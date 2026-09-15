@@ -104,6 +104,12 @@ enum ProbeOperationContract {
     }
 }
 
+enum ProbeSemanticRouterContract {
+    static let rejectedAssertion = "semantic-router-write-rejected"
+    static let canonicalizedAssertion = "semantic-router-write-canonicalized"
+    static let settledAssertion = "semantic-router-write-settled"
+}
+
 enum ProbeTransitionOutcome: String, Codable, CaseIterable {
     case cancel
     case finish

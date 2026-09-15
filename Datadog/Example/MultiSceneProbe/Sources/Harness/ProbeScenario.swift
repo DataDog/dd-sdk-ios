@@ -79,8 +79,15 @@ enum ProbeSwiftUIStress: String, Codable, CaseIterable {
     case siblingContainerAuthority = "sibling-container-authority"
 }
 
+enum ProbeSwiftUIRouterWritePolicy: String, Codable, CaseIterable {
+    case accept
+    case reject
+    case canonicalizeToAlternate = "canonicalize-to-alternate"
+}
+
 struct ProbeRuntimeOptions: Codable, Equatable {
     var initialSwiftUIPath: [String] = []
+    var swiftUIRouterWritePolicy = ProbeSwiftUIRouterWritePolicy.accept
     var automaticallyNavigates = false
     var automaticallyOpensSecondWindow = false
     var automaticallyClosesSceneB = false
@@ -141,7 +148,7 @@ struct ProbeScenario: Codable, Equatable {
 }
 
 struct ProbeScenarioManifest: Codable, Equatable {
-    static let schemaVersion = 2
+    static let schemaVersion = 3
 
     let schemaVersion: Int
     let runID: String

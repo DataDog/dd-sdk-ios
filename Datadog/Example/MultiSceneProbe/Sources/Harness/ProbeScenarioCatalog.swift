@@ -23,6 +23,9 @@ enum ProbeScenarioCatalog {
         "swiftui.semantic-api.complete-destination",
         "swiftui.semantic-api.repeated-value-links",
         "swiftui.semantic-api.initial-repeated-path",
+        "swiftui.semantic-api.external-replacements",
+        "swiftui.semantic-api.rejected-link-write",
+        "swiftui.semantic-api.canonicalized-link-write",
         "swiftui.coexistence.automatic-keyed-manual-view",
         "swiftui.coexistence.nested-keyed-manual-view",
         "swiftui.coexistence.same-key-manual-two-scenes",
@@ -59,6 +62,9 @@ enum ProbeScenarioCatalog {
         swiftUISemanticAPICompleteDestination,
         swiftUISemanticAPIRepeatedValueLinks,
         swiftUISemanticAPIInitialRepeatedPath,
+        swiftUISemanticAPIExternalReplacements,
+        swiftUISemanticAPIRejectedLinkWrite,
+        swiftUISemanticAPICanonicalizedLinkWrite,
         swiftUICoexistenceAutomaticKeyedManualView,
         swiftUICoexistenceNestedKeyedManualView,
         swiftUICoexistenceSameKeyManualTwoScenes,
@@ -148,10 +154,15 @@ enum ProbeScenarioCatalog {
         scenario.identifier == swiftUISemanticAPICompleteDestination.identifier
             || scenario.identifier == swiftUISemanticAPIRepeatedValueLinks.identifier
             || scenario.identifier == swiftUISemanticAPIInitialRepeatedPath.identifier
+            || scenario.identifier == swiftUISemanticAPIExternalReplacements.identifier
+            || scenario.identifier == swiftUISemanticAPIRejectedLinkWrite.identifier
+            || scenario.identifier == swiftUISemanticAPICanonicalizedLinkWrite.identifier
     }
 
     static func usesSemanticNavigationValueLinks(_ scenario: ProbeScenario) -> Bool {
         scenario.identifier == swiftUISemanticAPIRepeatedValueLinks.identifier
+            || scenario.identifier == swiftUISemanticAPIRejectedLinkWrite.identifier
+            || scenario.identifier == swiftUISemanticAPICanonicalizedLinkWrite.identifier
     }
 
     static func scenario(
@@ -1337,6 +1348,367 @@ enum ProbeScenarioCatalog {
         }
         return timeline
     }
+
+    /// Mutates the customer's bound router directly, without going through a
+    /// platform link. Same-type and different-type replacements must each
+    /// become a fresh semantic destination occurrence.
+    private static let swiftUISemanticAPIExternalReplacements = ProbeScenario(
+        identifier: "swiftui.semantic-api.external-replacements",
+        trackingMode: .navigationOccurrence,
+        layout: .stack,
+        steps: [
+            ProbeStep(.waitForSceneReady, scene: "scene-A"),
+            ProbeStep(.waitForSignal, scene: "scene-A", signal: "rum-view:home#1"),
+            ProbeStep(.emitMarker, scene: "scene-A", value: "semantic-router-home"),
+            ProbeStep(.setSwiftUIPath, scene: "scene-A", value: "detail-1"),
+            ProbeStep(.waitForSignal, scene: "scene-A", signal: "rum-view:detail-1#1"),
+            ProbeStep(.emitMarker, scene: "scene-A", value: "semantic-router-detail-1"),
+            ProbeStep(.setSwiftUIPath, scene: "scene-A", value: "detail-2"),
+            ProbeStep(.waitForSignal, scene: "scene-A", signal: "rum-view:detail-2#1"),
+            ProbeStep(.emitMarker, scene: "scene-A", value: "semantic-router-detail-2"),
+            ProbeStep(.setSwiftUIPath, scene: "scene-A", value: "alternate"),
+            ProbeStep(.waitForSignal, scene: "scene-A", signal: "rum-view:alternate#1"),
+            ProbeStep(.emitMarker, scene: "scene-A", value: "semantic-router-alternate")
+        ],
+        completionConditions: [
+            ProbeExpectation(.noViewStarted, rumViewOrigin: .automatic),
+            ProbeExpectation(
+                .action,
+                scene: "scene-A",
+                screen: "detail-2",
+                occurrence: 1,
+                name: "binding-update-2",
+                sourceScene: "scene-A",
+                sourceScreen: "detail-2",
+                rumViewOrigin: .semantic
+            ),
+            ProbeExpectation(
+                .resource,
+                scene: "scene-A",
+                screen: "detail-2",
+                occurrence: 1,
+                name: "binding-update-2",
+                sourceScene: "scene-A",
+                sourceScreen: "detail-2",
+                rumViewOrigin: .semantic
+            ),
+            ProbeExpectation(
+                .viewStarted,
+                scene: "scene-A",
+                screen: "home",
+                rumViewOrigin: .semantic,
+                expectedCount: 1
+            ),
+            ProbeExpectation(
+                .viewStarted,
+                scene: "scene-A",
+                screen: "detail-1",
+                rumViewOrigin: .semantic,
+                expectedCount: 1
+            ),
+            ProbeExpectation(
+                .viewStarted,
+                scene: "scene-A",
+                screen: "detail-2",
+                rumViewOrigin: .semantic,
+                expectedCount: 1
+            ),
+            ProbeExpectation(
+                .viewStarted,
+                scene: "scene-A",
+                screen: "alternate",
+                rumViewOrigin: .semantic,
+                expectedCount: 1
+            ),
+            ProbeExpectation(
+                .viewStopped,
+                scene: "scene-A",
+                screen: "home",
+                rumViewOrigin: .semantic,
+                expectedCount: 1
+            ),
+            ProbeExpectation(
+                .viewStopped,
+                scene: "scene-A",
+                screen: "detail-1",
+                rumViewOrigin: .semantic,
+                expectedCount: 1
+            ),
+            ProbeExpectation(
+                .viewStopped,
+                scene: "scene-A",
+                screen: "detail-2",
+                rumViewOrigin: .semantic,
+                expectedCount: 1
+            ),
+            ProbeExpectation(
+                .action,
+                scene: "scene-A",
+                screen: "detail-2",
+                occurrence: 1,
+                name: "semantic-router-detail-2",
+                sourceScene: "scene-A",
+                sourceScreen: "detail-2",
+                rumViewOrigin: .semantic,
+                ownerViewReferenceAction: "semantic-router-detail-1",
+                ownerViewRelation: .different
+            ),
+            ProbeExpectation(
+                .action,
+                scene: "scene-A",
+                screen: "alternate",
+                occurrence: 1,
+                name: "semantic-router-alternate",
+                sourceScene: "scene-A",
+                sourceScreen: "alternate",
+                rumViewOrigin: .semantic,
+                ownerViewReferenceAction: "semantic-router-detail-2",
+                ownerViewRelation: .different
+            )
+        ] + semanticMarkerExpectations(
+            screen: "alternate",
+            occurrence: 1,
+            name: "on-appear"
+        ) + semanticMarkerExpectations(
+            screen: "alternate",
+            occurrence: 1,
+            name: "task-immediate"
+        ),
+        expectedSemanticTimeline: semanticExternalReplacementsTimeline()
+    )
+
+    private static func semanticExternalReplacementsTimeline() -> [ProbeExpectation] {
+        let occurrences: [(screen: String, marker: String)] = [
+            ("home", "semantic-router-home"),
+            ("detail-1", "semantic-router-detail-1"),
+            ("detail-2", "semantic-router-detail-2"),
+            ("alternate", "semantic-router-alternate")
+        ]
+        var timeline: [ProbeExpectation] = []
+        for (index, occurrence) in occurrences.enumerated() {
+            if index > 0 {
+                timeline.append(
+                    ProbeExpectation(
+                        .viewStopped,
+                        scene: "scene-A",
+                        screen: occurrences[index - 1].screen,
+                        occurrence: 1,
+                        rumViewOrigin: .semantic
+                    )
+                )
+            }
+            timeline.append(
+                ProbeExpectation(
+                    .viewStarted,
+                    scene: "scene-A",
+                    screen: occurrence.screen,
+                    occurrence: 1,
+                    rumViewOrigin: .semantic
+                )
+            )
+            timeline += semanticMarkerExpectations(
+                screen: occurrence.screen,
+                occurrence: 1,
+                name: occurrence.marker
+            )
+        }
+        return timeline
+    }
+
+    /// Rejects the path proposed by a native value link. The customer's Home
+    /// path stays authoritative and no proposed Detail occurrence may escape.
+    private static let swiftUISemanticAPIRejectedLinkWrite = ProbeScenario(
+        identifier: "swiftui.semantic-api.rejected-link-write",
+        trackingMode: .navigationOccurrence,
+        layout: .stack,
+        steps: [
+            ProbeStep(.waitForSceneReady, scene: "scene-A"),
+            ProbeStep(.waitForSignal, scene: "scene-A", signal: "rum-view:home#1"),
+            ProbeStep(.emitMarker, scene: "scene-A", value: "semantic-rejected-home-before"),
+            ProbeStep(
+                .waitForSignal,
+                scene: "scene-A",
+                signal: "assertion:\(ProbeSemanticRouterContract.rejectedAssertion)"
+            ),
+            ProbeStep(
+                .waitForSignal,
+                scene: "scene-A",
+                signal: "assertion:\(ProbeSemanticRouterContract.settledAssertion)"
+            ),
+            ProbeStep(.emitMarker, scene: "scene-A", value: "semantic-rejected-home-after")
+        ],
+        completionConditions: [
+            ProbeExpectation(.noViewStarted, rumViewOrigin: .automatic),
+            ProbeExpectation(
+                .noViewStarted,
+                scene: "scene-A",
+                screen: "detail-1"
+            ),
+            ProbeExpectation(
+                .noEvent,
+                scene: "scene-A",
+                screen: "detail-1"
+            ),
+            ProbeExpectation(
+                .viewStarted,
+                scene: "scene-A",
+                screen: "home",
+                rumViewOrigin: .semantic,
+                expectedCount: 1
+            ),
+            ProbeExpectation(
+                .viewStopped,
+                scene: "scene-A",
+                screen: "home",
+                rumViewOrigin: .semantic,
+                expectedCount: 0
+            ),
+            ProbeExpectation(
+                .action,
+                scene: "scene-A",
+                screen: "home",
+                occurrence: 1,
+                name: "semantic-rejected-home-after",
+                sourceScene: "scene-A",
+                sourceScreen: "home",
+                rumViewOrigin: .semantic,
+                ownerViewReferenceAction: "semantic-rejected-home-before",
+                ownerViewRelation: .same
+            )
+        ],
+        expectedSemanticTimeline: [
+            ProbeExpectation(
+                .viewStarted,
+                scene: "scene-A",
+                screen: "home",
+                occurrence: 1,
+                rumViewOrigin: .semantic
+            )
+        ] + semanticMarkerExpectations(
+            screen: "home",
+            occurrence: 1,
+            name: "semantic-rejected-home-before"
+        ) + semanticMarkerExpectations(
+            screen: "home",
+            occurrence: 1,
+            name: "semantic-rejected-home-after"
+        ),
+        runtimeOptions: runtime {
+            $0.swiftUIRouterWritePolicy = .reject
+        }
+    )
+
+    /// Canonicalizes a native value-link proposal for Detail to Alternate. Only
+    /// the accepted Alternate path may become visible to RUM or lifecycle work.
+    private static let swiftUISemanticAPICanonicalizedLinkWrite = ProbeScenario(
+        identifier: "swiftui.semantic-api.canonicalized-link-write",
+        trackingMode: .navigationOccurrence,
+        layout: .stack,
+        steps: [
+            ProbeStep(.waitForSceneReady, scene: "scene-A"),
+            ProbeStep(.waitForSignal, scene: "scene-A", signal: "rum-view:home#1"),
+            ProbeStep(.emitMarker, scene: "scene-A", value: "semantic-canonical-home"),
+            ProbeStep(
+                .waitForSignal,
+                scene: "scene-A",
+                signal: "assertion:\(ProbeSemanticRouterContract.canonicalizedAssertion)"
+            ),
+            ProbeStep(
+                .waitForSignal,
+                scene: "scene-A",
+                signal: "assertion:\(ProbeSemanticRouterContract.settledAssertion)"
+            ),
+            ProbeStep(.waitForSignal, scene: "scene-A", signal: "rum-view:alternate#1"),
+            ProbeStep(.waitForSignal, scene: "scene-A", signal: "marker:task-delayed"),
+            ProbeStep(.emitMarker, scene: "scene-A", value: "semantic-canonical-alternate")
+        ],
+        completionConditions: [
+            ProbeExpectation(.noViewStarted, rumViewOrigin: .automatic),
+            ProbeExpectation(
+                .noViewStarted,
+                scene: "scene-A",
+                screen: "detail-1"
+            ),
+            ProbeExpectation(
+                .noEvent,
+                scene: "scene-A",
+                screen: "detail-1"
+            ),
+            ProbeExpectation(
+                .viewStarted,
+                scene: "scene-A",
+                screen: "home",
+                rumViewOrigin: .semantic,
+                expectedCount: 1
+            ),
+            ProbeExpectation(
+                .viewStarted,
+                scene: "scene-A",
+                screen: "alternate",
+                rumViewOrigin: .semantic,
+                expectedCount: 1
+            ),
+            ProbeExpectation(
+                .action,
+                scene: "scene-A",
+                screen: "alternate",
+                occurrence: 1,
+                name: "semantic-canonical-alternate",
+                sourceScene: "scene-A",
+                sourceScreen: "alternate",
+                rumViewOrigin: .semantic,
+                ownerViewReferenceAction: "semantic-canonical-home",
+                ownerViewRelation: .different
+            )
+        ] + semanticMarkerExpectations(
+            screen: "alternate",
+            occurrence: 1,
+            name: "on-appear"
+        ) + semanticMarkerExpectations(
+            screen: "alternate",
+            occurrence: 1,
+            name: "task-immediate"
+        ) + semanticMarkerExpectations(
+            screen: "alternate",
+            occurrence: 1,
+            name: "task-delayed"
+        ),
+        expectedSemanticTimeline: [
+            ProbeExpectation(
+                .viewStarted,
+                scene: "scene-A",
+                screen: "home",
+                occurrence: 1,
+                rumViewOrigin: .semantic
+            )
+        ] + semanticMarkerExpectations(
+            screen: "home",
+            occurrence: 1,
+            name: "semantic-canonical-home"
+        ) + [
+            ProbeExpectation(
+                .viewStopped,
+                scene: "scene-A",
+                screen: "home",
+                occurrence: 1,
+                rumViewOrigin: .semantic
+            ),
+            ProbeExpectation(
+                .viewStarted,
+                scene: "scene-A",
+                screen: "alternate",
+                occurrence: 1,
+                rumViewOrigin: .semantic
+            )
+        ] + semanticMarkerExpectations(
+            screen: "alternate",
+            occurrence: 1,
+            name: "semantic-canonical-alternate"
+        ),
+        runtimeOptions: runtime {
+            $0.swiftUIRouterWritePolicy = .canonicalizeToAlternate
+        }
+    )
 
     private static func semanticMarkerExpectations(
         screen: String,

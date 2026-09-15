@@ -509,6 +509,21 @@ enum ProbeScenarioRunner {
                 )
             }
         }
+        if scenario.runtimeOptions.swiftUIRouterWritePolicy != .accept {
+            if !ProbeScenarioCatalog.usesSemanticNavigationSPI(scenario) {
+                errors.append("router write policy requires the semantic navigation API")
+            }
+            if !ProbeScenarioCatalog.usesSemanticNavigationValueLinks(scenario) {
+                errors.append("router write policy requires a native semantic value link")
+            }
+            if scenario.steps.contains(where: {
+                $0.kind == .setSwiftUIPath || $0.kind == .replaceSwiftUIDestination
+            }) {
+                errors.append(
+                    "router write policy cannot be combined with driver path mutation"
+                )
+            }
+        }
         for step in scenario.steps {
             if
                 let percentage = step.percentage,

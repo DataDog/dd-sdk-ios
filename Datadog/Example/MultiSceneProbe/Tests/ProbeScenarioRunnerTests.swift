@@ -664,6 +664,134 @@ final class ProbeScenarioRunnerTests: XCTestCase {
         }
     }
 
+    func testSemanticNavigationAPICoversExternalRejectedAndCanonicalRouterWrites() throws {
+        let external = try XCTUnwrap(
+            ProbeScenarioCatalog.scenario(
+                identifier: "swiftui.semantic-api.external-replacements"
+            )
+        )
+        let rejected = try XCTUnwrap(
+            ProbeScenarioCatalog.scenario(
+                identifier: "swiftui.semantic-api.rejected-link-write"
+            )
+        )
+        let canonicalized = try XCTUnwrap(
+            ProbeScenarioCatalog.scenario(
+                identifier: "swiftui.semantic-api.canonicalized-link-write"
+            )
+        )
+
+        for scenario in [external, rejected, canonicalized] {
+            XCTAssertTrue(ProbeScenarioCatalog.usesObservableDriver(scenario))
+            XCTAssertTrue(ProbeScenarioCatalog.usesSemanticNavigationSPI(scenario))
+            XCTAssertTrue(
+                scenario.completionConditions.contains {
+                    $0.kind == .noViewStarted && $0.rumViewOrigin == .automatic
+                }
+            )
+        }
+
+        XCTAssertEqual(
+            external.steps.filter { $0.kind == .setSwiftUIPath }.compactMap(\.value),
+            ["detail-1", "detail-2", "alternate"]
+        )
+        for screen in ["home", "detail-1", "detail-2", "alternate"] {
+            XCTAssertTrue(
+                external.expectedSemanticTimeline.contains {
+                    $0.kind == .viewStarted
+                        && $0.screen == screen
+                        && $0.occurrence == 1
+                        && $0.rumViewOrigin == .semantic
+                }
+            )
+        }
+
+        XCTAssertEqual(rejected.runtimeOptions.swiftUIRouterWritePolicy, .reject)
+        XCTAssertTrue(ProbeScenarioCatalog.usesSemanticNavigationValueLinks(rejected))
+        XCTAssertFalse(
+            rejected.steps.contains {
+                $0.kind == .setSwiftUIPath || $0.kind == .replaceSwiftUIDestination
+            }
+        )
+        XCTAssertTrue(
+            rejected.steps.contains {
+                $0.signal == "assertion:\(ProbeSemanticRouterContract.rejectedAssertion)"
+            }
+        )
+        XCTAssertTrue(
+            rejected.steps.contains {
+                $0.signal == "assertion:\(ProbeSemanticRouterContract.settledAssertion)"
+            }
+        )
+        XCTAssertTrue(
+            rejected.completionConditions.contains {
+                $0.kind == .noEvent
+                    && $0.scene == "scene-A"
+                    && $0.screen == "detail-1"
+                    && $0.sourceScene == nil
+                    && $0.sourceScreen == nil
+            }
+        )
+        XCTAssertTrue(
+            rejected.completionConditions.contains {
+                $0.kind == .viewStopped
+                    && $0.screen == "home"
+                    && $0.expectedCount == 0
+            }
+        )
+
+        XCTAssertEqual(
+            canonicalized.runtimeOptions.swiftUIRouterWritePolicy,
+            .canonicalizeToAlternate
+        )
+        XCTAssertTrue(
+            ProbeScenarioCatalog.usesSemanticNavigationValueLinks(canonicalized)
+        )
+        XCTAssertFalse(
+            canonicalized.steps.contains {
+                $0.kind == .setSwiftUIPath || $0.kind == .replaceSwiftUIDestination
+            }
+        )
+        XCTAssertTrue(
+            canonicalized.steps.contains {
+                $0.signal
+                    == "assertion:\(ProbeSemanticRouterContract.canonicalizedAssertion)"
+            }
+        )
+        XCTAssertTrue(
+            canonicalized.steps.contains {
+                $0.signal == "assertion:\(ProbeSemanticRouterContract.settledAssertion)"
+            }
+        )
+        XCTAssertTrue(
+            canonicalized.completionConditions.contains {
+                $0.kind == .noViewStarted && $0.screen == "detail-1"
+            }
+        )
+        XCTAssertTrue(
+            canonicalized.completionConditions.contains {
+                $0.kind == .noEvent
+                    && $0.scene == "scene-A"
+                    && $0.screen == "detail-1"
+                    && $0.sourceScene == nil
+                    && $0.sourceScreen == nil
+            }
+        )
+        XCTAssertTrue(
+            canonicalized.steps.contains {
+                $0.signal == "marker:task-delayed"
+            }
+        )
+        XCTAssertTrue(
+            canonicalized.expectedSemanticTimeline.contains {
+                $0.kind == .viewStarted
+                    && $0.screen == "alternate"
+                    && $0.occurrence == 1
+                    && $0.rumViewOrigin == .semantic
+            }
+        )
+    }
+
     func testAutomaticKeyedManualViewRequiresFreshAutomaticOwnerAfterStop() throws {
         let scenario = try XCTUnwrap(
             ProbeScenarioCatalog.scenario(
@@ -993,7 +1121,7 @@ final class ProbeScenarioRunnerTests: XCTestCase {
         XCTAssertEqual(resolution.manifest.runID, "generated-run-id")
         XCTAssertEqual(resolution.manifest.runMode, .clean)
         XCTAssertEqual(resolution.manifest.resolutionSource, .defaultScenario)
-        XCTAssertEqual(resolution.manifest.schemaVersion, 2)
+        XCTAssertEqual(resolution.manifest.schemaVersion, 3)
     }
 
     func testNamedScenarioResolvesCommandLineMetadata() {

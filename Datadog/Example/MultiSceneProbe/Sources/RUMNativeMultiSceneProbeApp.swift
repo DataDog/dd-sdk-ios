@@ -105,6 +105,7 @@ enum ProbeRuntime {
 
     static let automaticallyNavigates = options.automaticallyNavigates
     static let initialSwiftUIPath = options.initialSwiftUIPath
+    static let swiftUIRouterWritePolicy = options.swiftUIRouterWritePolicy
     static let automaticallyOpensSecondWindow = options.automaticallyOpensSecondWindow
     static let automaticallyClosesSceneB = options.automaticallyClosesSceneB
     static let automaticallyAbortsDetail = options.automaticallyAbortsDetail
@@ -275,6 +276,7 @@ enum ProbeRuntime {
                 + "swiftui_semantic_navigation_api=\(usesSemanticNavigationSPI) "
                 + "swiftui_stress=\(options.swiftUIStress.rawValue) "
                 + "initial_swiftui_path=\(initialSwiftUIPath.joined(separator: ",")) "
+                + "swiftui_router_write_policy=\(swiftUIRouterWritePolicy.rawValue) "
                 + "automatic_detail=\(automaticallyNavigates) "
                 + "automatic_second_window=\(automaticallyOpensSecondWindow) "
                 + "automatic_close_scene_b=\(automaticallyClosesSceneB) "

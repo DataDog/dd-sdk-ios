@@ -471,6 +471,7 @@ struct ProbeWindowRoot: View {
     @State private var didScheduleDetailReplacement = false
     @State private var didScheduleDetailInstanceReplacement = false
     @State private var didScheduleSyntheticReaderDisconnect = false
+    @State private var didRecordSemanticRouterDecision = false
 
     var body: some View {
         Group {
@@ -757,6 +758,27 @@ struct ProbeWindowRoot: View {
                 phase: "post-retained-reader-remount"
             )
         }
+        .task(id: didRecordSemanticRouterDecision) {
+            guard didRecordSemanticRouterDecision else {
+                return
+            }
+            try? await Task.sleep(for: .milliseconds(250))
+            guard !Task.isCancelled else {
+                return
+            }
+            ProbeRuntime.eventRecorder.record(
+                ProbeSignal(
+                    kind: .assertion,
+                    semanticContext: ProbeSemanticContext(
+                        logicalSceneID: window.label,
+                        nativeSceneID: sceneSessionID,
+                        screen: currentNavigationScreen
+                    ),
+                    name: ProbeSemanticRouterContract.settledAssertion,
+                    result: .pass
+                )
+            )
+        }
     }
 
     @ViewBuilder
@@ -993,14 +1015,36 @@ struct ProbeWindowRoot: View {
     private var navigationPath: Binding<[ProbeRoute]> {
         Binding(
             get: { path },
-            set: { newPath in
-                guard newPath != path else {
+            set: { proposedPath in
+                guard proposedPath != path else {
                     return
                 }
                 let previousPath = path
-                path = newPath
+                let acceptedPath: [ProbeRoute]
+                switch ProbeRuntime.swiftUIRouterWritePolicy {
+                case .reject where proposedPath == [.detail(1)]:
+                    recordSemanticRouterDecision(
+                        name: ProbeSemanticRouterContract.rejectedAssertion,
+                        proposedPath: proposedPath,
+                        acceptedPath: previousPath
+                    )
+                    return
+                case .canonicalizeToAlternate where proposedPath == [.detail(1)]:
+                    acceptedPath = [.alternate]
+                    recordSemanticRouterDecision(
+                        name: ProbeSemanticRouterContract.canonicalizedAssertion,
+                        proposedPath: proposedPath,
+                        acceptedPath: acceptedPath
+                    )
+                case .accept, .reject, .canonicalizeToAlternate:
+                    acceptedPath = proposedPath
+                }
+                guard acceptedPath != previousPath else {
+                    return
+                }
+                path = acceptedPath
                 navigationMutation += 1
-                advanceRUMViewBindingGeneration(for: newPath)
+                advanceRUMViewBindingGeneration(for: acceptedPath)
                 updateSceneRoute()
                 ProbeRuntime.eventRecorder.record(
                     ProbeSignal(
@@ -1008,44 +1052,45 @@ struct ProbeWindowRoot: View {
                         semanticContext: ProbeSemanticContext(
                             logicalSceneID: window.label,
                             nativeSceneID: sceneSessionID,
-                            screen: currentNavigationScreen
+                            screen: navigationScreen(for: acceptedPath)
                         ),
                         previousNavigationPath: navigationPathDescription(
                             for: previousPath
                         ),
-                        navigationPath: navigationPathDescription(for: newPath),
+                        navigationPath: navigationPathDescription(for: acceptedPath),
                         mutation: navigationMutation
                     )
                 )
                 ProbeRuntime.record(
                     "navigation path mutated source=\(window.label) "
-                        + "screen=\(currentNavigationScreen) mutation=\(navigationMutation)"
+                        + "screen=\(navigationScreen(for: acceptedPath)) "
+                        + "mutation=\(navigationMutation)"
                 )
                 #if DEBUG
                 if
                     ProbeRuntime.usesNavigationOccurrenceSwiftUIViewTracking,
                     !ProbeRuntime.usesSemanticNavigationSPI,
-                    newPath.count < previousPath.count
+                    acceptedPath.count < previousPath.count
                 {
                     let didReveal = navigationOccurrenceSource.revealRetainedRoute(
                         occurrenceKey: RUMViewOccurrenceKey(
-                            navigationOccurrence(for: newPath)
+                            navigationOccurrence(for: acceptedPath)
                         ),
-                        bindingGeneration: bindingGeneration(for: newPath)
+                        bindingGeneration: bindingGeneration(for: acceptedPath)
                     )
                     ProbeRuntime.record(
                         "navigation occurrence source source=\(window.label) "
-                            + "screen=\(currentNavigationScreen) "
-                            + "generation=\(bindingGeneration(for: newPath)) "
+                            + "screen=\(navigationScreen(for: acceptedPath)) "
+                            + "generation=\(bindingGeneration(for: acceptedPath)) "
                             + "delivered=\(didReveal)"
                     )
                 }
                 #endif
-                if newPath.count < previousPath.count {
+                if acceptedPath.count < previousPath.count {
                     ProbeRuntime.recordDestination(
                         window: window,
                         sceneSessionID: sceneSessionID,
-                        screen: currentNavigationScreen,
+                        screen: navigationScreen(for: acceptedPath),
                         isCommitted: true
                     )
                 }
@@ -1053,7 +1098,38 @@ struct ProbeWindowRoot: View {
         )
     }
 
+    private func recordSemanticRouterDecision(
+        name: String,
+        proposedPath: [ProbeRoute],
+        acceptedPath: [ProbeRoute]
+    ) {
+        guard !didRecordSemanticRouterDecision else {
+            return
+        }
+        didRecordSemanticRouterDecision = true
+        ProbeRuntime.eventRecorder.record(
+            ProbeSignal(
+                kind: .assertion,
+                semanticContext: ProbeSemanticContext(
+                    logicalSceneID: window.label,
+                    nativeSceneID: sceneSessionID,
+                    screen: navigationScreen(for: acceptedPath)
+                ),
+                previousNavigationPath: navigationPathDescription(for: path),
+                navigationPath: navigationPathDescription(for: acceptedPath),
+                name: name,
+                result: .pass,
+                reason: "proposed=\(navigationPathDescription(for: proposedPath)) "
+                    + "accepted=\(navigationPathDescription(for: acceptedPath))"
+            )
+        )
+    }
+
     private var currentNavigationScreen: String {
+        navigationScreen(for: path)
+    }
+
+    private func navigationScreen(for path: [ProbeRoute]) -> String {
         switch path.last {
         case .detail(let instance):
             return "detail-\(instance)"
