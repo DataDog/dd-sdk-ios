@@ -2,15 +2,16 @@
 
 Read the relevant section before designing a new multi-scene implementation or
 experiment. These warnings preserve failed, inconclusive, unsafe, or
-insufficiently discriminating approaches through `EXP-142`. They are constraints
-on future work, not a substitute for the current verdict in
+insufficiently discriminating approaches through `EXP-142` plus active
+`EXP-143` lessons. They are constraints on future work, not a substitute for the
+current verdict in
 [ASSESSMENT.md](ASSESSMENT.md).
 
 The 107 historical warning blocks below are reproduced from the
 [frozen experiment record](Archive/EXPERIMENTS_THROUGH_EXP-142.md) and reorganized
 exactly once by subject. Two additional `EXP-142` lessons are included because
 they lived in that experiment's detailed record rather than the old warning
-section.
+section. New `EXP-143` warnings are appended in their owning subject sections.
 
 ## Thematic index
 
@@ -187,6 +188,33 @@ Occurrence identity, path commitment, retained destinations, and transition orde
   route materializable and failed the full RUM suite. Exempt only a configuration
   explicitly classified as a non-current semantic destination with concrete
   scene proof; ordinary never-started registrations must still fail closed.
+- Do not accept a clean restored-path device run as proof that bootstrap
+  ownership is race-safe. `EXP-143` fix-c and fix-d both passed 20/20 with correct
+  backend ownership, then failed deterministic callback permutations involving
+  descriptor lag, replacement readers, disconnect cleanup, and scene movement.
+- Do not let a boundary that lent a provisional occurrence fall back to its
+  state-local generation fence. Refresh, detach, disappear, and reader-mount
+  callbacks for the source-leased donor key must be routed completely by the
+  navigation source; otherwise an older callback can expose hidden Root or a
+  newer callback can fence the still-visible destination.
+- Do not pin a provisional initial occurrence permanently to the first SwiftUI
+  reader, and do not require a replacement reader to be virgin. SwiftUI may
+  replace and later reuse either reader. A reliable same-scene reader transfers
+  the live identity; a scene move or disconnect creates one fresh occurrence.
+  Inactive previously used readers are eligible only when their last-started
+  generation and local destination or validated donor boundary match.
+- Do not use a newer donor boundary as the replacement state's startup
+  configuration while its accepted destination descriptor is pending. In the
+  rejected fix-d ordering, Root/gen2 prevented the last proven Detail/gen1 from
+  restarting. Keep the newer boundary in source metadata and prepare the reader
+  with the last proven visible destination.
+- Do not stop the live provisional owner before proving that its replacement can
+  transfer or restart ownership. The rejected cross-scene fix-d path balanced D1
+  and then discovered that the target's same-generation or disconnect fence
+  rejected D1, leaving no current semantic view.
+- Do not run generic reconciliation before an exact reader-qualified reconnect
+  recovery. It can mark appearance without creating an occurrence, consume the
+  only remount authorization, and leave later callbacks unable to recover.
 
 ## Presentations and manual authority
 
@@ -344,6 +372,11 @@ Scene capability, disconnect/reconnect, restoration, and immutable scope ownersh
 - Do not reuse the initial scene trait as reconnect proof after disconnect. It is
   valid only for the first clean iOS 27 mount. A retained reader must regain an
   attached scene, and an inactive view must still wait for semantic appearance.
+- Do not rearm a dormant semantic boundary from a trait or generic update after
+  disconnect. Only a reader-qualified concrete attachment proves recovery. A
+  queued final detach must retain enough lifetime state to run after the wrapper
+  releases, cancel when that state reattaches, and be tested with both reconnect
+  orders so stale cleanup cannot remove the fresh owner.
 - Do not index a detached observer only by its current scene. Preserve its last
   proven scene for unregister/filter decisions, or a stale A reader can
   participate in B and bypass B's interactive coordinator gate.

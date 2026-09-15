@@ -16,16 +16,18 @@ Last updated: 2026-09-15
 ## Current checkpoint
 
 - Last completed experiment remains `EXP-142`; `EXP-143` is now a partial backend
-  pass for initial repeated-path occurrence restoration and remains open for its
-  other router cases and initial lifecycle attribution.
-- Latest accepted implementation commit: `f885f9da4`
-  (`Preserve restored semantic route occurrences`).
+  pass for initial repeated-path restoration and pre-view lifecycle attribution.
+  It remains open only for external replacement, rejection, and canonicalization.
+- Latest accepted implementation commit: `4d64d8a53`
+  (`Harden restored semantic navigation ownership`); accepted probe oracle commit:
+  `484de074c` (`Validate restored destination lifecycle ownership`).
 - Documentation-refactor baseline: `5fc2099e9`
   (`Document repeated semantic route validation`).
 - Frozen archive commit: `e51a83b15`.
-- Latest validation: restored-path run 14/14, native probe 136/136, DatadogRUM
-  1,184/1,184, exact backend view/action/Resource ownership, and zero accepted-run
-  errors/crashes. The prior Xcode 27 Release build must rerun after EXP-143 closes.
+- Latest validation: restored-path run 20/20, semantic cluster 100/100, native
+  probe 136/136, DatadogRUM 1,219/1,219, source and test lint clean, exact backend
+  view/action/Resource ownership, and zero accepted-run errors/crashes. The prior
+  Xcode 27 Release build must rerun after EXP-143 closes.
 
 Status describes the contract proved, not whether a diagnostic successfully found
 a defect. Compound status preserves mixed evidence. `PREPARED` means the
@@ -34,9 +36,9 @@ driver/oracle exists but runtime acceptance is pending.
 ## In-flight and next experiment
 
 `EXP-143` is in progress. Direct restoration into repeated equal values now
-creates only the initial top, then fresh surviving Detail and Home occurrences;
-initial hidden-root work still precedes that top, and router replacement,
-rejection, and canonicalization remain. Full evidence is in the
+creates the initial top before hidden-root work, then fresh surviving Detail and
+Home occurrences. Router replacement, rejection, and canonicalization remain.
+Full evidence is in the
 [active shard](Experiments/EXP-143-199.md#exp-143--external-semantic-router-mutations-and-restoration).
 
 ## Complete experiment ledger
@@ -185,7 +187,7 @@ rejection, and canonicalization remain. Full evidence is in the
 | EXP-140 | 2026-09-15 | PASS · backend | Presentations | Customer-shaped scene-targeted full-screen-cover acceptance. The 14/14 oracle and backend contain H1 `43326c6e…` → one semantic Cover `1d7f7dd0…` → fresh H2 `238b6fa3…`, with no automatic cover duplicate. | [archive](Archive/EXPERIMENTS_THROUGH_EXP-142.md): `EXP-140` |
 | EXP-141 | 2026-09-15 | PASS · backend | SwiftUI navigation | Customer-shaped complete-destination semantic API acceptance. The 38/38 oracle and backend contain seven distinct semantic occurrences H1/D1/H2/Sheet/H3/Cover/H4 plus ApplicationLaunch, with no automatic duplicate. | [archive](Archive/EXPERIMENTS_THROUGH_EXP-142.md): `EXP-141` |
 | EXP-142 | 2026-09-15 | PASS after FAIL · backend; weak-oracle PASS excluded | SwiftUI navigation | Repeated equal-route acceptance through real `NavigationLink(value:)` controls. A stronger reveal-before-callback oracle exposed returned Detail work on D2 before fresh D3. | [archive](Archive/EXPERIMENTS_THROUGH_EXP-142.md): `EXP-142` |
-| EXP-143 | 2026-09-15 | PARTIAL PASS after FAIL · backend | SwiftUI navigation | Initial `[Detail, Detail]` restoration now emits only D1, then fresh D2 and first Home with exact owners and no automatic duplicate. Hidden-root work still uses ApplicationLaunch; replacement, rejection, and canonicalization remain. | [active record](Experiments/EXP-143-199.md#exp-143--external-semantic-router-mutations-and-restoration) |
+| EXP-143 | 2026-09-15 | PARTIAL PASS after FAIL and rejected candidates · backend | SwiftUI navigation | Initial `[Detail, Detail]` restoration now starts D1 before hidden-root work, then fresh D2 and first Home with exact owners and no automatic duplicate. Adversarial descriptor, replacement-state, reconnect-order, and scene-migration tests pass; external replacement, rejection, and canonicalization remain. | [active record](Experiments/EXP-143-199.md#exp-143--external-semantic-router-mutations-and-restoration) |
 
 ## Simulator-inconclusive and hardware-required evidence
 

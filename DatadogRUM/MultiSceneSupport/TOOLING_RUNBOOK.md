@@ -82,11 +82,18 @@ unsupported. Treat that result as invalid evidence. The accepted build used
 ### Resolve and cache the workspace
 
 1. Call `XcodeListWorkspaces`.
-2. Match the returned absolute workspace path to
+2. Resolve the SDK workspace at `Datadog.xcworkspace` for DatadogRUM tests.
+3. The probe is a separate project and its scheme is not in the SDK workspace.
+   If its path is absent, call `XcodeOpenWorkspace` with
    `Datadog/Example/MultiSceneProbe/RUMNativeMultiSceneProbe.xcodeproj`.
-3. Cache that `workspaceIdentifier` for the current Xcode connection.
-4. Pass it to every workspace-aware call.
-5. Resolve it again if Xcode, the headless server, or the workspace restarts.
+4. Cache both returned `workspaceIdentifier` values for the current Xcode
+   connection. Use the SDK identifier with scheme `DatadogRUM` and the probe
+   identifier with scheme `RUMNativeMultiSceneProbe`.
+5. Pass the correct identifier to every workspace-aware call. A failed attempt
+   to select `RUMNativeMultiSceneProbe` in the SDK workspace is a workspace
+   routing mistake, not a missing scheme or project defect.
+6. Resolve identifiers again if Xcode, the headless server, or either workspace
+   restarts.
 
 `workspaceIdentifier` is required in practice even where an individual tool's
 schema makes it look optional. Never reuse a remembered identifier across Xcode
@@ -165,6 +172,25 @@ This is a tooling workaround, not permission to omit the complete module run.
 Use Xcode 27's `xcresulttool get test-results summary` on the resulting
 `.xcresult` when raw output is truncated. Its device-level `passedTests` count
 includes parameterized test runs and is the count used by this project.
+
+For semantic restoration and router work, do not rely on sleeps or one runtime
+callback order. Run `RUMSwiftUINavigationOccurrenceSourceTests` first, then the
+semantic cluster (occurrence source, container lifetime, interactive arbiter,
+and semantic navigation state). Its deterministic matrix must cover:
+
+- accepted occurrence identity before descriptor reconciliation;
+- donor reader mount versus non-reader trait/update callbacks;
+- multiple newer and out-of-order older donor refreshes;
+- detach and disappear before and after ownership transfer;
+- SwiftUI state replacement and later reuse of the former state;
+- scene disconnect, queued source cleanup, and both reconnect orders;
+- same-scene identity transfer and cross-scene fresh remount; and
+- a newer donor generation while the last proven destination is still older.
+
+Only after that matrix passes should one clean device run validate the
+platform's observed happy-path order. A device PASS followed by a deterministic
+race failure is a rejected implementation attempt and must remain in the active
+experiment record.
 
 ### Experimental public-API loop
 
@@ -245,8 +271,11 @@ only for SwiftUI window identity and dismissal. Backend validation must still
 inspect every view in the resulting session and reject a run if any semantic view
 retains another run ID.
 
-Restoration scenarios must use their documented predecessor run and restoration
-state instead of this clean sequence.
+OS/window persistence restoration scenarios must use their documented
+predecessor run and restored state instead of this clean sequence. A clean launch
+whose router is intentionally initialized with a non-empty path, such as
+`EXP-143`, is semantic-container bootstrap and still uses the clean-run
+precondition.
 
 ## Device-interaction workflow
 
@@ -413,9 +442,10 @@ Each attempt should produce one compact machine-readable summary containing:
 - backend ingestion and reducer validation status;
 - reason and rerun instructions for invalid or inconclusive attempts.
 
-Exact run IDs, RUM session IDs, and artifact evidence belong in
-`EXPERIMENTS.md`. Higher-level documents should cite the stable `EXP-*` identifier
-instead of duplicating volatile identifiers.
+Exact run IDs, RUM session IDs, and artifact evidence belong in the active
+numbered record under `Experiments/`. `EXPERIMENTS.md` keeps one compact locator
+row; higher-level documents should cite the stable `EXP-*` identifier instead of
+duplicating volatile identifiers.
 
 ## Datadog validation workflow
 

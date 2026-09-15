@@ -43,8 +43,8 @@ Objective-C Release exposure still require normal API review.
 | Expected outcome | The experimental iOS 27 semantic container follows the application router's accepted path for programmatic replacement, rejection, canonicalization, and restoration, including an initial repeated-equal path |
 | Prerequisite evidence | `EXP-141` proves the complete stack/presentation SPI; `EXP-142` proves sequential equal values and accepted-binding reconciliation through native value links |
 | Implementation boundary | Semantic navigation state and materialized destination boundary in `SwiftUIViewModifier.swift`; native probe router, recorder, and oracle only as needed |
-| Current result | Initial repeated restoration occurrence lifecycle passes at mapper/backend on `f885f9da4`: D1 -> fresh D2 -> first H1, no hidden/automatic view. Initial hidden-root work still uses ApplicationLaunch. |
-| Acceptance | Start the initial accepted top before hidden-root customer work; rejected proposals emit nothing; canonicalized proposals emit only the accepted path; every repeated position has a distinct UUID; revealed lifecycle work uses the fresh occurrence; mapper and backend inventories agree without automatic duplicates, errors, or crashes |
+| Current result | Repeated restoration and initial attribution pass at mapper/backend on `4d64d8a53` with probe oracle `484de074c`: D1 starts before hidden-root work, then fresh D2 and first H1, with no hidden/automatic view. Forty-nine adversarial callback-order tests and static review pass. |
+| Acceptance | Remaining: rejected proposals emit nothing; programmatic replacement and canonicalized proposals emit only the accepted path. Accepted restoration already proves distinct repeated-position UUIDs, fresh reveal-before-callback ownership, mapper/backend agreement, and no automatic duplicates, errors, or crashes. |
 | Environment | iPadOS 27 simulator first; use hardware only if restoration or presentation topology cannot be exercised deterministically |
 
 The planned detailed record and template live in
@@ -54,7 +54,7 @@ The planned detailed record and template live in
 
 | Order | Expected outcome | Prerequisite evidence | Implementation boundary | Acceptance test | Environment |
 | ---: | --- | --- | --- | --- | --- |
-| 1 | Complete `EXP-143` initial attribution and external mutation | Restored occurrence subcase accepted on `f885f9da4` | Semantic SwiftUI state plus focused router/probe coverage | Initial top precedes hidden-root work; accepted path is the only RUM path; rejection/canonicalization are exact | Simulator |
+| 1 | Complete `EXP-143` external router mutation | Restoration and initial attribution accepted on `4d64d8a53`; 49 source-order tests and 20/20 backend run | Semantic SwiftUI state plus focused router/probe coverage | Programmatic replacement follows only the accepted path; rejected writes emit nothing; canonicalized writes emit only the getter result | Simulator |
 | 2 | Replace one active semantic presentation with another without exposing an intermediate underlying destination | `EXP-125`, `EXP-126`, `EXP-141` | Complete-destination presentation state and target-local suppression | Sheet/cover replacement produces one stop/start pair; dismissal reveals one fresh latest underlying occurrence before customer work | Simulator |
 | 3 | Exercise sibling-container isolation through the actual semantic SPI | `EXP-127`, `EXP-141` | Public-experiment call site, not the probe-only wrapper | One container's authority never suppresses its sibling; reveal starts only the sibling's latest committed destination | Simulator |
 | 4 | Prototype Operation view targeting behind iOS 27 experimental boundaries | `EXP-130` identity semantics; `EXP-131` cross-scene driver; [Operations contract](OPERATIONS.md) | Opaque customer target with `.current(in:)` first; separate explicit and inferred candidates; Debug-only Objective-C companions | Start/succeed/fail calls compile and route explicit > inferred > last-proven snapshot > representative; no internal UUID leaks | Simulator for API/fallback tests; hardware for cross-scene acceptance |
@@ -83,14 +83,13 @@ The planned detailed record and template live in
 | Work | Expected outcome and prerequisite | Boundary | Acceptance |
 | --- | --- | --- | --- |
 | External router rejection/canonicalization | `EXP-143`, after accepted-binding reconciliation in `EXP-142` | Typed path state only | No RUM transition for rejected proposal; only canonical getter result becomes current |
-| Initial/repeated restoration | `EXP-143`, after sequential equal routes in `EXP-142` | Occurrence claims and restored materialization | Distinct path-position UUIDs and correct first lifecycle owner |
 | Presentation replacement | After `EXP-125`/`126`/`141` | Router presentation state and suppression lifetime | No intermediate underlying view; fresh reveal only on final dismissal |
 | Semantic sibling call site | After `EXP-127` | Replace probe-only wrapper with actual SPI | Same ancestry/owner oracle remains green |
 | Operation target API | After `EXP-130` and source review | Monitor/handler routing plus Swift/ObjC prototype | Explicit target precedence, fallback, crash safety, and source compatibility |
 | Targeted downstream signals | After target abstraction exists | One signal family per slice | Exact requested owner plus legacy fallback regressions |
 | Single-scene/custom-handler compatibility | After semantic state stabilizes | Existing integration paths | Full suites, representative behavior, no duplicate views/actions |
 | Performance/reentrancy | After code shape freezes | `UIApplication.sendEvent` handoff and locks | Measured bounded overhead, no recursion/deadlock, normal apps unaffected |
-| Missing deterministic harness controls | Before restoration, WebView, mirrored log, fatal/exported context rows | Probe only | Named scenario, fail-closed prerequisites, mapper/backend oracle |
+| Missing deterministic harness controls | Before WebView, mirrored log, and fatal/exported context rows | Probe only | Named scenario, fail-closed prerequisites, mapper/backend oracle |
 
 ## Physical-device and human-driven queue
 
@@ -144,12 +143,14 @@ The branch is not release-ready until all applicable gates pass:
 - Hardware: the P0 queue and final iPhone Duo/iOS 27.1 matrix pass unchanged named
   scenarios with exact backend evidence.
 
-Latest checkpoint: `EXP-143` restoration passes 14/14 locally and in backend
-intake on `f885f9da4`; native probe 136/136; complete DatadogRUM 1,184/1,184;
-DatadogTrace 151/151 at its latest affected checkpoint. The last Xcode 27 Release
-probe build predates the open EXP-143 slice and must rerun when it closes. The full repository lint and unaffected
-module suites remain valid at their recorded checkpoints, but must rerun at the
-release freeze.
+Latest checkpoint: `EXP-143` restoration and initial attribution pass 20/20
+locally and in backend intake on `4d64d8a53` with probe oracle `484de074c`;
+source-order tests 49/49, semantic cluster 100/100, native probe 136/136,
+complete DatadogRUM 1,219/1,219, and repository lint clean across 713 source and
+699 test files. DatadogTrace remains 151/151 at its latest affected checkpoint.
+The last Xcode 27 Release probe build predates the open `EXP-143` slice and must
+rerun when it closes. Unaffected module suites remain valid at their recorded
+checkpoints but must rerun at the release freeze.
 
 ## Completed milestone ledger
 
@@ -161,7 +162,7 @@ release freeze.
 | Deterministic probe and lifecycle driver | `EXP-106`-`114` | Named scenarios, JSONL recorder, reducer/oracle, exact scene registry, signal-driven stack/split/UIKit/lifecycle flows, and hardware routing established | Same archives |
 | Automatic coexistence and manual authority | `EXP-115`-`129`, `EXP-137`-`140` | Target-local authority, underlying navigation, nesting, Sheet/cover, sibling isolation, and customer-shaped scene-targeted manual SPI pass; same-key A/B remains hardware-gated | Same archives |
 | Operations, scroll, Trace, and causal boundary | `EXP-130`-`136` | Navigation-step Operations, real scroll origin, Trace request-start freezing, reverse completion, and approved source-less SwiftUI task fallback classified; cross-scene/shared rows prepared | Same archives |
-| Customer-shaped semantic navigation | `EXP-141`-`142` | Complete stack/presentation SPI and sequential repeated equal native value links pass locally and in backend intake; implementation commit `a19177582` | Same archives |
+| Customer-shaped semantic navigation | `EXP-141`-`142`; `EXP-143` restoration subcase | Complete stack/presentation SPI, sequential repeated equal native value links, and direct repeated restoration with pre-view attribution pass locally and in backend intake; latest implementation `4d64d8a53` | Same archives plus [active EXP-143 record](Experiments/EXP-143-199.md#exp-143--external-semantic-router-mutations-and-restoration) |
 
 ## Deferred and explicitly out of scope
 
