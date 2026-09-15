@@ -38,10 +38,10 @@ class KSCrashBacktraceTests: XCTestCase {
         }
 
         let userImage = report.binaryImages.first(where: { $0.libraryName.contains("DatadogCrashReportingTests") })
-        let systemImage = report.binaryImages.first(where: { $0.libraryName == "xctest" })
+        let systemImage = report.binaryImages.first(where: { $0.libraryName == "CoreFoundation" })
 
         XCTAssertFalse(userImage?.isSystemLibrary ?? true, "Should include current binary image")
-        XCTAssertTrue(systemImage?.isSystemLibrary ?? false, "Should include xctest system image")
+        XCTAssertTrue(systemImage?.isSystemLibrary ?? false, "Should include CoreFoundation system image")
         XCTAssertEqual(report.threads.count, 1, "Should have one thread")
         XCTAssertEqual(report.stack, report.threads[0].stack)
         XCTAssertFalse(report.threads[0].name.isEmpty, "Thread should have a name")
