@@ -648,6 +648,20 @@ final class ProbeScenarioRunnerTests: XCTestCase {
                 }
             )
         }
+        for phase in ["navigation-appearance-1", "on-appear", "task-immediate"] {
+            for kind in [ProbeExpectationKind.action, .resource] {
+                XCTAssertTrue(
+                    scenario.expectedSemanticTimeline.contains {
+                        $0.kind == kind
+                            && $0.screen == "detail-1"
+                            && $0.occurrence == 1
+                            && $0.name == phase
+                            && $0.sourceScreen == "home"
+                            && $0.rumViewOrigin == .semantic
+                    }
+                )
+            }
+        }
     }
 
     func testAutomaticKeyedManualViewRequiresFreshAutomaticOwnerAfterStop() throws {

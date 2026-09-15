@@ -1301,6 +1301,34 @@ enum ProbeScenarioCatalog {
                     rumViewOrigin: .semantic
                 )
             )
+            if index == 0 {
+                for phase in ["navigation-appearance-1", "on-appear", "task-immediate"] {
+                    timeline.append(
+                        ProbeExpectation(
+                            .action,
+                            scene: "scene-A",
+                            screen: occurrence.screen,
+                            occurrence: occurrence.occurrence,
+                            name: phase,
+                            sourceScene: "scene-A",
+                            sourceScreen: "home",
+                            rumViewOrigin: .semantic
+                        )
+                    )
+                    timeline.append(
+                        ProbeExpectation(
+                            .resource,
+                            scene: "scene-A",
+                            screen: occurrence.screen,
+                            occurrence: occurrence.occurrence,
+                            name: phase,
+                            sourceScene: "scene-A",
+                            sourceScreen: "home",
+                            rumViewOrigin: .semantic
+                        )
+                    )
+                }
+            }
             timeline += semanticMarkerExpectations(
                 screen: occurrence.screen,
                 occurrence: occurrence.occurrence,
