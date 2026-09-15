@@ -3004,6 +3004,191 @@ class RUMViewScopeTests: XCTestCase {
         XCTAssertEqual(stopViewEvent?.view.slowFramesRate, 16)
     }
 
+    #if !os(macOS)
+    func testWhenThereAreViewHitches_startingAnotherViewUsesForegroundDurationForSlowFramesRate() {
+        // Given
+        var currentTime: Date = .mockDecember15th2019At10AMUTC()
+        let identity = ViewIdentifier("view-a")
+        let hitch = Hitch(start: 0, duration: 0.16.dd.toInt64Nanoseconds)
+        let scope = RUMViewScope(
+            isInitialView: false,
+            parent: parent,
+            dependencies: .mockWith(
+                viewHitchesReaderFactory: { ViewHitchesMock(hitchesDataModel: ([hitch], 0.16)) }
+            ),
+            identity: identity,
+            path: "view-a",
+            name: "View A",
+            customTimings: [:],
+            startTime: currentTime,
+            serverTimeOffset: .zero,
+            interactionToNextViewMetric: nil,
+            viewIndexInSession: .mockAny()
+        )
+        _ = scope.process(
+            command: RUMStartViewCommand.mockWith(time: currentTime, identity: identity),
+            context: context,
+            writer: writer
+        )
+        _ = scope.process(
+            command: RUMStartResourceCommand.mockWith(resourceKey: "resource", time: currentTime),
+            context: context,
+            writer: writer
+        )
+
+        // When
+        context.applicationStateHistory = .mockWith(
+            initialState: .active,
+            date: currentTime,
+            transitions: [
+                (state: .background, date: currentTime + 10),
+                (state: .active, date: currentTime + 70)
+            ]
+        )
+        currentTime.addTimeInterval(80)
+        XCTAssertTrue(
+            scope.process(
+                command: RUMStartViewCommand.mockWith(time: currentTime, identity: ViewIdentifier("view-b")),
+                context: context,
+                writer: writer
+            ),
+            "The inactive view must remain while its resource is pending"
+        )
+
+        // Then
+        var viewEvents = writer.events(ofType: RUMViewEvent.self)
+        XCTAssertEqual(viewEvents.count, 2)
+        XCTAssertNil(viewEvents[0].view.slowFramesRate)
+        XCTAssertEqual(viewEvents[1].view.timeSpent, 80.dd.toInt64Nanoseconds)
+        XCTAssertEqual(viewEvents[1].view.slowFramesRate, 8)
+
+        // When the pending resource completes after the view became inactive
+        currentTime.addTimeInterval(10)
+        _ = scope.process(
+            command: RUMStopResourceCommand.mockWith(resourceKey: "resource", time: currentTime),
+            context: context,
+            writer: writer
+        )
+
+        // Then later full updates retain the rate calculated when the view became inactive
+        viewEvents = writer.events(ofType: RUMViewEvent.self)
+        XCTAssertEqual(viewEvents.count, 3)
+        XCTAssertEqual(viewEvents[2].view.slowFramesRate, 8)
+    }
+    #endif
+
+    func testWhenStartingAnotherViewFromBackground_itDoesNotCalculateRenderingRates() {
+        // Given
+        var currentTime: Date = .mockDecember15th2019At10AMUTC()
+        let backgroundViewURL = RUMOffViewEventsHandlingRule.Constants.backgroundViewURL
+        let identity = ViewIdentifier(backgroundViewURL)
+        let hitch = Hitch(start: 0, duration: 0.16.dd.toInt64Nanoseconds)
+        let scope = RUMViewScope(
+            isInitialView: false,
+            parent: parent,
+            dependencies: .mockWith(
+                hasAppHangsEnabled: true,
+                viewHitchesReaderFactory: { ViewHitchesMock(hitchesDataModel: ([hitch], 0.16)) }
+            ),
+            identity: identity,
+            path: backgroundViewURL,
+            name: RUMOffViewEventsHandlingRule.Constants.backgroundViewName,
+            customTimings: [:],
+            startTime: currentTime,
+            serverTimeOffset: .zero,
+            interactionToNextViewMetric: nil,
+            viewIndexInSession: .mockAny()
+        )
+        _ = scope.process(
+            command: RUMStartViewCommand.mockWith(time: currentTime, identity: identity),
+            context: context,
+            writer: writer
+        )
+
+        // When
+        currentTime.addTimeInterval(10)
+        _ = scope.process(
+            command: RUMStartViewCommand.mockWith(time: currentTime, identity: ViewIdentifier("foreground-view")),
+            context: context,
+            writer: writer
+        )
+
+        // Then
+        let viewEvent = writer.events(ofType: RUMViewEvent.self).last
+        XCTAssertNil(viewEvent?.view.slowFramesRate)
+        XCTAssertNil(viewEvent?.view.freezeRate)
+    }
+
+    func testWhenReplacingApplicationLaunchView_itDoesNotCalculateRenderingRates() {
+        let startTime: Date = .mockDecember15th2019At10AMUTC()
+        let launchViewURL = RUMOffViewEventsHandlingRule.Constants.applicationLaunchViewURL
+        let identity = ViewIdentifier(launchViewURL)
+        let scope = RUMViewScope(
+            isInitialView: true,
+            parent: parent,
+            dependencies: .mockWith(
+                hasAppHangsEnabled: true,
+                viewHitchesReaderFactory: { ViewHitchesMock(hitchesDataModel: ([Hitch(start: 0, duration: 0.16.dd.toInt64Nanoseconds)], 0.16)) }
+            ),
+            identity: identity,
+            path: launchViewURL,
+            name: RUMOffViewEventsHandlingRule.Constants.applicationLaunchViewName,
+            customTimings: [:],
+            startTime: startTime,
+            serverTimeOffset: .zero,
+            interactionToNextViewMetric: nil,
+            viewIndexInSession: 0
+        )
+
+        _ = scope.process(
+            command: RUMStartViewCommand.mockWith(time: startTime, identity: identity),
+            context: context,
+            writer: writer
+        )
+        _ = scope.process(
+            command: RUMStartViewCommand.mockWith(time: startTime + 10, identity: ViewIdentifier("user-view")),
+            context: context,
+            writer: writer
+        )
+
+        let viewEvent = writer.events(ofType: RUMViewEvent.self).last
+        XCTAssertNil(viewEvent?.view.slowFramesRate)
+        XCTAssertNil(viewEvent?.view.freezeRate)
+    }
+
+    func testWhenSessionStopsAnActiveView_itCalculatesSlowFramesRate() {
+        let startTime: Date = .mockDecember15th2019At10AMUTC()
+        let identity = ViewIdentifier("user-view")
+        let scope = RUMViewScope(
+            isInitialView: false,
+            parent: parent,
+            dependencies: .mockWith(
+                viewHitchesReaderFactory: { ViewHitchesMock(hitchesDataModel: ([Hitch(start: 0, duration: 0.16.dd.toInt64Nanoseconds)], 0.16)) }
+            ),
+            identity: identity,
+            path: "user-view",
+            name: "User view",
+            customTimings: [:],
+            startTime: startTime,
+            serverTimeOffset: .zero,
+            interactionToNextViewMetric: nil,
+            viewIndexInSession: 1
+        )
+
+        _ = scope.process(
+            command: RUMStartViewCommand.mockWith(time: startTime, identity: identity),
+            context: context,
+            writer: writer
+        )
+        _ = scope.process(
+            command: RUMStopSessionCommand.mockWith(time: startTime + 10),
+            context: context,
+            writer: writer
+        )
+
+        XCTAssertEqual(writer.events(ofType: RUMViewEvent.self).last?.view.slowFramesRate, 16)
+    }
+
     func testWhenThereAreAppHangs_theStopViewEventHasFreezeRate() {
         // Given
         var currentTime: Date = .mockDecember15th2019At10AMUTC()

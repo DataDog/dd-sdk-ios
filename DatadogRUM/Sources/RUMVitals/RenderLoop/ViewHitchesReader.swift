@@ -108,16 +108,23 @@ internal final class ViewHitchesReader: ViewHitchesModel {
 }
 
 extension ViewHitchesReader: RenderLoopReader {
-    func stop() { queue.async { self._isActive = false } }
+    func stop() {
+        queue.async {
+            self._isActive = false
+            self.nextFrameTimestamp = nil
+        }
+    }
 
     func didUpdateFrame(link: FrameInfoProvider) {
         queue.async {
             self._isActive = true
             // Baseline to capture View Hitches
             guard let nextFrameTimestamp = self.nextFrameTimestamp else {
-                self.startTimestamp = link.currentFrameTimestamp
+                if self.startFrameRate == nil {
+                    self.startTimestamp = link.currentFrameTimestamp
+                    self.startFrameRate = link.nextFrameTimestamp - link.currentFrameTimestamp
+                }
                 self.nextFrameTimestamp = link.nextFrameTimestamp
-                self.startFrameRate = link.nextFrameTimestamp - link.currentFrameTimestamp
                 return
             }
 

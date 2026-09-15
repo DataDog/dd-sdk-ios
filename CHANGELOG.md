@@ -4,6 +4,7 @@
 - [FIX] Pin KSCrash to exact version 2.5.1 via SPM to prevent silently resolving newer, unvetted releases.
 - [FIX] Keep attributes isolated when returning to a previously tracked RUM view while its earlier resources are still pending.
 - [IMPROVEMENT] Require Swift tools version 6.2 (Xcode 26) to resolve the package with Swift Package Manager. See [#3231][]
+- [FIX] Report slow frame and freeze rates for RUM views when navigation starts a new view without calling `stopView()` on the previous one.
 
 # 3.18.0 / 21-09-2026
 
