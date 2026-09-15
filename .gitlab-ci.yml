@@ -383,9 +383,17 @@ Smoke Tests (iOS):
     PLATFORM: "iOS Simulator"
     DEVICE: "iPhone 17 Pro"
   script:
-    - ./tools/runner-setup.sh --xcode "$DEFAULT_XCODE" --ssh
+    - ./tools/runner-setup.sh --xcode "$DEFAULT_XCODE" --ssh --datadog-ci
     - make clean repo-setup ENV=ci
     - make smoke-test-ios-all OS="$DEFAULT_IOS_OS" PLATFORM="$PLATFORM" DEVICE="$DEVICE"
+  after_script:
+    - ./tools/upload-smoke-test-reports.sh
+  artifacts:
+    paths:
+      - "artifacts/smoke-test-reports/**/*.xml"
+    reports:
+      junit: "artifacts/smoke-test-reports/**/*.xml"
+    when: always
 
 Smoke Tests (tvOS):
   stage: smoke-test
@@ -398,9 +406,17 @@ Smoke Tests (tvOS):
     PLATFORM: "tvOS Simulator"
     DEVICE: "Apple TV"
   script:
-    - ./tools/runner-setup.sh --xcode "$DEFAULT_XCODE" --ssh
+    - ./tools/runner-setup.sh --xcode "$DEFAULT_XCODE" --ssh --datadog-ci
     - make clean repo-setup ENV=ci
     - make smoke-test-tvos-all OS="$DEFAULT_TVOS_OS" PLATFORM="$PLATFORM" DEVICE="$DEVICE"
+  after_script:
+    - ./tools/upload-smoke-test-reports.sh
+  artifacts:
+    paths:
+      - "artifacts/smoke-test-reports/**/*.xml"
+    reports:
+      junit: "artifacts/smoke-test-reports/**/*.xml"
+    when: always
 
 SPM Build (Swift 6.2):
   stage: smoke-test
