@@ -774,19 +774,30 @@ class TimeseriesSessionCollectorTests: XCTestCase {
         collector.start(sessionID: "session-bg", applicationID: "app-1", sessionType: .user)
         waitForExpectations(timeout: 2)
 
+        // `flush()` blocks until the collector's internal queue is drained, so any sample from a timer
+        // tick already in flight is counted here rather than racing with the `pause()` call below.
+        collector.flush()
         let countBeforePause = featureScope.eventsWritten(ofType: RUMTimeseriesMemoryEvent.self).count
         XCTAssertGreaterThan(countBeforePause, 0)
 
         // When — pause on backgrounding
-        let afterPauseExpectation = self.expectation(description: "sampling stopped after pause")
-        afterPauseExpectation.assertForOverFulfill = false
         collector.pause(sessionID: "session-bg")
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) { afterPauseExpectation.fulfill() }
-        waitForExpectations(timeout: 2)
+        // `pause()` and `flush()` are both dispatched on the collector's serial FIFO queue, so this
+        // `flush()` won't return until `pause()` itself has finished executing — a deterministic
+        // completion barrier instead of racing an async wait against the read below.
+        collector.flush()
 
-        // Then — no new events accumulate while paused
+        // Then — no new events accumulate immediately after pause completes
         let countAfterPause = featureScope.eventsWritten(ofType: RUMTimeseriesMemoryEvent.self).count
         XCTAssertEqual(countAfterPause, countBeforePause, "Sampling should stop while backgrounded, regardless of trackBackgroundEvents")
+
+        // And — no further events accumulate over time while paused
+        let afterPauseExpectation = self.expectation(description: "sampling stopped after pause")
+        afterPauseExpectation.assertForOverFulfill = false
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) { afterPauseExpectation.fulfill() }
+        waitForExpectations(timeout: 2)
+        let countAfterWait = featureScope.eventsWritten(ofType: RUMTimeseriesMemoryEvent.self).count
+        XCTAssertEqual(countAfterWait, countBeforePause, "No samples should accumulate over time while paused")
         collector.stop(sessionID: "session-bg")
     }
 
