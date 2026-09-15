@@ -4830,6 +4830,7 @@ internal final class RUMSwiftUISemanticNavigationState<
     private(set) var bindingGeneration: UInt64 = 0
     private var currentPath: [Route]?
     private var activePresentation: ActivePresentation?
+    private var outgoingPresentation: ActivePresentation?
     private var dismissedSheet: Presentation?
     private var dismissedFullScreenCover: Presentation?
 
@@ -5009,7 +5010,9 @@ internal final class RUMSwiftUISemanticNavigationState<
             return
         }
 
-        finishActivePresentation(viewsHandler: viewsHandler, recordsDismissal: false)
+        let mountedPresentation = activePresentation?.isStarted == true
+            ? activePresentation
+            : outgoingPresentation
         activePresentation = ActivePresentation(
             item: item,
             descriptor: nextDescriptor,
@@ -5018,6 +5021,7 @@ internal final class RUMSwiftUISemanticNavigationState<
             isStarted: false,
             hasMounted: false
         )
+        outgoingPresentation = mountedPresentation
     }
 
     func presentationStyle(for item: Presentation) -> RUMNavigationPresentationStyle? {
@@ -5056,13 +5060,29 @@ internal final class RUMSwiftUISemanticNavigationState<
         }
 
         let view = activePresentation.descriptor.view
-        viewsHandler.notify_semanticPresentationAppear(
-            identity: activePresentation.identity,
-            name: view.name,
-            path: view.path ?? view.name,
-            attributes: view.attributes,
-            sceneIdentifier: sceneIdentifier
-        )
+        if
+            let outgoingPresentation,
+            outgoingPresentation.isStarted,
+            let outgoingSceneIdentifier = outgoingPresentation.sceneIdentifier {
+            viewsHandler.notify_semanticPresentationReplace(
+                identity: outgoingPresentation.identity,
+                sceneIdentifier: outgoingSceneIdentifier,
+                replacementIdentity: activePresentation.identity,
+                replacementName: view.name,
+                replacementPath: view.path ?? view.name,
+                replacementAttributes: view.attributes,
+                replacementSceneIdentifier: sceneIdentifier
+            )
+            self.outgoingPresentation = nil
+        } else {
+            viewsHandler.notify_semanticPresentationAppear(
+                identity: activePresentation.identity,
+                name: view.name,
+                path: view.path ?? view.name,
+                attributes: view.attributes,
+                sceneIdentifier: sceneIdentifier
+            )
+        }
         activePresentation.sceneIdentifier = sceneIdentifier
         activePresentation.isStarted = true
         activePresentation.hasMounted = true
@@ -5104,6 +5124,13 @@ internal final class RUMSwiftUISemanticNavigationState<
         }
     }
 
+    /// Balances the last mounted presentation when its semantic container is
+    /// removed before a pending replacement can mount. Ordinary presentation
+    /// disappearance remains owned by `presentationDidDisappear`.
+    func cancelPresentations(viewsHandler: RUMViewsHandler?) {
+        finishActivePresentation(viewsHandler: viewsHandler, recordsDismissal: false)
+    }
+
     private func finishActivePresentation(
         viewsHandler: RUMViewsHandler?,
         recordsDismissal: Bool
@@ -5112,11 +5139,17 @@ internal final class RUMSwiftUISemanticNavigationState<
             return
         }
 
+        let mountedPresentation: ActivePresentation?
+        if activePresentation.isStarted {
+            mountedPresentation = activePresentation
+        } else {
+            mountedPresentation = outgoingPresentation
+        }
         if
-            activePresentation.isStarted,
-            let sceneIdentifier = activePresentation.sceneIdentifier {
+            let mountedPresentation,
+            let sceneIdentifier = mountedPresentation.sceneIdentifier {
             viewsHandler?.notify_semanticPresentationDisappear(
-                identity: activePresentation.identity,
+                identity: mountedPresentation.identity,
                 sceneIdentifier: sceneIdentifier
             )
         }
@@ -5130,6 +5163,7 @@ internal final class RUMSwiftUISemanticNavigationState<
             }
         }
         self.activePresentation = nil
+        outgoingPresentation = nil
     }
 }
 
@@ -5294,8 +5328,12 @@ internal final class RUMSemanticNavigationContainerLifetimeState {
 /// SwiftUI's transient representable detach/reattach cycles.
 @available(iOS 27.0, *)
 @MainActor
-private struct RUMSemanticNavigationContainerLifetimeModifier: SwiftUI.ViewModifier {
+private struct RUMSemanticNavigationContainerLifetimeModifier<
+    Route: Hashable,
+    Presentation: Identifiable
+>: SwiftUI.ViewModifier {
     let occurrenceSource: RUMSwiftUINavigationOccurrenceSource
+    let navigationState: RUMSwiftUISemanticNavigationState<Route, Presentation>
     let viewsHandler: RUMViewsHandler?
 
     @State private var lifetimeState = RUMSemanticNavigationContainerLifetimeState()
@@ -5309,6 +5347,7 @@ private struct RUMSemanticNavigationContainerLifetimeModifier: SwiftUI.ViewModif
                         occurrenceSource.cancelNavigationOwnedOccurrences(
                             viewsHandler: viewsHandler
                         )
+                        navigationState.cancelPresentations(viewsHandler: viewsHandler)
                     }
                 }
             )
@@ -5411,6 +5450,7 @@ public struct RUMNavigationStack<
         .modifier(
             RUMSemanticNavigationContainerLifetimeModifier(
                 occurrenceSource: navigationState.occurrenceSource,
+                navigationState: navigationState,
                 viewsHandler: instrumentation?.viewsHandler
             )
         )

@@ -36,6 +36,7 @@ final class ProbeScenarioRunnerTests: XCTestCase {
                 "swiftui.coexistence.automatic-manual-sheet",
                 "swiftui.coexistence.automatic-scene-targeted-sheet",
                 "swiftui.coexistence.automatic-scene-targeted-full-screen-cover",
+                "swiftui.semantic-api.presentation-replacement",
                 "swiftui.coexistence.automatic-keyed-manual-view",
                 "swiftui.coexistence.nested-keyed-manual-view",
                 "swiftui.coexistence.same-key-manual-two-scenes",
@@ -562,6 +563,68 @@ final class ProbeScenarioRunnerTests: XCTestCase {
                 },
                 "Missing semantic view occurrence \(screen)#\(occurrence)"
             )
+        }
+    }
+
+    func testSemanticNavigationAPICoversPresentationReplacement() throws {
+        let scenario = try XCTUnwrap(
+            ProbeScenarioCatalog.scenario(
+                identifier: "swiftui.semantic-api.presentation-replacement"
+            )
+        )
+
+        XCTAssertEqual(scenario.trackingMode, .navigationOccurrence)
+        XCTAssertTrue(ProbeScenarioCatalog.usesObservableDriver(scenario))
+        XCTAssertTrue(ProbeScenarioCatalog.usesSemanticNavigationSPI(scenario))
+        XCTAssertEqual(
+            scenario.steps
+                .filter { $0.kind == .setSwiftUIPresentation }
+                .compactMap(\.value),
+            ["sheet", "full-screen-cover", "home"]
+        )
+        XCTAssertTrue(
+            scenario.completionConditions.contains {
+                $0.kind == .noViewStarted && $0.rumViewOrigin == .automatic
+            }
+        )
+        for (screen, occurrence) in [
+            ("home", 1),
+            ("sheet", 1),
+            ("full-screen-cover", 1),
+            ("home", 2)
+        ] {
+            XCTAssertTrue(
+                scenario.expectedSemanticTimeline.contains {
+                    $0.kind == .viewStarted
+                        && $0.scene == "scene-A"
+                        && $0.screen == screen
+                        && $0.occurrence == occurrence
+                        && $0.rumViewOrigin == .semantic
+                },
+                "Missing semantic presentation occurrence \(screen)#\(occurrence)"
+            )
+        }
+        XCTAssertTrue(
+            scenario.completionConditions.contains {
+                $0.kind == .viewStarted
+                    && $0.screen == "home"
+                    && $0.expectedCount == 2
+            }
+        )
+        for screen in ["sheet", "full-screen-cover"] {
+            for phase in ["on-appear", "task-immediate"] {
+                for kind in [ProbeExpectationKind.action, .resource] {
+                    XCTAssertTrue(
+                        scenario.completionConditions.contains {
+                            $0.kind == kind
+                                && $0.screen == screen
+                                && $0.occurrence == 1
+                                && $0.name == phase
+                                && $0.rumViewOrigin == .semantic
+                        }
+                    )
+                }
+            }
         }
     }
 

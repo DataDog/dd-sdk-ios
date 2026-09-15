@@ -1210,15 +1210,6 @@ struct ProbeWindowRoot: View {
         guard swiftUIPresentation != presentation else {
             return
         }
-        guard swiftUIPresentation == nil || presentation == nil else {
-            ProbeRuntime.record(
-                "rejected direct presentation replacement source=\(window.label) "
-                    + "from=\(swiftUIPresentation?.rawValue ?? "none") "
-                    + "to=\(presentation?.rawValue ?? "none")"
-            )
-            return
-        }
-
         let previousPresentation = swiftUIPresentation
         let previousRoute = currentSceneRoute
         if let presentation {

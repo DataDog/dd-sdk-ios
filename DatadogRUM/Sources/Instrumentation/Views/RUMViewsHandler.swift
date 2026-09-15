@@ -505,20 +505,21 @@ internal final class RUMViewsHandler {
         #endif
     }
 
-    /// Replaces an existing navigation occurrence in place. Unlike `remove`,
+    /// Replaces an existing tracked occurrence in place. Unlike `remove`,
     /// this does not restart the view below the replaced slot before starting
     /// the new occurrence.
-    private func replace(identity: ViewIdentifier, with view: View) {
+    @discardableResult
+    private func replace(identity: ViewIdentifier, with view: View) -> Bool {
         guard let stackIndex = stacks.firstIndex(where: { stack in
             stack.sceneIdentifier == view.sceneIdentifier
                 && stack.views.contains(where: { $0.identity == identity })
         }) else {
-            return
+            return false
         }
 
         var stack = stacks[stackIndex].views
         guard let viewIndex = stack.firstIndex(where: { $0.identity == identity }) else {
-            return
+            return false
         }
 
         let isActiveOccurrence = stacks[stackIndex].isActive
@@ -534,6 +535,7 @@ internal final class RUMViewsHandler {
         if isActiveOccurrence {
             start(view: view)
         }
+        return true
     }
 
     private func start(view: View, time: Date? = nil) {
@@ -1248,6 +1250,42 @@ extension RUMViewsHandler {
             sceneIdentifier: sceneIdentifier,
             stopAttributes: [:]
         )
+    }
+
+    /// Replaces one mounted router-owned presentation with another without
+    /// revealing the destination staged below manual authority in the same
+    /// scene. A cross-scene move still reveals the old scene independently.
+    @MainActor
+    func notify_semanticPresentationReplace(
+        identity: String,
+        sceneIdentifier: RUMSceneIdentifier,
+        replacementIdentity: String,
+        replacementName: String,
+        replacementPath: String,
+        replacementAttributes: [AttributeKey: AttributeValue],
+        replacementSceneIdentifier: RUMSceneIdentifier
+    ) {
+        let replacement = View(
+            identity: ViewIdentifier(replacementIdentity),
+            name: replacementName,
+            path: replacementPath,
+            isUntrackedModal: false,
+            attributes: replacementAttributes,
+            instrumentationType: .manual,
+            sceneIdentifier: replacementSceneIdentifier
+        )
+        if
+            sceneIdentifier == replacementSceneIdentifier,
+            replace(identity: ViewIdentifier(identity), with: replacement) {
+            return
+        }
+
+        remove(
+            identity: ViewIdentifier(identity),
+            sceneIdentifier: sceneIdentifier,
+            stopAttributes: [:]
+        )
+        add(view: replacement)
     }
 }
 #endif
