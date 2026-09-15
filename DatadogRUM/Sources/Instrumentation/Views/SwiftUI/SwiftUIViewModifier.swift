@@ -2812,6 +2812,19 @@ internal final class RUMSwiftUISemanticNavigationState<
         let generation: UInt64
     }
 
+    /// Stable control data retained by one materialized destination boundary.
+    /// It preserves the path-position key while an equal route is hidden below
+    /// another occurrence, without changing the customer's native `[Route]`.
+    final class RouteOccurrenceClaim {
+        fileprivate var route: Route
+        fileprivate var key: RUMViewOccurrenceKey
+
+        fileprivate init(route: Route, key: RUMViewOccurrenceKey) {
+            self.route = route
+            self.key = key
+        }
+    }
+
     private struct RootKey: Hashable {
         let containerID: UUID
     }
@@ -2862,6 +2875,22 @@ internal final class RUMSwiftUISemanticNavigationState<
         )
     }
 
+    func makeOccurrenceClaim(for route: Route) -> RouteOccurrenceClaim {
+        RouteOccurrenceClaim(route: route, key: occurrence(for: route).key)
+    }
+
+    func occurrence(
+        for route: Route,
+        retaining claim: RouteOccurrenceClaim
+    ) -> Occurrence {
+        if claim.route != route {
+            let current = occurrence(for: route)
+            claim.route = route
+            claim.key = current.key
+        }
+        return Occurrence(key: claim.key, generation: bindingGeneration)
+    }
+
     func reconcile(path: [Route]) {
         guard let previousPath = currentPath else {
             currentPath = path
@@ -2889,6 +2918,15 @@ internal final class RUMSwiftUISemanticNavigationState<
             occurrenceKey: occurrence.key,
             bindingGeneration: occurrence.generation
         )
+    }
+
+    func forward(
+        proposedPath: [Route],
+        to path: Binding<[Route]>,
+        transaction: Transaction
+    ) {
+        path.transaction(transaction).wrappedValue = proposedPath
+        reconcile(path: path.wrappedValue)
     }
 
     func reconcilePresentation(
@@ -3038,6 +3076,54 @@ internal final class RUMSwiftUISemanticNavigationState<
 
 @available(iOS 27.0, *)
 @MainActor
+private struct RUMSemanticNavigationDestinationBoundary<
+    Route: Hashable,
+    Presentation: Identifiable,
+    Content: SwiftUI.View
+>: SwiftUI.View {
+    let route: Route
+    let rumView: RUMView
+    let navigationState: RUMSwiftUISemanticNavigationState<Route, Presentation>
+    let core: DatadogCoreProtocol
+    @ViewBuilder let content: Content
+
+    @State private var occurrenceClaim:
+        RUMSwiftUISemanticNavigationState<Route, Presentation>.RouteOccurrenceClaim
+
+    init(
+        route: Route,
+        rumView: RUMView,
+        navigationState: RUMSwiftUISemanticNavigationState<Route, Presentation>,
+        core: DatadogCoreProtocol,
+        @ViewBuilder content: () -> Content
+    ) {
+        self.route = route
+        self.rumView = rumView
+        self.navigationState = navigationState
+        self.core = core
+        self.content = content()
+        self._occurrenceClaim = State(
+            initialValue: navigationState.makeOccurrenceClaim(for: route)
+        )
+    }
+
+    var body: some SwiftUI.View {
+        let occurrence = navigationState.occurrence(
+            for: route,
+            retaining: occurrenceClaim
+        )
+        return content.trackRUMView(
+            rumView: rumView,
+            occurrenceKey: occurrence.key,
+            bindingGeneration: occurrence.generation,
+            navigationOccurrenceSource: navigationState.occurrenceSource,
+            in: core
+        )
+    }
+}
+
+@available(iOS 27.0, *)
+@MainActor
 private struct RUMSemanticPresentationBoundary<
     Presentation: Identifiable,
     Content: SwiftUI.View
@@ -3182,11 +3268,14 @@ public struct RUMNavigationStack<
         return NavigationStack(path: trackedPath) {
             tracked(rootContent, as: root, occurrence: navigationState.rootOccurrence)
                 .navigationDestination(for: Route.self) { route in
-                    tracked(
-                        destinationContent(route),
-                        as: destination(route),
-                        occurrence: navigationState.occurrence(for: route)
-                    )
+                    RUMSemanticNavigationDestinationBoundary(
+                        route: route,
+                        rumView: destination(route),
+                        navigationState: navigationState,
+                        core: core
+                    ) {
+                        destinationContent(route)
+                    }
                 }
         }
         .sheet(
@@ -3207,8 +3296,11 @@ public struct RUMNavigationStack<
         Binding(
             get: { path.wrappedValue },
             set: { newPath, transaction in
-                navigationState.reconcile(path: newPath)
-                path.transaction(transaction).wrappedValue = newPath
+                navigationState.forward(
+                    proposedPath: newPath,
+                    to: path,
+                    transaction: transaction
+                )
             }
         )
     }

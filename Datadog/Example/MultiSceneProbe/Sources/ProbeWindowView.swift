@@ -4360,12 +4360,22 @@ private struct ProbeHomeView: View {
                 screen: "home"
             )
 
-            Button("Open detail") {
-                ProbeRuntime.record("tap handler source=\(window.label) target=detail")
-                openDetail()
+            if ProbeRuntime.usesSemanticNavigationValueLinks {
+                NavigationLink(value: ProbeRoute.detail(1)) {
+                    Text("Open detail with value link")
+                }
+                .buttonStyle(.borderedProminent)
+                .accessibilityIdentifier(
+                    "probe.native.\(window.label).semantic-value-link-detail"
+                )
+            } else {
+                Button("Open detail") {
+                    ProbeRuntime.record("tap handler source=\(window.label) target=detail")
+                    openDetail()
+                }
+                .buttonStyle(.borderedProminent)
+                .accessibilityIdentifier("probe.native.\(window.label).open-detail")
             }
-            .buttonStyle(.borderedProminent)
-            .accessibilityIdentifier("probe.native.\(window.label).open-detail")
 
             Button("Present sheet") {
                 ProbeRuntime.record("tap handler source=\(window.label) target=sheet")
@@ -4653,6 +4663,7 @@ private struct ProbeDetailView: View {
     @State private var didRunTask = false
     @State private var stateWitness = UUID()
     @State private var bindingUpdateCount = 0
+    @State private var appearanceCount = 0
 
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
@@ -4663,6 +4674,15 @@ private struct ProbeDetailView: View {
             )
             Text("This is Detail navigation occurrence \(instance).")
                 .foregroundStyle(.secondary)
+            if ProbeRuntime.usesSemanticNavigationValueLinks {
+                NavigationLink(value: ProbeRoute.detail(1)) {
+                    Text("Open the same route value again")
+                }
+                .buttonStyle(.borderedProminent)
+                .accessibilityIdentifier(
+                    "probe.native.\(window.label).semantic-value-link-repeat"
+                )
+            }
             Button("Replace with alternate") {
                 replaceWithAlternate()
             }
@@ -4699,6 +4719,15 @@ private struct ProbeDetailView: View {
             emit(phase: "binding-update-\(bindingUpdateCount)")
         }
         .onAppear {
+            if ProbeRuntime.usesNavigationOccurrenceSwiftUIViewTracking {
+                appearanceCount += 1
+                ProbeRuntime.record(
+                    "navigation state witness source=\(window.label) screen=\(screen) "
+                        + "token=\(stateWitness.uuidString.lowercased()) "
+                        + "appearance=\(appearanceCount)"
+                )
+                emit(phase: "navigation-appearance-\(appearanceCount)")
+            }
             guard !emittedAppearance else {
                 return
             }

@@ -3310,6 +3310,147 @@ final class RUMSwiftUISemanticNavigationStateTests: XCTestCase {
         XCTAssertEqual(identities.invocationCount, 1)
     }
 
+    func testRepeatedEqualRoute_retainsEachMaterializedPathPositionAcrossPushAndPop() {
+        let navigationState = RUMSwiftUISemanticNavigationState<String, Presentation>()
+        navigationState.reconcile(path: [])
+        navigationState.reconcile(path: ["details"])
+
+        let firstClaim = navigationState.makeOccurrenceClaim(for: "details")
+        let firstOccurrence = navigationState.occurrence(
+            for: "details",
+            retaining: firstClaim
+        )
+        let identities = RUMOccurrenceIdentityGenerator(["details-1", "details-3"])
+        let viewState = RUMViewTrackingState(
+            identity: "fallback",
+            occurrenceIdentityGenerator: identities.next
+        )
+        let firstConfiguration = configuration(
+            for: firstOccurrence,
+            name: "Details"
+        )
+        _ = viewState.mount(in: scene, configuration: firstConfiguration)
+        _ = viewState.disappear(configuration: firstConfiguration)
+        let registration = RUMSwiftUINavigationOccurrenceRegistration()
+        var transitions: [RUMViewTrackingState.Transition] = []
+        registration.rebind(
+            to: navigationState.occurrenceSource,
+            state: viewState,
+            configuration: firstConfiguration,
+            attachment: .attached(scene)
+        ) { configuration, sceneIdentifier in
+            transitions.append(
+                contentsOf: viewState.reconcile(
+                    configuration: configuration,
+                    attachment: .attached(sceneIdentifier),
+                    isAppeared: true
+                )
+            )
+        }
+
+        navigationState.reconcile(path: ["details", "details"])
+        let retainedFirstOccurrence = navigationState.occurrence(
+            for: "details",
+            retaining: firstClaim
+        )
+        let secondClaim = navigationState.makeOccurrenceClaim(for: "details")
+        let secondOccurrence = navigationState.occurrence(
+            for: "details",
+            retaining: secondClaim
+        )
+
+        XCTAssertEqual(retainedFirstOccurrence.key, firstOccurrence.key)
+        XCTAssertNotEqual(secondOccurrence.key, firstOccurrence.key)
+
+        navigationState.reconcile(path: ["details"])
+
+        let revealedFirstOccurrence = navigationState.occurrence(
+            for: "details",
+            retaining: firstClaim
+        )
+        XCTAssertEqual(revealedFirstOccurrence.key, firstOccurrence.key)
+        XCTAssertGreaterThan(revealedFirstOccurrence.generation, firstOccurrence.generation)
+        XCTAssertEqual(
+            transitions,
+            [.start(identity: "details-3", sceneIdentifier: scene)]
+        )
+        XCTAssertEqual(
+            viewState.configuration?.bindingGeneration,
+            revealedFirstOccurrence.generation
+        )
+        XCTAssertEqual(identities.invocationCount, 2)
+    }
+
+    func testOccurrenceClaim_whenBoundaryRouteChanges_adoptsCurrentRoutePosition() {
+        let navigationState = RUMSwiftUISemanticNavigationState<String, Presentation>()
+        navigationState.reconcile(path: ["details"])
+        let claim = navigationState.makeOccurrenceClaim(for: "details")
+        let detailsOccurrence = navigationState.occurrence(
+            for: "details",
+            retaining: claim
+        )
+
+        navigationState.reconcile(path: ["alternate"])
+        let alternateOccurrence = navigationState.occurrence(
+            for: "alternate",
+            retaining: claim
+        )
+
+        XCTAssertNotEqual(alternateOccurrence.key, detailsOccurrence.key)
+        XCTAssertEqual(
+            alternateOccurrence.key,
+            navigationState.occurrence(for: "alternate").key
+        )
+    }
+
+    func testForward_whenCustomerBindingRejectsProposedPath_reconcilesAcceptedPath() {
+        let navigationState = RUMSwiftUISemanticNavigationState<String, Presentation>()
+        navigationState.reconcile(path: [])
+        let initialGeneration = navigationState.bindingGeneration
+        let acceptedPath: [String] = []
+        let rejectingBinding = Binding<[String]>(
+            get: { acceptedPath },
+            set: { _ in }
+        )
+
+        navigationState.forward(
+            proposedPath: ["details"],
+            to: rejectingBinding,
+            transaction: Transaction()
+        )
+
+        XCTAssertTrue(acceptedPath.isEmpty)
+        XCTAssertEqual(navigationState.bindingGeneration, initialGeneration)
+    }
+
+    func testForward_whenCustomerBindingCanonicalizesProposedPath_reconcilesCanonicalPath() {
+        let navigationState = RUMSwiftUISemanticNavigationState<String, Presentation>()
+        navigationState.reconcile(path: [])
+        var acceptedPath: [String] = []
+        let canonicalizingBinding = Binding<[String]>(
+            get: { acceptedPath },
+            set: { acceptedPath = Array($0.prefix(1)) }
+        )
+
+        navigationState.forward(
+            proposedPath: ["details", "ignored"],
+            to: canonicalizingBinding,
+            transaction: Transaction()
+        )
+        let acceptedGeneration = navigationState.bindingGeneration
+        let acceptedOccurrence = navigationState.occurrence(for: "details")
+
+        navigationState.forward(
+            proposedPath: ["details", "still-ignored"],
+            to: canonicalizingBinding,
+            transaction: Transaction()
+        )
+
+        XCTAssertEqual(acceptedPath, ["details"])
+        XCTAssertEqual(acceptedOccurrence.key, navigationState.occurrence(for: "details").key)
+        XCTAssertEqual(navigationState.bindingGeneration, acceptedGeneration)
+    }
+
     private func configuration(
         for occurrence: RUMSwiftUISemanticNavigationState<String, Presentation>.Occurrence,
         name: String

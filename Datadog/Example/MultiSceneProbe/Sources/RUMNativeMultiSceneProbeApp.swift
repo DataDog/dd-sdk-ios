@@ -82,6 +82,9 @@ enum ProbeRuntime {
     static let usesSemanticNavigationSPI = scenario.map(
         ProbeScenarioCatalog.usesSemanticNavigationSPI
     ) ?? false
+    static let usesSemanticNavigationValueLinks = scenario.map(
+        ProbeScenarioCatalog.usesSemanticNavigationValueLinks
+    ) ?? false
     @MainActor static let scenarioDriver: ProbeScenarioDriver? = {
         guard usesObservableScenarioDriver, let scenario else {
             return nil
@@ -90,7 +93,9 @@ enum ProbeRuntime {
             scenario: scenario,
             recorder: eventRecorder,
             sceneRegistry: sceneRegistry,
-            stepTimeoutNanoseconds: options.exercisesSwiftUIButtonStructuredTask
+            stepTimeoutNanoseconds: usesSemanticNavigationValueLinks
+                ? 180_000_000_000
+                : options.exercisesSwiftUIButtonStructuredTask
                 ? 180_000_000_000
                 : options.exercisesUIKitScrollOwnership
                     ? 60_000_000_000

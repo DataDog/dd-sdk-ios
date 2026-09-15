@@ -21,6 +21,7 @@ enum ProbeScenarioCatalog {
         "swiftui.coexistence.automatic-scene-targeted-sheet",
         "swiftui.coexistence.automatic-scene-targeted-full-screen-cover",
         "swiftui.semantic-api.complete-destination",
+        "swiftui.semantic-api.repeated-value-links",
         "swiftui.coexistence.automatic-keyed-manual-view",
         "swiftui.coexistence.nested-keyed-manual-view",
         "swiftui.coexistence.same-key-manual-two-scenes",
@@ -55,6 +56,7 @@ enum ProbeScenarioCatalog {
         swiftUICoexistenceAutomaticSceneTargetedSheet,
         swiftUICoexistenceAutomaticSceneTargetedFullScreenCover,
         swiftUISemanticAPICompleteDestination,
+        swiftUISemanticAPIRepeatedValueLinks,
         swiftUICoexistenceAutomaticKeyedManualView,
         swiftUICoexistenceNestedKeyedManualView,
         swiftUICoexistenceSameKeyManualTwoScenes,
@@ -142,6 +144,11 @@ enum ProbeScenarioCatalog {
 
     static func usesSemanticNavigationSPI(_ scenario: ProbeScenario) -> Bool {
         scenario.identifier == swiftUISemanticAPICompleteDestination.identifier
+            || scenario.identifier == swiftUISemanticAPIRepeatedValueLinks.identifier
+    }
+
+    static func usesSemanticNavigationValueLinks(_ scenario: ProbeScenario) -> Bool {
+        scenario.identifier == swiftUISemanticAPIRepeatedValueLinks.identifier
     }
 
     static func scenario(
@@ -1084,6 +1091,122 @@ enum ProbeScenarioCatalog {
             occurrence: 4,
             name: "semantic-home-4"
         )
+        return timeline
+    }
+
+    /// Drives the experimental container through native value links and native
+    /// back buttons. The repeated `detail(1)` values prove that the integration
+    /// preserves customer `NavigationLink(value:)` behavior and gives every
+    /// committed path position, including a revealed prefix, a fresh RUM view.
+    private static let swiftUISemanticAPIRepeatedValueLinks = ProbeScenario(
+        identifier: "swiftui.semantic-api.repeated-value-links",
+        trackingMode: .navigationOccurrence,
+        layout: .stack,
+        steps: [
+            ProbeStep(.waitForSceneReady, scene: "scene-A"),
+            ProbeStep(.waitForSignal, scene: "scene-A", signal: "rum-view:home#1"),
+            ProbeStep(.emitMarker, scene: "scene-A", value: "semantic-link-home-1"),
+            ProbeStep(.waitForSignal, scene: "scene-A", signal: "rum-view:detail-1#1"),
+            ProbeStep(.emitMarker, scene: "scene-A", value: "semantic-link-detail-1"),
+            ProbeStep(.waitForSignal, scene: "scene-A", signal: "rum-view:detail-1#2"),
+            ProbeStep(.emitMarker, scene: "scene-A", value: "semantic-link-detail-2"),
+            ProbeStep(.waitForSignal, scene: "scene-A", signal: "rum-view:detail-1#3"),
+            ProbeStep(.emitMarker, scene: "scene-A", value: "semantic-link-detail-3"),
+            ProbeStep(.waitForSignal, scene: "scene-A", signal: "rum-view:home#2"),
+            ProbeStep(.emitMarker, scene: "scene-A", value: "semantic-link-home-2")
+        ],
+        completionConditions: [
+            ProbeExpectation(.noViewStarted, rumViewOrigin: .automatic),
+            ProbeExpectation(
+                .action,
+                scene: "scene-A",
+                screen: "home",
+                occurrence: 2,
+                name: "semantic-link-home-2",
+                sourceScene: "scene-A",
+                sourceScreen: "home",
+                rumViewOrigin: .semantic
+            ),
+            ProbeExpectation(
+                .resource,
+                scene: "scene-A",
+                screen: "home",
+                occurrence: 2,
+                name: "semantic-link-home-2",
+                sourceScene: "scene-A",
+                sourceScreen: "home",
+                rumViewOrigin: .semantic
+            )
+        ] + semanticRepeatedValueLinkLifecycleExpectations(),
+        expectedSemanticTimeline: semanticRepeatedValueLinksTimeline()
+    )
+
+    private static func semanticRepeatedValueLinkLifecycleExpectations()
+        -> [ProbeExpectation] {
+        var expectations: [ProbeExpectation] = []
+        for (screen, occurrence, phases) in [
+            ("home", 1, ["navigation-appearance-1", "on-appear", "task-immediate"]),
+            (
+                "detail-1",
+                1,
+                ["binding-update-1", "navigation-appearance-1", "on-appear", "task-immediate"]
+            ),
+            (
+                "detail-1",
+                2,
+                ["binding-update-1", "navigation-appearance-1", "on-appear", "task-immediate"]
+            ),
+            ("detail-1", 3, ["navigation-appearance-2"]),
+            ("home", 2, ["navigation-appearance-2"])
+        ] {
+            for phase in phases {
+                expectations += semanticMarkerExpectations(
+                    screen: screen,
+                    occurrence: occurrence,
+                    name: phase
+                )
+            }
+        }
+        return expectations
+    }
+
+    private static func semanticRepeatedValueLinksTimeline() -> [ProbeExpectation] {
+        let occurrences: [(screen: String, occurrence: Int, marker: String)] = [
+            ("home", 1, "semantic-link-home-1"),
+            ("detail-1", 1, "semantic-link-detail-1"),
+            ("detail-1", 2, "semantic-link-detail-2"),
+            ("detail-1", 3, "semantic-link-detail-3"),
+            ("home", 2, "semantic-link-home-2")
+        ]
+        var timeline: [ProbeExpectation] = []
+        for (index, occurrence) in occurrences.enumerated() {
+            if index > 0 {
+                let previous = occurrences[index - 1]
+                timeline.append(
+                    ProbeExpectation(
+                        .viewStopped,
+                        scene: "scene-A",
+                        screen: previous.screen,
+                        occurrence: previous.occurrence,
+                        rumViewOrigin: .semantic
+                    )
+                )
+            }
+            timeline.append(
+                ProbeExpectation(
+                    .viewStarted,
+                    scene: "scene-A",
+                    screen: occurrence.screen,
+                    occurrence: occurrence.occurrence,
+                    rumViewOrigin: .semantic
+                )
+            )
+            timeline += semanticMarkerExpectations(
+                screen: occurrence.screen,
+                occurrence: occurrence.occurrence,
+                name: occurrence.marker
+            )
+        }
         return timeline
     }
 

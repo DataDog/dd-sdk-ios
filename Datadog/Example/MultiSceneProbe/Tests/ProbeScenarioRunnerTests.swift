@@ -565,6 +565,58 @@ final class ProbeScenarioRunnerTests: XCTestCase {
         }
     }
 
+    func testSemanticNavigationAPIExercisesRepeatedNativeValueLinks() throws {
+        let scenario = try XCTUnwrap(
+            ProbeScenarioCatalog.scenario(
+                identifier: "swiftui.semantic-api.repeated-value-links"
+            )
+        )
+
+        XCTAssertEqual(scenario.trackingMode, .navigationOccurrence)
+        XCTAssertTrue(ProbeScenarioCatalog.usesObservableDriver(scenario))
+        XCTAssertTrue(ProbeScenarioCatalog.usesSemanticNavigationSPI(scenario))
+        XCTAssertTrue(ProbeScenarioCatalog.usesSemanticNavigationValueLinks(scenario))
+        XCTAssertTrue(
+            scenario.completionConditions.contains {
+                $0.kind == .noViewStarted && $0.rumViewOrigin == .automatic
+            }
+        )
+        for (screen, occurrence) in [
+            ("home", 1),
+            ("detail-1", 1),
+            ("detail-1", 2),
+            ("detail-1", 3),
+            ("home", 2)
+        ] {
+            XCTAssertTrue(
+                scenario.expectedSemanticTimeline.contains {
+                    $0.kind == .viewStarted
+                        && $0.screen == screen
+                        && $0.occurrence == occurrence
+                        && $0.rumViewOrigin == .semantic
+                }
+            )
+        }
+        for (screen, occurrence, name) in [
+            ("detail-1", 1, "binding-update-1"),
+            ("detail-1", 2, "binding-update-1"),
+            ("detail-1", 3, "navigation-appearance-2"),
+            ("home", 2, "navigation-appearance-2")
+        ] {
+            for kind in [ProbeExpectationKind.action, .resource] {
+                XCTAssertTrue(
+                    scenario.completionConditions.contains {
+                        $0.kind == kind
+                            && $0.screen == screen
+                            && $0.occurrence == occurrence
+                            && $0.name == name
+                            && $0.rumViewOrigin == .semantic
+                    }
+                )
+            }
+        }
+    }
+
     func testAutomaticKeyedManualViewRequiresFreshAutomaticOwnerAfterStop() throws {
         let scenario = try XCTUnwrap(
             ProbeScenarioCatalog.scenario(
