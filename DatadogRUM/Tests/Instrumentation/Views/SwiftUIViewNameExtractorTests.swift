@@ -542,6 +542,354 @@ class RUMViewTrackingStateTests: XCTestCase {
         XCTAssertEqual(state.lifecycleGeneration, 3)
     }
 
+    func testWhenSourcePromotesMountedDormantNavigationBoundary_itStartsWithoutAnotherAppear() {
+        let identities = RUMOccurrenceIdentityGenerator(["alternate-1"])
+        let state = RUMViewTrackingState(
+            identity: identity,
+            occurrenceIdentityGenerator: identities.next
+        )
+        let proposed = RUMViewTrackingState.Configuration(
+            occurrenceKey: RUMViewOccurrenceKey("detail"),
+            bindingGeneration: 1,
+            descriptor: .init(name: "Detail", path: "/detail", attributes: [:]),
+            isCurrentDestination: false
+        )
+        let accepted = RUMViewTrackingState.Configuration(
+            occurrenceKey: RUMViewOccurrenceKey("alternate"),
+            bindingGeneration: 1,
+            descriptor: .init(name: "Alternate", path: "/alternate", attributes: [:])
+        )
+        XCTAssertTrue(
+            state.recordDormantNavigationBoundary(
+                configuration: proposed,
+                attachment: .attached(sceneA)
+            )
+        )
+
+        XCTAssertEqual(
+            state.promoteDormantNavigationBoundary(
+                from: proposed,
+                to: accepted,
+                in: sceneA
+            ),
+            [.start(identity: "alternate-1", sceneIdentifier: sceneA)]
+        )
+        XCTAssertTrue(state.isAppeared)
+        XCTAssertEqual(identities.invocationCount, 1)
+    }
+
+    func testWhenDetachedDormantNavigationBoundaryBecomesCurrent_itWaitsForAttachment() {
+        let identities = RUMOccurrenceIdentityGenerator(["alternate-1"])
+        let state = RUMViewTrackingState(
+            identity: identity,
+            occurrenceIdentityGenerator: identities.next
+        )
+        let proposed = RUMViewTrackingState.Configuration(
+            occurrenceKey: RUMViewOccurrenceKey("detail"),
+            bindingGeneration: 1,
+            descriptor: .init(name: "Detail", path: "/detail", attributes: [:]),
+            isCurrentDestination: false
+        )
+        let accepted = keyedConfiguration("alternate", generation: 1)
+        XCTAssertTrue(
+            state.recordDormantNavigationBoundary(
+                configuration: proposed,
+                attachment: .detached
+            )
+        )
+
+        XCTAssertEqual(
+            state.promoteDormantNavigationBoundary(
+                from: proposed,
+                to: accepted,
+                in: sceneA
+            ),
+            []
+        )
+        XCTAssertFalse(state.isAppeared)
+        XCTAssertEqual(identities.invocationCount, 0)
+    }
+
+    func testWhenMountedDormantNavigationBoundaryRemainsNonCurrent_itDoesNotStart() {
+        let identities = RUMOccurrenceIdentityGenerator(["unused"])
+        let state = RUMViewTrackingState(
+            identity: identity,
+            occurrenceIdentityGenerator: identities.next
+        )
+        let proposed = RUMViewTrackingState.Configuration(
+            occurrenceKey: RUMViewOccurrenceKey("detail"),
+            bindingGeneration: 1,
+            descriptor: .init(name: "Detail", path: "/detail", attributes: [:]),
+            isCurrentDestination: false
+        )
+        let stillHidden = RUMViewTrackingState.Configuration(
+            occurrenceKey: RUMViewOccurrenceKey("alternate"),
+            bindingGeneration: 2,
+            descriptor: .init(name: "Alternate", path: "/alternate", attributes: [:]),
+            isCurrentDestination: false
+        )
+        XCTAssertTrue(
+            state.recordDormantNavigationBoundary(
+                configuration: proposed,
+                attachment: .attached(sceneA)
+            )
+        )
+
+        XCTAssertEqual(
+            state.promoteDormantNavigationBoundary(
+                from: proposed,
+                to: stillHidden,
+                in: sceneA
+            ),
+            []
+        )
+        XCTAssertFalse(state.isAppeared)
+        XCTAssertEqual(identities.invocationCount, 0)
+    }
+
+    func testDormantNavigationPromotionRequiresExactSceneAndDormantSnapshot() {
+        let identities = RUMOccurrenceIdentityGenerator(["unused"])
+        let state = RUMViewTrackingState(
+            identity: identity,
+            occurrenceIdentityGenerator: identities.next
+        )
+        let proposed = RUMViewTrackingState.Configuration(
+            occurrenceKey: RUMViewOccurrenceKey("detail"),
+            bindingGeneration: 1,
+            descriptor: .init(name: "Detail", path: "/detail", attributes: [:]),
+            isCurrentDestination: false
+        )
+        let wrongSnapshot = RUMViewTrackingState.Configuration(
+            occurrenceKey: RUMViewOccurrenceKey("other-proposal"),
+            bindingGeneration: 1,
+            descriptor: .init(name: "Other", path: "/other", attributes: [:]),
+            isCurrentDestination: false
+        )
+        let accepted = keyedConfiguration("alternate", generation: 1)
+        XCTAssertTrue(
+            state.recordDormantNavigationBoundary(
+                configuration: proposed,
+                attachment: .attached(sceneA)
+            )
+        )
+
+        XCTAssertEqual(
+            state.promoteDormantNavigationBoundary(
+                from: wrongSnapshot,
+                to: accepted,
+                in: sceneA
+            ),
+            []
+        )
+        XCTAssertEqual(
+            state.promoteDormantNavigationBoundary(
+                from: proposed,
+                to: accepted,
+                in: sceneB
+            ),
+            []
+        )
+        XCTAssertEqual(state.configuration, proposed)
+        XCTAssertFalse(state.isAppeared)
+        XCTAssertEqual(identities.invocationCount, 0)
+    }
+
+    func testSourceAuthorizedReaderCanMigrateDormantNavigationBoundaryToAnotherScene() {
+        let identities = RUMOccurrenceIdentityGenerator(["alternate-B"])
+        let state = RUMViewTrackingState(
+            identity: identity,
+            occurrenceIdentityGenerator: identities.next
+        )
+        let proposed = RUMViewTrackingState.Configuration(
+            occurrenceKey: RUMViewOccurrenceKey("detail"),
+            bindingGeneration: 1,
+            descriptor: .init(name: "Detail", path: "/detail", attributes: [:]),
+            isCurrentDestination: false
+        )
+        let accepted = keyedConfiguration("alternate", generation: 1)
+        XCTAssertTrue(
+            state.recordDormantNavigationBoundary(
+                configuration: proposed,
+                attachment: .attached(sceneA)
+            )
+        )
+
+        XCTAssertEqual(
+            state.promoteDormantNavigationBoundary(
+                from: proposed,
+                to: accepted,
+                in: sceneB,
+                allowsSceneMigration: true
+            ),
+            [.start(identity: "alternate-B", sceneIdentifier: sceneB)]
+        )
+        XCTAssertEqual(state.configuration, accepted)
+        XCTAssertEqual(state.attachment, .attached(sceneB))
+        XCTAssertTrue(state.isAppeared)
+        XCTAssertEqual(identities.invocationCount, 1)
+    }
+
+    func testSourceAuthorizedReaderCanPromoteDormantBoundaryAfterTransientDetach() {
+        let cases: [(RUMViewTrackingState.Attachment, RUMSceneIdentifier)] = [
+            (.attached(sceneA), sceneA),
+            (.attached(sceneA), sceneB),
+            (.detached, sceneB)
+        ]
+
+        for (index, testCase) in cases.enumerated() {
+            let identity = "accepted-\(index)"
+            let identities = RUMOccurrenceIdentityGenerator([identity])
+            let state = RUMViewTrackingState(
+                identity: self.identity,
+                occurrenceIdentityGenerator: identities.next
+            )
+            let proposed = RUMViewTrackingState.Configuration(
+                occurrenceKey: RUMViewOccurrenceKey("detail"),
+                bindingGeneration: 1,
+                descriptor: .init(name: "Detail", path: "/detail", attributes: [:]),
+                isCurrentDestination: false
+            )
+            let accepted = keyedConfiguration("alternate", generation: 1)
+            XCTAssertTrue(
+                state.recordDormantNavigationBoundary(
+                    configuration: proposed,
+                    attachment: testCase.0
+                )
+            )
+            if testCase.0 != .detached {
+                XCTAssertEqual(
+                    state.reconcile(
+                        configuration: proposed,
+                        attachment: .detached,
+                        isAppeared: false
+                    ),
+                    []
+                )
+            }
+
+            XCTAssertEqual(
+                state.promoteDormantNavigationBoundary(
+                    from: proposed,
+                    to: accepted,
+                    in: testCase.1
+                ),
+                []
+            )
+            XCTAssertEqual(
+                state.promoteDormantNavigationBoundary(
+                    from: proposed,
+                    to: accepted,
+                    in: testCase.1,
+                    allowsSceneMigration: true
+                ),
+                [.start(identity: identity, sceneIdentifier: testCase.1)]
+            )
+            XCTAssertEqual(identities.invocationCount, 1)
+        }
+    }
+
+    func testPreviouslyStartedBoundaryCanUseDormantPromotionForNewerGeneration() {
+        let usedIdentities = RUMOccurrenceIdentityGenerator(["detail-1", "alternate-2"])
+        let usedState = RUMViewTrackingState(
+            identity: identity,
+            occurrenceIdentityGenerator: usedIdentities.next
+        )
+        let detail = keyedConfiguration("detail", generation: 1)
+        let proposed = RUMViewTrackingState.Configuration(
+            occurrenceKey: RUMViewOccurrenceKey("proposal"),
+            bindingGeneration: 2,
+            descriptor: .init(name: "Proposal", path: "/proposal", attributes: [:]),
+            isCurrentDestination: false
+        )
+        let accepted = keyedConfiguration("alternate", generation: 2)
+        _ = usedState.mount(in: sceneA, configuration: detail)
+        _ = usedState.disappear(configuration: detail)
+        XCTAssertTrue(
+            usedState.recordDormantNavigationBoundary(
+                configuration: proposed,
+                attachment: .attached(sceneA)
+            )
+        )
+
+        XCTAssertEqual(
+            usedState.promoteDormantNavigationBoundary(
+                from: proposed,
+                to: accepted,
+                in: sceneA
+            ),
+            [.start(identity: "alternate-2", sceneIdentifier: sceneA)]
+        )
+        XCTAssertEqual(usedIdentities.invocationCount, 2)
+    }
+
+    func testPreviouslyStartedBoundaryCannotPromoteAnAlreadyStartedGeneration() {
+        let identities = RUMOccurrenceIdentityGenerator(["detail-1", "unused"])
+        let state = RUMViewTrackingState(
+            identity: identity,
+            occurrenceIdentityGenerator: identities.next
+        )
+        let detail = keyedConfiguration("detail", generation: 1)
+        let proposed = RUMViewTrackingState.Configuration(
+            occurrenceKey: RUMViewOccurrenceKey("proposal"),
+            bindingGeneration: 1,
+            descriptor: .init(name: "Proposal", path: "/proposal", attributes: [:]),
+            isCurrentDestination: false
+        )
+        let accepted = keyedConfiguration("alternate", generation: 1)
+        _ = state.mount(in: sceneA, configuration: detail)
+        _ = state.disappear(configuration: detail)
+        XCTAssertTrue(
+            state.recordDormantNavigationBoundary(
+                configuration: proposed,
+                attachment: .attached(sceneA)
+            )
+        )
+
+        XCTAssertEqual(
+            state.promoteDormantNavigationBoundary(
+                from: proposed,
+                to: accepted,
+                in: sceneA
+            ),
+            []
+        )
+        XCTAssertEqual(identities.invocationCount, 1)
+    }
+
+    func testDisconnectFencedBoundaryCanUseSourceAuthorizedDormantPromotion() {
+        let proposed = RUMViewTrackingState.Configuration(
+            occurrenceKey: RUMViewOccurrenceKey("proposal"),
+            bindingGeneration: 2,
+            descriptor: .init(name: "Proposal", path: "/proposal", attributes: [:]),
+            isCurrentDestination: false
+        )
+        let accepted = keyedConfiguration("alternate", generation: 2)
+        let fencedIdentities = RUMOccurrenceIdentityGenerator(["accepted-1"])
+        let fencedState = RUMViewTrackingState(
+            identity: identity,
+            occurrenceIdentityGenerator: fencedIdentities.next
+        )
+        XCTAssertTrue(
+            fencedState.recordDormantNavigationBoundary(
+                configuration: proposed,
+                attachment: .attached(sceneA)
+            )
+        )
+        XCTAssertTrue(fencedState.invalidateAfterSceneDisconnect(sceneA))
+
+        XCTAssertEqual(
+            fencedState.promoteDormantNavigationBoundary(
+                from: proposed,
+                to: accepted,
+                in: sceneA
+            ),
+            [.start(identity: "accepted-1", sceneIdentifier: sceneA)]
+        )
+        XCTAssertEqual(fencedState.attachment, .attached(sceneA))
+        XCTAssertFalse(fencedState.needsReaderRemount)
+        XCTAssertEqual(fencedIdentities.invocationCount, 1)
+    }
+
     func testWhenKeyChangesWhileDetached_itStopsThenWaitsForAttachment() {
         let identities = RUMOccurrenceIdentityGenerator(["detail-1", "detail-2"])
         let state = RUMViewTrackingState(
@@ -1181,6 +1529,226 @@ class RUMSwiftUINavigationOccurrenceSourceTests: XCTestCase {
             .allowOrdinaryMount
         )
         XCTAssertNotNil(initialState.activeLifecycleGeneration)
+    }
+
+    func testWhenAcceptedRouteReusesDormantProposal_readerReconciliationAuthorizesPromotion() {
+        let state = RUMViewTrackingState(identity: "destination-fallback")
+        let proposed = configuration(
+            key: "detail",
+            generation: 1,
+            isCurrentDestination: false
+        )
+        let accepted = configuration(key: "alternate", generation: 1)
+        let source = RUMSwiftUINavigationOccurrenceSource()
+        source.acceptDestination(
+            occurrenceKey: accepted.occurrenceKey,
+            bindingGeneration: accepted.bindingGeneration,
+            change: .initial(requiresBootstrap: false)
+        )
+        source.reconcileCurrentDestination(configuration: accepted, viewsHandler: nil)
+        XCTAssertTrue(
+            state.recordDormantNavigationBoundary(
+                configuration: proposed,
+                attachment: .attached(sceneA)
+            )
+        )
+
+        XCTAssertEqual(
+            source.resolveCandidate(
+                candidateConfiguration: accepted,
+                sceneIdentifier: sceneA,
+                state: state,
+                viewsHandler: nil
+            ) { _, _ in
+                XCTFail("Ordinary callbacks must not authorize promotion")
+            },
+            .allowOrdinaryMount
+        )
+        XCTAssertEqual(
+            source.resolveCandidate(
+                candidateConfiguration: accepted,
+                sceneIdentifier: sceneA,
+                state: state,
+                allowsDormantBoundaryPromotion: true,
+                viewsHandler: nil
+            ) { _, _ in
+                XCTFail("A post-bootstrap promotion must use the ordinary arbiter")
+            },
+            .promoteDormantBoundary(expected: proposed, accepted: accepted)
+        )
+    }
+
+    func testWhenAcceptedRouteAdvancesDuringPendingProposal_readerMountAuthorizesPromotion() {
+        let state = RUMViewTrackingState(identity: "destination-fallback")
+        let proposed = configuration(
+            key: "detail",
+            generation: 1,
+            isCurrentDestination: false
+        )
+        let accepted = configuration(key: "later", generation: 2)
+        let source = RUMSwiftUINavigationOccurrenceSource()
+        source.acceptDestination(
+            occurrenceKey: accepted.occurrenceKey,
+            bindingGeneration: accepted.bindingGeneration,
+            change: .replacement
+        )
+        source.reconcileCurrentDestination(configuration: accepted, viewsHandler: nil)
+        XCTAssertTrue(
+            state.recordDormantNavigationBoundary(
+                configuration: proposed,
+                attachment: .attached(sceneA)
+            )
+        )
+
+        XCTAssertEqual(
+            source.resolveCandidate(
+                candidateConfiguration: accepted,
+                sceneIdentifier: sceneA,
+                state: state,
+                isReaderMount: true,
+                allowsDormantBoundaryPromotion: true,
+                viewsHandler: nil
+            ) { _, _ in
+                XCTFail("A post-bootstrap promotion must use the ordinary arbiter")
+            },
+            .promoteDormantBoundary(expected: proposed, accepted: accepted)
+        )
+    }
+
+    func testWhenAcceptedRouteMovesToAnotherScene_onlyReaderMountAuthorizesMigration() {
+        let state = RUMViewTrackingState(identity: "destination-fallback")
+        let proposed = configuration(
+            key: "detail",
+            generation: 1,
+            isCurrentDestination: false
+        )
+        let accepted = configuration(key: "alternate", generation: 1)
+        let source = RUMSwiftUINavigationOccurrenceSource()
+        source.acceptDestination(
+            occurrenceKey: accepted.occurrenceKey,
+            bindingGeneration: accepted.bindingGeneration,
+            change: .initial(requiresBootstrap: false)
+        )
+        source.reconcileCurrentDestination(configuration: accepted, viewsHandler: nil)
+        XCTAssertTrue(
+            state.recordDormantNavigationBoundary(
+                configuration: proposed,
+                attachment: .attached(sceneA)
+            )
+        )
+
+        XCTAssertEqual(
+            source.resolveCandidate(
+                candidateConfiguration: accepted,
+                sceneIdentifier: sceneB,
+                state: state,
+                isReaderMount: false,
+                allowsDormantBoundaryPromotion: true,
+                viewsHandler: nil
+            ) { _, _ in
+                XCTFail("A post-bootstrap migration must use the ordinary arbiter")
+            },
+            .allowOrdinaryMount
+        )
+        XCTAssertEqual(
+            source.resolveCandidate(
+                candidateConfiguration: accepted,
+                sceneIdentifier: sceneB,
+                state: state,
+                isReaderMount: true,
+                allowsDormantBoundaryPromotion: true,
+                viewsHandler: nil
+            ) { _, _ in
+                XCTFail("A post-bootstrap migration must use the ordinary arbiter")
+            },
+            .promoteDormantBoundary(expected: proposed, accepted: accepted)
+        )
+
+        let detachedState = RUMViewTrackingState(identity: "detached-fallback")
+        XCTAssertTrue(
+            detachedState.recordDormantNavigationBoundary(
+                configuration: proposed,
+                attachment: .detached
+            )
+        )
+        XCTAssertEqual(
+            source.resolveCandidate(
+                candidateConfiguration: accepted,
+                sceneIdentifier: sceneB,
+                state: detachedState,
+                isReaderMount: false,
+                allowsDormantBoundaryPromotion: true,
+                viewsHandler: nil
+            ) { _, _ in
+                XCTFail("A post-bootstrap migration must use the ordinary arbiter")
+            },
+            .allowOrdinaryMount
+        )
+        XCTAssertEqual(
+            source.resolveCandidate(
+                candidateConfiguration: accepted,
+                sceneIdentifier: sceneB,
+                state: detachedState,
+                isReaderMount: true,
+                allowsDormantBoundaryPromotion: true,
+                viewsHandler: nil
+            ) { _, _ in
+                XCTFail("A post-bootstrap migration must use the ordinary arbiter")
+            },
+            .promoteDormantBoundary(expected: proposed, accepted: accepted)
+        )
+    }
+
+    func testWhenDormantProposalDisconnects_readerMountAuthorizesAcceptedRecovery() {
+        let identities = RUMOccurrenceIdentityGenerator(["alternate-1"])
+        let state = RUMViewTrackingState(
+            identity: "destination-fallback",
+            occurrenceIdentityGenerator: identities.next
+        )
+        let proposed = configuration(
+            key: "detail",
+            generation: 1,
+            isCurrentDestination: false
+        )
+        let accepted = configuration(key: "alternate", generation: 1)
+        let source = RUMSwiftUINavigationOccurrenceSource()
+        source.acceptDestination(
+            occurrenceKey: accepted.occurrenceKey,
+            bindingGeneration: accepted.bindingGeneration,
+            change: .initial(requiresBootstrap: false)
+        )
+        source.reconcileCurrentDestination(configuration: accepted, viewsHandler: nil)
+        XCTAssertTrue(
+            state.recordDormantNavigationBoundary(
+                configuration: proposed,
+                attachment: .attached(sceneA)
+            )
+        )
+        XCTAssertTrue(state.invalidateAfterSceneDisconnect(sceneA))
+
+        XCTAssertEqual(
+            source.resolveCandidate(
+                candidateConfiguration: accepted,
+                sceneIdentifier: sceneB,
+                state: state,
+                isReaderMount: true,
+                allowsDormantBoundaryPromotion: true,
+                viewsHandler: nil
+            ) { _, _ in
+                XCTFail("The accepted reader must recover through the ordinary arbiter")
+            },
+            .promoteDormantBoundary(expected: proposed, accepted: accepted)
+        )
+        XCTAssertEqual(
+            state.promoteDormantNavigationBoundary(
+                from: proposed,
+                to: accepted,
+                in: sceneB
+            ),
+            [.start(identity: "alternate-1", sceneIdentifier: sceneB)]
+        )
+        XCTAssertEqual(state.attachment, .attached(sceneB))
+        XCTAssertFalse(state.needsReaderRemount)
     }
 
     func testWhenPendingInitialTopChanges_sourceWaitsForAcceptedBoundaryAndRejectsStaleTop() {
@@ -4281,6 +4849,866 @@ class RUMSwiftUIInteractiveTransitionArbiterTests: XCTestCase {
         XCTAssertEqual(identities.invocationCount, 1)
     }
 
+    func testWhenDormantBoundaryPromotionCommits_itStartsAcceptedDestinationOnce() {
+        let coordinator = RUMSwiftUITransitionCoordinatorMock()
+        coordinators[sceneA] = coordinator
+        let identities = RUMOccurrenceIdentityGenerator(["alternate-1", "duplicate"])
+        let state = RUMViewTrackingState(
+            identity: "platform-destination",
+            occurrenceIdentityGenerator: identities.next
+        )
+        let proposed = nonCurrentConfiguration("detail", generation: 1)
+        let accepted = keyedConfiguration("alternate", generation: 1)
+        XCTAssertTrue(
+            state.recordDormantNavigationBoundary(
+                configuration: proposed,
+                attachment: .attached(sceneA)
+            )
+        )
+        let recorder = RUMSwiftUITransitionRecorder()
+
+        arbiter.process(
+            .promoteDormantBoundary(
+                expected: proposed,
+                accepted: accepted,
+                sceneIdentifier: sceneA
+            ),
+            state: state
+        ) {
+            recorder.send(source: "alternate", transitions: $0)
+        }
+
+        XCTAssertEqual(recorder.entries, [])
+        XCTAssertEqual(state.configuration, proposed)
+        XCTAssertFalse(state.isAppeared)
+
+        coordinator.complete(isCancelled: false)
+        coordinators[sceneA] = nil
+        arbiter.process(
+            .promoteDormantBoundary(
+                expected: proposed,
+                accepted: accepted,
+                sceneIdentifier: sceneA
+            ),
+            state: state
+        ) {
+            recorder.send(source: "alternate", transitions: $0)
+        }
+
+        XCTAssertEqual(
+            recorder.entries.map(\.transition),
+            [.start(identity: "alternate-1", sceneIdentifier: sceneA)]
+        )
+        XCTAssertEqual(state.configuration, accepted)
+        XCTAssertTrue(state.isAppeared)
+        XCTAssertEqual(identities.invocationCount, 1)
+    }
+
+    func testWhenDormantBoundaryPromotionIsCancelled_itLeavesDormantStateUntouched() {
+        let coordinator = RUMSwiftUITransitionCoordinatorMock()
+        coordinators[sceneA] = coordinator
+        let identities = RUMOccurrenceIdentityGenerator(["unused"])
+        let state = RUMViewTrackingState(
+            identity: "platform-destination",
+            occurrenceIdentityGenerator: identities.next
+        )
+        let proposed = nonCurrentConfiguration("detail", generation: 1)
+        let accepted = keyedConfiguration("alternate", generation: 1)
+        XCTAssertTrue(
+            state.recordDormantNavigationBoundary(
+                configuration: proposed,
+                attachment: .attached(sceneA)
+            )
+        )
+        let revision = state.revision
+        let recorder = RUMSwiftUITransitionRecorder()
+
+        arbiter.process(
+            .promoteDormantBoundary(
+                expected: proposed,
+                accepted: accepted,
+                sceneIdentifier: sceneA
+            ),
+            state: state
+        ) {
+            recorder.send(source: "alternate", transitions: $0)
+        }
+        coordinator.complete(isCancelled: true)
+
+        XCTAssertEqual(recorder.entries, [])
+        XCTAssertEqual(state.configuration, proposed)
+        XCTAssertEqual(state.attachment, .attached(sceneA))
+        XCTAssertFalse(state.isAppeared)
+        XCTAssertEqual(state.lifecycleGeneration, 0)
+        XCTAssertEqual(state.revision, revision)
+        XCTAssertEqual(identities.invocationCount, 0)
+    }
+
+    func testWhenSceneDisconnectsDuringDormantPromotion_readerRemountStartsAcceptedDestination() {
+        let coordinator = RUMSwiftUITransitionCoordinatorMock()
+        coordinators[sceneA] = coordinator
+        let identities = RUMOccurrenceIdentityGenerator(["alternate-1"])
+        let state = RUMViewTrackingState(
+            identity: "platform-destination",
+            occurrenceIdentityGenerator: identities.next
+        )
+        let proposed = nonCurrentConfiguration("detail", generation: 1)
+        let accepted = keyedConfiguration("alternate", generation: 1)
+        XCTAssertTrue(
+            state.recordDormantNavigationBoundary(
+                configuration: proposed,
+                attachment: .attached(sceneA)
+            )
+        )
+        let recorder = RUMSwiftUITransitionRecorder()
+
+        arbiter.process(
+            .promoteDormantBoundary(
+                expected: proposed,
+                accepted: accepted,
+                sceneIdentifier: sceneA
+            ),
+            state: state
+        ) {
+            recorder.send(source: "alternate", transitions: $0)
+        }
+        arbiter.discard(sceneIdentifier: sceneA)
+        coordinator.complete(isCancelled: false)
+
+        XCTAssertEqual(recorder.entries, [])
+        XCTAssertEqual(state.configuration, accepted)
+        XCTAssertEqual(state.attachment, .detached)
+        XCTAssertFalse(state.isAppeared)
+        XCTAssertTrue(state.needsReaderRemount)
+
+        coordinators[sceneA] = nil
+        arbiter.process(
+            .keyedMount(
+                configuration: accepted,
+                sceneIdentifier: sceneA
+            ),
+            state: state
+        ) {
+            recorder.send(source: "alternate", transitions: $0)
+        }
+
+        XCTAssertEqual(
+            recorder.entries.map(\.transition),
+            [.start(identity: "alternate-1", sceneIdentifier: sceneA)]
+        )
+        XCTAssertEqual(state.configuration, accepted)
+        XCTAssertEqual(state.attachment, .attached(sceneA))
+        XCTAssertTrue(state.isAppeared)
+        XCTAssertEqual(identities.invocationCount, 1)
+    }
+
+    func testWhenDormantPromotionDisappearsBeforeCommit_laterAcceptedAppearanceCanStart() {
+        let coordinator = RUMSwiftUITransitionCoordinatorMock()
+        coordinators[sceneA] = coordinator
+        let identities = RUMOccurrenceIdentityGenerator(["alternate-1"])
+        let state = RUMViewTrackingState(
+            identity: "platform-destination",
+            occurrenceIdentityGenerator: identities.next
+        )
+        let proposed = nonCurrentConfiguration("detail", generation: 1)
+        let accepted = keyedConfiguration("alternate", generation: 1)
+        XCTAssertTrue(
+            state.recordDormantNavigationBoundary(
+                configuration: proposed,
+                attachment: .attached(sceneA)
+            )
+        )
+        let recorder = RUMSwiftUITransitionRecorder()
+
+        arbiter.process(
+            .promoteDormantBoundary(
+                expected: proposed,
+                accepted: accepted,
+                sceneIdentifier: sceneA
+            ),
+            state: state
+        ) {
+            recorder.send(source: "alternate", transitions: $0)
+        }
+        arbiter.process(
+            .reconcile(
+                configuration: accepted,
+                attachment: nil,
+                isAppeared: false
+            ),
+            state: state
+        ) {
+            recorder.send(source: "alternate", transitions: $0)
+        }
+        coordinator.complete(isCancelled: false)
+
+        XCTAssertEqual(recorder.entries, [])
+        XCTAssertEqual(state.configuration, accepted)
+        XCTAssertFalse(state.isAppeared)
+        XCTAssertEqual(state.lifecycleGeneration, 0)
+
+        coordinators[sceneA] = nil
+        arbiter.process(
+            .reconcile(
+                configuration: accepted,
+                attachment: .attached(sceneA),
+                isAppeared: true
+            ),
+            state: state
+        ) {
+            recorder.send(source: "alternate", transitions: $0)
+        }
+
+        XCTAssertEqual(
+            recorder.entries.map(\.transition),
+            [.start(identity: "alternate-1", sceneIdentifier: sceneA)]
+        )
+        XCTAssertEqual(identities.invocationCount, 1)
+    }
+
+    func testWhenStaleDetachedCallbackFollowsDormantPromotion_itCannotCancelPromotion() {
+        let coordinator = RUMSwiftUITransitionCoordinatorMock()
+        coordinators[sceneA] = coordinator
+        let identities = RUMOccurrenceIdentityGenerator(["alternate-1"])
+        let state = RUMViewTrackingState(
+            identity: "platform-destination",
+            occurrenceIdentityGenerator: identities.next
+        )
+        let proposed = nonCurrentConfiguration("detail", generation: 1)
+        let accepted = keyedConfiguration("alternate", generation: 1)
+        let staleDetached = keyedConfiguration("stale-detail", generation: 2)
+        XCTAssertTrue(
+            state.recordDormantNavigationBoundary(
+                configuration: proposed,
+                attachment: .attached(sceneA)
+            )
+        )
+        let recorder = RUMSwiftUITransitionRecorder()
+
+        arbiter.process(
+            .promoteDormantBoundary(
+                expected: proposed,
+                accepted: accepted,
+                sceneIdentifier: sceneA
+            ),
+            state: state
+        ) {
+            recorder.send(source: "alternate", transitions: $0)
+        }
+        arbiter.process(
+            .reconcile(
+                configuration: staleDetached,
+                attachment: .detached,
+                isAppeared: nil
+            ),
+            state: state
+        ) {
+            recorder.send(source: "stale-detail", transitions: $0)
+        }
+        coordinator.complete(isCancelled: false)
+
+        XCTAssertEqual(
+            recorder.entries.map(\.transition),
+            [.start(identity: "alternate-1", sceneIdentifier: sceneA)]
+        )
+        XCTAssertEqual(state.configuration, accepted)
+        XCTAssertEqual(state.attachment, .attached(sceneA))
+        XCTAssertTrue(state.isAppeared)
+        XCTAssertEqual(identities.invocationCount, 1)
+    }
+
+    func testWhenGenericConfigurationAttemptsToSupersedeDormantPromotion_itIsIgnored() {
+        let coordinator = RUMSwiftUITransitionCoordinatorMock()
+        coordinators[sceneA] = coordinator
+        let identities = RUMOccurrenceIdentityGenerator(["alternate-1"])
+        let state = RUMViewTrackingState(
+            identity: "platform-destination",
+            occurrenceIdentityGenerator: identities.next
+        )
+        let proposed = nonCurrentConfiguration("detail", generation: 1)
+        let accepted = keyedConfiguration("alternate", generation: 1)
+        let later = keyedConfiguration("later", generation: 2)
+        XCTAssertTrue(
+            state.recordDormantNavigationBoundary(
+                configuration: proposed,
+                attachment: .attached(sceneA)
+            )
+        )
+        let recorder = RUMSwiftUITransitionRecorder()
+
+        arbiter.process(
+            .promoteDormantBoundary(
+                expected: proposed,
+                accepted: accepted,
+                sceneIdentifier: sceneA
+            ),
+            state: state
+        ) {
+            recorder.send(source: "alternate", transitions: $0)
+        }
+        arbiter.process(
+            .reconcile(
+                configuration: later,
+                attachment: .attached(sceneA),
+                isAppeared: nil
+            ),
+            state: state
+        ) {
+            recorder.send(source: "later", transitions: $0)
+        }
+        coordinator.complete(isCancelled: false)
+
+        XCTAssertEqual(
+            recorder.entries.map(\.transition),
+            [.start(identity: "alternate-1", sceneIdentifier: sceneA)]
+        )
+        XCTAssertEqual(state.configuration, accepted)
+        XCTAssertTrue(state.isAppeared)
+        XCTAssertEqual(state.lifecycleGeneration, 1)
+        XCTAssertEqual(identities.invocationCount, 1)
+    }
+
+    func testWhenUnscopedAppearanceAttemptsToSupersedeDormantPromotion_itIsIgnored() {
+        let coordinator = RUMSwiftUITransitionCoordinatorMock()
+        coordinators[sceneA] = coordinator
+        let identities = RUMOccurrenceIdentityGenerator(["alternate-1"])
+        let state = RUMViewTrackingState(
+            identity: "platform-destination",
+            occurrenceIdentityGenerator: identities.next
+        )
+        let proposed = nonCurrentConfiguration("detail", generation: 1)
+        let accepted = keyedConfiguration("alternate", generation: 1)
+        let later = keyedConfiguration("later", generation: 2)
+        XCTAssertTrue(
+            state.recordDormantNavigationBoundary(
+                configuration: proposed,
+                attachment: .attached(sceneA)
+            )
+        )
+        let recorder = RUMSwiftUITransitionRecorder()
+
+        arbiter.process(
+            .promoteDormantBoundary(
+                expected: proposed,
+                accepted: accepted,
+                sceneIdentifier: sceneA
+            ),
+            state: state
+        ) {
+            recorder.send(source: "alternate", transitions: $0)
+        }
+        arbiter.process(
+            .reconcile(
+                configuration: later,
+                attachment: nil,
+                isAppeared: true
+            ),
+            state: state
+        ) {
+            recorder.send(source: "later", transitions: $0)
+        }
+        coordinator.complete(isCancelled: false)
+
+        XCTAssertEqual(
+            recorder.entries.map(\.transition),
+            [.start(identity: "alternate-1", sceneIdentifier: sceneA)]
+        )
+        XCTAssertEqual(recorder.entries.map(\.source), ["alternate"])
+        XCTAssertEqual(state.configuration, accepted)
+        XCTAssertEqual(state.attachment, .attached(sceneA))
+        XCTAssertTrue(state.isAppeared)
+        XCTAssertEqual(identities.invocationCount, 1)
+    }
+
+    func testWhenSourceAcceptedGenerationAdvances_itSupersedesPendingPromotion() {
+        let coordinator = RUMSwiftUITransitionCoordinatorMock()
+        coordinators[sceneA] = coordinator
+        let identities = RUMOccurrenceIdentityGenerator(["later-2"])
+        let state = RUMViewTrackingState(
+            identity: "platform-destination",
+            occurrenceIdentityGenerator: identities.next
+        )
+        let proposal = nonCurrentConfiguration("detail", generation: 1)
+        let firstAccepted = keyedConfiguration("alternate", generation: 1)
+        let laterAccepted = keyedConfiguration("later", generation: 2)
+        XCTAssertTrue(
+            state.recordDormantNavigationBoundary(
+                configuration: proposal,
+                attachment: .attached(sceneA)
+            )
+        )
+        let recorder = RUMSwiftUITransitionRecorder()
+
+        arbiter.process(
+            .promoteDormantBoundary(
+                expected: proposal,
+                accepted: firstAccepted,
+                sceneIdentifier: sceneA
+            ),
+            state: state
+        ) {
+            recorder.send(source: "alternate", transitions: $0)
+        }
+        arbiter.process(
+            .promoteDormantBoundary(
+                expected: proposal,
+                accepted: laterAccepted,
+                sceneIdentifier: sceneA
+            ),
+            state: state
+        ) {
+            recorder.send(source: "later", transitions: $0)
+        }
+        coordinator.complete(isCancelled: false)
+
+        XCTAssertEqual(
+            recorder.entries.map(\.transition),
+            [.start(identity: "later-2", sceneIdentifier: sceneA)]
+        )
+        XCTAssertEqual(recorder.entries.map(\.source), ["later"])
+        XCTAssertEqual(state.configuration, laterAccepted)
+        XCTAssertTrue(state.isAppeared)
+        XCTAssertEqual(identities.invocationCount, 1)
+    }
+
+    func testWhenDetachedSourceAcceptedGenerationAdvances_itSuppressesPendingPromotion() {
+        let coordinator = RUMSwiftUITransitionCoordinatorMock()
+        coordinators[sceneA] = coordinator
+        let identities = RUMOccurrenceIdentityGenerator(["later-2"])
+        let state = RUMViewTrackingState(
+            identity: "platform-destination",
+            occurrenceIdentityGenerator: identities.next
+        )
+        let proposal = nonCurrentConfiguration("detail", generation: 1)
+        let firstAccepted = keyedConfiguration("alternate", generation: 1)
+        let laterAccepted = keyedConfiguration("later", generation: 2)
+        XCTAssertTrue(
+            state.recordDormantNavigationBoundary(
+                configuration: proposal,
+                attachment: .attached(sceneA)
+            )
+        )
+        let recorder = RUMSwiftUITransitionRecorder()
+
+        arbiter.process(
+            .promoteDormantBoundary(
+                expected: proposal,
+                accepted: firstAccepted,
+                sceneIdentifier: sceneA
+            ),
+            state: state
+        ) {
+            recorder.send(source: "alternate", transitions: $0)
+        }
+        arbiter.process(
+            .settleDormantBoundary(
+                expected: proposal,
+                accepted: laterAccepted,
+                sceneIdentifier: sceneA
+            ),
+            state: state
+        ) {
+            recorder.send(source: "later", transitions: $0)
+        }
+        coordinator.complete(isCancelled: false)
+
+        XCTAssertEqual(recorder.entries, [])
+        XCTAssertEqual(state.configuration, laterAccepted)
+        XCTAssertEqual(state.attachment, .detached)
+        XCTAssertFalse(state.isAppeared)
+        XCTAssertTrue(state.needsReaderRemount)
+        XCTAssertEqual(identities.invocationCount, 0)
+        XCTAssertFalse(state.invalidateAfterSceneDisconnect(sceneA))
+        XCTAssertTrue(state.needsReaderRemount)
+
+        coordinators[sceneA] = nil
+        arbiter.process(
+            .keyedMount(
+                configuration: laterAccepted,
+                sceneIdentifier: sceneA
+            ),
+            state: state
+        ) {
+            recorder.send(source: "later", transitions: $0)
+        }
+
+        XCTAssertEqual(
+            recorder.entries.map(\.transition),
+            [.start(identity: "later-2", sceneIdentifier: sceneA)]
+        )
+        XCTAssertEqual(identities.invocationCount, 1)
+    }
+
+    func testWhenDetachedSettlementReceivesOrdinaryLifecycle_itRemainsNonStarting() {
+        let coordinator = RUMSwiftUITransitionCoordinatorMock()
+        coordinators[sceneA] = coordinator
+        let identities = RUMOccurrenceIdentityGenerator(["alternate-1"])
+        let state = RUMViewTrackingState(
+            identity: "platform-destination",
+            occurrenceIdentityGenerator: identities.next
+        )
+        let proposal = nonCurrentConfiguration("detail", generation: 1)
+        let accepted = keyedConfiguration("alternate", generation: 1)
+        XCTAssertTrue(
+            state.recordDormantNavigationBoundary(
+                configuration: proposal,
+                attachment: .attached(sceneA)
+            )
+        )
+        let recorder = RUMSwiftUITransitionRecorder()
+
+        arbiter.process(
+            .settleDormantBoundary(
+                expected: proposal,
+                accepted: accepted,
+                sceneIdentifier: sceneA
+            ),
+            state: state
+        ) {
+            recorder.send(source: "alternate", transitions: $0)
+        }
+        arbiter.process(
+            .reconcile(
+                configuration: accepted,
+                attachment: .attached(sceneA),
+                isAppeared: nil
+            ),
+            state: state
+        ) {
+            recorder.send(source: "ordinary-attachment", transitions: $0)
+        }
+        arbiter.process(
+            .reconcile(
+                configuration: accepted,
+                attachment: nil,
+                isAppeared: true
+            ),
+            state: state
+        ) {
+            recorder.send(source: "ordinary-appearance", transitions: $0)
+        }
+        coordinator.complete(isCancelled: false)
+
+        XCTAssertEqual(recorder.entries, [])
+        XCTAssertEqual(state.configuration, accepted)
+        XCTAssertEqual(state.attachment, .detached)
+        XCTAssertFalse(state.isAppeared)
+        XCTAssertTrue(state.needsReaderRemount)
+        XCTAssertEqual(identities.invocationCount, 0)
+
+        coordinators[sceneA] = nil
+        arbiter.process(
+            .reconcile(
+                configuration: accepted,
+                attachment: nil,
+                isAppeared: true
+            ),
+            state: state
+        ) {
+            recorder.send(source: "post-commit-appearance", transitions: $0)
+        }
+
+        XCTAssertEqual(recorder.entries, [])
+        XCTAssertEqual(state.attachment, .detached)
+        XCTAssertFalse(state.isAppeared)
+        XCTAssertTrue(state.needsReaderRemount)
+        XCTAssertEqual(identities.invocationCount, 0)
+    }
+
+    func testWhenAcceptedReaderMovesScenes_itReplacesPendingSettlementAndStartsThere() {
+        let coordinator = RUMSwiftUITransitionCoordinatorMock()
+        coordinators[sceneA] = coordinator
+        let identities = RUMOccurrenceIdentityGenerator(["alternate-B"])
+        let state = RUMViewTrackingState(
+            identity: "platform-destination",
+            occurrenceIdentityGenerator: identities.next
+        )
+        let proposal = nonCurrentConfiguration("detail", generation: 1)
+        let accepted = keyedConfiguration("alternate", generation: 1)
+        XCTAssertTrue(
+            state.recordDormantNavigationBoundary(
+                configuration: proposal,
+                attachment: .attached(sceneA)
+            )
+        )
+        let recorder = RUMSwiftUITransitionRecorder()
+
+        arbiter.process(
+            .settleDormantBoundary(
+                expected: proposal,
+                accepted: accepted,
+                sceneIdentifier: sceneA
+            ),
+            state: state
+        ) {
+            recorder.send(source: "settlement-A", transitions: $0)
+        }
+        arbiter.process(
+            .migrateDormantBoundary(
+                expected: proposal,
+                accepted: accepted,
+                sceneIdentifier: sceneB
+            ),
+            state: state
+        ) {
+            recorder.send(source: "reader-B", transitions: $0)
+        }
+
+        XCTAssertEqual(
+            recorder.entries.map(\.transition),
+            [.start(identity: "alternate-B", sceneIdentifier: sceneB)]
+        )
+        XCTAssertEqual(recorder.entries.map(\.source), ["reader-B"])
+        XCTAssertEqual(state.configuration, accepted)
+        XCTAssertEqual(state.attachment, .attached(sceneB))
+        XCTAssertTrue(state.isAppeared)
+        XCTAssertEqual(identities.invocationCount, 1)
+
+        coordinator.complete(isCancelled: false)
+
+        XCTAssertEqual(recorder.entries.count, 1)
+        XCTAssertEqual(identities.invocationCount, 1)
+    }
+
+    func testWhenGenericReconciliationMovesScenes_itCannotReplacePendingSettlement() {
+        let coordinator = RUMSwiftUITransitionCoordinatorMock()
+        coordinators[sceneA] = coordinator
+        let identities = RUMOccurrenceIdentityGenerator(["unused"])
+        let state = RUMViewTrackingState(
+            identity: "platform-destination",
+            occurrenceIdentityGenerator: identities.next
+        )
+        let proposal = nonCurrentConfiguration("detail", generation: 1)
+        let accepted = keyedConfiguration("alternate", generation: 1)
+        XCTAssertTrue(
+            state.recordDormantNavigationBoundary(
+                configuration: proposal,
+                attachment: .attached(sceneA)
+            )
+        )
+        let recorder = RUMSwiftUITransitionRecorder()
+
+        arbiter.process(
+            .settleDormantBoundary(
+                expected: proposal,
+                accepted: accepted,
+                sceneIdentifier: sceneA
+            ),
+            state: state
+        ) {
+            recorder.send(source: "settlement-A", transitions: $0)
+        }
+        arbiter.process(
+            .reconcile(
+                configuration: accepted,
+                attachment: .attached(sceneB),
+                isAppeared: nil
+            ),
+            state: state
+        ) {
+            recorder.send(source: "generic-B", transitions: $0)
+        }
+
+        XCTAssertEqual(recorder.entries, [])
+        XCTAssertEqual(state.configuration, proposal)
+        XCTAssertEqual(state.attachment, .attached(sceneA))
+
+        coordinator.complete(isCancelled: false)
+
+        XCTAssertEqual(recorder.entries, [])
+        XCTAssertEqual(state.configuration, accepted)
+        XCTAssertEqual(state.attachment, .detached)
+        XCTAssertFalse(state.isAppeared)
+        XCTAssertTrue(state.needsReaderRemount)
+        XCTAssertEqual(identities.invocationCount, 0)
+    }
+
+    func testWhenSourceAuthorizedPromotionAdvances_itRebasesToLatestDormantSnapshot() {
+        let coordinator = RUMSwiftUITransitionCoordinatorMock()
+        coordinators[sceneA] = coordinator
+        let identities = RUMOccurrenceIdentityGenerator(["alternate-2"])
+        let state = RUMViewTrackingState(
+            identity: "platform-destination",
+            occurrenceIdentityGenerator: identities.next
+        )
+        let firstProposal = nonCurrentConfiguration("detail", generation: 1)
+        let firstAccepted = keyedConfiguration("alternate", generation: 1)
+        let secondProposal = nonCurrentConfiguration("later-proposal", generation: 2)
+        let secondAccepted = keyedConfiguration("later-accepted", generation: 2)
+        XCTAssertTrue(
+            state.recordDormantNavigationBoundary(
+                configuration: firstProposal,
+                attachment: .attached(sceneA)
+            )
+        )
+        let recorder = RUMSwiftUITransitionRecorder()
+
+        arbiter.process(
+            .promoteDormantBoundary(
+                expected: firstProposal,
+                accepted: firstAccepted,
+                sceneIdentifier: sceneA
+            ),
+            state: state
+        ) {
+            recorder.send(source: "alternate", transitions: $0)
+        }
+        let initialRevision = state.revision
+        XCTAssertTrue(
+            state.recordDormantNavigationBoundary(
+                configuration: secondProposal,
+                attachment: .attached(sceneA)
+            )
+        )
+        XCTAssertGreaterThan(state.revision, initialRevision)
+        arbiter.process(
+            .promoteDormantBoundary(
+                expected: secondProposal,
+                accepted: secondAccepted,
+                sceneIdentifier: sceneA
+            ),
+            state: state
+        ) {
+            recorder.send(source: "later-accepted", transitions: $0)
+        }
+        coordinator.complete(isCancelled: false)
+
+        XCTAssertEqual(
+            recorder.entries.map(\.transition),
+            [.start(identity: "alternate-2", sceneIdentifier: sceneA)]
+        )
+        XCTAssertEqual(recorder.entries.map(\.source), ["later-accepted"])
+        XCTAssertEqual(state.configuration, secondAccepted)
+        XCTAssertTrue(state.isAppeared)
+        XCTAssertEqual(identities.invocationCount, 1)
+    }
+
+    func testWhenSourceAuthorizedDetachedSettlementAdvances_itWaitsForReaderMount() {
+        let coordinator = RUMSwiftUITransitionCoordinatorMock()
+        coordinators[sceneA] = coordinator
+        let identities = RUMOccurrenceIdentityGenerator(["alternate-2"])
+        let state = RUMViewTrackingState(
+            identity: "platform-destination",
+            occurrenceIdentityGenerator: identities.next
+        )
+        let firstProposal = nonCurrentConfiguration("detail", generation: 1)
+        let firstAccepted = keyedConfiguration("alternate", generation: 1)
+        let secondProposal = nonCurrentConfiguration("later-proposal", generation: 2)
+        let secondAccepted = keyedConfiguration("later-accepted", generation: 2)
+        XCTAssertTrue(
+            state.recordDormantNavigationBoundary(
+                configuration: firstProposal,
+                attachment: .attached(sceneA)
+            )
+        )
+        let recorder = RUMSwiftUITransitionRecorder()
+
+        arbiter.process(
+            .promoteDormantBoundary(
+                expected: firstProposal,
+                accepted: firstAccepted,
+                sceneIdentifier: sceneA
+            ),
+            state: state
+        ) {
+            recorder.send(source: "alternate", transitions: $0)
+        }
+        XCTAssertTrue(
+            state.recordDormantNavigationBoundary(
+                configuration: secondProposal,
+                attachment: .attached(sceneA)
+            )
+        )
+        arbiter.process(
+            .settleDormantBoundary(
+                expected: secondProposal,
+                accepted: secondAccepted,
+                sceneIdentifier: sceneA
+            ),
+            state: state
+        ) {
+            recorder.send(source: "later-accepted", transitions: $0)
+        }
+        coordinator.complete(isCancelled: false)
+
+        XCTAssertEqual(recorder.entries, [])
+        XCTAssertEqual(state.configuration, secondAccepted)
+        XCTAssertEqual(state.attachment, .detached)
+        XCTAssertFalse(state.isAppeared)
+        XCTAssertEqual(identities.invocationCount, 0)
+
+        coordinators[sceneA] = nil
+        arbiter.process(
+            .keyedMount(
+                configuration: secondAccepted,
+                sceneIdentifier: sceneA
+            ),
+            state: state
+        ) {
+            recorder.send(source: "later-accepted", transitions: $0)
+        }
+
+        XCTAssertEqual(
+            recorder.entries.map(\.transition),
+            [.start(identity: "alternate-2", sceneIdentifier: sceneA)]
+        )
+        XCTAssertEqual(identities.invocationCount, 1)
+    }
+
+    func testWhenAdvancedDormantResolutionIsCancelled_itStartsNoDestination() {
+        let coordinator = RUMSwiftUITransitionCoordinatorMock()
+        coordinators[sceneA] = coordinator
+        let identities = RUMOccurrenceIdentityGenerator(["unused"])
+        let state = RUMViewTrackingState(
+            identity: "platform-destination",
+            occurrenceIdentityGenerator: identities.next
+        )
+        let firstProposal = nonCurrentConfiguration("detail", generation: 1)
+        let firstAccepted = keyedConfiguration("alternate", generation: 1)
+        let secondProposal = nonCurrentConfiguration("later-proposal", generation: 2)
+        let secondAccepted = keyedConfiguration("later-accepted", generation: 2)
+        XCTAssertTrue(
+            state.recordDormantNavigationBoundary(
+                configuration: firstProposal,
+                attachment: .attached(sceneA)
+            )
+        )
+        let recorder = RUMSwiftUITransitionRecorder()
+
+        arbiter.process(
+            .promoteDormantBoundary(
+                expected: firstProposal,
+                accepted: firstAccepted,
+                sceneIdentifier: sceneA
+            ),
+            state: state
+        ) {
+            recorder.send(source: "alternate", transitions: $0)
+        }
+        XCTAssertTrue(
+            state.recordDormantNavigationBoundary(
+                configuration: secondProposal,
+                attachment: .attached(sceneA)
+            )
+        )
+        arbiter.process(
+            .promoteDormantBoundary(
+                expected: secondProposal,
+                accepted: secondAccepted,
+                sceneIdentifier: sceneA
+            ),
+            state: state
+        ) {
+            recorder.send(source: "later-accepted", transitions: $0)
+        }
+        coordinator.complete(isCancelled: true)
+
+        XCTAssertEqual(recorder.entries, [])
+        XCTAssertEqual(state.configuration, secondProposal)
+        XCTAssertFalse(state.isAppeared)
+        XCTAssertEqual(identities.invocationCount, 0)
+    }
+
     func testWhenDisconnectedViewRemountIsDeferred_itStartsAfterSuccessfulCompletion() {
         let coordinator = RUMSwiftUITransitionCoordinatorMock()
         coordinators[sceneA] = coordinator
@@ -5461,6 +6889,18 @@ class RUMSwiftUIInteractiveTransitionArbiterTests: XCTestCase {
         let state = attachedState(identity: identity, sceneIdentifier: sceneIdentifier)
         _ = state.appear()
         return state
+    }
+
+    private func nonCurrentConfiguration(
+        _ key: String,
+        generation: UInt64
+    ) -> RUMViewTrackingState.Configuration {
+        RUMViewTrackingState.Configuration(
+            occurrenceKey: RUMViewOccurrenceKey(key),
+            bindingGeneration: generation,
+            descriptor: .init(name: key, path: "/\(key)", attributes: [:]),
+            isCurrentDestination: false
+        )
     }
 
     private func keyedConfiguration(

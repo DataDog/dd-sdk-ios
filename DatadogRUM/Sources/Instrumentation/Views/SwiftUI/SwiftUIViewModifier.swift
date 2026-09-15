@@ -527,6 +527,212 @@ internal final class RUMViewTrackingState {
         return true
     }
 
+    /// Whether the navigation source may promote this already materialized
+    /// boundary to the exact destination accepted by the customer's router.
+    ///
+    /// iOS 27 can reuse one mounted SwiftUI boundary when a Binding
+    /// canonicalizes a native navigation proposal to another route. The
+    /// proposed route is recorded as dormant first, and the reused boundary
+    /// does not necessarily receive another `onAppear`. The same proof also
+    /// lets a later accepted router generation supersede an older pending
+    /// canonicalization. Keep both cases limited to an inactive dormant
+    /// boundary and a binding generation that has never started from this
+    /// state. Ordinary reconciliation requires unchanged concrete scene proof;
+    /// only an exact source-accepted reader mount may relocate or recover a
+    /// detached boundary.
+    func canPromoteDormantNavigationBoundary(
+        from expectedDormantConfiguration: Configuration,
+        to configuration: Configuration,
+        in sceneIdentifier: RUMSceneIdentifier,
+        allowsSceneMigration: Bool = false
+    ) -> Bool {
+        let hasMountedReaderProof = !requiresRemount
+            && attachment == .attached(sceneIdentifier)
+            && lastProvenSceneIdentifier == sceneIdentifier
+        let hasSourceAuthorizedReaderProof: Bool
+        switch attachment {
+        case .detached:
+            // The exact source-accepted ObserverView mount supplies concrete
+            // scene proof even if the speculative boundary detached before it
+            // was ever attached to a scene.
+            hasSourceAuthorizedReaderProof = allowsSceneMigration
+        case .attached(let attachedSceneIdentifier?):
+            hasSourceAuthorizedReaderProof =
+                allowsSceneMigration
+                    && attachedSceneIdentifier != sceneIdentifier
+                    && lastProvenSceneIdentifier == attachedSceneIdentifier
+        case .attached(nil):
+            hasSourceAuthorizedReaderProof = false
+        }
+        let hasConcreteReaderRecovery = requiresRemount
+            && attachment == .detached
+        return canResolveDormantNavigationBoundary(
+            from: expectedDormantConfiguration,
+            to: configuration
+        ) && (
+            hasMountedReaderProof
+                || hasSourceAuthorizedReaderProof
+                || hasConcreteReaderRecovery
+        )
+    }
+
+    /// Whether a retained reader may commit the source-accepted key without
+    /// publishing an occurrence. This accepts either the still-attached reader
+    /// or a subsequent detached reconciliation, but both require the same last
+    /// concrete scene proof.
+    func canSettleDormantNavigationBoundary(
+        from expectedDormantConfiguration: Configuration,
+        to configuration: Configuration,
+        in sceneIdentifier: RUMSceneIdentifier
+    ) -> Bool {
+        canResolveDormantNavigationBoundary(
+            from: expectedDormantConfiguration,
+            to: configuration
+        ) && !requiresRemount
+            && lastProvenSceneIdentifier == sceneIdentifier
+            && (attachment == .attached(sceneIdentifier) || attachment == .detached)
+    }
+
+    private func canResolveDormantNavigationBoundary(
+        from expectedDormantConfiguration: Configuration,
+        to configuration: Configuration
+    ) -> Bool {
+        let advancesBinding = configuration.bindingGeneration
+            > expectedDormantConfiguration.bindingGeneration
+        let canonicalizesCurrentBinding = configuration.bindingGeneration
+            == expectedDormantConfiguration.bindingGeneration
+            && configuration.occurrenceKey
+                != expectedDormantConfiguration.occurrenceKey
+        return
+            self.configuration == expectedDormantConfiguration
+            && configuration.isCurrentDestination
+            && !expectedDormantConfiguration.isCurrentDestination
+            && (advancesBinding || canonicalizesCurrentBinding)
+            && activeOccurrence == nil
+            && (lastStartedBindingGeneration == nil
+                || configuration.bindingGeneration
+                    > (lastStartedBindingGeneration ?? 0))
+            && !isAppeared
+    }
+
+    /// Atomically promotes a source-authorized dormant boundary. This is the
+    /// only source-authorized exception to the ordinary binding fence, and it
+    /// still participates in interactive-transition deferral by checking the
+    /// revision captured by the arbiter.
+    func promoteDormantNavigationBoundary(
+        from expectedDormantConfiguration: Configuration,
+        to configuration: Configuration,
+        in sceneIdentifier: RUMSceneIdentifier,
+        expectedRevision: UInt64? = nil,
+        allowsSceneMigration: Bool = false
+    ) -> [Transition] {
+        guard expectedRevision == nil || expectedRevision == revision else {
+            return []
+        }
+        guard canPromoteDormantNavigationBoundary(
+            from: expectedDormantConfiguration,
+            to: configuration,
+            in: sceneIdentifier,
+            allowsSceneMigration: allowsSceneMigration
+        ) else {
+            return []
+        }
+
+        self.configuration = configuration
+        attachment = .attached(sceneIdentifier)
+        isAppeared = true
+        lastProvenSceneIdentifier = sceneIdentifier
+        requiresRemount = false
+        restoresAppearanceOnReaderRemount = false
+        guard let transition = start(in: sceneIdentifier) else {
+            // The eligibility fence above guarantees a startable generation.
+            // Stay non-authoritative if that invariant ever changes.
+            isAppeared = false
+            return []
+        }
+        finishMutation(true)
+        return [transition]
+    }
+
+    /// Commits the accepted key without publishing an occurrence when the
+    /// final interactive state is no longer both appeared and attached to the
+    /// proved scene. This prevents a later accepted lifecycle callback from
+    /// being rejected by the former speculative key's generation fence.
+    func settleDormantNavigationPromotion(
+        from expectedDormantConfiguration: Configuration,
+        to configuration: Configuration,
+        in sceneIdentifier: RUMSceneIdentifier,
+        attachment: Attachment?,
+        isAppeared: Bool?,
+        expectedRevision: UInt64? = nil
+    ) {
+        guard expectedRevision == nil || expectedRevision == revision else {
+            return
+        }
+        guard canSettleDormantNavigationBoundary(
+            from: expectedDormantConfiguration,
+            to: configuration,
+            in: sceneIdentifier
+        ) else {
+            return
+        }
+
+        self.configuration = configuration
+        if let attachment {
+            self.attachment = attachment
+            if case .attached(let sceneIdentifier?) = attachment {
+                lastProvenSceneIdentifier = sceneIdentifier
+            }
+        }
+        if attachment == .detached {
+            self.isAppeared = false
+            requiresRemount = true
+            restoresAppearanceOnReaderRemount = true
+            retainedRouteHandoffGeneration = nil
+        } else if let isAppeared {
+            self.isAppeared = isAppeared
+        }
+        finishMutation(true)
+    }
+
+    /// Preserves a source-authorized canonicalization when its scene
+    /// disconnects before an interactive transition resolves. No occurrence is
+    /// published for the disappearing scene; the accepted configuration and
+    /// appearance proof are consumed only by a subsequent concrete reader
+    /// mount.
+    @discardableResult
+    func preserveDormantNavigationPromotionAfterSceneDisconnect(
+        from expectedDormantConfiguration: Configuration,
+        to configuration: Configuration
+    ) -> Bool {
+        let advancesBinding = configuration.bindingGeneration
+            > expectedDormantConfiguration.bindingGeneration
+        let canonicalizesCurrentBinding = configuration.bindingGeneration
+            == expectedDormantConfiguration.bindingGeneration
+            && configuration.occurrenceKey
+                != expectedDormantConfiguration.occurrenceKey
+        guard
+            requiresRemount,
+            activeOccurrence == nil,
+            lastStartedBindingGeneration == nil
+                || configuration.bindingGeneration
+                    > (lastStartedBindingGeneration ?? 0),
+            attachment == .detached,
+            !isAppeared,
+            self.configuration == expectedDormantConfiguration,
+            !expectedDormantConfiguration.isCurrentDestination,
+            configuration.isCurrentDestination,
+            advancesBinding || canonicalizesCurrentBinding
+        else {
+            return false
+        }
+
+        self.configuration = configuration
+        restoresAppearanceOnReaderRemount = true
+        finishMutation(true)
+        return true
+    }
+
     /// Re-establishes scene proof for a hidden navigation boundary after its
     /// former scene disconnected. The navigation source has already established
     /// that this reader is not the accepted destination, so rearming must update
@@ -1377,6 +1583,10 @@ internal final class RUMSwiftUINavigationOccurrenceSource {
     enum CandidateDisposition: Equatable {
         case handled
         case allowOrdinaryMount
+        case promoteDormantBoundary(
+            expected: RUMViewTrackingState.Configuration,
+            accepted: RUMViewTrackingState.Configuration
+        )
         case recordDormant
         case rejectStale
     }
@@ -1566,7 +1776,29 @@ internal final class RUMSwiftUINavigationOccurrenceSource {
             candidateConfiguration: candidateConfiguration,
             sceneIdentifier: sceneIdentifier,
             state: state,
+            allowsDormantBoundaryPromotion: false,
+            viewsHandler: viewsHandler,
+            process: process
+        )
+    }
+
+    func resolveCandidate(
+        candidateConfiguration: RUMViewTrackingState.Configuration,
+        sceneIdentifier: RUMSceneIdentifier,
+        state: RUMViewTrackingState,
+        allowsDormantBoundaryPromotion: Bool,
+        viewsHandler: RUMViewsHandler?,
+        process: (
+            RUMViewTrackingState.Configuration,
+            RUMSceneIdentifier
+        ) -> Void
+    ) -> CandidateDisposition {
+        resolveCandidate(
+            candidateConfiguration: candidateConfiguration,
+            sceneIdentifier: sceneIdentifier,
+            state: state,
             isReaderMount: true,
+            allowsDormantBoundaryPromotion: allowsDormantBoundaryPromotion,
             viewsHandler: viewsHandler,
             process: process
         )
@@ -1577,6 +1809,29 @@ internal final class RUMSwiftUINavigationOccurrenceSource {
         sceneIdentifier: RUMSceneIdentifier,
         state: RUMViewTrackingState,
         isReaderMount: Bool,
+        viewsHandler: RUMViewsHandler?,
+        process: (
+            RUMViewTrackingState.Configuration,
+            RUMSceneIdentifier
+        ) -> Void
+    ) -> CandidateDisposition {
+        resolveCandidate(
+            candidateConfiguration: candidateConfiguration,
+            sceneIdentifier: sceneIdentifier,
+            state: state,
+            isReaderMount: isReaderMount,
+            allowsDormantBoundaryPromotion: false,
+            viewsHandler: viewsHandler,
+            process: process
+        )
+    }
+
+    func resolveCandidate(
+        candidateConfiguration: RUMViewTrackingState.Configuration,
+        sceneIdentifier: RUMSceneIdentifier,
+        state: RUMViewTrackingState,
+        isReaderMount: Bool,
+        allowsDormantBoundaryPromotion: Bool,
         viewsHandler: RUMViewsHandler?,
         process: (
             RUMViewTrackingState.Configuration,
@@ -1730,6 +1985,20 @@ internal final class RUMSwiftUINavigationOccurrenceSource {
         }
 
         guard requiresInitialBootstrap else {
+            if
+                allowsDormantBoundaryPromotion,
+                let dormantConfiguration = state.configuration,
+                state.canPromoteDormantNavigationBoundary(
+                    from: dormantConfiguration,
+                    to: acceptedDestinationConfiguration,
+                    in: sceneIdentifier,
+                    allowsSceneMigration: isReaderMount
+                ) {
+                return .promoteDormantBoundary(
+                    expected: dormantConfiguration,
+                    accepted: acceptedDestinationConfiguration
+                )
+            }
             return .allowOrdinaryMount
         }
         startManagedInitialOccurrence(
@@ -2576,6 +2845,21 @@ internal final class RUMSwiftUIInteractiveTransitionArbiter {
             configuration: RUMViewTrackingState.Configuration,
             sceneIdentifier: RUMSceneIdentifier
         )
+        case promoteDormantBoundary(
+            expected: RUMViewTrackingState.Configuration,
+            accepted: RUMViewTrackingState.Configuration,
+            sceneIdentifier: RUMSceneIdentifier
+        )
+        case migrateDormantBoundary(
+            expected: RUMViewTrackingState.Configuration,
+            accepted: RUMViewTrackingState.Configuration,
+            sceneIdentifier: RUMSceneIdentifier
+        )
+        case settleDormantBoundary(
+            expected: RUMViewTrackingState.Configuration,
+            accepted: RUMViewTrackingState.Configuration,
+            sceneIdentifier: RUMSceneIdentifier
+        )
         case appear
         case disappear
         case reconcile(
@@ -2588,6 +2872,9 @@ internal final class RUMSwiftUIInteractiveTransitionArbiter {
             switch self {
             case .keyedInitialMount(let configuration, _),
                  .keyedMount(let configuration, _),
+                 .promoteDormantBoundary(_, let configuration, _),
+                 .migrateDormantBoundary(_, let configuration, _),
+                 .settleDormantBoundary(_, let configuration, _),
                  .reconcile(let configuration, _, _):
                 return configuration
             case .update, .initialMount, .mount, .appear, .disappear:
@@ -2604,8 +2891,12 @@ internal final class RUMSwiftUIInteractiveTransitionArbiter {
             case .initialMount(let sceneIdentifier):
                 return .attached(sceneIdentifier)
             case .keyedInitialMount(_, let sceneIdentifier),
-                 .keyedMount(_, let sceneIdentifier):
+                 .keyedMount(_, let sceneIdentifier),
+                 .promoteDormantBoundary(_, _, let sceneIdentifier),
+                 .migrateDormantBoundary(_, _, let sceneIdentifier):
                 return .attached(sceneIdentifier)
+            case .settleDormantBoundary:
+                return .detached
             case .appear, .disappear:
                 return nil
             case .reconcile(_, let attachment, _):
@@ -2615,8 +2906,11 @@ internal final class RUMSwiftUIInteractiveTransitionArbiter {
 
         fileprivate var isAppeared: Bool? {
             switch self {
-            case .initialMount, .mount, .keyedInitialMount, .keyedMount, .appear:
+            case .initialMount, .mount, .keyedInitialMount, .keyedMount,
+                 .promoteDormantBoundary, .migrateDormantBoundary, .appear:
                 return true
+            case .settleDormantBoundary:
+                return false
             case .disappear:
                 return false
             case .update:
@@ -2631,7 +2925,10 @@ internal final class RUMSwiftUIInteractiveTransitionArbiter {
             case .initialMount(let sceneIdentifier), .mount(let sceneIdentifier):
                 return sceneIdentifier
             case .keyedInitialMount(_, let sceneIdentifier),
-                 .keyedMount(_, let sceneIdentifier):
+                 .keyedMount(_, let sceneIdentifier),
+                 .promoteDormantBoundary(_, _, let sceneIdentifier),
+                 .migrateDormantBoundary(_, _, let sceneIdentifier),
+                 .settleDormantBoundary(_, _, let sceneIdentifier):
                 return sceneIdentifier
             case .update(.attached(let sceneIdentifier)):
                 return sceneIdentifier
@@ -2662,6 +2959,40 @@ internal final class RUMSwiftUIInteractiveTransitionArbiter {
                     in: sceneIdentifier,
                     configuration: configuration
                 )
+            case .promoteDormantBoundary(
+                let expected,
+                let accepted,
+                let sceneIdentifier
+            ):
+                return state.promoteDormantNavigationBoundary(
+                    from: expected,
+                    to: accepted,
+                    in: sceneIdentifier
+                )
+            case .migrateDormantBoundary(
+                let expected,
+                let accepted,
+                let sceneIdentifier
+            ):
+                return state.promoteDormantNavigationBoundary(
+                    from: expected,
+                    to: accepted,
+                    in: sceneIdentifier,
+                    allowsSceneMigration: true
+                )
+            case .settleDormantBoundary(
+                let expected,
+                let accepted,
+                let sceneIdentifier
+            ):
+                state.settleDormantNavigationPromotion(
+                    from: expected,
+                    to: accepted,
+                    in: sceneIdentifier,
+                    attachment: .detached,
+                    isAppeared: false
+                )
+                return []
             case .appear:
                 return state.appear()
             case .disappear:
@@ -2697,6 +3028,14 @@ internal final class RUMSwiftUIInteractiveTransitionArbiter {
         }
     }
 
+    private struct DormantBoundaryResolution: Equatable {
+        let expected: RUMViewTrackingState.Configuration
+        let accepted: RUMViewTrackingState.Configuration
+        let sceneIdentifier: RUMSceneIdentifier
+        let startsOccurrence: Bool
+        let allowsSceneMigration: Bool
+    }
+
     private final class DeferredState {
         let state: RUMViewTrackingState
         let sequence: Int
@@ -2709,6 +3048,7 @@ internal final class RUMSwiftUIInteractiveTransitionArbiter {
         var isAppeared: Bool?
         var allowsRemount = false
         var containsReaderMount = false
+        var dormantBoundaryResolution: DormantBoundaryResolution?
 
         init(
             state: RUMViewTrackingState,
@@ -2729,6 +3069,82 @@ internal final class RUMSwiftUIInteractiveTransitionArbiter {
             _ intent: Intent,
             send: @escaping ([RUMViewTrackingState.Transition]) -> Void
         ) -> Bool {
+            let requestedResolution: DormantBoundaryResolution?
+            switch intent {
+            case .promoteDormantBoundary(let expected, let accepted, let sceneIdentifier):
+                requestedResolution = DormantBoundaryResolution(
+                    expected: expected,
+                    accepted: accepted,
+                    sceneIdentifier: sceneIdentifier,
+                    startsOccurrence: true,
+                    allowsSceneMigration: false
+                )
+            case .migrateDormantBoundary(let expected, let accepted, let sceneIdentifier):
+                requestedResolution = DormantBoundaryResolution(
+                    expected: expected,
+                    accepted: accepted,
+                    sceneIdentifier: sceneIdentifier,
+                    startsOccurrence: true,
+                    allowsSceneMigration: true
+                )
+            case .settleDormantBoundary(let expected, let accepted, let sceneIdentifier):
+                requestedResolution = DormantBoundaryResolution(
+                    expected: expected,
+                    accepted: accepted,
+                    sceneIdentifier: sceneIdentifier,
+                    startsOccurrence: false,
+                    allowsSceneMigration: false
+                )
+            default:
+                requestedResolution = nil
+            }
+
+            if let requestedResolution {
+                let canResolve = requestedResolution.startsOccurrence
+                    ? state.canPromoteDormantNavigationBoundary(
+                        from: requestedResolution.expected,
+                        to: requestedResolution.accepted,
+                        in: requestedResolution.sceneIdentifier,
+                        allowsSceneMigration: requestedResolution.allowsSceneMigration
+                    )
+                    : state.canSettleDormantNavigationBoundary(
+                        from: requestedResolution.expected,
+                        to: requestedResolution.accepted,
+                        in: requestedResolution.sceneIdentifier
+                    )
+                guard canResolve else {
+                    return false
+                }
+
+                if
+                    dormantBoundaryResolution != requestedResolution
+                        || baseRevision != state.revision {
+                    // Dormant reader bookkeeping can advance synchronously
+                    // while an interactive transition is pending. Only this
+                    // exact source-authorized resolution may rebase the
+                    // projection onto that newer live snapshot.
+                    baseRevision = state.revision
+                    dormantBoundaryResolution = nil
+                    configuration = state.configuration
+                    attachment = nil
+                    isAppeared = nil
+                    allowsRemount = false
+                    containsReaderMount = false
+                }
+            } else if let dormantBoundaryResolution,
+                      !dormantBoundaryResolution.startsOccurrence {
+                // A source-authorized detached settlement stays non-starting.
+                // Only a later concrete reader resolution may upgrade it.
+                return false
+            } else if
+                let dormantBoundaryResolution,
+                let incomingConfiguration = intent.configuration,
+                incomingConfiguration != dormantBoundaryResolution.accepted {
+                // Generation orders callbacks but does not prove that a
+                // destination was accepted by the customer's router. A generic
+                // callback must not replace a source-authorized resolution.
+                return false
+            }
             guard accepts(intent) else {
                 return false
             }
@@ -2756,6 +3172,48 @@ internal final class RUMSwiftUIInteractiveTransitionArbiter {
                 isAppeared = state.appearanceForReaderMount
                 allowsRemount = true
                 containsReaderMount = true
+            } else if case .promoteDormantBoundary(
+                let expected,
+                let accepted,
+                let sceneIdentifier
+            ) = intent {
+                dormantBoundaryResolution = DormantBoundaryResolution(
+                    expected: expected,
+                    accepted: accepted,
+                    sceneIdentifier: sceneIdentifier,
+                    startsOccurrence: true,
+                    allowsSceneMigration: false
+                )
+                attachment = .attached(sceneIdentifier)
+                isAppeared = true
+            } else if case .migrateDormantBoundary(
+                let expected,
+                let accepted,
+                let sceneIdentifier
+            ) = intent {
+                dormantBoundaryResolution = DormantBoundaryResolution(
+                    expected: expected,
+                    accepted: accepted,
+                    sceneIdentifier: sceneIdentifier,
+                    startsOccurrence: true,
+                    allowsSceneMigration: true
+                )
+                attachment = .attached(sceneIdentifier)
+                isAppeared = true
+            } else if case .settleDormantBoundary(
+                let expected,
+                let accepted,
+                let sceneIdentifier
+            ) = intent {
+                dormantBoundaryResolution = DormantBoundaryResolution(
+                    expected: expected,
+                    accepted: accepted,
+                    sceneIdentifier: sceneIdentifier,
+                    startsOccurrence: false,
+                    allowsSceneMigration: false
+                )
+                attachment = .detached
+                isAppeared = false
             } else {
                 if let attachment = intent.attachment {
                     self.attachment = attachment
@@ -2779,6 +3237,58 @@ internal final class RUMSwiftUIInteractiveTransitionArbiter {
             }
             if case .keyedMount = intent, !state.acceptsReaderMount {
                 return false
+            }
+            if case .promoteDormantBoundary(
+                let expected,
+                let accepted,
+                let sceneIdentifier
+            ) = intent {
+                guard state.canPromoteDormantNavigationBoundary(
+                    from: expected,
+                    to: accepted,
+                    in: sceneIdentifier
+                ) else {
+                    return false
+                }
+                guard dormantBoundaryResolution == nil else {
+                    return true
+                }
+                return configuration == state.configuration
+            }
+            if case .migrateDormantBoundary(
+                let expected,
+                let accepted,
+                let sceneIdentifier
+            ) = intent {
+                guard state.canPromoteDormantNavigationBoundary(
+                    from: expected,
+                    to: accepted,
+                    in: sceneIdentifier,
+                    allowsSceneMigration: true
+                ) else {
+                    return false
+                }
+                guard dormantBoundaryResolution == nil else {
+                    return true
+                }
+                return configuration == state.configuration
+            }
+            if case .settleDormantBoundary(
+                let expected,
+                let accepted,
+                let sceneIdentifier
+            ) = intent {
+                guard state.canSettleDormantNavigationBoundary(
+                    from: expected,
+                    to: accepted,
+                    in: sceneIdentifier
+                ) else {
+                    return false
+                }
+                guard dormantBoundaryResolution == nil else {
+                    return true
+                }
+                return configuration == state.configuration
             }
             guard let incomingConfiguration = intent.configuration else {
                 return state.acceptsUnversioned(
@@ -2804,13 +3314,46 @@ internal final class RUMSwiftUIInteractiveTransitionArbiter {
             allowsRemount = true
         }
 
+        func preserveDormantPromotionAfterSceneDisconnect() {
+            guard let dormantBoundaryResolution else {
+                return
+            }
+            _ = state.preserveDormantNavigationPromotionAfterSceneDisconnect(
+                from: dormantBoundaryResolution.expected,
+                to: dormantBoundaryResolution.accepted
+            )
+        }
+
         var needsReaderRemountRearm: Bool {
             containsReaderMount && state.needsReaderRemount
         }
 
         func commit() {
             let transitions: [RUMViewTrackingState.Transition]
-            if let configuration {
+            if
+                let dormantBoundaryResolution,
+                dormantBoundaryResolution.startsOccurrence,
+                configuration == dormantBoundaryResolution.accepted,
+                attachment == .attached(dormantBoundaryResolution.sceneIdentifier),
+                isAppeared != false {
+                transitions = state.promoteDormantNavigationBoundary(
+                    from: dormantBoundaryResolution.expected,
+                    to: dormantBoundaryResolution.accepted,
+                    in: dormantBoundaryResolution.sceneIdentifier,
+                    expectedRevision: baseRevision,
+                    allowsSceneMigration: dormantBoundaryResolution.allowsSceneMigration
+                )
+            } else if let dormantBoundaryResolution {
+                state.settleDormantNavigationPromotion(
+                    from: dormantBoundaryResolution.expected,
+                    to: dormantBoundaryResolution.accepted,
+                    in: dormantBoundaryResolution.sceneIdentifier,
+                    attachment: attachment,
+                    isAppeared: isAppeared,
+                    expectedRevision: baseRevision
+                )
+                transitions = []
+            } else if let configuration {
                 transitions = state.reconcile(
                     configuration: configuration,
                     attachment: attachment,
@@ -2883,6 +3426,16 @@ internal final class RUMSwiftUIInteractiveTransitionArbiter {
             states.forEach { identity, state in
                 if identities.contains(identity) {
                     state.rebaseAfterSceneDisconnect()
+                }
+            }
+        }
+
+        func preserveDormantPromotionsAfterSceneDisconnect(
+            statesWithIdentities identities: Set<ObjectIdentifier>
+        ) {
+            states.forEach { identity, state in
+                if identities.contains(identity) {
+                    state.preserveDormantPromotionAfterSceneDisconnect()
                 }
             }
         }
@@ -3127,6 +3680,14 @@ internal final class RUMSwiftUIInteractiveTransitionArbiter {
                 invalidatedStateIdentities.insert(identity)
             }
         }
+        deferredTransitions.forEach { key, transition in
+            guard key.sceneIdentifier == sceneIdentifier else {
+                return
+            }
+            transition.preserveDormantPromotionsAfterSceneDisconnect(
+                statesWithIdentities: invalidatedStateIdentities
+            )
+        }
 
         var disconnectedSources: [ObjectIdentifier: RUMSwiftUINavigationOccurrenceSource] = [:]
         observerRegistrations.values.forEach { registration in
@@ -3266,14 +3827,19 @@ internal final class RUMSwiftUIInteractiveTransitionArbiter {
         else {
             return
         }
+        // Merge before removing the state from its original coordinator. A
+        // generic callback from another scene may pass the broad projection
+        // fence but still be rejected because a source-authorized settlement
+        // is pending. In that case the original settlement must remain owned
+        // by its coordinator.
+        guard deferredState.merge(intent, send: send) else {
+            return
+        }
         guard pending.transition.remove(state: state) != nil else {
             return
         }
         if pending.transition.isEmpty {
             deferredTransitions.removeValue(forKey: pending.key)
-        }
-        guard deferredState.merge(intent, send: send) else {
-            return
         }
         deferredState.commit()
     }
@@ -3425,7 +3991,10 @@ private struct RUMTraitBackedMultiSceneViewModifier: SwiftUI.ViewModifier {
                         mount(in: sceneIdentifier)
                     } : nil,
                     onReconcile: configuration == nil ? nil : { attachment in
-                        update(attachment: attachment)
+                        update(
+                            attachment: attachment,
+                            allowsDormantBoundaryPromotion: true
+                        )
                         rebindNavigationOccurrenceSource(attachment: attachment)
                     },
                     onChange: { attachment in
@@ -3481,7 +4050,8 @@ private struct RUMTraitBackedMultiSceneViewModifier: SwiftUI.ViewModifier {
             switch resolveNavigationCandidate(
                 configuration,
                 in: sceneIdentifier,
-                isReaderMount: true
+                isReaderMount: true,
+                allowsDormantBoundaryPromotion: true
             ) {
             case .handled:
                 rebindNavigationOccurrenceSource(attachment: .attached(sceneIdentifier))
@@ -3498,6 +4068,13 @@ private struct RUMTraitBackedMultiSceneViewModifier: SwiftUI.ViewModifier {
                 }
                 update(attachment: attachment)
                 rebindNavigationOccurrenceSource(attachment: attachment)
+                return
+            case .promoteDormantBoundary(let expected, let accepted):
+                promoteDormantNavigationBoundary(
+                    from: expected,
+                    to: accepted,
+                    in: sceneIdentifier
+                )
                 return
             case .allowOrdinaryMount:
                 break
@@ -3572,6 +4149,8 @@ private struct RUMTraitBackedMultiSceneViewModifier: SwiftUI.ViewModifier {
                 update(attachment: attachment)
                 rebindNavigationOccurrenceSource(attachment: attachment)
                 return
+            case .promoteDormantBoundary:
+                return
             case .allowOrdinaryMount:
                 break
             }
@@ -3615,7 +4194,10 @@ private struct RUMTraitBackedMultiSceneViewModifier: SwiftUI.ViewModifier {
         apply(trackingState.mountFromInitialTrait(in: sceneIdentifier))
     }
 
-    private func update(attachment: RUMViewTrackingState.Attachment) {
+    private func update(
+        attachment: RUMViewTrackingState.Attachment,
+        allowsDormantBoundaryPromotion: Bool = false
+    ) {
         if let configuration {
             if navigationOccurrenceSource?.retainsManagedInitialOccurrence(
                 for: configuration,
@@ -3625,8 +4207,30 @@ private struct RUMTraitBackedMultiSceneViewModifier: SwiftUI.ViewModifier {
                 rebindNavigationOccurrenceSource(attachment: attachment)
                 return
             }
+            if
+                case .detached = attachment,
+                allowsDormantBoundaryPromotion,
+                navigationOccurrenceSource?.isAcceptedBoundary(configuration) == true,
+                let sceneIdentifier = trackingState.retainedRouteSceneIdentifier,
+                let dormantConfiguration = trackingState.configuration,
+                trackingState.canSettleDormantNavigationBoundary(
+                    from: dormantConfiguration,
+                    to: configuration,
+                    in: sceneIdentifier
+                ) {
+                settleDormantNavigationBoundary(
+                    from: dormantConfiguration,
+                    to: configuration,
+                    in: sceneIdentifier
+                )
+                return
+            }
             if case .attached(let sceneIdentifier?) = attachment {
-                switch resolveNavigationCandidate(configuration, in: sceneIdentifier) {
+                switch resolveNavigationCandidate(
+                    configuration,
+                    in: sceneIdentifier,
+                    allowsDormantBoundaryPromotion: allowsDormantBoundaryPromotion
+                ) {
                 case .handled:
                     return
                 case .rejectStale:
@@ -3638,6 +4242,13 @@ private struct RUMTraitBackedMultiSceneViewModifier: SwiftUI.ViewModifier {
                     ) {
                         return
                     }
+                case .promoteDormantBoundary(let expected, let accepted):
+                    promoteDormantNavigationBoundary(
+                        from: expected,
+                        to: accepted,
+                        in: sceneIdentifier
+                    )
+                    return
                 case .allowOrdinaryMount:
                     break
                 }
@@ -3678,6 +4289,8 @@ private struct RUMTraitBackedMultiSceneViewModifier: SwiftUI.ViewModifier {
                 case .rejectStale:
                     return
                 case .recordDormant:
+                    return
+                case .promoteDormantBoundary:
                     return
                 case .allowOrdinaryMount:
                     break
@@ -3788,7 +4401,8 @@ private struct RUMTraitBackedMultiSceneViewModifier: SwiftUI.ViewModifier {
     private func resolveNavigationCandidate(
         _ configuration: RUMViewTrackingState.Configuration,
         in sceneIdentifier: RUMSceneIdentifier,
-        isReaderMount: Bool = false
+        isReaderMount: Bool = false,
+        allowsDormantBoundaryPromotion: Bool = false
     ) -> RUMSwiftUINavigationOccurrenceSource.CandidateDisposition {
         guard let navigationOccurrenceSource else {
             return .allowOrdinaryMount
@@ -3798,6 +4412,7 @@ private struct RUMTraitBackedMultiSceneViewModifier: SwiftUI.ViewModifier {
             sceneIdentifier: sceneIdentifier,
             state: trackingState,
             isReaderMount: isReaderMount,
+            allowsDormantBoundaryPromotion: allowsDormantBoundaryPromotion,
             viewsHandler: instrumentation?.viewsHandler
         ) { initialConfiguration, sceneIdentifier in
             apply(
@@ -3807,6 +4422,76 @@ private struct RUMTraitBackedMultiSceneViewModifier: SwiftUI.ViewModifier {
                 )
             )
         }
+    }
+
+    private func promoteDormantNavigationBoundary(
+        from expected: RUMViewTrackingState.Configuration,
+        to accepted: RUMViewTrackingState.Configuration,
+        in sceneIdentifier: RUMSceneIdentifier
+    ) {
+        let requiresReaderAuthorization = !trackingState.canPromoteDormantNavigationBoundary(
+            from: expected,
+            to: accepted,
+            in: sceneIdentifier
+        )
+        #if os(iOS)
+        if let transitionArbiter {
+            let intent: RUMSwiftUIInteractiveTransitionArbiter.Intent = requiresReaderAuthorization
+                ? .migrateDormantBoundary(
+                    expected: expected,
+                    accepted: accepted,
+                    sceneIdentifier: sceneIdentifier
+                )
+                : .promoteDormantBoundary(
+                    expected: expected,
+                    accepted: accepted,
+                    sceneIdentifier: sceneIdentifier
+                )
+            transitionArbiter.process(
+                intent,
+                state: trackingState,
+                send: apply
+            )
+            return
+        }
+        #endif
+        apply(
+            trackingState.promoteDormantNavigationBoundary(
+                from: expected,
+                to: accepted,
+                in: sceneIdentifier,
+                allowsSceneMigration: requiresReaderAuthorization
+            )
+        )
+    }
+
+    private func settleDormantNavigationBoundary(
+        from expected: RUMViewTrackingState.Configuration,
+        to accepted: RUMViewTrackingState.Configuration,
+        in sceneIdentifier: RUMSceneIdentifier
+    ) {
+        #if os(iOS)
+        if let transitionArbiter {
+            transitionArbiter.process(
+                .settleDormantBoundary(
+                    expected: expected,
+                    accepted: accepted,
+                    sceneIdentifier: sceneIdentifier
+                ),
+                state: trackingState,
+                send: apply
+            )
+            return
+        }
+        #endif
+        trackingState.settleDormantNavigationPromotion(
+            from: expected,
+            to: accepted,
+            in: sceneIdentifier,
+            attachment: .detached,
+            isAppeared: false
+        )
+        apply([])
     }
 
     #if os(iOS)
