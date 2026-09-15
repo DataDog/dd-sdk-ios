@@ -82,6 +82,11 @@ class RUMResourcesScenarioTests: IntegrationTests, RUMCommonAsserts, URLSessionT
     private func runTest(for testScenarioClassName: String, expectations: Expectations, urlSessionSetup: URLSessionSetup) throws {
         precondition(urlSessionSetup.initializationMethod == .afterSDK, "The SDK must be initialized before enabling URLSession ")
 
+        // Only the Swift `URLSession` scenario exercises OS-level HTTP cache revalidation (see
+        // `RUMResourcesBaseScenario.cacheEnabledSession`) - the ObjC scenario uses different view controllers
+        // that never call it.
+        let testsCacheRevalidation = testScenarioClassName == "RUMURLSessionResourcesScenario"
+
         // Server session recording first party requests send to `HTTPServerMock`.
         // Used to assert that trace propagation headers are send for first party requests.
         let customFirstPartyServerSession = server.obtainUniqueRecordingSession()
@@ -90,6 +95,11 @@ class RUMResourcesScenarioTests: IntegrationTests, RUMCommonAsserts, URLSessionT
         let tracingServerSession = server.obtainUniqueRecordingSession()
         // Server session recording RUM events send to `HTTPServerMock`.
         let rumServerSession = server.obtainUniqueRecordingSession()
+
+        // A resource that supports ETag-based revalidation: the mock server responds `200` on the 1st request
+        // and `304` (no body) on the 2nd request, once the device's local HTTP cache sends `If-None-Match`.
+        let cacheServerSession = testsCacheRevalidation ? server.obtainUniqueRecordingSession() : nil
+        let cacheableResourceURL = cacheServerSession?.recordingURL.appendingPathComponent("cache-test/resource-1")
 
         // Requesting this first party by the app should create the RUM Resource.
         let firstPartyGETResourceURL = URL(
@@ -105,24 +115,36 @@ class RUMResourcesScenarioTests: IntegrationTests, RUMCommonAsserts, URLSessionT
         // Requesting this third party by the app should create the RUM Resource.
         let thirdPartyPOSTResourceURL = URL(string: "https://api.shopist.io/checkout.json")!
 
+        var instrumentedEndpoints = [
+            firstPartyGETResourceURL,
+            firstPartyPOSTResourceURL,
+            firstPartyBadResourceURL,
+            thirdPartyGETResourceURL,
+            thirdPartyPOSTResourceURL
+        ]
+        if let cacheableResourceURL = cacheableResourceURL {
+            instrumentedEndpoints.append(cacheableResourceURL)
+        }
+
         let app = ExampleApplication()
         app.launchWith(
             testScenarioClassName: testScenarioClassName,
             serverConfiguration: HTTPServerMockConfiguration(
                 tracesEndpoint: tracingServerSession.recordingURL,
                 rumEndpoint: rumServerSession.recordingURL,
-                instrumentedEndpoints: [
-                    firstPartyGETResourceURL,
-                    firstPartyPOSTResourceURL,
-                    firstPartyBadResourceURL,
-                    thirdPartyGETResourceURL,
-                    thirdPartyPOSTResourceURL
-                ]
+                instrumentedEndpoints: instrumentedEndpoints
             ),
             urlSessionSetup: urlSessionSetup
         )
 
         app.tapSend3rdPartyRequests()
+
+        // Wait for both the "prime" and "revalidate" cache requests to complete before ending the RUM session -
+        // otherwise `endRUMSession()`'s fixed delay could race with the 2nd request's completion, ending the
+        // view before the revalidate resource is reported and dropping it from the RUM session.
+        let cacheRequests = try cacheServerSession?.pullRecordedRequests(timeout: dataDeliveryTimeout) { requests in
+            requests.count == 2
+        }
 
         try app.endRUMSession()
 
@@ -214,7 +236,11 @@ class RUMResourcesScenarioTests: IntegrationTests, RUMCommonAsserts, URLSessionT
         // Asserts in `SendThirdPartyRequestsVC` RUM View
         XCTAssertEqual(session.views[2].name, expectations.expectedThirdPartyRequestsViewControllerName)
         XCTAssertEqual(session.views[2].path, expectations.expectedThirdPartyRequestsViewControllerName)
-        XCTAssertEqual(session.views[2].resourceEvents.count, 2, "2nd screen should track 2 RUM Resources")
+        XCTAssertEqual(
+            session.views[2].resourceEvents.count,
+            testsCacheRevalidation ? 4 : 2,
+            "2nd screen should track 2 RUM Resources" + (testsCacheRevalidation ? " plus 2 for the cache prime/revalidate requests" : "")
+        )
         XCTAssertEqual(session.views[2].errorEvents.count, 0, "2nd screen should track no RUM Errors")
 
         let thirdPartyResource1 = try XCTUnwrap(
@@ -259,6 +285,36 @@ class RUMResourcesScenarioTests: IntegrationTests, RUMCommonAsserts, URLSessionT
             thirdPartyResource1.resource.download != nil && thirdPartyResource2.resource.download != nil,
             "Both 3rd party resources should track download phase"
         )
+
+        // Verifies how RUM Resource events report the "server-validated cache" scenario: an OS-level HTTP
+        // cache revalidation (`304 Not Modified`) that the app sees as a transparent `200`. The RUM Resource's
+        // `resource.status_code` reflects the *app-visible* response (`200`, synthesized by the OS for a
+        // revalidated cache hit) - never the `304` that was actually exchanged on the wire.
+        if testsCacheRevalidation, let cacheRequests = cacheRequests, let cacheableResourceURL = cacheableResourceURL {
+            // Prove that the mock server actually took its `304` branch for the 2nd request - otherwise the
+            // status-code assertions below would pass just the same even if revalidation never happened.
+            let cacheResponseStatuses = try cacheRequests.map { request -> Int in
+                let json = try JSONSerialization.jsonObject(with: request.httpBody) as? [String: Int]
+                return try XCTUnwrap(json?["response_status"])
+            }
+            XCTAssertEqual(cacheResponseStatuses, [200, 304], "The mock server must serve `200` for the 'prime' request and `304` for the 'revalidate' request")
+
+            let cacheResourceEvents = session.views[2].resourceEvents.filter { $0.resource.url == cacheableResourceURL.absoluteString }
+            XCTAssertEqual(cacheResourceEvents.count, 2, "Both the 'prime' and 'revalidate' requests should create a RUM Resource event")
+
+            let primeResource = cacheResourceEvents[0]
+            let revalidateResource = cacheResourceEvents[1]
+
+            XCTAssertEqual(primeResource.resource.statusCode, 200, "The 'prime' request is a genuine cache miss - server responds `200`")
+
+            // This is the behaviour under test: even though the 2nd request was revalidated by the server with
+            // a `304 Not Modified`, the app (and therefore RUM) only ever sees the OS-synthesized `200` response.
+            XCTAssertEqual(
+                revalidateResource.resource.statusCode,
+                200,
+                "The 'revalidate' request is transparently served as `200` to the app, even though `304` was exchanged on the wire"
+            )
+        }
 
         // Assert there were no tracing `Spans` sent
         _ = try tracingServerSession.pullRecordedRequests(timeout: 1) { requests in

@@ -5,14 +5,15 @@
  */
 
 #if os(iOS)
+import TestUtilities
 import QuartzCore
 import SwiftUI
 import Testing
 
 @testable import DatadogSessionReplay
 
+@Suite(.datadogTesting)
 struct PathCornerRadiiTests {
-    @available(iOS 13.0, tvOS 13.0, *)
     @Test("Creates path for elliptical corner radii")
     func createsPathForEllipticalCornerRadii() {
         // Given

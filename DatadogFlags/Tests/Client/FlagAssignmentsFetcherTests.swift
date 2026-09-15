@@ -129,6 +129,7 @@ final class FlagAssignmentsFetcherTests: XCTestCase {
             (.eu1, "https://preview.ff-cdn.datadoghq.eu"),
             (.ap1, "https://preview.ff-cdn.ap1.datadoghq.com"),
             (.ap2, "https://preview.ff-cdn.ap2.datadoghq.com"),
+            (.uk1, "https://preview.ff-cdn.uk1.datadoghq.com"),
         ]
 
         for (site, expectedEndpoint) in flagsEndpoints {

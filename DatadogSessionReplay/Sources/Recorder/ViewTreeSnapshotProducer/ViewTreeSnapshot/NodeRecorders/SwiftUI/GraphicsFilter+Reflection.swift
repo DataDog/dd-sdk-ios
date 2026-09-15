@@ -9,7 +9,6 @@
 import SwiftUI
 import DatadogInternal
 
-@available(iOS 13.0, tvOS 13.0, *)
 extension GraphicsFilter: Reflection {
     init(from reflector: Reflector) throws {
         switch (reflector.displayStyle, reflector.descendantIfPresent(0)) {

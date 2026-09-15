@@ -32,6 +32,12 @@ public enum Profiling {
     ///   - core: The Datadog core instance to register with. Defaults to the default core.
     @available(*, message: "This API is experimental and may change in future releases")
     public static func enable(with configuration: Configuration = .init(), in core: DatadogCoreProtocol = CoreRegistry.default) {
+        // Merge remote configuration on top of the in-code configuration. Remote values take
+        // precedence for supported behavioral parameters; if no remote configuration is available,
+        // the in-code configuration is used unchanged.
+        var configuration = configuration
+        configuration.apply(remoteConfiguration: core.remoteConfiguration)
+
         let telemetryController = ProfilingTelemetryController(
             sampleRate: configuration.debugSDK ? 100 : ProfilingTelemetryController.defaultSampleRate,
             telemetry: core.telemetry

@@ -169,7 +169,7 @@ public class ServerMock {
     /// An unique identifier of the `URLSession` produced by this instance of `ServerMock`.
     public let urlSessionUUID = UUID()
     private let queue: DispatchQueue
-    private let skipIsMainThreadCheck: Bool
+    public let skipIsMainThreadCheck: Bool
 
     #if os(watchOS)
     /// Swizzler that intercepts `__NSCFLocalSessionTask._onqueue_resume` to deliver mocked

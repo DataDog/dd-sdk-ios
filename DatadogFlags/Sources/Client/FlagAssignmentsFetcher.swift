@@ -130,6 +130,7 @@ extension DatadogSite {
         case .eu1: return URL(string: "https://\(subdomain).ff-cdn.datadoghq.eu")!
         case .ap1: return URL(string: "https://\(subdomain).ff-cdn.ap1.datadoghq.com")!
         case .ap2: return URL(string: "https://\(subdomain).ff-cdn.ap2.datadoghq.com")!
+        case .uk1: return URL(string: "https://\(subdomain).ff-cdn.uk1.datadoghq.com")!
         case .us1_fed, .us2_fed:
             DD.logger.warn(
                 """

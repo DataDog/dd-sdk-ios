@@ -86,6 +86,13 @@ internal struct RUMViewEventsFilter {
             return .skipInitialOneNs
         }
 
+        if viewMetadata.isDeltaBaseline == true {
+            // This full event is a delta baseline: `RUMViewUpdateEvent` deltas in this batch were computed
+            // against it, so it must be kept even if a newer full event for the same view also appears in
+            // the batch — unlike legacy full-event snapshots, it is not redundant.
+            return .keep
+        }
+
         guard seen.contains(viewMetadata.id) == false else {
             // If we've already seen an update for this view, we can skip the next one.
             return .skipRedundant

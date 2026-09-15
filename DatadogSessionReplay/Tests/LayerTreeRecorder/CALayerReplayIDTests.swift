@@ -5,14 +5,15 @@
  */
 
 #if os(iOS)
+import TestUtilities
 import Testing
 import QuartzCore
 
 @testable import DatadogSessionReplay
 
+@Suite(.datadogTesting)
 @MainActor
 struct CALayerReplayIDTests {
-    @available(iOS 13.0, tvOS 13.0, *)
     @Test
     func autoincrementingGeneratorAssignsSequentialIDsToLayers() {
         CALayer.withReplayIDGenerator(.autoincrementing) {
@@ -35,7 +36,6 @@ struct CALayerReplayIDTests {
         }
     }
 
-    @available(iOS 13.0, tvOS 13.0, *)
     @Test
     func replayIDIsCachedAndGeneratorInvokedOnlyOncePerLayer() {
         var calls = 0
@@ -59,7 +59,6 @@ struct CALayerReplayIDTests {
         }
     }
 
-    @available(iOS 13.0, tvOS 13.0, *)
     @Test
     func taskLocalGeneratorOverridesWithinScopeAndRestoresAfter() {
         var outerCounter: Int64 = 10
@@ -90,7 +89,6 @@ struct CALayerReplayIDTests {
         }
     }
 
-    @available(iOS 13.0, tvOS 13.0, *)
     @Test
     func sameLayerKeepsIDAcrossGeneratorOverrides() {
         var outerCounter: Int64 = 7
@@ -120,7 +118,6 @@ struct CALayerReplayIDTests {
         }
     }
 
-    @available(iOS 13.0, tvOS 13.0, *)
     @Test
     func autoincrementingGeneratorWrapsToZeroAfterInt32Max() {
         var currentID = Int64(Int32.max - 1)

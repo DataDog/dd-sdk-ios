@@ -14,6 +14,12 @@ import DatadogSessionReplay
 import CatalogUIKit
 
 struct SessionReplayScenario: Scenario {
+    private let recordingPipeline: SessionReplayRecordingPipeline
+
+    init(recordingPipeline: SessionReplayRecordingPipeline) {
+        self.recordingPipeline = recordingPipeline
+    }
+
     var initialViewController: UIViewController {
         let storyboard = UIStoryboard(name: "Main", bundle: CatalogUIKit.bundle)
         return storyboard.instantiateInitialViewController()!
@@ -39,10 +45,28 @@ struct SessionReplayScenario: Scenario {
                 textAndInputPrivacyLevel: .maskSensitiveInputs,
                 imagePrivacyLevel: .maskNone,
                 touchPrivacyLevel: .show,
-                featureFlags: [.heatmaps: true]
+                featureFlags: featureFlags
             )
         )
 
-        RUMMonitor.shared().addAttribute(forKey: "scenario", value: "SessionReplay")
+        RUMMonitor.shared().addAttribute(forKey: "scenario", value: rumScenarioName)
+    }
+
+    private var featureFlags: SessionReplay.Configuration.FeatureFlags {
+        switch recordingPipeline {
+        case .viewTree:
+            return [.heatmaps: true]
+        case .compositionTree:
+            return [.compositionTreeRecording: true]
+        }
+    }
+
+    private var rumScenarioName: String {
+        switch recordingPipeline {
+        case .viewTree:
+            return "SessionReplay"
+        case .compositionTree:
+            return "SessionReplayCompositionTree"
+        }
     }
 }

@@ -12,7 +12,6 @@ import SwiftUI
 @_spi(Internal)
 @testable import TestUtilities
 
-@available(iOS 13.0, tvOS 13.0, *)
 class UIHostingViewRecorderTests: XCTestCase {
     private enum Constants {
         static let bundledImageName = "dd_logo"
@@ -256,7 +255,6 @@ class UIHostingViewRecorderTests: XCTestCase {
 ///   - attributes: Optional host view attributes.
 ///   - context: Optional host view context.
 /// - Returns: The SessionReplay wireframes representing the view.
-@available(iOS 13.0, tvOS 13.0, *)
 private func render<V>(
     _ view: V,
     size: CGSize = CGSize(width: 300, height: 300),
@@ -279,7 +277,6 @@ private func render<V>(
     return wireframes
 }
 
-@available(iOS 13.0, *)
 private struct MockImageView: View {
     static let bundle = Bundle(for: UIHostingViewRecorderTests.self)
     let imageName: String
@@ -293,7 +290,6 @@ private struct MockImageView: View {
     }
 }
 
-@available(iOS 13.0, tvOS 13.0, *)
 private struct MockTextView: View {
     var body: some View {
         Text("Hello, World!")

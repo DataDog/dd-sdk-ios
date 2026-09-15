@@ -96,7 +96,8 @@ push_repo() {
             -T "DataDog/$REPO_NAME" \
             --branch "$DOGFOODING_BRANCH_NAME" \
             --head-sha "$BASE_SHA" \
-            --create-branch
+            --create-branch \
+            "$(git rev-parse HEAD)"
     fi
     cd -
 }

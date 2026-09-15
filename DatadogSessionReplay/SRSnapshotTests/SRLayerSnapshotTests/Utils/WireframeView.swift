@@ -54,6 +54,8 @@ internal final class WireframeView: UIView {
             return PlaceholderWireframeView(wireframe, frame: bounds)
         case .webviewWireframe(let wireframe):
             return WebViewWireframeView(wireframe, frame: bounds)
+        case .embeddedContentWireframe(let wireframe):
+            return EmbeddedContentWireframeView(wireframe, frame: bounds)
         }
     }
 }
@@ -61,15 +63,29 @@ internal final class WireframeView: UIView {
 @available(iOS 13.0, *)
 @MainActor
 private final class ShapeWireframeView: UIView {
+    private var backgroundGradientLayer: CAGradientLayer?
+
     init(_ wireframe: SRShapeWireframe, frame: CGRect) {
         super.init(frame: frame)
         backgroundColor = .clear
         applyWireframeShapeStyle(wireframe.shapeStyle, border: wireframe.border)
+
+        if let backgroundGradient = wireframe.shapeStyle?.backgroundGradient {
+            let gradientLayer = CAGradientLayer(backgroundGradient)
+            gradientLayer.frame = bounds
+            layer.insertSublayer(gradientLayer, at: 0)
+            backgroundGradientLayer = gradientLayer
+        }
     }
 
     @available(*, unavailable)
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
+    }
+
+    override func layoutSubviews() {
+        super.layoutSubviews()
+        backgroundGradientLayer?.frame = bounds
     }
 }
 
@@ -203,6 +219,33 @@ private final class WebViewWireframeView: UIView {
 }
 
 @available(iOS 13.0, *)
+@MainActor
+private final class EmbeddedContentWireframeView: UIView {
+    init?(_ wireframe: SREmbeddedContentWireframe, frame: CGRect) {
+        guard wireframe.isVisible != false else {
+            return nil
+        }
+
+        super.init(frame: frame)
+        backgroundColor = .clear
+        applyWireframeShapeStyle(wireframe.shapeStyle, border: wireframe.border)
+
+        let label = UILabel(frame: bounds)
+        label.autoresizingMask = [.flexibleWidth, .flexibleHeight]
+        label.text = "Embedded Content"
+        label.textAlignment = .center
+        label.textColor = .black
+        label.font = .systemFont(ofSize: 24)
+        addSubview(label)
+    }
+
+    @available(*, unavailable)
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+}
+
+@available(iOS 13.0, *)
 private extension SRWireframe {
     var absoluteFrame: CGRect {
         switch self {
@@ -211,6 +254,7 @@ private extension SRWireframe {
         case .imageWireframe(let value): value.absoluteFrame
         case .placeholderWireframe(let value): value.absoluteFrame
         case .webviewWireframe(let value): value.absoluteFrame
+        case .embeddedContentWireframe(let value): value.absoluteFrame
         }
     }
 }
@@ -263,6 +307,13 @@ private extension SRPlaceholderWireframe {
 
 @available(iOS 13.0, *)
 private extension SRWebviewWireframe {
+    var absoluteFrame: CGRect {
+        CGRect(x: CGFloat(x), y: CGFloat(y), width: CGFloat(width), height: CGFloat(height))
+    }
+}
+
+@available(iOS 13.0, *)
+private extension SREmbeddedContentWireframe {
     var absoluteFrame: CGRect {
         CGRect(x: CGFloat(x), y: CGFloat(y), width: CGFloat(width), height: CGFloat(height))
     }
@@ -323,6 +374,27 @@ private extension NSLineBreakMode {
             self = .byTruncatingMiddle
         case nil:
             self = .byWordWrapping
+        }
+    }
+}
+
+private extension CAGradientLayer {
+    convenience init(_ gradient: SRShapeGradient) {
+        self.init()
+
+        switch gradient {
+        case .linear(let gradient):
+            type = .axial
+            colors = gradient.stops.map { UIColor(hexString: $0.color).cgColor }
+            locations = gradient.stops.map { NSNumber(value: $0.position) }
+            startPoint = CGPoint(
+                x: CGFloat(gradient.startPoint.x),
+                y: CGFloat(gradient.startPoint.y)
+            )
+            endPoint = CGPoint(
+                x: CGFloat(gradient.endPoint.x),
+                y: CGFloat(gradient.endPoint.y)
+            )
         }
     }
 }

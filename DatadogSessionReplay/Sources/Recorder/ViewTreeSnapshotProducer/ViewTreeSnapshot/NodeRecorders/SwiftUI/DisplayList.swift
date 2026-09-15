@@ -11,7 +11,6 @@ import SwiftUI
 import UIKit
 import QuartzCore
 
-@available(iOS 13.0, tvOS 13.0, *)
 internal struct DisplayList {
     internal struct Identity: Hashable {
         let value: UInt32
@@ -55,9 +54,6 @@ internal struct DisplayList {
 
             /// Original view's `.isHidden`.
             let isHidden: Bool
-
-            /// Original view's `.intrinsicContentSize`.
-            let intrinsicContentSize: CGSize
         }
 
         let viewCache: ViewCache

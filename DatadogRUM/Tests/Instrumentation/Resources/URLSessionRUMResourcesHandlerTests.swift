@@ -17,6 +17,7 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
         rumAttributesProvider: RUM.ResourceAttributesProvider? = nil,
         distributedTracing: DistributedTracing? = nil,
         headerProcessor: HeaderProcessor? = nil,
+        disallowList: DisallowList? = nil,
         telemetry: Telemetry = NOPTelemetry()
     ) -> URLSessionRUMResourcesHandler {
         let handler = URLSessionRUMResourcesHandler(
@@ -24,6 +25,7 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
             rumAttributesProvider: rumAttributesProvider,
             distributedTracing: distributedTracing,
             headerProcessor: headerProcessor,
+            disallowList: disallowList,
             telemetry: telemetry
         )
         handler.publish(to: commandSubscriber)
@@ -635,6 +637,60 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
         XCTAssertNotEqual(resourceStopCommand.size, taskInterception.metrics?.responseBodySize?.decoded, "Should not use metrics.responseBodySize?.decoded when it is 0")
     }
 
+    func testGivenTaskInterceptionWithLocalCacheHitMetrics_whenInterceptionCompletes_itSetsLocalCacheHitAttribute() throws {
+        let receiveCommand = expectation(description: "Receive RUMStopResourceCommand")
+        var stopResourceCommand: RUMStopResourceCommand?
+        commandSubscriber.onCommandReceived = { command in
+            if let command = command as? RUMStopResourceCommand {
+                stopResourceCommand = command
+                receiveCommand.fulfill()
+            }
+        }
+
+        // Given
+        let taskInterception = URLSessionTaskInterception(request: .mockAny(), isFirstParty: .random(), trackingMode: .registeredDelegate)
+        let resourceMetrics = ResourceMetrics.mockWith(isLocalCacheHit: true)
+        taskInterception.register(metrics: resourceMetrics)
+        let response: HTTPURLResponse = .mockResponseWith(statusCode: 200)
+        taskInterception.register(response: response, error: nil)
+
+        // When
+        handler.interceptionDidComplete(interception: taskInterception)
+
+        // Then
+        waitForExpectations(timeout: 0.5, handler: nil)
+
+        let attributes = try XCTUnwrap(stopResourceCommand?.attributes)
+        XCTAssertEqual(attributes[CrossPlatformAttributes.localCacheHit] as? Bool, true)
+    }
+
+    func testGivenTaskInterceptionWithoutLocalCacheHitMetrics_whenInterceptionCompletes_itOmitsLocalCacheHitAttribute() throws {
+        let receiveCommand = expectation(description: "Receive RUMStopResourceCommand")
+        var stopResourceCommand: RUMStopResourceCommand?
+        commandSubscriber.onCommandReceived = { command in
+            if let command = command as? RUMStopResourceCommand {
+                stopResourceCommand = command
+                receiveCommand.fulfill()
+            }
+        }
+
+        // Given
+        let taskInterception = URLSessionTaskInterception(request: .mockAny(), isFirstParty: .random(), trackingMode: .registeredDelegate)
+        let resourceMetrics = ResourceMetrics.mockWith(isLocalCacheHit: false)
+        taskInterception.register(metrics: resourceMetrics)
+        let response: HTTPURLResponse = .mockResponseWith(statusCode: 200)
+        taskInterception.register(response: response, error: nil)
+
+        // When
+        handler.interceptionDidComplete(interception: taskInterception)
+
+        // Then
+        waitForExpectations(timeout: 0.5, handler: nil)
+
+        let attributes = try XCTUnwrap(stopResourceCommand?.attributes)
+        XCTAssertNil(attributes[CrossPlatformAttributes.localCacheHit])
+    }
+
     func testGivenTaskInterceptionWithMetricsAndError_whenInterceptionCompletes_itStopsRUMResourceWithErrorAndMetrics() throws {
         let receiveCommands = expectation(description: "Receive 2 RUM commands")
         receiveCommands.expectedFulfillmentCount = 2
@@ -672,6 +728,32 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
         XCTAssertEqual(resourceStopCommand.errorSource, .network)
         XCTAssertEqual(resourceStopCommand.stack, DDError(error: taskError).stack)
         XCTAssertNil(resourceStopCommand.httpStatusCode)
+    }
+
+    func testGivenTaskInterceptionWithLocalCacheHitMetricsAndError_whenInterceptionCompletes_itOmitsLocalCacheHitAttributeFromErrorCommand() throws {
+        let receiveCommands = expectation(description: "Receive 2 RUM commands")
+        receiveCommands.expectedFulfillmentCount = 2
+        var commandsReceived: [RUMCommand] = []
+        commandSubscriber.onCommandReceived = { command in
+            commandsReceived.append(command)
+            receiveCommands.fulfill()
+        }
+
+        // Given
+        let taskInterception = URLSessionTaskInterception(request: .mockAny(), isFirstParty: .random(), trackingMode: .mockRandom())
+        let taskError = NSError(domain: "domain", code: 123, userInfo: [NSLocalizedDescriptionKey: "network error"])
+        let resourceMetrics = ResourceMetrics.mockWith(isLocalCacheHit: true)
+        taskInterception.register(metrics: resourceMetrics)
+        taskInterception.register(response: nil, error: taskError)
+
+        // When
+        handler.interceptionDidComplete(interception: taskInterception)
+
+        // Then
+        waitForExpectations(timeout: 0.5, handler: nil)
+
+        let resourceStopCommand = try XCTUnwrap(commandsReceived[1] as? RUMStopResourceWithErrorCommand)
+        XCTAssertNil(resourceStopCommand.attributes[CrossPlatformAttributes.localCacheHit])
     }
 
     // MARK: - RUM Resource Attributes Provider
@@ -1234,6 +1316,53 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
         waitForExpectations(timeout: 0.5, handler: nil)
 
         XCTAssertNil(stopResourceCommand?.attributes[CrossPlatformAttributes.graphqlErrors])
+    }
+
+    // MARK: - Disallow List
+
+    func testGivenDisallowedURL_whenInterceptionStartsAndCompletes_itDoesNotSendAnyRUMCommand() throws {
+        // Given
+        let handler = createHandler(disallowList: DisallowList(["https://excluded.example.com/"]))
+        commandSubscriber.onCommandReceived = { _ in XCTFail("No RUM command should be sent for a disallowed URL") }
+
+        let request: ImmutableRequest = .mockWith(url: URL(string: "https://excluded.example.com/")!)
+        let taskInterception = URLSessionTaskInterception(request: request, isFirstParty: .random(), trackingMode: .mockRandom())
+        taskInterception.register(metrics: .mockAny())
+        taskInterception.register(response: .mockResponseWith(statusCode: 200), error: nil)
+
+        // When & Then (fails via `onCommandReceived` above if any RUM command is sent)
+        handler.interceptionDidStart(interception: taskInterception, capturedStates: [])
+        handler.interceptionDidComplete(interception: taskInterception)
+    }
+
+    func testGivenDisallowedURL_whenInterceptionStarts_itDoesNotRegisterRUMOriginOnInterception() throws {
+        // Given
+        let handler = createHandler(disallowList: DisallowList(["https://excluded.example.com/"]))
+        let request: ImmutableRequest = .mockWith(url: URL(string: "https://excluded.example.com/")!)
+        let taskInterception = URLSessionTaskInterception(request: request, isFirstParty: .random(), trackingMode: .mockRandom())
+
+        // When
+        handler.interceptionDidStart(interception: taskInterception, capturedStates: [])
+
+        // Then
+        XCTAssertNil(taskInterception.origin)
+    }
+
+    func testGivenNonDisallowedURL_whenDisallowListIsConfigured_itStartsRUMResourceAsUsual() throws {
+        let receiveCommand = expectation(description: "Receive RUM command")
+        commandSubscriber.onCommandReceived = { _ in receiveCommand.fulfill() }
+
+        // Given
+        let handler = createHandler(disallowList: DisallowList(["https://excluded.example.com/"]))
+        let request: ImmutableRequest = .mockWith(url: URL(string: "https://allowed.example.com/")!)
+        let taskInterception = URLSessionTaskInterception(request: request, isFirstParty: .random(), trackingMode: .mockRandom())
+
+        // When
+        handler.interceptionDidStart(interception: taskInterception, capturedStates: [])
+
+        // Then
+        waitForExpectations(timeout: 0.5, handler: nil)
+        XCTAssertTrue(commandSubscriber.lastReceivedCommand is RUMStartResourceCommand)
     }
 
     // MARK: - Helper Methods

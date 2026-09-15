@@ -72,6 +72,8 @@ private extension SRWireframe {
             return placeholder.toFrame()
         case .webviewWireframe(value: let webview):
             return webview.toFrame()
+        case .embeddedContentWireframe(value: let embeddedContent):
+            return embeddedContent.toFrame()
         }
     }
 }
@@ -146,6 +148,28 @@ private extension SRWebviewWireframe {
             clip: clip,
             content: .init(
                 text: "WKWebView",
+                textStyle: nil,
+                textPosition: SRTextPosition(
+                    alignment: SRTextPosition.Alignment(horizontal: .center, vertical: .center),
+                    padding: nil
+                )
+            )
+        )
+    }
+}
+
+private extension SREmbeddedContentWireframe {
+    func toFrame() -> BlueprintFrame {
+        BlueprintFrame(
+            x: x,
+            y: y,
+            width: width,
+            height: height,
+            border: border,
+            style: shapeStyle,
+            clip: clip,
+            content: .init(
+                text: "Embedded Content",
                 textStyle: nil,
                 textPosition: SRTextPosition(
                     alignment: SRTextPosition.Alignment(horizontal: .center, vertical: .center),

@@ -5,6 +5,7 @@
  */
 
 import Foundation
+@_spi(Internal)
 import DatadogInternal
 
 /// `Encodable` representation of log. It gets sanitized before encoding.
@@ -323,51 +324,71 @@ internal struct LogEventEncoder {
         }
 
         // Encode attributes...
-        // Individual attribute encoding failures are caught and logged, allowing the event to be sent
-        // with all successfully encoded attributes. This prevents a single malformed attribute from
-        // causing the entire event to be dropped.
+        // The first attempt encodes attributes directly. If one fails, a fresh attempt isolates all
+        // attribute failures so malformed values cannot corrupt the event encoder.
         var attributesContainer = encoder.container(keyedBy: DynamicCodingKey.self)
+        let shouldRecover = encoder.shouldRecoverAttributeFailures
 
         // 1. user info attributes
-        log.userInfo.extraInfo.forEach { name, value in
+        try log.userInfo.extraInfo.forEach { name, value in
             let key = DynamicCodingKey("usr.\(name)")
-            attributesContainer.encodeAttribute(
+            if shouldRecover, StaticCodingKeys(stringValue: key.stringValue) != nil {
+                return
+            }
+
+            try attributesContainer.encodeAttribute(
                 AnyEncodable(value),
                 forKey: key,
                 attributeName: name,
-                context: .userInfo
+                context: .userInfo,
+                shouldRecover: shouldRecover
             )
         }
 
         // 2. account info attributes
-        log.accountInfo?.extraInfo.forEach { name, value in
+        try log.accountInfo?.extraInfo.forEach { name, value in
             let key = DynamicCodingKey("account.\(name)")
-            attributesContainer.encodeAttribute(
+            if shouldRecover, StaticCodingKeys(stringValue: key.stringValue) != nil {
+                return
+            }
+
+            try attributesContainer.encodeAttribute(
                 AnyEncodable(value),
                 forKey: key,
                 attributeName: name,
-                context: .accountInfo
+                context: .accountInfo,
+                shouldRecover: shouldRecover
             )
         }
 
         // 3. user attributes
-        log.attributes.userAttributes.forEach { name, value in
-            attributesContainer.encodeAttribute(
+        try log.attributes.userAttributes.forEach { name, value in
+            if shouldRecover, StaticCodingKeys(stringValue: name) != nil {
+                return
+            }
+
+            try attributesContainer.encodeAttribute(
                 AnyEncodable(value),
                 forKey: DynamicCodingKey(name),
                 attributeName: name,
-                context: .custom
+                context: .custom,
+                shouldRecover: shouldRecover
             )
         }
 
         // 4. internal attributes
         if let internalAttributes = log.attributes.internalAttributes {
-            internalAttributes.forEach { name, value in
-                attributesContainer.encodeAttribute(
+            try internalAttributes.forEach { name, value in
+                if shouldRecover, StaticCodingKeys(stringValue: name) != nil {
+                    return
+                }
+
+                try attributesContainer.encodeAttribute(
                     AnyEncodable(value),
                     forKey: DynamicCodingKey(name),
                     attributeName: name,
-                    context: .internal
+                    context: .internal,
+                    shouldRecover: shouldRecover
                 )
             }
         }

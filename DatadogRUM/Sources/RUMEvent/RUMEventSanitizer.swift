@@ -91,3 +91,11 @@ extension RUMResourceEvent: RUMSanitizableEvent {}
 extension RUMErrorEvent: RUMSanitizableEvent {}
 
 extension RUMLongTaskEvent: RUMSanitizableEvent {}
+
+extension RUMVitalAppLaunchEvent: RUMSanitizableEvent {}
+
+extension RUMVitalOperationStepEvent: RUMSanitizableEvent {}
+
+extension RUMTimeseriesMemoryEvent: RUMSanitizableEvent {}
+
+extension RUMTimeseriesCpuEvent: RUMSanitizableEvent {}

@@ -1157,13 +1157,15 @@ extension RUMScopeDependencies {
         },
         appStateManager: AppStateManaging = AppStateManagerMock(),
         watchdogTermination: WatchdogTerminationMonitor? = nil,
+        featureFlags: RUM.Configuration.FeatureFlags = .defaults,
         networkSettledMetricFactory: @escaping (Date, String) -> TNSMetricTracking = {
             TNSMetric(viewName: $1, viewStartDate: $0, resourcePredicate: TimeBasedTNSResourcePredicate())
         },
         interactionToNextViewMetricFactory: @escaping () -> INVMetricTracking = {
             INVMetric(predicate: TimeBasedINVActionPredicate())
         },
-        sessionType: RUMSessionType? = nil
+        sessionType: RUMSessionType? = nil,
+        timeseriesCollector: TimeseriesCollecting? = nil
     ) -> RUMScopeDependencies {
         return RUMScopeDependencies(
             featureScope: featureScope,
@@ -1191,9 +1193,11 @@ extension RUMScopeDependencies {
             viewEndedMetricFactory: viewEndedMetricFactory,
             appStateManager: appStateManager,
             watchdogTermination: watchdogTermination,
+            featureFlags: featureFlags,
             networkSettledMetricFactory: networkSettledMetricFactory,
             interactionToNextViewMetricFactory: interactionToNextViewMetricFactory,
-            sessionType: sessionType
+            sessionType: sessionType,
+            timeseriesCollector: timeseriesCollector
         )
     }
 
@@ -1223,6 +1227,7 @@ extension RUMScopeDependencies {
         viewEndedMetricFactory: (() -> ViewEndedController)? = nil,
         appStateManager: AppStateManager? = nil,
         watchdogTermination: WatchdogTerminationMonitor? = nil,
+        featureFlags: RUM.Configuration.FeatureFlags? = nil,
         networkSettledMetricFactory: ((Date, String) -> TNSMetricTracking)? = nil,
         interactionToNextViewMetricFactory: (() -> INVMetricTracking)? = nil,
         sessionType: RUMSessionType? = nil
@@ -1253,6 +1258,7 @@ extension RUMScopeDependencies {
             viewEndedMetricFactory: viewEndedMetricFactory ?? self.viewEndedMetricFactory,
             appStateManager: appStateManager ?? self.appStateManager,
             watchdogTermination: watchdogTermination ?? self.watchdogTermination,
+            featureFlags: featureFlags ?? self.featureFlags,
             networkSettledMetricFactory: networkSettledMetricFactory ?? self.networkSettledMetricFactory,
             interactionToNextViewMetricFactory: interactionToNextViewMetricFactory ?? self.interactionToNextViewMetricFactory,
             sessionType: sessionType
@@ -1555,6 +1561,7 @@ public class RUMActionsHandlerMock: RUMActionsHandling {
         onViewModifierTapped?(actionName, actionAttributes)
     }
 }
+#endif
 
 public class SamplingBasedVitalReaderMock: SamplingBasedVitalReader {
     public var vitalData: Double?
@@ -1587,7 +1594,6 @@ public class ContinuousVitalReaderMock: ContinuousVitalReader {
         }
     }
 }
-#endif
 
 extension TelemetryReceiver: AnyMockable {
     public static func mockAny() -> Self { .mockWith() }
@@ -1709,7 +1715,8 @@ extension AppHang.BacktraceGenerationResult: AnyMockable, RandomMockable {
         return [
             .succeeded(.mockRandom()),
             .failed,
-            .notAvailable
+            .notAvailable,
+            .disabled
         ].randomElement()!
     }
 }
@@ -1844,7 +1851,8 @@ extension RUMCoreContext: AnyMockable, RandomMockable {
         viewID: String? = .mockAny(),
         userActionID: String? = nil,
         serverTimeOffset: TimeInterval = .mockAny(),
-        viewPath: String? = .mockAny()
+        viewPath: String? = .mockAny(),
+        viewName: String? = nil
     ) -> Self {
         .init(
             applicationID: applicationID,
@@ -1853,7 +1861,8 @@ extension RUMCoreContext: AnyMockable, RandomMockable {
             viewID: viewID,
             userActionID: userActionID,
             viewServerTimeOffset: serverTimeOffset,
-            viewPath: viewPath
+            viewPath: viewPath,
+            viewName: viewName
         )
     }
 
@@ -1864,7 +1873,8 @@ extension RUMCoreContext: AnyMockable, RandomMockable {
             viewID: .mockRandom(),
             userActionID: .mockRandom(),
             serverTimeOffset: .mockRandom(),
-            viewPath: .mockRandom()
+            viewPath: .mockRandom(),
+            viewName: .mockRandom()
         )
     }
 }

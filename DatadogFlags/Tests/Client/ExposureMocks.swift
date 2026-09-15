@@ -18,6 +18,7 @@ extension ExposureEvent: AnyMockable, RandomMockable {
             allocation: .mockAny(),
             flag: .mockAny(),
             variant: .mockAny(),
+            serialID: nil,
             subject: .mockAny()
         )
     }
@@ -28,6 +29,7 @@ extension ExposureEvent: AnyMockable, RandomMockable {
             allocation: .mockRandom(),
             flag: .mockRandom(),
             variant: .mockRandom(),
+            serialID: .mockRandom(),
             subject: .mockRandom()
         )
     }

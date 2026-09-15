@@ -10,10 +10,8 @@ import DatadogInternal
 import Foundation
 import SwiftUI
 
-@available(iOS 13.0, *)
 extension SwiftUI.Path: DatadogExtended {}
 
-@available(iOS 13.0, *)
 extension DatadogExtension where ExtendedType == SwiftUI.Path {
     var svgString: String {
         var d = ""

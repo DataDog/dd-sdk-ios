@@ -5,12 +5,13 @@
  */
 
 #if os(iOS)
+import TestUtilities
 import Testing
 @_spi(Internal)
 @testable import DatadogSessionReplay
 
+@Suite(.datadogTesting)
 struct DiffSRCompositionTreeTests {
-    @available(iOS 13.0, tvOS 13.0, *)
     @Test("Composition tree mutation is nil when unchanged")
     func compositionTreeMutationIsNilWhenUnchanged() throws {
         // Given
@@ -28,7 +29,6 @@ struct DiffSRCompositionTreeTests {
         #expect(mutation == nil)
     }
 
-    @available(iOS 13.0, tvOS 13.0, *)
     @Test("Composition tree mutation replaces root when root changes")
     func compositionTreeMutationReplacesRootWhenRootChanges() throws {
         // Given
@@ -51,7 +51,6 @@ struct DiffSRCompositionTreeTests {
         #expect(mutation.updates == nil)
     }
 
-    @available(iOS 13.0, tvOS 13.0, *)
     @Test("Composition tree mutation includes layer additions, removals, and updates")
     func compositionTreeMutationIncludesLayerAdditionsRemovalsAndUpdates() throws {
         // Given
@@ -95,7 +94,6 @@ struct DiffSRCompositionTreeTests {
         #expect(update.y == nil)
     }
 
-    @available(iOS 13.0, tvOS 13.0, *)
     @Test("Composition tree mutation ignores non-root layer list order")
     func compositionTreeMutationIgnoresNonRootLayerListOrder() throws {
         // Given
@@ -120,7 +118,6 @@ struct DiffSRCompositionTreeTests {
         #expect(mutation == nil)
     }
 
-    @available(iOS 13.0, tvOS 13.0, *)
     @Test("Composition layer mutation skips unchanged fields")
     func compositionLayerMutationSkipsUnchangedFields() throws {
         // Given
@@ -149,7 +146,6 @@ struct DiffSRCompositionTreeTests {
         #expect(mutation.y == nil)
     }
 
-    @available(iOS 13.0, tvOS 13.0, *)
     @Test("Composition layer mutation includes changed fields")
     func compositionLayerMutationIncludesChangedFields() throws {
         // Given
@@ -165,7 +161,7 @@ struct DiffSRCompositionTreeTests {
         )
         let newLayer = SRCompositionLayer(
             children: [.init(id: 2, type: .layer)],
-            compositeOperation: .plusDarker,
+            compositeOperation: .destinationOut,
             height: 110,
             id: 42,
             modifiers: [.compositionLayerGaussianBlurModifier(value: .init(radius: 4))],
@@ -180,7 +176,7 @@ struct DiffSRCompositionTreeTests {
         // Then
         #expect(mutation.id == 42)
         #expect(mutation.children == newLayer.children)
-        #expect(mutation.compositeOperation == .plusDarker)
+        #expect(mutation.compositeOperation == .destinationOut)
         #expect(mutation.height == 110)
         #expect(mutation.modifiers == newLayer.modifiers)
         #expect(mutation.width == 220)
@@ -188,7 +184,6 @@ struct DiffSRCompositionTreeTests {
         #expect(mutation.y == 25)
     }
 
-    @available(iOS 13.0, tvOS 13.0, *)
     @Test("Composition layer mutation clears children with empty array")
     func compositionLayerMutationClearsChildrenWithEmptyArray() throws {
         // Given
@@ -217,7 +212,6 @@ struct DiffSRCompositionTreeTests {
         #expect(mutation.children?.isEmpty == true)
     }
 
-    @available(iOS 13.0, tvOS 13.0, *)
     @Test("Composition layer mutation clears modifiers with empty array")
     func compositionLayerMutationClearsModifiersWithEmptyArray() throws {
         // Given
@@ -247,7 +241,6 @@ struct DiffSRCompositionTreeTests {
         #expect(mutation.modifiers?.isEmpty == true)
     }
 
-    @available(iOS 13.0, tvOS 13.0, *)
     @Test("Composition layer mutation clears composite operation with source-over")
     func compositionLayerMutationClearsCompositeOperationWithSourceOver() throws {
         // Given
@@ -277,7 +270,6 @@ struct DiffSRCompositionTreeTests {
         #expect(mutation.compositeOperation == .sourceOver)
     }
 
-    @available(iOS 13.0, tvOS 13.0, *)
     @Test("Composition layer mutation throws when IDs differ")
     func compositionLayerMutationThrowsWhenIDsDiffer() {
         // Given

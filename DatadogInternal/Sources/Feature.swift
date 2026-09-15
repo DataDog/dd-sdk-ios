@@ -7,6 +7,8 @@
 import Foundation
 
 public enum Feature {
+    public static let crashReporting = "crash-reporter"
+
     public static let networkInstrumentation = "network-instrumentation"
 
     public static let rum = "rum"

@@ -6,31 +6,34 @@
 
 #if os(iOS)
 import Foundation
+import UIKit
 import WebKit
 
+@_spi(Internal)
+import DatadogInternal
+
 /// Snapshot of a layer tree and the recording context used to capture it.
-@available(iOS 13.0, tvOS 13.0, *)
 internal struct LayerTreeSnapshot: Sendable {
     let date: Date
     let context: LayerRecordingContext
     let viewportSize: CGSize
     var root: CALayerSnapshot
     let webViewSlotIDs: Set<Int>
+    let embeddedContentSlots: [Int64: String]
 }
 
 /// Creates layer tree snapshots on the main actor.
-@available(iOS 13.0, tvOS 13.0, *)
 @MainActor
 internal protocol LayerTreeSnapshotBuilding: AnyObject {
     func takeSnapshot(context: LayerRecordingContext) -> LayerTreeSnapshot?
 }
 
 /// Builds immutable snapshots from the current root layer.
-@available(iOS 13.0, tvOS 13.0, *)
 @MainActor
 internal final class LayerTreeSnapshotBuilder: LayerTreeSnapshotBuilding {
     private let layerProvider: any LayerProvider
     private let webViewCache: NSHashTable<WKWebView> = .weakObjects()
+    private let embeddedContentViewCache: NSHashTable<UIView> = .weakObjects()
 
     init(layerProvider: any LayerProvider) {
         self.layerProvider = layerProvider
@@ -44,7 +47,8 @@ internal final class LayerTreeSnapshotBuilder: LayerTreeSnapshotBuilding {
         let snapshotContext = CALayerSnapshot.Context(
             textAndInputPrivacyLevel: context.textAndInputPrivacy,
             imagePrivacyLevel: context.imagePrivacy,
-            webViewCache: webViewCache
+            webViewCache: webViewCache,
+            embeddedContentViewCache: embeddedContentViewCache
         )
 
         guard let root = CALayerSnapshot(from: rootLayer, in: snapshotContext) else {
@@ -56,8 +60,22 @@ internal final class LayerTreeSnapshotBuilder: LayerTreeSnapshotBuilding {
             context: context,
             viewportSize: rootLayer.bounds.size,
             root: root,
-            webViewSlotIDs: Set(webViewCache.allObjects.map(\.hash))
+            webViewSlotIDs: Set(webViewCache.allObjects.map(\.hash)),
+            embeddedContentSlots: Dictionary(
+                embeddedContentViewCache
+                    .allObjects
+                    .compactMap(\.embeddedContentSlot),
+                uniquingKeysWith: { existing, _ in existing }
+            )
         )
+    }
+}
+
+extension UIView {
+    fileprivate var embeddedContentSlot: (Int64, String)? {
+        self.dd.sessionReplaySlotID.map {
+            (self.layer.replayID, $0)
+        }
     }
 }
 #endif

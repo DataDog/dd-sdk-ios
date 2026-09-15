@@ -4,11 +4,12 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
+import TestUtilities
 import Testing
 import DatadogInternal
 
+@Suite(.datadogTesting)
 struct HeatmapIdentifierTests {
-    @available(iOS 13.0, tvOS 13.0, *)
     @Test("Produces a 32 lowercase hex character string")
     func identifierIs32LowercaseHexCharacters() {
         let identifier = HeatmapIdentifier(
@@ -22,7 +23,6 @@ struct HeatmapIdentifierTests {
         #expect(identifier.rawValue.allSatisfy { $0.isHexDigit })
     }
 
-    @available(iOS 13.0, tvOS 13.0, *)
     @Test("Same inputs produce the same identifier")
     func sameInputsProduceSameIdentifier() {
         let a = HeatmapIdentifier(
@@ -39,7 +39,6 @@ struct HeatmapIdentifierTests {
         #expect(a == b)
     }
 
-    @available(iOS 13.0, tvOS 13.0, *)
     @Test("Canonical path is hashed correctly")
     func canonicalPathProducesExpectedHash() {
         let identifier = HeatmapIdentifier(

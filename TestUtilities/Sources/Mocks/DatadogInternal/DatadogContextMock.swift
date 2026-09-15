@@ -41,6 +41,7 @@ extension DatadogContext: AnyMockable, RandomMockable {
         batteryStatus: BatteryStatus? = .mockAny(),
         brightnessLevel: BrightnessLevel? = .mockAny(),
         isLowPowerModeEnabled: Bool = false,
+        remoteConfigurationId: String? = nil,
         additionalContext: [AdditionalContext] = []
     ) -> DatadogContext {
         var context = DatadogContext(
@@ -73,7 +74,8 @@ extension DatadogContext: AnyMockable, RandomMockable {
             carrierInfo: carrierInfo,
             batteryStatus: batteryStatus,
             brightnessLevel: brightnessLevel,
-            isLowPowerModeEnabled: isLowPowerModeEnabled
+            isLowPowerModeEnabled: isLowPowerModeEnabled,
+            remoteConfigurationId: remoteConfigurationId
         )
 
         additionalContext.forEach { context.set(additionalContext: $0) }
@@ -109,7 +111,8 @@ extension DatadogContext: AnyMockable, RandomMockable {
             networkConnectionInfo: .mockRandom(),
             carrierInfo: .mockRandom(),
             batteryStatus: nil,
-            isLowPowerModeEnabled: .mockRandom()
+            isLowPowerModeEnabled: .mockRandom(),
+            remoteConfigurationId: .mockRandom()
         )
     }
 }

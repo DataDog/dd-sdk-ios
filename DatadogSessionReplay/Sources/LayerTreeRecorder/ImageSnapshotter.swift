@@ -11,7 +11,6 @@ import QuartzCore
 import UIKit
 
 /// Captures rendered image snapshots from layer snapshot requests.
-@available(iOS 13.0, tvOS 13.0, *)
 internal protocol ImageSnapshotting: AnyObject {
     /// Renders images for the optimized layer tree within the given time budget.
     @MainActor
@@ -23,7 +22,6 @@ internal protocol ImageSnapshotting: AnyObject {
 }
 
 /// Rendered snapshots produced by `ImageSnapshotter`.
-@available(iOS 13.0, tvOS 13.0, *)
 internal struct ImageSnapshotBatch: Sendable {
     let contentSnapshots: [Int64: ContentSnapshotResult]
     let maskSnapshots: [Int64: MaskSnapshotResult]
@@ -37,7 +35,6 @@ internal struct ImageSnapshotBatch: Sendable {
     }
 }
 
-@available(iOS 13.0, tvOS 13.0, *)
 @MainActor
 internal final class ImageSnapshotter: ImageSnapshotting {
     private enum Constants {
@@ -78,7 +75,7 @@ internal final class ImageSnapshotter: ImageSnapshotting {
         let requests = root.imageSnapshotRequests(for: changeset, cache: cache)
         cache.updateFrameNumber(for: requests)
 
-        guard let rootLayer = root.layer.resolve(), !requests.isEmpty else {
+        guard !requests.isEmpty else {
             return .init()
         }
 
@@ -104,7 +101,7 @@ internal final class ImageSnapshotter: ImageSnapshotting {
 
             switch request {
             case .content(let request):
-                contentSnapshots[request.replayID] = takeContentSnapshot(for: request, rootLayer: rootLayer)
+                contentSnapshots[request.replayID] = takeContentSnapshot(for: request)
             case .mask(let request):
                 maskSnapshots[request.replayID] = takeMaskSnapshot(for: request)
             }
@@ -138,18 +135,15 @@ internal final class ImageSnapshotter: ImageSnapshotting {
         return .init(contentSnapshots: contentSnapshots, maskSnapshots: maskSnapshots)
     }
 
-    private func takeContentSnapshot(
-        for request: ContentSnapshotRequest,
-        rootLayer: CALayer
-    ) -> ContentSnapshotResult {
+    private func takeContentSnapshot(for request: ContentSnapshotRequest) -> ContentSnapshotResult {
         do {
-            let resolvedRequest = try request.resolved(relativeTo: rootLayer)
+            let resolvedRequest = try request.resolved()
             let snapshot: ContentSnapshot
 
             if !resolvedRequest.needsSnapshot, let cachedSnapshot = request.previousSnapshotData?.snapshot {
                 snapshot = ContentSnapshot(
                     image: cachedSnapshot.image,
-                    frame: resolvedRequest.frame,
+                    frame: resolvedRequest.geometry.frame,
                     layerClass: request.layerClass,
                     delegateClass: request.delegateClass,
                     hasLayerSemantics: request.hasLayerSemantics,
@@ -160,10 +154,10 @@ internal final class ImageSnapshotter: ImageSnapshotting {
                 snapshot = ContentSnapshot(
                     image: try renderImage(
                         for: resolvedRequest.layer,
-                        in: resolvedRequest.localRect,
-                        opaque: request.isOpaque
+                        in: resolvedRequest.geometry.localRect,
+                        opaque: request.isOpaque && resolvedRequest.geometry.renderBounds.equalTo(request.bounds)
                     ),
-                    frame: resolvedRequest.frame,
+                    frame: resolvedRequest.geometry.frame,
                     layerClass: request.layerClass,
                     delegateClass: request.delegateClass,
                     hasLayerSemantics: request.hasLayerSemantics,
@@ -175,7 +169,8 @@ internal final class ImageSnapshotter: ImageSnapshotting {
             cache.setContentSnapshotData(
                 .init(
                     snapshot: snapshot,
-                    localRect: resolvedRequest.localRect,
+                    localRect: resolvedRequest.geometry.localRect,
+                    renderBounds: resolvedRequest.geometry.renderBounds,
                     bounds: request.bounds,
                     dependencies: request.dependencies
                 ),
@@ -241,8 +236,11 @@ internal final class ImageSnapshotter: ImageSnapshotting {
 
     private func renderImage(for layer: CALayer, in rect: CGRect, opaque: Bool) throws -> UIImage {
         let format = UIGraphicsImageRendererFormat.default()
-        format.scale = scale ?? layer.contentsScale
         format.opaque = opaque
+
+        if let scale {
+            format.scale = scale
+        }
 
         let renderer = UIGraphicsImageRenderer(size: rect.size, format: format)
         return try screenChangeFilter.ignoringChanges {
@@ -257,8 +255,11 @@ internal final class ImageSnapshotter: ImageSnapshotting {
 
     private func renderMaskImage(for layer: CALayer, in bounds: CGRect, frame: CGRect) throws -> UIImage {
         let format = UIGraphicsImageRendererFormat.default()
-        format.scale = scale ?? layer.contentsScale
         format.opaque = false
+
+        if let scale {
+            format.scale = scale
+        }
 
         let renderer = UIGraphicsImageRenderer(size: bounds.size, format: format)
         return try screenChangeFilter.ignoringChanges {

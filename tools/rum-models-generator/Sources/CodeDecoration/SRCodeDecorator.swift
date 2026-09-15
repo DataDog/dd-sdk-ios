@@ -23,6 +23,7 @@ public class SRCodeDecorator: SwiftCodeDecorator {
                 "SRImageWireframe",
                 "SRPlaceholderWireframe",
                 "SRWebviewWireframe",
+                "SREmbeddedContentWireframe",
                 // For convenience, make fat `*Record` structures to be root types:
                 "SRFullSnapshotRecord",
                 "SRIncrementalSnapshotRecord",
@@ -41,6 +42,11 @@ public class SRCodeDecorator: SwiftCodeDecorator {
                 "SRShapeStyle",
                 "SRTextPosition",
                 "SRTextStyle",
+                // Detach shape gradient types to shared, root-level definitions:
+                "SRShapeGradient",
+                "SRShapeLinearGradient",
+                "SRShapeGradientPoint",
+                "SRShapeGradientStop",
                 // Detach composition tree types to shared, root-level definitions:
                 "SRCompositionTree",
                 "SRCompositionLayer",
@@ -54,7 +60,6 @@ public class SRCodeDecorator: SwiftCodeDecorator {
                 "SRCompositionLayerShadowModifier",
                 "SRCompositionLayerBrightnessBiasModifier",
                 "SRCompositionLayerSaturateModifier",
-                "SRCompositionLayerBackgroundMaterialModifier",
                 "SRCompositionLayerMaskImageModifier",
                 "SRCompositionLayerUpdate",
                 "SRCompositionTreeMutationData",
@@ -94,7 +99,20 @@ public class SRCodeDecorator: SwiftCodeDecorator {
     override public func transform(associatedTypeEnum: SwiftAssociatedTypeEnum) throws -> SwiftAssociatedTypeEnum {
         var transformed = try super.transform(associatedTypeEnum: associatedTypeEnum)
 
+        if transformed.name == "SRWireframe" {
+            transformed = addDiscriminator("type", to: transformed, basedOn: associatedTypeEnum)
+        }
+
+        if transformed.name == "Updates", canAddDiscriminator("type", to: associatedTypeEnum) {
+            transformed = addDiscriminator("type", to: transformed, basedOn: associatedTypeEnum)
+        }
+
         if transformed.name == "SRCompositionLayerModifier" {
+            transformed = addDiscriminator("type", to: transformed, basedOn: associatedTypeEnum)
+            transformed.conformance.append(hashableProtocol)
+        }
+
+        if transformed.name == "SRShapeGradient" {
             transformed = addDiscriminator("type", to: transformed, basedOn: associatedTypeEnum)
             transformed.conformance.append(hashableProtocol)
         }
@@ -122,6 +140,7 @@ public class SRCodeDecorator: SwiftCodeDecorator {
             enumCaseName: enumCaseName
                 .replacingOccurrences(of: "mobile", with: "")
                 .replacingOccurrences(of: "Mobile", with: "") // erase "[M|m]obile" in names
+                .replacingOccurrences(of: "ShapeLinearGradient", with: "linear")
         )
     }
 
@@ -159,6 +178,19 @@ public class SRCodeDecorator: SwiftCodeDecorator {
         }
         if parentWireframe != nil && fixedName == "TextStyle" {
             fixedName = "SRTextStyle"
+        }
+
+        // Detach shape gradient types to shared, root-level definitions.
+        let parentShapeStyle = context.predecessorStruct(matching: { $0.name.lowercased() == "shapestyle" })
+        let parentLinearGradient = context.predecessorStruct(matching: { $0.name.lowercased() == "shapelineargradient" })
+        if parentShapeStyle != nil && fixedName == "BackgroundGradient" {
+            fixedName = "SRShapeGradient"
+        }
+        if parentLinearGradient != nil && (fixedName == "EndPoint" || fixedName == "StartPoint") {
+            fixedName = "SRShapeGradientPoint"
+        }
+        if parentLinearGradient != nil && fixedName == "Stops" {
+            fixedName = "SRShapeGradientStop"
         }
 
         // Detach composition tree types to shared, root-level definitions.
@@ -231,6 +263,12 @@ public class SRCodeDecorator: SwiftCodeDecorator {
             }
             return value == codingKey
         }?.defaultValue
+    }
+
+    private func canAddDiscriminator(_ codingKey: String, to associatedTypeEnum: SwiftAssociatedTypeEnum) -> Bool {
+        !associatedTypeEnum.cases.isEmpty && associatedTypeEnum.cases.allSatisfy {
+            discriminatorValue(for: codingKey, in: $0.associatedType) != nil
+        }
     }
 }
 

@@ -7,12 +7,13 @@
 #if os(iOS)
 import Foundation
 import QuartzCore
+import TestUtilities
 import Testing
 
 @testable import DatadogSessionReplay
 
+@Suite(.datadogTesting)
 struct CALayerSnapshotFilterTests {
-    @available(iOS 13.0, tvOS 13.0, *)
     @Test("Ignores unsupported filter values")
     func ignoresUnsupportedFilterValues() {
         // Given
@@ -25,7 +26,6 @@ struct CALayerSnapshotFilterTests {
         #expect(snapshotFilter == nil)
     }
 
-    @available(iOS 13.0, tvOS 13.0, *)
     @Test("Ignores disabled filters")
     func ignoresDisabledFilters() throws {
         // Given
@@ -39,20 +39,6 @@ struct CALayerSnapshotFilterTests {
         #expect(snapshotFilter == nil)
     }
 
-    @available(iOS 13.0, tvOS 13.0, *)
-    @Test("Captures glass background filter")
-    func capturesGlassBackgroundFilter() throws {
-        // Given
-        let filter = try NSObject.makeCAFilter(type: "glassBackground")
-
-        // When
-        let snapshotFilter = CALayerSnapshot.Filter(filter)
-
-        // Then
-        #expect(snapshotFilter == .glassBackground)
-    }
-
-    @available(iOS 13.0, tvOS 13.0, *)
     @Test("Captures gaussian blur filter", arguments: ["gaussianBlur", "variableBlur"])
     func capturesGaussianBlurFilter(type: String) throws {
         // Given
@@ -67,11 +53,10 @@ struct CALayerSnapshotFilterTests {
         #expect(snapshotFilter == .gaussianBlur(radius))
     }
 
-    @available(iOS 13.0, tvOS 13.0, *)
-    @Test("Captures color matrix filter", arguments: ["colorMatrix", "vibrantColorMatrix"])
-    func capturesColorMatrixFilter(type: String) throws {
+    @Test("Captures color matrix filter")
+    func capturesColorMatrixFilter() throws {
         // Given
-        let filter = try NSObject.makeCAFilter(type: type)
+        let filter = try NSObject.makeCAFilter(type: "colorMatrix")
         // swiftlint:disable multiline_arguments
         let matrix = CALayerSnapshot.ColorMatrix(
             m11: 1, m12: 2, m13: 3, m14: 4, m15: 5,
@@ -89,7 +74,27 @@ struct CALayerSnapshotFilterTests {
         #expect(snapshotFilter == .colorMatrix(matrix))
     }
 
-    @available(iOS 13.0, tvOS 13.0, *)
+    @Test("Captures vibrant color matrix filter")
+    func capturesVibrantColorMatrixFilter() throws {
+        // Given
+        let filter = try NSObject.makeCAFilter(type: "vibrantColorMatrix")
+        // swiftlint:disable multiline_arguments
+        let matrix = CALayerSnapshot.ColorMatrix(
+            m11: 1, m12: 2, m13: 3, m14: 4, m15: 5,
+            m21: 6, m22: 7, m23: 8, m24: 9, m25: 10,
+            m31: 11, m32: 12, m33: 13, m34: 14, m35: 15,
+            m41: 16, m42: 17, m43: 18, m44: 19, m45: 20
+        )
+        // swiftlint:enable multiline_arguments
+        filter.setValue(matrix.nsValue, forKey: "inputColorMatrix")
+
+        // When
+        let snapshotFilter = CALayerSnapshot.Filter(filter)
+
+        // Then
+        #expect(snapshotFilter == .vibrantColorMatrix(matrix))
+    }
+
     @Test("Captures color saturate filter")
     func capturesColorSaturateFilter() throws {
         // Given
@@ -104,7 +109,6 @@ struct CALayerSnapshotFilterTests {
         #expect(snapshotFilter == .saturate(amount))
     }
 
-    @available(iOS 13.0, tvOS 13.0, *)
     @Test("Captures color brightness filter")
     func capturesColorBrightnessFilter() throws {
         // Given
@@ -119,7 +123,6 @@ struct CALayerSnapshotFilterTests {
         #expect(snapshotFilter == .brightness(amount))
     }
 
-    @available(iOS 13.0, tvOS 13.0, *)
     @Test("Captures multiply color filter")
     func capturesMultiplyColorFilter() throws {
         // Given
@@ -134,7 +137,6 @@ struct CALayerSnapshotFilterTests {
         #expect(snapshotFilter == .multiplyColor(color))
     }
 
-    @available(iOS 13.0, tvOS 13.0, *)
     @Test("Captures unknown filter names")
     func capturesUnknownFilterNames() throws {
         // Given
@@ -149,7 +151,6 @@ struct CALayerSnapshotFilterTests {
     }
 }
 
-@available(iOS 13.0, tvOS 13.0, *)
 private extension CALayerSnapshot.ColorMatrix {
     var nsValue: NSValue {
         var value = self

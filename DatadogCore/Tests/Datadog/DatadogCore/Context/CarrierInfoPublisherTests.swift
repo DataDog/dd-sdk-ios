@@ -25,7 +25,16 @@ class CarrierInfoPublisherTests: XCTestCase {
         serviceSubscriberCellularProviders: [:]
     )
 
-    func testGivenCellularServiceAvailable_itProvidesInitialValue() {
+    private var isIOS16OrAbove: Bool {
+        if #available(iOS 16, *) {
+            return true
+        }
+        return false
+    }
+
+    func testGivenCellularServiceAvailable_itProvidesInitialValue() throws {
+        try XCTSkipIf(isIOS16OrAbove, "`CarrierInfo` is always nil on iOS 16+ — see testGivenIOS16OrAbove_itProvidesNoInitialValue")
+
         // Given
         let publisher = CarrierInfoPublisher(networkInfo: availableCTTelephonyNetworkInfo)
 
@@ -35,7 +44,9 @@ class CarrierInfoPublisherTests: XCTestCase {
         XCTAssertEqual(publisher.initialValue?.carrierAllowsVOIP, true)
     }
 
-    func testGivenCellularServiceUnAvailable_itProvidesNoInitialValue() {
+    func testGivenCellularServiceUnAvailable_itProvidesNoInitialValue() throws {
+        try XCTSkipIf(isIOS16OrAbove, "`CarrierInfo` is always nil on iOS 16+ — see testGivenIOS16OrAbove_itProvidesNoInitialValue")
+
         // Given
         let publisher = CarrierInfoPublisher(networkInfo: unavailableCTTelephonyNetworkInfo)
 
@@ -44,6 +55,8 @@ class CarrierInfoPublisherTests: XCTestCase {
     }
 
     func testGivenSubscribedInfoProvider_whenCarrierInfoChanges_itNotifiesSubscriber() throws {
+        try XCTSkipIf(isIOS16OrAbove, "`CarrierInfo` is always nil on iOS 16+ — see testGivenIOS16OrAbove_itNeverNotifiesSubscriber")
+
         let expectation = expectation(description: "Notify `CarrierInfo` change")
         var info: CarrierInfo? = nil
         let publisher = CarrierInfoPublisher(networkInfo: availableCTTelephonyNetworkInfo)
@@ -74,6 +87,37 @@ class CarrierInfoPublisherTests: XCTestCase {
         XCTAssertEqual(info?.carrierISOCountryCode, newISOCountryCode)
         XCTAssertEqual(info?.carrierAllowsVOIP, newAllowsVOIP)
         XCTAssertEqual(info?.radioAccessTechnology, .init(newRadioAccessTechnology))
+    }
+
+    func testGivenIOS16OrAbove_itProvidesNoInitialValue() throws {
+        try XCTSkipIf(!isIOS16OrAbove, "This behavior only applies from iOS 16 onward")
+
+        // Given
+        let publisher = CarrierInfoPublisher(networkInfo: availableCTTelephonyNetworkInfo)
+
+        // Then
+        XCTAssertNil(publisher.initialValue, "`CarrierInfo` must be nil on iOS 16+ since `CTCarrier` is deprecated with no replacement")
+    }
+
+    func testGivenIOS16OrAbove_itNeverNotifiesSubscriber() throws {
+        try XCTSkipIf(!isIOS16OrAbove, "This behavior only applies from iOS 16 onward")
+
+        var receivedUpdate = false
+        let publisher = CarrierInfoPublisher(networkInfo: availableCTTelephonyNetworkInfo)
+
+        // Given
+        publisher.publish { _ in receivedUpdate = true }
+
+        // When
+        availableCTTelephonyNetworkInfo.changeCarrier(
+            newCarrierName: .mockRandom(),
+            newISOCountryCode: .mockRandom(),
+            newAllowsVOIP: .mockRandom(),
+            newRadioAccessTechnology: CTRadioAccessTechnologyLTE
+        )
+
+        // Then
+        XCTAssertFalse(receivedUpdate, "No update should be received on iOS 16+ as there is no subscription set up")
     }
 
     func testDifferentCarrierInfoRadioAccessTechnologies() {

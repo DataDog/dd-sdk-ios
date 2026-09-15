@@ -23,7 +23,7 @@ DatadogRUM/RUM_FEATURE.md
 DatadogSessionReplay/SESSION_REPLAY_FEATURE.md
 DatadogTrace/TRACE_FEATURE.md
 DatadogProfiling/PROFILING_FEATURE.md
-DatadogLogs/LOGS_FEATURE.md            # (future)
+DatadogLogs/LOGS_FEATURE.md
 DatadogWebViewTracking/WEBVIEW_FEATURE.md  # (future)
 ```
 
@@ -53,7 +53,7 @@ Every feature doc contains these core sections, in order. Optional sections are 
 
 ### Overview
 - Brief description of feature purpose
-- Platform availability (iOS, tvOS, watchOS, visionOS)
+- Platform availability — use the format `**Platform**: iOS, tvOS, watchOS, visionOS` (list only platforms declared in the podspec; add a note for platforms where functionality is limited or absent)
 - Key dependencies (e.g. "requires RUM")
 
 ### Quick Start Example
@@ -64,10 +64,10 @@ A complete, compilable Swift code snippet that:
 - Includes optional features (manual control, per-view overrides) where applicable
 
 ### Architecture Overview (optional)
-Use a `## Architecture Overview` section after Quick Start when the feature spans multiple runtime components, message flows, native layers, or cross-feature coordination. Keep it high-level and use "Key Files" for source navigation.
+Use an `## Architecture Overview` section after Quick Start when the feature spans multiple runtime components, message flows, native layers, or cross-feature coordination. Keep it high-level and use "Key Files" for source navigation.
 
 ### Key Files
-Full relative paths from repository root, with a brief description of each file's purpose. Include public API/configuration files and the most useful internal implementation files for navigation. Group by role (Feature Entry Point, Configuration, Public API, Implementation).
+Full relative paths from repository root, with a brief description of each file's purpose. Include public API and configuration files, and the most useful internal implementation files for navigation. Group by role (Feature Entry Point, Configuration, Public API, Implementation).
 
 ### Configuration Categories
 Logical groupings of configuration options (Sampling, Privacy, Performance Monitoring, Event Modification, etc.). Reference defaults and explain interactions between options.

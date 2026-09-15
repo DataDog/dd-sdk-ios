@@ -30,30 +30,3 @@ public enum AttributeEncodingContext {
         }
     }
 }
-
-public extension KeyedEncodingContainer {
-    /// Encodes an attribute, catching and logging any encoding failures.
-    /// If encoding fails, the attribute is skipped and an error is logged, but execution continues.
-    /// This prevents a single malformed attribute from causing the entire event to be dropped.
-    ///
-    /// - Parameters:
-    ///   - value: The encodable value to encode
-    ///   - key: The coding key for this attribute
-    ///   - attributeName: The name of the attribute as known by the customer (for error reporting)
-    ///   - context: The context of this attribute (custom, userInfo, accountInfo, or internal)
-    mutating func encodeAttribute<T: Encodable>(
-        _ value: T,
-        forKey key: Key,
-        attributeName: String,
-        context: AttributeEncodingContext = .custom
-    ) {
-        do {
-            try encode(value, forKey: key)
-        } catch {
-            let contextPrefix = context.errorMessagePrefix
-            DD.logger.error(
-                "Failed to encode \(contextPrefix)attribute '\(attributeName)': \(error). This attribute will be dropped from the event."
-            )
-        }
-    }
-}

@@ -10,7 +10,6 @@ import CoreGraphics
 import Foundation
 import UIKit
 
-@available(iOS 13.0, tvOS 13.0, *)
 internal struct Drawing {
     private enum Constants {
         static let cls: AnyClass? = NSClassFromString("RBMovedDisplayListContents")
@@ -51,7 +50,6 @@ internal struct Drawing {
     }
 }
 
-@available(iOS 13.0, tvOS 13.0, *)
 extension Drawing: ImageRepresentable {
     static func == (lhs: Drawing, rhs: Drawing) -> Bool {
         lhs.contents.isEqual(rhs.contents) && lhs.origin == rhs.origin

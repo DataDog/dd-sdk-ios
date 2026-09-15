@@ -19,7 +19,6 @@ import DatadogInternal
 /// - If tracking taps inside a `List` is required, consider logging actions manually via `RUMMonitor.shared().addAction(...)`
 ///   instead of using this modifier.
 /// - We consider this a bug in SwiftUI and have reported it to Apple: [FB16488816](https://openradar.appspot.com/FB16488816).
-@available(iOS 13, watchOS 7, *)
 internal struct RUMTapActionModifier: SwiftUI.ViewModifier {
     /// The SDK core instance.
     weak var core: DatadogCoreProtocol?
@@ -49,7 +48,6 @@ internal struct RUMTapActionModifier: SwiftUI.ViewModifier {
     }
 }
 
-@available(iOS 13, watchOS 7, *)
 public extension SwiftUI.View {
     /// Monitor tap actions on this view with Datadog RUM. An Action event will be logged after the required number of taps.
     ///

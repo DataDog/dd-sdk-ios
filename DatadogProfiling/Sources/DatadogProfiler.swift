@@ -376,7 +376,9 @@ private extension DatadogProfiler {
     func sendProfile() {
         previousCustomProfilingStartDate = dateProvider.now
         guard let profile = dd_profiler_flush_and_get_profile() else {
-            telemetryController.sendNoProfile(for: operation)
+            if shouldReportProfileAbsence {
+                telemetryController.sendNoProfile(for: operation)
+            }
             cleanUpState()
             return
         }
@@ -389,7 +391,7 @@ private extension DatadogProfiler {
                 hangs: hangs,
                 longTasks: longTasks
             )
-        } else {
+        } else if quotaChecker.isRejectedByQuota || shouldReportProfileAbsence {
             telemetryController.sendProfileDropped(for: operation, reason: profileDropReason)
         }
 
@@ -405,6 +407,12 @@ private extension DatadogProfiler {
 
     var profileDropReason: ProfilingSessionMetric.ProfileDropReason {
         quotaChecker.isRejectedByQuota ? .quotaRejected(quotaChecker.quotaResult?.reason) : .noProfiledEvents
+    }
+
+    // Report only when continuous profiling is actually running.
+    var shouldReportProfileAbsence: Bool {
+        profilingSamplerProvider.isContinuousProfilingConfigured
+            && profilingSamplerProvider.continuousProfilingSampled != false
     }
 
     var canWriteProfile: Bool {

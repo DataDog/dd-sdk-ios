@@ -14,7 +14,6 @@ internal protocol AccessibilityReading {
 }
 
 #if !os(watchOS)
-@available(iOS 13.0, tvOS 13.0, *)
 internal final class AccessibilityReader: AccessibilityReading {
     @ReadWriteLock
     private(set) var state: AccessibilityInfo
@@ -40,25 +39,23 @@ internal final class AccessibilityReader: AccessibilityReading {
     }
 
     private func startObserving() {
-        if #available(iOS 14.0, tvOS 14.0, *) {
-            let buttonShapesObserver = notificationCenter.addObserver(
-                forName: UIAccessibility.buttonShapesEnabledStatusDidChangeNotification,
-                object: nil,
-                queue: .main
-            ) { [weak self] _ in
-                self?.updateState()
-            }
-            observers.append(buttonShapesObserver)
-
-            let crossFadeTransitionsObserver = notificationCenter.addObserver(
-                forName: UIAccessibility.prefersCrossFadeTransitionsStatusDidChange,
-                object: nil,
-                queue: .main
-            ) { [weak self] _ in
-                self?.updateState()
-            }
-            observers.append(crossFadeTransitionsObserver)
+        let buttonShapesObserver = notificationCenter.addObserver(
+            forName: UIAccessibility.buttonShapesEnabledStatusDidChangeNotification,
+            object: nil,
+            queue: .main
+        ) { [weak self] _ in
+            self?.updateState()
         }
+        observers.append(buttonShapesObserver)
+
+        let crossFadeTransitionsObserver = notificationCenter.addObserver(
+            forName: UIAccessibility.prefersCrossFadeTransitionsStatusDidChange,
+            object: nil,
+            queue: .main
+        ) { [weak self] _ in
+            self?.updateState()
+        }
+        observers.append(crossFadeTransitionsObserver)
 
         let videoAutoplayObserver = notificationCenter.addObserver(
             forName: UIAccessibility.videoAutoplayStatusDidChangeNotification,
@@ -257,10 +254,8 @@ internal final class AccessibilityReader: AccessibilityReading {
         state.speakSelectionEnabled = UIAccessibility.isSpeakSelectionEnabled
         state.rtlEnabled = UIApplication.dd.managedShared?.userInterfaceLayoutDirection == .rightToLeft
 
-        if #available(iOS 14.0, tvOS 14.0, *) {
-            state.buttonShapesEnabled = UIAccessibility.buttonShapesEnabled
-            state.reducedAnimationsEnabled = UIAccessibility.prefersCrossFadeTransitions
-        }
+        state.buttonShapesEnabled = UIAccessibility.buttonShapesEnabled
+        state.reducedAnimationsEnabled = UIAccessibility.prefersCrossFadeTransitions
 
         return state
     }

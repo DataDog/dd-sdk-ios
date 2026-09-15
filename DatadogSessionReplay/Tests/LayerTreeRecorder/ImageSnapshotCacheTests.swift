@@ -5,14 +5,15 @@
  */
 
 #if os(iOS)
+import TestUtilities
 import Testing
 import UIKit
 
 @testable import DatadogSessionReplay
 
+@Suite(.datadogTesting)
 @MainActor
 struct ImageSnapshotCacheTests {
-    @available(iOS 13.0, tvOS 13.0, *)
     @Test("Returns stored snapshot data")
     func returnsStoredSnapshotData() throws {
         // Given
@@ -21,7 +22,8 @@ struct ImageSnapshotCacheTests {
         let snapshotData = ContentSnapshotData.mockAny(
             snapshot: snapshot,
             localRect: CGRect(x: 1, y: 2, width: 3, height: 4),
-            bounds: CGRect(x: 5, y: 6, width: 7, height: 8)
+            bounds: CGRect(x: 5, y: 6, width: 7, height: 8),
+            renderBounds: CGRect(x: 2, y: 3, width: 5, height: 6)
         )
 
         // When
@@ -31,11 +33,11 @@ struct ImageSnapshotCacheTests {
         // Then
         #expect(cachedSnapshotData.snapshot === snapshot)
         #expect(cachedSnapshotData.localRect == snapshotData.localRect)
+        #expect(cachedSnapshotData.renderBounds == snapshotData.renderBounds)
         #expect(cachedSnapshotData.bounds == snapshotData.bounds)
         #expect(cachedSnapshotData.dependencies == snapshotData.dependencies)
     }
 
-    @available(iOS 13.0, tvOS 13.0, *)
     @Test("Removes stored snapshot data")
     func removesStoredSnapshotData() {
         // Given
@@ -49,7 +51,6 @@ struct ImageSnapshotCacheTests {
         #expect(cache.contentSnapshotData(forReplayID: 1) == nil)
     }
 
-    @available(iOS 13.0, tvOS 13.0, *)
     @Test("Returns stored mask snapshot data")
     func returnsStoredMaskSnapshotData() throws {
         // Given
@@ -72,7 +73,6 @@ struct ImageSnapshotCacheTests {
         #expect(cachedSnapshotData.dependencies == snapshotData.dependencies)
     }
 
-    @available(iOS 13.0, tvOS 13.0, *)
     @Test("Removes stored mask snapshot data")
     func removesStoredMaskSnapshotData() {
         // Given
@@ -86,7 +86,6 @@ struct ImageSnapshotCacheTests {
         #expect(cache.maskSnapshotData(forReplayID: 1) == nil)
     }
 
-    @available(iOS 13.0, tvOS 13.0, *)
     @Test("Drops snapshot data when cached image is evicted")
     func dropsSnapshotDataWhenCachedImageIsEvicted() {
         // Given
@@ -101,7 +100,6 @@ struct ImageSnapshotCacheTests {
         #expect(cache.contentSnapshotData(forReplayID: 1) == nil)
     }
 
-    @available(iOS 13.0, tvOS 13.0, *)
     @Test("Removes stored snapshot data for direct content changes")
     func removesStoredSnapshotDataForDirectContentChanges() {
         // Given
@@ -117,7 +115,6 @@ struct ImageSnapshotCacheTests {
         #expect(cache.contentSnapshotData(forReplayID: layer.replayID) == nil)
     }
 
-    @available(iOS 13.0, tvOS 13.0, *)
     @Test("Removes stored snapshot data when dependency changes")
     func removesStoredSnapshotDataWhenDependencyChanges() {
         // Given
@@ -137,7 +134,6 @@ struct ImageSnapshotCacheTests {
         #expect(cache.contentSnapshotData(forReplayID: owner.replayID) == nil)
     }
 
-    @available(iOS 13.0, tvOS 13.0, *)
     @Test("Keeps stored snapshot data when owner only lays out")
     func keepsStoredSnapshotDataWhenOwnerOnlyLaysOut() {
         // Given
@@ -157,7 +153,6 @@ struct ImageSnapshotCacheTests {
         #expect(cache.contentSnapshotData(forReplayID: owner.replayID) != nil)
     }
 
-    @available(iOS 13.0, tvOS 13.0, *)
     @Test("Removes stored mask snapshot data when dependency changes")
     func removesStoredMaskSnapshotDataWhenDependencyChanges() {
         // Given
@@ -177,7 +172,6 @@ struct ImageSnapshotCacheTests {
         #expect(cache.maskSnapshotData(forReplayID: mask.replayID) == nil)
     }
 
-    @available(iOS 13.0, tvOS 13.0, *)
     @Test("Expires snapshot data after unobserved frames")
     func expiresSnapshotDataAfterUnobservedFrames() throws {
         // Given
@@ -198,8 +192,11 @@ struct ImageSnapshotCacheTests {
                 delegateClass: nil,
                 hasLayerSemantics: true,
                 bounds: layer.bounds,
-                absoluteFrame: layer.frame,
-                visibleFrame: layer.frame,
+                geometry: .init(
+                    renderBounds: layer.bounds,
+                    localRect: layer.bounds,
+                    frame: layer.frame
+                ),
                 isOpaque: layer.isOpaque,
                 hasContents: false,
                 dependencies: [],

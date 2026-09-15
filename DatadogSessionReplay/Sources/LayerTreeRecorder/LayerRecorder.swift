@@ -12,7 +12,6 @@ import Foundation
 ///
 /// Only one recording task runs at a time. New requests are ignored while the
 /// current task is still running.
-@available(iOS 13.0, tvOS 13.0, *)
 internal actor LayerRecorder: LayerRecording {
     private let snapshotBuilder: any LayerTreeSnapshotBuilding
     private let uiApplicationSwizzler: UIApplicationSwizzler
@@ -69,7 +68,9 @@ internal actor LayerRecorder: LayerRecording {
 
         guard
             var layerTreeSnapshot,
-            let root = layerTreeSnapshot.root.removingOccluded()
+            let root = layerTreeSnapshot.root
+                .resolvingPortalLayers()
+                .removingOccluded()
         else {
             return
         }

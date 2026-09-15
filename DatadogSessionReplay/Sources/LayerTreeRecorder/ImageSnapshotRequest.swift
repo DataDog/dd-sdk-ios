@@ -11,7 +11,6 @@ import QuartzCore
 @preconcurrency import DatadogInternal
 
 /// Request to render one layer bitmap.
-@available(iOS 13.0, tvOS 13.0, *)
 internal enum ImageSnapshotRequest: Sendable {
     case content(ContentSnapshotRequest)
     case mask(MaskSnapshotRequest)
@@ -36,7 +35,6 @@ internal enum ImageSnapshotRequest: Sendable {
 }
 
 /// Request to render one `CALayerSnapshot` as a content image.
-@available(iOS 13.0, tvOS 13.0, *)
 internal struct ContentSnapshotRequest: Sendable {
     let replayID: Int64
     let layer: CALayerReference
@@ -44,8 +42,7 @@ internal struct ContentSnapshotRequest: Sendable {
     let delegateClass: AnyClass?
     let hasLayerSemantics: Bool
     let bounds: CGRect
-    let absoluteFrame: CGRect
-    let visibleFrame: CGRect
+    let geometry: CALayerSnapshot.ContentGeometry
     let isOpaque: Bool
     let hasContents: Bool
     let dependencies: [CALayerReference]
@@ -61,8 +58,7 @@ internal struct ContentSnapshotRequest: Sendable {
         delegateClass: AnyClass?,
         hasLayerSemantics: Bool,
         bounds: CGRect,
-        absoluteFrame: CGRect,
-        visibleFrame: CGRect,
+        geometry: CALayerSnapshot.ContentGeometry,
         isOpaque: Bool,
         hasContents: Bool,
         dependencies: [CALayerReference],
@@ -77,8 +73,7 @@ internal struct ContentSnapshotRequest: Sendable {
         self.delegateClass = delegateClass
         self.hasLayerSemantics = hasLayerSemantics
         self.bounds = bounds
-        self.absoluteFrame = absoluteFrame
-        self.visibleFrame = visibleFrame
+        self.geometry = geometry
         self.isOpaque = isOpaque
         self.hasContents = hasContents
         self.dependencies = dependencies
@@ -89,17 +84,14 @@ internal struct ContentSnapshotRequest: Sendable {
     }
 }
 
-/// An image snapshot request resolved against the current layer tree.
-@available(iOS 13.0, tvOS 13.0, *)
+/// A content snapshot request with its live layer resolved for rendering.
 internal struct ResolvedContentSnapshotRequest {
     let layer: CALayer
-    let localRect: CGRect
-    let frame: CGRect
+    let geometry: CALayerSnapshot.ContentGeometry
     let needsSnapshot: Bool
 }
 
 /// Request to render one layer mask as an image.
-@available(iOS 13.0, tvOS 13.0, *)
 internal struct MaskSnapshotRequest: Sendable {
     let replayID: Int64
     let layer: CALayerReference
@@ -133,7 +125,6 @@ internal struct MaskSnapshotRequest: Sendable {
 }
 
 /// A mask snapshot request resolved against the current layer tree.
-@available(iOS 13.0, tvOS 13.0, *)
 internal struct ResolvedMaskSnapshotRequest {
     let layer: CALayer
     let bounds: CGRect
@@ -142,39 +133,33 @@ internal struct ResolvedMaskSnapshotRequest {
 }
 
 /// Failure reason for resolving an image snapshot request.
-@available(iOS 13.0, tvOS 13.0, *)
 internal enum ImageSnapshotRequestResolutionError: Error {
     case missingLayer
     case invalidRect
 }
 
-@available(iOS 13.0, tvOS 13.0, *)
 extension ContentSnapshotRequest {
     @MainActor
-    func resolved(relativeTo rootLayer: CALayer) throws -> ResolvedContentSnapshotRequest {
+    func resolved() throws -> ResolvedContentSnapshotRequest {
         guard let layer = layer.resolve() else {
             throw ImageSnapshotRequestResolutionError.missingLayer
         }
 
-        let visibleLocalRect = layer.convert(visibleFrame, from: rootLayer)
-
-        guard !visibleLocalRect.isNull, !visibleLocalRect.isEmpty else {
+        guard !geometry.localRect.isNull, !geometry.localRect.isEmpty else {
             throw ImageSnapshotRequestResolutionError.invalidRect
         }
 
-        let isNewSnapshot = previousSnapshotData == nil
-
-        // Oversized layers are rendered only in their visible area
-        let requiresPartialSnapshot = self.requiresPartialSnapshot(relativeTo: rootLayer)
-
-        // Full snapshots can be moved without re-rendering, but partial snapshots depend on the visible slice
-        let partialSnapshotHasChanges = self.hasPartialSnapshotChanges(
-            visibleLocalRect: visibleLocalRect,
-            requiresPartialSnapshot: requiresPartialSnapshot
-        )
-
         // Bounds changes invalidate the bitmap coordinate space
         let snapshotBoundsDidChange = previousSnapshotData.map { !$0.bounds.equalTo(bounds) } ?? false
+        let isNewSnapshot = previousSnapshotData == nil
+
+        // Full snapshots can be moved without re-rendering, but partial snapshots
+        // depend on the visible slice captured for this frame
+        let partialSnapshotHasChanges = hasPartialSnapshotChanges()
+
+        let renderBoundsDidChange = previousSnapshotData.map {
+            !$0.renderBounds.equalTo(geometry.renderBounds)
+        } ?? false
 
         // Plain layers need contents or collapsed dependencies to produce pixels on first capture
         let shouldCaptureInitialSnapshot = layerClass != CALayer.self || hasContents || !dependencies.isEmpty
@@ -183,29 +168,18 @@ extension ContentSnapshotRequest {
         let needsSnapshot = (isNewSnapshot && shouldCaptureInitialSnapshot) ||
             hasChanges ||
             partialSnapshotHasChanges ||
-            snapshotBoundsDidChange
-
-        // Full snapshots capture the layer bounds while partial snapshots capture only the visible slice
-        let localRect = requiresPartialSnapshot ? visibleLocalRect : bounds
-        let frame = requiresPartialSnapshot ? visibleFrame : absoluteFrame
+            snapshotBoundsDidChange ||
+            renderBoundsDidChange
 
         return .init(
             layer: layer,
-            localRect: localRect,
-            frame: frame,
+            geometry: geometry,
             needsSnapshot: needsSnapshot
         )
     }
 
-    private func requiresPartialSnapshot(relativeTo rootLayer: CALayer) -> Bool {
-        bounds.width > rootLayer.bounds.width || bounds.height > rootLayer.bounds.height
-    }
-
-    private func hasPartialSnapshotChanges(
-        visibleLocalRect: CGRect,
-        requiresPartialSnapshot: Bool
-    ) -> Bool {
-        guard previousSnapshotData?.isPartial == true || requiresPartialSnapshot else {
+    private func hasPartialSnapshotChanges() -> Bool {
+        guard previousSnapshotData?.isPartial == true || geometry.isPartial else {
             return false
         }
 
@@ -213,11 +187,10 @@ extension ContentSnapshotRequest {
             return true
         }
 
-        return !previousSnapshotData.localRect.equalTo(visibleLocalRect)
+        return !previousSnapshotData.localRect.equalTo(geometry.localRect)
     }
 }
 
-@available(iOS 13.0, tvOS 13.0, *)
 extension MaskSnapshotRequest {
     @MainActor
     func resolved() throws -> ResolvedMaskSnapshotRequest {
@@ -242,10 +215,9 @@ extension MaskSnapshotRequest {
     }
 }
 
-@available(iOS 13.0, tvOS 13.0, *)
 extension ContentSnapshotData {
     fileprivate var isPartial: Bool {
-        !bounds.equalTo(localRect)
+        !renderBounds.equalTo(localRect)
     }
 }
 #endif

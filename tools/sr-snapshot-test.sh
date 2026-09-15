@@ -94,7 +94,9 @@ test_snapshots() {
 
     export DD_TEST_UTILITIES_ENABLED=1 # it is used in `dd-sdk-ios/Package.swift` to enable `TestUtilities` module
     xcodebuild -version
-    xcodebuild -workspace "$TEST_WORKSPACE" -destination "$destination" -scheme "$TEST_SCHEME" -resultBundlePath "$TEST_ARTIFACTS_PATH/$TEST_SCHEME.xcresult" test | xcbeautify
+    # Tee the raw xcodebuild log to disk (flushed line-by-line) so it survives even if the
+    # process gets killed mid-run, e.g. by RUNNER_SCRIPT_TIMEOUT on a hung test.
+    xcodebuild -workspace "$TEST_WORKSPACE" -destination "$destination" -scheme "$TEST_SCHEME" -resultBundlePath "$TEST_ARTIFACTS_PATH/$TEST_SCHEME.xcresult" test 2>&1 | tee "$TEST_ARTIFACTS_PATH/$TEST_SCHEME.log" | xcbeautify
 }
 
 open_snapshot_tests_project() {

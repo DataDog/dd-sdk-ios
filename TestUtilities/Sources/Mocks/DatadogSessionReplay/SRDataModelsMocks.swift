@@ -366,6 +366,71 @@ extension SRPlaceholderWireframe: AnyMockable, RandomMockable {
     }
 }
 
+extension SREmbeddedContentWireframe: AnyMockable, RandomMockable {
+    public static func mockAny() -> SREmbeddedContentWireframe {
+        return .mockWith()
+    }
+
+    public static func mockRandom() -> SREmbeddedContentWireframe {
+        return .mockRandomWith(id: .mockRandom())
+    }
+
+    @_spi(Internal)
+    public static func mockRandomWith(id: WireframeID) -> SREmbeddedContentWireframe {
+        return .mockRandomWith(id: id, slotId: .mockRandom())
+    }
+
+    @_spi(Internal)
+    public static func mockRandomWith(id: WireframeID, slotId: String) -> SREmbeddedContentWireframe {
+        return .mockRandomWith(id: id, slotId: slotId, permanentId: .mockRandom())
+    }
+
+    @_spi(Internal)
+    public static func mockRandomWith(id: WireframeID, slotId: String, permanentId: String?) -> SREmbeddedContentWireframe {
+        return SREmbeddedContentWireframe(
+            border: .mockRandom(),
+            clip: .mockRandom(),
+            height: .mockRandom(),
+            id: id,
+            isVisible: .mockRandom(),
+            permanentId: permanentId,
+            shapeStyle: .mockRandom(),
+            slotId: slotId,
+            width: .mockRandom(),
+            x: .mockRandom(),
+            y: .mockRandom()
+        )
+    }
+
+    public static func mockWith(
+        border: SRShapeBorder? = .mockAny(),
+        clip: SRContentClip? = .mockAny(),
+        height: Int64 = .mockAny(),
+        id: Int64 = .mockAny(),
+        isVisible: Bool? = .mockAny(),
+        permanentId: String? = .mockAny(),
+        shapeStyle: SRShapeStyle? = .mockAny(),
+        slotId: String = .mockAny(),
+        width: Int64 = .mockAny(),
+        x: Int64 = .mockAny(),
+        y: Int64 = .mockAny()
+    ) -> SREmbeddedContentWireframe {
+        return SREmbeddedContentWireframe(
+            border: border,
+            clip: clip,
+            height: height,
+            id: id,
+            isVisible: isVisible,
+            permanentId: permanentId,
+            shapeStyle: shapeStyle,
+            slotId: slotId,
+            width: width,
+            x: x,
+            y: y
+        )
+    }
+}
+
 extension SRImageWireframe: AnyMockable, RandomMockable {
     public static func mockAny() -> SRImageWireframe {
         return SRImageWireframe(

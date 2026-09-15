@@ -30,11 +30,21 @@ class ViewAttributesTests: XCTestCase {
         XCTAssertEqual(attributes.layerCornerRadius, view.layer.cornerRadius)
         XCTAssertEqual(attributes.alpha, view.alpha)
         XCTAssertEqual(attributes.isHidden, view.isHidden)
-        XCTAssertEqual(attributes.intrinsicContentSize, view.intrinsicContentSize)
         XCTAssertNil(attributes.textAndInputPrivacy)
         XCTAssertNil(attributes.imagePrivacy)
         XCTAssertNil(attributes.touchPrivacy)
         XCTAssertNil(attributes.hide)
+    }
+
+    func testItDoesNotCaptureIntrinsicContentSize() {
+        // Given
+        let view = IntrinsicContentSizeTrackingView()
+
+        // When
+        _ = createViewAttributes(with: view)
+
+        // Then
+        XCTAssertEqual(view.numberOfIntrinsicContentSizeReads, 0)
     }
 
     func testWhenViewIsVisible() {
@@ -279,6 +289,15 @@ extension ViewAttributesTests {
             clip: clip ?? view.frame,
             overrides: .mockAny()
         )
+    }
+}
+
+private final class IntrinsicContentSizeTrackingView: UIView {
+    private(set) var numberOfIntrinsicContentSizeReads = 0
+
+    override var intrinsicContentSize: CGSize {
+        numberOfIntrinsicContentSizeReads += 1
+        return CGSize(width: 100, height: 100)
     }
 }
 #endif

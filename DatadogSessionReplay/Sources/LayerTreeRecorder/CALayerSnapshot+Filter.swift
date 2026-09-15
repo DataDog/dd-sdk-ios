@@ -8,13 +8,12 @@
 import Foundation
 import QuartzCore
 
-@available(iOS 13.0, tvOS 13.0, *)
 extension CALayerSnapshot {
     /// Captured subset of Core Animation filters that affect layer rendering.
     enum Filter: Sendable, Equatable {
-        case glassBackground
         case gaussianBlur(CGFloat)
         case colorMatrix(ColorMatrix)
+        case vibrantColorMatrix(ColorMatrix)
         case saturate(CGFloat)
         case brightness(CGFloat)
         case multiplyColor(CGColor)
@@ -23,7 +22,6 @@ extension CALayerSnapshot {
     }
 }
 
-@available(iOS 13.0, tvOS 13.0, *)
 extension CALayerSnapshot.Filter {
     /// Reads a supported layer filter. Unknown enabled filters are kept by name.
     init?(_ filterValue: Any) {
@@ -31,39 +29,44 @@ extension CALayerSnapshot.Filter {
             let filterClass = NSClassFromString(["CA", "Filter"].joined()),
             let filter = filterValue as? NSObject,
             type(of: filter).isSubclass(of: filterClass),
-            filter.value(forKey: "enabled") as? Bool == true,
-            let name = filter.value(forKey: "name") as? String
+            filter.safeValue(forKey: "enabled") as? Bool == true,
+            let name = filter.safeValue(forKey: "name") as? String
         else {
             return nil
         }
 
         switch name {
-        case "glassBackground":
-            self = .glassBackground
         case "gaussianBlur", "variableBlur":
-            guard let radius = filter.value(forKey: "inputRadius") as? CGFloat else {
+            guard let radius = filter.safeValue(forKey: "inputRadius") as? CGFloat else {
                 return nil
             }
             self = .gaussianBlur(radius)
-        case "colorMatrix", "vibrantColorMatrix":
-            guard let value = filter.value(forKey: "inputColorMatrix") as? NSValue else {
+        case "colorMatrix":
+            guard let value = filter.safeValue(forKey: "inputColorMatrix") as? NSValue else {
                 return nil
             }
             var colorMatrix = CALayerSnapshot.ColorMatrix()
             value.getValue(&colorMatrix)
             self = .colorMatrix(colorMatrix)
+        case "vibrantColorMatrix":
+            guard let value = filter.safeValue(forKey: "inputColorMatrix") as? NSValue else {
+                return nil
+            }
+            var colorMatrix = CALayerSnapshot.ColorMatrix()
+            value.getValue(&colorMatrix)
+            self = .vibrantColorMatrix(colorMatrix)
         case "colorSaturate":
-            guard let amount = filter.value(forKey: "inputAmount") as? CGFloat else {
+            guard let amount = filter.safeValue(forKey: "inputAmount") as? CGFloat else {
                 return nil
             }
             self = .saturate(amount)
         case "colorBrightness":
-            guard let amount = filter.value(forKey: "inputAmount") as? CGFloat else {
+            guard let amount = filter.safeValue(forKey: "inputAmount") as? CGFloat else {
                 return nil
             }
             self = .brightness(amount)
         case "multiplyColor":
-            guard let color = CGColor.safeCast(filter.value(forKey: "inputColor")) else {
+            guard let color = CGColor.safeCast(filter.safeValue(forKey: "inputColor")) else {
                 return nil
             }
             self = .multiplyColor(color)
@@ -73,7 +76,6 @@ extension CALayerSnapshot.Filter {
     }
 }
 
-@available(iOS 13.0, tvOS 13.0, *)
 extension CALayerSnapshot {
     /// A 4-by-5 color transform matrix used by layer filters.
     struct ColorMatrix: Sendable, Equatable {
@@ -103,7 +105,6 @@ extension CALayerSnapshot {
     }
 }
 
-@available(iOS 13.0, tvOS 13.0, *)
 extension CALayerSnapshot {
     struct CompositingFilter: Sendable, Hashable, RawRepresentable {
         let rawValue: String
@@ -121,7 +122,6 @@ extension CALayerSnapshot {
     }
 }
 
-@available(iOS 13.0, tvOS 13.0, *)
 extension CALayerSnapshot.CompositingFilter {
     static let normal = Self(rawValue: "normalBlendMode")
     static let plusDarker = Self(rawValue: "plusD")

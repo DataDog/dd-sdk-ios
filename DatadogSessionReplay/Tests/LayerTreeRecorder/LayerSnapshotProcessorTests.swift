@@ -15,8 +15,8 @@ import UIKit
 @_spi(Internal)
 @testable import DatadogSessionReplay
 
+@Suite(.datadogTesting)
 struct LayerSnapshotProcessorTests {
-    @available(iOS 13.0, tvOS 13.0, *)
     @Test("First layer tree snapshot starts a segment and processes resources")
     func firstLayerTreeSnapshotStartsSegmentAndProcessesResources() throws {
         // Given
@@ -52,7 +52,6 @@ struct LayerSnapshotProcessorTests {
         #expect(fixture.core.recordsCountByViewID == ["view-id": 3])
     }
 
-    @available(iOS 13.0, tvOS 13.0, *)
     @Test("Same context writes wireframe, composition tree, viewport, and touch records in order")
     func sameContextWritesMutationViewportAndTouchRecordsInOrder() throws {
         // Given
@@ -122,7 +121,6 @@ struct LayerSnapshotProcessorTests {
         #expect(fixture.core.recordsCountByViewID == ["view-id": 7])
     }
 
-    @available(iOS 13.0, tvOS 13.0, *)
     @Test("RUM context change starts a new segment")
     func rumContextChangeStartsNewSegment() throws {
         // Given
@@ -150,9 +148,8 @@ struct LayerSnapshotProcessorTests {
         #expect(fixture.core.recordsCountByViewID == ["view-1": 3, "view-2": 3])
     }
 
-    @available(iOS 13.0, tvOS 13.0, *)
-    @Test("Diffing errors fall back to a full snapshot and update state")
-    func diffingErrorsFallBackToFullSnapshotAndUpdateState() throws {
+    @Test("Wireframe type changes use incremental mutations and update state")
+    func wireframeTypeChangesUseIncrementalMutationsAndUpdateState() throws {
         // Given
         let fixture = Fixture()
         let shapeSnapshot = LayerTreeSnapshot.mockWith(root: .mockRoot(sublayers: [
@@ -188,19 +185,33 @@ struct LayerSnapshotProcessorTests {
         )
 
         // Then
-        #expect(fixture.recordWriter.records.count == 2)
-        #expect(fixture.recordWriter.records[1].records.map(\.type) == [.fullSnapshot])
-        #expect(
-            fixture.telemetry.messages.firstError()?.message.hasPrefix(
-                "[SR] Failed to build layer recording mutation records"
-            ) == true
+        let shapeWireframeID = Int64(namespace: .shape, replayID: 2)
+        let placeholderWireframeID = Int64(namespace: .placeholder, replayID: 2)
+        let mutationRecord = try #require(
+            fixture.recordWriter.records[1].records[0].incrementalSnapshot?.mutationData
         )
-        #expect(fixture.core.recordsCountByViewID == ["view-id": 4])
+        let compositionTreeMutationRecord = try #require(
+            fixture.recordWriter.records[1].records[1]
+                .incrementalSnapshot?.compositionTreeMutationData
+        )
+
+        #expect(fixture.recordWriter.records.count == 2)
+        #expect(fixture.recordWriter.records[1].records.map(\.type) == [
+            .incrementalSnapshot,
+            .incrementalSnapshot
+        ])
+        #expect(mutationRecord.adds.map(\.wireframe.id) == [placeholderWireframeID])
+        #expect(mutationRecord.removes.map(\.id) == [shapeWireframeID])
+        #expect(mutationRecord.updates.isEmpty)
+        #expect(compositionTreeMutationRecord.root?.children == [
+            .init(id: placeholderWireframeID, type: .wireframe)
+        ])
+        #expect(fixture.telemetry.messages.firstError() == nil)
+        #expect(fixture.core.recordsCountByViewID == ["view-id": 5])
     }
 }
 
 private extension LayerSnapshotProcessorTests {
-    @available(iOS 13.0, tvOS 13.0, *)
     final class Fixture {
         let core = PassthroughCoreMock()
         let recordWriter = RecordWriterMock()

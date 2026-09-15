@@ -76,7 +76,8 @@ internal final class RUMInstrumentation: RUMCommandPublisher {
         watchdogTermination: WatchdogTerminationMonitor?,
         memoryWarningMonitor: MemoryWarningMonitor?,
         uuidGenerator: RUMUUIDGenerator,
-        heatmapIdentifierRegistry: any HeatmapIdentifierRegistry
+        heatmapIdentifierRegistry: any HeatmapIdentifierRegistry,
+        isAppHangBacktraceEnabled: @escaping @Sendable () -> Bool = { true }
     ) {
         // Always create views handler (we can't know if it will be used by SwiftUI manual instrumentation)
         // and only activate `UIViewControllerSwizzler` if automatic instrumentation for UIKit or SwiftUI is configured:
@@ -182,7 +183,8 @@ internal final class RUMInstrumentation: RUMCommandPublisher {
             backtraceReporter: backtraceReporter,
             fatalErrorContext: fatalErrorContext,
             processID: processID,
-            uuidGenerator: uuidGenerator
+            uuidGenerator: uuidGenerator,
+            isAppHangBacktraceEnabled: isAppHangBacktraceEnabled
         )
         self.watchdogTermination = watchdogTermination
         self.memoryWarningMonitor = memoryWarningMonitor
@@ -214,7 +216,8 @@ internal final class RUMInstrumentation: RUMCommandPublisher {
         bundleType: BundleType,
         watchdogTermination: WatchdogTerminationMonitor?,
         memoryWarningMonitor: MemoryWarningMonitor?,
-        uuidGenerator: RUMUUIDGenerator
+        uuidGenerator: RUMUUIDGenerator,
+        isAppHangBacktraceEnabled: @escaping @Sendable () -> Bool = { true }
     ) {
         // Always create views handler (we can't know if it will be used by manual instrumentation)
         self.viewsHandler = RUMViewsHandler(dateProvider: dateProvider, notificationCenter: notificationCenter)
@@ -230,7 +233,8 @@ internal final class RUMInstrumentation: RUMCommandPublisher {
             backtraceReporter: backtraceReporter,
             fatalErrorContext: fatalErrorContext,
             processID: processID,
-            uuidGenerator: uuidGenerator
+            uuidGenerator: uuidGenerator,
+            isAppHangBacktraceEnabled: isAppHangBacktraceEnabled
         )
         self.watchdogTermination = watchdogTermination
         self.memoryWarningMonitor = memoryWarningMonitor
@@ -297,7 +301,8 @@ private extension AppHangsMonitor {
         backtraceReporter: BacktraceReporting,
         fatalErrorContext: FatalErrorContextNotifying,
         processID: UUID,
-        uuidGenerator: RUMUUIDGenerator
+        uuidGenerator: RUMUUIDGenerator,
+        isAppHangBacktraceEnabled: @escaping @Sendable () -> Bool
     ) {
         guard bundleType == .iOSApp, var appHangThreshold = appHangThreshold else {
             return nil
@@ -316,7 +321,8 @@ private extension AppHangsMonitor {
             fatalErrorContext: fatalErrorContext,
             dateProvider: dateProvider,
             uuidGenerator: uuidGenerator,
-            processID: processID
+            processID: processID,
+            isAppHangBacktraceEnabled: isAppHangBacktraceEnabled
         )
     }
 }

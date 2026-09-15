@@ -13,8 +13,8 @@ import UIKit
 
 @testable import DatadogSessionReplay
 
+@Suite(.datadogTesting)
 struct ContentSnapshotRedactionTests {
-    @available(iOS 13.0, tvOS 13.0, *)
     @Test("Returns the original image when no redaction is needed")
     func returnsOriginalImageWhenNoRedactionIsNeeded() throws {
         // Given
@@ -32,7 +32,6 @@ struct ContentSnapshotRedactionTests {
         #expect(redactedImage === image)
     }
 
-    @available(iOS 13.0, tvOS 13.0, *)
     @Test("Returns placeholder with background color when image should not be sent")
     func returnsPlaceholderWithBackgroundColorWhenImageShouldNotBeSent() throws {
         // Given
@@ -51,7 +50,6 @@ struct ContentSnapshotRedactionTests {
         #expect(backgroundColor == .red)
     }
 
-    @available(iOS 13.0, tvOS 13.0, *)
     @Test("Does not redact generic layer snapshots")
     func doesNotRedactGenericLayerSnapshots() {
         // Given
@@ -68,7 +66,6 @@ struct ContentSnapshotRedactionTests {
         #expect(action == .none)
     }
 
-    @available(iOS 13.0, tvOS 13.0, *)
     @Test("Does not redact non-layer semantic snapshots")
     func doesNotRedactNonLayerSemanticSnapshots() {
         // Given
@@ -86,7 +83,6 @@ struct ContentSnapshotRedactionTests {
         #expect(action == .none)
     }
 
-    @available(iOS 13.0, tvOS 13.0, *)
     @Test("Redacts sensitive non-empty text input layout fragments when masking sensitive inputs")
     func redactsSensitiveNonEmptyTextInputLayoutFragmentsWhenMaskingSensitiveInputs() throws {
         // Given
@@ -107,7 +103,6 @@ struct ContentSnapshotRedactionTests {
         #expect(action == .redactText)
     }
 
-    @available(iOS 13.0, tvOS 13.0, *)
     @Test("Does not redact non-sensitive text input layout fragments when masking sensitive inputs")
     func doesNotRedactNonSensitiveTextInputLayoutFragmentsWhenMaskingSensitiveInputs() throws {
         // Given
@@ -128,7 +123,6 @@ struct ContentSnapshotRedactionTests {
         #expect(action == .none)
     }
 
-    @available(iOS 13.0, tvOS 13.0, *)
     @Test("Redacts non-empty text input layout fragments when masking all inputs")
     func redactsNonEmptyTextInputLayoutFragmentsWhenMaskingAllInputs() throws {
         // Given
@@ -149,7 +143,6 @@ struct ContentSnapshotRedactionTests {
         #expect(action == .redactText)
     }
 
-    @available(iOS 13.0, tvOS 13.0, *)
     @Test("Redacts text field canvas views when masking all inputs")
     func redactsTextFieldCanvasViewsWhenMaskingAllInputs() throws {
         // Given
@@ -170,7 +163,6 @@ struct ContentSnapshotRedactionTests {
         #expect(action == .redactText)
     }
 
-    @available(iOS 13.0, tvOS 13.0, *)
     @Test("Does not redact read-only text input layout fragments when masking all inputs")
     func doesNotRedactReadOnlyTextInputLayoutFragmentsWhenMaskingAllInputs() throws {
         // Given
@@ -191,7 +183,6 @@ struct ContentSnapshotRedactionTests {
         #expect(action == .none)
     }
 
-    @available(iOS 13.0, tvOS 13.0, *)
     @Test("Redacts sensitive read-only text input layout fragments when masking all inputs")
     func redactsSensitiveReadOnlyTextInputLayoutFragmentsWhenMaskingAllInputs() throws {
         // Given
@@ -212,7 +203,6 @@ struct ContentSnapshotRedactionTests {
         #expect(action == .redactText)
     }
 
-    @available(iOS 13.0, tvOS 13.0, *)
     @Test("Does not redact empty text input descendants")
     func doesNotRedactEmptyTextInputDescendants() {
         // Given
@@ -230,7 +220,6 @@ struct ContentSnapshotRedactionTests {
         #expect(action == .none)
     }
 
-    @available(iOS 13.0, tvOS 13.0, *)
     @Test("Redacts SwiftUI drawing layers when masking all text")
     func redactsSwiftUIDrawingLayersWhenMaskingAllText() {
         // Given
@@ -246,7 +235,6 @@ struct ContentSnapshotRedactionTests {
         #expect(action == .redactText)
     }
 
-    @available(iOS 13.0, tvOS 13.0, *)
     @Test("Redacts SwiftUI drawing view delegates when masking all text")
     func redactsSwiftUIDrawingViewDelegatesWhenMaskingAllText() {
         // Given
@@ -262,7 +250,6 @@ struct ContentSnapshotRedactionTests {
         #expect(action == .redactText)
     }
 
-    @available(iOS 13.0, tvOS 13.0, *)
     @Test("Redacts UILabel backed layers when masking all text")
     func redactsUILabelBackedLayersWhenMaskingAllText() {
         // Given
@@ -278,7 +265,6 @@ struct ContentSnapshotRedactionTests {
         #expect(action == .redactText)
     }
 
-    @available(iOS 13.0, tvOS 13.0, *)
     @Test("Redacts UILabel subclass backed layers when masking all text")
     func redactsUILabelSubclassBackedLayersWhenMaskingAllText() {
         // Given
@@ -294,7 +280,6 @@ struct ContentSnapshotRedactionTests {
         #expect(action == .redactText)
     }
 
-    @available(iOS 13.0, tvOS 13.0, *)
     @Test("Redacts UILabel layers when masking all text")
     func redactsUILabelLayersWhenMaskingAllText() {
         // Given
@@ -310,7 +295,6 @@ struct ContentSnapshotRedactionTests {
         #expect(action == .redactText)
     }
 
-    @available(iOS 13.0, tvOS 13.0, *)
     @Test("Redacts CATextLayer when masking all text")
     func redactsCATextLayerWhenMaskingAllText() {
         // Given
@@ -326,7 +310,6 @@ struct ContentSnapshotRedactionTests {
         #expect(action == .redactText)
     }
 
-    @available(iOS 13.0, tvOS 13.0, *)
     @Test("Redacts CATextLayer subclasses when masking all text")
     func redactsCATextLayerSubclassesWhenMaskingAllText() {
         // Given
@@ -342,7 +325,6 @@ struct ContentSnapshotRedactionTests {
         #expect(action == .redactText)
     }
 
-    @available(iOS 13.0, tvOS 13.0, *)
     @Test("Does not redact static text candidates when only masking inputs")
     func doesNotRedactStaticTextCandidatesWhenOnlyMaskingInputs() {
         // Given
@@ -358,7 +340,6 @@ struct ContentSnapshotRedactionTests {
         #expect(action == .none)
     }
 
-    @available(iOS 13.0, tvOS 13.0, *)
     @Test("Uses placeholder for SwiftUI image layers when masking all images")
     func usesPlaceholderForSwiftUIImageLayersWhenMaskingAllImages() throws {
         // Given
@@ -374,7 +355,6 @@ struct ContentSnapshotRedactionTests {
         #expect(action == .placeholder)
     }
 
-    @available(iOS 13.0, tvOS 13.0, *)
     @Test("Does not redact SwiftUI image layers when image masking is disabled")
     func doesNotRedactSwiftUIImageLayersWhenImageMaskingIsDisabled() throws {
         // Given
@@ -390,7 +370,6 @@ struct ContentSnapshotRedactionTests {
         #expect(action == .none)
     }
 
-    @available(iOS 13.0, tvOS 13.0, *)
     @Test("Does not redact small SwiftUI image layers when masking non-bundled images")
     func doesNotRedactSmallSwiftUIImageLayersWhenMaskingNonBundledImages() throws {
         // Given
@@ -408,7 +387,6 @@ struct ContentSnapshotRedactionTests {
         #expect(action == .none)
     }
 
-    @available(iOS 13.0, tvOS 13.0, *)
     @Test("Uses placeholder for large SwiftUI image layers when masking non-bundled images")
     func usesPlaceholderForLargeSwiftUIImageLayersWhenMaskingNonBundledImages() throws {
         // Given
@@ -427,22 +405,16 @@ struct ContentSnapshotRedactionTests {
     }
 }
 
-@available(iOS 13.0, tvOS 13.0, *)
 private final class TestCGDrawingLayer: CALayer {}
 
-@available(iOS 13.0, tvOS 13.0, *)
 private final class TestUILabelLayer: CALayer {}
 
-@available(iOS 13.0, tvOS 13.0, *)
 private final class TestTextLayer: CATextLayer {}
 
-@available(iOS 13.0, tvOS 13.0, *)
 private final class TestLabel: UILabel {}
 
-@available(iOS 13.0, tvOS 13.0, *)
 private final class TestCGDrawingView: UIView {}
 
-@available(iOS 13.0, tvOS 13.0, *)
 private extension ImageRedactionResult {
     var image: UIImage? {
         guard case let .image(image) = self else {
@@ -472,4 +444,5 @@ private func textFieldCanvasClass() throws -> AnyClass {
 private func imageLayerClass() throws -> AnyClass {
     try #require(NSClassFromString("SwiftUI.ImageLayer"))
 }
+
 #endif

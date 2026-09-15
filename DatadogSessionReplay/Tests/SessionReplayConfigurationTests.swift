@@ -30,13 +30,12 @@ class SessionReplayConfigurationTests: XCTestCase {
         XCTAssertEqual(config._additionalNodeRecorders.count, 0)
     }
 
-    @available(iOS 13.0, tvOS 13.0, *)
-    func testDefaultConfigurationDisablesLayerTreeRecordingFeatureFlag() {
+    func testDefaultConfigurationDisablesCompositionTreeRecordingFeatureFlag() {
         // When
         let config = SessionReplay.Configuration()
 
         // Then
-        XCTAssertFalse(config.featureFlags[.layerTreeRecording])
+        XCTAssertFalse(config.featureFlags[.compositionTreeRecording])
     }
 
     func testDefaultConfigurationWithNewApi() {

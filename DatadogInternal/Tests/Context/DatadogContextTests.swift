@@ -128,4 +128,40 @@ final class DatadogContextTests: XCTestCase {
         XCTAssertEqual(context.version, "200")
         XCTAssertTrue(context.ddTags.contains("version:200"))
     }
+
+    // MARK: - DDTag.merge
+
+    func testMergeDDTags_whenOtherTagsIsNilOrEmpty_itReturnsNativeTagsUnchanged() {
+        let nativeTags = "service:app,version:1.0.0,sdk_version:5.0.0,env:prod"
+
+        XCTAssertEqual(DDTag.merge(nativeTags, with: nil), nativeTags)
+        XCTAssertEqual(DDTag.merge(nativeTags, with: ""), nativeTags)
+    }
+
+    func testMergeDDTags_whenOtherTagsHasNoOverlappingKeys_itAppendsThem() {
+        let merged = DDTag.merge(
+            "service:app,version:1.0.0,sdk_version:5.0.0,env:prod",
+            with: "browser_sdk_version:3.6.13"
+        )
+
+        XCTAssertEqual(merged, "browser_sdk_version:3.6.13,env:prod,sdk_version:5.0.0,service:app,version:1.0.0")
+    }
+
+    func testMergeDDTags_whenOtherTagsHasOverlappingKeys_itOverridesNativeValuesInPlace() {
+        let merged = DDTag.merge(
+            "service:app,version:1.0.0,sdk_version:5.0.0,env:prod",
+            with: "sdk_version:3.6.13,browser_sdk_version:3.6.13"
+        )
+
+        XCTAssertEqual(merged, "browser_sdk_version:3.6.13,env:prod,sdk_version:3.6.13,service:app,version:1.0.0")
+    }
+
+    func testMergeDDTags_itIgnoresPairsWithoutAColon() {
+        let merged = DDTag.merge(
+            "service:app,version:1.0.0",
+            with: "malformed,env:prod"
+        )
+
+        XCTAssertEqual(merged, "env:prod,service:app,version:1.0.0")
+    }
 }

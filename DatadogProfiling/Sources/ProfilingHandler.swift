@@ -81,16 +81,22 @@ extension ProfilingHandler {
         let end = dd_pprof_get_end_timestamp_s(profile)
         let durationNs = (end - start).dd.toInt64Nanoseconds
         let size = dd_pprof_serialize(profile, &data)
+        let operation = self.operation
 
         guard let data else {
             telemetryController.sendNoData(durationNs: durationNs, for: operation)
             return
         }
 
-        let pprof = Data(bytes: data, count: Int(clamping: size))
-        dd_pprof_free_serialized_data(data)
+        let serializedProfileSize = Int(clamping: size)
+        guard serializedProfileSize <= Int(ProfilerFeature.Constants.maxObjectSize) else {
+            dd_pprof_free_serialized_data(data)
+            telemetryController.sendProfileDropped(for: operation, reason: .profileTooLarge)
+            return
+        }
 
-        let operation = self.operation
+        let pprof = Data(bytes: data, count: serializedProfileSize)
+        dd_pprof_free_serialized_data(data)
 
         featureScope.eventWriteContext { context, writer in
             let event = ProfileEvent(

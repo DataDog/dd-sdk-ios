@@ -93,36 +93,6 @@ class AnyCodableTests: XCTestCase {
         XCTAssertEqual(dictionary["null"]?.value as! NSNull, NSNull())
     }
 
-    func testJSONDecodingEquatable() throws {
-        let json = """
-        {
-            "boolean": true,
-            "integer": 42,
-            "double": 3.141592653589793,
-            "string": "string",
-            "array": [1, 2, 3],
-            "nested": {
-                "a": "alpha",
-                "b": "bravo",
-                "c": "charlie"
-            },
-            "null": null
-        }
-        """.data(using: .utf8)!
-
-        let decoder = JSONDecoder()
-        let dictionary1 = try decoder.decode([String: AnyCodable].self, from: json)
-        let dictionary2 = try decoder.decode([String: AnyCodable].self, from: json)
-
-        XCTAssertEqual(dictionary1["boolean"], dictionary2["boolean"])
-        XCTAssertEqual(dictionary1["integer"], dictionary2["integer"])
-        XCTAssertEqual(dictionary1["double"], dictionary2["double"])
-        XCTAssertEqual(dictionary1["string"], dictionary2["string"])
-        XCTAssertEqual(dictionary1["array"], dictionary2["array"])
-        XCTAssertEqual(dictionary1["nested"], dictionary2["nested"])
-        XCTAssertEqual(dictionary1["null"], dictionary2["null"])
-    }
-
     func testJSONEncoding() throws {
         let someCodable = AnyCodable(
             SomeCodable(
@@ -197,8 +167,7 @@ class AnyCodableTests: XCTestCase {
             return encodedCodableValue.utf8String
         }
 
-        if #available(iOS 13.0, *) {
-            XCTAssertEqual(try json(for: true), "true")
+        XCTAssertEqual(try json(for: true), "true")
             XCTAssertEqual(try json(for: false), "false")
             XCTAssertEqual(try json(for: 123), "123")
             XCTAssertEqual(try json(for: -123), "-123")
@@ -217,27 +186,6 @@ class AnyCodableTests: XCTestCase {
             XCTAssertEqual(try json(for: Optional<URL>.none), "null")
             XCTAssertEqual(try json(for: Optional<Foo>.none), "null")
             // swiftlint:enable syntactic_sugar
-        } else {
-            XCTAssertEqual(try json(for: EncodingContainer(true)), #"{"value":true}"#)
-            XCTAssertEqual(try json(for: EncodingContainer(false)), #"{"value":false}"#)
-            XCTAssertEqual(try json(for: EncodingContainer(123)), #"{"value":123}"#)
-            XCTAssertEqual(try json(for: EncodingContainer(-123)), #"{"value":-123}"#)
-            XCTAssertEqual(try json(for: EncodingContainer(123.45)), #"{"value":123.45}"#)
-            XCTAssertEqual(try json(for: EncodingContainer("string")), #"{"value":"string"}"#)
-
-            let url = URL(string: "https://example.com/image.png")!
-            XCTAssertEqual(try json(for: EncodingContainer(url)), #"{"value":"https:\/\/example.com\/image.png"}"#)
-
-            // swiftlint:disable syntactic_sugar
-            XCTAssertEqual(try json(for: EncodingContainer(Optional<Bool>.none)), #"{"value":null}"#)
-            XCTAssertEqual(try json(for: EncodingContainer(Optional<UInt64>.none)), #"{"value":null}"#)
-            XCTAssertEqual(try json(for: EncodingContainer(Optional<Int>.none)), #"{"value":null}"#)
-            XCTAssertEqual(try json(for: EncodingContainer(Optional<Double>.none)), #"{"value":null}"#)
-            XCTAssertEqual(try json(for: EncodingContainer(Optional<String>.none)), #"{"value":null}"#)
-            XCTAssertEqual(try json(for: EncodingContainer(Optional<URL>.none)), #"{"value":null}"#)
-            XCTAssertEqual(try json(for: EncodingContainer(Optional<Foo>.none)), #"{"value":null}"#)
-            // swiftlint:enable syntactic_sugar
-        }
 
         XCTAssertEqual(try json(for: [true, false, true, false]), "[true,false,true,false]")
         XCTAssertEqual(try json(for: [1, 2, 3, 4, 5]), "[1,2,3,4,5]")

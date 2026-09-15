@@ -10,7 +10,6 @@ import QuartzCore
 import UIKit
 
 /// Redaction to apply to a rendered image snapshot.
-@available(iOS 13.0, tvOS 13.0, *)
 internal enum ImageRedactionAction: Hashable {
     case none
     case redactText
@@ -18,13 +17,11 @@ internal enum ImageRedactionAction: Hashable {
 }
 
 /// Redacted image or placeholder instruction.
-@available(iOS 13.0, tvOS 13.0, *)
 internal enum ImageRedactionResult {
     case image(UIImage)
     case placeholder(UIColor)
 }
 
-@available(iOS 13.0, tvOS 13.0, *)
 extension ContentSnapshot {
     func redacted(
         parentTextInput: CALayerSnapshot.SemanticObservation.TextInputSemantics?
@@ -42,11 +39,7 @@ extension ContentSnapshot {
     func redactionAction(
         parentTextInput: CALayerSnapshot.SemanticObservation.TextInputSemantics?
     ) -> ImageRedactionAction {
-        guard hasLayerSemantics else {
-            return .none
-        }
-
-        if isImageLayer {
+        if hasLayerSemantics, isImageLayer {
             return imageLayerRedactionAction
         }
 
@@ -60,6 +53,10 @@ extension ContentSnapshot {
     private func shouldRedactText(
         parentTextInput: CALayerSnapshot.SemanticObservation.TextInputSemantics?
     ) -> Bool {
+        guard hasLayerSemantics else {
+            return false
+        }
+
         if let parentTextInput, isTextLayoutFragment {
             guard !parentTextInput.isEmpty else {
                 return false
@@ -79,9 +76,12 @@ extension ContentSnapshot {
     }
 
     private var isTextLayoutFragment: Bool {
-        delegateClassName == "_UITextLayoutFragmentView" ||
-        delegateClassName == "_UITextViewCanvasView" ||
-        delegateClassName == "_UITextFieldCanvasView"
+        guard let delegateClass else {
+            return false
+        }
+        return Classes.textLayoutFragmentView.map { delegateClass.isSubclass(of: $0) } == true
+            || Classes.textViewCanvasView.map { delegateClass.isSubclass(of: $0) } == true
+            || Classes.textFieldCanvasView.map { delegateClass.isSubclass(of: $0) } == true
     }
 
     private var isStaticText: Bool {
@@ -93,7 +93,7 @@ extension ContentSnapshot {
     }
 
     private var isImageLayer: Bool {
-        layerClassName == "SwiftUI.ImageLayer"
+        Classes.imageLayer.map { layerClass.isSubclass(of: $0) } == true
     }
 
     private var imageLayerRedactionAction: ImageRedactionAction {
@@ -117,5 +117,12 @@ extension ContentSnapshot {
     private var delegateClassName: String? {
         delegateClass.map(NSStringFromClass)
     }
+}
+
+private enum Classes {
+    static let textLayoutFragmentView: AnyClass? = NSClassFromString("_UITextLayoutFragmentView")
+    static let textViewCanvasView: AnyClass? = NSClassFromString("_UITextViewCanvasView")
+    static let textFieldCanvasView: AnyClass? = NSClassFromString("_UITextFieldCanvasView")
+    static let imageLayer: AnyClass? = NSClassFromString("SwiftUI.ImageLayer")
 }
 #endif

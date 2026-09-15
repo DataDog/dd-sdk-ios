@@ -176,6 +176,10 @@
     config.vitalsUpdateFrequency = DDRUMVitalsFrequencyNever;
     XCTAssertEqual(config.vitalsUpdateFrequency, DDRUMVitalsFrequencyNever);
 
+    DDRUMTimeseriesConfiguration *timeseriesConfiguration = [[DDRUMTimeseriesConfiguration alloc]
+        initWithCollectTypes:@[DDRUMTimeseriesType.memory, DDRUMTimeseriesType.cpu]];
+    [config setTimeseriesConfiguration:timeseriesConfiguration];
+
     [config setViewEventMapper:^DDRUMViewEvent * _Nonnull(DDRUMViewEvent * _Nonnull viewEvent) {
         viewEvent.view.url = @"";
         return viewEvent;

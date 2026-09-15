@@ -6,12 +6,13 @@
 
 #if os(iOS)
 import QuartzCore
+import TestUtilities
 import Testing
 
 @testable import DatadogSessionReplay
 
+@Suite(.datadogTesting)
 struct CALayerChangesetTests {
-    @available(iOS 13.0, tvOS 13.0, *)
     @Test("Display and draw changes are content changes")
     func hasContentChanges() {
         // Given
@@ -33,7 +34,6 @@ struct CALayerChangesetTests {
         #expect(!changeset.hasContentChanges(for: .init(layoutLayer)))
     }
 
-    @available(iOS 13.0, tvOS 13.0, *)
     @Test("Display, draw, and layout changes are tracked changes")
     func hasChanges() {
         // Given
@@ -57,7 +57,6 @@ struct CALayerChangesetTests {
         #expect(!changeset.hasChanges(for: .init(unchangedLayer)))
     }
 
-    @available(iOS 13.0, tvOS 13.0, *)
     @Test("Deallocated layers do not return stale aspects")
     func deallocatedLayerDoesNotReturnStaleAspects() {
         // Given

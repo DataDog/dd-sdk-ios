@@ -26,10 +26,6 @@ class JSONEncoderTests: XCTestCase {
             EncodingContainer(URL(string: "https://example.com/foo")!)
         )
 
-        if #available(iOS 13.0, OSX 10.15, *) {
-            XCTAssertEqual(encodedURL.utf8String, #"{"value":"https://example.com/foo"}"#)
-        } else {
-            XCTAssertEqual(encodedURL.utf8String, #"{"value":"https:\/\/example.com\/foo"}"#)
-        }
+        XCTAssertEqual(encodedURL.utf8String, #"{"value":"https://example.com/foo"}"#)
     }
 }

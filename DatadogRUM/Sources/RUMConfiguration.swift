@@ -47,7 +47,7 @@ extension RUM {
 
     /// RUM session listener.
     /// - See: `RUM.Configuration.onSessionStart`.
-    public typealias SessionListener = (String, Bool) -> Void
+    public typealias SessionListener = @Sendable (String, Bool) -> Void
 
     /// RUM resource attributes provider.
     /// - See: `RUM.Configuration.URLSessionTracking.resourceAttributesProvider`.
@@ -190,6 +190,7 @@ extension RUM {
         ///         some hangs lasting very close to this threshold may not be reported.
         ///
         /// - Note: App Hangs monitoring requires Datadog Crash Reporting to be enabled. Otherwise stack trace will be not reported in App Hang errors.
+        ///         Stack traces can also be opted out of while keeping Crash Reporting enabled, with `CrashReporting.Configuration.appHangBacktraceEnabled`.
         ///
         /// - Default: `nil` (hangs monitoring disabled).
         public var appHangThreshold: TimeInterval?
@@ -328,6 +329,15 @@ extension RUM {
         /// Default: `false`.
         public var collectAccessibility: Bool
 
+        /// Enables collection of memory and CPU timeseries events.
+        ///
+        /// When set, memory footprint and CPU usage are sampled every second and uploaded as
+        /// timeseries events scoped to the RUM session.
+        ///
+        /// Default: `nil` - which means timeseries collection is not enabled by default.
+        @_spi(Experimental)
+        public var timeseries: Timeseries?
+
         /// Feature flags to preview features in RUM.
         public var featureFlags: FeatureFlags
 
@@ -380,6 +390,17 @@ extension RUM {
             /// Default: `.disabled`.
             public var trackResourceHeaders: TrackResourceHeaders = .disabled
 
+            /// URL patterns disallowed from automatic RUM resource tracking.
+            ///
+            /// Matching requests produce no RUM Resource, and no APM span reconstructed from a RUM Resource.
+            /// The disallow list takes priority over RUM first-party hosts tracing.
+            ///
+            /// A pattern matches the full URL: plain strings match exactly, `*` matches any characters (multiple
+            /// allowed). Patterns with no literal (e.g. `"*"`) are ignored.
+            ///
+            /// Default: `[]`.
+            public var disallowList: [String] = []
+
             /// Private init to avoid `invalid redeclaration of synthesized memberwise init(...:)` in extension.
             private init() {}
         }
@@ -392,6 +413,34 @@ extension RUM {
             case average
             /// Every `1000ms`.
             case rare
+        }
+
+        /// Configuration for collecting memory and CPU timeseries during a RUM session.
+        @_spi(Experimental)
+        public struct Timeseries {
+            /// The specific timeseries types to collect.
+            public var collectTypes: Set<TimeseriesType>
+
+            /// Creates a timeseries configuration.
+            /// - Parameters:
+            ///   - collectTypes: The specific timeseries types to collect.
+            public init(
+                collectTypes: Set<TimeseriesType>
+            ) {
+                self.collectTypes = collectTypes
+            }
+
+            /// The default timeseries configuration: memory and CPU.
+            public static let `default` = Timeseries(collectTypes: [.memory, .cpu])
+        }
+
+        /// A timeseries type that can be collected.
+        @_spi(Experimental)
+        public enum TimeseriesType: CaseIterable {
+            /// Memory footprint and percentage of total device RAM.
+            case memory
+            /// CPU usage as a percentage.
+            case cpu
         }
 
         // MARK: - Internal
@@ -511,14 +560,39 @@ extension RUM.Configuration.URLSessionTracking {
     ///   - firstPartyHostsTracing: Distributed tracing configuration for particular first-party hosts.
     ///   - resourceAttributesProvider: Custom attributes provider for intercepted RUM resources.
     ///   - trackResourceHeaders: Configuration for capturing HTTP headers. Default: `.disabled`.
+    ///   - disallowList: URL patterns disallowed from automatic RUM resource tracking. Default: `[]`.
     public init(
         firstPartyHostsTracing: RUM.Configuration.URLSessionTracking.FirstPartyHostsTracing? = nil,
         resourceAttributesProvider: RUM.ResourceAttributesProvider? = nil,
-        trackResourceHeaders: TrackResourceHeaders = .disabled
+        trackResourceHeaders: TrackResourceHeaders = .disabled,
+        disallowList: [String] = []
     ) {
         self.firstPartyHostsTracing = firstPartyHostsTracing
         self.resourceAttributesProvider = resourceAttributesProvider
         self.trackResourceHeaders = trackResourceHeaders
+        self.disallowList = disallowList
+    }
+}
+
+extension RUM.Configuration.TimeseriesType {
+    /// The timeseries types available for collection on the current platform.
+    internal static var allAvailableOnCurrentPlatform: Set<Self> {
+#if os(watchOS)
+        // CPU usage is unavailable on watchOS (`TimeseriesSessionCollector.processCPU()` always returns `nil`).
+        return [.memory]
+#else
+        return [.memory, .cpu]
+#endif
+    }
+}
+
+extension RUM.Configuration.Timeseries {
+    /// `collectTypes` filtered down to the types actually available on the current platform.
+    ///
+    /// Empty means timeseries collection should be disabled entirely (e.g. `collectTypes: [.cpu]` on watchOS).
+    internal var effectiveCollectTypes: Set<RUM.Configuration.TimeseriesType> {
+        let available = RUM.Configuration.TimeseriesType.allAvailableOnCurrentPlatform
+        return collectTypes.intersection(available)
     }
 }
 
@@ -618,6 +692,7 @@ extension RUM.Configuration {
         self.trackSlowFrames = trackSlowFrames
         self.telemetrySampleRate = telemetrySampleRate
         self.collectAccessibility = collectAccessibility
+        self.timeseries = nil
         self.featureFlags = featureFlags
     }
     #else
@@ -668,6 +743,7 @@ extension RUM.Configuration {
         self.trackSlowFrames = trackSlowFrames
         self.telemetrySampleRate = telemetrySampleRate
         self.collectAccessibility = collectAccessibility
+        self.timeseries = nil
         self.featureFlags = featureFlags
     }
     #endif
@@ -700,6 +776,12 @@ extension RUM.Configuration {
         /// gestures will no longer count as candidate "last interactions" for INV
         /// (Interaction-to-Next-View) attribution.
         case trackScrollAndSwipeActions
+        /// When `true`, changes how view updates are reported: after the first full `RUMViewEvent`
+        /// for a view, subsequent updates are sent as `RUMViewUpdateEvent` deltas containing only the
+        /// fields that changed, instead of resending the full event. A full event is still sent every
+        /// 5 updates so the view state can be reconstructed even if some deltas are lost in transit.
+        /// Defaults to `false`.
+        case viewUpdates
     }
 }
 

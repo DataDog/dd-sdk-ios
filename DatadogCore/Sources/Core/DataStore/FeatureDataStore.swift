@@ -50,7 +50,7 @@ internal final class FeatureDataStore: DataStore {
                 try self.write(data: value, forKey: key, version: version)
             } catch let error {
                 DD.logger.error("[Data Store] Error on setting `\(key)` value for `\(self.feature)`", error: error)
-                self.telemetry.error("[Data Store] Error on setting `\(key)` value for `\(self.feature)`", error: DDError(error: error))
+                self.telemetry.error("[Data Store] Error on setting `\(key)` value for `\(self.feature)`", error: error)
             }
         }
     }
@@ -67,7 +67,7 @@ internal final class FeatureDataStore: DataStore {
             } catch let error {
                 callback(.error(error))
                 DD.logger.error("[Data Store] Error on getting `\(key)` value for `\(self.feature)`", error: error)
-                self.telemetry.error("[Data Store] Error on getting `\(key)` value for `\(self.feature)`", error: DDError(error: error))
+                self.telemetry.error("[Data Store] Error on getting `\(key)` value for `\(self.feature)`", error: error)
             }
         }
     }
@@ -82,7 +82,7 @@ internal final class FeatureDataStore: DataStore {
                 try self.deleteData(forKey: key)
             } catch let error {
                 DD.logger.error("[Data Store] Error on deleting `\(key)` value for `\(self.feature)`", error: error)
-                self.telemetry.error("[Data Store] Error on deleting `\(key)` value for `\(self.feature)`", error: DDError(error: error))
+                self.telemetry.error("[Data Store] Error on deleting `\(key)` value for `\(self.feature)`", error: error)
             }
         }
     }
@@ -94,7 +94,7 @@ internal final class FeatureDataStore: DataStore {
                 try directory?.deleteAllFiles()
             } catch let error {
                 DD.logger.error("[Data Store] Error on clearing all data for `\(self.feature)`", error: error)
-                self.telemetry.error("[Data Store] Error on clearing all data for `\(self.feature)`", error: DDError(error: error))
+                self.telemetry.error("[Data Store] Error on clearing all data for `\(self.feature)`", error: error)
             }
         }
     }

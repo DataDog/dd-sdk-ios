@@ -18,7 +18,14 @@ internal class ViewController: UIViewController {
         DatadogSetup.initialize()
 
         // RUM APIs must be visible:
-        RUM.enable(with: .init(applicationID: "app-id"))
+        RUM.enable(
+            with: .init(
+                applicationID: "app-id",
+                onSessionStart: { sessionID, _ in
+                    print("Session ID is \(sessionID)")
+                }
+            )
+        )
         RUMMonitor.shared().startView(viewController: self)
 
         // Trace APIs must be visible:

@@ -9,7 +9,6 @@ import DatadogInternal
 import Foundation
 
 /// Turns layer tree, image, and touch snapshots into Session Replay records.
-@available(iOS 13.0, tvOS 13.0, *)
 internal protocol LayerSnapshotProcessing {
     func process(
         layerTreeSnapshot: LayerTreeSnapshot,
@@ -19,7 +18,6 @@ internal protocol LayerSnapshotProcessing {
 }
 
 /// Builds and writes Session Replay records for the Core Animation recording pipeline.
-@available(iOS 13.0, tvOS 13.0, *)
 internal final class LayerSnapshotProcessor: LayerSnapshotProcessing {
     private let queue: Queue
     private let recordWriter: RecordWriting
@@ -31,7 +29,6 @@ internal final class LayerSnapshotProcessor: LayerSnapshotProcessing {
     private var lastSnapshot: LayerTreeSnapshot?
     private var lastCompositionTree: SRCompositionTree?
     private var lastWireframes: [SRWireframe]?
-    private var recordsCountByViewID: [String: Int64] = [:]
 
     init(
         queue: Queue,
@@ -69,6 +66,7 @@ internal final class LayerSnapshotProcessor: LayerSnapshotProcessing {
         let output = CompositionTreeBuilder(
             root: layerTreeSnapshot.root,
             webViewSlotIDs: layerTreeSnapshot.webViewSlotIDs,
+            embeddedContentSlots: layerTreeSnapshot.embeddedContentSlots,
             imageSnapshots: imageSnapshots
         ).build()
 
@@ -84,7 +82,10 @@ internal final class LayerSnapshotProcessor: LayerSnapshotProcessing {
 
         if !records.isEmpty {
             let enrichedRecord = EnrichedRecord(context: layerTreeSnapshot.context, records: records)
-            trackRecord(key: enrichedRecord.viewID, value: Int64(records.count))
+            replayContextPublisher.incrementRecordCount(
+                by: Int64(records.count),
+                forViewID: enrichedRecord.viewID
+            )
             recordWriter.write(nextRecord: enrichedRecord)
         }
 
@@ -168,14 +169,8 @@ internal final class LayerSnapshotProcessor: LayerSnapshotProcessing {
 
         return records
     }
-
-    private func trackRecord(key: String, value: Int64) {
-        recordsCountByViewID[key, default: 0] += value
-        replayContextPublisher.setRecordsCountByViewID(recordsCountByViewID)
-    }
 }
 
-@available(iOS 13.0, tvOS 13.0, *)
 private extension LayerTreeSnapshot {
     func shouldStartNewSegment(after previousSnapshot: LayerTreeSnapshot?) -> Bool {
         return context.applicationID != previousSnapshot?.context.applicationID ||
@@ -184,7 +179,6 @@ private extension LayerTreeSnapshot {
     }
 }
 
-@available(iOS 13.0, tvOS 13.0, *)
 private extension EnrichedRecord {
     init(context: LayerRecordingContext, records: [SRRecord]) {
         self.applicationID = context.applicationID

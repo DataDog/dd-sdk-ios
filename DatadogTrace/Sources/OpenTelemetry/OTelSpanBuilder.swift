@@ -160,7 +160,6 @@ internal class OTelSpanBuilder: OpenTelemetryApi.SpanBuilder {
 
 #if canImport(_Concurrency)
     /// Ref.: https://github.com/open-telemetry/opentelemetry-swift/issues/578
-    @available(macOS 10.15, iOS 13.0, watchOS 6.0, tvOS 13.0, *)
     func withActiveSpan<T>(_ operation: (any OpenTelemetryApi.SpanBase) async throws -> T) async rethrows -> T {
         let createdSpan = self.prepareSpan()
         defer { createdSpan.end() }

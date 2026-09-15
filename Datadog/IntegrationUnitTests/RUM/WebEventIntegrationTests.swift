@@ -180,7 +180,8 @@ class WebEventIntegrationTests: XCTestCase {
             },
             "usr": {
               "anonymous_id": "\(expectedUUID)"
-            }
+            },
+            "ddtags": "service:abc,version:1.1.1,sdk_version:abc,env:test"
         }
         """
         )

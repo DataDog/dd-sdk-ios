@@ -35,7 +35,8 @@ public struct AttributesSanitizer {
     ///     one.two.three.four.five.six.seven.eight_nine_ten_eleven
     ///
     public func sanitizeKeys<Value>(for attributes: [String: Value], prefixLevels: Int = 0) -> [String: Value] {
-        let sanitizedAttributes: [(String, Value)] = attributes.map { key, value in
+        var sanitizedAttributes = attributes
+        attributes.forEach { key, value in
             let sanitizedName = sanitize(attributeKey: key, prefixLevels: prefixLevels)
             if sanitizedName != key {
                 DD.logger.warn(
@@ -43,12 +44,13 @@ public struct AttributesSanitizer {
                     \(featureName) attribute '\(key)' was modified to '\(sanitizedName)' to match Datadog constraints.
                     """
                 )
-                return (sanitizedName, value)
-            } else {
-                return (key, value)
+                sanitizedAttributes.removeValue(forKey: key)
+                if attributes[sanitizedName] == nil {
+                    sanitizedAttributes[sanitizedName] = value
+                }
             }
         }
-        return Dictionary(uniqueKeysWithValues: sanitizedAttributes)
+        return sanitizedAttributes
     }
 
     private func sanitize(attributeKey: String, prefixLevels: Int = 0) -> String {

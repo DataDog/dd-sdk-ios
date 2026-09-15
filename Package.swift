@@ -9,10 +9,10 @@ let internalSwiftSettings: [SwiftSetting] = ProcessInfo.processInfo.environment[
 let package = Package(
     name: "Datadog",
     platforms: [
-        .iOS(.v12),
-        .tvOS(.v12),
+        .iOS(.v15),
+        .tvOS(.v15),
         .macOS("12.6"),
-        .watchOS(.v7),
+        .watchOS(.v9),
         .visionOS(.v1)
     ],
     products: [
@@ -54,7 +54,7 @@ let package = Package(
         ),
     ],
     dependencies: [
-        .package(url: "https://github.com/kstenerud/KSCrash.git", from: "2.5.0"),
+        .package(url: "https://github.com/kstenerud/KSCrash.git", from: "2.5.1"),
         .package(url: "https://github.com/open-telemetry/opentelemetry-swift-core", .upToNextMinor(from: "2.5.0")),
     ],
     targets: [
@@ -266,7 +266,7 @@ let package = Package(
                 .target(name: "DatadogTrace"),
                 .target(name: "DatadogCrashReporting"),
                 .target(name: "DatadogWebViewTracking"),
-                .target(name: "DatadogFlags")
+                .target(name: "DatadogFlags"),
             ],
             path: "TestUtilities/Sources",
             swiftSettings: [.define("SPM_BUILD")] + internalSwiftSettings

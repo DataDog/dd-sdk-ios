@@ -7,14 +7,15 @@
 #if os(iOS)
 import DatadogInternal
 import QuartzCore
+import TestUtilities
 import Testing
 import UIKit
 
 @testable import DatadogSessionReplay
 
+@Suite(.datadogTesting)
 @MainActor
 struct CALayerSnapshotTests {
-    @available(iOS 13.0, tvOS 13.0, *)
     @Test("Captures layer identity and visual properties")
     func capturesLayerIdentityAndVisualProperties() throws {
         try CALayer.withReplayIDGenerator(ReplayIDGenerator { 42 }) {
@@ -78,7 +79,6 @@ struct CALayerSnapshotTests {
         }
     }
 
-    @available(iOS 13.0, tvOS 13.0, *)
     @Test("Preserves sublayer order")
     func preservesSublayerOrder() throws {
         // Given
@@ -108,7 +108,6 @@ struct CALayerSnapshotTests {
         #expect(capturedLayers.elementsEqual([backLayer, middleLayer, frontLayer]) { $0.matches($1) })
     }
 
-    @available(iOS 13.0, tvOS 13.0, *)
     @Test("Captures nested hierarchy with absolute frames")
     func capturesNestedHierarchyWithAbsoluteFrames() throws {
         // Given
@@ -135,7 +134,6 @@ struct CALayerSnapshotTests {
         #expect(childSnapshot.absoluteFrame == CGRect(x: 30, y: 45, width: 20, height: 25))
     }
 
-    @available(iOS 13.0, tvOS 13.0, *)
     @Test("Prunes hidden and transparent layer trees")
     func prunesHiddenAndTransparentLayerTrees() throws {
         // Given
@@ -178,7 +176,6 @@ struct CALayerSnapshotTests {
         #expect(snapshot.sublayers.first?.layer.matches(visibleChild) == true)
     }
 
-    @available(iOS 13.0, tvOS 13.0, *)
     @Test("Prunes layer trees outside visible bounds")
     func prunesLayerTreesOutsideVisibleBounds() throws {
         // Given
@@ -202,7 +199,6 @@ struct CALayerSnapshotTests {
         #expect(snapshot.sublayers.first?.layer.matches(visibleChild) == true)
     }
 
-    @available(iOS 13.0, tvOS 13.0, *)
     @Test("Prunes sublayers outside clipping parent bounds")
     func prunesSublayersOutsideClippingParentBounds() throws {
         // Given
@@ -226,7 +222,6 @@ struct CALayerSnapshotTests {
         #expect(parentSnapshot.sublayers.isEmpty)
     }
 
-    @available(iOS 13.0, tvOS 13.0, *)
     @Test("Prunes sublayers outside nested clipping bounds")
     func prunesSublayersOutsideNestedClippingBounds() throws {
         // Given
@@ -262,7 +257,6 @@ struct CALayerSnapshotTests {
         #expect(innerSnapshot.sublayers.first?.layer.matches(visibleChild) == true)
     }
 
-    @available(iOS 13.0, tvOS 13.0, *)
     @Test("Prunes empty clipping layer trees")
     func prunesEmptyClippingLayerTrees() throws {
         // Given
@@ -281,7 +275,6 @@ struct CALayerSnapshotTests {
         #expect(snapshot.sublayers.isEmpty)
     }
 
-    @available(iOS 13.0, tvOS 13.0, *)
     @Test("Applies hide privacy override and ignores private subtree")
     func appliesHidePrivacyOverrideAndIgnoresPrivateSubtree() throws {
         // Given
@@ -306,7 +299,6 @@ struct CALayerSnapshotTests {
         #expect(privateSnapshot.sublayers.isEmpty)
     }
 
-    @available(iOS 13.0, tvOS 13.0, *)
     @Test("Propagates privacy overrides to descendants")
     func propagatesPrivacyOverridesToDescendants() throws {
         // Given
@@ -342,7 +334,119 @@ struct CALayerSnapshotTests {
         #expect(childSnapshot.imagePrivacyLevel == .maskNonBundledOnly)
     }
 
-    @available(iOS 13.0, tvOS 13.0, *)
+    @Test("Captures content geometry")
+    func capturesContentGeometry() throws {
+        // Given
+        let root = CALayer()
+        root.bounds = CGRect(x: 0, y: 0, width: 200, height: 200)
+
+        let layer = CALayer()
+        layer.frame = CGRect(x: 20, y: 30, width: 80, height: 40)
+        root.addSublayer(layer)
+
+        // When
+        let snapshot = try #require(CALayerSnapshot(from: root, in: .mockAny()))
+        let layerSnapshot = try #require(snapshot.sublayers.first)
+
+        // Then
+        #expect(layerSnapshot.contentGeometry.renderBounds == layer.bounds)
+        #expect(layerSnapshot.contentGeometry.localRect == layer.bounds)
+        #expect(layerSnapshot.contentGeometry.frame == layer.frame)
+    }
+
+    @Test("Expands content geometry to include ignored sublayers")
+    func expandsContentGeometryToIncludeIgnoredSublayers() throws {
+        // Given
+        let root = CALayer()
+        root.bounds = CGRect(x: 0, y: 0, width: 200, height: 200)
+
+        let imageView = UIImageView(frame: CGRect(x: 50, y: 60, width: 30, height: 30))
+        root.addSublayer(imageView.layer)
+
+        let ignoredSublayer = CALayer()
+        ignoredSublayer.frame = CGRect(x: -10, y: -12, width: 50, height: 54)
+        imageView.layer.addSublayer(ignoredSublayer)
+
+        // When
+        let snapshot = try #require(CALayerSnapshot(from: root, in: .mockAny()))
+        let imageSnapshot = try #require(snapshot.sublayers.first)
+
+        // Then
+        #expect(imageSnapshot.contentGeometry.renderBounds == ignoredSublayer.frame)
+        #expect(imageSnapshot.contentGeometry.localRect == ignoredSublayer.frame)
+        #expect(imageSnapshot.contentGeometry.frame == CGRect(x: 40, y: 48, width: 50, height: 54))
+    }
+
+    @Test("Keeps content geometry within an ignored subtree owner that clips")
+    func keepsContentGeometryWithinIgnoredSublayerOwnerThatClips() throws {
+        // Given
+        let root = CALayer()
+        root.bounds = CGRect(x: 0, y: 0, width: 200, height: 200)
+
+        let imageView = UIImageView(frame: CGRect(x: 50, y: 60, width: 30, height: 30))
+        imageView.layer.masksToBounds = true
+        root.addSublayer(imageView.layer)
+
+        let ignoredSublayer = CALayer()
+        ignoredSublayer.frame = CGRect(x: -10, y: -12, width: 50, height: 54)
+        imageView.layer.addSublayer(ignoredSublayer)
+
+        // When
+        let snapshot = try #require(CALayerSnapshot(from: root, in: .mockAny()))
+        let imageSnapshot = try #require(snapshot.sublayers.first)
+
+        // Then
+        #expect(imageSnapshot.contentGeometry.renderBounds == imageView.layer.bounds)
+        #expect(imageSnapshot.contentGeometry.localRect == imageView.layer.bounds)
+        #expect(imageSnapshot.contentGeometry.frame == imageView.layer.frame)
+    }
+
+    @Test("Captures complete geometry for a non-oversized layer clipped by an ancestor")
+    func capturesCompleteGeometryForNonOversizedLayerClippedByAncestor() throws {
+        // Given
+        let root = CALayer()
+        root.bounds = CGRect(x: 0, y: 0, width: 200, height: 200)
+
+        let parent = CALayer()
+        parent.frame = CGRect(x: 20, y: 30, width: 50, height: 50)
+        parent.masksToBounds = true
+        root.addSublayer(parent)
+
+        let child = CATextLayer()
+        child.frame = CGRect(x: 30, y: 10, width: 40, height: 20)
+        parent.addSublayer(child)
+
+        // When
+        let snapshot = try #require(CALayerSnapshot(from: root, in: .mockAny()))
+        let parentSnapshot = try #require(snapshot.sublayers.first)
+        let childSnapshot = try #require(parentSnapshot.sublayers.first)
+
+        // Then
+        #expect(childSnapshot.contentGeometry.renderBounds == child.bounds)
+        #expect(childSnapshot.contentGeometry.localRect == child.bounds)
+        #expect(childSnapshot.contentGeometry.frame == child.convert(child.bounds, to: root))
+    }
+
+    @Test("Crops oversized content geometry to the viewport")
+    func cropsOversizedContentGeometryToViewport() throws {
+        // Given
+        let root = CALayer()
+        root.bounds = CGRect(x: 0, y: 0, width: 100, height: 100)
+
+        let oversizedLayer = CALayer()
+        oversizedLayer.frame = CGRect(x: -180, y: 0, width: 400, height: 120)
+        root.addSublayer(oversizedLayer)
+
+        // When
+        let snapshot = try #require(CALayerSnapshot(from: root, in: .mockAny()))
+        let oversizedSnapshot = try #require(snapshot.sublayers.first)
+
+        // Then
+        #expect(oversizedSnapshot.contentGeometry.renderBounds == oversizedLayer.bounds)
+        #expect(oversizedSnapshot.contentGeometry.localRect == CGRect(x: 180, y: 0, width: 100, height: 100))
+        #expect(oversizedSnapshot.contentGeometry.frame == root.bounds)
+    }
+
     @Test("Captures per-corner radii")
     func capturesPerCornerRadii() throws {
         // Given
@@ -365,7 +469,6 @@ struct CALayerSnapshotTests {
         #expect(snapshot.cornerRadii == cornerRadii)
     }
 
-    @available(iOS 13.0, tvOS 13.0, *)
     @Test("Captures masked corner radii")
     func capturesMaskedCornerRadii() throws {
         // Given
@@ -384,58 +487,21 @@ struct CALayerSnapshotTests {
         #expect(snapshot.cornerRadii.bottomRight == CGSize(width: 8, height: 8))
     }
 
-    @available(iOS 13.0, tvOS 13.0, *)
-    @Test("Resolves automatic corner radius in switch sublayers")
-    func resolvesAutomaticCornerRadiusInSwitchSublayers() throws {
+    @Test("Ignores non-finite corner radius")
+    func ignoresNonFiniteCornerRadius() throws {
         // Given
-        let switchControl = UISwitch(frame: CGRect(x: 0, y: 0, width: 63, height: 28))
         let layer = CALayer()
         layer.bounds = CGRect(x: 0, y: 0, width: 37, height: 24)
-        layer.position = CGPoint(x: 18.5, y: 12)
-        layer.backgroundColor = UIColor.white.cgColor
         layer.cornerRadius = .nan
-        switchControl.layer.addSublayer(layer)
 
         // When
-        let snapshot = try #require(CALayerSnapshot(from: switchControl.layer, in: .mockAny()))
+        let snapshot = try #require(CALayerSnapshot(from: layer, in: .mockAny()))
 
         // Then
-        let layerSnapshot = try #require(snapshot.sublayers.first { $0.layer.matches(layer) })
-
-        if #available(iOS 26.0, *) {
-            #expect(layerSnapshot.cornerRadii.uniformCornerRadius == 12)
-        } else {
-            #expect(layerSnapshot.cornerRadii == .zero)
-        }
-    }
-
-    @available(iOS 13.0, tvOS 13.0, *)
-    @Test("Resolves automatic corner radius in slider sublayers")
-    func resolvesAutomaticCornerRadiusInSliderSublayers() throws {
-        // Given
-        let slider = UISlider(frame: CGRect(x: 0, y: 0, width: 280, height: 31))
-        let layer = CALayer()
-        layer.bounds = CGRect(x: 0, y: 0, width: 37, height: 24)
-        layer.position = CGPoint(x: 18.5, y: 12)
-        layer.backgroundColor = UIColor.white.cgColor
-        layer.cornerRadius = .nan
-        slider.layer.addSublayer(layer)
-
-        // When
-        let snapshot = try #require(CALayerSnapshot(from: slider.layer, in: .mockAny()))
-
-        // Then
-        let layerSnapshot = try #require(snapshot.sublayers.first { $0.layer.matches(layer) })
-
-        if #available(iOS 26.0, *) {
-            #expect(layerSnapshot.cornerRadii.uniformCornerRadius == 12)
-        } else {
-            #expect(layerSnapshot.cornerRadii == .zero)
-        }
+        #expect(snapshot.cornerRadii == .zero)
     }
 }
 
-@available(iOS 13.0, tvOS 13.0, *)
 private extension CALayerSnapshot.CornerRadii {
     var nsValue: NSValue {
         var value = self
