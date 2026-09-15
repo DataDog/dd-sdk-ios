@@ -1111,10 +1111,10 @@ enum ProbeScenarioCatalog {
         return timeline
     }
 
-    /// Replaces one mounted semantic presentation with another without first
-    /// clearing the customer's complete-destination binding. The underlying
-    /// stack destination must remain hidden until the replacement is finally
-    /// dismissed.
+    /// Replaces mounted semantic presentations in both directions without
+    /// first clearing the customer's complete-destination binding. The
+    /// underlying stack destination must remain hidden until the final
+    /// presentation is dismissed.
     private static let swiftUISemanticAPIPresentationReplacement = ProbeScenario(
         identifier: "swiftui.semantic-api.presentation-replacement",
         trackingMode: .navigationOccurrence,
@@ -1155,11 +1155,19 @@ enum ProbeScenarioCatalog {
                 scene: "scene-A",
                 value: "semantic-presentation-full-screen-cover"
             ),
+            ProbeStep(.setSwiftUIPresentation, scene: "scene-A", value: "sheet"),
+            ProbeStep(.waitForSignal, scene: "scene-A", signal: "destination:sheet"),
+            ProbeStep(.waitForSignal, scene: "scene-A", signal: "rum-view:sheet#2"),
+            ProbeStep(
+                .emitMarker,
+                scene: "scene-A",
+                value: "semantic-presentation-sheet-return"
+            ),
             ProbeStep(.setSwiftUIPresentation, scene: "scene-A", value: "home"),
             ProbeStep(
                 .waitForSignal,
                 scene: "scene-A",
-                signal: "marker:full-screen-cover-dismissed-settled"
+                signal: "marker:sheet-dismissed-settled"
             ),
             ProbeStep(.waitForSignal, scene: "scene-A", signal: "rum-view:home#2"),
             ProbeStep(
@@ -1188,7 +1196,7 @@ enum ProbeScenarioCatalog {
                 scene: "scene-A",
                 screen: "sheet",
                 rumViewOrigin: .semantic,
-                expectedCount: 1
+                expectedCount: 2
             ),
             ProbeExpectation(
                 .viewStarted,
@@ -1198,18 +1206,12 @@ enum ProbeScenarioCatalog {
                 expectedCount: 1
             )
         ]
-        for (screen, phases) in [
-            ("sheet", ["on-appear", "task-immediate"]),
-            ("full-screen-cover", ["on-appear", "task-immediate"]),
-            (
-                "home",
-                [
-                    "full-screen-cover-dismissed-immediate",
-                    "full-screen-cover-dismissed-settled"
-                ]
-            )
+        for (screen, occurrence, phases) in [
+            ("sheet", 1, ["on-appear", "task-immediate"]),
+            ("full-screen-cover", 1, ["on-appear", "task-immediate"]),
+            ("sheet", 2, ["on-appear", "task-immediate"]),
+            ("home", 2, ["sheet-dismissed-immediate", "sheet-dismissed-settled"])
         ] {
-            let occurrence = screen == "home" ? 2 : 1
             for phase in phases {
                 expectations += semanticMarkerExpectations(
                     screen: screen,
@@ -1289,6 +1291,27 @@ enum ProbeScenarioCatalog {
             ProbeExpectation(
                 .viewStarted,
                 scene: "scene-A",
+                screen: "sheet",
+                occurrence: 2,
+                rumViewOrigin: .semantic
+            )
+        ]
+        timeline += semanticMarkerExpectations(
+            screen: "sheet",
+            occurrence: 2,
+            name: "semantic-presentation-sheet-return"
+        )
+        timeline += [
+            ProbeExpectation(
+                .viewStopped,
+                scene: "scene-A",
+                screen: "sheet",
+                occurrence: 2,
+                rumViewOrigin: .semantic
+            ),
+            ProbeExpectation(
+                .viewStarted,
+                scene: "scene-A",
                 screen: "home",
                 occurrence: 2,
                 rumViewOrigin: .semantic
@@ -1297,12 +1320,12 @@ enum ProbeScenarioCatalog {
         timeline += semanticMarkerExpectations(
             screen: "home",
             occurrence: 2,
-            name: "full-screen-cover-dismissed-immediate"
+            name: "sheet-dismissed-immediate"
         )
         timeline += semanticMarkerExpectations(
             screen: "home",
             occurrence: 2,
-            name: "full-screen-cover-dismissed-settled"
+            name: "sheet-dismissed-settled"
         )
         timeline += semanticMarkerExpectations(
             screen: "home",

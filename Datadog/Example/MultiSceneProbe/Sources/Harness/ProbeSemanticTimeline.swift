@@ -6,6 +6,28 @@
 
 import Foundation
 
+/// Keeps presentation-subtree intervals balanced when SwiftUI replaces one
+/// presentation style directly with another. SwiftUI does not necessarily
+/// deliver the outgoing modifier's `onDismiss` callback during replacement, so
+/// returning to the same style continues its existing suppression interval.
+internal struct ProbePresentationSubtreeIntervals {
+    private var active: Set<String> = []
+
+    mutating func begin(_ interval: String) -> Bool {
+        active.insert(interval).inserted
+    }
+
+    mutating func end(
+        _ interval: String,
+        whilePresentationIsActive: Bool = false
+    ) -> Bool {
+        guard !whilePresentationIsActive else {
+            return false
+        }
+        return active.remove(interval) != nil
+    }
+}
+
 internal struct ProbeViewOccurrence: Hashable, Codable, CustomStringConvertible {
     let scene: String
     let screen: String

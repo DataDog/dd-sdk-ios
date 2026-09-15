@@ -460,6 +460,8 @@ struct ProbeWindowRoot: View {
     @State private var didShowDetail = false
     @State private var didOpenPeer = false
     @State private var swiftUIPresentation: ProbeSwiftUIPresentation?
+    @State private var presentationSubtreeIntervals =
+        ProbePresentationSubtreeIntervals()
     @State private var keyedManualViewStack: [ProbeKeyedManualDestination] = []
     @State private var isSiblingAuthorityActive = false
     @State private var siblingControllerAncestries: [String: ProbeControllerAncestry] = [:]
@@ -1224,17 +1226,19 @@ struct ProbeWindowRoot: View {
                     interval: presentation.activeInterval
                 )
             )
-            ProbeRuntime.eventRecorder.record(
-                ProbeSignal(
-                    kind: .intervalBegan,
-                    semanticContext: ProbeSemanticContext(
-                        logicalSceneID: window.label,
-                        nativeSceneID: sceneSessionID,
-                        screen: presentation.rawValue
-                    ),
-                    interval: presentation.subtreeInterval
+            if presentationSubtreeIntervals.begin(presentation.subtreeInterval) {
+                ProbeRuntime.eventRecorder.record(
+                    ProbeSignal(
+                        kind: .intervalBegan,
+                        semanticContext: ProbeSemanticContext(
+                            logicalSceneID: window.label,
+                            nativeSceneID: sceneSessionID,
+                            screen: presentation.rawValue
+                        ),
+                        interval: presentation.subtreeInterval
+                    )
                 )
-            )
+            }
         }
         swiftUIPresentation = presentation
         navigationMutation += 1
@@ -1352,17 +1356,22 @@ struct ProbeWindowRoot: View {
     }
 
     private func presentationDidDismiss(_ presentation: ProbeSwiftUIPresentation) {
-        ProbeRuntime.eventRecorder.record(
-            ProbeSignal(
-                kind: .intervalEnded,
-                semanticContext: ProbeSemanticContext(
-                    logicalSceneID: window.label,
-                    nativeSceneID: sceneSessionID,
-                    screen: currentNavigationScreen
-                ),
-                interval: presentation.subtreeInterval
+        if presentationSubtreeIntervals.end(
+            presentation.subtreeInterval,
+            whilePresentationIsActive: swiftUIPresentation == presentation
+        ) {
+            ProbeRuntime.eventRecorder.record(
+                ProbeSignal(
+                    kind: .intervalEnded,
+                    semanticContext: ProbeSemanticContext(
+                        logicalSceneID: window.label,
+                        nativeSceneID: sceneSessionID,
+                        screen: currentNavigationScreen
+                    ),
+                    interval: presentation.subtreeInterval
+                )
             )
-        )
+        }
         guard swiftUIPresentation == nil else {
             return
         }

@@ -7,6 +7,20 @@
 import XCTest
 
 final class ProbeScenarioRunnerTests: XCTestCase {
+    func testPresentationSubtreeIntervalsRemainBalancedAcrossReplacement() {
+        var intervals = ProbePresentationSubtreeIntervals()
+
+        XCTAssertTrue(intervals.begin("sheet"))
+        XCTAssertTrue(intervals.begin("cover"))
+        XCTAssertFalse(intervals.begin("sheet"))
+        XCTAssertFalse(
+            intervals.end("sheet", whilePresentationIsActive: true)
+        )
+        XCTAssertTrue(intervals.end("sheet"))
+        XCTAssertFalse(intervals.end("sheet"))
+        XCTAssertTrue(intervals.end("cover"))
+    }
+
     func testRestoredWindowUsesCurrentLaunchRunID() {
         let restoredWindow = ProbeWindow(
             runID: "previous-run",
@@ -580,7 +594,7 @@ final class ProbeScenarioRunnerTests: XCTestCase {
             scenario.steps
                 .filter { $0.kind == .setSwiftUIPresentation }
                 .compactMap(\.value),
-            ["sheet", "full-screen-cover", "home"]
+            ["sheet", "full-screen-cover", "sheet", "home"]
         )
         XCTAssertTrue(
             scenario.completionConditions.contains {
@@ -591,6 +605,7 @@ final class ProbeScenarioRunnerTests: XCTestCase {
             ("home", 1),
             ("sheet", 1),
             ("full-screen-cover", 1),
+            ("sheet", 2),
             ("home", 2)
         ] {
             XCTAssertTrue(
@@ -611,14 +626,18 @@ final class ProbeScenarioRunnerTests: XCTestCase {
                     && $0.expectedCount == 2
             }
         )
-        for screen in ["sheet", "full-screen-cover"] {
+        for (screen, occurrence) in [
+            ("sheet", 1),
+            ("full-screen-cover", 1),
+            ("sheet", 2)
+        ] {
             for phase in ["on-appear", "task-immediate"] {
                 for kind in [ProbeExpectationKind.action, .resource] {
                     XCTAssertTrue(
                         scenario.completionConditions.contains {
                             $0.kind == kind
                                 && $0.screen == screen
-                                && $0.occurrence == 1
+                                && $0.occurrence == occurrence
                                 && $0.name == phase
                                 && $0.rumViewOrigin == .semantic
                         }
