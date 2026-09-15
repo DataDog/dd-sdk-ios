@@ -54,7 +54,7 @@ extension URLRequest {
 }
 
 internal struct FlagAssignmentsRequestBody {
-    struct Subject: Encodable {
+    struct Subject: Codable {
         private enum CodingKeys: String, CodingKey {
             case targetingKey = "targeting_key"
             case targetingAttributes = "targeting_attributes"
@@ -64,7 +64,7 @@ internal struct FlagAssignmentsRequestBody {
         let targetingAttributes: [String: AnyValue]
     }
 
-    struct Environment: Encodable {
+    struct Environment: Codable {
         private enum CodingKeys: String, CodingKey {
             case name
             case datadogEnvironment = "dd_env"
@@ -74,7 +74,7 @@ internal struct FlagAssignmentsRequestBody {
         let datadogEnvironment: String
     }
 
-    struct Source: Encodable {
+    struct Source: Codable {
         private enum CodingKeys: String, CodingKey {
             case sdkName = "sdk_name"
             case sdkVersion = "sdk_version"
@@ -89,7 +89,7 @@ internal struct FlagAssignmentsRequestBody {
     let subject: Subject
 }
 
-extension FlagAssignmentsRequestBody: Encodable {
+extension FlagAssignmentsRequestBody: Codable {
     private enum CodingKeys: String, CodingKey {
         case type
         case data
@@ -110,5 +110,14 @@ extension FlagAssignmentsRequestBody: Encodable {
         try attributesContainer.encode(environment, forKey: .environment)
         try attributesContainer.encode(source, forKey: .source)
         try attributesContainer.encode(subject, forKey: .subject)
+    }
+
+    init(from decoder: any Decoder) throws {
+        let rootContainer = try decoder.container(keyedBy: CodingKeys.self)
+        let dataContainer = try rootContainer.nestedContainer(keyedBy: CodingKeys.self, forKey: .data)
+        let attributesContainer = try dataContainer.nestedContainer(keyedBy: CodingKeys.self, forKey: .attributes)
+        environment = try attributesContainer.decode(Environment.self, forKey: .environment)
+        source = try attributesContainer.decode(Source.self, forKey: .source)
+        subject = try attributesContainer.decode(Subject.self, forKey: .subject)
     }
 }

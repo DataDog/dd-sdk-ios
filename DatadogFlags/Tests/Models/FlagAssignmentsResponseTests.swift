@@ -150,7 +150,8 @@ final class FlagAssignmentsResponseTests: XCTestCase {
                         reason: "TARGETING_MATCH",
                         doLog: true
                     ),
-                ]
+                ],
+                subject: "test_subject"
             )
         )
     }

@@ -77,6 +77,8 @@
 		116656D62EB501D3004248E8 /* ProfilingRUMIntegrationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 116656D42EB501C2004248E8 /* ProfilingRUMIntegrationTests.swift */; };
 		116656D72EB504A8004248E8 /* DatadogProfiling.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D229FFA72E3BC6D4009CCD62 /* DatadogProfiling.framework */; platformFilters = (ios, tvos, xros, ); };
 		116656E12EB504F1004248E8 /* DatadogFlags.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 5BA8C2ED2E784B3C00B1DA80 /* DatadogFlags.framework */; };
+		AAFFE0010000000000000001 /* DatadogFlags.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 5BA8C2ED2E784B3C00B1DA80 /* DatadogFlags.framework */; };
+		AAFFE0020000000000000002 /* DatadogFlags.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 5BA8C2ED2E784B3C00B1DA80 /* DatadogFlags.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		1166C5952F748138008E34BC /* DDProfilerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1166C5942F748138008E34BC /* DDProfilerTests.swift */; };
 		1166C5992F76D81A008E34BC /* AppHangMessage.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1166C5972F76D810008E34BC /* AppHangMessage.swift */; };
 		1166C59C2F76D827008E34BC /* LongTaskMessage.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1166C59A2F76D822008E34BC /* LongTaskMessage.swift */; };
@@ -1814,6 +1816,13 @@
 			remoteGlobalIDString = D23039A4298D513C001A1FA3;
 			remoteInfo = DatadogInternal;
 		};
+		AAFFE0030000000000000003 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 61133B79242393DE00786299 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 5BA8C2EC2E784B3C00B1DA80;
+			remoteInfo = DatadogFlags;
+		};
 		D25EF0212F45EBC2007E6CEE /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 61133B79242393DE00786299 /* Project object */;
@@ -1890,6 +1899,7 @@
 			dstPath = "";
 			dstSubfolderSpec = 10;
 			files = (
+				AAFFE0020000000000000002 /* DatadogFlags.framework in Embed Frameworks */,
 				3C2206F82AB9DBC600DE780C /* DatadogInternal.framework in Embed Frameworks */,
 				3C2206F72AB9DBB600DE780C /* DatadogTrace.framework in Embed Frameworks */,
 				1434A4622B7F73110072E3BB /* OpenTelemetryApi.xcframework in Embed Frameworks */,
@@ -3377,6 +3387,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				AAFFE0010000000000000001 /* DatadogFlags.framework in Frameworks */,
 				D25EF02B2F45EBEA007E6CEE /* DatadogInternal.framework in Frameworks */,
 				6175922D2A6FADDD0073F431 /* DatadogSessionReplay.framework in Frameworks */,
 				61A2CC332A44A5F60000FF25 /* DatadogRUM.framework in Frameworks */,
@@ -7618,6 +7629,7 @@
 			buildRules = (
 			);
 			dependencies = (
+				AAFFE0040000000000000004 /* PBXTargetDependency */,
 				D25EF0202F45EBC2007E6CEE /* PBXTargetDependency */,
 				D25EF0222F45EBC2007E6CEE /* PBXTargetDependency */,
 				D25EF0242F45EBC2007E6CEE /* PBXTargetDependency */,
@@ -9755,6 +9767,11 @@
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
+		AAFFE0040000000000000004 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 5BA8C2EC2E784B3C00B1DA80 /* DatadogFlags */;
+			targetProxy = AAFFE0030000000000000003 /* PBXContainerItemProxy */;
+		};
 		11030D622D959EAD00732D5F /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			target = D207317B29A5226A00ECBF94 /* DatadogLogs */;

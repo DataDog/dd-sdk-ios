@@ -16,6 +16,8 @@ final class FlagsTests: XCTestCase {
         // Then
         XCTAssertNil(config.customExposureEndpoint)
         XCTAssertEqual(config.initializationTimeout, 5)
+        XCTAssertEqual(config.assignmentProtection, .disabled)
+        XCTAssertNil(config.assignmentAuthorization)
     }
 
     func testConfigurationInitializerSetsInitializationTimeout() {
@@ -26,6 +28,39 @@ final class FlagsTests: XCTestCase {
         // Then
         XCTAssertEqual(configured.initializationTimeout, 2.5)
         XCTAssertNil(disabled.initializationTimeout)
+    }
+
+    func testAuthorizationInfersSignedAndAuthorizedProtectionForSourceCompatibility() {
+        let authorization = Flags.AssignmentAuthorization(
+            bearerToken: "header.payload.signature",
+            expiresAt: .distantFuture
+        )
+
+        let config = Flags.Configuration(assignmentAuthorization: authorization)
+
+        XCTAssertEqual(config.assignmentProtection, .signedAndAuthorized)
+        XCTAssertEqual(config.assignmentAuthorization, authorization)
+    }
+
+    func testExplicitSignedProtectionDoesNotRequireAuthorization() {
+        let config = Flags.Configuration(assignmentProtection: .signed)
+
+        XCTAssertEqual(config.assignmentProtection, .signed)
+        XCTAssertNil(config.assignmentAuthorization)
+    }
+
+    func testExplicitSignedProtectionRejectsAuthorizationWithoutDowngradeOrCrash() {
+        let core = FeatureRegistrationCoreMock()
+        let config = Flags.Configuration(
+            assignmentProtection: .signed,
+            assignmentAuthorization: .init(
+                bearerToken: "header.payload.signature",
+                expiresAt: .distantFuture
+            )
+        )
+
+        XCTAssertThrowsError(try Flags.enableOrThrow(with: config, in: core))
+        XCTAssertNil(core.get(feature: FlagsFeature.self))
     }
 
     func testWhenNotEnabled() {
@@ -53,6 +88,7 @@ final class FlagsTests: XCTestCase {
         config.customFlagsEndpoint = .mockRandom()
         config.customFlagsHeaders = .mockRandom()
         config.initializationTimeout = 2.5
+        config.assignmentProtection = .signed
         config.customExposureEndpoint = .mockRandom()
         let core = FeatureRegistrationCoreMock()
 
@@ -66,6 +102,7 @@ final class FlagsTests: XCTestCase {
         XCTAssertEqual(flagAssignmentFetcher.customEndpoint, config.customFlagsEndpoint)
         XCTAssertEqual(flagAssignmentFetcher.customHeaders, config.customFlagsHeaders)
         XCTAssertEqual(flags.initializationTimeout, config.initializationTimeout)
+        XCTAssertEqual(flags.assignmentProtection, .signed)
         let requestBuilder = try XCTUnwrap(flags.requestBuilder as? ExposureRequestBuilder)
         XCTAssertEqual(requestBuilder.customIntakeURL, config.customExposureEndpoint)
     }

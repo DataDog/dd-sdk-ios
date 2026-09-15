@@ -7,10 +7,12 @@
 import Foundation
 
 internal struct FlagAssignmentsResponse: Equatable {
+    let subject: String?
     let flags: [String: FlagAssignment]
     let failedFlags: [String: String] // key -> error description
 
-    init(flags: [String: FlagAssignment], failedFlags: [String: String] = [:]) {
+    init(flags: [String: FlagAssignment], subject: String? = nil, failedFlags: [String: String] = [:]) {
+        self.subject = subject
         self.flags = flags
         self.failedFlags = failedFlags
     }
@@ -19,6 +21,7 @@ internal struct FlagAssignmentsResponse: Equatable {
 extension FlagAssignmentsResponse: Codable {
     private enum CodingKeys: String, CodingKey {
         case data
+        case id
         case attributes
         case flags
     }
@@ -26,6 +29,7 @@ extension FlagAssignmentsResponse: Codable {
     init(from decoder: any Decoder) throws {
         let rootContainer = try decoder.container(keyedBy: CodingKeys.self)
         let dataContainer = try rootContainer.nestedContainer(keyedBy: CodingKeys.self, forKey: .data)
+        self.subject = try dataContainer.decodeIfPresent(String.self, forKey: .id)
         let attributesContainer = try dataContainer.nestedContainer(keyedBy: CodingKeys.self, forKey: .attributes)
 
         // Decode all flags (including those with unknown variation types)
@@ -50,6 +54,7 @@ extension FlagAssignmentsResponse: Codable {
     func encode(to encoder: any Encoder) throws {
         var rootContainer = encoder.container(keyedBy: CodingKeys.self)
         var dataContainer = rootContainer.nestedContainer(keyedBy: CodingKeys.self, forKey: .data)
+        try dataContainer.encodeIfPresent(subject, forKey: .id)
         var attributesContainer = dataContainer.nestedContainer(keyedBy: CodingKeys.self, forKey: .attributes)
         try attributesContainer.encode(flags, forKey: .flags)
     }
