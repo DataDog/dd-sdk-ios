@@ -70,6 +70,64 @@ public extension RUMMonitorProtocol {
         stopView(key: key, attributes: attributes)
     }
 
+    #if os(iOS)
+    /// Starts a RUM view in a specific window scene.
+    ///
+    /// This API is experimental and may change before becoming generally available.
+    /// Pair this call with `stopView(key:in:attributes:)` using the same key and scene.
+    /// - Parameters:
+    ///   - key: a `String` value identifying this view within `scene`.
+    ///   - name: the name of the view. If not provided, the `key` name will be used.
+    ///   - scene: the window scene that owns this view.
+    ///   - attributes: custom attributes to attach to this view.
+    @_spi(Experimental)
+    @available(iOS 27.0, *)
+    @MainActor
+    func startView(
+        key: String,
+        name: String? = nil,
+        in scene: UIWindowScene,
+        attributes: [AttributeKey: AttributeValue] = [:]
+    ) {
+        RUMSceneTargetedManualViewBridge.startView(
+            on: self,
+            key: key,
+            name: name,
+            attributes: attributes,
+            sceneIdentifier: RUMSceneIdentifier(
+                rawValue: scene.session.persistentIdentifier
+            )
+        )
+    }
+
+    /// Stops a RUM view in a specific window scene.
+    ///
+    /// This API is experimental and may change before becoming generally available.
+    /// It only pairs with `startView(key:name:in:attributes:)` made for the same
+    /// key and scene.
+    /// - Parameters:
+    ///   - key: a `String` value identifying the view within `scene`.
+    ///   - scene: the window scene that owns this view.
+    ///   - attributes: custom attributes to attach to this view.
+    @_spi(Experimental)
+    @available(iOS 27.0, *)
+    @MainActor
+    func stopView(
+        key: String,
+        in scene: UIWindowScene,
+        attributes: [AttributeKey: AttributeValue] = [:]
+    ) {
+        RUMSceneTargetedManualViewBridge.stopView(
+            on: self,
+            key: key,
+            attributes: attributes,
+            sceneIdentifier: RUMSceneIdentifier(
+                rawValue: scene.session.persistentIdentifier
+            )
+        )
+    }
+    #endif
+
     // MARK: - errors
 
     /// Adds RUM error to current RUM view.
@@ -412,5 +470,50 @@ public extension RUMMonitorProtocol {
         failOperation(name: name, operationKey: operationKey, reason: reason, attributes: attributes)
     }
 }
+
+#if os(iOS)
+/// Keeps extension-only scene APIs source-compatible with third-party monitor
+/// conformers while allowing the SDK monitor to use exact scene ownership.
+@MainActor
+internal enum RUMSceneTargetedManualViewBridge {
+    static func startView(
+        on monitor: any RUMMonitorViewProtocol,
+        key: String,
+        name: String?,
+        attributes: [AttributeKey: AttributeValue],
+        sceneIdentifier: RUMSceneIdentifier
+    ) {
+        guard let monitor = monitor as? any RUMSceneTargetedManualViewHandling else {
+            monitor.startView(key: key, name: name, attributes: attributes)
+            return
+        }
+
+        monitor.startView(
+            key: key,
+            name: name,
+            attributes: attributes,
+            sceneIdentifier: sceneIdentifier
+        )
+    }
+
+    static func stopView(
+        on monitor: any RUMMonitorViewProtocol,
+        key: String,
+        attributes: [AttributeKey: AttributeValue],
+        sceneIdentifier: RUMSceneIdentifier
+    ) {
+        guard let monitor = monitor as? any RUMSceneTargetedManualViewHandling else {
+            monitor.stopView(key: key, attributes: attributes)
+            return
+        }
+
+        monitor.stopView(
+            key: key,
+            attributes: attributes,
+            sceneIdentifier: sceneIdentifier
+        )
+    }
+}
+#endif
 
 // swiftlint:enable function_default_parameter_at_end

@@ -6,6 +6,22 @@
 
 import Foundation
 
+struct ProbeWindow: Codable, Hashable {
+    static let windowGroupID = "rum-probe"
+
+    let runID: String
+    let label: String
+    let opensPeer: Bool
+
+    func normalized(forRunID currentRunID: String) -> ProbeWindow {
+        ProbeWindow(
+            runID: currentRunID,
+            label: label,
+            opensPeer: opensPeer
+        )
+    }
+}
+
 /// Mirrors `RUMScrollHandler.velocityThreshold` so the runtime probe can prove
 /// that a late scroll-handler stop would classify the gesture as a swipe. The
 /// expected `.scroll` event is only an ordering discriminator above this speed.

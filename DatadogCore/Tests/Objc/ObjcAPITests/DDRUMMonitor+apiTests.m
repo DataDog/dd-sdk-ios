@@ -69,6 +69,15 @@
     [monitor stopViewWithKey:@"view" attributes:@{}];
     [monitor startViewWithKey:@"" name:nil attributes:@{}];
     [monitor stopViewWithKey:@"" attributes:@{}];
+    #if TARGET_OS_IOS && DEBUG
+    if (@available(iOS 27.0, *)) {
+        UIWindowScene *scene = (UIWindowScene *)UIApplication.sharedApplication.connectedScenes.anyObject;
+        if (scene != nil) {
+            [monitor startViewWithKey:@"view" name:@"Scene View" inScene:scene attributes:@{}];
+            [monitor stopViewWithKey:@"view" inScene:scene attributes:@{}];
+        }
+    }
+    #endif
     [monitor addViewLoadingTimeWithOverwrite:YES];
 
     [monitor addErrorWithMessage:@"" stack:nil source:DDRUMErrorSourceCustom attributes:@{}];

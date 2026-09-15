@@ -10,6 +10,43 @@ import DatadogInternal
 
 @testable import DatadogRUM
 
+#if os(iOS)
+private final class SceneTargetedFallbackMonitor: RUMMonitorViewProtocol {
+    var starts: [(key: String, name: String?, attributes: [AttributeKey: AttributeValue])] = []
+    var stops: [(key: String, attributes: [AttributeKey: AttributeValue])] = []
+
+    func addViewAttribute(forKey key: AttributeKey, value: AttributeValue) {}
+    func addViewAttributes(_ attributes: [AttributeKey: AttributeValue]) {}
+    func removeViewAttribute(forKey key: AttributeKey) {}
+    func removeViewAttributes(forKeys keys: [AttributeKey]) {}
+    func startView(
+        viewController: UIViewController,
+        name: String?,
+        attributes: [AttributeKey: AttributeValue]
+    ) {}
+    func stopView(
+        viewController: UIViewController,
+        attributes: [AttributeKey: AttributeValue]
+    ) {}
+    func startView(
+        key: String,
+        name: String?,
+        attributes: [AttributeKey: AttributeValue]
+    ) {
+        starts.append((key: key, name: name, attributes: attributes))
+    }
+
+    func stopView(
+        key: String,
+        attributes: [AttributeKey: AttributeValue]
+    ) {
+        stops.append((key: key, attributes: attributes))
+    }
+    func addTiming(name: String) {}
+    func addViewLoadingTime(overwrite: Bool) {}
+}
+#endif
+
 class NOPMonitorTests: XCTestCase {
     func testWhenUsingNOPMonitorAPIs_itPrintsWarning() {
         let dd = DD.mockWith(logger: CoreLoggerMock())
@@ -99,4 +136,77 @@ class NOPMonitorTests: XCTestCase {
         }
         XCTAssertEqual(expectedMessages, actualMessages)
     }
+
+    #if os(iOS)
+    @MainActor
+    func testWhenUsingSceneTargetedManualViewBridgeOnNOPMonitor_itFallsBackExactlyOnce() {
+        let dd = DD.mockWith(logger: CoreLoggerMock())
+        defer { dd.reset() }
+
+        // Given
+        let noop: any RUMMonitorProtocol = NOPMonitor()
+        let scene = RUMSceneIdentifier(rawValue: "scene-A")
+
+        // When
+        RUMSceneTargetedManualViewBridge.startView(
+            on: noop,
+            key: "compose",
+            name: "Compose",
+            attributes: [:],
+            sceneIdentifier: scene
+        )
+        RUMSceneTargetedManualViewBridge.stopView(
+            on: noop,
+            key: "compose",
+            attributes: [:],
+            sceneIdentifier: scene
+        )
+
+        // Then
+        XCTAssertEqual(
+            dd.logger.criticalLogs.map(\.message),
+            [
+                """
+                Calling `startView(key:name:attributes:)` on NOPMonitor.
+                Make sure RUM feature is enabled before using `RUMMonitor.shared()`.
+                """,
+                """
+                Calling `stopView(key:attributes:)` on NOPMonitor.
+                Make sure RUM feature is enabled before using `RUMMonitor.shared()`.
+                """
+            ]
+        )
+    }
+
+    @MainActor
+    func testWhenUsingSceneTargetedManualViewBridgeOnCustomMonitor_itFallsBackExactlyOnce() {
+        // Given
+        let monitor = SceneTargetedFallbackMonitor()
+        let scene = RUMSceneIdentifier(rawValue: "scene-A")
+
+        // When
+        RUMSceneTargetedManualViewBridge.startView(
+            on: monitor,
+            key: "compose",
+            name: "Compose",
+            attributes: ["start": "attribute"],
+            sceneIdentifier: scene
+        )
+        RUMSceneTargetedManualViewBridge.stopView(
+            on: monitor,
+            key: "compose",
+            attributes: ["stop": "attribute"],
+            sceneIdentifier: scene
+        )
+
+        // Then
+        XCTAssertEqual(monitor.starts.count, 1)
+        XCTAssertEqual(monitor.starts.first?.key, "compose")
+        XCTAssertEqual(monitor.starts.first?.name, "Compose")
+        XCTAssertEqual(monitor.starts.first?.attributes["start"] as? String, "attribute")
+        XCTAssertEqual(monitor.stops.count, 1)
+        XCTAssertEqual(monitor.stops.first?.key, "compose")
+        XCTAssertEqual(monitor.stops.first?.attributes["stop"] as? String, "attribute")
+    }
+    #endif
 }
