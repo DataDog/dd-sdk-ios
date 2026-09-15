@@ -206,7 +206,7 @@ class TelemetryReceiverTests: XCTestCase {
             oneOf([
                 { telemetry.debug(id: "\(index)", message: .mockAny()) },
                 { telemetry.error(id: "\(index)", message: .mockAny(), kind: .mockAny(), stack: .mockAny()) },
-                { telemetry.metric(name: .mockAny(), attributes: [:]) }
+                { telemetry.metric(name: .mockAny(), attributes: [:], sampleRate: 100) }
             ])
             // swiftlint:enable opening_brace
         }
@@ -232,7 +232,7 @@ class TelemetryReceiverTests: XCTestCase {
                 { telemetry.debug(id: "debug-\(index)", message: .mockAny()) },
                 { telemetry.error(id: "error-\(index)", message: .mockAny(), kind: .mockAny(), stack: .mockAny()) },
                 { telemetry.configuration(batchSize: .mockAny()) },
-                { telemetry.metric(name: .mockAny(), attributes: [:]) }
+                { telemetry.metric(name: .mockAny(), attributes: [:], sampleRate: 100) }
             ])
             // swiftlint:enable opening_brace
         }
@@ -265,7 +265,9 @@ class TelemetryReceiverTests: XCTestCase {
         XCTAssertTrue(featureScope.eventsWritten(ofType: TelemetryConfigurationEvent.self).isEmpty, "It should reject all configuration events")
     }
 
-    func testSampledTelemetry_rejectAllMetrics() throws {
+    func testSampledTelemetry_metricsAreForwardedRegardlessOfSampleRate() throws {
+        // Metric sampling is now handled in CoreTelemetry.send() before messages enter the bus.
+        // TelemetryReceiver no longer applies per-metric sampling — it processes all metric messages it receives.
         // Given
         let receiver = TelemetryReceiver.mockWith(
             featureScope: featureScope,
@@ -277,12 +279,12 @@ class TelemetryReceiverTests: XCTestCase {
         for index in 0..<10 {
             telemetry.debug(id: "debug-\(index)", message: .mockAny())
             telemetry.error(id: "error-\(index)", message: .mockAny(), kind: .mockAny(), stack: .mockAny())
-            telemetry.metric(name: .mockAny(), attributes: [:], sampleRate: 0)
+            telemetry.metric(name: .mockAny(), attributes: [:], sampleRate: 0) // sampleRate: 0 is ignored by receiver
             telemetry.configuration(batchSize: .mockAny())
         }
 
         // Then
-        XCTAssertEqual(featureScope.eventsWritten(ofType: TelemetryDebugEvent.self).count, 10, "It should keep 10 debug events but no metrics")
+        XCTAssertEqual(featureScope.eventsWritten(ofType: TelemetryDebugEvent.self).count, 20, "It should keep 10 debug events and 10 metrics — receiver no longer filters by sample rate")
         XCTAssertEqual(featureScope.eventsWritten(ofType: TelemetryErrorEvent.self).count, 10, "It should keep 10 error events")
         XCTAssertEqual(featureScope.eventsWritten(ofType: TelemetryConfigurationEvent.self).count, 1, "It should keep 1 configuration event")
     }
@@ -557,7 +559,7 @@ class TelemetryReceiverTests: XCTestCase {
         let isSuccessful = Bool.random()
         let trace = telemetry.startMethodCalled(operationName: operationName, callerClass: callerClass, headSampleRate: 100)
         Thread.sleep(forTimeInterval: 0.001)
-        telemetry.stopMethodCalled(trace, isSuccessful: isSuccessful, tailSampleRate: 100)
+        telemetry.stopMethodCalled(trace, isSuccessful: isSuccessful, headSampleRate: 100)
 
         // Then
         let event = featureScope.eventsWritten(ofType: TelemetryDebugEvent.self).first
