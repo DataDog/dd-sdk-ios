@@ -477,7 +477,7 @@ internal class SessionEndedMetric {
 
             if sessionStart < sessionEnd { // sanity check
                 let sessionDuration = sessionEnd.timeIntervalSince(sessionStart)
-                let foregroundDuration = context.applicationStateHistory.foregroundDuration(during: sessionStart...sessionEnd)
+                let foregroundDuration = context.applicationStateHistory.applicationNotSuspendedDuration(during: sessionStart...sessionEnd)
                 let foregroundCoverage = round(Double(foregroundDuration / sessionDuration) * 1_000) / 1_000
 
                 let stateAtStart = context.applicationStateHistory.state(at: sessionStart) ?? context.applicationStateHistory.initialState
@@ -612,7 +612,7 @@ extension InstrumentationType: Encodable {
 #if canImport(UIKit)
         case .uikit: try container.encode(0)
 #elseif canImport(AppKit)
-        case .appKit: try container.encode(0)
+        case .appkit: try container.encode(0)
 #endif
         case .swiftuiAutomatic: try container.encode(1)
         case .swiftui: try container.encode(2)
@@ -626,7 +626,7 @@ extension InstrumentationType: Encodable {
 #if canImport(UIKit)
         case .uikit: return "uikit"
 #elseif canImport(AppKit)
-        case .appKit: return "appkit"
+        case .appkit: return "appkit"
 #endif
         case .swiftuiAutomatic: return "swiftuiAutomatic"
         case .swiftui: return "swiftui"

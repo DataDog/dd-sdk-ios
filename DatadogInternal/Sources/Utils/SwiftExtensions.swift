@@ -155,4 +155,12 @@ extension DatadogExtension where ExtendedType == Bundle {
     public var isAppKit: Bool {
         return type.bundleURL.lastPathComponent == "AppKit.framework"
     }
+
+    public var isPlatformKit: Bool {
+        #if os(macOS)
+        isAppKit
+        #else
+        isUIKit
+        #endif
+    }
 }

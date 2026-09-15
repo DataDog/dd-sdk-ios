@@ -11,9 +11,17 @@ internal enum ControllerType {
     case modal
     case unknown
 
+    private static var hostingControllerPrefix: String {
+        #if os(macOS)
+        "_TtGC7SwiftUI19NSHostingController"
+        #else
+        "_TtGC7SwiftUI19UIHostingController"
+        #endif
+    }
+
     /// Determines the controller type from the class name
     init(from className: String) {
-        if className.hasPrefix("_TtGC7SwiftUI19UIHostingController") {
+        if className.hasPrefix(Self.hostingControllerPrefix) {
             self = .hostingController
         } else if className.contains("Navigation") {
             self = .navigationStackHostingController

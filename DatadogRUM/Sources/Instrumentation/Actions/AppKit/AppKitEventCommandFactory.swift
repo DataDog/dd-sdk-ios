@@ -159,6 +159,11 @@ internal final class AppKitCommandFactory: AppKitEventCommandFactory {
             return .ignore // no valid view
         }
 
+        guard (clickedView.window is RUMDebuggingWindow) == false else {
+            // Ignore interaction with the RUM debug window
+            return .ignore
+        }
+
         let bestTarget = bestActionTargetFor(view: clickedView, event: event)
 
         // If the best target is determined to be a possible SwiftUI view, `accessibilityHierarchyDetector`
@@ -202,7 +207,7 @@ internal final class AppKitCommandFactory: AppKitEventCommandFactory {
                 RUMAddUserActionCommand(
                 time: dateProvider.now,
                 attributes: action.attributes,
-                instrumentation: .appKit,
+                instrumentation: .appkit,
                 actionType: .click,
                 name: action.name
             )
@@ -227,7 +232,7 @@ internal final class AppKitCommandFactory: AppKitEventCommandFactory {
         return RUMAddUserActionCommand(
             time: dateProvider.now,
             attributes: action.attributes,
-            instrumentation: .appKit,
+            instrumentation: .appkit,
             actionType: .click,
             name: action.name
         )

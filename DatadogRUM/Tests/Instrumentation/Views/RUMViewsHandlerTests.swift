@@ -4,7 +4,6 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
-#if !os(macOS)
 import XCTest
 import TestUtilities
 @testable import DatadogInternal
@@ -13,12 +12,16 @@ import TestUtilities
 class RUMViewsHandlerTests: XCTestCase {
     private let dateProvider = RelativeDateProvider(using: .mockDecember15th2019At10AMUTC())
     private let commandSubscriber = RUMCommandSubscriberMock()
-    private let notificationCenter = NotificationCenter()
+    #if os(macOS)
+    private let notificationCenterProvider = NotificationCenterProvider(applicationCenter: NotificationCenter(), workspaceCenter: NotificationCenter())
+    #else
+    private let notificationCenterProvider = NotificationCenterProvider(applicationCenter: NotificationCenter())
+    #endif
 
     // MARK: - Helper
     #if !os(watchOS)
     private func createHandler(
-        uiKitPredicate: UIKitRUMViewsPredicate? = nil,
+        uiKitPredicate: DDKitRUMViewsPredicate? = nil,
         swiftUIPredicate: SwiftUIRUMViewsPredicate? = nil,
         swiftUIViewNameExtractor: SwiftUIViewNameExtractor? = nil
     ) -> RUMViewsHandler {
@@ -27,17 +30,60 @@ class RUMViewsHandlerTests: XCTestCase {
             uiKitPredicate: uiKitPredicate,
             swiftUIPredicate: swiftUIPredicate,
             swiftUIViewNameExtractor: swiftUIViewNameExtractor,
-            notificationCenter: notificationCenter
+            notificationCenterProvider: notificationCenterProvider
         )
         handler.publish(to: commandSubscriber)
         return handler
     }
     #else
     private func createHandler() -> RUMViewsHandler {
-        let handler = RUMViewsHandler(dateProvider: dateProvider, notificationCenter: notificationCenter)
+        let handler = RUMViewsHandler(dateProvider: dateProvider, notificationCenterProvider: notificationCenterProvider)
         handler.publish(to: commandSubscriber)
         return handler
     }
+    #endif
+
+    // MARK: - macOS abstractions
+    #if os(macOS)
+    func notify(_ handler: RUMViewsHandler, viewDidAppear view: DDViewController) {
+        handler.notify_viewDidAppear(viewController: view)
+    }
+
+    func notify(_ handler: RUMViewsHandler, viewDidDisappear view: DDViewController) {
+        handler.notify_viewDidDisappear(viewController: view)
+    }
+
+    func postAppSuspendedNotification() {
+        notificationCenterProvider.workspaceCenter.post(name: NSWorkspace.willSleepNotification, object: nil)
+    }
+
+    func postAppResumedNotification() {
+        notificationCenterProvider.workspaceCenter.post(name: NSWorkspace.didWakeNotification, object: nil)
+    }
+
+    var expectedInstrumentationType: InstrumentationType { .appkit }
+
+    // MARK: - iOS abstractions
+    #else
+    #if !os(watchOS)
+    func notify(_ handler: RUMViewsHandler, viewDidAppear view: DDViewController) {
+        handler.notify_viewDidAppear(viewController: view, animated: .mockAny())
+    }
+
+    func notify(_ handler: RUMViewsHandler, viewDidDisappear view: DDViewController) {
+        handler.notify_viewDidDisappear(viewController: view, animated: .mockAny())
+    }
+    #endif
+
+    func postAppSuspendedNotification() {
+        notificationCenterProvider.applicationCenter.post(name: ApplicationNotifications.didEnterBackground, object: nil)
+    }
+
+    func postAppResumedNotification() {
+        notificationCenterProvider.applicationCenter.post(name: ApplicationNotifications.willEnterForeground, object: nil)
+    }
+
+    var expectedInstrumentationType: InstrumentationType { .uikit }
     #endif
 
     // MARK: - Handling `viewDidAppear`
@@ -53,7 +99,7 @@ class RUMViewsHandlerTests: XCTestCase {
         let handler = createHandler(uiKitPredicate: uiKitPredicate)
 
         // When
-        handler.notify_viewDidAppear(viewController: view, animated: .mockAny())
+        notify(handler, viewDidAppear: view)
 
         // Then
         XCTAssertEqual(commandSubscriber.receivedCommands.count, 1)
@@ -63,7 +109,7 @@ class RUMViewsHandlerTests: XCTestCase {
         XCTAssertEqual(command.path, viewControllerClassName)
         XCTAssertEqual(command.name, viewName)
         XCTAssertEqual(command.attributes as? [String: String], ["foo": "bar"])
-        XCTAssertEqual(command.instrumentationType, .uikit)
+        XCTAssertEqual(command.instrumentationType, expectedInstrumentationType)
         XCTAssertEqual(command.time, .mockDecember15th2019At10AMUTC())
     }
 
@@ -80,8 +126,8 @@ class RUMViewsHandlerTests: XCTestCase {
         let handler = createHandler(uiKitPredicate: uiKitPredicate)
 
         // When
-        handler.notify_viewDidAppear(viewController: view1, animated: .mockAny())
-        handler.notify_viewDidAppear(viewController: view2, animated: .mockAny())
+        notify(handler, viewDidAppear: view1)
+        notify(handler, viewDidAppear: view2)
 
         // Then
         XCTAssertEqual(commandSubscriber.receivedCommands.count, 3)
@@ -105,8 +151,8 @@ class RUMViewsHandlerTests: XCTestCase {
         let handler = createHandler(uiKitPredicate: uiKitPredicate)
 
         // When
-        handler.notify_viewDidAppear(viewController: view, animated: .mockAny())
-        handler.notify_viewDidAppear(viewController: view, animated: .mockAny())
+        notify(handler, viewDidAppear: view)
+        notify(handler, viewDidAppear: view)
 
         // Then
         XCTAssertEqual(commandSubscriber.receivedCommands.count, 1)
@@ -120,7 +166,7 @@ class RUMViewsHandlerTests: XCTestCase {
         let handler = createHandler()
 
         // When
-        handler.notify_viewDidAppear(viewController: view, animated: .mockAny())
+        notify(handler, viewDidAppear: view)
 
         // Then
         XCTAssertEqual(commandSubscriber.receivedCommands.count, 0)
@@ -141,7 +187,7 @@ class RUMViewsHandlerTests: XCTestCase {
         )
 
         // When
-        handler.notify_viewDidAppear(viewController: viewController, animated: .mockAny())
+        notify(handler, viewDidAppear: viewController)
 
         // Then
         XCTAssertEqual(commandSubscriber.receivedCommands.count, 1)
@@ -166,7 +212,7 @@ class RUMViewsHandlerTests: XCTestCase {
         )
 
         // When
-        handler.notify_viewDidAppear(viewController: viewController, animated: true)
+        notify(handler, viewDidAppear: viewController)
 
         // Then
         XCTAssertEqual(commandSubscriber.receivedCommands.count, 0)
@@ -184,7 +230,7 @@ class RUMViewsHandlerTests: XCTestCase {
         )
 
         // When
-        handler.notify_viewDidAppear(viewController: viewController, animated: true)
+        notify(handler, viewDidAppear: viewController)
 
         // Then
         XCTAssertEqual(commandSubscriber.receivedCommands.count, 0)
@@ -209,8 +255,8 @@ class RUMViewsHandlerTests: XCTestCase {
         let handler = createHandler(swiftUIPredicate: swiftUIPredicate, swiftUIViewNameExtractor: swiftUIViewNameExtractor)
 
         // When
-        handler.notify_viewDidAppear(viewController: view1, animated: .mockAny())
-        handler.notify_viewDidAppear(viewController: view2, animated: .mockAny())
+        notify(handler, viewDidAppear: view1)
+        notify(handler, viewDidAppear: view2)
 
         // Then
         XCTAssertEqual(commandSubscriber.receivedCommands.count, 3)
@@ -244,13 +290,13 @@ class RUMViewsHandlerTests: XCTestCase {
         )
 
         // When
-        handler.notify_viewDidAppear(viewController: viewController, animated: true)
+        notify(handler, viewDidAppear: viewController)
 
         // Then
         XCTAssertEqual(commandSubscriber.receivedCommands.count, 1)
         let command = try XCTUnwrap(commandSubscriber.receivedCommands[0] as? RUMStartViewCommand)
         XCTAssertEqual(command.name, "UIKitName")
-        XCTAssertEqual(command.instrumentationType, .uikit)
+        XCTAssertEqual(command.instrumentationType, expectedInstrumentationType)
     }
 
     func testGivenNoUIKitPredicate_whenViewDidAppear_itFallsBackToSwiftUIPredicate() throws {
@@ -267,7 +313,7 @@ class RUMViewsHandlerTests: XCTestCase {
         handler.publish(to: commandSubscriber)
 
         // When
-        handler.notify_viewDidAppear(viewController: viewController, animated: true)
+        notify(handler, viewDidAppear: viewController)
 
         // Then
         XCTAssertEqual(commandSubscriber.receivedCommands.count, 1)
@@ -286,9 +332,9 @@ class RUMViewsHandlerTests: XCTestCase {
         // When
         let uiKitPredicate = UIKitRUMViewsPredicateMock(result: .init(name: .mockRandom()))
         let handler = createHandler(uiKitPredicate: uiKitPredicate)
-        handler.notify_viewDidAppear(viewController: view1, animated: .mockAny())
-        handler.notify_viewDidAppear(viewController: view2, animated: .mockAny())
-        handler.notify_viewDidDisappear(viewController: view2, animated: .mockAny())
+        notify(handler, viewDidAppear: view1)
+        notify(handler, viewDidAppear: view2)
+        notify(handler, viewDidDisappear: view2)
 
         // Then
         XCTAssertEqual(commandSubscriber.receivedCommands.count, 5)
@@ -314,7 +360,7 @@ class RUMViewsHandlerTests: XCTestCase {
         let handler = createHandler(uiKitPredicate: uiKitPredicate)
 
         // When
-        handler.notify_viewDidDisappear(viewController: view, animated: .mockAny())
+        notify(handler, viewDidDisappear: view)
 
         // Then
         XCTAssertEqual(commandSubscriber.receivedCommands.count, 0)
@@ -328,9 +374,9 @@ class RUMViewsHandlerTests: XCTestCase {
         let handler = createHandler()
 
         // When
-        handler.notify_viewDidAppear(viewController: view1, animated: .mockAny())
-        handler.notify_viewDidAppear(viewController: view2, animated: .mockAny())
-        handler.notify_viewDidDisappear(viewController: view2, animated: .mockAny())
+        notify(handler, viewDidAppear: view1)
+        notify(handler, viewDidAppear: view2)
+        notify(handler, viewDidDisappear: view2)
 
         // Then
         XCTAssertEqual(commandSubscriber.receivedCommands.count, 0)
@@ -344,12 +390,12 @@ class RUMViewsHandlerTests: XCTestCase {
         // Given
         let uiKitPredicate = UIKitRUMViewsPredicateMock(result: .init(name: viewName, attributes: ["foo": "bar"]))
         let handler = createHandler(uiKitPredicate: uiKitPredicate)
-        handler.notify_viewDidAppear(viewController: view, animated: .mockAny())
+        notify(handler, viewDidAppear: view)
 
         // When
-        notificationCenter.post(name: UIApplication.didEnterBackgroundNotification, object: nil)
+        postAppSuspendedNotification()
         dateProvider.advance(bySeconds: 1)
-        notificationCenter.post(name: UIApplication.willEnterForegroundNotification, object: nil)
+        postAppResumedNotification()
 
         // Then
         XCTAssertEqual(commandSubscriber.receivedCommands.count, 5)
@@ -380,12 +426,12 @@ class RUMViewsHandlerTests: XCTestCase {
         // Given
         let uiKitPredicate = UIKitRUMViewsPredicateMock(result: .init(name: viewName, attributes: ["foo": "bar"]))
         let handler = createHandler(uiKitPredicate: uiKitPredicate)
-        handler.notify_viewDidDisappear(viewController: view, animated: .mockAny())
+        notify(handler, viewDidDisappear: view)
 
         // When
-        notificationCenter.post(name: UIApplication.didEnterBackgroundNotification, object: nil)
+        postAppSuspendedNotification()
         dateProvider.advance(bySeconds: 1)
-        notificationCenter.post(name: UIApplication.willEnterForegroundNotification, object: nil)
+        postAppResumedNotification()
 
         // Then
         XCTAssertEqual(commandSubscriber.receivedCommands.count, 2)
@@ -404,11 +450,11 @@ class RUMViewsHandlerTests: XCTestCase {
         let anotherView = createMockViewInWindow()
 
         // When
-        handler.notify_viewDidAppear(viewController: anotherView, animated: .mockAny()) // 1st: `anotherView` receives "did appear"
-        handler.notify_viewDidAppear(viewController: someView, animated: .mockAny()) // 2nd: `someView` receives "did disappear"
-        handler.notify_viewDidAppear(viewController: anotherView, animated: .mockAny()) // 3rd: `anotherView` receives "did appear"
-        handler.notify_viewDidAppear(viewController: someView, animated: .mockAny()) // 4th: `someView` receives "did disappear"
-        handler.notify_viewDidAppear(viewController: anotherView, animated: .mockAny()) // 5th: `anotherView` receives "did appear"
+        notify(handler, viewDidAppear: anotherView)  // 1st: `anotherView` receives "did appear"
+        notify(handler, viewDidAppear: someView)     // 2nd: `someView` receives "did disappear"
+        notify(handler, viewDidAppear: anotherView)  // 3rd: `anotherView` receives "did appear"
+        notify(handler, viewDidAppear: someView)     // 4th: `someView` receives "did disappear"
+        notify(handler, viewDidAppear: anotherView)  // 5th: `anotherView` receives "did appear"
 
         // Then
         XCTAssertEqual(uiKitPredicate.numberOfCalls, 2)
@@ -423,8 +469,8 @@ class RUMViewsHandlerTests: XCTestCase {
         let handler = createHandler(uiKitPredicate: uiKitPredicate)
 
         // When
-        handler.notify_viewDidAppear(viewController: someView, animated: .mockAny())
-        handler.notify_viewDidAppear(viewController: untrackedModal, animated: .mockAny())
+        notify(handler, viewDidAppear: someView)
+        notify(handler, viewDidAppear: untrackedModal)
 
         XCTAssertEqual(commandSubscriber.receivedCommands.count, 2)
 
@@ -444,9 +490,9 @@ class RUMViewsHandlerTests: XCTestCase {
         let handler = createHandler(uiKitPredicate: uiKitPredicate)
 
         // When
-        handler.notify_viewDidAppear(viewController: someView, animated: .mockAny())
-        handler.notify_viewDidAppear(viewController: untrackedModal, animated: .mockAny())
-        handler.notify_viewDidAppear(viewController: someView, animated: .mockAny())
+        notify(handler, viewDidAppear: someView)
+        notify(handler, viewDidAppear: untrackedModal)
+        notify(handler, viewDidAppear: someView)
 
         XCTAssertEqual(commandSubscriber.receivedCommands.count, 3)
 
@@ -697,7 +743,7 @@ class RUMViewsHandlerTests: XCTestCase {
         DDAssertDictionariesEqual(startCommand2.attributes, view2Attributes)
         XCTAssertTrue(stopCommand2.identity == ViewIdentifier(view2Identity))
         XCTAssertTrue(startCommand3.identity == ViewIdentifier(view1Identity))
-        DDAssertDictionariesEqual(startCommand1.attributes, view1Attributes)
+        DDAssertDictionariesEqual(startCommand3.attributes, view1Attributes)
     }
 
     // MARK: - Handling Application Activity
@@ -718,9 +764,9 @@ class RUMViewsHandlerTests: XCTestCase {
             attributes: viewAttributes
         )
 
-        notificationCenter.post(name: ApplicationNotifications.didEnterBackground, object: nil)
+        postAppSuspendedNotification()
         dateProvider.advance(bySeconds: 1)
-        notificationCenter.post(name: ApplicationNotifications.willEnterForeground, object: nil)
+        postAppResumedNotification()
 
         // Then
         XCTAssertEqual(commandSubscriber.receivedCommands.count, 5)
@@ -747,12 +793,18 @@ class RUMViewsHandlerTests: XCTestCase {
         // When
         handler.notify_onDisappear(identity: viewIdentity)
 
-        notificationCenter.post(name: ApplicationNotifications.willResignActive, object: nil)
+        #if os(macOS)
+        // Although macOS has a `willResignActive` notification, we use `didResignActive`
+        // to trigger AppState changes, so it makes more sense to test using that one,
+        // since it's the notification that can trigger code in the SDK.
+        notificationCenterProvider.applicationCenter.post(name: ApplicationNotifications.didResignActive, object: nil)
+        #else
+        notificationCenterProvider.applicationCenter.post(name: ApplicationNotifications.willResignActive, object: nil)
+        #endif
         dateProvider.advance(bySeconds: 1)
-        notificationCenter.post(name: ApplicationNotifications.didBecomeActive, object: nil)
+        notificationCenterProvider.applicationCenter.post(name: ApplicationNotifications.didBecomeActive, object: nil)
 
         // Then
         XCTAssertEqual(commandSubscriber.receivedCommands.count, 0)
     }
 }
-#endif

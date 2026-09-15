@@ -271,11 +271,11 @@ internal final class TNSMetric: TNSMetricTracking {
             return .failure(.invalidCalculatedValue)
         }
 
-        // Check if the app stayed foregrounded through the resource load time.
+        // Check if the app was not suspended through the resource load time.
         let loadingEndDate = viewStartDate.addingTimeInterval(tnsValue)
-        let wasAlwaysForeground = !appStateHistory.containsState(during: viewStartDate...loadingEndDate) { $0.applicationMayBeSuspended }
+        let wasNeverSuspended = !appStateHistory.containsState(during: viewStartDate...loadingEndDate) { $0.applicationMayBeSuspended }
 
-        guard wasAlwaysForeground else {
+        guard wasNeverSuspended else {
             return .failure(.appNotInForeground)
         }
 

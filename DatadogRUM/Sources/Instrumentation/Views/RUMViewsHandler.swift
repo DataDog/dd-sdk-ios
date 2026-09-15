@@ -41,7 +41,7 @@ internal final class RUMViewsHandler {
     #if !os(watchOS)
     /// `UIKit` view predicate. `nil` if `UIKit` auto-instrumentations is
     /// disabled.
-    private let uiKitPredicate: DDKitRUMViewsPredicate?
+    private let ddKitPredicate: DDKitRUMViewsPredicate?
 
     /// `SwiftUI` view predicate. `nil` if `SwiftUI` auto-instrumentations is
     /// disabled.
@@ -55,7 +55,7 @@ internal final class RUMViewsHandler {
     /// The notification center where this handler observes following `DDApplication` notifications:
     /// - `.didEnterBackgroundNotification`
     /// - `.willEnterForegroundNotification`
-    private weak var notificationCenter: NotificationCenter?
+    private var notificationCenterProvider: NotificationCenterProvider?
 
     /// The RUM Command subscriber responsible for processing
     /// this publisher's commands.
@@ -83,22 +83,35 @@ internal final class RUMViewsHandler {
         uiKitPredicate: DDKitRUMViewsPredicate?,
         swiftUIPredicate: SwiftUIRUMViewsPredicate?,
         swiftUIViewNameExtractor: SwiftUIViewNameExtractor?,
-        notificationCenter: NotificationCenter
+        notificationCenterProvider: NotificationCenterProvider
     ) {
         self.dateProvider = dateProvider
-        self.uiKitPredicate = uiKitPredicate
+        self.ddKitPredicate = uiKitPredicate
         self.swiftUIPredicate = swiftUIPredicate
         self.swiftUIViewNameExtractor = swiftUIViewNameExtractor
-        self.notificationCenter = notificationCenter
+        self.notificationCenterProvider = notificationCenterProvider
 
-        #if !os(macOS)
-        notificationCenter.addObserver(
+        #if os(macOS)
+        notificationCenterProvider.workspaceCenter.addObserver(
+            self,
+            selector: #selector(applicationDidEnterBackground),
+            name: WorkspaceNotifications.willSleep,
+            object: nil
+        )
+        notificationCenterProvider.workspaceCenter.addObserver(
+            self,
+            selector: #selector(applicationWillEnterForeground),
+            name: WorkspaceNotifications.didWake,
+            object: nil
+        )
+        #else
+        notificationCenterProvider.applicationCenter.addObserver(
             self,
             selector: #selector(applicationDidEnterBackground),
             name: ApplicationNotifications.didEnterBackground,
             object: nil
         )
-        notificationCenter.addObserver(
+        notificationCenterProvider.applicationCenter.addObserver(
             self,
             selector: #selector(applicationWillEnterForeground),
             name: ApplicationNotifications.willEnterForeground,
@@ -113,17 +126,17 @@ internal final class RUMViewsHandler {
     ///   - dateProvider: The current date provider.
     ///   - notificationCenter: The notification center where this handler
     ///     observes app lifecycle notifications.
-    init(dateProvider: DateProvider, notificationCenter: NotificationCenter) {
+    init(dateProvider: DateProvider, notificationCenterProvider: NotificationCenterProvider) {
         self.dateProvider = dateProvider
-        self.notificationCenter = notificationCenter
+        self.notificationCenterProvider = notificationCenterProvider
 
-        notificationCenter.addObserver(
+        notificationCenterProvider.applicationCenter.addObserver(
             self,
             selector: #selector(applicationDidEnterBackground),
             name: ApplicationNotifications.didEnterBackground,
             object: nil
         )
-        notificationCenter.addObserver(
+        notificationCenterProvider.applicationCenter.addObserver(
             self,
             selector: #selector(applicationWillEnterForeground),
             name: ApplicationNotifications.willEnterForeground,
@@ -132,20 +145,31 @@ internal final class RUMViewsHandler {
     }
     #endif
 
-    #if !os(macOS)
     deinit {
-        notificationCenter?.removeObserver(
+    #if os(macOS)
+        notificationCenterProvider?.workspaceCenter.removeObserver(
+            self,
+            name: WorkspaceNotifications.willSleep,
+            object: nil
+        )
+        notificationCenterProvider?.workspaceCenter.removeObserver(
+            self,
+            name: WorkspaceNotifications.didWake,
+            object: nil
+        )
+    #else
+        notificationCenterProvider?.applicationCenter.removeObserver(
             self,
             name: ApplicationNotifications.didEnterBackground,
             object: nil
         )
-        notificationCenter?.removeObserver(
+        notificationCenterProvider?.applicationCenter.removeObserver(
             self,
             name: ApplicationNotifications.willEnterForeground,
             object: nil
         )
-    }
     #endif
+    }
 
     func publish(to subscriber: RUMCommandSubscriber) {
         self.subscriber = subscriber
@@ -231,7 +255,8 @@ internal final class RUMViewsHandler {
         )
     }
 
-#if !os(macOS)
+    /// Called when the application enters background state (iOS and similar platforms)
+    /// or when the system enters sleep (macOS).
     @objc
     private func applicationDidEnterBackground() {
         if let current = stack.last {
@@ -246,6 +271,8 @@ internal final class RUMViewsHandler {
         )
     }
 
+    /// Called when the application enters foreground state (iOS and similar platforms)
+    /// or when the system awakes from sleep (macOS).
     @objc
     private func applicationWillEnterForeground() {
         if let current = stack.last {
@@ -259,20 +286,54 @@ internal final class RUMViewsHandler {
             )
         )
     }
-#endif
 }
 
+// MARK: - NSViewControllerHandler
+#if os(macOS)
+extension RUMViewsHandler: NSViewControllerHandler {
+    func notify_viewDidAppear(viewController: DDViewController) {
+        guard (viewController is RUMDebuggingViewController) == false else {
+            // Do not consider the RUM view scope debugger as a view that may be active.
+            return
+        }
+
+        notify_viewDidAppear_impl(viewController: viewController, ddKitInstrumentationType: .appkit)
+    }
+
+    func notify_viewDidDisappear(viewController: DDViewController) {
+        guard (viewController is RUMDebuggingViewController) == false else {
+            // Do not consider the RUM view scope debugger as a view that may be active.
+            return
+        }
+
+        remove(identity: ViewIdentifier(viewController))
+    }
+}
+#endif
+
 // MARK: - UIViewControllerHandler
-#if !os(watchOS)
+#if !os(watchOS) && !os(macOS)
 extension RUMViewsHandler: UIViewControllerHandler {
     func notify_viewDidAppear(viewController: DDViewController, animated: Bool) {
+        notify_viewDidAppear_impl(viewController: viewController, ddKitInstrumentationType: .uikit)
+    }
+
+    func notify_viewDidDisappear(viewController: DDViewController, animated: Bool) {
+        remove(identity: ViewIdentifier(viewController))
+    }
+}
+#endif
+
+// MARK: - ViewControllerHandler implementation
+#if !os(watchOS)
+extension RUMViewsHandler {
+    func notify_viewDidAppear_impl(viewController: DDViewController, ddKitInstrumentationType: InstrumentationType) {
         let identity = ViewIdentifier(viewController)
         if let view = stack.first(where: { $0.identity == identity }) {
             // If the stack already contains the view controller, just restarts the view.
             // This prevents from calling the predicate when unnecessary.
             add(view: view)
-        } else if let rumView = uiKitPredicate?.rumView(for: viewController) {
-#if canImport(UIKit)
+        } else if let rumView = ddKitPredicate?.rumView(for: viewController) {
             add(
                 view: .init(
                     identity: identity,
@@ -280,21 +341,9 @@ extension RUMViewsHandler: UIViewControllerHandler {
                     path: rumView.path ?? viewController.canonicalClassName,
                     isUntrackedModal: rumView.isUntrackedModal,
                     attributes: rumView.attributes,
-                    instrumentationType: .uikit
+                    instrumentationType: ddKitInstrumentationType
                 )
             )
-#elseif canImport(AppKit)
-            add(
-                view: .init(
-                    identity: identity,
-                    name: rumView.name,
-                    path: rumView.path ?? viewController.canonicalClassName,
-                    isUntrackedModal: rumView.isUntrackedModal,
-                    attributes: rumView.attributes,
-                    instrumentationType: .appKit
-                )
-            )
-#endif
         } else if let swiftUIPredicate,
                   let swiftUIViewNameExtractor,
                   let rumViewName = swiftUIViewNameExtractor.extractName(from: viewController),
@@ -311,10 +360,6 @@ extension RUMViewsHandler: UIViewControllerHandler {
                 )
             )
         }
-    }
-
-    func notify_viewDidDisappear(viewController: DDViewController, animated: Bool) {
-        remove(identity: ViewIdentifier(viewController))
     }
 }
 #endif

@@ -137,7 +137,7 @@ final class RUMActionsHandlerToolbarMacOSTests: XCTestCase, NSToolbarDelegate, N
         let command = try XCTUnwrap(commandSubscriber.lastReceivedCommand as? RUMAddUserActionCommand)
         XCTAssertEqual(command.name, expectedName)
         XCTAssertEqual(command.actionType, .click)
-        XCTAssertEqual(command.instrumentation, .appKit)
+        XCTAssertEqual(command.instrumentation, .appkit)
         XCTAssertEqual(command.time, .mockDecember15th2019At10AMUTC())
         XCTAssertEqual(command.attributes.count, 0)
 

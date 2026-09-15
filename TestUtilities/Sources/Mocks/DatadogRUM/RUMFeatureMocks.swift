@@ -1548,6 +1548,27 @@ public class UIKitRUMViewsPredicateMock: DDKitRUMViewsPredicate {
     }
 }
 
+#if os(macOS)
+public class AppKitRUMViewsHandlerMock: NSViewControllerHandler {
+    public var onSubscribe: ((RUMCommandSubscriber) -> Void)?
+    public var notifyViewDidAppear: ((DDViewController) -> Void)?
+    public var notifyViewDidDisappear: ((DDViewController) -> Void)?
+
+    public init() {}
+
+    public func publish(to subscriber: RUMCommandSubscriber) {
+        onSubscribe?(subscriber)
+    }
+
+    public func notify_viewDidAppear(viewController: DDViewController) {
+        notifyViewDidAppear?(viewController)
+    }
+
+    public func notify_viewDidDisappear(viewController: DDViewController) {
+        notifyViewDidDisappear?(viewController)
+    }
+}
+#else
 public class UIKitRUMViewsHandlerMock: UIViewControllerHandler {
     public var onSubscribe: ((RUMCommandSubscriber) -> Void)?
     public var notifyViewDidAppear: ((DDViewController, Bool) -> Void)?
@@ -1567,6 +1588,7 @@ public class UIKitRUMViewsHandlerMock: UIViewControllerHandler {
         notifyViewDidDisappear?(viewController, animated)
     }
 }
+#endif
 
 #if os(tvOS)
 public typealias UIKitRUMActionsPredicateMock = UIPressRUMActionsPredicateMock
