@@ -9,15 +9,30 @@ import Foundation
 import DatadogInternal
 
 internal final class HeatmapIdentifierStore: @unchecked Sendable, HeatmapIdentifierRegistry {
-    @ReadWriteLock
-    private var identifiers: [ObjectIdentifier: HeatmapIdentifier] = [:]
+    private struct State {
+        var identifiers: [ObjectIdentifier: HeatmapIdentifier] = [:]
+        var requiresDescendantLookup = false
+    }
 
-    func setHeatmapIdentifiers(_ heatmapIdentifiers: [ObjectIdentifier: HeatmapIdentifier]) {
-        identifiers = heatmapIdentifiers
+    @ReadWriteLock
+    private var state = State()
+
+    var requiresDescendantLookup: Bool {
+        state.requiresDescendantLookup
+    }
+
+    func setHeatmapIdentifiers(
+        _ heatmapIdentifiers: [ObjectIdentifier: HeatmapIdentifier],
+        requiresDescendantLookup: Bool
+    ) {
+        state = State(
+            identifiers: heatmapIdentifiers,
+            requiresDescendantLookup: requiresDescendantLookup
+        )
     }
 
     func heatmapIdentifier(for objectIdentifier: ObjectIdentifier) -> HeatmapIdentifier? {
-        identifiers[objectIdentifier]
+        state.identifiers[objectIdentifier]
     }
 }
 #endif

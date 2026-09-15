@@ -51,11 +51,19 @@ internal final class UITouchCommandFactory: UIEventCommandFactory {
 
         // Detect UIKit interactions first,
         // as they are more likely to happen.
-        if let rumAction = createUIKitActionCommand(from: tap) {
-            return rumAction
+        let actionCommand = createUIKitActionCommand(from: tap)
+            ?? swiftUIDetector?.createActionCommand(
+                from: tap,
+                predicate: swiftUIPredicate,
+                dateProvider: dateProvider
+            )
+
+        guard var actionCommand else {
+            return nil
         }
 
-        return swiftUIDetector?.createActionCommand(from: tap, predicate: swiftUIPredicate, dateProvider: dateProvider)
+        actionCommand.heatmapAttributes = tap.heatmapAttributes(in: heatmapIdentifierRegistry)
+        return actionCommand
     }
 
     // MARK: UIKit
@@ -85,24 +93,12 @@ internal final class UITouchCommandFactory: UIEventCommandFactory {
             return nil
         }
 
-        var heatmapAttributes: HeatmapAttributes?
-
-        // Heatmap identifiers are looked up by `tap.view.layer`, not the action target
-        if let heatmapIdentifier = heatmapIdentifierRegistry.heatmapIdentifier(for: ObjectIdentifier(view.layer)) {
-            heatmapAttributes = HeatmapAttributes(
-                identifier: heatmapIdentifier,
-                size: view.bounds.size,
-                location: tap.location(in: view)
-            )
-        }
-
         return RUMAddUserActionCommand(
             time: dateProvider.now,
             attributes: action.attributes,
             instrumentation: .uikit,
             actionType: .tap,
-            name: action.name,
-            heatmapAttributes: heatmapAttributes
+            name: action.name
         )
     }
 
@@ -129,6 +125,52 @@ internal final class UITouchCommandFactory: UIEventCommandFactory {
             }
             return bestParent // best parent or `nil`
         }
+    }
+}
+
+private extension UITouch {
+    /// Resolves heatmap attributes for the touch.
+    func heatmapAttributes(in registry: any HeatmapIdentifierRegistry) -> HeatmapAttributes? {
+        guard let view else {
+            return nil
+        }
+
+        let locationInView = location(in: view)
+
+        guard registry.requiresDescendantLookup else {
+            guard let heatmapIdentifier = registry.heatmapIdentifier(for: ObjectIdentifier(view.layer)) else {
+                return nil
+            }
+            return HeatmapAttributes(
+                identifier: heatmapIdentifier,
+                size: view.bounds.size,
+                location: locationInView
+            )
+        }
+
+        let hitTestLocation = view.layer.convert(locationInView, to: view.layer.superlayer)
+        var candidateLayer: CALayer? = view.layer.hitTest(hitTestLocation) ?? view.layer
+
+        while let layer = candidateLayer {
+            if let heatmapIdentifier = registry.heatmapIdentifier(for: ObjectIdentifier(layer)) {
+                let locationInLayer = layer.convert(locationInView, from: view.layer)
+                return HeatmapAttributes(
+                    identifier: heatmapIdentifier,
+                    size: layer.bounds.size,
+                    location: CGPoint(
+                        x: locationInLayer.x - layer.bounds.minX,
+                        y: locationInLayer.y - layer.bounds.minY
+                    )
+                )
+            }
+
+            guard layer !== view.layer else {
+                return nil
+            }
+            candidateLayer = layer.superlayer
+        }
+
+        return nil
     }
 }
 
