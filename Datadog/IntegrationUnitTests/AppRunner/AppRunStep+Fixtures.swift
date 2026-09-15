@@ -5,6 +5,7 @@
  */
 
 import Foundation
+import XCTest
 @testable import DatadogCore
 @testable import DatadogRUM
 
@@ -153,6 +154,28 @@ extension AppRunStep {
     static func flushDatadogContext() -> AppRunStep {
         AppRunStep { app in
             app.flush()
+        }
+    }
+
+    /// Blocks the test thread for `duration` of real (wall-clock) time. Unlike `.advanceTime(by:)`, this
+    /// actually sleeps — use it only for code driven by a real timer (e.g. `TimeseriesSessionCollector`'s
+    /// `DispatchSourceTimer`), not to simulate the passage of app time.
+    static func waitRealTime(_ duration: TimeInterval) -> AppRunStep {
+        AppRunStep { app in
+            // Advances the mocked clocks in lockstep with the real sleep, in small slices, so samples
+            // taken by the collector's real timer mid-wait get distinct, progressing timestamps instead
+            // of all reading the same frozen mock time until a single jump at the end.
+            let slice: TimeInterval = 0.1
+            var elapsed: TimeInterval = 0
+            while elapsed < duration {
+                let sleepInterval = min(slice, duration - elapsed)
+                let expectation = XCTestExpectation(description: "waited \(sleepInterval)s")
+                DispatchQueue.global(qos: .utility).asyncAfter(deadline: .now() + sleepInterval) { expectation.fulfill() }
+                _ = XCTWaiter().wait(for: [expectation], timeout: sleepInterval + 2)
+                app.advanceTime(by: sleepInterval)
+                app.advanceMediaTime(by: sleepInterval)
+                elapsed += sleepInterval
+            }
         }
     }
 }
