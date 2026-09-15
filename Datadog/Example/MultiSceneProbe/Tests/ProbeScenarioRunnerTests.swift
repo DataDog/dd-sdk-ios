@@ -617,6 +617,39 @@ final class ProbeScenarioRunnerTests: XCTestCase {
         }
     }
 
+    func testSemanticNavigationAPIExercisesInitialRepeatedPath() throws {
+        let scenario = try XCTUnwrap(
+            ProbeScenarioCatalog.scenario(
+                identifier: "swiftui.semantic-api.initial-repeated-path"
+            )
+        )
+
+        XCTAssertEqual(scenario.trackingMode, .navigationOccurrence)
+        XCTAssertEqual(scenario.runtimeOptions.initialSwiftUIPath, ["detail-1", "detail-1"])
+        XCTAssertTrue(ProbeScenarioCatalog.usesObservableDriver(scenario))
+        XCTAssertTrue(ProbeScenarioCatalog.usesSemanticNavigationSPI(scenario))
+        XCTAssertFalse(ProbeScenarioCatalog.usesSemanticNavigationValueLinks(scenario))
+        XCTAssertTrue(
+            scenario.completionConditions.contains {
+                $0.kind == .noViewStarted && $0.rumViewOrigin == .automatic
+            }
+        )
+        for (screen, occurrence) in [
+            ("detail-1", 1),
+            ("detail-1", 2),
+            ("home", 1)
+        ] {
+            XCTAssertTrue(
+                scenario.expectedSemanticTimeline.contains {
+                    $0.kind == .viewStarted
+                        && $0.screen == screen
+                        && $0.occurrence == occurrence
+                        && $0.rumViewOrigin == .semantic
+                }
+            )
+        }
+    }
+
     func testAutomaticKeyedManualViewRequiresFreshAutomaticOwnerAfterStop() throws {
         let scenario = try XCTUnwrap(
             ProbeScenarioCatalog.scenario(

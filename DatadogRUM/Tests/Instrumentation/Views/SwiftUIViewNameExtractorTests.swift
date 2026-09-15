@@ -3274,6 +3274,55 @@ final class RUMSwiftUISemanticNavigationStateTests: XCTestCase {
         XCTAssertEqual(identities.invocationCount, 2)
     }
 
+    func testInitialRestoredPath_revealsNeverStartedHiddenHomeBeforeRemount() {
+        let navigationState = RUMSwiftUISemanticNavigationState<String, Presentation>()
+        navigationState.reconcile(path: ["details"])
+        let hiddenHome = navigationState.rootOccurrence
+        let identities = RUMOccurrenceIdentityGenerator(["home-1"])
+        let viewState = RUMViewTrackingState(
+            identity: "fallback",
+            occurrenceIdentityGenerator: identities.next
+        )
+        let hiddenConfiguration = configuration(for: hiddenHome, name: "Home")
+
+        XCTAssertFalse(hiddenHome.isCurrentDestination)
+        XCTAssertTrue(
+            viewState.update(
+                configuration: hiddenConfiguration,
+                attachment: .attached(scene)
+            ).isEmpty
+        )
+        XCTAssertEqual(viewState.lifecycleGeneration, 0)
+
+        let registration = RUMSwiftUINavigationOccurrenceRegistration()
+        var transitions: [RUMViewTrackingState.Transition] = []
+        registration.rebind(
+            to: navigationState.occurrenceSource,
+            state: viewState,
+            configuration: hiddenConfiguration,
+            attachment: .attached(scene)
+        ) { configuration, sceneIdentifier in
+            transitions.append(
+                contentsOf: viewState.reconcile(
+                    configuration: configuration,
+                    attachment: .attached(sceneIdentifier),
+                    isAppeared: true
+                )
+            )
+        }
+
+        navigationState.reconcile(path: [])
+
+        let revealedHome = navigationState.rootOccurrence
+        XCTAssertTrue(revealedHome.isCurrentDestination)
+        XCTAssertEqual(
+            transitions,
+            [.start(identity: "home-1", sceneIdentifier: scene)]
+        )
+        XCTAssertEqual(viewState.configuration?.bindingGeneration, revealedHome.generation)
+        XCTAssertEqual(identities.invocationCount, 1)
+    }
+
     func testPathThatPushesAndRevertsBeforeRootDisappears_createsNoIntermediateOccurrence() {
         let navigationState = RUMSwiftUISemanticNavigationState<String, Presentation>()
         navigationState.reconcile(path: [])
@@ -3381,6 +3430,77 @@ final class RUMSwiftUISemanticNavigationStateTests: XCTestCase {
         XCTAssertEqual(identities.invocationCount, 2)
     }
 
+    func testRepeatedEqualRoute_restoredTogether_targetsOnlyMaterializedTopPosition() {
+        let navigationState = RUMSwiftUISemanticNavigationState<String, Presentation>()
+        navigationState.reconcile(path: ["details", "details"])
+
+        let materializedClaim = navigationState.makeOccurrenceClaim(for: "details")
+        let initialTop = navigationState.occurrence(
+            for: "details",
+            retaining: materializedClaim
+        )
+
+        XCTAssertFalse(navigationState.rootOccurrence.isCurrentDestination)
+        XCTAssertTrue(initialTop.isCurrentDestination)
+
+        navigationState.reconcile(path: ["details"])
+        let revealedDestination = navigationState.occurrence(
+            for: "details",
+            retaining: materializedClaim
+        )
+
+        XCTAssertTrue(revealedDestination.isCurrentDestination)
+        XCTAssertNotEqual(revealedDestination.key, initialTop.key)
+        XCTAssertGreaterThan(revealedDestination.generation, initialTop.generation)
+    }
+
+    func testRepeatedEqualRoute_restoredTogether_replacesTopWhenItsPositionIsRemoved() {
+        let navigationState = RUMSwiftUISemanticNavigationState<String, Presentation>()
+        navigationState.reconcile(path: ["details", "details"])
+        let materializedClaim = navigationState.makeOccurrenceClaim(for: "details")
+        let initialTop = navigationState.occurrence(
+            for: "details",
+            retaining: materializedClaim
+        )
+        let identities = RUMOccurrenceIdentityGenerator(["details-1", "details-2"])
+        let viewState = RUMViewTrackingState(
+            identity: "fallback",
+            occurrenceIdentityGenerator: identities.next
+        )
+        let initialConfiguration = configuration(for: initialTop, name: "Details")
+
+        XCTAssertEqual(
+            viewState.mount(in: scene, configuration: initialConfiguration),
+            [.start(identity: "details-1", sceneIdentifier: scene)]
+        )
+
+        navigationState.reconcile(path: ["details"])
+        let revealedDestination = navigationState.occurrence(
+            for: "details",
+            retaining: materializedClaim
+        )
+        let revealedConfiguration = configuration(
+            for: revealedDestination,
+            name: "Details"
+        )
+
+        XCTAssertEqual(
+            viewState.reconcile(
+                configuration: revealedConfiguration,
+                attachment: .attached(scene),
+                isAppeared: true
+            ),
+            [
+                .replace(
+                    oldIdentity: "details-1",
+                    newIdentity: "details-2",
+                    sceneIdentifier: scene
+                )
+            ]
+        )
+        XCTAssertEqual(identities.invocationCount, 2)
+    }
+
     func testOccurrenceClaim_whenBoundaryRouteChanges_adoptsCurrentRoutePosition() {
         let navigationState = RUMSwiftUISemanticNavigationState<String, Presentation>()
         navigationState.reconcile(path: ["details"])
@@ -3458,7 +3578,8 @@ final class RUMSwiftUISemanticNavigationStateTests: XCTestCase {
         RUMViewTrackingState.Configuration(
             occurrenceKey: occurrence.key,
             bindingGeneration: occurrence.generation,
-            descriptor: .init(name: name, path: "/\(name)", attributes: [:])
+            descriptor: .init(name: name, path: "/\(name)", attributes: [:]),
+            isCurrentDestination: occurrence.isCurrentDestination
         )
     }
 }

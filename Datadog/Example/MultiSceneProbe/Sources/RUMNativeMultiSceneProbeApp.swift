@@ -104,6 +104,7 @@ enum ProbeRuntime {
     }()
 
     static let automaticallyNavigates = options.automaticallyNavigates
+    static let initialSwiftUIPath = options.initialSwiftUIPath
     static let automaticallyOpensSecondWindow = options.automaticallyOpensSecondWindow
     static let automaticallyClosesSceneB = options.automaticallyClosesSceneB
     static let automaticallyAbortsDetail = options.automaticallyAbortsDetail
@@ -273,6 +274,7 @@ enum ProbeRuntime {
                 + "swiftui_view_tracking=\(swiftUIViewTrackingMode) "
                 + "swiftui_semantic_navigation_api=\(usesSemanticNavigationSPI) "
                 + "swiftui_stress=\(options.swiftUIStress.rawValue) "
+                + "initial_swiftui_path=\(initialSwiftUIPath.joined(separator: ",")) "
                 + "automatic_detail=\(automaticallyNavigates) "
                 + "automatic_second_window=\(automaticallyOpensSecondWindow) "
                 + "automatic_close_scene_b=\(automaticallyClosesSceneB) "

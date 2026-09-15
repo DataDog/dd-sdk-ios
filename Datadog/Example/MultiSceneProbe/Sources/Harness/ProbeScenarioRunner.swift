@@ -491,6 +491,24 @@ enum ProbeScenarioRunner {
             scenario.runtimeOptions.forcesNavigationRouteIdentity {
             errors.append("navigation-occurrence scenarios cannot force customer route identity")
         }
+        if !scenario.runtimeOptions.initialSwiftUIPath.isEmpty {
+            if scenario.layout != .stack {
+                errors.append("initial SwiftUI path requires the stack layout")
+            }
+            if !ProbeScenarioCatalog.usesSemanticNavigationSPI(scenario) {
+                errors.append("initial SwiftUI path requires the semantic navigation API")
+            }
+            let supportedInitialRoutes = Set(["detail-1", "detail-2", "alternate"])
+            let unsupportedInitialRoutes = Set(scenario.runtimeOptions.initialSwiftUIPath)
+                .subtracting(supportedInitialRoutes)
+                .sorted()
+            if !unsupportedInitialRoutes.isEmpty {
+                errors.append(
+                    "unsupported initial SwiftUI routes: "
+                        + unsupportedInitialRoutes.joined(separator: ",")
+                )
+            }
+        }
         for step in scenario.steps {
             if
                 let percentage = step.percentage,

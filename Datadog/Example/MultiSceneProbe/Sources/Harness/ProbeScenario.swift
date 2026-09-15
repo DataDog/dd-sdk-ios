@@ -80,6 +80,7 @@ enum ProbeSwiftUIStress: String, Codable, CaseIterable {
 }
 
 struct ProbeRuntimeOptions: Codable, Equatable {
+    var initialSwiftUIPath: [String] = []
     var automaticallyNavigates = false
     var automaticallyOpensSecondWindow = false
     var automaticallyClosesSceneB = false

@@ -344,23 +344,27 @@ internal final class RUMViewTrackingState {
         let occurrenceKey: RUMViewOccurrenceKey
         let bindingGeneration: UInt64
         let descriptor: Descriptor
+        let isCurrentDestination: Bool
 
         init(
             occurrenceKey: RUMViewOccurrenceKey,
             bindingGeneration: UInt64,
-            descriptor: Descriptor
+            descriptor: Descriptor,
+            isCurrentDestination: Bool = true
         ) {
             self.occurrenceKey = occurrenceKey
             self.bindingGeneration = bindingGeneration
             self.descriptor = descriptor
+            self.isCurrentDestination = isCurrentDestination
         }
 
         static func == (lhs: Configuration, rhs: Configuration) -> Bool {
-            // The generation identifies the complete binding snapshot,
-            // including its descriptor. Descriptor values are Encodable and
-            // intentionally have no general equality operation.
+            // The generation identifies the descriptor's binding snapshot.
+            // Descriptor values are Encodable and intentionally have no
+            // general equality operation.
             lhs.occurrenceKey == rhs.occurrenceKey
                 && lhs.bindingGeneration == rhs.bindingGeneration
+                && lhs.isCurrentDestination == rhs.isCurrentDestination
         }
     }
 
@@ -1132,9 +1136,9 @@ internal final class RUMSwiftUINavigationOccurrenceSource {
         )
     }
 
-    /// Reveals a route retained below the current navigation destination. Only
-    /// a registration which previously started, disappeared, and retains a
-    /// proven scene can accept this committed path contraction.
+    /// Reveals a route retained below the current navigation destination. A
+    /// registration may have published an earlier occurrence or may only have
+    /// retained materialization and scene proof while it was hidden.
     @discardableResult
     func revealRetainedRoute(
         occurrenceKey: RUMViewOccurrenceKey,
@@ -1158,7 +1162,8 @@ internal final class RUMSwiftUINavigationOccurrenceSource {
             let configuration = RUMViewTrackingState.Configuration(
                 occurrenceKey: occurrenceKey,
                 bindingGeneration: bindingGeneration,
-                descriptor: descriptor
+                descriptor: descriptor,
+                isCurrentDestination: true
             )
             if
                 state.prepareForRetainedRouteHandoff(
@@ -1286,7 +1291,7 @@ internal final class RUMSwiftUINavigationOccurrenceRegistration {
             configuration.occurrenceKey == occurrenceKey,
             bindingGeneration > configuration.bindingGeneration,
             bindingGeneration > (state.configuration?.bindingGeneration ?? 0),
-            state.lifecycleGeneration > 0,
+            state.lifecycleGeneration > 0 || !configuration.isCurrentDestination,
             !state.isAppeared,
             state.activeLifecycleGeneration == nil,
             !state.needsReaderRemount,
@@ -1300,7 +1305,8 @@ internal final class RUMSwiftUINavigationOccurrenceRegistration {
         let nextConfiguration = RUMViewTrackingState.Configuration(
             occurrenceKey: occurrenceKey,
             bindingGeneration: bindingGeneration,
-            descriptor: configuration.descriptor
+            descriptor: configuration.descriptor,
+            isCurrentDestination: true
         )
         process(nextConfiguration, sceneIdentifier)
         return sceneIdentifier
@@ -2390,6 +2396,12 @@ private struct RUMTraitBackedMultiSceneViewModifier: SwiftUI.ViewModifier {
 
     private func mount(in sceneIdentifier: RUMSceneIdentifier) {
         if let configuration {
+            guard configuration.isCurrentDestination else {
+                let attachment = RUMViewTrackingState.Attachment.attached(sceneIdentifier)
+                update(attachment: attachment)
+                rebindNavigationOccurrenceSource(attachment: attachment)
+                return
+            }
             if consumeRevealedRoute(configuration, in: sceneIdentifier) {
                 rebindNavigationOccurrenceSource(attachment: .attached(sceneIdentifier))
                 return
@@ -2426,6 +2438,12 @@ private struct RUMTraitBackedMultiSceneViewModifier: SwiftUI.ViewModifier {
 
     private func initialMount(in sceneIdentifier: RUMSceneIdentifier) {
         if let configuration {
+            guard configuration.isCurrentDestination else {
+                let attachment = RUMViewTrackingState.Attachment.attached(sceneIdentifier)
+                update(attachment: attachment)
+                rebindNavigationOccurrenceSource(attachment: attachment)
+                return
+            }
             if consumeRevealedRoute(configuration, in: sceneIdentifier) {
                 rebindNavigationOccurrenceSource(attachment: .attached(sceneIdentifier))
                 return
@@ -2499,6 +2517,9 @@ private struct RUMTraitBackedMultiSceneViewModifier: SwiftUI.ViewModifier {
 
     private func appear() {
         if let configuration {
+            guard configuration.isCurrentDestination else {
+                return
+            }
             if
                 let sceneIdentifier = trackingState.sceneIdentifier,
                 consumeRevealedRoute(configuration, in: sceneIdentifier) {
@@ -2810,6 +2831,7 @@ internal final class RUMSwiftUISemanticNavigationState<
     struct Occurrence {
         let key: RUMViewOccurrenceKey
         let generation: UInt64
+        let isCurrentDestination: Bool
     }
 
     /// Stable control data retained by one materialized destination boundary.
@@ -2818,10 +2840,12 @@ internal final class RUMSwiftUISemanticNavigationState<
     final class RouteOccurrenceClaim {
         fileprivate var route: Route
         fileprivate var key: RUMViewOccurrenceKey
+        fileprivate var depth: Int
 
-        fileprivate init(route: Route, key: RUMViewOccurrenceKey) {
+        fileprivate init(route: Route, key: RUMViewOccurrenceKey, depth: Int) {
             self.route = route
             self.key = key
+            self.depth = depth
         }
     }
 
@@ -2856,14 +2880,63 @@ internal final class RUMSwiftUISemanticNavigationState<
     var rootOccurrence: Occurrence {
         Occurrence(
             key: RUMViewOccurrenceKey(RootKey(containerID: containerID)),
-            generation: bindingGeneration
+            generation: bindingGeneration,
+            isCurrentDestination: currentPath?.isEmpty ?? true
         )
     }
 
     func occurrence(for route: Route) -> Occurrence {
+        let position = routePosition(for: route)
+        return Occurrence(
+            key: position.key,
+            generation: bindingGeneration,
+            isCurrentDestination: position.isCurrentDestination
+        )
+    }
+
+    func makeOccurrenceClaim(for route: Route) -> RouteOccurrenceClaim {
+        let position = routePosition(for: route)
+        return RouteOccurrenceClaim(
+            route: route,
+            key: position.key,
+            depth: position.depth
+        )
+    }
+
+    func occurrence(
+        for route: Route,
+        retaining claim: RouteOccurrenceClaim
+    ) -> Occurrence {
+        let current = routePosition(for: route)
+        if claim.route != route {
+            claim.route = route
+            claim.key = current.key
+            claim.depth = current.depth
+        } else if
+            claim.depth > (currentPath?.count ?? 0),
+            current.isCurrentDestination {
+            // A restored stack can materialize only its top destination. If
+            // equal values occupy multiple positions, that single boundary is
+            // initially claimed at the deepest position. Rebase it when a pop
+            // removes that position so the surviving destination becomes a
+            // fresh RUM occurrence. Claims for positions still in the path are
+            // retained, preserving normal equal-value push/pop ownership.
+            claim.key = current.key
+            claim.depth = current.depth
+        }
+        return Occurrence(
+            key: claim.key,
+            generation: bindingGeneration,
+            isCurrentDestination: current.isCurrentDestination && claim.key == current.key
+        )
+    }
+
+    private func routePosition(
+        for route: Route
+    ) -> (key: RUMViewOccurrenceKey, depth: Int, isCurrentDestination: Bool) {
         let path = currentPath ?? []
         let depth = path.lastIndex(of: route).map { $0 + 1 } ?? max(path.count, 1)
-        return Occurrence(
+        return (
             key: RUMViewOccurrenceKey(
                 RoutePositionKey(
                     containerID: containerID,
@@ -2871,24 +2944,9 @@ internal final class RUMSwiftUISemanticNavigationState<
                     depth: depth
                 )
             ),
-            generation: bindingGeneration
+            depth: depth,
+            isCurrentDestination: depth == path.count && path.last == route
         )
-    }
-
-    func makeOccurrenceClaim(for route: Route) -> RouteOccurrenceClaim {
-        RouteOccurrenceClaim(route: route, key: occurrence(for: route).key)
-    }
-
-    func occurrence(
-        for route: Route,
-        retaining claim: RouteOccurrenceClaim
-    ) -> Occurrence {
-        if claim.route != route {
-            let current = occurrence(for: route)
-            claim.route = route
-            claim.key = current.key
-        }
-        return Occurrence(key: claim.key, generation: bindingGeneration)
     }
 
     func reconcile(path: [Route]) {
@@ -3116,6 +3174,7 @@ private struct RUMSemanticNavigationDestinationBoundary<
             rumView: rumView,
             occurrenceKey: occurrence.key,
             bindingGeneration: occurrence.generation,
+            isCurrentDestination: occurrence.isCurrentDestination,
             navigationOccurrenceSource: navigationState.occurrenceSource,
             in: core
         )
@@ -3359,6 +3418,7 @@ public struct RUMNavigationStack<
             rumView: rumView,
             occurrenceKey: occurrence.key,
             bindingGeneration: occurrence.generation,
+            isCurrentDestination: occurrence.isCurrentDestination,
             navigationOccurrenceSource: navigationState.occurrenceSource,
             in: core
         )
@@ -3421,6 +3481,7 @@ internal extension SwiftUI.View {
         name: String,
         occurrenceKey: RUMViewOccurrenceKey,
         bindingGeneration: UInt64,
+        isCurrentDestination: Bool = true,
         navigationOccurrenceSource: RUMSwiftUINavigationOccurrenceSource? = nil,
         attributes: [AttributeKey: AttributeValue] = [:],
         in core: DatadogCoreProtocol = CoreRegistry.default
@@ -3430,7 +3491,8 @@ internal extension SwiftUI.View {
         let configuration = RUMViewTrackingState.Configuration(
             occurrenceKey: occurrenceKey,
             bindingGeneration: bindingGeneration,
-            descriptor: .init(name: name, path: path, attributes: attributes)
+            descriptor: .init(name: name, path: path, attributes: attributes),
+            isCurrentDestination: isCurrentDestination
         )
         return modifier(
             RUMViewModifier(
@@ -3448,6 +3510,7 @@ internal extension SwiftUI.View {
         rumView: RUMView,
         occurrenceKey: RUMViewOccurrenceKey,
         bindingGeneration: UInt64,
+        isCurrentDestination: Bool = true,
         navigationOccurrenceSource: RUMSwiftUINavigationOccurrenceSource? = nil,
         in core: DatadogCoreProtocol = CoreRegistry.default
     ) -> some View {
@@ -3460,7 +3523,8 @@ internal extension SwiftUI.View {
                 name: rumView.name,
                 path: path,
                 attributes: rumView.attributes
-            )
+            ),
+            isCurrentDestination: isCurrentDestination
         )
         return modifier(
             RUMViewModifier(

@@ -419,6 +419,22 @@ struct ProbeWindowRoot: View {
     init(window: ProbeWindow) {
         routedWindow = window
         self.window = window.normalized(forRunID: ProbeRuntime.runID)
+        self._path = State(initialValue: Self.initialNavigationPath())
+    }
+
+    private static func initialNavigationPath() -> [ProbeRoute] {
+        ProbeRuntime.initialSwiftUIPath.compactMap { value in
+            switch value {
+            case "detail-1":
+                return .detail(1)
+            case "detail-2":
+                return .detail(2)
+            case "alternate":
+                return .alternate
+            default:
+                return nil
+            }
+        }
     }
 
     @Environment(\.openWindow) private var openWindow

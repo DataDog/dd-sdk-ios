@@ -22,6 +22,7 @@ enum ProbeScenarioCatalog {
         "swiftui.coexistence.automatic-scene-targeted-full-screen-cover",
         "swiftui.semantic-api.complete-destination",
         "swiftui.semantic-api.repeated-value-links",
+        "swiftui.semantic-api.initial-repeated-path",
         "swiftui.coexistence.automatic-keyed-manual-view",
         "swiftui.coexistence.nested-keyed-manual-view",
         "swiftui.coexistence.same-key-manual-two-scenes",
@@ -57,6 +58,7 @@ enum ProbeScenarioCatalog {
         swiftUICoexistenceAutomaticSceneTargetedFullScreenCover,
         swiftUISemanticAPICompleteDestination,
         swiftUISemanticAPIRepeatedValueLinks,
+        swiftUISemanticAPIInitialRepeatedPath,
         swiftUICoexistenceAutomaticKeyedManualView,
         swiftUICoexistenceNestedKeyedManualView,
         swiftUICoexistenceSameKeyManualTwoScenes,
@@ -145,6 +147,7 @@ enum ProbeScenarioCatalog {
     static func usesSemanticNavigationSPI(_ scenario: ProbeScenario) -> Bool {
         scenario.identifier == swiftUISemanticAPICompleteDestination.identifier
             || scenario.identifier == swiftUISemanticAPIRepeatedValueLinks.identifier
+            || scenario.identifier == swiftUISemanticAPIInitialRepeatedPath.identifier
     }
 
     static func usesSemanticNavigationValueLinks(_ scenario: ProbeScenario) -> Bool {
@@ -1177,6 +1180,103 @@ enum ProbeScenarioCatalog {
             ("detail-1", 2, "semantic-link-detail-2"),
             ("detail-1", 3, "semantic-link-detail-3"),
             ("home", 2, "semantic-link-home-2")
+        ]
+        var timeline: [ProbeExpectation] = []
+        for (index, occurrence) in occurrences.enumerated() {
+            if index > 0 {
+                let previous = occurrences[index - 1]
+                timeline.append(
+                    ProbeExpectation(
+                        .viewStopped,
+                        scene: "scene-A",
+                        screen: previous.screen,
+                        occurrence: previous.occurrence,
+                        rumViewOrigin: .semantic
+                    )
+                )
+            }
+            timeline.append(
+                ProbeExpectation(
+                    .viewStarted,
+                    scene: "scene-A",
+                    screen: occurrence.screen,
+                    occurrence: occurrence.occurrence,
+                    rumViewOrigin: .semantic
+                )
+            )
+            timeline += semanticMarkerExpectations(
+                screen: occurrence.screen,
+                occurrence: occurrence.occurrence,
+                name: occurrence.marker
+            )
+        }
+        return timeline
+    }
+
+    /// Starts with the customer's router already restored to two equal route
+    /// values. Only the top route may become a RUM view initially; each pop
+    /// must reveal a fresh occurrence of the surviving destination.
+    private static let swiftUISemanticAPIInitialRepeatedPath = ProbeScenario(
+        identifier: "swiftui.semantic-api.initial-repeated-path",
+        trackingMode: .navigationOccurrence,
+        layout: .stack,
+        steps: [
+            ProbeStep(.waitForSceneReady, scene: "scene-A"),
+            ProbeStep(.waitForSignal, scene: "scene-A", signal: "rum-view:detail-1#1"),
+            ProbeStep(
+                .emitMarker,
+                scene: "scene-A",
+                value: "semantic-restored-detail-top"
+            ),
+            ProbeStep(.setSwiftUIPath, scene: "scene-A", value: "detail-1"),
+            ProbeStep(.waitForSignal, scene: "scene-A", signal: "rum-view:detail-1#2"),
+            ProbeStep(
+                .emitMarker,
+                scene: "scene-A",
+                value: "semantic-restored-detail-revealed"
+            ),
+            ProbeStep(.setSwiftUIPath, scene: "scene-A", value: "home"),
+            ProbeStep(.waitForSignal, scene: "scene-A", signal: "rum-view:home#1"),
+            ProbeStep(
+                .emitMarker,
+                scene: "scene-A",
+                value: "semantic-restored-home"
+            )
+        ],
+        completionConditions: [
+            ProbeExpectation(.noViewStarted, rumViewOrigin: .automatic),
+            ProbeExpectation(
+                .action,
+                scene: "scene-A",
+                screen: "home",
+                occurrence: 1,
+                name: "semantic-restored-home",
+                sourceScene: "scene-A",
+                sourceScreen: "home",
+                rumViewOrigin: .semantic
+            ),
+            ProbeExpectation(
+                .resource,
+                scene: "scene-A",
+                screen: "home",
+                occurrence: 1,
+                name: "semantic-restored-home",
+                sourceScene: "scene-A",
+                sourceScreen: "home",
+                rumViewOrigin: .semantic
+            )
+        ],
+        expectedSemanticTimeline: semanticInitialRepeatedPathTimeline(),
+        runtimeOptions: runtime {
+            $0.initialSwiftUIPath = ["detail-1", "detail-1"]
+        }
+    )
+
+    private static func semanticInitialRepeatedPathTimeline() -> [ProbeExpectation] {
+        let occurrences: [(screen: String, occurrence: Int, marker: String)] = [
+            ("detail-1", 1, "semantic-restored-detail-top"),
+            ("detail-1", 2, "semantic-restored-detail-revealed"),
+            ("home", 1, "semantic-restored-home")
         ]
         var timeline: [ProbeExpectation] = []
         for (index, occurrence) in occurrences.enumerated() {
