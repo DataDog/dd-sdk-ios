@@ -17,9 +17,11 @@ and runtime usefulness before normal API and RFC review. `EXP-137` through
 `EXP-140` cover automatic Home → manual/presentation → fresh Home using the
 customer-shaped overloads. Do not promote these declarations to the supported
 public API surface until review approves their names, availability, protocol
-behavior, and Objective-C exposure. The semantic SwiftUI container remains the
-next API prototype. Examples below are review starting points, not settled
-signatures.
+behavior, and Objective-C exposure. The semantic SwiftUI container is now also
+implemented as an iOS 27 experimental Swift SPI. `EXP-141` validates its complete
+Home → Detail → Home → Sheet → Home → full-screen-cover → Home stream locally and
+in backend intake while automatic tracking remains enabled. Examples below are
+the exercised review starting point, not settled signatures.
 
 The approved behavior is:
 
@@ -66,7 +68,7 @@ start/stop intent. It does not need a second scene registry or a wire change.
 that path bypasses the platform-view stack and has no authority over later
 automatic appearances. Commits `29c8cec2c` and `b1a0fb6b8` implement and harden
 the internal stack route; `EXP-122` validates it locally and in backend intake.
-Commit `e51376b6f` adds the customer-shaped bridge. The Swift form is
+Signed commit `01e5d1ffb` adds the customer-shaped bridge. The Swift form is
 `@_spi(Experimental)` and iOS 27-only. The Objective-C form is Debug-only because
 Objective-C cannot import a Swift SPI. Focused forwarding, NOP/custom conformer,
 instrumentation-stack, and selector smoke tests pass. The probe uses the real
@@ -324,12 +326,18 @@ state:
 ```swift
 RUMNavigationStack(
     path: $router.path,
+    presented: $router.presentation,
     root: RUMView(name: "Home"),
-    destination: router.rumView
+    destination: router.rumView,
+    presentation: router.rumPresentation
 ) {
     HomeView()
 } destinationContent: { route in
     router.view(for: route)
+} presentedContent: { presentation in
+    router.view(for: presentation)
+} onPresentationDismiss: { presentation in
+    router.didDismiss(presentation)
 }
 ```
 
@@ -355,16 +363,21 @@ destination builders and installs the route-owned tracking boundary where each
 destination materializes. A final modifier is acceptable only if it provides an
 equivalent materialization boundary; a path observer by itself is not.
 
-There is no technical blocker to an iOS 27 SPI prototype. The smallest credible
-next slice is a builder-owning `RUMNavigationStack` that accepts a typed
-`Binding<[Route]>`, a centralized root/destination resolver, one optional
-application presentation binding, and builders for root, destination, and
-presented content. The presentation resolver must return both RUM metadata and
-Sheet versus full-screen-cover style. Keeping this as SPI allows the branch to
-measure whether that shape preserves transactions, programmatic router changes,
-presentation dismissal ordering, and automatic coexistence before public review.
-The existing probe wrapper is the implementation control; customer-call-site
-acceptance must use the SPI rather than relabeling the probe-only type.
+That builder-owning iOS 27 SPI is now implemented. `RUMNavigationStack` accepts a
+typed `Binding<[Route]>`, centralized root/destination resolution, one
+application-owned optional presentation binding, and builders for root,
+destination, and presented content. `RUMNavigationPresentation` supplies both
+RUM metadata and Sheet versus full-screen-cover style. The binding wrappers
+forward SwiftUI transactions. The accepted `EXP-141` customer call site uses this
+SPI directly rather than relabeling the probe-only control.
+
+The prototype answers the implementation-feasibility question but does not yet
+settle the public shape. It currently requires a presentation type and binding
+even when an application has stack-only navigation, and it reuses `RUMView`,
+whose `isUntrackedModal` field is unrelated to semantic route metadata. API
+review should consider presentation-free overloads and a smaller descriptor.
+Programmatic router replacement, repeated equal routes, restoration, and
+presentation replacement remain hardening experiments before promotion.
 
 ### Resolver and path model
 
@@ -437,10 +450,14 @@ fresh H2, including duplicate active-key crash safety. `EXP-139` and `EXP-140`
 independently pass 14/14 for Sheet and full-screen cover, with exactly one
 semantic presentation and fresh H2 before immediate dismissal work. All four
 backend sessions agree with mapper ownership and contain zero errors/crashes.
-The complete RUM suite passes 1,171/1,171, the native probe passes 133/133, lint
-passes, and both Debug and Xcode 27 Release probe builds pass. The source-based
-API verifier reports only the expected two Swift and two Debug-only Objective-C
-prototype additions; no baseline was changed.
+`EXP-141` then exercises the actual container SPI as one complete stream. It
+passes 38/38 with distinct H1/D1/H2/Sheet/H3/Cover/H4 IDs, no automatic duplicate,
+and immediate, settled, and delayed post-dismiss work on fresh H3/H4. Its exact
+backend session contains those seven semantic views plus ApplicationLaunch, 25
+actions, 25 Resources, and zero errors/crashes. The complete RUM suite now passes
+1,177/1,177 and the native probe passes 134/134. Both Debug and authoritative
+Xcode 27 Release probe builds pass. The source-based API verifier remains a
+prototype gate; no baseline is changed before normal review.
 
 ## Required review and test matrix
 

@@ -124,12 +124,45 @@ Filter build and console logs at the tool when possible. Avoid transferring or
 parsing an entire Xcode log when a severity, pattern, glob, or tail limit can
 isolate the evidence.
 
+The probe scheme is `RUMNativeMultiSceneProbe`. The SDK workspace scheme is
+`DatadogRUM`; `DatadogRUM iOS` is stale and exits before tests run. If a direct
+Xcode 27 test invocation completes its tests but hangs while finalizing the
+result bundle, rerun the unchanged selection with code coverage disabled:
+
+```sh
+/Applications/Xcode_27.app/Contents/Developer/usr/bin/xcodebuild \
+  -workspace Datadog.xcworkspace \
+  -scheme DatadogRUM \
+  -destination 'platform=iOS Simulator,name=iPhone 17 Pro,OS=latest' \
+  -enableCodeCoverage NO \
+  test
+```
+
+This is a tooling workaround, not permission to omit the complete module run.
+Use Xcode 27's `xcresulttool get test-results summary` on the resulting
+`.xcresult` when raw output is truncated. Its device-level `passedTests` count
+includes parameterized test runs and is the count used by this project.
+
 ### Experimental public-API loop
 
 Customer-shaped API experiments may use Swift SPI before normal public API
 review. Import those declarations with `@_spi(Experimental)` in the probe and
 compile both Debug and Release probe configurations. The Release build is the
 proof that the experiment does not depend on `@testable` visibility.
+
+An SDK test that needs both SPI and internal access uses both import attributes,
+each on its own line:
+
+```swift
+@_spi(Experimental)
+@testable import DatadogRUM
+```
+
+A plain `@testable` import does not expose SPI members. When asserting fresh
+SwiftUI occurrences, inspect emitted transitions or commands; the tracking
+state's base identity is a stable fallback and is not the generated occurrence
+identity. `RUMStopViewCommand` also has no instrumentation-type field, so pair it
+with its start by identity and assert the start command's type.
 
 Objective-C has no equivalent SPI import boundary. Keep an Objective-C prototype
 Debug-only until API review, exercise its exact generated selectors in the
@@ -375,7 +408,9 @@ For each run:
    expected occurrence is present and that each semantic view document carries
    the current run ID. A run-ID aggregate alone can hide a view whose start
    attributes were contaminated by restored state.
-4. Compare event view UUIDs with the local mapper evidence.
+4. Group actions and Resources by `@type`, `@view.id`, and `@view.name`. Compare
+   those counts and UUIDs with the local mapper evidence; this catches a correct
+   view inventory with incorrect downstream ownership.
 5. For Operations, compare raw `operation_step` documents with the reduced
    Operation result.
 6. Verify exact counts, occurrence IDs, start/end ownership, and the absence of

@@ -53,6 +53,7 @@ The catalog currently preserves these experiment families:
 | `swiftui.stack.abort` | `EXP-091`, `EXP-110`, `EXP-116` | Signal-driven PASS through route-owned and container-wrapper paths |
 | `swiftui.stack.same-type-replacement` | `EXP-090`, `EXP-110`, `EXP-116` | Signal-driven PASS through route-owned and container-wrapper paths |
 | `swiftui.stack.different-type-replacement` | `EXP-054`, `EXP-110` | Signal-driven PASS |
+| `swiftui.semantic-api.complete-destination` | `EXP-141` | Actual iOS 27 SDK SPI PASS 38/38: H1 → D1 → H2 → Sheet → H3 → Cover → H4, exact downstream ownership, and no automatic duplicate |
 | `swiftui.coexistence.semantic-a-automatic-b` | `EXP-118` | Signal-driven; simulator-inconclusive, physical hardware required |
 | `swiftui.coexistence.automatic-manual-sheet` | `EXP-119` | Signal-driven FAIL: immediate `onDismiss` work retains outgoing Sheet; settled work uses fresh automatic Home |
 | `swiftui.coexistence.automatic-scene-targeted-sheet` | `EXP-123`–`EXP-125` | Handler-only baseline FAIL; suppression-bound successor PASS 14/14 with semantic Sheet, no automatic duplicate, and fresh Home before immediate dismiss work |
@@ -99,7 +100,7 @@ view-stop/Resource observations, repeated-name completion, a missing event, a
 forbidden view, and an ignored native gesture. An exact main-actor scene
 registry adds stable logical/native identity, weak window ownership, readiness,
 activation, geometry, route, and disconnect generations without serializing its
-future Execution Context seam. The generated test plan passes 132/132. The stack
+future Execution Context seam. The generated test plan passes 134/134. The stack
 return, abort, replacement, split-selection, and deterministic UIKit transition
 scenarios, plus exact scene open/close/activation, drive their exact scene and wait for
 observable readiness, lifecycle state, path/selection,
@@ -113,6 +114,12 @@ moving the path and route metadata to one probe-container call site. The wrapper
 still owns the root and typed destination builders so it can install the early
 tracking boundary at each materialized route; a passive root-only modifier is
 known to be too late. This is an API-shape prototype, not a shipped integration.
+`EXP-141` replaces that probe-only wrapper for one combined path with the actual
+iOS 27 SDK SPI. With automatic discovery still enabled, it produces four fresh
+Home occurrences plus Detail, Sheet, and full-screen Cover; all 38 local
+expectations and backend owners pass, and no automatic presentation or hosting
+duplicate appears. This remains an experimental call site pending normal API
+review.
 `EXP-119` adds one explicit Sheet over an otherwise automatic hierarchy. It
 proves automatic Home H1 -> explicit Sheet S1 -> fresh automatic Home H2 without
 an automatic Sheet duplicate, but intentionally fails while immediate

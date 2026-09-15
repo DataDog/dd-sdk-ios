@@ -110,10 +110,11 @@ boundary, in this order:
 | 93 | `Document shared request validation boundary` | `EXP-136` simulator-system failure evidence, physical rerun routing, tooling runbook, and customer-shaped API resume point |
 | 94 | `Prototype scene-targeted manual view APIs` | iOS 27 Swift SPI and Debug-only Objective-C customer-shaped start/stop calls, custom/NOP fallback, probe migration, restored-window run isolation, and compile/runtime coverage |
 | 95 | `Document scene-targeted manual API validation` | `EXP-137` through `EXP-140`, Xcode/tooling corrections, current support assessment, and the semantic SwiftUI plus Operation SPI resume plan |
+| 96 | `Prototype SwiftUI semantic navigation integration` | iOS 27 builder-owning Swift SPI, typed path occurrence state, Sheet/full-screen-cover authority, target-scoped automatic suppression, and focused tests |
+| 97 | `Exercise semantic navigation API in native probe` | `EXP-141` customer-shaped H1/D1/H2/Sheet/H3/Cover/H4 scenario and strict action/Resource/dedup oracle |
 
-Rows 1-93 are committed and signed; row 93 is `d2a5b9491`. Row 94 is local development commit
-`e51376b6f`; two signing attempts failed before that commit was created unsigned,
-so it must be re-signed before the next signed handoff. Row 16 is commit `e56262485`; row 17 is commit
+Rows 1-97 are committed and signed. Rows 93-97 are `d2a5b9491`, `01e5d1ffb`,
+`3b26da106`, `eb89a4f24`, and `3af24003c` respectively. Row 16 is commit `e56262485`; row 17 is commit
 `2fb8dd9b5`; row 18 is commit `6fa2baf24`; rows 19-21 are commits
 `874dcad11`, `ea787a35a`, and `a24527b17`; rows 22-23 are commits
 `32dd4dbe5` and `77e064a1d`; row 24 is commit `3a4b98f6d`, row 25 is
@@ -139,11 +140,15 @@ Rows 80-92 are `af2a2666d`, `9fa58e3c0`, `5d536e0bd`, `140e57c11`,
 `0dca626df`, `2972d3de1`, `75becb324`, and `e804d3bd6`. Their signatures were verified against the
 configured Datadog developer key before this checkpoint.
 
-The row-94 signing attempts failed with the same external-agent communication
-error recorded below. The branch remains local-only, and the user explicitly
-allowed an unsigned development checkpoint rather than losing this boundary.
-Do not push it; replace it with an equivalent signed commit when the signer is
-available.
+The first row-94 signing attempts failed with the same external-agent
+communication error recorded below. The user explicitly allowed unsigned
+development checkpoints, producing historical objects `e51376b6f` and
+`0ba14da6f`. When signing recovered, rows 94-97 were replayed with signatures in
+a temporary worktree. The old and new tips have the identical tree
+`58bf65ab2ac8d5748c6bbd5fad2e0ce1b0b978d9`; the branch now points only to the
+signed tail. It remains local-only and must not be pushed.
+A raw commit-object audit after repointing the branch finds a `gpgsig` block on
+all 105 commits after the `develop` merge base, with no missing signature.
 
 Twelve earlier signed attempts failed before writing a commit object. The last
 attempt that returned signer stderr reported:
@@ -4337,7 +4342,7 @@ the customer-shaped scene-aware API prototype.
 
 ### 2026-09-15 — EXP-137 through EXP-140: customer-shaped manual view APIs
 
-Commit `e51376b6f` adds the first iOS 27 customer-shaped scene-targeted manual
+Signed commit `01e5d1ffb` adds the first iOS 27 customer-shaped scene-targeted manual
 view prototype. Swift callers import it through `@_spi(Experimental)` and pass a
 real `UIWindowScene` to paired start/stop overloads. The bridge copies only the
 scene session identifier on the main actor, routes the SDK monitor through the
@@ -4415,6 +4420,114 @@ and their two Objective-C declarations as additions because it scans source and
 does not hide SPI or Debug-only declarations. This is the expected prototype
 mismatch; no checked-in API baseline was changed. Stable promotion still requires
 normal API/RFC review and a clean approved API-surface result.
+
+### 2026-09-15 — EXP-141: customer-shaped semantic navigation API
+
+The first optional SwiftUI semantic-navigation prototype now uses the actual SDK
+surface rather than the probe-only wrapper. The iOS 27
+`@_spi(Experimental)` `RUMNavigationStack` owns a typed `NavigationStack`, the
+root and destination builders, one application presentation binding, and the
+sheet/full-screen-cover builders. Customer metadata stays centralized in root,
+destination, and presentation resolvers. Automatic tracking remains enabled.
+
+The internal navigation state gives committed path changes fresh occurrence
+generations and synchronously reveals a retained route on pop. A presentation
+does not start until its content mounts with a concrete `UIWindowScene`; it then
+uses the existing scene-local manual-authority stack. Router authority stops and
+reveals the latest committed underlying destination before the customer's
+`onPresentationDismiss` callback, while a separate UI-attached suppression state
+remains active until the native presentation subtree disappears. A presentation
+that never mounts publishes no RUM view or dismissal. Repeated mount signals are
+idempotent, and a mounted presentation that moves scenes stops in its old scene
+before starting in the new one.
+
+The clean iPadOS 27.0 simulator run is:
+
+- scenario `swiftui.semantic-api.complete-destination`;
+- run `semantic-api-20260915-1021-a`;
+- RUM session `ff21d9ab-f59f-49cf-91c1-f1326a0a39ea`;
+- native scene `33F68994-4513-4100-B294-A1F5A5A2EE23`;
+- local semantic oracle `PASS`, 38/38 expectations;
+- three RUM upload batches accepted with HTTP 202; and
+- no SDK warning/error/failure signature, app crash, or visible layout defect.
+
+The mapper occurrence chain is exact and every occurrence has a distinct view
+ID:
+
+1. Home H1 `986596da-f66d-47b4-b373-938cbaac7782`;
+2. Detail D1 `562e9078-f37c-4d03-843d-c3917233d610`;
+3. Home H2 `deeaad7d-3d09-4e05-b5d7-b1fe7288e6c7`;
+4. Sheet S1 `fa32f665-3df2-405c-ba97-bca35780c8d4`;
+5. Home H3 `bf9c8d03-09c3-40e7-8d3d-6291e11f85ad`;
+6. full-screen Cover C1 `d398be8f-b6ac-4f08-b9db-45f48008ae83`; and
+7. Home H4 `e1f36d2e-4c69-435d-a96a-5a6189973fb8`.
+
+Every superseded occurrence is inactive and H4 remains active at the end. No
+automatic view start occurs within the semantic container. The backend exact
+session inventory independently contains eight one-document views: the seven
+semantic IDs above plus ApplicationLaunch
+`fc47765d-4274-4dad-936d-7fb82ed63e90`. It contains no automatic duplicate.
+The full session has 63 events: 25 actions, 25 Resources, eight views, three long
+tasks, one session, and one vital. There are zero error events and no crashed
+session.
+
+Backend action and Resource counts agree for every semantic occurrence: H1 and
+D1 own five of each, H2 owns one of each, Sheet and Cover own three of each, and
+H3 and H4 own four of each. In particular, post-dismiss immediate and settled
+work belongs to fresh H3/H4. A delayed task emitted by the outgoing Sheet also
+lands on H3 after dismissal, and the corresponding Cover task lands on H4. This
+confirms the SDK's current destination at the time the work occurs rather than
+retaining the presentation owner.
+
+The clean-run precondition was proven on simulator
+`B4E4F039-CA5D-4D04-A904-1D71099BE651`: termination reported no running app,
+uninstall succeeded, and the subsequent application-container lookup reported
+the container absent before install and launch. Runtime artifacts are:
+
+- logs:
+  `/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/ActionArtifacts/default/DeviceInteractionSynthesize/Semantic Navigation API-10_23_42_136-logs.txt`;
+- hierarchy:
+  `/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/ActionArtifacts/default/DeviceInteractionSynthesize/Semantic Navigation API-10_23_42_136-hierarchy.txt`; and
+- screenshot:
+  `/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/ActionArtifacts/default/DeviceInteractionSynthesize/Semantic Navigation API-10_23_42_136-screenshot.png`.
+
+Validation at this checkpoint is:
+
+- six focused semantic-navigation state/handler tests pass;
+- complete DatadogRUM test run passes 1,177/1,177 with zero failures or skips;
+- complete native probe suite passes 134/134;
+- Debug probe build passes through Xcode MCP; and
+- the authoritative Xcode 27.0 (`27A266a`) Release simulator build succeeds;
+- repository lint passes with zero violations; and
+- the API-surface verifier reports only the expected experimental semantic
+  navigation declarations plus the previously recorded manual-view additions.
+  No checked-in API baseline changed.
+
+Rejected implementation/tooling attempts remain part of the result:
+
+- A focused command used the stale scheme name `DatadogRUM iOS` and exited 65
+  before testing. The workspace scheme is `DatadogRUM`.
+- The first test import used only `@testable import DatadogRUM`, which could not
+  access SPI enum cases. Tests importing internal and SPI declarations need
+  separate `@_spi(Experimental)` and `@testable` attributes on the import.
+- The first occurrence assertions compared the stable fallback identity instead
+  of the generated occurrence identity. Occurrence transitions, not the state's
+  fallback identity property, prove H1/H2 uniqueness.
+- One stop assertion tried to read `instrumentationType` from
+  `RUMStopViewCommand`, where that field does not exist. Pair the start/stop
+  identity and assert the start command's instrumentation type.
+- A coverage-enabled focused run completed its tests but hung while finalizing
+  the Xcode result. The accepted CLI runs add `-enableCodeCoverage NO`; the Xcode
+  MCP probe run did not exhibit this problem.
+
+This closes the first customer-shaped complete-destination usefulness loop. It
+does not yet close repeated equal routes, external router mutation ordering,
+state restoration, presentation replacement, semantic-A/automatic-B isolation,
+or stable API review. Reusing `RUMView` is intentionally provisional because its
+`isUntrackedModal` field is unrelated to semantic destinations. The next local
+slice should test programmatic router mutations and presentation replacement,
+then run the same API in scene A while automatic tracking remains active in an
+independent scene B on capable hardware.
 
 ### Attempts not to repeat
 

@@ -129,15 +129,20 @@ single A-created request with a B consumer and raises the plan to 132/132. Two
 clean simulator attempts reached the second window; the retry also reached B
 join, then both crashed simulator `backboardd` before release. The unchanged
 runtime row is now hardware-gated. The experimental scene-aware manual-view
-Swift/Objective-C call-site item is complete in `e51376b6f` and `EXP-137`
-through `EXP-140`.
-The probe uses the customer-shaped Swift SPI for manual, nested, Sheet, and
-full-screen-cover flows; the full plan passes 133/133 and all four backend
-sessions have exact owners with zero errors/crashes. Stable promotion still
-needs review, and the two-scene same-key row remains hardware-gated. The next
-local slice is the builder-owning complete-destination SwiftUI SPI, followed by
-the Operation `.current(in:)` target SPI. Neither is technically blocked by
-public review because both remain experimental; review blocks only stable
+Swift/Objective-C call-site item is complete in `01e5d1ffb` and `EXP-137`
+through `EXP-140`. The probe uses the customer-shaped Swift SPI for manual,
+nested, Sheet, and full-screen-cover flows; all four backend sessions have exact
+owners with zero errors/crashes. `EXP-141` then completes the first
+builder-owning complete-destination SwiftUI SPI loop. The customer-shaped
+container consumes one typed path plus centralized root, destination, and
+presentation resolvers; its clean H1 → D1 → H2 → Sheet → H3 → Cover → H4 run
+passes 38/38 locally and in backend intake with no automatic duplicate. The full
+plan passes 134/134, six focused semantic tests pass, the complete RUM suite
+passes 1,177/1,177, and Xcode 27 Release compilation passes. Stable promotion
+still needs review, and the two-scene same-key row remains hardware-gated. The
+next local slice hardens router replacement/restoration and repeated equal routes
+before the Operation `.current(in:)` target SPI. Neither is technically blocked
+by public review because both remain experimental; review blocks only stable
 exposure.
 
 1. Completed in `115dc9e38` and `EXP-109`: connect observable scene, route,
@@ -241,7 +246,7 @@ exposure.
     success and H2→D2 failure, while the duplicate emits `[start H3, start D3,
     end D3]`, reduces from D3, and leaves H3 open without a synthetic end. The
     corrected warning and zero error/crash result are captured.
-15. Completed in development checkpoint `e51376b6f`: add scene-aware Swift
+15. Completed in signed commit `01e5d1ffb`: add scene-aware Swift
     manual-view overloads behind an iOS 27 SPI and Debug-only Objective-C
     companions. The SDK monitor routes through the handler authority, captures
     only the scene identifier on the main actor, falls back exactly once for
@@ -297,30 +302,36 @@ exposure.
     physical hardware and do not claim an SDK verdict from either partial run.
 24. Run `windows.activation-sequence` on iPhone Duo or a physical multi-window
     iPad, requiring exact foreground-active target and background peer state.
-25. Next local slice: prototype a builder-owning complete-destination SwiftUI
-    integration behind an iOS 27 SPI. It must own `NavigationStack` destination
-    materialization, consume a typed path plus centralized root/destination and
-    presentation resolvers, cover Sheet and full-screen cover, preserve Binding
-    transactions, and coexist with automatic tracking. First rerun one combined
-    H1 → D1 → H2 → Sheet → H3 → Cover → H4 customer-call-site scenario, then a
-    sibling/container isolation discriminator. Promote only an API-reviewed shape.
-26. Obtain recognized native SwiftUI cancel/finish gestures, preserve the retained
+25. Completed in `EXP-141`: prototype a builder-owning complete-destination
+    SwiftUI integration behind an iOS 27 SPI. It owns `NavigationStack`
+    destination materialization, consumes a typed path plus centralized
+    root/destination and presentation resolvers, covers Sheet and full-screen
+    cover, forwards Binding transactions, and coexists with automatic tracking.
+    The combined customer-call-site run passes H1 → D1 → H2 → Sheet → H3 → Cover
+    → H4 with 38/38 local assertions, seven exact backend view owners, 25 actions,
+    25 Resources, and zero errors/crashes. The complete probe plan passes 134/134;
+    the complete RUM suite passes 1,177/1,177. Promote only an API-reviewed shape.
+26. Harden that SPI with focused repeated-equal-route, external router mutation,
+    presentation replacement, and restoration cases. Rerun sibling-container
+    isolation through the actual SPI and add a presentation-free convenience only
+    if it preserves the same complete-destination contract.
+27. Obtain recognized native SwiftUI cancel/finish gestures, preserve the retained
     split result through adaptive collapse/expand, and validate stable simultaneous
     A/B topology through the real-device/human queue.
-27. Run genuine disconnect/reconnect, per-scene background/foreground, and
+28. Run genuine disconnect/reconnect, per-scene background/foreground, and
     concurrent restoration.
-28. Prototype Operation view targeting next, initially with an opaque iOS 27 SPI
+29. Prototype Operation view targeting next, initially with an opaque iOS 27 SPI
     value exposing only `.current(in:)`. Preserve explicit and inferred candidates
     separately so an unresolved explicit scene can fall through to trustworthy
     inference before snapshot/representative fallback. Exercise start/succeed/fail
     customer calls and Debug-only Objective-C selectors. Duplicate-start backend
     behavior is already closed by `EXP-130` and must not be rerun as an A-to-B
     prerequisite.
-29. Close explicitly targeted downstream signals and run live single-scene and
+30. Close explicitly targeted downstream signals and run live single-scene and
     custom-handler compatibility, handoff overhead, and the iOS 27.1/iPhone Duo
     matrix. Include `EXP-136` physical completion but do not reopen header-rewrite
     misuse or already-passing independent request ownership.
-30. After the multi-scene freeze gate—not before—execute the
+31. After the multi-scene freeze gate—not before—execute the
     [deferred single-scene extraction](DEFERRED_SINGLE_SCENE_EXTRACTION.md),
     rebuild this work on that generic stack, and stop before pushing.
 
@@ -332,14 +343,14 @@ The deferred extraction is a delivery phase after this order is complete, not a
 reason to interrupt or reshape the remaining runtime experiments.
 
 This plan was rechecked against the original objective and the approved product
-decision record after `EXP-140`. It still
+decision record after `EXP-141`. It still
 covers proper per-scene view creation, SwiftUI and UIKit navigation, action
 ownership, Resources/Traces/Operations and the remaining downstream signals,
 single-scene compatibility, and Session Replay crash safety. Header injection for
 developer-rewritten requests, true multi-pane/tab modeling, and Execution Context
 serialization remain deliberately outside this project. Hardware-limited
 activation and shared-request evidence is queued rather than allowed to block
-the next customer-shaped API prototype.
+the next local hardening and Operation-target prototypes.
 
 The UIKit split and exact-owner fixes remain regression gates, but they no longer
 precede the automatic SwiftUI P0. Device-limited rows are routed through the

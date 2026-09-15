@@ -177,7 +177,7 @@ Required test coverage is tracked explicitly:
 | Closed origin with no new context uses snapshot | Manager vital/message retained-view assertions plus backend teardown run | Focused and backend pass |
 | Closed origin then explicit B completion uses B | Manager exact-view assertion | Internal pass; customer-shaped Operation SPI is the next local slice |
 | Duplicate identity has corrected warning and no synthetic end | Manager warning plus exact `[start, start, end]` step sequence, with both a reused key and omitted key; `EXP-130` raw/reduced backend proof | Focused and live backend pass; earlier raw start is orphaned as specified |
-| Existing single-scene and source-less behavior | Representative-change and legacy no-view regressions | Focused pass; current full 1,171-test RUM suite passes |
+| Existing single-scene and source-less behavior | Representative-change and legacy no-view regressions | Focused pass; current full 1,177-test RUM suite passes |
 
 API review must settle the public Operation target type/name and exact
 Swift/Objective-C signatures. That review blocks stable exposure, not the SPI
