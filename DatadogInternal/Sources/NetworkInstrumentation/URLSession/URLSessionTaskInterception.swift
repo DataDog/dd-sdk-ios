@@ -339,11 +339,13 @@ extension ResourceMetrics {
         case .some(.networkLoad) where is304Revalidated:
             deliveryType = .cache
             // A `304` revalidation response has no body, but its headers still went over the network.
-            // Report that measured header size so it isn't confused with a zero-byte local cache hit.
-            // Fall back to a sentinel only if the header size itself wasn't reported.
+            // `URLSession` often reports `0` header bytes for `304`s even though data was transferred,
+            // so fall back to an estimate unless the count is truly unmeasured (`-1`, i.e.
+            // `NSURLSessionTransferSizeUnknown`) - reporting `0` would be indistinguishable from a
+            // real local cache hit.
             let fallbackTransferSize: Int64 = 300
-            let headerBytes = lastTransaction?.countOfResponseHeaderBytesReceived ?? 0
-            transferSize = headerBytes > 0 ? headerBytes : fallbackTransferSize
+            let headerBytes = lastTransaction?.countOfResponseHeaderBytesReceived ?? -1
+            transferSize = headerBytes < 0 ? nil : (headerBytes > 0 ? headerBytes : fallbackTransferSize)
         case .some(.networkLoad), .some(.serverPush):
             deliveryType = .other
             // `transferSize` represents the entire fetched response, not just the body - a response
