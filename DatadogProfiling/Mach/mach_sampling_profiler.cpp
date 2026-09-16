@@ -26,6 +26,10 @@
 #include <utility>
 #include <mach/vm_map.h>
 
+#if defined(__arm64__)
+#include <ptrauth.h>
+#endif
+
 // Address validation constants and macros
 //
 // These values define the valid range for user-space addresses on 64-bit systems:
@@ -196,6 +200,30 @@ static constexpr bool is_valid_userspace_addr(uintptr_t addr) {
  */
 static constexpr bool is_valid_frame_pointer(uintptr_t fp) {
     return is_valid_userspace_addr(fp) && (fp & FRAME_POINTER_ALIGN) == 0;
+}
+
+/**
+ * Removes pointer-authentication bits from an ARM64 instruction pointer.
+ *
+ * The profiler is normally compiled as arm64, even when it runs on arm64e
+ * hardware. Return addresses saved by arm64e system libraries can therefore
+ * contain PAC bits while ptrauth_strip remains a no-op in our arm64 binary.
+ * In that configuration, mask the upper bits and keep the 47-bit userspace
+ * virtual address. Other architectures do not require normalization.
+ */
+static uintptr_t normalize_instruction_pointer(uintptr_t instruction_pointer) {
+#if defined(__arm64__)
+#if __has_feature(ptrauth_calls)
+    return reinterpret_cast<uintptr_t>(ptrauth_strip(
+        reinterpret_cast<void*>(instruction_pointer),
+        ptrauth_key_return_address
+    ));
+#else
+    return instruction_pointer & 0x00007FFFFFFFFFFFULL;
+#endif
+#else
+    return instruction_pointer;
+#endif
 }
 
 /**
@@ -420,7 +448,9 @@ static void walk_frames(
     bool allow_memory_fallback
 ) {
     void* fp = initial_fp;
-    void* pc = initial_pc;
+    void* pc = reinterpret_cast<void*>(normalize_instruction_pointer(
+        reinterpret_cast<uintptr_t>(initial_pc)
+    ));
     trace->frame_count = 0;
 
     while (trace->frame_count < max_depth && pc != nullptr) {
@@ -445,7 +475,9 @@ static void walk_frames(
         }
 
         fp = next_frame.next_frame_pointer;  // saved x29 / rbp
-        pc = next_frame.return_address;  // saved lr / return address on stack
+        pc = reinterpret_cast<void*>(normalize_instruction_pointer(
+            reinterpret_cast<uintptr_t>(next_frame.return_address)
+        ));  // saved lr / return address on stack
 
         if (!is_valid_userspace_addr(reinterpret_cast<uintptr_t>(pc))) break;
     }
