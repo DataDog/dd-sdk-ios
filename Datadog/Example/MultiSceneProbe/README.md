@@ -57,12 +57,17 @@ The catalog currently preserves these experiment families:
 | `swiftui.semantic-api.repeated-value-links`, `initial-repeated-path`, `external-replacements`, `rejected-link-write`, `canonicalized-link-write` | `EXP-142`, `EXP-143` | Actual SPI PASS for repeated equal values, restored paths, accepted/rejected external writes, and canonicalization without speculative views |
 | `swiftui.semantic-api.presentation-replacement` | `EXP-144` | Actual SPI PASS 43/43: Sheet → Cover → fresh Sheet remains atomic and final dismissal reveals one fresh Home |
 | `swiftui.semantic-api.sibling-container-isolation` | `EXP-145` | Actual SPI PASS 19/19: distinct controller branches, no automatic duplicate, Detail staged beneath sibling manual authority, and one fresh Detail reveal |
-| `swiftui.semantic-host.explicit-source` | `EXP-146` | Arbitrary-host explicit-source PASS 42/42: standard `NavigationStack`, Sheet, and cover code remains unchanged; H1 starts before initial lifecycle work and every return is fresh |
-| `swiftui.semantic-host.explicit-precedence` | `EXP-146` | Runtime precedence PASS 43/43: an explicit source wins over a conflicting capability, the decoy emits no view, and the complete semantic timeline remains exact |
-| `swiftui.semantic-host.optional-capability` | `EXP-146` | The identical customer-owned container exposes one stable type-erased capability and reproduces the explicit-source 42/42 oracle without per-screen or presentation replacements |
+| `swiftui.semantic-host.explicit-source` | `EXP-146` | Engine/adapter-harness PASS 42/42: standard `NavigationStack`, Sheet, and cover code remains unchanged; H1 starts before initial lifecycle work and every return is fresh. Its low-level transition publisher is not the accepted normal customer integration |
+| `swiftui.semantic-host.explicit-precedence` | `EXP-146` | Adapter precedence PASS 43/43: an explicit source wins over a conflicting capability, the decoy emits no view, and the complete semantic timeline remains exact |
+| `swiftui.semantic-host.optional-capability` | `EXP-146` | The identical harness container exposes one stable type-erased capability and reproduces the explicit-source 42/42 oracle without per-screen or presentation replacements |
 | `swiftui.semantic-host.capability-reconstruction` | `EXP-146` | Stable-source reconstruction PASS 43/43: SwiftUI resolves the capability repeatedly without replaying, disconnecting, or duplicating the selected source |
 | `swiftui.semantic-host.capability-replacement` | `EXP-146` | Adversarial replacement PASS 43/43: a later capability resolution returns a decoy source, but the host keeps the first selected source and emits no decoy view |
+| `swiftui.semantic-host.transient-reader-reattach` | `EXP-146` | Synchronous real-reader bounce PASS 17/17: Detail keeps one UUID and source before/after reattach, then a later commit stops it once and starts fresh Home. This does not prove a delayed remount or OS reconnect |
+| `swiftui.semantic-host.final-removal-isolation` | `EXP-146` | PREPARED and simulator-INCONCLUSIVE twice: `backboardd` failed before host removal. Focused final-detach cleanup passes, but live final removal must run unchanged on physical hardware |
 | `swiftui.semantic-host.automatic-fallback` | `EXP-146` | The opaque specialization passes 5/5: automatic capture remains active, no semantic view is invented, and exact Detail delayed work uses the automatic controller owner |
+| `swiftui.semantic-host.router-stream-adapter` | `EXP-147`, `EXP-148`, `EXP-149` | EXP-147 measures the fixture migration budget: one boundary per accepted-state router, zero screen or navigation-method edits, unchanged standard SwiftUI, and zero RUM-code growth for an added route/presentation. EXP-148 moves observation and automatic metadata into DatadogRUM. Authoritative post-lint frozen run `exp148-sdk-observed-postlint-20260916T063742Z` passes 38/38 locally and in backend session `c951c32e-12a7-4bc4-bc5e-bdaf2f16f8aa`, with exact eight-view and 22-bucket ownership, no automatic duplicate, and zero errors/crashes. EXP-149 adds a 20/20 actual-host reconstruction, stable-subscription, two-scene isolation, posted-disconnect, and automatic-sibling matrix. The historical EXP-147 run remains evidence only for the older fixture-local adapter |
+| `swiftui.semantic-host.current-destination-boundary` | `EXP-150` | Conclusive FAIL 17/38. A value read during SwiftUI reconstruction is one render late: immediate sheet work remains on Compose and immediate cover work remains on Attachment; each fresh Home starts afterward. Settled work is correct and the app stays healthy. Backend session `2294a609-76f9-47be-a643-ab51edc5b638` confirms both stale action/Resource owners. Keep this scenario as a rejection control; do not weaken its synchronous dismissal oracle. |
+| `swiftui.semantic-host.observation-router-adapter` | `EXP-151` | Accepted experimental input over one atomic iOS 27 `@Observable` accepted-state property. Post-review run `exp151-observation-router-postreview-20260916T083131Z` passes 38/38; backend session `ea9adc0e-5a00-4290-9580-fb4df6bc18e7` has eight views, 11 actions, 11 Resources, no error bucket/crash, and exact fresh-Home ownership for immediate and settled sheet/cover dismissal work. Focused tests cover sequential/nested mutation, independent-property semantics, reconstruction, teardown, and invalid background mutation. This accepts the timing primitive, not the public API spelling or opaque local `@State`. |
 | `swiftui.coexistence.semantic-a-automatic-b` | `EXP-118` | Signal-driven; simulator-inconclusive, physical hardware required |
 | `swiftui.coexistence.automatic-manual-sheet` | `EXP-119` | Signal-driven FAIL: immediate `onDismiss` work retains outgoing Sheet; settled work uses fresh automatic Home |
 | `swiftui.coexistence.automatic-scene-targeted-sheet` | `EXP-123`–`EXP-125` | Handler-only baseline FAIL; suppression-bound successor PASS 14/14 with semantic Sheet, no automatic duplicate, and fresh Home before immediate dismiss work |
@@ -109,7 +114,7 @@ view-stop/Resource observations, repeated-name completion, a missing event, a
 forbidden view, and an ignored native gesture. An exact main-actor scene
 registry adds stable logical/native identity, weak window ownership, readiness,
 activation, geometry, route, and disconnect generations without serializing its
-future Execution Context seam. The generated test plan passes 147/147. The stack
+future Execution Context seam. The generated test plan passes 154/154. The stack
 return, abort, replacement, split-selection, and deterministic UIKit transition
 scenarios, plus exact scene open/close/activation, drive their exact scene and wait for
 observable readiness, lifecycle state, path/selection,
@@ -135,6 +140,29 @@ session contain only launch, semantic Home, left manual authority, and fresh
 semantic Detail. Two prior retries remain documented as harness-invalid because
 one waited after a short marker had already fired and one assigned fixed
 ownership to an asynchronous callback that could cross the exact stop boundary.
+`EXP-146` extracts the semantic engine and exercises it through deterministic
+adapter controls. Calls such as `willNavigate` and `commit` belong to this harness
+or a dedicated adapter author; they are not a recommendation to edit every
+customer navigation method. `EXP-147` passes its migration discriminator: 25
+routes, seven presentations, three observable routers, native and opaque
+fallbacks, zero screen or navigation-method instrumentation, zero RUM-code growth
+for an added route and presentation, and 154/154 tests. Its final frozen-source
+run passes 38/38 locally and in backend intake with no automatic duplicate,
+error, or crash. That run remains historical fixture-local evidence. `EXP-148`
+moves observation and automatic metadata into DatadogRUM, adds equal-route
+occurrence identity and delayed trustworthy authority, and repeats the frozen
+38/38 local/backend run with exact ownership. `EXP-149` closes deterministic
+host reconstruction, source pinning, two-scene isolation, posted-disconnect, and
+automatic-sibling behavior. `EXP-150` then conclusively rejects a destination
+value sampled only during SwiftUI reconstruction. `EXP-151` accepts Xcode 27
+one-shot Observation `.didSet` over one atomic accepted-state property: its
+post-review frozen run passes 38/38 locally and in backend with immediate and
+settled dismissal work on fresh Home occurrences. None of these experiments
+approves a stable public declaration. Keep the migration result separate from
+the probe's semantic PASS. The real-reader bounce covers synchronous generation
+cancellation only;
+posted disconnect tests cover internal fencing only; and final host removal plus
+genuine OS disconnect remain physical-device rows.
 `EXP-119` adds one explicit Sheet over an otherwise automatic hierarchy. It
 proves automatic Home H1 -> explicit Sheet S1 -> fresh automatic Home H2 without
 an automatic Sheet duplicate, but intentionally fails while immediate

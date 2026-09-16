@@ -34,13 +34,25 @@ a container-independent host, optional type-erased capability, or explicit
 transition source/adapter. Standard navigation and presentation code must remain
 standard.
 
+`EXP-146` validates the shared engine and adapter-author boundary. Its explicit
+`RUMNavigationTransitions` publisher is a deterministic harness adapter, not the
+accepted normal customer integration. `EXP-147` now validates a low-cost
+existing-router candidate: one subscription and one outer boundary, zero screen
+or navigation-method edits, automatic metadata with one sparse override, and no
+RUM-code growth when a route and presentation are added. `EXP-148` moves generic
+state observation, occurrence identity, automatic metadata, sparse overrides,
+and delayed authority into the SDK-owned iOS 27 prototype. Its final frozen run
+passes the same 38/38 local/backend oracle. This validates an experimental
+existing-router path, not stable public names.
+
 The approved behavior is:
 
 - automatic SwiftUI tracking remains the zero-code default;
 - exact SwiftUI navigation may be installed once per independent navigation
   container or router without replacing the customer's container, route model,
   destination modifiers, sheets, or covers;
-- route-to-RUM metadata is centralized rather than repeated in destinations;
+- usable metadata is automatic by default; optional custom naming is centralized
+  and sparse rather than repeated in destinations;
 - one committed navigation occurrence creates one RUM view ID, so
   Home H1 -> Detail D1 -> Home H2 uses three distinct IDs;
 - a semantic container or exceptional manual view is authoritative only within
@@ -62,7 +74,9 @@ The approved behavior is:
 Customer integration cost must scale with containers or routers, not the number
 of screens or presentations. For a 100-screen app with 10 independent
 containers, the target is roughly 10 flow-boundary integrations or adapter
-entries, not edits in 100 destinations.
+entries, not edits in 100 destinations. Exactness must not require an exhaustive
+RUM-only route or presentation resolver, calls in every navigation method, or
+new RUM code whenever another destination is added.
 
 ## Existing API and implementation constraints
 
@@ -379,13 +393,19 @@ It does not own layout, gestures, animation, deep links, custom configuration,
 or presentation behavior. Those remain properties of the customer's container.
 
 A Datadog-owned outer host may attach the scene/authority boundary while accepting
-any customer `View` as its content:
+any customer `View` as its content. For native SwiftUI, the intended low-cost
+shape is one container integration with automatic metadata:
 
 ```swift
-RUMNavigationHost {
-    CustomerNavigationStack(router: router) {
-        ApplicationContent()
+RUMNavigationHost(metadata: .automatic) {
+    NavigationStack(path: $path) {
+        ExistingContent()
+            .navigationDestination(for: Route.self) { route in
+                destination(for: route)
+            }
     }
+    .sheet(item: $draft) { ComposeView(draft: $0) }
+    .fullScreenCover(item: $attachment) { AttachmentPreview(attachment: $0) }
 }
 ```
 
@@ -393,29 +413,115 @@ Without another capability, this host supplies scene attachment, target-local
 automatic deduplication, best-effort inference, and crash-safe compatibility
 fallback. It must not mirror the customer's container parameters.
 
-`EXP-146` validates the explicit-source version of this shape with one outer host
-around unchanged `NavigationStack`, `.sheet`, and `.fullScreenCover` code. Its
-accepted run passes 42/42 and produces H1/D1/H2/Sheet/H3/Cover/H4 as distinct
-occurrences with exact downstream ownership and no automatic duplicate. This is
-implementation evidence, not approval of the provisional public names. The
-same customer-owned container also passes that 42-event oracle through its
-optional capability. Its opaque specialization passes a 5-event automatic
-fallback contract: automatic capture remains active, no semantic occurrence is
-invented, and exact Detail work uses the automatic controller owner. Runtime
-precedence and source stability are also accepted: explicit input beats a
-contradictory capability, repeated capability resolution reuses the stable
-source, and an adversarial later source cannot replace the first selection.
+An application that already owns an observable router may connect one dedicated
+adapter at that boundary. Its navigation methods remain unchanged:
+
+```swift
+RUMNavigationHost(
+    transitions: router.rumNavigationTransitions,
+    metadata: .automatic
+) {
+    ExistingApplicationNavigation(router: router)
+}
+```
+
+Sparse overrides may add business names for exceptional destinations. They are a
+policy layer, not a correctness prerequisite. A centralized exhaustive resolver
+is acceptable only when the application already owns one or deliberately wants
+complete custom naming.
+
+`EXP-146` validates the engine behind these shapes with one outer host and a
+deterministic explicit-source adapter around unchanged `NavigationStack`,
+`.sheet`, and `.fullScreenCover` code. It passes 42/42 and produces
+H1/D1/H2/Sheet/H3/Cover/H4 as distinct occurrences with exact downstream
+ownership and no automatic duplicate. The optional capability passes the same
+oracle; opaque content retains automatic capture. Runtime precedence and source
+stability also pass. These are engine and adapter-author results. `EXP-147`
+separately proves that an application with an existing accepted router-state
+stream can integrate at one boundary without route-proportional transition
+publishing. `EXP-148` moves that route-count-independent policy into DatadogRUM,
+including fresh equal-route occurrence tokens and automatic metadata. It still
+does not approve a public SDK API or prove exact native/opaque reconstruction
+where no trustworthy stream exists.
 
 ### Integration inputs and precedence
 
 Exact semantic input follows this order:
 
-1. An explicit customer-provided transition source or adapter.
+1. An explicit stable source supplied by a dedicated existing-router or
+   third-party adapter.
 2. An optional type-erased capability exposed by the supplied container.
 3. Native adapter knowledge when the optional `RUMNavigationStack` convenience
    is used.
 4. Scene-aware automatic discovery.
 5. Existing process-representative compatibility fallback.
+
+The current SDK-owned existing-router prototype consumes accepted state once at
+the container boundary:
+
+```swift
+RUMNavigationHost(
+    observing: router.$state,
+    destination: { state in state.currentRUMDestination },
+    metadata: .automatic
+) {
+    ExistingApplicationNavigation(router: router)
+}
+```
+
+The projection identifies the current root, route, or presentation; it is not an
+exhaustive business-name resolver. Equal route values need an in-memory
+occurrence discriminator only when the source permits the same value at multiple
+positions. That token is not a RUM UUID and is never serialized.
+
+Do not replace this signal with a plain destination value evaluated by the outer
+SwiftUI host:
+
+```swift
+// Rejected as an exact API by EXP-150.
+RUMNavigationHost(currentDestination: destination(for: router.state)) {
+    ExistingApplicationNavigation(router: router)
+}
+```
+
+`EXP-150` proves that this value arrives one render too late for the approved
+dismissal contract. Both sheet and full-screen-cover immediate action/Resource
+pairs remain on the dismissed presentation; the fresh underlying occurrence
+starts afterward. Eventual final state, passing state-level parity tests, and
+correct settled work do not repair that attribution loss.
+
+For an existing iOS 27 `@Observable` router, a second candidate can observe the
+accepted stored value during mutation through one-shot Observation `.didSet`
+tracking and rearm after every event. Conceptually:
+
+```swift
+RUMNavigationHost(
+    observingCurrentDestination: { destination(for: router.state) },
+    metadata: .automatic
+) {
+    ExistingApplicationNavigation(router: router)
+}
+```
+
+EXP-151 accepts the one-shot `.didSet` primitive for an existing iOS 27
+`@Observable` router, but not this public spelling. The adapter delivers the
+stored destination and rearms before the setter returns; its frozen 38/38 run and
+backend session place immediate and settled sheet/cover dismissal work on fresh
+revealed occurrences. The projection must be stable, side-effect-free, and read
+one atomically updated property representing the complete accepted destination.
+If it reads independently mutated route and presentation properties, each
+`.didSet` is a separate committed signal and the intermediate combination is
+observable; the SDK does not invent a transaction across those writes.
+
+Sequential and nested mutations, teardown, SwiftUI reconstruction, and an
+invalid background mutation's crash-safe latest-state fallback pass focused
+tests. The iOS Release and visionOS package builds also pass; the semantic host
+remains iOS 27-only in the current platform conditional. Two-scene isolation,
+actual native callback behavior, and API review remain. The continuous
+Observation API is explicitly too late because it delivers at a later suspension
+point. Plain local SwiftUI `@State`
+does not conform to `Observable`, so this candidate must not imply exact
+opaque/native-local-state support.
 
 Conceptual optional capability:
 
@@ -432,13 +538,24 @@ required. Transition timing, current-destination metadata, materialization, and
 presentation state may be separate capabilities rather than one large protocol;
 do not use Objective-C-style optional requirements.
 
-The source's initial committed destination must exist when the host first
-evaluates. Publishing it from a descendant `.task` is too late for root
-`onAppear` and the synchronous prefix of an immediate task. The host resolves the
-scene from its inherited iOS 27 scene trait; customers do not supply an internal
-RUM UUID or native scene identifier. The first source selected by a host is pinned
-across SwiftUI view-value reconstruction so a freshly computed capability cannot
-replay or disconnect the current occurrence.
+The source's low-level prepare/commit/cancel methods are engine and adapter-author
+primitives. They must not normally appear in every customer navigate, pop,
+present, or dismiss method. If an adapter cannot subscribe once to trustworthy
+existing state or transitions, the integration should retain scene-aware
+automatic tracking and sparse manual exceptions rather than require widespread
+bridge calls.
+
+For exact initial lifecycle attribution, the source should synchronously expose
+its current committed destination when the host first evaluates. Publishing it
+from a descendant `.task` remains too late for root `onAppear` and the synchronous
+prefix of an immediate task. A configured source with no initial value does not
+silently select a lower-precedence capability and does not suppress automatic
+tracking before its first trustworthy destination; precision upgrades only when
+that value arrives. The host resolves the scene from its inherited iOS 27 scene
+trait; customers do not supply an internal RUM UUID or native scene identifier.
+The first source selected by a host is pinned across SwiftUI view-value
+reconstruction so a freshly computed capability cannot replay or disconnect the
+current occurrence.
 
 Imported third-party containers should normally use an explicit source or
 reusable adapter rather than a retroactive conformance:
@@ -506,12 +623,26 @@ fixture.
 
 They now do in the experimental implementation: `a84061840` extracts the
 scene-scoped engine and makes both the native convenience and arbitrary-content
-host delegate to it. `354422d88` supplies the customer-shaped explicit-source
-probe, and `651b173c6` validates the identical container with optional capability
+host delegate to it. `354422d88` supplies the deterministic explicit-source
+adapter probe, and `651b173c6` validates the identical container with optional capability
 and opaque automatic fallback. `47bc08eca` then exercises runtime precedence,
-repeated reconstruction, and deliberate source replacement. The remaining proof
-obligation is not another visual-container rewrite; it is scene disconnect/final
-detach plus native/custom/explicit adapter parity through the same engine.
+repeated reconstruction, and deliberate source replacement. Focused lifetime work
+adds a synchronous real-reader bounce, source release, and posted-disconnect
+fencing; final host removal and genuine OS disconnect remain hardware rows.
+`EXP-147` closes the migration-cost obligation for the existing-router candidate.
+`EXP-148` closes the SDK-owned publisher-observable-router baseline with the same source
+diff and runtime semantics. `EXP-149` closes actual host subscription
+reconstruction, publisher replacement, two-scene isolation, posted-disconnect
+cleanup, and unrelated automatic-subtree coexistence at 20/20. `EXP-150` then
+rejects value-only render-time observation after its frozen runtime and backend
+session place both immediate dismissal pairs on the outgoing presentation.
+`EXP-151` accepts one-shot Observation `.didSet` as the early iOS 27 router
+signal: focused atomic-state, ordering, nested-reentrancy, reconstruction,
+teardown, and background-misuse tests pass, and its post-review frozen 38/38
+runtime plus backend session assign both dismissal pairs to fresh underlying
+occurrences. The next proof obligation is native callback, two-scene, and honest
+custom/explicit adapter parity before public-shape review; genuine OS disconnect
+remains a hardware gate.
 
 ### Resolver and path model
 
@@ -523,8 +654,10 @@ use a centralized nonoptional resolver:
 func rumView(for route: AppRoute) -> RUMView
 ```
 
-This is an adapter option, not a requirement to create a Datadog router or rewrite
-local presentation state. An optional result is ambiguous between "allow
+This is an adapter option when the application already owns or deliberately wants
+complete route metadata, not a requirement to create a Datadog router, enumerate
+every destination, or rewrite local presentation state. Automatic metadata is the
+default and sparse overrides are sufficient. An optional result is ambiguous between "allow
 automatic tracking here" and "intentionally emit no RUM destination." If partial
 semantic coverage is needed,
 model that choice explicitly rather than giving `nil` two meanings.
@@ -602,19 +735,25 @@ intake contains the same five semantic occurrences, 19 actions, 19 Resources,
 and zero errors/crashes. `EXP-145` adds actual-SPI sibling isolation: left manual
 authority keeps right Detail hidden until exact stop, then one fresh Detail owns
 post-stop work. `EXP-146` then moves those mechanics into the shared engine and
-passes 42/42 through an arbitrary host plus stable explicit source while leaving
-standard presentation APIs intact. Its backend session contains the eight views
-including ApplicationLaunch, 26 exact-view actions, 26 exact-view Resources, and
+passes 42/42 through an arbitrary host plus deterministic stable-source adapter
+while leaving standard presentation APIs intact. Its backend session contains the
+eight views including ApplicationLaunch, 26 exact-view actions, 26 exact-view Resources, and
 zero errors/crashes; launch owns no downstream work. The optional capability
 repeats that 42/42 contract, while opaque fallback passes 5/5 with automatic
 capture and no semantic view. Runtime precedence, repeated source resolution,
 and adversarial replacement each pass 43/43 with the same exact backend owners
 and no decoy view. The complete RUM run passes
 1,262/1,263 and the sole unrelated timeseries timing failure passes immediately
-in isolation; the native probe passes 147/147. Both Debug and authoritative Xcode
-27 Release probe builds, repository lint, and API-surface verification pass. The
-source-based API verifier remains a prototype gate; no baseline is changed before
-normal review.
+in isolation; the current native probe passes 154/154. The synchronous real-reader bounce
+passes 17/17, focused disconnect/lifetime tests pass 4/4, and handler tests pass
+84/84 at their recorded checkpoint. `EXP-150` itself fails 17/38 because its
+fresh H3/H4 occurrences start after synchronous post-dismiss work; backend
+session `2294a609-76f9-47be-a643-ab51edc5b638` independently confirms Compose
+and Attachment as the stale owners. Final host removal and genuine OS disconnect
+remain hardware gates. Repository lint is clean. The current dirty tree still
+requires an explicit Xcode 27 Release build and expected-only API-surface
+verification after the failed value-only initializer is removed or replaced;
+no prototype baseline is changed before normal review.
 
 ## Required review and test matrix
 
@@ -645,6 +784,12 @@ Scene-aware manual views require:
 
 Semantic SwiftUI navigation requires:
 
+- automatic metadata sufficient for correctness, with sparse optional custom
+  overrides and no required exhaustive RUM-only resolver;
+- zero screen-file edits and zero per-navigation-method RUM calls in the
+  realistic `EXP-147` baseline integration;
+- adding another route or presentation requires no RUM code unless the customer
+  chooses a custom metadata override;
 - a non-conforming custom container receives baseline scene-aware automatic
   tracking without changing its navigation implementation;
 - the same container with a stable optional capability receives exact semantic
@@ -676,19 +821,25 @@ Semantic SwiftUI navigation requires:
 
 ## API-review questions
 
-No product-behavior decision blocks implementation. The remaining questions are
-public shape, compatibility, and implementation-boundary review:
+No product-behavior decision blocks the next experiment. `EXP-148` validates the
+SDK-owned low-cost publisher path, `EXP-149` closes its deterministic lifetime
+and scene-isolation matrix, and `EXP-151` accepts the iOS 27 Observation input
+for one atomic accepted-state property. EXP-146's low-level semantic oracle alone
+remains insufficient for API promotion. The next implementation experiment is
+native/custom/two-scene adapter parity. The remaining questions are public shape,
+compatibility, and implementation-boundary review:
 
-1. Exact names and overloads for the arbitrary-view host and explicit
-   transition-source/adapter entry points?
+1. Which parts of the transition source remain internal, become adapter-author
+   SPI, or warrant public exposure, and what are the exact host/adapter names?
 2. Which small type-erased capabilities should be independently detectable, and
    how should runtime discovery preserve a stable source across SwiftUI value
    reconstruction without retaining customer containers?
 3. How much native `NavigationStack` convenience should `RUMNavigationStack`
    expose while delegating to the shared engine and avoiding a mirrored Apple API
    surface?
-4. Reuse `RUMView` as route metadata or introduce a smaller navigation-specific
-   descriptor with an explicit tracked/untracked decision?
+4. What automatic metadata policy supplies usable names/paths without customer
+   enumeration, and should sparse overrides reuse `RUMView` or a smaller
+   navigation-specific descriptor?
 5. Extension-only manual overload with private capability, or defaulted public
    protocol requirements after library-evolution review?
 6. How should the public integration create, retain, and remove the proven

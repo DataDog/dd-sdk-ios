@@ -122,6 +122,14 @@ Occurrence identity, path commitment, retained destinations, and transition orde
   `rumFullScreenCover`, or Datadog-specific destination modifiers. Integration
   cost must scale with containers/routers, not screens or presentations, and
   existing `.sheet`/`.fullScreenCover` code remains valid.
+- Do not promote EXP-146's low-level `willNavigate`/`commit` publisher into the
+  normal customer integration. It is an engine and adapter-author proof. Calls in
+  every navigate, pop, present, or dismiss method make cost scale with mutations
+  rather than containers and fail the `EXP-147` migration gate.
+- Do not require exhaustive RUM-only route and presentation resolvers or metadata
+  on every destination. Semantic correctness uses automatic metadata; optional
+  custom naming is sparse. A complete resolver is valid only when the application
+  already owns one or deliberately chooses full custom naming.
 - Do not require retroactive conformance on an imported third-party navigation
   type. It can warn today and conflict with a future library conformance. Prefer
   an explicit reusable adapter or transition source; optional conformance remains
@@ -130,6 +138,24 @@ Occurrence identity, path commitment, retained destinations, and transition orde
   materialization, transition, router/coordinator, or content-builder signal.
   Keep scene-aware automatic tracking and manual exceptions as the bounded
   fallback rather than inventing navigation state.
+- Do not promote a value-only `currentDestination` host that reconciles during
+  SwiftUI body evaluation as an exact adapter. `EXP-150` passes state-level
+  timeline tests but fails the frozen runtime oracle: synchronous work after
+  sheet dismissal remains on Compose and synchronous work after cover dismissal
+  remains on Attachment; the fresh Home occurrence starts one signal later in
+  both cases. A later render is not an accepted transition signal. Require an
+  earlier router/coordinator, Observation, binding/materialization, or capability
+  boundary, otherwise retain automatic tracking plus sparse manual exceptions.
+- Do not replace the `EXP-150` reveal-before-callback oracle with settled work or
+  successful final view creation. Both settled markers were correct, the app did
+  not crash, and backend intake still confirmed the immediate attribution defect.
+  State-level adapter parity must be paired with a live callback-ordering run.
+- Do not treat a projection over independently mutated observed properties as
+  one atomic accepted destination. Observation correctly emits each `.didSet`,
+  so a route write followed by a presentation write exposes the intermediate
+  combination. The `EXP-151` exact adapter contract reads one stable,
+  side-effect-free property that the application updates atomically; otherwise
+  each observed write is its own committed state.
 - Do not apply `.id` only to the hidden SDK reader to advance a retained route.
   `EXP-093` kept Home's immediate return marker on Detail. The missing input was
   the committed route contraction, not platform-reader identity.

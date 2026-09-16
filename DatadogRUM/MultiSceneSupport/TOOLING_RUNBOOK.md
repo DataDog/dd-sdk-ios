@@ -55,6 +55,19 @@ Never use one evidence level as a substitute for another:
 A callback count, successful build, local marker, or absence of a crash is not
 semantic attribution evidence.
 
+Lifecycle evidence also has distinct scopes:
+
+| Evidence | Proves | Does not prove |
+| --- | --- | --- |
+| Focused state/unit test | Internal fencing, generation cancellation, stop count, and subscription cleanup | UIKit/SwiftUI or the OS delivered the real lifecycle |
+| Posted `UIScene` notification | Handler response to that notification and reconnect ordering | A scene actually disconnected |
+| Captured real reader synchronously detached and reattached | The mounted reader's pending final-detach generation can be cancelled without replacing its occurrence | A later-run-loop remount or scene reconnect |
+| Conditional host removal reached by the probe | Final host detach and scene-local suppression/source cleanup | OS scene disconnect unless the native disconnect signal is separately observed |
+| Real scene close/disconnect on capable hardware | The full platform-to-SDK lifecycle for that topology | Reconnect/restoration unless those subsequent states are also observed |
+
+Record the narrowest applicable claim. A simulator failure before the decisive
+step is `INCONCLUSIVE`, even when focused tests cover the same internal code.
+
 ## Xcode MCP preparation
 
 ### Select the intended Xcode
@@ -227,8 +240,10 @@ state's base identity is a stable fallback and is not the generated occurrence
 identity. `RUMStopViewCommand` also has no instrumentation-type field, so pair it
 with its start by identity and assert the start command's type.
 
-For an exact semantic host, create its stable transition source with the initial
-committed destination before the host evaluates. Do not wait for a descendant
+For an exact semantic-engine or adapter-author probe, create its stable transition
+source with the initial committed destination before the host evaluates. This is
+the low-level EXP-146 harness recipe, not the recommended normal-customer
+integration. Do not wait for a descendant
 `.task`, probe scene reader, or diagnostic native-scene attribute before calling
 `setInitialDestination`: `EXP-146` attempt A showed that this makes root
 `onAppear` and immediate-task work precede the semantic view. The host resolves
@@ -245,18 +260,135 @@ adversarial arm, return a decoy source on the second resolution, forbid its view
 and require the original source to complete the exact timeline. This separates
 source-pinning evidence from an ordinary happy-path navigation pass.
 
-Serialize live simulator work for these arms. Build and test the exact signed
-revision first, then give one device worker sole ownership of clean
+### Customer migration-cost loop
+
+Run the migration discriminator before treating an engine/adapter prototype as a
+public customer shape. Keep two comparable fixture states: ordinary customer code
+and the instrumented candidate. The fixture must include many routes, multiple
+independent navigation containers, standard sheets/covers, one existing router,
+one native-SwiftUI flow, and one opaque third-party-style flow.
+
+For every candidate, record:
+
+1. screen files modified;
+2. navigation methods modified;
+3. customer-owned lines added outside a dedicated adapter;
+4. integrations required per independent container/router;
+5. the RUM-code diff after adding one route and one presentation; and
+6. whether ordinary generated SwiftUI remains valid without Datadog knowledge.
+
+Baseline acceptance is zero screen edits, zero per-navigation-method RUM calls,
+unchanged `.sheet`/`.fullScreenCover` call sites, automatic metadata, sparse
+optional naming overrides, and no new RUM code for an added destination. An
+exhaustive resolver is acceptable only when the application already owns or
+deliberately chooses one. Opaque input must fall back to scene-aware automatic
+tracking rather than force a navigation rewrite.
+
+Keep migration evidence separate from runtime semantics. A low-level adapter can
+pass the complete EXP-146 occurrence oracle and still fail customer integration
+if its diff grows with routes or navigation methods. Record that outcome as an
+API-shape failure, not an SDK-engine failure.
+
+Serialize live simulator work for these arms. Build and test the exact source
+checkpoint first. Prefer a signed commit; if the configured signing agent is
+temporarily unavailable, freeze a complete source-hash manifest and do not
+promote the slice until those exact sources are later checkpointed in a signed
+commit. Then give one device worker sole ownership of clean
 terminate/uninstall/missing-container/run boundaries. A second worker may analyze
 backend intake, but it must not install, launch, or interact with the shared
 simulator until the owner releases it.
+
+Before delegating a migration runtime, record SHA-256 fingerprints for every
+runtime-critical source file and declare that source frozen. Do not edit those
+files while the device worker owns the run; documentation-only work is safe. The
+worker must compare the same fingerprints after capture. A locally passing run
+whose source changed in flight is `INVALID` and must be repeated from a new clean
+boundary and run ID. `EXP-147`'s first 38/38 attempt established this rule.
+
+When the experiment claims that policy moved into the SDK, the frozen manifest
+must include the SDK implementation files as well as the probe project and the
+complete probe `Sources` tree. Hashing only the fixture would allow a passing run
+to validate a different SDK revision. `EXP-148` used three comparisons: before
+launch, immediately after the terminal oracle, and after backend validation.
+
+Test configured-source precedence before runtime acceptance. A delayed explicit
+or observed source must not fall through to a lower-priority content capability
+while waiting for its first value, and it must not suppress automatic tracking
+before a trustworthy destination exists. Use a non-replaying publisher for this
+test; a synchronous current-value source cannot expose the edge.
+
+Test observed-source lifetime through an actual `UIHostingController`, not only
+by calling the host-state object directly. Count subscriptions on both the
+original and a replacement publisher, force the outer SwiftUI view to render
+both selections, and require one original subscription plus zero replacement
+subscriptions for the same host identity. Pair this with two scene-attached
+observed adapters and an unrelated controller subtree: posted disconnect must
+release only the exact scene source, later updates from it must emit nothing,
+the peer must continue, and the unrelated subtree must remain eligible for
+automatic tracking. This proves internal reconstruction and fencing; it does not
+replace a genuine OS disconnect/reconnect run on hardware.
+
+For a current-destination or Observation-based adapter, a state-level timeline
+test is necessary but not sufficient. Run a real sheet and full-screen-cover
+scenario that emits one action and Resource synchronously after the accepted
+dismissal mutation, then another pair after settling. The fresh underlying view
+must own the synchronous pair. `EXP-150` demonstrates why: all deterministic
+adapter tests passed while the live host reconciled one render too late. Keep an
+actual `.sheet(onDismiss:)` callback as a separate characterization when useful;
+it is a weaker boundary and must not replace the synchronous mutation oracle.
+
+Xcode 27's one-shot
+`withObservationTracking(options: [.didSet],_:onChange:)` is a candidate for an
+existing `@Observable` router because its callback runs during mutation after the
+new value is stored. The continuous API is not interchangeable: it delivers at
+the next suspension point and cannot satisfy immediate attribution. Before a
+runtime claim, deterministically prove one-shot rearming, no gap across
+back-to-back and nested MainActor mutations, cancellation/teardown, and a safe
+background-mutation fallback. Plain local `@State` is not an `Observable` router
+and remains outside that candidate's exactness claim.
+
+Observe one atomically updated accepted-state property. A projection that reads
+separate route and presentation properties receives one `.didSet` for each write;
+those are separate committed signals, so an intermediate combination is expected.
+Do not describe that shape as an atomic router transaction. The projection must
+also be stable and side-effect-free because SwiftUI pins the first adapter for a
+host identity. Validate this with the focused tests for nested reentrancy,
+independent-property behavior, host reconstruction, deallocation, and invalid
+background mutation.
+
+Because this source file participates in cross-platform package builds, run both
+the iOS Release probe build and the Xcode 27 visionOS package build after changing
+Observation availability or compiler guards:
+
+```bash
+/Applications/Xcode_27.app/Contents/Developer/usr/bin/xcodebuild \
+  -project Datadog/Example/MultiSceneProbe/RUMNativeMultiSceneProbe.xcodeproj \
+  -scheme RUMNativeMultiSceneProbe \
+  -configuration Release \
+  -destination 'generic/platform=iOS Simulator' build
+
+make DEVELOPER_DIR=/Applications/Xcode_27.app/Contents/Developer \
+  spm-build-visionos
+```
+
+The package helper temporarily renames `Datadog.xcworkspace`. If Xcode MCP loses
+the workspace afterward, reopen the restored absolute workspace path and select
+the `DatadogRUM` scheme before running more tests.
+
+Run the route-growth and presentation-growth checks as explicit before/after
+steps. Record which customer files changed and prove the dedicated adapter and
+integration call sites retained identical hashes. A build after growth proves
+source compatibility; it does not replace the final mapper/backend run.
 
 Objective-C has no equivalent SPI import boundary. Keep an Objective-C prototype
 Debug-only until API review, exercise its exact generated selectors in the
 Objective-C API smoke target, and do not mistake that prototype for an approved
 Release API.
 
-Run `make api-surface-verify`, but interpret its result precisely. The current
+Run `make api-surface-verify`, but interpret its result precisely. Do not run
+`make api-surface` as a check: it rewrites the checked-in baselines. If the
+generator is invoked accidentally, restore only those known generated files and
+reconfirm that no user-owned baseline edit existed before the run. The current
 source-based verifier includes Swift SPI and declarations excluded by `#if DEBUG`;
 it therefore reports the experimental Swift and Objective-C declarations
 as additions. Do not update checked-in API baselines for a prototype. Confirm
@@ -637,6 +769,7 @@ runbook around them.
 - [ ] Scenario and unique run ID chosen.
 - [ ] Capability and interaction recipe reviewed.
 - [ ] Expected semantic timeline and evidence levels known.
+- [ ] For API-shape work, baseline fixture and migration-diff measurements defined.
 - [ ] Clean or restoration precondition established.
 - [ ] Backend query discriminator prepared.
 - [ ] No credentials or local artifacts are candidates for staging.
@@ -652,6 +785,7 @@ runbook around them.
 - [ ] Crash, RUM error, and duplicate-event checks completed.
 - [ ] Invalid or inconclusive tooling behavior documented.
 - [ ] Physical-device or human rerun added when needed.
+- [ ] Migration-cost result recorded separately from semantic-engine correctness.
 - [ ] Exact run details appended to the active numbered shard and one compact
       locator row added to `EXPERIMENTS.md`.
 - [ ] Interaction session closed or confirmed automatically expired.
