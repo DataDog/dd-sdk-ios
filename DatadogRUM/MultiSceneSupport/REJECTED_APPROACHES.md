@@ -113,6 +113,23 @@ Occurrence identity, path commitment, retained destinations, and transition orde
   lifecycle. `EXP-116` is different: its container wrapper owns the root and
   destination builders and injects a separate route-owned boundary at each
   materialized occurrence.
+- Do not turn the proven `RUMNavigationStack` prototype into a requirement that
+  customers replace native, internal, or third-party navigation. It proves a
+  materialization boundary, not ownership of the visual container. Extract the
+  occurrence/transition state into a scene-scoped engine and offer an arbitrary-
+  view host, optional capability, or explicit source/adapter.
+- Do not mirror standard navigation and presentation APIs as `rumSheet`,
+  `rumFullScreenCover`, or Datadog-specific destination modifiers. Integration
+  cost must scale with containers/routers, not screens or presentations, and
+  existing `.sheet`/`.fullScreenCover` code remains valid.
+- Do not require retroactive conformance on an imported third-party navigation
+  type. It can warn today and conflict with a future library conformance. Prefer
+  an explicit reusable adapter or transition source; optional conformance remains
+  suitable for customer-owned types.
+- Do not claim exact semantics for an opaque container with no accepted-route,
+  materialization, transition, router/coordinator, or content-builder signal.
+  Keep scene-aware automatic tracking and manual exceptions as the bounded
+  fallback rather than inventing navigation state.
 - Do not apply `.id` only to the hidden SDK reader to advance a retained route.
   `EXP-093` kept Home's immediate return marker on Detail. The missing input was
   the committed route contraction, not platform-reader identity.
@@ -563,3 +580,11 @@ Oracle, recorder, fixture, control, and evidence-design failures.
   out because the new wait subscribed afterward. Let the terminal semantic
   completion condition require the action/Resource evidence directly, or wait
   on a discriminator that cannot predate the step cursor.
+- `EXP-145` repeats that lesson: attempt A observed `task-delayed` before a later
+  duplicate wait and then timed out. Removing only the redundant wait preserves
+  the earlier synchronization and the unchanged `EXP-127` control.
+- Do not assign one fixed owner to an asynchronous callback that can legitimately
+  cross an exact authority stop. `EXP-145` attempt B expected Detail's delayed
+  task on manual M1, but it fired after stop and correctly used fresh D1. Use
+  explicit under-authority and post-stop markers for acceptance; keep the delayed
+  callback diagnostic unless its side of the boundary is itself synchronized.

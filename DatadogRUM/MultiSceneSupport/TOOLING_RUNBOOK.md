@@ -360,9 +360,16 @@ Do not add a later `waitForSignal` for a short marker when the terminal completi
 conditions already require the marker's action/Resource evidence. The marker may
 arrive while the driver is evaluating an earlier step; subscribing afterward
 creates a false timeout even though the SDK result is complete. The first
-post-fix canonicalization attempt in `EXP-143` exposed this race. If an explicit
-wait is necessary, choose a discriminator that cannot exist before the current
-observation cursor.
+post-fix canonicalization attempt in `EXP-143` and `EXP-145` attempt A exposed
+this race. If an explicit wait is necessary, choose a discriminator that cannot
+exist before the current observation cursor.
+
+Do not use an ordinary delayed task as the clock for an exact authority stop.
+Scheduling may place it before or after the stop; either owner can be correct for
+the call site's actual execution time. `EXP-145` attempt B was invalid for fixing
+that callback to the manual side. Use an explicit marker before stop and another
+after the newly revealed occurrence starts. Treat the unsynchronized delayed
+callback as diagnostic evidence unless the driver gates its execution side.
 
 ### Coordinate and gesture rules
 

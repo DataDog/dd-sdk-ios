@@ -54,6 +54,9 @@ The catalog currently preserves these experiment families:
 | `swiftui.stack.same-type-replacement` | `EXP-090`, `EXP-110`, `EXP-116` | Signal-driven PASS through route-owned and container-wrapper paths |
 | `swiftui.stack.different-type-replacement` | `EXP-054`, `EXP-110` | Signal-driven PASS |
 | `swiftui.semantic-api.complete-destination` | `EXP-141` | Actual iOS 27 SDK SPI PASS 38/38: H1 → D1 → H2 → Sheet → H3 → Cover → H4, exact downstream ownership, and no automatic duplicate |
+| `swiftui.semantic-api.repeated-value-links`, `initial-repeated-path`, `external-replacements`, `rejected-link-write`, `canonicalized-link-write` | `EXP-142`, `EXP-143` | Actual SPI PASS for repeated equal values, restored paths, accepted/rejected external writes, and canonicalization without speculative views |
+| `swiftui.semantic-api.presentation-replacement` | `EXP-144` | Actual SPI PASS 43/43: Sheet → Cover → fresh Sheet remains atomic and final dismissal reveals one fresh Home |
+| `swiftui.semantic-api.sibling-container-isolation` | `EXP-145` | Actual SPI PASS 19/19: distinct controller branches, no automatic duplicate, Detail staged beneath sibling manual authority, and one fresh Detail reveal |
 | `swiftui.coexistence.semantic-a-automatic-b` | `EXP-118` | Signal-driven; simulator-inconclusive, physical hardware required |
 | `swiftui.coexistence.automatic-manual-sheet` | `EXP-119` | Signal-driven FAIL: immediate `onDismiss` work retains outgoing Sheet; settled work uses fresh automatic Home |
 | `swiftui.coexistence.automatic-scene-targeted-sheet` | `EXP-123`–`EXP-125` | Handler-only baseline FAIL; suppression-bound successor PASS 14/14 with semantic Sheet, no automatic duplicate, and fresh Home before immediate dismiss work |
@@ -100,7 +103,7 @@ view-stop/Resource observations, repeated-name completion, a missing event, a
 forbidden view, and an ignored native gesture. An exact main-actor scene
 registry adds stable logical/native identity, weak window ownership, readiness,
 activation, geometry, route, and disconnect generations without serializing its
-future Execution Context seam. The generated test plan passes 134/134. The stack
+future Execution Context seam. The generated test plan passes 142/142. The stack
 return, abort, replacement, split-selection, and deterministic UIKit transition
 scenarios, plus exact scene open/close/activation, drive their exact scene and wait for
 observable readiness, lifecycle state, path/selection,
@@ -119,7 +122,13 @@ iOS 27 SDK SPI. With automatic discovery still enabled, it produces four fresh
 Home occurrences plus Detail, Sheet, and full-screen Cover; all 38 local
 expectations and backend owners pass, and no automatic presentation or hosting
 duplicate appears. This remains an experimental call site pending normal API
-review.
+review. `EXP-142` through `EXP-144` add repeated/restored routes, external router
+mutation, and atomic presentation replacement. `EXP-145` then reuses the
+`EXP-127` topology with the actual SPI: its final 19/19 run and 30-event backend
+session contain only launch, semantic Home, left manual authority, and fresh
+semantic Detail. Two prior retries remain documented as harness-invalid because
+one waited after a short marker had already fired and one assigned fixed
+ownership to an asynchronous callback that could cross the exact stop boundary.
 `EXP-119` adds one explicit Sheet over an otherwise automatic hierarchy. It
 proves automatic Home H1 -> explicit Sheet S1 -> fresh automatic Home H2 without
 an automatic Sheet duplicate, but intentionally fails while immediate
@@ -261,6 +270,7 @@ Home₁ → Detail → Home₂ occurrences and post-return work on Home₂.
 `uikit.split.pop-finish`, plus `windows.close-with-resource` and
 `windows.activation-sequence`, plus
 `swiftui.coexistence.sibling-container-authority` and
+`swiftui.semantic-api.sibling-container-isolation` and
 `swiftui.coexistence.nested-keyed-manual-view`, plus
 `actions.uikit-scroll-navigation-deceleration` and
 `actions.swiftui-button-structured-task`, plus

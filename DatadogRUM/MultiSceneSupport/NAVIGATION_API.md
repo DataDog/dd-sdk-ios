@@ -10,26 +10,36 @@ Last updated: 2026-09-16
 
 ## Status
 
-The scene-targeted manual view proposal is now implemented and exercised as an
+The scene-targeted manual view proposal is implemented and exercised as an
 iOS 27 experimental Swift SPI, with Debug-only Objective-C counterparts. The
 prototype validates customer call sites, exact selectors, custom/NOP fallback,
 and runtime usefulness before normal API and RFC review. `EXP-137` through
 `EXP-140` cover automatic Home → manual/presentation → fresh Home using the
 customer-shaped overloads. Do not promote these declarations to the supported
 public API surface until review approves their names, availability, protocol
-behavior, and Objective-C exposure. The semantic SwiftUI container is now also
-implemented as an iOS 27 experimental Swift SPI. `EXP-141` validates its complete
+behavior, and Objective-C exposure. The native-convenience SwiftUI container is
+also implemented as an iOS 27 experimental Swift SPI. `EXP-141` validates its complete
 Home → Detail → Home → Sheet → Home → full-screen-cover → Home stream locally and
 in backend intake while automatic tracking remains enabled. Examples below are
 the exercised review starting point, not settled signatures. `EXP-142`-`144`
 then close repeated equal routes, external router/restoration behavior, and
-direct Sheet ↔ Cover replacement without an intermediate underlying view.
+direct Sheet ↔ Cover replacement without an intermediate underlying view;
+`EXP-145` closes its actual-SPI sibling authority boundary.
+
+Revised product constraints supersede the assumption that this
+`RUMNavigationStack` shape should be the main customer API. It remains valuable
+proof and may remain an optional native convenience, but exact multi-scene
+support must also accept arbitrary customer-owned navigation containers through
+a container-independent host, optional type-erased capability, or explicit
+transition source/adapter. Standard navigation and presentation code must remain
+standard.
 
 The approved behavior is:
 
 - automatic SwiftUI tracking remains the zero-code default;
 - exact SwiftUI navigation may be installed once per independent navigation
-  container and consumes the customer's existing path or router;
+  container or router without replacing the customer's container, route model,
+  destination modifiers, sheets, or covers;
 - route-to-RUM metadata is centralized rather than repeated in destinations;
 - one committed navigation occurrence creates one RUM view ID, so
   Home H1 -> Detail D1 -> Home H2 uses three distinct IDs;
@@ -40,13 +50,19 @@ The approved behavior is:
 - different manual keys may nest, while re-starting an active `(scene, key)` is
   instrumentation misuse and receives only crash-safe handling;
 - targeted starts pair only with targeted stops for the same scene and key;
-- the first semantic integration resolves the complete current destination,
-  including sheets and full-screen covers;
+- the shared engine accepts exact presentation transitions when a trustworthy
+  source exposes them, while ordinary sheets and full-screen covers remain
+  unchanged and automatic tracking supplies the opaque-container fallback;
 - each scene has one current destination; structural panes and tabs are not
   parallel RUM views;
 - the same manual key can be active independently in different scenes; and
 - no public API accepts a RUM UUID, serializes a scene identifier, or introduces
   an interim window attribute or session boundary.
+
+Customer integration cost must scale with containers or routers, not the number
+of screens or presentations. For a 100-screen app with 10 independent
+containers, the target is roughly 10 flow-boundary integrations or adapter
+entries, not edits in 100 destinations.
 
 ## Existing API and implementation constraints
 
@@ -320,10 +336,114 @@ can become a late automatic RUM view itself.
 
 ## SwiftUI semantic navigation
 
-### Required customer shape
+### Customer compatibility and engine boundary
 
-Integration occurs once per independent container and uses application-owned
-state:
+Using RUM must not require customers to replace standard or existing navigation.
+Normal SwiftUI remains normal SwiftUI:
+
+```swift
+NavigationStack(path: $path) {
+    ContentView()
+        .navigationDestination(for: Route.self) { route in
+            destination(for: route)
+        }
+}
+.sheet(item: $draft) { draft in
+    ComposeView(draft: draft)
+}
+.fullScreenCover(item: $attachment) { attachment in
+    AttachmentPreview(attachment: attachment)
+}
+```
+
+Do not require `rumSheet`, `rumFullScreenCover`, Datadog destination modifiers,
+a Datadog router, or conversion of local presentation state into one centralized
+enum solely for RUM. The same rule applies to internal and third-party SwiftUI
+containers, coordinators, UIKit navigation containing SwiftUI, and custom
+transitions. Agent-generated native SwiftUI must continue to work without
+Datadog-specific knowledge.
+
+The semantic navigation engine therefore sits below any visual container:
+
+```text
+Native NavigationStack adapter ─┐
+Customer container capability ──┤
+Router/transition source ────────┼─→ scene-scoped semantic engine ─→ RUM views
+UIKit coordinator adapter ───────┤
+Automatic discovery ─────────────┘
+```
+
+The engine understands scene ownership, destination metadata/materialization,
+transition preparation, commit/cancellation, reveal, and occurrence identity.
+It does not own layout, gestures, animation, deep links, custom configuration,
+or presentation behavior. Those remain properties of the customer's container.
+
+A Datadog-owned outer host may attach the scene/authority boundary while accepting
+any customer `View` as its content:
+
+```swift
+RUMNavigationHost {
+    CustomerNavigationStack(router: router) {
+        ApplicationContent()
+    }
+}
+```
+
+Without another capability, this host supplies scene attachment, target-local
+automatic deduplication, best-effort inference, and crash-safe compatibility
+fallback. It must not mirror the customer's container parameters.
+
+### Integration inputs and precedence
+
+Exact semantic input follows this order:
+
+1. An explicit customer-provided transition source or adapter.
+2. An optional type-erased capability exposed by the supplied container.
+3. Native adapter knowledge when the optional `RUMNavigationStack` convenience
+   is used.
+4. Scene-aware automatic discovery.
+5. Existing process-representative compatibility fallback.
+
+Conceptual optional capability:
+
+```swift
+@MainActor
+public protocol RUMNavigationTransitionProviding {
+    var rumNavigationTransitions: RUMNavigationTransitions { get }
+}
+```
+
+The source must remain stable across SwiftUI view-value reconstruction. Prefer a
+type-erased source without an associated route type when runtime detection is
+required. Transition timing, current-destination metadata, materialization, and
+presentation state may be separate capabilities rather than one large protocol;
+do not use Objective-C-style optional requirements.
+
+Imported third-party containers should normally use an explicit source or
+reusable adapter rather than a retroactive conformance:
+
+```swift
+RUMNavigationHost(transitions: router.rumNavigationTransitions) {
+    ThirdPartyNavigationStack(router: router) {
+        ApplicationContent()
+    }
+}
+```
+
+Datadog may ship optional library adapters without adding those libraries as core
+SDK dependencies. Explicit input is authoritative only for its target and must
+not suppress unrelated automatic containers.
+
+Exact reconstruction has an information boundary. At least one trustworthy
+accepted-route, destination-materialization, transition-completion/cancellation,
+observable-router/coordinator, or wrappable content-builder signal is required.
+A completely opaque container remains scene-aware and crash-safe through
+automatic tracking and exceptional manual instrumentation; the SDK must document
+that exact semantic reconstruction is unavailable rather than guessing.
+
+### Native convenience proof
+
+The current `RUMNavigationStack` may remain as an optional native convenience:
 
 ```swift
 RUMNavigationStack(
@@ -338,83 +458,53 @@ RUMNavigationStack(
     router.view(for: route)
 } presentedContent: { presentation in
     router.view(for: presentation)
-} onPresentationDismiss: { presentation in
-    router.didDismiss(presentation)
 }
 ```
 
-The product's preferred modifier-shaped spelling remains valid as an ergonomic
-goal:
+It must behave as closely as practical to native `NavigationStack`, use the same
+container-independent engine, and never be a prerequisite for exact multi-scene
+support. Its current builder-owning form is important evidence: `EXP-047` through
+`EXP-049` prove that a passive modifier outside an already-built stack learns the
+destination too late, while `EXP-116` proves that a materialization boundary can
+start the occurrence before lifecycle work.
 
-```swift
-NavigationStack(path: $router.path) {
-    HomeView()
-}
-.trackRUMNavigation(
-    path: $router.path,
-    root: RUMView(name: "Home"),
-    destination: router.rumView
-)
-```
+The iOS 27 SPI accepts a typed `Binding<[Route]>`, centralized root/destination
+resolution, one optional presentation binding, and root/destination/presented
+builders. It answers implementation-feasibility questions but not the final
+customer shape. `EXP-141` through `EXP-145` validate complete destinations,
+repeated/restored equal routes, rejected/canonicalized writes, atomic Sheet ↔
+Cover replacement, and sibling-container authority.
 
-The implementation cannot be selected from spelling alone. `EXP-047` through
-`EXP-049` show that a passive modifier outside an already-built
-`NavigationStack` learns about a destination too late for its first lifecycle
-work. `EXP-116` passes because the probe wrapper owns the root and typed
-destination builders and installs the route-owned tracking boundary where each
-destination materializes. A final modifier is acceptable only if it provides an
-equivalent materialization boundary; a path observer by itself is not.
-
-That builder-owning iOS 27 SPI is now implemented. `RUMNavigationStack` accepts a
-typed `Binding<[Route]>`, centralized root/destination resolution, one
-application-owned optional presentation binding, and builders for root,
-destination, and presented content. `RUMNavigationPresentation` supplies both
-RUM metadata and Sheet versus full-screen-cover style. The binding wrappers
-forward SwiftUI transactions. The accepted `EXP-141` customer call site uses this
-SPI directly rather than relabeling the probe-only control.
-
-The prototype answers the implementation-feasibility question but does not yet
-settle the public shape. It currently requires a presentation type and binding
-even when an application has stack-only navigation, and it reuses `RUMView`,
-whose `isUntrackedModal` field is unrelated to semantic route metadata. API
-review should consider presentation-free overloads and a smaller descriptor.
-`EXP-142` now validates sequential repeated equal routes through actual
-`NavigationLink(value:)` controls. The implementation preserves the customer's
-`[Route]` element type and attaches an occurrence claim to each materialized
-destination boundary; wrapping the route in a private identity was rejected
-because it breaks native value-link/destination matching. Binding writes are
-reconciled against the application's accepted getter so rejecting or
-canonicalizing routers do not advance RUM state from an uncommitted proposal.
-`EXP-143` closes those router cases. External same-type/different-type replacement
-emits only the accepted path, rejected writes emit no view, and direct repeated
-restoration preserves fresh occurrence semantics. On iOS 27 a canonicalizing
-binding can reuse the speculative proposal's boundary for a different accepted
-value; the implementation uses the inherited scene trait only to promote an
-already reader-proven same-scene dormant boundary before `onAppear` and immediate
-task work. The trait cannot migrate or recover disconnected state. `EXP-144`
-closes direct presentation replacement: the accepted path is H1 → Sheet S1 →
-Cover F1 → Sheet S2 → fresh H2, with no intermediate Home or automatic
-duplicate.
+The implementation preserves the customer's `[Route]` element type and keeps
+occurrence identity inside materialized RUM boundaries. Binding writes reconcile
+against the accepted getter, so uncommitted proposals do not advance RUM state.
+The inherited iOS 27 scene trait may promote only an already reader-proven
+same-scene dormant boundary; it cannot migrate or recover disconnected state.
+These mechanics should move into the shared engine without weakening any current
+fixture.
 
 ### Resolver and path model
 
-The first review should prefer a typed application route, normally an enum, and
-a centralized nonoptional resolver:
+When an application already exposes a typed route or router, a native adapter may
+use a centralized nonoptional resolver:
 
 ```swift
 @MainActor
 func rumView(for route: AppRoute) -> RUMView
 ```
 
-An optional result is ambiguous between "allow automatic tracking here" and
-"intentionally emit no RUM destination." If partial semantic coverage is needed,
+This is an adapter option, not a requirement to create a Datadog router or rewrite
+local presentation state. An optional result is ambiguous between "allow
+automatic tracking here" and "intentionally emit no RUM destination." If partial
+semantic coverage is needed,
 model that choice explicitly rather than giving `nil` two meanings.
 
-A typed `Binding<[Route]>` can expose committed order and repeated values. A
-type-erased `NavigationPath` does not provide a public sequence of its elements,
-so support for heterogeneous paths requires a different integration or an
-application router that exposes its semantic route list. API review must not
-promise arbitrary `NavigationPath` introspection.
+A typed `Binding<[Route]>` can expose committed order and repeated values to the
+native convenience adapter. A type-erased `NavigationPath` does not provide a
+public sequence of its elements, so support for heterogeneous paths requires a
+different source, coordinator, or
+application router that exposes semantic transitions. API review must not
+promise arbitrary `NavigationPath` introspection or require path conversion.
 
 Occurrence identity belongs to a committed path position and transition, not to
 `Route`, `Hashable`, a destination view value, or its RUM metadata. Equal routes
@@ -434,7 +524,10 @@ two sibling controller branches hosted below one outer SwiftUI root. The latter
 passes only after observing both exact controller ancestries; a missing or
 collapsed topology is `INCONCLUSIVE`, not authority evidence. This closes the
 internal isolation question without approving how the public integration creates
-and owns the boundary. `EXP-129` adds the exact same-key A/B contract, but its
+and owns the boundary. `EXP-145` reruns that topology through the actual native
+convenience SPI and passes 19/19 locally plus exact backend ownership, proving
+the current public-shape prototype does not globalize authority. `EXP-129` adds
+the exact same-key A/B contract, but its
 live acceptance remains hardware-inconclusive before manual authority began.
 
 Exceptional `.trackRUMView` instrumentation remains supported alongside a
@@ -445,20 +538,21 @@ the container/router integration can provide that earlier signal.
 
 ### Presentation state
 
-The first navigation integration must consume the router's complete current
-destination, including sheets and full-screen covers. Stack-only coverage is not
-an acceptable first semantic release. A presented destination replaces the
-scene's one current destination; it is never a second concurrent RUM view.
-Dismissal must start a fresh underlying occurrence before post-dismiss customer
-work is attributed and must suppress the presented destination's automatic
-duplicate. A same-turn presentation mutation that never commits starts no view.
-The internal Sheet path passes this contract in `EXP-125`. Its semantic router
-authority ends before the outgoing aggregate's last mapper snapshot, while its
-UI-attached suppression remains through native subtree removal. Those are
-intentionally distinct lifetimes. `EXP-126` repeats this independently for
-`fullScreenCover`: the exact-scene semantic occurrence replaces Home, dismissal
-starts a fresh Home before immediate customer work, and target-scoped suppression
-lasts until the native cover subtree disappears.
+The shared engine models sheets, covers, UIKit presentations, and custom overlays
+as the same semantic fact: the scene's current destination changed. A presented
+destination replaces the scene's one current destination; it is never a second
+concurrent RUM view. An exact adapter or transition source may report those
+changes through the common engine. Otherwise standard automatic tracking remains
+the fallback.
+
+Do not create Datadog equivalents for every presentation API. Existing `.sheet`
+and `.fullScreenCover` call sites remain unchanged. When trustworthy semantic
+input exists, dismissal starts a fresh underlying occurrence before post-dismiss
+customer work and suppresses only the presented destination's duplicate. A
+same-turn proposal that never commits starts no view. The internal Sheet path
+passes this contract in `EXP-125`; `EXP-126` repeats it independently for
+`fullScreenCover`. Router authority and native-subtree suppression deliberately
+have different lifetimes because a final aggregate may outlive semantic stop.
 
 The customer-shaped reruns close the remaining prototype-usefulness question.
 `EXP-137` passes 16/16 for Home H1 → Compose M1 → fresh H2 through the Swift SPI.
@@ -475,8 +569,10 @@ actions, 25 Resources, and zero errors/crashes. `EXP-144` then replaces Sheet
 with Cover and Cover with a fresh Sheet while keeping the underlying Home hidden,
 before final dismissal creates fresh H2. Its final run passes 43/43; backend
 intake contains the same five semantic occurrences, 19 actions, 19 Resources,
-and zero errors/crashes. The complete RUM suite now passes 1,252/1,252 and the
-native probe passes 139/139. Both Debug and authoritative Xcode 27 Release probe
+and zero errors/crashes. `EXP-145` adds actual-SPI sibling isolation: left manual
+authority keeps right Detail hidden until exact stop, then one fresh Detail owns
+post-stop work. The complete RUM suite remains 1,252/1,252 and the native probe
+passes 142/142. Both Debug and authoritative Xcode 27 Release probe
 builds pass. The source-based API verifier remains a prototype gate; no baseline
 is changed before normal review.
 
@@ -509,39 +605,55 @@ Scene-aware manual views require:
 
 Semantic SwiftUI navigation requires:
 
+- a non-conforming custom container receives baseline scene-aware automatic
+  tracking without changing its navigation implementation;
+- the same container with a stable optional capability receives exact semantic
+  tracking;
+- an explicit transition source overrides capability and automatic inference;
+- native convenience, conforming custom, and explicit third-party-style adapters
+  produce identical occurrence semantics;
 - Home H1 -> Detail D1 -> Home H2 with distinct IDs;
 - equal same-named Detail D1 -> Detail D2 occurrences;
 - same-turn push/revert and interactive cancellation with no speculative view;
 - state preservation when only the RUM occurrence rotates;
 - root, destination, modal, and retained-return lifecycle work on the intended
   occurrence;
-- Sheet and full-screen-cover present/dismiss sequences driven by the complete
-  router destination, with a fresh reveal before immediate post-dismiss work;
+- Sheet and full-screen-cover present/dismiss sequences through the shared
+  semantic source, with standard presentation call sites unchanged and a fresh
+  reveal before immediate post-dismiss work;
 - direct Sheet → Cover → Sheet replacement with no intermediate underlying view,
   distinct presentation IDs, and one fresh reveal only after final dismissal;
 - coexistence with automatic tracking, a manual exception, a sibling container,
   and another scene without duplicate or global suppression;
+- two enhanced containers in different scenes remain isolated, while one
+  enhanced container does not suppress an unrelated automatic container;
+- SwiftUI container reconstruction preserves the stable transition source and
+  does not replay or disconnect the current occurrence;
 - one current destination for split/tab structures;
 - scene disconnect, reconnect, restoration, and session rollover; and
-- unchanged automatic-only and single-scene behavior.
+- unchanged automatic-only, source-less, and single-scene behavior.
 
 ## API-review questions
 
 No product-behavior decision blocks implementation. The remaining questions are
 public shape, compatibility, and implementation-boundary review:
 
-1. Wrapper, modifier with destination builders, or another shape that provides
-   the proven materialization boundary?
-2. Typed path plus presentation bindings, or a router protocol that describes the
-   required complete destination while supporting heterogeneous routes?
-3. Reuse `RUMView` as route metadata or introduce a smaller navigation-specific
+1. Exact names and overloads for the arbitrary-view host and explicit
+   transition-source/adapter entry points?
+2. Which small type-erased capabilities should be independently detectable, and
+   how should runtime discovery preserve a stable source across SwiftUI value
+   reconstruction without retaining customer containers?
+3. How much native `NavigationStack` convenience should `RUMNavigationStack`
+   expose while delegating to the shared engine and avoiding a mirrored Apple API
+   surface?
+4. Reuse `RUMView` as route metadata or introduce a smaller navigation-specific
    descriptor with an explicit tracked/untracked decision?
-4. Extension-only manual overload with private capability, or defaulted public
+5. Extension-only manual overload with private capability, or defaulted public
    protocol requirements after library-evolution review?
-5. How should the public integration create, retain, and remove the proven
+6. How should the public integration create, retain, and remove the proven
    container-local authority boundary without exposing controller hierarchy or
    requiring customers to understand its internal containment model?
-6. How should Objective-C callers that invoke a `UIWindowScene` overload away
+7. How should Objective-C callers that invoke a `UIWindowScene` overload away
    from the main thread be handled without retaining or asynchronously dereferencing
    the scene?
 

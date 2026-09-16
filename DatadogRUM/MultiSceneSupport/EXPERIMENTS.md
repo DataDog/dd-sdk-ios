@@ -15,21 +15,24 @@ Last updated: 2026-09-16
 
 ## Current checkpoint
 
-- Last completed experiment is `EXP-144`. Direct Sheet → full-screen Cover →
-  Sheet replacement now produces only committed presentation occurrences and
-  reveals one fresh underlying Home after final dismissal.
+- Last completed experiment is `EXP-145`. The actual semantic SPI now preserves
+  the sibling authority boundary: right-side navigation commits beneath a left
+  manual view, emits no intermediate destination, and reveals one fresh Detail
+  after authority stops.
 - Latest accepted implementation commits: `4d64d8a53` (`Harden restored semantic
   navigation ownership`), `bdbfc1d5c` (`Handle canonicalized semantic
   navigation`), `a458ff6c2` (`Start canonical destinations before lifecycle
   work`), and `698b1584d` (`Handle semantic presentation replacement`). Latest
-  bidirectional probe commit: `01a8466c5`.
+  bidirectional probe commit: `01a8466c5`. Semantic sibling probe/oracle commit:
+  `144d6e0e7`.
 - Documentation-refactor baseline: `5fc2099e9`
   (`Document repeated semantic route validation`).
 - Frozen archive commit: `e51a83b15`.
-- Latest validation: `EXP-144` bidirectional run 43/43 with 48 exact backend
-  events, focused replacement tests 3/3, native probe 139/139, DatadogRUM
-  1,252/1,252, source and test lint clean, zero accepted-run errors/crashes, and
-  an Xcode 27 Release probe build.
+- Latest validation: `EXP-145` passes 19/19 with 30 exact backend events, four
+  intended views, no automatic duplicate, and zero errors/crashes. The native
+  probe passes 142/142, repository lint is clean across 713 source and 699 test
+  files, and the Xcode 27 Release probe build passes. DatadogRUM remains
+  1,252/1,252 at its latest affected checkpoint.
 
 Status describes the contract proved, not whether a diagnostic successfully found
 a defect. Compound status preserves mixed evidence. `PREPARED` means the
@@ -37,9 +40,11 @@ driver/oracle exists but runtime acceptance is pending.
 
 ## In-flight and next experiment
 
-`EXP-144` is closed. The next simulator-capable slice is `EXP-145`: exercise
-sibling-container isolation through the actual semantic SPI, retaining the
-probe-only `EXP-127` path as its control. The ordered acceptance contract is in
+`EXP-145` is closed. Revised product constraints make `EXP-146` the next
+simulator-capable slice: extract the scene-scoped occurrence engine from the
+native convenience container and prototype a container-independent host around
+an arbitrary customer-owned `View`, without changing standard SwiftUI navigation
+or presentation call sites. The ordered acceptance contract is in
 [PLAN.md](PLAN.md).
 
 ## Complete experiment ledger
@@ -190,6 +195,7 @@ probe-only `EXP-127` path as its control. The ordered acceptance contract is in
 | EXP-142 | 2026-09-15 | PASS after FAIL · backend; weak-oracle PASS excluded | SwiftUI navigation | Repeated equal-route acceptance through real `NavigationLink(value:)` controls. A stronger reveal-before-callback oracle exposed returned Detail work on D2 before fresh D3. | [archive](Archive/EXPERIMENTS_THROUGH_EXP-142.md): `EXP-142` |
 | EXP-143 | 2026-09-15 | PASS after FAIL, rejected candidates, and tooling-invalid retries · backend | SwiftUI navigation | Initial repeated restoration, external same/different-type replacement, rejected proposals, and canonicalized writes preserve only accepted path occurrences. The final canonical run starts Alternate before `onAppear`/immediate work, emits no speculative Detail or automatic duplicate, and passes 19/19 plus exact backend ownership. | [active record](Experiments/EXP-143-199.md#exp-143--external-semantic-router-mutations-and-restoration) |
 | EXP-144 | 2026-09-16 | PASS after SDK FAIL and harness-invalid retry · backend | SwiftUI navigation | Direct Sheet → Cover → Sheet replacement emits H1/S1/F1/S2/fresh H2 with no intermediate Home or automatic duplicate. The final run passes 43/43; backend intake has the same five semantic UUIDs, 19 exact-view actions, 19 exact-view Resources, and zero errors/crashes. | [active record](Experiments/EXP-143-199.md#exp-144--semantic-presentation-replacement) |
+| EXP-145 | 2026-09-16 | PASS after two INVALID harness attempts · backend | SwiftUI navigation | The actual semantic SPI preserves the `EXP-127` sibling boundary. Home commits to Detail beneath left manual authority, emits no intermediate/automatic view, and reveals one fresh Detail afterward. Final run passes 19/19; backend intake has exactly launch/Home/manual/Detail, 11 exact actions, 11 exact Resources, and zero errors/crashes. | [active record](Experiments/EXP-143-199.md#exp-145--semantic-sibling-container-isolation) |
 
 ## Simulator-inconclusive and hardware-required evidence
 
