@@ -143,7 +143,7 @@ internal class AppRunner {
     private var processInfo: ProcessInfoMock!
     private var notificationCenter: NotificationCenter!
     private var dateProvider: DateProviderMock!
-    /// Only set once RUM is enabled (see `enableRUM()`); advanced alongside `dateProvider` in `advanceTime(by:)`.
+    /// Only set once RUM is enabled (see `enableRUM()`); advanced separately from `dateProvider` via `advanceMediaTime(by:)`.
     private var mediaTimeProvider: MediaTimeProviderMock?
     private var appStateProvider: AppStateProviderMock!
     private var appLaunchHandler: AppLaunchHandlerMock!

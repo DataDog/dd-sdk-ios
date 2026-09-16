@@ -171,7 +171,8 @@ extension AppRunStep {
                 let sleepInterval = min(slice, duration - elapsed)
                 let expectation = XCTestExpectation(description: "waited \(sleepInterval)s")
                 DispatchQueue.global(qos: .utility).asyncAfter(deadline: .now() + sleepInterval) { expectation.fulfill() }
-                _ = XCTWaiter().wait(for: [expectation], timeout: sleepInterval + 2)
+                let result = XCTWaiter().wait(for: [expectation], timeout: sleepInterval + 2)
+                XCTAssertEqual(result, .completed, "Timed out waiting \(sleepInterval)s of real time")
                 app.advanceTime(by: sleepInterval)
                 app.advanceMediaTime(by: sleepInterval)
                 elapsed += sleepInterval
