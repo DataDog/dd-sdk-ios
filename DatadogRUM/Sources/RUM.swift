@@ -31,6 +31,7 @@ public enum RUM {
         }
     }
 
+    @MainActor
     internal static func enableOrThrow(
         with configuration: RUM.Configuration,
         in core: DatadogCoreProtocol

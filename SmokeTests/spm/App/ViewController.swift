@@ -5,50 +5,12 @@
 */
 
 import UIKit
-import DatadogRUM
-import DatadogSessionReplay // it should compile for iOS and tvOS, but APIs are only available on iOS
-import DatadogTrace
-import DatadogFlags
-import DatadogProfiling
-@preconcurrency import OpenTelemetryApi
 
 internal class ViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         DatadogSetup.initialize()
-
-        // RUM APIs must be visible:
-        RUM.enable(
-            with: .init(
-                applicationID: "app-id",
-                onSessionStart: { sessionID, _ in
-                    print("Session ID is \(sessionID)")
-                }
-            )
-        )
-        RUMMonitor.shared().startView(viewController: self)
-
-        // Trace APIs must be visible:
-        Trace.enable()
-        OpenTelemetry.registerTracerProvider(
-            tracerProvider: OTelTracerProvider()
-        )
-
-        let otSpan = Tracer.shared().startSpan(operationName: "OT Span")
-        otSpan.finish()
-        
-        // otel tracer
-        let tracer = OpenTelemetry
-            .instance
-            .tracerProvider
-            .get(instrumentationName: "", instrumentationVersion: nil)
-        let otelSpan = tracer.spanBuilder(spanName: "OTel span").startSpan()
-        otelSpan.end()
-
-        #if os(iOS)
-        // Session Replay API must be visible:
-        SessionReplay.enable(with: .init(replaySampleRate: 0))
-        #endif
+        DatadogSetup.enableAndTest(viewController: self)
 
         addLabel()
     }

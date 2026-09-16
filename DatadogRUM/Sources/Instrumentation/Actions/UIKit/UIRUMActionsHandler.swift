@@ -4,16 +4,16 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
-import DatadogInternal
-
+#if canImport(UIKit)
 #if !os(watchOS)
 import UIKit
 #endif
+import DatadogInternal
 
 internal protocol RUMActionsHandling: RUMCommandPublisher {
     #if !os(watchOS)
     /// Tracks RUM actions automatically for UIKit and SwiftUI by responding to `UIApplication.sendEvent(application:event:)` being called.
-    func notify_sendEvent(application: UIApplication, event: UIEvent)
+    func notify_sendEvent(application: UIApplication, event: DDEvent)
     #endif
     /// Tracks RUM actions manually with SwiftUI view modifiers by being notified from `RUMTapActionModifier`.
     func notify_viewModifierTapped(actionName: String, actionAttributes: [String: Encodable])
@@ -94,7 +94,7 @@ internal final class RUMActionsHandler: RUMActionsHandling {
 
     #if !os(watchOS)
     /// Tracks RUM actions automatically for UIKit and SwiftUI in response to `UIApplication.sendEvent(application:event:)` event.
-    func notify_sendEvent(application: UIApplication, event: UIEvent) {
+    func notify_sendEvent(application: DDApplication, event: DDEvent) {
         guard let command = eventCommandsFactory?.command(from: event) else {
             return // Not a "tap" event or doesn't have the view.
         }
@@ -137,3 +137,4 @@ internal final class RUMActionsHandler: RUMActionsHandling {
         subscriber.process(command: command)
     }
 }
+#endif

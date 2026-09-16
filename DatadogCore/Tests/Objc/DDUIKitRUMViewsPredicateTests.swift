@@ -18,7 +18,7 @@ import SwiftUI
 class DDUIKitRUMViewsPredicateTests: XCTestCase {
     func testGivenDefaultPredicate_whenAskingForCustomSwiftViewController_itNamesTheViewByItsClassName() {
         // Given
-        let predicate = objc_DefaultUIKitRUMViewsPredicate()
+        let predicate = objc_DefaultViewsPredicate()
 
         // When
         let customViewController = createMockView(viewControllerClassName: "CustomSwiftViewController")
@@ -31,7 +31,7 @@ class DDUIKitRUMViewsPredicateTests: XCTestCase {
 
     func testGivenDefaultPredicate_whenAskingForCustomObjcViewController_itNamesTheViewByItsClassName() {
         // Given
-        let predicate = objc_DefaultUIKitRUMViewsPredicate()
+        let predicate = objc_DefaultViewsPredicate()
 
         // When
         let customViewController = CustomObjcViewController()
@@ -44,10 +44,10 @@ class DDUIKitRUMViewsPredicateTests: XCTestCase {
 
     func testGivenDefaultPredicate_whenAskingUIKitViewController_itReturnsNoView() {
         // Given
-        let predicate = objc_DefaultUIKitRUMViewsPredicate()
+        let predicate = objc_DefaultViewsPredicate()
 
         // When
-        let uiKitViewController = UIViewController()
+        let uiKitViewController = DDViewController()
         let rumView = predicate.rumView(for: uiKitViewController)
 
         // Then
@@ -57,10 +57,10 @@ class DDUIKitRUMViewsPredicateTests: XCTestCase {
 #if canImport(SwiftUI)
     func testGivenDefaultPredicate_whenAskingSwiftUIViewController_itReturnsNoView() {
         // Given
-        let predicate = objc_DefaultUIKitRUMViewsPredicate()
+        let predicate = objc_DefaultViewsPredicate()
 
         // When
-        let swiftUIHostingController = UIHostingController<EmptyView>(rootView: EmptyView())
+        let swiftUIHostingController = DDHostingController<EmptyView>(rootView: EmptyView())
         let rumView = predicate.rumView(for: swiftUIHostingController)
 
         // Then
