@@ -537,6 +537,43 @@ early capture already occurred, repeat once without it before blaming the
 harness or SDK; EXP-155 attempts 2 and 3 used that comparison to isolate a stale
 view-boundary harness independently of the capture failure.
 
+### Physical-device connection preflight
+
+An eligible physical destination in Xcode does not prove that the device is
+usable by Xcode's interaction-session APIs. On Xcode 27 those APIs can still
+return a simulator-only inventory even while the destination list contains a
+paired iPad. If they reject the physical device by display name, hardware UDID,
+and CoreDevice identifier, use the Xcode-independent physical path:
+
+- build for the exact physical destination with `xcodebuild`;
+- inspect, install, launch, terminate, and capture through `devicectl`;
+- keep the same clean-run and evidence requirements as an interaction-session
+  run.
+
+Do not begin terminate/uninstall/install work merely because the destination is
+listed as eligible. First require all of the following non-mutating checks:
+
+1. the exact device is paired and reports a connected transport;
+2. it is awake, unlocked, and remains on;
+3. app inventory succeeds;
+4. process inventory succeeds;
+5. at least one repeated inventory call also succeeds, proving the tunnel is not
+   disconnecting immediately after connection.
+
+CoreDevice error 4000 (`device disconnected immediately after connecting`),
+`Network.NWError 60` (`Operation timed out`), or a paired-but-disconnected state
+fails this preflight. Stop before mutation, record an infrastructure-
+inconclusive attempt, and preserve the named SDK scenario unchanged. `EXP-156`
+records this exact boundary: the lock-state read succeeded once, but subsequent
+app/process inventories failed; no clean boundary, install, launch, run ID, RUM
+session, or SDK verdict exists.
+
+Record both identifiers when they differ: the hardware UDID selects the Xcode
+destination, while the CoreDevice identifier can appear in `devicectl` output.
+The transport (`usb`, `local-network`, or another reported path) is evidence too;
+a physically attached device can still be reached only through a flaky
+local-network tunnel.
+
 Follow the live Xcode MCP instruction about delegating device interaction even
 for an automated run. The delegate owns only device state and artifacts; source
 editing and semantic interpretation remain with the main task.

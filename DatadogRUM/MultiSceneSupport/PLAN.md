@@ -283,6 +283,13 @@ Do not close these rows with simulator prefixes or callback counts. A human
 gesture closes a row only when path, coordinator, lifecycle, and RUM UUID evidence
 prove the intended interaction.
 
+The first iPadOS 27 preflight (`EXP-156`) stopped before mutation. Xcode listed
+the physical iPad as eligible, but DeviceInteraction exposed simulators only and
+CoreDevice could not maintain the local-network tunnel long enough to inventory
+apps or processes. There is no SDK verdict. Before resuming this table, require
+the awake and unlocked device to remain connected through repeated non-mutating
+inventory calls; then begin with the unchanged `EXP-131` scenario.
+
 | Priority | Experiments | Expected outcome | Prerequisite | Implementation boundary | Acceptance | Required environment |
 | --- | --- | --- | --- | --- | --- | --- |
 | P0 | `EXP-100` | SwiftUI edge-pop cancel retains Detail; completion creates fresh Home | Existing transition gate | No new implementation unless hardware disproves it | Recognized gesture plus exact path/coordinator/lifecycle/view evidence | Human, physical device |
@@ -351,6 +358,13 @@ EXP-152 harness checkpoint: `0a67f3e36`; signed EXP-153 harness checkpoint:
 `d6d813736`; signed EXP-154 scenario checkpoint: `7fd6a891a`; signed readiness
 correction: `f92d72909`; signed EXP-155 SDK, scenario, and harness checkpoints:
 `b0524bb5b`, `3e567a494`, and `eb1dd2fdc`.
+
+Physical execution checkpoint: `EXP-156` is infrastructure-inconclusive before
+any app mutation. The iPad is an eligible Xcode destination, but Xcode's
+interaction API omitted physical devices and CoreDevice returned disconnect
+error 4000 and `Network.NWError 60` during app/process inventory. There is no run
+ID, RUM session, upload, or SDK result. Resume at `EXP-131` only after a stable
+awake/unlocked-device preflight.
 
 Earlier `EXP-146` engine/adapter explicit and optional-capability runs each pass
 42/42; runtime precedence, stable reconstruction, and adversarial replacement

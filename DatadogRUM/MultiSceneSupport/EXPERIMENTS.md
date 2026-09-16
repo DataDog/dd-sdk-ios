@@ -15,6 +15,12 @@ Last updated: 2026-09-16
 
 ## Current checkpoint
 
+- Latest physical-device attempt is `EXP-156`. Xcode lists the connected
+  iPadOS 27 iPad as an eligible destination, but its interaction-session APIs
+  expose simulators only and CoreDevice's local-network tunnel disconnected or
+  timed out during non-mutating app/process inventory. No clean boundary, app
+  install, launch, or SDK signal occurred. The attempt is infrastructure-
+  inconclusive and leaves the unchanged `EXP-131` hardware row pending.
 - Latest runtime experiment is `EXP-155`. The bounded Operation
   `.current(in:)` SPI passes 24/24 after correcting a stale harness boundary.
   Backend intake contains eight raw Operation steps and four reduced Operations:
@@ -101,8 +107,11 @@ publisher host, with a 42/42 local/backend run and one stable registration.
 backend ownership after one deterministic duplicated-readiness harness failure.
 `EXP-155` then accepts the bounded Operation `.current(in:)` engine proof at
 24/24 with exact raw and reduced backend ownership after three invalid harness
-attempts. Next execute the physical concurrent-window queue and prepare the
-navigation and Operation shapes for API review. Interactive
+attempts. `EXP-156` records the first physical-iPad automation preflight as
+infrastructure-inconclusive before any app mutation because CoreDevice could not
+hold a stable connection. Once the device is awake, unlocked, and continuously
+connected, next execute the unchanged physical concurrent-window queue and
+prepare the navigation and Operation shapes for API review. Interactive
 dismissal/cancellation and genuine OS disconnect remain hardware rows. The
 ordered acceptance contract is in
 [PLAN.md](PLAN.md).
@@ -266,6 +275,7 @@ ordered acceptance contract is in
 | EXP-153 | 2026-09-16 | PASS · tests + mapper + backend | SwiftUI integration/third-party adapters | A true custom visual container exposes synchronous accepted snapshots to one dedicated adapter, which bridges into the existing SDK-owned publisher host. No screen or navigation method changes, retroactive conformance, or new SDK API are required. Focused tests pass 7/7, the probe passes 161/161, lint and Release pass, and frozen run `exp153-third-party-callback-20260916T103122Z` passes 42/42 plus `registrations=1 active=1`. Backend session `f2d2fb24-02d6-4bd9-9df9-ee353b899e69` has eight views, 13 actions, 13 Resources, exact H1/D1/H2/Sheet/H3/Cover/H4 ownership, and zero errors/crashes. Opaque state remains fallback-only; two-native-scene runtime parity is next. | [active record](Experiments/EXP-143-199.md#exp-153--callback-driven-third-party-navigation-adapter) |
 | EXP-154 | 2026-09-16 | PASS after HARNESS FAIL · tests + mapper + backend | SwiftUI integration/multi-scene | Two real native scenes independently mount per-window Observation routers and each complete H1 → D1 → fresh H2. Attempt 1 rejected a redundant readiness wait after `open-window` had already consumed B's signal; the app and partial attribution remained healthy. Corrected frozen run `exp154-observation-two-scenes-serial-fix-20260916T111921Z` passes 25/25. Backend session `a6a5afd5-8089-4996-9805-ed62fb76927d` has seven views, six actions, six Resources, exact A/B marker ownership, and zero errors/crashes. This closes serial native-scene parity, not simultaneous visibility or lifecycle acceptance. | [active record](Experiments/EXP-143-199.md#exp-154--serial-two-native-scene-observation-parity) |
 | EXP-155 | 2026-09-16 | PASS after three INVALID attempts · tests + mapper + backend | Operations/API prototype | The iOS 27 `.current(in:)` SPI keeps explicit and inferred targets separate and resolves every Operation step independently. Corrected run `exp155-operation-explicit-target-serial-manual-boundaries-20260916T124918Z` passes 24/24. Backend session `bcb168fd-b5df-42ed-b416-b505a42e6e76` has eight raw steps and four reduced Operations with exact A→B success/failure, A→A alpha, B→B beta, and beta-before-alpha completion. The API shape remains experimental. | [active record](Experiments/EXP-143-199.md#exp-155--explicit-cross-scene-operation-targeting) |
+| EXP-156 | 2026-09-16 | INCONCLUSIVE · physical-device tooling before mutation | Hardware automation | Xcode sees the iPadOS 27 iPad as eligible, but physical DeviceInteraction is unavailable and CoreDevice app/process inventory repeatedly disconnects or times out over the local-network tunnel. Nothing was installed or launched, so there is no SDK verdict and `EXP-131` remains pending unchanged. | [active record](Experiments/EXP-143-199.md#exp-156--physical-ipad-automation-preflight) |
 
 ## Simulator-inconclusive and hardware-required evidence
 
