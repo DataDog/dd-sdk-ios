@@ -6,7 +6,7 @@ workflows used by the project. Product behavior and support conclusions belong i
 `ASSESSMENT.md`; `EXPERIMENTS.md` indexes evidence; exact new experiment and
 session identifiers belong in the active numbered shard under `Experiments/`.
 
-Last updated: 2026-09-16
+Last updated: 2026-09-17
 
 ## Purpose
 
@@ -67,6 +67,39 @@ Lifecycle evidence also has distinct scopes:
 
 Record the narrowest applicable claim. A simulator failure before the decisive
 step is `INCONCLUSIVE`, even when focused tests cover the same internal code.
+
+## Restart verification without rerunning accepted experiments
+
+Read `AGENTS.md` and `.continue-here.md` first and follow the latter's ordered
+reading list. Verify the actual branch, HEAD, signature, and status. A later
+signed documentation-only handoff can legitimately follow the accepted SDK
+checkpoint; inspect its path list instead of treating it as implementation drift.
+Do not rerun accepted tests or load the frozen archive merely to resume.
+
+Capture each protected index entry and file metadata without printing a diff of
+local configuration. Never open `xcconfigs/Datadog.local.xcconfig`. Hashing the
+protected project file is allowed; inspect only metadata for the local xcconfig.
+Preserve the actual initial status exactly rather than assuming an older `AM`
+state. Use signed `git commit --only -- <explicit paths>` and verify the resulting
+commit path list, protected index entries, metadata, and project-file hash.
+Git signature verification may need permission to create temporary signature
+files even though it does not modify repository content; never substitute a raw
+signature block for cryptographic verification.
+
+Rediscover workspace IDs, schemes, and destinations with real Xcode MCP calls.
+A working GUI-backed MCP connection can coexist with a stopped standalone
+`mcp-server`; the standalone daemon status alone is not a failure verdict.
+Re-query `simctl` and `devicectl` before choosing a destination, and keep the
+physical queue paused when its iPad is unavailable.
+
+For Datadog, rediscover the tools actually exposed in this connection. If an
+identity endpoint is absent, a minimal bounded read aggregate using a fresh
+nonexistent probe run discriminator can verify authenticated query access
+without retrieving customer payloads or reusing an old session ID. Skill listing
+alone is not authentication evidence. Record that this check proves read access,
+not organization identity or experiment ingestion; deeper RUM tools are not
+required for basic event aggregation. Exact current identifiers and outcomes
+belong in the active experiment record, not a reusable recipe.
 
 ## Xcode MCP preparation
 
@@ -893,6 +926,7 @@ Use these categories consistently:
 | `INCONCLUSIVE` | The environment could not exercise or distinguish the required behavior |
 | `INVALID` | Setup, launch configuration, stale state, tooling, or oracle construction broke the experiment |
 | `SKIPPED` | A declared capability or prerequisite made the row intentionally inapplicable |
+| `PLANNED` | The contract is defined before implementation; driver/oracle coverage is not yet complete |
 | `PREPARED` | Driver/oracle coverage exists, but the required runtime or backend acceptance has not run |
 
 Examples that are not SDK failures:

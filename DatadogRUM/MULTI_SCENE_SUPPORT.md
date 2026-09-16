@@ -7,7 +7,7 @@ work can start here without loading the frozen experiment history.
 It remains separate from `RUM_FEATURE.md` until the behavior is implemented,
 validated, and ready to become a supported contract.
 
-Last updated: 2026-09-16
+Last updated: 2026-09-17
 
 ## Goal
 
@@ -606,6 +606,11 @@ not be pushed. Earlier signer outages and the exact rewritten commit
 mapping remain preserved in the experiment ledger. The
 chronological checkpoint table in
 [EXPERIMENTS.md](MultiSceneSupport/EXPERIMENTS.md) is authoritative.
+
+The 2026-09-17 restart audit defines `EXP-159` for explicit long-running
+action start/stop, including reverse A/B completion, empty-action isolation, and
+unavailable-target fallback. Its definition precedes implementation; EXP-158
+remains the latest accepted result. See the current plan and active EXP-159 record.
 
 Resume after accepted `EXP-158` at signed implementation, probe, and
 documentation checkpoint `c2d1f1f9a` (`Target one-shot actions to a window

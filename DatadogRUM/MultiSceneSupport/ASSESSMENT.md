@@ -6,7 +6,7 @@ This document owns the current support verdict and remaining product gaps. Use
 assessment through `EXP-142` is frozen in
 [Archive/ASSESSMENT_THROUGH_EXP-142.md](Archive/ASSESSMENT_THROUGH_EXP-142.md).
 
-Last updated: 2026-09-16
+Last updated: 2026-09-17
 
 ## Current verdict
 
@@ -203,6 +203,33 @@ No product decision blocks the next internal experiment.
    same depth of live two-window/backend evidence as views, Resources, and Traces.
 8. Full normal-app, custom-handler, Objective-C Release, supported-system, and
    performance/reentrancy validation has not run on the final code shape.
+
+## Downstream routing audit for EXP-159
+
+Source inspection on 2026-09-17 uses `670843f9d` (the documentation-only
+successor of accepted implementation `c2d1f1f9a`). No test or runtime was rerun
+for this audit. The interrupted pre-pause audits are not evidence.
+
+| Surface | Current committed routing and lifetime | Next boundary |
+| --- | --- | --- |
+| Long-running actions | `Monitor.startAction` and `stopAction` each capture `currentExecutionTarget`: exact handoff view, then handoff scene, then representative. `RUMSessionScope` already isolates these commands by view/scene, but only one-shot action commands carry a separate explicit candidate. `RUMViewScope` has one action slot per view; duplicate starts do not replace it. | Extend the accepted action target bridge to start/stop, preserving both candidates and exactly-once custom/NOP fallback. This is the selected EXP-159 slice. |
+| Action completion | `RUMUserActionScope.process` stops the selected view's action; stop name/type are final event metadata, not an identity lookup. View navigation/stop already ends the outgoing action. Cross-scene activity advances timeouts with an attribute-free keep-alive command. | A live explicit view with no action must not fall through to another scene's action. The target selects current view at processing time; it is not a frozen action handle and does not extend actions across navigation. Preserve timeout and duplicate-start behavior. |
+| Manual Resource starts | All three `startResource` forms capture the same inferred target. The owning `RUMViewScope` creates the Resource child. | A later slice should target starts; it must retain the captured owner and avoid adding a completion-time view lookup. |
+| Resource metrics/success/error | Manual completion commands retain their resource key and default representative target. `RUMSessionScope.propagate` finds the existing Resource owner before removing completed scopes; `RUMResourceScope` emits success or network error through that original parent, including an inactive view retained for pending work. | Preserve resource-key ownership, late completion, metrics, and error paths. Concurrent duplicate resource keys require separate contract analysis; do not introduce scene namespacing in the action slice. |
+| Current-view errors | Message, `Error`, completion-handler, and internal monitor entry points converge on `processCurrentViewError`, which captures inferred context. Resource failures and mirrored/fatal errors use distinct paths. | Explicit current-view errors can reuse separate candidate resolution later. Do not retarget Resource errors or alter captured log action correlation, fatal handling, or telemetry sanitization. |
+| View mutations | Single/batch attribute add/remove, custom timings, loading time, feature flags, and cross-platform internal attributes/performance mutations capture inferred context. An obsolete exact view resolves to the current view in its known scene, not an unrelated representative. Global monitor attributes remain process-wide. | Add only reviewed experimental overloads in a later bounded slice; preserve same-scene stale-view fallback, internal-only attributes, and existing loading-time overwrite behavior. |
+
+Primary implementation evidence: `RUMCommandSubscriber.currentExecutionTarget`,
+`Monitor` action/Resource/error/view methods, `RUMSessionScope.process`,
+`propagate`, `shouldPropagate`, and `routedView`, plus `RUMViewScope`,
+`RUMUserActionScope`, and `RUMResourceScope`. Existing tests inspected include
+manual handoff routing in `MonitorTests`, concurrent continuous-action isolation
+and late Resource completion in `RUMSessionScopeTests`, and custom/NOP bridge
+fallback in `RUMMonitorProtocolTests`. These are source/test-code evidence, not
+new execution results. Cross-codebase usage inspection also covers automatic
+scroll commands, both mock sets, Objective-C forwarding, and internal interfaces.
+No Core protocol, encoder, generated model, project file, or wire change is
+needed for the selected action overloads.
 
 ## Compatibility and regression risks
 

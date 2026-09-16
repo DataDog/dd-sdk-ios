@@ -6,7 +6,7 @@ support verdict and the [experiment index](EXPERIMENTS.md) for evidence locators
 Historical planning through `EXP-142` is frozen in
 [Archive/PLAN_THROUGH_EXP-142.md](Archive/PLAN_THROUGH_EXP-142.md).
 
-Last updated: 2026-09-16
+Last updated: 2026-09-17
 
 ## Current objective and scope
 
@@ -248,11 +248,38 @@ DatadogRUM suite passes 1,255 test cases with zero failures. This accepts
 one-shot action targeting and compatibility behavior, not stable API names,
 long-running actions, or other signal families.
 
+### EXP-159: explicit scene-targeted long-running actions
+
+Defined before implementation on 2026-09-17. Extend the existing iOS 27 Swift
+SPI and Debug-only Objective-C action bridge with targeted `startAction` and
+`stopAction`. Keep each call's explicit and inferred targets separate. Resolve
+against a live view before updating the interaction representative, using the
+same fallback policy as EXP-158. Do not add protocol requirements, action
+handles, action-name matching, or new lifetime state.
+
+The smallest useful discriminator is two serially opened native scenes with
+stable explicit Home boundaries. Start equally named A/B actions, deliberately
+make the opposite scene representative before each targeted call, and stop B
+before A. A second B stop while only A has an action must leave A untouched.
+Then prove an unchanged source-A legacy start/stop remains on representative B.
+Require exact action UUID/count, final name/attributes, owner view, and stop
+order in focused tests and mapper/backend evidence. Unit gates additionally
+cover unavailable explicit input, contradictory exact/scene handoff, navigation,
+duplicate starts, expiry, custom/NOP forwarding, and one-shot regression.
+
+Proposed scenario: `actions.explicit-target.long-running-cross-scene-serial`.
+Its capability is `.multipleScenes`; no focus switch or simultaneous visibility
+claim is needed. Record the driver/oracle as pending until it exists. Resource,
+error, and view-mutation targets follow independently; their routing audit is in
+[ASSESSMENT.md](ASSESSMENT.md#downstream-routing-audit-for-exp-159).
+The full pre-implementation contract is
+[EXP-159](Experiments/EXP-143-199.md#exp-159--explicit-scene-targeted-long-running-actions).
+
 ## Next ordered slices
 
 | Order | Expected outcome | Prerequisite evidence | Implementation boundary | Acceptance test | Environment |
 | ---: | --- | --- | --- | --- | --- |
-| 1 | Close remaining explicit downstream targets | Accepted shared `RUMViewTarget`, Operations, and one-shot action proofs | Continue one signal family per slice. Next cover long-running actions and Resource/error/view-mutation boundaries; then Traces, logs, WebView, and exported/fatal context where a public target is meaningful | Each targeted signal reaches the requested scene's current view; unresolved explicit input falls through safely; legacy source-less behavior is unchanged | Simulator for controlled attribution; hardware follow-up only where simultaneous topology is essential |
+| 1 | Close remaining explicit downstream targets | Accepted shared `RUMViewTarget`, Operations, and one-shot action proofs | Continue one signal family per slice. Execute the defined EXP-159 long-running action slice, then Resource/error/view-mutation targets; then Traces, logs, WebView, and exported/fatal context where a public target is meaningful | Each targeted signal reaches the requested scene's current view; unresolved explicit input falls through safely; legacy source-less behavior is unchanged | Simulator for controlled attribution; hardware follow-up only where simultaneous topology is essential |
 | 2 | Validate ordinary-app compatibility and overhead | Current simulator-capable semantic and target fixes | Single-scene automatic/manual apps, custom handlers, event handoff, swizzle paths | No new views/actions, no custom-handler regression, bounded `sendEvent` overhead/reentrancy, all module/API/lint gates green | Simulator and benchmark host |
 | 3 | Prepare semantic-navigation, shared-target, and Operation API review candidates | Accepted EXP-146-155 navigation/Operation evidence plus EXP-158 action evidence | Freeze the shared engine and accepted publisher/Observation/callback inputs. Present `RUMViewTarget.current(in:)` as evidence rather than a pre-approved name. | Review packet reconciles migration, occurrence and presentation semantics, scene isolation, target precedence, availability, Swift/Objective-C shape, and explicit limitations | API/RFC review, informed by physical results already recorded |
 | 4 | Resume the physical multi-window acceptance queue below | Prepared named scenarios, clean-run recipes, and a connected iPadOS 27 iPad | Run unchanged scenarios serially on one device; preserve topology failures as inconclusive and keep analog-only rows for a human | Exact mapper plus backend owner evidence on simultaneously usable scenes, lifecycle, close, coexistence, manual views, and shared Trace work | Paused while the physical iPad is unavailable; final parity on iPhone Duo 27.1 |

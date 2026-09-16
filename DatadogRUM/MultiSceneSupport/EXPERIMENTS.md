@@ -11,9 +11,13 @@ Full records through `EXP-142` are frozen in
 New full records belong in the active
 [EXP-143-199 shard](Experiments/EXP-143-199.md). Do not renumber experiments.
 
-Last updated: 2026-09-16
+Last updated: 2026-09-17
 
 ## Current checkpoint
+
+- Next defined slice: `EXP-159`, explicit long-running action start/stop. The
+  current-source audit is complete; implementation, driver/oracle, tests, and
+  runtime acceptance are pending. EXP-158 remains the latest accepted result.
 
 - Latest physical-device attempt is `EXP-157`. `EXP-156` now closes the tooling
   gate: after the earlier connection, unsigned-install, and restricted-context
@@ -89,7 +93,8 @@ Last updated: 2026-09-16
 
 Status describes the contract proved, not whether a diagnostic successfully found
 a defect. Compound status preserves mixed evidence. `PREPARED` means the
-driver/oracle exists but runtime acceptance is pending.
+driver/oracle exists but runtime acceptance is pending. `PLANNED` means the
+contract is defined but implementation and driver/oracle are not yet complete.
 
 ## Current checkpoint and next experiment
 
@@ -133,8 +138,10 @@ This accepts inferred cross-scene Operation attribution while retaining a human
 follow-up for simultaneous on-screen visibility. `EXP-158` then generalizes the
 experimental target and accepts one-shot explicit action routing: explicit A/B
 actions own their requested scene, while an unchanged source-less action still
-uses representative B. Continue the remaining simulator-capable downstream
-target slices while the physical iPad is unavailable. Resume `EXP-129` and the
+uses representative B. The 2026-09-17 current-source routing audit now defines
+EXP-159 for explicit long-running action start/stop before implementation.
+Proceed with that bounded simulator-capable slice while the physical iPad is
+unavailable. Resume `EXP-129` and the
 unchanged physical queue when hardware returns, then prepare the navigation,
 Operation, and shared target shapes for API review. Interactive
 dismissal/cancellation and genuine OS disconnect remain hardware rows. The
@@ -303,6 +310,7 @@ ordered acceptance contract is in
 | EXP-156 | 2026-09-16 | PASS · physical-device tooling | Hardware automation | Two preflights found only a disconnected local-network record. A third passed repeated wired inventories and an `arm64` build; the expected unsigned rejection exposed signing. The restricted-context zero-identity result was false: one of two login-keychain identities matches the installed device profile. A copied app passed strict/deep verification, clean install, and physical launch. | [active record](Experiments/EXP-143-199.md#exp-156--physical-ipad-automation-preflight) |
 | EXP-157 | 2026-09-16 | PASS · physical Operations + backend; INCONCLUSIVE · simultaneous visibility | Operations/hardware | First signed `EXP-131` launch exposed a stale Home fixture before any Operation. With explicit per-scene Home boundaries, the physical retry passes 24/24 across two native scenes; backend contains eight raw steps and four exact reduced Operations with A→B, A→A, B→B ownership and beta-before-alpha completion. Both scenes were full-screen and A was background while B was active, so simultaneous on-screen visibility remains human-gated. | [active record](Experiments/EXP-143-199.md#exp-157--physical-inferred-operation-retry) |
 | EXP-158 | 2026-09-16 | PASS · tests + mapper + backend | Actions/API prototype | The generalized iOS 27 `RUMViewTarget.current(in:)` routes one-shot actions to a requested scene while retaining independent inferred fallback. Run `exp158-sim-66f922ee-19a3-4941-b8ca-c518216e6b0d` passes 9/9: explicit A and B own their requested Home, while a source-A legacy action remains on representative B. Backend session `f67c75b2-e839-4701-a283-7e4355682b6a` confirms the same owners across 30 events. The probe passes 164/164, Objective-C smoke passes 8/8, and the full RUM suite has zero failures. Stable API and long-running actions remain open. | [active record](Experiments/EXP-143-199.md#exp-158--explicit-scene-targeted-one-shot-action) |
+| EXP-159 | 2026-09-17 | PLANNED · source audit | Actions/API prototype | Extend explicit targeting to start/stop without changing the per-view action slot. Prove equal-name A/B reverse completion, a targeted stop on an action-free live view, unavailable-target fallback, and unchanged source-less behavior. Definition precedes implementation; no new runtime or test result yet. | [active record](Experiments/EXP-143-199.md#exp-159--explicit-scene-targeted-long-running-actions) |
 
 ## Simulator-inconclusive and hardware-required evidence
 
