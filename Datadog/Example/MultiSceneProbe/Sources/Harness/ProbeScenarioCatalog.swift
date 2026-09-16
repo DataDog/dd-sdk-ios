@@ -33,7 +33,11 @@ enum ProbeScenarioCatalog {
         "swiftui.semantic-host.optional-capability",
         "swiftui.semantic-host.capability-reconstruction",
         "swiftui.semantic-host.capability-replacement",
+        "swiftui.semantic-host.transient-reader-reattach",
+        "swiftui.semantic-host.final-removal-isolation",
         "swiftui.semantic-host.automatic-fallback",
+        "swiftui.semantic-host.router-stream-adapter",
+        "swiftui.semantic-host.observation-router-adapter",
         "swiftui.coexistence.automatic-keyed-manual-view",
         "swiftui.coexistence.nested-keyed-manual-view",
         "swiftui.coexistence.same-key-manual-two-scenes",
@@ -80,7 +84,11 @@ enum ProbeScenarioCatalog {
         swiftUISemanticHostOptionalCapability,
         swiftUISemanticHostCapabilityReconstruction,
         swiftUISemanticHostCapabilityReplacement,
+        swiftUISemanticHostTransientReaderReattach,
+        swiftUISemanticHostFinalRemovalIsolation,
         swiftUISemanticHostAutomaticFallback,
+        swiftUISemanticHostRouterStreamAdapter,
+        swiftUISemanticHostObservationRouterAdapter,
         swiftUICoexistenceAutomaticKeyedManualView,
         swiftUICoexistenceNestedKeyedManualView,
         swiftUICoexistenceSameKeyManualTwoScenes,
@@ -181,11 +189,14 @@ enum ProbeScenarioCatalog {
         usesExplicitSemanticNavigationHostSPI(scenario)
             || usesCapabilitySemanticNavigationHostSPI(scenario)
             || usesAutomaticSemanticNavigationHostSPI(scenario)
+            || usesEXP147RouterStreamAdapter(scenario)
+            || usesEXP151ObservationRouterAdapter(scenario)
     }
 
     static func usesExplicitSemanticNavigationHostSPI(_ scenario: ProbeScenario) -> Bool {
         scenario.identifier == swiftUISemanticHostExplicitSource.identifier
             || usesExplicitSemanticNavigationPrecedenceSPI(scenario)
+            || usesSemanticNavigationHostLifetimeTestingSPI(scenario)
     }
 
     static func usesExplicitSemanticNavigationPrecedenceSPI(
@@ -212,8 +223,34 @@ enum ProbeScenarioCatalog {
         scenario.identifier == swiftUISemanticHostCapabilityReplacement.identifier
     }
 
+    static func usesSemanticNavigationHostFinalDetachSPI(
+        _ scenario: ProbeScenario
+    ) -> Bool {
+        scenario.identifier == swiftUISemanticHostFinalRemovalIsolation.identifier
+    }
+
+    static func usesSemanticNavigationHostLifetimeTestingSPI(
+        _ scenario: ProbeScenario
+    ) -> Bool {
+        scenario.identifier == swiftUISemanticHostTransientReaderReattach.identifier
+            || usesSemanticNavigationHostFinalDetachSPI(scenario)
+    }
+
     static func usesAutomaticSemanticNavigationHostSPI(_ scenario: ProbeScenario) -> Bool {
         scenario.identifier == swiftUISemanticHostAutomaticFallback.identifier
+    }
+
+    static func usesEXP147RouterStreamAdapter(_ scenario: ProbeScenario) -> Bool {
+        scenario.identifier == swiftUISemanticHostRouterStreamAdapter.identifier
+    }
+
+    static func usesEXP151ObservationRouterAdapter(_ scenario: ProbeScenario) -> Bool {
+        scenario.identifier == swiftUISemanticHostObservationRouterAdapter.identifier
+    }
+
+    static func usesEXP147NavigationFixture(_ scenario: ProbeScenario) -> Bool {
+        usesEXP147RouterStreamAdapter(scenario)
+            || usesEXP151ObservationRouterAdapter(scenario)
     }
 
     static func usesExactSemanticNavigationHostSPI(_ scenario: ProbeScenario) -> Bool {
@@ -1020,6 +1057,32 @@ enum ProbeScenarioCatalog {
         )
     )
 
+    /// EXP-147 replays the same exact-destination oracle through a realistic
+    /// customer router observed once at the container boundary. The ordinary
+    /// screens, navigation methods, NavigationStack, sheet, and cover remain
+    /// unaware of Datadog. Automatic metadata is sufficient for correctness;
+    /// sparse naming overrides are optional and not used by this runtime arm.
+    private static let swiftUISemanticHostRouterStreamAdapter = ProbeScenario(
+        identifier: "swiftui.semantic-host.router-stream-adapter",
+        trackingMode: .navigationOccurrence,
+        layout: .stack,
+        steps: swiftUISemanticAPICompleteDestination.steps,
+        completionConditions: swiftUISemanticAPICompleteDestination.completionConditions,
+        expectedSemanticTimeline: semanticNavigationAPITimeline()
+    )
+
+    /// EXP-151 replays the router-stream oracle without requiring a Combine
+    /// publisher. The host observes the existing `@Observable` router's accepted
+    /// destination synchronously at `.didSet`.
+    private static let swiftUISemanticHostObservationRouterAdapter = ProbeScenario(
+        identifier: "swiftui.semantic-host.observation-router-adapter",
+        trackingMode: .navigationOccurrence,
+        layout: .stack,
+        steps: swiftUISemanticAPICompleteDestination.steps,
+        completionConditions: swiftUISemanticAPICompleteDestination.completionConditions,
+        expectedSemanticTimeline: semanticNavigationAPITimeline()
+    )
+
     /// Supplies a conflicting exact capability on the customer container while
     /// also passing the real source explicitly. The decoy source must never own
     /// a view, and the full explicit-source oracle must remain unchanged.
@@ -1114,6 +1177,257 @@ enum ProbeScenarioCatalog {
         )
     )
 
+    /// Detaches and reattaches the host's actual scene reader synchronously.
+    /// The queued teardown must be cancelled, preserving Detail's occurrence
+    /// and the original source subscription before a later Home commit.
+    private static let swiftUISemanticHostTransientReaderReattach = ProbeScenario(
+        identifier: "swiftui.semantic-host.transient-reader-reattach",
+        trackingMode: .navigationOccurrence,
+        layout: .stack,
+        steps: [
+            ProbeStep(.waitForSceneReady, scene: "scene-A"),
+            ProbeStep(.waitForSignal, scene: "scene-A", signal: "rum-view:home#1"),
+            ProbeStep(.setSwiftUIPath, scene: "scene-A", value: "detail-1"),
+            ProbeStep(.waitForSignal, scene: "scene-A", signal: "destination:detail-1"),
+            ProbeStep(.waitForSignal, scene: "scene-A", signal: "rum-view:detail-1#1"),
+            ProbeStep(.waitForSignal, scene: "scene-A", signal: "marker:task-delayed"),
+            ProbeStep(
+                .emitMarker,
+                scene: "scene-A",
+                value: "semantic-host-before-transient-reattach"
+            ),
+            ProbeStep(.bounceSemanticNavigationHostReader, scene: "scene-A"),
+            ProbeStep(
+                .emitMarker,
+                scene: "scene-A",
+                value: "semantic-host-after-transient-reattach"
+            ),
+            ProbeStep(.setSwiftUIPath, scene: "scene-A", value: "home"),
+            ProbeStep(.waitForSignal, scene: "scene-A", signal: "destination:home"),
+            ProbeStep(.waitForSignal, scene: "scene-A", signal: "rum-view:home#2"),
+            ProbeStep(
+                .emitMarker,
+                scene: "scene-A",
+                value: "semantic-host-after-transient-commit"
+            )
+        ],
+        completionConditions: [
+            ProbeExpectation(.noViewStarted, rumViewOrigin: .automatic),
+            ProbeExpectation(
+                .viewStarted,
+                scene: "scene-A",
+                screen: "detail-1",
+                rumViewOrigin: .semantic,
+                expectedCount: 1
+            ),
+            ProbeExpectation(
+                .viewStopped,
+                scene: "scene-A",
+                screen: "detail-1",
+                rumViewOrigin: .semantic,
+                expectedCount: 1
+            ),
+            ProbeExpectation(
+                .viewStarted,
+                scene: "scene-A",
+                screen: "home",
+                rumViewOrigin: .semantic,
+                expectedCount: 2
+            ),
+            ProbeExpectation(
+                .action,
+                scene: "scene-A",
+                screen: "detail-1",
+                occurrence: 1,
+                name: "semantic-host-after-transient-reattach",
+                sourceScene: "scene-A",
+                sourceScreen: "detail-1",
+                rumViewOrigin: .semantic,
+                ownerViewReferenceAction: "semantic-host-before-transient-reattach",
+                ownerViewRelation: .same
+            ),
+            ProbeExpectation(
+                .resource,
+                scene: "scene-A",
+                screen: "detail-1",
+                occurrence: 1,
+                name: "semantic-host-after-transient-reattach",
+                sourceScene: "scene-A",
+                sourceScreen: "detail-1",
+                rumViewOrigin: .semantic,
+                ownerViewReferenceAction: "semantic-host-before-transient-reattach",
+                ownerViewRelation: .same
+            )
+        ],
+        expectedSemanticTimeline: semanticNavigationHostTransientReattachTimeline()
+    )
+
+    /// Removes scene A's host while scene B remains mounted. Scene A must stop
+    /// its semantic occurrence, release automatic suppression, and unsubscribe
+    /// from the exact source without disturbing scene B's current occurrence.
+    private static let swiftUISemanticHostFinalRemovalIsolation = ProbeScenario(
+        identifier: "swiftui.semantic-host.final-removal-isolation",
+        trackingMode: .navigationOccurrence,
+        layout: .stack,
+        initialWindows: ["scene-A", "scene-B"],
+        requiredCapabilities: [.multipleScenes],
+        steps: [
+            ProbeStep(.waitForSceneReady, scene: "scene-A"),
+            ProbeStep(.openWindow, scene: "scene-A", value: "scene-B"),
+            ProbeStep(.waitForSceneReady, scene: "scene-B"),
+            ProbeStep(.waitForSignal, scene: "scene-A", signal: "rum-view:home#1"),
+            ProbeStep(.waitForSignal, scene: "scene-B", signal: "rum-view:home#1"),
+            ProbeStep(
+                .emitMarker,
+                scene: "scene-B",
+                value: "semantic-host-peer-before-final-removal"
+            ),
+            ProbeStep(
+                .removeSemanticNavigationHost,
+                scene: "scene-A",
+                value: "home#1"
+            ),
+            ProbeStep(
+                .emitMarker,
+                scene: "scene-B",
+                value: "semantic-host-peer-after-final-removal"
+            ),
+            ProbeStep(.setSwiftUIPath, scene: "scene-B", value: "detail-1"),
+            ProbeStep(
+                .waitForSignal,
+                scene: "scene-B",
+                signal: "destination:detail-1"
+            ),
+            ProbeStep(
+                .waitForSignal,
+                scene: "scene-B",
+                signal: "rum-view:detail-1#1"
+            ),
+            ProbeStep(
+                .emitMarker,
+                scene: "scene-B",
+                value: "semantic-host-peer-transition-after-final-removal"
+            ),
+            ProbeStep(.setSwiftUIPath, scene: "scene-A", value: "detail-1"),
+            ProbeStep(.waitForSignal, scene: "scene-A", signal: "destination:detail-1"),
+            ProbeStep(.waitForSignal, scene: "scene-A", signal: "marker:task-delayed"),
+            ProbeStep(
+                .emitMarker,
+                scene: "scene-A",
+                value: "semantic-host-after-final-removal"
+            )
+        ],
+        completionConditions: [
+            ProbeExpectation(
+                .viewStopped,
+                scene: "scene-A",
+                screen: "home",
+                occurrence: 1,
+                rumViewOrigin: .semantic,
+                expectedCount: 1
+            ),
+            ProbeExpectation(
+                .viewStopped,
+                scene: "scene-B",
+                screen: "home",
+                occurrence: 1,
+                rumViewOrigin: .semantic,
+                expectedCount: 1
+            ),
+            ProbeExpectation(
+                .noViewStarted,
+                scene: "scene-A",
+                screen: "detail-1",
+                rumViewOrigin: .semantic
+            ),
+            ProbeExpectation(
+                .noViewStarted,
+                scene: "scene-B",
+                rumViewOrigin: .automatic
+            ),
+            ProbeExpectation(
+                .viewStarted,
+                scene: "scene-B",
+                screen: "detail-1",
+                occurrence: 1,
+                rumViewOrigin: .semantic,
+                expectedCount: 1
+            ),
+            ProbeExpectation(
+                .viewStarted,
+                scene: "scene-A",
+                rumViewOrigin: .automatic
+            ),
+            ProbeExpectation(
+                .action,
+                scene: "scene-B",
+                screen: "home",
+                occurrence: 1,
+                name: "semantic-host-peer-after-final-removal",
+                sourceScene: "scene-B",
+                sourceScreen: "home",
+                rumViewOrigin: .semantic,
+                ownerViewReferenceAction: "semantic-host-peer-before-final-removal",
+                ownerViewRelation: .same
+            ),
+            ProbeExpectation(
+                .resource,
+                scene: "scene-B",
+                screen: "home",
+                occurrence: 1,
+                name: "semantic-host-peer-after-final-removal",
+                sourceScene: "scene-B",
+                sourceScreen: "home",
+                rumViewOrigin: .semantic,
+                ownerViewReferenceAction: "semantic-host-peer-before-final-removal",
+                ownerViewRelation: .same
+            ),
+            ProbeExpectation(
+                .action,
+                scene: "scene-B",
+                screen: "detail-1",
+                occurrence: 1,
+                name: "semantic-host-peer-transition-after-final-removal",
+                sourceScene: "scene-B",
+                sourceScreen: "detail-1",
+                rumViewOrigin: .semantic,
+                ownerViewReferenceAction: "semantic-host-peer-after-final-removal",
+                ownerViewRelation: .different
+            ),
+            ProbeExpectation(
+                .resource,
+                scene: "scene-B",
+                screen: "detail-1",
+                occurrence: 1,
+                name: "semantic-host-peer-transition-after-final-removal",
+                sourceScene: "scene-B",
+                sourceScreen: "detail-1",
+                rumViewOrigin: .semantic,
+                ownerViewReferenceAction: "semantic-host-peer-after-final-removal",
+                ownerViewRelation: .different
+            ),
+            ProbeExpectation(
+                .action,
+                name: "semantic-host-after-final-removal",
+                sourceScene: "scene-A",
+                sourceScreen: "detail-1",
+                rumViewOrigin: .automatic,
+                ownerViewStartedAfterStep: .removeSemanticNavigationHost,
+                ownerViewStartedAfterStepValue: "home#1"
+            ),
+            ProbeExpectation(
+                .resource,
+                name: "semantic-host-after-final-removal",
+                sourceScene: "scene-A",
+                sourceScreen: "detail-1",
+                rumViewOrigin: .automatic,
+                ownerViewStartedAfterStep: .removeSemanticNavigationHost,
+                ownerViewStartedAfterStepValue: "home#1"
+            )
+        ],
+        expectedSemanticTimeline: semanticNavigationHostFinalRemovalTimeline()
+    )
+
     /// Leaves that customer-owned container opaque. The host must keep automatic
     /// discovery enabled, emit no semantic occurrence, and remain useful enough
     /// for ordinary downstream work to have a non-launch automatic owner.
@@ -1153,6 +1467,137 @@ enum ProbeScenarioCatalog {
             ProbeExpectation(.viewStarted, rumViewOrigin: .automatic)
         ]
     )
+
+    private static func semanticNavigationHostTransientReattachTimeline()
+        -> [ProbeExpectation] {
+        [
+            ProbeExpectation(
+                .viewStarted,
+                scene: "scene-A",
+                screen: "home",
+                occurrence: 1,
+                rumViewOrigin: .semantic
+            ),
+            ProbeExpectation(
+                .viewStopped,
+                scene: "scene-A",
+                screen: "home",
+                occurrence: 1,
+                rumViewOrigin: .semantic
+            ),
+            ProbeExpectation(
+                .viewStarted,
+                scene: "scene-A",
+                screen: "detail-1",
+                occurrence: 1,
+                rumViewOrigin: .semantic
+            )
+        ] + semanticMarkerExpectations(
+            screen: "detail-1",
+            occurrence: 1,
+            name: "semantic-host-before-transient-reattach"
+        ) + semanticMarkerExpectations(
+            screen: "detail-1",
+            occurrence: 1,
+            name: "semantic-host-after-transient-reattach"
+        ) + [
+            ProbeExpectation(
+                .viewStopped,
+                scene: "scene-A",
+                screen: "detail-1",
+                occurrence: 1,
+                rumViewOrigin: .semantic
+            ),
+            ProbeExpectation(
+                .viewStarted,
+                scene: "scene-A",
+                screen: "home",
+                occurrence: 2,
+                rumViewOrigin: .semantic
+            )
+        ] + semanticMarkerExpectations(
+            screen: "home",
+            occurrence: 2,
+            name: "semantic-host-after-transient-commit"
+        )
+    }
+
+    private static func semanticNavigationHostFinalRemovalTimeline()
+        -> [ProbeExpectation] {
+        [
+            ProbeExpectation(
+                .viewStarted,
+                scene: "scene-A",
+                screen: "home",
+                occurrence: 1,
+                rumViewOrigin: .semantic
+            ),
+            ProbeExpectation(
+                .viewStarted,
+                scene: "scene-B",
+                screen: "home",
+                occurrence: 1,
+                rumViewOrigin: .semantic
+            )
+        ] + semanticMarkerExpectations(
+            scene: "scene-B",
+            screen: "home",
+            occurrence: 1,
+            name: "semantic-host-peer-before-final-removal"
+        ) + [
+            ProbeExpectation(
+                .viewStopped,
+                scene: "scene-A",
+                screen: "home",
+                occurrence: 1,
+                rumViewOrigin: .semantic
+            )
+        ] + semanticMarkerExpectations(
+            scene: "scene-B",
+            screen: "home",
+            occurrence: 1,
+            name: "semantic-host-peer-after-final-removal"
+        ) + [
+            ProbeExpectation(
+                .viewStopped,
+                scene: "scene-B",
+                screen: "home",
+                occurrence: 1,
+                rumViewOrigin: .semantic
+            ),
+            ProbeExpectation(
+                .viewStarted,
+                scene: "scene-B",
+                screen: "detail-1",
+                occurrence: 1,
+                rumViewOrigin: .semantic
+            )
+        ] + semanticMarkerExpectations(
+            scene: "scene-B",
+            screen: "detail-1",
+            occurrence: 1,
+            name: "semantic-host-peer-transition-after-final-removal"
+        ) + [
+            ProbeExpectation(
+                .action,
+                name: "semantic-host-after-final-removal",
+                sourceScene: "scene-A",
+                sourceScreen: "detail-1",
+                rumViewOrigin: .automatic,
+                ownerViewStartedAfterStep: .removeSemanticNavigationHost,
+                ownerViewStartedAfterStepValue: "home#1"
+            ),
+            ProbeExpectation(
+                .resource,
+                name: "semantic-host-after-final-removal",
+                sourceScene: "scene-A",
+                sourceScreen: "detail-1",
+                rumViewOrigin: .automatic,
+                ownerViewStartedAfterStep: .removeSemanticNavigationHost,
+                ownerViewStartedAfterStepValue: "home#1"
+            )
+        ]
+    }
 
     private static func semanticNavigationAPITimeline(
         initialLifecycleMarkers: [String] = []
@@ -2153,6 +2598,7 @@ enum ProbeScenarioCatalog {
     )
 
     private static func semanticMarkerExpectations(
+        scene: String = "scene-A",
         screen: String,
         occurrence: Int,
         name: String
@@ -2160,21 +2606,21 @@ enum ProbeScenarioCatalog {
         [
             ProbeExpectation(
                 .action,
-                scene: "scene-A",
+                scene: scene,
                 screen: screen,
                 occurrence: occurrence,
                 name: name,
-                sourceScene: "scene-A",
+                sourceScene: scene,
                 sourceScreen: screen,
                 rumViewOrigin: .semantic
             ),
             ProbeExpectation(
                 .resource,
-                scene: "scene-A",
+                scene: scene,
                 screen: screen,
                 occurrence: occurrence,
                 name: name,
-                sourceScene: "scene-A",
+                sourceScene: scene,
                 sourceScreen: screen,
                 rumViewOrigin: .semantic
             )

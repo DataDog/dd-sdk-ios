@@ -33,6 +33,8 @@ enum ProbeStepKind: String, Codable, CaseIterable {
     case succeedOperation = "succeed-operation"
     case failOperation = "fail-operation"
     case disconnectRetainedReader = "disconnect-retained-reader"
+    case bounceSemanticNavigationHostReader = "bounce-semantic-navigation-host-reader"
+    case removeSemanticNavigationHost = "remove-semantic-navigation-host"
     case waitForSignal = "wait-for-signal"
 }
 
@@ -115,6 +117,9 @@ enum ProbeSemanticHostContract {
         "semantic-host-capability-reconstructed"
     static let capabilityReplacedAssertion =
         "semantic-host-capability-replaced"
+    static let transientReaderReattachedAssertion =
+        "semantic-host-transient-reader-reattached"
+    static let finalDetachedAssertion = "semantic-host-final-detached"
     static let conflictingCapabilityScreen = "semantic-capability-decoy"
     static let conflictingCapabilityViewName = "ProbeSemanticCapabilityDecoyView"
 }

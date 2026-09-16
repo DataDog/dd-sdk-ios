@@ -33,6 +33,37 @@ private enum ProbeNavigationOccurrence: Hashable {
     case splitPlaceholder
 }
 
+@MainActor
+private final class ProbeEXP147AttributeContext: ObservableObject {
+    private let window: ProbeWindow
+    private var sceneSessionID: String
+
+    init(window: ProbeWindow, sceneSessionID: String) {
+        self.window = window
+        self.sceneSessionID = sceneSessionID
+    }
+
+    func update(sceneSessionID: String) {
+        self.sceneSessionID = sceneSessionID
+    }
+
+    func attributes(
+        for state: EXP147NavigationState
+    ) -> [String: Encodable] {
+        let screen = EXP147ProbeSemantics.screen(for: state)
+        return [
+            ProbeRuntime.Attribute.runID: window.runID,
+            ProbeRuntime.Attribute.host: "exp147-observed-router-adapter",
+            ProbeRuntime.Attribute.sourceScene: window.label,
+            ProbeRuntime.Attribute.sceneSessionID: sceneSessionID,
+            ProbeRuntime.Attribute.screen: screen,
+            ProbeRuntime.Attribute.viewScene: window.label,
+            ProbeRuntime.Attribute.viewSceneSessionID: sceneSessionID,
+            ProbeRuntime.Attribute.viewScreen: screen
+        ]
+    }
+}
+
 /// Keeps the experimental type-erased transition source stable while SwiftUI
 /// reconstructs `ProbeWindowRoot`. The `Any` storage lets the probe keep its
 /// iOS 15 deployment target while exposing the iOS 27 source only behind an
@@ -65,6 +96,37 @@ private final class ProbeSemanticNavigationTransitionDriver {
         transitions.commit(id: id)
     }
 }
+
+#if DEBUG
+/// Drives the real semantic-host reader in the probe without adding customer
+/// API for synthetic lifecycle control.
+@MainActor
+private final class ProbeSemanticNavigationHostLifetimeControl {
+    private weak var reader: RUMSceneIdentifierReader.ObserverView?
+    private(set) var finalDetachCount = 0
+
+    func capture(reader: RUMSceneIdentifierReader.ObserverView) {
+        self.reader = reader
+    }
+
+    func bounceReader(in sceneIdentifier: String) -> Bool {
+        guard let reader else {
+            return false
+        }
+        reader.notify(attachment: .detached)
+        reader.notify(
+            attachment: .attached(
+                RUMSceneIdentifier(rawValue: sceneIdentifier)
+            )
+        )
+        return true
+    }
+
+    func didFinalDetach() {
+        finalDetachCount += 1
+    }
+}
+#endif
 
 private enum ProbeSemanticNavigationCapabilityLifetimeMode {
     case stable
@@ -599,6 +661,15 @@ struct ProbeWindowRoot: View {
                 : .stable
         self.window = normalizedWindow
         self._path = State(initialValue: initialPath)
+        self._exp147Router = StateObject(
+            wrappedValue: EXP147NavigationRouter(flow: .messages)
+        )
+        self._exp147AttributeContext = StateObject(
+            wrappedValue: ProbeEXP147AttributeContext(
+                window: normalizedWindow,
+                sceneSessionID: "unresolved"
+            )
+        )
         self._semanticTransitionDriver = State(
             initialValue: semanticTransitionDriver
         )
@@ -635,6 +706,8 @@ struct ProbeWindowRoot: View {
     @Environment(\.scenePhase)
     private var scenePhase
     @State private var path: [ProbeRoute] = []
+    @StateObject private var exp147Router: EXP147NavigationRouter
+    @StateObject private var exp147AttributeContext: ProbeEXP147AttributeContext
     @State private var navigationMutation: UInt64 = 0
     @State private var rumViewBindingGeneration: UInt64 = 0
     @State private var homeBindingGeneration: UInt64 = 0
@@ -645,6 +718,10 @@ struct ProbeWindowRoot: View {
         ProbeSemanticNavigationTransitionDriver
     @State private var observedSemanticNavigationCapability:
         ProbeObservedSemanticNavigationCapability
+#if DEBUG
+    @State private var semanticNavigationHostLifetimeControl =
+        ProbeSemanticNavigationHostLifetimeControl()
+#endif
     @State private var splitSelection: ProbeSplitSelection? =
         ProbeRuntime.startsSplitWithoutSelection ? nil : .detail(1)
     @State private var splitRUMViewBindingGeneration: UInt64 = 1
@@ -672,6 +749,7 @@ struct ProbeWindowRoot: View {
     @State private var didScheduleDetailInstanceReplacement = false
     @State private var didScheduleSyntheticReaderDisconnect = false
     @State private var didRecordSemanticRouterDecision = false
+    @State private var isSemanticNavigationHostMounted = true
 
     var body: some View {
         Group {
@@ -1070,7 +1148,76 @@ struct ProbeWindowRoot: View {
 
     @ViewBuilder
     private var navigationStack: some View {
+#if DEBUG
+        if #available(iOS 27.0, *), ProbeRuntime.usesEXP151ObservationRouterAdapter {
+            EXP151RuntimeProbeView(
+                router: exp147Router,
+                attributesForState: exp147AttributeContext.attributes(for:)
+            )
+        } else if #available(iOS 27.0, *), ProbeRuntime.usesEXP147RouterStreamAdapter {
+            EXP147RuntimeProbeView(
+                router: exp147Router,
+                attributesForState: exp147AttributeContext.attributes(for:)
+            )
+        } else if
+            #available(iOS 27.0, *),
+            ProbeRuntime.usesSemanticNavigationHostLifetimeTestingSPI,
+            isSemanticNavigationHostMounted
+        {
+            RUMNavigationHost(
+                transitions: semanticTransitionDriver.transitions,
+                testingOnLifetimeReaderCreate: { reader in
+                    semanticNavigationHostLifetimeControl.capture(reader: reader)
+                },
+                testingOnFinalDetach: {
+                    semanticNavigationHostLifetimeControl.didFinalDetach()
+                    let detachCount =
+                        semanticNavigationHostLifetimeControl.finalDetachCount
+                    ProbeRuntime.eventRecorder.record(
+                        ProbeSignal(
+                            kind: .assertion,
+                            semanticContext: ProbeSemanticContext(
+                                logicalSceneID: window.label,
+                                nativeSceneID: sceneSessionID,
+                                screen: currentSceneScreen
+                            ),
+                            name: ProbeSemanticHostContract.finalDetachedAssertion,
+                            result: detachCount == 1 ? .pass : .fail,
+                            reason: "final-detach-count=\(detachCount)"
+                        )
+                    )
+                }
+            ) {
+                standardNavigationStack
+            }
+        } else {
+            regularNavigationStack
+        }
+#else
+        if #available(iOS 27.0, *), ProbeRuntime.usesEXP151ObservationRouterAdapter {
+            EXP151RuntimeProbeView(
+                router: exp147Router,
+                attributesForState: exp147AttributeContext.attributes(for:)
+            )
+        } else if #available(iOS 27.0, *), ProbeRuntime.usesEXP147RouterStreamAdapter {
+            EXP147RuntimeProbeView(
+                router: exp147Router,
+                attributesForState: exp147AttributeContext.attributes(for:)
+            )
+        } else {
+            regularNavigationStack
+        }
+#endif
+    }
+
+    @ViewBuilder
+    private var regularNavigationStack: some View {
         if
+            ProbeRuntime.usesSemanticNavigationHostFinalDetachSPI,
+            !isSemanticNavigationHostMounted
+        {
+            standardNavigationStack
+        } else if
             #available(iOS 27.0, *),
             ProbeRuntime.usesExplicitSemanticNavigationPrecedenceSPI
         {
@@ -1397,6 +1544,9 @@ struct ProbeWindowRoot: View {
     }
 
     private var currentSceneScreen: String {
+        if ProbeRuntime.usesEXP147NavigationFixture {
+            return EXP147ProbeSemantics.screen(for: exp147Router.state)
+        }
         if ProbeRuntime.usesSplitSelectionLayout {
             return splitSelection?.screen ?? "split-empty"
         }
@@ -1413,6 +1563,9 @@ struct ProbeWindowRoot: View {
     }
 
     private var currentSceneRoute: [String] {
+        if ProbeRuntime.usesEXP147NavigationFixture {
+            return EXP147ProbeSemantics.route(for: exp147Router.state)
+        }
         if ProbeRuntime.usesSplitSelectionLayout {
             return splitSelection.map { [$0.screen] } ?? []
         }
@@ -1460,6 +1613,114 @@ struct ProbeWindowRoot: View {
                 }
             }
         )
+    }
+
+    private func setEXP147Path(_ value: String) -> ProbeStepExecutionResult {
+        let previousRoute = currentSceneRoute
+        switch value {
+        case "home":
+            exp147Router.popToRoot()
+        case "detail-1":
+            exp147Router.setPath([.thread(1)])
+        case "detail-2":
+            exp147Router.setPath([.thread(2)])
+        case "alternate":
+            exp147Router.setPath([.mentions])
+        default:
+            return .rejected(reason: "unsupported EXP-147 path \(value)")
+        }
+        recordEXP147NavigationMutation(previousRoute: previousRoute)
+        return .accepted
+    }
+
+    private func setEXP147Presentation(
+        _ value: String
+    ) -> ProbeStepExecutionResult {
+        let previousRoute = currentSceneRoute
+        let dismissedScreen = exp147Router.state.presentation.map {
+            EXP147ProbeSemantics.screen(
+                for: EXP147NavigationState(
+                    flow: exp147Router.state.flow,
+                    path: exp147Router.state.path,
+                    presentation: $0
+                )
+            )
+        }
+        switch value {
+        case "sheet":
+            exp147Router.present(.compose)
+        case "full-screen-cover":
+            exp147Router.present(.attachment(1))
+        case "home":
+            exp147Router.dismissPresentation()
+        default:
+            return .rejected(
+                reason: "unsupported EXP-147 presentation \(value)"
+            )
+        }
+        recordEXP147NavigationMutation(previousRoute: previousRoute)
+
+        if value == "home", let dismissedScreen {
+            emitEXP147DismissalMarkers(dismissedScreen: dismissedScreen)
+        }
+        return .accepted
+    }
+
+    private func recordEXP147NavigationMutation(previousRoute: [String]) {
+        navigationMutation &+= 1
+        updateSceneRoute()
+        ProbeRuntime.eventRecorder.record(
+            ProbeSignal(
+                kind: .navigationPathMutation,
+                semanticContext: ProbeSemanticContext(
+                    logicalSceneID: window.label,
+                    nativeSceneID: sceneSessionID,
+                    screen: currentSceneScreen
+                ),
+                previousNavigationPath: previousRoute,
+                navigationPath: currentSceneRoute,
+                mutation: navigationMutation
+            )
+        )
+        ProbeRuntime.recordDestination(
+            window: window,
+            sceneSessionID: sceneSessionID,
+            screen: currentSceneScreen,
+            isCommitted: true
+        )
+        ProbeRuntime.record(
+            "EXP-147 router state accepted source=\(window.label) "
+                + "screen=\(currentSceneScreen) mutation=\(navigationMutation)"
+        )
+    }
+
+    private func emitEXP147DismissalMarkers(dismissedScreen: String) {
+        let revealedScreen = currentSceneScreen
+        let immediatePhase = "\(dismissedScreen)-dismissed-immediate"
+        let settledPhase = "\(dismissedScreen)-dismissed-settled"
+        ProbeRuntime.emitLifecycleMarker(
+            window: window,
+            sceneSessionID: sceneSessionID,
+            screen: revealedScreen,
+            phase: immediatePhase
+        )
+        Task { @MainActor in
+            await Task.yield()
+            try? await Task.sleep(for: .milliseconds(250))
+            guard
+                !Task.isCancelled,
+                exp147Router.state.presentation == nil,
+                currentSceneScreen == revealedScreen
+            else {
+                return
+            }
+            ProbeRuntime.emitLifecycleMarker(
+                window: window,
+                sceneSessionID: sceneSessionID,
+                screen: revealedScreen,
+                phase: settledPhase
+            )
+        }
     }
 
     private func setSwiftUIPresentation(_ presentation: ProbeSwiftUIPresentation?) {
@@ -1975,6 +2236,7 @@ struct ProbeWindowRoot: View {
         sceneHandle = handle
         if sceneSessionID != identifier {
             sceneSessionID = identifier
+            exp147AttributeContext.update(sceneSessionID: identifier)
             advanceCurrentRUMViewBindingGeneration()
         }
 
@@ -2082,6 +2344,9 @@ struct ProbeWindowRoot: View {
                 guard let value = step.value else {
                     return .rejected(reason: "SwiftUI path is missing")
                 }
+                if ProbeRuntime.usesEXP147NavigationFixture {
+                    return setEXP147Path(value)
+                }
                 switch value {
                 case "home":
                     pathBinding.wrappedValue = []
@@ -2097,6 +2362,9 @@ struct ProbeWindowRoot: View {
             case .setSwiftUIPresentation:
                 guard let value = step.value else {
                     return .rejected(reason: "SwiftUI presentation is missing")
+                }
+                if ProbeRuntime.usesEXP147NavigationFixture {
+                    return setEXP147Presentation(value)
                 }
                 switch value {
                 case "sheet":
@@ -2138,6 +2406,62 @@ struct ProbeWindowRoot: View {
                         reason: "unsupported keyed manual view \(step.value ?? "nil")"
                     )
                 }
+#if DEBUG
+            case .bounceSemanticNavigationHostReader:
+                guard
+                    ProbeRuntime.usesSemanticNavigationHostLifetimeTestingSPI,
+                    isSemanticNavigationHostMounted
+                else {
+                    return .rejected(
+                        reason: "semantic navigation host reader is unavailable"
+                    )
+                }
+                let detachCount = semanticNavigationHostLifetimeControl.finalDetachCount
+                guard semanticNavigationHostLifetimeControl.bounceReader(
+                    in: handle.nativeSceneID
+                ) else {
+                    return .rejected(
+                        reason: "semantic navigation host reader is unresolved"
+                    )
+                }
+                DispatchQueue.main.async {
+                    let didRemainMounted =
+                        semanticNavigationHostLifetimeControl.finalDetachCount
+                            == detachCount
+                    ProbeRuntime.eventRecorder.record(
+                        ProbeSignal(
+                            kind: .assertion,
+                            semanticContext: ProbeSemanticContext(
+                                logicalSceneID: logicalSceneID,
+                                nativeSceneID: handle.nativeSceneID,
+                                screen: currentSceneScreen
+                            ),
+                            name: ProbeSemanticHostContract
+                                .transientReaderReattachedAssertion,
+                            result: didRemainMounted ? .pass : .fail,
+                            reason: didRemainMounted
+                                ? "reader reattached before queued final detach"
+                                : "transient reader detach finalized the host"
+                        )
+                    )
+                }
+            case .removeSemanticNavigationHost:
+                guard
+                    ProbeRuntime.usesSemanticNavigationHostFinalDetachSPI,
+                    isSemanticNavigationHostMounted
+                else {
+                    return .rejected(
+                        reason: "semantic navigation host is not mounted"
+                    )
+                }
+                isSemanticNavigationHostMounted = false
+#else
+            case .bounceSemanticNavigationHostReader,
+                 .removeSemanticNavigationHost:
+                return .rejected(
+                    reason: "semantic navigation host lifetime control requires DEBUG"
+                )
+#endif
             case .pushAndRevertSwiftUIPath:
                 guard step.value == "detail-1" else {
                     return .rejected(

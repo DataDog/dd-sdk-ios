@@ -222,6 +222,31 @@ internal final class ProbeScenarioDriver {
                     occurrence: occurrence
                 ) == viewID
             }
+            if value.hasPrefix("rum-view-stopped:") {
+                let destination = String(
+                    value.dropFirst("rum-view-stopped:".count)
+                )
+                let components = destination.split(
+                    separator: "#",
+                    maxSplits: 1
+                )
+                guard
+                    let scene,
+                    let screen = components.first.map(String.init),
+                    components.count == 2,
+                    let occurrence = Int(components[1]),
+                    signal.kind == .rumViewSnapshot,
+                    signal.rumContext?.viewActive == false,
+                    let viewID = signal.rumContext?.viewID
+                else {
+                    return false
+                }
+                return ProbeSemanticTimeline(signals: recordedSignals).viewID(
+                    scene: scene,
+                    screen: screen,
+                    occurrence: occurrence
+                ) == viewID
+            }
             if value.hasPrefix("trace:") {
                 return signal.kind == .rumTrace
                     && signal.evidenceSource == .traceMapper
@@ -908,6 +933,71 @@ internal final class ProbeScenarioDriver {
                 )
             }
             return .acknowledged(signal)
+
+        case .bounceSemanticNavigationHostReader:
+            guard let scene = step.scene else {
+                return .failed("scene is missing")
+            }
+            if case .rejected(let reason) = executeOnExactScene(
+                step,
+                scene: scene
+            ) {
+                return .failed(reason)
+            }
+            guard let signal = await wait(
+                for: .encoded(
+                    scene: scene,
+                    value: "assertion:"
+                        + ProbeSemanticHostContract.transientReaderReattachedAssertion
+                ),
+                after: commandSequence,
+                timeoutNanoseconds: stepTimeoutNanoseconds
+            ) else {
+                return .failed(
+                    "timed out waiting for semantic host reader reattachment in \(scene)"
+                )
+            }
+            return .acknowledged(signal)
+
+        case .removeSemanticNavigationHost:
+            guard
+                let scene = step.scene,
+                let occurrence = step.value
+            else {
+                return .failed("scene or semantic view occurrence is missing")
+            }
+            if case .rejected(let reason) = executeOnExactScene(
+                step,
+                scene: scene
+            ) {
+                return .failed(reason)
+            }
+            guard await wait(
+                for: .encoded(
+                    scene: scene,
+                    value: "assertion:"
+                        + ProbeSemanticHostContract.finalDetachedAssertion
+                ),
+                after: commandSequence,
+                timeoutNanoseconds: stepTimeoutNanoseconds
+            ) != nil else {
+                return .failed(
+                    "timed out waiting for semantic host final detach in \(scene)"
+                )
+            }
+            guard let stopped = await wait(
+                for: .encoded(
+                    scene: scene,
+                    value: "rum-view-stopped:\(occurrence)"
+                ),
+                after: commandSequence,
+                timeoutNanoseconds: stepTimeoutNanoseconds
+            ) else {
+                return .failed(
+                    "timed out waiting for semantic view \(occurrence) to stop in \(scene)"
+                )
+            }
+            return .acknowledged(stopped)
 
         case .startOperation, .succeedOperation, .failOperation:
             guard

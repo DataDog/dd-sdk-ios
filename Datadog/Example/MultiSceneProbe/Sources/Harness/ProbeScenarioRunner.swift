@@ -554,7 +554,10 @@ enum ProbeScenarioRunner {
                         "scenario \(scenario.identifier) open-window uses undeclared scene \(scene)"
                     )
                 }
-            case .activateWindow, .closeWindow, .releaseSwiftUIButtonStructuredTask:
+            case .activateWindow,
+                 .closeWindow,
+                 .releaseSwiftUIButtonStructuredTask,
+                 .bounceSemanticNavigationHostReader:
                 guard let scene = normalized(step.scene) else {
                     errors.append(
                         "scenario \(scenario.identifier) \(step.kind.rawValue) requires a scene"
@@ -564,6 +567,25 @@ enum ProbeScenarioRunner {
                 if !scenario.initialWindows.contains(scene) {
                     errors.append(
                         "scenario \(scenario.identifier) \(step.kind.rawValue) uses undeclared scene \(scene)"
+                    )
+                }
+            case .removeSemanticNavigationHost:
+                guard
+                    let scene = normalized(step.scene),
+                    let occurrence = normalized(step.value),
+                    occurrence.split(separator: "#", maxSplits: 1).count == 2,
+                    Int(occurrence.split(separator: "#", maxSplits: 1)[1]) != nil
+                else {
+                    errors.append(
+                        "scenario \(scenario.identifier) remove-semantic-navigation-host "
+                            + "requires a scene and screen#occurrence value"
+                    )
+                    continue
+                }
+                if !scenario.initialWindows.contains(scene) {
+                    errors.append(
+                        "scenario \(scenario.identifier) remove-semantic-navigation-host "
+                            + "uses undeclared scene \(scene)"
                     )
                 }
             case .startOperation, .succeedOperation, .failOperation:

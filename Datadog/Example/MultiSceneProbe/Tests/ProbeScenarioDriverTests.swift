@@ -2210,6 +2210,119 @@ final class ProbeScenarioDriverTests: XCTestCase {
         )
     }
 
+    func testDrivesSemanticHostReaderBounceAndWaitsForExactFinalViewStop()
+        async throws {
+        let recorder = ProbeEventRecorder(
+            runID: "driver-semantic-host-lifetime",
+            scenarioID: "driver-semantic-host-lifetime",
+            sink: { _ in }
+        )
+        let registry = ProbeSceneRegistry()
+        let window = UIWindow()
+        let handle = try registeredHandle(
+            registry.register(
+                logicalSceneID: "scene-A",
+                nativeSceneID: "native-A",
+                window: window,
+                currentRoute: ["home"]
+            )
+        )
+        XCTAssertNotNil(registry.markReady(handle))
+        recorder.record(
+            viewSignal(
+                id: "home-1",
+                screen: "home",
+                active: true,
+                documentVersion: 1
+            )
+        )
+
+        var invocations: [ProbeStepKind] = []
+        let executor = ProbeSceneStepExecutor()
+        executor.configure(handle: handle) { step in
+            invocations.append(step.kind)
+            switch step.kind {
+            case .bounceSemanticNavigationHostReader:
+                recorder.record(
+                    ProbeSignal(
+                        kind: .assertion,
+                        semanticContext: self.semanticContext(screen: "home"),
+                        name: ProbeSemanticHostContract
+                            .transientReaderReattachedAssertion,
+                        result: .pass
+                    )
+                )
+            case .removeSemanticNavigationHost:
+                recorder.record(
+                    ProbeSignal(
+                        kind: .assertion,
+                        semanticContext: self.semanticContext(screen: "home"),
+                        name: ProbeSemanticHostContract.finalDetachedAssertion,
+                        result: .pass
+                    )
+                )
+                recorder.record(
+                    self.viewSignal(
+                        id: "home-1",
+                        screen: "home",
+                        active: false,
+                        documentVersion: 2
+                    )
+                )
+            default:
+                return .rejected(reason: "unsupported step")
+            }
+            return .accepted
+        }
+
+        let driver = ProbeScenarioDriver(
+            scenario: ProbeScenario(
+                identifier: "driver-semantic-host-lifetime",
+                trackingMode: .navigationOccurrence,
+                layout: .stack,
+                steps: [
+                    ProbeStep(
+                        .bounceSemanticNavigationHostReader,
+                        scene: "scene-A"
+                    ),
+                    ProbeStep(
+                        .removeSemanticNavigationHost,
+                        scene: "scene-A",
+                        value: "home#1"
+                    )
+                ],
+                completionConditions: [],
+                expectedSemanticTimeline: []
+            ),
+            recorder: recorder,
+            sceneRegistry: registry,
+            stepTimeoutNanoseconds: 100_000_000,
+            terminalTimeoutNanoseconds: 100_000_000
+        )
+        driver.register(handle: handle, executor: executor)
+        driver.startIfNeeded()
+
+        let completedResult = await driver.waitUntilFinished()
+        let result = try XCTUnwrap(completedResult)
+
+        XCTAssertEqual(result.state, .pass)
+        XCTAssertEqual(
+            invocations,
+            [.bounceSemanticNavigationHostReader, .removeSemanticNavigationHost]
+        )
+        let acknowledgements = recorder.snapshot().filter {
+            $0.kind == .stepAcknowledged
+        }
+        XCTAssertEqual(acknowledgements.count, 2)
+        XCTAssertEqual(
+            acknowledgements.last?.acknowledgedSignalSequence,
+            recorder.snapshot().last(where: {
+                $0.kind == .rumViewSnapshot
+                    && $0.rumContext?.viewActive == false
+            })?.sequence
+        )
+    }
+
     private func scenario(named identifier: String) throws -> ProbeScenario {
         try XCTUnwrap(
             ProbeScenarioCatalog.scenario(identifier: identifier),

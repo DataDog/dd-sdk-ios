@@ -57,7 +57,11 @@ final class ProbeScenarioRunnerTests: XCTestCase {
                 "swiftui.semantic-host.optional-capability",
                 "swiftui.semantic-host.capability-reconstruction",
                 "swiftui.semantic-host.capability-replacement",
+                "swiftui.semantic-host.transient-reader-reattach",
+                "swiftui.semantic-host.final-removal-isolation",
                 "swiftui.semantic-host.automatic-fallback",
+                "swiftui.semantic-host.router-stream-adapter",
+                "swiftui.semantic-host.observation-router-adapter",
                 "swiftui.coexistence.automatic-keyed-manual-view",
                 "swiftui.coexistence.nested-keyed-manual-view",
                 "swiftui.coexistence.same-key-manual-two-scenes",
@@ -629,6 +633,203 @@ final class ProbeScenarioRunnerTests: XCTestCase {
         })
     }
 
+    func testEXP147RouterStreamAdapterUsesTheCompleteSemanticOracle() throws {
+        let scenario = try XCTUnwrap(
+            ProbeScenarioCatalog.scenario(
+                identifier: "swiftui.semantic-host.router-stream-adapter"
+            )
+        )
+        let completeDestination = try XCTUnwrap(
+            ProbeScenarioCatalog.scenario(
+                identifier: "swiftui.semantic-api.complete-destination"
+            )
+        )
+
+        XCTAssertEqual(scenario.trackingMode, .navigationOccurrence)
+        XCTAssertTrue(ProbeScenarioCatalog.usesObservableDriver(scenario))
+        XCTAssertTrue(ProbeScenarioCatalog.usesSemanticNavigationHostSPI(scenario))
+        XCTAssertTrue(ProbeScenarioCatalog.usesEXP147RouterStreamAdapter(scenario))
+        XCTAssertFalse(ProbeScenarioCatalog.usesExplicitSemanticNavigationHostSPI(scenario))
+        XCTAssertFalse(ProbeScenarioCatalog.usesCapabilitySemanticNavigationHostSPI(scenario))
+        XCTAssertFalse(ProbeScenarioCatalog.usesExactSemanticNavigationHostSPI(scenario))
+        XCTAssertFalse(ProbeScenarioCatalog.usesAutomaticSemanticNavigationHostSPI(scenario))
+        XCTAssertFalse(ProbeScenarioCatalog.usesSemanticNavigationSPI(scenario))
+        XCTAssertEqual(scenario.steps, completeDestination.steps)
+        XCTAssertEqual(
+            scenario.completionConditions,
+            completeDestination.completionConditions
+        )
+        XCTAssertEqual(
+            scenario.expectedSemanticTimeline,
+            completeDestination.expectedSemanticTimeline
+        )
+    }
+
+    func testEXP151ObservationRouterAdapterUsesTheCompleteSemanticOracle() throws {
+        let scenario = try XCTUnwrap(
+            ProbeScenarioCatalog.scenario(
+                identifier: "swiftui.semantic-host.observation-router-adapter"
+            )
+        )
+        let completeDestination = try XCTUnwrap(
+            ProbeScenarioCatalog.scenario(
+                identifier: "swiftui.semantic-api.complete-destination"
+            )
+        )
+
+        XCTAssertEqual(scenario.trackingMode, .navigationOccurrence)
+        XCTAssertTrue(ProbeScenarioCatalog.usesObservableDriver(scenario))
+        XCTAssertTrue(ProbeScenarioCatalog.usesSemanticNavigationHostSPI(scenario))
+        XCTAssertTrue(ProbeScenarioCatalog.usesEXP151ObservationRouterAdapter(scenario))
+        XCTAssertTrue(ProbeScenarioCatalog.usesEXP147NavigationFixture(scenario))
+        XCTAssertFalse(ProbeScenarioCatalog.usesEXP147RouterStreamAdapter(scenario))
+        XCTAssertFalse(ProbeScenarioCatalog.usesExplicitSemanticNavigationHostSPI(scenario))
+        XCTAssertFalse(ProbeScenarioCatalog.usesCapabilitySemanticNavigationHostSPI(scenario))
+        XCTAssertFalse(ProbeScenarioCatalog.usesExactSemanticNavigationHostSPI(scenario))
+        XCTAssertFalse(ProbeScenarioCatalog.usesAutomaticSemanticNavigationHostSPI(scenario))
+        XCTAssertFalse(ProbeScenarioCatalog.usesSemanticNavigationSPI(scenario))
+        XCTAssertEqual(scenario.steps, completeDestination.steps)
+        XCTAssertEqual(
+            scenario.completionConditions,
+            completeDestination.completionConditions
+        )
+        XCTAssertEqual(
+            scenario.expectedSemanticTimeline,
+            completeDestination.expectedSemanticTimeline
+        )
+    }
+
+    @MainActor
+    func testEXP147RouterGrowthUsesGenericProbeSemantics() {
+        let router = EXP147NavigationRouter(flow: .messages)
+
+        router.push(.scheduledMessages)
+        XCTAssertEqual(
+            EXP147ProbeSemantics.route(for: router.state),
+            ["home", "scheduled-messages"]
+        )
+
+        router.present(.compose)
+        XCTAssertEqual(
+            EXP147ProbeSemantics.route(for: router.state),
+            ["home", "scheduled-messages", "sheet"]
+        )
+
+        router.dismissPresentation()
+        XCTAssertEqual(
+            EXP147ProbeSemantics.route(for: router.state),
+            ["home", "scheduled-messages"]
+        )
+    }
+
+    func testEXP147MigrationFixtureKeepsCustomerNavigationUninstrumented() throws {
+        let projectDirectory = URL(fileURLWithPath: #filePath)
+            .deletingLastPathComponent()
+            .deletingLastPathComponent()
+        let fixtureDirectory = projectDirectory
+            .appendingPathComponent("Sources/EXP147MigrationFixture")
+        let customerFiles = [
+            "EXP147NavigationModel.swift",
+            "EXP147ScreenScaffold.swift",
+            "EXP147MessagingScreens.swift",
+            "EXP147NotesScreens.swift",
+            "EXP147SettingsScreens.swift",
+            "EXP147PresentationScreens.swift",
+            "EXP147BaselineNavigation.swift"
+        ]
+
+        for file in customerFiles {
+            let source = try String(
+                contentsOf: fixtureDirectory.appendingPathComponent(file),
+                encoding: .utf8
+            )
+            XCTAssertFalse(source.contains("import DatadogRUM"), file)
+            XCTAssertFalse(source.contains("RUMNavigationHost"), file)
+            XCTAssertFalse(source.contains("RUMNavigationTransitions"), file)
+            XCTAssertFalse(source.contains("willNavigate("), file)
+            XCTAssertFalse(source.contains("commit(id:"), file)
+        }
+
+        let routerSource = try String(
+            contentsOf: fixtureDirectory
+                .appendingPathComponent("EXP147NavigationModel.swift"),
+            encoding: .utf8
+        )
+        XCTAssertEqual(
+            routerSource.components(separatedBy: "\n    func ").count - 1,
+            12,
+            "The fixture's twelve customer navigation methods must stay RUM-free"
+        )
+
+        let navigationSource = try String(
+            contentsOf: fixtureDirectory
+                .appendingPathComponent("EXP147BaselineNavigation.swift"),
+            encoding: .utf8
+        )
+        XCTAssertTrue(navigationSource.contains("NavigationStack(path: router.path)"))
+        XCTAssertTrue(navigationSource.contains(".sheet(item: router.sheet)"))
+        XCTAssertTrue(
+            navigationSource.contains(
+                ".fullScreenCover(item: router.fullScreenCover)"
+            )
+        )
+        XCTAssertTrue(
+            navigationSource.contains("struct EXP147NativeSwiftUIContainer")
+        )
+        XCTAssertTrue(
+            navigationSource.contains("struct EXP147OpaqueThirdPartyContainer")
+        )
+
+        let adapterSource = try String(
+            contentsOf: fixtureDirectory
+                .appendingPathComponent("EXP147RouterStreamAdapter.swift"),
+            encoding: .utf8
+        )
+        XCTAssertFalse(
+            adapterSource.contains("scheduledMessages"),
+            "Adding the growth route must not add adapter-specific code"
+        )
+        XCTAssertFalse(
+            adapterSource.contains("shareThread"),
+            "Adding the growth presentation must not add adapter-specific code"
+        )
+        XCTAssertFalse(adapterSource.contains("willNavigate("))
+        XCTAssertFalse(adapterSource.contains("commit(id:"))
+        XCTAssertTrue(adapterSource.contains("observing: router.statePublisher"))
+        XCTAssertTrue(
+            adapterSource.contains("observingCurrentDestination:"),
+            "The Observation candidate must remain one boundary projection"
+        )
+        let compositionSource = try String(
+            contentsOf: fixtureDirectory
+                .appendingPathComponent("EXP147InstrumentedComposition.swift"),
+            encoding: .utf8
+        )
+        XCTAssertTrue(compositionSource.contains(".overriding("))
+        XCTAssertTrue(compositionSource.contains("EXP147Route.preferences"))
+        XCTAssertTrue(
+            compositionSource.contains("name: \"Account preferences\""),
+            "The sparse override must be observably different from automatic naming"
+        )
+        XCTAssertTrue(
+            compositionSource.contains("EXP147FallbackInstrumentedApplication")
+        )
+        XCTAssertEqual(
+            compositionSource
+                .components(separatedBy: "EXP147RUMRouterBoundary(")
+                .count - 1,
+            3,
+            "Exact tracking should add one boundary per observable router"
+        )
+        XCTAssertEqual(
+            compositionSource
+                .components(separatedBy: "RUMNavigationHost {")
+                .count - 1,
+            2,
+            "Native and opaque arms should each use one automatic fallback boundary"
+        )
+    }
+
     func testSemanticNavigationHostCapabilityUsesTheExactSemanticOracle() throws {
         let scenario = try XCTUnwrap(
             ProbeScenarioCatalog.scenario(
@@ -735,6 +936,114 @@ final class ProbeScenarioRunnerTests: XCTestCase {
                     && expectation.rumViewOrigin == .semantic
             })
         }
+    }
+
+    func testSemanticNavigationHostTransientReaderReattachPreservesOccurrenceAndSource()
+        throws {
+        let scenario = try XCTUnwrap(
+            ProbeScenarioCatalog.scenario(
+                identifier: "swiftui.semantic-host.transient-reader-reattach"
+            )
+        )
+
+        XCTAssertTrue(ProbeScenarioCatalog.usesObservableDriver(scenario))
+        XCTAssertTrue(ProbeScenarioCatalog.usesSemanticNavigationHostSPI(scenario))
+        XCTAssertTrue(ProbeScenarioCatalog.usesExplicitSemanticNavigationHostSPI(scenario))
+        XCTAssertTrue(
+            ProbeScenarioCatalog.usesSemanticNavigationHostLifetimeTestingSPI(scenario)
+        )
+        XCTAssertFalse(ProbeScenarioCatalog.usesSemanticNavigationHostFinalDetachSPI(scenario))
+        XCTAssertTrue(scenario.steps.contains { step in
+            step.kind == .bounceSemanticNavigationHostReader
+                && step.scene == "scene-A"
+        })
+        XCTAssertTrue(scenario.completionConditions.contains { expectation in
+            expectation.kind == .viewStarted
+                && expectation.scene == "scene-A"
+                && expectation.screen == "detail-1"
+                && expectation.expectedCount == 1
+        })
+        XCTAssertTrue(scenario.completionConditions.contains { expectation in
+            expectation.kind == .action
+                && expectation.name == "semantic-host-after-transient-reattach"
+                && expectation.ownerViewReferenceAction
+                    == "semantic-host-before-transient-reattach"
+                && expectation.ownerViewRelation == .same
+        })
+        XCTAssertTrue(scenario.expectedSemanticTimeline.contains { expectation in
+            expectation.kind == .viewStarted
+                && expectation.scene == "scene-A"
+                && expectation.screen == "home"
+                && expectation.occurrence == 2
+                && expectation.rumViewOrigin == .semantic
+        })
+    }
+
+    func testSemanticNavigationHostFinalRemovalIsSceneIsolatedAndFallsBackToAutomatic()
+        throws {
+        let scenario = try XCTUnwrap(
+            ProbeScenarioCatalog.scenario(
+                identifier: "swiftui.semantic-host.final-removal-isolation"
+            )
+        )
+
+        XCTAssertEqual(scenario.initialWindows, ["scene-A", "scene-B"])
+        XCTAssertEqual(scenario.requiredCapabilities, [.multipleScenes])
+        XCTAssertTrue(ProbeScenarioCatalog.usesObservableDriver(scenario))
+        XCTAssertTrue(
+            ProbeScenarioCatalog.usesSemanticNavigationHostLifetimeTestingSPI(scenario)
+        )
+        XCTAssertTrue(ProbeScenarioCatalog.usesSemanticNavigationHostFinalDetachSPI(scenario))
+        XCTAssertTrue(scenario.steps.contains { step in
+            step.kind == .removeSemanticNavigationHost
+                && step.scene == "scene-A"
+                && step.value == "home#1"
+        })
+        XCTAssertTrue(scenario.completionConditions.contains { expectation in
+            expectation.kind == .viewStopped
+                && expectation.scene == "scene-A"
+                && expectation.screen == "home"
+                && expectation.expectedCount == 1
+        })
+        XCTAssertTrue(scenario.completionConditions.contains { expectation in
+            expectation.kind == .viewStopped
+                && expectation.scene == "scene-B"
+                && expectation.screen == "home"
+                && expectation.expectedCount == 1
+        })
+        XCTAssertTrue(scenario.completionConditions.contains { expectation in
+            expectation.kind == .viewStarted
+                && expectation.scene == "scene-B"
+                && expectation.screen == "detail-1"
+                && expectation.expectedCount == 1
+                && expectation.rumViewOrigin == .semantic
+        })
+        XCTAssertTrue(scenario.completionConditions.contains { expectation in
+            expectation.kind == .action
+                && expectation.name == "semantic-host-after-final-removal"
+                && expectation.sourceScene == "scene-A"
+                && expectation.sourceScreen == "detail-1"
+                && expectation.rumViewOrigin == .automatic
+                && expectation.ownerViewStartedAfterStep
+                    == .removeSemanticNavigationHost
+        })
+        XCTAssertTrue(scenario.completionConditions.contains { expectation in
+            expectation.kind == .action
+                && expectation.name == "semantic-host-peer-after-final-removal"
+                && expectation.scene == "scene-B"
+                && expectation.occurrence == 1
+                && expectation.ownerViewRelation == .same
+        })
+        XCTAssertTrue(scenario.completionConditions.contains { expectation in
+            expectation.kind == .action
+                && expectation.name
+                    == "semantic-host-peer-transition-after-final-removal"
+                && expectation.scene == "scene-B"
+                && expectation.screen == "detail-1"
+                && expectation.ownerViewReferenceAction
+                    == "semantic-host-peer-after-final-removal"
+                && expectation.ownerViewRelation == .different
+        })
     }
 
     func testSemanticNavigationHostOpaqueContainerKeepsAutomaticFallback() throws {

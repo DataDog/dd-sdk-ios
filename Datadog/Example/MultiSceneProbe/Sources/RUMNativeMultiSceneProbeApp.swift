@@ -97,11 +97,26 @@ enum ProbeRuntime {
     static let usesObservedSemanticNavigationCapabilitySPI = scenario.map(
         ProbeScenarioCatalog.usesObservedSemanticNavigationCapabilitySPI
     ) ?? false
+    static let usesSemanticNavigationHostLifetimeTestingSPI = scenario.map(
+        ProbeScenarioCatalog.usesSemanticNavigationHostLifetimeTestingSPI
+    ) ?? false
+    static let usesSemanticNavigationHostFinalDetachSPI = scenario.map(
+        ProbeScenarioCatalog.usesSemanticNavigationHostFinalDetachSPI
+    ) ?? false
     static let replacesSemanticNavigationCapabilitySource = scenario.map(
         ProbeScenarioCatalog.replacesSemanticNavigationCapabilitySource
     ) ?? false
     static let usesAutomaticSemanticNavigationHostSPI = scenario.map(
         ProbeScenarioCatalog.usesAutomaticSemanticNavigationHostSPI
+    ) ?? false
+    static let usesEXP147RouterStreamAdapter = scenario.map(
+        ProbeScenarioCatalog.usesEXP147RouterStreamAdapter
+    ) ?? false
+    static let usesEXP151ObservationRouterAdapter = scenario.map(
+        ProbeScenarioCatalog.usesEXP151ObservationRouterAdapter
+    ) ?? false
+    static let usesEXP147NavigationFixture = scenario.map(
+        ProbeScenarioCatalog.usesEXP147NavigationFixture
     ) ?? false
     static let usesExactSemanticNavigationHostSPI = scenario.map(
         ProbeScenarioCatalog.usesExactSemanticNavigationHostSPI
@@ -302,6 +317,10 @@ enum ProbeRuntime {
                 + "swiftui_navigation_host_explicit=\(usesExplicitSemanticNavigationHostSPI) "
                 + "swiftui_navigation_host_capability=\(usesCapabilitySemanticNavigationHostSPI) "
                 + "swiftui_navigation_host_automatic=\(usesAutomaticSemanticNavigationHostSPI) "
+                + "swiftui_navigation_host_router_stream="
+                + "\(usesEXP147RouterStreamAdapter) "
+                + "swiftui_navigation_host_current_destination="
+                + "\(usesEXP151ObservationRouterAdapter) "
                 + "swiftui_stress=\(options.swiftUIStress.rawValue) "
                 + "initial_swiftui_path=\(initialSwiftUIPath.joined(separator: ",")) "
                 + "swiftui_router_write_policy=\(swiftUIRouterWritePolicy.rawValue) "
