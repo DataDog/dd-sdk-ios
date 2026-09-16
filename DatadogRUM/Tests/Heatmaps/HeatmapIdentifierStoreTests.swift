@@ -19,18 +19,18 @@ struct HeatmapIdentifierStoreTests {
     func setHeatmapIdentifiersReplacesCurrentSnapshot() {
         // given
         let store = HeatmapIdentifierStore()
-        let view1 = UIView()
-        let view2 = UIView()
+        let layer1 = CALayer()
+        let layer2 = CALayer()
         let id1 = HeatmapIdentifier(rawValue: "aaa")
         let id2 = HeatmapIdentifier(rawValue: "bbb")
 
         // when
-        store.setHeatmapIdentifiers([ObjectIdentifier(view1): id1])
-        store.setHeatmapIdentifiers([ObjectIdentifier(view2): id2])
+        store.setHeatmapIdentifiers([ObjectIdentifier(layer1): id1])
+        store.setHeatmapIdentifiers([ObjectIdentifier(layer2): id2])
 
         // then
-        #expect(store.heatmapIdentifier(for: ObjectIdentifier(view1)) == nil)
-        #expect(store.heatmapIdentifier(for: ObjectIdentifier(view2)) == id2)
+        #expect(store.heatmapIdentifier(for: ObjectIdentifier(layer1)) == nil)
+        #expect(store.heatmapIdentifier(for: ObjectIdentifier(layer2)) == id2)
     }
 }
 #endif

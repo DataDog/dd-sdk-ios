@@ -148,9 +148,12 @@ struct HeatmapIdentifierComputationTests {
         _ = recorder.record(parent, in: context)
 
         // Then
-        #expect(heatmapCache.identifiers[ObjectIdentifier(parent)] != nil)
-        #expect(heatmapCache.identifiers[ObjectIdentifier(child)] != nil)
-        #expect(heatmapCache.identifiers[ObjectIdentifier(parent)] != heatmapCache.identifiers[ObjectIdentifier(child)])
+        #expect(heatmapCache.identifiers[ObjectIdentifier(parent.layer)] != nil)
+        #expect(heatmapCache.identifiers[ObjectIdentifier(child.layer)] != nil)
+        #expect(
+            heatmapCache.identifiers[ObjectIdentifier(parent.layer)]
+                != heatmapCache.identifiers[ObjectIdentifier(child.layer)]
+        )
     }
 
     @Test("Skips heatmap cache write for views that produce no rendered nodes")
@@ -176,8 +179,8 @@ struct HeatmapIdentifierComputationTests {
         _ = recorder.record(parent, in: context)
 
         // Then
-        #expect(heatmapCache.identifiers[ObjectIdentifier(parent)] == nil)
-        #expect(heatmapCache.identifiers[ObjectIdentifier(child)] != nil)
+        #expect(heatmapCache.identifiers[ObjectIdentifier(parent.layer)] == nil)
+        #expect(heatmapCache.identifiers[ObjectIdentifier(child.layer)] != nil)
     }
 
     @Test("Skips heatmap computation when viewPath is nil")
