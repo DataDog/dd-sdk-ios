@@ -38,6 +38,7 @@ enum ProbeScenarioCatalog {
         "swiftui.semantic-host.automatic-fallback",
         "swiftui.semantic-host.router-stream-adapter",
         "swiftui.semantic-host.observation-router-adapter",
+        "swiftui.semantic-host.observation-native-dismiss-callbacks",
         "swiftui.coexistence.automatic-keyed-manual-view",
         "swiftui.coexistence.nested-keyed-manual-view",
         "swiftui.coexistence.same-key-manual-two-scenes",
@@ -89,6 +90,7 @@ enum ProbeScenarioCatalog {
         swiftUISemanticHostAutomaticFallback,
         swiftUISemanticHostRouterStreamAdapter,
         swiftUISemanticHostObservationRouterAdapter,
+        swiftUISemanticHostObservationNativeDismissCallbacks,
         swiftUICoexistenceAutomaticKeyedManualView,
         swiftUICoexistenceNestedKeyedManualView,
         swiftUICoexistenceSameKeyManualTwoScenes,
@@ -246,6 +248,12 @@ enum ProbeScenarioCatalog {
 
     static func usesEXP151ObservationRouterAdapter(_ scenario: ProbeScenario) -> Bool {
         scenario.identifier == swiftUISemanticHostObservationRouterAdapter.identifier
+            || usesEXP152NativeDismissCallbacks(scenario)
+    }
+
+    static func usesEXP152NativeDismissCallbacks(_ scenario: ProbeScenario) -> Bool {
+        scenario.identifier
+            == swiftUISemanticHostObservationNativeDismissCallbacks.identifier
     }
 
     static func usesEXP147NavigationFixture(_ scenario: ProbeScenario) -> Bool {
@@ -1083,6 +1091,78 @@ enum ProbeScenarioCatalog {
         expectedSemanticTimeline: semanticNavigationAPITimeline()
     )
 
+    /// EXP-152 keeps the accepted Observation boundary but moves dismissal
+    /// markers into SwiftUI's actual sheet and full-screen-cover `onDismiss`
+    /// callbacks. The harness no longer emits those markers after mutating the
+    /// router, so a passing result characterizes the native callback boundary.
+    private static let swiftUISemanticHostObservationNativeDismissCallbacks =
+        ProbeScenario(
+            identifier: "swiftui.semantic-host.observation-native-dismiss-callbacks",
+            trackingMode: .navigationOccurrence,
+            layout: .stack,
+            steps: swiftUISemanticAPICompleteDestination.steps.flatMap { step in
+                switch step.signal {
+                case "destination:sheet":
+                    [
+                        step,
+                        ProbeStep(
+                            .waitForSignal,
+                            scene: step.scene,
+                            signal: "assertion:\(ProbeNativeDismissCallbackContract.sheetContentAppeared)"
+                        )
+                    ]
+                case "marker:sheet-dismissed-settled":
+                    [
+                        ProbeStep(
+                            .waitForSignal,
+                            scene: step.scene,
+                            signal: "assertion:\(ProbeNativeDismissCallbackContract.sheetOnDismissEntered)"
+                        ),
+                        ProbeStep(
+                            .waitForSignal,
+                            scene: step.scene,
+                            signal: "marker:sheet-native-on-dismiss-settled"
+                        )
+                    ]
+                case "destination:full-screen-cover":
+                    [
+                        step,
+                        ProbeStep(
+                            .waitForSignal,
+                            scene: step.scene,
+                            signal: "assertion:\(ProbeNativeDismissCallbackContract.coverContentAppeared)"
+                        )
+                    ]
+                case "marker:full-screen-cover-dismissed-settled":
+                    [
+                        ProbeStep(
+                            .waitForSignal,
+                            scene: step.scene,
+                            signal: "assertion:\(ProbeNativeDismissCallbackContract.coverOnDismissEntered)"
+                        ),
+                        ProbeStep(
+                            .waitForSignal,
+                            scene: step.scene,
+                            signal:
+                                "marker:full-screen-cover-native-on-dismiss-settled"
+                        )
+                    ]
+                default:
+                    [step]
+                }
+            },
+            completionConditions:
+                swiftUISemanticAPICompleteDestination.completionConditions,
+            expectedSemanticTimeline: semanticNavigationAPITimeline(
+                sheetDismissedImmediateMarker: "sheet-native-on-dismiss-immediate",
+                sheetDismissedSettledMarker: "sheet-native-on-dismiss-settled",
+                coverDismissedImmediateMarker:
+                    "full-screen-cover-native-on-dismiss-immediate",
+                coverDismissedSettledMarker:
+                    "full-screen-cover-native-on-dismiss-settled"
+            )
+        )
+
     /// Supplies a conflicting exact capability on the customer container while
     /// also passing the real source explicitly. The decoy source must never own
     /// a view, and the full explicit-source oracle must remain unchanged.
@@ -1600,7 +1680,13 @@ enum ProbeScenarioCatalog {
     }
 
     private static func semanticNavigationAPITimeline(
-        initialLifecycleMarkers: [String] = []
+        initialLifecycleMarkers: [String] = [],
+        sheetDismissedImmediateMarker: String = "sheet-dismissed-immediate",
+        sheetDismissedSettledMarker: String = "sheet-dismissed-settled",
+        coverDismissedImmediateMarker: String =
+            "full-screen-cover-dismissed-immediate",
+        coverDismissedSettledMarker: String =
+            "full-screen-cover-dismissed-settled"
     ) -> [ProbeExpectation] {
         var timeline: [ProbeExpectation] = [
             ProbeExpectation(
@@ -1705,12 +1791,12 @@ enum ProbeScenarioCatalog {
         timeline += semanticMarkerExpectations(
             screen: "home",
             occurrence: 3,
-            name: "sheet-dismissed-immediate"
+            name: sheetDismissedImmediateMarker
         )
         timeline += semanticMarkerExpectations(
             screen: "home",
             occurrence: 3,
-            name: "sheet-dismissed-settled"
+            name: sheetDismissedSettledMarker
         )
         timeline += semanticMarkerExpectations(
             screen: "home",
@@ -1757,12 +1843,12 @@ enum ProbeScenarioCatalog {
         timeline += semanticMarkerExpectations(
             screen: "home",
             occurrence: 4,
-            name: "full-screen-cover-dismissed-immediate"
+            name: coverDismissedImmediateMarker
         )
         timeline += semanticMarkerExpectations(
             screen: "home",
             occurrence: 4,
-            name: "full-screen-cover-dismissed-settled"
+            name: coverDismissedSettledMarker
         )
         timeline += semanticMarkerExpectations(
             screen: "home",

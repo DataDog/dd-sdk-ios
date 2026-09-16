@@ -62,6 +62,7 @@ final class ProbeScenarioRunnerTests: XCTestCase {
                 "swiftui.semantic-host.automatic-fallback",
                 "swiftui.semantic-host.router-stream-adapter",
                 "swiftui.semantic-host.observation-router-adapter",
+                "swiftui.semantic-host.observation-native-dismiss-callbacks",
                 "swiftui.coexistence.automatic-keyed-manual-view",
                 "swiftui.coexistence.nested-keyed-manual-view",
                 "swiftui.coexistence.same-key-manual-two-scenes",
@@ -697,6 +698,61 @@ final class ProbeScenarioRunnerTests: XCTestCase {
             scenario.expectedSemanticTimeline,
             completeDestination.expectedSemanticTimeline
         )
+    }
+
+    func testEXP152NativeDismissCallbacksUseActualCallbackSignals() throws {
+        let scenario = try XCTUnwrap(
+            ProbeScenarioCatalog.scenario(
+                identifier:
+                    "swiftui.semantic-host.observation-native-dismiss-callbacks"
+            )
+        )
+
+        XCTAssertEqual(scenario.trackingMode, .navigationOccurrence)
+        XCTAssertTrue(ProbeScenarioCatalog.usesObservableDriver(scenario))
+        XCTAssertTrue(ProbeScenarioCatalog.usesSemanticNavigationHostSPI(scenario))
+        XCTAssertTrue(ProbeScenarioCatalog.usesEXP151ObservationRouterAdapter(scenario))
+        XCTAssertTrue(ProbeScenarioCatalog.usesEXP152NativeDismissCallbacks(scenario))
+        XCTAssertTrue(ProbeScenarioCatalog.usesEXP147NavigationFixture(scenario))
+        XCTAssertFalse(ProbeScenarioCatalog.usesEXP147RouterStreamAdapter(scenario))
+
+        let waitedSignals = Set(scenario.steps.compactMap(\.signal))
+        let callbackAssertions = [
+            ProbeNativeDismissCallbackContract.sheetContentAppeared,
+            ProbeNativeDismissCallbackContract.sheetOnDismissEntered,
+            ProbeNativeDismissCallbackContract.coverContentAppeared,
+            ProbeNativeDismissCallbackContract.coverOnDismissEntered
+        ]
+        for assertion in callbackAssertions {
+            XCTAssertTrue(waitedSignals.contains("assertion:\(assertion)"))
+        }
+        XCTAssertTrue(
+            waitedSignals.contains("marker:sheet-native-on-dismiss-settled")
+        )
+        XCTAssertTrue(
+            waitedSignals.contains(
+                "marker:full-screen-cover-native-on-dismiss-settled"
+            )
+        )
+        XCTAssertFalse(waitedSignals.contains("marker:sheet-dismissed-settled"))
+        XCTAssertFalse(
+            waitedSignals.contains("marker:full-screen-cover-dismissed-settled")
+        )
+
+        let callbackMarkers = [
+            "sheet-native-on-dismiss-immediate",
+            "sheet-native-on-dismiss-settled",
+            "full-screen-cover-native-on-dismiss-immediate",
+            "full-screen-cover-native-on-dismiss-settled"
+        ]
+        for marker in callbackMarkers {
+            let matches = scenario.expectedSemanticTimeline.filter {
+                $0.name == marker
+            }
+            XCTAssertEqual(matches.map(\.kind), [.action, .resource])
+            XCTAssertTrue(matches.allSatisfy { $0.screen == "home" })
+            XCTAssertTrue(matches.allSatisfy { $0.rumViewOrigin == .semantic })
+        }
     }
 
     @MainActor

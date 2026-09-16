@@ -124,6 +124,17 @@ enum ProbeSemanticHostContract {
     static let conflictingCapabilityViewName = "ProbeSemanticCapabilityDecoyView"
 }
 
+enum ProbeNativeDismissCallbackContract {
+    static let sheetContentAppeared =
+        "exp152-sheet-native-content-appeared"
+    static let sheetOnDismissEntered =
+        "exp152-sheet-native-on-dismiss-entered"
+    static let coverContentAppeared =
+        "exp152-full-screen-cover-native-content-appeared"
+    static let coverOnDismissEntered =
+        "exp152-full-screen-cover-native-on-dismiss-entered"
+}
+
 enum ProbeTransitionOutcome: String, Codable, CaseIterable {
     case cancel
     case finish

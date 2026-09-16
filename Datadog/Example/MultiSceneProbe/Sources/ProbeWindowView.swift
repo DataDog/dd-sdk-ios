@@ -1149,7 +1149,28 @@ struct ProbeWindowRoot: View {
     @ViewBuilder
     private var navigationStack: some View {
 #if DEBUG
-        if #available(iOS 27.0, *), ProbeRuntime.usesEXP151ObservationRouterAdapter {
+        if #available(iOS 27.0, *), ProbeRuntime.usesEXP152NativeDismissCallbacks {
+            EXP152RuntimeProbeView(
+                router: exp147Router,
+                attributesForState: exp147AttributeContext.attributes(for:),
+                onSheetAppear: {
+                    recordEXP152NativePresentationAppearance(screen: "sheet")
+                },
+                onSheetDismiss: {
+                    recordEXP152NativePresentationDismissal(screen: "sheet")
+                },
+                onFullScreenCoverAppear: {
+                    recordEXP152NativePresentationAppearance(
+                        screen: "full-screen-cover"
+                    )
+                },
+                onFullScreenCoverDismiss: {
+                    recordEXP152NativePresentationDismissal(
+                        screen: "full-screen-cover"
+                    )
+                }
+            )
+        } else if #available(iOS 27.0, *), ProbeRuntime.usesEXP151ObservationRouterAdapter {
             EXP151RuntimeProbeView(
                 router: exp147Router,
                 attributesForState: exp147AttributeContext.attributes(for:)
@@ -1194,7 +1215,28 @@ struct ProbeWindowRoot: View {
             regularNavigationStack
         }
 #else
-        if #available(iOS 27.0, *), ProbeRuntime.usesEXP151ObservationRouterAdapter {
+        if #available(iOS 27.0, *), ProbeRuntime.usesEXP152NativeDismissCallbacks {
+            EXP152RuntimeProbeView(
+                router: exp147Router,
+                attributesForState: exp147AttributeContext.attributes(for:),
+                onSheetAppear: {
+                    recordEXP152NativePresentationAppearance(screen: "sheet")
+                },
+                onSheetDismiss: {
+                    recordEXP152NativePresentationDismissal(screen: "sheet")
+                },
+                onFullScreenCoverAppear: {
+                    recordEXP152NativePresentationAppearance(
+                        screen: "full-screen-cover"
+                    )
+                },
+                onFullScreenCoverDismiss: {
+                    recordEXP152NativePresentationDismissal(
+                        screen: "full-screen-cover"
+                    )
+                }
+            )
+        } else if #available(iOS 27.0, *), ProbeRuntime.usesEXP151ObservationRouterAdapter {
             EXP151RuntimeProbeView(
                 router: exp147Router,
                 attributesForState: exp147AttributeContext.attributes(for:)
@@ -1660,7 +1702,11 @@ struct ProbeWindowRoot: View {
         }
         recordEXP147NavigationMutation(previousRoute: previousRoute)
 
-        if value == "home", let dismissedScreen {
+        if
+            value == "home",
+            let dismissedScreen,
+            !ProbeRuntime.usesEXP152NativeDismissCallbacks
+        {
             emitEXP147DismissalMarkers(dismissedScreen: dismissedScreen)
         }
         return .accepted
@@ -1692,6 +1738,106 @@ struct ProbeWindowRoot: View {
             "EXP-147 router state accepted source=\(window.label) "
                 + "screen=\(currentSceneScreen) mutation=\(navigationMutation)"
         )
+    }
+
+    private func recordEXP152NativePresentationAppearance(screen: String) {
+        let actualScreen = currentSceneScreen
+        let assertionName: String
+        switch screen {
+        case "sheet":
+            assertionName = ProbeNativeDismissCallbackContract.sheetContentAppeared
+        case "full-screen-cover":
+            assertionName = ProbeNativeDismissCallbackContract.coverContentAppeared
+        default:
+            assertionName = "exp152-unsupported-native-content-appeared"
+        }
+        let isExpectedState =
+            actualScreen == screen && exp147Router.state.presentation != nil
+        recordEXP152NativeCallbackAssertion(
+            name: assertionName,
+            screen: actualScreen,
+            isExpectedState: isExpectedState
+        )
+    }
+
+    private func recordEXP152NativePresentationDismissal(screen: String) {
+        let actualScreen = currentSceneScreen
+        let assertionName: String
+        switch screen {
+        case "sheet":
+            assertionName = ProbeNativeDismissCallbackContract.sheetOnDismissEntered
+        case "full-screen-cover":
+            assertionName = ProbeNativeDismissCallbackContract.coverOnDismissEntered
+        default:
+            assertionName = "exp152-unsupported-native-on-dismiss-entered"
+        }
+        let isExpectedState =
+            actualScreen == "home" && exp147Router.state.presentation == nil
+        recordEXP152NativeCallbackAssertion(
+            name: assertionName,
+            screen: actualScreen,
+            isExpectedState: isExpectedState
+        )
+        emitEXP152NativeDismissalMarkers(dismissedScreen: screen)
+    }
+
+    private func recordEXP152NativeCallbackAssertion(
+        name: String,
+        screen: String,
+        isExpectedState: Bool
+    ) {
+        let presentation = exp147Router.state.presentation?.id ?? "nil"
+        ProbeRuntime.eventRecorder.record(
+            ProbeSignal(
+                kind: .assertion,
+                semanticContext: ProbeSemanticContext(
+                    logicalSceneID: window.label,
+                    nativeSceneID: sceneSessionID,
+                    screen: screen
+                ),
+                mutation: navigationMutation,
+                name: name,
+                result: isExpectedState ? .pass : .fail,
+                reason:
+                    "presentation=\(presentation) screen=\(screen) "
+                    + "mutation=\(navigationMutation)"
+            )
+        )
+        ProbeRuntime.record(
+            "EXP-152 native callback assertion=\(name) "
+                + "presentation=\(presentation) screen=\(screen) "
+                + "mutation=\(navigationMutation) "
+                + "result=\(isExpectedState ? "pass" : "fail")"
+        )
+    }
+
+    private func emitEXP152NativeDismissalMarkers(dismissedScreen: String) {
+        let revealedScreen = currentSceneScreen
+        let immediatePhase = "\(dismissedScreen)-native-on-dismiss-immediate"
+        let settledPhase = "\(dismissedScreen)-native-on-dismiss-settled"
+        ProbeRuntime.emitLifecycleMarker(
+            window: window,
+            sceneSessionID: sceneSessionID,
+            screen: revealedScreen,
+            phase: immediatePhase
+        )
+        Task { @MainActor in
+            await Task.yield()
+            try? await Task.sleep(for: .milliseconds(250))
+            guard
+                !Task.isCancelled,
+                exp147Router.state.presentation == nil,
+                currentSceneScreen == revealedScreen
+            else {
+                return
+            }
+            ProbeRuntime.emitLifecycleMarker(
+                window: window,
+                sceneSessionID: sceneSessionID,
+                screen: revealedScreen,
+                phase: settledPhase
+            )
+        }
     }
 
     private func emitEXP147DismissalMarkers(dismissedScreen: String) {

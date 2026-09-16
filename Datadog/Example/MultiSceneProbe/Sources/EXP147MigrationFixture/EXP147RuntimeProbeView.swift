@@ -91,4 +91,71 @@ struct EXP151RuntimeProbeView: View {
         }
     }
 }
+
+/// Probe-only EXP-152 arm. It keeps the accepted Observation boundary and
+/// reproduces the customer's standard navigation container solely to attach
+/// diagnostic callbacks to SwiftUI's native presentation modifiers. These
+/// callbacks are not part of the proposed RUM integration.
+@available(iOS 27.0, *)
+struct EXP152RuntimeProbeView: View {
+    @ObservedObject var router: EXP147NavigationRouter
+    let attributesForState: (EXP147NavigationState) -> [String: Encodable]
+    let onSheetAppear: () -> Void
+    let onSheetDismiss: () -> Void
+    let onFullScreenCoverAppear: () -> Void
+    let onFullScreenCoverDismiss: () -> Void
+
+    var body: some View {
+        EXP151RUMObservationBoundary(
+            router: router,
+            attributesForState: attributesForState
+        ) {
+            EXP152NativeDismissCallbackNavigationContainer(
+                router: router,
+                onSheetAppear: onSheetAppear,
+                onSheetDismiss: onSheetDismiss,
+                onFullScreenCoverAppear: onFullScreenCoverAppear,
+                onFullScreenCoverDismiss: onFullScreenCoverDismiss
+            )
+        }
+    }
+}
+
+@available(iOS 27.0, *)
+private struct EXP152NativeDismissCallbackNavigationContainer: View {
+    @ObservedObject var router: EXP147NavigationRouter
+    let onSheetAppear: () -> Void
+    let onSheetDismiss: () -> Void
+    let onFullScreenCoverAppear: () -> Void
+    let onFullScreenCoverDismiss: () -> Void
+
+    var body: some View {
+        NavigationStack(path: router.path) {
+            EXP147MessagesRootScreen(router: router)
+                .navigationDestination(for: EXP147Route.self) { route in
+                    EXP147MessagesDestinationScreen(
+                        route: route,
+                        router: router
+                    )
+                }
+        }
+        .sheet(item: router.sheet, onDismiss: onSheetDismiss) { presentation in
+            EXP147PresentationScreen(
+                presentation: presentation,
+                router: router
+            )
+            .onAppear(perform: onSheetAppear)
+        }
+        .fullScreenCover(
+            item: router.fullScreenCover,
+            onDismiss: onFullScreenCoverDismiss
+        ) { presentation in
+            EXP147PresentationScreen(
+                presentation: presentation,
+                router: router
+            )
+            .onAppear(perform: onFullScreenCoverAppear)
+        }
+    }
+}
 #endif
