@@ -536,12 +536,14 @@ enum ProbeScenarioCatalog {
     )
 
     /// Exercises one application-wide Operation identity across two scenes and
-    /// two independent same-name identities completed in reverse order. Local
-    /// signals prove exact call sites; raw and reduced backend Operation events
-    /// remain the attribution oracle.
+    /// two independent same-name identities completed in reverse order. This
+    /// scenario does not navigate, so explicit per-scene Home boundaries keep
+    /// its view setup independent from the legacy occurrence-source probe. The
+    /// Operation calls remain inferred: local signals prove exact call sites;
+    /// raw and reduced backend Operation events remain the attribution oracle.
     private static let operationsCrossSceneLifecycle = ProbeScenario(
         identifier: "operations.cross-scene.lifecycle",
-        trackingMode: .navigationOccurrence,
+        trackingMode: .manual,
         layout: .stack,
         initialWindows: ["scene-A", "scene-B"],
         requiredCapabilities: [.multipleScenes, .simultaneousVisibleWindows],
