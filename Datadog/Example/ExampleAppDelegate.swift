@@ -7,6 +7,7 @@
 import UIKit
 import DatadogCore
 import DatadogFlags
+import DatadogInternal
 import DatadogLogs
 import DatadogTrace
 import DatadogRUM
@@ -39,10 +40,11 @@ class ExampleAppDelegate: UIResponder, UIApplicationDelegate {
         // Initialize Datadog SDK
         let siteName = Bundle.main.infoDictionary?["DatadogSite"] as? String ?? "us1"
         let site = DatadogSite(rawValue: siteName) ?? .us1
+        let environmentName = Bundle.main.infoDictionary?["DatadogEnvironment"] as? String ?? "tests"
         Datadog.initialize(
             with: Datadog.Configuration(
                 clientToken: Environment.readClientToken(),
-                env: "tests",
+                env: environmentName,
                 site: site,
                 service: serviceName,
                 batchSize: .small,
@@ -112,7 +114,7 @@ class ExampleAppDelegate: UIResponder, UIApplicationDelegate {
             FlagsEvaluationContext(targetingKey: "diagnostic-user", attributes: [:])
         )
         if let flagsClient = flagsClientProtocol as? FlagsClient {
-            runFlagsDiagnostics(client: flagsClient)
+            runFlagsDiagnostics(client: flagsClient, environmentName: environmentName)
         }
 
         // Register Trace Provider
@@ -180,7 +182,7 @@ class ExampleAppDelegate: UIResponder, UIApplicationDelegate {
 
 private extension ExampleAppDelegate {
     // swiftlint:disable function_body_length
-    func runFlagsDiagnostics(client: FlagsClient) {
+    func runFlagsDiagnostics(client: FlagsClient, environmentName: String) {
         DispatchQueue.global(qos: .utility).async {
             let tag = "FlagsDiagnostics"
             let clientToken = Bundle.main.infoDictionary?["DatadogClientToken"] as? String ?? ""
@@ -210,7 +212,7 @@ private extension ExampleAppDelegate {
             Self.headCheck(tag: tag, label: "Exposures intake", url: intakeURL)
 
             // POST probe — SDK-shaped request, reveals auth errors vs network errors
-            Self.postProbe(tag: tag, url: cdnURL, clientToken: clientToken)
+            Self.postProbe(tag: tag, url: cdnURL, clientToken: clientToken, environmentName: environmentName)
 
             NSLog("[%@] ========== FLAGS SDK NETWORK DIAGNOSTICS END ==========", tag)
 
@@ -280,12 +282,12 @@ private extension ExampleAppDelegate {
         semaphore.wait()
     }
 
-    static func postProbe(tag: String, url: URL, clientToken: String) {
+    static func postProbe(tag: String, url: URL, clientToken: String, environmentName: String) {
         let body: [String: Any] = [
             "data": [
                 "type": "precompute-assignments-request",
                 "attributes": [
-                    "env": ["dd_env": "diagnostic"],
+                    "env": ["dd_env": environmentName],
                     "source": ["sdk_name": "dd-sdk-ios", "sdk_version": "diagnostic"],
                     "subject": [
                         "targeting_key": "diagnostic-probe",
@@ -325,7 +327,7 @@ private extension ExampleAppDelegate {
 
     static func observeSnapshotOnce(tag: String, client: FlagsClient) {
         let listener = DiagnosticsStateListener(tag: tag, client: client)
-        client.state.addListener(listener)
+        listener.start()
     }
 }
 
@@ -333,10 +335,16 @@ private extension ExampleAppDelegate {
 private final class DiagnosticsStateListener: FlagsStateListener {
     private let tag: String
     private weak var client: FlagsClient?
+    private var keepAlive: DiagnosticsStateListener?
 
     init(tag: String, client: FlagsClient) {
         self.tag = tag
         self.client = client
+    }
+
+    func start() {
+        keepAlive = self
+        client?.state.addListener(self)
     }
 
     func flagsStateDidChange(_ newState: FlagsClientState) {
@@ -345,40 +353,42 @@ private final class DiagnosticsStateListener: FlagsStateListener {
         switch newState {
         case .ready:
             dumpSnapshot()
-            client?.state.removeListener(self)
+            finish()
         case .error:
             NSLog("[%@] Flag snapshot: client entered Error state", tag)
-            client?.state.removeListener(self)
+            finish()
         case .stale:
             dumpSnapshot()
-            client?.state.removeListener(self)
+            finish()
         case .notReady, .reconciling:
             break
         }
     }
 
+    private func finish() {
+        client?.state.removeListener(self)
+        keepAlive = nil
+    }
+
     private func dumpSnapshot() {
-        guard let client = client as? FlagsClientInternal else {
-            NSLog("[%@] Flag snapshot: FlagsClientInternal not available", tag)
-            return
-        }
-        let assignments = client.getFlagAssignments()
+        let assignments = client?.snapshot()?.assignments
         if let flags = assignments, !flags.isEmpty {
             NSLog("[%@] Flag snapshot: %d flag(s) loaded", tag, flags.count)
             for (key, assignment) in flags {
                 let variationType: String
-                switch assignment.variation {
-                case .boolean: variationType = "boolean"
+                switch assignment.value {
+                case .bool: variationType = "boolean"
                 case .string: variationType = "string"
-                case .integer: variationType = "integer"
+                case .int: variationType = "integer"
                 case .double: variationType = "double"
-                case .object: variationType = "object"
-                case .unknown(let rawType): variationType = "unknown(\(rawType))"
+                case .dictionary: variationType = "object"
+                case .array: variationType = "array"
+                case .null: variationType = "null"
                 }
                 NSLog("[%@]   flag: %@ | type=%@ variant=%@ reason=%@",
                       tag, key,
                       variationType,
-                      assignment.variationKey,
+                      assignment.variant,
                       assignment.reason)
             }
         } else {

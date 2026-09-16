@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		F1A6D0012F6A000100000001 /* DatadogFlags.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 5BA8C2ED2E784B3C00B1DA80 /* DatadogFlags.framework */; };
+		F1A6D0022F6A000100000002 /* DatadogFlags.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 5BA8C2ED2E784B3C00B1DA80 /* DatadogFlags.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		A0A0A0A0A0A0A0A0A0A00004 /* TimeseriesSessionCollector.swift in Sources */ = {isa = PBXBuildFile; fileRef = A0A0A0A0A0A0A0A0A0A00003 /* TimeseriesSessionCollector.swift */; };
 		A0A0A0A0A0A0A0A0A0A00008 /* TimeseriesSessionCollectorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A0A0A0A0A0A0A0A0A0A00007 /* TimeseriesSessionCollectorTests.swift */; };
 		A0A0A0A0A0A0A0A0A0A0000A /* TimeseriesConfigurationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A0A0A0A0A0A0A0A0A0A00009 /* TimeseriesConfigurationTests.swift */; };
@@ -1870,6 +1872,13 @@
 			remoteGlobalIDString = 61441C0124616DE9003D8BB8;
 			remoteInfo = Example;
 		};
+		F1A6D0032F6A000100000003 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 61133B79242393DE00786299 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 5BA8C2EC2E784B3C00B1DA80;
+			remoteInfo = DatadogFlags;
+		};
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -1890,6 +1899,7 @@
 			dstPath = "";
 			dstSubfolderSpec = 10;
 			files = (
+				F1A6D0022F6A000100000002 /* DatadogFlags.framework in Embed Frameworks */,
 				3C2206F82AB9DBC600DE780C /* DatadogInternal.framework in Embed Frameworks */,
 				3C2206F72AB9DBB600DE780C /* DatadogTrace.framework in Embed Frameworks */,
 				1434A4622B7F73110072E3BB /* OpenTelemetryApi.xcframework in Embed Frameworks */,
@@ -3377,6 +3387,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				F1A6D0012F6A000100000001 /* DatadogFlags.framework in Frameworks */,
 				D25EF02B2F45EBEA007E6CEE /* DatadogInternal.framework in Frameworks */,
 				6175922D2A6FADDD0073F431 /* DatadogSessionReplay.framework in Frameworks */,
 				61A2CC332A44A5F60000FF25 /* DatadogRUM.framework in Frameworks */,
@@ -7618,6 +7629,7 @@
 			buildRules = (
 			);
 			dependencies = (
+				F1A6D0042F6A000100000004 /* PBXTargetDependency */,
 				D25EF0202F45EBC2007E6CEE /* PBXTargetDependency */,
 				D25EF0222F45EBC2007E6CEE /* PBXTargetDependency */,
 				D25EF0242F45EBC2007E6CEE /* PBXTargetDependency */,
@@ -9755,6 +9767,11 @@
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
+		F1A6D0042F6A000100000004 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 5BA8C2EC2E784B3C00B1DA80 /* DatadogFlags */;
+			targetProxy = F1A6D0032F6A000100000003 /* PBXContainerItemProxy */;
+		};
 		11030D622D959EAD00732D5F /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			target = D207317B29A5226A00ECBF94 /* DatadogLogs */;

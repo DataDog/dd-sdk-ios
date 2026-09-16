@@ -33,6 +33,7 @@ Create `xcconfigs/Datadog.local.xcconfig` (gitignored) to override defaults:
 ```
 DATADOG_CLIENT_TOKEN=<YOUR_DD_CLIENT_TOKEN>
 RUM_APPLICATION_ID=<YOUR_RUM_APP_ID>
+DATADOG_ENV=alpha
 DATADOG_SITE=us5
 ```
 
@@ -40,6 +41,7 @@ DATADOG_SITE=us5
 |-------|-------------|
 | `DATADOG_CLIENT_TOKEN` | Client token from your Datadog org |
 | `RUM_APPLICATION_ID` | RUM application ID from your Datadog org |
+| `DATADOG_ENV` | `dd_env` sent by both the SDK and the diagnostic POST probe |
 | `DATADOG_SITE` | Datadog site: `us1`, `us3`, `us5`, `eu1`, `ap1`, `ap2`, `uk1` |
 
 **To test endpoint reachability without real credentials**, set `DATADOG_CLIENT_TOKEN` to any non-empty string and `RUM_APPLICATION_ID` to any non-empty string. The diagnostics will still run DNS + HTTP checks.
