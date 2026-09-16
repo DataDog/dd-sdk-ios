@@ -82,6 +82,9 @@ enum ProbeRuntime {
     static let usesSemanticNavigationSPI = scenario.map(
         ProbeScenarioCatalog.usesSemanticNavigationSPI
     ) ?? false
+    static let usesSemanticNavigationHostSPI = scenario.map(
+        ProbeScenarioCatalog.usesSemanticNavigationHostSPI
+    ) ?? false
     static let usesSemanticNavigationValueLinks = scenario.map(
         ProbeScenarioCatalog.usesSemanticNavigationValueLinks
     ) ?? false
@@ -274,6 +277,7 @@ enum ProbeRuntime {
                 + "run_mode=\(resolution.manifest.runMode.rawValue) "
                 + "swiftui_view_tracking=\(swiftUIViewTrackingMode) "
                 + "swiftui_semantic_navigation_api=\(usesSemanticNavigationSPI) "
+                + "swiftui_semantic_navigation_host=\(usesSemanticNavigationHostSPI) "
                 + "swiftui_stress=\(options.swiftUIStress.rawValue) "
                 + "initial_swiftui_path=\(initialSwiftUIPath.joined(separator: ",")) "
                 + "swiftui_router_write_policy=\(swiftUIRouterWritePolicy.rawValue) "

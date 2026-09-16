@@ -33,6 +33,39 @@ private enum ProbeNavigationOccurrence: Hashable {
     case splitPlaceholder
 }
 
+/// Keeps the experimental type-erased transition source stable while SwiftUI
+/// reconstructs `ProbeWindowRoot`. The `Any` storage lets the probe keep its
+/// iOS 15 deployment target while exposing the iOS 27 source only behind an
+/// availability check.
+@MainActor
+private final class ProbeSemanticNavigationTransitionDriver {
+    private let storage: Any
+
+    init(initialDestination: RUMView? = nil) {
+        if #available(iOS 27.0, *) {
+            storage = initialDestination.map {
+                RUMNavigationTransitions(currentDestination: $0)
+            } ?? RUMNavigationTransitions()
+        } else {
+            storage = NSObject()
+        }
+    }
+
+    @available(iOS 27.0, *)
+    var transitions: RUMNavigationTransitions {
+        storage as! RUMNavigationTransitions // swiftlint:disable:this force_cast
+    }
+
+    func commit(_ destination: RUMView) {
+        guard #available(iOS 27.0, *) else {
+            return
+        }
+        let id = UUID().uuidString
+        transitions.willNavigate(id: id, destination: destination)
+        transitions.commit(id: id)
+    }
+}
+
 private enum ProbeSplitSelection: Hashable {
     case detail(Int)
     case placeholder
@@ -418,8 +451,20 @@ struct ProbeWindowRoot: View {
 
     init(window: ProbeWindow) {
         routedWindow = window
-        self.window = window.normalized(forRunID: ProbeRuntime.runID)
-        self._path = State(initialValue: Self.initialNavigationPath())
+        let normalizedWindow = window.normalized(forRunID: ProbeRuntime.runID)
+        let initialPath = Self.initialNavigationPath()
+        self.window = normalizedWindow
+        self._path = State(initialValue: initialPath)
+        self._semanticTransitionDriver = State(
+            initialValue: ProbeSemanticNavigationTransitionDriver(
+                initialDestination: ProbeRuntime.usesSemanticNavigationHostSPI
+                    ? Self.initialSemanticRUMView(
+                        window: normalizedWindow,
+                        route: initialPath.last
+                    )
+                    : nil
+            )
+        )
     }
 
     private static func initialNavigationPath() -> [ProbeRoute] {
@@ -447,6 +492,7 @@ struct ProbeWindowRoot: View {
     @State private var homeBindingGeneration: UInt64 = 0
     @State private var destinationBindingGeneration: UInt64 = 0
     @State private var navigationOccurrenceSource = ProbeNavigationOccurrenceSource()
+    @State private var semanticTransitionDriver: ProbeSemanticNavigationTransitionDriver
     @State private var splitSelection: ProbeSplitSelection? =
         ProbeRuntime.startsSplitWithoutSelection ? nil : .detail(1)
     @State private var splitRUMViewBindingGeneration: UInt64 = 1
@@ -872,7 +918,16 @@ struct ProbeWindowRoot: View {
 
     @ViewBuilder
     private var navigationStack: some View {
-        if #available(iOS 27.0, *), ProbeRuntime.usesSemanticNavigationSPI {
+        if #available(iOS 27.0, *), ProbeRuntime.usesSemanticNavigationHostSPI {
+            RUMNavigationHost(transitions: semanticTransitionDriver.transitions) {
+                NavigationStack(path: navigationPath) {
+                    navigationRootContent
+                        .navigationDestination(for: ProbeRoute.self) { route in
+                            navigationDestinationContent(for: route)
+                        }
+                }
+            }
+        } else if #available(iOS 27.0, *), ProbeRuntime.usesSemanticNavigationSPI {
             RUMNavigationStack(
                 path: navigationPath,
                 presented: semanticNavigationPresentation,
@@ -1045,6 +1100,11 @@ struct ProbeWindowRoot: View {
                     return
                 }
                 path = acceptedPath
+                if ProbeRuntime.usesSemanticNavigationHostSPI {
+                    semanticTransitionDriver.commit(
+                        semanticRUMView(for: acceptedPath.last)
+                    )
+                }
                 navigationMutation += 1
                 advanceRUMViewBindingGeneration(for: acceptedPath)
                 updateSceneRoute()
@@ -1241,6 +1301,12 @@ struct ProbeWindowRoot: View {
             }
         }
         swiftUIPresentation = presentation
+        if #available(iOS 27.0, *), ProbeRuntime.usesSemanticNavigationHostSPI {
+            let destination = presentation.map { presentation in
+                semanticPresentationDescriptor(for: presentation).view
+            } ?? semanticRUMView(for: path.last)
+            semanticTransitionDriver.commit(destination)
+        }
         navigationMutation += 1
         updateSceneRoute()
         ProbeRuntime.eventRecorder.record(
@@ -1488,9 +1554,56 @@ struct ProbeWindowRoot: View {
         screen: String,
         name: String
     ) -> RUMView {
+        Self.semanticRUMView(
+            window: window,
+            sceneSessionID: sceneSessionID,
+            readerControlGeneration: readerControlGeneration,
+            screen: screen,
+            name: name
+        )
+    }
+
+    private static func initialSemanticRUMView(
+        window: ProbeWindow,
+        route: ProbeRoute?
+    ) -> RUMView {
+        let screen: String
+        let name: String
+        switch route {
+        case .detail(let instance):
+            screen = "detail-\(instance)"
+            name = "ProbeDetailView"
+        case .alternate:
+            screen = "alternate"
+            name = "ProbeAlternateView"
+        case nil:
+            screen = "home"
+            name = "ProbeHomeView"
+        }
+        return semanticRUMView(
+            window: window,
+            sceneSessionID: "unresolved",
+            readerControlGeneration: 0,
+            screen: screen,
+            name: name
+        )
+    }
+
+    private static func semanticRUMView(
+        window: ProbeWindow,
+        sceneSessionID: String,
+        readerControlGeneration: Int,
+        screen: String,
+        name: String
+    ) -> RUMView {
         var view = RUMView(
             name: name,
-            attributes: semanticNavigationAttributes(screen: screen)
+            attributes: semanticNavigationAttributes(
+                window: window,
+                sceneSessionID: sceneSessionID,
+                readerControlGeneration: readerControlGeneration,
+                screen: screen
+            )
         )
         view.path = "/probe/\(screen)"
         return view
@@ -1517,6 +1630,20 @@ struct ProbeWindowRoot: View {
     }
 
     private func semanticNavigationAttributes(
+        screen: String
+    ) -> [String: Encodable] {
+        Self.semanticNavigationAttributes(
+            window: window,
+            sceneSessionID: sceneSessionID,
+            readerControlGeneration: readerControlGeneration,
+            screen: screen
+        )
+    }
+
+    private static func semanticNavigationAttributes(
+        window: ProbeWindow,
+        sceneSessionID: String,
+        readerControlGeneration: Int,
         screen: String
     ) -> [String: Encodable] {
         [

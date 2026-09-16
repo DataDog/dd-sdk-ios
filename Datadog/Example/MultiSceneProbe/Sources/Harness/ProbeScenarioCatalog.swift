@@ -28,6 +28,7 @@ enum ProbeScenarioCatalog {
         "swiftui.semantic-api.rejected-link-write",
         "swiftui.semantic-api.canonicalized-link-write",
         "swiftui.semantic-api.sibling-container-isolation",
+        "swiftui.semantic-host.explicit-source",
         "swiftui.coexistence.automatic-keyed-manual-view",
         "swiftui.coexistence.nested-keyed-manual-view",
         "swiftui.coexistence.same-key-manual-two-scenes",
@@ -69,6 +70,7 @@ enum ProbeScenarioCatalog {
         swiftUISemanticAPIRejectedLinkWrite,
         swiftUISemanticAPICanonicalizedLinkWrite,
         swiftUISemanticAPISiblingContainerIsolation,
+        swiftUISemanticHostExplicitSource,
         swiftUICoexistenceAutomaticKeyedManualView,
         swiftUICoexistenceNestedKeyedManualView,
         swiftUICoexistenceSameKeyManualTwoScenes,
@@ -163,6 +165,10 @@ enum ProbeScenarioCatalog {
             || scenario.identifier == swiftUISemanticAPIRejectedLinkWrite.identifier
             || scenario.identifier == swiftUISemanticAPICanonicalizedLinkWrite.identifier
             || scenario.identifier == swiftUISemanticAPISiblingContainerIsolation.identifier
+    }
+
+    static func usesSemanticNavigationHostSPI(_ scenario: ProbeScenario) -> Bool {
+        scenario.identifier == swiftUISemanticHostExplicitSource.identifier
     }
 
     static func usesSemanticNavigationValueLinks(_ scenario: ProbeScenario) -> Bool {
@@ -950,7 +956,23 @@ enum ProbeScenarioCatalog {
         expectedSemanticTimeline: semanticNavigationAPITimeline()
     )
 
-    private static func semanticNavigationAPITimeline() -> [ProbeExpectation] {
+    /// Replays the complete destination oracle through standard NavigationStack,
+    /// sheet, and fullScreenCover code wrapped once by RUMNavigationHost. Exact
+    /// destination commits arrive through the explicit type-erased source.
+    private static let swiftUISemanticHostExplicitSource = ProbeScenario(
+        identifier: "swiftui.semantic-host.explicit-source",
+        trackingMode: .navigationOccurrence,
+        layout: .stack,
+        steps: swiftUISemanticAPICompleteDestination.steps,
+        completionConditions: swiftUISemanticAPICompleteDestination.completionConditions,
+        expectedSemanticTimeline: semanticNavigationAPITimeline(
+            initialLifecycleMarkers: ["on-appear", "task-immediate"]
+        )
+    )
+
+    private static func semanticNavigationAPITimeline(
+        initialLifecycleMarkers: [String] = []
+    ) -> [ProbeExpectation] {
         var timeline: [ProbeExpectation] = [
             ProbeExpectation(
                 .viewStarted,
@@ -960,6 +982,13 @@ enum ProbeScenarioCatalog {
                 rumViewOrigin: .semantic
             )
         ]
+        for marker in initialLifecycleMarkers {
+            timeline += semanticMarkerExpectations(
+                screen: "home",
+                occurrence: 1,
+                name: marker
+            )
+        }
         timeline += semanticMarkerExpectations(
             screen: "home",
             occurrence: 1,

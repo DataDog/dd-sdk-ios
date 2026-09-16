@@ -52,6 +52,7 @@ final class ProbeScenarioRunnerTests: XCTestCase {
                 "swiftui.coexistence.automatic-scene-targeted-full-screen-cover",
                 "swiftui.semantic-api.presentation-replacement",
                 "swiftui.semantic-api.sibling-container-isolation",
+                "swiftui.semantic-host.explicit-source",
                 "swiftui.coexistence.automatic-keyed-manual-view",
                 "swiftui.coexistence.nested-keyed-manual-view",
                 "swiftui.coexistence.same-key-manual-two-scenes",
@@ -584,6 +585,39 @@ final class ProbeScenarioRunnerTests: XCTestCase {
                 "Missing semantic view occurrence \(screen)#\(occurrence)"
             )
         }
+    }
+
+    func testSemanticNavigationHostUsesStandardNavigationWithExplicitSource() throws {
+        let scenario = try XCTUnwrap(
+            ProbeScenarioCatalog.scenario(
+                identifier: "swiftui.semantic-host.explicit-source"
+            )
+        )
+
+        XCTAssertEqual(scenario.trackingMode, .navigationOccurrence)
+        XCTAssertTrue(ProbeScenarioCatalog.usesObservableDriver(scenario))
+        XCTAssertTrue(ProbeScenarioCatalog.usesSemanticNavigationHostSPI(scenario))
+        XCTAssertFalse(ProbeScenarioCatalog.usesSemanticNavigationSPI(scenario))
+        XCTAssertEqual(
+            scenario.expectedSemanticTimeline.count,
+            try XCTUnwrap(
+                ProbeScenarioCatalog.scenario(
+                    identifier: "swiftui.semantic-api.complete-destination"
+                )
+            ).expectedSemanticTimeline.count + 4
+        )
+        XCTAssertTrue(scenario.expectedSemanticTimeline.contains { expectation in
+            expectation.kind == .action
+                && expectation.name == "on-appear"
+                && expectation.screen == "home"
+                && expectation.occurrence == 1
+        })
+        XCTAssertTrue(scenario.expectedSemanticTimeline.contains { expectation in
+            expectation.kind == .resource
+                && expectation.name == "task-immediate"
+                && expectation.screen == "home"
+                && expectation.occurrence == 1
+        })
     }
 
     func testSemanticNavigationAPICoversPresentationReplacement() throws {
