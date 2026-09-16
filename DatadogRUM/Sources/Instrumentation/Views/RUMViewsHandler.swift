@@ -170,6 +170,20 @@ internal final class RUMViewsHandler {
     /// this publisher's commands.
     internal weak var subscriber: RUMCommandSubscriber?
 
+    #if !os(watchOS)
+    /// Shares the exact lifecycle source and scene resolver with SwiftUI
+    /// instrumentation that must release scene-owned state on disconnect.
+    internal var lifecycleNotificationCenter: NotificationCenter? {
+        notificationCenter
+    }
+
+    internal func sceneIdentifierForLifecycleNotification(
+        _ notification: Notification
+    ) -> RUMSceneIdentifier? {
+        sceneIdentifierFromNotification(notification)
+    }
+    #endif
+
     /// The appearing views stacks, independently keyed by scene.
     ///
     /// This stack allows to track appearing and disappearing views to consistently
@@ -188,6 +202,10 @@ internal final class RUMViewsHandler {
     /// not have a tracked view stack yet. Scene notifications can precede
     /// `viewDidAppear`, especially while creating or restoring a window.
     private var sceneActivityByIdentifier: [RUMSceneIdentifier: Bool] = [:]
+
+    /// Scene sessions that have disconnected and must reject stale lifecycle
+    /// callbacks until UIKit announces a new connection for that session.
+    private var disconnectedSceneIdentifiers: Set<RUMSceneIdentifier> = []
 
     #if os(iOS)
     /// Split metadata captured while each UIKit controller is attached.
@@ -268,6 +286,12 @@ internal final class RUMViewsHandler {
         )
         notificationCenter.addObserver(
             self,
+            selector: #selector(sceneWillConnect(_:)),
+            name: UIScene.willConnectNotification,
+            object: nil
+        )
+        notificationCenter.addObserver(
+            self,
             selector: #selector(sceneDidEnterBackground(_:)),
             name: UIScene.didEnterBackgroundNotification,
             object: nil
@@ -323,6 +347,7 @@ internal final class RUMViewsHandler {
             object: nil
         )
         #if !os(watchOS)
+        notificationCenter?.removeObserver(self, name: UIScene.willConnectNotification, object: nil)
         notificationCenter?.removeObserver(self, name: UIScene.didEnterBackgroundNotification, object: nil)
         notificationCenter?.removeObserver(self, name: UIScene.willEnterForegroundNotification, object: nil)
         notificationCenter?.removeObserver(self, name: UIScene.didDisconnectNotification, object: nil)
@@ -334,6 +359,13 @@ internal final class RUMViewsHandler {
     }
 
     private func add(view: View, stoppingCurrentAt time: Date? = nil) {
+        #if !os(watchOS)
+        if let sceneIdentifier = view.sceneIdentifier,
+           disconnectedSceneIdentifiers.contains(sceneIdentifier) {
+            return
+        }
+        #endif
+
         let stackIndex: Int
         if let existingIndex = stacks.firstIndex(where: { $0.sceneIdentifier == view.sceneIdentifier }) {
             stackIndex = existingIndex
@@ -933,6 +965,15 @@ internal final class RUMViewsHandler {
 
     #if !os(watchOS)
     @objc
+    private func sceneWillConnect(_ notification: Notification) {
+        guard let sceneIdentifier = sceneIdentifierFromNotification(notification) else {
+            return
+        }
+        disconnectedSceneIdentifiers.remove(sceneIdentifier)
+        sceneActivityByIdentifier[sceneIdentifier] = false
+    }
+
+    @objc
     private func sceneDidEnterBackground(_ notification: Notification) {
         guard let sceneIdentifier = sceneIdentifierFromNotification(notification) else {
             return
@@ -960,6 +1001,7 @@ internal final class RUMViewsHandler {
         guard let sceneIdentifier = sceneIdentifierFromNotification(notification) else {
             return
         }
+        disconnectedSceneIdentifiers.remove(sceneIdentifier)
         sceneActivityByIdentifier[sceneIdentifier] = true
         guard let index = stacks.firstIndex(where: { $0.sceneIdentifier == sceneIdentifier }) else {
             return
@@ -972,12 +1014,12 @@ internal final class RUMViewsHandler {
         guard let sceneIdentifier = sceneIdentifierFromNotification(notification) else {
             return
         }
+        disconnectedSceneIdentifiers.insert(sceneIdentifier)
         sceneActivityByIdentifier[sceneIdentifier] = false
         guard let index = stacks.firstIndex(where: { $0.sceneIdentifier == sceneIdentifier }) else {
             #if os(iOS)
             pendingUIKitSplitViewRemovals.removeAll { $0.sceneIdentifier == sceneIdentifier }
             #endif
-            sceneActivityByIdentifier.removeValue(forKey: sceneIdentifier)
             return
         }
         #if os(iOS)
@@ -994,7 +1036,6 @@ internal final class RUMViewsHandler {
             discardUIKitSplitViewContextIfUntracked(identity: identity)
         }
         #endif
-        sceneActivityByIdentifier.removeValue(forKey: sceneIdentifier)
     }
     #endif
 }

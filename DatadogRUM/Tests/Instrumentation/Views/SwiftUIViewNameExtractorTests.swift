@@ -6,8 +6,12 @@
 
 #if !os(watchOS)
 
+import Combine
 import XCTest
 import SwiftUI
+#if compiler(>=6.4)
+import Observation
+#endif
 @_spi(Experimental)
 @testable import DatadogRUM
 @testable import DatadogInternal
@@ -1314,6 +1318,60 @@ class RUMSwiftUIViewAuthorityRegistryTests: XCTestCase {
 
         XCTAssertFalse(registry.isAutomaticViewSuppressed(for: presentation))
         XCTAssertFalse(registry.isAutomaticViewSuppressed(for: root))
+    }
+
+    @available(iOS 27.0, *)
+    func testSemanticHostFinalDetachReleasesOnlyItsAutomaticSuppressionSubtree() {
+        let registry = RUMSwiftUIViewAuthorityRegistry()
+        let hostA = RUMSemanticNavigationHostState()
+        let hostB = RUMSemanticNavigationHostState()
+        let sourceA = RUMNavigationTransitions(
+            currentDestination: RUMView(name: "Home A")
+        )
+        let sourceB = RUMNavigationTransitions(
+            currentDestination: RUMView(name: "Home B")
+        )
+        let observerA = RUMSceneIdentifierReader.ObserverView { _ in }
+        let observerB = RUMSceneIdentifierReader.ObserverView { _ in }
+        let controllerA = UIViewController()
+        let controllerB = UIViewController()
+        let unrelated = UIViewController()
+        let root = UIViewController()
+        root.addChild(controllerA)
+        root.view.addSubview(controllerA.view)
+        controllerA.didMove(toParent: root)
+        root.addChild(controllerB)
+        root.view.addSubview(controllerB.view)
+        controllerB.didMove(toParent: root)
+        root.addChild(unrelated)
+        root.view.addSubview(unrelated.view)
+        unrelated.didMove(toParent: root)
+        controllerA.view.addSubview(observerA)
+        controllerB.view.addSubview(observerB)
+        let window = UIWindow()
+        window.rootViewController = root
+        window.isHidden = false
+
+        hostA.reconcile(transitions: sourceA, viewsHandler: nil)
+        hostB.reconcile(transitions: sourceB, viewsHandler: nil)
+        registry.register(
+            observer: observerA,
+            suppressionState: hostA.suppressionState
+        )
+        registry.register(
+            observer: observerB,
+            suppressionState: hostB.suppressionState
+        )
+
+        XCTAssertTrue(registry.isAutomaticViewSuppressed(for: controllerA))
+        XCTAssertTrue(registry.isAutomaticViewSuppressed(for: controllerB))
+        XCTAssertFalse(registry.isAutomaticViewSuppressed(for: unrelated))
+
+        hostA.finalDetach()
+
+        XCTAssertFalse(registry.isAutomaticViewSuppressed(for: controllerA))
+        XCTAssertTrue(registry.isAutomaticViewSuppressed(for: controllerB))
+        XCTAssertFalse(registry.isAutomaticViewSuppressed(for: unrelated))
     }
 }
 
@@ -4703,6 +4761,94 @@ class RUMSwiftUINavigationOccurrenceSourceTests: XCTestCase {
 @available(iOS 27.0, *)
 @MainActor
 final class RUMSwiftUISemanticNavigationEngineTests: XCTestCase {
+    private struct SemanticSnapshot: Equatable {
+        let generation: UInt64
+        let name: String
+        let path: String?
+    }
+
+    private enum ParityRoot: Hashable {
+        case home
+    }
+
+    private enum ParityRoute: Hashable {
+        case thread(Int)
+    }
+
+    private enum ParityPresentation: Hashable {
+        case compose
+        case attachmentPreview
+    }
+
+    private final class ObservationCounter {
+        private(set) var subscriptions = 0
+        private(set) var projections = 0
+        private(set) var renderedSelections: [Bool] = []
+
+        func recordSubscription() {
+            subscriptions += 1
+        }
+
+        func recordProjection() {
+            projections += 1
+        }
+
+        func recordRender(useSecondPublisher: Bool) {
+            renderedSelections.append(useSecondPublisher)
+        }
+    }
+
+    private final class ObservedHostReconstructionModel: ObservableObject {
+        @Published var useSecondPublisher = false
+    }
+
+#if compiler(>=6.4)
+    @Observable
+    @MainActor
+    final class ObservationNavigationModel {
+        var destination: RUMNavigationDestination
+
+        init(destination: RUMNavigationDestination) {
+            self.destination = destination
+        }
+    }
+
+    @Observable
+    @MainActor
+    final class MultiPropertyObservationNavigationModel {
+        var route: Int?
+        var presentation: String?
+    }
+
+    @Observable
+    final class BackgroundObservationNavigationModel: @unchecked Sendable {
+        var destination: RUMNavigationDestination
+
+        init(destination: RUMNavigationDestination) {
+            self.destination = destination
+        }
+    }
+
+    private struct ObservationHostReconstructionHarness: SwiftUI.View {
+        @ObservedObject var renderModel: ObservedHostReconstructionModel
+        let navigationModel: ObservationNavigationModel
+        let counter: ObservationCounter
+
+        var body: some SwiftUI.View {
+            let useSecondRendering = renderModel.useSecondPublisher
+            counter.recordRender(useSecondPublisher: useSecondRendering)
+            return RUMNavigationHost(
+                observingCurrentDestination: {
+                    counter.recordProjection()
+                    return navigationModel.destination
+                }
+            ) {
+                SwiftUI.Text(useSecondRendering ? "Second" : "First")
+            }
+        }
+    }
+#endif
+
     private struct Presentation: Identifiable {
         let id: String
     }
@@ -4714,6 +4860,25 @@ final class RUMSwiftUISemanticNavigationEngineTests: XCTestCase {
 
         var body: some SwiftUI.View {
             SwiftUI.Text("Customer navigation")
+        }
+    }
+
+    private struct ObservedHostReconstructionHarness: SwiftUI.View {
+        @ObservedObject var model: ObservedHostReconstructionModel
+        let first: AnyPublisher<Int, Never>
+        let second: AnyPublisher<Int, Never>
+        let renderCounter: ObservationCounter
+
+        var body: some SwiftUI.View {
+            let useSecondPublisher = model.useSecondPublisher
+            let updates = useSecondPublisher ? second : first
+            renderCounter.recordRender(useSecondPublisher: useSecondPublisher)
+            return RUMNavigationHost(
+                observing: updates,
+                destination: { .root($0) }
+            ) {
+                SwiftUI.Text(useSecondPublisher ? "Second" : "First")
+            }
         }
     }
 
@@ -4745,6 +4910,27 @@ final class RUMSwiftUISemanticNavigationEngineTests: XCTestCase {
             SwiftUI.Text("Customer navigation")
         }
     }
+
+#if compiler(>=6.4)
+    func testObservationHostKeepsStandardSwiftUINavigation() {
+        let model = ObservationNavigationModel(
+            destination: .root(ParityRoot.home)
+        )
+        _ = RUMNavigationHost(
+            observingCurrentDestination: { model.destination }
+        ) {
+            SwiftUI.NavigationStack {
+                SwiftUI.Text("Customer navigation")
+            }
+            .sheet(isPresented: .constant(false)) {
+                SwiftUI.Text("Customer sheet")
+            }
+            .fullScreenCover(isPresented: .constant(false)) {
+                SwiftUI.Text("Customer cover")
+            }
+        }
+    }
+#endif
 
     func testTransitionSourcePublishesOnlyCommittedDestinationsAsFreshOccurrences() {
         let source = RUMNavigationTransitions(
@@ -4787,6 +4973,284 @@ final class RUMSwiftUISemanticNavigationEngineTests: XCTestCase {
         source.removeObserver(observation)
     }
 
+    func testNavigationInputsProduceEquivalentAcceptedDestinationTimeline() throws {
+        let destinations: [RUMNavigationDestination] = [
+            .root(ParityRoot.home),
+            .route(ParityRoute.thread(42), occurrence: 1),
+            .route(ParityRoute.thread(42), occurrence: 2),
+            .presentation(ParityPresentation.compose),
+            .presentation(ParityPresentation.attachmentPreview),
+            .root(ParityRoot.home)
+        ]
+        let metadata = RUMNavigationMetadata.automatic(in: "parity")
+        let expected = destinations.enumerated().map { index, destination in
+            let view = metadata.view(for: destination)
+            return SemanticSnapshot(
+                generation: UInt64(index),
+                name: view.name,
+                path: view.path
+            )
+        }
+
+        let updates = CurrentValueSubject<RUMNavigationDestination, Never>(
+            destinations[0]
+        )
+        let observedAdapter = RUMNavigationObservedTransitions(
+            updates: updates,
+            destination: { $0 },
+            metadata: metadata
+        )
+        let observedSource = try XCTUnwrap(observedAdapter.transitions)
+        var observedSnapshots: [SemanticSnapshot] = []
+        let observedObservation = observedSource.observe {
+            observedSnapshots.append(Self.semanticSnapshot($0))
+        }
+        updates.send(destinations[0])
+        destinations.dropFirst().forEach(updates.send)
+        observedSource.removeObserver(observedObservation)
+
+        let explicitSource = RUMNavigationTransitions(
+            currentDestination: metadata.view(for: destinations[0])
+        )
+        var explicitSnapshots: [SemanticSnapshot] = []
+        let explicitObservation = explicitSource.observe {
+            explicitSnapshots.append(Self.semanticSnapshot($0))
+        }
+        explicitSource.willNavigate(
+            id: "cancelled-proposal",
+            destination: RUMView(name: "Cancelled")
+        )
+        explicitSource.cancel(id: "cancelled-proposal")
+        explicitSource.commit(id: "cancelled-proposal")
+        Self.commit(
+            destinations: destinations.dropFirst(),
+            metadata: metadata,
+            to: explicitSource
+        )
+        explicitSource.removeObserver(explicitObservation)
+
+        let capabilitySource = RUMNavigationTransitions(
+            currentDestination: metadata.view(for: destinations[0])
+        )
+        let capabilityContent = ProvidingContent(source: capabilitySource)
+        let resolvedCapability = try XCTUnwrap(
+            RUMNavigationHost<ProvidingContent>.resolveTransitions(
+                explicit: nil,
+                content: capabilityContent
+            )
+        )
+        var capabilitySnapshots: [SemanticSnapshot] = []
+        let capabilityObservation = resolvedCapability.observe {
+            capabilitySnapshots.append(Self.semanticSnapshot($0))
+        }
+        Self.commit(
+            destinations: destinations.dropFirst(),
+            metadata: metadata,
+            to: resolvedCapability
+        )
+        resolvedCapability.removeObserver(capabilityObservation)
+
+        XCTAssertEqual(observedSnapshots, expected)
+        XCTAssertEqual(explicitSnapshots, expected)
+        XCTAssertEqual(capabilitySnapshots, expected)
+        XCTAssertNil(
+            RUMNavigationHost<SwiftUI.Text>.resolveTransitions(
+                explicit: nil,
+                content: SwiftUI.Text("Opaque")
+            )
+        )
+    }
+
+#if compiler(>=6.4)
+    func testObservationAdapterRearmsSynchronouslyAfterEachDidSet() throws {
+        let model = ObservationNavigationModel(
+            destination: .root(ParityRoot.home)
+        )
+        let metadata = RUMNavigationMetadata.automatic(in: "observation")
+        let adapter = RUMNavigationObservedTransitions(
+            observingCurrentDestination: { model.destination },
+            metadata: metadata
+        )
+        let source = try XCTUnwrap(adapter.transitions)
+        var order: [String] = []
+        var generations: [UInt64] = []
+        let observation = source.observe { snapshot in
+            generations.append(snapshot.generation)
+            order.append(snapshot.destination.name)
+        }
+
+        model.destination = .route(ParityRoute.thread(42), occurrence: 1)
+        order.append("after-route-1")
+        model.destination = .route(ParityRoute.thread(42), occurrence: 2)
+        order.append("after-route-2")
+        model.destination = .presentation(ParityPresentation.compose)
+        order.append("after-presentation")
+        model.destination = .root(ParityRoot.home)
+        order.append("after-root")
+
+        XCTAssertEqual(
+            order,
+            [
+                "Home",
+                "Thread",
+                "after-route-1",
+                "Thread",
+                "after-route-2",
+                "Compose",
+                "after-presentation",
+                "Home",
+                "after-root"
+            ]
+        )
+        XCTAssertEqual(generations, [0, 1, 2, 3, 4])
+        source.removeObserver(observation)
+    }
+
+    func testObservationAdapterRearmsBeforeNestedObserverMutation() throws {
+        let model = ObservationNavigationModel(
+            destination: .root(ParityRoot.home)
+        )
+        let adapter = RUMNavigationObservedTransitions(
+            observingCurrentDestination: { model.destination },
+            metadata: .automatic
+        )
+        let source = try XCTUnwrap(adapter.transitions)
+        var snapshots: [RUMNavigationTransitions.Snapshot] = []
+        var performedNestedMutation = false
+        let observation = source.observe { snapshot in
+            snapshots.append(snapshot)
+            if snapshot.destination.name == "Thread",
+               !performedNestedMutation {
+                performedNestedMutation = true
+                model.destination = .presentation(ParityPresentation.compose)
+            }
+        }
+
+        model.destination = .route(ParityRoute.thread(42), occurrence: 1)
+        model.destination = .root(ParityRoot.home)
+
+        XCTAssertEqual(
+            snapshots.map(\.destination.name),
+            ["Home", "Thread", "Compose", "Home"]
+        )
+        XCTAssertEqual(snapshots.map(\.generation), [0, 1, 2, 3])
+        source.removeObserver(observation)
+    }
+
+    func testObservationAdapterTreatsIndependentPropertyMutationsAsSeparateStates() throws {
+        let model = MultiPropertyObservationNavigationModel()
+        let adapter = RUMNavigationObservedTransitions(
+            observingCurrentDestination: {
+                if let presentation = model.presentation {
+                    return .presentation(presentation)
+                }
+                if let route = model.route {
+                    return .route(route)
+                }
+                return .root(ParityRoot.home)
+            },
+            metadata: .automatic
+        )
+        let source = try XCTUnwrap(adapter.transitions)
+        var names: [String] = []
+        let observation = source.observe { names.append($0.destination.name) }
+
+        // Each independently observed property mutation is a committed signal.
+        // Customers that need an atomic composite destination must expose one
+        // accepted-state property rather than project sequential properties.
+        model.route = 42
+        model.presentation = "compose"
+
+        XCTAssertEqual(names, ["Home", "Int", "String"])
+        source.removeObserver(observation)
+    }
+
+    func testObservationAdapterStopsRearmingAfterDeallocation() throws {
+        let model = ObservationNavigationModel(
+            destination: .root(ParityRoot.home)
+        )
+        var adapter: RUMNavigationObservedTransitions? =
+            RUMNavigationObservedTransitions(
+                observingCurrentDestination: { model.destination },
+                metadata: .automatic
+            )
+        weak var weakAdapter = adapter
+        let source = try XCTUnwrap(adapter?.transitions)
+        var names: [String] = []
+        let observation = source.observe { names.append($0.destination.name) }
+
+        adapter = nil
+        XCTAssertNil(weakAdapter)
+        model.destination = .route(ParityRoute.thread(42), occurrence: 1)
+
+        XCTAssertEqual(names, ["Home"])
+        source.removeObserver(observation)
+    }
+
+    func testObservationNavigationHostTracksOnceAcrossSwiftUIReconstruction() async {
+        let renderModel = ObservedHostReconstructionModel()
+        let navigationModel = ObservationNavigationModel(
+            destination: .root(ParityRoot.home)
+        )
+        let counter = ObservationCounter()
+        let hostingController = UIHostingController(
+            rootView: ObservationHostReconstructionHarness(
+                renderModel: renderModel,
+                navigationModel: navigationModel,
+                counter: counter
+            )
+        )
+        let window = UIWindow()
+        window.rootViewController = hostingController
+        window.makeKeyAndVisible()
+
+        hostingController.view.layoutIfNeeded()
+        await drainMainQueue()
+
+        XCTAssertEqual(counter.projections, 1)
+        XCTAssertTrue(counter.renderedSelections.contains(false))
+
+        renderModel.useSecondPublisher = true
+        hostingController.view.setNeedsLayout()
+        hostingController.view.layoutIfNeeded()
+        await drainMainQueue()
+
+        XCTAssertEqual(counter.projections, 1)
+        XCTAssertTrue(counter.renderedSelections.contains(true))
+
+        navigationModel.destination = .route(
+            ParityRoute.thread(42),
+            occurrence: 1
+        )
+
+        XCTAssertEqual(counter.projections, 2)
+    }
+
+    func testObservationAdapterRemainsCrashSafeForBackgroundMutation() async throws {
+        let model = BackgroundObservationNavigationModel(
+            destination: .root(ParityRoot.home)
+        )
+        let adapter = RUMNavigationObservedTransitions(
+            observingCurrentDestination: { model.destination },
+            metadata: .automatic
+        )
+        let source = try XCTUnwrap(adapter.transitions)
+        var names: [String] = []
+        let observation = source.observe { names.append($0.destination.name) }
+        let mutationFinished = expectation(description: "background mutation finished")
+
+        DispatchQueue.global().async {
+            model.destination = .route(ParityRoute.thread(42), occurrence: 1)
+            mutationFinished.fulfill()
+        }
+        await fulfillment(of: [mutationFinished], timeout: 1)
+        await drainMainQueue()
+
+        XCTAssertEqual(names, ["Home", "Thread"])
+        source.removeObserver(observation)
+    }
+#endif
+
     func testNavigationHostResolvesOptionalCapability() {
         let source = RUMNavigationTransitions(
             currentDestination: RUMView(name: "Home")
@@ -4818,6 +5282,21 @@ final class RUMSwiftUISemanticNavigationEngineTests: XCTestCase {
         XCTAssertTrue(resolved === explicitSource)
     }
 
+    func testConfiguredObservedSourceDoesNotFallThroughToCapabilityWhilePending() {
+        let capabilitySource = RUMNavigationTransitions(
+            currentDestination: RUMView(name: "Capability")
+        )
+        let content = ProvidingContent(source: capabilitySource)
+
+        let resolved = RUMNavigationHost<ProvidingContent>.resolveTransitions(
+            explicit: nil,
+            content: content,
+            allowsCapabilityFallback: false
+        )
+
+        XCTAssertNil(resolved)
+    }
+
     func testHostStatePinsFirstSourceAcrossContainerReconstruction() {
         let first = RUMNavigationTransitions(
             currentDestination: RUMView(name: "Home")
@@ -4837,6 +5316,83 @@ final class RUMSwiftUISemanticNavigationEngineTests: XCTestCase {
 
         XCTAssertNil(hostState.selectedTransitions)
         XCTAssertFalse(hostState.suppressionState.isActive)
+    }
+
+    func testObservedNavigationHostSubscribesOnceAcrossSwiftUIReconstruction() async {
+        let model = ObservedHostReconstructionModel()
+        let firstCounter = ObservationCounter()
+        let secondCounter = ObservationCounter()
+        let renderCounter = ObservationCounter()
+        let first = CurrentValueSubject<Int, Never>(1)
+            .handleEvents(receiveSubscription: { _ in
+                firstCounter.recordSubscription()
+            })
+            .eraseToAnyPublisher()
+        let second = CurrentValueSubject<Int, Never>(2)
+            .handleEvents(receiveSubscription: { _ in
+                secondCounter.recordSubscription()
+            })
+            .eraseToAnyPublisher()
+        let hostingController = UIHostingController(
+            rootView: ObservedHostReconstructionHarness(
+                model: model,
+                first: first,
+                second: second,
+                renderCounter: renderCounter
+            )
+        )
+        let window = UIWindow()
+        window.rootViewController = hostingController
+        window.makeKeyAndVisible()
+
+        hostingController.view.layoutIfNeeded()
+        await drainMainQueue()
+
+        XCTAssertEqual(firstCounter.subscriptions, 1)
+        XCTAssertEqual(secondCounter.subscriptions, 0)
+        XCTAssertTrue(renderCounter.renderedSelections.contains(false))
+
+        model.useSecondPublisher = true
+        hostingController.view.setNeedsLayout()
+        hostingController.view.layoutIfNeeded()
+        await drainMainQueue()
+
+        XCTAssertEqual(firstCounter.subscriptions, 1)
+        XCTAssertEqual(secondCounter.subscriptions, 0)
+        XCTAssertTrue(renderCounter.renderedSelections.contains(true))
+    }
+
+    private func drainMainQueue() async {
+        let drained = expectation(description: "main queue drained")
+        DispatchQueue.main.async {
+            drained.fulfill()
+        }
+        await fulfillment(of: [drained], timeout: 1)
+    }
+
+    private static func semanticSnapshot(
+        _ snapshot: RUMNavigationTransitions.Snapshot
+    ) -> SemanticSnapshot {
+        SemanticSnapshot(
+            generation: snapshot.generation,
+            name: snapshot.destination.name,
+            path: snapshot.destination.path
+        )
+    }
+
+    private static func commit(
+        destinations: ArraySlice<RUMNavigationDestination>,
+        metadata: RUMNavigationMetadata,
+        to source: RUMNavigationTransitions
+    ) {
+        for destination in destinations {
+            let id = UUID().uuidString
+            source.willNavigate(
+                id: id,
+                destination: metadata.view(for: destination)
+            )
+            source.commit(id: id)
+        }
     }
 }
 
