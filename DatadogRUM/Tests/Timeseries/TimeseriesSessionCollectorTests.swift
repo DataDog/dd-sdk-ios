@@ -757,12 +757,17 @@ class TimeseriesSessionCollectorTests: XCTestCase {
     func testWhenBackgrounded_pauseAlwaysStopsSampling() {
         // Given
         memoryReader.vitalData = 1_000_000
+        // Injecting the collector's own serial queue lets this test enqueue "read the count" and
+        // "pause" as a single atomic unit of work below, with no gap where the sampling timer
+        // (scheduled on this same queue) could sneak a tick in between the two.
+        let collectorQueue = DispatchQueue(label: "test.timeseries-collector")
         let collector = TimeseriesSessionCollector(
             memoryReader: memoryReader,
             featureScope: featureScope,
             batchSize: 2,
             samplingInterval: 0.05,
-            cpuUsageProvider: { nil }
+            cpuUsageProvider: { nil },
+            queue: collectorQueue
         )
         let contextReader = RUMActiveContextReaderMock()
         collector.activeContextReader = contextReader
@@ -774,17 +779,19 @@ class TimeseriesSessionCollectorTests: XCTestCase {
         collector.start(sessionID: "session-bg", applicationID: "app-1", sessionType: .user)
         waitForExpectations(timeout: 2)
 
-        // `flush()` blocks until the collector's internal queue is drained, so any sample from a timer
-        // tick already in flight is counted here rather than racing with the `pause()` call below.
-        collector.flush()
-        let countBeforePause = featureScope.eventsWritten(ofType: RUMTimeseriesMemoryEvent.self).count
+        // When — pause on backgrounding. Reading `countBeforePause` and calling `pause()` inside the
+        // same block, dispatched onto the collector's own queue, makes them atomic with respect to the
+        // sampling timer (also scheduled on this queue): no tick can land between the two, unlike a
+        // `flush()`-then-read from the main thread which leaves a (very narrow but nonzero) gap.
+        let countBeforePause = collectorQueue.sync { () -> Int in
+            let count = featureScope.eventsWritten(ofType: RUMTimeseriesMemoryEvent.self).count
+            collector.pause(sessionID: "session-bg")
+            return count
+        }
         XCTAssertGreaterThan(countBeforePause, 0)
 
-        // When — pause on backgrounding
-        collector.pause(sessionID: "session-bg")
-        // `pause()` and `flush()` are both dispatched on the collector's serial FIFO queue, so this
-        // `flush()` won't return until `pause()` itself has finished executing — a deterministic
-        // completion barrier instead of racing an async wait against the read below.
+        // `flush()` is dispatched on the same serial FIFO queue right behind the `pause()` enqueued
+        // above, so this won't return until `pause()` itself has finished executing.
         collector.flush()
 
         // Then — no new events accumulate immediately after pause completes
