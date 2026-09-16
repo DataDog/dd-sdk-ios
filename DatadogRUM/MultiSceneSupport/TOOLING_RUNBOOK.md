@@ -568,6 +568,13 @@ records this exact boundary: the lock-state read succeeded once, but subsequent
 app/process inventories failed; no clean boundary, install, launch, run ID, RUM
 session, or SDK verdict exists.
 
+When the user reports a cable connection but CoreDevice exposes only
+`localNetwork`, confirm USB enumeration independently (for example,
+`system_profiler SPUSBDataType -detailLevel mini`). No matching iPad means the
+paired network record is not evidence of a usable cable. Ask for an unlocked
+device, a data-capable cable/port, and acceptance of any trust prompt before
+retrying.
+
 Record both identifiers when they differ: the hardware UDID selects the Xcode
 destination, while the CoreDevice identifier can appear in `devicectl` output.
 The transport (`usb`, `local-network`, or another reported path) is evidence too;

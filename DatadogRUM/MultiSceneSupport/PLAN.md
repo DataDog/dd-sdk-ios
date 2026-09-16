@@ -307,6 +307,41 @@ inventory calls; then begin with the unchanged `EXP-131` scenario.
 | P1 | `EXP-042` | A and B restore concurrently with fresh RUM occurrences | Restoration controls from `EXP-143` | Scene lifecycle/restoration | Both native scene sessions reconnect; no stale RUM scope or cross-owner work | Physical multi-window device |
 | P1 | `EXP-001` | UIKit-hosted SwiftUI parity, only if still a release requirement | Final host matrix decision | Example/probe host | Same semantic and attribution guarantees as native host | Physical device |
 
+### Automated physical execution order
+
+Once `EXP-156`'s connection gate passes, use one physical-device owner and a
+fresh run ID and clean boundary for each independent scenario. Run in this order
+so foundational attribution failures stop dependent batches early:
+
+1. `operations.cross-scene.lifecycle` (`EXP-131`) — inferred context and the
+   raw/reduced Operation model;
+2. `swiftui.coexistence.same-key-manual-two-scenes` (`EXP-129`) and
+   `swiftui.coexistence.semantic-a-automatic-b` (`EXP-118`) — manual authority,
+   same-key isolation, and automatic sibling coexistence;
+3. `swiftui.split.same-type-selection-two-scenes` (`EXP-103`),
+   `uikit.split.concurrent-scenes` (`EXP-086`), and
+   `windows.parallel-navigation` — SwiftUI/UIKit occurrence isolation and
+   simultaneous-window navigation;
+4. `windows.close-with-resource`, `windows.activation-sequence`, and
+   `actions.exact-source-handoff` — peer close, focus lifecycle, actions, and
+   exact owner handoff;
+5. `traces.urlsession-shared-request` (`EXP-136`) — one A-created request and
+   one A-owned span after B joins;
+6. `swiftui.semantic-host.final-removal-isolation` — genuine final host removal
+   while the peer continues;
+7. the two-stage `windows.restoration` (`EXP-042`) flow, only after preserving
+   and proving the required predecessor state.
+
+The first six groups are signal-driven or deterministic and require no analog
+touch when the OS can create the requested topology. A capability rejection,
+failure to keep both windows usable, or inability to drive restoration is
+`INCONCLUSIVE`, not an SDK failure; keep the scenario unchanged for a human or
+different device. `EXP-100`, `EXP-081`, and the `EXP-152` gesture follow-up stay
+human-driven because cancellation/completion must be proved from a real analog
+gesture. `EXP-076`/`EXP-087` resize stays human-driven unless a physical-device
+resize controller can reproduce the same OS transition and expose exact geometry
+evidence.
+
 Forward-looking hardware gates without dedicated IDs remain: genuine
 disconnect/reconnect, isolated per-scene background/foreground, and the final
 iPhone Duo iOS 27.1 release matrix. `EXP-039` is not in this queue because its
