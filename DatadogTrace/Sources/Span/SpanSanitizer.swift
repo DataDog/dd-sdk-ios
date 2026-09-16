@@ -21,19 +21,18 @@ internal struct SpanSanitizer {
         var sanitizedTags = attributesSanitizer.sanitizeKeys(for: span.tags)
 
         // Limit to max number of attributes
-        // If any attributes need to be removed, we first reduce number of
-        // span tags, then user info extra attributes.
+        // The limit is applied per field, so `usr`, `account` and tags do not compete for it.
         sanitizedUserExtraInfo = attributesSanitizer.limitNumberOf(
             attributes: sanitizedUserExtraInfo,
             to: AttributesSanitizer.Constraints.maxNumberOfAttributes
         )
         sanitizedAccountExtraInfo = attributesSanitizer.limitNumberOf(
             attributes: sanitizedAccountExtraInfo,
-            to: AttributesSanitizer.Constraints.maxNumberOfAttributes - sanitizedUserExtraInfo.count
+            to: AttributesSanitizer.Constraints.maxNumberOfAttributes
         )
         sanitizedTags = attributesSanitizer.limitNumberOf(
             attributes: sanitizedTags,
-            to: AttributesSanitizer.Constraints.maxNumberOfAttributes - sanitizedAccountExtraInfo.count - sanitizedUserExtraInfo.count
+            to: AttributesSanitizer.Constraints.maxNumberOfAttributes
         )
 
         var sanitizedSpan = span

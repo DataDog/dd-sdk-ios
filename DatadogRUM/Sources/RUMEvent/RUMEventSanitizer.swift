@@ -26,17 +26,15 @@ internal struct RUMEventSanitizer {
         var event = event
 
         // Limit to max number of attributes.
-        // If any attributes need to be removed, we first reduce number of
-        // event attributes, then user info extra attributes.
-        var limit = AttributesSanitizer.Constraints.maxNumberOfAttributes
-        event.usr = sanitize(usr: event.usr, limit: &limit)
-        event.account = sanitize(account: event.account, limit: &limit)
-        event.context = sanitize(context: event.context, limit: &limit)
+        // The limit is applied per field, so `usr`, `account` and `context` do not compete for it.
+        event.usr = sanitize(usr: event.usr)
+        event.account = sanitize(account: event.account)
+        event.context = sanitize(context: event.context)
 
         return event
     }
 
-    private func sanitize(usr: RUMUser?, limit: inout Int) -> RUMUser? {
+    private func sanitize(usr: RUMUser?) -> RUMUser? {
         guard var usr = usr else {
             return nil
         }
@@ -45,13 +43,15 @@ internal struct RUMEventSanitizer {
         let attributes = attributesSanitizer.sanitizeKeys(for: usr.usrInfo, prefixLevels: 1)
 
         // Limit to max number of attributes.
-        usr.usrInfo = attributesSanitizer.limitNumberOf(attributes: attributes, to: limit)
+        usr.usrInfo = attributesSanitizer.limitNumberOf(
+            attributes: attributes,
+            to: AttributesSanitizer.Constraints.maxNumberOfAttributes
+        )
 
-        limit -= usr.usrInfo.count
         return usr
     }
 
-    private func sanitize(account: RUMAccount?, limit: inout Int) -> RUMAccount? {
+    private func sanitize(account: RUMAccount?) -> RUMAccount? {
         guard var account = account else {
             return nil
         }
@@ -60,13 +60,15 @@ internal struct RUMEventSanitizer {
         let attributes = attributesSanitizer.sanitizeKeys(for: account.accountInfo, prefixLevels: 1)
 
         // Limit to max number of attributes.
-        account.accountInfo = attributesSanitizer.limitNumberOf(attributes: attributes, to: limit)
+        account.accountInfo = attributesSanitizer.limitNumberOf(
+            attributes: attributes,
+            to: AttributesSanitizer.Constraints.maxNumberOfAttributes
+        )
 
-        limit -= account.accountInfo.count
         return account
     }
 
-    private func sanitize(context: RUMEventAttributes?, limit: inout Int) -> RUMEventAttributes? {
+    private func sanitize(context: RUMEventAttributes?) -> RUMEventAttributes? {
         guard var context = context else {
             return nil
         }
@@ -75,9 +77,11 @@ internal struct RUMEventSanitizer {
         let attributes = attributesSanitizer.sanitizeKeys(for: context.contextInfo, prefixLevels: 1)
 
         // Limit to max number of attributes.
-        context.contextInfo = attributesSanitizer.limitNumberOf(attributes: attributes, to: limit)
+        context.contextInfo = attributesSanitizer.limitNumberOf(
+            attributes: attributes,
+            to: AttributesSanitizer.Constraints.maxNumberOfAttributes
+        )
 
-        limit -= context.contextInfo.count
         return context
     }
 }

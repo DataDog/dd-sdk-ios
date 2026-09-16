@@ -119,7 +119,7 @@ class LogSanitizerTests: XCTestCase {
     }
 
     func testWhenNumberOfUserAttributesExceedsLimit_itDropsExtraOnes() {
-        let mockAttributes = (0...1_000).map { index in ("attribute-\(index)", mockValue()) }
+        let mockAttributes = (0...(AttributesSanitizer.Constraints.maxNumberOfAttributes + 100)).map { index in ("attribute-\(index)", mockValue()) }
         let log = LogEvent.mockWith(
             attributes: .mockWith(
                 userAttributes: Dictionary(uniqueKeysWithValues: mockAttributes)
@@ -129,6 +129,43 @@ class LogSanitizerTests: XCTestCase {
         let sanitized = LogEventSanitizer().sanitize(log: log)
 
         XCTAssertEqual(sanitized.attributes.userAttributes.count, AttributesSanitizer.Constraints.maxNumberOfAttributes)
+    }
+
+    func testWhenNumberOfUserInfoExtraAttributesExceedsLimit_itDropsExtraOnes() {
+        let extraInfo = (0...(AttributesSanitizer.Constraints.maxNumberOfAttributes + 100)).map { index in ("attribute-\(index)", mockValue()) }
+        let log = LogEvent.mockWith(
+            userInfo: UserInfo(id: nil, name: nil, email: nil, extraInfo: Dictionary(uniqueKeysWithValues: extraInfo))
+        )
+
+        let sanitized = LogEventSanitizer().sanitize(log: log)
+
+        XCTAssertEqual(sanitized.userInfo.extraInfo.count, AttributesSanitizer.Constraints.maxNumberOfAttributes)
+    }
+
+    func testWhenNumberOfAccountInfoExtraAttributesExceedsLimit_itDropsExtraOnes() {
+        let extraInfo = (0...(AttributesSanitizer.Constraints.maxNumberOfAttributes + 100)).map { index in ("attribute-\(index)", mockValue()) }
+        let log = LogEvent.mockWith(
+            accountInfo: AccountInfo(id: "account-id", extraInfo: Dictionary(uniqueKeysWithValues: extraInfo))
+        )
+
+        let sanitized = LogEventSanitizer().sanitize(log: log)
+
+        XCTAssertEqual(sanitized.accountInfo?.extraInfo.count, AttributesSanitizer.Constraints.maxNumberOfAttributes)
+    }
+
+    func testUserAndAccountInfoExtraAttributesAreLimitedIndependentlyOfEachOther() {
+        let extraInfo = Dictionary(
+            uniqueKeysWithValues: (0..<AttributesSanitizer.Constraints.maxNumberOfAttributes).map { index in ("attribute-\(index)", mockValue()) }
+        )
+        let log = LogEvent.mockWith(
+            userInfo: UserInfo(id: nil, name: nil, email: nil, extraInfo: extraInfo),
+            accountInfo: AccountInfo(id: "account-id", extraInfo: extraInfo)
+        )
+
+        let sanitized = LogEventSanitizer().sanitize(log: log)
+
+        XCTAssertEqual(sanitized.userInfo.extraInfo.count, AttributesSanitizer.Constraints.maxNumberOfAttributes)
+        XCTAssertEqual(sanitized.accountInfo?.extraInfo.count, AttributesSanitizer.Constraints.maxNumberOfAttributes)
     }
 
     func testInternalAttributesAreNotSanitized() {

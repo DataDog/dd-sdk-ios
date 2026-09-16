@@ -43,6 +43,16 @@ internal struct LogEventSanitizer {
         var sanitizedLog = log
         sanitizedLog.attributes = sanitizedAttributes
         sanitizedLog.tags = sanitizedTags
+        sanitizedLog.userInfo.extraInfo = attributesSanitizer.limitNumberOf(
+            attributes: log.userInfo.extraInfo,
+            to: AttributesSanitizer.Constraints.maxNumberOfAttributes
+        )
+        if let accountExtraInfo = log.accountInfo?.extraInfo {
+            sanitizedLog.accountInfo?.extraInfo = attributesSanitizer.limitNumberOf(
+                attributes: accountExtraInfo,
+                to: AttributesSanitizer.Constraints.maxNumberOfAttributes
+            )
+        }
         return sanitizedLog
     }
 

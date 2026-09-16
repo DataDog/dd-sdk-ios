@@ -103,13 +103,9 @@ class SpanSanitizerTests: XCTestCase {
         let sanitized = SpanSanitizer().sanitize(span: span)
 
         // Then
-        XCTAssertEqual(
-            sanitized.userInfo.extraInfo.count + sanitized.tags.count,
-            AttributesSanitizer.Constraints.maxNumberOfAttributes
-        )
-        XCTAssertTrue(
-            sanitized.userInfo.extraInfo.count >= sanitized.tags.count,
-            "If number of attributes needs to be limited, `tags` are removed prior to `extraInfo` attributes."
-        )
+        // The limit is applied per field, so `extraInfo` and tags are capped independently of each other.
+        let limit = AttributesSanitizer.Constraints.maxNumberOfAttributes
+        XCTAssertEqual(sanitized.userInfo.extraInfo.count, min(numberOfUserExtraAttributes, limit))
+        XCTAssertEqual(sanitized.tags.count, min(numberOfTags, limit))
     }
 }
