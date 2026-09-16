@@ -12,6 +12,7 @@ import TestUtilities
 @testable import DatadogProfiling
 //swiftlint:disable duplicate_imports
 import DatadogMachProfiler
+import DatadogMachProfiler.Pprof
 import DatadogMachProfiler.Testing
 //swiftlint:enable duplicate_imports
 
@@ -111,6 +112,7 @@ final class DatadogProfilerTests: XCTestCase {
         let dateProvider = DateProviderMock()
         dd_profiler_start_testing(100, false, 5.seconds.dd.toInt64Nanoseconds, 0)
         let profiler = continuousProfiler(isAppLaunchProfilingEnabled: true, dateProvider: dateProvider)
+        addSampleToCurrentProfile()
         let completedOperationStart = Vital.mockWith(name: "completed-operation")
         let completedOperationEnd = Vital.mockWith(
             name: completedOperationStart.name,
@@ -331,6 +333,7 @@ extension DatadogProfilerTests {
         let dateProvider = DateProviderMock()
         let profiler = continuousProfiler(dateProvider: dateProvider)
         dd_profiler_start_testing(100, false, 5.seconds.dd.toInt64Nanoseconds, 0)
+        addSampleToCurrentProfile()
 
         let startOperation = Vital.mockWith(id: .mockRandom(), name: "operation")
         let endOperation = Vital.mockWith(id: .mockRandom(), name: "operation", operationKey: startOperation.operationKey, stepType: .end)
@@ -369,6 +372,7 @@ extension DatadogProfilerTests {
         )
 
         dd_profiler_start_testing(100, false, 5.seconds.dd.toInt64Nanoseconds, 0)
+        addSampleToCurrentProfile()
         _ = profiler.receive(message: .payload(OperationMessage(attributes: mockRandomAttributes(), operation: ttfdVital)), from: core)
 
         // When
@@ -417,6 +421,7 @@ extension DatadogProfilerTests {
         )
 
         dd_profiler_start_testing(100, false, 5.seconds.dd.toInt64Nanoseconds, 0)
+        addSampleToCurrentProfile()
 
         _ = profiler.receive(
             message: .payload(
@@ -467,6 +472,7 @@ extension DatadogProfilerTests {
         )
         let profiler = continuousProfiler(profilingSamplerProvider: profilingSamplerProvider, dateProvider: dateProvider)
         dd_profiler_start_testing(100, false, 5.seconds.dd.toInt64Nanoseconds, 0)
+        addSampleToCurrentProfile()
 
         let attributes: [AttributeKey: AttributeValue] = [
             RUMCoreContext.IDs.sessionID: "long-task-session-id",
@@ -504,6 +510,7 @@ extension DatadogProfilerTests {
         )
         let profiler = continuousProfiler(profilingSamplerProvider: profilingSamplerProvider, dateProvider: dateProvider)
         dd_profiler_start_testing(100, false, 5.seconds.dd.toInt64Nanoseconds, 0)
+        addSampleToCurrentProfile()
 
         let attributes: [AttributeKey: AttributeValue] = [
             RUMCoreContext.IDs.sessionID: "app-hang-session-id",
@@ -623,6 +630,7 @@ extension DatadogProfilerTests {
         )
         flushQueue()
         XCTAssertEqual(dd_profiler_get_status(), DD_PROFILER_STATUS_RUNNING)
+        addSampleToCurrentProfile()
 
         let endOperation = Vital.mockWith(
             name: ongoingOperation.name,
@@ -769,6 +777,7 @@ extension DatadogProfilerTests {
         core.context = .mockWith(applicationStateHistory: .mockAppInForeground())
         flushQueue()
         XCTAssertEqual(dd_profiler_get_status(), DD_PROFILER_STATUS_RUNNING)
+        addSampleToCurrentProfile()
 
         let launchVital = Vital.mockWith(id: "ttid-id", name: "time_to_initial_display", stepType: nil)
         _ = profiler.receive(
@@ -792,7 +801,7 @@ extension DatadogProfilerTests {
         let rumEvents = try typedRUMEvents(from: metadata)
         XCTAssertEqual(eventIDs(ofType: "vital", in: rumEvents), ["ttid-id"])
         let event = try XCTUnwrap(core.events.first as? ProfileEvent)
-        XCTAssertTrue(event.tags.contains("operation:launch"))
+        XCTAssertTrue(event.tags.contains("operation:application_launch"))
         withExtendedLifetime(profiler) {}
     }
 
@@ -809,6 +818,7 @@ extension DatadogProfilerTests {
         core.context = .mockWith(applicationStateHistory: .mockAppInForeground())
         flushQueue()
         XCTAssertEqual(dd_profiler_get_status(), DD_PROFILER_STATUS_RUNNING)
+        addSampleToCurrentProfile()
 
         // When - the RUM session samples out before TTID can harvest app-launch.
         core.context = .mockWith(
@@ -841,7 +851,65 @@ extension DatadogProfilerTests {
             ["ttid-id"]
         )
         let event = try XCTUnwrap(core.events.first as? ProfileEvent)
-        XCTAssertTrue(event.tags.contains("operation:launch"))
+        XCTAssertTrue(event.tags.contains("operation:application_launch"))
+        withExtendedLifetime(profiler) {}
+    }
+
+    func testReceiveContext_preservesLaunchSamples_whenTTIDFollowsWhileProfilerQueueIsBacklogged() throws {
+        // Given
+        core = PassthroughCoreMock(context: .mockWith(applicationStateHistory: .mockAppInBackground()))
+        let profilingSamplerProvider = profilingSamplerProvider(isContinuousProfiling: true)
+        dd_profiler_start_testing(100, false, 5.seconds.dd.toInt64Nanoseconds, 0)
+        let profiler = continuousProfiler(
+            profilingSamplerProvider: profilingSamplerProvider,
+            isAppLaunchProfilingEnabled: true
+        )
+        connectMessageReceiver(to: profiler, profilingSamplerProvider: profilingSamplerProvider)
+        core.context = .mockWith(applicationStateHistory: .mockAppInForeground())
+        flushQueue()
+        dd_profiler_stop()
+        addSampleToCurrentProfile()
+
+        let queueGate = DispatchSemaphore(value: 0)
+        profilerQueue.async {
+            queueGate.wait()
+        }
+
+        // When - a sampled-out context and then TTID arrive while the profiler queue is blocked.
+        waitForProfileWrite(timeout: 1.0) {
+            core.context = .mockWith(
+                applicationStateHistory: .mockAppInForeground(),
+                additionalContext: [RUMCoreContext.mockWith(sessionSampleRate: 0)]
+            )
+            _ = profiler.receive(
+                message: .payload(TTIDMessage(
+                    attributes: mockRandomAttributes(),
+                    ttid: .mockWith(id: "ttid-id", stepType: nil)
+                )),
+                from: core
+            )
+            queueGate.signal()
+        }
+        flushQueue()
+
+        // Then - the earlier context observes TTID only when its queued work is processed,
+        // preserving the original native launch samples for the TTID harvest.
+        XCTAssertEqual(core.events.count, 1)
+        let metadata = try XCTUnwrap(core.metadata.first as? ProfileAttachments)
+        XCTAssertEqual(
+            eventIDs(ofType: "vital", in: try typedRUMEvents(from: metadata)),
+            ["ttid-id"]
+        )
+
+        let unpackedProfile = try XCTUnwrap(metadata.pprof.withUnsafeBytes { bytes in
+            perftools__profiles__profile__unpack(
+                nil,
+                metadata.pprof.count,
+                bytes.bindMemory(to: UInt8.self).baseAddress
+            )
+        })
+        defer { perftools__profiles__profile__free_unpacked(unpackedProfile, nil) }
+        XCTAssertGreaterThan(unpackedProfile.pointee.n_sample, 0)
         withExtendedLifetime(profiler) {}
     }
 
@@ -939,7 +1007,7 @@ extension DatadogProfilerTests {
             ["ttid-id"]
         )
         let event = try XCTUnwrap(core.events.first as? ProfileEvent)
-        XCTAssertTrue(event.tags.contains("operation:launch"))
+        XCTAssertTrue(event.tags.contains("operation:application_launch"))
         withExtendedLifetime(profiler) {}
     }
 
@@ -1116,6 +1184,7 @@ extension DatadogProfilerTests {
             stepType: .end
         )
         dd_profiler_start_testing(100, false, 5.seconds.dd.toInt64Nanoseconds, 0)
+        addSampleToCurrentProfile()
 
         _ = profiler.receive(message: .payload(OperationMessage(attributes: mockRandomAttributes(), operation: startOperation)), from: core)
         _ = profiler.receive(message: .payload(OperationMessage(attributes: mockRandomAttributes(), operation: endOperation)), from: core)
@@ -1156,6 +1225,7 @@ extension DatadogProfilerTests {
         shareCurrentContext(with: profiler)
         dd_profiler_start_testing(100, false, 5.seconds.dd.toInt64Nanoseconds, 0)
         XCTAssertEqual(dd_profiler_get_status(), DD_PROFILER_STATUS_RUNNING)
+        addSampleToCurrentProfile()
 
         let startOperation = Vital.mockWith(stepType: .start, date: dateProvider.now)
         _ = profiler.receive(
@@ -1239,6 +1309,7 @@ extension DatadogProfilerTests {
         let dateProvider = DateProviderMock()
         let profiler = continuousProfiler(dateProvider: dateProvider)
         dd_profiler_start_testing(100, false, 5.seconds.dd.toInt64Nanoseconds, 0)
+        addSampleToCurrentProfile()
 
         let startOperation = Vital.mockWith(name: "operation")
         let endOperation = Vital.mockWith(name: "operation", operationKey: startOperation.operationKey, stepType: .end)
@@ -1558,6 +1629,7 @@ extension DatadogProfilerTests {
         shareCurrentContext(with: profiler)
         dd_profiler_start_testing(100, false, 5.seconds.dd.toInt64Nanoseconds, 0)
         XCTAssertEqual(dd_profiler_get_status(), DD_PROFILER_STATUS_RUNNING)
+        addSampleToCurrentProfile()
 
         let startOp: Vital = .mockWith(stepType: .start, date: dateProvider.now)
         _ = profiler.receive(message: .payload(OperationMessage(attributes: mockRandomAttributes(), operation: startOp)), from: core)
@@ -1590,6 +1662,7 @@ extension DatadogProfilerTests {
         let profiler = customProfiler(dateProvider: dateProvider)
         shareCurrentContext(with: profiler)
         dd_profiler_start_testing(100, false, 5.seconds.dd.toInt64Nanoseconds, 0)
+        addSampleToCurrentProfile()
 
         let startOp = Vital.mockWith(id: "start-id", name: "operation", stepType: .start, date: dateProvider.now)
         let orphanedEnd = Vital.mockWith(id: "orphan-id", name: "other-operation", stepType: .end, date: dateProvider.now)
@@ -1731,6 +1804,7 @@ extension DatadogProfilerTests {
         let dateProvider = DateProviderMock()
         let profiler = customProfiler(dateProvider: dateProvider)
         dd_profiler_start_testing(100, false, 5.seconds.dd.toInt64Nanoseconds, 0)
+        addSampleToCurrentProfile()
 
         let startOperation = Vital.mockWith(name: "operation", date: dateProvider.now)
         let endOperation = Vital.mockWith(
@@ -1765,6 +1839,7 @@ extension DatadogProfilerTests {
         let dateProvider = DateProviderMock()
         let profiler = customProfiler(dateProvider: dateProvider)
         dd_profiler_start_testing(100, false, 5.seconds.dd.toInt64Nanoseconds, 0)
+        addSampleToCurrentProfile()
 
         let startOperation = Vital.mockWith(name: "operation", date: dateProvider.now)
         let endOperation = Vital.mockWith(
@@ -1848,6 +1923,7 @@ extension DatadogProfilerTests {
         )
         let longTask = DurationEvent(id: .mockRandom(), type: .longTask, start: 0, duration: 100)
         dd_profiler_start_testing(100, false, 5.seconds.dd.toInt64Nanoseconds, 0)
+        addSampleToCurrentProfile()
         _ = profiler.receive(message: .payload(LongTaskMessage(attributes: mockRandomAttributes(), longTask: longTask)), from: core)
 
         // When
@@ -1889,6 +1965,8 @@ extension DatadogProfilerTests {
             dateProvider: dateProvider
         )
         dd_profiler_start_testing(100, false, 5.seconds.dd.toInt64Nanoseconds, 0)
+        dd_profiler_stop()
+        addSampleToCurrentProfile()
 
         // When
         core.context = .mockWith(applicationStateHistory: .mockWith(
@@ -1967,6 +2045,7 @@ extension DatadogProfilerTests {
         let profiler = customProfiler(telemetryController: telemetryController, dateProvider: dateProvider)
         shareCurrentContext(with: profiler)
         dd_profiler_start_testing(100, false, 5.seconds.dd.toInt64Nanoseconds, 0)
+        addSampleToCurrentProfile()
 
         let startOperation = Vital.mockWith(stepType: .start, date: dateProvider.now)
         _ = profiler.receive(message: .payload(OperationMessage(attributes: mockRandomAttributes(), operation: startOperation)), from: core)
@@ -2356,6 +2435,7 @@ extension DatadogProfilerTests {
         _ = profiler.receive(message: .context(core.context), from: core)
         flushQueue()
         dd_profiler_start_testing(100, false, 5.seconds.dd.toInt64Nanoseconds, 0)
+        addSampleToCurrentProfile()
 
         let admittedLongTask = DurationEvent(id: .mockRandom(), type: .longTask, start: 0, duration: 100)
         _ = profiler.receive(
@@ -2467,6 +2547,37 @@ extension DatadogProfilerTests {
         XCTAssertNil(telemetry.messages.lastMetric(named: ProfilingSessionMetric.Constants.name))
     }
 
+    func testReceiveTTIDMessage_whenLaunchProfileHasNoSamples_doesNotWriteProfile() throws {
+        // Given
+        let telemetry = TelemetryMock()
+        dd_profiler_start_testing(100, false, 5.seconds.dd.toInt64Nanoseconds, 0)
+        let profiler = customProfiler(
+            isAppLaunchProfilingEnabled: true,
+            telemetryController: ProfilingTelemetryController(telemetry: telemetry)
+        )
+        _ = profiler.receive(message: .context(core.context), from: core)
+        flushQueue()
+
+        // Flush any samples captured before the profiler stopped, leaving a fresh empty profile.
+        if let profile = dd_profiler_flush_and_get_profile() {
+            dd_pprof_destroy(profile)
+        }
+
+        // When
+        let result = profiler.receive(
+            message: .payload(TTIDMessage(attributes: mockRandomAttributes(), ttid: appLaunchVital)),
+            from: core
+        )
+        flushQueue()
+
+        // Then
+        XCTAssertTrue(result)
+        XCTAssertTrue(core.events.isEmpty)
+        XCTAssertTrue(core.metadata.isEmpty)
+        let metric = try lastProfilingSessionMetric(from: telemetry)
+        XCTAssertEqual(metric.errorMessage, ProfilingSessionMetric.Constants.noProfileErrorMessage)
+    }
+
     func testReceiveTTIDMessage_whenProfilerPrewarmed_doesNotWriteProfile() {
         // Given
         dd_profiler_start_testing(100, true, 5.seconds.dd.toInt64Nanoseconds, 0)
@@ -2522,6 +2633,7 @@ extension DatadogProfilerTests {
         )
         _ = profiler.receive(message: .context(core.context), from: core)
         flushQueue()
+        addSampleToCurrentProfile()
         Thread.sleep(forTimeInterval: 0.05)
         _ = profiler.receive(
             message: .payload(OperationMessage(attributes: mockRandomAttributes(), operation: ttfdVital)),
@@ -2567,7 +2679,7 @@ extension DatadogProfilerTests {
             "language:swift",
             "format:pprof",
             "remote_symbols:yes",
-            "operation:launch"
+            "operation:application_launch"
         ].joined(separator: ",")
         XCTAssertEqual(event.tags, expectedTags)
 
@@ -2622,6 +2734,7 @@ extension DatadogProfilerTests {
         )
         Thread.sleep(forTimeInterval: 0.05)
         dd_profiler_stop()
+        addSampleToCurrentProfile()
         let nativeProfile = try XCTUnwrap(dd_profiler_get_profile())
         let originalProfileStart = dd_pprof_get_start_timestamp_s(nativeProfile)
 
@@ -2784,6 +2897,37 @@ private extension DatadogProfilerTests {
 
     func flushQueue() {
         profilerQueue.sync {}
+    }
+
+    func addSampleToCurrentProfile(
+        file: StaticString = #filePath,
+        line: UInt = #line
+    ) {
+        let wasRunning = dd_profiler_is_running()
+        if wasRunning {
+            dd_profiler_stop()
+        }
+        defer {
+            if wasRunning {
+                XCTAssertEqual(dd_profiler_start(), 1, file: file, line: line)
+            }
+        }
+
+        guard let profile = dd_profiler_get_profile() else {
+            XCTFail("Expected the native profiler to have a current profile.", file: file, line: line)
+            return
+        }
+
+        let trace = UnsafeMutablePointer<stack_trace_t>.allocate(capacity: 1)
+        trace.pointee = .mockWith(
+            tid: 1,
+            addresses: [0x100001000],
+            timestamp: DispatchTime.now().uptimeNanoseconds
+        )
+        dd_pprof_add_samples(profile, trace, 1)
+        dd_free(trace)
+
+        XCTAssertGreaterThan(dd_pprof_sample_count(profile), 0, file: file, line: line)
     }
 
     func typedRUMEvents(from metadata: ProfileAttachments) throws -> [[String: Any]] {
