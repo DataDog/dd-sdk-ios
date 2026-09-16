@@ -53,6 +53,8 @@ final class ProbeScenarioRunnerTests: XCTestCase {
                 "swiftui.semantic-api.presentation-replacement",
                 "swiftui.semantic-api.sibling-container-isolation",
                 "swiftui.semantic-host.explicit-source",
+                "swiftui.semantic-host.optional-capability",
+                "swiftui.semantic-host.automatic-fallback",
                 "swiftui.coexistence.automatic-keyed-manual-view",
                 "swiftui.coexistence.nested-keyed-manual-view",
                 "swiftui.coexistence.same-key-manual-two-scenes",
@@ -597,6 +599,10 @@ final class ProbeScenarioRunnerTests: XCTestCase {
         XCTAssertEqual(scenario.trackingMode, .navigationOccurrence)
         XCTAssertTrue(ProbeScenarioCatalog.usesObservableDriver(scenario))
         XCTAssertTrue(ProbeScenarioCatalog.usesSemanticNavigationHostSPI(scenario))
+        XCTAssertTrue(ProbeScenarioCatalog.usesExplicitSemanticNavigationHostSPI(scenario))
+        XCTAssertTrue(ProbeScenarioCatalog.usesExactSemanticNavigationHostSPI(scenario))
+        XCTAssertFalse(ProbeScenarioCatalog.usesCapabilitySemanticNavigationHostSPI(scenario))
+        XCTAssertFalse(ProbeScenarioCatalog.usesAutomaticSemanticNavigationHostSPI(scenario))
         XCTAssertFalse(ProbeScenarioCatalog.usesSemanticNavigationSPI(scenario))
         XCTAssertEqual(
             scenario.expectedSemanticTimeline.count,
@@ -617,6 +623,70 @@ final class ProbeScenarioRunnerTests: XCTestCase {
                 && expectation.name == "task-immediate"
                 && expectation.screen == "home"
                 && expectation.occurrence == 1
+        })
+    }
+
+    func testSemanticNavigationHostCapabilityUsesTheExactSemanticOracle() throws {
+        let scenario = try XCTUnwrap(
+            ProbeScenarioCatalog.scenario(
+                identifier: "swiftui.semantic-host.optional-capability"
+            )
+        )
+        let explicit = try XCTUnwrap(
+            ProbeScenarioCatalog.scenario(
+                identifier: "swiftui.semantic-host.explicit-source"
+            )
+        )
+
+        XCTAssertEqual(scenario.trackingMode, .navigationOccurrence)
+        XCTAssertTrue(ProbeScenarioCatalog.usesObservableDriver(scenario))
+        XCTAssertTrue(ProbeScenarioCatalog.usesSemanticNavigationHostSPI(scenario))
+        XCTAssertFalse(ProbeScenarioCatalog.usesExplicitSemanticNavigationHostSPI(scenario))
+        XCTAssertTrue(ProbeScenarioCatalog.usesCapabilitySemanticNavigationHostSPI(scenario))
+        XCTAssertTrue(ProbeScenarioCatalog.usesExactSemanticNavigationHostSPI(scenario))
+        XCTAssertFalse(ProbeScenarioCatalog.usesAutomaticSemanticNavigationHostSPI(scenario))
+        XCTAssertEqual(scenario.steps, explicit.steps)
+        XCTAssertEqual(scenario.completionConditions, explicit.completionConditions)
+        XCTAssertEqual(scenario.expectedSemanticTimeline, explicit.expectedSemanticTimeline)
+    }
+
+    func testSemanticNavigationHostOpaqueContainerKeepsAutomaticFallback() throws {
+        let scenario = try XCTUnwrap(
+            ProbeScenarioCatalog.scenario(
+                identifier: "swiftui.semantic-host.automatic-fallback"
+            )
+        )
+
+        XCTAssertEqual(scenario.trackingMode, .automatic)
+        XCTAssertTrue(ProbeScenarioCatalog.usesObservableDriver(scenario))
+        XCTAssertTrue(ProbeScenarioCatalog.usesSemanticNavigationHostSPI(scenario))
+        XCTAssertFalse(ProbeScenarioCatalog.usesExplicitSemanticNavigationHostSPI(scenario))
+        XCTAssertFalse(ProbeScenarioCatalog.usesCapabilitySemanticNavigationHostSPI(scenario))
+        XCTAssertFalse(ProbeScenarioCatalog.usesExactSemanticNavigationHostSPI(scenario))
+        XCTAssertTrue(ProbeScenarioCatalog.usesAutomaticSemanticNavigationHostSPI(scenario))
+        XCTAssertEqual(
+            scenario.expectedSemanticTimeline,
+            [ProbeExpectation(.viewStarted, rumViewOrigin: .automatic)]
+        )
+        XCTAssertTrue(scenario.completionConditions.contains { expectation in
+            expectation.kind == .viewStarted
+                && expectation.rumViewOrigin == .automatic
+        })
+        XCTAssertTrue(scenario.completionConditions.contains { expectation in
+            expectation.kind == .noViewStarted
+                && expectation.rumViewOrigin == .semantic
+        })
+        XCTAssertTrue(scenario.completionConditions.contains { expectation in
+            expectation.kind == .action
+                && expectation.name == "task-delayed"
+                && expectation.sourceScreen == "detail-1"
+                && expectation.rumViewOrigin == .automatic
+        })
+        XCTAssertTrue(scenario.completionConditions.contains { expectation in
+            expectation.kind == .resource
+                && expectation.name == "task-delayed"
+                && expectation.sourceScreen == "detail-1"
+                && expectation.rumViewOrigin == .automatic
         })
     }
 

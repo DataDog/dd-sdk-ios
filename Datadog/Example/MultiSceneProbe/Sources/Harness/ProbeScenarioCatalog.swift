@@ -29,6 +29,8 @@ enum ProbeScenarioCatalog {
         "swiftui.semantic-api.canonicalized-link-write",
         "swiftui.semantic-api.sibling-container-isolation",
         "swiftui.semantic-host.explicit-source",
+        "swiftui.semantic-host.optional-capability",
+        "swiftui.semantic-host.automatic-fallback",
         "swiftui.coexistence.automatic-keyed-manual-view",
         "swiftui.coexistence.nested-keyed-manual-view",
         "swiftui.coexistence.same-key-manual-two-scenes",
@@ -71,6 +73,8 @@ enum ProbeScenarioCatalog {
         swiftUISemanticAPICanonicalizedLinkWrite,
         swiftUISemanticAPISiblingContainerIsolation,
         swiftUISemanticHostExplicitSource,
+        swiftUISemanticHostOptionalCapability,
+        swiftUISemanticHostAutomaticFallback,
         swiftUICoexistenceAutomaticKeyedManualView,
         swiftUICoexistenceNestedKeyedManualView,
         swiftUICoexistenceSameKeyManualTwoScenes,
@@ -168,7 +172,26 @@ enum ProbeScenarioCatalog {
     }
 
     static func usesSemanticNavigationHostSPI(_ scenario: ProbeScenario) -> Bool {
+        usesExplicitSemanticNavigationHostSPI(scenario)
+            || usesCapabilitySemanticNavigationHostSPI(scenario)
+            || usesAutomaticSemanticNavigationHostSPI(scenario)
+    }
+
+    static func usesExplicitSemanticNavigationHostSPI(_ scenario: ProbeScenario) -> Bool {
         scenario.identifier == swiftUISemanticHostExplicitSource.identifier
+    }
+
+    static func usesCapabilitySemanticNavigationHostSPI(_ scenario: ProbeScenario) -> Bool {
+        scenario.identifier == swiftUISemanticHostOptionalCapability.identifier
+    }
+
+    static func usesAutomaticSemanticNavigationHostSPI(_ scenario: ProbeScenario) -> Bool {
+        scenario.identifier == swiftUISemanticHostAutomaticFallback.identifier
+    }
+
+    static func usesExactSemanticNavigationHostSPI(_ scenario: ProbeScenario) -> Bool {
+        usesExplicitSemanticNavigationHostSPI(scenario)
+            || usesCapabilitySemanticNavigationHostSPI(scenario)
     }
 
     static func usesSemanticNavigationValueLinks(_ scenario: ProbeScenario) -> Bool {
@@ -968,6 +991,60 @@ enum ProbeScenarioCatalog {
         expectedSemanticTimeline: semanticNavigationAPITimeline(
             initialLifecycleMarkers: ["on-appear", "task-immediate"]
         )
+    )
+
+    /// Uses the same customer-owned visual container as the automatic fallback
+    /// arm, but conditionally conforms its exact-capability specialization. The
+    /// host discovers the stable source without an explicit initializer argument.
+    private static let swiftUISemanticHostOptionalCapability = ProbeScenario(
+        identifier: "swiftui.semantic-host.optional-capability",
+        trackingMode: .navigationOccurrence,
+        layout: .stack,
+        steps: swiftUISemanticAPICompleteDestination.steps,
+        completionConditions: swiftUISemanticAPICompleteDestination.completionConditions,
+        expectedSemanticTimeline: semanticNavigationAPITimeline(
+            initialLifecycleMarkers: ["on-appear", "task-immediate"]
+        )
+    )
+
+    /// Leaves that customer-owned container opaque. The host must keep automatic
+    /// discovery enabled, emit no semantic occurrence, and remain useful enough
+    /// for ordinary downstream work to have a non-launch automatic owner.
+    private static let swiftUISemanticHostAutomaticFallback = ProbeScenario(
+        identifier: "swiftui.semantic-host.automatic-fallback",
+        trackingMode: .automatic,
+        layout: .stack,
+        steps: [
+            ProbeStep(.waitForSceneReady, scene: "scene-A"),
+            ProbeStep(.setSwiftUIPath, scene: "scene-A", value: "detail-1"),
+            ProbeStep(.waitForSignal, scene: "scene-A", signal: "destination:detail-1"),
+            ProbeStep(.waitForSignal, scene: "scene-A", signal: "marker:task-delayed")
+        ],
+        completionConditions: [
+            ProbeExpectation(.viewStarted, rumViewOrigin: .automatic),
+            ProbeExpectation(.noViewStarted, rumViewOrigin: .semantic),
+            ProbeExpectation(
+                .action,
+                name: "task-delayed",
+                sourceScene: "scene-A",
+                sourceScreen: "detail-1",
+                rumViewOrigin: .automatic
+            ),
+            ProbeExpectation(
+                .resource,
+                name: "task-delayed",
+                sourceScene: "scene-A",
+                sourceScreen: "detail-1",
+                rumViewOrigin: .automatic
+            )
+        ],
+        // Home and Detail intentionally emit the same lifecycle marker names.
+        // Keep only the automatic-view existence check ordered so an earlier
+        // Home marker cannot fail before the completion oracle finds the exact
+        // source-screen-qualified Detail action and Resource above.
+        expectedSemanticTimeline: [
+            ProbeExpectation(.viewStarted, rumViewOrigin: .automatic)
+        ]
     )
 
     private static func semanticNavigationAPITimeline(

@@ -66,6 +66,37 @@ private final class ProbeSemanticNavigationTransitionDriver {
     }
 }
 
+/// Customer-owned navigation container used by the host integration matrix.
+/// The visual implementation is identical in both arms. Supplying the exact
+/// capability type opts only that specialization into semantic transitions;
+/// the opaque specialization remains on automatic tracking.
+@available(iOS 27.0, *)
+@MainActor
+private struct ProbeCustomerNavigationContainer<Capability, Content: View>: View {
+    let capability: Capability
+    @ViewBuilder let content: Content
+
+    init(
+        capability: Capability,
+        @ViewBuilder content: () -> Content
+    ) {
+        self.capability = capability
+        self.content = content()
+    }
+
+    var body: some View {
+        content
+    }
+}
+
+@available(iOS 27.0, *)
+extension ProbeCustomerNavigationContainer: RUMNavigationTransitionProviding
+where Capability == RUMNavigationTransitions {
+    var rumNavigationTransitions: RUMNavigationTransitions { capability }
+}
+
+private struct ProbeOpaqueNavigationCapability {}
+
 private enum ProbeSplitSelection: Hashable {
     case detail(Int)
     case placeholder
@@ -457,7 +488,7 @@ struct ProbeWindowRoot: View {
         self._path = State(initialValue: initialPath)
         self._semanticTransitionDriver = State(
             initialValue: ProbeSemanticNavigationTransitionDriver(
-                initialDestination: ProbeRuntime.usesSemanticNavigationHostSPI
+                initialDestination: ProbeRuntime.usesExactSemanticNavigationHostSPI
                     ? Self.initialSemanticRUMView(
                         window: normalizedWindow,
                         route: initialPath.last
@@ -918,13 +949,39 @@ struct ProbeWindowRoot: View {
 
     @ViewBuilder
     private var navigationStack: some View {
-        if #available(iOS 27.0, *), ProbeRuntime.usesSemanticNavigationHostSPI {
+        if #available(iOS 27.0, *), ProbeRuntime.usesExplicitSemanticNavigationHostSPI {
             RUMNavigationHost(transitions: semanticTransitionDriver.transitions) {
                 NavigationStack(path: navigationPath) {
                     navigationRootContent
                         .navigationDestination(for: ProbeRoute.self) { route in
                             navigationDestinationContent(for: route)
                         }
+                }
+            }
+        } else if #available(iOS 27.0, *), ProbeRuntime.usesCapabilitySemanticNavigationHostSPI {
+            RUMNavigationHost {
+                ProbeCustomerNavigationContainer(
+                    capability: semanticTransitionDriver.transitions
+                ) {
+                    NavigationStack(path: navigationPath) {
+                        navigationRootContent
+                            .navigationDestination(for: ProbeRoute.self) { route in
+                                navigationDestinationContent(for: route)
+                            }
+                    }
+                }
+            }
+        } else if #available(iOS 27.0, *), ProbeRuntime.usesAutomaticSemanticNavigationHostSPI {
+            RUMNavigationHost {
+                ProbeCustomerNavigationContainer(
+                    capability: ProbeOpaqueNavigationCapability()
+                ) {
+                    NavigationStack(path: navigationPath) {
+                        navigationRootContent
+                            .navigationDestination(for: ProbeRoute.self) { route in
+                                navigationDestinationContent(for: route)
+                            }
+                    }
                 }
             }
         } else if #available(iOS 27.0, *), ProbeRuntime.usesSemanticNavigationSPI {
@@ -1100,7 +1157,7 @@ struct ProbeWindowRoot: View {
                     return
                 }
                 path = acceptedPath
-                if ProbeRuntime.usesSemanticNavigationHostSPI {
+                if ProbeRuntime.usesExactSemanticNavigationHostSPI {
                     semanticTransitionDriver.commit(
                         semanticRUMView(for: acceptedPath.last)
                     )
@@ -1301,7 +1358,7 @@ struct ProbeWindowRoot: View {
             }
         }
         swiftUIPresentation = presentation
-        if #available(iOS 27.0, *), ProbeRuntime.usesSemanticNavigationHostSPI {
+        if #available(iOS 27.0, *), ProbeRuntime.usesExactSemanticNavigationHostSPI {
             let destination = presentation.map { presentation in
                 semanticPresentationDescriptor(for: presentation).view
             } ?? semanticRUMView(for: path.last)

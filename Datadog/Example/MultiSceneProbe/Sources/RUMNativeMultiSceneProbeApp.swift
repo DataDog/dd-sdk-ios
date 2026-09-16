@@ -85,6 +85,18 @@ enum ProbeRuntime {
     static let usesSemanticNavigationHostSPI = scenario.map(
         ProbeScenarioCatalog.usesSemanticNavigationHostSPI
     ) ?? false
+    static let usesExplicitSemanticNavigationHostSPI = scenario.map(
+        ProbeScenarioCatalog.usesExplicitSemanticNavigationHostSPI
+    ) ?? false
+    static let usesCapabilitySemanticNavigationHostSPI = scenario.map(
+        ProbeScenarioCatalog.usesCapabilitySemanticNavigationHostSPI
+    ) ?? false
+    static let usesAutomaticSemanticNavigationHostSPI = scenario.map(
+        ProbeScenarioCatalog.usesAutomaticSemanticNavigationHostSPI
+    ) ?? false
+    static let usesExactSemanticNavigationHostSPI = scenario.map(
+        ProbeScenarioCatalog.usesExactSemanticNavigationHostSPI
+    ) ?? false
     static let usesSemanticNavigationValueLinks = scenario.map(
         ProbeScenarioCatalog.usesSemanticNavigationValueLinks
     ) ?? false
@@ -278,6 +290,9 @@ enum ProbeRuntime {
                 + "swiftui_view_tracking=\(swiftUIViewTrackingMode) "
                 + "swiftui_semantic_navigation_api=\(usesSemanticNavigationSPI) "
                 + "swiftui_semantic_navigation_host=\(usesSemanticNavigationHostSPI) "
+                + "swiftui_navigation_host_explicit=\(usesExplicitSemanticNavigationHostSPI) "
+                + "swiftui_navigation_host_capability=\(usesCapabilitySemanticNavigationHostSPI) "
+                + "swiftui_navigation_host_automatic=\(usesAutomaticSemanticNavigationHostSPI) "
                 + "swiftui_stress=\(options.swiftUIStress.rawValue) "
                 + "initial_swiftui_path=\(initialSwiftUIPath.joined(separator: ",")) "
                 + "swiftui_router_write_policy=\(swiftUIRouterWritePolicy.rawValue) "
