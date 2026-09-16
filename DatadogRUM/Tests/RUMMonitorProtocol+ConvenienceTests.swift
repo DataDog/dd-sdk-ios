@@ -5,8 +5,12 @@
  */
 
 import XCTest
+#if os(iOS)
+import UIKit
+#endif
 import TestUtilities
 import DatadogInternal
+@_spi(Experimental)
 @testable import DatadogRUM
 
 class RUMMonitorProtocol_ConvenienceTests: XCTestCase {
@@ -14,6 +18,7 @@ class RUMMonitorProtocol_ConvenienceTests: XCTestCase {
     /// infinite loop and crash.
     ///
     /// TODO: RUMM-3347 Remove this test once protocol extension methods are safe by desing
+    @MainActor
     func testCallingExtensionMethodsIsSafe() {
         // Given
         let monitor = Monitor(
@@ -44,5 +49,14 @@ class RUMMonitorProtocol_ConvenienceTests: XCTestCase {
         monitor.startOperation(name: .mockAny())
         monitor.succeedOperation(name: .mockAny())
         monitor.failOperation(name: .mockAny(), reason: .mockAny())
+        #if os(iOS)
+        if #available(iOS 27.0, *),
+           let scene = UIApplication.shared.connectedScenes.first as? UIWindowScene {
+            let target = RUMOperationViewTarget.current(in: scene)
+            monitor.startOperation(name: "targeted", view: target)
+            monitor.succeedOperation(name: "targeted", view: target)
+            monitor.failOperation(name: "targeted", reason: .error, view: target)
+        }
+        #endif
     }
 }

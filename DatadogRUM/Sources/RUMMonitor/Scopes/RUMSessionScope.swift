@@ -392,11 +392,15 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
 
             case var operationStepVitalCommand as RUMOperationStepVitalCommand:
                 // Forward command to the feature operation manager
+                let operationTarget = resolveOperationTarget(
+                    for: operationStepVitalCommand
+                )
+                operationStepVitalCommand.target = operationTarget.target
                 let operationView = featureOperationManager.process(
                     operationStepVitalCommand,
                     context: context,
                     writer: writer,
-                    activeView: operationTargetView(for: operationStepVitalCommand),
+                    activeView: operationTarget.view,
                     activeViews: viewScopes,
                     processRepresentativeView: activeView
                 )
@@ -826,8 +830,28 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
         }
     }
 
-    private func operationTargetView(for command: RUMOperationStepVitalCommand) -> RUMViewScope? {
-        switch command.target {
+    private func resolveOperationTarget(
+        for command: RUMOperationStepVitalCommand
+    ) -> (target: RUMCommandTarget, view: RUMViewScope?) {
+        if let explicitTarget = command.explicitTarget,
+           let explicitView = operationTargetView(
+               for: explicitTarget,
+               command: command
+           ) {
+            return (explicitTarget, explicitView)
+        }
+
+        return (
+            command.target,
+            operationTargetView(for: command.target, command: command)
+        )
+    }
+
+    private func operationTargetView(
+        for target: RUMCommandTarget,
+        command: RUMOperationStepVitalCommand
+    ) -> RUMViewScope? {
+        switch target {
         case .none:
             return nil
         case .allActiveViews, .processRepresentative:

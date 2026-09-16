@@ -45,6 +45,38 @@ private final class SceneTargetedFallbackMonitor: RUMMonitorViewProtocol {
     func addTiming(name: String) {}
     func addViewLoadingTime(overwrite: Bool) {}
 }
+
+private final class OperationTargetFallbackMonitor: NOPMonitor {
+    var starts: [(name: String, key: String?, attributes: [AttributeKey: AttributeValue])] = []
+    var successes: [(name: String, key: String?, attributes: [AttributeKey: AttributeValue])] = []
+    var failures: [(name: String, key: String?, reason: RUMFeatureOperationFailureReason)] = []
+
+    override func startOperation(
+        name: String,
+        operationKey: String?,
+        attributes: [AttributeKey: AttributeValue],
+        options: OperationOptions?
+    ) {
+        starts.append((name: name, key: operationKey, attributes: attributes))
+    }
+
+    override func succeedOperation(
+        name: String,
+        operationKey: String?,
+        attributes: [AttributeKey: AttributeValue]
+    ) {
+        successes.append((name: name, key: operationKey, attributes: attributes))
+    }
+
+    override func failOperation(
+        name: String,
+        operationKey: String?,
+        reason: RUMFeatureOperationFailureReason,
+        attributes: [AttributeKey: AttributeValue]
+    ) {
+        failures.append((name: name, key: operationKey, reason: reason))
+    }
+}
 #endif
 
 class NOPMonitorTests: XCTestCase {
@@ -207,6 +239,54 @@ class NOPMonitorTests: XCTestCase {
         XCTAssertEqual(monitor.stops.count, 1)
         XCTAssertEqual(monitor.stops.first?.key, "compose")
         XCTAssertEqual(monitor.stops.first?.attributes["stop"] as? String, "attribute")
+    }
+
+    @MainActor
+    func testWhenUsingOperationViewTargetBridgeOnCustomMonitor_itFallsBackExactlyOnce() {
+        // Given
+        let monitor = OperationTargetFallbackMonitor()
+        let target = RUMCommandTarget.scene(
+            RUMSceneIdentifier(rawValue: "scene-A")
+        )
+
+        // When
+        RUMOperationViewTargetBridge.startOperation(
+            on: monitor,
+            name: "thread_open",
+            operationKey: "key-123",
+            attributes: ["start": "attribute"],
+            options: nil,
+            explicitTarget: target
+        )
+        RUMOperationViewTargetBridge.succeedOperation(
+            on: monitor,
+            name: "thread_open",
+            operationKey: "key-123",
+            attributes: ["success": "attribute"],
+            explicitTarget: target
+        )
+        RUMOperationViewTargetBridge.failOperation(
+            on: monitor,
+            name: "thread_open",
+            operationKey: "key-123",
+            reason: .error,
+            attributes: ["failure": "attribute"],
+            explicitTarget: target
+        )
+
+        // Then
+        XCTAssertEqual(monitor.starts.count, 1)
+        XCTAssertEqual(monitor.starts.first?.name, "thread_open")
+        XCTAssertEqual(monitor.starts.first?.key, "key-123")
+        XCTAssertEqual(monitor.starts.first?.attributes["start"] as? String, "attribute")
+        XCTAssertEqual(monitor.successes.count, 1)
+        XCTAssertEqual(monitor.successes.first?.name, "thread_open")
+        XCTAssertEqual(monitor.successes.first?.key, "key-123")
+        XCTAssertEqual(monitor.successes.first?.attributes["success"] as? String, "attribute")
+        XCTAssertEqual(monitor.failures.count, 1)
+        XCTAssertEqual(monitor.failures.first?.name, "thread_open")
+        XCTAssertEqual(monitor.failures.first?.key, "key-123")
+        XCTAssertEqual(monitor.failures.first?.reason, .error)
     }
     #endif
 }

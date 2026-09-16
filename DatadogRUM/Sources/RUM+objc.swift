@@ -773,6 +773,32 @@ public class objc_RUM: NSObject {
     }
 }
 
+#if os(iOS) && DEBUG
+/// Objective-C companion for the experimental Operation view target.
+///
+/// Objective-C has no Swift SPI import boundary, so this type remains Debug-only
+/// until normal API review approves its release.
+@available(iOS 27.0, *)
+@objc(DDRUMOperationViewTarget)
+@objcMembers
+@_spi(objc)
+public final class objc_RUMOperationViewTarget: NSObject {
+    fileprivate let swiftType: RUMOperationViewTarget
+
+    private init(swiftType: RUMOperationViewTarget) {
+        self.swiftType = swiftType
+    }
+
+    @MainActor
+    @objc(currentInScene:)
+    public static func current(in scene: UIWindowScene) -> objc_RUMOperationViewTarget {
+        objc_RUMOperationViewTarget(
+            swiftType: .current(in: scene)
+        )
+    }
+}
+#endif
+
 @objc(DDRUMMonitor)
 @objcMembers
 @_spi(objc)
@@ -1101,6 +1127,69 @@ public class objc_RUMMonitor: NSObject {
             attributes: attributes.dd.swiftAttributes
         )
     }
+
+    #if os(iOS) && DEBUG
+    /// Starts a RUM Operation on the current tracked view in an explicitly
+    /// selected window scene.
+    @available(iOS 27.0, *)
+    @MainActor
+    @objc(startOperationWithName:operationKey:view:attributes:options:)
+    public func startOperation(
+        name: String,
+        operationKey: String?,
+        view: objc_RUMOperationViewTarget,
+        attributes: [String: Any],
+        options: objc_OperationOptions?
+    ) {
+        swiftRUMMonitor.startOperation(
+            name: name,
+            operationKey: operationKey,
+            view: view.swiftType,
+            attributes: attributes.dd.swiftAttributes,
+            options: options?.swiftType
+        )
+    }
+
+    /// Completes a RUM Operation successfully on the current tracked view in an
+    /// explicitly selected window scene.
+    @available(iOS 27.0, *)
+    @MainActor
+    @objc(succeedOperationWithName:operationKey:view:attributes:)
+    public func succeedOperation(
+        name: String,
+        operationKey: String?,
+        view: objc_RUMOperationViewTarget,
+        attributes: [String: Any]
+    ) {
+        swiftRUMMonitor.succeedOperation(
+            name: name,
+            operationKey: operationKey,
+            view: view.swiftType,
+            attributes: attributes.dd.swiftAttributes
+        )
+    }
+
+    /// Fails a RUM Operation on the current tracked view in an explicitly
+    /// selected window scene.
+    @available(iOS 27.0, *)
+    @MainActor
+    @objc(failOperationWithName:operationKey:reason:view:attributes:)
+    public func failOperation(
+        name: String,
+        operationKey: String?,
+        reason: objc_RUMFeatureOperationFailureReason,
+        view: objc_RUMOperationViewTarget,
+        attributes: [String: Any]
+    ) {
+        swiftRUMMonitor.failOperation(
+            name: name,
+            operationKey: operationKey,
+            reason: reason.swiftType,
+            view: view.swiftType,
+            attributes: attributes.dd.swiftAttributes
+        )
+    }
+    #endif
 
     @available(*, deprecated, renamed: "failOperation(name:operationKey:reason:attributes:)", message: "Use failOperation(name:operationKey:reason:attributes:) instead.")
     public func failFeatureOperation(

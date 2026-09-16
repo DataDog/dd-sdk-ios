@@ -655,6 +655,22 @@ extension Monitor: RUMMonitorProtocol {
     // MARK: - Feature Operations
 
     func startOperation(name: String, operationKey: String?, attributes: [AttributeKey: AttributeValue], options: OperationOptions?) {
+        startOperation(
+            name: name,
+            operationKey: operationKey,
+            attributes: attributes,
+            options: options,
+            explicitTarget: nil
+        )
+    }
+
+    func startOperation(
+        name: String,
+        operationKey: String?,
+        attributes: [AttributeKey: AttributeValue],
+        options: OperationOptions?,
+        explicitTarget: RUMCommandTarget?
+    ) {
         DD.logger.debug("Feature Operation `\(name)`\(instanceSuffix(operationKey)) started")
 
         telemetry.usage(event: .addOperationStepVital(.init(actionType: .start)))
@@ -669,7 +685,8 @@ extension Monitor: RUMMonitorProtocol {
                 options: options,
                 time: dateProvider.now,
                 attributes: attributes
-            )
+            ),
+            explicitTarget: explicitTarget
         )
     }
 
@@ -678,6 +695,20 @@ extension Monitor: RUMMonitorProtocol {
     }
 
     func succeedOperation(name: String, operationKey: String?, attributes: [AttributeKey: AttributeValue]) {
+        succeedOperation(
+            name: name,
+            operationKey: operationKey,
+            attributes: attributes,
+            explicitTarget: nil
+        )
+    }
+
+    func succeedOperation(
+        name: String,
+        operationKey: String?,
+        attributes: [AttributeKey: AttributeValue],
+        explicitTarget: RUMCommandTarget?
+    ) {
         DD.logger.debug("Feature Operation `\(name)`\(instanceSuffix(operationKey)) successfully ended")
 
         telemetry.usage(event: .addOperationStepVital(.init(actionType: .succeed)))
@@ -691,7 +722,8 @@ extension Monitor: RUMMonitorProtocol {
                 failureReason: nil,
                 time: dateProvider.now,
                 attributes: attributes
-            )
+            ),
+            explicitTarget: explicitTarget
         )
     }
 
@@ -700,6 +732,22 @@ extension Monitor: RUMMonitorProtocol {
     }
 
     func failOperation(name: String, operationKey: String?, reason: RUMFeatureOperationFailureReason, attributes: [AttributeKey: AttributeValue]) {
+        failOperation(
+            name: name,
+            operationKey: operationKey,
+            reason: reason,
+            attributes: attributes,
+            explicitTarget: nil
+        )
+    }
+
+    func failOperation(
+        name: String,
+        operationKey: String?,
+        reason: RUMFeatureOperationFailureReason,
+        attributes: [AttributeKey: AttributeValue],
+        explicitTarget: RUMCommandTarget?
+    ) {
         DD.logger.debug("Feature Operation `\(name)`\(instanceSuffix(operationKey)) unsuccessfully ended with the following failure reason: \(reason.rawValue)")
 
         telemetry.usage(event: .addOperationStepVital(.init(actionType: .fail)))
@@ -713,7 +761,8 @@ extension Monitor: RUMMonitorProtocol {
                 failureReason: reason,
                 time: dateProvider.now,
                 attributes: attributes
-            )
+            ),
+            explicitTarget: explicitTarget
         )
     }
 
@@ -721,8 +770,12 @@ extension Monitor: RUMMonitorProtocol {
         failOperation(name: name, operationKey: operationKey, reason: reason, attributes: attributes)
     }
 
-    private func processOperationStep(_ operationStep: RUMOperationStepVitalCommand) {
+    private func processOperationStep(
+        _ operationStep: RUMOperationStepVitalCommand,
+        explicitTarget: RUMCommandTarget?
+    ) {
         var operationStep = operationStep
+        operationStep.explicitTarget = explicitTarget
         operationStep.target = currentExecutionTarget
         process(command: operationStep)
     }
@@ -938,6 +991,8 @@ extension Monitor: RUMMonitorViewProtocol {
 }
 
 #if os(iOS)
+extension Monitor: RUMOperationViewTargetHandling {}
+
 extension Monitor: RUMSceneTargetedManualViewHandling {
     func startView(
         key: String,

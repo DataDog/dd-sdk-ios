@@ -833,6 +833,10 @@ internal struct RUMOperationStepVitalCommand: RUMCommand {
     let shouldRestartLastViewAfterSessionExpiration = true
     let shouldRestartLastViewAfterSessionStop = false
     let canStartBackgroundViewAfterSessionStop = false
+    /// Customer-selected target resolved before the independently captured
+    /// call-site `target`. Kept separate so an unavailable explicit scene can
+    /// still fall through to trustworthy inference.
+    var explicitTarget: RUMCommandTarget? = nil
     var target: RUMCommandTarget = .processRepresentative
 }
 
