@@ -58,6 +58,8 @@ The catalog currently preserves these experiment families:
 | `swiftui.semantic-api.presentation-replacement` | `EXP-144` | Actual SPI PASS 43/43: Sheet → Cover → fresh Sheet remains atomic and final dismissal reveals one fresh Home |
 | `swiftui.semantic-api.sibling-container-isolation` | `EXP-145` | Actual SPI PASS 19/19: distinct controller branches, no automatic duplicate, Detail staged beneath sibling manual authority, and one fresh Detail reveal |
 | `swiftui.semantic-host.explicit-source` | `EXP-146` | Arbitrary-host explicit-source PASS 42/42: standard `NavigationStack`, Sheet, and cover code remains unchanged; H1 starts before initial lifecycle work and every return is fresh |
+| `swiftui.semantic-host.optional-capability` | `EXP-146` | The identical customer-owned container exposes one stable type-erased capability and reproduces the explicit-source 42/42 oracle without per-screen or presentation replacements |
+| `swiftui.semantic-host.automatic-fallback` | `EXP-146` | The opaque specialization passes 5/5: automatic capture remains active, no semantic view is invented, and exact Detail delayed work uses the automatic controller owner |
 | `swiftui.coexistence.semantic-a-automatic-b` | `EXP-118` | Signal-driven; simulator-inconclusive, physical hardware required |
 | `swiftui.coexistence.automatic-manual-sheet` | `EXP-119` | Signal-driven FAIL: immediate `onDismiss` work retains outgoing Sheet; settled work uses fresh automatic Home |
 | `swiftui.coexistence.automatic-scene-targeted-sheet` | `EXP-123`–`EXP-125` | Handler-only baseline FAIL; suppression-bound successor PASS 14/14 with semantic Sheet, no automatic duplicate, and fresh Home before immediate dismiss work |

@@ -398,7 +398,10 @@ around unchanged `NavigationStack`, `.sheet`, and `.fullScreenCover` code. Its
 accepted run passes 42/42 and produces H1/D1/H2/Sheet/H3/Cover/H4 as distinct
 occurrences with exact downstream ownership and no automatic duplicate. This is
 implementation evidence, not approval of the provisional public names. The
-non-conforming and optional-capability runtime arms remain open.
+same customer-owned container also passes that 42-event oracle through its
+optional capability. Its opaque specialization passes a 5-event automatic
+fallback contract: automatic capture remains active, no semantic occurrence is
+invented, and exact Detail work uses the automatic controller owner.
 
 ### Integration inputs and precedence
 
@@ -501,9 +504,11 @@ fixture.
 They now do in the experimental implementation: `a84061840` extracts the
 scene-scoped engine and makes both the native convenience and arbitrary-content
 host delegate to it. `354422d88` supplies the customer-shaped explicit-source
-probe. The remaining proof obligation is not another visual-container rewrite;
-it is runtime parity for optional capability, non-conforming automatic fallback,
-and explicit third-party-style input through the same engine.
+probe, and `651b173c6` validates the identical container with optional capability
+and opaque automatic fallback. The remaining proof obligation is not another
+visual-container rewrite; it is runtime precedence, deliberate source
+replacement, reconstruction/disconnect, and native/custom/explicit adapter
+parity through the same engine.
 
 ### Resolver and path model
 
@@ -597,9 +602,11 @@ post-stop work. `EXP-146` then moves those mechanics into the shared engine and
 passes 42/42 through an arbitrary host plus stable explicit source while leaving
 standard presentation APIs intact. Its backend session contains the eight views
 including ApplicationLaunch, 26 exact-view actions, 26 exact-view Resources, and
-zero errors/crashes; launch owns no downstream work. The complete RUM run passes
+zero errors/crashes; launch owns no downstream work. The optional capability
+repeats that 42/42 contract, while opaque fallback passes 5/5 with automatic
+capture and no semantic view. The complete RUM run passes
 1,262/1,263 and the sole unrelated timeseries timing failure passes immediately
-in isolation; the native probe passes 143/143. Both Debug and authoritative Xcode
+in isolation; the native probe passes 145/145. Both Debug and authoritative Xcode
 27 Release probe builds, repository lint, and API-surface verification pass. The
 source-based API verifier remains a prototype gate; no baseline is changed before
 normal review.

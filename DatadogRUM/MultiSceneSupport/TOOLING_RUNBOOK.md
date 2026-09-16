@@ -426,6 +426,15 @@ Recover by:
 4. Recomputing or confirming coordinates from that new hierarchy.
 5. Performing the prepared interaction immediately.
 
+If an automated run's session expires before `InstallAndRun`, first prove that no
+install, launch, or container mutation happened after the clean precondition. A
+replacement interaction session may then reuse that clean proof. If any app
+operation occurred, repeat terminate, uninstall, and missing-container checks;
+do not infer a clean launch merely from the replacement session being new. Some
+Xcode versions also reject immediate reuse of the expired human-readable session
+name, so use a distinct replacement name and preserve both names in the tooling
+record.
+
 If `DeviceInteractionEndSession` reports that the session no longer exists after
 a successful capture, record it as automatic tooling expiration. The captured
 artifacts remain valid.

@@ -15,24 +15,26 @@ Last updated: 2026-09-16
 
 ## Current checkpoint
 
-- Latest runtime experiment is `EXP-146`. Its explicit-source sub-slice passes:
-  one `RUMNavigationHost` wraps standard `NavigationStack`, `.sheet`, and
-  `.fullScreenCover` code, while a stable source produces exact H1/D1/H2/S1/H3/
-  F1/H4 occurrences and starts H1 before initial lifecycle work. Optional-
-  capability and non-conforming baseline runtime rows remain open.
+- Latest runtime experiment is `EXP-146`. Explicit source and optional
+  capability each pass the exact 42-event H1/D1/H2/S1/H3/F1/H4 contract around
+  unchanged standard SwiftUI. The identical opaque customer-container
+  specialization passes its 5-event fallback contract: automatic capture stays
+  active, no semantic view is invented, and exact Detail work uses the automatic
+  controller owner.
 - Latest accepted implementation commits: `4d64d8a53` (`Harden restored semantic
   navigation ownership`), `bdbfc1d5c` (`Handle canonicalized semantic
   navigation`), `a458ff6c2` (`Start canonical destinations before lifecycle
   work`), and `698b1584d` (`Handle semantic presentation replacement`). Latest
   bidirectional probe commit: `01a8466c5`. Semantic sibling probe/oracle commit:
   `144d6e0e7`. Container-independent host implementation: `a84061840`; explicit
-  source probe: `354422d88`.
+  source probe: `354422d88`; capability/fallback matrix: `651b173c6`.
 - Documentation-refactor baseline: `5fc2099e9`
   (`Document repeated semantic route validation`).
 - Frozen archive commit: `e51a83b15`.
-- Latest validation: accepted `EXP-146` attempt B passes 42/42 with eight exact
-  backend views, 26 actions, 26 Resources, five long tasks, no automatic
-  duplicate, and zero errors/crashes. The native probe passes 143/143,
+- Latest validation: accepted explicit and capability paths each pass 42/42 with
+  eight backend views, 26 actions, 26 Resources, no automatic duplicate, and
+  zero errors/crashes. Accepted opaque fallback passes 5/5 and backend intake
+  confirms its Detail ownership. The native probe passes 145/145,
   repository lint is clean across 713 source and 699 test files, API-surface
   verification and the Xcode 27 Release probe build pass. The complete
   DatadogRUM run passed 1,262/1,263; its sole unrelated timeseries timing failure
@@ -44,10 +46,12 @@ driver/oracle exists but runtime acceptance is pending.
 
 ## In-flight and next experiment
 
-`EXP-146` has accepted the shared-engine, arbitrary-host, and explicit-source
-path. Its next simulator-capable discriminator is the optional capability versus
-non-conforming baseline on the same custom container, followed by migration-diff
-measurement. The ordered acceptance contract is in [PLAN.md](PLAN.md).
+`EXP-146` has accepted the shared engine, arbitrary host, explicit source,
+optional capability, and opaque automatic fallback on the same custom container.
+Its next simulator-capable discriminators are runtime explicit-over-capability
+precedence, deliberate source replacement and host reconstruction/disconnect,
+then adapter parity and migration-diff measurement. The ordered acceptance
+contract is in [PLAN.md](PLAN.md).
 
 ## Complete experiment ledger
 
@@ -198,7 +202,7 @@ measurement. The ordered acceptance contract is in [PLAN.md](PLAN.md).
 | EXP-143 | 2026-09-15 | PASS after FAIL, rejected candidates, and tooling-invalid retries · backend | SwiftUI navigation | Initial repeated restoration, external same/different-type replacement, rejected proposals, and canonicalized writes preserve only accepted path occurrences. The final canonical run starts Alternate before `onAppear`/immediate work, emits no speculative Detail or automatic duplicate, and passes 19/19 plus exact backend ownership. | [active record](Experiments/EXP-143-199.md#exp-143--external-semantic-router-mutations-and-restoration) |
 | EXP-144 | 2026-09-16 | PASS after SDK FAIL and harness-invalid retry · backend | SwiftUI navigation | Direct Sheet → Cover → Sheet replacement emits H1/S1/F1/S2/fresh H2 with no intermediate Home or automatic duplicate. The final run passes 43/43; backend intake has the same five semantic UUIDs, 19 exact-view actions, 19 exact-view Resources, and zero errors/crashes. | [active record](Experiments/EXP-143-199.md#exp-144--semantic-presentation-replacement) |
 | EXP-145 | 2026-09-16 | PASS after two INVALID harness attempts · backend | SwiftUI navigation | The actual semantic SPI preserves the `EXP-127` sibling boundary. Home commits to Detail beneath left manual authority, emits no intermediate/automatic view, and reveals one fresh Detail afterward. Final run passes 19/19; backend intake has exactly launch/Home/manual/Detail, 11 exact actions, 11 exact Resources, and zero errors/crashes. | [active record](Experiments/EXP-143-199.md#exp-145--semantic-sibling-container-isolation) |
-| EXP-146 | 2026-09-16 | PASS after SDK FAIL for explicit source; remaining adapters PREPARED · backend | SwiftUI navigation | A container-independent engine and arbitrary `RUMNavigationHost` instrument unchanged standard SwiftUI through a stable explicit source. Accepted retry starts H1 before lifecycle work, passes 42/42 through H1/D1/H2/S1/H3/F1/H4, and backend intake has eight exact views, 26 actions, 26 Resources, and zero errors/crashes. Optional-capability and non-conforming runtime rows remain. | [active record](Experiments/EXP-143-199.md#exp-146--container-independent-semantic-navigation-host) |
+| EXP-146 | 2026-09-16 | PASS after SDK FAIL and INVALID harness attempts; precedence/lifetime/parity PREPARED · backend | SwiftUI navigation | A container-independent engine and arbitrary `RUMNavigationHost` instrument unchanged standard SwiftUI through explicit or optional-capability sources at 42/42. The identical opaque specialization passes 5/5 with automatic capture, no semantic view, and exact Detail ownership. Two clean pre-fix fallback runs are retained as INVALID because an ordered oracle conflated same-named Home and Detail markers. | [active record](Experiments/EXP-143-199.md#exp-146--container-independent-semantic-navigation-host) |
 
 ## Simulator-inconclusive and hardware-required evidence
 
