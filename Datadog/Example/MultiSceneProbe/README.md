@@ -57,6 +57,7 @@ The catalog currently preserves these experiment families:
 | `swiftui.semantic-api.repeated-value-links`, `initial-repeated-path`, `external-replacements`, `rejected-link-write`, `canonicalized-link-write` | `EXP-142`, `EXP-143` | Actual SPI PASS for repeated equal values, restored paths, accepted/rejected external writes, and canonicalization without speculative views |
 | `swiftui.semantic-api.presentation-replacement` | `EXP-144` | Actual SPI PASS 43/43: Sheet → Cover → fresh Sheet remains atomic and final dismissal reveals one fresh Home |
 | `swiftui.semantic-api.sibling-container-isolation` | `EXP-145` | Actual SPI PASS 19/19: distinct controller branches, no automatic duplicate, Detail staged beneath sibling manual authority, and one fresh Detail reveal |
+| `swiftui.semantic-host.explicit-source` | `EXP-146` | Arbitrary-host explicit-source PASS 42/42: standard `NavigationStack`, Sheet, and cover code remains unchanged; H1 starts before initial lifecycle work and every return is fresh |
 | `swiftui.coexistence.semantic-a-automatic-b` | `EXP-118` | Signal-driven; simulator-inconclusive, physical hardware required |
 | `swiftui.coexistence.automatic-manual-sheet` | `EXP-119` | Signal-driven FAIL: immediate `onDismiss` work retains outgoing Sheet; settled work uses fresh automatic Home |
 | `swiftui.coexistence.automatic-scene-targeted-sheet` | `EXP-123`–`EXP-125` | Handler-only baseline FAIL; suppression-bound successor PASS 14/14 with semantic Sheet, no automatic duplicate, and fresh Home before immediate dismiss work |

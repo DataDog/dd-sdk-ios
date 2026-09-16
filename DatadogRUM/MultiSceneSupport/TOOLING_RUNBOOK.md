@@ -227,6 +227,16 @@ state's base identity is a stable fallback and is not the generated occurrence
 identity. `RUMStopViewCommand` also has no instrumentation-type field, so pair it
 with its start by identity and assert the start command's type.
 
+For an exact semantic host, create its stable transition source with the initial
+committed destination before the host evaluates. Do not wait for a descendant
+`.task`, probe scene reader, or diagnostic native-scene attribute before calling
+`setInitialDestination`: `EXP-146` attempt A showed that this makes root
+`onAppear` and immediate-task work precede the semantic view. The host resolves
+the actual scene from the SDK's inherited scene trait; customer destination
+metadata does not need an internal RUM UUID or native scene identifier. Add root
+`onAppear` and immediate-task action/Resource ownership to the oracle so a normal
+navigation-only timeline cannot conceal this ordering regression.
+
 Objective-C has no equivalent SPI import boundary. Keep an Objective-C prototype
 Debug-only until API review, exercise its exact generated selectors in the
 Objective-C API smoke target, and do not mistake that prototype for an approved

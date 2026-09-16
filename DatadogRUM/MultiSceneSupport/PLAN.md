@@ -48,21 +48,22 @@ Objective-C Release exposure still require normal API review.
 | Expected outcome | The proven occurrence, transition, reveal, and authority state no longer fundamentally depends on `RUMNavigationStack`. A `RUMNavigationHost`-style boundary can wrap an arbitrary customer-owned `View` while leaving its navigation implementation unchanged. |
 | Prerequisite evidence | `EXP-141`-`145` prove the current native convenience container, including sibling isolation. The revised API constraints require equivalent paths for native, custom, third-party-style, UIKit-coordinator, and automatic navigation. |
 | Implementation boundary | First extract a scene-scoped, container-independent semantic engine without behavior change. Then add an iOS 27 experimental host whose content builder accepts any `View`. Keep `RUMNavigationStack` as a native convenience adapter over that engine, not the engine itself. Do not add Datadog replacements for standard presentation modifiers. |
-| Current result | PLANNED. The native convenience prototype is proven; engine extraction, arbitrary-view host, optional type-erased capability, and explicit transition-source paths are not implemented. |
+| Current result | PARTIAL PASS. Commit `a84061840` extracts the shared engine and adds the arbitrary-content host, stable source, optional capability detection, and explicit-source precedence. Commit `354422d88` exercises unchanged standard SwiftUI through the explicit-source path. Accepted run `semantic-host-explicit-20260916-b` passes 42/42 with exact H1/D1/H2/Sheet/H3/Cover/H4 ownership and root creation before initial lifecycle work. Live capability and non-conforming fallback rows remain. |
 | Acceptance | Existing `RUMNavigationStack` fixtures remain identical. A non-conforming custom container receives scene-aware automatic baseline behavior; a stable optional capability upgrades it to exact committed occurrences; an explicit source overrides capability and automatic inference. Container reconstruction retains the source, authority stays target-local, and standard `.sheet`/`.fullScreenCover` code is unchanged. |
 | Environment | Focused deterministic tests and iPadOS 27 simulator. Cross-scene isolation remains a physical-device acceptance row. |
 
-`EXP-145` is closed at 19/19 with exact sibling mapper/backend ownership and a
-142/142 full probe. Append the first `EXP-146` fixture or runtime attempt to
-[Experiments/EXP-143-199.md](Experiments/EXP-143-199.md).
+The explicit-source sub-slice is accepted with exact mapper/backend ownership, a
+143/143 full probe, API-surface verification, clean lint, and an Xcode 27 Release
+build. Continue `EXP-146` with the same customer-owned custom container in
+capability and non-conforming modes, then measure the integration diff.
 
 ## Next ordered slices
 
 | Order | Expected outcome | Prerequisite evidence | Implementation boundary | Acceptance test | Environment |
 | ---: | --- | --- | --- | --- | --- |
-| 1 | Extract the scene-scoped semantic engine and prototype an arbitrary-view host | `EXP-141`-`145` | Engine owns destination/transition state; host owns scene attachment and target-local automatic suppression; native convenience delegates to both | Native fixtures remain unchanged; non-conforming custom content receives baseline automatic tracking without screen rewrites | Simulator |
-| 2 | Add optional capability and explicit transition-source paths | Extracted engine/host | Stable type-erased source, no associated route type required for runtime detection; explicit source > capability > native adapter > automatic > representative | Native, conforming custom, and explicit third-party-style adapters produce identical H1/D1/H2 and presentation occurrence semantics; reconstruction and cancellation remain exact | Simulator |
-| 3 | Measure customer migration and compatibility cost | Host, capability, and explicit source prototypes | Realistic multi-flow sample with standard navigation and presentations unchanged | Integration diff is isolated to setup/flow boundaries or one adapter file, not proportional to screen/presentation count; agent-generated native SwiftUI still compiles unchanged | Simulator and source audit |
+| 1 | Validate optional capability against a non-conforming baseline on the same customer-owned custom container | Accepted explicit-source host | Keep the customer container and standard navigation/presentation code identical; add only a stable type-erased capability for the enhanced arm | Non-conforming content remains crash-safe and scene-aware through automatic tracking; capability arm reproduces the exact 42-event semantic oracle without per-screen changes | Simulator |
+| 2 | Close native/capability/explicit adapter parity and source lifetime | Shared engine plus accepted capability path | Explicit source > capability > native adapter > automatic > representative; source stays stable across SwiftUI reconstruction and scene disconnect | Native convenience, conforming custom, and explicit third-party-style adapters produce identical H1/D1/H2 and presentation occurrences; reconstruction, cancellation, and teardown remain exact | Simulator |
+| 3 | Measure customer migration and compatibility cost | Host, capability, and explicit source prototypes | Realistic multi-flow sample with standard navigation and presentations unchanged | Integration diff is isolated to SDK setup, flow boundaries, or one adapter file, not proportional to screens/presentations; no Datadog router or presentation replacement; agent-generated native SwiftUI still compiles unchanged | Simulator and source audit |
 | 4 | Prototype Operation view targeting behind iOS 27 experimental boundaries | `EXP-130` identity semantics; `EXP-131` cross-scene driver; [Operations contract](OPERATIONS.md) | Opaque customer target with `.current(in:)` first; separate explicit and inferred candidates; Debug-only Objective-C companions | Start/succeed/fail calls compile and route explicit > inferred > last-proven snapshot > representative; no internal UUID leaks | Simulator for API/fallback tests; hardware for cross-scene acceptance |
 | 5 | Close explicitly targeted actions, Resources, errors, view mutations, Traces, logs, WebView, and exported/fatal context | Scene-targeted view API and Operation target prototype | Existing public API overloads or scoped target seam only where source inference cannot be reliable | Each targeted signal reaches the requested scene's current view; unresolved explicit input falls through safely; legacy source-less behavior is unchanged | Simulator for one-scene/controlled rows; hardware for concurrent rows |
 | 6 | Validate ordinary-app compatibility and overhead | All simulator-capable semantic fixes | Single-scene automatic/manual apps, custom handlers, event handoff, swizzle paths | No new views/actions, no custom-handler regression, bounded `sendEvent` overhead/reentrancy, all module/API/lint gates green | Simulator and benchmark host |
@@ -91,9 +92,9 @@ Objective-C Release exposure still require normal API review.
 
 | Work | Expected outcome and prerequisite | Boundary | Acceptance |
 | --- | --- | --- | --- |
-| Container-independent semantic engine | `EXP-146`, after closed `EXP-141`-`145` | Extract occurrence/transition/reveal state from the native convenience container | Existing semantic fixtures remain byte-for-byte equivalent at the command/oracle level |
-| Arbitrary-view host baseline | After engine extraction | Outer instrumentation boundary accepts any customer `View`; no navigation replacement | Non-conforming custom container keeps standard code and receives scene-aware automatic tracking/dedup fallback |
-| Capability and explicit source | After host baseline | Stable type-erased source, optional separated capabilities, explicit adapter path for imported third-party types | Exact H1/D1/H2, repeated routes, commit/cancel, presentations, reconstruction, scene isolation, and precedence |
+| Container-independent semantic engine and explicit source | Accepted `EXP-146` sub-slice | Shared engine plus arbitrary-content outer host; no navigation or presentation replacement | Accepted 42/42 local/backend run with distinct occurrences, exact lifecycle ownership, standard SwiftUI call sites, and target-local suppression |
+| Arbitrary-view host baseline | Next `EXP-146` discriminator | The same customer-owned custom container without semantic capability | Standard code remains functional, scene-aware automatic tracking stays enabled, no global suppression or crash |
+| Optional capability | After/alongside baseline | Stable type-erased source detected from the supplied container; no associated route type or per-screen changes | Exact H1/D1/H2, repeated routes, commit/cancel, presentations, reconstruction, scene isolation, and precedence matching explicit/native paths |
 | Migration-diff sample | After all navigation entry paths exist | Realistic 100-screen-style multi-flow sample or representative scaled fixture | Integration cost scales with containers/routers, not screens, sheets, or covers |
 | Operation target API | After `EXP-130` and source review | Monitor/handler routing plus Swift/ObjC prototype | Explicit target precedence, fallback, crash safety, and source compatibility |
 | Targeted downstream signals | After target abstraction exists | One signal family per slice | Exact requested owner plus legacy fallback regressions |
@@ -154,14 +155,16 @@ The branch is not release-ready until all applicable gates pass:
 - Hardware: the P0 queue and final iPhone Duo/iOS 27.1 matrix pass unchanged named
   scenarios with exact backend evidence.
 
-Latest checkpoint: closed `EXP-145` run
-`semantic-sibling-isolation-20260916-fix-c` passes 19/19 locally and exact
-backend intake on probe/oracle commit `144d6e0e7`. Its session has exactly four
-views, 11 actions, 11 Resources, zero errors/crashes, and no automatic duplicate.
-The native probe passes 142/142, repository lint is clean across 713 source and
-699 test files, and the Xcode 27.0 Release probe build passes. Complete
-DatadogRUM remains 1,252/1,252 and DatadogTrace remains 151/151 at their latest
-affected checkpoints.
+Latest checkpoint: accepted `EXP-146` run
+`semantic-host-explicit-20260916-b` passes 42/42 locally and exact backend intake
+on host commit `a84061840` and probe/oracle commit `354422d88`. Its session has
+exactly eight views including launch, 26 actions, 26 Resources, zero
+errors/crashes, no automatic duplicate, and no downstream work on
+ApplicationLaunch. The native probe passes 143/143, repository lint is clean
+across 713 source and 699 test files, API-surface verification passes, and the
+Xcode 27.0 Release probe build passes. Complete DatadogRUM passes 1,262/1,263;
+the sole unrelated timeseries timing failure passed immediately in isolation.
+DatadogTrace remains 151/151 at its latest affected checkpoint.
 Unaffected module suites remain valid at their recorded checkpoints but must
 rerun at the release freeze.
 

@@ -15,24 +15,28 @@ Last updated: 2026-09-16
 
 ## Current checkpoint
 
-- Last completed experiment is `EXP-145`. The actual semantic SPI now preserves
-  the sibling authority boundary: right-side navigation commits beneath a left
-  manual view, emits no intermediate destination, and reveals one fresh Detail
-  after authority stops.
+- Latest runtime experiment is `EXP-146`. Its explicit-source sub-slice passes:
+  one `RUMNavigationHost` wraps standard `NavigationStack`, `.sheet`, and
+  `.fullScreenCover` code, while a stable source produces exact H1/D1/H2/S1/H3/
+  F1/H4 occurrences and starts H1 before initial lifecycle work. Optional-
+  capability and non-conforming baseline runtime rows remain open.
 - Latest accepted implementation commits: `4d64d8a53` (`Harden restored semantic
   navigation ownership`), `bdbfc1d5c` (`Handle canonicalized semantic
   navigation`), `a458ff6c2` (`Start canonical destinations before lifecycle
   work`), and `698b1584d` (`Handle semantic presentation replacement`). Latest
   bidirectional probe commit: `01a8466c5`. Semantic sibling probe/oracle commit:
-  `144d6e0e7`.
+  `144d6e0e7`. Container-independent host implementation: `a84061840`; explicit
+  source probe: `354422d88`.
 - Documentation-refactor baseline: `5fc2099e9`
   (`Document repeated semantic route validation`).
 - Frozen archive commit: `e51a83b15`.
-- Latest validation: `EXP-145` passes 19/19 with 30 exact backend events, four
-  intended views, no automatic duplicate, and zero errors/crashes. The native
-  probe passes 142/142, repository lint is clean across 713 source and 699 test
-  files, and the Xcode 27 Release probe build passes. DatadogRUM remains
-  1,252/1,252 at its latest affected checkpoint.
+- Latest validation: accepted `EXP-146` attempt B passes 42/42 with eight exact
+  backend views, 26 actions, 26 Resources, five long tasks, no automatic
+  duplicate, and zero errors/crashes. The native probe passes 143/143,
+  repository lint is clean across 713 source and 699 test files, API-surface
+  verification and the Xcode 27 Release probe build pass. The complete
+  DatadogRUM run passed 1,262/1,263; its sole unrelated timeseries timing failure
+  passed immediately in isolation.
 
 Status describes the contract proved, not whether a diagnostic successfully found
 a defect. Compound status preserves mixed evidence. `PREPARED` means the
@@ -40,12 +44,10 @@ driver/oracle exists but runtime acceptance is pending.
 
 ## In-flight and next experiment
 
-`EXP-145` is closed. Revised product constraints make `EXP-146` the next
-simulator-capable slice: extract the scene-scoped occurrence engine from the
-native convenience container and prototype a container-independent host around
-an arbitrary customer-owned `View`, without changing standard SwiftUI navigation
-or presentation call sites. The ordered acceptance contract is in
-[PLAN.md](PLAN.md).
+`EXP-146` has accepted the shared-engine, arbitrary-host, and explicit-source
+path. Its next simulator-capable discriminator is the optional capability versus
+non-conforming baseline on the same custom container, followed by migration-diff
+measurement. The ordered acceptance contract is in [PLAN.md](PLAN.md).
 
 ## Complete experiment ledger
 
@@ -196,6 +198,7 @@ or presentation call sites. The ordered acceptance contract is in
 | EXP-143 | 2026-09-15 | PASS after FAIL, rejected candidates, and tooling-invalid retries · backend | SwiftUI navigation | Initial repeated restoration, external same/different-type replacement, rejected proposals, and canonicalized writes preserve only accepted path occurrences. The final canonical run starts Alternate before `onAppear`/immediate work, emits no speculative Detail or automatic duplicate, and passes 19/19 plus exact backend ownership. | [active record](Experiments/EXP-143-199.md#exp-143--external-semantic-router-mutations-and-restoration) |
 | EXP-144 | 2026-09-16 | PASS after SDK FAIL and harness-invalid retry · backend | SwiftUI navigation | Direct Sheet → Cover → Sheet replacement emits H1/S1/F1/S2/fresh H2 with no intermediate Home or automatic duplicate. The final run passes 43/43; backend intake has the same five semantic UUIDs, 19 exact-view actions, 19 exact-view Resources, and zero errors/crashes. | [active record](Experiments/EXP-143-199.md#exp-144--semantic-presentation-replacement) |
 | EXP-145 | 2026-09-16 | PASS after two INVALID harness attempts · backend | SwiftUI navigation | The actual semantic SPI preserves the `EXP-127` sibling boundary. Home commits to Detail beneath left manual authority, emits no intermediate/automatic view, and reveals one fresh Detail afterward. Final run passes 19/19; backend intake has exactly launch/Home/manual/Detail, 11 exact actions, 11 exact Resources, and zero errors/crashes. | [active record](Experiments/EXP-143-199.md#exp-145--semantic-sibling-container-isolation) |
+| EXP-146 | 2026-09-16 | PASS after SDK FAIL for explicit source; remaining adapters PREPARED · backend | SwiftUI navigation | A container-independent engine and arbitrary `RUMNavigationHost` instrument unchanged standard SwiftUI through a stable explicit source. Accepted retry starts H1 before lifecycle work, passes 42/42 through H1/D1/H2/S1/H3/F1/H4, and backend intake has eight exact views, 26 actions, 26 Resources, and zero errors/crashes. Optional-capability and non-conforming runtime rows remain. | [active record](Experiments/EXP-143-199.md#exp-146--container-independent-semantic-navigation-host) |
 
 ## Simulator-inconclusive and hardware-required evidence
 

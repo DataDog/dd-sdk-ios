@@ -393,6 +393,13 @@ Without another capability, this host supplies scene attachment, target-local
 automatic deduplication, best-effort inference, and crash-safe compatibility
 fallback. It must not mirror the customer's container parameters.
 
+`EXP-146` validates the explicit-source version of this shape with one outer host
+around unchanged `NavigationStack`, `.sheet`, and `.fullScreenCover` code. Its
+accepted run passes 42/42 and produces H1/D1/H2/Sheet/H3/Cover/H4 as distinct
+occurrences with exact downstream ownership and no automatic duplicate. This is
+implementation evidence, not approval of the provisional public names. The
+non-conforming and optional-capability runtime arms remain open.
+
 ### Integration inputs and precedence
 
 Exact semantic input follows this order:
@@ -418,6 +425,14 @@ type-erased source without an associated route type when runtime detection is
 required. Transition timing, current-destination metadata, materialization, and
 presentation state may be separate capabilities rather than one large protocol;
 do not use Objective-C-style optional requirements.
+
+The source's initial committed destination must exist when the host first
+evaluates. Publishing it from a descendant `.task` is too late for root
+`onAppear` and the synchronous prefix of an immediate task. The host resolves the
+scene from its inherited iOS 27 scene trait; customers do not supply an internal
+RUM UUID or native scene identifier. The first source selected by a host is pinned
+across SwiftUI view-value reconstruction so a freshly computed capability cannot
+replay or disconnect the current occurrence.
 
 Imported third-party containers should normally use an explicit source or
 reusable adapter rather than a retroactive conformance:
@@ -482,6 +497,13 @@ The inherited iOS 27 scene trait may promote only an already reader-proven
 same-scene dormant boundary; it cannot migrate or recover disconnected state.
 These mechanics should move into the shared engine without weakening any current
 fixture.
+
+They now do in the experimental implementation: `a84061840` extracts the
+scene-scoped engine and makes both the native convenience and arbitrary-content
+host delegate to it. `354422d88` supplies the customer-shaped explicit-source
+probe. The remaining proof obligation is not another visual-container rewrite;
+it is runtime parity for optional capability, non-conforming automatic fallback,
+and explicit third-party-style input through the same engine.
 
 ### Resolver and path model
 
@@ -571,10 +593,16 @@ before final dismissal creates fresh H2. Its final run passes 43/43; backend
 intake contains the same five semantic occurrences, 19 actions, 19 Resources,
 and zero errors/crashes. `EXP-145` adds actual-SPI sibling isolation: left manual
 authority keeps right Detail hidden until exact stop, then one fresh Detail owns
-post-stop work. The complete RUM suite remains 1,252/1,252 and the native probe
-passes 142/142. Both Debug and authoritative Xcode 27 Release probe
-builds pass. The source-based API verifier remains a prototype gate; no baseline
-is changed before normal review.
+post-stop work. `EXP-146` then moves those mechanics into the shared engine and
+passes 42/42 through an arbitrary host plus stable explicit source while leaving
+standard presentation APIs intact. Its backend session contains the eight views
+including ApplicationLaunch, 26 exact-view actions, 26 exact-view Resources, and
+zero errors/crashes; launch owns no downstream work. The complete RUM run passes
+1,262/1,263 and the sole unrelated timeseries timing failure passes immediately
+in isolation; the native probe passes 143/143. Both Debug and authoritative Xcode
+27 Release probe builds, repository lint, and API-surface verification pass. The
+source-based API verifier remains a prototype gate; no baseline is changed before
+normal review.
 
 ## Required review and test matrix
 
