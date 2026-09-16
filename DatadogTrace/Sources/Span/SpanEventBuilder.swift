@@ -19,6 +19,10 @@ internal struct SpanEventBuilder: Sendable {
     let eventsMapper: SpanEventMapper?
     /// If spans should be enriched with the current RUM context.
     let bundleWithRUM: Bool
+    /// Whether client-side stats computation is enabled. When `true`, spans are stamped with
+    /// `meta._dd.compute_stats = "0"` so the backend skips its own (double-counting) computation.
+    /// When `false`, the tag is removed so the backend keeps computing stats (backwards-compatible default).
+    let statsComputationEnabled: Bool
     /// Telemetry interface.
     let telemetry: Telemetry
     /// Span attributes encoder
@@ -58,6 +62,16 @@ internal struct SpanEventBuilder: Sendable {
                 tags[SpanTags.rumViewID] = rum.viewID
                 tags[SpanTags.rumActionID] = rum.userActionID
             }
+        }
+
+        // The SDK owns `_dd.compute_stats`: (over)write it to "0" when client-side stats is enabled,
+        // otherwise remove any user-provided value. This guarantees a user tag can never flip the
+        // opt-out and silently reintroduce backend double counting (when enabled) or under-counting
+        // (when disabled).
+        if statsComputationEnabled {
+            tags[SpanTags.computeStats] = "0"
+        } else {
+            tags.removeValue(forKey: SpanTags.computeStats)
         }
 
         // Transform user info to `SpanEvent.UserInfo` representation
@@ -106,11 +120,24 @@ internal struct SpanEventBuilder: Sendable {
             tags: tags
         )
 
-        if let eventMapper = eventsMapper {
-            return eventMapper(span)
-        } else {
+        guard let eventMapper = eventsMapper else {
             return span
         }
+
+        var mappedSpan = eventMapper(span)
+
+        // Re-assert the SDK-owned `_dd.compute_stats` after the user mapper runs. The mapper receives
+        // the tag already stamped above, but a mapper that rewrites or drops `tags` could otherwise
+        // strip it, letting the sampled-in span upload without the opt-out while client-side stats are
+        // also uploaded, causing the backend to recompute and double-count. `SpanSanitizer` only
+        // guards against attribute-count limiting dropping the tag, not against the mapper removing it.
+        if statsComputationEnabled {
+            mappedSpan.tags[SpanTags.computeStats] = "0"
+        } else {
+            mappedSpan.tags.removeValue(forKey: SpanTags.computeStats)
+        }
+
+        return mappedSpan
     }
 
     // MARK: - Attributes Conversion

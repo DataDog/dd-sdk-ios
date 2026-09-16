@@ -72,4 +72,30 @@ extension Profiling {
     }
 }
 
+extension Profiling.Configuration {
+    public typealias FeatureFlags = [FeatureFlag: Bool]
+
+    /// Feature flags available in Profiling.
+    public enum FeatureFlag: String {
+        /// Adds CPU-time sample values alongside wall-time sample values.
+        case cpuTimeSamples
+    }
+}
+
+extension Profiling.Configuration.FeatureFlags {
+    /// The default feature flags applied to Profiling configuration.
+    public static var defaults: Self {
+        [
+            .cpuTimeSamples: false,
+        ]
+    }
+
+    /// Accesses a feature flag value.
+    ///
+    /// Returns false by default.
+    public subscript(flag: Key) -> Bool {
+        self[flag, default: false]
+    }
+}
+
 #endif

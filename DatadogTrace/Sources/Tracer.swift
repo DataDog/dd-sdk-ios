@@ -49,6 +49,12 @@ public enum SpanTags {
     public static let manualDrop = "manual.drop"
     /// Tag used to mark a span as manually kept.
     public static let manualKeep = "manual.keep"
+
+    /// Internal tag owned exclusively by the SDK. Set to `"0"` when client-side stats computation
+    /// is enabled to tell the backend to skip its own (double-counting) computation. Encoded as
+    /// `meta._dd.compute_stats`. Any user-provided value for this key is overwritten or removed in
+    /// `SpanEventBuilder`, so it can never flip the SDK opt-out.
+    internal static let computeStats = "_dd.compute_stats"
 }
 
 /// A class for manual interaction with the Trace feature. It records spans that are sent to Datadog APM.

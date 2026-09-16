@@ -156,6 +156,24 @@ static double read_profiling_sample_rate() {
     return sample_rate;
 }
 
+static bool read_profiling_record_cpu_time() {
+    CFStringRef suiteName = CFSTR(DD_PROFILING_USER_DEFAULTS_SUITE_NAME);
+    CFStringRef key = CFSTR(DD_PROFILING_RECORD_CPU_TIME_KEY);
+    CFPreferencesAppSynchronize(suiteName);
+    CFPropertyListRef value = CFPreferencesCopyAppValue(key, suiteName);
+
+    bool result = false;
+
+    if (value) {
+        if (CFGetTypeID(value) == CFBooleanGetTypeID()) {
+            result = CFBooleanGetValue((CFBooleanRef)value);
+        }
+        CFRelease(value);
+    }
+
+    return result;
+}
+
 /**
  * Deletes the DatadogProfiling defaults from the `UserDefaults`
  * to be re-evaluated during `Profiling.enable()`.
@@ -164,9 +182,11 @@ void dd_delete_profiling_defaults() {
     CFStringRef suiteName = CFSTR(DD_PROFILING_USER_DEFAULTS_SUITE_NAME);
     CFStringRef isEnabledKey = CFSTR(DD_PROFILING_IS_ENABLED_KEY);
     CFStringRef sampleRateKey = CFSTR(DD_PROFILING_APP_LAUNCH_SAMPLE_RATE_KEY);
+    CFStringRef recordCPUTimeKey = CFSTR(DD_PROFILING_RECORD_CPU_TIME_KEY);
 
     CFPreferencesSetValue(isEnabledKey, NULL, suiteName, kCFPreferencesCurrentUser, kCFPreferencesAnyHost);
     CFPreferencesSetValue(sampleRateKey, NULL, suiteName, kCFPreferencesCurrentUser, kCFPreferencesAnyHost);
+    CFPreferencesSetValue(recordCPUTimeKey, NULL, suiteName, kCFPreferencesCurrentUser, kCFPreferencesAnyHost);
     CFPreferencesSynchronize(suiteName, kCFPreferencesCurrentUser, kCFPreferencesAnyHost);
 }
 
