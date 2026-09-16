@@ -79,6 +79,9 @@ enum ProbeRuntime {
     static let usesSceneTargetedPresentationAuthority = scenario.map(
         ProbeScenarioCatalog.usesSceneTargetedPresentationAuthority
     ) ?? false
+    static let usesExplicitOperationViewTargetSPI = scenario.map(
+        ProbeScenarioCatalog.usesExplicitOperationViewTargetSPI
+    ) ?? false
     static let usesSemanticNavigationSPI = scenario.map(
         ProbeScenarioCatalog.usesSemanticNavigationSPI
     ) ?? false

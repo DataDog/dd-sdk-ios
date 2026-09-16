@@ -451,6 +451,38 @@ final class ProbeScenarioRunnerTests: XCTestCase {
         )
     }
 
+    func testExplicitOperationTargetReusesCrossSceneContractWithoutSimultaneousCapability() throws {
+        let scenario = try XCTUnwrap(
+            ProbeScenarioCatalog.scenario(
+                identifier: "operations.explicit-target.cross-scene-serial"
+            )
+        )
+        let inferredScenario = try XCTUnwrap(
+            ProbeScenarioCatalog.scenario(
+                identifier: "operations.cross-scene.lifecycle"
+            )
+        )
+
+        XCTAssertEqual(scenario.trackingMode, .navigationOccurrence)
+        XCTAssertEqual(scenario.initialWindows, ["scene-A", "scene-B"])
+        XCTAssertEqual(Set(scenario.requiredCapabilities), [.multipleScenes])
+        XCTAssertTrue(ProbeScenarioCatalog.usesObservableDriver(scenario))
+        XCTAssertTrue(
+            ProbeScenarioCatalog.usesExplicitOperationViewTargetSPI(scenario)
+        )
+        XCTAssertEqual(scenario.steps, inferredScenario.steps)
+        XCTAssertEqual(
+            scenario.expectedSemanticTimeline,
+            inferredScenario.expectedSemanticTimeline
+        )
+        XCTAssertFalse(
+            scenario.steps.contains {
+                $0.kind == .waitForSceneReady && $0.scene == "scene-B"
+            },
+            "open-window already waits for and consumes scene B readiness"
+        )
+    }
+
     func testAutomaticManualSheetTargetsOnlyTheExceptionalScreen() throws {
         let scenario = try XCTUnwrap(
             ProbeScenarioCatalog.scenario(

@@ -13,6 +13,7 @@ enum ProbeScenarioCatalog {
         "swiftui.stack.return",
         "operations.navigation.lifecycle",
         "operations.cross-scene.lifecycle",
+        "operations.explicit-target.cross-scene-serial",
         "swiftui.stack.abort",
         "swiftui.stack.same-type-replacement",
         "swiftui.stack.different-type-replacement",
@@ -67,6 +68,7 @@ enum ProbeScenarioCatalog {
         swiftUIStackReturn,
         operationsNavigationLifecycle,
         operationsCrossSceneLifecycle,
+        operationsExplicitTargetCrossSceneSerial,
         swiftUIStackAbort,
         swiftUIStackSameTypeReplacement,
         swiftUIStackDifferentTypeReplacement,
@@ -178,6 +180,12 @@ enum ProbeScenarioCatalog {
         scenario.identifier == swiftUICoexistenceAutomaticSceneTargetedSheet.identifier
             || scenario.identifier
                 == swiftUICoexistenceAutomaticSceneTargetedFullScreenCover.identifier
+    }
+
+    static func usesExplicitOperationViewTargetSPI(
+        _ scenario: ProbeScenario
+    ) -> Bool {
+        scenario.identifier == operationsExplicitTargetCrossSceneSerial.identifier
     }
 
     static func usesSemanticNavigationSPI(_ scenario: ProbeScenario) -> Bool {
@@ -615,6 +623,22 @@ enum ProbeScenarioCatalog {
             reference: "operation-cross-home-a"
         ),
         expectedSemanticTimeline: operationCrossSceneTimeline()
+    )
+
+    /// EXP-155 reuses the cross-scene Operation contract through the
+    /// customer-shaped `.current(in:)` SPI. It intentionally requires only two
+    /// native scenes, not simultaneous visibility: every call carries an
+    /// explicit scene target while the preceding marker has made the other
+    /// scene the process representative.
+    private static let operationsExplicitTargetCrossSceneSerial = ProbeScenario(
+        identifier: "operations.explicit-target.cross-scene-serial",
+        trackingMode: .navigationOccurrence,
+        layout: .stack,
+        initialWindows: operationsCrossSceneLifecycle.initialWindows,
+        requiredCapabilities: [.multipleScenes],
+        steps: operationsCrossSceneLifecycle.steps,
+        completionConditions: operationsCrossSceneLifecycle.completionConditions,
+        expectedSemanticTimeline: operationsCrossSceneLifecycle.expectedSemanticTimeline
     )
 
     private static let swiftUIStackAbort = ProbeScenario(

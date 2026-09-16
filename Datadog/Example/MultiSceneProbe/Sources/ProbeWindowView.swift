@@ -2912,16 +2912,19 @@ struct ProbeWindowRoot: View {
                 )
                 let operationStep: String
                 let failureReason: String?
-                let invoke = {
-                    let attributes: [String: Encodable] = [
-                        ProbeRuntime.Attribute.runID: ProbeRuntime.runID,
-                        ProbeRuntime.Attribute.host: "native-swiftui",
-                        ProbeRuntime.Attribute.sourceScene: logicalSceneID,
-                        ProbeRuntime.Attribute.sceneSessionID: handle.nativeSceneID,
-                        ProbeRuntime.Attribute.screen: currentSceneScreen,
-                        ProbeRuntime.Attribute.operationInstance: instance,
-                        ProbeRuntime.Attribute.operationStep: step.kind.rawValue,
-                    ]
+                let attributes: [String: Encodable] = [
+                    ProbeRuntime.Attribute.runID: ProbeRuntime.runID,
+                    ProbeRuntime.Attribute.host: ProbeRuntime
+                        .usesExplicitOperationViewTargetSPI
+                        ? "native-swiftui-explicit-operation-target"
+                        : "native-swiftui",
+                    ProbeRuntime.Attribute.sourceScene: logicalSceneID,
+                    ProbeRuntime.Attribute.sceneSessionID: handle.nativeSceneID,
+                    ProbeRuntime.Attribute.screen: currentSceneScreen,
+                    ProbeRuntime.Attribute.operationInstance: instance,
+                    ProbeRuntime.Attribute.operationStep: step.kind.rawValue,
+                ]
+                let invokeInferred = {
                     switch step.kind {
                     case .startOperation:
                         RUMMonitor.shared().startOperation(
@@ -2959,18 +2962,61 @@ struct ProbeWindowRoot: View {
                 default:
                     return .rejected(reason: "unsupported operation step")
                 }
+
+                if ProbeRuntime.usesExplicitOperationViewTargetSPI {
+                    guard #available(iOS 27.0, *) else {
+                        return .rejected(
+                            reason: "explicit Operation target requires iOS 27"
+                        )
+                    }
+                    guard let windowScene = sceneTargetedWindowScene(
+                        operation: "\(step.kind.rawValue)-operation-target"
+                    ) else {
+                        return .rejected(
+                            reason: "explicit Operation target scene is unavailable"
+                        )
+                    }
+                    let target = RUMOperationViewTarget.current(in: windowScene)
+                    switch step.kind {
+                    case .startOperation:
+                        RUMMonitor.shared().startOperation(
+                            name: ProbeOperationContract.name,
+                            operationKey: operationKey,
+                            view: target,
+                            attributes: attributes
+                        )
+                    case .succeedOperation:
+                        RUMMonitor.shared().succeedOperation(
+                            name: ProbeOperationContract.name,
+                            operationKey: operationKey,
+                            view: target,
+                            attributes: attributes
+                        )
+                    case .failOperation:
+                        RUMMonitor.shared().failOperation(
+                            name: ProbeOperationContract.name,
+                            operationKey: operationKey,
+                            reason: .error,
+                            view: target,
+                            attributes: attributes
+                        )
+                    default:
+                        break
+                    }
+                } else {
                 #if DEBUG
-                RUMUIEventNetworkContext.withValue(
-                    sceneIdentifier: RUMSceneIdentifier(
-                        rawValue: handle.nativeSceneID
-                    ),
-                    rumContext: nil
-                ) {
-                    invoke()
-                }
+                    RUMUIEventNetworkContext.withValue(
+                        sceneIdentifier: RUMSceneIdentifier(
+                            rawValue: handle.nativeSceneID
+                        ),
+                        rumContext: nil
+                    ) {
+                        invokeInferred()
+                    }
                 #else
-                invoke()
+                    invokeInferred()
                 #endif
+                }
                 ProbeRuntime.eventRecorder.record(
                     ProbeSignal(
                         kind: .assertion,
