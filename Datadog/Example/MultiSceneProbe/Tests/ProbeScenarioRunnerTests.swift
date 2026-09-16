@@ -463,7 +463,7 @@ final class ProbeScenarioRunnerTests: XCTestCase {
             )
         )
 
-        XCTAssertEqual(scenario.trackingMode, .navigationOccurrence)
+        XCTAssertEqual(scenario.trackingMode, .manual)
         XCTAssertEqual(scenario.initialWindows, ["scene-A", "scene-B"])
         XCTAssertEqual(Set(scenario.requiredCapabilities), [.multipleScenes])
         XCTAssertTrue(ProbeScenarioCatalog.usesObservableDriver(scenario))

@@ -626,13 +626,15 @@ enum ProbeScenarioCatalog {
     )
 
     /// EXP-155 reuses the cross-scene Operation contract through the
-    /// customer-shaped `.current(in:)` SPI. It intentionally requires only two
-    /// native scenes, not simultaneous visibility: every call carries an
-    /// explicit scene target while the preceding marker has made the other
-    /// scene the process representative.
+    /// customer-shaped `.current(in:)` SPI. It uses explicit per-scene Home
+    /// boundaries because this scenario does not navigate and its purpose is
+    /// to discriminate Operation targeting, not the legacy occurrence-source
+    /// probe. It intentionally requires only two native scenes, not simultaneous
+    /// visibility: every call carries an explicit scene target while the
+    /// preceding marker has made the other scene the process representative.
     private static let operationsExplicitTargetCrossSceneSerial = ProbeScenario(
         identifier: "operations.explicit-target.cross-scene-serial",
-        trackingMode: .navigationOccurrence,
+        trackingMode: .manual,
         layout: .stack,
         initialWindows: operationsCrossSceneLifecycle.initialWindows,
         requiredCapabilities: [.multipleScenes],
