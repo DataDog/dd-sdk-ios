@@ -10,6 +10,7 @@ import XCTest
 
 // swiftlint:disable duplicate_imports
 import DatadogMachProfiler
+import DatadogMachProfiler.Pprof
 import DatadogMachProfiler.Testing
 // swiftlint:enable duplicate_imports
 
@@ -249,22 +250,67 @@ final class SafeReadTests: XCTestCase {
             initialPC: validPC1,
             stackBase: stackBase,
             bufSize: bufSize,
-            maxDepth: maxDepth
-        ) { ptr in
-            // Frame at offset 0x40: saved_fp = stackBase + 0x80 (valid), saved_pc = validPC2 (valid)
-            let frame1 = ptr.advanced(by: 0x40).assumingMemoryBound(to: UInt.self)
-            frame1[0] = stackBase + 0x80
-            frame1[1] = UInt(bitPattern: validPC2)
+            maxDepth: maxDepth,
+            populate: { ptr in
+                // Frame at offset 0x40: saved_fp = stackBase + 0x80 (valid), saved_pc = validPC2 (valid)
+                let frame1 = ptr.advanced(by: 0x40).assumingMemoryBound(to: UInt.self)
+                frame1[0] = stackBase + 0x80
+                frame1[1] = UInt(bitPattern: validPC2)
 
-            // Frame at offset 0x80: saved_fp = valid, saved_pc = 0 (invalid)
-            let frame2 = ptr.advanced(by: 0x80).assumingMemoryBound(to: UInt.self)
-            frame2[0] = stackBase + 0xC0
-            frame2[1] = 0
-        }
+                // Frame at offset 0x80: saved_fp = valid, saved_pc = 0 (invalid)
+                let frame2 = ptr.advanced(by: 0x80).assumingMemoryBound(to: UInt.self)
+                frame2[0] = stackBase + 0xC0
+                frame2[1] = 0
+            }
+        )
 
         let message = "Walk should record validPC1 + validPC2 then stop when the next saved PC is invalid"
         XCTAssertEqual(count, 2, message)
     }
+
+    #if arch(arm64)
+    func testWalkNormalizesPointerAuthenticationBitsFromInstructionPointers() {
+        let maxDepth: UInt32 = 10
+        let stackBase: UInt = 0x1_0000_0000
+        let bufSize = 256
+        // Include bit 47 in the simulated signature and preserve canonical bits
+        // above bit 35 to pin the 47-bit mask used by modern Apple platforms.
+        let pointerAuthenticationBits: UInt64 = 0xABCD_8000_0000_0000
+        let canonicalInitialPC: UInt64 = 0x1234_0040_0000
+        let canonicalSavedPC: UInt64 = 0x1234_0050_0000
+        let initialFP = UnsafeMutableRawPointer(bitPattern: stackBase + 0x40)!
+        let initialPC = UnsafeMutableRawPointer(
+            bitPattern: UInt(pointerAuthenticationBits | canonicalInitialPC)
+        )!
+        let savedPC = UnsafeMutableRawPointer(
+            bitPattern: UInt(pointerAuthenticationBits | canonicalSavedPC)
+        )!
+        var capturedInstructionPointers: [UInt64] = []
+
+        let count = runWalk(
+            initialFP: initialFP,
+            initialPC: initialPC,
+            stackBase: stackBase,
+            bufSize: bufSize,
+            maxDepth: maxDepth,
+            onCapturedFrames: { frames in
+                capturedInstructionPointers = frames.map(\.instruction_ptr)
+            },
+            populate: { ptr in
+                let frame = ptr.advanced(by: 0x40).assumingMemoryBound(to: UInt.self)
+                frame[0] = stackBase + 0x80
+                frame[1] = UInt(bitPattern: savedPC)
+
+                let terminatingFrame = ptr.advanced(by: 0x80).assumingMemoryBound(to: UInt.self)
+                terminatingFrame[0] = stackBase + 0xC0
+                terminatingFrame[1] = 0
+            }
+        )
+
+        XCTAssertEqual(count, 2)
+        XCTAssertEqual(capturedInstructionPointers, [canonicalInitialPC, canonicalSavedPC])
+    }
+    #endif
 
     func testWalkUsesSafeReadFallbackWhenValidFramePointerIsOutsideSnapshot() {
         let maxDepth: UInt32 = 4
@@ -321,12 +367,13 @@ final class SafeReadTests: XCTestCase {
             initialPC: validPC,
             stackBase: stackBase,
             bufSize: bufSize,
-            maxDepth: maxDepth
-        ) { ptr in
-            let words = ptr.advanced(by: Int(cycleOffset)).assumingMemoryBound(to: UInt.self)
-            words[0] = stackBase + cycleOffset
-            words[1] = UInt(bitPattern: validPC)
-        }
+            maxDepth: maxDepth,
+            populate: { ptr in
+                let words = ptr.advanced(by: Int(cycleOffset)).assumingMemoryBound(to: UInt.self)
+                words[0] = stackBase + cycleOffset
+                words[1] = UInt(bitPattern: validPC)
+            }
+        )
 
         XCTAssertEqual(count, maxDepth, "FP cycle should iterate until max_depth and stop")
     }
@@ -449,39 +496,103 @@ final class SafeReadTests: XCTestCase {
 
     // MARK: - End-to-end: frame capture via the full profiler
 
-    func testProfilerCapturesFramesFromSuspendedThread() {
-            // This exercises the complete path: thread_get_frame_pointers -> read_stack_region
-            // -> memcpy frame walk, all without raising any memory fault.
-        let mockThread = MockThread {
-            XCTAssertEqual(dd_profiler_start(), 1)
+    func testProfilerCapturesFramesFromSuspendedThread() throws {
+        let targetThreadName = "dd-profiler-unwind-test"
 
-            // Provide a non-trivial call stack so the profiler has frames to walk.
-            recursiveWork(depth: 10) {
-                Thread.sleep(forTimeInterval: 0.05)
-            }
-
+        dd_profiler_destroy()
+        XCTAssertEqual(dd_profiler_start(), 1)
+        defer {
             dd_profiler_stop()
-
-            let sampleCount = dd_pprof_sample_count(dd_profiler_get_profile())
-            XCTAssertGreaterThan(sampleCount, 0, "Profiler should capture stack frames via batch read")
-
             dd_profiler_destroy()
         }
 
+        let mockThread = MockThread {
+            _ = recursiveSleep(depth: 10)
+        }
+        mockThread.name = targetThreadName
+        defer { mockThread.cancel() }
+
         mockThread.start()
-        XCTAssertTrue(mockThread.waitForWorkCompletion(timeout: 5.0))
-        mockThread.cancel()
+        guard mockThread.waitForWorkCompletion(timeout: 5) else {
+            XCTFail("Timed out waiting for the profiled thread")
+            return
+        }
+
+        // stop() joins the sampler and flushes its pending batch.
+        dd_profiler_stop()
+
+        let profile = try XCTUnwrap(dd_profiler_get_profile())
+
+        var data: UnsafeMutablePointer<UInt8>?
+        let size = dd_pprof_serialize(profile, &data)
+        defer { dd_pprof_free_serialized_data(data) }
+
+        XCTAssertGreaterThan(size, 0)
+
+        let unpackedProfile = try XCTUnwrap(
+            perftools__profiles__profile__unpack(nil, size, data)
+        )
+        defer {
+            perftools__profiles__profile__free_unpacked(unpackedProfile, nil)
+        }
+
+        var targetDepths: [Int] = []
+
+        for sampleIndex in 0..<unpackedProfile.pointee.n_sample {
+            let sample = try XCTUnwrap(unpackedProfile.pointee.sample[sampleIndex])
+            var belongsToTargetThread = false
+
+            for labelIndex in 0..<sample.pointee.n_label {
+                let label = try XCTUnwrap(sample.pointee.label[labelIndex])
+                let keyCString = try XCTUnwrap(
+                    unpackedProfile.pointee.string_table[Int(label.pointee.key)]
+                )
+
+                guard String(cString: keyCString) == "thread name" else {
+                    continue
+                }
+
+                let valueCString = try XCTUnwrap(
+                    unpackedProfile.pointee.string_table[Int(label.pointee.str)]
+                )
+                belongsToTargetThread = String(cString: valueCString) == targetThreadName
+                break
+            }
+
+            if belongsToTargetThread {
+                targetDepths.append(sample.pointee.n_location_id)
+            }
+        }
+
+        guard !targetDepths.isEmpty else {
+            XCTFail(
+                "Expected at least one sample for \(targetThreadName)"
+            )
+            return
+        }
+
+        XCTAssertTrue(
+            targetDepths.contains { $0 >= 4 },
+            "The target thread should contain a real stack: \(targetDepths)"
+        )
     }
 }
 
 // MARK: - Helpers
 
-private func recursiveWork(depth: Int, work: @escaping () -> Void) {
+@inline(never)
+private func recursiveSleep(depth: Int) -> UInt64 {
     guard depth > 0 else {
-        work()
-        return
+        // Deliberately sample inside arm64e system libraries, where saved return
+        // addresses carry PAC bits even when the calling app is compiled as arm64.
+        Thread.sleep(forTimeInterval: 0.3)
+        return 0
     }
-    recursiveWork(depth: depth - 1, work: work)
+
+    let value = recursiveSleep(depth: depth - 1)
+
+    // Work after the recursive call prevents tail-call elimination.
+    return value &+ UInt64(depth)
 }
 
 /// Drives the frame walker against a synthetic stack buffer. The caller can populate
@@ -496,6 +607,7 @@ private func runWalk(
     bufSize: Int,
     maxDepth: UInt32,
     useSafeReadFallback: Bool = false,
+    onCapturedFrames: ([stack_frame_t]) -> Void = { _ in },
     populate: (UnsafeMutableRawPointer) -> Void = { _ in }
 ) -> UInt32 {
     var buf = [UInt8](repeating: 0, count: bufSize)
@@ -527,6 +639,7 @@ private func runWalk(
                     maxDepth
                 )
             }
+            onCapturedFrames(Array(framesPtr.prefix(Int(trace.frame_count))))
             return trace.frame_count
         }
     }
