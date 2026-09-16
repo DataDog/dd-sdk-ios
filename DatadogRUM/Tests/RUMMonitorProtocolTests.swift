@@ -77,6 +77,18 @@ private final class OperationTargetFallbackMonitor: NOPMonitor {
         failures.append((name: name, key: operationKey, reason: reason))
     }
 }
+
+private final class ActionTargetFallbackMonitor: NOPMonitor {
+    var actions: [(type: RUMActionType, name: String, attributes: [AttributeKey: AttributeValue])] = []
+
+    override func addAction(
+        type: RUMActionType,
+        name: String,
+        attributes: [AttributeKey: AttributeValue]
+    ) {
+        actions.append((type: type, name: name, attributes: attributes))
+    }
+}
 #endif
 
 class NOPMonitorTests: XCTestCase {
@@ -239,6 +251,48 @@ class NOPMonitorTests: XCTestCase {
         XCTAssertEqual(monitor.stops.count, 1)
         XCTAssertEqual(monitor.stops.first?.key, "compose")
         XCTAssertEqual(monitor.stops.first?.attributes["stop"] as? String, "attribute")
+    }
+
+    @MainActor
+    func testWhenUsingActionViewTargetBridgeOnNOPMonitor_itFallsBackExactlyOnce() {
+        let dd = DD.mockWith(logger: CoreLoggerMock())
+        defer { dd.reset() }
+
+        RUMActionViewTargetBridge.addAction(
+            on: NOPMonitor(),
+            type: .custom,
+            name: "targeted",
+            attributes: [:],
+            explicitTarget: .scene(RUMSceneIdentifier(rawValue: "scene-A"))
+        )
+
+        XCTAssertEqual(
+            dd.logger.criticalLogs.map(\.message),
+            [
+                """
+                Calling `addAction(type:name:attributes:)` on NOPMonitor.
+                Make sure RUM feature is enabled before using `RUMMonitor.shared()`.
+                """
+            ]
+        )
+    }
+
+    @MainActor
+    func testWhenUsingActionViewTargetBridgeOnCustomMonitor_itFallsBackExactlyOnce() {
+        let monitor = ActionTargetFallbackMonitor()
+
+        RUMActionViewTargetBridge.addAction(
+            on: monitor,
+            type: .custom,
+            name: "targeted",
+            attributes: ["test": "attribute"],
+            explicitTarget: .scene(RUMSceneIdentifier(rawValue: "scene-A"))
+        )
+
+        XCTAssertEqual(monitor.actions.count, 1)
+        XCTAssertEqual(monitor.actions.first?.type, .custom)
+        XCTAssertEqual(monitor.actions.first?.name, "targeted")
+        XCTAssertEqual(monitor.actions.first?.attributes["test"] as? String, "attribute")
     }
 
     @MainActor

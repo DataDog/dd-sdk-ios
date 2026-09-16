@@ -595,6 +595,20 @@ extension Monitor: RUMMonitorProtocol {
     // MARK: - actions
 
     func addAction(type: RUMActionType, name: String, attributes: [AttributeKey: AttributeValue]) {
+        addAction(
+            type: type,
+            name: name,
+            attributes: attributes,
+            explicitTarget: nil
+        )
+    }
+
+    func addAction(
+        type: RUMActionType,
+        name: String,
+        attributes: [AttributeKey: AttributeValue],
+        explicitTarget: RUMCommandTarget?
+    ) {
         var command = RUMAddUserActionCommand(
             time: dateProvider.now,
             globalAttributes: self.attributes,
@@ -604,6 +618,7 @@ extension Monitor: RUMMonitorProtocol {
             name: name
         )
         command.target = currentExecutionTarget
+        command.explicitTarget = explicitTarget
         process(
             command: command
         )
@@ -991,6 +1006,8 @@ extension Monitor: RUMMonitorViewProtocol {
 }
 
 #if os(iOS)
+extension Monitor: RUMActionViewTargetHandling {}
+
 extension Monitor: RUMOperationViewTargetHandling {}
 
 extension Monitor: RUMSceneTargetedManualViewHandling {

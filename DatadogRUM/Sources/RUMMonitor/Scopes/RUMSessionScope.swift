@@ -326,6 +326,16 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
             command = startViewCommand
         }
 
+        // An explicit one-shot action target is authoritative only when it
+        // resolves to a live view. Preserve the independently inferred target
+        // when a scene has already closed or has not started a RUM view yet.
+        if var actionCommand = command as? RUMAddUserActionCommand,
+           let explicitTarget = actionCommand.explicitTarget,
+           actionTargetView(for: explicitTarget, command: actionCommand) != nil {
+            actionCommand.target = explicitTarget
+            command = actionCommand
+        }
+
         if command.isUserInteraction {
             lastInteractionTime = command.time
             let interactedSceneIdentifier: RUMSceneIdentifier?
@@ -850,6 +860,28 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
     private func operationTargetView(
         for target: RUMCommandTarget,
         command: RUMOperationStepVitalCommand
+    ) -> RUMViewScope? {
+        switch target {
+        case .none:
+            return nil
+        case .allActiveViews, .processRepresentative:
+            return activeView
+        case .scene(let sceneIdentifier):
+            return viewScopes.last {
+                $0.isActiveView && $0.sceneIdentifier == sceneIdentifier
+            }
+        case .view(let viewID):
+            return routedView(
+                for: viewID,
+                command: command,
+                hasExactTargetView: viewScopes.contains { $0.viewUUID == viewID }
+            )
+        }
+    }
+
+    private func actionTargetView(
+        for target: RUMCommandTarget,
+        command: RUMAddUserActionCommand
     ) -> RUMViewScope? {
         switch target {
         case .none:

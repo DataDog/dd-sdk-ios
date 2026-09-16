@@ -774,25 +774,25 @@ public class objc_RUM: NSObject {
 }
 
 #if os(iOS) && DEBUG
-/// Objective-C companion for the experimental Operation view target.
+/// Objective-C companion for the experimental RUM view target.
 ///
 /// Objective-C has no Swift SPI import boundary, so this type remains Debug-only
 /// until normal API review approves its release.
 @available(iOS 27.0, *)
-@objc(DDRUMOperationViewTarget)
+@objc(DDRUMViewTarget)
 @objcMembers
 @_spi(objc)
-public final class objc_RUMOperationViewTarget: NSObject {
-    fileprivate let swiftType: RUMOperationViewTarget
+public final class objc_RUMViewTarget: NSObject {
+    fileprivate let swiftType: RUMViewTarget
 
-    private init(swiftType: RUMOperationViewTarget) {
+    private init(swiftType: RUMViewTarget) {
         self.swiftType = swiftType
     }
 
     @MainActor
     @objc(currentInScene:)
-    public static func current(in scene: UIWindowScene) -> objc_RUMOperationViewTarget {
-        objc_RUMOperationViewTarget(
+    public static func current(in scene: UIWindowScene) -> objc_RUMViewTarget {
+        objc_RUMViewTarget(
             swiftType: .current(in: scene)
         )
     }
@@ -1051,6 +1051,27 @@ public class objc_RUMMonitor: NSObject {
         swiftRUMMonitor.addAction(type: type.swiftType, name: name, attributes: attributes.dd.swiftAttributes)
     }
 
+    #if os(iOS) && DEBUG
+    /// Adds a RUM action to the current tracked view in an explicitly selected
+    /// window scene.
+    @available(iOS 27.0, *)
+    @MainActor
+    @objc(addActionWithType:name:view:attributes:)
+    public func addAction(
+        type: objc_RUMActionType,
+        name: String,
+        view: objc_RUMViewTarget,
+        attributes: [String: Any]
+    ) {
+        swiftRUMMonitor.addAction(
+            type: type.swiftType,
+            name: name,
+            view: view.swiftType,
+            attributes: attributes.dd.swiftAttributes
+        )
+    }
+    #endif
+
     public func addAttribute(
         forKey key: String,
         value: Any
@@ -1137,7 +1158,7 @@ public class objc_RUMMonitor: NSObject {
     public func startOperation(
         name: String,
         operationKey: String?,
-        view: objc_RUMOperationViewTarget,
+        view: objc_RUMViewTarget,
         attributes: [String: Any],
         options: objc_OperationOptions?
     ) {
@@ -1158,7 +1179,7 @@ public class objc_RUMMonitor: NSObject {
     public func succeedOperation(
         name: String,
         operationKey: String?,
-        view: objc_RUMOperationViewTarget,
+        view: objc_RUMViewTarget,
         attributes: [String: Any]
     ) {
         swiftRUMMonitor.succeedOperation(
@@ -1178,7 +1199,7 @@ public class objc_RUMMonitor: NSObject {
         name: String,
         operationKey: String?,
         reason: objc_RUMFeatureOperationFailureReason,
-        view: objc_RUMOperationViewTarget,
+        view: objc_RUMViewTarget,
         attributes: [String: Any]
     ) {
         swiftRUMMonitor.failOperation(

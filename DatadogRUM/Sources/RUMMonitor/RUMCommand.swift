@@ -745,6 +745,9 @@ internal struct RUMAddUserActionCommand: RUMUserActionCommand {
     var heatmapAttributes: HeatmapAttributes?
     /// Scene containing the touched control, or the legacy representative when unavailable.
     var target: RUMCommandTarget = .processRepresentative
+    /// Customer-selected target evaluated before the independently inferred
+    /// `target`. Kept separate so a stale explicit scene can fall back safely.
+    var explicitTarget: RUMCommandTarget? = nil
     let missedEventType: SessionEndedMetric.MissedEventType? = .action
 }
 

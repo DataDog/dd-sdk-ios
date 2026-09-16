@@ -799,7 +799,7 @@ internal final class ProbeScenarioDriver {
             }
             return .acknowledged(signal)
 
-        case .emitMarker, .emitSceneContextMarker:
+        case .emitMarker, .emitSceneContextMarker, .emitExplicitTargetAction:
             guard
                 let scene = step.scene,
                 let marker = step.value

@@ -200,6 +200,17 @@ Use Xcode 27's `xcresulttool get test-results summary` on the resulting
 `.xcresult` when raw output is truncated. Its device-level `passedTests` count
 includes parameterized test runs and is the count used by this project.
 
+Xcode 27 can print `error: the following command failed with exit code 0` around
+compiler warnings even when the build and tests succeeded. Do not classify that
+string alone as a failure. Use the `xcodebuild` process exit status and the
+`.xcresult` test summary as the authoritative result, then inspect actual
+`testFailures` when either reports a problem.
+
+Xcode MCP console filtering can still return the entire application transcript
+when stdout is represented as one large log unit. Use a unique probe run ID and
+bounded mapper/backend queries as the primary evidence extraction path; do not
+paste the full transcript into project documentation.
+
 For semantic restoration and router work, do not rely on sleeps or one runtime
 callback order. Run `RUMSwiftUINavigationOccurrenceSourceTests` first, then the
 semantic cluster (occurrence source, container lifetime, interactive arbiter,
@@ -239,6 +250,11 @@ SwiftUI occurrences, inspect emitted transitions or commands; the tracking
 state's base identity is a stable fallback and is not the generated occurrence
 identity. `RUMStopViewCommand` also has no instrumentation-type field, so pair it
 with its start by identity and assert the start command's type.
+
+The Objective-C smoke target is selected as
+`DatadogCoreTests/DDRUMMonitor_apiTests`. `ObjcAPITests` is a source group, not a
+test identifier; selecting it can exit before compiling the intended fixture and
+is a tooling mistake rather than API evidence.
 
 For an exact semantic-engine or adapter-author probe, create its stable transition
 source with the initial committed destination before the host evaluates. This is
@@ -590,8 +606,10 @@ intentionally sets `CODE_SIGNING_ALLOWED=NO` and `CODE_SIGNING_REQUIRED=NO` for
 its simulator-first workflow, so a successful `iphoneos` compile can still
 produce an app that no physical device can install.
 
-1. Run `security find-identity -v -p codesigning` and require a valid Apple
-   Development identity.
+1. Run `security find-identity -v -p codesigning` in the actual login-keychain
+   context and require a valid Apple Development identity. A restricted worker
+   or sandbox can return zero even when the user has valid identities; rerun the
+   diagnostic in user context before declaring a credential prerequisite.
 2. Resolve a development team through developer-local Xcode settings or command
    overrides. Do not commit a team identifier, certificate, or profile to the
    probe project.
@@ -601,6 +619,27 @@ produce an app that no physical device can install.
    expected embedded development profile before installing.
 5. Only then establish the clean device boundary and install.
 
+If scheme-wide signing overrides leak into Swift package targets, do not keep
+mutating identity and provisioning settings globally. The probe intentionally
+builds unsigned, so this repository-neutral fallback is acceptable for a local
+physical experiment:
+
+1. make a fresh exact-device `arm64` unsigned build;
+2. copy the `.app` to a temporary directory and leave the original untouched;
+3. select an existing development profile that includes the device and embeds
+   one currently valid local certificate;
+4. embed that profile and derive concrete, minimal entitlements from its granted
+   wildcard values for the app's actual bundle identifier;
+5. inventory nested Mach-O code and sign it depth-first with the exact matching
+   identity, then sign the outer bundle without relying on `--deep` to create
+   signatures;
+6. run strict/deep verification in user context and independently compare the
+   profile team, certificate, device, and application identifier before install.
+
+Keep this local: do not commit the team, identity, profile, or generated
+entitlements, and do not alter accounts or credentials. Preserve both unsigned
+and signed copies plus verification logs.
+
 Zero valid identities is a user/environment prerequisite, not an SDK or source
 failure. Do not create, import, revoke, or regenerate signing credentials without
 explicit user involvement. An unsigned install rejection with CoreDevice error
@@ -608,9 +647,33 @@ explicit user involvement. An unsigned install rejection with CoreDevice error
 physical runtime never began. Preserve the build and install log, prove the app
 and process remain absent, and keep the named scenario pending unchanged.
 
-`EXP-156` records the concrete boundary: the wired preflight and `arm64` build
-pass, but the host reports zero identities and the unsigned probe is rejected.
-Its preserved build result and install log are not RUM evidence.
+`EXP-156` records the concrete boundary and correction: the wired preflight and
+`arm64` build pass; the unsigned probe is rejected; a restricted identity query
+incorrectly reports zero; the user-context query finds two valid identities;
+one matches the installed device profile; and a copied app passes strict/deep
+verification, clean install, and launch. None of its build, signing, or install
+evidence is RUM evidence.
+
+`devicectl device process launch --console --log-output <path>` can bridge the
+application's console to the caller while writing only launcher status to
+`<path>`. Do not assume `--log-output` preserved JSONL merely because the live
+tool result displayed it. Capture the caller output separately or preserve the
+task-history item, then verify the standalone file before ending the run.
+
+Keep non-navigating attribution scenarios independent from navigation-specific
+view machinery. If their purpose is to discriminate Operations, Resources, or
+Traces across scenes, establish explicit per-scene Home boundaries unless the
+navigation integration itself is part of the question. Preserve inferred versus
+explicit signal APIs and every ownership expectation; changing only the view
+fixture is a harness correction, not evidence about the signal under test.
+
+A manifest's `simultaneous-visible-windows` requirement states the scenario's
+contract; it does not prove the OS actually arranged both windows. For physical
+runs, record each scene's geometry and lifecycle and capture the terminal UI.
+Two full-screen geometries with one scene background and only the other visible
+prove real multi-scene execution but leave simultaneous visibility
+inconclusive. Move that exact subcondition to a human-arranged Stage Manager or
+split-window run without discarding otherwise valid cross-scene signal evidence.
 
 Follow the live Xcode MCP instruction about delegating device interaction even
 for an automated run. The delegate owns only device state and artifacts; source

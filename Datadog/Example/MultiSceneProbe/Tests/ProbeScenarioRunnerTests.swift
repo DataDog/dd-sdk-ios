@@ -44,6 +44,7 @@ final class ProbeScenarioRunnerTests: XCTestCase {
                 "swiftui.stack.return",
                 "operations.navigation.lifecycle",
                 "operations.cross-scene.lifecycle",
+                "actions.explicit-target.cross-scene-serial",
                 "swiftui.stack.abort",
                 "swiftui.stack.same-type-replacement",
                 "swiftui.coexistence.semantic-a-automatic-b",
@@ -480,6 +481,41 @@ final class ProbeScenarioRunnerTests: XCTestCase {
                 $0.kind == .waitForSceneReady && $0.scene == "scene-B"
             },
             "open-window already waits for and consumes scene B readiness"
+        )
+    }
+
+    func testExplicitActionTargetOverridesOppositeRepresentativeAndPreservesLegacyFallback() throws {
+        let scenario = try XCTUnwrap(
+            ProbeScenarioCatalog.scenario(
+                identifier: "actions.explicit-target.cross-scene-serial"
+            )
+        )
+
+        XCTAssertEqual(scenario.trackingMode, .manual)
+        XCTAssertEqual(scenario.initialWindows, ["scene-A", "scene-B"])
+        XCTAssertEqual(Set(scenario.requiredCapabilities), [.multipleScenes])
+        XCTAssertTrue(ProbeScenarioCatalog.usesObservableDriver(scenario))
+        XCTAssertEqual(
+            scenario.steps.filter { $0.kind == .emitExplicitTargetAction }.map(\.scene),
+            ["scene-A", "scene-B"]
+        )
+        XCTAssertTrue(
+            scenario.expectedSemanticTimeline.contains {
+                $0.kind == .action
+                    && $0.name == "explicit-action-a-overrides-b"
+                    && $0.scene == "scene-A"
+                    && $0.sourceScene == "scene-A"
+            }
+        )
+        XCTAssertTrue(
+            scenario.expectedSemanticTimeline.contains {
+                $0.kind == .action
+                    && $0.name == "explicit-action-legacy-fallback-to-b"
+                    && $0.scene == "scene-B"
+                    && $0.sourceScene == "scene-A"
+                    && $0.ownerViewReferenceAction == "explicit-action-representative-b"
+                    && $0.ownerViewRelation == .same
+            }
         )
     }
 

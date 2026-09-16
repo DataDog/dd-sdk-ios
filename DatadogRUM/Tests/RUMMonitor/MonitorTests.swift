@@ -271,6 +271,73 @@ class MonitorTests: XCTestCase {
         XCTAssertEqual(actions.map(\.view.url), ["View B", "View A", "View A", "View A"])
     }
 
+    func testGivenExplicitActionScene_itOverridesInferredSceneAndRepresentative() throws {
+        let dateProvider = DateProviderMock()
+        let monitor = Monitor(
+            dependencies: .mockWith(featureScope: featureScope, samplingRate: 100),
+            dateProvider: dateProvider
+        )
+        let (sceneA, sceneB) = startConcurrentSceneViews(
+            in: monitor,
+            dateProvider: dateProvider
+        )
+
+        RUMContextHandoff.withValue(rumContext: nil, sceneIdentifier: sceneB.rawValue) {
+            monitor.addAction(
+                type: .custom,
+                name: "explicit A",
+                attributes: [:],
+                explicitTarget: .scene(sceneA)
+            )
+        }
+
+        let featureScope = try XCTUnwrap(featureScope as? FeatureScopeMock)
+        let action = try XCTUnwrap(featureScope.eventsWritten(ofType: RUMActionEvent.self).last)
+        XCTAssertEqual(action.action.target?.name, "explicit A")
+        XCTAssertEqual(action.view.url, "View A")
+        XCTAssertEqual(
+            monitor.rumContextSnapshot(for: .processRepresentative)?.viewName,
+            "View A"
+        )
+    }
+
+    func testGivenExplicitActionSceneHasNoView_itUsesTrustworthyInferredScene() throws {
+        let dateProvider = DateProviderMock()
+        let monitor = Monitor(
+            dependencies: .mockWith(featureScope: featureScope, samplingRate: 100),
+            dateProvider: dateProvider
+        )
+        let (sceneA, sceneB) = startConcurrentSceneViews(
+            in: monitor,
+            dateProvider: dateProvider
+        )
+
+        RUMContextHandoff.withValue(rumContext: nil, sceneIdentifier: sceneA.rawValue) {
+            monitor.addAction(type: .custom, name: "represent A", attributes: [:])
+        }
+        XCTAssertEqual(
+            monitor.rumContextSnapshot(for: .processRepresentative)?.viewName,
+            "View A"
+        )
+
+        RUMContextHandoff.withValue(rumContext: nil, sceneIdentifier: sceneB.rawValue) {
+            monitor.addAction(
+                type: .custom,
+                name: "inferred B",
+                attributes: [:],
+                explicitTarget: .scene(RUMSceneIdentifier(rawValue: "missing-scene"))
+            )
+        }
+
+        let featureScope = try XCTUnwrap(featureScope as? FeatureScopeMock)
+        let actions = featureScope.eventsWritten(ofType: RUMActionEvent.self)
+        XCTAssertEqual(actions.suffix(2).map(\.view.url), ["View A", "View B"])
+        XCTAssertEqual(
+            monitor.rumContextSnapshot(for: .processRepresentative)?.viewName,
+            "View B"
+        )
+    }
+
     func testGivenManualErrorsDuringSceneHandoff_theyUseExactOrSceneContext() throws {
         let dateProvider = DateProviderMock()
         let monitor = Monitor(

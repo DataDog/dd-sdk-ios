@@ -2867,6 +2867,44 @@ struct ProbeWindowRoot: View {
                     phase: marker
                 )
                 #endif
+            case .emitExplicitTargetAction:
+                guard let marker = step.value else {
+                    return .rejected(reason: "marker is missing")
+                }
+                guard #available(iOS 27.0, *) else {
+                    return .rejected(
+                        reason: "explicit action target requires iOS 27"
+                    )
+                }
+                guard let windowScene = sceneTargetedWindowScene(
+                    operation: "explicit-action-target"
+                ) else {
+                    return .rejected(
+                        reason: "explicit action target scene is unavailable"
+                    )
+                }
+                let uptime = ProcessInfo.processInfo.systemUptime
+                let attributes: [String: Encodable] = [
+                    ProbeRuntime.Attribute.runID: ProbeRuntime.runID,
+                    ProbeRuntime.Attribute.host: "native-swiftui-explicit-action-target",
+                    ProbeRuntime.Attribute.sourceScene: logicalSceneID,
+                    ProbeRuntime.Attribute.sceneSessionID: handle.nativeSceneID,
+                    ProbeRuntime.Attribute.screen: currentSceneScreen,
+                    ProbeRuntime.Attribute.phase: marker,
+                    ProbeRuntime.Attribute.uptime: uptime,
+                ]
+                RUMMonitor.shared().addAction(
+                    type: .custom,
+                    name: "probe-explicit-action-\(logicalSceneID)-\(marker)",
+                    view: .current(in: windowScene),
+                    attributes: attributes
+                )
+                ProbeRuntime.record(
+                    "explicit action target source=\(logicalSceneID) "
+                        + "native=\(handle.nativeSceneID) "
+                        + "screen=\(currentSceneScreen) phase=\(marker) "
+                        + "uptime=\(uptime)"
+                )
             case .startTraceOnlyURLSessionRequest:
                 guard let requestName = step.value else {
                     return .rejected(reason: "Trace-only request name is missing")
@@ -2976,7 +3014,7 @@ struct ProbeWindowRoot: View {
                             reason: "explicit Operation target scene is unavailable"
                         )
                     }
-                    let target = RUMOperationViewTarget.current(in: windowScene)
+                    let target = RUMViewTarget.current(in: windowScene)
                     switch step.kind {
                     case .startOperation:
                         RUMMonitor.shared().startOperation(

@@ -32,11 +32,15 @@ Operation escape hatch as an iOS 27 experimental/SPI surface. Its Swift and
 Objective-C call sites, custom-conformer/NOP fallback, explicit-over-inferred
 precedence, unresolved-target fallback, and cross-scene runtime usefulness pass.
 It must not be promoted to the supported public API surface until normal review
-approves the exact names and contracts. The longer-term value-type proposal,
-which never exposes internal RUM UUIDs, remains:
+approves the exact names and contracts. `EXP-158` then demonstrates that the
+same scene-current concept applies to one-shot actions, so the experimental
+value is now named `RUMViewTarget` rather than being Operation-specific. The
+earlier Swift `RUMOperationViewTarget` spelling remains an SPI type alias while
+review is pending. The longer-term value-type proposal, which never exposes
+internal RUM UUIDs, remains:
 
 ```swift
-public struct RUMOperationViewTarget {
+public struct RUMViewTarget {
     public static let inferred: Self
 
     @MainActor
@@ -97,8 +101,9 @@ plus a scene where the identity is not globally unique, never a public RUM UUID.
 To avoid making a new requirement on every external `RUMMonitorProtocol`
 conformer, the experimental prototype uses extension-only overloads backed by a
 private targeting capability. A custom conformer or NOP monitor calls the
-existing inferred method exactly once. The first Objective-C companion likewise
-exposes only `currentInScene:` in Debug builds. `inferred`,
+existing inferred method exactly once. The generalized Objective-C companion is
+`DDRUMViewTarget` and likewise exposes only `currentInScene:` in Debug builds.
+`inferred`,
 `trackedViewWithKey:inScene:`, and `trackedViewController:` remain API-review
 options rather than implemented claims. The SPI uses the same iOS 27 availability
 boundary as the scene-targeted manual-view prerequisite in
@@ -151,14 +156,20 @@ duplicate semantics; it does not close A-to-B completion or the public target.
 Exact run, session, view, and artifact identifiers remain in the
 [experiment ledger](EXPERIMENTS.md).
 
-`EXP-131` prepares the remaining live discriminator without weakening that
+`EXP-131` defines the inferred cross-scene discriminator without weakening that
 evidence boundary. Its `operations.cross-scene.lifecycle` driver starts success
 and failure in A and completes them in B. It then starts same-name Operations
 with distinct `parallel-alpha` and `parallel-beta` keys in A and B and completes
 B before A. The 100/100 hostless plan verifies all eight invocations and rejects
 shared A/B view identity, wrong-scene B ownership, a B completion on A, and A
-owner drift after B completes. It deliberately makes no live or backend claim;
-the unchanged scenario is queued for iPhone Duo or a physical multi-window iPad.
+owner drift after B completes. Its initial physical run was harness-inconclusive
+before any Operation because the non-navigating scenario still depended on a
+stale navigation occurrence source. `EXP-157` replaces only that irrelevant Home
+boundary, then passes 24/24 on two physical native scenes. Backend session
+`1dd8d491-19a4-4b67-bfa5-13df5b2a73a6` contains all eight raw steps and four
+exact A→B/A→A/B→B reduced Operations, with beta completing before alpha. This
+accepts inferred cross-scene ownership. Both windows were full-screen rather
+than simultaneously visible, so only the topology qualifier remains human-gated.
 
 `EXP-155` closes the explicit-target discriminator without requiring simultaneous
 visibility. Its corrected serial two-native-scene run deliberately makes the
@@ -178,23 +189,29 @@ capture timeout, and a capture-free retry proved the stale occurrence-source
 harness never seeded Home. The signed correction `eb1dd2fdc` uses explicit
 per-scene Home boundaries because this experiment targets Operation routing, not
 navigation. This is accepted engine and call-site evidence, not stable API
-approval and not a substitute for `EXP-131`'s inferred concurrent-call-site row.
+approval. `EXP-157` separately accepts the inferred physical call-site row.
+
+The last-proven snapshot described by this document is Operation-instance state:
+it protects later Operation steps when their originating scene has closed. The
+shared `RUMViewTarget` does not give one-shot actions an Operation snapshot; an
+action resolves its explicit target, then its independently captured inference,
+then the existing representative behavior.
 
 Required test coverage is tracked explicitly:
 
 | Required case | Current coverage | Status |
 | --- | --- | --- |
-| Start in A, succeed in B | Manager/session-scope assertions, `EXP-131` hostless driver, and explicit-target `EXP-155` raw/reduced backend proof | Explicit-target live backend pass; inferred hardware row pending |
-| Start in A, fail in B | Manager failure assertions, `EXP-131` hostless driver, and explicit-target `EXP-155` raw/reduced backend proof | Explicit-target live backend pass; inferred hardware row pending |
+| Start in A, succeed in B | Manager/session-scope assertions, explicit-target `EXP-155`, and inferred physical `EXP-157` raw/reduced backend proof | Focused plus explicit and inferred live backend pass |
+| Start in A, fail in B | Manager failure assertions, explicit-target `EXP-155`, and inferred physical `EXP-157` raw/reduced backend proof | Focused plus explicit and inferred live backend pass |
 | Start in A1, navigate in A, end in A2 | Manager/session-scope assertions plus `EXP-130` success and failure backend documents | Focused and live backend pass |
-| Parallel A/B, same name, different keys | Manager identity/view sequence plus `EXP-131` and explicit-target `EXP-155` alpha/beta drivers | Explicit-target live backend pass; inferred hardware row pending |
-| Reverse-order completion | Manager sequence plus `EXP-155` raw beta-before-alpha completion | Focused and explicit-target live backend pass |
+| Parallel A/B, same name, different keys | Manager identity/view sequence plus explicit-target `EXP-155` and inferred physical `EXP-157` alpha/beta runs | Focused plus explicit and inferred live backend pass |
+| Reverse-order completion | Manager sequence plus `EXP-155` and `EXP-157` raw beta-before-alpha completion | Focused plus explicit and inferred live backend pass |
 | Explicit target overrides wrong representative | Session-scope regression plus every customer-shaped `EXP-155` call opposing the representative | Focused and live backend pass |
 | Trustworthy inferred B overrides stored A | Manager scene-B step regression, including update/retry snapshot refresh | Focused pass |
 | Closed origin with no new context uses snapshot | Manager vital/message retained-view assertions plus backend teardown run | Focused and backend pass |
 | Closed origin then explicit B completion uses B | Manager exact-view assertion | Internal pass; public-shaped close/re-target runtime remains a later target-form row |
 | Duplicate identity has corrected warning and no synthetic end | Manager warning plus exact `[start, start, end]` step sequence, with both a reused key and omitted key; `EXP-130` raw/reduced backend proof | Focused and live backend pass; earlier raw start is orphaned as specified |
-| Existing single-scene and source-less behavior | Representative-change and legacy no-view regressions | Focused pass; current full 1,177-test RUM suite passes |
+| Existing single-scene and source-less behavior | Representative-change and legacy no-view regressions | Focused pass; current full 1,255-test RUM suite passes with zero failures |
 
 API review must settle the public Operation target type/name, availability, and
 exact Swift/Objective-C signatures. It must also decide whether and how to add

@@ -81,7 +81,8 @@ The catalog currently preserves these experiment families:
 | `swiftui.coexistence.same-key-manual-two-scenes` | `EXP-129` | Hostless contract PASS 91/91; clean simulator run reached both scenes but expired before manual starts, so live acceptance requires iPhone Duo or physical iPad |
 | `operations.navigation.lifecycle` | `EXP-130` | Signal-driven PASS 27/27; backend raw steps and reduced Operations prove independent start/end view attribution across same-scene navigation, failure, and duplicate-start orphan semantics |
 | `operations.cross-scene.lifecycle` | `EXP-131` | Hostless contract PASS 100/100; exact A→B success/failure and distinct-key reverse-completion oracle prepared, with live acceptance reserved for iPhone Duo or physical iPad |
-| `operations.explicit-target.cross-scene-serial` | `EXP-155` | Customer-shaped `.current(in:)` SPI PASS 24/24 after correcting a stale non-navigation occurrence-source harness. Backend has eight raw steps and four reduced Operations with exact A→B success/failure, A→A alpha, B→B beta, and beta-before-alpha completion. Stable API review and inferred `EXP-131` hardware acceptance remain separate. |
+| `operations.explicit-target.cross-scene-serial` | `EXP-155` | Customer-shaped `.current(in:)` SPI PASS 24/24 after correcting a stale non-navigation occurrence-source harness. Backend has eight raw steps and four reduced Operations with exact A→B success/failure, A→A alpha, B→B beta, and beta-before-alpha completion. Stable API review remains separate; inferred physical ownership later passes in `EXP-157`. |
+| `actions.explicit-target.cross-scene-serial` | `EXP-158` | Generalized `RUMViewTarget.current(in:)` one-shot action proof. Run `exp158-sim-66f922ee-19a3-4941-b8ca-c518216e6b0d` passes 9/9 while B is representative: explicit A owns A, explicit B owns B, and a source-A legacy action plus Resource remain on B. Backend session `f67c75b2-e839-4701-a283-7e4355682b6a` confirms the same ownership across 30 events. Long-running actions and stable API review remain open. |
 | `actions.uikit-scroll-navigation-deceleration` | `EXP-132` | Real-gesture PASS 7/7; a threshold-qualified `UITableView` fling remains exactly once on stopped Secondary 2 when fresh Secondary 3 is presented during deceleration, and backend ownership agrees |
 | `traces.urlsession-cross-scene` | `EXP-133` | Signal-driven PASS 8/8; one Trace-only URLSession request starts while A/Home H1 is representative, completes after B/Home B1 becomes representative, and emits exactly one backend span on A/H1 with no matching RUM Resource |
 | `traces.urlsession-reverse-completion` | `EXP-134` | Signal-driven PASS 14/14; independent A and B Trace-only requests complete B-before-A while the opposite scene is representative, yet exactly one backend span for each request remains on its own start-scene Home view and neither URL becomes a RUM Resource |
@@ -118,7 +119,7 @@ view-stop/Resource observations, repeated-name completion, a missing event, a
 forbidden view, and an ignored native gesture. An exact main-actor scene
 registry adds stable logical/native identity, weak window ownership, readiness,
 activation, geometry, route, and disconnect generations without serializing its
-future Execution Context seam. The generated test plan passes 162/162. The stack
+future Execution Context seam. The generated test plan passes 164/164. The stack
 return, abort, replacement, split-selection, and deterministic UIKit transition
 scenarios, plus exact scene open/close/activation, drive their exact scene and wait for
 observable readiness, lifecycle state, path/selection,
@@ -170,7 +171,9 @@ reuse the SDK-owned publisher host with no per-screen or per-method RUM code.
 Its 42/42 local/backend result includes initial lifecycle ownership and one
 stable registration. `EXP-154` then mounts the accepted Observation boundary in
 two real native scenes and proves independent A/B H1/D1/fresh-H2 ownership at
-25/25 locally and in backend intake. The current probe suite passes 162/162.
+25/25 locally and in backend intake. `EXP-158` adds exact scene-targeted one-shot
+action ownership while preserving legacy representative fallback. The current
+probe suite passes 164/164.
 None of these experiments approves a stable public declaration. Keep the
 migration result separate from the probe's semantic PASS. The real-reader bounce
 covers synchronous generation cancellation only;

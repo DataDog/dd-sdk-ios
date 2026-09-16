@@ -786,9 +786,9 @@ zero errors/crashes; launch owns no downstream work. The optional capability
 repeats that 42/42 contract, while opaque fallback passes 5/5 with automatic
 capture and no semantic view. Runtime precedence, repeated source resolution,
 and adversarial replacement each pass 43/43 with the same exact backend owners
-and no decoy view. The complete RUM run passes
-1,262/1,263 and the sole unrelated timeseries timing failure passes immediately
-in isolation; the current native probe passes 162/162. The synchronous real-reader bounce
+and no decoy view. The complete RUM run passes 1,255/1,255 with zero failures at
+the current downstream-target checkpoint; the current native probe passes
+164/164. The synchronous real-reader bounce
 passes 17/17, focused disconnect/lifetime tests pass 4/4, and handler tests pass
 84/84 at their recorded checkpoint. `EXP-150` itself fails 17/38 because its
 fresh H3/H4 occurrences start after synchronous post-dismiss work; backend

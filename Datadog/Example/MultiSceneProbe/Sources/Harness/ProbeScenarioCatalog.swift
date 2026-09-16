@@ -14,6 +14,7 @@ enum ProbeScenarioCatalog {
         "operations.navigation.lifecycle",
         "operations.cross-scene.lifecycle",
         "operations.explicit-target.cross-scene-serial",
+        "actions.explicit-target.cross-scene-serial",
         "swiftui.stack.abort",
         "swiftui.stack.same-type-replacement",
         "swiftui.stack.different-type-replacement",
@@ -69,6 +70,7 @@ enum ProbeScenarioCatalog {
         operationsNavigationLifecycle,
         operationsCrossSceneLifecycle,
         operationsExplicitTargetCrossSceneSerial,
+        actionsExplicitTargetCrossSceneSerial,
         swiftUIStackAbort,
         swiftUIStackSameTypeReplacement,
         swiftUIStackDifferentTypeReplacement,
@@ -643,6 +645,67 @@ enum ProbeScenarioCatalog {
         steps: operationsCrossSceneLifecycle.steps,
         completionConditions: operationsCrossSceneLifecycle.completionConditions,
         expectedSemanticTimeline: operationsCrossSceneLifecycle.expectedSemanticTimeline
+    )
+
+    /// EXP-158 validates the first non-Operation consumer of the general RUM
+    /// view target. Each explicit action is emitted after the opposite scene has
+    /// become process representative. A final source-less marker deliberately
+    /// executes from A and remains on last-interacted B for compatibility.
+    private static let actionsExplicitTargetCrossSceneSerial = ProbeScenario(
+        identifier: "actions.explicit-target.cross-scene-serial",
+        trackingMode: .manual,
+        layout: .stack,
+        initialWindows: ["scene-A", "scene-B"],
+        requiredCapabilities: [.multipleScenes],
+        steps: [
+            ProbeStep(.waitForSceneReady, scene: "scene-A"),
+            ProbeStep(
+                .waitForSignal,
+                scene: "scene-A",
+                signal: "rum-view:home#1"
+            ),
+            ProbeStep(.openWindow, scene: "scene-A", value: "scene-B"),
+            ProbeStep(
+                .waitForSignal,
+                scene: "scene-B",
+                signal: "rum-view:home#1"
+            ),
+            ProbeStep(
+                .emitSceneContextMarker,
+                scene: "scene-B",
+                value: "explicit-action-representative-b"
+            ),
+            ProbeStep(
+                .emitExplicitTargetAction,
+                scene: "scene-A",
+                value: "explicit-action-a-overrides-b"
+            ),
+            ProbeStep(
+                .emitExplicitTargetAction,
+                scene: "scene-B",
+                value: "explicit-action-b-overrides-a"
+            ),
+            ProbeStep(
+                .emitMarker,
+                scene: "scene-A",
+                value: "explicit-action-legacy-fallback-to-b"
+            ),
+        ],
+        completionConditions: [
+            ProbeExpectation(
+                .resource,
+                scene: "scene-B",
+                screen: "home",
+                occurrence: 1,
+                name: "explicit-action-legacy-fallback-to-b",
+                sourceScene: "scene-A",
+                sourceScreen: "home",
+                rumViewOrigin: .semantic,
+                ownerViewReferenceAction: "explicit-action-representative-b",
+                ownerViewRelation: .same
+            )
+        ],
+        expectedSemanticTimeline: explicitActionTargetTimeline()
     )
 
     private static let swiftUIStackAbort = ProbeScenario(
@@ -5641,6 +5704,71 @@ enum ProbeScenarioCatalog {
             name: "operation-parallel-alpha-end-a",
             scene: "scene-A",
             reference: "operation-cross-home-a"
+        )
+    }
+
+    private static func explicitActionTargetTimeline() -> [ProbeExpectation] {
+        [
+            ProbeExpectation(
+                .viewStarted,
+                scene: "scene-A",
+                screen: "home",
+                occurrence: 1,
+                rumViewOrigin: .semantic
+            ),
+            ProbeExpectation(
+                .viewStarted,
+                scene: "scene-B",
+                screen: "home",
+                occurrence: 1,
+                rumViewOrigin: .semantic
+            ),
+        ]
+        + sameKeyWorkExpectations(
+            name: "explicit-action-representative-b",
+            sourceScene: "scene-B",
+            sourceScreen: "home",
+            scene: "scene-B",
+            screen: "home",
+            occurrence: 1,
+            rumViewOrigin: .semantic,
+            ownerViewStartedAfterSceneOpen: "scene-B"
+        )
+        + [
+            ProbeExpectation(
+                .action,
+                scene: "scene-A",
+                screen: "home",
+                occurrence: 1,
+                name: "explicit-action-a-overrides-b",
+                sourceScene: "scene-A",
+                sourceScreen: "home",
+                rumViewOrigin: .semantic
+            ),
+            ProbeExpectation(
+                .action,
+                scene: "scene-B",
+                screen: "home",
+                occurrence: 1,
+                name: "explicit-action-b-overrides-a",
+                sourceScene: "scene-B",
+                sourceScreen: "home",
+                rumViewOrigin: .semantic,
+                ownerViewReferenceAction: "explicit-action-representative-b",
+                ownerViewRelation: .same
+            ),
+        ]
+        + sameKeyWorkExpectations(
+            name: "explicit-action-legacy-fallback-to-b",
+            sourceScene: "scene-A",
+            sourceScreen: "home",
+            scene: "scene-B",
+            screen: "home",
+            occurrence: 1,
+            rumViewOrigin: .semantic,
+            ownerViewStartedAfterSceneOpen: "scene-B",
+            actionReference: "explicit-action-representative-b",
+            actionRelation: .same
         )
     }
 

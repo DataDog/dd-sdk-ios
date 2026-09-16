@@ -35,10 +35,14 @@ zero-screen/zero-navigation-method budget, and passes the complete occurrence
 and downstream ownership oracle without a new SDK primitive. EXP-154 then proves
 two native Observation scenes serially, and EXP-155 accepts the first explicit
 Operation `.current(in:)` target with exact A→B raw and reduced backend evidence.
+EXP-157 accepts inferred cross-scene Operations on a physical iPad. EXP-158 then
+generalizes the experimental view target and accepts explicit one-shot action
+routing: A and B own their requested actions while an unchanged source-less
+action still uses the last-interacted representative.
 
 The remaining risk is concentrated in automatic SwiftUI limitations, selecting
-the reviewed public shape for trustworthy low-cost adapters, proving two native
-scene instances and then genuine concurrent windows, completing genuine
+the reviewed public shape for trustworthy low-cost adapters and downstream
+targets, proving genuine concurrently visible/interactive windows, completing genuine
 scene disconnect/remount and final-host-removal runtime evidence, simultaneously
 usable window hardware, remaining explicit
 target APIs for work without reliable source context, downstream-surface runtime
@@ -54,15 +58,15 @@ No product decision blocks the next internal experiment.
 | SwiftUI navigation | The iOS 27 semantic engine is independent of a visual container. The native convenience SPI and arbitrary-content host prove committed fresh occurrences, unchanged standard `NavigationStack`/sheet/cover rendering, target-local authority, exact input precedence, and stable source lifetime. Opaque content retains automatic capture without guessed semantic views. EXP-148 adds an SDK-owned accepted-state publisher observer with automatic metadata, sparse overrides, equal-route occurrence identity, delayed authority, and route-count-independent integration. EXP-149 closes actual host reconstruction/subscription pinning, publisher replacement, two-scene observed-source isolation, posted-disconnect cleanup, and unrelated automatic-subtree coexistence. EXP-150 rejects render-time current-value observation. EXP-151 accepts one-shot Observation `.didSet` for an existing iOS 27 `@Observable` router whose complete accepted destination is stored in one atomic property, and restores exact synchronous dismissal attribution. EXP-152 confirms actual native Sheet/Cover `onDismiss` callbacks run after accepted Home state and use the fresh occurrences without creating another Home. EXP-153 proves a custom library-owned container can use one synchronous accepted-state callback adapter and the existing SDK publisher host without retroactive conformance or per-screen/per-method RUM code. EXP-154 proves two real native scenes independently mount the Observation boundary and retain distinct H1/D1/H2 occurrences plus exact downstream owners. The low-level EXP-146 publisher remains adapter-author evidence, not the normal customer path. | `EXP-141` 38/38; `EXP-142` 48/48; `EXP-143` restoration 20/20 and canonicalization 19/19; `EXP-144` 43/43; `EXP-145` 19/19; `EXP-146` explicit/capability 42/42 and precedence/lifetime matrix; `EXP-147` migration audit; `EXP-148` 9/9 focused, 153/153 probe, Release build, and final 38/38 local/backend; `EXP-149` 20/20 focused lifetime/scene matrix; `EXP-150` frozen runtime FAIL 17/38; `EXP-151` 8/8 focused, 193/193 broadened, 154/154 probe, Xcode 27 iOS Release plus visionOS package builds, and post-review 38/38 mapper/backend; `EXP-152` 155/155 probe plus clean 38/38 mapper/backend with exact native-callback owners; `EXP-153` 7/7 focused, 161/161 probe, lint and Release PASS, plus clean 42/42 mapper/backend and one stable registration; `EXP-154` 2/2 focused, 162/162 probe, lint and Release PASS, plus clean 25/25 mapper/backend with seven views and six exact marker pairs | Automatic discovery is still semantically late and automatic split lacks destination views. A plain current destination is not a trustworthy early signal. Interactive dismissal/cancellation, real OS disconnect/remount/final removal, API review, and simultaneous hardware coexistence remain. Plain local `@State` and opaque navigation retain automatic/manual fallback rather than an exact claim. |
 | UIKit navigation | Push/pop/modal and stock regular-width split transitions create fresh committed occurrences. Interactive cancel retains the current UUID; finish creates a fresh returned UUID. Structural Primary/sidebar columns are not current RUM destinations. | `EXP-079`/`080`, deterministic `EXP-112`, mapper/backend action and Resource ownership | Human edge gestures, subclass containers, adaptive collapse/expand, simultaneous-window completion, and ordinary-app compatibility remain. |
 | Manual views | Internal scene stacks and the iOS 27 Swift SPI support exact scene/key start-stop pairing, nested distinct keys, navigation beneath authority, latest-destination reveal, fresh returned occurrences, and crash-safe duplicate-key misuse. Automatic tracking continues outside the target. | `EXP-122`, `EXP-125`-`128`, customer-shaped `EXP-137`-`140` | Same key in A/B with reverse stop is tested hostlessly but live `EXP-129` is simulator-inconclusive. Stable Swift and Objective-C surfaces require review. Legacy source-less start/stop intentionally does not pair with targeted calls. |
-| Actions | Source-bearing UIKit/SwiftUI taps emit once; exact-view actions advance the compatibility representative. Manual work inside trustworthy event handoff uses the exact view. A threshold-qualified UIKit scroll remains on its origin across navigation. | `EXP-089`, `EXP-132`, focused routing tests | The decisive visible-A/B representative discriminator needs hardware. Ordinary SwiftUI Button child tasks begin outside the handoff in `EXP-135` and correctly use the approved last-interacted fallback unless explicitly targeted. |
+| Actions | Source-bearing UIKit/SwiftUI taps emit once; exact-view actions advance the compatibility representative. Manual work inside trustworthy event handoff uses the exact view. A threshold-qualified UIKit scroll remains on its origin across navigation. The experimental one-shot `RUMViewTarget.current(in:)` overrides a wrong process representative, and an unavailable explicit target preserves independently inferred fallback. | `EXP-089`, `EXP-132`; `EXP-158` focused/custom/NOP tests, 9/9 mapper oracle, and exact backend A/B owners | Stable target API review and long-running `startAction`/`stopAction` targeting remain. The decisive simultaneously visible A/B inferred discriminator remains hardware work. Ordinary SwiftUI Button child tasks begin outside the handoff in `EXP-135` and correctly use the approved last-interacted fallback unless explicitly targeted. |
 | Resources | Start ownership is captured and completion remains on that scope after navigation or teardown. Manual starts use exact handoff view/scene when available. | `EXP-006`-`009`, `EXP-023`, focused completion tests | Explicit scene targeting and remaining two-window runtime rows are incomplete. Shared/coalesced `EXP-136` is hardware-gated after repeatable simulator-system crashes before completion. |
 | Traces and log correlation | Manual/native/OpenTelemetry and URLSession spans share start-context selection. One request survives representative churn; independent A/B requests completed in reverse order keep their start owners. Log correlation and mirrored-error routing have focused scene tests. | Trace-only `EXP-133`/`134` backend spans; latest affected DatadogTrace suite 151/151 | Shared request hardware run, exact-source escape hatch, live two-window log/mirrored-error evidence, and compatibility remain. |
 | Errors and view mutations | Manual errors, view attributes, timings, loading-time mutations, and internal view commands prefer exact handoff view then scene then representative. | Focused regressions grouped in `EXP-101` | Targeted public surface and comprehensive two-window mapper/backend runs remain. Raw customer `Error` values must still use sanitized telemetry paths. |
-| Operations | Identity is application-wide `(name, operationKey)`. Every step resolves its view independently; navigation or an explicit scene target can change start/end view. Duplicate starts keep only the latest client start, produce no synthetic end, and leave the earlier backend operation to four-hour timeout. The iOS 27 `.current(in:)` SPI preserves explicit > inferred > last-proven > representative fallback. | `EXP-130` raw/reduced navigation Operations; `EXP-131` prepared inferred driver; `EXP-155` 24/24 plus eight raw steps and four reduced explicit-target Operations | Explicit target behavior is accepted but stable Swift/Objective-C API review remains. Inferred simultaneous call-site context still needs the physical `EXP-131` run; manual-key/controller target forms and other downstream target APIs remain. |
+| Operations | Identity is application-wide `(name, operationKey)`. Every step resolves its view independently; navigation or an explicit scene target can change start/end view. Duplicate starts keep only the latest client start, produce no synthetic end, and leave the earlier backend operation to four-hour timeout. The iOS 27 `.current(in:)` SPI preserves explicit > inferred > last-proven > representative fallback. | `EXP-130` raw/reduced navigation Operations; `EXP-155` 24/24 plus eight raw steps and four reduced explicit-target Operations; physical `EXP-157` 24/24 with the same exact inferred A→B/A→A/B→B reduction | Explicit and inferred cross-scene behavior is accepted, but stable Swift/Objective-C API review remains. Simultaneous on-screen topology is still a human-arranged qualifier; manual-key/controller target forms and other downstream target APIs remain. |
 | Scene lifecycle and restoration | Exact registry, disconnect fencing, retained-reader rearming, migration, explicit session stop, and origin-scene teardown preserve proven ownership in deterministic tests. EXP-146 additionally releases only the exact semantic host and rejects stale post-disconnect starts until fresh lifecycle. | `EXP-008`, `EXP-041`/`042`, `EXP-063`-`066`, `EXP-113`, `EXP-143`; EXP-146 focused disconnect/lifetime tests and synchronous real-reader bounce | Posted notifications and synchronous reader callbacks do not prove genuine OS disconnect or representable remount timing. Final two-window host removal hit the same simulator-system crash twice before removal. Real focus handoff, peer lifecycle, reconnect, isolated background/foreground, and concurrent A/B restoration remain hardware gates. |
 | WebView, vitals, fatal/exported context, profiling | WebView native container snapshots and several process/context surfaces have source or focused-test seams. Vitals remain view-based. Profiling operation identity is exact. | Focused module checkpoints and source inspection in the archive | Named runtime/backend scenarios are missing for WebView, vitals, mirrored logs, fatal/exported context, and profiling support statements. Profiling is process-level, not a per-scene view model. |
 | Session Replay | Exercised UIKit/SwiftUI two-window and teardown runs uploaded replay data without an SDK-caused crash. | Repeated runtime sessions including `EXP-004` and `EXP-019` | Scene-correct replay representation is explicitly out of scope. Only crash safety is a release requirement here. |
-| Single-scene compatibility | Existing inferred/source-less behavior is preserved. Experimental manual, semantic engine/adapter, and Operation target SPIs build at recorded checkpoints, and affected suites pass at the latest checkpoint. | DatadogRUM 1,262/1,263 with its sole unrelated timing failure passing immediately in isolation; EXP-151 broadened SDK selection 193/193; current native probe 163/163; RUM view-handler regressions 84/84 at their recorded checkpoint; Operation focused/broadened selections 7/7 and 33/33; Objective-C smoke 1/1; live opaque, capability, precedence, source-lifetime, reader-bounce, publisher-observed, Observation-observed, native-callback, custom callback-adapter, serial two-native-scene, and explicit Operation target runs; explicit Xcode 27 iOS Release and visionOS package builds PASS | API-surface verification correctly rejects only the unapproved experimental navigation, manual-view, and Operation target symbols; baselines remain unchanged. Live ordinary automatic/manual apps outside the probe, broader custom-handler/Objective-C Release, supported-OS, overhead, and reentrancy gates remain. |
+| Single-scene compatibility | Existing inferred/source-less behavior is preserved. Experimental manual, semantic engine/adapter, shared view-target, Operation, and one-shot action SPIs build at recorded checkpoints, and affected suites pass at the latest checkpoint. | DatadogRUM 1,255/1,255; EXP-151 broadened SDK selection 193/193; current native probe 164/164; RUM view-handler regressions 84/84 at their recorded checkpoint; Operation focused/broadened selections 7/7 and 33/33; Objective-C action/target smoke 8/8; custom/NOP action fallback regressions; live opaque, capability, precedence, source-lifetime, reader-bounce, publisher-observed, Observation-observed, native-callback, custom callback-adapter, serial two-native-scene, explicit Operation, inferred physical Operation, and explicit action target runs; explicit Xcode 27 iOS Release and visionOS package builds PASS | API-surface verification correctly rejects only the unapproved experimental navigation, manual-view, shared-target, Operation, and action symbols; baselines remain unchanged. Live ordinary automatic/manual apps outside the probe, broader custom-handler/Objective-C Release, supported-OS, overhead, and reentrancy gates remain. |
 
 ## Confirmed capabilities
 
@@ -113,6 +117,10 @@ No product decision blocks the next internal experiment.
   every step independently. With the opposite scene intentionally made process
   representative, backend raw steps and reduced Operations still expose A→B
   success/failure, A→A alpha, and B→B beta with reverse completion (`EXP-155`).
+- The same generalized target can route a one-shot action to A or B while the
+  opposite scene is representative. A legacy action emitted from source A still
+  follows representative B, and an unresolved explicit target falls back to the
+  independently inferred candidate instead of dropping the event (`EXP-158`).
 - Sequential repeated equal route values retain distinct materialized occurrence
   claims while preserving ordinary `NavigationLink(value: Route)` matching.
 - A directly restored repeated-equal path materializes only its top on iOS 27;
@@ -186,8 +194,9 @@ No product decision blocks the next internal experiment.
 4. Ordinary SwiftUI Button child tasks are outside the `sendEvent` handoff in the
    measured path. Exact origin cannot be inferred after suspension; `EXP-135`
    intentionally preserves the approved B/last-interacted fallback.
-5. Scene-targeted Operation completion and other explicit downstream APIs remain
-   prototypes-to-build, and cross-window runtime acceptance is pending.
+5. Scene-targeted Operations and one-shot actions are accepted engine proofs.
+   Stable API review, long-running action targeting, Resources, errors, view
+   mutations, Traces, logs, WebView, and exported/fatal target surfaces remain.
 6. Activation, peer backgrounding, reconnect, per-scene lifecycle, and concurrent
    restoration are incomplete.
 7. Errors, logs, WebView, vitals, fatal/exported context, and profiling lack the
@@ -319,6 +328,21 @@ every transition manually:
   six scene-context marker pairs uses its matching occurrence. The preceding
   attempt is retained as a harness failure because `open-window` had already
   consumed the readiness signal awaited again by the next step.
+- Accepted `EXP-155` explicit Operation run
+  `exp155-operation-explicit-target-serial-manual-boundaries-20260916T124918Z`:
+  24/24 with eight raw steps and four exact reduced Operations in backend session
+  `bcb168fd-b5df-42ed-b416-b505a42e6e76`.
+- Accepted physical `EXP-157` inferred Operation run
+  `exp131-physical-manual-20260916T160435Z`: 24/24 across two native scenes.
+  Backend session `1dd8d491-19a4-4b67-bfa5-13df5b2a73a6` contains eight exact
+  raw steps and four exact A→B/A→A/B→B reduced Operations. Both windows were
+  full-screen rather than simultaneously visible, so that topology qualifier
+  remains human-gated.
+- Accepted `EXP-158` explicit one-shot action run
+  `exp158-sim-66f922ee-19a3-4941-b8ca-c518216e6b0d`: 9/9. Backend session
+  `f67c75b2-e839-4701-a283-7e4355682b6a` contains 30 events; explicit A and B
+  actions use their requested Home, while the legacy source-A action and Resource
+  retain representative B. There is no error or crash bucket.
 - Signed SDK implementation/test checkpoint `24cf5078a`; signed migration
   fixture, harness, and probe-test checkpoint `7da52ae6d`; signed EXP-152
   harness checkpoint `0a67f3e36`; signed EXP-153 harness checkpoint
@@ -328,11 +352,12 @@ every transition manually:
   test file passes 193/193, including nested reentrancy, `StateObject`
   reconstruction, independent-property semantics, deallocation, and invalid
   background-mutation crash safety.
-- Native multi-scene probe: 162/162.
-- Complete DatadogRUM suite: 1,262/1,263; the sole unrelated timeseries timing
-  failure passed immediately in isolation.
+- Native multi-scene probe: 164/164.
+- Complete DatadogRUM suite: 1,255/1,255 test cases with zero failures; the
+  result bundle records 1,291 expanded device/configuration invocations.
 - API-surface verification reports only the expected unapproved experimental
-  navigation/manual symbols; neither checked-in baseline is changed.
+  navigation/manual/shared-target/Operation/action symbols; neither checked-in
+  baseline is changed.
 - Focused semantic presentation replacement: 3/3.
 - Final semantic navigation state/source/arbiter cluster: 153/153. The final
   trait path additionally proves it cannot move or recover a scene without its
@@ -360,15 +385,18 @@ P0 blockers:
    for normal API review. Preserve the zero screen/navigation-method edit budget,
    keep low-level transition publishing adapter-author only, and do not infer
    exact semantics from opaque state.
-2. Prototype and validate scene-aware Operation targeting, then the required
-   downstream target surfaces without changing legacy fallback.
+2. Continue the required downstream target surfaces without changing legacy
+   fallback. Operations and one-shot actions are accepted prototypes;
+   long-running actions and the remaining signal families are open.
 3. Close actual semantic-host removal and genuine scene disconnect/reconnect,
    then pass the rest of the P0 [physical-device and human-driven
    queue](PLAN.md#physical-device-and-human-driven-queue), including semantic A /
    automatic B, same-key manual A/B, cross-scene Operations, shared Trace, exact
    activation, visible-A action attribution, and human cancel/finish gestures.
-   EXP-154 closes only serial native-scene isolation; simultaneous visibility
-   and interleaved use stay in this queue.
+   EXP-154 closes serial native-scene isolation and EXP-157 closes inferred
+   Operation ownership on two physical scenes; simultaneous visibility and
+   interleaved use stay in this queue. The queue is paused while hardware is
+   unavailable.
 4. Close ordinary single-scene/custom-handler behavior, overhead/reentrancy,
    supported-system, full suite/lint/API surface, and Objective-C Release gates.
 5. Pass the final iPhone Duo iOS 27.1 matrix with mapper and backend evidence and

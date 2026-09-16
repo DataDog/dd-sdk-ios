@@ -225,17 +225,38 @@ alpha. Three invalid predecessors document wrong restored scene state, an
 accessibility-capture timeout, and the stale occurrence-source harness that the
 accepted correction removed. Stable API names, availability, Objective-C shape,
 and later manual-key/controller targets remain review work. Inferred concurrent
-call-site context remains the separate physical `EXP-131` row.
+call-site context is the separate `EXP-131` contract accepted physically in
+`EXP-157`; simultaneous visibility remains only a topology qualifier.
+
+### EXP-158: explicit scene-targeted one-shot action
+
+The Operation-only experimental target is now the reusable `RUMViewTarget`, with
+the earlier Swift spelling retained as an SPI alias. An iOS 27 `@MainActor`
+one-shot `addAction(..., view:)` prototype preserves explicit and inferred
+candidates independently, resolves a live explicit scene first, and falls back
+to the existing inferred representative if the explicit scene cannot resolve.
+Custom protocol implementations and the NOP monitor call the legacy method once.
+
+Scenario `actions.explicit-target.cross-scene-serial` deliberately makes B the
+process representative around source-A work. Run
+`exp158-sim-66f922ee-19a3-4941-b8ca-c518216e6b0d` passes 9/9: explicit A owns
+A, explicit B owns B, and the legacy source-A action plus Resource remain on B.
+Backend session `f67c75b2-e839-4701-a283-7e4355682b6a` confirms all four
+discriminators across 30 events. The complete probe passes 164/164, Objective-C
+smoke passes 8/8, the Release simulator build succeeds, and the complete
+DatadogRUM suite passes 1,255 test cases with zero failures. This accepts
+one-shot action targeting and compatibility behavior, not stable API names,
+long-running actions, or other signal families.
 
 ## Next ordered slices
 
 | Order | Expected outcome | Prerequisite evidence | Implementation boundary | Acceptance test | Environment |
 | ---: | --- | --- | --- | --- | --- |
-| 1 | Complete the physical multi-window acceptance queue below | Prepared named scenarios, clean-run recipes, and a connected iPadOS 27 iPad | Run unchanged scenarios serially on one device; preserve topology failures as inconclusive and keep analog-only rows for a human | Exact mapper plus backend owner evidence on simultaneously usable scenes, lifecycle, close, coexistence, Operations, and shared Trace work | Physical multi-window iPad now; final parity on iPhone Duo 27.1 |
-| 2 | Close remaining lifecycle runtime gates | Deterministic reader-bounce plus EXP-149 lifetime/disconnect fencing PASS | Keep the existing named scenarios unchanged; do not reinterpret synthetic callbacks as platform lifecycle | Actual representable remount timing, exact host removal, and genuine OS disconnect/reconnect show no replay, resurrection, duplicate stop, or peer disturbance | Physical device; simulator only if topology becomes stable |
-| 3 | Prepare semantic-navigation and Operation API review candidates | Accepted EXP-146-154 navigation evidence plus accepted EXP-155 Operation target | Freeze the shared engine and accepted publisher/Observation/callback inputs. Keep low-level transition publishing adapter-author-only, and present `.current(in:)` as evidence rather than a pre-approved name. | Review packet reconciles migration, occurrence and presentation semantics, scene isolation, target precedence, availability, Swift/Objective-C shape, and explicit limitations | API/RFC review, informed by physical results |
-| 4 | Close explicitly targeted actions, Resources, errors, view mutations, Traces, logs, WebView, and exported/fatal context | Scene-targeted view API and accepted Operation `.current(in:)` target proof | Existing public API overloads or scoped target seam only where source inference cannot be reliable | Each targeted signal reaches the requested scene's current view; unresolved explicit input falls through safely; legacy source-less behavior is unchanged | Simulator for one-scene/controlled rows; hardware for concurrent rows |
-| 5 | Validate ordinary-app compatibility and overhead | All simulator-capable semantic fixes | Single-scene automatic/manual apps, custom handlers, event handoff, swizzle paths | No new views/actions, no custom-handler regression, bounded `sendEvent` overhead/reentrancy, all module/API/lint gates green | Simulator and benchmark host |
+| 1 | Close remaining explicit downstream targets | Accepted shared `RUMViewTarget`, Operations, and one-shot action proofs | Continue one signal family per slice. Next cover long-running actions and Resource/error/view-mutation boundaries; then Traces, logs, WebView, and exported/fatal context where a public target is meaningful | Each targeted signal reaches the requested scene's current view; unresolved explicit input falls through safely; legacy source-less behavior is unchanged | Simulator for controlled attribution; hardware follow-up only where simultaneous topology is essential |
+| 2 | Validate ordinary-app compatibility and overhead | Current simulator-capable semantic and target fixes | Single-scene automatic/manual apps, custom handlers, event handoff, swizzle paths | No new views/actions, no custom-handler regression, bounded `sendEvent` overhead/reentrancy, all module/API/lint gates green | Simulator and benchmark host |
+| 3 | Prepare semantic-navigation, shared-target, and Operation API review candidates | Accepted EXP-146-155 navigation/Operation evidence plus EXP-158 action evidence | Freeze the shared engine and accepted publisher/Observation/callback inputs. Present `RUMViewTarget.current(in:)` as evidence rather than a pre-approved name. | Review packet reconciles migration, occurrence and presentation semantics, scene isolation, target precedence, availability, Swift/Objective-C shape, and explicit limitations | API/RFC review, informed by physical results already recorded |
+| 4 | Resume the physical multi-window acceptance queue below | Prepared named scenarios, clean-run recipes, and a connected iPadOS 27 iPad | Run unchanged scenarios serially on one device; preserve topology failures as inconclusive and keep analog-only rows for a human | Exact mapper plus backend owner evidence on simultaneously usable scenes, lifecycle, close, coexistence, manual views, and shared Trace work | Paused while the physical iPad is unavailable; final parity on iPhone Duo 27.1 |
+| 5 | Close remaining lifecycle runtime gates | Deterministic reader-bounce plus EXP-149 lifetime/disconnect fencing PASS | Keep the existing named scenarios unchanged; do not reinterpret synthetic callbacks as platform lifecycle | Actual representable remount timing, exact host removal, and genuine OS disconnect/reconnect show no replay, resurrection, duplicate stop, or peer disturbance | Physical device; simulator only if topology becomes stable |
 | 6 | Freeze the multi-scene implementation | Simulator, hardware, compatibility, and review blockers closed | Experimental Swift/Objective-C surfaces and documentation | Reviewed stable shape, availability/fallback story, compatibility evidence, and no unapproved API baseline changes | Review plus CI |
 
 ## Dependencies and decision gates
@@ -272,7 +293,8 @@ call-site context remains the separate physical `EXP-131` row.
 | Callback-driven custom adapter (`EXP-153`) | Accepted adapter-author path over a reliable third-party accepted-state callback | True custom visual container plus one dedicated callback-to-publisher boundary; no retroactive conformance, screen edits, navigation-method RUM calls, or new SDK primitive | Signed checkpoint `d6d813736`, 7/7 focused, 161/161 probe, lint and Release PASS, clean 42/42 mapper/backend run, `registrations=1 active=1`, eight views, 13 actions, 13 Resources, and zero errors/crashes |
 | Two native Observation scenes (`EXP-154`) | Accepted serial simulator discriminator; simultaneous topology remains hardware-only | Existing per-window Observation router and exact scene-context markers; require `.multipleScenes`, not `.simultaneousVisibleWindows` | Signed correction `f92d72909`; 2/2 focused, 162/162 probe, lint and Release PASS; corrected frozen run 25/25; backend session `a6a5afd5-8089-4996-9805-ed62fb76927d` has distinct A/B H1/D1/H2 IDs, six exact marker pairs, and no error/crash |
 | Operation target API (`EXP-155`) | Accepted experimental `.current(in:)` engine proof; stable review pending | Opaque scene identifier, separate explicit/inferred candidates, extension fallback for custom/NOP handlers, Debug-only Objective-C companion | 7/7 focused API/session tests, 33/33 broadened Operation tests, Objective-C smoke 1/1, 163/163 probe, 24/24 runtime, eight raw steps and four reduced Operations with exact A/B owners |
-| Targeted downstream signals | After target abstraction exists | One signal family per slice | Exact requested owner plus legacy fallback regressions |
+| One-shot action target (`EXP-158`) | Accepted experimental shared-target proof; stable review pending | Generalized `RUMViewTarget`, separate explicit/inferred candidates, exactly-once custom/NOP fallback, Debug-only Objective-C companion | Focused regressions, Objective-C smoke 8/8, 164/164 probe, 9/9 runtime, and exact backend A/B explicit owners plus unchanged B representative fallback |
+| Remaining targeted downstream signals | Shared target and one-shot action accepted | Long-running actions, Resources, errors, view mutations, Traces, logs, WebView, and exported/fatal context; one signal family per slice | Exact requested owner, unavailable-explicit fallback, custom/NOP compatibility, and unchanged legacy behavior |
 | Single-scene/custom-handler compatibility | After semantic state stabilizes | Existing integration paths | Full suites, representative behavior, no duplicate views/actions |
 | Performance/reentrancy | After code shape freezes | `UIApplication.sendEvent` handoff and locks | Measured bounded overhead, no recursion/deadlock, normal apps unaffected |
 | Missing deterministic harness controls | Before WebView, mirrored log, and fatal/exported context rows | Probe only | Named scenario, fail-closed prerequisites, mapper/backend oracle |
@@ -283,13 +305,21 @@ Do not close these rows with simulator prefixes or callback counts. A human
 gesture closes a row only when path, coordinator, lifecycle, and RUM UUID evidence
 prove the intended interaction.
 
-`EXP-156` now passes the wired-device gate and exact clean boundary, and an
-`arm64` physical build succeeds. Runtime remains blocked before launch because
-the host has zero valid code-signing identities and iPadOS rejects the unsigned
-probe with `0xe800801c`. There is no SDK verdict. Before resuming this table,
-configure a local Apple Development identity and team without committing either
-to the probe project; then repeat the clean boundary and begin with the unchanged
-`EXP-131` scenario.
+The physical iPad is currently unavailable. Keep this queue paused and resume at
+`EXP-129` without substituting simulator evidence for simultaneous topology,
+real disconnect, resize, or analog gesture requirements.
+
+`EXP-156` passes the wired-device, exact clean-boundary, signing, install,
+and launch gates. iPadOS correctly rejected its first unsigned copy with
+`0xe800801c`; the restricted-context zero-identity result was false, and one of
+two login-keychain identities matches the installed device profile. `EXP-157`'s
+first `EXP-131` launch was harness-inconclusive before scene B or any Operation:
+the non-navigating scenario still used the stale occurrence-source Home setup.
+Its explicit per-scene Home correction passes 163/163 probe tests. The corrected
+physical run then passes 24/24, and backend intake proves eight raw steps plus
+four exact A→B/A→A/B→B Operations. The inferred Operation contract is accepted.
+Because A was background while B was full-screen active, simultaneous on-screen
+visibility remains human-gated; continue automated execution at `EXP-129`.
 
 | Priority | Experiments | Expected outcome | Prerequisite | Implementation boundary | Acceptance | Required environment |
 | --- | --- | --- | --- | --- | --- | --- |
@@ -300,7 +330,7 @@ to the probe project; then repeat the clean boundary and begin with the unchange
 | P0 | `EXP-114` | Real focus/activation handoff backgrounds the peer | Latched lifecycle driver | Probe unless SDK behavior fails | Target foreground-active, peer background, exact owner evidence | iPhone Duo or physical iPad |
 | P0 | `EXP-118` | Semantic A coexists with automatic B | Target-scoped authority | Automatic predicate plus semantic SPI | B automatic view starts after B opens; neither scene suppresses or owns the other | Simultaneously usable windows |
 | P0 | `EXP-129` | Same manual key exists independently in A/B and stops in reverse order | Scene-targeted manual API | Manual stack authority | Distinct Compose UUIDs; B stop never preempts A; fresh Home per scene | iPhone Duo or physical iPad |
-| P0 | `EXP-131` | Inferred call-site Operations start in A and finish in B; parallel keys finish B-before-A | Operation step model; explicit `.current(in:)` control accepted in `EXP-155` | Raw steps and reducer | Eight raw steps and four reduced Operations with exact start/end views, without using the explicit target | iPhone Duo or physical iPad |
+| P0 | `EXP-131` | Inferred call-site Operations start in A and finish in B; parallel keys finish B-before-A | Accepted in `EXP-157`; simultaneous visibility follow-up remains | Raw steps and reducer | Eight raw steps and four reduced Operations with exact start/end views, without using the explicit target | PASS on two physical scenes; human Stage Manager/split arrangement for simultaneous visibility |
 | P0 | `EXP-136` | One A-created request joined from B remains one A-owned Trace | Existing held request driver | Trace request-start ownership | Exactly one A/Home span, zero B owner and zero duplicate | Physical multi-window device |
 | P0 | `EXP-146` lifetime follow-up | Final removal or genuine disconnect of semantic scene A cannot resurrect A, duplicate its stop, unsubscribe B, or suppress B | Deterministic reader bounce, source release, and disconnect fence pass | Run the unchanged final-removal scenario and a genuine OS disconnect/reconnect; do not replace them with posted notifications | Exact A stop, later B navigation and ownership, no A resurrection, reconnect creates a fresh occurrence | Physical multi-window iPad or iPhone Duo |
 | P1 | `EXP-152` gesture follow-up | A cancelled interactive Sheet dismissal keeps the presentation occurrence; a completed native dismissal commits one fresh underlying occurrence before `onDismiss` work | Programmatic native callbacks pass in EXP-152 | Reuse the native callback harness but drive a real analog gesture; do not infer completion from callback count alone | Recognized cancellation emits no Home; recognized completion updates accepted router state, creates one fresh Home, and attributes callback work there | Human, physical iPad or iPhone Duo |
@@ -314,8 +344,9 @@ Once `EXP-156`'s connection and local-signing gates pass, use one physical-devic
 owner and a fresh run ID and clean boundary for each independent scenario. Run
 in this order so foundational attribution failures stop dependent batches early:
 
-1. `operations.cross-scene.lifecycle` (`EXP-131`) — inferred context and the
-   raw/reduced Operation model;
+1. `operations.cross-scene.lifecycle` (`EXP-131`) — accepted for inferred
+   physical context and the raw/reduced Operation model; retain only its human
+   simultaneous-visibility follow-up;
 2. `swiftui.coexistence.same-key-manual-two-scenes` (`EXP-129`) and
    `swiftui.coexistence.semantic-a-automatic-b` (`EXP-118`) — manual authority,
    same-key isolation, and automatic sibling coexistence;
@@ -377,15 +408,15 @@ The branch is not release-ready until all applicable gates pass:
 - Hardware: the P0 queue and final iPhone Duo/iOS 27.1 matrix pass unchanged named
   scenarios with exact backend evidence.
 
-Latest checkpoint: corrected `EXP-155` run
-`exp155-operation-explicit-target-serial-manual-boundaries-20260916T124918Z`
-passes 24/24 locally and in backend session
-`bcb168fd-b5df-42ed-b416-b505a42e6e76`. Two native scenes own distinct Home
-views; eight raw Operation steps reduce to exact A→B success/failure, A→A alpha,
-and B→B beta Operations, with beta completing first and no error/crash. Three
-invalid attempts preserve the wrong-restored-scene, accessibility-capture, and
-stale occurrence-source harness failures. Focused tests pass 3/3, and the current
-native probe passes 163/163. The corrected EXP-154 Observation result remains
+Latest checkpoint: `EXP-158` run
+`exp158-sim-66f922ee-19a3-4941-b8ca-c518216e6b0d` passes 9/9 locally and in
+backend session `f67c75b2-e839-4701-a283-7e4355682b6a`. Explicit A and B
+one-shot actions own their requested Home while a source-A legacy action and
+Resource remain on representative B. The current native probe passes 164/164,
+Objective-C smoke passes 8/8, the Release simulator build passes, and complete
+DatadogRUM passes 1,255 test cases with zero failures. The corrected EXP-155
+Operation result remains 24/24 with eight exact raw steps and four exact reduced
+Operations. The corrected EXP-154 Observation result remains
 25/25 with exact backend ownership. The affected SwiftUI file passes 193/193.
 Xcode 27 iOS Release and visionOS package builds pass
 at their relevant checkpoints. Signed SDK implementation/test checkpoint:
@@ -395,14 +426,20 @@ EXP-152 harness checkpoint: `0a67f3e36`; signed EXP-153 harness checkpoint:
 correction: `f92d72909`; signed EXP-155 SDK, scenario, and harness checkpoints:
 `b0524bb5b`, `3e567a494`, and `eb1dd2fdc`.
 
-Physical execution checkpoint: `EXP-156` is infrastructure-inconclusive before
-runtime. Two preflights failed with CoreDevice disconnect error 4000,
+Physical execution checkpoint: `EXP-156` closes physical tooling. Two preflights
+failed with CoreDevice disconnect error 4000,
 `Network.NWError 60`, and no USB enumeration. The third proves a stable wired
 iPad, repeated inventories, exact clean uninstall, and a successful `arm64`
-physical build. The host has zero valid code-signing identities; iPadOS rejects
-the unsigned app with CoreDevice error 3002 / `0xe800801c`, and final app/process
-inventories remain empty. There is no run ID, RUM session, upload, or SDK result.
-Resume at `EXP-131` after local development signing is configured.
+physical build. iPadOS rejects the unsigned app with CoreDevice error 3002 /
+`0xe800801c`, and final app/process inventories remain empty. A user-context
+preflight then proves two valid identities, an exact certificate/profile/device
+match, and strict/deep verification of a separately signed copied artifact; its
+clean install and launch succeed. `EXP-157` preserves the initial stale-fixture
+failure, then accepts the corrected physical Operation run at 24/24 plus eight
+raw and four reduced backend Operations. Two native scenes are proven, but A was
+background while B was full-screen active; simultaneous visibility remains a
+human topology row. Automated execution is queued at `EXP-129` but paused while
+the physical iPad is unavailable.
 
 Earlier `EXP-146` engine/adapter explicit and optional-capability runs each pass
 42/42; runtime precedence, stable reconstruction, and adversarial replacement
@@ -411,9 +448,9 @@ passes 17/17 locally and has exact backend ownership, while focused lifecycle
 and handler regressions pass 84/84. The two final-host-removal simulator attempts
 are infrastructure-inconclusive before removal and remain in the physical queue.
 API-surface verification reports only the expected unapproved experimental
-symbols and leaves both reference baselines unchanged. Complete DatadogRUM
-passes 1,262/1,263; the sole unrelated timeseries timing failure passed
-immediately in isolation. DatadogTrace remains 151/151 at its latest affected
+symbols and leaves both reference baselines unchanged. The current complete
+DatadogRUM run passes 1,255/1,255 with zero failures. DatadogTrace remains
+151/151 at its latest affected
 checkpoint. Current repository lint is clean across 713 source and 699 test
 files. Unaffected module suites remain valid at their recorded checkpoints but
 must rerun at release freeze.
@@ -429,7 +466,7 @@ must rerun at release freeze.
 | Automatic coexistence and manual authority | `EXP-115`-`129`, `EXP-137`-`140` | Target-local authority, underlying navigation, nesting, Sheet/cover, sibling isolation, and customer-shaped scene-targeted manual SPI pass; same-key A/B remains hardware-gated | Same archives |
 | Operations, scroll, Trace, and causal boundary | `EXP-130`-`136` | Navigation-step Operations, real scroll origin, Trace request-start freezing, reverse completion, and approved source-less SwiftUI task fallback classified; cross-scene/shared rows prepared | Same archives |
 | Native-convenience semantic navigation proof | `EXP-141`-`145` | Complete stack/presentation SPI, repeated equal values, restoration, external replacement/rejection/canonicalization, bidirectional presentation replacement, and actual-SPI sibling isolation pass locally and in backend intake; latest native-convenience probe/oracle `144d6e0e7` | Same archives plus [active EXP-143-145 records](Experiments/EXP-143-199.md) |
-| Container-independent navigation and explicit Operation targeting | `EXP-146`-`155` | Shared navigation engine, arbitrary host, capability/explicit/opaque modes, low-cost publisher and Observation adapters, lifetime/scene fencing, value-only rejection, synchronous accepted-state timing, native dismissal callback ordering, callback-driven custom-container integration, serial native-scene isolation, and `.current(in:)` Operation targeting are classified. EXP-155 is the latest 24/24 raw/reduced backend acceptance; inferred simultaneous-window parity remains hardware-gated | [active EXP-146-155 records](Experiments/EXP-143-199.md) |
+| Container-independent navigation and explicit downstream targeting | `EXP-146`-`158` | Shared navigation engine, arbitrary host, capability/explicit/opaque modes, low-cost publisher and Observation adapters, lifetime/scene fencing, value-only rejection, synchronous accepted-state timing, native dismissal callback ordering, callback-driven custom-container integration, serial native-scene isolation, and shared `.current(in:)` Operation/one-shot-action targeting are classified. EXP-158 adds exact explicit A/B action ownership plus unchanged legacy representative fallback; simultaneous-window parity remains hardware-gated | [active EXP-146-158 records](Experiments/EXP-143-199.md) |
 
 ## Deferred and explicitly out of scope
 

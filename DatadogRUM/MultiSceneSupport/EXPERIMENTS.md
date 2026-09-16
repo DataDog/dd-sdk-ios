@@ -15,20 +15,31 @@ Last updated: 2026-09-16
 
 ## Current checkpoint
 
-- Latest physical-device attempt is `EXP-156`. After two disconnected
-  local-network preflights, the iPad passed repeated wired USB inventories and
-  an exact clean boundary. An `arm64` physical build succeeded, but the probe
-  remained unsigned because the project disables signing and this host has zero
-  valid code-signing identities. iPadOS rejected the controlled install with
-  `0xe800801c`; the app never launched. The attempt is infrastructure-
-  inconclusive and leaves the unchanged `EXP-131` hardware row pending.
-- Latest runtime experiment is `EXP-155`. The bounded Operation
-  `.current(in:)` SPI passes 24/24 after correcting a stale harness boundary.
-  Backend intake contains eight raw Operation steps and four reduced Operations:
-  cross-scene success and failure use A→B, parallel alpha uses A→A, and parallel
-  beta uses B→B and completes before alpha. This accepts explicit per-step scene
-  targeting without approving the public API or closing inferred concurrent
-  call-site context on hardware.
+- Latest physical-device attempt is `EXP-157`. `EXP-156` now closes the tooling
+  gate: after the earlier connection, unsigned-install, and restricted-context
+  signing failures, a copied `arm64` build passed strict/deep verification,
+  clean install, and launch on the wired iPad. The first `EXP-131` runtime then
+  timed out before scene B or any Operation call because the scenario still
+  used the unrelated legacy occurrence-source Home boundary. It emitted only
+  automatic hosting-controller views. The scenario now uses the same explicit
+  non-navigating Home setup already accepted for `EXP-155`; focused tests pass
+  2/2 and the complete probe passes 163/163. The corrected physical run passes
+  24/24 across two native scenes. Backend intake contains all eight raw steps
+  and four exact reduced Operations: success/failure A→B, alpha A→A, and beta
+  B→B ending before alpha. The Operation contract is accepted. Both scene
+  geometries were full-screen and only B was foreground-active at completion,
+  so simultaneous on-screen visibility remains a separate human-arranged Stage
+  Manager/split-window row. The physical iPad is currently unavailable, so the
+  unchanged hardware queue is paused rather than reinterpreted through simulator
+  evidence.
+- Latest runtime experiment is `EXP-158`. The generalized experimental
+  `RUMViewTarget.current(in:)` keeps explicit and inferred action targets
+  separate. Its serial two-native-scene run passes 9/9 while deliberately making
+  B representative: explicit A owns A, explicit B owns B, and a source-A legacy
+  action remains on B. Backend session
+  `f67c75b2-e839-4701-a283-7e4355682b6a` confirms the same ownership across 30
+  events. This accepts scene-targeted one-shot actions without approving stable
+  API or changing source-less last-interacted behavior.
 - Latest accepted SDK implementation/test checkpoint: `24cf5078a`
   (`Add observable semantic navigation adapters`). Latest migration fixture,
   harness, and probe-test checkpoint: `7da52ae6d`
@@ -38,7 +49,8 @@ Last updated: 2026-09-16
   (`Exercise callback-driven semantic navigation`). The signed `EXP-154`
   scenario checkpoint is `7fd6a891a`; its accepted readiness correction is
   `f92d72909`. The signed Operation implementation, scenario, and accepted
-  harness correction are `b0524bb5b`, `3e567a494`, and `eb1dd2fdc`.
+  harness correction are `b0524bb5b`, `3e567a494`, and `eb1dd2fdc`. The signed
+  inferred-Operation physical harness correction is `4695d092c`.
   Earlier
   semantic engine checkpoints remain `a84061840`, `354422d88`, `651b173c6`,
   and `47bc08eca`; the detailed ledger preserves the preceding native,
@@ -54,7 +66,7 @@ Last updated: 2026-09-16
   source replacement. The real-reader synchronous bounce additionally passes
   17/17 locally and in backend intake without changing Detail ownership. The
   EXP-149's lifetime matrix passes 20/20. The current native probe passes
-  162/162 and the affected SwiftUI test file passes 193/193. The focused
+  164/164 and the affected SwiftUI test file passes 193/193. The focused
   Observation/adapter matrix passes 8/8. Exact Xcode 27 iOS Release and visionOS
   package builds succeed. Repository SwiftLint passes across 713 source and 699
   test files with zero violations. API
@@ -68,9 +80,10 @@ Last updated: 2026-09-16
   or crash bucket. EXP-155 adds a 3/3 focused pass, a 163/163 complete probe,
   clean lint, and a 24/24 runtime/backend pass with two scene-local Home views,
   eight raw steps, four correctly reduced Operations, and no error or crash.
-  The complete
-  DatadogRUM run passed 1,262/1,263; its sole unrelated timeseries timing failure
-  passed immediately in isolation.
+  EXP-158 adds a 9/9 runtime/backend pass, an 8/8 Objective-C smoke pass, a
+  successful Release simulator build, and a clean complete DatadogRUM run:
+  1,255 test cases, 1,291 expanded device/configuration invocations, and zero
+  failures.
 
 Status describes the contract proved, not whether a diagnostic successfully found
 a defect. Compound status preserves mixed evidence. `PREPARED` means the
@@ -108,12 +121,20 @@ publisher host, with a 42/42 local/backend run and one stable registration.
 backend ownership after one deterministic duplicated-readiness harness failure.
 `EXP-155` then accepts the bounded Operation `.current(in:)` engine proof at
 24/24 with exact raw and reduced backend ownership after three invalid harness
-attempts. `EXP-156` records the first physical-iPad automation preflight as
-infrastructure-inconclusive: two disconnected preflights were followed by a
-stable wired preflight and successful `arm64` build, but the host has no valid
-development signing identity. Once local signing is configured, execute the
-unchanged physical concurrent-window queue and prepare the navigation and
-Operation shapes for API review. Interactive
+attempts. `EXP-156` closes the physical tooling preflight after two disconnected
+attempts, one expected unsigned-install rejection, correction of a sandbox-only
+zero-identity result, and a successful verified install and launch. `EXP-157`
+then records the first `EXP-131` runtime as harness-inconclusive before scene B
+or any Operation call. Its corrected run passes 24/24 across two native scenes,
+and backend intake proves eight raw steps plus four exact reduced Operations.
+This accepts inferred cross-scene Operation attribution while retaining a human
+follow-up for simultaneous on-screen visibility. `EXP-158` then generalizes the
+experimental target and accepts one-shot explicit action routing: explicit A/B
+actions own their requested scene, while an unchanged source-less action still
+uses representative B. Continue the remaining simulator-capable downstream
+target slices while the physical iPad is unavailable. Resume `EXP-129` and the
+unchanged physical queue when hardware returns, then prepare the navigation,
+Operation, and shared target shapes for API review. Interactive
 dismissal/cancellation and genuine OS disconnect remain hardware rows. The
 ordered acceptance contract is in
 [PLAN.md](PLAN.md).
@@ -277,7 +298,9 @@ ordered acceptance contract is in
 | EXP-153 | 2026-09-16 | PASS · tests + mapper + backend | SwiftUI integration/third-party adapters | A true custom visual container exposes synchronous accepted snapshots to one dedicated adapter, which bridges into the existing SDK-owned publisher host. No screen or navigation method changes, retroactive conformance, or new SDK API are required. Focused tests pass 7/7, the probe passes 161/161, lint and Release pass, and frozen run `exp153-third-party-callback-20260916T103122Z` passes 42/42 plus `registrations=1 active=1`. Backend session `f2d2fb24-02d6-4bd9-9df9-ee353b899e69` has eight views, 13 actions, 13 Resources, exact H1/D1/H2/Sheet/H3/Cover/H4 ownership, and zero errors/crashes. Opaque state remains fallback-only; two-native-scene runtime parity is next. | [active record](Experiments/EXP-143-199.md#exp-153--callback-driven-third-party-navigation-adapter) |
 | EXP-154 | 2026-09-16 | PASS after HARNESS FAIL · tests + mapper + backend | SwiftUI integration/multi-scene | Two real native scenes independently mount per-window Observation routers and each complete H1 → D1 → fresh H2. Attempt 1 rejected a redundant readiness wait after `open-window` had already consumed B's signal; the app and partial attribution remained healthy. Corrected frozen run `exp154-observation-two-scenes-serial-fix-20260916T111921Z` passes 25/25. Backend session `a6a5afd5-8089-4996-9805-ed62fb76927d` has seven views, six actions, six Resources, exact A/B marker ownership, and zero errors/crashes. This closes serial native-scene parity, not simultaneous visibility or lifecycle acceptance. | [active record](Experiments/EXP-143-199.md#exp-154--serial-two-native-scene-observation-parity) |
 | EXP-155 | 2026-09-16 | PASS after three INVALID attempts · tests + mapper + backend | Operations/API prototype | The iOS 27 `.current(in:)` SPI keeps explicit and inferred targets separate and resolves every Operation step independently. Corrected run `exp155-operation-explicit-target-serial-manual-boundaries-20260916T124918Z` passes 24/24. Backend session `bcb168fd-b5df-42ed-b416-b505a42e6e76` has eight raw steps and four reduced Operations with exact A→B success/failure, A→A alpha, B→B beta, and beta-before-alpha completion. The API shape remains experimental. | [active record](Experiments/EXP-143-199.md#exp-155--explicit-cross-scene-operation-targeting) |
-| EXP-156 | 2026-09-16 | INCONCLUSIVE · physical-device tooling before runtime | Hardware automation | Two preflights found only a disconnected local-network record. A third passed repeated wired inventories, exact clean uninstall, and an `arm64` physical build. The host has zero valid signing identities, so the unsigned install was rejected with `0xe800801c`; the app never launched and `EXP-131` remains pending unchanged. | [active record](Experiments/EXP-143-199.md#exp-156--physical-ipad-automation-preflight) |
+| EXP-156 | 2026-09-16 | PASS · physical-device tooling | Hardware automation | Two preflights found only a disconnected local-network record. A third passed repeated wired inventories and an `arm64` build; the expected unsigned rejection exposed signing. The restricted-context zero-identity result was false: one of two login-keychain identities matches the installed device profile. A copied app passed strict/deep verification, clean install, and physical launch. | [active record](Experiments/EXP-143-199.md#exp-156--physical-ipad-automation-preflight) |
+| EXP-157 | 2026-09-16 | PASS · physical Operations + backend; INCONCLUSIVE · simultaneous visibility | Operations/hardware | First signed `EXP-131` launch exposed a stale Home fixture before any Operation. With explicit per-scene Home boundaries, the physical retry passes 24/24 across two native scenes; backend contains eight raw steps and four exact reduced Operations with A→B, A→A, B→B ownership and beta-before-alpha completion. Both scenes were full-screen and A was background while B was active, so simultaneous on-screen visibility remains human-gated. | [active record](Experiments/EXP-143-199.md#exp-157--physical-inferred-operation-retry) |
+| EXP-158 | 2026-09-16 | PASS · tests + mapper + backend | Actions/API prototype | The generalized iOS 27 `RUMViewTarget.current(in:)` routes one-shot actions to a requested scene while retaining independent inferred fallback. Run `exp158-sim-66f922ee-19a3-4941-b8ca-c518216e6b0d` passes 9/9: explicit A and B own their requested Home, while a source-A legacy action remains on representative B. Backend session `f67c75b2-e839-4701-a283-7e4355682b6a` confirms the same owners across 30 events. The probe passes 164/164, Objective-C smoke passes 8/8, and the full RUM suite has zero failures. Stable API and long-running actions remain open. | [active record](Experiments/EXP-143-199.md#exp-158--explicit-scene-targeted-one-shot-action) |
 
 ## Simulator-inconclusive and hardware-required evidence
 

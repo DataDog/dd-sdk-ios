@@ -11,21 +11,21 @@ import DatadogInternal
 // swiftlint:disable function_default_parameter_at_end
 
 #if os(iOS)
-/// Selects the RUM view used to attribute one Operation step.
+/// Selects the RUM view used to attribute explicitly targeted telemetry.
 ///
 /// This API is experimental and may change before becoming generally available.
 /// It does not expose or retain an internal RUM view identifier.
 @_spi(Experimental)
 @available(iOS 27.0, *)
-public struct RUMOperationViewTarget {
+public struct RUMViewTarget {
     fileprivate let sceneIdentifier: RUMSceneIdentifier
 
     private init(sceneIdentifier: RUMSceneIdentifier) {
         self.sceneIdentifier = sceneIdentifier
     }
 
-    /// Targets the current tracked RUM view in `scene` when the Operation step
-    /// is processed.
+    /// Targets the current tracked RUM view in `scene` when telemetry is
+    /// processed.
     @MainActor
     public static func current(in scene: UIWindowScene) -> Self {
         Self(
@@ -35,6 +35,11 @@ public struct RUMOperationViewTarget {
         )
     }
 }
+
+/// Compatibility spelling retained while the experimental API is under review.
+@_spi(Experimental)
+@available(iOS 27.0, *)
+public typealias RUMOperationViewTarget = RUMViewTarget
 #endif
 
 /// Convenience extension for defining `RUMMonitorProtocol` methods with default parameter values.
@@ -358,6 +363,32 @@ public extension RUMMonitorProtocol {
         addAction(type: type, name: name, attributes: attributes)
     }
 
+    #if os(iOS)
+    /// Adds a RUM action to the current tracked view in an explicitly selected
+    /// window scene.
+    ///
+    /// This API is experimental and may change before becoming generally available.
+    /// If the selected scene has no current tracked view, the SDK preserves the
+    /// call site's inferred and process-representative fallbacks.
+    @_spi(Experimental)
+    @available(iOS 27.0, *)
+    @MainActor
+    func addAction(
+        type: RUMActionType,
+        name: String,
+        view: RUMViewTarget,
+        attributes: [AttributeKey: AttributeValue] = [:]
+    ) {
+        RUMActionViewTargetBridge.addAction(
+            on: self,
+            type: type,
+            name: name,
+            attributes: attributes,
+            explicitTarget: .scene(view.sceneIdentifier)
+        )
+    }
+    #endif
+
     /// Starts RUM action.
     ///
     /// If the action is not stopped with `stopAction(type:)`, it will be stopped automatically after 10 seconds.
@@ -493,7 +524,7 @@ public extension RUMMonitorProtocol {
     func startOperation(
         name: String,
         operationKey: String? = nil,
-        view: RUMOperationViewTarget,
+        view: RUMViewTarget,
         attributes: [AttributeKey: AttributeValue] = [:],
         options: OperationOptions? = nil
     ) {
@@ -515,7 +546,7 @@ public extension RUMMonitorProtocol {
     func succeedOperation(
         name: String,
         operationKey: String? = nil,
-        view: RUMOperationViewTarget,
+        view: RUMViewTarget,
         attributes: [AttributeKey: AttributeValue] = [:]
     ) {
         RUMOperationViewTargetBridge.succeedOperation(
@@ -536,7 +567,7 @@ public extension RUMMonitorProtocol {
         name: String,
         operationKey: String? = nil,
         reason: RUMFeatureOperationFailureReason,
-        view: RUMOperationViewTarget,
+        view: RUMViewTarget,
         attributes: [AttributeKey: AttributeValue] = [:]
     ) {
         RUMOperationViewTargetBridge.failOperation(
@@ -569,6 +600,42 @@ public extension RUMMonitorProtocol {
 }
 
 #if os(iOS)
+/// Private capability used by extension-only action overloads so existing
+/// third-party `RUMMonitorProtocol` conformers do not gain a new requirement.
+internal protocol RUMActionViewTargetHandling: AnyObject {
+    func addAction(
+        type: RUMActionType,
+        name: String,
+        attributes: [AttributeKey: AttributeValue],
+        explicitTarget: RUMCommandTarget?
+    )
+}
+
+/// Dispatches an explicit action target when the SDK monitor supports it and
+/// otherwise calls the existing inferred API exactly once.
+@MainActor
+internal enum RUMActionViewTargetBridge {
+    static func addAction(
+        on monitor: any RUMMonitorProtocol,
+        type: RUMActionType,
+        name: String,
+        attributes: [AttributeKey: AttributeValue],
+        explicitTarget: RUMCommandTarget
+    ) {
+        guard let monitor = monitor as? any RUMActionViewTargetHandling else {
+            monitor.addAction(type: type, name: name, attributes: attributes)
+            return
+        }
+
+        monitor.addAction(
+            type: type,
+            name: name,
+            attributes: attributes,
+            explicitTarget: explicitTarget
+        )
+    }
+}
+
 /// Private capability used by extension-only Operation overloads so existing
 /// third-party `RUMMonitorProtocol` conformers do not gain a new requirement.
 internal protocol RUMOperationViewTargetHandling: AnyObject {

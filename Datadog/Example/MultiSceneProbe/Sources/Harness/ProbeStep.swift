@@ -25,6 +25,7 @@ enum ProbeStepKind: String, Codable, CaseIterable {
     case armNativeUIKitGesture = "arm-native-uikit-gesture"
     case emitMarker = "emit-marker"
     case emitSceneContextMarker = "emit-scene-context-marker"
+    case emitExplicitTargetAction = "emit-explicit-target-action"
     case startTraceOnlyURLSessionRequest = "start-trace-only-url-session-request"
     case joinTraceOnlyURLSessionRequest = "join-trace-only-url-session-request"
     case completeTraceOnlyURLSessionRequest = "complete-trace-only-url-session-request"
