@@ -1,6 +1,7 @@
 # Unreleased
 
 - [FIX] Resolve the RUM session sampling decision synchronously in `RUM.enable()`, so WebViews instrumented immediately after initialization get a decision consistent with the session. See [#3183][]
+- [IMPROVEMENT] Increase the maximum number of custom attributes per event from 256 to 1900 in RUM, Logs and Traces. In RUM the limit applies to `context`, `usr` and `account` independently; in Logs and Traces those attributes are encoded into a single JSON object, so they share one limit. Log `usr` and `account` extra attributes are now limited as well. See [#3198][]
 
 # 3.17.0 / 09-09-2026
 
@@ -1247,6 +1248,7 @@ Release `2.0` introduces breaking changes. Follow the [Migration Guide](MIGRATIO
 [#3164]: https://github.com/DataDog/dd-sdk-ios/pull/3164
 [#3167]: https://github.com/DataDog/dd-sdk-ios/pull/3167
 [#3183]: https://github.com/DataDog/dd-sdk-ios/pull/3183
+[#3198]: https://github.com/DataDog/dd-sdk-ios/pull/3198
 
 [@00fa9a]: https://github.com/00FA9A
 [@britton-earnin]: https://github.com/Britton-Earnin

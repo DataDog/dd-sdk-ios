@@ -121,6 +121,10 @@ class LogSanitizerTests: XCTestCase {
     func testWhenNumberOfUserAttributesExceedsLimit_itDropsExtraOnes() {
         let mockAttributes = (0...(AttributesSanitizer.Constraints.maxNumberOfAttributes + 100)).map { index in ("attribute-\(index)", mockValue()) }
         let log = LogEvent.mockWith(
+            // `usr` and `account` extra attributes share the budget with custom attributes, so they are
+            // left empty here to assert the limit applied to custom attributes alone.
+            userInfo: UserInfo(id: nil, name: nil, email: nil, extraInfo: [:]),
+            accountInfo: AccountInfo(id: "account-id"),
             attributes: .mockWith(
                 userAttributes: Dictionary(uniqueKeysWithValues: mockAttributes)
             )
@@ -153,19 +157,48 @@ class LogSanitizerTests: XCTestCase {
         XCTAssertEqual(sanitized.accountInfo?.extraInfo.count, AttributesSanitizer.Constraints.maxNumberOfAttributes)
     }
 
-    func testUserAndAccountInfoExtraAttributesAreLimitedIndependentlyOfEachOther() {
-        let extraInfo = Dictionary(
-            uniqueKeysWithValues: (0..<AttributesSanitizer.Constraints.maxNumberOfAttributes).map { index in ("attribute-\(index)", mockValue()) }
+    func testUserAccountAndCustomAttributesShareASingleBudget() {
+        // `usr.*`, `account.*` and custom attributes are flattened into the same JSON object by
+        // `LogEventEncoder`, so they are children of one node and share the limit.
+        let limit = AttributesSanitizer.Constraints.maxNumberOfAttributes
+        let oneThirdOfTheLimit = limit / 3
+        let attributes = Dictionary(
+            uniqueKeysWithValues: (0..<oneThirdOfTheLimit).map { index in ("attribute-\(index)", mockValue()) }
         )
         let log = LogEvent.mockWith(
-            userInfo: UserInfo(id: nil, name: nil, email: nil, extraInfo: extraInfo),
-            accountInfo: AccountInfo(id: "account-id", extraInfo: extraInfo)
+            userInfo: UserInfo(id: nil, name: nil, email: nil, extraInfo: attributes),
+            accountInfo: AccountInfo(id: "account-id", extraInfo: attributes),
+            attributes: .mockWith(userAttributes: attributes)
         )
 
         let sanitized = LogEventSanitizer().sanitize(log: log)
 
-        XCTAssertEqual(sanitized.userInfo.extraInfo.count, AttributesSanitizer.Constraints.maxNumberOfAttributes)
-        XCTAssertEqual(sanitized.accountInfo?.extraInfo.count, AttributesSanitizer.Constraints.maxNumberOfAttributes)
+        // Everything fits within the shared budget, so nothing is dropped.
+        XCTAssertEqual(sanitized.userInfo.extraInfo.count, oneThirdOfTheLimit)
+        XCTAssertEqual(sanitized.accountInfo?.extraInfo.count, oneThirdOfTheLimit)
+        XCTAssertEqual(sanitized.attributes.userAttributes.count, oneThirdOfTheLimit)
+    }
+
+    func testWhenUserAccountAndCustomAttributesExceedTheSharedBudget_itDropsExtraOnes() {
+        let limit = AttributesSanitizer.Constraints.maxNumberOfAttributes
+        let attributes = Dictionary(
+            uniqueKeysWithValues: (0..<limit).map { index in ("attribute-\(index)", mockValue()) }
+        )
+        let log = LogEvent.mockWith(
+            userInfo: UserInfo(id: nil, name: nil, email: nil, extraInfo: attributes),
+            accountInfo: AccountInfo(id: "account-id", extraInfo: attributes),
+            attributes: .mockWith(userAttributes: attributes)
+        )
+
+        let sanitized = LogEventSanitizer().sanitize(log: log)
+
+        let total = sanitized.userInfo.extraInfo.count
+            + (sanitized.accountInfo?.extraInfo.count ?? 0)
+            + sanitized.attributes.userAttributes.count
+        XCTAssertEqual(total, limit, "The total number of flattened attributes must not exceed the limit")
+        XCTAssertEqual(sanitized.userInfo.extraInfo.count, limit, "`usr` takes precedence over `account` and custom attributes")
+        XCTAssertEqual(sanitized.accountInfo?.extraInfo.count, 0)
+        XCTAssertEqual(sanitized.attributes.userAttributes.count, 0)
     }
 
     func testInternalAttributesAreNotSanitized() {

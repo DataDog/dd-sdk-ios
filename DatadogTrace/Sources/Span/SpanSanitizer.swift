@@ -20,19 +20,22 @@ internal struct SpanSanitizer {
         }
         var sanitizedTags = attributesSanitizer.sanitizeKeys(for: span.tags)
 
-        // Limit to max number of attributes
-        // The limit is applied per field, so `usr`, `account` and tags do not compete for it.
+        // Limit to max number of attributes.
+        // `SpanEventEncoder` flattens `usr`, `account` and tags into dotted `meta.*` keys of a single
+        // JSON object, so they are children of the same node and must share one budget.
+        // If any attributes need to be removed, we first reduce number of
+        // span tags, then user info extra attributes.
         sanitizedUserExtraInfo = attributesSanitizer.limitNumberOf(
             attributes: sanitizedUserExtraInfo,
             to: AttributesSanitizer.Constraints.maxNumberOfAttributes
         )
         sanitizedAccountExtraInfo = attributesSanitizer.limitNumberOf(
             attributes: sanitizedAccountExtraInfo,
-            to: AttributesSanitizer.Constraints.maxNumberOfAttributes
+            to: AttributesSanitizer.Constraints.maxNumberOfAttributes - sanitizedUserExtraInfo.count
         )
         sanitizedTags = attributesSanitizer.limitNumberOf(
             attributes: sanitizedTags,
-            to: AttributesSanitizer.Constraints.maxNumberOfAttributes
+            to: AttributesSanitizer.Constraints.maxNumberOfAttributes - sanitizedAccountExtraInfo.count - sanitizedUserExtraInfo.count
         )
 
         var sanitizedSpan = span

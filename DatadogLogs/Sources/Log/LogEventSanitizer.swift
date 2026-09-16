@@ -37,35 +37,42 @@ internal struct LogEventSanitizer {
     private let attributesSanitizer = AttributesSanitizer(featureName: "Log")
 
     func sanitize(log: LogEvent) -> LogEvent {
-        let sanitizedAttributes = sanitize(attributes: log.attributes)
-        let sanitizedTags = sanitize(tags: log.tags)
-
         var sanitizedLog = log
-        sanitizedLog.attributes = sanitizedAttributes
-        sanitizedLog.tags = sanitizedTags
+        sanitizedLog.tags = sanitize(tags: log.tags)
+
+        // Limit to max number of attributes.
+        // `LogEventEncoder` flattens `usr.*`, `account.*`, custom and internal attributes into keys of a
+        // single JSON object, so they are children of the same node and must share one budget.
+        // Internal attributes are reserved for the SDK and are charged against the budget without being dropped.
+        var remaining = AttributesSanitizer.Constraints.maxNumberOfAttributes - (log.attributes.internalAttributes?.count ?? 0)
+
         sanitizedLog.userInfo.extraInfo = attributesSanitizer.limitNumberOf(
             attributes: log.userInfo.extraInfo,
-            to: AttributesSanitizer.Constraints.maxNumberOfAttributes
+            to: max(remaining, 0)
         )
+        remaining -= sanitizedLog.userInfo.extraInfo.count
+
         if let accountExtraInfo = log.accountInfo?.extraInfo {
             sanitizedLog.accountInfo?.extraInfo = attributesSanitizer.limitNumberOf(
                 attributes: accountExtraInfo,
-                to: AttributesSanitizer.Constraints.maxNumberOfAttributes
+                to: max(remaining, 0)
             )
+            remaining -= sanitizedLog.accountInfo?.extraInfo.count ?? 0
         }
+
+        sanitizedLog.attributes = sanitize(attributes: log.attributes, to: max(remaining, 0))
         return sanitizedLog
     }
 
     // MARK: - Attributes sanitization
 
-    private func sanitize(attributes rawAttributes: LogEvent.Attributes) -> LogEvent.Attributes {
+    private func sanitize(attributes rawAttributes: LogEvent.Attributes, to limit: Int) -> LogEvent.Attributes {
         // Sanitizes only `userAttributes`, `internalAttributes` remain untouched
         var userAttributes = rawAttributes.userAttributes
         userAttributes = removeInvalidAttributes(userAttributes)
         userAttributes = removeReservedAttributes(userAttributes)
         userAttributes = attributesSanitizer.sanitizeKeys(for: userAttributes)
-        let userAttributesLimit = AttributesSanitizer.Constraints.maxNumberOfAttributes - (rawAttributes.internalAttributes?.count ?? 0)
-        userAttributes = attributesSanitizer.limitNumberOf(attributes: userAttributes, to: userAttributesLimit)
+        userAttributes = attributesSanitizer.limitNumberOf(attributes: userAttributes, to: limit)
 
         return LogEvent.Attributes(
             userAttributes: userAttributes,
