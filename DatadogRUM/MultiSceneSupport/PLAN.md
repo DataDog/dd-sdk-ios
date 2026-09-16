@@ -145,17 +145,33 @@ session `ea9adc0e-5a00-4290-9580-fb4df6bc18e7` confirms eight distinct views,
 ownership, and no error bucket or crash.
 
 This accepts the input primitive, not a stable API spelling. Remaining parity
-work is actual `onDismiss` characterization, two-scene router isolation,
-custom/third-party adapters, and honest fallback behavior. Back-to-back/nested
-mutation, reconstruction, and background-misuse unit gates are closed; actual
-native callback and concurrent-scene parity remain. Plain local `@State` remains
-outside this exact claim.
+work is two-scene router isolation, custom/third-party adapters, and honest
+fallback behavior. Back-to-back/nested mutation, reconstruction, and
+background-misuse unit gates are closed. Plain local `@State` remains outside
+this exact claim.
+
+### EXP-152: actual native dismissal callback boundary
+
+Native `.sheet` and `.fullScreenCover` callback characterization is accepted.
+The separate harness arm waits for each standard SwiftUI presentation's content
+to appear before dismissing it, then records the actual `onDismiss` entry rather
+than reusing EXP-151's synthetic post-mutation marker. Clean frozen run
+`exp152-native-dismiss-callbacks-20260916T094300Z` passes 38/38: both callbacks
+observe `presentation=nil` and Home after the accepted router mutation, emit
+exactly once, create no extra Home, and place immediate plus settled work on
+fresh H3/H4. Backend session `fee27d61-1eb7-4eb6-8525-7af74a53ed7e` agrees with
+eight views, 11 actions, 11 Resources, and zero errors/crashes.
+
+This closes programmatic native callback timing without an SDK change. It does
+not replace the stronger accepted-state mutation boundary, because direct
+presentation replacement can omit outgoing `onDismiss`. Interactive dismissal
+and cancellation remain a physical/human row.
 
 ## Next ordered slices
 
 | Order | Expected outcome | Prerequisite evidence | Implementation boundary | Acceptance test | Environment |
 | ---: | --- | --- | --- | --- | --- |
-| 1 | Complete trustworthy adapter parity and prepare the review candidate | Accepted EXP-146 engine, EXP-147 migration budget, EXP-148 publisher path, EXP-149 lifetime/scene matrix, EXP-150 value-only rejection, and EXP-151 one-shot Observation path | Keep the shared engine; characterize native callbacks and compare publisher/Observation routers, optional capability, explicit third-party adapter, and opaque/native fallback. Do not expose widespread low-level transition publishing, value-only exactness, or Datadog presentation replacements. | Actual sheet/cover callbacks, equal routes, cancellation, custom/third-party inputs, and two-scene isolation preserve fresh committed occurrences. Opaque/native inputs claim only the exactness their signals support | Simulator and API review |
+| 1 | Complete trustworthy adapter parity and prepare the review candidate | Accepted EXP-146 engine, EXP-147 migration budget, EXP-148 publisher path, EXP-149 lifetime/scene matrix, EXP-150 value-only rejection, EXP-151 one-shot Observation path, and EXP-152 native callback characterization | Keep the shared engine; compare publisher/Observation routers, optional capability, explicit third-party adapters, and opaque/native fallback. Do not expose widespread low-level transition publishing, value-only exactness, or Datadog presentation replacements. | Custom/third-party inputs and two-scene isolation preserve fresh committed occurrences; equal routes and programmatic native callback timing stay exact. Opaque/native inputs claim only the precision their signals support | Simulator and API review; hardware for genuine concurrent windows and gesture dismissal |
 | 2 | Close remaining lifecycle runtime gates | Deterministic reader-bounce plus EXP-149 lifetime/disconnect fencing PASS | Keep the existing named scenarios unchanged; do not reinterpret synthetic callbacks as platform lifecycle | Actual representable remount timing, exact host removal, and genuine OS disconnect/reconnect show no replay, resurrection, duplicate stop, or peer disturbance | Physical device; simulator only if topology becomes stable |
 | 3 | Prototype Operation view targeting behind iOS 27 experimental boundaries | `EXP-130` identity semantics; `EXP-131` cross-scene driver; [Operations contract](OPERATIONS.md) | Opaque customer target with `.current(in:)` first; separate explicit and inferred candidates; Debug-only Objective-C companions | Start/succeed/fail calls compile and route explicit > inferred > last-proven snapshot > representative; no internal UUID leaks | Simulator for API/fallback tests; hardware for cross-scene acceptance |
 | 4 | Close explicitly targeted actions, Resources, errors, view mutations, Traces, logs, WebView, and exported/fatal context | Scene-targeted view API and Operation target prototype | Existing public API overloads or scoped target seam only where source inference cannot be reliable | Each targeted signal reaches the requested scene's current view; unresolved explicit input falls through safely; legacy source-less behavior is unchanged | Simulator for one-scene/controlled rows; hardware for concurrent rows |
@@ -192,7 +208,8 @@ outside this exact claim.
 | SDK-owned router-stream adapter (`EXP-148`) | Accepted experimental candidate | Internal iOS 27 prototype over an existing accepted state stream; no customer-owned low-level transition publisher | 9/9 focused tests, 153/153 probe tests, Release build, and final 38/38 local/backend run with exact eight-view and 22-bucket ownership |
 | Observed-source lifetime and scene matrix (`EXP-149`) | Accepted deterministic slice; genuine OS lifecycle remains hardware-gated | Actual host reconstruction, delayed first value, source replacement, two scene-local sources, posted disconnect, and unrelated automatic sibling | 20/20: one stable subscription/source, no replay or stale transition, local suppression only, and automatic remains active until trustworthy semantic authority exists |
 | Value-only current destination (`EXP-150`) | Rejected exact candidate | Direct accepted destination read only during SwiftUI reconstruction | Runtime FAIL at 17/38 plus backend confirmation: both immediate dismissal pairs retain the outgoing presentation; settled work is not sufficient acceptance evidence |
-| One-shot Observation router (`EXP-151`) | Accepted experimental input for an existing `@Observable` router/coordinator on iOS 27 | One-shot `.didSet` tracking with explicit rearming over one atomic accepted-state property; no continuous-observation substitution; no claim for plain local `@State` | 8/8 focused tests, 193/193 affected SwiftUI tests, 154/154 probe tests, Xcode 27 iOS Release plus visionOS package builds, and post-review 38/38 mapper/backend presentation oracle. Two-scene and native/custom/third-party characterization remain before API review |
+| One-shot Observation router (`EXP-151`) | Accepted experimental input for an existing `@Observable` router/coordinator on iOS 27 | One-shot `.didSet` tracking with explicit rearming over one atomic accepted-state property; no continuous-observation substitution; no claim for plain local `@State` | 8/8 focused tests, 193/193 affected SwiftUI tests, 154/154 probe tests, Xcode 27 iOS Release plus visionOS package builds, and post-review 38/38 mapper/backend presentation oracle. Two-scene and custom/third-party characterization remain before API review |
+| Actual native dismissal callbacks (`EXP-152`) | Accepted characterization over the EXP-151 input | Separate harness-only standard Sheet/Cover arm with a content-appearance barrier and actual SwiftUI `onDismiss`; no SDK policy moves into callbacks | Signed checkpoint `0a67f3e36`, full probe 155/155, lint and Release PASS, clean frozen 38/38 mapper/backend run. Each callback fires once after accepted Home, creates no extra Home, and owns fresh H3/H4; interactive gesture dismissal remains device/human work |
 | Operation target API | After `EXP-130` and source review | Monitor/handler routing plus Swift/ObjC prototype | Explicit target precedence, fallback, crash safety, and source compatibility |
 | Targeted downstream signals | After target abstraction exists | One signal family per slice | Exact requested owner plus legacy fallback regressions |
 | Single-scene/custom-handler compatibility | After semantic state stabilizes | Existing integration paths | Full suites, representative behavior, no duplicate views/actions |
@@ -217,6 +234,7 @@ prove the intended interaction.
 | P0 | `EXP-131` | Operations start in A and finish in B; parallel keys finish B-before-A | Operation step model and target prototype when available | Raw steps and reducer | Eight raw steps and four reduced Operations with exact start/end views | iPhone Duo or physical iPad |
 | P0 | `EXP-136` | One A-created request joined from B remains one A-owned Trace | Existing held request driver | Trace request-start ownership | Exactly one A/Home span, zero B owner and zero duplicate | Physical multi-window device |
 | P0 | `EXP-146` lifetime follow-up | Final removal or genuine disconnect of semantic scene A cannot resurrect A, duplicate its stop, unsubscribe B, or suppress B | Deterministic reader bounce, source release, and disconnect fence pass | Run the unchanged final-removal scenario and a genuine OS disconnect/reconnect; do not replace them with posted notifications | Exact A stop, later B navigation and ownership, no A resurrection, reconnect creates a fresh occurrence | Physical multi-window iPad or iPhone Duo |
+| P1 | `EXP-152` gesture follow-up | A cancelled interactive Sheet dismissal keeps the presentation occurrence; a completed native dismissal commits one fresh underlying occurrence before `onDismiss` work | Programmatic native callbacks pass in EXP-152 | Reuse the native callback harness but drive a real analog gesture; do not infer completion from callback count alone | Recognized cancellation emits no Home; recognized completion updates accepted router state, creates one fresh Home, and attributes callback work there | Human, physical iPad or iPhone Duo |
 | P1 | `EXP-076`, `EXP-087` | Regular → compact → regular keeps the one-current-destination contract | Acknowledged resize control | SwiftUI/UIKit split handling | Exact geometry/selection/path/view sequence with no structural view | Resizable capable device |
 | P1 | `EXP-042` | A and B restore concurrently with fresh RUM occurrences | Restoration controls from `EXP-143` | Scene lifecycle/restoration | Both native scene sessions reconnect; no stale RUM scope or cross-owner work | Physical multi-window device |
 | P1 | `EXP-001` | UIKit-hosted SwiftUI parity, only if still a release requirement | Final host matrix decision | Example/probe host | Same semantic and attribution guarantees as native host | Physical device |
@@ -255,16 +273,18 @@ The branch is not release-ready until all applicable gates pass:
 - Hardware: the P0 queue and final iPhone Duo/iOS 27.1 matrix pass unchanged named
   scenarios with exact backend evidence.
 
-Latest checkpoint: `EXP-151` post-review run
-`exp151-observation-router-postreview-20260916T083131Z` passes 38/38 locally;
-backend session `ea9adc0e-5a00-4290-9580-fb4df6bc18e7` has eight views,
-11 actions, 11 Resources, five long tasks, one session, one vital, and no error
-bucket or crash. Immediate and settled sheet/cover dismissal work owns fresh
-revealed Home occurrences. Focused Observation/adapter tests pass 8/8, the
-affected SwiftUI file passes 193/193, and the current native probe passes
-154/154. Xcode 27 generic iOS Release and visionOS package builds pass.
-Signed SDK implementation/test checkpoint: `24cf5078a`. Signed migration
-fixture, harness, and probe-test checkpoint: `7da52ae6d`.
+Latest checkpoint: `EXP-152` run
+`exp152-native-dismiss-callbacks-20260916T094300Z` passes 38/38 locally;
+backend session `fee27d61-1eb7-4eb6-8525-7af74a53ed7e` has eight views,
+11 actions, 11 Resources, seven long tasks, one session, one vital, and no error
+bucket or crash. Actual Sheet/Cover `onDismiss` callbacks each fire exactly once
+after accepted Home state; immediate and settled callback work owns fresh H3/H4
+without creating another Home. Focused Observation/adapter tests remain 8/8,
+the affected SwiftUI file passes 193/193, and the current native probe passes
+155/155. Xcode 27 iOS Release and visionOS package builds pass at their relevant
+checkpoints. Signed SDK implementation/test checkpoint: `24cf5078a`; signed
+migration fixture/probe checkpoint: `7da52ae6d`; signed EXP-152 harness
+checkpoint: `0a67f3e36`.
 
 Earlier `EXP-146` engine/adapter explicit and optional-capability runs each pass
 42/42; runtime precedence, stable reconstruction, and adversarial replacement
@@ -291,6 +311,7 @@ must rerun at release freeze.
 | Automatic coexistence and manual authority | `EXP-115`-`129`, `EXP-137`-`140` | Target-local authority, underlying navigation, nesting, Sheet/cover, sibling isolation, and customer-shaped scene-targeted manual SPI pass; same-key A/B remains hardware-gated | Same archives |
 | Operations, scroll, Trace, and causal boundary | `EXP-130`-`136` | Navigation-step Operations, real scroll origin, Trace request-start freezing, reverse completion, and approved source-less SwiftUI task fallback classified; cross-scene/shared rows prepared | Same archives |
 | Native-convenience semantic navigation proof | `EXP-141`-`145` | Complete stack/presentation SPI, repeated equal values, restoration, external replacement/rejection/canonicalization, bidirectional presentation replacement, and actual-SPI sibling isolation pass locally and in backend intake; latest native-convenience probe/oracle `144d6e0e7` | Same archives plus [active EXP-143-145 records](Experiments/EXP-143-199.md) |
+| Container-independent and existing-router integration | `EXP-146`-`152` | Shared engine, arbitrary host, capability/explicit/opaque modes, low-cost publisher and Observation adapters, lifetime/scene fencing, value-only rejection, synchronous accepted-state timing, and actual native dismissal callback ordering are classified. EXP-152 is the latest 38/38 mapper/backend acceptance; custom/third-party and genuine concurrent-window parity remain | [active EXP-146-152 records](Experiments/EXP-143-199.md) |
 
 ## Deferred and explicitly out of scope
 

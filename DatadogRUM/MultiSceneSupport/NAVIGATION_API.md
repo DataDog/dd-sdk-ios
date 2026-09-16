@@ -43,7 +43,11 @@ RUM-code growth when a route and presentation are added. `EXP-148` moves generic
 state observation, occurrence identity, automatic metadata, sparse overrides,
 and delayed authority into the SDK-owned iOS 27 prototype. Its final frozen run
 passes the same 38/38 local/backend oracle. This validates an experimental
-existing-router path, not stable public names.
+existing-router path, not stable public names. `EXP-149` closes deterministic
+host reconstruction and scene-local source lifetime. `EXP-150` rejects a plain
+render-time destination value, `EXP-151` accepts one-shot Observation `.didSet`
+over one atomic accepted-state property, and `EXP-152` confirms actual native
+Sheet/Cover `onDismiss` callbacks then use the fresh revealed occurrences.
 
 The approved behavior is:
 
@@ -516,8 +520,11 @@ observable; the SDK does not invent a transaction across those writes.
 Sequential and nested mutations, teardown, SwiftUI reconstruction, and an
 invalid background mutation's crash-safe latest-state fallback pass focused
 tests. The iOS Release and visionOS package builds also pass; the semantic host
-remains iOS 27-only in the current platform conditional. Two-scene isolation,
-actual native callback behavior, and API review remain. The continuous
+remains iOS 27-only in the current platform conditional. EXP-152 separately
+waits for real presentation content appearance and proves actual Sheet/Cover
+`onDismiss` callbacks run once after accepted Home state, create no extra Home,
+and attribute immediate plus settled work to fresh H3/H4. Custom/third-party and
+genuine concurrent two-scene parity plus API review remain. The continuous
 Observation API is explicitly too late because it delivers at a later suspension
 point. Plain local SwiftUI `@State`
 does not conform to `Observable`, so this candidate must not imply exact
@@ -640,9 +647,10 @@ session place both immediate dismissal pairs on the outgoing presentation.
 signal: focused atomic-state, ordering, nested-reentrancy, reconstruction,
 teardown, and background-misuse tests pass, and its post-review frozen 38/38
 runtime plus backend session assign both dismissal pairs to fresh underlying
-occurrences. The next proof obligation is native callback, two-scene, and honest
-custom/explicit adapter parity before public-shape review; genuine OS disconnect
-remains a hardware gate.
+occurrences. `EXP-152` then closes actual programmatic native callback timing at
+38/38 without moving SDK policy into `onDismiss`. The next proof obligation is
+two-scene and honest custom/explicit adapter parity before public-shape review;
+interactive dismissal and genuine OS disconnect remain hardware gates.
 
 ### Resolver and path model
 
@@ -744,16 +752,19 @@ capture and no semantic view. Runtime precedence, repeated source resolution,
 and adversarial replacement each pass 43/43 with the same exact backend owners
 and no decoy view. The complete RUM run passes
 1,262/1,263 and the sole unrelated timeseries timing failure passes immediately
-in isolation; the current native probe passes 154/154. The synchronous real-reader bounce
+in isolation; the current native probe passes 155/155. The synchronous real-reader bounce
 passes 17/17, focused disconnect/lifetime tests pass 4/4, and handler tests pass
 84/84 at their recorded checkpoint. `EXP-150` itself fails 17/38 because its
 fresh H3/H4 occurrences start after synchronous post-dismiss work; backend
 session `2294a609-76f9-47be-a643-ab51edc5b638` independently confirms Compose
 and Attachment as the stale owners. Final host removal and genuine OS disconnect
-remain hardware gates. Repository lint is clean. The current dirty tree still
-requires an explicit Xcode 27 Release build and expected-only API-surface
-verification after the failed value-only initializer is removed or replaced;
-no prototype baseline is changed before normal review.
+remain hardware gates. `EXP-151` passes the replacement synchronous oracle, and
+`EXP-152` passes actual native callback characterization with eight views, 11
+actions, 11 Resources, and zero errors/crashes in backend session
+`fee27d61-1eb7-4eb6-8525-7af74a53ed7e`. Repository lint and the Xcode 27 Release
+build are clean at the EXP-152 checkpoint. API-surface verification remains the
+expected-only rejection of unapproved experimental symbols; no prototype
+baseline is changed before normal review.
 
 ## Required review and test matrix
 
@@ -823,11 +834,12 @@ Semantic SwiftUI navigation requires:
 
 No product-behavior decision blocks the next experiment. `EXP-148` validates the
 SDK-owned low-cost publisher path, `EXP-149` closes its deterministic lifetime
-and scene-isolation matrix, and `EXP-151` accepts the iOS 27 Observation input
-for one atomic accepted-state property. EXP-146's low-level semantic oracle alone
-remains insufficient for API promotion. The next implementation experiment is
-native/custom/two-scene adapter parity. The remaining questions are public shape,
-compatibility, and implementation-boundary review:
+and scene-isolation matrix, `EXP-151` accepts the iOS 27 Observation input for
+one atomic accepted-state property, and `EXP-152` closes programmatic native
+dismissal callback timing. EXP-146's low-level semantic oracle alone remains
+insufficient for API promotion. The next implementation experiment is
+custom/third-party and two-scene adapter parity. The remaining questions are
+public shape, compatibility, and implementation-boundary review:
 
 1. Which parts of the transition source remain internal, become adapter-author
    SPI, or warrant public exposure, and what are the exact host/adapter names?

@@ -337,6 +337,18 @@ adapter tests passed while the live host reconciled one render too late. Keep an
 actual `.sheet(onDismiss:)` callback as a separate characterization when useful;
 it is a weaker boundary and must not replace the synchronous mutation oracle.
 
+`EXP-152` records the deterministic native-callback recipe. Use a separate
+scenario so the accepted synchronous oracle is not rewritten. Wait for an
+`onAppear` signal from the actual Sheet or cover content before programmatic
+dismissal; accepted router state alone does not prove that SwiftUI mounted the
+presentation, and dismissing earlier can make a missing `onDismiss` a harness
+race. At callback entry, record the accepted presentation, current destination,
+and mutation generation, then emit uniquely named immediate and settled
+action/Resource pairs. Require exactly one appearance and callback per style,
+fresh revealed-view ownership, and no extra underlying occurrence caused by the
+callback. Direct presentation replacement may omit outgoing `onDismiss`
+(`EXP-144`), so never use callback count as the adapter's commit signal.
+
 Xcode 27's one-shot
 `withObservationTracking(options: [.didSet],_:onChange:)` is a candidate for an
 existing `@Observable` router because its callback runs during mutation after the

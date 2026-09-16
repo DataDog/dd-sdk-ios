@@ -68,6 +68,7 @@ The catalog currently preserves these experiment families:
 | `swiftui.semantic-host.router-stream-adapter` | `EXP-147`, `EXP-148`, `EXP-149` | EXP-147 measures the fixture migration budget: one boundary per accepted-state router, zero screen or navigation-method edits, unchanged standard SwiftUI, and zero RUM-code growth for an added route/presentation. EXP-148 moves observation and automatic metadata into DatadogRUM. Authoritative post-lint frozen run `exp148-sdk-observed-postlint-20260916T063742Z` passes 38/38 locally and in backend session `c951c32e-12a7-4bc4-bc5e-bdaf2f16f8aa`, with exact eight-view and 22-bucket ownership, no automatic duplicate, and zero errors/crashes. EXP-149 adds a 20/20 actual-host reconstruction, stable-subscription, two-scene isolation, posted-disconnect, and automatic-sibling matrix. The historical EXP-147 run remains evidence only for the older fixture-local adapter |
 | `swiftui.semantic-host.current-destination-boundary` | `EXP-150` | Conclusive FAIL 17/38. A value read during SwiftUI reconstruction is one render late: immediate sheet work remains on Compose and immediate cover work remains on Attachment; each fresh Home starts afterward. Settled work is correct and the app stays healthy. Backend session `2294a609-76f9-47be-a643-ab51edc5b638` confirms both stale action/Resource owners. Keep this scenario as a rejection control; do not weaken its synchronous dismissal oracle. |
 | `swiftui.semantic-host.observation-router-adapter` | `EXP-151` | Accepted experimental input over one atomic iOS 27 `@Observable` accepted-state property. Post-review run `exp151-observation-router-postreview-20260916T083131Z` passes 38/38; backend session `ea9adc0e-5a00-4290-9580-fb4df6bc18e7` has eight views, 11 actions, 11 Resources, no error bucket/crash, and exact fresh-Home ownership for immediate and settled sheet/cover dismissal work. Focused tests cover sequential/nested mutation, independent-property semantics, reconstruction, teardown, and invalid background mutation. This accepts the timing primitive, not the public API spelling or opaque local `@State`. |
+| `swiftui.semantic-host.observation-native-dismiss-callbacks` | `EXP-152` | Harness-only native callback characterization over the accepted Observation adapter. It waits for real Sheet/Cover content appearance, then uses the standard SwiftUI `onDismiss` callbacks. Frozen run `exp152-native-dismiss-callbacks-20260916T094300Z` passes 38/38; each callback fires once after accepted Home state, creates no extra Home, and its immediate/settled action and Resource pairs own fresh H3/H4. Backend session `fee27d61-1eb7-4eb6-8525-7af74a53ed7e` contains eight views, 11 actions, 11 Resources, and zero errors/crashes. Keep EXP-151's stronger synchronous mutation oracle; gesture dismissal remains physical/human work. |
 | `swiftui.coexistence.semantic-a-automatic-b` | `EXP-118` | Signal-driven; simulator-inconclusive, physical hardware required |
 | `swiftui.coexistence.automatic-manual-sheet` | `EXP-119` | Signal-driven FAIL: immediate `onDismiss` work retains outgoing Sheet; settled work uses fresh automatic Home |
 | `swiftui.coexistence.automatic-scene-targeted-sheet` | `EXP-123`–`EXP-125` | Handler-only baseline FAIL; suppression-bound successor PASS 14/14 with semantic Sheet, no automatic duplicate, and fresh Home before immediate dismiss work |
@@ -114,7 +115,7 @@ view-stop/Resource observations, repeated-name completion, a missing event, a
 forbidden view, and an ignored native gesture. An exact main-actor scene
 registry adds stable logical/native identity, weak window ownership, readiness,
 activation, geometry, route, and disconnect generations without serializing its
-future Execution Context seam. The generated test plan passes 154/154. The stack
+future Execution Context seam. The generated test plan passes 155/155. The stack
 return, abort, replacement, split-selection, and deterministic UIKit transition
 scenarios, plus exact scene open/close/activation, drive their exact scene and wait for
 observable readiness, lifecycle state, path/selection,
@@ -157,10 +158,13 @@ automatic-sibling behavior. `EXP-150` then conclusively rejects a destination
 value sampled only during SwiftUI reconstruction. `EXP-151` accepts Xcode 27
 one-shot Observation `.didSet` over one atomic accepted-state property: its
 post-review frozen run passes 38/38 locally and in backend with immediate and
-settled dismissal work on fresh Home occurrences. None of these experiments
-approves a stable public declaration. Keep the migration result separate from
-the probe's semantic PASS. The real-reader bounce covers synchronous generation
-cancellation only;
+settled dismissal work on fresh Home occurrences. `EXP-152` then distinguishes
+SwiftUI's actual Sheet/Cover `onDismiss` entry from those synthetic mutation
+markers: after confirmed presentation appearance, both callbacks run once on
+fresh H3/H4 and create no extra Home. The current probe suite passes 155/155.
+None of these experiments approves a stable public declaration. Keep the
+migration result separate from the probe's semantic PASS. The real-reader bounce
+covers synchronous generation cancellation only;
 posted disconnect tests cover internal fencing only; and final host removal plus
 genuine OS disconnect remain physical-device rows.
 `EXP-119` adds one explicit Sheet over an otherwise automatic hierarchy. It

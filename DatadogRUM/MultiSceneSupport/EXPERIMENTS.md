@@ -15,18 +15,20 @@ Last updated: 2026-09-16
 
 ## Current checkpoint
 
-- Latest runtime experiment is `EXP-151`. It accepts one-shot Observation
-  `.didSet` as a trustworthy iOS 27 input for an existing `@Observable`
-  router when one atomically updated property represents the complete accepted
-  destination. The adapter rearms synchronously, preserves the one-boundary
-  migration budget, and passes the post-review frozen 38/38 presentation oracle.
-  Immediate and settled work after sheet and full-screen-cover dismissal use
-  fresh Home occurrences; backend intake agrees. This does not make plain local
-  `@State` exact and does not approve the experimental public spelling.
+- Latest runtime experiment is `EXP-152`. It keeps the accepted `EXP-151`
+  one-shot Observation boundary but moves the dismissal discriminator into
+  SwiftUI's actual `.sheet` and `.fullScreenCover` `onDismiss` callbacks. A
+  clean frozen run passes 38/38: each presentation first proves that its native
+  content appeared, each callback fires exactly once after the router accepted
+  Home, and immediate plus settled callback work belongs to fresh Home H3/H4.
+  Backend intake agrees. This characterizes the native callback boundary; it
+  does not weaken the stronger synchronous post-mutation oracle, make plain
+  local `@State` exact, or approve the experimental public spelling.
 - Latest accepted SDK implementation/test checkpoint: `24cf5078a`
   (`Add observable semantic navigation adapters`). Latest migration fixture,
   harness, and probe-test checkpoint: `7da52ae6d`
-  (`Expand semantic navigation probe coverage`). Both are signed. Earlier
+  (`Expand semantic navigation probe coverage`). The signed `EXP-152` harness
+  checkpoint is `0a67f3e36` (`Add native presentation dismissal probe`). Earlier
   semantic engine checkpoints remain `a84061840`, `354422d88`, `651b173c6`,
   and `47bc08eca`; the detailed ledger preserves the preceding native,
   restoration, presentation, and sibling commits.
@@ -41,14 +43,14 @@ Last updated: 2026-09-16
   source replacement. The real-reader synchronous bounce additionally passes
   17/17 locally and in backend intake without changing Detail ownership. The
   EXP-149's lifetime matrix passes 20/20. The current native probe passes
-  154/154 and the affected SwiftUI test file passes 193/193. The focused
+  155/155 and the affected SwiftUI test file passes 193/193. The focused
   Observation/adapter matrix passes 8/8. Exact Xcode 27 iOS Release and visionOS
   package builds succeed. Repository SwiftLint passes across 713 source and 699
   test files with zero violations. API
   verification reports only the intentionally unaccepted experimental Swift
   navigation and scene-targeted manual-view prototypes; reference baselines were
-  not updated. The post-review frozen EXP-151 runtime passes 38/38 and backend intake contains
-  eight views, 11 actions, 11 Resources, five long tasks, one session, one vital,
+  not updated. The frozen EXP-152 runtime passes 38/38 and backend intake contains
+  eight views, 11 actions, 11 Resources, seven long tasks, one session, one vital,
   and no error or crash bucket. The complete
   DatadogRUM run passed 1,262/1,263; its sole unrelated timeseries timing failure
   passed immediately in isolation.
@@ -80,10 +82,12 @@ supplies the earlier signal for existing iOS 27 `@Observable` routers. Its
 one-shot `.didSet` adapter rearms before the setter returns and the frozen runtime
 plus backend session close the same 38-expectation oracle. Sequential/nested
 mutation, reconstruction, teardown, independent-property, and background-misuse
-tests are closed. Next characterize native `onDismiss`, two-scene router
-isolation, and custom/third-party adapter parity without claiming exact support
-for opaque local `@State`. Genuine OS disconnect remains a hardware row. The
-ordered acceptance contract is in
+tests are closed. `EXP-152` then proves the actual native sheet and cover
+`onDismiss` callbacks run after the accepted Home mutation and use those fresh
+occurrences, without creating another Home. Next close custom/third-party adapter
+parity and concurrent two-scene runtime evidence without claiming exact support
+for opaque local `@State`. Interactive dismissal/cancellation and genuine OS
+disconnect remain hardware rows. The ordered acceptance contract is in
 [PLAN.md](PLAN.md).
 
 ## Complete experiment ledger
@@ -241,6 +245,7 @@ ordered acceptance contract is in
 | EXP-149 | 2026-09-16 | PASS · focused tests | SwiftUI integration/lifecycle | The actual observed host subscribes once across a SwiftUI reconstruction that supplies a different publisher; the replacement remains unsubscribed. Two SDK-owned observed adapters attach to A/B independently, posted disconnect of A releases only A and rejects later A updates while B advances. Automatic suppression remains local and an unrelated subtree stays eligible. The complete semantic/observed lifetime matrix passes 20/20. | [active record](Experiments/EXP-143-199.md#exp-149--observed-source-lifetime-and-scene-isolation) |
 | EXP-150 | 2026-09-16 | FAIL · mapper + backend; tests remain green | SwiftUI integration/timing | A one-boundary `currentDestination` value preserves standard SwiftUI and passes state-level parity tests, but it observes dismissal only during the next render. Frozen iPadOS 27 run `exp150-current-destination-20260916T072321Z` fails at 17/38: immediate sheet work stays on Compose and immediate cover work stays on Attachment; fresh Home starts one signal later in both cases. Backend session `2294a609-76f9-47be-a643-ab51edc5b638` confirms both wrong action/Resource owners, while settled work is correct and the app does not crash. This API shape is not an exact customer candidate. | [active record](Experiments/EXP-143-199.md#exp-150--render-time-current-destination-boundary) |
 | EXP-151 | 2026-09-16 | PASS · tests + mapper + backend | SwiftUI integration/timing | An iOS 27 one-shot Observation `.didSet` adapter observes one atomically updated accepted-destination property on an existing `@Observable` router and rearms synchronously. Focused tests pass 8/8, the affected SwiftUI file passes 193/193, the probe passes 154/154, and Xcode 27 iOS Release plus visionOS package builds succeed. Post-review frozen run `exp151-observation-router-postreview-20260916T083131Z` passes 38/38; backend session `ea9adc0e-5a00-4290-9580-fb4df6bc18e7` has eight views, 11 actions, 11 Resources, no error bucket/crash, and exact fresh-Home ownership for immediate and settled sheet/cover dismissal work. Plain local `@State` remains fallback-only and the API spelling remains experimental. | [active record](Experiments/EXP-143-199.md#exp-151--one-shot-observation-router-boundary) |
+| EXP-152 | 2026-09-16 | PASS · tests + mapper + backend | SwiftUI integration/timing | Harness-only characterization over the accepted Observation adapter waits for real Sheet/Cover content appearance, then records SwiftUI's actual `onDismiss` callbacks. Frozen run `exp152-native-dismiss-callbacks-20260916T094300Z` passes 38/38; each callback fires once after accepted Home state, creates no extra Home, and its immediate/settled action and Resource pairs own fresh H3/H4. Backend session `fee27d61-1eb7-4eb6-8525-7af74a53ed7e` has eight views, 11 actions, 11 Resources, and zero errors/crashes. This closes native callback characterization without replacing the stronger synchronous mutation oracle; interactive gesture dismissal remains a physical/human row. | [active record](Experiments/EXP-143-199.md#exp-152--native-swiftui-dismissal-callback-characterization) |
 
 ## Simulator-inconclusive and hardware-required evidence
 

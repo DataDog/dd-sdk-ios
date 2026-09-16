@@ -310,6 +310,12 @@ Target-local authority, nesting, reveal behavior, and automatic coexistence.
   interval twice. Recorder/suppression diagnostics must tolerate a continuous
   same-style interval and must not let a delayed callback close the currently
   active replacement.
+- Do not promote native `onDismiss` itself to the semantic commit signal because
+  `EXP-152` attributes callback work correctly. That run proves the accepted
+  Observation mutation and fresh underlying occurrence already precede callback
+  entry; it does not prove every transition emits a callback. Keep `onDismiss`
+  as a separate customer-work characterization and preserve the synchronous
+  accepted-state oracle.
 - Do not disable automatic SwiftUI tracking for the entire scene or application
   merely because one semantic/manual boundary is active. `EXP-115` proves the
   viable boundary is an active, attached explicit subtree; unrelated controllers

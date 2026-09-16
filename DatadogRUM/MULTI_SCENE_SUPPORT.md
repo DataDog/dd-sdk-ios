@@ -140,10 +140,14 @@ one atomically updated property. Its post-review frozen run passes 38/38 locally
 and in backend intake, including immediate and settled dismissal ownership on
 fresh Home occurrences. Nested reentrancy, SwiftUI reconstruction, invalid
 background mutation crash safety, the iOS Release build, and the visionOS
-package build also pass. Plain local `@State` and opaque containers retain
-automatic tracking plus sparse manual exceptions. Native callback,
-custom/third-party, and two-scene adapter parity plus API review follow; genuine
-OS disconnect remains hardware-gated.
+package build also pass. `EXP-152` then keeps that accepted boundary and records
+SwiftUI's actual Sheet and cover `onDismiss` callbacks after proving each native
+presentation appeared. Its clean frozen run passes 38/38 locally and in backend
+intake: both callbacks observe accepted Home, emit once, create no extra Home,
+and place immediate plus settled work on fresh H3/H4. Plain local `@State` and
+opaque containers retain automatic tracking plus sparse manual exceptions.
+Custom/third-party and genuine concurrent two-scene adapter parity plus API
+review follow; interactive dismissal and OS disconnect remain hardware-gated.
 
 The original exceptional SwiftUI Sheet discriminator (`EXP-119`) produced
 automatic Home H1, explicit Sheet S1, and eventual H2 without an automatic Sheet
@@ -242,7 +246,7 @@ synchronous detach/reattach run passes 17/17 with one preserved Detail occurrenc
 focused disconnect/lifetime tests pass 4/4 and the handler suite passes 84/84.
 Two clean final-host-removal simulator attempts crashed `backboardd` before the
 removal step and remain device-INCONCLUSIVE. The `EXP-146` checkpoint passed
-150/150 probe tests; the current suite passes 154/154 after the router-adapter
+150/150 probe tests; the current suite passes 155/155 after the router-adapter
 experiments. The complete RUM run passes
 1,262/1,263; its sole unrelated timeseries timing failure passes immediately in
 isolation. Current repository lint passes across 713 source and 699 test files.
@@ -347,8 +351,8 @@ readiness, activation, geometry, route, and disconnect generations. Its
 signal-driven stack, split, UIKit-transition, scene-lifecycle,
 automatic/manual-coexistence, semantic-navigation, action, Operation, and Trace
 scenarios through the `EXP-146` precedence/lifetime matrix passed 150/150 tests
-at that checkpoint; the current generated suite passes 154/154 after
-`EXP-147`-`151`. The prepared two-scene same-key, cross-scene
+at that checkpoint; the current generated suite passes 155/155 after
+`EXP-147`-`152`. The prepared two-scene same-key, cross-scene
 Operation, and shared-request scenarios
 remain hardware-gated; the single-scene Operation/navigation scenario passes
 locally and in backend intake.
@@ -388,7 +392,7 @@ to retry.
 | Surface | Current branch status | Remaining release condition |
 | --- | --- | --- |
 | UIKit views and navigation | Independent stacks, push/pop, modal, duplicate names, and teardown pass experimentally. On iOS 27 in declared multi-scene apps, regular split Primary/supplementary columns are now structural rather than RUM views. Deterministic cancel keeps S2 and finish creates fresh S1; both have exact backend action/Resource ownership | Cover the application-subclassed container and startup-host fallback, then prove simultaneous visibility, adaptive/lifecycle/restoration, live normal-app compatibility, and iPhone Duo behavior |
-| Explicit/semantic SwiftUI tracking | Experimental iOS 27 early-start, retained-return, modal, repeated push/pop, crash-safe teardown, restoration, synthetic reconnect, and customer-state-preserving keyed-occurrence controls pass; single- and two-window split replacement plus a retained split return preserve customer state and exact markers. `EXP-116` proves a builder-owned materialization boundary; `EXP-141`-`145` validate the native-convenience SPI across complete destinations, repeated/restored routes, router acceptance/canonicalization, atomic presentations, and sibling isolation. `EXP-146` validates the shared engine and arbitrary-host adapter boundary with stable explicit or optional-capability input around unchanged standard SwiftUI at 42/42; runtime precedence, repeated reconstruction, and adversarial source replacement pass 43/43 each. Its opaque specialization retains automatic capture at 5/5, and its synchronous real-reader bounce passes 17/17 without changing the active Detail UUID. `EXP-147` validates the route-count-independent migration budget; `EXP-148` moves observation, automatic metadata, sparse overrides, equal-route identity, delayed authority, and strict pending-source precedence into DatadogRUM. Its final frozen run passes 38/38 locally and in backend with eight exact views and 22 ownership buckets. `EXP-149` closes real-host subscription reconstruction, publisher replacement, two-scene observed-source isolation, posted-disconnect cleanup, and unrelated automatic-subtree coexistence at 20/20. `EXP-150` rejects render-time current-value observation; `EXP-151` accepts one-shot Observation of one atomic accepted-state property, with a post-review 38/38 mapper/backend pass plus nested, reconstruction, background-misuse, iOS Release, and visionOS build coverage. The low-level publisher remains adapter-author SPI, not the normal customer path. `EXP-122` proves the internal exact-scene keyed manual stack stays authoritative and reveals a fresh underlying destination. `EXP-125`-`128` cover presentation boundaries, sibling isolation, nesting, and duplicate-start crash safety; `EXP-137`-`140` exercise the customer-shaped manual SPI. `EXP-129` adds the strict same-key A/B contract, but its live simulator run expired before manual authority began | Close native/custom/third-party and two-scene adapter parity, genuine OS disconnect/final detach on hardware, and same-key A/B acceptance before gestures, adaptive navigation, simultaneous visibility, reconnect, and restoration |
+| Explicit/semantic SwiftUI tracking | Experimental iOS 27 early-start, retained-return, modal, repeated push/pop, crash-safe teardown, restoration, synthetic reconnect, and customer-state-preserving keyed-occurrence controls pass; single- and two-window split replacement plus a retained split return preserve customer state and exact markers. `EXP-116` proves a builder-owned materialization boundary; `EXP-141`-`145` validate the native-convenience SPI across complete destinations, repeated/restored routes, router acceptance/canonicalization, atomic presentations, and sibling isolation. `EXP-146` validates the shared engine and arbitrary-host adapter boundary with stable explicit or optional-capability input around unchanged standard SwiftUI at 42/42; runtime precedence, repeated reconstruction, and adversarial source replacement pass 43/43 each. Its opaque specialization retains automatic capture at 5/5, and its synchronous real-reader bounce passes 17/17 without changing the active Detail UUID. `EXP-147` validates the route-count-independent migration budget; `EXP-148` moves observation, automatic metadata, sparse overrides, equal-route identity, delayed authority, and strict pending-source precedence into DatadogRUM. Its final frozen run passes 38/38 locally and in backend with eight exact views and 22 ownership buckets. `EXP-149` closes real-host subscription reconstruction, publisher replacement, two-scene observed-source isolation, posted-disconnect cleanup, and unrelated automatic-subtree coexistence at 20/20. `EXP-150` rejects render-time current-value observation; `EXP-151` accepts one-shot Observation of one atomic accepted-state property, with a post-review 38/38 mapper/backend pass plus nested, reconstruction, background-misuse, iOS Release, and visionOS build coverage. `EXP-152` closes actual programmatic Sheet/Cover `onDismiss` timing at 38/38 with fresh H3/H4 ownership and no callback-created Home. The low-level publisher remains adapter-author SPI, not the normal customer path. `EXP-122` proves the internal exact-scene keyed manual stack stays authoritative and reveals a fresh underlying destination. `EXP-125`-`128` cover presentation boundaries, sibling isolation, nesting, and duplicate-start crash safety; `EXP-137`-`140` exercise the customer-shaped manual SPI. `EXP-129` adds the strict same-key A/B contract, but its live simulator run expired before manual authority began | Close custom/third-party and genuine two-scene adapter parity, interactive dismissal/cancellation, OS disconnect/final detach on hardware, and same-key A/B acceptance before adaptive navigation, simultaneous visibility, reconnect, and restoration |
 | Automatic native SwiftUI | Transparent discovery remains semantically late; route-owned controls prove initial creation, abort, different- and same-type stack/split replacement, and retained Home without resetting customer state, but only through an internal debug integration; automatic split has no semantic selection views. `EXP-115`/`EXP-116` prove target-scoped semantic authority, `EXP-122` prevents exact-scene manual preemption, `EXP-125`/`EXP-126` cover presentation subtrees, and `EXP-127` plus actual-SPI `EXP-145` leave an unrelated sibling controller eligible while manual authority is active. `EXP-141` keeps automatic discovery enabled around the actual semantic container without producing a duplicate. `EXP-146` proves an opaque arbitrary host does not suppress automatic capture, while also confirming that opaque input cannot repair automatic lifecycle or destination precision | Validate automatic behavior in a separate live scene and ordinary automatic-only applications, then take the container-independent shape through API review |
 | Actions | Source-bearing UIKit/SwiftUI taps emit once on their scene; exact-view actions refresh the process representative; public manual errors, view mutations, and internal view work consume exact handoff view/scene when present; source-less work retains last-interacted fallback. `EXP-122` attributes active Compose work to exact-scene M1 and immediate plus settled return work to one fresh H2. `EXP-125` and `EXP-126` do the same across presentation dismissal. In `EXP-127`, work originating from underlying Detail stays on M1 until stop, then switches immediately to fresh Detail. `EXP-128` keeps first Compose, Preview, resumed Compose, duplicate-start, and final Home action/Resource pairs on their exact occurrence IDs. `EXP-132` proves a threshold-qualified real UIKit fling remains exactly once on its origin when navigation starts during deceleration. `EXP-135` proves one automatic SwiftUI Button tap stays on A, while source-less work resumed after B takes over follows B by compatibility. `EXP-129` encodes the A/B precedence oracle but has no completed runtime result | Complete exact precedence with simultaneously visible A/B and a different representative, then finish explicitly targeted downstream runtime rows |
 | Resources and traces | Trustworthy start provenance is frozen; manual Resource completions remain with their captured owner; automatic URLSession completion and OpenTelemetry spans use the same scene-handoff model. `EXP-133` backend-confirms one Trace-only request across A→B representative churn; `EXP-134` backend-confirms independent A/B requests completed in reverse order while each retains its own start-scene Home view. Neither scenario emits a matching RUM Resource. `EXP-135` proves an ordinary SwiftUI Button callback is outside the synchronous handoff and its resumed task is source-less. `EXP-136` proves the shared-consumer harness through B join, but the simulator compositor failed before completion twice | Finish the unchanged shared/coalesced completion and simultaneous-window exact-source rows on capable hardware, then normal-handler compatibility, explicit target/scoped API review, and overhead measurement |
@@ -396,7 +400,7 @@ to retry.
 | Lifecycle and sessions | Independent close, rollover, fresh/retained-reader remount, and cancellation rearming are covered; exact A-to-B open and B close are signal-driven, and A continues on its original Home occurrence after B disconnects; exact activation dispatch and current-state lifecycle waits are implemented in the harness; hidden detached readers retain only their last concrete scene proof, which disconnect clears before requiring a new mount. `EXP-146` adds a synchronous real-reader bounce plus focused final-detach and posted-disconnect fencing tests | Run final host removal and genuine OS disconnect/reconnect on capable hardware; then prove activation/background, stable simultaneous-visible peer continuity, live background/foreground, and concurrent restoration |
 | Other signals | Focused ownership exists for logs, mirrored errors, WebView, vitals, fatal context, and profiling identity | Targeted two-window runtime proof and explicit process-wide limitations |
 | Session Replay | Coexists in tested two-window runs without an SDK crash | No scene-correct replay work is required here |
-| Normal applications | The exact manual-authority set passes 8/8, focused semantic replacement passes 3/3, and the complete DatadogRUM run passes 1,262/1,263 with its sole unrelated timing failure passing immediately in isolation. DatadogTrace remains 151/151; repository lint, expected-only prototype API-surface diff, and both probes build at their recorded checkpoints. The current generated native probe passes 154/154. EXP-147's zero-screen/zero-method migration budget is preserved by the SDK-owned EXP-148 publisher and EXP-151 Observation candidates while standard SwiftUI stays unchanged; EXP-149 adds a 20/20 actual-host lifetime and scene-isolation matrix, and the latest affected SwiftUI file selection passes 193/193 | Close adapter parity, then run live ordinary-app/custom-handler behavior and `sendEvent` overhead/reentrancy |
+| Normal applications | The exact manual-authority set passes 8/8, focused semantic replacement passes 3/3, and the complete DatadogRUM run passes 1,262/1,263 with its sole unrelated timing failure passing immediately in isolation. DatadogTrace remains 151/151; repository lint, expected-only prototype API-surface diff, and both probes build at their recorded checkpoints. The current generated native probe passes 155/155. EXP-147's zero-screen/zero-method migration budget is preserved by the SDK-owned EXP-148 publisher and EXP-151 Observation candidates while standard SwiftUI stays unchanged; EXP-149 adds a 20/20 actual-host lifetime and scene-isolation matrix, EXP-152 validates actual native dismissal callbacks without changing customer code, and the latest affected SwiftUI file selection passes 193/193 | Close adapter parity, then run live ordinary-app/custom-handler behavior and `sendEvent` overhead/reentrancy |
 
 Generic work with no trustworthy source still emits once on the process
 representative, intended to be the last-interacted view. This preserves existing
@@ -568,7 +572,7 @@ mapping remain preserved in the experiment ledger. The
 chronological checkpoint table in
 [EXPERIMENTS.md](MultiSceneSupport/EXPERIMENTS.md) is authoritative.
 
-Resume after accepted `EXP-151`. EXP-149 closes the deterministic lifetime/scene
+Resume after accepted `EXP-152`. EXP-149 closes the deterministic lifetime/scene
 matrix for the `EXP-148` SDK-owned implementation. `EXP-148` moves the `EXP-147`
 existing-router policy into the SDK-owned iOS 27 prototype while preserving zero
 screen edits, zero
@@ -585,8 +589,11 @@ router. The post-review frozen run is
 `ea9adc0e-5a00-4290-9580-fb4df6bc18e7`; it passes 38/38 locally and in backend
 intake with exact synchronous dismissal ownership. Signed SDK checkpoint
 `24cf5078a` and signed migration fixture/probe checkpoint `7da52ae6d` preserve
-the frozen sources used for that run. Next prove actual native
-callback, custom/third-party-style, and two-scene adapter parity. Do not retry
+the frozen sources used for that run. EXP-152's signed harness checkpoint is
+`0a67f3e36`; clean run `exp152-native-dismiss-callbacks-20260916T094300Z`,
+session `fee27d61-1eb7-4eb6-8525-7af74a53ed7e`, passes 38/38 and proves actual
+Sheet/Cover `onDismiss` work uses fresh H3/H4 without creating another Home.
+Next prove custom/third-party-style and genuine two-scene adapter parity. Do not retry
 the rejected value-only `currentDestination` initializer: frozen run
 `exp150-current-destination-20260916T072321Z`, session
 `2294a609-76f9-47be-a643-ab51edc5b638`, matched only 17/38 because immediate
@@ -1078,8 +1085,15 @@ As of 2026-09-16:
   and cover dismissal owners. Focused Observation/adapter tests pass 8/8, the
   affected SwiftUI file passes 193/193, the probe passes 154/154, and both the
   Xcode 27 iOS Release and visionOS package builds pass. The API spelling remains
-  experimental; native callbacks, custom/third-party inputs, and two-scene
-  Observation parity remain.
+  experimental; custom/third-party inputs and two-scene Observation parity remain.
+- `EXP-152` separates actual native SwiftUI callback timing from EXP-151's
+  stronger synchronous post-mutation markers. After confirmed Sheet and cover
+  content appearance, each native `onDismiss` fires once with accepted Home
+  current, creates no additional Home, and owns its immediate plus settled work
+  on fresh H3/H4. The clean frozen run passes 38/38; backend session
+  `fee27d61-1eb7-4eb6-8525-7af74a53ed7e` contains eight views, 11 actions, 11
+  Resources, and zero errors/crashes. The full probe now passes 155/155. Gesture
+  dismissal/cancellation remains a physical/human experiment.
 - Repeated native value-link navigation passes `EXP-142`: H1/D1/D2/fresh D3/
   fresh H2 is lifecycle-correct after a stronger oracle exposed and the
   implementation fixed returned-Detail work on D2. The accepted run passes
