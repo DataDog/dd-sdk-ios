@@ -2805,5 +2805,138 @@ class RUMViewsHandlerTests: XCTestCase {
         XCTAssertEqual(stopA.target, .scene(sceneA))
         XCTAssertEqual(startB.target, .scene(sceneB))
     }
+
+    @available(iOS 27.0, *)
+    @MainActor
+    func testSemanticHostSource_commitsFreshOccurrencesAndIgnoresCancellation() throws {
+        let scene = RUMSceneIdentifier(rawValue: "scene-A")
+        let handler = createHandler()
+        let source = RUMNavigationTransitions(
+            currentDestination: rumView(name: "Home", path: "/home")
+        )
+        let hostState = RUMSemanticNavigationHostState()
+
+        hostState.reconcile(transitions: source, viewsHandler: handler)
+        hostState.reconcile(attachment: .attached(scene))
+
+        source.willNavigate(
+            id: "cancelled-detail",
+            destination: rumView(name: "Detail", path: "/detail")
+        )
+        source.cancel(id: "cancelled-detail")
+        source.commit(id: "cancelled-detail")
+
+        XCTAssertEqual(commandSubscriber.receivedCommands.count, 1)
+
+        source.willNavigate(
+            id: "detail",
+            destination: rumView(name: "Detail", path: "/detail")
+        )
+        source.commit(id: "detail")
+        source.willNavigate(
+            id: "home-return",
+            destination: rumView(name: "Home", path: "/home")
+        )
+        source.commit(id: "home-return")
+
+        XCTAssertEqual(commandSubscriber.receivedCommands.count, 5)
+        let home1 = try XCTUnwrap(commandSubscriber.receivedCommands[0] as? RUMStartViewCommand)
+        let detail = try XCTUnwrap(commandSubscriber.receivedCommands[2] as? RUMStartViewCommand)
+        let home2 = try XCTUnwrap(commandSubscriber.receivedCommands[4] as? RUMStartViewCommand)
+        XCTAssertEqual(home1.name, "Home")
+        XCTAssertEqual(detail.name, "Detail")
+        XCTAssertEqual(home2.name, "Home")
+        XCTAssertNotEqual(home1.identity, home2.identity)
+        XCTAssertTrue(commandSubscriber.receivedCommands.allSatisfy { $0.target == .scene(scene) })
+        XCTAssertEqual(home1.instrumentationType, .manual)
+        XCTAssertEqual(detail.instrumentationType, .manual)
+        XCTAssertEqual(home2.instrumentationType, .manual)
+    }
+
+    @available(iOS 27.0, *)
+    @MainActor
+    func testSemanticHostSource_updatesBelowManualExceptionUntilItStops() throws {
+        let scene = RUMSceneIdentifier(rawValue: "scene-A")
+        let handler = createHandler()
+        let source = RUMNavigationTransitions(
+            currentDestination: rumView(name: "Home", path: "/home")
+        )
+        let hostState = RUMSemanticNavigationHostState()
+
+        hostState.reconcile(transitions: source, viewsHandler: handler)
+        hostState.reconcile(attachment: .attached(scene))
+        handler.startView(
+            key: "compose",
+            name: "Compose",
+            attributes: [:],
+            sceneIdentifier: scene
+        )
+
+        source.willNavigate(
+            id: "detail-below-compose",
+            destination: rumView(name: "Detail", path: "/detail")
+        )
+        source.commit(id: "detail-below-compose")
+
+        XCTAssertEqual(commandSubscriber.receivedCommands.count, 3)
+        XCTAssertFalse(commandSubscriber.receivedCommands.contains { command in
+            (command as? RUMStartViewCommand)?.name == "Detail"
+        })
+
+        handler.stopView(key: "compose", attributes: [:], sceneIdentifier: scene)
+
+        XCTAssertEqual(commandSubscriber.receivedCommands.count, 5)
+        let composeStop = try XCTUnwrap(
+            commandSubscriber.receivedCommands[3] as? RUMStopViewCommand
+        )
+        let revealedDetail = try XCTUnwrap(
+            commandSubscriber.receivedCommands[4] as? RUMStartViewCommand
+        )
+        XCTAssertEqual(composeStop.identity, ViewIdentifier("compose"))
+        XCTAssertEqual(revealedDetail.name, "Detail")
+        XCTAssertEqual(revealedDetail.target, .scene(scene))
+    }
+
+    @available(iOS 27.0, *)
+    @MainActor
+    func testSemanticHostSources_inDifferentScenesRemainIsolated() throws {
+        let sceneA = RUMSceneIdentifier(rawValue: "scene-A")
+        let sceneB = RUMSceneIdentifier(rawValue: "scene-B")
+        let handler = createHandler()
+        let sourceA = RUMNavigationTransitions(
+            currentDestination: rumView(name: "Home A", path: "/a")
+        )
+        let sourceB = RUMNavigationTransitions(
+            currentDestination: rumView(name: "Home B", path: "/b")
+        )
+        let hostA = RUMSemanticNavigationHostState()
+        let hostB = RUMSemanticNavigationHostState()
+
+        hostA.reconcile(transitions: sourceA, viewsHandler: handler)
+        hostB.reconcile(transitions: sourceB, viewsHandler: handler)
+        hostA.reconcile(attachment: .attached(sceneA))
+        hostB.reconcile(attachment: .attached(sceneB))
+        sourceA.willNavigate(
+            id: "detail-a",
+            destination: rumView(name: "Detail A", path: "/a/detail")
+        )
+        sourceA.commit(id: "detail-a")
+
+        XCTAssertEqual(commandSubscriber.receivedCommands.count, 4)
+        let startB = try XCTUnwrap(commandSubscriber.receivedCommands[1] as? RUMStartViewCommand)
+        XCTAssertEqual(startB.name, "Home B")
+        XCTAssertEqual(startB.target, .scene(sceneB))
+        XCTAssertFalse(commandSubscriber.receivedCommands.dropFirst(2).contains { command in
+            command.target == .scene(sceneB)
+        })
+    }
+
+    @available(iOS 27.0, *)
+    @MainActor
+    private func rumView(name: String, path: String) -> RUMView {
+        var view = RUMView(name: name)
+        view.path = path
+        return view
+    }
     #endif
 }

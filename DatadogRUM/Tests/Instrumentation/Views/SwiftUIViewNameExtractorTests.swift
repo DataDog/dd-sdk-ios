@@ -8,6 +8,7 @@
 
 import XCTest
 import SwiftUI
+@_spi(Experimental)
 @testable import DatadogRUM
 @testable import DatadogInternal
 
@@ -4696,6 +4697,146 @@ class RUMSwiftUINavigationOccurrenceSourceTests: XCTestCase {
             descriptor: .init(name: key, path: "/\(key)", attributes: [:]),
             isCurrentDestination: isCurrentDestination
         )
+    }
+}
+
+@available(iOS 27.0, *)
+@MainActor
+final class RUMSwiftUISemanticNavigationEngineTests: XCTestCase {
+    private struct Presentation: Identifiable {
+        let id: String
+    }
+
+    private struct ProvidingContent: SwiftUI.View, RUMNavigationTransitionProviding {
+        let source: RUMNavigationTransitions
+
+        var rumNavigationTransitions: RUMNavigationTransitions { source }
+
+        var body: some SwiftUI.View {
+            SwiftUI.Text("Customer navigation")
+        }
+    }
+
+    func testSceneAttachmentIsIndependentFromVisualContainer() {
+        let engine = RUMSwiftUISemanticNavigationEngine()
+        let scene = RUMSceneIdentifier(rawValue: "scene-A")
+
+        XCTAssertNil(engine.sceneIdentifier)
+
+        engine.reconcile(attachment: .attached(scene))
+        XCTAssertEqual(engine.sceneIdentifier, scene)
+
+        engine.reconcile(attachment: .detached)
+        XCTAssertNil(engine.sceneIdentifier)
+    }
+
+    func testNativeAdapterUsesInjectedContainerIndependentEngine() {
+        let engine = RUMSwiftUISemanticNavigationEngine()
+        let navigationState = RUMSwiftUISemanticNavigationState<String, Presentation>(
+            engine: engine
+        )
+
+        XCTAssertTrue(navigationState.engine === engine)
+        XCTAssertTrue(navigationState.occurrenceSource === engine.occurrenceSource)
+    }
+
+    func testNavigationHostAcceptsArbitraryCustomerContent() {
+        _ = RUMNavigationHost {
+            SwiftUI.Text("Customer navigation")
+        }
+    }
+
+    func testTransitionSourcePublishesOnlyCommittedDestinationsAsFreshOccurrences() {
+        let source = RUMNavigationTransitions(
+            currentDestination: RUMView(name: "Home")
+        )
+        var snapshots: [RUMNavigationTransitions.Snapshot] = []
+        let observation = source.observe { snapshots.append($0) }
+
+        source.willNavigate(
+            id: "cancelled-detail",
+            destination: RUMView(name: "Detail")
+        )
+        source.cancel(id: "cancelled-detail")
+        source.commit(id: "cancelled-detail")
+
+        XCTAssertEqual(snapshots.map(\.destination.name), ["Home"])
+
+        source.willNavigate(id: "detail-1", destination: RUMView(name: "Detail"))
+        source.commit(id: "detail-1")
+        source.willNavigate(id: "detail-2", destination: RUMView(name: "Detail"))
+        source.commit(id: "detail-2")
+
+        XCTAssertEqual(snapshots.map(\.destination.name), ["Home", "Detail", "Detail"])
+        XCTAssertEqual(snapshots.map(\.generation), [0, 1, 2])
+        source.removeObserver(observation)
+    }
+
+    func testTransitionSourceCanWaitForSceneDependentInitialMetadata() {
+        let source = RUMNavigationTransitions()
+        var snapshots: [RUMNavigationTransitions.Snapshot] = []
+        let observation = source.observe { snapshots.append($0) }
+
+        XCTAssertTrue(snapshots.isEmpty)
+
+        source.setInitialDestination(RUMView(name: "Resolved Home"))
+        source.setInitialDestination(RUMView(name: "Ignored Duplicate"))
+
+        XCTAssertEqual(snapshots.map(\.destination.name), ["Resolved Home"])
+        XCTAssertEqual(snapshots.map(\.generation), [0])
+        source.removeObserver(observation)
+    }
+
+    func testNavigationHostResolvesOptionalCapability() {
+        let source = RUMNavigationTransitions(
+            currentDestination: RUMView(name: "Home")
+        )
+        let content = ProvidingContent(source: source)
+
+        let resolved = RUMNavigationHost<ProvidingContent>.resolveTransitions(
+            explicit: nil,
+            content: content
+        )
+
+        XCTAssertTrue(resolved === source)
+    }
+
+    func testExplicitTransitionSourceOverridesOptionalCapability() {
+        let capabilitySource = RUMNavigationTransitions(
+            currentDestination: RUMView(name: "Capability")
+        )
+        let explicitSource = RUMNavigationTransitions(
+            currentDestination: RUMView(name: "Explicit")
+        )
+        let content = ProvidingContent(source: capabilitySource)
+
+        let resolved = RUMNavigationHost<ProvidingContent>.resolveTransitions(
+            explicit: explicitSource,
+            content: content
+        )
+
+        XCTAssertTrue(resolved === explicitSource)
+    }
+
+    func testHostStatePinsFirstSourceAcrossContainerReconstruction() {
+        let first = RUMNavigationTransitions(
+            currentDestination: RUMView(name: "Home")
+        )
+        let reconstructed = RUMNavigationTransitions(
+            currentDestination: RUMView(name: "Reconstructed")
+        )
+        let hostState = RUMSemanticNavigationHostState()
+
+        hostState.reconcile(transitions: first, viewsHandler: nil)
+        hostState.reconcile(transitions: reconstructed, viewsHandler: nil)
+
+        XCTAssertTrue(hostState.selectedTransitions === first)
+        XCTAssertTrue(hostState.suppressionState.isActive)
+
+        hostState.finalDetach()
+
+        XCTAssertNil(hostState.selectedTransitions)
+        XCTAssertFalse(hostState.suppressionState.isActive)
     }
 }
 

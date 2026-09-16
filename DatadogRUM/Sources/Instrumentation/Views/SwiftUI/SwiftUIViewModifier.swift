@@ -4780,6 +4780,275 @@ public struct RUMNavigationPresentation {
     }
 }
 
+/// A stable, type-erased source of committed navigation destinations.
+///
+/// Keep one instance for the lifetime of an independent navigation container.
+/// Preparing a transition does not change RUM state. Committing it creates a
+/// fresh RUM view occurrence, even when its destination metadata matches an
+/// earlier occurrence. Cancelling it leaves the current occurrence unchanged.
+@_spi(Experimental)
+@available(iOS 27.0, *)
+@MainActor
+public final class RUMNavigationTransitions {
+    internal struct Snapshot {
+        let generation: UInt64
+        let destination: RUMView
+    }
+
+    private var nextGeneration: UInt64 = 0
+    private var currentSnapshot: Snapshot?
+    private var preparedDestinations: [String: RUMView] = [:]
+    private var observers: [UUID: (Snapshot) -> Void] = [:]
+
+    public init() {}
+
+    public convenience init(currentDestination: RUMView) {
+        self.init()
+        setInitialDestination(currentDestination)
+    }
+
+    /// Publishes the container's initial committed destination exactly once.
+    /// This allows a stable source to be created before scene-dependent RUM
+    /// metadata is available.
+    public func setInitialDestination(_ destination: RUMView) {
+        guard currentSnapshot == nil else {
+            return
+        }
+        let snapshot = Snapshot(
+            generation: nextGeneration,
+            destination: destination
+        )
+        currentSnapshot = snapshot
+        observers.values.forEach { $0(snapshot) }
+    }
+
+    /// Records a possible destination without starting a RUM view.
+    public func willNavigate(id: String, destination: RUMView) {
+        preparedDestinations[id] = destination
+    }
+
+    /// Commits the prepared transition and publishes a fresh occurrence.
+    public func commit(id: String) {
+        guard let destination = preparedDestinations.removeValue(forKey: id) else {
+            return
+        }
+        nextGeneration &+= 1
+        let snapshot = Snapshot(
+            generation: nextGeneration,
+            destination: destination
+        )
+        currentSnapshot = snapshot
+        observers.values.forEach { $0(snapshot) }
+    }
+
+    /// Cancels a prepared transition without changing the current occurrence.
+    public func cancel(id: String) {
+        preparedDestinations.removeValue(forKey: id)
+    }
+
+    @discardableResult
+    internal func observe(_ observer: @escaping (Snapshot) -> Void) -> UUID {
+        let id = UUID()
+        observers[id] = observer
+        if let currentSnapshot {
+            observer(currentSnapshot)
+        }
+        return id
+    }
+
+    internal func removeObserver(_ id: UUID) {
+        observers[id] = nil
+    }
+}
+
+/// Optional exact-navigation capability for a customer-owned container.
+///
+/// The returned source must remain stable while the container is reconstructed
+/// as SwiftUI view values. Imported third-party containers should normally use
+/// the explicit `RUMNavigationHost(transitions:content:)` initializer instead
+/// of adding a retroactive conformance.
+@_spi(Experimental)
+@available(iOS 27.0, *)
+@MainActor
+public protocol RUMNavigationTransitionProviding {
+    var rumNavigationTransitions: RUMNavigationTransitions { get }
+}
+
+/// Scene-scoped semantic navigation state independent of any visual container.
+///
+/// Native, custom, and coordinator adapters feed accepted destinations into this
+/// engine. A SwiftUI host supplies only scene attachment and lifetime. Keeping
+/// those roles separate lets an opaque customer container retain automatic view
+/// tracking without inventing semantic transitions.
+@available(iOS 27.0, *)
+@MainActor
+internal final class RUMSwiftUISemanticNavigationEngine {
+    let occurrenceSource = RUMSwiftUINavigationOccurrenceSource()
+
+    private(set) var attachment: RUMViewTrackingState.Attachment = .detached
+
+    var sceneIdentifier: RUMSceneIdentifier? {
+        guard case .attached(let sceneIdentifier) = attachment else {
+            return nil
+        }
+        return sceneIdentifier
+    }
+
+    func reconcile(attachment: RUMViewTrackingState.Attachment) {
+        self.attachment = attachment
+    }
+
+    func acceptDestination(
+        occurrenceKey: RUMViewOccurrenceKey,
+        bindingGeneration: UInt64,
+        change: RUMSwiftUINavigationOccurrenceSource.DestinationChange
+    ) {
+        occurrenceSource.acceptDestination(
+            occurrenceKey: occurrenceKey,
+            bindingGeneration: bindingGeneration,
+            change: change
+        )
+    }
+
+    func reconcileCurrentDestination(
+        configuration: RUMViewTrackingState.Configuration,
+        viewsHandler: RUMViewsHandler?
+    ) {
+        occurrenceSource.reconcileCurrentDestination(
+            configuration: configuration,
+            viewsHandler: viewsHandler
+        )
+    }
+
+    func cancelNavigationOwnedOccurrences(viewsHandler: RUMViewsHandler?) {
+        occurrenceSource.cancelNavigationOwnedOccurrences(viewsHandler: viewsHandler)
+    }
+}
+
+@available(iOS 27.0, *)
+@MainActor
+internal final class RUMSemanticNavigationHostState {
+    private struct ActiveOccurrence {
+        let sourceGeneration: UInt64
+        let identity: String
+        let sceneIdentifier: RUMSceneIdentifier
+    }
+
+    let engine = RUMSwiftUISemanticNavigationEngine()
+    let suppressionState = RUMSwiftUIAutomaticViewSuppressionState()
+
+    private let hostID = UUID()
+    private(set) var selectedTransitions: RUMNavigationTransitions?
+    private var observationID: UUID?
+    private var latestSnapshot: RUMNavigationTransitions.Snapshot?
+    private var activeOccurrence: ActiveOccurrence?
+    private weak var viewsHandler: RUMViewsHandler?
+
+    func reconcile(
+        transitions: RUMNavigationTransitions?,
+        viewsHandler: RUMViewsHandler?
+    ) {
+        self.viewsHandler = viewsHandler
+
+        guard let transitions else {
+            return
+        }
+        guard selectedTransitions == nil else {
+            // Pin the first source for this host identity. A computed capability
+            // that creates a new source during every SwiftUI reconstruction must
+            // not replay or disconnect the current RUM occurrence.
+            activateLatestSnapshotIfPossible()
+            return
+        }
+
+        selectedTransitions = transitions
+        suppressionState.appear()
+        observationID = transitions.observe { [weak self] snapshot in
+            self?.receive(snapshot)
+        }
+    }
+
+    func reconcile(attachment: RUMViewTrackingState.Attachment) {
+        engine.reconcile(attachment: attachment)
+
+        guard case .attached(let sceneIdentifier?) = attachment else {
+            return
+        }
+        if
+            let activeOccurrence,
+            activeOccurrence.sceneIdentifier != sceneIdentifier {
+            viewsHandler?.notify_semanticDestinationDisappear(
+                identity: activeOccurrence.identity,
+                sceneIdentifier: activeOccurrence.sceneIdentifier
+            )
+            self.activeOccurrence = nil
+        }
+        activateLatestSnapshotIfPossible()
+    }
+
+    func finalDetach() {
+        if let activeOccurrence {
+            viewsHandler?.notify_semanticDestinationDisappear(
+                identity: activeOccurrence.identity,
+                sceneIdentifier: activeOccurrence.sceneIdentifier
+            )
+        }
+        activeOccurrence = nil
+        suppressionState.disappear()
+        if let observationID {
+            selectedTransitions?.removeObserver(observationID)
+        }
+        observationID = nil
+        selectedTransitions = nil
+        latestSnapshot = nil
+    }
+
+    private func receive(_ snapshot: RUMNavigationTransitions.Snapshot) {
+        latestSnapshot = snapshot
+        activateLatestSnapshotIfPossible()
+    }
+
+    private func activateLatestSnapshotIfPossible() {
+        guard
+            let latestSnapshot,
+            let sceneIdentifier = engine.sceneIdentifier,
+            let viewsHandler
+        else {
+            return
+        }
+        guard activeOccurrence?.sourceGeneration != latestSnapshot.generation else {
+            return
+        }
+
+        let identity = "rum-navigation-host-\(hostID.uuidString)-\(latestSnapshot.generation)"
+        let destination = latestSnapshot.destination
+        if let activeOccurrence {
+            viewsHandler.notify_semanticDestinationReplace(
+                identity: activeOccurrence.identity,
+                sceneIdentifier: activeOccurrence.sceneIdentifier,
+                replacementIdentity: identity,
+                replacementName: destination.name,
+                replacementPath: destination.path ?? destination.name,
+                replacementAttributes: destination.attributes,
+                replacementSceneIdentifier: sceneIdentifier
+            )
+        } else {
+            viewsHandler.notify_semanticDestinationAppear(
+                identity: identity,
+                name: destination.name,
+                path: destination.path ?? destination.name,
+                attributes: destination.attributes,
+                sceneIdentifier: sceneIdentifier
+            )
+        }
+        activeOccurrence = ActiveOccurrence(
+            sourceGeneration: latestSnapshot.generation,
+            identity: identity,
+            sceneIdentifier: sceneIdentifier
+        )
+    }
+}
+
 @available(iOS 27.0, *)
 @MainActor
 internal final class RUMSwiftUISemanticNavigationState<
@@ -4834,7 +5103,19 @@ internal final class RUMSwiftUISemanticNavigationState<
     private var dismissedSheet: Presentation?
     private var dismissedFullScreenCover: Presentation?
 
-    let occurrenceSource = RUMSwiftUINavigationOccurrenceSource()
+    let engine: RUMSwiftUISemanticNavigationEngine
+
+    var occurrenceSource: RUMSwiftUINavigationOccurrenceSource {
+        engine.occurrenceSource
+    }
+
+    init() {
+        self.engine = RUMSwiftUISemanticNavigationEngine()
+    }
+
+    init(engine: RUMSwiftUISemanticNavigationEngine) {
+        self.engine = engine
+    }
 
     var rootOccurrence: Occurrence {
         Occurrence(
@@ -4915,7 +5196,7 @@ internal final class RUMSwiftUISemanticNavigationState<
                 bindingGeneration &+= 1
             }
             let occurrence = path.last.map(occurrence(for:)) ?? rootOccurrence
-            occurrenceSource.acceptDestination(
+            engine.acceptDestination(
                 occurrenceKey: occurrence.key,
                 bindingGeneration: occurrence.generation,
                 change: .initial(requiresBootstrap: !path.isEmpty)
@@ -4924,7 +5205,7 @@ internal final class RUMSwiftUISemanticNavigationState<
         }
         guard previousPath != path else {
             let occurrence = path.last.map(occurrence(for:)) ?? rootOccurrence
-            occurrenceSource.acceptDestination(
+            engine.acceptDestination(
                 occurrenceKey: occurrence.key,
                 bindingGeneration: occurrence.generation,
                 change: .unchanged
@@ -4937,7 +5218,7 @@ internal final class RUMSwiftUISemanticNavigationState<
         let occurrence = path.last.map(occurrence(for:)) ?? rootOccurrence
         let revealsRetainedDestination = path.count < previousPath.count
             && Array(previousPath.prefix(path.count)) == path
-        occurrenceSource.acceptDestination(
+        engine.acceptDestination(
             occurrenceKey: occurrence.key,
             bindingGeneration: occurrence.generation,
             change: revealsRetainedDestination ? .retainedReveal : .replacement
@@ -4965,7 +5246,7 @@ internal final class RUMSwiftUISemanticNavigationState<
         }
         let path = rumView.path
             ?? "\(rumView.name)/\(String(describing: fallbackType).hashValue)"
-        occurrenceSource.reconcileCurrentDestination(
+        engine.reconcileCurrentDestination(
             configuration: RUMViewTrackingState.Configuration(
                 occurrenceKey: currentOccurrence.key,
                 bindingGeneration: currentOccurrence.generation,
@@ -5328,30 +5609,154 @@ internal final class RUMSemanticNavigationContainerLifetimeState {
 /// SwiftUI's transient representable detach/reattach cycles.
 @available(iOS 27.0, *)
 @MainActor
-private struct RUMSemanticNavigationContainerLifetimeModifier<
-    Route: Hashable,
-    Presentation: Identifiable
->: SwiftUI.ViewModifier {
-    let occurrenceSource: RUMSwiftUINavigationOccurrenceSource
-    let navigationState: RUMSwiftUISemanticNavigationState<Route, Presentation>
+private struct RUMSemanticNavigationHostLifetimeModifier: SwiftUI.ViewModifier {
+    let engine: RUMSwiftUISemanticNavigationEngine
     let viewsHandler: RUMViewsHandler?
+    let authorityRegistry: RUMSwiftUIViewAuthorityRegistry?
+    let suppressionState: RUMSwiftUIAutomaticViewSuppressionState?
+    let onAttachment: (RUMViewTrackingState.Attachment) -> Void
+    let onFinalDetach: () -> Void
 
+    @Environment(\.rumSceneIdentifier)
+    private var sceneIdentifier
     @State private var lifetimeState = RUMSemanticNavigationContainerLifetimeState()
 
+    init(
+        engine: RUMSwiftUISemanticNavigationEngine,
+        viewsHandler: RUMViewsHandler?,
+        authorityRegistry: RUMSwiftUIViewAuthorityRegistry? = nil,
+        suppressionState: RUMSwiftUIAutomaticViewSuppressionState? = nil,
+        onAttachment: @escaping (RUMViewTrackingState.Attachment) -> Void = { _ in },
+        onFinalDetach: @escaping () -> Void
+    ) {
+        self.engine = engine
+        self.viewsHandler = viewsHandler
+        self.authorityRegistry = authorityRegistry
+        self.suppressionState = suppressionState
+        self.onAttachment = onAttachment
+        self.onFinalDetach = onFinalDetach
+    }
+
     func body(content: Content) -> some SwiftUI.View {
-        content.background(
+        reconcileInitialSceneAttachment()
+        return content.background(
             RUMSceneIdentifierReader(
                 applicationSupportsMultipleScenes: true,
-                onChange: { attachment in
-                    lifetimeState.reconcile(attachment: attachment) {
-                        occurrenceSource.cancelNavigationOwnedOccurrences(
-                            viewsHandler: viewsHandler
-                        )
-                        navigationState.cancelPresentations(viewsHandler: viewsHandler)
+                initialSceneIdentifier: initialSceneIdentifier,
+                onCreate: { observer in
+                    guard let suppressionState else {
+                        return
                     }
+                    authorityRegistry?.register(
+                        observer: observer,
+                        suppressionState: suppressionState
+                    )
+                },
+                onInitialMount: reconcile(sceneIdentifier:),
+                onMount: reconcile(sceneIdentifier:),
+                onChange: { attachment in
+                    reconcile(attachment: attachment)
                 }
             )
         )
+    }
+
+    /// The scene trait is available while SwiftUI evaluates the host, before
+    /// descendant `onAppear` and task callbacks. Reconcile here so a source
+    /// with an initial destination can establish its first RUM occurrence
+    /// before customer lifecycle work is emitted.
+    private func reconcileInitialSceneAttachment() {
+        guard let initialSceneIdentifier else {
+            return
+        }
+        reconcile(attachment: .attached(initialSceneIdentifier))
+    }
+
+    private var initialSceneIdentifier: RUMSceneIdentifier? {
+        sceneIdentifier.map { RUMSceneIdentifier(rawValue: $0) }
+    }
+
+    private func reconcile(sceneIdentifier: RUMSceneIdentifier) {
+        reconcile(attachment: .attached(sceneIdentifier))
+    }
+
+    private func reconcile(attachment: RUMViewTrackingState.Attachment) {
+        engine.reconcile(attachment: attachment)
+        onAttachment(attachment)
+        lifetimeState.reconcile(attachment: attachment) {
+            engine.cancelNavigationOwnedOccurrences(viewsHandler: viewsHandler)
+            onFinalDetach()
+        }
+    }
+}
+
+/// An experimental instrumentation host for customer-owned navigation content.
+///
+/// The host attaches a scene-scoped semantic engine without replacing the
+/// customer's visual navigation container. Opaque content continues through
+/// ordinary automatic view tracking until an exact transition source is
+/// supplied by a future experimental overload.
+@_spi(Experimental)
+@available(iOS 27.0, *)
+@MainActor
+public struct RUMNavigationHost<Content: SwiftUI.View>: SwiftUI.View {
+    private let core: DatadogCoreProtocol
+    private let explicitTransitions: RUMNavigationTransitions?
+    private let content: Content
+
+    @State private var hostState = RUMSemanticNavigationHostState()
+
+    public init(
+        in core: DatadogCoreProtocol = CoreRegistry.default,
+        @ViewBuilder content: () -> Content
+    ) {
+        self.core = core
+        self.explicitTransitions = nil
+        self.content = content()
+    }
+
+    public init(
+        transitions: RUMNavigationTransitions,
+        in core: DatadogCoreProtocol = CoreRegistry.default,
+        @ViewBuilder content: () -> Content
+    ) {
+        self.core = core
+        self.explicitTransitions = transitions
+        self.content = content()
+    }
+
+    public var body: some SwiftUI.View {
+        let instrumentation = core.get(feature: RUMFeature.self)?.instrumentation
+        hostState.reconcile(
+            transitions: Self.resolveTransitions(
+                explicit: explicitTransitions,
+                content: content
+            ),
+            viewsHandler: instrumentation?.viewsHandler
+        )
+        return content.modifier(
+            RUMSemanticNavigationHostLifetimeModifier(
+                engine: hostState.engine,
+                viewsHandler: instrumentation?.viewsHandler,
+                authorityRegistry: instrumentation?.swiftUIViewAuthorityRegistry,
+                suppressionState: hostState.suppressionState,
+                onAttachment: { attachment in
+                    hostState.reconcile(attachment: attachment)
+                },
+                onFinalDetach: {
+                    hostState.finalDetach()
+                }
+            )
+        )
+    }
+
+    internal static func resolveTransitions(
+        explicit: RUMNavigationTransitions?,
+        content: Content
+    ) -> RUMNavigationTransitions? {
+        explicit
+            ?? (content as? any RUMNavigationTransitionProviding)?
+                .rumNavigationTransitions
     }
 }
 
@@ -5448,10 +5853,14 @@ public struct RUMNavigationStack<
             semanticPresentation(item, instrumentation: instrumentation)
         }
         .modifier(
-            RUMSemanticNavigationContainerLifetimeModifier(
-                occurrenceSource: navigationState.occurrenceSource,
-                navigationState: navigationState,
-                viewsHandler: instrumentation?.viewsHandler
+            RUMSemanticNavigationHostLifetimeModifier(
+                engine: navigationState.engine,
+                viewsHandler: instrumentation?.viewsHandler,
+                onFinalDetach: {
+                    navigationState.cancelPresentations(
+                        viewsHandler: instrumentation?.viewsHandler
+                    )
+                }
             )
         )
     }

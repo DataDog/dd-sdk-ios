@@ -1213,11 +1213,11 @@ extension RUMViewsHandler: RUMSceneTargetedManualViewHandling {
 }
 
 extension RUMViewsHandler {
-    /// Starts a router-owned SwiftUI presentation as manual authority so
-    /// automatic navigation can continue underneath it without becoming the
-    /// scene's current RUM destination.
+    /// Starts an exact router- or coordinator-owned destination as manual
+    /// authority for its container. Automatic discoveries in that subtree may
+    /// continue underneath without becoming the scene's current destination.
     @MainActor
-    func notify_semanticPresentationAppear(
+    func notify_semanticDestinationAppear(
         identity: String,
         name: String,
         path: String,
@@ -1237,11 +1237,8 @@ extension RUMViewsHandler {
         )
     }
 
-    /// Stops only the matching router-owned presentation. The manual stack
-    /// reveals its latest committed underlying destination as a fresh
-    /// occurrence before the application receives the dismissal binding write.
     @MainActor
-    func notify_semanticPresentationDisappear(
+    func notify_semanticDestinationDisappear(
         identity: String,
         sceneIdentifier: RUMSceneIdentifier
     ) {
@@ -1252,11 +1249,10 @@ extension RUMViewsHandler {
         )
     }
 
-    /// Replaces one mounted router-owned presentation with another without
-    /// revealing the destination staged below manual authority in the same
-    /// scene. A cross-scene move still reveals the old scene independently.
+    /// Replaces one exact destination without revealing an automatic or manual
+    /// entry below it between the two committed occurrences.
     @MainActor
-    func notify_semanticPresentationReplace(
+    func notify_semanticDestinationReplace(
         identity: String,
         sceneIdentifier: RUMSceneIdentifier,
         replacementIdentity: String,
@@ -1286,6 +1282,64 @@ extension RUMViewsHandler {
             stopAttributes: [:]
         )
         add(view: replacement)
+    }
+
+    /// Starts a router-owned SwiftUI presentation as manual authority so
+    /// automatic navigation can continue underneath it without becoming the
+    /// scene's current RUM destination.
+    @MainActor
+    func notify_semanticPresentationAppear(
+        identity: String,
+        name: String,
+        path: String,
+        attributes: [AttributeKey: AttributeValue],
+        sceneIdentifier: RUMSceneIdentifier
+    ) {
+        notify_semanticDestinationAppear(
+            identity: identity,
+            name: name,
+            path: path,
+            attributes: attributes,
+            sceneIdentifier: sceneIdentifier
+        )
+    }
+
+    /// Stops only the matching router-owned presentation. The manual stack
+    /// reveals its latest committed underlying destination as a fresh
+    /// occurrence before the application receives the dismissal binding write.
+    @MainActor
+    func notify_semanticPresentationDisappear(
+        identity: String,
+        sceneIdentifier: RUMSceneIdentifier
+    ) {
+        notify_semanticDestinationDisappear(
+            identity: identity,
+            sceneIdentifier: sceneIdentifier
+        )
+    }
+
+    /// Replaces one mounted router-owned presentation with another without
+    /// revealing the destination staged below manual authority in the same
+    /// scene. A cross-scene move still reveals the old scene independently.
+    @MainActor
+    func notify_semanticPresentationReplace(
+        identity: String,
+        sceneIdentifier: RUMSceneIdentifier,
+        replacementIdentity: String,
+        replacementName: String,
+        replacementPath: String,
+        replacementAttributes: [AttributeKey: AttributeValue],
+        replacementSceneIdentifier: RUMSceneIdentifier
+    ) {
+        notify_semanticDestinationReplace(
+            identity: identity,
+            sceneIdentifier: sceneIdentifier,
+            replacementIdentity: replacementIdentity,
+            replacementName: replacementName,
+            replacementPath: replacementPath,
+            replacementAttributes: replacementAttributes,
+            replacementSceneIdentifier: replacementSceneIdentifier
+        )
     }
 }
 #endif
