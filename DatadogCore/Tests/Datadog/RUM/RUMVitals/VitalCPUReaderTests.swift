@@ -9,11 +9,7 @@ import DatadogInternal
 @testable import DatadogRUM
 
 class VitalCPUReaderTest: XCTestCase {
-    #if os(macOS)
-    let testNotificationCenterProvider = NotificationCenterProvider(applicationCenter: NotificationCenter(), workspaceCenter: NotificationCenter())
-    #else
-    let testNotificationCenterProvider = NotificationCenterProvider(applicationCenter: NotificationCenter())
-    #endif
+    let testNotificationCenterProvider = NotificationCenterProvider.makeTestProvider()
     lazy var cpuReader = VitalCPUReader(notificationCenterProvider: testNotificationCenterProvider)
 
     func testWhenCPUUnderHeavyLoadItMeasuresHigherCPUTicks() throws {

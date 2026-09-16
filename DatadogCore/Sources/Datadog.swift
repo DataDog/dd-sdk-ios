@@ -439,7 +439,7 @@ extension DatadogCore {
                 site: configuration.site,
                 directory: persistentDirectory.coreDirectory,
                 httpClient: httpClient,
-                notificationCenter: configuration.notificationCenter,
+                notificationCenterProvider: configuration.notificationCenterProvider,
                 customURL: remoteConfiguration.customURL,
                 dateProvider: configuration.dateProvider
             )
