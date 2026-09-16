@@ -15,13 +15,13 @@ Last updated: 2026-09-16
 
 ## Current checkpoint
 
-- Latest runtime experiment is `EXP-154`. Two real native `WindowGroup` scene
-  sessions independently mount the accepted Observation adapter and complete
-  serial H1 → D1 → fresh H2 chains. The corrected frozen run passes 25/25;
-  backend intake contains launch plus six distinct semantic views, six exact
-  action/Resource marker pairs, and zero errors/crashes. This closes serial
-  two-native-scene parity without claiming simultaneous visibility, interleaved
-  use, focus handoff, or genuine scene disconnect.
+- Latest runtime experiment is `EXP-155`. The bounded Operation
+  `.current(in:)` SPI passes 24/24 after correcting a stale harness boundary.
+  Backend intake contains eight raw Operation steps and four reduced Operations:
+  cross-scene success and failure use A→B, parallel alpha uses A→A, and parallel
+  beta uses B→B and completes before alpha. This accepts explicit per-step scene
+  targeting without approving the public API or closing inferred concurrent
+  call-site context on hardware.
 - Latest accepted SDK implementation/test checkpoint: `24cf5078a`
   (`Add observable semantic navigation adapters`). Latest migration fixture,
   harness, and probe-test checkpoint: `7da52ae6d`
@@ -30,7 +30,9 @@ Last updated: 2026-09-16
   signed `EXP-153` harness checkpoint is `d6d813736`
   (`Exercise callback-driven semantic navigation`). The signed `EXP-154`
   scenario checkpoint is `7fd6a891a`; its accepted readiness correction is
-  `f92d72909`. Earlier
+  `f92d72909`. The signed Operation implementation, scenario, and accepted
+  harness correction are `b0524bb5b`, `3e567a494`, and `eb1dd2fdc`.
+  Earlier
   semantic engine checkpoints remain `a84061840`, `354422d88`, `651b173c6`,
   and `47bc08eca`; the detailed ledger preserves the preceding native,
   restoration, presentation, and sibling commits.
@@ -56,7 +58,10 @@ Last updated: 2026-09-16
   long task, one session, one vital, and no error or crash bucket. The EXP-154
   run then passes 25/25; backend intake contains seven views, six
   actions, six Resources, five long tasks, one session, one vital, and no error
-  or crash bucket. The complete
+  or crash bucket. EXP-155 adds a 3/3 focused pass, a 163/163 complete probe,
+  clean lint, and a 24/24 runtime/backend pass with two scene-local Home views,
+  eight raw steps, four correctly reduced Operations, and no error or crash.
+  The complete
   DatadogRUM run passed 1,262/1,263; its sole unrelated timeseries timing failure
   passed immediately in isolation.
 
@@ -94,9 +99,11 @@ third-party parity through one custom-container boundary and the existing
 publisher host, with a 42/42 local/backend run and one stable registration.
 `EXP-154` closes serial two-native-scene Observation parity at 25/25 and exact
 backend ownership after one deterministic duplicated-readiness harness failure.
-Next prototype the bounded Operation `.current(in:)` target and prepare the
-navigation shape for API review. Interactive dismissal/cancellation, true
-concurrent topology, and genuine OS disconnect remain hardware rows. The
+`EXP-155` then accepts the bounded Operation `.current(in:)` engine proof at
+24/24 with exact raw and reduced backend ownership after three invalid harness
+attempts. Next execute the physical concurrent-window queue and prepare the
+navigation and Operation shapes for API review. Interactive
+dismissal/cancellation and genuine OS disconnect remain hardware rows. The
 ordered acceptance contract is in
 [PLAN.md](PLAN.md).
 
@@ -258,6 +265,7 @@ ordered acceptance contract is in
 | EXP-152 | 2026-09-16 | PASS · tests + mapper + backend | SwiftUI integration/timing | Harness-only characterization over the accepted Observation adapter waits for real Sheet/Cover content appearance, then records SwiftUI's actual `onDismiss` callbacks. Frozen run `exp152-native-dismiss-callbacks-20260916T094300Z` passes 38/38; each callback fires once after accepted Home state, creates no extra Home, and its immediate/settled action and Resource pairs own fresh H3/H4. Backend session `fee27d61-1eb7-4eb6-8525-7af74a53ed7e` has eight views, 11 actions, 11 Resources, and zero errors/crashes. This closes native callback characterization without replacing the stronger synchronous mutation oracle; interactive gesture dismissal remains a physical/human row. | [active record](Experiments/EXP-143-199.md#exp-152--native-swiftui-dismissal-callback-characterization) |
 | EXP-153 | 2026-09-16 | PASS · tests + mapper + backend | SwiftUI integration/third-party adapters | A true custom visual container exposes synchronous accepted snapshots to one dedicated adapter, which bridges into the existing SDK-owned publisher host. No screen or navigation method changes, retroactive conformance, or new SDK API are required. Focused tests pass 7/7, the probe passes 161/161, lint and Release pass, and frozen run `exp153-third-party-callback-20260916T103122Z` passes 42/42 plus `registrations=1 active=1`. Backend session `f2d2fb24-02d6-4bd9-9df9-ee353b899e69` has eight views, 13 actions, 13 Resources, exact H1/D1/H2/Sheet/H3/Cover/H4 ownership, and zero errors/crashes. Opaque state remains fallback-only; two-native-scene runtime parity is next. | [active record](Experiments/EXP-143-199.md#exp-153--callback-driven-third-party-navigation-adapter) |
 | EXP-154 | 2026-09-16 | PASS after HARNESS FAIL · tests + mapper + backend | SwiftUI integration/multi-scene | Two real native scenes independently mount per-window Observation routers and each complete H1 → D1 → fresh H2. Attempt 1 rejected a redundant readiness wait after `open-window` had already consumed B's signal; the app and partial attribution remained healthy. Corrected frozen run `exp154-observation-two-scenes-serial-fix-20260916T111921Z` passes 25/25. Backend session `a6a5afd5-8089-4996-9805-ed62fb76927d` has seven views, six actions, six Resources, exact A/B marker ownership, and zero errors/crashes. This closes serial native-scene parity, not simultaneous visibility or lifecycle acceptance. | [active record](Experiments/EXP-143-199.md#exp-154--serial-two-native-scene-observation-parity) |
+| EXP-155 | 2026-09-16 | PASS after three INVALID attempts · tests + mapper + backend | Operations/API prototype | The iOS 27 `.current(in:)` SPI keeps explicit and inferred targets separate and resolves every Operation step independently. Corrected run `exp155-operation-explicit-target-serial-manual-boundaries-20260916T124918Z` passes 24/24. Backend session `bcb168fd-b5df-42ed-b416-b505a42e6e76` has eight raw steps and four reduced Operations with exact A→B success/failure, A→A alpha, B→B beta, and beta-before-alpha completion. The API shape remains experimental. | [active record](Experiments/EXP-143-199.md#exp-155--explicit-cross-scene-operation-targeting) |
 
 ## Simulator-inconclusive and hardware-required evidence
 

@@ -478,6 +478,13 @@ whose router is intentionally initialized with a non-empty path, such as
 `EXP-143`, is semantic-container bootstrap and still uses the clean-run
 precondition.
 
+A clean uninstall and missing container can still leave simulator window-server
+identity outside the app container. If a scenario requiring initial logical scene
+A instead restores only B, the attempt is `INVALID`: do not reinterpret B as A or
+attribute the missing readiness signal to the SDK. Use a fresh simulator target
+or an explicit, proven window cleanup and a new run ID. EXP-155 attempt 1 records
+this boundary.
+
 ## Device-interaction workflow
 
 Device-interaction sessions can expire quickly. Complete all code review, skill
@@ -522,6 +529,13 @@ A signal-driven scenario that needs no external touch does not require a
 3. read filtered console output until the terminal result or bounded timeout;
 4. capture hierarchy/screenshot only when visual state is evidence for the row;
 5. end the interaction session.
+
+Do not issue `DeviceInteractionSynthesize` before the terminal result merely to
+inspect a fully automated run. Its accessibility capture can time out and block
+the scenario or its console evidence. Capture after terminal when useful. If an
+early capture already occurred, repeat once without it before blaming the
+harness or SDK; EXP-155 attempts 2 and 3 used that comparison to isolate a stale
+view-boundary harness independently of the capture failure.
 
 Follow the live Xcode MCP instruction about delegating device interaction even
 for an automated run. The delegate owns only device state and artifacts; source

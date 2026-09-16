@@ -5,7 +5,7 @@ duplicate-start behavior, the proposed public targeting API, customer guidance,
 or Operations tests. This is the authoritative home for the Operations contract;
 the [canonical overview](../MULTI_SCENE_SUPPORT.md) carries only its summary.
 
-Last updated: 2026-09-15
+Last updated: 2026-09-16
 
 ## RUM Operations contract and API review proposal
 
@@ -26,14 +26,14 @@ The implemented internal contract is:
    open until its four-hour timeout.
 
 The internal routing and warning changes are implemented, and the scene-targeted
-manual-view prerequisite now passes through customer-shaped Swift calls in
-`EXP-137` through `EXP-140`. Nothing technical blocks the Operation escape-hatch
-prototype. It should now be implemented and exercised as an iOS 27
-experimental/SPI surface. This validates its Swift and Objective-C call sites,
-protocol-conformance fallback, and runtime usefulness before normal API review.
-It must not be promoted to the supported public API surface until that review
-approves the exact names and contracts. A value-type proposal that does not
-expose internal RUM UUIDs is:
+manual-view prerequisite passes through customer-shaped Swift calls in `EXP-137`
+through `EXP-140`. `EXP-155` now implements and accepts the first bounded
+Operation escape hatch as an iOS 27 experimental/SPI surface. Its Swift and
+Objective-C call sites, custom-conformer/NOP fallback, explicit-over-inferred
+precedence, unresolved-target fallback, and cross-scene runtime usefulness pass.
+It must not be promoted to the supported public API surface until normal review
+approves the exact names and contracts. The longer-term value-type proposal,
+which never exposes internal RUM UUIDs, remains:
 
 ```swift
 public struct RUMOperationViewTarget {
@@ -95,18 +95,15 @@ the exact-view forms requires an internal logical target keyed by `ViewIdentifie
 plus a scene where the identity is not globally unique, never a public RUM UUID.
 
 To avoid making a new requirement on every external `RUMMonitorProtocol`
-conformer, the experimental prototype should use extension-only overloads backed
-by a private targeting capability, with the existing inferred method called
-exactly once for custom conformers and the NOP monitor. The Objective-C surface
-needs a
-`DDRUMOperationViewTarget` companion with `inferred`, `currentInScene:`,
-`trackedViewWithKey:inScene:`, and `trackedViewController:` factories. Use the
-same availability decision as the scene-targeted manual-view prerequisite in
-[NAVIGATION_API.md](NAVIGATION_API.md). `UIWindowScene` predates the SDK's iOS 15
-minimum, but the validated coexistence contract currently targets declared
-multi-scene applications on iOS 27. API review must choose whether to expose the
-overloads broadly with legacy-compatible behavior or annotate them for iOS 27;
-the Operations proposal must not decide that independently.
+conformer, the experimental prototype uses extension-only overloads backed by a
+private targeting capability. A custom conformer or NOP monitor calls the
+existing inferred method exactly once. The first Objective-C companion likewise
+exposes only `currentInScene:` in Debug builds. `inferred`,
+`trackedViewWithKey:inScene:`, and `trackedViewController:` remain API-review
+options rather than implemented claims. The SPI uses the same iOS 27 availability
+boundary as the scene-targeted manual-view prerequisite in
+[NAVIGATION_API.md](NAVIGATION_API.md). Stable review must choose whether to keep
+that boundary or expose broader legacy-compatible behavior.
 
 The scene-targeted manual prerequisite is now implemented as an iOS 27 Swift SPI
 with Debug-only Objective-C companions. `EXP-137` through `EXP-140` replace the
@@ -163,25 +160,46 @@ shared A/B view identity, wrong-scene B ownership, a B completion on A, and A
 owner drift after B completes. It deliberately makes no live or backend claim;
 the unchanged scenario is queued for iPhone Duo or a physical multi-window iPad.
 
+`EXP-155` closes the explicit-target discriminator without requiring simultaneous
+visibility. Its corrected serial two-native-scene run deliberately makes the
+opposite scene the process representative around every call while passing an
+explicit `.current(in:)` target. The 24/24 local oracle and backend session
+`bcb168fd-b5df-42ed-b416-b505a42e6e76` contain two distinct Home owners, exactly
+eight raw `operation_step` vitals, and exactly four reduced Operations:
+
+- cross-success A→B;
+- cross-failure A→B with failure reason `error`;
+- parallel-alpha A→A;
+- parallel-beta B→B, whose end precedes alpha's end.
+
+Three preceding attempts remain documented as invalid: one restored the wrong
+logical scene despite a clean container, one was confounded by an accessibility
+capture timeout, and a capture-free retry proved the stale occurrence-source
+harness never seeded Home. The signed correction `eb1dd2fdc` uses explicit
+per-scene Home boundaries because this experiment targets Operation routing, not
+navigation. This is accepted engine and call-site evidence, not stable API
+approval and not a substitute for `EXP-131`'s inferred concurrent-call-site row.
+
 Required test coverage is tracked explicitly:
 
 | Required case | Current coverage | Status |
 | --- | --- | --- |
-| Start in A, succeed in B | Manager/session-scope assertions plus the exact `EXP-131` hostless driver and ownership oracle | Focused/hostless pass; live backend pending |
-| Start in A, fail in B | Manager failure assertions plus the exact `EXP-131` hostless driver and ownership oracle | Focused/hostless pass; live backend pending |
+| Start in A, succeed in B | Manager/session-scope assertions, `EXP-131` hostless driver, and explicit-target `EXP-155` raw/reduced backend proof | Explicit-target live backend pass; inferred hardware row pending |
+| Start in A, fail in B | Manager failure assertions, `EXP-131` hostless driver, and explicit-target `EXP-155` raw/reduced backend proof | Explicit-target live backend pass; inferred hardware row pending |
 | Start in A1, navigate in A, end in A2 | Manager/session-scope assertions plus `EXP-130` success and failure backend documents | Focused and live backend pass |
-| Parallel A/B, same name, different keys | Manager identity/view sequence plus `EXP-131` `parallel-alpha`/`parallel-beta` driver | Focused/hostless pass; live backend pending |
-| Reverse-order completion | Manager sequence plus `EXP-131` B-before-A driver order | Focused/hostless pass; live backend pending |
-| Explicit target overrides wrong representative | Session-scope internal scene-target regression | Internal pass; customer-shaped Operation SPI is the next local slice |
+| Parallel A/B, same name, different keys | Manager identity/view sequence plus `EXP-131` and explicit-target `EXP-155` alpha/beta drivers | Explicit-target live backend pass; inferred hardware row pending |
+| Reverse-order completion | Manager sequence plus `EXP-155` raw beta-before-alpha completion | Focused and explicit-target live backend pass |
+| Explicit target overrides wrong representative | Session-scope regression plus every customer-shaped `EXP-155` call opposing the representative | Focused and live backend pass |
 | Trustworthy inferred B overrides stored A | Manager scene-B step regression, including update/retry snapshot refresh | Focused pass |
 | Closed origin with no new context uses snapshot | Manager vital/message retained-view assertions plus backend teardown run | Focused and backend pass |
-| Closed origin then explicit B completion uses B | Manager exact-view assertion | Internal pass; customer-shaped Operation SPI is the next local slice |
+| Closed origin then explicit B completion uses B | Manager exact-view assertion | Internal pass; public-shaped close/re-target runtime remains a later target-form row |
 | Duplicate identity has corrected warning and no synthetic end | Manager warning plus exact `[start, start, end]` step sequence, with both a reused key and omitted key; `EXP-130` raw/reduced backend proof | Focused and live backend pass; earlier raw start is orphaned as specified |
 | Existing single-scene and source-less behavior | Representative-change and legacy no-view regressions | Focused pass; current full 1,177-test RUM suite passes |
 
-API review must settle the public Operation target type/name and exact
-Swift/Objective-C signatures. That review blocks stable exposure, not the SPI
-experiment. The requested
+API review must settle the public Operation target type/name, availability, and
+exact Swift/Objective-C signatures. It must also decide whether and how to add
+manual-key/controller forms. That review blocks stable exposure, not the now-
+accepted `.current(in:)` SPI experiment. The requested
 application-wide identity means that scenes do not
 namespace an Operation; it does not add a new cross-session persistence contract.
 The manager and its retained view snapshot remain session-local, while duplicate
