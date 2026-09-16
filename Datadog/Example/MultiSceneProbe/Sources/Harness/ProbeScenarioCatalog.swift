@@ -1165,7 +1165,6 @@ enum ProbeScenarioCatalog {
                 value: "observation-a-home-2"
             ),
             ProbeStep(.openWindow, scene: "scene-A", value: "scene-B"),
-            ProbeStep(.waitForSceneReady, scene: "scene-B"),
             ProbeStep(
                 .waitForSignal,
                 scene: "scene-B",

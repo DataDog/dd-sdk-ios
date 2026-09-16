@@ -795,6 +795,11 @@ final class ProbeScenarioRunnerTests: XCTestCase {
             ["scene-A:scene-B"]
         )
         XCTAssertEqual(
+            scenario.steps.filter { $0.kind == .waitForSceneReady }
+                .compactMap(\.scene),
+            ["scene-A"]
+        )
+        XCTAssertEqual(
             scenario.steps.filter { $0.kind == .setSwiftUIPath }.map {
                 "\($0.scene ?? ""):\($0.value ?? "")"
             },
