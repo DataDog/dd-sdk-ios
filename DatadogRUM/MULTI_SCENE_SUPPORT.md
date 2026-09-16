@@ -607,7 +607,9 @@ mapping remain preserved in the experiment ledger. The
 chronological checkpoint table in
 [EXPERIMENTS.md](MultiSceneSupport/EXPERIMENTS.md) is authoritative.
 
-Resume after accepted `EXP-158`. EXP-149 closes the deterministic lifetime/scene
+Resume after accepted `EXP-158` at signed implementation, probe, and
+documentation checkpoint `c2d1f1f9a` (`Target one-shot actions to a window
+scene`). EXP-149 closes the deterministic lifetime/scene
 matrix for the `EXP-148` SDK-owned implementation. `EXP-148` moves the `EXP-147`
 existing-router policy into the SDK-owned iOS 27 prototype while preserving zero
 screen edits, zero

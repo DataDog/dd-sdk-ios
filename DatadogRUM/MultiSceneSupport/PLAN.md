@@ -419,8 +419,9 @@ Operation result remains 24/24 with eight exact raw steps and four exact reduced
 Operations. The corrected EXP-154 Observation result remains
 25/25 with exact backend ownership. The affected SwiftUI file passes 193/193.
 Xcode 27 iOS Release and visionOS package builds pass
-at their relevant checkpoints. Signed SDK implementation/test checkpoint:
-`24cf5078a`; signed migration fixture/probe checkpoint: `7da52ae6d`; signed
+at their relevant checkpoints. Signed EXP-158 implementation, probe, and
+documentation checkpoint: `c2d1f1f9a`; earlier signed SDK semantic-navigation
+checkpoint: `24cf5078a`; signed migration fixture/probe checkpoint: `7da52ae6d`; signed
 EXP-152 harness checkpoint: `0a67f3e36`; signed EXP-153 harness checkpoint:
 `d6d813736`; signed EXP-154 scenario checkpoint: `7fd6a891a`; signed readiness
 correction: `f92d72909`; signed EXP-155 SDK, scenario, and harness checkpoints:

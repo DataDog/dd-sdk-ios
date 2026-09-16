@@ -40,7 +40,9 @@ Last updated: 2026-09-16
   `f67c75b2-e839-4701-a283-7e4355682b6a` confirms the same ownership across 30
   events. This accepts scene-targeted one-shot actions without approving stable
   API or changing source-less last-interacted behavior.
-- Latest accepted SDK implementation/test checkpoint: `24cf5078a`
+- Latest accepted SDK implementation, probe, and documentation checkpoint:
+  `c2d1f1f9a` (`Target one-shot actions to a window scene`). Earlier SDK
+  semantic-navigation checkpoint: `24cf5078a`
   (`Add observable semantic navigation adapters`). Latest migration fixture,
   harness, and probe-test checkpoint: `7da52ae6d`
   (`Expand semantic navigation probe coverage`). The signed `EXP-152` harness
