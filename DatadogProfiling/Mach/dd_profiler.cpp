@@ -282,7 +282,7 @@ public:
      * The swap runs in the aggregation worker's ordered stream, giving this
      * flush a deterministic profile boundary.
      *
-     * @return The harvested profile, or nullptr if no profile exists.
+     * @return The harvested profile, or nullptr if no profile exists or it has no samples.
      */
     profile* flush_and_get_profile() {
         if (!profiler) {
@@ -307,6 +307,11 @@ public:
             if (profile) {
                 profile->set_server_time_offset_ns(server_time_offset_ns);
             }
+        }
+
+        if (flushed_profile && flushed_profile->samples().empty()) {
+            delete flushed_profile;
+            return nullptr;
         }
 
         return flushed_profile;

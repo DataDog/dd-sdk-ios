@@ -87,8 +87,7 @@ final class ProfilingHandlerTests: XCTestCase {
 
     func testWriteWithNoVitals_doesNotAddVitalAttributesToEvent() throws {
         // Given
-        XCTAssertEqual(dd_profiler_start(), 1)
-        let profile = try XCTUnwrap(dd_profiler_flush_and_get_profile())
+        let profile = try startProfilerAndFlushSampledProfile()
 
         // When
         handler.write(profile: profile, operation: .appLaunch, rumVitals: [])
@@ -101,8 +100,7 @@ final class ProfilingHandlerTests: XCTestCase {
 
     func testWriteWithVitals_addsVitalIDsAndLabelsToEvent() throws {
         // Given
-        XCTAssertEqual(dd_profiler_start(), 1)
-        let profile = try XCTUnwrap(dd_profiler_flush_and_get_profile())
+        let profile = try startProfilerAndFlushSampledProfile()
         let vitals = [
             Vital.mockWith(id: "id1", name: "operation1"),
             Vital.mockWith(id: "id2", name: "operation2")
@@ -121,8 +119,7 @@ final class ProfilingHandlerTests: XCTestCase {
 
     func testWriteContextAttributes_flowThroughToEvent() throws {
         // Given
-        XCTAssertEqual(dd_profiler_start(), 1)
-        let profile = try XCTUnwrap(dd_profiler_flush_and_get_profile())
+        let profile = try startProfilerAndFlushSampledProfile()
         handler.attributes = ["session.id": "session1", "view.id": ["view1"]]
 
         // When
@@ -136,8 +133,7 @@ final class ProfilingHandlerTests: XCTestCase {
 
     func testWriteEvent_hasCorrectStaticFields_andTags() throws {
         // Given
-        XCTAssertEqual(dd_profiler_start(), 1)
-        let profile = try XCTUnwrap(dd_profiler_flush_and_get_profile())
+        let profile = try startProfilerAndFlushSampledProfile()
 
         // When
         handler.write(profile: profile, operation: .appLaunch, rumVitals: [])
@@ -159,8 +155,7 @@ final class ProfilingHandlerTests: XCTestCase {
 
     func testWriteProfileAttachments_containNonEmptyPprofData() throws {
         // Given
-        XCTAssertEqual(dd_profiler_start(), 1)
-        let profile = try XCTUnwrap(dd_profiler_flush_and_get_profile())
+        let profile = try startProfilerAndFlushSampledProfile()
 
         // When
         handler.write(profile: profile, operation: .appLaunch, rumVitals: [])
@@ -172,8 +167,7 @@ final class ProfilingHandlerTests: XCTestCase {
 
     func testWriteProfileAttachments_containRumEventsWithProvidedVitals() throws {
         // Given
-        XCTAssertEqual(dd_profiler_start(), 1)
-        let profile = try XCTUnwrap(dd_profiler_flush_and_get_profile())
+        let profile = try startProfilerAndFlushSampledProfile()
         let vitals = [
             Vital.mockWith(id: "id1", name: "operation1"),
             Vital.mockWith(id: "id2", name: "operation2")
@@ -194,8 +188,7 @@ final class ProfilingHandlerTests: XCTestCase {
 
     func testWriteProfileAttachments_encodeTypedRumEventsForAllSupportedTypes() throws {
         // Given
-        XCTAssertEqual(dd_profiler_start(), 1)
-        let profile = try XCTUnwrap(dd_profiler_flush_and_get_profile())
+        let profile = try startProfilerAndFlushSampledProfile()
         let vital = Vital.mockWith(id: "vital-id", name: "operation", duration: 60)
         let longTask = DurationEvent(id: "long-task-id", type: .longTask, start: 20, duration: 30)
         let hang = DurationEvent(id: "hang-id", type: .error, start: 40, duration: 50)
@@ -241,9 +234,7 @@ final class ProfilingHandlerTests: XCTestCase {
             serverTimeOffset: serverTimeOffset
         )
 
-        dd_profiler_start_testing(100, false, 5.seconds.dd.toInt64Nanoseconds, 0)
-        Thread.sleep(forTimeInterval: 0.05)
-        let profile = try XCTUnwrap(dd_profiler_flush_and_get_profile())
+        let profile = try startProfilerAndFlushSampledProfile()
         let originalStart = dd_pprof_get_start_timestamp_s(profile)
         let originalEnd = dd_pprof_get_end_timestamp_s(profile)
 
@@ -263,8 +254,7 @@ final class ProfilingHandlerTests: XCTestCase {
 
     func testWrite_capturesOperationBeforeEventWriteContextIsExecuted() throws {
         // Given
-        XCTAssertEqual(dd_profiler_start(), 1)
-        let profile = try XCTUnwrap(dd_profiler_flush_and_get_profile())
+        let profile = try startProfilerAndFlushSampledProfile()
         let featureScope = FeatureScopeMock(deferEventWriteContext: true)
         let telemetry = TelemetryMock()
         let handler = ProfilingHandlerMock(
@@ -293,6 +283,22 @@ final class ProfilingHandlerTests: XCTestCase {
     private func typedRUMEvents(from metadata: ProfileAttachments) throws -> [[String: Any]] {
         let rumEventsData = try XCTUnwrap(metadata.rumEvents)
         return try XCTUnwrap(JSONSerialization.jsonObject(with: rumEventsData) as? [[String: Any]])
+    }
+
+    private func startProfilerAndFlushSampledProfile() throws -> OpaquePointer {
+        XCTAssertEqual(dd_profiler_start(), 1)
+        dd_profiler_stop()
+
+        let trace = UnsafeMutablePointer<stack_trace_t>.allocate(capacity: 1)
+        trace.pointee = .mockWith(
+            tid: 1,
+            addresses: [0x100001000],
+            timestamp: DispatchTime.now().uptimeNanoseconds
+        )
+        dd_pprof_add_samples(dd_profiler_get_profile(), trace, 1)
+        dd_free(trace)
+
+        return try XCTUnwrap(dd_profiler_flush_and_get_profile())
     }
 }
 

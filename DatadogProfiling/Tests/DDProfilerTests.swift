@@ -7,6 +7,7 @@
 #if !os(watchOS)
 import XCTest
 import DatadogInternal
+import TestUtilities
 // swiftlint:disable duplicate_imports
 import DatadogMachProfiler
 import DatadogMachProfiler.Pprof
@@ -189,6 +190,16 @@ final class DDProfilerTests: XCTestCase {
         let sample = try XCTUnwrap(unpackedProfile.pointee.sample[0])
         XCTAssertEqual(sample.pointee.n_value, 2)
 
+        dd_profiler_stop()
+        let trace = UnsafeMutablePointer<stack_trace_t>.allocate(capacity: 1)
+        trace.pointee = .mockWith(
+            tid: 1,
+            addresses: [0x100001000],
+            timestamp: DispatchTime.now().uptimeNanoseconds
+        )
+        dd_pprof_add_samples(dd_profiler_get_profile(), trace, 1)
+        dd_free(trace)
+
         let nextProfile = try XCTUnwrap(dd_profiler_flush_and_get_profile())
         defer { dd_pprof_destroy(nextProfile) }
 
@@ -260,6 +271,31 @@ final class DDProfilerTests: XCTestCase {
         // Then
         XCTAssertNil(profile, "Flush should not create a profile when profiler was never started")
         XCTAssertNil(dd_profiler_get_profile(), "Profile should remain nil")
+    }
+
+    func testDDProfiler_flushProfile_whenProfileHasNoSamples_returnsNil() throws {
+        // Given - flush a known sample to rotate to a fresh profile, then stop sampling.
+        dd_profiler_start_testing(100, false, 5.seconds.dd.toInt64Nanoseconds, 0)
+        dd_profiler_stop()
+
+        let trace = UnsafeMutablePointer<stack_trace_t>.allocate(capacity: 1)
+        trace.pointee = .mockWith(
+            tid: 1,
+            addresses: [0x100001000],
+            timestamp: DispatchTime.now().uptimeNanoseconds
+        )
+        dd_pprof_add_samples(dd_profiler_get_profile(), trace, 1)
+        dd_free(trace)
+
+        let sampledProfile = try XCTUnwrap(dd_profiler_flush_and_get_profile())
+        XCTAssertGreaterThan(dd_pprof_sample_count(sampledProfile), 0)
+        dd_pprof_destroy(sampledProfile)
+
+        // When
+        let emptyProfile = dd_profiler_flush_and_get_profile()
+
+        // Then
+        XCTAssertNil(emptyProfile, "Flush should not return a profile without samples")
     }
 
     func testDDProfiler_getProfile_whenRunning_returnsValidProfile() {
