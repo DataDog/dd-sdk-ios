@@ -62,6 +62,7 @@ final class ProbeScenarioRunnerTests: XCTestCase {
                 "swiftui.semantic-host.automatic-fallback",
                 "swiftui.semantic-host.router-stream-adapter",
                 "swiftui.semantic-host.observation-router-adapter",
+                "swiftui.semantic-host.observation-router-two-scenes-serial",
                 "swiftui.semantic-host.observation-native-dismiss-callbacks",
                 "swiftui.semantic-host.third-party-callback-adapter",
                 "swiftui.coexistence.automatic-keyed-manual-view",
@@ -753,6 +754,99 @@ final class ProbeScenarioRunnerTests: XCTestCase {
             XCTAssertEqual(matches.map(\.kind), [.action, .resource])
             XCTAssertTrue(matches.allSatisfy { $0.screen == "home" })
             XCTAssertTrue(matches.allSatisfy { $0.rumViewOrigin == .semantic })
+        }
+    }
+
+    func testEXP154ObservationRouterUsesIndependentScenesSerially() throws {
+        let scenario = try XCTUnwrap(
+            ProbeScenarioCatalog.scenario(
+                identifier:
+                    "swiftui.semantic-host.observation-router-two-scenes-serial"
+            )
+        )
+
+        XCTAssertEqual(scenario.trackingMode, .navigationOccurrence)
+        XCTAssertEqual(scenario.layout, .stack)
+        XCTAssertEqual(scenario.initialWindows, ["scene-A", "scene-B"])
+        XCTAssertEqual(scenario.requiredCapabilities, [.multipleScenes])
+        XCTAssertFalse(
+            scenario.requiredCapabilities.contains(.simultaneousVisibleWindows)
+        )
+        XCTAssertTrue(ProbeScenarioCatalog.usesObservableDriver(scenario))
+        XCTAssertTrue(
+            ProbeScenarioCatalog.usesSemanticNavigationHostSPI(scenario)
+        )
+        XCTAssertTrue(
+            ProbeScenarioCatalog.usesEXP151ObservationRouterAdapter(scenario)
+        )
+        XCTAssertTrue(ProbeScenarioCatalog.usesEXP147NavigationFixture(scenario))
+        XCTAssertFalse(ProbeScenarioCatalog.usesEXP147RouterStreamAdapter(scenario))
+        XCTAssertFalse(
+            ProbeScenarioCatalog.usesEXP152NativeDismissCallbacks(scenario)
+        )
+        XCTAssertFalse(
+            ProbeScenarioCatalog.usesEXP153ThirdPartyCallbackAdapter(scenario)
+        )
+
+        XCTAssertEqual(
+            scenario.steps.filter { $0.kind == .openWindow }.map {
+                "\($0.scene ?? ""):\($0.value ?? "")"
+            },
+            ["scene-A:scene-B"]
+        )
+        XCTAssertEqual(
+            scenario.steps.filter { $0.kind == .setSwiftUIPath }.map {
+                "\($0.scene ?? ""):\($0.value ?? "")"
+            },
+            [
+                "scene-A:detail-1",
+                "scene-A:home",
+                "scene-B:detail-1",
+                "scene-B:home"
+            ]
+        )
+        XCTAssertEqual(
+            scenario.steps.filter { $0.kind == .emitSceneContextMarker }
+                .compactMap(\.value),
+            [
+                "observation-a-home-1",
+                "observation-a-detail-1",
+                "observation-a-home-2",
+                "observation-b-home-1",
+                "observation-b-detail-1",
+                "observation-b-home-2"
+            ]
+        )
+        XCTAssertFalse(scenario.steps.contains { $0.kind == .emitMarker })
+        XCTAssertEqual(scenario.expectedSemanticTimeline.count, 22)
+        XCTAssertEqual(scenario.completionConditions.count, 3)
+        XCTAssertEqual(
+            scenario.expectedSemanticTimeline.filter {
+                $0.kind == .viewStarted && $0.screen == "home"
+            }.map { "\($0.scene ?? "")#\($0.occurrence ?? 0)" },
+            [
+                "scene-A#1",
+                "scene-A#2",
+                "scene-B#1",
+                "scene-B#2"
+            ]
+        )
+        XCTAssertTrue(
+            scenario.completionConditions.contains {
+                $0.kind == .noViewStarted && $0.rumViewOrigin == .automatic
+            }
+        )
+        for kind in [ProbeExpectationKind.action, .resource] {
+            XCTAssertTrue(
+                scenario.completionConditions.contains {
+                    $0.kind == kind
+                        && $0.scene == "scene-B"
+                        && $0.screen == "home"
+                        && $0.occurrence == 2
+                        && $0.name == "observation-b-home-2"
+                        && $0.rumViewOrigin == .semantic
+                }
+            )
         }
     }
 

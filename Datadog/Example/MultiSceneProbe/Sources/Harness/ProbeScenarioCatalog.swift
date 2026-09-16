@@ -38,6 +38,7 @@ enum ProbeScenarioCatalog {
         "swiftui.semantic-host.automatic-fallback",
         "swiftui.semantic-host.router-stream-adapter",
         "swiftui.semantic-host.observation-router-adapter",
+        "swiftui.semantic-host.observation-router-two-scenes-serial",
         "swiftui.semantic-host.observation-native-dismiss-callbacks",
         "swiftui.semantic-host.third-party-callback-adapter",
         "swiftui.coexistence.automatic-keyed-manual-view",
@@ -91,6 +92,7 @@ enum ProbeScenarioCatalog {
         swiftUISemanticHostAutomaticFallback,
         swiftUISemanticHostRouterStreamAdapter,
         swiftUISemanticHostObservationRouterAdapter,
+        swiftUISemanticHostObservationRouterTwoScenesSerial,
         swiftUISemanticHostObservationNativeDismissCallbacks,
         swiftUISemanticHostThirdPartyCallbackAdapter,
         swiftUICoexistenceAutomaticKeyedManualView,
@@ -251,6 +253,8 @@ enum ProbeScenarioCatalog {
 
     static func usesEXP151ObservationRouterAdapter(_ scenario: ProbeScenario) -> Bool {
         scenario.identifier == swiftUISemanticHostObservationRouterAdapter.identifier
+            || scenario.identifier
+                == swiftUISemanticHostObservationRouterTwoScenesSerial.identifier
             || usesEXP152NativeDismissCallbacks(scenario)
     }
 
@@ -1100,6 +1104,168 @@ enum ProbeScenarioCatalog {
         completionConditions: swiftUISemanticAPICompleteDestination.completionConditions,
         expectedSemanticTimeline: semanticNavigationAPITimeline()
     )
+
+    /// EXP-154 mounts the Observation-backed host in two real WindowGroup
+    /// scenes and navigates them serially. Serial execution isolates per-scene
+    /// host and router ownership without claiming simultaneous visibility,
+    /// focus handoff, or background-scene mutation support from the simulator.
+    private static let swiftUISemanticHostObservationRouterTwoScenesSerial =
+        ProbeScenario(
+            identifier:
+                "swiftui.semantic-host.observation-router-two-scenes-serial",
+            trackingMode: .navigationOccurrence,
+            layout: .stack,
+            initialWindows: ["scene-A", "scene-B"],
+            requiredCapabilities: [.multipleScenes],
+            steps: observationRouterTwoScenesSerialSteps(),
+            completionConditions: [
+                ProbeExpectation(.noViewStarted, rumViewOrigin: .automatic)
+            ] + semanticMarkerExpectations(
+                scene: "scene-B",
+                screen: "home",
+                occurrence: 2,
+                name: "observation-b-home-2"
+            ),
+            expectedSemanticTimeline: observationRouterTwoScenesSerialTimeline()
+        )
+
+    private static func observationRouterTwoScenesSerialSteps() -> [ProbeStep] {
+        [
+            ProbeStep(.waitForSceneReady, scene: "scene-A"),
+            ProbeStep(
+                .waitForSignal,
+                scene: "scene-A",
+                signal: "rum-view:home#1"
+            ),
+            ProbeStep(
+                .emitSceneContextMarker,
+                scene: "scene-A",
+                value: "observation-a-home-1"
+            ),
+            ProbeStep(.setSwiftUIPath, scene: "scene-A", value: "detail-1"),
+            ProbeStep(
+                .waitForSignal,
+                scene: "scene-A",
+                signal: "rum-view:detail-1#1"
+            ),
+            ProbeStep(
+                .emitSceneContextMarker,
+                scene: "scene-A",
+                value: "observation-a-detail-1"
+            ),
+            ProbeStep(.setSwiftUIPath, scene: "scene-A", value: "home"),
+            ProbeStep(
+                .waitForSignal,
+                scene: "scene-A",
+                signal: "rum-view:home#2"
+            ),
+            ProbeStep(
+                .emitSceneContextMarker,
+                scene: "scene-A",
+                value: "observation-a-home-2"
+            ),
+            ProbeStep(.openWindow, scene: "scene-A", value: "scene-B"),
+            ProbeStep(.waitForSceneReady, scene: "scene-B"),
+            ProbeStep(
+                .waitForSignal,
+                scene: "scene-B",
+                signal: "rum-view:home#1"
+            ),
+            ProbeStep(
+                .emitSceneContextMarker,
+                scene: "scene-B",
+                value: "observation-b-home-1"
+            ),
+            ProbeStep(.setSwiftUIPath, scene: "scene-B", value: "detail-1"),
+            ProbeStep(
+                .waitForSignal,
+                scene: "scene-B",
+                signal: "rum-view:detail-1#1"
+            ),
+            ProbeStep(
+                .emitSceneContextMarker,
+                scene: "scene-B",
+                value: "observation-b-detail-1"
+            ),
+            ProbeStep(.setSwiftUIPath, scene: "scene-B", value: "home"),
+            ProbeStep(
+                .waitForSignal,
+                scene: "scene-B",
+                signal: "rum-view:home#2"
+            ),
+            ProbeStep(
+                .emitSceneContextMarker,
+                scene: "scene-B",
+                value: "observation-b-home-2"
+            )
+        ]
+    }
+
+    private static func observationRouterTwoScenesSerialTimeline()
+        -> [ProbeExpectation] {
+        observationRouterSerialTimeline(scene: "scene-A", markerPrefix: "a")
+            + observationRouterSerialTimeline(scene: "scene-B", markerPrefix: "b")
+    }
+
+    private static func observationRouterSerialTimeline(
+        scene: String,
+        markerPrefix: String
+    ) -> [ProbeExpectation] {
+        [
+            ProbeExpectation(
+                .viewStarted,
+                scene: scene,
+                screen: "home",
+                occurrence: 1,
+                rumViewOrigin: .semantic
+            )
+        ] + semanticMarkerExpectations(
+            scene: scene,
+            screen: "home",
+            occurrence: 1,
+            name: "observation-\(markerPrefix)-home-1"
+        ) + [
+            ProbeExpectation(
+                .viewStopped,
+                scene: scene,
+                screen: "home",
+                occurrence: 1,
+                rumViewOrigin: .semantic
+            ),
+            ProbeExpectation(
+                .viewStarted,
+                scene: scene,
+                screen: "detail-1",
+                occurrence: 1,
+                rumViewOrigin: .semantic
+            )
+        ] + semanticMarkerExpectations(
+            scene: scene,
+            screen: "detail-1",
+            occurrence: 1,
+            name: "observation-\(markerPrefix)-detail-1"
+        ) + [
+            ProbeExpectation(
+                .viewStopped,
+                scene: scene,
+                screen: "detail-1",
+                occurrence: 1,
+                rumViewOrigin: .semantic
+            ),
+            ProbeExpectation(
+                .viewStarted,
+                scene: scene,
+                screen: "home",
+                occurrence: 2,
+                rumViewOrigin: .semantic
+            )
+        ] + semanticMarkerExpectations(
+            scene: scene,
+            screen: "home",
+            occurrence: 2,
+            name: "observation-\(markerPrefix)-home-2"
+        )
+    }
 
     /// EXP-152 keeps the accepted Observation boundary but moves dismissal
     /// markers into SwiftUI's actual sheet and full-screen-cover `onDismiss`
