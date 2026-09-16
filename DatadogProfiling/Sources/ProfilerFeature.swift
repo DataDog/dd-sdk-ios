@@ -9,13 +9,9 @@ import DatadogInternal
 
 #if !os(watchOS)
 
-// swiftlint:disable duplicate_imports
-#if swift(>=6.0)
-internal import DatadogMachProfiler
-#else
+// Keep this implementation-only. Otherwise, Swift 6 records DatadogMachProfiler as a
+// transitive module dependency, but it is not distributed as an XCFramework.
 @_implementationOnly import DatadogMachProfiler
-#endif
-// swiftlint:enable duplicate_imports
 
 internal final class ProfilerFeature: DatadogRemoteFeature {
     enum Constants {
@@ -54,9 +50,7 @@ internal final class ProfilerFeature: DatadogRemoteFeature {
         let appLaunchSampleRate = configuration.debugSDK ? .maxSampleRate : configuration.applicationLaunchSampleRate
         self.profilingSamplerProvider = ProfilingSamplerProvider(continuousSampleRate: continuousSampleRate)
 
-        let cpuTimeSamplesEnabled = configuration.featureFlags[.cpuTimeSamples]
         Self.setProfilingEnabled(in: userDefaults)
-        Self.setCPUTimeSamplesEnabled(cpuTimeSamplesEnabled, in: userDefaults)
         Self.setAppLaunch(sampleRate: appLaunchSampleRate, in: userDefaults)
 
         let datadogProfiler = DatadogProfiler(
@@ -80,10 +74,6 @@ internal final class ProfilerFeature: DatadogRemoteFeature {
 
     private static func setAppLaunch(sampleRate: SampleRate, in userDefaults: UserDefaults) { //swiftlint:disable:this required_reason_api_name
         userDefaults.setValue(sampleRate, forKey: DD_PROFILING_APP_LAUNCH_SAMPLE_RATE_KEY)
-    }
-
-    private static func setCPUTimeSamplesEnabled(_ enabled: Bool, in userDefaults: UserDefaults) { //swiftlint:disable:this required_reason_api_name
-        userDefaults.setValue(enabled, forKey: DD_PROFILING_RECORD_CPU_TIME_KEY)
     }
 }
 

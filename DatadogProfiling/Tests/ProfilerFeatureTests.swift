@@ -71,23 +71,6 @@ final class ProfilerFeatureTests: XCTestCase {
         XCTAssertEqual(userDefaults.value(forKey: DD_PROFILING_APP_LAUNCH_SAMPLE_RATE_KEY) as? SampleRate, newSampleRate)
     }
 
-    func testInit_setsCPUTimingFeatureFlagValue() {
-        // Given
-        XCTAssertNil(userDefaults.value(forKey: DD_PROFILING_RECORD_CPU_TIME_KEY))
-
-        // When
-        _ = ProfilerFeature(
-            core: core,
-            configuration: .init(featureFlags: [.cpuTimeSamples: true]),
-            requestBuilder: requestBuilder,
-            telemetryController: telemetryController,
-            userDefaults: userDefaults
-        )
-
-        // Then
-        XCTAssertEqual(userDefaults.value(forKey: DD_PROFILING_RECORD_CPU_TIME_KEY) as? Bool, true)
-    }
-
     func testMessageReceiver_checksQuota_whenCustomEndpointIsConfigured() {
         // Given
         let quotaChecker = ProfilingQuotaCheckerMock()

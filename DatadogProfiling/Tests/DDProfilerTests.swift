@@ -56,6 +56,20 @@ final class DDProfilerTests: XCTestCase {
         XCTAssertEqual(dd_profiler_get_status(), DD_PROFILER_STATUS_RUNNING, "Profiler should start with custom timeout")
     }
 
+    func testDDProfiler_wasStartedAtLaunch_whenAutoStartSucceeds() {
+        dd_profiler_start_testing(100, false, 5.seconds.dd.toInt64Nanoseconds, 0)
+
+        XCTAssertTrue(dd_profiler_was_started_at_launch())
+    }
+
+    func testDDProfiler_wasNotStartedAtLaunch_whenStartedLater() {
+        XCTAssertFalse(dd_profiler_was_started_at_launch())
+
+        XCTAssertEqual(dd_profiler_start(), 1)
+
+        XCTAssertFalse(dd_profiler_was_started_at_launch())
+    }
+
     func testDDProfiler_flushHarvestsPartialBatch() {
         dd_profiler_start_testing(100, false, 1.seconds.dd.toInt64Nanoseconds, 0)
         XCTAssertEqual(dd_profiler_get_status(), DD_PROFILER_STATUS_RUNNING)
@@ -148,10 +162,8 @@ final class DDProfilerTests: XCTestCase {
         )
     }
 
-    func testDDProfiler_withCPUTimingEnabled_serializesDualSampleValues() throws {
+    func testDDProfiler_serializesWallAndCPUTimingByDefault() throws {
         dd_profiler_destroy()
-        let userDefaults = try XCTUnwrap(UserDefaults(suiteName: DD_PROFILING_USER_DEFAULTS_SUITE_NAME))
-        userDefaults.setValue(true, forKey: DD_PROFILING_RECORD_CPU_TIME_KEY)
 
         XCTAssertEqual(dd_profiler_start(), 1)
         XCTAssertEqual(dd_profiler_get_status(), DD_PROFILER_STATUS_RUNNING)

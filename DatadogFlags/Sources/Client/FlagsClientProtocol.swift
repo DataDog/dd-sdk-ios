@@ -26,6 +26,9 @@ public protocol FlagsClientProtocol: AnyObject {
     ///
     /// This method fetches flag assignments from the server asynchronously. The completion handler
     /// is called when the operation completes or fails.
+    /// For the first context, the configured initialization timeout bounds this wait. If it elapses,
+    /// the completion handler receives ``FlagsError/initializationTimedOut`` while the operation
+    /// continues and can update the client to ``FlagsClientState/ready`` later.
     ///
     /// ```swift
     /// client.setEvaluationContext(
@@ -130,7 +133,9 @@ extension FlagsClientProtocol {
     ///
     /// - Parameter context: The evaluation context containing targeting key and custom attributes.
     ///
-    /// - Throws: ``FlagsError`` if the operation fails.
+    /// - Throws: ``FlagsError`` if the operation fails. The first call throws
+    ///   ``FlagsError/initializationTimedOut`` if the configured initialization timeout elapses;
+    ///   the underlying operation continues and can make the client ready later.
     public func setEvaluationContext(_ context: FlagsEvaluationContext) async throws {
         try await withCheckedThrowingContinuation { continuation in
             setEvaluationContext(context) { result in

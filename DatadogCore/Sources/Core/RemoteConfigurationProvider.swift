@@ -238,6 +238,10 @@ internal final class RemoteConfigurationProvider {
                 .appendingPathComponent(id)
                 .appendingPathExtension("json")
         )
+        // This request carries no Datadog intake credentials (it targets a public CDN or a
+        // customer-supplied `customURL`), so mark it internal locally - without altering the request
+        // sent over the wire - to keep it out of RUM's automatic `URLSession` instrumentation.
+        URLRequestBuilder.markAsInternal(&request)
 
         var cache: RemoteConfigurationCache?
         if let file = try? directory.file(named: cacheFilename) {

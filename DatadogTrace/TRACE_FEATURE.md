@@ -1,7 +1,7 @@
 ---
-last_updated: 2026-08-31
-sdk_version: 3.16.0
-verified_against_commit: b9103bfe1
+last_updated: 2026-09-08
+sdk_version: 3.17.0
+verified_against_commit: ac1c0a102
 tracked_files:
   - DatadogTrace/Sources/Trace.swift
   - DatadogTrace/Sources/TraceConfiguration.swift

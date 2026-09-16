@@ -25,6 +25,7 @@
 // The extra time avoids stopping sampling while the profile is still being processed.
 static constexpr int64_t DD_PROFILER_TIMEOUT_NS = 90000000000LL; // 1:30 minutes
 static constexpr double DD_PROFILER_MAX_SAMPLE_RATE = 100.0;
+static constexpr bool DD_PROFILER_RECORD_CPU_TIME = true;
 // Maximum queued aggregation batch memory before new batches are dropped.
 static constexpr uint64_t DD_PROFILER_DEFAULT_HARD_LIMIT_BYTES = 64ULL * 1024ULL * 1024ULL;
 
@@ -247,8 +248,8 @@ public:
 
         if (!create_profile_and_profiler()) return 0;
 
-        start();
-        return 1;
+        started_at_launch = start() == 1;
+        return started_at_launch ? 1 : 0;
     }
 
     int start() {
@@ -280,6 +281,10 @@ public:
         return profile;
     }
 
+    bool was_started_at_launch() const {
+        return started_at_launch;
+    }
+
     /**
      * Sets the server time offset on the active profile and stores it for
      * profiles created after future flushes.
@@ -304,7 +309,10 @@ public:
             return nullptr;
         }
 
-        dd::profiler::profile* next_profile = new (std::nothrow) dd::profiler::profile(sampling_interval_ns, record_cpu_time);
+        dd::profiler::profile* next_profile = new (std::nothrow) dd::profiler::profile(
+            sampling_interval_ns,
+            DD_PROFILER_RECORD_CPU_TIME
+        );
         dd::profiler::profile* flushed_profile = nullptr;
         auto swap_profile = [this, next_profile, &flushed_profile] {
             swap_profile_at_flush_boundary(next_profile, flushed_profile);
@@ -373,9 +381,10 @@ private:
 
         if (profiler) return true;
 
-        record_cpu_time = read_profiling_record_cpu_time();
-
-        profile = new (std::nothrow) dd::profiler::profile(sampling_interval_ns, record_cpu_time);
+        profile = new (std::nothrow) dd::profiler::profile(
+            sampling_interval_ns,
+            DD_PROFILER_RECORD_CPU_TIME
+        );
         if (!profile) {
             status = DD_PROFILER_STATUS_ALLOCATION_FAILED;
             return false;
@@ -384,7 +393,7 @@ private:
 
         sampling_config_t config = SAMPLING_CONFIG_DEFAULT;
         config.sampling_interval_nanos = sampling_interval_ns;
-        config.record_cpu_time = record_cpu_time ? 1 : 0;
+        config.record_cpu_time = DD_PROFILER_RECORD_CPU_TIME;
 
         profiler = new (std::nothrow) mach_sampling_profiler(&config, callback, this, hard_limit_bytes);
         if (!profiler) {
@@ -406,7 +415,7 @@ private:
     uint64_t hard_limit_bytes = DD_PROFILER_DEFAULT_HARD_LIMIT_BYTES;
     uint64_t sampling_interval_ns = SAMPLING_CONFIG_DEFAULT_INTERVAL_NANOS;
     int64_t server_time_offset_ns = 0;
-    bool record_cpu_time = false;
+    bool started_at_launch = false;
 
     /**
      * Mutex protecting the profile pointer.
@@ -511,6 +520,11 @@ dd_profiler_diagnostics_t dd_profiler_diagnostics(void) {
 bool dd_profiler_is_running() {
     std::lock_guard<std::mutex> lock(g_dd_profiler_mutex);
     return g_dd_profiler ? g_dd_profiler->status == DD_PROFILER_STATUS_RUNNING : false;
+}
+
+bool dd_profiler_was_started_at_launch() {
+    std::lock_guard<std::mutex> lock(g_dd_profiler_mutex);
+    return g_dd_profiler ? g_dd_profiler->was_started_at_launch() : false;
 }
 
 dd_profile_t* dd_profiler_get_profile(void) {

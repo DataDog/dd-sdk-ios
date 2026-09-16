@@ -5,19 +5,15 @@
  */
 
 import Foundation
-import DatadogInternal
+@preconcurrency import DatadogInternal
 
 #if !os(watchOS)
 
-// swiftlint:disable duplicate_imports
-#if swift(>=6.0)
-internal import DatadogMachProfiler
-#else
+// Keep this implementation-only. Otherwise, Swift 6 records DatadogMachProfiler as a
+// transitive module dependency, but it is not distributed as an XCFramework.
 @_implementationOnly import DatadogMachProfiler
-#endif
-// swiftlint:enable duplicate_imports
 
-internal final class DatadogProfiler: ProfilingHandler {
+internal final class DatadogProfiler: ProfilingHandler, @unchecked Sendable {
     enum Constants {
         /// Default profile duration during continuous profiling.
         static let maxProfileDuration: TimeInterval = 60 // 1 minute profiles
@@ -39,7 +35,8 @@ internal final class DatadogProfiler: ProfilingHandler {
     private let profilingConditions: ProfilingConditions
     private let profilingInterval: TimeInterval
     private let minProfileDuration: TimeInterval
-    private let isAppLaunchProfilingEnabled: Bool
+    /// Whether the native profiler started at process launch and the latest configuration permits harvesting it.
+    private let hasAppLaunchProfileToHarvest: Bool
     private var timer: DispatchSourceTimer?
 
     let featureScope: FeatureScope
@@ -67,6 +64,8 @@ internal final class DatadogProfiler: ProfilingHandler {
     /// Consent remains fail-open while `.pending`; only `.notGranted` disables collection.
     private var isTrackingConsentAllowed = true
     private var previousAppState: AppState?
+    /// Current RUM session.
+    private var currentRUMSessionID: String?
     // Current profiling mode
     private(set) var operation: ProfilingOperation
     /// Allows continuous profiling to temporarily run while waiting for the first
@@ -99,7 +98,7 @@ internal final class DatadogProfiler: ProfilingHandler {
         self.profilingConditions = profilingConditions
         self.profilingInterval = profilingInterval
         self.minProfileDuration = minProfileDuration
-        self.isAppLaunchProfilingEnabled = isAppLaunchProfilingEnabled
+        self.hasAppLaunchProfileToHarvest = isAppLaunchProfilingEnabled && dd_profiler_was_started_at_launch()
         self.encoder = encoder
         self.dateProvider = dateProvider
         self.profileStartDate = dateProvider.now
@@ -194,6 +193,12 @@ private extension DatadogProfiler {
         queue.async { [weak self] in
             guard let self else {
                 return
+            }
+
+            if let sessionID = context.additionalContext(ofType: RUMCoreContext.self)?.sessionID,
+               sessionID != currentRUMSessionID {
+                currentRUMSessionID = sessionID
+                telemetryController.resetContinuousCycleIndex()
             }
 
             let wasTrackingConsentAllowed = isTrackingConsentAllowed
@@ -462,7 +467,7 @@ private extension DatadogProfiler {
             return
         }
 
-        if isAppLaunchProfilingEnabled {
+        if hasAppLaunchProfileToHarvest {
             writeAppLaunchProfile(profile)
         }
         cleanUpState()
@@ -564,7 +569,7 @@ private extension DatadogProfiler {
     var shouldWaitForAppLaunchVital: Bool {
         // If continuous profiling samples out before TTID, keep the native profiler
         // briefly so it can harvest the launch profile.
-        isAppLaunchProfilingEnabled
+        hasAppLaunchProfileToHarvest
             && isTrackingConsentAllowed
             && !quotaChecker.isRejectedByQuota
             && hasConditionsToProfile
@@ -590,7 +595,7 @@ private extension DatadogProfiler {
     var shouldHarvestAppLaunchProfileOnTTID: Bool {
         // TTID may still be attached to continuous/custom profiles when standalone
         // app-launch upload is disabled; this gate only decides standalone launch harvesting.
-        guard isAppLaunchProfilingEnabled
+        guard hasAppLaunchProfileToHarvest
                 && hasReceivedAppLaunchVital
                 && !quotaChecker.isRejectedByQuota else {
             return false

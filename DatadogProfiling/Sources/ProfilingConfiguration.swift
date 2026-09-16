@@ -11,7 +11,7 @@ import DatadogInternal
 
 extension Profiling {
     /// Configuration options for the profiling feature.
-    public struct Configuration {
+    public struct Configuration: Sendable {
         /// Overrides the custom server endpoint where Profiles are sent.
         /// If `nil`, the default Datadog endpoint will be used.
         public var customEndpoint: URL?
@@ -30,9 +30,6 @@ extension Profiling {
         /// Default: `5.0`.
         public var continuousSampleRate: SampleRate
 
-        /// Feature flags to preview features in Profiling.
-        public var featureFlags: FeatureFlags
-
         // MARK: - Internal
 
         internal var debugSDK: Bool = ProcessInfo.processInfo.arguments.contains(LaunchArguments.Debug)
@@ -45,13 +42,11 @@ extension Profiling {
         public init(
             customEndpoint: URL? = nil,
             applicationLaunchSampleRate: SampleRate = 5,
-            continuousSampleRate: SampleRate = 5,
-            featureFlags: FeatureFlags = .defaults
+            continuousSampleRate: SampleRate = 5
         ) {
             self.customEndpoint = customEndpoint
             self.applicationLaunchSampleRate = applicationLaunchSampleRate
             self.continuousSampleRate = continuousSampleRate
-            self.featureFlags = featureFlags
         }
 
         /// Merges the remote configuration on top of this in-code configuration.

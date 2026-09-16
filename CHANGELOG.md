@@ -1,5 +1,8 @@
 # Unreleased
 
+# 3.17.0 / 09-09-2026
+
+- [FEATURE] Add a configurable initialization timeout for the first Datadog Flags evaluation context. See [#3167][]
 - [FEATURE] Add `remoteConfiguration` to `Datadog.Configuration`, set with `RemoteConfiguration(id:)`, to fetch and cache the remote configuration document from the Datadog CDN at SDK startup. See [#2919][]
 - [IMPROVEMENT] Bump minimum deployment targets to iOS 15.0, tvOS 15.0, and watchOS 9.0. See [#3155][]
 - [FEATURE] Add `CrashReporting.Configuration.appHangBacktraceEnabled` to opt out of stack trace collection in App Hang errors while keeping Crash Reporting enabled. See [#3136][]
@@ -1265,6 +1268,7 @@ Release `2.0` introduces breaking changes. Follow the [Migration Guide](MIGRATIO
 [#3136]: https://github.com/DataDog/dd-sdk-ios/pull/3136
 [#3165]: https://github.com/DataDog/dd-sdk-ios/pull/3165
 [#3164]: https://github.com/DataDog/dd-sdk-ios/pull/3164
+[#3167]: https://github.com/DataDog/dd-sdk-ios/pull/3167
 
 [@00fa9a]: https://github.com/00FA9A
 [@britton-earnin]: https://github.com/Britton-Earnin

@@ -26,6 +26,10 @@
 #include <utility>
 #include <mach/vm_map.h>
 
+#if defined(__arm64__)
+#include <ptrauth.h>
+#endif
+
 // Address validation constants and macros
 //
 // These values define the valid range for user-space addresses on 64-bit systems:
@@ -196,6 +200,30 @@ static constexpr bool is_valid_userspace_addr(uintptr_t addr) {
  */
 static constexpr bool is_valid_frame_pointer(uintptr_t fp) {
     return is_valid_userspace_addr(fp) && (fp & FRAME_POINTER_ALIGN) == 0;
+}
+
+/**
+ * Removes pointer-authentication bits from an ARM64 instruction pointer.
+ *
+ * The profiler is normally compiled as arm64, even when it runs on arm64e
+ * hardware. Return addresses saved by arm64e system libraries can therefore
+ * contain PAC bits while ptrauth_strip remains a no-op in our arm64 binary.
+ * In that configuration, mask the upper bits and keep the 47-bit userspace
+ * virtual address. Other architectures do not require normalization.
+ */
+static uintptr_t normalize_instruction_pointer(uintptr_t instruction_pointer) {
+#if defined(__arm64__)
+#if __has_feature(ptrauth_calls)
+    return reinterpret_cast<uintptr_t>(ptrauth_strip(
+        reinterpret_cast<void*>(instruction_pointer),
+        ptrauth_key_return_address
+    ));
+#else
+    return instruction_pointer & 0x00007FFFFFFFFFFFULL;
+#endif
+#else
+    return instruction_pointer;
+#endif
 }
 
 /**
@@ -420,7 +448,9 @@ static void walk_frames(
     bool allow_memory_fallback
 ) {
     void* fp = initial_fp;
-    void* pc = initial_pc;
+    void* pc = reinterpret_cast<void*>(normalize_instruction_pointer(
+        reinterpret_cast<uintptr_t>(initial_pc)
+    ));
     trace->frame_count = 0;
 
     while (trace->frame_count < max_depth && pc != nullptr) {
@@ -439,14 +469,15 @@ static void walk_frames(
         if (stack_base != 0 && fp_addr < stack_base) break;
 
         frame_pointer_pair_t next_frame = {};
-        if (!read_frame_pair_from_snapshot(fp_addr, stack_base, stack_buf, bytes_read, &next_frame)) {
-            if (!allow_memory_fallback || !read_frame_pair_from_memory(fp_addr, &next_frame)) {
-                break;
-            }
+        if (!read_frame_pair_from_snapshot(fp_addr, stack_base, stack_buf, bytes_read, &next_frame)
+            && (!allow_memory_fallback || !read_frame_pair_from_memory(fp_addr, &next_frame))) {
+            break;
         }
 
         fp = next_frame.next_frame_pointer;  // saved x29 / rbp
-        pc = next_frame.return_address;  // saved lr / return address on stack
+        pc = reinterpret_cast<void*>(normalize_instruction_pointer(
+            reinterpret_cast<uintptr_t>(next_frame.return_address)
+        ));  // saved lr / return address on stack
 
         if (!is_valid_userspace_addr(reinterpret_cast<uintptr_t>(pc))) break;
     }
@@ -843,7 +874,7 @@ void mach_sampling_profiler::main() {
         } else {
             thread_act_array_t threads = nullptr;
             mach_msg_type_number_t count = 0;
-            
+
             if (task_threads(mach_task_self(), &threads, &count) != KERN_SUCCESS) {
                 std::this_thread::sleep_for(std::chrono::milliseconds(100));
                 continue;
@@ -857,7 +888,7 @@ void mach_sampling_profiler::main() {
 
                 // Skip profiler-owned threads to avoid self-noise in customer profiles.
                 if (is_profiler_internal_thread(threads[i])) continue;
-                
+
                 sample_thread(threads[i], interval_nanos);
 
                 if (sample_buffer.size() >= config.max_buffer_size) {
