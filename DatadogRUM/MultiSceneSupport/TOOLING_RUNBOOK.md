@@ -237,6 +237,20 @@ metadata does not need an internal RUM UUID or native scene identifier. Add root
 `onAppear` and immediate-task action/Resource ownership to the oracle so a normal
 navigation-only timeline cannot conceal this ordering regression.
 
+A complete semantic timeline does not by itself prove that SwiftUI reconstructed
+the customer container or resolved its optional capability again. Add a separate
+assertion whose evidence is the capability's resolution count. For the stable
+arm, return the same source and require no replay or duplicate. For the
+adversarial arm, return a decoy source on the second resolution, forbid its view,
+and require the original source to complete the exact timeline. This separates
+source-pinning evidence from an ordinary happy-path navigation pass.
+
+Serialize live simulator work for these arms. Build and test the exact signed
+revision first, then give one device worker sole ownership of clean
+terminate/uninstall/missing-container/run boundaries. A second worker may analyze
+backend intake, but it must not install, launch, or interact with the shared
+simulator until the owner releases it.
+
 Objective-C has no equivalent SPI import boundary. Keep an Objective-C prototype
 Debug-only until API review, exercise its exact generated selectors in the
 Objective-C API smoke target, and do not mistake that prototype for an approved

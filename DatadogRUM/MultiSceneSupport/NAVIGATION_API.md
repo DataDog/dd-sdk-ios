@@ -401,7 +401,10 @@ implementation evidence, not approval of the provisional public names. The
 same customer-owned container also passes that 42-event oracle through its
 optional capability. Its opaque specialization passes a 5-event automatic
 fallback contract: automatic capture remains active, no semantic occurrence is
-invented, and exact Detail work uses the automatic controller owner.
+invented, and exact Detail work uses the automatic controller owner. Runtime
+precedence and source stability are also accepted: explicit input beats a
+contradictory capability, repeated capability resolution reuses the stable
+source, and an adversarial later source cannot replace the first selection.
 
 ### Integration inputs and precedence
 
@@ -505,10 +508,10 @@ They now do in the experimental implementation: `a84061840` extracts the
 scene-scoped engine and makes both the native convenience and arbitrary-content
 host delegate to it. `354422d88` supplies the customer-shaped explicit-source
 probe, and `651b173c6` validates the identical container with optional capability
-and opaque automatic fallback. The remaining proof obligation is not another
-visual-container rewrite; it is runtime precedence, deliberate source
-replacement, reconstruction/disconnect, and native/custom/explicit adapter
-parity through the same engine.
+and opaque automatic fallback. `47bc08eca` then exercises runtime precedence,
+repeated reconstruction, and deliberate source replacement. The remaining proof
+obligation is not another visual-container rewrite; it is scene disconnect/final
+detach plus native/custom/explicit adapter parity through the same engine.
 
 ### Resolver and path model
 
@@ -604,9 +607,11 @@ standard presentation APIs intact. Its backend session contains the eight views
 including ApplicationLaunch, 26 exact-view actions, 26 exact-view Resources, and
 zero errors/crashes; launch owns no downstream work. The optional capability
 repeats that 42/42 contract, while opaque fallback passes 5/5 with automatic
-capture and no semantic view. The complete RUM run passes
+capture and no semantic view. Runtime precedence, repeated source resolution,
+and adversarial replacement each pass 43/43 with the same exact backend owners
+and no decoy view. The complete RUM run passes
 1,262/1,263 and the sole unrelated timeseries timing failure passes immediately
-in isolation; the native probe passes 145/145. Both Debug and authoritative Xcode
+in isolation; the native probe passes 147/147. Both Debug and authoritative Xcode
 27 Release probe builds, repository lint, and API-surface verification pass. The
 source-based API verifier remains a prototype gate; no baseline is changed before
 normal review.
@@ -663,7 +668,8 @@ Semantic SwiftUI navigation requires:
 - two enhanced containers in different scenes remain isolated, while one
   enhanced container does not suppress an unrelated automatic container;
 - SwiftUI container reconstruction preserves the stable transition source and
-  does not replay or disconnect the current occurrence;
+  does not replay or disconnect the current occurrence; a later computed
+  capability source cannot replace the first selected source;
 - one current destination for split/tab structures;
 - scene disconnect, reconnect, restoration, and session rollover; and
 - unchanged automatic-only, source-less, and single-scene behavior.

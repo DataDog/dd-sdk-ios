@@ -58,7 +58,10 @@ The catalog currently preserves these experiment families:
 | `swiftui.semantic-api.presentation-replacement` | `EXP-144` | Actual SPI PASS 43/43: Sheet → Cover → fresh Sheet remains atomic and final dismissal reveals one fresh Home |
 | `swiftui.semantic-api.sibling-container-isolation` | `EXP-145` | Actual SPI PASS 19/19: distinct controller branches, no automatic duplicate, Detail staged beneath sibling manual authority, and one fresh Detail reveal |
 | `swiftui.semantic-host.explicit-source` | `EXP-146` | Arbitrary-host explicit-source PASS 42/42: standard `NavigationStack`, Sheet, and cover code remains unchanged; H1 starts before initial lifecycle work and every return is fresh |
+| `swiftui.semantic-host.explicit-precedence` | `EXP-146` | Runtime precedence PASS 43/43: an explicit source wins over a conflicting capability, the decoy emits no view, and the complete semantic timeline remains exact |
 | `swiftui.semantic-host.optional-capability` | `EXP-146` | The identical customer-owned container exposes one stable type-erased capability and reproduces the explicit-source 42/42 oracle without per-screen or presentation replacements |
+| `swiftui.semantic-host.capability-reconstruction` | `EXP-146` | Stable-source reconstruction PASS 43/43: SwiftUI resolves the capability repeatedly without replaying, disconnecting, or duplicating the selected source |
+| `swiftui.semantic-host.capability-replacement` | `EXP-146` | Adversarial replacement PASS 43/43: a later capability resolution returns a decoy source, but the host keeps the first selected source and emits no decoy view |
 | `swiftui.semantic-host.automatic-fallback` | `EXP-146` | The opaque specialization passes 5/5: automatic capture remains active, no semantic view is invented, and exact Detail delayed work uses the automatic controller owner |
 | `swiftui.coexistence.semantic-a-automatic-b` | `EXP-118` | Signal-driven; simulator-inconclusive, physical hardware required |
 | `swiftui.coexistence.automatic-manual-sheet` | `EXP-119` | Signal-driven FAIL: immediate `onDismiss` work retains outgoing Sheet; settled work uses fresh automatic Home |
@@ -106,7 +109,7 @@ view-stop/Resource observations, repeated-name completion, a missing event, a
 forbidden view, and an ignored native gesture. An exact main-actor scene
 registry adds stable logical/native identity, weak window ownership, readiness,
 activation, geometry, route, and disconnect generations without serializing its
-future Execution Context seam. The generated test plan passes 142/142. The stack
+future Execution Context seam. The generated test plan passes 147/147. The stack
 return, abort, replacement, split-selection, and deterministic UIKit transition
 scenarios, plus exact scene open/close/activation, drive their exact scene and wait for
 observable readiness, lifecycle state, path/selection,
