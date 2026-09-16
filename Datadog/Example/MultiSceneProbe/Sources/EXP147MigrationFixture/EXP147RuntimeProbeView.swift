@@ -51,6 +51,30 @@ enum EXP147ProbeSemantics {
     }
 }
 
+enum EXP153ProbeSemantics {
+    static func screen(
+        for snapshot: EXP153ThirdPartyNavigator.Snapshot
+    ) -> String {
+        EXP147ProbeSemantics.screen(for: navigationState(for: snapshot))
+    }
+
+    static func route(
+        for snapshot: EXP153ThirdPartyNavigator.Snapshot
+    ) -> [String] {
+        EXP147ProbeSemantics.route(for: navigationState(for: snapshot))
+    }
+
+    private static func navigationState(
+        for snapshot: EXP153ThirdPartyNavigator.Snapshot
+    ) -> EXP147NavigationState {
+        EXP147NavigationState(
+            flow: snapshot.flow,
+            path: snapshot.path.map(\.route),
+            presentation: snapshot.presentation?.presentation
+        )
+    }
+}
+
 /// Runtime arm for EXP-147. Probe attributes are injected by the dedicated
 /// adapter so the ordinary customer screens and router stay unchanged.
 #if !EXP147_PROBE_TESTS
@@ -117,6 +141,31 @@ struct EXP152RuntimeProbeView: View {
                 onFullScreenCoverAppear: onFullScreenCoverAppear,
                 onFullScreenCoverDismiss: onFullScreenCoverDismiss
             )
+        }
+    }
+}
+
+/// Runtime arm for EXP-153. The custom visual container and navigator expose no
+/// Datadog surface; this wrapper adds one callback adapter and one host boundary.
+@available(iOS 27.0, *)
+struct EXP153RuntimeProbeView: View {
+    @ObservedObject var navigator: EXP153ThirdPartyNavigator
+    let attributesForSnapshot:
+        (EXP153ThirdPartyNavigator.Snapshot) -> [String: Encodable]
+    let recordInitialLifecycle: (String) -> Void
+
+    var body: some View {
+        EXP153RUMThirdPartyBoundary(
+            navigator: navigator,
+            attributesForSnapshot: attributesForSnapshot
+        ) {
+            EXP153ThirdPartyNavigationContainer(navigator: navigator)
+                .onAppear {
+                    recordInitialLifecycle("on-appear")
+                }
+                .task {
+                    recordInitialLifecycle("task-immediate")
+                }
         }
     }
 }

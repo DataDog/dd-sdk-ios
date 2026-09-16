@@ -39,6 +39,7 @@ enum ProbeScenarioCatalog {
         "swiftui.semantic-host.router-stream-adapter",
         "swiftui.semantic-host.observation-router-adapter",
         "swiftui.semantic-host.observation-native-dismiss-callbacks",
+        "swiftui.semantic-host.third-party-callback-adapter",
         "swiftui.coexistence.automatic-keyed-manual-view",
         "swiftui.coexistence.nested-keyed-manual-view",
         "swiftui.coexistence.same-key-manual-two-scenes",
@@ -91,6 +92,7 @@ enum ProbeScenarioCatalog {
         swiftUISemanticHostRouterStreamAdapter,
         swiftUISemanticHostObservationRouterAdapter,
         swiftUISemanticHostObservationNativeDismissCallbacks,
+        swiftUISemanticHostThirdPartyCallbackAdapter,
         swiftUICoexistenceAutomaticKeyedManualView,
         swiftUICoexistenceNestedKeyedManualView,
         swiftUICoexistenceSameKeyManualTwoScenes,
@@ -193,6 +195,7 @@ enum ProbeScenarioCatalog {
             || usesAutomaticSemanticNavigationHostSPI(scenario)
             || usesEXP147RouterStreamAdapter(scenario)
             || usesEXP151ObservationRouterAdapter(scenario)
+            || usesEXP153ThirdPartyCallbackAdapter(scenario)
     }
 
     static func usesExplicitSemanticNavigationHostSPI(_ scenario: ProbeScenario) -> Bool {
@@ -254,6 +257,13 @@ enum ProbeScenarioCatalog {
     static func usesEXP152NativeDismissCallbacks(_ scenario: ProbeScenario) -> Bool {
         scenario.identifier
             == swiftUISemanticHostObservationNativeDismissCallbacks.identifier
+    }
+
+    static func usesEXP153ThirdPartyCallbackAdapter(
+        _ scenario: ProbeScenario
+    ) -> Bool {
+        scenario.identifier
+            == swiftUISemanticHostThirdPartyCallbackAdapter.identifier
     }
 
     static func usesEXP147NavigationFixture(_ scenario: ProbeScenario) -> Bool {
@@ -1160,6 +1170,32 @@ enum ProbeScenarioCatalog {
                     "full-screen-cover-native-on-dismiss-immediate",
                 coverDismissedSettledMarker:
                     "full-screen-cover-native-on-dismiss-settled"
+            )
+        )
+
+    /// EXP-153 wraps a callback-driven custom navigator once, bridges its
+    /// synchronous accepted snapshots through a dedicated adapter, and reuses
+    /// the SDK-owned publisher host without modifying the visual container or
+    /// any navigation method.
+    private static let swiftUISemanticHostThirdPartyCallbackAdapter =
+        ProbeScenario(
+            identifier: "swiftui.semantic-host.third-party-callback-adapter",
+            trackingMode: .navigationOccurrence,
+            layout: .stack,
+            steps: swiftUISemanticAPICompleteDestination.steps + [
+                ProbeStep(
+                    .waitForSignal,
+                    scene: "scene-A",
+                    signal:
+                        "assertion:"
+                        + ProbeThirdPartyCallbackAdapterContract
+                            .singleRegistrationAssertion
+                )
+            ],
+            completionConditions:
+                swiftUISemanticAPICompleteDestination.completionConditions,
+            expectedSemanticTimeline: semanticNavigationAPITimeline(
+                initialLifecycleMarkers: ["on-appear", "task-immediate"]
             )
         )
 

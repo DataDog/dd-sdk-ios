@@ -118,6 +118,9 @@ enum ProbeRuntime {
     static let usesEXP152NativeDismissCallbacks = scenario.map(
         ProbeScenarioCatalog.usesEXP152NativeDismissCallbacks
     ) ?? false
+    static let usesEXP153ThirdPartyCallbackAdapter = scenario.map(
+        ProbeScenarioCatalog.usesEXP153ThirdPartyCallbackAdapter
+    ) ?? false
     static let usesEXP147NavigationFixture = scenario.map(
         ProbeScenarioCatalog.usesEXP147NavigationFixture
     ) ?? false
@@ -326,6 +329,8 @@ enum ProbeRuntime {
                 + "\(usesEXP151ObservationRouterAdapter) "
                 + "swiftui_navigation_host_native_dismiss_callbacks="
                 + "\(usesEXP152NativeDismissCallbacks) "
+                + "swiftui_navigation_host_third_party_callback="
+                + "\(usesEXP153ThirdPartyCallbackAdapter) "
                 + "swiftui_stress=\(options.swiftUIStress.rawValue) "
                 + "initial_swiftui_path=\(initialSwiftUIPath.joined(separator: ",")) "
                 + "swiftui_router_write_policy=\(swiftUIRouterWritePolicy.rawValue) "

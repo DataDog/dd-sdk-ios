@@ -63,6 +63,7 @@ final class ProbeScenarioRunnerTests: XCTestCase {
                 "swiftui.semantic-host.router-stream-adapter",
                 "swiftui.semantic-host.observation-router-adapter",
                 "swiftui.semantic-host.observation-native-dismiss-callbacks",
+                "swiftui.semantic-host.third-party-callback-adapter",
                 "swiftui.coexistence.automatic-keyed-manual-view",
                 "swiftui.coexistence.nested-keyed-manual-view",
                 "swiftui.coexistence.same-key-manual-two-scenes",
@@ -755,6 +756,54 @@ final class ProbeScenarioRunnerTests: XCTestCase {
         }
     }
 
+    func testEXP153ThirdPartyCallbackAdapterUsesCompleteSemanticOracle() throws {
+        let scenario = try XCTUnwrap(
+            ProbeScenarioCatalog.scenario(
+                identifier: "swiftui.semantic-host.third-party-callback-adapter"
+            )
+        )
+        let completeDestination = try XCTUnwrap(
+            ProbeScenarioCatalog.scenario(
+                identifier: "swiftui.semantic-api.complete-destination"
+            )
+        )
+
+        XCTAssertEqual(scenario.trackingMode, .navigationOccurrence)
+        XCTAssertTrue(ProbeScenarioCatalog.usesObservableDriver(scenario))
+        XCTAssertTrue(ProbeScenarioCatalog.usesSemanticNavigationHostSPI(scenario))
+        XCTAssertTrue(
+            ProbeScenarioCatalog.usesEXP153ThirdPartyCallbackAdapter(scenario)
+        )
+        XCTAssertFalse(ProbeScenarioCatalog.usesEXP147NavigationFixture(scenario))
+        XCTAssertFalse(ProbeScenarioCatalog.usesEXP147RouterStreamAdapter(scenario))
+        XCTAssertFalse(ProbeScenarioCatalog.usesEXP151ObservationRouterAdapter(scenario))
+        XCTAssertEqual(
+            Array(scenario.steps.dropLast()),
+            completeDestination.steps
+        )
+        XCTAssertEqual(
+            scenario.steps.last?.signal,
+            "assertion:"
+                + ProbeThirdPartyCallbackAdapterContract.singleRegistrationAssertion
+        )
+        XCTAssertEqual(
+            scenario.completionConditions,
+            completeDestination.completionConditions
+        )
+        XCTAssertEqual(
+            scenario.expectedSemanticTimeline.count,
+            completeDestination.expectedSemanticTimeline.count + 4
+        )
+        for marker in ["on-appear", "task-immediate"] {
+            let matches = scenario.expectedSemanticTimeline.filter {
+                $0.name == marker
+            }
+            XCTAssertEqual(matches.map(\.kind), [.action, .resource])
+            XCTAssertTrue(matches.allSatisfy { $0.screen == "home" })
+            XCTAssertTrue(matches.allSatisfy { $0.occurrence == 1 })
+        }
+    }
+
     @MainActor
     func testEXP147RouterGrowthUsesGenericProbeSemantics() {
         let router = EXP147NavigationRouter(flow: .messages)
@@ -776,6 +825,101 @@ final class ProbeScenarioRunnerTests: XCTestCase {
             EXP147ProbeSemantics.route(for: router.state),
             ["home", "scheduled-messages"]
         )
+    }
+
+    @MainActor
+    func testEXP153ThirdPartyCallbackPublishesCurrentAndAcceptedStateSynchronously() {
+        let navigator = EXP153ThirdPartyNavigator()
+        var order: [String] = []
+        let observation = navigator.observeAcceptedSnapshots { snapshot in
+            order.append(
+                "callback-\(EXP153ProbeSemantics.screen(for: snapshot))"
+            )
+        }
+        order.append("registered")
+
+        navigator.push(.thread(1))
+        order.append("after-push")
+
+        XCTAssertEqual(
+            order,
+            ["callback-home", "registered", "callback-detail-1", "after-push"]
+        )
+        withExtendedLifetime(observation) {}
+    }
+
+    @MainActor
+    func testEXP153ThirdPartyCallbackDistinguishesEqualRouteOccurrences() {
+        let navigator = EXP153ThirdPartyNavigator()
+        var snapshots: [EXP153ThirdPartyNavigator.Snapshot] = []
+        let observation = navigator.observeAcceptedSnapshots {
+            snapshots.append($0)
+        }
+
+        navigator.push(.thread(1))
+        navigator.push(.thread(1))
+
+        XCTAssertEqual(snapshots.count, 3)
+        XCTAssertEqual(snapshots[1].path.last?.route, .thread(1))
+        XCTAssertEqual(snapshots[2].path.last?.route, .thread(1))
+        XCTAssertNotEqual(
+            snapshots[1].path.last?.id,
+            snapshots[2].path.last?.id
+        )
+        withExtendedLifetime(observation) {}
+    }
+
+    @MainActor
+    func testEXP153ThirdPartyCallbackPublishesOnlyCommittedInteractivePop() {
+        let navigator = EXP153ThirdPartyNavigator()
+        var screens: [String] = []
+        let observation = navigator.observeAcceptedSnapshots {
+            screens.append(EXP153ProbeSemantics.screen(for: $0))
+        }
+        navigator.push(.thread(1))
+
+        navigator.beginInteractivePop()
+        navigator.resolveInteractivePop(committed: false)
+        XCTAssertEqual(screens, ["home", "detail-1"])
+
+        navigator.beginInteractivePop()
+        navigator.resolveInteractivePop(committed: true)
+        XCTAssertEqual(screens, ["home", "detail-1", "home"])
+        withExtendedLifetime(observation) {}
+    }
+
+    @MainActor
+    func testEXP153ThirdPartyCallbackReplacesPresentationAtomically() {
+        let navigator = EXP153ThirdPartyNavigator()
+        var screens: [String] = []
+        let observation = navigator.observeAcceptedSnapshots {
+            screens.append(EXP153ProbeSemantics.screen(for: $0))
+        }
+
+        navigator.present(.compose)
+        navigator.present(.attachment(1))
+        navigator.dismissPresentation()
+
+        XCTAssertEqual(
+            screens,
+            ["home", "sheet", "full-screen-cover", "home"]
+        )
+        withExtendedLifetime(observation) {}
+    }
+
+    @MainActor
+    func testEXP153ThirdPartyObservationDeallocationReleasesRegistration() {
+        let navigator = EXP153ThirdPartyNavigator()
+        var observation: EXP153ThirdPartyNavigator.Observation? =
+            navigator.observeAcceptedSnapshots { _ in }
+
+        XCTAssertEqual(navigator.observerRegistrationCount, 1)
+        XCTAssertEqual(navigator.activeObserverCount, 1)
+
+        observation = nil
+
+        XCTAssertNil(observation)
+        XCTAssertEqual(navigator.activeObserverCount, 0)
     }
 
     func testEXP147MigrationFixtureKeepsCustomerNavigationUninstrumented() throws {
@@ -835,6 +979,17 @@ final class ProbeScenarioRunnerTests: XCTestCase {
         XCTAssertTrue(
             navigationSource.contains("struct EXP147OpaqueThirdPartyContainer")
         )
+        XCTAssertTrue(
+            navigationSource.contains("struct EXP153ThirdPartyNavigationContainer")
+        )
+        let customContainerSource = try XCTUnwrap(
+            navigationSource.components(
+                separatedBy: "struct EXP153ThirdPartyNavigationContainer"
+            ).last
+        )
+        XCTAssertFalse(customContainerSource.contains("NavigationStack"))
+        XCTAssertFalse(customContainerSource.contains(".sheet("))
+        XCTAssertFalse(customContainerSource.contains(".fullScreenCover("))
 
         let adapterSource = try String(
             contentsOf: fixtureDirectory
@@ -851,6 +1006,21 @@ final class ProbeScenarioRunnerTests: XCTestCase {
         )
         XCTAssertFalse(adapterSource.contains("willNavigate("))
         XCTAssertFalse(adapterSource.contains("commit(id:"))
+        XCTAssertTrue(
+            adapterSource.contains("final class EXP153ThirdPartyRUMAdapter")
+        )
+        XCTAssertTrue(
+            adapterSource.contains("navigator.observeAcceptedSnapshots")
+        )
+        XCTAssertTrue(
+            adapterSource.contains("struct EXP153RUMThirdPartyBoundary")
+        )
+        XCTAssertFalse(
+            adapterSource.contains(
+                "extension EXP153ThirdPartyNavigationContainer: "
+                    + "RUMNavigationTransitionProviding"
+            )
+        )
         XCTAssertTrue(adapterSource.contains("observing: router.statePublisher"))
         XCTAssertTrue(
             adapterSource.contains("observingCurrentDestination:"),

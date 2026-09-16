@@ -51,9 +51,29 @@ private final class ProbeEXP147AttributeContext: ObservableObject {
         for state: EXP147NavigationState
     ) -> [String: Encodable] {
         let screen = EXP147ProbeSemantics.screen(for: state)
+        return attributes(
+            screen: screen,
+            host: "exp147-observed-router-adapter"
+        )
+    }
+
+    func attributes(
+        for snapshot: EXP153ThirdPartyNavigator.Snapshot
+    ) -> [String: Encodable] {
+        let screen = EXP153ProbeSemantics.screen(for: snapshot)
+        return attributes(
+            screen: screen,
+            host: "exp153-third-party-callback-adapter"
+        )
+    }
+
+    private func attributes(
+        screen: String,
+        host: String
+    ) -> [String: Encodable] {
         return [
             ProbeRuntime.Attribute.runID: window.runID,
-            ProbeRuntime.Attribute.host: "exp147-observed-router-adapter",
+            ProbeRuntime.Attribute.host: host,
             ProbeRuntime.Attribute.sourceScene: window.label,
             ProbeRuntime.Attribute.sceneSessionID: sceneSessionID,
             ProbeRuntime.Attribute.screen: screen,
@@ -664,6 +684,9 @@ struct ProbeWindowRoot: View {
         self._exp147Router = StateObject(
             wrappedValue: EXP147NavigationRouter(flow: .messages)
         )
+        self._exp153Navigator = StateObject(
+            wrappedValue: EXP153ThirdPartyNavigator(flow: .messages)
+        )
         self._exp147AttributeContext = StateObject(
             wrappedValue: ProbeEXP147AttributeContext(
                 window: normalizedWindow,
@@ -707,6 +730,7 @@ struct ProbeWindowRoot: View {
     private var scenePhase
     @State private var path: [ProbeRoute] = []
     @StateObject private var exp147Router: EXP147NavigationRouter
+    @StateObject private var exp153Navigator: EXP153ThirdPartyNavigator
     @StateObject private var exp147AttributeContext: ProbeEXP147AttributeContext
     @State private var navigationMutation: UInt64 = 0
     @State private var rumViewBindingGeneration: UInt64 = 0
@@ -1149,7 +1173,20 @@ struct ProbeWindowRoot: View {
     @ViewBuilder
     private var navigationStack: some View {
 #if DEBUG
-        if #available(iOS 27.0, *), ProbeRuntime.usesEXP152NativeDismissCallbacks {
+        if #available(iOS 27.0, *), ProbeRuntime.usesEXP153ThirdPartyCallbackAdapter {
+            EXP153RuntimeProbeView(
+                navigator: exp153Navigator,
+                attributesForSnapshot: exp147AttributeContext.attributes(for:),
+                recordInitialLifecycle: { phase in
+                    ProbeRuntime.emitLifecycleMarker(
+                        window: window,
+                        sceneSessionID: sceneSessionID,
+                        screen: currentSceneScreen,
+                        phase: phase
+                    )
+                }
+            )
+        } else if #available(iOS 27.0, *), ProbeRuntime.usesEXP152NativeDismissCallbacks {
             EXP152RuntimeProbeView(
                 router: exp147Router,
                 attributesForState: exp147AttributeContext.attributes(for:),
@@ -1215,7 +1252,20 @@ struct ProbeWindowRoot: View {
             regularNavigationStack
         }
 #else
-        if #available(iOS 27.0, *), ProbeRuntime.usesEXP152NativeDismissCallbacks {
+        if #available(iOS 27.0, *), ProbeRuntime.usesEXP153ThirdPartyCallbackAdapter {
+            EXP153RuntimeProbeView(
+                navigator: exp153Navigator,
+                attributesForSnapshot: exp147AttributeContext.attributes(for:),
+                recordInitialLifecycle: { phase in
+                    ProbeRuntime.emitLifecycleMarker(
+                        window: window,
+                        sceneSessionID: sceneSessionID,
+                        screen: currentSceneScreen,
+                        phase: phase
+                    )
+                }
+            )
+        } else if #available(iOS 27.0, *), ProbeRuntime.usesEXP152NativeDismissCallbacks {
             EXP152RuntimeProbeView(
                 router: exp147Router,
                 attributesForState: exp147AttributeContext.attributes(for:),
@@ -1586,6 +1636,11 @@ struct ProbeWindowRoot: View {
     }
 
     private var currentSceneScreen: String {
+        if ProbeRuntime.usesEXP153ThirdPartyCallbackAdapter {
+            return EXP153ProbeSemantics.screen(
+                for: exp153Navigator.currentSnapshot
+            )
+        }
         if ProbeRuntime.usesEXP147NavigationFixture {
             return EXP147ProbeSemantics.screen(for: exp147Router.state)
         }
@@ -1605,6 +1660,11 @@ struct ProbeWindowRoot: View {
     }
 
     private var currentSceneRoute: [String] {
+        if ProbeRuntime.usesEXP153ThirdPartyCallbackAdapter {
+            return EXP153ProbeSemantics.route(
+                for: exp153Navigator.currentSnapshot
+            )
+        }
         if ProbeRuntime.usesEXP147NavigationFixture {
             return EXP147ProbeSemantics.route(for: exp147Router.state)
         }
@@ -1654,6 +1714,105 @@ struct ProbeWindowRoot: View {
                     setSwiftUIPresentation(nil)
                 }
             }
+        )
+    }
+
+    private func setEXP153Path(_ value: String) -> ProbeStepExecutionResult {
+        let previousRoute = currentSceneRoute
+        switch value {
+        case "home":
+            exp153Navigator.popToRoot()
+        case "detail-1" where exp153Navigator.currentSnapshot.path.isEmpty:
+            exp153Navigator.push(.thread(1))
+        case "detail-2" where exp153Navigator.currentSnapshot.path.isEmpty:
+            exp153Navigator.push(.thread(2))
+        case "alternate" where exp153Navigator.currentSnapshot.path.isEmpty:
+            exp153Navigator.push(.mentions)
+        default:
+            return .rejected(
+                reason: "unsupported EXP-153 path transition to \(value)"
+            )
+        }
+        recordEXP153NavigationMutation(previousRoute: previousRoute)
+        return .accepted
+    }
+
+    private func setEXP153Presentation(
+        _ value: String
+    ) -> ProbeStepExecutionResult {
+        let previousRoute = currentSceneRoute
+        let dismissedScreen = exp153Navigator.currentSnapshot.presentation.map { _ in
+            EXP153ProbeSemantics.screen(for: exp153Navigator.currentSnapshot)
+        }
+        switch value {
+        case "sheet":
+            exp153Navigator.present(.compose)
+        case "full-screen-cover":
+            exp153Navigator.present(.attachment(1))
+        case "home":
+            exp153Navigator.dismissPresentation()
+        default:
+            return .rejected(
+                reason: "unsupported EXP-153 presentation \(value)"
+            )
+        }
+        recordEXP153NavigationMutation(previousRoute: previousRoute)
+
+        if value == "home", let dismissedScreen {
+            emitEXP153DismissalMarkers(dismissedScreen: dismissedScreen)
+            if dismissedScreen == "full-screen-cover" {
+                recordEXP153AdapterLifetimeAssertion()
+            }
+        }
+        return .accepted
+    }
+
+    private func recordEXP153NavigationMutation(previousRoute: [String]) {
+        navigationMutation &+= 1
+        updateSceneRoute()
+        ProbeRuntime.eventRecorder.record(
+            ProbeSignal(
+                kind: .navigationPathMutation,
+                semanticContext: ProbeSemanticContext(
+                    logicalSceneID: window.label,
+                    nativeSceneID: sceneSessionID,
+                    screen: currentSceneScreen
+                ),
+                previousNavigationPath: previousRoute,
+                navigationPath: currentSceneRoute,
+                mutation: navigationMutation
+            )
+        )
+        ProbeRuntime.recordDestination(
+            window: window,
+            sceneSessionID: sceneSessionID,
+            screen: currentSceneScreen,
+            isCommitted: true
+        )
+        ProbeRuntime.record(
+            "EXP-153 accepted callback source=\(window.label) "
+                + "screen=\(currentSceneScreen) mutation=\(navigationMutation)"
+        )
+    }
+
+    private func recordEXP153AdapterLifetimeAssertion() {
+        let registrations = exp153Navigator.observerRegistrationCount
+        let activeObservers = exp153Navigator.activeObserverCount
+        let didPass = registrations == 1 && activeObservers == 1
+        ProbeRuntime.eventRecorder.record(
+            ProbeSignal(
+                kind: .assertion,
+                semanticContext: ProbeSemanticContext(
+                    logicalSceneID: window.label,
+                    nativeSceneID: sceneSessionID,
+                    screen: currentSceneScreen
+                ),
+                name: ProbeThirdPartyCallbackAdapterContract
+                    .singleRegistrationAssertion,
+                result: didPass ? .pass : .fail,
+                reason:
+                    "registrations=\(registrations) active=\(activeObservers)"
+            )
         )
     }
 
@@ -1856,6 +2015,35 @@ struct ProbeWindowRoot: View {
             guard
                 !Task.isCancelled,
                 exp147Router.state.presentation == nil,
+                currentSceneScreen == revealedScreen
+            else {
+                return
+            }
+            ProbeRuntime.emitLifecycleMarker(
+                window: window,
+                sceneSessionID: sceneSessionID,
+                screen: revealedScreen,
+                phase: settledPhase
+            )
+        }
+    }
+
+    private func emitEXP153DismissalMarkers(dismissedScreen: String) {
+        let revealedScreen = currentSceneScreen
+        let immediatePhase = "\(dismissedScreen)-dismissed-immediate"
+        let settledPhase = "\(dismissedScreen)-dismissed-settled"
+        ProbeRuntime.emitLifecycleMarker(
+            window: window,
+            sceneSessionID: sceneSessionID,
+            screen: revealedScreen,
+            phase: immediatePhase
+        )
+        Task { @MainActor in
+            await Task.yield()
+            try? await Task.sleep(for: .milliseconds(250))
+            guard
+                !Task.isCancelled,
+                exp153Navigator.currentSnapshot.presentation == nil,
                 currentSceneScreen == revealedScreen
             else {
                 return
@@ -2490,6 +2678,9 @@ struct ProbeWindowRoot: View {
                 guard let value = step.value else {
                     return .rejected(reason: "SwiftUI path is missing")
                 }
+                if ProbeRuntime.usesEXP153ThirdPartyCallbackAdapter {
+                    return setEXP153Path(value)
+                }
                 if ProbeRuntime.usesEXP147NavigationFixture {
                     return setEXP147Path(value)
                 }
@@ -2508,6 +2699,9 @@ struct ProbeWindowRoot: View {
             case .setSwiftUIPresentation:
                 guard let value = step.value else {
                     return .rejected(reason: "SwiftUI presentation is missing")
+                }
+                if ProbeRuntime.usesEXP153ThirdPartyCallbackAdapter {
+                    return setEXP153Presentation(value)
                 }
                 if ProbeRuntime.usesEXP147NavigationFixture {
                     return setEXP147Presentation(value)

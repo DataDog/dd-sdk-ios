@@ -135,6 +135,11 @@ enum ProbeNativeDismissCallbackContract {
         "exp152-full-screen-cover-native-on-dismiss-entered"
 }
 
+enum ProbeThirdPartyCallbackAdapterContract {
+    static let singleRegistrationAssertion =
+        "exp153-third-party-adapter-single-registration"
+}
+
 enum ProbeTransitionOutcome: String, Codable, CaseIterable {
     case cancel
     case finish
