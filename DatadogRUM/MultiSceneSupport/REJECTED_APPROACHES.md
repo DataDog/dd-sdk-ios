@@ -133,7 +133,13 @@ Occurrence identity, path commitment, retained destinations, and transition orde
 - Do not require retroactive conformance on an imported third-party navigation
   type. It can warn today and conflict with a future library conformance. Prefer
   an explicit reusable adapter or transition source; optional conformance remains
-  suitable for customer-owned types.
+  suitable for customer-owned types. `EXP-153` proves the reusable-adapter path
+  with a custom library-owned container, one stable registration, and the
+  complete occurrence oracle.
+- Do not claim exact immediate-work semantics when a third-party callback arrives
+  only after the navigation method returns. The accepted `EXP-153` adapter seeds
+  current state synchronously and receives committed snapshots before return;
+  later callbacks need their own timing proof or a weaker claim.
 - Do not claim exact semantics for an opaque container with no accepted-route,
   materialization, transition, router/coordinator, or content-builder signal.
   Keep scene-aware automatic tracking and manual exceptions as the bounded

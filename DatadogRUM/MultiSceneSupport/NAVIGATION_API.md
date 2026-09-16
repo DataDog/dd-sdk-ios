@@ -48,6 +48,10 @@ host reconstruction and scene-local source lifetime. `EXP-150` rejects a plain
 render-time destination value, `EXP-151` accepts one-shot Observation `.didSet`
 over one atomic accepted-state property, and `EXP-152` confirms actual native
 Sheet/Cover `onDismiss` callbacks then use the fresh revealed occurrences.
+`EXP-153` closes a third-party callback-driven path: one dedicated adapter
+around a custom library-owned container reuses the SDK publisher host without
+retroactive conformance, screen edits, navigation-method RUM calls, or another
+SDK input primitive.
 
 The approved behavior is:
 
@@ -523,8 +527,10 @@ tests. The iOS Release and visionOS package builds also pass; the semantic host
 remains iOS 27-only in the current platform conditional. EXP-152 separately
 waits for real presentation content appearance and proves actual Sheet/Cover
 `onDismiss` callbacks run once after accepted Home state, create no extra Home,
-and attribute immediate plus settled work to fresh H3/H4. Custom/third-party and
-genuine concurrent two-scene parity plus API review remain. The continuous
+and attribute immediate plus settled work to fresh H3/H4. EXP-153 separately
+proves that a synchronous accepted-state callback from a custom navigation
+library can feed the existing publisher host through one stable boundary
+adapter. Genuine two-native-scene parity plus API review remain. The continuous
 Observation API is explicitly too late because it delivers at a later suspension
 point. Plain local SwiftUI `@State`
 does not conform to `Observable`, so this candidate must not imply exact
@@ -578,6 +584,27 @@ RUMNavigationHost(transitions: router.rumNavigationTransitions) {
 Datadog may ship optional library adapters without adding those libraries as core
 SDK dependencies. Explicit input is authoritative only for its target and must
 not suppress unrelated automatic containers.
+
+The third-party library does not need to expose Combine or Observation directly.
+EXP-153 accepts an adapter that seeds a current-value stream from the library's
+current accepted snapshot, registers once for synchronous committed-state
+callbacks, and translates route/presentation identities into semantic
+destinations:
+
+```swift
+ThirdPartyRUMNavigationBoundary(navigator: navigator) {
+    ThirdPartyNavigationContainer(navigator: navigator)
+}
+```
+
+This is a conceptual integration shape, not an approved public name. The
+adapter must receive current state synchronously, publish only accepted commits,
+distinguish repeated equal-route occurrences, and remain stable through SwiftUI
+reconstruction. A callback delivered only after the navigation method returns
+does not satisfy the exact immediate-work contract. The accepted EXP-153 run
+uses one registration for H1/D1/H2/Sheet/H3/Cover/H4 and passes all 42 local and
+backend expectations without modifying the custom container's navigation
+methods.
 
 Exact reconstruction has an information boundary. At least one trustworthy
 accepted-route, destination-materialization, transition-completion/cancellation,
@@ -648,9 +675,12 @@ signal: focused atomic-state, ordering, nested-reentrancy, reconstruction,
 teardown, and background-misuse tests pass, and its post-review frozen 38/38
 runtime plus backend session assign both dismissal pairs to fresh underlying
 occurrences. `EXP-152` then closes actual programmatic native callback timing at
-38/38 without moving SDK policy into `onDismiss`. The next proof obligation is
-two-scene and honest custom/explicit adapter parity before public-shape review;
-interactive dismissal and genuine OS disconnect remain hardware gates.
+38/38 without moving SDK policy into `onDismiss`. `EXP-153` closes honest
+callback-driven custom/explicit parity at 42/42 through one stable adapter and
+the existing publisher host. The next proof obligation is serial
+two-native-scene Observation parity before public-shape review; simultaneous
+visibility, interactive dismissal, and genuine OS disconnect remain hardware
+gates.
 
 ### Resolver and path model
 
@@ -752,7 +782,7 @@ capture and no semantic view. Runtime precedence, repeated source resolution,
 and adversarial replacement each pass 43/43 with the same exact backend owners
 and no decoy view. The complete RUM run passes
 1,262/1,263 and the sole unrelated timeseries timing failure passes immediately
-in isolation; the current native probe passes 155/155. The synchronous real-reader bounce
+in isolation; the current native probe passes 161/161. The synchronous real-reader bounce
 passes 17/17, focused disconnect/lifetime tests pass 4/4, and handler tests pass
 84/84 at their recorded checkpoint. `EXP-150` itself fails 17/38 because its
 fresh H3/H4 occurrences start after synchronous post-dismiss work; backend
@@ -762,7 +792,11 @@ remain hardware gates. `EXP-151` passes the replacement synchronous oracle, and
 `EXP-152` passes actual native callback characterization with eight views, 11
 actions, 11 Resources, and zero errors/crashes in backend session
 `fee27d61-1eb7-4eb6-8525-7af74a53ed7e`. Repository lint and the Xcode 27 Release
-build are clean at the EXP-152 checkpoint. API-surface verification remains the
+build are clean at the EXP-152 checkpoint. `EXP-153` then passes 42/42 with one
+stable callback-adapter registration; backend session
+`f2d2fb24-02d6-4bd9-9df9-ee353b899e69` contains eight views, 13 actions, 13
+Resources, and zero errors/crashes. Repository lint and the Xcode 27 Release
+build also pass at its signed harness checkpoint. API-surface verification remains the
 expected-only rejection of unapproved experimental symbols; no prototype
 baseline is changed before normal review.
 
@@ -806,8 +840,12 @@ Semantic SwiftUI navigation requires:
 - the same container with a stable optional capability receives exact semantic
   tracking;
 - an explicit transition source overrides capability and automatic inference;
-- native convenience, conforming custom, and explicit third-party-style adapters
-  produce identical occurrence semantics;
+- native convenience, existing-router, and callback-driven third-party adapters
+  produce identical occurrence semantics without retroactive conformance;
+- a callback-driven adapter seeds the current accepted snapshot synchronously,
+  publishes only accepted commits before the navigation method returns,
+  distinguishes equal-route occurrences, and keeps one registration through
+  SwiftUI reconstruction;
 - Home H1 -> Detail D1 -> Home H2 with distinct IDs;
 - equal same-named Detail D1 -> Detail D2 occurrences;
 - same-turn push/revert and interactive cancellation with no speculative view;
@@ -836,9 +874,11 @@ No product-behavior decision blocks the next experiment. `EXP-148` validates the
 SDK-owned low-cost publisher path, `EXP-149` closes its deterministic lifetime
 and scene-isolation matrix, `EXP-151` accepts the iOS 27 Observation input for
 one atomic accepted-state property, and `EXP-152` closes programmatic native
-dismissal callback timing. EXP-146's low-level semantic oracle alone remains
-insufficient for API promotion. The next implementation experiment is
-custom/third-party and two-scene adapter parity. The remaining questions are
+dismissal callback timing. `EXP-153` closes callback-driven custom/third-party
+parity through one boundary and the existing publisher host. EXP-146's
+low-level semantic oracle alone remains insufficient for API promotion. The next
+implementation experiment is serial two-native-scene Observation parity. The
+remaining questions are
 public shape, compatibility, and implementation-boundary review:
 
 1. Which parts of the transition source remain internal, become adapter-author

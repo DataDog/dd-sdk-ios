@@ -359,6 +359,18 @@ back-to-back and nested MainActor mutations, cancellation/teardown, and a safe
 background-mutation fallback. Plain local `@State` is not an `Observable` router
 and remains outside that candidate's exactness claim.
 
+For a callback-driven custom or third-party navigator, preserve the imported
+container and navigation methods. Build one boundary adapter that reads the
+current accepted snapshot synchronously, registers once for accepted commits,
+and feeds the existing publisher host. Deterministically test equal-route
+occurrence identity, cancelled versus committed transitions, atomic presentation
+replacement, token teardown, and registration count. The live oracle must add
+initial `onAppear` and immediate-task action/Resource pairs so it can distinguish
+a correctly seeded root from a callback that begins too late. `EXP-153` records
+the accepted recipe and its `registrations=1 active=1` runtime assertion. A
+callback delivered only after the customer's navigation method returns needs a
+separate timing experiment and cannot inherit EXP-153's exactness claim.
+
 Observe one atomically updated accepted-state property. A projection that reads
 separate route and presentation properties receives one `.didSet` for each write;
 those are separate committed signals, so an intermediate combination is expected.
@@ -507,6 +519,18 @@ A signal-driven scenario that needs no external touch does not require a
 Follow the live Xcode MCP instruction about delegating device interaction even
 for an automated run. The delegate owns only device state and artifacts; source
 editing and semantic interpretation remain with the main task.
+
+When delegation is required, the same delegated worker must start the workspace
+interaction session, install and run the app, capture artifacts, and end that
+session. Interaction keys are scoped to the agent context that created them: a
+worker given a parent-created key can receive `Session with that key doesn't
+exist`, while immediately reusing the parent's human-readable session identifier
+can still be rejected as recently used. Delegate before
+`DeviceInteractionStartWorkspaceSession` and use a never-used identifier for the
+worker-owned session. If this mismatch is discovered after the clean uninstall
+boundary, that boundary may be retained only when logs prove that no install,
+launch, interaction, or container mutation occurred afterward; otherwise repeat
+the complete clean precondition.
 
 `waitForSignal` proves that a matching signal exists after the driver's current
 observation cursor; it does not by itself prove that a new semantic occurrence
