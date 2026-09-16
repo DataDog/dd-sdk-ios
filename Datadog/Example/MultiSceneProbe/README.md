@@ -70,6 +70,7 @@ The catalog currently preserves these experiment families:
 | `swiftui.semantic-host.observation-router-adapter` | `EXP-151` | Accepted experimental input over one atomic iOS 27 `@Observable` accepted-state property. Post-review run `exp151-observation-router-postreview-20260916T083131Z` passes 38/38; backend session `ea9adc0e-5a00-4290-9580-fb4df6bc18e7` has eight views, 11 actions, 11 Resources, no error bucket/crash, and exact fresh-Home ownership for immediate and settled sheet/cover dismissal work. Focused tests cover sequential/nested mutation, independent-property semantics, reconstruction, teardown, and invalid background mutation. This accepts the timing primitive, not the public API spelling or opaque local `@State`. |
 | `swiftui.semantic-host.observation-native-dismiss-callbacks` | `EXP-152` | Harness-only native callback characterization over the accepted Observation adapter. It waits for real Sheet/Cover content appearance, then uses the standard SwiftUI `onDismiss` callbacks. Frozen run `exp152-native-dismiss-callbacks-20260916T094300Z` passes 38/38; each callback fires once after accepted Home state, creates no extra Home, and its immediate/settled action and Resource pairs own fresh H3/H4. Backend session `fee27d61-1eb7-4eb6-8525-7af74a53ed7e` contains eight views, 11 actions, 11 Resources, and zero errors/crashes. Keep EXP-151's stronger synchronous mutation oracle; gesture dismissal remains physical/human work. |
 | `swiftui.semantic-host.third-party-callback-adapter` | `EXP-153` | A library-owned custom container publishes synchronous accepted snapshots to one dedicated adapter around the container. The adapter reuses the SDK-owned publisher host without screen or navigation-method edits, retroactive conformance, or native-container substitution. Frozen run `exp153-third-party-callback-20260916T103122Z` passes 42/42 plus `registrations=1 active=1`; backend session `f2d2fb24-02d6-4bd9-9df9-ee353b899e69` has eight views, 13 actions, 13 Resources, exact fresh-return ownership, and zero errors/crashes. This closes reliable callback-driven adapter parity, not opaque-state inference or public API review. |
+| `swiftui.semantic-host.observation-router-two-scenes-serial` | `EXP-154` | Two real native scenes independently mount the existing per-window Observation router. Corrected frozen run `exp154-observation-two-scenes-serial-fix-20260916T111921Z` passes 25/25; backend session `a6a5afd5-8089-4996-9805-ed62fb76927d` has seven views, six actions, six Resources, distinct A/B H1/D1/fresh-H2 owners, six exact marker pairs, and zero errors/crashes. Signed correction `f92d72909` removes a redundant readiness wait after `open-window`. This closes serial scene isolation, not simultaneous visibility or hardware lifecycle acceptance. |
 | `swiftui.coexistence.semantic-a-automatic-b` | `EXP-118` | Signal-driven; simulator-inconclusive, physical hardware required |
 | `swiftui.coexistence.automatic-manual-sheet` | `EXP-119` | Signal-driven FAIL: immediate `onDismiss` work retains outgoing Sheet; settled work uses fresh automatic Home |
 | `swiftui.coexistence.automatic-scene-targeted-sheet` | `EXP-123`–`EXP-125` | Handler-only baseline FAIL; suppression-bound successor PASS 14/14 with semantic Sheet, no automatic duplicate, and fresh Home before immediate dismiss work |
@@ -116,7 +117,7 @@ view-stop/Resource observations, repeated-name completion, a missing event, a
 forbidden view, and an ignored native gesture. An exact main-actor scene
 registry adds stable logical/native identity, weak window ownership, readiness,
 activation, geometry, route, and disconnect generations without serializing its
-future Execution Context seam. The generated test plan passes 161/161. The stack
+future Execution Context seam. The generated test plan passes 162/162. The stack
 return, abort, replacement, split-selection, and deterministic UIKit transition
 scenarios, plus exact scene open/close/activation, drive their exact scene and wait for
 observable readiness, lifecycle state, path/selection,
@@ -166,7 +167,9 @@ fresh H3/H4 and create no extra Home. `EXP-153` adds a genuinely custom visual
 container and proves that one synchronous accepted-state callback adapter can
 reuse the SDK-owned publisher host with no per-screen or per-method RUM code.
 Its 42/42 local/backend result includes initial lifecycle ownership and one
-stable registration. The current probe suite passes 161/161.
+stable registration. `EXP-154` then mounts the accepted Observation boundary in
+two real native scenes and proves independent A/B H1/D1/fresh-H2 ownership at
+25/25 locally and in backend intake. The current probe suite passes 162/162.
 None of these experiments approves a stable public declaration. Keep the
 migration result separate from the probe's semantic PASS. The real-reader bounce
 covers synchronous generation cancellation only;

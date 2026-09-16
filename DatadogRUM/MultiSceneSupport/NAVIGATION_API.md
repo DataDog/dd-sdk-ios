@@ -51,7 +51,11 @@ Sheet/Cover `onDismiss` callbacks then use the fresh revealed occurrences.
 `EXP-153` closes a third-party callback-driven path: one dedicated adapter
 around a custom library-owned container reuses the SDK publisher host without
 retroactive conformance, screen edits, navigation-method RUM calls, or another
-SDK input primitive.
+SDK input primitive. `EXP-154` closes serial native-scene isolation: two real
+scenes independently mount the Observation boundary, produce distinct
+H1/D1/fresh-H2 occurrences, and retain exact action/Resource owners. This makes
+the semantic shape ready for normal API review without claiming simultaneous
+window visibility or hardware lifecycle acceptance.
 
 The approved behavior is:
 
@@ -530,7 +534,8 @@ waits for real presentation content appearance and proves actual Sheet/Cover
 and attribute immediate plus settled work to fresh H3/H4. EXP-153 separately
 proves that a synchronous accepted-state callback from a custom navigation
 library can feed the existing publisher host through one stable boundary
-adapter. Genuine two-native-scene parity plus API review remain. The continuous
+adapter. EXP-154 then proves serial parity across two real native scenes. Normal
+API review and genuine simultaneous-window acceptance remain. The continuous
 Observation API is explicitly too late because it delivers at a later suspension
 point. Plain local SwiftUI `@State`
 does not conform to `Observable`, so this candidate must not imply exact
@@ -677,10 +682,11 @@ runtime plus backend session assign both dismissal pairs to fresh underlying
 occurrences. `EXP-152` then closes actual programmatic native callback timing at
 38/38 without moving SDK policy into `onDismiss`. `EXP-153` closes honest
 callback-driven custom/explicit parity at 42/42 through one stable adapter and
-the existing publisher host. The next proof obligation is serial
-two-native-scene Observation parity before public-shape review; simultaneous
-visibility, interactive dismissal, and genuine OS disconnect remain hardware
-gates.
+the existing publisher host. `EXP-154` closes serial two-native-scene
+Observation parity at 25/25 with six exact marker pairs. The public-shape review
+can now begin; simultaneous visibility, interactive dismissal, and genuine OS
+disconnect remain hardware gates rather than prerequisites for reviewing the
+semantic integration contract.
 
 ### Resolver and path model
 
@@ -782,7 +788,7 @@ capture and no semantic view. Runtime precedence, repeated source resolution,
 and adversarial replacement each pass 43/43 with the same exact backend owners
 and no decoy view. The complete RUM run passes
 1,262/1,263 and the sole unrelated timeseries timing failure passes immediately
-in isolation; the current native probe passes 161/161. The synchronous real-reader bounce
+in isolation; the current native probe passes 162/162. The synchronous real-reader bounce
 passes 17/17, focused disconnect/lifetime tests pass 4/4, and handler tests pass
 84/84 at their recorded checkpoint. `EXP-150` itself fails 17/38 because its
 fresh H3/H4 occurrences start after synchronous post-dismiss work; backend
@@ -796,7 +802,13 @@ build are clean at the EXP-152 checkpoint. `EXP-153` then passes 42/42 with one
 stable callback-adapter registration; backend session
 `f2d2fb24-02d6-4bd9-9df9-ee353b899e69` contains eight views, 13 actions, 13
 Resources, and zero errors/crashes. Repository lint and the Xcode 27 Release
-build also pass at its signed harness checkpoint. API-surface verification remains the
+build also pass at its signed harness checkpoint. `EXP-154` then passes 25/25
+across two real native scenes; backend session
+`a6a5afd5-8089-4996-9805-ed62fb76927d` contains seven views, six actions, six
+Resources, and zero errors/crashes, with distinct A/B H1/D1/H2 owners. Focused
+tests pass 2/2, the full probe passes 162/162, lint and Release pass, and signed
+readiness correction `f92d72909` freezes the accepted harness source.
+API-surface verification remains the
 expected-only rejection of unapproved experimental symbols; no prototype
 baseline is changed before normal review.
 
@@ -875,11 +887,11 @@ SDK-owned low-cost publisher path, `EXP-149` closes its deterministic lifetime
 and scene-isolation matrix, `EXP-151` accepts the iOS 27 Observation input for
 one atomic accepted-state property, and `EXP-152` closes programmatic native
 dismissal callback timing. `EXP-153` closes callback-driven custom/third-party
-parity through one boundary and the existing publisher host. EXP-146's
-low-level semantic oracle alone remains insufficient for API promotion. The next
-implementation experiment is serial two-native-scene Observation parity. The
-remaining questions are
-public shape, compatibility, and implementation-boundary review:
+parity through one boundary and the existing publisher host. `EXP-154` closes
+serial two-native-scene Observation parity with exact per-scene owners. EXP-146's
+low-level semantic oracle alone remains insufficient for API promotion, but the
+combined accepted evidence is now ready for normal review. The remaining
+questions are public shape, compatibility, and implementation-boundary review:
 
 1. Which parts of the transition source remain internal, become adapter-author
    SPI, or warrant public exposure, and what are the exact host/adapter names?

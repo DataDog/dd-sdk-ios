@@ -434,6 +434,13 @@ $(inherited)
 Do not edit the shared Xcode scheme for an individual experiment. Preserve
 scheme-provided arguments with `$(inherited)`.
 
+`open-window` is an acknowledged harness step: it waits for and consumes the
+target scene's `scene-ready` signal before completing. Do not immediately follow
+it with `wait-for-scene-ready` for the same target unless the scenario explicitly
+expects a second lifecycle readiness event. `EXP-154` attempt 1 proved that the
+duplicate wait starts after the first signal's acknowledgement and deterministically
+times out; this is a harness failure, not evidence about the SDK or simulator.
+
 Every conclusive attempt must have a unique run ID. A relaunch that intentionally
 continues the same attempt may reuse its run ID only when the scenario contract
 explicitly permits it.
