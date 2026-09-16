@@ -283,12 +283,13 @@ Do not close these rows with simulator prefixes or callback counts. A human
 gesture closes a row only when path, coordinator, lifecycle, and RUM UUID evidence
 prove the intended interaction.
 
-The first iPadOS 27 preflight (`EXP-156`) stopped before mutation. Xcode listed
-the physical iPad as eligible, but DeviceInteraction exposed simulators only and
-CoreDevice could not maintain the local-network tunnel long enough to inventory
-apps or processes. There is no SDK verdict. Before resuming this table, require
-the awake and unlocked device to remain connected through repeated non-mutating
-inventory calls; then begin with the unchanged `EXP-131` scenario.
+`EXP-156` now passes the wired-device gate and exact clean boundary, and an
+`arm64` physical build succeeds. Runtime remains blocked before launch because
+the host has zero valid code-signing identities and iPadOS rejects the unsigned
+probe with `0xe800801c`. There is no SDK verdict. Before resuming this table,
+configure a local Apple Development identity and team without committing either
+to the probe project; then repeat the clean boundary and begin with the unchanged
+`EXP-131` scenario.
 
 | Priority | Experiments | Expected outcome | Prerequisite | Implementation boundary | Acceptance | Required environment |
 | --- | --- | --- | --- | --- | --- | --- |
@@ -309,9 +310,9 @@ inventory calls; then begin with the unchanged `EXP-131` scenario.
 
 ### Automated physical execution order
 
-Once `EXP-156`'s connection gate passes, use one physical-device owner and a
-fresh run ID and clean boundary for each independent scenario. Run in this order
-so foundational attribution failures stop dependent batches early:
+Once `EXP-156`'s connection and local-signing gates pass, use one physical-device
+owner and a fresh run ID and clean boundary for each independent scenario. Run
+in this order so foundational attribution failures stop dependent batches early:
 
 1. `operations.cross-scene.lifecycle` (`EXP-131`) — inferred context and the
    raw/reduced Operation model;
@@ -395,11 +396,13 @@ correction: `f92d72909`; signed EXP-155 SDK, scenario, and harness checkpoints:
 `b0524bb5b`, `3e567a494`, and `eb1dd2fdc`.
 
 Physical execution checkpoint: `EXP-156` is infrastructure-inconclusive before
-any app mutation. The iPad is an eligible Xcode destination, but Xcode's
-interaction API omitted physical devices and CoreDevice returned disconnect
-error 4000 and `Network.NWError 60` during app/process inventory. There is no run
-ID, RUM session, upload, or SDK result. Resume at `EXP-131` only after a stable
-awake/unlocked-device preflight.
+runtime. Two preflights failed with CoreDevice disconnect error 4000,
+`Network.NWError 60`, and no USB enumeration. The third proves a stable wired
+iPad, repeated inventories, exact clean uninstall, and a successful `arm64`
+physical build. The host has zero valid code-signing identities; iPadOS rejects
+the unsigned app with CoreDevice error 3002 / `0xe800801c`, and final app/process
+inventories remain empty. There is no run ID, RUM session, upload, or SDK result.
+Resume at `EXP-131` after local development signing is configured.
 
 Earlier `EXP-146` engine/adapter explicit and optional-capability runs each pass
 42/42; runtime precedence, stable reconstruction, and adversarial replacement

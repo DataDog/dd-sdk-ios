@@ -563,10 +563,12 @@ listed as eligible. First require all of the following non-mutating checks:
 CoreDevice error 4000 (`device disconnected immediately after connecting`),
 `Network.NWError 60` (`Operation timed out`), or a paired-but-disconnected state
 fails this preflight. Stop before mutation, record an infrastructure-
-inconclusive attempt, and preserve the named SDK scenario unchanged. `EXP-156`
-records this exact boundary: the lock-state read succeeded once, but subsequent
-app/process inventories failed; no clean boundary, install, launch, run ID, RUM
-session, or SDK verdict exists.
+inconclusive attempt, and preserve the named SDK scenario unchanged. The first
+two `EXP-156` preflights record this boundary: one reached lock state before
+app/process inventory failed, and the next found only a disconnected paired
+record. Neither produced a clean boundary, install, launch, run ID, RUM session,
+or SDK verdict. The later wired retry closed this connection gate before exposing
+the separate signing prerequisite below.
 
 When the user reports a cable connection but CoreDevice exposes only
 `localNetwork`, confirm USB enumeration independently (for example,
@@ -580,6 +582,35 @@ destination, while the CoreDevice identifier can appear in `devicectl` output.
 The transport (`usb`, `local-network`, or another reported path) is evidence too;
 a physically attached device can still be reached only through a flaky
 local-network tunnel.
+
+### Physical-device signing preflight
+
+Run signing diagnostics before terminate/uninstall work. The probe project
+intentionally sets `CODE_SIGNING_ALLOWED=NO` and `CODE_SIGNING_REQUIRED=NO` for
+its simulator-first workflow, so a successful `iphoneos` compile can still
+produce an app that no physical device can install.
+
+1. Run `security find-identity -v -p codesigning` and require a valid Apple
+   Development identity.
+2. Resolve a development team through developer-local Xcode settings or command
+   overrides. Do not commit a team identifier, certificate, or profile to the
+   probe project.
+3. Build the exact iPad destination as `arm64`. An unconstrained build can select
+   `arm64e` while local Swift package products contain `arm64` modules.
+4. Verify `codesign -d --verbose=4 <app>` reports a signature and verify the
+   expected embedded development profile before installing.
+5. Only then establish the clean device boundary and install.
+
+Zero valid identities is a user/environment prerequisite, not an SDK or source
+failure. Do not create, import, revoke, or regenerate signing credentials without
+explicit user involvement. An unsigned install rejection with CoreDevice error
+3002, `ApplicationVerificationFailed`, or `0xe800801c` proves only that the
+physical runtime never began. Preserve the build and install log, prove the app
+and process remain absent, and keep the named scenario pending unchanged.
+
+`EXP-156` records the concrete boundary: the wired preflight and `arm64` build
+pass, but the host reports zero identities and the unsigned probe is rejected.
+Its preserved build result and install log are not RUM evidence.
 
 Follow the live Xcode MCP instruction about delegating device interaction even
 for an automated run. The delegate owns only device state and artifacts; source
