@@ -91,7 +91,7 @@ internal final class RemoteConfigurationProvider {
     let directory: Directory
     let httpClient: HTTPClient
 
-    private let notificationCenter: NotificationCenter
+    private let notificationCenterProvider: NotificationCenterProvider
     private let dateProvider: DateProvider
     private let minimumSyncInterval: TimeInterval = 300
     @ReadWriteLock
@@ -104,7 +104,7 @@ internal final class RemoteConfigurationProvider {
         site: DatadogSite,
         directory: Directory,
         httpClient: HTTPClient,
-        notificationCenter: NotificationCenter,
+        notificationCenterProvider: NotificationCenterProvider,
         customURL: URL? = nil,
         dateProvider: DateProvider = SystemDateProvider()
     ) {
@@ -113,7 +113,7 @@ internal final class RemoteConfigurationProvider {
         self.customURL = customURL
         self.directory = directory
         self.httpClient = httpClient
-        self.notificationCenter = notificationCenter
+        self.notificationCenterProvider = notificationCenterProvider
         self.dateProvider = dateProvider
     }
 
@@ -151,8 +151,25 @@ internal final class RemoteConfigurationProvider {
         // present after a previous successful fetch — absent on first launch.
         readCache(telemetry: telemetry).map(handler)
 
-#if canImport(UIKit)
-        foregroundObserver = notificationCenter.addObserver(
+#if os(macOS)
+        foregroundObserver = notificationCenterProvider.workspaceCenter.addObserver(
+            forName: WorkspaceNotifications.didWake,
+            object: nil,
+            queue: nil
+        ) { [weak self] _ in
+            guard let self else {
+                return
+            }
+            if let last = self.lastSyncDate {
+                let elapsed = self.dateProvider.now.timeIntervalSince(last)
+                if elapsed >= 0, elapsed < self.minimumSyncInterval {
+                    return
+                }
+            }
+            self.sync(handler, telemetry: telemetry)
+        }
+#elseif canImport(UIKit)
+        foregroundObserver = notificationCenterProvider.applicationCenter.addObserver(
             forName: ApplicationNotifications.willEnterForeground,
             object: nil,
             queue: nil
@@ -187,8 +204,10 @@ internal final class RemoteConfigurationProvider {
     /// Safe to call multiple times and from any thread.
     func stop() {
         _foregroundObserver.mutate { observer in
-#if canImport(UIKit)
-            observer.map { notificationCenter.removeObserver($0) }
+#if os(macOS)
+            observer.map { notificationCenterProvider.workspaceCenter.removeObserver($0) }
+#elseif canImport(UIKit)
+            observer.map { notificationCenterProvider.applicationCenter.removeObserver($0) }
 #endif
             observer = nil
         }
