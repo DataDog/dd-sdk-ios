@@ -53,7 +53,10 @@ final class ProbeScenarioRunnerTests: XCTestCase {
                 "swiftui.semantic-api.presentation-replacement",
                 "swiftui.semantic-api.sibling-container-isolation",
                 "swiftui.semantic-host.explicit-source",
+                "swiftui.semantic-host.explicit-precedence",
                 "swiftui.semantic-host.optional-capability",
+                "swiftui.semantic-host.capability-reconstruction",
+                "swiftui.semantic-host.capability-replacement",
                 "swiftui.semantic-host.automatic-fallback",
                 "swiftui.coexistence.automatic-keyed-manual-view",
                 "swiftui.coexistence.nested-keyed-manual-view",
@@ -648,6 +651,90 @@ final class ProbeScenarioRunnerTests: XCTestCase {
         XCTAssertEqual(scenario.steps, explicit.steps)
         XCTAssertEqual(scenario.completionConditions, explicit.completionConditions)
         XCTAssertEqual(scenario.expectedSemanticTimeline, explicit.expectedSemanticTimeline)
+    }
+
+    func testSemanticNavigationHostExplicitPrecedenceUsesTheExactSemanticOracle() throws {
+        let scenario = try XCTUnwrap(
+            ProbeScenarioCatalog.scenario(
+                identifier: "swiftui.semantic-host.explicit-precedence"
+            )
+        )
+        let explicit = try XCTUnwrap(
+            ProbeScenarioCatalog.scenario(
+                identifier: "swiftui.semantic-host.explicit-source"
+            )
+        )
+
+        XCTAssertTrue(ProbeScenarioCatalog.usesObservableDriver(scenario))
+        XCTAssertTrue(ProbeScenarioCatalog.usesSemanticNavigationHostSPI(scenario))
+        XCTAssertTrue(ProbeScenarioCatalog.usesExplicitSemanticNavigationHostSPI(scenario))
+        XCTAssertTrue(
+            ProbeScenarioCatalog.usesExplicitSemanticNavigationPrecedenceSPI(scenario)
+        )
+        XCTAssertFalse(ProbeScenarioCatalog.usesCapabilitySemanticNavigationHostSPI(scenario))
+        XCTAssertTrue(ProbeScenarioCatalog.usesExactSemanticNavigationHostSPI(scenario))
+        XCTAssertEqual(scenario.steps, explicit.steps)
+        XCTAssertEqual(scenario.expectedSemanticTimeline, explicit.expectedSemanticTimeline)
+        XCTAssertTrue(scenario.completionConditions.contains { expectation in
+            expectation.kind == .noViewStarted
+                && expectation.screen
+                    == ProbeSemanticHostContract.conflictingCapabilityScreen
+                && expectation.rumViewOrigin == .semantic
+        })
+    }
+
+    func testSemanticNavigationHostCapabilityLifetimeUsesTheExactSemanticOracle() throws {
+        let explicit = try XCTUnwrap(
+            ProbeScenarioCatalog.scenario(
+                identifier: "swiftui.semantic-host.explicit-source"
+            )
+        )
+        let scenarios = try [
+            (
+                XCTUnwrap(
+                    ProbeScenarioCatalog.scenario(
+                        identifier: "swiftui.semantic-host.capability-reconstruction"
+                    )
+                ),
+                ProbeSemanticHostContract.capabilityReconstructedAssertion,
+                false
+            ),
+            (
+                XCTUnwrap(
+                    ProbeScenarioCatalog.scenario(
+                        identifier: "swiftui.semantic-host.capability-replacement"
+                    )
+                ),
+                ProbeSemanticHostContract.capabilityReplacedAssertion,
+                true
+            )
+        ]
+
+        for (scenario, assertion, replacesSource) in scenarios {
+            XCTAssertTrue(ProbeScenarioCatalog.usesObservableDriver(scenario))
+            XCTAssertTrue(ProbeScenarioCatalog.usesSemanticNavigationHostSPI(scenario))
+            XCTAssertFalse(ProbeScenarioCatalog.usesExplicitSemanticNavigationHostSPI(scenario))
+            XCTAssertTrue(ProbeScenarioCatalog.usesCapabilitySemanticNavigationHostSPI(scenario))
+            XCTAssertTrue(
+                ProbeScenarioCatalog.usesObservedSemanticNavigationCapabilitySPI(scenario)
+            )
+            XCTAssertEqual(
+                ProbeScenarioCatalog.replacesSemanticNavigationCapabilitySource(scenario),
+                replacesSource
+            )
+            XCTAssertTrue(ProbeScenarioCatalog.usesExactSemanticNavigationHostSPI(scenario))
+            XCTAssertEqual(scenario.expectedSemanticTimeline, explicit.expectedSemanticTimeline)
+            XCTAssertTrue(scenario.steps.contains { step in
+                step.kind == .waitForSignal
+                    && step.signal == "assertion:" + assertion
+            })
+            XCTAssertTrue(scenario.completionConditions.contains { expectation in
+                expectation.kind == .noViewStarted
+                    && expectation.screen
+                        == ProbeSemanticHostContract.conflictingCapabilityScreen
+                    && expectation.rumViewOrigin == .semantic
+            })
+        }
     }
 
     func testSemanticNavigationHostOpaqueContainerKeepsAutomaticFallback() throws {

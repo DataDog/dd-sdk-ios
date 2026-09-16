@@ -88,8 +88,17 @@ enum ProbeRuntime {
     static let usesExplicitSemanticNavigationHostSPI = scenario.map(
         ProbeScenarioCatalog.usesExplicitSemanticNavigationHostSPI
     ) ?? false
+    static let usesExplicitSemanticNavigationPrecedenceSPI = scenario.map(
+        ProbeScenarioCatalog.usesExplicitSemanticNavigationPrecedenceSPI
+    ) ?? false
     static let usesCapabilitySemanticNavigationHostSPI = scenario.map(
         ProbeScenarioCatalog.usesCapabilitySemanticNavigationHostSPI
+    ) ?? false
+    static let usesObservedSemanticNavigationCapabilitySPI = scenario.map(
+        ProbeScenarioCatalog.usesObservedSemanticNavigationCapabilitySPI
+    ) ?? false
+    static let replacesSemanticNavigationCapabilitySource = scenario.map(
+        ProbeScenarioCatalog.replacesSemanticNavigationCapabilitySource
     ) ?? false
     static let usesAutomaticSemanticNavigationHostSPI = scenario.map(
         ProbeScenarioCatalog.usesAutomaticSemanticNavigationHostSPI

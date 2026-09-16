@@ -29,7 +29,10 @@ enum ProbeScenarioCatalog {
         "swiftui.semantic-api.canonicalized-link-write",
         "swiftui.semantic-api.sibling-container-isolation",
         "swiftui.semantic-host.explicit-source",
+        "swiftui.semantic-host.explicit-precedence",
         "swiftui.semantic-host.optional-capability",
+        "swiftui.semantic-host.capability-reconstruction",
+        "swiftui.semantic-host.capability-replacement",
         "swiftui.semantic-host.automatic-fallback",
         "swiftui.coexistence.automatic-keyed-manual-view",
         "swiftui.coexistence.nested-keyed-manual-view",
@@ -73,7 +76,10 @@ enum ProbeScenarioCatalog {
         swiftUISemanticAPICanonicalizedLinkWrite,
         swiftUISemanticAPISiblingContainerIsolation,
         swiftUISemanticHostExplicitSource,
+        swiftUISemanticHostExplicitPrecedence,
         swiftUISemanticHostOptionalCapability,
+        swiftUISemanticHostCapabilityReconstruction,
+        swiftUISemanticHostCapabilityReplacement,
         swiftUISemanticHostAutomaticFallback,
         swiftUICoexistenceAutomaticKeyedManualView,
         swiftUICoexistenceNestedKeyedManualView,
@@ -179,10 +185,31 @@ enum ProbeScenarioCatalog {
 
     static func usesExplicitSemanticNavigationHostSPI(_ scenario: ProbeScenario) -> Bool {
         scenario.identifier == swiftUISemanticHostExplicitSource.identifier
+            || usesExplicitSemanticNavigationPrecedenceSPI(scenario)
+    }
+
+    static func usesExplicitSemanticNavigationPrecedenceSPI(
+        _ scenario: ProbeScenario
+    ) -> Bool {
+        scenario.identifier == swiftUISemanticHostExplicitPrecedence.identifier
     }
 
     static func usesCapabilitySemanticNavigationHostSPI(_ scenario: ProbeScenario) -> Bool {
         scenario.identifier == swiftUISemanticHostOptionalCapability.identifier
+            || usesObservedSemanticNavigationCapabilitySPI(scenario)
+    }
+
+    static func usesObservedSemanticNavigationCapabilitySPI(
+        _ scenario: ProbeScenario
+    ) -> Bool {
+        scenario.identifier == swiftUISemanticHostCapabilityReconstruction.identifier
+            || scenario.identifier == swiftUISemanticHostCapabilityReplacement.identifier
+    }
+
+    static func replacesSemanticNavigationCapabilitySource(
+        _ scenario: ProbeScenario
+    ) -> Bool {
+        scenario.identifier == swiftUISemanticHostCapabilityReplacement.identifier
     }
 
     static func usesAutomaticSemanticNavigationHostSPI(_ scenario: ProbeScenario) -> Bool {
@@ -993,6 +1020,28 @@ enum ProbeScenarioCatalog {
         )
     )
 
+    /// Supplies a conflicting exact capability on the customer container while
+    /// also passing the real source explicitly. The decoy source must never own
+    /// a view, and the full explicit-source oracle must remain unchanged.
+    private static let swiftUISemanticHostExplicitPrecedence = ProbeScenario(
+        identifier: "swiftui.semantic-host.explicit-precedence",
+        trackingMode: .navigationOccurrence,
+        layout: .stack,
+        steps: swiftUISemanticAPICompleteDestination.steps,
+        completionConditions:
+            swiftUISemanticAPICompleteDestination.completionConditions + [
+                ProbeExpectation(
+                    .noViewStarted,
+                    scene: "scene-A",
+                    screen: ProbeSemanticHostContract.conflictingCapabilityScreen,
+                    rumViewOrigin: .semantic
+                )
+            ],
+        expectedSemanticTimeline: semanticNavigationAPITimeline(
+            initialLifecycleMarkers: ["on-appear", "task-immediate"]
+        )
+    )
+
     /// Uses the same customer-owned visual container as the automatic fallback
     /// arm, but conditionally conforms its exact-capability specialization. The
     /// host discovers the stable source without an explicit initializer argument.
@@ -1002,6 +1051,64 @@ enum ProbeScenarioCatalog {
         layout: .stack,
         steps: swiftUISemanticAPICompleteDestination.steps,
         completionConditions: swiftUISemanticAPICompleteDestination.completionConditions,
+        expectedSemanticTimeline: semanticNavigationAPITimeline(
+            initialLifecycleMarkers: ["on-appear", "task-immediate"]
+        )
+    )
+
+    /// Forces the customer container's capability property to resolve again
+    /// after SwiftUI reconstruction while returning the same stable source. The
+    /// repeated resolution must neither replay nor disconnect the occurrence.
+    private static let swiftUISemanticHostCapabilityReconstruction = ProbeScenario(
+        identifier: "swiftui.semantic-host.capability-reconstruction",
+        trackingMode: .navigationOccurrence,
+        layout: .stack,
+        steps: swiftUISemanticAPICompleteDestination.steps + [
+            ProbeStep(
+                .waitForSignal,
+                scene: "scene-A",
+                signal: "assertion:"
+                    + ProbeSemanticHostContract.capabilityReconstructedAssertion
+            )
+        ],
+        completionConditions:
+            swiftUISemanticAPICompleteDestination.completionConditions + [
+                ProbeExpectation(
+                    .noViewStarted,
+                    scene: "scene-A",
+                    screen: ProbeSemanticHostContract.conflictingCapabilityScreen,
+                    rumViewOrigin: .semantic
+                )
+            ],
+        expectedSemanticTimeline: semanticNavigationAPITimeline(
+            initialLifecycleMarkers: ["on-appear", "task-immediate"]
+        )
+    )
+
+    /// Adversarially returns a different exact source after the first capability
+    /// resolution. The host must pin the original source, reject the decoy, and
+    /// continue the same complete destination stream without replay.
+    private static let swiftUISemanticHostCapabilityReplacement = ProbeScenario(
+        identifier: "swiftui.semantic-host.capability-replacement",
+        trackingMode: .navigationOccurrence,
+        layout: .stack,
+        steps: swiftUISemanticAPICompleteDestination.steps + [
+            ProbeStep(
+                .waitForSignal,
+                scene: "scene-A",
+                signal: "assertion:"
+                    + ProbeSemanticHostContract.capabilityReplacedAssertion
+            )
+        ],
+        completionConditions:
+            swiftUISemanticAPICompleteDestination.completionConditions + [
+                ProbeExpectation(
+                    .noViewStarted,
+                    scene: "scene-A",
+                    screen: ProbeSemanticHostContract.conflictingCapabilityScreen,
+                    rumViewOrigin: .semantic
+                )
+            ],
         expectedSemanticTimeline: semanticNavigationAPITimeline(
             initialLifecycleMarkers: ["on-appear", "task-immediate"]
         )

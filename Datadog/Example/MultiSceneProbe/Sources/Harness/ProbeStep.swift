@@ -110,6 +110,15 @@ enum ProbeSemanticRouterContract {
     static let settledAssertion = "semantic-router-write-settled"
 }
 
+enum ProbeSemanticHostContract {
+    static let capabilityReconstructedAssertion =
+        "semantic-host-capability-reconstructed"
+    static let capabilityReplacedAssertion =
+        "semantic-host-capability-replaced"
+    static let conflictingCapabilityScreen = "semantic-capability-decoy"
+    static let conflictingCapabilityViewName = "ProbeSemanticCapabilityDecoyView"
+}
+
 enum ProbeTransitionOutcome: String, Codable, CaseIterable {
     case cancel
     case finish

@@ -66,6 +66,74 @@ private final class ProbeSemanticNavigationTransitionDriver {
     }
 }
 
+private enum ProbeSemanticNavigationCapabilityLifetimeMode {
+    case stable
+    case replacement
+}
+
+/// Records that SwiftUI reconstructed the customer container and optionally
+/// returns an adversarial replacement source after the first resolution. The
+/// host must retain the first selected source in both modes.
+@MainActor
+private final class ProbeObservedSemanticNavigationCapability {
+    private let primaryDriver: ProbeSemanticNavigationTransitionDriver
+    private let replacementDriver: ProbeSemanticNavigationTransitionDriver
+    private let logicalSceneID: String
+    private let mode: ProbeSemanticNavigationCapabilityLifetimeMode
+    private var resolutionCount = 0
+    private var didRecordRepeatedResolution = false
+
+    init(
+        primaryDriver: ProbeSemanticNavigationTransitionDriver,
+        replacementDriver: ProbeSemanticNavigationTransitionDriver,
+        logicalSceneID: String,
+        mode: ProbeSemanticNavigationCapabilityLifetimeMode
+    ) {
+        self.primaryDriver = primaryDriver
+        self.replacementDriver = replacementDriver
+        self.logicalSceneID = logicalSceneID
+        self.mode = mode
+    }
+
+    @available(iOS 27.0, *)
+    func resolveTransitions() -> RUMNavigationTransitions {
+        resolutionCount += 1
+        guard resolutionCount > 1 else {
+            return primaryDriver.transitions
+        }
+
+        if !didRecordRepeatedResolution {
+            didRecordRepeatedResolution = true
+            let assertionName: String
+            switch mode {
+            case .stable:
+                assertionName = ProbeSemanticHostContract.capabilityReconstructedAssertion
+            case .replacement:
+                assertionName = ProbeSemanticHostContract.capabilityReplacedAssertion
+            }
+            ProbeRuntime.eventRecorder.record(
+                ProbeSignal(
+                    kind: .assertion,
+                    semanticContext: ProbeSemanticContext(
+                        logicalSceneID: logicalSceneID,
+                        screen: "home"
+                    ),
+                    name: assertionName,
+                    result: .pass,
+                    reason: "capability-resolution-count=\(resolutionCount)"
+                )
+            )
+        }
+
+        switch mode {
+        case .stable:
+            return primaryDriver.transitions
+        case .replacement:
+            return replacementDriver.transitions
+        }
+    }
+}
+
 /// Customer-owned navigation container used by the host integration matrix.
 /// The visual implementation is identical in both arms. Supplying the exact
 /// capability type opts only that specialization into semantic transitions;
@@ -96,6 +164,30 @@ where Capability == RUMNavigationTransitions {
 }
 
 private struct ProbeOpaqueNavigationCapability {}
+
+@available(iOS 27.0, *)
+@MainActor
+private struct ProbeObservedNavigationContainer<Content: View>: View,
+    RUMNavigationTransitionProviding {
+    let capability: ProbeObservedSemanticNavigationCapability
+    @ViewBuilder let content: Content
+
+    init(
+        capability: ProbeObservedSemanticNavigationCapability,
+        @ViewBuilder content: () -> Content
+    ) {
+        self.capability = capability
+        self.content = content()
+    }
+
+    var rumNavigationTransitions: RUMNavigationTransitions {
+        capability.resolveTransitions()
+    }
+
+    var body: some View {
+        content
+    }
+}
 
 private enum ProbeSplitSelection: Hashable {
     case detail(Int)
@@ -484,16 +576,41 @@ struct ProbeWindowRoot: View {
         routedWindow = window
         let normalizedWindow = window.normalized(forRunID: ProbeRuntime.runID)
         let initialPath = Self.initialNavigationPath()
+        let semanticTransitionDriver = ProbeSemanticNavigationTransitionDriver(
+            initialDestination: ProbeRuntime.usesExactSemanticNavigationHostSPI
+                ? Self.initialSemanticRUMView(
+                    window: normalizedWindow,
+                    route: initialPath.last
+                )
+                : nil
+        )
+        let conflictingTransitionDriver = ProbeSemanticNavigationTransitionDriver(
+            initialDestination: Self.semanticRUMView(
+                window: normalizedWindow,
+                sceneSessionID: "unresolved",
+                readerControlGeneration: 0,
+                screen: ProbeSemanticHostContract.conflictingCapabilityScreen,
+                name: ProbeSemanticHostContract.conflictingCapabilityViewName
+            )
+        )
+        let capabilityLifetimeMode: ProbeSemanticNavigationCapabilityLifetimeMode =
+            ProbeRuntime.replacesSemanticNavigationCapabilitySource
+                ? .replacement
+                : .stable
         self.window = normalizedWindow
         self._path = State(initialValue: initialPath)
         self._semanticTransitionDriver = State(
-            initialValue: ProbeSemanticNavigationTransitionDriver(
-                initialDestination: ProbeRuntime.usesExactSemanticNavigationHostSPI
-                    ? Self.initialSemanticRUMView(
-                        window: normalizedWindow,
-                        route: initialPath.last
-                    )
-                    : nil
+            initialValue: semanticTransitionDriver
+        )
+        self._conflictingSemanticTransitionDriver = State(
+            initialValue: conflictingTransitionDriver
+        )
+        self._observedSemanticNavigationCapability = State(
+            initialValue: ProbeObservedSemanticNavigationCapability(
+                primaryDriver: semanticTransitionDriver,
+                replacementDriver: conflictingTransitionDriver,
+                logicalSceneID: normalizedWindow.label,
+                mode: capabilityLifetimeMode
             )
         )
     }
@@ -524,6 +641,10 @@ struct ProbeWindowRoot: View {
     @State private var destinationBindingGeneration: UInt64 = 0
     @State private var navigationOccurrenceSource = ProbeNavigationOccurrenceSource()
     @State private var semanticTransitionDriver: ProbeSemanticNavigationTransitionDriver
+    @State private var conflictingSemanticTransitionDriver:
+        ProbeSemanticNavigationTransitionDriver
+    @State private var observedSemanticNavigationCapability:
+        ProbeObservedSemanticNavigationCapability
     @State private var splitSelection: ProbeSplitSelection? =
         ProbeRuntime.startsSplitWithoutSelection ? nil : .detail(1)
     @State private var splitRUMViewBindingGeneration: UInt64 = 1
@@ -949,13 +1070,30 @@ struct ProbeWindowRoot: View {
 
     @ViewBuilder
     private var navigationStack: some View {
-        if #available(iOS 27.0, *), ProbeRuntime.usesExplicitSemanticNavigationHostSPI {
+        if
+            #available(iOS 27.0, *),
+            ProbeRuntime.usesExplicitSemanticNavigationPrecedenceSPI
+        {
             RUMNavigationHost(transitions: semanticTransitionDriver.transitions) {
-                NavigationStack(path: navigationPath) {
-                    navigationRootContent
-                        .navigationDestination(for: ProbeRoute.self) { route in
-                            navigationDestinationContent(for: route)
-                        }
+                ProbeCustomerNavigationContainer(
+                    capability: conflictingSemanticTransitionDriver.transitions
+                ) {
+                    standardNavigationStack
+                }
+            }
+        } else if #available(iOS 27.0, *), ProbeRuntime.usesExplicitSemanticNavigationHostSPI {
+            RUMNavigationHost(transitions: semanticTransitionDriver.transitions) {
+                standardNavigationStack
+            }
+        } else if
+            #available(iOS 27.0, *),
+            ProbeRuntime.usesObservedSemanticNavigationCapabilitySPI
+        {
+            RUMNavigationHost {
+                ProbeObservedNavigationContainer(
+                    capability: observedSemanticNavigationCapability
+                ) {
+                    standardNavigationStack
                 }
             }
         } else if #available(iOS 27.0, *), ProbeRuntime.usesCapabilitySemanticNavigationHostSPI {
@@ -963,12 +1101,7 @@ struct ProbeWindowRoot: View {
                 ProbeCustomerNavigationContainer(
                     capability: semanticTransitionDriver.transitions
                 ) {
-                    NavigationStack(path: navigationPath) {
-                        navigationRootContent
-                            .navigationDestination(for: ProbeRoute.self) { route in
-                                navigationDestinationContent(for: route)
-                            }
-                    }
+                    standardNavigationStack
                 }
             }
         } else if #available(iOS 27.0, *), ProbeRuntime.usesAutomaticSemanticNavigationHostSPI {
@@ -976,12 +1109,7 @@ struct ProbeWindowRoot: View {
                 ProbeCustomerNavigationContainer(
                     capability: ProbeOpaqueNavigationCapability()
                 ) {
-                    NavigationStack(path: navigationPath) {
-                        navigationRootContent
-                            .navigationDestination(for: ProbeRoute.self) { route in
-                                navigationDestinationContent(for: route)
-                            }
-                    }
+                    standardNavigationStack
                 }
             }
         } else if #available(iOS 27.0, *), ProbeRuntime.usesSemanticNavigationSPI {
@@ -1015,6 +1143,15 @@ struct ProbeWindowRoot: View {
             } destinationContent: { route in
                 navigationDestinationContent(for: route)
             }
+        }
+    }
+
+    private var standardNavigationStack: some View {
+        NavigationStack(path: navigationPath) {
+            navigationRootContent
+                .navigationDestination(for: ProbeRoute.self) { route in
+                    navigationDestinationContent(for: route)
+                }
         }
     }
 

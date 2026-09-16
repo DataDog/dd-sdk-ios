@@ -5694,8 +5694,8 @@ private struct RUMSemanticNavigationHostLifetimeModifier: SwiftUI.ViewModifier {
 ///
 /// The host attaches a scene-scoped semantic engine without replacing the
 /// customer's visual navigation container. Opaque content continues through
-/// ordinary automatic view tracking until an exact transition source is
-/// supplied by a future experimental overload.
+/// ordinary automatic view tracking unless an exact transition source is
+/// supplied explicitly or through the optional capability.
 @_spi(Experimental)
 @available(iOS 27.0, *)
 @MainActor
