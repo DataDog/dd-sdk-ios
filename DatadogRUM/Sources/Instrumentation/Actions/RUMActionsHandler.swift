@@ -245,10 +245,9 @@ internal final class RUMActionsHandler: RUMActionsHandling {
     }
 }
 
-#if !os(watchOS)
-/// Thread-scoped handoff used only while UIKit dispatches a concrete UI event.
-/// It prevents a request synchronously created by scene B's target-action code
-/// from inheriting scene A's eventually-consistent process context.
+/// Platform-neutral adapter for the context captured while dispatching UI events.
+/// It remains available to Resource tracking on platforms without UIKit, where
+/// no UI event context is supplied.
 internal enum RUMUIEventNetworkContext {
     static var currentRUMContext: RUMCoreContext? {
         RUMContextHandoff.current?.rumContext
@@ -278,6 +277,7 @@ internal enum RUMUIEventNetworkContext {
     }
 }
 
+#if !os(watchOS)
 private final class RUMUIEventContextResolver {
     weak var snapshotProvider: RUMContextSnapshotProviding?
     let target: RUMCommandTarget
