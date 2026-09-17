@@ -319,6 +319,7 @@ ordered acceptance contract is in
 | EXP-162 | 2026-09-17 | PASS · D01/D02 | Platform compatibility | Two failing full-target controls; watchOS RUM/macOS WebView Debug and Release pass; 70 Resource/action and 28 WebView iOS tests plus lint pass. | [active record](Experiments/EXP-143-199.md#exp-162--restore-watchos-resource-and-macos-webview-compilation) |
 | EXP-163 | 2026-09-17 | PASS · D12; T02 restored | Existing-API compatibility | Three recipient metadata failures reproduced; 212 affected tests and strict source/test lint pass. Own overdue-stop attributes retained; peer metadata remains isolated. | [active record](Experiments/EXP-143-199.md#exp-163--preserve-overdue-action-stop-attributes-without-peer-leakage) |
 | EXP-164 | 2026-09-17 | PASS · D09 | Controller thread compatibility | Two failing getter controls; 31 affected tests pass. Mounted fixture 19/19, zero background reads/MTC diagnostics versus control 5 reads/4 diagnostics. Tooling-invalid attempts retained. | [active record](Experiments/EXP-143-199.md#exp-164--preserve-controller-api-caller-thread-compatibility) |
+| EXP-165 | PLANNED | D11: legacy native/WebView Replay correlation with strict peer exclusion | [Record](Experiments/EXP-143-199.md#exp-165--preserve-legacy-nativewebview-replay-correlation) |
 
 ## Simulator-inconclusive and hardware-required evidence
 
