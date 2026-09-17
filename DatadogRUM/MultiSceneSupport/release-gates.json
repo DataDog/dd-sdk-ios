@@ -306,7 +306,7 @@
       "environment": "iOS 27 simulator, focused compatibility tests, exact mapper and Datadog backend owners",
       "completion_mode": "explicit target where customer-callable; captured call-site ownership internally",
       "status": "OPEN",
-      "evidence": ""
+      "evidence": "EXP-180 defined before implementation: explicit flag targets, generation-scoped Flags message-bus capture, internal metric/FBC routing,8 paired native checkpoints and whole-session backend. Results/EXP-180-flags-internal-mutations.json. Not accepted."
     },
     {
       "id": "T08",

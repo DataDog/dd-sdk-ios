@@ -1,0 +1,21 @@
+{
+  "experiment": "EXP-180",
+  "status": "DEFINED",
+  "gate": "T07",
+  "gates_closed": [],
+  "control_revision": "db4a96dfabd3b0c3054203d9069905749e55907c",
+  "control_sdk_revision": "e2ba9afe561a0a6d5afae16c828350f883e0425c",
+  "definition": "Experiments/EXP-143-199.md#exp-180--target-feature-flags-and-preserve-internal-mutation-ownership",
+  "native_contract": {
+    "scenario": "flags.explicit-target.internal-mutations-cross-scene-serial",
+    "checkpoints": 8,
+    "marker_errors": 16,
+    "views": 3,
+    "resources": 0,
+    "crashes": 0,
+    "app_expectations": 34,
+    "simultaneous_visibility_claimed": false
+  },
+  "unit_attempts": [],
+  "native_attempts": []
+}

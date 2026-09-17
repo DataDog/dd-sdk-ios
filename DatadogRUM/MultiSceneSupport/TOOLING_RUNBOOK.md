@@ -1218,3 +1218,11 @@ The named timing runner binds marker assertions to the immediately preceding
 mapper snapshot sequence and exact document version. Its synthetic-key projection
 and malformed-duration controls are specified in the
 [timing runner procedure](../../tools/multi-scene/acceptance/README.md#timing-contract-exp-179t06).
+
+For asynchronous feature messages, distinguish the sender's captured ownership
+from the receiver's current handoff. Replay messages after leaving the origin
+scope and under a peer; reject foreign or invalidated core generations. Internal
+metrics may not emit a snapshot immediately, so use an independently accepted
+view-update trigger before each payload marker and bind the exact prior snapshot.
+The bounded flag/internal oracle is in
+[EXP-180](Experiments/EXP-143-199.md#exp-180--target-feature-flags-and-preserve-internal-mutation-ownership).

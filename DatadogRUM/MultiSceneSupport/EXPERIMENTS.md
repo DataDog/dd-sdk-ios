@@ -197,6 +197,7 @@ remain available for a specific question.
 | <a id="exp-177"></a>EXP-177 | T04 | PASS | 376 SDK/8 ObjC, Release;168 probe,24/24 local/61 signals,1 callback and exact backend9 errors/3 views/2 actions with7/2 counts,0 Resources/crashes;67 Python/3 connector controls | [record](Experiments/EXP-143-199.md#exp-177--target-current-view-errors-without-changing-resource-owners) |
 | <a id="exp-178"></a>EXP-178 | T05 | PASS | T05 closed: SDK compatibility plus42/42 native expectations and20 exact typed backend markers; serial topology only. | [record](Experiments/EXP-143-199.md#exp-178--target-view-attributes-and-removal) |
 | <a id="exp-179"></a>EXP-179 | T06, A01 | PASS | T06 closed: 8 paired overwrite checkpoints,34/34 expectations,16 backend markers and exact final timing/loading values; serial topology only. | [record](Experiments/EXP-143-199.md#exp-179--target-custom-timing-and-loading-time) |
+| <a id="exp-180"></a>EXP-180 | T07, A01 | DEFINED | Explicit flags, captured Flags-bus ownership and internal metric/attribute isolation; no acceptance yet. | [record](Experiments/EXP-143-199.md#exp-180--target-feature-flags-and-preserve-internal-mutation-ownership) |
 
 Original detailed shards and frozen records remain unchanged. Superseded index
 prose is preserved in the [documentation checkpoint](Experiments/DOCUMENTATION_CHECKPOINT_EXP-178.md).
