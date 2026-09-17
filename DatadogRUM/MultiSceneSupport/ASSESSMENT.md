@@ -74,8 +74,11 @@ publication, live observer membership and exact two-host teardown. All six bound
 component reviews now pass. EXP-175 repairs T03's existing late-completion
 regression at signed `aefe337b6`: four failing controls and379 affected tests.
 Resource metrics/completion keep their original scope while new-session and peer
-actions retain zero foreign counts. Defined EXP-176 covers remaining T03 explicit-start/backend acceptance; physical
-scene, API and final release gates remain separate.
+actions retain zero foreign counts. EXP-176 prepares explicit Resource starts at signed `5e41d0b11`:397 affected
+tests across396+1,8 Objective-C API checks, Release and strict lint. Its controls
+also repair representative drift during ordinary session restoration and lost
+network errors after response headers. Native mapper/backend acceptance remains
+pending; physical scene, API and final release gates remain separate.
 
 The released SDK baseline is not semantically safe for applications with
 concurrent scenes. Process-representative view state and process-global SwiftUI

@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "candidate_revision": "aefe337b675623b2ad6e0b1a346e45ff4677e1bf",
+  "candidate_revision": "5e41d0b116f1e700fe4ac997202fc2df5fdfd1cf",
   "gate_count": 66,
   "counts": {
     "CLOSED": 30,

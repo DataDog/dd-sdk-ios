@@ -1374,3 +1374,14 @@ Backend inventories use complete session queries so restored run IDs cannot hide
 Keep the mechanical target-plumbing control separate from the actual SDK routing
 repair. Reuse the clean-install, source/build, bridge nonce and failed-attempt
 rules; do not copy a previous run/session identifier.
+
+EXP-176 SDK preparation is signed `5e41d0b11`. The397 affected checks are396
+passing cases in the broad run plus the corrected final case; preserve both
+artifacts and do not describe them as one397/397 run.8 Objective-C API checks and
+Release pass. The SDK test host is legacy and supplies no UIWindowScene; actual
+Swift/Objective-C target overload execution belongs in the native acceptance app.
+A URLSession failure may include response headers: require one error and no
+success event for that start, with the original owner/status. Preserve the failed
+representative-restoration controls and response-plus-error attempt. `devicectl`
+now lists simulated devices too; filter `hardwareProperties.reality == physical`
+before reporting hardware availability. Physical iPad/iPhone remain unavailable.

@@ -55,7 +55,8 @@ Objective-C Release exposure still require normal API review.
 3. D10/R06 accepted presentations and R05 observer reentrancy pass EXP-173/174.
    Execute T03 Resource start/completion ownership before the remaining bounded
    telemetry gates. EXP-175 repairs its concrete late-completion regression;
-   defined EXP-176 explicit-start/URLSession/backend acceptance closes the full gate.
+   EXP-176 SDK is prepared; finish its native mapper/URLSession/backend acceptance
+   to close the full gate. Preserve its restoration and partial-response controls.
    All six responsibility reviews have bounded evidence.
 4. Close the early compatibility/performance gates in available environments;
    C06 remains blocked without a minimum-OS runtime. Resume T03–T14 only after

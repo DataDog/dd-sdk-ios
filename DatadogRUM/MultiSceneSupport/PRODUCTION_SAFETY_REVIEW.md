@@ -57,7 +57,11 @@ three deterministic failures repaired and346 tests; [evidence](Results/EXP-174-o
 EXP-175 repairs the separately listed pre-existing late Resource/action count
 defect at signed `aefe337b6`: four failing controls and379 affected tests;
 [evidence](Results/EXP-175-resource-completion.json). T03 explicit-start/backend,
-physical and final release gates remain. EXP-176 is defined for T03 completion. Keep this review as the disposition and historical evidence record; it
+physical and final release gates remain. EXP-176 SDK preparation also repairs two reproduced T03 risks: restoration
+selected the first branch instead of the previous representative, and URLSession
+success removed a Resource before a response-plus-error completion. Signed
+`5e41d0b11` passes397 affected checks across396+1,8 Objective-C checks and Release;
+[native/backend acceptance is pending](Results/EXP-176-resource-start.json). Keep this review as the disposition and historical evidence record; it
 is not release certification.
 
 **Original review at the source revision below**
