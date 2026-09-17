@@ -5,7 +5,9 @@
  */
 
 import XCTest
+@_spi(Internal)
 import TestUtilities
+@_spi(Internal)
 @testable import DatadogInternal
 @testable import DatadogRUM
 
@@ -679,6 +681,7 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
         let sceneIdentifier = RUMSceneIdentifier(rawValue: "scene-B")
         let request: URLRequest = .mockWith(url: "https://www.example.com/resource")
         let result = RUMUIEventNetworkContext.withValue(
+            owner: commandSubscriber.rumContextHandoffOwner,
             sceneIdentifier: sceneIdentifier,
             rumContext: nil
         ) {
@@ -717,7 +720,7 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
         receiveCommands.expectedFulfillmentCount = 2
         commandSubscriber.onCommandReceived = { _ in receiveCommands.fulfill() }
 
-        let provider = NetworkContextCoreProvider()
+        let provider = NetworkContextCoreProvider(rumContextHandoffOwner: commandSubscriber.rumContextHandoffOwner)
         let networkFeature = NetworkInstrumentationFeature(
             networkContextProvider: provider,
             messageReceiver: provider
@@ -727,6 +730,7 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
         let request: URLRequest = .mockWith(url: "https://third-party.example/resource")
 
         let interceptionResult = RUMUIEventNetworkContext.withValue(
+            owner: commandSubscriber.rumContextHandoffOwner,
             sceneIdentifier: sceneIdentifier,
             rumContext: nil
         ) {
@@ -756,6 +760,39 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
             try XCTUnwrap(commandSubscriber.receivedCommands[1] as? RUMStopResourceCommand).target,
             .scene(sceneIdentifier)
         )
+    }
+
+    func testGivenForeignCoreDispatch_resourceStartAndCompletionKeepConsumerOwnership() throws {
+        let ownID = UUID()
+        let own: RUMCoreContext = .mockWith(sessionID: UUID(), viewID: ownID.uuidString)
+        let origins: [RUMCoreContext?] = [
+            .mockWith(applicationID: own.applicationID, sessionID: UUID(), viewID: UUID().uuidString),
+            .mockWith(applicationID: "another-application", viewID: UUID().uuidString),
+            nil
+        ]
+        for ownContext in [own, nil] {
+            for origin in origins {
+                let before = commandSubscriber.receivedCommands.count
+                let result = RUMContextHandoff.withValue(owner: .init(), rumContext: origin, sceneIdentifier: "foreign") {
+                    handler.modify(
+                        request: .mockWith(url: "https://third.example/resource"),
+                        headerTypes: [],
+                        networkContext: NetworkContext(rumContext: ownContext)
+                    )
+                }
+                let interception = URLSessionTaskInterception(
+                    request: ImmutableRequest(request: result.0), isFirstParty: false, trackingMode: .automatic
+                )
+                interception.register(response: HTTPURLResponse.mockResponseWith(statusCode: 200), error: nil)
+                handler.interceptionDidStart(interception: interception, capturedStates: result.2.map { [$0] } ?? [])
+                handler.interceptionDidComplete(interception: interception)
+                let commands = Array(commandSubscriber.receivedCommands.dropFirst(before))
+                XCTAssertEqual(commands.count, 2)
+                let expected: RUMCommandTarget = ownContext == nil ? .processRepresentative : .view(.init(rawValue: ownID))
+                XCTAssertEqual(try XCTUnwrap(commands.first as? RUMStartResourceCommand).target, expected)
+                XCTAssertEqual(try XCTUnwrap(commands.last as? RUMStopResourceCommand).target, expected)
+            }
+        }
     }
 
     func testGivenInterleavedCapturedRUMViews_whenInterceptionsComplete_itDoesNotSwapResourceOwners() throws {

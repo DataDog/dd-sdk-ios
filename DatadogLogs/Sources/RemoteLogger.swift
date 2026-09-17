@@ -119,7 +119,7 @@ internal final class RemoteLogger: LoggerProtocol, Sendable {
         // on user thread:
         let date = dateProvider.now
         let threadName = Thread.current.dd.name
-        let rumContextHandoff = RUMContextHandoff.current
+        let rumContextHandoff = RUMContextHandoff.current(in: featureScope)
 
         // capture current tags and attributes before opening the write event context
         let tags = loggerTags.getTags()

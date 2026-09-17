@@ -162,14 +162,14 @@ internal final class RUMActionsHandler: RUMActionsHandling {
             : nil
         let resolver = RUMUIEventContextResolver(
             snapshotProvider: snapshotProvider,
-            target: target,
-            dateProvider: dateProvider,
+            sceneIdentifier: sceneIdentifier,
             excludedUserActionID: excludedUserActionID
         )
         let synchronousContext = processedEvent.didPublishAction
             ? initialContext.map { $0.replacingUserActionID(with: nil) }
             : initialContext
         return RUMUIEventNetworkContext.withValue(
+            owner: subscriber?.rumContextHandoffOwner,
             sceneIdentifier: sceneIdentifier,
             rumContext: synchronousContext,
             contextProvider: { resolver.currentContext() },
@@ -249,15 +249,16 @@ internal final class RUMActionsHandler: RUMActionsHandling {
 /// It remains available to Resource tracking on platforms without UIKit, where
 /// no UI event context is supplied.
 internal enum RUMUIEventNetworkContext {
-    static var currentRUMContext: RUMCoreContext? {
-        RUMContextHandoff.current?.rumContext
+    static func currentRUMContext(for owner: RUMContextHandoff.Owner?) -> RUMCoreContext? {
+        RUMContextHandoff.current(for: owner)?.rumContext
     }
 
-    static var currentSceneIdentifier: RUMSceneIdentifier? {
-        RUMContextHandoff.current?.sceneIdentifier.map { RUMSceneIdentifier(rawValue: $0) }
+    static func currentSceneIdentifier(for owner: RUMContextHandoff.Owner?) -> RUMSceneIdentifier? {
+        RUMContextHandoff.current(for: owner)?.sceneIdentifier.map { RUMSceneIdentifier(rawValue: $0) }
     }
 
     static func withValue<T>(
+        owner: RUMContextHandoff.Owner?,
         sceneIdentifier: RUMSceneIdentifier,
         rumContext: RUMCoreContext?,
         contextProvider: (() -> RUMCoreContext?)? = nil,
@@ -267,6 +268,7 @@ internal enum RUMUIEventNetworkContext {
     ) -> T {
         let provider = contextProvider ?? { rumContext }
         return RUMContextHandoff.withValue(
+            owner: owner,
             rumContextProvider: provider,
             sceneIdentifier: sceneIdentifier.rawValue,
             hasPendingUserAction: hasPendingUserAction,
@@ -280,26 +282,23 @@ internal enum RUMUIEventNetworkContext {
 #if !os(watchOS)
 private final class RUMUIEventContextResolver {
     weak var snapshotProvider: RUMContextSnapshotProviding?
-    let target: RUMCommandTarget
-    let dateProvider: DateProvider
+    let sceneIdentifier: RUMSceneIdentifier
     let excludedUserActionID: String?
 
     init(
         snapshotProvider: RUMContextSnapshotProviding?,
-        target: RUMCommandTarget,
-        dateProvider: DateProvider,
+        sceneIdentifier: RUMSceneIdentifier,
         excludedUserActionID: String?
     ) {
         self.snapshotProvider = snapshotProvider
-        self.target = target
-        self.dateProvider = dateProvider
+        self.sceneIdentifier = sceneIdentifier
         self.excludedUserActionID = excludedUserActionID
     }
 
     func currentContext() -> RUMCoreContext? {
         guard let context = snapshotProvider?.rumContextSnapshot(
-            for: target,
-            at: dateProvider.now
+            for: .scene(sceneIdentifier),
+            at: nil
         ) else {
             return nil
         }

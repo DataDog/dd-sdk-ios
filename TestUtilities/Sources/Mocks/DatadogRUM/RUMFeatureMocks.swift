@@ -8,6 +8,7 @@ import Foundation
 #if !os(watchOS)
 import UIKit
 #endif
+@_spi(Internal)
 import DatadogInternal
 import XCTest
 
@@ -1463,6 +1464,9 @@ public class RUMContextProviderMock: RUMContextProvider {
 // MARK: - Auto Instrumentation Mocks
 
 public class RUMCommandSubscriberMock: RUMCommandSubscriber {
+    @_spi(Internal)
+    public let rumContextHandoffOwner: RUMContextHandoff.Owner? = .init()
+
     public var onCommandReceived: ((RUMCommand) -> Void)?
     public var receivedCommands: [RUMCommand] = []
     public var lastReceivedCommand: RUMCommand? { receivedCommands.last }

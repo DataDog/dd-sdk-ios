@@ -132,7 +132,7 @@ internal final class URLSessionRUMResourcesHandler: DatadogURLSessionHandlerSupp
         let rumViewID = networkContext?.rumContext?.viewID
             .flatMap(UUID.init(uuidString:))
             .map(RUMUUID.init(rawValue:))
-        let sceneIdentifier = RUMUIEventNetworkContext.currentSceneIdentifier
+        let sceneIdentifier = RUMUIEventNetworkContext.currentSceneIdentifier(for: subscriber?.rumContextHandoffOwner)
         let target = rumViewID.map(RUMCommandTarget.view)
             ?? sceneIdentifier.map(RUMCommandTarget.scene)
             ?? .processRepresentative

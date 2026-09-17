@@ -6,12 +6,30 @@
 
 import Foundation
 
-/// Request-local RUM context propagated through structured Swift tasks.
-///
-/// This is SPI because it only connects first-party SDK modules. The public
-/// logging, tracing, and networking APIs do not expose or accept this value.
+/// Identifies the core lifetime shared by first-party feature scopes.
+/// Custom and NOP scopes need not conform and receive no UI-event override.
+@_spi(Internal)
+public protocol RUMContextHandoffOwnerProviding {
+    var rumContextHandoffOwner: RUMContextHandoff.Owner? { get }
+}
+
+/// Request-local RUM context scoped to one SDK lifetime.
 @_spi(Internal)
 public enum RUMContextHandoff {
+    /// An opaque core-generation token. It owns no core, feature or UI object.
+    public final class Owner: @unchecked Sendable {
+        @ReadWriteLock
+        private var isActive = true
+
+        public init() {}
+
+        public func invalidate() {
+            isActive = false
+        }
+
+        fileprivate var isValid: Bool { isActive }
+    }
+
     public struct CurrentValue {
         public let rumContext: RUMCoreContext?
         public let sceneIdentifier: String?
@@ -20,46 +38,67 @@ public enum RUMContextHandoff {
     }
 
     private struct Value {
+        let owner: Owner
         let rumContextProvider: () -> RUMCoreContext?
         let sceneIdentifier: String
         let hasPendingUserAction: Bool
         let excludedUserActionID: String?
     }
 
-    private static let rumContextKey = "\(String(reflecting: RUMCoreContext.self)).ui-event-network-context"
-    private static let sceneIdentifierKey = "\(String(reflecting: RUMCoreContext.self)).ui-event-scene-identifier"
-    private static let pendingUserActionKey = "\(String(reflecting: RUMCoreContext.self)).ui-event-pending-user-action"
-    private static let excludedUserActionIDKey = "\(String(reflecting: RUMCoreContext.self)).ui-event-excluded-user-action-id"
+    private struct Snapshot {
+        let owner: Owner
+        let context: CurrentValue
+    }
 
+    /// One reusable cell per dispatching thread avoids boxing the RUM context
+    /// into Foundation on every event. No owner or context survives scope exit.
+    private final class ThreadState {
+        var current: Snapshot?
+        var outerOwners: [Snapshot] = []
+    }
+
+    private static let threadStateKey: NSString = "com.datadoghq.rum.ui-event-context-state"
     @TaskLocal private static var value: Value?
+    @TaskLocal private static var outerOwners: [Value] = []
 
-    /// Returns the synchronous thread override when present, otherwise the
-    /// value inherited by the current structured Swift task. A non-nil result
-    /// with a nil `rumContext` is intentional: the source scene is known but
-    /// does not yet have a RUM view, so consumers must not use another scene's
-    /// process-representative context.
-    public static var current: CurrentValue? {
-        let dictionary = Thread.current.threadDictionary
-        if dictionary[rumContextKey] != nil {
-            return CurrentValue(
-                rumContext: dictionary[rumContextKey] as? RUMCoreContext,
-                sceneIdentifier: dictionary[sceneIdentifierKey] as? String,
-                hasPendingUserAction: dictionary[pendingUserActionKey] as? Bool == true,
-                excludedUserActionID: dictionary[excludedUserActionIDKey] as? String
-            )
+    public static func owner(in scope: Any) -> Owner? {
+        (scope as? RUMContextHandoffOwnerProviding)?.rumContextHandoffOwner
+    }
+
+    public static func current(in scope: Any) -> CurrentValue? {
+        current(for: owner(in: scope))
+    }
+
+    /// A present result with nil context is authoritative only for its owner.
+    /// Synchronous dispatch uses its entry snapshot. Inherited tasks refresh the
+    /// matching scene through the provider after the thread scope has unwound.
+    public static func current(for owner: Owner?) -> CurrentValue? {
+        guard let owner, owner.isValid else {
+            return nil
         }
-        guard let value else {
+        if let state = Thread.current.threadDictionary[threadStateKey] as? ThreadState {
+            if let current = state.current, current.owner === owner {
+                return current.context
+            }
+            if let outer = state.outerOwners.last(where: { $0.owner === owner }) {
+                return outer.context
+            }
+        }
+        let matchingValue = value?.owner === owner
+            ? value : outerOwners.last(where: { $0.owner === owner })
+        guard let matchingValue else {
             return nil
         }
         return CurrentValue(
-            rumContext: value.rumContextProvider(),
-            sceneIdentifier: value.sceneIdentifier,
-            hasPendingUserAction: value.hasPendingUserAction,
-            excludedUserActionID: value.excludedUserActionID
+            rumContext: matchingValue.rumContextProvider(),
+            sceneIdentifier: matchingValue.sceneIdentifier,
+            hasPendingUserAction: matchingValue.hasPendingUserAction,
+            excludedUserActionID: matchingValue.excludedUserActionID
         )
     }
 
     public static func withValue<T>(
+        owner: Owner?,
         rumContext: RUMCoreContext?,
         sceneIdentifier: String,
         hasPendingUserAction: Bool = false,
@@ -67,6 +106,7 @@ public enum RUMContextHandoff {
         operation: () throws -> T
     ) rethrows -> T {
         try withValue(
+            owner: owner,
             rumContextProvider: { rumContext },
             sceneIdentifier: sceneIdentifier,
             hasPendingUserAction: hasPendingUserAction,
@@ -76,50 +116,57 @@ public enum RUMContextHandoff {
     }
 
     public static func withValue<T>(
+        owner: Owner?,
         rumContextProvider: @escaping () -> RUMCoreContext?,
         sceneIdentifier: String,
         hasPendingUserAction: Bool = false,
         excludedUserActionID: String? = nil,
         operation: () throws -> T
     ) rethrows -> T {
-        try $value.withValue(
-            Value(
-                rumContextProvider: rumContextProvider,
+        guard let owner, owner.isValid else {
+            return try operation()
+        }
+        let next = Value(
+            owner: owner,
+            rumContextProvider: rumContextProvider,
+            sceneIdentifier: sceneIdentifier,
+            hasPendingUserAction: hasPendingUserAction,
+            excludedUserActionID: excludedUserActionID
+        )
+        let dictionary = Thread.current.threadDictionary
+        let state: ThreadState
+        if let existing = dictionary[threadStateKey] as? ThreadState {
+            state = existing
+        } else {
+            state = ThreadState()
+            dictionary[threadStateKey] = state
+        }
+        let previous = state.current
+        let hasForeignOwner = previous.map { $0.owner !== owner } ?? false
+        if hasForeignOwner, let previous {
+            state.outerOwners.append(previous)
+        }
+        state.current = Snapshot(
+            owner: owner,
+            context: CurrentValue(
+                rumContext: rumContextProvider(),
                 sceneIdentifier: sceneIdentifier,
                 hasPendingUserAction: hasPendingUserAction,
                 excludedUserActionID: excludedUserActionID
             )
-        ) {
-            let dictionary = Thread.current.threadDictionary
-            let previousContext = dictionary[rumContextKey]
-            let previousSceneIdentifier = dictionary[sceneIdentifierKey]
-            let previousPendingUserAction = dictionary[pendingUserActionKey]
-            let previousExcludedUserActionID = dictionary[excludedUserActionIDKey]
-
-            dictionary[rumContextKey] = rumContextProvider() ?? NSNull()
-            dictionary[sceneIdentifierKey] = sceneIdentifier
-            dictionary[pendingUserActionKey] = hasPendingUserAction
-            dictionary[excludedUserActionIDKey] = excludedUserActionID ?? NSNull()
-            defer {
-                restore(previousContext, forKey: rumContextKey, in: dictionary)
-                restore(previousSceneIdentifier, forKey: sceneIdentifierKey, in: dictionary)
-                restore(previousPendingUserAction, forKey: pendingUserActionKey, in: dictionary)
-                restore(previousExcludedUserActionID, forKey: excludedUserActionIDKey, in: dictionary)
+        )
+        defer {
+            state.current = previous
+            if hasForeignOwner {
+                state.outerOwners.removeLast()
             }
-            return try operation()
         }
-    }
-
-    private static func restore(
-        _ value: Any?,
-        forKey key: String,
-        in dictionary: NSMutableDictionary
-    ) {
-        if let value {
-            dictionary[key] = value
-        } else {
-            dictionary.removeObject(forKey: key)
+        if let value, value.owner !== owner {
+            return try $outerOwners.withValue(outerOwners + [value]) {
+                try $value.withValue(next, operation: operation)
+            }
         }
+        return try $value.withValue(next, operation: operation)
     }
 }
 

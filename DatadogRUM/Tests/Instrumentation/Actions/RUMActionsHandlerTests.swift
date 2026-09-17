@@ -5,7 +5,7 @@
  */
 
 import XCTest
-import TestUtilities
+@testable import TestUtilities
 @_spi(Internal)
 import DatadogInternal
 @testable import DatadogRUM
@@ -127,6 +127,78 @@ class RUMActionsHandlerTests: XCTestCase {
         XCTAssertEqual(command?.target, .scene(scene))
     }
 
+    func testGivenForeignCoreDispatch_whenConsumerHasDifferentApplication_itKeepsOwnContext() throws {
+        try assertForeignDispatchIsolation(originHasView: true, sameApplication: false)
+    }
+
+    func testGivenForeignCoreDispatch_whenConsumerHasSameApplication_itKeepsOwnSession() throws {
+        try assertForeignDispatchIsolation(originHasView: true, sameApplication: true)
+    }
+
+    func testGivenForeignCoreDispatchWithNoView_itDoesNotSuppressConsumerContext() throws {
+        try assertForeignDispatchIsolation(originHasView: false, sameApplication: true)
+    }
+
+    private func assertForeignDispatchIsolation(originHasView: Bool, sameApplication: Bool) throws {
+        let originScope = FeatureScopeMock()
+        let consumerScope = FeatureScopeMock()
+        let originApplication = UUID().uuidString.lowercased()
+        let consumerApplication = sameApplication ? originApplication : UUID().uuidString.lowercased()
+        let origin = Monitor(
+            dependencies: .mockWith(featureScope: originScope, rumApplicationID: originApplication, samplingRate: 100),
+            dateProvider: dateProvider
+        )
+        let consumer = Monitor(
+            dependencies: .mockWith(featureScope: consumerScope, rumApplicationID: consumerApplication, samplingRate: 100),
+            dateProvider: dateProvider
+        )
+        let scene = RUMSceneIdentifier(rawValue: "origin-scene")
+        if originHasView {
+            origin.process(command: RUMStartViewCommand(
+                time: dateProvider.now,
+                identity: ViewIdentifier("origin"),
+                name: "Origin",
+                path: "Origin",
+                globalAttributes: [:],
+                attributes: [:],
+                instrumentationType: .uikit,
+                target: .scene(scene)
+            ))
+        }
+        consumer.startView(key: "consumer", name: "Consumer")
+        let expected = try XCTUnwrap(consumer.rumContextSnapshot(for: .processRepresentative))
+        let handler = RUMActionsHandler(
+            dateProvider: dateProvider,
+            eventCommandsFactory: UITouchCommandFactory(
+                dateProvider: dateProvider,
+                heatmapIdentifierRegistry: HeatmapIdentifierRegistryMock(),
+                uiKitPredicate: DefaultUIKitRUMActionsPredicate(),
+                swiftUIPredicate: nil,
+                swiftUIDetector: nil,
+                sceneIdentifierProvider: { _ in scene }
+            ),
+            isUIEventContextHandoffEnabled: true
+        )
+        handler.publish(to: origin)
+        let view = UIButton().attached(to: mockAppWindow)
+        let result = handler.intercept_sendEvent(
+            application: .shared,
+            event: .mockWith(touch: .mockWith(phase: .moved, view: view))
+        ) {
+            consumer.addAction(type: .custom, name: "Consumer action")
+            consumer.startView(key: "replacement", name: "Consumer replacement")
+            return true
+        }
+
+        XCTAssertTrue(result)
+        let action = try XCTUnwrap(consumerScope.eventsWritten(ofType: RUMActionEvent.self).last)
+        XCTAssertEqual(action.application.id, consumerApplication)
+        XCTAssertEqual(action.session.id, expected.sessionID)
+        XCTAssertEqual(action.view.id, expected.viewID)
+        XCTAssertNil(consumer.rumContextSnapshot(for: .scene(scene)))
+        XCTAssertEqual(consumer.rumContextSnapshot(for: .processRepresentative)?.viewName, "Consumer replacement")
+    }
+
     func testGivenUIKitViewInScene_whenDispatchingEvent_itScopesThatScenesRUMContext() {
         let scene = RUMSceneIdentifier(rawValue: "scene-B")
         let context: RUMCoreContext = .mockWith(viewName: "View B")
@@ -150,16 +222,16 @@ class RUMActionsHandlerTests: XCTestCase {
             application: .shared,
             event: .mockWith(touch: .mockWith(view: view))
         ) {
-            XCTAssertEqual(RUMUIEventNetworkContext.currentSceneIdentifier, scene)
-            XCTAssertEqual(RUMUIEventNetworkContext.currentRUMContext?.viewID, context.viewID)
-            XCTAssertNil(RUMUIEventNetworkContext.currentRUMContext?.userActionID)
+            XCTAssertEqual(RUMUIEventNetworkContext.currentSceneIdentifier(for: subscriber.rumContextHandoffOwner), scene)
+            XCTAssertEqual(RUMUIEventNetworkContext.currentRUMContext(for: subscriber.rumContextHandoffOwner)?.viewID, context.viewID)
+            XCTAssertNil(RUMUIEventNetworkContext.currentRUMContext(for: subscriber.rumContextHandoffOwner)?.userActionID)
             return true
         }
 
         XCTAssertTrue(result)
         XCTAssertEqual(subscriber.receivedCommands.count, 1)
-        XCTAssertNil(RUMUIEventNetworkContext.currentSceneIdentifier)
-        XCTAssertNil(RUMUIEventNetworkContext.currentRUMContext)
+        XCTAssertNil(RUMUIEventNetworkContext.currentSceneIdentifier(for: subscriber.rumContextHandoffOwner))
+        XCTAssertNil(RUMUIEventNetworkContext.currentRUMContext(for: subscriber.rumContextHandoffOwner))
     }
 
     func testGivenUIEventContextHandoffDisabled_whenDispatchingSceneEvent_itKeepsActionOnlyBehavior() {
@@ -184,7 +256,7 @@ class RUMActionsHandlerTests: XCTestCase {
             application: .shared,
             event: .mockWith(touch: .mockWith(view: view))
         ) {
-            XCTAssertNil(RUMContextHandoff.current)
+            XCTAssertNil(RUMContextHandoff.current(for: subscriber.rumContextHandoffOwner))
             return true
         }
 
@@ -214,27 +286,29 @@ class RUMActionsHandlerTests: XCTestCase {
             application: .shared,
             event: .mockWith(touch: .mockWith(view: view))
         ) {
-            XCTAssertEqual(RUMUIEventNetworkContext.currentSceneIdentifier, scene)
-            XCTAssertEqual(RUMUIEventNetworkContext.currentRUMContext?.viewID, context.viewID)
+            XCTAssertEqual(RUMUIEventNetworkContext.currentSceneIdentifier(for: subscriber.rumContextHandoffOwner), scene)
+            XCTAssertEqual(RUMUIEventNetworkContext.currentRUMContext(for: subscriber.rumContextHandoffOwner)?.viewID, context.viewID)
             return true
         }
 
         XCTAssertTrue(subscriber.receivedCommands.isEmpty)
-        XCTAssertNil(RUMUIEventNetworkContext.currentSceneIdentifier)
+        XCTAssertNil(RUMUIEventNetworkContext.currentSceneIdentifier(for: subscriber.rumContextHandoffOwner))
     }
 
     func testGivenSceneEventScope_whenCreatingChildTask_itInheritsContextButDetachedTaskDoesNot() async {
+        let owner = RUMContextHandoff.Owner()
         let scene = RUMSceneIdentifier(rawValue: "scene-A")
         let context: RUMCoreContext = .mockWith(viewName: "View A")
 
         let childTask = RUMUIEventNetworkContext.withValue(
+            owner: owner,
             sceneIdentifier: scene,
             rumContext: context
         ) {
             Task {
                 (
-                    RUMUIEventNetworkContext.currentSceneIdentifier,
-                    RUMUIEventNetworkContext.currentRUMContext
+                    RUMUIEventNetworkContext.currentSceneIdentifier(for: owner),
+                    RUMUIEventNetworkContext.currentRUMContext(for: owner)
                 )
             }
         }
@@ -243,13 +317,14 @@ class RUMActionsHandlerTests: XCTestCase {
         XCTAssertEqual(childValue.1, context)
 
         let detachedTask = RUMUIEventNetworkContext.withValue(
+            owner: owner,
             sceneIdentifier: scene,
             rumContext: context
         ) {
             Task.detached {
                 (
-                    RUMUIEventNetworkContext.currentSceneIdentifier,
-                    RUMUIEventNetworkContext.currentRUMContext
+                    RUMUIEventNetworkContext.currentSceneIdentifier(for: owner),
+                    RUMUIEventNetworkContext.currentRUMContext(for: owner)
                 )
             }
         }
@@ -291,7 +366,7 @@ class RUMActionsHandlerTests: XCTestCase {
                 .mockWith(view: secondView)
             ])
         ) {
-            XCTAssertEqual(RUMUIEventNetworkContext.currentSceneIdentifier, sceneA)
+            XCTAssertEqual(RUMUIEventNetworkContext.currentSceneIdentifier(for: subscriber.rumContextHandoffOwner), sceneA)
             return true
         }
         XCTAssertTrue(subscriber.receivedCommands.isEmpty)
@@ -303,7 +378,7 @@ class RUMActionsHandlerTests: XCTestCase {
                 .mockWith(view: otherSceneView)
             ])
         ) {
-            XCTAssertNil(RUMUIEventNetworkContext.currentSceneIdentifier)
+            XCTAssertNil(RUMUIEventNetworkContext.currentSceneIdentifier(for: subscriber.rumContextHandoffOwner))
             return true
         }
     }
@@ -791,6 +866,7 @@ private class MockUIKitRUMActionsPredicate: UITouchRUMActionsPredicate & UIPress
 }
 
 private final class SceneContextSubscriber: RUMCommandSubscriber, RUMContextSnapshotProviding {
+    let rumContextHandoffOwner: RUMContextHandoff.Owner? = .init()
     var receivedCommands: [RUMCommand] = []
     let target: RUMCommandTarget
     let context: RUMCoreContext

@@ -6,7 +6,8 @@
 
 import XCTest
 import TestUtilities
-import DatadogInternal
+@_spi(Internal)
+@testable import DatadogInternal
 @_spi(Internal)
 @testable import DatadogCore
 
@@ -56,6 +57,75 @@ class DatadogCoreTests: XCTestCase {
     override func tearDown() {
         temporaryCoreDirectory.delete()
         super.tearDown()
+    }
+
+    private func makeHandoffCore() -> DatadogCore {
+        DatadogCore(
+            directory: temporaryCoreDirectory,
+            dateProvider: SystemDateProvider(),
+            initialConsent: .notGranted,
+            performance: .mockAny(),
+            httpClient: HTTPClientMock(),
+            encryption: nil,
+            contextProvider: .mockAny(),
+            applicationVersion: .mockAny(),
+            maxBatchesPerUpload: 1,
+            backgroundTasksEnabled: false
+        )
+    }
+
+    func testHandoffOwner_isSharedByCoreScopesAndNetworkButDistinctAcrossCores() throws {
+        let core = makeHandoffCore()
+        let other = makeHandoffCore()
+        defer { core.stop(); other.stop() }
+        let firstScope = core.scope(for: FeatureMock.self)
+        let secondScope = core.scope(for: NetworkInstrumentationFeature.self)
+        let owner = try XCTUnwrap(RUMContextHandoff.owner(in: core))
+        XCTAssertTrue(RUMContextHandoff.owner(in: firstScope) === owner)
+        XCTAssertTrue(RUMContextHandoff.owner(in: secondScope) === owner)
+        XCTAssertFalse(RUMContextHandoff.owner(in: other) === owner)
+        try core.register(urlSessionHandler: URLSessionHandlerMock())
+        let network = try XCTUnwrap(core.get(feature: NetworkInstrumentationFeature.self))
+        XCTAssertTrue(network.networkContextProvider.rumContextHandoffOwner === owner)
+        XCTAssertNil(RUMContextHandoff.owner(in: NOPDatadogCore()))
+        XCTAssertNil(RUMContextHandoff.owner(in: NOPDatadogCore().scope(for: FeatureMock.self)))
+    }
+
+    @MainActor
+    func testHandoffOwner_stopInvalidatesDispatchAndInheritedTaskWithoutAffectingNewCore() async throws {
+        let core = makeHandoffCore()
+        let owner = try XCTUnwrap(RUMContextHandoff.owner(in: core))
+        let scope = core.scope(for: FeatureMock.self)
+        let child = RUMContextHandoff.withValue(owner: owner, rumContext: nil, sceneIdentifier: "stopped") {
+            let child = Task { RUMContextHandoff.current(for: owner) }
+            core.stop()
+            XCTAssertNil(RUMContextHandoff.current(in: scope))
+            return child
+        }
+        let stale = await child.value
+        XCTAssertNil(stale)
+        let replacement = makeHandoffCore()
+        defer { replacement.stop() }
+        let newOwner = try XCTUnwrap(RUMContextHandoff.owner(in: replacement))
+        XCTAssertFalse(newOwner === owner)
+        RUMContextHandoff.withValue(owner: newOwner, rumContext: nil, sceneIdentifier: "replacement") {
+            XCTAssertEqual(RUMContextHandoff.current(in: replacement)?.sceneIdentifier, "replacement")
+            XCTAssertNil(RUMContextHandoff.current(for: owner))
+        }
+    }
+
+    func testHandoffOwner_andFeatureScopeDoNotRetainCoreAfterDispatch() throws {
+        var core: DatadogCore? = makeHandoffCore()
+        weak var weakCore = core
+        let owner = try XCTUnwrap(core?.rumContextHandoffOwner)
+        let scope = try XCTUnwrap(core?.scope(for: FeatureMock.self))
+        RUMContextHandoff.withValue(owner: owner, rumContext: nil, sceneIdentifier: "released") {
+            core = nil
+            XCTAssertNil(weakCore)
+            XCTAssertNil(RUMContextHandoff.current(for: owner))
+            XCTAssertNil(RUMContextHandoff.owner(in: scope))
+        }
+        XCTAssertNil(weakCore)
     }
 
     func testGivenRemoteConfigurationProvider_whenReadingRemoteConfiguration_itReturnsCachedValue() throws {

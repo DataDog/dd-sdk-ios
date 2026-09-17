@@ -16,14 +16,17 @@ internal protocol RUMCommandSubscriber: AnyObject {
     ///
     /// - Parameter command: The RUM command to process.
     func process(command: RUMCommand)
+    var rumContextHandoffOwner: RUMContextHandoff.Owner? { get }
 }
 
 internal extension RUMCommandSubscriber {
+    var rumContextHandoffOwner: RUMContextHandoff.Owner? { nil }
+
     /// Resolves work invoked synchronously inside a trustworthy UI-event
     /// handoff. Calls outside that bounded scope preserve the historical
     /// process-representative behavior.
     var currentExecutionTarget: RUMCommandTarget {
-        guard let handoff = RUMContextHandoff.current else {
+        guard let handoff = RUMContextHandoff.current(for: rumContextHandoffOwner) else {
             return .processRepresentative
         }
         if let viewID = handoff.rumContext?.viewID
@@ -49,12 +52,13 @@ internal extension RUMCommandSubscriber {
 internal protocol RUMContextSnapshotProviding: AnyObject {
     func rumContextSnapshot(for target: RUMCommandTarget) -> RUMCoreContext?
     /// Returns the snapshot only if it still belongs to a live session at the
-    /// time customer work is about to be dispatched.
-    func rumContextSnapshot(for target: RUMCommandTarget, at date: Date) -> RUMCoreContext?
+    /// time customer work is about to be dispatched. A nil date uses the
+    /// provider's clock when an inherited task resumes.
+    func rumContextSnapshot(for target: RUMCommandTarget, at date: Date?) -> RUMCoreContext?
 }
 
 extension RUMContextSnapshotProviding {
-    func rumContextSnapshot(for target: RUMCommandTarget, at date: Date) -> RUMCoreContext? {
+    func rumContextSnapshot(for target: RUMCommandTarget, at date: Date?) -> RUMCoreContext? {
         rumContextSnapshot(for: target)
     }
 }

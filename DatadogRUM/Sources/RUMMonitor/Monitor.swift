@@ -120,6 +120,10 @@ internal protocol RUMActiveContextReader: AnyObject {
 
 internal class Monitor: RUMCommandSubscriber {
     /// RUM feature scope.
+    var rumContextHandoffOwner: RUMContextHandoff.Owner? {
+        (featureScope as? RUMContextHandoffOwnerProviding)?.rumContextHandoffOwner
+    }
+
     let featureScope: FeatureScope
     let applicationScope: RUMApplicationScope
     let dateProvider: DateProvider
@@ -349,7 +353,8 @@ extension Monitor: RUMContextSnapshotProviding {
         }
     }
 
-    func rumContextSnapshot(for target: RUMCommandTarget, at date: Date) -> RUMCoreContext? {
+    func rumContextSnapshot(for target: RUMCommandTarget, at date: Date?) -> RUMCoreContext? {
+        let date = date ?? dateProvider.now
         guard let snapshot = rumContextSnapshot(for: target) else {
             return nil
         }
@@ -822,7 +827,7 @@ extension Monitor: RUMMonitorProtocol {
     }
 
     private var currentExecutionSceneTarget: RUMCommandTarget {
-        guard let handoff = RUMContextHandoff.current else {
+        guard let handoff = RUMContextHandoff.current(for: rumContextHandoffOwner) else {
             return .processRepresentative
         }
         if let viewID = handoff.rumContext?.viewID,

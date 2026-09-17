@@ -148,7 +148,7 @@ internal final class DatadogTracer: OTTracer, OpenTelemetryApi.Tracer {
     /// A scene handoff with no view snapshot is an intentional nil override and
     /// must not fall through to another window's process representative.
     internal func makeSpanWriteContext() -> SpanWriteContext {
-        guard let rumContextHandoff = RUMContextHandoff.current else {
+        guard let rumContextHandoff = RUMContextHandoff.current(in: featureScope) else {
             return LazySpanWriteContext(featureScope: featureScope)
         }
         return LazySpanWriteContext(

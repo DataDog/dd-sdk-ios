@@ -118,6 +118,9 @@ class MonitorTests: XCTestCase {
         XCTAssertNil(
             provider.rumContextSnapshot(for: .scene(sceneA), at: .distantFuture)
         )
+        XCTAssertEqual(provider.rumContextSnapshot(for: .scene(sceneA), at: nil)?.viewID, contextA.viewID)
+        dateProvider.now = .distantFuture
+        XCTAssertNil(provider.rumContextSnapshot(for: .scene(sceneA), at: nil))
     }
 
     func testGivenOperationStartedDuringSceneHandoff_itUsesThatSceneInsteadOfRepresentative() throws {
@@ -154,7 +157,7 @@ class MonitorTests: XCTestCase {
             )
         )
 
-        RUMContextHandoff.withValue(rumContext: nil, sceneIdentifier: sceneA.rawValue) {
+        RUMContextHandoff.withValue(owner: monitor.rumContextHandoffOwner, rumContext: nil, sceneIdentifier: sceneA.rawValue) {
             monitor.startOperation(
                 name: "load_note",
                 operationKey: nil,
@@ -179,7 +182,7 @@ class MonitorTests: XCTestCase {
             dateProvider: dateProvider
         )
 
-        RUMContextHandoff.withValue(rumContext: nil, sceneIdentifier: sceneB.rawValue) {
+        RUMContextHandoff.withValue(owner: monitor.rumContextHandoffOwner, rumContext: nil, sceneIdentifier: sceneB.rawValue) {
             monitor.startOperation(
                 name: "thread_open",
                 operationKey: "key-123",
@@ -214,7 +217,7 @@ class MonitorTests: XCTestCase {
             options: nil,
             explicitTarget: .scene(sceneA)
         )
-        RUMContextHandoff.withValue(rumContext: nil, sceneIdentifier: sceneA.rawValue) {
+        RUMContextHandoff.withValue(owner: monitor.rumContextHandoffOwner, rumContext: nil, sceneIdentifier: sceneA.rawValue) {
             monitor.addAction(type: .custom, name: "make A representative", attributes: [:])
         }
         XCTAssertEqual(
@@ -222,7 +225,7 @@ class MonitorTests: XCTestCase {
             "View A"
         )
 
-        RUMContextHandoff.withValue(rumContext: nil, sceneIdentifier: sceneB.rawValue) {
+        RUMContextHandoff.withValue(owner: monitor.rumContextHandoffOwner, rumContext: nil, sceneIdentifier: sceneB.rawValue) {
             monitor.succeedOperation(
                 name: "thread_open",
                 operationKey: "key-123",
@@ -250,13 +253,13 @@ class MonitorTests: XCTestCase {
         )
 
         monitor.addAction(type: .custom, name: "representative-action", attributes: [:])
-        RUMContextHandoff.withValue(rumContext: nil, sceneIdentifier: sceneA.rawValue) {
+        RUMContextHandoff.withValue(owner: monitor.rumContextHandoffOwner, rumContext: nil, sceneIdentifier: sceneA.rawValue) {
             monitor.addAction(type: .custom, name: "scene-action", attributes: [:])
             monitor.startAction(type: .custom, name: "scene-continuous-action", attributes: [:])
             dateProvider.now = dateProvider.now.addingTimeInterval(1)
             monitor.stopAction(type: .custom, name: "scene-continuous-action", attributes: [:])
         }
-        RUMContextHandoff.withValue(rumContext: contextA, sceneIdentifier: sceneB.rawValue) {
+        RUMContextHandoff.withValue(owner: monitor.rumContextHandoffOwner, rumContext: contextA, sceneIdentifier: sceneB.rawValue) {
             monitor.addAction(type: .custom, name: "exact-view-action", attributes: [:])
         }
 
@@ -282,7 +285,7 @@ class MonitorTests: XCTestCase {
             dateProvider: dateProvider
         )
 
-        RUMContextHandoff.withValue(rumContext: nil, sceneIdentifier: sceneB.rawValue) {
+        RUMContextHandoff.withValue(owner: monitor.rumContextHandoffOwner, rumContext: nil, sceneIdentifier: sceneB.rawValue) {
             monitor.addAction(
                 type: .custom,
                 name: "explicit A",
@@ -312,7 +315,7 @@ class MonitorTests: XCTestCase {
             dateProvider: dateProvider
         )
 
-        RUMContextHandoff.withValue(rumContext: nil, sceneIdentifier: sceneA.rawValue) {
+        RUMContextHandoff.withValue(owner: monitor.rumContextHandoffOwner, rumContext: nil, sceneIdentifier: sceneA.rawValue) {
             monitor.addAction(type: .custom, name: "represent A", attributes: [:])
         }
         XCTAssertEqual(
@@ -320,7 +323,7 @@ class MonitorTests: XCTestCase {
             "View A"
         )
 
-        RUMContextHandoff.withValue(rumContext: nil, sceneIdentifier: sceneB.rawValue) {
+        RUMContextHandoff.withValue(owner: monitor.rumContextHandoffOwner, rumContext: nil, sceneIdentifier: sceneB.rawValue) {
             monitor.addAction(
                 type: .custom,
                 name: "inferred B",
@@ -347,21 +350,21 @@ class MonitorTests: XCTestCase {
         let (sceneA, sceneB) = startConcurrentSceneViews(in: monitor, dateProvider: dateProvider)
         let contextB = try XCTUnwrap(monitor.rumContextSnapshot(for: .scene(sceneB)))
 
-        RUMContextHandoff.withValue(rumContext: contextB, sceneIdentifier: sceneB.rawValue) {
+        RUMContextHandoff.withValue(owner: monitor.rumContextHandoffOwner, rumContext: contextB, sceneIdentifier: sceneB.rawValue) {
             monitor.startAction(type: .custom, name: "same", attributes: ["start": "A"], explicitTarget: .scene(sceneA))
         }
-        RUMContextHandoff.withValue(rumContext: nil, sceneIdentifier: sceneA.rawValue) {
+        RUMContextHandoff.withValue(owner: monitor.rumContextHandoffOwner, rumContext: nil, sceneIdentifier: sceneA.rawValue) {
             monitor.startAction(type: .custom, name: "same", attributes: ["start": "B"], explicitTarget: .scene(sceneB))
         }
         dateProvider.now = dateProvider.now.addingTimeInterval(1)
-        RUMContextHandoff.withValue(rumContext: nil, sceneIdentifier: sceneA.rawValue) {
+        RUMContextHandoff.withValue(owner: monitor.rumContextHandoffOwner, rumContext: nil, sceneIdentifier: sceneA.rawValue) {
             monitor.stopAction(type: .swipe, name: "finished B", attributes: ["stop": "B"], explicitTarget: .scene(sceneB))
             // B is a valid view even though its action slot is now empty.
             monitor.stopAction(type: .custom, name: "must not stop A", attributes: [:], explicitTarget: .scene(sceneB))
         }
         let session = try XCTUnwrap(monitor.applicationScope.activeSession)
         XCTAssertNotNil(session.viewScopes.first { $0.sceneIdentifier == sceneA }?.userActionScope)
-        RUMContextHandoff.withValue(rumContext: contextB, sceneIdentifier: sceneB.rawValue) {
+        RUMContextHandoff.withValue(owner: monitor.rumContextHandoffOwner, rumContext: contextB, sceneIdentifier: sceneB.rawValue) {
             monitor.stopAction(type: .tap, name: "finished A", attributes: ["stop": "A"], explicitTarget: .scene(sceneA))
         }
 
@@ -385,11 +388,11 @@ class MonitorTests: XCTestCase {
         let unavailable = RUMCommandTarget.scene(RUMSceneIdentifier(rawValue: "closed-scene"))
         monitor.startAction(type: .custom, name: "representative B", attributes: [:], explicitTarget: unavailable)
         monitor.stopAction(type: .custom, name: nil, attributes: [:], explicitTarget: unavailable)
-        RUMContextHandoff.withValue(rumContext: contextA, sceneIdentifier: "contradictory-scene") {
+        RUMContextHandoff.withValue(owner: monitor.rumContextHandoffOwner, rumContext: contextA, sceneIdentifier: "contradictory-scene") {
             monitor.startAction(type: .custom, name: "exact A", attributes: [:], explicitTarget: unavailable)
             monitor.stopAction(type: .custom, name: nil, attributes: [:], explicitTarget: unavailable)
         }
-        RUMContextHandoff.withValue(rumContext: nil, sceneIdentifier: sceneA.rawValue) {
+        RUMContextHandoff.withValue(owner: monitor.rumContextHandoffOwner, rumContext: nil, sceneIdentifier: sceneA.rawValue) {
             monitor.startAction(type: .custom, name: "scene A", attributes: [:], explicitTarget: unavailable)
             monitor.stopAction(type: .custom, name: nil, attributes: [:], explicitTarget: unavailable)
         }
@@ -408,7 +411,7 @@ class MonitorTests: XCTestCase {
         monitor.startAction(type: .custom, name: "original A", attributes: [:], explicitTarget: .scene(sceneA))
         monitor.startAction(type: .custom, name: "duplicate A", attributes: [:], explicitTarget: .scene(sceneA))
         monitor.startAction(type: .custom, name: "original B", attributes: [:], explicitTarget: .scene(sceneB))
-        RUMContextHandoff.withValue(rumContext: nil, sceneIdentifier: sceneA.rawValue) {
+        RUMContextHandoff.withValue(owner: monitor.rumContextHandoffOwner, rumContext: nil, sceneIdentifier: sceneA.rawValue) {
             monitor.startView(key: "next-A", name: "Next A")
         }
         let session = try XCTUnwrap(monitor.applicationScope.activeSession)
@@ -447,16 +450,16 @@ class MonitorTests: XCTestCase {
         )
         let (sceneA, sceneB) = startConcurrentSceneViews(in: monitor, dateProvider: dateProvider)
 
-        RUMContextHandoff.withValue(rumContext: nil, sceneIdentifier: sceneA.rawValue) {
+        RUMContextHandoff.withValue(owner: monitor.rumContextHandoffOwner, rumContext: nil, sceneIdentifier: sceneA.rawValue) {
             monitor.startAction(type: .tap, name: "Tap A", attributes: [:])
         }
-        RUMContextHandoff.withValue(rumContext: nil, sceneIdentifier: sceneB.rawValue) {
+        RUMContextHandoff.withValue(owner: monitor.rumContextHandoffOwner, rumContext: nil, sceneIdentifier: sceneB.rawValue) {
             monitor.startAction(type: .tap, name: "Tap B", attributes: [:])
         }
         let contextA = try XCTUnwrap(monitor.rumContextSnapshot(for: .scene(sceneA)))
         let contextB = try XCTUnwrap(monitor.rumContextSnapshot(for: .scene(sceneB)))
 
-        RUMContextHandoff.withValue(rumContext: contextA, sceneIdentifier: sceneB.rawValue) {
+        RUMContextHandoff.withValue(owner: monitor.rumContextHandoffOwner, rumContext: contextA, sceneIdentifier: sceneB.rawValue) {
             monitor.addError(
                 message: "exact A error",
                 type: nil,
@@ -467,11 +470,11 @@ class MonitorTests: XCTestCase {
                 line: nil
             )
         }
-        RUMContextHandoff.withValue(rumContext: nil, sceneIdentifier: sceneA.rawValue) {
+        RUMContextHandoff.withValue(owner: monitor.rumContextHandoffOwner, rumContext: nil, sceneIdentifier: sceneA.rawValue) {
             monitor.addError(error: ErrorMock("scene A error"), source: .source, attributes: [:])
         }
         var didComplete = false
-        RUMContextHandoff.withValue(rumContext: contextA, sceneIdentifier: sceneB.rawValue) {
+        RUMContextHandoff.withValue(owner: monitor.rumContextHandoffOwner, rumContext: contextA, sceneIdentifier: sceneB.rawValue) {
             monitor.addError(
                 error: ErrorMock("completion A error"),
                 source: .source,
@@ -512,7 +515,7 @@ class MonitorTests: XCTestCase {
         let contextA = try XCTUnwrap(monitor.rumContextSnapshot(for: .scene(sceneA)))
         dateProvider.now = dateProvider.now.addingTimeInterval(1)
 
-        RUMContextHandoff.withValue(rumContext: contextA, sceneIdentifier: sceneB.rawValue) {
+        RUMContextHandoff.withValue(owner: monitor.rumContextHandoffOwner, rumContext: contextA, sceneIdentifier: sceneB.rawValue) {
             monitor.addViewAttribute(forKey: "exact", value: "A")
             monitor.addViewAttributes([
                 "batch": "A",
@@ -523,7 +526,7 @@ class MonitorTests: XCTestCase {
             monitor.addViewLoadingTime(overwrite: false)
             monitor.addFeatureFlagEvaluation(name: "flag-A", value: "A")
         }
-        RUMContextHandoff.withValue(rumContext: nil, sceneIdentifier: sceneA.rawValue) {
+        RUMContextHandoff.withValue(owner: monitor.rumContextHandoffOwner, rumContext: nil, sceneIdentifier: sceneA.rawValue) {
             monitor.removeViewAttribute(forKey: "remove-one")
             monitor.removeViewAttributes(forKeys: ["remove-many"])
         }
@@ -564,23 +567,23 @@ class MonitorTests: XCTestCase {
         let sceneA = RUMSceneIdentifier(rawValue: "scene-A")
         let sceneB = RUMSceneIdentifier(rawValue: "scene-B")
 
-        RUMContextHandoff.withValue(rumContext: nil, sceneIdentifier: sceneA.rawValue) {
+        RUMContextHandoff.withValue(owner: monitor.rumContextHandoffOwner, rumContext: nil, sceneIdentifier: sceneA.rawValue) {
             monitor.startView(key: "Home", name: "Home A", attributes: [:])
         }
         let firstA = try XCTUnwrap(monitor.rumContextSnapshot(for: .scene(sceneA)))
-        RUMContextHandoff.withValue(rumContext: nil, sceneIdentifier: sceneB.rawValue) {
+        RUMContextHandoff.withValue(owner: monitor.rumContextHandoffOwner, rumContext: nil, sceneIdentifier: sceneB.rawValue) {
             monitor.startView(key: "Home", name: "Home B", attributes: [:])
         }
         let firstB = try XCTUnwrap(monitor.rumContextSnapshot(for: .scene(sceneB)))
         XCTAssertNotEqual(firstA.viewID, firstB.viewID)
 
-        RUMContextHandoff.withValue(rumContext: nil, sceneIdentifier: sceneA.rawValue) {
+        RUMContextHandoff.withValue(owner: monitor.rumContextHandoffOwner, rumContext: nil, sceneIdentifier: sceneA.rawValue) {
             monitor.stopView(key: "Home", attributes: [:])
         }
         XCTAssertNil(monitor.rumContextSnapshot(for: .scene(sceneA)))
         XCTAssertEqual(monitor.rumContextSnapshot(for: .scene(sceneB))?.viewID, firstB.viewID)
 
-        RUMContextHandoff.withValue(rumContext: nil, sceneIdentifier: sceneA.rawValue) {
+        RUMContextHandoff.withValue(owner: monitor.rumContextHandoffOwner, rumContext: nil, sceneIdentifier: sceneA.rawValue) {
             monitor.startView(key: "Home", name: "Home A", attributes: [:])
         }
         let returnedA = try XCTUnwrap(monitor.rumContextSnapshot(for: .scene(sceneA)))
@@ -598,7 +601,7 @@ class MonitorTests: XCTestCase {
         let contextA = try XCTUnwrap(monitor.rumContextSnapshot(for: .scene(sceneA)))
         let contextB = try XCTUnwrap(monitor.rumContextSnapshot(for: .scene(sceneB)))
 
-        RUMContextHandoff.withValue(rumContext: contextA, sceneIdentifier: sceneB.rawValue) {
+        RUMContextHandoff.withValue(owner: monitor.rumContextHandoffOwner, rumContext: contextA, sceneIdentifier: sceneB.rawValue) {
             monitor.startView(key: "detail", name: "Detail A", attributes: [:])
         }
 
@@ -636,7 +639,7 @@ class MonitorTests: XCTestCase {
                     monitor.stopView(viewController: controller, attributes: [:])
                 }
                 if inSceneA {
-                    RUMContextHandoff.withValue(rumContext: nil, sceneIdentifier: sceneA.rawValue, operation: call)
+                    RUMContextHandoff.withValue(owner: monitor.rumContextHandoffOwner, rumContext: nil, sceneIdentifier: sceneA.rawValue, operation: call)
                 } else {
                     call()
                 }
@@ -663,12 +666,12 @@ class MonitorTests: XCTestCase {
         )
         let (sceneA, sceneB) = startConcurrentSceneViews(in: monitor, dateProvider: dateProvider)
 
-        RUMContextHandoff.withValue(rumContext: nil, sceneIdentifier: sceneA.rawValue) {
+        RUMContextHandoff.withValue(owner: monitor.rumContextHandoffOwner, rumContext: nil, sceneIdentifier: sceneA.rawValue) {
             monitor.startView(viewController: UIViewController(), name: "Controller A", attributes: [:])
         }
         XCTAssertEqual(monitor.rumContextSnapshot(for: .scene(sceneA))?.viewName, "Controller A")
 
-        RUMContextHandoff.withValue(rumContext: nil, sceneIdentifier: sceneB.rawValue) {
+        RUMContextHandoff.withValue(owner: monitor.rumContextHandoffOwner, rumContext: nil, sceneIdentifier: sceneB.rawValue) {
             monitor.addAction(type: .custom, name: "Represent B", attributes: [:])
         }
         monitor.startView(viewController: UIViewController(), name: "Representative Controller", attributes: [:])
@@ -688,7 +691,7 @@ class MonitorTests: XCTestCase {
         let (sceneA, _) = startConcurrentSceneViews(in: monitor, dateProvider: dateProvider)
         let resourceURL = URL(string: "https://example.com/scene-resource")!
 
-        RUMContextHandoff.withValue(rumContext: nil, sceneIdentifier: sceneA.rawValue) {
+        RUMContextHandoff.withValue(owner: monitor.rumContextHandoffOwner, rumContext: nil, sceneIdentifier: sceneA.rawValue) {
             monitor.startResource(resourceKey: "url-resource", url: resourceURL, attributes: [:])
             monitor.startResource(
                 resourceKey: "request-resource",

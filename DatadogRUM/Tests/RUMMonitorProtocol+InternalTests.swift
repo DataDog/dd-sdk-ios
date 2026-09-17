@@ -7,6 +7,7 @@
 import XCTest
 @_spi(Internal)
 import DatadogInternal
+@_spi(Internal)
 import TestUtilities
 @testable import DatadogRUM
 
@@ -45,13 +46,13 @@ class RUMMonitorProtocol_InternalTests: XCTestCase {
         XCTAssertEqual(monitor.receivedCommands.map(\.target), Array(repeating: .processRepresentative, count: 4))
 
         monitor.receivedCommands = []
-        RUMContextHandoff.withValue(rumContext: nil, sceneIdentifier: scene.rawValue) {
+        RUMContextHandoff.withValue(owner: monitor.rumContextHandoffOwner, rumContext: nil, sceneIdentifier: scene.rawValue) {
             emitCurrentViewCommands(using: interface)
         }
         XCTAssertEqual(monitor.receivedCommands.map(\.target), Array(repeating: .scene(scene), count: 4))
 
         monitor.receivedCommands = []
-        RUMContextHandoff.withValue(rumContext: context, sceneIdentifier: "contradictory-scene") {
+        RUMContextHandoff.withValue(owner: monitor.rumContextHandoffOwner, rumContext: context, sceneIdentifier: "contradictory-scene") {
             emitCurrentViewCommands(using: interface)
         }
         XCTAssertEqual(
@@ -65,7 +66,7 @@ class RUMMonitorProtocol_InternalTests: XCTestCase {
         let interface = DatadogInternalInterface(monitor: monitor)
         let now = Date()
 
-        RUMContextHandoff.withValue(rumContext: .mockAny(), sceneIdentifier: "scene-A") {
+        RUMContextHandoff.withValue(owner: monitor.rumContextHandoffOwner, rumContext: .mockAny(), sceneIdentifier: "scene-A") {
             interface.addResourceMetrics(
                 at: now,
                 resourceKey: "resource",

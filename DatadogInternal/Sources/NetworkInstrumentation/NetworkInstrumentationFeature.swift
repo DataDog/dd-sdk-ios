@@ -432,7 +432,7 @@ extension NetworkInstrumentationFeature {
     func intercept(request: URLRequest, additionalFirstPartyHosts: FirstPartyHosts?) -> (URLRequest, [RequestInstrumentationContext]) {
         let headerTypes = firstPartyHosts(with: additionalFirstPartyHosts)
             .tracingHeaderTypes(for: request.url)
-        let rumContextHandoff = RUMContextHandoff.current
+        let rumContextHandoff = RUMContextHandoff.current(for: networkContextProvider.rumContextHandoffOwner)
 
         // Historically `modify` is skipped for third-party requests. Preserve
         // that behavior unless RUM installed an exact request-local context:

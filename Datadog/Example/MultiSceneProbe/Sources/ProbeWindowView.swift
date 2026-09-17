@@ -2847,6 +2847,7 @@ struct ProbeWindowRoot: View {
                 }
                 #if DEBUG
                 RUMUIEventNetworkContext.withValue(
+                    owner: (RUMMonitor.shared() as? RUMCommandSubscriber)?.rumContextHandoffOwner,
                     sceneIdentifier: RUMSceneIdentifier(
                         rawValue: handle.nativeSceneID
                     ),
@@ -3083,6 +3084,7 @@ struct ProbeWindowRoot: View {
                 } else {
                 #if DEBUG
                     RUMUIEventNetworkContext.withValue(
+                        owner: (RUMMonitor.shared() as? RUMCommandSubscriber)?.rumContextHandoffOwner,
                         sceneIdentifier: RUMSceneIdentifier(
                             rawValue: handle.nativeSceneID
                         ),
@@ -5697,7 +5699,8 @@ private struct ProbeHomeView: View {
     @MainActor
     private func recordStructuredTaskExecutionContext(phase: String) {
         #if DEBUG
-        let handoffScene = RUMUIEventNetworkContext.currentSceneIdentifier?.rawValue
+        let owner = (RUMMonitor.shared() as? RUMCommandSubscriber)?.rumContextHandoffOwner
+        let handoffScene = RUMUIEventNetworkContext.currentSceneIdentifier(for: owner)?.rawValue
         let traitScene: String?
         if #available(iOS 17.0, *) {
             traitScene = UITraitCollection.current[RUMSceneIdentifierTrait.self]

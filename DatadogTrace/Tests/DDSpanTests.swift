@@ -50,6 +50,7 @@ class DDSpanTests: XCTestCase {
             spanEventBuilder: .mockWith(bundleWithRUM: true)
         )
         RUMContextHandoff.withValue(
+            owner: RUMContextHandoff.owner(in: core),
             rumContext: sourceSceneContext,
             sceneIdentifier: "scene-B"
         ) {
@@ -72,7 +73,7 @@ class DDSpanTests: XCTestCase {
             core: core,
             spanEventBuilder: .mockWith(bundleWithRUM: true)
         )
-        RUMContextHandoff.withValue(rumContext: nil, sceneIdentifier: "scene-B") {
+        RUMContextHandoff.withValue(owner: RUMContextHandoff.owner(in: core), rumContext: nil, sceneIdentifier: "scene-B") {
             tracer.startSpan(operationName: "unresolved scene work").finish()
         }
 
@@ -96,6 +97,7 @@ class DDSpanTests: XCTestCase {
             spanEventBuilder: .mockWith(bundleWithRUM: true)
         )
         RUMContextHandoff.withValue(
+            owner: RUMContextHandoff.owner(in: core),
             rumContext: nil,
             sceneIdentifier: "scene-B",
             hasPendingUserAction: true
@@ -108,6 +110,31 @@ class DDSpanTests: XCTestCase {
         XCTAssertNil(span.tags[SpanTags.rumSessionID])
         XCTAssertNil(span.tags[SpanTags.rumViewID])
         XCTAssertNil(span.tags[SpanTags.rumActionID])
+    }
+
+    func testGivenForeignCoreDispatch_spanKeepsConsumerOwnership() throws {
+        let own: RUMCoreContext = .mockWith(sessionID: UUID(), viewID: UUID().uuidString, userActionID: UUID().uuidString)
+        let origins: [RUMCoreContext?] = [
+            .mockWith(applicationID: own.applicationID, sessionID: UUID(), viewID: UUID().uuidString),
+            .mockWith(applicationID: "another-application", viewID: UUID().uuidString),
+            nil
+        ]
+        for ownContext in [own, nil] {
+            for origin in origins {
+                let scope = FeatureScopeMock(context: .mockWith(additionalContext: ownContext.map { [$0] } ?? []))
+                let tracer: DatadogTracer = .mockWith(featureScope: scope, spanEventBuilder: .mockWith(bundleWithRUM: true))
+                RUMContextHandoff.withValue(owner: .init(), rumContext: origin, sceneIdentifier: "foreign") {
+                    tracer.startSpan(operationName: "consumer").finish()
+                }
+                let spans = try scope.spanEventsWritten()
+                let span = try XCTUnwrap(spans.first)
+                XCTAssertEqual(spans.count, 1)
+                XCTAssertEqual(span.tags[SpanTags.rumApplicationID], ownContext?.applicationID)
+                XCTAssertEqual(span.tags[SpanTags.rumSessionID], ownContext?.sessionID)
+                XCTAssertEqual(span.tags[SpanTags.rumViewID], ownContext?.viewID)
+                XCTAssertEqual(span.tags[SpanTags.rumActionID], ownContext?.userActionID)
+            }
+        }
     }
 
     // MARK: - Customizing SpanEvents

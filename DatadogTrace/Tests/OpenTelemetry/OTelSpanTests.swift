@@ -49,6 +49,7 @@ final class OTelSpanTests: XCTestCase {
         )
 
         RUMContextHandoff.withValue(
+            owner: RUMContextHandoff.owner(in: scope),
             rumContext: sourceSceneContext,
             sceneIdentifier: "scene-B"
         ) {
@@ -72,7 +73,7 @@ final class OTelSpanTests: XCTestCase {
             spanEventBuilder: .mockWith(bundleWithRUM: true)
         )
 
-        RUMContextHandoff.withValue(rumContext: nil, sceneIdentifier: "scene-B") {
+        RUMContextHandoff.withValue(owner: RUMContextHandoff.owner(in: scope), rumContext: nil, sceneIdentifier: "scene-B") {
             tracer.spanBuilder(spanName: "unresolved scene work").startSpan().end()
         }
 
@@ -120,6 +121,7 @@ final class OTelSpanTests: XCTestCase {
         )
 
         RUMContextHandoff.withValue(
+            owner: RUMContextHandoff.owner(in: scope),
             rumContext: sourceSceneContext,
             sceneIdentifier: "scene-B"
         ) {
@@ -132,6 +134,31 @@ final class OTelSpanTests: XCTestCase {
         XCTAssertEqual(spans.count, 2)
         XCTAssertTrue(spans.allSatisfy { $0.tags[SpanTags.rumViewID] == sourceSceneContext.viewID })
         XCTAssertTrue(spans.allSatisfy { $0.tags[SpanTags.rumActionID] == nil })
+    }
+
+    func testGivenForeignCoreDispatch_spanKeepsConsumerOwnership() throws {
+        let own: RUMCoreContext = .mockWith(sessionID: UUID(), viewID: UUID().uuidString, userActionID: UUID().uuidString)
+        let origins: [RUMCoreContext?] = [
+            .mockWith(applicationID: own.applicationID, sessionID: UUID(), viewID: UUID().uuidString),
+            .mockWith(applicationID: "another-application", viewID: UUID().uuidString),
+            nil
+        ]
+        for ownContext in [own, nil] {
+            for origin in origins {
+                let scope = FeatureScopeMock(context: .mockWith(additionalContext: ownContext.map { [$0] } ?? []))
+                let tracer: DatadogTracer = .mockWith(featureScope: scope, spanEventBuilder: .mockWith(bundleWithRUM: true))
+                RUMContextHandoff.withValue(owner: .init(), rumContext: origin, sceneIdentifier: "foreign") {
+                    tracer.spanBuilder(spanName: "consumer").startSpan().end()
+                }
+                let spans = try scope.spanEventsWritten()
+                let span = try XCTUnwrap(spans.first)
+                XCTAssertEqual(spans.count, 1)
+                XCTAssertEqual(span.tags[SpanTags.rumApplicationID], ownContext?.applicationID)
+                XCTAssertEqual(span.tags[SpanTags.rumSessionID], ownContext?.sessionID)
+                XCTAssertEqual(span.tags[SpanTags.rumViewID], ownContext?.viewID)
+                XCTAssertEqual(span.tags[SpanTags.rumActionID], ownContext?.userActionID)
+            }
+        }
     }
 
     func testSpanOperationNameAttribute() throws {

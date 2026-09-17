@@ -46,7 +46,9 @@ extension DatadogCoreProtocol {
     ///
     /// - Parameter urlSessionHandler: The `URLSession` handler to register.
     public func register(urlSessionHandler: DatadogURLSessionHandler) throws {
-        let contextProvider = NetworkContextCoreProvider()
+        let contextProvider = NetworkContextCoreProvider(
+            rumContextHandoffOwner: (self as? RUMContextHandoffOwnerProviding)?.rumContextHandoffOwner
+        )
         let feature = get(feature: NetworkInstrumentationFeature.self) ?? .init(networkContextProvider: contextProvider, messageReceiver: contextProvider)
         feature.handlers.append(urlSessionHandler)
         try register(feature: feature)
