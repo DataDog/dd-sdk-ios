@@ -1,0 +1,1165 @@
+{
+  "artifacts": {
+    "backend-evidence.json": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/multi-scene-acceptance-cbqjw7up/run/backend-evidence.json",
+    "boot-ready.log": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/multi-scene-acceptance-cbqjw7up/run/boot-ready.log",
+    "build-identity.json": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/multi-scene-acceptance-cbqjw7up/run/build-identity.json",
+    "build-tests.log": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/multi-scene-acceptance-cbqjw7up/run/build-tests.log",
+    "console.raw.log": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/multi-scene-acceptance-cbqjw7up/run/console.raw.log",
+    "container-absence.log": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/multi-scene-acceptance-cbqjw7up/run/container-absence.log",
+    "install.log": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/multi-scene-acceptance-cbqjw7up/run/install.log",
+    "local-evidence.json": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/multi-scene-acceptance-cbqjw7up/run/local-evidence.json",
+    "probe.jsonl": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/multi-scene-acceptance-cbqjw7up/run/probe.jsonl",
+    "signature.log": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/multi-scene-acceptance-cbqjw7up/run/signature.log",
+    "source-identity.json": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/multi-scene-acceptance-cbqjw7up/run/source-identity.json",
+    "summary.json": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/multi-scene-acceptance-cbqjw7up/run/summary.json",
+    "terminal-screenshot.log": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/multi-scene-acceptance-cbqjw7up/run/terminal-screenshot.log",
+    "terminal.png": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/multi-scene-acceptance-cbqjw7up/run/terminal.png",
+    "terminate-after.log": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/multi-scene-acceptance-cbqjw7up/run/terminate-after.log",
+    "terminate-before.log": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/multi-scene-acceptance-cbqjw7up/run/terminate-before.log",
+    "test-summary.json": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/multi-scene-acceptance-cbqjw7up/run/test-summary.json",
+    "uninstall.log": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/multi-scene-acceptance-cbqjw7up/run/uninstall.log"
+  },
+  "commit_signature": {
+    "required_before_push": true,
+    "state": "VERIFIED"
+  },
+  "device": {
+    "dataPath": "/Users/valentin.pertuisot/Library/Developer/CoreSimulator/Devices/92C9918B-FEC6-4440-9D6D-8E09475950BB/data",
+    "dataPathSize": 3258945536,
+    "deviceTypeIdentifier": "com.apple.CoreSimulator.SimDeviceType.iPad-mini-A17-Pro",
+    "isAvailable": true,
+    "lastUsedAt": "2026-09-16T22:19:15Z",
+    "logPath": "/Users/valentin.pertuisot/Library/Logs/CoreSimulator/92C9918B-FEC6-4440-9D6D-8E09475950BB",
+    "logPathSize": 593920,
+    "name": "iPad mini (A17 Pro)",
+    "runtime": "com.apple.CoreSimulator.SimRuntime.iOS-27-0",
+    "state": "Booted",
+    "udid": "92C9918B-FEC6-4440-9D6D-8E09475950BB"
+  },
+  "dirty_state": [
+    " M Datadog/Datadog.xcodeproj/project.pbxproj",
+    "A  xcconfigs/Datadog.local.xcconfig"
+  ],
+  "evidence": {
+    "backend-evidence.json": {
+      "crashes": {
+        "count": 0
+      },
+      "errors": [
+        {
+          "attribute_state": {
+            "exp178_process": "global-v2",
+            "exp178_shadow": "global-v2"
+          },
+          "error_source": "custom",
+          "error_type": "ProbeAttribute",
+          "event_id": "76a90310-9473-41f5-a612-6328f42cb919",
+          "is_crash": false,
+          "payload_matches": true,
+          "phase": "attribute-global-update-b",
+          "run_id": "exp178-20260917T221447Z-1f56786fe833",
+          "session_id": "4f85f41d-9403-4bfa-8e61-dc6acfc4be44",
+          "source_scene": "scene-A",
+          "view_id": "4e669240-20bf-44f5-a1ef-741c2eb6031f"
+        },
+        {
+          "attribute_state": {
+            "exp178_process": "global-v1",
+            "exp178_shadow": "global-v1"
+          },
+          "error_source": "custom",
+          "error_type": "ProbeAttribute",
+          "event_id": "0ebb668d-dbb8-484d-81c9-be78254c5a5a",
+          "is_crash": false,
+          "payload_matches": true,
+          "phase": "attribute-objc-batch-remove-b",
+          "run_id": "exp178-20260917T221447Z-1f56786fe833",
+          "session_id": "4f85f41d-9403-4bfa-8e61-dc6acfc4be44",
+          "source_scene": "scene-A",
+          "view_id": "4e669240-20bf-44f5-a1ef-741c2eb6031f"
+        },
+        {
+          "attribute_state": {
+            "exp178_flag": true,
+            "exp178_integer": 7,
+            "exp178_nested": {
+              "value": "objc-b"
+            },
+            "exp178_process": "global-v1",
+            "exp178_shadow": "global-v1"
+          },
+          "error_source": "custom",
+          "error_type": "ProbeAttribute",
+          "event_id": "ba566605-99b6-4c92-9a1c-a478ba313b88",
+          "is_crash": false,
+          "payload_matches": true,
+          "phase": "attribute-objc-single-remove-b",
+          "run_id": "exp178-20260917T221447Z-1f56786fe833",
+          "session_id": "4f85f41d-9403-4bfa-8e61-dc6acfc4be44",
+          "source_scene": "scene-A",
+          "view_id": "4e669240-20bf-44f5-a1ef-741c2eb6031f"
+        },
+        {
+          "attribute_state": {
+            "exp178_flag": true,
+            "exp178_integer": 7,
+            "exp178_nested": {
+              "value": "objc-b"
+            },
+            "exp178_process": "global-v1",
+            "exp178_shadow": "objc-b"
+          },
+          "error_source": "custom",
+          "error_type": "ProbeAttribute",
+          "event_id": "b23cc7c8-1673-47ba-89e8-d39cf75b64c3",
+          "is_crash": false,
+          "payload_matches": true,
+          "phase": "attribute-objc-batch-add-b",
+          "run_id": "exp178-20260917T221447Z-1f56786fe833",
+          "session_id": "4f85f41d-9403-4bfa-8e61-dc6acfc4be44",
+          "source_scene": "scene-A",
+          "view_id": "4e669240-20bf-44f5-a1ef-741c2eb6031f"
+        },
+        {
+          "attribute_state": {
+            "exp178_process": "global-v1",
+            "exp178_shadow": "objc-b"
+          },
+          "error_source": "custom",
+          "error_type": "ProbeAttribute",
+          "event_id": "7798cb47-2b75-441f-b499-8eaa4b49c7a3",
+          "is_crash": false,
+          "payload_matches": true,
+          "phase": "attribute-objc-single-add-b",
+          "run_id": "exp178-20260917T221447Z-1f56786fe833",
+          "session_id": "4f85f41d-9403-4bfa-8e61-dc6acfc4be44",
+          "source_scene": "scene-A",
+          "view_id": "4e669240-20bf-44f5-a1ef-741c2eb6031f"
+        },
+        {
+          "attribute_state": {
+            "exp178_process": "global-v1",
+            "exp178_shadow": "global-v1"
+          },
+          "error_source": "custom",
+          "error_type": "ProbeAttribute",
+          "event_id": "631597be-e8d7-484a-a7a1-f11ec4b52ba4",
+          "is_crash": false,
+          "payload_matches": true,
+          "phase": "attribute-swift-batch-remove-b",
+          "run_id": "exp178-20260917T221447Z-1f56786fe833",
+          "session_id": "4f85f41d-9403-4bfa-8e61-dc6acfc4be44",
+          "source_scene": "scene-A",
+          "view_id": "4e669240-20bf-44f5-a1ef-741c2eb6031f"
+        },
+        {
+          "attribute_state": {
+            "exp178_process": "global-v1",
+            "exp178_shadow": "global-v1"
+          },
+          "error_source": "custom",
+          "error_type": "ProbeAttribute",
+          "event_id": "5cf5f16f-b52e-4ee8-965e-c72ff3089927",
+          "is_crash": false,
+          "payload_matches": true,
+          "phase": "attribute-swift-single-remove-b",
+          "run_id": "exp178-20260917T221447Z-1f56786fe833",
+          "session_id": "4f85f41d-9403-4bfa-8e61-dc6acfc4be44",
+          "source_scene": "scene-A",
+          "view_id": "4e669240-20bf-44f5-a1ef-741c2eb6031f"
+        },
+        {
+          "attribute_state": {
+            "exp178_process": "global-v1",
+            "exp178_shadow": "global-v1"
+          },
+          "error_source": "custom",
+          "error_type": "ProbeAttribute",
+          "event_id": "afaa8e0e-20be-44fc-b484-9fb2a2e83b9d",
+          "is_crash": false,
+          "payload_matches": true,
+          "phase": "attribute-swift-batch-add-b",
+          "run_id": "exp178-20260917T221447Z-1f56786fe833",
+          "session_id": "4f85f41d-9403-4bfa-8e61-dc6acfc4be44",
+          "source_scene": "scene-A",
+          "view_id": "4e669240-20bf-44f5-a1ef-741c2eb6031f"
+        },
+        {
+          "attribute_state": {
+            "exp178_process": "global-v1",
+            "exp178_shadow": "global-v1"
+          },
+          "error_source": "custom",
+          "error_type": "ProbeAttribute",
+          "event_id": "84972d6c-1742-40c2-9514-f238e6a3ea83",
+          "is_crash": false,
+          "payload_matches": true,
+          "phase": "attribute-swift-single-add-b",
+          "run_id": "exp178-20260917T221447Z-1f56786fe833",
+          "session_id": "4f85f41d-9403-4bfa-8e61-dc6acfc4be44",
+          "source_scene": "scene-A",
+          "view_id": "4e669240-20bf-44f5-a1ef-741c2eb6031f"
+        },
+        {
+          "attribute_state": {
+            "exp178_process": "global-v1",
+            "exp178_shadow": "global-v1"
+          },
+          "error_source": "custom",
+          "error_type": "ProbeAttribute",
+          "event_id": "60b045a8-0895-44d2-b88c-700d0dd9a8ee",
+          "is_crash": false,
+          "payload_matches": true,
+          "phase": "attribute-initial-b",
+          "run_id": "exp178-20260917T221447Z-1f56786fe833",
+          "session_id": "4f85f41d-9403-4bfa-8e61-dc6acfc4be44",
+          "source_scene": "scene-A",
+          "view_id": "4e669240-20bf-44f5-a1ef-741c2eb6031f"
+        },
+        {
+          "attribute_state": {
+            "exp178_process": "global-v2",
+            "exp178_shadow": "global-v2"
+          },
+          "error_source": "custom",
+          "error_type": "ProbeAttribute",
+          "event_id": "8bc19f0a-da3c-42ec-a9b0-56ddc8847504",
+          "is_crash": false,
+          "payload_matches": true,
+          "phase": "attribute-global-update-a",
+          "run_id": "exp178-20260917T221447Z-1f56786fe833",
+          "session_id": "4f85f41d-9403-4bfa-8e61-dc6acfc4be44",
+          "source_scene": "scene-A",
+          "view_id": "96ea9a14-323b-4b0a-a508-40e36ac48bdb"
+        },
+        {
+          "attribute_state": {
+            "exp178_process": "global-v1",
+            "exp178_shadow": "global-v1"
+          },
+          "error_source": "custom",
+          "error_type": "ProbeAttribute",
+          "event_id": "57fc62c1-207f-4f6a-b5f8-1341d4da6f80",
+          "is_crash": false,
+          "payload_matches": true,
+          "phase": "attribute-objc-batch-remove-a",
+          "run_id": "exp178-20260917T221447Z-1f56786fe833",
+          "session_id": "4f85f41d-9403-4bfa-8e61-dc6acfc4be44",
+          "source_scene": "scene-A",
+          "view_id": "96ea9a14-323b-4b0a-a508-40e36ac48bdb"
+        },
+        {
+          "attribute_state": {
+            "exp178_process": "global-v1",
+            "exp178_shadow": "global-v1"
+          },
+          "error_source": "custom",
+          "error_type": "ProbeAttribute",
+          "event_id": "87193670-cad8-4300-9efe-06c5a4157efd",
+          "is_crash": false,
+          "payload_matches": true,
+          "phase": "attribute-objc-single-remove-a",
+          "run_id": "exp178-20260917T221447Z-1f56786fe833",
+          "session_id": "4f85f41d-9403-4bfa-8e61-dc6acfc4be44",
+          "source_scene": "scene-A",
+          "view_id": "96ea9a14-323b-4b0a-a508-40e36ac48bdb"
+        },
+        {
+          "attribute_state": {
+            "exp178_process": "global-v1",
+            "exp178_shadow": "global-v1"
+          },
+          "error_source": "custom",
+          "error_type": "ProbeAttribute",
+          "event_id": "47bd81b7-5831-4c4f-8c38-8d9611b7680c",
+          "is_crash": false,
+          "payload_matches": true,
+          "phase": "attribute-objc-batch-add-a",
+          "run_id": "exp178-20260917T221447Z-1f56786fe833",
+          "session_id": "4f85f41d-9403-4bfa-8e61-dc6acfc4be44",
+          "source_scene": "scene-A",
+          "view_id": "96ea9a14-323b-4b0a-a508-40e36ac48bdb"
+        },
+        {
+          "attribute_state": {
+            "exp178_process": "global-v1",
+            "exp178_shadow": "global-v1"
+          },
+          "error_source": "custom",
+          "error_type": "ProbeAttribute",
+          "event_id": "0e7cd51e-89c5-4c53-b2b5-e6145e11af7a",
+          "is_crash": false,
+          "payload_matches": true,
+          "phase": "attribute-objc-single-add-a",
+          "run_id": "exp178-20260917T221447Z-1f56786fe833",
+          "session_id": "4f85f41d-9403-4bfa-8e61-dc6acfc4be44",
+          "source_scene": "scene-A",
+          "view_id": "96ea9a14-323b-4b0a-a508-40e36ac48bdb"
+        },
+        {
+          "attribute_state": {
+            "exp178_process": "global-v1",
+            "exp178_shadow": "global-v1"
+          },
+          "error_source": "custom",
+          "error_type": "ProbeAttribute",
+          "event_id": "d2aa4bd6-8e2b-4587-abaf-f801d056cdfb",
+          "is_crash": false,
+          "payload_matches": true,
+          "phase": "attribute-swift-batch-remove-a",
+          "run_id": "exp178-20260917T221447Z-1f56786fe833",
+          "session_id": "4f85f41d-9403-4bfa-8e61-dc6acfc4be44",
+          "source_scene": "scene-A",
+          "view_id": "96ea9a14-323b-4b0a-a508-40e36ac48bdb"
+        },
+        {
+          "attribute_state": {
+            "exp178_flag": true,
+            "exp178_integer": 7,
+            "exp178_nested": {
+              "value": "swift-a"
+            },
+            "exp178_process": "global-v1",
+            "exp178_shadow": "global-v1"
+          },
+          "error_source": "custom",
+          "error_type": "ProbeAttribute",
+          "event_id": "9063c729-d705-4226-9dd1-017e63b22347",
+          "is_crash": false,
+          "payload_matches": true,
+          "phase": "attribute-swift-single-remove-a",
+          "run_id": "exp178-20260917T221447Z-1f56786fe833",
+          "session_id": "4f85f41d-9403-4bfa-8e61-dc6acfc4be44",
+          "source_scene": "scene-A",
+          "view_id": "96ea9a14-323b-4b0a-a508-40e36ac48bdb"
+        },
+        {
+          "attribute_state": {
+            "exp178_flag": true,
+            "exp178_integer": 7,
+            "exp178_nested": {
+              "value": "swift-a"
+            },
+            "exp178_process": "global-v1",
+            "exp178_shadow": "swift-a"
+          },
+          "error_source": "custom",
+          "error_type": "ProbeAttribute",
+          "event_id": "88b06d89-04df-4cce-ab4a-b5cde3c14958",
+          "is_crash": false,
+          "payload_matches": true,
+          "phase": "attribute-swift-batch-add-a",
+          "run_id": "exp178-20260917T221447Z-1f56786fe833",
+          "session_id": "4f85f41d-9403-4bfa-8e61-dc6acfc4be44",
+          "source_scene": "scene-A",
+          "view_id": "96ea9a14-323b-4b0a-a508-40e36ac48bdb"
+        },
+        {
+          "attribute_state": {
+            "exp178_process": "global-v1",
+            "exp178_shadow": "swift-a"
+          },
+          "error_source": "custom",
+          "error_type": "ProbeAttribute",
+          "event_id": "83f1deb9-348b-4c20-a9ae-993760b1ba81",
+          "is_crash": false,
+          "payload_matches": true,
+          "phase": "attribute-swift-single-add-a",
+          "run_id": "exp178-20260917T221447Z-1f56786fe833",
+          "session_id": "4f85f41d-9403-4bfa-8e61-dc6acfc4be44",
+          "source_scene": "scene-A",
+          "view_id": "96ea9a14-323b-4b0a-a508-40e36ac48bdb"
+        },
+        {
+          "attribute_state": {
+            "exp178_process": "global-v1",
+            "exp178_shadow": "global-v1"
+          },
+          "error_source": "custom",
+          "error_type": "ProbeAttribute",
+          "event_id": "4a1c1277-bed1-4f77-ae81-dd3fb74ac8b1",
+          "is_crash": false,
+          "payload_matches": true,
+          "phase": "attribute-initial-a",
+          "run_id": "exp178-20260917T221447Z-1f56786fe833",
+          "session_id": "4f85f41d-9403-4bfa-8e61-dc6acfc4be44",
+          "source_scene": "scene-A",
+          "view_id": "96ea9a14-323b-4b0a-a508-40e36ac48bdb"
+        }
+      ],
+      "resources": [],
+      "views": [
+        {
+          "name": "ProbeHomeView",
+          "run_id": "exp178-20260917T221447Z-1f56786fe833",
+          "session_id": "4f85f41d-9403-4bfa-8e61-dc6acfc4be44",
+          "view_id": "4e669240-20bf-44f5-a1ef-741c2eb6031f"
+        },
+        {
+          "name": "ProbeHomeView",
+          "run_id": "exp178-20260917T221447Z-1f56786fe833",
+          "session_id": "4f85f41d-9403-4bfa-8e61-dc6acfc4be44",
+          "view_id": "96ea9a14-323b-4b0a-a508-40e36ac48bdb"
+        },
+        {
+          "name": "ApplicationLaunch",
+          "run_id": "exp178-20260917T221447Z-1f56786fe833",
+          "session_id": "4f85f41d-9403-4bfa-8e61-dc6acfc4be44",
+          "view_id": "15fe739e-fe3b-4eec-a220-31ee7facdf6e"
+        }
+      ]
+    },
+    "build-identity.json": {
+      "executable_sha256": "7ff4debc407fbd05d3efa58fd7b26e1009c53f743a13b3e5d4f5df4d5368d758",
+      "source_sha256": "7744c08e6c389aa9141cf431e471a81a232315b9042b957190f5ff617d207602",
+      "uuid": "UUID: E75D8558-B16B-3154-8098-1ADA14AF56CE (arm64) /private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/multi-scene-acceptance-cbqjw7up/run/derived/Build/Products/Debug-iphonesimulator/RUMNativeMultiSceneProbe.app/RUMNativeMultiSceneProbe"
+    },
+    "local-evidence.json": {
+      "assertions": 42,
+      "checkpoints": 10,
+      "errors": [
+        {
+          "attribute_state": {
+            "exp178_process": "global-v1",
+            "exp178_shadow": "global-v1"
+          },
+          "error_source": "custom",
+          "error_type": "ProbeAttribute",
+          "event_id": "4a1c1277-bed1-4f77-ae81-dd3fb74ac8b1",
+          "payload_matches": true,
+          "phase": "attribute-initial-a",
+          "session_id": "4f85f41d-9403-4bfa-8e61-dc6acfc4be44",
+          "source_scene": "scene-A",
+          "view_id": "96ea9a14-323b-4b0a-a508-40e36ac48bdb"
+        },
+        {
+          "attribute_state": {
+            "exp178_process": "global-v1",
+            "exp178_shadow": "global-v1"
+          },
+          "error_source": "custom",
+          "error_type": "ProbeAttribute",
+          "event_id": "60b045a8-0895-44d2-b88c-700d0dd9a8ee",
+          "payload_matches": true,
+          "phase": "attribute-initial-b",
+          "session_id": "4f85f41d-9403-4bfa-8e61-dc6acfc4be44",
+          "source_scene": "scene-A",
+          "view_id": "4e669240-20bf-44f5-a1ef-741c2eb6031f"
+        },
+        {
+          "attribute_state": {
+            "exp178_process": "global-v1",
+            "exp178_shadow": "swift-a"
+          },
+          "error_source": "custom",
+          "error_type": "ProbeAttribute",
+          "event_id": "83f1deb9-348b-4c20-a9ae-993760b1ba81",
+          "payload_matches": true,
+          "phase": "attribute-swift-single-add-a",
+          "session_id": "4f85f41d-9403-4bfa-8e61-dc6acfc4be44",
+          "source_scene": "scene-A",
+          "view_id": "96ea9a14-323b-4b0a-a508-40e36ac48bdb"
+        },
+        {
+          "attribute_state": {
+            "exp178_process": "global-v1",
+            "exp178_shadow": "global-v1"
+          },
+          "error_source": "custom",
+          "error_type": "ProbeAttribute",
+          "event_id": "84972d6c-1742-40c2-9514-f238e6a3ea83",
+          "payload_matches": true,
+          "phase": "attribute-swift-single-add-b",
+          "session_id": "4f85f41d-9403-4bfa-8e61-dc6acfc4be44",
+          "source_scene": "scene-A",
+          "view_id": "4e669240-20bf-44f5-a1ef-741c2eb6031f"
+        },
+        {
+          "attribute_state": {
+            "exp178_flag": true,
+            "exp178_integer": 7,
+            "exp178_nested": {
+              "value": "swift-a"
+            },
+            "exp178_process": "global-v1",
+            "exp178_shadow": "swift-a"
+          },
+          "error_source": "custom",
+          "error_type": "ProbeAttribute",
+          "event_id": "88b06d89-04df-4cce-ab4a-b5cde3c14958",
+          "payload_matches": true,
+          "phase": "attribute-swift-batch-add-a",
+          "session_id": "4f85f41d-9403-4bfa-8e61-dc6acfc4be44",
+          "source_scene": "scene-A",
+          "view_id": "96ea9a14-323b-4b0a-a508-40e36ac48bdb"
+        },
+        {
+          "attribute_state": {
+            "exp178_process": "global-v1",
+            "exp178_shadow": "global-v1"
+          },
+          "error_source": "custom",
+          "error_type": "ProbeAttribute",
+          "event_id": "afaa8e0e-20be-44fc-b484-9fb2a2e83b9d",
+          "payload_matches": true,
+          "phase": "attribute-swift-batch-add-b",
+          "session_id": "4f85f41d-9403-4bfa-8e61-dc6acfc4be44",
+          "source_scene": "scene-A",
+          "view_id": "4e669240-20bf-44f5-a1ef-741c2eb6031f"
+        },
+        {
+          "attribute_state": {
+            "exp178_flag": true,
+            "exp178_integer": 7,
+            "exp178_nested": {
+              "value": "swift-a"
+            },
+            "exp178_process": "global-v1",
+            "exp178_shadow": "global-v1"
+          },
+          "error_source": "custom",
+          "error_type": "ProbeAttribute",
+          "event_id": "9063c729-d705-4226-9dd1-017e63b22347",
+          "payload_matches": true,
+          "phase": "attribute-swift-single-remove-a",
+          "session_id": "4f85f41d-9403-4bfa-8e61-dc6acfc4be44",
+          "source_scene": "scene-A",
+          "view_id": "96ea9a14-323b-4b0a-a508-40e36ac48bdb"
+        },
+        {
+          "attribute_state": {
+            "exp178_process": "global-v1",
+            "exp178_shadow": "global-v1"
+          },
+          "error_source": "custom",
+          "error_type": "ProbeAttribute",
+          "event_id": "5cf5f16f-b52e-4ee8-965e-c72ff3089927",
+          "payload_matches": true,
+          "phase": "attribute-swift-single-remove-b",
+          "session_id": "4f85f41d-9403-4bfa-8e61-dc6acfc4be44",
+          "source_scene": "scene-A",
+          "view_id": "4e669240-20bf-44f5-a1ef-741c2eb6031f"
+        },
+        {
+          "attribute_state": {
+            "exp178_process": "global-v1",
+            "exp178_shadow": "global-v1"
+          },
+          "error_source": "custom",
+          "error_type": "ProbeAttribute",
+          "event_id": "d2aa4bd6-8e2b-4587-abaf-f801d056cdfb",
+          "payload_matches": true,
+          "phase": "attribute-swift-batch-remove-a",
+          "session_id": "4f85f41d-9403-4bfa-8e61-dc6acfc4be44",
+          "source_scene": "scene-A",
+          "view_id": "96ea9a14-323b-4b0a-a508-40e36ac48bdb"
+        },
+        {
+          "attribute_state": {
+            "exp178_process": "global-v1",
+            "exp178_shadow": "global-v1"
+          },
+          "error_source": "custom",
+          "error_type": "ProbeAttribute",
+          "event_id": "631597be-e8d7-484a-a7a1-f11ec4b52ba4",
+          "payload_matches": true,
+          "phase": "attribute-swift-batch-remove-b",
+          "session_id": "4f85f41d-9403-4bfa-8e61-dc6acfc4be44",
+          "source_scene": "scene-A",
+          "view_id": "4e669240-20bf-44f5-a1ef-741c2eb6031f"
+        },
+        {
+          "attribute_state": {
+            "exp178_process": "global-v1",
+            "exp178_shadow": "global-v1"
+          },
+          "error_source": "custom",
+          "error_type": "ProbeAttribute",
+          "event_id": "0e7cd51e-89c5-4c53-b2b5-e6145e11af7a",
+          "payload_matches": true,
+          "phase": "attribute-objc-single-add-a",
+          "session_id": "4f85f41d-9403-4bfa-8e61-dc6acfc4be44",
+          "source_scene": "scene-A",
+          "view_id": "96ea9a14-323b-4b0a-a508-40e36ac48bdb"
+        },
+        {
+          "attribute_state": {
+            "exp178_process": "global-v1",
+            "exp178_shadow": "objc-b"
+          },
+          "error_source": "custom",
+          "error_type": "ProbeAttribute",
+          "event_id": "7798cb47-2b75-441f-b499-8eaa4b49c7a3",
+          "payload_matches": true,
+          "phase": "attribute-objc-single-add-b",
+          "session_id": "4f85f41d-9403-4bfa-8e61-dc6acfc4be44",
+          "source_scene": "scene-A",
+          "view_id": "4e669240-20bf-44f5-a1ef-741c2eb6031f"
+        },
+        {
+          "attribute_state": {
+            "exp178_process": "global-v1",
+            "exp178_shadow": "global-v1"
+          },
+          "error_source": "custom",
+          "error_type": "ProbeAttribute",
+          "event_id": "47bd81b7-5831-4c4f-8c38-8d9611b7680c",
+          "payload_matches": true,
+          "phase": "attribute-objc-batch-add-a",
+          "session_id": "4f85f41d-9403-4bfa-8e61-dc6acfc4be44",
+          "source_scene": "scene-A",
+          "view_id": "96ea9a14-323b-4b0a-a508-40e36ac48bdb"
+        },
+        {
+          "attribute_state": {
+            "exp178_flag": true,
+            "exp178_integer": 7,
+            "exp178_nested": {
+              "value": "objc-b"
+            },
+            "exp178_process": "global-v1",
+            "exp178_shadow": "objc-b"
+          },
+          "error_source": "custom",
+          "error_type": "ProbeAttribute",
+          "event_id": "b23cc7c8-1673-47ba-89e8-d39cf75b64c3",
+          "payload_matches": true,
+          "phase": "attribute-objc-batch-add-b",
+          "session_id": "4f85f41d-9403-4bfa-8e61-dc6acfc4be44",
+          "source_scene": "scene-A",
+          "view_id": "4e669240-20bf-44f5-a1ef-741c2eb6031f"
+        },
+        {
+          "attribute_state": {
+            "exp178_process": "global-v1",
+            "exp178_shadow": "global-v1"
+          },
+          "error_source": "custom",
+          "error_type": "ProbeAttribute",
+          "event_id": "87193670-cad8-4300-9efe-06c5a4157efd",
+          "payload_matches": true,
+          "phase": "attribute-objc-single-remove-a",
+          "session_id": "4f85f41d-9403-4bfa-8e61-dc6acfc4be44",
+          "source_scene": "scene-A",
+          "view_id": "96ea9a14-323b-4b0a-a508-40e36ac48bdb"
+        },
+        {
+          "attribute_state": {
+            "exp178_flag": true,
+            "exp178_integer": 7,
+            "exp178_nested": {
+              "value": "objc-b"
+            },
+            "exp178_process": "global-v1",
+            "exp178_shadow": "global-v1"
+          },
+          "error_source": "custom",
+          "error_type": "ProbeAttribute",
+          "event_id": "ba566605-99b6-4c92-9a1c-a478ba313b88",
+          "payload_matches": true,
+          "phase": "attribute-objc-single-remove-b",
+          "session_id": "4f85f41d-9403-4bfa-8e61-dc6acfc4be44",
+          "source_scene": "scene-A",
+          "view_id": "4e669240-20bf-44f5-a1ef-741c2eb6031f"
+        },
+        {
+          "attribute_state": {
+            "exp178_process": "global-v1",
+            "exp178_shadow": "global-v1"
+          },
+          "error_source": "custom",
+          "error_type": "ProbeAttribute",
+          "event_id": "57fc62c1-207f-4f6a-b5f8-1341d4da6f80",
+          "payload_matches": true,
+          "phase": "attribute-objc-batch-remove-a",
+          "session_id": "4f85f41d-9403-4bfa-8e61-dc6acfc4be44",
+          "source_scene": "scene-A",
+          "view_id": "96ea9a14-323b-4b0a-a508-40e36ac48bdb"
+        },
+        {
+          "attribute_state": {
+            "exp178_process": "global-v1",
+            "exp178_shadow": "global-v1"
+          },
+          "error_source": "custom",
+          "error_type": "ProbeAttribute",
+          "event_id": "0ebb668d-dbb8-484d-81c9-be78254c5a5a",
+          "payload_matches": true,
+          "phase": "attribute-objc-batch-remove-b",
+          "session_id": "4f85f41d-9403-4bfa-8e61-dc6acfc4be44",
+          "source_scene": "scene-A",
+          "view_id": "4e669240-20bf-44f5-a1ef-741c2eb6031f"
+        },
+        {
+          "attribute_state": {
+            "exp178_process": "global-v2",
+            "exp178_shadow": "global-v2"
+          },
+          "error_source": "custom",
+          "error_type": "ProbeAttribute",
+          "event_id": "8bc19f0a-da3c-42ec-a9b0-56ddc8847504",
+          "payload_matches": true,
+          "phase": "attribute-global-update-a",
+          "session_id": "4f85f41d-9403-4bfa-8e61-dc6acfc4be44",
+          "source_scene": "scene-A",
+          "view_id": "96ea9a14-323b-4b0a-a508-40e36ac48bdb"
+        },
+        {
+          "attribute_state": {
+            "exp178_process": "global-v2",
+            "exp178_shadow": "global-v2"
+          },
+          "error_source": "custom",
+          "error_type": "ProbeAttribute",
+          "event_id": "76a90310-9473-41f5-a612-6328f42cb919",
+          "payload_matches": true,
+          "phase": "attribute-global-update-b",
+          "session_id": "4f85f41d-9403-4bfa-8e61-dc6acfc4be44",
+          "source_scene": "scene-A",
+          "view_id": "4e669240-20bf-44f5-a1ef-741c2eb6031f"
+        }
+      ],
+      "native_scenes": {
+        "scene-A": "1C4CAFE9-D73D-44C5-A34E-EAA9754AFA12",
+        "scene-B": "F2D1D598-F37A-4B5F-8FC5-CA3A3BA2F629"
+      },
+      "owners": {
+        "scene-A": "96ea9a14-323b-4b0a-a508-40e36ac48bdb",
+        "scene-B": "4e669240-20bf-44f5-a1ef-741c2eb6031f"
+      },
+      "session_id": "4f85f41d-9403-4bfa-8e61-dc6acfc4be44",
+      "signal_count": 88,
+      "simultaneous_visibility_claimed": false,
+      "views": [
+        {
+          "name": "ApplicationLaunch",
+          "session_id": "4f85f41d-9403-4bfa-8e61-dc6acfc4be44",
+          "view_id": "15fe739e-fe3b-4eec-a220-31ee7facdf6e"
+        },
+        {
+          "name": "ProbeHomeView",
+          "session_id": "4f85f41d-9403-4bfa-8e61-dc6acfc4be44",
+          "view_id": "96ea9a14-323b-4b0a-a508-40e36ac48bdb"
+        },
+        {
+          "name": "ProbeHomeView",
+          "session_id": "4f85f41d-9403-4bfa-8e61-dc6acfc4be44",
+          "view_id": "4e669240-20bf-44f5-a1ef-741c2eb6031f"
+        }
+      ]
+    },
+    "test-summary.json": {
+      "devicesAndConfigurations": [
+        {
+          "device": {
+            "architecture": "arm64",
+            "deviceId": "92C9918B-FEC6-4440-9D6D-8E09475950BB",
+            "deviceName": "iPad mini (A17 Pro)",
+            "modelName": "iPad mini (A17 Pro)",
+            "osBuildNumber": "24A434",
+            "osVersion": "27.0",
+            "platform": "iOS Simulator"
+          },
+          "expectedFailures": 0,
+          "failedTests": 0,
+          "passedTests": 170,
+          "skippedTests": 0,
+          "testPlanConfiguration": {
+            "configurationId": "1",
+            "configurationName": "Test Scheme Action"
+          }
+        }
+      ],
+      "environmentDescription": "RUMNativeMultiSceneProbe \u00b7 Built with macOS 26.6.2",
+      "expectedFailures": 0,
+      "failedTests": 0,
+      "finishTime": 1789683338.197,
+      "passedTests": 170,
+      "result": "Passed",
+      "runtimeWarnings": [],
+      "skippedTests": 0,
+      "startTime": 1789683314.604,
+      "statistics": [],
+      "testFailures": [],
+      "title": "Test - RUMNativeMultiSceneProbe",
+      "topInsights": [],
+      "totalTestCount": 170
+    }
+  },
+  "experiment": "EXP-178",
+  "failures": [],
+  "finished_at": "2026-09-17T22:17:26.883877+00:00",
+  "gate": "T05",
+  "oracle_contract_sha256": "f229d7be84a67c34d2654f154d0ff411e916ea0790db8071b09d400d628ce317",
+  "rerun": "Use a fresh output directory and freshly resolved device; do not reuse run IDs or bridge responses.",
+  "revision": "7956000faffcc5ba8e7cab4ab04efcee7ad930d1",
+  "run_id": "exp178-20260917T221447Z-1f56786fe833",
+  "scenario_id": "attributes.explicit-target.current-view-cross-scene-serial",
+  "schema_version": 1,
+  "source_file_count": 471,
+  "source_fingerprint": "7744c08e6c389aa9141cf431e471a81a232315b9042b957190f5ff617d207602",
+  "stages": {
+    "backend": {
+      "checkpoints": 10,
+      "crash_count": 0,
+      "error_count": 20,
+      "resource_count": 0,
+      "state": "PASS",
+      "view_count": 3
+    },
+    "clean_install": {
+      "data_container_absent": true,
+      "installed_binary_sha256": "7ff4debc407fbd05d3efa58fd7b26e1009c53f743a13b3e5d4f5df4d5368d758",
+      "state": "PASS"
+    },
+    "frozen_build": {
+      "executable_sha256": "7ff4debc407fbd05d3efa58fd7b26e1009c53f743a13b3e5d4f5df4d5368d758",
+      "source_sha256": "7744c08e6c389aa9141cf431e471a81a232315b9042b957190f5ff617d207602",
+      "state": "PASS",
+      "test_count": 170,
+      "uuid": "UUID: E75D8558-B16B-3154-8098-1ADA14AF56CE (arm64) /private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/multi-scene-acceptance-cbqjw7up/run/derived/Build/Products/Debug-iphonesimulator/RUMNativeMultiSceneProbe.app/RUMNativeMultiSceneProbe"
+    },
+    "local_semantics": {
+      "assertions": 42,
+      "checkpoints": 10,
+      "errors": [
+        {
+          "attribute_state": {
+            "exp178_process": "global-v1",
+            "exp178_shadow": "global-v1"
+          },
+          "error_source": "custom",
+          "error_type": "ProbeAttribute",
+          "event_id": "4a1c1277-bed1-4f77-ae81-dd3fb74ac8b1",
+          "payload_matches": true,
+          "phase": "attribute-initial-a",
+          "session_id": "4f85f41d-9403-4bfa-8e61-dc6acfc4be44",
+          "source_scene": "scene-A",
+          "view_id": "96ea9a14-323b-4b0a-a508-40e36ac48bdb"
+        },
+        {
+          "attribute_state": {
+            "exp178_process": "global-v1",
+            "exp178_shadow": "global-v1"
+          },
+          "error_source": "custom",
+          "error_type": "ProbeAttribute",
+          "event_id": "60b045a8-0895-44d2-b88c-700d0dd9a8ee",
+          "payload_matches": true,
+          "phase": "attribute-initial-b",
+          "session_id": "4f85f41d-9403-4bfa-8e61-dc6acfc4be44",
+          "source_scene": "scene-A",
+          "view_id": "4e669240-20bf-44f5-a1ef-741c2eb6031f"
+        },
+        {
+          "attribute_state": {
+            "exp178_process": "global-v1",
+            "exp178_shadow": "swift-a"
+          },
+          "error_source": "custom",
+          "error_type": "ProbeAttribute",
+          "event_id": "83f1deb9-348b-4c20-a9ae-993760b1ba81",
+          "payload_matches": true,
+          "phase": "attribute-swift-single-add-a",
+          "session_id": "4f85f41d-9403-4bfa-8e61-dc6acfc4be44",
+          "source_scene": "scene-A",
+          "view_id": "96ea9a14-323b-4b0a-a508-40e36ac48bdb"
+        },
+        {
+          "attribute_state": {
+            "exp178_process": "global-v1",
+            "exp178_shadow": "global-v1"
+          },
+          "error_source": "custom",
+          "error_type": "ProbeAttribute",
+          "event_id": "84972d6c-1742-40c2-9514-f238e6a3ea83",
+          "payload_matches": true,
+          "phase": "attribute-swift-single-add-b",
+          "session_id": "4f85f41d-9403-4bfa-8e61-dc6acfc4be44",
+          "source_scene": "scene-A",
+          "view_id": "4e669240-20bf-44f5-a1ef-741c2eb6031f"
+        },
+        {
+          "attribute_state": {
+            "exp178_flag": true,
+            "exp178_integer": 7,
+            "exp178_nested": {
+              "value": "swift-a"
+            },
+            "exp178_process": "global-v1",
+            "exp178_shadow": "swift-a"
+          },
+          "error_source": "custom",
+          "error_type": "ProbeAttribute",
+          "event_id": "88b06d89-04df-4cce-ab4a-b5cde3c14958",
+          "payload_matches": true,
+          "phase": "attribute-swift-batch-add-a",
+          "session_id": "4f85f41d-9403-4bfa-8e61-dc6acfc4be44",
+          "source_scene": "scene-A",
+          "view_id": "96ea9a14-323b-4b0a-a508-40e36ac48bdb"
+        },
+        {
+          "attribute_state": {
+            "exp178_process": "global-v1",
+            "exp178_shadow": "global-v1"
+          },
+          "error_source": "custom",
+          "error_type": "ProbeAttribute",
+          "event_id": "afaa8e0e-20be-44fc-b484-9fb2a2e83b9d",
+          "payload_matches": true,
+          "phase": "attribute-swift-batch-add-b",
+          "session_id": "4f85f41d-9403-4bfa-8e61-dc6acfc4be44",
+          "source_scene": "scene-A",
+          "view_id": "4e669240-20bf-44f5-a1ef-741c2eb6031f"
+        },
+        {
+          "attribute_state": {
+            "exp178_flag": true,
+            "exp178_integer": 7,
+            "exp178_nested": {
+              "value": "swift-a"
+            },
+            "exp178_process": "global-v1",
+            "exp178_shadow": "global-v1"
+          },
+          "error_source": "custom",
+          "error_type": "ProbeAttribute",
+          "event_id": "9063c729-d705-4226-9dd1-017e63b22347",
+          "payload_matches": true,
+          "phase": "attribute-swift-single-remove-a",
+          "session_id": "4f85f41d-9403-4bfa-8e61-dc6acfc4be44",
+          "source_scene": "scene-A",
+          "view_id": "96ea9a14-323b-4b0a-a508-40e36ac48bdb"
+        },
+        {
+          "attribute_state": {
+            "exp178_process": "global-v1",
+            "exp178_shadow": "global-v1"
+          },
+          "error_source": "custom",
+          "error_type": "ProbeAttribute",
+          "event_id": "5cf5f16f-b52e-4ee8-965e-c72ff3089927",
+          "payload_matches": true,
+          "phase": "attribute-swift-single-remove-b",
+          "session_id": "4f85f41d-9403-4bfa-8e61-dc6acfc4be44",
+          "source_scene": "scene-A",
+          "view_id": "4e669240-20bf-44f5-a1ef-741c2eb6031f"
+        },
+        {
+          "attribute_state": {
+            "exp178_process": "global-v1",
+            "exp178_shadow": "global-v1"
+          },
+          "error_source": "custom",
+          "error_type": "ProbeAttribute",
+          "event_id": "d2aa4bd6-8e2b-4587-abaf-f801d056cdfb",
+          "payload_matches": true,
+          "phase": "attribute-swift-batch-remove-a",
+          "session_id": "4f85f41d-9403-4bfa-8e61-dc6acfc4be44",
+          "source_scene": "scene-A",
+          "view_id": "96ea9a14-323b-4b0a-a508-40e36ac48bdb"
+        },
+        {
+          "attribute_state": {
+            "exp178_process": "global-v1",
+            "exp178_shadow": "global-v1"
+          },
+          "error_source": "custom",
+          "error_type": "ProbeAttribute",
+          "event_id": "631597be-e8d7-484a-a7a1-f11ec4b52ba4",
+          "payload_matches": true,
+          "phase": "attribute-swift-batch-remove-b",
+          "session_id": "4f85f41d-9403-4bfa-8e61-dc6acfc4be44",
+          "source_scene": "scene-A",
+          "view_id": "4e669240-20bf-44f5-a1ef-741c2eb6031f"
+        },
+        {
+          "attribute_state": {
+            "exp178_process": "global-v1",
+            "exp178_shadow": "global-v1"
+          },
+          "error_source": "custom",
+          "error_type": "ProbeAttribute",
+          "event_id": "0e7cd51e-89c5-4c53-b2b5-e6145e11af7a",
+          "payload_matches": true,
+          "phase": "attribute-objc-single-add-a",
+          "session_id": "4f85f41d-9403-4bfa-8e61-dc6acfc4be44",
+          "source_scene": "scene-A",
+          "view_id": "96ea9a14-323b-4b0a-a508-40e36ac48bdb"
+        },
+        {
+          "attribute_state": {
+            "exp178_process": "global-v1",
+            "exp178_shadow": "objc-b"
+          },
+          "error_source": "custom",
+          "error_type": "ProbeAttribute",
+          "event_id": "7798cb47-2b75-441f-b499-8eaa4b49c7a3",
+          "payload_matches": true,
+          "phase": "attribute-objc-single-add-b",
+          "session_id": "4f85f41d-9403-4bfa-8e61-dc6acfc4be44",
+          "source_scene": "scene-A",
+          "view_id": "4e669240-20bf-44f5-a1ef-741c2eb6031f"
+        },
+        {
+          "attribute_state": {
+            "exp178_process": "global-v1",
+            "exp178_shadow": "global-v1"
+          },
+          "error_source": "custom",
+          "error_type": "ProbeAttribute",
+          "event_id": "47bd81b7-5831-4c4f-8c38-8d9611b7680c",
+          "payload_matches": true,
+          "phase": "attribute-objc-batch-add-a",
+          "session_id": "4f85f41d-9403-4bfa-8e61-dc6acfc4be44",
+          "source_scene": "scene-A",
+          "view_id": "96ea9a14-323b-4b0a-a508-40e36ac48bdb"
+        },
+        {
+          "attribute_state": {
+            "exp178_flag": true,
+            "exp178_integer": 7,
+            "exp178_nested": {
+              "value": "objc-b"
+            },
+            "exp178_process": "global-v1",
+            "exp178_shadow": "objc-b"
+          },
+          "error_source": "custom",
+          "error_type": "ProbeAttribute",
+          "event_id": "b23cc7c8-1673-47ba-89e8-d39cf75b64c3",
+          "payload_matches": true,
+          "phase": "attribute-objc-batch-add-b",
+          "session_id": "4f85f41d-9403-4bfa-8e61-dc6acfc4be44",
+          "source_scene": "scene-A",
+          "view_id": "4e669240-20bf-44f5-a1ef-741c2eb6031f"
+        },
+        {
+          "attribute_state": {
+            "exp178_process": "global-v1",
+            "exp178_shadow": "global-v1"
+          },
+          "error_source": "custom",
+          "error_type": "ProbeAttribute",
+          "event_id": "87193670-cad8-4300-9efe-06c5a4157efd",
+          "payload_matches": true,
+          "phase": "attribute-objc-single-remove-a",
+          "session_id": "4f85f41d-9403-4bfa-8e61-dc6acfc4be44",
+          "source_scene": "scene-A",
+          "view_id": "96ea9a14-323b-4b0a-a508-40e36ac48bdb"
+        },
+        {
+          "attribute_state": {
+            "exp178_flag": true,
+            "exp178_integer": 7,
+            "exp178_nested": {
+              "value": "objc-b"
+            },
+            "exp178_process": "global-v1",
+            "exp178_shadow": "global-v1"
+          },
+          "error_source": "custom",
+          "error_type": "ProbeAttribute",
+          "event_id": "ba566605-99b6-4c92-9a1c-a478ba313b88",
+          "payload_matches": true,
+          "phase": "attribute-objc-single-remove-b",
+          "session_id": "4f85f41d-9403-4bfa-8e61-dc6acfc4be44",
+          "source_scene": "scene-A",
+          "view_id": "4e669240-20bf-44f5-a1ef-741c2eb6031f"
+        },
+        {
+          "attribute_state": {
+            "exp178_process": "global-v1",
+            "exp178_shadow": "global-v1"
+          },
+          "error_source": "custom",
+          "error_type": "ProbeAttribute",
+          "event_id": "57fc62c1-207f-4f6a-b5f8-1341d4da6f80",
+          "payload_matches": true,
+          "phase": "attribute-objc-batch-remove-a",
+          "session_id": "4f85f41d-9403-4bfa-8e61-dc6acfc4be44",
+          "source_scene": "scene-A",
+          "view_id": "96ea9a14-323b-4b0a-a508-40e36ac48bdb"
+        },
+        {
+          "attribute_state": {
+            "exp178_process": "global-v1",
+            "exp178_shadow": "global-v1"
+          },
+          "error_source": "custom",
+          "error_type": "ProbeAttribute",
+          "event_id": "0ebb668d-dbb8-484d-81c9-be78254c5a5a",
+          "payload_matches": true,
+          "phase": "attribute-objc-batch-remove-b",
+          "session_id": "4f85f41d-9403-4bfa-8e61-dc6acfc4be44",
+          "source_scene": "scene-A",
+          "view_id": "4e669240-20bf-44f5-a1ef-741c2eb6031f"
+        },
+        {
+          "attribute_state": {
+            "exp178_process": "global-v2",
+            "exp178_shadow": "global-v2"
+          },
+          "error_source": "custom",
+          "error_type": "ProbeAttribute",
+          "event_id": "8bc19f0a-da3c-42ec-a9b0-56ddc8847504",
+          "payload_matches": true,
+          "phase": "attribute-global-update-a",
+          "session_id": "4f85f41d-9403-4bfa-8e61-dc6acfc4be44",
+          "source_scene": "scene-A",
+          "view_id": "96ea9a14-323b-4b0a-a508-40e36ac48bdb"
+        },
+        {
+          "attribute_state": {
+            "exp178_process": "global-v2",
+            "exp178_shadow": "global-v2"
+          },
+          "error_source": "custom",
+          "error_type": "ProbeAttribute",
+          "event_id": "76a90310-9473-41f5-a612-6328f42cb919",
+          "payload_matches": true,
+          "phase": "attribute-global-update-b",
+          "session_id": "4f85f41d-9403-4bfa-8e61-dc6acfc4be44",
+          "source_scene": "scene-A",
+          "view_id": "4e669240-20bf-44f5-a1ef-741c2eb6031f"
+        }
+      ],
+      "native_scenes": {
+        "scene-A": "1C4CAFE9-D73D-44C5-A34E-EAA9754AFA12",
+        "scene-B": "F2D1D598-F37A-4B5F-8FC5-CA3A3BA2F629"
+      },
+      "owners": {
+        "scene-A": "96ea9a14-323b-4b0a-a508-40e36ac48bdb",
+        "scene-B": "4e669240-20bf-44f5-a1ef-741c2eb6031f"
+      },
+      "session_id": "4f85f41d-9403-4bfa-8e61-dc6acfc4be44",
+      "signal_count": 88,
+      "simultaneous_visibility_claimed": false,
+      "state": "PASS",
+      "views": [
+        {
+          "name": "ApplicationLaunch",
+          "session_id": "4f85f41d-9403-4bfa-8e61-dc6acfc4be44",
+          "view_id": "15fe739e-fe3b-4eec-a220-31ee7facdf6e"
+        },
+        {
+          "name": "ProbeHomeView",
+          "session_id": "4f85f41d-9403-4bfa-8e61-dc6acfc4be44",
+          "view_id": "96ea9a14-323b-4b0a-a508-40e36ac48bdb"
+        },
+        {
+          "name": "ProbeHomeView",
+          "session_id": "4f85f41d-9403-4bfa-8e61-dc6acfc4be44",
+          "view_id": "4e669240-20bf-44f5-a1ef-741c2eb6031f"
+        }
+      ]
+    },
+    "preflight": {
+      "authenticated_read": true,
+      "state": "PASS"
+    }
+  },
+  "started_at": "2026-09-17T22:14:47.658567+00:00",
+  "state": "PASS",
+  "xcode": "Xcode 27.0\nBuild version 27A266a"
+}

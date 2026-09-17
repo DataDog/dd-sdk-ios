@@ -1,8 +1,10 @@
 {
   "experiment": "EXP-178",
-  "status": "SDK PASS; native PREPARED",
+  "status": "PASS",
   "gate": "T05",
-  "gates_closed": [],
+  "gates_closed": [
+    "T05"
+  ],
   "control_revision": "29ca719c2724a9490b2509b0915cf20d22ecd778",
   "control_sdk_revision": "1e9c4788d280603fd6fdd572300aba71614b29a1",
   "candidate_revision": "1c6104cacb95751137c700e1812bcb1c0f05a359",
@@ -872,6 +874,32 @@
     "attempt_notes": [
       "Initial Python controls: 78 passed, 3 temporary-directory sandbox errors; authorized temporary-write rerun:81 pass."
     ],
-    "runtime_acceptance": "PENDING"
+    "runtime_acceptance": "PASS"
+  },
+  "fixture_revision": "7956000faffcc5ba8e7cab4ab04efcee7ad930d1",
+  "native_acceptance": {
+    "durable_summary": "DatadogRUM/MultiSceneSupport/Results/acceptance/exp178-20260917T221447Z-1f56786fe833.json",
+    "sha256": "ab8675ab663063d3e29bb9933ec33cdcda33833244a823e3dc815877a92f4fa9",
+    "run_id": "exp178-20260917T221447Z-1f56786fe833",
+    "state": "PASS",
+    "source_fingerprint": "7744c08e6c389aa9141cf431e471a81a232315b9042b957190f5ff617d207602",
+    "frozen_build": {
+      "executable_sha256": "7ff4debc407fbd05d3efa58fd7b26e1009c53f743a13b3e5d4f5df4d5368d758",
+      "source_sha256": "7744c08e6c389aa9141cf431e471a81a232315b9042b957190f5ff617d207602",
+      "state": "PASS",
+      "test_count": 170,
+      "uuid": "UUID: E75D8558-B16B-3154-8098-1ADA14AF56CE (arm64) /private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/multi-scene-acceptance-cbqjw7up/run/derived/Build/Products/Debug-iphonesimulator/RUMNativeMultiSceneProbe.app/RUMNativeMultiSceneProbe"
+    },
+    "local_assertions": 42,
+    "signals": 88,
+    "backend": {
+      "checkpoints": 10,
+      "crash_count": 0,
+      "error_count": 20,
+      "resource_count": 0,
+      "state": "PASS",
+      "view_count": 3
+    },
+    "simultaneous_visibility_claimed": false
   }
 }

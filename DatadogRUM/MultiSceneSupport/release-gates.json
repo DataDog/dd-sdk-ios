@@ -279,8 +279,8 @@
       "decisive_test": "Single/batch add/remove changes only requested current view; global monitor attributes remain process-wide",
       "environment": "iOS 27 simulator, focused compatibility tests, exact mapper and Datadog backend owners",
       "completion_mode": "explicit target",
-      "status": "OPEN",
-      "evidence": ""
+      "status": "CLOSED",
+      "evidence": "EXP-178; signed SDK1c6104cac and fixture7956000fa. Two failing controls,419 affected,8 ObjC,46 integration on26.5; iOS/watchOS Release and lint. Fresh native170 tests,42/42 expectations,20 typed A/B marker errors,3 views,0 Resources/crashes, independent whole-session backend owners.81 Python/6 connector controls. Results/EXP-178-view-attributes.json; serial topology only."
     },
     {
       "id": "T06",
