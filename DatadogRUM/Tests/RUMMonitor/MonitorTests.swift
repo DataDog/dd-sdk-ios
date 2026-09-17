@@ -607,6 +607,54 @@ class MonitorTests: XCTestCase {
     }
 
     #if os(iOS)
+    @MainActor
+    func testGivenBackgroundControllerCalls_itAvoidsHierarchyReadsAndKeepsRepresentativeFallback() async throws {
+        try await assertBackgroundControllerCalls(inSceneA: false)
+    }
+
+    @MainActor
+    func testGivenBackgroundControllerCallsDuringHandoff_itAvoidsHierarchyReadsAndKeepsInferredScene() async throws {
+        try await assertBackgroundControllerCalls(inSceneA: true)
+    }
+
+    @MainActor
+    private func assertBackgroundControllerCalls(inSceneA: Bool) async throws {
+        let dateProvider = DateProviderMock()
+        let monitor = Monitor(
+            dependencies: .mockWith(featureScope: featureScope, samplingRate: 100),
+            dateProvider: dateProvider
+        )
+        let (sceneA, sceneB) = startConcurrentSceneViews(in: monitor, dateProvider: dateProvider)
+        let peerScene = inSceneA ? sceneB : sceneA
+        let peerID = try XCTUnwrap(monitor.rumContextSnapshot(for: .scene(peerScene))?.viewID)
+        let controller = HierarchyReadSpy()
+        await withCheckedContinuation { (continuation: CheckedContinuation<Void, Never>) in
+            DispatchQueue.global().async {
+                XCTAssertFalse(Thread.isMainThread)
+                let call = {
+                    monitor.startView(viewController: controller, name: "Background Controller", attributes: [:])
+                    monitor.stopView(viewController: controller, attributes: [:])
+                }
+                if inSceneA {
+                    RUMContextHandoff.withValue(rumContext: nil, sceneIdentifier: sceneA.rawValue, operation: call)
+                } else {
+                    call()
+                }
+                continuation.resume()
+            }
+        }
+
+        XCTAssertEqual(controller.hierarchyReadCount, 0)
+        XCTAssertEqual(monitor.rumContextSnapshot(for: .scene(peerScene))?.viewID, peerID)
+        XCTAssertNil(monitor.rumContextSnapshot(for: .scene(inSceneA ? sceneA : sceneB)))
+        let views = try XCTUnwrap(featureScope as? FeatureScopeMock).eventsWritten(ofType: RUMViewEvent.self)
+        let backgroundViews = views.filter { $0.view.name == "Background Controller" }
+        XCTAssertEqual(Set(backgroundViews.map(\.view.id)).count, 1)
+        XCTAssertEqual(backgroundViews.last?.view.isActive, false)
+    }
+    #endif
+
+    #if os(iOS)
     func testGivenUnattachedViewController_whenStartedDuringSceneHandoff_itUsesThatScene() throws {
         let dateProvider = DateProviderMock()
         let monitor = Monitor(
@@ -951,3 +999,23 @@ private extension Monitor {
     /// Returns RUM context assuming that some view is started.
     var currentRUMContext: RUMContext { applicationScope.activeSession!.viewScopes.last!.context }
 }
+
+#if os(iOS)
+private final class HierarchyReadSpy: UIViewController {
+    private let readsLock = NSLock()
+    private var reads = 0
+
+    var hierarchyReadCount: Int {
+        readsLock.lock()
+        defer { readsLock.unlock() }
+        return reads
+    }
+
+    override var viewIfLoaded: UIView? {
+        readsLock.lock()
+        reads += 1
+        readsLock.unlock()
+        return nil
+    }
+}
+#endif

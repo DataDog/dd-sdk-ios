@@ -961,6 +961,11 @@ extension Monitor: RUMMonitorViewProtocol {
     }
 
     private func sceneTarget(for viewController: UIViewController) -> RUMCommandTarget {
+        // Existing controller APIs accept calls from any thread. Keep background
+        // callers on inferred routing without reading UIKit or waiting for main.
+        guard Thread.isMainThread else {
+            return currentExecutionSceneTarget
+        }
         guard let identifier = viewController.viewIfLoaded?
             .window?
             .windowScene?
