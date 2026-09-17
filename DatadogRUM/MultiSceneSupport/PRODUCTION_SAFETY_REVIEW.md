@@ -1,7 +1,7 @@
 **Production safety review of multi-scene SDK instrumentation**
 
 Updated 2026-09-17 during plan execution. **Release remains on hold: 11 of the
-12 review findings are closed, 1 remains open.** The finite checklist has 26/66
+12 review findings are closed, 1 remains open.** The finite checklist has 27/66
 release gates closed. [PLAN.md](PLAN.md) owns the release contract and
 [REVIEW_TRIAGE.md](REVIEW_TRIAGE.md) owns assessed repair order and evidence limits.
 Review IDs R01–R12 below map to repair gates D01–D12, not PLAN's responsibility
@@ -43,7 +43,12 @@ EXP-169 closes D07 with [pending-authority evidence](Results/EXP-169-pending-aut
 EXP-170 closes D08 with [reconnect evidence](Results/EXP-170-reconnect-acceptance.json)
 and EXP-171 closes bounded R04 with [retained-reader evidence](Results/EXP-171-retained-reader.json):
 318 tests and mounted57/57 versus43/57 at the first callback before any body rebind.
-D10 presentation remains the one open review finding; P03 registry growth is next.
+EXP-172 closes the additional P03 registry-growth risk with
+[retention evidence](Results/EXP-172-scene-retention.json):326 tests, complete
+Release ABBA on27/26.5, zero retired entries/weak survivors and heap increases
+within the original limits. The original220-entry control still fails. Ordinary
+automatic/manual and watchOS Release checks pass. D10 presentation remains the
+one open review finding; accepted-state and same-ID occurrence coverage are next.
 Keep this review and its open
 findings until their corresponding gates close; preserve historical evidence below.
 

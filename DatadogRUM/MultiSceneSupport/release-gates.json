@@ -109,8 +109,8 @@
       "decisive_test": "Repeated create/disconnect/release leaves no SDK-owned scene/controller/host and no growing registry",
       "environment": "Same simulator/toolchain, Release build; focused internal lifecycle tests",
       "completion_mode": null,
-      "status": "REGRESSION BLOCKED",
-      "evidence": "EXP-160; BASELINES.md and Results/EXP-160-baseline.json. 220 entries in each disconnect/activity registry after20warmup+200 cycles; controller weak survivors0. EXP-168 closes mounted keyed host lifetime only: 25 control registrations/states versus zero candidate survivors on27/26.5. D08 closes in EXP-170; disconnected-history retirement and the unchanged retention budget remain required."
+      "status": "CLOSED",
+      "evidence": "EXP-172, signed 4653e0a72: three failing controls;326 affected tests; Release ABBA on27/26.5 has zero retired registry entries/weak controller survivors, first100 heap delta512-832 bytes and second100 delta512-1152 bytes within frozen65536/16384 limits. All four controls retain220 entries per history registry. Eight ordinary automatic/manual runs and watchOS Release compile pass. Results/EXP-172-scene-retention.json; mounted host release prerequisites EXP-168/171 retained. Physical H08/H09 remain separate."
     },
     {
       "id": "P04",

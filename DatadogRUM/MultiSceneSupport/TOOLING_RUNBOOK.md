@@ -1281,3 +1281,17 @@ separately from ownership counts. Use fresh Release27/26.5 processes in ABBA ord
 P01/P02/P04 dispatch measurements are not being rerun. Verify stale callbacks cannot
 recreate retired entries before treating zero counts as acceptance. Initial live
 peer/late SDK initialization and main-thread inventory controls are required.
+
+
+Use `tools/multi-scene/scene-retention/run.py` with explicit control/candidate
+revisions and a new output path. It archives seven allowed SDK source paths,
+uses unchanged baseline App/allocation helpers, and records the one empty-inventory
+constructor adaptation. It performs watchOS Release compile, discovers27/26.5,
+proves clean installation and executable/run/topology identity, executes complete
+Release ABBA, then checks ordinary automatic/manual exact owners. The summary
+retains all raw samples and failed setup attempts. Seven negative oracle tests
+cover registry renaming, incomplete boundaries, weak survivors and frozen limits.
+EXP-172's first native attempt passed16 launches; keep its accepted result pinned.
+Do not use a synchronous global queue call to prove background initialization:
+GCD may execute it on the caller. The unit fixture uses async dispatch and a
+bounded semaphore to hold the main seed until the handler is released.

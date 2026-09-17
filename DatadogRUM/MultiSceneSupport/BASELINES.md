@@ -149,3 +149,22 @@ are separate from RSS, allocation churn and disconnected-history accounting.
 P03 remains REGRESSION BLOCKED until D08 and the original registry budget pass;
 the frozen EXP-160 protocol and thresholds are unchanged. Evidence is in
 [EXP-168-swiftui-lifetime.json](Results/EXP-168-swiftui-lifetime.json).
+
+
+### EXP-172 registry retention repair
+
+Signed SDK `4653e0a72` closes P03 with the original20+100+100 logical lifetimes
+in Release ABBA order on27/26.5. Each of the four controls still retains220
+entries in both historical registries. Every candidate collection is empty after
+each boundary, with zero weak controller survivors. Candidate first100 heap
+increases are512/512/832/832 bytes; second100 increases512/1,152/512/512 bytes,
+within unchanged65,536/16,384 limits. The candidate fixture's single internal
+constructor adaptation supplies an empty initial scene inventory; the control
+already starts empty. All directly owned collections are inspected, preventing
+a renamed registry from escaping the oracle.
+
+Eight ordinary automatic/manual native runs and the watchOS Release product pass;
+326 affected tests and seven oracle controls pass. Mounted host/state release
+remains accepted from EXP-168/171, and H08/H09 remain physical. P01/P02/P04 are
+not rerun. See [raw samples and identities](Results/EXP-172-scene-retention.json).
+The protocol prefix above and original baseline workloads remain frozen.

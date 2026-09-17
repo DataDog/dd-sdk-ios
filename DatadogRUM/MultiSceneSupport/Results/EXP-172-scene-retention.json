@@ -1,0 +1,2431 @@
+{
+  "experiment": "EXP-172",
+  "gate": "P03",
+  "artifact_root": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/scene-retention-zz9o16do",
+  "arms": {
+    "control": {
+      "revision": "a76133570f05a8db0de282efc2fe04ebf96349f5",
+      "sdk_identity": {
+        "file_count": 369,
+        "sha256": "5816cf4f9453982b2d4170a8687b7e0996041a6c717336c650ba8173f785a689"
+      },
+      "bundle": "com.datadoghq.exp172.control",
+      "fixture_identity": {
+        "file_count": 4,
+        "sha256": "c8041134e3c42479568fd2c3e88877b82c7b6e1ca591ed77b4df6f88645764d9",
+        "files": {
+          "AllocationCounter.c": "4fc68475a35fdbb805786a79455defc5725b6e0deb4847778cd75be228f9119d",
+          "AllocationCounter.h": "d668fa6258ccbf16ce011374af0aa4178ae4ca0f8a1c4f28a51bee2077ce52ab",
+          "App.swift": "4e9438781d5e17ef4cbfd06871a6938bdf9b25cc81e2b0dc5d2bff1645dc69ee",
+          "InternalFixture.swift": "95898e888a5bf16b35dab8a4961f93dcc6cc5600295c21bfb40a15f6a59b12a2"
+        }
+      },
+      "inventory_adapter": "",
+      "package_sha256": "45560f1babe3496400165c06f85454f7dfde9b5b150bcc9d23d131e056d3626b",
+      "build_command": [
+        "xcodebuild",
+        "build",
+        "-quiet",
+        "-project",
+        "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/scene-retention-zz9o16do/control/SceneRetention.xcodeproj",
+        "-scheme",
+        "SceneRetention",
+        "-configuration",
+        "Release",
+        "-destination",
+        "generic/platform=iOS Simulator",
+        "-derivedDataPath",
+        "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/scene-retention-zz9o16do/control/derived",
+        "CODE_SIGNING_ALLOWED=NO"
+      ],
+      "build_log": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/scene-retention-zz9o16do/control/build.log",
+      "app": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/scene-retention-zz9o16do/control/derived/Build/Products/Release-iphonesimulator/SceneRetention.app",
+      "binary_sha256": "69f619ddb8f5a2d5d1d111ba4e012862949463c08ec06f9f5ed1e26cf4b8ecc5",
+      "build_log_sha256": "03215c0232168e09a9d69957f4ce43602bf189b8b7addca2757a60d16944e918",
+      "source_unchanged": true,
+      "package_unchanged": true,
+      "fixture_unchanged": true
+    },
+    "candidate": {
+      "revision": "4653e0a72eb9cd832792e9f02c2cbbe1dc36e1a1",
+      "sdk_identity": {
+        "file_count": 369,
+        "sha256": "88377e27f58bf661284b7b8f110722b5c11865e76ee5cd07a3ca9c5797672fab"
+      },
+      "bundle": "com.datadoghq.exp172.candidate",
+      "fixture_identity": {
+        "file_count": 4,
+        "sha256": "a040b75326947db0fac807314542df7f7cc2f14c3ecf8f8151d87dda699da102",
+        "files": {
+          "AllocationCounter.c": "4fc68475a35fdbb805786a79455defc5725b6e0deb4847778cd75be228f9119d",
+          "AllocationCounter.h": "d668fa6258ccbf16ce011374af0aa4178ae4ca0f8a1c4f28a51bee2077ce52ab",
+          "App.swift": "4e9438781d5e17ef4cbfd06871a6938bdf9b25cc81e2b0dc5d2bff1645dc69ee",
+          "InternalFixture.swift": "efd1e5e5604618ed158eb4fef6db7103f316ac898c43314e123c330ec87fd93d"
+        }
+      },
+      "inventory_adapter": ", initialSceneActivityProvider: { [:] }",
+      "package_sha256": "45560f1babe3496400165c06f85454f7dfde9b5b150bcc9d23d131e056d3626b",
+      "build_command": [
+        "xcodebuild",
+        "build",
+        "-quiet",
+        "-project",
+        "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/scene-retention-zz9o16do/candidate/SceneRetention.xcodeproj",
+        "-scheme",
+        "SceneRetention",
+        "-configuration",
+        "Release",
+        "-destination",
+        "generic/platform=iOS Simulator",
+        "-derivedDataPath",
+        "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/scene-retention-zz9o16do/candidate/derived",
+        "CODE_SIGNING_ALLOWED=NO"
+      ],
+      "build_log": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/scene-retention-zz9o16do/candidate/build.log",
+      "app": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/scene-retention-zz9o16do/candidate/derived/Build/Products/Release-iphonesimulator/SceneRetention.app",
+      "binary_sha256": "586df5c580f388befd68b089190dff1d14fce563a7f2c88e47212816dbf47808",
+      "build_log_sha256": "8ebfb4f163cff0f8f420c6c7d99f4eebc039350132bb70399b5b22072af348ce",
+      "source_unchanged": true,
+      "package_unchanged": true,
+      "fixture_unchanged": true
+    }
+  },
+  "runs": [
+    {
+      "arm": "control",
+      "os": "27.0",
+      "mode": "internal",
+      "order": 0,
+      "run_id": "exp172-f43859ff3e7b4a7890c4b4911fcaa1f5",
+      "clean_install": true,
+      "binary_sha256": "69f619ddb8f5a2d5d1d111ba4e012862949463c08ec06f9f5ed1e26cf4b8ecc5",
+      "fixture_sha256": "c8041134e3c42479568fd2c3e88877b82c7b6e1ca591ed77b4df6f88645764d9",
+      "launch_command": [
+        "xcrun",
+        "simctl",
+        "launch",
+        "--console",
+        "BE03D65C-84F6-4FE0-95DA-A8F8D81A5D21",
+        "com.datadoghq.exp172.control",
+        "--mode",
+        "internal",
+        "--run-id",
+        "exp172-f43859ff3e7b4a7890c4b4911fcaa1f5"
+      ],
+      "result": {
+        "failures": [],
+        "fixture_version": 1,
+        "has_scene_manifest": true,
+        "internal": {
+          "retention": {
+            "boundary": "posted-disconnect handler lifetime; native host teardown remains EXP-168/171",
+            "completed_lifetimes": 220,
+            "cycles_after_warmup": [
+              100,
+              100
+            ],
+            "heap_bytes": [
+              5422704,
+              5437040,
+              5452976
+            ],
+            "published_commands": 0,
+            "registry_after_100": {
+              "disconnectedSceneIdentifiers": 120,
+              "pendingUIKitSplitViewRemovals": 0,
+              "sceneActivityByIdentifier": 120,
+              "stacks": 0,
+              "uiKitSplitViewContexts": 0
+            },
+            "registry_after_200": {
+              "disconnectedSceneIdentifiers": 220,
+              "pendingUIKitSplitViewRemovals": 0,
+              "sceneActivityByIdentifier": 220,
+              "stacks": 0,
+              "uiKitSplitViewContexts": 0
+            },
+            "registry_after_warmup": {
+              "disconnectedSceneIdentifiers": 20,
+              "pendingUIKitSplitViewRemovals": 0,
+              "sceneActivityByIdentifier": 20,
+              "stacks": 0,
+              "uiKitSplitViewContexts": 0
+            },
+            "registry_initial": {
+              "disconnectedSceneIdentifiers": 0,
+              "pendingUIKitSplitViewRemovals": 0,
+              "sceneActivityByIdentifier": 0,
+              "stacks": 0,
+              "uiKitSplitViewContexts": 0
+            },
+            "surviving_controller_references": 0,
+            "warmup_lifetimes": 20
+          }
+        },
+        "mode": "internal",
+        "model": "iPhone",
+        "os": "27.0",
+        "run_id": "exp172-f43859ff3e7b4a7890c4b4911fcaa1f5",
+        "scene_count": 1
+      },
+      "evaluation": {
+        "status": "FAIL",
+        "checks": {
+          "zero_weak_survivors": true,
+          "zero_retired_entries_at_every_boundary": false,
+          "first_100_within_65536_bytes": true,
+          "second_100_within_16384_bytes": true
+        },
+        "heap_delta_bytes": [
+          14336,
+          15936
+        ]
+      },
+      "artifact": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/scene-retention-zz9o16do/runs/exp172-f43859ff3e7b4a7890c4b4911fcaa1f5/result.json",
+      "result_sha256": "0f179da3e52c01abaf4824036ff0f84412921411cfafdbf2122993b5ad8ac03c"
+    },
+    {
+      "arm": "candidate",
+      "os": "27.0",
+      "mode": "internal",
+      "order": 1,
+      "run_id": "exp172-889fc072b5384636b32d34bda0e2b27f",
+      "clean_install": true,
+      "binary_sha256": "586df5c580f388befd68b089190dff1d14fce563a7f2c88e47212816dbf47808",
+      "fixture_sha256": "a040b75326947db0fac807314542df7f7cc2f14c3ecf8f8151d87dda699da102",
+      "launch_command": [
+        "xcrun",
+        "simctl",
+        "launch",
+        "--console",
+        "BE03D65C-84F6-4FE0-95DA-A8F8D81A5D21",
+        "com.datadoghq.exp172.candidate",
+        "--mode",
+        "internal",
+        "--run-id",
+        "exp172-889fc072b5384636b32d34bda0e2b27f"
+      ],
+      "result": {
+        "failures": [],
+        "fixture_version": 1,
+        "has_scene_manifest": true,
+        "internal": {
+          "retention": {
+            "boundary": "posted-disconnect handler lifetime; native host teardown remains EXP-168/171",
+            "completed_lifetimes": 220,
+            "cycles_after_warmup": [
+              100,
+              100
+            ],
+            "heap_bytes": [
+              5322384,
+              5322896,
+              5323408
+            ],
+            "published_commands": 0,
+            "registry_after_100": {
+              "pendingUIKitSplitViewRemovals": 0,
+              "sceneActivityByIdentifier": 0,
+              "stacks": 0,
+              "uiKitSplitViewContexts": 0
+            },
+            "registry_after_200": {
+              "pendingUIKitSplitViewRemovals": 0,
+              "sceneActivityByIdentifier": 0,
+              "stacks": 0,
+              "uiKitSplitViewContexts": 0
+            },
+            "registry_after_warmup": {
+              "pendingUIKitSplitViewRemovals": 0,
+              "sceneActivityByIdentifier": 0,
+              "stacks": 0,
+              "uiKitSplitViewContexts": 0
+            },
+            "registry_initial": {
+              "pendingUIKitSplitViewRemovals": 0,
+              "sceneActivityByIdentifier": 0,
+              "stacks": 0,
+              "uiKitSplitViewContexts": 0
+            },
+            "surviving_controller_references": 0,
+            "warmup_lifetimes": 20
+          }
+        },
+        "mode": "internal",
+        "model": "iPhone",
+        "os": "27.0",
+        "run_id": "exp172-889fc072b5384636b32d34bda0e2b27f",
+        "scene_count": 1
+      },
+      "evaluation": {
+        "status": "PASS",
+        "checks": {
+          "zero_weak_survivors": true,
+          "zero_retired_entries_at_every_boundary": true,
+          "first_100_within_65536_bytes": true,
+          "second_100_within_16384_bytes": true
+        },
+        "heap_delta_bytes": [
+          512,
+          512
+        ]
+      },
+      "artifact": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/scene-retention-zz9o16do/runs/exp172-889fc072b5384636b32d34bda0e2b27f/result.json",
+      "result_sha256": "b096ee502174ddd0d02d0aef86ce3ca94d06bd228eb43daac864d6b628ac6553"
+    },
+    {
+      "arm": "candidate",
+      "os": "27.0",
+      "mode": "internal",
+      "order": 2,
+      "run_id": "exp172-0aea7c64209947619a4f9c0f13d4a13b",
+      "clean_install": true,
+      "binary_sha256": "586df5c580f388befd68b089190dff1d14fce563a7f2c88e47212816dbf47808",
+      "fixture_sha256": "a040b75326947db0fac807314542df7f7cc2f14c3ecf8f8151d87dda699da102",
+      "launch_command": [
+        "xcrun",
+        "simctl",
+        "launch",
+        "--console",
+        "BE03D65C-84F6-4FE0-95DA-A8F8D81A5D21",
+        "com.datadoghq.exp172.candidate",
+        "--mode",
+        "internal",
+        "--run-id",
+        "exp172-0aea7c64209947619a4f9c0f13d4a13b"
+      ],
+      "result": {
+        "failures": [],
+        "fixture_version": 1,
+        "has_scene_manifest": true,
+        "internal": {
+          "retention": {
+            "boundary": "posted-disconnect handler lifetime; native host teardown remains EXP-168/171",
+            "completed_lifetimes": 220,
+            "cycles_after_warmup": [
+              100,
+              100
+            ],
+            "heap_bytes": [
+              5326608,
+              5327120,
+              5328272
+            ],
+            "published_commands": 0,
+            "registry_after_100": {
+              "pendingUIKitSplitViewRemovals": 0,
+              "sceneActivityByIdentifier": 0,
+              "stacks": 0,
+              "uiKitSplitViewContexts": 0
+            },
+            "registry_after_200": {
+              "pendingUIKitSplitViewRemovals": 0,
+              "sceneActivityByIdentifier": 0,
+              "stacks": 0,
+              "uiKitSplitViewContexts": 0
+            },
+            "registry_after_warmup": {
+              "pendingUIKitSplitViewRemovals": 0,
+              "sceneActivityByIdentifier": 0,
+              "stacks": 0,
+              "uiKitSplitViewContexts": 0
+            },
+            "registry_initial": {
+              "pendingUIKitSplitViewRemovals": 0,
+              "sceneActivityByIdentifier": 0,
+              "stacks": 0,
+              "uiKitSplitViewContexts": 0
+            },
+            "surviving_controller_references": 0,
+            "warmup_lifetimes": 20
+          }
+        },
+        "mode": "internal",
+        "model": "iPhone",
+        "os": "27.0",
+        "run_id": "exp172-0aea7c64209947619a4f9c0f13d4a13b",
+        "scene_count": 1
+      },
+      "evaluation": {
+        "status": "PASS",
+        "checks": {
+          "zero_weak_survivors": true,
+          "zero_retired_entries_at_every_boundary": true,
+          "first_100_within_65536_bytes": true,
+          "second_100_within_16384_bytes": true
+        },
+        "heap_delta_bytes": [
+          512,
+          1152
+        ]
+      },
+      "artifact": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/scene-retention-zz9o16do/runs/exp172-0aea7c64209947619a4f9c0f13d4a13b/result.json",
+      "result_sha256": "3e080d412d8a03babac402945d6ba206fa7f1878587cb6b01e39be5bb80228a5"
+    },
+    {
+      "arm": "control",
+      "os": "27.0",
+      "mode": "internal",
+      "order": 3,
+      "run_id": "exp172-22f24ba4f0e840229f0733bf88ed4473",
+      "clean_install": true,
+      "binary_sha256": "69f619ddb8f5a2d5d1d111ba4e012862949463c08ec06f9f5ed1e26cf4b8ecc5",
+      "fixture_sha256": "c8041134e3c42479568fd2c3e88877b82c7b6e1ca591ed77b4df6f88645764d9",
+      "launch_command": [
+        "xcrun",
+        "simctl",
+        "launch",
+        "--console",
+        "BE03D65C-84F6-4FE0-95DA-A8F8D81A5D21",
+        "com.datadoghq.exp172.control",
+        "--mode",
+        "internal",
+        "--run-id",
+        "exp172-22f24ba4f0e840229f0733bf88ed4473"
+      ],
+      "result": {
+        "failures": [],
+        "fixture_version": 1,
+        "has_scene_manifest": true,
+        "internal": {
+          "retention": {
+            "boundary": "posted-disconnect handler lifetime; native host teardown remains EXP-168/171",
+            "completed_lifetimes": 220,
+            "cycles_after_warmup": [
+              100,
+              100
+            ],
+            "heap_bytes": [
+              5346288,
+              5360624,
+              5376240
+            ],
+            "published_commands": 0,
+            "registry_after_100": {
+              "disconnectedSceneIdentifiers": 120,
+              "pendingUIKitSplitViewRemovals": 0,
+              "sceneActivityByIdentifier": 120,
+              "stacks": 0,
+              "uiKitSplitViewContexts": 0
+            },
+            "registry_after_200": {
+              "disconnectedSceneIdentifiers": 220,
+              "pendingUIKitSplitViewRemovals": 0,
+              "sceneActivityByIdentifier": 220,
+              "stacks": 0,
+              "uiKitSplitViewContexts": 0
+            },
+            "registry_after_warmup": {
+              "disconnectedSceneIdentifiers": 20,
+              "pendingUIKitSplitViewRemovals": 0,
+              "sceneActivityByIdentifier": 20,
+              "stacks": 0,
+              "uiKitSplitViewContexts": 0
+            },
+            "registry_initial": {
+              "disconnectedSceneIdentifiers": 0,
+              "pendingUIKitSplitViewRemovals": 0,
+              "sceneActivityByIdentifier": 0,
+              "stacks": 0,
+              "uiKitSplitViewContexts": 0
+            },
+            "surviving_controller_references": 0,
+            "warmup_lifetimes": 20
+          }
+        },
+        "mode": "internal",
+        "model": "iPhone",
+        "os": "27.0",
+        "run_id": "exp172-22f24ba4f0e840229f0733bf88ed4473",
+        "scene_count": 1
+      },
+      "evaluation": {
+        "status": "FAIL",
+        "checks": {
+          "zero_weak_survivors": true,
+          "zero_retired_entries_at_every_boundary": false,
+          "first_100_within_65536_bytes": true,
+          "second_100_within_16384_bytes": true
+        },
+        "heap_delta_bytes": [
+          14336,
+          15616
+        ]
+      },
+      "artifact": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/scene-retention-zz9o16do/runs/exp172-22f24ba4f0e840229f0733bf88ed4473/result.json",
+      "result_sha256": "9b0ba51c8e5487a20b9eb556cc112ec5050c35e6c50eb482a1aef7a3cb19e784"
+    },
+    {
+      "arm": "control",
+      "os": "27.0",
+      "mode": "automatic",
+      "order": null,
+      "run_id": "exp172-dff1ee4ec10e4209bd04b5e7c1466f67",
+      "clean_install": true,
+      "binary_sha256": "69f619ddb8f5a2d5d1d111ba4e012862949463c08ec06f9f5ed1e26cf4b8ecc5",
+      "fixture_sha256": "c8041134e3c42479568fd2c3e88877b82c7b6e1ca591ed77b4df6f88645764d9",
+      "launch_command": [
+        "xcrun",
+        "simctl",
+        "launch",
+        "--console",
+        "BE03D65C-84F6-4FE0-95DA-A8F8D81A5D21",
+        "com.datadoghq.exp172.control",
+        "--mode",
+        "automatic",
+        "--run-id",
+        "exp172-dff1ee4ec10e4209bd04b5e7c1466f67"
+      ],
+      "result": {
+        "events": [
+          {
+            "active": true,
+            "id": "a6d0623c-8fd8-45b7-b112-4e78ef145646",
+            "name": "ApplicationLaunch",
+            "type": "view"
+          },
+          {
+            "active": false,
+            "id": "a6d0623c-8fd8-45b7-b112-4e78ef145646",
+            "name": "ApplicationLaunch",
+            "type": "view"
+          },
+          {
+            "active": true,
+            "id": "5edaa66e-8393-4cc7-a667-01fe8ad19319",
+            "name": "Home",
+            "type": "view"
+          },
+          {
+            "id": "cc4d35da-4c4b-45fb-a1c5-6caa09bb1c08",
+            "name": "Home1",
+            "owner": "5edaa66e-8393-4cc7-a667-01fe8ad19319",
+            "type": "action"
+          },
+          {
+            "id": "d983b54f-6cd2-4978-acda-ea5c7a133d15",
+            "owner": "5edaa66e-8393-4cc7-a667-01fe8ad19319",
+            "type": "resource",
+            "url": "https://fixture.invalid/Home1"
+          },
+          {
+            "active": true,
+            "id": "5edaa66e-8393-4cc7-a667-01fe8ad19319",
+            "name": "Home",
+            "type": "view"
+          },
+          {
+            "active": false,
+            "id": "5edaa66e-8393-4cc7-a667-01fe8ad19319",
+            "name": "Home",
+            "type": "view"
+          },
+          {
+            "active": true,
+            "id": "872e71c3-2ce9-425b-8d29-5d776008b595",
+            "name": "Detail",
+            "type": "view"
+          },
+          {
+            "active": true,
+            "id": "872e71c3-2ce9-425b-8d29-5d776008b595",
+            "name": "Detail",
+            "type": "view"
+          },
+          {
+            "id": "dd5cc1bb-4f52-44b9-bb0b-e39d0234489f",
+            "name": "Detail1",
+            "owner": "872e71c3-2ce9-425b-8d29-5d776008b595",
+            "type": "action"
+          },
+          {
+            "id": "27f9365d-21df-4170-ab81-0367652b4579",
+            "owner": "872e71c3-2ce9-425b-8d29-5d776008b595",
+            "type": "resource",
+            "url": "https://fixture.invalid/Detail1"
+          },
+          {
+            "active": true,
+            "id": "872e71c3-2ce9-425b-8d29-5d776008b595",
+            "name": "Detail",
+            "type": "view"
+          },
+          {
+            "active": false,
+            "id": "872e71c3-2ce9-425b-8d29-5d776008b595",
+            "name": "Detail",
+            "type": "view"
+          },
+          {
+            "active": true,
+            "id": "2d67c7d2-7e2b-4424-8485-1f3863064c88",
+            "name": "Home",
+            "type": "view"
+          },
+          {
+            "id": "de104ce1-1a72-44b2-b2e4-661b1f5c4dca",
+            "name": "Home2",
+            "owner": "2d67c7d2-7e2b-4424-8485-1f3863064c88",
+            "type": "action"
+          },
+          {
+            "id": "0ff9ce8f-cf2c-4827-a970-ea9f0b844a54",
+            "owner": "2d67c7d2-7e2b-4424-8485-1f3863064c88",
+            "type": "resource",
+            "url": "https://fixture.invalid/Home2"
+          },
+          {
+            "active": true,
+            "id": "2d67c7d2-7e2b-4424-8485-1f3863064c88",
+            "name": "Home",
+            "type": "view"
+          }
+        ],
+        "failures": [],
+        "fixture_version": 1,
+        "has_scene_manifest": true,
+        "mode": "automatic",
+        "model": "iPhone",
+        "os": "27.0",
+        "run_id": "exp172-dff1ee4ec10e4209bd04b5e7c1466f67",
+        "scene_count": 1
+      },
+      "evaluation": {
+        "status": "PASS",
+        "failures": []
+      },
+      "artifact": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/scene-retention-zz9o16do/runs/exp172-dff1ee4ec10e4209bd04b5e7c1466f67/result.json",
+      "result_sha256": "7f3a5a65687943d05e573a6f569dfd606914c4f63bc803b8195bf204c348f9cd"
+    },
+    {
+      "arm": "candidate",
+      "os": "27.0",
+      "mode": "automatic",
+      "order": null,
+      "run_id": "exp172-666cd2d057df4d42b9fdd492afd8879f",
+      "clean_install": true,
+      "binary_sha256": "586df5c580f388befd68b089190dff1d14fce563a7f2c88e47212816dbf47808",
+      "fixture_sha256": "a040b75326947db0fac807314542df7f7cc2f14c3ecf8f8151d87dda699da102",
+      "launch_command": [
+        "xcrun",
+        "simctl",
+        "launch",
+        "--console",
+        "BE03D65C-84F6-4FE0-95DA-A8F8D81A5D21",
+        "com.datadoghq.exp172.candidate",
+        "--mode",
+        "automatic",
+        "--run-id",
+        "exp172-666cd2d057df4d42b9fdd492afd8879f"
+      ],
+      "result": {
+        "events": [
+          {
+            "active": true,
+            "id": "ff53f258-d2ad-4fb2-a391-06bc435d770c",
+            "name": "ApplicationLaunch",
+            "type": "view"
+          },
+          {
+            "active": false,
+            "id": "ff53f258-d2ad-4fb2-a391-06bc435d770c",
+            "name": "ApplicationLaunch",
+            "type": "view"
+          },
+          {
+            "active": true,
+            "id": "23743bf2-d5d9-4aea-a5df-5af8c0856097",
+            "name": "Home",
+            "type": "view"
+          },
+          {
+            "id": "14fe2e32-3b08-46c7-82ac-b459d48b5d40",
+            "name": "Home1",
+            "owner": "23743bf2-d5d9-4aea-a5df-5af8c0856097",
+            "type": "action"
+          },
+          {
+            "id": "c9ce29e6-d560-413d-a894-481d47f386a2",
+            "owner": "23743bf2-d5d9-4aea-a5df-5af8c0856097",
+            "type": "resource",
+            "url": "https://fixture.invalid/Home1"
+          },
+          {
+            "active": true,
+            "id": "23743bf2-d5d9-4aea-a5df-5af8c0856097",
+            "name": "Home",
+            "type": "view"
+          },
+          {
+            "active": false,
+            "id": "23743bf2-d5d9-4aea-a5df-5af8c0856097",
+            "name": "Home",
+            "type": "view"
+          },
+          {
+            "active": true,
+            "id": "ba72bf0a-b7c9-4770-b3ca-8c7ae139c0be",
+            "name": "Detail",
+            "type": "view"
+          },
+          {
+            "id": "3ceb1148-ad21-4624-9fd4-838ac81f771c",
+            "name": "Detail1",
+            "owner": "ba72bf0a-b7c9-4770-b3ca-8c7ae139c0be",
+            "type": "action"
+          },
+          {
+            "id": "6ef64c8a-ebd9-4413-8242-1001c62e5656",
+            "owner": "ba72bf0a-b7c9-4770-b3ca-8c7ae139c0be",
+            "type": "resource",
+            "url": "https://fixture.invalid/Detail1"
+          },
+          {
+            "active": true,
+            "id": "ba72bf0a-b7c9-4770-b3ca-8c7ae139c0be",
+            "name": "Detail",
+            "type": "view"
+          },
+          {
+            "active": false,
+            "id": "ba72bf0a-b7c9-4770-b3ca-8c7ae139c0be",
+            "name": "Detail",
+            "type": "view"
+          },
+          {
+            "active": true,
+            "id": "04ad8239-0333-4528-8b32-11d1bf9f7613",
+            "name": "Home",
+            "type": "view"
+          },
+          {
+            "id": "b18946dc-de85-4720-9891-0c1a0a3f30aa",
+            "name": "Home2",
+            "owner": "04ad8239-0333-4528-8b32-11d1bf9f7613",
+            "type": "action"
+          },
+          {
+            "id": "aaf77d11-b07d-4d01-99c1-650db1fe9ad4",
+            "owner": "04ad8239-0333-4528-8b32-11d1bf9f7613",
+            "type": "resource",
+            "url": "https://fixture.invalid/Home2"
+          },
+          {
+            "active": true,
+            "id": "04ad8239-0333-4528-8b32-11d1bf9f7613",
+            "name": "Home",
+            "type": "view"
+          }
+        ],
+        "failures": [],
+        "fixture_version": 1,
+        "has_scene_manifest": true,
+        "mode": "automatic",
+        "model": "iPhone",
+        "os": "27.0",
+        "run_id": "exp172-666cd2d057df4d42b9fdd492afd8879f",
+        "scene_count": 1
+      },
+      "evaluation": {
+        "status": "PASS",
+        "failures": []
+      },
+      "artifact": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/scene-retention-zz9o16do/runs/exp172-666cd2d057df4d42b9fdd492afd8879f/result.json",
+      "result_sha256": "818115e05390283acc38e073c84ec1b3c976b45f78e1acd0ba792120a17f4d59"
+    },
+    {
+      "arm": "control",
+      "os": "27.0",
+      "mode": "manual",
+      "order": null,
+      "run_id": "exp172-fce6a37f9aff4f99b61e0f120b1a0526",
+      "clean_install": true,
+      "binary_sha256": "69f619ddb8f5a2d5d1d111ba4e012862949463c08ec06f9f5ed1e26cf4b8ecc5",
+      "fixture_sha256": "c8041134e3c42479568fd2c3e88877b82c7b6e1ca591ed77b4df6f88645764d9",
+      "launch_command": [
+        "xcrun",
+        "simctl",
+        "launch",
+        "--console",
+        "BE03D65C-84F6-4FE0-95DA-A8F8D81A5D21",
+        "com.datadoghq.exp172.control",
+        "--mode",
+        "manual",
+        "--run-id",
+        "exp172-fce6a37f9aff4f99b61e0f120b1a0526"
+      ],
+      "result": {
+        "events": [
+          {
+            "active": true,
+            "id": "8ae0454c-9e6c-4c32-832f-59118917b5b1",
+            "name": "ApplicationLaunch",
+            "type": "view"
+          },
+          {
+            "active": false,
+            "id": "8ae0454c-9e6c-4c32-832f-59118917b5b1",
+            "name": "ApplicationLaunch",
+            "type": "view"
+          },
+          {
+            "active": true,
+            "id": "dc63a4a4-c5e1-4a40-9d1d-523d4eb35419",
+            "name": "Home",
+            "type": "view"
+          },
+          {
+            "id": "f6fc7fa3-ca31-45a5-ae1a-9514ff62f90c",
+            "name": "Home1",
+            "owner": "dc63a4a4-c5e1-4a40-9d1d-523d4eb35419",
+            "type": "action"
+          },
+          {
+            "id": "85b9dfe4-13bd-4dde-806c-e7facfd065b2",
+            "owner": "dc63a4a4-c5e1-4a40-9d1d-523d4eb35419",
+            "type": "resource",
+            "url": "https://fixture.invalid/Home1"
+          },
+          {
+            "active": true,
+            "id": "dc63a4a4-c5e1-4a40-9d1d-523d4eb35419",
+            "name": "Home",
+            "type": "view"
+          },
+          {
+            "active": false,
+            "id": "dc63a4a4-c5e1-4a40-9d1d-523d4eb35419",
+            "name": "Home",
+            "type": "view"
+          },
+          {
+            "active": true,
+            "id": "422b057d-23fb-4ceb-98e0-3483d0d97c7a",
+            "name": "Detail",
+            "type": "view"
+          },
+          {
+            "id": "6b25c928-1171-4308-9081-2715c637a2d4",
+            "name": "Detail1",
+            "owner": "422b057d-23fb-4ceb-98e0-3483d0d97c7a",
+            "type": "action"
+          },
+          {
+            "id": "b44b4da3-73ef-408e-8430-238e1889ce06",
+            "owner": "422b057d-23fb-4ceb-98e0-3483d0d97c7a",
+            "type": "resource",
+            "url": "https://fixture.invalid/Detail1"
+          },
+          {
+            "active": true,
+            "id": "422b057d-23fb-4ceb-98e0-3483d0d97c7a",
+            "name": "Detail",
+            "type": "view"
+          },
+          {
+            "active": false,
+            "id": "422b057d-23fb-4ceb-98e0-3483d0d97c7a",
+            "name": "Detail",
+            "type": "view"
+          },
+          {
+            "active": true,
+            "id": "8f87325b-87b9-4609-8dfb-c68433681378",
+            "name": "Home",
+            "type": "view"
+          },
+          {
+            "id": "610cb868-77e9-4774-ad52-1b24d3109afb",
+            "name": "Home2",
+            "owner": "8f87325b-87b9-4609-8dfb-c68433681378",
+            "type": "action"
+          },
+          {
+            "id": "4b081f4b-387c-4dc9-a6e2-3d3d6c73fe2a",
+            "owner": "8f87325b-87b9-4609-8dfb-c68433681378",
+            "type": "resource",
+            "url": "https://fixture.invalid/Home2"
+          },
+          {
+            "active": true,
+            "id": "8f87325b-87b9-4609-8dfb-c68433681378",
+            "name": "Home",
+            "type": "view"
+          }
+        ],
+        "failures": [],
+        "fixture_version": 1,
+        "has_scene_manifest": true,
+        "mode": "manual",
+        "model": "iPhone",
+        "os": "27.0",
+        "run_id": "exp172-fce6a37f9aff4f99b61e0f120b1a0526",
+        "scene_count": 1
+      },
+      "evaluation": {
+        "status": "PASS",
+        "failures": []
+      },
+      "artifact": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/scene-retention-zz9o16do/runs/exp172-fce6a37f9aff4f99b61e0f120b1a0526/result.json",
+      "result_sha256": "3845936a0d8bd52497d87a55069306c57e76a9cc7bef17cfe843e09e08b03c86"
+    },
+    {
+      "arm": "candidate",
+      "os": "27.0",
+      "mode": "manual",
+      "order": null,
+      "run_id": "exp172-551ed17945884e1b9239c1295790ea84",
+      "clean_install": true,
+      "binary_sha256": "586df5c580f388befd68b089190dff1d14fce563a7f2c88e47212816dbf47808",
+      "fixture_sha256": "a040b75326947db0fac807314542df7f7cc2f14c3ecf8f8151d87dda699da102",
+      "launch_command": [
+        "xcrun",
+        "simctl",
+        "launch",
+        "--console",
+        "BE03D65C-84F6-4FE0-95DA-A8F8D81A5D21",
+        "com.datadoghq.exp172.candidate",
+        "--mode",
+        "manual",
+        "--run-id",
+        "exp172-551ed17945884e1b9239c1295790ea84"
+      ],
+      "result": {
+        "events": [
+          {
+            "active": true,
+            "id": "13996582-c1a6-45d1-b02a-22aa440fe7c5",
+            "name": "ApplicationLaunch",
+            "type": "view"
+          },
+          {
+            "active": false,
+            "id": "13996582-c1a6-45d1-b02a-22aa440fe7c5",
+            "name": "ApplicationLaunch",
+            "type": "view"
+          },
+          {
+            "active": true,
+            "id": "ebb2de9b-68fd-46b2-806b-6b62d0d6882b",
+            "name": "Home",
+            "type": "view"
+          },
+          {
+            "id": "e539db6c-725f-4316-b630-db2526f02630",
+            "name": "Home1",
+            "owner": "ebb2de9b-68fd-46b2-806b-6b62d0d6882b",
+            "type": "action"
+          },
+          {
+            "id": "de6fcf91-11cd-45cd-b000-a22001c41b14",
+            "owner": "ebb2de9b-68fd-46b2-806b-6b62d0d6882b",
+            "type": "resource",
+            "url": "https://fixture.invalid/Home1"
+          },
+          {
+            "active": true,
+            "id": "ebb2de9b-68fd-46b2-806b-6b62d0d6882b",
+            "name": "Home",
+            "type": "view"
+          },
+          {
+            "active": false,
+            "id": "ebb2de9b-68fd-46b2-806b-6b62d0d6882b",
+            "name": "Home",
+            "type": "view"
+          },
+          {
+            "active": true,
+            "id": "cb5859f5-5d1b-409a-9348-3493e9430e25",
+            "name": "Detail",
+            "type": "view"
+          },
+          {
+            "id": "87b53be3-418b-44a3-bb26-18bc45c5588d",
+            "name": "Detail1",
+            "owner": "cb5859f5-5d1b-409a-9348-3493e9430e25",
+            "type": "action"
+          },
+          {
+            "id": "27a89253-e7e6-46de-b5b7-951c11dbfe41",
+            "owner": "cb5859f5-5d1b-409a-9348-3493e9430e25",
+            "type": "resource",
+            "url": "https://fixture.invalid/Detail1"
+          },
+          {
+            "active": true,
+            "id": "cb5859f5-5d1b-409a-9348-3493e9430e25",
+            "name": "Detail",
+            "type": "view"
+          },
+          {
+            "active": false,
+            "id": "cb5859f5-5d1b-409a-9348-3493e9430e25",
+            "name": "Detail",
+            "type": "view"
+          },
+          {
+            "active": true,
+            "id": "37b39dd8-33e3-48b5-aeb3-02cc3c3a684b",
+            "name": "Home",
+            "type": "view"
+          },
+          {
+            "id": "6b8f1545-408b-4186-a28f-8aba761403ac",
+            "name": "Home2",
+            "owner": "37b39dd8-33e3-48b5-aeb3-02cc3c3a684b",
+            "type": "action"
+          },
+          {
+            "id": "c1f34e44-ba58-4778-8814-bf3c71bdcc98",
+            "owner": "37b39dd8-33e3-48b5-aeb3-02cc3c3a684b",
+            "type": "resource",
+            "url": "https://fixture.invalid/Home2"
+          },
+          {
+            "active": true,
+            "id": "37b39dd8-33e3-48b5-aeb3-02cc3c3a684b",
+            "name": "Home",
+            "type": "view"
+          }
+        ],
+        "failures": [],
+        "fixture_version": 1,
+        "has_scene_manifest": true,
+        "mode": "manual",
+        "model": "iPhone",
+        "os": "27.0",
+        "run_id": "exp172-551ed17945884e1b9239c1295790ea84",
+        "scene_count": 1
+      },
+      "evaluation": {
+        "status": "PASS",
+        "failures": []
+      },
+      "artifact": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/scene-retention-zz9o16do/runs/exp172-551ed17945884e1b9239c1295790ea84/result.json",
+      "result_sha256": "5df4bf40a4c79a0b5404eba48bd35b54d8bfedf7741c8bac09b64d639eaf23b0"
+    },
+    {
+      "arm": "control",
+      "os": "26.5",
+      "mode": "internal",
+      "order": 0,
+      "run_id": "exp172-95e8867fabab4c99bd0ea99a31e187e3",
+      "clean_install": true,
+      "binary_sha256": "69f619ddb8f5a2d5d1d111ba4e012862949463c08ec06f9f5ed1e26cf4b8ecc5",
+      "fixture_sha256": "c8041134e3c42479568fd2c3e88877b82c7b6e1ca591ed77b4df6f88645764d9",
+      "launch_command": [
+        "xcrun",
+        "simctl",
+        "launch",
+        "--console",
+        "65A76904-154E-4C79-9DFD-A57B526C85E6",
+        "com.datadoghq.exp172.control",
+        "--mode",
+        "internal",
+        "--run-id",
+        "exp172-95e8867fabab4c99bd0ea99a31e187e3"
+      ],
+      "result": {
+        "failures": [],
+        "fixture_version": 1,
+        "has_scene_manifest": true,
+        "internal": {
+          "retention": {
+            "boundary": "posted-disconnect handler lifetime; native host teardown remains EXP-168/171",
+            "completed_lifetimes": 220,
+            "cycles_after_warmup": [
+              100,
+              100
+            ],
+            "heap_bytes": [
+              4900080,
+              4914416,
+              4930032
+            ],
+            "published_commands": 0,
+            "registry_after_100": {
+              "disconnectedSceneIdentifiers": 120,
+              "pendingUIKitSplitViewRemovals": 0,
+              "sceneActivityByIdentifier": 120,
+              "stacks": 0,
+              "uiKitSplitViewContexts": 0
+            },
+            "registry_after_200": {
+              "disconnectedSceneIdentifiers": 220,
+              "pendingUIKitSplitViewRemovals": 0,
+              "sceneActivityByIdentifier": 220,
+              "stacks": 0,
+              "uiKitSplitViewContexts": 0
+            },
+            "registry_after_warmup": {
+              "disconnectedSceneIdentifiers": 20,
+              "pendingUIKitSplitViewRemovals": 0,
+              "sceneActivityByIdentifier": 20,
+              "stacks": 0,
+              "uiKitSplitViewContexts": 0
+            },
+            "registry_initial": {
+              "disconnectedSceneIdentifiers": 0,
+              "pendingUIKitSplitViewRemovals": 0,
+              "sceneActivityByIdentifier": 0,
+              "stacks": 0,
+              "uiKitSplitViewContexts": 0
+            },
+            "surviving_controller_references": 0,
+            "warmup_lifetimes": 20
+          }
+        },
+        "mode": "internal",
+        "model": "iPhone",
+        "os": "26.5",
+        "run_id": "exp172-95e8867fabab4c99bd0ea99a31e187e3",
+        "scene_count": 1
+      },
+      "evaluation": {
+        "status": "FAIL",
+        "checks": {
+          "zero_weak_survivors": true,
+          "zero_retired_entries_at_every_boundary": false,
+          "first_100_within_65536_bytes": true,
+          "second_100_within_16384_bytes": true
+        },
+        "heap_delta_bytes": [
+          14336,
+          15616
+        ]
+      },
+      "artifact": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/scene-retention-zz9o16do/runs/exp172-95e8867fabab4c99bd0ea99a31e187e3/result.json",
+      "result_sha256": "613e929c11052cfd916762407c3789dc62a92a487724e1aa2ea5996bcd6cb39f"
+    },
+    {
+      "arm": "candidate",
+      "os": "26.5",
+      "mode": "internal",
+      "order": 1,
+      "run_id": "exp172-d0f519cb8e6347c5843fd0f4cdac6eec",
+      "clean_install": true,
+      "binary_sha256": "586df5c580f388befd68b089190dff1d14fce563a7f2c88e47212816dbf47808",
+      "fixture_sha256": "a040b75326947db0fac807314542df7f7cc2f14c3ecf8f8151d87dda699da102",
+      "launch_command": [
+        "xcrun",
+        "simctl",
+        "launch",
+        "--console",
+        "65A76904-154E-4C79-9DFD-A57B526C85E6",
+        "com.datadoghq.exp172.candidate",
+        "--mode",
+        "internal",
+        "--run-id",
+        "exp172-d0f519cb8e6347c5843fd0f4cdac6eec"
+      ],
+      "result": {
+        "failures": [],
+        "fixture_version": 1,
+        "has_scene_manifest": true,
+        "internal": {
+          "retention": {
+            "boundary": "posted-disconnect handler lifetime; native host teardown remains EXP-168/171",
+            "completed_lifetimes": 220,
+            "cycles_after_warmup": [
+              100,
+              100
+            ],
+            "heap_bytes": [
+              4956848,
+              4957680,
+              4958192
+            ],
+            "published_commands": 0,
+            "registry_after_100": {
+              "pendingUIKitSplitViewRemovals": 0,
+              "sceneActivityByIdentifier": 0,
+              "stacks": 0,
+              "uiKitSplitViewContexts": 0
+            },
+            "registry_after_200": {
+              "pendingUIKitSplitViewRemovals": 0,
+              "sceneActivityByIdentifier": 0,
+              "stacks": 0,
+              "uiKitSplitViewContexts": 0
+            },
+            "registry_after_warmup": {
+              "pendingUIKitSplitViewRemovals": 0,
+              "sceneActivityByIdentifier": 0,
+              "stacks": 0,
+              "uiKitSplitViewContexts": 0
+            },
+            "registry_initial": {
+              "pendingUIKitSplitViewRemovals": 0,
+              "sceneActivityByIdentifier": 0,
+              "stacks": 0,
+              "uiKitSplitViewContexts": 0
+            },
+            "surviving_controller_references": 0,
+            "warmup_lifetimes": 20
+          }
+        },
+        "mode": "internal",
+        "model": "iPhone",
+        "os": "26.5",
+        "run_id": "exp172-d0f519cb8e6347c5843fd0f4cdac6eec",
+        "scene_count": 1
+      },
+      "evaluation": {
+        "status": "PASS",
+        "checks": {
+          "zero_weak_survivors": true,
+          "zero_retired_entries_at_every_boundary": true,
+          "first_100_within_65536_bytes": true,
+          "second_100_within_16384_bytes": true
+        },
+        "heap_delta_bytes": [
+          832,
+          512
+        ]
+      },
+      "artifact": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/scene-retention-zz9o16do/runs/exp172-d0f519cb8e6347c5843fd0f4cdac6eec/result.json",
+      "result_sha256": "e2a84e68f941432dd26339cfe2e03c2b79290596589ed8d7de6c12fe9a5cc23f"
+    },
+    {
+      "arm": "candidate",
+      "os": "26.5",
+      "mode": "internal",
+      "order": 2,
+      "run_id": "exp172-dcac7bd2e7df4c26896711d3b5f2cb63",
+      "clean_install": true,
+      "binary_sha256": "586df5c580f388befd68b089190dff1d14fce563a7f2c88e47212816dbf47808",
+      "fixture_sha256": "a040b75326947db0fac807314542df7f7cc2f14c3ecf8f8151d87dda699da102",
+      "launch_command": [
+        "xcrun",
+        "simctl",
+        "launch",
+        "--console",
+        "65A76904-154E-4C79-9DFD-A57B526C85E6",
+        "com.datadoghq.exp172.candidate",
+        "--mode",
+        "internal",
+        "--run-id",
+        "exp172-dcac7bd2e7df4c26896711d3b5f2cb63"
+      ],
+      "result": {
+        "failures": [],
+        "fixture_version": 1,
+        "has_scene_manifest": true,
+        "internal": {
+          "retention": {
+            "boundary": "posted-disconnect handler lifetime; native host teardown remains EXP-168/171",
+            "completed_lifetimes": 220,
+            "cycles_after_warmup": [
+              100,
+              100
+            ],
+            "heap_bytes": [
+              4990880,
+              4991712,
+              4992224
+            ],
+            "published_commands": 0,
+            "registry_after_100": {
+              "pendingUIKitSplitViewRemovals": 0,
+              "sceneActivityByIdentifier": 0,
+              "stacks": 0,
+              "uiKitSplitViewContexts": 0
+            },
+            "registry_after_200": {
+              "pendingUIKitSplitViewRemovals": 0,
+              "sceneActivityByIdentifier": 0,
+              "stacks": 0,
+              "uiKitSplitViewContexts": 0
+            },
+            "registry_after_warmup": {
+              "pendingUIKitSplitViewRemovals": 0,
+              "sceneActivityByIdentifier": 0,
+              "stacks": 0,
+              "uiKitSplitViewContexts": 0
+            },
+            "registry_initial": {
+              "pendingUIKitSplitViewRemovals": 0,
+              "sceneActivityByIdentifier": 0,
+              "stacks": 0,
+              "uiKitSplitViewContexts": 0
+            },
+            "surviving_controller_references": 0,
+            "warmup_lifetimes": 20
+          }
+        },
+        "mode": "internal",
+        "model": "iPhone",
+        "os": "26.5",
+        "run_id": "exp172-dcac7bd2e7df4c26896711d3b5f2cb63",
+        "scene_count": 1
+      },
+      "evaluation": {
+        "status": "PASS",
+        "checks": {
+          "zero_weak_survivors": true,
+          "zero_retired_entries_at_every_boundary": true,
+          "first_100_within_65536_bytes": true,
+          "second_100_within_16384_bytes": true
+        },
+        "heap_delta_bytes": [
+          832,
+          512
+        ]
+      },
+      "artifact": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/scene-retention-zz9o16do/runs/exp172-dcac7bd2e7df4c26896711d3b5f2cb63/result.json",
+      "result_sha256": "7e0f76ed054382a6ca4f616240df423c9de0815aa59e1d6fcddac12efcbf1fed"
+    },
+    {
+      "arm": "control",
+      "os": "26.5",
+      "mode": "internal",
+      "order": 3,
+      "run_id": "exp172-a743aadaf1a04040a8b2ac1897a88413",
+      "clean_install": true,
+      "binary_sha256": "69f619ddb8f5a2d5d1d111ba4e012862949463c08ec06f9f5ed1e26cf4b8ecc5",
+      "fixture_sha256": "c8041134e3c42479568fd2c3e88877b82c7b6e1ca591ed77b4df6f88645764d9",
+      "launch_command": [
+        "xcrun",
+        "simctl",
+        "launch",
+        "--console",
+        "65A76904-154E-4C79-9DFD-A57B526C85E6",
+        "com.datadoghq.exp172.control",
+        "--mode",
+        "internal",
+        "--run-id",
+        "exp172-a743aadaf1a04040a8b2ac1897a88413"
+      ],
+      "result": {
+        "failures": [],
+        "fixture_version": 1,
+        "has_scene_manifest": true,
+        "internal": {
+          "retention": {
+            "boundary": "posted-disconnect handler lifetime; native host teardown remains EXP-168/171",
+            "completed_lifetimes": 220,
+            "cycles_after_warmup": [
+              100,
+              100
+            ],
+            "heap_bytes": [
+              4988544,
+              5002880,
+              5018496
+            ],
+            "published_commands": 0,
+            "registry_after_100": {
+              "disconnectedSceneIdentifiers": 120,
+              "pendingUIKitSplitViewRemovals": 0,
+              "sceneActivityByIdentifier": 120,
+              "stacks": 0,
+              "uiKitSplitViewContexts": 0
+            },
+            "registry_after_200": {
+              "disconnectedSceneIdentifiers": 220,
+              "pendingUIKitSplitViewRemovals": 0,
+              "sceneActivityByIdentifier": 220,
+              "stacks": 0,
+              "uiKitSplitViewContexts": 0
+            },
+            "registry_after_warmup": {
+              "disconnectedSceneIdentifiers": 20,
+              "pendingUIKitSplitViewRemovals": 0,
+              "sceneActivityByIdentifier": 20,
+              "stacks": 0,
+              "uiKitSplitViewContexts": 0
+            },
+            "registry_initial": {
+              "disconnectedSceneIdentifiers": 0,
+              "pendingUIKitSplitViewRemovals": 0,
+              "sceneActivityByIdentifier": 0,
+              "stacks": 0,
+              "uiKitSplitViewContexts": 0
+            },
+            "surviving_controller_references": 0,
+            "warmup_lifetimes": 20
+          }
+        },
+        "mode": "internal",
+        "model": "iPhone",
+        "os": "26.5",
+        "run_id": "exp172-a743aadaf1a04040a8b2ac1897a88413",
+        "scene_count": 1
+      },
+      "evaluation": {
+        "status": "FAIL",
+        "checks": {
+          "zero_weak_survivors": true,
+          "zero_retired_entries_at_every_boundary": false,
+          "first_100_within_65536_bytes": true,
+          "second_100_within_16384_bytes": true
+        },
+        "heap_delta_bytes": [
+          14336,
+          15616
+        ]
+      },
+      "artifact": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/scene-retention-zz9o16do/runs/exp172-a743aadaf1a04040a8b2ac1897a88413/result.json",
+      "result_sha256": "3efa660f39bd260563ce56e43428cddf92f11ea82ed83189a72ad67a24af8396"
+    },
+    {
+      "arm": "control",
+      "os": "26.5",
+      "mode": "automatic",
+      "order": null,
+      "run_id": "exp172-292245b8f05c4698b528ebee3beadafa",
+      "clean_install": true,
+      "binary_sha256": "69f619ddb8f5a2d5d1d111ba4e012862949463c08ec06f9f5ed1e26cf4b8ecc5",
+      "fixture_sha256": "c8041134e3c42479568fd2c3e88877b82c7b6e1ca591ed77b4df6f88645764d9",
+      "launch_command": [
+        "xcrun",
+        "simctl",
+        "launch",
+        "--console",
+        "65A76904-154E-4C79-9DFD-A57B526C85E6",
+        "com.datadoghq.exp172.control",
+        "--mode",
+        "automatic",
+        "--run-id",
+        "exp172-292245b8f05c4698b528ebee3beadafa"
+      ],
+      "result": {
+        "events": [
+          {
+            "active": true,
+            "id": "b3f6512d-793d-4340-b7b6-227778b5f2f4",
+            "name": "ApplicationLaunch",
+            "type": "view"
+          },
+          {
+            "active": false,
+            "id": "b3f6512d-793d-4340-b7b6-227778b5f2f4",
+            "name": "ApplicationLaunch",
+            "type": "view"
+          },
+          {
+            "active": true,
+            "id": "b90baa21-80cc-424e-a02d-152a03383559",
+            "name": "Home",
+            "type": "view"
+          },
+          {
+            "id": "e626de4b-9405-476f-896b-f455872effca",
+            "name": "Home1",
+            "owner": "b90baa21-80cc-424e-a02d-152a03383559",
+            "type": "action"
+          },
+          {
+            "id": "b36e799c-b935-4dec-b6aa-a8c9c6b22592",
+            "owner": "b90baa21-80cc-424e-a02d-152a03383559",
+            "type": "resource",
+            "url": "https://fixture.invalid/Home1"
+          },
+          {
+            "active": true,
+            "id": "b90baa21-80cc-424e-a02d-152a03383559",
+            "name": "Home",
+            "type": "view"
+          },
+          {
+            "active": false,
+            "id": "b90baa21-80cc-424e-a02d-152a03383559",
+            "name": "Home",
+            "type": "view"
+          },
+          {
+            "active": true,
+            "id": "43cc1fb6-607c-48f3-81bb-a7957b3f52aa",
+            "name": "Detail",
+            "type": "view"
+          },
+          {
+            "id": "61ff35d0-f371-43e3-a63f-81bb5b588267",
+            "name": "Detail1",
+            "owner": "43cc1fb6-607c-48f3-81bb-a7957b3f52aa",
+            "type": "action"
+          },
+          {
+            "id": "9fb8a448-eb86-4947-9b4b-9d0d3efa6ea1",
+            "owner": "43cc1fb6-607c-48f3-81bb-a7957b3f52aa",
+            "type": "resource",
+            "url": "https://fixture.invalid/Detail1"
+          },
+          {
+            "active": true,
+            "id": "43cc1fb6-607c-48f3-81bb-a7957b3f52aa",
+            "name": "Detail",
+            "type": "view"
+          },
+          {
+            "active": false,
+            "id": "43cc1fb6-607c-48f3-81bb-a7957b3f52aa",
+            "name": "Detail",
+            "type": "view"
+          },
+          {
+            "active": true,
+            "id": "1dad95c6-2462-4085-a68d-74a2afac6dfa",
+            "name": "Home",
+            "type": "view"
+          },
+          {
+            "id": "5fd63941-b28c-42ac-90b6-251b89979545",
+            "name": "Home2",
+            "owner": "1dad95c6-2462-4085-a68d-74a2afac6dfa",
+            "type": "action"
+          },
+          {
+            "id": "909c29ae-9caa-4e5b-8469-59fff018af02",
+            "owner": "1dad95c6-2462-4085-a68d-74a2afac6dfa",
+            "type": "resource",
+            "url": "https://fixture.invalid/Home2"
+          },
+          {
+            "active": true,
+            "id": "1dad95c6-2462-4085-a68d-74a2afac6dfa",
+            "name": "Home",
+            "type": "view"
+          }
+        ],
+        "failures": [],
+        "fixture_version": 1,
+        "has_scene_manifest": true,
+        "mode": "automatic",
+        "model": "iPhone",
+        "os": "26.5",
+        "run_id": "exp172-292245b8f05c4698b528ebee3beadafa",
+        "scene_count": 1
+      },
+      "evaluation": {
+        "status": "PASS",
+        "failures": []
+      },
+      "artifact": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/scene-retention-zz9o16do/runs/exp172-292245b8f05c4698b528ebee3beadafa/result.json",
+      "result_sha256": "773b81b6ee6907cf357eee42af1f851504cddf17bb977255de33d32aacfcd929"
+    },
+    {
+      "arm": "candidate",
+      "os": "26.5",
+      "mode": "automatic",
+      "order": null,
+      "run_id": "exp172-19533f2da28245c7b0b07a4d607c1450",
+      "clean_install": true,
+      "binary_sha256": "586df5c580f388befd68b089190dff1d14fce563a7f2c88e47212816dbf47808",
+      "fixture_sha256": "a040b75326947db0fac807314542df7f7cc2f14c3ecf8f8151d87dda699da102",
+      "launch_command": [
+        "xcrun",
+        "simctl",
+        "launch",
+        "--console",
+        "65A76904-154E-4C79-9DFD-A57B526C85E6",
+        "com.datadoghq.exp172.candidate",
+        "--mode",
+        "automatic",
+        "--run-id",
+        "exp172-19533f2da28245c7b0b07a4d607c1450"
+      ],
+      "result": {
+        "events": [
+          {
+            "active": true,
+            "id": "4de82db1-350c-4bf1-945a-b2f2829859b7",
+            "name": "ApplicationLaunch",
+            "type": "view"
+          },
+          {
+            "active": false,
+            "id": "4de82db1-350c-4bf1-945a-b2f2829859b7",
+            "name": "ApplicationLaunch",
+            "type": "view"
+          },
+          {
+            "active": true,
+            "id": "f633942b-dc8d-4823-96b9-2e086405bdb8",
+            "name": "Home",
+            "type": "view"
+          },
+          {
+            "id": "2d5dc6be-4bb7-4ee8-ba57-bc8b1c5d723f",
+            "name": "Home1",
+            "owner": "f633942b-dc8d-4823-96b9-2e086405bdb8",
+            "type": "action"
+          },
+          {
+            "id": "3401e26d-bf77-45d2-bc66-6b705da4f05e",
+            "owner": "f633942b-dc8d-4823-96b9-2e086405bdb8",
+            "type": "resource",
+            "url": "https://fixture.invalid/Home1"
+          },
+          {
+            "active": true,
+            "id": "f633942b-dc8d-4823-96b9-2e086405bdb8",
+            "name": "Home",
+            "type": "view"
+          },
+          {
+            "active": false,
+            "id": "f633942b-dc8d-4823-96b9-2e086405bdb8",
+            "name": "Home",
+            "type": "view"
+          },
+          {
+            "active": true,
+            "id": "045dfa84-7411-4c64-92e3-94487abe7261",
+            "name": "Detail",
+            "type": "view"
+          },
+          {
+            "id": "ad3c845e-b3e6-44ea-a8cc-cc75ea487467",
+            "name": "Detail1",
+            "owner": "045dfa84-7411-4c64-92e3-94487abe7261",
+            "type": "action"
+          },
+          {
+            "id": "af4d088f-f06c-4802-9cc1-f8c3c41fc868",
+            "owner": "045dfa84-7411-4c64-92e3-94487abe7261",
+            "type": "resource",
+            "url": "https://fixture.invalid/Detail1"
+          },
+          {
+            "active": true,
+            "id": "045dfa84-7411-4c64-92e3-94487abe7261",
+            "name": "Detail",
+            "type": "view"
+          },
+          {
+            "active": false,
+            "id": "045dfa84-7411-4c64-92e3-94487abe7261",
+            "name": "Detail",
+            "type": "view"
+          },
+          {
+            "active": true,
+            "id": "72490864-a4e3-47b0-9e2e-f83d677f3a2b",
+            "name": "Home",
+            "type": "view"
+          },
+          {
+            "id": "3ad9ae9c-8faf-4349-81ab-75bd5a0f160a",
+            "name": "Home2",
+            "owner": "72490864-a4e3-47b0-9e2e-f83d677f3a2b",
+            "type": "action"
+          },
+          {
+            "id": "db16a6d1-02f7-4919-a15b-77686a8feb0e",
+            "owner": "72490864-a4e3-47b0-9e2e-f83d677f3a2b",
+            "type": "resource",
+            "url": "https://fixture.invalid/Home2"
+          },
+          {
+            "active": true,
+            "id": "72490864-a4e3-47b0-9e2e-f83d677f3a2b",
+            "name": "Home",
+            "type": "view"
+          }
+        ],
+        "failures": [],
+        "fixture_version": 1,
+        "has_scene_manifest": true,
+        "mode": "automatic",
+        "model": "iPhone",
+        "os": "26.5",
+        "run_id": "exp172-19533f2da28245c7b0b07a4d607c1450",
+        "scene_count": 1
+      },
+      "evaluation": {
+        "status": "PASS",
+        "failures": []
+      },
+      "artifact": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/scene-retention-zz9o16do/runs/exp172-19533f2da28245c7b0b07a4d607c1450/result.json",
+      "result_sha256": "e38ede6a47599b69baaf0f94927f4ba6ff33c7898a58505fabc6460b8f333be0"
+    },
+    {
+      "arm": "control",
+      "os": "26.5",
+      "mode": "manual",
+      "order": null,
+      "run_id": "exp172-daee094fb14e4e7abf13edaac8a2ac59",
+      "clean_install": true,
+      "binary_sha256": "69f619ddb8f5a2d5d1d111ba4e012862949463c08ec06f9f5ed1e26cf4b8ecc5",
+      "fixture_sha256": "c8041134e3c42479568fd2c3e88877b82c7b6e1ca591ed77b4df6f88645764d9",
+      "launch_command": [
+        "xcrun",
+        "simctl",
+        "launch",
+        "--console",
+        "65A76904-154E-4C79-9DFD-A57B526C85E6",
+        "com.datadoghq.exp172.control",
+        "--mode",
+        "manual",
+        "--run-id",
+        "exp172-daee094fb14e4e7abf13edaac8a2ac59"
+      ],
+      "result": {
+        "events": [
+          {
+            "active": true,
+            "id": "c492cb7c-3cfe-4c44-ab03-819e1052d365",
+            "name": "ApplicationLaunch",
+            "type": "view"
+          },
+          {
+            "active": false,
+            "id": "c492cb7c-3cfe-4c44-ab03-819e1052d365",
+            "name": "ApplicationLaunch",
+            "type": "view"
+          },
+          {
+            "active": true,
+            "id": "f9d2ec51-70ea-4083-a6c2-1d499122ef55",
+            "name": "Home",
+            "type": "view"
+          },
+          {
+            "id": "f5508b40-01d7-4dc4-bcb5-fdc7cc518e64",
+            "name": "Home1",
+            "owner": "f9d2ec51-70ea-4083-a6c2-1d499122ef55",
+            "type": "action"
+          },
+          {
+            "id": "3c038605-f051-4723-97fb-dfca6f90383c",
+            "owner": "f9d2ec51-70ea-4083-a6c2-1d499122ef55",
+            "type": "resource",
+            "url": "https://fixture.invalid/Home1"
+          },
+          {
+            "active": true,
+            "id": "f9d2ec51-70ea-4083-a6c2-1d499122ef55",
+            "name": "Home",
+            "type": "view"
+          },
+          {
+            "active": false,
+            "id": "f9d2ec51-70ea-4083-a6c2-1d499122ef55",
+            "name": "Home",
+            "type": "view"
+          },
+          {
+            "active": true,
+            "id": "c0f5775d-a674-4bc3-b2cf-61538e5b5db9",
+            "name": "Detail",
+            "type": "view"
+          },
+          {
+            "id": "22c7b099-8af2-4ff1-9589-4214bb05632f",
+            "name": "Detail1",
+            "owner": "c0f5775d-a674-4bc3-b2cf-61538e5b5db9",
+            "type": "action"
+          },
+          {
+            "id": "d3579794-9751-42cd-b2b3-44368fc20a88",
+            "owner": "c0f5775d-a674-4bc3-b2cf-61538e5b5db9",
+            "type": "resource",
+            "url": "https://fixture.invalid/Detail1"
+          },
+          {
+            "active": true,
+            "id": "c0f5775d-a674-4bc3-b2cf-61538e5b5db9",
+            "name": "Detail",
+            "type": "view"
+          },
+          {
+            "active": false,
+            "id": "c0f5775d-a674-4bc3-b2cf-61538e5b5db9",
+            "name": "Detail",
+            "type": "view"
+          },
+          {
+            "active": true,
+            "id": "a233fd4f-41ae-405c-845f-aceda6ecaefd",
+            "name": "Home",
+            "type": "view"
+          },
+          {
+            "id": "6132df1f-552b-4281-90ce-ef256302f681",
+            "name": "Home2",
+            "owner": "a233fd4f-41ae-405c-845f-aceda6ecaefd",
+            "type": "action"
+          },
+          {
+            "id": "2e816300-a0ef-412c-89f4-a5da1cf4b695",
+            "owner": "a233fd4f-41ae-405c-845f-aceda6ecaefd",
+            "type": "resource",
+            "url": "https://fixture.invalid/Home2"
+          },
+          {
+            "active": true,
+            "id": "a233fd4f-41ae-405c-845f-aceda6ecaefd",
+            "name": "Home",
+            "type": "view"
+          }
+        ],
+        "failures": [],
+        "fixture_version": 1,
+        "has_scene_manifest": true,
+        "mode": "manual",
+        "model": "iPhone",
+        "os": "26.5",
+        "run_id": "exp172-daee094fb14e4e7abf13edaac8a2ac59",
+        "scene_count": 1
+      },
+      "evaluation": {
+        "status": "PASS",
+        "failures": []
+      },
+      "artifact": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/scene-retention-zz9o16do/runs/exp172-daee094fb14e4e7abf13edaac8a2ac59/result.json",
+      "result_sha256": "577360f4589ff65879aed94f63a822df3efee500e80ca5cd3038bd758cb92bc6"
+    },
+    {
+      "arm": "candidate",
+      "os": "26.5",
+      "mode": "manual",
+      "order": null,
+      "run_id": "exp172-a1197021bcb34af1b96abe3b41d9daf7",
+      "clean_install": true,
+      "binary_sha256": "586df5c580f388befd68b089190dff1d14fce563a7f2c88e47212816dbf47808",
+      "fixture_sha256": "a040b75326947db0fac807314542df7f7cc2f14c3ecf8f8151d87dda699da102",
+      "launch_command": [
+        "xcrun",
+        "simctl",
+        "launch",
+        "--console",
+        "65A76904-154E-4C79-9DFD-A57B526C85E6",
+        "com.datadoghq.exp172.candidate",
+        "--mode",
+        "manual",
+        "--run-id",
+        "exp172-a1197021bcb34af1b96abe3b41d9daf7"
+      ],
+      "result": {
+        "events": [
+          {
+            "active": true,
+            "id": "41612ccc-1ab8-47e7-9b51-5b2ccd1c7008",
+            "name": "ApplicationLaunch",
+            "type": "view"
+          },
+          {
+            "active": false,
+            "id": "41612ccc-1ab8-47e7-9b51-5b2ccd1c7008",
+            "name": "ApplicationLaunch",
+            "type": "view"
+          },
+          {
+            "active": true,
+            "id": "55392c04-468b-4735-981b-a095d472d45d",
+            "name": "Home",
+            "type": "view"
+          },
+          {
+            "id": "d43dc7b6-fb29-4899-a4a6-b6f0486edc9d",
+            "name": "Home1",
+            "owner": "55392c04-468b-4735-981b-a095d472d45d",
+            "type": "action"
+          },
+          {
+            "id": "c3e8c240-42f7-40e4-84e4-1b78f0980c57",
+            "owner": "55392c04-468b-4735-981b-a095d472d45d",
+            "type": "resource",
+            "url": "https://fixture.invalid/Home1"
+          },
+          {
+            "active": true,
+            "id": "55392c04-468b-4735-981b-a095d472d45d",
+            "name": "Home",
+            "type": "view"
+          },
+          {
+            "active": false,
+            "id": "55392c04-468b-4735-981b-a095d472d45d",
+            "name": "Home",
+            "type": "view"
+          },
+          {
+            "active": true,
+            "id": "d83a59c3-decb-4d34-abf3-98c3abaa93dc",
+            "name": "Detail",
+            "type": "view"
+          },
+          {
+            "id": "fe826c17-bb94-42ae-8cd0-1660f23ca633",
+            "name": "Detail1",
+            "owner": "d83a59c3-decb-4d34-abf3-98c3abaa93dc",
+            "type": "action"
+          },
+          {
+            "id": "5bd40a63-5558-4d1b-a7cf-f31a899b9742",
+            "owner": "d83a59c3-decb-4d34-abf3-98c3abaa93dc",
+            "type": "resource",
+            "url": "https://fixture.invalid/Detail1"
+          },
+          {
+            "active": true,
+            "id": "d83a59c3-decb-4d34-abf3-98c3abaa93dc",
+            "name": "Detail",
+            "type": "view"
+          },
+          {
+            "active": false,
+            "id": "d83a59c3-decb-4d34-abf3-98c3abaa93dc",
+            "name": "Detail",
+            "type": "view"
+          },
+          {
+            "active": true,
+            "id": "b84d1ebb-b792-4f5f-8d29-106186dfcfbb",
+            "name": "Home",
+            "type": "view"
+          },
+          {
+            "id": "64771156-d0c2-41f8-8c22-11ef9b317954",
+            "name": "Home2",
+            "owner": "b84d1ebb-b792-4f5f-8d29-106186dfcfbb",
+            "type": "action"
+          },
+          {
+            "id": "6754cc1f-197e-45ab-a085-79b616987d60",
+            "owner": "b84d1ebb-b792-4f5f-8d29-106186dfcfbb",
+            "type": "resource",
+            "url": "https://fixture.invalid/Home2"
+          },
+          {
+            "active": true,
+            "id": "b84d1ebb-b792-4f5f-8d29-106186dfcfbb",
+            "name": "Home",
+            "type": "view"
+          }
+        ],
+        "failures": [],
+        "fixture_version": 1,
+        "has_scene_manifest": true,
+        "mode": "manual",
+        "model": "iPhone",
+        "os": "26.5",
+        "run_id": "exp172-a1197021bcb34af1b96abe3b41d9daf7",
+        "scene_count": 1
+      },
+      "evaluation": {
+        "status": "PASS",
+        "failures": []
+      },
+      "artifact": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/scene-retention-zz9o16do/runs/exp172-a1197021bcb34af1b96abe3b41d9daf7/result.json",
+      "result_sha256": "48c7c5f163bd214ab49b856628bfdf0299620c8bc45df3cfd70b68fea5e6ad42"
+    }
+  ],
+  "invalid_attempts": [],
+  "status": "PASS",
+  "definition_sha256": "c24f741f008e654e816f96ba418ed62225aa0ae1470582bd2c15fc789e113345",
+  "xcode": "Xcode 27.0\nBuild version 27A266a",
+  "devices": {
+    "27.0": {
+      "udid": "BE03D65C-84F6-4FE0-95DA-A8F8D81A5D21",
+      "name": "iPhone 17 Pro",
+      "state": "Booted"
+    },
+    "26.5": {
+      "udid": "65A76904-154E-4C79-9DFD-A57B526C85E6",
+      "name": "iPhone 17",
+      "state": "Booted"
+    }
+  },
+  "harness_identity": {
+    "tools/multi-scene/scene-retention/run.py": "e4aef65ef6d9d2f3050ea7775799c4b376ccd2617f0a767b5482b0958888df42",
+    "tools/multi-scene/scene-retention/InternalFixture.swift": "ae7eb9241f65e646f670b3029ba7d1dc1ea189cc36fe54ad77bc83dfd14679b6",
+    "tools/multi-scene/baselines/run.py": "d14fa5cd77aed6147386e0815a3f711f8d2c45d0018cf5512da79e9db4943398",
+    "tools/multi-scene/baselines/analyze.py": "79de1e8ea99f1d27f84ef98d8a39d1b2b8a8e7fbfdc996b0278258189c15e306",
+    "tools/multi-scene/baselines/Fixture/App.swift": "4e9438781d5e17ef4cbfd06871a6938bdf9b25cc81e2b0dc5d2bff1645dc69ee",
+    "tools/multi-scene/baselines/Fixture/AllocationCounter.c": "4fc68475a35fdbb805786a79455defc5725b6e0deb4847778cd75be228f9119d",
+    "tools/multi-scene/baselines/Fixture/AllocationCounter.h": "d668fa6258ccbf16ce011374af0aa4178ae4ca0f8a1c4f28a51bee2077ce52ab"
+  },
+  "watchOS_build": {
+    "command": [
+      "xcodebuild",
+      "build",
+      "-quiet",
+      "-scheme",
+      "DatadogRUM",
+      "-configuration",
+      "Release",
+      "-destination",
+      "generic/platform=watchOS",
+      "-derivedDataPath",
+      "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/scene-retention-zz9o16do/watch-derived",
+      "CODE_SIGNING_ALLOWED=NO"
+    ],
+    "log": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/scene-retention-zz9o16do/watchOS-Release.log",
+    "status": "PASS",
+    "log_sha256": "75ebd6adcf5a96490b6fb7d3625478b1825a845fdb8a6632ca906bde6a1bd264"
+  },
+  "definition_revision": "cd4349cccab20e107c6413db0dc29ff76cc31fac",
+  "gates_closed": [
+    "P03"
+  ],
+  "recorded_at": "2026-09-17T14:16:33Z",
+  "unit_attempts": [
+    {
+      "label": "exp172Control",
+      "counts": {
+        "expectedFailures": 0,
+        "failed": 2,
+        "notRun": 0,
+        "passed": 0,
+        "skipped": 0,
+        "total": 2
+      },
+      "fullSummaryPath": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/ActionArtifacts/default/RunSomeTests/85419315-4DED-4E5F-A1CD-AAD72BF52ED9.txt",
+      "xcresultBundlePath": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/ActionArtifacts/default/RunSomeTests/Test-DatadogRUM-2026.09.17_14-55-30-+0100.xcresult",
+      "failures": [
+        {
+          "displayName": "testDisconnectedSceneRegistriesRetireAfterRepeatedControllerLifetimes()",
+          "errorMessages": [
+            "Datadog/DatadogRUMTests/Instrumentation/Views/RUMViewsHandlerTests.swift:2030 RUMViewsHandlerTests/testDisconnectedSceneRegistriesRetireAfterRepeatedControllerLifetimes(): XCTAssertEqual failed: (\"[\"sceneActivityByIdentifier\": 220, \"disconnectedSceneIdentifiers\": 220]\") is not equal to (\"[:]\")",
+            "Datadog/DatadogRUMTests/Instrumentation/Views/RUMViewsHandlerTests.swift:2037 RUMViewsHandlerTests/testDisconnectedSceneRegistriesRetireAfterRepeatedControllerLifetimes(): XCTAssertEqual failed: (\"[\"sceneActivityByIdentifier\": 220, \"disconnectedSceneIdentifiers\": 220]\") is not equal to (\"[:]\")"
+          ],
+          "identifier": "RUMViewsHandlerTests/testDisconnectedSceneRegistriesRetireAfterRepeatedControllerLifetimes()",
+          "state": "Failed",
+          "targetName": "DatadogRUMTests"
+        },
+        {
+          "displayName": "testDisconnectWithoutTrackedViewRetiresStateAndRejectsLateBackground()",
+          "errorMessages": [
+            "Datadog/DatadogRUMTests/Instrumentation/Views/RUMViewsHandlerTests.swift:2047 RUMViewsHandlerTests/testDisconnectWithoutTrackedViewRetiresStateAndRejectsLateBackground(): XCTAssertEqual failed: (\"[\"sceneActivityByIdentifier\": 1, \"disconnectedSceneIdentifiers\": 1]\") is not equal to (\"[:]\")",
+            "Datadog/DatadogRUMTests/Instrumentation/Views/RUMViewsHandlerTests.swift:2060 RUMViewsHandlerTests/testDisconnectWithoutTrackedViewRetiresStateAndRejectsLateBackground(): XCTAssertEqual failed: (\"[\"sceneActivityByIdentifier\": 1, \"disconnectedSceneIdentifiers\": 1]\") is not equal to (\"[:]\")"
+          ],
+          "identifier": "RUMViewsHandlerTests/testDisconnectWithoutTrackedViewRetiresStateAndRejectsLateBackground()",
+          "state": "Failed",
+          "targetName": "DatadogRUMTests"
+        }
+      ],
+      "summary_sha256": "b7a2d61465c0c34d48e4e761746e828a2f31f58d092ba320860967fdbd644225"
+    },
+    {
+      "label": "exp172AdditionalControl",
+      "counts": {
+        "expectedFailures": 0,
+        "failed": 1,
+        "notRun": 0,
+        "passed": 0,
+        "skipped": 0,
+        "total": 1
+      },
+      "fullSummaryPath": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/ActionArtifacts/default/RunSomeTests/7FF4AB65-120E-4F2F-85A4-A458DD4859CC.txt",
+      "xcresultBundlePath": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/ActionArtifacts/default/RunSomeTests/Test-DatadogRUM-2026.09.17_14-57-28-+0100.xcresult",
+      "failures": [
+        {
+          "displayName": "testStaleUIKitAppearanceCannotRecreateDisconnectedSplitMetadata()",
+          "errorMessages": [
+            "Datadog/DatadogRUMTests/Instrumentation/Views/RUMViewsHandlerTests.swift:2080 RUMViewsHandlerTests/testStaleUIKitAppearanceCannotRecreateDisconnectedSplitMetadata(): XCTAssertNil failed: \"1\""
+          ],
+          "identifier": "RUMViewsHandlerTests/testStaleUIKitAppearanceCannotRecreateDisconnectedSplitMetadata()",
+          "state": "Failed",
+          "targetName": "DatadogRUMTests"
+        }
+      ],
+      "summary_sha256": "0fe1efb042f6325c8476fa032a4db524b5eea24eb6a179f395fb74d53ec0dc04"
+    },
+    {
+      "label": "exp172CandidateControls",
+      "counts": {
+        "expectedFailures": 0,
+        "failed": 0,
+        "notRun": 0,
+        "passed": 3,
+        "skipped": 0,
+        "total": 3
+      },
+      "fullSummaryPath": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/ActionArtifacts/default/RunSomeTests/A424B840-D812-4FE1-9E39-512027C5D1AC.txt",
+      "xcresultBundlePath": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/ActionArtifacts/default/RunSomeTests/Test-DatadogRUM-2026.09.17_15-03-44-+0100.xcresult",
+      "failures": [],
+      "summary_sha256": "fc2b7b4de2de8975eecae1afb421f935d763415e4d81ec555291d76a17f92814"
+    },
+    {
+      "label": "exp172Affected1",
+      "counts": {
+        "expectedFailures": 0,
+        "failed": 1,
+        "notRun": 0,
+        "passed": 325,
+        "skipped": 0,
+        "total": 326
+      },
+      "fullSummaryPath": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/ActionArtifacts/default/RunSomeTests/EBD3CDCE-0825-476B-ABEB-A1D2CE94AADC.txt",
+      "xcresultBundlePath": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/ActionArtifacts/default/RunSomeTests/Test-DatadogRUM-2026.09.17_15-06-41-+0100.xcresult",
+      "failures": [
+        {
+          "displayName": "testPendingInitialSceneInventoryDoesNotRetainHandler()",
+          "errorMessages": [
+            "Datadog/DatadogRUMTests/Instrumentation/Views/RUMViewsHandlerTests.swift:2195 RUMViewsHandlerTests/testPendingInitialSceneInventoryDoesNotRetainHandler(): failed - Released handler must not read scene inventory"
+          ],
+          "identifier": "RUMViewsHandlerTests/testPendingInitialSceneInventoryDoesNotRetainHandler()",
+          "state": "Failed",
+          "targetName": "DatadogRUMTests"
+        }
+      ],
+      "summary_sha256": "4c8997a1399c23e92aec4ea71583a74b8c7080ddb0ae9f9995e9b565e1d498ee"
+    },
+    {
+      "label": "exp172Affected",
+      "counts": {
+        "expectedFailures": 0,
+        "failed": 0,
+        "notRun": 0,
+        "passed": 326,
+        "skipped": 0,
+        "total": 326
+      },
+      "fullSummaryPath": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/ActionArtifacts/default/RunSomeTests/8449F3BF-CCEE-462C-905D-A80CAA24A7BE.txt",
+      "xcresultBundlePath": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/ActionArtifacts/default/RunSomeTests/Test-DatadogRUM-2026.09.17_15-07-55-+0100.xcresult",
+      "failures": [],
+      "summary_sha256": "b6253dc674e84d6a015dbeeecac7fe0d996516d51fdc9045998df2aed4e10e6e"
+    }
+  ],
+  "affected_test_selectors": [
+    "RUMInstrumentationTests/testWhenOnlyUIKitViewsPredicateIsConfigured_itInstrumentsUIViewController()",
+    "RUMInstrumentationTests/testWhenOnlyUIKitActionsPredicateIsConfigured_itInstrumentsUIApplication()",
+    "RUMInstrumentationTests/testWhenOnlySwiftUIViewsPredicateIsConfigured_itInstrumentsUIViewController()",
+    "RUMInstrumentationTests/testWhenApplicationSupportsMultipleScenes_itInstrumentsUIApplicationForCausalHandoff()",
+    "RUMInstrumentationTests/testWhenApplicationDoesNotSupportMultipleScenes_itDoesNotPublishSceneIdentifierTrait()",
+    "RUMInstrumentationTests/testSceneIdentifierTrait_itCarriesValueThroughTraitCollection()",
+    "RUMInstrumentationTests/testWhenOnlySwiftUIActionsPredicateIsConfigured_itInstrumentsUIApplication()",
+    "RUMInstrumentationTests/testWhenScrollAndSwipeActionsTrackingIsDisabled_itDoesNotInstrumentUIScrollView()",
+    "RUMInstrumentationTests/testWhenOnlyLongTasksThresholdIsConfigured_itInstrumentsRunLoop()",
+    "RUMInstrumentationTests/testWhenLongTasksThresholdIsLessOrEqualZero_itDoesNotInstrumentsRunLoop()",
+    "RUMInstrumentationTests/testWhenAppHangThresholdIsConfigured_itInstrumentsAppHangs()",
+    "RUMInstrumentationTests/testWhenAppHangThresholdIsNotConfigured_itDoesNotInstrumentsAppHangs()",
+    "RUMInstrumentationTests/testAppHangsAreDisabled_oniOSWidgets()",
+    "RUMInstrumentationTests/testGivenAllInstrumentationsConfigured_whenSubscribed_itSetsSubsciberInRespectiveHandlers()",
+    "RUMSemanticNavigationAuthorityTests/testEmptyExplicitSourceKeepsAutomaticTrackingUntilFirstDestination()",
+    "RUMSemanticNavigationAuthorityTests/testEmptyCapabilitySourceKeepsAutomaticTrackingUntilFirstDestination()",
+    "RUMSemanticNavigationAuthorityTests/testSourceWithoutInstrumentationHasNoAuthorityUntilHandlerIsAvailable()",
+    "RUMSemanticNavigationAuthorityTests/testSourceWithoutSceneHasNoAuthorityUntilAttachmentIsAvailable()",
+    "RUMSemanticNavigationContainerLifetimeStateTests/testWhenDetachedStateIsReleased_queuedFinalDetachStillRuns()",
+    "RUMSemanticNavigationContainerLifetimeStateTests/testWhenDetachedStateReattaches_queuedFinalDetachIsCancelled()",
+    "RUMSwiftUIInteractiveTransitionArbiterTests/testWhenInteractiveAppearanceIsCancelled_itCreatesNoOccurrence()",
+    "RUMSwiftUIInteractiveTransitionArbiterTests/testWhenObserverReregisters_itReplacesRegistrationIdempotently()",
+    "RUMSwiftUIInteractiveTransitionArbiterTests/testWhenCancellationReversalArrivesBeforeCompletion_itCreatesNoOccurrence()",
+    "RUMSwiftUIInteractiveTransitionArbiterTests/testWhenInteractiveMountIsCancelled_itDoesNotMutateTrackingState()",
+    "RUMSwiftUIInteractiveTransitionArbiterTests/testWhenKeyedInitialMountIsCancelled_itCanStartOnTheNextCommittedMount()",
+    "RUMSwiftUIInteractiveTransitionArbiterTests/testWhenDormantBoundaryPromotionCommits_itStartsAcceptedDestinationOnce()",
+    "RUMSwiftUIInteractiveTransitionArbiterTests/testWhenDormantBoundaryPromotionIsCancelled_itLeavesDormantStateUntouched()",
+    "RUMSwiftUIInteractiveTransitionArbiterTests/testWhenSceneDisconnectsDuringDormantPromotion_readerRemountStartsAcceptedDestination()",
+    "RUMSwiftUIInteractiveTransitionArbiterTests/testWhenDormantPromotionDisappearsBeforeCommit_laterAcceptedAppearanceCanStart()",
+    "RUMSwiftUIInteractiveTransitionArbiterTests/testWhenStaleDetachedCallbackFollowsDormantPromotion_itCannotCancelPromotion()",
+    "RUMSwiftUIInteractiveTransitionArbiterTests/testWhenGenericConfigurationAttemptsToSupersedeDormantPromotion_itIsIgnored()",
+    "RUMSwiftUIInteractiveTransitionArbiterTests/testWhenUnscopedAppearanceAttemptsToSupersedeDormantPromotion_itIsIgnored()",
+    "RUMSwiftUIInteractiveTransitionArbiterTests/testWhenSourceAcceptedGenerationAdvances_itSupersedesPendingPromotion()",
+    "RUMSwiftUIInteractiveTransitionArbiterTests/testWhenDetachedSourceAcceptedGenerationAdvances_itSuppressesPendingPromotion()",
+    "RUMSwiftUIInteractiveTransitionArbiterTests/testWhenDetachedSettlementReceivesOrdinaryLifecycle_itRemainsNonStarting()",
+    "RUMSwiftUIInteractiveTransitionArbiterTests/testWhenAcceptedReaderMovesScenes_itReplacesPendingSettlementAndStartsThere()",
+    "RUMSwiftUIInteractiveTransitionArbiterTests/testWhenGenericReconciliationMovesScenes_itCannotReplacePendingSettlement()",
+    "RUMSwiftUIInteractiveTransitionArbiterTests/testWhenSourceAuthorizedPromotionAdvances_itRebasesToLatestDormantSnapshot()",
+    "RUMSwiftUIInteractiveTransitionArbiterTests/testWhenSourceAuthorizedDetachedSettlementAdvances_itWaitsForReaderMount()",
+    "RUMSwiftUIInteractiveTransitionArbiterTests/testWhenAdvancedDormantResolutionIsCancelled_itStartsNoDestination()",
+    "RUMSwiftUIInteractiveTransitionArbiterTests/testWhenDisconnectedViewRemountIsDeferred_itStartsAfterSuccessfulCompletion()",
+    "RUMSwiftUIInteractiveTransitionArbiterTests/testWhenDeferredReconnectIsCancelled_readerRearmsForNextResolvedMount()",
+    "RUMSwiftUIInteractiveTransitionArbiterTests/testWhenDeferredReconnectDisappears_successLeavesStateReadyForLaterAppearance()",
+    "RUMSwiftUIInteractiveTransitionArbiterTests/testWhenDeferredReconnectDisappearsAndCancels_readerRearms()",
+    "RUMSwiftUIInteractiveTransitionArbiterTests/testProviderUsesMatchingSceneHierarchyWhileNewReaderIsUnattached()",
+    "RUMSwiftUIInteractiveTransitionArbiterTests/testProviderDoesNotBorrowSceneTransitionForAttachedUnrelatedReader()",
+    "RUMSwiftUIInteractiveTransitionArbiterTests/testWhenAttachmentStartsInteractiveDeferral_followingAppearanceJoinsSameScene()",
+    "RUMSwiftUIInteractiveTransitionArbiterTests/testWhenInteractivePopCompletes_itStopsOutgoingBeforeStartingReturnedOccurrence()",
+    "RUMSwiftUIInteractiveTransitionArbiterTests/testWhenRetainedViewCompletesTwoReturns_itCreatesANewOccurrenceForEachReturn()",
+    "RUMSwiftUIInteractiveTransitionArbiterTests/testWhenCoordinatorIsNotInteractive_itAppliesImmediately()",
+    "RUMSwiftUIInteractiveTransitionArbiterTests/testWhenCoordinatorRejectsRegistration_itAppliesImmediately()",
+    "RUMSwiftUIInteractiveTransitionArbiterTests/testWhenCallbacksRepeatDuringTransition_itCommitsOneOccurrence()",
+    "RUMSwiftUIInteractiveTransitionArbiterTests/testWhenTwoScenesTransitionConcurrently_theyResolveIndependently()",
+    "RUMSwiftUIInteractiveTransitionArbiterTests/testWhenTwoKeyedScenesTransitionConcurrently_cancelAndCommitRemainIndependent()",
+    "RUMSwiftUIInteractiveTransitionArbiterTests/testWhenTwoTransitionsRunInSameScene_theyResolveByCoordinatorIdentity()",
+    "RUMSwiftUIInteractiveTransitionArbiterTests/testWhenPopIsCancelled_unrelatedLifecycleInSameSceneCommitsImmediately()",
+    "RUMSwiftUIInteractiveTransitionArbiterTests/testWhenUnrelatedReaderAttachesDuringPop_itLeavesProvisionalTransaction()",
+    "RUMSwiftUIInteractiveTransitionArbiterTests/testWhenPendingViewAttachesToAnotherScene_itMigratesOutsideCancelledTransition()",
+    "RUMSwiftUIInteractiveTransitionArbiterTests/testWhenSceneDisconnects_itDiscardsPendingLifecycle()",
+    "RUMSwiftUIInteractiveTransitionArbiterTests/testWhenSceneDisconnectsDuringConcurrentKeyedTransitions_itCancelsOnlyThatScene()",
+    "RUMSwiftUIInteractiveTransitionArbiterTests/testWhenSourceSceneDisconnects_pendingDestinationMigrationCanStillCommit()",
+    "RUMSwiftUIInteractiveTransitionArbiterTests/testWhenSourceSceneDisconnects_cancelledDestinationMigrationCreatesNoOccurrence()",
+    "RUMSwiftUIInteractiveTransitionArbiterTests/testWhenOldSceneObserverIsDiscarded_destinationIntentUsesOnlyDestinationObserver()",
+    "RUMSwiftUIInteractiveTransitionArbiterTests/testWhenDisconnectedObserverReregisters_itCannotBypassDestinationCancellation()",
+    "RUMSwiftUIInteractiveTransitionArbiterTests/testWhenPendingMigrationTargetsDisconnectedScene_itKeepsCommittedPeerState()",
+    "RUMSwiftUIInteractiveTransitionArbiterTests/testWhenInteractiveKeyChangesMultipleTimes_itCommitsOnlyFinalCandidate()",
+    "RUMSwiftUIInteractiveTransitionArbiterTests/testWhenInteractiveKeyChangeIsCancelled_itDoesNotMutateOrAllocateOccurrence()",
+    "RUMSwiftUIInteractiveTransitionArbiterTests/testWhenInteractiveCandidatesReturnToOriginalKey_itCommitsNoReplacement()",
+    "RUMSwiftUIInteractiveTransitionArbiterTests/testWhenStaleBindingIntentArrivesDuringInteractiveReplacement_itIsIgnored()",
+    "RUMSwiftUIInteractiveTransitionArbiterTests/testWhenUnversionedLifecycleArrivesDuringKeyedReplacement_itIsIgnored()",
+    "RUMSwiftUIInteractiveTransitionArbiterTests/testWhenStaleBindingClaimsAnotherScene_itLeavesValidPendingReplacementIntact()",
+    "RUMSwiftUIInteractiveTransitionArbiterTests/testWhenCoordinatorIdentityIsReused_oldCompletionCannotResolveNewTransition()",
+    "RUMSwiftUIInteractiveTransitionArbiterTests/testWhenOldCoordinatorCompletesAgain_itDoesNotResolveNewTransition()",
+    "RUMSwiftUIInteractiveTransitionArbiterTests/testObserverResolvesNearestViewController()",
+    "RUMSwiftUINavigationOccurrenceContextTests/testRetainedCallbackDoesNotOwnItsCollaborators()",
+    "RUMSwiftUINavigationOccurrenceContextTests/testRegistrationReleaseDoesNotRequireSourceRelease()",
+    "RUMSwiftUINavigationOccurrenceContextTests/testCancellationClearsCallbackAndRejectsRetainedReveal()",
+    "RUMSwiftUINavigationOccurrenceContextTests/testRebindingMovesSourceAndPublishesLatestDescriptorOnFreshOccurrence()",
+    "RUMSwiftUINavigationOccurrenceContextTests/testContextPreservesInteractiveCancellationAndSingleCommit()",
+    "RUMSwiftUINavigationOccurrenceSourceTests/testWhenInitialTopHasNotMounted_containerSceneStartsAndTransfersOccurrence()",
+    "RUMSwiftUINavigationOccurrenceSourceTests/testWhenInitialTopMountsFirst_itOwnsBootstrapWithoutDuplicateStart()",
+    "RUMSwiftUINavigationOccurrenceSourceTests/testWhenMaterializedInitialTopIsReplaced_laterNavigationUsesOrdinaryArbiter()",
+    "RUMSwiftUINavigationOccurrenceSourceTests/testWhenAcceptedRouteReusesDormantProposal_readerReconciliationAuthorizesPromotion()",
+    "RUMSwiftUINavigationOccurrenceSourceTests/testWhenAcceptedRouteReusesDormantProposal_environmentTraitAuthorizesSameScenePromotion()",
+    "RUMSwiftUINavigationOccurrenceSourceTests/testWhenAcceptedRouteReusesDormantProposal_environmentTraitCannotMoveOrRecoverScene()",
+    "RUMSwiftUINavigationOccurrenceSourceTests/testWhenAcceptedRouteAdvancesDuringPendingProposal_readerMountAuthorizesPromotion()",
+    "RUMSwiftUINavigationOccurrenceSourceTests/testWhenAcceptedRouteMovesToAnotherScene_onlyReaderMountAuthorizesMigration()",
+    "RUMSwiftUINavigationOccurrenceSourceTests/testWhenDormantProposalDisconnects_readerMountAuthorizesAcceptedRecovery()",
+    "RUMSwiftUINavigationOccurrenceSourceTests/testWhenPendingInitialTopChanges_sourceWaitsForAcceptedBoundaryAndRejectsStaleTop()",
+    "RUMSwiftUINavigationOccurrenceSourceTests/testWhenPendingInitialTopChanges_donorRefreshDoesNotCreateHiddenRoot()",
+    "RUMSwiftUINavigationOccurrenceSourceTests/testWhenDonorRefreshCallbacksArriveOutOfOrder_theyNeverReachLocalGenerationFence()",
+    "RUMSwiftUINavigationOccurrenceSourceTests/testWhenDonorMovesScenesBeforeDescriptorReconciliation_visibleDestinationMigrates()",
+    "RUMSwiftUINavigationOccurrenceSourceTests/testWhenDonorReaderStateIsReplaced_sameSceneAdoptsExistingOccurrence()",
+    "RUMSwiftUINavigationOccurrenceSourceTests/testWhenPreviouslyUsedDonorReturns_sameSceneReclaimsExistingOccurrence()",
+    "RUMSwiftUINavigationOccurrenceSourceTests/testWhenPreviouslyUsedDonorReturnsInAnotherScene_itStartsFreshOccurrence()",
+    "RUMSwiftUINavigationOccurrenceSourceTests/testWhenAdvancedDonorReturns_sameSceneReclaimsExistingOccurrence()",
+    "RUMSwiftUINavigationOccurrenceSourceTests/testWhenAdvancedDonorReturnsInAnotherScene_itStartsFreshOccurrence()",
+    "RUMSwiftUINavigationOccurrenceSourceTests/testWhenAdvancedDonorReconnectsFirst_replacementAdoptsFreshOccurrence()",
+    "RUMSwiftUINavigationOccurrenceSourceTests/testWhenAdvancedReplacementReconnectsFirst_donorAdoptsFreshOccurrence()",
+    "RUMSwiftUINavigationOccurrenceSourceTests/testWhenProvisionalDonorReconnectsBeforeQueuedCleanup_freshOwnerSurvives()",
+    "RUMSwiftUINavigationOccurrenceSourceTests/testWhenDormantReplacementReconnectsBeforeInactiveOwner_itStartsFreshOccurrence()",
+    "RUMSwiftUINavigationOccurrenceSourceTests/testWhenOwnerReconnectsBeforeDormantReplacement_replacementAdoptsFreshOccurrence()",
+    "RUMSwiftUINavigationOccurrenceSourceTests/testWhenNewerDonorReconnectsBeforeDescriptor_itRestartsLastProvenDestination()",
+    "RUMSwiftUINavigationOccurrenceSourceTests/testWhenNewerDonorMovesScenesBeforeDescriptor_itStartsLastProvenDestination()",
+    "RUMSwiftUINavigationOccurrenceSourceTests/testWhenAcceptedIdentityChanges_staleDescriptorCannotAdoptBeforeReconciliation()",
+    "RUMSwiftUINavigationOccurrenceSourceTests/testWhenInitialPathIsEmpty_laterDestinationCannotBootstrap()",
+    "RUMSwiftUINavigationOccurrenceSourceTests/testWhenPendingInitialPathBecomesEmpty_revealsFreshRootAndRejectsStaleTop()",
+    "RUMSwiftUINavigationOccurrenceSourceTests/testWhenContainerDetachesBeforeInitialAdoption_provisionalOccurrenceStops()",
+    "RUMSwiftUINavigationOccurrenceSourceTests/testWhenInitialOwnerMovesToAnotherScene_newSceneBecomesSoleOwner()",
+    "RUMSwiftUINavigationOccurrenceSourceTests/testWhenInitialOwnerSceneDisconnects_sameGenerationReaderRemountStartsFreshOccurrence()",
+    "RUMSwiftUINavigationOccurrenceSourceTests/testWhenSameSceneReconnectsBeforeQueuedSourceCleanup_freshOwnerSurvivesCleanup()",
+    "RUMSwiftUINavigationOccurrenceSourceTests/testWhenRetainedRouteReconnectsBeforeQueuedSourceCleanup_itRequiresFreshMount()",
+    "RUMSwiftUINavigationOccurrenceSourceTests/testWhenTwoSourcesRestoreSameRoute_initialOwnershipRemainsWindowLocal()",
+    "RUMSwiftUINavigationOccurrenceSourceTests/testWhenRetainedRouteWasPreviouslyVisible_revealStartsFreshOccurrenceSynchronously()",
+    "RUMSwiftUINavigationOccurrenceSourceTests/testWhenRevealedRouteMountsWithNewSwiftUIState_itAdoptsPublishedOccurrence()",
+    "RUMSwiftUINavigationOccurrenceSourceTests/testWhenRevealedRouteKeepsItsSwiftUIState_consumptionSettlesHandoff()",
+    "RUMSwiftUINavigationOccurrenceSourceTests/testWhenPendingRevealedRouteMovesScenesWithSameState_itRemountsFreshInDestinationScene()",
+    "RUMSwiftUINavigationOccurrenceSourceTests/testWhenMultipleRegistrationsCanRevealSameRoute_onlyNewestRegistrationStarts()",
+    "RUMSwiftUINavigationOccurrenceSourceTests/testWhenAnotherRouteIsRevealed_pendingHandoffNoLongerSuppressesDisappear()",
+    "RUMSwiftUINavigationOccurrenceSourceTests/testWhenRouteIsStillActive_revealDoesNotCreateSyntheticOccurrence()",
+    "RUMSwiftUINavigationOccurrenceSourceTests/testWhenRouteHasNeverStarted_revealDoesNotMaterializeIt()",
+    "RUMSwiftUINavigationOccurrenceSourceTests/testWhenRetainedRouteDisconnected_revealWaitsForExplicitRemount()",
+    "RUMSwiftUINavigationOccurrenceSourceTests/testWhenRetainedRouteReaderIsDetached_revealUsesLastProvenScene()",
+    "RUMSwiftUINavigationOccurrenceSourceTests/testWhenOutgoingCurrentSnapshotDetaches_retainedPopUsesItsLastProvenScene()",
+    "RUMSwiftUINavigationOccurrenceSourceTests/testWhenContainerDetachesDuringRetainedAdoption_pendingOccurrenceStops()",
+    "RUMSwiftUINavigationOccurrenceSourceTests/testWhenRetainedRouteReaderIsAttachedWithoutScene_revealStaysUnresolved()",
+    "RUMSwiftUINavigationOccurrenceSourceTests/testWhenRetainedRouteMovesToAnotherScene_revealUsesNewProvenScene()",
+    "RUMSwiftUINavigationOccurrenceSourceTests/testWhenDisconnectedRouteRemountsInAnotherScene_laterRevealUsesNewScene()",
+    "RUMSwiftUINavigationOccurrenceSourceTests/testWhenDormantRouteReconnects_readerRearmsSynchronousReveal()",
+    "RUMSwiftUINavigationOccurrenceSourceTests/testWhenRegistrationRebindsToAnotherSource_staleSourceCannotRevealRoute()",
+    "RUMSwiftUINavigationOccurrenceSourceTests/testWhenTwoWindowsUseTheSameRouteKey_sourceRevealsOnlyItsOwnRegistration()",
+    "RUMSwiftUINavigationOccurrenceSourceTests/testWhenStateAlreadyConsumedGeneration_duplicateRevealIsRejected()",
+    "RUMSwiftUINavigationOccurrenceSourceTests/testWhenInteractiveRevealIsCancelled_arbiterCreatesNoOccurrence()",
+    "RUMSwiftUINavigationOccurrenceSourceTests/testWhenInteractiveRevealCompletes_arbiterStartsReturnedOccurrence()",
+    "RUMSwiftUISemanticNavigationEngineTests/testSceneAttachmentIsIndependentFromVisualContainer()",
+    "RUMSwiftUISemanticNavigationEngineTests/testNativeAdapterUsesInjectedContainerIndependentEngine()",
+    "RUMSwiftUISemanticNavigationEngineTests/testNavigationHostAcceptsArbitraryCustomerContent()",
+    "RUMSwiftUISemanticNavigationEngineTests/testObservationHostKeepsStandardSwiftUINavigation()",
+    "RUMSwiftUISemanticNavigationEngineTests/testTransitionSourcePublishesOnlyCommittedDestinationsAsFreshOccurrences()",
+    "RUMSwiftUISemanticNavigationEngineTests/testTransitionSourceCanWaitForSceneDependentInitialMetadata()",
+    "RUMSwiftUISemanticNavigationEngineTests/testNavigationInputsProduceEquivalentAcceptedDestinationTimeline()",
+    "RUMSwiftUISemanticNavigationEngineTests/testObservationAdapterRearmsSynchronouslyAfterEachDidSet()",
+    "RUMSwiftUISemanticNavigationEngineTests/testObservationAdapterRearmsBeforeNestedObserverMutation()",
+    "RUMSwiftUISemanticNavigationEngineTests/testObservationAdapterTreatsIndependentPropertyMutationsAsSeparateStates()",
+    "RUMSwiftUISemanticNavigationEngineTests/testObservationAdapterStopsRearmingAfterDeallocation()",
+    "RUMSwiftUISemanticNavigationEngineTests/testObservationNavigationHostTracksOnceAcrossSwiftUIReconstruction()",
+    "RUMSwiftUISemanticNavigationEngineTests/testObservationAdapterRemainsCrashSafeForBackgroundMutation()",
+    "RUMSwiftUISemanticNavigationEngineTests/testNavigationHostResolvesOptionalCapability()",
+    "RUMSwiftUISemanticNavigationEngineTests/testExplicitTransitionSourceOverridesOptionalCapability()",
+    "RUMSwiftUISemanticNavigationEngineTests/testConfiguredObservedSourceDoesNotFallThroughToCapabilityWhilePending()",
+    "RUMSwiftUISemanticNavigationEngineTests/testHostStatePinsFirstSourceAcrossContainerReconstruction()",
+    "RUMSwiftUISemanticNavigationEngineTests/testObservedNavigationHostSubscribesOnceAcrossSwiftUIReconstruction()",
+    "RUMSwiftUISemanticNavigationStateTests/testCommittedPop_revealsHomeAsFreshOccurrenceBeforeRetainedContentRemounts()",
+    "RUMSwiftUISemanticNavigationStateTests/testInitialRestoredPath_revealsNeverStartedHiddenHomeBeforeRemount()",
+    "RUMSwiftUISemanticNavigationStateTests/testPathThatPushesAndRevertsBeforeRootDisappears_createsNoIntermediateOccurrence()",
+    "RUMSwiftUISemanticNavigationStateTests/testRepeatedEqualRoute_retainsEachMaterializedPathPositionAcrossPushAndPop()",
+    "RUMSwiftUISemanticNavigationStateTests/testRepeatedEqualRoute_restoredTogether_targetsOnlyMaterializedTopPosition()",
+    "RUMSwiftUISemanticNavigationStateTests/testRepeatedEqualRoute_restoredTogether_replacesTopWhenItsPositionIsRemoved()",
+    "RUMSwiftUISemanticNavigationStateTests/testOccurrenceClaim_whenBoundaryRouteChanges_adoptsCurrentRoutePosition()",
+    "RUMSwiftUISemanticNavigationStateTests/testForward_whenCustomerBindingRejectsProposedPath_reconcilesAcceptedPath()",
+    "RUMSwiftUISemanticNavigationStateTests/testForward_whenCustomerBindingCanonicalizesProposedPath_reconcilesCanonicalPath()",
+    "RUMSwiftUISemanticNavigationStateTests/testForward_whenPendingBootstrapIsCanonicalized_onlyAcceptedDestinationCanAdopt()",
+    "RUMSwiftUIViewAuthorityRegistryTests/testActiveExplicitViewSuppressesOnlyContainingAutomaticController()",
+    "RUMSwiftUIViewAuthorityRegistryTests/testDetachedOrNeverAppearedExplicitViewDoesNotSuppressAutomaticController()",
+    "RUMSwiftUIViewAuthorityRegistryTests/testSemanticPresentationAuthoritySuppressesOnlyItsMountedSubtreeUntilDisappear()",
+    "RUMSwiftUIViewAuthorityRegistryTests/testSemanticHostFinalDetachReleasesOnlyItsAutomaticSuppressionSubtree()",
+    "RUMViewsHandlerTests/testGivenUIKitPredicate_whenViewDidAppear_itStartsRUMView()",
+    "RUMViewsHandlerTests/testGivenUIKitPredicate_whenViewDidAppear_itStopsPreviousRUMView()",
+    "RUMViewsHandlerTests/testGivenViewsInDifferentScenes_whenViewDidAppear_itKeepsBothRUMViewsActive()",
+    "RUMViewsHandlerTests/testGivenConcurrentScenes_whenNavigatingAndReturning_itOnlyChangesOwningScene()",
+    "RUMViewsHandlerTests/testGivenMultiSceneSplitView_whenOldControllerDisappearsBeforePush_itHandoffsWithinColumn()",
+    "RUMViewsHandlerTests/testGivenMultiSceneSplitView_whenPoppingToSameController_itCreatesFreshReturnedOccurrence()",
+    "RUMViewsHandlerTests/testGivenMultiSceneSplitView_whenReplacingColumnRoot_itDoesNotRestartPrimary()",
+    "RUMViewsHandlerTests/testGivenMultiSceneRegularSplitView_whenPrimaryIsStructural_itTracksOnlyDestinations()",
+    "RUMViewsHandlerTests/testGivenOrdinaryApplication_whenPrimaryIsMarkedStructural_itKeepsLegacyTracking()",
+    "RUMViewsHandlerTests/testGivenMultiSceneSplitView_whenNewControllerAppearsBeforeOldDisappears_itKeepsDirectPath()",
+    "RUMViewsHandlerTests/testGivenMultiSceneSplitView_whenNoSuccessorAppears_itRestartsPrimaryOnReconciliation()",
+    "RUMViewsHandlerTests/testGivenMultiSceneSplitView_whenPendingControllerReappears_itTreatsTransitionAsCancelled()",
+    "RUMViewsHandlerTests/testGivenConcurrentMultiSceneSplitViews_whenBothNavigate_itKeepsPendingHandoffsIsolated()",
+    "RUMViewsHandlerTests/testGivenPendingMultiSceneSplitView_whenUnrelatedUIKitViewAppears_itDoesNotRevealSibling()",
+    "RUMViewsHandlerTests/testGivenPendingMultiSceneSplitView_whenSceneEntersBackground_itDoesNotRevealSibling()",
+    "RUMViewsHandlerTests/testGivenPendingMultiSceneSplitView_whenApplicationEntersBackground_itDoesNotRevealSibling()",
+    "RUMViewsHandlerTests/testGivenPendingMultiSceneSplitView_whenSceneDisconnects_itDoesNotRestartSiblingColumn()",
+    "RUMViewsHandlerTests/testGivenOrdinaryApplication_whenSplitControllerDisappears_itKeepsLegacyImmediateRestart()",
+    "RUMViewsHandlerTests/testGivenConcurrentScenes_whenSceneLifecycleChanges_itOnlyChangesOwningScene()",
+    "RUMViewsHandlerTests/testGivenSceneEnteredBackgroundBeforeItsFirstViewAppears_itWaitsForSceneForegroundToStartView()",
+    "RUMViewsHandlerTests/testGivenApplicationEnteredBackgroundBeforeLegacyViewAppears_itWaitsForForegroundToStartView()",
+    "RUMViewsHandlerTests/testGivenReusedViewControllerMovesToAnotherScene_whenItAppears_itMovesRUMViewOwnership()",
+    "RUMViewsHandlerTests/testGivenConcurrentScenes_whenSceneDisconnects_itStopsOnlyThatSceneOnce()",
+    "RUMViewsHandlerTests/testGivenUIKitPredicate_whenViewDidAppear_itDoesNotStartTheSameRUMViewTwice()",
+    "RUMViewsHandlerTests/testGivenNoUIKitPredicate_whenViewDidAppear_itDoesNotStartAnyRUMView()",
+    "RUMViewsHandlerTests/testGivenSwiftUIPredicateAndNameExtractor_whenViewDidAppear_itStartsRUMView()",
+    "RUMViewsHandlerTests/testGivenExplicitSwiftUIAuthority_whenAutomaticViewDidAppear_itDoesNotStartView()",
+    "RUMViewsHandlerTests/testGivenExplicitSwiftUIAuthority_whenUIKitPredicateAcceptsView_itStillStartsUIKitView()",
+    "RUMViewsHandlerTests/testGivenSwiftUIPredicateAndNoNameExtractor_whenViewDidAppear_itDoesNotStartView()",
+    "RUMViewsHandlerTests/testGivenNameExtractorButNoSwiftUIPredicate_whenViewDidAppear_itDoesNotStartView()",
+    "RUMViewsHandlerTests/testGivenSwiftUIPredicate_whenViewDidAppear_itStopsPreviousRUMView()",
+    "RUMViewsHandlerTests/testGivenAutomaticHome_whenTargetedManualViewStops_itRestartsHomeAsFreshOccurrence()",
+    "RUMViewsHandlerTests/testGivenTargetedManualView_whenAutomaticDestinationAppears_itStagesDestinationUntilManualStop()",
+    "RUMViewsHandlerTests/testGivenTargetedManualView_whenGenericAutomaticFallbackAppears_itRevealsRetainedDestination()",
+    "RUMViewsHandlerTests/testGivenNestedTargetedManualViews_whenAutomaticDestinationAppears_itKeepsEntireManualSuffixAuthoritative()",
+    "RUMViewsHandlerTests/testGivenSeveralUnderlyingDestinationsDuringManualAuthority_whenItStops_itRevealsOnlyLatest()",
+    "RUMViewsHandlerTests/testGivenNestedTargetedManualViews_whenPreviewStops_itStartsFreshComposeOccurrence()",
+    "RUMViewsHandlerTests/testGivenActiveTargetedManualView_whenSameSceneAndKeyStartsAgain_itRemainsCrashSafeAndDoesNotRestart()",
+    "RUMViewsHandlerTests/testGivenSameTargetedManualKeyInTwoScenes_whenOneStops_itDoesNotAffectPeer()",
+    "RUMViewsHandlerTests/testGivenTargetedManualView_whenWrongSceneStops_itRemainsActive()",
+    "RUMViewsHandlerTests/testGivenTargetedManualView_whenSceneDisconnects_itDoesNotRevealUnderlyingView()",
+    "RUMViewsHandlerTests/testGivenBothPredicates_whenViewDidAppear_itUsesUIKitPredicate()",
+    "RUMViewsHandlerTests/testGivenNoUIKitPredicate_whenViewDidAppear_itFallsBackToSwiftUIPredicate()",
+    "RUMViewsHandlerTests/testGivenAcceptingPredicate_whenViewDidDisappear_itStartsPreviousRUMView()",
+    "RUMViewsHandlerTests/testGivenNoActiveView_whenViewDidDisappear_itDoesNotStartAnyRUMView()",
+    "RUMViewsHandlerTests/testGivenNoPredicates_whenViewDidDisappear_itDoesNotStartAnyRUMView()",
+    "RUMViewsHandlerTests/testGivenViewControllerStarted_whenAppStateChanges_itStopsAndRestartsRUMView()",
+    "RUMViewsHandlerTests/testGivenViewControllerDidNotStart_whenAppStateChanges_itDoesAlterViews()",
+    "RUMViewsHandlerTests/testGivenAppearedView_whenTransitioningBackAndForthFromThisViewToAnother_thenPredicateIsCalledOnlyTwice()",
+    "RUMViewsHandlerTests/testGivenAppearedView_whenTransitioningToUntrackedModal_viewDoesStop()",
+    "RUMViewsHandlerTests/testGivenUntrackedModal_whenTransitioningToAppearedView_viewDoesStart()",
+    "RUMViewsHandlerTests/testWhenOnAppear_itStartsRUMView()",
+    "RUMViewsHandlerTests/testWhenOnAppearInScene_itTargetsThatScene()",
+    "RUMViewsHandlerTests/testGivenSameSwiftUIIdentityInTwoScenes_whenOneDisappears_itStopsOnlyThatScene()",
+    "RUMViewsHandlerTests/testWhenOnAppear_itStopsPreviousRUMView()",
+    "RUMViewsHandlerTests/testWhenOnAppear_itDoesNotStartTheSameRUMViewTwice()",
+    "RUMViewsHandlerTests/testWhenActiveSwiftUIOccurrenceIsReplaced_itDoesNotRestartUnderlyingView()",
+    "RUMViewsHandlerTests/testWhenKeyedStatePublishesReplacement_itUsesCommittedOccurrenceDescriptor()",
+    "RUMViewsHandlerTests/testDisconnectedSceneRegistriesRetireAfterRepeatedControllerLifetimes()",
+    "RUMViewsHandlerTests/testDisconnectWithoutTrackedViewRetiresStateAndRejectsLateBackground()",
+    "RUMViewsHandlerTests/testStaleUIKitAppearanceCannotRecreateDisconnectedSplitMetadata()",
+    "RUMViewsHandlerTests/testInitialConnectedPeerWithoutViewSurvivesAnotherSceneDisconnect()",
+    "RUMViewsHandlerTests/testBootstrapPeerRemainsKnownAfterFirstSceneLifecycleBoundary()",
+    "RUMViewsHandlerTests/testAllSceneViewSourcesRejectRetiredIdentityUntilReconnection()",
+    "RUMViewsHandlerTests/testBackgroundInitializationReadsInitialSceneInventoryOnceOnMain()",
+    "RUMViewsHandlerTests/testPendingInitialSceneInventoryDoesNotRetainHandler()",
+    "RUMViewsHandlerTests/testWhenSceneDisconnects_itRejectsStaleStateUntilFreshSceneConnection()",
+    "RUMViewsHandlerTests/testWhenCoveredSwiftUIOccurrenceIsReplaced_itDoesNotDisturbVisibleView()",
+    "RUMViewsHandlerTests/testWhenSameNamedSwiftUIOccurrenceIsReplaced_itUsesFreshIdentity()",
+    "RUMViewsHandlerTests/testWhenSwiftUIOccurrencesShareIdentityAcrossScenes_replacementTouchesOnlyTargetScene()",
+    "RUMViewsHandlerTests/testWhenOldSwiftUIOccurrenceIsMissing_replacementDoesNotMaterializeNewOccurrence()",
+    "RUMViewsHandlerTests/testWhenInactiveSwiftUIOccurrenceIsReplaced_itStartsReplacementOnForeground()",
+    "RUMViewsHandlerTests/testWhenReplacementTargetsAnotherScene_itDoesNotMigrateOrMaterializeOccurrence()",
+    "RUMViewsHandlerTests/testWhenOnDisappear_itDoesNotSendAnyCommand()",
+    "RUMViewsHandlerTests/testGivenAppearedView_whenOnDisappear_itSopsTheRUMView()",
+    "RUMViewsHandlerTests/testGiven2AppearedView_whenTheFirstDisappears_itDoesNotStopItTwice()",
+    "RUMViewsHandlerTests/testGiven2AppearedView_whenTheLastDisappears_itRestartsThePreviousRUMView()",
+    "RUMViewsHandlerTests/testGivenSwiftUIViewStarted_whenAppStateChanges_itStopsAndRestartsRUMView()",
+    "RUMViewsHandlerTests/testGivenSwiftUIViewDidNotStart_whenAppStateChanges_itDoesNothing()",
+    "RUMViewsHandlerTests/testSemanticPresentationThatNeverMounts_doesNotPublishOrReportDismissal()",
+    "RUMViewsHandlerTests/testMountedSemanticPresentation_stopsBeforeRevealingUnderlyingDestination()",
+    "RUMViewsHandlerTests/testMountedSemanticPresentation_revealsOnlyLatestUnderlyingDestination()",
+    "RUMViewsHandlerTests/testMountedSemanticPresentationReplacement_doesNotRevealUnderlyingDestination()",
+    "RUMViewsHandlerTests/testUnmountedSemanticPresentationReplacement_keepsLastMountedPresentation()",
+    "RUMViewsHandlerTests/testPendingSemanticPresentationReplacement_whenContainerCancels_stopsLastMountedPresentation()",
+    "RUMViewsHandlerTests/testMountedSemanticPresentationThatMovesScenes_followsItsActualScene()",
+    "RUMViewsHandlerTests/testSemanticHostSource_commitsFreshOccurrencesAndIgnoresCancellation()",
+    "RUMViewsHandlerTests/testSemanticHostSource_updatesBelowManualExceptionUntilItStops()",
+    "RUMViewsHandlerTests/testSemanticHostSources_inDifferentScenesRemainIsolated()",
+    "RUMViewsHandlerTests/testSemanticHostTransientDetachAndReattach_preservesOccurrenceAndSource()",
+    "RUMViewsHandlerTests/testSemanticHostFinalDetach_isolatedBySceneAndUnsubscribesSource()",
+    "RUMViewsHandlerTests/testSemanticHostSceneDisconnect_releasesOnlyExactSceneWithoutResurrection()",
+    "RUMViewsHandlerTests/testSemanticReconnectRejectedReaderDoesNotConsumeGeneration()",
+    "RUMViewsHandlerTests/testSemanticReconnectPublishesLatestInputOnceAfterRejection()",
+    "RUMViewsHandlerTests/testSemanticReconnectWithoutStaleCallbackUsesFreshIdentity()",
+    "RUMViewsHandlerTests/testSemanticReconnectIgnoresInheritedTraitUntilLiveReaderMount()",
+    "RUMViewsHandlerTests/testSemanticFinalDetachRequiresReaderAndAcceptsLateInputAndHandler()",
+    "RUMViewsHandlerTests/testSemanticPublicationReportsRejectionAndInactiveAcceptance()",
+    "RUMViewsHandlerTests/testRejectedSemanticReplacementPreservesAcceptedScene()",
+    "RUMViewsHandlerTests/testRetainedSemanticReaderRemountsAfterFinalDetachWithoutBody()",
+    "RUMViewsHandlerTests/testRetainedSemanticReaderRemountsAfterSceneReconnectWithoutBody()",
+    "RUMViewsHandlerTests/testRetainedSemanticConfigurationDoesNotKeepSourceOrHandlerAlive()",
+    "RUMViewsHandlerTests/testRetainedSemanticReaderDoesNotRestoreWithdrawnSource()",
+    "RUMViewsHandlerTests/testObservedNavigationMetadata_usesSafeAutomaticCaseNamesAndSparseOverrides()",
+    "RUMViewsHandlerTests/testObservedNavigationTransitions_emitsInitialAndFreshReturnedOccurrences()",
+    "RUMViewsHandlerTests/testObservedNavigationTransitions_emitsFreshEqualRouteOccurrences()",
+    "RUMViewsHandlerTests/testObservedNavigationTransitions_waitsForInitialDestinationBeforeAuthority()",
+    "RUMViewsHandlerTests/testObservedNavigationTransitions_preservesBackgroundEmissionOrder()",
+    "RUMViewsHandlerTests/testObservedNavigationTransitions_ignoresHiddenStateWhilePresentationRemainsCurrent()",
+    "RUMViewsHandlerTests/testObservedNavigationHosts_areIsolatedBySceneAndDisconnectExactSource()",
+    "RUMViewTrackingStateTests/testWhenViewAppearsBeforeWindowAttaches_itStartsAfterAttachment()",
+    "RUMViewTrackingStateTests/testWhenWindowAttachesBeforeViewAppears_itStartsOnAppearance()",
+    "RUMViewTrackingStateTests/testWhenTraitBackedViewMountsBeforeAppearance_itStartsOnce()",
+    "RUMViewTrackingStateTests/testWhenMountedViewDisappears_itStopsTheMountedScene()",
+    "RUMViewTrackingStateTests/testWhenRetainedReaderUpdatesAfterDisappearance_itDoesNotRestartView()",
+    "RUMViewTrackingStateTests/testWhenInactiveViewReconnects_readerMountWaitsForSemanticAppearance()",
+    "RUMViewTrackingStateTests/testWhenDisconnectedStateReceivesStaleInitialTrait_itWaitsForResolvedReaderMount()",
+    "RUMViewTrackingStateTests/testWhenMountedViewMovesToAnotherScene_itMigratesOnce()",
+    "RUMViewTrackingStateTests/testWhenMountedViewDetachesThenDisappears_itStopsTheMountedScene()",
+    "RUMViewTrackingStateTests/testWhenActiveSceneDisconnects_itInvalidatesSilentlyUntilExplicitRemount()",
+    "RUMViewTrackingStateTests/testWhenKeyedSceneDisconnects_itRequiresNewGenerationToRemount()",
+    "RUMViewTrackingStateTests/testWhenRetainedSwiftUIViewReappearsAfterNavigation_itStartsANewRUMViewOccurrence()",
+    "RUMViewTrackingStateTests/testWhenKeyedViewReappears_itUsesAFreshCommandIdentity()",
+    "RUMViewTrackingStateTests/testWhenAppearedKeyChangesInSameScene_itReplacesTheOccurrence()",
+    "RUMViewTrackingStateTests/testWhenAppearedKeyIsUnchanged_itDoesNotCreateAnotherOccurrence()",
+    "RUMViewTrackingStateTests/testWhenSameKeyDescriptorChanges_itAppliesOnlyToTheNextOccurrence()",
+    "RUMViewTrackingStateTests/testWhenKeyReturnsToEarlierValue_itCreatesAThirdOccurrence()",
+    "RUMViewTrackingStateTests/testWhenSourcePromotesMountedDormantNavigationBoundary_itStartsWithoutAnotherAppear()",
+    "RUMViewTrackingStateTests/testWhenDetachedDormantNavigationBoundaryBecomesCurrent_itWaitsForAttachment()",
+    "RUMViewTrackingStateTests/testWhenMountedDormantNavigationBoundaryRemainsNonCurrent_itDoesNotStart()",
+    "RUMViewTrackingStateTests/testDormantNavigationPromotionRequiresExactSceneAndDormantSnapshot()",
+    "RUMViewTrackingStateTests/testSourceAuthorizedReaderCanMigrateDormantNavigationBoundaryToAnotherScene()",
+    "RUMViewTrackingStateTests/testSourceAuthorizedReaderCanPromoteDormantBoundaryAfterTransientDetach()",
+    "RUMViewTrackingStateTests/testPreviouslyStartedBoundaryCanUseDormantPromotionForNewerGeneration()",
+    "RUMViewTrackingStateTests/testPreviouslyStartedBoundaryCannotPromoteAnAlreadyStartedGeneration()",
+    "RUMViewTrackingStateTests/testDisconnectFencedBoundaryCanUseSourceAuthorizedDormantPromotion()",
+    "RUMViewTrackingStateTests/testWhenKeyChangesWhileDetached_itStopsThenWaitsForAttachment()",
+    "RUMViewTrackingStateTests/testWhenKeyAndSceneChangeTogether_itStopsAndStartsInsteadOfReplacing()",
+    "RUMViewTrackingStateTests/testWhenSameKeyMovesScenes_oldBindingCannotStopMigratedOccurrence()",
+    "RUMViewTrackingStateTests/testWhenKeyedStateReceivesUnversionedLifecycle_itFailsClosed()",
+    "RUMViewTrackingStateTests/testWhenOldBindingDisappearsAfterReplacement_itCannotStopNewOccurrence()",
+    "RUMViewTrackingStateTests/testWhenViewDisappearsBeforeWindowAttaches_itNeverStarts()",
+    "RUMViewTrackingStateTests/testWhenAttachedWindowHasNoScene_itPreservesLegacyUnscopedLifecycle()",
+    "RUMViewTrackingStateTests/testWhenAppearedViewTransientlyDetachesAndReattachesSameScene_itDoesNotRestart()",
+    "RUMViewTrackingStateTests/testWhenAppearedViewDetachesThenDisappears_itStopsOriginalScene()",
+    "RUMViewTrackingStateTests/testWhenAppearedViewDetachesThenAttachesToAnotherScene_itMigratesOnce()",
+    "RUMViewTrackingStateTests/testWhenAppearedViewMovesBetweenScenes_itStopsThenStartsWithStableIdentity()",
+    "RUMViewTrackingStateTests/testObserverReportsAttachmentBeforeDetachment()",
+    "RUMViewTrackingStateTests/testObserverTreatsSceneLessWindowAsUnresolvedWhenApplicationSupportsMultipleScenes()",
+    "RUMViewTrackingStateTests/testObserverTreatsUnattachedSceneAsDisconnected()",
+    "RUMViewTrackingStateTests/testObserverDoesNotRepeatMountForUnchangedAttachment()",
+    "RUMViewTrackingStateTests/testObserverReportsMountAfterSilentSceneDisconnection()",
+    "RUMViewTrackingStateTests/testReaderUpdateRebindsAndReregistersRetainedObserver()",
+    "RUMViewTrackingStateTests/testReaderUpdateReconcilesRetainedObserverWithLatestBinding()",
+    "SwiftUIViewNameExtractorTests/testViewNameExtraction()",
+    "SwiftUIViewNameExtractorTests/testFallbackViewNameExtraction()",
+    "SwiftUIViewNameExtractorTests/testSwiftUIViewPathComponents()",
+    "SwiftUIViewNameExtractorTests/testDetectControllerType()",
+    "SwiftUIViewNameExtractorTests/testShouldSkipViewController()",
+    "SwiftUIViewNameExtractorTests/testExtractNameFilteringForUIKitControllers()"
+  ],
+  "test_list_sha256": "16fe6637dccf0cb84ea0613904281f102213458d5beb09f04fa37c42be34b9b3",
+  "validation": {
+    "source_strict_lint": "PASS; repository sources configuration; 0 violations",
+    "test_strict_lint": "PASS; repository tests configuration; 0 violations",
+    "oracle_negative_controls": {
+      "passed": 7,
+      "file": "tools/multi-scene/scene-retention/test_run.py"
+    },
+    "non_acceptance_attempts": [
+      "Initial sandboxed lint could not create Xcode caches.",
+      "New tests had nine multiline argument lint violations; corrected before acceptance.",
+      "First affected suite:325/326; synchronous global dispatch may execute on main. Corrected fixture uses asynchronous background initialization and a bounded semaphore to hold the queued-main seed; no SDK workaround."
+    ]
+  },
+  "prerequisites": [
+    "Results/EXP-168-swiftui-lifetime.json",
+    "Results/EXP-171-retained-reader.json"
+  ],
+  "boundary": "P03 logical scene-registry retention and ordinary compatibility; accepted mounted host lifetime remains EXP-168/171. No physical, backend, minimum-runtime, or new dispatch-performance claim."
+}

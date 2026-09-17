@@ -10,12 +10,13 @@ Last updated: 2026-09-17
 
 ## Current verdict
 
-Current release accounting is **26/66 gates closed**. EXP-160 establishes early
+Current release accounting is **27/66 gates closed**. EXP-160 establishes early
 ordinary automatic/manual/custom/NOP and26.5 compatibility, dispatch and exact
 reentrancy baselines. EXP-166 repairs the enabled-handoff allocation failure:
 complete Release ABBA runs measure 1 allocation/64 bytes per event on27/26.5,
-within the original budget; ordinary dispatch remains0/0. Retained scene
-registries still fail teardown (220 entries after200 cycles plus20 warm-up). Legacy27 remains
+within the original budget; ordinary dispatch remains0/0. EXP-172 repairs retained scene
+registries: zero entries after20+100+100 lifetimes on27/26.5, within the frozen
+64KiB/16KiB heap limits. Legacy27 remains
 inconclusive; minimum15 runtime is unavailable. EXP-161 closes the repeatable
 acceptance workflow with15/15 local assertions and exact7-action/3-view backend
 ownership. These measurements precede further API expansion.
@@ -48,8 +49,8 @@ restoration; immediate and delayed boundaries preserve the same eligible peers.
 EXP-168 closes D03 and bounded R02 review at signed `7b77f60eb`: 303 affected
 tests and 37/37 mounted checks on each of 27/26.5. The control retains 25 keyed
 registrations/states; the candidate releases all weak objects and restores three
-method implementations after SDK stop. P03 still requires disconnected-registry
-retirement. EXP-169 closes D07 at local unsigned `a9aaf25a7`: four failing
+method implementations after SDK stop. P03 disconnected-registry
+retirement is accepted separately in EXP-172. EXP-169 closes D07 at local unsigned `a9aaf25a7`: four failing
 authority controls, 119 tests and mounted hosts29/29 versus control19/29.
 Automatic eligibility persists before input, and the first semantic destination
 owns immediate work. EXP-170 closes D08 at signed `66d1ccb02`: three failing controls,
@@ -59,8 +60,12 @@ belong to the fresh Home; the control sends them to Peer. A retained host remoun
 fresh after delayed detach with body reconstruction. EXP-171 closes R04 at signed
 `4ba7179c6`: two failing no-body controls,318 affected tests and mounted57/57 versus
 43/57. Its first retained-reader callback proves zero observers before SDK delivery,
-then fresh Latest Resource/Log ownership. P03 registry retirement is next in defined EXP-172; D10 is
-the remaining production-review repair. Physical scene and final release gates remain separate.
+then fresh Latest Resource/Log ownership. EXP-172 closes P03 at signed `4653e0a72`: three failing controls,326 affected
+tests, complete Release ABBA on27/26.5 with zero retired entries/weak survivors,
+eight ordinary automatic/manual passes and watchOS Release compile. Candidate
+heap increases are512–832 bytes for the first100 and512–1,152 for the second100.
+D10 is the remaining production-review repair. Physical scene and final release
+gates remain separate.
 
 The released SDK baseline is not semantically safe for applications with
 concurrent scenes. Process-representative view state and process-global SwiftUI
@@ -118,7 +123,7 @@ No product decision blocks the next internal experiment.
 | Scene lifecycle and restoration | Exact registry, disconnect fencing, retained-reader rearming, migration, explicit session stop, and origin-scene teardown preserve proven ownership in deterministic tests. EXP-146 additionally releases only the exact semantic host and rejects stale post-disconnect starts until fresh lifecycle. | `EXP-008`, `EXP-041`/`042`, `EXP-063`-`066`, `EXP-113`, `EXP-143`; EXP-146 focused disconnect/lifetime tests and synchronous real-reader bounce | Posted notifications and synchronous reader callbacks do not prove genuine OS disconnect or representable remount timing. Final two-window host removal hit the same simulator-system crash twice before removal. Real focus handoff, peer lifecycle, reconnect, isolated background/foreground, and concurrent A/B restoration remain hardware gates. |
 | WebView, vitals, fatal/exported context, profiling | WebView native container snapshots and several process/context surfaces have source or focused-test seams. Vitals remain view-based. Profiling operation identity is exact. | Focused module checkpoints and source inspection in the archive | Named runtime/backend scenarios are missing for WebView, vitals, mirrored logs, fatal/exported context, and profiling support statements. Profiling is process-level, not a per-scene view model. |
 | Session Replay | Exercised UIKit/SwiftUI two-window and teardown runs uploaded replay data without an SDK-caused crash. | Repeated runtime sessions including `EXP-004` and `EXP-019` | Scene-correct replay representation is explicitly out of scope. Only crash safety is a release requirement here. |
-| Single-scene compatibility | Ordinary automatic/manual and custom/NOP early baselines pass on27/26.5 in EXP-160; broader compatibility is not yet established. D01/D02/D09/D11/D12 identify required repairs. | DatadogRUM 1,260/1,260 at EXP-159; EXP-151 broadened SDK selection 193/193; native probe166/166 at EXP-161; RUM view-handler regressions 84/84 at their recorded checkpoint; Operation focused/broadened selections 7/7 and 33/33; Objective-C action/target smoke 8/8; custom/NOP action fallback regressions; live opaque, capability, precedence, source-lifetime, reader-bounce, publisher-observed, Observation-observed, native-callback, custom callback-adapter, serial two-native-scene, explicit Operation, inferred physical Operation, and explicit action target runs; explicit Xcode 27 iOS Release and visionOS package builds PASS | API-surface verification correctly rejects only the unapproved experimental navigation, manual-view, shared-target, Operation, and action symbols; baselines remain unchanged. EXP-160 closes bounded ordinary/custom/NOP/older26.5/dispatch/reentrancy gates; P02 allocation and P03 retained-state failures block expansion. Legacy27, minimum15 runtime, reported regressions and final matrix remain. |
+| Single-scene compatibility | Ordinary automatic/manual and custom/NOP early baselines pass on27/26.5 in EXP-160; broader compatibility is not yet established. D01/D02/D09/D11/D12 identify required repairs. | DatadogRUM 1,260/1,260 at EXP-159; EXP-151 broadened SDK selection 193/193; native probe166/166 at EXP-161; RUM view-handler regressions 84/84 at their recorded checkpoint; Operation focused/broadened selections 7/7 and 33/33; Objective-C action/target smoke 8/8; custom/NOP action fallback regressions; live opaque, capability, precedence, source-lifetime, reader-bounce, publisher-observed, Observation-observed, native-callback, custom callback-adapter, serial two-native-scene, explicit Operation, inferred physical Operation, and explicit action target runs; explicit Xcode 27 iOS Release and visionOS package builds PASS | API-surface verification correctly rejects only the unapproved experimental navigation, manual-view, shared-target, Operation, and action symbols; baselines remain unchanged. EXP-160 closes bounded ordinary/custom/NOP/older26.5/dispatch/reentrancy gates; P02 allocation and P03 retained-state failures are repaired in EXP-166/172. Legacy27, minimum15 runtime, reported regressions and final matrix remain. |
 
 ## Confirmed capabilities
 
@@ -476,8 +481,8 @@ process fallback; each gate has an owner, dependency, decisive test and environm
 
 1. D10 is the remaining assessed production-review repair. Preserve the accepted
    D01–D09/D11/D12 results and EXP-159 ownership evidence.
-2. Close measured P03 retention under the frozen budget; P02 passes EXP-166.
-   R05/R06 remain blocked by lifetime, accepted-state and coverage findings;
+2. Preserve P02/P03 frozen-budget evidence from EXP-166/172.
+   R05/R06 still need accepted presentation occurrence and multi-observer coverage;
    extraction is still deferred until freeze.
 3. Finish named T03–T14 contracts after their repair dependencies. Complete
    hardware H01–H16 when the required topology/gesture is available; simulator
@@ -485,9 +490,9 @@ process fallback; each gate has an owner, dependency, decisive test and environm
 4. Close C03/C06 environment gaps, stable API review, final supported-platform
    matrix (including macOS/watchOS), Replay crash safety and Duo27.1 acceptance.
 
-No product decision blocks internal repair work. Execute defined EXP-172 for P03 disconnected-registry
-retirement, preserving stale-callback rejection and the frozen retention budget.
-D10 and the remaining R05/R06 discriminators follow.
+No product decision blocks internal repair work. Define D10/R06 accepted
+presentation state and same-ID occurrence coverage next, followed by R05
+multi-observer fan-out. Preserve the accepted P03 lifetime and stale-callback evidence.
 Do not rerun accepted experiments merely to resume.
 
 ## Evidence routing

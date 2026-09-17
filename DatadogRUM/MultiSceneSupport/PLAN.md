@@ -50,10 +50,10 @@ Objective-C Release exposure still require normal API review.
    boundaries. Preserve their controls and frozen acceptance identities.
 2. D05/D06 restoration, D03/R02 keyed lifetime, D07 pending authority and D08
    reconnect acceptance are closed within their recorded boundaries.
-   R04 retained-reader remount now passes EXP-171. Next execute defined EXP-172 for P03
-   disconnected-registry retirement and its unchanged budget.
-3. Repair D10 accepted presentation state. Close the missing R05/R06
-   discriminators in those slices; P03 needs its full retained-state budget.
+   R04 retained-reader remount and P03 disconnected-registry retirement pass
+   EXP-171/172 within their recorded boundaries.
+3. Define and execute D10 accepted presentation state with the R06 same-ID
+   occurrence discriminator. Then close R05 multi-observer reentrancy coverage.
 4. Close the early compatibility/performance gates in available environments;
    C06 remains blocked without a minimum-OS runtime. Resume T03–T14 only after
    relevant repair dependencies pass. A documented fallback remains a deliverable.
@@ -93,7 +93,7 @@ SwiftUI remains required as H16; the former conditional row is resolved.
 | --- | --- | --- | --- | --- | --- | --- |
 | P01 | Event-dispatch overhead | SDK implementer | C01 | Release ABBA comparison passes predeclared median/p95 thresholds in BASELINES.md | Same simulator/toolchain, Release build; focused internal lifecycle tests | CLOSED |
 | P02 | Allocation cost | SDK implementer | C01, D04 | Measured allocation count and bytes per fixed workload pass baseline deltas; net heap is not allocation churn | Same simulator/toolchain, Release build; focused internal lifecycle tests | CLOSED |
-| P03 | Retained scene state | SDK implementer | C01, D03, D08 | Repeated create/disconnect/release leaves no SDK-owned scene/controller/host and no growing registry | Same simulator/toolchain, Release build; focused internal lifecycle tests | REGRESSION BLOCKED |
+| P03 | Retained scene state | SDK implementer | C01, D03, D08 | Repeated create/disconnect/release leaves no SDK-owned scene/controller/host and no growing registry | Same simulator/toolchain, Release build; focused internal lifecycle tests | CLOSED |
 | P04 | Reentrancy | SDK implementer | C01 | Nested A→B→A dispatch restores exact outer context; one original call each, no deadlock or leaked task/thread context | Same simulator/toolchain, Release build; focused internal lifecycle tests | CLOSED |
 
 ## Incremental responsibility review

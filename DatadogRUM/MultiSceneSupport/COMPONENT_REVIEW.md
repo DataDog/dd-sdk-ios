@@ -45,7 +45,7 @@ Both runtime candidates pass 37/37 with zero weak survivors and three original
 method implementations restored. The 303-test selection covers exact fresh
 reveals, current descriptor, stale generations/epochs, peer-local suppression,
 released collaborators and interactive cancel/commit. This closes R02's bounded
-review; P03 still needs disconnected-registry retirement. R04's later D08 and
+review; P03 disconnected-registry retirement closes separately in EXP-172. R04's later D08 and
 no-body retained-host remount evidence is recorded in EXP-170/171. No extraction or final independent review is claimed.
 
 **D07, pending semantic authority — closed in EXP-169.** Source selection and
