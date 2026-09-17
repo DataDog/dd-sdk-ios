@@ -1,0 +1,1879 @@
+{
+  "experiment": "EXP-171",
+  "gates": [
+    "R04"
+  ],
+  "status": "PASS",
+  "definition_revision": "dbe42519377201d93eba4c7f2c41519b66601807",
+  "candidate_sdk_revision": "4ba7179c674a80a7e8e7151fadcb1fb5c8ad390c",
+  "candidate_signed": true,
+  "control": {
+    "counts": {
+      "expectedFailures": 0,
+      "failed": 2,
+      "notRun": 0,
+      "passed": 0,
+      "skipped": 0,
+      "total": 2
+    },
+    "fullSummaryPath": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/ActionArtifacts/default/RunSomeTests/4478B50C-EE1A-4101-AD18-BABCADCA39BC.txt",
+    "xcresultBundlePath": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/ActionArtifacts/default/RunSomeTests/Test-DatadogRUM-2026.09.17_14-32-24-+0100.xcresult",
+    "results": [
+      {
+        "displayName": "testRetainedSemanticReaderRemountsAfterFinalDetachWithoutBody()",
+        "errorMessages": [
+          "Datadog/DatadogRUMTests/Instrumentation/Views/RUMViewsHandlerTests.swift:3344 RUMViewsHandlerTests/testRetainedSemanticReaderRemountsAfterFinalDetachWithoutBody(): XCTAssertEqual failed: (\"1\") is not equal to (\"2\")",
+          "Datadog/DatadogRUMTests/Instrumentation/Views/RUMViewsHandlerTests.swift:3346 RUMViewsHandlerTests/testRetainedSemanticReaderRemountsAfterFinalDetachWithoutBody(): XCTAssertEqual failed: (\"Initial\") is not equal to (\"Latest\")",
+          "Datadog/DatadogRUMTests/Instrumentation/Views/RUMViewsHandlerTests.swift:3347 RUMViewsHandlerTests/testRetainedSemanticReaderRemountsAfterFinalDetachWithoutBody(): XCTAssertNotEqual failed: (\"key(\"rum-navigation-host-3BBB5C77-9E97-48B4-9603-43A34D8D8ECB-0-0\")\") is equal to (\"key(\"rum-navigation-host-3BBB5C77-9E97-48B4-9603-43A34D8D8ECB-0-0\")\")",
+          "Datadog/DatadogRUMTests/Instrumentation/Views/RUMViewsHandlerTests.swift:3348 RUMViewsHandlerTests/testRetainedSemanticReaderRemountsAfterFinalDetachWithoutBody(): XCTAssertTrue failed",
+          "Datadog/DatadogRUMTests/Instrumentation/Views/RUMViewsHandlerTests.swift:3349 RUMViewsHandlerTests/testRetainedSemanticReaderRemountsAfterFinalDetachWithoutBody(): XCTAssertTrue failed"
+        ],
+        "identifier": "RUMViewsHandlerTests/testRetainedSemanticReaderRemountsAfterFinalDetachWithoutBody()",
+        "state": "Failed",
+        "targetName": "DatadogRUMTests"
+      },
+      {
+        "displayName": "testRetainedSemanticReaderRemountsAfterSceneReconnectWithoutBody()",
+        "errorMessages": [
+          "Datadog/DatadogRUMTests/Instrumentation/Views/RUMViewsHandlerTests.swift:3344 RUMViewsHandlerTests/testRetainedSemanticReaderRemountsAfterSceneReconnectWithoutBody(): XCTAssertEqual failed: (\"1\") is not equal to (\"2\")",
+          "Datadog/DatadogRUMTests/Instrumentation/Views/RUMViewsHandlerTests.swift:3346 RUMViewsHandlerTests/testRetainedSemanticReaderRemountsAfterSceneReconnectWithoutBody(): XCTAssertEqual failed: (\"Initial\") is not equal to (\"Latest\")",
+          "Datadog/DatadogRUMTests/Instrumentation/Views/RUMViewsHandlerTests.swift:3347 RUMViewsHandlerTests/testRetainedSemanticReaderRemountsAfterSceneReconnectWithoutBody(): XCTAssertNotEqual failed: (\"key(\"rum-navigation-host-E97D556A-18E5-49AE-9598-CF55F7D9438E-0-0\")\") is equal to (\"key(\"rum-navigation-host-E97D556A-18E5-49AE-9598-CF55F7D9438E-0-0\")\")",
+          "Datadog/DatadogRUMTests/Instrumentation/Views/RUMViewsHandlerTests.swift:3348 RUMViewsHandlerTests/testRetainedSemanticReaderRemountsAfterSceneReconnectWithoutBody(): XCTAssertTrue failed",
+          "Datadog/DatadogRUMTests/Instrumentation/Views/RUMViewsHandlerTests.swift:3349 RUMViewsHandlerTests/testRetainedSemanticReaderRemountsAfterSceneReconnectWithoutBody(): XCTAssertTrue failed"
+        ],
+        "identifier": "RUMViewsHandlerTests/testRetainedSemanticReaderRemountsAfterSceneReconnectWithoutBody()",
+        "state": "Failed",
+        "targetName": "DatadogRUMTests"
+      }
+    ],
+    "summary_sha256": "a226f0bbc1ca58b51d7a02db3dcfab077213ea582440ce72f3d2e269a26df053"
+  },
+  "affected": {
+    "counts": {
+      "expectedFailures": 0,
+      "failed": 0,
+      "notRun": 0,
+      "passed": 318,
+      "skipped": 0,
+      "total": 318
+    },
+    "fullSummaryPath": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/ActionArtifacts/default/RunSomeTests/4BA3AF13-3B60-45AE-8980-6A936D8F38CD.txt",
+    "xcresultBundlePath": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/ActionArtifacts/default/RunSomeTests/Test-DatadogRUM-2026.09.17_14-35-57-+0100.xcresult",
+    "summary_sha256": "86f6286f2de086810c2db48fed7ec7695a656836ca929a22b2c6cefbf426a047"
+  },
+  "strict_lint": {
+    "sources": "0 violations in 1 file",
+    "tests": "0 violations in 1 file",
+    "configs": [
+      "tools/lint/sources.swiftlint.yml",
+      "tools/lint/tests.swiftlint.yml"
+    ]
+  },
+  "limitations": [
+    "The remount is a retained native UIHostingController/reader in one iOS27 simulator scene, with a logical peer. No genuine OS scene disconnection, physical concurrency, backend or minimum-runtime acceptance is claimed.",
+    "Resource/Log calls use their ordinary process fallback outside UI dispatch and are submitted inside the intercepted reader callback before any body rebind.",
+    "R04 is a bounded component review, not final independent release review or deferred file extraction. P03 registry retirement, R05 observer fan-out and D10/R06 presentation remain open."
+  ],
+  "affected_selection": [
+    {
+      "targetName": "DatadogRUMTests",
+      "testIdentifier": "RUMInstrumentationTests/testWhenOnlyUIKitViewsPredicateIsConfigured_itInstrumentsUIViewController()"
+    },
+    {
+      "targetName": "DatadogRUMTests",
+      "testIdentifier": "RUMInstrumentationTests/testWhenOnlyUIKitActionsPredicateIsConfigured_itInstrumentsUIApplication()"
+    },
+    {
+      "targetName": "DatadogRUMTests",
+      "testIdentifier": "RUMInstrumentationTests/testWhenOnlySwiftUIViewsPredicateIsConfigured_itInstrumentsUIViewController()"
+    },
+    {
+      "targetName": "DatadogRUMTests",
+      "testIdentifier": "RUMInstrumentationTests/testWhenApplicationSupportsMultipleScenes_itInstrumentsUIApplicationForCausalHandoff()"
+    },
+    {
+      "targetName": "DatadogRUMTests",
+      "testIdentifier": "RUMInstrumentationTests/testWhenApplicationDoesNotSupportMultipleScenes_itDoesNotPublishSceneIdentifierTrait()"
+    },
+    {
+      "targetName": "DatadogRUMTests",
+      "testIdentifier": "RUMInstrumentationTests/testSceneIdentifierTrait_itCarriesValueThroughTraitCollection()"
+    },
+    {
+      "targetName": "DatadogRUMTests",
+      "testIdentifier": "RUMInstrumentationTests/testWhenOnlySwiftUIActionsPredicateIsConfigured_itInstrumentsUIApplication()"
+    },
+    {
+      "targetName": "DatadogRUMTests",
+      "testIdentifier": "RUMInstrumentationTests/testWhenScrollAndSwipeActionsTrackingIsDisabled_itDoesNotInstrumentUIScrollView()"
+    },
+    {
+      "targetName": "DatadogRUMTests",
+      "testIdentifier": "RUMInstrumentationTests/testWhenOnlyLongTasksThresholdIsConfigured_itInstrumentsRunLoop()"
+    },
+    {
+      "targetName": "DatadogRUMTests",
+      "testIdentifier": "RUMInstrumentationTests/testWhenLongTasksThresholdIsLessOrEqualZero_itDoesNotInstrumentsRunLoop()"
+    },
+    {
+      "targetName": "DatadogRUMTests",
+      "testIdentifier": "RUMInstrumentationTests/testWhenAppHangThresholdIsConfigured_itInstrumentsAppHangs()"
+    },
+    {
+      "targetName": "DatadogRUMTests",
+      "testIdentifier": "RUMInstrumentationTests/testWhenAppHangThresholdIsNotConfigured_itDoesNotInstrumentsAppHangs()"
+    },
+    {
+      "targetName": "DatadogRUMTests",
+      "testIdentifier": "RUMInstrumentationTests/testAppHangsAreDisabled_oniOSWidgets()"
+    },
+    {
+      "targetName": "DatadogRUMTests",
+      "testIdentifier": "RUMInstrumentationTests/testGivenAllInstrumentationsConfigured_whenSubscribed_itSetsSubsciberInRespectiveHandlers()"
+    },
+    {
+      "targetName": "DatadogRUMTests",
+      "testIdentifier": "RUMSemanticNavigationAuthorityTests/testEmptyExplicitSourceKeepsAutomaticTrackingUntilFirstDestination()"
+    },
+    {
+      "targetName": "DatadogRUMTests",
+      "testIdentifier": "RUMSemanticNavigationAuthorityTests/testEmptyCapabilitySourceKeepsAutomaticTrackingUntilFirstDestination()"
+    },
+    {
+      "targetName": "DatadogRUMTests",
+      "testIdentifier": "RUMSemanticNavigationAuthorityTests/testSourceWithoutInstrumentationHasNoAuthorityUntilHandlerIsAvailable()"
+    },
+    {
+      "targetName": "DatadogRUMTests",
+      "testIdentifier": "RUMSemanticNavigationAuthorityTests/testSourceWithoutSceneHasNoAuthorityUntilAttachmentIsAvailable()"
+    },
+    {
+      "targetName": "DatadogRUMTests",
+      "testIdentifier": "RUMSemanticNavigationContainerLifetimeStateTests/testWhenDetachedStateIsReleased_queuedFinalDetachStillRuns()"
+    },
+    {
+      "targetName": "DatadogRUMTests",
+      "testIdentifier": "RUMSemanticNavigationContainerLifetimeStateTests/testWhenDetachedStateReattaches_queuedFinalDetachIsCancelled()"
+    },
+    {
+      "targetName": "DatadogRUMTests",
+      "testIdentifier": "RUMSwiftUIInteractiveTransitionArbiterTests/testWhenInteractiveAppearanceIsCancelled_itCreatesNoOccurrence()"
+    },
+    {
+      "targetName": "DatadogRUMTests",
+      "testIdentifier": "RUMSwiftUIInteractiveTransitionArbiterTests/testWhenObserverReregisters_itReplacesRegistrationIdempotently()"
+    },
+    {
+      "targetName": "DatadogRUMTests",
+      "testIdentifier": "RUMSwiftUIInteractiveTransitionArbiterTests/testWhenCancellationReversalArrivesBeforeCompletion_itCreatesNoOccurrence()"
+    },
+    {
+      "targetName": "DatadogRUMTests",
+      "testIdentifier": "RUMSwiftUIInteractiveTransitionArbiterTests/testWhenInteractiveMountIsCancelled_itDoesNotMutateTrackingState()"
+    },
+    {
+      "targetName": "DatadogRUMTests",
+      "testIdentifier": "RUMSwiftUIInteractiveTransitionArbiterTests/testWhenKeyedInitialMountIsCancelled_itCanStartOnTheNextCommittedMount()"
+    },
+    {
+      "targetName": "DatadogRUMTests",
+      "testIdentifier": "RUMSwiftUIInteractiveTransitionArbiterTests/testWhenDormantBoundaryPromotionCommits_itStartsAcceptedDestinationOnce()"
+    },
+    {
+      "targetName": "DatadogRUMTests",
+      "testIdentifier": "RUMSwiftUIInteractiveTransitionArbiterTests/testWhenDormantBoundaryPromotionIsCancelled_itLeavesDormantStateUntouched()"
+    },
+    {
+      "targetName": "DatadogRUMTests",
+      "testIdentifier": "RUMSwiftUIInteractiveTransitionArbiterTests/testWhenSceneDisconnectsDuringDormantPromotion_readerRemountStartsAcceptedDestination()"
+    },
+    {
+      "targetName": "DatadogRUMTests",
+      "testIdentifier": "RUMSwiftUIInteractiveTransitionArbiterTests/testWhenDormantPromotionDisappearsBeforeCommit_laterAcceptedAppearanceCanStart()"
+    },
+    {
+      "targetName": "DatadogRUMTests",
+      "testIdentifier": "RUMSwiftUIInteractiveTransitionArbiterTests/testWhenStaleDetachedCallbackFollowsDormantPromotion_itCannotCancelPromotion()"
+    },
+    {
+      "targetName": "DatadogRUMTests",
+      "testIdentifier": "RUMSwiftUIInteractiveTransitionArbiterTests/testWhenGenericConfigurationAttemptsToSupersedeDormantPromotion_itIsIgnored()"
+    },
+    {
+      "targetName": "DatadogRUMTests",
+      "testIdentifier": "RUMSwiftUIInteractiveTransitionArbiterTests/testWhenUnscopedAppearanceAttemptsToSupersedeDormantPromotion_itIsIgnored()"
+    },
+    {
+      "targetName": "DatadogRUMTests",
+      "testIdentifier": "RUMSwiftUIInteractiveTransitionArbiterTests/testWhenSourceAcceptedGenerationAdvances_itSupersedesPendingPromotion()"
+    },
+    {
+      "targetName": "DatadogRUMTests",
+      "testIdentifier": "RUMSwiftUIInteractiveTransitionArbiterTests/testWhenDetachedSourceAcceptedGenerationAdvances_itSuppressesPendingPromotion()"
+    },
+    {
+      "targetName": "DatadogRUMTests",
+      "testIdentifier": "RUMSwiftUIInteractiveTransitionArbiterTests/testWhenDetachedSettlementReceivesOrdinaryLifecycle_itRemainsNonStarting()"
+    },
+    {
+      "targetName": "DatadogRUMTests",
+      "testIdentifier": "RUMSwiftUIInteractiveTransitionArbiterTests/testWhenAcceptedReaderMovesScenes_itReplacesPendingSettlementAndStartsThere()"
+    },
+    {
+      "targetName": "DatadogRUMTests",
+      "testIdentifier": "RUMSwiftUIInteractiveTransitionArbiterTests/testWhenGenericReconciliationMovesScenes_itCannotReplacePendingSettlement()"
+    },
+    {
+      "targetName": "DatadogRUMTests",
+      "testIdentifier": "RUMSwiftUIInteractiveTransitionArbiterTests/testWhenSourceAuthorizedPromotionAdvances_itRebasesToLatestDormantSnapshot()"
+    },
+    {
+      "targetName": "DatadogRUMTests",
+      "testIdentifier": "RUMSwiftUIInteractiveTransitionArbiterTests/testWhenSourceAuthorizedDetachedSettlementAdvances_itWaitsForReaderMount()"
+    },
+    {
+      "targetName": "DatadogRUMTests",
+      "testIdentifier": "RUMSwiftUIInteractiveTransitionArbiterTests/testWhenAdvancedDormantResolutionIsCancelled_itStartsNoDestination()"
+    },
+    {
+      "targetName": "DatadogRUMTests",
+      "testIdentifier": "RUMSwiftUIInteractiveTransitionArbiterTests/testWhenDisconnectedViewRemountIsDeferred_itStartsAfterSuccessfulCompletion()"
+    },
+    {
+      "targetName": "DatadogRUMTests",
+      "testIdentifier": "RUMSwiftUIInteractiveTransitionArbiterTests/testWhenDeferredReconnectIsCancelled_readerRearmsForNextResolvedMount()"
+    },
+    {
+      "targetName": "DatadogRUMTests",
+      "testIdentifier": "RUMSwiftUIInteractiveTransitionArbiterTests/testWhenDeferredReconnectDisappears_successLeavesStateReadyForLaterAppearance()"
+    },
+    {
+      "targetName": "DatadogRUMTests",
+      "testIdentifier": "RUMSwiftUIInteractiveTransitionArbiterTests/testWhenDeferredReconnectDisappearsAndCancels_readerRearms()"
+    },
+    {
+      "targetName": "DatadogRUMTests",
+      "testIdentifier": "RUMSwiftUIInteractiveTransitionArbiterTests/testProviderUsesMatchingSceneHierarchyWhileNewReaderIsUnattached()"
+    },
+    {
+      "targetName": "DatadogRUMTests",
+      "testIdentifier": "RUMSwiftUIInteractiveTransitionArbiterTests/testProviderDoesNotBorrowSceneTransitionForAttachedUnrelatedReader()"
+    },
+    {
+      "targetName": "DatadogRUMTests",
+      "testIdentifier": "RUMSwiftUIInteractiveTransitionArbiterTests/testWhenAttachmentStartsInteractiveDeferral_followingAppearanceJoinsSameScene()"
+    },
+    {
+      "targetName": "DatadogRUMTests",
+      "testIdentifier": "RUMSwiftUIInteractiveTransitionArbiterTests/testWhenInteractivePopCompletes_itStopsOutgoingBeforeStartingReturnedOccurrence()"
+    },
+    {
+      "targetName": "DatadogRUMTests",
+      "testIdentifier": "RUMSwiftUIInteractiveTransitionArbiterTests/testWhenRetainedViewCompletesTwoReturns_itCreatesANewOccurrenceForEachReturn()"
+    },
+    {
+      "targetName": "DatadogRUMTests",
+      "testIdentifier": "RUMSwiftUIInteractiveTransitionArbiterTests/testWhenCoordinatorIsNotInteractive_itAppliesImmediately()"
+    },
+    {
+      "targetName": "DatadogRUMTests",
+      "testIdentifier": "RUMSwiftUIInteractiveTransitionArbiterTests/testWhenCoordinatorRejectsRegistration_itAppliesImmediately()"
+    },
+    {
+      "targetName": "DatadogRUMTests",
+      "testIdentifier": "RUMSwiftUIInteractiveTransitionArbiterTests/testWhenCallbacksRepeatDuringTransition_itCommitsOneOccurrence()"
+    },
+    {
+      "targetName": "DatadogRUMTests",
+      "testIdentifier": "RUMSwiftUIInteractiveTransitionArbiterTests/testWhenTwoScenesTransitionConcurrently_theyResolveIndependently()"
+    },
+    {
+      "targetName": "DatadogRUMTests",
+      "testIdentifier": "RUMSwiftUIInteractiveTransitionArbiterTests/testWhenTwoKeyedScenesTransitionConcurrently_cancelAndCommitRemainIndependent()"
+    },
+    {
+      "targetName": "DatadogRUMTests",
+      "testIdentifier": "RUMSwiftUIInteractiveTransitionArbiterTests/testWhenTwoTransitionsRunInSameScene_theyResolveByCoordinatorIdentity()"
+    },
+    {
+      "targetName": "DatadogRUMTests",
+      "testIdentifier": "RUMSwiftUIInteractiveTransitionArbiterTests/testWhenPopIsCancelled_unrelatedLifecycleInSameSceneCommitsImmediately()"
+    },
+    {
+      "targetName": "DatadogRUMTests",
+      "testIdentifier": "RUMSwiftUIInteractiveTransitionArbiterTests/testWhenUnrelatedReaderAttachesDuringPop_itLeavesProvisionalTransaction()"
+    },
+    {
+      "targetName": "DatadogRUMTests",
+      "testIdentifier": "RUMSwiftUIInteractiveTransitionArbiterTests/testWhenPendingViewAttachesToAnotherScene_itMigratesOutsideCancelledTransition()"
+    },
+    {
+      "targetName": "DatadogRUMTests",
+      "testIdentifier": "RUMSwiftUIInteractiveTransitionArbiterTests/testWhenSceneDisconnects_itDiscardsPendingLifecycle()"
+    },
+    {
+      "targetName": "DatadogRUMTests",
+      "testIdentifier": "RUMSwiftUIInteractiveTransitionArbiterTests/testWhenSceneDisconnectsDuringConcurrentKeyedTransitions_itCancelsOnlyThatScene()"
+    },
+    {
+      "targetName": "DatadogRUMTests",
+      "testIdentifier": "RUMSwiftUIInteractiveTransitionArbiterTests/testWhenSourceSceneDisconnects_pendingDestinationMigrationCanStillCommit()"
+    },
+    {
+      "targetName": "DatadogRUMTests",
+      "testIdentifier": "RUMSwiftUIInteractiveTransitionArbiterTests/testWhenSourceSceneDisconnects_cancelledDestinationMigrationCreatesNoOccurrence()"
+    },
+    {
+      "targetName": "DatadogRUMTests",
+      "testIdentifier": "RUMSwiftUIInteractiveTransitionArbiterTests/testWhenOldSceneObserverIsDiscarded_destinationIntentUsesOnlyDestinationObserver()"
+    },
+    {
+      "targetName": "DatadogRUMTests",
+      "testIdentifier": "RUMSwiftUIInteractiveTransitionArbiterTests/testWhenDisconnectedObserverReregisters_itCannotBypassDestinationCancellation()"
+    },
+    {
+      "targetName": "DatadogRUMTests",
+      "testIdentifier": "RUMSwiftUIInteractiveTransitionArbiterTests/testWhenPendingMigrationTargetsDisconnectedScene_itKeepsCommittedPeerState()"
+    },
+    {
+      "targetName": "DatadogRUMTests",
+      "testIdentifier": "RUMSwiftUIInteractiveTransitionArbiterTests/testWhenInteractiveKeyChangesMultipleTimes_itCommitsOnlyFinalCandidate()"
+    },
+    {
+      "targetName": "DatadogRUMTests",
+      "testIdentifier": "RUMSwiftUIInteractiveTransitionArbiterTests/testWhenInteractiveKeyChangeIsCancelled_itDoesNotMutateOrAllocateOccurrence()"
+    },
+    {
+      "targetName": "DatadogRUMTests",
+      "testIdentifier": "RUMSwiftUIInteractiveTransitionArbiterTests/testWhenInteractiveCandidatesReturnToOriginalKey_itCommitsNoReplacement()"
+    },
+    {
+      "targetName": "DatadogRUMTests",
+      "testIdentifier": "RUMSwiftUIInteractiveTransitionArbiterTests/testWhenStaleBindingIntentArrivesDuringInteractiveReplacement_itIsIgnored()"
+    },
+    {
+      "targetName": "DatadogRUMTests",
+      "testIdentifier": "RUMSwiftUIInteractiveTransitionArbiterTests/testWhenUnversionedLifecycleArrivesDuringKeyedReplacement_itIsIgnored()"
+    },
+    {
+      "targetName": "DatadogRUMTests",
+      "testIdentifier": "RUMSwiftUIInteractiveTransitionArbiterTests/testWhenStaleBindingClaimsAnotherScene_itLeavesValidPendingReplacementIntact()"
+    },
+    {
+      "targetName": "DatadogRUMTests",
+      "testIdentifier": "RUMSwiftUIInteractiveTransitionArbiterTests/testWhenCoordinatorIdentityIsReused_oldCompletionCannotResolveNewTransition()"
+    },
+    {
+      "targetName": "DatadogRUMTests",
+      "testIdentifier": "RUMSwiftUIInteractiveTransitionArbiterTests/testWhenOldCoordinatorCompletesAgain_itDoesNotResolveNewTransition()"
+    },
+    {
+      "targetName": "DatadogRUMTests",
+      "testIdentifier": "RUMSwiftUIInteractiveTransitionArbiterTests/testObserverResolvesNearestViewController()"
+    },
+    {
+      "targetName": "DatadogRUMTests",
+      "testIdentifier": "RUMSwiftUINavigationOccurrenceContextTests/testRetainedCallbackDoesNotOwnItsCollaborators()"
+    },
+    {
+      "targetName": "DatadogRUMTests",
+      "testIdentifier": "RUMSwiftUINavigationOccurrenceContextTests/testRegistrationReleaseDoesNotRequireSourceRelease()"
+    },
+    {
+      "targetName": "DatadogRUMTests",
+      "testIdentifier": "RUMSwiftUINavigationOccurrenceContextTests/testCancellationClearsCallbackAndRejectsRetainedReveal()"
+    },
+    {
+      "targetName": "DatadogRUMTests",
+      "testIdentifier": "RUMSwiftUINavigationOccurrenceContextTests/testRebindingMovesSourceAndPublishesLatestDescriptorOnFreshOccurrence()"
+    },
+    {
+      "targetName": "DatadogRUMTests",
+      "testIdentifier": "RUMSwiftUINavigationOccurrenceContextTests/testContextPreservesInteractiveCancellationAndSingleCommit()"
+    },
+    {
+      "targetName": "DatadogRUMTests",
+      "testIdentifier": "RUMSwiftUINavigationOccurrenceSourceTests/testWhenInitialTopHasNotMounted_containerSceneStartsAndTransfersOccurrence()"
+    },
+    {
+      "targetName": "DatadogRUMTests",
+      "testIdentifier": "RUMSwiftUINavigationOccurrenceSourceTests/testWhenInitialTopMountsFirst_itOwnsBootstrapWithoutDuplicateStart()"
+    },
+    {
+      "targetName": "DatadogRUMTests",
+      "testIdentifier": "RUMSwiftUINavigationOccurrenceSourceTests/testWhenMaterializedInitialTopIsReplaced_laterNavigationUsesOrdinaryArbiter()"
+    },
+    {
+      "targetName": "DatadogRUMTests",
+      "testIdentifier": "RUMSwiftUINavigationOccurrenceSourceTests/testWhenAcceptedRouteReusesDormantProposal_readerReconciliationAuthorizesPromotion()"
+    },
+    {
+      "targetName": "DatadogRUMTests",
+      "testIdentifier": "RUMSwiftUINavigationOccurrenceSourceTests/testWhenAcceptedRouteReusesDormantProposal_environmentTraitAuthorizesSameScenePromotion()"
+    },
+    {
+      "targetName": "DatadogRUMTests",
+      "testIdentifier": "RUMSwiftUINavigationOccurrenceSourceTests/testWhenAcceptedRouteReusesDormantProposal_environmentTraitCannotMoveOrRecoverScene()"
+    },
+    {
+      "targetName": "DatadogRUMTests",
+      "testIdentifier": "RUMSwiftUINavigationOccurrenceSourceTests/testWhenAcceptedRouteAdvancesDuringPendingProposal_readerMountAuthorizesPromotion()"
+    },
+    {
+      "targetName": "DatadogRUMTests",
+      "testIdentifier": "RUMSwiftUINavigationOccurrenceSourceTests/testWhenAcceptedRouteMovesToAnotherScene_onlyReaderMountAuthorizesMigration()"
+    },
+    {
+      "targetName": "DatadogRUMTests",
+      "testIdentifier": "RUMSwiftUINavigationOccurrenceSourceTests/testWhenDormantProposalDisconnects_readerMountAuthorizesAcceptedRecovery()"
+    },
+    {
+      "targetName": "DatadogRUMTests",
+      "testIdentifier": "RUMSwiftUINavigationOccurrenceSourceTests/testWhenPendingInitialTopChanges_sourceWaitsForAcceptedBoundaryAndRejectsStaleTop()"
+    },
+    {
+      "targetName": "DatadogRUMTests",
+      "testIdentifier": "RUMSwiftUINavigationOccurrenceSourceTests/testWhenPendingInitialTopChanges_donorRefreshDoesNotCreateHiddenRoot()"
+    },
+    {
+      "targetName": "DatadogRUMTests",
+      "testIdentifier": "RUMSwiftUINavigationOccurrenceSourceTests/testWhenDonorRefreshCallbacksArriveOutOfOrder_theyNeverReachLocalGenerationFence()"
+    },
+    {
+      "targetName": "DatadogRUMTests",
+      "testIdentifier": "RUMSwiftUINavigationOccurrenceSourceTests/testWhenDonorMovesScenesBeforeDescriptorReconciliation_visibleDestinationMigrates()"
+    },
+    {
+      "targetName": "DatadogRUMTests",
+      "testIdentifier": "RUMSwiftUINavigationOccurrenceSourceTests/testWhenDonorReaderStateIsReplaced_sameSceneAdoptsExistingOccurrence()"
+    },
+    {
+      "targetName": "DatadogRUMTests",
+      "testIdentifier": "RUMSwiftUINavigationOccurrenceSourceTests/testWhenPreviouslyUsedDonorReturns_sameSceneReclaimsExistingOccurrence()"
+    },
+    {
+      "targetName": "DatadogRUMTests",
+      "testIdentifier": "RUMSwiftUINavigationOccurrenceSourceTests/testWhenPreviouslyUsedDonorReturnsInAnotherScene_itStartsFreshOccurrence()"
+    },
+    {
+      "targetName": "DatadogRUMTests",
+      "testIdentifier": "RUMSwiftUINavigationOccurrenceSourceTests/testWhenAdvancedDonorReturns_sameSceneReclaimsExistingOccurrence()"
+    },
+    {
+      "targetName": "DatadogRUMTests",
+      "testIdentifier": "RUMSwiftUINavigationOccurrenceSourceTests/testWhenAdvancedDonorReturnsInAnotherScene_itStartsFreshOccurrence()"
+    },
+    {
+      "targetName": "DatadogRUMTests",
+      "testIdentifier": "RUMSwiftUINavigationOccurrenceSourceTests/testWhenAdvancedDonorReconnectsFirst_replacementAdoptsFreshOccurrence()"
+    },
+    {
+      "targetName": "DatadogRUMTests",
+      "testIdentifier": "RUMSwiftUINavigationOccurrenceSourceTests/testWhenAdvancedReplacementReconnectsFirst_donorAdoptsFreshOccurrence()"
+    },
+    {
+      "targetName": "DatadogRUMTests",
+      "testIdentifier": "RUMSwiftUINavigationOccurrenceSourceTests/testWhenProvisionalDonorReconnectsBeforeQueuedCleanup_freshOwnerSurvives()"
+    },
+    {
+      "targetName": "DatadogRUMTests",
+      "testIdentifier": "RUMSwiftUINavigationOccurrenceSourceTests/testWhenDormantReplacementReconnectsBeforeInactiveOwner_itStartsFreshOccurrence()"
+    },
+    {
+      "targetName": "DatadogRUMTests",
+      "testIdentifier": "RUMSwiftUINavigationOccurrenceSourceTests/testWhenOwnerReconnectsBeforeDormantReplacement_replacementAdoptsFreshOccurrence()"
+    },
+    {
+      "targetName": "DatadogRUMTests",
+      "testIdentifier": "RUMSwiftUINavigationOccurrenceSourceTests/testWhenNewerDonorReconnectsBeforeDescriptor_itRestartsLastProvenDestination()"
+    },
+    {
+      "targetName": "DatadogRUMTests",
+      "testIdentifier": "RUMSwiftUINavigationOccurrenceSourceTests/testWhenNewerDonorMovesScenesBeforeDescriptor_itStartsLastProvenDestination()"
+    },
+    {
+      "targetName": "DatadogRUMTests",
+      "testIdentifier": "RUMSwiftUINavigationOccurrenceSourceTests/testWhenAcceptedIdentityChanges_staleDescriptorCannotAdoptBeforeReconciliation()"
+    },
+    {
+      "targetName": "DatadogRUMTests",
+      "testIdentifier": "RUMSwiftUINavigationOccurrenceSourceTests/testWhenInitialPathIsEmpty_laterDestinationCannotBootstrap()"
+    },
+    {
+      "targetName": "DatadogRUMTests",
+      "testIdentifier": "RUMSwiftUINavigationOccurrenceSourceTests/testWhenPendingInitialPathBecomesEmpty_revealsFreshRootAndRejectsStaleTop()"
+    },
+    {
+      "targetName": "DatadogRUMTests",
+      "testIdentifier": "RUMSwiftUINavigationOccurrenceSourceTests/testWhenContainerDetachesBeforeInitialAdoption_provisionalOccurrenceStops()"
+    },
+    {
+      "targetName": "DatadogRUMTests",
+      "testIdentifier": "RUMSwiftUINavigationOccurrenceSourceTests/testWhenInitialOwnerMovesToAnotherScene_newSceneBecomesSoleOwner()"
+    },
+    {
+      "targetName": "DatadogRUMTests",
+      "testIdentifier": "RUMSwiftUINavigationOccurrenceSourceTests/testWhenInitialOwnerSceneDisconnects_sameGenerationReaderRemountStartsFreshOccurrence()"
+    },
+    {
+      "targetName": "DatadogRUMTests",
+      "testIdentifier": "RUMSwiftUINavigationOccurrenceSourceTests/testWhenSameSceneReconnectsBeforeQueuedSourceCleanup_freshOwnerSurvivesCleanup()"
+    },
+    {
+      "targetName": "DatadogRUMTests",
+      "testIdentifier": "RUMSwiftUINavigationOccurrenceSourceTests/testWhenRetainedRouteReconnectsBeforeQueuedSourceCleanup_itRequiresFreshMount()"
+    },
+    {
+      "targetName": "DatadogRUMTests",
+      "testIdentifier": "RUMSwiftUINavigationOccurrenceSourceTests/testWhenTwoSourcesRestoreSameRoute_initialOwnershipRemainsWindowLocal()"
+    },
+    {
+      "targetName": "DatadogRUMTests",
+      "testIdentifier": "RUMSwiftUINavigationOccurrenceSourceTests/testWhenRetainedRouteWasPreviouslyVisible_revealStartsFreshOccurrenceSynchronously()"
+    },
+    {
+      "targetName": "DatadogRUMTests",
+      "testIdentifier": "RUMSwiftUINavigationOccurrenceSourceTests/testWhenRevealedRouteMountsWithNewSwiftUIState_itAdoptsPublishedOccurrence()"
+    },
+    {
+      "targetName": "DatadogRUMTests",
+      "testIdentifier": "RUMSwiftUINavigationOccurrenceSourceTests/testWhenRevealedRouteKeepsItsSwiftUIState_consumptionSettlesHandoff()"
+    },
+    {
+      "targetName": "DatadogRUMTests",
+      "testIdentifier": "RUMSwiftUINavigationOccurrenceSourceTests/testWhenPendingRevealedRouteMovesScenesWithSameState_itRemountsFreshInDestinationScene()"
+    },
+    {
+      "targetName": "DatadogRUMTests",
+      "testIdentifier": "RUMSwiftUINavigationOccurrenceSourceTests/testWhenMultipleRegistrationsCanRevealSameRoute_onlyNewestRegistrationStarts()"
+    },
+    {
+      "targetName": "DatadogRUMTests",
+      "testIdentifier": "RUMSwiftUINavigationOccurrenceSourceTests/testWhenAnotherRouteIsRevealed_pendingHandoffNoLongerSuppressesDisappear()"
+    },
+    {
+      "targetName": "DatadogRUMTests",
+      "testIdentifier": "RUMSwiftUINavigationOccurrenceSourceTests/testWhenRouteIsStillActive_revealDoesNotCreateSyntheticOccurrence()"
+    },
+    {
+      "targetName": "DatadogRUMTests",
+      "testIdentifier": "RUMSwiftUINavigationOccurrenceSourceTests/testWhenRouteHasNeverStarted_revealDoesNotMaterializeIt()"
+    },
+    {
+      "targetName": "DatadogRUMTests",
+      "testIdentifier": "RUMSwiftUINavigationOccurrenceSourceTests/testWhenRetainedRouteDisconnected_revealWaitsForExplicitRemount()"
+    },
+    {
+      "targetName": "DatadogRUMTests",
+      "testIdentifier": "RUMSwiftUINavigationOccurrenceSourceTests/testWhenRetainedRouteReaderIsDetached_revealUsesLastProvenScene()"
+    },
+    {
+      "targetName": "DatadogRUMTests",
+      "testIdentifier": "RUMSwiftUINavigationOccurrenceSourceTests/testWhenOutgoingCurrentSnapshotDetaches_retainedPopUsesItsLastProvenScene()"
+    },
+    {
+      "targetName": "DatadogRUMTests",
+      "testIdentifier": "RUMSwiftUINavigationOccurrenceSourceTests/testWhenContainerDetachesDuringRetainedAdoption_pendingOccurrenceStops()"
+    },
+    {
+      "targetName": "DatadogRUMTests",
+      "testIdentifier": "RUMSwiftUINavigationOccurrenceSourceTests/testWhenRetainedRouteReaderIsAttachedWithoutScene_revealStaysUnresolved()"
+    },
+    {
+      "targetName": "DatadogRUMTests",
+      "testIdentifier": "RUMSwiftUINavigationOccurrenceSourceTests/testWhenRetainedRouteMovesToAnotherScene_revealUsesNewProvenScene()"
+    },
+    {
+      "targetName": "DatadogRUMTests",
+      "testIdentifier": "RUMSwiftUINavigationOccurrenceSourceTests/testWhenDisconnectedRouteRemountsInAnotherScene_laterRevealUsesNewScene()"
+    },
+    {
+      "targetName": "DatadogRUMTests",
+      "testIdentifier": "RUMSwiftUINavigationOccurrenceSourceTests/testWhenDormantRouteReconnects_readerRearmsSynchronousReveal()"
+    },
+    {
+      "targetName": "DatadogRUMTests",
+      "testIdentifier": "RUMSwiftUINavigationOccurrenceSourceTests/testWhenRegistrationRebindsToAnotherSource_staleSourceCannotRevealRoute()"
+    },
+    {
+      "targetName": "DatadogRUMTests",
+      "testIdentifier": "RUMSwiftUINavigationOccurrenceSourceTests/testWhenTwoWindowsUseTheSameRouteKey_sourceRevealsOnlyItsOwnRegistration()"
+    },
+    {
+      "targetName": "DatadogRUMTests",
+      "testIdentifier": "RUMSwiftUINavigationOccurrenceSourceTests/testWhenStateAlreadyConsumedGeneration_duplicateRevealIsRejected()"
+    },
+    {
+      "targetName": "DatadogRUMTests",
+      "testIdentifier": "RUMSwiftUINavigationOccurrenceSourceTests/testWhenInteractiveRevealIsCancelled_arbiterCreatesNoOccurrence()"
+    },
+    {
+      "targetName": "DatadogRUMTests",
+      "testIdentifier": "RUMSwiftUINavigationOccurrenceSourceTests/testWhenInteractiveRevealCompletes_arbiterStartsReturnedOccurrence()"
+    },
+    {
+      "targetName": "DatadogRUMTests",
+      "testIdentifier": "RUMSwiftUISemanticNavigationEngineTests/testSceneAttachmentIsIndependentFromVisualContainer()"
+    },
+    {
+      "targetName": "DatadogRUMTests",
+      "testIdentifier": "RUMSwiftUISemanticNavigationEngineTests/testNativeAdapterUsesInjectedContainerIndependentEngine()"
+    },
+    {
+      "targetName": "DatadogRUMTests",
+      "testIdentifier": "RUMSwiftUISemanticNavigationEngineTests/testNavigationHostAcceptsArbitraryCustomerContent()"
+    },
+    {
+      "targetName": "DatadogRUMTests",
+      "testIdentifier": "RUMSwiftUISemanticNavigationEngineTests/testObservationHostKeepsStandardSwiftUINavigation()"
+    },
+    {
+      "targetName": "DatadogRUMTests",
+      "testIdentifier": "RUMSwiftUISemanticNavigationEngineTests/testTransitionSourcePublishesOnlyCommittedDestinationsAsFreshOccurrences()"
+    },
+    {
+      "targetName": "DatadogRUMTests",
+      "testIdentifier": "RUMSwiftUISemanticNavigationEngineTests/testTransitionSourceCanWaitForSceneDependentInitialMetadata()"
+    },
+    {
+      "targetName": "DatadogRUMTests",
+      "testIdentifier": "RUMSwiftUISemanticNavigationEngineTests/testNavigationInputsProduceEquivalentAcceptedDestinationTimeline()"
+    },
+    {
+      "targetName": "DatadogRUMTests",
+      "testIdentifier": "RUMSwiftUISemanticNavigationEngineTests/testObservationAdapterRearmsSynchronouslyAfterEachDidSet()"
+    },
+    {
+      "targetName": "DatadogRUMTests",
+      "testIdentifier": "RUMSwiftUISemanticNavigationEngineTests/testObservationAdapterRearmsBeforeNestedObserverMutation()"
+    },
+    {
+      "targetName": "DatadogRUMTests",
+      "testIdentifier": "RUMSwiftUISemanticNavigationEngineTests/testObservationAdapterTreatsIndependentPropertyMutationsAsSeparateStates()"
+    },
+    {
+      "targetName": "DatadogRUMTests",
+      "testIdentifier": "RUMSwiftUISemanticNavigationEngineTests/testObservationAdapterStopsRearmingAfterDeallocation()"
+    },
+    {
+      "targetName": "DatadogRUMTests",
+      "testIdentifier": "RUMSwiftUISemanticNavigationEngineTests/testObservationNavigationHostTracksOnceAcrossSwiftUIReconstruction()"
+    },
+    {
+      "targetName": "DatadogRUMTests",
+      "testIdentifier": "RUMSwiftUISemanticNavigationEngineTests/testObservationAdapterRemainsCrashSafeForBackgroundMutation()"
+    },
+    {
+      "targetName": "DatadogRUMTests",
+      "testIdentifier": "RUMSwiftUISemanticNavigationEngineTests/testNavigationHostResolvesOptionalCapability()"
+    },
+    {
+      "targetName": "DatadogRUMTests",
+      "testIdentifier": "RUMSwiftUISemanticNavigationEngineTests/testExplicitTransitionSourceOverridesOptionalCapability()"
+    },
+    {
+      "targetName": "DatadogRUMTests",
+      "testIdentifier": "RUMSwiftUISemanticNavigationEngineTests/testConfiguredObservedSourceDoesNotFallThroughToCapabilityWhilePending()"
+    },
+    {
+      "targetName": "DatadogRUMTests",
+      "testIdentifier": "RUMSwiftUISemanticNavigationEngineTests/testHostStatePinsFirstSourceAcrossContainerReconstruction()"
+    },
+    {
+      "targetName": "DatadogRUMTests",
+      "testIdentifier": "RUMSwiftUISemanticNavigationEngineTests/testObservedNavigationHostSubscribesOnceAcrossSwiftUIReconstruction()"
+    },
+    {
+      "targetName": "DatadogRUMTests",
+      "testIdentifier": "RUMSwiftUISemanticNavigationStateTests/testCommittedPop_revealsHomeAsFreshOccurrenceBeforeRetainedContentRemounts()"
+    },
+    {
+      "targetName": "DatadogRUMTests",
+      "testIdentifier": "RUMSwiftUISemanticNavigationStateTests/testInitialRestoredPath_revealsNeverStartedHiddenHomeBeforeRemount()"
+    },
+    {
+      "targetName": "DatadogRUMTests",
+      "testIdentifier": "RUMSwiftUISemanticNavigationStateTests/testPathThatPushesAndRevertsBeforeRootDisappears_createsNoIntermediateOccurrence()"
+    },
+    {
+      "targetName": "DatadogRUMTests",
+      "testIdentifier": "RUMSwiftUISemanticNavigationStateTests/testRepeatedEqualRoute_retainsEachMaterializedPathPositionAcrossPushAndPop()"
+    },
+    {
+      "targetName": "DatadogRUMTests",
+      "testIdentifier": "RUMSwiftUISemanticNavigationStateTests/testRepeatedEqualRoute_restoredTogether_targetsOnlyMaterializedTopPosition()"
+    },
+    {
+      "targetName": "DatadogRUMTests",
+      "testIdentifier": "RUMSwiftUISemanticNavigationStateTests/testRepeatedEqualRoute_restoredTogether_replacesTopWhenItsPositionIsRemoved()"
+    },
+    {
+      "targetName": "DatadogRUMTests",
+      "testIdentifier": "RUMSwiftUISemanticNavigationStateTests/testOccurrenceClaim_whenBoundaryRouteChanges_adoptsCurrentRoutePosition()"
+    },
+    {
+      "targetName": "DatadogRUMTests",
+      "testIdentifier": "RUMSwiftUISemanticNavigationStateTests/testForward_whenCustomerBindingRejectsProposedPath_reconcilesAcceptedPath()"
+    },
+    {
+      "targetName": "DatadogRUMTests",
+      "testIdentifier": "RUMSwiftUISemanticNavigationStateTests/testForward_whenCustomerBindingCanonicalizesProposedPath_reconcilesCanonicalPath()"
+    },
+    {
+      "targetName": "DatadogRUMTests",
+      "testIdentifier": "RUMSwiftUISemanticNavigationStateTests/testForward_whenPendingBootstrapIsCanonicalized_onlyAcceptedDestinationCanAdopt()"
+    },
+    {
+      "targetName": "DatadogRUMTests",
+      "testIdentifier": "RUMSwiftUIViewAuthorityRegistryTests/testActiveExplicitViewSuppressesOnlyContainingAutomaticController()"
+    },
+    {
+      "targetName": "DatadogRUMTests",
+      "testIdentifier": "RUMSwiftUIViewAuthorityRegistryTests/testDetachedOrNeverAppearedExplicitViewDoesNotSuppressAutomaticController()"
+    },
+    {
+      "targetName": "DatadogRUMTests",
+      "testIdentifier": "RUMSwiftUIViewAuthorityRegistryTests/testSemanticPresentationAuthoritySuppressesOnlyItsMountedSubtreeUntilDisappear()"
+    },
+    {
+      "targetName": "DatadogRUMTests",
+      "testIdentifier": "RUMSwiftUIViewAuthorityRegistryTests/testSemanticHostFinalDetachReleasesOnlyItsAutomaticSuppressionSubtree()"
+    },
+    {
+      "targetName": "DatadogRUMTests",
+      "testIdentifier": "RUMViewsHandlerTests/testGivenUIKitPredicate_whenViewDidAppear_itStartsRUMView()"
+    },
+    {
+      "targetName": "DatadogRUMTests",
+      "testIdentifier": "RUMViewsHandlerTests/testGivenUIKitPredicate_whenViewDidAppear_itStopsPreviousRUMView()"
+    },
+    {
+      "targetName": "DatadogRUMTests",
+      "testIdentifier": "RUMViewsHandlerTests/testGivenViewsInDifferentScenes_whenViewDidAppear_itKeepsBothRUMViewsActive()"
+    },
+    {
+      "targetName": "DatadogRUMTests",
+      "testIdentifier": "RUMViewsHandlerTests/testGivenConcurrentScenes_whenNavigatingAndReturning_itOnlyChangesOwningScene()"
+    },
+    {
+      "targetName": "DatadogRUMTests",
+      "testIdentifier": "RUMViewsHandlerTests/testGivenMultiSceneSplitView_whenOldControllerDisappearsBeforePush_itHandoffsWithinColumn()"
+    },
+    {
+      "targetName": "DatadogRUMTests",
+      "testIdentifier": "RUMViewsHandlerTests/testGivenMultiSceneSplitView_whenPoppingToSameController_itCreatesFreshReturnedOccurrence()"
+    },
+    {
+      "targetName": "DatadogRUMTests",
+      "testIdentifier": "RUMViewsHandlerTests/testGivenMultiSceneSplitView_whenReplacingColumnRoot_itDoesNotRestartPrimary()"
+    },
+    {
+      "targetName": "DatadogRUMTests",
+      "testIdentifier": "RUMViewsHandlerTests/testGivenMultiSceneRegularSplitView_whenPrimaryIsStructural_itTracksOnlyDestinations()"
+    },
+    {
+      "targetName": "DatadogRUMTests",
+      "testIdentifier": "RUMViewsHandlerTests/testGivenOrdinaryApplication_whenPrimaryIsMarkedStructural_itKeepsLegacyTracking()"
+    },
+    {
+      "targetName": "DatadogRUMTests",
+      "testIdentifier": "RUMViewsHandlerTests/testGivenMultiSceneSplitView_whenNewControllerAppearsBeforeOldDisappears_itKeepsDirectPath()"
+    },
+    {
+      "targetName": "DatadogRUMTests",
+      "testIdentifier": "RUMViewsHandlerTests/testGivenMultiSceneSplitView_whenNoSuccessorAppears_itRestartsPrimaryOnReconciliation()"
+    },
+    {
+      "targetName": "DatadogRUMTests",
+      "testIdentifier": "RUMViewsHandlerTests/testGivenMultiSceneSplitView_whenPendingControllerReappears_itTreatsTransitionAsCancelled()"
+    },
+    {
+      "targetName": "DatadogRUMTests",
+      "testIdentifier": "RUMViewsHandlerTests/testGivenConcurrentMultiSceneSplitViews_whenBothNavigate_itKeepsPendingHandoffsIsolated()"
+    },
+    {
+      "targetName": "DatadogRUMTests",
+      "testIdentifier": "RUMViewsHandlerTests/testGivenPendingMultiSceneSplitView_whenUnrelatedUIKitViewAppears_itDoesNotRevealSibling()"
+    },
+    {
+      "targetName": "DatadogRUMTests",
+      "testIdentifier": "RUMViewsHandlerTests/testGivenPendingMultiSceneSplitView_whenSceneEntersBackground_itDoesNotRevealSibling()"
+    },
+    {
+      "targetName": "DatadogRUMTests",
+      "testIdentifier": "RUMViewsHandlerTests/testGivenPendingMultiSceneSplitView_whenApplicationEntersBackground_itDoesNotRevealSibling()"
+    },
+    {
+      "targetName": "DatadogRUMTests",
+      "testIdentifier": "RUMViewsHandlerTests/testGivenPendingMultiSceneSplitView_whenSceneDisconnects_itDoesNotRestartSiblingColumn()"
+    },
+    {
+      "targetName": "DatadogRUMTests",
+      "testIdentifier": "RUMViewsHandlerTests/testGivenOrdinaryApplication_whenSplitControllerDisappears_itKeepsLegacyImmediateRestart()"
+    },
+    {
+      "targetName": "DatadogRUMTests",
+      "testIdentifier": "RUMViewsHandlerTests/testGivenConcurrentScenes_whenSceneLifecycleChanges_itOnlyChangesOwningScene()"
+    },
+    {
+      "targetName": "DatadogRUMTests",
+      "testIdentifier": "RUMViewsHandlerTests/testGivenSceneEnteredBackgroundBeforeItsFirstViewAppears_itWaitsForSceneForegroundToStartView()"
+    },
+    {
+      "targetName": "DatadogRUMTests",
+      "testIdentifier": "RUMViewsHandlerTests/testGivenApplicationEnteredBackgroundBeforeLegacyViewAppears_itWaitsForForegroundToStartView()"
+    },
+    {
+      "targetName": "DatadogRUMTests",
+      "testIdentifier": "RUMViewsHandlerTests/testGivenReusedViewControllerMovesToAnotherScene_whenItAppears_itMovesRUMViewOwnership()"
+    },
+    {
+      "targetName": "DatadogRUMTests",
+      "testIdentifier": "RUMViewsHandlerTests/testGivenConcurrentScenes_whenSceneDisconnects_itStopsOnlyThatSceneOnce()"
+    },
+    {
+      "targetName": "DatadogRUMTests",
+      "testIdentifier": "RUMViewsHandlerTests/testGivenUIKitPredicate_whenViewDidAppear_itDoesNotStartTheSameRUMViewTwice()"
+    },
+    {
+      "targetName": "DatadogRUMTests",
+      "testIdentifier": "RUMViewsHandlerTests/testGivenNoUIKitPredicate_whenViewDidAppear_itDoesNotStartAnyRUMView()"
+    },
+    {
+      "targetName": "DatadogRUMTests",
+      "testIdentifier": "RUMViewsHandlerTests/testGivenSwiftUIPredicateAndNameExtractor_whenViewDidAppear_itStartsRUMView()"
+    },
+    {
+      "targetName": "DatadogRUMTests",
+      "testIdentifier": "RUMViewsHandlerTests/testGivenExplicitSwiftUIAuthority_whenAutomaticViewDidAppear_itDoesNotStartView()"
+    },
+    {
+      "targetName": "DatadogRUMTests",
+      "testIdentifier": "RUMViewsHandlerTests/testGivenExplicitSwiftUIAuthority_whenUIKitPredicateAcceptsView_itStillStartsUIKitView()"
+    },
+    {
+      "targetName": "DatadogRUMTests",
+      "testIdentifier": "RUMViewsHandlerTests/testGivenSwiftUIPredicateAndNoNameExtractor_whenViewDidAppear_itDoesNotStartView()"
+    },
+    {
+      "targetName": "DatadogRUMTests",
+      "testIdentifier": "RUMViewsHandlerTests/testGivenNameExtractorButNoSwiftUIPredicate_whenViewDidAppear_itDoesNotStartView()"
+    },
+    {
+      "targetName": "DatadogRUMTests",
+      "testIdentifier": "RUMViewsHandlerTests/testGivenSwiftUIPredicate_whenViewDidAppear_itStopsPreviousRUMView()"
+    },
+    {
+      "targetName": "DatadogRUMTests",
+      "testIdentifier": "RUMViewsHandlerTests/testGivenAutomaticHome_whenTargetedManualViewStops_itRestartsHomeAsFreshOccurrence()"
+    },
+    {
+      "targetName": "DatadogRUMTests",
+      "testIdentifier": "RUMViewsHandlerTests/testGivenTargetedManualView_whenAutomaticDestinationAppears_itStagesDestinationUntilManualStop()"
+    },
+    {
+      "targetName": "DatadogRUMTests",
+      "testIdentifier": "RUMViewsHandlerTests/testGivenTargetedManualView_whenGenericAutomaticFallbackAppears_itRevealsRetainedDestination()"
+    },
+    {
+      "targetName": "DatadogRUMTests",
+      "testIdentifier": "RUMViewsHandlerTests/testGivenNestedTargetedManualViews_whenAutomaticDestinationAppears_itKeepsEntireManualSuffixAuthoritative()"
+    },
+    {
+      "targetName": "DatadogRUMTests",
+      "testIdentifier": "RUMViewsHandlerTests/testGivenSeveralUnderlyingDestinationsDuringManualAuthority_whenItStops_itRevealsOnlyLatest()"
+    },
+    {
+      "targetName": "DatadogRUMTests",
+      "testIdentifier": "RUMViewsHandlerTests/testGivenNestedTargetedManualViews_whenPreviewStops_itStartsFreshComposeOccurrence()"
+    },
+    {
+      "targetName": "DatadogRUMTests",
+      "testIdentifier": "RUMViewsHandlerTests/testGivenActiveTargetedManualView_whenSameSceneAndKeyStartsAgain_itRemainsCrashSafeAndDoesNotRestart()"
+    },
+    {
+      "targetName": "DatadogRUMTests",
+      "testIdentifier": "RUMViewsHandlerTests/testGivenSameTargetedManualKeyInTwoScenes_whenOneStops_itDoesNotAffectPeer()"
+    },
+    {
+      "targetName": "DatadogRUMTests",
+      "testIdentifier": "RUMViewsHandlerTests/testGivenTargetedManualView_whenWrongSceneStops_itRemainsActive()"
+    },
+    {
+      "targetName": "DatadogRUMTests",
+      "testIdentifier": "RUMViewsHandlerTests/testGivenTargetedManualView_whenSceneDisconnects_itDoesNotRevealUnderlyingView()"
+    },
+    {
+      "targetName": "DatadogRUMTests",
+      "testIdentifier": "RUMViewsHandlerTests/testGivenBothPredicates_whenViewDidAppear_itUsesUIKitPredicate()"
+    },
+    {
+      "targetName": "DatadogRUMTests",
+      "testIdentifier": "RUMViewsHandlerTests/testGivenNoUIKitPredicate_whenViewDidAppear_itFallsBackToSwiftUIPredicate()"
+    },
+    {
+      "targetName": "DatadogRUMTests",
+      "testIdentifier": "RUMViewsHandlerTests/testGivenAcceptingPredicate_whenViewDidDisappear_itStartsPreviousRUMView()"
+    },
+    {
+      "targetName": "DatadogRUMTests",
+      "testIdentifier": "RUMViewsHandlerTests/testGivenNoActiveView_whenViewDidDisappear_itDoesNotStartAnyRUMView()"
+    },
+    {
+      "targetName": "DatadogRUMTests",
+      "testIdentifier": "RUMViewsHandlerTests/testGivenNoPredicates_whenViewDidDisappear_itDoesNotStartAnyRUMView()"
+    },
+    {
+      "targetName": "DatadogRUMTests",
+      "testIdentifier": "RUMViewsHandlerTests/testGivenViewControllerStarted_whenAppStateChanges_itStopsAndRestartsRUMView()"
+    },
+    {
+      "targetName": "DatadogRUMTests",
+      "testIdentifier": "RUMViewsHandlerTests/testGivenViewControllerDidNotStart_whenAppStateChanges_itDoesAlterViews()"
+    },
+    {
+      "targetName": "DatadogRUMTests",
+      "testIdentifier": "RUMViewsHandlerTests/testGivenAppearedView_whenTransitioningBackAndForthFromThisViewToAnother_thenPredicateIsCalledOnlyTwice()"
+    },
+    {
+      "targetName": "DatadogRUMTests",
+      "testIdentifier": "RUMViewsHandlerTests/testGivenAppearedView_whenTransitioningToUntrackedModal_viewDoesStop()"
+    },
+    {
+      "targetName": "DatadogRUMTests",
+      "testIdentifier": "RUMViewsHandlerTests/testGivenUntrackedModal_whenTransitioningToAppearedView_viewDoesStart()"
+    },
+    {
+      "targetName": "DatadogRUMTests",
+      "testIdentifier": "RUMViewsHandlerTests/testWhenOnAppear_itStartsRUMView()"
+    },
+    {
+      "targetName": "DatadogRUMTests",
+      "testIdentifier": "RUMViewsHandlerTests/testWhenOnAppearInScene_itTargetsThatScene()"
+    },
+    {
+      "targetName": "DatadogRUMTests",
+      "testIdentifier": "RUMViewsHandlerTests/testGivenSameSwiftUIIdentityInTwoScenes_whenOneDisappears_itStopsOnlyThatScene()"
+    },
+    {
+      "targetName": "DatadogRUMTests",
+      "testIdentifier": "RUMViewsHandlerTests/testWhenOnAppear_itStopsPreviousRUMView()"
+    },
+    {
+      "targetName": "DatadogRUMTests",
+      "testIdentifier": "RUMViewsHandlerTests/testWhenOnAppear_itDoesNotStartTheSameRUMViewTwice()"
+    },
+    {
+      "targetName": "DatadogRUMTests",
+      "testIdentifier": "RUMViewsHandlerTests/testWhenActiveSwiftUIOccurrenceIsReplaced_itDoesNotRestartUnderlyingView()"
+    },
+    {
+      "targetName": "DatadogRUMTests",
+      "testIdentifier": "RUMViewsHandlerTests/testWhenKeyedStatePublishesReplacement_itUsesCommittedOccurrenceDescriptor()"
+    },
+    {
+      "targetName": "DatadogRUMTests",
+      "testIdentifier": "RUMViewsHandlerTests/testWhenSceneDisconnects_itRejectsStaleStateUntilFreshSceneConnection()"
+    },
+    {
+      "targetName": "DatadogRUMTests",
+      "testIdentifier": "RUMViewsHandlerTests/testWhenCoveredSwiftUIOccurrenceIsReplaced_itDoesNotDisturbVisibleView()"
+    },
+    {
+      "targetName": "DatadogRUMTests",
+      "testIdentifier": "RUMViewsHandlerTests/testWhenSameNamedSwiftUIOccurrenceIsReplaced_itUsesFreshIdentity()"
+    },
+    {
+      "targetName": "DatadogRUMTests",
+      "testIdentifier": "RUMViewsHandlerTests/testWhenSwiftUIOccurrencesShareIdentityAcrossScenes_replacementTouchesOnlyTargetScene()"
+    },
+    {
+      "targetName": "DatadogRUMTests",
+      "testIdentifier": "RUMViewsHandlerTests/testWhenOldSwiftUIOccurrenceIsMissing_replacementDoesNotMaterializeNewOccurrence()"
+    },
+    {
+      "targetName": "DatadogRUMTests",
+      "testIdentifier": "RUMViewsHandlerTests/testWhenInactiveSwiftUIOccurrenceIsReplaced_itStartsReplacementOnForeground()"
+    },
+    {
+      "targetName": "DatadogRUMTests",
+      "testIdentifier": "RUMViewsHandlerTests/testWhenReplacementTargetsAnotherScene_itDoesNotMigrateOrMaterializeOccurrence()"
+    },
+    {
+      "targetName": "DatadogRUMTests",
+      "testIdentifier": "RUMViewsHandlerTests/testWhenOnDisappear_itDoesNotSendAnyCommand()"
+    },
+    {
+      "targetName": "DatadogRUMTests",
+      "testIdentifier": "RUMViewsHandlerTests/testGivenAppearedView_whenOnDisappear_itSopsTheRUMView()"
+    },
+    {
+      "targetName": "DatadogRUMTests",
+      "testIdentifier": "RUMViewsHandlerTests/testGiven2AppearedView_whenTheFirstDisappears_itDoesNotStopItTwice()"
+    },
+    {
+      "targetName": "DatadogRUMTests",
+      "testIdentifier": "RUMViewsHandlerTests/testGiven2AppearedView_whenTheLastDisappears_itRestartsThePreviousRUMView()"
+    },
+    {
+      "targetName": "DatadogRUMTests",
+      "testIdentifier": "RUMViewsHandlerTests/testGivenSwiftUIViewStarted_whenAppStateChanges_itStopsAndRestartsRUMView()"
+    },
+    {
+      "targetName": "DatadogRUMTests",
+      "testIdentifier": "RUMViewsHandlerTests/testGivenSwiftUIViewDidNotStart_whenAppStateChanges_itDoesNothing()"
+    },
+    {
+      "targetName": "DatadogRUMTests",
+      "testIdentifier": "RUMViewsHandlerTests/testSemanticPresentationThatNeverMounts_doesNotPublishOrReportDismissal()"
+    },
+    {
+      "targetName": "DatadogRUMTests",
+      "testIdentifier": "RUMViewsHandlerTests/testMountedSemanticPresentation_stopsBeforeRevealingUnderlyingDestination()"
+    },
+    {
+      "targetName": "DatadogRUMTests",
+      "testIdentifier": "RUMViewsHandlerTests/testMountedSemanticPresentation_revealsOnlyLatestUnderlyingDestination()"
+    },
+    {
+      "targetName": "DatadogRUMTests",
+      "testIdentifier": "RUMViewsHandlerTests/testMountedSemanticPresentationReplacement_doesNotRevealUnderlyingDestination()"
+    },
+    {
+      "targetName": "DatadogRUMTests",
+      "testIdentifier": "RUMViewsHandlerTests/testUnmountedSemanticPresentationReplacement_keepsLastMountedPresentation()"
+    },
+    {
+      "targetName": "DatadogRUMTests",
+      "testIdentifier": "RUMViewsHandlerTests/testPendingSemanticPresentationReplacement_whenContainerCancels_stopsLastMountedPresentation()"
+    },
+    {
+      "targetName": "DatadogRUMTests",
+      "testIdentifier": "RUMViewsHandlerTests/testMountedSemanticPresentationThatMovesScenes_followsItsActualScene()"
+    },
+    {
+      "targetName": "DatadogRUMTests",
+      "testIdentifier": "RUMViewsHandlerTests/testSemanticHostSource_commitsFreshOccurrencesAndIgnoresCancellation()"
+    },
+    {
+      "targetName": "DatadogRUMTests",
+      "testIdentifier": "RUMViewsHandlerTests/testSemanticHostSource_updatesBelowManualExceptionUntilItStops()"
+    },
+    {
+      "targetName": "DatadogRUMTests",
+      "testIdentifier": "RUMViewsHandlerTests/testSemanticHostSources_inDifferentScenesRemainIsolated()"
+    },
+    {
+      "targetName": "DatadogRUMTests",
+      "testIdentifier": "RUMViewsHandlerTests/testSemanticHostTransientDetachAndReattach_preservesOccurrenceAndSource()"
+    },
+    {
+      "targetName": "DatadogRUMTests",
+      "testIdentifier": "RUMViewsHandlerTests/testSemanticHostFinalDetach_isolatedBySceneAndUnsubscribesSource()"
+    },
+    {
+      "targetName": "DatadogRUMTests",
+      "testIdentifier": "RUMViewsHandlerTests/testSemanticHostSceneDisconnect_releasesOnlyExactSceneWithoutResurrection()"
+    },
+    {
+      "targetName": "DatadogRUMTests",
+      "testIdentifier": "RUMViewsHandlerTests/testSemanticReconnectRejectedReaderDoesNotConsumeGeneration()"
+    },
+    {
+      "targetName": "DatadogRUMTests",
+      "testIdentifier": "RUMViewsHandlerTests/testSemanticReconnectPublishesLatestInputOnceAfterRejection()"
+    },
+    {
+      "targetName": "DatadogRUMTests",
+      "testIdentifier": "RUMViewsHandlerTests/testSemanticReconnectWithoutStaleCallbackUsesFreshIdentity()"
+    },
+    {
+      "targetName": "DatadogRUMTests",
+      "testIdentifier": "RUMViewsHandlerTests/testSemanticReconnectIgnoresInheritedTraitUntilLiveReaderMount()"
+    },
+    {
+      "targetName": "DatadogRUMTests",
+      "testIdentifier": "RUMViewsHandlerTests/testSemanticFinalDetachRequiresReaderAndAcceptsLateInputAndHandler()"
+    },
+    {
+      "targetName": "DatadogRUMTests",
+      "testIdentifier": "RUMViewsHandlerTests/testSemanticPublicationReportsRejectionAndInactiveAcceptance()"
+    },
+    {
+      "targetName": "DatadogRUMTests",
+      "testIdentifier": "RUMViewsHandlerTests/testRejectedSemanticReplacementPreservesAcceptedScene()"
+    },
+    {
+      "targetName": "DatadogRUMTests",
+      "testIdentifier": "RUMViewsHandlerTests/testRetainedSemanticReaderRemountsAfterFinalDetachWithoutBody()"
+    },
+    {
+      "targetName": "DatadogRUMTests",
+      "testIdentifier": "RUMViewsHandlerTests/testRetainedSemanticReaderRemountsAfterSceneReconnectWithoutBody()"
+    },
+    {
+      "targetName": "DatadogRUMTests",
+      "testIdentifier": "RUMViewsHandlerTests/testRetainedSemanticConfigurationDoesNotKeepSourceOrHandlerAlive()"
+    },
+    {
+      "targetName": "DatadogRUMTests",
+      "testIdentifier": "RUMViewsHandlerTests/testRetainedSemanticReaderDoesNotRestoreWithdrawnSource()"
+    },
+    {
+      "targetName": "DatadogRUMTests",
+      "testIdentifier": "RUMViewsHandlerTests/testObservedNavigationMetadata_usesSafeAutomaticCaseNamesAndSparseOverrides()"
+    },
+    {
+      "targetName": "DatadogRUMTests",
+      "testIdentifier": "RUMViewsHandlerTests/testObservedNavigationTransitions_emitsInitialAndFreshReturnedOccurrences()"
+    },
+    {
+      "targetName": "DatadogRUMTests",
+      "testIdentifier": "RUMViewsHandlerTests/testObservedNavigationTransitions_emitsFreshEqualRouteOccurrences()"
+    },
+    {
+      "targetName": "DatadogRUMTests",
+      "testIdentifier": "RUMViewsHandlerTests/testObservedNavigationTransitions_waitsForInitialDestinationBeforeAuthority()"
+    },
+    {
+      "targetName": "DatadogRUMTests",
+      "testIdentifier": "RUMViewsHandlerTests/testObservedNavigationTransitions_preservesBackgroundEmissionOrder()"
+    },
+    {
+      "targetName": "DatadogRUMTests",
+      "testIdentifier": "RUMViewsHandlerTests/testObservedNavigationTransitions_ignoresHiddenStateWhilePresentationRemainsCurrent()"
+    },
+    {
+      "targetName": "DatadogRUMTests",
+      "testIdentifier": "RUMViewsHandlerTests/testObservedNavigationHosts_areIsolatedBySceneAndDisconnectExactSource()"
+    },
+    {
+      "targetName": "DatadogRUMTests",
+      "testIdentifier": "RUMViewTrackingStateTests/testWhenViewAppearsBeforeWindowAttaches_itStartsAfterAttachment()"
+    },
+    {
+      "targetName": "DatadogRUMTests",
+      "testIdentifier": "RUMViewTrackingStateTests/testWhenWindowAttachesBeforeViewAppears_itStartsOnAppearance()"
+    },
+    {
+      "targetName": "DatadogRUMTests",
+      "testIdentifier": "RUMViewTrackingStateTests/testWhenTraitBackedViewMountsBeforeAppearance_itStartsOnce()"
+    },
+    {
+      "targetName": "DatadogRUMTests",
+      "testIdentifier": "RUMViewTrackingStateTests/testWhenMountedViewDisappears_itStopsTheMountedScene()"
+    },
+    {
+      "targetName": "DatadogRUMTests",
+      "testIdentifier": "RUMViewTrackingStateTests/testWhenRetainedReaderUpdatesAfterDisappearance_itDoesNotRestartView()"
+    },
+    {
+      "targetName": "DatadogRUMTests",
+      "testIdentifier": "RUMViewTrackingStateTests/testWhenInactiveViewReconnects_readerMountWaitsForSemanticAppearance()"
+    },
+    {
+      "targetName": "DatadogRUMTests",
+      "testIdentifier": "RUMViewTrackingStateTests/testWhenDisconnectedStateReceivesStaleInitialTrait_itWaitsForResolvedReaderMount()"
+    },
+    {
+      "targetName": "DatadogRUMTests",
+      "testIdentifier": "RUMViewTrackingStateTests/testWhenMountedViewMovesToAnotherScene_itMigratesOnce()"
+    },
+    {
+      "targetName": "DatadogRUMTests",
+      "testIdentifier": "RUMViewTrackingStateTests/testWhenMountedViewDetachesThenDisappears_itStopsTheMountedScene()"
+    },
+    {
+      "targetName": "DatadogRUMTests",
+      "testIdentifier": "RUMViewTrackingStateTests/testWhenActiveSceneDisconnects_itInvalidatesSilentlyUntilExplicitRemount()"
+    },
+    {
+      "targetName": "DatadogRUMTests",
+      "testIdentifier": "RUMViewTrackingStateTests/testWhenKeyedSceneDisconnects_itRequiresNewGenerationToRemount()"
+    },
+    {
+      "targetName": "DatadogRUMTests",
+      "testIdentifier": "RUMViewTrackingStateTests/testWhenRetainedSwiftUIViewReappearsAfterNavigation_itStartsANewRUMViewOccurrence()"
+    },
+    {
+      "targetName": "DatadogRUMTests",
+      "testIdentifier": "RUMViewTrackingStateTests/testWhenKeyedViewReappears_itUsesAFreshCommandIdentity()"
+    },
+    {
+      "targetName": "DatadogRUMTests",
+      "testIdentifier": "RUMViewTrackingStateTests/testWhenAppearedKeyChangesInSameScene_itReplacesTheOccurrence()"
+    },
+    {
+      "targetName": "DatadogRUMTests",
+      "testIdentifier": "RUMViewTrackingStateTests/testWhenAppearedKeyIsUnchanged_itDoesNotCreateAnotherOccurrence()"
+    },
+    {
+      "targetName": "DatadogRUMTests",
+      "testIdentifier": "RUMViewTrackingStateTests/testWhenSameKeyDescriptorChanges_itAppliesOnlyToTheNextOccurrence()"
+    },
+    {
+      "targetName": "DatadogRUMTests",
+      "testIdentifier": "RUMViewTrackingStateTests/testWhenKeyReturnsToEarlierValue_itCreatesAThirdOccurrence()"
+    },
+    {
+      "targetName": "DatadogRUMTests",
+      "testIdentifier": "RUMViewTrackingStateTests/testWhenSourcePromotesMountedDormantNavigationBoundary_itStartsWithoutAnotherAppear()"
+    },
+    {
+      "targetName": "DatadogRUMTests",
+      "testIdentifier": "RUMViewTrackingStateTests/testWhenDetachedDormantNavigationBoundaryBecomesCurrent_itWaitsForAttachment()"
+    },
+    {
+      "targetName": "DatadogRUMTests",
+      "testIdentifier": "RUMViewTrackingStateTests/testWhenMountedDormantNavigationBoundaryRemainsNonCurrent_itDoesNotStart()"
+    },
+    {
+      "targetName": "DatadogRUMTests",
+      "testIdentifier": "RUMViewTrackingStateTests/testDormantNavigationPromotionRequiresExactSceneAndDormantSnapshot()"
+    },
+    {
+      "targetName": "DatadogRUMTests",
+      "testIdentifier": "RUMViewTrackingStateTests/testSourceAuthorizedReaderCanMigrateDormantNavigationBoundaryToAnotherScene()"
+    },
+    {
+      "targetName": "DatadogRUMTests",
+      "testIdentifier": "RUMViewTrackingStateTests/testSourceAuthorizedReaderCanPromoteDormantBoundaryAfterTransientDetach()"
+    },
+    {
+      "targetName": "DatadogRUMTests",
+      "testIdentifier": "RUMViewTrackingStateTests/testPreviouslyStartedBoundaryCanUseDormantPromotionForNewerGeneration()"
+    },
+    {
+      "targetName": "DatadogRUMTests",
+      "testIdentifier": "RUMViewTrackingStateTests/testPreviouslyStartedBoundaryCannotPromoteAnAlreadyStartedGeneration()"
+    },
+    {
+      "targetName": "DatadogRUMTests",
+      "testIdentifier": "RUMViewTrackingStateTests/testDisconnectFencedBoundaryCanUseSourceAuthorizedDormantPromotion()"
+    },
+    {
+      "targetName": "DatadogRUMTests",
+      "testIdentifier": "RUMViewTrackingStateTests/testWhenKeyChangesWhileDetached_itStopsThenWaitsForAttachment()"
+    },
+    {
+      "targetName": "DatadogRUMTests",
+      "testIdentifier": "RUMViewTrackingStateTests/testWhenKeyAndSceneChangeTogether_itStopsAndStartsInsteadOfReplacing()"
+    },
+    {
+      "targetName": "DatadogRUMTests",
+      "testIdentifier": "RUMViewTrackingStateTests/testWhenSameKeyMovesScenes_oldBindingCannotStopMigratedOccurrence()"
+    },
+    {
+      "targetName": "DatadogRUMTests",
+      "testIdentifier": "RUMViewTrackingStateTests/testWhenKeyedStateReceivesUnversionedLifecycle_itFailsClosed()"
+    },
+    {
+      "targetName": "DatadogRUMTests",
+      "testIdentifier": "RUMViewTrackingStateTests/testWhenOldBindingDisappearsAfterReplacement_itCannotStopNewOccurrence()"
+    },
+    {
+      "targetName": "DatadogRUMTests",
+      "testIdentifier": "RUMViewTrackingStateTests/testWhenViewDisappearsBeforeWindowAttaches_itNeverStarts()"
+    },
+    {
+      "targetName": "DatadogRUMTests",
+      "testIdentifier": "RUMViewTrackingStateTests/testWhenAttachedWindowHasNoScene_itPreservesLegacyUnscopedLifecycle()"
+    },
+    {
+      "targetName": "DatadogRUMTests",
+      "testIdentifier": "RUMViewTrackingStateTests/testWhenAppearedViewTransientlyDetachesAndReattachesSameScene_itDoesNotRestart()"
+    },
+    {
+      "targetName": "DatadogRUMTests",
+      "testIdentifier": "RUMViewTrackingStateTests/testWhenAppearedViewDetachesThenDisappears_itStopsOriginalScene()"
+    },
+    {
+      "targetName": "DatadogRUMTests",
+      "testIdentifier": "RUMViewTrackingStateTests/testWhenAppearedViewDetachesThenAttachesToAnotherScene_itMigratesOnce()"
+    },
+    {
+      "targetName": "DatadogRUMTests",
+      "testIdentifier": "RUMViewTrackingStateTests/testWhenAppearedViewMovesBetweenScenes_itStopsThenStartsWithStableIdentity()"
+    },
+    {
+      "targetName": "DatadogRUMTests",
+      "testIdentifier": "RUMViewTrackingStateTests/testObserverReportsAttachmentBeforeDetachment()"
+    },
+    {
+      "targetName": "DatadogRUMTests",
+      "testIdentifier": "RUMViewTrackingStateTests/testObserverTreatsSceneLessWindowAsUnresolvedWhenApplicationSupportsMultipleScenes()"
+    },
+    {
+      "targetName": "DatadogRUMTests",
+      "testIdentifier": "RUMViewTrackingStateTests/testObserverTreatsUnattachedSceneAsDisconnected()"
+    },
+    {
+      "targetName": "DatadogRUMTests",
+      "testIdentifier": "RUMViewTrackingStateTests/testObserverDoesNotRepeatMountForUnchangedAttachment()"
+    },
+    {
+      "targetName": "DatadogRUMTests",
+      "testIdentifier": "RUMViewTrackingStateTests/testObserverReportsMountAfterSilentSceneDisconnection()"
+    },
+    {
+      "targetName": "DatadogRUMTests",
+      "testIdentifier": "RUMViewTrackingStateTests/testReaderUpdateRebindsAndReregistersRetainedObserver()"
+    },
+    {
+      "targetName": "DatadogRUMTests",
+      "testIdentifier": "RUMViewTrackingStateTests/testReaderUpdateReconcilesRetainedObserverWithLatestBinding()"
+    },
+    {
+      "targetName": "DatadogRUMTests",
+      "testIdentifier": "SwiftUIViewNameExtractorTests/testViewNameExtraction()"
+    },
+    {
+      "targetName": "DatadogRUMTests",
+      "testIdentifier": "SwiftUIViewNameExtractorTests/testFallbackViewNameExtraction()"
+    },
+    {
+      "targetName": "DatadogRUMTests",
+      "testIdentifier": "SwiftUIViewNameExtractorTests/testSwiftUIViewPathComponents()"
+    },
+    {
+      "targetName": "DatadogRUMTests",
+      "testIdentifier": "SwiftUIViewNameExtractorTests/testDetectControllerType()"
+    },
+    {
+      "targetName": "DatadogRUMTests",
+      "testIdentifier": "SwiftUIViewNameExtractorTests/testShouldSkipViewController()"
+    },
+    {
+      "targetName": "DatadogRUMTests",
+      "testIdentifier": "SwiftUIViewNameExtractorTests/testExtractNameFilteringForUIKitControllers()"
+    }
+  ],
+  "native_attempts": [
+    {
+      "artifact_root": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/retained-reader-me1wg2ce",
+      "experiment": "EXP-171",
+      "status": "PASS",
+      "arms": {
+        "control": {
+          "revision": "2da21c041ded08eb26943c653f9b8abd5fae1411",
+          "sdk_identity": {
+            "file_count": 387,
+            "sha256": "f87de0dd49ed2d93ee0d8a62ccdc92e494e6144fd3875046d076c05d3cc6476e"
+          },
+          "fixture_sha256": "1323fd75c897357a5549176276f59374be8aafa024439984e3bf709de06d04c0",
+          "package_sha256": "08c8b38c32992641a13f21c5c5eb7bde8a78f409d4b5c7af63930cd262bc2c19",
+          "bundle": "com.datadoghq.retained-reader.control",
+          "build_command": [
+            "xcodebuild",
+            "build",
+            "-quiet",
+            "-project",
+            "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/retained-reader-me1wg2ce/control/RetainedReader.xcodeproj",
+            "-scheme",
+            "RetainedReader",
+            "-configuration",
+            "Debug",
+            "-destination",
+            "generic/platform=iOS Simulator",
+            "-derivedDataPath",
+            "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/retained-reader-me1wg2ce/control/derived",
+            "CODE_SIGNING_ALLOWED=NO"
+          ],
+          "build_log": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/retained-reader-me1wg2ce/control/build.log",
+          "app": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/retained-reader-me1wg2ce/control/derived/Build/Products/Debug-iphonesimulator/RetainedReader.app",
+          "binary_sha256": "8eb9d1f47c7995cf7e0e19d0e39f6b1420657e8f9d9d06b9a1dca7839de9dd18",
+          "build_log_sha256": "1ff027d049dd33b1d35745def82c9a2c5b9e0603372b98c853435d279b5d3094",
+          "run": {
+            "status": "FAIL",
+            "run_id": "retained-reader-f4e82fba6276420e9db53770321e9865",
+            "launch_command": [
+              "xcrun",
+              "simctl",
+              "launch",
+              "--console",
+              "BE03D65C-84F6-4FE0-95DA-A8F8D81A5D21",
+              "com.datadoghq.retained-reader.control",
+              "--run-id",
+              "retained-reader-f4e82fba6276420e9db53770321e9865"
+            ],
+            "clean_install": true,
+            "installed_binary_matches": true,
+            "required_checks_complete": true,
+            "result": {
+              "checks": {
+                "capability_authority_restored": false,
+                "capability_detach_releases": true,
+                "capability_duplicate_reader_no_change": true,
+                "capability_existing_callback_ready": true,
+                "capability_final_detach_releases": true,
+                "capability_first_mount_before_body": true,
+                "capability_first_mount_intercepted": true,
+                "capability_first_mount_source_scene": true,
+                "capability_fresh_id": false,
+                "capability_initial_owner": true,
+                "capability_input_while_detached_no_owner": true,
+                "capability_latest_owner": false,
+                "capability_mount_log_owner": false,
+                "capability_mount_resource_owner": false,
+                "capability_mounted": true,
+                "capability_no_intermediate_home": true,
+                "capability_one_peer_occurrence": true,
+                "capability_peer_owner": true,
+                "capability_peer_survives_mount": true,
+                "capability_peer_unchanged": true,
+                "capability_reader_present": true,
+                "capability_registry_present": true,
+                "capability_removed_native_window": true,
+                "capability_retained_reader_still_exists": true,
+                "capability_source_reobserved": false,
+                "capability_source_unsubscribed": true,
+                "capability_source_unsubscribed_final": true,
+                "capability_two_owned_occurrences": false,
+                "explicit_authority_restored": false,
+                "explicit_detach_releases": true,
+                "explicit_duplicate_reader_no_change": true,
+                "explicit_existing_callback_ready": true,
+                "explicit_final_detach_releases": true,
+                "explicit_first_mount_before_body": true,
+                "explicit_first_mount_intercepted": true,
+                "explicit_first_mount_source_scene": true,
+                "explicit_fresh_id": false,
+                "explicit_initial_owner": true,
+                "explicit_input_while_detached_no_owner": true,
+                "explicit_latest_owner": false,
+                "explicit_mount_log_owner": false,
+                "explicit_mount_resource_owner": false,
+                "explicit_mounted": true,
+                "explicit_no_intermediate_home": true,
+                "explicit_one_peer_occurrence": true,
+                "explicit_peer_owner": true,
+                "explicit_peer_survives_mount": true,
+                "explicit_peer_unchanged": true,
+                "explicit_reader_present": true,
+                "explicit_registry_present": true,
+                "explicit_removed_native_window": true,
+                "explicit_retained_reader_still_exists": true,
+                "explicit_source_reobserved": false,
+                "explicit_source_unsubscribed": true,
+                "explicit_source_unsubscribed_final": true,
+                "explicit_two_owned_occurrences": false,
+                "native_scene_active": true
+              },
+              "details": {
+                "scenarios": [
+                  {
+                    "events": [
+                      {
+                        "id": "63a90cd3-5728-416d-b1ec-387dbc51ad94",
+                        "name": "ApplicationLaunch",
+                        "session": "c76772b8-dec5-4734-85f3-5d89248aa5bd",
+                        "type": "view"
+                      },
+                      {
+                        "id": "63a90cd3-5728-416d-b1ec-387dbc51ad94",
+                        "name": "ApplicationLaunch",
+                        "session": "c76772b8-dec5-4734-85f3-5d89248aa5bd",
+                        "type": "view"
+                      },
+                      {
+                        "id": "a4eb6528-148d-485b-8bd5-aa5f2391db96",
+                        "name": "Initial",
+                        "session": "c76772b8-dec5-4734-85f3-5d89248aa5bd",
+                        "type": "view"
+                      },
+                      {
+                        "id": "495c9c6b-a9a7-4185-8821-e6aea53de5f4",
+                        "name": "Peer",
+                        "session": "c76772b8-dec5-4734-85f3-5d89248aa5bd",
+                        "type": "view"
+                      },
+                      {
+                        "id": "a4eb6528-148d-485b-8bd5-aa5f2391db96",
+                        "name": "Initial",
+                        "session": "c76772b8-dec5-4734-85f3-5d89248aa5bd",
+                        "type": "view"
+                      },
+                      {
+                        "message": "explicit_mount",
+                        "session": "c76772b8-dec5-4734-85f3-5d89248aa5bd",
+                        "type": "log",
+                        "view": "495c9c6b-a9a7-4185-8821-e6aea53de5f4"
+                      },
+                      {
+                        "session": "c76772b8-dec5-4734-85f3-5d89248aa5bd",
+                        "type": "resource",
+                        "url": "https://fixture.invalid/explicit_mount",
+                        "view": "495c9c6b-a9a7-4185-8821-e6aea53de5f4"
+                      },
+                      {
+                        "id": "495c9c6b-a9a7-4185-8821-e6aea53de5f4",
+                        "name": "Peer",
+                        "session": "c76772b8-dec5-4734-85f3-5d89248aa5bd",
+                        "type": "view"
+                      },
+                      {
+                        "id": "495c9c6b-a9a7-4185-8821-e6aea53de5f4",
+                        "name": "Peer",
+                        "session": "c76772b8-dec5-4734-85f3-5d89248aa5bd",
+                        "type": "view"
+                      }
+                    ],
+                    "mode": "explicit",
+                    "mount_callback_count": 1,
+                    "peer": "logical",
+                    "root_value_replaced": false,
+                    "scene_id": "A3CFABD7-B59E-4CD1-A136-8F0E285C96FF"
+                  },
+                  {
+                    "events": [
+                      {
+                        "id": "d25a9efe-394b-4449-a6f5-b4ece1aedb16",
+                        "name": "ApplicationLaunch",
+                        "session": "b3f80a74-4b55-4fa6-9456-b7d2b3161f78",
+                        "type": "view"
+                      },
+                      {
+                        "id": "d25a9efe-394b-4449-a6f5-b4ece1aedb16",
+                        "name": "ApplicationLaunch",
+                        "session": "b3f80a74-4b55-4fa6-9456-b7d2b3161f78",
+                        "type": "view"
+                      },
+                      {
+                        "id": "4d4f456a-349b-4ce0-adbc-00149ff6ff64",
+                        "name": "Initial",
+                        "session": "b3f80a74-4b55-4fa6-9456-b7d2b3161f78",
+                        "type": "view"
+                      },
+                      {
+                        "id": "3c31f5e4-dced-4155-94e3-34b321b753b6",
+                        "name": "Peer",
+                        "session": "b3f80a74-4b55-4fa6-9456-b7d2b3161f78",
+                        "type": "view"
+                      },
+                      {
+                        "id": "4d4f456a-349b-4ce0-adbc-00149ff6ff64",
+                        "name": "Initial",
+                        "session": "b3f80a74-4b55-4fa6-9456-b7d2b3161f78",
+                        "type": "view"
+                      },
+                      {
+                        "message": "capability_mount",
+                        "session": "b3f80a74-4b55-4fa6-9456-b7d2b3161f78",
+                        "type": "log",
+                        "view": "3c31f5e4-dced-4155-94e3-34b321b753b6"
+                      },
+                      {
+                        "session": "b3f80a74-4b55-4fa6-9456-b7d2b3161f78",
+                        "type": "resource",
+                        "url": "https://fixture.invalid/capability_mount",
+                        "view": "3c31f5e4-dced-4155-94e3-34b321b753b6"
+                      },
+                      {
+                        "id": "3c31f5e4-dced-4155-94e3-34b321b753b6",
+                        "name": "Peer",
+                        "session": "b3f80a74-4b55-4fa6-9456-b7d2b3161f78",
+                        "type": "view"
+                      },
+                      {
+                        "id": "3c31f5e4-dced-4155-94e3-34b321b753b6",
+                        "name": "Peer",
+                        "session": "b3f80a74-4b55-4fa6-9456-b7d2b3161f78",
+                        "type": "view"
+                      }
+                    ],
+                    "mode": "capability",
+                    "mount_callback_count": 1,
+                    "peer": "logical",
+                    "root_value_replaced": false,
+                    "scene_id": "A3CFABD7-B59E-4CD1-A136-8F0E285C96FF"
+                  }
+                ]
+              },
+              "run_id": "retained-reader-f4e82fba6276420e9db53770321e9865"
+            },
+            "console_sha256": "d2bff295c6d548037afac50db2a629837cc01be66ef8184b1a63fb4e969cf0ad"
+          },
+          "sdk_unchanged": true,
+          "fixture_unchanged": true,
+          "binary_unchanged": true
+        },
+        "candidate": {
+          "revision": "4ba7179c674a80a7e8e7151fadcb1fb5c8ad390c",
+          "sdk_identity": {
+            "file_count": 387,
+            "sha256": "7570d06257f9c40c0d953fa763f06b776fb41a38a43824f659076ac6368c3d1b"
+          },
+          "fixture_sha256": "1323fd75c897357a5549176276f59374be8aafa024439984e3bf709de06d04c0",
+          "package_sha256": "08c8b38c32992641a13f21c5c5eb7bde8a78f409d4b5c7af63930cd262bc2c19",
+          "bundle": "com.datadoghq.retained-reader.candidate",
+          "build_command": [
+            "xcodebuild",
+            "build",
+            "-quiet",
+            "-project",
+            "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/retained-reader-me1wg2ce/candidate/RetainedReader.xcodeproj",
+            "-scheme",
+            "RetainedReader",
+            "-configuration",
+            "Debug",
+            "-destination",
+            "generic/platform=iOS Simulator",
+            "-derivedDataPath",
+            "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/retained-reader-me1wg2ce/candidate/derived",
+            "CODE_SIGNING_ALLOWED=NO"
+          ],
+          "build_log": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/retained-reader-me1wg2ce/candidate/build.log",
+          "app": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/retained-reader-me1wg2ce/candidate/derived/Build/Products/Debug-iphonesimulator/RetainedReader.app",
+          "binary_sha256": "0c95f9ed9dad61f389dce8154243fa53207efdfdeabbe05981f7964f7ae12df7",
+          "build_log_sha256": "e693a9940059f902bcdaec7b2513d6181e6b6687130a46a16ac780febac211e4",
+          "run": {
+            "status": "PASS",
+            "run_id": "retained-reader-00e8d0347ecb4f2fbdfb3619d10a0540",
+            "launch_command": [
+              "xcrun",
+              "simctl",
+              "launch",
+              "--console",
+              "BE03D65C-84F6-4FE0-95DA-A8F8D81A5D21",
+              "com.datadoghq.retained-reader.candidate",
+              "--run-id",
+              "retained-reader-00e8d0347ecb4f2fbdfb3619d10a0540"
+            ],
+            "clean_install": true,
+            "installed_binary_matches": true,
+            "required_checks_complete": true,
+            "result": {
+              "checks": {
+                "capability_authority_restored": true,
+                "capability_detach_releases": true,
+                "capability_duplicate_reader_no_change": true,
+                "capability_existing_callback_ready": true,
+                "capability_final_detach_releases": true,
+                "capability_first_mount_before_body": true,
+                "capability_first_mount_intercepted": true,
+                "capability_first_mount_source_scene": true,
+                "capability_fresh_id": true,
+                "capability_initial_owner": true,
+                "capability_input_while_detached_no_owner": true,
+                "capability_latest_owner": true,
+                "capability_mount_log_owner": true,
+                "capability_mount_resource_owner": true,
+                "capability_mounted": true,
+                "capability_no_intermediate_home": true,
+                "capability_one_peer_occurrence": true,
+                "capability_peer_owner": true,
+                "capability_peer_survives_mount": true,
+                "capability_peer_unchanged": true,
+                "capability_reader_present": true,
+                "capability_registry_present": true,
+                "capability_removed_native_window": true,
+                "capability_retained_reader_still_exists": true,
+                "capability_source_reobserved": true,
+                "capability_source_unsubscribed": true,
+                "capability_source_unsubscribed_final": true,
+                "capability_two_owned_occurrences": true,
+                "explicit_authority_restored": true,
+                "explicit_detach_releases": true,
+                "explicit_duplicate_reader_no_change": true,
+                "explicit_existing_callback_ready": true,
+                "explicit_final_detach_releases": true,
+                "explicit_first_mount_before_body": true,
+                "explicit_first_mount_intercepted": true,
+                "explicit_first_mount_source_scene": true,
+                "explicit_fresh_id": true,
+                "explicit_initial_owner": true,
+                "explicit_input_while_detached_no_owner": true,
+                "explicit_latest_owner": true,
+                "explicit_mount_log_owner": true,
+                "explicit_mount_resource_owner": true,
+                "explicit_mounted": true,
+                "explicit_no_intermediate_home": true,
+                "explicit_one_peer_occurrence": true,
+                "explicit_peer_owner": true,
+                "explicit_peer_survives_mount": true,
+                "explicit_peer_unchanged": true,
+                "explicit_reader_present": true,
+                "explicit_registry_present": true,
+                "explicit_removed_native_window": true,
+                "explicit_retained_reader_still_exists": true,
+                "explicit_source_reobserved": true,
+                "explicit_source_unsubscribed": true,
+                "explicit_source_unsubscribed_final": true,
+                "explicit_two_owned_occurrences": true,
+                "native_scene_active": true
+              },
+              "details": {
+                "scenarios": [
+                  {
+                    "events": [
+                      {
+                        "id": "47d9a8e5-5981-45a4-8526-4ce7a420e053",
+                        "name": "ApplicationLaunch",
+                        "session": "bfc41b95-8fa0-4228-ac2e-e1afcc95d7ff",
+                        "type": "view"
+                      },
+                      {
+                        "id": "47d9a8e5-5981-45a4-8526-4ce7a420e053",
+                        "name": "ApplicationLaunch",
+                        "session": "bfc41b95-8fa0-4228-ac2e-e1afcc95d7ff",
+                        "type": "view"
+                      },
+                      {
+                        "id": "90d8cb10-f6b1-4b8b-8d90-1da21c655ec2",
+                        "name": "Initial",
+                        "session": "bfc41b95-8fa0-4228-ac2e-e1afcc95d7ff",
+                        "type": "view"
+                      },
+                      {
+                        "id": "2506335a-9bf1-4660-b7a5-de895084d90a",
+                        "name": "Peer",
+                        "session": "bfc41b95-8fa0-4228-ac2e-e1afcc95d7ff",
+                        "type": "view"
+                      },
+                      {
+                        "id": "90d8cb10-f6b1-4b8b-8d90-1da21c655ec2",
+                        "name": "Initial",
+                        "session": "bfc41b95-8fa0-4228-ac2e-e1afcc95d7ff",
+                        "type": "view"
+                      },
+                      {
+                        "id": "1e7e1905-d6e0-4a20-b078-20084b84a060",
+                        "name": "Latest",
+                        "session": "bfc41b95-8fa0-4228-ac2e-e1afcc95d7ff",
+                        "type": "view"
+                      },
+                      {
+                        "message": "explicit_mount",
+                        "session": "bfc41b95-8fa0-4228-ac2e-e1afcc95d7ff",
+                        "type": "log",
+                        "view": "1e7e1905-d6e0-4a20-b078-20084b84a060"
+                      },
+                      {
+                        "session": "bfc41b95-8fa0-4228-ac2e-e1afcc95d7ff",
+                        "type": "resource",
+                        "url": "https://fixture.invalid/explicit_mount",
+                        "view": "1e7e1905-d6e0-4a20-b078-20084b84a060"
+                      },
+                      {
+                        "id": "1e7e1905-d6e0-4a20-b078-20084b84a060",
+                        "name": "Latest",
+                        "session": "bfc41b95-8fa0-4228-ac2e-e1afcc95d7ff",
+                        "type": "view"
+                      },
+                      {
+                        "id": "1e7e1905-d6e0-4a20-b078-20084b84a060",
+                        "name": "Latest",
+                        "session": "bfc41b95-8fa0-4228-ac2e-e1afcc95d7ff",
+                        "type": "view"
+                      },
+                      {
+                        "id": "2506335a-9bf1-4660-b7a5-de895084d90a",
+                        "name": "Peer",
+                        "session": "bfc41b95-8fa0-4228-ac2e-e1afcc95d7ff",
+                        "type": "view"
+                      }
+                    ],
+                    "mode": "explicit",
+                    "mount_callback_count": 1,
+                    "peer": "logical",
+                    "root_value_replaced": false,
+                    "scene_id": "3B211538-3A3E-4D51-9E22-91194A92606E"
+                  },
+                  {
+                    "events": [
+                      {
+                        "id": "5d993008-b261-418c-a772-d613b645a54c",
+                        "name": "ApplicationLaunch",
+                        "session": "3966631a-577b-46a7-bf40-e3966d8452b0",
+                        "type": "view"
+                      },
+                      {
+                        "id": "5d993008-b261-418c-a772-d613b645a54c",
+                        "name": "ApplicationLaunch",
+                        "session": "3966631a-577b-46a7-bf40-e3966d8452b0",
+                        "type": "view"
+                      },
+                      {
+                        "id": "598aff14-2d46-49a6-acd0-13b826b98f65",
+                        "name": "Initial",
+                        "session": "3966631a-577b-46a7-bf40-e3966d8452b0",
+                        "type": "view"
+                      },
+                      {
+                        "id": "c5bbaf5e-b664-4da1-bb69-d828f09f6452",
+                        "name": "Peer",
+                        "session": "3966631a-577b-46a7-bf40-e3966d8452b0",
+                        "type": "view"
+                      },
+                      {
+                        "id": "598aff14-2d46-49a6-acd0-13b826b98f65",
+                        "name": "Initial",
+                        "session": "3966631a-577b-46a7-bf40-e3966d8452b0",
+                        "type": "view"
+                      },
+                      {
+                        "id": "814359e3-a4b1-4b1a-9f4e-d97e0f3b9f70",
+                        "name": "Latest",
+                        "session": "3966631a-577b-46a7-bf40-e3966d8452b0",
+                        "type": "view"
+                      },
+                      {
+                        "message": "capability_mount",
+                        "session": "3966631a-577b-46a7-bf40-e3966d8452b0",
+                        "type": "log",
+                        "view": "814359e3-a4b1-4b1a-9f4e-d97e0f3b9f70"
+                      },
+                      {
+                        "session": "3966631a-577b-46a7-bf40-e3966d8452b0",
+                        "type": "resource",
+                        "url": "https://fixture.invalid/capability_mount",
+                        "view": "814359e3-a4b1-4b1a-9f4e-d97e0f3b9f70"
+                      },
+                      {
+                        "id": "814359e3-a4b1-4b1a-9f4e-d97e0f3b9f70",
+                        "name": "Latest",
+                        "session": "3966631a-577b-46a7-bf40-e3966d8452b0",
+                        "type": "view"
+                      },
+                      {
+                        "id": "814359e3-a4b1-4b1a-9f4e-d97e0f3b9f70",
+                        "name": "Latest",
+                        "session": "3966631a-577b-46a7-bf40-e3966d8452b0",
+                        "type": "view"
+                      },
+                      {
+                        "id": "c5bbaf5e-b664-4da1-bb69-d828f09f6452",
+                        "name": "Peer",
+                        "session": "3966631a-577b-46a7-bf40-e3966d8452b0",
+                        "type": "view"
+                      }
+                    ],
+                    "mode": "capability",
+                    "mount_callback_count": 1,
+                    "peer": "logical",
+                    "root_value_replaced": false,
+                    "scene_id": "3B211538-3A3E-4D51-9E22-91194A92606E"
+                  }
+                ]
+              },
+              "run_id": "retained-reader-00e8d0347ecb4f2fbdfb3619d10a0540"
+            },
+            "console_sha256": "edb07d366e49b949209cb2ba3ff19a857c148ea96221fdff5240930d7bd2d2be"
+          },
+          "sdk_unchanged": true,
+          "fixture_unchanged": true,
+          "binary_unchanged": true
+        }
+      },
+      "runner_sha256": "2acf49d550f97dd158265824da7eed74a88b156d8d55433b5a5ace9d6d30370a",
+      "helper_sha256": "d14fa5cd77aed6147386e0815a3f711f8d2c45d0018cf5512da79e9db4943398",
+      "xcode": "Xcode 27.0\nBuild version 27A266a",
+      "device": {
+        "name": "iPhone 17 Pro",
+        "udid": "BE03D65C-84F6-4FE0-95DA-A8F8D81A5D21",
+        "os": "27.0"
+      },
+      "manifest_sha256": "a5db3438225e63b3e6cede755430a2b6ee15894ae1b0c8d9a065c3fd0a33e873"
+    }
+  ]
+}

@@ -331,7 +331,7 @@ ordered acceptance contract is in
 
 | EXP-170 | PASS | D08: three failing controls,314 tests and mounted51/51 versus39/51; fresh reconnect Resource/Log owners and delayed retained-host remount | [Record](Experiments/EXP-143-199.md#exp-170--accept-semantic-reconnects-only-after-a-live-attachment) |
 
-| EXP-171 | PLANNED | R04: retained-reader remount without body/source rebind; latest input, fresh owners and weak configuration lifetime | [Record](Experiments/EXP-143-199.md#exp-171--restore-retained-hosts-from-the-reader-without-body-reconstruction) |
+| EXP-171 | PASS | R04: two failing no-body controls,318 tests, mounted57/57 versus43/57; first retained-reader callback owns latest input before body rebind | [Record](Experiments/EXP-143-199.md#exp-171--restore-retained-hosts-from-the-reader-without-body-reconstruction) |
 
 ## Simulator-inconclusive and hardware-required evidence
 

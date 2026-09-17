@@ -50,9 +50,9 @@ Objective-C Release exposure still require normal API review.
    boundaries. Preserve their controls and frozen acceptance identities.
 2. D05/D06 restoration, D03/R02 keyed lifetime, D07 pending authority and D08
    reconnect acceptance are closed within their recorded boundaries.
-   Next execute EXP-171 for R04 retained-reader remount without body/source rebind, then define
-   P03 disconnected-registry retirement and run its unchanged budget.
-3. Repair D10 accepted presentation state. Close the missing R04/R05/R06
+   R04 retained-reader remount now passes EXP-171. Next define P03 disconnected-
+   registry retirement and run its unchanged budget.
+3. Repair D10 accepted presentation state. Close the missing R05/R06
    discriminators in those slices; P03 needs its full retained-state budget.
 4. Close the early compatibility/performance gates in available environments;
    C06 remains blocked without a minimum-OS runtime. Resume T03–T14 only after
@@ -103,7 +103,7 @@ SwiftUI remains required as H16; the former conditional row is resolved.
 | R01 | Trait readers and tracking lifetimes | SDK reviewer | None | Reader identity, migration, remount, weak ownership and disconnect fencing; record findings, evidence and dispositions in COMPONENT_REVIEW.md | Source review plus targeted regressions for any finding | CLOSED |
 | R02 | Authority and occurrence sources | SDK reviewer | D03 | Exact host release, local suppression, stale generation rejection and fresh reveals; record findings, evidence and dispositions in COMPONENT_REVIEW.md | Source review plus targeted regressions for any finding | CLOSED |
 | R03 | Transition arbitration | SDK reviewer | None | Accepted versus proposed state; cancel/finish exactly once; nested reentrancy; record findings, evidence and dispositions in COMPONENT_REVIEW.md | Source review plus targeted regressions for any finding | CLOSED |
-| R04 | View modifiers and attachment boundaries | SDK reviewer | D03, D08 | Main-thread/availability gates, host reconstruction and retained-reader teardown; record findings, evidence and dispositions in COMPONENT_REVIEW.md | Source review plus targeted regressions for any finding | REVIEW BLOCKED |
+| R04 | View modifiers and attachment boundaries | SDK reviewer | D03, D08 | Main-thread/availability gates, host reconstruction and retained-reader teardown; record findings, evidence and dispositions in COMPONENT_REVIEW.md | Source review plus targeted regressions for any finding | CLOSED |
 | R05 | Observed input and semantic engine | SDK reviewer | D07, D08 | Publisher pinning, Observation rearming, background FIFO and atomic destination; record findings, evidence and dispositions in COMPONENT_REVIEW.md; multiple observers with nested commit/remove/add must preserve monotonic generations | Source review plus targeted regressions for any finding | REVIEW BLOCKED |
 | R06 | Public hosts and native convenience adapters | SDK reviewer | D10 | Migration budget, no screen/method edits, automatic metadata and platform fallback; record findings, evidence and dispositions in COMPONENT_REVIEW.md; delayed detach/remount and same-ID presentation replacement preserve occurrence ownership | Source review plus targeted regressions for any finding | REVIEW BLOCKED |
 

@@ -171,8 +171,8 @@
       "decisive_test": "Main-thread/availability gates, host reconstruction and retained-reader teardown; record findings, evidence and dispositions in COMPONENT_REVIEW.md",
       "environment": "Source review plus targeted regressions for any finding",
       "completion_mode": null,
-      "status": "REVIEW BLOCKED",
-      "evidence": "EXP-168 teardown and EXP-170 stale-trait/fresh reconnect evidence pass. Delayed native remount passes with body reconstruction; retained reader callback without body/source rebind remains a distinct missing discriminator in COMPONENT_REVIEW.md."
+      "status": "CLOSED",
+      "evidence": "EXP-171, signed SDK4ba7179c6: two failing no-body controls,318 affected tests and mounted57/57 versus43/57. First retained-reader callback runs with zero source observers, then owns exact fresh Latest Resource/Log markers before any body rebind. Weak configuration/source withdrawal and final teardown pass; H08/H09 stay physical."
     },
     {
       "id": "R05",

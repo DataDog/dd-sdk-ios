@@ -10,7 +10,7 @@ Last updated: 2026-09-17
 
 ## Current verdict
 
-Current release accounting is **25/66 gates closed**. EXP-160 establishes early
+Current release accounting is **26/66 gates closed**. EXP-160 establishes early
 ordinary automatic/manual/custom/NOP and26.5 compatibility, dispatch and exact
 reentrancy baselines. EXP-166 repairs the enabled-handoff allocation failure:
 complete Release ABBA runs measure 1 allocation/64 bytes per event on27/26.5,
@@ -56,9 +56,11 @@ owns immediate work. EXP-170 closes D08 at signed `66d1ccb02`: three failing con
 314 affected tests and mounted51/51 versus39/51. Stale traits and rejected reader
 callbacks cannot consume a generation. Immediate reconnect Resource/Log events
 belong to the fresh Home; the control sends them to Peer. A retained host remounts
-fresh after delayed detach with body reconstruction. R04 still requires a retained
-reader remount without body/source rebind (defined EXP-171), before P03 registry retirement; D10 is the remaining
-production-review repair. Physical scene and final release gates remain separate.
+fresh after delayed detach with body reconstruction. EXP-171 closes R04 at signed
+`4ba7179c6`: two failing no-body controls,318 affected tests and mounted57/57 versus
+43/57. Its first retained-reader callback proves zero observers before SDK delivery,
+then fresh Latest Resource/Log ownership. P03 registry retirement is next; D10 is
+the remaining production-review repair. Physical scene and final release gates remain separate.
 
 The released SDK baseline is not semantically safe for applications with
 concurrent scenes. Process-representative view state and process-global SwiftUI
@@ -472,10 +474,10 @@ The finite [release checklist](PLAN.md) replaces the former expandable downstrea
 row. Each family T01–T15 states explicit target, captured ownership or documented
 process fallback; each gate has an owner, dependency, decisive test and environment.
 
-1. Repair assessed D01–D12 in [REVIEW_TRIAGE.md](REVIEW_TRIAGE.md) order. Preserve
-   passing EXP-159 evidence while adding the missing D12 timeout discriminator.
-2. Close measured P02/P03 failures under the frozen budgets. R02/R04/R05/R06
-   remain blocked by lifetime, authority, accepted-state and coverage findings;
+1. D10 is the remaining assessed production-review repair. Preserve the accepted
+   D01–D09/D11/D12 results and EXP-159 ownership evidence.
+2. Close measured P03 retention under the frozen budget; P02 passes EXP-166.
+   R05/R06 remain blocked by lifetime, accepted-state and coverage findings;
    extraction is still deferred until freeze.
 3. Finish named T03–T14 contracts after their repair dependencies. Complete
    hardware H01–H16 when the required topology/gesture is available; simulator
@@ -483,8 +485,9 @@ process fallback; each gate has an owner, dependency, decisive test and environm
 4. Close C03/C06 environment gaps, stable API review, final supported-platform
    matrix (including macOS/watchOS), Replay crash safety and Duo27.1 acceptance.
 
-No product decision blocks internal repair work. The next experiment is a bounded
-D01/D02 supported-platform regression slice, defined before changing SDK source.
+No product decision blocks internal repair work. Define P03 disconnected-registry
+retirement next, preserving stale-callback rejection and the frozen retention budget.
+D10 and the remaining R05/R06 discriminators follow.
 Do not rerun accepted experiments merely to resume.
 
 ## Evidence routing

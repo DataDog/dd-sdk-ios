@@ -1262,3 +1262,11 @@ submit Resource/Log markers inside that callback after SDK delivery. Require the
 callback to run before any subsequent render; missing callback interception is
 inconclusive. Do not assign a new root value to repair the source before this
 boundary. Unit controls must enforce the same no-rebind sequence independently.
+
+EXP-171 accepted attempt1: control2da21c041/candidate4ba7179c6,57 required
+checks; control43/57 versus candidate57/57. Both first mounted reader callbacks
+run with zero source observers; the candidate reobserves and owns the immediately
+submitted Resource/Log markers. The root value is never reassigned. SDK/fixture/
+binary identities remain frozen. Results/EXP-171-retained-reader.json retains all
+checks, exact owners,318 test selectors and test-summary hashes. R04 closes only
+its bounded component review, leaving physical H08/H09 unchanged.

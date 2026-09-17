@@ -54,7 +54,7 @@ SwiftUI invariants and current test seams are detailed in
 | Concern | Disposition and release gate |
 | --- | --- |
 | Disconnected scene dictionaries grow without retirement | Confirmed independently by EXP-160: 220 entries after 20 warm-up plus 200 unique disconnect cycles. P03 already owns the finite repair. Retire connection generations without removing the fence while stale callbacks can still arrive; repeat ownership and retained-heap checks. |
-| Final detach uses one queue turn | Relevant coverage gap, not a newly reproduced OS failure. R04/H08/H09 must distinguish transient detach, suspended retained host and final destruction, including delayed remount without a body reevaluation. |
+| Final detach uses one queue turn | R04 closes in EXP-171 after two failing no-body controls and native retained-reader57/57 versus43/57. First mount precedes body/source rebind and owns fresh telemetry. H08/H09 genuine OS lifetime ordering remains open. |
 | Presentation callback carries item ID instead of occurrence | Relevant unproven ordering risk. Add sheet/cover same-ID and A→B→A mount/disappear tests to D10/R06; carry an occurrence token if actual callback ordering proves stale callbacks can stop the replacement. |
 | Old Resource completion mutates a new-session action | Treat as a pre-existing routing risk, not one of the 12 introduced defects. T03 must exercise a live continuous action plus late failed Resource completion and reject false counts; the existing immediately finished custom action does not discriminate. Fix if the required ownership oracle reproduces it. |
 | Multi-observer nested transition delivery | Incremental review added this explicit R05 gap: one-observer nested tests do not establish monotonic delivery to every host. Test nested commit plus observer add/remove before closing R05; no unsupported runtime-failure claim. |
@@ -71,8 +71,8 @@ SwiftUI invariants and current test seams are detailed in
    restoration across explicit stop, immediate and lazy expiration. The first
    native readiness attempt is INVALID and preserved separately.
 3. D03 mounted lifetime passes EXP-168 and bounded R02 review is complete.
-   D07 pending authority and D08 reconnect pass EXP-169/170. Resolve R04 retained
-   reader remount without body/source rebind, then P03 registry retirement and D10.
+   D07 pending authority, D08 reconnect and R04 retained-reader remount pass
+   EXP-169/170/171. Next define P03 registry retirement, then D10.
    Keep the remaining R05/R06 discriminators in those slices. Each fix is a small
    component commit with explicit paths. Sign when available; if unavailable,
    continue unsigned locally and sign before any future authorized push.

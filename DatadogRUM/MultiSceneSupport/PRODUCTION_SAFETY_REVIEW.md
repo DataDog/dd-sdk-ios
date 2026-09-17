@@ -1,7 +1,7 @@
 **Production safety review of multi-scene SDK instrumentation**
 
 Updated 2026-09-17 during plan execution. **Release remains on hold: 11 of the
-12 review findings are closed, 1 remains open.** The finite checklist has 25/66
+12 review findings are closed, 1 remains open.** The finite checklist has 26/66
 release gates closed. [PLAN.md](PLAN.md) owns the release contract and
 [REVIEW_TRIAGE.md](REVIEW_TRIAGE.md) owns assessed repair order and evidence limits.
 Review IDs R01–R12 below map to repair gates D01–D12, not PLAN's responsibility
@@ -41,8 +41,9 @@ EXP-167 closes D05/D06 with [restoration evidence](Results/EXP-167-session-resto
 with [mounted lifetime evidence](Results/EXP-168-swiftui-lifetime.json) on27/26.5.
 EXP-169 closes D07 with [pending-authority evidence](Results/EXP-169-pending-authority.json).
 EXP-170 closes D08 with [reconnect evidence](Results/EXP-170-reconnect-acceptance.json)
-while R04 still needs remount without body/source rebind. D10 presentation remains
-the one open review finding. Resolve that R04 discriminator, then P03 registry growth.
+and EXP-171 closes bounded R04 with [retained-reader evidence](Results/EXP-171-retained-reader.json):
+318 tests and mounted57/57 versus43/57 at the first callback before any body rebind.
+D10 presentation remains the one open review finding; P03 registry growth is next.
 Keep this review and its open
 findings until their corresponding gates close; preserve historical evidence below.
 
