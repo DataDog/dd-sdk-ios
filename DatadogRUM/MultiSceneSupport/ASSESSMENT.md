@@ -26,6 +26,8 @@ come first, then shared ownership/restoration and SwiftUI lifetime/authority.
 The branch remains held from release; passing an earlier bounded experiment does
 not close these missing cases. [PLAN.md](PLAN.md) and its machine register own
 all remaining deliverables and dependencies; completed narratives are separate.
+EXP-162 is defined for the D01/D02 platform build repairs; both gates remain
+blocked until complete-module builds and the stated iOS regressions pass.
 
 The released SDK baseline is not semantically safe for applications with
 concurrent scenes. Process-representative view state and process-global SwiftUI

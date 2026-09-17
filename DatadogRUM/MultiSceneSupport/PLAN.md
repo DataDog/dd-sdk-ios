@@ -44,7 +44,8 @@ Objective-C Release exposure still require normal API review.
 
 ## Execution and experiment admission
 
-0. Finish EXP-160/161 records before changing their candidate source.
+0. Execute the predefined EXP-162 D01/D02 platform-compatibility slice. EXP-160/161
+   records and their frozen source identities are complete and remain unchanged.
 1. Apply the [assessed repair order](REVIEW_TRIAGE.md): D01/D02 platform builds,
    then D09/D11/D12 existing-API compatibility regressions. Define each bounded
    repair experiment before implementation; preserve failing controls.
