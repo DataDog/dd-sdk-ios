@@ -1,0 +1,13 @@
+{
+    "defaultEnvironment": "ios-26.0.1-iphone17",
+    "environments": [
+        {
+            "name": "ios-26.0.1-iphone17",
+            "simulator": {
+                "modelIdentifier": "iPhone18,3",
+                "name": "iPhone 17",
+                "osVersion": "26.0.1"
+            }
+        }
+    ]
+}
