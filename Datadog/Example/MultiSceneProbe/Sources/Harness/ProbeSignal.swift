@@ -198,6 +198,50 @@ internal struct ProbeGeometry: Codable, Equatable {
     let height: Double
 }
 
+/// Only synthetic EXP-180 flag values and observed cross-platform metrics.
+internal struct ProbeFlagState: Codable, Equatable {
+    let flags: [String: ProbeFlagValue]
+    let build: ProbeBuildSamples?
+    let fbc: Int64?
+    let leakedInternalAttribute: Bool
+}
+
+internal struct ProbeBuildSamples: Codable, Equatable {
+    let min: Double
+    let max: Double
+    let average: Double
+}
+
+internal struct ProbeNestedFlag: Codable, Equatable {
+    let enabled: Bool
+    let weights: [Int]
+}
+
+internal enum ProbeFlagValue: Codable, Equatable {
+    case boolean(Bool)
+    case integer(Int)
+    case string(String)
+    case nested(ProbeNestedFlag)
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.singleValueContainer()
+        if let value = try? container.decode(Bool.self) { self = .boolean(value) }
+        else if let value = try? container.decode(Int.self) { self = .integer(value) }
+        else if let value = try? container.decode(String.self) { self = .string(value) }
+        else { self = .nested(try container.decode(ProbeNestedFlag.self)) }
+    }
+
+    func encode(to encoder: Encoder) throws {
+        var container = encoder.singleValueContainer()
+        switch self {
+        case .boolean(let value): try container.encode(value)
+        case .integer(let value): try container.encode(value)
+        case .string(let value): try container.encode(value)
+        case .nested(let value): try container.encode(value)
+        }
+    }
+}
+
 /// Observed synthetic timings and loading nanoseconds for EXP-179.
 internal struct ProbeTimingState: Codable, Equatable {
     let timings: [String: Int64]
@@ -281,6 +325,7 @@ internal struct ProbeSignal: Codable, Equatable {
     let operation: ProbeOperationSignal?
     let attributeState: ProbeAttributeState?
     let timingState: ProbeTimingState?
+    let flagState: ProbeFlagState?
     let result: ProbeSemanticResultState?
     let reason: String?
 
@@ -322,6 +367,7 @@ internal struct ProbeSignal: Codable, Equatable {
         operation: ProbeOperationSignal? = nil,
         attributeState: ProbeAttributeState? = nil,
         timingState: ProbeTimingState? = nil,
+        flagState: ProbeFlagState? = nil,
         result: ProbeSemanticResultState? = nil,
         reason: String? = nil
     ) {
@@ -363,6 +409,7 @@ internal struct ProbeSignal: Codable, Equatable {
         self.operation = operation
         self.attributeState = attributeState
         self.timingState = timingState
+        self.flagState = flagState
         self.result = result
         self.reason = reason
     }
@@ -411,6 +458,7 @@ internal struct ProbeSignal: Codable, Equatable {
             operation: operation,
             attributeState: attributeState,
             timingState: timingState,
+            flagState: flagState,
             result: result,
             reason: reason
         )

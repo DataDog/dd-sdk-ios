@@ -24,7 +24,7 @@ internal enum ProbeRUMEventAdapter {
         )
     }
 
-    static func viewSnapshot(_ event: RUMViewEvent, timingState: ProbeTimingState? = nil) -> ProbeSignal {
+    static func viewSnapshot(_ event: RUMViewEvent, timingState: ProbeTimingState? = nil, flagState: ProbeFlagState? = nil) -> ProbeSignal {
         ProbeSignal(
             kind: .rumViewSnapshot,
             evidenceSource: .rumMapper,
@@ -39,7 +39,8 @@ internal enum ProbeRUMEventAdapter {
                 viewDocumentVersion: event.dd.documentVersion,
                 viewTimeSpentNanoseconds: event.view.timeSpent
             ),
-            timingState: timingState
+            timingState: timingState,
+            flagState: flagState
         )
     }
 

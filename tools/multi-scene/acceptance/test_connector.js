@@ -88,3 +88,73 @@ test('timing projection rejects booleans strings nested durations and invalid nu
     assert.deepEqual(projectTimingState({view:{loading_time}}, nestedAt), {invalid:true});
   }
 });
+
+const {projectFlagValues, projectFlagState, hasInternalFlagAttribute} = new Function(source.replace(
+  'return runAcceptance({tools, notify, device, repo, scenario: typeof scenario === "undefined" ? undefined : scenario});',
+  'return {projectFlagValues, projectFlagState, hasInternalFlagAttribute};'
+))();
+const flagAt = (object, path) => {
+  const parts = path.split('.');
+  let value = object;
+  for (let i = 0; i < parts.length; i++) {
+    if (value == null) return null;
+    if (Object.hasOwn(value, parts.slice(i).join('.'))) return value[parts.slice(i).join('.')];
+    value = value[parts[i]];
+  }
+  return value ?? null;
+};
+test('flag projection preserves supported typed replacements and absence', () => {
+  for (const value of [true, 7, 'B', {enabled:false,weights:[2,4]}]) {
+    assert.deepEqual(projectFlagValues({feature_flags:{exp180_shared:value}}, flagAt), {exp180_shared:value});
+  }
+  assert.deepEqual(projectFlagState({view:{}}, flagAt),
+    {flags:{},build:null,fbc:null,leakedInternalAttribute:false});
+});
+test('flag projection accepts only declared flattened nested fields', () => {
+  for (const payload of [
+    {feature_flags:{'exp180_shared.enabled':false,'exp180_shared.weights':[2,4]}},
+    {'feature_flags.exp180_shared.enabled':false,'feature_flags.exp180_shared.weights':[2,4]}
+  ]) assert.deepEqual(projectFlagValues(payload, flagAt), {exp180_shared:{enabled:false,weights:[2,4]}});
+});
+test('flag projection rejects type conversion unknown fields and ambiguous nesting', () => {
+  for (const feature_flags of [
+    {exp180_shared:1}, {exp180_shared:'7'}, {exp180_shared:false}, {exp180_shared:null},
+    {exp180_shared:{enabled:0,weights:[2,4]}}, {exp180_shared:{enabled:false,weights:[true,4]}},
+    {exp180_shared:{enabled:false,weights:[2,4],extra:'private'}},
+    {'exp180_shared.enabled':false}, {exp180_unknown:'private'},
+    {exp180_shared:{enabled:false,weights:[2,4]},'exp180_shared.enabled':false},
+    {exp180_final_a:'B-final'}
+  ]) assert.deepEqual(projectFlagValues({feature_flags}, flagAt), {invalid:true});
+  assert.deepEqual(projectFlagValues({feature_flags:{exp180_shared:7},
+    'feature_flags.exp180_shared':7}, flagAt), {invalid:true});
+});
+test('flag metrics preserve aggregate values and FBC in nested and flat payloads', () => {
+  const expected = {flags:{exp180_shared:7},build:{min:32,max:52,average:42},
+    fbc:101,leakedInternalAttribute:false};
+  assert.deepEqual(projectFlagState({feature_flags:{exp180_shared:7},
+    view:{flutter_build_time:{min:32,max:52,average:42},performance:{fbc:{timestamp:101}}}}, flagAt), expected);
+  assert.deepEqual(projectFlagState({'feature_flags.exp180_shared':7,
+    'view.flutter_build_time.min':32,'view.flutter_build_time.max':52,'view.flutter_build_time.average':42,
+    'view.performance.fbc.timestamp':101}, flagAt), expected);
+});
+test('flag metrics reject malformed present aggregates and FBC types', () => {
+  for (const build of [null, {}, {min:null,max:null,average:null}, {min:32,max:52},
+    {min:true,max:52,average:42}, {min:'32',max:52,average:42},
+    {min:NaN,max:52,average:42}, {min:0,max:52,average:42}]) {
+    assert.deepEqual(projectFlagState({view:{flutter_build_time:build}}, flagAt), {invalid:true});
+  }
+  for (const timestamp of [null,true,'101',0,-1,1.5]) {
+    assert.deepEqual(projectFlagState({view:{performance:{fbc:{timestamp}}}}, flagAt), {invalid:true});
+  }
+});
+test('internal mutation key leakage is visible even for null and flattened values', () => {
+  for (const payload of [
+    {context:{'_dd.performance.first_build_complete':null}},
+    {'context._dd.performance.first_build_complete':101},
+    {context:{_dd:{performance:{first_build_complete:101}}}}
+  ]) {
+    assert.equal(hasInternalFlagAttribute(payload), true);
+    assert.equal(projectFlagState(payload, flagAt).leakedInternalAttribute, true);
+  }
+  assert.equal(hasInternalFlagAttribute({context:{other:101}}), false);
+});

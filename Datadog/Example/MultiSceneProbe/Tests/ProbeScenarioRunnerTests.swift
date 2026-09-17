@@ -36,6 +36,41 @@ final class ProbeScenarioRunnerTests: XCTestCase {
     }
 
 
+    func testFlagContractHasAllMutationCheckpointsAndBothOwners() throws {
+        let scenario = try XCTUnwrap(ProbeScenarioCatalog.scenario(identifier: ProbeFlagContract.scenarioID))
+        XCTAssertEqual(scenario.steps.last?.kind, .runViewFlagBatch)
+        XCTAssertEqual(scenario.steps.last?.scene, "scene-B")
+        XCTAssertTrue(ProbeScenarioCatalog.usesObservableDriver(scenario))
+        XCTAssertEqual(ProbeFlagContract.checkpoints.count, 8)
+        XCTAssertEqual(scenario.completionConditions.count, 16)
+        XCTAssertEqual(Set(scenario.completionConditions.compactMap(\.name)).count, 16)
+        for scene in ["scene-A", "scene-B"] {
+            XCTAssertEqual(scenario.completionConditions.filter { $0.scene == scene }.count, 8)
+        }
+        XCTAssertTrue(scenario.completionConditions.allSatisfy {
+            $0.kind == .error && $0.sourceScene == "scene-A" && $0.expectedCount == 1
+        })
+        XCTAssertEqual(scenario.expectedSemanticTimeline.count + scenario.completionConditions.count, 34)
+    }
+
+    func testFlagEvidencePreservesTypesSnapshotBindingAndInternalMetrics() throws {
+        let state = ProbeFlagState(
+            flags: [ProbeFlagContract.shared: .integer(7)],
+            build: ProbeBuildSamples(min: 32, max: 52, average: 42),
+            fbc: 101, leakedInternalAttribute: false
+        )
+        let signal = ProbeSignal(kind: .assertion, acknowledgedSignalSequence: 7, eventID: "error", flagState: state)
+            .enveloped(sequence: 8, timestampMilliseconds: 1, runID: "run", scenarioID: ProbeFlagContract.scenarioID)
+        let decoded = try JSONDecoder().decode(ProbeSignal.self, from: JSONEncoder().encode(signal))
+        XCTAssertEqual(decoded.flagState, state)
+        XCTAssertEqual(decoded.acknowledgedSignalSequence, 7)
+        let boolean = try JSONDecoder().decode(ProbeFlagValue.self, from: Data("true".utf8))
+        XCTAssertEqual(boolean, .boolean(true))
+        XCTAssertNotEqual(boolean, .integer(1))
+        let malformed = Data(#"{"enabled":false,"weights":[true,4]}"#.utf8)
+        XCTAssertThrowsError(try JSONDecoder().decode(ProbeFlagValue.self, from: malformed))
+    }
+
     func testTimingContractHasAllOverwriteCheckpointsAndBothOwners() throws {
         let scenario = try XCTUnwrap(ProbeScenarioCatalog.scenario(identifier: ProbeTimingContract.scenarioID))
         XCTAssertEqual(scenario.steps.last?.kind, .runViewTimingBatch)

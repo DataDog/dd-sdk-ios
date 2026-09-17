@@ -1,6 +1,6 @@
 {
   "experiment": "EXP-180",
-  "status": "SDK PASS; native BUILD PASS",
+  "status": "SDK PASS; native PREPARED",
   "gate": "T07",
   "gates_closed": [],
   "control_revision": "db4a96dfabd3b0c3054203d9069905749e55907c",
@@ -386,7 +386,8 @@
     "Core22 unique selected checks have passing coverage across the21 passing initial checks and3 passing bus checks; no skipped/not-run tests.",
     "The443 affected RUM checks pass; the same stale-occurrence test was extended with fresh explicit targeting and source-less metric fallback, then passed separately.",
     "Unescalated xcresulttool inspection could not create Xcode cache/temp files. Repeated read with allowed cache access succeeded; no test rerun.",
-    "No known iOS27 legacy app-host trap was rerun; affected integration runs on26.5."
+    "No known iOS27 legacy app-host trap was rerun; affected integration runs on26.5.",
+    "Runner controls first hit read-only temporary-directory errors in three signature fixtures. The full107 Python checks pass with temporary Git access; all15 Node checks pass. No SDK checks rerun."
   ],
   "native_preparation": {
     "build_for_testing": {
@@ -395,6 +396,17 @@
       "errors": [],
       "fullLogPath": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/ActionArtifacts/default/BuildProject/BuildProject-Log-20260918-002635.txt"
     },
-    "runtime_acceptance": "PENDING"
+    "runtime_acceptance": "PENDING",
+    "operational_controls": {
+      "python": {
+        "passed": 107,
+        "failed": 0
+      },
+      "node": {
+        "passed": 15,
+        "failed": 0
+      },
+      "probe_test_minimum": 174
+    }
   }
 }

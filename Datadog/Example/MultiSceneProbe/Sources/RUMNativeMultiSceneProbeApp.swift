@@ -287,6 +287,8 @@ enum ProbeRuntime {
                         ProbeAttributeAcceptance.recordPayloadCheck(event)
                     } else if scenario?.identifier == ProbeTimingContract.scenarioID {
                         ProbeTimingAcceptance.recordPayloadCheck(event)
+                    } else if scenario?.identifier == ProbeFlagContract.scenarioID {
+                        ProbeFlagAcceptance.recordPayloadCheck(event)
                     }
                     #endif
                     record(errorEvent: event)
@@ -387,7 +389,7 @@ enum ProbeRuntime {
         screen: String,
         phase: String
     ) {
-        guard ![ProbeResourceContract.scenarioID, ProbeErrorContract.scenarioID, ProbeAttributeContract.scenarioID, ProbeTimingContract.scenarioID].contains(scenario?.identifier ?? "") else { return }
+        guard ![ProbeResourceContract.scenarioID, ProbeErrorContract.scenarioID, ProbeAttributeContract.scenarioID, ProbeTimingContract.scenarioID, ProbeFlagContract.scenarioID].contains(scenario?.identifier ?? "") else { return }
         let uptime = ProcessInfo.processInfo.systemUptime
         let marker = "\(window.label).\(screen).\(phase)"
         let attributes: [String: Encodable] = [
@@ -647,7 +649,12 @@ enum ProbeRuntime {
                 timings: (event.view.customTimings?.customTimingsInfo ?? [:]).filter { ProbeTimingContract.keys.contains($0.key) },
                 loading: event.view.loadingTime
             ) : nil
-        eventRecorder.record(ProbeRUMEventAdapter.viewSnapshot(event, timingState: timingState))
+        #if DEBUG
+        let flagState = scenario?.identifier == ProbeFlagContract.scenarioID ? ProbeFlagAcceptance.state(event) : nil
+        #else
+        let flagState: ProbeFlagState? = nil
+        #endif
+        eventRecorder.record(ProbeRUMEventAdapter.viewSnapshot(event, timingState: timingState, flagState: flagState))
         record(
             "payload type=view session=\(event.session.id) view=\(event.view.id) "
                 + "name=\(event.view.name ?? "nil") "

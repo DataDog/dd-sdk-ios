@@ -1226,3 +1226,9 @@ metrics may not emit a snapshot immediately, so use an independently accepted
 view-update trigger before each payload marker and bind the exact prior snapshot.
 The bounded flag/internal oracle is in
 [EXP-180](Experiments/EXP-143-199.md#exp-180--target-feature-flags-and-preserve-internal-mutation-ownership).
+
+For the named flag/internal runner, compare typed flag replacements at every
+paired checkpoint, exact sample aggregates/FBC on the owner and internal-key
+absence in custom context. Reject malformed present metrics and ambiguous nested
+flag representations; retain only bounded synthetic values. See the
+[flag runner procedure](../../tools/multi-scene/acceptance/README.md#flaginternal-mutation-contract-exp-180t07).

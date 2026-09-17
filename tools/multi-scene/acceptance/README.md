@@ -1,8 +1,9 @@
 # Multi-scene acceptance workflow
 
-This runner admits five finite contracts: EXP-161/A01 long-running actions,
+This runner admits six finite contracts: EXP-161/A01 long-running actions,
 EXP-176/T03 captured Resource starts, EXP-177/T04 current-view errors and
-EXP-178/T05 current-view attributes and EXP-179/T06 timing/loading. It does not certify simultaneous visibility,
+EXP-178/T05 current-view attributes, EXP-179/T06 timing/loading and EXP-180/T07
+flags/internal mutations. It does not certify simultaneous visibility,
 real scene teardown, interactive gestures or hardware-only scenarios.
 
 The Python runner records commit signature status and performs environment and
@@ -170,3 +171,31 @@ Intermediate revisions can be collapsed by ingestion and are established by
 ordered mapper evidence. The runner requires at least172 probe tests and runs the
 complete current suite. Earlier action/Resource/error/attribute contracts remain
 independently selectable and keep their original inventories.
+
+## Flag/internal mutation contract (EXP-180/T07)
+
+Pass scenario `flags.explicit-target.internal-mutations-cross-scene-serial`.
+The frozen contract requires eight paired checkpoints and34 app expectations.
+Real Swift/Objective-C calls replace flags on the requested live view under peer
+inference. Internal sample/FBC calls use an exact owner with a contradictory scene.
+An accepted timing update flushes each view before its marker; the marker binds to
+the immediately preceding mapper snapshot by sequence, view/session and document
+version. Flag values retain Boolean, integer, string and nested types. Build
+minimum/maximum/average and FBC must match the declared samples on only their owner;
+the internal attribute must never appear in custom context.
+
+Whole-session queries require16 marker errors,3 views and0 Resources/crashes.
+Every error preserves its checkpoint's typed flags. Final persisted view flags,
+sample aggregates and FBC match mapper evidence; intermediate view revisions remain
+local ordered evidence. The runner requires at least174 probe tests and executes
+the complete suite. It preserves all five earlier contracts.
+
+Negative controls reject stale identity, consumed readiness, late guards/snapshot
+bindings, wrong owners, missing/duplicate events, Boolean/number coercion, incorrect
+replacement/peer values, malformed aggregates, internal-key leakage and restored
+backend run IDs. Connector projection retains only declared synthetic flag values,
+normalizes the known nested flag fields and rejects ambiguous representations.
+
+The native contract exercises explicit flag calls and internal mutations. The
+asynchronous Flags reporter/message-bus ownership contract is covered separately by
+the experiment's actual reporter, Core-bus and RUM-receiver integration checks.

@@ -58,6 +58,71 @@ function projectTimingState(payload, at) {
   return {timings, loading};
 }
 
+
+function projectFlagValues(payload, at) {
+  const raw = at(payload, "feature_flags");
+  if (raw != null && (typeof raw !== "object" || Array.isArray(raw))) return {invalid: true};
+  const selected = {};
+  for (const [key, value] of Object.entries(raw || {})) {
+    if (key.startsWith("exp180_")) selected[key] = value;
+  }
+  for (const [key, value] of Object.entries(payload)) {
+    if (!key.startsWith("feature_flags.exp180_")) continue;
+    const name = key.slice("feature_flags.".length);
+    if (Object.hasOwn(selected, name)) return {invalid: true};
+    selected[name] = value;
+  }
+  for (const key of ["exp180_shared", "exp180_final_a", "exp180_final_b"]) {
+    const fields = ["enabled", "weights"];
+    if (fields.some(field => Object.hasOwn(selected, key + "." + field))) {
+      if (Object.hasOwn(selected, key) ||
+          !fields.every(field => Object.hasOwn(selected, key + "." + field))) return {invalid: true};
+      selected[key] = Object.fromEntries(fields.map(field => [field, selected[key + "." + field]]));
+      for (const field of fields) delete selected[key + "." + field];
+    }
+  }
+  for (const [key, value] of Object.entries(selected)) {
+    if (!["exp180_shared", "exp180_final_a", "exp180_final_b"].includes(key)) return {invalid: true};
+    const nested = value && typeof value === "object" && !Array.isArray(value) &&
+      Object.keys(value).length === 2 && value.enabled === false &&
+      Array.isArray(value.weights) && JSON.stringify(value.weights) === "[2,4]";
+    const valid = key === "exp180_shared" ? value === true || value === 7 || value === "B" || nested
+      : value === (key === "exp180_final_a" ? "A-final" : "B-final");
+    if (!valid) return {invalid: true};
+  }
+  return selected;
+}
+
+function hasPayloadPath(payload, path) {
+  const parts = path.split(".");
+  let current = payload;
+  for (let i = 0; i < parts.length; i++) {
+    if (current == null || typeof current !== "object") return false;
+    if (Object.hasOwn(current, parts.slice(i).join("."))) return true;
+    current = current[parts[i]];
+  }
+  return current !== undefined;
+}
+
+function hasInternalFlagAttribute(payload) {
+  return hasPayloadPath(payload, "context._dd.performance.first_build_complete");
+}
+
+function projectFlagState(payload, at) {
+  const flags = projectFlagValues(payload, at);
+  if (flags.invalid) return {invalid: true};
+  const values = ["min", "max", "average"].map(key => at(payload, "view.flutter_build_time." + key));
+  let build = null;
+  if (hasPayloadPath(payload, "view.flutter_build_time") ||
+      ["min", "max", "average"].some(key => hasPayloadPath(payload, "view.flutter_build_time." + key))) {
+    if (!values.every(value => typeof value === "number" && Number.isFinite(value) && value > 0)) return {invalid: true};
+    build = Object.fromEntries(["min", "max", "average"].map((key, i) => [key, values[i]]));
+  }
+  const fbc = at(payload, "view.performance.fbc.timestamp");
+  if (hasPayloadPath(payload, "view.performance.fbc.timestamp") && (!Number.isSafeInteger(fbc) || fbc <= 0)) return {invalid: true};
+  return {flags, build, fbc, leakedInternalAttribute: hasInternalFlagAttribute(payload)};
+}
+
 async function runAcceptance({tools, notify, device, repo, scenario}) {
   if (!repo || !device) throw Error("Explicit repository path and freshly resolved simulator UUID required");
   const shellQuote = value => "'" + value.replaceAll("'", "'\\''") + "'";
@@ -132,6 +197,16 @@ async function runAcceptance({tools, notify, device, repo, scenario}) {
       const base = {run_id:at(payload,"context.probe.run_id"),
                     session_id:at(payload,"session.id"), view_id:at(payload,"view.id")};
       if (request.kind === "views") return {...base, name:at(payload,"view.name")};
+      if (request.kind === "flag_views") return {...base, name:at(payload, "view.name"),
+        flag_state:projectFlagState(payload, at)};
+      if (request.kind === "flag_errors") {
+        const phase = at(payload, "context.probe.phase");
+        return {...base, phase, event_id:at(payload, "error.id"),
+          source_scene:at(payload, "context.probe.source_scene"),
+          error_source:at(payload, "error.source"), error_type:at(payload, "error.type"),
+          is_crash:at(payload, "error.is_crash"), payload_matches:at(payload, "error.message") === phase,
+          flags:projectFlagValues(payload, at), leaked_internal_attribute:hasInternalFlagAttribute(payload)};
+      }
       if (request.kind === "timing_views") return {...base, name:at(payload, "view.name"),
         timing_state:projectTimingState(payload, at)};
       if (request.kind === "timing_errors") {
