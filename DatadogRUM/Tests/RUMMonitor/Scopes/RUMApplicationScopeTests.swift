@@ -562,6 +562,250 @@ class RUMApplicationScopeTests: XCTestCase {
         )
     }
 
+    #if !os(tvOS) && !os(watchOS)
+    private enum RestorationBoundary {
+        case explicitStop, timeout, maximumDuration, delayedTimeout, delayedMaximumDuration
+    }
+
+    private enum RestoringNavigation {
+        case inferredStart, sceneStart, identityStop, sceneStop
+    }
+
+    func testGivenStoppedConcurrentSession_whenSourceLessViewStarts_itPreservesOldOwner() throws {
+        try assertNavigationRestoration(boundary: .explicitStop, navigation: .inferredStart)
+    }
+
+    func testGivenStoppedConcurrentSession_whenNonrepresentativeIdentityStops_itPreservesPeer() throws {
+        try assertNavigationRestoration(boundary: .explicitStop, navigation: .identityStop)
+    }
+
+    func testGivenLifecycleTimeout_whenViewStarts_itRestoresEligiblePeer() throws {
+        try assertNavigationRestoration(boundary: .delayedTimeout, navigation: .sceneStart)
+    }
+
+    func testGivenLifecycleTimeout_whenViewStops_itRestoresEligiblePeer() throws {
+        try assertNavigationRestoration(boundary: .delayedTimeout, navigation: .sceneStop)
+    }
+
+    func testGivenLifecycleMaximumDuration_whenViewStarts_itRestoresEligiblePeer() throws {
+        try assertNavigationRestoration(boundary: .delayedMaximumDuration, navigation: .sceneStart)
+    }
+
+    func testGivenLifecycleMaximumDuration_whenViewStops_itRestoresEligiblePeer() throws {
+        try assertNavigationRestoration(boundary: .delayedMaximumDuration, navigation: .sceneStop)
+    }
+
+    func testGivenImmediateTimeout_whenNavigationChanges_itPreservesEveryUnaffectedBranch() throws {
+        for navigation in [RestoringNavigation.inferredStart, .sceneStart, .identityStop, .sceneStop] {
+            try assertNavigationRestoration(boundary: .timeout, navigation: navigation)
+        }
+    }
+
+    func testGivenImmediateMaximumDuration_whenNavigationChanges_itPreservesEveryUnaffectedBranch() throws {
+        for navigation in [RestoringNavigation.inferredStart, .sceneStart, .identityStop, .sceneStop] {
+            try assertNavigationRestoration(boundary: .maximumDuration, navigation: navigation)
+        }
+    }
+
+    func testGivenDelayedExpiration_whenNavigationIsInferred_itKeepsTheOldOwner() throws {
+        for boundary in [RestorationBoundary.delayedTimeout, .delayedMaximumDuration] {
+            for navigation in [RestoringNavigation.inferredStart, .identityStop] {
+                try assertNavigationRestoration(boundary: boundary, navigation: navigation)
+            }
+        }
+    }
+
+    func testGivenExplicitStop_whenNavigationHasSceneTarget_itRestoresOnlyPeers() throws {
+        for navigation in [RestoringNavigation.sceneStart, .sceneStop] {
+            try assertNavigationRestoration(boundary: .explicitStop, navigation: navigation)
+        }
+    }
+
+    func testGivenRepresentativeChangedBeforeBoundary_whenSourceLessNavigationStarts_itUsesThatRepresentative() throws {
+        for boundary in [RestorationBoundary.explicitStop, .delayedTimeout] {
+            try assertNavigationRestoration(boundary: boundary, navigation: .inferredStart, representativeIsA: true)
+        }
+    }
+
+    func testGivenExpiration_whenNavigationRunsInBackground_itDoesNotResumeForegroundPeers() throws {
+        for boundary in [RestorationBoundary.explicitStop, .timeout, .maximumDuration, .delayedTimeout, .delayedMaximumDuration] {
+            for enabled in [false, true] {
+                for navigation in [RestoringNavigation.sceneStart, .sceneStop] {
+                    try assertNavigationRestoration(
+                        boundary: boundary,
+                        navigation: navigation,
+                        inBackground: true,
+                        trackBackgroundEvents: enabled
+                    )
+                }
+            }
+        }
+    }
+
+    func testGivenSceneLessView_whenNavigationRestartsSession_itKeepsLegacyViewShape() throws {
+        let start: Date = .mockDecember15th2019At10AMUTC()
+        let context: DatadogContext = .mockWith(
+            sdkInitDate: start,
+            launchInfo: .mockWith(launchReason: .userLaunch, processLaunchDate: start),
+            applicationStateHistory: .mockAppInForeground(since: start)
+        )
+        for delayed in [false, true] {
+            let scope = createRUMApplicationScope(dependencies: .mockWith(samplingRate: 100), sdkContext: context)
+            _ = scope.process(command: RUMStartViewCommand.mockWith(time: start, identity: ViewIdentifier("old")), context: context, writer: writer)
+            let old = try XCTUnwrap(scope.activeSession?.activeView)
+            let boundary = start.addingTimeInterval(delayed ? RUMSessionScope.Constants.sessionTimeoutDuration : 1)
+            let end: RUMCommand = delayed
+                ? RUMHandleAppLifecycleEventCommand(time: boundary, event: .willEnterForeground)
+                : RUMStopSessionCommand(time: boundary)
+            _ = scope.process(command: end, context: context, writer: writer)
+            XCTAssertNil(scope.activeSession)
+            _ = scope.process(
+                command: RUMStartViewCommand.mockWith(time: boundary.addingTimeInterval(1), identity: ViewIdentifier("new"), name: "New"),
+                context: context,
+                writer: writer
+            )
+            let session = try XCTUnwrap(scope.activeSession)
+            let view = try XCTUnwrap(session.activeView)
+            XCTAssertEqual(session.viewScopes.filter(\.isActiveView).count, 1)
+            XCTAssertEqual(view.viewName, "New")
+            XCTAssertNil(view.sceneIdentifier)
+            XCTAssertNotEqual(view.viewUUID, old.viewUUID)
+        }
+    }
+
+    private func assertNavigationRestoration(
+        boundary: RestorationBoundary,
+        navigation: RestoringNavigation,
+        representativeIsA: Bool = false,
+        inBackground: Bool = false,
+        trackBackgroundEvents: Bool = false
+    ) throws {
+        let start: Date = .mockDecember15th2019At10AMUTC()
+        var context: DatadogContext = .mockWith(
+            sdkInitDate: start,
+            launchInfo: .mockWith(launchReason: .userLaunch, processLaunchDate: start),
+            applicationStateHistory: .mockAppInForeground(since: start)
+        )
+        let scope = createRUMApplicationScope(
+            dependencies: .mockWith(samplingRate: 100, trackBackgroundEvents: trackBackgroundEvents, featureFlags: [.viewUpdates: false]),
+            sdkContext: context
+        )
+        let sceneA = RUMSceneIdentifier(rawValue: "scene-A")
+        let sceneB = RUMSceneIdentifier(rawValue: "scene-B")
+        for (scene, key, name) in [(sceneA, "A", "View A"), (sceneB, "B", "View B")] {
+            _ = scope.process(
+                command: RUMStartViewCommand.mockWith(time: start, identity: ViewIdentifier(key), name: name, target: .scene(scene)),
+                context: context,
+                writer: writer
+            )
+        }
+        if representativeIsA {
+            _ = scope.process(
+                command: RUMAddUserActionCommand.mockWith(time: start, actionType: .custom, name: "Select A", target: .scene(sceneA)),
+                context: context,
+                writer: writer
+            )
+        }
+        let oldSession = try XCTUnwrap(scope.activeSession)
+        let oldViews = oldSession.viewScopes.filter(\.isActiveView)
+        XCTAssertEqual(oldViews.count, 2)
+        XCTAssertEqual(oldSession.activeView?.sceneIdentifier, representativeIsA ? sceneA : sceneB)
+        let isMaximum = boundary == .maximumDuration || boundary == .delayedMaximumDuration
+        let boundaryTime = start.addingTimeInterval(
+            boundary == .explicitStop ? 1 : isMaximum
+                ? RUMSessionScope.Constants.sessionMaxDuration
+                : RUMSessionScope.Constants.sessionTimeoutDuration
+        )
+        if isMaximum {
+            var heartbeat = start
+            while heartbeat.addingTimeInterval(RUMSessionScope.Constants.sessionTimeoutDuration - 1) < boundaryTime {
+                heartbeat.addTimeInterval(RUMSessionScope.Constants.sessionTimeoutDuration - 1)
+                _ = scope.process(command: RUMCommandMock(time: heartbeat, isUserInteraction: true), context: context, writer: writer)
+            }
+            XCTAssertTrue(scope.activeSession === oldSession, "Maximum duration must not accidentally test an inactivity timeout")
+        }
+        if inBackground {
+            context = .mockWith(
+                sdkInitDate: start,
+                launchInfo: .mockWith(launchReason: .userLaunch, processLaunchDate: start),
+                applicationStateHistory: .mockAppInBackground(since: boundaryTime)
+            )
+        }
+        if boundary == .explicitStop {
+            _ = scope.process(command: RUMStopSessionCommand(time: boundaryTime), context: context, writer: writer)
+            XCTAssertNil(scope.activeSession)
+        } else if boundary == .delayedTimeout || boundary == .delayedMaximumDuration {
+            _ = scope.process(
+                command: RUMHandleAppLifecycleEventCommand(time: boundaryTime, event: inBackground ? .didEnterBackground : .willEnterForeground),
+                context: context,
+                writer: writer
+            )
+            XCTAssertNil(scope.activeSession, "Lifecycle expiration must defer the replacement session")
+        }
+        let navigationTime = boundaryTime.addingTimeInterval(1)
+        let command: RUMCommand
+        let expectedNames: [RUMSceneIdentifier: String]
+        switch navigation {
+        case .inferredStart:
+            command = RUMStartViewCommand.mockWith(time: navigationTime, identity: ViewIdentifier("new"), name: "New")
+            expectedNames = representativeIsA ? [sceneA: "New", sceneB: "View B"] : [sceneA: "View A", sceneB: "New"]
+        case .sceneStart:
+            command = RUMStartViewCommand.mockWith(
+                time: navigationTime, identity: ViewIdentifier("new"), name: "New", target: .scene(sceneA)
+            )
+            expectedNames = [sceneA: "New", sceneB: "View B"]
+        case .identityStop, .sceneStop:
+            command = RUMStopViewCommand.mockWith(
+                time: navigationTime,
+                identity: ViewIdentifier("A"),
+                target: navigation == .sceneStop ? .scene(sceneA) : .processRepresentative
+            )
+            expectedNames = [sceneB: "View B"]
+        }
+        _ = scope.process(command: command, context: context, writer: writer)
+        let newSession = try XCTUnwrap(scope.activeSession)
+        XCTAssertNotEqual(newSession.sessionUUID, oldSession.sessionUUID)
+        XCTAssertEqual(newSession.context.sessionPrecondition, boundary == .explicitStop ? .explicitStop : isMaximum ? .maxDuration : .inactivityTimeout)
+        let active = newSession.viewScopes.filter(\.isActiveView)
+        if inBackground {
+            XCTAssertFalse(active.contains { $0.viewName == "View A" || $0.viewName == "View B" })
+            XCTAssertEqual(active.count, navigation == .sceneStart ? 1 : 0)
+            return
+        }
+        XCTAssertEqual(active.count, expectedNames.count)
+        for (scene, name) in expectedNames {
+            let view = try XCTUnwrap(active.first { $0.sceneIdentifier == scene })
+            XCTAssertEqual(view.viewName, name)
+            XCTAssertNotEqual(view.viewUUID, oldViews.first { $0.sceneIdentifier == scene }?.viewUUID)
+        }
+        let viewEvents = writer.events(ofType: RUMViewEvent.self).filter { $0.session.id == newSession.sessionUUID.toRUMDataFormat }
+        XCTAssertEqual(Set(viewEvents.map(\.view.id)), Set(active.map { $0.viewUUID.toRUMDataFormat }), "No phantom restored occurrence")
+
+        let peerScene = navigation == .inferredStart && !representativeIsA ? sceneA : sceneB
+        let peer = try XCTUnwrap(active.first { $0.sceneIdentifier == peerScene })
+        let markerTime = navigationTime.addingTimeInterval(1)
+        _ = scope.process(
+            command: RUMAddUserActionCommand.mockWith(time: markerTime, actionType: .custom, name: "Peer action", target: .scene(peerScene)),
+            context: context,
+            writer: writer
+        )
+        var resource = RUMStartResourceCommand.mockWith(resourceKey: "peer", time: markerTime, url: "https://example.com/peer")
+        resource.target = .scene(peerScene)
+        _ = scope.process(command: resource, context: context, writer: writer)
+        _ = scope.process(
+            command: RUMStopResourceCommand.mockWith(resourceKey: "peer", time: markerTime.addingTimeInterval(1)),
+            context: context,
+            writer: writer
+        )
+        let action = try XCTUnwrap(writer.events(ofType: RUMActionEvent.self).last)
+        let resourceEvent = try XCTUnwrap(writer.events(ofType: RUMResourceEvent.self).last)
+        XCTAssertEqual(action.session.id, newSession.sessionUUID.toRUMDataFormat)
+        XCTAssertEqual(action.view.id, peer.viewUUID.toRUMDataFormat)
+        XCTAssertEqual(resourceEvent.session.id, newSession.sessionUUID.toRUMDataFormat)
+        XCTAssertEqual(resourceEvent.view.id, peer.viewUUID.toRUMDataFormat)
+    }
+    #endif
+
     func testGivenSessionProcessingResources_whenStopped_itStaysInactive() throws {
         // Given
         let currentTime = Date()

@@ -94,7 +94,8 @@ internal class RUMApplicationScope: RUMScope, RUMContextProvider {
         return true
     }
 
-    private func _process(command: RUMCommand, context: DatadogContext, writer: Writer) {
+    private func _process(command incomingCommand: RUMCommand, context: DatadogContext, writer: Writer) {
+        var command = incomingCommand
         // `RUMSDKInitCommand` forces the creation of the initial session
         // Added in https://github.com/DataDog/dd-sdk-ios/pull/1278 to ensure that logs and traces
         // can be correlated with valid RUM session id (even if occurring before any user interaction).
@@ -140,7 +141,7 @@ internal class RUMApplicationScope: RUMScope, RUMContextProvider {
         if activeSession == nil {
             // No active sessions, start a new one
             if !(command is RUMHandleAppLifecycleEventCommand) {
-                startNewSession(on: command, context: context, writer: writer)
+                command = startNewSession(on: command, context: context, writer: writer)
             }
         }
 
@@ -261,7 +262,7 @@ internal class RUMApplicationScope: RUMScope, RUMContextProvider {
     }
 
     /// Starts new RUM Session immediately after previous one expires or time outs. It transfers some of the state from the expired session to the new one.
-    private func refresh(expiredSession: RUMSessionScope, on command: RUMCommand, context: DatadogContext, writer: Writer) -> RUMSessionScope {
+    private func refresh(expiredSession: RUMSessionScope, on incomingCommand: RUMCommand, context: DatadogContext, writer: Writer) -> RUMSessionScope {
         var startPrecondition: RUMSessionPrecondition? = nil
 
         // If the app is in background, use the background-aware precondition; otherwise fall through to the end-reason logic.
@@ -276,23 +277,24 @@ internal class RUMApplicationScope: RUMScope, RUMContextProvider {
             dependencies.telemetry.error("Failed to determine session precondition for REFRESHED session with end reason: \(lastSessionEndReason?.rawValue ?? "unknown")")
         }
 
-        let refreshingInForeground = context.applicationStateHistory.currentState == .active
-        let lastActiveViewPath = expiredSession.viewScopes.last(where: { $0.isActiveView })?.viewPath
-        let hasConcurrentActiveForegroundViews = expiredSession.viewScopes.filter {
-            $0.isActiveView
-                && $0.viewPath != RUMOffViewEventsHandlingRule.Constants.backgroundViewURL
-        }.count > 1
-        let transferActiveView = (command.shouldRestartLastViewAfterSessionExpiration || hasConcurrentActiveForegroundViews)
-            && refreshingInForeground
-            && lastActiveViewPath != RUMOffViewEventsHandlingRule.Constants.backgroundViewURL
+        var previousViews = expiredSession.viewScopes.filter {
+            $0.isActiveView && $0.viewPath != RUMOffViewEventsHandlingRule.Constants.backgroundViewURL
+        }
+        if let representative = expiredSession.activeView,
+           let index = previousViews.firstIndex(where: { $0 === representative }) {
+            previousViews.append(previousViews.remove(at: index))
+        }
+        let command = previousViews.resolvingNavigationOwner(of: incomingCommand)
+        let viewsToResume = viewsToRestore(on: command, from: previousViews, context: context)
 
         let refreshedSession = RUMSessionScope(
             from: expiredSession,
             startTime: command.time,
             startPrecondition: startPrecondition,
             context: context,
-            transferActiveView: transferActiveView,
-            applicationState: applicationState
+            transferActiveView: !viewsToResume.isEmpty,
+            applicationState: applicationState,
+            resumingViewScopes: viewsToResume
         )
         sessionScopeDidUpdate(refreshedSession)
         lastActiveViews = []
@@ -301,7 +303,8 @@ internal class RUMApplicationScope: RUMScope, RUMContextProvider {
         return refreshedSession
     }
 
-    private func startNewSession(on command: RUMCommand, context: DatadogContext, writer: Writer) {
+    private func startNewSession(on incomingCommand: RUMCommand, context: DatadogContext, writer: Writer) -> RUMCommand {
+        let command = lastActiveViews.resolvingNavigationOwner(of: incomingCommand)
         var startPrecondition: RUMSessionPrecondition? = nil
 
         // If the app is in background, use the background-aware precondition; otherwise fall through to the end-reason logic.
@@ -323,24 +326,7 @@ internal class RUMApplicationScope: RUMScope, RUMContextProvider {
             dependencies.telemetry.debug("Starting new session triggered by \(type(of: command)). Previous session was stopped for the following reason: \(startPrecondition?.rawValue ?? "unknown")")
         }
 
-        let startingInForeground = context.applicationStateHistory.currentState == .active
-        var viewsToResume: [RUMViewScope] = []
-
-        if lastSessionEndReason == .stopAPI {
-            if command.shouldRestartLastViewAfterSessionStop && startingInForeground {
-                viewsToResume = lastActiveViews
-            } else if startingInForeground,
-                      command is RUMStartViewCommand || command is RUMStopViewCommand {
-                // A scene-targeted navigation establishes the new View for its
-                // own branch. Preserve every other visible scene across the
-                // explicit session boundary without reviving the replaced View.
-                viewsToResume = lastActiveViews.excludingViewTargeted(by: command.target)
-            }
-        } else if lastSessionEndReason == .timeOut || lastSessionEndReason == .maxDuration {
-            if command.shouldRestartLastViewAfterSessionExpiration && startingInForeground {
-                viewsToResume = lastActiveViews
-            }
-        }
+        let viewsToResume = viewsToRestore(on: command, from: lastActiveViews, context: context)
 
         let newSession = RUMSessionScope(
             isInitialSession: false,
@@ -356,6 +342,31 @@ internal class RUMApplicationScope: RUMScope, RUMContextProvider {
         lastSessionEndReason = nil
         sessionScopes.append(newSession)
         sessionScopeDidUpdate(newSession)
+        return command
+    }
+
+    /// Both immediate and delayed boundaries restore the same eligible peers.
+    /// Navigation ownership is already resolved against the previous session.
+    private func viewsToRestore(on command: RUMCommand, from views: [RUMViewScope], context: DatadogContext) -> [RUMViewScope] {
+        guard context.applicationStateHistory.currentState == .active else {
+            return []
+        }
+        let shouldRestart: Bool
+        switch lastSessionEndReason {
+        case .stopAPI:
+            shouldRestart = command.shouldRestartLastViewAfterSessionStop
+        case .timeOut, .maxDuration:
+            shouldRestart = command.shouldRestartLastViewAfterSessionExpiration
+        case nil:
+            return []
+        }
+        if shouldRestart {
+            return views
+        }
+        if command is RUMStartViewCommand || command is RUMStopViewCommand {
+            return views.excludingViewTargeted(by: command.target)
+        }
+        return []
     }
 
     private func sessionScopeDidUpdate(_ sessionScope: RUMSessionScope?) {
@@ -409,6 +420,25 @@ internal class RUMApplicationScope: RUMScope, RUMContextProvider {
 }
 
 private extension Array where Element == RUMViewScope {
+    /// The previous representative is last. A manual stop first matches its
+    /// identity; choosing a representative after exclusion would change owners.
+    func resolvingNavigationOwner(of command: RUMCommand) -> RUMCommand {
+        guard command.target == .processRepresentative else {
+            return command
+        }
+        if var start = command as? RUMStartViewCommand,
+           let scene = last?.sceneIdentifier {
+            start.target = .scene(scene)
+            return start
+        }
+        if var stop = command as? RUMStopViewCommand,
+           let scene = (last(where: { $0.identity == stop.identity }) ?? last)?.sceneIdentifier {
+            stop.target = .scene(scene)
+            return stop
+        }
+        return command
+    }
+
     func excludingViewTargeted(by target: RUMCommandTarget) -> [RUMViewScope] {
         switch target {
         case .scene(let sceneIdentifier):

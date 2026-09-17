@@ -244,7 +244,8 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
         startPrecondition: RUMSessionPrecondition?,
         context: DatadogContext,
         transferActiveView: Bool,
-        applicationState: RUMApplicationState
+        applicationState: RUMApplicationState,
+        resumingViewScopes: [RUMViewScope]? = nil
     ) {
         self.init(
             // If the expired session was marked as "initial" but didn’t track any views, mark this new session as the new "initial".
@@ -259,7 +260,7 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
 
         // Transfer every concurrently active View to the refreshed session.
         if transferActiveView {
-            var activeViews = expiredSession.viewScopes.filter(\.isActiveView)
+            var activeViews = resumingViewScopes ?? expiredSession.viewScopes.filter(\.isActiveView)
             if let representative = expiredSession.activeView,
                let index = activeViews.firstIndex(where: { $0 === representative }) {
                 activeViews.append(activeViews.remove(at: index))
