@@ -125,6 +125,10 @@ coverage, lifecycle/restoration, API review, and ordinary-app
 compatibility/performance.
 No product decision blocks the next internal experiment.
 
+EXP-177 is defined for T04: live explicit error targets, independent fallback,
+completion delivery and preserved captured Resource-error ownership. No gate
+closes until its frozen SDK and exact native/backend oracle passes.
+
 ## Support matrix
 
 | SDK surface | Current branch support | Strongest evidence | Confirmed gap or remaining gate |

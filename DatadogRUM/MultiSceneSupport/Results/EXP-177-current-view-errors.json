@@ -1,0 +1,16 @@
+{
+  "experiment": "EXP-177",
+  "status": "PLANNED",
+  "gate": "T04",
+  "gates_closed": [],
+  "control_revision": "da7bdaf126f63405e3a35ca8db4da5cec82bc52c",
+  "control_sdk_revision": "5e41d0b116f1e700fe4ac997202fc2df5fdfd1cf",
+  "candidate_revision": null,
+  "unit_attempts": [],
+  "native_attempts": [],
+  "acceptance": {
+    "sdk": "PENDING",
+    "native_backend": "PENDING"
+  },
+  "scope": "Explicit current-view errors and completion delivery; captured Resource errors retain T03 ownership."
+}

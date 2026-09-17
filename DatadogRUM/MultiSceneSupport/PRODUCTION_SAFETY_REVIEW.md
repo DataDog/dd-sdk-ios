@@ -68,6 +68,11 @@ simultaneous/physical hardware gates remain. watchOS Release also passes after
 these shared Resource changes. Keep this review as the disposition and historical evidence record; it
 is not release certification.
 
+EXP-177 is admitted for T04. Its audit retains the accepted T03 Resource-error
+contract and adds explicit current-view error ownership and completion controls.
+Potential dropped callbacks on no-recipient/unsampled paths are under investigation,
+not a new closed finding. All12 original dispositions above remain unchanged.
+
 **Original review at the source revision below**
 
 Reviewed on 2026-09-17. Branch: `valpertui/multiple-windows-scenes`. Reviewed head: `af63657f08dbecb66e7c3ae97ed53fc8f7b065b9`; comparison base: `92f021ba7e4a866f84a52da93ed8b63f3dc75882` (merge base with `origin/develop`). The production-source delta spans 41 files, with 11,191 added and 456 removed lines. There were no uncommitted production-source changes during the review. Existing local configuration and concurrent planning edits were preserved.

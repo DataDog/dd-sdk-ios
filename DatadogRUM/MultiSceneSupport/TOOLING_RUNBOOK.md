@@ -1410,3 +1410,13 @@ Do not retry manual starts on background A or substitute artificial foreground
 notifications. Mapper-confirmed navigation/new-session barriers precede release.
 The acceptance script performs fresh source/build/install/auth checks every run;
 no accepted scenario is rerun merely for resumption. T04 is next.
+
+### EXP-177 acceptance preparation
+
+The defined T04 slice extends the existing acceptance runner with a named error
+contract:8 current-view errors (6 A/2 B),1 captured-A Resource error,2 named actions,
+no Resource event and complete session view/error inventories. Freeze payload,
+action counts and exactly-once callback barriers before a native run. Retain the
+EXP-176 lessons: decode AnyEncodable; consume readiness once; require current A/B
+before synchronous targets; never wait until A has ended and claim a live-A target.
+Backend and mapper must agree on exact owners, not just counts.

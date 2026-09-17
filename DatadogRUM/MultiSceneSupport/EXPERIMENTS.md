@@ -15,15 +15,14 @@ Last updated: 2026-09-17
 
 ## Current checkpoint
 
-Current release position: **30/66 gates closed**. EXP-173 closes D10/R06 at
-signed `7619eb8a2` with337 affected tests and native77/77 versus55/77. All12
-original safety findings have repair evidence. EXP-174 closes R05 at signed
-`368c62a72` with three failing controls and346 affected tests. EXP-175 repairs
-late Resource completion at signed `aefe337b6` with379 affected tests; the remaining
-T03 native/URLSession/backend acceptance is next. EXP-176 SDK is prepared at
-signed `5e41d0b11`:397 affected tests across396+1,8 Objective-C checks and Release.
-The additional representative-restoration and response-plus-error defects are repaired.
-Recent identities and attempts are in the finite gate register and active shard.
+Current release position: **31/66 gates closed**. All12 original safety findings
+and all6 bounded responsibility reviews have repair/review evidence. EXP-176 closes
+T03 at SDK `5e41d0b11` and fixture `797ab135c`:397 affected cases across396+1,
+8 Objective-C checks, iOS/watchOS Release,167 probe tests,22 local expectations/
+77 signals and exact backend5 Resources/4 errors/5 views across2 sessions.
+All failed attempts remain preserved. EXP-177 is defined for T04 current-view
+error targeting and completion delivery; T05/T06 follow. Recent identities and
+attempts are in the finite gate register and active shard.
 
 The checkpoints below preserve the earlier telemetry/navigation milestones;
 they do not override this current release position.
@@ -348,6 +347,7 @@ ordered acceptance contract is in
 | EXP-174 | PASS | R05 closed: three failing controls, nine new regressions and346 affected tests; monotonic synchronous generations, membership and exact two-host teardown | [Record](Experiments/EXP-143-199.md#exp-174--preserve-monotonic-reentrant-observer-delivery) |
 | EXP-175 | PASS | Four failed controls repaired, seven new regressions and379 affected tests; completion/metrics stay on original owner without foreign action counts. Full T03 target/backend gate stays open | [Record](Experiments/EXP-143-199.md#exp-175--keep-resource-completion-on-its-owning-scope) |
 | EXP-176 | PASS | T03 closed:397 affected/8 ObjC, iOS/watchOS Release;167 probe tests,22 local/77 signals and exact5 Resource/4 error/5 view backend owners across2 sessions, peer counters0/0; all failed attempts retained | [Record](Experiments/EXP-143-199.md#exp-176--accept-explicit-resource-starts-and-captured-completion-owners) |
+| EXP-177 | PLANNED | T04: explicit current-view error targets, independent fallback and exactly-once completion; preserve T03 Resource-error owners | [Record](Experiments/EXP-143-199.md#exp-177--target-current-view-errors-without-changing-resource-owners) |
 
 ## Simulator-inconclusive and hardware-required evidence
 
