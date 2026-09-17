@@ -696,6 +696,208 @@ class MonitorTests: XCTestCase {
         XCTAssertEqual(actions.last?.context?.contextInfo["completion"] as? String, "B")
     }
 
+    func testExplicitCurrentViewErrorsOverrideInferenceForEveryForm() throws {
+        let dateProvider = DateProviderMock()
+        let monitor = Monitor(dependencies: .mockWith(featureScope: featureScope, samplingRate: 100), dateProvider: dateProvider)
+        let (sceneA, sceneB) = startConcurrentSceneViews(in: monitor, dateProvider: dateProvider)
+        monitor.startAction(type: .tap, name: "A", attributes: [:], explicitTarget: .scene(sceneA))
+        monitor.startAction(type: .tap, name: "B", attributes: [:], explicitTarget: .scene(sceneB))
+        let owner = try XCTUnwrap(monitor.rumContextSnapshot(for: .scene(sceneA)))
+        let peer = try XCTUnwrap(monitor.rumContextSnapshot(for: .scene(sceneB)))
+        var completions = 0
+        RUMContextHandoff.withValue(owner: monitor.rumContextHandoffOwner, rumContext: peer, sceneIdentifier: sceneB.rawValue) {
+            monitor.addError(
+                message: "message A",
+                type: "MessageType",
+                stack: "selected stack",
+                source: .source,
+                attributes: ["form": "message"],
+                file: nil,
+                line: nil,
+                explicitTarget: .scene(sceneA)
+            )
+            monitor.addError(error: ErrorMock("error A"), source: .custom, attributes: ["form": "error"], explicitTarget: .scene(sceneA))
+            monitor.addError(
+                error: ErrorMock("callback A"),
+                source: .custom,
+                attributes: ["form": "callback"],
+                completionHandler: { completions += 1 },
+                explicitTarget: .scene(sceneA)
+            )
+        }
+        let scope = try XCTUnwrap(featureScope as? FeatureScopeMock)
+        let errors = scope.eventsWritten(ofType: RUMErrorEvent.self)
+        XCTAssertEqual(errors.count, 3)
+        XCTAssertEqual(errors.map(\.view.id), Array(repeating: owner.viewID, count: 3))
+        XCTAssertEqual(errors.map(\.session.id), Array(repeating: owner.sessionID, count: 3))
+        XCTAssertEqual(errors.map(\.action?.id), Array(repeating: owner.userActionID.map { RUMActionID.string(value: $0) }, count: 3))
+        XCTAssertEqual(errors.first?.error.type, "MessageType")
+        XCTAssertEqual(errors.first?.error.stack, "selected stack")
+        XCTAssertEqual(errors.map { $0.context?.contextInfo["form"] as? String }, ["message", "error", "callback"])
+        XCTAssertEqual(completions, 1)
+        XCTAssertEqual(monitor.rumContextSnapshot(for: .processRepresentative)?.viewID, peer.viewID)
+        monitor.stopAction(type: .tap, name: nil, attributes: [:], explicitTarget: .scene(sceneA))
+        monitor.stopAction(type: .tap, name: nil, attributes: [:], explicitTarget: .scene(sceneB))
+        let actions = scope.eventsWritten(ofType: RUMActionEvent.self)
+        XCTAssertEqual(actions.map(\.action.error?.count), [3, 0])
+    }
+
+    func testCurrentViewErrorCompletesWhenSessionIsNotSampled() throws {
+        let monitor = Monitor(dependencies: .mockWith(featureScope: featureScope, samplingRate: 0), dateProvider: DateProviderMock())
+        monitor.startView(key: "ordinary")
+        var completions = 0
+        monitor.addError(error: ErrorMock("unsampled"), source: .custom, attributes: [:], completionHandler: { completions += 1 })
+        XCTAssertEqual(completions, 1)
+        XCTAssertTrue(try XCTUnwrap(featureScope as? FeatureScopeMock).eventsWritten(ofType: RUMErrorEvent.self).isEmpty)
+    }
+
+    func testCurrentViewErrorCompletesWithoutSceneRecipient() throws {
+        let dateProvider = DateProviderMock()
+        let monitor = Monitor(dependencies: .mockWith(featureScope: featureScope, samplingRate: 100), dateProvider: dateProvider)
+        _ = startConcurrentSceneViews(in: monitor, dateProvider: dateProvider)
+        let scope = try XCTUnwrap(featureScope as? FeatureScopeMock)
+        let eventCount = scope.eventsWritten.count
+        var completions = 0
+        RUMContextHandoff.withValue(owner: monitor.rumContextHandoffOwner, rumContext: nil, sceneIdentifier: "missing") {
+            monitor.addError(error: ErrorMock("no recipient"), source: .custom, attributes: [:], completionHandler: { completions += 1 })
+        }
+        XCTAssertEqual(completions, 1)
+        XCTAssertEqual(scope.eventsWritten.count, eventCount)
+    }
+
+    func testUnavailableErrorTargetsPreserveIndependentFallbacks() throws {
+        let dateProvider = DateProviderMock()
+        let monitor = Monitor(dependencies: .mockWith(featureScope: featureScope, samplingRate: 100), dateProvider: dateProvider)
+        let (sceneA, sceneB) = startConcurrentSceneViews(in: monitor, dateProvider: dateProvider)
+        let a = try XCTUnwrap(monitor.rumContextSnapshot(for: .scene(sceneA)))
+        let b = try XCTUnwrap(monitor.rumContextSnapshot(for: .scene(sceneB)))
+        let unavailable = RUMCommandTarget.scene(RUMSceneIdentifier(rawValue: "closed"))
+        var completions = 0
+        RUMContextHandoff.withValue(owner: monitor.rumContextHandoffOwner, rumContext: a, sceneIdentifier: sceneB.rawValue) {
+            monitor.addError(error: ErrorMock("exact"), source: .custom, attributes: [:], explicitTarget: unavailable)
+        }
+        RUMContextHandoff.withValue(owner: monitor.rumContextHandoffOwner, rumContext: nil, sceneIdentifier: sceneA.rawValue) {
+            monitor.addError(
+                message: "scene",
+                type: nil,
+                stack: nil,
+                source: .custom,
+                attributes: [:],
+                file: "Example/Error.swift",
+                line: 42,
+                explicitTarget: unavailable
+            )
+        }
+        monitor.addError(error: ErrorMock("representative"), source: .custom, attributes: [:], completionHandler: { completions += 1 }, explicitTarget: unavailable)
+        monitor.process(command: RUMStopViewCommand.mockWith(time: dateProvider.now, identity: ViewIdentifier("view-A"), target: .scene(sceneA)))
+        monitor.addError(error: ErrorMock("ended"), source: .custom, attributes: [:], explicitTarget: .scene(sceneA))
+        let errors = try XCTUnwrap(featureScope as? FeatureScopeMock).eventsWritten(ofType: RUMErrorEvent.self)
+        XCTAssertEqual(errors.map(\.view.id), [a.viewID, a.viewID, b.viewID, b.viewID])
+        XCTAssertEqual(errors[1].error.stack, "Error.swift:42")
+        XCTAssertEqual(completions, 1)
+    }
+
+    func testExplicitErrorUsesCurrentOccurrenceAfterNavigationAndExpiration() throws {
+        for delayed in [false, true] {
+            let dateProvider = DateProviderMock()
+            let monitor = Monitor(dependencies: .mockWith(featureScope: featureScope, samplingRate: 100), dateProvider: dateProvider)
+            let (sceneA, sceneB) = startConcurrentSceneViews(in: monitor, dateProvider: dateProvider)
+            let oldA = try XCTUnwrap(monitor.rumContextSnapshot(for: .scene(sceneA)))
+            monitor.process(command: RUMStartViewCommand.mockWith(
+                time: dateProvider.now, identity: ViewIdentifier("next-A"), name: "Next A", target: .scene(sceneA)
+            ))
+            monitor.addAction(type: .custom, name: "representative B", attributes: [:], explicitTarget: .scene(sceneB))
+            let nextA = try XCTUnwrap(monitor.rumContextSnapshot(for: .scene(sceneA)))
+            monitor.addError(error: ErrorMock("next A"), source: .custom, attributes: [:], explicitTarget: .scene(sceneA))
+            dateProvider.now = dateProvider.now.addingTimeInterval(4 * 60 * 60 + 1)
+            if delayed {
+                monitor.process(command: RUMHandleAppLifecycleEventCommand(time: dateProvider.now, event: .willEnterForeground))
+            }
+            var completions = 0
+            monitor.addError(
+                error: ErrorMock("restored A"),
+                source: .custom,
+                attributes: [:],
+                completionHandler: { completions += 1 },
+                explicitTarget: .scene(sceneA)
+            )
+            let errors = try XCTUnwrap(featureScope as? FeatureScopeMock).eventsWritten(ofType: RUMErrorEvent.self).suffix(2)
+            XCTAssertEqual(errors.first?.view.id, nextA.viewID)
+            XCTAssertNotEqual(nextA.viewID, oldA.viewID)
+            XCTAssertEqual(errors.last?.view.name, "Next A")
+            XCTAssertNotEqual(errors.last?.view.id, nextA.viewID)
+            XCTAssertNotEqual(errors.last?.session.id, nextA.sessionID)
+            XCTAssertEqual(completions, 1)
+            XCTAssertEqual(monitor.rumContextSnapshot(for: .processRepresentative)?.viewName, "View B")
+        }
+    }
+
+    func testCurrentErrorTargetDoesNotReplaceCapturedResourceErrorOwner() throws {
+        let dateProvider = DateProviderMock()
+        let monitor = Monitor(dependencies: .mockWith(featureScope: featureScope, samplingRate: 100), dateProvider: dateProvider)
+        let (sceneA, sceneB) = startConcurrentSceneViews(in: monitor, dateProvider: dateProvider)
+        monitor.startAction(type: .tap, name: "A", attributes: [:], explicitTarget: .scene(sceneA))
+        monitor.startAction(type: .tap, name: "B", attributes: [:], explicitTarget: .scene(sceneB))
+        let owner = try XCTUnwrap(monitor.rumContextSnapshot(for: .scene(sceneA)))
+        let peer = try XCTUnwrap(monitor.rumContextSnapshot(for: .scene(sceneB)))
+        startTargetedResource(in: monitor, form: .url, key: "original-A", target: .scene(sceneA))
+        RUMContextHandoff.withValue(owner: monitor.rumContextHandoffOwner, rumContext: peer, sceneIdentifier: sceneB.rawValue) {
+            monitor.addError(error: ErrorMock("current B"), source: .custom, attributes: [:], explicitTarget: .scene(sceneB))
+            monitor.stopResourceWithError(resourceKey: "original-A", message: "captured A")
+        }
+        monitor.stopAction(type: .tap, name: nil, attributes: [:], explicitTarget: .scene(sceneA))
+        monitor.stopAction(type: .tap, name: nil, attributes: [:], explicitTarget: .scene(sceneB))
+        let scope = try XCTUnwrap(featureScope as? FeatureScopeMock)
+        let errors = scope.eventsWritten(ofType: RUMErrorEvent.self)
+        XCTAssertEqual(errors.map(\.view.id), [peer.viewID, owner.viewID])
+        XCTAssertEqual(errors.map(\.action?.id), [peer.userActionID, owner.userActionID].map { $0.map { RUMActionID.string(value: $0) } })
+        let actions = scope.eventsWritten(ofType: RUMActionEvent.self)
+        XCTAssertEqual(actions.map(\.action.error?.count), [1, 1])
+        XCTAssertEqual(actions.map(\.action.resource?.count), [0, 0])
+        XCTAssertTrue(scope.eventsWritten(ofType: RUMResourceEvent.self).isEmpty)
+    }
+
+    func testErrorCompletionCoversMapperDropsAndReentrantCalls() throws {
+        for dropsError in [false, true] {
+            let scope = FeatureScopeMock()
+            let builder = RUMEventBuilder(eventsMapper: .mockWith(errorEventMapper: { dropsError ? nil : $0 }))
+            let monitor = Monitor(
+                dependencies: .mockWith(featureScope: scope, samplingRate: 100, eventBuilder: builder),
+                dateProvider: DateProviderMock()
+            )
+            monitor.startView(key: "ordinary")
+            var completions = 0
+            monitor.addError(error: ErrorMock("outer"), source: .custom, attributes: [:]) {
+                completions += 1
+                monitor.addError(error: ErrorMock("nested"), source: .custom, attributes: [:]) { completions += 1 }
+            }
+            XCTAssertEqual(completions, 2)
+            XCTAssertEqual(scope.eventsWritten(ofType: RUMErrorEvent.self).count, dropsError ? 0 : 2)
+        }
+    }
+
+    func testDroppedErrorCompletesWhenMonitorIsReleasedBeforeDeferredProcessing() {
+        let scope = FeatureScopeMock(deferEventWriteContext: true)
+        var monitor: Monitor? = Monitor(dependencies: .mockWith(featureScope: scope, samplingRate: 100), dateProvider: DateProviderMock())
+        var completions = 0
+        monitor?.addError(error: ErrorMock("queued"), source: .custom, attributes: [:]) { completions += 1 }
+        XCTAssertEqual(completions, 0)
+        monitor = nil
+        scope.flushDeferredEventWriteContexts()
+        XCTAssertEqual(completions, 1)
+        XCTAssertTrue(scope.eventsWritten(ofType: RUMErrorEvent.self).isEmpty)
+    }
+
+    func testSuppressedCurrentViewErrorCompletesWithoutWriting() throws {
+        let monitor = Monitor(dependencies: .mockWith(featureScope: featureScope, samplingRate: 100), dateProvider: DateProviderMock())
+        var completions = 0
+        var command = RUMAddCurrentViewErrorCommand.mockWithErrorMessage(completionHandler: { completions += 1 })
+        command.target = .none
+        monitor.process(command: command)
+        XCTAssertEqual(completions, 1)
+        XCTAssertTrue(try XCTUnwrap(featureScope as? FeatureScopeMock).eventsWritten(ofType: RUMErrorEvent.self).isEmpty)
+    }
+
     func testGivenManualErrorsDuringSceneHandoff_theyUseExactOrSceneContext() throws {
         let dateProvider = DateProviderMock()
         let monitor = Monitor(

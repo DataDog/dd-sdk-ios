@@ -76,6 +76,25 @@ class RUMApplicationScopeTests: XCTestCase {
         return scope
     }
 
+    func testErrorCompletionWaitsForAllWritesAndCompletesOnce() {
+        let context = DatadogContext.mockWith(launchInfo: .mockWith(launchReason: .userLaunch))
+        let scope = createRUMApplicationScope(dependencies: .mockWith(samplingRate: 100), sdkContext: context)
+        let delayedWriter = ErrorDelayedWriter()
+        var completions = 0
+        let command = RUMAddCurrentViewErrorCommand.mockWithErrorMessage(
+            time: context.sdkInitDate.addingTimeInterval(1),
+            completionHandler: { completions += 1 }
+        )
+        _ = scope.process(command: command, context: context, writer: delayedWriter)
+        XCTAssertEqual(delayedWriter.completions.count, 2)
+        XCTAssertEqual(completions, 0)
+        // The view write alone must not signal completion if the error write is pending.
+        delayedWriter.completions.last?()
+        XCTAssertEqual(completions, 0)
+        delayedWriter.completions.first?()
+        XCTAssertEqual(completions, 1)
+    }
+
     func testRootContext() {
         let scope = createRUMApplicationScope(
             dependencies: .mockWith(rumApplicationID: "abc-123")
@@ -1506,5 +1525,13 @@ class RUMApplicationScopeTests: XCTestCase {
         XCTAssertEqual(scope.activeSession?.context.sessionPrecondition, .inactivityTimeout)
         // And no error telemetry is fired for .userLaunch in background (it is a valid scenario)
         XCTAssertNil(featureScope.telemetryMock.messages.firstError())
+    }
+}
+
+private final class ErrorDelayedWriter: Writer {
+    var completions: [CompletionHandler] = []
+
+    func write<T: Encodable, M: Encodable>(value: T, metadata: M?, completion: @escaping CompletionHandler) {
+        completions.append(completion)
     }
 }

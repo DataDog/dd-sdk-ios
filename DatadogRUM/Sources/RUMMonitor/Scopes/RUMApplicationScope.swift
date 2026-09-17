@@ -95,6 +95,18 @@ internal class RUMApplicationScope: RUMScope, RUMContextProvider {
     }
 
     private func _process(command incomingCommand: RUMCommand, context: DatadogContext, writer: Writer) {
+        guard var error = incomingCommand as? RUMAddCurrentViewErrorCommand else {
+            processCommand(command: incomingCommand, context: context, writer: writer)
+            return
+        }
+        let completion = RUMErrorCompletion(error.completionHandler)
+        error.completionHandler = NOPCompletionHandler
+        let errorWriter = RUMErrorCompletionWriter(writer: writer, errorCompletion: completion)
+        processCommand(command: error, context: context, writer: errorWriter)
+        completion.finish()
+    }
+
+    private func processCommand(command incomingCommand: RUMCommand, context: DatadogContext, writer: Writer) {
         var command = incomingCommand
         // `RUMSDKInitCommand` forces the creation of the initial session
         // Added in https://github.com/DataDog/dd-sdk-ios/pull/1278 to ensure that logs and traces
@@ -450,6 +462,48 @@ private extension Array where Element == RUMViewScope {
             return isEmpty ? [] : Array(dropLast())
         case .none, .allActiveViews:
             return []
+        }
+    }
+}
+
+/// Finishes an error once processing and every scheduled write have completed.
+/// The processing reservation also covers dropped errors with no recipient.
+private final class RUMErrorCompletion {
+    private let lock = NSLock()
+    private var pending = 1
+    private var completion: CompletionHandler?
+
+    init(_ completion: @escaping CompletionHandler) {
+        self.completion = completion
+    }
+
+    func beginWrite() {
+        lock.lock()
+        pending += 1
+        lock.unlock()
+    }
+
+    func finish() {
+        lock.lock()
+        pending -= 1
+        let callback = pending == 0 ? completion : nil
+        if pending == 0 {
+            completion = nil
+        }
+        lock.unlock()
+        callback?()
+    }
+}
+
+private struct RUMErrorCompletionWriter: Writer {
+    let writer: Writer
+    let errorCompletion: RUMErrorCompletion
+
+    func write<T: Encodable, M: Encodable>(value: T, metadata: M?, completion: @escaping CompletionHandler) {
+        errorCompletion.beginWrite()
+        writer.write(value: value, metadata: metadata) {
+            completion()
+            self.errorCompletion.finish()
         }
     }
 }

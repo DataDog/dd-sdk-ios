@@ -951,6 +951,39 @@ public class objc_RUMMonitor: NSObject {
         swiftRUMMonitor.addError(error: error, source: source.swiftType, attributes: attributes.dd.swiftAttributes)
     }
 
+    #if os(iOS) && DEBUG
+    /// Adds an error to the selected scene's current tracked view.
+    /// This API is experimental; unavailable targets keep existing inference.
+    @available(iOS 27.0, *)
+    @MainActor
+    @objc(addErrorWithMessage:stack:source:view:attributes:)
+    public func addError(
+        message: String,
+        stack: String?,
+        source: objc_RUMErrorSource,
+        view: objc_RUMViewTarget,
+        attributes: [String: Any]
+    ) {
+        swiftRUMMonitor.addError(
+            message: message, stack: stack, source: source.swiftType, view: view.swiftType, attributes: attributes.dd.swiftAttributes
+        )
+    }
+
+    /// Adds an Error to the selected scene's current tracked view.
+    /// This API is experimental; Resource errors keep their captured start owner.
+    @available(iOS 27.0, *)
+    @MainActor
+    @objc(addErrorWithError:source:view:attributes:)
+    public func addError(
+        error: Error,
+        source: objc_RUMErrorSource,
+        view: objc_RUMViewTarget,
+        attributes: [String: Any]
+    ) {
+        swiftRUMMonitor.addError(error: error, source: source.swiftType, view: view.swiftType, attributes: attributes.dd.swiftAttributes)
+    }
+    #endif
+
     public func startResource(
         resourceKey: String,
         request: URLRequest,

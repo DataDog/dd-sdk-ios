@@ -53,6 +53,9 @@ class RUMMonitorProtocol_ConvenienceTests: XCTestCase {
         if #available(iOS 27.0, *),
            let scene = UIApplication.shared.connectedScenes.first as? UIWindowScene {
             let target = RUMViewTarget.current(in: scene)
+            monitor.addError(message: "targeted", view: target)
+            monitor.addError(error: ProgrammerError(description: "targeted"), view: target)
+            monitor.addError(error: ProgrammerError(description: "targeted callback"), view: target) {}
             monitor.startResource(resourceKey: "targeted-request", request: .mockAny(), view: target)
             monitor.startResource(resourceKey: "targeted-url", url: .mockRandom(), view: target)
             monitor.startResource(resourceKey: "targeted-method", httpMethod: .get, urlString: "https://example.com", view: target)

@@ -344,6 +344,24 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
             command = actionCommand
         }
 
+        // A current-view error targets a live occurrence without changing the
+        // representative. Invalid explicit targets preserve independent inference.
+        if var error = command as? RUMAddCurrentViewErrorCommand,
+           let explicitTarget = error.explicitTarget,
+           let view = viewScopes.last(where: { view in
+               guard view.isActiveView else {
+                   return false
+               }
+               switch explicitTarget {
+               case .scene(let scene): return view.sceneIdentifier == scene
+               case .view(let id): return view.viewUUID == id
+               case .none, .processRepresentative, .allActiveViews: return false
+               }
+           }) {
+            error.target = .view(view.viewUUID)
+            command = error
+        }
+
         // Resolve only live explicit start targets. Once started, the Resource
         // scope keeps this exact owner for metrics and completion by key.
         if var startResource = command as? RUMStartResourceCommand,

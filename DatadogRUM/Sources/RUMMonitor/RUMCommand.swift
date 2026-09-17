@@ -308,6 +308,8 @@ internal struct RUMAddCurrentViewErrorCommand: RUMErrorCommand {
     let canStartBackgroundViewAfterSessionStop = false
     let isUserInteraction = false // an error is not an interactive event
     var target: RUMCommandTarget = .processRepresentative
+    /// Valid live target takes precedence over independent inference.
+    var explicitTarget: RUMCommandTarget?
     var userActionTarget: RUMErrorUserActionTarget = .current
 
     let message: String
@@ -321,7 +323,7 @@ internal struct RUMAddCurrentViewErrorCommand: RUMErrorCommand {
     let binaryImages: [BinaryImage]?
     let isStackTraceTruncated: Bool?
     let missedEventType: SessionEndedMetric.MissedEventType? = .error
-    let completionHandler: CompletionHandler
+    var completionHandler: CompletionHandler
 
     /// Constructor dedicated to errors defined by message, type and stack.
     init(

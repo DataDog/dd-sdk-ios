@@ -188,6 +188,7 @@ internal class Monitor: RUMCommandSubscriber {
 
     func process(command: RUMCommand) {
         guard command.target != .none else {
+            (command as? RUMAddCurrentViewErrorCommand)?.completionHandler()
             return
         }
         var command = command
@@ -195,6 +196,7 @@ internal class Monitor: RUMCommandSubscriber {
         // process command in event context
         featureScope.eventWriteContext { [weak self] context, writer in
             guard let self = self else {
+                (command as? RUMAddCurrentViewErrorCommand)?.completionHandler()
                 return
             }
 
@@ -430,6 +432,19 @@ extension Monitor: RUMMonitorProtocol {
     // MARK: - errors
 
     func addError(message: String, type: String?, stack: String?, source: RUMErrorSource, attributes: [AttributeKey: AttributeValue], file: StaticString?, line: UInt?) {
+        addError(message: message, type: type, stack: stack, source: source, attributes: attributes, file: file, line: line, explicitTarget: nil)
+    }
+
+    func addError(
+        message: String,
+        type: String?,
+        stack: String?,
+        source: RUMErrorSource,
+        attributes: [AttributeKey: AttributeValue],
+        file: StaticString?,
+        line: UInt?,
+        explicitTarget: RUMCommandTarget?
+    ) {
         let stack: String? = stack ?? {
             if let file = file,
                let fileName = "\(file)".split(separator: "/").last,
@@ -448,11 +463,16 @@ extension Monitor: RUMMonitorProtocol {
                 globalAttributes: self.attributes,
                 attributes: attributes,
                 completionHandler: NOPCompletionHandler
-            )
+            ),
+            explicitTarget: explicitTarget
         )
     }
 
     func addError(error: Error, source: RUMErrorSource, attributes: [AttributeKey: AttributeValue]) {
+        addError(error: error, source: source, attributes: attributes, explicitTarget: nil)
+    }
+
+    func addError(error: Error, source: RUMErrorSource, attributes: [AttributeKey: AttributeValue], explicitTarget: RUMCommandTarget?) {
         processCurrentViewError(
             RUMAddCurrentViewErrorCommand(
                 time: dateProvider.now,
@@ -461,7 +481,8 @@ extension Monitor: RUMMonitorProtocol {
                 globalAttributes: self.attributes,
                 attributes: attributes,
                 completionHandler: NOPCompletionHandler
-            )
+            ),
+            explicitTarget: explicitTarget
         )
     }
 
@@ -851,8 +872,9 @@ extension Monitor: RUMMonitorProtocol {
         process(command: operationStep)
     }
 
-    private func processCurrentViewError(_ error: RUMAddCurrentViewErrorCommand) {
+    private func processCurrentViewError(_ error: RUMAddCurrentViewErrorCommand, explicitTarget: RUMCommandTarget? = nil) {
         var error = error
+        error.explicitTarget = explicitTarget
         error.target = currentExecutionTarget
         process(command: error)
     }
@@ -908,6 +930,16 @@ extension Monitor: RUMMonitorProtocol {
         attributes: [AttributeKey: AttributeValue],
         completionHandler: @escaping CompletionHandler
     ) {
+        addError(error: error, source: source, attributes: attributes, completionHandler: completionHandler, explicitTarget: nil)
+    }
+
+    func addError(
+        error: Error,
+        source: RUMErrorSource,
+        attributes: [AttributeKey: AttributeValue],
+        completionHandler: @escaping CompletionHandler,
+        explicitTarget: RUMCommandTarget?
+    ) {
         processCurrentViewError(
             RUMAddCurrentViewErrorCommand(
                 time: dateProvider.now,
@@ -916,7 +948,8 @@ extension Monitor: RUMMonitorProtocol {
                 globalAttributes: self.attributes,
                 attributes: attributes,
                 completionHandler: completionHandler
-            )
+            ),
+            explicitTarget: explicitTarget
         )
     }
 }
@@ -1067,6 +1100,8 @@ extension Monitor: RUMMonitorViewProtocol {
 }
 
 #if os(iOS)
+extension Monitor: RUMErrorViewTargetHandling {}
+
 extension Monitor: RUMResourceViewTargetHandling {}
 
 extension Monitor: RUMActionViewTargetHandling {}

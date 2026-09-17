@@ -78,6 +78,45 @@ private final class OperationTargetFallbackMonitor: NOPMonitor {
     }
 }
 
+private final class ErrorTargetFallbackMonitor: NOPMonitor {
+    var forms: [String] = []
+    var attributes: [[AttributeKey: AttributeValue]] = []
+    var message: String?
+    var stack: String?
+    var file: StaticString?
+    var line: UInt?
+
+    override func addError(
+        message: String,
+        type: String?,
+        stack: String?,
+        source: RUMErrorSource,
+        attributes: [AttributeKey: AttributeValue],
+        file: StaticString?,
+        line: UInt?
+    ) {
+        forms.append("message")
+        self.attributes.append(attributes)
+        self.message = message
+        self.stack = stack
+        self.file = file
+        self.line = line
+    }
+
+    override func addError(error: Error, source: RUMErrorSource, attributes: [AttributeKey: AttributeValue]) {
+        forms.append("error")
+        self.attributes.append(attributes)
+    }
+
+    override func addError(
+        error: Error, source: RUMErrorSource, attributes: [AttributeKey: AttributeValue], completionHandler: () -> Void
+    ) {
+        forms.append("callback")
+        self.attributes.append(attributes)
+        completionHandler()
+    }
+}
+
 private final class ResourceTargetFallbackMonitor: NOPMonitor {
     var starts: [(key: String, method: String?, url: String?, attributes: [AttributeKey: AttributeValue])] = []
 
@@ -277,6 +316,47 @@ class NOPMonitorTests: XCTestCase {
         XCTAssertEqual(monitor.stops.count, 1)
         XCTAssertEqual(monitor.stops.first?.key, "compose")
         XCTAssertEqual(monitor.stops.first?.attributes["stop"] as? String, "attribute")
+    }
+
+    @MainActor
+    func testErrorTargetBridgePreservesCustomAndNOPMonitorCompatibility() {
+        let dd = DD.mockWith(logger: CoreLoggerMock())
+        defer { dd.reset() }
+        let custom = ErrorTargetFallbackMonitor()
+        var completions = 0
+        let target = RUMCommandTarget.scene(RUMSceneIdentifier(rawValue: "scene-A"))
+        for monitor in [custom, NOPMonitor()] {
+            RUMErrorViewTargetBridge.addError(
+                on: monitor,
+                message: "message",
+                type: "type",
+                stack: "stack",
+                source: .custom,
+                attributes: ["form": "message"],
+                file: "Example.swift",
+                line: 42,
+                explicitTarget: target
+            )
+            RUMErrorViewTargetBridge.addError(
+                on: monitor, error: ErrorMock("error"), source: .custom, attributes: ["form": "error"], explicitTarget: target
+            )
+            RUMErrorViewTargetBridge.addError(
+                on: monitor,
+                error: ErrorMock("callback"),
+                source: .custom,
+                attributes: ["form": "callback"],
+                completionHandler: { completions += 1 },
+                explicitTarget: target
+            )
+        }
+        XCTAssertEqual(custom.forms, ["message", "error", "callback"])
+        XCTAssertEqual(custom.attributes.map { $0["form"] as? String }, ["message", "error", "callback"])
+        XCTAssertEqual(custom.message, "message")
+        XCTAssertEqual(custom.stack, "stack")
+        XCTAssertEqual(custom.file.map { "\($0)" }, "Example.swift")
+        XCTAssertEqual(custom.line, 42)
+        XCTAssertEqual(completions, 2)
+        XCTAssertEqual(dd.logger.criticalLogs.count, 3)
     }
 
     @MainActor

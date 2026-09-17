@@ -76,6 +76,8 @@
             [monitor startViewWithKey:@"view" name:@"Scene View" inScene:scene attributes:@{}];
             [monitor stopViewWithKey:@"view" inScene:scene attributes:@{}];
             DDRUMViewTarget *target = [DDRUMViewTarget currentInScene:scene];
+            [monitor addErrorWithMessage:@"targeted" stack:@"stack" source:DDRUMErrorSourceCustom view:target attributes:@{}];
+            [monitor addErrorWithError:[NSError errorWithDomain:@"targeted" code:1 userInfo:nil] source:DDRUMErrorSourceCustom view:target attributes:@{}];
             [monitor startResourceWithResourceKey:@"targeted_request" request:[NSURLRequest new] view:target attributes:@{}];
             [monitor startResourceWithResourceKey:@"targeted_url" url:[NSURL new] view:target attributes:@{}];
             [monitor startResourceWithResourceKey:@"targeted_method" httpMethod:DDRUMMethodGet urlString:@"" view:target attributes:@{}];

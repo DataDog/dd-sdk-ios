@@ -204,6 +204,82 @@ public extension RUMMonitorProtocol {
         addError(error: error, source: source, attributes: attributes)
     }
 
+    #if os(iOS)
+    /// Adds an error to the selected scene's current tracked view.
+    ///
+    /// This API is experimental. A scene without a live view falls back to the
+    /// independently inferred view or process representative. Reporting an error
+    /// does not change that representative. File and line supply a missing stack.
+    @_spi(Experimental)
+    @available(iOS 27.0, *)
+    @MainActor
+    func addError(
+        message: String,
+        type: String? = nil,
+        stack: String? = nil,
+        source: RUMErrorSource = .custom,
+        view: RUMViewTarget,
+        attributes: [AttributeKey: AttributeValue] = [:],
+        file: StaticString? = #fileID,
+        line: UInt? = #line
+    ) {
+        RUMErrorViewTargetBridge.addError(
+            on: self,
+            message: message,
+            type: type,
+            stack: stack,
+            source: source,
+            attributes: attributes,
+            file: file,
+            line: line,
+            explicitTarget: .scene(view.sceneIdentifier)
+        )
+    }
+
+    /// Adds an Error to the selected scene's current tracked view.
+    ///
+    /// This experimental overload uses independent inference when the scene has
+    /// no live view. Resource errors retain the owner captured by startResource.
+    @_spi(Experimental)
+    @available(iOS 27.0, *)
+    @MainActor
+    func addError(
+        error: Error,
+        source: RUMErrorSource = .custom,
+        view: RUMViewTarget,
+        attributes: [AttributeKey: AttributeValue] = [:]
+    ) {
+        RUMErrorViewTargetBridge.addError(
+            on: self, error: error, source: source, attributes: attributes, explicitTarget: .scene(view.sceneIdentifier)
+        )
+    }
+
+    /// Adds an Error to the selected current view and completes after processing.
+    ///
+    /// This API is experimental. The callback also runs when the SDK drops the
+    /// error; it does not indicate backend delivery. Custom monitors retain their
+    /// existing completion-handler behavior.
+    @_spi(Experimental)
+    @available(iOS 27.0, *)
+    @MainActor
+    func addError(
+        error: Error,
+        source: RUMErrorSource = .custom,
+        view: RUMViewTarget,
+        attributes: [AttributeKey: AttributeValue] = [:],
+        completionHandler: @escaping CompletionHandler
+    ) {
+        RUMErrorViewTargetBridge.addError(
+            on: self,
+            error: error,
+            source: source,
+            attributes: attributes,
+            completionHandler: completionHandler,
+            explicitTarget: .scene(view.sceneIdentifier)
+        )
+    }
+    #endif
+
     // MARK: - resources
 
     /// Starts RUM resource.
@@ -730,6 +806,92 @@ public extension RUMMonitorProtocol {
         failOperation(name: name, operationKey: operationKey, reason: reason, attributes: attributes)
     }
 }
+
+#if os(iOS)
+/// Private capability preserving existing custom monitor requirements.
+internal protocol RUMErrorViewTargetHandling: AnyObject {
+    func addError(
+        message: String,
+        type: String?,
+        stack: String?,
+        source: RUMErrorSource,
+        attributes: [AttributeKey: AttributeValue],
+        file: StaticString?,
+        line: UInt?,
+        explicitTarget: RUMCommandTarget?
+    )
+    func addError(error: Error, source: RUMErrorSource, attributes: [AttributeKey: AttributeValue], explicitTarget: RUMCommandTarget?)
+    func addError(
+        error: Error,
+        source: RUMErrorSource,
+        attributes: [AttributeKey: AttributeValue],
+        completionHandler: @escaping CompletionHandler,
+        explicitTarget: RUMCommandTarget?
+    )
+}
+
+/// Forwards exactly once through the targeted capability or the legacy API.
+@MainActor
+internal enum RUMErrorViewTargetBridge {
+    static func addError(
+        on monitor: any RUMMonitorProtocol,
+        message: String,
+        type: String?,
+        stack: String?,
+        source: RUMErrorSource,
+        attributes: [AttributeKey: AttributeValue],
+        file: StaticString?,
+        line: UInt?,
+        explicitTarget: RUMCommandTarget
+    ) {
+        guard let monitor = monitor as? any RUMErrorViewTargetHandling else {
+            monitor.addError(message: message, type: type, stack: stack, source: source, attributes: attributes, file: file, line: line)
+            return
+        }
+        monitor.addError(
+            message: message,
+            type: type,
+            stack: stack,
+            source: source,
+            attributes: attributes,
+            file: file,
+            line: line,
+            explicitTarget: explicitTarget
+        )
+    }
+
+    static func addError(
+        on monitor: any RUMMonitorProtocol,
+        error: Error,
+        source: RUMErrorSource,
+        attributes: [AttributeKey: AttributeValue],
+        explicitTarget: RUMCommandTarget
+    ) {
+        guard let monitor = monitor as? any RUMErrorViewTargetHandling else {
+            monitor.addError(error: error, source: source, attributes: attributes)
+            return
+        }
+        monitor.addError(error: error, source: source, attributes: attributes, explicitTarget: explicitTarget)
+    }
+
+    static func addError(
+        on monitor: any RUMMonitorProtocol,
+        error: Error,
+        source: RUMErrorSource,
+        attributes: [AttributeKey: AttributeValue],
+        completionHandler: @escaping CompletionHandler,
+        explicitTarget: RUMCommandTarget
+    ) {
+        guard let monitor = monitor as? any RUMErrorViewTargetHandling else {
+            monitor.addError(error: error, source: source, attributes: attributes, completionHandler: completionHandler)
+            return
+        }
+        monitor.addError(
+            error: error, source: source, attributes: attributes, completionHandler: completionHandler, explicitTarget: explicitTarget
+        )
+    }
+}
+#endif
 
 #if os(iOS)
 /// Private capability preserving existing custom monitor requirements.
