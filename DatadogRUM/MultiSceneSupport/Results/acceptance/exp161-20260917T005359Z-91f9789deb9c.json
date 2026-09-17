@@ -1,0 +1,79 @@
+{
+  "artifacts": {
+    "boot-ready.log": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp161-acceptance-2o58j5wp/run/boot-ready.log",
+    "build-identity.json": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp161-acceptance-2o58j5wp/run/build-identity.json",
+    "build-tests.log": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp161-acceptance-2o58j5wp/run/build-tests.log",
+    "console.raw.log": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp161-acceptance-2o58j5wp/run/console.raw.log",
+    "container-absence.log": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp161-acceptance-2o58j5wp/run/container-absence.log",
+    "install.log": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp161-acceptance-2o58j5wp/run/install.log",
+    "signature.log": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp161-acceptance-2o58j5wp/run/signature.log",
+    "source-identity.json": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp161-acceptance-2o58j5wp/run/source-identity.json",
+    "summary.json": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp161-acceptance-2o58j5wp/run/summary.json",
+    "terminate-after.log": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp161-acceptance-2o58j5wp/run/terminate-after.log",
+    "terminate-before.log": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp161-acceptance-2o58j5wp/run/terminate-before.log",
+    "test-summary.json": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp161-acceptance-2o58j5wp/run/test-summary.json",
+    "uninstall.log": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp161-acceptance-2o58j5wp/run/uninstall.log"
+  },
+  "classification_reason": "Validator required an occurrence field absent from native mapper envelopes; app oracle PASS15/15 but backend was never reached. Original runner state preserved.",
+  "device": {
+    "dataPath": "/Users/valentin.pertuisot/Library/Developer/CoreSimulator/Devices/92C9918B-FEC6-4440-9D6D-8E09475950BB/data",
+    "dataPathSize": 3168907264,
+    "deviceTypeIdentifier": "com.apple.CoreSimulator.SimDeviceType.iPad-mini-A17-Pro",
+    "isAvailable": true,
+    "lastUsedAt": "2026-09-16T22:19:15Z",
+    "logPath": "/Users/valentin.pertuisot/Library/Logs/CoreSimulator/92C9918B-FEC6-4440-9D6D-8E09475950BB",
+    "logPathSize": 385024,
+    "name": "iPad mini (A17 Pro)",
+    "runtime": "com.apple.CoreSimulator.SimRuntime.iOS-27-0",
+    "state": "Booted",
+    "udid": "92C9918B-FEC6-4440-9D6D-8E09475950BB"
+  },
+  "dirty_state": [
+    "M  .continue-here.md",
+    " M Datadog/Datadog.xcodeproj/project.pbxproj",
+    "A  DatadogRUM/MultiSceneSupport/BASELINES.md",
+    "A  DatadogRUM/MultiSceneSupport/COMPONENT_REVIEW.md",
+    "M  DatadogRUM/MultiSceneSupport/EXPERIMENTS.md",
+    "M  DatadogRUM/MultiSceneSupport/Experiments/EXP-143-199.md",
+    "A  DatadogRUM/MultiSceneSupport/Experiments/PLAN_COMPLETED_THROUGH_EXP-159.md",
+    "M  DatadogRUM/MultiSceneSupport/PLAN.md",
+    "A  DatadogRUM/MultiSceneSupport/release-gates.json",
+    "A  xcconfigs/Datadog.local.xcconfig",
+    "?? DatadogRUM/MultiSceneSupport/PRODUCTION_SAFETY_REVIEW.md",
+    "?? tools/multi-scene/"
+  ],
+  "experiment": "EXP-161",
+  "experiment_classification": "INVALID",
+  "failures": [
+    "no Home snapshot before critical batch: scene-A"
+  ],
+  "finished_at": "2026-09-17T00:54:43.870568+00:00",
+  "gate": "A01",
+  "rerun": "Use a fresh output directory and freshly resolved device; do not reuse run IDs or bridge responses.",
+  "revision": "af63657f08dbecb66e7c3ae97ed53fc8f7b065b9",
+  "run_id": "exp161-20260917T005359Z-91f9789deb9c",
+  "scenario_id": "actions.explicit-target.long-running-cross-scene-serial",
+  "schema_version": 1,
+  "source_fingerprint": "d1eeecbbeb0e52565677d045cb672756f9d7195e63eaac9b8ea8d8db4e4ac156",
+  "stages": {
+    "clean_install": {
+      "data_container_absent": true,
+      "installed_binary_sha256": "be98deb606089899d6412ab7cc03d27fb4468aa63e3d4aebf38dd87ad5800a9c",
+      "state": "PASS"
+    },
+    "frozen_build": {
+      "executable_sha256": "be98deb606089899d6412ab7cc03d27fb4468aa63e3d4aebf38dd87ad5800a9c",
+      "source_sha256": "d1eeecbbeb0e52565677d045cb672756f9d7195e63eaac9b8ea8d8db4e4ac156",
+      "state": "PASS",
+      "test_count": 166,
+      "uuid": "UUID: 46861773-DD3C-35EE-A78A-AD6BEA461AAC (arm64) /private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp161-acceptance-2o58j5wp/run/derived/Build/Products/Debug-iphonesimulator/RUMNativeMultiSceneProbe.app/RUMNativeMultiSceneProbe"
+    },
+    "preflight": {
+      "authenticated_read": true,
+      "state": "PASS"
+    }
+  },
+  "started_at": "2026-09-17T00:53:59.817478+00:00",
+  "state": "FAIL",
+  "xcode": "Xcode 27.0\nBuild version 27A266a"
+}

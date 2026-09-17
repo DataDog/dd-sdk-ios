@@ -1,0 +1,421 @@
+{
+  "artifacts": {
+    "backend-evidence.json": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp161-acceptance-qw2b9iu8/run/backend-evidence.json",
+    "boot-ready.log": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp161-acceptance-qw2b9iu8/run/boot-ready.log",
+    "build-identity.json": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp161-acceptance-qw2b9iu8/run/build-identity.json",
+    "build-tests.log": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp161-acceptance-qw2b9iu8/run/build-tests.log",
+    "console.raw.log": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp161-acceptance-qw2b9iu8/run/console.raw.log",
+    "container-absence.log": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp161-acceptance-qw2b9iu8/run/container-absence.log",
+    "install.log": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp161-acceptance-qw2b9iu8/run/install.log",
+    "local-evidence.json": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp161-acceptance-qw2b9iu8/run/local-evidence.json",
+    "probe.jsonl": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp161-acceptance-qw2b9iu8/run/probe.jsonl",
+    "signature.log": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp161-acceptance-qw2b9iu8/run/signature.log",
+    "source-identity.json": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp161-acceptance-qw2b9iu8/run/source-identity.json",
+    "summary.json": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp161-acceptance-qw2b9iu8/run/summary.json",
+    "terminal-screenshot.log": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp161-acceptance-qw2b9iu8/run/terminal-screenshot.log",
+    "terminal.png": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp161-acceptance-qw2b9iu8/run/terminal.png",
+    "terminate-after.log": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp161-acceptance-qw2b9iu8/run/terminate-after.log",
+    "terminate-before.log": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp161-acceptance-qw2b9iu8/run/terminate-before.log",
+    "test-summary.json": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp161-acceptance-qw2b9iu8/run/test-summary.json",
+    "uninstall.log": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp161-acceptance-qw2b9iu8/run/uninstall.log"
+  },
+  "device": {
+    "dataPath": "/Users/valentin.pertuisot/Library/Developer/CoreSimulator/Devices/92C9918B-FEC6-4440-9D6D-8E09475950BB/data",
+    "dataPathSize": 3166380032,
+    "deviceTypeIdentifier": "com.apple.CoreSimulator.SimDeviceType.iPad-mini-A17-Pro",
+    "isAvailable": true,
+    "lastUsedAt": "2026-09-16T22:19:15Z",
+    "logPath": "/Users/valentin.pertuisot/Library/Logs/CoreSimulator/92C9918B-FEC6-4440-9D6D-8E09475950BB",
+    "logPathSize": 458752,
+    "name": "iPad mini (A17 Pro)",
+    "runtime": "com.apple.CoreSimulator.SimRuntime.iOS-27-0",
+    "state": "Booted",
+    "udid": "92C9918B-FEC6-4440-9D6D-8E09475950BB"
+  },
+  "dirty_state": [
+    "M  .continue-here.md",
+    " M Datadog/Datadog.xcodeproj/project.pbxproj",
+    "A  DatadogRUM/MultiSceneSupport/BASELINES.md",
+    "AM DatadogRUM/MultiSceneSupport/COMPONENT_REVIEW.md",
+    "M  DatadogRUM/MultiSceneSupport/EXPERIMENTS.md",
+    "MM DatadogRUM/MultiSceneSupport/Experiments/EXP-143-199.md",
+    "A  DatadogRUM/MultiSceneSupport/Experiments/PLAN_COMPLETED_THROUGH_EXP-159.md",
+    "MM DatadogRUM/MultiSceneSupport/PLAN.md",
+    " M DatadogRUM/MultiSceneSupport/TOOLING_RUNBOOK.md",
+    "AM DatadogRUM/MultiSceneSupport/release-gates.json",
+    "A  xcconfigs/Datadog.local.xcconfig",
+    "?? DatadogRUM/MultiSceneSupport/PRODUCTION_SAFETY_REVIEW.md",
+    "?? DatadogRUM/MultiSceneSupport/Results/",
+    "?? tools/multi-scene/"
+  ],
+  "evidence": {
+    "backend-evidence.json": {
+      "actions": [
+        {
+          "action_id": "9cfb63ba-92e6-4ca4-b1d9-dc22dcced666",
+          "duration_ns": 54002,
+          "phase": "long-running-legacy-finished-b",
+          "run_id": "exp161-20260917T011012Z-9bb629c7c630",
+          "session_id": "4190b7c5-fbfe-4a7b-8a27-2daeadd485e1",
+          "source_scene": "scene-A",
+          "target": "long-running-legacy-finished-b",
+          "uptime": 617128.0321467083,
+          "view_id": "bf0d69d1-e156-4e00-94b9-cec71585500f"
+        },
+        {
+          "action_id": "671a40e1-9d29-4667-9ea9-76e63e3748ac",
+          "duration_ns": 0,
+          "phase": "long-running-legacy-representative-b",
+          "run_id": "exp161-20260917T011012Z-9bb629c7c630",
+          "session_id": "4190b7c5-fbfe-4a7b-8a27-2daeadd485e1",
+          "source_scene": "scene-B",
+          "target": "probe-lifecycle-scene-B.home.long-running-legacy-representative-b",
+          "uptime": 617128.03201325,
+          "view_id": "bf0d69d1-e156-4e00-94b9-cec71585500f"
+        },
+        {
+          "action_id": "c1c782cf-c724-4877-bf5c-11e3243cb690",
+          "duration_ns": 188947,
+          "phase": "long-running-finished-b",
+          "run_id": "exp161-20260917T011012Z-9bb629c7c630",
+          "session_id": "4190b7c5-fbfe-4a7b-8a27-2daeadd485e1",
+          "source_scene": "scene-B",
+          "target": "long-running-finished-b",
+          "uptime": 617128.0316980417,
+          "view_id": "bf0d69d1-e156-4e00-94b9-cec71585500f"
+        },
+        {
+          "action_id": "65e30b6b-ee8c-4835-995e-4da34403b5a7",
+          "duration_ns": 0,
+          "phase": "long-running-representative-b",
+          "run_id": "exp161-20260917T011012Z-9bb629c7c630",
+          "session_id": "4190b7c5-fbfe-4a7b-8a27-2daeadd485e1",
+          "source_scene": "scene-B",
+          "target": "probe-lifecycle-scene-B.home.long-running-representative-b",
+          "uptime": 617128.0306156251,
+          "view_id": "bf0d69d1-e156-4e00-94b9-cec71585500f"
+        },
+        {
+          "action_id": "8769903f-cc51-466f-bcfe-afcf770e6735",
+          "duration_ns": 524998,
+          "phase": "long-running-finished-a",
+          "run_id": "exp161-20260917T011012Z-9bb629c7c630",
+          "session_id": "4190b7c5-fbfe-4a7b-8a27-2daeadd485e1",
+          "source_scene": "scene-A",
+          "target": "long-running-finished-a",
+          "uptime": 617128.0319538751,
+          "view_id": "66fb98ab-863d-4210-81de-8623a932a713"
+        },
+        {
+          "action_id": "cc687db8-9377-493a-9c1e-d1b702a6c881",
+          "duration_ns": 0,
+          "phase": "long-running-empty-b-representative-a",
+          "run_id": "exp161-20260917T011012Z-9bb629c7c630",
+          "session_id": "4190b7c5-fbfe-4a7b-8a27-2daeadd485e1",
+          "source_scene": "scene-A",
+          "target": "probe-lifecycle-scene-A.home.long-running-empty-b-representative-a",
+          "uptime": 617128.031787375,
+          "view_id": "66fb98ab-863d-4210-81de-8623a932a713"
+        },
+        {
+          "action_id": "85e4f379-3fb7-4ac9-b306-5b956697906a",
+          "duration_ns": 0,
+          "phase": "long-running-representative-a",
+          "run_id": "exp161-20260917T011012Z-9bb629c7c630",
+          "session_id": "4190b7c5-fbfe-4a7b-8a27-2daeadd485e1",
+          "source_scene": "scene-A",
+          "target": "probe-lifecycle-scene-A.home.long-running-representative-a",
+          "uptime": 617128.031581625,
+          "view_id": "66fb98ab-863d-4210-81de-8623a932a713"
+        }
+      ],
+      "errors": {
+        "count": 0
+      },
+      "views": [
+        {
+          "name": "ProbeHomeView",
+          "run_id": "exp161-20260917T011012Z-9bb629c7c630",
+          "session_id": "4190b7c5-fbfe-4a7b-8a27-2daeadd485e1",
+          "view_id": "bf0d69d1-e156-4e00-94b9-cec71585500f"
+        },
+        {
+          "name": "ProbeHomeView",
+          "run_id": "exp161-20260917T011012Z-9bb629c7c630",
+          "session_id": "4190b7c5-fbfe-4a7b-8a27-2daeadd485e1",
+          "view_id": "66fb98ab-863d-4210-81de-8623a932a713"
+        },
+        {
+          "name": "ApplicationLaunch",
+          "run_id": "exp161-20260917T011012Z-9bb629c7c630",
+          "session_id": "4190b7c5-fbfe-4a7b-8a27-2daeadd485e1",
+          "view_id": "cb764c5b-4b6c-4f2f-a21e-fea6282676ad"
+        }
+      ]
+    },
+    "build-identity.json": {
+      "executable_sha256": "35df8f6e6c6f7c40af40478d0174e1f9df98b9970e11e5fcea4a373ad307671f",
+      "source_sha256": "91454d5e699a86d13514aaa3c87796e87b0a95781a7c6a5591c1256dc4406d08",
+      "uuid": "UUID: D4EA9400-71E9-3504-81EE-F3C2DE44858B (arm64) /private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp161-acceptance-qw2b9iu8/run/derived/Build/Products/Debug-iphonesimulator/RUMNativeMultiSceneProbe.app/RUMNativeMultiSceneProbe"
+    },
+    "local-evidence.json": {
+      "actions": [
+        {
+          "action_id": "65e30b6b-ee8c-4835-995e-4da34403b5a7",
+          "duration_ns": 0,
+          "phase": "long-running-representative-b",
+          "sequence": 40,
+          "source_scene": "scene-B",
+          "target": "probe-lifecycle-scene-B.home.long-running-representative-b",
+          "uptime": 617128.0306156251,
+          "view_id": "bf0d69d1-e156-4e00-94b9-cec71585500f"
+        },
+        {
+          "action_id": "85e4f379-3fb7-4ac9-b306-5b956697906a",
+          "duration_ns": 0,
+          "phase": "long-running-representative-a",
+          "sequence": 58,
+          "source_scene": "scene-A",
+          "target": "probe-lifecycle-scene-A.home.long-running-representative-a",
+          "uptime": 617128.031581625,
+          "view_id": "66fb98ab-863d-4210-81de-8623a932a713"
+        },
+        {
+          "action_id": "c1c782cf-c724-4877-bf5c-11e3243cb690",
+          "duration_ns": 188947,
+          "phase": "long-running-finished-b",
+          "sequence": 60,
+          "source_scene": "scene-B",
+          "target": "long-running-finished-b",
+          "uptime": 617128.0316980417,
+          "view_id": "bf0d69d1-e156-4e00-94b9-cec71585500f"
+        },
+        {
+          "action_id": "cc687db8-9377-493a-9c1e-d1b702a6c881",
+          "duration_ns": 0,
+          "phase": "long-running-empty-b-representative-a",
+          "sequence": 62,
+          "source_scene": "scene-A",
+          "target": "probe-lifecycle-scene-A.home.long-running-empty-b-representative-a",
+          "uptime": 617128.031787375,
+          "view_id": "66fb98ab-863d-4210-81de-8623a932a713"
+        },
+        {
+          "action_id": "8769903f-cc51-466f-bcfe-afcf770e6735",
+          "duration_ns": 524998,
+          "phase": "long-running-finished-a",
+          "sequence": 64,
+          "source_scene": "scene-A",
+          "target": "long-running-finished-a",
+          "uptime": 617128.0319538751,
+          "view_id": "66fb98ab-863d-4210-81de-8623a932a713"
+        },
+        {
+          "action_id": "671a40e1-9d29-4667-9ea9-76e63e3748ac",
+          "duration_ns": 0,
+          "phase": "long-running-legacy-representative-b",
+          "sequence": 66,
+          "source_scene": "scene-B",
+          "target": "probe-lifecycle-scene-B.home.long-running-legacy-representative-b",
+          "uptime": 617128.03201325,
+          "view_id": "bf0d69d1-e156-4e00-94b9-cec71585500f"
+        },
+        {
+          "action_id": "9cfb63ba-92e6-4ca4-b1d9-dc22dcced666",
+          "duration_ns": 54002,
+          "phase": "long-running-legacy-finished-b",
+          "sequence": 68,
+          "source_scene": "scene-A",
+          "target": "long-running-legacy-finished-b",
+          "uptime": 617128.0321467083,
+          "view_id": "bf0d69d1-e156-4e00-94b9-cec71585500f"
+        }
+      ],
+      "assertions": 15,
+      "native_scenes": {
+        "scene-A": "4DA063FA-89BD-4949-B2F3-F964F018B895",
+        "scene-B": "ED595848-AEEC-432B-AAAA-DADB973DA528"
+      },
+      "owners": {
+        "scene-A": "66fb98ab-863d-4210-81de-8623a932a713",
+        "scene-B": "bf0d69d1-e156-4e00-94b9-cec71585500f"
+      },
+      "session_id": "4190b7c5-fbfe-4a7b-8a27-2daeadd485e1",
+      "signal_count": 86,
+      "simultaneous_visibility_claimed": false,
+      "view_ids": [
+        "66fb98ab-863d-4210-81de-8623a932a713",
+        "bf0d69d1-e156-4e00-94b9-cec71585500f",
+        "cb764c5b-4b6c-4f2f-a21e-fea6282676ad"
+      ]
+    },
+    "test-summary.json": {
+      "devicesAndConfigurations": [
+        {
+          "device": {
+            "architecture": "arm64",
+            "deviceId": "92C9918B-FEC6-4440-9D6D-8E09475950BB",
+            "deviceName": "iPad mini (A17 Pro)",
+            "modelName": "iPad mini (A17 Pro)",
+            "osBuildNumber": "24A434",
+            "osVersion": "27.0",
+            "platform": "iOS Simulator"
+          },
+          "expectedFailures": 0,
+          "failedTests": 0,
+          "passedTests": 166,
+          "skippedTests": 0,
+          "testPlanConfiguration": {
+            "configurationId": "1",
+            "configurationName": "Test Scheme Action"
+          }
+        }
+      ],
+      "environmentDescription": "RUMNativeMultiSceneProbe \u00b7 Built with macOS 26.6.2",
+      "expectedFailures": 0,
+      "failedTests": 0,
+      "finishTime": 1789607475.425,
+      "passedTests": 166,
+      "result": "Passed",
+      "runtimeWarnings": [],
+      "skippedTests": 0,
+      "startTime": 1789607426.887,
+      "statistics": [],
+      "testFailures": [],
+      "title": "Test - RUMNativeMultiSceneProbe",
+      "topInsights": [],
+      "totalTestCount": 166
+    }
+  },
+  "experiment": "EXP-161",
+  "failures": [],
+  "finished_at": "2026-09-17T01:12:33.726578+00:00",
+  "gate": "A01",
+  "oracle_contract_sha256": "fd498484e811d4da1a62cb5501be5b8c1ec021abbe9101474167617c3475df56",
+  "rerun": "Use a fresh output directory and freshly resolved device; do not reuse run IDs or bridge responses.",
+  "revision": "af63657f08dbecb66e7c3ae97ed53fc8f7b065b9",
+  "run_id": "exp161-20260917T011012Z-9bb629c7c630",
+  "scenario_id": "actions.explicit-target.long-running-cross-scene-serial",
+  "schema_version": 1,
+  "source_file_count": 458,
+  "source_fingerprint": "91454d5e699a86d13514aaa3c87796e87b0a95781a7c6a5591c1256dc4406d08",
+  "stages": {
+    "backend": {
+      "action_count": 7,
+      "error_crash_count": 0,
+      "state": "PASS",
+      "view_count": 3
+    },
+    "clean_install": {
+      "data_container_absent": true,
+      "installed_binary_sha256": "35df8f6e6c6f7c40af40478d0174e1f9df98b9970e11e5fcea4a373ad307671f",
+      "state": "PASS"
+    },
+    "frozen_build": {
+      "executable_sha256": "35df8f6e6c6f7c40af40478d0174e1f9df98b9970e11e5fcea4a373ad307671f",
+      "source_sha256": "91454d5e699a86d13514aaa3c87796e87b0a95781a7c6a5591c1256dc4406d08",
+      "state": "PASS",
+      "test_count": 166,
+      "uuid": "UUID: D4EA9400-71E9-3504-81EE-F3C2DE44858B (arm64) /private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp161-acceptance-qw2b9iu8/run/derived/Build/Products/Debug-iphonesimulator/RUMNativeMultiSceneProbe.app/RUMNativeMultiSceneProbe"
+    },
+    "local_semantics": {
+      "actions": [
+        {
+          "action_id": "65e30b6b-ee8c-4835-995e-4da34403b5a7",
+          "duration_ns": 0,
+          "phase": "long-running-representative-b",
+          "sequence": 40,
+          "source_scene": "scene-B",
+          "target": "probe-lifecycle-scene-B.home.long-running-representative-b",
+          "uptime": 617128.0306156251,
+          "view_id": "bf0d69d1-e156-4e00-94b9-cec71585500f"
+        },
+        {
+          "action_id": "85e4f379-3fb7-4ac9-b306-5b956697906a",
+          "duration_ns": 0,
+          "phase": "long-running-representative-a",
+          "sequence": 58,
+          "source_scene": "scene-A",
+          "target": "probe-lifecycle-scene-A.home.long-running-representative-a",
+          "uptime": 617128.031581625,
+          "view_id": "66fb98ab-863d-4210-81de-8623a932a713"
+        },
+        {
+          "action_id": "c1c782cf-c724-4877-bf5c-11e3243cb690",
+          "duration_ns": 188947,
+          "phase": "long-running-finished-b",
+          "sequence": 60,
+          "source_scene": "scene-B",
+          "target": "long-running-finished-b",
+          "uptime": 617128.0316980417,
+          "view_id": "bf0d69d1-e156-4e00-94b9-cec71585500f"
+        },
+        {
+          "action_id": "cc687db8-9377-493a-9c1e-d1b702a6c881",
+          "duration_ns": 0,
+          "phase": "long-running-empty-b-representative-a",
+          "sequence": 62,
+          "source_scene": "scene-A",
+          "target": "probe-lifecycle-scene-A.home.long-running-empty-b-representative-a",
+          "uptime": 617128.031787375,
+          "view_id": "66fb98ab-863d-4210-81de-8623a932a713"
+        },
+        {
+          "action_id": "8769903f-cc51-466f-bcfe-afcf770e6735",
+          "duration_ns": 524998,
+          "phase": "long-running-finished-a",
+          "sequence": 64,
+          "source_scene": "scene-A",
+          "target": "long-running-finished-a",
+          "uptime": 617128.0319538751,
+          "view_id": "66fb98ab-863d-4210-81de-8623a932a713"
+        },
+        {
+          "action_id": "671a40e1-9d29-4667-9ea9-76e63e3748ac",
+          "duration_ns": 0,
+          "phase": "long-running-legacy-representative-b",
+          "sequence": 66,
+          "source_scene": "scene-B",
+          "target": "probe-lifecycle-scene-B.home.long-running-legacy-representative-b",
+          "uptime": 617128.03201325,
+          "view_id": "bf0d69d1-e156-4e00-94b9-cec71585500f"
+        },
+        {
+          "action_id": "9cfb63ba-92e6-4ca4-b1d9-dc22dcced666",
+          "duration_ns": 54002,
+          "phase": "long-running-legacy-finished-b",
+          "sequence": 68,
+          "source_scene": "scene-A",
+          "target": "long-running-legacy-finished-b",
+          "uptime": 617128.0321467083,
+          "view_id": "bf0d69d1-e156-4e00-94b9-cec71585500f"
+        }
+      ],
+      "assertions": 15,
+      "native_scenes": {
+        "scene-A": "4DA063FA-89BD-4949-B2F3-F964F018B895",
+        "scene-B": "ED595848-AEEC-432B-AAAA-DADB973DA528"
+      },
+      "owners": {
+        "scene-A": "66fb98ab-863d-4210-81de-8623a932a713",
+        "scene-B": "bf0d69d1-e156-4e00-94b9-cec71585500f"
+      },
+      "session_id": "4190b7c5-fbfe-4a7b-8a27-2daeadd485e1",
+      "signal_count": 86,
+      "simultaneous_visibility_claimed": false,
+      "state": "PASS",
+      "view_ids": [
+        "66fb98ab-863d-4210-81de-8623a932a713",
+        "bf0d69d1-e156-4e00-94b9-cec71585500f",
+        "cb764c5b-4b6c-4f2f-a21e-fea6282676ad"
+      ]
+    },
+    "preflight": {
+      "authenticated_read": true,
+      "state": "PASS"
+    }
+  },
+  "started_at": "2026-09-17T01:10:12.142462+00:00",
+  "state": "PASS",
+  "xcode": "Xcode 27.0\nBuild version 27A266a"
+}
