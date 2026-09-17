@@ -46,10 +46,11 @@ Objective-C Release exposure still require normal API review.
 
 0. D01/D02 platform compatibility is closed by EXP-162; evidence is in the
    register and detailed record. Accepted experiment identities remain unchanged.
-1. D12/T02, D09 and D11 compatibility repairs are accepted. EXP-166 defines D04 with P02
-   next in the [assessed order](REVIEW_TRIAGE.md): isolate handoff by SDK instance
-   and lifecycle, and meet the frozen allocation budget. Preserve failing controls.
-2. Normalize restoration in D05/D06 after the shared ownership repair.
+1. D12/T02, D09, D11 and D04/P02 repairs are accepted within their recorded
+   boundaries. Preserve their controls and frozen acceptance identities.
+2. Next: define and execute EXP-167 for D05/D06. Resolve the old navigation owner
+   before restoring peers and unify explicit-stop, immediate and lazy-expiration
+   restoration in the [assessed order](REVIEW_TRIAGE.md).
 3. Repair D03/P03 lifetimes, D07/D08 authority/reconnect, and D10 accepted
    presentation state. Close the missing R04–R06 discriminators in those slices.
 4. Close the early compatibility/performance gates in available environments;
@@ -90,7 +91,7 @@ SwiftUI remains required as H16; the former conditional row is resolved.
 | Gate | Deliverable / completion mode | Owner | Depends on | Decisive test | Environment | Status |
 | --- | --- | --- | --- | --- | --- | --- |
 | P01 | Event-dispatch overhead | SDK implementer | C01 | Release ABBA comparison passes predeclared median/p95 thresholds in BASELINES.md | Same simulator/toolchain, Release build; focused internal lifecycle tests | CLOSED |
-| P02 | Allocation cost | SDK implementer | C01, D04 | Measured allocation count and bytes per fixed workload pass baseline deltas; net heap is not allocation churn | Same simulator/toolchain, Release build; focused internal lifecycle tests | REGRESSION BLOCKED |
+| P02 | Allocation cost | SDK implementer | C01, D04 | Measured allocation count and bytes per fixed workload pass baseline deltas; net heap is not allocation churn | Same simulator/toolchain, Release build; focused internal lifecycle tests | CLOSED |
 | P03 | Retained scene state | SDK implementer | C01, D03, D08 | Repeated create/disconnect/release leaves no SDK-owned scene/controller/host and no growing registry | Same simulator/toolchain, Release build; focused internal lifecycle tests | REGRESSION BLOCKED |
 | P04 | Reentrancy | SDK implementer | C01 | Nested A→B→A dispatch restores exact outer context; one original call each, no deadlock or leaked task/thread context | Same simulator/toolchain, Release build; focused internal lifecycle tests | CLOSED |
 
@@ -165,7 +166,7 @@ experiment slices remain evidence, not a substitute for these missing cases.
 | D01 | watchOS Resource compile compatibility | SDK implementer | None | Reproduce/triage the reported finding, then require: DatadogRUM watchOS build including absent UI handoff | watchOS SDK build | CLOSED |
 | D02 | macOS WebView compile compatibility | SDK implementer | None | Reproduce/triage the reported finding, then require: DatadogWebViewTracking macOS build with absent UIKit scene metadata | macOS SDK build | CLOSED |
 | D03 | Keyed SwiftUI registration teardown | SDK implementer | None | Reproduce/triage the reported finding, then require: Mounted keyed destination removal plus SDK release: weak registration/instrumentation release and balanced unswizzling; repeat cycles | iOS 27 simulator, mounted SwiftUI host and lifetime checks | REGRESSION BLOCKED |
-| D04 | Named-core handoff isolation | SDK implementer | None | Reproduce/triage the reported finding, then require: Different cores, same application/different sessions, no-RUM core, nested dispatch and inherited work after stop/reinitialize never consume foreign context | Internal, RUM, Logs, Trace and network focused tests | REGRESSION BLOCKED |
+| D04 | Named-core handoff isolation | SDK implementer | None | Reproduce/triage the reported finding, then require: Different cores, same application/different sessions, no-RUM core, nested dispatch and inherited work after stop/reinitialize never consume foreign context | Internal, RUM, Logs, Trace and network focused tests | CLOSED |
 | D05 | Resolve ownership before explicit session restart | SDK implementer | None | Reproduce/triage the reported finding, then require: After stopSession with A/B and B representative, source-less start replaces B and preserves A; identity-stop A preserves B | RUM application/session tests plus two-scene simulator | REGRESSION BLOCKED |
 | D06 | Preserve peers on lazy session expiration | SDK implementer | D05 | Reproduce/triage the reported finding, then require: Expiring lifecycle command followed by start/stop in A restores eligible B with fresh new-session ownership | RUM application/session tests plus two-scene simulator | REGRESSION BLOCKED |
 | D07 | Pending semantic authority | SDK implementer | D03 | Reproduce/triage the reported finding, then require: Empty explicit/capability source and absent instrumentation do not suppress automatic tracking; first accepted snapshot acquires local authority | iOS 27 simulator with real authority registry | REGRESSION BLOCKED |

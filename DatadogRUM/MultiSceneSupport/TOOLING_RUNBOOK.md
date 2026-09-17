@@ -1150,3 +1150,21 @@ that specifically loses the legacy container, and a candidate that preserves it
 without peer fallback. Never commit raw intake payloads; keep compact ownership
 summaries and artifact hashes. See the fixture README for its exact one-window
 boundary; T10 owns two-container/backend evidence.
+
+## EXP-166 shared handoff acceptance
+
+Use `tools/multi-scene/handoff-isolation/README.md` for the staged runner.
+Freeze the explicit SDK directories and copied baseline fixture before building;
+only adapt internal owner arguments/accessors. Keep original EXP-160 fixtures,
+protocol and thresholds unchanged. Wait for every build/test/profile job to
+finish before the complete 27/26.5 ABBA window. Diagnostic probes never close a
+performance gate. Record actual calibrated count/requested bytes, full-context
+nested/throwing checks, source/build identities and separate platform compiles.
+
+A pure TaskLocal optimization changed the synchronous snapshot contract even
+though isolation passed. Keep the discriminating entry-snapshot/child-refresh
+control. Foreign context must not activate the legacy third-party callback;
+assert that boundary separately from direct Resource ownership through completion.
+The accepted runner reaches 1 allocation/64 bytes; never raise the frozen budget
+or substitute retained heap for allocation churn. Closed D04/P02 does not close
+retained-state, backend, minimum-runtime or physical-topology gates.

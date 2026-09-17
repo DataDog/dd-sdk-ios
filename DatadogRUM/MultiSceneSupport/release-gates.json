@@ -2,7 +2,7 @@
   "schema_version": 1,
   "scope": "Multi-scene RUM release",
   "baseline_revision": "92f021ba7e4a866f84a52da93ed8b63f3dc75882",
-  "candidate_revision": "9a1ee83a5e2b10644edb5400e9b66d3cb9e36fdd",
+  "candidate_revision": "5eb3c1aace8d07f03f2bb113afcf5243f07b6e4e",
   "gates": [
     {
       "id": "C01",
@@ -81,7 +81,7 @@
       "environment": "Same simulator/toolchain, Release build; focused internal lifecycle tests",
       "completion_mode": null,
       "status": "CLOSED",
-      "evidence": "EXP-160; BASELINES.md and Results/EXP-160-baseline.json. Bounded workload passes on27/26.5; see recorded limitations."
+      "evidence": "EXP-160; BASELINES.md and Results/EXP-160-baseline.json. Bounded workload passes on27/26.5; see recorded limitations. EXP-166 revalidates the same frozen dispatch/reentrancy budgets after D04."
     },
     {
       "id": "P02",
@@ -94,8 +94,8 @@
       "decisive_test": "Measured allocation count and bytes per fixed workload pass baseline deltas; net heap is not allocation churn",
       "environment": "Same simulator/toolchain, Release build; focused internal lifecycle tests",
       "completion_mode": null,
-      "status": "REGRESSION BLOCKED",
-      "evidence": "EXP-160; BASELINES.md and Results/EXP-160-baseline.json. Enabled handoff excess3 allocations/416 requested bytes per event; frozen budget1/64."
+      "status": "CLOSED",
+      "evidence": "EXP-166; full Release ABBA on27/26.5: ordinary0 allocations/0 bytes; enabled1 allocation/64 bytes per event. Original thresholds unchanged; source/fixture/binary identities verified. Results/EXP-166-handoff-performance.json."
     },
     {
       "id": "P03",
@@ -123,7 +123,7 @@
       "environment": "Same simulator/toolchain, Release build; focused internal lifecycle tests",
       "completion_mode": null,
       "status": "CLOSED",
-      "evidence": "EXP-160; BASELINES.md and Results/EXP-160-baseline.json. Bounded workload passes on27/26.5; see recorded limitations."
+      "evidence": "EXP-160; BASELINES.md and Results/EXP-160-baseline.json. Bounded workload passes on27/26.5; see recorded limitations. EXP-166 revalidates the same frozen dispatch/reentrancy budgets after D04."
     },
     {
       "id": "R01",
@@ -761,8 +761,8 @@
       "decisive_test": "Reproduce/triage the reported finding, then require: Different cores, same application/different sessions, no-RUM core, nested dispatch and inherited work after stop/reinitialize never consume foreign context",
       "environment": "Internal, RUM, Logs, Trace and network focused tests",
       "completion_mode": null,
-      "status": "REGRESSION BLOCKED",
-      "evidence": "REVIEW_TRIAGE.md: assessed relevant at af63657f0; source-confirmed path; required full regression/repair remains open."
+      "status": "CLOSED",
+      "evidence": "EXP-166; signed 5eb3c1aac. Three failing actual-dispatch controls, 282 affected tests plus strengthened session/clock checks, per-consumer and core/task/lifetime isolation; complete watchOS RUM/macOS Core Debug/Release builds."
     },
     {
       "id": "D05",

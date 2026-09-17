@@ -120,3 +120,19 @@ accepted timing result. The evaluator's 11 negative-control tests pass, includin
 wrong ownership despite correct counts, missing/duplicate/reused occurrences,
 p95 regression, incomplete ABBA, changed binary identity and insufficient
 full-context checks.
+
+## EXP-166 handoff repair
+
+Signed SDK `5eb3c1aac` closes P02 after complete Release ABBA runs on iOS27/26.5
+using copied EXP-160 workloads. Only owner-scoped SPI bindings differ; the
+protocol above and original fixtures remain unchanged. Ordinary dispatch remains
+0 allocations/0 bytes; enabled handoff is 1 allocation/64 requested bytes per event
+in all four measured candidate processes, down from 3/416. All ordinary and
+handoff median/p95 limits pass. Full-context reentrancy checks 90,000 boundaries
+per runtime with zero errors; P01/P04 remain closed. The thread storage retains
+no core/scene context after scope exit. P03's separate registry failure remains.
+
+See [paired results](Results/EXP-166-handoff-performance.json) and
+[numeric samples](Results/EXP-166-handoff-performance-samples.json). One-off
+1/112 and1/64 diagnostics are retained separately and make no timing claim.
+The unchanged scope remains simulator microbenchmarks, not device-wide proof.

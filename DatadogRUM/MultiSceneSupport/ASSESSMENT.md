@@ -10,11 +10,12 @@ Last updated: 2026-09-17
 
 ## Current verdict
 
-Current release accounting is **17/66 gates closed**. EXP-160 establishes early
+Current release accounting is **19/66 gates closed**. EXP-160 establishes early
 ordinary automatic/manual/custom/NOP and26.5 compatibility, dispatch and exact
-reentrancy baselines. Enabled handoff fails allocation budget (3 allocations/
-416 requested bytes per event versus1/64) and retained scene registries fail
-teardown (220 entries after200 measured cycles plus20 warm-up). Legacy27 remains
+reentrancy baselines. EXP-166 repairs the enabled-handoff allocation failure:
+complete Release ABBA runs measure 1 allocation/64 bytes per event on27/26.5,
+within the original budget; ordinary dispatch remains0/0. Retained scene
+registries still fail teardown (220 entries after200 cycles plus20 warm-up). Legacy27 remains
 inconclusive; minimum15 runtime is unavailable. EXP-161 closes the repeatable
 acceptance workflow with15/15 local assertions and exact7-action/3-view backend
 ownership. These measurements precede further API expansion.
@@ -36,8 +37,12 @@ while peers expire without foreign metadata; 212 affected tests pass at signed
 background hierarchy reads and zero diagnostics. EXP-165 closes D11 at signed
 `9a1ee83a5`: 102 affected tests, four collector controls and 19/19 mounted
 WebView/Replay checks preserve the legacy container while excluding peers.
-The original collector attempt is INVALID and preserved. Seven assessed review
-repairs remain open; core/lifecycle isolation D04 with allocation P02 is next.
+The original collector attempt is INVALID and preserved. EXP-166 closes D04/P02
+at signed `5eb3c1aac`: core-lifetime ownership isolates every handoff consumer,
+282 affected tests pass, complete watchOS RUM/macOS Core builds pass, and the
+frozen allocation, latency and full-context reentrancy budgets pass. Six assessed
+review repairs remain open; old-owner resolution and lazy restoration D05/D06
+are next. Physical scene and final release gates remain separate.
 
 The released SDK baseline is not semantically safe for applications with
 concurrent scenes. Process-representative view state and process-global SwiftUI

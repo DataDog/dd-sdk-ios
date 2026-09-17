@@ -1,7 +1,7 @@
 **Production safety review of multi-scene SDK instrumentation**
 
-Updated 2026-09-17 during plan execution. **Release remains on hold: 5 of the
-12 review findings are closed, 7 remain open.** The finite checklist has 17/66
+Updated 2026-09-17 during plan execution. **Release remains on hold: 6 of the
+12 review findings are closed, 6 remain open.** The finite checklist has 19/66
 release gates closed. [PLAN.md](PLAN.md) owns the release contract and
 [REVIEW_TRIAGE.md](REVIEW_TRIAGE.md) owns assessed repair order and evidence limits.
 Review IDs R01–R12 below map to repair gates D01–D12, not PLAN's responsibility
@@ -12,7 +12,7 @@ review gates R01–R06.
 | R01 / D01 | CLOSED | EXP-162, signed `e420528f7`: full watchOS RUM Debug/Release builds and 70 iOS Resource/action tests |
 | R02 / D02 | CLOSED | EXP-162, signed `af8864528`: full macOS WebView Debug/Release builds and 28 iOS bridge tests |
 | R03 / D03 | OPEN | Mounted keyed host teardown and repeated lifetime checks, paired with P03 |
-| R04 / D04 | OPEN | Core/generation isolation across every handoff consumer, paired with P02 allocation budget |
+| R04 / D04 | CLOSED | EXP-166, signed `5eb3c1aac`: 282 affected tests, core/task/lifetime and all-consumer isolation; allocation1/64 and latency/reentrancy budgets pass on27/26.5 |
 | R05 / D05 | OPEN | Resolve old session ownership once before restoring peers |
 | R06 / D06 | OPEN | Controlled lazy-expiration restoration after lifecycle boundaries |
 | R07 / D07 | OPEN | Empty explicit/capability source must retain automatic tracking until accepted state |
@@ -33,7 +33,10 @@ closes D12 and restores T02 using retained EXP-159 backend evidence; no hardware
 or new backend acceptance is inferred. EXP-164's
 [controller-thread result](Results/EXP-164-controller-threads.json) closes D09
 using an actual native scene with a logical peer; it does not prove physical
-window concurrency. D11 correlation remains next. Keep this review and its open
+window concurrency. EXP-165 closes D11 with mounted WebView/Replay correlation;
+EXP-166 closes D04/P02 with [ownership](Results/EXP-166-handoff-isolation.json)
+and [paired performance](Results/EXP-166-handoff-performance.json) evidence;
+D05/D06 restoration is next. Keep this review and its open
 findings until their corresponding gates close; preserve historical evidence below.
 
 **Original review at the source revision below**

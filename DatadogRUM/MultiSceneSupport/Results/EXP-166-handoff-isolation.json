@@ -1,0 +1,2853 @@
+{
+  "experiment": "EXP-166",
+  "status": "PASS",
+  "gates": [
+    "D04",
+    "P02"
+  ],
+  "definition_commit": "9f0f3389e7c518b38962051939522fa1b57653c5",
+  "fixture_invalid": {
+    "buildIsRunning": false,
+    "buildLogEntries": [
+      {
+        "buildTask": "Compile RUMActionsHandlerTests.swift",
+        "emittedIssues": [
+          {
+            "line": 148,
+            "message": "'mockWith' is inaccessible due to 'internal' protection level",
+            "path": "/Users/valentin.pertuisot/work/dd-sdk-ios/DatadogRUM/Tests/Instrumentation/Actions/RUMActionsHandlerTests.swift",
+            "severity": "error"
+          },
+          {
+            "line": 152,
+            "message": "'mockWith' is inaccessible due to 'internal' protection level",
+            "path": "/Users/valentin.pertuisot/work/dd-sdk-ios/DatadogRUM/Tests/Instrumentation/Actions/RUMActionsHandlerTests.swift",
+            "severity": "error"
+          },
+          {
+            "line": 163,
+            "message": "Generic parameter 'T' could not be inferred",
+            "path": "/Users/valentin.pertuisot/work/dd-sdk-ios/DatadogRUM/Tests/Instrumentation/Actions/RUMActionsHandlerTests.swift",
+            "severity": "error"
+          }
+        ]
+      }
+    ],
+    "buildResult": "The build failed",
+    "fullLogPath": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/ActionArtifacts/default/GetBuildLog/3448DC81-2ECC-40C8-973E-D6BD1052831E.txt",
+    "totalFound": 1,
+    "truncated": false
+  },
+  "control": {
+    "counts": {
+      "expectedFailures": 0,
+      "failed": 3,
+      "notRun": 0,
+      "passed": 0,
+      "skipped": 0,
+      "total": 3
+    },
+    "fullConsoleLogsPath": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/ActionArtifacts/default/RunSomeTests/test-console-log-2026-09-17T10-59-18+01-00.txt",
+    "fullSummaryPath": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/ActionArtifacts/default/RunSomeTests/30EEDF71-DC3D-4E61-9D00-020FFC022E20.txt",
+    "results": [
+      {
+        "displayName": "testGivenForeignCoreDispatch_whenConsumerHasDifferentApplication_itKeepsOwnContext()",
+        "errorMessages": [
+          "Datadog/DatadogRUMTests/Instrumentation/Actions/RUMActionsHandlerTests.swift:192 RUMActionsHandlerTests/testGivenForeignCoreDispatch_whenConsumerHasDifferentApplication_itKeepsOwnContext(): XCTAssertNil failed: \"RUMCoreContext(applicationID: \"69db2f2c-8c38-4bc2-98be-d37d9e181eec\", sessionID: \"a57920aa-6b28-4b48-b9ec-d7b3b9503dee\", viewID: Optional(\"0295f927-f28f-41a7-85e5-2cb00355c48e\"), userActionID: nil, viewServerTimeOffset: Optional(0.0), sessionSampler: DatadogInternal.DeterministicSampler(seed: 237166908161518, samplingRate: 100.0, isSampled: true), viewPath: Optional(\"replacement\"), viewName: Optional(\"Consumer replacement\"))\""
+        ],
+        "identifier": "RUMActionsHandlerTests/testGivenForeignCoreDispatch_whenConsumerHasDifferentApplication_itKeepsOwnContext()",
+        "state": "Failed",
+        "targetName": "DatadogRUMTests"
+      },
+      {
+        "displayName": "testGivenForeignCoreDispatch_whenConsumerHasSameApplication_itKeepsOwnSession()",
+        "errorMessages": [
+          "Datadog/DatadogRUMTests/Instrumentation/Actions/RUMActionsHandlerTests.swift:192 RUMActionsHandlerTests/testGivenForeignCoreDispatch_whenConsumerHasSameApplication_itKeepsOwnSession(): XCTAssertNil failed: \"RUMCoreContext(applicationID: \"fb811d6f-6dc2-45ea-b84f-de59b36550c6\", sessionID: \"cf244a45-bf46-49c4-af83-18406eec04c7\", viewID: Optional(\"1e4f3e41-2b52-4e34-9a46-cab382ab954e\"), userActionID: nil, viewServerTimeOffset: Optional(0.0), sessionSampler: DatadogInternal.DeterministicSampler(seed: 26665017935047, samplingRate: 100.0, isSampled: true), viewPath: Optional(\"replacement\"), viewName: Optional(\"Consumer replacement\"))\""
+        ],
+        "identifier": "RUMActionsHandlerTests/testGivenForeignCoreDispatch_whenConsumerHasSameApplication_itKeepsOwnSession()",
+        "state": "Failed",
+        "targetName": "DatadogRUMTests"
+      },
+      {
+        "displayName": "testGivenForeignCoreDispatchWithNoView_itDoesNotSuppressConsumerContext()",
+        "errorMessages": [
+          "Datadog/DatadogRUMTests/Instrumentation/Actions/RUMActionsHandlerTests.swift:188 RUMActionsHandlerTests/testGivenForeignCoreDispatchWithNoView_itDoesNotSuppressConsumerContext(): XCTUnwrap failed: expected non-nil value of type \"RUMActionEvent\""
+        ],
+        "identifier": "RUMActionsHandlerTests/testGivenForeignCoreDispatchWithNoView_itDoesNotSuppressConsumerContext()",
+        "state": "Failed",
+        "targetName": "DatadogRUMTests"
+      }
+    ],
+    "schemeName": "DatadogRUM",
+    "summary": "3 tests: 0 passed, 3 failed, 0 skipped, 0 expected failures, 0 not run",
+    "totalResults": 3,
+    "truncated": false,
+    "xcresultBundlePath": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/ActionArtifacts/default/RunSomeTests/Test-DatadogRUM-2026.09.17_10-59-18-+0100.xcresult"
+  },
+  "candidate_attempts": {
+    "exp166InitialCandidate": {
+      "counts": {
+        "expectedFailures": 0,
+        "failed": 0,
+        "notRun": 0,
+        "passed": 3,
+        "skipped": 0,
+        "total": 3
+      },
+      "fullConsoleLogsPath": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/ActionArtifacts/default/RunSomeTests/test-console-log-2026-09-17T11-04-40+01-00.txt",
+      "fullSummaryPath": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/ActionArtifacts/default/RunSomeTests/A100C2C7-33A1-4B16-B118-2A66A674C574.txt",
+      "results": [
+        {
+          "displayName": "testGivenForeignCoreDispatch_whenConsumerHasDifferentApplication_itKeepsOwnContext()",
+          "errorMessages": [],
+          "identifier": "RUMActionsHandlerTests/testGivenForeignCoreDispatch_whenConsumerHasDifferentApplication_itKeepsOwnContext()",
+          "state": "Passed",
+          "targetName": "DatadogRUMTests"
+        },
+        {
+          "displayName": "testGivenForeignCoreDispatch_whenConsumerHasSameApplication_itKeepsOwnSession()",
+          "errorMessages": [],
+          "identifier": "RUMActionsHandlerTests/testGivenForeignCoreDispatch_whenConsumerHasSameApplication_itKeepsOwnSession()",
+          "state": "Passed",
+          "targetName": "DatadogRUMTests"
+        },
+        {
+          "displayName": "testGivenForeignCoreDispatchWithNoView_itDoesNotSuppressConsumerContext()",
+          "errorMessages": [],
+          "identifier": "RUMActionsHandlerTests/testGivenForeignCoreDispatchWithNoView_itDoesNotSuppressConsumerContext()",
+          "state": "Passed",
+          "targetName": "DatadogRUMTests"
+        }
+      ],
+      "schemeName": "DatadogRUM",
+      "summary": "3 tests: 3 passed, 0 failed, 0 skipped, 0 expected failures, 0 not run",
+      "totalResults": 3,
+      "truncated": false,
+      "xcresultBundlePath": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/ActionArtifacts/default/RunSomeTests/Test-DatadogRUM-2026.09.17_11-04-40-+0100.xcresult"
+    },
+    "exp166SnapshotControl": {
+      "counts": {
+        "expectedFailures": 0,
+        "failed": 1,
+        "notRun": 0,
+        "passed": 3,
+        "skipped": 0,
+        "total": 4
+      },
+      "fullConsoleLogsPath": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/ActionArtifacts/default/RunSomeTests/test-console-log-2026-09-17T11-12-52+01-00.txt",
+      "fullSummaryPath": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/ActionArtifacts/default/RunSomeTests/D60210BD-4D6D-4360-BAB0-F9CF5DC66EFE.txt",
+      "results": [
+        {
+          "displayName": "testRUMContextHandoff_keepsDispatchSnapshotAndRefreshesInheritedTask()",
+          "errorMessages": [
+            "Datadog/DatadogInternalTests/NetworkInstrumentation/NetworkInstrumentationFeatureTests.swift:211 NetworkInstrumentationFeatureTests/testRUMContextHandoff_keepsDispatchSnapshotAndRefreshesInheritedTask(): XCTAssertEqual failed: (\"Optional(\"later\")\") is not equal to (\"Optional(\"initial\")\")"
+          ],
+          "identifier": "NetworkInstrumentationFeatureTests/testRUMContextHandoff_keepsDispatchSnapshotAndRefreshesInheritedTask()",
+          "state": "Failed",
+          "targetName": "DatadogInternalTests"
+        },
+        {
+          "displayName": "testRUMContextHandoff_preservesExplicitNilAndRestoresNestedValue()",
+          "errorMessages": [],
+          "identifier": "NetworkInstrumentationFeatureTests/testRUMContextHandoff_preservesExplicitNilAndRestoresNestedValue()",
+          "state": "Passed",
+          "targetName": "DatadogInternalTests"
+        },
+        {
+          "displayName": "testRUMContextHandoff_nestedOwnersRestoreAfterThrowAndExplicitNil()",
+          "errorMessages": [],
+          "identifier": "NetworkInstrumentationFeatureTests/testRUMContextHandoff_nestedOwnersRestoreAfterThrowAndExplicitNil()",
+          "state": "Passed",
+          "targetName": "DatadogInternalTests"
+        },
+        {
+          "displayName": "testRUMContextHandoff_inheritedNestedOwnersRejectInvalidatedGeneration()",
+          "errorMessages": [],
+          "identifier": "NetworkInstrumentationFeatureTests/testRUMContextHandoff_inheritedNestedOwnersRejectInvalidatedGeneration()",
+          "state": "Passed",
+          "targetName": "DatadogInternalTests"
+        }
+      ],
+      "schemeName": "DatadogInternal",
+      "summary": "4 tests: 3 passed, 1 failed, 0 skipped, 0 expected failures, 0 not run",
+      "totalResults": 4,
+      "truncated": false,
+      "xcresultBundlePath": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/ActionArtifacts/default/RunSomeTests/Test-DatadogInternal-2026.09.17_11-12-52-+0100.xcresult"
+    },
+    "exp166SnapshotCandidate": {
+      "counts": {
+        "expectedFailures": 0,
+        "failed": 0,
+        "notRun": 0,
+        "passed": 4,
+        "skipped": 0,
+        "total": 4
+      },
+      "fullConsoleLogsPath": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/ActionArtifacts/default/RunSomeTests/test-console-log-2026-09-17T11-13-58+01-00.txt",
+      "fullSummaryPath": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/ActionArtifacts/default/RunSomeTests/0852DE6B-F353-4253-B17F-1428B5ADB055.txt",
+      "results": [
+        {
+          "displayName": "testRUMContextHandoff_preservesExplicitNilAndRestoresNestedValue()",
+          "errorMessages": [],
+          "identifier": "NetworkInstrumentationFeatureTests/testRUMContextHandoff_preservesExplicitNilAndRestoresNestedValue()",
+          "state": "Passed",
+          "targetName": "DatadogInternalTests"
+        },
+        {
+          "displayName": "testRUMContextHandoff_keepsDispatchSnapshotAndRefreshesInheritedTask()",
+          "errorMessages": [],
+          "identifier": "NetworkInstrumentationFeatureTests/testRUMContextHandoff_keepsDispatchSnapshotAndRefreshesInheritedTask()",
+          "state": "Passed",
+          "targetName": "DatadogInternalTests"
+        },
+        {
+          "displayName": "testRUMContextHandoff_nestedOwnersRestoreAfterThrowAndExplicitNil()",
+          "errorMessages": [],
+          "identifier": "NetworkInstrumentationFeatureTests/testRUMContextHandoff_nestedOwnersRestoreAfterThrowAndExplicitNil()",
+          "state": "Passed",
+          "targetName": "DatadogInternalTests"
+        },
+        {
+          "displayName": "testRUMContextHandoff_inheritedNestedOwnersRejectInvalidatedGeneration()",
+          "errorMessages": [],
+          "identifier": "NetworkInstrumentationFeatureTests/testRUMContextHandoff_inheritedNestedOwnersRejectInvalidatedGeneration()",
+          "state": "Passed",
+          "targetName": "DatadogInternalTests"
+        }
+      ],
+      "schemeName": "DatadogInternal",
+      "summary": "4 tests: 4 passed, 0 failed, 0 skipped, 0 expected failures, 0 not run",
+      "totalResults": 4,
+      "truncated": false,
+      "xcresultBundlePath": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/ActionArtifacts/default/RunSomeTests/Test-DatadogInternal-2026.09.17_11-13-58-+0100.xcresult"
+    },
+    "exp166InternalFocused": {
+      "counts": {
+        "expectedFailures": 0,
+        "failed": 1,
+        "notRun": 0,
+        "passed": 6,
+        "skipped": 0,
+        "total": 7
+      },
+      "fullConsoleLogsPath": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/ActionArtifacts/default/RunSomeTests/test-console-log-2026-09-17T11-19-57+01-00.txt",
+      "fullSummaryPath": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/ActionArtifacts/default/RunSomeTests/C15A0B0D-9D35-434E-A725-774C207D071E.txt",
+      "message": "Some error messages were truncated to 5. Full logs available at /var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/ActionArtifacts/default/RunSomeTests/C15A0B0D-9D35-434E-A725-774C207D071E.txt.",
+      "results": [
+        {
+          "displayName": "testGivenForeignCoreDispatch_networkUsesOnlyItsOwnContextForFirstAndThirdPartyRequests()",
+          "errorMessages": [
+            "Datadog/DatadogInternalTests/NetworkInstrumentation/NetworkInstrumentationFeatureTests.swift:221 NetworkInstrumentationFeatureTests/testGivenForeignCoreDispatch_networkUsesOnlyItsOwnContextForFirstAndThirdPartyRequests(): XCTAssertEqual failed: (\"1\") is not equal to (\"2\")",
+            "Datadog/DatadogInternalTests/NetworkInstrumentation/NetworkInstrumentationFeatureTests.swift:221 NetworkInstrumentationFeatureTests/testGivenForeignCoreDispatch_networkUsesOnlyItsOwnContextForFirstAndThirdPartyRequests(): XCTAssertEqual failed: (\"1\") is not equal to (\"2\")",
+            "Datadog/DatadogInternalTests/NetworkInstrumentation/NetworkInstrumentationFeatureTests.swift:221 NetworkInstrumentationFeatureTests/testGivenForeignCoreDispatch_networkUsesOnlyItsOwnContextForFirstAndThirdPartyRequests(): XCTAssertEqual failed: (\"1\") is not equal to (\"2\")",
+            "Datadog/DatadogInternalTests/NetworkInstrumentation/NetworkInstrumentationFeatureTests.swift:221 NetworkInstrumentationFeatureTests/testGivenForeignCoreDispatch_networkUsesOnlyItsOwnContextForFirstAndThirdPartyRequests(): XCTAssertEqual failed: (\"1\") is not equal to (\"2\")",
+            "Datadog/DatadogInternalTests/NetworkInstrumentation/NetworkInstrumentationFeatureTests.swift:221 NetworkInstrumentationFeatureTests/testGivenForeignCoreDispatch_networkUsesOnlyItsOwnContextForFirstAndThirdPartyRequests(): XCTAssertEqual failed: (\"1\") is not equal to (\"2\")"
+          ],
+          "identifier": "NetworkInstrumentationFeatureTests/testGivenForeignCoreDispatch_networkUsesOnlyItsOwnContextForFirstAndThirdPartyRequests()",
+          "state": "Failed",
+          "targetName": "DatadogInternalTests"
+        },
+        {
+          "displayName": "testGivenUIEventRUMContext_whenInterceptingRequest_itOverridesProcessRepresentativeOnlyForDispatchScope()",
+          "errorMessages": [],
+          "identifier": "NetworkInstrumentationFeatureTests/testGivenUIEventRUMContext_whenInterceptingRequest_itOverridesProcessRepresentativeOnlyForDispatchScope()",
+          "state": "Passed",
+          "targetName": "DatadogInternalTests"
+        },
+        {
+          "displayName": "testGivenTaskLocalRUMContext_whenChildTaskInterceptsRequest_itInheritsSourceSceneContext()",
+          "errorMessages": [],
+          "identifier": "NetworkInstrumentationFeatureTests/testGivenTaskLocalRUMContext_whenChildTaskInterceptsRequest_itInheritsSourceSceneContext()",
+          "state": "Passed",
+          "targetName": "DatadogInternalTests"
+        },
+        {
+          "displayName": "testRUMContextHandoff_preservesExplicitNilAndRestoresNestedValue()",
+          "errorMessages": [],
+          "identifier": "NetworkInstrumentationFeatureTests/testRUMContextHandoff_preservesExplicitNilAndRestoresNestedValue()",
+          "state": "Passed",
+          "targetName": "DatadogInternalTests"
+        },
+        {
+          "displayName": "testRUMContextHandoff_keepsDispatchSnapshotAndRefreshesInheritedTask()",
+          "errorMessages": [],
+          "identifier": "NetworkInstrumentationFeatureTests/testRUMContextHandoff_keepsDispatchSnapshotAndRefreshesInheritedTask()",
+          "state": "Passed",
+          "targetName": "DatadogInternalTests"
+        },
+        {
+          "displayName": "testRUMContextHandoff_nestedOwnersRestoreAfterThrowAndExplicitNil()",
+          "errorMessages": [],
+          "identifier": "NetworkInstrumentationFeatureTests/testRUMContextHandoff_nestedOwnersRestoreAfterThrowAndExplicitNil()",
+          "state": "Passed",
+          "targetName": "DatadogInternalTests"
+        },
+        {
+          "displayName": "testRUMContextHandoff_inheritedNestedOwnersRejectInvalidatedGeneration()",
+          "errorMessages": [],
+          "identifier": "NetworkInstrumentationFeatureTests/testRUMContextHandoff_inheritedNestedOwnersRejectInvalidatedGeneration()",
+          "state": "Passed",
+          "targetName": "DatadogInternalTests"
+        }
+      ],
+      "schemeName": "DatadogInternal",
+      "summary": "7 tests: 6 passed, 1 failed, 0 skipped, 0 expected failures, 0 not run",
+      "totalResults": 7,
+      "truncated": false,
+      "xcresultBundlePath": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/ActionArtifacts/default/RunSomeTests/Test-DatadogInternal-2026.09.17_11-19-57-+0100.xcresult"
+    },
+    "exp166InternalSuite": {
+      "counts": {
+        "expectedFailures": 0,
+        "failed": 0,
+        "notRun": 0,
+        "passed": 79,
+        "skipped": 0,
+        "total": 79
+      },
+      "fullConsoleLogsPath": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/ActionArtifacts/default/RunSomeTests/test-console-log-2026-09-17T11-21-31+01-00.txt",
+      "fullSummaryPath": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/ActionArtifacts/default/RunSomeTests/EE711350-472D-4662-AED4-CC8EFB75775D.txt",
+      "results": [
+        {
+          "displayName": "testGivenUIEventRUMContext_whenInterceptingRequest_itOverridesProcessRepresentativeOnlyForDispatchScope()",
+          "errorMessages": [],
+          "identifier": "NetworkInstrumentationFeatureTests/testGivenUIEventRUMContext_whenInterceptingRequest_itOverridesProcessRepresentativeOnlyForDispatchScope()",
+          "state": "Passed",
+          "targetName": "DatadogInternalTests"
+        },
+        {
+          "displayName": "testGivenTaskLocalRUMContext_whenChildTaskInterceptsRequest_itInheritsSourceSceneContext()",
+          "errorMessages": [],
+          "identifier": "NetworkInstrumentationFeatureTests/testGivenTaskLocalRUMContext_whenChildTaskInterceptsRequest_itInheritsSourceSceneContext()",
+          "state": "Passed",
+          "targetName": "DatadogInternalTests"
+        },
+        {
+          "displayName": "testRUMContextHandoff_preservesExplicitNilAndRestoresNestedValue()",
+          "errorMessages": [],
+          "identifier": "NetworkInstrumentationFeatureTests/testRUMContextHandoff_preservesExplicitNilAndRestoresNestedValue()",
+          "state": "Passed",
+          "targetName": "DatadogInternalTests"
+        },
+        {
+          "displayName": "testGivenForeignCoreDispatch_networkUsesOnlyItsOwnContextForFirstAndThirdPartyRequests()",
+          "errorMessages": [],
+          "identifier": "NetworkInstrumentationFeatureTests/testGivenForeignCoreDispatch_networkUsesOnlyItsOwnContextForFirstAndThirdPartyRequests()",
+          "state": "Passed",
+          "targetName": "DatadogInternalTests"
+        },
+        {
+          "displayName": "testRUMContextHandoff_keepsDispatchSnapshotAndRefreshesInheritedTask()",
+          "errorMessages": [],
+          "identifier": "NetworkInstrumentationFeatureTests/testRUMContextHandoff_keepsDispatchSnapshotAndRefreshesInheritedTask()",
+          "state": "Passed",
+          "targetName": "DatadogInternalTests"
+        },
+        {
+          "displayName": "testRUMContextHandoff_nestedOwnersRestoreAfterThrowAndExplicitNil()",
+          "errorMessages": [],
+          "identifier": "NetworkInstrumentationFeatureTests/testRUMContextHandoff_nestedOwnersRestoreAfterThrowAndExplicitNil()",
+          "state": "Passed",
+          "targetName": "DatadogInternalTests"
+        },
+        {
+          "displayName": "testRUMContextHandoff_inheritedNestedOwnersRejectInvalidatedGeneration()",
+          "errorMessages": [],
+          "identifier": "NetworkInstrumentationFeatureTests/testRUMContextHandoff_inheritedNestedOwnersRejectInvalidatedGeneration()",
+          "state": "Passed",
+          "targetName": "DatadogInternalTests"
+        },
+        {
+          "displayName": "testRegisteredDelegate_capturesMetricsForDataTaskWithURL()",
+          "errorMessages": [],
+          "identifier": "NetworkInstrumentationFeatureTests/testRegisteredDelegate_capturesMetricsForDataTaskWithURL()",
+          "state": "Passed",
+          "targetName": "DatadogInternalTests"
+        },
+        {
+          "displayName": "testRegisteredDelegate_capturesMetricsForDataTaskWithURLRequest()",
+          "errorMessages": [],
+          "identifier": "NetworkInstrumentationFeatureTests/testRegisteredDelegate_capturesMetricsForDataTaskWithURLRequest()",
+          "state": "Passed",
+          "targetName": "DatadogInternalTests"
+        },
+        {
+          "displayName": "testRegisteredDelegate_capturesMetricsForUploadTask()",
+          "errorMessages": [],
+          "identifier": "NetworkInstrumentationFeatureTests/testRegisteredDelegate_capturesMetricsForUploadTask()",
+          "state": "Passed",
+          "targetName": "DatadogInternalTests"
+        },
+        {
+          "displayName": "testRegisteredDelegate_capturesMetricsForDownloadTask()",
+          "errorMessages": [],
+          "identifier": "NetworkInstrumentationFeatureTests/testRegisteredDelegate_capturesMetricsForDownloadTask()",
+          "state": "Passed",
+          "targetName": "DatadogInternalTests"
+        },
+        {
+          "displayName": "testRegisteredDelegate_capturesMetricsForAsyncDataFromURL()",
+          "errorMessages": [],
+          "identifier": "NetworkInstrumentationFeatureTests/testRegisteredDelegate_capturesMetricsForAsyncDataFromURL()",
+          "state": "Passed",
+          "targetName": "DatadogInternalTests"
+        },
+        {
+          "displayName": "testRegisteredDelegate_capturesMetricsForAsyncDataWithSessionDelegate()",
+          "errorMessages": [],
+          "identifier": "NetworkInstrumentationFeatureTests/testRegisteredDelegate_capturesMetricsForAsyncDataWithSessionDelegate()",
+          "state": "Passed",
+          "targetName": "DatadogInternalTests"
+        },
+        {
+          "displayName": "testRegisteredDelegate_capturesMetricsForAsyncDataWithPerTaskDelegate()",
+          "errorMessages": [],
+          "identifier": "NetworkInstrumentationFeatureTests/testRegisteredDelegate_capturesMetricsForAsyncDataWithPerTaskDelegate()",
+          "state": "Passed",
+          "targetName": "DatadogInternalTests"
+        },
+        {
+          "displayName": "testRegisteredDelegate_capturesMetricsForAsyncUploadWithPerTaskDelegate()",
+          "errorMessages": [],
+          "identifier": "NetworkInstrumentationFeatureTests/testRegisteredDelegate_capturesMetricsForAsyncUploadWithPerTaskDelegate()",
+          "state": "Passed",
+          "targetName": "DatadogInternalTests"
+        },
+        {
+          "displayName": "testRegisteredDelegate_capturesMetricsForAsyncUploadWithSessionDelegate()",
+          "errorMessages": [],
+          "identifier": "NetworkInstrumentationFeatureTests/testRegisteredDelegate_capturesMetricsForAsyncUploadWithSessionDelegate()",
+          "state": "Passed",
+          "targetName": "DatadogInternalTests"
+        },
+        {
+          "displayName": "testRegisteredDelegate_capturesMetricsForAsyncDataTaskWithURLRequest()",
+          "errorMessages": [],
+          "identifier": "NetworkInstrumentationFeatureTests/testRegisteredDelegate_capturesMetricsForAsyncDataTaskWithURLRequest()",
+          "state": "Passed",
+          "targetName": "DatadogInternalTests"
+        },
+        {
+          "displayName": "testRegisteredDelegate_capturesMetricsForCombineDataTask()",
+          "errorMessages": [],
+          "identifier": "NetworkInstrumentationFeatureTests/testRegisteredDelegate_capturesMetricsForCombineDataTask()",
+          "state": "Passed",
+          "targetName": "DatadogInternalTests"
+        },
+        {
+          "displayName": "testRegisteredDelegate_capturesMetricsForCompletionHandlerDataTask()",
+          "errorMessages": [],
+          "identifier": "NetworkInstrumentationFeatureTests/testRegisteredDelegate_capturesMetricsForCompletionHandlerDataTask()",
+          "state": "Passed",
+          "targetName": "DatadogInternalTests"
+        },
+        {
+          "displayName": "testRegisteredDelegate_capturesMetricsForCompletionHandlerUploadTask()",
+          "errorMessages": [],
+          "identifier": "NetworkInstrumentationFeatureTests/testRegisteredDelegate_capturesMetricsForCompletionHandlerUploadTask()",
+          "state": "Passed",
+          "targetName": "DatadogInternalTests"
+        },
+        {
+          "displayName": "testRegisteredDelegate_doesNotBufferMediaResponseBody()",
+          "errorMessages": [],
+          "identifier": "NetworkInstrumentationFeatureTests/testRegisteredDelegate_doesNotBufferMediaResponseBody()",
+          "state": "Passed",
+          "targetName": "DatadogInternalTests"
+        },
+        {
+          "displayName": "testRegisteredDelegate_truncatesBodyAtSizeCap()",
+          "errorMessages": [],
+          "identifier": "NetworkInstrumentationFeatureTests/testRegisteredDelegate_truncatesBodyAtSizeCap()",
+          "state": "Passed",
+          "targetName": "DatadogInternalTests"
+        },
+        {
+          "displayName": "testAutomaticMode_tracksTasksWithoutDelegateRegistration()",
+          "errorMessages": [],
+          "identifier": "NetworkInstrumentationFeatureTests/testAutomaticMode_tracksTasksWithoutDelegateRegistration()",
+          "state": "Passed",
+          "targetName": "DatadogInternalTests"
+        },
+        {
+          "displayName": "testAutomaticMode_whenTaskIsResumedTwice_itMutatesAndStartsItOnlyOnce()",
+          "errorMessages": [],
+          "identifier": "NetworkInstrumentationFeatureTests/testAutomaticMode_whenTaskIsResumedTwice_itMutatesAndStartsItOnlyOnce()",
+          "state": "Passed",
+          "targetName": "DatadogInternalTests"
+        },
+        {
+          "displayName": "testAutomaticMode_tracksAsyncAwaitTasks()",
+          "errorMessages": [],
+          "identifier": "NetworkInstrumentationFeatureTests/testAutomaticMode_tracksAsyncAwaitTasks()",
+          "state": "Passed",
+          "targetName": "DatadogInternalTests"
+        },
+        {
+          "displayName": "testAutomaticMode_tracksTaskWithURL()",
+          "errorMessages": [],
+          "identifier": "NetworkInstrumentationFeatureTests/testAutomaticMode_tracksTaskWithURL()",
+          "state": "Passed",
+          "targetName": "DatadogInternalTests"
+        },
+        {
+          "displayName": "testAutomaticMode_tracksTaskWithURLRequest()",
+          "errorMessages": [],
+          "identifier": "NetworkInstrumentationFeatureTests/testAutomaticMode_tracksTaskWithURLRequest()",
+          "state": "Passed",
+          "targetName": "DatadogInternalTests"
+        },
+        {
+          "displayName": "testAutomaticMode_tracksCombineTasks()",
+          "errorMessages": [],
+          "identifier": "NetworkInstrumentationFeatureTests/testAutomaticMode_tracksCombineTasks()",
+          "state": "Passed",
+          "targetName": "DatadogInternalTests"
+        },
+        {
+          "displayName": "testAutomaticMode_tracksUploadTaskWithCompletionHandler()",
+          "errorMessages": [],
+          "identifier": "NetworkInstrumentationFeatureTests/testAutomaticMode_tracksUploadTaskWithCompletionHandler()",
+          "state": "Passed",
+          "targetName": "DatadogInternalTests"
+        },
+        {
+          "displayName": "testAutomaticMode_tracksUploadTaskWithoutCompletionHandler()",
+          "errorMessages": [],
+          "identifier": "NetworkInstrumentationFeatureTests/testAutomaticMode_tracksUploadTaskWithoutCompletionHandler()",
+          "state": "Passed",
+          "targetName": "DatadogInternalTests"
+        },
+        {
+          "displayName": "testAutomaticMode_tracksAsyncUploadTasks()",
+          "errorMessages": [],
+          "identifier": "NetworkInstrumentationFeatureTests/testAutomaticMode_tracksAsyncUploadTasks()",
+          "state": "Passed",
+          "targetName": "DatadogInternalTests"
+        },
+        {
+          "displayName": "testAutomaticMode_tracksDownloadTask()",
+          "errorMessages": [],
+          "identifier": "NetworkInstrumentationFeatureTests/testAutomaticMode_tracksDownloadTask()",
+          "state": "Passed",
+          "targetName": "DatadogInternalTests"
+        },
+        {
+          "displayName": "testAutomaticMode_doesNotCaptureMetricsEvenWithDelegate()",
+          "errorMessages": [],
+          "identifier": "NetworkInstrumentationFeatureTests/testAutomaticMode_doesNotCaptureMetricsEvenWithDelegate()",
+          "state": "Passed",
+          "targetName": "DatadogInternalTests"
+        },
+        {
+          "displayName": "testGivenBothModesEnabled_whenSessionDoesNotRegisterDelegate_itInterceptsAutomatically()",
+          "errorMessages": [],
+          "identifier": "NetworkInstrumentationFeatureTests/testGivenBothModesEnabled_whenSessionDoesNotRegisterDelegate_itInterceptsAutomatically()",
+          "state": "Passed",
+          "targetName": "DatadogInternalTests"
+        },
+        {
+          "displayName": "testGivenBothModesEnabled_whenPerTaskDelegate_itUsesCorrectTrackingMode()",
+          "errorMessages": [],
+          "identifier": "NetworkInstrumentationFeatureTests/testGivenBothModesEnabled_whenPerTaskDelegate_itUsesCorrectTrackingMode()",
+          "state": "Passed",
+          "targetName": "DatadogInternalTests"
+        },
+        {
+          "displayName": "testGivenBothModesEnabled_whenSessionWithDelegateAndCompletionHandler_itCapturesMetrics()",
+          "errorMessages": [],
+          "identifier": "NetworkInstrumentationFeatureTests/testGivenBothModesEnabled_whenSessionWithDelegateAndCompletionHandler_itCapturesMetrics()",
+          "state": "Passed",
+          "targetName": "DatadogInternalTests"
+        },
+        {
+          "displayName": "testGivenBothModesEnabled_whenRegisteredDelegateWithCompletionHandler_itCapturesMetricsAndData()",
+          "errorMessages": [],
+          "identifier": "NetworkInstrumentationFeatureTests/testGivenBothModesEnabled_whenRegisteredDelegateWithCompletionHandler_itCapturesMetricsAndData()",
+          "state": "Passed",
+          "targetName": "DatadogInternalTests"
+        },
+        {
+          "displayName": "testGivenBothModesEnabled_whenRegisteredDelegateWithoutCompletionHandler_itCapturesMetricsAndData()",
+          "errorMessages": [],
+          "identifier": "NetworkInstrumentationFeatureTests/testGivenBothModesEnabled_whenRegisteredDelegateWithoutCompletionHandler_itCapturesMetricsAndData()",
+          "state": "Passed",
+          "targetName": "DatadogInternalTests"
+        },
+        {
+          "displayName": "testGivenBothModesEnabled_whenUnregisteredDelegateWithCompletionHandler_itUsesAutomaticMode()",
+          "errorMessages": [],
+          "identifier": "NetworkInstrumentationFeatureTests/testGivenBothModesEnabled_whenUnregisteredDelegateWithCompletionHandler_itUsesAutomaticMode()",
+          "state": "Passed",
+          "targetName": "DatadogInternalTests"
+        },
+        {
+          "displayName": "testGivenBothModesEnabled_whenUnregisteredDelegateWithoutCompletionHandler_itUsesAutomaticMode()",
+          "errorMessages": [],
+          "identifier": "NetworkInstrumentationFeatureTests/testGivenBothModesEnabled_whenUnregisteredDelegateWithoutCompletionHandler_itUsesAutomaticMode()",
+          "state": "Passed",
+          "targetName": "DatadogInternalTests"
+        },
+        {
+          "displayName": "testGivenBothModesEnabled_whenNoDelegateWithCompletionHandler_itUsesAutomaticMode()",
+          "errorMessages": [],
+          "identifier": "NetworkInstrumentationFeatureTests/testGivenBothModesEnabled_whenNoDelegateWithCompletionHandler_itUsesAutomaticMode()",
+          "state": "Passed",
+          "targetName": "DatadogInternalTests"
+        },
+        {
+          "displayName": "testGivenBothModesEnabled_whenNoDelegateWithoutCompletionHandler_itUsesAutomaticMode()",
+          "errorMessages": [],
+          "identifier": "NetworkInstrumentationFeatureTests/testGivenBothModesEnabled_whenNoDelegateWithoutCompletionHandler_itUsesAutomaticMode()",
+          "state": "Passed",
+          "targetName": "DatadogInternalTests"
+        },
+        {
+          "displayName": "testGivenBothModesEnabled_whenUsingAsyncAPI_itCapturesAllValues()",
+          "errorMessages": [],
+          "identifier": "NetworkInstrumentationFeatureTests/testGivenBothModesEnabled_whenUsingAsyncAPI_itCapturesAllValues()",
+          "state": "Passed",
+          "targetName": "DatadogInternalTests"
+        },
+        {
+          "displayName": "testGivenBothModesEnabled_whenUsingDownloadTask_itUsesCorrectTrackingMode()",
+          "errorMessages": [],
+          "identifier": "NetworkInstrumentationFeatureTests/testGivenBothModesEnabled_whenUsingDownloadTask_itUsesCorrectTrackingMode()",
+          "state": "Passed",
+          "targetName": "DatadogInternalTests"
+        },
+        {
+          "displayName": "testAutomaticMode_whenTaskIsCancelled_itCapturesError()",
+          "errorMessages": [],
+          "identifier": "NetworkInstrumentationFeatureTests/testAutomaticMode_whenTaskIsCancelled_itCapturesError()",
+          "state": "Passed",
+          "targetName": "DatadogInternalTests"
+        },
+        {
+          "displayName": "testGivenRegisteredDelegate_whenTaskCompletesWithFailure_itCapturesError()",
+          "errorMessages": [],
+          "identifier": "NetworkInstrumentationFeatureTests/testGivenRegisteredDelegate_whenTaskCompletesWithFailure_itCapturesError()",
+          "state": "Passed",
+          "targetName": "DatadogInternalTests"
+        },
+        {
+          "displayName": "testGivenRegisteredDelegate_whenTaskCompletesWithSuccess_itCapturesAllValues()",
+          "errorMessages": [],
+          "identifier": "NetworkInstrumentationFeatureTests/testGivenRegisteredDelegate_whenTaskCompletesWithSuccess_itCapturesAllValues()",
+          "state": "Passed",
+          "targetName": "DatadogInternalTests"
+        },
+        {
+          "displayName": "testGivenAutomaticMode_whenTaskWithoutCompletionHandler_itCapturesBasicValues()",
+          "errorMessages": [],
+          "identifier": "NetworkInstrumentationFeatureTests/testGivenAutomaticMode_whenTaskWithoutCompletionHandler_itCapturesBasicValues()",
+          "state": "Passed",
+          "targetName": "DatadogInternalTests"
+        },
+        {
+          "displayName": "testGivenAutomaticMode_whenTaskWithCompletionHandler_itCapturesAllBasicValues()",
+          "errorMessages": [],
+          "identifier": "NetworkInstrumentationFeatureTests/testGivenAutomaticMode_whenTaskWithCompletionHandler_itCapturesAllBasicValues()",
+          "state": "Passed",
+          "targetName": "DatadogInternalTests"
+        },
+        {
+          "displayName": "testGivenAutomaticMode_whenTaskCompletesWithFailure_itCapturesError()",
+          "errorMessages": [],
+          "identifier": "NetworkInstrumentationFeatureTests/testGivenAutomaticMode_whenTaskCompletesWithFailure_itCapturesError()",
+          "state": "Passed",
+          "targetName": "DatadogInternalTests"
+        },
+        {
+          "displayName": "testGivenRegisteredDelegate_whenUsingAsyncAPI_itCapturesAllValues()",
+          "errorMessages": [],
+          "identifier": "NetworkInstrumentationFeatureTests/testGivenRegisteredDelegate_whenUsingAsyncAPI_itCapturesAllValues()",
+          "state": "Passed",
+          "targetName": "DatadogInternalTests"
+        },
+        {
+          "displayName": "testAutomaticMode_enabledOnlyOnce()",
+          "errorMessages": [],
+          "identifier": "NetworkInstrumentationFeatureTests/testAutomaticMode_enabledOnlyOnce()",
+          "state": "Passed",
+          "targetName": "DatadogInternalTests"
+        },
+        {
+          "displayName": "testWhenEnableAutomaticModeTwice_thenItPrintsAWarning()",
+          "errorMessages": [],
+          "identifier": "NetworkInstrumentationFeatureTests/testWhenEnableAutomaticModeTwice_thenItPrintsAWarning()",
+          "state": "Passed",
+          "targetName": "DatadogInternalTests"
+        },
+        {
+          "displayName": "testWhenEnablingDurationBreakdownOnTheSameDelegate_thenItPrintsAWarning()",
+          "errorMessages": [],
+          "identifier": "NetworkInstrumentationFeatureTests/testWhenEnablingDurationBreakdownOnTheSameDelegate_thenItPrintsAWarning()",
+          "state": "Passed",
+          "targetName": "DatadogInternalTests"
+        },
+        {
+          "displayName": "testWhenEnablingDurationBreakdownBeforeAutomaticMode_thenItPrintsAnError()",
+          "errorMessages": [],
+          "identifier": "NetworkInstrumentationFeatureTests/testWhenEnablingDurationBreakdownBeforeAutomaticMode_thenItPrintsAnError()",
+          "state": "Passed",
+          "targetName": "DatadogInternalTests"
+        },
+        {
+          "displayName": "testAutomaticMode_doesNotTrackSDKRequests()",
+          "errorMessages": [],
+          "identifier": "NetworkInstrumentationFeatureTests/testAutomaticMode_doesNotTrackSDKRequests()",
+          "state": "Passed",
+          "targetName": "DatadogInternalTests"
+        },
+        {
+          "displayName": "testAutomaticMode_doesNotTrackSDKRequestsAuthenticatedWithClientToken()",
+          "errorMessages": [],
+          "identifier": "NetworkInstrumentationFeatureTests/testAutomaticMode_doesNotTrackSDKRequestsAuthenticatedWithClientToken()",
+          "state": "Passed",
+          "targetName": "DatadogInternalTests"
+        },
+        {
+          "displayName": "testAutomaticMode_doesNotTrackSDKRequestsMarkedInternal()",
+          "errorMessages": [],
+          "identifier": "NetworkInstrumentationFeatureTests/testAutomaticMode_doesNotTrackSDKRequestsMarkedInternal()",
+          "state": "Passed",
+          "targetName": "DatadogInternalTests"
+        },
+        {
+          "displayName": "testAutomaticMode_doesNotTrackDatadogSDKTestingRequests()",
+          "errorMessages": [],
+          "identifier": "NetworkInstrumentationFeatureTests/testAutomaticMode_doesNotTrackDatadogSDKTestingRequests()",
+          "state": "Passed",
+          "targetName": "DatadogInternalTests"
+        },
+        {
+          "displayName": "testAutomaticMode_handlerIgnoresForeignURLSessionTraffic()",
+          "errorMessages": [],
+          "identifier": "NetworkInstrumentationFeatureTests/testAutomaticMode_handlerIgnoresForeignURLSessionTraffic()",
+          "state": "Passed",
+          "targetName": "DatadogInternalTests"
+        },
+        {
+          "displayName": "testWhenInterceptingTaskWithMultipleTraceContexts_itTakesTheFirstContext()",
+          "errorMessages": [],
+          "identifier": "NetworkInstrumentationFeatureTests/testWhenInterceptingTaskWithMultipleTraceContexts_itTakesTheFirstContext()",
+          "state": "Passed",
+          "targetName": "DatadogInternalTests"
+        },
+        {
+          "displayName": "testIsSupportedForInstrumentation_returnsTrueForDataTask()",
+          "errorMessages": [],
+          "identifier": "NetworkInstrumentationFeatureTests/testIsSupportedForInstrumentation_returnsTrueForDataTask()",
+          "state": "Passed",
+          "targetName": "DatadogInternalTests"
+        },
+        {
+          "displayName": "testIsSupportedForInstrumentation_returnsTrueForUploadTask()",
+          "errorMessages": [],
+          "identifier": "NetworkInstrumentationFeatureTests/testIsSupportedForInstrumentation_returnsTrueForUploadTask()",
+          "state": "Passed",
+          "targetName": "DatadogInternalTests"
+        },
+        {
+          "displayName": "testIsSupportedForInstrumentation_returnsTrueForDownloadTask()",
+          "errorMessages": [],
+          "identifier": "NetworkInstrumentationFeatureTests/testIsSupportedForInstrumentation_returnsTrueForDownloadTask()",
+          "state": "Passed",
+          "targetName": "DatadogInternalTests"
+        },
+        {
+          "displayName": "testIsSupportedForInstrumentation_returnsTrueForWebSocketTask()",
+          "errorMessages": [],
+          "identifier": "NetworkInstrumentationFeatureTests/testIsSupportedForInstrumentation_returnsTrueForWebSocketTask()",
+          "state": "Passed",
+          "targetName": "DatadogInternalTests"
+        },
+        {
+          "displayName": "testIsSupportedForInstrumentation_returnsTrueForStreamTask()",
+          "errorMessages": [],
+          "identifier": "NetworkInstrumentationFeatureTests/testIsSupportedForInstrumentation_returnsTrueForStreamTask()",
+          "state": "Passed",
+          "targetName": "DatadogInternalTests"
+        },
+        {
+          "displayName": "testIsSupportedForInstrumentation_returnsFalseForUnsupportedAVTaskTypes()",
+          "errorMessages": [],
+          "identifier": "NetworkInstrumentationFeatureTests/testIsSupportedForInstrumentation_returnsFalseForUnsupportedAVTaskTypes()",
+          "state": "Passed",
+          "targetName": "DatadogInternalTests"
+        },
+        {
+          "displayName": "testWebSocketTask_resumeDoesNotCrash()",
+          "errorMessages": [],
+          "identifier": "NetworkInstrumentationFeatureTests/testWebSocketTask_resumeDoesNotCrash()",
+          "state": "Passed",
+          "targetName": "DatadogInternalTests"
+        },
+        {
+          "displayName": "testStreamTask_resumeDoesNotCrash()",
+          "errorMessages": [],
+          "identifier": "NetworkInstrumentationFeatureTests/testStreamTask_resumeDoesNotCrash()",
+          "state": "Passed",
+          "targetName": "DatadogInternalTests"
+        },
+        {
+          "displayName": "testAutomaticMode_detectsFirstPartyHosts()",
+          "errorMessages": [],
+          "identifier": "NetworkInstrumentationFeatureTests/testAutomaticMode_detectsFirstPartyHosts()",
+          "state": "Passed",
+          "targetName": "DatadogInternalTests"
+        },
+        {
+          "displayName": "testAutomaticMode_injectsTraceHeadersForFirstPartyHosts()",
+          "errorMessages": [],
+          "identifier": "NetworkInstrumentationFeatureTests/testAutomaticMode_injectsTraceHeadersForFirstPartyHosts()",
+          "state": "Passed",
+          "targetName": "DatadogInternalTests"
+        },
+        {
+          "displayName": "testAutomaticMode_doesNotInjectHeadersForThirdPartyHosts()",
+          "errorMessages": [],
+          "identifier": "NetworkInstrumentationFeatureTests/testAutomaticMode_doesNotInjectHeadersForThirdPartyHosts()",
+          "state": "Passed",
+          "targetName": "DatadogInternalTests"
+        },
+        {
+          "displayName": "testRegisteredDelegate_detectsFirstPartyHosts()",
+          "errorMessages": [],
+          "identifier": "NetworkInstrumentationFeatureTests/testRegisteredDelegate_detectsFirstPartyHosts()",
+          "state": "Passed",
+          "targetName": "DatadogInternalTests"
+        },
+        {
+          "displayName": "testGivenRequestWithGraphQLHeaders_whenInterceptingRequest_itRemovesGraphQLHeaders()",
+          "errorMessages": [],
+          "identifier": "NetworkInstrumentationFeatureTests/testGivenRequestWithGraphQLHeaders_whenInterceptingRequest_itRemovesGraphQLHeaders()",
+          "state": "Passed",
+          "targetName": "DatadogInternalTests"
+        },
+        {
+          "displayName": "testRandomlyCallingDifferentAPIsConcurrentlyDoesNotCrash()",
+          "errorMessages": [],
+          "identifier": "NetworkInstrumentationFeatureTests/testRandomlyCallingDifferentAPIsConcurrentlyDoesNotCrash()",
+          "state": "Passed",
+          "targetName": "DatadogInternalTests"
+        },
+        {
+          "displayName": "testWhenReceivingContextMessage_itCreatesNetworkContextWithUserAndAccountInformation()",
+          "errorMessages": [],
+          "identifier": "NetworkInstrumentationFeatureTests/testWhenReceivingContextMessage_itCreatesNetworkContextWithUserAndAccountInformation()",
+          "state": "Passed",
+          "targetName": "DatadogInternalTests"
+        },
+        {
+          "displayName": "testWhenReceivingContextMessage_withoutUserAndAccountInfo_itCreatesNetworkContextWithNilValues()",
+          "errorMessages": [],
+          "identifier": "NetworkInstrumentationFeatureTests/testWhenReceivingContextMessage_withoutUserAndAccountInfo_itCreatesNetworkContextWithNilValues()",
+          "state": "Passed",
+          "targetName": "DatadogInternalTests"
+        },
+        {
+          "displayName": "testWhenReceivingNonContextMessage_itReturnsFalse()",
+          "errorMessages": [],
+          "identifier": "NetworkInstrumentationFeatureTests/testWhenReceivingNonContextMessage_itReturnsFalse()",
+          "state": "Passed",
+          "targetName": "DatadogInternalTests"
+        },
+        {
+          "displayName": "testGivenBothModesEnabled_whenUsingDelegateSubclass_itOnlyProcessesWithRegisteredDelegate()",
+          "errorMessages": [],
+          "identifier": "NetworkInstrumentationFeatureTests/testGivenBothModesEnabled_whenUsingDelegateSubclass_itOnlyProcessesWithRegisteredDelegate()",
+          "state": "Passed",
+          "targetName": "DatadogInternalTests"
+        }
+      ],
+      "schemeName": "DatadogInternal",
+      "summary": "79 tests: 79 passed, 0 failed, 0 skipped, 0 expected failures, 0 not run",
+      "totalResults": 79,
+      "truncated": false,
+      "xcresultBundlePath": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/ActionArtifacts/default/RunSomeTests/Test-DatadogInternal-2026.09.17_11-21-31-+0100.xcresult"
+    },
+    "exp166CoreSuite": {
+      "counts": {
+        "expectedFailures": 0,
+        "failed": 0,
+        "notRun": 0,
+        "passed": 22,
+        "skipped": 0,
+        "total": 22
+      },
+      "fullConsoleLogsPath": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/ActionArtifacts/default/RunSomeTests/test-console-log-2026-09-17T11-22-21+01-00.txt",
+      "fullSummaryPath": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/ActionArtifacts/default/RunSomeTests/6C639237-D6B9-42C8-AAB1-400597634973.txt",
+      "results": [
+        {
+          "displayName": "testHandoffOwner_isSharedByCoreScopesAndNetworkButDistinctAcrossCores()",
+          "errorMessages": [],
+          "identifier": "DatadogCoreTests/testHandoffOwner_isSharedByCoreScopesAndNetworkButDistinctAcrossCores()",
+          "state": "Passed",
+          "targetName": "DatadogCoreTests"
+        },
+        {
+          "displayName": "testHandoffOwner_stopInvalidatesDispatchAndInheritedTaskWithoutAffectingNewCore()",
+          "errorMessages": [],
+          "identifier": "DatadogCoreTests/testHandoffOwner_stopInvalidatesDispatchAndInheritedTaskWithoutAffectingNewCore()",
+          "state": "Passed",
+          "targetName": "DatadogCoreTests"
+        },
+        {
+          "displayName": "testHandoffOwner_andFeatureScopeDoNotRetainCoreAfterDispatch()",
+          "errorMessages": [],
+          "identifier": "DatadogCoreTests/testHandoffOwner_andFeatureScopeDoNotRetainCoreAfterDispatch()",
+          "state": "Passed",
+          "targetName": "DatadogCoreTests"
+        },
+        {
+          "displayName": "testGivenRemoteConfigurationProvider_whenReadingRemoteConfiguration_itReturnsCachedValue()",
+          "errorMessages": [],
+          "identifier": "DatadogCoreTests/testGivenRemoteConfigurationProvider_whenReadingRemoteConfiguration_itReturnsCachedValue()",
+          "state": "Passed",
+          "targetName": "DatadogCoreTests"
+        },
+        {
+          "displayName": "testGivenNoRemoteConfigurationProvider_whenReadingRemoteConfiguration_itReturnsNil()",
+          "errorMessages": [],
+          "identifier": "DatadogCoreTests/testGivenNoRemoteConfigurationProvider_whenReadingRemoteConfiguration_itReturnsNil()",
+          "state": "Passed",
+          "targetName": "DatadogCoreTests"
+        },
+        {
+          "displayName": "testWhenWritingEventsWithDifferentTrackingConsent_itOnlyUploadsAuthorizedEvents()",
+          "errorMessages": [],
+          "identifier": "DatadogCoreTests/testWhenWritingEventsWithDifferentTrackingConsent_itOnlyUploadsAuthorizedEvents()",
+          "state": "Passed",
+          "targetName": "DatadogCoreTests"
+        },
+        {
+          "displayName": "testWhenWritingEventsWithPendingConsentThenGranted_itUploadsAllEvents()",
+          "errorMessages": [],
+          "identifier": "DatadogCoreTests/testWhenWritingEventsWithPendingConsentThenGranted_itUploadsAllEvents()",
+          "state": "Passed",
+          "targetName": "DatadogCoreTests"
+        },
+        {
+          "displayName": "testWhenWritingEventsWithBypassingConsent_itUploadsAllEvents()",
+          "errorMessages": [],
+          "identifier": "DatadogCoreTests/testWhenWritingEventsWithBypassingConsent_itUploadsAllEvents()",
+          "state": "Passed",
+          "targetName": "DatadogCoreTests"
+        },
+        {
+          "displayName": "testWhenFeatureAdditionalContextIsUpdated_thenNewValueIsImmediatellyAvailable()",
+          "errorMessages": [],
+          "identifier": "DatadogCoreTests/testWhenFeatureAdditionalContextIsUpdated_thenNewValueIsImmediatellyAvailable()",
+          "state": "Passed",
+          "targetName": "DatadogCoreTests"
+        },
+        {
+          "displayName": "testWhenPerformancePresetOverrideIsProvided_itOverridesPresets()",
+          "errorMessages": [],
+          "identifier": "DatadogCoreTests/testWhenPerformancePresetOverrideIsProvided_itOverridesPresets()",
+          "state": "Passed",
+          "targetName": "DatadogCoreTests"
+        },
+        {
+          "displayName": "testWhenStoppingInstance_itDoesNotUploadEvents()",
+          "errorMessages": [],
+          "identifier": "DatadogCoreTests/testWhenStoppingInstance_itDoesNotUploadEvents()",
+          "state": "Passed",
+          "targetName": "DatadogCoreTests"
+        },
+        {
+          "displayName": "testWhenStoppingInstance_itStopsRemoteConfigurationProvider()",
+          "errorMessages": [],
+          "identifier": "DatadogCoreTests/testWhenStoppingInstance_itStopsRemoteConfigurationProvider()",
+          "state": "Passed",
+          "targetName": "DatadogCoreTests"
+        },
+        {
+          "displayName": "testItAppendsUserDataIfAnonymousIdentifierExists()",
+          "errorMessages": [],
+          "identifier": "DatadogCoreTests/testItAppendsUserDataIfAnonymousIdentifierExists()",
+          "state": "Passed",
+          "targetName": "DatadogCoreTests"
+        },
+        {
+          "displayName": "testItAppendsAnonymousIdentifierIfUserExists()",
+          "errorMessages": [],
+          "identifier": "DatadogCoreTests/testItAppendsAnonymousIdentifierIfUserExists()",
+          "state": "Passed",
+          "targetName": "DatadogCoreTests"
+        },
+        {
+          "displayName": "testItAppendsAccountDataAndUpdatesIt()",
+          "errorMessages": [],
+          "identifier": "DatadogCoreTests/testItAppendsAccountDataAndUpdatesIt()",
+          "state": "Passed",
+          "targetName": "DatadogCoreTests"
+        },
+        {
+          "displayName": "testItUpdatesAccountExtraInfoWhileKeepingOriginalAccountInfo()",
+          "errorMessages": [],
+          "identifier": "DatadogCoreTests/testItUpdatesAccountExtraInfoWhileKeepingOriginalAccountInfo()",
+          "state": "Passed",
+          "targetName": "DatadogCoreTests"
+        },
+        {
+          "displayName": "testItClearsAccountInfo()",
+          "errorMessages": [],
+          "identifier": "DatadogCoreTests/testItClearsAccountInfo()",
+          "state": "Passed",
+          "targetName": "DatadogCoreTests"
+        },
+        {
+          "displayName": "testItClearUserInfo()",
+          "errorMessages": [],
+          "identifier": "DatadogCoreTests/testItClearUserInfo()",
+          "state": "Passed",
+          "targetName": "DatadogCoreTests"
+        },
+        {
+          "displayName": "testFlushAndUpload_uploadsAuthorizedEvents()",
+          "errorMessages": [],
+          "identifier": "DatadogCoreTests/testFlushAndUpload_uploadsAuthorizedEvents()",
+          "state": "Passed",
+          "targetName": "DatadogCoreTests"
+        },
+        {
+          "displayName": "testFlushAndUpload_sdkRemainsOperationalAfterFlush()",
+          "errorMessages": [],
+          "identifier": "DatadogCoreTests/testFlushAndUpload_sdkRemainsOperationalAfterFlush()",
+          "state": "Passed",
+          "targetName": "DatadogCoreTests"
+        },
+        {
+          "displayName": "testDatadogFlush_uploadsEventsAndReturnsSynchronously()",
+          "errorMessages": [],
+          "identifier": "DatadogCoreTests/testDatadogFlush_uploadsEventsAndReturnsSynchronously()",
+          "state": "Passed",
+          "targetName": "DatadogCoreTests"
+        },
+        {
+          "displayName": "testItClearsAnonymousIdentifier()",
+          "errorMessages": [],
+          "identifier": "DatadogCoreTests/testItClearsAnonymousIdentifier()",
+          "state": "Passed",
+          "targetName": "DatadogCoreTests"
+        }
+      ],
+      "schemeName": "DatadogCore",
+      "summary": "22 tests: 22 passed, 0 failed, 0 skipped, 0 expected failures, 0 not run",
+      "totalResults": 22,
+      "truncated": false,
+      "xcresultBundlePath": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/ActionArtifacts/default/RunSomeTests/Test-DatadogCore-2026.09.17_11-22-21-+0100.xcresult"
+    },
+    "exp166RUMSuite": {
+      "counts": {
+        "expectedFailures": 0,
+        "failed": 0,
+        "notRun": 0,
+        "passed": 109,
+        "skipped": 0,
+        "total": 109
+      },
+      "fullConsoleLogsPath": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/ActionArtifacts/default/RunSomeTests/test-console-log-2026-09-17T11-24-53+01-00.txt",
+      "fullSummaryPath": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/ActionArtifacts/default/RunSomeTests/6EDA59C6-21EB-47CA-BA6D-52EA8DE7D0EB.txt",
+      "message": "Results truncated to 100 of 109 tests. Failed tests shown first. Full logs available at /var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/ActionArtifacts/default/RunSomeTests/6EDA59C6-21EB-47CA-BA6D-52EA8DE7D0EB.txt.",
+      "results": [
+        {
+          "displayName": "testWhenSessionIsSampled_itSetsRUMContextInCore()",
+          "errorMessages": [],
+          "identifier": "MonitorTests/testWhenSessionIsSampled_itSetsRUMContextInCore()",
+          "state": "Passed",
+          "targetName": "DatadogRUMTests"
+        },
+        {
+          "displayName": "testWhenSessionIsNotSampled_RUMCoreSampler_returnsFalse()",
+          "errorMessages": [],
+          "identifier": "MonitorTests/testWhenSessionIsNotSampled_RUMCoreSampler_returnsFalse()",
+          "state": "Passed",
+          "targetName": "DatadogRUMTests"
+        },
+        {
+          "displayName": "testGivenConcurrentScenes_itKeepsSynchronousContextSnapshotForEachScene()",
+          "errorMessages": [],
+          "identifier": "MonitorTests/testGivenConcurrentScenes_itKeepsSynchronousContextSnapshotForEachScene()",
+          "state": "Passed",
+          "targetName": "DatadogRUMTests"
+        },
+        {
+          "displayName": "testGivenOperationStartedDuringSceneHandoff_itUsesThatSceneInsteadOfRepresentative()",
+          "errorMessages": [],
+          "identifier": "MonitorTests/testGivenOperationStartedDuringSceneHandoff_itUsesThatSceneInsteadOfRepresentative()",
+          "state": "Passed",
+          "targetName": "DatadogRUMTests"
+        },
+        {
+          "displayName": "testGivenExplicitOperationScene_itOverridesInferredSceneAndRepresentative()",
+          "errorMessages": [],
+          "identifier": "MonitorTests/testGivenExplicitOperationScene_itOverridesInferredSceneAndRepresentative()",
+          "state": "Passed",
+          "targetName": "DatadogRUMTests"
+        },
+        {
+          "displayName": "testGivenExplicitOperationSceneHasNoView_itUsesTrustworthyInferredSceneBeforeSnapshotAndRepresentative()",
+          "errorMessages": [],
+          "identifier": "MonitorTests/testGivenExplicitOperationSceneHasNoView_itUsesTrustworthyInferredSceneBeforeSnapshotAndRepresentative()",
+          "state": "Passed",
+          "targetName": "DatadogRUMTests"
+        },
+        {
+          "displayName": "testGivenManualActionsDuringSceneHandoff_theyUseThatSceneInsteadOfRepresentative()",
+          "errorMessages": [],
+          "identifier": "MonitorTests/testGivenManualActionsDuringSceneHandoff_theyUseThatSceneInsteadOfRepresentative()",
+          "state": "Passed",
+          "targetName": "DatadogRUMTests"
+        },
+        {
+          "displayName": "testGivenExplicitActionScene_itOverridesInferredSceneAndRepresentative()",
+          "errorMessages": [],
+          "identifier": "MonitorTests/testGivenExplicitActionScene_itOverridesInferredSceneAndRepresentative()",
+          "state": "Passed",
+          "targetName": "DatadogRUMTests"
+        },
+        {
+          "displayName": "testGivenExplicitActionSceneHasNoView_itUsesTrustworthyInferredScene()",
+          "errorMessages": [],
+          "identifier": "MonitorTests/testGivenExplicitActionSceneHasNoView_itUsesTrustworthyInferredScene()",
+          "state": "Passed",
+          "targetName": "DatadogRUMTests"
+        },
+        {
+          "displayName": "testGivenExplicitContinuousActions_theyOverrideContradictoryInferenceAndStopIndependently()",
+          "errorMessages": [],
+          "identifier": "MonitorTests/testGivenExplicitContinuousActions_theyOverrideContradictoryInferenceAndStopIndependently()",
+          "state": "Passed",
+          "targetName": "DatadogRUMTests"
+        },
+        {
+          "displayName": "testGivenUnavailableContinuousActionTarget_itPreservesInferenceThenRepresentative()",
+          "errorMessages": [],
+          "identifier": "MonitorTests/testGivenUnavailableContinuousActionTarget_itPreservesInferenceThenRepresentative()",
+          "state": "Passed",
+          "targetName": "DatadogRUMTests"
+        },
+        {
+          "displayName": "testGivenTargetedContinuousActions_duplicateStartAndNavigationKeepPeerAction()",
+          "errorMessages": [],
+          "identifier": "MonitorTests/testGivenTargetedContinuousActions_duplicateStartAndNavigationKeepPeerAction()",
+          "state": "Passed",
+          "targetName": "DatadogRUMTests"
+        },
+        {
+          "displayName": "testGivenExpiredContinuousAction_peerStopDoesNotContaminateItsAttributes()",
+          "errorMessages": [],
+          "identifier": "MonitorTests/testGivenExpiredContinuousAction_peerStopDoesNotContaminateItsAttributes()",
+          "state": "Passed",
+          "targetName": "DatadogRUMTests"
+        },
+        {
+          "displayName": "testGivenManualErrorsDuringSceneHandoff_theyUseExactOrSceneContext()",
+          "errorMessages": [],
+          "identifier": "MonitorTests/testGivenManualErrorsDuringSceneHandoff_theyUseExactOrSceneContext()",
+          "state": "Passed",
+          "targetName": "DatadogRUMTests"
+        },
+        {
+          "displayName": "testGivenViewMutationsDuringSceneHandoff_theyOnlyUpdateThatView()",
+          "errorMessages": [],
+          "identifier": "MonitorTests/testGivenViewMutationsDuringSceneHandoff_theyOnlyUpdateThatView()",
+          "state": "Passed",
+          "targetName": "DatadogRUMTests"
+        },
+        {
+          "displayName": "testGivenMatchingManualViewKeysInTwoScenes_whenAStopsAndReturns_itKeepsIndependentOccurrences()",
+          "errorMessages": [],
+          "identifier": "MonitorTests/testGivenMatchingManualViewKeysInTwoScenes_whenAStopsAndReturns_itKeepsIndependentOccurrences()",
+          "state": "Passed",
+          "targetName": "DatadogRUMTests"
+        },
+        {
+          "displayName": "testGivenExactViewAndContradictoryScene_whenStartingManualView_itUsesExactViewsScene()",
+          "errorMessages": [],
+          "identifier": "MonitorTests/testGivenExactViewAndContradictoryScene_whenStartingManualView_itUsesExactViewsScene()",
+          "state": "Passed",
+          "targetName": "DatadogRUMTests"
+        },
+        {
+          "displayName": "testGivenBackgroundControllerCalls_itAvoidsHierarchyReadsAndKeepsRepresentativeFallback()",
+          "errorMessages": [],
+          "identifier": "MonitorTests/testGivenBackgroundControllerCalls_itAvoidsHierarchyReadsAndKeepsRepresentativeFallback()",
+          "state": "Passed",
+          "targetName": "DatadogRUMTests"
+        },
+        {
+          "displayName": "testGivenBackgroundControllerCallsDuringHandoff_itAvoidsHierarchyReadsAndKeepsInferredScene()",
+          "errorMessages": [],
+          "identifier": "MonitorTests/testGivenBackgroundControllerCallsDuringHandoff_itAvoidsHierarchyReadsAndKeepsInferredScene()",
+          "state": "Passed",
+          "targetName": "DatadogRUMTests"
+        },
+        {
+          "displayName": "testGivenUnattachedViewController_whenStartedDuringSceneHandoff_itUsesThatScene()",
+          "errorMessages": [],
+          "identifier": "MonitorTests/testGivenUnattachedViewController_whenStartedDuringSceneHandoff_itUsesThatScene()",
+          "state": "Passed",
+          "targetName": "DatadogRUMTests"
+        },
+        {
+          "displayName": "testGivenManualResourcesStartedDuringSceneHandoff_theyCompleteOnThatScene()",
+          "errorMessages": [],
+          "identifier": "MonitorTests/testGivenManualResourcesStartedDuringSceneHandoff_theyCompleteOnThatScene()",
+          "state": "Passed",
+          "targetName": "DatadogRUMTests"
+        },
+        {
+          "displayName": "testStartView_withViewController_itUsesClassNameAsViewName()",
+          "errorMessages": [],
+          "identifier": "MonitorTests/testStartView_withViewController_itUsesClassNameAsViewName()",
+          "state": "Passed",
+          "targetName": "DatadogRUMTests"
+        },
+        {
+          "displayName": "testStartView_withViewController_itUsesClassNameAsViewPath()",
+          "errorMessages": [],
+          "identifier": "MonitorTests/testStartView_withViewController_itUsesClassNameAsViewPath()",
+          "state": "Passed",
+          "targetName": "DatadogRUMTests"
+        },
+        {
+          "displayName": "testReportTTIDAndTTFD_thenTheyAreWrittenAsVitalEvents()",
+          "errorMessages": [],
+          "identifier": "MonitorTests/testReportTTIDAndTTFD_thenTheyAreWrittenAsVitalEvents()",
+          "state": "Passed",
+          "targetName": "DatadogRUMTests"
+        },
+        {
+          "displayName": "testReportTTFDWithoutTTID_thenTheyAreNotWritten()",
+          "errorMessages": [],
+          "identifier": "MonitorTests/testReportTTFDWithoutTTID_thenTheyAreNotWritten()",
+          "state": "Passed",
+          "targetName": "DatadogRUMTests"
+        },
+        {
+          "displayName": "testReportTTIDWithoutTTFD_thenTTIDIsWrittenAsVitalEvent()",
+          "errorMessages": [],
+          "identifier": "MonitorTests/testReportTTIDWithoutTTFD_thenTTIDIsWrittenAsVitalEvent()",
+          "state": "Passed",
+          "targetName": "DatadogRUMTests"
+        },
+        {
+          "displayName": "testAddViewLoadingTimeToActiveView_thenLoadingTimeUpdated()",
+          "errorMessages": [],
+          "identifier": "MonitorTests/testAddViewLoadingTimeToActiveView_thenLoadingTimeUpdated()",
+          "state": "Passed",
+          "targetName": "DatadogRUMTests"
+        },
+        {
+          "displayName": "testAddViewLoadingTimeNoActiveView_thenNoEvent()",
+          "errorMessages": [],
+          "identifier": "MonitorTests/testAddViewLoadingTimeNoActiveView_thenNoEvent()",
+          "state": "Passed",
+          "targetName": "DatadogRUMTests"
+        },
+        {
+          "displayName": "testAddViewLoadingTimeMultipleTimes_thenLoadingTimeOverwritten()",
+          "errorMessages": [],
+          "identifier": "MonitorTests/testAddViewLoadingTimeMultipleTimes_thenLoadingTimeOverwritten()",
+          "state": "Passed",
+          "targetName": "DatadogRUMTests"
+        },
+        {
+          "displayName": "testHasReplaySnapshot_isGatedByTimeseriesCollectorAndResetOnNewSession()",
+          "errorMessages": [],
+          "identifier": "MonitorTests/testHasReplaySnapshot_isGatedByTimeseriesCollectorAndResetOnNewSession()",
+          "state": "Passed",
+          "targetName": "DatadogRUMTests"
+        },
+        {
+          "displayName": "testGivenUIKitViewWithAccessibilityIdentifier_whenSingleTouchEnds_itSendsRUMAction()",
+          "errorMessages": [],
+          "identifier": "RUMActionsHandlerTests/testGivenUIKitViewWithAccessibilityIdentifier_whenSingleTouchEnds_itSendsRUMAction()",
+          "state": "Passed",
+          "targetName": "DatadogRUMTests"
+        },
+        {
+          "displayName": "testGivenUIKitViewInScene_whenSingleTouchEnds_itTargetsThatScene()",
+          "errorMessages": [],
+          "identifier": "RUMActionsHandlerTests/testGivenUIKitViewInScene_whenSingleTouchEnds_itTargetsThatScene()",
+          "state": "Passed",
+          "targetName": "DatadogRUMTests"
+        },
+        {
+          "displayName": "testGivenForeignCoreDispatch_whenConsumerHasDifferentApplication_itKeepsOwnContext()",
+          "errorMessages": [],
+          "identifier": "RUMActionsHandlerTests/testGivenForeignCoreDispatch_whenConsumerHasDifferentApplication_itKeepsOwnContext()",
+          "state": "Passed",
+          "targetName": "DatadogRUMTests"
+        },
+        {
+          "displayName": "testGivenForeignCoreDispatch_whenConsumerHasSameApplication_itKeepsOwnSession()",
+          "errorMessages": [],
+          "identifier": "RUMActionsHandlerTests/testGivenForeignCoreDispatch_whenConsumerHasSameApplication_itKeepsOwnSession()",
+          "state": "Passed",
+          "targetName": "DatadogRUMTests"
+        },
+        {
+          "displayName": "testGivenForeignCoreDispatchWithNoView_itDoesNotSuppressConsumerContext()",
+          "errorMessages": [],
+          "identifier": "RUMActionsHandlerTests/testGivenForeignCoreDispatchWithNoView_itDoesNotSuppressConsumerContext()",
+          "state": "Passed",
+          "targetName": "DatadogRUMTests"
+        },
+        {
+          "displayName": "testGivenUIKitViewInScene_whenDispatchingEvent_itScopesThatScenesRUMContext()",
+          "errorMessages": [],
+          "identifier": "RUMActionsHandlerTests/testGivenUIKitViewInScene_whenDispatchingEvent_itScopesThatScenesRUMContext()",
+          "state": "Passed",
+          "targetName": "DatadogRUMTests"
+        },
+        {
+          "displayName": "testGivenUIEventContextHandoffDisabled_whenDispatchingSceneEvent_itKeepsActionOnlyBehavior()",
+          "errorMessages": [],
+          "identifier": "RUMActionsHandlerTests/testGivenUIEventContextHandoffDisabled_whenDispatchingSceneEvent_itKeepsActionOnlyBehavior()",
+          "state": "Passed",
+          "targetName": "DatadogRUMTests"
+        },
+        {
+          "displayName": "testGivenActionPredicateRejectsTouch_whenDispatchingEvent_itStillScopesItsScene()",
+          "errorMessages": [],
+          "identifier": "RUMActionsHandlerTests/testGivenActionPredicateRejectsTouch_whenDispatchingEvent_itStillScopesItsScene()",
+          "state": "Passed",
+          "targetName": "DatadogRUMTests"
+        },
+        {
+          "displayName": "testGivenSceneEventScope_whenCreatingChildTask_itInheritsContextButDetachedTaskDoesNot()",
+          "errorMessages": [],
+          "identifier": "RUMActionsHandlerTests/testGivenSceneEventScope_whenCreatingChildTask_itInheritsContextButDetachedTaskDoesNot()",
+          "state": "Passed",
+          "targetName": "DatadogRUMTests"
+        },
+        {
+          "displayName": "testGivenMultiTouchEvent_whenAllTouchesShareScene_itScopesWithoutCreatingTapAction()",
+          "errorMessages": [],
+          "identifier": "RUMActionsHandlerTests/testGivenMultiTouchEvent_whenAllTouchesShareScene_itScopesWithoutCreatingTapAction()",
+          "state": "Passed",
+          "targetName": "DatadogRUMTests"
+        },
+        {
+          "displayName": "testGivenUIKitViewWithNoAccessibilityIdentifier_whenSingleTouchEnds_itSendsRUMAction()",
+          "errorMessages": [],
+          "identifier": "RUMActionsHandlerTests/testGivenUIKitViewWithNoAccessibilityIdentifier_whenSingleTouchEnds_itSendsRUMAction()",
+          "state": "Passed",
+          "targetName": "DatadogRUMTests"
+        },
+        {
+          "displayName": "testWhenTapViewIsInRegistry_itLooksUpHeatmapByTapView()",
+          "errorMessages": [],
+          "identifier": "RUMActionsHandlerTests/testWhenTapViewIsInRegistry_itLooksUpHeatmapByTapView()",
+          "state": "Passed",
+          "targetName": "DatadogRUMTests"
+        },
+        {
+          "displayName": "testWhenTapViewIsNotInRegistry_itDoesNotAttachHeatmapAttributes()",
+          "errorMessages": [],
+          "identifier": "RUMActionsHandlerTests/testWhenTapViewIsNotInRegistry_itDoesNotAttachHeatmapAttributes()",
+          "state": "Passed",
+          "targetName": "DatadogRUMTests"
+        },
+        {
+          "displayName": "testGivenAnyUIKitViewWithUnrecognizedHierarchy_whenTouchEnds_itGetsIgnored()",
+          "errorMessages": [],
+          "identifier": "RUMActionsHandlerTests/testGivenAnyUIKitViewWithUnrecognizedHierarchy_whenTouchEnds_itGetsIgnored()",
+          "state": "Passed",
+          "targetName": "DatadogRUMTests"
+        },
+        {
+          "displayName": "testGivenAnyUIKitViewPresentedInKeyboardWindow_whenTouchEnds_itGetsIgnoredForPrivacyReason()",
+          "errorMessages": [],
+          "identifier": "RUMActionsHandlerTests/testGivenAnyUIKitViewPresentedInKeyboardWindow_whenTouchEnds_itGetsIgnoredForPrivacyReason()",
+          "state": "Passed",
+          "targetName": "DatadogRUMTests"
+        },
+        {
+          "displayName": "testGivenAnyUIControlTouchNotAttachedToAnyWindow_itGetsIgnoredForPrivacyReason()",
+          "errorMessages": [],
+          "identifier": "RUMActionsHandlerTests/testGivenAnyUIControlTouchNotAttachedToAnyWindow_itGetsIgnoredForPrivacyReason()",
+          "state": "Passed",
+          "targetName": "DatadogRUMTests"
+        },
+        {
+          "displayName": "testItIgnoresSingleUIKitTouchEventWithPhaseOtherThanEnded()",
+          "errorMessages": [],
+          "identifier": "RUMActionsHandlerTests/testItIgnoresSingleUIKitTouchEventWithPhaseOtherThanEnded()",
+          "state": "Passed",
+          "targetName": "DatadogRUMTests"
+        },
+        {
+          "displayName": "testItIgnoresUIKitMultitouchEvents()",
+          "errorMessages": [],
+          "identifier": "RUMActionsHandlerTests/testItIgnoresUIKitMultitouchEvents()",
+          "state": "Passed",
+          "targetName": "DatadogRUMTests"
+        },
+        {
+          "displayName": "testItIgnoresUIKitEventsWithNoTouch()",
+          "errorMessages": [],
+          "identifier": "RUMActionsHandlerTests/testItIgnoresUIKitEventsWithNoTouch()",
+          "state": "Passed",
+          "targetName": "DatadogRUMTests"
+        },
+        {
+          "displayName": "testGivenUIKitTouchEvent_itAppliesUserAttributesAndCustomName()",
+          "errorMessages": [],
+          "identifier": "RUMActionsHandlerTests/testGivenUIKitTouchEvent_itAppliesUserAttributesAndCustomName()",
+          "state": "Passed",
+          "targetName": "DatadogRUMTests"
+        },
+        {
+          "displayName": "testGivenUIKitActionPredicateReturnsNil_itDoesntSendTapAction()",
+          "errorMessages": [],
+          "identifier": "RUMActionsHandlerTests/testGivenUIKitActionPredicateReturnsNil_itDoesntSendTapAction()",
+          "state": "Passed",
+          "targetName": "DatadogRUMTests"
+        },
+        {
+          "displayName": "testGivenUIKitPressEvent_whenSinglePressEnds_itSendsRUMAction()",
+          "errorMessages": [],
+          "identifier": "RUMActionsHandlerTests/testGivenUIKitPressEvent_whenSinglePressEnds_itSendsRUMAction()",
+          "state": "Passed",
+          "targetName": "DatadogRUMTests"
+        },
+        {
+          "displayName": "testGivenAnyUIKitViewPresentedInKeyboardWindow_whenPressEnds_itGetsIgnoredForPrivacyReason()",
+          "errorMessages": [],
+          "identifier": "RUMActionsHandlerTests/testGivenAnyUIKitViewPresentedInKeyboardWindow_whenPressEnds_itGetsIgnoredForPrivacyReason()",
+          "state": "Passed",
+          "targetName": "DatadogRUMTests"
+        },
+        {
+          "displayName": "testGivenAnyUIControlPressNotAttachedToAnyWindow_itGetsIgnoredForPrivacyReason()",
+          "errorMessages": [],
+          "identifier": "RUMActionsHandlerTests/testGivenAnyUIControlPressNotAttachedToAnyWindow_itGetsIgnoredForPrivacyReason()",
+          "state": "Passed",
+          "targetName": "DatadogRUMTests"
+        },
+        {
+          "displayName": "testItIgnoresSingleUIKitPressEventWithPhaseOtherThanEnded()",
+          "errorMessages": [],
+          "identifier": "RUMActionsHandlerTests/testItIgnoresSingleUIKitPressEventWithPhaseOtherThanEnded()",
+          "state": "Passed",
+          "targetName": "DatadogRUMTests"
+        },
+        {
+          "displayName": "testItIgnoresUIKitMultiPressEvents()",
+          "errorMessages": [],
+          "identifier": "RUMActionsHandlerTests/testItIgnoresUIKitMultiPressEvents()",
+          "state": "Passed",
+          "targetName": "DatadogRUMTests"
+        },
+        {
+          "displayName": "testGivenUIKitPressEvent_ItAppliesUserAttributesAndCustomName()",
+          "errorMessages": [],
+          "identifier": "RUMActionsHandlerTests/testGivenUIKitPressEvent_ItAppliesUserAttributesAndCustomName()",
+          "state": "Passed",
+          "targetName": "DatadogRUMTests"
+        },
+        {
+          "displayName": "testGivenUIKitActionPredicateReturnsNil_itDoesntSendClickAction()",
+          "errorMessages": [],
+          "identifier": "RUMActionsHandlerTests/testGivenUIKitActionPredicateReturnsNil_itDoesntSendClickAction()",
+          "state": "Passed",
+          "targetName": "DatadogRUMTests"
+        },
+        {
+          "displayName": "testWhenSwiftUIViewModifierIsTapped_itSendsRUMAction()",
+          "errorMessages": [],
+          "identifier": "RUMActionsHandlerTests/testWhenSwiftUIViewModifierIsTapped_itSendsRUMAction()",
+          "state": "Passed",
+          "targetName": "DatadogRUMTests"
+        },
+        {
+          "displayName": "testWhenSwiftUIViewModifierIsTappedInScene_itTargetsThatScene()",
+          "errorMessages": [],
+          "identifier": "RUMActionsHandlerTests/testWhenSwiftUIViewModifierIsTappedInScene_itTargetsThatScene()",
+          "state": "Passed",
+          "targetName": "DatadogRUMTests"
+        },
+        {
+          "displayName": "testCallingExtensionMethodsIsSafe()",
+          "errorMessages": [],
+          "identifier": "RUMMonitorProtocol_ConvenienceTests/testCallingExtensionMethodsIsSafe()",
+          "state": "Passed",
+          "targetName": "DatadogRUMTests"
+        },
+        {
+          "displayName": "testInternalInterfaceIsAvailableOnMonitor()",
+          "errorMessages": [],
+          "identifier": "RUMMonitorProtocol_InternalTests/testInternalInterfaceIsAvailableOnMonitor()",
+          "state": "Passed",
+          "targetName": "DatadogRUMTests"
+        },
+        {
+          "displayName": "testInternalInterfaceIsNotAvailableOnNOPMonitor()",
+          "errorMessages": [],
+          "identifier": "RUMMonitorProtocol_InternalTests/testInternalInterfaceIsNotAvailableOnNOPMonitor()",
+          "state": "Passed",
+          "targetName": "DatadogRUMTests"
+        },
+        {
+          "displayName": "testInternalCurrentViewCommandsUseExecutionHandoffAndRepresentativeFallback()",
+          "errorMessages": [],
+          "identifier": "RUMMonitorProtocol_InternalTests/testInternalCurrentViewCommandsUseExecutionHandoffAndRepresentativeFallback()",
+          "state": "Passed",
+          "targetName": "DatadogRUMTests"
+        },
+        {
+          "displayName": "testInternalResourceMetricsRemainOwnerKeyRouted()",
+          "errorMessages": [],
+          "identifier": "RUMMonitorProtocol_InternalTests/testInternalResourceMetricsRemainOwnerKeyRouted()",
+          "state": "Passed",
+          "targetName": "DatadogRUMTests"
+        },
+        {
+          "displayName": "testGivenFirstPartyInterception_withSampledTrace_itInjectDDTraceHeaders()",
+          "errorMessages": [],
+          "identifier": "URLSessionRUMResourcesHandlerTests/testGivenFirstPartyInterception_withSampledTrace_itInjectDDTraceHeaders()",
+          "state": "Passed",
+          "targetName": "DatadogRUMTests"
+        },
+        {
+          "displayName": "testGivenFirstPartyInterception_withSampledTrace_itInjectB3TraceHeaders()",
+          "errorMessages": [],
+          "identifier": "URLSessionRUMResourcesHandlerTests/testGivenFirstPartyInterception_withSampledTrace_itInjectB3TraceHeaders()",
+          "state": "Passed",
+          "targetName": "DatadogRUMTests"
+        },
+        {
+          "displayName": "testGivenFirstPartyInterception_withSampledTrace_itInjectB3MultiTraceHeaders()",
+          "errorMessages": [],
+          "identifier": "URLSessionRUMResourcesHandlerTests/testGivenFirstPartyInterception_withSampledTrace_itInjectB3MultiTraceHeaders()",
+          "state": "Passed",
+          "targetName": "DatadogRUMTests"
+        },
+        {
+          "displayName": "testGivenFirstPartyInterception_withSampledTrace_itInjectW3CTraceHeaders()",
+          "errorMessages": [],
+          "identifier": "URLSessionRUMResourcesHandlerTests/testGivenFirstPartyInterception_withSampledTrace_itInjectW3CTraceHeaders()",
+          "state": "Passed",
+          "targetName": "DatadogRUMTests"
+        },
+        {
+          "displayName": "testGivenFirstPartyInterception_withRejectedTrace_itDoesNotInjectDDTraceHeaders()",
+          "errorMessages": [],
+          "identifier": "URLSessionRUMResourcesHandlerTests/testGivenFirstPartyInterception_withRejectedTrace_itDoesNotInjectDDTraceHeaders()",
+          "state": "Passed",
+          "targetName": "DatadogRUMTests"
+        },
+        {
+          "displayName": "testGivenFirstPartyInterception_withRejectedTrace_itDoesNotInjectB3TraceHeaders()",
+          "errorMessages": [],
+          "identifier": "URLSessionRUMResourcesHandlerTests/testGivenFirstPartyInterception_withRejectedTrace_itDoesNotInjectB3TraceHeaders()",
+          "state": "Passed",
+          "targetName": "DatadogRUMTests"
+        },
+        {
+          "displayName": "testGivenFirstPartyInterception_withRejectedTrace_itDoesNotInjectB3MultiTraceHeaders()",
+          "errorMessages": [],
+          "identifier": "URLSessionRUMResourcesHandlerTests/testGivenFirstPartyInterception_withRejectedTrace_itDoesNotInjectB3MultiTraceHeaders()",
+          "state": "Passed",
+          "targetName": "DatadogRUMTests"
+        },
+        {
+          "displayName": "testGivenFirstPartyInterception_withRejectedTrace_itDoesNotInjectW3CTraceHeaders()",
+          "errorMessages": [],
+          "identifier": "URLSessionRUMResourcesHandlerTests/testGivenFirstPartyInterception_withRejectedTrace_itDoesNotInjectW3CTraceHeaders()",
+          "state": "Passed",
+          "targetName": "DatadogRUMTests"
+        },
+        {
+          "displayName": "testGivenFirstPartyInterceptionAndShouldSetBaggageHeaderAndBaggageHeaderValuesToSet_withSampledTrace_itDoesNotOverwriteTraceHeadersExceptBaggage()",
+          "errorMessages": [],
+          "identifier": "URLSessionRUMResourcesHandlerTests/testGivenFirstPartyInterceptionAndShouldSetBaggageHeaderAndBaggageHeaderValuesToSet_withSampledTrace_itDoesNotOverwriteTraceHeadersExceptBaggage()",
+          "state": "Passed",
+          "targetName": "DatadogRUMTests"
+        },
+        {
+          "displayName": "testGivenFirstPartyInterceptionAndShouldNotSetBaggageHeaderAndBaggageHeaderValuesToSet_withSampledTrace_itDoesNotOverwriteTraceHeaders()",
+          "errorMessages": [],
+          "identifier": "URLSessionRUMResourcesHandlerTests/testGivenFirstPartyInterceptionAndShouldNotSetBaggageHeaderAndBaggageHeaderValuesToSet_withSampledTrace_itDoesNotOverwriteTraceHeaders()",
+          "state": "Passed",
+          "targetName": "DatadogRUMTests"
+        },
+        {
+          "displayName": "testGivenFirstPartyInterceptionAndShouldSetBaggageHeaderAndBaggageHeaderValuesEmpty_withSampledTrace_itDoesNotOverwriteTraceHeaders()",
+          "errorMessages": [],
+          "identifier": "URLSessionRUMResourcesHandlerTests/testGivenFirstPartyInterceptionAndShouldSetBaggageHeaderAndBaggageHeaderValuesEmpty_withSampledTrace_itDoesNotOverwriteTraceHeaders()",
+          "state": "Passed",
+          "targetName": "DatadogRUMTests"
+        },
+        {
+          "displayName": "testGivenTaskInterceptionWithNoSpanContext_whenInterceptionStarts_itStartsRUMResource()",
+          "errorMessages": [],
+          "identifier": "URLSessionRUMResourcesHandlerTests/testGivenTaskInterceptionWithNoSpanContext_whenInterceptionStarts_itStartsRUMResource()",
+          "state": "Passed",
+          "targetName": "DatadogRUMTests"
+        },
+        {
+          "displayName": "testGivenTaskInterceptionWithSpanContext_whenInterceptionStarts_itStartsRUMResource()",
+          "errorMessages": [],
+          "identifier": "URLSessionRUMResourcesHandlerTests/testGivenTaskInterceptionWithSpanContext_whenInterceptionStarts_itStartsRUMResource()",
+          "state": "Passed",
+          "targetName": "DatadogRUMTests"
+        },
+        {
+          "displayName": "testGivenCapturedRUMView_whenInterceptionStartsAndCompletes_itKeepsTheResourceOnThatView()",
+          "errorMessages": [],
+          "identifier": "URLSessionRUMResourcesHandlerTests/testGivenCapturedRUMView_whenInterceptionStartsAndCompletes_itKeepsTheResourceOnThatView()",
+          "state": "Passed",
+          "targetName": "DatadogRUMTests"
+        },
+        {
+          "displayName": "testGivenPrestartedResource_whenAnotherHandlerTraceWins_itUsesTheWinningTraceContext()",
+          "errorMessages": [],
+          "identifier": "URLSessionRUMResourcesHandlerTests/testGivenPrestartedResource_whenAnotherHandlerTraceWins_itUsesTheWinningTraceContext()",
+          "state": "Passed",
+          "targetName": "DatadogRUMTests"
+        },
+        {
+          "displayName": "testGivenSourceSceneWithoutRUMView_whenInterceptionRuns_itKeepsTheResourceOnThatScene()",
+          "errorMessages": [],
+          "identifier": "URLSessionRUMResourcesHandlerTests/testGivenSourceSceneWithoutRUMView_whenInterceptionRuns_itKeepsTheResourceOnThatScene()",
+          "state": "Passed",
+          "targetName": "DatadogRUMTests"
+        },
+        {
+          "displayName": "testGivenThirdPartyRequestDuringUIEvent_whenNetworkFeatureIntercepts_itCarriesSourceScene()",
+          "errorMessages": [],
+          "identifier": "URLSessionRUMResourcesHandlerTests/testGivenThirdPartyRequestDuringUIEvent_whenNetworkFeatureIntercepts_itCarriesSourceScene()",
+          "state": "Passed",
+          "targetName": "DatadogRUMTests"
+        },
+        {
+          "displayName": "testGivenForeignCoreDispatch_resourceStartAndCompletionKeepConsumerOwnership()",
+          "errorMessages": [],
+          "identifier": "URLSessionRUMResourcesHandlerTests/testGivenForeignCoreDispatch_resourceStartAndCompletionKeepConsumerOwnership()",
+          "state": "Passed",
+          "targetName": "DatadogRUMTests"
+        },
+        {
+          "displayName": "testGivenInterleavedCapturedRUMViews_whenInterceptionsComplete_itDoesNotSwapResourceOwners()",
+          "errorMessages": [],
+          "identifier": "URLSessionRUMResourcesHandlerTests/testGivenInterleavedCapturedRUMViews_whenInterceptionsComplete_itDoesNotSwapResourceOwners()",
+          "state": "Passed",
+          "targetName": "DatadogRUMTests"
+        },
+        {
+          "displayName": "testGivenCapturedRUMView_whenInterceptionCompletesWithError_itKeepsTheErrorOnThatView()",
+          "errorMessages": [],
+          "identifier": "URLSessionRUMResourcesHandlerTests/testGivenCapturedRUMView_whenInterceptionCompletesWithError_itKeepsTheErrorOnThatView()",
+          "state": "Passed",
+          "targetName": "DatadogRUMTests"
+        },
+        {
+          "displayName": "testGivenNoValidCapturedRUMView_whenInterceptionRuns_itKeepsLegacyRepresentativeTarget()",
+          "errorMessages": [],
+          "identifier": "URLSessionRUMResourcesHandlerTests/testGivenNoValidCapturedRUMView_whenInterceptionRuns_itKeepsLegacyRepresentativeTarget()",
+          "state": "Passed",
+          "targetName": "DatadogRUMTests"
+        },
+        {
+          "displayName": "testGivenTaskInterceptionWithMetricsAndResponse_whenInterceptionCompletes_itStopsRUMResourceWithMetrics()",
+          "errorMessages": [],
+          "identifier": "URLSessionRUMResourcesHandlerTests/testGivenTaskInterceptionWithMetricsAndResponse_whenInterceptionCompletes_itStopsRUMResourceWithMetrics()",
+          "state": "Passed",
+          "targetName": "DatadogRUMTests"
+        },
+        {
+          "displayName": "testGivenTaskInterceptionWithZeroMetricsSize_whenInterceptionCompletes_itFallsBackToResponseSize()",
+          "errorMessages": [],
+          "identifier": "URLSessionRUMResourcesHandlerTests/testGivenTaskInterceptionWithZeroMetricsSize_whenInterceptionCompletes_itFallsBackToResponseSize()",
+          "state": "Passed",
+          "targetName": "DatadogRUMTests"
+        },
+        {
+          "displayName": "testGivenTaskInterceptionWithLocalCacheHitMetrics_whenInterceptionCompletes_itSetsLocalCacheHitAttribute()",
+          "errorMessages": [],
+          "identifier": "URLSessionRUMResourcesHandlerTests/testGivenTaskInterceptionWithLocalCacheHitMetrics_whenInterceptionCompletes_itSetsLocalCacheHitAttribute()",
+          "state": "Passed",
+          "targetName": "DatadogRUMTests"
+        },
+        {
+          "displayName": "testGivenTaskInterceptionWithoutLocalCacheHitMetrics_whenInterceptionCompletes_itOmitsLocalCacheHitAttribute()",
+          "errorMessages": [],
+          "identifier": "URLSessionRUMResourcesHandlerTests/testGivenTaskInterceptionWithoutLocalCacheHitMetrics_whenInterceptionCompletes_itOmitsLocalCacheHitAttribute()",
+          "state": "Passed",
+          "targetName": "DatadogRUMTests"
+        },
+        {
+          "displayName": "testGivenTaskInterceptionWithMetricsAndError_whenInterceptionCompletes_itStopsRUMResourceWithErrorAndMetrics()",
+          "errorMessages": [],
+          "identifier": "URLSessionRUMResourcesHandlerTests/testGivenTaskInterceptionWithMetricsAndError_whenInterceptionCompletes_itStopsRUMResourceWithErrorAndMetrics()",
+          "state": "Passed",
+          "targetName": "DatadogRUMTests"
+        },
+        {
+          "displayName": "testGivenTaskInterceptionWithLocalCacheHitMetricsAndError_whenInterceptionCompletes_itOmitsLocalCacheHitAttributeFromErrorCommand()",
+          "errorMessages": [],
+          "identifier": "URLSessionRUMResourcesHandlerTests/testGivenTaskInterceptionWithLocalCacheHitMetricsAndError_whenInterceptionCompletes_itOmitsLocalCacheHitAttributeFromErrorCommand()",
+          "state": "Passed",
+          "targetName": "DatadogRUMTests"
+        },
+        {
+          "displayName": "testGivenRUMAttributesProviderRegistered_whenInterceptionCompletesWithResponse_itAddsCustomRUMAttributes()",
+          "errorMessages": [],
+          "identifier": "URLSessionRUMResourcesHandlerTests/testGivenRUMAttributesProviderRegistered_whenInterceptionCompletesWithResponse_itAddsCustomRUMAttributes()",
+          "state": "Passed",
+          "targetName": "DatadogRUMTests"
+        },
+        {
+          "displayName": "testGivenTaskInterceptionWithError_whenInterceptionCompletes_itAsksForCustomRUMAttributes()",
+          "errorMessages": [],
+          "identifier": "URLSessionRUMResourcesHandlerTests/testGivenTaskInterceptionWithError_whenInterceptionCompletes_itAsksForCustomRUMAttributes()",
+          "state": "Passed",
+          "targetName": "DatadogRUMTests"
+        },
+        {
+          "displayName": "testGivenAllTracingHeaderTypes_itUsesTheSameIds()",
+          "errorMessages": [],
+          "identifier": "URLSessionRUMResourcesHandlerTests/testGivenAllTracingHeaderTypes_itUsesTheSameIds()",
+          "state": "Passed",
+          "targetName": "DatadogRUMTests"
+        },
+        {
+          "displayName": "testGivenRequestWithExistingBaggageHeader_whenTraceContextIsInjected_itMergesBaggageHeaders()",
+          "errorMessages": [],
+          "identifier": "URLSessionRUMResourcesHandlerTests/testGivenRequestWithExistingBaggageHeader_whenTraceContextIsInjected_itMergesBaggageHeaders()",
+          "state": "Passed",
+          "targetName": "DatadogRUMTests"
+        },
+        {
+          "displayName": "testGivenRequestWithExistingBaggageHeader_whenTraceContextIsInjectedWithW3C_itMergesBaggageHeaders()",
+          "errorMessages": [],
+          "identifier": "URLSessionRUMResourcesHandlerTests/testGivenRequestWithExistingBaggageHeader_whenTraceContextIsInjectedWithW3C_itMergesBaggageHeaders()",
+          "state": "Passed",
+          "targetName": "DatadogRUMTests"
+        },
+        {
+          "displayName": "testGivenRequestWithComplexBaggageHeader_whenTraceContextIsInjected_itMergesBaggageHeadersCorrectly()",
+          "errorMessages": [],
+          "identifier": "URLSessionRUMResourcesHandlerTests/testGivenRequestWithComplexBaggageHeader_whenTraceContextIsInjected_itMergesBaggageHeadersCorrectly()",
+          "state": "Passed",
+          "targetName": "DatadogRUMTests"
+        },
+        {
+          "displayName": "testGivenRequestWithoutBaggageHeader_whenTraceContextIsInjected_itAddsBaggageHeader()",
+          "errorMessages": [],
+          "identifier": "URLSessionRUMResourcesHandlerTests/testGivenRequestWithoutBaggageHeader_whenTraceContextIsInjected_itAddsBaggageHeader()",
+          "state": "Passed",
+          "targetName": "DatadogRUMTests"
+        },
+        {
+          "displayName": "testGivenRequestWithBaggageHeader_whenMultipleHeaderTypesAreInjected_itMergesBaggageOnlyOnce()",
+          "errorMessages": [],
+          "identifier": "URLSessionRUMResourcesHandlerTests/testGivenRequestWithBaggageHeader_whenMultipleHeaderTypesAreInjected_itMergesBaggageOnlyOnce()",
+          "state": "Passed",
+          "targetName": "DatadogRUMTests"
+        }
+      ],
+      "schemeName": "DatadogRUM",
+      "summary": "109 tests: 109 passed, 0 failed, 0 skipped, 0 expected failures, 0 not run",
+      "totalResults": 109,
+      "truncated": true,
+      "xcresultBundlePath": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/ActionArtifacts/default/RunSomeTests/Test-DatadogRUM-2026.09.17_11-24-53-+0100.xcresult"
+    },
+    "exp166LogsSuite": {
+      "counts": {
+        "expectedFailures": 0,
+        "failed": 0,
+        "notRun": 0,
+        "passed": 29,
+        "skipped": 0,
+        "total": 29
+      },
+      "fullConsoleLogsPath": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/ActionArtifacts/default/RunSomeTests/test-console-log-2026-09-17T11-32-59+01-00.txt",
+      "fullSummaryPath": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/ActionArtifacts/default/RunSomeTests/36A14328-0DC8-4749-ABDD-61068EF54489.txt",
+      "results": [
+        {
+          "displayName": "testWhenNonErrorLogged_itDoesNotPostsToMessageBus()",
+          "errorMessages": [],
+          "identifier": "RemoteLoggerTests/testWhenNonErrorLogged_itDoesNotPostsToMessageBus()",
+          "state": "Passed",
+          "targetName": "DatadogLogsTests"
+        },
+        {
+          "displayName": "testWhenErrorLogged_itPostsToMessageBus()",
+          "errorMessages": [],
+          "identifier": "RemoteLoggerTests/testWhenErrorLogged_itPostsToMessageBus()",
+          "state": "Passed",
+          "targetName": "DatadogLogsTests"
+        },
+        {
+          "displayName": "testWhenAttributesContainIncludeBinaryImages_itPostsBinaryImagesToMessageBus()",
+          "errorMessages": [],
+          "identifier": "RemoteLoggerTests/testWhenAttributesContainIncludeBinaryImages_itPostsBinaryImagesToMessageBus()",
+          "state": "Passed",
+          "targetName": "DatadogLogsTests"
+        },
+        {
+          "displayName": "testWhenBinaryImagesGenerationFails_itReportsErrorToTelemetryAndOmitsBinaryImages()",
+          "errorMessages": [],
+          "identifier": "RemoteLoggerTests/testWhenBinaryImagesGenerationFails_itReportsErrorToTelemetryAndOmitsBinaryImages()",
+          "state": "Passed",
+          "targetName": "DatadogLogsTests"
+        },
+        {
+          "displayName": "testWhenErrorLogged_itPostsToMessageBus_withOtherCrossPlatformAttributesIntact()",
+          "errorMessages": [],
+          "identifier": "RemoteLoggerTests/testWhenErrorLogged_itPostsToMessageBus_withOtherCrossPlatformAttributesIntact()",
+          "state": "Passed",
+          "targetName": "DatadogLogsTests"
+        },
+        {
+          "displayName": "testWhenErrorLoggedFromInternal_itPostsToMessageBus_withSourceTypeInjected()",
+          "errorMessages": [],
+          "identifier": "RemoteLoggerTests/testWhenErrorLoggedFromInternal_itPostsToMessageBus_withSourceTypeInjected()",
+          "state": "Passed",
+          "targetName": "DatadogLogsTests"
+        },
+        {
+          "displayName": "testWhenCriticalLoggedFromInternal_itCallCompletion()",
+          "errorMessages": [],
+          "identifier": "RemoteLoggerTests/testWhenCriticalLoggedFromInternal_itCallCompletion()",
+          "state": "Passed",
+          "targetName": "DatadogLogsTests"
+        },
+        {
+          "displayName": "testWhenAddingAndRemovingLoggerAttributes_itSendsLogsWithCurrentAttributes()",
+          "errorMessages": [],
+          "identifier": "RemoteLoggerTests/testWhenAddingAndRemovingLoggerAttributes_itSendsLogsWithCurrentAttributes()",
+          "state": "Passed",
+          "targetName": "DatadogLogsTests"
+        },
+        {
+          "displayName": "testGivenGlobalAttributeAvailable_whenSendingLog_itSendsLogWithGlobalAttribute()",
+          "errorMessages": [],
+          "identifier": "RemoteLoggerTests/testGivenGlobalAttributeAvailable_whenSendingLog_itSendsLogWithGlobalAttribute()",
+          "state": "Passed",
+          "targetName": "DatadogLogsTests"
+        },
+        {
+          "displayName": "testGivenGlobalAndLoggerAttributeAvailable_whenSendingLog_itSendsLogWithLoggerAttribute()",
+          "errorMessages": [],
+          "identifier": "RemoteLoggerTests/testGivenGlobalAndLoggerAttributeAvailable_whenSendingLog_itSendsLogWithLoggerAttribute()",
+          "state": "Passed",
+          "targetName": "DatadogLogsTests"
+        },
+        {
+          "displayName": "testGivenGlobalAndLoggerAndLogAttributeAvailable_whenSendingLog_itSendsLogWithLogAttribute()",
+          "errorMessages": [],
+          "identifier": "RemoteLoggerTests/testGivenGlobalAndLoggerAndLogAttributeAvailable_whenSendingLog_itSendsLogWithLogAttribute()",
+          "state": "Passed",
+          "targetName": "DatadogLogsTests"
+        },
+        {
+          "displayName": "testItSendsGlobalAttributesErrorAlongWithErrorLog()",
+          "errorMessages": [],
+          "identifier": "RemoteLoggerTests/testItSendsGlobalAttributesErrorAlongWithErrorLog()",
+          "state": "Passed",
+          "targetName": "DatadogLogsTests"
+        },
+        {
+          "displayName": "testWhenAttributesContainErrorFingerprint_itAddsItToTheLogEvent()",
+          "errorMessages": [],
+          "identifier": "RemoteLoggerTests/testWhenAttributesContainErrorFingerprint_itAddsItToTheLogEvent()",
+          "state": "Passed",
+          "targetName": "DatadogLogsTests"
+        },
+        {
+          "displayName": "testWhenAttributesContainIncludeBinaryImages_itAddsBinaryImagesToLogEvent()",
+          "errorMessages": [],
+          "identifier": "RemoteLoggerTests/testWhenAttributesContainIncludeBinaryImages_itAddsBinaryImagesToLogEvent()",
+          "state": "Passed",
+          "targetName": "DatadogLogsTests"
+        },
+        {
+          "displayName": "testWhenAddingAndRemovingLoggerTags_itSendsLogsWithCurrentTags()",
+          "errorMessages": [],
+          "identifier": "RemoteLoggerTests/testWhenAddingAndRemovingLoggerTags_itSendsLogsWithCurrentTags()",
+          "state": "Passed",
+          "targetName": "DatadogLogsTests"
+        },
+        {
+          "displayName": "testWhenRUMIntegrationIsEnabled_itSendsLogWithRUMContext()",
+          "errorMessages": [],
+          "identifier": "RemoteLoggerTests/testWhenRUMIntegrationIsEnabled_itSendsLogWithRUMContext()",
+          "state": "Passed",
+          "targetName": "DatadogLogsTests"
+        },
+        {
+          "displayName": "testWhenErrorIsLoggedWithRUMIntegration_itSendsCapturedViewToRUMMessage()",
+          "errorMessages": [],
+          "identifier": "RemoteLoggerTests/testWhenErrorIsLoggedWithRUMIntegration_itSendsCapturedViewToRUMMessage()",
+          "state": "Passed",
+          "targetName": "DatadogLogsTests"
+        },
+        {
+          "displayName": "testWhenErrorIsLoggedWithRUMSessionButNoView_itKeepsLegacyOffViewRouting()",
+          "errorMessages": [],
+          "identifier": "RemoteLoggerTests/testWhenErrorIsLoggedWithRUMSessionButNoView_itKeepsLegacyOffViewRouting()",
+          "state": "Passed",
+          "targetName": "DatadogLogsTests"
+        },
+        {
+          "displayName": "testWhenErrorIsLoggedWhileRUMViewIDIsEmpty_itKeepsLegacyOffViewRouting()",
+          "errorMessages": [],
+          "identifier": "RemoteLoggerTests/testWhenErrorIsLoggedWhileRUMViewIDIsEmpty_itKeepsLegacyOffViewRouting()",
+          "state": "Passed",
+          "targetName": "DatadogLogsTests"
+        },
+        {
+          "displayName": "testWhenCustomerAttributesCollideWithRUMRoutingMetadata_theyCannotControlMirrorRouting()",
+          "errorMessages": [],
+          "identifier": "RemoteLoggerTests/testWhenCustomerAttributesCollideWithRUMRoutingMetadata_theyCannotControlMirrorRouting()",
+          "state": "Passed",
+          "targetName": "DatadogLogsTests"
+        },
+        {
+          "displayName": "testGivenForeignCoreDispatch_logAndMirroredErrorKeepConsumerOwnership()",
+          "errorMessages": [],
+          "identifier": "RemoteLoggerTests/testGivenForeignCoreDispatch_logAndMirroredErrorKeepConsumerOwnership()",
+          "state": "Passed",
+          "targetName": "DatadogLogsTests"
+        },
+        {
+          "displayName": "testWhenErrorIsLoggedDuringSceneUIEvent_itUsesRequestLocalRUMContextForLogAndMirror()",
+          "errorMessages": [],
+          "identifier": "RemoteLoggerTests/testWhenErrorIsLoggedDuringSceneUIEvent_itUsesRequestLocalRUMContextForLogAndMirror()",
+          "state": "Passed",
+          "targetName": "DatadogLogsTests"
+        },
+        {
+          "displayName": "testWhenLoggedDuringUIEventWithoutSceneSnapshot_itDoesNotUseRepresentativeRUMContext()",
+          "errorMessages": [],
+          "identifier": "RemoteLoggerTests/testWhenLoggedDuringUIEventWithoutSceneSnapshot_itDoesNotUseRepresentativeRUMContext()",
+          "state": "Passed",
+          "targetName": "DatadogLogsTests"
+        },
+        {
+          "displayName": "testWhenPendingActionHasNoSceneSnapshot_itDoesNotAdoptRepresentativeAction()",
+          "errorMessages": [],
+          "identifier": "RemoteLoggerTests/testWhenPendingActionHasNoSceneSnapshot_itDoesNotAdoptRepresentativeAction()",
+          "state": "Passed",
+          "targetName": "DatadogLogsTests"
+        },
+        {
+          "displayName": "testWhenRUMIntegrationIsEnabled_withRUMContext_butSampledOut_itDoesNotSendTelemetryError()",
+          "errorMessages": [],
+          "identifier": "RemoteLoggerTests/testWhenRUMIntegrationIsEnabled_withRUMContext_butSampledOut_itDoesNotSendTelemetryError()",
+          "state": "Passed",
+          "targetName": "DatadogLogsTests"
+        },
+        {
+          "displayName": "testWhenRUMIntegrationIsEnabled_withNoRUMContext_itDoesNotSendTelemetryError()",
+          "errorMessages": [],
+          "identifier": "RemoteLoggerTests/testWhenRUMIntegrationIsEnabled_withNoRUMContext_itDoesNotSendTelemetryError()",
+          "state": "Passed",
+          "targetName": "DatadogLogsTests"
+        },
+        {
+          "displayName": "testWhenActiveSpanIntegrationIsEnabled_itSendsLogWithSpanContext()",
+          "errorMessages": [],
+          "identifier": "RemoteLoggerTests/testWhenActiveSpanIntegrationIsEnabled_itSendsLogWithSpanContext()",
+          "state": "Passed",
+          "targetName": "DatadogLogsTests"
+        },
+        {
+          "displayName": "testWhenActiveSpanIntegrationIsEnabled_withNoActiveSpan_itDoesNotSendTelemetryError()",
+          "errorMessages": [],
+          "identifier": "RemoteLoggerTests/testWhenActiveSpanIntegrationIsEnabled_withNoActiveSpan_itDoesNotSendTelemetryError()",
+          "state": "Passed",
+          "targetName": "DatadogLogsTests"
+        },
+        {
+          "displayName": "testWhenMultipleAttributesFailToEncode_itReplacesAllMalformedAttributesWithNull()",
+          "errorMessages": [],
+          "identifier": "RemoteLoggerTests/testWhenMultipleAttributesFailToEncode_itReplacesAllMalformedAttributesWithNull()",
+          "state": "Passed",
+          "targetName": "DatadogLogsTests"
+        }
+      ],
+      "schemeName": "DatadogLogs",
+      "summary": "29 tests: 29 passed, 0 failed, 0 skipped, 0 expected failures, 0 not run",
+      "totalResults": 29,
+      "truncated": false,
+      "xcresultBundlePath": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/ActionArtifacts/default/RunSomeTests/Test-DatadogLogs-2026.09.17_11-32-59-+0100.xcresult"
+    },
+    "exp166TraceSuite": {
+      "counts": {
+        "expectedFailures": 0,
+        "failed": 0,
+        "notRun": 0,
+        "passed": 41,
+        "skipped": 0,
+        "total": 41
+      },
+      "fullConsoleLogsPath": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/ActionArtifacts/default/RunSomeTests/test-console-log-2026-09-17T11-34-33+01-00.txt",
+      "fullSummaryPath": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/ActionArtifacts/default/RunSomeTests/1BD4DB6F-63D3-4A06-BCD3-9DD8FE84A407.txt",
+      "results": [
+        {
+          "displayName": "testWhenSpanIsFinished_itWritesSpanEventToCore()",
+          "errorMessages": [],
+          "identifier": "DDSpanTests/testWhenSpanIsFinished_itWritesSpanEventToCore()",
+          "state": "Passed",
+          "targetName": "DatadogTraceTests"
+        },
+        {
+          "displayName": "testWhenSpanStartsDuringSceneUIEvent_itUsesThatScenesRUMContext()",
+          "errorMessages": [],
+          "identifier": "DDSpanTests/testWhenSpanStartsDuringSceneUIEvent_itUsesThatScenesRUMContext()",
+          "state": "Passed",
+          "targetName": "DatadogTraceTests"
+        },
+        {
+          "displayName": "testWhenSpanStartsDuringSceneUIEventWithoutSnapshot_itDoesNotUseRepresentativeRUMContext()",
+          "errorMessages": [],
+          "identifier": "DDSpanTests/testWhenSpanStartsDuringSceneUIEventWithoutSnapshot_itDoesNotUseRepresentativeRUMContext()",
+          "state": "Passed",
+          "targetName": "DatadogTraceTests"
+        },
+        {
+          "displayName": "testWhenPendingActionHasNoSceneSnapshot_spanDoesNotAdoptRepresentativeAction()",
+          "errorMessages": [],
+          "identifier": "DDSpanTests/testWhenPendingActionHasNoSceneSnapshot_spanDoesNotAdoptRepresentativeAction()",
+          "state": "Passed",
+          "targetName": "DatadogTraceTests"
+        },
+        {
+          "displayName": "testGivenForeignCoreDispatch_spanKeepsConsumerOwnership()",
+          "errorMessages": [],
+          "identifier": "DDSpanTests/testGivenForeignCoreDispatch_spanKeepsConsumerOwnership()",
+          "state": "Passed",
+          "targetName": "DatadogTraceTests"
+        },
+        {
+          "displayName": "testWhenSettingCustomOperationName_itOverwritesOriginalName()",
+          "errorMessages": [],
+          "identifier": "DDSpanTests/testWhenSettingCustomOperationName_itOverwritesOriginalName()",
+          "state": "Passed",
+          "targetName": "DatadogTraceTests"
+        },
+        {
+          "displayName": "testWhenSettingCustomTags_theyAreMergedWithDefaultTags()",
+          "errorMessages": [],
+          "identifier": "DDSpanTests/testWhenSettingCustomTags_theyAreMergedWithDefaultTags()",
+          "state": "Passed",
+          "targetName": "DatadogTraceTests"
+        },
+        {
+          "displayName": "testSettingBaggageItems()",
+          "errorMessages": [],
+          "identifier": "DDSpanTests/testSettingBaggageItems()",
+          "state": "Passed",
+          "targetName": "DatadogTraceTests"
+        },
+        {
+          "displayName": "testSpanCanBeSafelyAccessedFromDifferentThreads()",
+          "errorMessages": [],
+          "identifier": "DDSpanTests/testSpanCanBeSafelyAccessedFromDifferentThreads()",
+          "state": "Passed",
+          "targetName": "DatadogTraceTests"
+        },
+        {
+          "displayName": "testGivenFinishedSpan_whenCallingItsAPI_itPrintsErrors()",
+          "errorMessages": [],
+          "identifier": "DDSpanTests/testGivenFinishedSpan_whenCallingItsAPI_itPrintsErrors()",
+          "state": "Passed",
+          "targetName": "DatadogTraceTests"
+        },
+        {
+          "displayName": "testKeepTraceFunctionSetsExpectedSamplingDecision()",
+          "errorMessages": [],
+          "identifier": "DDSpanTests/testKeepTraceFunctionSetsExpectedSamplingDecision()",
+          "state": "Passed",
+          "targetName": "DatadogTraceTests"
+        },
+        {
+          "displayName": "testDropTraceFunctionSetsExpectedSamplingDecision()",
+          "errorMessages": [],
+          "identifier": "DDSpanTests/testDropTraceFunctionSetsExpectedSamplingDecision()",
+          "state": "Passed",
+          "targetName": "DatadogTraceTests"
+        },
+        {
+          "displayName": "testWhenMultipleSpanTagsFailToEncode_itSkipsAllMalformedTags()",
+          "errorMessages": [],
+          "identifier": "DDSpanTests/testWhenMultipleSpanTagsFailToEncode_itSkipsAllMalformedTags()",
+          "state": "Passed",
+          "targetName": "DatadogTraceTests"
+        },
+        {
+          "displayName": "testWhenOnlyMalformedSpanTagsAdded_itSendsSpanWithoutCustomTags()",
+          "errorMessages": [],
+          "identifier": "DDSpanTests/testWhenOnlyMalformedSpanTagsAdded_itSendsSpanWithoutCustomTags()",
+          "state": "Passed",
+          "targetName": "DatadogTraceTests"
+        },
+        {
+          "displayName": "testSpanResourceNameDefault()",
+          "errorMessages": [],
+          "identifier": "OTelSpanTests/testSpanResourceNameDefault()",
+          "state": "Passed",
+          "targetName": "DatadogTraceTests"
+        },
+        {
+          "displayName": "testSpanStartedDuringSceneUIEventUsesThatScenesRUMContext()",
+          "errorMessages": [],
+          "identifier": "OTelSpanTests/testSpanStartedDuringSceneUIEventUsesThatScenesRUMContext()",
+          "state": "Passed",
+          "targetName": "DatadogTraceTests"
+        },
+        {
+          "displayName": "testSpanStartedDuringSceneUIEventWithoutSnapshotDoesNotUseRepresentativeRUMContext()",
+          "errorMessages": [],
+          "identifier": "OTelSpanTests/testSpanStartedDuringSceneUIEventWithoutSnapshotDoesNotUseRepresentativeRUMContext()",
+          "state": "Passed",
+          "targetName": "DatadogTraceTests"
+        },
+        {
+          "displayName": "testSpanStartedWithoutSceneUIEventUsesRepresentativeRUMContext()",
+          "errorMessages": [],
+          "identifier": "OTelSpanTests/testSpanStartedWithoutSceneUIEventUsesRepresentativeRUMContext()",
+          "state": "Passed",
+          "targetName": "DatadogTraceTests"
+        },
+        {
+          "displayName": "testStructuredChildSpanUsesInheritedSceneUIEventRUMContext()",
+          "errorMessages": [],
+          "identifier": "OTelSpanTests/testStructuredChildSpanUsesInheritedSceneUIEventRUMContext()",
+          "state": "Passed",
+          "targetName": "DatadogTraceTests"
+        },
+        {
+          "displayName": "testGivenForeignCoreDispatch_spanKeepsConsumerOwnership()",
+          "errorMessages": [],
+          "identifier": "OTelSpanTests/testGivenForeignCoreDispatch_spanKeepsConsumerOwnership()",
+          "state": "Passed",
+          "targetName": "DatadogTraceTests"
+        },
+        {
+          "displayName": "testSpanOperationNameAttribute()",
+          "errorMessages": [],
+          "identifier": "OTelSpanTests/testSpanOperationNameAttribute()",
+          "state": "Passed",
+          "targetName": "DatadogTraceTests"
+        },
+        {
+          "displayName": "testSpanServiceNameDefault()",
+          "errorMessages": [],
+          "identifier": "OTelSpanTests/testSpanServiceNameDefault()",
+          "state": "Passed",
+          "targetName": "DatadogTraceTests"
+        },
+        {
+          "displayName": "testSpanServiceNameAttribute()",
+          "errorMessages": [],
+          "identifier": "OTelSpanTests/testSpanServiceNameAttribute()",
+          "state": "Passed",
+          "targetName": "DatadogTraceTests"
+        },
+        {
+          "displayName": "testSpanResourceNameAttribute()",
+          "errorMessages": [],
+          "identifier": "OTelSpanTests/testSpanResourceNameAttribute()",
+          "state": "Passed",
+          "targetName": "DatadogTraceTests"
+        },
+        {
+          "displayName": "testSpanSetName()",
+          "errorMessages": [],
+          "identifier": "OTelSpanTests/testSpanSetName()",
+          "state": "Passed",
+          "targetName": "DatadogTraceTests"
+        },
+        {
+          "displayName": "testSpanEnd()",
+          "errorMessages": [],
+          "identifier": "OTelSpanTests/testSpanEnd()",
+          "state": "Passed",
+          "targetName": "DatadogTraceTests"
+        },
+        {
+          "displayName": "testSetParentSpan()",
+          "errorMessages": [],
+          "identifier": "OTelSpanTests/testSetParentSpan()",
+          "state": "Passed",
+          "targetName": "DatadogTraceTests"
+        },
+        {
+          "displayName": "testSetParentContext()",
+          "errorMessages": [],
+          "identifier": "OTelSpanTests/testSetParentContext()",
+          "state": "Passed",
+          "targetName": "DatadogTraceTests"
+        },
+        {
+          "displayName": "testSetNoParent()",
+          "errorMessages": [],
+          "identifier": "OTelSpanTests/testSetNoParent()",
+          "state": "Passed",
+          "targetName": "DatadogTraceTests"
+        },
+        {
+          "displayName": "testSetActive_givenParentSpan()",
+          "errorMessages": [],
+          "identifier": "OTelSpanTests/testSetActive_givenParentSpan()",
+          "state": "Passed",
+          "targetName": "DatadogTraceTests"
+        },
+        {
+          "displayName": "testSetActive_givenParentWithMultipleChildren()",
+          "errorMessages": [],
+          "identifier": "OTelSpanTests/testSetActive_givenParentWithMultipleChildren()",
+          "state": "Passed",
+          "targetName": "DatadogTraceTests"
+        },
+        {
+          "displayName": "testWithActiveSpan()",
+          "errorMessages": [],
+          "identifier": "OTelSpanTests/testWithActiveSpan()",
+          "state": "Passed",
+          "targetName": "DatadogTraceTests"
+        },
+        {
+          "displayName": "testParentIds_givenDisjointSpans()",
+          "errorMessages": [],
+          "identifier": "OTelSpanTests/testParentIds_givenDisjointSpans()",
+          "state": "Passed",
+          "targetName": "DatadogTraceTests"
+        },
+        {
+          "displayName": "testSetAttribute()",
+          "errorMessages": [],
+          "identifier": "OTelSpanTests/testSetAttribute()",
+          "state": "Passed",
+          "targetName": "DatadogTraceTests"
+        },
+        {
+          "displayName": "testSetAttributes()",
+          "errorMessages": [],
+          "identifier": "OTelSpanTests/testSetAttributes()",
+          "state": "Passed",
+          "targetName": "DatadogTraceTests"
+        },
+        {
+          "displayName": "testSetGlobalAttribute()",
+          "errorMessages": [],
+          "identifier": "OTelSpanTests/testSetGlobalAttribute()",
+          "state": "Passed",
+          "targetName": "DatadogTraceTests"
+        },
+        {
+          "displayName": "testStatus_whenStatusIsNotSet()",
+          "errorMessages": [],
+          "identifier": "OTelSpanTests/testStatus_whenStatusIsNotSet()",
+          "state": "Passed",
+          "targetName": "DatadogTraceTests"
+        },
+        {
+          "displayName": "testStatus_whenStatusIsOk()",
+          "errorMessages": [],
+          "identifier": "OTelSpanTests/testStatus_whenStatusIsOk()",
+          "state": "Passed",
+          "targetName": "DatadogTraceTests"
+        },
+        {
+          "displayName": "testStatus_whenStatusIsErrorWithMessage()",
+          "errorMessages": [],
+          "identifier": "OTelSpanTests/testStatus_whenStatusIsErrorWithMessage()",
+          "state": "Passed",
+          "targetName": "DatadogTraceTests"
+        },
+        {
+          "displayName": "testStatus_givenStatusOk_whenSetStatusCalledWithErrorAndUnset()",
+          "errorMessages": [],
+          "identifier": "OTelSpanTests/testStatus_givenStatusOk_whenSetStatusCalledWithErrorAndUnset()",
+          "state": "Passed",
+          "targetName": "DatadogTraceTests"
+        },
+        {
+          "displayName": "testStatus_givenStatusError_whenSetStatusCalledWithUnset()",
+          "errorMessages": [],
+          "identifier": "OTelSpanTests/testStatus_givenStatusError_whenSetStatusCalledWithUnset()",
+          "state": "Passed",
+          "targetName": "DatadogTraceTests"
+        }
+      ],
+      "schemeName": "DatadogTrace",
+      "summary": "41 tests: 41 passed, 0 failed, 0 skipped, 0 expected failures, 0 not run",
+      "totalResults": 41,
+      "truncated": false,
+      "xcresultBundlePath": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/ActionArtifacts/default/RunSomeTests/Test-DatadogTrace-2026.09.17_11-34-33-+0100.xcresult"
+    },
+    "exp166Concurrency": {
+      "counts": {
+        "expectedFailures": 0,
+        "failed": 0,
+        "notRun": 0,
+        "passed": 2,
+        "skipped": 0,
+        "total": 2
+      },
+      "fullConsoleLogsPath": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/ActionArtifacts/default/RunSomeTests/test-console-log-2026-09-17T11-39-02+01-00.txt",
+      "fullSummaryPath": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/ActionArtifacts/default/RunSomeTests/8DCF8DBC-D9EC-4F30-93F4-7E5167D00D80.txt",
+      "results": [
+        {
+          "displayName": "testRUMContextHandoff_childInheritsEachNestedOwnerAndDetachedTaskInheritsNeither()",
+          "errorMessages": [],
+          "identifier": "NetworkInstrumentationFeatureTests/testRUMContextHandoff_childInheritsEachNestedOwnerAndDetachedTaskInheritsNeither()",
+          "state": "Passed",
+          "targetName": "DatadogInternalTests"
+        },
+        {
+          "displayName": "testRUMContextHandoff_concurrentThreadsKeepSeparateDispatchSnapshots()",
+          "errorMessages": [],
+          "identifier": "NetworkInstrumentationFeatureTests/testRUMContextHandoff_concurrentThreadsKeepSeparateDispatchSnapshots()",
+          "state": "Passed",
+          "targetName": "DatadogInternalTests"
+        }
+      ],
+      "schemeName": "DatadogInternal",
+      "summary": "2 tests: 2 passed, 0 failed, 0 skipped, 0 expected failures, 0 not run",
+      "totalResults": 2,
+      "truncated": false,
+      "xcresultBundlePath": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/ActionArtifacts/default/RunSomeTests/Test-DatadogInternal-2026.09.17_11-39-02-+0100.xcresult"
+    },
+    "exp166ProbeBuild": {
+      "buildResult": "The project built successfully.",
+      "elapsedTime": 13.387,
+      "errors": [],
+      "fullLogPath": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/ActionArtifacts/default/BuildProject/BuildProject-Log-20260917-113816.txt"
+    }
+  },
+  "diagnostic_performance": [
+    {
+      "root": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp166-fdb9baa0b22d",
+      "claim": "diagnostic only; not a complete ABBA acceptance run",
+      "candidate_patch_sha256": "9251ae267c6eaf97021ee011960f3383631a658452906cd1220b2f088609b241",
+      "fixture": {
+        "file_count": 4,
+        "sha256": "9a5ec75eaf2cfe5d2ae886d1ddbd97351100b22748e6c839229397193612c6f0",
+        "files": {
+          "AllocationCounter.c": "4fc68475a35fdbb805786a79455defc5725b6e0deb4847778cd75be228f9119d",
+          "AllocationCounter.h": "d668fa6258ccbf16ce011374af0aa4178ae4ca0f8a1c4f28a51bee2077ce52ab",
+          "App.swift": "4e9438781d5e17ef4cbfd06871a6938bdf9b25cc81e2b0dc5d2bff1645dc69ee",
+          "InternalFixture.swift": "9a25810adbaa699d4cde3813f064a99523f673bbb17e8550555208c3ce052ffb"
+        }
+      },
+      "build": {
+        "app": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp166-fdb9baa0b22d/candidate/derived/Build/Products/Release-iphonesimulator/FixtureScene.app",
+        "sha256": "b188a66b7d646c180d63fe6aecb8ebaa715492a76a963999aff7090f2e88863a",
+        "uuid": "UUID: D0C1246D-B1CE-35F9-92A2-B5CCF3FF061B (x86_64) /var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp166-fdb9baa0b22d/candidate/derived/Build/Products/Release-iphonesimulator/FixtureScene.app/FixtureScene\nUUID: 37B9DD73-240D-3F1D-A7FF-97E0C6259C6F (arm64) /var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp166-fdb9baa0b22d/candidate/derived/Build/Products/Release-iphonesimulator/FixtureScene.app/FixtureScene",
+        "deployment_target": "15.0"
+      },
+      "run_id": "exp160-94e63deb50bd4373b56d649f10a95884",
+      "allocations": {
+        "calibrated": true,
+        "count": 0,
+        "events": 20000,
+        "method": "malloc_logger; successful heap allocations on workload thread; realloc counted at requested size",
+        "requested_bytes": 0
+      },
+      "handoff_allocations": {
+        "calibrated": true,
+        "count": 20000,
+        "events": 20000,
+        "requested_bytes": 2240000
+      },
+      "reentrancy": {
+        "errors": 0,
+        "expected_dispatches": 20000,
+        "iterations": 10000,
+        "original_dispatches": 20000
+      },
+      "verification": {
+        "original_fixture_unchanged": true,
+        "definition_unchanged": true,
+        "arms": {
+          "baseline": {
+            "sdk_unchanged": true,
+            "fixture_unchanged": true
+          },
+          "candidate": {
+            "sdk_unchanged": true,
+            "fixture_unchanged": true
+          }
+        },
+        "builds": {
+          "candidate": {
+            "Scene": true,
+            "Legacy": true
+          }
+        },
+        "passed": true
+      }
+    },
+    {
+      "root": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp166-e113a7af81e1",
+      "claim": "diagnostic only; not a complete ABBA acceptance run",
+      "candidate_patch_sha256": "e125069eda1c366dac577e6102f65c4fc0e7224c0057f83333d40ecb8b9c860f",
+      "fixture": {
+        "file_count": 4,
+        "sha256": "9a5ec75eaf2cfe5d2ae886d1ddbd97351100b22748e6c839229397193612c6f0",
+        "files": {
+          "AllocationCounter.c": "4fc68475a35fdbb805786a79455defc5725b6e0deb4847778cd75be228f9119d",
+          "AllocationCounter.h": "d668fa6258ccbf16ce011374af0aa4178ae4ca0f8a1c4f28a51bee2077ce52ab",
+          "App.swift": "4e9438781d5e17ef4cbfd06871a6938bdf9b25cc81e2b0dc5d2bff1645dc69ee",
+          "InternalFixture.swift": "9a25810adbaa699d4cde3813f064a99523f673bbb17e8550555208c3ce052ffb"
+        }
+      },
+      "build": {
+        "app": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp166-e113a7af81e1/candidate/derived/Build/Products/Release-iphonesimulator/FixtureScene.app",
+        "sha256": "3863ac9f447661474f4365dcaff0e257f6fafe25cb19b4aafb55123f9293adbf",
+        "uuid": "UUID: 2784C953-F21C-30EF-99C1-922EACE87C8C (x86_64) /var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp166-e113a7af81e1/candidate/derived/Build/Products/Release-iphonesimulator/FixtureScene.app/FixtureScene\nUUID: 1202E459-F32E-39D8-8D03-672AB8D14A44 (arm64) /var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp166-e113a7af81e1/candidate/derived/Build/Products/Release-iphonesimulator/FixtureScene.app/FixtureScene",
+        "deployment_target": "15.0"
+      },
+      "run_id": "exp160-730dae6cd8f64a3f8a75a1bd289989db",
+      "allocations": {
+        "calibrated": true,
+        "count": 0,
+        "events": 20000,
+        "method": "malloc_logger; successful heap allocations on workload thread; realloc counted at requested size",
+        "requested_bytes": 0
+      },
+      "handoff_allocations": {
+        "calibrated": true,
+        "count": 20000,
+        "events": 20000,
+        "requested_bytes": 1280000
+      },
+      "reentrancy": {
+        "errors": 0,
+        "expected_dispatches": 20000,
+        "iterations": 10000,
+        "original_dispatches": 20000
+      },
+      "verification": {
+        "original_fixture_unchanged": true,
+        "definition_unchanged": true,
+        "arms": {
+          "baseline": {
+            "sdk_unchanged": true,
+            "fixture_unchanged": true
+          },
+          "candidate": {
+            "sdk_unchanged": true,
+            "fixture_unchanged": true
+          }
+        },
+        "builds": {
+          "candidate": {
+            "Scene": true,
+            "Legacy": true
+          }
+        },
+        "passed": true
+      }
+    }
+  ],
+  "candidate_regression": "Pure TaskLocal candidate changed synchronous snapshot refresh; new discriminator failed and the reusable thread cell repaired it.",
+  "fixture_corrections": [
+    "Throwing-scope XCTest closure needed explicit try.",
+    "Foreign handoff must not activate a third-party request callback; corrected the fixture to expect only its existing first-party callback. Direct Resource handler test covers captured ownership through completion."
+  ],
+  "current": "PASS: SDK-scoped ownership and fixed allocation budget accepted; other release gates remain separate.",
+  "closed_gates": [
+    "D04",
+    "P02"
+  ],
+  "candidate_revision": "5eb3c1aace8d07f03f2bb113afcf5243f07b6e4e",
+  "unit_unique_passed": 282,
+  "unit_not_run": 0,
+  "unit_skipped": 0,
+  "performance": "EXP-166-handoff-performance.json",
+  "platforms": {
+    "experiment": "EXP-166",
+    "source_identity": {
+      "file_count": 369,
+      "sha256": "9be335902f8d6dfba523753d7badadfdee2c3ba05571efcc5ead020294d47029"
+    },
+    "source_paths": [
+      "DatadogCore/Sources",
+      "DatadogCore/Private",
+      "DatadogCore/Resources",
+      "DatadogInternal/Sources",
+      "DatadogRUM/Sources",
+      "DatadogRUM/Private",
+      "DatadogRUM/Resources"
+    ],
+    "package_manifest": "// swift-tools-version: 6.0\nimport PackageDescription\nlet checked: [SwiftSetting] = [.swiftLanguageMode(.v5), .unsafeFlags([\"-enable-testing\"])]\nlet package = Package(name: \"DatadogBaseline\", platforms: [.iOS(.v15), .watchOS(.v9), .macOS(\"12.6\")], products: [\n.library(name: \"DatadogCore\", targets: [\"DatadogCore\"]),\n.library(name: \"DatadogRUM\", targets: [\"DatadogRUM\"]),\n.library(name: \"DatadogInternal\", targets: [\"DatadogInternal\"])\n], targets: [\n.target(name: \"DatadogInternal\", path: \"DatadogInternal/Sources\", swiftSettings: checked),\n.target(name: \"DatadogPrivate\", path: \"DatadogCore/Private\"),\n.target(name: \"DatadogRUMPrivate\", path: \"DatadogRUM/Private\"),\n.target(name: \"DatadogCore\", dependencies: [\"DatadogInternal\", \"DatadogPrivate\"], path: \"DatadogCore\", sources: [\"Sources\"], resources: [.copy(\"Resources/PrivacyInfo.xcprivacy\")], swiftSettings: [.define(\"SPM_BUILD\")] + checked),\n.target(name: \"DatadogRUM\", dependencies: [\"DatadogInternal\", \"DatadogRUMPrivate\"], path: \"DatadogRUM\", sources: [\"Sources\"], resources: [.copy(\"Resources/PrivacyInfo.xcprivacy\")], swiftSettings: [.define(\"SPM_BUILD\")] + checked)\n])\n",
+    "attempts": [
+      {
+        "product": "DatadogRUM",
+        "platform": "watchOS",
+        "configuration": "Debug",
+        "status": "PASS",
+        "command": [
+          "xcodebuild",
+          "build",
+          "-quiet",
+          "-scheme",
+          "DatadogRUM",
+          "-configuration",
+          "Debug",
+          "-destination",
+          "generic/platform=watchOS",
+          "-derivedDataPath",
+          "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp166-platforms-9bqlf5xt/derived",
+          "-resultBundlePath",
+          "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp166-platforms-9bqlf5xt/watchOS-Debug.xcresult",
+          "CODE_SIGNING_ALLOWED=NO"
+        ],
+        "seconds": 24.75,
+        "log": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp166-platforms-9bqlf5xt/watchOS-Debug.log",
+        "log_sha256": "3c09c0fc25048bcc3ef18f076e03e2448352bcdf25272d2c478e3fd83c20a20d",
+        "swiftmodules": {
+          "derived/Build/Intermediates.noindex/DatadogBaseline.build/Debug-watchos/DatadogRUM-t.build/Objects-normal/arm64/DatadogRUM.swiftmodule": "760b82dd94ff5e284055fd106ae9288ceb91fe6e2e77ea8c70791a2a49e86b73",
+          "derived/Build/Intermediates.noindex/DatadogBaseline.build/Debug-watchos/DatadogRUM-t.build/Objects-normal/arm64_32/DatadogRUM.swiftmodule": "6b2affb05116e2b286dc9476b268263d149a4fec1035d8dbf0bf3d5e016b5edc"
+        }
+      },
+      {
+        "product": "DatadogRUM",
+        "platform": "watchOS",
+        "configuration": "Release",
+        "status": "PASS",
+        "command": [
+          "xcodebuild",
+          "build",
+          "-quiet",
+          "-scheme",
+          "DatadogRUM",
+          "-configuration",
+          "Release",
+          "-destination",
+          "generic/platform=watchOS",
+          "-derivedDataPath",
+          "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp166-platforms-9bqlf5xt/derived",
+          "-resultBundlePath",
+          "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp166-platforms-9bqlf5xt/watchOS-Release.xcresult",
+          "CODE_SIGNING_ALLOWED=NO"
+        ],
+        "seconds": 57.25,
+        "log": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp166-platforms-9bqlf5xt/watchOS-Release.log",
+        "log_sha256": "1acbebe7a39e823675100f99758560c75aac8d17c48d630b59d690f7f8eeaf0f",
+        "swiftmodules": {
+          "derived/Build/Intermediates.noindex/DatadogBaseline.build/Release-watchos/DatadogRUM-t.build/Objects-normal/arm64/DatadogRUM.swiftmodule": "71661dbef07220c81ef374f24f7e102f3c7b0f2502bbaf8f2108de33c4ccc4e5",
+          "derived/Build/Intermediates.noindex/DatadogBaseline.build/Release-watchos/DatadogRUM-t.build/Objects-normal/arm64_32/DatadogRUM.swiftmodule": "55a8800ef69747d3a432d6bacee00309051217d6847c25b67b456363fdf83d7f"
+        }
+      },
+      {
+        "product": "DatadogCore",
+        "platform": "macOS",
+        "configuration": "Debug",
+        "status": "PASS",
+        "command": [
+          "xcodebuild",
+          "build",
+          "-quiet",
+          "-scheme",
+          "DatadogCore",
+          "-configuration",
+          "Debug",
+          "-destination",
+          "generic/platform=macOS",
+          "-derivedDataPath",
+          "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp166-platforms-9bqlf5xt/derived",
+          "-resultBundlePath",
+          "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp166-platforms-9bqlf5xt/macOS-Debug.xcresult",
+          "CODE_SIGNING_ALLOWED=NO"
+        ],
+        "seconds": 17.49,
+        "log": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp166-platforms-9bqlf5xt/macOS-Debug.log",
+        "log_sha256": "319ba3c2e2c49dad18d305fa71d0eebe07e75efcdb8400d7772c20079d0e710e",
+        "swiftmodules": {
+          "derived/Build/Intermediates.noindex/DatadogBaseline.build/Debug/DatadogCore-t.build/Objects-normal/arm64/DatadogCore.swiftmodule": "bcfcb1f0fa9eb4e673bd56624554ec033ea64303a3dcf3c59145f402f21de2f9",
+          "derived/Build/Intermediates.noindex/DatadogBaseline.build/Debug/DatadogCore-t.build/Objects-normal/x86_64/DatadogCore.swiftmodule": "9c2b9d8c90ba071b0bcfdb10463844a253c3f3d3f248562ebe3049302a0a94da"
+        }
+      },
+      {
+        "product": "DatadogCore",
+        "platform": "macOS",
+        "configuration": "Release",
+        "status": "PASS",
+        "command": [
+          "xcodebuild",
+          "build",
+          "-quiet",
+          "-scheme",
+          "DatadogCore",
+          "-configuration",
+          "Release",
+          "-destination",
+          "generic/platform=macOS",
+          "-derivedDataPath",
+          "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp166-platforms-9bqlf5xt/derived",
+          "-resultBundlePath",
+          "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp166-platforms-9bqlf5xt/macOS-Release.xcresult",
+          "CODE_SIGNING_ALLOWED=NO"
+        ],
+        "seconds": 35.92,
+        "log": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp166-platforms-9bqlf5xt/macOS-Release.log",
+        "log_sha256": "3e0bb01ea0c2ed4f8080566bb92cf8eae7e9ecd76c6f543700a602fb45289231",
+        "swiftmodules": {
+          "derived/Build/Intermediates.noindex/DatadogBaseline.build/Release/DatadogCore-t.build/Objects-normal/arm64/DatadogCore.swiftmodule": "7d2559c9372982d90d710abcad8ee7043f7f5636b5713bb2ee86d1b4ce6d6bea",
+          "derived/Build/Intermediates.noindex/DatadogBaseline.build/Release/DatadogCore-t.build/Objects-normal/x86_64/DatadogCore.swiftmodule": "53d7778102f47ac34727866db69995c7c53f38e1b1722f01bede81080f08b540"
+        }
+      }
+    ],
+    "xcode": "Xcode 27.0\nBuild version 27A266a",
+    "source_unchanged": true,
+    "package_unchanged": true
+  },
+  "lint": {
+    "production_files": 11,
+    "test_mock_files": 12,
+    "violations": 0,
+    "configuration": [
+      "tools/lint/sources.swiftlint.yml",
+      "tools/lint/tests.swiftlint.yml"
+    ]
+  },
+  "protected_paths_unchanged": true,
+  "strengthened_controls": [
+    {
+      "counts": {
+        "expectedFailures": 0,
+        "failed": 0,
+        "notRun": 0,
+        "passed": 1,
+        "skipped": 0,
+        "total": 1
+      },
+      "fullConsoleLogsPath": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/ActionArtifacts/default/RunSomeTests/test-console-log-2026-09-17T11-43-04+01-00.txt",
+      "fullSummaryPath": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/ActionArtifacts/default/RunSomeTests/5C5A2AA0-2A0A-42B1-BFA9-D0BBE8F3A2B6.txt",
+      "results": [
+        {
+          "displayName": "testGivenForeignCoreDispatch_networkUsesOnlyItsOwnContextForFirstAndThirdPartyRequests()",
+          "errorMessages": [],
+          "identifier": "NetworkInstrumentationFeatureTests/testGivenForeignCoreDispatch_networkUsesOnlyItsOwnContextForFirstAndThirdPartyRequests()",
+          "state": "Passed",
+          "targetName": "DatadogInternalTests"
+        }
+      ],
+      "schemeName": "DatadogInternal",
+      "summary": "1 tests: 1 passed, 0 failed, 0 skipped, 0 expected failures, 0 not run",
+      "totalResults": 1,
+      "truncated": false,
+      "xcresultBundlePath": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/ActionArtifacts/default/RunSomeTests/Test-DatadogInternal-2026.09.17_11-43-04-+0100.xcresult"
+    },
+    {
+      "counts": {
+        "expectedFailures": 0,
+        "failed": 0,
+        "notRun": 0,
+        "passed": 2,
+        "skipped": 0,
+        "total": 2
+      },
+      "fullConsoleLogsPath": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/ActionArtifacts/default/RunSomeTests/test-console-log-2026-09-17T11-43-20+01-00.txt",
+      "fullSummaryPath": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/ActionArtifacts/default/RunSomeTests/3B87FE67-DDFD-4FA4-9BE2-377C5210430F.txt",
+      "results": [
+        {
+          "displayName": "testGivenConcurrentScenes_itKeepsSynchronousContextSnapshotForEachScene()",
+          "errorMessages": [],
+          "identifier": "MonitorTests/testGivenConcurrentScenes_itKeepsSynchronousContextSnapshotForEachScene()",
+          "state": "Passed",
+          "targetName": "DatadogRUMTests"
+        },
+        {
+          "displayName": "testGivenForeignCoreDispatch_resourceStartAndCompletionKeepConsumerOwnership()",
+          "errorMessages": [],
+          "identifier": "URLSessionRUMResourcesHandlerTests/testGivenForeignCoreDispatch_resourceStartAndCompletionKeepConsumerOwnership()",
+          "state": "Passed",
+          "targetName": "DatadogRUMTests"
+        }
+      ],
+      "schemeName": "DatadogRUM",
+      "summary": "2 tests: 2 passed, 0 failed, 0 skipped, 0 expected failures, 0 not run",
+      "totalResults": 2,
+      "truncated": false,
+      "xcresultBundlePath": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/ActionArtifacts/default/RunSomeTests/Test-DatadogRUM-2026.09.17_11-43-20-+0100.xcresult"
+    },
+    {
+      "counts": {
+        "expectedFailures": 0,
+        "failed": 0,
+        "notRun": 0,
+        "passed": 1,
+        "skipped": 0,
+        "total": 1
+      },
+      "fullConsoleLogsPath": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/ActionArtifacts/default/RunSomeTests/test-console-log-2026-09-17T11-43-34+01-00.txt",
+      "fullSummaryPath": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/ActionArtifacts/default/RunSomeTests/D42EBBBA-DE2A-4BD5-8EB7-81936BB63309.txt",
+      "results": [
+        {
+          "displayName": "testGivenForeignCoreDispatch_logAndMirroredErrorKeepConsumerOwnership()",
+          "errorMessages": [],
+          "identifier": "RemoteLoggerTests/testGivenForeignCoreDispatch_logAndMirroredErrorKeepConsumerOwnership()",
+          "state": "Passed",
+          "targetName": "DatadogLogsTests"
+        }
+      ],
+      "schemeName": "DatadogLogs",
+      "summary": "1 tests: 1 passed, 0 failed, 0 skipped, 0 expected failures, 0 not run",
+      "totalResults": 1,
+      "truncated": false,
+      "xcresultBundlePath": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/ActionArtifacts/default/RunSomeTests/Test-DatadogLogs-2026.09.17_11-43-34-+0100.xcresult"
+    },
+    {
+      "counts": {
+        "expectedFailures": 0,
+        "failed": 0,
+        "notRun": 0,
+        "passed": 2,
+        "skipped": 0,
+        "total": 2
+      },
+      "fullConsoleLogsPath": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/ActionArtifacts/default/RunSomeTests/test-console-log-2026-09-17T11-43-47+01-00.txt",
+      "fullSummaryPath": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/ActionArtifacts/default/RunSomeTests/C6FBE478-256E-4FF8-A8B4-97C265B3CC6D.txt",
+      "results": [
+        {
+          "displayName": "testGivenForeignCoreDispatch_spanKeepsConsumerOwnership()",
+          "errorMessages": [],
+          "identifier": "DDSpanTests/testGivenForeignCoreDispatch_spanKeepsConsumerOwnership()",
+          "state": "Passed",
+          "targetName": "DatadogTraceTests"
+        },
+        {
+          "displayName": "testGivenForeignCoreDispatch_spanKeepsConsumerOwnership()",
+          "errorMessages": [],
+          "identifier": "OTelSpanTests/testGivenForeignCoreDispatch_spanKeepsConsumerOwnership()",
+          "state": "Passed",
+          "targetName": "DatadogTraceTests"
+        }
+      ],
+      "schemeName": "DatadogTrace",
+      "summary": "2 tests: 2 passed, 0 failed, 0 skipped, 0 expected failures, 0 not run",
+      "totalResults": 2,
+      "truncated": false,
+      "xcresultBundlePath": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/ActionArtifacts/default/RunSomeTests/Test-DatadogTrace-2026.09.17_11-43-47-+0100.xcresult"
+    }
+  ],
+  "rum_selection": [
+    "MonitorTests/testWhenSessionIsSampled_itSetsRUMContextInCore()",
+    "MonitorTests/testWhenSessionIsNotSampled_RUMCoreSampler_returnsFalse()",
+    "MonitorTests/testGivenConcurrentScenes_itKeepsSynchronousContextSnapshotForEachScene()",
+    "MonitorTests/testGivenOperationStartedDuringSceneHandoff_itUsesThatSceneInsteadOfRepresentative()",
+    "MonitorTests/testGivenExplicitOperationScene_itOverridesInferredSceneAndRepresentative()",
+    "MonitorTests/testGivenExplicitOperationSceneHasNoView_itUsesTrustworthyInferredSceneBeforeSnapshotAndRepresentative()",
+    "MonitorTests/testGivenManualActionsDuringSceneHandoff_theyUseThatSceneInsteadOfRepresentative()",
+    "MonitorTests/testGivenExplicitActionScene_itOverridesInferredSceneAndRepresentative()",
+    "MonitorTests/testGivenExplicitActionSceneHasNoView_itUsesTrustworthyInferredScene()",
+    "MonitorTests/testGivenExplicitContinuousActions_theyOverrideContradictoryInferenceAndStopIndependently()",
+    "MonitorTests/testGivenUnavailableContinuousActionTarget_itPreservesInferenceThenRepresentative()",
+    "MonitorTests/testGivenTargetedContinuousActions_duplicateStartAndNavigationKeepPeerAction()",
+    "MonitorTests/testGivenExpiredContinuousAction_peerStopDoesNotContaminateItsAttributes()",
+    "MonitorTests/testGivenManualErrorsDuringSceneHandoff_theyUseExactOrSceneContext()",
+    "MonitorTests/testGivenViewMutationsDuringSceneHandoff_theyOnlyUpdateThatView()",
+    "MonitorTests/testGivenMatchingManualViewKeysInTwoScenes_whenAStopsAndReturns_itKeepsIndependentOccurrences()",
+    "MonitorTests/testGivenExactViewAndContradictoryScene_whenStartingManualView_itUsesExactViewsScene()",
+    "MonitorTests/testGivenBackgroundControllerCalls_itAvoidsHierarchyReadsAndKeepsRepresentativeFallback()",
+    "MonitorTests/testGivenBackgroundControllerCallsDuringHandoff_itAvoidsHierarchyReadsAndKeepsInferredScene()",
+    "MonitorTests/testGivenUnattachedViewController_whenStartedDuringSceneHandoff_itUsesThatScene()",
+    "MonitorTests/testGivenManualResourcesStartedDuringSceneHandoff_theyCompleteOnThatScene()",
+    "MonitorTests/testStartView_withViewController_itUsesClassNameAsViewName()",
+    "MonitorTests/testStartView_withViewController_itUsesClassNameAsViewPath()",
+    "MonitorTests/testReportTTIDAndTTFD_thenTheyAreWrittenAsVitalEvents()",
+    "MonitorTests/testReportTTFDWithoutTTID_thenTheyAreNotWritten()",
+    "MonitorTests/testReportTTIDWithoutTTFD_thenTTIDIsWrittenAsVitalEvent()",
+    "MonitorTests/testAddViewLoadingTimeToActiveView_thenLoadingTimeUpdated()",
+    "MonitorTests/testAddViewLoadingTimeNoActiveView_thenNoEvent()",
+    "MonitorTests/testAddViewLoadingTimeMultipleTimes_thenLoadingTimeOverwritten()",
+    "MonitorTests/testHasReplaySnapshot_isGatedByTimeseriesCollectorAndResetOnNewSession()",
+    "RUMActionsHandlerTests/testGivenUIKitViewWithAccessibilityIdentifier_whenSingleTouchEnds_itSendsRUMAction()",
+    "RUMActionsHandlerTests/testGivenUIKitViewInScene_whenSingleTouchEnds_itTargetsThatScene()",
+    "RUMActionsHandlerTests/testGivenForeignCoreDispatch_whenConsumerHasDifferentApplication_itKeepsOwnContext()",
+    "RUMActionsHandlerTests/testGivenForeignCoreDispatch_whenConsumerHasSameApplication_itKeepsOwnSession()",
+    "RUMActionsHandlerTests/testGivenForeignCoreDispatchWithNoView_itDoesNotSuppressConsumerContext()",
+    "RUMActionsHandlerTests/testGivenUIKitViewInScene_whenDispatchingEvent_itScopesThatScenesRUMContext()",
+    "RUMActionsHandlerTests/testGivenUIEventContextHandoffDisabled_whenDispatchingSceneEvent_itKeepsActionOnlyBehavior()",
+    "RUMActionsHandlerTests/testGivenActionPredicateRejectsTouch_whenDispatchingEvent_itStillScopesItsScene()",
+    "RUMActionsHandlerTests/testGivenSceneEventScope_whenCreatingChildTask_itInheritsContextButDetachedTaskDoesNot()",
+    "RUMActionsHandlerTests/testGivenMultiTouchEvent_whenAllTouchesShareScene_itScopesWithoutCreatingTapAction()",
+    "RUMActionsHandlerTests/testGivenUIKitViewWithNoAccessibilityIdentifier_whenSingleTouchEnds_itSendsRUMAction()",
+    "RUMActionsHandlerTests/testWhenTapViewIsInRegistry_itLooksUpHeatmapByTapView()",
+    "RUMActionsHandlerTests/testWhenTapViewIsNotInRegistry_itDoesNotAttachHeatmapAttributes()",
+    "RUMActionsHandlerTests/testGivenAnyUIKitViewWithUnrecognizedHierarchy_whenTouchEnds_itGetsIgnored()",
+    "RUMActionsHandlerTests/testGivenAnyUIKitViewPresentedInKeyboardWindow_whenTouchEnds_itGetsIgnoredForPrivacyReason()",
+    "RUMActionsHandlerTests/testGivenAnyUIControlTouchNotAttachedToAnyWindow_itGetsIgnoredForPrivacyReason()",
+    "RUMActionsHandlerTests/testItIgnoresSingleUIKitTouchEventWithPhaseOtherThanEnded()",
+    "RUMActionsHandlerTests/testItIgnoresUIKitMultitouchEvents()",
+    "RUMActionsHandlerTests/testItIgnoresUIKitEventsWithNoTouch()",
+    "RUMActionsHandlerTests/testGivenUIKitTouchEvent_itAppliesUserAttributesAndCustomName()",
+    "RUMActionsHandlerTests/testGivenUIKitActionPredicateReturnsNil_itDoesntSendTapAction()",
+    "RUMActionsHandlerTests/testGivenUIKitPressEvent_whenSinglePressEnds_itSendsRUMAction()",
+    "RUMActionsHandlerTests/testGivenAnyUIKitViewPresentedInKeyboardWindow_whenPressEnds_itGetsIgnoredForPrivacyReason()",
+    "RUMActionsHandlerTests/testGivenAnyUIControlPressNotAttachedToAnyWindow_itGetsIgnoredForPrivacyReason()",
+    "RUMActionsHandlerTests/testItIgnoresSingleUIKitPressEventWithPhaseOtherThanEnded()",
+    "RUMActionsHandlerTests/testItIgnoresUIKitMultiPressEvents()",
+    "RUMActionsHandlerTests/testGivenUIKitPressEvent_ItAppliesUserAttributesAndCustomName()",
+    "RUMActionsHandlerTests/testGivenUIKitActionPredicateReturnsNil_itDoesntSendClickAction()",
+    "RUMActionsHandlerTests/testWhenSwiftUIViewModifierIsTapped_itSendsRUMAction()",
+    "RUMActionsHandlerTests/testWhenSwiftUIViewModifierIsTappedInScene_itTargetsThatScene()",
+    "RUMMonitorProtocol_ConvenienceTests/testCallingExtensionMethodsIsSafe()",
+    "RUMMonitorProtocol_InternalTests/testInternalInterfaceIsAvailableOnMonitor()",
+    "RUMMonitorProtocol_InternalTests/testInternalInterfaceIsNotAvailableOnNOPMonitor()",
+    "RUMMonitorProtocol_InternalTests/testInternalCurrentViewCommandsUseExecutionHandoffAndRepresentativeFallback()",
+    "RUMMonitorProtocol_InternalTests/testInternalResourceMetricsRemainOwnerKeyRouted()",
+    "URLSessionRUMResourcesHandlerTests/testGivenFirstPartyInterception_withSampledTrace_itInjectDDTraceHeaders()",
+    "URLSessionRUMResourcesHandlerTests/testGivenFirstPartyInterception_withSampledTrace_itInjectB3TraceHeaders()",
+    "URLSessionRUMResourcesHandlerTests/testGivenFirstPartyInterception_withSampledTrace_itInjectB3MultiTraceHeaders()",
+    "URLSessionRUMResourcesHandlerTests/testGivenFirstPartyInterception_withSampledTrace_itInjectW3CTraceHeaders()",
+    "URLSessionRUMResourcesHandlerTests/testGivenFirstPartyInterception_withRejectedTrace_itDoesNotInjectDDTraceHeaders()",
+    "URLSessionRUMResourcesHandlerTests/testGivenFirstPartyInterception_withRejectedTrace_itDoesNotInjectB3TraceHeaders()",
+    "URLSessionRUMResourcesHandlerTests/testGivenFirstPartyInterception_withRejectedTrace_itDoesNotInjectB3MultiTraceHeaders()",
+    "URLSessionRUMResourcesHandlerTests/testGivenFirstPartyInterception_withRejectedTrace_itDoesNotInjectW3CTraceHeaders()",
+    "URLSessionRUMResourcesHandlerTests/testGivenFirstPartyInterceptionAndShouldSetBaggageHeaderAndBaggageHeaderValuesToSet_withSampledTrace_itDoesNotOverwriteTraceHeadersExceptBaggage()",
+    "URLSessionRUMResourcesHandlerTests/testGivenFirstPartyInterceptionAndShouldNotSetBaggageHeaderAndBaggageHeaderValuesToSet_withSampledTrace_itDoesNotOverwriteTraceHeaders()",
+    "URLSessionRUMResourcesHandlerTests/testGivenFirstPartyInterceptionAndShouldSetBaggageHeaderAndBaggageHeaderValuesEmpty_withSampledTrace_itDoesNotOverwriteTraceHeaders()",
+    "URLSessionRUMResourcesHandlerTests/testGivenTaskInterceptionWithNoSpanContext_whenInterceptionStarts_itStartsRUMResource()",
+    "URLSessionRUMResourcesHandlerTests/testGivenTaskInterceptionWithSpanContext_whenInterceptionStarts_itStartsRUMResource()",
+    "URLSessionRUMResourcesHandlerTests/testGivenCapturedRUMView_whenInterceptionStartsAndCompletes_itKeepsTheResourceOnThatView()",
+    "URLSessionRUMResourcesHandlerTests/testGivenPrestartedResource_whenAnotherHandlerTraceWins_itUsesTheWinningTraceContext()",
+    "URLSessionRUMResourcesHandlerTests/testGivenSourceSceneWithoutRUMView_whenInterceptionRuns_itKeepsTheResourceOnThatScene()",
+    "URLSessionRUMResourcesHandlerTests/testGivenThirdPartyRequestDuringUIEvent_whenNetworkFeatureIntercepts_itCarriesSourceScene()",
+    "URLSessionRUMResourcesHandlerTests/testGivenForeignCoreDispatch_resourceStartAndCompletionKeepConsumerOwnership()",
+    "URLSessionRUMResourcesHandlerTests/testGivenInterleavedCapturedRUMViews_whenInterceptionsComplete_itDoesNotSwapResourceOwners()",
+    "URLSessionRUMResourcesHandlerTests/testGivenCapturedRUMView_whenInterceptionCompletesWithError_itKeepsTheErrorOnThatView()",
+    "URLSessionRUMResourcesHandlerTests/testGivenNoValidCapturedRUMView_whenInterceptionRuns_itKeepsLegacyRepresentativeTarget()",
+    "URLSessionRUMResourcesHandlerTests/testGivenTaskInterceptionWithMetricsAndResponse_whenInterceptionCompletes_itStopsRUMResourceWithMetrics()",
+    "URLSessionRUMResourcesHandlerTests/testGivenTaskInterceptionWithZeroMetricsSize_whenInterceptionCompletes_itFallsBackToResponseSize()",
+    "URLSessionRUMResourcesHandlerTests/testGivenTaskInterceptionWithLocalCacheHitMetrics_whenInterceptionCompletes_itSetsLocalCacheHitAttribute()",
+    "URLSessionRUMResourcesHandlerTests/testGivenTaskInterceptionWithoutLocalCacheHitMetrics_whenInterceptionCompletes_itOmitsLocalCacheHitAttribute()",
+    "URLSessionRUMResourcesHandlerTests/testGivenTaskInterceptionWithMetricsAndError_whenInterceptionCompletes_itStopsRUMResourceWithErrorAndMetrics()",
+    "URLSessionRUMResourcesHandlerTests/testGivenTaskInterceptionWithLocalCacheHitMetricsAndError_whenInterceptionCompletes_itOmitsLocalCacheHitAttributeFromErrorCommand()",
+    "URLSessionRUMResourcesHandlerTests/testGivenRUMAttributesProviderRegistered_whenInterceptionCompletesWithResponse_itAddsCustomRUMAttributes()",
+    "URLSessionRUMResourcesHandlerTests/testGivenTaskInterceptionWithError_whenInterceptionCompletes_itAsksForCustomRUMAttributes()",
+    "URLSessionRUMResourcesHandlerTests/testGivenAllTracingHeaderTypes_itUsesTheSameIds()",
+    "URLSessionRUMResourcesHandlerTests/testGivenRequestWithExistingBaggageHeader_whenTraceContextIsInjected_itMergesBaggageHeaders()",
+    "URLSessionRUMResourcesHandlerTests/testGivenRequestWithExistingBaggageHeader_whenTraceContextIsInjectedWithW3C_itMergesBaggageHeaders()",
+    "URLSessionRUMResourcesHandlerTests/testGivenRequestWithComplexBaggageHeader_whenTraceContextIsInjected_itMergesBaggageHeadersCorrectly()",
+    "URLSessionRUMResourcesHandlerTests/testGivenRequestWithoutBaggageHeader_whenTraceContextIsInjected_itAddsBaggageHeader()",
+    "URLSessionRUMResourcesHandlerTests/testGivenRequestWithBaggageHeader_whenMultipleHeaderTypesAreInjected_itMergesBaggageOnlyOnce()",
+    "URLSessionRUMResourcesHandlerTests/testGivenRequestWithGraphQLHeaders_whenModifyingRequest_itExtractsGraphQLHeadersIntoTraceContext()",
+    "URLSessionRUMResourcesHandlerTests/testGivenRequestWithGraphQLHeaders_whenInterceptionCompletes_itExtractsGraphQLAttributesFromTraceContext()",
+    "URLSessionRUMResourcesHandlerTests/testGivenRequestWithGraphQLHeaders_whenInterceptionCompletesWithError_itExtractsGraphQLAttributesFromTraceContext()",
+    "URLSessionRUMResourcesHandlerTests/testGivenSameSessionID_withDeterministicSampling_itProducesConsistentSamplingDecision()",
+    "URLSessionRUMResourcesHandlerTests/testGivenGraphQLResponseBodyWithErrors_whenInterceptionCompletes_itExtractsErrors()",
+    "URLSessionRUMResourcesHandlerTests/testGivenGraphQLResponseWithNonJSONContentType_whenInterceptionCompletes_itDoesNotParseErrors()",
+    "URLSessionRUMResourcesHandlerTests/testGivenDisallowedURL_whenInterceptionStartsAndCompletes_itDoesNotSendAnyRUMCommand()",
+    "URLSessionRUMResourcesHandlerTests/testGivenDisallowedURL_whenInterceptionStarts_itDoesNotRegisterRUMOriginOnInterception()",
+    "URLSessionRUMResourcesHandlerTests/testGivenNonDisallowedURL_whenDisallowListIsConfigured_itStartsRUMResourceAsUsual()"
+  ],
+  "tooling_revision": "cce5b59d7aadf6f9b4e224ef4a88d0d5f55b740d"
+}

@@ -324,7 +324,7 @@ ordered acceptance contract is in
 | EXP-163 | 2026-09-17 | PASS · D12; T02 restored | Existing-API compatibility | Three recipient metadata failures reproduced; 212 affected tests and strict source/test lint pass. Own overdue-stop attributes retained; peer metadata remains isolated. | [active record](Experiments/EXP-143-199.md#exp-163--preserve-overdue-action-stop-attributes-without-peer-leakage) |
 | EXP-164 | 2026-09-17 | PASS · D09 | Controller thread compatibility | Two failing getter controls; 31 affected tests pass. Mounted fixture 19/19, zero background reads/MTC diagnostics versus control 5 reads/4 diagnostics. Tooling-invalid attempts retained. | [active record](Experiments/EXP-143-199.md#exp-164--preserve-controller-api-caller-thread-compatibility) |
 | EXP-165 | PASS | D11: legacy container restored; 102 tests, 19/19 mounted bridge/Replay checks and four collector controls | [Record](Experiments/EXP-143-199.md#exp-165--preserve-legacy-nativewebview-replay-correlation) |
-| EXP-166 | PLANNED | D04/P02: SDK lifecycle isolation across all handoff consumers and frozen allocation budget | [Record](Experiments/EXP-143-199.md#exp-166--isolate-ui-event-handoff-by-sdk-lifecycle-and-reduce-allocations) |
+| EXP-166 | PASS | D04/P02: 282 tests; core-scoped consumers; full27/26.5 ABBA1 allocation/64 bytes with latency/reentrancy budgets preserved | [Record](Experiments/EXP-143-199.md#exp-166--isolate-ui-event-handoff-by-sdk-lifecycle-and-reduce-allocations) |
 
 ## Simulator-inconclusive and hardware-required evidence
 

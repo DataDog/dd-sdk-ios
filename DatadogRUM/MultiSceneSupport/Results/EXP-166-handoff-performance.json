@@ -1,0 +1,1302 @@
+{
+  "experiment": "EXP-166",
+  "created_at": "2026-09-17T10:36:26Z",
+  "revisions": {
+    "baseline": "92f021ba7e4a866f84a52da93ed8b63f3dc75882",
+    "candidate": "9f0f3389e7c518b38962051939522fa1b57653c5"
+  },
+  "definition_sha256": "c24f741f008e654e816f96ba418ed62225aa0ae1470582bd2c15fc789e113345",
+  "fixture": {
+    "file_count": 4,
+    "sha256": "9a5ec75eaf2cfe5d2ae886d1ddbd97351100b22748e6c839229397193612c6f0",
+    "files": {
+      "AllocationCounter.c": "4fc68475a35fdbb805786a79455defc5725b6e0deb4847778cd75be228f9119d",
+      "AllocationCounter.h": "d668fa6258ccbf16ce011374af0aa4178ae4ca0f8a1c4f28a51bee2077ce52ab",
+      "App.swift": "4e9438781d5e17ef4cbfd06871a6938bdf9b25cc81e2b0dc5d2bff1645dc69ee",
+      "InternalFixture.swift": "9a25810adbaa699d4cde3813f064a99523f673bbb17e8550555208c3ce052ffb"
+    }
+  },
+  "xcode": "Xcode 27.0\nBuild version 27A266a",
+  "builds": {
+    "baseline": {
+      "Scene": {
+        "app": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp166-1885ed375565/baseline/derived/Build/Products/Release-iphonesimulator/FixtureScene.app",
+        "sha256": "c1647d90a05a7b3405b97b0acc8e9d37efd66caea2d56ae3fdfb4e99b3e66ce3",
+        "uuid": "UUID: A0E726A0-0E6F-3B33-9753-443475EC20B7 (x86_64) /var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp166-1885ed375565/baseline/derived/Build/Products/Release-iphonesimulator/FixtureScene.app/FixtureScene\nUUID: 90C82A4E-63D9-3DA5-A13A-29F9D7EBBE88 (arm64) /var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp166-1885ed375565/baseline/derived/Build/Products/Release-iphonesimulator/FixtureScene.app/FixtureScene",
+        "deployment_target": "15.0"
+      },
+      "Legacy": {
+        "app": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp166-1885ed375565/baseline/derived/Build/Products/Release-iphonesimulator/FixtureLegacy.app",
+        "sha256": "fd33e3fb68d3506261df1506ff96887fb90ac2b5c229835c2838a89835c62083",
+        "uuid": "UUID: 93DF80C1-2932-3A43-B242-6A7973A412C8 (x86_64) /var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp166-1885ed375565/baseline/derived/Build/Products/Release-iphonesimulator/FixtureLegacy.app/FixtureLegacy\nUUID: 7B5DF4A5-4195-3EFB-94C7-6A7CC1AD7AFB (arm64) /var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp166-1885ed375565/baseline/derived/Build/Products/Release-iphonesimulator/FixtureLegacy.app/FixtureLegacy",
+        "deployment_target": "15.0"
+      }
+    },
+    "candidate": {
+      "Scene": {
+        "app": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp166-1885ed375565/candidate/derived/Build/Products/Release-iphonesimulator/FixtureScene.app",
+        "sha256": "ca2c3346df4eb691ba673676ead26ee8f78f077298bf07d4c415412b50c5ba6f",
+        "uuid": "UUID: 2F11B005-CDFD-3747-9BDC-62788AB5F0F4 (x86_64) /var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp166-1885ed375565/candidate/derived/Build/Products/Release-iphonesimulator/FixtureScene.app/FixtureScene\nUUID: F02B75B6-208B-3BCB-9C73-921B58D44426 (arm64) /var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp166-1885ed375565/candidate/derived/Build/Products/Release-iphonesimulator/FixtureScene.app/FixtureScene",
+        "deployment_target": "15.0"
+      },
+      "Legacy": {
+        "app": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp166-1885ed375565/candidate/derived/Build/Products/Release-iphonesimulator/FixtureLegacy.app",
+        "sha256": "ea28f0c8c9f9b0ebd886ce50195f3bc72736e9f503fc0c72d4b18daf1723c3bd",
+        "uuid": "UUID: CBAB0DEC-59F5-379D-8816-C805A1A5493A (x86_64) /var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp166-1885ed375565/candidate/derived/Build/Products/Release-iphonesimulator/FixtureLegacy.app/FixtureLegacy\nUUID: D1EACD9F-7335-37B6-9432-E376FE36893B (arm64) /var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp166-1885ed375565/candidate/derived/Build/Products/Release-iphonesimulator/FixtureLegacy.app/FixtureLegacy",
+        "deployment_target": "15.0"
+      },
+      "Focused": {
+        "app": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp166-1885ed375565/candidate/derived/Build/Products/Release-iphonesimulator/FixtureFocused.app",
+        "sha256": "5e7b98cc0310db57465b575597e54657f9d6cc21f0ccdfbf2c51145e194eff0f",
+        "uuid": "UUID: D87F6234-70AA-3C23-9B8A-0ABA28FEF4F0 (x86_64) /var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp166-1885ed375565/candidate/derived/Build/Products/Release-iphonesimulator/FixtureFocused.app/FixtureFocused\nUUID: 94BF2454-DDE6-3218-8E2F-C5E6A26BE69F (arm64) /var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp166-1885ed375565/candidate/derived/Build/Products/Release-iphonesimulator/FixtureFocused.app/FixtureFocused",
+        "fixture": {
+          "file_count": 5,
+          "sha256": "52d6313ef450223ac97bce5f02ccf505594500025fdc58ad73302fe14f309674",
+          "files": {
+            "AllocationCounter.c": "4fc68475a35fdbb805786a79455defc5725b6e0deb4847778cd75be228f9119d",
+            "AllocationCounter.h": "d668fa6258ccbf16ce011374af0aa4178ae4ca0f8a1c4f28a51bee2077ce52ab",
+            "App.swift": "ffa7444c1b4afe84908f78b44263986018d1bd54762c5fe0144aa4d803ce2489",
+            "FocusedChecks.swift": "ca843b0562ab690facd52893ba041379a8b141dd3ab392d8c8de3498cf4c9006",
+            "InternalFixture.swift": "9a25810adbaa699d4cde3813f064a99523f673bbb17e8550555208c3ce052ffb"
+          }
+        },
+        "deployment_target": "15.0"
+      }
+    }
+  },
+  "devices": {
+    "27.0": {
+      "udid": "BE03D65C-84F6-4FE0-95DA-A8F8D81A5D21",
+      "name": "iPhone 17 Pro",
+      "state": "Booted"
+    },
+    "26.5": {
+      "udid": "65A76904-154E-4C79-9DFD-A57B526C85E6",
+      "name": "iPhone 17",
+      "state": "Booted"
+    }
+  },
+  "verification": {
+    "original_fixture_unchanged": true,
+    "definition_unchanged": true,
+    "arms": {
+      "baseline": {
+        "sdk_unchanged": true,
+        "fixture_unchanged": true
+      },
+      "candidate": {
+        "sdk_unchanged": true,
+        "fixture_unchanged": true
+      }
+    },
+    "builds": {
+      "baseline": {
+        "Scene": true,
+        "Legacy": true
+      },
+      "candidate": {
+        "Scene": true,
+        "Legacy": true,
+        "Focused": true
+      }
+    },
+    "focused_fixtures": {
+      "candidate": true
+    },
+    "passed": true
+  },
+  "performance": {
+    "27.0": {
+      "disabled": {
+        "status": "PASS",
+        "baseline": {
+          "median_ns": 12833.0,
+          "p95_ns": 16333,
+          "sample_count": 4000
+        },
+        "candidate": {
+          "median_ns": 12916.0,
+          "p95_ns": 16792,
+          "sample_count": 4000
+        },
+        "median_delta_ns": 83.0,
+        "p95_delta_ns": 459,
+        "median_allowed_delta_ns": 1283.3000000000002,
+        "p95_allowed_delta_ns": 3266.6000000000004,
+        "integrity": {
+          "status": "PASS",
+          "issues": []
+        }
+      },
+      "dispatch": {
+        "status": "PASS",
+        "baseline": {
+          "median_ns": 13625.0,
+          "p95_ns": 22750,
+          "sample_count": 4000
+        },
+        "candidate": {
+          "median_ns": 12708.0,
+          "p95_ns": 15667,
+          "sample_count": 4000
+        },
+        "median_delta_ns": -917.0,
+        "p95_delta_ns": -7083,
+        "median_allowed_delta_ns": 1362.5,
+        "p95_allowed_delta_ns": 4550.0,
+        "integrity": {
+          "status": "PASS",
+          "issues": []
+        }
+      },
+      "internal": {
+        "status": "PASS",
+        "baseline": {
+          "median_ns": 125.0,
+          "p95_ns": 167,
+          "sample_count": 4000
+        },
+        "candidate": {
+          "median_ns": 333.0,
+          "p95_ns": 417,
+          "sample_count": 4000
+        },
+        "median_delta_ns": 208.0,
+        "p95_delta_ns": 250,
+        "median_allowed_delta_ns": 500,
+        "p95_allowed_delta_ns": 1000,
+        "integrity": {
+          "status": "PASS",
+          "issues": []
+        }
+      },
+      "handoff": {
+        "status": "PASS",
+        "baseline": {
+          "median_ns": 333.0,
+          "p95_ns": 417,
+          "sample_count": 4000
+        },
+        "candidate": {
+          "median_ns": 1208.0,
+          "p95_ns": 1500,
+          "sample_count": 4000
+        },
+        "median_delta_ns": 875.0,
+        "p95_delta_ns": 1083,
+        "median_allowed_delta_ns": 5000,
+        "p95_allowed_delta_ns": 10000
+      },
+      "allocations": {
+        "baseline": {
+          "count_per_event": 0.0,
+          "bytes_per_event": 0.0
+        },
+        "candidate": {
+          "count_per_event": 0.0,
+          "bytes_per_event": 0.0
+        },
+        "status": "PASS",
+        "excess_count_per_event": 0.0,
+        "excess_bytes_per_event": 0.0
+      },
+      "handoff_allocations": {
+        "baseline": {
+          "count_per_event": 0.0,
+          "bytes_per_event": 0.0
+        },
+        "candidate": {
+          "count_per_event": 1.0,
+          "bytes_per_event": 64.0
+        },
+        "status": "PASS",
+        "excess_count_per_event": 1.0,
+        "excess_bytes_per_event": 64.0
+      }
+    },
+    "26.5": {
+      "disabled": {
+        "status": "PASS",
+        "baseline": {
+          "median_ns": 22708.0,
+          "p95_ns": 24625,
+          "sample_count": 4000
+        },
+        "candidate": {
+          "median_ns": 23167.0,
+          "p95_ns": 25750,
+          "sample_count": 4000
+        },
+        "median_delta_ns": 459.0,
+        "p95_delta_ns": 1125,
+        "median_allowed_delta_ns": 2270.8,
+        "p95_allowed_delta_ns": 4925.0,
+        "integrity": {
+          "status": "PASS",
+          "issues": []
+        }
+      },
+      "dispatch": {
+        "status": "PASS",
+        "baseline": {
+          "median_ns": 22000.0,
+          "p95_ns": 24083,
+          "sample_count": 4000
+        },
+        "candidate": {
+          "median_ns": 22959.0,
+          "p95_ns": 24458,
+          "sample_count": 4000
+        },
+        "median_delta_ns": 959.0,
+        "p95_delta_ns": 375,
+        "median_allowed_delta_ns": 2200.0,
+        "p95_allowed_delta_ns": 4816.6,
+        "integrity": {
+          "status": "PASS",
+          "issues": []
+        }
+      },
+      "internal": {
+        "status": "PASS",
+        "baseline": {
+          "median_ns": 166.0,
+          "p95_ns": 167,
+          "sample_count": 4000
+        },
+        "candidate": {
+          "median_ns": 333.0,
+          "p95_ns": 375,
+          "sample_count": 4000
+        },
+        "median_delta_ns": 167.0,
+        "p95_delta_ns": 208,
+        "median_allowed_delta_ns": 500,
+        "p95_allowed_delta_ns": 1000,
+        "integrity": {
+          "status": "PASS",
+          "issues": []
+        }
+      },
+      "handoff": {
+        "status": "PASS",
+        "baseline": {
+          "median_ns": 333.0,
+          "p95_ns": 375,
+          "sample_count": 4000
+        },
+        "candidate": {
+          "median_ns": 1209.0,
+          "p95_ns": 1500,
+          "sample_count": 4000
+        },
+        "median_delta_ns": 876.0,
+        "p95_delta_ns": 1125,
+        "median_allowed_delta_ns": 5000,
+        "p95_allowed_delta_ns": 10000
+      },
+      "allocations": {
+        "baseline": {
+          "count_per_event": 0.0,
+          "bytes_per_event": 0.0
+        },
+        "candidate": {
+          "count_per_event": 0.0,
+          "bytes_per_event": 0.0
+        },
+        "status": "PASS",
+        "excess_count_per_event": 0.0,
+        "excess_bytes_per_event": 0.0
+      },
+      "handoff_allocations": {
+        "baseline": {
+          "count_per_event": 0.0,
+          "bytes_per_event": 0.0
+        },
+        "candidate": {
+          "count_per_event": 1.0,
+          "bytes_per_event": 64.0
+        },
+        "status": "PASS",
+        "excess_count_per_event": 1.0,
+        "excess_bytes_per_event": 64.0
+      }
+    }
+  },
+  "reentrancy": [
+    {
+      "os": "27.0",
+      "run_id": "exp160-b30c8d2f427a45ef86a347d008859aa9",
+      "status": "PASS",
+      "boundary_checks": 90000,
+      "caught_throws": 10000,
+      "errors": 0,
+      "expected_dispatches": 20000,
+      "iterations": 10000,
+      "live_home_context": true,
+      "oracle": "full-RUMCoreContext-Equatable-and-handoff-fields-v1",
+      "original_dispatches": 20000,
+      "timing_claim": false
+    },
+    {
+      "os": "26.5",
+      "run_id": "exp160-6cab6ac366f148aea3782685f760ab70",
+      "status": "PASS",
+      "boundary_checks": 90000,
+      "caught_throws": 10000,
+      "errors": 0,
+      "expected_dispatches": 20000,
+      "iterations": 10000,
+      "live_home_context": true,
+      "oracle": "full-RUMCoreContext-Equatable-and-handoff-fields-v1",
+      "original_dispatches": 20000,
+      "timing_claim": false
+    }
+  ],
+  "custom_nop": [
+    {
+      "os": "27.0",
+      "arm": "baseline",
+      "status": "PASS",
+      "custom_calls": [
+        "add:one",
+        "start:two",
+        "stop:three"
+      ],
+      "expected_calls": [
+        "add:one",
+        "start:two",
+        "stop:three"
+      ],
+      "nop_nil_callbacks": 1
+    },
+    {
+      "os": "27.0",
+      "arm": "candidate",
+      "status": "PASS",
+      "custom_calls": [
+        "add:one",
+        "start:two",
+        "stop:three",
+        "add:target-one",
+        "start:target-two",
+        "stop:target-three"
+      ],
+      "expected_calls": [
+        "add:one",
+        "start:two",
+        "stop:three",
+        "add:target-one",
+        "start:target-two",
+        "stop:target-three"
+      ],
+      "nop_nil_callbacks": 1
+    },
+    {
+      "os": "27.0",
+      "arm": "candidate",
+      "status": "PASS",
+      "custom_calls": [
+        "add:one",
+        "start:two",
+        "stop:three",
+        "add:target-one",
+        "start:target-two",
+        "stop:target-three"
+      ],
+      "expected_calls": [
+        "add:one",
+        "start:two",
+        "stop:three",
+        "add:target-one",
+        "start:target-two",
+        "stop:target-three"
+      ],
+      "nop_nil_callbacks": 1
+    },
+    {
+      "os": "27.0",
+      "arm": "baseline",
+      "status": "PASS",
+      "custom_calls": [
+        "add:one",
+        "start:two",
+        "stop:three"
+      ],
+      "expected_calls": [
+        "add:one",
+        "start:two",
+        "stop:three"
+      ],
+      "nop_nil_callbacks": 1
+    },
+    {
+      "os": "26.5",
+      "arm": "baseline",
+      "status": "PASS",
+      "custom_calls": [
+        "add:one",
+        "start:two",
+        "stop:three"
+      ],
+      "expected_calls": [
+        "add:one",
+        "start:two",
+        "stop:three"
+      ],
+      "nop_nil_callbacks": 1
+    },
+    {
+      "os": "26.5",
+      "arm": "candidate",
+      "status": "PASS",
+      "custom_calls": [
+        "add:one",
+        "start:two",
+        "stop:three"
+      ],
+      "expected_calls": [
+        "add:one",
+        "start:two",
+        "stop:three"
+      ],
+      "nop_nil_callbacks": 1
+    },
+    {
+      "os": "26.5",
+      "arm": "candidate",
+      "status": "PASS",
+      "custom_calls": [
+        "add:one",
+        "start:two",
+        "stop:three"
+      ],
+      "expected_calls": [
+        "add:one",
+        "start:two",
+        "stop:three"
+      ],
+      "nop_nil_callbacks": 1
+    },
+    {
+      "os": "26.5",
+      "arm": "baseline",
+      "status": "PASS",
+      "custom_calls": [
+        "add:one",
+        "start:two",
+        "stop:three"
+      ],
+      "expected_calls": [
+        "add:one",
+        "start:two",
+        "stop:three"
+      ],
+      "nop_nil_callbacks": 1
+    }
+  ],
+  "limitations": [
+    "Simulator Release microbenchmarks, not physical-device performance proof.",
+    "Timing records per-event clock overhead in both arms; batch means are also retained.",
+    "Allocation counter observes successful heap allocations on the fixed workload thread, including realloc; it excludes VM allocations and unrelated threads.",
+    "Retention uses injected scene identifiers and posted disconnect on the actual handler; real OS scene and SwiftUI host teardown remain unproven.",
+    "iOS 15 deployment compilation does not prove iOS 15 runtime compatibility.",
+    "No backend ingestion claim: mapper events are the compatibility oracle; fixture endpoint is loopback with a dummy token."
+  ],
+  "gates": {
+    "P01": "PASS",
+    "P02": "PASS",
+    "P04": "PASS"
+  },
+  "candidate_patch_sha256": "301b139db5ccd87009b81c8b2e43ee7588561357c901a30c697b58889acf3131",
+  "original_fixture": {
+    "file_count": 4,
+    "sha256": "44bf7b154f4cf0c25e8fc1ab62131dcd1027d6d29b6f0e08e45a81c440564d3e",
+    "files": {
+      "AllocationCounter.c": "4fc68475a35fdbb805786a79455defc5725b6e0deb4847778cd75be228f9119d",
+      "AllocationCounter.h": "d668fa6258ccbf16ce011374af0aa4178ae4ca0f8a1c4f28a51bee2077ce52ab",
+      "App.swift": "4e9438781d5e17ef4cbfd06871a6938bdf9b25cc81e2b0dc5d2bff1645dc69ee",
+      "InternalFixture.swift": "5cfa2d46df2345e0868966690ce168e7154b281ef93a5f97e3e9c18a2c7e79e8"
+    }
+  },
+  "fixture_adaptation": "Only owner arguments and scoped SPI lookup names change in the copied fixture; workloads and thresholds are unchanged.",
+  "sources": {
+    "baseline": {
+      "file_count": 369,
+      "sha256": "dde2012968e33c3b0058acf6003ec15b18fce8182ca30e4befdfd8b36463e06c"
+    },
+    "candidate": {
+      "file_count": 369,
+      "sha256": "9be335902f8d6dfba523753d7badadfdee2c3ba05571efcc5ead020294d47029"
+    }
+  },
+  "commands": [
+    [
+      "xcodebuild",
+      "build",
+      "-project",
+      "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp166-1885ed375565/baseline/EXP160.xcodeproj",
+      "-scheme",
+      "EXP160",
+      "-configuration",
+      "Release",
+      "-destination",
+      "generic/platform=iOS Simulator",
+      "-derivedDataPath",
+      "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp166-1885ed375565/baseline/derived",
+      "CODE_SIGNING_ALLOWED=NO"
+    ],
+    [
+      "xcodebuild",
+      "build",
+      "-project",
+      "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp166-1885ed375565/candidate/EXP160.xcodeproj",
+      "-scheme",
+      "EXP160",
+      "-configuration",
+      "Release",
+      "-destination",
+      "generic/platform=iOS Simulator",
+      "-derivedDataPath",
+      "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp166-1885ed375565/candidate/derived",
+      "CODE_SIGNING_ALLOWED=NO"
+    ],
+    [
+      "xcodebuild",
+      "build",
+      "-project",
+      "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp166-1885ed375565/candidate/EXP160.xcodeproj",
+      "-scheme",
+      "EXP166Focused",
+      "-configuration",
+      "Release",
+      "-destination",
+      "generic/platform=iOS Simulator",
+      "-derivedDataPath",
+      "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp166-1885ed375565/candidate/derived",
+      "CODE_SIGNING_ALLOWED=NO"
+    ],
+    [
+      "xcrun",
+      "simctl",
+      "launch",
+      "--console",
+      "BE03D65C-84F6-4FE0-95DA-A8F8D81A5D21",
+      "com.datadoghq.exp160.baseline.scene",
+      "--mode",
+      "disabled",
+      "--run-id",
+      "exp160-473d9ef3827446c681eea8831201ff01"
+    ],
+    [
+      "xcrun",
+      "simctl",
+      "launch",
+      "--console",
+      "BE03D65C-84F6-4FE0-95DA-A8F8D81A5D21",
+      "com.datadoghq.exp160.candidate.scene",
+      "--mode",
+      "disabled",
+      "--run-id",
+      "exp160-616f8e7d70114c31a50dcb7dd32d2a81"
+    ],
+    [
+      "xcrun",
+      "simctl",
+      "launch",
+      "--console",
+      "BE03D65C-84F6-4FE0-95DA-A8F8D81A5D21",
+      "com.datadoghq.exp160.candidate.scene",
+      "--mode",
+      "disabled",
+      "--run-id",
+      "exp160-c7926f4aa0654317ab1830350d3a9586"
+    ],
+    [
+      "xcrun",
+      "simctl",
+      "launch",
+      "--console",
+      "BE03D65C-84F6-4FE0-95DA-A8F8D81A5D21",
+      "com.datadoghq.exp160.baseline.scene",
+      "--mode",
+      "disabled",
+      "--run-id",
+      "exp160-3e3f2058e6c3493a95369dafedc44e34"
+    ],
+    [
+      "xcrun",
+      "simctl",
+      "launch",
+      "--console",
+      "BE03D65C-84F6-4FE0-95DA-A8F8D81A5D21",
+      "com.datadoghq.exp160.baseline.scene",
+      "--mode",
+      "dispatch",
+      "--run-id",
+      "exp160-11381c323f1d4cafb1a71cb95dcb8d0e"
+    ],
+    [
+      "xcrun",
+      "simctl",
+      "launch",
+      "--console",
+      "BE03D65C-84F6-4FE0-95DA-A8F8D81A5D21",
+      "com.datadoghq.exp160.candidate.scene",
+      "--mode",
+      "dispatch",
+      "--run-id",
+      "exp160-c8aa664093f04f6280dc3a60e6e643fb"
+    ],
+    [
+      "xcrun",
+      "simctl",
+      "launch",
+      "--console",
+      "BE03D65C-84F6-4FE0-95DA-A8F8D81A5D21",
+      "com.datadoghq.exp160.candidate.scene",
+      "--mode",
+      "dispatch",
+      "--run-id",
+      "exp160-28582b6bfbd94225aeeb92b797e8fcc9"
+    ],
+    [
+      "xcrun",
+      "simctl",
+      "launch",
+      "--console",
+      "BE03D65C-84F6-4FE0-95DA-A8F8D81A5D21",
+      "com.datadoghq.exp160.baseline.scene",
+      "--mode",
+      "dispatch",
+      "--run-id",
+      "exp160-d548974e4571407d9109ed653de4dae5"
+    ],
+    [
+      "xcrun",
+      "simctl",
+      "launch",
+      "--console",
+      "BE03D65C-84F6-4FE0-95DA-A8F8D81A5D21",
+      "com.datadoghq.exp160.baseline.scene",
+      "--mode",
+      "internal",
+      "--run-id",
+      "exp160-8b7d9c01da744d69bad4e01aa5274c93"
+    ],
+    [
+      "xcrun",
+      "simctl",
+      "launch",
+      "--console",
+      "BE03D65C-84F6-4FE0-95DA-A8F8D81A5D21",
+      "com.datadoghq.exp160.candidate.scene",
+      "--mode",
+      "internal",
+      "--run-id",
+      "exp160-a3db584b37034265b8097928434b6099"
+    ],
+    [
+      "xcrun",
+      "simctl",
+      "launch",
+      "--console",
+      "BE03D65C-84F6-4FE0-95DA-A8F8D81A5D21",
+      "com.datadoghq.exp160.candidate.scene",
+      "--mode",
+      "internal",
+      "--run-id",
+      "exp160-2f178aa0a7bb447f9e40d6f613896197"
+    ],
+    [
+      "xcrun",
+      "simctl",
+      "launch",
+      "--console",
+      "BE03D65C-84F6-4FE0-95DA-A8F8D81A5D21",
+      "com.datadoghq.exp160.baseline.scene",
+      "--mode",
+      "internal",
+      "--run-id",
+      "exp160-9901bdebb47743f5bd4d20a0111288a4"
+    ],
+    [
+      "xcrun",
+      "simctl",
+      "launch",
+      "--console",
+      "65A76904-154E-4C79-9DFD-A57B526C85E6",
+      "com.datadoghq.exp160.baseline.scene",
+      "--mode",
+      "disabled",
+      "--run-id",
+      "exp160-b0f13e4ed1914c6589d1b1bd8ff7bb07"
+    ],
+    [
+      "xcrun",
+      "simctl",
+      "launch",
+      "--console",
+      "65A76904-154E-4C79-9DFD-A57B526C85E6",
+      "com.datadoghq.exp160.candidate.scene",
+      "--mode",
+      "disabled",
+      "--run-id",
+      "exp160-5cf6a0db96634a0dadbeb3887b3913bb"
+    ],
+    [
+      "xcrun",
+      "simctl",
+      "launch",
+      "--console",
+      "65A76904-154E-4C79-9DFD-A57B526C85E6",
+      "com.datadoghq.exp160.candidate.scene",
+      "--mode",
+      "disabled",
+      "--run-id",
+      "exp160-408b87be4eae4a3c959c694d5c801189"
+    ],
+    [
+      "xcrun",
+      "simctl",
+      "launch",
+      "--console",
+      "65A76904-154E-4C79-9DFD-A57B526C85E6",
+      "com.datadoghq.exp160.baseline.scene",
+      "--mode",
+      "disabled",
+      "--run-id",
+      "exp160-795afef86bd04decb44897ea3051ff25"
+    ],
+    [
+      "xcrun",
+      "simctl",
+      "launch",
+      "--console",
+      "65A76904-154E-4C79-9DFD-A57B526C85E6",
+      "com.datadoghq.exp160.baseline.scene",
+      "--mode",
+      "dispatch",
+      "--run-id",
+      "exp160-cc73b019dd64409888ea61cb4263b874"
+    ],
+    [
+      "xcrun",
+      "simctl",
+      "launch",
+      "--console",
+      "65A76904-154E-4C79-9DFD-A57B526C85E6",
+      "com.datadoghq.exp160.candidate.scene",
+      "--mode",
+      "dispatch",
+      "--run-id",
+      "exp160-a9d2d3d68fda4a78b869031b4c2dd364"
+    ],
+    [
+      "xcrun",
+      "simctl",
+      "launch",
+      "--console",
+      "65A76904-154E-4C79-9DFD-A57B526C85E6",
+      "com.datadoghq.exp160.candidate.scene",
+      "--mode",
+      "dispatch",
+      "--run-id",
+      "exp160-5e7ee6e4476b409b84f9e6fd6b1232e6"
+    ],
+    [
+      "xcrun",
+      "simctl",
+      "launch",
+      "--console",
+      "65A76904-154E-4C79-9DFD-A57B526C85E6",
+      "com.datadoghq.exp160.baseline.scene",
+      "--mode",
+      "dispatch",
+      "--run-id",
+      "exp160-8bf41d50730743d6963fb938791f9e15"
+    ],
+    [
+      "xcrun",
+      "simctl",
+      "launch",
+      "--console",
+      "65A76904-154E-4C79-9DFD-A57B526C85E6",
+      "com.datadoghq.exp160.baseline.scene",
+      "--mode",
+      "internal",
+      "--run-id",
+      "exp160-38a5b372e6b843919042ffec8e9e24ec"
+    ],
+    [
+      "xcrun",
+      "simctl",
+      "launch",
+      "--console",
+      "65A76904-154E-4C79-9DFD-A57B526C85E6",
+      "com.datadoghq.exp160.candidate.scene",
+      "--mode",
+      "internal",
+      "--run-id",
+      "exp160-115ef05e87be4ad59990d2fd59a66b5f"
+    ],
+    [
+      "xcrun",
+      "simctl",
+      "launch",
+      "--console",
+      "65A76904-154E-4C79-9DFD-A57B526C85E6",
+      "com.datadoghq.exp160.candidate.scene",
+      "--mode",
+      "internal",
+      "--run-id",
+      "exp160-61efc63d3e974eef9d23c263fb76bfc8"
+    ],
+    [
+      "xcrun",
+      "simctl",
+      "launch",
+      "--console",
+      "65A76904-154E-4C79-9DFD-A57B526C85E6",
+      "com.datadoghq.exp160.baseline.scene",
+      "--mode",
+      "internal",
+      "--run-id",
+      "exp160-3c0aeb9b71054e2ca533d75bc7a43168"
+    ],
+    [
+      "xcrun",
+      "simctl",
+      "launch",
+      "--console",
+      "BE03D65C-84F6-4FE0-95DA-A8F8D81A5D21",
+      "com.datadoghq.exp160.candidate.focused",
+      "--mode",
+      "focused",
+      "--run-id",
+      "exp160-b30c8d2f427a45ef86a347d008859aa9"
+    ],
+    [
+      "xcrun",
+      "simctl",
+      "launch",
+      "--console",
+      "65A76904-154E-4C79-9DFD-A57B526C85E6",
+      "com.datadoghq.exp160.candidate.focused",
+      "--mode",
+      "focused",
+      "--run-id",
+      "exp160-6cab6ac366f148aea3782685f760ab70"
+    ]
+  ],
+  "scope": "EXP-166 dispatch repair only; no other compatibility or retention gate is reassessed.",
+  "samples_sha256": "1bcc72a6cad3708d8a46f419e06c365339674111593195c83b413fae2bbd60e1",
+  "accepted_sdk_revision": "5eb3c1aace8d07f03f2bb113afcf5243f07b6e4e",
+  "working_sources_match_frozen_candidate": true,
+  "host": {
+    "os": "ProductName:\t\tmacOS\nProductVersion:\t\t26.6.2\nBuildVersion:\t\t25G83",
+    "architecture": "arm64",
+    "model": "Mac16,6",
+    "cpu": "Apple M4 Max"
+  },
+  "runtimes": [
+    {
+      "name": "iOS 26.5",
+      "version": "26.5",
+      "buildversion": "23F77",
+      "identifier": "com.apple.CoreSimulator.SimRuntime.iOS-26-5",
+      "isAvailable": true
+    },
+    {
+      "name": "iOS 27.0",
+      "version": "27.0",
+      "buildversion": "24A434",
+      "identifier": "com.apple.CoreSimulator.SimRuntime.iOS-27-0",
+      "isAvailable": true
+    }
+  ],
+  "mach_o_deployment": {
+    "baseline": {
+      "Scene": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp166-1885ed375565/baseline/derived/Build/Products/Release-iphonesimulator/FixtureScene.app/FixtureScene (architecture x86_64):\nLoad command 11\n      cmd LC_BUILD_VERSION\n  cmdsize 32\n platform IOSSIMULATOR\n    minos 15.0\n      sdk 27.0\n   ntools 1\n     tool LD\n  version 27037.1\n/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp166-1885ed375565/baseline/derived/Build/Products/Release-iphonesimulator/FixtureScene.app/FixtureScene (architecture arm64):\nLoad command 11\n      cmd LC_BUILD_VERSION\n  cmdsize 32\n platform IOSSIMULATOR\n    minos 15.0\n      sdk 27.0\n   ntools 1\n     tool LD\n  version 27037.1",
+      "Legacy": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp166-1885ed375565/baseline/derived/Build/Products/Release-iphonesimulator/FixtureLegacy.app/FixtureLegacy (architecture x86_64):\nLoad command 11\n      cmd LC_BUILD_VERSION\n  cmdsize 32\n platform IOSSIMULATOR\n    minos 15.0\n      sdk 27.0\n   ntools 1\n     tool LD\n  version 27037.1\n/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp166-1885ed375565/baseline/derived/Build/Products/Release-iphonesimulator/FixtureLegacy.app/FixtureLegacy (architecture arm64):\nLoad command 11\n      cmd LC_BUILD_VERSION\n  cmdsize 32\n platform IOSSIMULATOR\n    minos 15.0\n      sdk 27.0\n   ntools 1\n     tool LD\n  version 27037.1"
+    },
+    "candidate": {
+      "Scene": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp166-1885ed375565/candidate/derived/Build/Products/Release-iphonesimulator/FixtureScene.app/FixtureScene (architecture x86_64):\nLoad command 11\n      cmd LC_BUILD_VERSION\n  cmdsize 32\n platform IOSSIMULATOR\n    minos 15.0\n      sdk 27.0\n   ntools 1\n     tool LD\n  version 27037.1\n/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp166-1885ed375565/candidate/derived/Build/Products/Release-iphonesimulator/FixtureScene.app/FixtureScene (architecture arm64):\nLoad command 11\n      cmd LC_BUILD_VERSION\n  cmdsize 32\n platform IOSSIMULATOR\n    minos 15.0\n      sdk 27.0\n   ntools 1\n     tool LD\n  version 27037.1",
+      "Legacy": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp166-1885ed375565/candidate/derived/Build/Products/Release-iphonesimulator/FixtureLegacy.app/FixtureLegacy (architecture x86_64):\nLoad command 11\n      cmd LC_BUILD_VERSION\n  cmdsize 32\n platform IOSSIMULATOR\n    minos 15.0\n      sdk 27.0\n   ntools 1\n     tool LD\n  version 27037.1\n/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp166-1885ed375565/candidate/derived/Build/Products/Release-iphonesimulator/FixtureLegacy.app/FixtureLegacy (architecture arm64):\nLoad command 11\n      cmd LC_BUILD_VERSION\n  cmdsize 32\n platform IOSSIMULATOR\n    minos 15.0\n      sdk 27.0\n   ntools 1\n     tool LD\n  version 27037.1",
+      "Focused": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp166-1885ed375565/candidate/derived/Build/Products/Release-iphonesimulator/FixtureFocused.app/FixtureFocused (architecture x86_64):\nLoad command 11\n      cmd LC_BUILD_VERSION\n  cmdsize 32\n platform IOSSIMULATOR\n    minos 15.0\n      sdk 27.0\n   ntools 1\n     tool LD\n  version 27037.1\n/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp166-1885ed375565/candidate/derived/Build/Products/Release-iphonesimulator/FixtureFocused.app/FixtureFocused (architecture arm64):\nLoad command 11\n      cmd LC_BUILD_VERSION\n  cmdsize 32\n platform IOSSIMULATOR\n    minos 15.0\n      sdk 27.0\n   ntools 1\n     tool LD\n  version 27037.1"
+    }
+  },
+  "fixture_binding_diff": "--- /Users/valentin.pertuisot/work/dd-sdk-ios/tools/multi-scene/baselines/Fixture/InternalFixture.swift\t2026-09-17 02:02:02\n+++ /var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp166-1885ed375565/candidate/Sources/InternalFixture.swift\t2026-09-17 11:36:26\n@@ -52,7 +52,7 @@\n         if let monitorSubscriber { enabled.publish(to: monitorSubscriber) }\n         var liveContext = false\n         _ = enabled.intercept_sendEvent(application: .shared, event: event) {\n-            liveContext = RUMContextHandoff.current?.rumContext?.viewID != nil\n+            liveContext = RUMContextHandoff.current(for: monitorSubscriber?.rumContextHandoffOwner)?.rumContext?.viewID != nil\n             return true\n         }\n         result[\"handoff_live_context\"] = liveContext\n@@ -64,20 +64,20 @@\n         for _ in 0..<10_000 {\n             _ = enabled.intercept_sendEvent(application: .shared, event: event) {\n                 nestedCalls += 1\n-                if RUMUIEventNetworkContext.currentSceneIdentifier != expectedScene { errors += 1 }\n-                RUMContextHandoff.withValue(rumContext: nil, sceneIdentifier: \"B\") {\n-                    if RUMContextHandoff.current?.sceneIdentifier != \"B\" { errors += 1 }\n+                if RUMUIEventNetworkContext.currentSceneIdentifier(for: monitorSubscriber?.rumContextHandoffOwner) != expectedScene { errors += 1 }\n+                RUMContextHandoff.withValue(owner: monitorSubscriber?.rumContextHandoffOwner, rumContext: nil, sceneIdentifier: \"B\") {\n+                    if RUMContextHandoff.current(for: monitorSubscriber?.rumContextHandoffOwner)?.sceneIdentifier != \"B\" { errors += 1 }\n                     _ = enabled.intercept_sendEvent(application: .shared, event: event) {\n                         nestedCalls += 1\n-                        if RUMUIEventNetworkContext.currentSceneIdentifier != expectedScene { errors += 1 }\n+                        if RUMUIEventNetworkContext.currentSceneIdentifier(for: monitorSubscriber?.rumContextHandoffOwner) != expectedScene { errors += 1 }\n                         return false // Early return must still restore B.\n                     }\n-                    if RUMContextHandoff.current?.sceneIdentifier != \"B\" { errors += 1 }\n+                    if RUMContextHandoff.current(for: monitorSubscriber?.rumContextHandoffOwner)?.sceneIdentifier != \"B\" { errors += 1 }\n                 }\n-                if RUMUIEventNetworkContext.currentSceneIdentifier != expectedScene { errors += 1 }\n+                if RUMUIEventNetworkContext.currentSceneIdentifier(for: monitorSubscriber?.rumContextHandoffOwner) != expectedScene { errors += 1 }\n                 return true\n             }\n-            if RUMContextHandoff.current != nil { errors += 1 }\n+            if RUMContextHandoff.current(for: monitorSubscriber?.rumContextHandoffOwner) != nil { errors += 1 }\n         }\n         result[\"reentrancy\"] = [\"iterations\": 10_000, \"original_dispatches\": nestedCalls, \"expected_dispatches\": 20_000, \"errors\": errors]\n         #endif\n",
+  "runner_hashes": {
+    "tools/multi-scene/handoff-isolation/run.py": "c80e4ede783a6da2272afa4cfea72182a5fbdba118b81c09438f187e51893837",
+    "tools/multi-scene/handoff-isolation/platforms.py": "43a7987ce2422bc0ac30aa893fce23f3a9e6e9e87626e71cd8f5f557d180686f"
+  },
+  "runs": [
+    {
+      "run_id": "exp160-473d9ef3827446c681eea8831201ff01",
+      "arm": "baseline",
+      "lifecycle": "Scene",
+      "os": "27.0",
+      "mode": "disabled",
+      "order": 0,
+      "clean_install": true,
+      "status": "MEASURED",
+      "artifact": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp166-1885ed375565/runs/exp160-473d9ef3827446c681eea8831201ff01/result.json",
+      "launch": "console process 68212",
+      "binary_sha256": "c1647d90a05a7b3405b97b0acc8e9d37efd66caea2d56ae3fdfb4e99b3e66ce3",
+      "fixture_sha256": "9a5ec75eaf2cfe5d2ae886d1ddbd97351100b22748e6c839229397193612c6f0"
+    },
+    {
+      "run_id": "exp160-616f8e7d70114c31a50dcb7dd32d2a81",
+      "arm": "candidate",
+      "lifecycle": "Scene",
+      "os": "27.0",
+      "mode": "disabled",
+      "order": 1,
+      "clean_install": true,
+      "status": "MEASURED",
+      "artifact": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp166-1885ed375565/runs/exp160-616f8e7d70114c31a50dcb7dd32d2a81/result.json",
+      "launch": "console process 68357",
+      "binary_sha256": "ca2c3346df4eb691ba673676ead26ee8f78f077298bf07d4c415412b50c5ba6f",
+      "fixture_sha256": "9a5ec75eaf2cfe5d2ae886d1ddbd97351100b22748e6c839229397193612c6f0"
+    },
+    {
+      "run_id": "exp160-c7926f4aa0654317ab1830350d3a9586",
+      "arm": "candidate",
+      "lifecycle": "Scene",
+      "os": "27.0",
+      "mode": "disabled",
+      "order": 2,
+      "clean_install": true,
+      "status": "MEASURED",
+      "artifact": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp166-1885ed375565/runs/exp160-c7926f4aa0654317ab1830350d3a9586/result.json",
+      "launch": "console process 68460",
+      "binary_sha256": "ca2c3346df4eb691ba673676ead26ee8f78f077298bf07d4c415412b50c5ba6f",
+      "fixture_sha256": "9a5ec75eaf2cfe5d2ae886d1ddbd97351100b22748e6c839229397193612c6f0"
+    },
+    {
+      "run_id": "exp160-3e3f2058e6c3493a95369dafedc44e34",
+      "arm": "baseline",
+      "lifecycle": "Scene",
+      "os": "27.0",
+      "mode": "disabled",
+      "order": 3,
+      "clean_install": true,
+      "status": "MEASURED",
+      "artifact": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp166-1885ed375565/runs/exp160-3e3f2058e6c3493a95369dafedc44e34/result.json",
+      "launch": "console process 68627",
+      "binary_sha256": "c1647d90a05a7b3405b97b0acc8e9d37efd66caea2d56ae3fdfb4e99b3e66ce3",
+      "fixture_sha256": "9a5ec75eaf2cfe5d2ae886d1ddbd97351100b22748e6c839229397193612c6f0"
+    },
+    {
+      "run_id": "exp160-11381c323f1d4cafb1a71cb95dcb8d0e",
+      "arm": "baseline",
+      "lifecycle": "Scene",
+      "os": "27.0",
+      "mode": "dispatch",
+      "order": 0,
+      "clean_install": true,
+      "status": "MEASURED",
+      "artifact": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp166-1885ed375565/runs/exp160-11381c323f1d4cafb1a71cb95dcb8d0e/result.json",
+      "launch": "console process 68750",
+      "binary_sha256": "c1647d90a05a7b3405b97b0acc8e9d37efd66caea2d56ae3fdfb4e99b3e66ce3",
+      "fixture_sha256": "9a5ec75eaf2cfe5d2ae886d1ddbd97351100b22748e6c839229397193612c6f0"
+    },
+    {
+      "run_id": "exp160-c8aa664093f04f6280dc3a60e6e643fb",
+      "arm": "candidate",
+      "lifecycle": "Scene",
+      "os": "27.0",
+      "mode": "dispatch",
+      "order": 1,
+      "clean_install": true,
+      "status": "MEASURED",
+      "artifact": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp166-1885ed375565/runs/exp160-c8aa664093f04f6280dc3a60e6e643fb/result.json",
+      "launch": "console process 68855",
+      "binary_sha256": "ca2c3346df4eb691ba673676ead26ee8f78f077298bf07d4c415412b50c5ba6f",
+      "fixture_sha256": "9a5ec75eaf2cfe5d2ae886d1ddbd97351100b22748e6c839229397193612c6f0"
+    },
+    {
+      "run_id": "exp160-28582b6bfbd94225aeeb92b797e8fcc9",
+      "arm": "candidate",
+      "lifecycle": "Scene",
+      "os": "27.0",
+      "mode": "dispatch",
+      "order": 2,
+      "clean_install": true,
+      "status": "MEASURED",
+      "artifact": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp166-1885ed375565/runs/exp160-28582b6bfbd94225aeeb92b797e8fcc9/result.json",
+      "launch": "console process 68949",
+      "binary_sha256": "ca2c3346df4eb691ba673676ead26ee8f78f077298bf07d4c415412b50c5ba6f",
+      "fixture_sha256": "9a5ec75eaf2cfe5d2ae886d1ddbd97351100b22748e6c839229397193612c6f0"
+    },
+    {
+      "run_id": "exp160-d548974e4571407d9109ed653de4dae5",
+      "arm": "baseline",
+      "lifecycle": "Scene",
+      "os": "27.0",
+      "mode": "dispatch",
+      "order": 3,
+      "clean_install": true,
+      "status": "MEASURED",
+      "artifact": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp166-1885ed375565/runs/exp160-d548974e4571407d9109ed653de4dae5/result.json",
+      "launch": "console process 69047",
+      "binary_sha256": "c1647d90a05a7b3405b97b0acc8e9d37efd66caea2d56ae3fdfb4e99b3e66ce3",
+      "fixture_sha256": "9a5ec75eaf2cfe5d2ae886d1ddbd97351100b22748e6c839229397193612c6f0"
+    },
+    {
+      "run_id": "exp160-8b7d9c01da744d69bad4e01aa5274c93",
+      "arm": "baseline",
+      "lifecycle": "Scene",
+      "os": "27.0",
+      "mode": "internal",
+      "order": 0,
+      "clean_install": true,
+      "status": "MEASURED",
+      "artifact": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp166-1885ed375565/runs/exp160-8b7d9c01da744d69bad4e01aa5274c93/result.json",
+      "launch": "console process 69200",
+      "binary_sha256": "c1647d90a05a7b3405b97b0acc8e9d37efd66caea2d56ae3fdfb4e99b3e66ce3",
+      "fixture_sha256": "9a5ec75eaf2cfe5d2ae886d1ddbd97351100b22748e6c839229397193612c6f0"
+    },
+    {
+      "run_id": "exp160-a3db584b37034265b8097928434b6099",
+      "arm": "candidate",
+      "lifecycle": "Scene",
+      "os": "27.0",
+      "mode": "internal",
+      "order": 1,
+      "clean_install": true,
+      "status": "MEASURED",
+      "artifact": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp166-1885ed375565/runs/exp160-a3db584b37034265b8097928434b6099/result.json",
+      "launch": "console process 69289",
+      "binary_sha256": "ca2c3346df4eb691ba673676ead26ee8f78f077298bf07d4c415412b50c5ba6f",
+      "fixture_sha256": "9a5ec75eaf2cfe5d2ae886d1ddbd97351100b22748e6c839229397193612c6f0"
+    },
+    {
+      "run_id": "exp160-2f178aa0a7bb447f9e40d6f613896197",
+      "arm": "candidate",
+      "lifecycle": "Scene",
+      "os": "27.0",
+      "mode": "internal",
+      "order": 2,
+      "clean_install": true,
+      "status": "MEASURED",
+      "artifact": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp166-1885ed375565/runs/exp160-2f178aa0a7bb447f9e40d6f613896197/result.json",
+      "launch": "console process 69386",
+      "binary_sha256": "ca2c3346df4eb691ba673676ead26ee8f78f077298bf07d4c415412b50c5ba6f",
+      "fixture_sha256": "9a5ec75eaf2cfe5d2ae886d1ddbd97351100b22748e6c839229397193612c6f0"
+    },
+    {
+      "run_id": "exp160-9901bdebb47743f5bd4d20a0111288a4",
+      "arm": "baseline",
+      "lifecycle": "Scene",
+      "os": "27.0",
+      "mode": "internal",
+      "order": 3,
+      "clean_install": true,
+      "status": "MEASURED",
+      "artifact": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp166-1885ed375565/runs/exp160-9901bdebb47743f5bd4d20a0111288a4/result.json",
+      "launch": "console process 69514",
+      "binary_sha256": "c1647d90a05a7b3405b97b0acc8e9d37efd66caea2d56ae3fdfb4e99b3e66ce3",
+      "fixture_sha256": "9a5ec75eaf2cfe5d2ae886d1ddbd97351100b22748e6c839229397193612c6f0"
+    },
+    {
+      "run_id": "exp160-b0f13e4ed1914c6589d1b1bd8ff7bb07",
+      "arm": "baseline",
+      "lifecycle": "Scene",
+      "os": "26.5",
+      "mode": "disabled",
+      "order": 0,
+      "clean_install": true,
+      "status": "MEASURED",
+      "artifact": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp166-1885ed375565/runs/exp160-b0f13e4ed1914c6589d1b1bd8ff7bb07/result.json",
+      "launch": "console process 69589",
+      "binary_sha256": "c1647d90a05a7b3405b97b0acc8e9d37efd66caea2d56ae3fdfb4e99b3e66ce3",
+      "fixture_sha256": "9a5ec75eaf2cfe5d2ae886d1ddbd97351100b22748e6c839229397193612c6f0"
+    },
+    {
+      "run_id": "exp160-5cf6a0db96634a0dadbeb3887b3913bb",
+      "arm": "candidate",
+      "lifecycle": "Scene",
+      "os": "26.5",
+      "mode": "disabled",
+      "order": 1,
+      "clean_install": true,
+      "status": "MEASURED",
+      "artifact": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp166-1885ed375565/runs/exp160-5cf6a0db96634a0dadbeb3887b3913bb/result.json",
+      "launch": "console process 69730",
+      "binary_sha256": "ca2c3346df4eb691ba673676ead26ee8f78f077298bf07d4c415412b50c5ba6f",
+      "fixture_sha256": "9a5ec75eaf2cfe5d2ae886d1ddbd97351100b22748e6c839229397193612c6f0"
+    },
+    {
+      "run_id": "exp160-408b87be4eae4a3c959c694d5c801189",
+      "arm": "candidate",
+      "lifecycle": "Scene",
+      "os": "26.5",
+      "mode": "disabled",
+      "order": 2,
+      "clean_install": true,
+      "status": "MEASURED",
+      "artifact": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp166-1885ed375565/runs/exp160-408b87be4eae4a3c959c694d5c801189/result.json",
+      "launch": "console process 69895",
+      "binary_sha256": "ca2c3346df4eb691ba673676ead26ee8f78f077298bf07d4c415412b50c5ba6f",
+      "fixture_sha256": "9a5ec75eaf2cfe5d2ae886d1ddbd97351100b22748e6c839229397193612c6f0"
+    },
+    {
+      "run_id": "exp160-795afef86bd04decb44897ea3051ff25",
+      "arm": "baseline",
+      "lifecycle": "Scene",
+      "os": "26.5",
+      "mode": "disabled",
+      "order": 3,
+      "clean_install": true,
+      "status": "MEASURED",
+      "artifact": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp166-1885ed375565/runs/exp160-795afef86bd04decb44897ea3051ff25/result.json",
+      "launch": "console process 69998",
+      "binary_sha256": "c1647d90a05a7b3405b97b0acc8e9d37efd66caea2d56ae3fdfb4e99b3e66ce3",
+      "fixture_sha256": "9a5ec75eaf2cfe5d2ae886d1ddbd97351100b22748e6c839229397193612c6f0"
+    },
+    {
+      "run_id": "exp160-cc73b019dd64409888ea61cb4263b874",
+      "arm": "baseline",
+      "lifecycle": "Scene",
+      "os": "26.5",
+      "mode": "dispatch",
+      "order": 0,
+      "clean_install": true,
+      "status": "MEASURED",
+      "artifact": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp166-1885ed375565/runs/exp160-cc73b019dd64409888ea61cb4263b874/result.json",
+      "launch": "console process 70124",
+      "binary_sha256": "c1647d90a05a7b3405b97b0acc8e9d37efd66caea2d56ae3fdfb4e99b3e66ce3",
+      "fixture_sha256": "9a5ec75eaf2cfe5d2ae886d1ddbd97351100b22748e6c839229397193612c6f0"
+    },
+    {
+      "run_id": "exp160-a9d2d3d68fda4a78b869031b4c2dd364",
+      "arm": "candidate",
+      "lifecycle": "Scene",
+      "os": "26.5",
+      "mode": "dispatch",
+      "order": 1,
+      "clean_install": true,
+      "status": "MEASURED",
+      "artifact": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp166-1885ed375565/runs/exp160-a9d2d3d68fda4a78b869031b4c2dd364/result.json",
+      "launch": "console process 70284",
+      "binary_sha256": "ca2c3346df4eb691ba673676ead26ee8f78f077298bf07d4c415412b50c5ba6f",
+      "fixture_sha256": "9a5ec75eaf2cfe5d2ae886d1ddbd97351100b22748e6c839229397193612c6f0"
+    },
+    {
+      "run_id": "exp160-5e7ee6e4476b409b84f9e6fd6b1232e6",
+      "arm": "candidate",
+      "lifecycle": "Scene",
+      "os": "26.5",
+      "mode": "dispatch",
+      "order": 2,
+      "clean_install": true,
+      "status": "MEASURED",
+      "artifact": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp166-1885ed375565/runs/exp160-5e7ee6e4476b409b84f9e6fd6b1232e6/result.json",
+      "launch": "console process 70395",
+      "binary_sha256": "ca2c3346df4eb691ba673676ead26ee8f78f077298bf07d4c415412b50c5ba6f",
+      "fixture_sha256": "9a5ec75eaf2cfe5d2ae886d1ddbd97351100b22748e6c839229397193612c6f0"
+    },
+    {
+      "run_id": "exp160-8bf41d50730743d6963fb938791f9e15",
+      "arm": "baseline",
+      "lifecycle": "Scene",
+      "os": "26.5",
+      "mode": "dispatch",
+      "order": 3,
+      "clean_install": true,
+      "status": "MEASURED",
+      "artifact": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp166-1885ed375565/runs/exp160-8bf41d50730743d6963fb938791f9e15/result.json",
+      "launch": "console process 70502",
+      "binary_sha256": "c1647d90a05a7b3405b97b0acc8e9d37efd66caea2d56ae3fdfb4e99b3e66ce3",
+      "fixture_sha256": "9a5ec75eaf2cfe5d2ae886d1ddbd97351100b22748e6c839229397193612c6f0"
+    },
+    {
+      "run_id": "exp160-38a5b372e6b843919042ffec8e9e24ec",
+      "arm": "baseline",
+      "lifecycle": "Scene",
+      "os": "26.5",
+      "mode": "internal",
+      "order": 0,
+      "clean_install": true,
+      "status": "MEASURED",
+      "artifact": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp166-1885ed375565/runs/exp160-38a5b372e6b843919042ffec8e9e24ec/result.json",
+      "launch": "console process 70617",
+      "binary_sha256": "c1647d90a05a7b3405b97b0acc8e9d37efd66caea2d56ae3fdfb4e99b3e66ce3",
+      "fixture_sha256": "9a5ec75eaf2cfe5d2ae886d1ddbd97351100b22748e6c839229397193612c6f0"
+    },
+    {
+      "run_id": "exp160-115ef05e87be4ad59990d2fd59a66b5f",
+      "arm": "candidate",
+      "lifecycle": "Scene",
+      "os": "26.5",
+      "mode": "internal",
+      "order": 1,
+      "clean_install": true,
+      "status": "MEASURED",
+      "artifact": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp166-1885ed375565/runs/exp160-115ef05e87be4ad59990d2fd59a66b5f/result.json",
+      "launch": "console process 70703",
+      "binary_sha256": "ca2c3346df4eb691ba673676ead26ee8f78f077298bf07d4c415412b50c5ba6f",
+      "fixture_sha256": "9a5ec75eaf2cfe5d2ae886d1ddbd97351100b22748e6c839229397193612c6f0"
+    },
+    {
+      "run_id": "exp160-61efc63d3e974eef9d23c263fb76bfc8",
+      "arm": "candidate",
+      "lifecycle": "Scene",
+      "os": "26.5",
+      "mode": "internal",
+      "order": 2,
+      "clean_install": true,
+      "status": "MEASURED",
+      "artifact": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp166-1885ed375565/runs/exp160-61efc63d3e974eef9d23c263fb76bfc8/result.json",
+      "launch": "console process 70784",
+      "binary_sha256": "ca2c3346df4eb691ba673676ead26ee8f78f077298bf07d4c415412b50c5ba6f",
+      "fixture_sha256": "9a5ec75eaf2cfe5d2ae886d1ddbd97351100b22748e6c839229397193612c6f0"
+    },
+    {
+      "run_id": "exp160-3c0aeb9b71054e2ca533d75bc7a43168",
+      "arm": "baseline",
+      "lifecycle": "Scene",
+      "os": "26.5",
+      "mode": "internal",
+      "order": 3,
+      "clean_install": true,
+      "status": "MEASURED",
+      "artifact": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp166-1885ed375565/runs/exp160-3c0aeb9b71054e2ca533d75bc7a43168/result.json",
+      "launch": "console process 70880",
+      "binary_sha256": "c1647d90a05a7b3405b97b0acc8e9d37efd66caea2d56ae3fdfb4e99b3e66ce3",
+      "fixture_sha256": "9a5ec75eaf2cfe5d2ae886d1ddbd97351100b22748e6c839229397193612c6f0"
+    },
+    {
+      "run_id": "exp160-b30c8d2f427a45ef86a347d008859aa9",
+      "arm": "candidate",
+      "lifecycle": "Focused",
+      "os": "27.0",
+      "mode": "focused",
+      "order": "full-context-P04",
+      "clean_install": true,
+      "status": "MEASURED",
+      "artifact": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp166-1885ed375565/runs/exp160-b30c8d2f427a45ef86a347d008859aa9/result.json",
+      "launch": "console process 71020",
+      "binary_sha256": "5e7b98cc0310db57465b575597e54657f9d6cc21f0ccdfbf2c51145e194eff0f",
+      "fixture_sha256": "52d6313ef450223ac97bce5f02ccf505594500025fdc58ad73302fe14f309674"
+    },
+    {
+      "run_id": "exp160-6cab6ac366f148aea3782685f760ab70",
+      "arm": "candidate",
+      "lifecycle": "Focused",
+      "os": "26.5",
+      "mode": "focused",
+      "order": "full-context-P04",
+      "clean_install": true,
+      "status": "MEASURED",
+      "artifact": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp166-1885ed375565/runs/exp160-6cab6ac366f148aea3782685f760ab70/result.json",
+      "launch": "console process 71104",
+      "binary_sha256": "5e7b98cc0310db57465b575597e54657f9d6cc21f0ccdfbf2c51145e194eff0f",
+      "fixture_sha256": "52d6313ef450223ac97bce5f02ccf505594500025fdc58ad73302fe14f309674"
+    }
+  ],
+  "numeric_samples_file": "EXP-166-handoff-performance-samples.json",
+  "numeric_samples_sha256": "7a5243c5a65d6c15c5bfafb5ea4e6b002f288a96e10244d4a8e95f37dbe2084b"
+}

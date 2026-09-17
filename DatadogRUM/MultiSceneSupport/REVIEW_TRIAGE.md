@@ -14,8 +14,9 @@ not establish mounted SwiftUI or physical lifecycle ordering. The initial
 assessment claimed no repair. EXP-162 closes D01/D02 with complete platform
 builds and focused iOS checks; EXP-163 closes D12 with 212 affected tests.
 EXP-164 closes D09 with 31 tests and mounted Main Thread Checker evidence.
-EXP-165 closes D11 with 102 tests and 19/19 mounted WebView/Replay checks. Seven
-findings remain open. Existing
+EXP-165 closes D11 with 102 tests and 19/19 mounted WebView/Replay checks.
+EXP-166 closes D04/P02 with 282 affected tests and full Release ABBA allocation,
+latency and reentrancy acceptance on27/26.5. Six findings remain open. Existing
 accepted experiment slices remain valid within their recorded boundaries.
 
 ## Finding decisions
@@ -25,7 +26,7 @@ accepted experiment slices remain valid within their recorded boundaries.
 | R01 / D01, P1 | Confirmed platform compile defect. Resource `modify` references `RUMUIEventNetworkContext` at line 135 while its declaration is excluded on watchOS. Package supports watchOS 9. Isolated conditional/reference probe reproduces missing symbol. | Move the accessor to platform-neutral Internal ownership or guard the UIKit-only extraction while preserving absent-context behavior. Full DatadogRUM watchOS compile, not just the expression, must pass. Keep its interface compatible with D04's core-scoped contract. | CLOSED in EXP-162, signed `e420528f7`; full Debug/Release watchOS builds and 70 iOS tests. |
 | R02 / D02, P1 | Confirmed platform compile defect. `DDScriptMessageHandler` is available under WebKit on macOS, but unconditionally follows `NSWindow.windowScene`. Narrowed compiler probe fails; normal NSWindow access control passes. | Guard UIKit scene extraction and use absent metadata on macOS. Build DatadogWebViewTracking on macOS and retain iOS message/ownership tests. | CLOSED in EXP-162, signed `af8864528`; full Debug/Release macOS builds and 28 iOS tests. |
 | R03 / D03, P1 | Source confirms the strong closure/State cycle at SwiftUI modifier lines 4456/4698 and registration lines 2621/2644. The original review's ARC-shape probe supports it; no mounted SDK teardown result exists yet. | Replace bound-modifier captures with a small cancellable context and weak handler/state/arbiter ownership. Mount/remove a real keyed host, release the core and prove weak registration/instrumentation release and teardown. | Lifetime repair before any further semantic API expansion or H08/H09. Pair with P03 measurements, not a file split. |
-| R04 / D04, P1 | Confirmed isolation gap. `RUMContextHandoff` has one process-wide TaskLocal/thread slot; Monitor/subscriber, Logs, Trace and network consumers have no core identity check. A foreign authoritative nil is wrong too. | Shared internal core-instance/generation key, nested per-owner entries and lookup only by the consuming core. Cover different cores, identical application IDs/different sessions, no-RUM cores, nested dispatch, inherited work after stop/reinitialize. | Ownership repair before T03/T08/T09; measure P02 again in the same slice so isolation does not deepen the measured allocation cost. |
+| R04 / D04, P1 | Confirmed isolation gap. `RUMContextHandoff` has one process-wide TaskLocal/thread slot; Monitor/subscriber, Logs, Trace and network consumers have no core identity check. A foreign authoritative nil is wrong too. | Shared internal core-instance/generation key, nested per-owner entries and lookup only by the consuming core. Cover different cores, identical application IDs/different sessions, no-RUM cores, nested dispatch, inherited work after stop/reinitialize. | CLOSED in EXP-166, signed `5eb3c1aac`; 282 tests, core lifetime and every consumer covered, allocation1/64 and latency/reentrancy budgets pass on27/26.5. |
 | R05 / D05, P1 | Source-confirmed target-resolution defect. `startNewSession` excludes the old last representative, then the unchanged process target resolves against restored peers. Existing restart coverage supplies an explicit scene and misses this path. | Resolve the old owner once before restoration; carry that exact decision through new-session dispatch. Test A/B, representative B, stopSession, source-less start C; also identity-stop A with B preserved. | Shared routing repair before Resource/error/mutation expansion. |
 | R06 / D06, P1 | Source-confirmed lazy-expiration divergence. Lifecycle-triggered expiration postpones creation; the next start/stop has restart=false and resumes no peers. Immediate refresh has the concurrent-view rule that the lazy path lacks. | Reuse D05's resolution/restoration policy for explicit stop, immediate refresh and lazy timeout/max-duration paths. Controlled-clock lifecycle-then-navigation tests must preserve eligible B in the new session and respect background policy. | Same repair slice as D05; depends on its normalized owner decision. |
 | R07 / D07, P1 | Confirmed explicit/capability pending-authority gap. Host line 5272 calls suppression appear before an empty source delivers a snapshot. Observed input's nil-until-ready path is different; its passing test is not a control for empty explicit sources. | Separate subscribing from acquiring effective authority. Real registry tests before/after first accepted state; absent instrumentation must remain harmless. | Semantic authority repair after lifetime cleanup, before host parity/hardware acceptance. |
@@ -61,9 +62,9 @@ SwiftUI invariants and current test seams are detailed in
    pass EXP-162. Preserve failed attempts and frozen evidence identities.
 1. Early compatibility repairs D12, D09 and D11 pass EXP-163/164/165. Preserve
    their bounded evidence and invalid attempts; do not repeat them merely to resume.
-2. Repair shared ownership/restoration: D04 with P02, then D05/D06. Use one internal
-   ownership contract across modules, and audit every consumer. D04 is not solved
-   by comparing only application IDs or adding more public targets.
+2. D04/P02 passes EXP-166 with one core-lifetime identity across every consumer.
+   Next repair D05/D06: resolve old navigation ownership once, then reuse it
+   across explicit stop, immediate expiration and lazy lifecycle expiration.
 3. Repair lifetime/semantic authority: D03 plus P03, D07/D08, then D10. Keep the
    missing R04/R05/R06 discriminators in those slices. Each fix is a small
    component commit with explicit paths. Sign when available; if unavailable,
