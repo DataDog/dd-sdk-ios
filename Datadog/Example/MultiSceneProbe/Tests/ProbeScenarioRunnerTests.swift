@@ -5,6 +5,7 @@
  */
 
 import XCTest
+import DatadogInternal
 
 final class ProbeScenarioRunnerTests: XCTestCase {
     func testPresentationSubtreeIntervalsRemainBalancedAcrossReplacement() {
@@ -51,6 +52,23 @@ final class ProbeScenarioRunnerTests: XCTestCase {
             $0.kind == .error && $0.sourceScene == "scene-A" && $0.expectedCount == 1
         })
         XCTAssertEqual(scenario.expectedSemanticTimeline.count + scenario.completionConditions.count, 34)
+    }
+
+    func testFlagMapperDecodesActualEncodableValuesAndRejectsMalformedTypes() {
+        let values: [(Encodable, ProbeFlagValue)] = [
+            (true, .boolean(true)),
+            (7, .integer(7)),
+            ("B", .string("B")),
+            (AnyEncodable(["enabled": false, "weights": [2, 4]] as [String: Any]),
+             .nested(ProbeNestedFlag(enabled: false, weights: [2, 4])))
+        ]
+        for (raw, expected) in values {
+            XCTAssertEqual(ProbeFlagAcceptance.flags([ProbeFlagContract.shared: raw]),
+                           [ProbeFlagContract.shared: expected])
+        }
+        XCTAssertEqual(ProbeFlagAcceptance.flags([:]), [:])
+        let malformed = AnyEncodable(["enabled": 0, "weights": [2, 4]] as [String: Any])
+        XCTAssertNil(ProbeFlagAcceptance.flags([ProbeFlagContract.shared: malformed]))
     }
 
     func testFlagEvidencePreservesTypesSnapshotBindingAndInternalMetrics() throws {

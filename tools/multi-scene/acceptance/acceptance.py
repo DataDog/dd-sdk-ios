@@ -371,7 +371,7 @@ class Runner:
                           "-enableCodeCoverage", "NO", "CODE_SIGNING_ALLOWED=NO"], "build-tests", timeout=1200)
             tests = json.loads(self.capture(["xcrun", "xcresulttool", "get", "test-results", "summary", "--path", str(results)]))
             save(self.out / "test-summary.json", tests)
-            require(tests.get("failedTests") == 0 and tests.get("passedTests", 0) >= (174 if self.is_flag else 172 if self.is_timing else 170 if self.is_attribute else 168 if self.is_error else 167 if self.is_resource else 166) and
+            require(tests.get("failedTests") == 0 and tests.get("passedTests", 0) >= (175 if self.is_flag else 172 if self.is_timing else 170 if self.is_attribute else 168 if self.is_error else 167 if self.is_resource else 166) and
                     tests.get("skippedTests", 0) == 0 and tests.get("totalTestCount") == tests["passedTests"],
                     "incomplete/stale test artifact", "INVALID")
             require_identity(source_identity(self.repo), frozen, "source during build")

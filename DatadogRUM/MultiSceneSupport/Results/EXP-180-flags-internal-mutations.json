@@ -63,7 +63,16 @@
       }
     }
   ],
-  "native_attempts": [],
+  "native_attempts": [
+    {
+      "result": "FAIL",
+      "summary": "Results/acceptance/exp180-20260917T234324Z-23ef7a08ed8c.json",
+      "reason": "App assertions rejected missing flag states after the first nonempty flag. AttributeValue.dd.decode is a type cast, not Codable decoding; it cannot create ProbeFlagValue from Bool/Int/String.",
+      "disposition": "Fixture-only JSON encode/decode of selected synthetic keys, matching the existing attribute projection. Added actual-Encodable decoder regression. SDK unchanged; strict oracle unchanged.",
+      "probe_tests": 174,
+      "failed_native_payload_assertions": 12
+    }
+  ],
   "definition_revision": "5e35f3f95a866963629b9aa32a5091b6ef3c316a",
   "candidate_revision": "04201edc7711361279d8487b385bc8b0ca9c63c7",
   "sdk_validation": {
@@ -396,7 +405,7 @@
       "errors": [],
       "fullLogPath": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/ActionArtifacts/default/BuildProject/BuildProject-Log-20260918-002635.txt"
     },
-    "runtime_acceptance": "PENDING",
+    "runtime_acceptance": "PENDING after first rejected attempt",
     "operational_controls": {
       "python": {
         "passed": 107,
@@ -406,7 +415,8 @@
         "passed": 15,
         "failed": 0
       },
-      "probe_test_minimum": 174
+      "probe_test_minimum": 175
     }
-  }
+  },
+  "fixture_revision": "90e5d035326651d0ba8e17b775435c9ada9f2a07"
 }

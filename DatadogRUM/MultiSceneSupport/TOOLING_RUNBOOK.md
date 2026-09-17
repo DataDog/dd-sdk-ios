@@ -1232,3 +1232,8 @@ paired checkpoint, exact sample aggregates/FBC on the owner and internal-key
 absence in custom context. Reject malformed present metrics and ambiguous nested
 flag representations; retain only bounded synthetic values. See the
 [flag runner procedure](../../tools/multi-scene/acceptance/README.md#flaginternal-mutation-contract-exp-180t07).
+
+Typed mapper fixtures must encode selected Encodable values and decode their
+declared Codable evidence type. AttributeValue.dd.decode only casts an underlying
+value; it does not construct a custom Codable enum. Test the actual projection
+with primitive and Objective-C-wrapped values before accepting populated states.
