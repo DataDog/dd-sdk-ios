@@ -569,6 +569,158 @@ class RUMSessionScopeTests: XCTestCase {
         XCTAssertEqual(actions.first?.action.type, .swipe)
     }
 
+    func testGivenOverdueLegacyContinuousAction_whenStopped_itPreservesStopAttributes() throws {
+        try assertOverdueLegacyActionPreservesStopAttributes(isContinuous: true)
+    }
+
+    func testGivenOverdueLegacyDiscreteAction_whenStopped_itPreservesStopAttributes() throws {
+        try assertOverdueLegacyActionPreservesStopAttributes(isContinuous: false)
+    }
+
+    private func assertOverdueLegacyActionPreservesStopAttributes(isContinuous: Bool) throws {
+        let startTime = Date(timeIntervalSinceReferenceDate: 0)
+        let scope: RUMSessionScope = .mockWith(parent: parent, startTime: startTime)
+        _ = scope.process(
+            command: RUMStartViewCommand.mockWith(time: startTime, name: "Legacy View", path: "Legacy View"),
+            context: context,
+            writer: writer
+        )
+        let view = try XCTUnwrap(scope.activeView)
+        let attributes = ["started": "yes", "phase": "start"]
+        let startAction: RUMCommand = isContinuous
+            ? RUMStartUserActionCommand.mockWith(
+                time: startTime, attributes: attributes, actionType: .tap, name: "Original action"
+            )
+            : RUMAddUserActionCommand.mockWith(
+                time: startTime, attributes: attributes, actionType: .tap, name: "Original action"
+            )
+        _ = scope.process(command: startAction, context: context, writer: writer)
+        let actionID = try XCTUnwrap(view.userActionScope?.actionUUID.toRUMDataFormat)
+        let duration = isContinuous
+            ? RUMUserActionScope.Constants.continuousActionMaxDuration
+            : RUMUserActionScope.Constants.discreteActionTimeoutDuration
+        XCTAssertTrue(writer.events(ofType: RUMActionEvent.self).isEmpty)
+
+        _ = scope.process(
+            command: RUMStopUserActionCommand.mockWith(
+                time: startTime.addingTimeInterval(duration + 1),
+                attributes: ["stopped": "yes", "phase": "stop"],
+                actionType: .scroll,
+                name: "Late replacement"
+            ),
+            context: context,
+            writer: writer
+        )
+
+        let actions = writer.events(ofType: RUMActionEvent.self)
+        XCTAssertEqual(actions.count, 1)
+        let action = try XCTUnwrap(actions.first)
+        XCTAssertEqual(action.action.id, actionID)
+        XCTAssertEqual(action.view.id, view.viewUUID.toRUMDataFormat)
+        XCTAssertEqual(action.action.loadingTime, duration.dd.toInt64Nanoseconds)
+        XCTAssertEqual(action.action.target?.name, "Original action")
+        XCTAssertEqual(action.action.type, .tap)
+        XCTAssertEqual(action.context?.contextInfo["started"] as? String, "yes")
+        XCTAssertEqual(action.context?.contextInfo["stopped"] as? String, "yes")
+        XCTAssertEqual(action.context?.contextInfo["phase"] as? String, "stop")
+        XCTAssertNil(view.userActionScope)
+    }
+
+    func testGivenOverdueConcurrentActions_whenExplicitStopTargetsA_itPreservesOnlyRecipientAttributes() throws {
+        for useExactView in [false, true] {
+            let writer = FileWriterMock()
+            let startTime = Date()
+            let scope: RUMSessionScope = .mockWith(parent: parent, startTime: startTime)
+            let sceneA = RUMSceneIdentifier(rawValue: "scene-A")
+            let sceneB = RUMSceneIdentifier(rawValue: "scene-B")
+            for (scene, name) in [(sceneA, "A"), (sceneB, "B")] {
+                _ = scope.process(
+                    command: startViewCommand(
+                        identity: ViewIdentifier(name), name: name, sceneIdentifier: scene, time: startTime
+                    ),
+                    context: context,
+                    writer: writer
+                )
+                var startAction = RUMStartUserActionCommand.mockWith(
+                    time: startTime, attributes: ["owner": name], actionType: .scroll, name: name
+                )
+                startAction.target = .scene(scene)
+                _ = scope.process(command: startAction, context: context, writer: writer)
+            }
+            let viewA = try XCTUnwrap(scope.viewScopes.first { $0.sceneIdentifier == sceneA })
+            let viewB = try XCTUnwrap(scope.viewScopes.first { $0.sceneIdentifier == sceneB })
+            let actionAID = try XCTUnwrap(viewA.userActionScope?.actionUUID.toRUMDataFormat)
+            let actionBID = try XCTUnwrap(viewB.userActionScope?.actionUUID.toRUMDataFormat)
+            XCTAssertTrue(scope.activeView === viewB)
+            XCTAssertTrue(writer.events(ofType: RUMActionEvent.self).isEmpty)
+            var stopAction = RUMStopUserActionCommand.mockWith(
+                time: startTime.addingTimeInterval(11),
+                attributes: ["stopped": "A", "owner": "A-stop"],
+                actionType: .swipe,
+                name: "Late replacement"
+            )
+            stopAction.target = .scene(sceneB)
+            stopAction.explicitTarget = useExactView ? .view(viewA.viewUUID) : .scene(sceneA)
+
+            _ = scope.process(command: stopAction, context: context, writer: writer)
+
+            let actions = writer.events(ofType: RUMActionEvent.self)
+            XCTAssertEqual(actions.count, 2)
+            let actionA = try XCTUnwrap(actions.first { $0.view.id == viewA.viewUUID.toRUMDataFormat })
+            let actionB = try XCTUnwrap(actions.first { $0.view.id == viewB.viewUUID.toRUMDataFormat })
+            XCTAssertEqual(actionA.action.id, actionAID)
+            XCTAssertEqual(actionB.action.id, actionBID)
+            XCTAssertEqual(actionA.action.target?.name, "A")
+            XCTAssertEqual(actionB.action.target?.name, "B")
+            XCTAssertEqual(actionA.action.type, .scroll)
+            XCTAssertEqual(actionB.action.type, .scroll)
+            XCTAssertEqual(actionA.action.loadingTime, 10_000_000_000)
+            XCTAssertEqual(actionB.action.loadingTime, 10_000_000_000)
+            XCTAssertEqual(actionA.context?.contextInfo["stopped"] as? String, "A")
+            XCTAssertEqual(actionA.context?.contextInfo["owner"] as? String, "A-stop")
+            XCTAssertNil(actionB.context?.contextInfo["stopped"])
+            XCTAssertEqual(actionB.context?.contextInfo["owner"] as? String, "B")
+            XCTAssertNil(viewA.userActionScope)
+            XCTAssertNil(viewB.userActionScope)
+        }
+    }
+
+    func testGivenOverdueAction_whenStopTargetsMissingScene_itExpiresWithoutForeignAttributes() throws {
+        let startTime = Date()
+        let scope: RUMSessionScope = .mockWith(parent: parent, startTime: startTime)
+        let scene = RUMSceneIdentifier(rawValue: "scene-A")
+        _ = scope.process(
+            command: startViewCommand(
+                identity: ViewIdentifier("view-A"), name: "A", sceneIdentifier: scene, time: startTime
+            ),
+            context: context,
+            writer: writer
+        )
+        let view = try XCTUnwrap(scope.activeView)
+        var startAction = RUMStartUserActionCommand.mockWith(
+            time: startTime, attributes: ["owner": "A"], actionType: .scroll, name: "A"
+        )
+        startAction.target = .scene(scene)
+        _ = scope.process(command: startAction, context: context, writer: writer)
+        let actionID = try XCTUnwrap(view.userActionScope?.actionUUID.toRUMDataFormat)
+        var stopAction = RUMStopUserActionCommand.mockWith(
+            time: startTime.addingTimeInterval(11), attributes: ["stopped": "missing", "owner": "missing"]
+        )
+        stopAction.target = .scene(.init(rawValue: "missing-scene"))
+
+        _ = scope.process(command: stopAction, context: context, writer: writer)
+
+        let actions = writer.events(ofType: RUMActionEvent.self)
+        XCTAssertEqual(actions.count, 1)
+        let action = try XCTUnwrap(actions.first)
+        XCTAssertEqual(action.action.id, actionID)
+        XCTAssertEqual(action.view.id, view.viewUUID.toRUMDataFormat)
+        XCTAssertEqual(action.action.loadingTime, 10_000_000_000)
+        XCTAssertEqual(action.context?.contextInfo["owner"] as? String, "A")
+        XCTAssertNil(action.context?.contextInfo["stopped"])
+        XCTAssertNil(view.userActionScope)
+    }
+
     func testGivenDiscreteActionInOneScene_whenOnlyAnotherSceneInteracts_itStillExpiresTheFirstAction() throws {
         let startTime = Date()
         let scope: RUMSessionScope = .mockWith(parent: parent, startTime: startTime)

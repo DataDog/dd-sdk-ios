@@ -368,10 +368,13 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
             return true // keep this session until it gets ended by any `endReason`
         }
 
-        // Time continues for actions in every visible window even though the
-        // command itself will only be routed to its source scene.
-        viewScopes.forEach {
-            $0.expireUserActionIfNeeded(on: command, context: context, writer: writer)
+        // Action commands must reach their recipient before expiration so an
+        // overdue stop can contribute its attributes. Peers advance time during
+        // routing below. Other commands keep their existing expiration ordering.
+        if !(command is RUMUserActionCommand) {
+            viewScopes.forEach {
+                $0.expireUserActionIfNeeded(on: command, context: context, writer: writer)
+            }
         }
 
         var deactivating = false
@@ -770,6 +773,11 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
                 shouldMigrateLegacyBranch: shouldMigrateLegacyBranch,
                 legacySceneFallback: legacySceneFallback
             ) else {
+                if command is RUMUserActionCommand {
+                    // Advance peers without attributing the recipient's action
+                    // attributes or other side effects to them.
+                    viewScope.expireUserActionIfNeeded(on: command, context: context, writer: writer)
+                }
                 return viewScope
             }
             return viewScope.process(command: command, context: context, writer: writer)
