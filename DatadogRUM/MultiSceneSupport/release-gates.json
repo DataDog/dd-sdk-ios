@@ -306,7 +306,7 @@
       "environment": "iOS 27 simulator, focused compatibility tests, exact mapper and Datadog backend owners",
       "completion_mode": "explicit target where customer-callable; captured call-site ownership internally",
       "status": "OPEN",
-      "evidence": "EXP-180 SDK signed04201edc7:443 affected RUM,24 Flags,22 unique Core/ObjC checks,4 integration on26.5, lint and RUM/Flags iOS/watchOS Release pass. Two failing ownership controls repaired. Native fixture builds;107 Python/15 Node runner controls pass. First native attempt rejected a fixture decoder error after174 probe tests; corrected native/backend acceptance pending. Results/EXP-180-flags-internal-mutations.json. Not accepted."
+      "evidence": "EXP-180 SDK signed04201edc7 passes443 affected RUM,24 Flags,22 Core/ObjC,4 integration and four Release builds. Fixture dd3edc322 passes175 tests and34 local assertions. Backend flags/owners/build aggregates match; FBC absent on both Home views. Exact encoded-payload/realistic-duration diagnostic next. Results/EXP-180-flags-internal-mutations.json. Gate remains open."
     },
     {
       "id": "T08",

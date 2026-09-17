@@ -1,6 +1,6 @@
 {
   "experiment": "EXP-180",
-  "status": "SDK PASS; native PREPARED",
+  "status": "SDK PASS; native local PASS; backend FBC FAIL",
   "gate": "T07",
   "gates_closed": [],
   "control_revision": "db4a96dfabd3b0c3054203d9069905749e55907c",
@@ -77,6 +77,19 @@
       "summary": "Results/acceptance/exp180-20260917T234729Z-162532c5eb66.json",
       "reason": "Build rejected a DatadogInternal import in the SDK-independent probe test target before execution.",
       "disposition": "Move the shared mapper projection to ProbeSignal using a Foundation-only Encodable wrapper; remove the test SDK dependency. All3 focused flag checks pass."
+    },
+    {
+      "result": "FAIL",
+      "summary": "Results/acceptance/exp180-20260917T235128Z-7d70c17a7b65.json",
+      "reason": "All175 probe tests and34 strict local expectations pass. All16 backend flag markers and3 view owners/flags/build aggregates match; only view.performance.fbc.timestamp is absent on both backend Home views.",
+      "local_checkpoints": 8,
+      "local_signals": 98,
+      "backend_errors": 16,
+      "backend_views": 3,
+      "backend_resources": 0,
+      "backend_crashes": 0,
+      "diagnosis": "Fresh exact-session detailed queries show no performance/FBC field; independent field-existence aggregate is zero. SDK source encodes performance and sanitizes only custom attributes.",
+      "next": "Add exact encoded-payload regression and one predeclared realistic-duration diagnostic. Preserve required backend FBC equality; if still absent, keep T07 open and record the external observability boundary."
     }
   ],
   "definition_revision": "5e35f3f95a866963629b9aa32a5091b6ef3c316a",
@@ -464,5 +477,26 @@
       "xcresultBundlePath": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/ActionArtifacts/default/RunSomeTests/Test-RUMNativeMultiSceneProbe-2026.09.18_00-50-06-+0100.xcresult"
     }
   },
-  "fixture_revision": "90e5d035326651d0ba8e17b775435c9ada9f2a07"
+  "fixture_revision": "90e5d035326651d0ba8e17b775435c9ada9f2a07",
+  "diagnostic_amendment": {
+    "source_revision": "dd3edc322dc1d2dbdf5560abfc64723194723f08",
+    "declared_before_implementation": true,
+    "old_fbc_nanoseconds": [
+      101,
+      202
+    ],
+    "next_fbc_nanoseconds": [
+      101000000,
+      202000000
+    ],
+    "unchanged": [
+      "SDK implementation",
+      "ownership assertions",
+      "flag types",
+      "sample aggregates",
+      "16errors/3views/0Resources/crashes",
+      "backend FBC equality"
+    ],
+    "purpose": "Determine whether sub-microsecond synthetic FBC values explain absent backend fields; test encoding at both original and scaled values. One further native attempt for this diagnostic."
+  }
 }

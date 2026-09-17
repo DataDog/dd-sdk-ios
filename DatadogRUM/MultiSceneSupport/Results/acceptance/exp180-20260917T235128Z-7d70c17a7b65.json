@@ -1,0 +1,758 @@
+{
+  "artifacts": {
+    "boot-ready.log": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/multi-scene-acceptance-39wg3zym/run/boot-ready.log",
+    "build-identity.json": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/multi-scene-acceptance-39wg3zym/run/build-identity.json",
+    "build-tests.log": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/multi-scene-acceptance-39wg3zym/run/build-tests.log",
+    "console.raw.log": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/multi-scene-acceptance-39wg3zym/run/console.raw.log",
+    "container-absence.log": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/multi-scene-acceptance-39wg3zym/run/container-absence.log",
+    "install.log": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/multi-scene-acceptance-39wg3zym/run/install.log",
+    "local-evidence.json": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/multi-scene-acceptance-39wg3zym/run/local-evidence.json",
+    "probe.jsonl": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/multi-scene-acceptance-39wg3zym/run/probe.jsonl",
+    "signature.log": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/multi-scene-acceptance-39wg3zym/run/signature.log",
+    "source-identity.json": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/multi-scene-acceptance-39wg3zym/run/source-identity.json",
+    "summary.json": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/multi-scene-acceptance-39wg3zym/run/summary.json",
+    "terminal-screenshot.log": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/multi-scene-acceptance-39wg3zym/run/terminal-screenshot.log",
+    "terminal.png": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/multi-scene-acceptance-39wg3zym/run/terminal.png",
+    "terminate-after.log": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/multi-scene-acceptance-39wg3zym/run/terminate-after.log",
+    "terminate-before.log": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/multi-scene-acceptance-39wg3zym/run/terminate-before.log",
+    "test-summary.json": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/multi-scene-acceptance-39wg3zym/run/test-summary.json",
+    "uninstall.log": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/multi-scene-acceptance-39wg3zym/run/uninstall.log"
+  },
+  "commit_signature": {
+    "required_before_push": true,
+    "state": "VERIFIED"
+  },
+  "device": {
+    "dataPath": "/Users/valentin.pertuisot/Library/Developer/CoreSimulator/Devices/92C9918B-FEC6-4440-9D6D-8E09475950BB/data",
+    "dataPathSize": 3267076096,
+    "deviceTypeIdentifier": "com.apple.CoreSimulator.SimDeviceType.iPad-mini-A17-Pro",
+    "isAvailable": true,
+    "lastUsedAt": "2026-09-16T22:19:15Z",
+    "logPath": "/Users/valentin.pertuisot/Library/Logs/CoreSimulator/92C9918B-FEC6-4440-9D6D-8E09475950BB",
+    "logPathSize": 348160,
+    "name": "iPad mini (A17 Pro)",
+    "runtime": "com.apple.CoreSimulator.SimRuntime.iOS-27-0",
+    "state": "Booted",
+    "udid": "92C9918B-FEC6-4440-9D6D-8E09475950BB"
+  },
+  "dirty_state": [
+    " M Datadog/Datadog.xcodeproj/project.pbxproj",
+    "A  xcconfigs/Datadog.local.xcconfig"
+  ],
+  "evidence": {
+    "build-identity.json": {
+      "executable_sha256": "d1958728907f20dff139d41c7d3d2b9d5abe5c2d4e174317165effab7b6cd2a8",
+      "source_sha256": "97e0054e088797b65c93f4dcae8ecde1af96b784573f57b33a4935e271b7de35",
+      "uuid": "UUID: A1C8381C-C9C4-3E8A-9B2B-780FED015026 (arm64) /private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/multi-scene-acceptance-39wg3zym/run/derived/Build/Products/Debug-iphonesimulator/RUMNativeMultiSceneProbe.app/RUMNativeMultiSceneProbe"
+    },
+    "local-evidence.json": {
+      "assertions": 34,
+      "checkpoints": 8,
+      "errors": [
+        {
+          "error_source": "custom",
+          "error_type": "ProbeFlag",
+          "event_id": "3571f00f-aaa1-430d-98cc-b80b055c82b8",
+          "flags": {},
+          "leaked_internal_attribute": false,
+          "payload_matches": true,
+          "phase": "flag-initial-a",
+          "session_id": "e828da3b-712f-4397-a601-47f92fb88094",
+          "source_scene": "scene-A",
+          "view_id": "fc88dda9-597d-4772-825a-f4dd906d7957"
+        },
+        {
+          "error_source": "custom",
+          "error_type": "ProbeFlag",
+          "event_id": "a44a0683-c5f3-4e04-95f8-145fcbb14d88",
+          "flags": {},
+          "leaked_internal_attribute": false,
+          "payload_matches": true,
+          "phase": "flag-initial-b",
+          "session_id": "e828da3b-712f-4397-a601-47f92fb88094",
+          "source_scene": "scene-A",
+          "view_id": "d2419620-41a2-46c2-9c42-597c995170eb"
+        },
+        {
+          "error_source": "custom",
+          "error_type": "ProbeFlag",
+          "event_id": "a75d6aea-f9f1-4a8e-8187-632877701398",
+          "flags": {
+            "exp180_shared": true
+          },
+          "leaked_internal_attribute": false,
+          "payload_matches": true,
+          "phase": "flag-swift-boolean-a",
+          "session_id": "e828da3b-712f-4397-a601-47f92fb88094",
+          "source_scene": "scene-A",
+          "view_id": "fc88dda9-597d-4772-825a-f4dd906d7957"
+        },
+        {
+          "error_source": "custom",
+          "error_type": "ProbeFlag",
+          "event_id": "e3a16b5d-3c24-492e-985a-59df21154488",
+          "flags": {},
+          "leaked_internal_attribute": false,
+          "payload_matches": true,
+          "phase": "flag-swift-boolean-b",
+          "session_id": "e828da3b-712f-4397-a601-47f92fb88094",
+          "source_scene": "scene-A",
+          "view_id": "d2419620-41a2-46c2-9c42-597c995170eb"
+        },
+        {
+          "error_source": "custom",
+          "error_type": "ProbeFlag",
+          "event_id": "82c6b426-dac0-4ace-b484-3723afdf719b",
+          "flags": {
+            "exp180_shared": 7
+          },
+          "leaked_internal_attribute": false,
+          "payload_matches": true,
+          "phase": "flag-swift-integer-a",
+          "session_id": "e828da3b-712f-4397-a601-47f92fb88094",
+          "source_scene": "scene-A",
+          "view_id": "fc88dda9-597d-4772-825a-f4dd906d7957"
+        },
+        {
+          "error_source": "custom",
+          "error_type": "ProbeFlag",
+          "event_id": "b26bec81-8e8f-4078-bd0f-cd1d517ce26e",
+          "flags": {},
+          "leaked_internal_attribute": false,
+          "payload_matches": true,
+          "phase": "flag-swift-integer-b",
+          "session_id": "e828da3b-712f-4397-a601-47f92fb88094",
+          "source_scene": "scene-A",
+          "view_id": "d2419620-41a2-46c2-9c42-597c995170eb"
+        },
+        {
+          "error_source": "custom",
+          "error_type": "ProbeFlag",
+          "event_id": "98b34f4c-58b1-49c4-a654-9b224c7f1fb8",
+          "flags": {
+            "exp180_shared": 7
+          },
+          "leaked_internal_attribute": false,
+          "payload_matches": true,
+          "phase": "flag-objc-string-a",
+          "session_id": "e828da3b-712f-4397-a601-47f92fb88094",
+          "source_scene": "scene-A",
+          "view_id": "fc88dda9-597d-4772-825a-f4dd906d7957"
+        },
+        {
+          "error_source": "custom",
+          "error_type": "ProbeFlag",
+          "event_id": "87f33492-038c-45b0-b00c-5651e096d27e",
+          "flags": {
+            "exp180_shared": "B"
+          },
+          "leaked_internal_attribute": false,
+          "payload_matches": true,
+          "phase": "flag-objc-string-b",
+          "session_id": "e828da3b-712f-4397-a601-47f92fb88094",
+          "source_scene": "scene-A",
+          "view_id": "d2419620-41a2-46c2-9c42-597c995170eb"
+        },
+        {
+          "error_source": "custom",
+          "error_type": "ProbeFlag",
+          "event_id": "71d2f12f-eff9-4cd5-b9e7-cbdd770936d2",
+          "flags": {
+            "exp180_shared": 7
+          },
+          "leaked_internal_attribute": false,
+          "payload_matches": true,
+          "phase": "flag-objc-nested-a",
+          "session_id": "e828da3b-712f-4397-a601-47f92fb88094",
+          "source_scene": "scene-A",
+          "view_id": "fc88dda9-597d-4772-825a-f4dd906d7957"
+        },
+        {
+          "error_source": "custom",
+          "error_type": "ProbeFlag",
+          "event_id": "e578030e-cf3d-464d-b2d6-db6bae0e19ab",
+          "flags": {
+            "exp180_shared": {
+              "enabled": false,
+              "weights": [
+                2,
+                4
+              ]
+            }
+          },
+          "leaked_internal_attribute": false,
+          "payload_matches": true,
+          "phase": "flag-objc-nested-b",
+          "session_id": "e828da3b-712f-4397-a601-47f92fb88094",
+          "source_scene": "scene-A",
+          "view_id": "d2419620-41a2-46c2-9c42-597c995170eb"
+        },
+        {
+          "error_source": "custom",
+          "error_type": "ProbeFlag",
+          "event_id": "daaa1b1c-cd89-418b-aa6c-7b2bbe513fc3",
+          "flags": {
+            "exp180_shared": 7
+          },
+          "leaked_internal_attribute": false,
+          "payload_matches": true,
+          "phase": "flag-internal-a-a",
+          "session_id": "e828da3b-712f-4397-a601-47f92fb88094",
+          "source_scene": "scene-A",
+          "view_id": "fc88dda9-597d-4772-825a-f4dd906d7957"
+        },
+        {
+          "error_source": "custom",
+          "error_type": "ProbeFlag",
+          "event_id": "87eb58a3-ffce-4739-aeee-13d070800ecc",
+          "flags": {
+            "exp180_shared": {
+              "enabled": false,
+              "weights": [
+                2,
+                4
+              ]
+            }
+          },
+          "leaked_internal_attribute": false,
+          "payload_matches": true,
+          "phase": "flag-internal-a-b",
+          "session_id": "e828da3b-712f-4397-a601-47f92fb88094",
+          "source_scene": "scene-A",
+          "view_id": "d2419620-41a2-46c2-9c42-597c995170eb"
+        },
+        {
+          "error_source": "custom",
+          "error_type": "ProbeFlag",
+          "event_id": "593520f6-68e7-4e42-94f2-885e5ad3bc86",
+          "flags": {
+            "exp180_shared": 7
+          },
+          "leaked_internal_attribute": false,
+          "payload_matches": true,
+          "phase": "flag-internal-b-a",
+          "session_id": "e828da3b-712f-4397-a601-47f92fb88094",
+          "source_scene": "scene-A",
+          "view_id": "fc88dda9-597d-4772-825a-f4dd906d7957"
+        },
+        {
+          "error_source": "custom",
+          "error_type": "ProbeFlag",
+          "event_id": "458d6491-38c9-40a7-b33c-1b06bb54c02c",
+          "flags": {
+            "exp180_shared": {
+              "enabled": false,
+              "weights": [
+                2,
+                4
+              ]
+            }
+          },
+          "leaked_internal_attribute": false,
+          "payload_matches": true,
+          "phase": "flag-internal-b-b",
+          "session_id": "e828da3b-712f-4397-a601-47f92fb88094",
+          "source_scene": "scene-A",
+          "view_id": "d2419620-41a2-46c2-9c42-597c995170eb"
+        },
+        {
+          "error_source": "custom",
+          "error_type": "ProbeFlag",
+          "event_id": "901b6760-5daa-4607-ad16-eaa1c9195918",
+          "flags": {
+            "exp180_final_a": "A-final",
+            "exp180_shared": 7
+          },
+          "leaked_internal_attribute": false,
+          "payload_matches": true,
+          "phase": "flag-final-a",
+          "session_id": "e828da3b-712f-4397-a601-47f92fb88094",
+          "source_scene": "scene-A",
+          "view_id": "fc88dda9-597d-4772-825a-f4dd906d7957"
+        },
+        {
+          "error_source": "custom",
+          "error_type": "ProbeFlag",
+          "event_id": "6823f177-3175-45f8-81fa-cf5d88083b8d",
+          "flags": {
+            "exp180_final_b": "B-final",
+            "exp180_shared": {
+              "enabled": false,
+              "weights": [
+                2,
+                4
+              ]
+            }
+          },
+          "leaked_internal_attribute": false,
+          "payload_matches": true,
+          "phase": "flag-final-b",
+          "session_id": "e828da3b-712f-4397-a601-47f92fb88094",
+          "source_scene": "scene-A",
+          "view_id": "d2419620-41a2-46c2-9c42-597c995170eb"
+        }
+      ],
+      "final_document_versions": {
+        "d2419620-41a2-46c2-9c42-597c995170eb": 19,
+        "fc88dda9-597d-4772-825a-f4dd906d7957": 20
+      },
+      "native_scenes": {
+        "scene-A": "9DD6E63D-1B0F-4DFA-B27E-DE84FBF9A672",
+        "scene-B": "813B02A2-C37F-4B64-BAC3-69622AF07FB9"
+      },
+      "owners": {
+        "scene-A": "fc88dda9-597d-4772-825a-f4dd906d7957",
+        "scene-B": "d2419620-41a2-46c2-9c42-597c995170eb"
+      },
+      "session_id": "e828da3b-712f-4397-a601-47f92fb88094",
+      "signal_count": 98,
+      "simultaneous_visibility_claimed": false,
+      "views": [
+        {
+          "flag_state": {
+            "build": null,
+            "fbc": null,
+            "flags": {},
+            "leakedInternalAttribute": false
+          },
+          "name": "ApplicationLaunch",
+          "session_id": "e828da3b-712f-4397-a601-47f92fb88094",
+          "view_id": "c012bf89-7de1-4c06-b04e-33c910054ab7"
+        },
+        {
+          "flag_state": {
+            "build": {
+              "average": 42.0,
+              "max": 52.0,
+              "min": 32.0
+            },
+            "fbc": 101,
+            "flags": {
+              "exp180_final_a": "A-final",
+              "exp180_shared": 7
+            },
+            "leakedInternalAttribute": false
+          },
+          "name": "ProbeHomeView",
+          "session_id": "e828da3b-712f-4397-a601-47f92fb88094",
+          "view_id": "fc88dda9-597d-4772-825a-f4dd906d7957"
+        },
+        {
+          "flag_state": {
+            "build": {
+              "average": 40.0,
+              "max": 60.0,
+              "min": 20.0
+            },
+            "fbc": 202,
+            "flags": {
+              "exp180_final_b": "B-final",
+              "exp180_shared": {
+                "enabled": false,
+                "weights": [
+                  2,
+                  4
+                ]
+              }
+            },
+            "leakedInternalAttribute": false
+          },
+          "name": "ProbeHomeView",
+          "session_id": "e828da3b-712f-4397-a601-47f92fb88094",
+          "view_id": "d2419620-41a2-46c2-9c42-597c995170eb"
+        }
+      ]
+    },
+    "test-summary.json": {
+      "devicesAndConfigurations": [
+        {
+          "device": {
+            "architecture": "arm64",
+            "deviceId": "92C9918B-FEC6-4440-9D6D-8E09475950BB",
+            "deviceName": "iPad mini (A17 Pro)",
+            "modelName": "iPad mini (A17 Pro)",
+            "osBuildNumber": "24A434",
+            "osVersion": "27.0",
+            "platform": "iOS Simulator"
+          },
+          "expectedFailures": 0,
+          "failedTests": 0,
+          "passedTests": 175,
+          "skippedTests": 0,
+          "testPlanConfiguration": {
+            "configurationId": "1",
+            "configurationName": "Test Scheme Action"
+          }
+        }
+      ],
+      "environmentDescription": "RUMNativeMultiSceneProbe \u00b7 Built with macOS 26.6.2",
+      "expectedFailures": 0,
+      "failedTests": 0,
+      "finishTime": 1789689136.902,
+      "passedTests": 175,
+      "result": "Passed",
+      "runtimeWarnings": [],
+      "skippedTests": 0,
+      "startTime": 1789689108.221,
+      "statistics": [],
+      "testFailures": [],
+      "title": "Test - RUMNativeMultiSceneProbe",
+      "topInsights": [],
+      "totalTestCount": 175
+    }
+  },
+  "experiment": "EXP-180",
+  "failures": [
+    "backend fields differ: views"
+  ],
+  "finished_at": "2026-09-17T23:54:08.693397+00:00",
+  "gate": "T07",
+  "oracle_contract_sha256": "86a3b6d1f072fd5c7801cd5af2ec840ca8aaa03ebba420430e992489cac373c4",
+  "rerun": "Use a fresh output directory and freshly resolved device; do not reuse run IDs or bridge responses.",
+  "revision": "dd3edc322dc1d2dbdf5560abfc64723194723f08",
+  "run_id": "exp180-20260917T235128Z-7d70c17a7b65",
+  "scenario_id": "flags.explicit-target.internal-mutations-cross-scene-serial",
+  "schema_version": 1,
+  "source_file_count": 479,
+  "source_fingerprint": "97e0054e088797b65c93f4dcae8ecde1af96b784573f57b33a4935e271b7de35",
+  "stages": {
+    "clean_install": {
+      "data_container_absent": true,
+      "installed_binary_sha256": "d1958728907f20dff139d41c7d3d2b9d5abe5c2d4e174317165effab7b6cd2a8",
+      "state": "PASS"
+    },
+    "frozen_build": {
+      "executable_sha256": "d1958728907f20dff139d41c7d3d2b9d5abe5c2d4e174317165effab7b6cd2a8",
+      "source_sha256": "97e0054e088797b65c93f4dcae8ecde1af96b784573f57b33a4935e271b7de35",
+      "state": "PASS",
+      "test_count": 175,
+      "uuid": "UUID: A1C8381C-C9C4-3E8A-9B2B-780FED015026 (arm64) /private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/multi-scene-acceptance-39wg3zym/run/derived/Build/Products/Debug-iphonesimulator/RUMNativeMultiSceneProbe.app/RUMNativeMultiSceneProbe"
+    },
+    "local_semantics": {
+      "assertions": 34,
+      "checkpoints": 8,
+      "errors": [
+        {
+          "error_source": "custom",
+          "error_type": "ProbeFlag",
+          "event_id": "3571f00f-aaa1-430d-98cc-b80b055c82b8",
+          "flags": {},
+          "leaked_internal_attribute": false,
+          "payload_matches": true,
+          "phase": "flag-initial-a",
+          "session_id": "e828da3b-712f-4397-a601-47f92fb88094",
+          "source_scene": "scene-A",
+          "view_id": "fc88dda9-597d-4772-825a-f4dd906d7957"
+        },
+        {
+          "error_source": "custom",
+          "error_type": "ProbeFlag",
+          "event_id": "a44a0683-c5f3-4e04-95f8-145fcbb14d88",
+          "flags": {},
+          "leaked_internal_attribute": false,
+          "payload_matches": true,
+          "phase": "flag-initial-b",
+          "session_id": "e828da3b-712f-4397-a601-47f92fb88094",
+          "source_scene": "scene-A",
+          "view_id": "d2419620-41a2-46c2-9c42-597c995170eb"
+        },
+        {
+          "error_source": "custom",
+          "error_type": "ProbeFlag",
+          "event_id": "a75d6aea-f9f1-4a8e-8187-632877701398",
+          "flags": {
+            "exp180_shared": true
+          },
+          "leaked_internal_attribute": false,
+          "payload_matches": true,
+          "phase": "flag-swift-boolean-a",
+          "session_id": "e828da3b-712f-4397-a601-47f92fb88094",
+          "source_scene": "scene-A",
+          "view_id": "fc88dda9-597d-4772-825a-f4dd906d7957"
+        },
+        {
+          "error_source": "custom",
+          "error_type": "ProbeFlag",
+          "event_id": "e3a16b5d-3c24-492e-985a-59df21154488",
+          "flags": {},
+          "leaked_internal_attribute": false,
+          "payload_matches": true,
+          "phase": "flag-swift-boolean-b",
+          "session_id": "e828da3b-712f-4397-a601-47f92fb88094",
+          "source_scene": "scene-A",
+          "view_id": "d2419620-41a2-46c2-9c42-597c995170eb"
+        },
+        {
+          "error_source": "custom",
+          "error_type": "ProbeFlag",
+          "event_id": "82c6b426-dac0-4ace-b484-3723afdf719b",
+          "flags": {
+            "exp180_shared": 7
+          },
+          "leaked_internal_attribute": false,
+          "payload_matches": true,
+          "phase": "flag-swift-integer-a",
+          "session_id": "e828da3b-712f-4397-a601-47f92fb88094",
+          "source_scene": "scene-A",
+          "view_id": "fc88dda9-597d-4772-825a-f4dd906d7957"
+        },
+        {
+          "error_source": "custom",
+          "error_type": "ProbeFlag",
+          "event_id": "b26bec81-8e8f-4078-bd0f-cd1d517ce26e",
+          "flags": {},
+          "leaked_internal_attribute": false,
+          "payload_matches": true,
+          "phase": "flag-swift-integer-b",
+          "session_id": "e828da3b-712f-4397-a601-47f92fb88094",
+          "source_scene": "scene-A",
+          "view_id": "d2419620-41a2-46c2-9c42-597c995170eb"
+        },
+        {
+          "error_source": "custom",
+          "error_type": "ProbeFlag",
+          "event_id": "98b34f4c-58b1-49c4-a654-9b224c7f1fb8",
+          "flags": {
+            "exp180_shared": 7
+          },
+          "leaked_internal_attribute": false,
+          "payload_matches": true,
+          "phase": "flag-objc-string-a",
+          "session_id": "e828da3b-712f-4397-a601-47f92fb88094",
+          "source_scene": "scene-A",
+          "view_id": "fc88dda9-597d-4772-825a-f4dd906d7957"
+        },
+        {
+          "error_source": "custom",
+          "error_type": "ProbeFlag",
+          "event_id": "87f33492-038c-45b0-b00c-5651e096d27e",
+          "flags": {
+            "exp180_shared": "B"
+          },
+          "leaked_internal_attribute": false,
+          "payload_matches": true,
+          "phase": "flag-objc-string-b",
+          "session_id": "e828da3b-712f-4397-a601-47f92fb88094",
+          "source_scene": "scene-A",
+          "view_id": "d2419620-41a2-46c2-9c42-597c995170eb"
+        },
+        {
+          "error_source": "custom",
+          "error_type": "ProbeFlag",
+          "event_id": "71d2f12f-eff9-4cd5-b9e7-cbdd770936d2",
+          "flags": {
+            "exp180_shared": 7
+          },
+          "leaked_internal_attribute": false,
+          "payload_matches": true,
+          "phase": "flag-objc-nested-a",
+          "session_id": "e828da3b-712f-4397-a601-47f92fb88094",
+          "source_scene": "scene-A",
+          "view_id": "fc88dda9-597d-4772-825a-f4dd906d7957"
+        },
+        {
+          "error_source": "custom",
+          "error_type": "ProbeFlag",
+          "event_id": "e578030e-cf3d-464d-b2d6-db6bae0e19ab",
+          "flags": {
+            "exp180_shared": {
+              "enabled": false,
+              "weights": [
+                2,
+                4
+              ]
+            }
+          },
+          "leaked_internal_attribute": false,
+          "payload_matches": true,
+          "phase": "flag-objc-nested-b",
+          "session_id": "e828da3b-712f-4397-a601-47f92fb88094",
+          "source_scene": "scene-A",
+          "view_id": "d2419620-41a2-46c2-9c42-597c995170eb"
+        },
+        {
+          "error_source": "custom",
+          "error_type": "ProbeFlag",
+          "event_id": "daaa1b1c-cd89-418b-aa6c-7b2bbe513fc3",
+          "flags": {
+            "exp180_shared": 7
+          },
+          "leaked_internal_attribute": false,
+          "payload_matches": true,
+          "phase": "flag-internal-a-a",
+          "session_id": "e828da3b-712f-4397-a601-47f92fb88094",
+          "source_scene": "scene-A",
+          "view_id": "fc88dda9-597d-4772-825a-f4dd906d7957"
+        },
+        {
+          "error_source": "custom",
+          "error_type": "ProbeFlag",
+          "event_id": "87eb58a3-ffce-4739-aeee-13d070800ecc",
+          "flags": {
+            "exp180_shared": {
+              "enabled": false,
+              "weights": [
+                2,
+                4
+              ]
+            }
+          },
+          "leaked_internal_attribute": false,
+          "payload_matches": true,
+          "phase": "flag-internal-a-b",
+          "session_id": "e828da3b-712f-4397-a601-47f92fb88094",
+          "source_scene": "scene-A",
+          "view_id": "d2419620-41a2-46c2-9c42-597c995170eb"
+        },
+        {
+          "error_source": "custom",
+          "error_type": "ProbeFlag",
+          "event_id": "593520f6-68e7-4e42-94f2-885e5ad3bc86",
+          "flags": {
+            "exp180_shared": 7
+          },
+          "leaked_internal_attribute": false,
+          "payload_matches": true,
+          "phase": "flag-internal-b-a",
+          "session_id": "e828da3b-712f-4397-a601-47f92fb88094",
+          "source_scene": "scene-A",
+          "view_id": "fc88dda9-597d-4772-825a-f4dd906d7957"
+        },
+        {
+          "error_source": "custom",
+          "error_type": "ProbeFlag",
+          "event_id": "458d6491-38c9-40a7-b33c-1b06bb54c02c",
+          "flags": {
+            "exp180_shared": {
+              "enabled": false,
+              "weights": [
+                2,
+                4
+              ]
+            }
+          },
+          "leaked_internal_attribute": false,
+          "payload_matches": true,
+          "phase": "flag-internal-b-b",
+          "session_id": "e828da3b-712f-4397-a601-47f92fb88094",
+          "source_scene": "scene-A",
+          "view_id": "d2419620-41a2-46c2-9c42-597c995170eb"
+        },
+        {
+          "error_source": "custom",
+          "error_type": "ProbeFlag",
+          "event_id": "901b6760-5daa-4607-ad16-eaa1c9195918",
+          "flags": {
+            "exp180_final_a": "A-final",
+            "exp180_shared": 7
+          },
+          "leaked_internal_attribute": false,
+          "payload_matches": true,
+          "phase": "flag-final-a",
+          "session_id": "e828da3b-712f-4397-a601-47f92fb88094",
+          "source_scene": "scene-A",
+          "view_id": "fc88dda9-597d-4772-825a-f4dd906d7957"
+        },
+        {
+          "error_source": "custom",
+          "error_type": "ProbeFlag",
+          "event_id": "6823f177-3175-45f8-81fa-cf5d88083b8d",
+          "flags": {
+            "exp180_final_b": "B-final",
+            "exp180_shared": {
+              "enabled": false,
+              "weights": [
+                2,
+                4
+              ]
+            }
+          },
+          "leaked_internal_attribute": false,
+          "payload_matches": true,
+          "phase": "flag-final-b",
+          "session_id": "e828da3b-712f-4397-a601-47f92fb88094",
+          "source_scene": "scene-A",
+          "view_id": "d2419620-41a2-46c2-9c42-597c995170eb"
+        }
+      ],
+      "final_document_versions": {
+        "d2419620-41a2-46c2-9c42-597c995170eb": 19,
+        "fc88dda9-597d-4772-825a-f4dd906d7957": 20
+      },
+      "native_scenes": {
+        "scene-A": "9DD6E63D-1B0F-4DFA-B27E-DE84FBF9A672",
+        "scene-B": "813B02A2-C37F-4B64-BAC3-69622AF07FB9"
+      },
+      "owners": {
+        "scene-A": "fc88dda9-597d-4772-825a-f4dd906d7957",
+        "scene-B": "d2419620-41a2-46c2-9c42-597c995170eb"
+      },
+      "session_id": "e828da3b-712f-4397-a601-47f92fb88094",
+      "signal_count": 98,
+      "simultaneous_visibility_claimed": false,
+      "state": "PASS",
+      "views": [
+        {
+          "flag_state": {
+            "build": null,
+            "fbc": null,
+            "flags": {},
+            "leakedInternalAttribute": false
+          },
+          "name": "ApplicationLaunch",
+          "session_id": "e828da3b-712f-4397-a601-47f92fb88094",
+          "view_id": "c012bf89-7de1-4c06-b04e-33c910054ab7"
+        },
+        {
+          "flag_state": {
+            "build": {
+              "average": 42.0,
+              "max": 52.0,
+              "min": 32.0
+            },
+            "fbc": 101,
+            "flags": {
+              "exp180_final_a": "A-final",
+              "exp180_shared": 7
+            },
+            "leakedInternalAttribute": false
+          },
+          "name": "ProbeHomeView",
+          "session_id": "e828da3b-712f-4397-a601-47f92fb88094",
+          "view_id": "fc88dda9-597d-4772-825a-f4dd906d7957"
+        },
+        {
+          "flag_state": {
+            "build": {
+              "average": 40.0,
+              "max": 60.0,
+              "min": 20.0
+            },
+            "fbc": 202,
+            "flags": {
+              "exp180_final_b": "B-final",
+              "exp180_shared": {
+                "enabled": false,
+                "weights": [
+                  2,
+                  4
+                ]
+              }
+            },
+            "leakedInternalAttribute": false
+          },
+          "name": "ProbeHomeView",
+          "session_id": "e828da3b-712f-4397-a601-47f92fb88094",
+          "view_id": "d2419620-41a2-46c2-9c42-597c995170eb"
+        }
+      ]
+    },
+    "preflight": {
+      "authenticated_read": true,
+      "state": "PASS"
+    }
+  },
+  "started_at": "2026-09-17T23:51:28.080883+00:00",
+  "state": "FAIL",
+  "xcode": "Xcode 27.0\nBuild version 27A266a"
+}

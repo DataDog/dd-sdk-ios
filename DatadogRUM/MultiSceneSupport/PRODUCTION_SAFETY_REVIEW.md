@@ -184,8 +184,9 @@ execution target only on receipt. An originating handoff can therefore be lost.
 The SDK repair is committed in signed `04201edc7711361279d8487b385bc8b0ca9c63c7`.
 The unchanged-SDK control loses A; the candidate preserves it. Actual reporter
 and asynchronous bus delivery, foreign/retired generation rejection, ordinary
-compatibility and iOS/watchOS Release checks pass. T07 remains open for its
-complete native/backend acceptance; see
+compatibility and iOS/watchOS Release checks pass. Native flag/internal ownership
+now passes; backend flags and build aggregates match, but FBC is absent. T07 stays
+open through the declared encoding/duration diagnostic; see
 [EXP-180](Experiments/EXP-143-199.md#exp-180--target-feature-flags-and-preserve-internal-mutation-ownership).
 This is a subsequent bounded disposition, separate from the completed original
 review cycle and the final independent release review.
