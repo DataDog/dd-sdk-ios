@@ -1,7 +1,7 @@
 **Production safety review of multi-scene SDK instrumentation**
 
-Updated 2026-09-17 during plan execution. **Release remains on hold: 4 of the
-12 review findings are closed, 8 remain open.** The finite checklist has 16/66
+Updated 2026-09-17 during plan execution. **Release remains on hold: 5 of the
+12 review findings are closed, 7 remain open.** The finite checklist has 17/66
 release gates closed. [PLAN.md](PLAN.md) owns the release contract and
 [REVIEW_TRIAGE.md](REVIEW_TRIAGE.md) owns assessed repair order and evidence limits.
 Review IDs R01–R12 below map to repair gates D01–D12, not PLAN's responsibility
@@ -19,7 +19,7 @@ review gates R01–R06.
 | R08 / D08 | OPEN | Stale trait, real reconnect and accepted-publication regression; hardware ordering stays separate |
 | R09 / D09 | CLOSED | EXP-164 at local `a9abc092b`: 31 tests and actual mounted fixture 19/19; zero background reads/MTC diagnostics versus control 5 reads/4 diagnostics |
 | R10 / D10 | OPEN | Reject/canonicalize Binding writes and verify accepted-state callbacks/occurrences |
-| R11 / D11 | OPEN | Replay-enabled legacy native/WebView correlation plus cross-scene negative control |
+| R11 / D11 | CLOSED | EXP-165, signed `9a1ee83a5`: 102 tests, 19/19 mounted WebView/Replay checks; legacy association restored, peers excluded |
 | R12 / D12 | CLOSED | EXP-163, signed `084dff4c1`: three failing recipient controls, 212 affected tests pass; own overdue-stop attributes retained without peer leakage |
 
 EXP-162's [durable result](Results/EXP-162-platform-compatibility.json) includes

@@ -13,7 +13,8 @@ failures follow directly from source; the reported extracted-state/ARC probes do
 not establish mounted SwiftUI or physical lifecycle ordering. The initial
 assessment claimed no repair. EXP-162 closes D01/D02 with complete platform
 builds and focused iOS checks; EXP-163 closes D12 with 212 affected tests.
-EXP-164 closes D09 with 31 tests and mounted Main Thread Checker evidence. Eight
+EXP-164 closes D09 with 31 tests and mounted Main Thread Checker evidence.
+EXP-165 closes D11 with 102 tests and 19/19 mounted WebView/Replay checks. Seven
 findings remain open. Existing
 accepted experiment slices remain valid within their recorded boundaries.
 
@@ -31,7 +32,7 @@ accepted experiment slices remain valid within their recorded boundaries.
 | R08 / D08, P1 | Relevant conditional state defect. Host line 5369 records a generation after a void handler call even when handler line 361 rejects the disconnected scene; trait line 6063 can supply the stale attachment. Exact framework ordering still requires a live test. | Connection/remount epoch plus accepted-publication bookkeeping. Deterministic stale-trait → reconnect → reader-mount regression first; H09 retains genuine OS ordering and immediate-telemetry verification. | Alongside D07 after D03; before H09. Do not claim physical reproduction from the reported stub. |
 | R09 / D09, P1 | Confirmed newly reachable unsafe hierarchy read. Existing nonisolated public controller APIs have no main-thread requirement; stop previously used identity only. `sceneTarget` now reads viewIfLoaded/window/windowScene synchronously on the caller. No crash is reproduced here. | Main-thread-only extraction; off-main immutable identity lookup or legacy inferred fallback. No sync-to-main wait or source-breaking actor annotation. Background getter-spy and Main Thread Checker regression plus main-thread exact targeting. | CLOSED in EXP-164 at local `a9abc092b`; 31 tests and 19/19 mounted checks, zero background reads/Main Thread Checker diagnostics. |
 | R10 / D10, P2 | Confirmed accepted-state mismatch. Presentation line 6445 reconciles the proposal before customer Binding write; path line 5589 forwards then reads accepted state. A rejecting/canonicalizing setter is legal. | Accepted-state boundary for presentations, preserving transaction and immediate callback ownership. Reject nil/canonicalize item, emit work in setter, and verify exactly-once dismissal. Cover same-ID style replacement as a separate ordering discriminator. | Native adapter repair before R06/F01 and presentation hardware H13. |
-| R11 / D11, P2 | Confirmed compatibility mismatch. A string-key manual view can remain scene-less; a mounted WebView supplies a scene. Strict cache filtering at line 143 rejects that sole legacy view, removing existing container correlation. | Known single-scene/unambiguous legacy fallback only; never arbitrary cross-scene fallback. Replay-enabled native/WebView correlation test plus two-scene negative control. | Early compatibility repair before WebView T10; preserve existing Replay correlation despite scene-correct Replay remaining out of scope. |
+| R11 / D11, P2 | Confirmed compatibility mismatch. A string-key manual view can remain scene-less; a mounted WebView supplies a scene. Strict cache filtering at line 143 rejects that sole legacy view, removing existing container correlation. | Known single-scene/unambiguous legacy fallback only; never arbitrary cross-scene fallback. Replay-enabled native/WebView correlation test plus two-scene negative control. | CLOSED in EXP-165, signed `9a1ee83a5`; failing legacy control, 102 affected tests, 19/19 mounted bridge/Replay checks and four collector controls. T10 remains separate. |
 | R12 / D12, P2 | Confirmed metadata regression by source comparison. Session line 373 expires every action with a synthetic empty keepalive before the real recipient processes its stop. `sendActionEvent` merges stop attributes only for action commands. | Resolve actual recipients before timeout advancement; recipients consume original command and only peers receive time-only advancement. Controlled t=0 start/t=11 stop preserves own attributes while foreign peer attributes remain excluded. | CLOSED in EXP-163, signed `084dff4c1`; failing controls and 212 affected tests. T02 restored; EXP-159's 15 accepted checks retained. |
 
 The compiler evidence is in [review-triage-probes.json](Results/review-triage-probes.json).
@@ -58,9 +59,8 @@ SwiftUI invariants and current test seams are detailed in
 
 0. EXP-160/161 baselines and automation are recorded; D01/D02 platform repairs
    pass EXP-162. Preserve failed attempts and frozen evidence identities.
-1. D12 passes EXP-163 and D09 passes EXP-164. Define D11 legacy native/WebView
-   correlation next; add the failing regression before its behavior change. Revalidate the affected
-   ordinary/manual/custom/NOP baseline only where the repair changes that path.
+1. Early compatibility repairs D12, D09 and D11 pass EXP-163/164/165. Preserve
+   their bounded evidence and invalid attempts; do not repeat them merely to resume.
 2. Repair shared ownership/restoration: D04 with P02, then D05/D06. Use one internal
    ownership contract across modules, and audit every consumer. D04 is not solved
    by comparing only application IDs or adding more public targets.

@@ -10,7 +10,7 @@ Last updated: 2026-09-17
 
 ## Current verdict
 
-Current release accounting is **16/66 gates closed**. EXP-160 establishes early
+Current release accounting is **17/66 gates closed**. EXP-160 establishes early
 ordinary automatic/manual/custom/NOP and26.5 compatibility, dispatch and exact
 reentrancy baselines. Enabled handoff fails allocation budget (3 allocations/
 416 requested bytes per event versus1/64) and retained scene registries fail
@@ -33,8 +33,11 @@ D12 and restores T02: overdue stops retain their own attributes,
 while peers expire without foreign metadata; 212 affected tests pass at signed
 `084dff4c1`. EXP-164 closes D09 at local `a9abc092b`: 31 affected tests and a
 19/19 mounted-controller fixture pass with Main Thread Checker loaded, zero
-background hierarchy reads and zero diagnostics. Eight assessed review repairs
-remain open. D11 legacy native/WebView correlation is next.
+background hierarchy reads and zero diagnostics. EXP-165 closes D11 at signed
+`9a1ee83a5`: 102 affected tests, four collector controls and 19/19 mounted
+WebView/Replay checks preserve the legacy container while excluding peers.
+The original collector attempt is INVALID and preserved. Seven assessed review
+repairs remain open; core/lifecycle isolation D04 with allocation P02 is next.
 
 The released SDK baseline is not semantically safe for applications with
 concurrent scenes. Process-representative view state and process-global SwiftUI

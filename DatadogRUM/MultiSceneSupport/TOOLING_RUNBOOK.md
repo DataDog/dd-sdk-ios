@@ -1132,3 +1132,21 @@ runbook around them.
   prefix; never manufacture missing records. Check sequence continuity after
   terminal capture. EXP-159 recovered sequence 49 verbatim this way, yielding
   all sequences 1–94; the stdio-only original remains available.
+
+## EXP-165 mounted WebView compatibility runner
+
+`tools/multi-scene/webview-correlation/run.py --control COMMIT --candidate COMMIT
+--output NEW.json` creates frozen isolated Core/RUM/WebView/Replay apps and uses
+a fresh iOS 27 simulator discovery. It verifies clean install, executable/source
+identity and fresh run IDs, then captures dummy-token telemetry on loopback only.
+The actual WKWebView bridge waits for exact browser payload acknowledgement before
+the next native ownership mutation. Acknowledgement is repeatable, not consumed.
+
+Decode the SDK's `Content-Encoding: deflate` as zlib, as well as gzip. The first
+collector attempt missed deflate and is preserved as INVALID; missing payloads
+must not be reported as SDK failures. Four focused collector controls pass.
+Acceptance requires all 19 checks plus a native Replay-enabled payload, a control
+that specifically loses the legacy container, and a candidate that preserves it
+without peer fallback. Never commit raw intake payloads; keep compact ownership
+summaries and artifact hashes. See the fixture README for its exact one-window
+boundary; T10 owns two-container/backend evidence.

@@ -1,0 +1,1243 @@
+{
+  "experiment": "EXP-165",
+  "gate": "D11",
+  "status": "PASS",
+  "definition_commit": "32f446de571108a12981e2d744ce58310bfb2682",
+  "candidate_commit": "9a1ee83a5e2b10644edb5400e9b66d3cb9e36fdd",
+  "unit": {
+    "control": {
+      "counts": {
+        "expectedFailures": 0,
+        "failed": 1,
+        "notRun": 0,
+        "passed": 4,
+        "skipped": 0,
+        "total": 5
+      },
+      "fullConsoleLogsPath": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/ActionArtifacts/default/RunSomeTests/test-console-log-2026-09-17T10-12-44+01-00.txt",
+      "fullSummaryPath": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/ActionArtifacts/default/RunSomeTests/B8BF9D99-6BAE-424A-9633-844F82E55A3D.txt",
+      "results": [
+        {
+          "displayName": "testGivenLegacyReplayViewAndNativeScene_whenReceivingWebEvent_itKeepsContainer()",
+          "errorMessages": [
+            "Datadog/DatadogRUMTests/Integrations/WebViewEventReceiverTests.swift:536 WebViewEventReceiverTests/testGivenLegacyReplayViewAndNativeScene_whenReceivingWebEvent_itKeepsContainer(): XCTUnwrap failed: expected non-nil value of type \"Container\""
+          ],
+          "identifier": "WebViewEventReceiverTests/testGivenLegacyReplayViewAndNativeScene_whenReceivingWebEvent_itKeepsContainer()",
+          "state": "Failed",
+          "targetName": "DatadogRUMTests"
+        },
+        {
+          "displayName": "testGivenLegacyViewWithoutReplay_whenReceivingSceneEvent_itOmitsContainer()",
+          "errorMessages": [],
+          "identifier": "WebViewEventReceiverTests/testGivenLegacyViewWithoutReplay_whenReceivingSceneEvent_itOmitsContainer()",
+          "state": "Passed",
+          "targetName": "DatadogRUMTests"
+        },
+        {
+          "displayName": "testGivenFutureLegacyView_whenReceivingSceneEvent_itOmitsContainer()",
+          "errorMessages": [],
+          "identifier": "WebViewEventReceiverTests/testGivenFutureLegacyView_whenReceivingSceneEvent_itOmitsContainer()",
+          "state": "Passed",
+          "targetName": "DatadogRUMTests"
+        },
+        {
+          "displayName": "testGivenLegacyAndPeerSceneViews_whenReceivingSceneEvent_itOmitsContainer()",
+          "errorMessages": [],
+          "identifier": "WebViewEventReceiverTests/testGivenLegacyAndPeerSceneViews_whenReceivingSceneEvent_itOmitsContainer()",
+          "state": "Passed",
+          "targetName": "DatadogRUMTests"
+        },
+        {
+          "displayName": "testGivenLegacyAndMatchingSceneViews_whenReceivingSceneEvent_itUsesExactContainer()",
+          "errorMessages": [],
+          "identifier": "WebViewEventReceiverTests/testGivenLegacyAndMatchingSceneViews_whenReceivingSceneEvent_itUsesExactContainer()",
+          "state": "Passed",
+          "targetName": "DatadogRUMTests"
+        }
+      ],
+      "schemeName": "DatadogRUM",
+      "summary": "5 tests: 4 passed, 1 failed, 0 skipped, 0 expected failures, 0 not run",
+      "totalResults": 5,
+      "truncated": false,
+      "xcresultBundlePath": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/ActionArtifacts/default/RunSomeTests/Test-DatadogRUM-2026.09.17_10-12-44-+0100.xcresult",
+      "fullSummaryPathSHA256": "fcf3bcab03a51f43aa4b711c6fffea35bb919eed809f8dcfdc64506b20b31bfa",
+      "fullConsoleLogsPathSHA256": "01112faed18296cf2173bcd7acfda2fa75b4a6433592566a1f002db7fa975376"
+    },
+    "candidate": {
+      "counts": {
+        "expectedFailures": 0,
+        "failed": 0,
+        "notRun": 0,
+        "passed": 71,
+        "skipped": 0,
+        "total": 71
+      },
+      "fullConsoleLogsPath": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/ActionArtifacts/default/RunSomeTests/test-console-log-2026-09-17T10-14-31+01-00.txt",
+      "fullSummaryPath": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/ActionArtifacts/default/RunSomeTests/41F26137-19FD-456B-8C78-29C33EA51D90.txt",
+      "results": [
+        {
+          "displayName": "testWhenNotEnabled_thenRUMMonitorIsNotAvailable()",
+          "errorMessages": [],
+          "identifier": "RUMTests/testWhenNotEnabled_thenRUMMonitorIsNotAvailable()",
+          "state": "Passed",
+          "targetName": "DatadogRUMTests"
+        },
+        {
+          "displayName": "testWhenNotEnabled_thenRumIsEnabledIsFalse()",
+          "errorMessages": [],
+          "identifier": "RUMTests/testWhenNotEnabled_thenRumIsEnabledIsFalse()",
+          "state": "Passed",
+          "targetName": "DatadogRUMTests"
+        },
+        {
+          "displayName": "testWhenEnabledInNOPCore_itPrintsError()",
+          "errorMessages": [],
+          "identifier": "RUMTests/testWhenEnabledInNOPCore_itPrintsError()",
+          "state": "Passed",
+          "targetName": "DatadogRUMTests"
+        },
+        {
+          "displayName": "testWhenEnabled_thenRUMMonitorIsAvailable()",
+          "errorMessages": [],
+          "identifier": "RUMTests/testWhenEnabled_thenRUMMonitorIsAvailable()",
+          "state": "Passed",
+          "targetName": "DatadogRUMTests"
+        },
+        {
+          "displayName": "testWhenEnabled_thenRumIsEnabledIsTrue()",
+          "errorMessages": [],
+          "identifier": "RUMTests/testWhenEnabled_thenRumIsEnabledIsTrue()",
+          "state": "Passed",
+          "targetName": "DatadogRUMTests"
+        },
+        {
+          "displayName": "testWhenEnabledWithDefaultConfiguration()",
+          "errorMessages": [],
+          "identifier": "RUMTests/testWhenEnabledWithDefaultConfiguration()",
+          "state": "Passed",
+          "targetName": "DatadogRUMTests"
+        },
+        {
+          "displayName": "testWhenEnabledWithAllInstrumentations()",
+          "errorMessages": [],
+          "identifier": "RUMTests/testWhenEnabledWithAllInstrumentations()",
+          "state": "Passed",
+          "targetName": "DatadogRUMTests"
+        },
+        {
+          "displayName": "testWhenEnabledWithEmptyFeatureFlags_scrollAndSwipeTrackingRemainsEnabled()",
+          "errorMessages": [],
+          "identifier": "RUMTests/testWhenEnabledWithEmptyFeatureFlags_scrollAndSwipeTrackingRemainsEnabled()",
+          "state": "Passed",
+          "targetName": "DatadogRUMTests"
+        },
+        {
+          "displayName": "testWhenEnabledWithNoInstrumentations()",
+          "errorMessages": [],
+          "identifier": "RUMTests/testWhenEnabledWithNoInstrumentations()",
+          "state": "Passed",
+          "targetName": "DatadogRUMTests"
+        },
+        {
+          "displayName": "testWhenEnabled_thenSceneTargetedManualViewBridgeUsesInstrumentationStack()",
+          "errorMessages": [],
+          "identifier": "RUMTests/testWhenEnabled_thenSceneTargetedManualViewBridgeUsesInstrumentationStack()",
+          "state": "Passed",
+          "targetName": "DatadogRUMTests"
+        },
+        {
+          "displayName": "testWhenEnabledWithInvalidLongTasksThreshold()",
+          "errorMessages": [],
+          "identifier": "RUMTests/testWhenEnabledWithInvalidLongTasksThreshold()",
+          "state": "Passed",
+          "targetName": "DatadogRUMTests"
+        },
+        {
+          "displayName": "testWhenEnabledWithInvalidAppHangThreshold()",
+          "errorMessages": [],
+          "identifier": "RUMTests/testWhenEnabledWithInvalidAppHangThreshold()",
+          "state": "Passed",
+          "targetName": "DatadogRUMTests"
+        },
+        {
+          "displayName": "testWhenEnabledWithURLSessionTracking()",
+          "errorMessages": [],
+          "identifier": "RUMTests/testWhenEnabledWithURLSessionTracking()",
+          "state": "Passed",
+          "targetName": "DatadogRUMTests"
+        },
+        {
+          "displayName": "testWhenEnabledWithNoURLSessionTracking()",
+          "errorMessages": [],
+          "identifier": "RUMTests/testWhenEnabledWithNoURLSessionTracking()",
+          "state": "Passed",
+          "targetName": "DatadogRUMTests"
+        },
+        {
+          "displayName": "testWhenEnabledWithVitalsUpdateFrequency()",
+          "errorMessages": [],
+          "identifier": "RUMTests/testWhenEnabledWithVitalsUpdateFrequency()",
+          "state": "Passed",
+          "targetName": "DatadogRUMTests"
+        },
+        {
+          "displayName": "testWhenEnabledWithNoVitalsUpdateFrequency()",
+          "errorMessages": [],
+          "identifier": "RUMTests/testWhenEnabledWithNoVitalsUpdateFrequency()",
+          "state": "Passed",
+          "targetName": "DatadogRUMTests"
+        },
+        {
+          "displayName": "testWhenEnabledWithEventMappers()",
+          "errorMessages": [],
+          "identifier": "RUMTests/testWhenEnabledWithEventMappers()",
+          "state": "Passed",
+          "targetName": "DatadogRUMTests"
+        },
+        {
+          "displayName": "testWhenEnabledWithNoEventMappers()",
+          "errorMessages": [],
+          "identifier": "RUMTests/testWhenEnabledWithNoEventMappers()",
+          "state": "Passed",
+          "targetName": "DatadogRUMTests"
+        },
+        {
+          "displayName": "testWhenEnabledWithCustomEndpoint()",
+          "errorMessages": [],
+          "identifier": "RUMTests/testWhenEnabledWithCustomEndpoint()",
+          "state": "Passed",
+          "targetName": "DatadogRUMTests"
+        },
+        {
+          "displayName": "testWhenEnabledWithNoCustomEndpoint()",
+          "errorMessages": [],
+          "identifier": "RUMTests/testWhenEnabledWithNoCustomEndpoint()",
+          "state": "Passed",
+          "targetName": "DatadogRUMTests"
+        },
+        {
+          "displayName": "testWhenEnabledWithDebugSDKArgument()",
+          "errorMessages": [],
+          "identifier": "RUMTests/testWhenEnabledWithDebugSDKArgument()",
+          "state": "Passed",
+          "targetName": "DatadogRUMTests"
+        },
+        {
+          "displayName": "testWhenEnabledWithNoDebugSDKArgument()",
+          "errorMessages": [],
+          "identifier": "RUMTests/testWhenEnabledWithNoDebugSDKArgument()",
+          "state": "Passed",
+          "targetName": "DatadogRUMTests"
+        },
+        {
+          "displayName": "testWhenEnabledWithDebugViewsArgument()",
+          "errorMessages": [],
+          "identifier": "RUMTests/testWhenEnabledWithDebugViewsArgument()",
+          "state": "Passed",
+          "targetName": "DatadogRUMTests"
+        },
+        {
+          "displayName": "testWhenEnabledWithNoDebugViewsArgument()",
+          "errorMessages": [],
+          "identifier": "RUMTests/testWhenEnabledWithNoDebugViewsArgument()",
+          "state": "Passed",
+          "targetName": "DatadogRUMTests"
+        },
+        {
+          "displayName": "testWhenEnabledWithOverwritingConfigurationTelemetrySampleRate()",
+          "errorMessages": [],
+          "identifier": "RUMTests/testWhenEnabledWithOverwritingConfigurationTelemetrySampleRate()",
+          "state": "Passed",
+          "targetName": "DatadogRUMTests"
+        },
+        {
+          "displayName": "testWhenEnabledWithNoOverwritingConfigurationTelemetrySampleRate()",
+          "errorMessages": [],
+          "identifier": "RUMTests/testWhenEnabledWithNoOverwritingConfigurationTelemetrySampleRate()",
+          "state": "Passed",
+          "targetName": "DatadogRUMTests"
+        },
+        {
+          "displayName": "testWhenEnabled_itAppliesRemoteConfigurationOnTopOfInCodeConfiguration()",
+          "errorMessages": [],
+          "identifier": "RUMTests/testWhenEnabled_itAppliesRemoteConfigurationOnTopOfInCodeConfiguration()",
+          "state": "Passed",
+          "targetName": "DatadogRUMTests"
+        },
+        {
+          "displayName": "testWhenEnabledWithNoRemoteConfiguration_itUsesInCodeConfiguration()",
+          "errorMessages": [],
+          "identifier": "RUMTests/testWhenEnabledWithNoRemoteConfiguration_itUsesInCodeConfiguration()",
+          "state": "Passed",
+          "targetName": "DatadogRUMTests"
+        },
+        {
+          "displayName": "testWhenEnabledWithRemoteTrackResources_itEnablesNetworkInstrumentation()",
+          "errorMessages": [],
+          "identifier": "RUMTests/testWhenEnabledWithRemoteTrackResources_itEnablesNetworkInstrumentation()",
+          "state": "Passed",
+          "targetName": "DatadogRUMTests"
+        },
+        {
+          "displayName": "testWhenEnabledWithRemoteTrace_itEnablesNetworkInstrumentation()",
+          "errorMessages": [],
+          "identifier": "RUMTests/testWhenEnabledWithRemoteTrace_itEnablesNetworkInstrumentation()",
+          "state": "Passed",
+          "targetName": "DatadogRUMTests"
+        },
+        {
+          "displayName": "testWhenEnabledWithTimeseries_itSendsUsageTelemetryOnlyAfterFeatureIsRegistered()",
+          "errorMessages": [],
+          "identifier": "RUMTests/testWhenEnabledWithTimeseries_itSendsUsageTelemetryOnlyAfterFeatureIsRegistered()",
+          "state": "Passed",
+          "targetName": "DatadogRUMTests"
+        },
+        {
+          "displayName": "testWhenEnabled_itSetsRUMContextInCore()",
+          "errorMessages": [],
+          "identifier": "RUMTests/testWhenEnabled_itSetsRUMContextInCore()",
+          "state": "Passed",
+          "targetName": "DatadogRUMTests"
+        },
+        {
+          "displayName": "testWhenEnabled_itNotifiesInitialSessionID()",
+          "errorMessages": [],
+          "identifier": "RUMTests/testWhenEnabled_itNotifiesInitialSessionID()",
+          "state": "Passed",
+          "targetName": "DatadogRUMTests"
+        },
+        {
+          "displayName": "testWhenPassedNOPCore_lateEnableUrlSessionTrackingThrows()",
+          "errorMessages": [],
+          "identifier": "RUMTests/testWhenPassedNOPCore_lateEnableUrlSessionTrackingThrows()",
+          "state": "Passed",
+          "targetName": "DatadogRUMTests"
+        },
+        {
+          "displayName": "testWhenRumNotEnabled_lateEnableUrlSessionTrackingThrows()",
+          "errorMessages": [],
+          "identifier": "RUMTests/testWhenRumNotEnabled_lateEnableUrlSessionTrackingThrows()",
+          "state": "Passed",
+          "targetName": "DatadogRUMTests"
+        },
+        {
+          "displayName": "testLateEnableUrlSessionTracking()",
+          "errorMessages": [],
+          "identifier": "RUMTests/testLateEnableUrlSessionTracking()",
+          "state": "Passed",
+          "targetName": "DatadogRUMTests"
+        },
+        {
+          "displayName": "testRequestView_withReplay()",
+          "errorMessages": [],
+          "identifier": "ViewCacheTests/testRequestView_withReplay()",
+          "state": "Passed",
+          "targetName": "DatadogRUMTests"
+        },
+        {
+          "displayName": "testRequestView_withoutReplay()",
+          "errorMessages": [],
+          "identifier": "ViewCacheTests/testRequestView_withoutReplay()",
+          "state": "Passed",
+          "targetName": "DatadogRUMTests"
+        },
+        {
+          "displayName": "testRequestViewFromScene_itDoesNotUseNewerViewFromAnotherScene()",
+          "errorMessages": [],
+          "identifier": "ViewCacheTests/testRequestViewFromScene_itDoesNotUseNewerViewFromAnotherScene()",
+          "state": "Passed",
+          "targetName": "DatadogRUMTests"
+        },
+        {
+          "displayName": "testRequestViewWithoutScene_whenLegacyAndSceneBucketsExist_itFailsClosed()",
+          "errorMessages": [],
+          "identifier": "ViewCacheTests/testRequestViewWithoutScene_whenLegacyAndSceneBucketsExist_itFailsClosed()",
+          "state": "Passed",
+          "targetName": "DatadogRUMTests"
+        },
+        {
+          "displayName": "testRequestSceneWithOnlyLegacyHistory_requiresExplicitFallbackOptIn()",
+          "errorMessages": [],
+          "identifier": "ViewCacheTests/testRequestSceneWithOnlyLegacyHistory_requiresExplicitFallbackOptIn()",
+          "state": "Passed",
+          "targetName": "DatadogRUMTests"
+        },
+        {
+          "displayName": "testViewOwnership_distinguishesSceneLegacyAndUnknownViews()",
+          "errorMessages": [],
+          "identifier": "ViewCacheTests/testViewOwnership_distinguishesSceneLegacyAndUnknownViews()",
+          "state": "Passed",
+          "targetName": "DatadogRUMTests"
+        },
+        {
+          "displayName": "testPurge_whenExceedingCount()",
+          "errorMessages": [],
+          "identifier": "ViewCacheTests/testPurge_whenExceedingCount()",
+          "state": "Passed",
+          "targetName": "DatadogRUMTests"
+        },
+        {
+          "displayName": "testPurge_whenOneSceneExceedsCapacity_itRetainsHistoryFromOtherScenes()",
+          "errorMessages": [],
+          "identifier": "ViewCacheTests/testPurge_whenOneSceneExceedsCapacity_itRetainsHistoryFromOtherScenes()",
+          "state": "Passed",
+          "targetName": "DatadogRUMTests"
+        },
+        {
+          "displayName": "testPurge_whenExceedingTTL()",
+          "errorMessages": [],
+          "identifier": "ViewCacheTests/testPurge_whenExceedingTTL()",
+          "state": "Passed",
+          "targetName": "DatadogRUMTests"
+        },
+        {
+          "displayName": "testPurge_whenActiveSceneExceedsTTL_itRetainsItUntilItStops()",
+          "errorMessages": [],
+          "identifier": "ViewCacheTests/testPurge_whenActiveSceneExceedsTTL_itRetainsItUntilItStops()",
+          "state": "Passed",
+          "targetName": "DatadogRUMTests"
+        },
+        {
+          "displayName": "testPurge_whenSceneNavigatesRepeatedly_itDoesNotRenewOlderInactiveViews()",
+          "errorMessages": [],
+          "identifier": "ViewCacheTests/testPurge_whenSceneNavigatesRepeatedly_itDoesNotRenewOlderInactiveViews()",
+          "state": "Passed",
+          "targetName": "DatadogRUMTests"
+        },
+        {
+          "displayName": "testParsingViewEvent()",
+          "errorMessages": [],
+          "identifier": "WebViewEventReceiverTests/testParsingViewEvent()",
+          "state": "Passed",
+          "targetName": "DatadogRUMTests"
+        },
+        {
+          "displayName": "testParsingTelemetryEvent()",
+          "errorMessages": [],
+          "identifier": "WebViewEventReceiverTests/testParsingTelemetryEvent()",
+          "state": "Passed",
+          "targetName": "DatadogRUMTests"
+        },
+        {
+          "displayName": "testWhenReceivingWebViewTrackingMessageWithValidEvent_itAcknowledgesTheMessageAndKeepsRUMSessionAlive()",
+          "errorMessages": [],
+          "identifier": "WebViewEventReceiverTests/testWhenReceivingWebViewTrackingMessageWithValidEvent_itAcknowledgesTheMessageAndKeepsRUMSessionAlive()",
+          "state": "Passed",
+          "targetName": "DatadogRUMTests"
+        },
+        {
+          "displayName": "testWhenReceivingOtherMessage_itRejectsIt()",
+          "errorMessages": [],
+          "identifier": "WebViewEventReceiverTests/testWhenReceivingOtherMessage_itRejectsIt()",
+          "state": "Passed",
+          "targetName": "DatadogRUMTests"
+        },
+        {
+          "displayName": "testGivenRUMContextAvailable_whenReceivingWebEvent_itInjectRUMInfo()",
+          "errorMessages": [],
+          "identifier": "WebViewEventReceiverTests/testGivenRUMContextAvailable_whenReceivingWebEvent_itInjectRUMInfo()",
+          "state": "Passed",
+          "targetName": "DatadogRUMTests"
+        },
+        {
+          "displayName": "testGivenBrowserTagsAvailable_whenReceivingWebEvent_itMergesWithNativeDDTags()",
+          "errorMessages": [],
+          "identifier": "WebViewEventReceiverTests/testGivenBrowserTagsAvailable_whenReceivingWebEvent_itMergesWithNativeDDTags()",
+          "state": "Passed",
+          "targetName": "DatadogRUMTests"
+        },
+        {
+          "displayName": "testGivenNoBrowserTags_whenReceivingWebEvent_itSetsNativeDDTags()",
+          "errorMessages": [],
+          "identifier": "WebViewEventReceiverTests/testGivenNoBrowserTags_whenReceivingWebEvent_itSetsNativeDDTags()",
+          "state": "Passed",
+          "targetName": "DatadogRUMTests"
+        },
+        {
+          "displayName": "testGivenRUMContextNotAvailable_whenReceivingWebEvent_itIsDropped()",
+          "errorMessages": [],
+          "identifier": "WebViewEventReceiverTests/testGivenRUMContextNotAvailable_whenReceivingWebEvent_itIsDropped()",
+          "state": "Passed",
+          "targetName": "DatadogRUMTests"
+        },
+        {
+          "displayName": "testGivenReplayContextAvailable_whenReceivingWebEvent_itInjectReplayInfo()",
+          "errorMessages": [],
+          "identifier": "WebViewEventReceiverTests/testGivenReplayContextAvailable_whenReceivingWebEvent_itInjectReplayInfo()",
+          "state": "Passed",
+          "targetName": "DatadogRUMTests"
+        },
+        {
+          "displayName": "testGivenSceneMetadata_whenReceivingWebEvent_itUsesContainerViewFromThatScene()",
+          "errorMessages": [],
+          "identifier": "WebViewEventReceiverTests/testGivenSceneMetadata_whenReceivingWebEvent_itUsesContainerViewFromThatScene()",
+          "state": "Passed",
+          "targetName": "DatadogRUMTests"
+        },
+        {
+          "displayName": "testGivenLegacyReplayViewAndNativeScene_whenReceivingWebEvent_itKeepsContainer()",
+          "errorMessages": [],
+          "identifier": "WebViewEventReceiverTests/testGivenLegacyReplayViewAndNativeScene_whenReceivingWebEvent_itKeepsContainer()",
+          "state": "Passed",
+          "targetName": "DatadogRUMTests"
+        },
+        {
+          "displayName": "testGivenLegacyViewWithoutReplay_whenReceivingSceneEvent_itOmitsContainer()",
+          "errorMessages": [],
+          "identifier": "WebViewEventReceiverTests/testGivenLegacyViewWithoutReplay_whenReceivingSceneEvent_itOmitsContainer()",
+          "state": "Passed",
+          "targetName": "DatadogRUMTests"
+        },
+        {
+          "displayName": "testGivenFutureLegacyView_whenReceivingSceneEvent_itOmitsContainer()",
+          "errorMessages": [],
+          "identifier": "WebViewEventReceiverTests/testGivenFutureLegacyView_whenReceivingSceneEvent_itOmitsContainer()",
+          "state": "Passed",
+          "targetName": "DatadogRUMTests"
+        },
+        {
+          "displayName": "testGivenLegacyAndPeerSceneViews_whenReceivingSceneEvent_itOmitsContainer()",
+          "errorMessages": [],
+          "identifier": "WebViewEventReceiverTests/testGivenLegacyAndPeerSceneViews_whenReceivingSceneEvent_itOmitsContainer()",
+          "state": "Passed",
+          "targetName": "DatadogRUMTests"
+        },
+        {
+          "displayName": "testGivenLegacyAndMatchingSceneViews_whenReceivingSceneEvent_itUsesExactContainer()",
+          "errorMessages": [],
+          "identifier": "WebViewEventReceiverTests/testGivenLegacyAndMatchingSceneViews_whenReceivingSceneEvent_itUsesExactContainer()",
+          "state": "Passed",
+          "targetName": "DatadogRUMTests"
+        },
+        {
+          "displayName": "testGivenDeclaredMultiSceneAppAndLegacyView_whenReceivingSceneEvent_itOmitsContainer()",
+          "errorMessages": [],
+          "identifier": "WebViewEventReceiverTests/testGivenDeclaredMultiSceneAppAndLegacyView_whenReceivingSceneEvent_itOmitsContainer()",
+          "state": "Passed",
+          "targetName": "DatadogRUMTests"
+        },
+        {
+          "displayName": "testGivenNoSceneMetadataAndMultipleScenes_whenReceivingWebEvent_itOmitsAmbiguousContainer()",
+          "errorMessages": [],
+          "identifier": "WebViewEventReceiverTests/testGivenNoSceneMetadataAndMultipleScenes_whenReceivingWebEvent_itOmitsAmbiguousContainer()",
+          "state": "Passed",
+          "targetName": "DatadogRUMTests"
+        },
+        {
+          "displayName": "testGivenReplayContextNotAvailable_whenReceivingWebEvent_itRemovesReplayInfo()",
+          "errorMessages": [],
+          "identifier": "WebViewEventReceiverTests/testGivenReplayContextNotAvailable_whenReceivingWebEvent_itRemovesReplayInfo()",
+          "state": "Passed",
+          "targetName": "DatadogRUMTests"
+        },
+        {
+          "displayName": "testGivenAnonymousIdAvailable_whenReceivingWebEventWithExistingUsr_itAddsAnonymousIdAndPreservesWebFields()",
+          "errorMessages": [],
+          "identifier": "WebViewEventReceiverTests/testGivenAnonymousIdAvailable_whenReceivingWebEventWithExistingUsr_itAddsAnonymousIdAndPreservesWebFields()",
+          "state": "Passed",
+          "targetName": "DatadogRUMTests"
+        },
+        {
+          "displayName": "testGivenAnonymousIdAlreadySetByBrowser_whenReceivingWebEvent_itOverwritesWithNativeValue()",
+          "errorMessages": [],
+          "identifier": "WebViewEventReceiverTests/testGivenAnonymousIdAlreadySetByBrowser_whenReceivingWebEvent_itOverwritesWithNativeValue()",
+          "state": "Passed",
+          "targetName": "DatadogRUMTests"
+        },
+        {
+          "displayName": "testGivenFirstPartyHostSamplingRate_whenReceivingTracedResourceEvent_itOverwritesRulePsr()",
+          "errorMessages": [],
+          "identifier": "WebViewEventReceiverTests/testGivenFirstPartyHostSamplingRate_whenReceivingTracedResourceEvent_itOverwritesRulePsr()",
+          "state": "Passed",
+          "targetName": "DatadogRUMTests"
+        },
+        {
+          "displayName": "testGivenFirstPartyHostSamplingRate_whenReceivingResourceEventWithoutRulePsr_itDoesNotAddRulePsr()",
+          "errorMessages": [],
+          "identifier": "WebViewEventReceiverTests/testGivenFirstPartyHostSamplingRate_whenReceivingResourceEventWithoutRulePsr_itDoesNotAddRulePsr()",
+          "state": "Passed",
+          "targetName": "DatadogRUMTests"
+        },
+        {
+          "displayName": "testGivenNoFirstPartyHostSamplingRate_whenReceivingTracedResourceEvent_itDoesNotModifyRulePsr()",
+          "errorMessages": [],
+          "identifier": "WebViewEventReceiverTests/testGivenNoFirstPartyHostSamplingRate_whenReceivingTracedResourceEvent_itDoesNotModifyRulePsr()",
+          "state": "Passed",
+          "targetName": "DatadogRUMTests"
+        },
+        {
+          "displayName": "testGivenAnonymousIdAvailable_whenReceivingWebEventWithNoUsr_itAddsAnonymousId()",
+          "errorMessages": [],
+          "identifier": "WebViewEventReceiverTests/testGivenAnonymousIdAvailable_whenReceivingWebEventWithNoUsr_itAddsAnonymousId()",
+          "state": "Passed",
+          "targetName": "DatadogRUMTests"
+        }
+      ],
+      "schemeName": "DatadogRUM",
+      "summary": "71 tests: 71 passed, 0 failed, 0 skipped, 0 expected failures, 0 not run",
+      "totalResults": 71,
+      "truncated": false,
+      "xcresultBundlePath": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/ActionArtifacts/default/RunSomeTests/Test-DatadogRUM-2026.09.17_10-14-31-+0100.xcresult",
+      "fullSummaryPathSHA256": "213115afc9d3e24005dc1cbe916e41d4bafeeaf618b1c809bc520efc1bd87394",
+      "fullConsoleLogsPathSHA256": "ff7ef6e0c469f05361f3e58c97b4087d97d2134c41f3455856c756bb14bb05a6"
+    },
+    "bridge": {
+      "counts": {
+        "expectedFailures": 0,
+        "failed": 0,
+        "notRun": 0,
+        "passed": 31,
+        "skipped": 0,
+        "total": 31
+      },
+      "fullConsoleLogsPath": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/ActionArtifacts/default/RunSomeTests/test-console-log-2026-09-17T10-19-48+01-00.txt",
+      "fullSummaryPath": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/ActionArtifacts/default/RunSomeTests/641D4485-D5F6-44D7-B0E3-8AD23E7B290C.txt",
+      "results": [
+        {
+          "displayName": "testGivenSampleRate100_whenReceivingLogEvent_itForwardsToLogs()",
+          "errorMessages": [],
+          "identifier": "MessageEmitterTests/testGivenSampleRate100_whenReceivingLogEvent_itForwardsToLogs()",
+          "state": "Passed",
+          "targetName": "DatadogWebViewTrackingTests"
+        },
+        {
+          "displayName": "testGivenSampleRate0_whenReceivingLogEvent_itIsDropped()",
+          "errorMessages": [],
+          "identifier": "MessageEmitterTests/testGivenSampleRate0_whenReceivingLogEvent_itIsDropped()",
+          "state": "Passed",
+          "targetName": "DatadogWebViewTrackingTests"
+        },
+        {
+          "displayName": "testWhenReceivingRUMEvent_itForwardsToRUM()",
+          "errorMessages": [],
+          "identifier": "MessageEmitterTests/testWhenReceivingRUMEvent_itForwardsToRUM()",
+          "state": "Passed",
+          "targetName": "DatadogWebViewTrackingTests"
+        },
+        {
+          "displayName": "testWhenReceivingRUMEventFromScene_itForwardsPrivateSceneRoutingMetadata()",
+          "errorMessages": [],
+          "identifier": "MessageEmitterTests/testWhenReceivingRUMEventFromScene_itForwardsPrivateSceneRoutingMetadata()",
+          "state": "Passed",
+          "targetName": "DatadogWebViewTrackingTests"
+        },
+        {
+          "displayName": "testWhenReceivingTelemetryEvent_itForwardsToTelemetry()",
+          "errorMessages": [],
+          "identifier": "MessageEmitterTests/testWhenReceivingTelemetryEvent_itForwardsToTelemetry()",
+          "state": "Passed",
+          "targetName": "DatadogWebViewTrackingTests"
+        },
+        {
+          "displayName": "testWhenMessageIsInvalid_itReportTheError()",
+          "errorMessages": [],
+          "identifier": "MessageEmitterTests/testWhenMessageIsInvalid_itReportTheError()",
+          "state": "Passed",
+          "targetName": "DatadogWebViewTrackingTests"
+        },
+        {
+          "displayName": "testSingleCore()",
+          "errorMessages": [],
+          "identifier": "WebViewSessionRolloverHandlerTests/testSingleCore()",
+          "state": "Passed",
+          "targetName": "DatadogWebViewTrackingTests"
+        },
+        {
+          "displayName": "testMultipleCores()",
+          "errorMessages": [],
+          "identifier": "WebViewSessionRolloverHandlerTests/testMultipleCores()",
+          "state": "Passed",
+          "targetName": "DatadogWebViewTrackingTests"
+        },
+        {
+          "displayName": "testWeakReferencesHandling()",
+          "errorMessages": [],
+          "identifier": "WebViewSessionRolloverHandlerTests/testWeakReferencesHandling()",
+          "state": "Passed",
+          "targetName": "DatadogWebViewTrackingTests"
+        },
+        {
+          "displayName": "testItAddsUserScript()",
+          "errorMessages": [],
+          "identifier": "WebViewTrackingTests/testItAddsUserScript()",
+          "state": "Passed",
+          "targetName": "DatadogWebViewTrackingTests"
+        },
+        {
+          "displayName": "testItAddsUserScriptWithSessionReplay()",
+          "errorMessages": [],
+          "identifier": "WebViewTrackingTests/testItAddsUserScriptWithSessionReplay()",
+          "state": "Passed",
+          "targetName": "DatadogWebViewTrackingTests"
+        },
+        {
+          "displayName": "testItAddsUserScriptWithFirstPartyHostTracing()",
+          "errorMessages": [],
+          "identifier": "WebViewTrackingTests/testItAddsUserScriptWithFirstPartyHostTracing()",
+          "state": "Passed",
+          "targetName": "DatadogWebViewTrackingTests"
+        },
+        {
+          "displayName": "testItChangesBridgeDecisionOnSessionRollover()",
+          "errorMessages": [],
+          "identifier": "WebViewTrackingTests/testItChangesBridgeDecisionOnSessionRollover()",
+          "state": "Passed",
+          "targetName": "DatadogWebViewTrackingTests"
+        },
+        {
+          "displayName": "testItChangesBridgeDecisionOnSessionRolloverInIframes()",
+          "errorMessages": [],
+          "identifier": "WebViewTrackingTests/testItChangesBridgeDecisionOnSessionRolloverInIframes()",
+          "state": "Passed",
+          "targetName": "DatadogWebViewTrackingTests"
+        },
+        {
+          "displayName": "testItSetsBridgeDecisionToNullOnSessionStop()",
+          "errorMessages": [],
+          "identifier": "WebViewTrackingTests/testItSetsBridgeDecisionToNullOnSessionStop()",
+          "state": "Passed",
+          "targetName": "DatadogWebViewTrackingTests"
+        },
+        {
+          "displayName": "testItAddsUserScriptAndMessageHandler()",
+          "errorMessages": [],
+          "identifier": "WebViewTrackingTests/testItAddsUserScriptAndMessageHandler()",
+          "state": "Passed",
+          "targetName": "DatadogWebViewTrackingTests"
+        },
+        {
+          "displayName": "testWhenAddingMessageHandlerMultipleTimes_itIgnoresExtraOnesAndPrintsWarning()",
+          "errorMessages": [],
+          "identifier": "WebViewTrackingTests/testWhenAddingMessageHandlerMultipleTimes_itIgnoresExtraOnesAndPrintsWarning()",
+          "state": "Passed",
+          "targetName": "DatadogWebViewTrackingTests"
+        },
+        {
+          "displayName": "testWhenAddingMessageHandlerMultipleTimes_afterExternalRemovalOfUserScripts_itHandlesCorrectlyTheInstrumentation()",
+          "errorMessages": [],
+          "identifier": "WebViewTrackingTests/testWhenAddingMessageHandlerMultipleTimes_afterExternalRemovalOfUserScripts_itHandlesCorrectlyTheInstrumentation()",
+          "state": "Passed",
+          "targetName": "DatadogWebViewTrackingTests"
+        },
+        {
+          "displayName": "testWhenStoppingTracking_itCanBeEnabledAgain()",
+          "errorMessages": [],
+          "identifier": "WebViewTrackingTests/testWhenStoppingTracking_itCanBeEnabledAgain()",
+          "state": "Passed",
+          "targetName": "DatadogWebViewTrackingTests"
+        },
+        {
+          "displayName": "testWhenStoppingTracking_itKeepsNonDatadogComponents()",
+          "errorMessages": [],
+          "identifier": "WebViewTrackingTests/testWhenStoppingTracking_itKeepsNonDatadogComponents()",
+          "state": "Passed",
+          "targetName": "DatadogWebViewTrackingTests"
+        },
+        {
+          "displayName": "testSendingWebEvents()",
+          "errorMessages": [],
+          "identifier": "WebViewTrackingTests/testSendingWebEvents()",
+          "state": "Passed",
+          "targetName": "DatadogWebViewTrackingTests"
+        },
+        {
+          "displayName": "testSendingWebRUMEvent()",
+          "errorMessages": [],
+          "identifier": "WebViewTrackingTests/testSendingWebRUMEvent()",
+          "state": "Passed",
+          "targetName": "DatadogWebViewTrackingTests"
+        },
+        {
+          "displayName": "testSendingWebRecordEvent()",
+          "errorMessages": [],
+          "identifier": "WebViewTrackingTests/testSendingWebRecordEvent()",
+          "state": "Passed",
+          "targetName": "DatadogWebViewTrackingTests"
+        },
+        {
+          "displayName": "testItSendsTrackWebViewUsageTelemetry()",
+          "errorMessages": [],
+          "identifier": "WebViewTrackingTests/testItSendsTrackWebViewUsageTelemetry()",
+          "state": "Passed",
+          "targetName": "DatadogWebViewTrackingTests"
+        },
+        {
+          "displayName": "testItSendsTrackWebViewUsageTelemetryOnlyOnce()",
+          "errorMessages": [],
+          "identifier": "WebViewTrackingTests/testItSendsTrackWebViewUsageTelemetryOnlyOnce()",
+          "state": "Passed",
+          "targetName": "DatadogWebViewTrackingTests"
+        },
+        {
+          "displayName": "testItSendsTrackWebViewUsageTelemetryAgainAfterDisable()",
+          "errorMessages": [],
+          "identifier": "WebViewTrackingTests/testItSendsTrackWebViewUsageTelemetryAgainAfterDisable()",
+          "state": "Passed",
+          "targetName": "DatadogWebViewTrackingTests"
+        },
+        {
+          "displayName": "testItAddsUserScriptWithWildcardHosts()",
+          "errorMessages": [],
+          "identifier": "WebViewTrackingTests/testItAddsUserScriptWithWildcardHosts()",
+          "state": "Passed",
+          "targetName": "DatadogWebViewTrackingTests"
+        },
+        {
+          "displayName": "testItDropsWildcardWithMoreThanOneAsterisk()",
+          "errorMessages": [],
+          "identifier": "WebViewTrackingTests/testItDropsWildcardWithMoreThanOneAsterisk()",
+          "state": "Passed",
+          "targetName": "DatadogWebViewTrackingTests"
+        },
+        {
+          "displayName": "testItLowercasesWildcardHosts()",
+          "errorMessages": [],
+          "identifier": "WebViewTrackingTests/testItLowercasesWildcardHosts()",
+          "state": "Passed",
+          "targetName": "DatadogWebViewTrackingTests"
+        },
+        {
+          "displayName": "testItDropsHostsWithInvalidCharacters()",
+          "errorMessages": [],
+          "identifier": "WebViewTrackingTests/testItDropsHostsWithInvalidCharacters()",
+          "state": "Passed",
+          "targetName": "DatadogWebViewTrackingTests"
+        },
+        {
+          "displayName": "testItSanitizesHostEdgeCases()",
+          "errorMessages": [],
+          "identifier": "WebViewTrackingTests/testItSanitizesHostEdgeCases()",
+          "state": "Passed",
+          "targetName": "DatadogWebViewTrackingTests"
+        }
+      ],
+      "schemeName": "DatadogWebViewTracking",
+      "summary": "31 tests: 31 passed, 0 failed, 0 skipped, 0 expected failures, 0 not run",
+      "totalResults": 31,
+      "truncated": false,
+      "xcresultBundlePath": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/ActionArtifacts/default/RunSomeTests/Test-DatadogWebViewTracking-2026.09.17_10-19-48-+0100.xcresult",
+      "fullSummaryPathSHA256": "b6c1c9eeb0096c7ba684a5b9c1b56a7c79821a7b9a7ae4ebc96b5f6e92bd41e4",
+      "fullConsoleLogsPathSHA256": "00458ab315cad9f860b8d019b552f2ce361cad7ece43546c26743688116c38b6"
+    }
+  },
+  "lint": {
+    "status": "PASS",
+    "source_files": 3,
+    "test_files": 2,
+    "violations": 0
+  },
+  "collector_controls": {
+    "passed": 4,
+    "failed": 0
+  },
+  "runtime_attempts": [
+    {
+      "number": 1,
+      "classification": "INVALID",
+      "raw_status": "FAIL",
+      "manifest_path": "/tmp/exp165-runtime-attempt1.json",
+      "manifest_sha256": "81c285e2516c0f30d1e27609ffe80210e7795a1f988fa1780b778a8cb510f503",
+      "artifact_root": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/webview-correlation-jr4_j8vh",
+      "runner_sha256": "ab4b295fa0965592a67b36fc52d8932effff2c111263a8e10623ad1e31d05119",
+      "helper_sha256": "d14fa5cd77aed6147386e0815a3f711f8d2c45d0018cf5512da79e9db4943398",
+      "xcode": "Xcode 27.0\nBuild version 27A266a",
+      "device": {
+        "name": "iPhone 17 Pro",
+        "udid": "BE03D65C-84F6-4FE0-95DA-A8F8D81A5D21",
+        "os": "27.0"
+      },
+      "arms": {
+        "control": {
+          "revision": "074f644ad6a60e7a324e7da66b503b95e9b20dc0",
+          "fixture_sha256": "3247efc1be262c3a078ab0ad16934d74f7b94a1fbe4f4098e6ae910f39d114ba",
+          "package_sha256": "bf79c21e204fe8aedcd2cdf07395da3901d20845f213800c5e74ddc45015d558",
+          "bundle": "com.datadoghq.webview-correlation.control",
+          "build_command": [
+            "xcodebuild",
+            "build",
+            "-quiet",
+            "-project",
+            "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/webview-correlation-jr4_j8vh/control/WebViewCorrelation.xcodeproj",
+            "-scheme",
+            "WebViewCorrelation",
+            "-configuration",
+            "Debug",
+            "-destination",
+            "generic/platform=iOS Simulator",
+            "-derivedDataPath",
+            "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/webview-correlation-jr4_j8vh/control/derived",
+            "CODE_SIGNING_ALLOWED=NO"
+          ],
+          "build_log": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/webview-correlation-jr4_j8vh/control/build.log",
+          "app": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/webview-correlation-jr4_j8vh/control/derived/Build/Products/Debug-iphonesimulator/WebViewCorrelation.app",
+          "binary_sha256": "94b33b4ef423e3e3005fe93bc9f82e5230f18b2d5fbae02242f7c03b7c6b086e",
+          "build_log_sha256": "5c6b6e6b1cc05a9a3cf66ec0b70790cf36cfa1ca08def78936866acd9c13996d",
+          "run": {
+            "status": "INCONCLUSIVE",
+            "run_id": "webview-correlation-b67850e2e3f042bbaa5adb51d43bf0ef",
+            "launch_command": [
+              "xcrun",
+              "simctl",
+              "launch",
+              "--console",
+              "BE03D65C-84F6-4FE0-95DA-A8F8D81A5D21",
+              "com.datadoghq.webview-correlation.control",
+              "--run-id",
+              "webview-correlation-b67850e2e3f042bbaa5adb51d43bf0ef",
+              "--endpoint",
+              "http://127.0.0.1:62811"
+            ],
+            "clean_install": true,
+            "installed_binary_matches": true,
+            "required_checks_complete": false,
+            "native_replay_payload": false,
+            "replay_upload_count": 1,
+            "result": {
+              "checks": {
+                "actual_replay_enabled": true,
+                "declared_single_scene": true,
+                "legacy_view_has_no_scene_owner": true,
+                "single_native_scene": true,
+                "webview_mounted_in_native_scene": true
+              },
+              "details": {
+                "fixture_error": "Error Domain=Fixture Code=1 \"Missing emitted browser acknowledgement for legacy\" UserInfo={NSLocalizedDescription=Missing emitted browser acknowledgement for legacy}",
+                "legacy_view_id": "8b0b3556-942f-4e96-9ce6-f8aa1dac8d13",
+                "native_scene_id": "092F7784-366C-4B79-9F43-46970BD0314C",
+                "peer_kind": "injected logical branch, not a second native window"
+              },
+              "run_id": "webview-correlation-b67850e2e3f042bbaa5adb51d43bf0ef"
+            },
+            "console_sha256": "86bfb1921de4f49b1745c08eb03f98bea59c3f37ea1eb3db481b8a328f561f7d",
+            "payloads_sha256": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570"
+          },
+          "sdk_unchanged": true,
+          "fixture_unchanged": true,
+          "binary_unchanged": true,
+          "sdk_identity": {
+            "file_count": 534,
+            "sha256": "61ab7e42df2082c6ecddbc69e93e96cb6412fac863af8022c16ef0b196e4e31d"
+          }
+        },
+        "candidate": {
+          "revision": "9a1ee83a5e2b10644edb5400e9b66d3cb9e36fdd",
+          "fixture_sha256": "3247efc1be262c3a078ab0ad16934d74f7b94a1fbe4f4098e6ae910f39d114ba",
+          "package_sha256": "bf79c21e204fe8aedcd2cdf07395da3901d20845f213800c5e74ddc45015d558",
+          "bundle": "com.datadoghq.webview-correlation.candidate",
+          "build_command": [
+            "xcodebuild",
+            "build",
+            "-quiet",
+            "-project",
+            "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/webview-correlation-jr4_j8vh/candidate/WebViewCorrelation.xcodeproj",
+            "-scheme",
+            "WebViewCorrelation",
+            "-configuration",
+            "Debug",
+            "-destination",
+            "generic/platform=iOS Simulator",
+            "-derivedDataPath",
+            "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/webview-correlation-jr4_j8vh/candidate/derived",
+            "CODE_SIGNING_ALLOWED=NO"
+          ],
+          "build_log": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/webview-correlation-jr4_j8vh/candidate/build.log",
+          "app": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/webview-correlation-jr4_j8vh/candidate/derived/Build/Products/Debug-iphonesimulator/WebViewCorrelation.app",
+          "binary_sha256": "5ad8fb40d3ea8d531b3b70decb4f517979f020e45b0cafd9af73cae61dadd2fe",
+          "build_log_sha256": "1ad727fe9b696d3fe67138ff49f275e0e2cabfb17e3b85862ff3b5dd9089fe54",
+          "run": {
+            "status": "INCONCLUSIVE",
+            "run_id": "webview-correlation-8459a82544b14707815706e9cf625a4c",
+            "launch_command": [
+              "xcrun",
+              "simctl",
+              "launch",
+              "--console",
+              "BE03D65C-84F6-4FE0-95DA-A8F8D81A5D21",
+              "com.datadoghq.webview-correlation.candidate",
+              "--run-id",
+              "webview-correlation-8459a82544b14707815706e9cf625a4c",
+              "--endpoint",
+              "http://127.0.0.1:63212"
+            ],
+            "clean_install": true,
+            "installed_binary_matches": true,
+            "required_checks_complete": false,
+            "native_replay_payload": false,
+            "replay_upload_count": 1,
+            "result": {
+              "checks": {
+                "actual_replay_enabled": true,
+                "declared_single_scene": true,
+                "legacy_view_has_no_scene_owner": true,
+                "single_native_scene": true,
+                "webview_mounted_in_native_scene": true
+              },
+              "details": {
+                "fixture_error": "Error Domain=Fixture Code=1 \"Missing emitted browser acknowledgement for legacy\" UserInfo={NSLocalizedDescription=Missing emitted browser acknowledgement for legacy}",
+                "legacy_view_id": "8b09d46a-c3b0-4ccc-9a9d-de003abb9f06",
+                "native_scene_id": "79874054-2973-4CEA-AAD7-ED8FB7CA12A4",
+                "peer_kind": "injected logical branch, not a second native window"
+              },
+              "run_id": "webview-correlation-8459a82544b14707815706e9cf625a4c"
+            },
+            "console_sha256": "bc0f440da8e0747e14c9cfadf73657eb43329eae15615bba0af8f44d75ec7ec9",
+            "payloads_sha256": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570"
+          },
+          "sdk_unchanged": true,
+          "fixture_unchanged": true,
+          "binary_unchanged": true,
+          "sdk_identity": {
+            "file_count": 534,
+            "sha256": "ef635f1ccc4e988dcd8b4214e7dab0d8d22d70e7ef620259637483d6811e14e2"
+          }
+        }
+      },
+      "reason": "Collector did not decode deflate uploads; missing browser acknowledgements were tooling-invalid, not an SDK outcome. Both builds passed."
+    },
+    {
+      "number": 2,
+      "classification": "PASS",
+      "raw_status": "PASS",
+      "manifest_path": "/tmp/exp165-runtime-attempt2.json",
+      "manifest_sha256": "a251f1e6611a3fe08efae0790db049c0938937df386a6b95643e7b70d9e8d999",
+      "artifact_root": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/webview-correlation-knajztf0",
+      "runner_sha256": "7a853f41997272267565589d3e961e2e1ea008e909d7d57f1e199eeed4c62671",
+      "helper_sha256": "d14fa5cd77aed6147386e0815a3f711f8d2c45d0018cf5512da79e9db4943398",
+      "xcode": "Xcode 27.0\nBuild version 27A266a",
+      "device": {
+        "name": "iPhone 17 Pro",
+        "udid": "BE03D65C-84F6-4FE0-95DA-A8F8D81A5D21",
+        "os": "27.0"
+      },
+      "arms": {
+        "control": {
+          "revision": "074f644ad6a60e7a324e7da66b503b95e9b20dc0",
+          "fixture_sha256": "3247efc1be262c3a078ab0ad16934d74f7b94a1fbe4f4098e6ae910f39d114ba",
+          "package_sha256": "bf79c21e204fe8aedcd2cdf07395da3901d20845f213800c5e74ddc45015d558",
+          "bundle": "com.datadoghq.webview-correlation.control",
+          "build_command": [
+            "xcodebuild",
+            "build",
+            "-quiet",
+            "-project",
+            "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/webview-correlation-knajztf0/control/WebViewCorrelation.xcodeproj",
+            "-scheme",
+            "WebViewCorrelation",
+            "-configuration",
+            "Debug",
+            "-destination",
+            "generic/platform=iOS Simulator",
+            "-derivedDataPath",
+            "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/webview-correlation-knajztf0/control/derived",
+            "CODE_SIGNING_ALLOWED=NO"
+          ],
+          "build_log": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/webview-correlation-knajztf0/control/build.log",
+          "app": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/webview-correlation-knajztf0/control/derived/Build/Products/Debug-iphonesimulator/WebViewCorrelation.app",
+          "binary_sha256": "781c56f4f75894c092f482e490b7630c48275eedd6d298173422da8cbe195a6f",
+          "build_log_sha256": "a1283981a43ee1d7cd618d7da1bf2b5cd58bf687527463462b7b654d323a2688",
+          "run": {
+            "status": "FAIL",
+            "run_id": "webview-correlation-6fa53e99a45947bba6050bda46732034",
+            "launch_command": [
+              "xcrun",
+              "simctl",
+              "launch",
+              "--console",
+              "BE03D65C-84F6-4FE0-95DA-A8F8D81A5D21",
+              "com.datadoghq.webview-correlation.control",
+              "--run-id",
+              "webview-correlation-6fa53e99a45947bba6050bda46732034",
+              "--endpoint",
+              "http://127.0.0.1:64762"
+            ],
+            "clean_install": true,
+            "installed_binary_matches": true,
+            "required_checks_complete": true,
+            "native_replay_payload": true,
+            "replay_upload_count": 1,
+            "collector_errors": [],
+            "result": {
+              "checks": {
+                "actual_replay_enabled": true,
+                "declared_single_scene": true,
+                "exact_container_matches_native": true,
+                "exact_does_not_use_peer": true,
+                "exact_private_metadata_removed": true,
+                "exact_replay_preserved": true,
+                "exact_run_identity": true,
+                "legacy_container_matches_native": false,
+                "legacy_private_metadata_removed": true,
+                "legacy_replay_preserved": true,
+                "legacy_run_identity": true,
+                "legacy_view_has_no_scene_owner": true,
+                "peer_branch_established": true,
+                "peer_container_omitted": true,
+                "peer_private_metadata_removed": true,
+                "peer_replay_preserved": true,
+                "peer_run_identity": true,
+                "single_native_scene": true,
+                "webview_mounted_in_native_scene": true
+              },
+              "details": {
+                "exact_view_id": "45a06bf6-e271-4ff3-8f71-bd55c7da49db",
+                "legacy_view_id": "6501ec7a-e3d3-4057-8804-20346d4819d5",
+                "native_scene_id": "092F7784-366C-4B79-9F43-46970BD0314C",
+                "peer_kind": "injected logical branch, not a second native window",
+                "peer_view_id": "86283ae0-e535-49fd-98d4-ebb52c364b34",
+                "ownership_summary": [
+                  {
+                    "step": "legacy",
+                    "browser_view_id": "5274f304-99f1-40f6-b91a-48bd86fdf49f",
+                    "container_view_id": null,
+                    "has_replay": true,
+                    "private_scene_metadata_absent": true
+                  },
+                  {
+                    "step": "peer",
+                    "browser_view_id": "6acc1ac8-a5da-46c2-bcee-cc992688f05e",
+                    "container_view_id": null,
+                    "has_replay": true,
+                    "private_scene_metadata_absent": true
+                  },
+                  {
+                    "step": "exact",
+                    "browser_view_id": "f50430d9-896f-4549-8459-4ec1afae5417",
+                    "container_view_id": "45a06bf6-e271-4ff3-8f71-bd55c7da49db",
+                    "has_replay": true,
+                    "private_scene_metadata_absent": true
+                  }
+                ]
+              },
+              "run_id": "webview-correlation-6fa53e99a45947bba6050bda46732034"
+            },
+            "console_sha256": "182282bd4c8cc3eacc988c376bf2392bfe651aec08b349a6a5a4dae074970ace",
+            "payloads_sha256": "13a3ed2b88ae2d13dc0eaacb742861e921a6f8b67a83fab1b3ce090fc0dc8543"
+          },
+          "sdk_unchanged": true,
+          "fixture_unchanged": true,
+          "binary_unchanged": true,
+          "sdk_identity": {
+            "file_count": 534,
+            "sha256": "61ab7e42df2082c6ecddbc69e93e96cb6412fac863af8022c16ef0b196e4e31d"
+          }
+        },
+        "candidate": {
+          "revision": "9a1ee83a5e2b10644edb5400e9b66d3cb9e36fdd",
+          "fixture_sha256": "3247efc1be262c3a078ab0ad16934d74f7b94a1fbe4f4098e6ae910f39d114ba",
+          "package_sha256": "bf79c21e204fe8aedcd2cdf07395da3901d20845f213800c5e74ddc45015d558",
+          "bundle": "com.datadoghq.webview-correlation.candidate",
+          "build_command": [
+            "xcodebuild",
+            "build",
+            "-quiet",
+            "-project",
+            "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/webview-correlation-knajztf0/candidate/WebViewCorrelation.xcodeproj",
+            "-scheme",
+            "WebViewCorrelation",
+            "-configuration",
+            "Debug",
+            "-destination",
+            "generic/platform=iOS Simulator",
+            "-derivedDataPath",
+            "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/webview-correlation-knajztf0/candidate/derived",
+            "CODE_SIGNING_ALLOWED=NO"
+          ],
+          "build_log": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/webview-correlation-knajztf0/candidate/build.log",
+          "app": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/webview-correlation-knajztf0/candidate/derived/Build/Products/Debug-iphonesimulator/WebViewCorrelation.app",
+          "binary_sha256": "750c2899d487214c16e184d12c001a9edd0c4a18437202c5a92c231de0392063",
+          "build_log_sha256": "3e76bfbab854aac6cb0d069ff51736885ee912f62aa745208a4832944ed33845",
+          "run": {
+            "status": "PASS",
+            "run_id": "webview-correlation-0eb8abffb63c4c24a862af6eacae155d",
+            "launch_command": [
+              "xcrun",
+              "simctl",
+              "launch",
+              "--console",
+              "BE03D65C-84F6-4FE0-95DA-A8F8D81A5D21",
+              "com.datadoghq.webview-correlation.candidate",
+              "--run-id",
+              "webview-correlation-0eb8abffb63c4c24a862af6eacae155d",
+              "--endpoint",
+              "http://127.0.0.1:64916"
+            ],
+            "clean_install": true,
+            "installed_binary_matches": true,
+            "required_checks_complete": true,
+            "native_replay_payload": true,
+            "replay_upload_count": 1,
+            "collector_errors": [],
+            "result": {
+              "checks": {
+                "actual_replay_enabled": true,
+                "declared_single_scene": true,
+                "exact_container_matches_native": true,
+                "exact_does_not_use_peer": true,
+                "exact_private_metadata_removed": true,
+                "exact_replay_preserved": true,
+                "exact_run_identity": true,
+                "legacy_container_matches_native": true,
+                "legacy_private_metadata_removed": true,
+                "legacy_replay_preserved": true,
+                "legacy_run_identity": true,
+                "legacy_view_has_no_scene_owner": true,
+                "peer_branch_established": true,
+                "peer_container_omitted": true,
+                "peer_private_metadata_removed": true,
+                "peer_replay_preserved": true,
+                "peer_run_identity": true,
+                "single_native_scene": true,
+                "webview_mounted_in_native_scene": true
+              },
+              "details": {
+                "exact_view_id": "b76e83a7-61bb-4845-9383-996bb3914adc",
+                "legacy_view_id": "7a7cdc15-0258-4c76-b125-1ff1c5f7402b",
+                "native_scene_id": "79874054-2973-4CEA-AAD7-ED8FB7CA12A4",
+                "peer_kind": "injected logical branch, not a second native window",
+                "peer_view_id": "839707d7-5b42-42ff-ab07-144bc6b9b30f",
+                "ownership_summary": [
+                  {
+                    "step": "legacy",
+                    "browser_view_id": "76776ecd-6e88-402b-8532-b8e3ea03661d",
+                    "container_view_id": "7a7cdc15-0258-4c76-b125-1ff1c5f7402b",
+                    "has_replay": true,
+                    "private_scene_metadata_absent": true
+                  },
+                  {
+                    "step": "peer",
+                    "browser_view_id": "b75b791e-4801-4b81-bb8c-25fae7d4c591",
+                    "container_view_id": null,
+                    "has_replay": true,
+                    "private_scene_metadata_absent": true
+                  },
+                  {
+                    "step": "exact",
+                    "browser_view_id": "002f1eba-df3e-4cc6-bb6d-79407036b9bf",
+                    "container_view_id": "b76e83a7-61bb-4845-9383-996bb3914adc",
+                    "has_replay": true,
+                    "private_scene_metadata_absent": true
+                  }
+                ]
+              },
+              "run_id": "webview-correlation-0eb8abffb63c4c24a862af6eacae155d"
+            },
+            "console_sha256": "81ca3a451b3b4b295ffbf9e4df6f548ac8279c655cc279f0449cb6bfa6a9ef6b",
+            "payloads_sha256": "09a944812b10a28379da71d918c01ba455e491f006e12d4ab62eb552ab2edce4"
+          },
+          "sdk_unchanged": true,
+          "fixture_unchanged": true,
+          "binary_unchanged": true,
+          "sdk_identity": {
+            "file_count": 534,
+            "sha256": "ef635f1ccc4e988dcd8b4214e7dab0d8d22d70e7ef620259637483d6811e14e2"
+          }
+        }
+      }
+    }
+  ],
+  "boundaries": [
+    "One actual UIWindowScene and mounted WKWebView; peer is a logical branch.",
+    "Real native Session Replay enablement and actual RUM uploads; fixture browser envelopes use the actual JavaScript bridge.",
+    "No backend, two-container T10, minimum-iOS runtime, performance or hardware gate closes."
+  ]
+}

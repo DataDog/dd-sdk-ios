@@ -2,7 +2,7 @@
   "schema_version": 1,
   "scope": "Multi-scene RUM release",
   "baseline_revision": "92f021ba7e4a866f84a52da93ed8b63f3dc75882",
-  "candidate_revision": "a9abc092bfb3e03c222038f4d36babf4fd2c1f8d",
+  "candidate_revision": "9a1ee83a5e2b10644edb5400e9b66d3cb9e36fdd",
   "gates": [
     {
       "id": "C01",
@@ -845,8 +845,8 @@
       "decisive_test": "Reproduce/triage the reported finding, then require: Legacy string-key view plus mounted WKWebView retains unambiguous container.view.id; peer scene never used as fallback",
       "environment": "Single-scene simulator WebView with Replay correlation enabled",
       "completion_mode": null,
-      "status": "REGRESSION BLOCKED",
-      "evidence": "REVIEW_TRIAGE.md: assessed relevant at af63657f0; source-confirmed path; required full regression/repair remains open."
+      "status": "CLOSED",
+      "evidence": "EXP-165; signed 9a1ee83a5. Legacy failure reproduced; 71 RUM plus 31 WebView tests, strict lint and mounted Replay/bridge 19/19 pass (control 18/19). Four collector controls pass. Results/EXP-165-webview-correlation.json; T10 two-container/backend scope remains open."
     },
     {
       "id": "D12",

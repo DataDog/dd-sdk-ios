@@ -46,11 +46,10 @@ Objective-C Release exposure still require normal API review.
 
 0. D01/D02 platform compatibility is closed by EXP-162; evidence is in the
    register and detailed record. Accepted experiment identities remain unchanged.
-1. D12/T02 and D09 compatibility repairs are accepted. EXP-165 defines D11 legacy
-   native/WebView correlation with Replay association and a cross-scene negative
-   control, in the [assessed order](REVIEW_TRIAGE.md). Define the bounded
-   experiment before implementation; preserve failing controls.
-2. Repair D04 together with P02 allocation cost; normalize restoration in D05/D06.
+1. D12/T02, D09 and D11 compatibility repairs are accepted. Define D04 with P02
+   next in the [assessed order](REVIEW_TRIAGE.md): isolate handoff by SDK instance
+   and lifecycle, and meet the frozen allocation budget. Preserve failing controls.
+2. Normalize restoration in D05/D06 after the shared ownership repair.
 3. Repair D03/P03 lifetimes, D07/D08 authority/reconnect, and D10 accepted
    presentation state. Close the missing R04–R06 discriminators in those slices.
 4. Close the early compatibility/performance gates in available environments;
@@ -173,7 +172,7 @@ experiment slices remain evidence, not a substitute for these missing cases.
 | D08 | Reconnect generation acceptance | SDK implementer | D03, D07 | Reproduce/triage the reported finding, then require: Stale trait between disconnect and real connection/reader mount cannot consume generation; exactly one fresh occurrence and correct immediate telemetry | Deterministic iOS 27 regression; genuine lifecycle remains H09 | REGRESSION BLOCKED |
 | D09 | Controller API caller-thread compatibility | SDK implementer | None | Reproduce/triage the reported finding, then require: Background start/stop getter spy records no UIKit hierarchy access; main-thread target resolves correctly without sync-to-main deadlock | iOS simulator focused test plus Main Thread Checker | CLOSED |
 | D10 | Accepted presentation state | SDK implementer | None | Reproduce/triage the reported finding, then require: Rejected/canonicalized Binding writes, transaction forwarding, immediate setter work and dismissal callbacks follow accepted occurrence | Mounted iOS 27 SwiftUI adapter tests | REGRESSION BLOCKED |
-| D11 | Legacy native/WebView correlation | SDK implementer | None | Reproduce/triage the reported finding, then require: Legacy string-key view plus mounted WKWebView retains unambiguous container.view.id; peer scene never used as fallback | Single-scene simulator WebView with Replay correlation enabled | REGRESSION BLOCKED |
+| D11 | Legacy native/WebView correlation | SDK implementer | None | Reproduce/triage the reported finding, then require: Legacy string-key view plus mounted WKWebView retains unambiguous container.view.id; peer scene never used as fallback | Single-scene simulator WebView with Replay correlation enabled | CLOSED |
 | D12 | Expired action stop attributes | SDK implementer | None | Reproduce/triage the reported finding, then require: Single-scene continuous action stopped after timeout retains original stop attributes; peer timeout still cannot inherit foreign attributes | RUM scope regression with controlled clock | CLOSED |
 
 ## Release and compatibility gates

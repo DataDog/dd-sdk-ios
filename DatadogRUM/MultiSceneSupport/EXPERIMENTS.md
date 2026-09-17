@@ -15,6 +15,10 @@ Last updated: 2026-09-17
 
 ## Current checkpoint
 
+Current release position: 17/66 gates closed. EXP-165 closes D11 at signed
+`9a1ee83a5`; D04/P02 is next. Seven production-review repairs remain open.
+
+
 - Latest accepted slice: `EXP-159`, targeted long-running action start/stop.
   Bounded synchronous live-view runtime passes 15/15 and exact backend ownership;
   full RUM 1,260/1,260, probe 166/166, Objective-C 8/8, Release and lint pass.
@@ -319,7 +323,7 @@ ordered acceptance contract is in
 | EXP-162 | 2026-09-17 | PASS · D01/D02 | Platform compatibility | Two failing full-target controls; watchOS RUM/macOS WebView Debug and Release pass; 70 Resource/action and 28 WebView iOS tests plus lint pass. | [active record](Experiments/EXP-143-199.md#exp-162--restore-watchos-resource-and-macos-webview-compilation) |
 | EXP-163 | 2026-09-17 | PASS · D12; T02 restored | Existing-API compatibility | Three recipient metadata failures reproduced; 212 affected tests and strict source/test lint pass. Own overdue-stop attributes retained; peer metadata remains isolated. | [active record](Experiments/EXP-143-199.md#exp-163--preserve-overdue-action-stop-attributes-without-peer-leakage) |
 | EXP-164 | 2026-09-17 | PASS · D09 | Controller thread compatibility | Two failing getter controls; 31 affected tests pass. Mounted fixture 19/19, zero background reads/MTC diagnostics versus control 5 reads/4 diagnostics. Tooling-invalid attempts retained. | [active record](Experiments/EXP-143-199.md#exp-164--preserve-controller-api-caller-thread-compatibility) |
-| EXP-165 | PLANNED | D11: legacy native/WebView Replay correlation with strict peer exclusion | [Record](Experiments/EXP-143-199.md#exp-165--preserve-legacy-nativewebview-replay-correlation) |
+| EXP-165 | PASS | D11: legacy container restored; 102 tests, 19/19 mounted bridge/Replay checks and four collector controls | [Record](Experiments/EXP-143-199.md#exp-165--preserve-legacy-nativewebview-replay-correlation) |
 
 ## Simulator-inconclusive and hardware-required evidence
 
