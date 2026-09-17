@@ -5327,7 +5327,6 @@ internal final class RUMSemanticNavigationHostState {
         }
 
         selectedTransitions = transitions
-        suppressionState.appear()
         observationID = transitions.observe { [weak self] snapshot in
             self?.receive(snapshot)
         }
@@ -5428,6 +5427,9 @@ internal final class RUMSemanticNavigationHostState {
             identity: identity,
             sceneIdentifier: sceneIdentifier
         )
+        // Subscription alone has no authority over automatic tracking. Acquire
+        // it only when a snapshot, scene and handler can establish an occurrence.
+        suppressionState.appear()
     }
 }
 

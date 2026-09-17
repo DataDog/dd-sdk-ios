@@ -1353,8 +1353,21 @@ class RUMSwiftUIViewAuthorityRegistryTests: XCTestCase {
         window.rootViewController = root
         window.isHidden = false
 
-        hostA.reconcile(transitions: sourceA, viewsHandler: nil)
-        hostB.reconcile(transitions: sourceB, viewsHandler: nil)
+        let handler = RUMViewsHandler(
+            dateProvider: SystemDateProvider(),
+            uiKitPredicate: nil,
+            swiftUIPredicate: nil,
+            swiftUIViewNameExtractor: nil,
+            notificationCenter: NotificationCenter(),
+            isMultiSceneApplication: true
+        )
+        let subscriber = RUMCommandSubscriberMock()
+        handler.publish(to: subscriber)
+        hostA.reconcile(transitions: sourceA, viewsHandler: handler)
+        hostB.reconcile(transitions: sourceB, viewsHandler: handler)
+        hostA.reconcile(attachment: .attached(RUMSceneIdentifier(rawValue: "scene-A")))
+        hostB.reconcile(attachment: .attached(RUMSceneIdentifier(rawValue: "scene-B")))
+        XCTAssertEqual(subscriber.receivedCommands.compactMap { $0 as? RUMStartViewCommand }.count, 2)
         registry.register(
             observer: observerA,
             suppressionState: hostA.suppressionState
@@ -1373,6 +1386,108 @@ class RUMSwiftUIViewAuthorityRegistryTests: XCTestCase {
         XCTAssertFalse(registry.isAutomaticViewSuppressed(for: controllerA))
         XCTAssertTrue(registry.isAutomaticViewSuppressed(for: controllerB))
         XCTAssertFalse(registry.isAutomaticViewSuppressed(for: unrelated))
+    }
+}
+
+@available(iOS 27.0, *)
+@MainActor
+final class RUMSemanticNavigationAuthorityTests: XCTestCase {
+    private struct ProvidingContent: SwiftUI.View, RUMNavigationTransitionProviding {
+        let source: RUMNavigationTransitions
+        var rumNavigationTransitions: RUMNavigationTransitions { source }
+        var body: some SwiftUI.View { Text("Content") }
+    }
+
+    func testEmptyExplicitSourceKeepsAutomaticTrackingUntilFirstDestination() throws {
+        try assertPendingAuthority(capability: false)
+    }
+
+    func testEmptyCapabilitySourceKeepsAutomaticTrackingUntilFirstDestination() throws {
+        try assertPendingAuthority(capability: true)
+    }
+
+    func testSourceWithoutInstrumentationHasNoAuthorityUntilHandlerIsAvailable() throws {
+        try assertPendingAuthority(initiallyHasDestination: true, initiallyHasHandler: false)
+    }
+
+    func testSourceWithoutSceneHasNoAuthorityUntilAttachmentIsAvailable() throws {
+        try assertPendingAuthority(initiallyHasDestination: true, initiallyHasAttachment: false)
+    }
+
+    private func assertPendingAuthority(
+        capability: Bool = false,
+        initiallyHasDestination: Bool = false,
+        initiallyHasHandler: Bool = true,
+        initiallyHasAttachment: Bool = true
+    ) throws {
+        let source = RUMNavigationTransitions()
+        if initiallyHasDestination { source.setInitialDestination(RUMView(name: "Semantic")) }
+        let content = ProvidingContent(source: source)
+        let selected = RUMNavigationHost<ProvidingContent>.resolveTransitions(
+            explicit: capability ? nil : source,
+            content: content
+        )
+        XCTAssertTrue(selected === source)
+        let host = RUMSemanticNavigationHostState()
+        let registry = RUMSwiftUIViewAuthorityRegistry()
+        let subscriber = RUMCommandSubscriberMock()
+        let handler = RUMViewsHandler(
+            dateProvider: SystemDateProvider(),
+            uiKitPredicate: nil,
+            swiftUIPredicate: nil,
+            swiftUIViewNameExtractor: nil,
+            notificationCenter: NotificationCenter(),
+            isMultiSceneApplication: true
+        )
+        handler.publish(to: subscriber)
+        let scene = RUMSceneIdentifier(rawValue: "scene-A")
+        let observer = RUMSceneIdentifierReader.ObserverView { _ in }
+        let target = UIViewController()
+        let peer = UIViewController()
+        let root = UIViewController()
+        for child in [target, peer] {
+            root.addChild(child)
+            root.view.addSubview(child.view)
+            child.didMove(toParent: root)
+        }
+        target.view.addSubview(observer)
+        let window = UIWindow()
+        window.rootViewController = root
+        window.isHidden = false
+        registry.register(observer: observer, suppressionState: host.suppressionState)
+        host.reconcile(transitions: selected, viewsHandler: initiallyHasHandler ? handler : nil)
+        if initiallyHasAttachment { host.reconcile(attachment: .attached(scene)) }
+
+        XCTAssertTrue(host.selectedTransitions === source)
+        XCTAssertFalse(host.suppressionState.isActive)
+        XCTAssertFalse(registry.isAutomaticViewSuppressed(for: target))
+        XCTAssertFalse(registry.isAutomaticViewSuppressed(for: peer))
+        XCTAssertTrue(subscriber.receivedCommands.isEmpty)
+        source.willNavigate(id: "cancelled", destination: RUMView(name: "Unaccepted"))
+        source.cancel(id: "cancelled")
+        source.commit(id: "cancelled")
+        XCTAssertFalse(registry.isAutomaticViewSuppressed(for: target))
+        XCTAssertTrue(subscriber.receivedCommands.isEmpty)
+
+        if !initiallyHasHandler { host.reconcile(transitions: selected, viewsHandler: handler) }
+        if !initiallyHasAttachment { host.reconcile(attachment: .attached(scene)) }
+        if !initiallyHasDestination { source.setInitialDestination(RUMView(name: "Semantic")) }
+        XCTAssertTrue(registry.isAutomaticViewSuppressed(for: target))
+        XCTAssertFalse(registry.isAutomaticViewSuppressed(for: peer))
+        let start = try XCTUnwrap(subscriber.receivedCommands.first as? RUMStartViewCommand)
+        XCTAssertEqual(subscriber.receivedCommands.count, 1)
+        XCTAssertEqual(start.name, "Semantic")
+        XCTAssertEqual(start.target, .scene(scene))
+        source.setInitialDestination(RUMView(name: "Ignored duplicate"))
+        host.reconcile(transitions: RUMNavigationTransitions(currentDestination: RUMView(name: "Replacement source")), viewsHandler: handler)
+        XCTAssertTrue(host.selectedTransitions === source)
+        XCTAssertEqual(subscriber.receivedCommands.count, 1)
+        host.finalDetach()
+        XCTAssertFalse(registry.isAutomaticViewSuppressed(for: target))
+        XCTAssertFalse(registry.isAutomaticViewSuppressed(for: peer))
+        let stop = try XCTUnwrap(subscriber.receivedCommands.last as? RUMStopViewCommand)
+        XCTAssertEqual(subscriber.receivedCommands.count, 2)
+        XCTAssertEqual(stop.identity, start.identity)
     }
 }
 
@@ -5457,7 +5572,7 @@ final class RUMSwiftUISemanticNavigationEngineTests: XCTestCase {
         hostState.reconcile(transitions: reconstructed, viewsHandler: nil)
 
         XCTAssertTrue(hostState.selectedTransitions === first)
-        XCTAssertTrue(hostState.suppressionState.isActive)
+        XCTAssertFalse(hostState.suppressionState.isActive)
 
         hostState.finalDetach()
 
