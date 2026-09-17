@@ -544,6 +544,8 @@ internal struct RUMStartResourceCommand: RUMResourceCommand {
     let canStartBackgroundViewAfterSessionStop = false
     let isUserInteraction = false // a resource is not an interactive event
     var target: RUMCommandTarget = .processRepresentative
+    /// Optional explicit start candidate; inference remains available as fallback.
+    var explicitTarget: RUMCommandTarget? = nil
 
     /// Resource url
     let url: String

@@ -76,6 +76,9 @@
             [monitor startViewWithKey:@"view" name:@"Scene View" inScene:scene attributes:@{}];
             [monitor stopViewWithKey:@"view" inScene:scene attributes:@{}];
             DDRUMViewTarget *target = [DDRUMViewTarget currentInScene:scene];
+            [monitor startResourceWithResourceKey:@"targeted_request" request:[NSURLRequest new] view:target attributes:@{}];
+            [monitor startResourceWithResourceKey:@"targeted_url" url:[NSURL new] view:target attributes:@{}];
+            [monitor startResourceWithResourceKey:@"targeted_method" httpMethod:DDRUMMethodGet urlString:@"" view:target attributes:@{}];
             [monitor addActionWithType:DDRUMActionTypeCustom name:@"targeted_action" view:target attributes:@{}];
             [monitor startActionWithType:DDRUMActionTypeCustom name:@"targeted_action" view:target attributes:@{}];
             [monitor stopActionWithType:DDRUMActionTypeCustom name:nil view:target attributes:@{}];

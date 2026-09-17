@@ -78,6 +78,22 @@ private final class OperationTargetFallbackMonitor: NOPMonitor {
     }
 }
 
+private final class ResourceTargetFallbackMonitor: NOPMonitor {
+    var starts: [(key: String, method: String?, url: String?, attributes: [AttributeKey: AttributeValue])] = []
+
+    override func startResource(resourceKey: String, request: URLRequest, attributes: [AttributeKey: AttributeValue]) {
+        starts.append((resourceKey, request.httpMethod, request.url?.absoluteString, attributes))
+    }
+
+    override func startResource(resourceKey: String, url: URL, attributes: [AttributeKey: AttributeValue]) {
+        starts.append((resourceKey, "GET", url.absoluteString, attributes))
+    }
+
+    override func startResource(resourceKey: String, httpMethod: RUMMethod, urlString: String, attributes: [AttributeKey: AttributeValue]) {
+        starts.append((resourceKey, httpMethod.rawValue, urlString, attributes))
+    }
+}
+
 private final class ActionTargetFallbackMonitor: NOPMonitor {
     var actions: [(type: RUMActionType, name: String, attributes: [AttributeKey: AttributeValue])] = []
 
@@ -261,6 +277,36 @@ class NOPMonitorTests: XCTestCase {
         XCTAssertEqual(monitor.stops.count, 1)
         XCTAssertEqual(monitor.stops.first?.key, "compose")
         XCTAssertEqual(monitor.stops.first?.attributes["stop"] as? String, "attribute")
+    }
+
+    @MainActor
+    func testResourceTargetBridgePreservesCustomAndNOPMonitorCompatibility() throws {
+        let dd = DD.mockWith(logger: CoreLoggerMock())
+        defer { dd.reset() }
+        let custom = ResourceTargetFallbackMonitor()
+        let url = try XCTUnwrap(URL(string: "https://example.com/resource"))
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        let target = RUMCommandTarget.scene(RUMSceneIdentifier(rawValue: "scene-A"))
+        for monitor in [custom, NOPMonitor()] {
+            RUMResourceViewTargetBridge.startResource(
+                on: monitor, resourceKey: "request", request: request, attributes: ["form": "request"], explicitTarget: target
+            )
+            RUMResourceViewTargetBridge.startResource(
+                on: monitor, resourceKey: "url", url: url, attributes: ["form": "url"], explicitTarget: target
+            )
+            RUMResourceViewTargetBridge.startResource(
+                on: monitor, resourceKey: "method", httpMethod: .put, urlString: url.absoluteString, attributes: ["form": "method"], explicitTarget: target
+            )
+        }
+        XCTAssertEqual(custom.starts.map(\.key), ["request", "url", "method"])
+        XCTAssertEqual(custom.starts.map(\.method), ["POST", "GET", "PUT"])
+        XCTAssertEqual(custom.starts.map(\.url), Array(repeating: url.absoluteString, count: 3))
+        XCTAssertEqual(custom.starts.map { $0.attributes["form"] as? String }, ["request", "url", "method"])
+        XCTAssertEqual(dd.logger.criticalLogs.count, 3)
+        for signature in ["startResource(resourceKey:request:attributes:)", "startResource(resourceKey:url:attributes:)", "startResource(resourceKey:httpMethod:urlString:attributes:)"] {
+            XCTAssertEqual(dd.logger.criticalLogs.filter { $0.message.contains(signature) }.count, 1)
+        }
     }
 
     @MainActor

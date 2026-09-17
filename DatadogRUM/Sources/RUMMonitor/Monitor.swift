@@ -468,6 +468,15 @@ extension Monitor: RUMMonitorProtocol {
     // MARK: - resources
 
     func startResource(resourceKey: String, request: URLRequest, attributes: [AttributeKey: AttributeValue]) {
+        startResource(resourceKey: resourceKey, request: request, attributes: attributes, explicitTarget: nil)
+    }
+
+    func startResource(
+        resourceKey: String,
+        request: URLRequest,
+        attributes: [AttributeKey: AttributeValue],
+        explicitTarget: RUMCommandTarget?
+    ) {
         var command = RUMStartResourceCommand(
             resourceKey: resourceKey,
             time: dateProvider.now,
@@ -479,12 +488,22 @@ extension Monitor: RUMMonitorProtocol {
             spanContext: nil
         )
         command.target = currentExecutionTarget
+        command.explicitTarget = explicitTarget
         process(
             command: command
         )
     }
 
     func startResource(resourceKey: String, url: URL, attributes: [AttributeKey: AttributeValue]) {
+        startResource(resourceKey: resourceKey, url: url, attributes: attributes, explicitTarget: nil)
+    }
+
+    func startResource(
+        resourceKey: String,
+        url: URL,
+        attributes: [AttributeKey: AttributeValue],
+        explicitTarget: RUMCommandTarget?
+    ) {
         var command = RUMStartResourceCommand(
             resourceKey: resourceKey,
             time: dateProvider.now,
@@ -496,12 +515,23 @@ extension Monitor: RUMMonitorProtocol {
             spanContext: nil
         )
         command.target = currentExecutionTarget
+        command.explicitTarget = explicitTarget
         process(
             command: command
         )
     }
 
     func startResource(resourceKey: String, httpMethod: RUMMethod, urlString: String, attributes: [AttributeKey: AttributeValue]) {
+        startResource(resourceKey: resourceKey, httpMethod: httpMethod, urlString: urlString, attributes: attributes, explicitTarget: nil)
+    }
+
+    func startResource(
+        resourceKey: String,
+        httpMethod: RUMMethod,
+        urlString: String,
+        attributes: [AttributeKey: AttributeValue],
+        explicitTarget: RUMCommandTarget?
+    ) {
         var command = RUMStartResourceCommand(
             resourceKey: resourceKey,
             time: dateProvider.now,
@@ -513,6 +543,7 @@ extension Monitor: RUMMonitorProtocol {
             spanContext: nil
         )
         command.target = currentExecutionTarget
+        command.explicitTarget = explicitTarget
         process(
             command: command
         )
@@ -1036,6 +1067,8 @@ extension Monitor: RUMMonitorViewProtocol {
 }
 
 #if os(iOS)
+extension Monitor: RUMResourceViewTargetHandling {}
+
 extension Monitor: RUMActionViewTargetHandling {}
 
 extension Monitor: RUMOperationViewTargetHandling {}

@@ -247,6 +247,85 @@ public extension RUMMonitorProtocol {
         startResource(resourceKey: resourceKey, httpMethod: httpMethod, urlString: urlString, attributes: attributes)
     }
 
+    #if os(iOS)
+    /// Starts a Resource on the selected scene's current tracked view.
+    ///
+    /// This API is experimental. If the selected scene has no live view, existing
+    /// inferred and process-representative fallbacks apply. The Resource key must
+    /// be unique among all Resources being tracked. Metrics and completion keep
+    /// the start owner even after navigation; they do not need another target.
+    /// The request supplies the URL, method and inferred Resource type.
+    @_spi(Experimental)
+    @available(iOS 27.0, *)
+    @MainActor
+    func startResource(
+        resourceKey: String,
+        request: URLRequest,
+        view: RUMViewTarget,
+        attributes: [AttributeKey: AttributeValue] = [:]
+    ) {
+        RUMResourceViewTargetBridge.startResource(
+            on: self,
+            resourceKey: resourceKey,
+            request: request,
+            attributes: attributes,
+            explicitTarget: .scene(view.sceneIdentifier)
+        )
+    }
+
+    /// Starts a Resource on the selected scene's current tracked view.
+    ///
+    /// This API is experimental. If the selected scene has no live view, existing
+    /// inferred and process-representative fallbacks apply. The Resource key must
+    /// be unique among all Resources being tracked. Metrics and completion keep
+    /// the start owner even after navigation; they do not need another target.
+    /// The URL form uses the GET method.
+    @_spi(Experimental)
+    @available(iOS 27.0, *)
+    @MainActor
+    func startResource(
+        resourceKey: String,
+        url: URL,
+        view: RUMViewTarget,
+        attributes: [AttributeKey: AttributeValue] = [:]
+    ) {
+        RUMResourceViewTargetBridge.startResource(
+            on: self,
+            resourceKey: resourceKey,
+            url: url,
+            attributes: attributes,
+            explicitTarget: .scene(view.sceneIdentifier)
+        )
+    }
+
+    /// Starts a Resource on the selected scene's current tracked view.
+    ///
+    /// This API is experimental. If the selected scene has no live view, existing
+    /// inferred and process-representative fallbacks apply. The Resource key must
+    /// be unique among all Resources being tracked. Metrics and completion keep
+    /// the start owner even after navigation; they do not need another target.
+    /// The supplied method and URL string are preserved.
+    @_spi(Experimental)
+    @available(iOS 27.0, *)
+    @MainActor
+    func startResource(
+        resourceKey: String,
+        httpMethod: RUMMethod,
+        urlString: String,
+        view: RUMViewTarget,
+        attributes: [AttributeKey: AttributeValue] = [:]
+    ) {
+        RUMResourceViewTargetBridge.startResource(
+            on: self,
+            resourceKey: resourceKey,
+            httpMethod: httpMethod,
+            urlString: urlString,
+            attributes: attributes,
+            explicitTarget: .scene(view.sceneIdentifier)
+        )
+    }
+    #endif
+
     /// Adds temporal metrics to given RUM resource.
     ///
     /// It must be called before the resource is stopped.
@@ -651,6 +730,96 @@ public extension RUMMonitorProtocol {
         failOperation(name: name, operationKey: operationKey, reason: reason, attributes: attributes)
     }
 }
+
+#if os(iOS)
+/// Private capability preserving existing custom monitor requirements.
+internal protocol RUMResourceViewTargetHandling: AnyObject {
+    func startResource(
+        resourceKey: String,
+        request: URLRequest,
+        attributes: [AttributeKey: AttributeValue],
+        explicitTarget: RUMCommandTarget?
+    )
+
+    func startResource(
+        resourceKey: String,
+        url: URL,
+        attributes: [AttributeKey: AttributeValue],
+        explicitTarget: RUMCommandTarget?
+    )
+
+    func startResource(
+        resourceKey: String,
+        httpMethod: RUMMethod,
+        urlString: String,
+        attributes: [AttributeKey: AttributeValue],
+        explicitTarget: RUMCommandTarget?
+    )
+}
+
+/// Forwards exactly once through the targeted capability or the legacy API.
+@MainActor
+internal enum RUMResourceViewTargetBridge {
+    static func startResource(
+        on monitor: any RUMMonitorProtocol,
+        resourceKey: String,
+        request: URLRequest,
+        attributes: [AttributeKey: AttributeValue],
+        explicitTarget: RUMCommandTarget
+    ) {
+        guard let monitor = monitor as? any RUMResourceViewTargetHandling else {
+            monitor.startResource(resourceKey: resourceKey, request: request, attributes: attributes)
+            return
+        }
+        monitor.startResource(
+            resourceKey: resourceKey,
+            request: request,
+            attributes: attributes,
+            explicitTarget: explicitTarget
+        )
+    }
+
+    static func startResource(
+        on monitor: any RUMMonitorProtocol,
+        resourceKey: String,
+        url: URL,
+        attributes: [AttributeKey: AttributeValue],
+        explicitTarget: RUMCommandTarget
+    ) {
+        guard let monitor = monitor as? any RUMResourceViewTargetHandling else {
+            monitor.startResource(resourceKey: resourceKey, url: url, attributes: attributes)
+            return
+        }
+        monitor.startResource(
+            resourceKey: resourceKey,
+            url: url,
+            attributes: attributes,
+            explicitTarget: explicitTarget
+        )
+    }
+
+    static func startResource(
+        on monitor: any RUMMonitorProtocol,
+        resourceKey: String,
+        httpMethod: RUMMethod,
+        urlString: String,
+        attributes: [AttributeKey: AttributeValue],
+        explicitTarget: RUMCommandTarget
+    ) {
+        guard let monitor = monitor as? any RUMResourceViewTargetHandling else {
+            monitor.startResource(resourceKey: resourceKey, httpMethod: httpMethod, urlString: urlString, attributes: attributes)
+            return
+        }
+        monitor.startResource(
+            resourceKey: resourceKey,
+            httpMethod: httpMethod,
+            urlString: urlString,
+            attributes: attributes,
+            explicitTarget: explicitTarget
+        )
+    }
+}
+#endif
 
 #if os(iOS)
 /// Private capability used by extension-only action overloads so existing

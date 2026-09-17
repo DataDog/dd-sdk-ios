@@ -976,6 +976,64 @@ public class objc_RUMMonitor: NSObject {
         swiftRUMMonitor.startResource(resourceKey: resourceKey, httpMethod: httpMethod.swiftType, urlString: urlString, attributes: attributes.dd.swiftAttributes)
     }
 
+    #if os(iOS) && DEBUG
+    /// Starts a Resource on the selected scene's current tracked view.
+    @available(iOS 27.0, *)
+    @MainActor
+    @objc(startResourceWithResourceKey:request:view:attributes:)
+    public func startResource(
+        resourceKey: String,
+        request: URLRequest,
+        view: objc_RUMViewTarget,
+        attributes: [String: Any]
+    ) {
+        swiftRUMMonitor.startResource(
+            resourceKey: resourceKey,
+            request: request,
+            view: view.swiftType,
+            attributes: attributes.dd.swiftAttributes
+        )
+    }
+
+    /// Starts a Resource on the selected scene's current tracked view.
+    @available(iOS 27.0, *)
+    @MainActor
+    @objc(startResourceWithResourceKey:url:view:attributes:)
+    public func startResource(
+        resourceKey: String,
+        url: URL,
+        view: objc_RUMViewTarget,
+        attributes: [String: Any]
+    ) {
+        swiftRUMMonitor.startResource(
+            resourceKey: resourceKey,
+            url: url,
+            view: view.swiftType,
+            attributes: attributes.dd.swiftAttributes
+        )
+    }
+
+    /// Starts a Resource on the selected scene's current tracked view.
+    @available(iOS 27.0, *)
+    @MainActor
+    @objc(startResourceWithResourceKey:httpMethod:urlString:view:attributes:)
+    public func startResource(
+        resourceKey: String,
+        httpMethod: objc_RUMMethod,
+        urlString: String,
+        view: objc_RUMViewTarget,
+        attributes: [String: Any]
+    ) {
+        swiftRUMMonitor.startResource(
+            resourceKey: resourceKey,
+            httpMethod: httpMethod.swiftType,
+            urlString: urlString,
+            view: view.swiftType,
+            attributes: attributes.dd.swiftAttributes
+        )
+    }
+    #endif
+
     public func addResourceMetrics(
         resourceKey: String,
         metrics: URLSessionTaskMetrics,

@@ -324,7 +324,10 @@ internal final class URLSessionRUMResourcesHandler: DatadogURLSessionHandlerSupp
             subscriber.process(command: command)
         }
 
-        if let httpResponse = interception.completion?.httpResponse {
+        // A task may fail after receiving response headers. End it once as an
+        // error; a success first would remove the Resource before error routing.
+        if let httpResponse = interception.completion?.httpResponse,
+           interception.completion?.error == nil {
             var command = RUMStopResourceCommand(
                 resourceKey: resourceKey,
                 time: dateProvider.now,
