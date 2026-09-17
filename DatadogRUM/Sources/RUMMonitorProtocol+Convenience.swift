@@ -404,6 +404,32 @@ public extension RUMMonitorProtocol {
         startAction(type: type, name: name, attributes: attributes)
     }
 
+    #if os(iOS)
+    /// Starts a RUM action in the current tracked view of the selected scene.
+    /// The existing per-view action slot and automatic timeout still apply.
+    ///
+    /// This API is experimental and may change before becoming generally available.
+    /// If the selected scene has no current tracked view, the SDK preserves the
+    /// call site's inferred and process-representative fallbacks.
+    @_spi(Experimental)
+    @available(iOS 27.0, *)
+    @MainActor
+    func startAction(
+        type: RUMActionType,
+        name: String,
+        view: RUMViewTarget,
+        attributes: [AttributeKey: AttributeValue] = [:]
+    ) {
+        RUMActionViewTargetBridge.startAction(
+            on: self,
+            type: type,
+            name: name,
+            attributes: attributes,
+            explicitTarget: .scene(view.sceneIdentifier)
+        )
+    }
+    #endif
+
     /// Stops RUM action.
     /// 
     /// The action must be first started with `startAction(type:)`.
@@ -418,6 +444,33 @@ public extension RUMMonitorProtocol {
     ) {
         stopAction(type: type, name: name, attributes: attributes)
     }
+
+    #if os(iOS)
+    /// Stops the action in the current tracked view of the selected scene.
+    /// A live view with no action leaves actions in other scenes unchanged.
+    /// The name and type describe the completed action; they are not lookup keys.
+    ///
+    /// This API is experimental and may change before becoming generally available.
+    /// If the selected scene has no current tracked view, the SDK preserves the
+    /// call site's inferred and process-representative fallbacks.
+    @_spi(Experimental)
+    @available(iOS 27.0, *)
+    @MainActor
+    func stopAction(
+        type: RUMActionType,
+        name: String? = nil,
+        view: RUMViewTarget,
+        attributes: [AttributeKey: AttributeValue] = [:]
+    ) {
+        RUMActionViewTargetBridge.stopAction(
+            on: self,
+            type: type,
+            name: name,
+            attributes: attributes,
+            explicitTarget: .scene(view.sceneIdentifier)
+        )
+    }
+    #endif
 
     // MARK: - Operations
 
@@ -609,6 +662,19 @@ internal protocol RUMActionViewTargetHandling: AnyObject {
         attributes: [AttributeKey: AttributeValue],
         explicitTarget: RUMCommandTarget?
     )
+    func startAction(
+        type: RUMActionType,
+        name: String,
+        attributes: [AttributeKey: AttributeValue],
+        explicitTarget: RUMCommandTarget?
+    )
+
+    func stopAction(
+        type: RUMActionType,
+        name: String?,
+        attributes: [AttributeKey: AttributeValue],
+        explicitTarget: RUMCommandTarget?
+    )
 }
 
 /// Dispatches an explicit action target when the SDK monitor supports it and
@@ -628,6 +694,45 @@ internal enum RUMActionViewTargetBridge {
         }
 
         monitor.addAction(
+            type: type,
+            name: name,
+            attributes: attributes,
+            explicitTarget: explicitTarget
+        )
+    }
+    static func startAction(
+        on monitor: any RUMMonitorProtocol,
+        type: RUMActionType,
+        name: String,
+        attributes: [AttributeKey: AttributeValue],
+        explicitTarget: RUMCommandTarget
+    ) {
+        guard let monitor = monitor as? any RUMActionViewTargetHandling else {
+            monitor.startAction(type: type, name: name, attributes: attributes)
+            return
+        }
+
+        monitor.startAction(
+            type: type,
+            name: name,
+            attributes: attributes,
+            explicitTarget: explicitTarget
+        )
+    }
+
+    static func stopAction(
+        on monitor: any RUMMonitorProtocol,
+        type: RUMActionType,
+        name: String?,
+        attributes: [AttributeKey: AttributeValue],
+        explicitTarget: RUMCommandTarget
+    ) {
+        guard let monitor = monitor as? any RUMActionViewTargetHandling else {
+            monitor.stopAction(type: type, name: name, attributes: attributes)
+            return
+        }
+
+        monitor.stopAction(
             type: type,
             name: name,
             attributes: attributes,

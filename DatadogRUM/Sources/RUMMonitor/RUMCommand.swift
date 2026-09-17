@@ -683,6 +683,9 @@ internal struct RUMStopResourceWithErrorCommand: RUMResourceCommand {
 internal protocol RUMUserActionCommand: RUMCommand {
     /// The action identifying the RUM User Action.
     var actionType: RUMActionType { get }
+    /// Inferred ownership remains available when the explicit view is unavailable.
+    var target: RUMCommandTarget { get set }
+    var explicitTarget: RUMCommandTarget? { get }
 }
 
 /// Starts continuous User Action.
@@ -703,6 +706,7 @@ internal struct RUMStartUserActionCommand: RUMUserActionCommand {
     let name: String
     /// Scene containing the scroll gesture, or the legacy representative when unavailable.
     var target: RUMCommandTarget = .processRepresentative
+    var explicitTarget: RUMCommandTarget? = nil
     let missedEventType: SessionEndedMetric.MissedEventType? = .action
 }
 
@@ -722,6 +726,7 @@ internal struct RUMStopUserActionCommand: RUMUserActionCommand {
     let name: String?
     /// Scene containing the scroll gesture, or the legacy representative when unavailable.
     var target: RUMCommandTarget = .processRepresentative
+    var explicitTarget: RUMCommandTarget? = nil
     let missedEventType: SessionEndedMetric.MissedEventType? = nil
 }
 

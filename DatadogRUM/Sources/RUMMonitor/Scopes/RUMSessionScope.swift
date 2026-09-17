@@ -326,10 +326,10 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
             command = startViewCommand
         }
 
-        // An explicit one-shot action target is authoritative only when it
+        // An explicit action target is authoritative only when it
         // resolves to a live view. Preserve the independently inferred target
         // when a scene has already closed or has not started a RUM view yet.
-        if var actionCommand = command as? RUMAddUserActionCommand,
+        if var actionCommand = command as? RUMUserActionCommand,
            let explicitTarget = actionCommand.explicitTarget,
            actionTargetView(for: explicitTarget, command: actionCommand) != nil {
             actionCommand.target = explicitTarget
@@ -881,7 +881,7 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
 
     private func actionTargetView(
         for target: RUMCommandTarget,
-        command: RUMAddUserActionCommand
+        command: RUMUserActionCommand
     ) -> RUMViewScope? {
         switch target {
         case .none:

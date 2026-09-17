@@ -1070,6 +1070,40 @@ public class objc_RUMMonitor: NSObject {
             attributes: attributes.dd.swiftAttributes
         )
     }
+
+    @available(iOS 27.0, *)
+    @MainActor
+    @objc(startActionWithType:name:view:attributes:)
+    public func startAction(
+        type: objc_RUMActionType,
+        name: String,
+        view: objc_RUMViewTarget,
+        attributes: [String: Any]
+    ) {
+        swiftRUMMonitor.startAction(
+            type: type.swiftType,
+            name: name,
+            view: view.swiftType,
+            attributes: attributes.dd.swiftAttributes
+        )
+    }
+
+    @available(iOS 27.0, *)
+    @MainActor
+    @objc(stopActionWithType:name:view:attributes:)
+    public func stopAction(
+        type: objc_RUMActionType,
+        name: String?,
+        view: objc_RUMViewTarget,
+        attributes: [String: Any]
+    ) {
+        swiftRUMMonitor.stopAction(
+            type: type.swiftType,
+            name: name,
+            view: view.swiftType,
+            attributes: attributes.dd.swiftAttributes
+        )
+    }
     #endif
 
     public func addAttribute(

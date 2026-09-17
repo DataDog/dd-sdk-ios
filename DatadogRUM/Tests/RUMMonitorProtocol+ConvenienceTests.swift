@@ -54,6 +54,8 @@ class RUMMonitorProtocol_ConvenienceTests: XCTestCase {
            let scene = UIApplication.shared.connectedScenes.first as? UIWindowScene {
             let target = RUMViewTarget.current(in: scene)
             monitor.addAction(type: .custom, name: "targeted", view: target)
+            monitor.startAction(type: .custom, name: "targeted", view: target)
+            monitor.stopAction(type: .custom, view: target)
             monitor.startOperation(name: "targeted", view: target)
             monitor.succeedOperation(name: "targeted", view: target)
             monitor.failOperation(name: "targeted", reason: .error, view: target)

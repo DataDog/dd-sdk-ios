@@ -88,6 +88,16 @@ private final class ActionTargetFallbackMonitor: NOPMonitor {
     ) {
         actions.append((type: type, name: name, attributes: attributes))
     }
+    var starts: [String] = []
+    var stops: [String?] = []
+
+    override func startAction(type: RUMActionType, name: String, attributes: [AttributeKey: AttributeValue]) {
+        starts.append(name)
+    }
+
+    override func stopAction(type: RUMActionType, name: String?, attributes: [AttributeKey: AttributeValue]) {
+        stops.append(name)
+    }
 }
 #endif
 
@@ -293,6 +303,34 @@ class NOPMonitorTests: XCTestCase {
         XCTAssertEqual(monitor.actions.first?.type, .custom)
         XCTAssertEqual(monitor.actions.first?.name, "targeted")
         XCTAssertEqual(monitor.actions.first?.attributes["test"] as? String, "attribute")
+    }
+
+    @MainActor
+    func testWhenUsingContinuousActionTargetBridgeOnCustomOrNOPMonitor_itFallsBackExactlyOnce() {
+        let dd = DD.mockWith(logger: CoreLoggerMock())
+        defer { dd.reset() }
+        let custom = ActionTargetFallbackMonitor()
+        let target = RUMCommandTarget.scene(RUMSceneIdentifier(rawValue: "scene-A"))
+        for monitor in [custom, NOPMonitor()] {
+            RUMActionViewTargetBridge.startAction(
+                on: monitor, type: .custom, name: "start", attributes: [:], explicitTarget: target
+            )
+            RUMActionViewTargetBridge.stopAction(
+                on: monitor, type: .custom, name: nil, attributes: [:], explicitTarget: target
+            )
+        }
+        XCTAssertEqual(custom.starts, ["start"])
+        XCTAssertEqual(custom.stops, [nil])
+        XCTAssertEqual(dd.logger.criticalLogs.map(\.message), [
+            """
+            Calling `startAction(type:name:attributes:)` on NOPMonitor.
+            Make sure RUM feature is enabled before using `RUMMonitor.shared()`.
+            """,
+            """
+            Calling `stopAction(type:name:attributes:)` on NOPMonitor.
+            Make sure RUM feature is enabled before using `RUMMonitor.shared()`.
+            """
+        ])
     }
 
     @MainActor

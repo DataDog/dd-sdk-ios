@@ -625,6 +625,15 @@ extension Monitor: RUMMonitorProtocol {
     }
 
     func startAction(type: RUMActionType, name: String, attributes: [AttributeKey: AttributeValue]) {
+        startAction(type: type, name: name, attributes: attributes, explicitTarget: nil)
+    }
+
+    func startAction(
+        type: RUMActionType,
+        name: String,
+        attributes: [AttributeKey: AttributeValue],
+        explicitTarget: RUMCommandTarget?
+    ) {
         var command = RUMStartUserActionCommand(
             time: dateProvider.now,
             globalAttributes: self.attributes,
@@ -634,12 +643,22 @@ extension Monitor: RUMMonitorProtocol {
             name: name
         )
         command.target = currentExecutionTarget
+        command.explicitTarget = explicitTarget
         process(
             command: command
         )
     }
 
     func stopAction(type: RUMActionType, name: String?, attributes: [AttributeKey: AttributeValue]) {
+        stopAction(type: type, name: name, attributes: attributes, explicitTarget: nil)
+    }
+
+    func stopAction(
+        type: RUMActionType,
+        name: String?,
+        attributes: [AttributeKey: AttributeValue],
+        explicitTarget: RUMCommandTarget?
+    ) {
         var command = RUMStopUserActionCommand(
             time: dateProvider.now,
             globalAttributes: self.attributes,
@@ -648,6 +667,7 @@ extension Monitor: RUMMonitorProtocol {
             name: name
         )
         command.target = currentExecutionTarget
+        command.explicitTarget = explicitTarget
         process(
             command: command
         )

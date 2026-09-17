@@ -77,6 +77,8 @@
             [monitor stopViewWithKey:@"view" inScene:scene attributes:@{}];
             DDRUMViewTarget *target = [DDRUMViewTarget currentInScene:scene];
             [monitor addActionWithType:DDRUMActionTypeCustom name:@"targeted_action" view:target attributes:@{}];
+            [monitor startActionWithType:DDRUMActionTypeCustom name:@"targeted_action" view:target attributes:@{}];
+            [monitor stopActionWithType:DDRUMActionTypeCustom name:nil view:target attributes:@{}];
             [monitor startOperationWithName:@"targeted_flow" operationKey:@"targeted_1" view:target attributes:@{} options:nil];
             [monitor succeedOperationWithName:@"targeted_flow" operationKey:@"targeted_1" view:target attributes:@{}];
             [monitor failOperationWithName:@"targeted_flow" operationKey:@"targeted_1" reason:DDRUMFeatureOperationFailureReasonError view:target attributes:@{}];
