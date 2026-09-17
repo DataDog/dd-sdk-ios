@@ -1065,6 +1065,76 @@ class RUMSessionScopeTests: XCTestCase {
         XCTAssertEqual(resourceEvents.first?.view.name, "View A")
     }
 
+    func testUnknownResourceCompletionDoesNotChangeCurrentActionCounts() throws {
+        let time = Date()
+        let scope: RUMSessionScope = .mockWith(parent: parent, startTime: time)
+        let scene = RUMSceneIdentifier(rawValue: "scene-A")
+        _ = scope.process(
+            command: startViewCommand(identity: ViewIdentifier("A"), name: "A", sceneIdentifier: scene, time: time),
+            context: context,
+            writer: writer
+        )
+        var action = RUMStartUserActionCommand.mockWith(time: time, actionType: .tap, name: "Current")
+        action.target = .scene(scene)
+        _ = scope.process(command: action, context: context, writer: writer)
+        _ = scope.process(
+            command: RUMAddResourceMetricsCommand.mockWith(resourceKey: "unknown", time: time.addingTimeInterval(0.01)),
+            context: context,
+            writer: writer
+        )
+        _ = scope.process(
+            command: RUMStopResourceCommand.mockWith(resourceKey: "unknown", time: time.addingTimeInterval(0.02)),
+            context: context,
+            writer: writer
+        )
+        _ = scope.process(
+            command: RUMStopResourceWithErrorCommand.mockWithErrorMessage(resourceKey: "unknown", time: time.addingTimeInterval(0.03)),
+            context: context,
+            writer: writer
+        )
+        var stop = RUMStopUserActionCommand.mockWith(time: time.addingTimeInterval(0.04), actionType: .tap)
+        stop.target = .scene(scene)
+        _ = scope.process(command: stop, context: context, writer: writer)
+
+        let event = try XCTUnwrap(writer.events(ofType: RUMActionEvent.self).last)
+        XCTAssertEqual(event.action.resource?.count, 0)
+        XCTAssertEqual(event.action.error?.count, 0)
+        XCTAssertTrue(writer.events(ofType: RUMResourceEvent.self).isEmpty)
+        XCTAssertTrue(writer.events(ofType: RUMErrorEvent.self).isEmpty)
+    }
+
+    func testUnownedResourceCommandStillExpiresUnrelatedActionAtItsDeadline() throws {
+        let time = Date(timeIntervalSinceReferenceDate: 0)
+        let scope: RUMSessionScope = .mockWith(parent: parent, startTime: time)
+        let scene = RUMSceneIdentifier(rawValue: "scene-A")
+        _ = scope.process(
+            command: startViewCommand(identity: ViewIdentifier("A"), name: "A", sceneIdentifier: scene, time: time),
+            context: context,
+            writer: writer
+        )
+        _ = scope.process(
+            command: RUMAddUserActionCommand.mockWith(time: time, actionType: .tap, name: "Tap", target: .scene(scene)),
+            context: context,
+            writer: writer
+        )
+        _ = scope.process(
+            command: RUMAddResourceMetricsCommand.mockWith(resourceKey: "unknown", time: time.addingTimeInterval(0.05)),
+            context: context,
+            writer: writer
+        )
+        _ = scope.process(
+            command: RUMStopResourceWithErrorCommand.mockWithErrorMessage(resourceKey: "unknown", time: time.addingTimeInterval(0.2)),
+            context: context,
+            writer: writer
+        )
+
+        let event = try XCTUnwrap(writer.events(ofType: RUMActionEvent.self).last)
+        XCTAssertEqual(event.action.loadingTime, 100_000_000)
+        XCTAssertEqual(event.action.error?.count, 0)
+        XCTAssertEqual(event.action.resource?.count, 0)
+        XCTAssertNil(scope.activeView?.userActionScope)
+    }
+
     func testGivenAOwnedResourceAndBAction_whenSourceLessResourceSucceeds_itDoesNotIncrementBAction() throws {
         let startTime = Date()
         let scope: RUMSessionScope = .mockWith(parent: parent, startTime: startTime)

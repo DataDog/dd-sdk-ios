@@ -796,6 +796,13 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
         shouldMigrateLegacyBranch: Bool,
         legacySceneFallback: RUMViewScope?
     ) -> Bool {
+        if command is RUMResourceCommand, !(command is RUMStartResourceCommand) {
+            // Metrics and completion belong to the scope created by the start.
+            // A later scene/view target or a session without that resource must
+            // not charge an unrelated live action for the same completion.
+            return viewScope === resourceOwnerView
+        }
+
         switch command.target {
         case .none:
             return false
@@ -836,14 +843,8 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
             if command is RUMStartViewCommand || command is RUMStopViewCommand {
                 return viewScope.sceneIdentifier == nil || viewScope === activeView
             }
-            if command is RUMResourceCommand {
-                if command is RUMStartResourceCommand {
-                    return viewScope === activeView || viewScope === resourceOwnerView
-                }
-                if let resourceOwnerView {
-                    return viewScope === resourceOwnerView
-                }
-                return viewScope === activeView
+            if command is RUMStartResourceCommand {
+                return viewScope === activeView || viewScope === resourceOwnerView
             }
             return viewScope === activeView
         }

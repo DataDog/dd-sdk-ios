@@ -979,6 +979,171 @@ class RUMApplicationScopeTests: XCTestCase {
         )
     }
 
+    private enum ResourceCompletionTarget: CaseIterable {
+        case inferred, ownerView, ownerScene, peerScene
+    }
+
+    func testLateResourceSuccessDoesNotAlterNewSessionContinuousAction() throws {
+        for target in [ResourceCompletionTarget.inferred, .ownerView, .ownerScene] {
+            try assertResourceCompletionOwnership(stopsSession: true, fails: false, target: target)
+        }
+    }
+
+    func testLateResourceFailureDoesNotAlterNewSessionContinuousAction() throws {
+        for target in [ResourceCompletionTarget.inferred, .ownerView, .ownerScene] {
+            try assertResourceCompletionOwnership(stopsSession: true, fails: true, target: target)
+        }
+    }
+
+    func testSceneResourceCompletionDoesNotAlterLaterViewContinuousAction() throws {
+        for fails in [false, true] {
+            try assertResourceCompletionOwnership(stopsSession: false, fails: fails, target: .ownerScene)
+        }
+    }
+
+    func testPeerResourceCompletionTargetCannotOverrideCapturedOwner() throws {
+        for fails in [false, true] {
+            try assertResourceCompletionOwnership(stopsSession: false, fails: fails, target: .peerScene)
+        }
+    }
+
+    func testLateResourceMetricsAndRepeatedCompletionKeepOriginalOwner() throws {
+        for target in ResourceCompletionTarget.allCases {
+            for fails in [false, true] {
+                try assertResourceCompletionOwnership(
+                    stopsSession: true, fails: fails, target: target, addsMetrics: true, repeatsCompletion: true
+                )
+            }
+        }
+    }
+
+    private func assertResourceCompletionOwnership(
+        stopsSession: Bool,
+        fails: Bool,
+        target: ResourceCompletionTarget,
+        addsMetrics: Bool = false,
+        repeatsCompletion: Bool = false
+    ) throws {
+        let time: Date = .mockDecember15th2019At10AMUTC()
+        let context: DatadogContext = .mockWith(
+            sdkInitDate: time,
+            launchInfo: .mockWith(launchReason: .userLaunch, processLaunchDate: time),
+            applicationStateHistory: .mockAppInForeground(since: time)
+        )
+        let scope = createRUMApplicationScope(dependencies: .mockWith(samplingRate: 100), sdkContext: context)
+        let writer = FileWriterMock()
+        let sceneA = RUMSceneIdentifier(rawValue: "scene-A")
+        let sceneB = RUMSceneIdentifier(rawValue: "scene-B")
+        _ = scope.process(
+            command: RUMStartViewCommand.mockWith(time: time, identity: ViewIdentifier("old-A"), name: "Old A", target: .scene(sceneA)),
+            context: context,
+            writer: writer
+        )
+        let oldSession = try XCTUnwrap(scope.activeSession)
+        let oldView = try XCTUnwrap(oldSession.activeView)
+        var resource = RUMStartResourceCommand.mockWith(resourceKey: "old-resource", time: time.addingTimeInterval(0.01))
+        resource.target = .view(oldView.viewUUID)
+        _ = scope.process(command: resource, context: context, writer: writer)
+        if stopsSession {
+            _ = scope.process(command: RUMStopSessionCommand(time: time.addingTimeInterval(0.02)), context: context, writer: writer)
+        }
+        _ = scope.process(
+            command: RUMStartViewCommand.mockWith(time: time.addingTimeInterval(0.03), identity: ViewIdentifier("new-A"), name: "New A", target: .scene(sceneA)),
+            context: context,
+            writer: writer
+        )
+        let newSession = try XCTUnwrap(scope.activeSession)
+        let newView = try XCTUnwrap(newSession.activeView)
+        _ = scope.process(
+            command: RUMStartViewCommand.mockWith(time: time.addingTimeInterval(0.04), identity: ViewIdentifier("B"), name: "Peer B", target: .scene(sceneB)),
+            context: context,
+            writer: writer
+        )
+        let peer = try XCTUnwrap(newSession.activeView)
+        for scene in [sceneA, sceneB] {
+            var action = RUMStartUserActionCommand.mockWith(time: time.addingTimeInterval(0.05), actionType: .tap, name: "Current action")
+            action.target = .scene(scene)
+            _ = scope.process(command: action, context: context, writer: writer)
+        }
+        let completionTarget: RUMCommandTarget
+        switch target {
+        case .inferred: completionTarget = .processRepresentative
+        case .ownerView: completionTarget = .view(oldView.viewUUID)
+        case .ownerScene: completionTarget = .scene(sceneA)
+        case .peerScene: completionTarget = .scene(sceneB)
+        }
+        let metrics = ResourceMetrics.mockWith(
+            fetch: .init(start: time.addingTimeInterval(0.01), end: time.addingTimeInterval(0.04)),
+            responseBodySize: (encoded: 555, decoded: 777)
+        )
+        if addsMetrics {
+            var command = RUMAddResourceMetricsCommand.mockWith(
+                resourceKey: "old-resource",
+                time: time.addingTimeInterval(0.055),
+                attributes: ["metrics": "owner"],
+                metrics: metrics
+            )
+            command.target = completionTarget
+            _ = scope.process(command: command, context: context, writer: writer)
+        }
+        if fails {
+            var completion = RUMStopResourceWithErrorCommand.mockWithErrorMessage(
+                resourceKey: "old-resource", time: time.addingTimeInterval(0.06), message: "Old request failed", source: .network
+            )
+            completion.target = completionTarget
+            _ = scope.process(command: completion, context: context, writer: writer)
+            if repeatsCompletion {
+                completion.time = time.addingTimeInterval(0.065)
+                _ = scope.process(command: completion, context: context, writer: writer)
+            }
+        } else {
+            var completion = RUMStopResourceCommand.mockWith(resourceKey: "old-resource", time: time.addingTimeInterval(0.06))
+            completion.target = completionTarget
+            _ = scope.process(command: completion, context: context, writer: writer)
+            if repeatsCompletion {
+                completion.time = time.addingTimeInterval(0.065)
+                _ = scope.process(command: completion, context: context, writer: writer)
+            }
+        }
+        for scene in [sceneA, sceneB] {
+            var stop = RUMStopUserActionCommand.mockWith(time: time.addingTimeInterval(0.07), attributes: ["result": "current"], actionType: .tap)
+            stop.target = .scene(scene)
+            _ = scope.process(command: stop, context: context, writer: writer)
+        }
+
+        let actions = writer.events(ofType: RUMActionEvent.self)
+        XCTAssertEqual(actions.count, 2)
+        XCTAssertEqual(Set(actions.map(\.view.id)), Set([newView.viewUUID.toRUMDataFormat, peer.viewUUID.toRUMDataFormat]))
+        for action in actions {
+            XCTAssertEqual(action.session.id, newSession.sessionUUID.toRUMDataFormat)
+            XCTAssertEqual(action.action.resource?.count, 0, "Completion target: \(target)")
+            XCTAssertEqual(action.action.error?.count, 0, "Completion target: \(target)")
+            XCTAssertEqual(action.context?.contextInfo["result"] as? String, "current")
+            XCTAssertNil(action.context?.contextInfo["metrics"])
+        }
+        if fails {
+            let errors = writer.events(ofType: RUMErrorEvent.self)
+            XCTAssertEqual(errors.count, 1)
+            XCTAssertEqual(errors.first?.view.id, oldView.viewUUID.toRUMDataFormat)
+            XCTAssertEqual(errors.first?.session.id, oldSession.sessionUUID.toRUMDataFormat)
+            if addsMetrics {
+                XCTAssertEqual(errors.first?.context?.contextInfo["metrics"] as? String, "owner")
+            }
+        } else {
+            let resources = writer.events(ofType: RUMResourceEvent.self)
+            XCTAssertEqual(resources.count, 1)
+            XCTAssertEqual(resources.first?.view.id, oldView.viewUUID.toRUMDataFormat)
+            XCTAssertEqual(resources.first?.session.id, oldSession.sessionUUID.toRUMDataFormat)
+            if addsMetrics {
+                XCTAssertEqual(resources.first?.context?.contextInfo["metrics"] as? String, "owner")
+                XCTAssertEqual(resources.first?.resource.duration, metrics.fetch.duration.dd.toInt64Nanoseconds)
+                XCTAssertEqual(resources.first?.resource.size, 777)
+                XCTAssertEqual(resources.first?.resource.encodedBodySize, 555)
+            }
+        }
+        XCTAssertNil(oldView.resourceScopes["old-resource"])
+    }
+
     // MARK: - Starting Session With Different Preconditions
 
     func testGivenAppLaunchInForegroundAndNoPrewarming_whenInitialSessionIsStarted() throws {
