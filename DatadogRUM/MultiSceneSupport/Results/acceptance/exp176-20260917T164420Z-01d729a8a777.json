@@ -1,0 +1,123 @@
+{
+  "artifacts": {
+    "boot-ready.log": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/multi-scene-acceptance-n1sisu62/run/boot-ready.log",
+    "build-identity.json": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/multi-scene-acceptance-n1sisu62/run/build-identity.json",
+    "build-tests.log": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/multi-scene-acceptance-n1sisu62/run/build-tests.log",
+    "console.raw.log": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/multi-scene-acceptance-n1sisu62/run/console.raw.log",
+    "container-absence.log": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/multi-scene-acceptance-n1sisu62/run/container-absence.log",
+    "install.log": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/multi-scene-acceptance-n1sisu62/run/install.log",
+    "signature.log": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/multi-scene-acceptance-n1sisu62/run/signature.log",
+    "source-identity.json": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/multi-scene-acceptance-n1sisu62/run/source-identity.json",
+    "summary.json": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/multi-scene-acceptance-n1sisu62/run/summary.json",
+    "terminate-after.log": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/multi-scene-acceptance-n1sisu62/run/terminate-after.log",
+    "terminate-before.log": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/multi-scene-acceptance-n1sisu62/run/terminate-before.log",
+    "test-summary.json": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/multi-scene-acceptance-n1sisu62/run/test-summary.json",
+    "uninstall.log": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/multi-scene-acceptance-n1sisu62/run/uninstall.log"
+  },
+  "commit_signature": {
+    "required_before_push": true,
+    "state": "VERIFIED"
+  },
+  "device": {
+    "dataPath": "/Users/valentin.pertuisot/Library/Developer/CoreSimulator/Devices/92C9918B-FEC6-4440-9D6D-8E09475950BB/data",
+    "dataPathSize": 3239280640,
+    "deviceTypeIdentifier": "com.apple.CoreSimulator.SimDeviceType.iPad-mini-A17-Pro",
+    "isAvailable": true,
+    "lastUsedAt": "2026-09-16T22:19:15Z",
+    "logPath": "/Users/valentin.pertuisot/Library/Logs/CoreSimulator/92C9918B-FEC6-4440-9D6D-8E09475950BB",
+    "logPathSize": 593920,
+    "name": "iPad mini (A17 Pro)",
+    "runtime": "com.apple.CoreSimulator.SimRuntime.iOS-27-0",
+    "state": "Booted",
+    "udid": "92C9918B-FEC6-4440-9D6D-8E09475950BB"
+  },
+  "dirty_state": [
+    " M Datadog/Datadog.xcodeproj/project.pbxproj",
+    "A  xcconfigs/Datadog.local.xcconfig"
+  ],
+  "evidence": {
+    "build-identity.json": {
+      "executable_sha256": "31f03fb67cc20c6a943ba13da4144478c76c5b7663fdd1fc0a16ca492e33179c",
+      "source_sha256": "2531aff37fa7f8af2bdebbfdbdd13f79c11b347fd1e865bd9bd4316c551e74d2",
+      "uuid": "UUID: 8A38322D-642C-3BC3-B5A0-DD41CC4EC6DA (arm64) /private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/multi-scene-acceptance-n1sisu62/run/derived/Build/Products/Debug-iphonesimulator/RUMNativeMultiSceneProbe.app/RUMNativeMultiSceneProbe"
+    },
+    "test-summary.json": {
+      "devicesAndConfigurations": [
+        {
+          "device": {
+            "architecture": "arm64",
+            "deviceId": "92C9918B-FEC6-4440-9D6D-8E09475950BB",
+            "deviceName": "iPad mini (A17 Pro)",
+            "modelName": "iPad mini (A17 Pro)",
+            "osBuildNumber": "24A434",
+            "osVersion": "27.0",
+            "platform": "iOS Simulator"
+          },
+          "expectedFailures": 0,
+          "failedTests": 0,
+          "passedTests": 167,
+          "skippedTests": 0,
+          "testPlanConfiguration": {
+            "configurationId": "1",
+            "configurationName": "Test Scheme Action"
+          }
+        }
+      ],
+      "environmentDescription": "RUMNativeMultiSceneProbe \u00b7 Built with macOS 26.6.2",
+      "expectedFailures": 0,
+      "failedTests": 0,
+      "finishTime": 1789663501.627,
+      "passedTests": 167,
+      "result": "Passed",
+      "runtimeWarnings": [],
+      "skippedTests": 0,
+      "startTime": 1789663478.734,
+      "statistics": [],
+      "testFailures": [],
+      "title": "Test - RUMNativeMultiSceneProbe",
+      "topInsights": [
+        {
+          "category": "Longest Test Runs",
+          "impact": "48% of duration",
+          "text": "1 longest test run with outlier durations exceeding 0.05s (three standard deviations)"
+        }
+      ],
+      "totalTestCount": 167
+    }
+  },
+  "experiment": "EXP-176",
+  "failures": [
+    "app oracle did not pass: [{'reason': 'step 4 run-resource-ownership-batch failed: missing(\"deadline: all Resource completions\")', 'signalSequence': 21}]"
+  ],
+  "finished_at": "2026-09-17T16:45:12.197746+00:00",
+  "gate": "T03",
+  "oracle_contract_sha256": "b40392b6d35d08d5c069ac63c79cdeaa062dd2649a4dd01fbb4cae228b969138",
+  "rerun": "Use a fresh output directory and freshly resolved device; do not reuse run IDs or bridge responses.",
+  "revision": "74cced6950b9ba88dd68cc25e9f158110852b49d",
+  "run_id": "exp176-20260917T164420Z-01d729a8a777",
+  "scenario_id": "resources.explicit-start.captured-owner-cross-scene-serial",
+  "schema_version": 1,
+  "source_file_count": 463,
+  "source_fingerprint": "2531aff37fa7f8af2bdebbfdbdd13f79c11b347fd1e865bd9bd4316c551e74d2",
+  "stages": {
+    "clean_install": {
+      "data_container_absent": true,
+      "installed_binary_sha256": "31f03fb67cc20c6a943ba13da4144478c76c5b7663fdd1fc0a16ca492e33179c",
+      "state": "PASS"
+    },
+    "frozen_build": {
+      "executable_sha256": "31f03fb67cc20c6a943ba13da4144478c76c5b7663fdd1fc0a16ca492e33179c",
+      "source_sha256": "2531aff37fa7f8af2bdebbfdbdd13f79c11b347fd1e865bd9bd4316c551e74d2",
+      "state": "PASS",
+      "test_count": 167,
+      "uuid": "UUID: 8A38322D-642C-3BC3-B5A0-DD41CC4EC6DA (arm64) /private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/multi-scene-acceptance-n1sisu62/run/derived/Build/Products/Debug-iphonesimulator/RUMNativeMultiSceneProbe.app/RUMNativeMultiSceneProbe"
+    },
+    "preflight": {
+      "authenticated_read": true,
+      "state": "PASS"
+    }
+  },
+  "started_at": "2026-09-17T16:44:20.816798+00:00",
+  "state": "FAIL",
+  "xcode": "Xcode 27.0\nBuild version 27A266a"
+}

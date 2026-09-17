@@ -1394,3 +1394,8 @@ network errors must preserve status/URL/owner and remain separate from zero-cras
 checks. Full fixture contracts and runner sources are frozen before build/install.
 50 Python controls pass;167 probe tests passed after a `viewPath` fixture correction.
 The acceptance invocation performs the final fresh build after fixture completion.
+
+Decode mapper context with `AttributeValue.dd.decode`, including AnyEncodable from
+Objective-C APIs. A direct Swift `as? String` can discard labels even when backend
+serialization is correct. Preserve the local failure and independent backend
+diagnostic; do not substitute backend labels into a failed local oracle.

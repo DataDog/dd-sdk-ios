@@ -805,6 +805,31 @@
       "summary": "acceptance/exp176-20260917T163814Z-25918a4c7847.json",
       "disposition": "INCONCLUSIVE_TOPOLOGY",
       "reason": "Foreground B wait retired A before starts; background A manual navigation is ineligible. Capture A before real background, navigate/renew B, preserve nine original completion owners."
+    },
+    {
+      "summary": "acceptance/exp176-20260917T164420Z-01d729a8a777.json",
+      "disposition": "INVALID_MAPPER_ADAPTER",
+      "reason": "All nine completions had correct owners, but direct casts missed AnyEncodable Objective-C attributes. Backend independently confirms all three phase labels.",
+      "backend_diagnostic": [
+        {
+          "event_id": "AwAAAaCwQexdHMkCJAAAABhBYUN3UWZlX0FBQk0yeHVnZVh2R1hBQU8AAAAkMDFhMGIwNDEtZWNiMS00Nzc1LTlmNzMtYjhiNjY2MTkyMmIzAAAAGg",
+          "phase": "resource-objc-method",
+          "view_id": "e7756a7f-5055-4887-b3a2-8d390a488d9d",
+          "session_id": "e8208ce4-a34b-4293-a537-3071d8c93cec"
+        },
+        {
+          "event_id": "AwAAAaCwQexdHMkCIwAAABhBYUN3UWZlX0FBQk0yeHVnZVh2R1hBQU4AAAAkMDFhMGIwNDEtZWNiMS00Nzc1LTlmNzMtYjhiNjY2MTkyMmIzAAAAGQ",
+          "phase": "resource-objc-url",
+          "view_id": "e7756a7f-5055-4887-b3a2-8d390a488d9d",
+          "session_id": "e8208ce4-a34b-4293-a537-3071d8c93cec"
+        },
+        {
+          "event_id": "AwAAAaCwQexcHMkCIgAAABhBYUN3UWZlX0FBQk0yeHVnZVh2R1hBQU0AAAAkMDFhMGIwNDEtZWNiMS00Nzc1LTlmNzMtYjhiNjY2MTkyMmIzAAAAGw",
+          "phase": "resource-objc-request",
+          "view_id": "e7756a7f-5055-4887-b3a2-8d390a488d9d",
+          "session_id": "e8208ce4-a34b-4293-a537-3071d8c93cec"
+        }
+      ]
     }
   ],
   "watchos_release": {

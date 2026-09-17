@@ -7,6 +7,7 @@
 import Foundation
 import DatadogRUM
 import DatadogTrace
+@_spi(Internal) import DatadogInternal
 
 internal enum ProbeRUMEventAdapter {
     static func sessionStarted(
@@ -263,7 +264,7 @@ internal enum ProbeRUMEventAdapter {
         _ key: String,
         in contextInfo: [String: Encodable]?
     ) -> T? {
-        contextInfo?[key] as? T
+        contextInfo?[key].flatMap { $0.dd.decode(T.self) }
     }
 
     private static func numericValue(
