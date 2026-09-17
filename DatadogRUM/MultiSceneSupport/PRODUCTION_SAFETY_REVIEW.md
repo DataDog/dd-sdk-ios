@@ -70,8 +70,10 @@ is not release certification.
 
 EXP-177 is admitted for T04. Its audit retains the accepted T03 Resource-error
 contract and adds explicit current-view error ownership and completion controls.
-Potential dropped callbacks on no-recipient/unsampled paths are under investigation,
-not a new closed finding. All12 original dispositions above remain unchanged.
+No-recipient/unsampled callback losses are reproduced and repaired at signed SDK
+`1e9c4788d`:376 affected/11 new tests, delayed-write and reentrancy checks,8 ObjC
+and iOS/watchOS Release pass. [T04 evidence](Results/EXP-177-current-view-errors.json)
+keeps native/backend acceptance pending; all12 original dispositions remain closed.
 
 **Original review at the source revision below**
 

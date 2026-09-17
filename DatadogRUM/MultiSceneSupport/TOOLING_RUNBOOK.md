@@ -1420,3 +1420,11 @@ action counts and exactly-once callback barriers before a native run. Retain the
 EXP-176 lessons: decode AnyEncodable; consume readiness once; require current A/B
 before synchronous targets; never wait until A has ended and claim a live-A target.
 Backend and mapper must agree on exact owners, not just counts.
+
+EXP-177 preparation: signed SDK `1e9c4788d`;376 SDK/8 ObjC/168 probe checks,
+iOS/watchOS Release and67 Python/3 connector controls pass. Named scenario is
+`errors.explicit-target.current-view-cross-scene-serial`; runner selects T04 and
+a fresh exp177 run ID. Inventory is9 errors,2 named actions,3 session views,
+0 Resources/crashes; callback and payload guards are strict. Initial native
+private-property compile error and a no-op test mutation are preserved. Run
+repository lint with explicit source/test configs; default SwiftLint is not valid.

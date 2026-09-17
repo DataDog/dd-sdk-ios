@@ -2,7 +2,7 @@
   "schema_version": 1,
   "scope": "Multi-scene RUM release",
   "baseline_revision": "92f021ba7e4a866f84a52da93ed8b63f3dc75882",
-  "candidate_revision": "5e41d0b116f1e700fe4ac997202fc2df5fdfd1cf",
+  "candidate_revision": "1e9c4788d280603fd6fdd572300aba71614b29a1",
   "gates": [
     {
       "id": "C01",
@@ -267,7 +267,7 @@
       "environment": "iOS 27 simulator, focused compatibility tests, exact mapper and Datadog backend owners",
       "completion_mode": "explicit target",
       "status": "OPEN",
-      "evidence": ""
+      "evidence": "EXP-177 PREPARED at signed1e9c4788d:376 affected/11 new,8 ObjC, Release iOS/watchOS; native/backend acceptance pending."
     },
     {
       "id": "T05",

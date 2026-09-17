@@ -347,7 +347,7 @@ ordered acceptance contract is in
 | EXP-174 | PASS | R05 closed: three failing controls, nine new regressions and346 affected tests; monotonic synchronous generations, membership and exact two-host teardown | [Record](Experiments/EXP-143-199.md#exp-174--preserve-monotonic-reentrant-observer-delivery) |
 | EXP-175 | PASS | Four failed controls repaired, seven new regressions and379 affected tests; completion/metrics stay on original owner without foreign action counts. Full T03 target/backend gate stays open | [Record](Experiments/EXP-143-199.md#exp-175--keep-resource-completion-on-its-owning-scope) |
 | EXP-176 | PASS | T03 closed:397 affected/8 ObjC, iOS/watchOS Release;167 probe tests,22 local/77 signals and exact5 Resource/4 error/5 view backend owners across2 sessions, peer counters0/0; all failed attempts retained | [Record](Experiments/EXP-143-199.md#exp-176--accept-explicit-resource-starts-and-captured-completion-owners) |
-| EXP-177 | PLANNED | T04: explicit current-view error targets, independent fallback and exactly-once completion; preserve T03 Resource-error owners | [Record](Experiments/EXP-143-199.md#exp-177--target-current-view-errors-without-changing-resource-owners) |
+| EXP-177 | PREPARED | T04 SDK signed1e9c4788d:3 failing controls→11 new/376 affected,8 ObjC, iOS/watchOS Release;168 probe/67 Python/3 connector checks; native/backend pending | [Record](Experiments/EXP-143-199.md#exp-177--target-current-view-errors-without-changing-resource-owners) |
 
 ## Simulator-inconclusive and hardware-required evidence
 

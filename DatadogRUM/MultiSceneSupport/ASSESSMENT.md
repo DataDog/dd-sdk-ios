@@ -125,9 +125,10 @@ coverage, lifecycle/restoration, API review, and ordinary-app
 compatibility/performance.
 No product decision blocks the next internal experiment.
 
-EXP-177 is defined for T04: live explicit error targets, independent fallback,
-completion delivery and preserved captured Resource-error ownership. No gate
-closes until its frozen SDK and exact native/backend oracle passes.
+EXP-177 prepares T04 at signed SDK `1e9c4788d`:376 affected/11 new tests,8 ObjC,
+strict lint and iOS/watchOS Release pass. Live targets preserve independent fallback
+and Resource owners; two reproduced dropped-callback paths are repaired.168 probe
+and67 Python/3 connector checks pass. Native/backend acceptance remains required.
 
 ## Support matrix
 
