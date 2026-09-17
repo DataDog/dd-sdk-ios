@@ -1,0 +1,2730 @@
+{
+  "experiment": "EXP-160",
+  "created_at": "2026-09-17T00:51:05Z",
+  "revisions": {
+    "baseline": "92f021ba7e4a866f84a52da93ed8b63f3dc75882",
+    "candidate": "af63657f08dbecb66e7c3ae97ed53fc8f7b065b9"
+  },
+  "definition_sha256": "c24f741f008e654e816f96ba418ed62225aa0ae1470582bd2c15fc789e113345",
+  "fixture": {
+    "file_count": 4,
+    "sha256": "44bf7b154f4cf0c25e8fc1ab62131dcd1027d6d29b6f0e08e45a81c440564d3e",
+    "files": {
+      "AllocationCounter.c": "4fc68475a35fdbb805786a79455defc5725b6e0deb4847778cd75be228f9119d",
+      "AllocationCounter.h": "d668fa6258ccbf16ce011374af0aa4178ae4ca0f8a1c4f28a51bee2077ce52ab",
+      "App.swift": "4e9438781d5e17ef4cbfd06871a6938bdf9b25cc81e2b0dc5d2bff1645dc69ee",
+      "InternalFixture.swift": "5cfa2d46df2345e0868966690ce168e7154b281ef93a5f97e3e9c18a2c7e79e8"
+    }
+  },
+  "xcode": "Xcode 27.0\nBuild version 27A266a",
+  "builds": {
+    "baseline": {
+      "Scene": {
+        "app": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp160-212ced16a66c/baseline/derived/Build/Products/Release-iphonesimulator/FixtureScene.app",
+        "sha256": "3b8bf8d80556a7095c243a4f13d0394f437d02cd130c000f1b5df55fb5450d43",
+        "uuid": "UUID: A0E726A0-0E6F-3B33-9753-443475EC20B7 (x86_64) /var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp160-212ced16a66c/baseline/derived/Build/Products/Release-iphonesimulator/FixtureScene.app/FixtureScene\nUUID: 90C82A4E-63D9-3DA5-A13A-29F9D7EBBE88 (arm64) /var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp160-212ced16a66c/baseline/derived/Build/Products/Release-iphonesimulator/FixtureScene.app/FixtureScene",
+        "deployment_target": "15.0"
+      },
+      "Legacy": {
+        "app": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp160-212ced16a66c/baseline/derived/Build/Products/Release-iphonesimulator/FixtureLegacy.app",
+        "sha256": "51547439b72245cb301b0c1874f37b358248fc2d93e9694bde793930b766d5f6",
+        "uuid": "UUID: 93DF80C1-2932-3A43-B242-6A7973A412C8 (x86_64) /var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp160-212ced16a66c/baseline/derived/Build/Products/Release-iphonesimulator/FixtureLegacy.app/FixtureLegacy\nUUID: 080EC4C6-42CD-3126-8FBB-CDD938E42953 (arm64) /var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp160-212ced16a66c/baseline/derived/Build/Products/Release-iphonesimulator/FixtureLegacy.app/FixtureLegacy",
+        "deployment_target": "15.0"
+      },
+      "LegacyLifecycle": {
+        "app": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp160-212ced16a66c/baseline/derived/Build/Products/Release-iphonesimulator/FixtureLegacyLifecycle.app",
+        "sha256": "ddbfecc8103628ce3c689822bb74797301751459144b9493838231f7aca5c7cb",
+        "uuid": "UUID: A87251F4-680B-3B53-BA62-3E7EF0D57669 (x86_64) /var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp160-212ced16a66c/baseline/derived/Build/Products/Release-iphonesimulator/FixtureLegacyLifecycle.app/FixtureLegacyLifecycle\nUUID: F6C72FAF-37B5-3477-B2C2-38806B7818CF (arm64) /var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp160-212ced16a66c/baseline/derived/Build/Products/Release-iphonesimulator/FixtureLegacyLifecycle.app/FixtureLegacyLifecycle",
+        "deployment_target": "15.0",
+        "fixture": {
+          "file_count": 4,
+          "sha256": "b72db7534e9ad357705e415f8a0c4d457126acfea002974c3634c6bd115072c6",
+          "files": {
+            "AllocationCounter.c": "4fc68475a35fdbb805786a79455defc5725b6e0deb4847778cd75be228f9119d",
+            "AllocationCounter.h": "d668fa6258ccbf16ce011374af0aa4178ae4ca0f8a1c4f28a51bee2077ce52ab",
+            "App.swift": "773d4efe4545db8070561a64127e5bfd3e47c26a7e372f3329c9d7184f5f96fe",
+            "InternalFixture.swift": "5cfa2d46df2345e0868966690ce168e7154b281ef93a5f97e3e9c18a2c7e79e8"
+          }
+        }
+      }
+    },
+    "candidate": {
+      "Scene": {
+        "app": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp160-212ced16a66c/candidate/derived/Build/Products/Release-iphonesimulator/FixtureScene.app",
+        "sha256": "10f2daa045582affbf6e5830a552133ebb1645314336360b01827c2811a733e7",
+        "uuid": "UUID: 8C59B083-B77C-3D92-BA8B-E21C4179A080 (x86_64) /var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp160-212ced16a66c/candidate/derived/Build/Products/Release-iphonesimulator/FixtureScene.app/FixtureScene\nUUID: 2BB8F902-BD99-3971-8FBA-EE239FAD4FF0 (arm64) /var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp160-212ced16a66c/candidate/derived/Build/Products/Release-iphonesimulator/FixtureScene.app/FixtureScene",
+        "deployment_target": "15.0"
+      },
+      "Legacy": {
+        "app": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp160-212ced16a66c/candidate/derived/Build/Products/Release-iphonesimulator/FixtureLegacy.app",
+        "sha256": "129354f192934ffb9fc0f1168115481e6eb41b8e9de5e936e865c96fe6a975bb",
+        "uuid": "UUID: A09B598D-EF77-308A-A686-4223E6E5D9C9 (x86_64) /var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp160-212ced16a66c/candidate/derived/Build/Products/Release-iphonesimulator/FixtureLegacy.app/FixtureLegacy\nUUID: 6FDCFF1F-0222-38F8-9283-0391BFD48FDB (arm64) /var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp160-212ced16a66c/candidate/derived/Build/Products/Release-iphonesimulator/FixtureLegacy.app/FixtureLegacy",
+        "deployment_target": "15.0"
+      },
+      "LegacyLifecycle": {
+        "app": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp160-212ced16a66c/candidate/derived/Build/Products/Release-iphonesimulator/FixtureLegacyLifecycle.app",
+        "sha256": "f3cd14f0930f9fae354a90ff97a3fca53b38b724cdd3bd1ccf8eeee8e44602cd",
+        "uuid": "UUID: 5E55CA92-352A-3358-811A-A22219FE34FF (x86_64) /var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp160-212ced16a66c/candidate/derived/Build/Products/Release-iphonesimulator/FixtureLegacyLifecycle.app/FixtureLegacyLifecycle\nUUID: F07D67CA-6C34-3C6C-8768-E7306966CB8C (arm64) /var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp160-212ced16a66c/candidate/derived/Build/Products/Release-iphonesimulator/FixtureLegacyLifecycle.app/FixtureLegacyLifecycle",
+        "deployment_target": "15.0",
+        "fixture": {
+          "file_count": 4,
+          "sha256": "b72db7534e9ad357705e415f8a0c4d457126acfea002974c3634c6bd115072c6",
+          "files": {
+            "AllocationCounter.c": "4fc68475a35fdbb805786a79455defc5725b6e0deb4847778cd75be228f9119d",
+            "AllocationCounter.h": "d668fa6258ccbf16ce011374af0aa4178ae4ca0f8a1c4f28a51bee2077ce52ab",
+            "App.swift": "773d4efe4545db8070561a64127e5bfd3e47c26a7e372f3329c9d7184f5f96fe",
+            "InternalFixture.swift": "5cfa2d46df2345e0868966690ce168e7154b281ef93a5f97e3e9c18a2c7e79e8"
+          }
+        }
+      },
+      "Focused": {
+        "app": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp160-212ced16a66c/candidate/derived/Build/Products/Release-iphonesimulator/FixtureFocused.app",
+        "sha256": "7c92d8cd05e8952e7cdc8c6c2964baff61f1c29066ebb20b35d422c9b99a0d15",
+        "uuid": "UUID: 64D141D3-69F0-3C4B-A42A-9BB7138B5D9C (x86_64) /var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp160-212ced16a66c/candidate/derived/Build/Products/Release-iphonesimulator/FixtureFocused.app/FixtureFocused\nUUID: 4EAB4CBE-CE9C-371F-AAD7-C124ECF4E701 (arm64) /var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp160-212ced16a66c/candidate/derived/Build/Products/Release-iphonesimulator/FixtureFocused.app/FixtureFocused",
+        "deployment_target": "15.0",
+        "fixture": {
+          "file_count": 5,
+          "sha256": "1c8a20b3a4d57f99725b4ca7afc608c81c690efbe024e3b8fe433da7891af331",
+          "files": {
+            "AllocationCounter.c": "4fc68475a35fdbb805786a79455defc5725b6e0deb4847778cd75be228f9119d",
+            "AllocationCounter.h": "d668fa6258ccbf16ce011374af0aa4178ae4ca0f8a1c4f28a51bee2077ce52ab",
+            "App.swift": "ffa7444c1b4afe84908f78b44263986018d1bd54762c5fe0144aa4d803ce2489",
+            "FocusedChecks.swift": "af9f72c0d1255afd588ee969971ee2badac587a294ae773f2ff5585ac93f7184",
+            "InternalFixture.swift": "5cfa2d46df2345e0868966690ce168e7154b281ef93a5f97e3e9c18a2c7e79e8"
+          }
+        },
+        "scope": "P04 assertions only; original timing fixture and binaries unchanged"
+      }
+    }
+  },
+  "devices": {
+    "27.0": {
+      "udid": "BE03D65C-84F6-4FE0-95DA-A8F8D81A5D21",
+      "name": "iPhone 17 Pro",
+      "state": "Booted"
+    },
+    "26.5": {
+      "udid": "65A76904-154E-4C79-9DFD-A57B526C85E6",
+      "name": "iPhone 17",
+      "state": "Booted"
+    }
+  },
+  "invalid_attempts": [
+    {
+      "stage": "build",
+      "arm": "baseline",
+      "log": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp160-212ced16a66c/baseline/build.log"
+    },
+    {
+      "stage": "runtime",
+      "reason": "Fixture malloc_logger TLS initialization recursion, both arms; complete ABBA series rerun after correction",
+      "fixture": {
+        "file_count": 4,
+        "sha256": "5cad19afa1c2c5efdc5a553107bdd6fb79c7ed260dc514a7d5c6e9b143e58006",
+        "files": {
+          "AllocationCounter.c": "d094e134e2bc9899da21644ff5b1bc2af55643e2434cf526ee1cda6d3d343e8e",
+          "AllocationCounter.h": "d668fa6258ccbf16ce011374af0aa4178ae4ca0f8a1c4f28a51bee2077ce52ab",
+          "App.swift": "65f77131e31f17a9aab9ed0bc948983ff36409ad65b659ed3dca88103b34d64a",
+          "InternalFixture.swift": "639dd0117cb2948bd1a6c325dc101e0706927963bbc52b8ffead3b3a1d2b0c7a"
+        }
+      }
+    }
+  ],
+  "verification": {
+    "verified_at": "2026-09-17T01:21:20Z",
+    "definition_unchanged": true,
+    "fixture_unchanged": true,
+    "arms": {
+      "baseline": {
+        "original_sdk_files_unchanged": true,
+        "copied_fixture_unchanged": true,
+        "package_manifest_sha256": "087c70faa52a276a5143b72e7a34ffcee770ed5e66acd6cfc1287b497a7333fa"
+      },
+      "candidate": {
+        "original_sdk_files_unchanged": true,
+        "copied_fixture_unchanged": true,
+        "package_manifest_sha256": "087c70faa52a276a5143b72e7a34ffcee770ed5e66acd6cfc1287b497a7333fa"
+      }
+    },
+    "builds": {
+      "baseline": {
+        "Scene": {
+          "unchanged": true,
+          "mach_o_build_version": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp160-212ced16a66c/baseline/derived/Build/Products/Release-iphonesimulator/FixtureScene.app/FixtureScene (architecture x86_64):\nLoad command 11\n      cmd LC_BUILD_VERSION\n  cmdsize 32\n platform IOSSIMULATOR\n    minos 15.0\n      sdk 27.0\n   ntools 1\n     tool LD\n  version 27037.1\n/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp160-212ced16a66c/baseline/derived/Build/Products/Release-iphonesimulator/FixtureScene.app/FixtureScene (architecture arm64):\nLoad command 11\n      cmd LC_BUILD_VERSION\n  cmdsize 32\n platform IOSSIMULATOR\n    minos 15.0\n      sdk 27.0\n   ntools 1\n     tool LD\n  version 27037.1"
+        },
+        "Legacy": {
+          "unchanged": true,
+          "mach_o_build_version": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp160-212ced16a66c/baseline/derived/Build/Products/Release-iphonesimulator/FixtureLegacy.app/FixtureLegacy (architecture x86_64):\nLoad command 11\n      cmd LC_BUILD_VERSION\n  cmdsize 32\n platform IOSSIMULATOR\n    minos 15.0\n      sdk 27.0\n   ntools 1\n     tool LD\n  version 27037.1\n/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp160-212ced16a66c/baseline/derived/Build/Products/Release-iphonesimulator/FixtureLegacy.app/FixtureLegacy (architecture arm64):\nLoad command 11\n      cmd LC_BUILD_VERSION\n  cmdsize 32\n platform IOSSIMULATOR\n    minos 15.0\n      sdk 27.0\n   ntools 1\n     tool LD\n  version 27037.1"
+        },
+        "LegacyLifecycle": {
+          "unchanged": true,
+          "mach_o_build_version": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp160-212ced16a66c/baseline/derived/Build/Products/Release-iphonesimulator/FixtureLegacyLifecycle.app/FixtureLegacyLifecycle (architecture x86_64):\nLoad command 11\n      cmd LC_BUILD_VERSION\n  cmdsize 32\n platform IOSSIMULATOR\n    minos 15.0\n      sdk 27.0\n   ntools 1\n     tool LD\n  version 27037.1\n/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp160-212ced16a66c/baseline/derived/Build/Products/Release-iphonesimulator/FixtureLegacyLifecycle.app/FixtureLegacyLifecycle (architecture arm64):\nLoad command 11\n      cmd LC_BUILD_VERSION\n  cmdsize 32\n platform IOSSIMULATOR\n    minos 15.0\n      sdk 27.0\n   ntools 1\n     tool LD\n  version 27037.1"
+        }
+      },
+      "candidate": {
+        "Scene": {
+          "unchanged": true,
+          "mach_o_build_version": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp160-212ced16a66c/candidate/derived/Build/Products/Release-iphonesimulator/FixtureScene.app/FixtureScene (architecture x86_64):\nLoad command 11\n      cmd LC_BUILD_VERSION\n  cmdsize 32\n platform IOSSIMULATOR\n    minos 15.0\n      sdk 27.0\n   ntools 1\n     tool LD\n  version 27037.1\n/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp160-212ced16a66c/candidate/derived/Build/Products/Release-iphonesimulator/FixtureScene.app/FixtureScene (architecture arm64):\nLoad command 11\n      cmd LC_BUILD_VERSION\n  cmdsize 32\n platform IOSSIMULATOR\n    minos 15.0\n      sdk 27.0\n   ntools 1\n     tool LD\n  version 27037.1"
+        },
+        "Legacy": {
+          "unchanged": true,
+          "mach_o_build_version": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp160-212ced16a66c/candidate/derived/Build/Products/Release-iphonesimulator/FixtureLegacy.app/FixtureLegacy (architecture x86_64):\nLoad command 11\n      cmd LC_BUILD_VERSION\n  cmdsize 32\n platform IOSSIMULATOR\n    minos 15.0\n      sdk 27.0\n   ntools 1\n     tool LD\n  version 27037.1\n/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp160-212ced16a66c/candidate/derived/Build/Products/Release-iphonesimulator/FixtureLegacy.app/FixtureLegacy (architecture arm64):\nLoad command 11\n      cmd LC_BUILD_VERSION\n  cmdsize 32\n platform IOSSIMULATOR\n    minos 15.0\n      sdk 27.0\n   ntools 1\n     tool LD\n  version 27037.1"
+        },
+        "LegacyLifecycle": {
+          "unchanged": true,
+          "mach_o_build_version": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp160-212ced16a66c/candidate/derived/Build/Products/Release-iphonesimulator/FixtureLegacyLifecycle.app/FixtureLegacyLifecycle (architecture x86_64):\nLoad command 11\n      cmd LC_BUILD_VERSION\n  cmdsize 32\n platform IOSSIMULATOR\n    minos 15.0\n      sdk 27.0\n   ntools 1\n     tool LD\n  version 27037.1\n/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp160-212ced16a66c/candidate/derived/Build/Products/Release-iphonesimulator/FixtureLegacyLifecycle.app/FixtureLegacyLifecycle (architecture arm64):\nLoad command 11\n      cmd LC_BUILD_VERSION\n  cmdsize 32\n platform IOSSIMULATOR\n    minos 15.0\n      sdk 27.0\n   ntools 1\n     tool LD\n  version 27037.1"
+        },
+        "Focused": {
+          "unchanged": true,
+          "mach_o_build_version": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp160-212ced16a66c/candidate/derived/Build/Products/Release-iphonesimulator/FixtureFocused.app/FixtureFocused (architecture x86_64):\nLoad command 11\n      cmd LC_BUILD_VERSION\n  cmdsize 32\n platform IOSSIMULATOR\n    minos 15.0\n      sdk 27.0\n   ntools 1\n     tool LD\n  version 27037.1\n/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp160-212ced16a66c/candidate/derived/Build/Products/Release-iphonesimulator/FixtureFocused.app/FixtureFocused (architecture arm64):\nLoad command 11\n      cmd LC_BUILD_VERSION\n  cmdsize 32\n platform IOSSIMULATOR\n    minos 15.0\n      sdk 27.0\n   ntools 1\n     tool LD\n  version 27037.1"
+        }
+      }
+    },
+    "host": {
+      "system": "ProductName:\t\tmacOS\nProductVersion:\t\t26.6.2\nBuildVersion:\t\t25G83",
+      "architecture": "arm64",
+      "model": "Mac16,6",
+      "cpu": "Apple M4 Max"
+    },
+    "runtime_inventory": [
+      {
+        "name": "iOS 26.5",
+        "version": "26.5",
+        "buildversion": "23F77",
+        "identifier": "com.apple.CoreSimulator.SimRuntime.iOS-26-5",
+        "isAvailable": true
+      },
+      {
+        "name": "iOS 27.0",
+        "version": "27.0",
+        "buildversion": "24A434",
+        "identifier": "com.apple.CoreSimulator.SimRuntime.iOS-27-0",
+        "isAvailable": true
+      }
+    ],
+    "legacy_platform_crash_evidence": [
+      {
+        "file": "FixtureLegacy-2026-09-17-020529.ips",
+        "arm": "baseline",
+        "binary_uuid": "080ec4c6-42cd-3126-8fbb-cdd938e42953",
+        "exception_type": "EXC_BREAKPOINT",
+        "signal": "SIGTRAP",
+        "triggered_symbols": [
+          "___UIApplicationEvaluateRuntimeIssueForNoSceneLifecycleAdoption_block_invoke",
+          "_dispatch_client_callout",
+          "_dispatch_once_callout",
+          "-[UIApplication workspace:didCreateScene:withTransitionContext:completion:]",
+          "-[UIApplicationSceneClientAgent scene:didInitializeWithEvent:completion:]",
+          "__95-[FBSScene _callOutQueue_didCreateWithTransitionContext:alternativeCreationCallout:completion:]_block_invoke",
+          "-[FBSScene _callOutQueue_maybeCoalesceClientSettingsUpdates:]",
+          "-[FBSScene _callOutQueue_didCreateWithTransitionContext:alternativeCreationCallout:completion:]"
+        ]
+      },
+      {
+        "file": "FixtureLegacy-2026-09-17-020531.ips",
+        "arm": "candidate",
+        "binary_uuid": "6fdcff1f-0222-38f8-9283-0391bfd48fdb",
+        "exception_type": "EXC_BREAKPOINT",
+        "signal": "SIGTRAP",
+        "triggered_symbols": [
+          "___UIApplicationEvaluateRuntimeIssueForNoSceneLifecycleAdoption_block_invoke",
+          "_dispatch_client_callout",
+          "_dispatch_once_callout",
+          "-[UIApplication workspace:didCreateScene:withTransitionContext:completion:]",
+          "-[UIApplicationSceneClientAgent scene:didInitializeWithEvent:completion:]",
+          "__95-[FBSScene _callOutQueue_didCreateWithTransitionContext:alternativeCreationCallout:completion:]_block_invoke",
+          "-[FBSScene _callOutQueue_maybeCoalesceClientSettingsUpdates:]",
+          "-[FBSScene _callOutQueue_didCreateWithTransitionContext:alternativeCreationCallout:completion:]"
+        ]
+      },
+      {
+        "file": "FixtureLegacy-2026-09-17-020532.ips",
+        "arm": "baseline",
+        "binary_uuid": "080ec4c6-42cd-3126-8fbb-cdd938e42953",
+        "exception_type": "EXC_BREAKPOINT",
+        "signal": "SIGTRAP",
+        "triggered_symbols": [
+          "___UIApplicationEvaluateRuntimeIssueForNoSceneLifecycleAdoption_block_invoke",
+          "_dispatch_client_callout",
+          "_dispatch_once_callout",
+          "-[UIApplication workspace:didCreateScene:withTransitionContext:completion:]",
+          "-[UIApplicationSceneClientAgent scene:didInitializeWithEvent:completion:]",
+          "__95-[FBSScene _callOutQueue_didCreateWithTransitionContext:alternativeCreationCallout:completion:]_block_invoke",
+          "-[FBSScene _callOutQueue_maybeCoalesceClientSettingsUpdates:]",
+          "-[FBSScene _callOutQueue_didCreateWithTransitionContext:alternativeCreationCallout:completion:]"
+        ]
+      },
+      {
+        "file": "FixtureLegacy-2026-09-17-020536.ips",
+        "arm": "candidate",
+        "binary_uuid": "6fdcff1f-0222-38f8-9283-0391bfd48fdb",
+        "exception_type": "EXC_BREAKPOINT",
+        "signal": "SIGTRAP",
+        "triggered_symbols": [
+          "___UIApplicationEvaluateRuntimeIssueForNoSceneLifecycleAdoption_block_invoke",
+          "_dispatch_client_callout",
+          "_dispatch_once_callout",
+          "-[UIApplication workspace:didCreateScene:withTransitionContext:completion:]",
+          "-[UIApplicationSceneClientAgent scene:didInitializeWithEvent:completion:]",
+          "__95-[FBSScene _callOutQueue_didCreateWithTransitionContext:alternativeCreationCallout:completion:]_block_invoke",
+          "-[FBSScene _callOutQueue_maybeCoalesceClientSettingsUpdates:]",
+          "-[FBSScene _callOutQueue_didCreateWithTransitionContext:alternativeCreationCallout:completion:]"
+        ]
+      }
+    ],
+    "passed": true,
+    "scope": "Post-run verification. Original runs bind to frozen build table; later variants additionally store per-launch identity."
+  },
+  "source_fingerprints": {
+    "baseline": {
+      "file_count": 369,
+      "sha256": "dde2012968e33c3b0058acf6003ec15b18fce8182ca30e4befdfd8b36463e06c"
+    },
+    "candidate": {
+      "file_count": 369,
+      "sha256": "de0fe4a202de9a181a386f0eb4406e0e26136979717bf94ae823f3088970eecc"
+    }
+  },
+  "compatibility": [
+    {
+      "arm": "baseline",
+      "lifecycle": "Scene",
+      "os": "27.0",
+      "mode": "automatic",
+      "status": "PASS",
+      "failures": [],
+      "run_id": "exp160-61ec8757e8684979bb80db42f56a4a0c"
+    },
+    {
+      "arm": "candidate",
+      "lifecycle": "Scene",
+      "os": "27.0",
+      "mode": "automatic",
+      "status": "PASS",
+      "failures": [],
+      "run_id": "exp160-6c5b9b4daa4d4225b88e491353e19c07"
+    },
+    {
+      "arm": "baseline",
+      "lifecycle": "Scene",
+      "os": "27.0",
+      "mode": "manual",
+      "status": "PASS",
+      "failures": [],
+      "run_id": "exp160-21cc1628af2d47e1801e4a555727663c"
+    },
+    {
+      "arm": "candidate",
+      "lifecycle": "Scene",
+      "os": "27.0",
+      "mode": "manual",
+      "status": "PASS",
+      "failures": [],
+      "run_id": "exp160-1c6b1ee7b1d24f6b948dc5028156f21c"
+    },
+    {
+      "arm": "baseline",
+      "lifecycle": "Legacy",
+      "os": "27.0",
+      "mode": "automatic",
+      "status": "INCONCLUSIVE",
+      "failures": [
+        "No terminal fixture result before deadline"
+      ],
+      "run_id": "exp160-bad0af649be245f59c7e42e136670f4e"
+    },
+    {
+      "arm": "candidate",
+      "lifecycle": "Legacy",
+      "os": "27.0",
+      "mode": "automatic",
+      "status": "INCONCLUSIVE",
+      "failures": [
+        "No terminal fixture result before deadline"
+      ],
+      "run_id": "exp160-d76a6fc78af54975aac0b1371f86f92e"
+    },
+    {
+      "arm": "baseline",
+      "lifecycle": "Legacy",
+      "os": "27.0",
+      "mode": "manual",
+      "status": "INCONCLUSIVE",
+      "failures": [
+        "No terminal fixture result before deadline"
+      ],
+      "run_id": "exp160-3a171a97cd23454783de0ffaf7e8950f"
+    },
+    {
+      "arm": "candidate",
+      "lifecycle": "Legacy",
+      "os": "27.0",
+      "mode": "manual",
+      "status": "INCONCLUSIVE",
+      "failures": [
+        "No terminal fixture result before deadline"
+      ],
+      "run_id": "exp160-e85d464d514e4304b141c292a514f651"
+    },
+    {
+      "arm": "baseline",
+      "lifecycle": "Scene",
+      "os": "26.5",
+      "mode": "automatic",
+      "status": "PASS",
+      "failures": [],
+      "run_id": "exp160-273b29d3ed56434692bd205dc0e339e2"
+    },
+    {
+      "arm": "candidate",
+      "lifecycle": "Scene",
+      "os": "26.5",
+      "mode": "automatic",
+      "status": "PASS",
+      "failures": [],
+      "run_id": "exp160-4fdda654cd634c0f9d4e95bbca5e14db"
+    },
+    {
+      "arm": "baseline",
+      "lifecycle": "Scene",
+      "os": "26.5",
+      "mode": "manual",
+      "status": "PASS",
+      "failures": [],
+      "run_id": "exp160-7478cbb03c0a49b5bab65424050bb804"
+    },
+    {
+      "arm": "candidate",
+      "lifecycle": "Scene",
+      "os": "26.5",
+      "mode": "manual",
+      "status": "PASS",
+      "failures": [],
+      "run_id": "exp160-f2eb870b7e9f4020bca32d1623f4d8ee"
+    },
+    {
+      "arm": "baseline",
+      "lifecycle": "Legacy",
+      "os": "26.5",
+      "mode": "automatic",
+      "status": "PASS",
+      "failures": [],
+      "run_id": "exp160-d0c2429886d44db2b9d958194f32e22d"
+    },
+    {
+      "arm": "candidate",
+      "lifecycle": "Legacy",
+      "os": "26.5",
+      "mode": "automatic",
+      "status": "PASS",
+      "failures": [],
+      "run_id": "exp160-40692170e14042c9bf639f130639c08c"
+    },
+    {
+      "arm": "baseline",
+      "lifecycle": "Legacy",
+      "os": "26.5",
+      "mode": "manual",
+      "status": "PASS",
+      "failures": [],
+      "run_id": "exp160-68ea48f0be674e9aa7de0676c2e8d498"
+    },
+    {
+      "arm": "candidate",
+      "lifecycle": "Legacy",
+      "os": "26.5",
+      "mode": "manual",
+      "status": "PASS",
+      "failures": [],
+      "run_id": "exp160-c368fe7427154b2bb24352384f74cb92"
+    }
+  ],
+  "performance": {
+    "27.0": {
+      "disabled": {
+        "status": "PASS",
+        "baseline": {
+          "median_ns": 12708.0,
+          "p95_ns": 15542,
+          "sample_count": 4000
+        },
+        "candidate": {
+          "median_ns": 12500.0,
+          "p95_ns": 15291,
+          "sample_count": 4000
+        },
+        "median_delta_ns": -208.0,
+        "p95_delta_ns": -251,
+        "median_allowed_delta_ns": 1270.8000000000002,
+        "p95_allowed_delta_ns": 3108.4,
+        "integrity": {
+          "status": "PASS",
+          "issues": []
+        }
+      },
+      "dispatch": {
+        "status": "PASS",
+        "baseline": {
+          "median_ns": 12959.0,
+          "p95_ns": 15875,
+          "sample_count": 4000
+        },
+        "candidate": {
+          "median_ns": 12750.0,
+          "p95_ns": 15917,
+          "sample_count": 4000
+        },
+        "median_delta_ns": -209.0,
+        "p95_delta_ns": 42,
+        "median_allowed_delta_ns": 1295.9,
+        "p95_allowed_delta_ns": 3175.0,
+        "integrity": {
+          "status": "PASS",
+          "issues": []
+        }
+      },
+      "internal": {
+        "status": "PASS",
+        "baseline": {
+          "median_ns": 166.0,
+          "p95_ns": 167,
+          "sample_count": 4000
+        },
+        "candidate": {
+          "median_ns": 333.0,
+          "p95_ns": 416,
+          "sample_count": 4000
+        },
+        "median_delta_ns": 167.0,
+        "p95_delta_ns": 249,
+        "median_allowed_delta_ns": 500,
+        "p95_allowed_delta_ns": 1000,
+        "integrity": {
+          "status": "PASS",
+          "issues": []
+        }
+      },
+      "handoff": {
+        "status": "PASS",
+        "baseline": {
+          "median_ns": 333.0,
+          "p95_ns": 416,
+          "sample_count": 4000
+        },
+        "candidate": {
+          "median_ns": 2041.0,
+          "p95_ns": 2125,
+          "sample_count": 4000
+        },
+        "median_delta_ns": 1708.0,
+        "p95_delta_ns": 1709,
+        "median_allowed_delta_ns": 5000,
+        "p95_allowed_delta_ns": 10000
+      },
+      "allocations": {
+        "baseline": {
+          "count_per_event": 0.0,
+          "bytes_per_event": 0.0
+        },
+        "candidate": {
+          "count_per_event": 0.0,
+          "bytes_per_event": 0.0
+        },
+        "status": "PASS",
+        "excess_count_per_event": 0.0,
+        "excess_bytes_per_event": 0.0
+      },
+      "handoff_allocations": {
+        "baseline": {
+          "count_per_event": 0.0,
+          "bytes_per_event": 0.0
+        },
+        "candidate": {
+          "count_per_event": 3.0,
+          "bytes_per_event": 416.0
+        },
+        "status": "FAIL",
+        "excess_count_per_event": 3.0,
+        "excess_bytes_per_event": 416.0
+      }
+    },
+    "26.5": {
+      "disabled": {
+        "status": "PASS",
+        "baseline": {
+          "median_ns": 21042.0,
+          "p95_ns": 24334,
+          "sample_count": 4000
+        },
+        "candidate": {
+          "median_ns": 22958.0,
+          "p95_ns": 24250,
+          "sample_count": 4000
+        },
+        "median_delta_ns": 1916.0,
+        "p95_delta_ns": -84,
+        "median_allowed_delta_ns": 2104.2000000000003,
+        "p95_allowed_delta_ns": 4866.8,
+        "integrity": {
+          "status": "PASS",
+          "issues": []
+        }
+      },
+      "dispatch": {
+        "status": "PASS",
+        "baseline": {
+          "median_ns": 22459.0,
+          "p95_ns": 25459,
+          "sample_count": 4000
+        },
+        "candidate": {
+          "median_ns": 23375.0,
+          "p95_ns": 24875,
+          "sample_count": 4000
+        },
+        "median_delta_ns": 916.0,
+        "p95_delta_ns": -584,
+        "median_allowed_delta_ns": 2245.9,
+        "p95_allowed_delta_ns": 5091.8,
+        "integrity": {
+          "status": "PASS",
+          "issues": []
+        }
+      },
+      "internal": {
+        "status": "PASS",
+        "baseline": {
+          "median_ns": 166.0,
+          "p95_ns": 167,
+          "sample_count": 4000
+        },
+        "candidate": {
+          "median_ns": 333.0,
+          "p95_ns": 417,
+          "sample_count": 4000
+        },
+        "median_delta_ns": 167.0,
+        "p95_delta_ns": 250,
+        "median_allowed_delta_ns": 500,
+        "p95_allowed_delta_ns": 1000,
+        "integrity": {
+          "status": "PASS",
+          "issues": []
+        }
+      },
+      "handoff": {
+        "status": "PASS",
+        "baseline": {
+          "median_ns": 333.0,
+          "p95_ns": 417,
+          "sample_count": 4000
+        },
+        "candidate": {
+          "median_ns": 2000.0,
+          "p95_ns": 2500,
+          "sample_count": 4000
+        },
+        "median_delta_ns": 1667.0,
+        "p95_delta_ns": 2083,
+        "median_allowed_delta_ns": 5000,
+        "p95_allowed_delta_ns": 10000
+      },
+      "allocations": {
+        "baseline": {
+          "count_per_event": 0.0,
+          "bytes_per_event": 0.0
+        },
+        "candidate": {
+          "count_per_event": 0.0,
+          "bytes_per_event": 0.0
+        },
+        "status": "PASS",
+        "excess_count_per_event": 0.0,
+        "excess_bytes_per_event": 0.0
+      },
+      "handoff_allocations": {
+        "baseline": {
+          "count_per_event": 0.0,
+          "bytes_per_event": 0.0
+        },
+        "candidate": {
+          "count_per_event": 3.0,
+          "bytes_per_event": 416.0
+        },
+        "status": "FAIL",
+        "excess_count_per_event": 3.0,
+        "excess_bytes_per_event": 416.0
+      }
+    }
+  },
+  "runs": [
+    {
+      "run_id": "exp160-237e3fe67fa24e699083debb92e08217",
+      "arm": "baseline",
+      "lifecycle": "Scene",
+      "os": "27.0",
+      "mode": "disabled",
+      "order": 0,
+      "clean_install": true,
+      "status": "MEASURED",
+      "artifact": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp160-212ced16a66c/runs/exp160-237e3fe67fa24e699083debb92e08217/result.json",
+      "launch": "console process 18790"
+    },
+    {
+      "run_id": "exp160-749294b3748f41c4b8293d765fabe6a5",
+      "arm": "candidate",
+      "lifecycle": "Scene",
+      "os": "27.0",
+      "mode": "disabled",
+      "order": 1,
+      "clean_install": true,
+      "status": "MEASURED",
+      "artifact": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp160-212ced16a66c/runs/exp160-749294b3748f41c4b8293d765fabe6a5/result.json",
+      "launch": "console process 18891"
+    },
+    {
+      "run_id": "exp160-5aa3e0f716f844e3a8c03afd12c98d05",
+      "arm": "candidate",
+      "lifecycle": "Scene",
+      "os": "27.0",
+      "mode": "disabled",
+      "order": 2,
+      "clean_install": true,
+      "status": "MEASURED",
+      "artifact": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp160-212ced16a66c/runs/exp160-5aa3e0f716f844e3a8c03afd12c98d05/result.json",
+      "launch": "console process 18977"
+    },
+    {
+      "run_id": "exp160-38971509d331487ebd667c07f3ee1692",
+      "arm": "baseline",
+      "lifecycle": "Scene",
+      "os": "27.0",
+      "mode": "disabled",
+      "order": 3,
+      "clean_install": true,
+      "status": "MEASURED",
+      "artifact": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp160-212ced16a66c/runs/exp160-38971509d331487ebd667c07f3ee1692/result.json",
+      "launch": "console process 19076"
+    },
+    {
+      "run_id": "exp160-f5c54c8048e44fa2a066002ae711299b",
+      "arm": "baseline",
+      "lifecycle": "Scene",
+      "os": "27.0",
+      "mode": "dispatch",
+      "order": 0,
+      "clean_install": true,
+      "status": "MEASURED",
+      "artifact": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp160-212ced16a66c/runs/exp160-f5c54c8048e44fa2a066002ae711299b/result.json",
+      "launch": "console process 19195"
+    },
+    {
+      "run_id": "exp160-c6379f7f25554b4cb42764271655b683",
+      "arm": "candidate",
+      "lifecycle": "Scene",
+      "os": "27.0",
+      "mode": "dispatch",
+      "order": 1,
+      "clean_install": true,
+      "status": "MEASURED",
+      "artifact": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp160-212ced16a66c/runs/exp160-c6379f7f25554b4cb42764271655b683/result.json",
+      "launch": "console process 19293"
+    },
+    {
+      "run_id": "exp160-7c4c28aa3e55457289648be36eebb7d5",
+      "arm": "candidate",
+      "lifecycle": "Scene",
+      "os": "27.0",
+      "mode": "dispatch",
+      "order": 2,
+      "clean_install": true,
+      "status": "MEASURED",
+      "artifact": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp160-212ced16a66c/runs/exp160-7c4c28aa3e55457289648be36eebb7d5/result.json",
+      "launch": "console process 19412"
+    },
+    {
+      "run_id": "exp160-36cdabe934a14ebab11bf93e2006188d",
+      "arm": "baseline",
+      "lifecycle": "Scene",
+      "os": "27.0",
+      "mode": "dispatch",
+      "order": 3,
+      "clean_install": true,
+      "status": "MEASURED",
+      "artifact": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp160-212ced16a66c/runs/exp160-36cdabe934a14ebab11bf93e2006188d/result.json",
+      "launch": "console process 19510"
+    },
+    {
+      "run_id": "exp160-1bc25ab4cb334f07a40cbf3f99e898de",
+      "arm": "baseline",
+      "lifecycle": "Scene",
+      "os": "27.0",
+      "mode": "internal",
+      "order": 0,
+      "clean_install": true,
+      "status": "MEASURED",
+      "artifact": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp160-212ced16a66c/runs/exp160-1bc25ab4cb334f07a40cbf3f99e898de/result.json",
+      "launch": "console process 19755"
+    },
+    {
+      "run_id": "exp160-13f322ab43514e23874a4103c3cef4ba",
+      "arm": "candidate",
+      "lifecycle": "Scene",
+      "os": "27.0",
+      "mode": "internal",
+      "order": 1,
+      "clean_install": true,
+      "status": "MEASURED",
+      "artifact": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp160-212ced16a66c/runs/exp160-13f322ab43514e23874a4103c3cef4ba/result.json",
+      "launch": "console process 19859"
+    },
+    {
+      "run_id": "exp160-fc32618f594b46338602c70504dda608",
+      "arm": "candidate",
+      "lifecycle": "Scene",
+      "os": "27.0",
+      "mode": "internal",
+      "order": 2,
+      "clean_install": true,
+      "status": "MEASURED",
+      "artifact": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp160-212ced16a66c/runs/exp160-fc32618f594b46338602c70504dda608/result.json",
+      "launch": "console process 19944"
+    },
+    {
+      "run_id": "exp160-ca9f7fa4462a4bd5ab089e5e0d189a7d",
+      "arm": "baseline",
+      "lifecycle": "Scene",
+      "os": "27.0",
+      "mode": "internal",
+      "order": 3,
+      "clean_install": true,
+      "status": "MEASURED",
+      "artifact": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp160-212ced16a66c/runs/exp160-ca9f7fa4462a4bd5ab089e5e0d189a7d/result.json",
+      "launch": "console process 20083"
+    },
+    {
+      "run_id": "exp160-e723374243ef4aebba0308f28e6d794f",
+      "arm": "baseline",
+      "lifecycle": "Scene",
+      "os": "26.5",
+      "mode": "disabled",
+      "order": 0,
+      "clean_install": true,
+      "status": "MEASURED",
+      "artifact": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp160-212ced16a66c/runs/exp160-e723374243ef4aebba0308f28e6d794f/result.json",
+      "launch": "console process 20231"
+    },
+    {
+      "run_id": "exp160-173d877d25fc451090663c3024ba1569",
+      "arm": "candidate",
+      "lifecycle": "Scene",
+      "os": "26.5",
+      "mode": "disabled",
+      "order": 1,
+      "clean_install": true,
+      "status": "MEASURED",
+      "artifact": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp160-212ced16a66c/runs/exp160-173d877d25fc451090663c3024ba1569/result.json",
+      "launch": "console process 20336"
+    },
+    {
+      "run_id": "exp160-a52d8170c3b7414eaa2bc968057bf79b",
+      "arm": "candidate",
+      "lifecycle": "Scene",
+      "os": "26.5",
+      "mode": "disabled",
+      "order": 2,
+      "clean_install": true,
+      "status": "MEASURED",
+      "artifact": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp160-212ced16a66c/runs/exp160-a52d8170c3b7414eaa2bc968057bf79b/result.json",
+      "launch": "console process 20564"
+    },
+    {
+      "run_id": "exp160-98913b3884a8479c811af4bf92ed1fa7",
+      "arm": "baseline",
+      "lifecycle": "Scene",
+      "os": "26.5",
+      "mode": "disabled",
+      "order": 3,
+      "clean_install": true,
+      "status": "MEASURED",
+      "artifact": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp160-212ced16a66c/runs/exp160-98913b3884a8479c811af4bf92ed1fa7/result.json",
+      "launch": "console process 20699"
+    },
+    {
+      "run_id": "exp160-10203ff609824a0f9445816e35f25841",
+      "arm": "baseline",
+      "lifecycle": "Scene",
+      "os": "26.5",
+      "mode": "dispatch",
+      "order": 0,
+      "clean_install": true,
+      "status": "MEASURED",
+      "artifact": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp160-212ced16a66c/runs/exp160-10203ff609824a0f9445816e35f25841/result.json",
+      "launch": "console process 20829"
+    },
+    {
+      "run_id": "exp160-c69a99bf10084f4fa4d3e4bc85be4263",
+      "arm": "candidate",
+      "lifecycle": "Scene",
+      "os": "26.5",
+      "mode": "dispatch",
+      "order": 1,
+      "clean_install": true,
+      "status": "MEASURED",
+      "artifact": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp160-212ced16a66c/runs/exp160-c69a99bf10084f4fa4d3e4bc85be4263/result.json",
+      "launch": "console process 21034"
+    },
+    {
+      "run_id": "exp160-9abef38fc6864aa693e6bb3c1b2afe1e",
+      "arm": "candidate",
+      "lifecycle": "Scene",
+      "os": "26.5",
+      "mode": "dispatch",
+      "order": 2,
+      "clean_install": true,
+      "status": "MEASURED",
+      "artifact": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp160-212ced16a66c/runs/exp160-9abef38fc6864aa693e6bb3c1b2afe1e/result.json",
+      "launch": "console process 21179"
+    },
+    {
+      "run_id": "exp160-4f3ff8c4c2954930a0f0ea500978fc42",
+      "arm": "baseline",
+      "lifecycle": "Scene",
+      "os": "26.5",
+      "mode": "dispatch",
+      "order": 3,
+      "clean_install": true,
+      "status": "MEASURED",
+      "artifact": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp160-212ced16a66c/runs/exp160-4f3ff8c4c2954930a0f0ea500978fc42/result.json",
+      "launch": "console process 21280"
+    },
+    {
+      "run_id": "exp160-ac2febd16fc84ad88ec61b595c72e6f2",
+      "arm": "baseline",
+      "lifecycle": "Scene",
+      "os": "26.5",
+      "mode": "internal",
+      "order": 0,
+      "clean_install": true,
+      "status": "MEASURED",
+      "artifact": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp160-212ced16a66c/runs/exp160-ac2febd16fc84ad88ec61b595c72e6f2/result.json",
+      "launch": "console process 21412"
+    },
+    {
+      "run_id": "exp160-96ddb258fa0940e886cae72d5ffe0f25",
+      "arm": "candidate",
+      "lifecycle": "Scene",
+      "os": "26.5",
+      "mode": "internal",
+      "order": 1,
+      "clean_install": true,
+      "status": "MEASURED",
+      "artifact": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp160-212ced16a66c/runs/exp160-96ddb258fa0940e886cae72d5ffe0f25/result.json",
+      "launch": "console process 21488"
+    },
+    {
+      "run_id": "exp160-ee98a528fc8b438da826eb0bc6d1c024",
+      "arm": "candidate",
+      "lifecycle": "Scene",
+      "os": "26.5",
+      "mode": "internal",
+      "order": 2,
+      "clean_install": true,
+      "status": "MEASURED",
+      "artifact": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp160-212ced16a66c/runs/exp160-ee98a528fc8b438da826eb0bc6d1c024/result.json",
+      "launch": "console process 21577"
+    },
+    {
+      "run_id": "exp160-8c3cffba46384c438d407cc5d77a2216",
+      "arm": "baseline",
+      "lifecycle": "Scene",
+      "os": "26.5",
+      "mode": "internal",
+      "order": 3,
+      "clean_install": true,
+      "status": "MEASURED",
+      "artifact": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp160-212ced16a66c/runs/exp160-8c3cffba46384c438d407cc5d77a2216/result.json",
+      "launch": "console process 21753"
+    },
+    {
+      "run_id": "exp160-61ec8757e8684979bb80db42f56a4a0c",
+      "arm": "baseline",
+      "lifecycle": "Scene",
+      "os": "27.0",
+      "mode": "automatic",
+      "order": "compatibility",
+      "clean_install": true,
+      "status": "MEASURED",
+      "artifact": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp160-212ced16a66c/runs/exp160-61ec8757e8684979bb80db42f56a4a0c/result.json",
+      "launch": "console process 22462"
+    },
+    {
+      "run_id": "exp160-6c5b9b4daa4d4225b88e491353e19c07",
+      "arm": "candidate",
+      "lifecycle": "Scene",
+      "os": "27.0",
+      "mode": "automatic",
+      "order": "compatibility",
+      "clean_install": true,
+      "status": "MEASURED",
+      "artifact": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp160-212ced16a66c/runs/exp160-6c5b9b4daa4d4225b88e491353e19c07/result.json",
+      "launch": "console process 22602"
+    },
+    {
+      "run_id": "exp160-21cc1628af2d47e1801e4a555727663c",
+      "arm": "baseline",
+      "lifecycle": "Scene",
+      "os": "27.0",
+      "mode": "manual",
+      "order": "compatibility",
+      "clean_install": true,
+      "status": "MEASURED",
+      "artifact": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp160-212ced16a66c/runs/exp160-21cc1628af2d47e1801e4a555727663c/result.json",
+      "launch": "console process 22726"
+    },
+    {
+      "run_id": "exp160-1c6b1ee7b1d24f6b948dc5028156f21c",
+      "arm": "candidate",
+      "lifecycle": "Scene",
+      "os": "27.0",
+      "mode": "manual",
+      "order": "compatibility",
+      "clean_install": true,
+      "status": "MEASURED",
+      "artifact": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp160-212ced16a66c/runs/exp160-1c6b1ee7b1d24f6b948dc5028156f21c/result.json",
+      "launch": "console process 22834"
+    },
+    {
+      "run_id": "exp160-bad0af649be245f59c7e42e136670f4e",
+      "arm": "baseline",
+      "lifecycle": "Legacy",
+      "os": "27.0",
+      "mode": "automatic",
+      "status": "INCONCLUSIVE",
+      "reason": "No terminal fixture result before deadline",
+      "artifact": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp160-212ced16a66c/runs/exp160-bad0af649be245f59c7e42e136670f4e"
+    },
+    {
+      "run_id": "exp160-d76a6fc78af54975aac0b1371f86f92e",
+      "arm": "candidate",
+      "lifecycle": "Legacy",
+      "os": "27.0",
+      "mode": "automatic",
+      "status": "INCONCLUSIVE",
+      "reason": "No terminal fixture result before deadline",
+      "artifact": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp160-212ced16a66c/runs/exp160-d76a6fc78af54975aac0b1371f86f92e"
+    },
+    {
+      "run_id": "exp160-3a171a97cd23454783de0ffaf7e8950f",
+      "arm": "baseline",
+      "lifecycle": "Legacy",
+      "os": "27.0",
+      "mode": "manual",
+      "status": "INCONCLUSIVE",
+      "reason": "No terminal fixture result before deadline",
+      "artifact": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp160-212ced16a66c/runs/exp160-3a171a97cd23454783de0ffaf7e8950f"
+    },
+    {
+      "run_id": "exp160-e85d464d514e4304b141c292a514f651",
+      "arm": "candidate",
+      "lifecycle": "Legacy",
+      "os": "27.0",
+      "mode": "manual",
+      "status": "INCONCLUSIVE",
+      "reason": "No terminal fixture result before deadline",
+      "artifact": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp160-212ced16a66c/runs/exp160-e85d464d514e4304b141c292a514f651"
+    },
+    {
+      "run_id": "exp160-273b29d3ed56434692bd205dc0e339e2",
+      "arm": "baseline",
+      "lifecycle": "Scene",
+      "os": "26.5",
+      "mode": "automatic",
+      "order": "compatibility",
+      "clean_install": true,
+      "status": "MEASURED",
+      "artifact": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp160-212ced16a66c/runs/exp160-273b29d3ed56434692bd205dc0e339e2/result.json",
+      "launch": "console process 23646"
+    },
+    {
+      "run_id": "exp160-4fdda654cd634c0f9d4e95bbca5e14db",
+      "arm": "candidate",
+      "lifecycle": "Scene",
+      "os": "26.5",
+      "mode": "automatic",
+      "order": "compatibility",
+      "clean_install": true,
+      "status": "MEASURED",
+      "artifact": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp160-212ced16a66c/runs/exp160-4fdda654cd634c0f9d4e95bbca5e14db/result.json",
+      "launch": "console process 23803"
+    },
+    {
+      "run_id": "exp160-7478cbb03c0a49b5bab65424050bb804",
+      "arm": "baseline",
+      "lifecycle": "Scene",
+      "os": "26.5",
+      "mode": "manual",
+      "order": "compatibility",
+      "clean_install": true,
+      "status": "MEASURED",
+      "artifact": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp160-212ced16a66c/runs/exp160-7478cbb03c0a49b5bab65424050bb804/result.json",
+      "launch": "console process 23973"
+    },
+    {
+      "run_id": "exp160-f2eb870b7e9f4020bca32d1623f4d8ee",
+      "arm": "candidate",
+      "lifecycle": "Scene",
+      "os": "26.5",
+      "mode": "manual",
+      "order": "compatibility",
+      "clean_install": true,
+      "status": "MEASURED",
+      "artifact": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp160-212ced16a66c/runs/exp160-f2eb870b7e9f4020bca32d1623f4d8ee/result.json",
+      "launch": "console process 24093"
+    },
+    {
+      "run_id": "exp160-d0c2429886d44db2b9d958194f32e22d",
+      "arm": "baseline",
+      "lifecycle": "Legacy",
+      "os": "26.5",
+      "mode": "automatic",
+      "order": "compatibility",
+      "clean_install": true,
+      "status": "MEASURED",
+      "artifact": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp160-212ced16a66c/runs/exp160-d0c2429886d44db2b9d958194f32e22d/result.json",
+      "launch": "console process 24167"
+    },
+    {
+      "run_id": "exp160-40692170e14042c9bf639f130639c08c",
+      "arm": "candidate",
+      "lifecycle": "Legacy",
+      "os": "26.5",
+      "mode": "automatic",
+      "order": "compatibility",
+      "clean_install": true,
+      "status": "MEASURED",
+      "artifact": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp160-212ced16a66c/runs/exp160-40692170e14042c9bf639f130639c08c/result.json",
+      "launch": "console process 24311"
+    },
+    {
+      "run_id": "exp160-68ea48f0be674e9aa7de0676c2e8d498",
+      "arm": "baseline",
+      "lifecycle": "Legacy",
+      "os": "26.5",
+      "mode": "manual",
+      "order": "compatibility",
+      "clean_install": true,
+      "status": "MEASURED",
+      "artifact": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp160-212ced16a66c/runs/exp160-68ea48f0be674e9aa7de0676c2e8d498/result.json",
+      "launch": "console process 24576"
+    },
+    {
+      "run_id": "exp160-c368fe7427154b2bb24352384f74cb92",
+      "arm": "candidate",
+      "lifecycle": "Legacy",
+      "os": "26.5",
+      "mode": "manual",
+      "order": "compatibility",
+      "clean_install": true,
+      "status": "MEASURED",
+      "artifact": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp160-212ced16a66c/runs/exp160-c368fe7427154b2bb24352384f74cb92/result.json",
+      "launch": "console process 24760"
+    },
+    {
+      "run_id": "exp160-bda2352ead7d482bb52dafe302d7806d",
+      "arm": "baseline",
+      "lifecycle": "LegacyLifecycle",
+      "os": "26.5",
+      "mode": "lifecycle-automatic",
+      "order": "OS-background-foreground",
+      "clean_install": true,
+      "status": "MEASURED",
+      "artifact": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp160-212ced16a66c/runs/exp160-bda2352ead7d482bb52dafe302d7806d/result.json",
+      "launch": "console process 30769",
+      "binary_sha256": "ddbfecc8103628ce3c689822bb74797301751459144b9493838231f7aca5c7cb",
+      "fixture_sha256": "b72db7534e9ad357705e415f8a0c4d457126acfea002974c3634c6bd115072c6"
+    },
+    {
+      "run_id": "exp160-4715b15e063543d689c4348c65ccb5fc",
+      "arm": "candidate",
+      "lifecycle": "LegacyLifecycle",
+      "os": "26.5",
+      "mode": "lifecycle-automatic",
+      "order": "OS-background-foreground",
+      "clean_install": true,
+      "status": "MEASURED",
+      "artifact": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp160-212ced16a66c/runs/exp160-4715b15e063543d689c4348c65ccb5fc/result.json",
+      "launch": "console process 31050",
+      "binary_sha256": "f3cd14f0930f9fae354a90ff97a3fca53b38b724cdd3bd1ccf8eeee8e44602cd",
+      "fixture_sha256": "b72db7534e9ad357705e415f8a0c4d457126acfea002974c3634c6bd115072c6"
+    },
+    {
+      "run_id": "exp160-f228fb249e484f208046e9f997b81be0",
+      "arm": "baseline",
+      "lifecycle": "LegacyLifecycle",
+      "os": "26.5",
+      "mode": "lifecycle-manual",
+      "order": "OS-background-foreground",
+      "clean_install": true,
+      "status": "MEASURED",
+      "artifact": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp160-212ced16a66c/runs/exp160-f228fb249e484f208046e9f997b81be0/result.json",
+      "launch": "console process 31218",
+      "binary_sha256": "ddbfecc8103628ce3c689822bb74797301751459144b9493838231f7aca5c7cb",
+      "fixture_sha256": "b72db7534e9ad357705e415f8a0c4d457126acfea002974c3634c6bd115072c6"
+    },
+    {
+      "run_id": "exp160-b352476ef7bc4e39831c3ec0fa6b8461",
+      "arm": "candidate",
+      "lifecycle": "LegacyLifecycle",
+      "os": "26.5",
+      "mode": "lifecycle-manual",
+      "order": "OS-background-foreground",
+      "clean_install": true,
+      "status": "MEASURED",
+      "artifact": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp160-212ced16a66c/runs/exp160-b352476ef7bc4e39831c3ec0fa6b8461/result.json",
+      "launch": "console process 31429",
+      "binary_sha256": "f3cd14f0930f9fae354a90ff97a3fca53b38b724cdd3bd1ccf8eeee8e44602cd",
+      "fixture_sha256": "b72db7534e9ad357705e415f8a0c4d457126acfea002974c3634c6bd115072c6"
+    },
+    {
+      "run_id": "exp160-bd7c7a80131942dcbc68e24894ffa21f",
+      "arm": "candidate",
+      "lifecycle": "Focused",
+      "os": "27.0",
+      "mode": "focused",
+      "order": "full-context-P04",
+      "clean_install": true,
+      "status": "MEASURED",
+      "artifact": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp160-212ced16a66c/runs/exp160-bd7c7a80131942dcbc68e24894ffa21f/result.json",
+      "launch": "console process 39006",
+      "binary_sha256": "7c92d8cd05e8952e7cdc8c6c2964baff61f1c29066ebb20b35d422c9b99a0d15",
+      "fixture_sha256": "1c8a20b3a4d57f99725b4ca7afc608c81c690efbe024e3b8fe433da7891af331"
+    },
+    {
+      "run_id": "exp160-c1d8d86f4c9140efb72aac576292df5d",
+      "arm": "candidate",
+      "lifecycle": "Focused",
+      "os": "26.5",
+      "mode": "focused",
+      "order": "full-context-P04",
+      "clean_install": true,
+      "status": "MEASURED",
+      "artifact": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp160-212ced16a66c/runs/exp160-c1d8d86f4c9140efb72aac576292df5d/result.json",
+      "launch": "console process 39124",
+      "binary_sha256": "7c92d8cd05e8952e7cdc8c6c2964baff61f1c29066ebb20b35d422c9b99a0d15",
+      "fixture_sha256": "1c8a20b3a4d57f99725b4ca7afc608c81c690efbe024e3b8fe433da7891af331"
+    }
+  ],
+  "commands": [
+    [
+      "xcodebuild",
+      "build",
+      "-project",
+      "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp160-212ced16a66c/baseline/EXP160.xcodeproj",
+      "-scheme",
+      "EXP160",
+      "-configuration",
+      "Release",
+      "-destination",
+      "generic/platform=iOS Simulator",
+      "-derivedDataPath",
+      "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp160-212ced16a66c/baseline/derived",
+      "CODE_SIGNING_ALLOWED=NO"
+    ],
+    [
+      "xcodebuild",
+      "build",
+      "-project",
+      "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp160-212ced16a66c/baseline/EXP160.xcodeproj",
+      "-scheme",
+      "EXP160",
+      "-configuration",
+      "Release",
+      "-destination",
+      "generic/platform=iOS Simulator",
+      "-derivedDataPath",
+      "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp160-212ced16a66c/baseline/derived",
+      "CODE_SIGNING_ALLOWED=NO"
+    ],
+    [
+      "xcodebuild",
+      "build",
+      "-project",
+      "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp160-212ced16a66c/candidate/EXP160.xcodeproj",
+      "-scheme",
+      "EXP160",
+      "-configuration",
+      "Release",
+      "-destination",
+      "generic/platform=iOS Simulator",
+      "-derivedDataPath",
+      "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp160-212ced16a66c/candidate/derived",
+      "CODE_SIGNING_ALLOWED=NO"
+    ],
+    [
+      "xcodebuild",
+      "build",
+      "-project",
+      "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp160-212ced16a66c/baseline/EXP160.xcodeproj",
+      "-scheme",
+      "EXP160",
+      "-configuration",
+      "Release",
+      "-destination",
+      "generic/platform=iOS Simulator",
+      "-derivedDataPath",
+      "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp160-212ced16a66c/baseline/derived",
+      "CODE_SIGNING_ALLOWED=NO"
+    ],
+    [
+      "xcodebuild",
+      "build",
+      "-project",
+      "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp160-212ced16a66c/candidate/EXP160.xcodeproj",
+      "-scheme",
+      "EXP160",
+      "-configuration",
+      "Release",
+      "-destination",
+      "generic/platform=iOS Simulator",
+      "-derivedDataPath",
+      "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp160-212ced16a66c/candidate/derived",
+      "CODE_SIGNING_ALLOWED=NO"
+    ],
+    [
+      "xcrun",
+      "simctl",
+      "launch",
+      "--stdout=/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp160-212ced16a66c/runs/exp160-3342cca172e4456b88c559e3a0f266ee/stdout.log",
+      "--stderr=/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp160-212ced16a66c/runs/exp160-3342cca172e4456b88c559e3a0f266ee/stderr.log",
+      "BE03D65C-84F6-4FE0-95DA-A8F8D81A5D21",
+      "com.datadoghq.exp160.baseline.scene",
+      "--mode",
+      "disabled",
+      "--run-id",
+      "exp160-3342cca172e4456b88c559e3a0f266ee"
+    ],
+    [
+      "xcrun",
+      "simctl",
+      "launch",
+      "--stdout=/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp160-212ced16a66c/runs/exp160-31ed6e4043d74ebb9682ffafdd48f094/stdout.log",
+      "--stderr=/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp160-212ced16a66c/runs/exp160-31ed6e4043d74ebb9682ffafdd48f094/stderr.log",
+      "BE03D65C-84F6-4FE0-95DA-A8F8D81A5D21",
+      "com.datadoghq.exp160.candidate.scene",
+      "--mode",
+      "disabled",
+      "--run-id",
+      "exp160-31ed6e4043d74ebb9682ffafdd48f094"
+    ],
+    [
+      "xcrun",
+      "simctl",
+      "launch",
+      "--stdout=/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp160-212ced16a66c/runs/exp160-6fce2149cf44407f84019fecc3eaff37/stdout.log",
+      "--stderr=/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp160-212ced16a66c/runs/exp160-6fce2149cf44407f84019fecc3eaff37/stderr.log",
+      "BE03D65C-84F6-4FE0-95DA-A8F8D81A5D21",
+      "com.datadoghq.exp160.candidate.scene",
+      "--mode",
+      "disabled",
+      "--run-id",
+      "exp160-6fce2149cf44407f84019fecc3eaff37"
+    ],
+    [
+      "xcrun",
+      "simctl",
+      "launch",
+      "--stdout=/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp160-212ced16a66c/runs/exp160-eed6167df98c4fc394de3f091b3ac354/stdout.log",
+      "--stderr=/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp160-212ced16a66c/runs/exp160-eed6167df98c4fc394de3f091b3ac354/stderr.log",
+      "BE03D65C-84F6-4FE0-95DA-A8F8D81A5D21",
+      "com.datadoghq.exp160.baseline.scene",
+      "--mode",
+      "disabled",
+      "--run-id",
+      "exp160-eed6167df98c4fc394de3f091b3ac354"
+    ],
+    [
+      "xcrun",
+      "simctl",
+      "launch",
+      "--stdout=/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp160-212ced16a66c/runs/exp160-49f03d97a4ac43e38f6f331e9f9172d4/stdout.log",
+      "--stderr=/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp160-212ced16a66c/runs/exp160-49f03d97a4ac43e38f6f331e9f9172d4/stderr.log",
+      "BE03D65C-84F6-4FE0-95DA-A8F8D81A5D21",
+      "com.datadoghq.exp160.baseline.scene",
+      "--mode",
+      "dispatch",
+      "--run-id",
+      "exp160-49f03d97a4ac43e38f6f331e9f9172d4"
+    ],
+    [
+      "xcrun",
+      "simctl",
+      "launch",
+      "--stdout=/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp160-212ced16a66c/runs/exp160-49ce507a9e4541b98018ec198706d46b/stdout.log",
+      "--stderr=/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp160-212ced16a66c/runs/exp160-49ce507a9e4541b98018ec198706d46b/stderr.log",
+      "BE03D65C-84F6-4FE0-95DA-A8F8D81A5D21",
+      "com.datadoghq.exp160.candidate.scene",
+      "--mode",
+      "dispatch",
+      "--run-id",
+      "exp160-49ce507a9e4541b98018ec198706d46b"
+    ],
+    [
+      "xcrun",
+      "simctl",
+      "launch",
+      "--stdout=/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp160-212ced16a66c/runs/exp160-65e4f0ab2ca84d00a4748dc75d5219c9/stdout.log",
+      "--stderr=/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp160-212ced16a66c/runs/exp160-65e4f0ab2ca84d00a4748dc75d5219c9/stderr.log",
+      "BE03D65C-84F6-4FE0-95DA-A8F8D81A5D21",
+      "com.datadoghq.exp160.candidate.scene",
+      "--mode",
+      "dispatch",
+      "--run-id",
+      "exp160-65e4f0ab2ca84d00a4748dc75d5219c9"
+    ],
+    [
+      "xcrun",
+      "simctl",
+      "launch",
+      "--stdout=/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp160-212ced16a66c/runs/exp160-12b40dad1ff94142b9a044edfd0945c1/stdout.log",
+      "--stderr=/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp160-212ced16a66c/runs/exp160-12b40dad1ff94142b9a044edfd0945c1/stderr.log",
+      "BE03D65C-84F6-4FE0-95DA-A8F8D81A5D21",
+      "com.datadoghq.exp160.baseline.scene",
+      "--mode",
+      "dispatch",
+      "--run-id",
+      "exp160-12b40dad1ff94142b9a044edfd0945c1"
+    ],
+    [
+      "xcrun",
+      "simctl",
+      "launch",
+      "--stdout=/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp160-212ced16a66c/runs/exp160-62d2cccfa54548e19ff3bb68d440db2f/stdout.log",
+      "--stderr=/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp160-212ced16a66c/runs/exp160-62d2cccfa54548e19ff3bb68d440db2f/stderr.log",
+      "BE03D65C-84F6-4FE0-95DA-A8F8D81A5D21",
+      "com.datadoghq.exp160.baseline.scene",
+      "--mode",
+      "internal",
+      "--run-id",
+      "exp160-62d2cccfa54548e19ff3bb68d440db2f"
+    ],
+    [
+      "xcodebuild",
+      "build",
+      "-project",
+      "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp160-212ced16a66c/baseline/EXP160.xcodeproj",
+      "-scheme",
+      "EXP160",
+      "-configuration",
+      "Release",
+      "-destination",
+      "generic/platform=iOS Simulator",
+      "-derivedDataPath",
+      "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp160-212ced16a66c/baseline/derived",
+      "CODE_SIGNING_ALLOWED=NO"
+    ],
+    [
+      "xcodebuild",
+      "build",
+      "-project",
+      "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp160-212ced16a66c/candidate/EXP160.xcodeproj",
+      "-scheme",
+      "EXP160",
+      "-configuration",
+      "Release",
+      "-destination",
+      "generic/platform=iOS Simulator",
+      "-derivedDataPath",
+      "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp160-212ced16a66c/candidate/derived",
+      "CODE_SIGNING_ALLOWED=NO"
+    ],
+    [
+      "xcrun",
+      "simctl",
+      "launch",
+      "--console",
+      "BE03D65C-84F6-4FE0-95DA-A8F8D81A5D21",
+      "com.datadoghq.exp160.baseline.scene",
+      "--mode",
+      "internal",
+      "--run-id",
+      "exp160-9c465d2ac415497aab93e64be7a6c051"
+    ],
+    [
+      "xcrun",
+      "simctl",
+      "launch",
+      "--console",
+      "BE03D65C-84F6-4FE0-95DA-A8F8D81A5D21",
+      "com.datadoghq.exp160.candidate.scene",
+      "--mode",
+      "internal",
+      "--run-id",
+      "exp160-dfa69308ed824a329f269a783bd90752"
+    ],
+    [
+      "xcodebuild",
+      "build",
+      "-project",
+      "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp160-212ced16a66c/baseline/EXP160.xcodeproj",
+      "-scheme",
+      "EXP160",
+      "-configuration",
+      "Release",
+      "-destination",
+      "generic/platform=iOS Simulator",
+      "-derivedDataPath",
+      "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp160-212ced16a66c/baseline/derived",
+      "CODE_SIGNING_ALLOWED=NO"
+    ],
+    [
+      "xcodebuild",
+      "build",
+      "-project",
+      "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp160-212ced16a66c/candidate/EXP160.xcodeproj",
+      "-scheme",
+      "EXP160",
+      "-configuration",
+      "Release",
+      "-destination",
+      "generic/platform=iOS Simulator",
+      "-derivedDataPath",
+      "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp160-212ced16a66c/candidate/derived",
+      "CODE_SIGNING_ALLOWED=NO"
+    ],
+    [
+      "xcrun",
+      "simctl",
+      "launch",
+      "--console",
+      "BE03D65C-84F6-4FE0-95DA-A8F8D81A5D21",
+      "com.datadoghq.exp160.baseline.scene",
+      "--mode",
+      "disabled",
+      "--run-id",
+      "exp160-237e3fe67fa24e699083debb92e08217"
+    ],
+    [
+      "xcrun",
+      "simctl",
+      "launch",
+      "--console",
+      "BE03D65C-84F6-4FE0-95DA-A8F8D81A5D21",
+      "com.datadoghq.exp160.candidate.scene",
+      "--mode",
+      "disabled",
+      "--run-id",
+      "exp160-749294b3748f41c4b8293d765fabe6a5"
+    ],
+    [
+      "xcrun",
+      "simctl",
+      "launch",
+      "--console",
+      "BE03D65C-84F6-4FE0-95DA-A8F8D81A5D21",
+      "com.datadoghq.exp160.candidate.scene",
+      "--mode",
+      "disabled",
+      "--run-id",
+      "exp160-5aa3e0f716f844e3a8c03afd12c98d05"
+    ],
+    [
+      "xcrun",
+      "simctl",
+      "launch",
+      "--console",
+      "BE03D65C-84F6-4FE0-95DA-A8F8D81A5D21",
+      "com.datadoghq.exp160.baseline.scene",
+      "--mode",
+      "disabled",
+      "--run-id",
+      "exp160-38971509d331487ebd667c07f3ee1692"
+    ],
+    [
+      "xcrun",
+      "simctl",
+      "launch",
+      "--console",
+      "BE03D65C-84F6-4FE0-95DA-A8F8D81A5D21",
+      "com.datadoghq.exp160.baseline.scene",
+      "--mode",
+      "dispatch",
+      "--run-id",
+      "exp160-f5c54c8048e44fa2a066002ae711299b"
+    ],
+    [
+      "xcrun",
+      "simctl",
+      "launch",
+      "--console",
+      "BE03D65C-84F6-4FE0-95DA-A8F8D81A5D21",
+      "com.datadoghq.exp160.candidate.scene",
+      "--mode",
+      "dispatch",
+      "--run-id",
+      "exp160-c6379f7f25554b4cb42764271655b683"
+    ],
+    [
+      "xcrun",
+      "simctl",
+      "launch",
+      "--console",
+      "BE03D65C-84F6-4FE0-95DA-A8F8D81A5D21",
+      "com.datadoghq.exp160.candidate.scene",
+      "--mode",
+      "dispatch",
+      "--run-id",
+      "exp160-7c4c28aa3e55457289648be36eebb7d5"
+    ],
+    [
+      "xcrun",
+      "simctl",
+      "launch",
+      "--console",
+      "BE03D65C-84F6-4FE0-95DA-A8F8D81A5D21",
+      "com.datadoghq.exp160.baseline.scene",
+      "--mode",
+      "dispatch",
+      "--run-id",
+      "exp160-36cdabe934a14ebab11bf93e2006188d"
+    ],
+    [
+      "xcrun",
+      "simctl",
+      "launch",
+      "--console",
+      "BE03D65C-84F6-4FE0-95DA-A8F8D81A5D21",
+      "com.datadoghq.exp160.baseline.scene",
+      "--mode",
+      "internal",
+      "--run-id",
+      "exp160-1bc25ab4cb334f07a40cbf3f99e898de"
+    ],
+    [
+      "xcrun",
+      "simctl",
+      "launch",
+      "--console",
+      "BE03D65C-84F6-4FE0-95DA-A8F8D81A5D21",
+      "com.datadoghq.exp160.candidate.scene",
+      "--mode",
+      "internal",
+      "--run-id",
+      "exp160-13f322ab43514e23874a4103c3cef4ba"
+    ],
+    [
+      "xcrun",
+      "simctl",
+      "launch",
+      "--console",
+      "BE03D65C-84F6-4FE0-95DA-A8F8D81A5D21",
+      "com.datadoghq.exp160.candidate.scene",
+      "--mode",
+      "internal",
+      "--run-id",
+      "exp160-fc32618f594b46338602c70504dda608"
+    ],
+    [
+      "xcrun",
+      "simctl",
+      "launch",
+      "--console",
+      "BE03D65C-84F6-4FE0-95DA-A8F8D81A5D21",
+      "com.datadoghq.exp160.baseline.scene",
+      "--mode",
+      "internal",
+      "--run-id",
+      "exp160-ca9f7fa4462a4bd5ab089e5e0d189a7d"
+    ],
+    [
+      "xcrun",
+      "simctl",
+      "launch",
+      "--console",
+      "65A76904-154E-4C79-9DFD-A57B526C85E6",
+      "com.datadoghq.exp160.baseline.scene",
+      "--mode",
+      "disabled",
+      "--run-id",
+      "exp160-e723374243ef4aebba0308f28e6d794f"
+    ],
+    [
+      "xcrun",
+      "simctl",
+      "launch",
+      "--console",
+      "65A76904-154E-4C79-9DFD-A57B526C85E6",
+      "com.datadoghq.exp160.candidate.scene",
+      "--mode",
+      "disabled",
+      "--run-id",
+      "exp160-173d877d25fc451090663c3024ba1569"
+    ],
+    [
+      "xcrun",
+      "simctl",
+      "launch",
+      "--console",
+      "65A76904-154E-4C79-9DFD-A57B526C85E6",
+      "com.datadoghq.exp160.candidate.scene",
+      "--mode",
+      "disabled",
+      "--run-id",
+      "exp160-a52d8170c3b7414eaa2bc968057bf79b"
+    ],
+    [
+      "xcrun",
+      "simctl",
+      "launch",
+      "--console",
+      "65A76904-154E-4C79-9DFD-A57B526C85E6",
+      "com.datadoghq.exp160.baseline.scene",
+      "--mode",
+      "disabled",
+      "--run-id",
+      "exp160-98913b3884a8479c811af4bf92ed1fa7"
+    ],
+    [
+      "xcrun",
+      "simctl",
+      "launch",
+      "--console",
+      "65A76904-154E-4C79-9DFD-A57B526C85E6",
+      "com.datadoghq.exp160.baseline.scene",
+      "--mode",
+      "dispatch",
+      "--run-id",
+      "exp160-10203ff609824a0f9445816e35f25841"
+    ],
+    [
+      "xcrun",
+      "simctl",
+      "launch",
+      "--console",
+      "65A76904-154E-4C79-9DFD-A57B526C85E6",
+      "com.datadoghq.exp160.candidate.scene",
+      "--mode",
+      "dispatch",
+      "--run-id",
+      "exp160-c69a99bf10084f4fa4d3e4bc85be4263"
+    ],
+    [
+      "xcrun",
+      "simctl",
+      "launch",
+      "--console",
+      "65A76904-154E-4C79-9DFD-A57B526C85E6",
+      "com.datadoghq.exp160.candidate.scene",
+      "--mode",
+      "dispatch",
+      "--run-id",
+      "exp160-9abef38fc6864aa693e6bb3c1b2afe1e"
+    ],
+    [
+      "xcrun",
+      "simctl",
+      "launch",
+      "--console",
+      "65A76904-154E-4C79-9DFD-A57B526C85E6",
+      "com.datadoghq.exp160.baseline.scene",
+      "--mode",
+      "dispatch",
+      "--run-id",
+      "exp160-4f3ff8c4c2954930a0f0ea500978fc42"
+    ],
+    [
+      "xcrun",
+      "simctl",
+      "launch",
+      "--console",
+      "65A76904-154E-4C79-9DFD-A57B526C85E6",
+      "com.datadoghq.exp160.baseline.scene",
+      "--mode",
+      "internal",
+      "--run-id",
+      "exp160-ac2febd16fc84ad88ec61b595c72e6f2"
+    ],
+    [
+      "xcrun",
+      "simctl",
+      "launch",
+      "--console",
+      "65A76904-154E-4C79-9DFD-A57B526C85E6",
+      "com.datadoghq.exp160.candidate.scene",
+      "--mode",
+      "internal",
+      "--run-id",
+      "exp160-96ddb258fa0940e886cae72d5ffe0f25"
+    ],
+    [
+      "xcrun",
+      "simctl",
+      "launch",
+      "--console",
+      "65A76904-154E-4C79-9DFD-A57B526C85E6",
+      "com.datadoghq.exp160.candidate.scene",
+      "--mode",
+      "internal",
+      "--run-id",
+      "exp160-ee98a528fc8b438da826eb0bc6d1c024"
+    ],
+    [
+      "xcrun",
+      "simctl",
+      "launch",
+      "--console",
+      "65A76904-154E-4C79-9DFD-A57B526C85E6",
+      "com.datadoghq.exp160.baseline.scene",
+      "--mode",
+      "internal",
+      "--run-id",
+      "exp160-8c3cffba46384c438d407cc5d77a2216"
+    ],
+    [
+      "xcrun",
+      "simctl",
+      "launch",
+      "--console",
+      "BE03D65C-84F6-4FE0-95DA-A8F8D81A5D21",
+      "com.datadoghq.exp160.baseline.scene",
+      "--mode",
+      "automatic",
+      "--run-id",
+      "exp160-61ec8757e8684979bb80db42f56a4a0c"
+    ],
+    [
+      "xcrun",
+      "simctl",
+      "launch",
+      "--console",
+      "BE03D65C-84F6-4FE0-95DA-A8F8D81A5D21",
+      "com.datadoghq.exp160.candidate.scene",
+      "--mode",
+      "automatic",
+      "--run-id",
+      "exp160-6c5b9b4daa4d4225b88e491353e19c07"
+    ],
+    [
+      "xcrun",
+      "simctl",
+      "launch",
+      "--console",
+      "BE03D65C-84F6-4FE0-95DA-A8F8D81A5D21",
+      "com.datadoghq.exp160.baseline.scene",
+      "--mode",
+      "manual",
+      "--run-id",
+      "exp160-21cc1628af2d47e1801e4a555727663c"
+    ],
+    [
+      "xcrun",
+      "simctl",
+      "launch",
+      "--console",
+      "BE03D65C-84F6-4FE0-95DA-A8F8D81A5D21",
+      "com.datadoghq.exp160.candidate.scene",
+      "--mode",
+      "manual",
+      "--run-id",
+      "exp160-1c6b1ee7b1d24f6b948dc5028156f21c"
+    ],
+    [
+      "xcrun",
+      "simctl",
+      "launch",
+      "--console",
+      "BE03D65C-84F6-4FE0-95DA-A8F8D81A5D21",
+      "com.datadoghq.exp160.baseline.legacy",
+      "--mode",
+      "automatic",
+      "--run-id",
+      "exp160-bad0af649be245f59c7e42e136670f4e"
+    ],
+    [
+      "xcrun",
+      "simctl",
+      "launch",
+      "--console",
+      "BE03D65C-84F6-4FE0-95DA-A8F8D81A5D21",
+      "com.datadoghq.exp160.candidate.legacy",
+      "--mode",
+      "automatic",
+      "--run-id",
+      "exp160-d76a6fc78af54975aac0b1371f86f92e"
+    ],
+    [
+      "xcrun",
+      "simctl",
+      "launch",
+      "--console",
+      "BE03D65C-84F6-4FE0-95DA-A8F8D81A5D21",
+      "com.datadoghq.exp160.baseline.legacy",
+      "--mode",
+      "manual",
+      "--run-id",
+      "exp160-3a171a97cd23454783de0ffaf7e8950f"
+    ],
+    [
+      "xcrun",
+      "simctl",
+      "launch",
+      "--console",
+      "BE03D65C-84F6-4FE0-95DA-A8F8D81A5D21",
+      "com.datadoghq.exp160.candidate.legacy",
+      "--mode",
+      "manual",
+      "--run-id",
+      "exp160-e85d464d514e4304b141c292a514f651"
+    ],
+    [
+      "xcrun",
+      "simctl",
+      "launch",
+      "--console",
+      "65A76904-154E-4C79-9DFD-A57B526C85E6",
+      "com.datadoghq.exp160.baseline.scene",
+      "--mode",
+      "automatic",
+      "--run-id",
+      "exp160-273b29d3ed56434692bd205dc0e339e2"
+    ],
+    [
+      "xcrun",
+      "simctl",
+      "launch",
+      "--console",
+      "65A76904-154E-4C79-9DFD-A57B526C85E6",
+      "com.datadoghq.exp160.candidate.scene",
+      "--mode",
+      "automatic",
+      "--run-id",
+      "exp160-4fdda654cd634c0f9d4e95bbca5e14db"
+    ],
+    [
+      "xcrun",
+      "simctl",
+      "launch",
+      "--console",
+      "65A76904-154E-4C79-9DFD-A57B526C85E6",
+      "com.datadoghq.exp160.baseline.scene",
+      "--mode",
+      "manual",
+      "--run-id",
+      "exp160-7478cbb03c0a49b5bab65424050bb804"
+    ],
+    [
+      "xcrun",
+      "simctl",
+      "launch",
+      "--console",
+      "65A76904-154E-4C79-9DFD-A57B526C85E6",
+      "com.datadoghq.exp160.candidate.scene",
+      "--mode",
+      "manual",
+      "--run-id",
+      "exp160-f2eb870b7e9f4020bca32d1623f4d8ee"
+    ],
+    [
+      "xcrun",
+      "simctl",
+      "launch",
+      "--console",
+      "65A76904-154E-4C79-9DFD-A57B526C85E6",
+      "com.datadoghq.exp160.baseline.legacy",
+      "--mode",
+      "automatic",
+      "--run-id",
+      "exp160-d0c2429886d44db2b9d958194f32e22d"
+    ],
+    [
+      "xcrun",
+      "simctl",
+      "launch",
+      "--console",
+      "65A76904-154E-4C79-9DFD-A57B526C85E6",
+      "com.datadoghq.exp160.candidate.legacy",
+      "--mode",
+      "automatic",
+      "--run-id",
+      "exp160-40692170e14042c9bf639f130639c08c"
+    ],
+    [
+      "xcrun",
+      "simctl",
+      "launch",
+      "--console",
+      "65A76904-154E-4C79-9DFD-A57B526C85E6",
+      "com.datadoghq.exp160.baseline.legacy",
+      "--mode",
+      "manual",
+      "--run-id",
+      "exp160-68ea48f0be674e9aa7de0676c2e8d498"
+    ],
+    [
+      "xcrun",
+      "simctl",
+      "launch",
+      "--console",
+      "65A76904-154E-4C79-9DFD-A57B526C85E6",
+      "com.datadoghq.exp160.candidate.legacy",
+      "--mode",
+      "manual",
+      "--run-id",
+      "exp160-c368fe7427154b2bb24352384f74cb92"
+    ],
+    [
+      "xcodebuild",
+      "build",
+      "-project",
+      "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp160-212ced16a66c/baseline/EXP160.xcodeproj",
+      "-scheme",
+      "EXP160Lifecycle",
+      "-configuration",
+      "Release",
+      "-destination",
+      "generic/platform=iOS Simulator",
+      "-derivedDataPath",
+      "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp160-212ced16a66c/baseline/derived",
+      "CODE_SIGNING_ALLOWED=NO"
+    ],
+    [
+      "xcodebuild",
+      "build",
+      "-project",
+      "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp160-212ced16a66c/candidate/EXP160.xcodeproj",
+      "-scheme",
+      "EXP160Lifecycle",
+      "-configuration",
+      "Release",
+      "-destination",
+      "generic/platform=iOS Simulator",
+      "-derivedDataPath",
+      "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp160-212ced16a66c/candidate/derived",
+      "CODE_SIGNING_ALLOWED=NO"
+    ],
+    [
+      "xcrun",
+      "simctl",
+      "launch",
+      "--console",
+      "65A76904-154E-4C79-9DFD-A57B526C85E6",
+      "com.datadoghq.exp160.baseline.legacylifecycle",
+      "--mode",
+      "lifecycle-automatic",
+      "--run-id",
+      "exp160-bda2352ead7d482bb52dafe302d7806d"
+    ],
+    [
+      "xcrun",
+      "simctl",
+      "launch",
+      "--console",
+      "65A76904-154E-4C79-9DFD-A57B526C85E6",
+      "com.datadoghq.exp160.candidate.legacylifecycle",
+      "--mode",
+      "lifecycle-automatic",
+      "--run-id",
+      "exp160-4715b15e063543d689c4348c65ccb5fc"
+    ],
+    [
+      "xcrun",
+      "simctl",
+      "launch",
+      "--console",
+      "65A76904-154E-4C79-9DFD-A57B526C85E6",
+      "com.datadoghq.exp160.baseline.legacylifecycle",
+      "--mode",
+      "lifecycle-manual",
+      "--run-id",
+      "exp160-f228fb249e484f208046e9f997b81be0"
+    ],
+    [
+      "xcrun",
+      "simctl",
+      "launch",
+      "--console",
+      "65A76904-154E-4C79-9DFD-A57B526C85E6",
+      "com.datadoghq.exp160.candidate.legacylifecycle",
+      "--mode",
+      "lifecycle-manual",
+      "--run-id",
+      "exp160-b352476ef7bc4e39831c3ec0fa6b8461"
+    ],
+    [
+      "xcodebuild",
+      "build",
+      "-project",
+      "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp160-212ced16a66c/candidate/EXP160.xcodeproj",
+      "-scheme",
+      "EXP160Focused",
+      "-configuration",
+      "Release",
+      "-destination",
+      "generic/platform=iOS Simulator",
+      "-derivedDataPath",
+      "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp160-212ced16a66c/candidate/derived",
+      "CODE_SIGNING_ALLOWED=NO"
+    ],
+    [
+      "xcrun",
+      "simctl",
+      "launch",
+      "--console",
+      "BE03D65C-84F6-4FE0-95DA-A8F8D81A5D21",
+      "com.datadoghq.exp160.candidate.focused",
+      "--mode",
+      "focused",
+      "--run-id",
+      "exp160-bd7c7a80131942dcbc68e24894ffa21f"
+    ],
+    [
+      "xcrun",
+      "simctl",
+      "launch",
+      "--console",
+      "65A76904-154E-4C79-9DFD-A57B526C85E6",
+      "com.datadoghq.exp160.candidate.focused",
+      "--mode",
+      "focused",
+      "--run-id",
+      "exp160-c1d8d86f4c9140efb72aac576292df5d"
+    ]
+  ],
+  "gates": {
+    "C01": "PASS",
+    "C02": "PASS",
+    "C03": "INCONCLUSIVE",
+    "C04": "PASS",
+    "C05": "PASS",
+    "C06": "ENVIRONMENT BLOCKED",
+    "P01": "PASS",
+    "P02": "FAIL",
+    "P03": "FAIL",
+    "P04": "PASS"
+  },
+  "custom_nop": [
+    {
+      "os": "27.0",
+      "arm": "baseline",
+      "status": "PASS",
+      "custom_calls": [
+        "add:one",
+        "start:two",
+        "stop:three"
+      ],
+      "expected_calls": [
+        "add:one",
+        "start:two",
+        "stop:three"
+      ],
+      "nop_nil_callbacks": 1
+    },
+    {
+      "os": "27.0",
+      "arm": "candidate",
+      "status": "PASS",
+      "custom_calls": [
+        "add:one",
+        "start:two",
+        "stop:three",
+        "add:target-one",
+        "start:target-two",
+        "stop:target-three"
+      ],
+      "expected_calls": [
+        "add:one",
+        "start:two",
+        "stop:three",
+        "add:target-one",
+        "start:target-two",
+        "stop:target-three"
+      ],
+      "nop_nil_callbacks": 1
+    },
+    {
+      "os": "27.0",
+      "arm": "candidate",
+      "status": "PASS",
+      "custom_calls": [
+        "add:one",
+        "start:two",
+        "stop:three",
+        "add:target-one",
+        "start:target-two",
+        "stop:target-three"
+      ],
+      "expected_calls": [
+        "add:one",
+        "start:two",
+        "stop:three",
+        "add:target-one",
+        "start:target-two",
+        "stop:target-three"
+      ],
+      "nop_nil_callbacks": 1
+    },
+    {
+      "os": "27.0",
+      "arm": "baseline",
+      "status": "PASS",
+      "custom_calls": [
+        "add:one",
+        "start:two",
+        "stop:three"
+      ],
+      "expected_calls": [
+        "add:one",
+        "start:two",
+        "stop:three"
+      ],
+      "nop_nil_callbacks": 1
+    },
+    {
+      "os": "26.5",
+      "arm": "baseline",
+      "status": "PASS",
+      "custom_calls": [
+        "add:one",
+        "start:two",
+        "stop:three"
+      ],
+      "expected_calls": [
+        "add:one",
+        "start:two",
+        "stop:three"
+      ],
+      "nop_nil_callbacks": 1
+    },
+    {
+      "os": "26.5",
+      "arm": "candidate",
+      "status": "PASS",
+      "custom_calls": [
+        "add:one",
+        "start:two",
+        "stop:three"
+      ],
+      "expected_calls": [
+        "add:one",
+        "start:two",
+        "stop:three"
+      ],
+      "nop_nil_callbacks": 1
+    },
+    {
+      "os": "26.5",
+      "arm": "candidate",
+      "status": "PASS",
+      "custom_calls": [
+        "add:one",
+        "start:two",
+        "stop:three"
+      ],
+      "expected_calls": [
+        "add:one",
+        "start:two",
+        "stop:three"
+      ],
+      "nop_nil_callbacks": 1
+    },
+    {
+      "os": "26.5",
+      "arm": "baseline",
+      "status": "PASS",
+      "custom_calls": [
+        "add:one",
+        "start:two",
+        "stop:three"
+      ],
+      "expected_calls": [
+        "add:one",
+        "start:two",
+        "stop:three"
+      ],
+      "nop_nil_callbacks": 1
+    }
+  ],
+  "retention": [
+    {
+      "os": "27.0",
+      "status": "FAIL",
+      "first_100_heap_delta": 31072,
+      "second_100_heap_delta": 15616,
+      "boundary": "focused posted-disconnect handler lifetime; not genuine OS scene or SwiftUI host teardown",
+      "cycles_after_warmup": [
+        100,
+        100
+      ],
+      "heap_bytes": [
+        5352384,
+        5383456,
+        5399072
+      ],
+      "registry_after_100": {
+        "disconnectedSceneIdentifiers": 120,
+        "pendingUIKitSplitViewRemovals": 0,
+        "sceneActivityByIdentifier": 120,
+        "stacks": 0,
+        "uiKitSplitViewContexts": 0
+      },
+      "registry_after_200": {
+        "disconnectedSceneIdentifiers": 220,
+        "pendingUIKitSplitViewRemovals": 0,
+        "sceneActivityByIdentifier": 220,
+        "stacks": 0,
+        "uiKitSplitViewContexts": 0
+      },
+      "registry_after_warmup": {
+        "disconnectedSceneIdentifiers": 20,
+        "pendingUIKitSplitViewRemovals": 0,
+        "sceneActivityByIdentifier": 20,
+        "stacks": 0,
+        "uiKitSplitViewContexts": 0
+      },
+      "surviving_controller_references": 0
+    },
+    {
+      "os": "27.0",
+      "status": "FAIL",
+      "first_100_heap_delta": 31072,
+      "second_100_heap_delta": 15616,
+      "boundary": "focused posted-disconnect handler lifetime; not genuine OS scene or SwiftUI host teardown",
+      "cycles_after_warmup": [
+        100,
+        100
+      ],
+      "heap_bytes": [
+        5350320,
+        5381392,
+        5397008
+      ],
+      "registry_after_100": {
+        "disconnectedSceneIdentifiers": 120,
+        "pendingUIKitSplitViewRemovals": 0,
+        "sceneActivityByIdentifier": 120,
+        "stacks": 0,
+        "uiKitSplitViewContexts": 0
+      },
+      "registry_after_200": {
+        "disconnectedSceneIdentifiers": 220,
+        "pendingUIKitSplitViewRemovals": 0,
+        "sceneActivityByIdentifier": 220,
+        "stacks": 0,
+        "uiKitSplitViewContexts": 0
+      },
+      "registry_after_warmup": {
+        "disconnectedSceneIdentifiers": 20,
+        "pendingUIKitSplitViewRemovals": 0,
+        "sceneActivityByIdentifier": 20,
+        "stacks": 0,
+        "uiKitSplitViewContexts": 0
+      },
+      "surviving_controller_references": 0
+    },
+    {
+      "os": "26.5",
+      "status": "FAIL",
+      "first_100_heap_delta": 47472,
+      "second_100_heap_delta": 15616,
+      "boundary": "focused posted-disconnect handler lifetime; not genuine OS scene or SwiftUI host teardown",
+      "cycles_after_warmup": [
+        100,
+        100
+      ],
+      "heap_bytes": [
+        4989568,
+        5037040,
+        5052656
+      ],
+      "registry_after_100": {
+        "disconnectedSceneIdentifiers": 120,
+        "pendingUIKitSplitViewRemovals": 0,
+        "sceneActivityByIdentifier": 120,
+        "stacks": 0,
+        "uiKitSplitViewContexts": 0
+      },
+      "registry_after_200": {
+        "disconnectedSceneIdentifiers": 220,
+        "pendingUIKitSplitViewRemovals": 0,
+        "sceneActivityByIdentifier": 220,
+        "stacks": 0,
+        "uiKitSplitViewContexts": 0
+      },
+      "registry_after_warmup": {
+        "disconnectedSceneIdentifiers": 20,
+        "pendingUIKitSplitViewRemovals": 0,
+        "sceneActivityByIdentifier": 20,
+        "stacks": 0,
+        "uiKitSplitViewContexts": 0
+      },
+      "surviving_controller_references": 0
+    },
+    {
+      "os": "26.5",
+      "status": "FAIL",
+      "first_100_heap_delta": 31120,
+      "second_100_heap_delta": 15616,
+      "boundary": "focused posted-disconnect handler lifetime; not genuine OS scene or SwiftUI host teardown",
+      "cycles_after_warmup": [
+        100,
+        100
+      ],
+      "heap_bytes": [
+        4997904,
+        5029024,
+        5044640
+      ],
+      "registry_after_100": {
+        "disconnectedSceneIdentifiers": 120,
+        "pendingUIKitSplitViewRemovals": 0,
+        "sceneActivityByIdentifier": 120,
+        "stacks": 0,
+        "uiKitSplitViewContexts": 0
+      },
+      "registry_after_200": {
+        "disconnectedSceneIdentifiers": 220,
+        "pendingUIKitSplitViewRemovals": 0,
+        "sceneActivityByIdentifier": 220,
+        "stacks": 0,
+        "uiKitSplitViewContexts": 0
+      },
+      "registry_after_warmup": {
+        "disconnectedSceneIdentifiers": 20,
+        "pendingUIKitSplitViewRemovals": 0,
+        "sceneActivityByIdentifier": 20,
+        "stacks": 0,
+        "uiKitSplitViewContexts": 0
+      },
+      "surviving_controller_references": 0
+    }
+  ],
+  "reentrancy": [
+    {
+      "os": "27.0",
+      "run_id": "exp160-bd7c7a80131942dcbc68e24894ffa21f",
+      "status": "PASS",
+      "boundary_checks": 90000,
+      "caught_throws": 10000,
+      "errors": 0,
+      "expected_dispatches": 20000,
+      "iterations": 10000,
+      "live_home_context": true,
+      "oracle": "full-RUMCoreContext-Equatable-and-handoff-fields-v1",
+      "original_dispatches": 20000,
+      "timing_claim": false
+    },
+    {
+      "os": "26.5",
+      "run_id": "exp160-c1d8d86f4c9140efb72aac576292df5d",
+      "status": "PASS",
+      "boundary_checks": 90000,
+      "caught_throws": 10000,
+      "errors": 0,
+      "expected_dispatches": 20000,
+      "iterations": 10000,
+      "live_home_context": true,
+      "oracle": "full-RUMCoreContext-Equatable-and-handoff-fields-v1",
+      "original_dispatches": 20000,
+      "timing_claim": false
+    }
+  ],
+  "initial_scene_label_reentrancy": [
+    {
+      "os": "27.0",
+      "status": "PASS",
+      "errors": 0,
+      "expected_dispatches": 20000,
+      "iterations": 10000,
+      "original_dispatches": 20000
+    },
+    {
+      "os": "27.0",
+      "status": "PASS",
+      "errors": 0,
+      "expected_dispatches": 20000,
+      "iterations": 10000,
+      "original_dispatches": 20000
+    },
+    {
+      "os": "26.5",
+      "status": "PASS",
+      "errors": 0,
+      "expected_dispatches": 20000,
+      "iterations": 10000,
+      "original_dispatches": 20000
+    },
+    {
+      "os": "26.5",
+      "status": "PASS",
+      "errors": 0,
+      "expected_dispatches": 20000,
+      "iterations": 10000,
+      "original_dispatches": 20000
+    }
+  ],
+  "legacy_lifecycle": [
+    {
+      "mode": "lifecycle-automatic",
+      "os": "26.5",
+      "status": "PASS",
+      "signatures": {
+        "baseline": {
+          "view_names": [
+            "Home",
+            "Home"
+          ],
+          "owners": [
+            {
+              "kind": "action",
+              "phase": "BeforeBackground",
+              "view_occurrence": 0
+            },
+            {
+              "kind": "resource",
+              "phase": "https://fixture.invalid/BeforeBackground",
+              "view_occurrence": 0
+            },
+            {
+              "kind": "action",
+              "phase": "AfterForeground",
+              "view_occurrence": 1
+            },
+            {
+              "kind": "resource",
+              "phase": "https://fixture.invalid/AfterForeground",
+              "view_occurrence": 1
+            }
+          ],
+          "view_was_stopped": [
+            true,
+            false
+          ],
+          "notifications": [
+            "UIApplicationDidBecomeActiveNotification",
+            "UIApplicationDidEnterBackgroundNotification",
+            "UIApplicationWillEnterForegroundNotification",
+            "UIApplicationDidBecomeActiveNotification"
+          ],
+          "failures": [],
+          "scene_manifest": false
+        },
+        "candidate": {
+          "view_names": [
+            "Home",
+            "Home"
+          ],
+          "owners": [
+            {
+              "kind": "action",
+              "phase": "BeforeBackground",
+              "view_occurrence": 0
+            },
+            {
+              "kind": "resource",
+              "phase": "https://fixture.invalid/BeforeBackground",
+              "view_occurrence": 0
+            },
+            {
+              "kind": "action",
+              "phase": "AfterForeground",
+              "view_occurrence": 1
+            },
+            {
+              "kind": "resource",
+              "phase": "https://fixture.invalid/AfterForeground",
+              "view_occurrence": 1
+            }
+          ],
+          "view_was_stopped": [
+            true,
+            false
+          ],
+          "notifications": [
+            "UIApplicationDidBecomeActiveNotification",
+            "UIApplicationDidEnterBackgroundNotification",
+            "UIApplicationWillEnterForegroundNotification",
+            "UIApplicationDidBecomeActiveNotification"
+          ],
+          "failures": [],
+          "scene_manifest": false
+        }
+      },
+      "run_ids": {
+        "baseline": "exp160-bda2352ead7d482bb52dafe302d7806d",
+        "candidate": "exp160-4715b15e063543d689c4348c65ccb5fc"
+      }
+    },
+    {
+      "mode": "lifecycle-manual",
+      "os": "26.5",
+      "status": "PASS",
+      "signatures": {
+        "baseline": {
+          "view_names": [
+            "Home"
+          ],
+          "owners": [
+            {
+              "kind": "action",
+              "phase": "BeforeBackground",
+              "view_occurrence": 0
+            },
+            {
+              "kind": "resource",
+              "phase": "https://fixture.invalid/BeforeBackground",
+              "view_occurrence": 0
+            },
+            {
+              "kind": "action",
+              "phase": "AfterForeground",
+              "view_occurrence": 0
+            },
+            {
+              "kind": "resource",
+              "phase": "https://fixture.invalid/AfterForeground",
+              "view_occurrence": 0
+            }
+          ],
+          "view_was_stopped": [
+            false
+          ],
+          "notifications": [
+            "UIApplicationDidBecomeActiveNotification",
+            "UIApplicationDidEnterBackgroundNotification",
+            "UIApplicationWillEnterForegroundNotification",
+            "UIApplicationDidBecomeActiveNotification"
+          ],
+          "failures": [],
+          "scene_manifest": false
+        },
+        "candidate": {
+          "view_names": [
+            "Home"
+          ],
+          "owners": [
+            {
+              "kind": "action",
+              "phase": "BeforeBackground",
+              "view_occurrence": 0
+            },
+            {
+              "kind": "resource",
+              "phase": "https://fixture.invalid/BeforeBackground",
+              "view_occurrence": 0
+            },
+            {
+              "kind": "action",
+              "phase": "AfterForeground",
+              "view_occurrence": 0
+            },
+            {
+              "kind": "resource",
+              "phase": "https://fixture.invalid/AfterForeground",
+              "view_occurrence": 0
+            }
+          ],
+          "view_was_stopped": [
+            false
+          ],
+          "notifications": [
+            "UIApplicationDidBecomeActiveNotification",
+            "UIApplicationDidEnterBackgroundNotification",
+            "UIApplicationWillEnterForegroundNotification",
+            "UIApplicationDidBecomeActiveNotification"
+          ],
+          "failures": [],
+          "scene_manifest": false
+        }
+      },
+      "run_ids": {
+        "baseline": "exp160-f228fb249e484f208046e9f997b81be0",
+        "candidate": "exp160-b352476ef7bc4e39831c3ec0fa6b8461"
+      }
+    }
+  ],
+  "limitations": [
+    "Simulator Release microbenchmarks, not physical-device performance proof.",
+    "Timing records per-event clock overhead in both arms; batch means are also retained.",
+    "Allocation counter observes successful heap allocations on the fixed workload thread, including realloc; it excludes VM allocations and unrelated threads.",
+    "Retention uses injected scene identifiers and posted disconnect on the actual handler; real OS scene and SwiftUI host teardown remain unproven.",
+    "iOS 15 deployment compilation does not prove iOS 15 runtime compatibility.",
+    "No backend ingestion claim: mapper events are the compatibility oracle; fixture endpoint is loopback with a dummy token."
+  ],
+  "raw_data_file": "EXP-160-baseline-samples.json",
+  "build_logs": {
+    "local_artifact": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp160-212ced16a66c/build-logs.json.gz",
+    "count": 17,
+    "sha256": "8cdb04f170a4b7c15e9fe522357de30f5b341c41da552ed395a2165f95acc41b",
+    "disposition": "Local diagnostic artifact only; not committed",
+    "logs": [
+      {
+        "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp160-212ced16a66c/baseline/build-before-allocation-fix.log",
+        "sha256": "e73416aad6970de1ee203e3b552bbdb1852f4fd8d99fcb1fdc1db52b760b6fe5"
+      },
+      {
+        "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp160-212ced16a66c/baseline/build-before-event-samples.log",
+        "sha256": "3941f03b3adbe6b926573eb8904978770f4c4f6394298dbc02e31459400c19a7"
+      },
+      {
+        "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp160-212ced16a66c/baseline/build-before-handoff-allocation.log",
+        "sha256": "7f1b88546f0be6ff5f9d0fae08d2d6784bbae032e2f1f396f4c1c96427e4640c"
+      },
+      {
+        "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp160-212ced16a66c/baseline/build-invalid-swift-mode.log",
+        "sha256": "8a808de702257ed64bd9b2a48bcd15ba2652ca76a767457a86b6451e5e34761c"
+      },
+      {
+        "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp160-212ced16a66c/baseline/build-lifecycle.log",
+        "sha256": "2bc277fe72d19f60e54e9344716f15d28d510df8446aaf93840d3ab8a15ccc55"
+      },
+      {
+        "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp160-212ced16a66c/baseline/build.log",
+        "sha256": "cc4ae9c14f1dea3ca5b22b33c760292ca3e18c9220c186dc3efb7f25786c52f2"
+      },
+      {
+        "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp160-212ced16a66c/baseline/generate-lifecycle.log",
+        "sha256": "375670ef24debf99631a9d1ee4d9a7fe40d6473b170def2e0f8e14bb7a57b58d"
+      },
+      {
+        "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp160-212ced16a66c/baseline/generate.log",
+        "sha256": "375670ef24debf99631a9d1ee4d9a7fe40d6473b170def2e0f8e14bb7a57b58d"
+      },
+      {
+        "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp160-212ced16a66c/candidate/build-before-allocation-fix.log",
+        "sha256": "65d703beee804bb91d10349d4966660a1ca0095499412ae99427b693207fef15"
+      },
+      {
+        "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp160-212ced16a66c/candidate/build-before-event-samples.log",
+        "sha256": "c4bf34ae89332545e12a34da078d25d05ec8b3a4d634d18f7da5c99bc5231437"
+      },
+      {
+        "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp160-212ced16a66c/candidate/build-before-handoff-allocation.log",
+        "sha256": "1387654fe07cdd13c02a477b5ec84c6226fbadd4757c2cb0a9cfe801ae5de796"
+      },
+      {
+        "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp160-212ced16a66c/candidate/build-focused.log",
+        "sha256": "b616ef4192377e08f85beeffa0384c68717429cbbe0edf9184202babddf6f9cf"
+      },
+      {
+        "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp160-212ced16a66c/candidate/build-lifecycle.log",
+        "sha256": "ab5cec9f92693d0997ccc5dbf22e0ecab323e4457d2e47d15ddc78701b4a6dad"
+      },
+      {
+        "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp160-212ced16a66c/candidate/build.log",
+        "sha256": "b4744def1837d898ede389a2930bab79336ba965aeed586821093ad11db295f5"
+      },
+      {
+        "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp160-212ced16a66c/candidate/generate-focused.log",
+        "sha256": "a9db1d95420e49cf64575dcf971855ce48dd504a2b10cd93daa956b20a97b99b"
+      },
+      {
+        "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp160-212ced16a66c/candidate/generate-lifecycle.log",
+        "sha256": "a9db1d95420e49cf64575dcf971855ce48dd504a2b10cd93daa956b20a97b99b"
+      },
+      {
+        "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp160-212ced16a66c/candidate/generate.log",
+        "sha256": "a9db1d95420e49cf64575dcf971855ce48dd504a2b10cd93daa956b20a97b99b"
+      }
+    ]
+  }
+}
