@@ -372,7 +372,8 @@ internal struct TracingURLSessionHandler: DatadogURLSessionHandler {
     ///    the parent span context here, otherwise, pass `nil`.
     ///    - sessionSnapshot: The RUM session sampling snapshot read for this request, or `nil` when no
     ///    session is active. Passed in rather than read here so that one request makes exactly one
-    ///    read, and the decision cannot disagree with the session ID injected alongside it.
+    ///    read, and its session-derived decision cannot disagree with the injected session ID. An
+    ///    active parent span still takes precedence to preserve the parent trace's decision.
     /// - returns: A ``TracingURLSessionHandler.NewSpanElements`` helper struct.
     private func makeElementsForNewSpanContext(tracer: DatadogTracer, parentSpanContext: DDSpanContext?, sessionSnapshot: SessionSamplingSnapshot?) -> NewSpanElements {
         let traceID = parentSpanContext?.traceID ?? tracer.traceIDGenerator.generate()

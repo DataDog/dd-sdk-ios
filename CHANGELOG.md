@@ -6,6 +6,7 @@
 - [IMPROVEMENT] Increase the maximum number of custom attributes per event from 256 to 1900 in RUM, Logs and Traces. In RUM the limit applies to `context`, `usr` and `account` independently; in Logs and Traces those attributes are encoded into a single JSON object, so they share one limit. Log `usr` and `account` extra attributes are now limited as well. See [#3198][]
 - [IMPROVEMENT] Require Swift tools version 6.2 (Xcode 26) to resolve the package with Swift Package Manager. See [#3231][]
 - [FIX] Report slow frame and freeze rates for RUM views when navigation starts a new view without calling `stopView()` on the previous one.
+- [FIX] Resolve the RUM session synchronously for trace sampling, instead of waiting for the RUM context to travel the message bus. Requests instrumented right after `RUM.enable()` now carry a sampling decision and a session ID consistent with the session rather than a random decision and no session ID, and manual spans from `Tracer.shared()` are seeded by the session from the same moment. See [#3221][]
 
 # 3.18.0 / 21-09-2026
 
@@ -17,8 +18,6 @@
 - [FIX] Resolve the RUM session sampling decision synchronously in `RUM.enable()`, so WebViews instrumented immediately after initialization get a decision consistent with the session. See [#3183][]
 - [IMPROVEMENT] Populate RUM Resource `delivery_type` and `transfer_size` from network cache signals, replacing the mobile-only `local_cache_hit` field. See [#3187][]
 - [IMPROVEMENT] Add the `view.name` tag to spans enriched with a sampled-in RUM context, so APM spans can be searched and grouped by RUM view. A `view.name` already set on the span is preserved. See [#3208][]
-- [FIX] Read the RUM session synchronously when injecting tracing headers, instead of waiting for the RUM context to travel the message bus. Requests made right after `RUM.enable()` now carry a sampling decision and a session ID consistent with the session, rather than a random decision and no session ID.
-
 # 3.17.0 / 09-09-2026
 
 - [FEATURE] Add a configurable initialization timeout for the first Datadog Flags evaluation context. See [#3167][]
@@ -1265,6 +1264,7 @@ Release `2.0` introduces breaking changes. Follow the [Migration Guide](MIGRATIO
 [#3167]: https://github.com/DataDog/dd-sdk-ios/pull/3167
 [#3183]: https://github.com/DataDog/dd-sdk-ios/pull/3183
 [#3198]: https://github.com/DataDog/dd-sdk-ios/pull/3198
+[#3221]: https://github.com/DataDog/dd-sdk-ios/pull/3221
 [#3186]: https://github.com/DataDog/dd-sdk-ios/pull/3186
 [#3195]: https://github.com/DataDog/dd-sdk-ios/pull/3195
 [#3200]: https://github.com/DataDog/dd-sdk-ios/pull/3200

@@ -222,22 +222,27 @@ class TracingURLSessionHandlerTests: XCTestCase {
 
     func testGivenAllTracingHeaderTypes_itUsesTheSameIds() throws {
         let request: URLRequest = .mockWith(httpMethod: "GET")
-        let fakeSessionId: UUID = .mockWith("8b723a25-e941-47ea-9173-910c866ccf19")
+        // Delivered over the message bus, and deliberately NOT what the handler should inject.
+        let busSessionId: UUID = .mockWith("8b723a25-e941-47ea-9173-910c866ccf19")
+        // Held by the sampling store, which is the source the handler must use.
+        let storeSessionId = "1f0e8d7c-6b5a-4938-8271-605f4e3d2c1b"
         let fakeContext: DatadogContext = .mockWith(
             additionalContext: [
                 RUMCoreContext.mockWith(
                     applicationID: .mockRandom(),
-                    sessionID: fakeSessionId
+                    sessionID: busSessionId
                 )
             ]
         )
         let message = FeatureMessage.context(fakeContext)
         _ = handler.contextReceiver.receive(message: message, from: core)
 
-        // The injected session ID comes from the sampling store, not from the bus context nor from
-        // `networkContext`: those two used to disagree, since sampling read either one while the
-        // `baggage` header only ever read the bus.
-        sessionSampling.identity = .init(sessionID: fakeSessionId.uuidString.lowercased(), sampler: .mockKeepAll())
+        // The injected session ID comes from the sampling store, not from the bus context. Before
+        // RUM-17921 the two could disagree on one request: sampling read
+        // `networkContext?.rumContext ?? contextReceiver.context.rumContext` while the `baggage`
+        // header only ever read the bus. The store deliberately holds a different ID from the bus
+        // context above, so the expectation below identifies which source the handler used.
+        sessionSampling.identity = .init(sessionID: storeSessionId, sampler: .mockKeepAll())
 
         let (modifiedRequest, _, _) = handler.modify(
             request: request,
@@ -255,7 +260,7 @@ class TracingURLSessionHandlerTests: XCTestCase {
                 "b3": "000000000000000a0000000000000064-0000000000000064-1",
                 "x-datadog-trace-id": "100",
                 "x-datadog-tags": "_dd.p.tid=a,_dd.p.dm=-1",
-                "baggage": "session.id=\(fakeSessionId.uuidString.lowercased())",
+                "baggage": "session.id=\(storeSessionId)",
                 "tracestate": "dd=p:0000000000000064;s:1;t.dm:-1",
                 "x-datadog-parent-id": "100",
                 "x-datadog-sampling-priority": "1"

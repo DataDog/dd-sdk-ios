@@ -63,14 +63,19 @@ public final class RUMSessionSamplerProviderMock: RUMSessionSamplerProvider {
         self.identity = identity
     }
 
-    /// Convenience for a session that is always kept, at the given ID.
+    /// Convenience for a session seeded so that any rate above `0` keeps.
+    ///
+    /// The seed is `0`, whose Knuth hash is `0` and therefore below the threshold for every non-zero
+    /// rate. That makes this the right mock for tests that only care about a session being present:
+    /// the decision follows the rate alone, under either policy.
+    ///
+    /// There is deliberately no `rejectAll()` counterpart. A "reject" sampler is
+    /// `DeterministicSampler(seed: 0, samplingRate: 0)`, and both policies rebuild the sampler from
+    /// its *seed* at the caller's rate, so the `0` rate is discarded and the mock would keep
+    /// everything. Tests that need a dropped session must pin a real seed, as
+    /// `RUMSessionSamplerProviderMock(identity:)` allows.
     public static func keepAll(sessionID: String = "session-id") -> RUMSessionSamplerProviderMock {
         .init(identity: .init(sessionID: sessionID, sampler: .mockKeepAll()))
-    }
-
-    /// Convenience for a session that is always dropped, at the given ID.
-    public static func rejectAll(sessionID: String = "session-id") -> RUMSessionSamplerProviderMock {
-        .init(identity: .init(sessionID: sessionID, sampler: .mockRejectAll()))
     }
 
     public func sessionSamplingSnapshot(for policy: SamplingRatePolicy, rate: SampleRate) -> SessionSamplingSnapshot? {
