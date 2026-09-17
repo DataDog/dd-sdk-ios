@@ -85,20 +85,12 @@ internal final class TelemetryReceiver: FeatureMessageReceiver {
         case .configuration(let configuration):
             send(configuration: configuration)
         case let .metric(metric):
-            if sampled(event: metric) {
-                send(metric: metric)
-            }
+            send(metric: metric)
         case .usage(let usage):
-            if sampled(event: usage) {
-                send(usage: usage)
-            }
+            send(usage: usage)
         }
 
         return true
-    }
-
-    private func sampled(event: SampledTelemetry) -> Bool {
-        return Sampler(samplingRate: event.sampleRate).sample()
     }
 
     /// Sends a `TelemetryDebugEvent` event.
