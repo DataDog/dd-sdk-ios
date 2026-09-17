@@ -181,8 +181,11 @@ repairs and validation are tracked in the current-disposition table above.
 T07 source audit after EXP-179 found that the Flags reporter sends key/value
 through asynchronous MessageBus delivery, while the RUM receiver resolves its
 execution target only on receipt. An originating handoff can therefore be lost.
-This finding is open within existing T07, with failing-control, generation-scoped
-capture and compatibility work admitted by
+The SDK repair is committed in signed `04201edc7711361279d8487b385bc8b0ca9c63c7`.
+The unchanged-SDK control loses A; the candidate preserves it. Actual reporter
+and asynchronous bus delivery, foreign/retired generation rejection, ordinary
+compatibility and iOS/watchOS Release checks pass. T07 remains open for its
+complete native/backend acceptance; see
 [EXP-180](Experiments/EXP-143-199.md#exp-180--target-feature-flags-and-preserve-internal-mutation-ownership).
-It does not reopen or extend the completed original review cycle, and no fix or
-release readiness is claimed before its decisive evidence.
+This is a subsequent bounded disposition, separate from the completed original
+review cycle and the final independent release review.

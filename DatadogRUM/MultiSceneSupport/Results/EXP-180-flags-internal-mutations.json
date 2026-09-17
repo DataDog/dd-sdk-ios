@@ -1,6 +1,6 @@
 {
   "experiment": "EXP-180",
-  "status": "DEFINED",
+  "status": "SDK PASS; native BUILD PASS",
   "gate": "T07",
   "gates_closed": [],
   "control_revision": "db4a96dfabd3b0c3054203d9069905749e55907c",
@@ -16,6 +16,385 @@
     "app_expectations": 34,
     "simultaneous_visibility_claimed": false
   },
-  "unit_attempts": [],
-  "native_attempts": []
+  "unit_attempts": [
+    {
+      "label": "unchanged SDK target and delayed-delivery controls",
+      "adapter": "Legacy target shim and legacy-only message fixture; removed for candidate.",
+      "result": {
+        "counts": {
+          "expectedFailures": 0,
+          "failed": 2,
+          "notRun": 0,
+          "passed": 0,
+          "skipped": 0,
+          "total": 2
+        },
+        "fullConsoleLogsPath": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/ActionArtifacts/default/RunSomeTests/test-console-log-2026-09-18T00-04-46+01-00.txt",
+        "fullSummaryPath": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/ActionArtifacts/default/RunSomeTests/122AB134-2F5E-436E-96C4-2488384B194E.txt",
+        "results": [
+          {
+            "displayName": "testTargetedFlagOverridesPeerAndReplacesOnlyRequestedValue()",
+            "errorMessages": [
+              "Datadog/DatadogRUMTests/RUMMonitor/MonitorTests.swift:1327 MonitorTests/testTargetedFlagOverridesPeerAndReplacesOnlyRequestedValue(): XCTAssertEqual failed: (\"nil\") is not equal to (\"Optional(true)\")",
+              "Datadog/DatadogRUMTests/RUMMonitor/MonitorTests.swift:1328 MonitorTests/testTargetedFlagOverridesPeerAndReplacesOnlyRequestedValue(): XCTAssertNil failed: \"true\"",
+              "Datadog/DatadogRUMTests/RUMMonitor/MonitorTests.swift:1331 MonitorTests/testTargetedFlagOverridesPeerAndReplacesOnlyRequestedValue(): XCTAssertEqual failed: (\"nil\") is not equal to (\"Optional(7)\")",
+              "Datadog/DatadogRUMTests/RUMMonitor/MonitorTests.swift:1332 MonitorTests/testTargetedFlagOverridesPeerAndReplacesOnlyRequestedValue(): XCTAssertNil failed: \"7\""
+            ],
+            "identifier": "MonitorTests/testTargetedFlagOverridesPeerAndReplacesOnlyRequestedValue()",
+            "state": "Failed",
+            "targetName": "DatadogRUMTests"
+          },
+          {
+            "displayName": "testDelayedFlagMessageKeepsCapturedOriginOutsideItsHandoff()",
+            "errorMessages": [
+              "Datadog/DatadogRUMTests/RUMMonitor/MonitorTests.swift:1355 MonitorTests/testDelayedFlagMessageKeepsCapturedOriginOutsideItsHandoff(): XCTAssertEqual failed: (\"nil\") is not equal to (\"Optional(true)\")",
+              "Datadog/DatadogRUMTests/RUMMonitor/MonitorTests.swift:1356 MonitorTests/testDelayedFlagMessageKeepsCapturedOriginOutsideItsHandoff(): XCTAssertNil failed: \"true\""
+            ],
+            "identifier": "MonitorTests/testDelayedFlagMessageKeepsCapturedOriginOutsideItsHandoff()",
+            "state": "Failed",
+            "targetName": "DatadogRUMTests"
+          }
+        ],
+        "schemeName": "DatadogRUM",
+        "summary": "2 tests: 0 passed, 2 failed, 0 skipped, 0 expected failures, 0 not run",
+        "totalResults": 2,
+        "truncated": false,
+        "xcresultBundlePath": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/ActionArtifacts/default/RunSomeTests/Test-DatadogRUM-2026.09.18_00-04-46-+0100.xcresult"
+      }
+    }
+  ],
+  "native_attempts": [],
+  "definition_revision": "5e35f3f95a866963629b9aa32a5091b6ef3c316a",
+  "candidate_revision": "04201edc7711361279d8487b385bc8b0ca9c63c7",
+  "sdk_validation": {
+    "FirstCandidate": {
+      "counts": {
+        "expectedFailures": 0,
+        "failed": 0,
+        "notRun": 0,
+        "passed": 2,
+        "skipped": 0,
+        "total": 2
+      },
+      "fullConsoleLogsPath": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/ActionArtifacts/default/RunSomeTests/test-console-log-2026-09-18T00-06-36+01-00.txt",
+      "fullSummaryPath": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/ActionArtifacts/default/RunSomeTests/B96C6D13-0C0D-495F-B6E1-462EA63166A4.txt",
+      "results": [],
+      "schemeName": "DatadogRUM",
+      "summary": "2 tests: 2 passed, 0 failed, 0 skipped, 0 expected failures, 0 not run",
+      "totalResults": 2,
+      "truncated": false,
+      "xcresultBundlePath": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/ActionArtifacts/default/RunSomeTests/Test-DatadogRUM-2026.09.18_00-06-36-+0100.xcresult"
+    },
+    "Focused": {
+      "counts": {
+        "expectedFailures": 0,
+        "failed": 0,
+        "notRun": 0,
+        "passed": 9,
+        "skipped": 0,
+        "total": 9
+      },
+      "fullConsoleLogsPath": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/ActionArtifacts/default/RunSomeTests/test-console-log-2026-09-18T00-12-10+01-00.txt",
+      "fullSummaryPath": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/ActionArtifacts/default/RunSomeTests/3C3FE413-6B3C-4FB5-927D-096BC3D60D30.txt",
+      "results": [],
+      "schemeName": "DatadogRUM",
+      "summary": "9 tests: 9 passed, 0 failed, 0 skipped, 0 expected failures, 0 not run",
+      "totalResults": 9,
+      "truncated": false,
+      "xcresultBundlePath": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/ActionArtifacts/default/RunSomeTests/Test-DatadogRUM-2026.09.18_00-12-10-+0100.xcresult"
+    },
+    "Affected": {
+      "counts": {
+        "expectedFailures": 0,
+        "failed": 0,
+        "notRun": 0,
+        "passed": 443,
+        "skipped": 0,
+        "total": 443
+      },
+      "fullConsoleLogsPath": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/ActionArtifacts/default/RunSomeTests/test-console-log-2026-09-18T00-12-49+01-00.txt",
+      "fullSummaryPath": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/ActionArtifacts/default/RunSomeTests/D890D8E2-F259-45AD-AA1F-252C2071E626.txt",
+      "message": "Results truncated to 100 of 443 tests. Failed tests shown first. Full logs available at /var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/ActionArtifacts/default/RunSomeTests/D890D8E2-F259-45AD-AA1F-252C2071E626.txt.",
+      "results": [],
+      "schemeName": "DatadogRUM",
+      "summary": "443 tests: 443 passed, 0 failed, 0 skipped, 0 expected failures, 0 not run",
+      "totalResults": 443,
+      "truncated": true,
+      "xcresultBundlePath": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/ActionArtifacts/default/RunSomeTests/Test-DatadogRUM-2026.09.18_00-12-49-+0100.xcresult"
+    },
+    "Flags": {
+      "counts": {
+        "expectedFailures": 0,
+        "failed": 0,
+        "notRun": 0,
+        "passed": 24,
+        "skipped": 0,
+        "total": 24
+      },
+      "fullConsoleLogsPath": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/ActionArtifacts/default/RunSomeTests/test-console-log-2026-09-18T00-13-40+01-00.txt",
+      "fullSummaryPath": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/ActionArtifacts/default/RunSomeTests/33AE5397-B300-4F4D-A2A5-B269150076E2.txt",
+      "results": [],
+      "schemeName": "DatadogFlags",
+      "summary": "24 tests: 24 passed, 0 failed, 0 skipped, 0 expected failures, 0 not run",
+      "totalResults": 24,
+      "truncated": false,
+      "xcresultBundlePath": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/ActionArtifacts/default/RunSomeTests/Test-DatadogFlags-2026.09.18_00-13-40-+0100.xcresult"
+    },
+    "CoreBuildFailure": {
+      "buildIsRunning": false,
+      "buildLogEntries": [
+        {
+          "buildTask": "Compile MessageBusTests.swift",
+          "emittedIssues": [
+            {
+              "line": 19,
+              "message": "'mockWith' is inaccessible due to 'internal' protection level",
+              "path": "/Users/valentin.pertuisot/work/dd-sdk-ios/DatadogCore/Tests/Datadog/DatadogCore/MessageBusTests.swift",
+              "severity": "error"
+            },
+            {
+              "line": 22,
+              "message": "'mockWith' is inaccessible due to 'internal' protection level",
+              "path": "/Users/valentin.pertuisot/work/dd-sdk-ios/DatadogCore/Tests/Datadog/DatadogCore/MessageBusTests.swift",
+              "severity": "error"
+            },
+            {
+              "line": 23,
+              "message": "'mockWith' is inaccessible due to 'internal' protection level",
+              "path": "/Users/valentin.pertuisot/work/dd-sdk-ios/DatadogCore/Tests/Datadog/DatadogCore/MessageBusTests.swift",
+              "severity": "error"
+            },
+            {
+              "line": 24,
+              "message": "Generic parameter 'T' could not be inferred",
+              "path": "/Users/valentin.pertuisot/work/dd-sdk-ios/DatadogCore/Tests/Datadog/DatadogCore/MessageBusTests.swift",
+              "severity": "error"
+            },
+            {
+              "line": 45,
+              "message": "Generic parameter 'T' could not be inferred",
+              "path": "/Users/valentin.pertuisot/work/dd-sdk-ios/DatadogCore/Tests/Datadog/DatadogCore/MessageBusTests.swift",
+              "severity": "error"
+            },
+            {
+              "line": 46,
+              "message": "Failed to produce diagnostic for expression; please submit a bug report (https://swift.org/contributing/#reporting-bugs)",
+              "path": "/Users/valentin.pertuisot/work/dd-sdk-ios/DatadogCore/Tests/Datadog/DatadogCore/MessageBusTests.swift",
+              "severity": "error"
+            }
+          ]
+        }
+      ],
+      "buildResult": "The build failed",
+      "fullLogPath": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/ActionArtifacts/default/GetBuildLog/786F49B4-BABB-41AB-8B8C-6BF8091BAB3A.txt",
+      "totalFound": 1,
+      "truncated": false
+    },
+    "CoreRetry": {
+      "counts": {
+        "expectedFailures": 0,
+        "failed": 1,
+        "notRun": 0,
+        "passed": 21,
+        "skipped": 0,
+        "total": 22
+      },
+      "fullConsoleLogsPath": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/ActionArtifacts/default/RunSomeTests/test-console-log-2026-09-18T00-15-40+01-00.txt",
+      "fullSummaryPath": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/ActionArtifacts/default/RunSomeTests/E8A3303A-B8E8-42E4-8C32-5C24E66FA79C.txt",
+      "results": [
+        {
+          "displayName": "testFlagEnvelopeCrossesActualAsyncBusWithoutChangingOrigin()",
+          "errorMessages": [
+            "MessageBusTests/testFlagEnvelopeCrossesActualAsyncBusWithoutChangingOrigin(): Crash: xctest at static xctest.main()"
+          ],
+          "identifier": "MessageBusTests/testFlagEnvelopeCrossesActualAsyncBusWithoutChangingOrigin()",
+          "state": "Failed",
+          "targetName": "DatadogCoreTests"
+        }
+      ],
+      "schemeName": "DatadogCore",
+      "summary": "22 tests: 21 passed, 1 failed, 0 skipped, 0 expected failures, 0 not run",
+      "totalResults": 22,
+      "truncated": false,
+      "xcresultBundlePath": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/ActionArtifacts/default/RunSomeTests/Test-DatadogCore-2026.09.18_00-15-40-+0100.xcresult"
+    },
+    "BusFixed": {
+      "counts": {
+        "expectedFailures": 0,
+        "failed": 0,
+        "notRun": 0,
+        "passed": 3,
+        "skipped": 0,
+        "total": 3
+      },
+      "fullConsoleLogsPath": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/ActionArtifacts/default/RunSomeTests/test-console-log-2026-09-18T00-18-09+01-00.txt",
+      "fullSummaryPath": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/ActionArtifacts/default/RunSomeTests/06408B83-1D0F-44DF-9333-12C7F459DA4B.txt",
+      "results": [],
+      "schemeName": "DatadogCore",
+      "summary": "3 tests: 3 passed, 0 failed, 0 skipped, 0 expected failures, 0 not run",
+      "totalResults": 3,
+      "truncated": false,
+      "xcresultBundlePath": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/ActionArtifacts/default/RunSomeTests/Test-DatadogCore-2026.09.18_00-18-09-+0100.xcresult"
+    },
+    "StaleExpanded": {
+      "counts": {
+        "expectedFailures": 0,
+        "failed": 0,
+        "notRun": 0,
+        "passed": 1,
+        "skipped": 0,
+        "total": 1
+      },
+      "fullConsoleLogsPath": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/ActionArtifacts/default/RunSomeTests/test-console-log-2026-09-18T00-19-18+01-00.txt",
+      "fullSummaryPath": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/ActionArtifacts/default/RunSomeTests/50B92071-A756-447C-8E14-2CC20D746A90.txt",
+      "results": [],
+      "schemeName": "DatadogRUM",
+      "summary": "1 tests: 1 passed, 0 failed, 0 skipped, 0 expected failures, 0 not run",
+      "totalResults": 1,
+      "truncated": false,
+      "xcresultBundlePath": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/ActionArtifacts/default/RunSomeTests/Test-DatadogRUM-2026.09.18_00-19-18-+0100.xcresult"
+    },
+    "Integration": {
+      "counts": {
+        "expectedFailures": 0,
+        "failed": 0,
+        "notRun": 0,
+        "passed": 4,
+        "skipped": 0,
+        "total": 4
+      },
+      "fullConsoleLogsPath": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/ActionArtifacts/default/RunSomeTests/test-console-log-2026-09-18T00-20-58+01-00.txt",
+      "fullSummaryPath": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/ActionArtifacts/default/RunSomeTests/E04DD891-66ED-4B63-9ED7-0163524931DA.txt",
+      "results": [],
+      "schemeName": "DatadogIntegrationTests",
+      "summary": "4 tests: 4 passed, 0 failed, 0 skipped, 0 expected failures, 0 not run",
+      "totalResults": 4,
+      "truncated": false,
+      "xcresultBundlePath": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/ActionArtifacts/default/RunSomeTests/Test-DatadogIntegrationTests-2026.09.18_00-20-58-+0100.xcresult"
+    }
+  },
+  "platform_builds": [
+    {
+      "state": "PASS",
+      "returncode": 0,
+      "seconds": 113.22072262503207,
+      "command": [
+        "xcodebuild",
+        "build",
+        "-quiet",
+        "-workspace",
+        "Datadog.xcworkspace",
+        "-scheme",
+        "DatadogRUM",
+        "-configuration",
+        "Release",
+        "-destination",
+        "generic/platform=iOS Simulator",
+        "-derivedDataPath",
+        "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp180-platforms-e9twe1bm/ios-derived",
+        "CODE_SIGNING_ALLOWED=NO"
+      ],
+      "source_revision": "04201edc7711361279d8487b385bc8b0ca9c63c7",
+      "log": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp180-platforms-e9twe1bm/ios-DatadogRUM.log",
+      "log_sha256": "e8cb83c6619628ec14518a093e37a1fde7ceb102237c7fac47846b98b08e331a"
+    },
+    {
+      "state": "PASS",
+      "returncode": 0,
+      "seconds": 52.1584175840253,
+      "command": [
+        "xcodebuild",
+        "build",
+        "-quiet",
+        "-workspace",
+        "Datadog.xcworkspace",
+        "-scheme",
+        "DatadogFlags",
+        "-configuration",
+        "Release",
+        "-destination",
+        "generic/platform=iOS Simulator",
+        "-derivedDataPath",
+        "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp180-platforms-e9twe1bm/ios-derived",
+        "CODE_SIGNING_ALLOWED=NO"
+      ],
+      "source_revision": "04201edc7711361279d8487b385bc8b0ca9c63c7",
+      "log": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp180-platforms-e9twe1bm/ios-DatadogFlags.log",
+      "log_sha256": "2ad96ed0bedd5735ee5b0e22b3c6766a2c7ef487106e72fcd41307d9f9bb6c7d"
+    },
+    {
+      "state": "PASS",
+      "returncode": 0,
+      "seconds": 103.99156091699842,
+      "command": [
+        "xcodebuild",
+        "build",
+        "-quiet",
+        "-workspace",
+        "Datadog.xcworkspace",
+        "-scheme",
+        "DatadogRUM",
+        "-configuration",
+        "Release",
+        "-destination",
+        "generic/platform=watchOS Simulator",
+        "-derivedDataPath",
+        "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp180-platforms-e9twe1bm/watchos-derived",
+        "CODE_SIGNING_ALLOWED=NO"
+      ],
+      "source_revision": "04201edc7711361279d8487b385bc8b0ca9c63c7",
+      "log": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp180-platforms-e9twe1bm/watchos-DatadogRUM.log",
+      "log_sha256": "67878a3418db0017afaaf6c372b8f1b0a5a59c559bec6cea32a6d89ea8171b71"
+    },
+    {
+      "state": "PASS",
+      "returncode": 0,
+      "seconds": 53.94376920897048,
+      "command": [
+        "xcodebuild",
+        "build",
+        "-quiet",
+        "-workspace",
+        "Datadog.xcworkspace",
+        "-scheme",
+        "DatadogFlags",
+        "-configuration",
+        "Release",
+        "-destination",
+        "generic/platform=watchOS Simulator",
+        "-derivedDataPath",
+        "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp180-platforms-e9twe1bm/watchos-derived",
+        "CODE_SIGNING_ALLOWED=NO"
+      ],
+      "source_revision": "04201edc7711361279d8487b385bc8b0ca9c63c7",
+      "log": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp180-platforms-e9twe1bm/watchos-DatadogFlags.log",
+      "log_sha256": "9ff7bba4fb6e04adcb5e834d3042d2fe8bda947787585222b3cf0057efd49451"
+    }
+  ],
+  "usage_audit": {
+    "references": 115,
+    "changed_paths": 14,
+    "generated_models_changed": false,
+    "wire_fields_changed": false,
+    "public_protocol_requirements_changed": false,
+    "strict_source_test_lint": "PASS"
+  },
+  "attempt_notes": [
+    "Core bus test first lacked @testable access to existing TestUtilities fixtures. GetBuildLog identified a test-only compile error; corrected.",
+    "First compiled Core run passed21/22 but the new bus test trapped during DatadogTestsObserver teardown. Crash stack at DatadogTestsObserver.swift:163; receiver closure retained PassthroughCoreMock until delayed bus configuration. Removing receiver and draining queue in defer fixes3/3 bus tests. No SDK runtime change.",
+    "Two strict lint whitespace violations corrected; configured source/test lint passes.",
+    "Core22 unique selected checks have passing coverage across the21 passing initial checks and3 passing bus checks; no skipped/not-run tests.",
+    "The443 affected RUM checks pass; the same stale-occurrence test was extended with fresh explicit targeting and source-less metric fallback, then passed separately.",
+    "Unescalated xcresulttool inspection could not create Xcode cache/temp files. Repeated read with allowed cache access succeeded; no test rerun.",
+    "No known iOS27 legacy app-host trap was rerun; affected integration runs on26.5."
+  ],
+  "native_preparation": {
+    "build_for_testing": {
+      "buildResult": "The project built successfully.",
+      "elapsedTime": 19.198,
+      "errors": [],
+      "fullLogPath": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/ActionArtifacts/default/BuildProject/BuildProject-Log-20260918-002635.txt"
+    },
+    "runtime_acceptance": "PENDING"
+  }
 }

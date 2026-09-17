@@ -306,7 +306,7 @@
       "environment": "iOS 27 simulator, focused compatibility tests, exact mapper and Datadog backend owners",
       "completion_mode": "explicit target where customer-callable; captured call-site ownership internally",
       "status": "OPEN",
-      "evidence": "EXP-180 defined before implementation: explicit flag targets, generation-scoped Flags message-bus capture, internal metric/FBC routing,8 paired native checkpoints and whole-session backend. Results/EXP-180-flags-internal-mutations.json. Not accepted."
+      "evidence": "EXP-180 SDK signed04201edc7:443 affected RUM,24 Flags,22 unique Core/ObjC checks,4 integration on26.5, lint and RUM/Flags iOS/watchOS Release pass. Two failing ownership controls repaired. Native fixture builds; strict runner/backend pending. Results/EXP-180-flags-internal-mutations.json. Not accepted."
     },
     {
       "id": "T08",
