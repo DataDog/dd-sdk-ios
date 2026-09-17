@@ -2,7 +2,7 @@
   "schema_version": 1,
   "scope": "Multi-scene RUM release",
   "baseline_revision": "92f021ba7e4a866f84a52da93ed8b63f3dc75882",
-  "candidate_revision": "af886452837e3fd34b42725f648fb955fb625c65",
+  "candidate_revision": "084dff4c1403d69626f16d4447254a42423aa39e",
   "gates": [
     {
       "id": "C01",
@@ -236,8 +236,8 @@
       "decisive_test": "EXP-159 B-before-A, empty B stop isolation, exact final metadata; navigation/timeout retain original owner",
       "environment": "iOS 27 simulator, focused compatibility tests, exact mapper and Datadog backend owners",
       "completion_mode": "explicit target",
-      "status": "REVIEW BLOCKED",
-      "evidence": "EXP-159 accepted targeted slice retained; D12 reports missing legacy expired-stop metadata discriminator."
+      "status": "CLOSED",
+      "evidence": "EXP-159 accepted 15/15 exact mapper/backend targeted slice; EXP-163 closes missing D12 expired-stop metadata discriminator and passes target/fallback/navigation/timeout tests. Hardware duration/visibility remains separate."
     },
     {
       "id": "T03",
@@ -856,8 +856,8 @@
       "decisive_test": "Reproduce/triage the reported finding, then require: Single-scene continuous action stopped after timeout retains original stop attributes; peer timeout still cannot inherit foreign attributes",
       "environment": "RUM scope regression with controlled clock",
       "completion_mode": null,
-      "status": "REGRESSION BLOCKED",
-      "evidence": "REVIEW_TRIAGE.md: assessed relevant at af63657f0; source-confirmed path; required full regression/repair remains open."
+      "status": "CLOSED",
+      "evidence": "EXP-163, signed 084dff4c1: three recipient metadata regressions fail before repair; 212 session/view/action/monitor tests pass after repair, including both peer controls. Results/EXP-163-action-stop-attributes.json."
     },
     {
       "id": "F06",

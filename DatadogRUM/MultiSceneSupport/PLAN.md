@@ -46,10 +46,10 @@ Objective-C Release exposure still require normal API review.
 
 0. D01/D02 platform compatibility is closed by EXP-162; evidence is in the
    register and detailed record. Accepted experiment identities remain unchanged.
-1. Execute predefined EXP-163 for D12 overdue-stop metadata, the smallest
-   deterministic slice in the independent D09/D11/D12 compatibility group. Then
-   repair D09/D11 in the [assessed order](REVIEW_TRIAGE.md). Define each bounded
-   experiment before implementation; preserve failing controls.
+1. D12 is closed and T02 restored by EXP-163. Next repair D09 controller caller-
+   thread compatibility, then D11 legacy WebView correlation, in the
+   [assessed order](REVIEW_TRIAGE.md). Define each bounded experiment before
+   implementation; preserve failing controls.
 2. Repair D04 together with P02 allocation cost; normalize restoration in D05/D06.
 3. Repair D03/P03 lifetimes, D07/D08 authority/reconnect, and D10 accepted
    presentation state. Close the missing R04–R06 discriminators in those slices.
@@ -117,7 +117,7 @@ SwiftUI remains required as H16; the former conditional row is resolved.
 | Gate | Deliverable / completion mode | Owner | Depends on | Decisive test | Environment | Status |
 | --- | --- | --- | --- | --- | --- | --- |
 | T01 | One-shot actions — explicit target | SDK implementer | C04 | EXP-158 exact A/B owner and unresolved-target/custom/NOP fallback | iOS 27 simulator, focused compatibility tests, exact mapper and Datadog backend owners | CLOSED |
-| T02 | Long-running actions — explicit target | SDK implementer | C04, D12 | EXP-159 B-before-A, empty B stop isolation, exact final metadata; navigation/timeout retain original owner | iOS 27 simulator, focused compatibility tests, exact mapper and Datadog backend owners | REVIEW BLOCKED |
+| T02 | Long-running actions — explicit target | SDK implementer | C04, D12 | EXP-159 B-before-A, empty B stop isolation, exact final metadata; navigation/timeout retain original owner | iOS 27 simulator, focused compatibility tests, exact mapper and Datadog backend owners | CLOSED |
 | T03 | Manual and automatic Resources — explicit start target + captured start ownership | SDK implementer | A01, D01, D04, D05, D06 | Target A start while B represents; success/error/metrics after navigation/teardown remain A-owned; duplicate-key behavior documented; late failed completion cannot increment another session's live continuous action | iOS 27 simulator, URLSession/manual Resource fixture, mapper and Datadog backend | OPEN |
 | T04 | Current-view errors — explicit target | SDK implementer | A01 | Requested live view owns message/Error/completion-handler forms; invalid target falls back; Resource errors retain T03 owner | iOS 27 simulator, focused compatibility tests, exact mapper and Datadog backend owners | OPEN |
 | T05 | View attributes and removal — explicit target | SDK implementer | A01 | Single/batch add/remove changes only requested current view; global monitor attributes remain process-wide | iOS 27 simulator, focused compatibility tests, exact mapper and Datadog backend owners | OPEN |
@@ -174,7 +174,7 @@ experiment slices remain evidence, not a substitute for these missing cases.
 | D09 | Controller API caller-thread compatibility | SDK implementer | None | Reproduce/triage the reported finding, then require: Background start/stop getter spy records no UIKit hierarchy access; main-thread target resolves correctly without sync-to-main deadlock | iOS simulator focused test plus Main Thread Checker | REGRESSION BLOCKED |
 | D10 | Accepted presentation state | SDK implementer | None | Reproduce/triage the reported finding, then require: Rejected/canonicalized Binding writes, transaction forwarding, immediate setter work and dismissal callbacks follow accepted occurrence | Mounted iOS 27 SwiftUI adapter tests | REGRESSION BLOCKED |
 | D11 | Legacy native/WebView correlation | SDK implementer | None | Reproduce/triage the reported finding, then require: Legacy string-key view plus mounted WKWebView retains unambiguous container.view.id; peer scene never used as fallback | Single-scene simulator WebView with Replay correlation enabled | REGRESSION BLOCKED |
-| D12 | Expired action stop attributes | SDK implementer | None | Reproduce/triage the reported finding, then require: Single-scene continuous action stopped after timeout retains original stop attributes; peer timeout still cannot inherit foreign attributes | RUM scope regression with controlled clock | REGRESSION BLOCKED |
+| D12 | Expired action stop attributes | SDK implementer | None | Reproduce/triage the reported finding, then require: Single-scene continuous action stopped after timeout retains original stop attributes; peer timeout still cannot inherit foreign attributes | RUM scope regression with controlled clock | CLOSED |
 
 ## Release and compatibility gates
 

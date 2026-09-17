@@ -317,7 +317,7 @@ ordered acceptance contract is in
 | EXP-160 | 2026-09-17 | MIXED · six baseline gates closed; P02/P03 fail | Early baselines | Ordinary automatic/manual/custom/NOP/26.5, dispatch and exact reentrancy pass; enabled handoff3 allocations/416bytes exceeds1/64 budget;220 retained scene entries. Legacy27 inconclusive;15 runtime unavailable. | [active record](Experiments/EXP-143-199.md#exp-160--early-compatibility-and-performance-baseline) |
 | EXP-161 | 2026-09-17 | PASS · A01 | Acceptance workflow | Fully automated166tests,15/15 local,7actions/3views/0errors backend; two tooling-invalid attempts retained;24Python+3Node controls. | [active record](Experiments/EXP-143-199.md#exp-161--automated-acceptance-pipeline) |
 | EXP-162 | 2026-09-17 | PASS · D01/D02 | Platform compatibility | Two failing full-target controls; watchOS RUM/macOS WebView Debug and Release pass; 70 Resource/action and 28 WebView iOS tests plus lint pass. | [active record](Experiments/EXP-143-199.md#exp-162--restore-watchos-resource-and-macos-webview-compilation) |
-| EXP-163 | 2026-09-17 | DEFINED · D12 | Existing-API compatibility | Controlled legacy and targeted overdue-stop attribute merge, with exact owners and peer metadata isolation. | [active record](Experiments/EXP-143-199.md#exp-163--preserve-overdue-action-stop-attributes-without-peer-leakage) |
+| EXP-163 | 2026-09-17 | PASS · D12; T02 restored | Existing-API compatibility | Three recipient metadata failures reproduced; 212 affected tests and strict source/test lint pass. Own overdue-stop attributes retained; peer metadata remains isolated. | [active record](Experiments/EXP-143-199.md#exp-163--preserve-overdue-action-stop-attributes-without-peer-leakage) |
 
 ## Simulator-inconclusive and hardware-required evidence
 

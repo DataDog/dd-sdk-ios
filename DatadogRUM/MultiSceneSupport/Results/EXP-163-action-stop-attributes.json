@@ -1,0 +1,220 @@
+{
+  "experiment": "EXP-163",
+  "status": "PASS",
+  "closed_gates": [
+    "D12"
+  ],
+  "restored_gate": "T02",
+  "control_revision": "0f91747a410d1b8b4b9bf7dee287bcd36c5d6d83",
+  "definition_revision": "d86ded7f8a0b4c6f0ae7b499033a1f7154bf2bf5",
+  "candidate_revision": "084dff4c1403d69626f16d4447254a42423aa39e",
+  "environment": {
+    "xcode": "27.0 (27A266a)",
+    "scheme": "DatadogRUM",
+    "destination": "iPhone 18 Pro, iOS 27.0",
+    "workspace": "workspace-DLY6WWrRlF"
+  },
+  "attempts": [
+    {
+      "id": "initial_control",
+      "status": "FAIL",
+      "oracle_issue": "Metadata loss reproduced; the discrete duration assertion also exposed wall-clock Date precision (24 ns). Fixed reference-time clock in the next unchanged-source control.",
+      "counts": {
+        "expectedFailures": 0,
+        "failed": 3,
+        "notRun": 0,
+        "passed": 2,
+        "skipped": 0,
+        "total": 5
+      },
+      "scheme": "DatadogRUM",
+      "summary_path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/ActionArtifacts/default/RunSomeTests/1A4417C3-4705-4341-8FF0-054EBC2EA5F5.txt",
+      "xcresult_path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/ActionArtifacts/default/RunSomeTests/Test-DatadogRUM-2026.09.17_08-50-46-+0100.xcresult",
+      "results": [
+        {
+          "displayName": "testGivenOverdueLegacyContinuousAction_whenStopped_itPreservesStopAttributes()",
+          "errorMessages": [
+            "Datadog/DatadogRUMTests/RUMMonitor/Scopes/RUMSessionScopeTests.swift:624 RUMSessionScopeTests/testGivenOverdueLegacyContinuousAction_whenStopped_itPreservesStopAttributes(): XCTAssertEqual failed: (\"nil\") is not equal to (\"Optional(\"yes\")\")",
+            "Datadog/DatadogRUMTests/RUMMonitor/Scopes/RUMSessionScopeTests.swift:625 RUMSessionScopeTests/testGivenOverdueLegacyContinuousAction_whenStopped_itPreservesStopAttributes(): XCTAssertEqual failed: (\"Optional(\"start\")\") is not equal to (\"Optional(\"stop\")\")"
+          ],
+          "identifier": "RUMSessionScopeTests/testGivenOverdueLegacyContinuousAction_whenStopped_itPreservesStopAttributes()",
+          "state": "Failed",
+          "targetName": "DatadogRUMTests"
+        },
+        {
+          "displayName": "testGivenOverdueLegacyDiscreteAction_whenStopped_itPreservesStopAttributes()",
+          "errorMessages": [
+            "Datadog/DatadogRUMTests/RUMMonitor/Scopes/RUMSessionScopeTests.swift:620 RUMSessionScopeTests/testGivenOverdueLegacyDiscreteAction_whenStopped_itPreservesStopAttributes(): XCTAssertEqual failed: (\"Optional(100000024)\") is not equal to (\"Optional(100000000)\")",
+            "Datadog/DatadogRUMTests/RUMMonitor/Scopes/RUMSessionScopeTests.swift:624 RUMSessionScopeTests/testGivenOverdueLegacyDiscreteAction_whenStopped_itPreservesStopAttributes(): XCTAssertEqual failed: (\"nil\") is not equal to (\"Optional(\"yes\")\")",
+            "Datadog/DatadogRUMTests/RUMMonitor/Scopes/RUMSessionScopeTests.swift:625 RUMSessionScopeTests/testGivenOverdueLegacyDiscreteAction_whenStopped_itPreservesStopAttributes(): XCTAssertEqual failed: (\"Optional(\"start\")\") is not equal to (\"Optional(\"stop\")\")"
+          ],
+          "identifier": "RUMSessionScopeTests/testGivenOverdueLegacyDiscreteAction_whenStopped_itPreservesStopAttributes()",
+          "state": "Failed",
+          "targetName": "DatadogRUMTests"
+        },
+        {
+          "displayName": "testGivenOverdueConcurrentActions_whenExplicitStopTargetsA_itPreservesOnlyRecipientAttributes()",
+          "errorMessages": [
+            "Datadog/DatadogRUMTests/RUMMonitor/Scopes/RUMSessionScopeTests.swift:679 RUMSessionScopeTests/testGivenOverdueConcurrentActions_whenExplicitStopTargetsA_itPreservesOnlyRecipientAttributes(): XCTAssertEqual failed: (\"nil\") is not equal to (\"Optional(\"A\")\")",
+            "Datadog/DatadogRUMTests/RUMMonitor/Scopes/RUMSessionScopeTests.swift:680 RUMSessionScopeTests/testGivenOverdueConcurrentActions_whenExplicitStopTargetsA_itPreservesOnlyRecipientAttributes(): XCTAssertEqual failed: (\"Optional(\"A\")\") is not equal to (\"Optional(\"A-stop\")\")",
+            "Datadog/DatadogRUMTests/RUMMonitor/Scopes/RUMSessionScopeTests.swift:679 RUMSessionScopeTests/testGivenOverdueConcurrentActions_whenExplicitStopTargetsA_itPreservesOnlyRecipientAttributes(): XCTAssertEqual failed: (\"nil\") is not equal to (\"Optional(\"A\")\")",
+            "Datadog/DatadogRUMTests/RUMMonitor/Scopes/RUMSessionScopeTests.swift:680 RUMSessionScopeTests/testGivenOverdueConcurrentActions_whenExplicitStopTargetsA_itPreservesOnlyRecipientAttributes(): XCTAssertEqual failed: (\"Optional(\"A\")\") is not equal to (\"Optional(\"A-stop\")\")"
+          ],
+          "identifier": "RUMSessionScopeTests/testGivenOverdueConcurrentActions_whenExplicitStopTargetsA_itPreservesOnlyRecipientAttributes()",
+          "state": "Failed",
+          "targetName": "DatadogRUMTests"
+        },
+        {
+          "displayName": "testGivenOverdueAction_whenStopTargetsMissingScene_itExpiresWithoutForeignAttributes()",
+          "errorMessages": [],
+          "identifier": "RUMSessionScopeTests/testGivenOverdueAction_whenStopTargetsMissingScene_itExpiresWithoutForeignAttributes()",
+          "state": "Passed",
+          "targetName": "DatadogRUMTests"
+        }
+      ],
+      "summary_sha256": "9267833023049e5b469b82735cc82e6d9d475c8e45dedce5ce894f25b78e6baf"
+    },
+    {
+      "id": "corrected_control",
+      "status": "FAIL",
+      "interpretation": "Three recipient metadata tests fail; missing-scene and peer-discrete negative controls pass. All nonmetadata assertions pass.",
+      "counts": {
+        "expectedFailures": 0,
+        "failed": 3,
+        "notRun": 0,
+        "passed": 2,
+        "skipped": 0,
+        "total": 5
+      },
+      "scheme": "DatadogRUM",
+      "summary_path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/ActionArtifacts/default/RunSomeTests/AA5F3687-DB05-45DC-BABC-98447760F09B.txt",
+      "xcresult_path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/ActionArtifacts/default/RunSomeTests/Test-DatadogRUM-2026.09.17_08-52-03-+0100.xcresult",
+      "results": [
+        {
+          "displayName": "testGivenOverdueLegacyContinuousAction_whenStopped_itPreservesStopAttributes()",
+          "errorMessages": [
+            "Datadog/DatadogRUMTests/RUMMonitor/Scopes/RUMSessionScopeTests.swift:624 RUMSessionScopeTests/testGivenOverdueLegacyContinuousAction_whenStopped_itPreservesStopAttributes(): XCTAssertEqual failed: (\"nil\") is not equal to (\"Optional(\"yes\")\")",
+            "Datadog/DatadogRUMTests/RUMMonitor/Scopes/RUMSessionScopeTests.swift:625 RUMSessionScopeTests/testGivenOverdueLegacyContinuousAction_whenStopped_itPreservesStopAttributes(): XCTAssertEqual failed: (\"Optional(\"start\")\") is not equal to (\"Optional(\"stop\")\")"
+          ],
+          "identifier": "RUMSessionScopeTests/testGivenOverdueLegacyContinuousAction_whenStopped_itPreservesStopAttributes()",
+          "state": "Failed",
+          "targetName": "DatadogRUMTests"
+        },
+        {
+          "displayName": "testGivenOverdueLegacyDiscreteAction_whenStopped_itPreservesStopAttributes()",
+          "errorMessages": [
+            "Datadog/DatadogRUMTests/RUMMonitor/Scopes/RUMSessionScopeTests.swift:624 RUMSessionScopeTests/testGivenOverdueLegacyDiscreteAction_whenStopped_itPreservesStopAttributes(): XCTAssertEqual failed: (\"nil\") is not equal to (\"Optional(\"yes\")\")",
+            "Datadog/DatadogRUMTests/RUMMonitor/Scopes/RUMSessionScopeTests.swift:625 RUMSessionScopeTests/testGivenOverdueLegacyDiscreteAction_whenStopped_itPreservesStopAttributes(): XCTAssertEqual failed: (\"Optional(\"start\")\") is not equal to (\"Optional(\"stop\")\")"
+          ],
+          "identifier": "RUMSessionScopeTests/testGivenOverdueLegacyDiscreteAction_whenStopped_itPreservesStopAttributes()",
+          "state": "Failed",
+          "targetName": "DatadogRUMTests"
+        },
+        {
+          "displayName": "testGivenOverdueConcurrentActions_whenExplicitStopTargetsA_itPreservesOnlyRecipientAttributes()",
+          "errorMessages": [
+            "Datadog/DatadogRUMTests/RUMMonitor/Scopes/RUMSessionScopeTests.swift:679 RUMSessionScopeTests/testGivenOverdueConcurrentActions_whenExplicitStopTargetsA_itPreservesOnlyRecipientAttributes(): XCTAssertEqual failed: (\"nil\") is not equal to (\"Optional(\"A\")\")",
+            "Datadog/DatadogRUMTests/RUMMonitor/Scopes/RUMSessionScopeTests.swift:680 RUMSessionScopeTests/testGivenOverdueConcurrentActions_whenExplicitStopTargetsA_itPreservesOnlyRecipientAttributes(): XCTAssertEqual failed: (\"Optional(\"A\")\") is not equal to (\"Optional(\"A-stop\")\")",
+            "Datadog/DatadogRUMTests/RUMMonitor/Scopes/RUMSessionScopeTests.swift:679 RUMSessionScopeTests/testGivenOverdueConcurrentActions_whenExplicitStopTargetsA_itPreservesOnlyRecipientAttributes(): XCTAssertEqual failed: (\"nil\") is not equal to (\"Optional(\"A\")\")",
+            "Datadog/DatadogRUMTests/RUMMonitor/Scopes/RUMSessionScopeTests.swift:680 RUMSessionScopeTests/testGivenOverdueConcurrentActions_whenExplicitStopTargetsA_itPreservesOnlyRecipientAttributes(): XCTAssertEqual failed: (\"Optional(\"A\")\") is not equal to (\"Optional(\"A-stop\")\")"
+          ],
+          "identifier": "RUMSessionScopeTests/testGivenOverdueConcurrentActions_whenExplicitStopTargetsA_itPreservesOnlyRecipientAttributes()",
+          "state": "Failed",
+          "targetName": "DatadogRUMTests"
+        },
+        {
+          "displayName": "testGivenOverdueAction_whenStopTargetsMissingScene_itExpiresWithoutForeignAttributes()",
+          "errorMessages": [],
+          "identifier": "RUMSessionScopeTests/testGivenOverdueAction_whenStopTargetsMissingScene_itExpiresWithoutForeignAttributes()",
+          "state": "Passed",
+          "targetName": "DatadogRUMTests"
+        }
+      ],
+      "summary_sha256": "39d4613db4802355298a050d09ef1ef87d9ae05fb9f897ec92b92b8d96c6ce0c"
+    },
+    {
+      "id": "candidate",
+      "status": "PASS",
+      "coverage": [
+        "RUMSessionScopeTests",
+        "RUMViewScopeTests",
+        "RUMUserActionScopeTests",
+        "MonitorTests"
+      ],
+      "counts": {
+        "expectedFailures": 0,
+        "failed": 0,
+        "notRun": 0,
+        "passed": 212,
+        "skipped": 0,
+        "total": 212
+      },
+      "scheme": "DatadogRUM",
+      "summary_path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/ActionArtifacts/default/RunSomeTests/783F8F6E-AD80-4010-8EA3-07A59082968E.txt",
+      "xcresult_path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/ActionArtifacts/default/RunSomeTests/Test-DatadogRUM-2026.09.17_08-53-21-+0100.xcresult",
+      "results": [
+        {
+          "displayName": "testGivenOverdueLegacyContinuousAction_whenStopped_itPreservesStopAttributes()",
+          "errorMessages": [],
+          "identifier": "RUMSessionScopeTests/testGivenOverdueLegacyContinuousAction_whenStopped_itPreservesStopAttributes()",
+          "state": "Passed",
+          "targetName": "DatadogRUMTests"
+        },
+        {
+          "displayName": "testGivenOverdueLegacyDiscreteAction_whenStopped_itPreservesStopAttributes()",
+          "errorMessages": [],
+          "identifier": "RUMSessionScopeTests/testGivenOverdueLegacyDiscreteAction_whenStopped_itPreservesStopAttributes()",
+          "state": "Passed",
+          "targetName": "DatadogRUMTests"
+        },
+        {
+          "displayName": "testGivenOverdueConcurrentActions_whenExplicitStopTargetsA_itPreservesOnlyRecipientAttributes()",
+          "errorMessages": [],
+          "identifier": "RUMSessionScopeTests/testGivenOverdueConcurrentActions_whenExplicitStopTargetsA_itPreservesOnlyRecipientAttributes()",
+          "state": "Passed",
+          "targetName": "DatadogRUMTests"
+        },
+        {
+          "displayName": "testGivenOverdueAction_whenStopTargetsMissingScene_itExpiresWithoutForeignAttributes()",
+          "errorMessages": [],
+          "identifier": "RUMSessionScopeTests/testGivenOverdueAction_whenStopTargetsMissingScene_itExpiresWithoutForeignAttributes()",
+          "state": "Passed",
+          "targetName": "DatadogRUMTests"
+        }
+      ],
+      "summary_sha256": "938dce9f26fc20413e44246fe1d42735d34448ba031d8c22450bc58cd03d8cb4"
+    }
+  ],
+  "lint": {
+    "source": "PASS, zero violations",
+    "tests": "PASS, zero violations",
+    "diff_check": "PASS"
+  },
+  "limits": [
+    "No backend, physical device, minimum-OS or timing/allocation claim.",
+    "T02 restored from accepted EXP-159 backend evidence plus D12 and existing target/fallback/navigation/timeout checks; no backend rerun.",
+    "Non-action expiration ordering and expired name/type/deadline semantics unchanged."
+  ],
+  "protected_paths_unchanged": true,
+  "identities": {
+    "control": {
+      "revision": "d86ded7f8a0b4c6f0ae7b499033a1f7154bf2bf5",
+      "production_source_sha256": "1736a389cc4b5a643b08094a6e7e737ce3b780e8d43160d20dd84bd1d818fd10",
+      "test_file_sha256": "13ed4d9003e991214bf8af2c7258b34061176908e011ac15d355fc5bdccc7210"
+    },
+    "corrected-control": {
+      "revision": "d86ded7f8a0b4c6f0ae7b499033a1f7154bf2bf5",
+      "production_source_sha256": "1736a389cc4b5a643b08094a6e7e737ce3b780e8d43160d20dd84bd1d818fd10",
+      "test_file_sha256": "e18f1315c5f852470cfaadbd18d3b24cb614248c8d2c23d95cfabd48d0e5a429"
+    },
+    "candidate": {
+      "revision": "d86ded7f8a0b4c6f0ae7b499033a1f7154bf2bf5",
+      "production_source_sha256": "2360e872f1d3585f12975e981cd8b3957ae17a006861792a0e18fbb9fc0402e5",
+      "test_file_sha256": "e18f1315c5f852470cfaadbd18d3b24cb614248c8d2c23d95cfabd48d0e5a429"
+    }
+  },
+  "candidate_files": {
+    "DatadogRUM/Sources/RUMMonitor/Scopes/RUMSessionScope.swift": "2360e872f1d3585f12975e981cd8b3957ae17a006861792a0e18fbb9fc0402e5",
+    "DatadogRUM/Tests/RUMMonitor/Scopes/RUMSessionScopeTests.swift": "e18f1315c5f852470cfaadbd18d3b24cb614248c8d2c23d95cfabd48d0e5a429"
+  }
+}

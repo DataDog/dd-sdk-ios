@@ -93,6 +93,12 @@ packages exclude the protected project and local xcconfig. The repository's
 SPM build helper renames the main workspace, so this experiment did not invoke
 or modify it. Compile evidence does not substitute for an unavailable runtime.
 
+For controlled-clock regressions that assert nanosecond durations, use a fixed
+reference-time Date when the interval must be represented exactly. EXP-163's
+first wall-clock-based discrete deadline differed by 24 ns; its corrected control
+kept the same production source and isolated the actual metadata failures. Keep
+both attempts and distinguish an oracle correction from a production repair.
+
 ## Documentation reading and update workflow
 
 Use progressive disclosure; do not load the frozen history wholesale.
