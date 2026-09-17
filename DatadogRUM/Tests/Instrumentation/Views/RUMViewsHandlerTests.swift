@@ -3156,6 +3156,184 @@ class RUMViewsHandlerTests: XCTestCase {
 
     @available(iOS 27.0, *)
     @MainActor
+    func testSemanticReconnectRejectedReaderDoesNotConsumeGeneration() throws {
+        try assertSemanticReconnect(earlyReader: true, advanceSource: false)
+    }
+
+    @available(iOS 27.0, *)
+    @MainActor
+    func testSemanticReconnectPublishesLatestInputOnceAfterRejection() throws {
+        try assertSemanticReconnect(earlyReader: true, advanceSource: true)
+    }
+
+    @available(iOS 27.0, *)
+    @MainActor
+    func testSemanticReconnectWithoutStaleCallbackUsesFreshIdentity() throws {
+        try assertSemanticReconnect(earlyReader: false, advanceSource: false)
+    }
+
+    @available(iOS 27.0, *)
+    @MainActor
+    func testSemanticReconnectIgnoresInheritedTraitUntilLiveReaderMount() throws {
+        let scene = RUMSceneIdentifier(rawValue: "scene-A")
+        let handler = createHandler(sceneIdentifierFromNotification: { _ in scene })
+        let source = RUMNavigationTransitions(currentDestination: RUMView(name: "Home"))
+        let host = RUMSemanticNavigationHostState()
+        host.reconcile(transitions: source, viewsHandler: handler)
+        host.reconcile(initialSceneIdentifier: scene)
+        XCTAssertEqual(commandSubscriber.receivedCommands.count, 1, "First trait must retain early attribution")
+        for _ in 0..<3 {
+            notificationCenter.post(name: UIScene.didDisconnectNotification, object: nil)
+            host.sceneDidDisconnect(scene)
+            let disconnectedCount = commandSubscriber.receivedCommands.count
+            host.reconcile(transitions: source, viewsHandler: handler)
+            host.reconcile(initialSceneIdentifier: scene)
+            XCTAssertNil(host.engine.sceneIdentifier)
+            XCTAssertFalse(host.suppressionState.isActive)
+            notificationCenter.post(name: UIScene.willConnectNotification, object: nil)
+            notificationCenter.post(name: UIScene.willEnterForegroundNotification, object: nil)
+            host.reconcile(initialSceneIdentifier: scene)
+            host.reconcile(transitions: source, viewsHandler: handler)
+            XCTAssertNil(host.engine.sceneIdentifier)
+            XCTAssertFalse(host.suppressionState.isActive)
+            XCTAssertEqual(commandSubscriber.receivedCommands.count, disconnectedCount)
+            host.reconcile(attachment: .attached(scene))
+            host.reconcile(initialSceneIdentifier: scene)
+            host.reconcile(attachment: .attached(scene))
+            XCTAssertTrue(host.suppressionState.isActive)
+            XCTAssertEqual(commandSubscriber.receivedCommands.count, disconnectedCount + 1)
+        }
+        let starts = commandSubscriber.receivedCommands.compactMap { $0 as? RUMStartViewCommand }
+        XCTAssertEqual(starts.count, 4)
+        for (index, start) in starts.enumerated() {
+            XCTAssertFalse(starts.prefix(index).contains { $0.identity == start.identity })
+        }
+    }
+
+    @available(iOS 27.0, *)
+    @MainActor
+    func testSemanticFinalDetachRequiresReaderAndAcceptsLateInputAndHandler() throws {
+        let scene = RUMSceneIdentifier(rawValue: "scene-A")
+        let handler = createHandler()
+        let host = RUMSemanticNavigationHostState()
+        let oldSource = RUMNavigationTransitions(currentDestination: RUMView(name: "Old"))
+        host.reconcile(transitions: oldSource, viewsHandler: handler)
+        host.reconcile(initialSceneIdentifier: scene)
+        host.finalDetach()
+        let newSource = RUMNavigationTransitions()
+        host.reconcile(transitions: newSource, viewsHandler: nil)
+        host.reconcile(initialSceneIdentifier: scene)
+        XCTAssertNil(host.engine.sceneIdentifier)
+        XCTAssertFalse(host.suppressionState.isActive)
+        host.reconcile(attachment: .attached(scene))
+        newSource.setInitialDestination(RUMView(name: "New"))
+        XCTAssertEqual(commandSubscriber.receivedCommands.count, 2)
+        XCTAssertFalse(host.suppressionState.isActive)
+        host.reconcile(transitions: newSource, viewsHandler: handler)
+        let restored = try XCTUnwrap(commandSubscriber.receivedCommands.last as? RUMStartViewCommand)
+        XCTAssertEqual(restored.name, "New")
+        XCTAssertEqual(restored.target, .scene(scene))
+        XCTAssertEqual(commandSubscriber.receivedCommands.count, 3)
+        host.reconcile(attachment: .attached(scene))
+        XCTAssertEqual(commandSubscriber.receivedCommands.count, 3)
+    }
+
+    @available(iOS 27.0, *)
+    @MainActor
+    func testSemanticPublicationReportsRejectionAndInactiveAcceptance() {
+        let scene = RUMSceneIdentifier(rawValue: "scene-A")
+        let handler = createHandler(sceneIdentifierFromNotification: { _ in scene })
+        notificationCenter.post(name: UIScene.didDisconnectNotification, object: nil)
+        XCTAssertFalse(handler.notify_semanticDestinationAppear(
+            identity: "rejected", name: "Rejected", path: "/rejected", attributes: [:], sceneIdentifier: scene
+        ))
+        notificationCenter.post(name: UIScene.willConnectNotification, object: nil)
+        XCTAssertTrue(handler.notify_semanticDestinationAppear(
+            identity: "staged", name: "Staged", path: "/staged", attributes: [:], sceneIdentifier: scene
+        ))
+        XCTAssertTrue(commandSubscriber.receivedCommands.isEmpty)
+        notificationCenter.post(name: UIScene.willEnterForegroundNotification, object: nil)
+        let starts = commandSubscriber.receivedCommands.compactMap { $0 as? RUMStartViewCommand }
+        XCTAssertEqual(starts.map(\.name), ["Staged"])
+        XCTAssertEqual(starts.first?.target, .scene(scene))
+    }
+
+    @available(iOS 27.0, *)
+    @MainActor
+    func testRejectedSemanticReplacementPreservesAcceptedScene() throws {
+        let sceneA = RUMSceneIdentifier(rawValue: "scene-A")
+        let sceneB = RUMSceneIdentifier(rawValue: "scene-B")
+        let handler = createHandler(sceneIdentifierFromNotification: { _ in sceneB })
+        XCTAssertTrue(handler.notify_semanticDestinationAppear(
+            identity: "accepted", name: "Accepted", path: "/a", attributes: [:], sceneIdentifier: sceneA
+        ))
+        notificationCenter.post(name: UIScene.didDisconnectNotification, object: nil)
+        XCTAssertFalse(handler.notify_semanticDestinationReplace(
+            identity: "accepted",
+            sceneIdentifier: sceneA,
+            replacementIdentity: "rejected",
+            replacementName: "Rejected",
+            replacementPath: "/b",
+            replacementAttributes: [:],
+            replacementSceneIdentifier: sceneB
+        ))
+        XCTAssertEqual(commandSubscriber.receivedCommands.count, 1)
+        handler.notify_semanticDestinationDisappear(identity: "accepted", sceneIdentifier: sceneA)
+        let stop = try XCTUnwrap(commandSubscriber.receivedCommands.last as? RUMStopViewCommand)
+        XCTAssertEqual(stop.identity, ViewIdentifier("accepted"))
+        XCTAssertEqual(stop.target, .scene(sceneA))
+        XCTAssertEqual(commandSubscriber.receivedCommands.count, 2)
+    }
+
+    @available(iOS 27.0, *)
+    @MainActor
+    private func assertSemanticReconnect(earlyReader: Bool, advanceSource: Bool) throws {
+        let sceneA = RUMSceneIdentifier(rawValue: "scene-A")
+        let sceneB = RUMSceneIdentifier(rawValue: "scene-B")
+        let handler = createHandler(sceneIdentifierFromNotification: { notification in
+            notification.object as? String == "scene-A" ? sceneA : nil
+        })
+        let source = RUMNavigationTransitions(currentDestination: RUMView(name: "Home"))
+        let host = RUMSemanticNavigationHostState()
+        host.reconcile(transitions: source, viewsHandler: handler)
+        host.reconcile(attachment: .attached(sceneA))
+        let initial = try XCTUnwrap(commandSubscriber.receivedCommands.first as? RUMStartViewCommand)
+        handler.notify_semanticDestinationAppear(
+            identity: "peer", name: "Peer", path: "/peer", attributes: [:], sceneIdentifier: sceneB
+        )
+        notificationCenter.post(name: UIScene.didDisconnectNotification, object: "scene-A")
+        host.sceneDidDisconnect(sceneA)
+        host.reconcile(transitions: source, viewsHandler: handler)
+        if earlyReader { host.reconcile(attachment: .attached(sceneA)) }
+        XCTAssertFalse(host.suppressionState.isActive)
+        XCTAssertEqual(commandSubscriber.receivedCommands.count, 3)
+        if advanceSource {
+            source.willNavigate(id: "latest", destination: RUMView(name: "Latest"))
+            source.commit(id: "latest")
+            XCTAssertFalse(host.suppressionState.isActive)
+            XCTAssertEqual(commandSubscriber.receivedCommands.count, 3)
+        }
+        notificationCenter.post(name: UIScene.willConnectNotification, object: "scene-A")
+        notificationCenter.post(name: UIScene.willEnterForegroundNotification, object: "scene-A")
+        host.reconcile(attachment: .attached(sceneA))
+        host.reconcile(attachment: .attached(sceneA))
+        host.reconcile(transitions: source, viewsHandler: handler)
+        let starts = commandSubscriber.receivedCommands.compactMap { $0 as? RUMStartViewCommand }
+        let restored = try XCTUnwrap(starts.last { $0.target == .scene(sceneA) })
+        XCTAssertEqual(starts.filter { $0.target == .scene(sceneA) }.count, 2)
+        XCTAssertNotEqual(restored.identity, initial.identity)
+        XCTAssertEqual(restored.name, advanceSource ? "Latest" : "Home")
+        XCTAssertTrue(host.suppressionState.isActive)
+        XCTAssertEqual(starts.filter { $0.target == .scene(sceneB) }.count, 1)
+        host.finalDetach()
+        let stops = commandSubscriber.receivedCommands.compactMap { $0 as? RUMStopViewCommand }
+        XCTAssertEqual(stops.filter { $0.target == .scene(sceneA) }.map(\.identity), [initial.identity, restored.identity])
+        XCTAssertFalse(stops.contains { $0.target == .scene(sceneB) })
+        XCTAssertFalse(host.suppressionState.isActive)
+    }
+
+    @available(iOS 27.0, *)
+    @MainActor
     func testObservedNavigationMetadata_usesSafeAutomaticCaseNamesAndSparseOverrides() {
         let thread = RUMNavigationDestination.route(
             ObservedNavigationRoute.thread(42)

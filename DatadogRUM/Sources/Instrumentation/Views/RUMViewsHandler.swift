@@ -358,11 +358,12 @@ internal final class RUMViewsHandler {
         self.subscriber = subscriber
     }
 
-    private func add(view: View, stoppingCurrentAt time: Date? = nil) {
+    @discardableResult
+    private func add(view: View, stoppingCurrentAt time: Date? = nil) -> Bool {
         #if !os(watchOS)
         if let sceneIdentifier = view.sceneIdentifier,
-           disconnectedSceneIdentifiers.contains(sceneIdentifier) {
-            return
+           !canTrackViews(in: sceneIdentifier) {
+            return false
         }
         #endif
 
@@ -399,11 +400,11 @@ internal final class RUMViewsHandler {
             // trustworthy navigation destinations. Do not let one displace the
             // retained destination when manual authority ends.
             if view.isGenericSwiftUIFallback {
-                return
+                return false
             }
             if insertionIndex > stack.startIndex,
                stack[stack.index(before: insertionIndex)].identity == view.identity {
-                return
+                return true
             }
 
             stack.removeAll { candidate in
@@ -413,12 +414,12 @@ internal final class RUMViewsHandler {
             let updatedInsertionIndex = firstIndexOfManualSuffix(in: stack) ?? stack.endIndex
             stack.insert(view, at: updatedInsertionIndex)
             stacks[stackIndex].views = stack
-            return
+            return true
         }
 
         // Ignore the view if it's already visible
         if view.identity == stack.last?.identity {
-            return
+            return true
         }
 
         if view.instrumentationType == .manual,
@@ -440,6 +441,7 @@ internal final class RUMViewsHandler {
         stack.removeAll(where: { $0.identity == view.identity })
         stack.append(view)
         stacks[stackIndex].views = stack
+        return true
     }
 
     /// Returns where a lower-priority platform view should be staged while an
@@ -964,6 +966,12 @@ internal final class RUMViewsHandler {
     }
 
     #if !os(watchOS)
+    /// Unknown scenes may establish their first view; only an explicit
+    /// disconnect rejects publication until a new connection is observed.
+    func canTrackViews(in sceneIdentifier: RUMSceneIdentifier) -> Bool {
+        !disconnectedSceneIdentifiers.contains(sceneIdentifier)
+    }
+
     @objc
     private func sceneWillConnect(_ notification: Notification) {
         guard let sceneIdentifier = sceneIdentifierFromNotification(notification) else {
@@ -1258,13 +1266,14 @@ extension RUMViewsHandler {
     /// authority for its container. Automatic discoveries in that subtree may
     /// continue underneath without becoming the scene's current destination.
     @MainActor
+    @discardableResult
     func notify_semanticDestinationAppear(
         identity: String,
         name: String,
         path: String,
         attributes: [AttributeKey: AttributeValue],
         sceneIdentifier: RUMSceneIdentifier
-    ) {
+    ) -> Bool {
         add(
             view: .init(
                 identity: ViewIdentifier(identity),
@@ -1293,6 +1302,7 @@ extension RUMViewsHandler {
     /// Replaces one exact destination without revealing an automatic or manual
     /// entry below it between the two committed occurrences.
     @MainActor
+    @discardableResult
     func notify_semanticDestinationReplace(
         identity: String,
         sceneIdentifier: RUMSceneIdentifier,
@@ -1301,7 +1311,10 @@ extension RUMViewsHandler {
         replacementPath: String,
         replacementAttributes: [AttributeKey: AttributeValue],
         replacementSceneIdentifier: RUMSceneIdentifier
-    ) {
+    ) -> Bool {
+        guard canTrackViews(in: replacementSceneIdentifier) else {
+            return false
+        }
         let replacement = View(
             identity: ViewIdentifier(replacementIdentity),
             name: replacementName,
@@ -1314,7 +1327,7 @@ extension RUMViewsHandler {
         if
             sceneIdentifier == replacementSceneIdentifier,
             replace(identity: ViewIdentifier(identity), with: replacement) {
-            return
+            return true
         }
 
         remove(
@@ -1322,7 +1335,7 @@ extension RUMViewsHandler {
             sceneIdentifier: sceneIdentifier,
             stopAttributes: [:]
         )
-        add(view: replacement)
+        return add(view: replacement)
     }
 
     /// Starts a router-owned SwiftUI presentation as manual authority so

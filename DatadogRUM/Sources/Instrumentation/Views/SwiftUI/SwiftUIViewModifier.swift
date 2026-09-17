@@ -5303,6 +5303,8 @@ internal final class RUMSemanticNavigationHostState {
     let suppressionState = RUMSwiftUIAutomaticViewSuppressionState()
 
     private let hostID = UUID()
+    private var attachmentGeneration: UInt64 = 0
+    private var requiresReaderMount = false
     private(set) var selectedTransitions: RUMNavigationTransitions?
     private var observationID: UUID?
     private var latestSnapshot: RUMNavigationTransitions.Snapshot?
@@ -5332,12 +5334,27 @@ internal final class RUMSemanticNavigationHostState {
         }
     }
 
+    /// An inherited trait can bootstrap the first mount, but cannot prove a
+    /// retained host has rejoined a scene after its previous lifetime ended.
+    func reconcile(initialSceneIdentifier: RUMSceneIdentifier) {
+        guard !requiresReaderMount else {
+            return
+        }
+        reconcile(attachment: .attached(initialSceneIdentifier))
+    }
+
     func reconcile(attachment: RUMViewTrackingState.Attachment) {
+        if case .attached(let sceneIdentifier?) = attachment,
+           viewsHandler?.canTrackViews(in: sceneIdentifier) == false {
+            requiresReaderMount = true
+            return
+        }
         engine.reconcile(attachment: attachment)
 
         guard case .attached(let sceneIdentifier?) = attachment else {
             return
         }
+        requiresReaderMount = false
         if
             let activeOccurrence,
             activeOccurrence.sceneIdentifier != sceneIdentifier {
@@ -5374,6 +5391,9 @@ internal final class RUMSemanticNavigationHostState {
     }
 
     private func releaseSource() {
+        attachmentGeneration &+= 1
+        requiresReaderMount = true
+        engine.reconcile(attachment: .detached)
         activeOccurrence = nil
         suppressionState.disappear()
         if let observationID {
@@ -5391,6 +5411,7 @@ internal final class RUMSemanticNavigationHostState {
 
     private func activateLatestSnapshotIfPossible() {
         guard
+            !requiresReaderMount,
             let latestSnapshot,
             let sceneIdentifier = engine.sceneIdentifier,
             let viewsHandler
@@ -5401,10 +5422,11 @@ internal final class RUMSemanticNavigationHostState {
             return
         }
 
-        let identity = "rum-navigation-host-\(hostID.uuidString)-\(latestSnapshot.generation)"
+        let identity = "rum-navigation-host-\(hostID.uuidString)-\(attachmentGeneration)-\(latestSnapshot.generation)"
         let destination = latestSnapshot.destination
+        let accepted: Bool
         if let activeOccurrence {
-            viewsHandler.notify_semanticDestinationReplace(
+            accepted = viewsHandler.notify_semanticDestinationReplace(
                 identity: activeOccurrence.identity,
                 sceneIdentifier: activeOccurrence.sceneIdentifier,
                 replacementIdentity: identity,
@@ -5414,13 +5436,16 @@ internal final class RUMSemanticNavigationHostState {
                 replacementSceneIdentifier: sceneIdentifier
             )
         } else {
-            viewsHandler.notify_semanticDestinationAppear(
+            accepted = viewsHandler.notify_semanticDestinationAppear(
                 identity: identity,
                 name: destination.name,
                 path: destination.path ?? destination.name,
                 attributes: destination.attributes,
                 sceneIdentifier: sceneIdentifier
             )
+        }
+        guard accepted else {
+            return
         }
         activeOccurrence = ActiveOccurrence(
             sourceGeneration: latestSnapshot.generation,
@@ -6021,6 +6046,7 @@ private struct RUMSemanticNavigationHostLifetimeModifier: SwiftUI.ViewModifier {
     var testingOnReaderCreate: ((RUMSceneIdentifierReader.ObserverView) -> Void)?
         = nil
 #endif
+    let onInitialSceneAttachment: ((RUMSceneIdentifier) -> Void)?
     let onAttachment: (RUMViewTrackingState.Attachment) -> Void
     let onSceneDisconnect: (RUMSceneIdentifier) -> Void
     let onFinalDetach: () -> Void
@@ -6035,6 +6061,7 @@ private struct RUMSemanticNavigationHostLifetimeModifier: SwiftUI.ViewModifier {
         notificationCenter: NotificationCenter,
         authorityRegistry: RUMSwiftUIViewAuthorityRegistry? = nil,
         suppressionState: RUMSwiftUIAutomaticViewSuppressionState? = nil,
+        onInitialSceneAttachment: ((RUMSceneIdentifier) -> Void)? = nil,
         onAttachment: @escaping (RUMViewTrackingState.Attachment) -> Void = { _ in },
         onSceneDisconnect: @escaping (RUMSceneIdentifier) -> Void,
         onFinalDetach: @escaping () -> Void
@@ -6044,6 +6071,7 @@ private struct RUMSemanticNavigationHostLifetimeModifier: SwiftUI.ViewModifier {
         self.notificationCenter = notificationCenter
         self.authorityRegistry = authorityRegistry
         self.suppressionState = suppressionState
+        self.onInitialSceneAttachment = onInitialSceneAttachment
         self.onAttachment = onAttachment
         self.onSceneDisconnect = onSceneDisconnect
         self.onFinalDetach = onFinalDetach
@@ -6058,6 +6086,7 @@ private struct RUMSemanticNavigationHostLifetimeModifier: SwiftUI.ViewModifier {
         suppressionState: RUMSwiftUIAutomaticViewSuppressionState? = nil,
         testingOnReaderCreate:
             ((RUMSceneIdentifierReader.ObserverView) -> Void)?,
+        onInitialSceneAttachment: ((RUMSceneIdentifier) -> Void)? = nil,
         onAttachment: @escaping (RUMViewTrackingState.Attachment) -> Void = { _ in },
         onSceneDisconnect: @escaping (RUMSceneIdentifier) -> Void,
         onFinalDetach: @escaping () -> Void
@@ -6068,6 +6097,7 @@ private struct RUMSemanticNavigationHostLifetimeModifier: SwiftUI.ViewModifier {
             notificationCenter: notificationCenter,
             authorityRegistry: authorityRegistry,
             suppressionState: suppressionState,
+            onInitialSceneAttachment: onInitialSceneAttachment,
             onAttachment: onAttachment,
             onSceneDisconnect: onSceneDisconnect,
             onFinalDetach: onFinalDetach
@@ -6095,7 +6125,7 @@ private struct RUMSemanticNavigationHostLifetimeModifier: SwiftUI.ViewModifier {
                             suppressionState: suppressionState
                         )
                     },
-                    onInitialMount: reconcile(sceneIdentifier:),
+                    onInitialMount: reconcileInitialTrait(sceneIdentifier:),
                     onMount: reconcile(sceneIdentifier:),
                     onChange: { attachment in
                         reconcile(attachment: attachment)
@@ -6123,7 +6153,15 @@ private struct RUMSemanticNavigationHostLifetimeModifier: SwiftUI.ViewModifier {
         guard let initialSceneIdentifier else {
             return
         }
-        reconcile(attachment: .attached(initialSceneIdentifier))
+        reconcileInitialTrait(sceneIdentifier: initialSceneIdentifier)
+    }
+
+    private func reconcileInitialTrait(sceneIdentifier: RUMSceneIdentifier) {
+        if let onInitialSceneAttachment {
+            onInitialSceneAttachment(sceneIdentifier)
+        } else {
+            reconcile(attachment: .attached(sceneIdentifier))
+        }
     }
 
     private var initialSceneIdentifier: RUMSceneIdentifier? {
@@ -6309,6 +6347,7 @@ public struct RUMNavigationHost<Content: SwiftUI.View>: SwiftUI.View {
                 authorityRegistry: instrumentation?.swiftUIViewAuthorityRegistry,
                 suppressionState: hostState.suppressionState,
                 testingOnReaderCreate: testingOnLifetimeReaderCreate,
+                onInitialSceneAttachment: hostState.reconcile(initialSceneIdentifier:),
                 onAttachment: { attachment in
                     hostState.reconcile(attachment: attachment)
                 },
@@ -6328,6 +6367,7 @@ public struct RUMNavigationHost<Content: SwiftUI.View>: SwiftUI.View {
                 .lifecycleNotificationCenter ?? .default,
             authorityRegistry: instrumentation?.swiftUIViewAuthorityRegistry,
             suppressionState: hostState.suppressionState,
+            onInitialSceneAttachment: hostState.reconcile(initialSceneIdentifier:),
             onAttachment: { attachment in
                 hostState.reconcile(attachment: attachment)
             },
