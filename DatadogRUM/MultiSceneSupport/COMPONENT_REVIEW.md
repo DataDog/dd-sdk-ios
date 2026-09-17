@@ -1,5 +1,9 @@
 # Incremental multi-scene component review
 
+**This bounded responsibility-review cycle is completed.** Current release
+obligations belong to [the register](release-gates.json); this record does not
+certify release readiness or direct the next experiment.
+
 Original review 2026-09-17 against `af63657f08dbecb66e7c3ae97ed53fc8f7b065b9`.
 R02 was reviewed again at signed `7b77f60eb` during EXP-168, and R04 at signed
 `66d1ccb02`/`4ba7179c6` during EXP-170/171. R06 was reviewed again at signed
@@ -30,10 +34,10 @@ because a report exists. No production source changed during this review.
 
 Names above identify coverage in `SwiftUIViewNameExtractorTests.swift` and
 `RUMViewsHandlerTests.swift`; their accepted EXP-159 suite checkpoint is 1,260/1,260.
-That checkpoint was not rerun merely for this review and does not cover the gaps
+That checkpoint was not rerun merely for this review and does not by itself cover the subsequently repaired paths
 below. A passing broad suite does not override a concrete untested failure path.
 
-## Findings and remaining decisive checks
+## Historical findings and repair evidence
 
 **D03 / R02, registration lifetime — closed in EXP-168.** Mounted controls on
 27/26.5 retain one registration and tracking state per cycle, reaching 25, while
@@ -57,7 +61,7 @@ affected tests pass. Mounted explicit/capability hosts pass29/29 versus19/29,
 including automatic owners before input and an action submitted immediately at
 the first accepted input. Two previous tests that assumed authority without a
 handler now distinguish source pinning from actual publication. D08 still owns
-rejected disconnected publication; R05 still needs reentrant fan-out evidence.
+rejected disconnected publication; R05 reentrant fan-out is resolved separately by EXP-174 below.
 
 **D08, disconnected host — closed in EXP-170.**
 The handler now reports accepted insertion/replacement; rejected cross-scene

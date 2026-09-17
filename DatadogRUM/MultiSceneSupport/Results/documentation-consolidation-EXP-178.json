@@ -1,0 +1,181 @@
+{
+  "schema_version": 1,
+  "checkpoint": "cdc9a6e528ae2027b5e6011e8eb5a0f3bb958318",
+  "sdk_revision": "1c6104cacb95751137c700e1812bcb1c0f05a359",
+  "scope": "Bounded documentation consolidation; no SDK/runtime/backend reruns",
+  "source_sha256": {
+    ".continue-here.md": "d384d4016368359f6c26ef24c4218c2a49c9bddd9d0c1eb9d43a6906820f4a7a",
+    "DatadogRUM/MULTI_SCENE_SUPPORT.md": "0d8a0723c1e28f2144f572fcdf1374e9f727ea6670ad8ef41c85e498c548183f",
+    "DatadogRUM/MultiSceneSupport/PLAN.md": "d0fbb820091a72ca2a2a1636b4ddc637c7704a04ebf5b14f869060a5e65c5b21",
+    "DatadogRUM/MultiSceneSupport/ASSESSMENT.md": "02d6e6307489075df71406d4dd3b09d12951b67d9f1b2a31a8e41cead0bd6383",
+    "DatadogRUM/MultiSceneSupport/EXPERIMENTS.md": "b8ce8e0cabd46cf85eb11915190f1fff8d3a278cd90ec6aa01d73b384bfaa0df",
+    "DatadogRUM/MultiSceneSupport/TOOLING_RUNBOOK.md": "4b42e9f495192d77f1b82782ad003936f1695d007fb76dc53e0a24e5803dd8a4",
+    "DatadogRUM/MultiSceneSupport/PRODUCTION_SAFETY_REVIEW.md": "6bbef179c90908ffe93e90eb6e89bda94ea5eff05572761acc6266fc27959705",
+    "DatadogRUM/MultiSceneSupport/REVIEW_TRIAGE.md": "f06c91894371f951c9450f190fa009e2098c23ed7fd7e5512573375bc629969e",
+    "DatadogRUM/MultiSceneSupport/COMPONENT_REVIEW.md": "4e479212ea8b7a30fe634727556b769367c3496ee6889a9452b4963454bc8822"
+  },
+  "unchanged_obligations_and_evidence": {
+    "DatadogRUM/MultiSceneSupport/release-gates.json": "387a54f220611f0d553561c4ee0c39d2d1ca9d9a33352407561386dd0229de8e",
+    "DatadogRUM/MultiSceneSupport/BASELINES.md": "a36b9666d012661a030e243f296b52568a5ba1bb5ca08d40e20efa6f6892bde4",
+    "DatadogRUM/MultiSceneSupport/REJECTED_APPROACHES.md": "d00656b8ad889f992e5e2206e3252bfa0b49430a48783ce14e64be8083f203ae",
+    "DatadogRUM/MultiSceneSupport/Experiments/EXP-143-199.md": "d212d3dae7839782bd54c6777b6f9839eabeb759ffaa5b5ab74057994e4dfbb5"
+  },
+  "archive_tree": "040000 tree 5c170c8303963005f0691adea0ea90f485b09840\tDatadogRUM/MultiSceneSupport/Archive",
+  "moved": [
+    {
+      "source": "DatadogRUM/MULTI_SCENE_SUPPORT.md",
+      "title": "Superseded overview and support narratives",
+      "sha256": "c40096e9afeb03b11fe4f1d1b713b906788f25e8a16962026ee232d016645211",
+      "id": "moved-01",
+      "anchor": "moved-01"
+    },
+    {
+      "source": "DatadogRUM/MultiSceneSupport/PLAN.md",
+      "title": "Superseded execution priorities and review staging",
+      "sha256": "e161784947c871af1b766380c6ef46d54ede47c87474e1e26e0c1ba0f7b438b8",
+      "id": "moved-02",
+      "anchor": "moved-02"
+    },
+    {
+      "source": "DatadogRUM/MultiSceneSupport/ASSESSMENT.md",
+      "title": "Historical support conclusions and routing audit",
+      "sha256": "02d6e6307489075df71406d4dd3b09d12951b67d9f1b2a31a8e41cead0bd6383",
+      "id": "moved-03",
+      "anchor": "moved-03"
+    },
+    {
+      "source": ".continue-here.md",
+      "title": "Superseded restart history",
+      "sha256": "d384d4016368359f6c26ef24c4218c2a49c9bddd9d0c1eb9d43a6906820f4a7a",
+      "id": "moved-04",
+      "anchor": "moved-04"
+    },
+    {
+      "source": "DatadogRUM/MultiSceneSupport/EXPERIMENTS.md",
+      "title": "Previous experiment index and checkpoint narratives",
+      "sha256": "b8ce8e0cabd46cf85eb11915190f1fff8d3a278cd90ec6aa01d73b384bfaa0df",
+      "id": "moved-05",
+      "anchor": "moved-05"
+    },
+    {
+      "source": "DatadogRUM/MultiSceneSupport/TOOLING_RUNBOOK.md",
+      "title": "Earlier runbook experiment-specific appendices",
+      "sha256": "46a7158de342acfd1b87cdd5b88843ac1e58528085bf69e90c44b440fa7351c6",
+      "id": "moved-06",
+      "anchor": "moved-06"
+    },
+    {
+      "source": "DatadogRUM/MultiSceneSupport/TOOLING_RUNBOOK.md",
+      "title": "Superseded documentation update workflow",
+      "sha256": "d76e9a1fa19b7e12a21486648252a1eb30f31179c8a5f1fef8a4574a4100bd12",
+      "id": "moved-07",
+      "anchor": "moved-07"
+    },
+    {
+      "source": "DatadogRUM/MultiSceneSupport/TOOLING_RUNBOOK.md",
+      "title": "Historical procedure example",
+      "sha256": "71d57e48a9b3976a17635c6e375919865bce4cac21441f435dcc048925741d8c",
+      "id": "moved-08",
+      "anchor": "moved-08"
+    },
+    {
+      "source": "DatadogRUM/MultiSceneSupport/TOOLING_RUNBOOK.md",
+      "title": "Historical procedure example",
+      "sha256": "9ff7f7f6533f29e5deefbcf56d4c07a4f3fb4f23b8438a7f3f31672df638cc69",
+      "id": "moved-09",
+      "anchor": "moved-09"
+    },
+    {
+      "source": "DatadogRUM/MultiSceneSupport/TOOLING_RUNBOOK.md",
+      "title": "Historical procedure example",
+      "sha256": "90dc8b80e347cc5ddd03cde2702b390a686f24d2c6a0b02852ecfbcac60f8375",
+      "id": "moved-10",
+      "anchor": "moved-10"
+    },
+    {
+      "source": "DatadogRUM/MultiSceneSupport/PRODUCTION_SAFETY_REVIEW.md",
+      "title": "Earlier review progress preface and repair order",
+      "sha256": "e8edb58486ecf399a01b1fd0b9fe78f6cece9f3e9b47382433bb8f32a29f2d91",
+      "id": "moved-11",
+      "anchor": "moved-11"
+    },
+    {
+      "source": "DatadogRUM/MultiSceneSupport/REVIEW_TRIAGE.md",
+      "title": "Original triage chronology and repair ordering",
+      "sha256": "24770c50ea2b1123d8c66e89447365b08fd66847f9c4d153e514823ed58b4edd",
+      "id": "moved-12",
+      "anchor": "moved-12"
+    },
+    {
+      "source": "DatadogRUM/MultiSceneSupport/COMPONENT_REVIEW.md",
+      "title": "Superseded component-review framing",
+      "sha256": "27a08aaa5a60dadc87eb4fb2572ddbfc1a8ea8abf127999005185de9940e6e55",
+      "id": "moved-13",
+      "anchor": "moved-13"
+    }
+  ],
+  "archive_locator_scan": "Only recorded lookup tokens and headings inspected; EXP-048 shares the EXP-047 through EXP-049 paragraph at line1563. Frozen archive not modified.",
+  "validation": {
+    "state": "PASS",
+    "gate_inventory_status_scope_and_evidence": "register byte-identical;66 existing gates retained",
+    "approved_product_decisions": "goal,24 decisions and API-review questions byte-identical; original early-start obligations retained in active behavioral boundaries",
+    "baseline_thresholds_and_results": "BASELINES.md byte-identical",
+    "detailed_experiment_shard_and_results": "unchanged since cdc9a6e52; all accepted, failed, invalid and inconclusive attempts retained",
+    "frozen_archive": "tracked tree unchanged; targeted locator search only",
+    "verbatim_moved_excerpts": 13,
+    "documentation_negative_controls": "6/6 PASS, including deleted/empty index and omitted active-record detection",
+    "generated_checklist_progress": "PASS",
+    "active_links_checked_before_excerpt_map": 386,
+    "experiment_rows": 178,
+    "protected_user_paths": "index, metadata and project hash unchanged; configuration contents never opened",
+    "sdk_or_simulator_or_backend_reruns_for_consolidation": 0,
+    "active_links_checked": 399
+  },
+  "active_document_sizes": {
+    ".continue-here.md": {
+      "before_lines": 199,
+      "after_lines": 79,
+      "sha256": "a058d53cc2be7721a20c940e0f9977a346d20999351e5175bc95c6aef7caf982"
+    },
+    "DatadogRUM/MULTI_SCENE_SUPPORT.md": {
+      "before_lines": 668,
+      "after_lines": 220,
+      "sha256": "84cdea12bc90c9bfa441ac5d2d5f3d6c1020f7a070a6cec01902cde69267cac1"
+    },
+    "DatadogRUM/MultiSceneSupport/PLAN.md": {
+      "before_lines": 238,
+      "after_lines": 194,
+      "sha256": "a8c5b11a4f05e7424a5fcd69f161383ef9b033374c7cc641998e1b17a772372a"
+    },
+    "DatadogRUM/MultiSceneSupport/ASSESSMENT.md": {
+      "before_lines": 537,
+      "after_lines": 62,
+      "sha256": "1a79f424566e0fabd175a4224eff3a333e20c250f7566781e950d7246e1c7539"
+    },
+    "DatadogRUM/MultiSceneSupport/EXPERIMENTS.md": {
+      "before_lines": 393,
+      "after_lines": 203,
+      "sha256": "291c32613756f402ef153c1d61d219d305b804b7c825fb7c6ffb6ca4283b8728"
+    },
+    "DatadogRUM/MultiSceneSupport/TOOLING_RUNBOOK.md": {
+      "before_lines": 1444,
+      "after_lines": 1202,
+      "sha256": "cae17b50007e72be9a7b1bf796784949dc8799107db0ab88de49423e2e0303a6"
+    },
+    "DatadogRUM/MultiSceneSupport/PRODUCTION_SAFETY_REVIEW.md": {
+      "before_lines": 235,
+      "after_lines": 177,
+      "sha256": "d3aabc148ddc58034a66c362445d6b1a477150acf1ca748b86b789b369e0b020"
+    },
+    "DatadogRUM/MultiSceneSupport/REVIEW_TRIAGE.md": {
+      "before_lines": 94,
+      "after_lines": 57,
+      "sha256": "8b6dd48e70ab41e30a01ebcd8277f208d7310e9d2a6f45cafe7467b78b987c40"
+    },
+    "DatadogRUM/MultiSceneSupport/COMPONENT_REVIEW.md": {
+      "before_lines": 150,
+      "after_lines": 154,
+      "sha256": "3c7ab8e0d187c6ee423cb65d05b842116c31e877a0f2157a393eb0df21052130"
+    }
+  }
+}

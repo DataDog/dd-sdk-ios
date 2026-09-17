@@ -1,86 +1,40 @@
-**Production safety review of multi-scene SDK instrumentation**
+# Production safety review and dispositions
 
-Updated 2026-09-17 during plan execution. **Release remains on hold: all 12
-review findings are closed, 0 remain open.** The finite checklist has 32/66
-release gates closed. [PLAN.md](PLAN.md) owns the release contract and
-[REVIEW_TRIAGE.md](REVIEW_TRIAGE.md) owns assessed repair order and evidence limits.
-Review IDs R01–R12 below map to repair gates D01–D12, not PLAN's responsibility
-review gates R01–R06.
+**This review cycle is completed.** Its original findings R01–R12 map to repair
+gates D01–D12 and have the repair evidence below. These IDs are distinct from
+the responsibility-review gates R01–R06. The original reviewer, source revision,
+comparison base, findings and limitations remain attributable below.
 
-| Finding / gate | Current disposition | Evidence or next decisive check |
+Review closure does not imply overall release readiness. Current release status
+belongs exclusively to [release-gates.json](release-gates.json) and [PLAN](PLAN.md).
+[Triage](REVIEW_TRIAGE.md) records the initial assessment and finding boundaries;
+[component review](COMPONENT_REVIEW.md) records the bounded responsibility pass.
+
+| Finding / gate | Current disposition | Repair evidence and retained limitation |
 | --- | --- | --- |
-| R01 / D01 | CLOSED | EXP-162, signed `e420528f7`: full watchOS RUM Debug/Release builds and 70 iOS Resource/action tests |
-| R02 / D02 | CLOSED | EXP-162, signed `af8864528`: full macOS WebView Debug/Release builds and 28 iOS bridge tests |
-| R03 / D03 | CLOSED | EXP-168, signed `7b77f60eb`: 303 tests; mounted 27/26.5 checks 37/37 each, zero weak survivors and three method implementations restored after SDK stop |
-| R04 / D04 | CLOSED | EXP-166, signed `5eb3c1aac`: 282 affected tests, core/task/lifetime and all-consumer isolation; allocation1/64 and latency/reentrancy budgets pass on27/26.5 |
-| R05 / D05 | CLOSED | EXP-167, signed `0aaafa7bd`: failing source-less start/identity-stop controls, 198 tests and two-native-scene 47/47 runtime acceptance |
-| R06 / D06 | CLOSED | EXP-167: controlled timeout/max-duration lifecycle boundaries, fresh peer IDs and exact action/Resource owners; background and legacy controls |
-| R07 / D07 | CLOSED | EXP-169, local unsigned `a9aaf25a7`: four failing controls, 119 tests and mounted29/29; automatic eligibility before input and exact immediate semantic owners |
-| R08 / D08 | CLOSED | EXP-170, signed `66d1ccb02`: three failing controls,314 affected tests and mounted51/51 versus39/51; fresh reconnect Resource/Log owners, peer continuity and delayed remount. H09 still requires genuine OS ordering. |
-| R09 / D09 | CLOSED | EXP-164 at local `a9abc092b`: 31 tests and actual mounted fixture 19/19; zero background reads/MTC diagnostics versus control 5 reads/4 diagnostics |
-| R10 / D10 | CLOSED | EXP-173, signed `7619eb8a2`:337 tests; actual mounted Bindings/sheet/cover77/77 versus55/77, exact Resource/Log owners and native dismissal; all failed attempts preserved |
-| R11 / D11 | CLOSED | EXP-165, signed `9a1ee83a5`: 102 tests, 19/19 mounted WebView/Replay checks; legacy association restored, peers excluded |
-| R12 / D12 | CLOSED | EXP-163, signed `084dff4c1`: three failing recipient controls, 212 affected tests pass; own overdue-stop attributes retained without peer leakage |
+| R01 / D01 | CLOSED | [EXP-162](Experiments/EXP-143-199.md#exp-162--restore-watchos-resource-and-macos-webview-compilation), signed `e420528f7`: full watchOS RUM Debug/Release builds and 70 iOS Resource/action tests |
+| R02 / D02 | CLOSED | [EXP-162](Experiments/EXP-143-199.md#exp-162--restore-watchos-resource-and-macos-webview-compilation), signed `af8864528`: full macOS WebView Debug/Release builds and 28 iOS bridge tests |
+| R03 / D03 | CLOSED | [EXP-168](Experiments/EXP-143-199.md#exp-168--release-keyed-swiftui-registrations-and-instrumentation), signed `7b77f60eb`: 303 tests; mounted 27/26.5 checks 37/37 each, zero weak survivors and three method implementations restored after SDK stop |
+| R04 / D04 | CLOSED | [EXP-166](Experiments/EXP-143-199.md#exp-166--isolate-ui-event-handoff-by-sdk-lifecycle-and-reduce-allocations), signed `5eb3c1aac`: 282 affected tests, core/task/lifetime and all-consumer isolation; allocation1/64 and latency/reentrancy budgets pass on27/26.5 |
+| R05 / D05 | CLOSED | [EXP-167](Experiments/EXP-143-199.md#exp-167--preserve-navigation-ownership-across-session-restoration), signed `0aaafa7bd`: failing source-less start/identity-stop controls, 198 tests and two-native-scene 47/47 runtime acceptance |
+| R06 / D06 | CLOSED | [EXP-167](Experiments/EXP-143-199.md#exp-167--preserve-navigation-ownership-across-session-restoration): controlled timeout/max-duration lifecycle boundaries, fresh peer IDs and exact action/Resource owners; background and legacy controls |
+| R07 / D07 | CLOSED | [EXP-169](Experiments/EXP-143-199.md#exp-169--keep-automatic-tracking-until-semantic-input-is-ready), local unsigned `a9aaf25a7`: four failing controls, 119 tests and mounted29/29; automatic eligibility before input and exact immediate semantic owners |
+| R08 / D08 | CLOSED | [EXP-170](Experiments/EXP-143-199.md#exp-170--accept-semantic-reconnects-only-after-a-live-attachment), signed `66d1ccb02`: three failing controls,314 affected tests and mounted51/51 versus39/51; fresh reconnect Resource/Log owners, peer continuity and delayed remount. H09 still requires genuine OS ordering. |
+| R09 / D09 | CLOSED | [EXP-164](Experiments/EXP-143-199.md#exp-164--preserve-controller-api-caller-thread-compatibility) at local `a9abc092b`: 31 tests and actual mounted fixture 19/19; zero background reads/MTC diagnostics versus control 5 reads/4 diagnostics |
+| R10 / D10 | CLOSED | [EXP-173](Experiments/EXP-143-199.md#exp-173--commit-accepted-presentation-state-and-fence-occurrence-callbacks), signed `7619eb8a2`:337 tests; actual mounted Bindings/sheet/cover77/77 versus55/77, exact Resource/Log owners and native dismissal; all failed attempts preserved |
+| R11 / D11 | CLOSED | [EXP-165](Experiments/EXP-143-199.md#exp-165--preserve-legacy-nativewebview-replay-correlation), signed `9a1ee83a5`: 102 tests, 19/19 mounted WebView/Replay checks; legacy association restored, peers excluded |
+| R12 / D12 | CLOSED | [EXP-163](Experiments/EXP-143-199.md#exp-163--preserve-overdue-action-stop-attributes-without-peer-leakage), signed `084dff4c1`: three failing recipient controls, 212 affected tests pass; own overdue-stop attributes retained without peer leakage |
 
-EXP-162's [durable result](Results/EXP-162-platform-compatibility.json) includes
-both failing full-target controls and passing builds. R01's platform-neutral
-adapter is now outside the watchOS guard; core scoping remains a separate R04
-repair. R02 forwards absent scene metadata on macOS. These compile results do not
-close runtime, restoration, lifetime, minimum-iOS or hardware gates. Early
-EXP-160 measurements independently fail allocation and retained-scene budgets;
-thresholds remain frozen. EXP-163's [durable result](Results/EXP-163-action-stop-attributes.json)
-closes D12 and restores T02 using retained EXP-159 backend evidence; no hardware
-or new backend acceptance is inferred. EXP-164's
-[controller-thread result](Results/EXP-164-controller-threads.json) closes D09
-using an actual native scene with a logical peer; it does not prove physical
-window concurrency. EXP-165 closes D11 with mounted WebView/Replay correlation;
-EXP-166 closes D04/P02 with [ownership](Results/EXP-166-handoff-isolation.json)
-and [paired performance](Results/EXP-166-handoff-performance.json) evidence;
-EXP-167 closes D05/D06 with [restoration evidence](Results/EXP-167-session-restoration.json):
-198 tests and 47/47 checks in two native simulator scenes. EXP-168 closes D03
-with [mounted lifetime evidence](Results/EXP-168-swiftui-lifetime.json) on27/26.5.
-EXP-169 closes D07 with [pending-authority evidence](Results/EXP-169-pending-authority.json).
-EXP-170 closes D08 with [reconnect evidence](Results/EXP-170-reconnect-acceptance.json)
-and EXP-171 closes bounded R04 with [retained-reader evidence](Results/EXP-171-retained-reader.json):
-318 tests and mounted57/57 versus43/57 at the first callback before any body rebind.
-EXP-172 closes the additional P03 registry-growth risk with
-[retention evidence](Results/EXP-172-scene-retention.json):326 tests, complete
-Release ABBA on27/26.5, zero retired entries/weak survivors and heap increases
-within the original limits. The original220-entry control still fails. Ordinary
-automatic/manual and watchOS Release checks pass. EXP-173 closes D10 and the
-additional same-ID occurrence risk with [presentation evidence](Results/EXP-173-presentation-acceptance.json):
-337 tests and mounted77/77. Its first native candidate exposed content
-rematerialization before injected old callbacks; the accepted fix preserves that
-occurrence while its Binding remains accepted. All12 original findings are now
-closed. EXP-174 also closes the bounded R05 observer reentrancy review with
-three deterministic failures repaired and346 tests; [evidence](Results/EXP-174-observer-delivery.json).
-EXP-175 repairs the separately listed pre-existing late Resource/action count
-defect at signed `aefe337b6`: four failing controls and379 affected tests;
-[evidence](Results/EXP-175-resource-completion.json). Physical and final release gates remain. EXP-176 SDK preparation also repairs two reproduced T03 risks: restoration
-selected the first branch instead of the previous representative, and URLSession
-success removed a Resource before a response-plus-error completion. Signed
-`5e41d0b11` passes397 affected checks across396+1,8 Objective-C checks and Release;
-[native/backend acceptance closes T03](Results/EXP-176-resource-start.json):
-signed fixture `797ab135c` passes167 tests,22 local expectations/77 signals and
-exact5 Resource/4 error/5 view inventories across2 sessions, with fresh peer counts0/0
-and0 crashes. Actual serial A background and B session renewal are covered;
-simultaneous/physical hardware gates remain. watchOS Release also passes after
-these shared Resource changes. Keep this review as the disposition and historical evidence record; it
-is not release certification.
+Additional risks raised alongside the original findings have separate evidence:
+[retained reader/R04](Results/EXP-171-retained-reader.json),
+[presentation occurrence/R06](Results/EXP-173-presentation-acceptance.json),
+[retained scene state/P03](Results/EXP-172-scene-retention.json),
+[observer delivery/R05](Results/EXP-174-observer-delivery.json) and
+[late Resource completion/T03](Results/EXP-175-resource-completion.json).
+Physical lifecycle, API review and final release gates remain separate.
 
-EXP-177 is admitted for T04. Its audit retains the accepted T03 Resource-error
-contract and adds explicit current-view error ownership and completion controls.
-No-recipient/unsampled callback losses are reproduced and repaired at signed SDK
-`1e9c4788d`:376 affected/11 new tests, delayed-write and reentrancy checks,8 ObjC
-and iOS/watchOS Release pass. [T04 evidence](Results/EXP-177-current-view-errors.json)
-now closes T04: frozen42f2d3883 passes168 probe tests,24/24 local/61 signals,
-one callback and exact backend9 errors/3 views/2 actions with7/2 error counts,
-0 Resources/crashes. All12 original dispositions remain closed. Release remains
-held for the remaining finite gates; T05 view attributes/removal is next.
-
-EXP-178 is admitted for T05 attribute isolation and removal. Its bounded SDK and
-native/backend contract preserves accepted Resource/error ownership and global
-attribute precedence. All original review dispositions remain unchanged.
+The following original findings describe the reviewed revision, not current
+unrepaired behavior. Original line numbers are historical source locators.
 
 **Original review at the source revision below**
 
@@ -213,19 +167,7 @@ Required change: resolve actual recipients first. Recipients process the origina
 - **Disconnected scene history is unbounded.** [RUMViewsHandler.swift:1017](/Users/valentin.pertuisot/work/dd-sdk-ios/DatadogRUM/Sources/Instrumentation/Views/RUMViewsHandler.swift:1017) keeps every unique disconnected ID; `sceneActivityByIdentifier` also never removes keys. Reconnecting the same session clears its tombstone, but permanently discarded sessions accumulate, and app backgrounding scans the history. Measure repeated create/discard cycles and reconcile retired session generations. Do not simply expire tombstones while stale callbacks can still exist.
 - **Late resource completion can affect a new session's action; this predates the branch.** Old and new sessions independently process a late completion. The old session owns the resource, while fallback in the new session can feed that completion to a different active action. The new test at [RUMApplicationScopeTests.swift:647](/Users/valentin.pertuisot/work/dd-sdk-ios/DatadogRUM/Tests/RUMMonitor/Scopes/RUMApplicationScopeTests.swift:647) uses an immediately completed custom action and cannot expose false resource/error counts. Track this separately and test a continuous action plus late failed resource. Actual resource ownership should control completion routing across sessions.
 
-**Safer implementation direction and repair order**
-
-1. **Restore compatibility first:** fix R01/R02, then R09/R11/R12. Add the missing supported-platform builds and focused legacy regressions. These changes can be small and reviewed independently.
-2. **Give execution context an owner:** address R04 with one internal core/generation-aware handoff contract shared by Logs, Trace, RUM resources, and network instrumentation. Preserve the existing distinction between absent context and a known scene with no valid view.
-3. **Resolve routing before changing state:** fix R05/R06 with a single internal resolution/restoration policy. Reusing an unresolved process representative after mutating the tree is intrinsically fragile. Keep resource completion tied to operation ownership, not a newly chosen representative.
-4. **Make SwiftUI lifetime and authority explicit:** fix R03/R07/R08 with cancellable registrations, disconnected-scene epochs, and authority acquired only after an accepted destination can be published. Use transient detach, suspended scene, and final owner destruction as distinct states. Remove bound-modifier callbacks rather than relying solely on disappearance cleanup.
-5. **Unify accepted-state handling:** fix R10 and presentation occurrence identity. Path, presentation, and router adapters should all feed accepted transitions to the same small state machine. After behavior is covered, split the 6,613-line modifier file by responsibility: attachment, registration lifetime, authority, transition state, and public adapters. Splitting alone will not fix the ownership problems; avoid a broad rewrite before the regression cases exist.
-
-**Validation needed to close this review**
-
-Turn the reproductions into failing regression tests before changing behavior, then run the relevant RUM, Internal/network, Logs, Trace, WebView, and Objective-C suites. Add compile coverage for watchOS, macOS, tvOS, visionOS, and the repository's supported iOS/toolchain compatibility paths. Newer semantic APIs must remain availability-gated while iOS 15+ legacy behavior stays valid.
-
-Use a mounted SwiftUI host for retain/release, rejected presentation writes, delayed detach/remount, stale trait after disconnect, and same-ID presentation transitions. Exercise at least two live scenes with session stop/expiration and asynchronous completion. Capture actual emitted ownership and action/resource counts. Run Main Thread Checker for the existing controller APIs and memory growth checks over repeated navigation/window creation; retain the planned physical iPad/Duo and release-performance gates.
+Historical repair-order recommendations and the original closure checklist are preserved in the [documentation checkpoint](Experiments/DOCUMENTATION_CHECKPOINT_EXP-178.md). The disposition table above records their resolution; release obligations remain in the gate register.
 
 The review's compiler probes used `swiftc -typecheck -` with the installed SDK and `/tmp/dd-multiscene-review-module-cache`. SwiftUI executable probes used the installed Xcode Swift interpreter in Swift 5 mode, macOS SDK 26.5, and `/tmp/multiscene-review-swift-cache`; source snippets were read from the current checkout, with dependency/handler stubs where stated. Probe scripts were supplied on stdin, not committed as tests. No new complete SDK build or device result is claimed.
 

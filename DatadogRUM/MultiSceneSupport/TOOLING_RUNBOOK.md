@@ -30,7 +30,7 @@ runs authenticated queries and the Python process owns every stage/verdict.
 
 - Preflight records HEAD and signature status, current toolchain/destination and
   an actual authenticated read. Unsigned local commits are allowed; an existing
-  signature must verify. Fresh derived artifacts must execute all 166 probe tests.
+  signature must verify. Fresh derived artifacts must execute the complete discovered fixture inventory.
 - Hash SDK/fixture/runner/contract sources before building; verify unchanged
   identity through backend checks and match installed executable to the build.
 - Prove bundle data-container absence before installing. Generate a new run ID;
@@ -87,11 +87,7 @@ that the expected modules were emitted; an isolated expression is insufficient.
 Compiler wrapper lines can say “failed with exit code 0” around warnings: use
 actual build status and artifacts, not that phrase alone, for the verdict.
 
-EXP-162's [durable manifest](Results/EXP-162-platform-compatibility.json) records
-this watchOS RUM/macOS WebView check, with focused iOS regressions. The isolated
-packages exclude the protected project and local xcconfig. The repository's
-SPM build helper renames the main workspace, so this experiment did not invoke
-or modify it. Compile evidence does not substitute for an unavailable runtime.
+[Platform-build evidence](Experiments/EXP-143-199.md#exp-162--restore-watchos-resource-and-macos-webview-compilation) records the isolated full-target procedure. Exclude protected project/configuration; the repository SPM helper temporarily renames the workspace, so use an isolated package where that would violate workspace safety. Compile proof does not replace runtime proof.
 
 For controlled-clock regressions that assert nanosecond durations, use a fixed
 reference-time Date when the interval must be represented exactly. EXP-163's
@@ -112,23 +108,35 @@ routing without claiming a second native window or physical concurrency.
 
 ## Documentation reading and update workflow
 
-Use progressive disclosure; do not load the frozen history wholesale.
+[.continue-here.md](../../.continue-here.md) is the sole restart cursor.
+Use progressive disclosure and open only the evidence that owns the question.
+Do not load the frozen history wholesale.
 
-1. To resume work, read the [canonical overview](../MULTI_SCENE_SUPPORT.md) and
-   the current execution slice in [PLAN.md](PLAN.md).
-2. To check current support, read [ASSESSMENT.md](ASSESSMENT.md).
-3. To locate evidence, search [EXPERIMENTS.md](EXPERIMENTS.md), then open only
-   the linked detailed record or targeted archive range.
-4. Before designing an experiment, search the relevant section of
-   [REJECTED_APPROACHES.md](REJECTED_APPROACHES.md).
-5. To record an experiment, append its full record to the active numbered shard,
-   add one compact index row, and update only the affected assessment rows and
-   plan items. Keep attempts with different validity or outcomes distinguishable.
-6. When a shard's numeric range is full, freeze it and create the next bounded
-   range without renumbering any experiment.
+| Fact | Sole owner | Minimal update |
+| --- | --- | --- |
+| Approved goal, behavioral contract and non-goals | [Overview](../MULTI_SCENE_SUPPORT.md) | Change only for an approved product decision; link its affected gates. |
+| Finite obligations, status, owner, dependencies, completion mode and evidence | [release-gates.json](release-gates.json) | Edit the affected gate, run the generator, update the affected assessment capability. |
+| Generated checklist and counts | [PLAN](PLAN.md), [release progress](Results/release-progress.json) | Run `python3 -B tools/multi-scene/release_checklist.py --update`; never hand-copy counts elsewhere. |
+| Execution priority and experiment admission | [PLAN](PLAN.md) | Preserve finite scope and dependency order; point to the cursor for current work. |
+| Support conclusion and evidence limit | [Assessment](ASSESSMENT.md) | Update only affected capability/limits with direct evidence and remaining gates. |
+| Current checkpoint, unfinished work and next action | [.continue-here.md](../../.continue-here.md) | Replace the cursor; do not append an experiment history or reusable session IDs. |
+| Experiment definition, attempts and outcome | Owning detailed record and durable result | Preserve stable IDs, frozen sources/builds, failed/invalid attempts and negative controls; add/update one compact index row. |
+| Experiment lookup | [Index](EXPERIMENTS.md) | ID, related gates, bounded outcome, decisive conclusion and exact record link; no restart instructions. |
+| Reusable execution lesson | This runbook | Add the discriminator/procedure and link the detailed result rather than repeating it. |
+| Review attribution and disposition | [Safety review](PRODUCTION_SAFETY_REVIEW.md), [triage](REVIEW_TRIAGE.md), [component review](COMPONENT_REVIEW.md) | Map finding to gate and repair evidence; distinguish completed review from release readiness. |
+| Baseline thresholds/results and rejected lessons | [BASELINES](BASELINES.md), [REJECTED_APPROACHES](REJECTED_APPROACHES.md) | Preserve predeclared thresholds and failed results; append evidence without rewriting history. |
 
-The frozen `Archive/` snapshots are integrity records. Do not edit them to repair
-relative links; use [their manifest](Archive/README.md) and targeted search.
+After a documentation update, run `python3 -B tools/multi-scene/release_checklist.py`.
+It verifies register/checklist/progress agreement and the active document links
+and ownership constraints. Documentation consolidation requires only these checks;
+do not rerun SDK, simulator or backend acceptance merely to reorganize prose.
+
+New full records append to the active numbered shard. When its range is full,
+freeze it and start the next range without renumbering. The frozen `Archive/`
+snapshots are integrity records; do not edit their relative links.
+[Archive lookup rules](Archive/README.md) explain exact historical locators.
+The [EXP-178 documentation checkpoint](Experiments/DOCUMENTATION_CHECKPOINT_EXP-178.md)
+preserves moved historical material; it is not another restart cursor.
 
 ## Evidence levels
 
@@ -212,13 +220,7 @@ xcode-select -p
 xcodebuild -version
 ```
 
-On the 2026-09-15 test host, `/Applications/Xcode.app` was Xcode 26.6
-(`17F113`), while `/Applications/Xcode_27.app` was Xcode 27.0 (`27A266a`) and
-`xcode-select` selected the latter. A Release build invoked explicitly through the
-26.6 installation completed but warned that the iOS 27 deployment target was
-unsupported. Treat that result as invalid evidence. The accepted build used
-`/Applications/Xcode_27.app/Contents/Developer/usr/bin/xcodebuild` and the iOS
-27.0 simulator SDK.
+Reject a build if the selected SDK does not support the admitted deployment target. Record the exact Xcode/SDK used; an app name is not a version check.
 
 ### Resolve and cache the workspace
 
@@ -284,7 +286,8 @@ once during preparation, not while a short-lived interaction session is open.
 2. Use `RunSomeTests` while iterating on focused harness or SDK behavior.
 3. Read `fullSummaryPath`, `fullConsoleLogsPath`, and the `.xcresult` path instead
    of relying on truncated inline results.
-4. Run `RunAllTests` at the slice checkpoint.
+4. Run the admitted affected selection and complete probe suite at its slice
+   checkpoint; use full module/compatibility suites at their required gates.
 5. Run the repository's authoritative module suites, lint, build, and API checks
    at their planned release gates.
 
@@ -775,12 +778,7 @@ explicit user involvement. An unsigned install rejection with CoreDevice error
 physical runtime never began. Preserve the build and install log, prove the app
 and process remain absent, and keep the named scenario pending unchanged.
 
-`EXP-156` records the concrete boundary and correction: the wired preflight and
-`arm64` build pass; the unsigned probe is rejected; a restricted identity query
-incorrectly reports zero; the user-context query finds two valid identities;
-one matches the installed device profile; and a copied app passes strict/deep
-verification, clean install, and launch. None of its build, signing, or install
-evidence is RUM evidence.
+[Physical signing record](Experiments/EXP-143-199.md#exp-156--physical-ipad-automation-preflight) preserves the disconnected, unsigned-install, restricted-keychain and successful install attempts. None is RUM evidence.
 
 `devicectl device process launch --console --log-output <path>` can bridge the
 application's console to the caller while writing only launcher status to
@@ -1114,331 +1112,91 @@ runbook around them.
       locator row added to `EXPERIMENTS.md`.
 - [ ] Interaction session closed or confirmed automatically expired.
 
-## EXP-159 operational discriminators
+## Acceptance discriminators
 
-- A discovered test with `No result`/`notRun` invalidates current-build acceptance,
-  even if every older test passes. EXP-159 initially returned164 passes with two
-  new tests unexecuted; fresh derived data produced 166/166.
-- Resolve live-view prerequisites before the action interval. Native background
-  can correctly close a view/action between suspended driver steps. An API-only
-  synchronous batch is valid only with both live views and unchanged exact
-  completion oracle; it does not close sustained multi-window hardware gates.
-- Preserve final names and stop-phase attributes, exact owner UUIDs, counts, and
-  B-before-A ordering. Neither timeout nor a same-name early completion can pass.
-- Current full-module CLI uses `-enableCodeCoverage NO` for the previously
-  documented finalization issue; this is not a skipped test or a Release-build flag.
-- Mixed OSLog/stdout lines can contain a valid probe JSON object away from the
-  start of the line. Preserve raw logs and decode complete JSON objects at their
-  prefix; never manufacture missing records. Check sequence continuity after
-  terminal capture. EXP-159 recovered sequence 49 verbatim this way, yielding
-  all sequences 1–94; the stdio-only original remains available.
+### Fresh build and critical boundaries
 
-## EXP-165 mounted WebView compatibility runner
+- Every discovered test in the admitted fixture must run. A new test reported as
+  `No result`/`notRun` invalidates that build's acceptance even if older tests pass.
+- Prove live-view and topology prerequisites before the critical API interval.
+  Backgrounding can correctly end a view/action between suspended driver steps.
+  A synchronous two-live-view batch proves only its bounded serial contract.
+- Preserve exact owners, counts, names, metadata, callback barriers and completion
+  order. A timeout or same-name early completion cannot satisfy the oracle.
+- Decode complete JSON objects from mixed OSLog/stdout at their actual prefix;
+  retain the raw stream and check sequence continuity. Do not invent missing records.
+- Decode mapper attributes with `AttributeValue.dd.decode`; Objective-C
+  `AnyEncodable` values can fail direct Swift casts while serialization is correct.
+  A backend match cannot turn a failed local oracle into a pass.
+- Use repository source/test SwiftLint configurations and explicit changed-file
+  lists. Configuration-free lint is not the repository gate.
+- Filter `devicectl` inventories with
+  `hardwareProperties.reality == physical` before reporting hardware availability.
 
-`tools/multi-scene/webview-correlation/run.py --control COMMIT --candidate COMMIT
---output NEW.json` creates frozen isolated Core/RUM/WebView/Replay apps and uses
-a fresh iOS 27 simulator discovery. It verifies clean install, executable/source
-identity and fresh run IDs, then captures dummy-token telemetry on loopback only.
-The actual WKWebView bridge waits for exact browser payload acknowledgement before
-the next native ownership mutation. Acknowledgement is repeatable, not consumed.
+[Detailed action discriminators](Experiments/EXP-143-199.md#exp-159--explicit-scene-targeted-long-running-actions)
+and [Resource fixture lessons](Experiments/EXP-143-199.md#exp-176--accept-explicit-resource-starts-and-captured-completion-owners)
+retain failed attempts and exact identities.
 
-Decode the SDK's `Content-Encoding: deflate` as zlib, as well as gzip. The first
-collector attempt missed deflate and is preserved as INVALID; missing payloads
-must not be reported as SDK failures. Four focused collector controls pass.
-Acceptance requires all 19 checks plus a native Replay-enabled payload, a control
-that specifically loses the legacy container, and a candidate that preserves it
-without peer fallback. Never commit raw intake payloads; keep compact ownership
-summaries and artifact hashes. See the fixture README for its exact one-window
-boundary; T10 owns two-container/backend evidence.
+### Compatibility, lifetime and restoration runners
 
-## EXP-166 shared handoff acceptance
+| Procedure | Required discriminators | Detailed evidence |
+| --- | --- | --- |
+| [Mounted WebView](../../tools/multi-scene/webview-correlation/README.md) | Frozen isolated Core/RUM/WebView/Replay builds; clean install and repeatable browser-payload acknowledgement before native mutation. Decode deflate as zlib and gzip separately. Require legacy container preservation plus peer-negative control; keep only sanitized ownership summaries. | [EXP-165](Experiments/EXP-143-199.md#exp-165--preserve-legacy-nativewebview-replay-correlation) |
+| [Core-scoped handoff](../../tools/multi-scene/handoff-isolation/README.md) | Preserve baseline fixtures/thresholds, calibrated allocations and full-context nested/throwing checks. Wait for competing workloads before Release ABBA. Keep entry-snapshot/child-refresh and foreign-context third-party-callback controls; TaskLocal isolation alone is insufficient. | [EXP-166](Experiments/EXP-143-199.md#exp-166--isolate-ui-event-handoff-by-sdk-lifecycle-and-reduce-allocations) |
+| [Session restoration](../../tools/multi-scene/session-restoration/README.md) | Observe readiness after actual activation with bounded retry. Read snapshots before markers can repair missing branches; verify full new-session inventory. Refresh activity in max-duration cases so inactivity cannot substitute. Posted/controlled time is not OS/backend proof. | [EXP-167](Experiments/EXP-143-199.md#exp-167--preserve-navigation-ownership-across-session-restoration) |
+| [Keyed lifetime](../../tools/multi-scene/swiftui-lifetime/README.md) | Require a mounted registration/destination, then weak registration/state/instrumentation release and original method implementations after bounded drain. Keep source alive past removal. Assert OS-specific prerequisites; controller release or RSS alone is insufficient. | [EXP-168](Experiments/EXP-143-199.md#exp-168--release-keyed-swiftui-registrations-and-instrumentation) |
+| [Pending authority](../../tools/multi-scene/pending-authority/README.md) | Check real automatic eligibility before first explicit/capability input, then submit immediate marker before another render. Cover absent handler/attachment with the real registry; subscription does not confer authority. | [EXP-169](Experiments/EXP-143-199.md#exp-169--keep-automatic-tracking-until-semantic-input-is-ready) |
+| [Reconnect](../../tools/multi-scene/reconnect-acceptance/README.md) | Separate inherited traits from accepted reader mounts. Enable the real authority registry with a nil-returning predicate; clear/rebind the retained callback through actual SwiftUI updates. Submit markers immediately, inspect after drain, allow only known launch fallback. No repair navigation or artificial authoritative-nil handoff. | [EXP-170](Experiments/EXP-143-199.md#exp-170--accept-semantic-reconnects-only-after-a-live-attachment) |
+| Retained-reader remount | Capture the real reader callback before removal, restore it before readding the same host and submit markers inside it after SDK delivery. Require zero observers before mount and no body/source reconciliation or replacement root. Missing interception is inconclusive. | [EXP-171](Experiments/EXP-143-199.md#exp-171--restore-retained-hosts-from-the-reader-without-body-reconstruction) |
+| [Scene retention](../../tools/multi-scene/scene-retention/README.md) | Freeze the baseline protocol; declare initial inventory, use20 warm-up plus100+100 unique lifetimes, count every owning collection and weak survivor separately from heap. Preserve Release ABBA samples, constructor adaptations, stale callback and initial-peer controls. Async dispatch plus a bounded semaphore proves off-main initialization; synchronous dispatch may run on the caller. | [EXP-172](Experiments/EXP-143-199.md#exp-172--retire-disconnected-scene-history-without-accepting-stale-callbacks) |
+| [Accepted presentations](../../tools/multi-scene/presentation-acceptance/README.md) | Mount real sheets/covers and observe native dismissal. Submit at setter return/callback before awaiting; distinguish proposal, accepted descriptor, item ID and occurrence UUID. Observation-only hooks in isolated copies retain separate archived/compiled hashes and may not mutate state. Require pre-injection stability to distinguish rematerialization from stale callback effects. | [EXP-173](Experiments/EXP-143-199.md#exp-173--commit-accepted-presentation-state-and-fence-occurrence-callbacks) |
 
-Use `tools/multi-scene/handoff-isolation/README.md` for the staged runner.
-Freeze the explicit SDK directories and copied baseline fixture before building;
-only adapt internal owner arguments/accessors. Keep original EXP-160 fixtures,
-protocol and thresholds unchanged. Wait for every build/test/profile job to
-finish before the complete 27/26.5 ABBA window. Diagnostic probes never close a
-performance gate. Record actual calibrated count/requested bytes, full-context
-nested/throwing checks, source/build identities and separate platform compiles.
+Each linked README owns its exact required-check inventory. Preserve every
+control/candidate/invalid attempt; neither a mounted logical peer nor posted
+notification closes physical H08/H09/H13.
 
-A pure TaskLocal optimization changed the synchronous snapshot contract even
-though isolation passed. Keep the discriminating entry-snapshot/child-refresh
-control. Foreign context must not activate the legacy third-party callback;
-assert that boundary separately from direct Resource ownership through completion.
-The accepted runner reaches 1 allocation/64 bytes; never raise the frozen budget
-or substitute retained heap for allocation churn. Closed D04/P02 does not close
-retained-state, backend, minimum-runtime or physical-topology gates.
+### Observer and Resource completion controls
 
+For observer reentrancy, whichever observer receives the outer value first must
+trigger nesting. This avoids Dictionary-order dependence. Assert each observer's
+generations at nested return, live membership after removal and current-only
+delivery to newly added observers. Apply the same oracle to initial and ordinary
+publication with actual source/adapter/host objects. A simulator/backend run adds
+no evidence to this synchronous in-memory contract.
+[EXP-174 record](Experiments/EXP-143-199.md#exp-174--preserve-monotonic-reentrant-observer-delivery).
 
-## EXP-167 native restoration acceptance
+For late Resource completion, keep a new-session continuous action alive. An
+immediately completed action cannot reveal leaked counts. Assert old Resource/error
+view/session and new action Resource/error counts, including metrics, duplicates
+and clock expiration. Use a fixed reference-date origin for exact nanosecond
+durations; do not widen tolerances to accept activity extension.
+[EXP-175 record](Experiments/EXP-143-199.md#exp-175--keep-resource-completion-on-its-owning-scope).
 
-`tools/multi-scene/session-restoration/run.py` builds explicit pinned control and
-candidate SDK copies, clean-installs both on a discovered iOS 27 iPad simulator,
-requests a second native scene, and produces 47 named checks with source/build
-identity and run-ID validation. It reuses baseline extraction helpers; it never
-reads the main project or local xcconfig. The README defines six cases and exact
-owner/inventory assertions. Controlled expiration times do not prove physical OS
-lifecycle behavior or backend ownership.
+### Named telemetry contracts
 
-Observe application readiness after scene activation, with a bounded retry:
-the callback may precede UIApplication becoming active. The first attempt missed
-this boundary and is retained as INVALID. The accepted repeat rebuilds both arms
-and requires real topology before interpreting semantic failures. Read snapshots
-before sending markers, and preserve exact new-session view inventories; a later
-action can otherwise hide a missing restoration branch. Maximum-duration cases
-must refresh activity before their deadline so they cannot pass as timeouts.
+Select the exact named contract through the optional `scenario` argument to
+`connector_driver.js`; omission retains its existing action contract. Preserve
+that default and all previously admitted family contracts when extending the
+runner. Expected inventories must travel in nonce-bound requests. Freeze all
+fixture/runner sources before build/install.
 
+Resource/error queries cover complete sessions, including restored view run IDs;
+only specifically named action queries use phase filters. For Resources, retain
+original mapper occurrence/session, request-release barriers, URL/status and peer
+action counters. A response-plus-error completion must yield one error and no
+success event. Expected network errors remain distinct from crash acceptance.
 
-## EXP-168 mounted SwiftUI lifetime acceptance
+For serial topology, capture A before actual background retirement, navigate
+foreground B and confirm renewal through mapper evidence before releasing pending
+work. Do not retry starts on background A or replace OS signals with artificial
+foreground notifications. [Resource record](Experiments/EXP-143-199.md#exp-176--accept-explicit-resource-starts-and-captured-completion-owners).
 
-`tools/multi-scene/swiftui-lifetime/run.py` runs frozen signed control/candidate
-apps on discovered27/26.5 simulators, with fresh installations and run IDs.
-Its37 checks require actual keyed registration and RUM destination before each
-host removal, weak-object counts after bounded main-queue draining, and exact
-restoration of three real method implementations after SDK release. The fixture
-only reads method implementations; it does not replace them. Keep sources alive
-past removal to prove their weak registration entries do not extend SDK lifetime.
+For current-view errors, require exact payload/owner and action counters plus
+exactly-once completion after scheduled writes. Consume readiness once and keep
+both views live before target calls. [Error record](Experiments/EXP-143-199.md#exp-177--target-current-view-errors-without-changing-resource-owners).
 
-Record availability as an oracle prerequisite. The first26.5 attempt incorrectly
-required the27-only transition arbiter and remains INCONCLUSIVE; the revised
-fixture requires the correct presence/absence before interpreting lifetime checks.
-Do not substitute controller release or process RSS for registration/state and
-instrumentation release. Mounted lifetime acceptance does not close P03's
-separate disconnected-history budget or physical scene lifecycle gates.
-
-
-## EXP-169 pending semantic authority
-
-`tools/multi-scene/pending-authority/run.py` repeats the frozen explicit/capability
-host comparison on a discovered iOS27 simulator. Require all29 named checks,
-real native mount/authority registry, clean installation and new run IDs. Automatic
-eligibility and mapper ownership must be checked before first semantic input;
-the unchanged control can correctly own later semantic work while losing all
-ordinary automatic work before it. Submit the immediate marker directly after
-input, before waiting for another render or lifecycle callback. Record both
-phases, exact occurrence IDs and duplicate/cancellation negatives.
-
-The four unit controls also cover absent instrumentation and attachment with the
-actual registry. Source selection is not authority. This acceptance does not
-prove disconnected publication/reconnect (D08), reentrant fan-out (R05), registry
-retirement (P03), or physical/backend/minimum-runtime gates. Local unsigned commits
-remain eligible under the user's policy; outgoing history must be signed before
-any separately authorized push.
-
-## EXP-170 accepted reconnect publication
-
-Definition is in EXP-143-199.md. Use actual handler rejection and separate inherited
-traits from reader mounts; a posted lifecycle sequence is deterministic evidence
-only. Capture immediate Resource/Log ownership at the accepted reader boundary,
-then inspect it without submitting a repair navigation command. Freeze both arms,
-prove clean installation and exact required-check inventory, and preserve invalid
-attempts. Reuse source/build helpers with explicit SDK directory allowlists; never
-read the protected project/configuration. Physical H09 remains separate.
-
-For the D08 fixture, enable automatic SwiftUI instrumentation with a predicate
-that returns nil so the real authority registry exists without synthetic automatic
-destinations. Read scene snapshots after draining the queued commands, but submit
-Resource/Log calls immediately after the reader boundary. Do not install an
-artificial authoritative-nil UI handoff in an ordinary lifecycle callback. Clear
-the retained reader's onMount before reconstruction and require SwiftUI's actual
-update to rebind it; checking only the root value is insufficient. Allow only the
-known ApplicationLaunch startup view in addition to the exact scene destinations.
-Strict lint uses tools/lint/sources.swiftlint.yml and tests.swiftlint.yml, each
-with an explicit changed-file list; a configuration-free run is not the repo gate.
-
-EXP-170 accepted attempt3: run.py at tools/multi-scene/reconnect-acceptance,
-control7826eabc1/candidate66d1ccb02,51 required checks; control39/51 versus
-candidate51/51. The runtime inventory requires real mounted readers/registry and
-callback rebinding, exact fresh view/session owners, three Home occurrences and
-one unchanged logical peer. Package attempt1 and fixture attempt2 remain in the
-durable result. Physical H09 cannot close from these posted lifecycle controls.
-
-## EXP-171 retained reader boundary
-
-The definition requires no body/source reconciliation between teardown and the
-retained reader remount. Capture the actual reader callback before removal;
-reinstall it immediately before readding the retained hosting controller, and
-submit Resource/Log markers inside that callback after SDK delivery. Require the
-callback to run before any subsequent render; missing callback interception is
-inconclusive. Do not assign a new root value to repair the source before this
-boundary. Unit controls must enforce the same no-rebind sequence independently.
-
-EXP-171 accepted attempt1: control2da21c041/candidate4ba7179c6,57 required
-checks; control43/57 versus candidate57/57. Both first mounted reader callbacks
-run with zero source observers; the candidate reobserves and owns the immediately
-submitted Resource/Log markers. The root value is never reassigned. SDK/fixture/
-binary identities remain frozen. Results/EXP-171-retained-reader.json retains all
-checks, exact owners,318 test selectors and test-summary hashes. R04 closes only
-its bounded component review, leaving physical H08/H09 unchanged.
-
-## EXP-172 retained scene state
-
-Keep the BASELINES.md protocol prefix frozen. The isolated logical-cycle fixture
-must declare an empty initial scene inventory, introduce20 warm-up plus100+100
-unique lifetimes, and tear down every introduced scene. Count every scene-owning
-collection, not only the old registry names. Preserve raw malloc-zone heap samples
-separately from ownership counts. Use fresh Release27/26.5 processes in ABBA order;
-P01/P02/P04 dispatch measurements are not being rerun. Verify stale callbacks cannot
-recreate retired entries before treating zero counts as acceptance. Initial live
-peer/late SDK initialization and main-thread inventory controls are required.
-
-
-Use `tools/multi-scene/scene-retention/run.py` with explicit control/candidate
-revisions and a new output path. It archives seven allowed SDK source paths,
-uses unchanged baseline App/allocation helpers, and records the one empty-inventory
-constructor adaptation. It performs watchOS Release compile, discovers27/26.5,
-proves clean installation and executable/run/topology identity, executes complete
-Release ABBA, then checks ordinary automatic/manual exact owners. The summary
-retains all raw samples and failed setup attempts. Seven negative oracle tests
-cover registry renaming, incomplete boundaries, weak survivors and frozen limits.
-EXP-172's first native attempt passed16 launches; keep its accepted result pinned.
-Do not use a synchronous global queue call to prove background initialization:
-GCD may execute it on the caller. The unit fixture uses async dispatch and a
-bounded semaphore to hold the main seed until the handler is released.
-
-
-## EXP-173 accepted presentation boundaries
-
-Define control and closure separately for D10 and R06. An internal behavior-neutral
-Binding-factory relocation can expose the actual production closure to tests;
-record failing controls before changing its order. Native evidence must mount
-real sheet/cover content and deliver actual dismissal callbacks. Submit markers
-at setter-return/callback boundaries before awaiting another frame, then inspect
-queued events after drain. Distinguish a rejected proposal, accepted descriptor,
-customer item ID and occurrence UUID. Preserve old callback closures for stale
-same-ID and A→B→A controls. Opaque setter internals are not an accepted-state
-observation source; exact interior work uses the existing source contract.
-
-
-The EXP-173 native harness uses observation-only Debug hooks in isolated copies
-of both SDK arms. Record archived source identity separately from the compiled
-hooked identity. The hook exposes existing Binding and boundary callback values;
-it must not mutate application or SDK state. Explicitly type the captured generic
-Binding, and capture initializer function fields through local constants instead
-of mutating `self`. The first invalid build is preserved. No hook enters production
-source or the public API.
-
-
-EXP-173 acceptance is durable in `Results/EXP-173-presentation-acceptance.json`.
-Use `tools/multi-scene/presentation-acceptance/run.py` and its README for the
-repeatable frozen control/candidate workflow. Attempt1 failed hook compilation;
-attempts2/3 exposed real candidate occurrence churn, and attempt4 passes77/77
-versus55/77. Require stability before injecting an old callback: otherwise native
-content rematerialization can be misdiagnosed as a stale-callback failure. A content
-onDisappear alone is not accepted dismissal; inspect the current Binding.
-The eight oracle controls include before-render and restored-run rejection.
-Archive and observation-hook compiled identities remain separate; logical peer
-and injected callbacks cannot close physical scene-ordering gates.
-
-## EXP-174 observer reentrancy controls
-
-Use whichever observer receives the outer snapshot first to trigger the nested
-commit, so the control is deterministic without depending on Dictionary order.
-Record per-observer generation sequences and assert the latest at nested return.
-Removal must affect pending delivery and newly added observers receive only the
-current snapshot. Initial publication needs the same oracle as commit. Run actual
-SDK source/observed-adapter/handler objects in XCTest; no physical/backend claim
-is appropriate for this synchronous in-memory gate. Keep the protected project
-and local configuration untouched and retain all failed controls before repair.
-
-EXP-174 is accepted at signed `368c62a72`: three failed controls and346 passing
-affected tests, with nine new regressions. The durable observer-delivery JSON
-records source identity and exact selectors. Its source-review environment is
-intentional; a new simulator app or backend run would not improve this synchronous
-fan-out oracle. Do not rerun it merely to resume. T03 needs its own captured-start
-and exact completion/backend discriminator before implementation.
-
-## EXP-175 Resource completion discriminator
-
-Keep the new session's continuous action alive while the old Resource completes.
-An immediately completed custom action cannot expose leaked completion counters.
-Assert emitted action Resource/error counts plus exact old Resource/error view and
-session IDs, not only the Resource event's correct owner. Include scene-targeted
-completion after navigation, metrics, duplicate completion and clock expiration.
-This regression slice does not close T03's explicit-start/backend gate.
-
-EXP-175 is accepted at signed `aefe337b6`: four failing controls and379 affected
-tests, seven of them new. The result retains the6/7 fixture attempt whose exact
-100ms expectation differed by24ns at a wall-clock origin. Use a fixed reference-
-date origin for this discriminator; do not widen the assertion enough to accept
-150ms activity extension. No native/backend run is claimed. Continue with T03's
-explicit-start and captured-owner fixture, keeping the new live-action counters.
-
-## EXP-176 Resource acceptance boundary
-
-Extend the existing A01 runner with an explicitly selected, frozen Resource
-contract; retain the accepted action scenario. Verify request release barriers,
-original mapper occurrence/session, exact Resource/error IDs and peer-action
-counters. Expected network errors are distinct from zero-crash acceptance.
-Backend inventories use complete session queries so restored run IDs cannot hide.
-Keep the mechanical target-plumbing control separate from the actual SDK routing
-repair. Reuse the clean-install, source/build, bridge nonce and failed-attempt
-rules; do not copy a previous run/session identifier.
-
-EXP-176 SDK preparation is signed `5e41d0b11`. The397 affected checks are396
-passing cases in the broad run plus the corrected final case; preserve both
-artifacts and do not describe them as one397/397 run.8 Objective-C API checks and
-Release pass. The SDK test host is legacy and supplies no UIWindowScene; actual
-Swift/Objective-C target overload execution belongs in the native acceptance app.
-A URLSession failure may include response headers: require one error and no
-success event for that start, with the original owner/status. Preserve the failed
-representative-restoration controls and response-plus-error attempt. `devicectl`
-now lists simulated devices too; filter `hardwareProperties.reality == physical`
-before reporting hardware availability. Physical iPad/iPhone remain unavailable.
-
-The EXP-176 runner now accepts the named Resource scenario through an optional
-`scenario` argument to `connector_driver.js`; omission retains the action contract.
-Expected backend counts travel in nonce-bound requests. Resource/error queries
-cover both entire sessions; the peer action has its explicit phase query. Expected
-network errors must preserve status/URL/owner and remain separate from zero-crash
-checks. Full fixture contracts and runner sources are frozen before build/install.
-50 Python controls pass;167 probe tests passed after a `viewPath` fixture correction.
-The acceptance invocation performs the final fresh build after fixture completion.
-
-Decode mapper context with `AttributeValue.dd.decode`, including AnyEncodable from
-Objective-C APIs. A direct Swift `as? String` can discard labels even when backend
-serialization is correct. Preserve the local failure and independent backend
-diagnostic; do not substitute backend labels into a failed local oracle.
-
-EXP-176 is accepted at signed fixture `797ab135c` (SDK `5e41d0b11`), run
-`exp176-20260917T164857Z-a72e79966b23`:167 tests,22/22 local/77 signals and
-backend5 Resources/4 expected errors/5 complete views across2 sessions, fresh
-peer counters0/0 and0 crashes.53 Python and3 connector controls pass. All four
-native failures are retained. For serial topology, capture A before it backgrounds;
-wait for actual retirement, navigate foreground B and renew B before release.
-Do not retry manual starts on background A or substitute artificial foreground
-notifications. Mapper-confirmed navigation/new-session barriers precede release.
-The acceptance script performs fresh source/build/install/auth checks every run;
-no accepted scenario is rerun merely for resumption. T04 is next.
-
-### EXP-177 acceptance preparation
-
-The defined T04 slice extends the existing acceptance runner with a named error
-contract:8 current-view errors (6 A/2 B),1 captured-A Resource error,2 named actions,
-no Resource event and complete session view/error inventories. Freeze payload,
-action counts and exactly-once callback barriers before a native run. Retain the
-EXP-176 lessons: decode AnyEncodable; consume readiness once; require current A/B
-before synchronous targets; never wait until A has ended and claim a live-A target.
-Backend and mapper must agree on exact owners, not just counts.
-
-EXP-177 preparation: signed SDK `1e9c4788d`;376 SDK/8 ObjC/168 probe checks,
-iOS/watchOS Release and67 Python/3 connector controls pass. Named scenario is
-`errors.explicit-target.current-view-cross-scene-serial`; runner selects T04 and
-a fresh exp177 run ID. Inventory is9 errors,2 named actions,3 session views,
-0 Resources/crashes; callback and payload guards are strict. Initial native
-private-property compile error and a no-op test mutation are preserved. Run
-repository lint with explicit source/test configs; default SwiftLint is not valid.
-
-EXP-177 first native attempt is accepted: `exp177-20260917T173444Z-28b735bf7f34`,
-frozen signed42f2d3883, sourcecb88001a47be2b77, binary88bc5ad533120ac7.
-168 probe tests,24 local expectations/61 signals,1 callback, exact backend
-9 errors/3 views/2 actions,0 Resources/crashes. All protected-path postconditions
-pass. Do not repeat this run merely to resume; reuse its discriminators for T05.
-
-### EXP-178 preparation
-
-T05 is defined before implementation. Freeze10 A/B attribute checkpoints (20 error
-markers),3 session views and0 Resources/crashes. Both Swift and Objective-C single/
-batch add/remove execute. Prove peer isolation, exact key absence and existing
-global/view/event precedence with independent backend synthetic field projections.
-Retain T04's accepted target marker API, readiness, clean-install and identity guards.
+For view mutations, freeze independent A/B checkpoints around every actual Swift
+and Objective-C form. Test typed values, exact key absence, global/view/event
+precedence and peer isolation using independent mapper and backend projections.
+The detailed experiment owns its counts and status:
+[attribute contract](Experiments/EXP-143-199.md#exp-178--target-view-attributes-and-removal).

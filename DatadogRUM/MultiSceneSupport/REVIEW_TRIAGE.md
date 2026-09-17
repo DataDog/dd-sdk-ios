@@ -1,35 +1,19 @@
-# Production safety review assessment and repair order
+# Production safety review triage
 
-Assessed 2026-09-17 at `af63657f08dbecb66e7c3ae97ed53fc8f7b065b9` against
-`92f021ba7e4a866f84a52da93ed8b63f3dc75882`. The [production safety review](PRODUCTION_SAFETY_REVIEW.md) now carries a live
-disposition table while retaining its original findings and evidence.
-Review finding Rxx maps to repair gate Dxx; these must not be confused with the
-responsibility-review gates R01–R06 in the release checklist.
+Assessed on2026-09-17 at af63657f08dbecb66e7c3ae97ed53fc8f7b065b9 against
+92f021ba7e4a866f84a52da93ed8b63f3dc75882.
+The [review cycle](PRODUCTION_SAFETY_REVIEW.md) is completed; its finding-to-gate
+decisions and evidence limits remain here. This document has no execution queue.
 
-All 12 findings are relevant to this branch's stability, compatibility or ownership
-contract. None is dismissed because the current iOS suite passed. Their evidence
-levels differ: two compiler expressions were reproduced here; several ownership
-failures follow directly from source; the reported extracted-state/ARC probes do
-not establish mounted SwiftUI or physical lifecycle ordering. The initial
-assessment claimed no repair. EXP-162 closes D01/D02 with complete platform
-builds and focused iOS checks; EXP-163 closes D12 with 212 affected tests.
-EXP-164 closes D09 with 31 tests and mounted Main Thread Checker evidence.
-EXP-165 closes D11 with 102 tests and 19/19 mounted WebView/Replay checks.
-EXP-166 closes D04/P02 with 282 affected tests and full Release ABBA allocation,
-latency and reentrancy acceptance on27/26.5. EXP-167 closes D05/D06 with 198
-affected tests and two native simulator scenes (47/47 versus control 20/47).
-EXP-168 closes D03 with 303 tests and mounted 27/26.5 weak-release/teardown
-acceptance, 37/37 each. EXP-169 closes D07 with four failing controls, 119 tests
-and mounted29/29 acceptance. EXP-170 closes D08; EXP-171 closes bounded R04,
-and EXP-172 closes P03 registry retention under its frozen budget. EXP-173 closes
-D10/R06 with337 tests and mounted77/77 at signed `7619eb8a2`; all12 original
-findings now have repair evidence. EXP-174 closes bounded R05 observer fan-out
-with346 tests at signed `368c62a72`. T03 Resource ownership is next. Existing
-accepted experiment slices remain valid within their recorded boundaries.
+All reported findings were relevant to compatibility, stability or ownership.
+Initial source/compiler/extracted probes did not establish mounted SwiftUI or
+physical OS ordering; subsequent evidence is identified separately in the table.
+Initial “no runtime result” wording describes the original assessment, not an
+open repair. Review IDs R01–R12 map to D01–D12, distinct from component R01–R06.
 
 ## Finding decisions
 
-| Review / gate | Assessment and source evidence | Fix boundary and decisive regression | When |
+| Review / gate | Initial assessment at reviewed source | Repair boundary and decisive regression | Disposition evidence |
 | --- | --- | --- | --- |
 | R01 / D01, P1 | Confirmed platform compile defect. Resource `modify` references `RUMUIEventNetworkContext` at line 135 while its declaration is excluded on watchOS. Package supports watchOS 9. Isolated conditional/reference probe reproduces missing symbol. | Move the accessor to platform-neutral Internal ownership or guard the UIKit-only extraction while preserving absent-context behavior. Full DatadogRUM watchOS compile, not just the expression, must pass. Keep its interface compatible with D04's core-scoped contract. | CLOSED in EXP-162, signed `e420528f7`; full Debug/Release watchOS builds and 70 iOS tests. |
 | R02 / D02, P1 | Confirmed platform compile defect. `DDScriptMessageHandler` is available under WebKit on macOS, but unconditionally follows `NSWindow.windowScene`. Narrowed compiler probe fails; normal NSWindow access control passes. | Guard UIKit scene extraction and use absent metadata on macOS. Build DatadogWebViewTracking on macOS and retain iOS message/ownership tests. | CLOSED in EXP-162, signed `af8864528`; full Debug/Release macOS builds and 28 iOS tests. |
@@ -60,35 +44,14 @@ SwiftUI invariants and current test seams are detailed in
 | Disconnected scene dictionaries grow without retirement | CLOSED P03 in EXP-172 at signed `4653e0a72`: all four Release controls retain220 entries per history registry; all four candidates have zero retired entries/weak survivors within unchanged heap limits on27/26.5. Stale-callback and initial-peer controls, ordinary app smoke and watchOS Release build pass. |
 | Final detach uses one queue turn | R04 closes in EXP-171 after two failing no-body controls and native retained-reader57/57 versus43/57. First mount precedes body/source rebind and owns fresh telemetry. H08/H09 genuine OS lifetime ordering remains open. |
 | Presentation callback carries item ID instead of occurrence | Closed within EXP-173 deterministic mounted evidence: captured occurrence tokens reject old callbacks; accepted Binding reads preserve current content rematerialization. Native77/77 and337 tests pass. Genuine physical callback ordering remains H08/H09/H13. |
-| Old Resource completion mutates a new-session action | Treat as a pre-existing routing risk, not one of the 12 introduced defects. T03 must exercise a live continuous action plus late failed Resource completion and reject false counts; the existing immediately finished custom action does not discriminate. Fix if the required ownership oracle reproduces it. |
-| Multi-observer nested transition delivery | Incremental review added this explicit R05 gap: one-observer nested tests do not establish monotonic delivery to every host. Test nested commit plus observer add/remove before closing R05; no unsupported runtime-failure claim. |
+| Old Resource completion mutates a new-session action | Reproduced and repaired in [EXP-175](Results/EXP-175-resource-completion.json); original Resource owner and foreign continuous-action counts are discriminated. Full T03 acceptance is [EXP-176](Results/EXP-176-resource-start.json). |
+| Multi-observer nested transition delivery | Resolved by [EXP-174](Results/EXP-174-observer-delivery.json): initial/commit nested generation and observer add/remove controls use every live host. The bounded R05 review is complete. |
 | Queued A→B Resource start, sendEvent return signature, profiling identity | Do not reopen rejected/pre-existing concerns or invent a repair from this review. Existing exact-source and process-fallback contracts remain in force. |
 
-## Execution order and stopping rules
+## Disposition rules
 
-0. EXP-160/161 baselines and automation are recorded; D01/D02 platform repairs
-   pass EXP-162. Preserve failed attempts and frozen evidence identities.
-1. Early compatibility repairs D12, D09 and D11 pass EXP-163/164/165. Preserve
-   their bounded evidence and invalid attempts; do not repeat them merely to resume.
-2. D04/P02 passes EXP-166 with one core-lifetime identity across every consumer.
-   D05/D06 passes EXP-167 with old navigation ownership resolved before
-   restoration across explicit stop, immediate and lazy expiration. The first
-   native readiness attempt is INVALID and preserved separately.
-3. D03 mounted lifetime passes EXP-168 and bounded R02 review is complete.
-   D07 pending authority, D08 reconnect and R04 retained-reader remount pass
-   EXP-169/170/171. P03 registry retirement passes EXP-172. Execute defined
-   EXP-173 closes D10/R06 accepted presentations; EXP-174 closes R05 observer
-   fan-out with deterministic nested commit/remove/add regressions. Each fix is a small
-   component commit with explicit paths. Sign when available; if unavailable,
-   continue unsigned locally and sign before any future authorized push.
-   Deferred extraction still starts only after release freeze.
-4. Resume T03–T14 only after the relevant repair dependencies and early baseline
-   gates pass. Physical H08/H09/H13 follow their repair gates when capable hardware
-   is available; a posted lifecycle test never closes them. Finish API review,
-   supported-platform CI and Duo release acceptance after these gates.
-
-Every repair experiment must name its gate, pinned source, environment and
-predeclared decisive test. A finding may be rejected only with a concrete
-counterexample/reproduction result showing the reported path cannot violate the
-contract. Keep that disposition; do not silently delete its gate or raise a failed
-performance threshold. Unsupported environments remain visible blockers.
+Reject a finding only with a concrete counterexample/reproduction showing why the
+reported path cannot violate the contract. Preserve that reasoning, failed attempts
+and frozen baseline limits. A bounded repair does not close hardware or final
+release obligations. [PLAN](PLAN.md) owns priority/dependency rules and
+[.continue-here.md](../../.continue-here.md) owns the sole restart action.
