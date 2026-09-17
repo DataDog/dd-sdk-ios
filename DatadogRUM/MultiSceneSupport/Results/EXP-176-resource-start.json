@@ -1,8 +1,10 @@
 {
   "experiment": "EXP-176",
-  "status": "PREPARED",
+  "status": "PASS",
   "gate": "T03",
-  "gates_closed": [],
+  "gates_closed": [
+    "T03"
+  ],
   "definition_revision": "2e6e2964dfbcdfbfab645cf811e6f960dbb577a4",
   "control_revision": "5681272511fb9aa32bd6dbc147f3ef2eeddca042",
   "candidate_revision": "5e41d0b116f1e700fe4ac997202fc2df5fdfd1cf",
@@ -691,9 +693,9 @@
   "acceptance": {
     "affected": "397 unique affected tests pass across broad run396 plus targeted1 after the sole remaining status-code assertion was corrected; SDK sources unchanged between those runs.",
     "new_regressions": 10,
-    "objective_c": "8/8 API smoke tests pass; actual UIWindowScene overload execution remains native-fixture evidence.",
+    "objective_c": "8/8 API smoke tests plus actual three Objective-C targeted Resource forms in the accepted native fixture; all preserve phase attributes and exact old owner.",
     "lint": "Strict source/test lint: zero violations.",
-    "native_backend": "PENDING. Full T03 remains OPEN."
+    "native_backend": "PASS. T03 closes on frozen797ab135c:167 probe tests,22 local expectations/77 signals,5 Resources/4 network errors/5 views across2 sessions, fresh peer action counts0/0 and0 crashes."
   },
   "findings": [
     {
@@ -830,6 +832,11 @@
           "session_id": "e8208ce4-a34b-4293-a537-3071d8c93cec"
         }
       ]
+    },
+    {
+      "summary": "acceptance/exp176-20260917T164857Z-a72e79966b23.json",
+      "disposition": "PASS",
+      "summary_sha256": "f90b468a57765e43cb73dc4869bacfa715103194d3d8c43fd14cc5a4d30a536d"
     }
   ],
   "watchos_release": {
@@ -855,5 +862,24 @@
     "log": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp176-watchos-x3u411j6/build.log",
     "source_revision": "dcf559b5cbbbe97f579de7c9698283432ee7ca7c",
     "log_sha256": "f8e2c8dce3a5c5141cfdcf0ada53deecf9ac92976b4d6991aef61cce1f51397b"
+  },
+  "native_candidate_revision": "797ab135c71f024fa9f9714c812f8a6a225310bc",
+  "accepted_native": {
+    "run_id": "exp176-20260917T164857Z-a72e79966b23",
+    "revision": "797ab135c71f024fa9f9714c812f8a6a225310bc",
+    "probe_tests": 167,
+    "local_assertions": 22,
+    "signal_count": 77,
+    "backend": {
+      "crash_count": 0,
+      "error_count": 4,
+      "peer_action_count": 1,
+      "resource_count": 5,
+      "state": "PASS",
+      "view_count": 5
+    },
+    "source_fingerprint": "207538072afd5d1fcb0877337323f4b5d6583cc8aac1530469bc2a5da6e0c952",
+    "binary_sha256": "a0888fb6280fe898927716d43c79f1881d1a16c19d38dd9fe4ca22f71736bf34",
+    "physical_or_simultaneous_visibility_claimed": false
   }
 }

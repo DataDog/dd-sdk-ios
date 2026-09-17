@@ -347,7 +347,7 @@ ordered acceptance contract is in
 | EXP-173 | PASS | D10/R06 closed:337 tests, mounted77/77 versus55/77; accepted Binding and occurrence callbacks, rematerialization regression fixed; all four native attempts retained | [Record](Experiments/EXP-143-199.md#exp-173--commit-accepted-presentation-state-and-fence-occurrence-callbacks) |
 | EXP-174 | PASS | R05 closed: three failing controls, nine new regressions and346 affected tests; monotonic synchronous generations, membership and exact two-host teardown | [Record](Experiments/EXP-143-199.md#exp-174--preserve-monotonic-reentrant-observer-delivery) |
 | EXP-175 | PASS | Four failed controls repaired, seven new regressions and379 affected tests; completion/metrics stay on original owner without foreign action counts. Full T03 target/backend gate stays open | [Record](Experiments/EXP-143-199.md#exp-175--keep-resource-completion-on-its-owning-scope) |
-| EXP-176 | PREPARED | Signed SDK5e41d0b11: explicit starts, restoration representative and partial-response error repairs;397 affected/8 ObjC/Release pass. Native mapper/backend still pending | [Record](Experiments/EXP-143-199.md#exp-176--accept-explicit-resource-starts-and-captured-completion-owners) |
+| EXP-176 | PASS | T03 closed:397 affected/8 ObjC, iOS/watchOS Release;167 probe tests,22 local/77 signals and exact5 Resource/4 error/5 view backend owners across2 sessions, peer counters0/0; all failed attempts retained | [Record](Experiments/EXP-143-199.md#exp-176--accept-explicit-resource-starts-and-captured-completion-owners) |
 
 ## Simulator-inconclusive and hardware-required evidence
 

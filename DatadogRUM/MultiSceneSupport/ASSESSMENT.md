@@ -10,7 +10,7 @@ Last updated: 2026-09-17
 
 ## Current verdict
 
-Current release accounting is **30/66 gates closed**. EXP-160 establishes early
+Current release accounting is **31/66 gates closed**. EXP-160 establishes early
 ordinary automatic/manual/custom/NOP and26.5 compatibility, dispatch and exact
 reentrancy baselines. EXP-166 repairs the enabled-handoff allocation failure:
 complete Release ABBA runs measure 1 allocation/64 bytes per event on27/26.5,
@@ -74,11 +74,16 @@ publication, live observer membership and exact two-host teardown. All six bound
 component reviews now pass. EXP-175 repairs T03's existing late-completion
 regression at signed `aefe337b6`: four failing controls and379 affected tests.
 Resource metrics/completion keep their original scope while new-session and peer
-actions retain zero foreign counts. EXP-176 prepares explicit Resource starts at signed `5e41d0b11`:397 affected
-tests across396+1,8 Objective-C API checks, Release and strict lint. Its controls
-also repair representative drift during ordinary session restoration and lost
-network errors after response headers. Native mapper/backend acceptance remains
-pending; physical scene, API and final release gates remain separate.
+actions retain zero foreign counts. EXP-176 closes T03 at signed SDK `5e41d0b11`
+and fixture `797ab135c`:397 affected tests across396+1,8 Objective-C API checks,
+iOS/watchOS Release and strict lint. Native167 tests and22/22 expectations/77
+signals agree with Datadog on5 Resources,4 expected errors,5 views across2 sessions,
+a fresh peer action with0/0 counts and0 crashes. All6 Swift/Objective-C starts and
+both automatic task outcomes retain captured owners through actual A background,
+B manual-view navigation and session renewal.53 Python controls reject invalid
+owners, metrics, identifiers and timing. All failed fixture attempts are retained.
+Physical scene, minimum-runtime, stable API and final release gates remain open.
+Next implement T04 current-view errors under its separate explicit-target contract.
 
 The released SDK baseline is not semantically safe for applications with
 concurrent scenes. Process-representative view state and process-global SwiftUI

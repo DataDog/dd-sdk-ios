@@ -1399,3 +1399,14 @@ Decode mapper context with `AttributeValue.dd.decode`, including AnyEncodable fr
 Objective-C APIs. A direct Swift `as? String` can discard labels even when backend
 serialization is correct. Preserve the local failure and independent backend
 diagnostic; do not substitute backend labels into a failed local oracle.
+
+EXP-176 is accepted at signed fixture `797ab135c` (SDK `5e41d0b11`), run
+`exp176-20260917T164857Z-a72e79966b23`:167 tests,22/22 local/77 signals and
+backend5 Resources/4 expected errors/5 complete views across2 sessions, fresh
+peer counters0/0 and0 crashes.53 Python and3 connector controls pass. All four
+native failures are retained. For serial topology, capture A before it backgrounds;
+wait for actual retirement, navigate foreground B and renew B before release.
+Do not retry manual starts on background A or substitute artificial foreground
+notifications. Mapper-confirmed navigation/new-session barriers precede release.
+The acceptance script performs fresh source/build/install/auth checks every run;
+no accepted scenario is rerun merely for resumption. T04 is next.

@@ -1,7 +1,7 @@
 **Production safety review of multi-scene SDK instrumentation**
 
 Updated 2026-09-17 during plan execution. **Release remains on hold: all 12
-review findings are closed, 0 remain open.** The finite checklist has 30/66
+review findings are closed, 0 remain open.** The finite checklist has 31/66
 release gates closed. [PLAN.md](PLAN.md) owns the release contract and
 [REVIEW_TRIAGE.md](REVIEW_TRIAGE.md) owns assessed repair order and evidence limits.
 Review IDs R01–R12 below map to repair gates D01–D12, not PLAN's responsibility
@@ -56,12 +56,16 @@ closed. EXP-174 also closes the bounded R05 observer reentrancy review with
 three deterministic failures repaired and346 tests; [evidence](Results/EXP-174-observer-delivery.json).
 EXP-175 repairs the separately listed pre-existing late Resource/action count
 defect at signed `aefe337b6`: four failing controls and379 affected tests;
-[evidence](Results/EXP-175-resource-completion.json). T03 explicit-start/backend,
-physical and final release gates remain. EXP-176 SDK preparation also repairs two reproduced T03 risks: restoration
+[evidence](Results/EXP-175-resource-completion.json). Physical and final release gates remain. EXP-176 SDK preparation also repairs two reproduced T03 risks: restoration
 selected the first branch instead of the previous representative, and URLSession
 success removed a Resource before a response-plus-error completion. Signed
 `5e41d0b11` passes397 affected checks across396+1,8 Objective-C checks and Release;
-[native/backend acceptance is pending](Results/EXP-176-resource-start.json). Keep this review as the disposition and historical evidence record; it
+[native/backend acceptance closes T03](Results/EXP-176-resource-start.json):
+signed fixture `797ab135c` passes167 tests,22 local expectations/77 signals and
+exact5 Resource/4 error/5 view inventories across2 sessions, with fresh peer counts0/0
+and0 crashes. Actual serial A background and B session renewal are covered;
+simultaneous/physical hardware gates remain. watchOS Release also passes after
+these shared Resource changes. Keep this review as the disposition and historical evidence record; it
 is not release certification.
 
 **Original review at the source revision below**

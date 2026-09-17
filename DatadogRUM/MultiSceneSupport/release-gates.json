@@ -253,8 +253,8 @@
       "decisive_test": "Target A start while B represents; success/error/metrics after navigation/teardown remain A-owned; duplicate-key behavior documented; late failed completion cannot increment another session's live continuous action",
       "environment": "iOS 27 simulator, URLSession/manual Resource fixture, mapper and Datadog backend",
       "completion_mode": "explicit start target + captured start ownership",
-      "status": "OPEN",
-      "evidence": "Partial: EXP-175 at signed aefe337b6 repairs late success/error/metrics ownership and foreign live-action counts; four failing controls, seven new regressions and379 affected tests. Results/EXP-175-resource-completion.json. Explicit-start/URLSession/mapper/backend acceptance remains required. EXP-176 SDK prepared at signed5e41d0b11: explicit start forms, ordinary restoration representative and response-plus-error repairs;397 affected across396+1,8 ObjC API checks, Release and strict lint. Results/EXP-176-resource-start.json. Native mapper/backend remains pending."
+      "status": "CLOSED",
+      "evidence": "EXP-175 and EXP-176: SDK signed5e41d0b11, native fixture signed797ab135c.397 affected tests across396+1,8 Objective-C API checks, iOS/watchOS Release and strict lint;53 Python/3 connector controls. Frozen run exp176-20260917T164857Z-a72e79966b23 passes167 probe tests,22 local expectations/77 signals, exact5 Resources/4 expected errors/5 session-only views across2 sessions, fresh peer action counts0/0 and0 crashes. All6 Swift/Objective-C target starts and automatic task capture preserve original owners across real A background retirement, B manual view navigation and session renewal; legacy source-A Resource stays on B. Results/EXP-176-resource-start.json and Results/acceptance/exp176-20260917T164857Z-a72e79966b23.json retain all prior attempts. No simultaneous-visibility or physical gate claim."
     },
     {
       "id": "T04",
