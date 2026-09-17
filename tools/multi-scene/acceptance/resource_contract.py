@@ -44,6 +44,8 @@ def validate_local(records, run_id):
         require(s.get("result") == "PASS", "native assertion failed: " + name, "FAIL")
         return s
 
+    foreground = assertion("resource-foreground-ready")
+    require_before(batch, foreground, "foreground readiness")
     native, owners, initial = {}, {}, {}
     snapshots = [s for s in signals if s.get("kind") == "rum-view-snapshot"]
     require(all(s.get("evidenceSource") == "rum-mapper" for s in snapshots), "non-mapper view substituted")
@@ -64,7 +66,7 @@ def validate_local(records, run_id):
         require(claimed.get("evidenceSource") == "internal-hook" and
                 all(claimed.get("rumContext", {}).get(k) == initial[scene].get(k) for k in ["viewID", "sessionID"]),
                 "start snapshot differs from independent mapper owner", "FAIL")
-        require_before(batch, claimed, "batch start")
+        require_before(foreground, claimed, "foreground readiness")
     require(all(native.values()) and all(owners.values()) and len(set(native.values())) == 2 and len(set(owners.values())) == 2,
             "native scenes or owners alias", "FAIL")
     old_session = initial["scene-A"]["sessionID"]
@@ -78,10 +80,16 @@ def validate_local(records, run_id):
     ordered = [batch, started, navigation, new_owner, boundary, verified, completed]
     for earlier, later in zip(ordered, ordered[1:]):
         require_before(earlier, later, "Resource lifecycle assertion")
+    navigated = [s for s in snapshots if s.get("rumContext", {}).get("viewName") == "Resource Next A"
+                 and s["sequence"] < navigation["sequence"]]
+    require(navigated, "navigation assertion preceded mapper evidence", "FAIL")
     new_context = new_owner.get("rumContext", {})
     new_session = new_context.get("sessionID")
     require(new_session and new_session != old_session and new_context.get("viewID") not in owners.values(),
             "session/new peer occurrence was not renewed", "FAIL")
+    mapped_new_b = [s for s in snapshots if s.get("rumContext", {}).get("viewID") == new_context.get("viewID")
+                    and s.get("rumContext", {}).get("sessionID") == new_session and s["sequence"] < new_owner["sequence"]]
+    require(mapped_new_b, "new-owner assertion preceded mapper evidence", "FAIL")
     for phase in PHASES:
         owner = initial["scene-B" if phase == LEGACY else "scene-A"]
         start = assertion("resource-start-" + phase)

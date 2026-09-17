@@ -786,7 +786,7 @@
     }
   ],
   "acceptance_oracle_controls": {
-    "python_tests": 50,
+    "python_tests": 52,
     "node_tests": 3,
     "state": "PASS"
   },
@@ -795,6 +795,35 @@
       "summary": "acceptance/exp176-20260917T163012Z-fbc7a866e7b7.json",
       "disposition": "INVALID_FIXTURE",
       "reason": "Batch omitted explicit scene-B; unrelated lifecycle markers must be disabled before strict whole-session Resource acceptance."
+    },
+    {
+      "summary": "acceptance/exp176-20260917T163328Z-78a3649772d6.json",
+      "disposition": "INVALID_FIXTURE",
+      "reason": "Read asynchronous new-session snapshot before queued view commands completed; add foreground and mapper-confirmed barriers before release."
     }
-  ]
+  ],
+  "watchos_release": {
+    "state": "PASS",
+    "returncode": 0,
+    "seconds": 83.03511354199145,
+    "command": [
+      "xcodebuild",
+      "build",
+      "-quiet",
+      "-workspace",
+      "Datadog.xcworkspace",
+      "-scheme",
+      "DatadogRUM",
+      "-configuration",
+      "Release",
+      "-destination",
+      "generic/platform=watchOS Simulator",
+      "-derivedDataPath",
+      "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp176-watchos-x3u411j6/derived",
+      "CODE_SIGNING_ALLOWED=NO"
+    ],
+    "log": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp176-watchos-x3u411j6/build.log",
+    "source_revision": "dcf559b5cbbbe97f579de7c9698283432ee7ca7c",
+    "log_sha256": "f8e2c8dce3a5c5141cfdcf0ada53deecf9ac92976b4d6991aef61cce1f51397b"
+  }
 }

@@ -104,6 +104,10 @@ enum ProbeResourceAcceptance {
         let sceneA = try scene("scene-A")
         let sceneB = try scene("scene-B")
         try require(sceneA !== sceneB, "two distinct native scenes")
+        try await waitFor("foreground scene B") {
+            sceneB.activationState == .foregroundActive && UIApplication.shared.applicationState == .active
+        }
+        record("resource-foreground-ready")
         guard let monitor = RUMMonitor.shared() as? Monitor,
               let ownerA = monitor.rumContextSnapshot(for: .scene(RUMSceneIdentifier(rawValue: sceneA.session.persistentIdentifier))),
               let ownerB = monitor.rumContextSnapshot(for: .scene(RUMSceneIdentifier(rawValue: sceneB.session.persistentIdentifier))) else {
@@ -134,6 +138,11 @@ enum ProbeResourceAcceptance {
             ProbeRuntime.Attribute.phase: "resource-representative-b",
             ProbeRuntime.Attribute.sourceScene: "scene-B",
         ])
+        try await waitFor("B representative marker") {
+            ProbeRuntime.eventRecorder.snapshot().contains {
+                $0.kind == .rumAction && $0.name == "resource-representative-b" && $0.rumContext?.viewID == ownerB.viewID
+            }
+        }
         try require(monitor.rumContextSnapshot(for: .processRepresentative)?.viewID == ownerB.viewID, "B representative before starts")
         record("resource-owner-a", context: ownerA)
         record("resource-owner-b", context: ownerB)
@@ -192,12 +201,26 @@ enum ProbeResourceAcceptance {
         }
         monitor.startView(key: "resource-next-a", name: "Resource Next A", in: sceneA,
                           attributes: viewAttributes(sceneA, label: "scene-A", screen: "resource-next"))
+        try await waitFor("navigation mapper") {
+            ProbeRuntime.eventRecorder.snapshot().contains {
+                $0.kind == .rumViewSnapshot && $0.rumContext?.viewName == "Resource Next A"
+                    && $0.rumContext?.sessionID == ownerA.sessionID
+            }
+        }
         record("resource-navigation-finished")
         monitor.stopSession()
         monitor.startView(key: "resource-new-a", name: "Resource New A", in: sceneA,
                           attributes: viewAttributes(sceneA, label: "scene-A", screen: "resource-new"))
         monitor.startView(key: "resource-new-b", name: "Resource New B", in: sceneB,
                           attributes: viewAttributes(sceneB, label: "scene-B", screen: "resource-new"))
+        try await waitFor("new B mapper and snapshot") {
+            guard let snapshot = monitor.rumContextSnapshot(for: .scene(RUMSceneIdentifier(rawValue: sceneB.session.persistentIdentifier))),
+                  snapshot.sessionID != ownerA.sessionID, snapshot.viewID != ownerB.viewID else { return false }
+            return ProbeRuntime.eventRecorder.snapshot().contains {
+                $0.kind == .rumViewSnapshot && $0.rumContext?.viewName == "Resource New B"
+                    && $0.rumContext?.sessionID == snapshot.sessionID && $0.rumContext?.viewID == snapshot.viewID
+            }
+        }
         guard let newB = monitor.rumContextSnapshot(for: .scene(RUMSceneIdentifier(rawValue: sceneB.session.persistentIdentifier))) else {
             throw FixtureError.missing("new B")
         }
@@ -231,6 +254,12 @@ enum ProbeResourceAcceptance {
             ProbeRuntime.eventRecorder.snapshot().filter {
                 ($0.kind == .rumResource || $0.kind == .rumError) && allPhases.contains($0.name ?? "")
             }.count >= allPhases.count
+        }
+        try await waitFor("URLSession completion callbacks") {
+            let signals = ProbeRuntime.eventRecorder.snapshot()
+            return automatic.allSatisfy { phase in
+                signals.contains { $0.kind == .assertion && $0.name == "transport-finished-" + phase }
+            }
         }
         let events = ProbeRuntime.eventRecorder.snapshot().filter {
             ($0.kind == .rumResource || $0.kind == .rumError) && allPhases.contains($0.name ?? "")

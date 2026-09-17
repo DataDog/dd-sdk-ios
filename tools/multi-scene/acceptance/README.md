@@ -118,7 +118,7 @@ serial completion timeline. The SDK's independent unit checks cover missing targ
 completed-key reuse and compatibility fallback; native acceptance executes all six
 experimental entry points in real UIWindowScenes.
 
-The operational suite now includes50 Python tests (23 Resource tests, with further
+The operational suite now includes52 Python tests (25 Resource tests, with further
 backend mutation subcases) and three connector tests. A passing SDK/probe unit build
 alone does not close T03. Commit the fixture/runner before acceptance and retain all
 failed native/backend attempts alongside the final durable result.

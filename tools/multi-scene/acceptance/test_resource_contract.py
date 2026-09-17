@@ -35,6 +35,7 @@ def fixture():
         signal("scene-ready", semanticContext=dict(logicalSceneID=scene, nativeSceneID="native-" + scene))
         view(scene, "ProbeHomeView", scene=scene, screen="home")
     signal("step-started", stepKind="run-resource-ownership-batch", stepIndex=4)
+    assertion("resource-foreground-ready")
     old_a = dict(viewID="scene-A", sessionID="old")
     old_b = dict(viewID="scene-B", sessionID="old")
     assertion("resource-owner-a", old_a)
@@ -198,6 +199,24 @@ class ResourceContractTests(unittest.TestCase):
     def test_old_error_increments_peer(self):
         self.named(r.PEER)["action"]["errorCount"] = 1
         self.rejects("contaminated peer")
+
+    def test_foreground_precondition_cannot_arrive_after_starts(self):
+        self.reorder("resource-foreground-ready", "resource-all-started")
+        self.rejects("critical boundary")
+
+    def test_lifecycle_markers_require_prior_mapper_evidence(self):
+        for name, marker in [("Resource Next A", "resource-navigation-finished"),
+                             ("Resource New B", "resource-new-owner-b")]:
+            with self.subTest(view=name):
+                self.records, self.run_id = fixture()
+                signals = self.signals()
+                mapped = next(s for s in signals if s.get("rumContext", {}).get("viewName") == name)
+                a, b = signals.index(mapped), signals.index(self.named(marker))
+                signals[a], signals[b] = signals[b], signals[a]
+                for index, value in enumerate(signals):
+                    value["sequence"] = index + 1
+                self.records = [self.records[0]] + [dict(type="signal", signal=value) for value in signals] + [self.records[-1]]
+                self.rejects("preceded mapper evidence")
 
     def test_backend_mutations(self):
         local = r.validate_local(self.records, self.run_id)
