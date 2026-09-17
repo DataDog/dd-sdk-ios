@@ -292,8 +292,8 @@
       "decisive_test": "Requested occurrence receives timing/loading mutation with existing overwrite rules and no peer mutation",
       "environment": "iOS 27 simulator, focused compatibility tests, exact mapper and Datadog backend owners",
       "completion_mode": "explicit target",
-      "status": "OPEN",
-      "evidence": "EXP-179 defined before implementation: explicit timing/loading targets, distinct expiration policy, repeated-name/overwrite rules, eight paired native checkpoints and whole-session backend final values. Results/EXP-179-timing-loading.json. Not accepted."
+      "status": "CLOSED",
+      "evidence": "EXP-179; signed SDK e2ba9afe5 and fixture 2eed88863. Two failing controls; 426 affected, 11 ObjC/Core, 3 integration on26.5, iOS/watchOS Release and lint pass. Fresh native172 tests,34/34 expectations,87 signals,8 paired timing/loading checkpoints,16 exact backend errors,3 views,0 Resources/crashes. Final persisted values match mapper states; intermediate overwrite proof is local.94 Python/9 connector controls. Results/EXP-179-timing-loading.json; serial topology only."
     },
     {
       "id": "T07",

@@ -1,8 +1,10 @@
 {
   "experiment": "EXP-179",
-  "status": "SDK PASS; native PREPARED",
+  "status": "PASS",
   "gate": "T06",
-  "gates_closed": [],
+  "gates_closed": [
+    "T06"
+  ],
   "control_revision": "f01637a65c4399838e93cfaaa10fca90ca99816d",
   "control_sdk_revision": "1c6104cacb95751137c700e1812bcb1c0f05a359",
   "definition": "Experiments/EXP-143-199.md#exp-179--target-custom-timing-and-loading-time",
@@ -64,7 +66,13 @@
       }
     }
   ],
-  "native_attempts": [],
+  "native_attempts": [
+    {
+      "run_id": "exp179-20260917T225049Z-96f185f6daaf",
+      "state": "PASS",
+      "durable_summary": "DatadogRUM/MultiSceneSupport/Results/acceptance/exp179-20260917T225049Z-96f185f6daaf.json"
+    }
+  ],
   "definition_revision": "e144c392b71559850cd11fe3f02ac4312b183b0c",
   "candidate_revision": "e2ba9afe561a0a6d5afae16c828350f883e0425c",
   "sdk_validation": {
@@ -296,6 +304,32 @@
       "errors": [],
       "fullLogPath": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/ActionArtifacts/default/BuildProject/BuildProject-Log-20260917-234212.txt"
     },
-    "runtime_acceptance": "PENDING"
+    "runtime_acceptance": "PASS"
+  },
+  "fixture_revision": "2eed88863bfa417446d4410fa500ad2c83a8429c",
+  "native_acceptance": {
+    "durable_summary": "DatadogRUM/MultiSceneSupport/Results/acceptance/exp179-20260917T225049Z-96f185f6daaf.json",
+    "sha256": "13c03cc8306e06b31fc55f05bfdd32c3a8d54fb5c21e2708f487408558bb9973",
+    "run_id": "exp179-20260917T225049Z-96f185f6daaf",
+    "state": "PASS",
+    "source_fingerprint": "fb7a94e6191ff72dd734475e90a6d0fba5be961314eef4c930328a99bfb6684d",
+    "frozen_build": {
+      "executable_sha256": "135105e8fb0d3cdb09602910be5ed214a3b43d516edd44a59699a0f304ff7537",
+      "source_sha256": "fb7a94e6191ff72dd734475e90a6d0fba5be961314eef4c930328a99bfb6684d",
+      "state": "PASS",
+      "test_count": 172,
+      "uuid": "UUID: 7DFF8628-EEB8-3F59-BD98-AF39345104B8 (arm64) /private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/multi-scene-acceptance-sf7ne3q4/run/derived/Build/Products/Debug-iphonesimulator/RUMNativeMultiSceneProbe.app/RUMNativeMultiSceneProbe"
+    },
+    "local_assertions": 34,
+    "signals": 87,
+    "backend": {
+      "checkpoints": 8,
+      "crash_count": 0,
+      "error_count": 16,
+      "resource_count": 0,
+      "state": "PASS",
+      "view_count": 3
+    },
+    "simultaneous_visibility_claimed": false
   }
 }

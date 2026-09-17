@@ -1,0 +1,799 @@
+{
+  "artifacts": {
+    "backend-evidence.json": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/multi-scene-acceptance-sf7ne3q4/run/backend-evidence.json",
+    "boot-ready.log": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/multi-scene-acceptance-sf7ne3q4/run/boot-ready.log",
+    "build-identity.json": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/multi-scene-acceptance-sf7ne3q4/run/build-identity.json",
+    "build-tests.log": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/multi-scene-acceptance-sf7ne3q4/run/build-tests.log",
+    "console.raw.log": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/multi-scene-acceptance-sf7ne3q4/run/console.raw.log",
+    "container-absence.log": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/multi-scene-acceptance-sf7ne3q4/run/container-absence.log",
+    "install.log": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/multi-scene-acceptance-sf7ne3q4/run/install.log",
+    "local-evidence.json": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/multi-scene-acceptance-sf7ne3q4/run/local-evidence.json",
+    "probe.jsonl": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/multi-scene-acceptance-sf7ne3q4/run/probe.jsonl",
+    "signature.log": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/multi-scene-acceptance-sf7ne3q4/run/signature.log",
+    "source-identity.json": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/multi-scene-acceptance-sf7ne3q4/run/source-identity.json",
+    "summary.json": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/multi-scene-acceptance-sf7ne3q4/run/summary.json",
+    "terminal-screenshot.log": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/multi-scene-acceptance-sf7ne3q4/run/terminal-screenshot.log",
+    "terminal.png": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/multi-scene-acceptance-sf7ne3q4/run/terminal.png",
+    "terminate-after.log": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/multi-scene-acceptance-sf7ne3q4/run/terminate-after.log",
+    "terminate-before.log": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/multi-scene-acceptance-sf7ne3q4/run/terminate-before.log",
+    "test-summary.json": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/multi-scene-acceptance-sf7ne3q4/run/test-summary.json",
+    "uninstall.log": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/multi-scene-acceptance-sf7ne3q4/run/uninstall.log"
+  },
+  "commit_signature": {
+    "required_before_push": true,
+    "state": "VERIFIED"
+  },
+  "device": {
+    "dataPath": "/Users/valentin.pertuisot/Library/Developer/CoreSimulator/Devices/92C9918B-FEC6-4440-9D6D-8E09475950BB/data",
+    "dataPathSize": 3256782848,
+    "deviceTypeIdentifier": "com.apple.CoreSimulator.SimDeviceType.iPad-mini-A17-Pro",
+    "isAvailable": true,
+    "lastUsedAt": "2026-09-16T22:19:15Z",
+    "logPath": "/Users/valentin.pertuisot/Library/Logs/CoreSimulator/92C9918B-FEC6-4440-9D6D-8E09475950BB",
+    "logPathSize": 593920,
+    "name": "iPad mini (A17 Pro)",
+    "runtime": "com.apple.CoreSimulator.SimRuntime.iOS-27-0",
+    "state": "Booted",
+    "udid": "92C9918B-FEC6-4440-9D6D-8E09475950BB"
+  },
+  "dirty_state": [
+    " M Datadog/Datadog.xcodeproj/project.pbxproj",
+    "A  xcconfigs/Datadog.local.xcconfig"
+  ],
+  "evidence": {
+    "backend-evidence.json": {
+      "crashes": {
+        "count": 0
+      },
+      "errors": [
+        {
+          "error_source": "custom",
+          "error_type": "ProbeTiming",
+          "event_id": "36c455d3-56e4-475f-a212-b9cfa9946636",
+          "is_crash": false,
+          "payload_matches": true,
+          "phase": "timing-final-b",
+          "run_id": "exp179-20260917T225049Z-96f185f6daaf",
+          "session_id": "cd4bd466-940f-4052-8b1f-9c887e41b7ac",
+          "source_scene": "scene-A",
+          "view_id": "8b7bd4f8-b9ad-4161-bb2c-b98448316f1b"
+        },
+        {
+          "error_source": "custom",
+          "error_type": "ProbeTiming",
+          "event_id": "a08506e8-bf19-44b5-833a-31765a4bc660",
+          "is_crash": false,
+          "payload_matches": true,
+          "phase": "timing-objc-overwrite-b",
+          "run_id": "exp179-20260917T225049Z-96f185f6daaf",
+          "session_id": "cd4bd466-940f-4052-8b1f-9c887e41b7ac",
+          "source_scene": "scene-A",
+          "view_id": "8b7bd4f8-b9ad-4161-bb2c-b98448316f1b"
+        },
+        {
+          "error_source": "custom",
+          "error_type": "ProbeTiming",
+          "event_id": "4eb4e58f-fdcb-4343-b226-0e32b48e7e55",
+          "is_crash": false,
+          "payload_matches": true,
+          "phase": "timing-objc-repeat-b",
+          "run_id": "exp179-20260917T225049Z-96f185f6daaf",
+          "session_id": "cd4bd466-940f-4052-8b1f-9c887e41b7ac",
+          "source_scene": "scene-A",
+          "view_id": "8b7bd4f8-b9ad-4161-bb2c-b98448316f1b"
+        },
+        {
+          "error_source": "custom",
+          "error_type": "ProbeTiming",
+          "event_id": "1e38265c-2cd1-4712-8e43-afc4861bb79b",
+          "is_crash": false,
+          "payload_matches": true,
+          "phase": "timing-objc-initial-b",
+          "run_id": "exp179-20260917T225049Z-96f185f6daaf",
+          "session_id": "cd4bd466-940f-4052-8b1f-9c887e41b7ac",
+          "source_scene": "scene-A",
+          "view_id": "8b7bd4f8-b9ad-4161-bb2c-b98448316f1b"
+        },
+        {
+          "error_source": "custom",
+          "error_type": "ProbeTiming",
+          "event_id": "2bacf1b3-5dee-4dc2-9d4f-aeacad360460",
+          "is_crash": false,
+          "payload_matches": true,
+          "phase": "timing-swift-overwrite-b",
+          "run_id": "exp179-20260917T225049Z-96f185f6daaf",
+          "session_id": "cd4bd466-940f-4052-8b1f-9c887e41b7ac",
+          "source_scene": "scene-A",
+          "view_id": "8b7bd4f8-b9ad-4161-bb2c-b98448316f1b"
+        },
+        {
+          "error_source": "custom",
+          "error_type": "ProbeTiming",
+          "event_id": "b083081b-4af6-4dde-a12e-d20a49d70d5e",
+          "is_crash": false,
+          "payload_matches": true,
+          "phase": "timing-swift-repeat-b",
+          "run_id": "exp179-20260917T225049Z-96f185f6daaf",
+          "session_id": "cd4bd466-940f-4052-8b1f-9c887e41b7ac",
+          "source_scene": "scene-A",
+          "view_id": "8b7bd4f8-b9ad-4161-bb2c-b98448316f1b"
+        },
+        {
+          "error_source": "custom",
+          "error_type": "ProbeTiming",
+          "event_id": "49544660-6a70-4c27-a1e5-a1d4ad4b3050",
+          "is_crash": false,
+          "payload_matches": true,
+          "phase": "timing-swift-initial-b",
+          "run_id": "exp179-20260917T225049Z-96f185f6daaf",
+          "session_id": "cd4bd466-940f-4052-8b1f-9c887e41b7ac",
+          "source_scene": "scene-A",
+          "view_id": "8b7bd4f8-b9ad-4161-bb2c-b98448316f1b"
+        },
+        {
+          "error_source": "custom",
+          "error_type": "ProbeTiming",
+          "event_id": "71e39f6e-4479-43e0-93b4-3872139e5552",
+          "is_crash": false,
+          "payload_matches": true,
+          "phase": "timing-initial-b",
+          "run_id": "exp179-20260917T225049Z-96f185f6daaf",
+          "session_id": "cd4bd466-940f-4052-8b1f-9c887e41b7ac",
+          "source_scene": "scene-A",
+          "view_id": "8b7bd4f8-b9ad-4161-bb2c-b98448316f1b"
+        },
+        {
+          "error_source": "custom",
+          "error_type": "ProbeTiming",
+          "event_id": "5479d473-89da-4cb7-9803-8a8899c586d8",
+          "is_crash": false,
+          "payload_matches": true,
+          "phase": "timing-final-a",
+          "run_id": "exp179-20260917T225049Z-96f185f6daaf",
+          "session_id": "cd4bd466-940f-4052-8b1f-9c887e41b7ac",
+          "source_scene": "scene-A",
+          "view_id": "76528fa0-f083-49d4-aa24-94e5dbe20b10"
+        },
+        {
+          "error_source": "custom",
+          "error_type": "ProbeTiming",
+          "event_id": "042e7837-2f14-475b-ad42-12a1534dd386",
+          "is_crash": false,
+          "payload_matches": true,
+          "phase": "timing-objc-overwrite-a",
+          "run_id": "exp179-20260917T225049Z-96f185f6daaf",
+          "session_id": "cd4bd466-940f-4052-8b1f-9c887e41b7ac",
+          "source_scene": "scene-A",
+          "view_id": "76528fa0-f083-49d4-aa24-94e5dbe20b10"
+        },
+        {
+          "error_source": "custom",
+          "error_type": "ProbeTiming",
+          "event_id": "6bf40a88-f23b-40a8-8620-1ccddd4338c9",
+          "is_crash": false,
+          "payload_matches": true,
+          "phase": "timing-objc-repeat-a",
+          "run_id": "exp179-20260917T225049Z-96f185f6daaf",
+          "session_id": "cd4bd466-940f-4052-8b1f-9c887e41b7ac",
+          "source_scene": "scene-A",
+          "view_id": "76528fa0-f083-49d4-aa24-94e5dbe20b10"
+        },
+        {
+          "error_source": "custom",
+          "error_type": "ProbeTiming",
+          "event_id": "b5675d4e-70a1-48b0-a57a-4f8970806cb1",
+          "is_crash": false,
+          "payload_matches": true,
+          "phase": "timing-objc-initial-a",
+          "run_id": "exp179-20260917T225049Z-96f185f6daaf",
+          "session_id": "cd4bd466-940f-4052-8b1f-9c887e41b7ac",
+          "source_scene": "scene-A",
+          "view_id": "76528fa0-f083-49d4-aa24-94e5dbe20b10"
+        },
+        {
+          "error_source": "custom",
+          "error_type": "ProbeTiming",
+          "event_id": "de0b52cc-cb1f-4dc6-91a3-7ee8b40cf69e",
+          "is_crash": false,
+          "payload_matches": true,
+          "phase": "timing-swift-overwrite-a",
+          "run_id": "exp179-20260917T225049Z-96f185f6daaf",
+          "session_id": "cd4bd466-940f-4052-8b1f-9c887e41b7ac",
+          "source_scene": "scene-A",
+          "view_id": "76528fa0-f083-49d4-aa24-94e5dbe20b10"
+        },
+        {
+          "error_source": "custom",
+          "error_type": "ProbeTiming",
+          "event_id": "27ff95b1-f62c-4db1-a1b3-df0e74aabb71",
+          "is_crash": false,
+          "payload_matches": true,
+          "phase": "timing-swift-repeat-a",
+          "run_id": "exp179-20260917T225049Z-96f185f6daaf",
+          "session_id": "cd4bd466-940f-4052-8b1f-9c887e41b7ac",
+          "source_scene": "scene-A",
+          "view_id": "76528fa0-f083-49d4-aa24-94e5dbe20b10"
+        },
+        {
+          "error_source": "custom",
+          "error_type": "ProbeTiming",
+          "event_id": "bf099f1a-25ff-4474-91fd-b369efbc9a64",
+          "is_crash": false,
+          "payload_matches": true,
+          "phase": "timing-swift-initial-a",
+          "run_id": "exp179-20260917T225049Z-96f185f6daaf",
+          "session_id": "cd4bd466-940f-4052-8b1f-9c887e41b7ac",
+          "source_scene": "scene-A",
+          "view_id": "76528fa0-f083-49d4-aa24-94e5dbe20b10"
+        },
+        {
+          "error_source": "custom",
+          "error_type": "ProbeTiming",
+          "event_id": "8b7a57db-6ed0-440d-ab8b-a6105394efae",
+          "is_crash": false,
+          "payload_matches": true,
+          "phase": "timing-initial-a",
+          "run_id": "exp179-20260917T225049Z-96f185f6daaf",
+          "session_id": "cd4bd466-940f-4052-8b1f-9c887e41b7ac",
+          "source_scene": "scene-A",
+          "view_id": "76528fa0-f083-49d4-aa24-94e5dbe20b10"
+        }
+      ],
+      "resources": [],
+      "views": [
+        {
+          "name": "ProbeHomeView",
+          "run_id": "exp179-20260917T225049Z-96f185f6daaf",
+          "session_id": "cd4bd466-940f-4052-8b1f-9c887e41b7ac",
+          "timing_state": {
+            "loading": 37116051,
+            "timings": {
+              "exp179_final_b": 37137032,
+              "exp179_shared": 37099957
+            }
+          },
+          "view_id": "8b7bd4f8-b9ad-4161-bb2c-b98448316f1b"
+        },
+        {
+          "name": "ProbeHomeView",
+          "run_id": "exp179-20260917T225049Z-96f185f6daaf",
+          "session_id": "cd4bd466-940f-4052-8b1f-9c887e41b7ac",
+          "timing_state": {
+            "loading": 192977071,
+            "timings": {
+              "exp179_final_a": 193044066,
+              "exp179_shared": 192957044
+            }
+          },
+          "view_id": "76528fa0-f083-49d4-aa24-94e5dbe20b10"
+        },
+        {
+          "name": "ApplicationLaunch",
+          "run_id": "exp179-20260917T225049Z-96f185f6daaf",
+          "session_id": "cd4bd466-940f-4052-8b1f-9c887e41b7ac",
+          "timing_state": {
+            "loading": null,
+            "timings": {}
+          },
+          "view_id": "354de9b5-be26-4112-8782-883afba5b2ff"
+        }
+      ]
+    },
+    "build-identity.json": {
+      "executable_sha256": "135105e8fb0d3cdb09602910be5ed214a3b43d516edd44a59699a0f304ff7537",
+      "source_sha256": "fb7a94e6191ff72dd734475e90a6d0fba5be961314eef4c930328a99bfb6684d",
+      "uuid": "UUID: 7DFF8628-EEB8-3F59-BD98-AF39345104B8 (arm64) /private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/multi-scene-acceptance-sf7ne3q4/run/derived/Build/Products/Debug-iphonesimulator/RUMNativeMultiSceneProbe.app/RUMNativeMultiSceneProbe"
+    },
+    "local-evidence.json": {
+      "assertions": 34,
+      "checkpoints": 8,
+      "errors": [
+        {
+          "error_source": "custom",
+          "error_type": "ProbeTiming",
+          "event_id": "8b7a57db-6ed0-440d-ab8b-a6105394efae",
+          "payload_matches": true,
+          "phase": "timing-initial-a",
+          "session_id": "cd4bd466-940f-4052-8b1f-9c887e41b7ac",
+          "source_scene": "scene-A",
+          "view_id": "76528fa0-f083-49d4-aa24-94e5dbe20b10"
+        },
+        {
+          "error_source": "custom",
+          "error_type": "ProbeTiming",
+          "event_id": "71e39f6e-4479-43e0-93b4-3872139e5552",
+          "payload_matches": true,
+          "phase": "timing-initial-b",
+          "session_id": "cd4bd466-940f-4052-8b1f-9c887e41b7ac",
+          "source_scene": "scene-A",
+          "view_id": "8b7bd4f8-b9ad-4161-bb2c-b98448316f1b"
+        },
+        {
+          "error_source": "custom",
+          "error_type": "ProbeTiming",
+          "event_id": "bf099f1a-25ff-4474-91fd-b369efbc9a64",
+          "payload_matches": true,
+          "phase": "timing-swift-initial-a",
+          "session_id": "cd4bd466-940f-4052-8b1f-9c887e41b7ac",
+          "source_scene": "scene-A",
+          "view_id": "76528fa0-f083-49d4-aa24-94e5dbe20b10"
+        },
+        {
+          "error_source": "custom",
+          "error_type": "ProbeTiming",
+          "event_id": "49544660-6a70-4c27-a1e5-a1d4ad4b3050",
+          "payload_matches": true,
+          "phase": "timing-swift-initial-b",
+          "session_id": "cd4bd466-940f-4052-8b1f-9c887e41b7ac",
+          "source_scene": "scene-A",
+          "view_id": "8b7bd4f8-b9ad-4161-bb2c-b98448316f1b"
+        },
+        {
+          "error_source": "custom",
+          "error_type": "ProbeTiming",
+          "event_id": "27ff95b1-f62c-4db1-a1b3-df0e74aabb71",
+          "payload_matches": true,
+          "phase": "timing-swift-repeat-a",
+          "session_id": "cd4bd466-940f-4052-8b1f-9c887e41b7ac",
+          "source_scene": "scene-A",
+          "view_id": "76528fa0-f083-49d4-aa24-94e5dbe20b10"
+        },
+        {
+          "error_source": "custom",
+          "error_type": "ProbeTiming",
+          "event_id": "b083081b-4af6-4dde-a12e-d20a49d70d5e",
+          "payload_matches": true,
+          "phase": "timing-swift-repeat-b",
+          "session_id": "cd4bd466-940f-4052-8b1f-9c887e41b7ac",
+          "source_scene": "scene-A",
+          "view_id": "8b7bd4f8-b9ad-4161-bb2c-b98448316f1b"
+        },
+        {
+          "error_source": "custom",
+          "error_type": "ProbeTiming",
+          "event_id": "de0b52cc-cb1f-4dc6-91a3-7ee8b40cf69e",
+          "payload_matches": true,
+          "phase": "timing-swift-overwrite-a",
+          "session_id": "cd4bd466-940f-4052-8b1f-9c887e41b7ac",
+          "source_scene": "scene-A",
+          "view_id": "76528fa0-f083-49d4-aa24-94e5dbe20b10"
+        },
+        {
+          "error_source": "custom",
+          "error_type": "ProbeTiming",
+          "event_id": "2bacf1b3-5dee-4dc2-9d4f-aeacad360460",
+          "payload_matches": true,
+          "phase": "timing-swift-overwrite-b",
+          "session_id": "cd4bd466-940f-4052-8b1f-9c887e41b7ac",
+          "source_scene": "scene-A",
+          "view_id": "8b7bd4f8-b9ad-4161-bb2c-b98448316f1b"
+        },
+        {
+          "error_source": "custom",
+          "error_type": "ProbeTiming",
+          "event_id": "b5675d4e-70a1-48b0-a57a-4f8970806cb1",
+          "payload_matches": true,
+          "phase": "timing-objc-initial-a",
+          "session_id": "cd4bd466-940f-4052-8b1f-9c887e41b7ac",
+          "source_scene": "scene-A",
+          "view_id": "76528fa0-f083-49d4-aa24-94e5dbe20b10"
+        },
+        {
+          "error_source": "custom",
+          "error_type": "ProbeTiming",
+          "event_id": "1e38265c-2cd1-4712-8e43-afc4861bb79b",
+          "payload_matches": true,
+          "phase": "timing-objc-initial-b",
+          "session_id": "cd4bd466-940f-4052-8b1f-9c887e41b7ac",
+          "source_scene": "scene-A",
+          "view_id": "8b7bd4f8-b9ad-4161-bb2c-b98448316f1b"
+        },
+        {
+          "error_source": "custom",
+          "error_type": "ProbeTiming",
+          "event_id": "6bf40a88-f23b-40a8-8620-1ccddd4338c9",
+          "payload_matches": true,
+          "phase": "timing-objc-repeat-a",
+          "session_id": "cd4bd466-940f-4052-8b1f-9c887e41b7ac",
+          "source_scene": "scene-A",
+          "view_id": "76528fa0-f083-49d4-aa24-94e5dbe20b10"
+        },
+        {
+          "error_source": "custom",
+          "error_type": "ProbeTiming",
+          "event_id": "4eb4e58f-fdcb-4343-b226-0e32b48e7e55",
+          "payload_matches": true,
+          "phase": "timing-objc-repeat-b",
+          "session_id": "cd4bd466-940f-4052-8b1f-9c887e41b7ac",
+          "source_scene": "scene-A",
+          "view_id": "8b7bd4f8-b9ad-4161-bb2c-b98448316f1b"
+        },
+        {
+          "error_source": "custom",
+          "error_type": "ProbeTiming",
+          "event_id": "042e7837-2f14-475b-ad42-12a1534dd386",
+          "payload_matches": true,
+          "phase": "timing-objc-overwrite-a",
+          "session_id": "cd4bd466-940f-4052-8b1f-9c887e41b7ac",
+          "source_scene": "scene-A",
+          "view_id": "76528fa0-f083-49d4-aa24-94e5dbe20b10"
+        },
+        {
+          "error_source": "custom",
+          "error_type": "ProbeTiming",
+          "event_id": "a08506e8-bf19-44b5-833a-31765a4bc660",
+          "payload_matches": true,
+          "phase": "timing-objc-overwrite-b",
+          "session_id": "cd4bd466-940f-4052-8b1f-9c887e41b7ac",
+          "source_scene": "scene-A",
+          "view_id": "8b7bd4f8-b9ad-4161-bb2c-b98448316f1b"
+        },
+        {
+          "error_source": "custom",
+          "error_type": "ProbeTiming",
+          "event_id": "5479d473-89da-4cb7-9803-8a8899c586d8",
+          "payload_matches": true,
+          "phase": "timing-final-a",
+          "session_id": "cd4bd466-940f-4052-8b1f-9c887e41b7ac",
+          "source_scene": "scene-A",
+          "view_id": "76528fa0-f083-49d4-aa24-94e5dbe20b10"
+        },
+        {
+          "error_source": "custom",
+          "error_type": "ProbeTiming",
+          "event_id": "36c455d3-56e4-475f-a212-b9cfa9946636",
+          "payload_matches": true,
+          "phase": "timing-final-b",
+          "session_id": "cd4bd466-940f-4052-8b1f-9c887e41b7ac",
+          "source_scene": "scene-A",
+          "view_id": "8b7bd4f8-b9ad-4161-bb2c-b98448316f1b"
+        }
+      ],
+      "final_document_versions": {
+        "76528fa0-f083-49d4-aa24-94e5dbe20b10": 14,
+        "8b7bd4f8-b9ad-4161-bb2c-b98448316f1b": 13
+      },
+      "native_scenes": {
+        "scene-A": "F2D1D598-F37A-4B5F-8FC5-CA3A3BA2F629",
+        "scene-B": "B4732ADD-FD73-499E-8CC9-D689DBAE7ADF"
+      },
+      "owners": {
+        "scene-A": "76528fa0-f083-49d4-aa24-94e5dbe20b10",
+        "scene-B": "8b7bd4f8-b9ad-4161-bb2c-b98448316f1b"
+      },
+      "session_id": "cd4bd466-940f-4052-8b1f-9c887e41b7ac",
+      "signal_count": 87,
+      "simultaneous_visibility_claimed": false,
+      "views": [
+        {
+          "name": "ApplicationLaunch",
+          "session_id": "cd4bd466-940f-4052-8b1f-9c887e41b7ac",
+          "timing_state": {
+            "loading": null,
+            "timings": {}
+          },
+          "view_id": "354de9b5-be26-4112-8782-883afba5b2ff"
+        },
+        {
+          "name": "ProbeHomeView",
+          "session_id": "cd4bd466-940f-4052-8b1f-9c887e41b7ac",
+          "timing_state": {
+            "loading": 192977071,
+            "timings": {
+              "exp179_final_a": 193044066,
+              "exp179_shared": 192957044
+            }
+          },
+          "view_id": "76528fa0-f083-49d4-aa24-94e5dbe20b10"
+        },
+        {
+          "name": "ProbeHomeView",
+          "session_id": "cd4bd466-940f-4052-8b1f-9c887e41b7ac",
+          "timing_state": {
+            "loading": 37116051,
+            "timings": {
+              "exp179_final_b": 37137032,
+              "exp179_shared": 37099957
+            }
+          },
+          "view_id": "8b7bd4f8-b9ad-4161-bb2c-b98448316f1b"
+        }
+      ]
+    },
+    "test-summary.json": {
+      "devicesAndConfigurations": [
+        {
+          "device": {
+            "architecture": "arm64",
+            "deviceId": "92C9918B-FEC6-4440-9D6D-8E09475950BB",
+            "deviceName": "iPad mini (A17 Pro)",
+            "modelName": "iPad mini (A17 Pro)",
+            "osBuildNumber": "24A434",
+            "osVersion": "27.0",
+            "platform": "iOS Simulator"
+          },
+          "expectedFailures": 0,
+          "failedTests": 0,
+          "passedTests": 172,
+          "skippedTests": 0,
+          "testPlanConfiguration": {
+            "configurationId": "1",
+            "configurationName": "Test Scheme Action"
+          }
+        }
+      ],
+      "environmentDescription": "RUMNativeMultiSceneProbe \u00b7 Built with macOS 26.6.2",
+      "expectedFailures": 0,
+      "failedTests": 0,
+      "finishTime": 1789685495.752,
+      "passedTests": 172,
+      "result": "Passed",
+      "runtimeWarnings": [],
+      "skippedTests": 0,
+      "startTime": 1789685472.458,
+      "statistics": [],
+      "testFailures": [],
+      "title": "Test - RUMNativeMultiSceneProbe",
+      "topInsights": [],
+      "totalTestCount": 172
+    }
+  },
+  "experiment": "EXP-179",
+  "failures": [],
+  "finished_at": "2026-09-17T22:56:11.063946+00:00",
+  "gate": "T06",
+  "oracle_contract_sha256": "ddde5a71ad1897ce9af46bd8a18bb1d23e7b1fd8c4fac2682c5d35d5d894934d",
+  "rerun": "Use a fresh output directory and freshly resolved device; do not reuse run IDs or bridge responses.",
+  "revision": "2eed88863bfa417446d4410fa500ad2c83a8429c",
+  "run_id": "exp179-20260917T225049Z-96f185f6daaf",
+  "scenario_id": "timing.explicit-target.current-view-cross-scene-serial",
+  "schema_version": 1,
+  "source_file_count": 475,
+  "source_fingerprint": "fb7a94e6191ff72dd734475e90a6d0fba5be961314eef4c930328a99bfb6684d",
+  "stages": {
+    "backend": {
+      "checkpoints": 8,
+      "crash_count": 0,
+      "error_count": 16,
+      "resource_count": 0,
+      "state": "PASS",
+      "view_count": 3
+    },
+    "clean_install": {
+      "data_container_absent": true,
+      "installed_binary_sha256": "135105e8fb0d3cdb09602910be5ed214a3b43d516edd44a59699a0f304ff7537",
+      "state": "PASS"
+    },
+    "frozen_build": {
+      "executable_sha256": "135105e8fb0d3cdb09602910be5ed214a3b43d516edd44a59699a0f304ff7537",
+      "source_sha256": "fb7a94e6191ff72dd734475e90a6d0fba5be961314eef4c930328a99bfb6684d",
+      "state": "PASS",
+      "test_count": 172,
+      "uuid": "UUID: 7DFF8628-EEB8-3F59-BD98-AF39345104B8 (arm64) /private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/multi-scene-acceptance-sf7ne3q4/run/derived/Build/Products/Debug-iphonesimulator/RUMNativeMultiSceneProbe.app/RUMNativeMultiSceneProbe"
+    },
+    "local_semantics": {
+      "assertions": 34,
+      "checkpoints": 8,
+      "errors": [
+        {
+          "error_source": "custom",
+          "error_type": "ProbeTiming",
+          "event_id": "8b7a57db-6ed0-440d-ab8b-a6105394efae",
+          "payload_matches": true,
+          "phase": "timing-initial-a",
+          "session_id": "cd4bd466-940f-4052-8b1f-9c887e41b7ac",
+          "source_scene": "scene-A",
+          "view_id": "76528fa0-f083-49d4-aa24-94e5dbe20b10"
+        },
+        {
+          "error_source": "custom",
+          "error_type": "ProbeTiming",
+          "event_id": "71e39f6e-4479-43e0-93b4-3872139e5552",
+          "payload_matches": true,
+          "phase": "timing-initial-b",
+          "session_id": "cd4bd466-940f-4052-8b1f-9c887e41b7ac",
+          "source_scene": "scene-A",
+          "view_id": "8b7bd4f8-b9ad-4161-bb2c-b98448316f1b"
+        },
+        {
+          "error_source": "custom",
+          "error_type": "ProbeTiming",
+          "event_id": "bf099f1a-25ff-4474-91fd-b369efbc9a64",
+          "payload_matches": true,
+          "phase": "timing-swift-initial-a",
+          "session_id": "cd4bd466-940f-4052-8b1f-9c887e41b7ac",
+          "source_scene": "scene-A",
+          "view_id": "76528fa0-f083-49d4-aa24-94e5dbe20b10"
+        },
+        {
+          "error_source": "custom",
+          "error_type": "ProbeTiming",
+          "event_id": "49544660-6a70-4c27-a1e5-a1d4ad4b3050",
+          "payload_matches": true,
+          "phase": "timing-swift-initial-b",
+          "session_id": "cd4bd466-940f-4052-8b1f-9c887e41b7ac",
+          "source_scene": "scene-A",
+          "view_id": "8b7bd4f8-b9ad-4161-bb2c-b98448316f1b"
+        },
+        {
+          "error_source": "custom",
+          "error_type": "ProbeTiming",
+          "event_id": "27ff95b1-f62c-4db1-a1b3-df0e74aabb71",
+          "payload_matches": true,
+          "phase": "timing-swift-repeat-a",
+          "session_id": "cd4bd466-940f-4052-8b1f-9c887e41b7ac",
+          "source_scene": "scene-A",
+          "view_id": "76528fa0-f083-49d4-aa24-94e5dbe20b10"
+        },
+        {
+          "error_source": "custom",
+          "error_type": "ProbeTiming",
+          "event_id": "b083081b-4af6-4dde-a12e-d20a49d70d5e",
+          "payload_matches": true,
+          "phase": "timing-swift-repeat-b",
+          "session_id": "cd4bd466-940f-4052-8b1f-9c887e41b7ac",
+          "source_scene": "scene-A",
+          "view_id": "8b7bd4f8-b9ad-4161-bb2c-b98448316f1b"
+        },
+        {
+          "error_source": "custom",
+          "error_type": "ProbeTiming",
+          "event_id": "de0b52cc-cb1f-4dc6-91a3-7ee8b40cf69e",
+          "payload_matches": true,
+          "phase": "timing-swift-overwrite-a",
+          "session_id": "cd4bd466-940f-4052-8b1f-9c887e41b7ac",
+          "source_scene": "scene-A",
+          "view_id": "76528fa0-f083-49d4-aa24-94e5dbe20b10"
+        },
+        {
+          "error_source": "custom",
+          "error_type": "ProbeTiming",
+          "event_id": "2bacf1b3-5dee-4dc2-9d4f-aeacad360460",
+          "payload_matches": true,
+          "phase": "timing-swift-overwrite-b",
+          "session_id": "cd4bd466-940f-4052-8b1f-9c887e41b7ac",
+          "source_scene": "scene-A",
+          "view_id": "8b7bd4f8-b9ad-4161-bb2c-b98448316f1b"
+        },
+        {
+          "error_source": "custom",
+          "error_type": "ProbeTiming",
+          "event_id": "b5675d4e-70a1-48b0-a57a-4f8970806cb1",
+          "payload_matches": true,
+          "phase": "timing-objc-initial-a",
+          "session_id": "cd4bd466-940f-4052-8b1f-9c887e41b7ac",
+          "source_scene": "scene-A",
+          "view_id": "76528fa0-f083-49d4-aa24-94e5dbe20b10"
+        },
+        {
+          "error_source": "custom",
+          "error_type": "ProbeTiming",
+          "event_id": "1e38265c-2cd1-4712-8e43-afc4861bb79b",
+          "payload_matches": true,
+          "phase": "timing-objc-initial-b",
+          "session_id": "cd4bd466-940f-4052-8b1f-9c887e41b7ac",
+          "source_scene": "scene-A",
+          "view_id": "8b7bd4f8-b9ad-4161-bb2c-b98448316f1b"
+        },
+        {
+          "error_source": "custom",
+          "error_type": "ProbeTiming",
+          "event_id": "6bf40a88-f23b-40a8-8620-1ccddd4338c9",
+          "payload_matches": true,
+          "phase": "timing-objc-repeat-a",
+          "session_id": "cd4bd466-940f-4052-8b1f-9c887e41b7ac",
+          "source_scene": "scene-A",
+          "view_id": "76528fa0-f083-49d4-aa24-94e5dbe20b10"
+        },
+        {
+          "error_source": "custom",
+          "error_type": "ProbeTiming",
+          "event_id": "4eb4e58f-fdcb-4343-b226-0e32b48e7e55",
+          "payload_matches": true,
+          "phase": "timing-objc-repeat-b",
+          "session_id": "cd4bd466-940f-4052-8b1f-9c887e41b7ac",
+          "source_scene": "scene-A",
+          "view_id": "8b7bd4f8-b9ad-4161-bb2c-b98448316f1b"
+        },
+        {
+          "error_source": "custom",
+          "error_type": "ProbeTiming",
+          "event_id": "042e7837-2f14-475b-ad42-12a1534dd386",
+          "payload_matches": true,
+          "phase": "timing-objc-overwrite-a",
+          "session_id": "cd4bd466-940f-4052-8b1f-9c887e41b7ac",
+          "source_scene": "scene-A",
+          "view_id": "76528fa0-f083-49d4-aa24-94e5dbe20b10"
+        },
+        {
+          "error_source": "custom",
+          "error_type": "ProbeTiming",
+          "event_id": "a08506e8-bf19-44b5-833a-31765a4bc660",
+          "payload_matches": true,
+          "phase": "timing-objc-overwrite-b",
+          "session_id": "cd4bd466-940f-4052-8b1f-9c887e41b7ac",
+          "source_scene": "scene-A",
+          "view_id": "8b7bd4f8-b9ad-4161-bb2c-b98448316f1b"
+        },
+        {
+          "error_source": "custom",
+          "error_type": "ProbeTiming",
+          "event_id": "5479d473-89da-4cb7-9803-8a8899c586d8",
+          "payload_matches": true,
+          "phase": "timing-final-a",
+          "session_id": "cd4bd466-940f-4052-8b1f-9c887e41b7ac",
+          "source_scene": "scene-A",
+          "view_id": "76528fa0-f083-49d4-aa24-94e5dbe20b10"
+        },
+        {
+          "error_source": "custom",
+          "error_type": "ProbeTiming",
+          "event_id": "36c455d3-56e4-475f-a212-b9cfa9946636",
+          "payload_matches": true,
+          "phase": "timing-final-b",
+          "session_id": "cd4bd466-940f-4052-8b1f-9c887e41b7ac",
+          "source_scene": "scene-A",
+          "view_id": "8b7bd4f8-b9ad-4161-bb2c-b98448316f1b"
+        }
+      ],
+      "final_document_versions": {
+        "76528fa0-f083-49d4-aa24-94e5dbe20b10": 14,
+        "8b7bd4f8-b9ad-4161-bb2c-b98448316f1b": 13
+      },
+      "native_scenes": {
+        "scene-A": "F2D1D598-F37A-4B5F-8FC5-CA3A3BA2F629",
+        "scene-B": "B4732ADD-FD73-499E-8CC9-D689DBAE7ADF"
+      },
+      "owners": {
+        "scene-A": "76528fa0-f083-49d4-aa24-94e5dbe20b10",
+        "scene-B": "8b7bd4f8-b9ad-4161-bb2c-b98448316f1b"
+      },
+      "session_id": "cd4bd466-940f-4052-8b1f-9c887e41b7ac",
+      "signal_count": 87,
+      "simultaneous_visibility_claimed": false,
+      "state": "PASS",
+      "views": [
+        {
+          "name": "ApplicationLaunch",
+          "session_id": "cd4bd466-940f-4052-8b1f-9c887e41b7ac",
+          "timing_state": {
+            "loading": null,
+            "timings": {}
+          },
+          "view_id": "354de9b5-be26-4112-8782-883afba5b2ff"
+        },
+        {
+          "name": "ProbeHomeView",
+          "session_id": "cd4bd466-940f-4052-8b1f-9c887e41b7ac",
+          "timing_state": {
+            "loading": 192977071,
+            "timings": {
+              "exp179_final_a": 193044066,
+              "exp179_shared": 192957044
+            }
+          },
+          "view_id": "76528fa0-f083-49d4-aa24-94e5dbe20b10"
+        },
+        {
+          "name": "ProbeHomeView",
+          "session_id": "cd4bd466-940f-4052-8b1f-9c887e41b7ac",
+          "timing_state": {
+            "loading": 37116051,
+            "timings": {
+              "exp179_final_b": 37137032,
+              "exp179_shared": 37099957
+            }
+          },
+          "view_id": "8b7bd4f8-b9ad-4161-bb2c-b98448316f1b"
+        }
+      ]
+    },
+    "preflight": {
+      "authenticated_read": true,
+      "state": "PASS"
+    }
+  },
+  "started_at": "2026-09-17T22:50:49.788350+00:00",
+  "state": "PASS",
+  "xcode": "Xcode 27.0\nBuild version 27A266a"
+}
