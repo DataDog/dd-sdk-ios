@@ -52,8 +52,8 @@ Objective-C Release exposure still require normal API review.
    reconnect acceptance are closed within their recorded boundaries.
    R04 retained-reader remount and P03 disconnected-registry retirement pass
    EXP-171/172 within their recorded boundaries.
-3. Execute defined EXP-173 for D10 accepted presentation state and the R06
-   same-ID occurrence discriminator. Then close R05 multi-observer reentrancy coverage.
+3. D10 accepted presentations and R06 occurrence review pass EXP-173. Close
+   R05 multi-observer reentrancy before resuming the bounded telemetry gates.
 4. Close the early compatibility/performance gates in available environments;
    C06 remains blocked without a minimum-OS runtime. Resume T03–T14 only after
    relevant repair dependencies pass. A documented fallback remains a deliverable.
@@ -105,7 +105,7 @@ SwiftUI remains required as H16; the former conditional row is resolved.
 | R03 | Transition arbitration | SDK reviewer | None | Accepted versus proposed state; cancel/finish exactly once; nested reentrancy; record findings, evidence and dispositions in COMPONENT_REVIEW.md | Source review plus targeted regressions for any finding | CLOSED |
 | R04 | View modifiers and attachment boundaries | SDK reviewer | D03, D08 | Main-thread/availability gates, host reconstruction and retained-reader teardown; record findings, evidence and dispositions in COMPONENT_REVIEW.md | Source review plus targeted regressions for any finding | CLOSED |
 | R05 | Observed input and semantic engine | SDK reviewer | D07, D08 | Publisher pinning, Observation rearming, background FIFO and atomic destination; record findings, evidence and dispositions in COMPONENT_REVIEW.md; multiple observers with nested commit/remove/add must preserve monotonic generations | Source review plus targeted regressions for any finding | REVIEW BLOCKED |
-| R06 | Public hosts and native convenience adapters | SDK reviewer | D10 | Migration budget, no screen/method edits, automatic metadata and platform fallback; record findings, evidence and dispositions in COMPONENT_REVIEW.md; delayed detach/remount and same-ID presentation replacement preserve occurrence ownership | Source review plus targeted regressions for any finding | REVIEW BLOCKED |
+| R06 | Public hosts and native convenience adapters | SDK reviewer | D10 | Migration budget, no screen/method edits, automatic metadata and platform fallback; record findings, evidence and dispositions in COMPONENT_REVIEW.md; delayed detach/remount and same-ID presentation replacement preserve occurrence ownership | Source review plus targeted regressions for any finding | CLOSED |
 
 ## Acceptance workflow
 
@@ -173,7 +173,7 @@ experiment slices remain evidence, not a substitute for these missing cases.
 | D07 | Pending semantic authority | SDK implementer | D03 | Reproduce/triage the reported finding, then require: Empty explicit/capability source and absent instrumentation do not suppress automatic tracking; first accepted snapshot acquires local authority | iOS 27 simulator with real authority registry | CLOSED |
 | D08 | Reconnect generation acceptance | SDK implementer | D03, D07 | Reproduce/triage the reported finding, then require: Stale trait between disconnect and real connection/reader mount cannot consume generation; exactly one fresh occurrence and correct immediate telemetry | Deterministic iOS 27 regression; genuine lifecycle remains H09 | CLOSED |
 | D09 | Controller API caller-thread compatibility | SDK implementer | None | Reproduce/triage the reported finding, then require: Background start/stop getter spy records no UIKit hierarchy access; main-thread target resolves correctly without sync-to-main deadlock | iOS simulator focused test plus Main Thread Checker | CLOSED |
-| D10 | Accepted presentation state | SDK implementer | None | Reproduce/triage the reported finding, then require: Rejected/canonicalized Binding writes, transaction forwarding, immediate setter work and dismissal callbacks follow accepted occurrence | Mounted iOS 27 SwiftUI adapter tests | REGRESSION BLOCKED |
+| D10 | Accepted presentation state | SDK implementer | None | Reproduce/triage the reported finding, then require: Rejected/canonicalized Binding writes, transaction forwarding, immediate setter work and dismissal callbacks follow accepted occurrence | Mounted iOS 27 SwiftUI adapter tests | CLOSED |
 | D11 | Legacy native/WebView correlation | SDK implementer | None | Reproduce/triage the reported finding, then require: Legacy string-key view plus mounted WKWebView retains unambiguous container.view.id; peer scene never used as fallback | Single-scene simulator WebView with Replay correlation enabled | CLOSED |
 | D12 | Expired action stop attributes | SDK implementer | None | Reproduce/triage the reported finding, then require: Single-scene continuous action stopped after timeout retains original stop attributes; peer timeout still cannot inherit foreign attributes | RUM scope regression with controlled clock | CLOSED |
 

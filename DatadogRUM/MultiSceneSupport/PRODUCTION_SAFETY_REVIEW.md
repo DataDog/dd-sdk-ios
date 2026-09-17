@@ -1,7 +1,7 @@
 **Production safety review of multi-scene SDK instrumentation**
 
-Updated 2026-09-17 during plan execution. **Release remains on hold: 11 of the
-12 review findings are closed, 1 remains open.** The finite checklist has 27/66
+Updated 2026-09-17 during plan execution. **Release remains on hold: all 12
+review findings are closed, 0 remain open.** The finite checklist has 29/66
 release gates closed. [PLAN.md](PLAN.md) owns the release contract and
 [REVIEW_TRIAGE.md](REVIEW_TRIAGE.md) owns assessed repair order and evidence limits.
 Review IDs R01–R12 below map to repair gates D01–D12, not PLAN's responsibility
@@ -18,7 +18,7 @@ review gates R01–R06.
 | R07 / D07 | CLOSED | EXP-169, local unsigned `a9aaf25a7`: four failing controls, 119 tests and mounted29/29; automatic eligibility before input and exact immediate semantic owners |
 | R08 / D08 | CLOSED | EXP-170, signed `66d1ccb02`: three failing controls,314 affected tests and mounted51/51 versus39/51; fresh reconnect Resource/Log owners, peer continuity and delayed remount. H09 still requires genuine OS ordering. |
 | R09 / D09 | CLOSED | EXP-164 at local `a9abc092b`: 31 tests and actual mounted fixture 19/19; zero background reads/MTC diagnostics versus control 5 reads/4 diagnostics |
-| R10 / D10 | OPEN | Defined EXP-173: reject/canonicalize actual Binding writes, accepted-state markers, exact native dismissal and same-ID occurrence callbacks |
+| R10 / D10 | CLOSED | EXP-173, signed `7619eb8a2`:337 tests; actual mounted Bindings/sheet/cover77/77 versus55/77, exact Resource/Log owners and native dismissal; all failed attempts preserved |
 | R11 / D11 | CLOSED | EXP-165, signed `9a1ee83a5`: 102 tests, 19/19 mounted WebView/Replay checks; legacy association restored, peers excluded |
 | R12 / D12 | CLOSED | EXP-163, signed `084dff4c1`: three failing recipient controls, 212 affected tests pass; own overdue-stop attributes retained without peer leakage |
 
@@ -47,10 +47,14 @@ EXP-172 closes the additional P03 registry-growth risk with
 [retention evidence](Results/EXP-172-scene-retention.json):326 tests, complete
 Release ABBA on27/26.5, zero retired entries/weak survivors and heap increases
 within the original limits. The original220-entry control still fails. Ordinary
-automatic/manual and watchOS Release checks pass. D10 presentation remains the
-one open review finding; accepted-state and same-ID occurrence coverage are next.
-Keep this review and its open
-findings until their corresponding gates close; preserve historical evidence below.
+automatic/manual and watchOS Release checks pass. EXP-173 closes D10 and the
+additional same-ID occurrence risk with [presentation evidence](Results/EXP-173-presentation-acceptance.json):
+337 tests and mounted77/77. Its first native candidate exposed content
+rematerialization before injected old callbacks; the accepted fix preserves that
+occurrence while its Binding remains accepted. All12 original findings are now
+closed, but R05 observer reentrancy, telemetry, physical and final release gates
+remain. Keep this review as the disposition and historical evidence record; it
+is not release certification.
 
 **Original review at the source revision below**
 

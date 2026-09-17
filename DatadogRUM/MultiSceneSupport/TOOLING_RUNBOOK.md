@@ -1308,3 +1308,24 @@ queued events after drain. Distinguish a rejected proposal, accepted descriptor,
 customer item ID and occurrence UUID. Preserve old callback closures for stale
 same-ID and A→B→A controls. Opaque setter internals are not an accepted-state
 observation source; exact interior work uses the existing source contract.
+
+
+The EXP-173 native harness uses observation-only Debug hooks in isolated copies
+of both SDK arms. Record archived source identity separately from the compiled
+hooked identity. The hook exposes existing Binding and boundary callback values;
+it must not mutate application or SDK state. Explicitly type the captured generic
+Binding, and capture initializer function fields through local constants instead
+of mutating `self`. The first invalid build is preserved. No hook enters production
+source or the public API.
+
+
+EXP-173 acceptance is durable in `Results/EXP-173-presentation-acceptance.json`.
+Use `tools/multi-scene/presentation-acceptance/run.py` and its README for the
+repeatable frozen control/candidate workflow. Attempt1 failed hook compilation;
+attempts2/3 exposed real candidate occurrence churn, and attempt4 passes77/77
+versus55/77. Require stability before injecting an old callback: otherwise native
+content rematerialization can be misdiagnosed as a stale-callback failure. A content
+onDisappear alone is not accepted dismissal; inspect the current Binding.
+The eight oracle controls include before-render and restored-run rejection.
+Archive and observation-hook compiled identities remain separate; logical peer
+and injected callbacks cannot close physical scene-ordering gates.

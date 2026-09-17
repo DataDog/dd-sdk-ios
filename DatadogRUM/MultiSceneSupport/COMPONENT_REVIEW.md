@@ -2,7 +2,8 @@
 
 Original review 2026-09-17 against `af63657f08dbecb66e7c3ae97ed53fc8f7b065b9`.
 R02 was reviewed again at signed `7b77f60eb` during EXP-168, and R04 at signed
-`66d1ccb02`/`4ba7179c6` during EXP-170/171. Original line ranges
+`66d1ccb02`/`4ba7179c6` during EXP-170/171. R06 was reviewed again at signed
+`7619eb8a2` during EXP-173. Original line ranges
 below refer to the original review; current symbol names identify the boundaries.
 The 6,613-line `SwiftUIViewModifier.swift` was reviewed by responsibility before
 further API expansion. This is a source review with existing regression evidence,
@@ -25,7 +26,7 @@ because a report exists. No production source changed during this review.
 | R03 | Deferred intent and interactive arbitration (3060–3899): scene/coordinator key, cancel rearm, pending identity check, remove pending before commit, preserve peer on disconnect | Interactive cancel/finish, concurrent keyed disconnect, pending migration and reregister-cannot-bypass-cancel tests | Bounded arbitration review complete. H11–H13 remain real recognized-gesture gates. Source observer fan-out is R05, not this arbiter. |
 | R04 | Ordinary/keyed modifiers and attachment/lifetime boundaries (3900–4789, 5796–6096): single-scene branch, availability fallback, declaration-owned State, generation-checked one-turn detach grace | Retained reader and reconstruction tests; `testWhenDetachedStateIsReleased_queuedFinalDetachStillRuns`, detach/reattach cancellation | CLOSED in EXP-171: after D03/D08, no-body retained-reader controls and native first-callback57/57 versus43/57 prove fresh Latest ownership, weak configuration and teardown. H08/H09 physical ordering stays separate. |
 | R05 | Transition source, observed adapter and host engine (4790–5379): stable source pinning, lazy observed authority, Observation rearm before receive, FIFO main dispatch, exact source unsubscribe | Observation synchronous/nested mutation, adapter deallocation, publisher pinning, background FIFO and exact host disconnect tests | BLOCKED by missing multi-observer reentrancy coverage below. D07/D08 pass EXP-169/170. |
-| R06 | Native semantic state/public hosts (5380–5795, 6097–6496): accepted path getter, presentation ownership, automatic metadata, explicit-over-capability precedence, unchanged standard-container integration | Rejected/canonicalized path tests, native presentation tests, host reconstruction, capability precedence and pending-observed-input tests | BLOCKED by D10. Accepted-path handling is sound in the reviewed seam; presentation writes use a different ordering. Stable API sign-off remains F01. |
+| R06 | Native semantic state/public hosts (5380–5795, 6097–6496): accepted path getter, presentation ownership, automatic metadata, explicit-over-capability precedence, unchanged standard-container integration | Rejected/canonicalized path tests, native presentation tests, host reconstruction, capability precedence and pending-observed-input tests | CLOSED in EXP-173: accepted getter after one transaction write, occurrence-token callbacks, accepted mount authority and stable rematerialization;337 tests and native77/77. Stable API sign-off remains F01. |
 
 Names above identify coverage in `SwiftUIViewNameExtractorTests.swift` and
 `RUMViewsHandlerTests.swift`; their accepted EXP-159 suite checkpoint is 1,260/1,260.
@@ -95,12 +96,27 @@ This closes the bounded modifier/attachment review, with EXP-168 teardown and
 EXP-170 trait fencing retained. H08/H09 physical ordering and final independent
 release review are not inferred from it.
 
-**D10, presentation writes.** The adapter reconciles `newItem` before writing the
-customer Binding (6445–6451), unlike the path adapter, which forwards and reads
-accepted state (5589–5595). A rejecting/canonicalizing setter can leave telemetry
-on an unaccepted destination. Required: rejecting nil, canonicalized item,
-transaction propagation, emitted setter work and exact dismissal callback tests.
-Do not fix this by simply delaying all semantic commits past the critical callback.
+**D10/R06, accepted presentations — closed in EXP-173.** The actual native
+Binding factory now forwards its transaction once and reads accepted state before
+returning. Rejection preserves the current owner; canonicalization does not commit
+the proposal. Mount/disappear closures capture an internal occurrence UUID, so
+same-ID sheet→cover and A→B→A cannot revive/stop a later occurrence. Only accepted
+handler publication sets started state and acquires suppression; rejected migration
+preserves the old owner. Container detach and disconnect still cancel independently.
+No callback is retained by the state, so boundary captures add no reverse ARC edge.
+Standard container call sites, availability and metadata/default precedence remain.
+
+The first native candidate still churned SheetAgain before old-callback injection:
+SwiftUI rematerialized accepted content. The disappearance callback now reads the
+current accepted Binding; unchanged accepted content keeps its occurrence, while
+accepted nil balances once. A new failing unit control and the native
+pre-injection stability check preserve this discriminator. All337 affected tests
+pass. Native77/77 versus55/77 validates exact presentation/Home counts, peer
+continuity and Resource/Log view/session IDs inside rejecting setters, immediately
+after return and at actual native onDismiss. All invalid/failed attempts remain.
+Opaque setter interiors still require an observed/explicit transition boundary;
+no speculative proposal ownership, public API, extraction or physical ordering
+claim was added. This closes the bounded R06 responsibility review.
 
 **R05, reentrant observer fan-out.** `commit` snapshots a generation and invokes
 `observers.values.forEach` synchronously (4834–4846). Existing nested-observer
@@ -110,15 +126,10 @@ already consumed the nested generation. This is a source-identified coverage gap
 not a reproduced SDK failure in this pass. Also cover observer removal/addition
 inside delivery before closing R05.
 
-**R06, remaining presentation lifetime boundary.** R04's no-body retained-reader
-remount now passes EXP-171. Same-ID sheet/cover replacement ordering still
-needs its decisive R06 regression with occurrence identity. H08/H09 genuine OS
-ordering stays separate from deterministic mounted evidence.
-
 ## Review and extraction boundary
 
-R01/R02/R03/R04 close only their bounded source-review obligations. R05/R06 remain
-blocked until the stated regressions are tested and the findings are fixed or
+R01/R02/R03/R04/R06 close only their bounded source-review obligations. R05 remains
+blocked until its stated regressions are tested and the findings are fixed or
 rejected with evidence. Keep the existing synchronous accepted-state boundary:
 blindly moving reconciliation to onAppear or another task would reintroduce the
 known immediate-telemetry ownership gap. Splitting the file is deferred; repairs

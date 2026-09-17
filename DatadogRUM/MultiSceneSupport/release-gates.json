@@ -2,7 +2,7 @@
   "schema_version": 1,
   "scope": "Multi-scene RUM release",
   "baseline_revision": "92f021ba7e4a866f84a52da93ed8b63f3dc75882",
-  "candidate_revision": "a9aaf25a787421235e40b0c1714b1b7b5ab94cc6",
+  "candidate_revision": "7619eb8a20eb20edceef84d59706e1cf7b7b838a",
   "gates": [
     {
       "id": "C01",
@@ -198,8 +198,8 @@
       "decisive_test": "Migration budget, no screen/method edits, automatic metadata and platform fallback; record findings, evidence and dispositions in COMPONENT_REVIEW.md; delayed detach/remount and same-ID presentation replacement preserve occurrence ownership",
       "environment": "Source review plus targeted regressions for any finding",
       "completion_mode": null,
-      "status": "REVIEW BLOCKED",
-      "evidence": "COMPONENT_REVIEW.md: concrete findings and decisive missing regressions; extraction deferred."
+      "status": "CLOSED",
+      "evidence": "COMPONENT_REVIEW.md and EXP-173: exact occurrence tokens, same-ID sheet/cover/A return, duplicate and stale callbacks, rejected mount/migration and rematerialization;337 affected tests and native77/77. EXP-171 retained-reader evidence remains valid. No final API or physical sign-off."
     },
     {
       "id": "A01",
@@ -834,8 +834,8 @@
       "decisive_test": "Reproduce/triage the reported finding, then require: Rejected/canonicalized Binding writes, transaction forwarding, immediate setter work and dismissal callbacks follow accepted occurrence",
       "environment": "Mounted iOS 27 SwiftUI adapter tests",
       "completion_mode": null,
-      "status": "REGRESSION BLOCKED",
-      "evidence": "REVIEW_TRIAGE.md: assessed relevant at af63657f0; source-confirmed path; required full regression/repair remains open."
+      "status": "CLOSED",
+      "evidence": "EXP-173; signed SDK7619eb8a2 after7f13b2203. Six failing controls plus native content-rematerialization regression;337 affected tests, strict lint, mounted77/77 versus55/77. Accepted Binding/transaction and exact Resource/Log ownership at rejecting setter, return and native dismissal. Results/EXP-173-presentation-acceptance.json."
     },
     {
       "id": "D11",

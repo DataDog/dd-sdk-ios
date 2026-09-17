@@ -15,8 +15,13 @@ Last updated: 2026-09-17
 
 ## Current checkpoint
 
-Current release position: 24/66 gates closed. EXP-169 closes D07 at local unsigned
-`a9aaf25a7`; D08 and P03 are next. Two production-review repairs remain open.
+Current release position: **29/66 gates closed**. EXP-173 closes D10/R06 at
+signed `7619eb8a2` with337 affected tests and native77/77 versus55/77. All12
+original safety findings have repair evidence. R05 multi-observer fan-out is next.
+Recent identities and attempts are in the finite gate register and active shard.
+
+The checkpoints below preserve the earlier telemetry/navigation milestones;
+they do not override this current release position.
 
 
 - Last accepted public telemetry slice: `EXP-159`, targeted long-running action start/stop.
@@ -334,7 +339,7 @@ ordered acceptance contract is in
 | EXP-171 | PASS | R04: two failing no-body controls,318 tests, mounted57/57 versus43/57; first retained-reader callback owns latest input before body rebind | [Record](Experiments/EXP-143-199.md#exp-171--restore-retained-hosts-from-the-reader-without-body-reconstruction) |
 
 | EXP-172 | PASS | P03:326 tests, three failing controls; Release ABBA27/26.5 zero retired entries/weak survivors within frozen heap limits; eight ordinary smoke runs and watchOS Release pass | [Record](Experiments/EXP-143-199.md#exp-172--retire-disconnected-scene-history-without-accepting-stale-callbacks) |
-| EXP-173 | PLANNED | D10/R06: accepted presentation Binding writes, exact occurrence callbacks, rejected mounts and native dismissal ownership | [Record](Experiments/EXP-143-199.md#exp-173--commit-accepted-presentation-state-and-fence-occurrence-callbacks) |
+| EXP-173 | PASS | D10/R06 closed:337 tests, mounted77/77 versus55/77; accepted Binding and occurrence callbacks, rematerialization regression fixed; all four native attempts retained | [Record](Experiments/EXP-143-199.md#exp-173--commit-accepted-presentation-state-and-fence-occurrence-callbacks) |
 
 ## Simulator-inconclusive and hardware-required evidence
 

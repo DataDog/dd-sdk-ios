@@ -9,18 +9,17 @@ validated, and ready to become a supported contract.
 
 Last updated: 2026-09-17
 
-Current SDK checkpoint: signed `9a1ee83a5`, adding EXP-165 WebView compatibility
-and EXP-164 caller-thread safety
-to EXP-163 overdue-stop metadata, EXP-162 platform guards and accepted EXP-159. Complete watchOS RUM and macOS WebView Debug/Release builds
-and 98 focused iOS tests close D01/D02. EXP-160 finds allocation/retained-registry
-failures; EXP-161 passes the automatic local/backend acceptance workflow. The
-finite [release checklist](MultiSceneSupport/PLAN.md) has 17/66 gates closed.
-Seven [production-review repairs](MultiSceneSupport/REVIEW_TRIAGE.md) remain
-open. D12/T02 pass with 212 affected tests; D09 passes 31 tests and 19/19 actual
-mounted-controller checks with Main Thread Checker. D11 passes 102 affected tests
-and 19/19 mounted WebView/Replay checks; strict peer exclusion is retained. Core
-and lifecycle isolation D04 with allocation cost P02 is next. No further API expansion until relevant
-baseline and repair gates pass. [Current evidence](MultiSceneSupport/Experiments/EXP-143-199.md).
+Current SDK checkpoint: signed `7619eb8a2` (EXP-173 accepted presentations and
+exact occurrence callbacks). The finite [release checklist](MultiSceneSupport/PLAN.md)
+has **29/66 gates closed**. All12 findings in the
+[production safety review](MultiSceneSupport/PRODUCTION_SAFETY_REVIEW.md) have
+bounded repair evidence. EXP-173 passes337 affected tests and77/77 mounted checks
+versus55/77. Early dispatch/allocation/reentrancy and retained-scene budgets now
+pass on27/26.5. R05 multi-observer nested commit/remove/add is the next executable
+gate, followed by the finite remaining telemetry families. Minimum-runtime,
+physical iPad/Duo, API review and final release acceptance remain open. Preserve
+accepted experiment identities; do not rerun them merely to resume.
+[Current evidence](MultiSceneSupport/Experiments/EXP-143-199.md).
 
 ## Goal
 

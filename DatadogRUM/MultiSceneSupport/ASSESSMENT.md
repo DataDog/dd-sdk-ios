@@ -10,7 +10,7 @@ Last updated: 2026-09-17
 
 ## Current verdict
 
-Current release accounting is **27/66 gates closed**. EXP-160 establishes early
+Current release accounting is **29/66 gates closed**. EXP-160 establishes early
 ordinary automatic/manual/custom/NOP and26.5 compatibility, dispatch and exact
 reentrancy baselines. EXP-166 repairs the enabled-handoff allocation failure:
 complete Release ABBA runs measure 1 allocation/64 bytes per event on27/26.5,
@@ -64,8 +64,12 @@ then fresh Latest Resource/Log ownership. EXP-172 closes P03 at signed `4653e0a7
 tests, complete Release ABBA on27/26.5 with zero retired entries/weak survivors,
 eight ordinary automatic/manual passes and watchOS Release compile. Candidate
 heap increases are512–832 bytes for the first100 and512–1,152 for the second100.
-D10 is the remaining production-review repair. Physical scene and final release
-gates remain separate.
+EXP-173 closes D10/R06 at signed `7619eb8a2`:337 affected tests and native77/77
+versus55/77. Rejected/canonicalized writes follow the accepted Binding, and exact
+occurrence callbacks preserve a rematerialized presentation. Resource/Log markers
+keep their exact view/session at setter return and native onDismiss. All12 safety
+findings are repaired within their evidence boundaries; R05 observer fan-out is
+next. Physical scene, API and final release gates remain separate.
 
 The released SDK baseline is not semantically safe for applications with
 concurrent scenes. Process-representative view state and process-global SwiftUI
