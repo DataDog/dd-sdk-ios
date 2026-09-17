@@ -5305,6 +5305,9 @@ internal final class RUMSemanticNavigationHostState {
     private let hostID = UUID()
     private var attachmentGeneration: UInt64 = 0
     private var requiresReaderMount = false
+    // A retained reader may mount before SwiftUI reevaluates the host body.
+    // Remember its configuration without retaining a dormant subscription/source.
+    private weak var configuredTransitions: RUMNavigationTransitions?
     private(set) var selectedTransitions: RUMNavigationTransitions?
     private var observationID: UUID?
     private var latestSnapshot: RUMNavigationTransitions.Snapshot?
@@ -5316,6 +5319,9 @@ internal final class RUMSemanticNavigationHostState {
         viewsHandler: RUMViewsHandler?
     ) {
         self.viewsHandler = viewsHandler
+        if selectedTransitions == nil {
+            configuredTransitions = transitions
+        }
 
         guard let transitions else {
             return
@@ -5363,6 +5369,9 @@ internal final class RUMSemanticNavigationHostState {
                 sceneIdentifier: activeOccurrence.sceneIdentifier
             )
             self.activeOccurrence = nil
+        }
+        if selectedTransitions == nil {
+            reconcile(transitions: configuredTransitions, viewsHandler: viewsHandler)
         }
         activateLatestSnapshotIfPossible()
     }

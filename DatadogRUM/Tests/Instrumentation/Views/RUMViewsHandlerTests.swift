@@ -3287,6 +3287,118 @@ class RUMViewsHandlerTests: XCTestCase {
 
     @available(iOS 27.0, *)
     @MainActor
+    func testRetainedSemanticReaderRemountsAfterFinalDetachWithoutBody() throws {
+        try assertRetainedSemanticReader(disconnect: false)
+    }
+
+    @available(iOS 27.0, *)
+    @MainActor
+    func testRetainedSemanticReaderRemountsAfterSceneReconnectWithoutBody() throws {
+        try assertRetainedSemanticReader(disconnect: true)
+    }
+
+    @available(iOS 27.0, *)
+    @MainActor
+    func testRetainedSemanticConfigurationDoesNotKeepSourceOrHandlerAlive() {
+        let scene = RUMSceneIdentifier(rawValue: "scene-A")
+        let host = RUMSemanticNavigationHostState()
+        weak var releasedSource: RUMNavigationTransitions?
+        weak var releasedHandler: RUMViewsHandler?
+        autoreleasepool {
+            let source = RUMNavigationTransitions(currentDestination: RUMView(name: "Initial"))
+            let handler = createHandler()
+            releasedSource = source
+            releasedHandler = handler
+            host.reconcile(transitions: source, viewsHandler: handler)
+            host.reconcile(attachment: .attached(scene))
+            host.finalDetach()
+        }
+        XCTAssertNil(releasedSource)
+        XCTAssertNil(releasedHandler)
+        host.reconcile(attachment: .attached(scene))
+        XCTAssertNil(host.selectedTransitions)
+        XCTAssertFalse(host.suppressionState.isActive)
+        XCTAssertEqual(commandSubscriber.receivedCommands.count, 2)
+    }
+
+    @available(iOS 27.0, *)
+    @MainActor
+    func testRetainedSemanticReaderDoesNotRestoreWithdrawnSource() {
+        let scene = RUMSceneIdentifier(rawValue: "scene-A")
+        let handler = createHandler()
+        let source = RUMNavigationTransitions(currentDestination: RUMView(name: "Initial"))
+        let host = RUMSemanticNavigationHostState()
+        host.reconcile(transitions: source, viewsHandler: handler)
+        host.reconcile(attachment: .attached(scene))
+        host.finalDetach()
+        host.reconcile(transitions: nil, viewsHandler: handler)
+        host.reconcile(attachment: .attached(scene))
+        source.willNavigate(id: "withdrawn", destination: RUMView(name: "Withdrawn"))
+        source.commit(id: "withdrawn")
+        XCTAssertNil(host.selectedTransitions)
+        XCTAssertFalse(host.suppressionState.isActive)
+        XCTAssertEqual(commandSubscriber.receivedCommands.count, 2)
+    }
+
+    @available(iOS 27.0, *)
+    @MainActor
+    private func assertRetainedSemanticReader(disconnect: Bool) throws {
+        let sceneA = RUMSceneIdentifier(rawValue: "scene-A")
+        let sceneB = RUMSceneIdentifier(rawValue: "scene-B")
+        let handler = createHandler(sceneIdentifierFromNotification: { _ in sceneA })
+        let source = RUMNavigationTransitions(currentDestination: RUMView(name: "Initial"))
+        let host = RUMSemanticNavigationHostState()
+        host.reconcile(transitions: source, viewsHandler: handler)
+        let reader = RUMSceneIdentifierReader.ObserverView(
+            onChange: host.reconcile(attachment:),
+            onMount: { host.reconcile(attachment: .attached($0)) },
+            applicationSupportsMultipleScenes: true
+        )
+        reader.notify(attachment: .attached(sceneA))
+        let initial = try XCTUnwrap(commandSubscriber.receivedCommands.first as? RUMStartViewCommand)
+        handler.notify_semanticDestinationAppear(
+            identity: "peer", name: "Peer", path: "/peer", attributes: [:], sceneIdentifier: sceneB
+        )
+        if disconnect {
+            notificationCenter.post(name: UIScene.didDisconnectNotification, object: nil)
+            host.sceneDidDisconnect(sceneA)
+            reader.markSceneDisconnected(sceneA)
+        } else {
+            reader.notify(attachment: .detached)
+            host.finalDetach()
+        }
+        XCTAssertNil(host.selectedTransitions)
+        XCTAssertFalse(host.suppressionState.isActive)
+        source.willNavigate(id: "latest", destination: RUMView(name: "Latest"))
+        source.commit(id: "latest")
+        XCTAssertEqual(commandSubscriber.receivedCommands.count, 3)
+        if disconnect {
+            reader.notify(attachment: .attached(sceneA))
+            XCTAssertFalse(host.suppressionState.isActive)
+            XCTAssertNil(host.selectedTransitions)
+            notificationCenter.post(name: UIScene.willConnectNotification, object: nil)
+            notificationCenter.post(name: UIScene.willEnterForegroundNotification, object: nil)
+            reader.markSceneDisconnected(sceneA)
+        }
+        // Existing callbacks only: no body/source reconciliation repairs this boundary.
+        reader.notify(attachment: .attached(sceneA))
+        reader.notify(attachment: .attached(sceneA))
+        let starts = commandSubscriber.receivedCommands.compactMap { $0 as? RUMStartViewCommand }
+        XCTAssertEqual(starts.filter { $0.target == .scene(sceneA) }.count, 2)
+        let restored = try XCTUnwrap(starts.last { $0.target == .scene(sceneA) })
+        XCTAssertEqual(restored.name, "Latest")
+        XCTAssertNotEqual(restored.identity, initial.identity)
+        XCTAssertTrue(host.selectedTransitions === source)
+        XCTAssertTrue(host.suppressionState.isActive)
+        XCTAssertEqual(commandSubscriber.receivedCommands.count, 4)
+        host.finalDetach()
+        let stops = commandSubscriber.receivedCommands.compactMap { $0 as? RUMStopViewCommand }
+        XCTAssertEqual(stops.filter { $0.target == .scene(sceneA) }.map(\.identity), [initial.identity, restored.identity])
+        XCTAssertFalse(stops.contains { $0.target == .scene(sceneB) })
+    }
+
+    @available(iOS 27.0, *)
+    @MainActor
     private func assertSemanticReconnect(earlyReader: Bool, advanceSource: Bool) throws {
         let sceneA = RUMSceneIdentifier(rawValue: "scene-A")
         let sceneB = RUMSceneIdentifier(rawValue: "scene-B")
