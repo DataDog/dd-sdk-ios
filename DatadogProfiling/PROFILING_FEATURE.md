@@ -1,7 +1,6 @@
 ---
-last_updated: 2026-09-13
-sdk_version: 3.17.0
-verified_against_commit: ac1c0a102
+last_updated: 2026-09-17
+verified_against_commit: a147920f3
 tracked_files:
   - DatadogProfiling/Sources/Profiling.swift
   - DatadogProfiling/Sources/ProfilingConfiguration.swift
@@ -208,7 +207,7 @@ This is expected. Background state is a profiling blocker, and the profiler flus
 ## Feature Interactions
 
 - **RUM**: Profiling reads RUM context and RUM payload messages for session-linked sampling, quota checks, and profile correlation.
-- **Remote Configuration**: overrides `applicationLaunchSampleRate` — see [Remote Configuration](#remote-configuration)
+- **Remote Configuration**: overrides `applicationLaunchSampleRate` and `continuousSampleRate` — see [Remote Configuration](#remote-configuration)
 
 ## Additional Context
 
