@@ -64,6 +64,10 @@ public final class FlagsClient {
         self.rumFlagEvaluationReporter = rumFlagEvaluationReporter
     }
 
+    internal func assignmentAuthorizationDidChange() {
+        repository.assignmentAuthorizationDidChange()
+    }
+
     /// Creates a new `FlagsClient` instance.
     ///
     /// Use this method to create a client for evaluating feature flags. The client is registered internally
@@ -186,6 +190,7 @@ public final class FlagsClient {
                 flagAssignmentsFetcher: feature.flagAssignmentsFetcher,
                 dateProvider: SystemDateProvider(),
                 featureScope: featureScope,
+                authorizationStore: feature.assignmentAuthorizationStore,
                 initializationTimeout: feature.initializationTimeout
             ),
             exposureLogger: feature.makeExposureLogger(featureScope),

@@ -187,6 +187,13 @@ final class FlagAssignmentsFetcherMock: FlagAssignmentsFetching {
             @escaping (Result<[String: FlagAssignment], FlagsError>) -> Void
         ) -> Void
     )?
+    var verifiedFlagAssignmentsStub: (
+        (
+            FlagsEvaluationContext,
+            @escaping (Result<VerifiedFlagAssignments, FlagsError>) -> Void
+        ) -> Void
+    )?
+    var validatePersistedFlagAssignmentsStub: ((FlagsData, Date, @escaping (Bool) -> Void) -> Void)?
 
     init(
         flagAssignmentsStub: (
@@ -194,9 +201,18 @@ final class FlagAssignmentsFetcherMock: FlagAssignmentsFetching {
                 FlagsEvaluationContext,
                 @escaping (Result<[String: FlagAssignment], FlagsError>) -> Void
             ) -> Void
-        )? = nil
+        )? = nil,
+        verifiedFlagAssignmentsStub: (
+            (
+                FlagsEvaluationContext,
+                @escaping (Result<VerifiedFlagAssignments, FlagsError>) -> Void
+            ) -> Void
+        )? = nil,
+        validatePersistedFlagAssignmentsStub: ((FlagsData, Date, @escaping (Bool) -> Void) -> Void)? = nil
     ) {
         self.flagAssignmentsStub = flagAssignmentsStub
+        self.verifiedFlagAssignmentsStub = verifiedFlagAssignmentsStub
+        self.validatePersistedFlagAssignmentsStub = validatePersistedFlagAssignmentsStub
     }
 
     func flagAssignments(
@@ -204,6 +220,31 @@ final class FlagAssignmentsFetcherMock: FlagAssignmentsFetching {
         completion: @escaping (Result<[String: FlagAssignment], FlagsError>) -> Void
     ) {
         flagAssignmentsStub?(evaluationContext, completion)
+    }
+
+    func verifiedFlagAssignments(
+        for evaluationContext: FlagsEvaluationContext,
+        completion: @escaping (Result<VerifiedFlagAssignments, FlagsError>) -> Void
+    ) {
+        if let verifiedFlagAssignmentsStub {
+            verifiedFlagAssignmentsStub(evaluationContext, completion)
+        } else {
+            flagAssignments(for: evaluationContext) { result in
+                completion(result.map { VerifiedFlagAssignments(flags: $0, signedPayload: nil) })
+            }
+        }
+    }
+
+    func validatePersistedFlagAssignments(
+        _ flagsData: FlagsData,
+        at date: Date,
+        completion: @escaping (Bool) -> Void
+    ) {
+        if let validatePersistedFlagAssignmentsStub {
+            validatePersistedFlagAssignmentsStub(flagsData, date, completion)
+        } else {
+            completion(flagsData.signedPayload == nil)
+        }
     }
 }
 

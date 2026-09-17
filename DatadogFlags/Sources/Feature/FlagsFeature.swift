@@ -16,6 +16,8 @@ internal struct FlagsFeature: DatadogRemoteFeature {
     }
 
     let flagAssignmentsFetcher: any FlagAssignmentsFetching
+    let assignmentAuthorizationStore: AssignmentAuthorizationStore
+    let assignmentProtection: Flags.AssignmentProtection
     let initializationTimeout: TimeInterval?
     let requestBuilder: any FeatureRequestBuilder
     let messageReceiver: any FeatureMessageReceiver
@@ -32,10 +34,17 @@ internal struct FlagsFeature: DatadogRemoteFeature {
         featureScope: FeatureScope,
         core: DatadogCoreProtocol
     ) {
+        let assignmentAuthorizationStore = AssignmentAuthorizationStore(
+            initialAuthorization: configuration.assignmentAuthorization,
+            protection: configuration.assignmentProtection
+        )
+        self.assignmentAuthorizationStore = assignmentAuthorizationStore
+        assignmentProtection = configuration.assignmentProtection
         flagAssignmentsFetcher = FlagAssignmentsFetcher(
             customEndpoint: configuration.customFlagsEndpoint,
             customHeaders: configuration.customFlagsHeaders,
-            featureScope: featureScope
+            featureScope: featureScope,
+            authorizationStore: assignmentAuthorizationStore
         )
         initializationTimeout = configuration.initializationTimeout
         requestBuilder = ExposureRequestBuilder(
@@ -87,6 +96,27 @@ internal struct FlagsFeature: DatadogRemoteFeature {
         performanceOverride = PerformancePresetOverride(maxObjectsInFile: 50)
 
         issueReporter = IssueReporter.default(isGracefulModeEnabled: configuration.gracefulModeEnabled)
+        assignmentAuthorizationStore.setExpirationHandler { [weak clientRegistry] in
+            guard let clientRegistry else {
+                return
+            }
+            for client in clientRegistry.allClients() {
+                (client as? FlagsClient)?.assignmentAuthorizationDidChange()
+            }
+        }
+    }
+
+    func setAssignmentAuthorization(_ authorization: Flags.AssignmentAuthorization?) {
+        guard assignmentProtection == .signedAndAuthorized else {
+            DD.logger.error(
+                "Assignment authorization requires signed-and-authorized response protection."
+            )
+            return
+        }
+        assignmentAuthorizationStore.update(authorization)
+        for client in clientRegistry.allClients() {
+            (client as? FlagsClient)?.assignmentAuthorizationDidChange()
+        }
     }
 }
 

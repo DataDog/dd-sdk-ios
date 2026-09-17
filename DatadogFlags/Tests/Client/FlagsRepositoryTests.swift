@@ -50,6 +50,60 @@ final class FlagsRepositoryTests: XCTestCase {
         XCTAssertTrue(featureScope.dataStoreMock.storage.isEmpty)
     }
 
+    func testInitAcceptsLegacyUnsignedCacheWhenProtectionIsDisabled() throws {
+        let cachedData = FlagsData(
+            flags: ["test": .mockAny()],
+            context: .mockAny(),
+            date: .mockAny()
+        )
+        try featureScope.dataStoreMock.setValue(
+            JSONEncoder().encode(cachedData),
+            forKey: .mockAny()
+        )
+
+        let flagsRepository = FlagsRepository(
+            clientName: .mockAny(),
+            flagAssignmentsFetcher: FlagAssignmentsFetcherMock(),
+            dateProvider: DateProviderMock(),
+            featureScope: featureScope
+        )
+        featureScope.dataStore.flush()
+
+        XCTAssertEqual(flagsRepository.context, cachedData.context)
+        XCTAssertEqual(flagsRepository.flagAssignment(for: "test"), cachedData.flags["test"])
+    }
+
+    func testInitRejectsCacheThatFailsProtectedValidation() throws {
+        let cachedData = FlagsData(
+            flags: ["test": .mockAny()],
+            context: .mockAny(),
+            date: .mockAny()
+        )
+        try featureScope.dataStoreMock.setValue(
+            JSONEncoder().encode(cachedData),
+            forKey: .mockAny()
+        )
+        let fetcher = FlagAssignmentsFetcherMock(
+            validatePersistedFlagAssignmentsStub: { _, _, completion in completion(false) }
+        )
+        let authorizationStore = AssignmentAuthorizationStore(
+            initialAuthorization: nil,
+            protection: .signed
+        )
+
+        let flagsRepository = FlagsRepository(
+            clientName: .mockAny(),
+            flagAssignmentsFetcher: fetcher,
+            dateProvider: DateProviderMock(),
+            featureScope: featureScope,
+            authorizationStore: authorizationStore
+        )
+        featureScope.dataStore.flush()
+
+        XCTAssertNil(flagsRepository.context)
+        XCTAssertNil(flagsRepository.flagAssignment(for: "test"))
+    }
+
     func testSetEvaluationContext() throws {
         // Given
         let evaluationContext = FlagsEvaluationContext.mockAny()
@@ -338,8 +392,9 @@ final class FlagsRepositoryTests: XCTestCase {
         try XCTUnwrap(timeoutAction)()
 
         // Then
-        guard case .failure(.initializationTimedOut) = firstResult else {
-            return XCTFail("Expected the first request to time out")
+        guard case .failure(.networkError(let error)) = firstResult,
+              (error as? URLError)?.code == .cancelled else {
+            return XCTFail("Expected the superseded request to be cancelled")
         }
         XCTAssertEqual(flagsRepository.state.currentState, .ready)
     }
@@ -848,6 +903,268 @@ final class FlagsRepositoryTests: XCTestCase {
         XCTAssertEqual(flagsRepository.context, contextB, "Context should be from request B")
     }
 
+    func testOverlappingContextUpdates_olderSuccessCannotReplaceNewerState() {
+        var capturedCompletions: [(
+            context: FlagsEvaluationContext,
+            completion: (Result<[String: FlagAssignment], FlagsError>) -> Void
+        )] = []
+        let fetcherMock = FlagAssignmentsFetcherMock { context, completion in
+            capturedCompletions.append((context, completion))
+        }
+        let contextA = FlagsEvaluationContext(targetingKey: "user-A", attributes: [:])
+        let contextB = FlagsEvaluationContext(targetingKey: "user-B", attributes: [:])
+        let flagsRepository = FlagsRepository(
+            clientName: .mockAny(),
+            flagAssignmentsFetcher: fetcherMock,
+            dateProvider: DateProviderMock(),
+            featureScope: featureScope
+        )
+
+        let completedA = expectation(description: "request A completed")
+        let completedB = expectation(description: "request B completed")
+        flagsRepository.setEvaluationContext(contextA) { _ in completedA.fulfill() }
+        flagsRepository.setEvaluationContext(contextB) { _ in completedB.fulfill() }
+
+        XCTAssertNil(flagsRepository.context)
+        capturedCompletions[1].completion(.success(["new": .mockAny()]))
+        capturedCompletions[0].completion(.success(["old": .mockAny()]))
+
+        waitForExpectations(timeout: 1)
+        XCTAssertEqual(flagsRepository.context, contextB)
+        XCTAssertNotNil(flagsRepository.flagAssignment(for: "new"))
+        XCTAssertNil(flagsRepository.flagAssignment(for: "old"))
+    }
+
+    func testResetRejectsDelayedProtectedSuccess() {
+        var fetchCompletion: ((Result<VerifiedFlagAssignments, FlagsError>) -> Void)?
+        let fetcher = FlagAssignmentsFetcherMock(
+            verifiedFlagAssignmentsStub: { _, completion in fetchCompletion = completion }
+        )
+        let authorizationStore = AssignmentAuthorizationStore(
+            initialAuthorization: nil,
+            protection: .signed
+        )
+        let flagsRepository = FlagsRepository(
+            clientName: .mockAny(),
+            flagAssignmentsFetcher: fetcher,
+            dateProvider: DateProviderMock(now: Self.verificationDate),
+            featureScope: featureScope,
+            authorizationStore: authorizationStore
+        )
+        featureScope.dataStore.flush()
+        let completed = expectation(description: "superseded request completed")
+        var result: Result<Void, FlagsError>?
+        let context = FlagsEvaluationContext(targetingKey: "user-1")
+        flagsRepository.setEvaluationContext(context) {
+            result = $0
+            completed.fulfill()
+        }
+
+        flagsRepository.reset()
+        fetchCompletion?(.success(Self.verifiedAssignments(
+            protection: .signed,
+            context: context,
+            flagKey: "delayed"
+        )))
+
+        waitForExpectations(timeout: 0)
+        guard case .failure(.networkError(let error)) = result,
+              (error as? URLError)?.code == .cancelled else {
+            return XCTFail("Expected reset to cancel the delayed protected response")
+        }
+        XCTAssertEqual(flagsRepository.state.currentState, .notReady)
+        XCTAssertNil(flagsRepository.context)
+        XCTAssertNil(flagsRepository.flagAssignment(for: "delayed"))
+        featureScope.dataStore.flush()
+        XCTAssertTrue(featureScope.dataStoreMock.storage.isEmpty)
+    }
+
+    func testAuthorizationRefreshRejectsOlderProtectedSuccess() throws {
+        var fetchCompletions: [(Result<VerifiedFlagAssignments, FlagsError>) -> Void] = []
+        let fetcher = FlagAssignmentsFetcherMock(
+            verifiedFlagAssignmentsStub: { _, completion in fetchCompletions.append(completion) }
+        )
+        let firstAuthorization = Flags.AssignmentAuthorization(
+            bearerToken: "first.jwt.signature",
+            expiresAt: .distantFuture
+        )
+        let secondAuthorization = Flags.AssignmentAuthorization(
+            bearerToken: "second.jwt.signature",
+            expiresAt: .distantFuture
+        )
+        let authorizationStore = AssignmentAuthorizationStore(
+            initialAuthorization: firstAuthorization,
+            protection: .signedAndAuthorized
+        )
+        let flagsRepository = FlagsRepository(
+            clientName: .mockAny(),
+            flagAssignmentsFetcher: fetcher,
+            dateProvider: DateProviderMock(now: Self.verificationDate),
+            featureScope: featureScope,
+            authorizationStore: authorizationStore
+        )
+        featureScope.dataStore.flush()
+        let context = FlagsEvaluationContext(targetingKey: "user-1")
+        let firstCompleted = expectation(description: "first request completed")
+        var firstResult: Result<Void, FlagsError>?
+        flagsRepository.setEvaluationContext(context) {
+            firstResult = $0
+            firstCompleted.fulfill()
+        }
+
+        authorizationStore.update(secondAuthorization)
+        flagsRepository.assignmentAuthorizationDidChange()
+        XCTAssertEqual(fetchCompletions.count, 2)
+        fetchCompletions[0](.success(Self.verifiedAssignments(
+            protection: .signedAndAuthorized,
+            context: context,
+            flagKey: "old-token",
+            authorization: firstAuthorization
+        )))
+
+        XCTAssertNil(flagsRepository.flagAssignment(for: "old-token"))
+        featureScope.dataStore.flush()
+        XCTAssertTrue(featureScope.dataStoreMock.storage.isEmpty)
+
+        fetchCompletions[1](.success(Self.verifiedAssignments(
+            protection: .signedAndAuthorized,
+            context: context,
+            flagKey: "new-token",
+            authorization: secondAuthorization
+        )))
+
+        waitForExpectations(timeout: 0)
+        guard case .failure(.networkError(let error)) = firstResult,
+              (error as? URLError)?.code == .cancelled else {
+            return XCTFail("Expected the authorization refresh to cancel the older response")
+        }
+        XCTAssertNil(flagsRepository.flagAssignment(for: "old-token"))
+        XCTAssertNotNil(flagsRepository.flagAssignment(for: "new-token"))
+    }
+
+    func testLogoutRejectsDelayedProtectedSuccess() {
+        var fetchCompletion: ((Result<VerifiedFlagAssignments, FlagsError>) -> Void)?
+        let authorization = Flags.AssignmentAuthorization(
+            bearerToken: "first.jwt.signature",
+            expiresAt: .distantFuture
+        )
+        let authorizationStore = AssignmentAuthorizationStore(
+            initialAuthorization: authorization,
+            protection: .signedAndAuthorized
+        )
+        let flagsRepository = FlagsRepository(
+            clientName: .mockAny(),
+            flagAssignmentsFetcher: FlagAssignmentsFetcherMock(
+                verifiedFlagAssignmentsStub: { _, completion in fetchCompletion = completion }
+            ),
+            dateProvider: DateProviderMock(now: Self.verificationDate),
+            featureScope: featureScope,
+            authorizationStore: authorizationStore
+        )
+        featureScope.dataStore.flush()
+        let context = FlagsEvaluationContext(targetingKey: "user-1")
+        let completed = expectation(description: "logged-out request completed")
+        flagsRepository.setEvaluationContext(context) { _ in completed.fulfill() }
+
+        authorizationStore.update(nil)
+        flagsRepository.assignmentAuthorizationDidChange()
+        fetchCompletion?(.success(Self.verifiedAssignments(
+            protection: .signedAndAuthorized,
+            context: context,
+            flagKey: "logged-out",
+            authorization: authorization
+        )))
+
+        waitForExpectations(timeout: 0)
+        XCTAssertEqual(flagsRepository.state.currentState, .notReady)
+        XCTAssertNil(flagsRepository.context)
+        XCTAssertNil(flagsRepository.flagAssignment(for: "logged-out"))
+        featureScope.dataStore.flush()
+        XCTAssertTrue(featureScope.dataStoreMock.storage.isEmpty)
+    }
+
+    func testResetDuringProtectedCacheValidationDoesNotRestorePersistedState() throws {
+        let context = FlagsEvaluationContext(targetingKey: "user-1")
+        let cachedData = FlagsData(
+            flags: ["cached": .mockAny()],
+            context: context,
+            date: Self.verificationDate.addingTimeInterval(-60),
+            signedPayload: Self.persistedPayload(protection: .signed, context: context)
+        )
+        try featureScope.dataStoreMock.setValue(
+            JSONEncoder().encode(cachedData),
+            forKey: .mockAny()
+        )
+        var validationCompletion: ((Bool) -> Void)?
+        let fetcher = FlagAssignmentsFetcherMock(
+            validatePersistedFlagAssignmentsStub: { _, _, completion in
+                validationCompletion = completion
+            }
+        )
+        let flagsRepository = FlagsRepository(
+            clientName: .mockAny(),
+            flagAssignmentsFetcher: fetcher,
+            dateProvider: DateProviderMock(now: Self.verificationDate),
+            featureScope: featureScope,
+            authorizationStore: AssignmentAuthorizationStore(
+                initialAuthorization: nil,
+                protection: .signed
+            )
+        )
+        featureScope.dataStore.flush()
+
+        flagsRepository.reset()
+        validationCompletion?(true)
+
+        XCTAssertNil(flagsRepository.context)
+        XCTAssertNil(flagsRepository.flagAssignment(for: "cached"))
+        XCTAssertEqual(flagsRepository.state.currentState, .notReady)
+    }
+
+    func testProtectedDiskCacheValidationObservesCacheSourceAndAge() throws {
+        let context = FlagsEvaluationContext(targetingKey: "user-1")
+        let cacheDate = Self.verificationDate.addingTimeInterval(-60)
+        let cachedData = FlagsData(
+            flags: ["cached": .mockAny()],
+            context: context,
+            date: cacheDate,
+            signedPayload: Self.persistedPayload(protection: .signed, context: context)
+        )
+        try featureScope.dataStoreMock.setValue(
+            JSONEncoder().encode(cachedData),
+            forKey: .mockAny()
+        )
+        var observedAge: TimeInterval?
+        let fetcher = FlagAssignmentsFetcherMock(
+            flagAssignmentsStub: { _, completion in
+                completion(.failure(.networkError(URLError(.notConnectedToInternet))))
+            },
+            validatePersistedFlagAssignmentsStub: { data, validationDate, completion in
+                observedAge = validationDate.timeIntervalSince(data.date)
+                completion(true)
+            }
+        )
+        let flagsRepository = FlagsRepository(
+            clientName: .mockAny(),
+            flagAssignmentsFetcher: fetcher,
+            dateProvider: DateProviderMock(now: Self.verificationDate),
+            featureScope: featureScope,
+            authorizationStore: AssignmentAuthorizationStore(
+                initialAuthorization: nil,
+                protection: .signed
+            )
+        )
+        featureScope.dataStore.flush()
+
+        XCTAssertEqual(observedAge, 60)
+        XCTAssertNotNil(flagsRepository.flagAssignment(for: "cached"))
+        let completed = expectation(description: "network fetch failed")
+        flagsRepository.setEvaluationContext(context) { _ in completed.fulfill() }
+        waitForExpectations(timeout: 0)
+        XCTAssertEqual(flagsRepository.state.currentState, .stale)
+        XCTAssertNotNil(flagsRepository.flagAssignment(for: "cached"))
+    }
+
     // MARK: - State-Before-Completion Ordering
 
     func testStateIsUpdatedBeforeCompletionOnSuccess() {
@@ -898,6 +1215,55 @@ final class FlagsRepositoryTests: XCTestCase {
         // (dd-openfeature-provider-swift depends on this ordering)
         waitForExpectations(timeout: 0)
         XCTAssertEqual(stateInCompletion, .error)
+    }
+}
+
+private extension FlagsRepositoryTests {
+    static let verificationDate = Date(timeIntervalSince1970: 1_789_096_800)
+
+    static func verifiedAssignments(
+        protection: Flags.AssignmentProtection,
+        context: FlagsEvaluationContext,
+        flagKey: String,
+        authorization: Flags.AssignmentAuthorization? = nil
+    ) -> VerifiedFlagAssignments {
+        VerifiedFlagAssignments(
+            flags: [flagKey: .mockAny()],
+            signedPayload: persistedPayload(
+                protection: protection,
+                context: context,
+                authorization: authorization
+            )
+        )
+    }
+
+    static func persistedPayload(
+        protection: Flags.AssignmentProtection,
+        context: FlagsEvaluationContext,
+        authorization: Flags.AssignmentAuthorization? = nil
+    ) -> PersistedSignedAssignmentPayload {
+        PersistedSignedAssignmentPayload(
+            protection: protection,
+            endpoint: URL(string: "https://example.test/precompute-assignments")!,
+            environment: "production",
+            subject: context.targetingKey,
+            clientTokenSHA256: AssignmentAuthorizationStore.digest(of: "client-token"),
+            authorizationBinding: authorization.map {
+                AssignmentAuthorizationBinding(
+                    compactJWTSHA256: AssignmentAuthorizationStore.digest(of: $0.bearerToken),
+                    policyVersion: "policy-1"
+                )
+            },
+            requestBody: Data(),
+            requestHeaders: [:],
+            responseStatus: 200,
+            responseBody: Data(),
+            responseHeaders: [:],
+            certificateID: String(repeating: "a", count: 64),
+            rulesRevision: "rules-42",
+            issuedAt: verificationDate,
+            expiresAt: verificationDate.addingTimeInterval(300)
+        )
     }
 }
 
