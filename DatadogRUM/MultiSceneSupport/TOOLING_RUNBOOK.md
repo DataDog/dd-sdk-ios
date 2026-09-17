@@ -70,6 +70,29 @@ calibrate allocation counters before using their numbers. Do not treat a posted
 scene notification as real OS teardown or a weak controller check as mounted
 SwiftUI host lifetime proof. Predeclared thresholds cannot be raised after results.
 
+## Full-target platform compatibility checks
+
+For a platform compile gate, extract explicitly named production source/private/
+resource paths from the pinned Git revision into a fresh isolated package. Use
+all production sources of the selected target and preserve the repository's
+platform minimums, dependency graph, Swift mode, C++ mode, SPM_BUILD and resource
+settings. Overlay only the declared candidate files; hash the complete manifest
+before and after every build, then match it to the committed candidate.
+
+Run the unchanged control first and retain compiler failures at the target being
+repaired. Require complete Debug and Release builds for the candidate. Record
+commands, real process exit status, diagnostic summaries and result-bundle paths.
+Verify each architecture's SwiftFileList contains every production source and
+that the expected modules were emitted; an isolated expression is insufficient.
+Compiler wrapper lines can say “failed with exit code 0” around warnings: use
+actual build status and artifacts, not that phrase alone, for the verdict.
+
+EXP-162's [durable manifest](Results/EXP-162-platform-compatibility.json) records
+this watchOS RUM/macOS WebView check, with focused iOS regressions. The isolated
+packages exclude the protected project and local xcconfig. The repository's
+SPM build helper renames the main workspace, so this experiment did not invoke
+or modify it. Compile evidence does not substitute for an unavailable runtime.
+
 ## Documentation reading and update workflow
 
 Use progressive disclosure; do not load the frozen history wholesale.

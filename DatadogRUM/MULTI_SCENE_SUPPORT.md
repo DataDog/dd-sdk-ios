@@ -9,13 +9,13 @@ validated, and ready to become a supported contract.
 
 Last updated: 2026-09-17
 
-Current SDK checkpoint: accepted EXP-159, signed `af63657f0`. EXP-160 now
-establishes early baselines and finds allocation/retained-registry failures;
-EXP-161 passes the automatic local/backend acceptance workflow. The finite
-[release checklist](MultiSceneSupport/PLAN.md) has11/66 gates closed. All12
-[production-review findings](MultiSceneSupport/REVIEW_TRIAGE.md) are scheduled
-before the affected expansion/release gates. Next: define the bounded D01/D02
-platform-compatibility repair experiment. No further API expansion until relevant
+Current SDK checkpoint: signed `af8864528`, adding the EXP-162 platform guards
+to accepted EXP-159. Complete watchOS RUM and macOS WebView Debug/Release builds
+and 98 focused iOS tests close D01/D02. EXP-160 finds allocation/retained-registry
+failures; EXP-161 passes the automatic local/backend acceptance workflow. The
+finite [release checklist](MultiSceneSupport/PLAN.md) has 13/66 gates closed.
+Ten [production-review repairs](MultiSceneSupport/REVIEW_TRIAGE.md) remain
+open. Next: define the bounded D09/D11/D12 existing-API compatibility repair slice. No further API expansion until relevant
 baseline and repair gates pass. [Current evidence](MultiSceneSupport/Experiments/EXP-143-199.md).
 
 ## Goal

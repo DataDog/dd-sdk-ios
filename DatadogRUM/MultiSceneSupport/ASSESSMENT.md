@@ -10,7 +10,7 @@ Last updated: 2026-09-17
 
 ## Current verdict
 
-Current release accounting is **11/66 gates closed**. EXP-160 establishes early
+Current release accounting is **13/66 gates closed**. EXP-160 establishes early
 ordinary automatic/manual/custom/NOP and26.5 compatibility, dispatch and exact
 reentrancy baselines. Enabled handoff fails allocation budget (3 allocations/
 416 requested bytes per event versus1/64) and retained scene registries fail
@@ -26,8 +26,10 @@ come first, then shared ownership/restoration and SwiftUI lifetime/authority.
 The branch remains held from release; passing an earlier bounded experiment does
 not close these missing cases. [PLAN.md](PLAN.md) and its machine register own
 all remaining deliverables and dependencies; completed narratives are separate.
-EXP-162 is defined for the D01/D02 platform build repairs; both gates remain
-blocked until complete-module builds and the stated iOS regressions pass.
+EXP-162 closes D01/D02: complete watchOS RUM and macOS WebView targets pass
+Debug/Release builds after failing controls, and 70 Resource/action plus 28
+WebView iOS tests pass. Signed platform fixes end at `af8864528`. Ten assessed
+review repairs remain open; D09/D11/D12 compatibility is the next slice.
 
 The released SDK baseline is not semantically safe for applications with
 concurrent scenes. Process-representative view state and process-global SwiftUI

@@ -10,16 +10,17 @@ All 12 findings are relevant to this branch's stability, compatibility or owners
 contract. None is dismissed because the current iOS suite passed. Their evidence
 levels differ: two compiler expressions were reproduced here; several ownership
 failures follow directly from source; the reported extracted-state/ARC probes do
-not establish mounted SwiftUI or physical lifecycle ordering. No production repair
-is claimed by this assessment. Existing accepted experiment slices remain valid
-within their recorded boundaries.
+not establish mounted SwiftUI or physical lifecycle ordering. The initial
+assessment claimed no repair. EXP-162 now closes D01/D02 with complete platform
+builds and focused iOS checks; the other ten findings remain open. Existing
+accepted experiment slices remain valid within their recorded boundaries.
 
 ## Finding decisions
 
 | Review / gate | Assessment and source evidence | Fix boundary and decisive regression | When |
 | --- | --- | --- | --- |
-| R01 / D01, P1 | Confirmed platform compile defect. Resource `modify` references `RUMUIEventNetworkContext` at line 135 while its declaration is excluded on watchOS. Package supports watchOS 9. Isolated conditional/reference probe reproduces missing symbol. | Move the accessor to platform-neutral Internal ownership or guard the UIKit-only extraction while preserving absent-context behavior. Full DatadogRUM watchOS compile, not just the expression, must pass. Keep its interface compatible with D04's core-scoped contract. | First repair slice. |
-| R02 / D02, P1 | Confirmed platform compile defect. `DDScriptMessageHandler` is available under WebKit on macOS, but unconditionally follows `NSWindow.windowScene`. Narrowed compiler probe fails; normal NSWindow access control passes. | Guard UIKit scene extraction and use absent metadata on macOS. Build DatadogWebViewTracking on macOS and retain iOS message/ownership tests. | First repair slice, independently of routing redesign. |
+| R01 / D01, P1 | Confirmed platform compile defect. Resource `modify` references `RUMUIEventNetworkContext` at line 135 while its declaration is excluded on watchOS. Package supports watchOS 9. Isolated conditional/reference probe reproduces missing symbol. | Move the accessor to platform-neutral Internal ownership or guard the UIKit-only extraction while preserving absent-context behavior. Full DatadogRUM watchOS compile, not just the expression, must pass. Keep its interface compatible with D04's core-scoped contract. | CLOSED in EXP-162, signed `e420528f7`; full Debug/Release watchOS builds and 70 iOS tests. |
+| R02 / D02, P1 | Confirmed platform compile defect. `DDScriptMessageHandler` is available under WebKit on macOS, but unconditionally follows `NSWindow.windowScene`. Narrowed compiler probe fails; normal NSWindow access control passes. | Guard UIKit scene extraction and use absent metadata on macOS. Build DatadogWebViewTracking on macOS and retain iOS message/ownership tests. | CLOSED in EXP-162, signed `af8864528`; full Debug/Release macOS builds and 28 iOS tests. |
 | R03 / D03, P1 | Source confirms the strong closure/State cycle at SwiftUI modifier lines 4456/4698 and registration lines 2621/2644. The original review's ARC-shape probe supports it; no mounted SDK teardown result exists yet. | Replace bound-modifier captures with a small cancellable context and weak handler/state/arbiter ownership. Mount/remove a real keyed host, release the core and prove weak registration/instrumentation release and teardown. | Lifetime repair before any further semantic API expansion or H08/H09. Pair with P03 measurements, not a file split. |
 | R04 / D04, P1 | Confirmed isolation gap. `RUMContextHandoff` has one process-wide TaskLocal/thread slot; Monitor/subscriber, Logs, Trace and network consumers have no core identity check. A foreign authoritative nil is wrong too. | Shared internal core-instance/generation key, nested per-owner entries and lookup only by the consuming core. Cover different cores, identical application IDs/different sessions, no-RUM cores, nested dispatch, inherited work after stop/reinitialize. | Ownership repair before T03/T08/T09; measure P02 again in the same slice so isolation does not deepen the measured allocation cost. |
 | R05 / D05, P1 | Source-confirmed target-resolution defect. `startNewSession` excludes the old last representative, then the unchanged process target resolves against restored peers. Existing restart coverage supplies an explicit scene and misses this path. | Resolve the old owner once before restoration; carry that exact decision through new-session dispatch. Test A/B, representative B, stopSession, source-less start C; also identity-stop A with B preserved. | Shared routing repair before Resource/error/mutation expansion. |
@@ -35,6 +36,8 @@ The compiler evidence is in [review-triage-probes.json](Results/review-triage-pr
 The full chained macOS expression first triggered a Swift diagnostic-generation
 failure; the narrowed member check and valid-window control disambiguated it.
 Neither compiler probe substitutes for a supported-platform module build.
+EXP-162 supplies failing full-target controls and passing Debug/Release builds:
+[platform result](Results/EXP-162-platform-compatibility.json).
 SwiftUI invariants and current test seams are detailed in
 [COMPONENT_REVIEW.md](COMPONENT_REVIEW.md).
 
@@ -51,11 +54,10 @@ SwiftUI invariants and current test seams are detailed in
 
 ## Execution order and stopping rules
 
-0. Finish recording EXP-160 and the now-passing EXP-161 automation; preserve their
-   failed attempts and frozen thresholds. No repair changes enter those builds.
-1. Define the next regression experiment for D01/D02 and the early compatibility
-   slice D09/D11/D12. Start with the two independently compilable platform fixes;
-   add each failing regression before its behavior change. Revalidate the affected
+0. EXP-160/161 baselines and automation are recorded; D01/D02 platform repairs
+   pass EXP-162. Preserve failed attempts and frozen evidence identities.
+1. Define the next regression experiment for the early compatibility slice
+   D09/D11/D12; add each failing regression before its behavior change. Revalidate the affected
    ordinary/manual/custom/NOP baseline only where the repair changes that path.
 2. Repair shared ownership/restoration: D04 with P02, then D05/D06. Use one internal
    ownership contract across modules, and audit every consumer. D04 is not solved

@@ -2,7 +2,7 @@
   "schema_version": 1,
   "scope": "Multi-scene RUM release",
   "baseline_revision": "92f021ba7e4a866f84a52da93ed8b63f3dc75882",
-  "candidate_revision": "af63657f08dbecb66e7c3ae97ed53fc8f7b065b9",
+  "candidate_revision": "af886452837e3fd34b42725f648fb955fb625c65",
   "gates": [
     {
       "id": "C01",
@@ -728,8 +728,8 @@
       "decisive_test": "Reproduce/triage the reported finding, then require: DatadogRUM watchOS build including absent UI handoff",
       "environment": "watchOS SDK build",
       "completion_mode": null,
-      "status": "REGRESSION BLOCKED",
-      "evidence": "REVIEW_TRIAGE.md: assessed relevant at af63657f0; isolated compiler reproduction in Results/review-triage-probes.json."
+      "status": "CLOSED",
+      "evidence": "EXP-162: failing full-target control, passing Debug/Release builds and source-manifest/module checks; Results/EXP-162-platform-compatibility.json. Signed e420528f7; 70 iOS Resource/action tests pass."
     },
     {
       "id": "D02",
@@ -739,8 +739,8 @@
       "decisive_test": "Reproduce/triage the reported finding, then require: DatadogWebViewTracking macOS build with absent UIKit scene metadata",
       "environment": "macOS SDK build",
       "completion_mode": null,
-      "status": "REGRESSION BLOCKED",
-      "evidence": "REVIEW_TRIAGE.md: assessed relevant at af63657f0; isolated compiler reproduction in Results/review-triage-probes.json."
+      "status": "CLOSED",
+      "evidence": "EXP-162: failing full-target control, passing Debug/Release builds and source-manifest/module checks; Results/EXP-162-platform-compatibility.json. Signed af8864528; 28 iOS WebView forwarding/ownership tests pass."
     },
     {
       "id": "D03",

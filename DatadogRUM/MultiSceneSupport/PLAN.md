@@ -44,11 +44,11 @@ Objective-C Release exposure still require normal API review.
 
 ## Execution and experiment admission
 
-0. Execute the predefined EXP-162 D01/D02 platform-compatibility slice. EXP-160/161
-   records and their frozen source identities are complete and remain unchanged.
-1. Apply the [assessed repair order](REVIEW_TRIAGE.md): D01/D02 platform builds,
-   then D09/D11/D12 existing-API compatibility regressions. Define each bounded
-   repair experiment before implementation; preserve failing controls.
+0. D01/D02 platform compatibility is closed by EXP-162; evidence is in the
+   register and detailed record. Accepted experiment identities remain unchanged.
+1. Execute D09/D11/D12 existing-API compatibility repairs in the
+   [assessed order](REVIEW_TRIAGE.md). Define each bounded repair experiment
+   before implementation; preserve failing controls.
 2. Repair D04 together with P02 allocation cost; normalize restoration in D05/D06.
 3. Repair D03/P03 lifetimes, D07/D08 authority/reconnect, and D10 accepted
    presentation state. Close the missing R04–R06 discriminators in those slices.
@@ -162,8 +162,8 @@ experiment slices remain evidence, not a substitute for these missing cases.
 
 | Gate | Deliverable / completion mode | Owner | Depends on | Decisive test | Environment | Status |
 | --- | --- | --- | --- | --- | --- | --- |
-| D01 | watchOS Resource compile compatibility | SDK implementer | None | Reproduce/triage the reported finding, then require: DatadogRUM watchOS build including absent UI handoff | watchOS SDK build | REGRESSION BLOCKED |
-| D02 | macOS WebView compile compatibility | SDK implementer | None | Reproduce/triage the reported finding, then require: DatadogWebViewTracking macOS build with absent UIKit scene metadata | macOS SDK build | REGRESSION BLOCKED |
+| D01 | watchOS Resource compile compatibility | SDK implementer | None | Reproduce/triage the reported finding, then require: DatadogRUM watchOS build including absent UI handoff | watchOS SDK build | CLOSED |
+| D02 | macOS WebView compile compatibility | SDK implementer | None | Reproduce/triage the reported finding, then require: DatadogWebViewTracking macOS build with absent UIKit scene metadata | macOS SDK build | CLOSED |
 | D03 | Keyed SwiftUI registration teardown | SDK implementer | None | Reproduce/triage the reported finding, then require: Mounted keyed destination removal plus SDK release: weak registration/instrumentation release and balanced unswizzling; repeat cycles | iOS 27 simulator, mounted SwiftUI host and lifetime checks | REGRESSION BLOCKED |
 | D04 | Named-core handoff isolation | SDK implementer | None | Reproduce/triage the reported finding, then require: Different cores, same application/different sessions, no-RUM core, nested dispatch and inherited work after stop/reinitialize never consume foreign context | Internal, RUM, Logs, Trace and network focused tests | REGRESSION BLOCKED |
 | D05 | Resolve ownership before explicit session restart | SDK implementer | None | Reproduce/triage the reported finding, then require: After stopSession with A/B and B representative, source-less start replaces B and preserves A; identity-stop A preserves B | RUM application/session tests plus two-scene simulator | REGRESSION BLOCKED |
