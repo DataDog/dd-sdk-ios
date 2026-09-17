@@ -1,6 +1,6 @@
 {
   "experiment": "EXP-179",
-  "status": "PLANNED",
+  "status": "SDK PASS; native PLANNED",
   "gate": "T06",
   "gates_closed": [],
   "control_revision": "f01637a65c4399838e93cfaaa10fca90ca99816d",
@@ -16,6 +16,273 @@
     "app_expectations": 34,
     "simultaneous_visibility_claimed": false
   },
-  "unit_attempts": [],
-  "native_attempts": []
+  "unit_attempts": [
+    {
+      "label": "unchanged SDK control",
+      "adapter": "Proposed overloads dispatch unchanged legacy inference; removed before candidate.",
+      "result": {
+        "counts": {
+          "expectedFailures": 0,
+          "failed": 2,
+          "notRun": 0,
+          "passed": 0,
+          "skipped": 0,
+          "total": 2
+        },
+        "fullConsoleLogsPath": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/ActionArtifacts/default/RunSomeTests/test-console-log-2026-09-17T23-24-44+01-00.txt",
+        "fullSummaryPath": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/ActionArtifacts/default/RunSomeTests/97AD394D-DD5E-4B65-B9D0-DECE467BD6FF.txt",
+        "results": [
+          {
+            "displayName": "testTargetedTimingOverridesPeerAndReplacesOnlyRequestedValue()",
+            "errorMessages": [
+              "Datadog/DatadogRUMTests/RUMMonitor/MonitorTests.swift:979 MonitorTests/testTargetedTimingOverridesPeerAndReplacesOnlyRequestedValue(): XCTAssertEqual failed: (\"[:]\") is not equal to (\"[\"same\": 3000000000]\")",
+              "Datadog/DatadogRUMTests/RUMMonitor/MonitorTests.swift:980 MonitorTests/testTargetedTimingOverridesPeerAndReplacesOnlyRequestedValue(): XCTAssertTrue failed",
+              "Datadog/DatadogRUMTests/RUMMonitor/MonitorTests.swift:985 MonitorTests/testTargetedTimingOverridesPeerAndReplacesOnlyRequestedValue(): XCTAssertTrue failed"
+            ],
+            "identifier": "MonitorTests/testTargetedTimingOverridesPeerAndReplacesOnlyRequestedValue()",
+            "state": "Failed",
+            "targetName": "DatadogRUMTests"
+          },
+          {
+            "displayName": "testTargetedLoadingPreservesOverwriteRulesAndPeerState()",
+            "errorMessages": [
+              "Datadog/DatadogRUMTests/RUMMonitor/MonitorTests.swift:999 MonitorTests/testTargetedLoadingPreservesOverwriteRulesAndPeerState(): XCTAssertEqual failed: (\"nil\") is not equal to (\"Optional(1.0)\")",
+              "Datadog/DatadogRUMTests/RUMMonitor/MonitorTests.swift:1002 MonitorTests/testTargetedLoadingPreservesOverwriteRulesAndPeerState(): XCTAssertEqual failed: (\"nil\") is not equal to (\"Optional(1.0)\")",
+              "Datadog/DatadogRUMTests/RUMMonitor/MonitorTests.swift:1006 MonitorTests/testTargetedLoadingPreservesOverwriteRulesAndPeerState(): XCTAssertEqual failed: (\"nil\") is not equal to (\"Optional(3.0)\")",
+              "Datadog/DatadogRUMTests/RUMMonitor/MonitorTests.swift:1007 MonitorTests/testTargetedLoadingPreservesOverwriteRulesAndPeerState(): XCTAssertNil failed: \"3.0\""
+            ],
+            "identifier": "MonitorTests/testTargetedLoadingPreservesOverwriteRulesAndPeerState()",
+            "state": "Failed",
+            "targetName": "DatadogRUMTests"
+          }
+        ],
+        "schemeName": "DatadogRUM",
+        "summary": "2 tests: 0 passed, 2 failed, 0 skipped, 0 expected failures, 0 not run",
+        "totalResults": 2,
+        "truncated": false,
+        "xcresultBundlePath": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/ActionArtifacts/default/RunSomeTests/Test-DatadogRUM-2026.09.17_23-24-44-+0100.xcresult"
+      }
+    }
+  ],
+  "native_attempts": [],
+  "definition_revision": "e144c392b71559850cd11fe3f02ac4312b183b0c",
+  "candidate_revision": "e2ba9afe561a0a6d5afae16c828350f883e0425c",
+  "sdk_validation": {
+    "focused": {
+      "counts": {
+        "expectedFailures": 0,
+        "failed": 1,
+        "notRun": 0,
+        "passed": 6,
+        "skipped": 0,
+        "total": 7
+      },
+      "fullConsoleLogsPath": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/ActionArtifacts/default/RunSomeTests/test-console-log-2026-09-17T23-29-23+01-00.txt",
+      "fullSummaryPath": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/ActionArtifacts/default/RunSomeTests/BF04F0DB-1A53-4D31-B856-1572BA1DD389.txt",
+      "results": [
+        {
+          "displayName": "testTargetedTimingOffViewPolicyMatchesLegacyInForegroundAndBackground()",
+          "errorMessages": [
+            "Datadog/DatadogRUMTests/RUMMonitor/MonitorTests.swift:1143 MonitorTests/testTargetedTimingOffViewPolicyMatchesLegacyInForegroundAndBackground(): XCTAssertEqual failed: (\"[\"com/datadog/application-launch/view:-1:-1\", \"com/datadog/application-launch/view:-811376976342900992:-1\"]\") is not equal to (\"[\"com/datadog/application-launch/view:-1:-1\", \"com/datadog/application-launch/view:-811376976344719104:-1\"]\") - background=false, loading=false",
+            "Datadog/DatadogRUMTests/RUMMonitor/MonitorTests.swift:1143 MonitorTests/testTargetedTimingOffViewPolicyMatchesLegacyInForegroundAndBackground(): XCTAssertEqual failed: (\"[\"com/datadog/application-launch/view:-1:-1\", \"com/datadog/application-launch/view:-1:-811376976548470912\"]\") is not equal to (\"[\"com/datadog/application-launch/view:-1:-1\", \"com/datadog/application-launch/view:-1:-811376976562103040\"]\") - background=false, loading=true"
+          ],
+          "identifier": "MonitorTests/testTargetedTimingOffViewPolicyMatchesLegacyInForegroundAndBackground()",
+          "state": "Failed",
+          "targetName": "DatadogRUMTests"
+        }
+      ],
+      "schemeName": "DatadogRUM",
+      "summary": "7 tests: 6 passed, 1 failed, 0 skipped, 0 expected failures, 0 not run",
+      "totalResults": 7,
+      "truncated": false,
+      "xcresultBundlePath": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/ActionArtifacts/default/RunSomeTests/Test-DatadogRUM-2026.09.17_23-29-23-+0100.xcresult"
+    },
+    "affected": {
+      "counts": {
+        "expectedFailures": 0,
+        "failed": 0,
+        "notRun": 0,
+        "passed": 426,
+        "skipped": 0,
+        "total": 426
+      },
+      "fullConsoleLogsPath": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/ActionArtifacts/default/RunSomeTests/test-console-log-2026-09-17T23-31-12+01-00.txt",
+      "fullSummaryPath": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/ActionArtifacts/default/RunSomeTests/4985DB52-BC5C-41FE-A253-D4D1A60B0AF5.txt",
+      "message": "Results truncated to 100 of 426 tests. Failed tests shown first. Full logs available at /var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/ActionArtifacts/default/RunSomeTests/4985DB52-BC5C-41FE-A253-D4D1A60B0AF5.txt.",
+      "results": [],
+      "schemeName": "DatadogRUM",
+      "summary": "426 tests: 426 passed, 0 failed, 0 skipped, 0 expected failures, 0 not run",
+      "totalResults": 426,
+      "truncated": true,
+      "xcresultBundlePath": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/ActionArtifacts/default/RunSomeTests/Test-DatadogRUM-2026.09.17_23-31-12-+0100.xcresult"
+    },
+    "objc_core": {
+      "counts": {
+        "expectedFailures": 0,
+        "failed": 0,
+        "notRun": 0,
+        "passed": 11,
+        "skipped": 0,
+        "total": 11
+      },
+      "fullConsoleLogsPath": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/ActionArtifacts/default/RunSomeTests/test-console-log-2026-09-17T23-33-23+01-00.txt",
+      "fullSummaryPath": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/ActionArtifacts/default/RunSomeTests/3D3A3A47-B53B-401B-8BAE-9F1B346EFD0B.txt",
+      "results": [],
+      "schemeName": "DatadogCore",
+      "summary": "11 tests: 11 passed, 0 failed, 0 skipped, 0 expected failures, 0 not run",
+      "totalResults": 11,
+      "truncated": false,
+      "xcresultBundlePath": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/ActionArtifacts/default/RunSomeTests/Test-DatadogCore-2026.09.17_23-33-23-+0100.xcresult"
+    },
+    "integration_265": {
+      "counts": {
+        "expectedFailures": 0,
+        "failed": 0,
+        "notRun": 0,
+        "passed": 3,
+        "skipped": 0,
+        "total": 3
+      },
+      "fullConsoleLogsPath": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/ActionArtifacts/default/RunSomeTests/test-console-log-2026-09-17T23-34-50+01-00.txt",
+      "fullSummaryPath": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/ActionArtifacts/default/RunSomeTests/6993375B-AA01-4361-89AE-9F1A4CB9F8AA.txt",
+      "results": [],
+      "schemeName": "DatadogIntegrationTests",
+      "summary": "3 tests: 3 passed, 0 failed, 0 skipped, 0 expected failures, 0 not run",
+      "totalResults": 3,
+      "truncated": false,
+      "xcresultBundlePath": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/ActionArtifacts/default/RunSomeTests/Test-DatadogIntegrationTests-2026.09.17_23-34-50-+0100.xcresult"
+    },
+    "affected_classes": [
+      "ErrorMessageReceiverTests",
+      "Monitor_AttributeEncodingTests",
+      "Monitor_GlobalAttributesTests",
+      "MonitorTests",
+      "NOPMonitorTests",
+      "RUMApplicationScopeTests",
+      "RUMCommandTests",
+      "RUMMonitorProtocol_ConvenienceTests",
+      "RUMResourceScopeTests",
+      "RUMSessionScopeTests",
+      "RUMUserActionScopeTests",
+      "RUMViewScope_Tests",
+      "RUMViewScopeTests"
+    ],
+    "affected_test_count": 426,
+    "objc_core_selection": [
+      {
+        "targetName": "DatadogCoreTests",
+        "testIdentifier": "DDRUMMonitor_apiTests/testDDRUMViewAPI"
+      },
+      {
+        "targetName": "DatadogCoreTests",
+        "testIdentifier": "DDRUMMonitor_apiTests/testDDRUMActionAPI"
+      },
+      {
+        "targetName": "DatadogCoreTests",
+        "testIdentifier": "DDRUMMonitor_apiTests/testDDRUMErrorSourceAPI"
+      },
+      {
+        "targetName": "DatadogCoreTests",
+        "testIdentifier": "DDRUMMonitor_apiTests/testDDRUMActionTypeAPI"
+      },
+      {
+        "targetName": "DatadogCoreTests",
+        "testIdentifier": "DDRUMMonitor_apiTests/testDDRUMResourceTypeAPI"
+      },
+      {
+        "targetName": "DatadogCoreTests",
+        "testIdentifier": "DDRUMMonitor_apiTests/testDDRUMMethodAPI"
+      },
+      {
+        "targetName": "DatadogCoreTests",
+        "testIdentifier": "DDRUMMonitor_apiTests/testDDRUMFeatureOperationFailureReasonAPI"
+      },
+      {
+        "targetName": "DatadogCoreTests",
+        "testIdentifier": "DDRUMMonitor_apiTests/testDDRUMMonitorAPI"
+      },
+      {
+        "targetName": "DatadogCoreTests",
+        "testIdentifier": "DDRUMMonitorTests/testSendingViewEvents()"
+      },
+      {
+        "targetName": "DatadogCoreTests",
+        "testIdentifier": "DDRUMMonitorTests/testSendingViewEventsWithTiming()"
+      },
+      {
+        "targetName": "DatadogCoreTests",
+        "testIdentifier": "RUMMonitorTests/testStartingView_thenAddingTiming()"
+      }
+    ],
+    "integration_selection": [
+      {
+        "targetName": "DatadogIntegrationTests",
+        "testIdentifier": "RUMAttributesIntegration_Tests/testTimingAttributes_inheritViewAttributes_overGlobalAttributes()"
+      },
+      {
+        "targetName": "DatadogIntegrationTests",
+        "testIdentifier": "RUMAttributesIntegrationTests/testTimingAttributes_inheritViewAttributes_overGlobalAttributes()"
+      },
+      {
+        "targetName": "DatadogIntegrationTests",
+        "testIdentifier": "RUMViewEndedMetricIntegrationTests/testReportingLoadingTimeValue()"
+      }
+    ],
+    "lint": "PASS: configured strict source and test lint; only existing rule rename warning",
+    "usage_audit": "136 Swift/Objective-C call/command references across the entire tracked codebase plus selector references; no generated, wire, build-script or public protocol requirement edits."
+  },
+  "platform_builds": [
+    {
+      "state": "PASS",
+      "returncode": 0,
+      "seconds": 72.78190445806831,
+      "command": [
+        "xcodebuild",
+        "build",
+        "-quiet",
+        "-workspace",
+        "Datadog.xcworkspace",
+        "-scheme",
+        "DatadogRUM",
+        "-configuration",
+        "Release",
+        "-destination",
+        "generic/platform=iOS Simulator",
+        "-derivedDataPath",
+        "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp179-platforms-zxolm7zl/ios-derived",
+        "CODE_SIGNING_ALLOWED=NO"
+      ],
+      "source_revision": "e2ba9afe561a0a6d5afae16c828350f883e0425c",
+      "log": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp179-platforms-zxolm7zl/ios.log",
+      "log_sha256": "e8cb83c6619628ec14518a093e37a1fde7ceb102237c7fac47846b98b08e331a"
+    },
+    {
+      "state": "PASS",
+      "returncode": 0,
+      "seconds": 66.26708550006151,
+      "command": [
+        "xcodebuild",
+        "build",
+        "-quiet",
+        "-workspace",
+        "Datadog.xcworkspace",
+        "-scheme",
+        "DatadogRUM",
+        "-configuration",
+        "Release",
+        "-destination",
+        "generic/platform=watchOS Simulator",
+        "-derivedDataPath",
+        "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp179-platforms-zxolm7zl/watchos-derived",
+        "CODE_SIGNING_ALLOWED=NO"
+      ],
+      "source_revision": "e2ba9afe561a0a6d5afae16c828350f883e0425c",
+      "log": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp179-platforms-zxolm7zl/watchos.log",
+      "log_sha256": "243ffde28fdb01fcaed8d7dd6a2813373e98a6c2c42dc933a1a13f9921065e84"
+    }
+  ],
+  "attempt_notes": [
+    "Initial off-view parity helper used wall-clock SDK initialization with a fixed command clock, producing differing negative elapsed values. Fix only the helper SDK-init date; all426 affected tests then pass.",
+    "Initial scheme lookup used test target ObjcAPITests as scheme; tool rejected it before any build. Fresh DatadogCore inventory supplied the actual11 test selectors."
+  ]
 }

@@ -1206,3 +1206,10 @@ mapper error ID before its event record. JSON decoding must reject Boolean/numbe
 coercion. Intake projection retains exact absence and only bounded synthetic
 values; normalize only the declared nested key. The reusable entry point and
 negative controls are in the [acceptance README](../../tools/multi-scene/acceptance/README.md#attribute-contract-exp-178t05).
+
+For custom timing/loading, preserve ordered mapper states before each marker and
+bind them to exact view/session IDs and document versions. Backend view ingestion
+can collapse revisions; compare final persisted values independently and retain
+intermediate overwrite evidence locally. Do not infer intermediate backend
+documents from the last version. See the
+[timing contract](Experiments/EXP-143-199.md#exp-179--target-custom-timing-and-loading-time).
