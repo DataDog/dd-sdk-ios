@@ -3511,6 +3511,103 @@ class RUMViewsHandlerTests: XCTestCase {
 
     @available(iOS 27.0, *)
     @MainActor
+    func testSharedSemanticSourceNestedCommitKeepsBothHostsOnLatestOccurrence() throws {
+        let sceneA = RUMSceneIdentifier(rawValue: "scene-A")
+        let sceneB = RUMSceneIdentifier(rawValue: "scene-B")
+        let peerScene = RUMSceneIdentifier(rawValue: "peer")
+        let handler = createHandler()
+        let source = RUMNavigationTransitions(currentDestination: RUMView(name: "Home"))
+        let hostA = RUMSemanticNavigationHostState()
+        let hostB = RUMSemanticNavigationHostState()
+        hostA.reconcile(transitions: source, viewsHandler: handler)
+        hostB.reconcile(transitions: source, viewsHandler: handler)
+        hostA.reconcile(attachment: .attached(sceneA))
+        hostB.reconcile(attachment: .attached(sceneB))
+        handler.notify_semanticDestinationAppear(
+            identity: "peer", name: "Peer", path: "/peer", attributes: [:], sceneIdentifier: peerScene
+        )
+        var nested = false
+        let observation = source.observe { snapshot in
+            guard snapshot.generation == 1, !nested else {
+                return
+            }
+            nested = true
+            source.willNavigate(id: "nested", destination: RUMView(name: "Latest"))
+            source.commit(id: "nested")
+            for scene in [sceneA, sceneB] {
+                let latest = self.commandSubscriber.receivedCommands.compactMap { $0 as? RUMStartViewCommand }
+                    .last { $0.target == .scene(scene) }
+                XCTAssertEqual(latest?.name, "Latest")
+            }
+        }
+        defer { source.removeObserver(observation) }
+
+        source.willNavigate(id: "outer", destination: RUMView(name: "Outer"))
+        source.commit(id: "outer")
+
+        XCTAssertTrue(nested)
+        let starts = commandSubscriber.receivedCommands.compactMap { $0 as? RUMStartViewCommand }
+        for scene in [sceneA, sceneB] {
+            let owned = starts.filter { $0.target == .scene(scene) }
+            XCTAssertEqual(owned.last?.name, "Latest")
+            XCTAssertEqual(owned.filter { $0.name == "Latest" }.count, 1)
+            XCTAssertNotEqual(owned.first?.identity, owned.last?.identity)
+        }
+        let latestA = try XCTUnwrap(starts.last { $0.target == .scene(sceneA) })
+        let latestB = try XCTUnwrap(starts.last { $0.target == .scene(sceneB) })
+        XCTAssertNotEqual(latestA.identity, latestB.identity)
+        hostA.finalDetach()
+        hostB.finalDetach()
+        let finalCount = commandSubscriber.receivedCommands.count
+        source.willNavigate(id: "detached", destination: RUMView(name: "Detached"))
+        source.commit(id: "detached")
+        XCTAssertEqual(commandSubscriber.receivedCommands.count, finalCount)
+        let stops = commandSubscriber.receivedCommands.compactMap { $0 as? RUMStopViewCommand }
+        XCTAssertEqual(stops.last { $0.target == .scene(sceneA) }?.identity, latestA.identity)
+        XCTAssertEqual(stops.last { $0.target == .scene(sceneB) }?.identity, latestB.identity)
+        XCTAssertEqual(commandSubscriber.receivedCommands.filter { $0.target == .scene(peerScene) }.count, 1)
+    }
+
+    @available(iOS 27.0, *)
+    @MainActor
+    func testNestedSemanticDeliveryCannotReviveHostRemovedByObserver() throws {
+        let sceneA = RUMSceneIdentifier(rawValue: "scene-A")
+        let sceneB = RUMSceneIdentifier(rawValue: "scene-B")
+        let handler = createHandler()
+        let source = RUMNavigationTransitions(currentDestination: RUMView(name: "Home"))
+        let hostA = RUMSemanticNavigationHostState()
+        let hostB = RUMSemanticNavigationHostState()
+        hostA.reconcile(transitions: source, viewsHandler: handler)
+        hostB.reconcile(transitions: source, viewsHandler: handler)
+        hostA.reconcile(attachment: .attached(sceneA))
+        hostB.reconcile(attachment: .attached(sceneB))
+        var commandsForDetachedScene = 0
+        let observation = source.observe { snapshot in
+            guard snapshot.generation == 1 else {
+                return
+            }
+            hostA.finalDetach()
+            commandsForDetachedScene = self.commandSubscriber.receivedCommands.filter { $0.target == .scene(sceneA) }.count
+            source.willNavigate(id: "nested", destination: RUMView(name: "Latest"))
+            source.commit(id: "nested")
+        }
+        defer { source.removeObserver(observation) }
+
+        source.willNavigate(id: "outer", destination: RUMView(name: "Outer"))
+        source.commit(id: "outer")
+
+        XCTAssertNil(hostA.selectedTransitions)
+        XCTAssertFalse(hostA.suppressionState.isActive)
+        XCTAssertEqual(commandSubscriber.receivedCommands.filter { $0.target == .scene(sceneA) }.count, commandsForDetachedScene)
+        let latestB = try XCTUnwrap(commandSubscriber.receivedCommands.compactMap { $0 as? RUMStartViewCommand }
+            .last { $0.target == .scene(sceneB) })
+        XCTAssertEqual(latestB.name, "Latest")
+        hostB.finalDetach()
+        XCTAssertNil(hostB.selectedTransitions)
+    }
+
+    @available(iOS 27.0, *)
+    @MainActor
     func testSemanticHostTransientDetachAndReattach_preservesOccurrenceAndSource()
         async throws {
         let scene = RUMSceneIdentifier(rawValue: "scene-A")

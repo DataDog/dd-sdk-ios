@@ -5220,6 +5220,187 @@ final class RUMSwiftUISemanticNavigationEngineTests: XCTestCase {
         source.removeObserver(observation)
     }
 
+    func testTransitionSourceNestedCommitDoesNotRegressAnyObserver() {
+        let source = RUMNavigationTransitions(currentDestination: RUMView(name: "Home"))
+        var generations = Array(repeating: [UInt64](), count: 3)
+        var nested = false
+        var observations: [UUID] = []
+        for index in generations.indices {
+            observations.append(source.observe { snapshot in
+                generations[index].append(snapshot.generation)
+                if snapshot.generation == 1, !nested {
+                    nested = true
+                    source.willNavigate(id: "nested", destination: RUMView(name: "Latest"))
+                    source.commit(id: "nested")
+                    XCTAssertTrue(generations.allSatisfy { $0.last == 2 })
+                }
+            })
+        }
+
+        source.willNavigate(id: "outer", destination: RUMView(name: "Outer"))
+        source.commit(id: "outer")
+
+        XCTAssertTrue(nested)
+        for delivered in generations {
+            XCTAssertEqual(delivered.last, 2)
+            XCTAssertEqual(delivered, delivered.sorted())
+            XCTAssertEqual(delivered.filter { $0 == 2 }.count, 1)
+        }
+        observations.forEach(source.removeObserver)
+    }
+
+    func testTransitionSourceNestedInitialPublicationDoesNotRegressAnyObserver() {
+        let source = RUMNavigationTransitions()
+        var generations = Array(repeating: [UInt64](), count: 3)
+        var nested = false
+        var observations: [UUID] = []
+        for index in generations.indices {
+            observations.append(source.observe { snapshot in
+                generations[index].append(snapshot.generation)
+                if snapshot.generation == 0, !nested {
+                    nested = true
+                    source.willNavigate(id: "nested", destination: RUMView(name: "Latest"))
+                    source.commit(id: "nested")
+                    XCTAssertTrue(generations.allSatisfy { $0.last == 1 })
+                }
+            })
+        }
+
+        source.setInitialDestination(RUMView(name: "Initial"))
+        source.setInitialDestination(RUMView(name: "Ignored"))
+
+        XCTAssertTrue(nested)
+        for delivered in generations {
+            XCTAssertEqual(delivered.last, 1)
+            XCTAssertEqual(delivered, delivered.sorted())
+            XCTAssertEqual(delivered.filter { $0 == 1 }.count, 1)
+        }
+        observations.forEach(source.removeObserver)
+    }
+
+    func testTransitionSourceRemovalCancelsPendingObserverDelivery() {
+        let source = RUMNavigationTransitions(currentDestination: RUMView(name: "Home"))
+        var observations: [UUID] = []
+        var deliveries = 0
+        for _ in 0..<3 {
+            observations.append(source.observe { snapshot in
+                guard snapshot.generation > 0 else {
+                    return
+                }
+                deliveries += 1
+                observations.forEach(source.removeObserver)
+            })
+        }
+
+        source.willNavigate(id: "outer", destination: RUMView(name: "Outer"))
+        source.commit(id: "outer")
+        source.willNavigate(id: "later", destination: RUMView(name: "Later"))
+        source.commit(id: "later")
+
+        XCTAssertEqual(deliveries, 1)
+    }
+
+    func testTransitionSourceAddAndRemoveDuringNestedCommitUsesCurrentMembership() {
+        let source = RUMNavigationTransitions(currentDestination: RUMView(name: "Home"))
+        var observations: [UUID] = []
+        var delivered = Array(repeating: [UInt64](), count: 3)
+        var added: [UInt64] = []
+        var removedIndex: Int?
+        var addedObservation: UUID?
+        for index in delivered.indices {
+            observations.append(source.observe { snapshot in
+                delivered[index].append(snapshot.generation)
+                guard snapshot.generation == 1, removedIndex == nil else {
+                    return
+                }
+                removedIndex = index
+                source.removeObserver(observations[index])
+                addedObservation = source.observe { added.append($0.generation) }
+                source.willNavigate(id: "nested", destination: RUMView(name: "Latest"))
+                source.commit(id: "nested")
+                XCTAssertEqual(added, [1, 2])
+                XCTAssertTrue(delivered.indices.allSatisfy { $0 == index || delivered[$0].last == 2 })
+            })
+        }
+
+        source.willNavigate(id: "outer", destination: RUMView(name: "Outer"))
+        source.commit(id: "outer")
+        source.willNavigate(id: "cancelled", destination: RUMView(name: "Cancelled"))
+        source.cancel(id: "cancelled")
+        source.commit(id: "cancelled")
+
+        XCTAssertNotNil(removedIndex)
+        XCTAssertEqual(added, [1, 2])
+        for index in delivered.indices {
+            XCTAssertEqual(delivered[index].last, index == removedIndex ? 1 : 2)
+            XCTAssertEqual(delivered[index], delivered[index].sorted())
+        }
+        observations.forEach(source.removeObserver)
+        if let addedObservation { source.removeObserver(addedObservation) }
+    }
+
+    func testTransitionSourceNestedGenerationsStaySynchronousAtEveryReturn() {
+        let source = RUMNavigationTransitions(currentDestination: RUMView(name: "Home"))
+        var delivered = Array(repeating: [UInt64](), count: 3)
+        var committed: Set<UInt64> = []
+        var observations: [UUID] = []
+        for index in delivered.indices {
+            observations.append(source.observe { snapshot in
+                delivered[index].append(snapshot.generation)
+                guard (1..<4).contains(snapshot.generation), committed.insert(snapshot.generation).inserted else {
+                    return
+                }
+                source.willNavigate(id: "nested", destination: RUMView(name: "Nested"))
+                source.commit(id: "nested")
+                XCTAssertTrue(delivered.allSatisfy { $0.last == 4 })
+            })
+        }
+
+        source.willNavigate(id: "outer", destination: RUMView(name: "Outer"))
+        source.commit(id: "outer")
+
+        XCTAssertEqual(committed, [1, 2, 3])
+        for generations in delivered {
+            XCTAssertEqual(generations.last, 4)
+            XCTAssertEqual(generations, generations.sorted())
+            XCTAssertEqual(generations.filter { $0 == 4 }.count, 1)
+        }
+        observations.forEach(source.removeObserver)
+    }
+
+    func testObservedPublisherNestedCommitKeepsEveryObserverOnLatestDestination() throws {
+        let updates = CurrentValueSubject<RUMNavigationDestination, Never>(.root(ParityRoot.home))
+        let adapter = RUMNavigationObservedTransitions(
+            updates: updates,
+            destination: { $0 },
+            metadata: .automatic
+        )
+        let source = try XCTUnwrap(adapter.transitions)
+        var snapshots = Array(repeating: [SemanticSnapshot](), count: 3)
+        var nested = false
+        var observations: [UUID] = []
+        for index in snapshots.indices {
+            observations.append(source.observe { snapshot in
+                snapshots[index].append(Self.semanticSnapshot(snapshot))
+                if snapshot.generation == 1, !nested {
+                    nested = true
+                    updates.send(.presentation(ParityPresentation.compose))
+                    XCTAssertTrue(snapshots.allSatisfy { $0.last?.name == "Compose" })
+                }
+            })
+        }
+
+        updates.send(.route(ParityRoute.thread(42)))
+
+        XCTAssertTrue(nested)
+        for delivered in snapshots {
+            XCTAssertEqual(delivered.last?.name, "Compose")
+            XCTAssertEqual(delivered.map(\.generation), delivered.map(\.generation).sorted())
+            XCTAssertEqual(delivered.filter { $0.generation == 2 }.count, 1)
+        }
+        observations.forEach(source.removeObserver)
+    }
+
     func testTransitionSourceCanWaitForSceneDependentInitialMetadata() {
         let source = RUMNavigationTransitions()
         var snapshots: [RUMNavigationTransitions.Snapshot] = []
@@ -5397,6 +5578,38 @@ final class RUMSwiftUISemanticNavigationEngineTests: XCTestCase {
         )
         XCTAssertEqual(snapshots.map(\.generation), [0, 1, 2, 3])
         source.removeObserver(observation)
+    }
+
+    func testObservationAdapterNestedMutationKeepsEveryObserverOnLatestDestination() throws {
+        let model = ObservationNavigationModel(destination: .root(ParityRoot.home))
+        let adapter = RUMNavigationObservedTransitions(
+            observingCurrentDestination: { model.destination },
+            metadata: .automatic
+        )
+        let source = try XCTUnwrap(adapter.transitions)
+        var snapshots = Array(repeating: [SemanticSnapshot](), count: 3)
+        var nested = false
+        var observations: [UUID] = []
+        for index in snapshots.indices {
+            observations.append(source.observe { snapshot in
+                snapshots[index].append(Self.semanticSnapshot(snapshot))
+                if snapshot.generation == 1, !nested {
+                    nested = true
+                    model.destination = .presentation(ParityPresentation.compose)
+                    XCTAssertTrue(snapshots.allSatisfy { $0.last?.name == "Compose" })
+                }
+            })
+        }
+
+        model.destination = .route(ParityRoute.thread(42))
+
+        XCTAssertTrue(nested)
+        for delivered in snapshots {
+            XCTAssertEqual(delivered.last?.name, "Compose")
+            XCTAssertEqual(delivered.map(\.generation), delivered.map(\.generation).sorted())
+            XCTAssertEqual(delivered.filter { $0.generation == 2 }.count, 1)
+        }
+        observations.forEach(source.removeObserver)
     }
 
     func testObservationAdapterTreatsIndependentPropertyMutationsAsSeparateStates() throws {

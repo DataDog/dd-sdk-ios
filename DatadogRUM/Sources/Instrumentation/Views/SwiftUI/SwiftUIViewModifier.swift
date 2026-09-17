@@ -4880,7 +4880,7 @@ public final class RUMNavigationTransitions {
             destination: destination
         )
         currentSnapshot = snapshot
-        observers.values.forEach { $0(snapshot) }
+        publish(snapshot)
     }
 
     /// Records a possible destination without starting a RUM view.
@@ -4899,7 +4899,18 @@ public final class RUMNavigationTransitions {
             destination: destination
         )
         currentSnapshot = snapshot
-        observers.values.forEach { $0(snapshot) }
+        publish(snapshot)
+    }
+
+    private func publish(_ snapshot: Snapshot) {
+        // A callback may commit again or change subscriptions. Nested commits
+        // deliver synchronously; never resume an obsolete outer generation.
+        for id in Array(observers.keys) {
+            guard currentSnapshot?.generation == snapshot.generation else {
+                return
+            }
+            observers[id]?(snapshot)
+        }
     }
 
     /// Cancels a prepared transition without changing the current occurrence.
