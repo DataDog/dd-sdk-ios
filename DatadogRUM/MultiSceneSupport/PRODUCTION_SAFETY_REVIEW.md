@@ -1,7 +1,7 @@
 **Production safety review of multi-scene SDK instrumentation**
 
-Updated 2026-09-17 during plan execution. **Release remains on hold: 8 of the
-12 review findings are closed, 4 remain open.** The finite checklist has 21/66
+Updated 2026-09-17 during plan execution. **Release remains on hold: 9 of the
+12 review findings are closed, 3 remain open.** The finite checklist has 23/66
 release gates closed. [PLAN.md](PLAN.md) owns the release contract and
 [REVIEW_TRIAGE.md](REVIEW_TRIAGE.md) owns assessed repair order and evidence limits.
 Review IDs R01–R12 below map to repair gates D01–D12, not PLAN's responsibility
@@ -11,7 +11,7 @@ review gates R01–R06.
 | --- | --- | --- |
 | R01 / D01 | CLOSED | EXP-162, signed `e420528f7`: full watchOS RUM Debug/Release builds and 70 iOS Resource/action tests |
 | R02 / D02 | CLOSED | EXP-162, signed `af8864528`: full macOS WebView Debug/Release builds and 28 iOS bridge tests |
-| R03 / D03 | OPEN | Mounted keyed host teardown and repeated lifetime checks, paired with P03 |
+| R03 / D03 | CLOSED | EXP-168, signed `7b77f60eb`: 303 tests; mounted 27/26.5 checks 37/37 each, zero weak survivors and three method implementations restored after SDK stop |
 | R04 / D04 | CLOSED | EXP-166, signed `5eb3c1aac`: 282 affected tests, core/task/lifetime and all-consumer isolation; allocation1/64 and latency/reentrancy budgets pass on27/26.5 |
 | R05 / D05 | CLOSED | EXP-167, signed `0aaafa7bd`: failing source-less start/identity-stop controls, 198 tests and two-native-scene 47/47 runtime acceptance |
 | R06 / D06 | CLOSED | EXP-167: controlled timeout/max-duration lifecycle boundaries, fresh peer IDs and exact action/Resource owners; background and legacy controls |
@@ -37,7 +37,9 @@ window concurrency. EXP-165 closes D11 with mounted WebView/Replay correlation;
 EXP-166 closes D04/P02 with [ownership](Results/EXP-166-handoff-isolation.json)
 and [paired performance](Results/EXP-166-handoff-performance.json) evidence;
 EXP-167 closes D05/D06 with [restoration evidence](Results/EXP-167-session-restoration.json):
-198 tests and 47/47 checks in two native simulator scenes. D03 lifetime is next.
+198 tests and 47/47 checks in two native simulator scenes. EXP-168 closes D03
+with [mounted lifetime evidence](Results/EXP-168-swiftui-lifetime.json) on27/26.5.
+D07/D08 authority and reconnect are next; P03 registry growth remains open.
 Keep this review and its open
 findings until their corresponding gates close; preserve historical evidence below.
 

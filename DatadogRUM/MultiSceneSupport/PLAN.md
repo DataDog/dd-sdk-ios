@@ -48,12 +48,11 @@ Objective-C Release exposure still require normal API review.
    register and detailed record. Accepted experiment identities remain unchanged.
 1. D12/T02, D09, D11 and D04/P02 repairs are accepted within their recorded
    boundaries. Preserve their controls and frozen acceptance identities.
-2. D05/D06 restoration is accepted in EXP-167. Next execute the defined EXP-168 for D03
-   keyed SwiftUI lifetime repair in the [assessed order](REVIEW_TRIAGE.md), with
-   mounted release and teardown evidence. Measure P03 alongside it; P03 remains
-   open until D08 and the retained-registry budget also pass.
-3. Repair D07/D08 authority/reconnect and D10 accepted presentation state. Close
-   the missing R02/R04–R06 discriminators in those slices.
+2. D05/D06 restoration and D03/R02 keyed lifetime are accepted in EXP-167/168.
+   Next define D07 pending semantic authority in the [assessed order](REVIEW_TRIAGE.md),
+   then D08 reconnect publication and P03 disconnected-registry retirement.
+3. Repair D10 accepted presentation state. Close the missing R04–R06
+   discriminators in those slices; P03 needs its full retained-state budget.
 4. Close the early compatibility/performance gates in available environments;
    C06 remains blocked without a minimum-OS runtime. Resume T03–T14 only after
    relevant repair dependencies pass. A documented fallback remains a deliverable.
@@ -101,7 +100,7 @@ SwiftUI remains required as H16; the former conditional row is resolved.
 | Gate | Deliverable / completion mode | Owner | Depends on | Decisive test | Environment | Status |
 | --- | --- | --- | --- | --- | --- | --- |
 | R01 | Trait readers and tracking lifetimes | SDK reviewer | None | Reader identity, migration, remount, weak ownership and disconnect fencing; record findings, evidence and dispositions in COMPONENT_REVIEW.md | Source review plus targeted regressions for any finding | CLOSED |
-| R02 | Authority and occurrence sources | SDK reviewer | D03 | Exact host release, local suppression, stale generation rejection and fresh reveals; record findings, evidence and dispositions in COMPONENT_REVIEW.md | Source review plus targeted regressions for any finding | REVIEW BLOCKED |
+| R02 | Authority and occurrence sources | SDK reviewer | D03 | Exact host release, local suppression, stale generation rejection and fresh reveals; record findings, evidence and dispositions in COMPONENT_REVIEW.md | Source review plus targeted regressions for any finding | CLOSED |
 | R03 | Transition arbitration | SDK reviewer | None | Accepted versus proposed state; cancel/finish exactly once; nested reentrancy; record findings, evidence and dispositions in COMPONENT_REVIEW.md | Source review plus targeted regressions for any finding | CLOSED |
 | R04 | View modifiers and attachment boundaries | SDK reviewer | D03, D08 | Main-thread/availability gates, host reconstruction and retained-reader teardown; record findings, evidence and dispositions in COMPONENT_REVIEW.md | Source review plus targeted regressions for any finding | REVIEW BLOCKED |
 | R05 | Observed input and semantic engine | SDK reviewer | D07, D08 | Publisher pinning, Observation rearming, background FIFO and atomic destination; record findings, evidence and dispositions in COMPONENT_REVIEW.md; multiple observers with nested commit/remove/add must preserve monotonic generations | Source review plus targeted regressions for any finding | REVIEW BLOCKED |
@@ -166,7 +165,7 @@ experiment slices remain evidence, not a substitute for these missing cases.
 | --- | --- | --- | --- | --- | --- | --- |
 | D01 | watchOS Resource compile compatibility | SDK implementer | None | Reproduce/triage the reported finding, then require: DatadogRUM watchOS build including absent UI handoff | watchOS SDK build | CLOSED |
 | D02 | macOS WebView compile compatibility | SDK implementer | None | Reproduce/triage the reported finding, then require: DatadogWebViewTracking macOS build with absent UIKit scene metadata | macOS SDK build | CLOSED |
-| D03 | Keyed SwiftUI registration teardown | SDK implementer | None | Reproduce/triage the reported finding, then require: Mounted keyed destination removal plus SDK release: weak registration/instrumentation release and balanced unswizzling; repeat cycles | iOS 27 simulator, mounted SwiftUI host and lifetime checks | REGRESSION BLOCKED |
+| D03 | Keyed SwiftUI registration teardown | SDK implementer | None | Reproduce/triage the reported finding, then require: Mounted keyed destination removal plus SDK release: weak registration/instrumentation release and balanced unswizzling; repeat cycles | iOS 27 simulator, mounted SwiftUI host and lifetime checks | CLOSED |
 | D04 | Named-core handoff isolation | SDK implementer | None | Reproduce/triage the reported finding, then require: Different cores, same application/different sessions, no-RUM core, nested dispatch and inherited work after stop/reinitialize never consume foreign context | Internal, RUM, Logs, Trace and network focused tests | CLOSED |
 | D05 | Resolve ownership before explicit session restart | SDK implementer | None | Reproduce/triage the reported finding, then require: After stopSession with A/B and B representative, source-less start replaces B and preserves A; identity-stop A preserves B | RUM application/session tests plus two-scene simulator | CLOSED |
 | D06 | Preserve peers on lazy session expiration | SDK implementer | D05 | Reproduce/triage the reported finding, then require: Expiring lifecycle command followed by start/stop in A restores eligible B with fresh new-session ownership | RUM application/session tests plus two-scene simulator | CLOSED |

@@ -18,7 +18,8 @@ EXP-165 closes D11 with 102 tests and 19/19 mounted WebView/Replay checks.
 EXP-166 closes D04/P02 with 282 affected tests and full Release ABBA allocation,
 latency and reentrancy acceptance on27/26.5. EXP-167 closes D05/D06 with 198
 affected tests and two native simulator scenes (47/47 versus control 20/47).
-Four findings remain open. Existing
+EXP-168 closes D03 with 303 tests and mounted 27/26.5 weak-release/teardown
+acceptance, 37/37 each. Three findings remain open. Existing
 accepted experiment slices remain valid within their recorded boundaries.
 
 ## Finding decisions
@@ -27,7 +28,7 @@ accepted experiment slices remain valid within their recorded boundaries.
 | --- | --- | --- | --- |
 | R01 / D01, P1 | Confirmed platform compile defect. Resource `modify` references `RUMUIEventNetworkContext` at line 135 while its declaration is excluded on watchOS. Package supports watchOS 9. Isolated conditional/reference probe reproduces missing symbol. | Move the accessor to platform-neutral Internal ownership or guard the UIKit-only extraction while preserving absent-context behavior. Full DatadogRUM watchOS compile, not just the expression, must pass. Keep its interface compatible with D04's core-scoped contract. | CLOSED in EXP-162, signed `e420528f7`; full Debug/Release watchOS builds and 70 iOS tests. |
 | R02 / D02, P1 | Confirmed platform compile defect. `DDScriptMessageHandler` is available under WebKit on macOS, but unconditionally follows `NSWindow.windowScene`. Narrowed compiler probe fails; normal NSWindow access control passes. | Guard UIKit scene extraction and use absent metadata on macOS. Build DatadogWebViewTracking on macOS and retain iOS message/ownership tests. | CLOSED in EXP-162, signed `af8864528`; full Debug/Release macOS builds and 28 iOS tests. |
-| R03 / D03, P1 | Source confirms the strong closure/State cycle at SwiftUI modifier lines 4456/4698 and registration lines 2621/2644. The original review's ARC-shape probe supports it; no mounted SDK teardown result exists yet. | Replace bound-modifier captures with a small cancellable context and weak handler/state/arbiter ownership. Mount/remove a real keyed host, release the core and prove weak registration/instrumentation release and teardown. | Lifetime repair before any further semantic API expansion or H08/H09. Pair with P03 measurements, not a file split. |
+| R03 / D03, P1 | Source confirms the strong closure/State cycle at SwiftUI modifier lines 4456/4698 and registration lines 2621/2644. The original review's ARC-shape probe supports it; no mounted SDK teardown result exists yet. | Replace bound-modifier captures with a small cancellable context and weak handler/state/arbiter ownership. Mount/remove a real keyed host, release the core and prove weak registration/instrumentation release and teardown. | CLOSED in EXP-168, signed `7b77f60eb`; 25 retained registrations/states become zero on27/26.5, instrumentation releases and three real method implementations restore. P03 registry retirement stays open. |
 | R04 / D04, P1 | Confirmed isolation gap. `RUMContextHandoff` has one process-wide TaskLocal/thread slot; Monitor/subscriber, Logs, Trace and network consumers have no core identity check. A foreign authoritative nil is wrong too. | Shared internal core-instance/generation key, nested per-owner entries and lookup only by the consuming core. Cover different cores, identical application IDs/different sessions, no-RUM cores, nested dispatch, inherited work after stop/reinitialize. | CLOSED in EXP-166, signed `5eb3c1aac`; 282 tests, core lifetime and every consumer covered, allocation1/64 and latency/reentrancy budgets pass on27/26.5. |
 | R05 / D05, P1 | Source-confirmed target-resolution defect. `startNewSession` excludes the old last representative, then the unchanged process target resolves against restored peers. Existing restart coverage supplies an explicit scene and misses this path. | Resolve the old owner once before restoration; carry that exact decision through new-session dispatch. Test A/B, representative B, stopSession, source-less start C; also identity-stop A with B preserved. | CLOSED in EXP-167, signed `0aaafa7bd`; six failing scope controls, 198 tests and two-native-scene 47/47 acceptance. |
 | R06 / D06, P1 | Source-confirmed lazy-expiration divergence. Lifecycle-triggered expiration postpones creation; the next start/stop has restart=false and resumes no peers. Immediate refresh has the concurrent-view rule that the lazy path lacks. | Reuse D05's resolution/restoration policy for explicit stop, immediate refresh and lazy timeout/max-duration paths. Controlled-clock lifecycle-then-navigation tests must preserve eligible B in the new session and respect background policy. | CLOSED in EXP-167 with D05; 44 new matrix cases distinguish timeout/max duration, immediate/delayed creation, background policy and legacy shape. |
@@ -68,8 +69,9 @@ SwiftUI invariants and current test seams are detailed in
    D05/D06 passes EXP-167 with old navigation ownership resolved before
    restoration across explicit stop, immediate and lazy expiration. The first
    native readiness attempt is INVALID and preserved separately.
-3. Repair lifetime/semantic authority: D03 plus P03, D07/D08, then D10. Keep the
-   missing R04/R05/R06 discriminators in those slices. Each fix is a small
+3. D03 mounted lifetime passes EXP-168 and bounded R02 review is complete.
+   Next repair D07/D08 semantic authority/reconnect and P03 registry retirement,
+   then D10. Keep the missing R04/R05/R06 discriminators in those slices. Each fix is a small
    component commit with explicit paths. Sign when available; if unavailable,
    continue unsigned locally and sign before any future authorized push.
    Deferred extraction still starts only after release freeze.

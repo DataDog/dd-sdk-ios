@@ -15,8 +15,8 @@ Last updated: 2026-09-17
 
 ## Current checkpoint
 
-Current release position: 21/66 gates closed. EXP-167 closes D05/D06 at signed
-`0aaafa7bd`; D03 lifetime is next. Four production-review repairs remain open.
+Current release position: 23/66 gates closed. EXP-168 closes D03/R02 at signed
+`7b77f60eb`; D07/D08 and P03 are next. Three production-review repairs remain open.
 
 
 - Last accepted public telemetry slice: `EXP-159`, targeted long-running action start/stop.
@@ -326,7 +326,7 @@ ordered acceptance contract is in
 | EXP-165 | PASS | D11: legacy container restored; 102 tests, 19/19 mounted bridge/Replay checks and four collector controls | [Record](Experiments/EXP-143-199.md#exp-165--preserve-legacy-nativewebview-replay-correlation) |
 | EXP-166 | PASS | D04/P02: 282 tests; core-scoped consumers; full27/26.5 ABBA1 allocation/64 bytes with latency/reentrancy budgets preserved | [Record](Experiments/EXP-143-199.md#exp-166--isolate-ui-event-handoff-by-sdk-lifecycle-and-reduce-allocations) |
 | EXP-167 | PASS | D05/D06: six failing controls, 198 tests/44 new cases, two native scenes 47/47 versus 20/47; old ownership and eligible peers preserved | [Record](Experiments/EXP-143-199.md#exp-167--preserve-navigation-ownership-across-session-restoration) |
-| EXP-168 | PLANNED | D03: mounted keyed registration release and balanced SDK teardown; P03 lifetime measurement and R02 review | [Record](Experiments/EXP-143-199.md#exp-168--release-keyed-swiftui-registrations-and-instrumentation) |
+| EXP-168 | PASS | D03/R02: 303 tests; 37/37 mounted checks on27/26.5; 25 leaked registrations reduced to zero, teardown restored; P03 registry budget remains open | [Record](Experiments/EXP-143-199.md#exp-168--release-keyed-swiftui-registrations-and-instrumentation) |
 
 ## Simulator-inconclusive and hardware-required evidence
 

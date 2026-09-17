@@ -136,3 +136,16 @@ See [paired results](Results/EXP-166-handoff-performance.json) and
 [numeric samples](Results/EXP-166-handoff-performance-samples.json). One-off
 1/112 and1/64 diagnostics are retained separately and make no timing claim.
 The unchanged scope remains simulator microbenchmarks, not device-wide proof.
+
+
+### EXP-168 keyed host lifetime repair
+
+Signed `7b77f60eb` supplies mounted SwiftUI evidence for the D03 dependency of
+P03. With five warm-up plus twenty measured cycles on27/26.5, the unchanged SDK
+retains 25 registrations and tracking states. The candidate retains zero, with
+readers/controllers also zero and exact SDK unswizzling after core release.
+Both candidates pass37/37; 303 affected tests pass. These weak-object measurements
+are separate from RSS, allocation churn and disconnected-history accounting.
+P03 remains REGRESSION BLOCKED until D08 and the original registry budget pass;
+the frozen EXP-160 protocol and thresholds are unchanged. Evidence is in
+[EXP-168-swiftui-lifetime.json](Results/EXP-168-swiftui-lifetime.json).

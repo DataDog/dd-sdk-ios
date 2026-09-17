@@ -1187,3 +1187,21 @@ and requires real topology before interpreting semantic failures. Read snapshots
 before sending markers, and preserve exact new-session view inventories; a later
 action can otherwise hide a missing restoration branch. Maximum-duration cases
 must refresh activity before their deadline so they cannot pass as timeouts.
+
+
+## EXP-168 mounted SwiftUI lifetime acceptance
+
+`tools/multi-scene/swiftui-lifetime/run.py` runs frozen signed control/candidate
+apps on discovered27/26.5 simulators, with fresh installations and run IDs.
+Its37 checks require actual keyed registration and RUM destination before each
+host removal, weak-object counts after bounded main-queue draining, and exact
+restoration of three real method implementations after SDK release. The fixture
+only reads method implementations; it does not replace them. Keep sources alive
+past removal to prove their weak registration entries do not extend SDK lifetime.
+
+Record availability as an oracle prerequisite. The first26.5 attempt incorrectly
+required the27-only transition arbiter and remains INCONCLUSIVE; the revised
+fixture requires the correct presence/absence before interpreting lifetime checks.
+Do not substitute controller release or process RSS for registration/state and
+instrumentation release. Mounted lifetime acceptance does not close P03's
+separate disconnected-history budget or physical scene lifecycle gates.

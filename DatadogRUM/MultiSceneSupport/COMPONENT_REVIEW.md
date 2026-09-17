@@ -1,6 +1,8 @@
 # Incremental multi-scene component review
 
-Reviewed 2026-09-17 against `af63657f08dbecb66e7c3ae97ed53fc8f7b065b9`.
+Original review 2026-09-17 against `af63657f08dbecb66e7c3ae97ed53fc8f7b065b9`.
+R02 was reviewed again at signed `7b77f60eb` during EXP-168. Original line ranges
+below refer to the original review; current symbol names identify the boundaries.
 The 6,613-line `SwiftUIViewModifier.swift` was reviewed by responsibility before
 further API expansion. This is a source review with existing regression evidence,
 not final independent release sign-off or a new device run. Deferred extraction
@@ -18,9 +20,9 @@ because a report exists. No production source changed during this review.
 | Gate | Source boundary and inspected invariant | Existing decisive coverage | Disposition |
 | --- | --- | --- | --- |
 | R01 | Trait publisher/readers (1–325), tracking state and disconnect fence (1015–1580): weak notification ownership, main-thread seed, mount before change, generation-based stale callback rejection, detached versus legacy attachment | `testWhenActiveSceneDisconnects_itInvalidatesSilentlyUntilExplicitRemount`, keyed-disconnect/new-generation, latest-reader-binding and scene-migration tests in `SwiftUIViewNameExtractorTests` | Bounded reader review complete. H09 still requires genuine OS disconnect/remount. D08 covers the distinct semantic-host trait path. |
-| R02 | Weak authority/occurrence registries and keyed registration (1358–2780): subtree-local suppression, exact occurrence stop, stale registration epoch rejection | Dormant/reveal, scoped suppression, exact host removal and disconnect tests | BLOCKED by D03: the registry's weak references do not break the registration callback's strong capture of the modifier. |
+| R02 | Weak authority/occurrence registries and keyed registration (1358–2780): subtree-local suppression, exact occurrence stop, stale registration epoch rejection | Dormant/reveal, scoped suppression, exact host removal and disconnect tests | CLOSED in EXP-168 after weak callback context, explicit cancellation/rebind epoch tests, 303 affected tests and mounted release/teardown on27/26.5. |
 | R03 | Deferred intent and interactive arbitration (3060–3899): scene/coordinator key, cancel rearm, pending identity check, remove pending before commit, preserve peer on disconnect | Interactive cancel/finish, concurrent keyed disconnect, pending migration and reregister-cannot-bypass-cancel tests | Bounded arbitration review complete. H11–H13 remain real recognized-gesture gates. Source observer fan-out is R05, not this arbiter. |
-| R04 | Ordinary/keyed modifiers and attachment/lifetime boundaries (3900–4789, 5796–6096): single-scene branch, availability fallback, declaration-owned State, generation-checked one-turn detach grace | Retained reader and reconstruction tests; `testWhenDetachedStateIsReleased_queuedFinalDetachStillRuns`, detach/reattach cancellation | BLOCKED by D03/D08. A queued final callback can survive owner release, but that does not prove mounted keyed modifier teardown or stale-trait reconnect safety. |
+| R04 | Ordinary/keyed modifiers and attachment/lifetime boundaries (3900–4789, 5796–6096): single-scene branch, availability fallback, declaration-owned State, generation-checked one-turn detach grace | Retained reader and reconstruction tests; `testWhenDetachedStateIsReleased_queuedFinalDetachStillRuns`, detach/reattach cancellation | BLOCKED by D08 and delayed remount coverage. D03 mounted teardown passes EXP-168; stale-trait reconnect and retained-host reattachment remain separate. |
 | R05 | Transition source, observed adapter and host engine (4790–5379): stable source pinning, lazy observed authority, Observation rearm before receive, FIFO main dispatch, exact source unsubscribe | Observation synchronous/nested mutation, adapter deallocation, publisher pinning, background FIFO and exact host disconnect tests | BLOCKED by D07/D08 and missing multi-observer reentrancy coverage described below. |
 | R06 | Native semantic state/public hosts (5380–5795, 6097–6496): accepted path getter, presentation ownership, automatic metadata, explicit-over-capability precedence, unchanged standard-container integration | Rejected/canonicalized path tests, native presentation tests, host reconstruction, capability precedence and pending-observed-input tests | BLOCKED by D10. Accepted-path handling is sound in the reviewed seam; presentation writes use a different ordering. Stable API sign-off remains F01. |
 
@@ -31,14 +33,19 @@ below. A passing broad suite does not override a concrete untested failure path.
 
 ## Findings and remaining decisive checks
 
-**D03, registration lifetime.** At lines 4456 and 4698, `rebind` stores an escaping
-closure that calls the modifier's `apply` and accesses its `transitionArbiter`.
-The modifier owns its State registration and instrumentation; the registration
-owns `process` (2621–2644). The weak source/state fields do not break this cycle.
-The separate safety review reports an ARC-shape reproduction, not mounted-device
-proof. Required: cancellable context without bound-modifier capture, then a real
-keyed host removal and SDK release test proving weak registration/instrumentation
-release and balanced unswizzling. P03 cannot close from controller-only teardown.
+**D03 / R02, registration lifetime — closed in EXP-168.** Mounted controls on
+27/26.5 retain one registration and tracking state per cycle, reaching 25, while
+readers/controllers release. Instrumentation remains alive and methods remain
+swizzled after SDK stop. The repair stores a bound callback on an independent
+context with weak state/handler/arbiter references; neither modifier is captured.
+Cancellation removes the source entry, clears metadata/callback and advances the
+epoch. Rebinding cancels the old source; hidden routes keep their registrations.
+Both runtime candidates pass 37/37 with zero weak survivors and three original
+method implementations restored. The 303-test selection covers exact fresh
+reveals, current descriptor, stale generations/epochs, peer-local suppression,
+released collaborators and interactive cancel/commit. This closes R02's bounded
+review; P03 still needs disconnected-registry retirement, and R04 needs D08 plus
+delayed retained-host remount. No extraction or final independent review is claimed.
 
 **D07, pending semantic authority.** `RUMSemanticNavigationHostState.reconcile`
 selects a nonnil explicit source and calls `suppressionState.appear()` before
@@ -80,7 +87,7 @@ source review's hypotheses separate from reproduced results.
 
 ## Review and extraction boundary
 
-R01/R03 close only their bounded source-review obligations. R02/R04/R05/R06 remain
+R01/R02/R03 close only their bounded source-review obligations. R04/R05/R06 remain
 blocked until the stated regressions are tested and the findings are fixed or
 rejected with evidence. Keep the existing synchronous accepted-state boundary:
 blindly moving reconciliation to onAppear or another task would reintroduce the

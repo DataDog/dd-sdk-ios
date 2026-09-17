@@ -2,7 +2,7 @@
   "schema_version": 1,
   "scope": "Multi-scene RUM release",
   "baseline_revision": "92f021ba7e4a866f84a52da93ed8b63f3dc75882",
-  "candidate_revision": "0aaafa7bd21eaecd9908086f9043f813b3cbc419",
+  "candidate_revision": "7b77f60ebc7b6a194282c93a1e5e9c91d74afebe",
   "gates": [
     {
       "id": "C01",
@@ -110,7 +110,7 @@
       "environment": "Same simulator/toolchain, Release build; focused internal lifecycle tests",
       "completion_mode": null,
       "status": "REGRESSION BLOCKED",
-      "evidence": "EXP-160; BASELINES.md and Results/EXP-160-baseline.json. 220 entries in each disconnect/activity registry after20warmup+200 cycles; controller weak survivors0."
+      "evidence": "EXP-160; BASELINES.md and Results/EXP-160-baseline.json. 220 entries in each disconnect/activity registry after20warmup+200 cycles; controller weak survivors0. EXP-168 closes mounted keyed host lifetime only: 25 control registrations/states versus zero candidate survivors on27/26.5. D08 and disconnected-history retirement remain required."
     },
     {
       "id": "P04",
@@ -146,8 +146,8 @@
       "decisive_test": "Exact host release, local suppression, stale generation rejection and fresh reveals; record findings, evidence and dispositions in COMPONENT_REVIEW.md",
       "environment": "Source review plus targeted regressions for any finding",
       "completion_mode": null,
-      "status": "REVIEW BLOCKED",
-      "evidence": "COMPONENT_REVIEW.md: concrete findings and decisive missing regressions; extraction deferred."
+      "status": "CLOSED",
+      "evidence": "COMPONENT_REVIEW.md, EXP-168 at 7b77f60eb: weak callback/context and source registration review; cancellation, stale epochs, fresh reveals, descriptor/peer suppression, 303 affected tests and mounted host release/SDK teardown on27/26.5. Final independent review remains separate."
     },
     {
       "id": "R03",
@@ -750,8 +750,8 @@
       "decisive_test": "Reproduce/triage the reported finding, then require: Mounted keyed destination removal plus SDK release: weak registration/instrumentation release and balanced unswizzling; repeat cycles",
       "environment": "iOS 27 simulator, mounted SwiftUI host and lifetime checks",
       "completion_mode": null,
-      "status": "REGRESSION BLOCKED",
-      "evidence": "REVIEW_TRIAGE.md: assessed relevant at af63657f0; source-confirmed path; required full regression/repair remains open."
+      "status": "CLOSED",
+      "evidence": "EXP-168; signed 7b77f60eb. 303 affected tests and mounted 27/26.5 control/candidate acceptance, 37/37 each. Control retains 25 registrations/states; candidate has zero weak survivors and releases core/instrumentation/handler/arbiter with three original method implementations restored. Initial 26.5 fixture availability mistake retained as INCONCLUSIVE."
     },
     {
       "id": "D04",
