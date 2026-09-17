@@ -15,10 +15,27 @@ private final class SceneTargetedFallbackMonitor: RUMMonitorViewProtocol {
     var starts: [(key: String, name: String?, attributes: [AttributeKey: AttributeValue])] = []
     var stops: [(key: String, attributes: [AttributeKey: AttributeValue])] = []
 
-    func addViewAttribute(forKey key: AttributeKey, value: AttributeValue) {}
-    func addViewAttributes(_ attributes: [AttributeKey: AttributeValue]) {}
-    func removeViewAttribute(forKey key: AttributeKey) {}
-    func removeViewAttributes(forKeys keys: [AttributeKey]) {}
+    var attributeForms: [String] = []
+    var singleValue: AttributeValue?
+    var batchValues: [AttributeKey: AttributeValue] = [:]
+    var removedKeys: [String] = []
+
+    func addViewAttribute(forKey key: AttributeKey, value: AttributeValue) {
+        attributeForms.append("add-single")
+        singleValue = value
+    }
+    func addViewAttributes(_ attributes: [AttributeKey: AttributeValue]) {
+        attributeForms.append("add-batch")
+        batchValues = attributes
+    }
+    func removeViewAttribute(forKey key: AttributeKey) {
+        attributeForms.append("remove-single")
+        removedKeys.append(key)
+    }
+    func removeViewAttributes(forKeys keys: [AttributeKey]) {
+        attributeForms.append("remove-batch")
+        removedKeys.append(contentsOf: keys)
+    }
     func startView(
         viewController: UIViewController,
         name: String?,
@@ -316,6 +333,28 @@ class NOPMonitorTests: XCTestCase {
         XCTAssertEqual(monitor.stops.count, 1)
         XCTAssertEqual(monitor.stops.first?.key, "compose")
         XCTAssertEqual(monitor.stops.first?.attributes["stop"] as? String, "attribute")
+    }
+
+    @MainActor
+    func testViewAttributeTargetBridgePreservesCustomAndNOPMonitorCompatibility() {
+        let dd = DD.mockWith(logger: CoreLoggerMock())
+        defer { dd.reset() }
+        let custom = SceneTargetedFallbackMonitor()
+        let target = RUMCommandTarget.scene(RUMSceneIdentifier(rawValue: "scene-A"))
+        for monitor: any RUMMonitorViewProtocol in [custom, NOPMonitor()] {
+            RUMViewAttributeTargetBridge.addViewAttribute(on: monitor, forKey: "single", value: "value", explicitTarget: target)
+            RUMViewAttributeTargetBridge.addViewAttributes(on: monitor, attributes: ["batch": 7], explicitTarget: target)
+            RUMViewAttributeTargetBridge.removeViewAttribute(on: monitor, forKey: "single", explicitTarget: target)
+            RUMViewAttributeTargetBridge.removeViewAttributes(on: monitor, forKeys: ["batch"], explicitTarget: target)
+        }
+        XCTAssertEqual(custom.attributeForms, ["add-single", "add-batch", "remove-single", "remove-batch"])
+        XCTAssertEqual(custom.singleValue as? String, "value")
+        XCTAssertEqual(custom.batchValues["batch"] as? Int, 7)
+        XCTAssertEqual(custom.removedKeys, ["single", "batch"])
+        XCTAssertEqual(dd.logger.criticalLogs.count, 4)
+        for signature in ["addViewAttribute(forKey:value:)", "addViewAttributes(_:)", "removeViewAttribute(forKey:)", "removeViewAttributes(forKeys:)"] {
+            XCTAssertEqual(dd.logger.criticalLogs.filter { $0.message.contains(signature) }.count, 1)
+        }
     }
 
     @MainActor

@@ -959,47 +959,41 @@ extension Monitor: RUMMonitorProtocol {
 /// Declares `Monitor` conformance to public `RUMMonitorViewProtocol`.
 extension Monitor: RUMMonitorViewProtocol {
     func addViewAttribute(forKey key: AttributeKey, value: AttributeValue) {
-        var command = RUMAddViewAttributesCommand(
-            time: dateProvider.now,
-            attributes: [key: value]
-        )
-        command.target = currentExecutionTarget
-        process(
-            command: command
-        )
+        addViewAttribute(forKey: key, value: value, explicitTarget: nil)
+    }
+
+    func addViewAttribute(forKey key: AttributeKey, value: AttributeValue, explicitTarget: RUMCommandTarget?) {
+        addViewAttributes([key: value], explicitTarget: explicitTarget)
     }
 
     func addViewAttributes(_ attributes: [AttributeKey: AttributeValue]) {
-        var command = RUMAddViewAttributesCommand(
-            time: dateProvider.now,
-            attributes: attributes
-        )
+        addViewAttributes(attributes, explicitTarget: nil)
+    }
+
+    func addViewAttributes(_ attributes: [AttributeKey: AttributeValue], explicitTarget: RUMCommandTarget?) {
+        var command = RUMAddViewAttributesCommand(time: dateProvider.now, attributes: attributes)
         command.target = currentExecutionTarget
-        process(
-            command: command
-        )
+        command.explicitTarget = explicitTarget
+        process(command: command)
     }
 
     func removeViewAttribute(forKey key: AttributeKey) {
-        var command = RUMRemoveViewAttributesCommand(
-            time: dateProvider.now,
-            keysToRemove: [key]
-        )
-        command.target = currentExecutionTarget
-        process(
-            command: command
-        )
+        removeViewAttribute(forKey: key, explicitTarget: nil)
+    }
+
+    func removeViewAttribute(forKey key: AttributeKey, explicitTarget: RUMCommandTarget?) {
+        removeViewAttributes(forKeys: [key], explicitTarget: explicitTarget)
     }
 
     func removeViewAttributes(forKeys keys: [AttributeKey]) {
-        var command = RUMRemoveViewAttributesCommand(
-            time: dateProvider.now,
-            keysToRemove: keys
-        )
+        removeViewAttributes(forKeys: keys, explicitTarget: nil)
+    }
+
+    func removeViewAttributes(forKeys keys: [AttributeKey], explicitTarget: RUMCommandTarget?) {
+        var command = RUMRemoveViewAttributesCommand(time: dateProvider.now, keysToRemove: keys)
         command.target = currentExecutionTarget
-        process(
-            command: command
-        )
+        command.explicitTarget = explicitTarget
+        process(command: command)
     }
 
     #if !os(watchOS)
@@ -1100,6 +1094,8 @@ extension Monitor: RUMMonitorViewProtocol {
 }
 
 #if os(iOS)
+extension Monitor: RUMViewAttributeTargetHandling {}
+
 extension Monitor: RUMErrorViewTargetHandling {}
 
 extension Monitor: RUMResourceViewTargetHandling {}

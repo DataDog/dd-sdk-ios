@@ -30,6 +30,13 @@ internal enum RUMCommandTarget: Equatable {
     case allActiveViews
 }
 
+/// A customer-selected current view, resolved independently from inferred ownership.
+/// Only a live explicit target overrides inference; this does not change lifecycle policy.
+internal protocol RUMExplicitViewTargetCommand: RUMCommand {
+    var target: RUMCommandTarget { get set }
+    var explicitTarget: RUMCommandTarget? { get set }
+}
+
 /// Selects the user-action correlation used when building a RUM error.
 /// Mirrored log errors carry a frozen snapshot, including an explicit absence
 /// of action, while regular monitor errors preserve live-context behavior.
@@ -170,7 +177,7 @@ internal struct RUMTimeToFullDisplayCommand: RUMCommand {
 
 // MARK: - RUM View related commands
 
-internal struct RUMAddViewAttributesCommand: RUMCommand {
+internal struct RUMAddViewAttributesCommand: RUMExplicitViewTargetCommand {
     var time: Date
     var globalAttributes: [AttributeKey: AttributeValue] = [:]
     var attributes: [AttributeKey: AttributeValue]
@@ -182,11 +189,12 @@ internal struct RUMAddViewAttributesCommand: RUMCommand {
     var isUserInteraction = false
     var missedEventType: SessionEndedMetric.MissedEventType? = nil
     var target: RUMCommandTarget = .processRepresentative
+    var explicitTarget: RUMCommandTarget?
 
     var areInternalAttributes = false
 }
 
-internal struct RUMRemoveViewAttributesCommand: RUMCommand {
+internal struct RUMRemoveViewAttributesCommand: RUMExplicitViewTargetCommand {
     var time: Date
     var globalAttributes: [AttributeKey: AttributeValue] = [:]
     var attributes: [AttributeKey: AttributeValue] = [:]
@@ -198,6 +206,7 @@ internal struct RUMRemoveViewAttributesCommand: RUMCommand {
     var isUserInteraction = false
     var missedEventType: SessionEndedMetric.MissedEventType? = nil
     var target: RUMCommandTarget = .processRepresentative
+    var explicitTarget: RUMCommandTarget?
 
     var keysToRemove: [AttributeKey]
 }
@@ -297,7 +306,7 @@ internal protocol RUMErrorCommand: RUMCommand {
 /// Adds exception error to current view.
 ///
 /// Using this command results with classifying the error as "Exception" in Datadog app (`@error.category: Exception`).
-internal struct RUMAddCurrentViewErrorCommand: RUMErrorCommand {
+internal struct RUMAddCurrentViewErrorCommand: RUMErrorCommand, RUMExplicitViewTargetCommand {
     var time: Date
     var globalAttributes: [AttributeKey: AttributeValue]
     var attributes: [AttributeKey: AttributeValue]
@@ -534,7 +543,7 @@ internal struct RUMSpanContext {
     }
 }
 
-internal struct RUMStartResourceCommand: RUMResourceCommand {
+internal struct RUMStartResourceCommand: RUMResourceCommand, RUMExplicitViewTargetCommand {
     let resourceKey: String
     var time: Date
     var globalAttributes: [AttributeKey: AttributeValue] = [:]

@@ -849,6 +849,40 @@ public class objc_RUMMonitor: NSObject {
         swiftRUMMonitor.removeViewAttributes(forKeys: keys)
     }
 
+    #if os(iOS) && DEBUG
+    /// Adds an attribute to the selected current view. This API is experimental.
+    @available(iOS 27.0, *)
+    @MainActor
+    @objc(addViewAttributeForKey:value:view:)
+    public func addViewAttribute(forKey key: String, value: Any, view: objc_RUMViewTarget) {
+        swiftRUMMonitor.addViewAttribute(forKey: key, value: AnyEncodable(value), view: view.swiftType)
+    }
+
+    /// Adds attributes to the selected current view. This API is experimental.
+    @available(iOS 27.0, *)
+    @MainActor
+    @objc(addViewAttributes:view:)
+    public func addViewAttributes(_ attributes: [String: Any], view: objc_RUMViewTarget) {
+        swiftRUMMonitor.addViewAttributes(attributes.dd.swiftAttributes, view: view.swiftType)
+    }
+
+    /// Removes one view attribute without removing globals. This API is experimental.
+    @available(iOS 27.0, *)
+    @MainActor
+    @objc(removeViewAttributeForKey:view:)
+    public func removeViewAttribute(forKey key: String, view: objc_RUMViewTarget) {
+        swiftRUMMonitor.removeViewAttribute(forKey: key, view: view.swiftType)
+    }
+
+    /// Removes view attributes without removing globals. This API is experimental.
+    @available(iOS 27.0, *)
+    @MainActor
+    @objc(removeViewAttributesForKeys:view:)
+    public func removeViewAttributes(forKeys keys: [String], view: objc_RUMViewTarget) {
+        swiftRUMMonitor.removeViewAttributes(forKeys: keys, view: view.swiftType)
+    }
+    #endif
+
     #if !os(watchOS)
     public func startView(
         viewController: UIViewController,

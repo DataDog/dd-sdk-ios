@@ -53,6 +53,10 @@ class RUMMonitorProtocol_ConvenienceTests: XCTestCase {
         if #available(iOS 27.0, *),
            let scene = UIApplication.shared.connectedScenes.first as? UIWindowScene {
             let target = RUMViewTarget.current(in: scene)
+            monitor.addViewAttribute(forKey: "single", value: "value", view: target)
+            monitor.addViewAttributes(["batch": 7], view: target)
+            monitor.removeViewAttribute(forKey: "single", view: target)
+            monitor.removeViewAttributes(forKeys: ["batch"], view: target)
             monitor.addError(message: "targeted", view: target)
             monitor.addError(error: ProgrammerError(description: "targeted"), view: target)
             monitor.addError(error: ProgrammerError(description: "targeted callback"), view: target) {}

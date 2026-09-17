@@ -42,6 +42,97 @@ public struct RUMViewTarget {
 public typealias RUMOperationViewTarget = RUMViewTarget
 #endif
 
+#if os(iOS)
+public extension RUMMonitorViewProtocol {
+    /// Adds an attribute to the selected scene's current view.
+    ///
+    /// This API is experimental. An unavailable target preserves independent
+    /// inference. Global monitor attributes remain process-wide.
+    @_spi(Experimental)
+    @available(iOS 27.0, *)
+    @MainActor
+    func addViewAttribute(forKey key: AttributeKey, value: AttributeValue, view: RUMViewTarget) {
+        RUMViewAttributeTargetBridge.addViewAttribute(on: self, forKey: key, value: value, explicitTarget: .scene(view.sceneIdentifier))
+    }
+
+    /// Adds attributes to the selected scene's current view.
+    ///
+    /// This API is experimental. An unavailable target preserves independent
+    /// inference. These values retain the existing view-attribute precedence.
+    @_spi(Experimental)
+    @available(iOS 27.0, *)
+    @MainActor
+    func addViewAttributes(_ attributes: [AttributeKey: AttributeValue], view: RUMViewTarget) {
+        RUMViewAttributeTargetBridge.addViewAttributes(on: self, attributes: attributes, explicitTarget: .scene(view.sceneIdentifier))
+    }
+
+    /// Removes an attribute from the selected scene's current view.
+    ///
+    /// This API is experimental. A same-key global value remains available.
+    /// Events created before removal keep their attributes.
+    @_spi(Experimental)
+    @available(iOS 27.0, *)
+    @MainActor
+    func removeViewAttribute(forKey key: AttributeKey, view: RUMViewTarget) {
+        RUMViewAttributeTargetBridge.removeViewAttribute(on: self, forKey: key, explicitTarget: .scene(view.sceneIdentifier))
+    }
+
+    /// Removes attributes from the selected scene's current view.
+    ///
+    /// This API is experimental. An unavailable target preserves independent
+    /// inference. Removing view values does not remove global monitor values.
+    @_spi(Experimental)
+    @available(iOS 27.0, *)
+    @MainActor
+    func removeViewAttributes(forKeys keys: [AttributeKey], view: RUMViewTarget) {
+        RUMViewAttributeTargetBridge.removeViewAttributes(on: self, forKeys: keys, explicitTarget: .scene(view.sceneIdentifier))
+    }
+}
+
+/// Private capability preserving each existing single/batch custom-monitor call.
+internal protocol RUMViewAttributeTargetHandling: AnyObject {
+    func addViewAttribute(forKey key: AttributeKey, value: AttributeValue, explicitTarget: RUMCommandTarget?)
+    func addViewAttributes(_ attributes: [AttributeKey: AttributeValue], explicitTarget: RUMCommandTarget?)
+    func removeViewAttribute(forKey key: AttributeKey, explicitTarget: RUMCommandTarget?)
+    func removeViewAttributes(forKeys keys: [AttributeKey], explicitTarget: RUMCommandTarget?)
+}
+
+@MainActor
+internal enum RUMViewAttributeTargetBridge {
+    static func addViewAttribute(on monitor: any RUMMonitorViewProtocol, forKey key: AttributeKey, value: AttributeValue, explicitTarget: RUMCommandTarget) {
+        guard let monitor = monitor as? any RUMViewAttributeTargetHandling else {
+            monitor.addViewAttribute(forKey: key, value: value)
+            return
+        }
+        monitor.addViewAttribute(forKey: key, value: value, explicitTarget: explicitTarget)
+    }
+
+    static func addViewAttributes(on monitor: any RUMMonitorViewProtocol, attributes: [AttributeKey: AttributeValue], explicitTarget: RUMCommandTarget) {
+        guard let monitor = monitor as? any RUMViewAttributeTargetHandling else {
+            monitor.addViewAttributes(attributes)
+            return
+        }
+        monitor.addViewAttributes(attributes, explicitTarget: explicitTarget)
+    }
+
+    static func removeViewAttribute(on monitor: any RUMMonitorViewProtocol, forKey key: AttributeKey, explicitTarget: RUMCommandTarget) {
+        guard let monitor = monitor as? any RUMViewAttributeTargetHandling else {
+            monitor.removeViewAttribute(forKey: key)
+            return
+        }
+        monitor.removeViewAttribute(forKey: key, explicitTarget: explicitTarget)
+    }
+
+    static func removeViewAttributes(on monitor: any RUMMonitorViewProtocol, forKeys keys: [AttributeKey], explicitTarget: RUMCommandTarget) {
+        guard let monitor = monitor as? any RUMViewAttributeTargetHandling else {
+            monitor.removeViewAttributes(forKeys: keys)
+            return
+        }
+        monitor.removeViewAttributes(forKeys: keys, explicitTarget: explicitTarget)
+    }
+}
+#endif
+
 /// Convenience extension for defining `RUMMonitorProtocol` methods with default parameter values.
 ///
 /// ⚠️ Be extra cautious when adding new methods here. Each method overloads (shadows) its original

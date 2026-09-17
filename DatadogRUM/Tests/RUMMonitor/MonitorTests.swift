@@ -961,6 +961,173 @@ class MonitorTests: XCTestCase {
         XCTAssertTrue(didComplete)
     }
 
+    func testTargetedViewAttributeAddsMutateOnlyRequestedView() throws {
+        let dateProvider = DateProviderMock()
+        let monitor = Monitor(dependencies: .mockWith(featureScope: featureScope, samplingRate: 100), dateProvider: dateProvider)
+        let (sceneA, sceneB) = startConcurrentSceneViews(in: monitor, dateProvider: dateProvider)
+        let contextB = try XCTUnwrap(monitor.rumContextSnapshot(for: .scene(sceneB)))
+        monitor.addAttribute(forKey: "process", value: "global")
+        RUMContextHandoff.withValue(owner: monitor.rumContextHandoffOwner, rumContext: contextB, sceneIdentifier: sceneB.rawValue) {
+            monitor.addViewAttribute(forKey: "single", value: "A", explicitTarget: .scene(sceneA))
+            monitor.addViewAttributes(["count": 7, "flag": true, "nested": ["origin": "A"]], explicitTarget: .scene(sceneA))
+        }
+        let session = try XCTUnwrap(monitor.applicationScope.activeSession)
+        let a = try XCTUnwrap(session.viewScopes.first { $0.sceneIdentifier == sceneA })
+        let b = try XCTUnwrap(session.viewScopes.first { $0.sceneIdentifier == sceneB })
+        XCTAssertEqual(a.attributes["single"] as? String, "A")
+        XCTAssertEqual(a.attributes["count"] as? Int, 7)
+        XCTAssertEqual(a.attributes["flag"] as? Bool, true)
+        XCTAssertEqual(a.attributes["nested"] as? [String: String], ["origin": "A"])
+        XCTAssertNil(b.attributes["single"])
+        XCTAssertNil(b.attributes["count"])
+        XCTAssertNil(b.attributes["flag"])
+        XCTAssertNil(b.attributes["nested"])
+        XCTAssertEqual(monitor.globalAttributes["process"] as? String, "global")
+        XCTAssertEqual(monitor.rumContextSnapshot(for: .processRepresentative)?.viewID, contextB.viewID)
+    }
+
+    func testTargetedViewAttributeRemovalsMutateOnlyRequestedView() throws {
+        let dateProvider = DateProviderMock()
+        let monitor = Monitor(dependencies: .mockWith(featureScope: featureScope, samplingRate: 100), dateProvider: dateProvider)
+        let (sceneA, sceneB) = startConcurrentSceneViews(in: monitor, dateProvider: dateProvider)
+        for scene in [sceneA, sceneB] {
+            RUMContextHandoff.withValue(owner: monitor.rumContextHandoffOwner, rumContext: nil, sceneIdentifier: scene.rawValue) {
+                monitor.addViewAttributes(["single": "keep", "batch": true, "untouched": 7])
+            }
+        }
+        RUMContextHandoff.withValue(owner: monitor.rumContextHandoffOwner, rumContext: nil, sceneIdentifier: sceneB.rawValue) {
+            monitor.removeViewAttribute(forKey: "single", explicitTarget: .scene(sceneA))
+            monitor.removeViewAttributes(forKeys: ["batch", "missing", "batch"], explicitTarget: .scene(sceneA))
+        }
+        let session = try XCTUnwrap(monitor.applicationScope.activeSession)
+        let a = try XCTUnwrap(session.viewScopes.first { $0.sceneIdentifier == sceneA })
+        let b = try XCTUnwrap(session.viewScopes.first { $0.sceneIdentifier == sceneB })
+        XCTAssertNil(a.attributes["single"])
+        XCTAssertNil(a.attributes["batch"])
+        XCTAssertEqual(a.attributes["untouched"] as? Int, 7)
+        XCTAssertEqual(b.attributes["single"] as? String, "keep")
+        XCTAssertEqual(b.attributes["batch"] as? Bool, true)
+        XCTAssertEqual(b.attributes["untouched"] as? Int, 7)
+        XCTAssertEqual(monitor.rumContextSnapshot(for: .processRepresentative)?.viewName, "View B")
+    }
+
+    func testUnavailableViewAttributeTargetsPreserveEachIndependentFallback() throws {
+        for fallback in ["exact", "scene", "representative", "ended"] {
+            let dateProvider = DateProviderMock()
+            let monitor = Monitor(dependencies: .mockWith(featureScope: featureScope, samplingRate: 100), dateProvider: dateProvider)
+            let (sceneA, sceneB) = startConcurrentSceneViews(in: monitor, dateProvider: dateProvider)
+            let a = try XCTUnwrap(monitor.rumContextSnapshot(for: .scene(sceneA)))
+            var target = RUMCommandTarget.scene(RUMSceneIdentifier(rawValue: "missing"))
+            if fallback == "ended" {
+                monitor.process(command: RUMStopViewCommand.mockWith(time: dateProvider.now, identity: ViewIdentifier("view-A"), target: .scene(sceneA)))
+                target = .scene(sceneA)
+            }
+            let expectedScene = ["exact", "scene"].contains(fallback) ? sceneA : sceneB
+            let snapshot = fallback == "exact" ? a : nil
+            func withInference(_ body: () -> Void) {
+                if ["exact", "scene"].contains(fallback) {
+                    let inferredScene = fallback == "scene" ? sceneA.rawValue : sceneB.rawValue
+                    RUMContextHandoff.withValue(owner: monitor.rumContextHandoffOwner, rumContext: snapshot, sceneIdentifier: inferredScene, operation: body)
+                } else {
+                    body()
+                }
+            }
+            withInference {
+                monitor.addViewAttribute(forKey: "single", value: fallback, explicitTarget: target)
+                monitor.addViewAttributes(["batch": 7], explicitTarget: target)
+            }
+            let session = try XCTUnwrap(monitor.applicationScope.activeSession)
+            let expected = try XCTUnwrap(session.viewScopes.first { $0.sceneIdentifier == expectedScene && $0.isActiveView })
+            XCTAssertEqual(expected.attributes["single"] as? String, fallback)
+            XCTAssertEqual(expected.attributes["batch"] as? Int, 7)
+            for peer in session.viewScopes where peer !== expected {
+                XCTAssertNil(peer.attributes["single"])
+                XCTAssertNil(peer.attributes["batch"])
+            }
+            withInference {
+                monitor.removeViewAttribute(forKey: "single", explicitTarget: target)
+                monitor.removeViewAttributes(forKeys: ["batch"], explicitTarget: target)
+            }
+            XCTAssertNil(expected.attributes["single"])
+            XCTAssertNil(expected.attributes["batch"])
+            XCTAssertEqual(monitor.rumContextSnapshot(for: .processRepresentative)?.viewName, "View B")
+        }
+    }
+
+    func testViewAttributeTargetUsesCurrentOccurrenceAndLeavesRetainedEndedViewsUnchanged() throws {
+        let dateProvider = DateProviderMock()
+        let monitor = Monitor(dependencies: .mockWith(featureScope: featureScope, samplingRate: 100), dateProvider: dateProvider)
+        let (sceneA, sceneB) = startConcurrentSceneViews(in: monitor, dateProvider: dateProvider)
+        startTargetedResource(in: monitor, form: .url, key: "retain-old", target: .scene(sceneA))
+        monitor.addViewAttribute(forKey: "retained", value: "old", explicitTarget: .scene(sceneA))
+        let session = try XCTUnwrap(monitor.applicationScope.activeSession)
+        let old = try XCTUnwrap(session.viewScopes.first { $0.sceneIdentifier == sceneA })
+        monitor.process(command: RUMStartViewCommand.mockWith(time: dateProvider.now, identity: ViewIdentifier("next-A"), name: "Next A", target: .scene(sceneA)))
+        monitor.addAction(type: .custom, name: "representative B", attributes: [:], explicitTarget: .scene(sceneB))
+        startTargetedResource(in: monitor, form: .url, key: "retain-next", target: .scene(sceneA))
+        monitor.addViewAttributes(["retained": "next", "remove": true], explicitTarget: .scene(sceneA))
+        monitor.removeViewAttribute(forKey: "remove", explicitTarget: .scene(sceneA))
+        let next = try XCTUnwrap(session.viewScopes.first { $0.sceneIdentifier == sceneA && $0.isActiveView })
+        XCTAssertNotEqual(old.viewUUID, next.viewUUID)
+        XCTAssertFalse(old.isActiveView)
+        XCTAssertEqual(old.attributes["retained"] as? String, "old")
+        XCTAssertEqual(next.attributes["retained"] as? String, "next")
+        XCTAssertNil(next.attributes["remove"])
+        monitor.process(command: RUMStopViewCommand.mockWith(time: dateProvider.now, identity: ViewIdentifier("next-A"), target: .scene(sceneA)))
+        monitor.addViewAttribute(forKey: "fallback", value: true, explicitTarget: .scene(sceneA))
+        monitor.removeViewAttributes(forKeys: ["retained"], explicitTarget: .scene(sceneA))
+        let peer = try XCTUnwrap(session.viewScopes.first { $0.sceneIdentifier == sceneB })
+        XCTAssertEqual(peer.attributes["fallback"] as? Bool, true)
+        XCTAssertNil(old.attributes["fallback"])
+        XCTAssertNil(next.attributes["fallback"])
+        XCTAssertEqual(old.attributes["retained"] as? String, "old")
+        XCTAssertEqual(next.attributes["retained"] as? String, "next")
+    }
+
+    func testTargetedAttributesPreserveGlobalViewAndEventPrecedenceWithoutRewritingPastEvents() throws {
+        let dateProvider = DateProviderMock()
+        let monitor = Monitor(dependencies: .mockWith(featureScope: featureScope, samplingRate: 100), dateProvider: dateProvider)
+        let (sceneA, sceneB) = startConcurrentSceneViews(in: monitor, dateProvider: dateProvider)
+        monitor.addAttribute(forKey: "shadow", value: "global")
+        monitor.addAttribute(forKey: "process", value: 1)
+        monitor.addViewAttribute(forKey: "shadow", value: "view", explicitTarget: .scene(sceneA))
+        monitor.addError(error: ErrorMock("event wins"), source: .custom, attributes: ["shadow": "event"], explicitTarget: .scene(sceneA))
+        monitor.addError(error: ErrorMock("view wins"), source: .custom, attributes: [:], explicitTarget: .scene(sceneA))
+        monitor.addError(error: ErrorMock("peer"), source: .custom, attributes: [:], explicitTarget: .scene(sceneB))
+        monitor.removeViewAttribute(forKey: "shadow", explicitTarget: .scene(sceneA))
+        monitor.addAttribute(forKey: "process", value: 2)
+        monitor.addError(error: ErrorMock("removed"), source: .custom, attributes: [:], explicitTarget: .scene(sceneA))
+        monitor.addError(error: ErrorMock("global peer"), source: .custom, attributes: [:], explicitTarget: .scene(sceneB))
+        let errors = try XCTUnwrap(featureScope as? FeatureScopeMock).eventsWritten(ofType: RUMErrorEvent.self)
+        XCTAssertEqual(errors.map { $0.context?.contextInfo["shadow"] as? String }, ["event", "view", "global", "global", "global"])
+        XCTAssertEqual(errors.map { $0.context?.contextInfo["process"] as? Int }, [1, 1, 1, 2, 2])
+        XCTAssertEqual(errors.map(\.view.name), ["View A", "View A", "View B", "View A", "View B"])
+        XCTAssertEqual(monitor.globalAttributes["shadow"] as? String, "global")
+    }
+
+    func testTargetedViewAttributesDoNotRestoreStoppedOrExpiredSessions() throws {
+        for boundary in ["stop", "expire-immediate", "expire-delayed"] {
+            let dateProvider = DateProviderMock()
+            let monitor = Monitor(dependencies: .mockWith(featureScope: featureScope, samplingRate: 100), dateProvider: dateProvider)
+            let (sceneA, _) = startConcurrentSceneViews(in: monitor, dateProvider: dateProvider)
+            if boundary == "stop" {
+                monitor.stopSession()
+            } else {
+                dateProvider.now = dateProvider.now.addingTimeInterval(4 * 60 * 60 + 1)
+                if boundary == "expire-delayed" {
+                    monitor.process(command: RUMHandleAppLifecycleEventCommand(time: dateProvider.now, event: .willEnterForeground))
+                }
+            }
+            monitor.addViewAttribute(forKey: "single", value: true, explicitTarget: .scene(sceneA))
+            monitor.addViewAttributes(["batch": true], explicitTarget: .scene(sceneA))
+            monitor.removeViewAttribute(forKey: "single", explicitTarget: .scene(sceneA))
+            monitor.removeViewAttributes(forKeys: ["batch"], explicitTarget: .scene(sceneA))
+            XCTAssertFalse(monitor.applicationScope.sessionScopes.flatMap(\.viewScopes).contains { $0.isActiveView }, boundary)
+            XCTAssertNil(monitor.rumContextSnapshot(for: .scene(sceneA)), boundary)
+            XCTAssertNil(monitor.rumContextSnapshot(for: .processRepresentative)?.viewID, boundary)
+        }
+    }
+
     func testGivenViewMutationsDuringSceneHandoff_theyOnlyUpdateThatView() throws {
         let dateProvider = DateProviderMock()
         let monitor = Monitor(
