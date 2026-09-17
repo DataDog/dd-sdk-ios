@@ -110,7 +110,7 @@
       "environment": "Same simulator/toolchain, Release build; focused internal lifecycle tests",
       "completion_mode": null,
       "status": "REGRESSION BLOCKED",
-      "evidence": "EXP-160; BASELINES.md and Results/EXP-160-baseline.json. 220 entries in each disconnect/activity registry after20warmup+200 cycles; controller weak survivors0. EXP-168 closes mounted keyed host lifetime only: 25 control registrations/states versus zero candidate survivors on27/26.5. D08 and disconnected-history retirement remain required."
+      "evidence": "EXP-160; BASELINES.md and Results/EXP-160-baseline.json. 220 entries in each disconnect/activity registry after20warmup+200 cycles; controller weak survivors0. EXP-168 closes mounted keyed host lifetime only: 25 control registrations/states versus zero candidate survivors on27/26.5. D08 closes in EXP-170; disconnected-history retirement and the unchanged retention budget remain required."
     },
     {
       "id": "P04",
@@ -172,7 +172,7 @@
       "environment": "Source review plus targeted regressions for any finding",
       "completion_mode": null,
       "status": "REVIEW BLOCKED",
-      "evidence": "COMPONENT_REVIEW.md: concrete findings and decisive missing regressions; extraction deferred."
+      "evidence": "EXP-168 teardown and EXP-170 stale-trait/fresh reconnect evidence pass. Delayed native remount passes with body reconstruction; retained reader callback without body/source rebind remains a distinct missing discriminator in COMPONENT_REVIEW.md."
     },
     {
       "id": "R05",
@@ -812,8 +812,8 @@
       "decisive_test": "Reproduce/triage the reported finding, then require: Stale trait between disconnect and real connection/reader mount cannot consume generation; exactly one fresh occurrence and correct immediate telemetry",
       "environment": "Deterministic iOS 27 regression; genuine lifecycle remains H09",
       "completion_mode": null,
-      "status": "REGRESSION BLOCKED",
-      "evidence": "REVIEW_TRIAGE.md: conditional state defect; deterministic and genuine OS ordering evidence remain distinct."
+      "status": "CLOSED",
+      "evidence": "EXP-170, signed SDK66d1ccb02; three failing controls, seven focused and314 affected tests. Mounted explicit/capability hosts51/51 versus39/51; stale trait and rejected reader cannot consume generation; fresh Resource/Log owners, peer continuity, delayed remount. Deterministic simulator ordering only; H09 remains physical."
     },
     {
       "id": "D09",

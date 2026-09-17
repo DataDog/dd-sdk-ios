@@ -1234,3 +1234,21 @@ then inspect it without submitting a repair navigation command. Freeze both arms
 prove clean installation and exact required-check inventory, and preserve invalid
 attempts. Reuse source/build helpers with explicit SDK directory allowlists; never
 read the protected project/configuration. Physical H09 remains separate.
+
+For the D08 fixture, enable automatic SwiftUI instrumentation with a predicate
+that returns nil so the real authority registry exists without synthetic automatic
+destinations. Read scene snapshots after draining the queued commands, but submit
+Resource/Log calls immediately after the reader boundary. Do not install an
+artificial authoritative-nil UI handoff in an ordinary lifecycle callback. Clear
+the retained reader's onMount before reconstruction and require SwiftUI's actual
+update to rebind it; checking only the root value is insufficient. Allow only the
+known ApplicationLaunch startup view in addition to the exact scene destinations.
+Strict lint uses tools/lint/sources.swiftlint.yml and tests.swiftlint.yml, each
+with an explicit changed-file list; a configuration-free run is not the repo gate.
+
+EXP-170 accepted attempt3: run.py at tools/multi-scene/reconnect-acceptance,
+control7826eabc1/candidate66d1ccb02,51 required checks; control39/51 versus
+candidate51/51. The runtime inventory requires real mounted readers/registry and
+callback rebinding, exact fresh view/session owners, three Home occurrences and
+one unchanged logical peer. Package attempt1 and fixture attempt2 remain in the
+durable result. Physical H09 cannot close from these posted lifecycle controls.

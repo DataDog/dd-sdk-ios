@@ -1,7 +1,8 @@
 # Incremental multi-scene component review
 
 Original review 2026-09-17 against `af63657f08dbecb66e7c3ae97ed53fc8f7b065b9`.
-R02 was reviewed again at signed `7b77f60eb` during EXP-168. Original line ranges
+R02 was reviewed again at signed `7b77f60eb` during EXP-168, and R04 at signed
+`66d1ccb02` during EXP-170. Original line ranges
 below refer to the original review; current symbol names identify the boundaries.
 The 6,613-line `SwiftUIViewModifier.swift` was reviewed by responsibility before
 further API expansion. This is a source review with existing regression evidence,
@@ -22,8 +23,8 @@ because a report exists. No production source changed during this review.
 | R01 | Trait publisher/readers (1–325), tracking state and disconnect fence (1015–1580): weak notification ownership, main-thread seed, mount before change, generation-based stale callback rejection, detached versus legacy attachment | `testWhenActiveSceneDisconnects_itInvalidatesSilentlyUntilExplicitRemount`, keyed-disconnect/new-generation, latest-reader-binding and scene-migration tests in `SwiftUIViewNameExtractorTests` | Bounded reader review complete. H09 still requires genuine OS disconnect/remount. D08 covers the distinct semantic-host trait path. |
 | R02 | Weak authority/occurrence registries and keyed registration (1358–2780): subtree-local suppression, exact occurrence stop, stale registration epoch rejection | Dormant/reveal, scoped suppression, exact host removal and disconnect tests | CLOSED in EXP-168 after weak callback context, explicit cancellation/rebind epoch tests, 303 affected tests and mounted release/teardown on27/26.5. |
 | R03 | Deferred intent and interactive arbitration (3060–3899): scene/coordinator key, cancel rearm, pending identity check, remove pending before commit, preserve peer on disconnect | Interactive cancel/finish, concurrent keyed disconnect, pending migration and reregister-cannot-bypass-cancel tests | Bounded arbitration review complete. H11–H13 remain real recognized-gesture gates. Source observer fan-out is R05, not this arbiter. |
-| R04 | Ordinary/keyed modifiers and attachment/lifetime boundaries (3900–4789, 5796–6096): single-scene branch, availability fallback, declaration-owned State, generation-checked one-turn detach grace | Retained reader and reconstruction tests; `testWhenDetachedStateIsReleased_queuedFinalDetachStillRuns`, detach/reattach cancellation | BLOCKED by D08 and delayed remount coverage. D03 mounted teardown passes EXP-168; stale-trait reconnect and retained-host reattachment remain separate. |
-| R05 | Transition source, observed adapter and host engine (4790–5379): stable source pinning, lazy observed authority, Observation rearm before receive, FIFO main dispatch, exact source unsubscribe | Observation synchronous/nested mutation, adapter deallocation, publisher pinning, background FIFO and exact host disconnect tests | BLOCKED by D08 and missing multi-observer reentrancy coverage described below. D07 pending authority passes EXP-169. |
+| R04 | Ordinary/keyed modifiers and attachment/lifetime boundaries (3900–4789, 5796–6096): single-scene branch, availability fallback, declaration-owned State, generation-checked one-turn detach grace | Retained reader and reconstruction tests; `testWhenDetachedStateIsReleased_queuedFinalDetachStillRuns`, detach/reattach cancellation | REVIEW BLOCKED: D03/D08 now pass, including delayed remount with body reconstruction. A retained reader callback without body/source rebind remains unproven; H09 physical ordering stays separate. |
+| R05 | Transition source, observed adapter and host engine (4790–5379): stable source pinning, lazy observed authority, Observation rearm before receive, FIFO main dispatch, exact source unsubscribe | Observation synchronous/nested mutation, adapter deallocation, publisher pinning, background FIFO and exact host disconnect tests | BLOCKED by missing multi-observer reentrancy coverage below. D07/D08 pass EXP-169/170. |
 | R06 | Native semantic state/public hosts (5380–5795, 6097–6496): accepted path getter, presentation ownership, automatic metadata, explicit-over-capability precedence, unchanged standard-container integration | Rejected/canonicalized path tests, native presentation tests, host reconstruction, capability precedence and pending-observed-input tests | BLOCKED by D10. Accepted-path handling is sound in the reviewed seam; presentation writes use a different ordering. Stable API sign-off remains F01. |
 
 Names above identify coverage in `SwiftUIViewNameExtractorTests.swift` and
@@ -57,13 +58,26 @@ the first accepted input. Two previous tests that assumed authority without a
 handler now distinguish source pinning from actual publication. D08 still owns
 rejected disconnected publication; R05 still needs reentrant fan-out evidence.
 
-**D08, disconnected host generation.** The host unconditionally records an
-`ActiveOccurrence` after a void handler callback (5369), even if that handler
-rejects a disconnected scene. A stale inherited trait can reach this path before
-a live reader remount (6063). The subsequent generation equality guard can hide
-the first accepted reconnect start. Required: put stale-trait reconciliation
-between disconnect and real connection/reader mount; require exactly one fresh
-UUID and correctly owned immediate telemetry. Keep physical ordering in H09.
+**D08, disconnected host — closed in EXP-170; R04 remains open.**
+The handler now reports accepted insertion/replacement; rejected cross-scene
+replacement preserves the old owner. The host distinguishes first inherited
+traits from reader mounts after teardown, and uses a new attachment generation.
+Its source remains pinned within each live lifetime. Three failing controls and
+314 affected tests cover early rejected reader callbacks, stale traits before/after
+connection, latest input, repeated reconnects, nil prerequisites, inactive staging,
+manual precedence and exact peer stop behavior. Mounted actual explicit/capability
+hosts pass51/51 versus39/51; the old SDK sends immediate reconnect Resource/Log
+work to Peer, while the candidate uses the fresh Home. The same retained hosting
+controller is detached for200ms, then remounted after assigning a new root value;
+a third unique Home occurrence and exact Resource/Log owners prove that delayed
+boundary. It does not prove a retained reader callback without body reevaluation:
+releaseSource clears selectedTransitions/latestSnapshot, while the reader only
+reconciles attachment. R04 stays open until that distinct path is tested and
+repaired if necessary. EXP-168's zero-survivor/swizzle restoration evidence stays
+valid. No new availability
+requirement or public API was introduced; the split trait callback is within the
+existing iOS27/visionOS27 host. This is not independent final review or genuine OS
+ordering; H08/H09 remain open.
 
 **D10, presentation writes.** The adapter reconciles `newItem` before writing the
 customer Binding (6445–6451), unlike the path adapter, which forwards and reads
@@ -80,11 +94,11 @@ already consumed the nested generation. This is a source-identified coverage gap
 not a reproduced SDK failure in this pass. Also cover observer removal/addition
 inside delivery before closing R05.
 
-**R04/R06, lifetime boundaries.** Existing tests prove synchronous reader bounce
-and one-queue-turn detach cancellation. They do not prove delayed retained-host
-reattachment or same-ID sheet/cover replacement ordering. H08/H09 and the R06
-regression selection must cover these cases with occurrence identity; keep the
-source review's hypotheses separate from reproduced results.
+**R04/R06, remaining lifetime boundaries.** EXP-170 covers delayed reattachment
+with a new body value. R04 still needs no-body retained-reader remount; same-ID
+sheet/cover replacement ordering still
+needs its decisive R06 regression with occurrence identity. H08/H09 genuine OS
+ordering stays separate from deterministic mounted evidence.
 
 ## Review and extraction boundary
 

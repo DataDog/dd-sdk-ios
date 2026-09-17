@@ -1,7 +1,7 @@
 **Production safety review of multi-scene SDK instrumentation**
 
-Updated 2026-09-17 during plan execution. **Release remains on hold: 10 of the
-12 review findings are closed, 2 remain open.** The finite checklist has 24/66
+Updated 2026-09-17 during plan execution. **Release remains on hold: 11 of the
+12 review findings are closed, 1 remains open.** The finite checklist has 25/66
 release gates closed. [PLAN.md](PLAN.md) owns the release contract and
 [REVIEW_TRIAGE.md](REVIEW_TRIAGE.md) owns assessed repair order and evidence limits.
 Review IDs R01–R12 below map to repair gates D01–D12, not PLAN's responsibility
@@ -16,7 +16,7 @@ review gates R01–R06.
 | R05 / D05 | CLOSED | EXP-167, signed `0aaafa7bd`: failing source-less start/identity-stop controls, 198 tests and two-native-scene 47/47 runtime acceptance |
 | R06 / D06 | CLOSED | EXP-167: controlled timeout/max-duration lifecycle boundaries, fresh peer IDs and exact action/Resource owners; background and legacy controls |
 | R07 / D07 | CLOSED | EXP-169, local unsigned `a9aaf25a7`: four failing controls, 119 tests and mounted29/29; automatic eligibility before input and exact immediate semantic owners |
-| R08 / D08 | OPEN — EXP-170 defined | Actual handler rejection, stale trait before live remount, fresh occurrence and immediate Resource/Log owners; hardware ordering stays separate |
+| R08 / D08 | CLOSED | EXP-170, signed `66d1ccb02`: three failing controls,314 affected tests and mounted51/51 versus39/51; fresh reconnect Resource/Log owners, peer continuity and delayed remount. H09 still requires genuine OS ordering. |
 | R09 / D09 | CLOSED | EXP-164 at local `a9abc092b`: 31 tests and actual mounted fixture 19/19; zero background reads/MTC diagnostics versus control 5 reads/4 diagnostics |
 | R10 / D10 | OPEN | Reject/canonicalize Binding writes and verify accepted-state callbacks/occurrences |
 | R11 / D11 | CLOSED | EXP-165, signed `9a1ee83a5`: 102 tests, 19/19 mounted WebView/Replay checks; legacy association restored, peers excluded |
@@ -40,7 +40,9 @@ EXP-167 closes D05/D06 with [restoration evidence](Results/EXP-167-session-resto
 198 tests and 47/47 checks in two native simulator scenes. EXP-168 closes D03
 with [mounted lifetime evidence](Results/EXP-168-swiftui-lifetime.json) on27/26.5.
 EXP-169 closes D07 with [pending-authority evidence](Results/EXP-169-pending-authority.json).
-D08 reconnect is next; D10 presentation and P03 registry growth remain open.
+EXP-170 closes D08 with [reconnect evidence](Results/EXP-170-reconnect-acceptance.json)
+while R04 still needs remount without body/source rebind. D10 presentation remains
+the one open review finding. Resolve that R04 discriminator, then P03 registry growth.
 Keep this review and its open
 findings until their corresponding gates close; preserve historical evidence below.
 

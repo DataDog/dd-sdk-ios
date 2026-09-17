@@ -48,10 +48,11 @@ Objective-C Release exposure still require normal API review.
    register and detailed record. Accepted experiment identities remain unchanged.
 1. D12/T02, D09, D11 and D04/P02 repairs are accepted within their recorded
    boundaries. Preserve their controls and frozen acceptance identities.
-2. D05/D06 restoration, D03/R02 keyed lifetime and D07 pending authority are
-   accepted within their recorded boundaries. Next execute defined EXP-170 for D08 reconnect
-   publication in the [assessed order](REVIEW_TRIAGE.md), then P03 registry retirement.
-3. Repair D10 accepted presentation state. Close the missing R04–R06
+2. D05/D06 restoration, D03/R02 keyed lifetime, D07 pending authority and D08
+   reconnect acceptance are closed within their recorded boundaries.
+   Next resolve R04 retained-reader remount without body/source rebind, then define
+   P03 disconnected-registry retirement and run its unchanged budget.
+3. Repair D10 accepted presentation state. Close the missing R04/R05/R06
    discriminators in those slices; P03 needs its full retained-state budget.
 4. Close the early compatibility/performance gates in available environments;
    C06 remains blocked without a minimum-OS runtime. Resume T03–T14 only after
@@ -170,7 +171,7 @@ experiment slices remain evidence, not a substitute for these missing cases.
 | D05 | Resolve ownership before explicit session restart | SDK implementer | None | Reproduce/triage the reported finding, then require: After stopSession with A/B and B representative, source-less start replaces B and preserves A; identity-stop A preserves B | RUM application/session tests plus two-scene simulator | CLOSED |
 | D06 | Preserve peers on lazy session expiration | SDK implementer | D05 | Reproduce/triage the reported finding, then require: Expiring lifecycle command followed by start/stop in A restores eligible B with fresh new-session ownership | RUM application/session tests plus two-scene simulator | CLOSED |
 | D07 | Pending semantic authority | SDK implementer | D03 | Reproduce/triage the reported finding, then require: Empty explicit/capability source and absent instrumentation do not suppress automatic tracking; first accepted snapshot acquires local authority | iOS 27 simulator with real authority registry | CLOSED |
-| D08 | Reconnect generation acceptance | SDK implementer | D03, D07 | Reproduce/triage the reported finding, then require: Stale trait between disconnect and real connection/reader mount cannot consume generation; exactly one fresh occurrence and correct immediate telemetry | Deterministic iOS 27 regression; genuine lifecycle remains H09 | REGRESSION BLOCKED |
+| D08 | Reconnect generation acceptance | SDK implementer | D03, D07 | Reproduce/triage the reported finding, then require: Stale trait between disconnect and real connection/reader mount cannot consume generation; exactly one fresh occurrence and correct immediate telemetry | Deterministic iOS 27 regression; genuine lifecycle remains H09 | CLOSED |
 | D09 | Controller API caller-thread compatibility | SDK implementer | None | Reproduce/triage the reported finding, then require: Background start/stop getter spy records no UIKit hierarchy access; main-thread target resolves correctly without sync-to-main deadlock | iOS simulator focused test plus Main Thread Checker | CLOSED |
 | D10 | Accepted presentation state | SDK implementer | None | Reproduce/triage the reported finding, then require: Rejected/canonicalized Binding writes, transaction forwarding, immediate setter work and dismissal callbacks follow accepted occurrence | Mounted iOS 27 SwiftUI adapter tests | REGRESSION BLOCKED |
 | D11 | Legacy native/WebView correlation | SDK implementer | None | Reproduce/triage the reported finding, then require: Legacy string-key view plus mounted WKWebView retains unambiguous container.view.id; peer scene never used as fallback | Single-scene simulator WebView with Replay correlation enabled | CLOSED |

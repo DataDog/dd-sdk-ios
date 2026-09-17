@@ -10,7 +10,7 @@ Last updated: 2026-09-17
 
 ## Current verdict
 
-Current release accounting is **24/66 gates closed**. EXP-160 establishes early
+Current release accounting is **25/66 gates closed**. EXP-160 establishes early
 ordinary automatic/manual/custom/NOP and26.5 compatibility, dispatch and exact
 reentrancy baselines. EXP-166 repairs the enabled-handoff allocation failure:
 complete Release ABBA runs measure 1 allocation/64 bytes per event on27/26.5,
@@ -49,10 +49,16 @@ EXP-168 closes D03 and bounded R02 review at signed `7b77f60eb`: 303 affected
 tests and 37/37 mounted checks on each of 27/26.5. The control retains 25 keyed
 registrations/states; the candidate releases all weak objects and restores three
 method implementations after SDK stop. P03 still requires disconnected-registry
-retirement and D08. EXP-169 closes D07 at local unsigned `a9aaf25a7`: four failing
+retirement. EXP-169 closes D07 at local unsigned `a9aaf25a7`: four failing
 authority controls, 119 tests and mounted hosts29/29 versus control19/29.
 Automatic eligibility persists before input, and the first semantic destination
-owns immediate work. Two assessed review repairs remain open; D08 is next in defined EXP-170; stale traits and rejected publication need separate discriminators. Physical scene and final release gates remain separate.
+owns immediate work. EXP-170 closes D08 at signed `66d1ccb02`: three failing controls,
+314 affected tests and mounted51/51 versus39/51. Stale traits and rejected reader
+callbacks cannot consume a generation. Immediate reconnect Resource/Log events
+belong to the fresh Home; the control sends them to Peer. A retained host remounts
+fresh after delayed detach with body reconstruction. R04 still requires a retained
+reader remount without body/source rebind, before P03 registry retirement; D10 is the remaining
+production-review repair. Physical scene and final release gates remain separate.
 
 The released SDK baseline is not semantically safe for applications with
 concurrent scenes. Process-representative view state and process-global SwiftUI
