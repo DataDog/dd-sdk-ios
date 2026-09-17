@@ -16,8 +16,9 @@ Last updated: 2026-09-17
 ## Current checkpoint
 
 - Next defined slice: `EXP-159`, explicit long-running action start/stop. The
-  current-source audit is complete; implementation, driver/oracle, tests, and
-  runtime acceptance are pending. EXP-158 remains the latest accepted result.
+  SDK and driver/oracle are implemented and pass full RUM/probe checks. The first
+  runtime lost A to normal background before explicit stops; a bounded synchronous
+  driver correction is defined. EXP-158 remains the latest accepted runtime result.
 
 - Latest physical-device attempt is `EXP-157`. `EXP-156` now closes the tooling
   gate: after the earlier connection, unsigned-install, and restricted-context

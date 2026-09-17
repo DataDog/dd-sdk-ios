@@ -26,6 +26,7 @@ enum ProbeStepKind: String, Codable, CaseIterable {
     case emitMarker = "emit-marker"
     case emitSceneContextMarker = "emit-scene-context-marker"
     case emitExplicitTargetAction = "emit-explicit-target-action"
+    case runContinuousActionTargetBatch = "run-continuous-action-target-batch"
     case startExplicitTargetAction = "start-explicit-target-action"
     case stopExplicitTargetAction = "stop-explicit-target-action"
     case startLegacyAction = "start-legacy-action"

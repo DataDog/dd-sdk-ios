@@ -824,6 +824,35 @@ internal final class ProbeScenarioDriver {
             }
             return .acknowledged(signal)
 
+        case .runContinuousActionTargetBatch:
+            let signals = recorder.snapshot()
+            let timeline = ProbeSemanticTimeline(signals: signals)
+            for scene in ["scene-A", "scene-B"] {
+                guard let viewID = timeline.viewID(scene: scene, screen: "home", occurrence: 1),
+                      signals.last(where: {
+                          $0.kind == .rumViewSnapshot && $0.rumContext?.viewID == viewID
+                      })?.rumContext?.viewActive == true else {
+                    return .inconclusive("both native Home views must be live before the action batch")
+                }
+            }
+            // No suspension between starts and stops: native background can
+            // otherwise close the source view before the explicit-stop test.
+            for call in ProbeScenarioCatalog.continuousActionTargetBatch {
+                guard let scene = call.scene else { return .failed("action batch scene is missing") }
+                recorder.record(ProbeSignal(kind: .stepStarted, stepKind: call.kind, name: call.value))
+                if case .rejected(let reason) = executeOnExactScene(call, scene: scene) {
+                    return .failed(reason)
+                }
+            }
+            guard let signal = await wait(
+                for: .encoded(scene: "scene-A", value: "marker:long-running-legacy-finished-b"),
+                after: commandSequence,
+                timeoutNanoseconds: stepTimeoutNanoseconds
+            ) else {
+                return .failed("targeted continuous action batch did not complete")
+            }
+            return .acknowledged(signal)
+
         case .startExplicitTargetAction, .stopExplicitTargetAction,
              .startLegacyAction, .stopLegacyAction:
             guard let scene = step.scene, let marker = step.value else {

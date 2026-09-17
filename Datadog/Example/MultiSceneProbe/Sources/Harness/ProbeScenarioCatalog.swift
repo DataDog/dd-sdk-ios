@@ -724,17 +724,7 @@ enum ProbeScenarioCatalog {
             ProbeStep(.waitForSignal, scene: "scene-A", signal: "rum-view:home#1"),
             ProbeStep(.openWindow, scene: "scene-A", value: "scene-B"),
             ProbeStep(.waitForSignal, scene: "scene-B", signal: "rum-view:home#1"),
-            ProbeStep(.emitSceneContextMarker, scene: "scene-B", value: "long-running-representative-b"),
-            ProbeStep(.startExplicitTargetAction, scene: "scene-A", value: "long-running-shared"),
-            ProbeStep(.startExplicitTargetAction, scene: "scene-B", value: "long-running-shared"),
-            ProbeStep(.emitSceneContextMarker, scene: "scene-A", value: "long-running-representative-a"),
-            ProbeStep(.stopExplicitTargetAction, scene: "scene-B", value: "long-running-finished-b"),
-            ProbeStep(.emitSceneContextMarker, scene: "scene-A", value: "long-running-empty-b-representative-a"),
-            ProbeStep(.stopExplicitTargetAction, scene: "scene-B", value: "long-running-empty-b"),
-            ProbeStep(.stopExplicitTargetAction, scene: "scene-A", value: "long-running-finished-a"),
-            ProbeStep(.emitSceneContextMarker, scene: "scene-B", value: "long-running-legacy-representative-b"),
-            ProbeStep(.startLegacyAction, scene: "scene-A", value: "long-running-legacy-start"),
-            ProbeStep(.stopLegacyAction, scene: "scene-A", value: "long-running-legacy-finished-b"),
+            ProbeStep(.runContinuousActionTargetBatch),
         ],
         completionConditions: [
             continuousActionExpectation(name: "long-running-finished-b", scene: "scene-B"),
@@ -756,6 +746,20 @@ enum ProbeScenarioCatalog {
             continuousActionExpectation(name: "long-running-legacy-finished-b", scene: "scene-B", sourceScene: "scene-A"),
         ]
     )
+
+    static let continuousActionTargetBatch: [ProbeStep] = [
+            ProbeStep(.emitSceneContextMarker, scene: "scene-B", value: "long-running-representative-b"),
+            ProbeStep(.startExplicitTargetAction, scene: "scene-A", value: "long-running-shared"),
+            ProbeStep(.startExplicitTargetAction, scene: "scene-B", value: "long-running-shared"),
+            ProbeStep(.emitSceneContextMarker, scene: "scene-A", value: "long-running-representative-a"),
+            ProbeStep(.stopExplicitTargetAction, scene: "scene-B", value: "long-running-finished-b"),
+            ProbeStep(.emitSceneContextMarker, scene: "scene-A", value: "long-running-empty-b-representative-a"),
+            ProbeStep(.stopExplicitTargetAction, scene: "scene-B", value: "long-running-empty-b"),
+            ProbeStep(.stopExplicitTargetAction, scene: "scene-A", value: "long-running-finished-a"),
+            ProbeStep(.emitSceneContextMarker, scene: "scene-B", value: "long-running-legacy-representative-b"),
+            ProbeStep(.startLegacyAction, scene: "scene-A", value: "long-running-legacy-start"),
+            ProbeStep(.stopLegacyAction, scene: "scene-A", value: "long-running-legacy-finished-b"),
+    ]
 
     private static func continuousActionExpectation(
         name: String,

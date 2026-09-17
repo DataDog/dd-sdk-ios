@@ -524,12 +524,13 @@ final class ProbeScenarioRunnerTests: XCTestCase {
         let scenario = try XCTUnwrap(ProbeScenarioCatalog.scenario(
             identifier: "actions.explicit-target.long-running-cross-scene-serial"
         ))
-        let start = try XCTUnwrap(scenario.steps.firstIndex { $0.kind == .startExplicitTargetAction })
-        XCTAssertFalse(scenario.steps.dropFirst(start).contains {
+        XCTAssertEqual(scenario.steps.last?.kind, .runContinuousActionTargetBatch)
+        let batch = ProbeScenarioCatalog.continuousActionTargetBatch
+        XCTAssertFalse(batch.contains {
             [.waitForSceneReady, .waitForSignal, .openWindow].contains($0.kind)
         })
         XCTAssertFalse(scenario.steps.contains { $0.kind == .waitForSceneReady && $0.scene == "scene-B" })
-        XCTAssertEqual(scenario.steps.filter { $0.kind == .stopExplicitTargetAction }.map(\.scene),
+        XCTAssertEqual(batch.filter { $0.kind == .stopExplicitTargetAction }.map(\.scene),
                        ["scene-B", "scene-B", "scene-A"])
         XCTAssertEqual(Set(scenario.requiredCapabilities), [.multipleScenes])
     }
