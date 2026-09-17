@@ -59,7 +59,7 @@ belong to the fresh Home; the control sends them to Peer. A retained host remoun
 fresh after delayed detach with body reconstruction. EXP-171 closes R04 at signed
 `4ba7179c6`: two failing no-body controls,318 affected tests and mounted57/57 versus
 43/57. Its first retained-reader callback proves zero observers before SDK delivery,
-then fresh Latest Resource/Log ownership. P03 registry retirement is next; D10 is
+then fresh Latest Resource/Log ownership. P03 registry retirement is next in defined EXP-172; D10 is
 the remaining production-review repair. Physical scene and final release gates remain separate.
 
 The released SDK baseline is not semantically safe for applications with
@@ -485,8 +485,8 @@ process fallback; each gate has an owner, dependency, decisive test and environm
 4. Close C03/C06 environment gaps, stable API review, final supported-platform
    matrix (including macOS/watchOS), Replay crash safety and Duo27.1 acceptance.
 
-No product decision blocks internal repair work. Define P03 disconnected-registry
-retirement next, preserving stale-callback rejection and the frozen retention budget.
+No product decision blocks internal repair work. Execute defined EXP-172 for P03 disconnected-registry
+retirement, preserving stale-callback rejection and the frozen retention budget.
 D10 and the remaining R05/R06 discriminators follow.
 Do not rerun accepted experiments merely to resume.
 

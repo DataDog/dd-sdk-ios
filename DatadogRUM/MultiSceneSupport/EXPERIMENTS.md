@@ -333,6 +333,8 @@ ordered acceptance contract is in
 
 | EXP-171 | PASS | R04: two failing no-body controls,318 tests, mounted57/57 versus43/57; first retained-reader callback owns latest input before body rebind | [Record](Experiments/EXP-143-199.md#exp-171--restore-retained-hosts-from-the-reader-without-body-reconstruction) |
 
+| EXP-172 | PLANNED | P03: retire disconnected history, preserve connected peers/stale-callback fences, fixed Release retention budget on27/26.5 | [Record](Experiments/EXP-143-199.md#exp-172--retire-disconnected-scene-history-without-accepting-stale-callbacks) |
+
 ## Simulator-inconclusive and hardware-required evidence
 
 [PLAN.md owns the executable physical-device and human-driven

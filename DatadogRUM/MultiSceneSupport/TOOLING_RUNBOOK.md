@@ -1270,3 +1270,14 @@ submitted Resource/Log markers. The root value is never reassigned. SDK/fixture/
 binary identities remain frozen. Results/EXP-171-retained-reader.json retains all
 checks, exact owners,318 test selectors and test-summary hashes. R04 closes only
 its bounded component review, leaving physical H08/H09 unchanged.
+
+## EXP-172 retained scene state
+
+Keep the BASELINES.md protocol prefix frozen. The isolated logical-cycle fixture
+must declare an empty initial scene inventory, introduce20 warm-up plus100+100
+unique lifetimes, and tear down every introduced scene. Count every scene-owning
+collection, not only the old registry names. Preserve raw malloc-zone heap samples
+separately from ownership counts. Use fresh Release27/26.5 processes in ABBA order;
+P01/P02/P04 dispatch measurements are not being rerun. Verify stale callbacks cannot
+recreate retired entries before treating zero counts as acceptance. Initial live
+peer/late SDK initialization and main-thread inventory controls are required.
