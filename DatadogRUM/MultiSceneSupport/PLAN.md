@@ -49,7 +49,7 @@ Objective-C Release exposure still require normal API review.
 1. D12/T02, D09, D11 and D04/P02 repairs are accepted within their recorded
    boundaries. Preserve their controls and frozen acceptance identities.
 2. D05/D06 restoration, D03/R02 keyed lifetime and D07 pending authority are
-   accepted within their recorded boundaries. Next define D08 reconnect
+   accepted within their recorded boundaries. Next execute defined EXP-170 for D08 reconnect
    publication in the [assessed order](REVIEW_TRIAGE.md), then P03 registry retirement.
 3. Repair D10 accepted presentation state. Close the missing R04–R06
    discriminators in those slices; P03 needs its full retained-state budget.

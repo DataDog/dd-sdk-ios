@@ -329,6 +329,8 @@ ordered acceptance contract is in
 | EXP-168 | PASS | D03/R02: 303 tests; 37/37 mounted checks on27/26.5; 25 leaked registrations reduced to zero, teardown restored; P03 registry budget remains open | [Record](Experiments/EXP-143-199.md#exp-168--release-keyed-swiftui-registrations-and-instrumentation) |
 | EXP-169 | PASS | D07: four failing controls, 119 tests, mounted explicit/capability hosts29/29 versus19/29; automatic-before-input and immediate semantic owners | [Record](Experiments/EXP-143-199.md#exp-169--keep-automatic-tracking-until-semantic-input-is-ready) |
 
+| EXP-170 | PLANNED | D08: stale-trait and rejected-publication controls; fresh accepted reader remount and immediate Resource/Log ownership | [Record](Experiments/EXP-143-199.md#exp-170--accept-semantic-reconnects-only-after-a-live-attachment) |
+
 ## Simulator-inconclusive and hardware-required evidence
 
 [PLAN.md owns the executable physical-device and human-driven

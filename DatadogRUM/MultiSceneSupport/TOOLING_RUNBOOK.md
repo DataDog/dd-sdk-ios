@@ -1224,3 +1224,13 @@ prove disconnected publication/reconnect (D08), reentrant fan-out (R05), registr
 retirement (P03), or physical/backend/minimum-runtime gates. Local unsigned commits
 remain eligible under the user's policy; outgoing history must be signed before
 any separately authorized push.
+
+## EXP-170 accepted reconnect publication
+
+Definition is in EXP-143-199.md. Use actual handler rejection and separate inherited
+traits from reader mounts; a posted lifecycle sequence is deterministic evidence
+only. Capture immediate Resource/Log ownership at the accepted reader boundary,
+then inspect it without submitting a repair navigation command. Freeze both arms,
+prove clean installation and exact required-check inventory, and preserve invalid
+attempts. Reuse source/build helpers with explicit SDK directory allowlists; never
+read the protected project/configuration. Physical H09 remains separate.

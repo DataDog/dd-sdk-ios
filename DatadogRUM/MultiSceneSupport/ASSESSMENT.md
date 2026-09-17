@@ -52,7 +52,7 @@ method implementations after SDK stop. P03 still requires disconnected-registry
 retirement and D08. EXP-169 closes D07 at local unsigned `a9aaf25a7`: four failing
 authority controls, 119 tests and mounted hosts29/29 versus control19/29.
 Automatic eligibility persists before input, and the first semantic destination
-owns immediate work. Two assessed review repairs remain open; D08 is next. Physical scene and final release gates remain separate.
+owns immediate work. Two assessed review repairs remain open; D08 is next in defined EXP-170; stale traits and rejected publication need separate discriminators. Physical scene and final release gates remain separate.
 
 The released SDK baseline is not semantically safe for applications with
 concurrent scenes. Process-representative view state and process-global SwiftUI

@@ -16,7 +16,7 @@ review gates R01–R06.
 | R05 / D05 | CLOSED | EXP-167, signed `0aaafa7bd`: failing source-less start/identity-stop controls, 198 tests and two-native-scene 47/47 runtime acceptance |
 | R06 / D06 | CLOSED | EXP-167: controlled timeout/max-duration lifecycle boundaries, fresh peer IDs and exact action/Resource owners; background and legacy controls |
 | R07 / D07 | CLOSED | EXP-169, local unsigned `a9aaf25a7`: four failing controls, 119 tests and mounted29/29; automatic eligibility before input and exact immediate semantic owners |
-| R08 / D08 | OPEN | Stale trait, real reconnect and accepted-publication regression; hardware ordering stays separate |
+| R08 / D08 | OPEN — EXP-170 defined | Actual handler rejection, stale trait before live remount, fresh occurrence and immediate Resource/Log owners; hardware ordering stays separate |
 | R09 / D09 | CLOSED | EXP-164 at local `a9abc092b`: 31 tests and actual mounted fixture 19/19; zero background reads/MTC diagnostics versus control 5 reads/4 diagnostics |
 | R10 / D10 | OPEN | Reject/canonicalize Binding writes and verify accepted-state callbacks/occurrences |
 | R11 / D11 | CLOSED | EXP-165, signed `9a1ee83a5`: 102 tests, 19/19 mounted WebView/Replay checks; legacy association restored, peers excluded |
