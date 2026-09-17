@@ -1,0 +1,54 @@
+{
+  "artifacts": {
+    "boot-ready.log": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/multi-scene-acceptance-64qhh1xe/run/boot-ready.log",
+    "build-tests.log": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/multi-scene-acceptance-64qhh1xe/run/build-tests.log",
+    "signature.log": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/multi-scene-acceptance-64qhh1xe/run/signature.log",
+    "source-identity.json": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/multi-scene-acceptance-64qhh1xe/run/source-identity.json",
+    "summary.json": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/multi-scene-acceptance-64qhh1xe/run/summary.json"
+  },
+  "commit_signature": {
+    "required_before_push": true,
+    "state": "VERIFIED"
+  },
+  "device": {
+    "dataPath": "/Users/valentin.pertuisot/Library/Developer/CoreSimulator/Devices/92C9918B-FEC6-4440-9D6D-8E09475950BB/data",
+    "dataPathSize": 3266736128,
+    "deviceTypeIdentifier": "com.apple.CoreSimulator.SimDeviceType.iPad-mini-A17-Pro",
+    "isAvailable": true,
+    "lastUsedAt": "2026-09-16T22:19:15Z",
+    "logPath": "/Users/valentin.pertuisot/Library/Logs/CoreSimulator/92C9918B-FEC6-4440-9D6D-8E09475950BB",
+    "logPathSize": 348160,
+    "name": "iPad mini (A17 Pro)",
+    "runtime": "com.apple.CoreSimulator.SimRuntime.iOS-27-0",
+    "state": "Booted",
+    "udid": "92C9918B-FEC6-4440-9D6D-8E09475950BB"
+  },
+  "dirty_state": [
+    " M Datadog/Datadog.xcodeproj/project.pbxproj",
+    "A  xcconfigs/Datadog.local.xcconfig"
+  ],
+  "evidence": {},
+  "experiment": "EXP-180",
+  "failures": [
+    "build-tests failed; inspect its scoped log"
+  ],
+  "finished_at": "2026-09-17T23:47:51.133174+00:00",
+  "gate": "T07",
+  "oracle_contract_sha256": "86a3b6d1f072fd5c7801cd5af2ec840ca8aaa03ebba420430e992489cac373c4",
+  "rerun": "Use a fresh output directory and freshly resolved device; do not reuse run IDs or bridge responses.",
+  "revision": "ad93d0351786e840822d93b4c4dcc265b55edf3a",
+  "run_id": "exp180-20260917T234729Z-162532c5eb66",
+  "scenario_id": "flags.explicit-target.internal-mutations-cross-scene-serial",
+  "schema_version": 1,
+  "source_file_count": 479,
+  "source_fingerprint": "824a45abab586e6601db721087549b232ce681cd8e43ea5046959656e536833e",
+  "stages": {
+    "preflight": {
+      "authenticated_read": true,
+      "state": "PASS"
+    }
+  },
+  "started_at": "2026-09-17T23:47:29.122724+00:00",
+  "state": "INCONCLUSIVE",
+  "xcode": "Xcode 27.0\nBuild version 27A266a"
+}

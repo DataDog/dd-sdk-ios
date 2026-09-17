@@ -71,6 +71,12 @@
       "disposition": "Fixture-only JSON encode/decode of selected synthetic keys, matching the existing attribute projection. Added actual-Encodable decoder regression. SDK unchanged; strict oracle unchanged.",
       "probe_tests": 174,
       "failed_native_payload_assertions": 12
+    },
+    {
+      "result": "INCONCLUSIVE",
+      "summary": "Results/acceptance/exp180-20260917T234729Z-162532c5eb66.json",
+      "reason": "Build rejected a DatadogInternal import in the SDK-independent probe test target before execution.",
+      "disposition": "Move the shared mapper projection to ProbeSignal using a Foundation-only Encodable wrapper; remove the test SDK dependency. All3 focused flag checks pass."
     }
   ],
   "definition_revision": "5e35f3f95a866963629b9aa32a5091b6ef3c316a",
@@ -416,6 +422,46 @@
         "failed": 0
       },
       "probe_test_minimum": 175
+    },
+    "decoder_regressions": {
+      "counts": {
+        "expectedFailures": 0,
+        "failed": 0,
+        "notRun": 0,
+        "passed": 3,
+        "skipped": 0,
+        "total": 3
+      },
+      "fullConsoleLogsPath": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/ActionArtifacts/default/RunSomeTests/test-console-log-2026-09-18T00-50-06+01-00.txt",
+      "fullSummaryPath": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/ActionArtifacts/default/RunSomeTests/58FC877D-6FA8-4C65-B271-A72DB73DB1E5.txt",
+      "results": [
+        {
+          "displayName": "testFlagContractHasAllMutationCheckpointsAndBothOwners()",
+          "errorMessages": [],
+          "identifier": "ProbeScenarioRunnerTests/testFlagContractHasAllMutationCheckpointsAndBothOwners()",
+          "state": "Passed",
+          "targetName": "RUMNativeMultiSceneProbeTests"
+        },
+        {
+          "displayName": "testFlagMapperDecodesActualEncodableValuesAndRejectsMalformedTypes()",
+          "errorMessages": [],
+          "identifier": "ProbeScenarioRunnerTests/testFlagMapperDecodesActualEncodableValuesAndRejectsMalformedTypes()",
+          "state": "Passed",
+          "targetName": "RUMNativeMultiSceneProbeTests"
+        },
+        {
+          "displayName": "testFlagEvidencePreservesTypesSnapshotBindingAndInternalMetrics()",
+          "errorMessages": [],
+          "identifier": "ProbeScenarioRunnerTests/testFlagEvidencePreservesTypesSnapshotBindingAndInternalMetrics()",
+          "state": "Passed",
+          "targetName": "RUMNativeMultiSceneProbeTests"
+        }
+      ],
+      "schemeName": "RUMNativeMultiSceneProbe",
+      "summary": "3 tests: 3 passed, 0 failed, 0 skipped, 0 expected failures, 0 not run",
+      "totalResults": 3,
+      "truncated": false,
+      "xcresultBundlePath": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/ActionArtifacts/default/RunSomeTests/Test-RUMNativeMultiSceneProbe-2026.09.18_00-50-06-+0100.xcresult"
     }
   },
   "fixture_revision": "90e5d035326651d0ba8e17b775435c9ada9f2a07"

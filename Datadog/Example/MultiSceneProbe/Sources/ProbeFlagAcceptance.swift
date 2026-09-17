@@ -54,9 +54,7 @@ enum ProbeFlagAcceptance {
     }
 
     static func flags(_ values: [String: Encodable]) -> [String: ProbeFlagValue]? {
-        let selected = values.filter { ProbeFlagContract.keys.contains($0.key) }
-        guard let data = try? JSONEncoder().encode(AnyEncodable(selected)) else { return nil }
-        return try? JSONDecoder().decode([String: ProbeFlagValue].self, from: data)
+        ProbeFlagState.decodeFlags(values)
     }
 
     static func state(_ event: RUMViewEvent) -> ProbeFlagState? {

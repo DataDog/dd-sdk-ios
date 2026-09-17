@@ -204,6 +204,25 @@ internal struct ProbeFlagState: Codable, Equatable {
     let build: ProbeBuildSamples?
     let fbc: Int64?
     let leakedInternalAttribute: Bool
+
+    static func decodeFlags(_ values: [String: Encodable]) -> [String: ProbeFlagValue]? {
+        var flags: [String: ProbeFlagValue] = [:]
+        for key in ProbeFlagContract.keys {
+            guard let raw = values[key] else { continue }
+            guard let data = try? JSONEncoder().encode(ProbeFlagPayload(value: raw)),
+                  let value = try? JSONDecoder().decode(ProbeFlagValue.self, from: data) else { return nil }
+            flags[key] = value
+        }
+        return flags
+    }
+}
+
+private struct ProbeFlagPayload: Encodable {
+    let value: Encodable
+
+    func encode(to encoder: Encoder) throws {
+        try value.encode(to: encoder)
+    }
 }
 
 internal struct ProbeBuildSamples: Codable, Equatable {
