@@ -327,6 +327,7 @@ ordered acceptance contract is in
 | EXP-166 | PASS | D04/P02: 282 tests; core-scoped consumers; full27/26.5 ABBA1 allocation/64 bytes with latency/reentrancy budgets preserved | [Record](Experiments/EXP-143-199.md#exp-166--isolate-ui-event-handoff-by-sdk-lifecycle-and-reduce-allocations) |
 | EXP-167 | PASS | D05/D06: six failing controls, 198 tests/44 new cases, two native scenes 47/47 versus 20/47; old ownership and eligible peers preserved | [Record](Experiments/EXP-143-199.md#exp-167--preserve-navigation-ownership-across-session-restoration) |
 | EXP-168 | PASS | D03/R02: 303 tests; 37/37 mounted checks on27/26.5; 25 leaked registrations reduced to zero, teardown restored; P03 registry budget remains open | [Record](Experiments/EXP-143-199.md#exp-168--release-keyed-swiftui-registrations-and-instrumentation) |
+| EXP-169 | PLANNED | D07: pending explicit/capability authority, absent instrumentation and mounted first-input ownership | [Record](Experiments/EXP-143-199.md#exp-169--keep-automatic-tracking-until-semantic-input-is-ready) |
 
 ## Simulator-inconclusive and hardware-required evidence
 
