@@ -1329,3 +1329,14 @@ onDisappear alone is not accepted dismissal; inspect the current Binding.
 The eight oracle controls include before-render and restored-run rejection.
 Archive and observation-hook compiled identities remain separate; logical peer
 and injected callbacks cannot close physical scene-ordering gates.
+
+## EXP-174 observer reentrancy controls
+
+Use whichever observer receives the outer snapshot first to trigger the nested
+commit, so the control is deterministic without depending on Dictionary order.
+Record per-observer generation sequences and assert the latest at nested return.
+Removal must affect pending delivery and newly added observers receive only the
+current snapshot. Initial publication needs the same oracle as commit. Run actual
+SDK source/observed-adapter/handler objects in XCTest; no physical/backend claim
+is appropriate for this synchronous in-memory gate. Keep the protected project
+and local configuration untouched and retain all failed controls before repair.

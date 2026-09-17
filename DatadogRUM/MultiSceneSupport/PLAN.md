@@ -53,7 +53,8 @@ Objective-C Release exposure still require normal API review.
    R04 retained-reader remount and P03 disconnected-registry retirement pass
    EXP-171/172 within their recorded boundaries.
 3. D10 accepted presentations and R06 occurrence review pass EXP-173. Close
-   R05 multi-observer reentrancy before resuming the bounded telemetry gates.
+   R05 multi-observer reentrancy through defined EXP-174, then execute T03 Resource
+   start/completion ownership before the remaining bounded telemetry gates.
 4. Close the early compatibility/performance gates in available environments;
    C06 remains blocked without a minimum-OS runtime. Resume T03–T14 only after
    relevant repair dependencies pass. A documented fallback remains a deliverable.

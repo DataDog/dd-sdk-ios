@@ -69,7 +69,7 @@ versus55/77. Rejected/canonicalized writes follow the accepted Binding, and exac
 occurrence callbacks preserve a rematerialized presentation. Resource/Log markers
 keep their exact view/session at setter return and native onDismiss. All12 safety
 findings are repaired within their evidence boundaries; R05 observer fan-out is
-next. Physical scene, API and final release gates remain separate.
+defined as EXP-174. Physical scene, API and final release gates remain separate.
 
 The released SDK baseline is not semantically safe for applications with
 concurrent scenes. Process-representative view state and process-global SwiftUI

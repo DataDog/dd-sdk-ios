@@ -124,7 +124,8 @@ coverage has one observer. Multiple observers plus a nested commit need a decisi
 monotonic-generation test; a later outer callback must never regress a host that
 already consumed the nested generation. This is a source-identified coverage gap,
 not a reproduced SDK failure in this pass. Also cover observer removal/addition
-inside delivery before closing R05.
+inside delivery before closing R05. Defined EXP-174 owns these deterministic
+controls and the synchronous latest-generation/host teardown acceptance.
 
 ## Review and extraction boundary
 
