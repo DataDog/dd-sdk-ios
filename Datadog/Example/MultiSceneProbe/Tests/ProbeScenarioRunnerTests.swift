@@ -36,6 +36,37 @@ final class ProbeScenarioRunnerTests: XCTestCase {
     }
 
 
+    func testAttributeContractHasAllCheckpointsAndBothExactOwners() throws {
+        let scenario = try XCTUnwrap(ProbeScenarioCatalog.scenario(identifier: ProbeAttributeContract.scenarioID))
+        XCTAssertEqual(scenario.steps.last?.kind, .runViewAttributeBatch)
+        XCTAssertEqual(scenario.steps.last?.scene, "scene-B")
+        XCTAssertTrue(ProbeScenarioCatalog.usesObservableDriver(scenario))
+        XCTAssertEqual(scenario.completionConditions.count, 20)
+        XCTAssertEqual(Set(scenario.completionConditions.compactMap(\.name)).count, 20)
+        for scene in ["scene-A", "scene-B"] {
+            XCTAssertEqual(scenario.completionConditions.filter { $0.scene == scene }.count, 10)
+        }
+        XCTAssertTrue(scenario.completionConditions.allSatisfy {
+            $0.kind == .error && $0.sourceScene == "scene-A" && $0.expectedCount == 1
+        })
+        XCTAssertEqual(scenario.expectedSemanticTimeline.count + scenario.completionConditions.count, 42)
+    }
+
+    func testAttributeEvidenceSurvivesEnvelopeAndRejectsWrongJSONTypes() throws {
+        let state = ProbeAttributeState.expected(checkpoint: 2, isA: true)
+        let signal = ProbeSignal(kind: .assertion, name: "attribute-test", attributeState: state)
+            .enveloped(sequence: 1, timestampMilliseconds: 1, runID: "run", scenarioID: ProbeAttributeContract.scenarioID)
+        let decoded = try JSONDecoder().decode(ProbeSignal.self, from: JSONEncoder().encode(signal))
+        XCTAssertEqual(decoded.attributeState, state)
+        let data = try JSONEncoder().encode(state)
+        var object = try XCTUnwrap(JSONSerialization.jsonObject(with: data) as? [String: Any])
+        object["exp178_integer"] = true
+        XCTAssertThrowsError(try JSONDecoder().decode(ProbeAttributeState.self, from: JSONSerialization.data(withJSONObject: object)))
+        object["exp178_integer"] = 7
+        object["exp178_flag"] = 1
+        XCTAssertThrowsError(try JSONDecoder().decode(ProbeAttributeState.self, from: JSONSerialization.data(withJSONObject: object)))
+    }
+
     func testErrorAcceptanceContractIncludesTargetFormsFallbacksAndResourceOwner() throws {
         let scenario = try XCTUnwrap(ProbeScenarioCatalog.scenario(identifier: ProbeErrorContract.scenarioID))
         XCTAssertEqual(scenario.steps.last?.kind, .runCurrentViewErrorBatch)

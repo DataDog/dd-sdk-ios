@@ -2906,6 +2906,12 @@ struct ProbeWindowRoot: View {
                         + "screen=\(currentSceneScreen) phase=\(marker) "
                         + "uptime=\(uptime)"
                 )
+            case .runViewAttributeBatch:
+                #if DEBUG
+                return ProbeAttributeAcceptance.start()
+                #else
+                return .rejected(reason: "Attribute acceptance requires the Debug fixture")
+                #endif
             case .runCurrentViewErrorBatch:
                 #if DEBUG
                 return ProbeErrorAcceptance.start()

@@ -32,3 +32,33 @@ test('preserves immediate helper failure without polling', async () => {
 test('rejects missing completion and missing session', async () => {
   await assert.rejects(execToCompletion({exec_command: async () => ({output: ''})}, {}), /neither completion/);
 });
+
+const {projectAttributeState} = new Function(source.replace(
+  'return runAcceptance({tools, notify, device, repo, scenario: typeof scenario === "undefined" ? undefined : scenario});',
+  'return {projectAttributeState};'
+))();
+const at = (object, key) => object[key] ?? null;
+test('attribute projection preserves typed values and exact key absence', () => {
+  const context = {exp178_shadow:'swift-a', exp178_process:'global-v1', exp178_integer:7,
+    exp178_flag:true, exp178_nested:{value:'swift-a'}, 'probe.run_id':'unit'};
+  assert.deepEqual(projectAttributeState({context}, at), {
+    exp178_shadow:'swift-a', exp178_process:'global-v1', exp178_integer:7,
+    exp178_flag:true, exp178_nested:{value:'swift-a'}
+  });
+  assert.deepEqual(projectAttributeState({context:{exp178_shadow:'global-v1', exp178_process:'global-v1'}}, at),
+    {exp178_shadow:'global-v1', exp178_process:'global-v1'});
+});
+test('attribute projection normalizes only the known flattened nested key', () => {
+  assert.deepEqual(projectAttributeState({context:{'exp178_nested.value':'objc-b'}}, at),
+    {exp178_nested:{value:'objc-b'}});
+  assert.deepEqual(projectAttributeState({'context.exp178_nested.value':'objc-b'}, at),
+    {exp178_nested:{value:'objc-b'}});
+});
+test('attribute projection rejects wrong types and excludes unbounded values', () => {
+  for (const context of [
+    {exp178_integer:true}, {exp178_flag:1}, {exp178_integer:'7'},
+    {exp178_nested:{value:'objc-b',extra:'private'}}, {exp178_shadow:'private'},
+    {exp178_unknown:'private'}, {exp178_nested:null},
+    {exp178_nested:{value:'objc-b'}, 'exp178_nested.value':'objc-b'}
+  ]) assert.deepEqual(projectAttributeState({context}, at), {invalid:true});
+});

@@ -12,6 +12,35 @@ async function execToCompletion(tools, args) {
   return {...result, output};
 }
 
+// Export only this fixture's bounded synthetic values, preserving type and absence.
+function projectAttributeState(payload, at) {
+  const context = at(payload, "context") || {};
+  const selected = {};
+  for (const [key, value] of Object.entries(context)) {
+    if (key.startsWith("exp178_")) selected[key] = value;
+  }
+  for (const [key, value] of Object.entries(payload)) {
+    if (key.startsWith("context.exp178_")) selected[key.slice(8)] = value;
+  }
+  if (Object.hasOwn(selected, "exp178_nested.value")) {
+    if (Object.hasOwn(selected, "exp178_nested")) return {invalid: true};
+    selected.exp178_nested = {value: selected["exp178_nested.value"]};
+    delete selected["exp178_nested.value"];
+  }
+  const allowed = new Set(["exp178_shadow", "exp178_process", "exp178_integer", "exp178_flag", "exp178_nested"]);
+  if (Object.keys(selected).some(key => !allowed.has(key))) return {invalid: true};
+  for (const [key, value] of Object.entries(selected)) {
+    const valid = key === "exp178_shadow" ? ["global-v1", "global-v2", "swift-a", "objc-b"].includes(value)
+      : key === "exp178_process" ? ["global-v1", "global-v2"].includes(value)
+      : key === "exp178_integer" ? Number.isInteger(value) && value === 7
+      : key === "exp178_flag" ? value === true
+      : value && typeof value === "object" && !Array.isArray(value) &&
+        Object.keys(value).length === 1 && ["swift-a", "objc-b"].includes(value.value);
+    if (!valid) return {invalid: true};
+  }
+  return selected;
+}
+
 async function runAcceptance({tools, notify, device, repo, scenario}) {
   if (!repo || !device) throw Error("Explicit repository path and freshly resolved simulator UUID required");
   const shellQuote = value => "'" + value.replaceAll("'", "'\\''") + "'";
@@ -86,6 +115,14 @@ async function runAcceptance({tools, notify, device, repo, scenario}) {
       const base = {run_id:at(payload,"context.probe.run_id"),
                     session_id:at(payload,"session.id"), view_id:at(payload,"view.id")};
       if (request.kind === "views") return {...base, name:at(payload,"view.name")};
+      if (request.kind === "attribute_errors") {
+        const phase = at(payload, "context.probe.phase");
+        return {...base, phase, event_id:at(payload, "error.id"),
+          source_scene:at(payload, "context.probe.source_scene"),
+          error_source:at(payload, "error.source"), error_type:at(payload, "error.type"),
+          is_crash:at(payload, "error.is_crash"), attribute_state:projectAttributeState(payload, at),
+          payload_matches:at(payload, "error.message") === phase};
+      }
       if (request.kind === "current_errors") {
         const phase = at(payload,"context.probe.phase");
         const ids = at(payload,"action.id");

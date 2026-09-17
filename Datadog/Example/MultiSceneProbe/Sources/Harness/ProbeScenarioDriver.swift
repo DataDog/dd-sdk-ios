@@ -824,6 +824,22 @@ internal final class ProbeScenarioDriver {
             }
             return .acknowledged(signal)
 
+        case .runViewAttributeBatch:
+            if case .rejected(let reason) = executeOnExactScene(step, scene: "scene-B") {
+                return .failed(reason)
+            }
+            guard let signal = await wait(
+                for: .encoded(scene: nil, value: "assertion:" + ProbeAttributeContract.completed),
+                after: commandSequence,
+                timeoutNanoseconds: stepTimeoutNanoseconds
+            ) else {
+                return .inconclusive("Attribute batch did not produce its terminal assertion")
+            }
+            guard signal.result == .pass else {
+                return .failed(signal.reason ?? "Attribute batch failed")
+            }
+            return .acknowledged(signal)
+
         case .runCurrentViewErrorBatch:
             if case .rejected(let reason) = executeOnExactScene(step, scene: "scene-B") {
                 return .failed(reason)

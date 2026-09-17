@@ -1,11 +1,12 @@
 # Multi-scene acceptance workflow
 
-This runner admits two finite contracts: EXP-161/A01 long-running actions and
-EXP-176/T03 captured Resource starts. It does not certify simultaneous visibility,
+This runner admits four finite contracts: EXP-161/A01 long-running actions,
+EXP-176/T03 captured Resource starts, EXP-177/T04 current-view errors and
+EXP-178/T05 current-view attributes. It does not certify simultaneous visibility,
 real scene teardown, interactive gestures or hardware-only scenarios.
 
 The Python runner records commit signature status and performs environment and
-authentication preflight, a fresh probe build with all current tests (at least167 for Resources), frozen source
+authentication preflight, a fresh probe build with all current tests and the selected contract's minimum inventory, frozen source
 and binary identity, proven uninstall, clean install, scenario launch,
 native-scene/mapper ownership checks, complete
 backend inventory, app termination and a sanitized durable result. Unsupported
@@ -118,8 +119,7 @@ serial completion timeline. The SDK's independent unit checks cover missing targ
 completed-key reuse and compatibility fallback; native acceptance executes all six
 experimental entry points in real UIWindowScenes.
 
-The operational suite now includes53 Python tests (26 Resource tests, with further
-backend mutation subcases) and three connector tests. A passing SDK/probe unit build
+A passing SDK/probe unit build
 alone does not close T03. Commit the fixture/runner before acceptance and retain all
 failed native/backend attempts alongside the final durable result.
 
@@ -131,4 +131,24 @@ manufacture foreground state or weaken the original-owner oracle to pass it.
 T04 current-view errors: pass scenario `errors.explicit-target.current-view-cross-scene-serial`
 to the connector driver. The runner freezes error-scenario-contract.json and requires
 9 errors,2 actions,3 views,0 Resources/crashes and exactly1 completion callback.
-67 Python controls and3 connector controls cover all three admitted contracts.
+Each admitted contract has independent operational and backend mutation controls.
+
+## Attribute contract (EXP-178/T05)
+
+Pass scenario `attributes.explicit-target.current-view-cross-scene-serial`.
+`attribute-scenario-contract.json` freezes ten A/B checkpoints and42 app
+expectations. All eight real Swift/Objective-C attribute mutations execute in one
+synchronous batch under contradictory peer inference. Pre-call native readiness
+and live mapper ownership must precede the batch, and each typed mapper snapshot
+is joined to its exact error ID and owner. Whole-session backend queries require
+all20 errors,3 views and0 Resources/crashes, with independent typed values and
+key absence. Removal must reveal the original global shadow and leave the peer
+unchanged; the final process update reaches both views.
+
+The optional `attributeState` signal field contains only validated synthetic
+values. JSON decoding rejects numeric/Boolean coercion. Backend projection admits
+only the fixture's bounded values, preserves missing keys and normalizes the one
+known flattened nested key. Invalid values produce a fixed invalid marker.
+Negative controls reject peer mutation, wrong types, removed keys, detached
+snapshot IDs, stale identity and late guards. The runner requires at least170
+probe tests for this contract; its fresh build runs the complete current suite.

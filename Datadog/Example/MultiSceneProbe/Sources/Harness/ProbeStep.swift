@@ -29,6 +29,7 @@ enum ProbeStepKind: String, Codable, CaseIterable {
     case runContinuousActionTargetBatch = "run-continuous-action-target-batch"
     case runResourceOwnershipBatch = "run-resource-ownership-batch"
     case runCurrentViewErrorBatch = "run-current-view-error-batch"
+    case runViewAttributeBatch = "run-view-attribute-batch"
     case startExplicitTargetAction = "start-explicit-target-action"
     case stopExplicitTargetAction = "stop-explicit-target-action"
     case startLegacyAction = "start-legacy-action"
@@ -200,4 +201,14 @@ enum ProbeErrorContract {
     static let actionA = "error-action-a"
     static let actionB = "error-action-b"
     static let completed = "error-batch-finished"
+}
+
+enum ProbeAttributeContract {
+    static let scenarioID = "attributes.explicit-target.current-view-cross-scene-serial"
+    static let checkpoints = [
+        "initial", "swift-single-add", "swift-batch-add", "swift-single-remove", "swift-batch-remove",
+        "objc-single-add", "objc-batch-add", "objc-single-remove", "objc-batch-remove", "global-update",
+    ]
+    static let phases = checkpoints.flatMap { ["attribute-" + $0 + "-a", "attribute-" + $0 + "-b"] }
+    static let completed = "attribute-batch-finished"
 }

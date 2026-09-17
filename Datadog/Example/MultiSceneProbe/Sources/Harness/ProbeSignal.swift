@@ -198,6 +198,41 @@ internal struct ProbeGeometry: Codable, Equatable {
     let height: Double
 }
 
+/// Whitelisted synthetic EXP-178 values; omitted fields prove removal.
+internal struct ProbeAttributeState: Codable, Equatable {
+    let shadow: String
+    let process: String
+    let integer: Int?
+    let flag: Bool?
+    let nested: [String: String]?
+
+    enum CodingKeys: String, CodingKey {
+        case shadow = "exp178_shadow"
+        case process = "exp178_process"
+        case integer = "exp178_integer"
+        case flag = "exp178_flag"
+        case nested = "exp178_nested"
+    }
+
+    var keys: Set<String> {
+        var keys: Set<String> = ["exp178_shadow", "exp178_process"]
+        if integer != nil { keys.insert("exp178_integer") }
+        if flag != nil { keys.insert("exp178_flag") }
+        if nested != nil { keys.insert("exp178_nested") }
+        return keys
+    }
+
+    static func expected(checkpoint: Int, isA: Bool) -> Self {
+        let global = checkpoint == 9 ? "global-v2" : "global-v1"
+        let shadowed = isA ? [1, 2].contains(checkpoint) : [5, 6].contains(checkpoint)
+        let batched = isA ? [2, 3].contains(checkpoint) : [6, 7].contains(checkpoint)
+        let value = isA ? "swift-a" : "objc-b"
+        return Self(shadow: shadowed ? value : global, process: global,
+                    integer: batched ? 7 : nil, flag: batched ? true : nil,
+                    nested: batched ? ["value": value] : nil)
+    }
+}
+
 internal struct ProbeSignal: Codable, Equatable {
     static let schemaVersion = 5
     static let supportedSchemaVersions = 1 ... schemaVersion
@@ -238,6 +273,7 @@ internal struct ProbeSignal: Codable, Equatable {
     let error: ProbeErrorSignal?
     let trace: ProbeTraceSignal?
     let operation: ProbeOperationSignal?
+    let attributeState: ProbeAttributeState?
     let result: ProbeSemanticResultState?
     let reason: String?
 
@@ -277,6 +313,7 @@ internal struct ProbeSignal: Codable, Equatable {
         error: ProbeErrorSignal? = nil,
         trace: ProbeTraceSignal? = nil,
         operation: ProbeOperationSignal? = nil,
+        attributeState: ProbeAttributeState? = nil,
         result: ProbeSemanticResultState? = nil,
         reason: String? = nil
     ) {
@@ -316,6 +353,7 @@ internal struct ProbeSignal: Codable, Equatable {
         self.error = error
         self.trace = trace
         self.operation = operation
+        self.attributeState = attributeState
         self.result = result
         self.reason = reason
     }
@@ -362,6 +400,7 @@ internal struct ProbeSignal: Codable, Equatable {
             error: error,
             trace: trace,
             operation: operation,
+            attributeState: attributeState,
             result: result,
             reason: reason
         )

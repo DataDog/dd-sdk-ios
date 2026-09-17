@@ -1,6 +1,6 @@
 {
   "experiment": "EXP-178",
-  "status": "SDK PASS; native PLANNED",
+  "status": "SDK PASS; native PREPARED",
   "gate": "T05",
   "gates_closed": [],
   "control_revision": "29ca719c2724a9490b2509b0915cf20d22ecd778",
@@ -857,5 +857,21 @@
       "log": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp178-platforms-nvir2tpb/watchos.log",
       "log_sha256": "67878a3418db0017afaaf6c372b8f1b0a5a59c559bec6cea32a6d89ea8171b71"
     }
-  ]
+  ],
+  "native_preparation": {
+    "scenario": "attributes.explicit-target.current-view-cross-scene-serial",
+    "python_controls": 81,
+    "connector_controls": 6,
+    "minimum_probe_tests": 170,
+    "build_for_testing": {
+      "buildResult": "The project built successfully.",
+      "elapsedTime": 9.902,
+      "errors": [],
+      "fullLogPath": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/ActionArtifacts/default/BuildProject/BuildProject-Log-20260917-230651.txt"
+    },
+    "attempt_notes": [
+      "Initial Python controls: 78 passed, 3 temporary-directory sandbox errors; authorized temporary-write rerun:81 pass."
+    ],
+    "runtime_acceptance": "PENDING"
+  }
 }

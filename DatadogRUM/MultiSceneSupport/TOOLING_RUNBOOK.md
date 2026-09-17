@@ -1200,3 +1200,9 @@ and Objective-C form. Test typed values, exact key absence, global/view/event
 precedence and peer isolation using independent mapper and backend projections.
 The detailed experiment owns its counts and status:
 [attribute contract](Experiments/EXP-143-199.md#exp-178--target-view-attributes-and-removal).
+
+For the named attribute runner, bind each typed payload snapshot to the exact
+mapper error ID before its event record. JSON decoding must reject Boolean/number
+coercion. Intake projection retains exact absence and only bounded synthetic
+values; normalize only the declared nested key. The reusable entry point and
+negative controls are in the [acceptance README](../../tools/multi-scene/acceptance/README.md#attribute-contract-exp-178t05).
