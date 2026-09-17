@@ -345,6 +345,7 @@ ordered acceptance contract is in
 | EXP-173 | PASS | D10/R06 closed:337 tests, mounted77/77 versus55/77; accepted Binding and occurrence callbacks, rematerialization regression fixed; all four native attempts retained | [Record](Experiments/EXP-143-199.md#exp-173--commit-accepted-presentation-state-and-fence-occurrence-callbacks) |
 | EXP-174 | PASS | R05 closed: three failing controls, nine new regressions and346 affected tests; monotonic synchronous generations, membership and exact two-host teardown | [Record](Experiments/EXP-143-199.md#exp-174--preserve-monotonic-reentrant-observer-delivery) |
 | EXP-175 | PASS | Four failed controls repaired, seven new regressions and379 affected tests; completion/metrics stay on original owner without foreign action counts. Full T03 target/backend gate stays open | [Record](Experiments/EXP-143-199.md#exp-175--keep-resource-completion-on-its-owning-scope) |
+| EXP-176 | PLANNED | T03: three explicit Resource start forms, captured manual/URLSession completion, compatibility and exact mapper/backend acceptance | [Record](Experiments/EXP-143-199.md#exp-176--accept-explicit-resource-starts-and-captured-completion-owners) |
 
 ## Simulator-inconclusive and hardware-required evidence
 

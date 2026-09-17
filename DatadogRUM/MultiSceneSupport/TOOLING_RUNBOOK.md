@@ -1363,3 +1363,14 @@ tests, seven of them new. The result retains the6/7 fixture attempt whose exact
 date origin for this discriminator; do not widen the assertion enough to accept
 150ms activity extension. No native/backend run is claimed. Continue with T03's
 explicit-start and captured-owner fixture, keeping the new live-action counters.
+
+## EXP-176 Resource acceptance boundary
+
+Extend the existing A01 runner with an explicitly selected, frozen Resource
+contract; retain the accepted action scenario. Verify request release barriers,
+original mapper occurrence/session, exact Resource/error IDs and peer-action
+counters. Expected network errors are distinct from zero-crash acceptance.
+Backend inventories use complete session queries so restored run IDs cannot hide.
+Keep the mechanical target-plumbing control separate from the actual SDK routing
+repair. Reuse the clean-install, source/build, bridge nonce and failed-attempt
+rules; do not copy a previous run/session identifier.
