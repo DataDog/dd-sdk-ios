@@ -1313,6 +1313,239 @@ class MonitorTests: XCTestCase {
         }
     }
 
+    func testTargetedFlagOverridesPeerAndReplacesOnlyRequestedValue() throws {
+        let clock = DateProviderMock()
+        let monitor = Monitor(dependencies: .mockWith(featureScope: featureScope, samplingRate: 100), dateProvider: clock)
+        let (sceneA, sceneB) = startConcurrentSceneViews(in: monitor, dateProvider: clock)
+        let contextB = try XCTUnwrap(monitor.rumContextSnapshot(for: .scene(sceneB)))
+        let session = try XCTUnwrap(monitor.applicationScope.activeSession)
+        let viewA = try XCTUnwrap(session.viewScopes.first { $0.sceneIdentifier == sceneA })
+        let viewB = try XCTUnwrap(session.viewScopes.first { $0.sceneIdentifier == sceneB })
+        let interaction = session.lastInteractionTime
+        RUMContextHandoff.withValue(owner: monitor.rumContextHandoffOwner, rumContext: contextB, sceneIdentifier: sceneB.rawValue) {
+            monitor.addFeatureFlagEvaluation(name: "shared", value: true, explicitTarget: .scene(sceneA))
+            XCTAssertEqual(viewA.featureFlags["shared"] as? Bool, true)
+            XCTAssertNil(viewB.featureFlags["shared"])
+            monitor.addFeatureFlagEvaluation(name: "shared", value: 7, explicitTarget: .scene(sceneA))
+        }
+        XCTAssertEqual(viewA.featureFlags["shared"] as? Int, 7)
+        XCTAssertNil(viewB.featureFlags["shared"])
+        XCTAssertEqual(session.lastInteractionTime, interaction)
+        XCTAssertEqual(monitor.rumContextSnapshot(for: .processRepresentative)?.viewID, contextB.viewID)
+    }
+
+    func testDelayedFlagMessageKeepsCapturedOriginOutsideItsHandoff() throws {
+        let clock = DateProviderMock()
+        let monitor = Monitor(dependencies: .mockWith(featureScope: featureScope, samplingRate: 100), dateProvider: clock)
+        let (sceneA, sceneB) = startConcurrentSceneViews(in: monitor, dateProvider: clock)
+        let contextA = try XCTUnwrap(monitor.rumContextSnapshot(for: .scene(sceneA)))
+        let contextB = try XCTUnwrap(monitor.rumContextSnapshot(for: .scene(sceneB)))
+        let message = RUMContextHandoff.withValue(
+            owner: monitor.rumContextHandoffOwner, rumContext: contextA, sceneIdentifier: sceneA.rawValue
+        ) {
+            capturedFlagMessage(name: "delayed", value: true)
+        }
+        let receiver = FlagEvaluationReceiver(monitor: monitor)
+        RUMContextHandoff.withValue(owner: monitor.rumContextHandoffOwner, rumContext: contextB, sceneIdentifier: sceneB.rawValue) {
+            XCTAssertTrue(receiver.receive(message: message, from: NOPDatadogCore()))
+        }
+        let session = try XCTUnwrap(monitor.applicationScope.activeSession)
+        let viewA = try XCTUnwrap(session.viewScopes.first { $0.sceneIdentifier == sceneA })
+        let viewB = try XCTUnwrap(session.viewScopes.first { $0.sceneIdentifier == sceneB })
+        XCTAssertEqual(viewA.featureFlags["delayed"] as? Bool, true)
+        XCTAssertNil(viewB.featureFlags["delayed"])
+    }
+
+    private func capturedFlagMessage(name: String, value: Encodable) -> FeatureMessage {
+        let evaluation = RUMFlagEvaluationMessage(flagKey: name, value: value)
+        if let captured = RUMFlagEvaluationContextMessage(evaluation: evaluation, in: featureScope as Any) {
+            return .payload(captured)
+        }
+        return .payload(evaluation)
+    }
+
+    func testUnavailableFlagTargetsPreserveIndependentFallback() throws {
+        for fallback in ["exact", "scene", "representative", "ended"] {
+            let clock = DateProviderMock()
+            let monitor = Monitor(dependencies: .mockWith(featureScope: featureScope, samplingRate: 100), dateProvider: clock)
+            let (sceneA, sceneB) = startConcurrentSceneViews(in: monitor, dateProvider: clock)
+            let contextA = try XCTUnwrap(monitor.rumContextSnapshot(for: .scene(sceneA)))
+            let views = try XCTUnwrap(monitor.applicationScope.activeSession).viewScopes
+            if fallback == "ended" {
+                monitor.process(command: RUMStopViewCommand.mockWith(time: clock.now, identity: ViewIdentifier("view-A"), target: .scene(sceneA)))
+            }
+            let target: RUMCommandTarget = fallback == "ended" ? .scene(sceneA) : .scene(.init(rawValue: "missing"))
+            let operation = { monitor.addFeatureFlagEvaluation(name: "fallback", value: 7, explicitTarget: target) }
+            if fallback == "exact" {
+                RUMContextHandoff.withValue(owner: monitor.rumContextHandoffOwner, rumContext: contextA, sceneIdentifier: sceneB.rawValue, operation: operation)
+            } else if fallback == "scene" {
+                RUMContextHandoff.withValue(owner: monitor.rumContextHandoffOwner, rumContext: nil, sceneIdentifier: sceneA.rawValue, operation: operation)
+            } else {
+                operation()
+            }
+            let selected = fallback == "exact" || fallback == "scene" ? sceneA : sceneB
+            for view in views {
+                XCTAssertEqual(view.featureFlags["fallback"] as? Int, view.sceneIdentifier == selected ? 7 : nil, fallback)
+            }
+        }
+    }
+
+    func testFlagsAndInternalMutationsFallBackToFreshSameSceneWithoutChangingRetainedViews() throws {
+        for retainOld in [false, true] {
+            let scope = FeatureScopeMock()
+            let clock = DateProviderMock()
+            let monitor = Monitor(dependencies: .mockWith(featureScope: scope, samplingRate: 100), dateProvider: clock)
+            let (sceneA, sceneB) = startConcurrentSceneViews(in: monitor, dateProvider: clock)
+            let captured = try XCTUnwrap(monitor.rumContextSnapshot(for: .scene(sceneA)))
+            let session = try XCTUnwrap(monitor.applicationScope.activeSession)
+            let old = try XCTUnwrap(session.viewScopes.first { $0.sceneIdentifier == sceneA })
+            if retainOld { startTargetedResource(in: monitor, form: .url, key: "retained", target: .scene(sceneA)) }
+            monitor.process(command: RUMStartViewCommand.mockWith(time: clock.now, identity: ViewIdentifier("next-A"), name: "Next A", target: .scene(sceneA)))
+            let next = try XCTUnwrap(session.viewScopes.first { $0.isActiveView && $0.sceneIdentifier == sceneA })
+            monitor.addAction(type: .custom, name: "B represents", attributes: [:], explicitTarget: .scene(sceneB))
+            RUMContextHandoff.withValue(owner: monitor.rumContextHandoffOwner, rumContext: captured, sceneIdentifier: sceneB.rawValue) {
+                monitor.addFeatureFlagEvaluation(name: "stale", value: true)
+                monitor._internal?.updatePerformanceMetric(at: clock.now, metric: .flutterBuildTime, value: 32)
+                monitor._internal?.updatePerformanceMetric(at: clock.now, metric: .flutterBuildTime, value: 52)
+                monitor._internal?.setInternalViewAttribute(at: clock.now, key: CrossPlatformAttributes.flutterFirstBuildComplete, value: 101)
+            }
+            monitor.addFeatureFlagEvaluation(name: "current", value: "Next A", explicitTarget: .scene(sceneA))
+            XCTAssertEqual(next.featureFlags["current"] as? String, "Next A")
+            monitor.addTiming(name: "flush", explicitTarget: .scene(sceneA))
+            monitor.addError(error: ErrorMock("marker"), source: .custom, attributes: [:], explicitTarget: .scene(sceneA))
+            XCTAssertEqual(next.featureFlags["stale"] as? Bool, true)
+            XCTAssertEqual(next.internalAttributes[CrossPlatformAttributes.flutterFirstBuildComplete] as? Int, 101)
+            XCTAssertTrue(old.featureFlags.isEmpty)
+            XCTAssertTrue(old.internalAttributes.isEmpty)
+            let peer = try XCTUnwrap(session.viewScopes.first { $0.sceneIdentifier == sceneB })
+            XCTAssertTrue(peer.featureFlags.isEmpty)
+            XCTAssertTrue(peer.internalAttributes.isEmpty)
+            let event = try XCTUnwrap(scope.eventsWritten(ofType: RUMViewEvent.self).last { $0.view.id == next.viewUUID.toRUMDataFormat })
+            XCTAssertEqual(event.view.flutterBuildTime?.min, 32)
+            XCTAssertEqual(event.view.flutterBuildTime?.max, 52)
+            XCTAssertEqual(event.view.flutterBuildTime?.average, 42)
+            XCTAssertEqual(event.view.performance?.fbc?.timestamp, 101)
+            XCTAssertNil(event.context?.contextInfo[CrossPlatformAttributes.flutterFirstBuildComplete])
+            XCTAssertNil(scope.eventsWritten(ofType: RUMErrorEvent.self).last?.context?.contextInfo[CrossPlatformAttributes.flutterFirstBuildComplete])
+            XCTAssertNotEqual(next.viewUUID, old.viewUUID)
+            XCTAssertEqual(monitor.rumContextSnapshot(for: .processRepresentative)?.viewID, peer.viewUUID.toRUMDataFormat)
+            monitor._internal?.updatePerformanceMetric(at: clock.now, metric: .flutterBuildTime, value: 21)
+            monitor._internal?.setInternalViewAttribute(at: clock.now, key: CrossPlatformAttributes.flutterFirstBuildComplete, value: 303)
+            monitor.addTiming(name: "representative-flush")
+            let representative = try XCTUnwrap(scope.eventsWritten(ofType: RUMViewEvent.self).last { $0.view.id == peer.viewUUID.toRUMDataFormat })
+            XCTAssertEqual(representative.view.flutterBuildTime?.average, 21)
+            XCTAssertEqual(representative.view.performance?.fbc?.timestamp, 303)
+            XCTAssertEqual(next.internalAttributes[CrossPlatformAttributes.flutterFirstBuildComplete] as? Int, 101)
+        }
+    }
+
+    func testInternalMutationsCaptureBeforeDeferredProcessingUnderPeer() throws {
+        let scope = FeatureScopeMock(deferEventWriteContext: true)
+        let clock = DateProviderMock()
+        let monitor = Monitor(dependencies: .mockWith(featureScope: scope, samplingRate: 100), dateProvider: clock)
+        let (sceneA, sceneB) = startConcurrentSceneViews(in: monitor, dateProvider: clock)
+        scope.flushDeferredEventWriteContexts()
+        let a = try XCTUnwrap(monitor.rumContextSnapshot(for: .scene(sceneA)))
+        let b = try XCTUnwrap(monitor.rumContextSnapshot(for: .scene(sceneB)))
+        RUMContextHandoff.withValue(owner: monitor.rumContextHandoffOwner, rumContext: a, sceneIdentifier: sceneB.rawValue) {
+            monitor._internal?.updatePerformanceMetric(at: clock.now, metric: .flutterBuildTime, value: 42)
+            monitor._internal?.setInternalViewAttribute(at: clock.now, key: CrossPlatformAttributes.flutterFirstBuildComplete, value: 101)
+        }
+        RUMContextHandoff.withValue(owner: monitor.rumContextHandoffOwner, rumContext: b, sceneIdentifier: sceneB.rawValue) {
+            scope.flushDeferredEventWriteContexts()
+        }
+        monitor.addTiming(name: "flush", explicitTarget: .scene(sceneA))
+        scope.flushDeferredEventWriteContexts()
+        let event = try XCTUnwrap(scope.eventsWritten(ofType: RUMViewEvent.self).last { $0.view.id == a.viewID })
+        XCTAssertEqual(event.view.flutterBuildTime?.average, 42)
+        XCTAssertEqual(event.view.performance?.fbc?.timestamp, 101)
+        let peer = try XCTUnwrap(scope.eventsWritten(ofType: RUMViewEvent.self).last { $0.view.id == b.viewID })
+        XCTAssertNil(peer.view.flutterBuildTime)
+        XCTAssertNil(peer.view.performance?.fbc)
+    }
+
+    func testFlagMessagesPreserveSceneCaptureAndRejectForeignOrRetiredOwners() throws {
+        for source in ["scene", "missing-scene", "empty", "foreign", "retired", "legacy"] {
+            let clock = DateProviderMock()
+            let scope = FeatureScopeMock()
+            let monitor = Monitor(dependencies: .mockWith(featureScope: scope, samplingRate: 100), dateProvider: clock)
+            let (sceneA, sceneB) = startConcurrentSceneViews(in: monitor, dateProvider: clock)
+            let foreignScope = FeatureScopeMock()
+            let sourceScope = source == "foreign" ? foreignScope : scope
+            let scene = source == "missing-scene" ? "missing" : source == "empty" ? "" : sceneA.rawValue
+            let evaluation = RUMFlagEvaluationMessage(flagKey: "flag", value: true)
+            let payload = try RUMContextHandoff.withValue(owner: sourceScope.rumContextHandoffOwner, rumContext: nil, sceneIdentifier: scene) {
+                try XCTUnwrap(RUMFlagEvaluationContextMessage(evaluation: evaluation, in: sourceScope))
+            }
+            if source == "retired" { scope.rumContextHandoffOwner?.invalidate() }
+            let receiver = FlagEvaluationReceiver(monitor: monitor)
+            let b = try XCTUnwrap(monitor.rumContextSnapshot(for: .scene(sceneB)))
+            RUMContextHandoff.withValue(owner: scope.rumContextHandoffOwner, rumContext: b, sceneIdentifier: sceneB.rawValue) {
+                let message: FeatureMessage = source == "legacy" ? .payload(evaluation) : .payload(payload)
+                XCTAssertTrue(receiver.receive(message: message, from: NOPDatadogCore()))
+            }
+            let views = try XCTUnwrap(monitor.applicationScope.activeSession).viewScopes
+            for view in views {
+                let expected = source == "scene" && view.sceneIdentifier == sceneA || source == "legacy" && view.sceneIdentifier == sceneB
+                XCTAssertEqual(view.featureFlags["flag"] as? Bool, expected ? true : nil, source)
+            }
+        }
+    }
+
+    func testFlagsAndInternalMutationsKeepDistinctRestorationPolicies() throws {
+        for family in ["flag", "metric", "internal-attribute"] {
+            for boundary in ["stop", "expire-immediate", "expire-delayed", "missing-scene"] {
+                let clock = DateProviderMock()
+                let scope = FeatureScopeMock(context: .mockWith(applicationStateHistory: .mockAppInForeground()))
+                let monitor = Monitor(dependencies: .mockWith(featureScope: scope, samplingRate: 100), dateProvider: clock)
+                let (sceneA, _) = startConcurrentSceneViews(in: monitor, dateProvider: clock)
+                let oldViews = try XCTUnwrap(monitor.applicationScope.activeSession).viewScopes
+                if boundary == "stop" {
+                    monitor.stopSession()
+                } else if boundary != "missing-scene" {
+                    clock.now = clock.now.addingTimeInterval(4 * 60 * 60 + 1)
+                    if boundary == "expire-delayed" {
+                        monitor.process(command: RUMHandleAppLifecycleEventCommand(time: clock.now, event: .willEnterForeground))
+                    }
+                }
+                let targetScene = boundary == "missing-scene" ? "missing" : sceneA.rawValue
+                RUMContextHandoff.withValue(owner: monitor.rumContextHandoffOwner, rumContext: nil, sceneIdentifier: targetScene) {
+                    switch family {
+                    case "flag": monitor.addFeatureFlagEvaluation(name: "boundary", value: true, explicitTarget: .scene(.init(rawValue: targetScene)))
+                    case "metric": monitor._internal?.updatePerformanceMetric(at: clock.now, metric: .flutterBuildTime, value: 42)
+                    default: monitor._internal?.setInternalViewAttribute(at: clock.now, key: CrossPlatformAttributes.flutterFirstBuildComplete, value: 101)
+                    }
+                }
+                let active = monitor.applicationScope.sessionScopes.flatMap(\.viewScopes).filter(\.isActiveView)
+                if family == "flag" && boundary.hasPrefix("expire") {
+                    XCTAssertEqual(active.count, 2)
+                    XCTAssertEqual(active.first { $0.sceneIdentifier == sceneA }?.featureFlags["boundary"] as? Bool, true)
+                    XCTAssertFalse(active.contains { current in oldViews.contains { $0.viewUUID == current.viewUUID } })
+                } else if boundary != "missing-scene" {
+                    XCTAssertTrue(active.isEmpty, family + boundary)
+                }
+                XCTAssertTrue(oldViews.allSatisfy { $0.featureFlags["boundary"] == nil && $0.internalAttributes.isEmpty })
+            }
+        }
+    }
+
+    func testTargetedFlagsMatchLegacyOffViewPolicy() {
+        for background in [false, true] {
+            var observed: [[String]] = []
+            for targeted in [false, true] {
+                let clock = DateProviderMock(now: Date(timeIntervalSinceReferenceDate: 0))
+                let history: AppStateHistory = background ? .mockAppInBackground(since: clock.now) : .mockAppInForeground(since: clock.now)
+                let scope = FeatureScopeMock(context: .mockWith(sdkInitDate: clock.now, applicationStateHistory: history))
+                let monitor = Monitor(dependencies: .mockWith(featureScope: scope, samplingRate: 100), dateProvider: clock)
+                monitor.addFeatureFlagEvaluation(name: "offview", value: 7, explicitTarget: targeted ? .scene(.init(rawValue: "missing")) : nil)
+                observed.append(scope.eventsWritten(ofType: RUMViewEvent.self).map {
+                    "\($0.view.url):\($0.featureFlags?.featureFlagsInfo["offview"] as? Int ?? -1)"
+                })
+            }
+            XCTAssertEqual(observed[0], observed[1])
+        }
+    }
+
     func testGivenViewMutationsDuringSceneHandoff_theyOnlyUpdateThatView() throws {
         let dateProvider = DateProviderMock()
         let monitor = Monitor(

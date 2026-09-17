@@ -43,6 +43,35 @@ public typealias RUMOperationViewTarget = RUMViewTarget
 #endif
 
 #if os(iOS)
+public extension RUMMonitorProtocol {
+    /// Records a flag evaluation on the selected scene's current view.
+    ///
+    /// This API is experimental. An unavailable target preserves independent
+    /// inference. Repeated names retain the existing replacement behavior.
+    @_spi(Experimental)
+    @available(iOS 27.0, *)
+    @MainActor
+    func addFeatureFlagEvaluation(name: String, value: Encodable, view: RUMViewTarget) {
+        RUMFeatureFlagTargetBridge.addEvaluation(on: self, name: name, value: value, explicitTarget: .scene(view.sceneIdentifier))
+    }
+}
+
+/// Private capability preserving the legacy custom-monitor evaluation call.
+internal protocol RUMFeatureFlagTargetHandling: AnyObject {
+    func addFeatureFlagEvaluation(name: String, value: Encodable, explicitTarget: RUMCommandTarget?)
+}
+
+@MainActor
+internal enum RUMFeatureFlagTargetBridge {
+    static func addEvaluation(on monitor: any RUMMonitorProtocol, name: String, value: Encodable, explicitTarget: RUMCommandTarget) {
+        guard let monitor = monitor as? any RUMFeatureFlagTargetHandling else {
+            monitor.addFeatureFlagEvaluation(name: name, value: value)
+            return
+        }
+        monitor.addFeatureFlagEvaluation(name: name, value: value, explicitTarget: explicitTarget)
+    }
+}
+
 public extension RUMMonitorViewProtocol {
     /// Records a timing on the selected scene's current view.
     ///

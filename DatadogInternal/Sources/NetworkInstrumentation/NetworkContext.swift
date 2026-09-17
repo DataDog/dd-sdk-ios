@@ -27,7 +27,7 @@ public enum RUMContextHandoff {
             isActive = false
         }
 
-        fileprivate var isValid: Bool { isActive }
+        var isValid: Bool { isActive }
     }
 
     public struct CurrentValue {

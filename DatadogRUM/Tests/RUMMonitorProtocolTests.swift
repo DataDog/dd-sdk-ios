@@ -65,6 +65,14 @@ private final class SceneTargetedFallbackMonitor: RUMMonitorViewProtocol {
     func addViewLoadingTime(overwrite: Bool) { loadingOverwrites.append(overwrite) }
 }
 
+private final class FlagTargetFallbackMonitor: NOPMonitor {
+    var evaluations: [(String, Encodable)] = []
+
+    override func addFeatureFlagEvaluation(name: String, value: Encodable) {
+        evaluations.append((name, value))
+    }
+}
+
 private final class OperationTargetFallbackMonitor: NOPMonitor {
     var starts: [(name: String, key: String?, attributes: [AttributeKey: AttributeValue])] = []
     var successes: [(name: String, key: String?, attributes: [AttributeKey: AttributeValue])] = []
@@ -335,6 +343,22 @@ class NOPMonitorTests: XCTestCase {
         XCTAssertEqual(monitor.stops.count, 1)
         XCTAssertEqual(monitor.stops.first?.key, "compose")
         XCTAssertEqual(monitor.stops.first?.attributes["stop"] as? String, "attribute")
+    }
+
+    @MainActor
+    func testFlagTargetBridgePreservesCustomAndNOPMonitorCalls() {
+        let dd = DD.mockWith(logger: CoreLoggerMock())
+        defer { dd.reset() }
+        let custom = FlagTargetFallbackMonitor()
+        let target = RUMCommandTarget.scene(RUMSceneIdentifier(rawValue: "scene-A"))
+        for monitor: any RUMMonitorProtocol in [custom, NOPMonitor()] {
+            RUMFeatureFlagTargetBridge.addEvaluation(on: monitor, name: "flag", value: 7, explicitTarget: target)
+        }
+        XCTAssertEqual(custom.evaluations.count, 1)
+        XCTAssertEqual(custom.evaluations.first?.0, "flag")
+        XCTAssertEqual(custom.evaluations.first?.1 as? Int, 7)
+        XCTAssertEqual(dd.logger.criticalLogs.count, 1)
+        XCTAssertTrue(dd.logger.criticalLogs[0].message.contains("addFeatureFlagEvaluation(name:value:)"))
     }
 
     @MainActor

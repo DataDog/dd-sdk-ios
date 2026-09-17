@@ -1270,6 +1270,16 @@ public class objc_RUMMonitor: NSObject {
         swiftRUMMonitor.addFeatureFlagEvaluation(name: name, value: AnyEncodable(value))
     }
 
+    #if os(iOS) && DEBUG
+    /// Records a flag evaluation on the selected current view. This API is experimental.
+    @available(iOS 27.0, *)
+    @MainActor
+    @objc(addFeatureFlagEvaluationWithName:value:view:)
+    public func addFeatureFlagEvaluation(name: String, value: Any, view: objc_RUMViewTarget) {
+        swiftRUMMonitor.addFeatureFlagEvaluation(name: name, value: AnyEncodable(value), view: view.swiftType)
+    }
+    #endif
+
     public func startOperation(
         name: String,
         operationKey: String?,

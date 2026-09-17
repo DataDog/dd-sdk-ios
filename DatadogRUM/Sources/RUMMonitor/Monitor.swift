@@ -733,15 +733,24 @@ extension Monitor: RUMMonitorProtocol {
     // MARK: - feature flags
 
     func addFeatureFlagEvaluation(name: String, value: Encodable) {
+        addFeatureFlagEvaluation(name: name, value: value, explicitTarget: nil)
+    }
+
+    func addFeatureFlagEvaluation(name: String, value: Encodable, explicitTarget: RUMCommandTarget?) {
+        addFeatureFlagEvaluation(name: name, value: value, target: currentExecutionTarget, explicitTarget: explicitTarget)
+    }
+
+    func addFeatureFlagEvaluation(
+        name: String, value: Encodable, target: RUMCommandTarget, explicitTarget: RUMCommandTarget? = nil
+    ) {
         var command = RUMAddFeatureFlagEvaluationCommand(
             time: dateProvider.now,
             name: name,
             value: value
         )
-        command.target = currentExecutionTarget
-        process(
-            command: command
-        )
+        command.target = target
+        command.explicitTarget = explicitTarget
+        process(command: command)
     }
 
     // MARK: - Feature Operations
@@ -1104,6 +1113,8 @@ extension Monitor: RUMMonitorViewProtocol {
 }
 
 #if os(iOS)
+extension Monitor: RUMFeatureFlagTargetHandling {}
+
 extension Monitor: RUMViewTimingTargetHandling {}
 
 extension Monitor: RUMViewAttributeTargetHandling {}

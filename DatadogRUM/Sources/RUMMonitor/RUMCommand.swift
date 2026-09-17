@@ -772,7 +772,7 @@ internal struct RUMAddUserActionCommand: RUMUserActionCommand {
 }
 
 /// Adds that a feature flag has been evaluated to the view
-internal struct RUMAddFeatureFlagEvaluationCommand: RUMCommand {
+internal struct RUMAddFeatureFlagEvaluationCommand: RUMExplicitViewTargetCommand {
     var time: Date
     var globalAttributes: [AttributeKey: AttributeValue]
     var attributes: [AttributeKey: AttributeValue]
@@ -783,6 +783,7 @@ internal struct RUMAddFeatureFlagEvaluationCommand: RUMCommand {
     let canStartBackgroundViewAfterSessionStop = false
     let isUserInteraction = false
     var target: RUMCommandTarget = .processRepresentative
+    var explicitTarget: RUMCommandTarget? = nil
     let name: String
     let value: Encodable
     let missedEventType: SessionEndedMetric.MissedEventType? = nil
