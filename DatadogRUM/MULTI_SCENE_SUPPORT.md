@@ -9,10 +9,10 @@ validated, and ready to become a supported contract.
 
 Last updated: 2026-09-17
 
-Current SDK checkpoint: signed `1e9c4788d` (EXP-177 error targets prepared;
+Current SDK checkpoint: signed `1e9c4788d` (EXP-177 current-view errors accepted;
 EXP-176 accepted Resource starts at `5e41d0b11`,
 restoration representative and response-plus-error completion). The finite [release checklist](MultiSceneSupport/PLAN.md)
-has **31/66 gates closed**. All12 findings in the
+has **32/66 gates closed**. All12 findings in the
 [production safety review](MultiSceneSupport/PRODUCTION_SAFETY_REVIEW.md) have
 bounded repair evidence. EXP-173 passes337 affected tests and77/77 mounted checks
 versus55/77. Early dispatch/allocation/reentrancy and retained-scene budgets now
@@ -21,7 +21,9 @@ component reviews. EXP-175 passes379 affected tests for late Resource completion
 EXP-176 closes T03 with397 affected/8 Objective-C checks, iOS/watchOS Release,
 167 probe tests and22/22 native expectations/77 signals. Exact backend5 Resources/
 4 errors/5 views across2 sessions preserve captured owners and fresh peer counts0/0.
-T04 SDK/compatibility preparation passes376 tests; frozen native/backend error acceptance is next. Minimum-runtime,
+EXP-177 closes T04:376 SDK tests,24/24 native expectations and exact backend
+9 errors/3 views/2 actions,1 callback and0 Resources/crashes. T05 view attributes
+and removal is next. Minimum-runtime,
 physical iPad/Duo, API review and final release acceptance remain open. Preserve
 accepted experiment identities; do not rerun them merely to resume.
 [Current evidence](MultiSceneSupport/Experiments/EXP-143-199.md).

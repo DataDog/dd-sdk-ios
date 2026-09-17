@@ -53,8 +53,8 @@ Objective-C Release exposure still require normal API review.
    R04 retained-reader remount and P03 disconnected-registry retirement pass
    EXP-171/172 within their recorded boundaries.
 3. D10/R06 accepted presentations and R05 observer reentrancy pass EXP-173/174.
-   T03 Resource ownership closes with EXP-175/176. Execute defined EXP-177 for T04 current-view
-   errors and exactly-once completion, then T05 view attributes/removal and T06 timing/loading mutations.
+   T03 Resource ownership closes with EXP-175/176. T04 closes with EXP-177. Define and execute T05
+   view attributes/removal next, then T06 timing/loading mutations.
    Keep their distinct completion contracts and the accepted Resource owner rule.
    All six responsibility reviews have bounded evidence.
 4. Close the early compatibility/performance gates in available environments;
@@ -123,7 +123,7 @@ SwiftUI remains required as H16; the former conditional row is resolved.
 | T01 | One-shot actions — explicit target | SDK implementer | C04 | EXP-158 exact A/B owner and unresolved-target/custom/NOP fallback | iOS 27 simulator, focused compatibility tests, exact mapper and Datadog backend owners | CLOSED |
 | T02 | Long-running actions — explicit target | SDK implementer | C04, D12 | EXP-159 B-before-A, empty B stop isolation, exact final metadata; navigation/timeout retain original owner | iOS 27 simulator, focused compatibility tests, exact mapper and Datadog backend owners | CLOSED |
 | T03 | Manual and automatic Resources — explicit start target + captured start ownership | SDK implementer | A01, D01, D04, D05, D06 | Target A start while B represents; success/error/metrics after navigation/teardown remain A-owned; duplicate-key behavior documented; late failed completion cannot increment another session's live continuous action | iOS 27 simulator, URLSession/manual Resource fixture, mapper and Datadog backend | CLOSED |
-| T04 | Current-view errors — explicit target | SDK implementer | A01 | Requested live view owns message/Error/completion-handler forms; invalid target falls back; Resource errors retain T03 owner | iOS 27 simulator, focused compatibility tests, exact mapper and Datadog backend owners | OPEN |
+| T04 | Current-view errors — explicit target | SDK implementer | A01 | Requested live view owns message/Error/completion-handler forms; invalid target falls back; Resource errors retain T03 owner | iOS 27 simulator, focused compatibility tests, exact mapper and Datadog backend owners | CLOSED |
 | T05 | View attributes and removal — explicit target | SDK implementer | A01 | Single/batch add/remove changes only requested current view; global monitor attributes remain process-wide | iOS 27 simulator, focused compatibility tests, exact mapper and Datadog backend owners | OPEN |
 | T06 | Custom timing and loading time — explicit target | SDK implementer | A01 | Requested occurrence receives timing/loading mutation with existing overwrite rules and no peer mutation | iOS 27 simulator, focused compatibility tests, exact mapper and Datadog backend owners | OPEN |
 | T07 | Feature flags and internal view mutations — explicit target where customer-callable; captured call-site ownership internally | SDK implementer | A01 | Flags and internal performance/cross-platform attributes preserve same-scene stale-view fallback; no public API for internal-only fields | iOS 27 simulator, focused compatibility tests, exact mapper and Datadog backend owners | OPEN |

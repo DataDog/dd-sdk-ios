@@ -10,7 +10,7 @@ Last updated: 2026-09-17
 
 ## Current verdict
 
-Current release accounting is **31/66 gates closed**. EXP-160 establishes early
+Current release accounting is **32/66 gates closed**. EXP-160 establishes early
 ordinary automatic/manual/custom/NOP and26.5 compatibility, dispatch and exact
 reentrancy baselines. EXP-166 repairs the enabled-handoff allocation failure:
 complete Release ABBA runs measure 1 allocation/64 bytes per event on27/26.5,
@@ -125,10 +125,13 @@ coverage, lifecycle/restoration, API review, and ordinary-app
 compatibility/performance.
 No product decision blocks the next internal experiment.
 
-EXP-177 prepares T04 at signed SDK `1e9c4788d`:376 affected/11 new tests,8 ObjC,
+EXP-177 closes T04 at signed SDK `1e9c4788d`:376 affected/11 new tests,8 ObjC,
 strict lint and iOS/watchOS Release pass. Live targets preserve independent fallback
 and Resource owners; two reproduced dropped-callback paths are repaired.168 probe
-and67 Python/3 connector checks pass. Native/backend acceptance remains required.
+and67 Python/3 connector checks pass. Frozen run
+`exp177-20260917T173444Z-28b735bf7f34` passes24/24 local expectations/61 signals,
+one callback and exact backend9 errors/3 views/2 actions with7/2 error counts and
+0 Resources/crashes. T05 view attributes/removal is next.
 
 ## Support matrix
 

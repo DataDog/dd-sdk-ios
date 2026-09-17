@@ -266,8 +266,8 @@
       "decisive_test": "Requested live view owns message/Error/completion-handler forms; invalid target falls back; Resource errors retain T03 owner",
       "environment": "iOS 27 simulator, focused compatibility tests, exact mapper and Datadog backend owners",
       "completion_mode": "explicit target",
-      "status": "OPEN",
-      "evidence": "EXP-177 PREPARED at signed1e9c4788d:376 affected/11 new,8 ObjC, Release iOS/watchOS; native/backend acceptance pending."
+      "status": "CLOSED",
+      "evidence": "EXP-177 PASS at signed SDK1e9c4788d, frozen42f2d3883:376 affected/11 new,8 ObjC, iOS/watchOS Release;168 probe,24/24 local/61 signals,1 callback and backend9 errors/3 views/2 actions with7/2 error counts,0 Resources/crashes. Results/EXP-177-current-view-errors.json"
     },
     {
       "id": "T05",

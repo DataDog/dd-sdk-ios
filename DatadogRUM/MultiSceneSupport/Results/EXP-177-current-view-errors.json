@@ -1,8 +1,10 @@
 {
   "experiment": "EXP-177",
-  "status": "PREPARED",
+  "status": "PASS",
   "gate": "T04",
-  "gates_closed": [],
+  "gates_closed": [
+    "T04"
+  ],
   "control_revision": "da7bdaf126f63405e3a35ca8db4da5cec82bc52c",
   "control_sdk_revision": "5e41d0b116f1e700fe4ac997202fc2df5fdfd1cf",
   "candidate_revision": "1e9c4788d280603fd6fdd572300aba71614b29a1",
@@ -167,10 +169,32 @@
       }
     }
   ],
-  "native_attempts": [],
+  "native_attempts": [
+    {
+      "state": "PASS",
+      "run_id": "exp177-20260917T173444Z-28b735bf7f34",
+      "revision": "42f2d388378c8c2c5fbe2ab8199938bec01df3db",
+      "source_fingerprint": "cb88001a47be2b775a3605e4cf40a1cbc9cfa391d96256aef22ef380c2f7bcf7",
+      "binary_sha256": "88bc5ad533120ac7ff87dc37f6e44a1d40d4a632c8fe9786f932a59843870e1e",
+      "test_count": 168,
+      "local_expectations": 24,
+      "signals": 61,
+      "callbacks": 1,
+      "backend": {
+        "action_count": 2,
+        "crash_count": 0,
+        "error_count": 9,
+        "resource_count": 0,
+        "state": "PASS",
+        "view_count": 3
+      },
+      "durable_summary": "DatadogRUM/MultiSceneSupport/Results/acceptance/exp177-20260917T173444Z-28b735bf7f34.json",
+      "simultaneous_visibility_claimed": false
+    }
+  ],
   "acceptance": {
     "sdk": "PASS",
-    "native_backend": "PENDING"
+    "native_backend": "PASS"
   },
   "scope": "Explicit current-view errors and completion delivery; captured Resource errors retain T03 ownership.",
   "definition_revision": "cf3d5661c47d05f41ef278a73d38d4272925d395",

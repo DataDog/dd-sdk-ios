@@ -73,7 +73,10 @@ contract and adds explicit current-view error ownership and completion controls.
 No-recipient/unsampled callback losses are reproduced and repaired at signed SDK
 `1e9c4788d`:376 affected/11 new tests, delayed-write and reentrancy checks,8 ObjC
 and iOS/watchOS Release pass. [T04 evidence](Results/EXP-177-current-view-errors.json)
-keeps native/backend acceptance pending; all12 original dispositions remain closed.
+now closes T04: frozen42f2d3883 passes168 probe tests,24/24 local/61 signals,
+one callback and exact backend9 errors/3 views/2 actions with7/2 error counts,
+0 Resources/crashes. All12 original dispositions remain closed. Release remains
+held for the remaining finite gates; T05 view attributes/removal is next.
 
 **Original review at the source revision below**
 

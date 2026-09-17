@@ -1,0 +1,710 @@
+{
+  "artifacts": {
+    "backend-evidence.json": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/multi-scene-acceptance-c9k_w3kp/run/backend-evidence.json",
+    "boot-ready.log": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/multi-scene-acceptance-c9k_w3kp/run/boot-ready.log",
+    "build-identity.json": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/multi-scene-acceptance-c9k_w3kp/run/build-identity.json",
+    "build-tests.log": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/multi-scene-acceptance-c9k_w3kp/run/build-tests.log",
+    "console.raw.log": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/multi-scene-acceptance-c9k_w3kp/run/console.raw.log",
+    "container-absence.log": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/multi-scene-acceptance-c9k_w3kp/run/container-absence.log",
+    "install.log": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/multi-scene-acceptance-c9k_w3kp/run/install.log",
+    "local-evidence.json": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/multi-scene-acceptance-c9k_w3kp/run/local-evidence.json",
+    "probe.jsonl": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/multi-scene-acceptance-c9k_w3kp/run/probe.jsonl",
+    "signature.log": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/multi-scene-acceptance-c9k_w3kp/run/signature.log",
+    "source-identity.json": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/multi-scene-acceptance-c9k_w3kp/run/source-identity.json",
+    "summary.json": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/multi-scene-acceptance-c9k_w3kp/run/summary.json",
+    "terminal-screenshot.log": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/multi-scene-acceptance-c9k_w3kp/run/terminal-screenshot.log",
+    "terminal.png": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/multi-scene-acceptance-c9k_w3kp/run/terminal.png",
+    "terminate-after.log": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/multi-scene-acceptance-c9k_w3kp/run/terminate-after.log",
+    "terminate-before.log": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/multi-scene-acceptance-c9k_w3kp/run/terminate-before.log",
+    "test-summary.json": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/multi-scene-acceptance-c9k_w3kp/run/test-summary.json",
+    "uninstall.log": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/multi-scene-acceptance-c9k_w3kp/run/uninstall.log"
+  },
+  "commit_signature": {
+    "required_before_push": true,
+    "state": "VERIFIED"
+  },
+  "device": {
+    "dataPath": "/Users/valentin.pertuisot/Library/Developer/CoreSimulator/Devices/92C9918B-FEC6-4440-9D6D-8E09475950BB/data",
+    "dataPathSize": 3251122176,
+    "deviceTypeIdentifier": "com.apple.CoreSimulator.SimDeviceType.iPad-mini-A17-Pro",
+    "isAvailable": true,
+    "lastUsedAt": "2026-09-16T22:19:15Z",
+    "logPath": "/Users/valentin.pertuisot/Library/Logs/CoreSimulator/92C9918B-FEC6-4440-9D6D-8E09475950BB",
+    "logPathSize": 593920,
+    "name": "iPad mini (A17 Pro)",
+    "runtime": "com.apple.CoreSimulator.SimRuntime.iOS-27-0",
+    "state": "Booted",
+    "udid": "92C9918B-FEC6-4440-9D6D-8E09475950BB"
+  },
+  "dirty_state": [
+    " M Datadog/Datadog.xcodeproj/project.pbxproj",
+    "A  xcconfigs/Datadog.local.xcconfig"
+  ],
+  "evidence": {
+    "backend-evidence.json": {
+      "actions": [
+        {
+          "action_id": "3606a140-f665-4a3d-8e55-de3b76f76819",
+          "error_count": 2,
+          "phase": "error-action-b",
+          "resource_count": 0,
+          "run_id": "exp177-20260917T173444Z-28b735bf7f34",
+          "session_id": "c5f48340-0536-4fac-a4f3-63d1c4e63936",
+          "target": "error-action-b",
+          "view_id": "b860a1e8-0e17-4aa6-9d1d-e7d0e39985dd"
+        },
+        {
+          "action_id": "22251459-f843-496f-a199-6ca9e7b42b21",
+          "error_count": 7,
+          "phase": "error-action-a",
+          "resource_count": 0,
+          "run_id": "exp177-20260917T173444Z-28b735bf7f34",
+          "session_id": "c5f48340-0536-4fac-a4f3-63d1c4e63936",
+          "target": "error-action-a",
+          "view_id": "ed0f7b85-a96d-4a9b-838f-c7d5b7fa2ebc"
+        }
+      ],
+      "crashes": {
+        "count": 0
+      },
+      "errors": [
+        {
+          "action_ids": [
+            "3606a140-f665-4a3d-8e55-de3b76f76819"
+          ],
+          "error_source": "custom",
+          "error_type": "ProbeCurrentError - 177",
+          "event_id": "6804625c-2c94-42aa-af6e-7ed176af3e2c",
+          "is_crash": false,
+          "payload_matches": true,
+          "phase": "error-legacy-source-a",
+          "run_id": "exp177-20260917T173444Z-28b735bf7f34",
+          "session_id": "c5f48340-0536-4fac-a4f3-63d1c4e63936",
+          "source_scene": "scene-A",
+          "status": null,
+          "url": null,
+          "view_id": "b860a1e8-0e17-4aa6-9d1d-e7d0e39985dd"
+        },
+        {
+          "action_ids": [
+            "3606a140-f665-4a3d-8e55-de3b76f76819"
+          ],
+          "error_source": "custom",
+          "error_type": "ProbeCurrentError - 177",
+          "event_id": "377d03a9-0fe9-407d-be58-6a18842d922d",
+          "is_crash": false,
+          "payload_matches": true,
+          "phase": "error-invalid-representative-b",
+          "run_id": "exp177-20260917T173444Z-28b735bf7f34",
+          "session_id": "c5f48340-0536-4fac-a4f3-63d1c4e63936",
+          "source_scene": "scene-A",
+          "status": null,
+          "url": null,
+          "view_id": "b860a1e8-0e17-4aa6-9d1d-e7d0e39985dd"
+        },
+        {
+          "action_ids": [
+            "22251459-f843-496f-a199-6ca9e7b42b21"
+          ],
+          "error_source": "network",
+          "error_type": "ProbeResource",
+          "event_id": "1fab6726-0803-4d73-978b-f40634460a22",
+          "is_crash": false,
+          "payload_matches": true,
+          "phase": "error-resource-captured-a",
+          "run_id": "exp177-20260917T173444Z-28b735bf7f34",
+          "session_id": "c5f48340-0536-4fac-a4f3-63d1c4e63936",
+          "source_scene": "scene-A",
+          "status": 0,
+          "url": "https://error-probe.invalid/exp177-20260917T173444Z-28b735bf7f34/error-resource-captured-a",
+          "view_id": "ed0f7b85-a96d-4a9b-838f-c7d5b7fa2ebc"
+        },
+        {
+          "action_ids": [
+            "22251459-f843-496f-a199-6ca9e7b42b21"
+          ],
+          "error_source": "custom",
+          "error_type": "ProbeCurrentError - 177",
+          "event_id": "cd718695-af26-46d3-81b7-ba15d54b11af",
+          "is_crash": false,
+          "payload_matches": true,
+          "phase": "error-invalid-exact-a",
+          "run_id": "exp177-20260917T173444Z-28b735bf7f34",
+          "session_id": "c5f48340-0536-4fac-a4f3-63d1c4e63936",
+          "source_scene": "scene-A",
+          "status": null,
+          "url": null,
+          "view_id": "ed0f7b85-a96d-4a9b-838f-c7d5b7fa2ebc"
+        },
+        {
+          "action_ids": [
+            "22251459-f843-496f-a199-6ca9e7b42b21"
+          ],
+          "error_source": "custom",
+          "error_type": "ProbeCurrentError - 177",
+          "event_id": "ff940064-eec9-4ebd-9395-3e45bea0d448",
+          "is_crash": false,
+          "payload_matches": true,
+          "phase": "error-objc-error",
+          "run_id": "exp177-20260917T173444Z-28b735bf7f34",
+          "session_id": "c5f48340-0536-4fac-a4f3-63d1c4e63936",
+          "source_scene": "scene-A",
+          "status": null,
+          "url": null,
+          "view_id": "ed0f7b85-a96d-4a9b-838f-c7d5b7fa2ebc"
+        },
+        {
+          "action_ids": [
+            "22251459-f843-496f-a199-6ca9e7b42b21"
+          ],
+          "error_source": "custom",
+          "error_type": null,
+          "event_id": "4ceaf1dc-5263-4b18-8712-85c413987729",
+          "is_crash": false,
+          "payload_matches": true,
+          "phase": "error-objc-message",
+          "run_id": "exp177-20260917T173444Z-28b735bf7f34",
+          "session_id": "c5f48340-0536-4fac-a4f3-63d1c4e63936",
+          "source_scene": "scene-A",
+          "status": null,
+          "url": null,
+          "view_id": "ed0f7b85-a96d-4a9b-838f-c7d5b7fa2ebc"
+        },
+        {
+          "action_ids": [
+            "22251459-f843-496f-a199-6ca9e7b42b21"
+          ],
+          "error_source": "custom",
+          "error_type": "ProbeCurrentError - 177",
+          "event_id": "b98687f9-177c-40a8-aff6-25c87098670a",
+          "is_crash": false,
+          "payload_matches": true,
+          "phase": "error-swift-callback",
+          "run_id": "exp177-20260917T173444Z-28b735bf7f34",
+          "session_id": "c5f48340-0536-4fac-a4f3-63d1c4e63936",
+          "source_scene": "scene-A",
+          "status": null,
+          "url": null,
+          "view_id": "ed0f7b85-a96d-4a9b-838f-c7d5b7fa2ebc"
+        },
+        {
+          "action_ids": [
+            "22251459-f843-496f-a199-6ca9e7b42b21"
+          ],
+          "error_source": "custom",
+          "error_type": "ProbeCurrentError - 177",
+          "event_id": "db7b02dd-5c16-4c44-bcac-c89184e028ac",
+          "is_crash": false,
+          "payload_matches": true,
+          "phase": "error-swift-error",
+          "run_id": "exp177-20260917T173444Z-28b735bf7f34",
+          "session_id": "c5f48340-0536-4fac-a4f3-63d1c4e63936",
+          "source_scene": "scene-A",
+          "status": null,
+          "url": null,
+          "view_id": "ed0f7b85-a96d-4a9b-838f-c7d5b7fa2ebc"
+        },
+        {
+          "action_ids": [
+            "22251459-f843-496f-a199-6ca9e7b42b21"
+          ],
+          "error_source": "custom",
+          "error_type": "ProbeMessage",
+          "event_id": "43bd3c27-e3a4-432f-bdd6-0a6704eadbc0",
+          "is_crash": false,
+          "payload_matches": true,
+          "phase": "error-swift-message",
+          "run_id": "exp177-20260917T173444Z-28b735bf7f34",
+          "session_id": "c5f48340-0536-4fac-a4f3-63d1c4e63936",
+          "source_scene": "scene-A",
+          "status": null,
+          "url": null,
+          "view_id": "ed0f7b85-a96d-4a9b-838f-c7d5b7fa2ebc"
+        }
+      ],
+      "resources": [],
+      "views": [
+        {
+          "name": "ProbeHomeView",
+          "run_id": "exp177-20260917T173444Z-28b735bf7f34",
+          "session_id": "c5f48340-0536-4fac-a4f3-63d1c4e63936",
+          "view_id": "b860a1e8-0e17-4aa6-9d1d-e7d0e39985dd"
+        },
+        {
+          "name": "ProbeHomeView",
+          "run_id": "exp177-20260917T173444Z-28b735bf7f34",
+          "session_id": "c5f48340-0536-4fac-a4f3-63d1c4e63936",
+          "view_id": "ed0f7b85-a96d-4a9b-838f-c7d5b7fa2ebc"
+        },
+        {
+          "name": "ApplicationLaunch",
+          "run_id": "exp177-20260917T173444Z-28b735bf7f34",
+          "session_id": "c5f48340-0536-4fac-a4f3-63d1c4e63936",
+          "view_id": "e3c3b0c9-8bec-4524-9a1f-ea8e6775327c"
+        }
+      ]
+    },
+    "build-identity.json": {
+      "executable_sha256": "88bc5ad533120ac7ff87dc37f6e44a1d40d4a632c8fe9786f932a59843870e1e",
+      "source_sha256": "cb88001a47be2b775a3605e4cf40a1cbc9cfa391d96256aef22ef380c2f7bcf7",
+      "uuid": "UUID: 9EB1C3EE-C6D8-3E06-A33E-B425D891DDE7 (arm64) /private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/multi-scene-acceptance-c9k_w3kp/run/derived/Build/Products/Debug-iphonesimulator/RUMNativeMultiSceneProbe.app/RUMNativeMultiSceneProbe"
+    },
+    "local-evidence.json": {
+      "actions": [
+        {
+          "action_id": "22251459-f843-496f-a199-6ca9e7b42b21",
+          "error_count": 7,
+          "phase": "error-action-a",
+          "resource_count": 0,
+          "session_id": "c5f48340-0536-4fac-a4f3-63d1c4e63936",
+          "target": "error-action-a",
+          "view_id": "ed0f7b85-a96d-4a9b-838f-c7d5b7fa2ebc"
+        },
+        {
+          "action_id": "3606a140-f665-4a3d-8e55-de3b76f76819",
+          "error_count": 2,
+          "phase": "error-action-b",
+          "resource_count": 0,
+          "session_id": "c5f48340-0536-4fac-a4f3-63d1c4e63936",
+          "target": "error-action-b",
+          "view_id": "b860a1e8-0e17-4aa6-9d1d-e7d0e39985dd"
+        }
+      ],
+      "assertions": 24,
+      "callbacks": 1,
+      "errors": [
+        {
+          "action_ids": [
+            "22251459-f843-496f-a199-6ca9e7b42b21"
+          ],
+          "error_source": "custom",
+          "error_type": "ProbeMessage",
+          "event_id": "43bd3c27-e3a4-432f-bdd6-0a6704eadbc0",
+          "payload_matches": true,
+          "phase": "error-swift-message",
+          "session_id": "c5f48340-0536-4fac-a4f3-63d1c4e63936",
+          "source_scene": "scene-A",
+          "status": null,
+          "url": null,
+          "view_id": "ed0f7b85-a96d-4a9b-838f-c7d5b7fa2ebc"
+        },
+        {
+          "action_ids": [
+            "22251459-f843-496f-a199-6ca9e7b42b21"
+          ],
+          "error_source": "custom",
+          "error_type": "ProbeCurrentError - 177",
+          "event_id": "db7b02dd-5c16-4c44-bcac-c89184e028ac",
+          "payload_matches": true,
+          "phase": "error-swift-error",
+          "session_id": "c5f48340-0536-4fac-a4f3-63d1c4e63936",
+          "source_scene": "scene-A",
+          "status": null,
+          "url": null,
+          "view_id": "ed0f7b85-a96d-4a9b-838f-c7d5b7fa2ebc"
+        },
+        {
+          "action_ids": [
+            "22251459-f843-496f-a199-6ca9e7b42b21"
+          ],
+          "error_source": "custom",
+          "error_type": "ProbeCurrentError - 177",
+          "event_id": "b98687f9-177c-40a8-aff6-25c87098670a",
+          "payload_matches": true,
+          "phase": "error-swift-callback",
+          "session_id": "c5f48340-0536-4fac-a4f3-63d1c4e63936",
+          "source_scene": "scene-A",
+          "status": null,
+          "url": null,
+          "view_id": "ed0f7b85-a96d-4a9b-838f-c7d5b7fa2ebc"
+        },
+        {
+          "action_ids": [
+            "22251459-f843-496f-a199-6ca9e7b42b21"
+          ],
+          "error_source": "custom",
+          "error_type": null,
+          "event_id": "4ceaf1dc-5263-4b18-8712-85c413987729",
+          "payload_matches": true,
+          "phase": "error-objc-message",
+          "session_id": "c5f48340-0536-4fac-a4f3-63d1c4e63936",
+          "source_scene": "scene-A",
+          "status": null,
+          "url": null,
+          "view_id": "ed0f7b85-a96d-4a9b-838f-c7d5b7fa2ebc"
+        },
+        {
+          "action_ids": [
+            "22251459-f843-496f-a199-6ca9e7b42b21"
+          ],
+          "error_source": "custom",
+          "error_type": "ProbeCurrentError - 177",
+          "event_id": "ff940064-eec9-4ebd-9395-3e45bea0d448",
+          "payload_matches": true,
+          "phase": "error-objc-error",
+          "session_id": "c5f48340-0536-4fac-a4f3-63d1c4e63936",
+          "source_scene": "scene-A",
+          "status": null,
+          "url": null,
+          "view_id": "ed0f7b85-a96d-4a9b-838f-c7d5b7fa2ebc"
+        },
+        {
+          "action_ids": [
+            "22251459-f843-496f-a199-6ca9e7b42b21"
+          ],
+          "error_source": "custom",
+          "error_type": "ProbeCurrentError - 177",
+          "event_id": "cd718695-af26-46d3-81b7-ba15d54b11af",
+          "payload_matches": true,
+          "phase": "error-invalid-exact-a",
+          "session_id": "c5f48340-0536-4fac-a4f3-63d1c4e63936",
+          "source_scene": "scene-A",
+          "status": null,
+          "url": null,
+          "view_id": "ed0f7b85-a96d-4a9b-838f-c7d5b7fa2ebc"
+        },
+        {
+          "action_ids": [
+            "3606a140-f665-4a3d-8e55-de3b76f76819"
+          ],
+          "error_source": "custom",
+          "error_type": "ProbeCurrentError - 177",
+          "event_id": "377d03a9-0fe9-407d-be58-6a18842d922d",
+          "payload_matches": true,
+          "phase": "error-invalid-representative-b",
+          "session_id": "c5f48340-0536-4fac-a4f3-63d1c4e63936",
+          "source_scene": "scene-A",
+          "status": null,
+          "url": null,
+          "view_id": "b860a1e8-0e17-4aa6-9d1d-e7d0e39985dd"
+        },
+        {
+          "action_ids": [
+            "3606a140-f665-4a3d-8e55-de3b76f76819"
+          ],
+          "error_source": "custom",
+          "error_type": "ProbeCurrentError - 177",
+          "event_id": "6804625c-2c94-42aa-af6e-7ed176af3e2c",
+          "payload_matches": true,
+          "phase": "error-legacy-source-a",
+          "session_id": "c5f48340-0536-4fac-a4f3-63d1c4e63936",
+          "source_scene": "scene-A",
+          "status": null,
+          "url": null,
+          "view_id": "b860a1e8-0e17-4aa6-9d1d-e7d0e39985dd"
+        },
+        {
+          "action_ids": [
+            "22251459-f843-496f-a199-6ca9e7b42b21"
+          ],
+          "error_source": "network",
+          "error_type": "ProbeResource",
+          "event_id": "1fab6726-0803-4d73-978b-f40634460a22",
+          "payload_matches": true,
+          "phase": "error-resource-captured-a",
+          "session_id": "c5f48340-0536-4fac-a4f3-63d1c4e63936",
+          "source_scene": "scene-A",
+          "status": 0,
+          "url": "https://error-probe.invalid/exp177-20260917T173444Z-28b735bf7f34/error-resource-captured-a",
+          "view_id": "ed0f7b85-a96d-4a9b-838f-c7d5b7fa2ebc"
+        }
+      ],
+      "native_scenes": {
+        "scene-A": "4DE7C32B-5358-44E6-BE17-1D563D4E9891",
+        "scene-B": "1C4CAFE9-D73D-44C5-A34E-EAA9754AFA12"
+      },
+      "owners": {
+        "scene-A": "ed0f7b85-a96d-4a9b-838f-c7d5b7fa2ebc",
+        "scene-B": "b860a1e8-0e17-4aa6-9d1d-e7d0e39985dd"
+      },
+      "session_id": "c5f48340-0536-4fac-a4f3-63d1c4e63936",
+      "signal_count": 61,
+      "simultaneous_visibility_claimed": false,
+      "views": [
+        {
+          "name": "ApplicationLaunch",
+          "session_id": "c5f48340-0536-4fac-a4f3-63d1c4e63936",
+          "view_id": "e3c3b0c9-8bec-4524-9a1f-ea8e6775327c"
+        },
+        {
+          "name": "ProbeHomeView",
+          "session_id": "c5f48340-0536-4fac-a4f3-63d1c4e63936",
+          "view_id": "ed0f7b85-a96d-4a9b-838f-c7d5b7fa2ebc"
+        },
+        {
+          "name": "ProbeHomeView",
+          "session_id": "c5f48340-0536-4fac-a4f3-63d1c4e63936",
+          "view_id": "b860a1e8-0e17-4aa6-9d1d-e7d0e39985dd"
+        }
+      ]
+    },
+    "test-summary.json": {
+      "devicesAndConfigurations": [
+        {
+          "device": {
+            "architecture": "arm64",
+            "deviceId": "92C9918B-FEC6-4440-9D6D-8E09475950BB",
+            "deviceName": "iPad mini (A17 Pro)",
+            "modelName": "iPad mini (A17 Pro)",
+            "osBuildNumber": "24A434",
+            "osVersion": "27.0",
+            "platform": "iOS Simulator"
+          },
+          "expectedFailures": 0,
+          "failedTests": 0,
+          "passedTests": 168,
+          "skippedTests": 0,
+          "testPlanConfiguration": {
+            "configurationId": "1",
+            "configurationName": "Test Scheme Action"
+          }
+        }
+      ],
+      "environmentDescription": "RUMNativeMultiSceneProbe \u00b7 Built with macOS 26.6.2",
+      "expectedFailures": 0,
+      "failedTests": 0,
+      "finishTime": 1789666518.669,
+      "passedTests": 168,
+      "result": "Passed",
+      "runtimeWarnings": [],
+      "skippedTests": 0,
+      "startTime": 1789666498.873,
+      "statistics": [],
+      "testFailures": [],
+      "title": "Test - RUMNativeMultiSceneProbe",
+      "topInsights": [],
+      "totalTestCount": 168
+    }
+  },
+  "experiment": "EXP-177",
+  "failures": [],
+  "finished_at": "2026-09-17T17:37:08.277469+00:00",
+  "gate": "T04",
+  "oracle_contract_sha256": "f97f7ea3d1bb9941fc8097971121e462fd01df7a0441f18d468796685f51b45b",
+  "rerun": "Use a fresh output directory and freshly resolved device; do not reuse run IDs or bridge responses.",
+  "revision": "42f2d388378c8c2c5fbe2ab8199938bec01df3db",
+  "run_id": "exp177-20260917T173444Z-28b735bf7f34",
+  "scenario_id": "errors.explicit-target.current-view-cross-scene-serial",
+  "schema_version": 1,
+  "source_file_count": 467,
+  "source_fingerprint": "cb88001a47be2b775a3605e4cf40a1cbc9cfa391d96256aef22ef380c2f7bcf7",
+  "stages": {
+    "backend": {
+      "action_count": 2,
+      "crash_count": 0,
+      "error_count": 9,
+      "resource_count": 0,
+      "state": "PASS",
+      "view_count": 3
+    },
+    "clean_install": {
+      "data_container_absent": true,
+      "installed_binary_sha256": "88bc5ad533120ac7ff87dc37f6e44a1d40d4a632c8fe9786f932a59843870e1e",
+      "state": "PASS"
+    },
+    "frozen_build": {
+      "executable_sha256": "88bc5ad533120ac7ff87dc37f6e44a1d40d4a632c8fe9786f932a59843870e1e",
+      "source_sha256": "cb88001a47be2b775a3605e4cf40a1cbc9cfa391d96256aef22ef380c2f7bcf7",
+      "state": "PASS",
+      "test_count": 168,
+      "uuid": "UUID: 9EB1C3EE-C6D8-3E06-A33E-B425D891DDE7 (arm64) /private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/multi-scene-acceptance-c9k_w3kp/run/derived/Build/Products/Debug-iphonesimulator/RUMNativeMultiSceneProbe.app/RUMNativeMultiSceneProbe"
+    },
+    "local_semantics": {
+      "actions": [
+        {
+          "action_id": "22251459-f843-496f-a199-6ca9e7b42b21",
+          "error_count": 7,
+          "phase": "error-action-a",
+          "resource_count": 0,
+          "session_id": "c5f48340-0536-4fac-a4f3-63d1c4e63936",
+          "target": "error-action-a",
+          "view_id": "ed0f7b85-a96d-4a9b-838f-c7d5b7fa2ebc"
+        },
+        {
+          "action_id": "3606a140-f665-4a3d-8e55-de3b76f76819",
+          "error_count": 2,
+          "phase": "error-action-b",
+          "resource_count": 0,
+          "session_id": "c5f48340-0536-4fac-a4f3-63d1c4e63936",
+          "target": "error-action-b",
+          "view_id": "b860a1e8-0e17-4aa6-9d1d-e7d0e39985dd"
+        }
+      ],
+      "assertions": 24,
+      "callbacks": 1,
+      "errors": [
+        {
+          "action_ids": [
+            "22251459-f843-496f-a199-6ca9e7b42b21"
+          ],
+          "error_source": "custom",
+          "error_type": "ProbeMessage",
+          "event_id": "43bd3c27-e3a4-432f-bdd6-0a6704eadbc0",
+          "payload_matches": true,
+          "phase": "error-swift-message",
+          "session_id": "c5f48340-0536-4fac-a4f3-63d1c4e63936",
+          "source_scene": "scene-A",
+          "status": null,
+          "url": null,
+          "view_id": "ed0f7b85-a96d-4a9b-838f-c7d5b7fa2ebc"
+        },
+        {
+          "action_ids": [
+            "22251459-f843-496f-a199-6ca9e7b42b21"
+          ],
+          "error_source": "custom",
+          "error_type": "ProbeCurrentError - 177",
+          "event_id": "db7b02dd-5c16-4c44-bcac-c89184e028ac",
+          "payload_matches": true,
+          "phase": "error-swift-error",
+          "session_id": "c5f48340-0536-4fac-a4f3-63d1c4e63936",
+          "source_scene": "scene-A",
+          "status": null,
+          "url": null,
+          "view_id": "ed0f7b85-a96d-4a9b-838f-c7d5b7fa2ebc"
+        },
+        {
+          "action_ids": [
+            "22251459-f843-496f-a199-6ca9e7b42b21"
+          ],
+          "error_source": "custom",
+          "error_type": "ProbeCurrentError - 177",
+          "event_id": "b98687f9-177c-40a8-aff6-25c87098670a",
+          "payload_matches": true,
+          "phase": "error-swift-callback",
+          "session_id": "c5f48340-0536-4fac-a4f3-63d1c4e63936",
+          "source_scene": "scene-A",
+          "status": null,
+          "url": null,
+          "view_id": "ed0f7b85-a96d-4a9b-838f-c7d5b7fa2ebc"
+        },
+        {
+          "action_ids": [
+            "22251459-f843-496f-a199-6ca9e7b42b21"
+          ],
+          "error_source": "custom",
+          "error_type": null,
+          "event_id": "4ceaf1dc-5263-4b18-8712-85c413987729",
+          "payload_matches": true,
+          "phase": "error-objc-message",
+          "session_id": "c5f48340-0536-4fac-a4f3-63d1c4e63936",
+          "source_scene": "scene-A",
+          "status": null,
+          "url": null,
+          "view_id": "ed0f7b85-a96d-4a9b-838f-c7d5b7fa2ebc"
+        },
+        {
+          "action_ids": [
+            "22251459-f843-496f-a199-6ca9e7b42b21"
+          ],
+          "error_source": "custom",
+          "error_type": "ProbeCurrentError - 177",
+          "event_id": "ff940064-eec9-4ebd-9395-3e45bea0d448",
+          "payload_matches": true,
+          "phase": "error-objc-error",
+          "session_id": "c5f48340-0536-4fac-a4f3-63d1c4e63936",
+          "source_scene": "scene-A",
+          "status": null,
+          "url": null,
+          "view_id": "ed0f7b85-a96d-4a9b-838f-c7d5b7fa2ebc"
+        },
+        {
+          "action_ids": [
+            "22251459-f843-496f-a199-6ca9e7b42b21"
+          ],
+          "error_source": "custom",
+          "error_type": "ProbeCurrentError - 177",
+          "event_id": "cd718695-af26-46d3-81b7-ba15d54b11af",
+          "payload_matches": true,
+          "phase": "error-invalid-exact-a",
+          "session_id": "c5f48340-0536-4fac-a4f3-63d1c4e63936",
+          "source_scene": "scene-A",
+          "status": null,
+          "url": null,
+          "view_id": "ed0f7b85-a96d-4a9b-838f-c7d5b7fa2ebc"
+        },
+        {
+          "action_ids": [
+            "3606a140-f665-4a3d-8e55-de3b76f76819"
+          ],
+          "error_source": "custom",
+          "error_type": "ProbeCurrentError - 177",
+          "event_id": "377d03a9-0fe9-407d-be58-6a18842d922d",
+          "payload_matches": true,
+          "phase": "error-invalid-representative-b",
+          "session_id": "c5f48340-0536-4fac-a4f3-63d1c4e63936",
+          "source_scene": "scene-A",
+          "status": null,
+          "url": null,
+          "view_id": "b860a1e8-0e17-4aa6-9d1d-e7d0e39985dd"
+        },
+        {
+          "action_ids": [
+            "3606a140-f665-4a3d-8e55-de3b76f76819"
+          ],
+          "error_source": "custom",
+          "error_type": "ProbeCurrentError - 177",
+          "event_id": "6804625c-2c94-42aa-af6e-7ed176af3e2c",
+          "payload_matches": true,
+          "phase": "error-legacy-source-a",
+          "session_id": "c5f48340-0536-4fac-a4f3-63d1c4e63936",
+          "source_scene": "scene-A",
+          "status": null,
+          "url": null,
+          "view_id": "b860a1e8-0e17-4aa6-9d1d-e7d0e39985dd"
+        },
+        {
+          "action_ids": [
+            "22251459-f843-496f-a199-6ca9e7b42b21"
+          ],
+          "error_source": "network",
+          "error_type": "ProbeResource",
+          "event_id": "1fab6726-0803-4d73-978b-f40634460a22",
+          "payload_matches": true,
+          "phase": "error-resource-captured-a",
+          "session_id": "c5f48340-0536-4fac-a4f3-63d1c4e63936",
+          "source_scene": "scene-A",
+          "status": 0,
+          "url": "https://error-probe.invalid/exp177-20260917T173444Z-28b735bf7f34/error-resource-captured-a",
+          "view_id": "ed0f7b85-a96d-4a9b-838f-c7d5b7fa2ebc"
+        }
+      ],
+      "native_scenes": {
+        "scene-A": "4DE7C32B-5358-44E6-BE17-1D563D4E9891",
+        "scene-B": "1C4CAFE9-D73D-44C5-A34E-EAA9754AFA12"
+      },
+      "owners": {
+        "scene-A": "ed0f7b85-a96d-4a9b-838f-c7d5b7fa2ebc",
+        "scene-B": "b860a1e8-0e17-4aa6-9d1d-e7d0e39985dd"
+      },
+      "session_id": "c5f48340-0536-4fac-a4f3-63d1c4e63936",
+      "signal_count": 61,
+      "simultaneous_visibility_claimed": false,
+      "state": "PASS",
+      "views": [
+        {
+          "name": "ApplicationLaunch",
+          "session_id": "c5f48340-0536-4fac-a4f3-63d1c4e63936",
+          "view_id": "e3c3b0c9-8bec-4524-9a1f-ea8e6775327c"
+        },
+        {
+          "name": "ProbeHomeView",
+          "session_id": "c5f48340-0536-4fac-a4f3-63d1c4e63936",
+          "view_id": "ed0f7b85-a96d-4a9b-838f-c7d5b7fa2ebc"
+        },
+        {
+          "name": "ProbeHomeView",
+          "session_id": "c5f48340-0536-4fac-a4f3-63d1c4e63936",
+          "view_id": "b860a1e8-0e17-4aa6-9d1d-e7d0e39985dd"
+        }
+      ]
+    },
+    "preflight": {
+      "authenticated_read": true,
+      "state": "PASS"
+    }
+  },
+  "started_at": "2026-09-17T17:34:44.208773+00:00",
+  "state": "PASS",
+  "xcode": "Xcode 27.0\nBuild version 27A266a"
+}

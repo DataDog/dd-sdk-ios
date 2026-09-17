@@ -1428,3 +1428,9 @@ a fresh exp177 run ID. Inventory is9 errors,2 named actions,3 session views,
 0 Resources/crashes; callback and payload guards are strict. Initial native
 private-property compile error and a no-op test mutation are preserved. Run
 repository lint with explicit source/test configs; default SwiftLint is not valid.
+
+EXP-177 first native attempt is accepted: `exp177-20260917T173444Z-28b735bf7f34`,
+frozen signed42f2d3883, sourcecb88001a47be2b77, binary88bc5ad533120ac7.
+168 probe tests,24 local expectations/61 signals,1 callback, exact backend
+9 errors/3 views/2 actions,0 Resources/crashes. All protected-path postconditions
+pass. Do not repeat this run merely to resume; reuse its discriminators for T05.
