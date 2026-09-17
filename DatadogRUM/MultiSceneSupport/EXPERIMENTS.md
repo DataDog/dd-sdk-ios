@@ -314,6 +314,8 @@ ordered acceptance contract is in
 | EXP-157 | 2026-09-16 | PASS · physical Operations + backend; INCONCLUSIVE · simultaneous visibility | Operations/hardware | First signed `EXP-131` launch exposed a stale Home fixture before any Operation. With explicit per-scene Home boundaries, the physical retry passes 24/24 across two native scenes; backend contains eight raw steps and four exact reduced Operations with A→B, A→A, B→B ownership and beta-before-alpha completion. Both scenes were full-screen and A was background while B was active, so simultaneous on-screen visibility remains human-gated. | [active record](Experiments/EXP-143-199.md#exp-157--physical-inferred-operation-retry) |
 | EXP-158 | 2026-09-16 | PASS · tests + mapper + backend | Actions/API prototype | The generalized iOS 27 `RUMViewTarget.current(in:)` routes one-shot actions to a requested scene while retaining independent inferred fallback. Run `exp158-sim-66f922ee-19a3-4941-b8ca-c518216e6b0d` passes 9/9: explicit A and B own their requested Home, while a source-A legacy action remains on representative B. Backend session `f67c75b2-e839-4701-a283-7e4355682b6a` confirms the same owners across 30 events. The probe passes 164/164, Objective-C smoke passes 8/8, and the full RUM suite has zero failures. Stable API and long-running actions remain open. | [active record](Experiments/EXP-143-199.md#exp-158--explicit-scene-targeted-one-shot-action) |
 | EXP-159 | 2026-09-17 | PASS · tests + mapper + backend | Actions/API prototype | Targeted long-running action start/stop passes 15/15 in a bounded live-view batch, with exact backend owners, reverse completion, empty-slot isolation, and unchanged legacy fallback. The earlier background-interrupted attempt remains INCONCLUSIVE; sustained simultaneous-window use remains hardware-gated. | [active record](Experiments/EXP-143-199.md#exp-159--explicit-scene-targeted-long-running-actions) |
+| EXP-160 | 2026-09-17 | MIXED · six baseline gates closed; P02/P03 fail | Early baselines | Ordinary automatic/manual/custom/NOP/26.5, dispatch and exact reentrancy pass; enabled handoff3 allocations/416bytes exceeds1/64 budget;220 retained scene entries. Legacy27 inconclusive;15 runtime unavailable. | [active record](Experiments/EXP-143-199.md#exp-160--early-compatibility-and-performance-baseline) |
+| EXP-161 | 2026-09-17 | PASS · A01 | Acceptance workflow | Fully automated166tests,15/15 local,7actions/3views/0errors backend; two tooling-invalid attempts retained;24Python+3Node controls. | [active record](Experiments/EXP-143-199.md#exp-161--automated-acceptance-pipeline) |
 
 ## Simulator-inconclusive and hardware-required evidence
 
@@ -335,10 +337,11 @@ ensure every existing environment-bound experiment remains visible here.
 | P0 | `EXP-146` lifetime follow-up | Actual semantic-host removal plus genuine scene disconnect/reconnect without A resurrection, duplicate stop, or B disturbance |
 | P1 | `EXP-076`, `EXP-087` | Acknowledged regular/compact/regular adaptive resize |
 | P1 | `EXP-042` | Concurrent two-window restoration |
-| P1 | `EXP-001` | UIKit-hosted SwiftUI parity if retained as a release requirement |
+| P1 | `EXP-001` | UIKit-hosted SwiftUI parity, required gate H16 |
 
-`EXP-039` is not a hardware rerun: its rejected candidate was never
-constructed, so it needs a deterministic replacement harness. The plan also
+`EXP-039` is not admitted release scope: its rejected candidate was never
+constructed. F02 owns documented automatic/opaque limits; do not create another
+reflection experiment without a named gate or concrete regression. The plan also
 retains forward-looking hardware gates for genuine reconnect, per-scene
 background/foreground, and the final iPhone Duo/iOS 27.1 release matrix.
 

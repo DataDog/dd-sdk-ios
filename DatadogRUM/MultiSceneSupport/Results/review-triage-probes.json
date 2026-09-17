@@ -1,0 +1,42 @@
+{
+  "reviewed_revision": "af63657f08dbecb66e7c3ae97ed53fc8f7b065b9",
+  "xcode": "Xcode 27.0\nBuild version 27A266a",
+  "probes": [
+    {
+      "gate": "D01",
+      "target": "arm64_32-apple-watchos9.0",
+      "scope": "Isolated actual conditional/reference shape; not full module build",
+      "source": "#if !os(watchOS)\nenum RUMUIEventNetworkContext { static let currentSceneIdentifier: String? = nil }\n#endif\nfunc resourceScene() -> String? { RUMUIEventNetworkContext.currentSceneIdentifier }\n",
+      "exit_code": 1,
+      "expected_diagnostic_observed": true,
+      "diagnostics": "<stdin>:4:35: error: cannot find 'RUMUIEventNetworkContext' in scope\n2 | enum RUMUIEventNetworkContext { static let currentSceneIdentifier: String? = nil }\n3 | #endif\n4 | func resourceScene() -> String? { RUMUIEventNetworkContext.currentSceneIdentifier }\n  |                                   `- error: cannot find 'RUMUIEventNetworkContext' in scope\n5 | \n"
+    },
+    {
+      "gate": "D02",
+      "target": "arm64-apple-macosx12.6",
+      "scope": "Isolated actual conditional/reference shape; not full module build",
+      "source": "import WebKit\nfunc extract(_ message: WKScriptMessage) {\n    let _ = message.webView?.window?.windowScene?.session.persistentIdentifier\n}\n",
+      "exit_code": 1,
+      "expected_diagnostic_observed": false,
+      "diagnostics": "<stdin>:3:59: error: failed to produce diagnostic for expression; please submit a bug report (https://swift.org/contributing/#reporting-bugs)\n1 | import WebKit\n2 | func extract(_ message: WKScriptMessage) {\n3 |     let _ = message.webView?.window?.windowScene?.session.persistentIdentifier\n  |                                                           `- error: failed to produce diagnostic for expression; please submit a bug report (https://swift.org/contributing/#reporting-bugs)\n4 | }\n5 | \n"
+    },
+    {
+      "gate": "D02",
+      "target": "arm64-apple-macosx12.6",
+      "scope": "narrowed windowScene member; not full module build",
+      "source": "import WebKit\nfunc extract(_ webView: WKWebView) { let _ = webView.window?.windowScene }\n",
+      "exit_code": 1,
+      "expected_diagnostic_observed": true,
+      "diagnostics": "<stdin>:2:62: error: value of type 'NSWindow' has no member 'windowScene'\n1 | import WebKit\n2 | func extract(_ webView: WKWebView) { let _ = webView.window?.windowScene }\n  |                                                              `- error: value of type 'NSWindow' has no member 'windowScene'\n3 | \n"
+    },
+    {
+      "gate": "D02",
+      "target": "arm64-apple-macosx12.6",
+      "scope": "control macOS window access; not full module build",
+      "source": "import WebKit\nfunc extract(_ webView: WKWebView) { let _: NSWindow? = webView.window }\n",
+      "exit_code": 0,
+      "expected_diagnostic_observed": true,
+      "diagnostics": ""
+    }
+  ]
+}

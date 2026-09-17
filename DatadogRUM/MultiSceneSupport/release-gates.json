@@ -1,0 +1,940 @@
+{
+  "schema_version": 1,
+  "scope": "Multi-scene RUM release",
+  "baseline_revision": "92f021ba7e4a866f84a52da93ed8b63f3dc75882",
+  "candidate_revision": "af63657f08dbecb66e7c3ae97ed53fc8f7b065b9",
+  "gates": [
+    {
+      "id": "C01",
+      "deliverable": "Ordinary single-scene automatic app",
+      "owner": "SDK implementer",
+      "dependencies": [],
+      "decisive_test": "Unchanged Home \u2192 Detail \u2192 fresh Home owner/name/count chain, no duplicate views/actions",
+      "environment": "iOS 27 and 26.5 simulators",
+      "completion_mode": null,
+      "status": "CLOSED",
+      "evidence": "EXP-160; BASELINES.md and Results/EXP-160-baseline.json. Bounded workload passes on27/26.5; see recorded limitations."
+    },
+    {
+      "id": "C02",
+      "deliverable": "Ordinary single-scene manual app",
+      "owner": "SDK implementer",
+      "dependencies": [],
+      "decisive_test": "Exact manual start/stop and marker owners match the pinned baseline",
+      "environment": "iOS 27 and 26.5 simulators",
+      "completion_mode": null,
+      "status": "CLOSED",
+      "evidence": "EXP-160; BASELINES.md and Results/EXP-160-baseline.json. Bounded workload passes on27/26.5; see recorded limitations."
+    },
+    {
+      "id": "C03",
+      "deliverable": "Legacy UIApplication lifecycle app",
+      "owner": "SDK implementer",
+      "dependencies": [],
+      "decisive_test": "No scene manifest; automatic and manual chains match baseline without a scene registry dependency",
+      "environment": "iOS 27 and 26.5 simulators",
+      "completion_mode": null,
+      "status": "INCONCLUSIVE",
+      "evidence": "EXP-160; BASELINES.md and Results/EXP-160-baseline.json. 26.5 navigation and actual legacy background/foreground pass;27 UIKit no-scene-lifecycle trap affects both revisions."
+    },
+    {
+      "id": "C04",
+      "deliverable": "Custom and NOP monitor compatibility",
+      "owner": "SDK implementer",
+      "dependencies": [],
+      "decisive_test": "Legacy-only conformer receives exactly one call; NOP emits nothing and never crashes",
+      "environment": "iOS 27 and 26.5 simulators",
+      "completion_mode": null,
+      "status": "CLOSED",
+      "evidence": "EXP-160; BASELINES.md and Results/EXP-160-baseline.json. Bounded workload passes on27/26.5; see recorded limitations."
+    },
+    {
+      "id": "C05",
+      "deliverable": "Older supported runtime sample",
+      "owner": "SDK implementer",
+      "dependencies": [],
+      "decisive_test": "Repeat C01\u2013C04 on iOS 26.5 with no new experimental availability requirement",
+      "environment": "iOS 27 and 26.5 simulators",
+      "completion_mode": null,
+      "status": "CLOSED",
+      "evidence": "EXP-160; BASELINES.md and Results/EXP-160-baseline.json. Bounded workload passes on27/26.5; see recorded limitations."
+    },
+    {
+      "id": "C06",
+      "deliverable": "Minimum-supported runtime",
+      "owner": "SDK implementer",
+      "dependencies": [],
+      "decisive_test": "Repeat automatic/manual/legacy smoke on iOS 15; compile minimum deployment target independently",
+      "environment": "iOS 15 device/runtime",
+      "completion_mode": null,
+      "status": "ENVIRONMENT BLOCKED",
+      "evidence": "EXP-160; BASELINES.md and Results/EXP-160-baseline.json. Deployment target15 compiles; no15 runtime available."
+    },
+    {
+      "id": "P01",
+      "deliverable": "Event-dispatch overhead",
+      "owner": "SDK implementer",
+      "dependencies": [
+        "C01"
+      ],
+      "decisive_test": "Release ABBA comparison passes predeclared median/p95 thresholds in BASELINES.md",
+      "environment": "Same simulator/toolchain, Release build; focused internal lifecycle tests",
+      "completion_mode": null,
+      "status": "CLOSED",
+      "evidence": "EXP-160; BASELINES.md and Results/EXP-160-baseline.json. Bounded workload passes on27/26.5; see recorded limitations."
+    },
+    {
+      "id": "P02",
+      "deliverable": "Allocation cost",
+      "owner": "SDK implementer",
+      "dependencies": [
+        "C01",
+        "D04"
+      ],
+      "decisive_test": "Measured allocation count and bytes per fixed workload pass baseline deltas; net heap is not allocation churn",
+      "environment": "Same simulator/toolchain, Release build; focused internal lifecycle tests",
+      "completion_mode": null,
+      "status": "REGRESSION BLOCKED",
+      "evidence": "EXP-160; BASELINES.md and Results/EXP-160-baseline.json. Enabled handoff excess3 allocations/416 requested bytes per event; frozen budget1/64."
+    },
+    {
+      "id": "P03",
+      "deliverable": "Retained scene state",
+      "owner": "SDK implementer",
+      "dependencies": [
+        "C01",
+        "D03",
+        "D08"
+      ],
+      "decisive_test": "Repeated create/disconnect/release leaves no SDK-owned scene/controller/host and no growing registry",
+      "environment": "Same simulator/toolchain, Release build; focused internal lifecycle tests",
+      "completion_mode": null,
+      "status": "REGRESSION BLOCKED",
+      "evidence": "EXP-160; BASELINES.md and Results/EXP-160-baseline.json. 220 entries in each disconnect/activity registry after20warmup+200 cycles; controller weak survivors0."
+    },
+    {
+      "id": "P04",
+      "deliverable": "Reentrancy",
+      "owner": "SDK implementer",
+      "dependencies": [
+        "C01"
+      ],
+      "decisive_test": "Nested A\u2192B\u2192A dispatch restores exact outer context; one original call each, no deadlock or leaked task/thread context",
+      "environment": "Same simulator/toolchain, Release build; focused internal lifecycle tests",
+      "completion_mode": null,
+      "status": "CLOSED",
+      "evidence": "EXP-160; BASELINES.md and Results/EXP-160-baseline.json. Bounded workload passes on27/26.5; see recorded limitations."
+    },
+    {
+      "id": "R01",
+      "deliverable": "Trait readers and tracking lifetimes",
+      "owner": "SDK reviewer",
+      "dependencies": [],
+      "decisive_test": "Reader identity, migration, remount, weak ownership and disconnect fencing; record findings, evidence and dispositions in COMPONENT_REVIEW.md",
+      "environment": "Source review plus targeted regressions for any finding",
+      "completion_mode": null,
+      "status": "CLOSED",
+      "evidence": "COMPONENT_REVIEW.md: bounded source review at af63657f0; existing EXP-159 regression evidence, no new device claim."
+    },
+    {
+      "id": "R02",
+      "deliverable": "Authority and occurrence sources",
+      "owner": "SDK reviewer",
+      "dependencies": [
+        "D03"
+      ],
+      "decisive_test": "Exact host release, local suppression, stale generation rejection and fresh reveals; record findings, evidence and dispositions in COMPONENT_REVIEW.md",
+      "environment": "Source review plus targeted regressions for any finding",
+      "completion_mode": null,
+      "status": "REVIEW BLOCKED",
+      "evidence": "COMPONENT_REVIEW.md: concrete findings and decisive missing regressions; extraction deferred."
+    },
+    {
+      "id": "R03",
+      "deliverable": "Transition arbitration",
+      "owner": "SDK reviewer",
+      "dependencies": [],
+      "decisive_test": "Accepted versus proposed state; cancel/finish exactly once; nested reentrancy; record findings, evidence and dispositions in COMPONENT_REVIEW.md",
+      "environment": "Source review plus targeted regressions for any finding",
+      "completion_mode": null,
+      "status": "CLOSED",
+      "evidence": "COMPONENT_REVIEW.md: bounded source review at af63657f0; existing EXP-159 regression evidence, no new device claim."
+    },
+    {
+      "id": "R04",
+      "deliverable": "View modifiers and attachment boundaries",
+      "owner": "SDK reviewer",
+      "dependencies": [
+        "D03",
+        "D08"
+      ],
+      "decisive_test": "Main-thread/availability gates, host reconstruction and retained-reader teardown; record findings, evidence and dispositions in COMPONENT_REVIEW.md",
+      "environment": "Source review plus targeted regressions for any finding",
+      "completion_mode": null,
+      "status": "REVIEW BLOCKED",
+      "evidence": "COMPONENT_REVIEW.md: concrete findings and decisive missing regressions; extraction deferred."
+    },
+    {
+      "id": "R05",
+      "deliverable": "Observed input and semantic engine",
+      "owner": "SDK reviewer",
+      "dependencies": [
+        "D07",
+        "D08"
+      ],
+      "decisive_test": "Publisher pinning, Observation rearming, background FIFO and atomic destination; record findings, evidence and dispositions in COMPONENT_REVIEW.md; multiple observers with nested commit/remove/add must preserve monotonic generations",
+      "environment": "Source review plus targeted regressions for any finding",
+      "completion_mode": null,
+      "status": "REVIEW BLOCKED",
+      "evidence": "COMPONENT_REVIEW.md: concrete findings and decisive missing regressions; extraction deferred."
+    },
+    {
+      "id": "R06",
+      "deliverable": "Public hosts and native convenience adapters",
+      "owner": "SDK reviewer",
+      "dependencies": [
+        "D10"
+      ],
+      "decisive_test": "Migration budget, no screen/method edits, automatic metadata and platform fallback; record findings, evidence and dispositions in COMPONENT_REVIEW.md; delayed detach/remount and same-ID presentation replacement preserve occurrence ownership",
+      "environment": "Source review plus targeted regressions for any finding",
+      "completion_mode": null,
+      "status": "REVIEW BLOCKED",
+      "evidence": "COMPONENT_REVIEW.md: concrete findings and decisive missing regressions; extraction deferred."
+    },
+    {
+      "id": "A01",
+      "deliverable": "Repeatable acceptance workflow",
+      "owner": "Harness implementer",
+      "dependencies": [],
+      "decisive_test": "One invocation performs preflight \u2192 clean install \u2192 frozen build \u2192 scenario \u2192 topology \u2192 strict semantics \u2192 backend; negative controls fail closed and durable summary is produced",
+      "environment": "Simulator + authenticated Datadog connector; physical/human capabilities remain explicit",
+      "completion_mode": null,
+      "status": "CLOSED",
+      "evidence": "EXP-161 third attempt:166tests,15assertions/86signals,7exact backend actions,3session-only views,0errors/crashes. Results/acceptance/exp161-20260917T011012Z-9bb629c7c630.json;24Python+3Node controls."
+    },
+    {
+      "id": "T01",
+      "deliverable": "One-shot actions",
+      "owner": "SDK implementer",
+      "dependencies": [
+        "C04"
+      ],
+      "decisive_test": "EXP-158 exact A/B owner and unresolved-target/custom/NOP fallback",
+      "environment": "iOS 27 simulator, focused compatibility tests, exact mapper and Datadog backend owners",
+      "completion_mode": "explicit target",
+      "status": "CLOSED",
+      "evidence": "EXP-158"
+    },
+    {
+      "id": "T02",
+      "deliverable": "Long-running actions",
+      "owner": "SDK implementer",
+      "dependencies": [
+        "C04",
+        "D12"
+      ],
+      "decisive_test": "EXP-159 B-before-A, empty B stop isolation, exact final metadata; navigation/timeout retain original owner",
+      "environment": "iOS 27 simulator, focused compatibility tests, exact mapper and Datadog backend owners",
+      "completion_mode": "explicit target",
+      "status": "REVIEW BLOCKED",
+      "evidence": "EXP-159 accepted targeted slice retained; D12 reports missing legacy expired-stop metadata discriminator."
+    },
+    {
+      "id": "T03",
+      "deliverable": "Manual and automatic Resources",
+      "owner": "SDK implementer",
+      "dependencies": [
+        "A01",
+        "D01",
+        "D04",
+        "D05",
+        "D06"
+      ],
+      "decisive_test": "Target A start while B represents; success/error/metrics after navigation/teardown remain A-owned; duplicate-key behavior documented; late failed completion cannot increment another session's live continuous action",
+      "environment": "iOS 27 simulator, URLSession/manual Resource fixture, mapper and Datadog backend",
+      "completion_mode": "explicit start target + captured start ownership",
+      "status": "OPEN",
+      "evidence": ""
+    },
+    {
+      "id": "T04",
+      "deliverable": "Current-view errors",
+      "owner": "SDK implementer",
+      "dependencies": [
+        "A01"
+      ],
+      "decisive_test": "Requested live view owns message/Error/completion-handler forms; invalid target falls back; Resource errors retain T03 owner",
+      "environment": "iOS 27 simulator, focused compatibility tests, exact mapper and Datadog backend owners",
+      "completion_mode": "explicit target",
+      "status": "OPEN",
+      "evidence": ""
+    },
+    {
+      "id": "T05",
+      "deliverable": "View attributes and removal",
+      "owner": "SDK implementer",
+      "dependencies": [
+        "A01"
+      ],
+      "decisive_test": "Single/batch add/remove changes only requested current view; global monitor attributes remain process-wide",
+      "environment": "iOS 27 simulator, focused compatibility tests, exact mapper and Datadog backend owners",
+      "completion_mode": "explicit target",
+      "status": "OPEN",
+      "evidence": ""
+    },
+    {
+      "id": "T06",
+      "deliverable": "Custom timing and loading time",
+      "owner": "SDK implementer",
+      "dependencies": [
+        "A01"
+      ],
+      "decisive_test": "Requested occurrence receives timing/loading mutation with existing overwrite rules and no peer mutation",
+      "environment": "iOS 27 simulator, focused compatibility tests, exact mapper and Datadog backend owners",
+      "completion_mode": "explicit target",
+      "status": "OPEN",
+      "evidence": ""
+    },
+    {
+      "id": "T07",
+      "deliverable": "Feature flags and internal view mutations",
+      "owner": "SDK implementer",
+      "dependencies": [
+        "A01"
+      ],
+      "decisive_test": "Flags and internal performance/cross-platform attributes preserve same-scene stale-view fallback; no public API for internal-only fields",
+      "environment": "iOS 27 simulator, focused compatibility tests, exact mapper and Datadog backend owners",
+      "completion_mode": "explicit target where customer-callable; captured call-site ownership internally",
+      "status": "OPEN",
+      "evidence": ""
+    },
+    {
+      "id": "T08",
+      "deliverable": "Manual/automatic/OpenTelemetry Traces",
+      "owner": "SDK implementer",
+      "dependencies": [
+        "A01",
+        "D04"
+      ],
+      "decisive_test": "Native/OTel/URLSession start in A then complete under B; one span, A context, no retarget or duplicate; source-less starts document representative fallback",
+      "environment": "iOS 27 simulator, Trace/OTel/URLSession fixtures and backend; shared request also H07",
+      "completion_mode": "captured start ownership",
+      "status": "OPEN",
+      "evidence": ""
+    },
+    {
+      "id": "T09",
+      "deliverable": "Logs and mirrored errors",
+      "owner": "SDK implementer",
+      "dependencies": [
+        "A01",
+        "D04"
+      ],
+      "decisive_test": "A-origin log and mirrored RUM error agree on captured view/action despite B representative churn; source-less log uses documented representative",
+      "environment": "iOS 27 simulator, Logs/RUM mirror fixture and Datadog backend",
+      "completion_mode": "captured emission ownership",
+      "status": "OPEN",
+      "evidence": ""
+    },
+    {
+      "id": "T10",
+      "deliverable": "WebView bridge",
+      "owner": "SDK implementer",
+      "dependencies": [
+        "A01",
+        "D02",
+        "D11"
+      ],
+      "decisive_test": "Two actual web containers retain their bound native view owners; navigation/rebind/teardown cannot inherit the peer",
+      "environment": "Two native WebView containers on iOS simulator plus backend; macOS compile in D02",
+      "completion_mode": "captured native-container ownership",
+      "status": "OPEN",
+      "evidence": ""
+    },
+    {
+      "id": "T11",
+      "deliverable": "Exported and fatal/crash context",
+      "owner": "SDK implementer",
+      "dependencies": [
+        "A01"
+      ],
+      "decisive_test": "Source-less export/fatal signal appears once on representative; explicit internal snapshot does not drift; no fabricated scene ownership",
+      "environment": "Deterministic crash/export context tests and isolated simulator process/backend",
+      "completion_mode": "documented process-level fallback; trustworthy internal snapshot remains exact",
+      "status": "OPEN",
+      "evidence": ""
+    },
+    {
+      "id": "T12",
+      "deliverable": "Long tasks, app hangs and memory warnings",
+      "owner": "SDK implementer",
+      "dependencies": [
+        "A01"
+      ],
+      "decisive_test": "One process signal appears once on representative; no per-scene broadcast or invented causal owner",
+      "environment": "Controlled long-task/hang/memory-warning tests and simulator backend",
+      "completion_mode": "documented process-level fallback",
+      "status": "OPEN",
+      "evidence": ""
+    },
+    {
+      "id": "T13",
+      "deliverable": "Vitals",
+      "owner": "SDK implementer",
+      "dependencies": [
+        "A01"
+      ],
+      "decisive_test": "CPU/memory/frame metrics retain documented process sampling and view association; never claim independent per-window measurement",
+      "environment": "Fixed process metric fixture, view associations and backend; representative device sample before freeze",
+      "completion_mode": "documented process-level measurement with existing view association",
+      "status": "OPEN",
+      "evidence": ""
+    },
+    {
+      "id": "T14",
+      "deliverable": "Profiling",
+      "owner": "SDK implementer",
+      "dependencies": [
+        "A01"
+      ],
+      "decisive_test": "Process profile and exact Operation identity remain correlated; docs make no per-scene CPU attribution claim",
+      "environment": "Profiling/Operation fixture and supported profiling device/backend",
+      "completion_mode": "documented process-level fallback",
+      "status": "OPEN",
+      "evidence": ""
+    },
+    {
+      "id": "T15",
+      "deliverable": "Operations",
+      "owner": "SDK implementer",
+      "dependencies": [
+        "C04"
+      ],
+      "decisive_test": "Application-wide name/key identity, A\u2192B start/end and reverse parallel completion; duplicate starts leave older backend timeout",
+      "environment": "iOS 27 simulator, focused compatibility tests, exact mapper and Datadog backend owners",
+      "completion_mode": "explicit per-step target or captured call-site ownership; last-proven then process fallback",
+      "status": "CLOSED",
+      "evidence": "EXP-155, EXP-157"
+    },
+    {
+      "id": "H01",
+      "deliverable": "Same-key manual A/B reverse stop",
+      "owner": "Device operator + SDK implementer",
+      "dependencies": [
+        "A01"
+      ],
+      "decisive_test": "EXP-129: distinct Compose IDs, B stop preserves A, fresh Home per scene",
+      "environment": "Physical iPad/iPhone Duo; human gesture for H11\u2013H13; resize-capable for H14",
+      "completion_mode": null,
+      "status": "ENVIRONMENT BLOCKED",
+      "evidence": ""
+    },
+    {
+      "id": "H02",
+      "deliverable": "Concurrent UIKit and SwiftUI split navigation",
+      "owner": "Device operator + SDK implementer",
+      "dependencies": [
+        "A01"
+      ],
+      "decisive_test": "EXP-086/103: simultaneously visible A/B chains, distinct occurrences, no structural view",
+      "environment": "Physical iPad/iPhone Duo; human gesture for H11\u2013H13; resize-capable for H14",
+      "completion_mode": null,
+      "status": "ENVIRONMENT BLOCKED",
+      "evidence": ""
+    },
+    {
+      "id": "H03",
+      "deliverable": "Visible peer attribution and close continuity",
+      "owner": "Device operator + SDK implementer",
+      "dependencies": [
+        "A01"
+      ],
+      "decisive_test": "EXP-041/089/113: A work stays on A while B represents; B close never stops A",
+      "environment": "Physical iPad/iPhone Duo; human gesture for H11\u2013H13; resize-capable for H14",
+      "completion_mode": null,
+      "status": "ENVIRONMENT BLOCKED",
+      "evidence": ""
+    },
+    {
+      "id": "H04",
+      "deliverable": "Actual focus and activation",
+      "owner": "Device operator + SDK implementer",
+      "dependencies": [
+        "A01"
+      ],
+      "decisive_test": "EXP-114: target foreground-active, peer background, exact lifecycle and event owners",
+      "environment": "Physical iPad/iPhone Duo; human gesture for H11\u2013H13; resize-capable for H14",
+      "completion_mode": null,
+      "status": "ENVIRONMENT BLOCKED",
+      "evidence": ""
+    },
+    {
+      "id": "H05",
+      "deliverable": "Semantic/automatic coexistence across scenes",
+      "owner": "Device operator + SDK implementer",
+      "dependencies": [
+        "A01"
+      ],
+      "decisive_test": "EXP-118: semantic A and automatic B neither suppress nor own each other",
+      "environment": "Physical iPad/iPhone Duo; human gesture for H11\u2013H13; resize-capable for H14",
+      "completion_mode": null,
+      "status": "ENVIRONMENT BLOCKED",
+      "evidence": ""
+    },
+    {
+      "id": "H06",
+      "deliverable": "Concurrent inferred Operations topology",
+      "owner": "Device operator + SDK implementer",
+      "dependencies": [
+        "A01"
+      ],
+      "decisive_test": "EXP-131/157 accepted ownership repeated with simultaneous visible topology evidence",
+      "environment": "Physical iPad/iPhone Duo; human gesture for H11\u2013H13; resize-capable for H14",
+      "completion_mode": null,
+      "status": "ENVIRONMENT BLOCKED",
+      "evidence": ""
+    },
+    {
+      "id": "H07",
+      "deliverable": "Shared URLSession request",
+      "owner": "Device operator + SDK implementer",
+      "dependencies": [
+        "A01"
+      ],
+      "decisive_test": "EXP-136: A-created request joined in B yields exactly one A span and no RUM Resource in trace-only mode",
+      "environment": "Physical iPad/iPhone Duo; human gesture for H11\u2013H13; resize-capable for H14",
+      "completion_mode": null,
+      "status": "ENVIRONMENT BLOCKED",
+      "evidence": ""
+    },
+    {
+      "id": "H08",
+      "deliverable": "Final semantic host removal",
+      "owner": "Device operator + SDK implementer",
+      "dependencies": [
+        "A01",
+        "D03",
+        "D07"
+      ],
+      "decisive_test": "EXP-146: real final A removal stops A once, releases source, preserves B and rejects resurrection",
+      "environment": "Physical iPad/iPhone Duo; human gesture for H11\u2013H13; resize-capable for H14",
+      "completion_mode": null,
+      "status": "ENVIRONMENT BLOCKED",
+      "evidence": ""
+    },
+    {
+      "id": "H09",
+      "deliverable": "Genuine disconnect, reconnect and remount",
+      "owner": "Device operator + SDK implementer",
+      "dependencies": [
+        "A01",
+        "D03",
+        "D08",
+        "P03"
+      ],
+      "decisive_test": "OS-driven disconnect/remount, no posted substitutes; fresh occurrence, stale callbacks fenced, peer continuity",
+      "environment": "Physical iPad/iPhone Duo; human gesture for H11\u2013H13; resize-capable for H14",
+      "completion_mode": null,
+      "status": "ENVIRONMENT BLOCKED",
+      "evidence": ""
+    },
+    {
+      "id": "H10",
+      "deliverable": "Isolated per-scene background/foreground",
+      "owner": "Device operator + SDK implementer",
+      "dependencies": [
+        "A01"
+      ],
+      "decisive_test": "Background A while B remains usable; neither lifecycle transition replaces peer current view",
+      "environment": "Physical iPad/iPhone Duo; human gesture for H11\u2013H13; resize-capable for H14",
+      "completion_mode": null,
+      "status": "ENVIRONMENT BLOCKED",
+      "evidence": ""
+    },
+    {
+      "id": "H11",
+      "deliverable": "UIKit interactive edge pop",
+      "owner": "Device operator + SDK implementer",
+      "dependencies": [
+        "A01"
+      ],
+      "decisive_test": "EXP-081: recognized cancel preserves Detail ID; recognized completion reveals fresh Home",
+      "environment": "Physical iPad/iPhone Duo; human gesture for H11\u2013H13; resize-capable for H14",
+      "completion_mode": null,
+      "status": "ENVIRONMENT BLOCKED",
+      "evidence": ""
+    },
+    {
+      "id": "H12",
+      "deliverable": "SwiftUI interactive edge pop",
+      "owner": "Device operator + SDK implementer",
+      "dependencies": [
+        "A01"
+      ],
+      "decisive_test": "EXP-100: recognized cancel preserves Detail ID; completion commits fresh Home before work",
+      "environment": "Physical iPad/iPhone Duo; human gesture for H11\u2013H13; resize-capable for H14",
+      "completion_mode": null,
+      "status": "ENVIRONMENT BLOCKED",
+      "evidence": ""
+    },
+    {
+      "id": "H13",
+      "deliverable": "Interactive presentation dismissal",
+      "owner": "Device operator + SDK implementer",
+      "dependencies": [
+        "A01",
+        "D10"
+      ],
+      "decisive_test": "EXP-152: cancelled Sheet retains ID; completed dismissal yields one fresh Home before actual callback work",
+      "environment": "Physical iPad/iPhone Duo; human gesture for H11\u2013H13; resize-capable for H14",
+      "completion_mode": null,
+      "status": "ENVIRONMENT BLOCKED",
+      "evidence": ""
+    },
+    {
+      "id": "H14",
+      "deliverable": "Adaptive split resize",
+      "owner": "Device operator + SDK implementer",
+      "dependencies": [
+        "A01"
+      ],
+      "decisive_test": "EXP-076/087: measured regular \u2192 compact \u2192 regular geometry, selection, path and exact owners",
+      "environment": "Physical iPad/iPhone Duo; human gesture for H11\u2013H13; resize-capable for H14",
+      "completion_mode": null,
+      "status": "ENVIRONMENT BLOCKED",
+      "evidence": ""
+    },
+    {
+      "id": "H15",
+      "deliverable": "Concurrent scene restoration",
+      "owner": "Device operator + SDK implementer",
+      "dependencies": [
+        "A01"
+      ],
+      "decisive_test": "EXP-042: both native sessions reconnect with fresh RUM IDs and no stale run attributes",
+      "environment": "Physical iPad/iPhone Duo; human gesture for H11\u2013H13; resize-capable for H14",
+      "completion_mode": null,
+      "status": "ENVIRONMENT BLOCKED",
+      "evidence": ""
+    },
+    {
+      "id": "H16",
+      "deliverable": "UIKit-hosted SwiftUI parity",
+      "owner": "Device operator + SDK implementer",
+      "dependencies": [
+        "A01"
+      ],
+      "decisive_test": "EXP-001 follow-up: same semantic/lifecycle/ownership contract in UIHostingController as WindowGroup",
+      "environment": "Physical iPad/iPhone Duo; human gesture for H11\u2013H13; resize-capable for H14",
+      "completion_mode": null,
+      "status": "ENVIRONMENT BLOCKED",
+      "evidence": ""
+    },
+    {
+      "id": "F01",
+      "deliverable": "Stable API review",
+      "owner": "RUM API reviewers",
+      "dependencies": [
+        "T03",
+        "T04",
+        "T05",
+        "T06",
+        "T07",
+        "R06"
+      ],
+      "decisive_test": "Reviewed RFC resolves Swift/ObjC names, availability, target forms, custom-conformer behavior and migration; only then update API baselines",
+      "environment": "API review",
+      "completion_mode": null,
+      "status": "OPEN",
+      "evidence": ""
+    },
+    {
+      "id": "F02",
+      "deliverable": "Support documentation",
+      "owner": "SDK implementer",
+      "dependencies": [
+        "F01"
+      ],
+      "decisive_test": "Each telemetry family documents its exact completion mode and automatic/opaque limits; feature docs match source",
+      "environment": "Source/doc review",
+      "completion_mode": null,
+      "status": "OPEN",
+      "evidence": ""
+    },
+    {
+      "id": "F03",
+      "deliverable": "Final compatibility build/test matrix",
+      "owner": "SDK implementer",
+      "dependencies": [
+        "F01",
+        "D01",
+        "D02",
+        "D09",
+        "D11",
+        "D12"
+      ],
+      "decisive_test": "All affected modules, ObjC Release, SPM iOS/macOS/tvOS/watchOS/visionOS, lint and approved API baselines pass at frozen revision",
+      "environment": "CI + supported SDK toolchains",
+      "completion_mode": null,
+      "status": "OPEN",
+      "evidence": ""
+    },
+    {
+      "id": "F04",
+      "deliverable": "iPhone Duo release acceptance",
+      "owner": "Device operator",
+      "dependencies": [
+        "H01",
+        "H02",
+        "H03",
+        "H04",
+        "H05",
+        "H06",
+        "H07",
+        "H08",
+        "H09",
+        "H10",
+        "H11",
+        "H12",
+        "H13",
+        "H14",
+        "H15",
+        "H16"
+      ],
+      "decisive_test": "Run the finite accepted scenario matrix on iPhone Duo iOS 27.1; exact mapper/backend owners and no SDK crash",
+      "environment": "iPhone Duo iOS 27.1",
+      "completion_mode": null,
+      "status": "OPEN",
+      "evidence": ""
+    },
+    {
+      "id": "F05",
+      "deliverable": "Session Replay coexistence",
+      "owner": "SDK implementer",
+      "dependencies": [
+        "A01"
+      ],
+      "decisive_test": "Enable Replay through two scenes, navigation and teardown without SDK-caused crash; no scene-correct replay claim",
+      "environment": "Physical multi-window device",
+      "completion_mode": null,
+      "status": "OPEN",
+      "evidence": ""
+    },
+    {
+      "id": "D01",
+      "deliverable": "watchOS Resource compile compatibility",
+      "owner": "SDK implementer",
+      "dependencies": [],
+      "decisive_test": "Reproduce/triage the reported finding, then require: DatadogRUM watchOS build including absent UI handoff",
+      "environment": "watchOS SDK build",
+      "completion_mode": null,
+      "status": "REGRESSION BLOCKED",
+      "evidence": "REVIEW_TRIAGE.md: assessed relevant at af63657f0; isolated compiler reproduction in Results/review-triage-probes.json."
+    },
+    {
+      "id": "D02",
+      "deliverable": "macOS WebView compile compatibility",
+      "owner": "SDK implementer",
+      "dependencies": [],
+      "decisive_test": "Reproduce/triage the reported finding, then require: DatadogWebViewTracking macOS build with absent UIKit scene metadata",
+      "environment": "macOS SDK build",
+      "completion_mode": null,
+      "status": "REGRESSION BLOCKED",
+      "evidence": "REVIEW_TRIAGE.md: assessed relevant at af63657f0; isolated compiler reproduction in Results/review-triage-probes.json."
+    },
+    {
+      "id": "D03",
+      "deliverable": "Keyed SwiftUI registration teardown",
+      "owner": "SDK implementer",
+      "dependencies": [],
+      "decisive_test": "Reproduce/triage the reported finding, then require: Mounted keyed destination removal plus SDK release: weak registration/instrumentation release and balanced unswizzling; repeat cycles",
+      "environment": "iOS 27 simulator, mounted SwiftUI host and lifetime checks",
+      "completion_mode": null,
+      "status": "REGRESSION BLOCKED",
+      "evidence": "REVIEW_TRIAGE.md: assessed relevant at af63657f0; source-confirmed path; required full regression/repair remains open."
+    },
+    {
+      "id": "D04",
+      "deliverable": "Named-core handoff isolation",
+      "owner": "SDK implementer",
+      "dependencies": [],
+      "decisive_test": "Reproduce/triage the reported finding, then require: Different cores, same application/different sessions, no-RUM core, nested dispatch and inherited work after stop/reinitialize never consume foreign context",
+      "environment": "Internal, RUM, Logs, Trace and network focused tests",
+      "completion_mode": null,
+      "status": "REGRESSION BLOCKED",
+      "evidence": "REVIEW_TRIAGE.md: assessed relevant at af63657f0; source-confirmed path; required full regression/repair remains open."
+    },
+    {
+      "id": "D05",
+      "deliverable": "Resolve ownership before explicit session restart",
+      "owner": "SDK implementer",
+      "dependencies": [],
+      "decisive_test": "Reproduce/triage the reported finding, then require: After stopSession with A/B and B representative, source-less start replaces B and preserves A; identity-stop A preserves B",
+      "environment": "RUM application/session tests plus two-scene simulator",
+      "completion_mode": null,
+      "status": "REGRESSION BLOCKED",
+      "evidence": "REVIEW_TRIAGE.md: assessed relevant at af63657f0; source-confirmed path; required full regression/repair remains open."
+    },
+    {
+      "id": "D06",
+      "deliverable": "Preserve peers on lazy session expiration",
+      "owner": "SDK implementer",
+      "dependencies": [
+        "D05"
+      ],
+      "decisive_test": "Reproduce/triage the reported finding, then require: Expiring lifecycle command followed by start/stop in A restores eligible B with fresh new-session ownership",
+      "environment": "RUM application/session tests plus two-scene simulator",
+      "completion_mode": null,
+      "status": "REGRESSION BLOCKED",
+      "evidence": "REVIEW_TRIAGE.md: assessed relevant at af63657f0; source-confirmed path; required full regression/repair remains open."
+    },
+    {
+      "id": "D07",
+      "deliverable": "Pending semantic authority",
+      "owner": "SDK implementer",
+      "dependencies": [
+        "D03"
+      ],
+      "decisive_test": "Reproduce/triage the reported finding, then require: Empty explicit/capability source and absent instrumentation do not suppress automatic tracking; first accepted snapshot acquires local authority",
+      "environment": "iOS 27 simulator with real authority registry",
+      "completion_mode": null,
+      "status": "REGRESSION BLOCKED",
+      "evidence": "REVIEW_TRIAGE.md: assessed relevant at af63657f0; source-confirmed path; required full regression/repair remains open."
+    },
+    {
+      "id": "D08",
+      "deliverable": "Reconnect generation acceptance",
+      "owner": "SDK implementer",
+      "dependencies": [
+        "D03",
+        "D07"
+      ],
+      "decisive_test": "Reproduce/triage the reported finding, then require: Stale trait between disconnect and real connection/reader mount cannot consume generation; exactly one fresh occurrence and correct immediate telemetry",
+      "environment": "Deterministic iOS 27 regression; genuine lifecycle remains H09",
+      "completion_mode": null,
+      "status": "REGRESSION BLOCKED",
+      "evidence": "REVIEW_TRIAGE.md: conditional state defect; deterministic and genuine OS ordering evidence remain distinct."
+    },
+    {
+      "id": "D09",
+      "deliverable": "Controller API caller-thread compatibility",
+      "owner": "SDK implementer",
+      "dependencies": [],
+      "decisive_test": "Reproduce/triage the reported finding, then require: Background start/stop getter spy records no UIKit hierarchy access; main-thread target resolves correctly without sync-to-main deadlock",
+      "environment": "iOS simulator focused test plus Main Thread Checker",
+      "completion_mode": null,
+      "status": "REGRESSION BLOCKED",
+      "evidence": "REVIEW_TRIAGE.md: assessed relevant at af63657f0; source-confirmed path; required full regression/repair remains open."
+    },
+    {
+      "id": "D10",
+      "deliverable": "Accepted presentation state",
+      "owner": "SDK implementer",
+      "dependencies": [],
+      "decisive_test": "Reproduce/triage the reported finding, then require: Rejected/canonicalized Binding writes, transaction forwarding, immediate setter work and dismissal callbacks follow accepted occurrence",
+      "environment": "Mounted iOS 27 SwiftUI adapter tests",
+      "completion_mode": null,
+      "status": "REGRESSION BLOCKED",
+      "evidence": "REVIEW_TRIAGE.md: assessed relevant at af63657f0; source-confirmed path; required full regression/repair remains open."
+    },
+    {
+      "id": "D11",
+      "deliverable": "Legacy native/WebView correlation",
+      "owner": "SDK implementer",
+      "dependencies": [],
+      "decisive_test": "Reproduce/triage the reported finding, then require: Legacy string-key view plus mounted WKWebView retains unambiguous container.view.id; peer scene never used as fallback",
+      "environment": "Single-scene simulator WebView with Replay correlation enabled",
+      "completion_mode": null,
+      "status": "REGRESSION BLOCKED",
+      "evidence": "REVIEW_TRIAGE.md: assessed relevant at af63657f0; source-confirmed path; required full regression/repair remains open."
+    },
+    {
+      "id": "D12",
+      "deliverable": "Expired action stop attributes",
+      "owner": "SDK implementer",
+      "dependencies": [],
+      "decisive_test": "Reproduce/triage the reported finding, then require: Single-scene continuous action stopped after timeout retains original stop attributes; peer timeout still cannot inherit foreign attributes",
+      "environment": "RUM scope regression with controlled clock",
+      "completion_mode": null,
+      "status": "REGRESSION BLOCKED",
+      "evidence": "REVIEW_TRIAGE.md: assessed relevant at af63657f0; source-confirmed path; required full regression/repair remains open."
+    },
+    {
+      "id": "F06",
+      "deliverable": "Release freeze",
+      "owner": "RUM maintainers",
+      "dependencies": [
+        "C01",
+        "C02",
+        "C03",
+        "C04",
+        "C05",
+        "C06",
+        "P01",
+        "P02",
+        "P03",
+        "P04",
+        "R01",
+        "R02",
+        "R03",
+        "R04",
+        "R05",
+        "R06",
+        "A01",
+        "T01",
+        "T02",
+        "T03",
+        "T04",
+        "T05",
+        "T06",
+        "T07",
+        "T08",
+        "T09",
+        "T10",
+        "T11",
+        "T12",
+        "T13",
+        "T14",
+        "T15",
+        "H01",
+        "H02",
+        "H03",
+        "H04",
+        "H05",
+        "H06",
+        "H07",
+        "H08",
+        "H09",
+        "H10",
+        "H11",
+        "H12",
+        "H13",
+        "H14",
+        "H15",
+        "H16",
+        "F01",
+        "F02",
+        "F03",
+        "F04",
+        "F05",
+        "D01",
+        "D02",
+        "D03",
+        "D04",
+        "D05",
+        "D06",
+        "D07",
+        "D08",
+        "D09",
+        "D10",
+        "D11",
+        "D12"
+      ],
+      "decisive_test": "Every required gate closed on reviewed source; performance thresholds hold; no unresolved correctness/release-review finding",
+      "environment": "Review + CI",
+      "completion_mode": null,
+      "status": "OPEN",
+      "evidence": ""
+    }
+  ]
+}

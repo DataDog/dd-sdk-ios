@@ -1,0 +1,75 @@
+# Production safety review assessment and repair order
+
+Assessed 2026-09-17 at `af63657f08dbecb66e7c3ae97ed53fc8f7b065b9` against
+`92f021ba7e4a866f84a52da93ed8b63f3dc75882`. The original
+[production safety review](PRODUCTION_SAFETY_REVIEW.md) remains unchanged.
+Review finding Rxx maps to repair gate Dxx; these must not be confused with the
+responsibility-review gates R01–R06 in the release checklist.
+
+All 12 findings are relevant to this branch's stability, compatibility or ownership
+contract. None is dismissed because the current iOS suite passed. Their evidence
+levels differ: two compiler expressions were reproduced here; several ownership
+failures follow directly from source; the reported extracted-state/ARC probes do
+not establish mounted SwiftUI or physical lifecycle ordering. No production repair
+is claimed by this assessment. Existing accepted experiment slices remain valid
+within their recorded boundaries.
+
+## Finding decisions
+
+| Review / gate | Assessment and source evidence | Fix boundary and decisive regression | When |
+| --- | --- | --- | --- |
+| R01 / D01, P1 | Confirmed platform compile defect. Resource `modify` references `RUMUIEventNetworkContext` at line 135 while its declaration is excluded on watchOS. Package supports watchOS 9. Isolated conditional/reference probe reproduces missing symbol. | Move the accessor to platform-neutral Internal ownership or guard the UIKit-only extraction while preserving absent-context behavior. Full DatadogRUM watchOS compile, not just the expression, must pass. Keep its interface compatible with D04's core-scoped contract. | First repair slice. |
+| R02 / D02, P1 | Confirmed platform compile defect. `DDScriptMessageHandler` is available under WebKit on macOS, but unconditionally follows `NSWindow.windowScene`. Narrowed compiler probe fails; normal NSWindow access control passes. | Guard UIKit scene extraction and use absent metadata on macOS. Build DatadogWebViewTracking on macOS and retain iOS message/ownership tests. | First repair slice, independently of routing redesign. |
+| R03 / D03, P1 | Source confirms the strong closure/State cycle at SwiftUI modifier lines 4456/4698 and registration lines 2621/2644. The original review's ARC-shape probe supports it; no mounted SDK teardown result exists yet. | Replace bound-modifier captures with a small cancellable context and weak handler/state/arbiter ownership. Mount/remove a real keyed host, release the core and prove weak registration/instrumentation release and teardown. | Lifetime repair before any further semantic API expansion or H08/H09. Pair with P03 measurements, not a file split. |
+| R04 / D04, P1 | Confirmed isolation gap. `RUMContextHandoff` has one process-wide TaskLocal/thread slot; Monitor/subscriber, Logs, Trace and network consumers have no core identity check. A foreign authoritative nil is wrong too. | Shared internal core-instance/generation key, nested per-owner entries and lookup only by the consuming core. Cover different cores, identical application IDs/different sessions, no-RUM cores, nested dispatch, inherited work after stop/reinitialize. | Ownership repair before T03/T08/T09; measure P02 again in the same slice so isolation does not deepen the measured allocation cost. |
+| R05 / D05, P1 | Source-confirmed target-resolution defect. `startNewSession` excludes the old last representative, then the unchanged process target resolves against restored peers. Existing restart coverage supplies an explicit scene and misses this path. | Resolve the old owner once before restoration; carry that exact decision through new-session dispatch. Test A/B, representative B, stopSession, source-less start C; also identity-stop A with B preserved. | Shared routing repair before Resource/error/mutation expansion. |
+| R06 / D06, P1 | Source-confirmed lazy-expiration divergence. Lifecycle-triggered expiration postpones creation; the next start/stop has restart=false and resumes no peers. Immediate refresh has the concurrent-view rule that the lazy path lacks. | Reuse D05's resolution/restoration policy for explicit stop, immediate refresh and lazy timeout/max-duration paths. Controlled-clock lifecycle-then-navigation tests must preserve eligible B in the new session and respect background policy. | Same repair slice as D05; depends on its normalized owner decision. |
+| R07 / D07, P1 | Confirmed explicit/capability pending-authority gap. Host line 5272 calls suppression appear before an empty source delivers a snapshot. Observed input's nil-until-ready path is different; its passing test is not a control for empty explicit sources. | Separate subscribing from acquiring effective authority. Real registry tests before/after first accepted state; absent instrumentation must remain harmless. | Semantic authority repair after lifetime cleanup, before host parity/hardware acceptance. |
+| R08 / D08, P1 | Relevant conditional state defect. Host line 5369 records a generation after a void handler call even when handler line 361 rejects the disconnected scene; trait line 6063 can supply the stale attachment. Exact framework ordering still requires a live test. | Connection/remount epoch plus accepted-publication bookkeeping. Deterministic stale-trait → reconnect → reader-mount regression first; H09 retains genuine OS ordering and immediate-telemetry verification. | Alongside D07 after D03; before H09. Do not claim physical reproduction from the reported stub. |
+| R09 / D09, P1 | Confirmed newly reachable unsafe hierarchy read. Existing nonisolated public controller APIs have no main-thread requirement; stop previously used identity only. `sceneTarget` now reads viewIfLoaded/window/windowScene synchronously on the caller. No crash is reproduced here. | Main-thread-only extraction; off-main immutable identity lookup or legacy inferred fallback. No sync-to-main wait or source-breaking actor annotation. Background getter-spy and Main Thread Checker regression plus main-thread exact targeting. | Early compatibility repair, before expanding target APIs. |
+| R10 / D10, P2 | Confirmed accepted-state mismatch. Presentation line 6445 reconciles the proposal before customer Binding write; path line 5589 forwards then reads accepted state. A rejecting/canonicalizing setter is legal. | Accepted-state boundary for presentations, preserving transaction and immediate callback ownership. Reject nil/canonicalize item, emit work in setter, and verify exactly-once dismissal. Cover same-ID style replacement as a separate ordering discriminator. | Native adapter repair before R06/F01 and presentation hardware H13. |
+| R11 / D11, P2 | Confirmed compatibility mismatch. A string-key manual view can remain scene-less; a mounted WebView supplies a scene. Strict cache filtering at line 143 rejects that sole legacy view, removing existing container correlation. | Known single-scene/unambiguous legacy fallback only; never arbitrary cross-scene fallback. Replay-enabled native/WebView correlation test plus two-scene negative control. | Early compatibility repair before WebView T10; preserve existing Replay correlation despite scene-correct Replay remaining out of scope. |
+| R12 / D12, P2 | Confirmed metadata regression by source comparison. Session line 373 expires every action with a synthetic empty keepalive before the real recipient processes its stop. `sendActionEvent` merges stop attributes only for action commands. | Resolve actual recipients before timeout advancement; recipients consume original command and only peers receive time-only advancement. Controlled t=0 start/t=11 stop preserves own attributes while foreign peer attributes remain excluded. | Early compatibility repair. T02 reopens for this missing discriminator; EXP-159's 15 accepted checks are retained. |
+
+The compiler evidence is in [review-triage-probes.json](Results/review-triage-probes.json).
+The full chained macOS expression first triggered a Swift diagnostic-generation
+failure; the narrowed member check and valid-window control disambiguated it.
+Neither compiler probe substitutes for a supported-platform module build.
+SwiftUI invariants and current test seams are detailed in
+[COMPONENT_REVIEW.md](COMPONENT_REVIEW.md).
+
+## Additional risks and exclusions
+
+| Concern | Disposition and release gate |
+| --- | --- |
+| Disconnected scene dictionaries grow without retirement | Confirmed independently by EXP-160: 220 entries after 20 warm-up plus 200 unique disconnect cycles. P03 already owns the finite repair. Retire connection generations without removing the fence while stale callbacks can still arrive; repeat ownership and retained-heap checks. |
+| Final detach uses one queue turn | Relevant coverage gap, not a newly reproduced OS failure. R04/H08/H09 must distinguish transient detach, suspended retained host and final destruction, including delayed remount without a body reevaluation. |
+| Presentation callback carries item ID instead of occurrence | Relevant unproven ordering risk. Add sheet/cover same-ID and A→B→A mount/disappear tests to D10/R06; carry an occurrence token if actual callback ordering proves stale callbacks can stop the replacement. |
+| Old Resource completion mutates a new-session action | Treat as a pre-existing routing risk, not one of the 12 introduced defects. T03 must exercise a live continuous action plus late failed Resource completion and reject false counts; the existing immediately finished custom action does not discriminate. Fix if the required ownership oracle reproduces it. |
+| Multi-observer nested transition delivery | Incremental review added this explicit R05 gap: one-observer nested tests do not establish monotonic delivery to every host. Test nested commit plus observer add/remove before closing R05; no unsupported runtime-failure claim. |
+| Queued A→B Resource start, sendEvent return signature, profiling identity | Do not reopen rejected/pre-existing concerns or invent a repair from this review. Existing exact-source and process-fallback contracts remain in force. |
+
+## Execution order and stopping rules
+
+0. Finish recording EXP-160 and the now-passing EXP-161 automation; preserve their
+   failed attempts and frozen thresholds. No repair changes enter those builds.
+1. Define the next regression experiment for D01/D02 and the early compatibility
+   slice D09/D11/D12. Start with the two independently compilable platform fixes;
+   add each failing regression before its behavior change. Revalidate the affected
+   ordinary/manual/custom/NOP baseline only where the repair changes that path.
+2. Repair shared ownership/restoration: D04 with P02, then D05/D06. Use one internal
+   ownership contract across modules, and audit every consumer. D04 is not solved
+   by comparing only application IDs or adding more public targets.
+3. Repair lifetime/semantic authority: D03 plus P03, D07/D08, then D10. Keep the
+   missing R04/R05/R06 discriminators in those slices. Each fix is a small signed
+   component commit; deferred extraction still starts only after release freeze.
+4. Resume T03–T14 only after the relevant repair dependencies and early baseline
+   gates pass. Physical H08/H09/H13 follow their repair gates when capable hardware
+   is available; a posted lifecycle test never closes them. Finish API review,
+   supported-platform CI and Duo release acceptance after these gates.
+
+Every repair experiment must name its gate, pinned source, environment and
+predeclared decisive test. A finding may be rejected only with a concrete
+counterexample/reproduction result showing the reported path cannot violate the
+contract. Keep that disposition; do not silently delete its gate or raise a failed
+performance threshold. Unsupported environments remain visible blockers.

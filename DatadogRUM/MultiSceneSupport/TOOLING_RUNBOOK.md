@@ -20,6 +20,55 @@ This runbook has two kinds of guidance:
 - Apple Xcode MCP constraints, which the SDK project cannot change.
 - Harness adaptations and operating procedures, which this project owns.
 
+## Repeatable acceptance and release progress
+
+The admitted one-command workflow lives in
+[`tools/multi-scene/acceptance/README.md`](../../tools/multi-scene/acceptance/README.md).
+EXP-161 exercises A01 with the accepted long-running-action fixture; it does not
+reopen EXP-159 or claim another family/hardware topology. The connector driver
+runs authenticated queries and the Python process owns every stage/verdict.
+
+- Preflight checks signed HEAD, current toolchain/destination and an actual
+  authenticated read. Fresh derived artifacts must execute all166 probe tests.
+- Hash SDK/fixture/runner/contract sources before building; verify unchanged
+  identity through backend checks and match installed executable to the build.
+- Prove bundle data-container absence before installing. Generate a new run ID;
+  reject existing output directories and bridge responses from another request.
+- Preserve the complete fixture contract, native scene identities, live Home UUIDs,
+  exact action owners/final names/counts, submission boundaries and stop ordering.
+- Query views by session alone and validate every view's run ID. A query filtered
+  only by the current run can hide restored stale views.
+- Store one sanitized durable JSON per attempt under `Results/acceptance/`;
+  raw console, screenshot, xcresult and binary files remain local artifacts.
+- Keep FAIL (semantic violation), INVALID (setup/oracle/tooling) and INCONCLUSIVE
+  (environment or incomplete evidence) distinct. Never edit a failed summary into
+  PASS. A corrected runner needs a new complete attempt.
+
+Native mapper Home records carry logical scene/screen plus exact RUM UUID. They
+have no occurrence number; action records carry sourceContext and rumContext,
+not semanticContext. Resolve occurrence1 from the first Home UUID and enforce
+that identity. The initial EXP-161 validator incorrectly required the absent
+field and was rejected; its raw FAIL summary remains preserved as a tooling-invalid
+attempt. Negative controls now cover the real envelope without weakening ownership.
+A helper `exec_command` may return a session ID even for a short filesystem read.
+Collect its subsequent output before checking exit_code or parsing JSON. Keep the
+long acceptance process asynchronous so the bridge can serve its requests; test
+both immediate and yielded helper completion paths.
+
+`release-gates.json` is the finite machine register. Run
+`python3 -B tools/multi-scene/release_checklist.py --update` after an evidence-based
+status change. This regenerates PLAN gate rows and `Results/release-progress.json`;
+without `--update` it checks consistency. New experiments name an existing gate
+or a reproduced regression. Finished narratives belong in the detailed record,
+not the active plan.
+
+The early baseline protocol is in [BASELINES.md](BASELINES.md); its fixture lives
+under `tools/multi-scene/baselines/`. Run timed/allocated workloads without another
+build, test or profiling workload. Preserve invalid instrumentation attempts and
+calibrate allocation counters before using their numbers. Do not treat a posted
+scene notification as real OS teardown or a weak controller check as mounted
+SwiftUI host lifetime proof. Predeclared thresholds cannot be raised after results.
+
 ## Documentation reading and update workflow
 
 Use progressive disclosure; do not load the frozen history wholesale.
