@@ -50,7 +50,7 @@ Objective-C Release exposure still require normal API review.
    boundaries. Preserve their controls and frozen acceptance identities.
 2. D05/D06 restoration, D03/R02 keyed lifetime, D07 pending authority and D08
    reconnect acceptance are closed within their recorded boundaries.
-   Next resolve R04 retained-reader remount without body/source rebind, then define
+   Next execute EXP-171 for R04 retained-reader remount without body/source rebind, then define
    P03 disconnected-registry retirement and run its unchanged budget.
 3. Repair D10 accepted presentation state. Close the missing R04/R05/R06
    discriminators in those slices; P03 needs its full retained-state budget.

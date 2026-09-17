@@ -1252,3 +1252,13 @@ candidate51/51. The runtime inventory requires real mounted readers/registry and
 callback rebinding, exact fresh view/session owners, three Home occurrences and
 one unchanged logical peer. Package attempt1 and fixture attempt2 remain in the
 durable result. Physical H09 cannot close from these posted lifecycle controls.
+
+## EXP-171 retained reader boundary
+
+The definition requires no body/source reconciliation between teardown and the
+retained reader remount. Capture the actual reader callback before removal;
+reinstall it immediately before readding the retained hosting controller, and
+submit Resource/Log markers inside that callback after SDK delivery. Require the
+callback to run before any subsequent render; missing callback interception is
+inconclusive. Do not assign a new root value to repair the source before this
+boundary. Unit controls must enforce the same no-rebind sequence independently.

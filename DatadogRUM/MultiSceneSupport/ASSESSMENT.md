@@ -57,7 +57,7 @@ owns immediate work. EXP-170 closes D08 at signed `66d1ccb02`: three failing con
 callbacks cannot consume a generation. Immediate reconnect Resource/Log events
 belong to the fresh Home; the control sends them to Peer. A retained host remounts
 fresh after delayed detach with body reconstruction. R04 still requires a retained
-reader remount without body/source rebind, before P03 registry retirement; D10 is the remaining
+reader remount without body/source rebind (defined EXP-171), before P03 registry retirement; D10 is the remaining
 production-review repair. Physical scene and final release gates remain separate.
 
 The released SDK baseline is not semantically safe for applications with
