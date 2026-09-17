@@ -48,7 +48,7 @@ Objective-C Release exposure still require normal API review.
    register and detailed record. Accepted experiment identities remain unchanged.
 1. D12/T02, D09, D11 and D04/P02 repairs are accepted within their recorded
    boundaries. Preserve their controls and frozen acceptance identities.
-2. Next: define and execute EXP-167 for D05/D06. Resolve the old navigation owner
+2. Next: execute the defined EXP-167 for D05/D06. Resolve the old navigation owner
    before restoring peers and unify explicit-stop, immediate and lazy-expiration
    restoration in the [assessed order](REVIEW_TRIAGE.md).
 3. Repair D03/P03 lifetimes, D07/D08 authority/reconnect, and D10 accepted
