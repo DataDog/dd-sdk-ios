@@ -1,0 +1,397 @@
+{
+  "completionConditions": [
+    {
+      "expectedCount": 1,
+      "kind": "error",
+      "name": "timing-initial-a",
+      "occurrence": 1,
+      "rumViewOrigin": "semantic",
+      "scene": "scene-A",
+      "screen": "home",
+      "sourceScene": "scene-A"
+    },
+    {
+      "expectedCount": 1,
+      "kind": "error",
+      "name": "timing-initial-b",
+      "occurrence": 1,
+      "rumViewOrigin": "semantic",
+      "scene": "scene-B",
+      "screen": "home",
+      "sourceScene": "scene-A"
+    },
+    {
+      "expectedCount": 1,
+      "kind": "error",
+      "name": "timing-swift-initial-a",
+      "occurrence": 1,
+      "rumViewOrigin": "semantic",
+      "scene": "scene-A",
+      "screen": "home",
+      "sourceScene": "scene-A"
+    },
+    {
+      "expectedCount": 1,
+      "kind": "error",
+      "name": "timing-swift-initial-b",
+      "occurrence": 1,
+      "rumViewOrigin": "semantic",
+      "scene": "scene-B",
+      "screen": "home",
+      "sourceScene": "scene-A"
+    },
+    {
+      "expectedCount": 1,
+      "kind": "error",
+      "name": "timing-swift-repeat-a",
+      "occurrence": 1,
+      "rumViewOrigin": "semantic",
+      "scene": "scene-A",
+      "screen": "home",
+      "sourceScene": "scene-A"
+    },
+    {
+      "expectedCount": 1,
+      "kind": "error",
+      "name": "timing-swift-repeat-b",
+      "occurrence": 1,
+      "rumViewOrigin": "semantic",
+      "scene": "scene-B",
+      "screen": "home",
+      "sourceScene": "scene-A"
+    },
+    {
+      "expectedCount": 1,
+      "kind": "error",
+      "name": "timing-swift-overwrite-a",
+      "occurrence": 1,
+      "rumViewOrigin": "semantic",
+      "scene": "scene-A",
+      "screen": "home",
+      "sourceScene": "scene-A"
+    },
+    {
+      "expectedCount": 1,
+      "kind": "error",
+      "name": "timing-swift-overwrite-b",
+      "occurrence": 1,
+      "rumViewOrigin": "semantic",
+      "scene": "scene-B",
+      "screen": "home",
+      "sourceScene": "scene-A"
+    },
+    {
+      "expectedCount": 1,
+      "kind": "error",
+      "name": "timing-objc-initial-a",
+      "occurrence": 1,
+      "rumViewOrigin": "semantic",
+      "scene": "scene-A",
+      "screen": "home",
+      "sourceScene": "scene-A"
+    },
+    {
+      "expectedCount": 1,
+      "kind": "error",
+      "name": "timing-objc-initial-b",
+      "occurrence": 1,
+      "rumViewOrigin": "semantic",
+      "scene": "scene-B",
+      "screen": "home",
+      "sourceScene": "scene-A"
+    },
+    {
+      "expectedCount": 1,
+      "kind": "error",
+      "name": "timing-objc-repeat-a",
+      "occurrence": 1,
+      "rumViewOrigin": "semantic",
+      "scene": "scene-A",
+      "screen": "home",
+      "sourceScene": "scene-A"
+    },
+    {
+      "expectedCount": 1,
+      "kind": "error",
+      "name": "timing-objc-repeat-b",
+      "occurrence": 1,
+      "rumViewOrigin": "semantic",
+      "scene": "scene-B",
+      "screen": "home",
+      "sourceScene": "scene-A"
+    },
+    {
+      "expectedCount": 1,
+      "kind": "error",
+      "name": "timing-objc-overwrite-a",
+      "occurrence": 1,
+      "rumViewOrigin": "semantic",
+      "scene": "scene-A",
+      "screen": "home",
+      "sourceScene": "scene-A"
+    },
+    {
+      "expectedCount": 1,
+      "kind": "error",
+      "name": "timing-objc-overwrite-b",
+      "occurrence": 1,
+      "rumViewOrigin": "semantic",
+      "scene": "scene-B",
+      "screen": "home",
+      "sourceScene": "scene-A"
+    },
+    {
+      "expectedCount": 1,
+      "kind": "error",
+      "name": "timing-final-a",
+      "occurrence": 1,
+      "rumViewOrigin": "semantic",
+      "scene": "scene-A",
+      "screen": "home",
+      "sourceScene": "scene-A"
+    },
+    {
+      "expectedCount": 1,
+      "kind": "error",
+      "name": "timing-final-b",
+      "occurrence": 1,
+      "rumViewOrigin": "semantic",
+      "scene": "scene-B",
+      "screen": "home",
+      "sourceScene": "scene-A"
+    }
+  ],
+  "defaultRunMode": "clean",
+  "expectedSemanticTimeline": [
+    {
+      "kind": "view-started",
+      "occurrence": 1,
+      "rumViewOrigin": "semantic",
+      "scene": "scene-A",
+      "screen": "home"
+    },
+    {
+      "kind": "view-started",
+      "occurrence": 1,
+      "rumViewOrigin": "semantic",
+      "scene": "scene-B",
+      "screen": "home"
+    },
+    {
+      "expectedCount": 1,
+      "kind": "error",
+      "name": "timing-initial-a",
+      "occurrence": 1,
+      "rumViewOrigin": "semantic",
+      "scene": "scene-A",
+      "screen": "home",
+      "sourceScene": "scene-A"
+    },
+    {
+      "expectedCount": 1,
+      "kind": "error",
+      "name": "timing-initial-b",
+      "occurrence": 1,
+      "rumViewOrigin": "semantic",
+      "scene": "scene-B",
+      "screen": "home",
+      "sourceScene": "scene-A"
+    },
+    {
+      "expectedCount": 1,
+      "kind": "error",
+      "name": "timing-swift-initial-a",
+      "occurrence": 1,
+      "rumViewOrigin": "semantic",
+      "scene": "scene-A",
+      "screen": "home",
+      "sourceScene": "scene-A"
+    },
+    {
+      "expectedCount": 1,
+      "kind": "error",
+      "name": "timing-swift-initial-b",
+      "occurrence": 1,
+      "rumViewOrigin": "semantic",
+      "scene": "scene-B",
+      "screen": "home",
+      "sourceScene": "scene-A"
+    },
+    {
+      "expectedCount": 1,
+      "kind": "error",
+      "name": "timing-swift-repeat-a",
+      "occurrence": 1,
+      "rumViewOrigin": "semantic",
+      "scene": "scene-A",
+      "screen": "home",
+      "sourceScene": "scene-A"
+    },
+    {
+      "expectedCount": 1,
+      "kind": "error",
+      "name": "timing-swift-repeat-b",
+      "occurrence": 1,
+      "rumViewOrigin": "semantic",
+      "scene": "scene-B",
+      "screen": "home",
+      "sourceScene": "scene-A"
+    },
+    {
+      "expectedCount": 1,
+      "kind": "error",
+      "name": "timing-swift-overwrite-a",
+      "occurrence": 1,
+      "rumViewOrigin": "semantic",
+      "scene": "scene-A",
+      "screen": "home",
+      "sourceScene": "scene-A"
+    },
+    {
+      "expectedCount": 1,
+      "kind": "error",
+      "name": "timing-swift-overwrite-b",
+      "occurrence": 1,
+      "rumViewOrigin": "semantic",
+      "scene": "scene-B",
+      "screen": "home",
+      "sourceScene": "scene-A"
+    },
+    {
+      "expectedCount": 1,
+      "kind": "error",
+      "name": "timing-objc-initial-a",
+      "occurrence": 1,
+      "rumViewOrigin": "semantic",
+      "scene": "scene-A",
+      "screen": "home",
+      "sourceScene": "scene-A"
+    },
+    {
+      "expectedCount": 1,
+      "kind": "error",
+      "name": "timing-objc-initial-b",
+      "occurrence": 1,
+      "rumViewOrigin": "semantic",
+      "scene": "scene-B",
+      "screen": "home",
+      "sourceScene": "scene-A"
+    },
+    {
+      "expectedCount": 1,
+      "kind": "error",
+      "name": "timing-objc-repeat-a",
+      "occurrence": 1,
+      "rumViewOrigin": "semantic",
+      "scene": "scene-A",
+      "screen": "home",
+      "sourceScene": "scene-A"
+    },
+    {
+      "expectedCount": 1,
+      "kind": "error",
+      "name": "timing-objc-repeat-b",
+      "occurrence": 1,
+      "rumViewOrigin": "semantic",
+      "scene": "scene-B",
+      "screen": "home",
+      "sourceScene": "scene-A"
+    },
+    {
+      "expectedCount": 1,
+      "kind": "error",
+      "name": "timing-objc-overwrite-a",
+      "occurrence": 1,
+      "rumViewOrigin": "semantic",
+      "scene": "scene-A",
+      "screen": "home",
+      "sourceScene": "scene-A"
+    },
+    {
+      "expectedCount": 1,
+      "kind": "error",
+      "name": "timing-objc-overwrite-b",
+      "occurrence": 1,
+      "rumViewOrigin": "semantic",
+      "scene": "scene-B",
+      "screen": "home",
+      "sourceScene": "scene-A"
+    },
+    {
+      "expectedCount": 1,
+      "kind": "error",
+      "name": "timing-final-a",
+      "occurrence": 1,
+      "rumViewOrigin": "semantic",
+      "scene": "scene-A",
+      "screen": "home",
+      "sourceScene": "scene-A"
+    },
+    {
+      "expectedCount": 1,
+      "kind": "error",
+      "name": "timing-final-b",
+      "occurrence": 1,
+      "rumViewOrigin": "semantic",
+      "scene": "scene-B",
+      "screen": "home",
+      "sourceScene": "scene-A"
+    }
+  ],
+  "identifier": "timing.explicit-target.current-view-cross-scene-serial",
+  "initialWindows": [
+    "scene-A",
+    "scene-B"
+  ],
+  "layout": "stack",
+  "requiredCapabilities": [
+    "multiple-scenes"
+  ],
+  "runtimeOptions": {
+    "automaticallyAbortsDetail": false,
+    "automaticallyAdvancesSplitSelection": true,
+    "automaticallyClosesSceneB": false,
+    "automaticallyNavigates": false,
+    "automaticallyOpensSecondWindow": false,
+    "automaticallyPopsUIKitSplitNavigation": true,
+    "automaticallyReplacesDetail": false,
+    "automaticallyReplacesDetailInstance": false,
+    "automaticallyReturnsSplitToDetail": false,
+    "exercisesSwiftUIButtonStructuredTask": false,
+    "exercisesTraceOnlyURLSessionOwnership": false,
+    "exercisesUIEventContextHandoff": false,
+    "exercisesUIKitScrollOwnership": false,
+    "forcesNavigationRouteIdentity": false,
+    "initialSwiftUIPath": [],
+    "manualSwiftUIViewScreensByScene": {},
+    "startsSplitWithoutSelection": false,
+    "swiftUIRouterWritePolicy": "accept",
+    "swiftUIStress": "none"
+  },
+  "steps": [
+    {
+      "kind": "wait-for-scene-ready",
+      "scene": "scene-A"
+    },
+    {
+      "kind": "wait-for-signal",
+      "scene": "scene-A",
+      "signal": "rum-view:home#1"
+    },
+    {
+      "kind": "open-window",
+      "scene": "scene-A",
+      "value": "scene-B"
+    },
+    {
+      "kind": "wait-for-signal",
+      "scene": "scene-B",
+      "signal": "rum-view:home#1"
+    },
+    {
+      "kind": "run-view-timing-batch",
+      "scene": "scene-B"
+    }
+  ],
+  "trackingMode": "manual"
+}

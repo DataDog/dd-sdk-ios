@@ -41,6 +41,23 @@ function projectAttributeState(payload, at) {
   return selected;
 }
 
+function projectTimingState(payload, at) {
+  const timings = {};
+  const keys = ["exp179_shared", "exp179_final_a", "exp179_final_b"];
+  const raw = at(payload, "view.custom_timings") || {};
+  for (const key of keys) {
+    const value = at(payload, "view.custom_timings." + key);
+    const present = Object.hasOwn(raw, key) || Object.hasOwn(payload, "view.custom_timings." + key) ||
+      Object.hasOwn(payload.view || {}, "custom_timings." + key);
+    if (value == null && !present) continue;
+    if (!Number.isSafeInteger(value) || value <= 0) return {invalid: true};
+    timings[key] = value;
+  }
+  const loading = at(payload, "view.loading_time");
+  if (loading != null && (!Number.isSafeInteger(loading) || loading <= 0)) return {invalid: true};
+  return {timings, loading};
+}
+
 async function runAcceptance({tools, notify, device, repo, scenario}) {
   if (!repo || !device) throw Error("Explicit repository path and freshly resolved simulator UUID required");
   const shellQuote = value => "'" + value.replaceAll("'", "'\\''") + "'";
@@ -115,6 +132,15 @@ async function runAcceptance({tools, notify, device, repo, scenario}) {
       const base = {run_id:at(payload,"context.probe.run_id"),
                     session_id:at(payload,"session.id"), view_id:at(payload,"view.id")};
       if (request.kind === "views") return {...base, name:at(payload,"view.name")};
+      if (request.kind === "timing_views") return {...base, name:at(payload, "view.name"),
+        timing_state:projectTimingState(payload, at)};
+      if (request.kind === "timing_errors") {
+        const phase = at(payload, "context.probe.phase");
+        return {...base, phase, event_id:at(payload, "error.id"),
+          source_scene:at(payload, "context.probe.source_scene"),
+          error_source:at(payload, "error.source"), error_type:at(payload, "error.type"),
+          is_crash:at(payload, "error.is_crash"), payload_matches:at(payload, "error.message") === phase};
+      }
       if (request.kind === "attribute_errors") {
         const phase = at(payload, "context.probe.phase");
         return {...base, phase, event_id:at(payload, "error.id"),

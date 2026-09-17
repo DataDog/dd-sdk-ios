@@ -1213,3 +1213,8 @@ can collapse revisions; compare final persisted values independently and retain
 intermediate overwrite evidence locally. Do not infer intermediate backend
 documents from the last version. See the
 [timing contract](Experiments/EXP-143-199.md#exp-179--target-custom-timing-and-loading-time).
+
+The named timing runner binds marker assertions to the immediately preceding
+mapper snapshot sequence and exact document version. Its synthetic-key projection
+and malformed-duration controls are specified in the
+[timing runner procedure](../../tools/multi-scene/acceptance/README.md#timing-contract-exp-179t06).

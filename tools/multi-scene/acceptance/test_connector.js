@@ -62,3 +62,29 @@ test('attribute projection rejects wrong types and excludes unbounded values', (
     {exp178_nested:{value:'objc-b'}, 'exp178_nested.value':'objc-b'}
   ]) assert.deepEqual(projectAttributeState({context}, at), {invalid:true});
 });
+
+const {projectTimingState} = new Function(source.replace(
+  'return runAcceptance({tools, notify, device, repo, scenario: typeof scenario === "undefined" ? undefined : scenario});',
+  'return {projectTimingState};'
+))();
+const nestedAt = (object, key) => {
+  if (Object.hasOwn(object, key)) return object[key];
+  return key.split('.').reduce((value, part) => value?.[part], object) ?? null;
+};
+test('timing projection keeps integer nanoseconds and initial absence', () => {
+  assert.deepEqual(projectTimingState({view:{custom_timings:{exp179_shared:123,exp179_final_a:456},loading_time:300}}, nestedAt),
+    {timings:{exp179_shared:123,exp179_final_a:456},loading:300});
+  assert.deepEqual(projectTimingState({view:{}}, nestedAt), {timings:{},loading:null});
+});
+test('timing projection supports full flattened names without type conversion', () => {
+  assert.deepEqual(projectTimingState({'view.custom_timings.exp179_shared':123,'view.loading_time':300}, nestedAt),
+    {timings:{exp179_shared:123},loading:300});
+});
+test('timing projection rejects booleans strings nested durations and invalid numbers', () => {
+  for (const value of [true, '123', {value:123}, 0, -1, 1.5, Number.MAX_SAFE_INTEGER+1, null]) {
+    assert.deepEqual(projectTimingState({view:{custom_timings:{exp179_shared:value}}}, nestedAt), {invalid:true});
+  }
+  for (const loading_time of [true, '123', 0, -1, 1.5]) {
+    assert.deepEqual(projectTimingState({view:{loading_time}}, nestedAt), {invalid:true});
+  }
+});

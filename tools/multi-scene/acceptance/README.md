@@ -1,8 +1,8 @@
 # Multi-scene acceptance workflow
 
-This runner admits four finite contracts: EXP-161/A01 long-running actions,
+This runner admits five finite contracts: EXP-161/A01 long-running actions,
 EXP-176/T03 captured Resource starts, EXP-177/T04 current-view errors and
-EXP-178/T05 current-view attributes. It does not certify simultaneous visibility,
+EXP-178/T05 current-view attributes and EXP-179/T06 timing/loading. It does not certify simultaneous visibility,
 real scene teardown, interactive gestures or hardware-only scenarios.
 
 The Python runner records commit signature status and performs environment and
@@ -152,3 +152,21 @@ known flattened nested key. Invalid values produce a fixed invalid marker.
 Negative controls reject peer mutation, wrong types, removed keys, detached
 snapshot IDs, stale identity and late guards. The runner requires at least170
 probe tests for this contract; its fresh build runs the complete current suite.
+
+## Timing contract (EXP-179/T06)
+
+Pass scenario `timing.explicit-target.current-view-cross-scene-serial`.
+`timing-scenario-contract.json` freezes eight paired checkpoints and34 app
+expectations. Real Swift/Objective-C calls target the opposite inferred scene.
+The local oracle joins each marker to the immediately preceding mapper view
+snapshot by sequence, exact view/session and document version. It rejects stale
+or late snapshot bindings, noninteger durations, non-growing replacements,
+changed loading under overwrite false, unchanged loading under true, peer
+mutations and foreign final keys.
+
+Whole-session backend queries require16 marker errors,3 views and0 Resources/
+crashes. Final custom timing/loading values must match the mapper exactly.
+Intermediate revisions can be collapsed by ingestion and are established by
+ordered mapper evidence. The runner requires at least172 probe tests and runs the
+complete current suite. Earlier action/Resource/error/attribute contracts remain
+independently selectable and keep their original inventories.

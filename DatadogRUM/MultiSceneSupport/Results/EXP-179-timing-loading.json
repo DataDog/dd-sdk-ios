@@ -1,6 +1,6 @@
 {
   "experiment": "EXP-179",
-  "status": "SDK PASS; native PLANNED",
+  "status": "SDK PASS; native PREPARED",
   "gate": "T06",
   "gates_closed": [],
   "control_revision": "f01637a65c4399838e93cfaaa10fca90ca99816d",
@@ -284,5 +284,18 @@
   "attempt_notes": [
     "Initial off-view parity helper used wall-clock SDK initialization with a fixed command clock, producing differing negative elapsed values. Fix only the helper SDK-init date; all426 affected tests then pass.",
     "Initial scheme lookup used test target ObjcAPITests as scheme; tool rejected it before any build. Fresh DatadogCore inventory supplied the actual11 test selectors."
-  ]
+  ],
+  "native_preparation": {
+    "scenario": "timing.explicit-target.current-view-cross-scene-serial",
+    "python_controls": 94,
+    "connector_controls": 9,
+    "minimum_probe_tests": 172,
+    "build_for_testing": {
+      "buildResult": "The project built successfully.",
+      "elapsedTime": 10.596,
+      "errors": [],
+      "fullLogPath": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/ActionArtifacts/default/BuildProject/BuildProject-Log-20260917-234212.txt"
+    },
+    "runtime_acceptance": "PENDING"
+  }
 }

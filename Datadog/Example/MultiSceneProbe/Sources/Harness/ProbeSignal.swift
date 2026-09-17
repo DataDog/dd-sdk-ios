@@ -198,6 +198,12 @@ internal struct ProbeGeometry: Codable, Equatable {
     let height: Double
 }
 
+/// Observed synthetic timings and loading nanoseconds for EXP-179.
+internal struct ProbeTimingState: Codable, Equatable {
+    let timings: [String: Int64]
+    let loading: Int64?
+}
+
 /// Whitelisted synthetic EXP-178 values; omitted fields prove removal.
 internal struct ProbeAttributeState: Codable, Equatable {
     let shadow: String
@@ -274,6 +280,7 @@ internal struct ProbeSignal: Codable, Equatable {
     let trace: ProbeTraceSignal?
     let operation: ProbeOperationSignal?
     let attributeState: ProbeAttributeState?
+    let timingState: ProbeTimingState?
     let result: ProbeSemanticResultState?
     let reason: String?
 
@@ -314,6 +321,7 @@ internal struct ProbeSignal: Codable, Equatable {
         trace: ProbeTraceSignal? = nil,
         operation: ProbeOperationSignal? = nil,
         attributeState: ProbeAttributeState? = nil,
+        timingState: ProbeTimingState? = nil,
         result: ProbeSemanticResultState? = nil,
         reason: String? = nil
     ) {
@@ -354,6 +362,7 @@ internal struct ProbeSignal: Codable, Equatable {
         self.trace = trace
         self.operation = operation
         self.attributeState = attributeState
+        self.timingState = timingState
         self.result = result
         self.reason = reason
     }
@@ -401,6 +410,7 @@ internal struct ProbeSignal: Codable, Equatable {
             trace: trace,
             operation: operation,
             attributeState: attributeState,
+            timingState: timingState,
             result: result,
             reason: reason
         )

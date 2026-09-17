@@ -30,6 +30,7 @@ enum ProbeStepKind: String, Codable, CaseIterable {
     case runResourceOwnershipBatch = "run-resource-ownership-batch"
     case runCurrentViewErrorBatch = "run-current-view-error-batch"
     case runViewAttributeBatch = "run-view-attribute-batch"
+    case runViewTimingBatch = "run-view-timing-batch"
     case startExplicitTargetAction = "start-explicit-target-action"
     case stopExplicitTargetAction = "stop-explicit-target-action"
     case startLegacyAction = "start-legacy-action"
@@ -211,4 +212,18 @@ enum ProbeAttributeContract {
     ]
     static let phases = checkpoints.flatMap { ["attribute-" + $0 + "-a", "attribute-" + $0 + "-b"] }
     static let completed = "attribute-batch-finished"
+}
+
+enum ProbeTimingContract {
+    static let scenarioID = "timing.explicit-target.current-view-cross-scene-serial"
+    static let checkpoints = [
+        "initial", "swift-initial", "swift-repeat", "swift-overwrite",
+        "objc-initial", "objc-repeat", "objc-overwrite", "final",
+    ]
+    static let phases = checkpoints.flatMap { ["timing-" + $0 + "-a", "timing-" + $0 + "-b"] }
+    static let shared = "exp179_shared"
+    static let finalA = "exp179_final_a"
+    static let finalB = "exp179_final_b"
+    static let keys = [shared, finalA, finalB]
+    static let completed = "timing-batch-finished"
 }

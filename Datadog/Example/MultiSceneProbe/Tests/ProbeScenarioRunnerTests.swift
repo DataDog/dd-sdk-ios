@@ -36,6 +36,35 @@ final class ProbeScenarioRunnerTests: XCTestCase {
     }
 
 
+    func testTimingContractHasAllOverwriteCheckpointsAndBothOwners() throws {
+        let scenario = try XCTUnwrap(ProbeScenarioCatalog.scenario(identifier: ProbeTimingContract.scenarioID))
+        XCTAssertEqual(scenario.steps.last?.kind, .runViewTimingBatch)
+        XCTAssertEqual(scenario.steps.last?.scene, "scene-B")
+        XCTAssertTrue(ProbeScenarioCatalog.usesObservableDriver(scenario))
+        XCTAssertEqual(ProbeTimingContract.checkpoints.count, 8)
+        XCTAssertEqual(scenario.completionConditions.count, 16)
+        XCTAssertEqual(Set(scenario.completionConditions.compactMap(\.name)).count, 16)
+        for scene in ["scene-A", "scene-B"] {
+            XCTAssertEqual(scenario.completionConditions.filter { $0.scene == scene }.count, 8)
+        }
+        XCTAssertTrue(scenario.completionConditions.allSatisfy {
+            $0.kind == .error && $0.sourceScene == "scene-A" && $0.expectedCount == 1
+        })
+        XCTAssertEqual(scenario.expectedSemanticTimeline.count + scenario.completionConditions.count, 34)
+    }
+
+    func testTimingEvidencePreservesSnapshotBindingAndRejectsBooleanDuration() throws {
+        let state = ProbeTimingState(timings: [ProbeTimingContract.shared: 123], loading: 456)
+        let signal = ProbeSignal(kind: .assertion, acknowledgedSignalSequence: 7, eventID: "error",
+                                 timingState: state)
+            .enveloped(sequence: 8, timestampMilliseconds: 1, runID: "run", scenarioID: ProbeTimingContract.scenarioID)
+        let decoded = try JSONDecoder().decode(ProbeSignal.self, from: JSONEncoder().encode(signal))
+        XCTAssertEqual(decoded.timingState, state)
+        XCTAssertEqual(decoded.acknowledgedSignalSequence, 7)
+        let data = try JSONSerialization.data(withJSONObject: ["timings": [ProbeTimingContract.shared: true], "loading": 456])
+        XCTAssertThrowsError(try JSONDecoder().decode(ProbeTimingState.self, from: data))
+    }
+
     func testAttributeContractHasAllCheckpointsAndBothExactOwners() throws {
         let scenario = try XCTUnwrap(ProbeScenarioCatalog.scenario(identifier: ProbeAttributeContract.scenarioID))
         XCTAssertEqual(scenario.steps.last?.kind, .runViewAttributeBatch)

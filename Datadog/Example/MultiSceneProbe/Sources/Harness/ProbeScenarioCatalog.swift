@@ -19,6 +19,7 @@ enum ProbeScenarioCatalog {
         ProbeResourceContract.scenarioID,
         ProbeErrorContract.scenarioID,
         ProbeAttributeContract.scenarioID,
+        ProbeTimingContract.scenarioID,
         "swiftui.stack.abort",
         "swiftui.stack.same-type-replacement",
         "swiftui.stack.different-type-replacement",
@@ -79,6 +80,7 @@ enum ProbeScenarioCatalog {
         resourcesExplicitStartCapturedOwner,
         errorsExplicitCurrentView,
         attributesExplicitCurrentView,
+        timingExplicitCurrentView,
         swiftUIStackAbort,
         swiftUIStackSameTypeReplacement,
         swiftUIStackDifferentTypeReplacement,
@@ -767,6 +769,33 @@ enum ProbeScenarioCatalog {
             ProbeStep(.stopLegacyAction, scene: "scene-A", value: "long-running-legacy-finished-b"),
     ]
 
+
+    private static let timingExplicitCurrentView = ProbeScenario(
+        identifier: ProbeTimingContract.scenarioID,
+        trackingMode: .manual,
+        layout: .stack,
+        initialWindows: ["scene-A", "scene-B"],
+        requiredCapabilities: [.multipleScenes],
+        steps: [
+            ProbeStep(.waitForSceneReady, scene: "scene-A"),
+            ProbeStep(.waitForSignal, scene: "scene-A", signal: "rum-view:home#1"),
+            ProbeStep(.openWindow, scene: "scene-A", value: "scene-B"),
+            ProbeStep(.waitForSignal, scene: "scene-B", signal: "rum-view:home#1"),
+            ProbeStep(.runViewTimingBatch, scene: "scene-B"),
+        ],
+        completionConditions: timingCompletionExpectations,
+        expectedSemanticTimeline: [
+            ProbeExpectation(.viewStarted, scene: "scene-A", screen: "home", occurrence: 1, rumViewOrigin: .semantic),
+            ProbeExpectation(.viewStarted, scene: "scene-B", screen: "home", occurrence: 1, rumViewOrigin: .semantic),
+        ] + timingCompletionExpectations
+    )
+
+    private static let timingCompletionExpectations: [ProbeExpectation] =
+        ProbeTimingContract.phases.enumerated().map { index, phase in
+            ProbeExpectation(.error, scene: index.isMultiple(of: 2) ? "scene-A" : "scene-B",
+                             screen: "home", occurrence: 1, name: phase, sourceScene: "scene-A",
+                             rumViewOrigin: .semantic, expectedCount: 1)
+        }
 
     private static let attributesExplicitCurrentView = ProbeScenario(
         identifier: ProbeAttributeContract.scenarioID,
