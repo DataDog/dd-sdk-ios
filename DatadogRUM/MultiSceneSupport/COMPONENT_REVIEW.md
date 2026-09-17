@@ -6,8 +6,9 @@ further API expansion. This is a source review with existing regression evidence
 not final independent release sign-off or a new device run. Deferred extraction
 remains in [its separate plan](DEFERRED_SINGLE_SCENE_EXTRACTION.md).
 
-The concurrent, user-owned `PRODUCTION_SAFETY_REVIEW.md` was consulted and left
-unchanged/uncommitted. Its reported reproductions are attributed to that review;
+The original review consulted `PRODUCTION_SAFETY_REVIEW.md` without editing it.
+That document now has a tracked live disposition table at the user’s request.
+Its historical reproductions are attributed to that review;
 this pass independently inspected the SwiftUI source paths below. D01–D12 in the
 release register preserve its finite repair/triage obligations. None closes merely
 because a report exists. No production source changed during this review.

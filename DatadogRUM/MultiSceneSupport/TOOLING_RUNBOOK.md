@@ -1168,3 +1168,22 @@ assert that boundary separately from direct Resource ownership through completio
 The accepted runner reaches 1 allocation/64 bytes; never raise the frozen budget
 or substitute retained heap for allocation churn. Closed D04/P02 does not close
 retained-state, backend, minimum-runtime or physical-topology gates.
+
+
+## EXP-167 native restoration acceptance
+
+`tools/multi-scene/session-restoration/run.py` builds explicit pinned control and
+candidate SDK copies, clean-installs both on a discovered iOS 27 iPad simulator,
+requests a second native scene, and produces 47 named checks with source/build
+identity and run-ID validation. It reuses baseline extraction helpers; it never
+reads the main project or local xcconfig. The README defines six cases and exact
+owner/inventory assertions. Controlled expiration times do not prove physical OS
+lifecycle behavior or backend ownership.
+
+Observe application readiness after scene activation, with a bounded retry:
+the callback may precede UIApplication becoming active. The first attempt missed
+this boundary and is retained as INVALID. The accepted repeat rebuilds both arms
+and requires real topology before interpreting semantic failures. Read snapshots
+before sending markers, and preserve exact new-session view inventories; a later
+action can otherwise hide a missing restoration branch. Maximum-duration cases
+must refresh activity before their deadline so they cannot pass as timeouts.

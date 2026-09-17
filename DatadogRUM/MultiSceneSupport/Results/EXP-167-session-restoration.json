@@ -1,0 +1,2943 @@
+{
+  "experiment": "EXP-167",
+  "gates": [
+    "D05",
+    "D06"
+  ],
+  "status": "PASS",
+  "definition_revision": "313a05304f1067abf93c1859e01eacccc28c0867",
+  "control_sdk_revision": "5eb3c1aace8d07f03f2bb113afcf5243f07b6e4e",
+  "candidate_sdk_revision": "0aaafa7bd21eaecd9908086f9043f813b3cbc419",
+  "scope": "Normalize navigation ownership before restoring peer views across explicit stop, immediate expiration, and deferred lifecycle expiration.",
+  "environment": {
+    "xcode": "27.0 (27A266a)",
+    "scheme": "DatadogRUM",
+    "simulator": "iPhone 18 Pro",
+    "runtime": "iOS 27.0"
+  },
+  "control": {
+    "counts": {
+      "expectedFailures": 0,
+      "failed": 6,
+      "notRun": 0,
+      "passed": 0,
+      "skipped": 0,
+      "total": 6
+    },
+    "fullConsoleLogsPath": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/ActionArtifacts/default/RunSomeTests/test-console-log-2026-09-17T11-59-01+01-00.txt",
+    "fullSummaryPath": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/ActionArtifacts/default/RunSomeTests/37FC178F-23BB-4BB8-BEB0-EBD632A3FF31.txt",
+    "results": [
+      {
+        "displayName": "testGivenStoppedConcurrentSession_whenSourceLessViewStarts_itPreservesOldOwner()",
+        "errorMessages": [
+          "Datadog/DatadogRUMTests/RUMMonitor/Scopes/RUMApplicationScopeTests.swift:669 RUMApplicationScopeTests/testGivenStoppedConcurrentSession_whenSourceLessViewStarts_itPreservesOldOwner(): XCTAssertEqual failed: (\"1\") is not equal to (\"2\")",
+          "Datadog/DatadogRUMTests/RUMMonitor/Scopes/RUMApplicationScopeTests.swift:671 RUMApplicationScopeTests/testGivenStoppedConcurrentSession_whenSourceLessViewStarts_itPreservesOldOwner(): XCTUnwrap failed: expected non-nil value of type \"RUMViewScope\""
+        ],
+        "identifier": "RUMApplicationScopeTests/testGivenStoppedConcurrentSession_whenSourceLessViewStarts_itPreservesOldOwner()",
+        "state": "Failed",
+        "targetName": "DatadogRUMTests"
+      },
+      {
+        "displayName": "testGivenStoppedConcurrentSession_whenNonrepresentativeIdentityStops_itPreservesPeer()",
+        "errorMessages": [
+          "Datadog/DatadogRUMTests/RUMMonitor/Scopes/RUMApplicationScopeTests.swift:669 RUMApplicationScopeTests/testGivenStoppedConcurrentSession_whenNonrepresentativeIdentityStops_itPreservesPeer(): XCTAssertEqual failed: (\"0\") is not equal to (\"1\")",
+          "Datadog/DatadogRUMTests/RUMMonitor/Scopes/RUMApplicationScopeTests.swift:671 RUMApplicationScopeTests/testGivenStoppedConcurrentSession_whenNonrepresentativeIdentityStops_itPreservesPeer(): XCTUnwrap failed: expected non-nil value of type \"RUMViewScope\""
+        ],
+        "identifier": "RUMApplicationScopeTests/testGivenStoppedConcurrentSession_whenNonrepresentativeIdentityStops_itPreservesPeer()",
+        "state": "Failed",
+        "targetName": "DatadogRUMTests"
+      },
+      {
+        "displayName": "testGivenLifecycleTimeout_whenViewStarts_itRestoresEligiblePeer()",
+        "errorMessages": [
+          "Datadog/DatadogRUMTests/RUMMonitor/Scopes/RUMApplicationScopeTests.swift:669 RUMApplicationScopeTests/testGivenLifecycleTimeout_whenViewStarts_itRestoresEligiblePeer(): XCTAssertEqual failed: (\"1\") is not equal to (\"2\")",
+          "Datadog/DatadogRUMTests/RUMMonitor/Scopes/RUMApplicationScopeTests.swift:671 RUMApplicationScopeTests/testGivenLifecycleTimeout_whenViewStarts_itRestoresEligiblePeer(): XCTUnwrap failed: expected non-nil value of type \"RUMViewScope\""
+        ],
+        "identifier": "RUMApplicationScopeTests/testGivenLifecycleTimeout_whenViewStarts_itRestoresEligiblePeer()",
+        "state": "Failed",
+        "targetName": "DatadogRUMTests"
+      },
+      {
+        "displayName": "testGivenLifecycleTimeout_whenViewStops_itRestoresEligiblePeer()",
+        "errorMessages": [
+          "Datadog/DatadogRUMTests/RUMMonitor/Scopes/RUMApplicationScopeTests.swift:669 RUMApplicationScopeTests/testGivenLifecycleTimeout_whenViewStops_itRestoresEligiblePeer(): XCTAssertEqual failed: (\"0\") is not equal to (\"1\")",
+          "Datadog/DatadogRUMTests/RUMMonitor/Scopes/RUMApplicationScopeTests.swift:671 RUMApplicationScopeTests/testGivenLifecycleTimeout_whenViewStops_itRestoresEligiblePeer(): XCTUnwrap failed: expected non-nil value of type \"RUMViewScope\""
+        ],
+        "identifier": "RUMApplicationScopeTests/testGivenLifecycleTimeout_whenViewStops_itRestoresEligiblePeer()",
+        "state": "Failed",
+        "targetName": "DatadogRUMTests"
+      },
+      {
+        "displayName": "testGivenLifecycleMaximumDuration_whenViewStarts_itRestoresEligiblePeer()",
+        "errorMessages": [
+          "Datadog/DatadogRUMTests/RUMMonitor/Scopes/RUMApplicationScopeTests.swift:669 RUMApplicationScopeTests/testGivenLifecycleMaximumDuration_whenViewStarts_itRestoresEligiblePeer(): XCTAssertEqual failed: (\"1\") is not equal to (\"2\")",
+          "Datadog/DatadogRUMTests/RUMMonitor/Scopes/RUMApplicationScopeTests.swift:671 RUMApplicationScopeTests/testGivenLifecycleMaximumDuration_whenViewStarts_itRestoresEligiblePeer(): XCTUnwrap failed: expected non-nil value of type \"RUMViewScope\""
+        ],
+        "identifier": "RUMApplicationScopeTests/testGivenLifecycleMaximumDuration_whenViewStarts_itRestoresEligiblePeer()",
+        "state": "Failed",
+        "targetName": "DatadogRUMTests"
+      },
+      {
+        "displayName": "testGivenLifecycleMaximumDuration_whenViewStops_itRestoresEligiblePeer()",
+        "errorMessages": [
+          "Datadog/DatadogRUMTests/RUMMonitor/Scopes/RUMApplicationScopeTests.swift:669 RUMApplicationScopeTests/testGivenLifecycleMaximumDuration_whenViewStops_itRestoresEligiblePeer(): XCTAssertEqual failed: (\"0\") is not equal to (\"1\")",
+          "Datadog/DatadogRUMTests/RUMMonitor/Scopes/RUMApplicationScopeTests.swift:671 RUMApplicationScopeTests/testGivenLifecycleMaximumDuration_whenViewStops_itRestoresEligiblePeer(): XCTUnwrap failed: expected non-nil value of type \"RUMViewScope\""
+        ],
+        "identifier": "RUMApplicationScopeTests/testGivenLifecycleMaximumDuration_whenViewStops_itRestoresEligiblePeer()",
+        "state": "Failed",
+        "targetName": "DatadogRUMTests"
+      }
+    ],
+    "schemeName": "DatadogRUM",
+    "summary": "6 tests: 0 passed, 6 failed, 0 skipped, 0 expected failures, 0 not run",
+    "totalResults": 6,
+    "truncated": false,
+    "xcresultBundlePath": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/ActionArtifacts/default/RunSomeTests/Test-DatadogRUM-2026.09.17_11-59-01-+0100.xcresult"
+  },
+  "initial_candidate": {
+    "counts": {
+      "expectedFailures": 0,
+      "failed": 0,
+      "notRun": 0,
+      "passed": 6,
+      "skipped": 0,
+      "total": 6
+    },
+    "fullConsoleLogsPath": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/ActionArtifacts/default/RunSomeTests/test-console-log-2026-09-17T12-01-41+01-00.txt",
+    "fullSummaryPath": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/ActionArtifacts/default/RunSomeTests/01730F73-6DBA-43FB-86D3-82795A881770.txt",
+    "results": [
+      {
+        "displayName": "testGivenStoppedConcurrentSession_whenSourceLessViewStarts_itPreservesOldOwner()",
+        "errorMessages": [],
+        "identifier": "RUMApplicationScopeTests/testGivenStoppedConcurrentSession_whenSourceLessViewStarts_itPreservesOldOwner()",
+        "state": "Passed",
+        "targetName": "DatadogRUMTests"
+      },
+      {
+        "displayName": "testGivenStoppedConcurrentSession_whenNonrepresentativeIdentityStops_itPreservesPeer()",
+        "errorMessages": [],
+        "identifier": "RUMApplicationScopeTests/testGivenStoppedConcurrentSession_whenNonrepresentativeIdentityStops_itPreservesPeer()",
+        "state": "Passed",
+        "targetName": "DatadogRUMTests"
+      },
+      {
+        "displayName": "testGivenLifecycleTimeout_whenViewStarts_itRestoresEligiblePeer()",
+        "errorMessages": [],
+        "identifier": "RUMApplicationScopeTests/testGivenLifecycleTimeout_whenViewStarts_itRestoresEligiblePeer()",
+        "state": "Passed",
+        "targetName": "DatadogRUMTests"
+      },
+      {
+        "displayName": "testGivenLifecycleTimeout_whenViewStops_itRestoresEligiblePeer()",
+        "errorMessages": [],
+        "identifier": "RUMApplicationScopeTests/testGivenLifecycleTimeout_whenViewStops_itRestoresEligiblePeer()",
+        "state": "Passed",
+        "targetName": "DatadogRUMTests"
+      },
+      {
+        "displayName": "testGivenLifecycleMaximumDuration_whenViewStarts_itRestoresEligiblePeer()",
+        "errorMessages": [],
+        "identifier": "RUMApplicationScopeTests/testGivenLifecycleMaximumDuration_whenViewStarts_itRestoresEligiblePeer()",
+        "state": "Passed",
+        "targetName": "DatadogRUMTests"
+      },
+      {
+        "displayName": "testGivenLifecycleMaximumDuration_whenViewStops_itRestoresEligiblePeer()",
+        "errorMessages": [],
+        "identifier": "RUMApplicationScopeTests/testGivenLifecycleMaximumDuration_whenViewStops_itRestoresEligiblePeer()",
+        "state": "Passed",
+        "targetName": "DatadogRUMTests"
+      }
+    ],
+    "schemeName": "DatadogRUM",
+    "summary": "6 tests: 6 passed, 0 failed, 0 skipped, 0 expected failures, 0 not run",
+    "totalResults": 6,
+    "truncated": false,
+    "xcresultBundlePath": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/ActionArtifacts/default/RunSomeTests/Test-DatadogRUM-2026.09.17_12-01-41-+0100.xcresult"
+  },
+  "affected_suites": {
+    "counts": {
+      "expectedFailures": 0,
+      "failed": 0,
+      "notRun": 0,
+      "passed": 198,
+      "skipped": 0,
+      "total": 198
+    },
+    "fullConsoleLogsPath": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/ActionArtifacts/default/RunSomeTests/test-console-log-2026-09-17T12-04-34+01-00.txt",
+    "fullSummaryPath": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/ActionArtifacts/default/RunSomeTests/A0B3264A-7A15-43F3-BC2B-2438BD29B289.txt",
+    "message": "Results truncated to 100 of 198 tests. Failed tests shown first. Full logs available at /var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/ActionArtifacts/default/RunSomeTests/A0B3264A-7A15-43F3-BC2B-2438BD29B289.txt.",
+    "results": [
+      {
+        "displayName": "testRootContext()",
+        "errorMessages": [],
+        "identifier": "RUMApplicationScopeTests/testRootContext()",
+        "state": "Passed",
+        "targetName": "DatadogRUMTests"
+      },
+      {
+        "displayName": "testWhenInitialized_itStartsNewSession()",
+        "errorMessages": [],
+        "identifier": "RUMApplicationScopeTests/testWhenInitialized_itStartsNewSession()",
+        "state": "Passed",
+        "targetName": "DatadogRUMTests"
+      },
+      {
+        "displayName": "testWhenSessionExpires_itStartsANewOneAndTransfersActiveViews()",
+        "errorMessages": [],
+        "identifier": "RUMApplicationScopeTests/testWhenSessionExpires_itStartsANewOneAndTransfersActiveViews()",
+        "state": "Passed",
+        "targetName": "DatadogRUMTests"
+      },
+      {
+        "displayName": "testGivenConcurrentScenes_whenSessionExpires_itTransfersEveryActiveSceneView()",
+        "errorMessages": [],
+        "identifier": "RUMApplicationScopeTests/testGivenConcurrentScenes_whenSessionExpires_itTransfersEveryActiveSceneView()",
+        "state": "Passed",
+        "targetName": "DatadogRUMTests"
+      },
+      {
+        "displayName": "testGivenConcurrentScenes_whenSessionTimesOutOnOneSceneStopping_itTransfersTheOtherActiveScene()",
+        "errorMessages": [],
+        "identifier": "RUMApplicationScopeTests/testGivenConcurrentScenes_whenSessionTimesOutOnOneSceneStopping_itTransfersTheOtherActiveScene()",
+        "state": "Passed",
+        "targetName": "DatadogRUMTests"
+      },
+      {
+        "displayName": "testWhenSamplingRateIs100_allEventsAreSent()",
+        "errorMessages": [],
+        "identifier": "RUMApplicationScopeTests/testWhenSamplingRateIs100_allEventsAreSent()",
+        "state": "Passed",
+        "targetName": "DatadogRUMTests"
+      },
+      {
+        "displayName": "testWhenSamplingRateIs0_noEventsAreSent()",
+        "errorMessages": [],
+        "identifier": "RUMApplicationScopeTests/testWhenSamplingRateIs0_noEventsAreSent()",
+        "state": "Passed",
+        "targetName": "DatadogRUMTests"
+      },
+      {
+        "displayName": "testWhenSamplingRateIs50_onlyHalfOfTheEventsAreSent()",
+        "errorMessages": [],
+        "identifier": "RUMApplicationScopeTests/testWhenSamplingRateIs50_onlyHalfOfTheEventsAreSent()",
+        "state": "Passed",
+        "targetName": "DatadogRUMTests"
+      },
+      {
+        "displayName": "testWhenStoppingSession_itHasNoActiveSesssion()",
+        "errorMessages": [],
+        "identifier": "RUMApplicationScopeTests/testWhenStoppingSession_itHasNoActiveSesssion()",
+        "state": "Passed",
+        "targetName": "DatadogRUMTests"
+      },
+      {
+        "displayName": "testGivenStoppedSession_whenUserActionEvent_itStartsANewSession()",
+        "errorMessages": [],
+        "identifier": "RUMApplicationScopeTests/testGivenStoppedSession_whenUserActionEvent_itStartsANewSession()",
+        "state": "Passed",
+        "targetName": "DatadogRUMTests"
+      },
+      {
+        "displayName": "testGivenStoppedSessionWithConcurrentScenes_whenSceneActionStartsNewSession_itRestoresEveryScene()",
+        "errorMessages": [],
+        "identifier": "RUMApplicationScopeTests/testGivenStoppedSessionWithConcurrentScenes_whenSceneActionStartsNewSession_itRestoresEveryScene()",
+        "state": "Passed",
+        "targetName": "DatadogRUMTests"
+      },
+      {
+        "displayName": "testGivenStoppedSessionWithConcurrentScenes_whenStartingViewInOneScene_itRestoresTheOtherScene()",
+        "errorMessages": [],
+        "identifier": "RUMApplicationScopeTests/testGivenStoppedSessionWithConcurrentScenes_whenStartingViewInOneScene_itRestoresTheOtherScene()",
+        "state": "Passed",
+        "targetName": "DatadogRUMTests"
+      },
+      {
+        "displayName": "testGivenStoppedConcurrentSession_whenSourceLessViewStarts_itPreservesOldOwner()",
+        "errorMessages": [],
+        "identifier": "RUMApplicationScopeTests/testGivenStoppedConcurrentSession_whenSourceLessViewStarts_itPreservesOldOwner()",
+        "state": "Passed",
+        "targetName": "DatadogRUMTests"
+      },
+      {
+        "displayName": "testGivenStoppedConcurrentSession_whenNonrepresentativeIdentityStops_itPreservesPeer()",
+        "errorMessages": [],
+        "identifier": "RUMApplicationScopeTests/testGivenStoppedConcurrentSession_whenNonrepresentativeIdentityStops_itPreservesPeer()",
+        "state": "Passed",
+        "targetName": "DatadogRUMTests"
+      },
+      {
+        "displayName": "testGivenLifecycleTimeout_whenViewStarts_itRestoresEligiblePeer()",
+        "errorMessages": [],
+        "identifier": "RUMApplicationScopeTests/testGivenLifecycleTimeout_whenViewStarts_itRestoresEligiblePeer()",
+        "state": "Passed",
+        "targetName": "DatadogRUMTests"
+      },
+      {
+        "displayName": "testGivenLifecycleTimeout_whenViewStops_itRestoresEligiblePeer()",
+        "errorMessages": [],
+        "identifier": "RUMApplicationScopeTests/testGivenLifecycleTimeout_whenViewStops_itRestoresEligiblePeer()",
+        "state": "Passed",
+        "targetName": "DatadogRUMTests"
+      },
+      {
+        "displayName": "testGivenLifecycleMaximumDuration_whenViewStarts_itRestoresEligiblePeer()",
+        "errorMessages": [],
+        "identifier": "RUMApplicationScopeTests/testGivenLifecycleMaximumDuration_whenViewStarts_itRestoresEligiblePeer()",
+        "state": "Passed",
+        "targetName": "DatadogRUMTests"
+      },
+      {
+        "displayName": "testGivenLifecycleMaximumDuration_whenViewStops_itRestoresEligiblePeer()",
+        "errorMessages": [],
+        "identifier": "RUMApplicationScopeTests/testGivenLifecycleMaximumDuration_whenViewStops_itRestoresEligiblePeer()",
+        "state": "Passed",
+        "targetName": "DatadogRUMTests"
+      },
+      {
+        "displayName": "testGivenImmediateTimeout_whenNavigationChanges_itPreservesEveryUnaffectedBranch()",
+        "errorMessages": [],
+        "identifier": "RUMApplicationScopeTests/testGivenImmediateTimeout_whenNavigationChanges_itPreservesEveryUnaffectedBranch()",
+        "state": "Passed",
+        "targetName": "DatadogRUMTests"
+      },
+      {
+        "displayName": "testGivenImmediateMaximumDuration_whenNavigationChanges_itPreservesEveryUnaffectedBranch()",
+        "errorMessages": [],
+        "identifier": "RUMApplicationScopeTests/testGivenImmediateMaximumDuration_whenNavigationChanges_itPreservesEveryUnaffectedBranch()",
+        "state": "Passed",
+        "targetName": "DatadogRUMTests"
+      },
+      {
+        "displayName": "testGivenDelayedExpiration_whenNavigationIsInferred_itKeepsTheOldOwner()",
+        "errorMessages": [],
+        "identifier": "RUMApplicationScopeTests/testGivenDelayedExpiration_whenNavigationIsInferred_itKeepsTheOldOwner()",
+        "state": "Passed",
+        "targetName": "DatadogRUMTests"
+      },
+      {
+        "displayName": "testGivenExplicitStop_whenNavigationHasSceneTarget_itRestoresOnlyPeers()",
+        "errorMessages": [],
+        "identifier": "RUMApplicationScopeTests/testGivenExplicitStop_whenNavigationHasSceneTarget_itRestoresOnlyPeers()",
+        "state": "Passed",
+        "targetName": "DatadogRUMTests"
+      },
+      {
+        "displayName": "testGivenRepresentativeChangedBeforeBoundary_whenSourceLessNavigationStarts_itUsesThatRepresentative()",
+        "errorMessages": [],
+        "identifier": "RUMApplicationScopeTests/testGivenRepresentativeChangedBeforeBoundary_whenSourceLessNavigationStarts_itUsesThatRepresentative()",
+        "state": "Passed",
+        "targetName": "DatadogRUMTests"
+      },
+      {
+        "displayName": "testGivenExpiration_whenNavigationRunsInBackground_itDoesNotResumeForegroundPeers()",
+        "errorMessages": [],
+        "identifier": "RUMApplicationScopeTests/testGivenExpiration_whenNavigationRunsInBackground_itDoesNotResumeForegroundPeers()",
+        "state": "Passed",
+        "targetName": "DatadogRUMTests"
+      },
+      {
+        "displayName": "testGivenSceneLessView_whenNavigationRestartsSession_itKeepsLegacyViewShape()",
+        "errorMessages": [],
+        "identifier": "RUMApplicationScopeTests/testGivenSceneLessView_whenNavigationRestartsSession_itKeepsLegacyViewShape()",
+        "state": "Passed",
+        "targetName": "DatadogRUMTests"
+      },
+      {
+        "displayName": "testGivenSessionProcessingResources_whenStopped_itStaysInactive()",
+        "errorMessages": [],
+        "identifier": "RUMApplicationScopeTests/testGivenSessionProcessingResources_whenStopped_itStaysInactive()",
+        "state": "Passed",
+        "targetName": "DatadogRUMTests"
+      },
+      {
+        "displayName": "testGivenSessionProcessingResources_whenStopped_itIsRemovedWhenResourceFinishes()",
+        "errorMessages": [],
+        "identifier": "RUMApplicationScopeTests/testGivenSessionProcessingResources_whenStopped_itIsRemovedWhenResourceFinishes()",
+        "state": "Passed",
+        "targetName": "DatadogRUMTests"
+      },
+      {
+        "displayName": "testGivenStoppedSessionHasPendingResource_whenNewSessionReusesViewIdentity_itKeepsOccurrencesIsolated()",
+        "errorMessages": [],
+        "identifier": "RUMApplicationScopeTests/testGivenStoppedSessionHasPendingResource_whenNewSessionReusesViewIdentity_itKeepsOccurrencesIsolated()",
+        "state": "Passed",
+        "targetName": "DatadogRUMTests"
+      },
+      {
+        "displayName": "testGivenAppLaunchInForegroundAndNoPrewarming_whenInitialSessionIsStarted()",
+        "errorMessages": [],
+        "identifier": "RUMApplicationScopeTests/testGivenAppLaunchInForegroundAndNoPrewarming_whenInitialSessionIsStarted()",
+        "state": "Passed",
+        "targetName": "DatadogRUMTests"
+      },
+      {
+        "displayName": "testGivenAppLaunchInBackgroundAndNoPrewarming_whenInitialSessionIsStarted()",
+        "errorMessages": [],
+        "identifier": "RUMApplicationScopeTests/testGivenAppLaunchInBackgroundAndNoPrewarming_whenInitialSessionIsStarted()",
+        "state": "Passed",
+        "targetName": "DatadogRUMTests"
+      },
+      {
+        "displayName": "testGivenLaunchWithPrewarming_whenInitialSessionIsStarted()",
+        "errorMessages": [],
+        "identifier": "RUMApplicationScopeTests/testGivenLaunchWithPrewarming_whenInitialSessionIsStarted()",
+        "state": "Passed",
+        "targetName": "DatadogRUMTests"
+      },
+      {
+        "displayName": "testGivenInactiveSession_whenNewOneIsStarted_itSetsInactivityTimeoutPrecondition()",
+        "errorMessages": [],
+        "identifier": "RUMApplicationScopeTests/testGivenInactiveSession_whenNewOneIsStarted_itSetsInactivityTimeoutPrecondition()",
+        "state": "Passed",
+        "targetName": "DatadogRUMTests"
+      },
+      {
+        "displayName": "testGivenExpiredSession_whenNewOneIsStarted_itSetsMaxDurationPrecondition()",
+        "errorMessages": [],
+        "identifier": "RUMApplicationScopeTests/testGivenExpiredSession_whenNewOneIsStarted_itSetsMaxDurationPrecondition()",
+        "state": "Passed",
+        "targetName": "DatadogRUMTests"
+      },
+      {
+        "displayName": "testGivenStoppedSession_whenNewOneIsStarted_itSetsExplicitStopPrecondition()",
+        "errorMessages": [],
+        "identifier": "RUMApplicationScopeTests/testGivenStoppedSession_whenNewOneIsStarted_itSetsExplicitStopPrecondition()",
+        "state": "Passed",
+        "targetName": "DatadogRUMTests"
+      },
+      {
+        "displayName": "testGivenInactiveSession_whenNewOneIsStartedInBackground_itSetsBackgroundLaunchPrecondition()",
+        "errorMessages": [],
+        "identifier": "RUMApplicationScopeTests/testGivenInactiveSession_whenNewOneIsStartedInBackground_itSetsBackgroundLaunchPrecondition()",
+        "state": "Passed",
+        "targetName": "DatadogRUMTests"
+      },
+      {
+        "displayName": "testGivenExpiredSession_whenNewOneIsStartedInBackground_itSetsBackgroundLaunchPrecondition()",
+        "errorMessages": [],
+        "identifier": "RUMApplicationScopeTests/testGivenExpiredSession_whenNewOneIsStartedInBackground_itSetsBackgroundLaunchPrecondition()",
+        "state": "Passed",
+        "targetName": "DatadogRUMTests"
+      },
+      {
+        "displayName": "testGivenStoppedSession_whenNewOneIsStartedInBackground_itSetsBackgroundLaunchPrecondition()",
+        "errorMessages": [],
+        "identifier": "RUMApplicationScopeTests/testGivenStoppedSession_whenNewOneIsStartedInBackground_itSetsBackgroundLaunchPrecondition()",
+        "state": "Passed",
+        "targetName": "DatadogRUMTests"
+      },
+      {
+        "displayName": "testGivenInactiveSession_whenNewOneIsStartedInBackgroundWithPrewarming_itSetsPrewarmPrecondition()",
+        "errorMessages": [],
+        "identifier": "RUMApplicationScopeTests/testGivenInactiveSession_whenNewOneIsStartedInBackgroundWithPrewarming_itSetsPrewarmPrecondition()",
+        "state": "Passed",
+        "targetName": "DatadogRUMTests"
+      },
+      {
+        "displayName": "testGivenStoppedSession_whenNewOneIsStartedInBackgroundWithPrewarming_itSetsPrewarmPrecondition()",
+        "errorMessages": [],
+        "identifier": "RUMApplicationScopeTests/testGivenStoppedSession_whenNewOneIsStartedInBackgroundWithPrewarming_itSetsPrewarmPrecondition()",
+        "state": "Passed",
+        "targetName": "DatadogRUMTests"
+      },
+      {
+        "displayName": "testGivenUserLaunchedApp_whenSessionTimesOutInBackground_itSetsInactivityTimeoutPrecondition()",
+        "errorMessages": [],
+        "identifier": "RUMApplicationScopeTests/testGivenUserLaunchedApp_whenSessionTimesOutInBackground_itSetsInactivityTimeoutPrecondition()",
+        "state": "Passed",
+        "targetName": "DatadogRUMTests"
+      },
+      {
+        "displayName": "testDefaultContext()",
+        "errorMessages": [],
+        "identifier": "RUMSessionScopeTests/testDefaultContext()",
+        "state": "Passed",
+        "targetName": "DatadogRUMTests"
+      },
+      {
+        "displayName": "testContextWhenSessionIsRejectedBySampler()",
+        "errorMessages": [],
+        "identifier": "RUMSessionScopeTests/testContextWhenSessionIsRejectedBySampler()",
+        "state": "Passed",
+        "targetName": "DatadogRUMTests"
+      },
+      {
+        "displayName": "testWhenSessionExceedsMaxDuration_itGetsClosed()",
+        "errorMessages": [],
+        "identifier": "RUMSessionScopeTests/testWhenSessionExceedsMaxDuration_itGetsClosed()",
+        "state": "Passed",
+        "targetName": "DatadogRUMTests"
+      },
+      {
+        "displayName": "testWhenSessionExpiresWithoutTransferringActiveView_itReleasesViewCachePin()",
+        "errorMessages": [],
+        "identifier": "RUMSessionScopeTests/testWhenSessionExpiresWithoutTransferringActiveView_itReleasesViewCachePin()",
+        "state": "Passed",
+        "targetName": "DatadogRUMTests"
+      },
+      {
+        "displayName": "testWhenSessionIsInactiveForCertainDuration_itGetsClosed()",
+        "errorMessages": [],
+        "identifier": "RUMSessionScopeTests/testWhenSessionIsInactiveForCertainDuration_itGetsClosed()",
+        "state": "Passed",
+        "targetName": "DatadogRUMTests"
+      },
+      {
+        "displayName": "testWhenSessionReceivesInteractiveEvent_itStaysAlive()",
+        "errorMessages": [],
+        "identifier": "RUMSessionScopeTests/testWhenSessionReceivesInteractiveEvent_itStaysAlive()",
+        "state": "Passed",
+        "targetName": "DatadogRUMTests"
+      },
+      {
+        "displayName": "testWhenSessionReceivesNonInteractiveEvent_itGetsClosed()",
+        "errorMessages": [],
+        "identifier": "RUMSessionScopeTests/testWhenSessionReceivesNonInteractiveEvent_itGetsClosed()",
+        "state": "Passed",
+        "targetName": "DatadogRUMTests"
+      },
+      {
+        "displayName": "testItManagesViewScopeLifecycle()",
+        "errorMessages": [],
+        "identifier": "RUMSessionScopeTests/testItManagesViewScopeLifecycle()",
+        "state": "Passed",
+        "targetName": "DatadogRUMTests"
+      },
+      {
+        "displayName": "testGivenSameViewIdentity_whenNavigatingAwayAndBack_itCreatesDistinctRUMViewOccurrences()",
+        "errorMessages": [],
+        "identifier": "RUMSessionScopeTests/testGivenSameViewIdentity_whenNavigatingAwayAndBack_itCreatesDistinctRUMViewOccurrences()",
+        "state": "Passed",
+        "targetName": "DatadogRUMTests"
+      },
+      {
+        "displayName": "testGivenFirstOccurrenceHasPendingResource_whenSameIdentityReturns_itKeepsOccurrencesIsolated()",
+        "errorMessages": [],
+        "identifier": "RUMSessionScopeTests/testGivenFirstOccurrenceHasPendingResource_whenSameIdentityReturns_itKeepsOccurrencesIsolated()",
+        "state": "Passed",
+        "targetName": "DatadogRUMTests"
+      },
+      {
+        "displayName": "testGivenRestoredActiveView_whenSameIdentityStarts_itKeepsOnlyLatestOccurrenceActive()",
+        "errorMessages": [],
+        "identifier": "RUMSessionScopeTests/testGivenRestoredActiveView_whenSameIdentityStarts_itKeepsOnlyLatestOccurrenceActive()",
+        "state": "Passed",
+        "targetName": "DatadogRUMTests"
+      },
+      {
+        "displayName": "testWhenViewsStartInDifferentScenes_itKeepsBothViewsActive()",
+        "errorMessages": [],
+        "identifier": "RUMSessionScopeTests/testWhenViewsStartInDifferentScenes_itKeepsBothViewsActive()",
+        "state": "Passed",
+        "targetName": "DatadogRUMTests"
+      },
+      {
+        "displayName": "testGivenConcurrentScenes_whenNonRepresentativeViewUpdates_watchdogKeepsRepresentativeView()",
+        "errorMessages": [],
+        "identifier": "RUMSessionScopeTests/testGivenConcurrentScenes_whenNonRepresentativeViewUpdates_watchdogKeepsRepresentativeView()",
+        "state": "Passed",
+        "targetName": "DatadogRUMTests"
+      },
+      {
+        "displayName": "testGivenConcurrentScenes_whenRepresentativeViewStops_watchdogMovesToSurvivingRepresentative()",
+        "errorMessages": [],
+        "identifier": "RUMSessionScopeTests/testGivenConcurrentScenes_whenRepresentativeViewStops_watchdogMovesToSurvivingRepresentative()",
+        "state": "Passed",
+        "targetName": "DatadogRUMTests"
+      },
+      {
+        "displayName": "testGivenSameViewIdentityInTwoScenes_whenOneStops_itKeepsOtherSceneActive()",
+        "errorMessages": [],
+        "identifier": "RUMSessionScopeTests/testGivenSameViewIdentityInTwoScenes_whenOneStops_itKeepsOtherSceneActive()",
+        "state": "Passed",
+        "targetName": "DatadogRUMTests"
+      },
+      {
+        "displayName": "testGivenLegacyView_whenFirstSceneViewStarts_itPreservesSingleWindowReplacementSemantics()",
+        "errorMessages": [],
+        "identifier": "RUMSessionScopeTests/testGivenLegacyView_whenFirstSceneViewStarts_itPreservesSingleWindowReplacementSemantics()",
+        "state": "Passed",
+        "targetName": "DatadogRUMTests"
+      },
+      {
+        "displayName": "testGivenConcurrentContinuousActions_whenRepresentativeActionStops_itDoesNotStopAnotherSceneAction()",
+        "errorMessages": [],
+        "identifier": "RUMSessionScopeTests/testGivenConcurrentContinuousActions_whenRepresentativeActionStops_itDoesNotStopAnotherSceneAction()",
+        "state": "Passed",
+        "targetName": "DatadogRUMTests"
+      },
+      {
+        "displayName": "testGivenOverdueLegacyContinuousAction_whenStopped_itPreservesStopAttributes()",
+        "errorMessages": [],
+        "identifier": "RUMSessionScopeTests/testGivenOverdueLegacyContinuousAction_whenStopped_itPreservesStopAttributes()",
+        "state": "Passed",
+        "targetName": "DatadogRUMTests"
+      },
+      {
+        "displayName": "testGivenOverdueLegacyDiscreteAction_whenStopped_itPreservesStopAttributes()",
+        "errorMessages": [],
+        "identifier": "RUMSessionScopeTests/testGivenOverdueLegacyDiscreteAction_whenStopped_itPreservesStopAttributes()",
+        "state": "Passed",
+        "targetName": "DatadogRUMTests"
+      },
+      {
+        "displayName": "testGivenOverdueConcurrentActions_whenExplicitStopTargetsA_itPreservesOnlyRecipientAttributes()",
+        "errorMessages": [],
+        "identifier": "RUMSessionScopeTests/testGivenOverdueConcurrentActions_whenExplicitStopTargetsA_itPreservesOnlyRecipientAttributes()",
+        "state": "Passed",
+        "targetName": "DatadogRUMTests"
+      },
+      {
+        "displayName": "testGivenOverdueAction_whenStopTargetsMissingScene_itExpiresWithoutForeignAttributes()",
+        "errorMessages": [],
+        "identifier": "RUMSessionScopeTests/testGivenOverdueAction_whenStopTargetsMissingScene_itExpiresWithoutForeignAttributes()",
+        "state": "Passed",
+        "targetName": "DatadogRUMTests"
+      },
+      {
+        "displayName": "testGivenDiscreteActionInOneScene_whenOnlyAnotherSceneInteracts_itStillExpiresTheFirstAction()",
+        "errorMessages": [],
+        "identifier": "RUMSessionScopeTests/testGivenDiscreteActionInOneScene_whenOnlyAnotherSceneInteracts_itStillExpiresTheFirstAction()",
+        "state": "Passed",
+        "targetName": "DatadogRUMTests"
+      },
+      {
+        "displayName": "testGivenConcurrentScenes_whenNavigatingInOneScene_itLeavesOtherSceneActive()",
+        "errorMessages": [],
+        "identifier": "RUMSessionScopeTests/testGivenConcurrentScenes_whenNavigatingInOneScene_itLeavesOtherSceneActive()",
+        "state": "Passed",
+        "targetName": "DatadogRUMTests"
+      },
+      {
+        "displayName": "testGivenConcurrentScenes_whenUnscopedViewStarts_itReplacesRepresentativeSceneOnly()",
+        "errorMessages": [],
+        "identifier": "RUMSessionScopeTests/testGivenConcurrentScenes_whenUnscopedViewStarts_itReplacesRepresentativeSceneOnly()",
+        "state": "Passed",
+        "targetName": "DatadogRUMTests"
+      },
+      {
+        "displayName": "testGivenConcurrentScenes_whenUnscopedStopMatchesEarlierSceneIdentity_itStopsThatScene()",
+        "errorMessages": [],
+        "identifier": "RUMSessionScopeTests/testGivenConcurrentScenes_whenUnscopedStopMatchesEarlierSceneIdentity_itStopsThatScene()",
+        "state": "Passed",
+        "targetName": "DatadogRUMTests"
+      },
+      {
+        "displayName": "testGivenConcurrentScenes_whenActionTargetsEarlierScene_itUsesThatSceneViewOnce()",
+        "errorMessages": [],
+        "identifier": "RUMSessionScopeTests/testGivenConcurrentScenes_whenActionTargetsEarlierScene_itUsesThatSceneViewOnce()",
+        "state": "Passed",
+        "targetName": "DatadogRUMTests"
+      },
+      {
+        "displayName": "testGivenConcurrentScenes_whenActionTargetsExactEarlierView_itBecomesRepresentativeForLaterSourceLessWork()",
+        "errorMessages": [],
+        "identifier": "RUMSessionScopeTests/testGivenConcurrentScenes_whenActionTargetsExactEarlierView_itBecomesRepresentativeForLaterSourceLessWork()",
+        "state": "Passed",
+        "targetName": "DatadogRUMTests"
+      },
+      {
+        "displayName": "testGivenConcurrentScenes_whenUnscopedActionIsAdded_itDoesNotDuplicateIt()",
+        "errorMessages": [],
+        "identifier": "RUMSessionScopeTests/testGivenConcurrentScenes_whenUnscopedActionIsAdded_itDoesNotDuplicateIt()",
+        "state": "Passed",
+        "targetName": "DatadogRUMTests"
+      },
+      {
+        "displayName": "testGivenConcurrentScenesWithActionInEarlierScene_whenUnscopedActionIsAdded_itDoesNotDuplicateIt()",
+        "errorMessages": [],
+        "identifier": "RUMSessionScopeTests/testGivenConcurrentScenesWithActionInEarlierScene_whenUnscopedActionIsAdded_itDoesNotDuplicateIt()",
+        "state": "Passed",
+        "targetName": "DatadogRUMTests"
+      },
+      {
+        "displayName": "testGivenConcurrentScenes_whenResourceCompletesAfterAnotherSceneInteracts_itKeepsItsCapturedView()",
+        "errorMessages": [],
+        "identifier": "RUMSessionScopeTests/testGivenConcurrentScenes_whenResourceCompletesAfterAnotherSceneInteracts_itKeepsItsCapturedView()",
+        "state": "Passed",
+        "targetName": "DatadogRUMTests"
+      },
+      {
+        "displayName": "testGivenAOwnedResourceAndBAction_whenSourceLessResourceSucceeds_itDoesNotIncrementBAction()",
+        "errorMessages": [],
+        "identifier": "RUMSessionScopeTests/testGivenAOwnedResourceAndBAction_whenSourceLessResourceSucceeds_itDoesNotIncrementBAction()",
+        "state": "Passed",
+        "targetName": "DatadogRUMTests"
+      },
+      {
+        "displayName": "testGivenAOwnedResourceAndBAction_whenSourceLessResourceFails_itDoesNotIncrementBAction()",
+        "errorMessages": [],
+        "identifier": "RUMSessionScopeTests/testGivenAOwnedResourceAndBAction_whenSourceLessResourceFails_itDoesNotIncrementBAction()",
+        "state": "Passed",
+        "targetName": "DatadogRUMTests"
+      },
+      {
+        "displayName": "testGivenResourceOwnedByInactiveView_whenItCompletes_itDoesNotAlsoReachCurrentViewsAction()",
+        "errorMessages": [],
+        "identifier": "RUMSessionScopeTests/testGivenResourceOwnedByInactiveView_whenItCompletes_itDoesNotAlsoReachCurrentViewsAction()",
+        "state": "Passed",
+        "targetName": "DatadogRUMTests"
+      },
+      {
+        "displayName": "testGivenCachedLegacyViewAndActiveSceneView_whenExactErrorArrives_itKeepsLegacyFallback()",
+        "errorMessages": [],
+        "identifier": "RUMSessionScopeTests/testGivenCachedLegacyViewAndActiveSceneView_whenExactErrorArrives_itKeepsLegacyFallback()",
+        "state": "Passed",
+        "targetName": "DatadogRUMTests"
+      },
+      {
+        "displayName": "testGivenInactiveExactLegacyViewAndActiveSceneView_whenErrorArrives_itKeepsLegacyFallback()",
+        "errorMessages": [],
+        "identifier": "RUMSessionScopeTests/testGivenInactiveExactLegacyViewAndActiveSceneView_whenErrorArrives_itKeepsLegacyFallback()",
+        "state": "Passed",
+        "targetName": "DatadogRUMTests"
+      },
+      {
+        "displayName": "testGivenCapturedViewNoLongerExists_whenResourceRuns_itFallsBackWithoutLosingCompletion()",
+        "errorMessages": [],
+        "identifier": "RUMSessionScopeTests/testGivenCapturedViewNoLongerExists_whenResourceRuns_itFallsBackWithoutLosingCompletion()",
+        "state": "Passed",
+        "targetName": "DatadogRUMTests"
+      },
+      {
+        "displayName": "testGivenCapturedViewNoLongerExists_whenErrorArrives_itFallsBackToRepresentativeView()",
+        "errorMessages": [],
+        "identifier": "RUMSessionScopeTests/testGivenCapturedViewNoLongerExists_whenErrorArrives_itFallsBackToRepresentativeView()",
+        "state": "Passed",
+        "targetName": "DatadogRUMTests"
+      },
+      {
+        "displayName": "testGivenUnknownCapturedViewAndConcurrentScenes_whenErrorArrives_itDoesNotGuessAnotherScene()",
+        "errorMessages": [],
+        "identifier": "RUMSessionScopeTests/testGivenUnknownCapturedViewAndConcurrentScenes_whenErrorArrives_itDoesNotGuessAnotherScene()",
+        "state": "Passed",
+        "targetName": "DatadogRUMTests"
+      },
+      {
+        "displayName": "testGivenCapturedSceneViewNoLongerExists_whenErrorArrives_itFallsBackWithinTheSameScene()",
+        "errorMessages": [],
+        "identifier": "RUMSessionScopeTests/testGivenCapturedSceneViewNoLongerExists_whenErrorArrives_itFallsBackWithinTheSameScene()",
+        "state": "Passed",
+        "targetName": "DatadogRUMTests"
+      },
+      {
+        "displayName": "testGivenCapturedSceneViewAndItsSceneNoLongerExist_whenErrorArrives_itDoesNotUseAnotherScene()",
+        "errorMessages": [],
+        "identifier": "RUMSessionScopeTests/testGivenCapturedSceneViewAndItsSceneNoLongerExist_whenErrorArrives_itDoesNotUseAnotherScene()",
+        "state": "Passed",
+        "targetName": "DatadogRUMTests"
+      },
+      {
+        "displayName": "testGivenCapturedViewOwnershipExpiredAndOneOtherSceneRemains_whenErrorArrives_itDoesNotGuessThatScene()",
+        "errorMessages": [],
+        "identifier": "RUMSessionScopeTests/testGivenCapturedViewOwnershipExpiredAndOneOtherSceneRemains_whenErrorArrives_itDoesNotGuessThatScene()",
+        "state": "Passed",
+        "targetName": "DatadogRUMTests"
+      },
+      {
+        "displayName": "testGivenOperationStartedInOneScene_whenItEndsThereAfterNavigation_itOverridesAnotherProcessRepresentative()",
+        "errorMessages": [],
+        "identifier": "RUMSessionScopeTests/testGivenOperationStartedInOneScene_whenItEndsThereAfterNavigation_itOverridesAnotherProcessRepresentative()",
+        "state": "Passed",
+        "targetName": "DatadogRUMTests"
+      },
+      {
+        "displayName": "testGivenOperationStartedInSceneA_whenItEndsInSceneB_itUsesEachScenesCurrentView()",
+        "errorMessages": [],
+        "identifier": "RUMSessionScopeTests/testGivenOperationStartedInSceneA_whenItEndsInSceneB_itUsesEachScenesCurrentView()",
+        "state": "Passed",
+        "targetName": "DatadogRUMTests"
+      },
+      {
+        "displayName": "testGivenOperationTargetSceneHasNoView_whenNoSnapshot_itUsesProcessRepresentative()",
+        "errorMessages": [],
+        "identifier": "RUMSessionScopeTests/testGivenOperationTargetSceneHasNoView_whenNoSnapshot_itUsesProcessRepresentative()",
+        "state": "Passed",
+        "targetName": "DatadogRUMTests"
+      },
+      {
+        "displayName": "testGivenConcurrentScenes_whenSessionStops_itStopsEverySceneView()",
+        "errorMessages": [],
+        "identifier": "RUMSessionScopeTests/testGivenConcurrentScenes_whenSessionStops_itStopsEverySceneView()",
+        "state": "Passed",
+        "targetName": "DatadogRUMTests"
+      },
+      {
+        "displayName": "testGivenConcurrentScenes_itKeepsIndependentINVHistories()",
+        "errorMessages": [],
+        "identifier": "RUMSessionScopeTests/testGivenConcurrentScenes_itKeepsIndependentINVHistories()",
+        "state": "Passed",
+        "targetName": "DatadogRUMTests"
+      },
+      {
+        "displayName": "testWhenViewStarts_itUpdatesTheViewCache()",
+        "errorMessages": [],
+        "identifier": "RUMSessionScopeTests/testWhenViewStarts_itUpdatesTheViewCache()",
+        "state": "Passed",
+        "targetName": "DatadogRUMTests"
+      },
+      {
+        "displayName": "testGivenAppInBackgroundAndNoViewScopeAndBackgroundEventsTrackingEnabled_whenCommandCanStartBackgroundView_itCreatesBackgroundScope()",
+        "errorMessages": [],
+        "identifier": "RUMSessionScopeTests/testGivenAppInBackgroundAndNoViewScopeAndBackgroundEventsTrackingEnabled_whenCommandCanStartBackgroundView_itCreatesBackgroundScope()",
+        "state": "Passed",
+        "targetName": "DatadogRUMTests"
+      },
+      {
+        "displayName": "testGivenAppInBackgroundAndNoActiveViewScopeAndBackgroundEventsTrackingEnabled_whenCommandCanStartBackgroundView_itCreatesBackgroundScope()",
+        "errorMessages": [],
+        "identifier": "RUMSessionScopeTests/testGivenAppInBackgroundAndNoActiveViewScopeAndBackgroundEventsTrackingEnabled_whenCommandCanStartBackgroundView_itCreatesBackgroundScope()",
+        "state": "Passed",
+        "targetName": "DatadogRUMTests"
+      },
+      {
+        "displayName": "testGivenSceneAViewAndSceneBBackgroundView_whenSceneAActs_itDoesNotDuplicateIntoBackground()",
+        "errorMessages": [],
+        "identifier": "RUMSessionScopeTests/testGivenSceneAViewAndSceneBBackgroundView_whenSceneAActs_itDoesNotDuplicateIntoBackground()",
+        "state": "Passed",
+        "targetName": "DatadogRUMTests"
+      },
+      {
+        "displayName": "testGivenConcurrentScenesAndBET_whenUnknownExactViewErrorArrives_itDoesNotCreateLegacyBackgroundView()",
+        "errorMessages": [],
+        "identifier": "RUMSessionScopeTests/testGivenConcurrentScenesAndBET_whenUnknownExactViewErrorArrives_itDoesNotCreateLegacyBackgroundView()",
+        "state": "Passed",
+        "targetName": "DatadogRUMTests"
+      },
+      {
+        "displayName": "testGivenAppInBackgroundAndNoViewScopeAndBackgroundEventsTrackingEnabled_whenCommandCanNotStartBackgroundView_itDoesNotCreateBackgroundScope()",
+        "errorMessages": [],
+        "identifier": "RUMSessionScopeTests/testGivenAppInBackgroundAndNoViewScopeAndBackgroundEventsTrackingEnabled_whenCommandCanNotStartBackgroundView_itDoesNotCreateBackgroundScope()",
+        "state": "Passed",
+        "targetName": "DatadogRUMTests"
+      },
+      {
+        "displayName": "testGivenAppInAnyStateAndNoViewScopeAndBackgroundEventsTrackingDisabled_whenReceivingAnyCommand_itDoesNotCreateBackgroundScope()",
+        "errorMessages": [],
+        "identifier": "RUMSessionScopeTests/testGivenAppInAnyStateAndNoViewScopeAndBackgroundEventsTrackingDisabled_whenReceivingAnyCommand_itDoesNotCreateBackgroundScope()",
+        "state": "Passed",
+        "targetName": "DatadogRUMTests"
+      },
+      {
+        "displayName": "testGivenAppInForegroundAndNotInitialSessionWithNoViewTrackedBefore_itDoesNotCreateAppLaunchScope()",
+        "errorMessages": [],
+        "identifier": "RUMSessionScopeTests/testGivenAppInForegroundAndNotInitialSessionWithNoViewTrackedBefore_itDoesNotCreateAppLaunchScope()",
+        "state": "Passed",
+        "targetName": "DatadogRUMTests"
+      },
+      {
+        "displayName": "testWhenSessionIsRejectedBySampler_itDoesNotCreateViewScopes()",
+        "errorMessages": [],
+        "identifier": "RUMSessionScopeTests/testWhenSessionIsRejectedBySampler_itDoesNotCreateViewScopes()",
+        "state": "Passed",
+        "targetName": "DatadogRUMTests"
+      },
+      {
+        "displayName": "testWhenSessionScopeIsCreated_itUpdatesFatalErrorContextWithSessionState()",
+        "errorMessages": [],
+        "identifier": "RUMSessionScopeTests/testWhenSessionScopeIsCreated_itUpdatesFatalErrorContextWithSessionState()",
+        "state": "Passed",
+        "targetName": "DatadogRUMTests"
+      },
+      {
+        "displayName": "testWhenSessionScopeStartsAnyView_itUpdatesFatalErrorContextWithSessionState()",
+        "errorMessages": [],
+        "identifier": "RUMSessionScopeTests/testWhenSessionScopeStartsAnyView_itUpdatesFatalErrorContextWithSessionState()",
+        "state": "Passed",
+        "targetName": "DatadogRUMTests"
+      },
+      {
+        "displayName": "testWhenSessionScopeHasNoActiveView_itUpdatesFatalErrorContextWithView()",
+        "errorMessages": [],
+        "identifier": "RUMSessionScopeTests/testWhenSessionScopeHasNoActiveView_itUpdatesFatalErrorContextWithView()",
+        "state": "Passed",
+        "targetName": "DatadogRUMTests"
+      },
+      {
+        "displayName": "testGivenConcurrentScenes_fatalContextFollowsRepresentativeAndIgnoresOtherViewUpdates()",
+        "errorMessages": [],
+        "identifier": "RUMSessionScopeTests/testGivenConcurrentScenes_fatalContextFollowsRepresentativeAndIgnoresOtherViewUpdates()",
+        "state": "Passed",
+        "targetName": "DatadogRUMTests"
+      },
+      {
+        "displayName": "testGivenLastRepresentativeSceneStops_itClearsCrashAndWatchdogContext()",
+        "errorMessages": [],
+        "identifier": "RUMSessionScopeTests/testGivenLastRepresentativeSceneStops_itClearsCrashAndWatchdogContext()",
+        "state": "Passed",
+        "targetName": "DatadogRUMTests"
+      }
+    ],
+    "schemeName": "DatadogRUM",
+    "summary": "198 tests: 198 passed, 0 failed, 0 skipped, 0 expected failures, 0 not run",
+    "totalResults": 198,
+    "truncated": true,
+    "xcresultBundlePath": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/ActionArtifacts/default/RunSomeTests/Test-DatadogRUM-2026.09.17_12-04-34-+0100.xcresult"
+  },
+  "affected_selection": [
+    "RUMApplicationScopeTests/testRootContext()",
+    "RUMApplicationScopeTests/testWhenInitialized_itStartsNewSession()",
+    "RUMApplicationScopeTests/testWhenSessionExpires_itStartsANewOneAndTransfersActiveViews()",
+    "RUMApplicationScopeTests/testGivenConcurrentScenes_whenSessionExpires_itTransfersEveryActiveSceneView()",
+    "RUMApplicationScopeTests/testGivenConcurrentScenes_whenSessionTimesOutOnOneSceneStopping_itTransfersTheOtherActiveScene()",
+    "RUMApplicationScopeTests/testWhenSamplingRateIs100_allEventsAreSent()",
+    "RUMApplicationScopeTests/testWhenSamplingRateIs0_noEventsAreSent()",
+    "RUMApplicationScopeTests/testWhenSamplingRateIs50_onlyHalfOfTheEventsAreSent()",
+    "RUMApplicationScopeTests/testWhenStoppingSession_itHasNoActiveSesssion()",
+    "RUMApplicationScopeTests/testGivenStoppedSession_whenUserActionEvent_itStartsANewSession()",
+    "RUMApplicationScopeTests/testGivenStoppedSessionWithConcurrentScenes_whenSceneActionStartsNewSession_itRestoresEveryScene()",
+    "RUMApplicationScopeTests/testGivenStoppedSessionWithConcurrentScenes_whenStartingViewInOneScene_itRestoresTheOtherScene()",
+    "RUMApplicationScopeTests/testGivenStoppedConcurrentSession_whenSourceLessViewStarts_itPreservesOldOwner()",
+    "RUMApplicationScopeTests/testGivenStoppedConcurrentSession_whenNonrepresentativeIdentityStops_itPreservesPeer()",
+    "RUMApplicationScopeTests/testGivenLifecycleTimeout_whenViewStarts_itRestoresEligiblePeer()",
+    "RUMApplicationScopeTests/testGivenLifecycleTimeout_whenViewStops_itRestoresEligiblePeer()",
+    "RUMApplicationScopeTests/testGivenLifecycleMaximumDuration_whenViewStarts_itRestoresEligiblePeer()",
+    "RUMApplicationScopeTests/testGivenLifecycleMaximumDuration_whenViewStops_itRestoresEligiblePeer()",
+    "RUMApplicationScopeTests/testGivenImmediateTimeout_whenNavigationChanges_itPreservesEveryUnaffectedBranch()",
+    "RUMApplicationScopeTests/testGivenImmediateMaximumDuration_whenNavigationChanges_itPreservesEveryUnaffectedBranch()",
+    "RUMApplicationScopeTests/testGivenDelayedExpiration_whenNavigationIsInferred_itKeepsTheOldOwner()",
+    "RUMApplicationScopeTests/testGivenExplicitStop_whenNavigationHasSceneTarget_itRestoresOnlyPeers()",
+    "RUMApplicationScopeTests/testGivenRepresentativeChangedBeforeBoundary_whenSourceLessNavigationStarts_itUsesThatRepresentative()",
+    "RUMApplicationScopeTests/testGivenExpiration_whenNavigationRunsInBackground_itDoesNotResumeForegroundPeers()",
+    "RUMApplicationScopeTests/testGivenSceneLessView_whenNavigationRestartsSession_itKeepsLegacyViewShape()",
+    "RUMApplicationScopeTests/testGivenSessionProcessingResources_whenStopped_itStaysInactive()",
+    "RUMApplicationScopeTests/testGivenSessionProcessingResources_whenStopped_itIsRemovedWhenResourceFinishes()",
+    "RUMApplicationScopeTests/testGivenStoppedSessionHasPendingResource_whenNewSessionReusesViewIdentity_itKeepsOccurrencesIsolated()",
+    "RUMApplicationScopeTests/testGivenAppLaunchInForegroundAndNoPrewarming_whenInitialSessionIsStarted()",
+    "RUMApplicationScopeTests/testGivenAppLaunchInBackgroundAndNoPrewarming_whenInitialSessionIsStarted()",
+    "RUMApplicationScopeTests/testGivenLaunchWithPrewarming_whenInitialSessionIsStarted()",
+    "RUMApplicationScopeTests/testGivenInactiveSession_whenNewOneIsStarted_itSetsInactivityTimeoutPrecondition()",
+    "RUMApplicationScopeTests/testGivenExpiredSession_whenNewOneIsStarted_itSetsMaxDurationPrecondition()",
+    "RUMApplicationScopeTests/testGivenStoppedSession_whenNewOneIsStarted_itSetsExplicitStopPrecondition()",
+    "RUMApplicationScopeTests/testGivenInactiveSession_whenNewOneIsStartedInBackground_itSetsBackgroundLaunchPrecondition()",
+    "RUMApplicationScopeTests/testGivenExpiredSession_whenNewOneIsStartedInBackground_itSetsBackgroundLaunchPrecondition()",
+    "RUMApplicationScopeTests/testGivenStoppedSession_whenNewOneIsStartedInBackground_itSetsBackgroundLaunchPrecondition()",
+    "RUMApplicationScopeTests/testGivenInactiveSession_whenNewOneIsStartedInBackgroundWithPrewarming_itSetsPrewarmPrecondition()",
+    "RUMApplicationScopeTests/testGivenStoppedSession_whenNewOneIsStartedInBackgroundWithPrewarming_itSetsPrewarmPrecondition()",
+    "RUMApplicationScopeTests/testGivenUserLaunchedApp_whenSessionTimesOutInBackground_itSetsInactivityTimeoutPrecondition()",
+    "RUMSessionScopeTests/testDefaultContext()",
+    "RUMSessionScopeTests/testContextWhenSessionIsRejectedBySampler()",
+    "RUMSessionScopeTests/testWhenSessionExceedsMaxDuration_itGetsClosed()",
+    "RUMSessionScopeTests/testWhenSessionExpiresWithoutTransferringActiveView_itReleasesViewCachePin()",
+    "RUMSessionScopeTests/testWhenSessionIsInactiveForCertainDuration_itGetsClosed()",
+    "RUMSessionScopeTests/testWhenSessionReceivesInteractiveEvent_itStaysAlive()",
+    "RUMSessionScopeTests/testWhenSessionReceivesNonInteractiveEvent_itGetsClosed()",
+    "RUMSessionScopeTests/testItManagesViewScopeLifecycle()",
+    "RUMSessionScopeTests/testGivenSameViewIdentity_whenNavigatingAwayAndBack_itCreatesDistinctRUMViewOccurrences()",
+    "RUMSessionScopeTests/testGivenFirstOccurrenceHasPendingResource_whenSameIdentityReturns_itKeepsOccurrencesIsolated()",
+    "RUMSessionScopeTests/testGivenRestoredActiveView_whenSameIdentityStarts_itKeepsOnlyLatestOccurrenceActive()",
+    "RUMSessionScopeTests/testWhenViewsStartInDifferentScenes_itKeepsBothViewsActive()",
+    "RUMSessionScopeTests/testGivenConcurrentScenes_whenNonRepresentativeViewUpdates_watchdogKeepsRepresentativeView()",
+    "RUMSessionScopeTests/testGivenConcurrentScenes_whenRepresentativeViewStops_watchdogMovesToSurvivingRepresentative()",
+    "RUMSessionScopeTests/testGivenSameViewIdentityInTwoScenes_whenOneStops_itKeepsOtherSceneActive()",
+    "RUMSessionScopeTests/testGivenLegacyView_whenFirstSceneViewStarts_itPreservesSingleWindowReplacementSemantics()",
+    "RUMSessionScopeTests/testGivenConcurrentContinuousActions_whenRepresentativeActionStops_itDoesNotStopAnotherSceneAction()",
+    "RUMSessionScopeTests/testGivenOverdueLegacyContinuousAction_whenStopped_itPreservesStopAttributes()",
+    "RUMSessionScopeTests/testGivenOverdueLegacyDiscreteAction_whenStopped_itPreservesStopAttributes()",
+    "RUMSessionScopeTests/testGivenOverdueConcurrentActions_whenExplicitStopTargetsA_itPreservesOnlyRecipientAttributes()",
+    "RUMSessionScopeTests/testGivenOverdueAction_whenStopTargetsMissingScene_itExpiresWithoutForeignAttributes()",
+    "RUMSessionScopeTests/testGivenDiscreteActionInOneScene_whenOnlyAnotherSceneInteracts_itStillExpiresTheFirstAction()",
+    "RUMSessionScopeTests/testGivenConcurrentScenes_whenNavigatingInOneScene_itLeavesOtherSceneActive()",
+    "RUMSessionScopeTests/testGivenConcurrentScenes_whenUnscopedViewStarts_itReplacesRepresentativeSceneOnly()",
+    "RUMSessionScopeTests/testGivenConcurrentScenes_whenUnscopedStopMatchesEarlierSceneIdentity_itStopsThatScene()",
+    "RUMSessionScopeTests/testGivenConcurrentScenes_whenActionTargetsEarlierScene_itUsesThatSceneViewOnce()",
+    "RUMSessionScopeTests/testGivenConcurrentScenes_whenActionTargetsExactEarlierView_itBecomesRepresentativeForLaterSourceLessWork()",
+    "RUMSessionScopeTests/testGivenConcurrentScenes_whenUnscopedActionIsAdded_itDoesNotDuplicateIt()",
+    "RUMSessionScopeTests/testGivenConcurrentScenesWithActionInEarlierScene_whenUnscopedActionIsAdded_itDoesNotDuplicateIt()",
+    "RUMSessionScopeTests/testGivenConcurrentScenes_whenResourceCompletesAfterAnotherSceneInteracts_itKeepsItsCapturedView()",
+    "RUMSessionScopeTests/testGivenAOwnedResourceAndBAction_whenSourceLessResourceSucceeds_itDoesNotIncrementBAction()",
+    "RUMSessionScopeTests/testGivenAOwnedResourceAndBAction_whenSourceLessResourceFails_itDoesNotIncrementBAction()",
+    "RUMSessionScopeTests/testGivenResourceOwnedByInactiveView_whenItCompletes_itDoesNotAlsoReachCurrentViewsAction()",
+    "RUMSessionScopeTests/testGivenCachedLegacyViewAndActiveSceneView_whenExactErrorArrives_itKeepsLegacyFallback()",
+    "RUMSessionScopeTests/testGivenInactiveExactLegacyViewAndActiveSceneView_whenErrorArrives_itKeepsLegacyFallback()",
+    "RUMSessionScopeTests/testGivenCapturedViewNoLongerExists_whenResourceRuns_itFallsBackWithoutLosingCompletion()",
+    "RUMSessionScopeTests/testGivenCapturedViewNoLongerExists_whenErrorArrives_itFallsBackToRepresentativeView()",
+    "RUMSessionScopeTests/testGivenUnknownCapturedViewAndConcurrentScenes_whenErrorArrives_itDoesNotGuessAnotherScene()",
+    "RUMSessionScopeTests/testGivenCapturedSceneViewNoLongerExists_whenErrorArrives_itFallsBackWithinTheSameScene()",
+    "RUMSessionScopeTests/testGivenCapturedSceneViewAndItsSceneNoLongerExist_whenErrorArrives_itDoesNotUseAnotherScene()",
+    "RUMSessionScopeTests/testGivenCapturedViewOwnershipExpiredAndOneOtherSceneRemains_whenErrorArrives_itDoesNotGuessThatScene()",
+    "RUMSessionScopeTests/testGivenOperationStartedInOneScene_whenItEndsThereAfterNavigation_itOverridesAnotherProcessRepresentative()",
+    "RUMSessionScopeTests/testGivenOperationStartedInSceneA_whenItEndsInSceneB_itUsesEachScenesCurrentView()",
+    "RUMSessionScopeTests/testGivenOperationTargetSceneHasNoView_whenNoSnapshot_itUsesProcessRepresentative()",
+    "RUMSessionScopeTests/testGivenConcurrentScenes_whenSessionStops_itStopsEverySceneView()",
+    "RUMSessionScopeTests/testGivenConcurrentScenes_itKeepsIndependentINVHistories()",
+    "RUMSessionScopeTests/testWhenViewStarts_itUpdatesTheViewCache()",
+    "RUMSessionScopeTests/testGivenAppInBackgroundAndNoViewScopeAndBackgroundEventsTrackingEnabled_whenCommandCanStartBackgroundView_itCreatesBackgroundScope()",
+    "RUMSessionScopeTests/testGivenAppInBackgroundAndNoActiveViewScopeAndBackgroundEventsTrackingEnabled_whenCommandCanStartBackgroundView_itCreatesBackgroundScope()",
+    "RUMSessionScopeTests/testGivenSceneAViewAndSceneBBackgroundView_whenSceneAActs_itDoesNotDuplicateIntoBackground()",
+    "RUMSessionScopeTests/testGivenConcurrentScenesAndBET_whenUnknownExactViewErrorArrives_itDoesNotCreateLegacyBackgroundView()",
+    "RUMSessionScopeTests/testGivenAppInBackgroundAndNoViewScopeAndBackgroundEventsTrackingEnabled_whenCommandCanNotStartBackgroundView_itDoesNotCreateBackgroundScope()",
+    "RUMSessionScopeTests/testGivenAppInAnyStateAndNoViewScopeAndBackgroundEventsTrackingDisabled_whenReceivingAnyCommand_itDoesNotCreateBackgroundScope()",
+    "RUMSessionScopeTests/testGivenAppInForegroundAndNotInitialSessionWithNoViewTrackedBefore_itDoesNotCreateAppLaunchScope()",
+    "RUMSessionScopeTests/testWhenSessionIsRejectedBySampler_itDoesNotCreateViewScopes()",
+    "RUMSessionScopeTests/testWhenSessionScopeIsCreated_itUpdatesFatalErrorContextWithSessionState()",
+    "RUMSessionScopeTests/testWhenSessionScopeStartsAnyView_itUpdatesFatalErrorContextWithSessionState()",
+    "RUMSessionScopeTests/testWhenSessionScopeHasNoActiveView_itUpdatesFatalErrorContextWithView()",
+    "RUMSessionScopeTests/testGivenConcurrentScenes_fatalContextFollowsRepresentativeAndIgnoresOtherViewUpdates()",
+    "RUMSessionScopeTests/testGivenLastRepresentativeSceneStops_itClearsCrashAndWatchdogContext()",
+    "RUMSessionScopeTests/testWhenSessionEnds_itUpdatesFatalErrorContextWithView()",
+    "RUMSessionScopeTests/testGivenActiveSession_whenStopSessionEvent_itSetsSessionActiveFalse()",
+    "RUMSessionScopeTests/testGivenStoppedSession_itUpdatesContext()",
+    "RUMSessionScopeTests/testGivenActiveSessionWithActiveView_whenStopSessionEvent_itStopsTheActiveView()",
+    "RUMSessionScopeTests/testWhenSessionScopeHasViewsWithPendingResources_whenStopSession_itKeepsTheScope()",
+    "RUMSessionScopeTests/testWhenSessionScopeHasViewsWithPendingResources_itClosesTheScopeWhenResourcesFinish()",
+    "RUMSessionScopeTests/testWhenScopeEnded_itDoesNotStartNewViews()",
+    "RUMSessionScopeTests/testWhenScopeEnded_itDoesNotCreateAnApplicationLaunchView()",
+    "RUMSessionScopeTests/testGivenSessionWithNoActiveScope_whenReceivingRUMCommand_itLogsWarning()",
+    "RUMSessionScopeTests/testGivenAnotherSceneHasAnActiveView_whenCommandTargetsSceneWithoutAView_itLogsWarning()",
+    "RUMSessionScopeTests/testGivenSessionWithNoActiveScope_whenReceivingSilentCommand_itDoesNotLogWarning()",
+    "RUMSessionScopeTests/testProcessesFeatureOperationCommand_DelegatesToManager()",
+    "RUMSessionScopeTests/testWhenSessionScopeReceivesTTIDCommand_itIsProcessedAccordingly()",
+    "RUMSessionScopeTests/testWhenSessionScopeReceivesTTFDCommand_itIsProcessedAccordingly()",
+    "RUMSessionScopeTests/testWhenSessionScopeIsCreated_itStartsTimeseriesCollector()",
+    "RUMSessionScopeTests/testWhenSessionExpiresDueToMaxDuration_itStopsTimeseriesCollector()",
+    "RUMSessionScopeTests/testWhenSessionExpiresDueToInactivity_itStopsTimeseriesCollector()",
+    "RUMSessionScopeTests/testWhenSessionScopeStartsNewSession_itStartsCollectorWithCorrectSessionID()",
+    "RUMSessionScopeTests/testWhenSessionIsNotSampled_itDoesNotStartTimeseriesCollector()",
+    "RUMSessionScopeTests/testWhenSessionIsCreatedInBackground_itStartsThenPausesTimeseriesCollector()",
+    "RUMSessionScopeTests/testWhenAppEntersBackground_itPausesTimeseriesCollector()",
+    "RUMSessionScopeTests/testWhenAppEntersForeground_itResumesTimeseriesCollector()",
+    "RUMViewScopeTests/testDefaultContext()",
+    "RUMViewScopeTests/testContextWhenViewHasAnActiveUserAction()",
+    "RUMViewScopeTests/testWhenInitialViewReceivesAnyCommand_itSendsViewUpdateEvent()",
+    "RUMViewScopeTests/testWhenSessionReplayHasNoExperimentalFeatures_itSendsEmptyExperimentalFeatures()",
+    "RUMViewScopeTests/testWhenInitialViewHasConfiguredSource_itSendsViewUpdateEventWithConfiguredSource()",
+    "RUMViewScopeTests/testWhenViewIsStarted_itSendsViewUpdateEvent()",
+    "RUMViewScopeTests/testWhenViewIsStopped_itSendsViewUpdateEvent_andEndsTheScope()",
+    "RUMViewScopeTests/testWhenViewIsStartedAndStoppedWithProfilingContext_itSendsViewUpdateEventsWithProfiling()",
+    "RUMViewScopeTests/testWhenViewIsStopped_itMakesAttributesImmutable()",
+    "RUMViewScopeTests/testWhenViewIsStoppedInCITest_itSendsViewUpdateEvent_andEndsTheScope()",
+    "RUMViewScopeTests/testWhenViewIsStoppedInSyntheticsTest_itSendsViewUpdateEvent_andEndsTheScope()",
+    "RUMViewScopeTests/testWhenViewStartWithSessionTypeOverride()",
+    "RUMViewScopeTests/testWhenAnotherViewIsStarted_itEndsTheScope()",
+    "RUMViewScopeTests/testWhenTheViewIsStartedAnotherTime_itEndsTheScope()",
+    "RUMViewScopeTests/testGivenMultipleViewScopes_whenSendingViewEvent_eachScopeUsesUniqueViewID()",
+    "RUMViewScopeTests/testWhenEventsAreSent_theyIncludeSessionPrecondition()",
+    "RUMViewScopeTests/testWhenViewAttributesAreSet_nextEventsHaveThem()",
+    "RUMViewScopeTests/testWhenViewAttributesAreRemoved_eventsDoNotIncludeThem()",
+    "RUMViewScopeTests/testWhenInternalViewAttributesAreSet_eventsAreNotAffected()",
+    "RUMViewScopeTests/testWhenViewAttributesAreSet_childEventsHaveThem()",
+    "RUMViewScopeTests/testWhenViewAttributesCollide_thePrecedenceIsRespected()",
+    "RUMViewScopeTests/testWhenViewAttributesChangeOnStoppedViewWithActiveResources()",
+    "RUMViewScopeTests/testWhenGlobalAttributesAreUpdated_eventsHaveTheUpdate()",
+    "RUMViewScopeTests/testViewAttributesTakePrecedenceOverGlobalAttributes()",
+    "RUMViewScopeTests/testCommandAttributesTakePrecendenceOverViewAttributesAndGlobalAttributes()",
+    "RUMViewScopeTests/testWhenRemovingGlobalAttributes_eventsDoNotIncludeThem()",
+    "RUMViewScopeTests/testItManagesResourceScopesLifecycle()",
+    "RUMViewScopeTests/testGivenViewWithPendingResources_whenItGetsStopped_itDoesNotFinishUntilResourcesComplete()",
+    "RUMViewScopeTests/testGivenViewWithUnfinishedResources_whenNextViewsAreStarted_itNoLongerUpdatesTimeSpent()",
+    "RUMViewScopeTests/testItManagesContinuousUserActionScopeLifecycle()",
+    "RUMViewScopeTests/testItManagesDiscreteUserActionScopeLifecycle()",
+    "RUMViewScopeTests/testGivenViewWithPendingAction_whenCustomActionIsAdded_itSendsItInstantly()",
+    "RUMViewScopeTests/testGivenViewWithNoPendingAction_whenCustomActionIsAdded_itSendsItInstantly()",
+    "RUMViewScopeTests/testWhenDiscreteUserActionHasFrustration_itSendsFrustrationCount()",
+    "RUMViewScopeTests/testWhenTwoTapActionsTrackedSequentially_thenHigherPriorityInstrumentationWins()",
+    "RUMViewScopeTests/testWhenViewErrorIsAdded_itSendsErrorEventAndViewUpdateEvent()",
+    "RUMViewScopeTests/testWhenViewErrorIsAddedWithConfiguredSource_itSendsErrorEventWithCorrectSource()",
+    "RUMViewScopeTests/testGivenStartedView_whenCrossPlatformErrorIsAdded_itSendsCorrectErrorEvent()",
+    "RUMViewScopeTests/testGivenStartedView_whenErrorWithAttributesIsAdded_itDoesNotUpdateViewAttributes()",
+    "RUMViewScopeTests/testGivenStartedView_whenErrorWithFingerprintAttributesIsAdded_itAddsFingerprintToError()",
+    "RUMViewScopeTests/testGivenStartedView_whenBinaryImagesGenerationFails_itReportsErrorToTelemetryAndOmitsBinaryImages()",
+    "RUMViewScopeTests/testGivenStartedView_whenErrorWithIncludeBinaryImagesAttributesIsAdded_itAddsBinaryImagesToError()",
+    "RUMViewScopeTests/testWhenResourceIsFinishedWithError_itSendsViewUpdateEvent()",
+    "RUMViewScopeTests/testWhenViewErrorIsAdded_itSendsErrorWithCorrectTimeSinceAppStart()",
+    "RUMViewScopeTests/testWhenThereAreHitches_theViewUpdatesContainsSlowFrames()",
+    "RUMViewScopeTests/testWhenAppHangsAndViewHitchesAreDisabled_theRatesAreNotCalculated()",
+    "RUMViewScopeTests/testWhenViewDurationIsTooSmall_theRatesAreNotCalculated()",
+    "RUMViewScopeTests/testWhenThereAreViewHitches_theStopViewEventHasSlowFramesRate()",
+    "RUMViewScopeTests/testWhenThereAreAppHangs_theStopViewEventHasFreezeRate()",
+    "RUMViewScopeTests/testWhenViewErrorIsAdded_ButErrorEventDiscarded_itCallsCompletionHandler()",
+    "RUMViewScopeTests/testWhenViewAppHangIsTracked_itSendsErrorEventAndViewUpdateEvent()",
+    "RUMViewScopeTests/testWhenLongTaskIsAdded_itSendsLongTaskEventAndViewUpdateEvent()",
+    "RUMViewScopeTests/testGivenStartedView_whenLongTaskWithAttributesIsAdded_itDoesNotUpdateViewAttributes()",
+    "RUMViewScopeTests/testWhenLongTaskIsAddedWithConfiguredSource_itSendsLongTaskEventWithConfiguredSource()",
+    "RUMViewScopeTests/testGivenActiveView_whenCustomTimingIsRegistered_itSendsViewUpdateEvent()",
+    "RUMViewScopeTests/testGivenInactiveView_whenCustomTimingIsRegistered_itDoesNotSendViewUpdateEvent()",
+    "RUMViewScopeTests/testGivenActiveView_whenCustomTimingIsRegistered_itSanitizesCustomTiming()",
+    "RUMViewScopeTests/testGivenActiveView_whenFeatureFlagEvaluated_itAddsTheFeatureFlag()",
+    "RUMViewScopeTests/testGivenActiveView_whenFeatureFlagReEvaluated_itModifiesTheFeatureFlag()",
+    "RUMViewScopeTests/testGivenActiveViewWithFeatureFlag_itSendsThoseFlagsWithErrors()",
+    "RUMViewScopeTests/testGivenSession_whenSessionStopped_itSendsViewUpdateWithStopped()",
+    "RUMViewScopeTests/testGivenViewStartedWithServerTimeDifference_whenDifferentEventsAreSend_itAppliesTheSameCorrectionToAll()",
+    "RUMViewScopeTests/testGivenViewScopeWithDependentActionsResourcesErrors_whenDroppingEvents_thenCountsAreAdjusted()",
+    "RUMViewScopeTests/testGivenViewScopeWithDroppingEventsMapper_whenProcessingApplicationStartAction_thenCountIsAdjusted()",
+    "RUMViewScopeTests/testWhenViewIsStarted_itUpdatesFatalErrorContextWithView()",
+    "RUMViewScopeTests/testWhenInactiveViewEmitsTerminalEventAfterStopResource_itDoesNotOverwriteFatalErrorContext()",
+    "RUMViewScopeTests/testWhenViewIsStopped_itStopsTrackingTNSMetric()",
+    "RUMViewScopeTests/testWhenViewIsStartedThenStopped_itUpdatesINVMetric()",
+    "RUMViewScopeTests/testGivenAStartedView_whenItSetsAnInternalViewAttribute_itSetsTheAttribute()",
+    "RUMViewScopeTests/testGivenAStartedView_whenItSetsAnExitingInternalViewAttribute_itSetsTheAttribute()",
+    "RUMViewScopeTests/testGivenAStoppedView_whenItSetsAnInternalViewAttribute_itDoesNotSetTheAttribute()",
+    "RUMViewScopeTests/testGivenFCBInternalAttribute_itSetsTheValueOnTheViewEvent()",
+    "RUMViewScopeTests/testGivenCustomINVValues_itSetsTheValueOnTheViewEvent()",
+    "RUMViewScopeTests/testViewUpdate_onceHasReplayIsTrueItRemainsTrue()",
+    "RUMViewScopeTests/testAccessibilityAttributesInViewEvents()",
+    "RUMViewScopeTests/testNoAccessibilityAttributesWhenNil()"
+  ],
+  "new_test_methods": 13,
+  "new_scenarios": 44,
+  "oracles": [
+    "Old process representative resolved before peer exclusion",
+    "Identity stop resolves its previous scene before restoration",
+    "Fresh session and view UUIDs",
+    "Exact outgoing view UUID inventory without phantom restoration",
+    "Immediate peer action and Resource session/view ownership",
+    "Maximum duration kept distinct from inactivity by heartbeats",
+    "Background with tracking enabled and disabled never restores foreground peers",
+    "Ordinary scene-less navigation retains one nil-scene occurrence"
+  ],
+  "lint": {
+    "production_files": 2,
+    "test_files": 1,
+    "strict": true,
+    "violations": 0,
+    "formatting_only_after_tests": true
+  },
+  "limitations": [
+    "No Datadog backend or physical-device lifecycle acceptance.",
+    "Native scenes are real; expiration command times are controlled internally. This is not an OS timeout/physical disconnect test.",
+    "Unit-test whitespace was lint-corrected after the 198-test run; production source and test behavior were unchanged."
+  ],
+  "source_sha256": {
+    "DatadogRUM/Sources/RUMMonitor/Scopes/RUMApplicationScope.swift": "934b4550d1fe0290cbd839eba10983b8ed709d4928274c6ba93843252287aadb",
+    "DatadogRUM/Sources/RUMMonitor/Scopes/RUMSessionScope.swift": "a18d029bc9335ebf2614eccc1ce1c65fde4d93a66a23bd65927390348926ed8d",
+    "DatadogRUM/Tests/RUMMonitor/Scopes/RUMApplicationScopeTests.swift": "120bb5b9882bfcdb63bbf1adf73058a15108bb167d6f50fd01684d649e4d64d8"
+  },
+  "native_runtime": {
+    "artifact_root": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/session-restoration-yn9zqjhp",
+    "experiment": "EXP-167",
+    "status": "PASS",
+    "arms": {
+      "control": {
+        "revision": "313a05304f1067abf93c1859e01eacccc28c0867",
+        "sdk_identity": {
+          "file_count": 369,
+          "sha256": "9be335902f8d6dfba523753d7badadfdee2c3ba05571efcc5ead020294d47029"
+        },
+        "fixture_sha256": "3675bdd0cd009bc6914ad1af10f1dafeccbdbec2fd5ad2c86dbfc05384eaebe4",
+        "package_sha256": "087c70faa52a276a5143b72e7a34ffcee770ed5e66acd6cfc1287b497a7333fa",
+        "bundle": "com.datadoghq.session-restoration.control",
+        "build_command": [
+          "xcodebuild",
+          "build",
+          "-quiet",
+          "-project",
+          "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/session-restoration-yn9zqjhp/control/SessionRestoration.xcodeproj",
+          "-scheme",
+          "SessionRestoration",
+          "-configuration",
+          "Debug",
+          "-destination",
+          "generic/platform=iOS Simulator",
+          "-derivedDataPath",
+          "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/session-restoration-yn9zqjhp/control/derived",
+          "CODE_SIGNING_ALLOWED=NO"
+        ],
+        "build_log": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/session-restoration-yn9zqjhp/control/build.log",
+        "app": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/session-restoration-yn9zqjhp/control/derived/Build/Products/Debug-iphonesimulator/SessionRestoration.app",
+        "binary_sha256": "d19f39fe1b4f53ac52e2f1a93ac69405141f3eb3e8ea75226a47830c2a0cd593",
+        "build_log_sha256": "3c7c08fb0777aeb97ff18e94a5650066e09d2fbb5a957091233962e4d1d5e890",
+        "run": {
+          "status": "FAIL",
+          "run_id": "session-restoration-cb214632a91742899c6beb0d69c60b09",
+          "launch_command": [
+            "xcrun",
+            "simctl",
+            "launch",
+            "--console",
+            "FF628CB6-1DBD-4073-9E0D-E77106337980",
+            "com.datadoghq.session-restoration.control",
+            "--run-id",
+            "session-restoration-cb214632a91742899c6beb0d69c60b09"
+          ],
+          "clean_install": true,
+          "installed_binary_matches": true,
+          "required_checks_complete": true,
+          "result": {
+            "checks": {
+              "application_active": true,
+              "both_controllers_mounted": true,
+              "maximum_start_boundary_has_no_session": true,
+              "maximum_start_exact_view_inventory": false,
+              "maximum_start_fresh_session_and_views": false,
+              "maximum_start_initial_owners": true,
+              "maximum_start_maximum_not_timeout": true,
+              "maximum_start_navigation_owners": false,
+              "maximum_start_peer_action": false,
+              "maximum_start_peer_resource": false,
+              "maximum_stop_boundary_has_no_session": true,
+              "maximum_stop_exact_view_inventory": false,
+              "maximum_stop_fresh_session_and_views": false,
+              "maximum_stop_initial_owners": true,
+              "maximum_stop_maximum_not_timeout": true,
+              "maximum_stop_navigation_owners": false,
+              "maximum_stop_peer_action": false,
+              "maximum_stop_peer_resource": false,
+              "stop_start_boundary_has_no_session": true,
+              "stop_start_exact_view_inventory": false,
+              "stop_start_fresh_session_and_views": true,
+              "stop_start_initial_owners": true,
+              "stop_start_navigation_owners": false,
+              "stop_start_peer_action": true,
+              "stop_start_peer_resource": true,
+              "stop_stop_boundary_has_no_session": true,
+              "stop_stop_exact_view_inventory": false,
+              "stop_stop_fresh_session_and_views": false,
+              "stop_stop_initial_owners": true,
+              "stop_stop_navigation_owners": false,
+              "stop_stop_peer_action": false,
+              "stop_stop_peer_resource": false,
+              "timeout_start_boundary_has_no_session": true,
+              "timeout_start_exact_view_inventory": false,
+              "timeout_start_fresh_session_and_views": false,
+              "timeout_start_initial_owners": true,
+              "timeout_start_navigation_owners": false,
+              "timeout_start_peer_action": false,
+              "timeout_start_peer_resource": false,
+              "timeout_stop_boundary_has_no_session": true,
+              "timeout_stop_exact_view_inventory": false,
+              "timeout_stop_fresh_session_and_views": false,
+              "timeout_stop_initial_owners": true,
+              "timeout_stop_navigation_owners": false,
+              "timeout_stop_peer_action": false,
+              "timeout_stop_peer_resource": false,
+              "two_native_scenes": true
+            },
+            "details": {
+              "scenarios": [
+                {
+                  "events": [
+                    {
+                      "name": "ApplicationLaunch",
+                      "session": "5ad708d8-b2cf-4cd5-a24b-5ac5186dc344",
+                      "type": "view",
+                      "view": "ea555a71-1c49-42ea-934a-bb0d1160abf5"
+                    },
+                    {
+                      "name": "ApplicationLaunch",
+                      "session": "5ad708d8-b2cf-4cd5-a24b-5ac5186dc344",
+                      "type": "view",
+                      "view": "ea555a71-1c49-42ea-934a-bb0d1160abf5"
+                    },
+                    {
+                      "name": "A",
+                      "session": "5ad708d8-b2cf-4cd5-a24b-5ac5186dc344",
+                      "type": "view",
+                      "view": "51081642-cef0-4337-be0f-cf1581776a8f"
+                    },
+                    {
+                      "name": "B",
+                      "session": "5ad708d8-b2cf-4cd5-a24b-5ac5186dc344",
+                      "type": "view",
+                      "view": "2ebe5b4f-0000-4912-8e11-1a86c17359ab"
+                    },
+                    {
+                      "name": "A",
+                      "session": "5ad708d8-b2cf-4cd5-a24b-5ac5186dc344",
+                      "type": "view",
+                      "view": "51081642-cef0-4337-be0f-cf1581776a8f"
+                    },
+                    {
+                      "name": "B",
+                      "session": "5ad708d8-b2cf-4cd5-a24b-5ac5186dc344",
+                      "type": "view",
+                      "view": "2ebe5b4f-0000-4912-8e11-1a86c17359ab"
+                    },
+                    {
+                      "name": "A",
+                      "session": "863dbaba-f0c9-4870-958d-5a21ab40d302",
+                      "type": "view",
+                      "view": "cd7c8d74-4490-4471-80e1-b4f0ef8968f1"
+                    },
+                    {
+                      "name": "New",
+                      "session": "863dbaba-f0c9-4870-958d-5a21ab40d302",
+                      "type": "view",
+                      "view": "005e1168-7a38-4b4c-ad92-95820f8cd830"
+                    },
+                    {
+                      "name": "Peer marker",
+                      "session": "863dbaba-f0c9-4870-958d-5a21ab40d302",
+                      "type": "action",
+                      "view": "005e1168-7a38-4b4c-ad92-95820f8cd830"
+                    },
+                    {
+                      "name": "New",
+                      "session": "863dbaba-f0c9-4870-958d-5a21ab40d302",
+                      "type": "view",
+                      "view": "005e1168-7a38-4b4c-ad92-95820f8cd830"
+                    },
+                    {
+                      "session": "863dbaba-f0c9-4870-958d-5a21ab40d302",
+                      "type": "resource",
+                      "view": "005e1168-7a38-4b4c-ad92-95820f8cd830"
+                    },
+                    {
+                      "name": "New",
+                      "session": "863dbaba-f0c9-4870-958d-5a21ab40d302",
+                      "type": "view",
+                      "view": "005e1168-7a38-4b4c-ad92-95820f8cd830"
+                    },
+                    {
+                      "name": "New",
+                      "session": "863dbaba-f0c9-4870-958d-5a21ab40d302",
+                      "type": "view",
+                      "view": "005e1168-7a38-4b4c-ad92-95820f8cd830"
+                    }
+                  ],
+                  "name": "stop_start",
+                  "new_session": "863dbaba-f0c9-4870-958d-5a21ab40d302",
+                  "old_session": "5ad708d8-b2cf-4cd5-a24b-5ac5186dc344"
+                },
+                {
+                  "events": [
+                    {
+                      "name": "ApplicationLaunch",
+                      "session": "19371884-5f94-4cb3-90a8-5d550045130d",
+                      "type": "view",
+                      "view": "53c0e2ba-486b-4d1b-bef7-1441cbbaf12f"
+                    },
+                    {
+                      "name": "ApplicationLaunch",
+                      "session": "19371884-5f94-4cb3-90a8-5d550045130d",
+                      "type": "view",
+                      "view": "53c0e2ba-486b-4d1b-bef7-1441cbbaf12f"
+                    },
+                    {
+                      "name": "A",
+                      "session": "19371884-5f94-4cb3-90a8-5d550045130d",
+                      "type": "view",
+                      "view": "793b276b-0829-4e53-a4b7-c91274348059"
+                    },
+                    {
+                      "name": "B",
+                      "session": "19371884-5f94-4cb3-90a8-5d550045130d",
+                      "type": "view",
+                      "view": "e3dec69f-51b3-4555-a5dd-57b2be215f9c"
+                    },
+                    {
+                      "name": "A",
+                      "session": "19371884-5f94-4cb3-90a8-5d550045130d",
+                      "type": "view",
+                      "view": "793b276b-0829-4e53-a4b7-c91274348059"
+                    },
+                    {
+                      "name": "B",
+                      "session": "19371884-5f94-4cb3-90a8-5d550045130d",
+                      "type": "view",
+                      "view": "e3dec69f-51b3-4555-a5dd-57b2be215f9c"
+                    },
+                    {
+                      "name": "A",
+                      "session": "ab636556-73fe-414c-b290-4f08a406ff06",
+                      "type": "view",
+                      "view": "62cc217c-ec1d-45b9-8a23-54e35e6bed57"
+                    }
+                  ],
+                  "name": "stop_stop",
+                  "new_session": "",
+                  "old_session": "19371884-5f94-4cb3-90a8-5d550045130d"
+                },
+                {
+                  "events": [
+                    {
+                      "name": "ApplicationLaunch",
+                      "session": "4b62b97c-47d3-45d8-80ff-1938eef883d2",
+                      "type": "view",
+                      "view": "9fcc8f37-5a33-4a40-9ef7-4f5f7c91bada"
+                    },
+                    {
+                      "name": "ApplicationLaunch",
+                      "session": "4b62b97c-47d3-45d8-80ff-1938eef883d2",
+                      "type": "view",
+                      "view": "9fcc8f37-5a33-4a40-9ef7-4f5f7c91bada"
+                    },
+                    {
+                      "name": "A",
+                      "session": "4b62b97c-47d3-45d8-80ff-1938eef883d2",
+                      "type": "view",
+                      "view": "2db73103-c8eb-4dd8-8b35-157be090521e"
+                    },
+                    {
+                      "name": "B",
+                      "session": "4b62b97c-47d3-45d8-80ff-1938eef883d2",
+                      "type": "view",
+                      "view": "7a8e239f-c46f-4e13-ba0b-9aac2fe82302"
+                    },
+                    {
+                      "name": "New",
+                      "session": "91b71c76-c2d6-4655-a92e-f1ebb0de3f77",
+                      "type": "view",
+                      "view": "e58d2114-7930-4936-b49e-4f46ac2e668e"
+                    },
+                    {
+                      "name": "New",
+                      "session": "91b71c76-c2d6-4655-a92e-f1ebb0de3f77",
+                      "type": "view",
+                      "view": "e58d2114-7930-4936-b49e-4f46ac2e668e"
+                    }
+                  ],
+                  "name": "timeout_start",
+                  "new_session": "",
+                  "old_session": "4b62b97c-47d3-45d8-80ff-1938eef883d2"
+                },
+                {
+                  "events": [
+                    {
+                      "name": "ApplicationLaunch",
+                      "session": "5d5f02aa-272e-41fb-a26b-f12c1f2a337f",
+                      "type": "view",
+                      "view": "5bf7759e-6b7d-4f86-b73e-7cdc78099d30"
+                    },
+                    {
+                      "name": "ApplicationLaunch",
+                      "session": "5d5f02aa-272e-41fb-a26b-f12c1f2a337f",
+                      "type": "view",
+                      "view": "5bf7759e-6b7d-4f86-b73e-7cdc78099d30"
+                    },
+                    {
+                      "name": "A",
+                      "session": "5d5f02aa-272e-41fb-a26b-f12c1f2a337f",
+                      "type": "view",
+                      "view": "726767b3-b08b-437f-a47e-9e27501effea"
+                    },
+                    {
+                      "name": "B",
+                      "session": "5d5f02aa-272e-41fb-a26b-f12c1f2a337f",
+                      "type": "view",
+                      "view": "43c7bb8b-1323-4330-b6e0-d16b1fd16194"
+                    }
+                  ],
+                  "name": "timeout_stop",
+                  "new_session": "",
+                  "old_session": "5d5f02aa-272e-41fb-a26b-f12c1f2a337f"
+                },
+                {
+                  "events": [
+                    {
+                      "name": "ApplicationLaunch",
+                      "session": "67631ca8-239d-4e67-baea-fd4912cda09f",
+                      "type": "view",
+                      "view": "0276f7cb-1923-4160-81cf-3d2c14dde06f"
+                    },
+                    {
+                      "name": "ApplicationLaunch",
+                      "session": "67631ca8-239d-4e67-baea-fd4912cda09f",
+                      "type": "view",
+                      "view": "0276f7cb-1923-4160-81cf-3d2c14dde06f"
+                    },
+                    {
+                      "name": "A",
+                      "session": "67631ca8-239d-4e67-baea-fd4912cda09f",
+                      "type": "view",
+                      "view": "ac91300a-9ffc-4073-9564-8dae426e658d"
+                    },
+                    {
+                      "name": "B",
+                      "session": "67631ca8-239d-4e67-baea-fd4912cda09f",
+                      "type": "view",
+                      "view": "96a688be-078b-489f-a7f0-a92df3c9b2da"
+                    },
+                    {
+                      "name": "Heartbeat",
+                      "session": "67631ca8-239d-4e67-baea-fd4912cda09f",
+                      "type": "action",
+                      "view": "96a688be-078b-489f-a7f0-a92df3c9b2da"
+                    },
+                    {
+                      "name": "B",
+                      "session": "67631ca8-239d-4e67-baea-fd4912cda09f",
+                      "type": "view",
+                      "view": "96a688be-078b-489f-a7f0-a92df3c9b2da"
+                    },
+                    {
+                      "name": "Heartbeat",
+                      "session": "67631ca8-239d-4e67-baea-fd4912cda09f",
+                      "type": "action",
+                      "view": "96a688be-078b-489f-a7f0-a92df3c9b2da"
+                    },
+                    {
+                      "name": "B",
+                      "session": "67631ca8-239d-4e67-baea-fd4912cda09f",
+                      "type": "view",
+                      "view": "96a688be-078b-489f-a7f0-a92df3c9b2da"
+                    },
+                    {
+                      "name": "Heartbeat",
+                      "session": "67631ca8-239d-4e67-baea-fd4912cda09f",
+                      "type": "action",
+                      "view": "96a688be-078b-489f-a7f0-a92df3c9b2da"
+                    },
+                    {
+                      "name": "B",
+                      "session": "67631ca8-239d-4e67-baea-fd4912cda09f",
+                      "type": "view",
+                      "view": "96a688be-078b-489f-a7f0-a92df3c9b2da"
+                    },
+                    {
+                      "name": "Heartbeat",
+                      "session": "67631ca8-239d-4e67-baea-fd4912cda09f",
+                      "type": "action",
+                      "view": "96a688be-078b-489f-a7f0-a92df3c9b2da"
+                    },
+                    {
+                      "name": "B",
+                      "session": "67631ca8-239d-4e67-baea-fd4912cda09f",
+                      "type": "view",
+                      "view": "96a688be-078b-489f-a7f0-a92df3c9b2da"
+                    },
+                    {
+                      "name": "Heartbeat",
+                      "session": "67631ca8-239d-4e67-baea-fd4912cda09f",
+                      "type": "action",
+                      "view": "96a688be-078b-489f-a7f0-a92df3c9b2da"
+                    },
+                    {
+                      "name": "B",
+                      "session": "67631ca8-239d-4e67-baea-fd4912cda09f",
+                      "type": "view",
+                      "view": "96a688be-078b-489f-a7f0-a92df3c9b2da"
+                    },
+                    {
+                      "name": "Heartbeat",
+                      "session": "67631ca8-239d-4e67-baea-fd4912cda09f",
+                      "type": "action",
+                      "view": "96a688be-078b-489f-a7f0-a92df3c9b2da"
+                    },
+                    {
+                      "name": "B",
+                      "session": "67631ca8-239d-4e67-baea-fd4912cda09f",
+                      "type": "view",
+                      "view": "96a688be-078b-489f-a7f0-a92df3c9b2da"
+                    },
+                    {
+                      "name": "Heartbeat",
+                      "session": "67631ca8-239d-4e67-baea-fd4912cda09f",
+                      "type": "action",
+                      "view": "96a688be-078b-489f-a7f0-a92df3c9b2da"
+                    },
+                    {
+                      "name": "B",
+                      "session": "67631ca8-239d-4e67-baea-fd4912cda09f",
+                      "type": "view",
+                      "view": "96a688be-078b-489f-a7f0-a92df3c9b2da"
+                    },
+                    {
+                      "name": "Heartbeat",
+                      "session": "67631ca8-239d-4e67-baea-fd4912cda09f",
+                      "type": "action",
+                      "view": "96a688be-078b-489f-a7f0-a92df3c9b2da"
+                    },
+                    {
+                      "name": "B",
+                      "session": "67631ca8-239d-4e67-baea-fd4912cda09f",
+                      "type": "view",
+                      "view": "96a688be-078b-489f-a7f0-a92df3c9b2da"
+                    },
+                    {
+                      "name": "Heartbeat",
+                      "session": "67631ca8-239d-4e67-baea-fd4912cda09f",
+                      "type": "action",
+                      "view": "96a688be-078b-489f-a7f0-a92df3c9b2da"
+                    },
+                    {
+                      "name": "B",
+                      "session": "67631ca8-239d-4e67-baea-fd4912cda09f",
+                      "type": "view",
+                      "view": "96a688be-078b-489f-a7f0-a92df3c9b2da"
+                    },
+                    {
+                      "name": "Heartbeat",
+                      "session": "67631ca8-239d-4e67-baea-fd4912cda09f",
+                      "type": "action",
+                      "view": "96a688be-078b-489f-a7f0-a92df3c9b2da"
+                    },
+                    {
+                      "name": "B",
+                      "session": "67631ca8-239d-4e67-baea-fd4912cda09f",
+                      "type": "view",
+                      "view": "96a688be-078b-489f-a7f0-a92df3c9b2da"
+                    },
+                    {
+                      "name": "Heartbeat",
+                      "session": "67631ca8-239d-4e67-baea-fd4912cda09f",
+                      "type": "action",
+                      "view": "96a688be-078b-489f-a7f0-a92df3c9b2da"
+                    },
+                    {
+                      "name": "B",
+                      "session": "67631ca8-239d-4e67-baea-fd4912cda09f",
+                      "type": "view",
+                      "view": "96a688be-078b-489f-a7f0-a92df3c9b2da"
+                    },
+                    {
+                      "name": "Heartbeat",
+                      "session": "67631ca8-239d-4e67-baea-fd4912cda09f",
+                      "type": "action",
+                      "view": "96a688be-078b-489f-a7f0-a92df3c9b2da"
+                    },
+                    {
+                      "name": "B",
+                      "session": "67631ca8-239d-4e67-baea-fd4912cda09f",
+                      "type": "view",
+                      "view": "96a688be-078b-489f-a7f0-a92df3c9b2da"
+                    },
+                    {
+                      "name": "Heartbeat",
+                      "session": "67631ca8-239d-4e67-baea-fd4912cda09f",
+                      "type": "action",
+                      "view": "96a688be-078b-489f-a7f0-a92df3c9b2da"
+                    },
+                    {
+                      "name": "B",
+                      "session": "67631ca8-239d-4e67-baea-fd4912cda09f",
+                      "type": "view",
+                      "view": "96a688be-078b-489f-a7f0-a92df3c9b2da"
+                    },
+                    {
+                      "name": "Heartbeat",
+                      "session": "67631ca8-239d-4e67-baea-fd4912cda09f",
+                      "type": "action",
+                      "view": "96a688be-078b-489f-a7f0-a92df3c9b2da"
+                    },
+                    {
+                      "name": "B",
+                      "session": "67631ca8-239d-4e67-baea-fd4912cda09f",
+                      "type": "view",
+                      "view": "96a688be-078b-489f-a7f0-a92df3c9b2da"
+                    },
+                    {
+                      "name": "Heartbeat",
+                      "session": "67631ca8-239d-4e67-baea-fd4912cda09f",
+                      "type": "action",
+                      "view": "96a688be-078b-489f-a7f0-a92df3c9b2da"
+                    },
+                    {
+                      "name": "B",
+                      "session": "67631ca8-239d-4e67-baea-fd4912cda09f",
+                      "type": "view",
+                      "view": "96a688be-078b-489f-a7f0-a92df3c9b2da"
+                    },
+                    {
+                      "name": "Heartbeat",
+                      "session": "67631ca8-239d-4e67-baea-fd4912cda09f",
+                      "type": "action",
+                      "view": "96a688be-078b-489f-a7f0-a92df3c9b2da"
+                    },
+                    {
+                      "name": "B",
+                      "session": "67631ca8-239d-4e67-baea-fd4912cda09f",
+                      "type": "view",
+                      "view": "96a688be-078b-489f-a7f0-a92df3c9b2da"
+                    },
+                    {
+                      "name": "New",
+                      "session": "aa726cec-4a89-413c-969d-0300cfcc35c0",
+                      "type": "view",
+                      "view": "9a275291-d2a2-40a8-ac66-7f691b001a6b"
+                    },
+                    {
+                      "name": "New",
+                      "session": "aa726cec-4a89-413c-969d-0300cfcc35c0",
+                      "type": "view",
+                      "view": "9a275291-d2a2-40a8-ac66-7f691b001a6b"
+                    }
+                  ],
+                  "name": "maximum_start",
+                  "new_session": "",
+                  "old_session": "67631ca8-239d-4e67-baea-fd4912cda09f"
+                },
+                {
+                  "events": [
+                    {
+                      "name": "ApplicationLaunch",
+                      "session": "528e17fd-2b31-40e1-ac72-4f50f3342b05",
+                      "type": "view",
+                      "view": "8dad6d78-cdec-4302-b7d9-d4ab72635620"
+                    },
+                    {
+                      "name": "ApplicationLaunch",
+                      "session": "528e17fd-2b31-40e1-ac72-4f50f3342b05",
+                      "type": "view",
+                      "view": "8dad6d78-cdec-4302-b7d9-d4ab72635620"
+                    },
+                    {
+                      "name": "A",
+                      "session": "528e17fd-2b31-40e1-ac72-4f50f3342b05",
+                      "type": "view",
+                      "view": "2f6f9fa6-53fe-4701-ab2a-c261e44055bc"
+                    },
+                    {
+                      "name": "B",
+                      "session": "528e17fd-2b31-40e1-ac72-4f50f3342b05",
+                      "type": "view",
+                      "view": "82ea3915-e042-4610-9510-585f0f1cdc40"
+                    },
+                    {
+                      "name": "Heartbeat",
+                      "session": "528e17fd-2b31-40e1-ac72-4f50f3342b05",
+                      "type": "action",
+                      "view": "82ea3915-e042-4610-9510-585f0f1cdc40"
+                    },
+                    {
+                      "name": "B",
+                      "session": "528e17fd-2b31-40e1-ac72-4f50f3342b05",
+                      "type": "view",
+                      "view": "82ea3915-e042-4610-9510-585f0f1cdc40"
+                    },
+                    {
+                      "name": "Heartbeat",
+                      "session": "528e17fd-2b31-40e1-ac72-4f50f3342b05",
+                      "type": "action",
+                      "view": "82ea3915-e042-4610-9510-585f0f1cdc40"
+                    },
+                    {
+                      "name": "B",
+                      "session": "528e17fd-2b31-40e1-ac72-4f50f3342b05",
+                      "type": "view",
+                      "view": "82ea3915-e042-4610-9510-585f0f1cdc40"
+                    },
+                    {
+                      "name": "Heartbeat",
+                      "session": "528e17fd-2b31-40e1-ac72-4f50f3342b05",
+                      "type": "action",
+                      "view": "82ea3915-e042-4610-9510-585f0f1cdc40"
+                    },
+                    {
+                      "name": "B",
+                      "session": "528e17fd-2b31-40e1-ac72-4f50f3342b05",
+                      "type": "view",
+                      "view": "82ea3915-e042-4610-9510-585f0f1cdc40"
+                    },
+                    {
+                      "name": "Heartbeat",
+                      "session": "528e17fd-2b31-40e1-ac72-4f50f3342b05",
+                      "type": "action",
+                      "view": "82ea3915-e042-4610-9510-585f0f1cdc40"
+                    },
+                    {
+                      "name": "B",
+                      "session": "528e17fd-2b31-40e1-ac72-4f50f3342b05",
+                      "type": "view",
+                      "view": "82ea3915-e042-4610-9510-585f0f1cdc40"
+                    },
+                    {
+                      "name": "Heartbeat",
+                      "session": "528e17fd-2b31-40e1-ac72-4f50f3342b05",
+                      "type": "action",
+                      "view": "82ea3915-e042-4610-9510-585f0f1cdc40"
+                    },
+                    {
+                      "name": "B",
+                      "session": "528e17fd-2b31-40e1-ac72-4f50f3342b05",
+                      "type": "view",
+                      "view": "82ea3915-e042-4610-9510-585f0f1cdc40"
+                    },
+                    {
+                      "name": "Heartbeat",
+                      "session": "528e17fd-2b31-40e1-ac72-4f50f3342b05",
+                      "type": "action",
+                      "view": "82ea3915-e042-4610-9510-585f0f1cdc40"
+                    },
+                    {
+                      "name": "B",
+                      "session": "528e17fd-2b31-40e1-ac72-4f50f3342b05",
+                      "type": "view",
+                      "view": "82ea3915-e042-4610-9510-585f0f1cdc40"
+                    },
+                    {
+                      "name": "Heartbeat",
+                      "session": "528e17fd-2b31-40e1-ac72-4f50f3342b05",
+                      "type": "action",
+                      "view": "82ea3915-e042-4610-9510-585f0f1cdc40"
+                    },
+                    {
+                      "name": "B",
+                      "session": "528e17fd-2b31-40e1-ac72-4f50f3342b05",
+                      "type": "view",
+                      "view": "82ea3915-e042-4610-9510-585f0f1cdc40"
+                    },
+                    {
+                      "name": "Heartbeat",
+                      "session": "528e17fd-2b31-40e1-ac72-4f50f3342b05",
+                      "type": "action",
+                      "view": "82ea3915-e042-4610-9510-585f0f1cdc40"
+                    },
+                    {
+                      "name": "B",
+                      "session": "528e17fd-2b31-40e1-ac72-4f50f3342b05",
+                      "type": "view",
+                      "view": "82ea3915-e042-4610-9510-585f0f1cdc40"
+                    },
+                    {
+                      "name": "Heartbeat",
+                      "session": "528e17fd-2b31-40e1-ac72-4f50f3342b05",
+                      "type": "action",
+                      "view": "82ea3915-e042-4610-9510-585f0f1cdc40"
+                    },
+                    {
+                      "name": "B",
+                      "session": "528e17fd-2b31-40e1-ac72-4f50f3342b05",
+                      "type": "view",
+                      "view": "82ea3915-e042-4610-9510-585f0f1cdc40"
+                    },
+                    {
+                      "name": "Heartbeat",
+                      "session": "528e17fd-2b31-40e1-ac72-4f50f3342b05",
+                      "type": "action",
+                      "view": "82ea3915-e042-4610-9510-585f0f1cdc40"
+                    },
+                    {
+                      "name": "B",
+                      "session": "528e17fd-2b31-40e1-ac72-4f50f3342b05",
+                      "type": "view",
+                      "view": "82ea3915-e042-4610-9510-585f0f1cdc40"
+                    },
+                    {
+                      "name": "Heartbeat",
+                      "session": "528e17fd-2b31-40e1-ac72-4f50f3342b05",
+                      "type": "action",
+                      "view": "82ea3915-e042-4610-9510-585f0f1cdc40"
+                    },
+                    {
+                      "name": "B",
+                      "session": "528e17fd-2b31-40e1-ac72-4f50f3342b05",
+                      "type": "view",
+                      "view": "82ea3915-e042-4610-9510-585f0f1cdc40"
+                    },
+                    {
+                      "name": "Heartbeat",
+                      "session": "528e17fd-2b31-40e1-ac72-4f50f3342b05",
+                      "type": "action",
+                      "view": "82ea3915-e042-4610-9510-585f0f1cdc40"
+                    },
+                    {
+                      "name": "B",
+                      "session": "528e17fd-2b31-40e1-ac72-4f50f3342b05",
+                      "type": "view",
+                      "view": "82ea3915-e042-4610-9510-585f0f1cdc40"
+                    },
+                    {
+                      "name": "Heartbeat",
+                      "session": "528e17fd-2b31-40e1-ac72-4f50f3342b05",
+                      "type": "action",
+                      "view": "82ea3915-e042-4610-9510-585f0f1cdc40"
+                    },
+                    {
+                      "name": "B",
+                      "session": "528e17fd-2b31-40e1-ac72-4f50f3342b05",
+                      "type": "view",
+                      "view": "82ea3915-e042-4610-9510-585f0f1cdc40"
+                    },
+                    {
+                      "name": "Heartbeat",
+                      "session": "528e17fd-2b31-40e1-ac72-4f50f3342b05",
+                      "type": "action",
+                      "view": "82ea3915-e042-4610-9510-585f0f1cdc40"
+                    },
+                    {
+                      "name": "B",
+                      "session": "528e17fd-2b31-40e1-ac72-4f50f3342b05",
+                      "type": "view",
+                      "view": "82ea3915-e042-4610-9510-585f0f1cdc40"
+                    },
+                    {
+                      "name": "Heartbeat",
+                      "session": "528e17fd-2b31-40e1-ac72-4f50f3342b05",
+                      "type": "action",
+                      "view": "82ea3915-e042-4610-9510-585f0f1cdc40"
+                    },
+                    {
+                      "name": "B",
+                      "session": "528e17fd-2b31-40e1-ac72-4f50f3342b05",
+                      "type": "view",
+                      "view": "82ea3915-e042-4610-9510-585f0f1cdc40"
+                    },
+                    {
+                      "name": "Heartbeat",
+                      "session": "528e17fd-2b31-40e1-ac72-4f50f3342b05",
+                      "type": "action",
+                      "view": "82ea3915-e042-4610-9510-585f0f1cdc40"
+                    },
+                    {
+                      "name": "B",
+                      "session": "528e17fd-2b31-40e1-ac72-4f50f3342b05",
+                      "type": "view",
+                      "view": "82ea3915-e042-4610-9510-585f0f1cdc40"
+                    }
+                  ],
+                  "name": "maximum_stop",
+                  "new_session": "",
+                  "old_session": "528e17fd-2b31-40e1-ac72-4f50f3342b05"
+                }
+              ],
+              "topology": [
+                {
+                  "activation_state": 2,
+                  "scene_id": "9F633B65-564A-4F58-ABE1-C57168E51806",
+                  "window_mounted": true
+                },
+                {
+                  "activation_state": 0,
+                  "scene_id": "46F7E577-73A6-4042-88F7-ADE629665622",
+                  "window_mounted": true
+                }
+              ]
+            },
+            "run_id": "session-restoration-cb214632a91742899c6beb0d69c60b09"
+          },
+          "console_sha256": "cc04021e9a140f120437a5df5ead523cd6e4da0e42f116d11acb826668d615dc"
+        },
+        "sdk_unchanged": true,
+        "fixture_unchanged": true,
+        "binary_unchanged": true
+      },
+      "candidate": {
+        "revision": "0aaafa7bd21eaecd9908086f9043f813b3cbc419",
+        "sdk_identity": {
+          "file_count": 369,
+          "sha256": "5fc7e386a7e868b2fd70e7e947c722a5b65490fab4d60675d0c19adbdc90fe93"
+        },
+        "fixture_sha256": "3675bdd0cd009bc6914ad1af10f1dafeccbdbec2fd5ad2c86dbfc05384eaebe4",
+        "package_sha256": "087c70faa52a276a5143b72e7a34ffcee770ed5e66acd6cfc1287b497a7333fa",
+        "bundle": "com.datadoghq.session-restoration.candidate",
+        "build_command": [
+          "xcodebuild",
+          "build",
+          "-quiet",
+          "-project",
+          "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/session-restoration-yn9zqjhp/candidate/SessionRestoration.xcodeproj",
+          "-scheme",
+          "SessionRestoration",
+          "-configuration",
+          "Debug",
+          "-destination",
+          "generic/platform=iOS Simulator",
+          "-derivedDataPath",
+          "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/session-restoration-yn9zqjhp/candidate/derived",
+          "CODE_SIGNING_ALLOWED=NO"
+        ],
+        "build_log": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/session-restoration-yn9zqjhp/candidate/build.log",
+        "app": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/session-restoration-yn9zqjhp/candidate/derived/Build/Products/Debug-iphonesimulator/SessionRestoration.app",
+        "binary_sha256": "675432a793f15fd06a9e66a436dcbe8b409980315b15b2407eb8505ab32cb925",
+        "build_log_sha256": "5c9450dbcf6d147de62765a0f75bcd89573387e60074e2c8530ce0498667b21f",
+        "run": {
+          "status": "PASS",
+          "run_id": "session-restoration-cf24ee7e26d5419b867354498806808d",
+          "launch_command": [
+            "xcrun",
+            "simctl",
+            "launch",
+            "--console",
+            "FF628CB6-1DBD-4073-9E0D-E77106337980",
+            "com.datadoghq.session-restoration.candidate",
+            "--run-id",
+            "session-restoration-cf24ee7e26d5419b867354498806808d"
+          ],
+          "clean_install": true,
+          "installed_binary_matches": true,
+          "required_checks_complete": true,
+          "result": {
+            "checks": {
+              "application_active": true,
+              "both_controllers_mounted": true,
+              "maximum_start_boundary_has_no_session": true,
+              "maximum_start_exact_view_inventory": true,
+              "maximum_start_fresh_session_and_views": true,
+              "maximum_start_initial_owners": true,
+              "maximum_start_maximum_not_timeout": true,
+              "maximum_start_navigation_owners": true,
+              "maximum_start_peer_action": true,
+              "maximum_start_peer_resource": true,
+              "maximum_stop_boundary_has_no_session": true,
+              "maximum_stop_exact_view_inventory": true,
+              "maximum_stop_fresh_session_and_views": true,
+              "maximum_stop_initial_owners": true,
+              "maximum_stop_maximum_not_timeout": true,
+              "maximum_stop_navigation_owners": true,
+              "maximum_stop_peer_action": true,
+              "maximum_stop_peer_resource": true,
+              "stop_start_boundary_has_no_session": true,
+              "stop_start_exact_view_inventory": true,
+              "stop_start_fresh_session_and_views": true,
+              "stop_start_initial_owners": true,
+              "stop_start_navigation_owners": true,
+              "stop_start_peer_action": true,
+              "stop_start_peer_resource": true,
+              "stop_stop_boundary_has_no_session": true,
+              "stop_stop_exact_view_inventory": true,
+              "stop_stop_fresh_session_and_views": true,
+              "stop_stop_initial_owners": true,
+              "stop_stop_navigation_owners": true,
+              "stop_stop_peer_action": true,
+              "stop_stop_peer_resource": true,
+              "timeout_start_boundary_has_no_session": true,
+              "timeout_start_exact_view_inventory": true,
+              "timeout_start_fresh_session_and_views": true,
+              "timeout_start_initial_owners": true,
+              "timeout_start_navigation_owners": true,
+              "timeout_start_peer_action": true,
+              "timeout_start_peer_resource": true,
+              "timeout_stop_boundary_has_no_session": true,
+              "timeout_stop_exact_view_inventory": true,
+              "timeout_stop_fresh_session_and_views": true,
+              "timeout_stop_initial_owners": true,
+              "timeout_stop_navigation_owners": true,
+              "timeout_stop_peer_action": true,
+              "timeout_stop_peer_resource": true,
+              "two_native_scenes": true
+            },
+            "details": {
+              "scenarios": [
+                {
+                  "events": [
+                    {
+                      "name": "ApplicationLaunch",
+                      "session": "59559ee1-7eb3-4509-8013-206f84511018",
+                      "type": "view",
+                      "view": "ee83d80b-449d-489c-8280-e5ef0d7101e1"
+                    },
+                    {
+                      "name": "ApplicationLaunch",
+                      "session": "59559ee1-7eb3-4509-8013-206f84511018",
+                      "type": "view",
+                      "view": "ee83d80b-449d-489c-8280-e5ef0d7101e1"
+                    },
+                    {
+                      "name": "A",
+                      "session": "59559ee1-7eb3-4509-8013-206f84511018",
+                      "type": "view",
+                      "view": "e5d70afa-72b9-4356-8147-6bd1a39c2a0f"
+                    },
+                    {
+                      "name": "B",
+                      "session": "59559ee1-7eb3-4509-8013-206f84511018",
+                      "type": "view",
+                      "view": "8ed9b65c-442a-4e6e-b9f4-b9a7e3f210a7"
+                    },
+                    {
+                      "name": "A",
+                      "session": "59559ee1-7eb3-4509-8013-206f84511018",
+                      "type": "view",
+                      "view": "e5d70afa-72b9-4356-8147-6bd1a39c2a0f"
+                    },
+                    {
+                      "name": "B",
+                      "session": "59559ee1-7eb3-4509-8013-206f84511018",
+                      "type": "view",
+                      "view": "8ed9b65c-442a-4e6e-b9f4-b9a7e3f210a7"
+                    },
+                    {
+                      "name": "New",
+                      "session": "41727bc4-4bf8-463e-b97f-7c97eb89462c",
+                      "type": "view",
+                      "view": "d1c70d91-0d84-4bc3-a56c-facc23f8c870"
+                    },
+                    {
+                      "name": "A",
+                      "session": "41727bc4-4bf8-463e-b97f-7c97eb89462c",
+                      "type": "view",
+                      "view": "1590a5d2-653f-422b-ade4-58ed3c5ac238"
+                    },
+                    {
+                      "name": "Peer marker",
+                      "session": "41727bc4-4bf8-463e-b97f-7c97eb89462c",
+                      "type": "action",
+                      "view": "1590a5d2-653f-422b-ade4-58ed3c5ac238"
+                    },
+                    {
+                      "name": "A",
+                      "session": "41727bc4-4bf8-463e-b97f-7c97eb89462c",
+                      "type": "view",
+                      "view": "1590a5d2-653f-422b-ade4-58ed3c5ac238"
+                    },
+                    {
+                      "session": "41727bc4-4bf8-463e-b97f-7c97eb89462c",
+                      "type": "resource",
+                      "view": "1590a5d2-653f-422b-ade4-58ed3c5ac238"
+                    },
+                    {
+                      "name": "A",
+                      "session": "41727bc4-4bf8-463e-b97f-7c97eb89462c",
+                      "type": "view",
+                      "view": "1590a5d2-653f-422b-ade4-58ed3c5ac238"
+                    },
+                    {
+                      "name": "A",
+                      "session": "41727bc4-4bf8-463e-b97f-7c97eb89462c",
+                      "type": "view",
+                      "view": "1590a5d2-653f-422b-ade4-58ed3c5ac238"
+                    },
+                    {
+                      "name": "New",
+                      "session": "41727bc4-4bf8-463e-b97f-7c97eb89462c",
+                      "type": "view",
+                      "view": "d1c70d91-0d84-4bc3-a56c-facc23f8c870"
+                    }
+                  ],
+                  "name": "stop_start",
+                  "new_session": "41727bc4-4bf8-463e-b97f-7c97eb89462c",
+                  "old_session": "59559ee1-7eb3-4509-8013-206f84511018"
+                },
+                {
+                  "events": [
+                    {
+                      "name": "ApplicationLaunch",
+                      "session": "840a69c9-6d0f-40d4-a0c1-52de45dad476",
+                      "type": "view",
+                      "view": "e5a1cf16-e685-4a85-8ee3-6335796a3fbe"
+                    },
+                    {
+                      "name": "ApplicationLaunch",
+                      "session": "840a69c9-6d0f-40d4-a0c1-52de45dad476",
+                      "type": "view",
+                      "view": "e5a1cf16-e685-4a85-8ee3-6335796a3fbe"
+                    },
+                    {
+                      "name": "A",
+                      "session": "840a69c9-6d0f-40d4-a0c1-52de45dad476",
+                      "type": "view",
+                      "view": "639dc50a-c6c8-47b3-8321-3d4fa7375dd8"
+                    },
+                    {
+                      "name": "B",
+                      "session": "840a69c9-6d0f-40d4-a0c1-52de45dad476",
+                      "type": "view",
+                      "view": "9237cd21-8585-4304-b533-804e1dfe6b59"
+                    },
+                    {
+                      "name": "A",
+                      "session": "840a69c9-6d0f-40d4-a0c1-52de45dad476",
+                      "type": "view",
+                      "view": "639dc50a-c6c8-47b3-8321-3d4fa7375dd8"
+                    },
+                    {
+                      "name": "B",
+                      "session": "840a69c9-6d0f-40d4-a0c1-52de45dad476",
+                      "type": "view",
+                      "view": "9237cd21-8585-4304-b533-804e1dfe6b59"
+                    },
+                    {
+                      "name": "B",
+                      "session": "268a9499-b31e-47db-b970-f8a81065f0e0",
+                      "type": "view",
+                      "view": "b5ddf679-bf3e-420e-97fc-398aaa6eab95"
+                    },
+                    {
+                      "name": "Peer marker",
+                      "session": "268a9499-b31e-47db-b970-f8a81065f0e0",
+                      "type": "action",
+                      "view": "b5ddf679-bf3e-420e-97fc-398aaa6eab95"
+                    },
+                    {
+                      "name": "B",
+                      "session": "268a9499-b31e-47db-b970-f8a81065f0e0",
+                      "type": "view",
+                      "view": "b5ddf679-bf3e-420e-97fc-398aaa6eab95"
+                    },
+                    {
+                      "session": "268a9499-b31e-47db-b970-f8a81065f0e0",
+                      "type": "resource",
+                      "view": "b5ddf679-bf3e-420e-97fc-398aaa6eab95"
+                    },
+                    {
+                      "name": "B",
+                      "session": "268a9499-b31e-47db-b970-f8a81065f0e0",
+                      "type": "view",
+                      "view": "b5ddf679-bf3e-420e-97fc-398aaa6eab95"
+                    },
+                    {
+                      "name": "B",
+                      "session": "268a9499-b31e-47db-b970-f8a81065f0e0",
+                      "type": "view",
+                      "view": "b5ddf679-bf3e-420e-97fc-398aaa6eab95"
+                    }
+                  ],
+                  "name": "stop_stop",
+                  "new_session": "268a9499-b31e-47db-b970-f8a81065f0e0",
+                  "old_session": "840a69c9-6d0f-40d4-a0c1-52de45dad476"
+                },
+                {
+                  "events": [
+                    {
+                      "name": "ApplicationLaunch",
+                      "session": "7dc74cd9-b00b-4833-be16-41bec891fc98",
+                      "type": "view",
+                      "view": "f905e87e-b967-412c-8bb0-336f34f83937"
+                    },
+                    {
+                      "name": "ApplicationLaunch",
+                      "session": "7dc74cd9-b00b-4833-be16-41bec891fc98",
+                      "type": "view",
+                      "view": "f905e87e-b967-412c-8bb0-336f34f83937"
+                    },
+                    {
+                      "name": "A",
+                      "session": "7dc74cd9-b00b-4833-be16-41bec891fc98",
+                      "type": "view",
+                      "view": "934c6db8-ebb3-4fe5-8421-e478a4e36938"
+                    },
+                    {
+                      "name": "B",
+                      "session": "7dc74cd9-b00b-4833-be16-41bec891fc98",
+                      "type": "view",
+                      "view": "7651aa92-b2a5-4c13-8781-d48df775ed83"
+                    },
+                    {
+                      "name": "New",
+                      "session": "ae6593f7-b24f-4d85-8412-49b6c34f51be",
+                      "type": "view",
+                      "view": "b2e4b2a0-ab01-4d98-b84f-a5003329a275"
+                    },
+                    {
+                      "name": "A",
+                      "session": "ae6593f7-b24f-4d85-8412-49b6c34f51be",
+                      "type": "view",
+                      "view": "535babc9-ecd9-43e3-bbc3-364804d32409"
+                    },
+                    {
+                      "name": "Peer marker",
+                      "session": "ae6593f7-b24f-4d85-8412-49b6c34f51be",
+                      "type": "action",
+                      "view": "535babc9-ecd9-43e3-bbc3-364804d32409"
+                    },
+                    {
+                      "name": "A",
+                      "session": "ae6593f7-b24f-4d85-8412-49b6c34f51be",
+                      "type": "view",
+                      "view": "535babc9-ecd9-43e3-bbc3-364804d32409"
+                    },
+                    {
+                      "session": "ae6593f7-b24f-4d85-8412-49b6c34f51be",
+                      "type": "resource",
+                      "view": "535babc9-ecd9-43e3-bbc3-364804d32409"
+                    },
+                    {
+                      "name": "A",
+                      "session": "ae6593f7-b24f-4d85-8412-49b6c34f51be",
+                      "type": "view",
+                      "view": "535babc9-ecd9-43e3-bbc3-364804d32409"
+                    },
+                    {
+                      "name": "A",
+                      "session": "ae6593f7-b24f-4d85-8412-49b6c34f51be",
+                      "type": "view",
+                      "view": "535babc9-ecd9-43e3-bbc3-364804d32409"
+                    },
+                    {
+                      "name": "New",
+                      "session": "ae6593f7-b24f-4d85-8412-49b6c34f51be",
+                      "type": "view",
+                      "view": "b2e4b2a0-ab01-4d98-b84f-a5003329a275"
+                    }
+                  ],
+                  "name": "timeout_start",
+                  "new_session": "ae6593f7-b24f-4d85-8412-49b6c34f51be",
+                  "old_session": "7dc74cd9-b00b-4833-be16-41bec891fc98"
+                },
+                {
+                  "events": [
+                    {
+                      "name": "ApplicationLaunch",
+                      "session": "ce810dd5-3db3-4424-876d-81b24bb1d33f",
+                      "type": "view",
+                      "view": "d63a3306-1c84-4bec-a272-f6c02521cfdc"
+                    },
+                    {
+                      "name": "ApplicationLaunch",
+                      "session": "ce810dd5-3db3-4424-876d-81b24bb1d33f",
+                      "type": "view",
+                      "view": "d63a3306-1c84-4bec-a272-f6c02521cfdc"
+                    },
+                    {
+                      "name": "A",
+                      "session": "ce810dd5-3db3-4424-876d-81b24bb1d33f",
+                      "type": "view",
+                      "view": "fa89b3ff-f0ac-4bb5-94a7-55d0398970bd"
+                    },
+                    {
+                      "name": "B",
+                      "session": "ce810dd5-3db3-4424-876d-81b24bb1d33f",
+                      "type": "view",
+                      "view": "474698c0-6142-4ac0-92df-df2a68896685"
+                    },
+                    {
+                      "name": "B",
+                      "session": "7c4af6a7-5392-4892-9b30-158fcce8de9e",
+                      "type": "view",
+                      "view": "8d9e44f2-c2ab-400f-af56-95049765ffcf"
+                    },
+                    {
+                      "name": "Peer marker",
+                      "session": "7c4af6a7-5392-4892-9b30-158fcce8de9e",
+                      "type": "action",
+                      "view": "8d9e44f2-c2ab-400f-af56-95049765ffcf"
+                    },
+                    {
+                      "name": "B",
+                      "session": "7c4af6a7-5392-4892-9b30-158fcce8de9e",
+                      "type": "view",
+                      "view": "8d9e44f2-c2ab-400f-af56-95049765ffcf"
+                    },
+                    {
+                      "session": "7c4af6a7-5392-4892-9b30-158fcce8de9e",
+                      "type": "resource",
+                      "view": "8d9e44f2-c2ab-400f-af56-95049765ffcf"
+                    },
+                    {
+                      "name": "B",
+                      "session": "7c4af6a7-5392-4892-9b30-158fcce8de9e",
+                      "type": "view",
+                      "view": "8d9e44f2-c2ab-400f-af56-95049765ffcf"
+                    },
+                    {
+                      "name": "B",
+                      "session": "7c4af6a7-5392-4892-9b30-158fcce8de9e",
+                      "type": "view",
+                      "view": "8d9e44f2-c2ab-400f-af56-95049765ffcf"
+                    }
+                  ],
+                  "name": "timeout_stop",
+                  "new_session": "7c4af6a7-5392-4892-9b30-158fcce8de9e",
+                  "old_session": "ce810dd5-3db3-4424-876d-81b24bb1d33f"
+                },
+                {
+                  "events": [
+                    {
+                      "name": "ApplicationLaunch",
+                      "session": "afa95aef-322c-4cd3-a714-d8aa93029cba",
+                      "type": "view",
+                      "view": "f83c0370-8171-4319-beb9-c42e7ca1d272"
+                    },
+                    {
+                      "name": "ApplicationLaunch",
+                      "session": "afa95aef-322c-4cd3-a714-d8aa93029cba",
+                      "type": "view",
+                      "view": "f83c0370-8171-4319-beb9-c42e7ca1d272"
+                    },
+                    {
+                      "name": "A",
+                      "session": "afa95aef-322c-4cd3-a714-d8aa93029cba",
+                      "type": "view",
+                      "view": "99d787b1-bb90-4528-931d-3dd003d995ab"
+                    },
+                    {
+                      "name": "B",
+                      "session": "afa95aef-322c-4cd3-a714-d8aa93029cba",
+                      "type": "view",
+                      "view": "d71526b9-355d-4999-b9ef-dc5e25a151ac"
+                    },
+                    {
+                      "name": "Heartbeat",
+                      "session": "afa95aef-322c-4cd3-a714-d8aa93029cba",
+                      "type": "action",
+                      "view": "d71526b9-355d-4999-b9ef-dc5e25a151ac"
+                    },
+                    {
+                      "name": "B",
+                      "session": "afa95aef-322c-4cd3-a714-d8aa93029cba",
+                      "type": "view",
+                      "view": "d71526b9-355d-4999-b9ef-dc5e25a151ac"
+                    },
+                    {
+                      "name": "Heartbeat",
+                      "session": "afa95aef-322c-4cd3-a714-d8aa93029cba",
+                      "type": "action",
+                      "view": "d71526b9-355d-4999-b9ef-dc5e25a151ac"
+                    },
+                    {
+                      "name": "B",
+                      "session": "afa95aef-322c-4cd3-a714-d8aa93029cba",
+                      "type": "view",
+                      "view": "d71526b9-355d-4999-b9ef-dc5e25a151ac"
+                    },
+                    {
+                      "name": "Heartbeat",
+                      "session": "afa95aef-322c-4cd3-a714-d8aa93029cba",
+                      "type": "action",
+                      "view": "d71526b9-355d-4999-b9ef-dc5e25a151ac"
+                    },
+                    {
+                      "name": "B",
+                      "session": "afa95aef-322c-4cd3-a714-d8aa93029cba",
+                      "type": "view",
+                      "view": "d71526b9-355d-4999-b9ef-dc5e25a151ac"
+                    },
+                    {
+                      "name": "Heartbeat",
+                      "session": "afa95aef-322c-4cd3-a714-d8aa93029cba",
+                      "type": "action",
+                      "view": "d71526b9-355d-4999-b9ef-dc5e25a151ac"
+                    },
+                    {
+                      "name": "B",
+                      "session": "afa95aef-322c-4cd3-a714-d8aa93029cba",
+                      "type": "view",
+                      "view": "d71526b9-355d-4999-b9ef-dc5e25a151ac"
+                    },
+                    {
+                      "name": "Heartbeat",
+                      "session": "afa95aef-322c-4cd3-a714-d8aa93029cba",
+                      "type": "action",
+                      "view": "d71526b9-355d-4999-b9ef-dc5e25a151ac"
+                    },
+                    {
+                      "name": "B",
+                      "session": "afa95aef-322c-4cd3-a714-d8aa93029cba",
+                      "type": "view",
+                      "view": "d71526b9-355d-4999-b9ef-dc5e25a151ac"
+                    },
+                    {
+                      "name": "Heartbeat",
+                      "session": "afa95aef-322c-4cd3-a714-d8aa93029cba",
+                      "type": "action",
+                      "view": "d71526b9-355d-4999-b9ef-dc5e25a151ac"
+                    },
+                    {
+                      "name": "B",
+                      "session": "afa95aef-322c-4cd3-a714-d8aa93029cba",
+                      "type": "view",
+                      "view": "d71526b9-355d-4999-b9ef-dc5e25a151ac"
+                    },
+                    {
+                      "name": "Heartbeat",
+                      "session": "afa95aef-322c-4cd3-a714-d8aa93029cba",
+                      "type": "action",
+                      "view": "d71526b9-355d-4999-b9ef-dc5e25a151ac"
+                    },
+                    {
+                      "name": "B",
+                      "session": "afa95aef-322c-4cd3-a714-d8aa93029cba",
+                      "type": "view",
+                      "view": "d71526b9-355d-4999-b9ef-dc5e25a151ac"
+                    },
+                    {
+                      "name": "Heartbeat",
+                      "session": "afa95aef-322c-4cd3-a714-d8aa93029cba",
+                      "type": "action",
+                      "view": "d71526b9-355d-4999-b9ef-dc5e25a151ac"
+                    },
+                    {
+                      "name": "B",
+                      "session": "afa95aef-322c-4cd3-a714-d8aa93029cba",
+                      "type": "view",
+                      "view": "d71526b9-355d-4999-b9ef-dc5e25a151ac"
+                    },
+                    {
+                      "name": "Heartbeat",
+                      "session": "afa95aef-322c-4cd3-a714-d8aa93029cba",
+                      "type": "action",
+                      "view": "d71526b9-355d-4999-b9ef-dc5e25a151ac"
+                    },
+                    {
+                      "name": "B",
+                      "session": "afa95aef-322c-4cd3-a714-d8aa93029cba",
+                      "type": "view",
+                      "view": "d71526b9-355d-4999-b9ef-dc5e25a151ac"
+                    },
+                    {
+                      "name": "Heartbeat",
+                      "session": "afa95aef-322c-4cd3-a714-d8aa93029cba",
+                      "type": "action",
+                      "view": "d71526b9-355d-4999-b9ef-dc5e25a151ac"
+                    },
+                    {
+                      "name": "B",
+                      "session": "afa95aef-322c-4cd3-a714-d8aa93029cba",
+                      "type": "view",
+                      "view": "d71526b9-355d-4999-b9ef-dc5e25a151ac"
+                    },
+                    {
+                      "name": "Heartbeat",
+                      "session": "afa95aef-322c-4cd3-a714-d8aa93029cba",
+                      "type": "action",
+                      "view": "d71526b9-355d-4999-b9ef-dc5e25a151ac"
+                    },
+                    {
+                      "name": "B",
+                      "session": "afa95aef-322c-4cd3-a714-d8aa93029cba",
+                      "type": "view",
+                      "view": "d71526b9-355d-4999-b9ef-dc5e25a151ac"
+                    },
+                    {
+                      "name": "Heartbeat",
+                      "session": "afa95aef-322c-4cd3-a714-d8aa93029cba",
+                      "type": "action",
+                      "view": "d71526b9-355d-4999-b9ef-dc5e25a151ac"
+                    },
+                    {
+                      "name": "B",
+                      "session": "afa95aef-322c-4cd3-a714-d8aa93029cba",
+                      "type": "view",
+                      "view": "d71526b9-355d-4999-b9ef-dc5e25a151ac"
+                    },
+                    {
+                      "name": "Heartbeat",
+                      "session": "afa95aef-322c-4cd3-a714-d8aa93029cba",
+                      "type": "action",
+                      "view": "d71526b9-355d-4999-b9ef-dc5e25a151ac"
+                    },
+                    {
+                      "name": "B",
+                      "session": "afa95aef-322c-4cd3-a714-d8aa93029cba",
+                      "type": "view",
+                      "view": "d71526b9-355d-4999-b9ef-dc5e25a151ac"
+                    },
+                    {
+                      "name": "Heartbeat",
+                      "session": "afa95aef-322c-4cd3-a714-d8aa93029cba",
+                      "type": "action",
+                      "view": "d71526b9-355d-4999-b9ef-dc5e25a151ac"
+                    },
+                    {
+                      "name": "B",
+                      "session": "afa95aef-322c-4cd3-a714-d8aa93029cba",
+                      "type": "view",
+                      "view": "d71526b9-355d-4999-b9ef-dc5e25a151ac"
+                    },
+                    {
+                      "name": "Heartbeat",
+                      "session": "afa95aef-322c-4cd3-a714-d8aa93029cba",
+                      "type": "action",
+                      "view": "d71526b9-355d-4999-b9ef-dc5e25a151ac"
+                    },
+                    {
+                      "name": "B",
+                      "session": "afa95aef-322c-4cd3-a714-d8aa93029cba",
+                      "type": "view",
+                      "view": "d71526b9-355d-4999-b9ef-dc5e25a151ac"
+                    },
+                    {
+                      "name": "Heartbeat",
+                      "session": "afa95aef-322c-4cd3-a714-d8aa93029cba",
+                      "type": "action",
+                      "view": "d71526b9-355d-4999-b9ef-dc5e25a151ac"
+                    },
+                    {
+                      "name": "B",
+                      "session": "afa95aef-322c-4cd3-a714-d8aa93029cba",
+                      "type": "view",
+                      "view": "d71526b9-355d-4999-b9ef-dc5e25a151ac"
+                    },
+                    {
+                      "name": "New",
+                      "session": "8d7a014d-d1d2-40e2-bff6-39c60eed5b45",
+                      "type": "view",
+                      "view": "eece50f0-188b-48d6-802f-a3d43b4a248d"
+                    },
+                    {
+                      "name": "A",
+                      "session": "8d7a014d-d1d2-40e2-bff6-39c60eed5b45",
+                      "type": "view",
+                      "view": "583144ea-3639-434f-9e80-1d25c5f1413f"
+                    },
+                    {
+                      "name": "Peer marker",
+                      "session": "8d7a014d-d1d2-40e2-bff6-39c60eed5b45",
+                      "type": "action",
+                      "view": "583144ea-3639-434f-9e80-1d25c5f1413f"
+                    },
+                    {
+                      "name": "A",
+                      "session": "8d7a014d-d1d2-40e2-bff6-39c60eed5b45",
+                      "type": "view",
+                      "view": "583144ea-3639-434f-9e80-1d25c5f1413f"
+                    },
+                    {
+                      "session": "8d7a014d-d1d2-40e2-bff6-39c60eed5b45",
+                      "type": "resource",
+                      "view": "583144ea-3639-434f-9e80-1d25c5f1413f"
+                    },
+                    {
+                      "name": "A",
+                      "session": "8d7a014d-d1d2-40e2-bff6-39c60eed5b45",
+                      "type": "view",
+                      "view": "583144ea-3639-434f-9e80-1d25c5f1413f"
+                    },
+                    {
+                      "name": "A",
+                      "session": "8d7a014d-d1d2-40e2-bff6-39c60eed5b45",
+                      "type": "view",
+                      "view": "583144ea-3639-434f-9e80-1d25c5f1413f"
+                    },
+                    {
+                      "name": "New",
+                      "session": "8d7a014d-d1d2-40e2-bff6-39c60eed5b45",
+                      "type": "view",
+                      "view": "eece50f0-188b-48d6-802f-a3d43b4a248d"
+                    }
+                  ],
+                  "name": "maximum_start",
+                  "new_session": "8d7a014d-d1d2-40e2-bff6-39c60eed5b45",
+                  "old_session": "afa95aef-322c-4cd3-a714-d8aa93029cba"
+                },
+                {
+                  "events": [
+                    {
+                      "name": "ApplicationLaunch",
+                      "session": "6ecf1ca8-ac37-4cd1-9c38-a5ae9d36247a",
+                      "type": "view",
+                      "view": "53b93371-aa27-4d00-8e45-431bb429a92a"
+                    },
+                    {
+                      "name": "ApplicationLaunch",
+                      "session": "6ecf1ca8-ac37-4cd1-9c38-a5ae9d36247a",
+                      "type": "view",
+                      "view": "53b93371-aa27-4d00-8e45-431bb429a92a"
+                    },
+                    {
+                      "name": "A",
+                      "session": "6ecf1ca8-ac37-4cd1-9c38-a5ae9d36247a",
+                      "type": "view",
+                      "view": "2d0fbece-ee5c-43c7-bdbd-d3e1ff8e64cf"
+                    },
+                    {
+                      "name": "B",
+                      "session": "6ecf1ca8-ac37-4cd1-9c38-a5ae9d36247a",
+                      "type": "view",
+                      "view": "ea58b6fe-e3d7-48b9-aaa2-7021bd016954"
+                    },
+                    {
+                      "name": "Heartbeat",
+                      "session": "6ecf1ca8-ac37-4cd1-9c38-a5ae9d36247a",
+                      "type": "action",
+                      "view": "ea58b6fe-e3d7-48b9-aaa2-7021bd016954"
+                    },
+                    {
+                      "name": "B",
+                      "session": "6ecf1ca8-ac37-4cd1-9c38-a5ae9d36247a",
+                      "type": "view",
+                      "view": "ea58b6fe-e3d7-48b9-aaa2-7021bd016954"
+                    },
+                    {
+                      "name": "Heartbeat",
+                      "session": "6ecf1ca8-ac37-4cd1-9c38-a5ae9d36247a",
+                      "type": "action",
+                      "view": "ea58b6fe-e3d7-48b9-aaa2-7021bd016954"
+                    },
+                    {
+                      "name": "B",
+                      "session": "6ecf1ca8-ac37-4cd1-9c38-a5ae9d36247a",
+                      "type": "view",
+                      "view": "ea58b6fe-e3d7-48b9-aaa2-7021bd016954"
+                    },
+                    {
+                      "name": "Heartbeat",
+                      "session": "6ecf1ca8-ac37-4cd1-9c38-a5ae9d36247a",
+                      "type": "action",
+                      "view": "ea58b6fe-e3d7-48b9-aaa2-7021bd016954"
+                    },
+                    {
+                      "name": "B",
+                      "session": "6ecf1ca8-ac37-4cd1-9c38-a5ae9d36247a",
+                      "type": "view",
+                      "view": "ea58b6fe-e3d7-48b9-aaa2-7021bd016954"
+                    },
+                    {
+                      "name": "Heartbeat",
+                      "session": "6ecf1ca8-ac37-4cd1-9c38-a5ae9d36247a",
+                      "type": "action",
+                      "view": "ea58b6fe-e3d7-48b9-aaa2-7021bd016954"
+                    },
+                    {
+                      "name": "B",
+                      "session": "6ecf1ca8-ac37-4cd1-9c38-a5ae9d36247a",
+                      "type": "view",
+                      "view": "ea58b6fe-e3d7-48b9-aaa2-7021bd016954"
+                    },
+                    {
+                      "name": "Heartbeat",
+                      "session": "6ecf1ca8-ac37-4cd1-9c38-a5ae9d36247a",
+                      "type": "action",
+                      "view": "ea58b6fe-e3d7-48b9-aaa2-7021bd016954"
+                    },
+                    {
+                      "name": "B",
+                      "session": "6ecf1ca8-ac37-4cd1-9c38-a5ae9d36247a",
+                      "type": "view",
+                      "view": "ea58b6fe-e3d7-48b9-aaa2-7021bd016954"
+                    },
+                    {
+                      "name": "Heartbeat",
+                      "session": "6ecf1ca8-ac37-4cd1-9c38-a5ae9d36247a",
+                      "type": "action",
+                      "view": "ea58b6fe-e3d7-48b9-aaa2-7021bd016954"
+                    },
+                    {
+                      "name": "B",
+                      "session": "6ecf1ca8-ac37-4cd1-9c38-a5ae9d36247a",
+                      "type": "view",
+                      "view": "ea58b6fe-e3d7-48b9-aaa2-7021bd016954"
+                    },
+                    {
+                      "name": "Heartbeat",
+                      "session": "6ecf1ca8-ac37-4cd1-9c38-a5ae9d36247a",
+                      "type": "action",
+                      "view": "ea58b6fe-e3d7-48b9-aaa2-7021bd016954"
+                    },
+                    {
+                      "name": "B",
+                      "session": "6ecf1ca8-ac37-4cd1-9c38-a5ae9d36247a",
+                      "type": "view",
+                      "view": "ea58b6fe-e3d7-48b9-aaa2-7021bd016954"
+                    },
+                    {
+                      "name": "Heartbeat",
+                      "session": "6ecf1ca8-ac37-4cd1-9c38-a5ae9d36247a",
+                      "type": "action",
+                      "view": "ea58b6fe-e3d7-48b9-aaa2-7021bd016954"
+                    },
+                    {
+                      "name": "B",
+                      "session": "6ecf1ca8-ac37-4cd1-9c38-a5ae9d36247a",
+                      "type": "view",
+                      "view": "ea58b6fe-e3d7-48b9-aaa2-7021bd016954"
+                    },
+                    {
+                      "name": "Heartbeat",
+                      "session": "6ecf1ca8-ac37-4cd1-9c38-a5ae9d36247a",
+                      "type": "action",
+                      "view": "ea58b6fe-e3d7-48b9-aaa2-7021bd016954"
+                    },
+                    {
+                      "name": "B",
+                      "session": "6ecf1ca8-ac37-4cd1-9c38-a5ae9d36247a",
+                      "type": "view",
+                      "view": "ea58b6fe-e3d7-48b9-aaa2-7021bd016954"
+                    },
+                    {
+                      "name": "Heartbeat",
+                      "session": "6ecf1ca8-ac37-4cd1-9c38-a5ae9d36247a",
+                      "type": "action",
+                      "view": "ea58b6fe-e3d7-48b9-aaa2-7021bd016954"
+                    },
+                    {
+                      "name": "B",
+                      "session": "6ecf1ca8-ac37-4cd1-9c38-a5ae9d36247a",
+                      "type": "view",
+                      "view": "ea58b6fe-e3d7-48b9-aaa2-7021bd016954"
+                    },
+                    {
+                      "name": "Heartbeat",
+                      "session": "6ecf1ca8-ac37-4cd1-9c38-a5ae9d36247a",
+                      "type": "action",
+                      "view": "ea58b6fe-e3d7-48b9-aaa2-7021bd016954"
+                    },
+                    {
+                      "name": "B",
+                      "session": "6ecf1ca8-ac37-4cd1-9c38-a5ae9d36247a",
+                      "type": "view",
+                      "view": "ea58b6fe-e3d7-48b9-aaa2-7021bd016954"
+                    },
+                    {
+                      "name": "Heartbeat",
+                      "session": "6ecf1ca8-ac37-4cd1-9c38-a5ae9d36247a",
+                      "type": "action",
+                      "view": "ea58b6fe-e3d7-48b9-aaa2-7021bd016954"
+                    },
+                    {
+                      "name": "B",
+                      "session": "6ecf1ca8-ac37-4cd1-9c38-a5ae9d36247a",
+                      "type": "view",
+                      "view": "ea58b6fe-e3d7-48b9-aaa2-7021bd016954"
+                    },
+                    {
+                      "name": "Heartbeat",
+                      "session": "6ecf1ca8-ac37-4cd1-9c38-a5ae9d36247a",
+                      "type": "action",
+                      "view": "ea58b6fe-e3d7-48b9-aaa2-7021bd016954"
+                    },
+                    {
+                      "name": "B",
+                      "session": "6ecf1ca8-ac37-4cd1-9c38-a5ae9d36247a",
+                      "type": "view",
+                      "view": "ea58b6fe-e3d7-48b9-aaa2-7021bd016954"
+                    },
+                    {
+                      "name": "Heartbeat",
+                      "session": "6ecf1ca8-ac37-4cd1-9c38-a5ae9d36247a",
+                      "type": "action",
+                      "view": "ea58b6fe-e3d7-48b9-aaa2-7021bd016954"
+                    },
+                    {
+                      "name": "B",
+                      "session": "6ecf1ca8-ac37-4cd1-9c38-a5ae9d36247a",
+                      "type": "view",
+                      "view": "ea58b6fe-e3d7-48b9-aaa2-7021bd016954"
+                    },
+                    {
+                      "name": "Heartbeat",
+                      "session": "6ecf1ca8-ac37-4cd1-9c38-a5ae9d36247a",
+                      "type": "action",
+                      "view": "ea58b6fe-e3d7-48b9-aaa2-7021bd016954"
+                    },
+                    {
+                      "name": "B",
+                      "session": "6ecf1ca8-ac37-4cd1-9c38-a5ae9d36247a",
+                      "type": "view",
+                      "view": "ea58b6fe-e3d7-48b9-aaa2-7021bd016954"
+                    },
+                    {
+                      "name": "Heartbeat",
+                      "session": "6ecf1ca8-ac37-4cd1-9c38-a5ae9d36247a",
+                      "type": "action",
+                      "view": "ea58b6fe-e3d7-48b9-aaa2-7021bd016954"
+                    },
+                    {
+                      "name": "B",
+                      "session": "6ecf1ca8-ac37-4cd1-9c38-a5ae9d36247a",
+                      "type": "view",
+                      "view": "ea58b6fe-e3d7-48b9-aaa2-7021bd016954"
+                    },
+                    {
+                      "name": "B",
+                      "session": "f3be38e0-0f81-478a-a173-798b48b26f9a",
+                      "type": "view",
+                      "view": "50a63ff6-c469-4d45-9a70-497c4d6e2916"
+                    },
+                    {
+                      "name": "Peer marker",
+                      "session": "f3be38e0-0f81-478a-a173-798b48b26f9a",
+                      "type": "action",
+                      "view": "50a63ff6-c469-4d45-9a70-497c4d6e2916"
+                    },
+                    {
+                      "name": "B",
+                      "session": "f3be38e0-0f81-478a-a173-798b48b26f9a",
+                      "type": "view",
+                      "view": "50a63ff6-c469-4d45-9a70-497c4d6e2916"
+                    },
+                    {
+                      "session": "f3be38e0-0f81-478a-a173-798b48b26f9a",
+                      "type": "resource",
+                      "view": "50a63ff6-c469-4d45-9a70-497c4d6e2916"
+                    },
+                    {
+                      "name": "B",
+                      "session": "f3be38e0-0f81-478a-a173-798b48b26f9a",
+                      "type": "view",
+                      "view": "50a63ff6-c469-4d45-9a70-497c4d6e2916"
+                    },
+                    {
+                      "name": "B",
+                      "session": "f3be38e0-0f81-478a-a173-798b48b26f9a",
+                      "type": "view",
+                      "view": "50a63ff6-c469-4d45-9a70-497c4d6e2916"
+                    }
+                  ],
+                  "name": "maximum_stop",
+                  "new_session": "f3be38e0-0f81-478a-a173-798b48b26f9a",
+                  "old_session": "6ecf1ca8-ac37-4cd1-9c38-a5ae9d36247a"
+                }
+              ],
+              "topology": [
+                {
+                  "activation_state": 2,
+                  "scene_id": "B4DFA6B4-C7C1-4434-9BA0-9F852C5891E6",
+                  "window_mounted": true
+                },
+                {
+                  "activation_state": 0,
+                  "scene_id": "532E4793-DC87-4A44-9940-1829E8E8BBED",
+                  "window_mounted": true
+                }
+              ]
+            },
+            "run_id": "session-restoration-cf24ee7e26d5419b867354498806808d"
+          },
+          "console_sha256": "d280490b0a29a96fb47169a315cd7ad8a323072cb73c9e8f117ca3a91cb1706c"
+        },
+        "sdk_unchanged": true,
+        "fixture_unchanged": true,
+        "binary_unchanged": true
+      }
+    },
+    "runner_sha256": "99543b1c9708466ea42333e5312a42382d2d074d57800e915cd073c3ba92509e",
+    "helper_sha256": "d14fa5cd77aed6147386e0815a3f711f8d2c45d0018cf5512da79e9db4943398",
+    "xcode": "Xcode 27.0\nBuild version 27A266a",
+    "device": {
+      "name": "iPad Air 11-inch (M4)",
+      "udid": "FF628CB6-1DBD-4073-9E0D-E77106337980",
+      "os": "27.0"
+    }
+  },
+  "invalid_attempts": [
+    {
+      "artifact_root": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/session-restoration-zmcap4d8",
+      "experiment": "EXP-167",
+      "status": "INVALID",
+      "arms": {
+        "control": {
+          "revision": "313a05304f1067abf93c1859e01eacccc28c0867",
+          "sdk_identity": {
+            "file_count": 369,
+            "sha256": "9be335902f8d6dfba523753d7badadfdee2c3ba05571efcc5ead020294d47029"
+          },
+          "fixture_sha256": "c512563444a15af8b87e2e6b5340659a7a4dfae72135a95d8f5b54eac346c1a5",
+          "package_sha256": "087c70faa52a276a5143b72e7a34ffcee770ed5e66acd6cfc1287b497a7333fa",
+          "bundle": "com.datadoghq.session-restoration.control",
+          "build_command": [
+            "xcodebuild",
+            "build",
+            "-quiet",
+            "-project",
+            "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/session-restoration-zmcap4d8/control/SessionRestoration.xcodeproj",
+            "-scheme",
+            "SessionRestoration",
+            "-configuration",
+            "Debug",
+            "-destination",
+            "generic/platform=iOS Simulator",
+            "-derivedDataPath",
+            "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/session-restoration-zmcap4d8/control/derived",
+            "CODE_SIGNING_ALLOWED=NO"
+          ],
+          "build_log": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/session-restoration-zmcap4d8/control/build.log",
+          "app": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/session-restoration-zmcap4d8/control/derived/Build/Products/Debug-iphonesimulator/SessionRestoration.app",
+          "binary_sha256": "88a1a856dfdc559de6050921af064ca30318f361e1aebf868ee2df383729f3a8",
+          "build_log_sha256": "fe8d890c0b120d7f44ac2f65a1e9ad4c69137b01fd2902f047b5f4bddb934ae4"
+        },
+        "candidate": {
+          "revision": "0aaafa7bd21eaecd9908086f9043f813b3cbc419",
+          "sdk_identity": {
+            "file_count": 369,
+            "sha256": "5fc7e386a7e868b2fd70e7e947c722a5b65490fab4d60675d0c19adbdc90fe93"
+          },
+          "fixture_sha256": "c512563444a15af8b87e2e6b5340659a7a4dfae72135a95d8f5b54eac346c1a5",
+          "package_sha256": "087c70faa52a276a5143b72e7a34ffcee770ed5e66acd6cfc1287b497a7333fa",
+          "bundle": "com.datadoghq.session-restoration.candidate",
+          "build_command": [
+            "xcodebuild",
+            "build",
+            "-quiet",
+            "-project",
+            "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/session-restoration-zmcap4d8/candidate/SessionRestoration.xcodeproj",
+            "-scheme",
+            "SessionRestoration",
+            "-configuration",
+            "Debug",
+            "-destination",
+            "generic/platform=iOS Simulator",
+            "-derivedDataPath",
+            "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/session-restoration-zmcap4d8/candidate/derived",
+            "CODE_SIGNING_ALLOWED=NO"
+          ],
+          "build_log": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/session-restoration-zmcap4d8/candidate/build.log",
+          "app": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/session-restoration-zmcap4d8/candidate/derived/Build/Products/Debug-iphonesimulator/SessionRestoration.app",
+          "binary_sha256": "b5d3bebd792d9bd0206d394cd5a8d25e5ccc87f9b47e848659f2cf188f17cce3",
+          "build_log_sha256": "21baba24ffd1821f241231ac44285ec84a6e35161c5181718de467d95e9ed9b5"
+        }
+      },
+      "runner_sha256": "99543b1c9708466ea42333e5312a42382d2d074d57800e915cd073c3ba92509e",
+      "helper_sha256": "d14fa5cd77aed6147386e0815a3f711f8d2c45d0018cf5512da79e9db4943398",
+      "xcode": "Xcode 27.0\nBuild version 27A266a",
+      "device": {
+        "name": "iPad Air 11-inch (M4)",
+        "udid": "FF628CB6-1DBD-4073-9E0D-E77106337980",
+        "os": "27.0"
+      },
+      "failure": "No completed fixture result"
+    }
+  ]
+}

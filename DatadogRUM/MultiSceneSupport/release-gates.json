@@ -2,7 +2,7 @@
   "schema_version": 1,
   "scope": "Multi-scene RUM release",
   "baseline_revision": "92f021ba7e4a866f84a52da93ed8b63f3dc75882",
-  "candidate_revision": "5eb3c1aace8d07f03f2bb113afcf5243f07b6e4e",
+  "candidate_revision": "0aaafa7bd21eaecd9908086f9043f813b3cbc419",
   "gates": [
     {
       "id": "C01",
@@ -772,8 +772,8 @@
       "decisive_test": "Reproduce/triage the reported finding, then require: After stopSession with A/B and B representative, source-less start replaces B and preserves A; identity-stop A preserves B",
       "environment": "RUM application/session tests plus two-scene simulator",
       "completion_mode": null,
-      "status": "REGRESSION BLOCKED",
-      "evidence": "REVIEW_TRIAGE.md: assessed relevant at af63657f0; source-confirmed path; required full regression/repair remains open."
+      "status": "CLOSED",
+      "evidence": "EXP-167; signed 0aaafa7bd. Six failing scope controls, 198 affected tests including 44 new matrix cases; two actual iPad simulator scenes, candidate 47/47 versus control 20/47. Exact old-owner resolution, fresh occurrences and peer action/Resource attribution; explicit/immediate/delayed and background/legacy controls. Initial native readiness-invalid attempt preserved."
     },
     {
       "id": "D06",
@@ -785,8 +785,8 @@
       "decisive_test": "Reproduce/triage the reported finding, then require: Expiring lifecycle command followed by start/stop in A restores eligible B with fresh new-session ownership",
       "environment": "RUM application/session tests plus two-scene simulator",
       "completion_mode": null,
-      "status": "REGRESSION BLOCKED",
-      "evidence": "REVIEW_TRIAGE.md: assessed relevant at af63657f0; source-confirmed path; required full regression/repair remains open."
+      "status": "CLOSED",
+      "evidence": "EXP-167; signed 0aaafa7bd. Six failing scope controls, 198 affected tests including 44 new matrix cases; two actual iPad simulator scenes, candidate 47/47 versus control 20/47. Exact old-owner resolution, fresh occurrences and peer action/Resource attribution; explicit/immediate/delayed and background/legacy controls. Initial native readiness-invalid attempt preserved."
     },
     {
       "id": "D07",

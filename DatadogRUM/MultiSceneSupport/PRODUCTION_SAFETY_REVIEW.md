@@ -1,7 +1,7 @@
 **Production safety review of multi-scene SDK instrumentation**
 
-Updated 2026-09-17 during plan execution. **Release remains on hold: 6 of the
-12 review findings are closed, 6 remain open.** The finite checklist has 19/66
+Updated 2026-09-17 during plan execution. **Release remains on hold: 8 of the
+12 review findings are closed, 4 remain open.** The finite checklist has 21/66
 release gates closed. [PLAN.md](PLAN.md) owns the release contract and
 [REVIEW_TRIAGE.md](REVIEW_TRIAGE.md) owns assessed repair order and evidence limits.
 Review IDs R01–R12 below map to repair gates D01–D12, not PLAN's responsibility
@@ -13,8 +13,8 @@ review gates R01–R06.
 | R02 / D02 | CLOSED | EXP-162, signed `af8864528`: full macOS WebView Debug/Release builds and 28 iOS bridge tests |
 | R03 / D03 | OPEN | Mounted keyed host teardown and repeated lifetime checks, paired with P03 |
 | R04 / D04 | CLOSED | EXP-166, signed `5eb3c1aac`: 282 affected tests, core/task/lifetime and all-consumer isolation; allocation1/64 and latency/reentrancy budgets pass on27/26.5 |
-| R05 / D05 | OPEN | Resolve old session ownership once before restoring peers |
-| R06 / D06 | OPEN | Controlled lazy-expiration restoration after lifecycle boundaries |
+| R05 / D05 | CLOSED | EXP-167, signed `0aaafa7bd`: failing source-less start/identity-stop controls, 198 tests and two-native-scene 47/47 runtime acceptance |
+| R06 / D06 | CLOSED | EXP-167: controlled timeout/max-duration lifecycle boundaries, fresh peer IDs and exact action/Resource owners; background and legacy controls |
 | R07 / D07 | OPEN | Empty explicit/capability source must retain automatic tracking until accepted state |
 | R08 / D08 | OPEN | Stale trait, real reconnect and accepted-publication regression; hardware ordering stays separate |
 | R09 / D09 | CLOSED | EXP-164 at local `a9abc092b`: 31 tests and actual mounted fixture 19/19; zero background reads/MTC diagnostics versus control 5 reads/4 diagnostics |
@@ -36,7 +36,9 @@ using an actual native scene with a logical peer; it does not prove physical
 window concurrency. EXP-165 closes D11 with mounted WebView/Replay correlation;
 EXP-166 closes D04/P02 with [ownership](Results/EXP-166-handoff-isolation.json)
 and [paired performance](Results/EXP-166-handoff-performance.json) evidence;
-D05/D06 restoration is next. Keep this review and its open
+EXP-167 closes D05/D06 with [restoration evidence](Results/EXP-167-session-restoration.json):
+198 tests and 47/47 checks in two native simulator scenes. D03 lifetime is next.
+Keep this review and its open
 findings until their corresponding gates close; preserve historical evidence below.
 
 **Original review at the source revision below**

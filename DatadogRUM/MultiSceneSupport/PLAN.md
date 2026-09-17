@@ -48,11 +48,12 @@ Objective-C Release exposure still require normal API review.
    register and detailed record. Accepted experiment identities remain unchanged.
 1. D12/T02, D09, D11 and D04/P02 repairs are accepted within their recorded
    boundaries. Preserve their controls and frozen acceptance identities.
-2. Next: execute the defined EXP-167 for D05/D06. Resolve the old navigation owner
-   before restoring peers and unify explicit-stop, immediate and lazy-expiration
-   restoration in the [assessed order](REVIEW_TRIAGE.md).
-3. Repair D03/P03 lifetimes, D07/D08 authority/reconnect, and D10 accepted
-   presentation state. Close the missing R04–R06 discriminators in those slices.
+2. D05/D06 restoration is accepted in EXP-167. Next define and execute D03
+   keyed SwiftUI lifetime repair in the [assessed order](REVIEW_TRIAGE.md), with
+   mounted release and teardown evidence. Measure P03 alongside it; P03 remains
+   open until D08 and the retained-registry budget also pass.
+3. Repair D07/D08 authority/reconnect and D10 accepted presentation state. Close
+   the missing R02/R04–R06 discriminators in those slices.
 4. Close the early compatibility/performance gates in available environments;
    C06 remains blocked without a minimum-OS runtime. Resume T03–T14 only after
    relevant repair dependencies pass. A documented fallback remains a deliverable.
@@ -167,8 +168,8 @@ experiment slices remain evidence, not a substitute for these missing cases.
 | D02 | macOS WebView compile compatibility | SDK implementer | None | Reproduce/triage the reported finding, then require: DatadogWebViewTracking macOS build with absent UIKit scene metadata | macOS SDK build | CLOSED |
 | D03 | Keyed SwiftUI registration teardown | SDK implementer | None | Reproduce/triage the reported finding, then require: Mounted keyed destination removal plus SDK release: weak registration/instrumentation release and balanced unswizzling; repeat cycles | iOS 27 simulator, mounted SwiftUI host and lifetime checks | REGRESSION BLOCKED |
 | D04 | Named-core handoff isolation | SDK implementer | None | Reproduce/triage the reported finding, then require: Different cores, same application/different sessions, no-RUM core, nested dispatch and inherited work after stop/reinitialize never consume foreign context | Internal, RUM, Logs, Trace and network focused tests | CLOSED |
-| D05 | Resolve ownership before explicit session restart | SDK implementer | None | Reproduce/triage the reported finding, then require: After stopSession with A/B and B representative, source-less start replaces B and preserves A; identity-stop A preserves B | RUM application/session tests plus two-scene simulator | REGRESSION BLOCKED |
-| D06 | Preserve peers on lazy session expiration | SDK implementer | D05 | Reproduce/triage the reported finding, then require: Expiring lifecycle command followed by start/stop in A restores eligible B with fresh new-session ownership | RUM application/session tests plus two-scene simulator | REGRESSION BLOCKED |
+| D05 | Resolve ownership before explicit session restart | SDK implementer | None | Reproduce/triage the reported finding, then require: After stopSession with A/B and B representative, source-less start replaces B and preserves A; identity-stop A preserves B | RUM application/session tests plus two-scene simulator | CLOSED |
+| D06 | Preserve peers on lazy session expiration | SDK implementer | D05 | Reproduce/triage the reported finding, then require: Expiring lifecycle command followed by start/stop in A restores eligible B with fresh new-session ownership | RUM application/session tests plus two-scene simulator | CLOSED |
 | D07 | Pending semantic authority | SDK implementer | D03 | Reproduce/triage the reported finding, then require: Empty explicit/capability source and absent instrumentation do not suppress automatic tracking; first accepted snapshot acquires local authority | iOS 27 simulator with real authority registry | REGRESSION BLOCKED |
 | D08 | Reconnect generation acceptance | SDK implementer | D03, D07 | Reproduce/triage the reported finding, then require: Stale trait between disconnect and real connection/reader mount cannot consume generation; exactly one fresh occurrence and correct immediate telemetry | Deterministic iOS 27 regression; genuine lifecycle remains H09 | REGRESSION BLOCKED |
 | D09 | Controller API caller-thread compatibility | SDK implementer | None | Reproduce/triage the reported finding, then require: Background start/stop getter spy records no UIKit hierarchy access; main-thread target resolves correctly without sync-to-main deadlock | iOS simulator focused test plus Main Thread Checker | CLOSED |

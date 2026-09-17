@@ -15,11 +15,11 @@ Last updated: 2026-09-17
 
 ## Current checkpoint
 
-Current release position: 17/66 gates closed. EXP-165 closes D11 at signed
-`9a1ee83a5`; D04/P02 is next. Seven production-review repairs remain open.
+Current release position: 21/66 gates closed. EXP-167 closes D05/D06 at signed
+`0aaafa7bd`; D03 lifetime is next. Four production-review repairs remain open.
 
 
-- Latest accepted slice: `EXP-159`, targeted long-running action start/stop.
+- Last accepted public telemetry slice: `EXP-159`, targeted long-running action start/stop.
   Bounded synchronous live-view runtime passes 15/15 and exact backend ownership;
   full RUM 1,260/1,260, probe 166/166, Objective-C 8/8, Release and lint pass.
   The earlier background-interrupted attempt remains INCONCLUSIVE. Next work is
@@ -325,7 +325,7 @@ ordered acceptance contract is in
 | EXP-164 | 2026-09-17 | PASS · D09 | Controller thread compatibility | Two failing getter controls; 31 affected tests pass. Mounted fixture 19/19, zero background reads/MTC diagnostics versus control 5 reads/4 diagnostics. Tooling-invalid attempts retained. | [active record](Experiments/EXP-143-199.md#exp-164--preserve-controller-api-caller-thread-compatibility) |
 | EXP-165 | PASS | D11: legacy container restored; 102 tests, 19/19 mounted bridge/Replay checks and four collector controls | [Record](Experiments/EXP-143-199.md#exp-165--preserve-legacy-nativewebview-replay-correlation) |
 | EXP-166 | PASS | D04/P02: 282 tests; core-scoped consumers; full27/26.5 ABBA1 allocation/64 bytes with latency/reentrancy budgets preserved | [Record](Experiments/EXP-143-199.md#exp-166--isolate-ui-event-handoff-by-sdk-lifecycle-and-reduce-allocations) |
-| EXP-167 | PLANNED | D05/D06: resolve old navigation ownership once and preserve eligible peers through all session restoration paths | [Record](Experiments/EXP-143-199.md#exp-167--preserve-navigation-ownership-across-session-restoration) |
+| EXP-167 | PASS | D05/D06: six failing controls, 198 tests/44 new cases, two native scenes 47/47 versus 20/47; old ownership and eligible peers preserved | [Record](Experiments/EXP-143-199.md#exp-167--preserve-navigation-ownership-across-session-restoration) |
 
 ## Simulator-inconclusive and hardware-required evidence
 

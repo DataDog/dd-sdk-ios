@@ -10,7 +10,7 @@ Last updated: 2026-09-17
 
 ## Current verdict
 
-Current release accounting is **19/66 gates closed**. EXP-160 establishes early
+Current release accounting is **21/66 gates closed**. EXP-160 establishes early
 ordinary automatic/manual/custom/NOP and26.5 compatibility, dispatch and exact
 reentrancy baselines. EXP-166 repairs the enabled-handoff allocation failure:
 complete Release ABBA runs measure 1 allocation/64 bytes per event on27/26.5,
@@ -40,9 +40,12 @@ WebView/Replay checks preserve the legacy container while excluding peers.
 The original collector attempt is INVALID and preserved. EXP-166 closes D04/P02
 at signed `5eb3c1aac`: core-lifetime ownership isolates every handoff consumer,
 282 affected tests pass, complete watchOS RUM/macOS Core builds pass, and the
-frozen allocation, latency and full-context reentrancy budgets pass. Six assessed
-review repairs remain open; old-owner resolution and lazy restoration D05/D06
-are next. Physical scene and final release gates remain separate.
+frozen allocation, latency and full-context reentrancy budgets pass. EXP-167
+closes D05/D06 at signed `0aaafa7bd`: six failing scope controls, 198 affected
+tests including 44 new matrix cases, and 47/47 checks in two native iPad simulator
+scenes versus control 20/47. Navigation resolves its old owner before peer
+restoration; immediate and delayed boundaries preserve the same eligible peers.
+Four assessed review repairs remain open; D03 lifetime is next, paired with P03. Physical scene and final release gates remain separate.
 
 The released SDK baseline is not semantically safe for applications with
 concurrent scenes. Process-representative view state and process-global SwiftUI
