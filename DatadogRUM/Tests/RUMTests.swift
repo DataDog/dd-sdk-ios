@@ -91,12 +91,13 @@ class RUMTests: XCTestCase {
         // by the time `RUM.enable()` returns, otherwise Features instrumenting a request right here (e.g.
         // WebViewTracking) get no decision at all. See RUM-17921.
         let rum = try XCTUnwrap(core.get(feature: RUMFeature.self))
-        let sampler = try XCTUnwrap(
-            rum.rumSessionSampler,
-            "The session sampler must be available synchronously, without waiting for the initial session"
+        let snapshot = try XCTUnwrap(
+            rum.sessionSamplingSnapshot(for: .combinedWithSessionRate, rate: .maxSampleRate),
+            "The session sampling decision must be available synchronously, without waiting for the initial session"
         )
-        XCTAssertEqual(sampler, DeterministicSampler(uuid: sessionUUID, samplingRate: 60))
-        XCTAssertTrue(sampler.isSampled)
+        XCTAssertEqual(snapshot.sessionID, RUMUUID(rawValue: sessionUUID).toRUMDataFormat)
+        XCTAssertEqual(snapshot.isSampled, DeterministicSampler(uuid: sessionUUID, samplingRate: 60).isSampled)
+        XCTAssertTrue(snapshot.isSampled)
     }
 
     func testWhenEnabledWithDebugSDK_thenSessionSamplerUsesTheOverriddenRate() throws {
@@ -109,11 +110,11 @@ class RUMTests: XCTestCase {
         // When
         RUM.enable(with: config, in: core)
 
-        // Then - `debugSDK` forces 100%, and the synchronous sampler must honour it like the session does
+        // Then - `debugSDK` forces 100%, and the synchronous store must honour it like the session does
         let rum = try XCTUnwrap(core.get(feature: RUMFeature.self))
-        let sampler = try XCTUnwrap(rum.rumSessionSampler)
-        XCTAssertEqual(sampler, DeterministicSampler(uuid: sessionUUID, samplingRate: 100))
-        XCTAssertTrue(sampler.isSampled)
+        let snapshot = try XCTUnwrap(rum.sessionSamplingSnapshot(for: .combinedWithSessionRate, rate: .maxSampleRate))
+        XCTAssertEqual(snapshot.sessionID, RUMUUID(rawValue: sessionUUID).toRUMDataFormat)
+        XCTAssertTrue(snapshot.isSampled, "A 0% configured rate must still be forced to 100% by `debugSDK`")
     }
 
     func testWhenEnabledWithDefaultConfiguration() throws {

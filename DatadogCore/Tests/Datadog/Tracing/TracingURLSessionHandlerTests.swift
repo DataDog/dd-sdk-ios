@@ -16,11 +16,12 @@ class TracingURLSessionHandlerTests: XCTestCase {
     var core: PassthroughCoreMock!
     var tracer: DatadogTracer!
     var handler: TracingURLSessionHandler!
+    var sessionSampling: RUMSessionSamplerProviderMock!
     // swiftlint:enable implicitly_unwrapped_optional
 
     override func setUp() {
         super.setUp()
-        let receiver = ContextMessageReceiver(samplerProvider: SamplerProvider(sampleRate: .mockAny()))
+        let receiver = ContextMessageReceiver()
         core = PassthroughCoreMock(messageReceiver: CombinedFeatureMessageReceiver([
             LogMessageReceiver.mockAny(),
             receiver
@@ -33,6 +34,9 @@ class TracingURLSessionHandlerTests: XCTestCase {
             loggingIntegration: TracingWithLoggingIntegration(core: core, service: .mockAny(), networkInfoEnabled: .mockAny())
         )
 
+        // No session by default: individual tests opt in by setting `sessionSampling.identity`.
+        sessionSampling = RUMSessionSamplerProviderMock()
+
         handler = TracingURLSessionHandler(
             tracer: tracer,
             contextReceiver: receiver,
@@ -41,7 +45,8 @@ class TracingURLSessionHandlerTests: XCTestCase {
                 "www.example.com": [.datadog]
             ]),
             traceContextInjection: .all,
-            telemetry: NOPTelemetry()
+            telemetry: NOPTelemetry(),
+            sessionSampling: { [weak self] in self?.sessionSampling }
         )
     }
 
@@ -49,6 +54,7 @@ class TracingURLSessionHandlerTests: XCTestCase {
         core = nil
         tracer = nil
         handler = nil
+        sessionSampling = nil
         super.tearDown()
     }
 
@@ -227,15 +233,16 @@ class TracingURLSessionHandlerTests: XCTestCase {
         )
         let message = FeatureMessage.context(fakeContext)
         _ = handler.contextReceiver.receive(message: message, from: core)
+
+        // The injected session ID comes from the sampling store, not from the bus context nor from
+        // `networkContext`: those two used to disagree, since sampling read either one while the
+        // `baggage` header only ever read the bus.
+        sessionSampling.identity = .init(sessionID: fakeSessionId.uuidString.lowercased(), sampler: .mockKeepAll())
+
         let (modifiedRequest, _, _) = handler.modify(
             request: request,
             headerTypes: [.datadog, .tracecontext, .b3, .b3multi],
-            networkContext: NetworkContext(
-                rumContext: .mockWith(
-                    applicationID: .mockRandom(),
-                    sessionID: .mockWith("abcdef01-2345-6789-abcd-ef0123456789")
-                )
-            )
+            networkContext: nil
         )
 
         XCTAssertEqual(

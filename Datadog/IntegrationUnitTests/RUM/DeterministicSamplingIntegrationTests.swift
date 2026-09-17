@@ -96,7 +96,10 @@ class DeterministicSamplingIntegrationTests: XCTestCase {
         RUM.enable(with: rumConfig, in: core)
 
         let rum = try XCTUnwrap(core.get(feature: RUMFeature.self))
-        let synchronousSampler = try XCTUnwrap(rum.rumSessionSampler, "Sampler must exist before any flush")
+        let synchronousSnapshot = try XCTUnwrap(
+            rum.sessionSamplingSnapshot(for: .combinedWithSessionRate, rate: .maxSampleRate),
+            "The session identity must exist before any flush"
+        )
 
         // Let the asynchronous session-creation flow run
         RUMMonitor.shared(in: core).startView(key: "test-view", name: "TestView")
@@ -104,11 +107,133 @@ class DeterministicSamplingIntegrationTests: XCTestCase {
 
         // Then - the session published by `onSessionUpdate` must be the one created at enable time
         XCTAssertEqual(
-            rum.rumSessionSampler,
-            synchronousSampler,
+            rum.sessionSamplingSnapshot(for: .combinedWithSessionRate, rate: .maxSampleRate),
+            synchronousSnapshot,
             "The initial session must adopt the preset identity, not generate a new one"
         )
-        XCTAssertEqual(synchronousSampler, DeterministicSampler(uuid: presetUUID, samplingRate: 60))
+        XCTAssertEqual(synchronousSnapshot.sessionID, RUMUUID(rawValue: presetUUID).toRUMDataFormat)
+        XCTAssertEqual(synchronousSnapshot.isSampled, DeterministicSampler(uuid: presetUUID, samplingRate: 60).isSampled)
+    }
+
+    // MARK: - The two sampling rate policies
+
+    /*
+     A feature's sampling rate relates to the RUM session rate in one of two ways, and the two must
+     not be mixed up:
+
+       - `Trace.Configuration.sampleRate` is an absolute trace sampling rate. The session supplies
+         only the seed, so 20% stays 20%.
+       - `urlSessionTracking.firstPartyHostsTracing`'s rate is a share of the sessions RUM keeps, so
+         20% inside a 10% session is an effective 2%.
+
+     Both features now read the same synchronous store, which makes it easy to apply one policy to
+     both by accident. These tests pin the difference. See RUM-17921.
+     */
+
+    /// A session UUID whose Knuth hash fraction is roughly 6.4%.
+    ///
+    /// It is kept at 20% applied alone, and dropped at the 2% that composing 20% with a 10% session
+    /// rate produces, so one session exercises both policies in opposite directions.
+    private static let policyVectorUUID = UUID(uuidString: "a1b2c3d4-e5f6-7890-abcd-ceb01cf21171")!
+
+    func testManualTraceSpan_appliesTheTraceRateWithoutComposingItWithTheSessionRate() throws {
+        let sessionUUID = Self.policyVectorUUID
+        let sessionRate: SampleRate = 10
+        let traceRate: SampleRate = 20
+
+        // Precondition guards — without them a change to the hash math would make this test vacuous
+        let sessionSampler = DeterministicSampler(uuid: sessionUUID, samplingRate: sessionRate)
+        try XCTSkipUnless(sessionSampler.isSampled, "Precondition: the session must be sampled at \(sessionRate)%")
+        try XCTSkipUnless(
+            DeterministicSampler(uuid: sessionUUID, samplingRate: traceRate).isSampled,
+            "Precondition: the vector must be kept at the trace rate applied alone"
+        )
+        try XCTSkipUnless(
+            !sessionSampler.combined(with: traceRate).isSampled,
+            "Precondition: the vector must be dropped at the composed rate"
+        )
+
+        // Given
+        var rumConfig = RUM.Configuration(applicationID: "test-app-id")
+        rumConfig.sessionSampleRate = sessionRate
+        rumConfig.uuidGenerator = RUMUUIDGeneratorMock(uuid: RUMUUID(rawValue: sessionUUID))
+        RUM.enable(with: rumConfig, in: core)
+
+        var traceConfig = Trace.Configuration()
+        traceConfig.sampleRate = traceRate
+        Trace.enable(with: traceConfig, in: core)
+
+        // When
+        Tracer.shared(in: core).startSpan(operationName: "manual").finish()
+
+        // Then — a 20% trace rate keeps this session; composing it down to 2% would drop it
+        let spans = core.waitAndReturnSpanEvents()
+        XCTAssertEqual(spans.count, 1)
+        XCTAssertTrue(
+            try XCTUnwrap(spans.first).samplingPriority.isKept,
+            "The trace sample rate is absolute, so the session must contribute only the seed"
+        )
+    }
+
+    func testURLSessionRequest_composesTheTracingRateWithTheSessionRate() throws {
+        let sessionUUID = Self.policyVectorUUID
+        let sessionRate: SampleRate = 10
+        let tracingRate: SampleRate = 20
+
+        let sessionSampler = DeterministicSampler(uuid: sessionUUID, samplingRate: sessionRate)
+        try XCTSkipUnless(sessionSampler.isSampled, "Precondition: the session must be sampled at \(sessionRate)%")
+        try XCTSkipUnless(
+            DeterministicSampler(uuid: sessionUUID, samplingRate: tracingRate).isSampled,
+            "Precondition: the vector must be kept at the tracing rate applied alone"
+        )
+        try XCTSkipUnless(
+            !sessionSampler.combined(with: tracingRate).isSampled,
+            "Precondition: the vector must be dropped at the composed rate"
+        )
+
+        // Given
+        var rumConfig = RUM.Configuration(applicationID: "test-app-id")
+        rumConfig.sessionSampleRate = sessionRate
+        rumConfig.uuidGenerator = RUMUUIDGeneratorMock(uuid: RUMUUID(rawValue: sessionUUID))
+        rumConfig.urlSessionTracking = .init(
+            // `.all` so the dropped request still carries its headers, with priority 0. The default
+            // `.sampled` would inject nothing, which is indistinguishable from the request never
+            // having been instrumented.
+            firstPartyHostsTracing: .trace(
+                hosts: ["www.example.com"],
+                sampleRate: tracingRate,
+                traceControlInjection: .all
+            )
+        )
+        RUM.enable(with: rumConfig, in: core)
+
+        // When
+        URLSessionInstrumentation.enable(
+            with: .init(delegateClass: SessionDataDelegateMock.self),
+            in: core
+        )
+        let server = ServerMock(delivery: .success(response: .mockResponseWith(statusCode: 200), data: .mock(ofSize: 10)))
+        let session = server.getInterceptedURLSession(delegate: SessionDataDelegateMock())
+        let completed = expectation(description: "request completes")
+        session
+            .dataTask(with: URLRequest(url: URL(string: "https://www.example.com/resource")!)) { _, _, _ in
+                completed.fulfill()
+            }
+            .resume()
+        waitForExpectations(timeout: 5)
+
+        // Then — 20% of a 10% session is an effective 2%, which drops this request
+        let sentRequest = try XCTUnwrap(server.waitAndReturnRequests(count: 1).first)
+        XCTAssertEqual(
+            sentRequest.value(forHTTPHeaderField: "x-datadog-sampling-priority"),
+            "0",
+            "The tracing rate applies on top of the session rate, so the two must be composed"
+        )
+        XCTAssertEqual(
+            sentRequest.value(forHTTPHeaderField: "baggage"),
+            "session.id=\(RUMUUID(rawValue: sessionUUID).toRUMDataFormat)",
+            "The request must carry the session the decision was made for, even before the RUM context is broadcast"
+        )
     }
 
     // MARK: - Session Replay child-rate correction
