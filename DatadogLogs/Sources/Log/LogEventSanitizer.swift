@@ -37,30 +37,19 @@ internal struct LogEventSanitizer {
     private let attributesSanitizer = AttributesSanitizer(featureName: "Log")
 
     func sanitize(log: LogEvent) -> LogEvent {
-        var sanitizedLog = log
-        sanitizedLog.tags = sanitize(tags: log.tags)
-
         // Limit to max number of attributes.
         // `LogEventEncoder` flattens `usr.*`, `account.*`, custom and internal attributes into keys of a
         // single JSON object, so they are children of the same node and must share one budget.
-        // Internal attributes are reserved for the SDK and are charged against the budget without being dropped.
-        var remaining = AttributesSanitizer.Constraints.maxNumberOfAttributes - (log.attributes.internalAttributes?.count ?? 0)
+        // If any attributes need to be removed, we first reduce custom attributes, then `account`, then `usr`.
+        let limit = AttributesSanitizer.Constraints.maxNumberOfAttributes - (log.attributes.internalAttributes?.count ?? 0)
+        let userExtraInfo = attributesSanitizer.limitNumberOf(attributes: log.userInfo.extraInfo, to: limit)
+        let accountExtraInfo = attributesSanitizer.limitNumberOf(attributes: log.accountInfo?.extraInfo ?? [:], to: limit - userExtraInfo.count)
 
-        sanitizedLog.userInfo.extraInfo = attributesSanitizer.limitNumberOf(
-            attributes: log.userInfo.extraInfo,
-            to: max(remaining, 0)
-        )
-        remaining -= sanitizedLog.userInfo.extraInfo.count
-
-        if let accountExtraInfo = log.accountInfo?.extraInfo {
-            sanitizedLog.accountInfo?.extraInfo = attributesSanitizer.limitNumberOf(
-                attributes: accountExtraInfo,
-                to: max(remaining, 0)
-            )
-            remaining -= sanitizedLog.accountInfo?.extraInfo.count ?? 0
-        }
-
-        sanitizedLog.attributes = sanitize(attributes: log.attributes, to: max(remaining, 0))
+        var sanitizedLog = log
+        sanitizedLog.tags = sanitize(tags: log.tags)
+        sanitizedLog.userInfo.extraInfo = userExtraInfo
+        sanitizedLog.accountInfo?.extraInfo = accountExtraInfo
+        sanitizedLog.attributes = sanitize(attributes: log.attributes, to: limit - userExtraInfo.count - accountExtraInfo.count)
         return sanitizedLog
     }
 
