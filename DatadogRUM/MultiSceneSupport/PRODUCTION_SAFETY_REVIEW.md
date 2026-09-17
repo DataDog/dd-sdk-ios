@@ -17,7 +17,7 @@ review gates R01–R06.
 | R06 / D06 | OPEN | Controlled lazy-expiration restoration after lifecycle boundaries |
 | R07 / D07 | OPEN | Empty explicit/capability source must retain automatic tracking until accepted state |
 | R08 / D08 | OPEN | Stale trait, real reconnect and accepted-publication regression; hardware ordering stays separate |
-| R09 / D09 | OPEN | Background hierarchy getter spy and Main Thread Checker, plus main-thread targeting |
+| R09 / D09 | IN PROGRESS | EXP-164 defined: background hierarchy getter spy and actual mounted scene with Main Thread Checker |
 | R10 / D10 | OPEN | Reject/canonicalize Binding writes and verify accepted-state callbacks/occurrences |
 | R11 / D11 | OPEN | Replay-enabled legacy native/WebView correlation plus cross-scene negative control |
 | R12 / D12 | CLOSED | EXP-163, signed `084dff4c1`: three failing recipient controls, 212 affected tests pass; own overdue-stop attributes retained without peer leakage |

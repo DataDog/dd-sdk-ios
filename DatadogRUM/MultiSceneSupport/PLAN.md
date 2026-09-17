@@ -46,8 +46,8 @@ Objective-C Release exposure still require normal API review.
 
 0. D01/D02 platform compatibility is closed by EXP-162; evidence is in the
    register and detailed record. Accepted experiment identities remain unchanged.
-1. D12 is closed and T02 restored by EXP-163. Next repair D09 controller caller-
-   thread compatibility, then D11 legacy WebView correlation, in the
+1. D12 is closed and T02 restored by EXP-163. Execute predefined EXP-164 for D09 controller
+   caller-thread compatibility, then define D11 legacy WebView correlation in the
    [assessed order](REVIEW_TRIAGE.md). Define each bounded experiment before
    implementation; preserve failing controls.
 2. Repair D04 together with P02 allocation cost; normalize restoration in D05/D06.
