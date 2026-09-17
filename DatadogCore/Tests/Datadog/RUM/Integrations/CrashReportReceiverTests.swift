@@ -18,16 +18,13 @@ class CrashReportReceiverTests: XCTestCase {
         let receiver: CrashReportReceiver = .mockWith(featureScope: featureScope)
 
         // When
-        let message: FeatureMessage = .payload(
-            Crash(
-                report: DDCrashReport.mockAny(),
-                context: CrashContext.mockWith(lastRUMViewEvent: nil)
-            )
+        let message = Crash(
+            report: DDCrashReport.mockAny(),
+            context: CrashContext.mockWith(lastRUMViewEvent: nil)
         )
-        let result = receiver.receive(message: message, from: NOPDatadogCore())
+        receiver.receive(message: message, from: NOPDatadogCore())
 
         // Then
-        XCTAssertTrue(result, "It must accept the message")
         XCTAssertEqual(featureScope.eventsWritten(ofType: RUMErrorEvent.self).count, 1, "It should send error event")
     }
 
@@ -37,18 +34,15 @@ class CrashReportReceiverTests: XCTestCase {
         let lastRUMViewEvent: RUMViewEvent = .mockRandom()
 
         // When
-        let message: FeatureMessage = .payload(
-            Crash(
-                report: DDCrashReport.mockWith(date: Date()),
-                context: CrashContext.mockWith(
-                    lastRUMViewEvent: lastRUMViewEvent
-                )
+        let message = Crash(
+            report: DDCrashReport.mockWith(date: Date()),
+            context: CrashContext.mockWith(
+                lastRUMViewEvent: lastRUMViewEvent
             )
         )
-        let result = receiver.receive(message: message, from: NOPDatadogCore())
+        receiver.receive(message: message, from: NOPDatadogCore())
 
         // Then
-        XCTAssertTrue(result, "It must accept the message")
         XCTAssertEqual(featureScope.eventsWritten(ofType: RUMErrorEvent.self).count, 1, "It should send error event")
         XCTAssertEqual(featureScope.eventsWritten(ofType: RUMViewEvent.self).count, 1, "It should send view event")
     }
@@ -77,10 +71,9 @@ class CrashReportReceiverTests: XCTestCase {
         )
 
         // When
-        XCTAssertTrue(
-            receiver.receive(message: .payload(
-                Crash(report: crashReport, context: crashContext)
-            ), from: NOPDatadogCore())
+        receiver.receive(
+            message: Crash(report: crashReport, context: crashContext),
+            from: NOPDatadogCore()
         )
 
         // Then
@@ -111,10 +104,9 @@ class CrashReportReceiverTests: XCTestCase {
         )
 
         // When
-        XCTAssertFalse(
-            receiver.receive(message: .payload(
-                Crash(report: crashReport, context: crashContext)
-            ), from: NOPDatadogCore())
+        receiver.receive(
+            message: Crash(report: crashReport, context: crashContext),
+            from: NOPDatadogCore()
         )
 
         // Then
@@ -143,10 +135,9 @@ class CrashReportReceiverTests: XCTestCase {
         )
 
         // When
-        XCTAssertTrue(
-            receiver.receive(message: .payload(
-                Crash(report: crashReport, context: crashContext)
-            ), from: NOPDatadogCore())
+        receiver.receive(
+            message: Crash(report: crashReport, context: crashContext),
+            from: NOPDatadogCore()
         )
 
         // Then
@@ -182,10 +173,9 @@ class CrashReportReceiverTests: XCTestCase {
         )
 
         // When
-        XCTAssertTrue(
-            receiver.receive(message: .payload(
-                Crash(report: crashReport, context: crashContext)
-            ), from: NOPDatadogCore())
+        receiver.receive(
+            message: Crash(report: crashReport, context: crashContext),
+            from: NOPDatadogCore()
         )
 
         // Then
@@ -220,10 +210,9 @@ class CrashReportReceiverTests: XCTestCase {
         )
 
         // When
-        XCTAssertTrue(
-            receiver.receive(message: .payload(
-                Crash(report: crashReport, context: crashContext)
-            ), from: NOPDatadogCore())
+        receiver.receive(
+            message: Crash(report: crashReport, context: crashContext),
+            from: NOPDatadogCore()
         )
 
         // Then
@@ -252,10 +241,9 @@ class CrashReportReceiverTests: XCTestCase {
         )
 
         // When
-        XCTAssertFalse(
-            receiver.receive(message: .payload(
-                Crash(report: crashReport, context: crashContext)
-            ), from: NOPDatadogCore())
+        receiver.receive(
+            message: Crash(report: crashReport, context: crashContext),
+            from: NOPDatadogCore()
         )
 
         // Then
@@ -282,10 +270,9 @@ class CrashReportReceiverTests: XCTestCase {
         )
 
         // When
-        XCTAssertTrue(
-            receiver.receive(message: .payload(
-                Crash(report: crashReport, context: crashContext)
-            ), from: NOPDatadogCore())
+        receiver.receive(
+            message: Crash(report: crashReport, context: crashContext),
+            from: NOPDatadogCore()
         )
 
         // Then
@@ -318,10 +305,9 @@ class CrashReportReceiverTests: XCTestCase {
         )
 
         // When
-        XCTAssertTrue(
-            receiver.receive(message: .payload(
-                Crash(report: crashReport, context: crashContext)
-            ), from: NOPDatadogCore())
+        receiver.receive(
+            message: Crash(report: crashReport, context: crashContext),
+            from: NOPDatadogCore()
         )
 
         // Then
@@ -353,10 +339,9 @@ class CrashReportReceiverTests: XCTestCase {
         )
 
         // When
-        XCTAssertTrue(
-            receiver.receive(message: .payload(
-                Crash(report: crashReport, context: crashContext)
-            ), from: NOPDatadogCore())
+        receiver.receive(
+            message: Crash(report: crashReport, context: crashContext),
+            from: NOPDatadogCore()
         )
 
         // Then
@@ -467,10 +452,9 @@ class CrashReportReceiverTests: XCTestCase {
         )
 
         // When
-        XCTAssertTrue(
-            receiver.receive(message: .payload(
-                Crash(report: crashReport, context: crashContext)
-            ), from: NOPDatadogCore())
+        receiver.receive(
+            message: Crash(report: crashReport, context: crashContext),
+            from: NOPDatadogCore()
         )
 
         // Then
@@ -549,10 +533,9 @@ class CrashReportReceiverTests: XCTestCase {
         )
 
         // When
-        XCTAssertTrue(
-            receiver.receive(message: .payload(
-                Crash(report: crashReport, context: crashContext)
-            ), from: NOPDatadogCore())
+        receiver.receive(
+            message: Crash(report: crashReport, context: crashContext),
+            from: NOPDatadogCore()
         )
 
         // Then
@@ -594,10 +577,9 @@ class CrashReportReceiverTests: XCTestCase {
         )
 
         // When
-        XCTAssertTrue(
-            receiver.receive(message: .payload(
-                Crash(report: crashReport, context: crashContext)
-            ), from: NOPDatadogCore())
+        receiver.receive(
+            message: Crash(report: crashReport, context: crashContext),
+            from: NOPDatadogCore()
         )
 
         // Then
@@ -667,10 +649,9 @@ class CrashReportReceiverTests: XCTestCase {
         )
 
         // When
-        XCTAssertTrue(
-            receiver.receive(message: .payload(
-                Crash(report: crashReport, context: crashContext)
-            ), from: NOPDatadogCore())
+        receiver.receive(
+            message: Crash(report: crashReport, context: crashContext),
+            from: NOPDatadogCore()
         )
 
         // Then
@@ -748,10 +729,9 @@ class CrashReportReceiverTests: XCTestCase {
         )
 
         // When
-        XCTAssertTrue(
-            receiver.receive(message: .payload(
-                Crash(report: crashReport, context: crashContext)
-            ), from: NOPDatadogCore())
+        receiver.receive(
+            message: Crash(report: crashReport, context: crashContext),
+            from: NOPDatadogCore()
         )
 
         // Then
@@ -781,10 +761,9 @@ class CrashReportReceiverTests: XCTestCase {
         )
 
         // When
-        XCTAssertTrue(
-            receiver.receive(message: .payload(
-                Crash(report: crashReport, context: crashContext)
-            ), from: NOPDatadogCore())
+        receiver.receive(
+            message: Crash(report: crashReport, context: crashContext),
+            from: NOPDatadogCore()
         )
 
         // Then
@@ -857,10 +836,9 @@ class CrashReportReceiverTests: XCTestCase {
             )
 
             // When
-            XCTAssertTrue(
-                receiver.receive(message: .payload(
-                    Crash(report: crashReport, context: crashContext)
-                ), from: NOPDatadogCore())
+            receiver.receive(
+                message: Crash(report: crashReport, context: crashContext),
+                from: NOPDatadogCore()
             )
 
             // Then
@@ -993,10 +971,9 @@ class CrashReportReceiverTests: XCTestCase {
             )
 
             // When
-            XCTAssertTrue(
-                receiver.receive(message: .payload(
-                    Crash(report: crashReport, context: crashContext)
-                ), from: NOPDatadogCore())
+            receiver.receive(
+                message: Crash(report: crashReport, context: crashContext),
+                from: NOPDatadogCore()
             )
 
             // Then
@@ -1070,10 +1047,9 @@ class CrashReportReceiverTests: XCTestCase {
             )
 
             // When
-            XCTAssertTrue(
-                receiver.receive(message: .payload(
-                    Crash(report: crashReport, context: crashContext)
-                ), from: NOPDatadogCore())
+            receiver.receive(
+                message: Crash(report: crashReport, context: crashContext),
+                from: NOPDatadogCore()
             )
 
             // Then
@@ -1138,10 +1114,9 @@ class CrashReportReceiverTests: XCTestCase {
             )
 
             // When
-            XCTAssertTrue(
-                receiver.receive(message: .payload(
-                    Crash(report: crashReport, context: crashContext)
-                ), from: NOPDatadogCore())
+            receiver.receive(
+                message: Crash(report: crashReport, context: crashContext),
+                from: NOPDatadogCore()
             )
 
             // Then
@@ -1209,10 +1184,9 @@ class CrashReportReceiverTests: XCTestCase {
             )
 
             // When
-            XCTAssertTrue(
-                receiver.receive(message: .payload(
-                    Crash(report: crashReport, context: crashContext)
-                ), from: NOPDatadogCore())
+            receiver.receive(
+                message: Crash(report: crashReport, context: crashContext),
+                from: NOPDatadogCore()
             )
 
             // Then
@@ -1332,10 +1306,9 @@ class CrashReportReceiverTests: XCTestCase {
             )
 
             // When
-            XCTAssertTrue(
-                receiver.receive(message: .payload(
-                    Crash(report: crashReport, context: crashContext)
-                ), from: NOPDatadogCore())
+            receiver.receive(
+                message: Crash(report: crashReport, context: crashContext),
+                from: NOPDatadogCore()
             )
 
             // Then
@@ -1409,10 +1382,9 @@ class CrashReportReceiverTests: XCTestCase {
             )
 
             // When
-            XCTAssertTrue(
-                receiver.receive(message: .payload(
-                    Crash(report: crashReport, context: crashContext)
-                ), from: NOPDatadogCore())
+            receiver.receive(
+                message: Crash(report: crashReport, context: crashContext),
+                from: NOPDatadogCore()
             )
 
             // Then
@@ -1492,10 +1464,9 @@ class CrashReportReceiverTests: XCTestCase {
             )
 
             // When
-            XCTAssertTrue(
-                receiver.receive(message: .payload(
-                    Crash(report: crashReport, context: crashContext)
-                ), from: NOPDatadogCore())
+            receiver.receive(
+                message: Crash(report: crashReport, context: crashContext),
+                from: NOPDatadogCore()
             )
 
             // Then

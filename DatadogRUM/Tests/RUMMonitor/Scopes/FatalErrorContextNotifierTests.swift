@@ -10,96 +10,96 @@ import TestUtilities
 @testable import DatadogRUM
 
 class FatalErrorContextNotifierTests: XCTestCase {
+    private var bus: PassthroughCoreMock! // swiftlint:disable:this implicitly_unwrapped_optional
+
+    override func setUp() {
+        super.setUp()
+        bus = PassthroughCoreMock()
+    }
+
+    override func tearDown() {
+        bus = nil
+        super.tearDown()
+    }
+
     // MARK: - Changing Session State
 
     func testWhenSessionStateIsSet_itSendsSessionStateMessage() throws {
         // Given
-        let core = NOPDatadogCore()
-        let bus = PassthroughMessageBusMock(core: core)
-        let fatalErrorContext = FatalErrorContextNotifier(messageBus: bus)
+        let fatalErrorContext = FatalErrorContextNotifier(messageBus: bus.messageBus)
+        var received: [RUMSessionState] = []
+        _ = bus.messageBus.subscribe { (state: RUMSessionState, _) in received.append(state) }
         let newSessionState: RUMSessionState = .mockRandom()
-        var received: RUMSessionState?
-        let subscription = bus.subscribe { (message: RUMSessionState, _) in received = message }
 
         // When
         fatalErrorContext.sessionState = newSessionState
 
         // Then
-        XCTAssertEqual(received, newSessionState)
-        _ = subscription
+        XCTAssertEqual(received.count, 1)
+        XCTAssertEqual(received.first, newSessionState)
     }
 
     func testWhenSessionStateIsReset_itDoesNotSendNextSessionStateMessage() throws {
         // Given
-        let core = NOPDatadogCore()
-        let bus = PassthroughMessageBusMock(core: core)
-        let fatalErrorContext = FatalErrorContextNotifier(messageBus: bus)
-        var receiveCount = 0
-        let subscription = bus.subscribe { (_: RUMSessionState, _) in receiveCount += 1 }
-        fatalErrorContext.sessionState = .mockRandom()
+        let fatalErrorContext = FatalErrorContextNotifier(messageBus: bus.messageBus)
+        var received: [RUMSessionState] = []
+        _ = bus.messageBus.subscribe { (state: RUMSessionState, _) in received.append(state) }
+        let originalSessionState: RUMSessionState = .mockRandom()
+        fatalErrorContext.sessionState = originalSessionState
 
         // When
         fatalErrorContext.sessionState = nil
 
         // Then
-        XCTAssertEqual(receiveCount, 1)
-        _ = subscription
+        XCTAssertEqual(received.count, 1)
+        XCTAssertEqual(received.first, originalSessionState)
     }
 
     // MARK: - Changing View State
 
     func testWhenViewIsSet_itSendsViewEventMessage() throws {
         // Given
-        let core = NOPDatadogCore()
-        let bus = PassthroughMessageBusMock(core: core)
-        let fatalErrorContext = FatalErrorContextNotifier(messageBus: bus)
+        let fatalErrorContext = FatalErrorContextNotifier(messageBus: bus.messageBus)
+        var receivedViews: [RUMViewEvent] = []
+        _ = bus.messageBus.subscribe { (event: RUMViewEvent, _) in receivedViews.append(event) }
         let newViewEvent: RUMViewEvent = .mockRandom()
-        var received: RUMViewEvent?
-        let subscription = bus.subscribe { (message: RUMViewEvent, _) in received = message }
 
         // When
         fatalErrorContext.view = newViewEvent
 
         // Then
-        let receivedView = try XCTUnwrap(received)
-        DDAssertJSONEqual(newViewEvent, receivedView)
-        _ = subscription
+        XCTAssertEqual(receivedViews.count, 1)
+        DDAssertJSONEqual(receivedViews.first, newViewEvent)
     }
 
     func testWhenViewIsReset_itSendsViewResetMessage() throws {
         // Given
-        let core = NOPDatadogCore()
-        let bus = PassthroughMessageBusMock(core: core)
-        let fatalErrorContext = FatalErrorContextNotifier(messageBus: bus)
-        var viewResetCount = 0
-        let subscription = bus.subscribe { (_: RUMViewResetMessage, _) in viewResetCount += 1 }
+        let fatalErrorContext = FatalErrorContextNotifier(messageBus: bus.messageBus)
+        var resetCount = 0
+        _ = bus.messageBus.subscribe { (_: RUMViewResetMessage, _) in resetCount += 1 }
         fatalErrorContext.view = .mockRandom()
 
         // When
         fatalErrorContext.view = nil
 
         // Then
-        XCTAssertEqual(viewResetCount, 1)
-        _ = subscription
+        XCTAssertEqual(resetCount, 1)
     }
 
     // MARK: - Changing Global Attributes
 
     func testWhenGlobalAttributesAreSet_itSendsAttributesMessage() throws {
         // Given
-        let core = NOPDatadogCore()
-        let bus = PassthroughMessageBusMock(core: core)
-        let fatalErrorContext = FatalErrorContextNotifier(messageBus: bus)
+        let fatalErrorContext = FatalErrorContextNotifier(messageBus: bus.messageBus)
+        var received: [RUMEventAttributes] = []
+        _ = bus.messageBus.subscribe { (attrs: RUMEventAttributes, _) in received.append(attrs) }
         let newGlobalAttributes = mockRandomAttributes()
-        var received: RUMEventAttributes?
-        let subscription = bus.subscribe { (message: RUMEventAttributes, _) in received = message }
 
         // When
         fatalErrorContext.globalAttributes = newGlobalAttributes
 
         // Then
-        let receivedAttributes = try XCTUnwrap(received)
-        DDAssertJSONEqual(newGlobalAttributes, receivedAttributes)
-        _ = subscription
+        XCTAssertEqual(received.count, 1)
+        DDAssertJSONEqual(received.first, newGlobalAttributes)
     }
 }

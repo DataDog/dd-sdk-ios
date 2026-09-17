@@ -16,10 +16,11 @@ internal final class FlagEvaluationReceiver: BusMessageReceiver {
         self.monitor = monitor
     }
 
-    func receive(message: RUMFlagEvaluationMessage, from core: DatadogCoreProtocol) {
+    /// Adds feature flag evaluation to the current RUM view.
+    func receive(message flagEvaluation: RUMFlagEvaluationMessage, from core: any DatadogCoreProtocol) {
         monitor.addFeatureFlagEvaluation(
-            name: message.flagKey,
-            value: message.value
+            name: flagEvaluation.flagKey,
+            value: flagEvaluation.value
         )
     }
 }

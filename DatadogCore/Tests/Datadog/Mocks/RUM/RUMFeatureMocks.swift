@@ -33,8 +33,8 @@ extension RUM.Configuration {
 }
 
 extension WebViewEventReceiver: AnyMockable {
-    public static func mockAny() -> Self {
-        .mockWith()
+    public static func mockAny() -> WebViewEventReceiver {
+        mockWith()
     }
 
     static func mockWith(
@@ -42,7 +42,7 @@ extension WebViewEventReceiver: AnyMockable {
         dateProvider: DateProvider = SystemDateProvider(),
         commandSubscriber: RUMCommandSubscriber = RUMCommandSubscriberMock(),
         viewCache: ViewCache = ViewCache(dateProvider: SystemDateProvider())
-    ) -> Self {
+    ) -> WebViewEventReceiver {
         .init(
             featureScope: featureScope,
             dateProvider: dateProvider,

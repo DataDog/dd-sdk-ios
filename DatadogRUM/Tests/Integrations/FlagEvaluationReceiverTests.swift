@@ -21,15 +21,13 @@ class FlagEvaluationReceiverTests: XCTestCase {
                 dateProvider: SystemDateProvider()
             )
         )
+        let message = RUMFlagEvaluationMessage(
+            flagKey: "feature-flag",
+            value: true
+        )
 
         // When
-        receiver.receive(
-            message: RUMFlagEvaluationMessage(
-                flagKey: "feature-flag",
-                value: true
-            ),
-            from: NOPDatadogCore()
-        )
+        receiver.receive(message: message, from: NOPDatadogCore())
 
         // Then
         let viewEvents: [RUMViewEvent] = featureScope.eventsWritten()
