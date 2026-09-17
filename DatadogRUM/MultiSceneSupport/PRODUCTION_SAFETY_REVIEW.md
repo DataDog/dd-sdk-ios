@@ -1,7 +1,7 @@
 **Production safety review of multi-scene SDK instrumentation**
 
-Updated 2026-09-17 during plan execution. **Release remains on hold: 3 of the
-12 review findings are closed, 9 remain open.** The finite checklist has 15/66
+Updated 2026-09-17 during plan execution. **Release remains on hold: 4 of the
+12 review findings are closed, 8 remain open.** The finite checklist has 16/66
 release gates closed. [PLAN.md](PLAN.md) owns the release contract and
 [REVIEW_TRIAGE.md](REVIEW_TRIAGE.md) owns assessed repair order and evidence limits.
 Review IDs R01–R12 below map to repair gates D01–D12, not PLAN's responsibility
@@ -17,7 +17,7 @@ review gates R01–R06.
 | R06 / D06 | OPEN | Controlled lazy-expiration restoration after lifecycle boundaries |
 | R07 / D07 | OPEN | Empty explicit/capability source must retain automatic tracking until accepted state |
 | R08 / D08 | OPEN | Stale trait, real reconnect and accepted-publication regression; hardware ordering stays separate |
-| R09 / D09 | IN PROGRESS | EXP-164 defined: background hierarchy getter spy and actual mounted scene with Main Thread Checker |
+| R09 / D09 | CLOSED | EXP-164 at local `a9abc092b`: 31 tests and actual mounted fixture 19/19; zero background reads/MTC diagnostics versus control 5 reads/4 diagnostics |
 | R10 / D10 | OPEN | Reject/canonicalize Binding writes and verify accepted-state callbacks/occurrences |
 | R11 / D11 | OPEN | Replay-enabled legacy native/WebView correlation plus cross-scene negative control |
 | R12 / D12 | CLOSED | EXP-163, signed `084dff4c1`: three failing recipient controls, 212 affected tests pass; own overdue-stop attributes retained without peer leakage |
@@ -30,8 +30,11 @@ close runtime, restoration, lifetime, minimum-iOS or hardware gates. Early
 EXP-160 measurements independently fail allocation and retained-scene budgets;
 thresholds remain frozen. EXP-163's [durable result](Results/EXP-163-action-stop-attributes.json)
 closes D12 and restores T02 using retained EXP-159 backend evidence; no hardware
-or new backend acceptance is inferred. Keep this review and its open findings until their
-corresponding gates close; preserve historical evidence below.
+or new backend acceptance is inferred. EXP-164's
+[controller-thread result](Results/EXP-164-controller-threads.json) closes D09
+using an actual native scene with a logical peer; it does not prove physical
+window concurrency. D11 correlation remains next. Keep this review and its open
+findings until their corresponding gates close; preserve historical evidence below.
 
 **Original review at the source revision below**
 

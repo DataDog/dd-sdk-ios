@@ -2,7 +2,7 @@
   "schema_version": 1,
   "scope": "Multi-scene RUM release",
   "baseline_revision": "92f021ba7e4a866f84a52da93ed8b63f3dc75882",
-  "candidate_revision": "084dff4c1403d69626f16d4447254a42423aa39e",
+  "candidate_revision": "a9abc092bfb3e03c222038f4d36babf4fd2c1f8d",
   "gates": [
     {
       "id": "C01",
@@ -823,8 +823,8 @@
       "decisive_test": "Reproduce/triage the reported finding, then require: Background start/stop getter spy records no UIKit hierarchy access; main-thread target resolves correctly without sync-to-main deadlock",
       "environment": "iOS simulator focused test plus Main Thread Checker",
       "completion_mode": null,
-      "status": "REGRESSION BLOCKED",
-      "evidence": "REVIEW_TRIAGE.md: assessed relevant at af63657f0; source-confirmed path; required full regression/repair remains open."
+      "status": "CLOSED",
+      "evidence": "EXP-164, local a9abc092b: two getter-spy controls fail, 31 monitor/convenience tests pass; actual mounted scene passes 19/19 with Main Thread Checker loaded, zero background reads/diagnostics versus control 5 reads/4 diagnostics. Results/EXP-164-controller-threads.json."
     },
     {
       "id": "D10",

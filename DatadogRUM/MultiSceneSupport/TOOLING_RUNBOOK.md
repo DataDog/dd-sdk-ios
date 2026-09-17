@@ -99,6 +99,17 @@ first wall-clock-based discrete deadline differed by 24 ns; its corrected contro
 kept the same production source and isolated the actual metadata failures. Keep
 both attempts and distinguish an oracle correction from a production repair.
 
+## Controller thread compatibility
+
+Use the [controller fixture](../../tools/multi-scene/controller-threads/README.md)
+for D09's mounted-controller check. It builds pinned SDK commits in isolated
+packages, verifies clean installation and exact binary/run identity, and records
+all 19 named checks. Main Thread Checker must be proven loaded inside the app;
+no diagnostics without that proof is insufficient. Preserve the unchanged SDK
+control's diagnostic headers separately from candidate assertions. A context-
+queue callback supplies the observation barrier. A logical peer discriminates
+routing without claiming a second native window or physical concurrency.
+
 ## Documentation reading and update workflow
 
 Use progressive disclosure; do not load the frozen history wholesale.

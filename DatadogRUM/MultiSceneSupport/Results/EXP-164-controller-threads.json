@@ -1,0 +1,531 @@
+{
+  "experiment": "EXP-164",
+  "status": "PASS",
+  "closed_gates": [
+    "D09"
+  ],
+  "definition_revision": "1060d4f891c2e16ef0a4735cb7d68ad96a2678e9",
+  "control_revision": "6b7a53dd7941ca75b6c455b61d09673c24d7d613",
+  "candidate_revision": "a9abc092bfb3e03c222038f4d36babf4fd2c1f8d",
+  "sdk_candidate_signed": false,
+  "source_paths": [
+    "DatadogRUM/Sources/RUMMonitor/Monitor.swift",
+    "DatadogRUM/Tests/RUMMonitor/MonitorTests.swift"
+  ],
+  "unit_tests": {
+    "invalid_build": {
+      "buildIsRunning": false,
+      "buildLogEntries": [
+        {
+          "buildTask": "Compile MonitorTests.swift",
+          "emittedIssues": [
+            {
+              "line": 639,
+              "message": "Missing argument label 'hasPendingUserAction:' in call",
+              "path": "/Users/valentin.pertuisot/work/dd-sdk-ios/DatadogRUM/Tests/RUMMonitor/MonitorTests.swift",
+              "severity": "error"
+            },
+            {
+              "line": 639,
+              "message": "Missing argument for parameter 'operation' in call",
+              "path": "/Users/valentin.pertuisot/work/dd-sdk-ios/DatadogRUM/Tests/RUMMonitor/MonitorTests.swift",
+              "severity": "error"
+            },
+            {
+              "line": 639,
+              "message": "Cannot convert value of type '() -> ()' to expected argument type 'Bool'",
+              "path": "/Users/valentin.pertuisot/work/dd-sdk-ios/DatadogRUM/Tests/RUMMonitor/MonitorTests.swift",
+              "severity": "error"
+            }
+          ]
+        }
+      ],
+      "buildResult": "The build failed",
+      "fullLogPath": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/ActionArtifacts/default/GetBuildLog/65809772-6AAF-44DD-874D-305A01C7F7A3.txt",
+      "totalFound": 1,
+      "truncated": false
+    },
+    "control": {
+      "counts": {
+        "expectedFailures": 0,
+        "failed": 2,
+        "notRun": 0,
+        "passed": 0,
+        "skipped": 0,
+        "total": 2
+      },
+      "summary_path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/ActionArtifacts/default/RunSomeTests/18520DF7-C7DB-4902-B17C-738B12FBADE1.txt",
+      "xcresult_path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/ActionArtifacts/default/RunSomeTests/Test-DatadogRUM-2026.09.17_09-05-28-+0100.xcresult",
+      "failed_tests": [
+        {
+          "displayName": "testGivenBackgroundControllerCalls_itAvoidsHierarchyReadsAndKeepsRepresentativeFallback()",
+          "errorMessages": [
+            "Datadog/DatadogRUMTests/RUMMonitor/MonitorTests.swift:647 MonitorTests/testGivenBackgroundControllerCalls_itAvoidsHierarchyReadsAndKeepsRepresentativeFallback(): XCTAssertEqual failed: (\"2\") is not equal to (\"0\")"
+          ],
+          "identifier": "MonitorTests/testGivenBackgroundControllerCalls_itAvoidsHierarchyReadsAndKeepsRepresentativeFallback()",
+          "state": "Failed",
+          "targetName": "DatadogRUMTests"
+        },
+        {
+          "displayName": "testGivenBackgroundControllerCallsDuringHandoff_itAvoidsHierarchyReadsAndKeepsInferredScene()",
+          "errorMessages": [
+            "Datadog/DatadogRUMTests/RUMMonitor/MonitorTests.swift:647 MonitorTests/testGivenBackgroundControllerCallsDuringHandoff_itAvoidsHierarchyReadsAndKeepsInferredScene(): XCTAssertEqual failed: (\"2\") is not equal to (\"0\")"
+          ],
+          "identifier": "MonitorTests/testGivenBackgroundControllerCallsDuringHandoff_itAvoidsHierarchyReadsAndKeepsInferredScene()",
+          "state": "Failed",
+          "targetName": "DatadogRUMTests"
+        }
+      ],
+      "summary_sha256": "e41136677cf1b58b458789b5e0068229cc438418c1c26974ed94861342787278"
+    },
+    "candidate": {
+      "counts": {
+        "expectedFailures": 0,
+        "failed": 0,
+        "notRun": 0,
+        "passed": 31,
+        "skipped": 0,
+        "total": 31
+      },
+      "summary_path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/ActionArtifacts/default/RunSomeTests/F3E81C68-7465-41E7-B312-BBD1FD1C2C1D.txt",
+      "xcresult_path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/ActionArtifacts/default/RunSomeTests/Test-DatadogRUM-2026.09.17_09-06-43-+0100.xcresult",
+      "failed_tests": [],
+      "summary_sha256": "7f361bcbcc5d358cb7f0c2ddd4ae38dd0be21087c371d2bba301910a2555163d"
+    }
+  },
+  "runtime_attempts": [
+    {
+      "artifact_root": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/controller-threads-0o4wo7u3",
+      "experiment": "EXP-164",
+      "status": "INVALID",
+      "checker_sha256": "6872925bc4d2c5abd77d8f749e1804c7271b069773f6977798c94f9581243183",
+      "runner_sha256": "f7bc0dcca33b0de1b6dd6fb71413913fc65826f9a1eff4aa5c25350c85613e69",
+      "helper_sha256": "d14fa5cd77aed6147386e0815a3f711f8d2c45d0018cf5512da79e9db4943398",
+      "xcode": "Xcode 27.0\nBuild version 27A266a",
+      "device": {
+        "name": "iPhone 17 Pro",
+        "udid": "BE03D65C-84F6-4FE0-95DA-A8F8D81A5D21",
+        "os": "27.0"
+      },
+      "failure": "Command failed (65): ['xcodebuild', 'build', '-quiet', '-project', '/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/controller-threads-0o4wo7u3/control/ControllerThreads.xcodeproj', '-scheme', 'ControllerThreads', '-configuration', 'Debug', '-destination', 'generic/platform=iOS Simulator', '-derivedDataPath', '/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/controller-threads-0o4wo7u3/control/derived', 'CODE_SIGNING_ALLOWED=NO']; log=/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/controller-threads-0o4wo7u3/control/build.log; None",
+      "manifest_sha256": "1c2b0332e4ddb0db807692fce8d4da5c4a394643a1eed5d5a164e97ae86b751a",
+      "arms": {
+        "control": {
+          "revision": "6b7a53dd7941ca75b6c455b61d09673c24d7d613",
+          "fixture_sha256": "b63ecadcb16b98548e3d7032433d998df466d2c817e1240afe4df2882b2a0149",
+          "package_sha256": "087c70faa52a276a5143b72e7a34ffcee770ed5e66acd6cfc1287b497a7333fa",
+          "bundle": "com.datadoghq.controller-threads.control",
+          "build_command": [
+            "xcodebuild",
+            "build",
+            "-quiet",
+            "-project",
+            "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/controller-threads-0o4wo7u3/control/ControllerThreads.xcodeproj",
+            "-scheme",
+            "ControllerThreads",
+            "-configuration",
+            "Debug",
+            "-destination",
+            "generic/platform=iOS Simulator",
+            "-derivedDataPath",
+            "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/controller-threads-0o4wo7u3/control/derived",
+            "CODE_SIGNING_ALLOWED=NO"
+          ],
+          "build_log": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/controller-threads-0o4wo7u3/control/build.log",
+          "sdk_identity": {
+            "file_count": 369,
+            "sha256": "9100bf9183ae1dd6ae0d1b85448b57ed5a3ad16db4235a2484e02b0eb68aeadf"
+          },
+          "monitor_sha256": "ad068a4651ae89e0426343a6befb8364468c7427bef721f8027d2059fe7d1917",
+          "compiler_errors": [
+            "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/controller-threads-0o4wo7u3/control/Sources/App.swift:73:20: error: 'nil' is not compatible with closure result type 'RUMViewEvent'"
+          ]
+        },
+        "candidate": {
+          "revision": "a9abc092bfb3e03c222038f4d36babf4fd2c1f8d",
+          "fixture_sha256": "b63ecadcb16b98548e3d7032433d998df466d2c817e1240afe4df2882b2a0149",
+          "package_sha256": "087c70faa52a276a5143b72e7a34ffcee770ed5e66acd6cfc1287b497a7333fa",
+          "bundle": "com.datadoghq.controller-threads.candidate",
+          "build_command": [
+            "xcodebuild",
+            "build",
+            "-quiet",
+            "-project",
+            "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/controller-threads-0o4wo7u3/candidate/ControllerThreads.xcodeproj",
+            "-scheme",
+            "ControllerThreads",
+            "-configuration",
+            "Debug",
+            "-destination",
+            "generic/platform=iOS Simulator",
+            "-derivedDataPath",
+            "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/controller-threads-0o4wo7u3/candidate/derived",
+            "CODE_SIGNING_ALLOWED=NO"
+          ],
+          "build_log": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/controller-threads-0o4wo7u3/candidate/build.log",
+          "sdk_identity": {
+            "file_count": 369,
+            "sha256": "c0180506a6b361f159e26189f283003a8577975492f8ff3fb4184e3fc7b67f27"
+          },
+          "monitor_sha256": "b3353a87ce28a1ba1c495805ea7b473065ca5eff407ced8ef5aab7d331b14b8f",
+          "compiler_errors": [
+            "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/controller-threads-0o4wo7u3/candidate/Sources/App.swift:73:20: error: 'nil' is not compatible with closure result type 'RUMViewEvent'"
+          ]
+        }
+      }
+    },
+    {
+      "artifact_root": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/controller-threads-3_dtjjwb",
+      "experiment": "EXP-164",
+      "status": "PASS",
+      "checker_sha256": "6872925bc4d2c5abd77d8f749e1804c7271b069773f6977798c94f9581243183",
+      "runner_sha256": "f7bc0dcca33b0de1b6dd6fb71413913fc65826f9a1eff4aa5c25350c85613e69",
+      "helper_sha256": "d14fa5cd77aed6147386e0815a3f711f8d2c45d0018cf5512da79e9db4943398",
+      "xcode": "Xcode 27.0\nBuild version 27A266a",
+      "device": {
+        "name": "iPhone 17 Pro",
+        "udid": "BE03D65C-84F6-4FE0-95DA-A8F8D81A5D21",
+        "os": "27.0"
+      },
+      "manifest_sha256": "2496cd61c30977c3e110120d4cb2a77d18a0e724474f49aac603c0468b081e39",
+      "arms": {
+        "control": {
+          "revision": "6b7a53dd7941ca75b6c455b61d09673c24d7d613",
+          "fixture_sha256": "2d1064d7fe2ab139b6bbb03e497a580d88edc864c1a63de340b9ad3bada63e88",
+          "package_sha256": "087c70faa52a276a5143b72e7a34ffcee770ed5e66acd6cfc1287b497a7333fa",
+          "bundle": "com.datadoghq.controller-threads.control",
+          "build_command": [
+            "xcodebuild",
+            "build",
+            "-quiet",
+            "-project",
+            "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/controller-threads-3_dtjjwb/control/ControllerThreads.xcodeproj",
+            "-scheme",
+            "ControllerThreads",
+            "-configuration",
+            "Debug",
+            "-destination",
+            "generic/platform=iOS Simulator",
+            "-derivedDataPath",
+            "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/controller-threads-3_dtjjwb/control/derived",
+            "CODE_SIGNING_ALLOWED=NO"
+          ],
+          "build_log": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/controller-threads-3_dtjjwb/control/build.log",
+          "app": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/controller-threads-3_dtjjwb/control/derived/Build/Products/Debug-iphonesimulator/ControllerThreads.app",
+          "binary_sha256": "461e13806438caa2fb0075fd1e755b6729bac89203304132cf4a404d6891cc68",
+          "build_log_sha256": "e8e2a7149aab33d62c6403d9a4ceba281ec7873b6cdbc2914addfa89b772b9d3",
+          "run": {
+            "status": "FAIL",
+            "run_id": "controller-threads-dbb23169b18d4736ac958c637f00b6ce",
+            "launch_command": [
+              "xcrun",
+              "simctl",
+              "launch",
+              "--console",
+              "BE03D65C-84F6-4FE0-95DA-A8F8D81A5D21",
+              "com.datadoghq.controller-threads.control",
+              "--run-id",
+              "controller-threads-dbb23169b18d4736ac958c637f00b6ce"
+            ],
+            "clean_install": true,
+            "installed_binary_matches": true,
+            "required_checks_complete": true,
+            "result": {
+              "checks": {
+                "background_preserves_handoff": false,
+                "background_start_preserves_native_peer": false,
+                "background_start_worker": true,
+                "background_stop_preserves_native_peer": false,
+                "background_stop_removes_owned_branch": false,
+                "background_stop_worker": true,
+                "background_uses_representative": false,
+                "controller_mounted_in_native_scene": true,
+                "identity_stop_preserves_representative_peer": true,
+                "identity_stop_removes_nonrepresentative_owner": true,
+                "identity_stop_worker": true,
+                "inferred_start_preserves_native_peer": false,
+                "inferred_start_worker": true,
+                "inferred_stop_removes_owned_branch": false,
+                "inferred_stop_worker": true,
+                "main_does_not_create_inferred_peer": true,
+                "main_native_scene_overrides_handoff": true,
+                "main_thread_checker_loaded": true,
+                "no_background_hierarchy_reads": false
+              },
+              "details": {
+                "background_hierarchy_reads": 5,
+                "native_scene_count": 1,
+                "native_scene_id": "A0E4A048-F1EE-49A0-A40C-D15CD8240028",
+                "peer_kind": "injected logical branch; not a second native window",
+                "views": [
+                  {
+                    "active": true,
+                    "id": "9c861533-8382-46bc-9ce6-42ad21ade0dc",
+                    "name": "ApplicationLaunch"
+                  },
+                  {
+                    "active": false,
+                    "id": "9c861533-8382-46bc-9ce6-42ad21ade0dc",
+                    "name": "ApplicationLaunch"
+                  },
+                  {
+                    "active": true,
+                    "id": "edd8a020-1f1c-4413-8082-326401e49f97",
+                    "name": "Main A"
+                  },
+                  {
+                    "active": true,
+                    "id": "67be0aef-83ad-4938-9f0b-a78cc6a98905",
+                    "name": "Peer B1"
+                  },
+                  {
+                    "active": false,
+                    "id": "edd8a020-1f1c-4413-8082-326401e49f97",
+                    "name": "Main A"
+                  },
+                  {
+                    "active": true,
+                    "id": "f646b5f1-9719-4835-be9e-a7dbde597344",
+                    "name": "Background representative"
+                  },
+                  {
+                    "active": false,
+                    "id": "f646b5f1-9719-4835-be9e-a7dbde597344",
+                    "name": "Background representative"
+                  },
+                  {
+                    "active": false,
+                    "id": "67be0aef-83ad-4938-9f0b-a78cc6a98905",
+                    "name": "Peer B1"
+                  },
+                  {
+                    "active": true,
+                    "id": "09aa21d3-fdce-4389-81ba-c0963e117799",
+                    "name": "Peer B2"
+                  },
+                  {
+                    "active": true,
+                    "id": "1e286f1e-7a22-4432-825b-fd05f4c5cab7",
+                    "name": "Background inferred"
+                  },
+                  {
+                    "active": false,
+                    "id": "1e286f1e-7a22-4432-825b-fd05f4c5cab7",
+                    "name": "Background inferred"
+                  },
+                  {
+                    "active": true,
+                    "id": "fd28ffd1-7842-4559-94be-bd4afcef923d",
+                    "name": "Main A2"
+                  },
+                  {
+                    "active": false,
+                    "id": "09aa21d3-fdce-4389-81ba-c0963e117799",
+                    "name": "Peer B2"
+                  },
+                  {
+                    "active": true,
+                    "id": "2b13c774-4181-4bf9-8dc6-b46cb97589cb",
+                    "name": "Peer B3"
+                  },
+                  {
+                    "active": false,
+                    "id": "fd28ffd1-7842-4559-94be-bd4afcef923d",
+                    "name": "Main A2"
+                  }
+                ]
+              },
+              "run_id": "controller-threads-dbb23169b18d4736ac958c637f00b6ce"
+            },
+            "main_thread_checker_diagnostics": [
+              "Main Thread Checker: UI API called on a background thread: -[UIViewController viewIfLoaded]",
+              "Main Thread Checker: UI API called on a background thread: -[UIView window]",
+              "Main Thread Checker: UI API called on a background thread: -[UIWindow windowScene]",
+              "Main Thread Checker: UI API called on a background thread: -[UIScene session]"
+            ],
+            "console_sha256": "bdda975b06d90c7c0df794a3810e7ea89e3391cdddee51cf6b76f7a7a98c0add"
+          },
+          "sdk_unchanged": true,
+          "fixture_unchanged": true,
+          "binary_unchanged": true,
+          "sdk_identity": {
+            "file_count": 369,
+            "sha256": "9100bf9183ae1dd6ae0d1b85448b57ed5a3ad16db4235a2484e02b0eb68aeadf"
+          },
+          "monitor_sha256": "ad068a4651ae89e0426343a6befb8364468c7427bef721f8027d2059fe7d1917"
+        },
+        "candidate": {
+          "revision": "a9abc092bfb3e03c222038f4d36babf4fd2c1f8d",
+          "fixture_sha256": "2d1064d7fe2ab139b6bbb03e497a580d88edc864c1a63de340b9ad3bada63e88",
+          "package_sha256": "087c70faa52a276a5143b72e7a34ffcee770ed5e66acd6cfc1287b497a7333fa",
+          "bundle": "com.datadoghq.controller-threads.candidate",
+          "build_command": [
+            "xcodebuild",
+            "build",
+            "-quiet",
+            "-project",
+            "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/controller-threads-3_dtjjwb/candidate/ControllerThreads.xcodeproj",
+            "-scheme",
+            "ControllerThreads",
+            "-configuration",
+            "Debug",
+            "-destination",
+            "generic/platform=iOS Simulator",
+            "-derivedDataPath",
+            "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/controller-threads-3_dtjjwb/candidate/derived",
+            "CODE_SIGNING_ALLOWED=NO"
+          ],
+          "build_log": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/controller-threads-3_dtjjwb/candidate/build.log",
+          "app": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/controller-threads-3_dtjjwb/candidate/derived/Build/Products/Debug-iphonesimulator/ControllerThreads.app",
+          "binary_sha256": "9a2f97c225ae21ace281a75cd1945848ff130d8aeabe49ecd9ae3b183d6f61cf",
+          "build_log_sha256": "89f286cc70b37b08cd28d0189c4fd76b0a447dc34ca1b67e032f8a8b44fa3144",
+          "run": {
+            "status": "PASS",
+            "run_id": "controller-threads-c4fdcea9538949f5ac8a97b1059a4dcd",
+            "launch_command": [
+              "xcrun",
+              "simctl",
+              "launch",
+              "--console",
+              "BE03D65C-84F6-4FE0-95DA-A8F8D81A5D21",
+              "com.datadoghq.controller-threads.candidate",
+              "--run-id",
+              "controller-threads-c4fdcea9538949f5ac8a97b1059a4dcd"
+            ],
+            "clean_install": true,
+            "installed_binary_matches": true,
+            "required_checks_complete": true,
+            "result": {
+              "checks": {
+                "background_preserves_handoff": true,
+                "background_start_preserves_native_peer": true,
+                "background_start_worker": true,
+                "background_stop_preserves_native_peer": true,
+                "background_stop_removes_owned_branch": true,
+                "background_stop_worker": true,
+                "background_uses_representative": true,
+                "controller_mounted_in_native_scene": true,
+                "identity_stop_preserves_representative_peer": true,
+                "identity_stop_removes_nonrepresentative_owner": true,
+                "identity_stop_worker": true,
+                "inferred_start_preserves_native_peer": true,
+                "inferred_start_worker": true,
+                "inferred_stop_removes_owned_branch": true,
+                "inferred_stop_worker": true,
+                "main_does_not_create_inferred_peer": true,
+                "main_native_scene_overrides_handoff": true,
+                "main_thread_checker_loaded": true,
+                "no_background_hierarchy_reads": true
+              },
+              "details": {
+                "background_hierarchy_reads": 0,
+                "native_scene_count": 1,
+                "native_scene_id": "D5EC29AE-F7A2-4472-9F84-F5589FDD9B38",
+                "peer_kind": "injected logical branch; not a second native window",
+                "views": [
+                  {
+                    "active": true,
+                    "id": "04e21b75-9bb7-4a70-8f19-5b4e681d44a2",
+                    "name": "ApplicationLaunch"
+                  },
+                  {
+                    "active": false,
+                    "id": "04e21b75-9bb7-4a70-8f19-5b4e681d44a2",
+                    "name": "ApplicationLaunch"
+                  },
+                  {
+                    "active": true,
+                    "id": "73600523-1224-4d7c-b672-d562c46894ae",
+                    "name": "Main A"
+                  },
+                  {
+                    "active": true,
+                    "id": "5bcb623c-b3b3-4158-ab25-3b680a2614cc",
+                    "name": "Peer B1"
+                  },
+                  {
+                    "active": false,
+                    "id": "5bcb623c-b3b3-4158-ab25-3b680a2614cc",
+                    "name": "Peer B1"
+                  },
+                  {
+                    "active": true,
+                    "id": "f4d8a65e-b065-4a96-88a0-d236b7213650",
+                    "name": "Background representative"
+                  },
+                  {
+                    "active": false,
+                    "id": "f4d8a65e-b065-4a96-88a0-d236b7213650",
+                    "name": "Background representative"
+                  },
+                  {
+                    "active": true,
+                    "id": "d673302f-8934-4dfa-93c4-9ca818e1c66f",
+                    "name": "Peer B2"
+                  },
+                  {
+                    "active": false,
+                    "id": "d673302f-8934-4dfa-93c4-9ca818e1c66f",
+                    "name": "Peer B2"
+                  },
+                  {
+                    "active": true,
+                    "id": "33b89c8b-3924-4da0-923e-bc24a79b7173",
+                    "name": "Background inferred"
+                  },
+                  {
+                    "active": false,
+                    "id": "33b89c8b-3924-4da0-923e-bc24a79b7173",
+                    "name": "Background inferred"
+                  },
+                  {
+                    "active": false,
+                    "id": "73600523-1224-4d7c-b672-d562c46894ae",
+                    "name": "Main A"
+                  },
+                  {
+                    "active": true,
+                    "id": "6dad2644-1c71-4867-8959-759d054d8671",
+                    "name": "Main A2"
+                  },
+                  {
+                    "active": true,
+                    "id": "2ad3b37d-41de-47c0-b415-227d6c1282f3",
+                    "name": "Peer B3"
+                  },
+                  {
+                    "active": false,
+                    "id": "6dad2644-1c71-4867-8959-759d054d8671",
+                    "name": "Main A2"
+                  }
+                ]
+              },
+              "run_id": "controller-threads-c4fdcea9538949f5ac8a97b1059a4dcd"
+            },
+            "main_thread_checker_diagnostics": [],
+            "console_sha256": "9b47930488e6a2ebfc9a74336664325f14ed208dad205533cf311c1c7d24272b"
+          },
+          "sdk_unchanged": true,
+          "fixture_unchanged": true,
+          "binary_unchanged": true,
+          "sdk_identity": {
+            "file_count": 369,
+            "sha256": "c0180506a6b361f159e26189f283003a8577975492f8ff3fb4184e3fc7b67f27"
+          },
+          "monitor_sha256": "b3353a87ce28a1ba1c495805ea7b473065ca5eff407ced8ef5aab7d331b14b8f"
+        }
+      }
+    }
+  ],
+  "limits": [
+    "One actual native scene and one injected logical peer; no physical multi-window acceptance.",
+    "iOS 15 deployment build is not iOS 15 runtime proof.",
+    "No Datadog ingestion, performance or D04/D11 ownership acceptance."
+  ],
+  "candidate_files": {
+    "DatadogRUM/Sources/RUMMonitor/Monitor.swift": "b3353a87ce28a1ba1c495805ea7b473065ca5eff407ced8ef5aab7d331b14b8f",
+    "DatadogRUM/Tests/RUMMonitor/MonitorTests.swift": "19b3b4bbd4b43fb08251e2fa53ecf7e68472607a2558ea7e329eba1c67e26840"
+  },
+  "lint": "Strict source/test/fixture lint: zero violations",
+  "protected_paths_unchanged": true
+}

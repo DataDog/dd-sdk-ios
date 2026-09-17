@@ -10,7 +10,7 @@ Last updated: 2026-09-17
 
 ## Current verdict
 
-Current release accounting is **15/66 gates closed**. EXP-160 establishes early
+Current release accounting is **16/66 gates closed**. EXP-160 establishes early
 ordinary automatic/manual/custom/NOP and26.5 compatibility, dispatch and exact
 reentrancy baselines. Enabled handoff fails allocation budget (3 allocations/
 416 requested bytes per event versus1/64) and retained scene registries fail
@@ -28,10 +28,13 @@ not close these missing cases. [PLAN.md](PLAN.md) and its machine register own
 all remaining deliverables and dependencies; completed narratives are separate.
 EXP-162 closes D01/D02: complete watchOS RUM and macOS WebView targets pass
 Debug/Release builds after failing controls, and 70 Resource/action plus 28
-WebView iOS tests pass. Signed platform fixes end at `af8864528`. EXP-163 closes D12 and restores T02: overdue stops retain their own attributes,
+WebView iOS tests pass. Signed platform fixes end at `af8864528`. EXP-163 closes
+D12 and restores T02: overdue stops retain their own attributes,
 while peers expire without foreign metadata; 212 affected tests pass at signed
-`084dff4c1`. Nine assessed review repairs remain open. EXP-164 is defined for D09 controller
-caller-thread compatibility; D11 follows.
+`084dff4c1`. EXP-164 closes D09 at local `a9abc092b`: 31 affected tests and a
+19/19 mounted-controller fixture pass with Main Thread Checker loaded, zero
+background hierarchy reads and zero diagnostics. Eight assessed review repairs
+remain open. D11 legacy native/WebView correlation is next.
 
 The released SDK baseline is not semantically safe for applications with
 concurrent scenes. Process-representative view state and process-global SwiftUI
