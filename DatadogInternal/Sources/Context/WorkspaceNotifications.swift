@@ -4,7 +4,7 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
-#if canImport(AppKit)
+#if os(macOS)
 import AppKit
 
 public enum WorkspaceNotifications {

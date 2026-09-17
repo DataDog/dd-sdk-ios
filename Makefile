@@ -315,8 +315,10 @@ spm-build-watchos:
 	# Build only compatible schemes for watchOS:
 	@$(MAKE) spm-build SCHEME="Datadog-Package" DESTINATION="generic/platform=watchOS"
 
-# Builds SPM package for macOS
+# Builds SPM package for macOS (and Mac Catalyst)
 spm-build-macos:
+	# Whole package for Mac Catalyst:
+	@$(MAKE) spm-build SCHEME="Datadog-Package" DESTINATION="platform=macOS,variant=Mac Catalyst"
 	# Only macOS-compatible product schemes (DatadogInternal is built transitively as a
 	# dependency of these; it is not a package product, so it has no scheme of its own):
 	@$(MAKE) spm-build DESTINATION="platform=macOS" SCHEME="DatadogCore"
