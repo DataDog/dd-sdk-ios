@@ -1,12 +1,11 @@
 # Multi-scene acceptance workflow
 
-This runner closes only A01 for the admitted EXP-159 long-running-action scenario.
-It does not certify other telemetry families, simultaneous visibility, real scene
-teardown, interactive gestures or hardware-only scenarios. Its reuse of the
-accepted scenario validates the acceptance workflow under EXP-161.
+This runner admits two finite contracts: EXP-161/A01 long-running actions and
+EXP-176/T03 captured Resource starts. It does not certify simultaneous visibility,
+real scene teardown, interactive gestures or hardware-only scenarios.
 
 The Python runner records commit signature status and performs environment and
-authentication preflight, a fresh probe build with all 166 tests, frozen source
+authentication preflight, a fresh probe build with all current tests (at least167 for Resources), frozen source
 and binary identity, proven uninstall, clean install, scenario launch,
 native-scene/mapper ownership checks, complete
 backend inventory, app termination and a sanitized durable result. Unsupported
@@ -30,8 +29,9 @@ From the tool orchestrator, read this trusted checkout's `connector_driver.js`
 with `exec_command`, then await:
 
 ```javascript
-await new Function("tools", "notify", "device", "repo", source)(
-  tools, notify, freshlyResolvedSimulatorUUID, absoluteRepositoryPath
+await new Function("tools", "notify", "device", "repo", "scenario", source)(
+  tools, notify, freshlyResolvedSimulatorUUID, absoluteRepositoryPath,
+  "resources.explicit-start.captured-owner-cross-scene-serial"
 );
 ```
 
@@ -88,7 +88,7 @@ early completion, inactive prerequisites, late assertions, restored backend run
 IDs, pagination/completeness, wrong stop order, yielded helper-command completion,
 unsigned local commits and invalid existing signatures. The EXP-142 late-boundary
 lesson is retained as a negative discriminator; that historical scenario is not claimed
-as a fresh runtime acceptance by this one-scenario runner.
+as a fresh runtime acceptance by this runner.
 
 After recording experiment dispositions, refresh gate progress with:
 
@@ -98,3 +98,27 @@ python3 -B tools/multi-scene/release_checklist.py --update
 
 Without `--update`, the command checks required gate fields, dependencies/cycles,
 telemetry completion modes, closed-gate evidence and PLAN/register agreement.
+
+## Resource contract (EXP-176/T03)
+
+`resource-scenario-contract.json` pins six actual Swift/Objective-C target starts,
+one legacy fallback, two paused URLSession tasks and a new-session peer action.
+`resource_contract.py` requires22 app expectations plus independent strict checks:
+native Home mapper owners before starts, all starts before navigation/renewal,
+zero completion before release, five Resources and four expected network errors
+on the original owners, exact request/status/method/size/duration fields, and zero
+old Resource/error counts on the fresh peer action. Session-only queries inventory
+all seven views and all Resource/error events across both sessions; no run filter
+can conceal restored metadata or extra events. The separate crash count stays zero.
+
+The custom URLProtocol holds actual instrumented tasks, then delivers a successful
+response or response headers/body followed by failure. It makes no external network
+request. Success is observed before the error is released, preserving the declared
+serial completion timeline. The SDK's independent unit checks cover missing targets,
+completed-key reuse and compatibility fallback; native acceptance executes all six
+experimental entry points in real UIWindowScenes.
+
+The operational suite now includes50 Python tests (23 Resource tests, with further
+backend mutation subcases) and three connector tests. A passing SDK/probe unit build
+alone does not close T03. Commit the fixture/runner before acceptance and retain all
+failed native/backend attempts alongside the final durable result.

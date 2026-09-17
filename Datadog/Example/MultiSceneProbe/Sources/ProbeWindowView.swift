@@ -2906,6 +2906,12 @@ struct ProbeWindowRoot: View {
                         + "screen=\(currentSceneScreen) phase=\(marker) "
                         + "uptime=\(uptime)"
                 )
+            case .runResourceOwnershipBatch:
+                #if DEBUG
+                return ProbeResourceAcceptance.start()
+                #else
+                return .rejected(reason: "Resource acceptance requires the Debug fixture")
+                #endif
             case .startExplicitTargetAction, .stopExplicitTargetAction,
                  .startLegacyAction, .stopLegacyAction:
                 guard let marker = step.value else {

@@ -138,6 +138,8 @@ internal struct ProbeActionSignal: Codable, Equatable {
     let type: String?
     let target: String?
     let loadingTimeNanoseconds: Int64?
+    var resourceCount: Int64? = nil
+    var errorCount: Int64? = nil
 }
 
 internal struct ProbeResourceSignal: Codable, Equatable {
@@ -145,6 +147,8 @@ internal struct ProbeResourceSignal: Codable, Equatable {
     let type: String?
     let statusCode: Int64?
     let durationNanoseconds: Int64?
+    var size: Int64? = nil
+    var encodedBodySize: Int64? = nil
     let method: String?
     let url: String?
     let traceID: String?
@@ -160,6 +164,8 @@ internal struct ProbeErrorSignal: Codable, Equatable {
     let category: String?
     let handling: String?
     let isCrash: Bool?
+    var resourceURL: String? = nil
+    var resourceStatusCode: Int64? = nil
     let traceID: String?
     let spanID: String?
     let parentSpanID: String?

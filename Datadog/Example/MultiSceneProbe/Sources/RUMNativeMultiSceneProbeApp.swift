@@ -261,6 +261,11 @@ enum ProbeRuntime {
                 swiftUIActionsPredicate: DefaultSwiftUIRUMActionsPredicate(
                     isLegacyDetectionEnabled: false
                 ),
+                urlSessionTracking: scenario?.identifier == ProbeResourceContract.scenarioID
+                    ? .init(resourceAttributesProvider: { request, _, _, _ in
+                        ProbeResourceAcceptance.attributes(for: request)
+                    })
+                    : nil,
                 trackBackgroundEvents: true,
                 viewEventMapper: { event in
                     record(viewEvent: event)

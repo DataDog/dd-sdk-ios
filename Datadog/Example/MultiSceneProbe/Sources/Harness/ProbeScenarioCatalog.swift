@@ -16,6 +16,7 @@ enum ProbeScenarioCatalog {
         "operations.explicit-target.cross-scene-serial",
         "actions.explicit-target.cross-scene-serial",
         "actions.explicit-target.long-running-cross-scene-serial",
+        ProbeResourceContract.scenarioID,
         "swiftui.stack.abort",
         "swiftui.stack.same-type-replacement",
         "swiftui.stack.different-type-replacement",
@@ -73,6 +74,7 @@ enum ProbeScenarioCatalog {
         operationsExplicitTargetCrossSceneSerial,
         actionsExplicitTargetCrossSceneSerial,
         actionsExplicitTargetLongRunningCrossSceneSerial,
+        resourcesExplicitStartCapturedOwner,
         swiftUIStackAbort,
         swiftUIStackSameTypeReplacement,
         swiftUIStackDifferentTypeReplacement,
@@ -760,6 +762,42 @@ enum ProbeScenarioCatalog {
             ProbeStep(.startLegacyAction, scene: "scene-A", value: "long-running-legacy-start"),
             ProbeStep(.stopLegacyAction, scene: "scene-A", value: "long-running-legacy-finished-b"),
     ]
+
+    private static let resourcesExplicitStartCapturedOwner = ProbeScenario(
+        identifier: ProbeResourceContract.scenarioID,
+        trackingMode: .manual,
+        layout: .stack,
+        initialWindows: ["scene-A", "scene-B"],
+        requiredCapabilities: [.multipleScenes],
+        steps: [
+            ProbeStep(.waitForSceneReady, scene: "scene-A"),
+            ProbeStep(.waitForSignal, scene: "scene-A", signal: "rum-view:home#1"),
+            ProbeStep(.openWindow, scene: "scene-A", value: "scene-B"),
+            ProbeStep(.waitForSignal, scene: "scene-B", signal: "rum-view:home#1"),
+            ProbeStep(.runResourceOwnershipBatch),
+        ],
+        completionConditions: resourceCompletionExpectations,
+        expectedSemanticTimeline: [
+            ProbeExpectation(.viewStarted, scene: "scene-A", screen: "home", occurrence: 1, rumViewOrigin: .semantic),
+            ProbeExpectation(.viewStarted, scene: "scene-B", screen: "home", occurrence: 1, rumViewOrigin: .semantic),
+        ] + resourceCompletionExpectations
+    )
+
+    private static let resourceCompletionExpectations: [ProbeExpectation] = {
+        let phases = ProbeResourceContract.manualSuccess + [ProbeResourceContract.legacy]
+            + ProbeResourceContract.manualFailure + ProbeResourceContract.automatic
+        return phases.map { phase in
+            let isError = ProbeResourceContract.manualFailure.contains(phase) || phase == ProbeResourceContract.automatic[1]
+            return ProbeExpectation(isError ? .error : .resource,
+                                    scene: phase == ProbeResourceContract.legacy ? "scene-B" : "scene-A",
+                                    screen: "home", occurrence: 1, name: phase, sourceScene: "scene-A",
+                                    rumViewOrigin: .semantic, expectedCount: 1)
+        } + [
+            ProbeExpectation(.action, scene: "scene-B", screen: "resource-new", occurrence: 1,
+                             name: ProbeResourceContract.peerAction, sourceScene: "scene-B", rumViewOrigin: .semantic,
+                             actionType: "tap", actionTarget: ProbeResourceContract.peerAction, expectedCount: 1),
+        ]
+    }()
 
     private static func continuousActionExpectation(
         name: String,

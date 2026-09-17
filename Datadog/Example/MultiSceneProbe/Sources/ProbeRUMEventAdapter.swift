@@ -61,7 +61,9 @@ internal enum ProbeRUMEventAdapter {
                 id: event.action.id,
                 type: event.action.type.rawValue,
                 target: event.action.target?.name,
-                loadingTimeNanoseconds: event.action.loadingTime
+                loadingTimeNanoseconds: event.action.loadingTime,
+                resourceCount: event.action.resource?.count,
+                errorCount: event.action.error?.count
             )
         )
     }
@@ -96,6 +98,8 @@ internal enum ProbeRUMEventAdapter {
                 type: event.resource.type.rawValue,
                 statusCode: event.resource.statusCode,
                 durationNanoseconds: event.resource.duration,
+                size: event.resource.size,
+                encodedBodySize: event.resource.encodedBodySize,
                 method: event.resource.method?.rawValue,
                 url: event.resource.url,
                 traceID: event.dd.traceId,
@@ -137,6 +141,8 @@ internal enum ProbeRUMEventAdapter {
                 category: event.error.category?.rawValue,
                 handling: event.error.handling?.rawValue,
                 isCrash: event.error.isCrash,
+                resourceURL: event.error.resource?.url,
+                resourceStatusCode: event.error.resource?.statusCode,
                 traceID: event.dd.traceId,
                 spanID: event.dd.spanId,
                 parentSpanID: event.dd.parentSpanId

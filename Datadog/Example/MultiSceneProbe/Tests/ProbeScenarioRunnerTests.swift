@@ -35,6 +35,24 @@ final class ProbeScenarioRunnerTests: XCTestCase {
         XCTAssertTrue(normalizedWindow.opensPeer)
     }
 
+    func testResourceAcceptanceContractIncludesAllFormsAndCriticalReleaseBatch() throws {
+        let scenario = try XCTUnwrap(ProbeScenarioCatalog.scenario(identifier: ProbeResourceContract.scenarioID))
+        XCTAssertEqual(scenario.initialWindows, ["scene-A", "scene-B"])
+        XCTAssertEqual(scenario.requiredCapabilities, [.multipleScenes])
+        XCTAssertEqual(scenario.steps.last?.kind, .runResourceOwnershipBatch)
+        XCTAssertTrue(ProbeScenarioCatalog.usesObservableDriver(scenario))
+        let resources = scenario.completionConditions.filter { $0.kind == .resource }
+        let errors = scenario.completionConditions.filter { $0.kind == .error }
+        let actions = scenario.completionConditions.filter { $0.kind == .action }
+        XCTAssertEqual(resources.count, 5)
+        XCTAssertEqual(errors.count, 4)
+        XCTAssertEqual(actions.count, 1)
+        XCTAssertEqual(resources.first { $0.name == ProbeResourceContract.legacy }?.scene, "scene-B")
+        XCTAssertTrue((resources + errors).allSatisfy { $0.occurrence == 1 && $0.expectedCount == 1 && $0.sourceScene == "scene-A" })
+        XCTAssertEqual(actions.first?.screen, "resource-new")
+        XCTAssertEqual(actions.first?.actionType, "tap")
+    }
+
     func testCatalogHasUniqueIdentifiersAndRequiredScenarios() {
         let identifiers = ProbeScenarioCatalog.all.map(\.identifier)
 
@@ -46,6 +64,7 @@ final class ProbeScenarioRunnerTests: XCTestCase {
                 "operations.cross-scene.lifecycle",
                 "actions.explicit-target.cross-scene-serial",
                 "actions.explicit-target.long-running-cross-scene-serial",
+                ProbeResourceContract.scenarioID,
                 "swiftui.stack.abort",
                 "swiftui.stack.same-type-replacement",
                 "swiftui.coexistence.semantic-a-automatic-b",

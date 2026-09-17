@@ -12,7 +12,7 @@ async function execToCompletion(tools, args) {
   return {...result, output};
 }
 
-async function runAcceptance({tools, notify, device, repo}) {
+async function runAcceptance({tools, notify, device, repo, scenario}) {
   if (!repo || !device) throw Error("Explicit repository path and freshly resolved simulator UUID required");
   const shellQuote = value => "'" + value.replaceAll("'", "'\\''") + "'";
   const start = async (cmd, max_output_tokens = 1500) => tools.exec_command({
@@ -25,11 +25,12 @@ async function runAcceptance({tools, notify, device, repo}) {
     justification: "Collect complete helper output for the authorized acceptance workflow.",
     yield_time_ms: 1000, max_output_tokens
   });
-  const setup = await run("python3 - <<'PY'\nimport tempfile,json\nfrom pathlib import Path\np=Path(tempfile.mkdtemp(prefix='exp161-acceptance-'))/'run'\nprint(json.dumps({'output':str(p)}))\nPY");
+  const setup = await run("python3 - <<'PY'\nimport tempfile,json\nfrom pathlib import Path\np=Path(tempfile.mkdtemp(prefix='multi-scene-acceptance-'))/'run'\nprint(json.dumps({'output':str(p)}))\nPY");
   if (setup.exit_code !== 0) throw Error(setup.output);
   const output = JSON.parse(setup.output).output;
   const execution = await start("python3 tools/multi-scene/acceptance/acceptance.py --device " +
     shellQuote(device) + " --output " + shellQuote(output) + " --repo " + shellQuote(repo) +
+    (scenario ? " --scenario " + shellQuote(scenario) : "") +
     " --durable-output " + shellQuote(repo + "/DatadogRUM/MultiSceneSupport/Results/acceptance"), 1000);
   notify({acceptance_output: output, execution_session: execution.session_id});
   if (!execution.session_id) return execution;
@@ -85,6 +86,21 @@ async function runAcceptance({tools, notify, device, repo}) {
       const base = {run_id:at(payload,"context.probe.run_id"),
                     session_id:at(payload,"session.id"), view_id:at(payload,"view.id")};
       if (request.kind === "views") return {...base, name:at(payload,"view.name")};
+      if (request.kind === "resources" || request.kind === "resource_errors") {
+        const error = request.kind === "resource_errors";
+        const path = error ? "error.resource" : "resource";
+        const completion = {...base, phase:at(payload,"context.probe.phase"), kind:error ? "error" : "resource",
+          event_id:at(payload,error ? "error.id" : "resource.id"),
+          source_scene:at(payload,"context.probe.source_scene"),
+          url:at(payload,path + ".url"), status:at(payload,path + ".status_code"),
+          action_ids:at(payload,"action.id")};
+        return error ? {...completion, error_source:at(payload,"error.source"), is_crash:at(payload,"error.is_crash")} :
+          {...completion, method:at(payload,"resource.method"), duration_ns:at(payload,"resource.duration"),
+           size:at(payload,"resource.size"), encoded_size:at(payload,"resource.encoded_body_size")};
+      }
+      if (request.kind === "peer_actions") return {...base, phase:at(payload,"context.probe.phase"),
+        action_id:at(payload,"action.id"), target:at(payload,"action.target.name"),
+        resource_count:at(payload,"action.resource.count"), error_count:at(payload,"action.error.count")};
       return {...base, phase:at(payload,"context.probe.phase"),
         action_id:at(payload,"action.id"), target:at(payload,"action.target.name"),
         source_scene:at(payload,"context.probe.source_scene"),
@@ -103,12 +119,11 @@ async function runAcceptance({tools, notify, device, repo}) {
       let count;
       do {
         count = await aggregate(request.query);
-        if (request.kind === "auth" || request.kind === "errors" ||
-            count >= (request.kind === "actions" ? 7 : 3)) break;
+        if (count >= request.expected_count) break;
         await pause(10000);
       } while (Date.now()<deadline);
       if (request.kind === "auth") data = {authenticated:true, count};
-      else if (request.kind === "errors") data = {count};
+      else if (request.kind === "errors" || request.kind === "crashes") data = {count};
       else data = await rows(request, count);
       // Digest is calculated by the same canonical encoder as the runner.
       const payload = JSON.stringify({provider:"datadog-mcp",ok:true,complete:true,
@@ -130,4 +145,4 @@ async function runAcceptance({tools, notify, device, repo}) {
     await pause(1000);
   }
 }
-return runAcceptance({tools, notify, device, repo});
+return runAcceptance({tools, notify, device, repo, scenario: typeof scenario === "undefined" ? undefined : scenario});

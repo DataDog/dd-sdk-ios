@@ -1385,3 +1385,12 @@ success event for that start, with the original owner/status. Preserve the faile
 representative-restoration controls and response-plus-error attempt. `devicectl`
 now lists simulated devices too; filter `hardwareProperties.reality == physical`
 before reporting hardware availability. Physical iPad/iPhone remain unavailable.
+
+The EXP-176 runner now accepts the named Resource scenario through an optional
+`scenario` argument to `connector_driver.js`; omission retains the action contract.
+Expected backend counts travel in nonce-bound requests. Resource/error queries
+cover both entire sessions; the peer action has its explicit phase query. Expected
+network errors must preserve status/URL/owner and remain separate from zero-crash
+checks. Full fixture contracts and runner sources are frozen before build/install.
+50 Python controls pass;167 probe tests passed after a `viewPath` fixture correction.
+The acceptance invocation performs the final fresh build after fixture completion.

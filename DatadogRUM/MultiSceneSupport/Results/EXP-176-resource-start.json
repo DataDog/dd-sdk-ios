@@ -750,5 +750,44 @@
       "CODE_SIGNING_ALLOWED=NO"
     ],
     "log_sha256": "a87f2bc8a8cd6b79735812f10bca03a336cefb307124c832a7f7923c831f0562"
+  },
+  "native_preparation_attempts": [
+    {
+      "state": "INVALID",
+      "kind": "native_fixture_build",
+      "issues": [
+        {
+          "buildTask": "Compile ProbeResourceAcceptance.swift",
+          "emittedIssues": [
+            {
+              "line": 85,
+              "message": "Value of type 'RUMCoreContext' has no member 'viewURL'",
+              "path": "/Users/valentin.pertuisot/work/dd-sdk-ios/Datadog/Example/MultiSceneProbe/Sources/ProbeResourceAcceptance.swift",
+              "severity": "error"
+            }
+          ]
+        }
+      ],
+      "fullLogPath": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/ActionArtifacts/default/GetBuildLog/FA4EFA50-D7A5-4945-990A-31C65A53C272.txt"
+    },
+    {
+      "state": "PASS",
+      "kind": "native_fixture_probe_tests",
+      "counts": {
+        "expectedFailures": 0,
+        "failed": 0,
+        "notRun": 0,
+        "passed": 167,
+        "skipped": 0,
+        "total": 167
+      },
+      "fullSummaryPath": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/ActionArtifacts/default/RunAllTests/4368BDEB-042D-4963-8635-53DC46F95E3B.txt",
+      "xcresultBundlePath": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/ActionArtifacts/default/RunAllTests/Test-RUMNativeMultiSceneProbe-2026.09.17_17-17-01-+0100.xcresult"
+    }
+  ],
+  "acceptance_oracle_controls": {
+    "python_tests": 50,
+    "node_tests": 3,
+    "state": "PASS"
   }
 }

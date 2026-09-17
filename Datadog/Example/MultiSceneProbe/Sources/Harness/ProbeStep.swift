@@ -27,6 +27,7 @@ enum ProbeStepKind: String, Codable, CaseIterable {
     case emitSceneContextMarker = "emit-scene-context-marker"
     case emitExplicitTargetAction = "emit-explicit-target-action"
     case runContinuousActionTargetBatch = "run-continuous-action-target-batch"
+    case runResourceOwnershipBatch = "run-resource-ownership-batch"
     case startExplicitTargetAction = "start-explicit-target-action"
     case stopExplicitTargetAction = "stop-explicit-target-action"
     case startLegacyAction = "start-legacy-action"
@@ -174,4 +175,14 @@ struct ProbeStep: Codable, Equatable {
         self.percentage = percentage
         self.signal = signal
     }
+}
+
+enum ProbeResourceContract {
+    static let scenarioID = "resources.explicit-start.captured-owner-cross-scene-serial"
+    static let manualSuccess = ["resource-swift-request", "resource-swift-url", "resource-swift-method"]
+    static let manualFailure = ["resource-objc-request", "resource-objc-url", "resource-objc-method"]
+    static let automatic = ["resource-auto-success", "resource-auto-error"]
+    static let legacy = "resource-legacy-source-a"
+    static let peerAction = "resource-peer-finished"
+    static let completed = "resource-batch-finished"
 }

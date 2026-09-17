@@ -14,6 +14,9 @@ import sys
 import time
 import uuid
 
+from acceptance_common import Rejected, require, canonical, digest, require_before, require_identity, unique
+import resource_contract
+
 SCENARIO = "actions.explicit-target.long-running-cross-scene-serial"
 BUNDLE = "com.datadoghq.rum-native-multi-scene-probe"
 PROBE = Path("Datadog/Example/MultiSceneProbe")
@@ -42,25 +45,6 @@ BATCH = [
     ("start-legacy-action", "long-running-legacy-start"),
     ("stop-legacy-action", "long-running-legacy-finished-b"),
 ]
-
-
-class Rejected(RuntimeError):
-    def __init__(self, message, state="INVALID"):
-        super().__init__(message)
-        self.state = state
-
-
-def require(value, message, state="INVALID"):
-    if not value:
-        raise Rejected(message, state)
-
-
-def canonical(value):
-    return json.dumps(value, sort_keys=True, separators=(",", ":")).encode()
-
-
-def digest(value):
-    return hashlib.sha256(canonical(value)).hexdigest()
 
 
 def file_hash(path):
@@ -133,19 +117,6 @@ def parse_records(raw):
                     "manifest", "signal", "semantic-result"}:
                 result.append(value)
     return result
-
-
-def require_before(signal, boundary, label):
-    require(signal["sequence"] < boundary["sequence"], label + " arrived after its critical boundary", "FAIL")
-
-
-def require_identity(actual, expected, label):
-    require(actual == expected, "stale or changed " + label)
-
-
-def unique(items, label):
-    require(len(items) == 1, f"{label}: expected exactly one, received {len(items)}", "FAIL")
-    return items[0]
 
 
 def validate_local(records, run_id):
@@ -307,9 +278,12 @@ class Runner:
         require(not self.out.exists(), "output directory already exists; use a fresh run")
         self.out.mkdir(parents=True)
         (self.out / "bridge").mkdir()
-        self.run_id = "exp161-" + dt.datetime.now(dt.timezone.utc).strftime("%Y%m%dT%H%M%SZ-") + uuid.uuid4().hex[:12]
+        self.is_resource = args.scenario == resource_contract.SCENARIO
+        self.contract_file = resource_contract.CONTRACT if self.is_resource else "scenario-contract.json"
+        self.run_id = ("exp176-" if self.is_resource else "exp161-") + dt.datetime.now(dt.timezone.utc).strftime("%Y%m%dT%H%M%SZ-") + uuid.uuid4().hex[:12]
         self.environment = dict(os.environ, DEVELOPER_DIR=args.developer_dir)
-        self.summary = {"schema_version": 1, "gate": "A01", "experiment": "EXP-161",
+        self.summary = {"schema_version": 1, "gate": "T03" if self.is_resource else "A01",
+                        "experiment": "EXP-176" if self.is_resource else "EXP-161",
                         "run_id": self.run_id, "scenario_id": args.scenario, "started_at": now(),
                         "state": "RUNNING", "stages": {}, "artifacts": {}, "failures": []}
         self.protected = protected_state(self.repo)
@@ -342,9 +316,9 @@ class Runner:
         self.flush()
         print(json.dumps({"stage": name, "state": details.get("state", "PASS"), "run_id": self.run_id}), flush=True)
 
-    def exchange(self, kind, query):
+    def exchange(self, kind, query, expected_count=0):
         request = {"schema_version": 1, "request_id": str(uuid.uuid4()), "kind": kind,
-                   "query": query, "from": self.summary["started_at"], "to": "now",
+                   "query": query, "expected_count": expected_count, "from": self.summary["started_at"], "to": "now",
                    "run_id": self.run_id, "created_at": now()}
         path = self.out / "bridge" / (request["request_id"] + ".request.json")
         save(path, request)
@@ -360,7 +334,7 @@ class Runner:
 
     def run(self):
         try:
-            require(self.args.scenario == SCENARIO, "unsupported scenario: no generic acceptance claim")
+            require(self.args.scenario in {SCENARIO, resource_contract.SCENARIO}, "unsupported scenario: no generic acceptance claim")
             require(self.args.device, "explicit simulator UUID is required")
             self.summary["revision"] = self.capture(["git", "rev-parse", "HEAD"]).strip()
             self.summary["dirty_state"] = self.capture(["git", "status", "--porcelain=v1"]).splitlines()
@@ -389,7 +363,7 @@ class Runner:
                           "-enableCodeCoverage", "NO", "CODE_SIGNING_ALLOWED=NO"], "build-tests", timeout=1200)
             tests = json.loads(self.capture(["xcrun", "xcresulttool", "get", "test-results", "summary", "--path", str(results)]))
             save(self.out / "test-summary.json", tests)
-            require(tests.get("failedTests") == 0 and tests.get("passedTests", 0) >= 166 and
+            require(tests.get("failedTests") == 0 and tests.get("passedTests", 0) >= (167 if self.is_resource else 166) and
                     tests.get("skippedTests", 0) == 0 and tests.get("totalTestCount") == tests["passedTests"],
                     "incomplete/stale test artifact", "INVALID")
             require_identity(source_identity(self.repo), frozen, "source during build")
@@ -418,7 +392,7 @@ class Runner:
             with console.open("w") as output:
                 self.launch_process = subprocess.Popen(
                     ["xcrun", "simctl", "launch", "--console-pty", self.args.device, BUNDLE,
-                     "--probe-scenario", SCENARIO, "--probe-run-id", self.run_id, "--probe-run-mode", "clean"],
+                     "--probe-scenario", self.args.scenario, "--probe-run-id", self.run_id, "--probe-run-mode", "clean"],
                     cwd=self.repo, env=self.environment, stdout=output, stderr=subprocess.STDOUT)
             deadline = time.monotonic() + self.args.scenario_timeout
             records = []
@@ -430,7 +404,7 @@ class Runner:
                     break
                 time.sleep(0.25)
             require(any(r["type"] == "semantic-result" for r in records), "scenario has no terminal verdict", "INCONCLUSIVE")
-            local = validate_local(records, self.run_id)
+            local = (resource_contract.validate_local if self.is_resource else validate_local)(records, self.run_id)
             (self.out / "probe.jsonl").write_text("".join(json.dumps(r, sort_keys=True) + "\n" for r in records))
             save(self.out / "local-evidence.json", local)
             require(source_identity(self.repo) == frozen, "source changed during scenario")
@@ -440,12 +414,23 @@ class Runner:
                          "terminal-screenshot")
             # The bridge must paginate and retry intake within its deadline. It returns
             # source fields, never a hand-entered semantic verdict.
-            sid = local["session_id"]
-            actions = self.exchange("actions", f"@session.id:{sid} @type:action @context.probe.run_id:{self.run_id} @context.probe.phase:long-running-*")
-            views = self.exchange("views", f"@session.id:{sid} @type:view")
-            errors = self.exchange("errors", f"@session.id:{sid} (@type:error OR @view.crash.count:>0)")
-            backend = validate_backend(local, self.run_id, actions, views, errors["count"])
-            save(self.out / "backend-evidence.json", {"actions": actions, "views": views, "errors": errors})
+            if self.is_resource:
+                sessions = "(" + " OR ".join("@session.id:" + sid for sid in local["session_ids"]) + ")"
+                resources = self.exchange("resources", sessions + " @type:resource", 5)
+                errors = self.exchange("resource_errors", sessions + " @type:error", 4)
+                views = self.exchange("views", sessions + " @type:view", 7)
+                actions = self.exchange("peer_actions", sessions + " @type:action @context.probe.phase:" + resource_contract.PEER, 1)
+                crashes = self.exchange("crashes", sessions + " (@error.is_crash:true OR @view.crash.count:>0)")
+                backend = resource_contract.validate_backend(local, self.run_id, resources, errors, views, actions, crashes["count"])
+                evidence = dict(resources=resources, errors=errors, views=views, actions=actions, crashes=crashes)
+            else:
+                sid = local["session_id"]
+                actions = self.exchange("actions", f"@session.id:{sid} @type:action @context.probe.run_id:{self.run_id} @context.probe.phase:long-running-*", 7)
+                views = self.exchange("views", f"@session.id:{sid} @type:view", 3)
+                errors = self.exchange("errors", f"@session.id:{sid} (@type:error OR @view.crash.count:>0)")
+                backend = validate_backend(local, self.run_id, actions, views, errors["count"])
+                evidence = dict(actions=actions, views=views, errors=errors)
+            save(self.out / "backend-evidence.json", evidence)
             require(source_identity(self.repo) == frozen, "source changed during backend verification")
             self.stage("backend", backend)
             self.summary["state"] = "PASS"
@@ -476,7 +461,7 @@ class Runner:
                 require(not destination.exists(), "durable run summary already exists")
                 record = dict(self.summary)
                 record["source_file_count"] = locals().get("frozen", {}).get("file_count")
-                record["oracle_contract_sha256"] = file_hash(Path(__file__).with_name("scenario-contract.json"))
+                record["oracle_contract_sha256"] = file_hash(Path(__file__).with_name(self.contract_file))
                 record["evidence"] = {}
                 for name in ["build-identity.json", "test-summary.json", "local-evidence.json", "backend-evidence.json"]:
                     artifact = self.out / name

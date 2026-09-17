@@ -4,7 +4,7 @@ const path = require('node:path');
 const test = require('node:test');
 const source = fs.readFileSync(path.join(__dirname, 'connector_driver.js'), 'utf8');
 const {execToCompletion} = new Function(source.replace(
-  'return runAcceptance({tools, notify, device, repo});', 'return {execToCompletion};'
+  'return runAcceptance({tools, notify, device, repo, scenario: typeof scenario === "undefined" ? undefined : scenario});', 'return {execToCompletion};'
 ))();
 
 test('collects every yielded helper chunk before checking exit code', async () => {
