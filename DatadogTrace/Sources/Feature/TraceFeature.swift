@@ -29,9 +29,11 @@ internal final class TraceFeature: DatadogRemoteFeature {
         )
 
         let sampleRate = configuration.debugSDK ? 100 : configuration.sampleRate
-        let samplingProvider = SamplerProvider(sampleRate: sampleRate)
+        // Resolved per read, and weakly: RUM may be enabled after Trace, and a feature must not
+        // retain its core.
+        let samplingProvider = SamplerProvider(sampleRate: sampleRate, sessionSampling: { [weak core] in core?.rumSessionSampling })
 
-        self.contextReceiver = ContextMessageReceiver(samplerProvider: samplingProvider)
+        self.contextReceiver = ContextMessageReceiver()
         self.tracer = DatadogTracer(
             core: core,
             samplingProvider: samplingProvider,

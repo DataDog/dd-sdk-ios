@@ -14,6 +14,7 @@
 - [FIX] Resolve the RUM session sampling decision synchronously in `RUM.enable()`, so WebViews instrumented immediately after initialization get a decision consistent with the session. See [#3183][]
 - [IMPROVEMENT] Populate RUM Resource `delivery_type` and `transfer_size` from network cache signals, replacing the mobile-only `local_cache_hit` field. See [#3187][]
 - [IMPROVEMENT] Add the `view.name` tag to spans enriched with a sampled-in RUM context, so APM spans can be searched and grouped by RUM view. A `view.name` already set on the span is preserved. See [#3208][]
+- [FIX] Read the RUM session synchronously when injecting tracing headers, instead of waiting for the RUM context to travel the message bus. Requests made right after `RUM.enable()` now carry a sampling decision and a session ID consistent with the session, rather than a random decision and no session ID.
 
 # 3.17.0 / 09-09-2026
 

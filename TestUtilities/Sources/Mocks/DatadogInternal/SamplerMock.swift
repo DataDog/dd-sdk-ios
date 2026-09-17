@@ -36,3 +36,58 @@ extension DeterministicSampler {
         return .init(seed: 0, samplingRate: 0)
     }
 }
+
+/// A `RUMSessionSamplerProvider` that returns a decision the test controls, without a RUM feature.
+///
+/// Set `identity` to simulate an active session, or leave it `nil` to simulate RUM being enabled with
+/// no session. The decision is derived the same way `RUMSessionSamplingStore` derives it, so a test
+/// that asserts on a composed rate exercises the real composition.
+public final class RUMSessionSamplerProviderMock: RUMSessionSamplerProvider {
+    public struct Identity {
+        public let sessionID: String
+        public let sampler: DeterministicSampler
+
+        public init(sessionID: String, sampler: DeterministicSampler) {
+            self.sessionID = sessionID
+            self.sampler = sampler
+        }
+    }
+
+    /// The session the mock reports, or `nil` for "no active session".
+    public var identity: Identity?
+
+    /// Records the `(policy, rate)` pairs the subject asked for, so a test can assert on the policy.
+    public private(set) var requests: [(policy: SamplingRatePolicy, rate: SampleRate)] = []
+
+    public init(identity: Identity? = nil) {
+        self.identity = identity
+    }
+
+    /// Convenience for a session that is always kept, at the given ID.
+    public static func keepAll(sessionID: String = "session-id") -> RUMSessionSamplerProviderMock {
+        .init(identity: .init(sessionID: sessionID, sampler: .mockKeepAll()))
+    }
+
+    /// Convenience for a session that is always dropped, at the given ID.
+    public static func rejectAll(sessionID: String = "session-id") -> RUMSessionSamplerProviderMock {
+        .init(identity: .init(sessionID: sessionID, sampler: .mockRejectAll()))
+    }
+
+    public func sessionSamplingSnapshot(for policy: SamplingRatePolicy, rate: SampleRate) -> SessionSamplingSnapshot? {
+        requests.append((policy: policy, rate: rate))
+
+        guard let identity else {
+            return nil
+        }
+
+        let sampler: DeterministicSampler
+        switch policy {
+        case .featureRate:
+            sampler = DeterministicSampler(seed: identity.sampler.seed, samplingRate: rate)
+        case .combinedWithSessionRate:
+            sampler = identity.sampler.combined(with: rate)
+        }
+
+        return SessionSamplingSnapshot(sessionID: identity.sessionID, isSampled: sampler.isSampled)
+    }
+}

@@ -306,53 +306,23 @@ public enum WebViewTracking {
     ///
     /// - Returns: The string ready to be injected in the bridge as explained above.
     static func isTraceSampledStringValue(for core: DatadogCoreProtocol) -> String {
-        guard let rum = core.feature(named: Feature.rum, type: RUMSessionSamplerProvider.self),
-              let sessionSampler = rum.rumSessionSampler else {
-            return "null"
-        }
-
-        return isTraceSampledStringValue(for: core, sessionSampler: sessionSampler)
-    }
-
-    /// Obtains the trace sampling decision for the given core, in `String` form ready to be used in the injected scripts.
-    ///
-    /// Use this function on callers that have the RUM session sampler available.
-    ///
-    /// This is the decision if requests should be traced. The decision is positive if:
-    /// * RUM is enabled, and the decision to sample the current session is positive; and
-    /// * `urlSessionTracking.firstPartyHostsTracing` is configured in `RUM.Configuration`; and
-    /// * The sampling decision for `firstPartyHostsTracing` is positive.
-    ///
-    /// Note the hosts configured in RUM's `urlSessionTracking.firstPartyHostsTracing` do not need to
-    /// match the ones being tracked by a WebView. The sampling decision is the same regardless.
-    ///
-    /// The returned values are the following strings:
-    /// * `true` if the sampling decision is positive as explained above.
-    /// * `false` if the sampling decision is negative. This happens if RUM is enabled but sampled out, _or_ if
-    /// `urlSessionTracking.firstPartyHostsTracing` is configured but sampled out.
-    /// * `null` if no sampling decision was made. This happens if RUM is not configured, _or_ if
-    /// `urlSessionTracking.firstPartyHostsTracing` is not configured.
-    ///
-    /// Note that `false` is not returned if either of the conditions for `null` happen. The goal of `null` is allowing
-    /// the Browser SDK to make its own sampling decision according to its own configuration, since the iOS side was
-    /// not configured to do so.
-    ///
-    /// - Parameters:
-    ///   - core: The core used for the instrumentation. Make sure this is consistent with the core used to instrument
-    ///   the view, since the sampling decision can be different in multiple cores.
-    ///   - sessionSampler: The RUM deterministic session sampler, or `nil` if there is no active session.
-    ///
-    /// - Returns: The string ready to be injected in the bridge as explained above.
-    static func isTraceSampledStringValue(for core: DatadogCoreProtocol, sessionSampler: DeterministicSampler?) -> String {
-        guard let sessionSampler,
-              let networkInstrumentation = core.feature(named: Feature.networkInstrumentation, type: DistributedTracingSampleRateProvider.self),
+        guard let networkInstrumentation = core.feature(named: Feature.networkInstrumentation, type: DistributedTracingSampleRateProvider.self),
               let distributedTracingSampleRate = networkInstrumentation.distributedTracingSampleRate else {
             return "null"
         }
 
-        let isSampled = sessionSampler.combined(with: distributedTracingSampleRate).isSampled
+        // `firstPartyHostsTracing`'s rate is a share of the sessions RUM already keeps, so the two
+        // rates multiply. Reading the session from its store rather than from the core context means
+        // a WebView instrumented immediately after `RUM.enable()` gets a real decision here instead
+        // of `null`.
+        guard let snapshot = core.rumSessionSampling?.sessionSamplingSnapshot(
+            for: .combinedWithSessionRate,
+            rate: distributedTracingSampleRate
+        ) else {
+            return "null"
+        }
 
-        return isSampled ? "true" : "false"
+        return snapshot.isSampled ? "true" : "false"
     }
 
     /// Conversion matrix from global privacy level to fine-grained privaly levels.
