@@ -71,7 +71,8 @@ keep their exact view/session at setter return and native onDismiss. All12 safet
 findings are repaired within their evidence boundaries. EXP-174 closes R05 at
 signed `368c62a72`: three failing controls and346 tests prove monotonic nested
 publication, live observer membership and exact two-host teardown. All six bounded
-component reviews now pass. T03 Resource ownership is next; physical scene, API
+component reviews now pass. Defined EXP-175 investigates T03's existing late-
+completion regression before explicit-start/backend acceptance; physical scene, API
 and final release gates remain separate.
 
 The released SDK baseline is not semantically safe for applications with

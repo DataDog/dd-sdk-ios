@@ -1347,3 +1347,12 @@ records source identity and exact selectors. Its source-review environment is
 intentional; a new simulator app or backend run would not improve this synchronous
 fan-out oracle. Do not rerun it merely to resume. T03 needs its own captured-start
 and exact completion/backend discriminator before implementation.
+
+## EXP-175 Resource completion discriminator
+
+Keep the new session's continuous action alive while the old Resource completes.
+An immediately completed custom action cannot expose leaked completion counters.
+Assert emitted action Resource/error counts plus exact old Resource/error view and
+session IDs, not only the Resource event's correct owner. Include scene-targeted
+completion after navigation, metrics, duplicate completion and clock expiration.
+This regression slice does not close T03's explicit-start/backend gate.

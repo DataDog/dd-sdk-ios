@@ -54,7 +54,8 @@ rematerialization before injected old callbacks; the accepted fix preserves that
 occurrence while its Binding remains accepted. All12 original findings are now
 closed. EXP-174 also closes the bounded R05 observer reentrancy review with
 three deterministic failures repaired and346 tests; [evidence](Results/EXP-174-observer-delivery.json).
-Telemetry, physical and final release gates remain. Keep this review as the disposition and historical evidence record; it
+EXP-175 now investigates the separately listed pre-existing late Resource/action
+count defect under T03. Telemetry, physical and final release gates remain. Keep this review as the disposition and historical evidence record; it
 is not release certification.
 
 **Original review at the source revision below**
