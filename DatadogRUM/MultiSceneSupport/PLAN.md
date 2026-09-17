@@ -48,7 +48,7 @@ Objective-C Release exposure still require normal API review.
    register and detailed record. Accepted experiment identities remain unchanged.
 1. D12/T02, D09, D11 and D04/P02 repairs are accepted within their recorded
    boundaries. Preserve their controls and frozen acceptance identities.
-2. D05/D06 restoration is accepted in EXP-167. Next define and execute D03
+2. D05/D06 restoration is accepted in EXP-167. Next execute the defined EXP-168 for D03
    keyed SwiftUI lifetime repair in the [assessed order](REVIEW_TRIAGE.md), with
    mounted release and teardown evidence. Measure P03 alongside it; P03 remains
    open until D08 and the retained-registry budget also pass.
