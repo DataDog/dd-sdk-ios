@@ -5,12 +5,19 @@ It does not certify other telemetry families, simultaneous visibility, real scen
 teardown, interactive gestures or hardware-only scenarios. Its reuse of the
 accepted scenario validates the acceptance workflow under EXP-161.
 
-The Python runner performs signature/environment/authentication preflight, a fresh
-probe build with all166 tests, frozen source and binary identity, proven uninstall,
-clean install, scenario launch, native-scene/mapper ownership checks, complete
+The Python runner records commit signature status and performs environment and
+authentication preflight, a fresh probe build with all 166 tests, frozen source
+and binary identity, proven uninstall, clean install, scenario launch,
+native-scene/mapper ownership checks, complete
 backend inventory, app termination and a sanitized durable result. Unsupported
 scenarios and reused output directories are rejected. No credentials are read
 from local configuration or written to artifacts.
+
+Sign commits when the agent is available. If it is unavailable, continue with
+unsigned local commits using explicit paths. Local acceptance accepts unsigned
+HEADs and records `UNSIGNED`; an existing signature must still verify. Signing is
+required before pushing, and this runner never pushes. Frozen revision, source,
+fixture and installed-build identity checks apply to both commit types.
 
 ## One invocation with the authenticated connector
 
@@ -78,8 +85,9 @@ node --test tools/multi-scene/acceptance/test_connector.js
 Controls cover stale contract/build/run IDs, missing/duplicate/reordered records,
 reused readiness, native schema, wrong exact/native owners, wrong final name,
 early completion, inactive prerequisites, late assertions, restored backend run
-IDs, pagination/completeness, wrong stop order and yielded helper-command completion. The EXP-142 late-boundary lesson
-is retained as a negative discriminator; that historical scenario is not claimed
+IDs, pagination/completeness, wrong stop order, yielded helper-command completion,
+unsigned local commits and invalid existing signatures. The EXP-142 late-boundary
+lesson is retained as a negative discriminator; that historical scenario is not claimed
 as a fresh runtime acceptance by this one-scenario runner.
 
 After recording experiment dispositions, refresh gate progress with:

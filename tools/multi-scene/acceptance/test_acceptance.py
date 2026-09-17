@@ -1,7 +1,10 @@
 import copy
 import importlib.util
 import json
+import os
 from pathlib import Path
+import subprocess
+import tempfile
 import unittest
 
 spec = importlib.util.spec_from_file_location("acceptance", Path(__file__).with_name("acceptance.py"))
@@ -200,6 +203,40 @@ class AcceptanceTests(unittest.TestCase):
             bad = {**good, field: value}
             with self.assertRaises(a.Rejected):
                 a.validate_bridge(request, bad)
+
+
+class SignaturePreflightTests(unittest.TestCase):
+    def setUp(self):
+        temporary = tempfile.TemporaryDirectory(prefix="acceptance-signature-")
+        self.addCleanup(temporary.cleanup)
+        self.runner = a.Runner.__new__(a.Runner)
+        self.runner.repo = Path(temporary.name)
+        self.runner.out = self.runner.repo / "logs"
+        self.runner.out.mkdir()
+        self.runner.environment = dict(os.environ)
+        subprocess.run(["git", "init", "-q", str(self.runner.repo)], check=True)
+
+    def revision(self, signature="", message="Fixture"):
+        tree = subprocess.check_output(["git", "mktree"], input="", text=True,
+                                       cwd=self.runner.repo).strip()
+        commit = ("tree " + tree + "\nauthor Fixture <fixture@example.invalid> 0 +0000\n"
+                  "committer Fixture <fixture@example.invalid> 0 +0000\n" + signature + "\n" + message + "\n")
+        return subprocess.check_output(["git", "hash-object", "-t", "commit", "-w", "--stdin"],
+                                       input=commit, text=True, cwd=self.runner.repo).strip()
+
+    def test_unsigned_local_commit_is_allowed_and_recorded(self):
+        result = self.runner.commit_signature(self.revision())
+        self.assertEqual(result, {"state": "UNSIGNED", "required_before_push": True})
+        self.assertFalse((self.runner.out / "signature.log").exists())
+
+    def test_signature_text_in_message_does_not_make_commit_signed(self):
+        result = self.runner.commit_signature(self.revision(message="gpgsig fake signature"))
+        self.assertEqual(result["state"], "UNSIGNED")
+
+    def test_invalid_existing_signature_is_not_treated_as_unsigned(self):
+        revision = self.revision(signature="gpgsig -----BEGIN SSH SIGNATURE-----\n malformed\n -----END SSH SIGNATURE-----\n")
+        with self.assertRaisesRegex(a.Rejected, "signature failed"):
+            self.runner.commit_signature(revision)
 
 
 if __name__ == "__main__":

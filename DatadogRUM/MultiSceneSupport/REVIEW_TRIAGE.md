@@ -61,8 +61,10 @@ SwiftUI invariants and current test seams are detailed in
    ownership contract across modules, and audit every consumer. D04 is not solved
    by comparing only application IDs or adding more public targets.
 3. Repair lifetime/semantic authority: D03 plus P03, D07/D08, then D10. Keep the
-   missing R04/R05/R06 discriminators in those slices. Each fix is a small signed
-   component commit; deferred extraction still starts only after release freeze.
+   missing R04/R05/R06 discriminators in those slices. Each fix is a small
+   component commit with explicit paths. Sign when available; if unavailable,
+   continue unsigned locally and sign before any future authorized push.
+   Deferred extraction still starts only after release freeze.
 4. Resume T03–T14 only after the relevant repair dependencies and early baseline
    gates pass. Physical H08/H09/H13 follow their repair gates when capable hardware
    is available; a posted lifecycle test never closes them. Finish API review,

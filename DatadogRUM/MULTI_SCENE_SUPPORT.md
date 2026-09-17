@@ -584,7 +584,9 @@ Superseded restart narratives moved to
 - Hardware H01–H16 and minimum15 runtime remain required. Rediscover device/MCP
   identities and authenticated backend access; do not reuse temporary sessions.
 - Preserve both dirty user paths and the independent safety-review file. Never
-  read local xcconfig contents. Use signed, explicit-path commits; never push.
+  read local xcconfig contents. Use explicit-path commits, signing when available
+  and continuing unsigned locally if the agent is unavailable. Sign before any
+  future authorized push; no push is authorized here.
 - Deferred source extraction remains after multi-scene freeze.
 
 ## Open API-review questions

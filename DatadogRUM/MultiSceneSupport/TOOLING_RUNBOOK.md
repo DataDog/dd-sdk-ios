@@ -28,8 +28,9 @@ EXP-161 exercises A01 with the accepted long-running-action fixture; it does not
 reopen EXP-159 or claim another family/hardware topology. The connector driver
 runs authenticated queries and the Python process owns every stage/verdict.
 
-- Preflight checks signed HEAD, current toolchain/destination and an actual
-  authenticated read. Fresh derived artifacts must execute all166 probe tests.
+- Preflight records HEAD and signature status, current toolchain/destination and
+  an actual authenticated read. Unsigned local commits are allowed; an existing
+  signature must verify. Fresh derived artifacts must execute all 166 probe tests.
 - Hash SDK/fixture/runner/contract sources before building; verify unchanged
   identity through backend checks and match installed executable to the build.
 - Prove bundle data-container absence before installing. Generate a new run ID;
@@ -120,8 +121,8 @@ step is `INCONCLUSIVE`, even when focused tests cover the same internal code.
 ## Restart verification without rerunning accepted experiments
 
 Read `AGENTS.md` and `.continue-here.md` first and follow the latter's ordered
-reading list. Verify the actual branch, HEAD, signature, and status. A later
-signed documentation-only handoff can legitimately follow the accepted SDK
+reading list. Verify the actual branch, HEAD, signature status, and working tree.
+A later documentation-only handoff can legitimately follow the accepted SDK
 checkpoint; inspect its path list instead of treating it as implementation drift.
 Do not rerun accepted tests or load the frozen archive merely to resume.
 
@@ -129,8 +130,13 @@ Capture each protected index entry and file metadata without printing a diff of
 local configuration. Never open `xcconfigs/Datadog.local.xcconfig`. Hashing the
 protected project file is allowed; inspect only metadata for the local xcconfig.
 Preserve the actual initial status exactly rather than assuming an older `AM`
-state. Use signed `git commit --only -- <explicit paths>` and verify the resulting
-commit path list, protected index entries, metadata, and project-file hash.
+state. Use `git commit -S --only -- <explicit paths>` when signing is available.
+Per the user's 2026-09-17 instruction, if the agent is unavailable, continue with
+`git commit --no-gpg-sign --only -- <explicit paths>` instead of blocking local
+work. Verify the resulting commit path list, protected index entries, metadata,
+and project-file hash. Do not change global signing configuration. Before any
+future authorized push, sign any unsigned local checkpoints and verify every
+outgoing commit's signature; no push is authorized for the current task.
 Git signature verification may need permission to create temporary signature
 files even though it does not modify repository content; never substitute a raw
 signature block for cryptographic verification.
@@ -388,10 +394,10 @@ if its diff grows with routes or navigation methods. Record that outcome as an
 API-shape failure, not an SDK-engine failure.
 
 Serialize live simulator work for these arms. Build and test the exact source
-checkpoint first. Prefer a signed commit; if the configured signing agent is
-temporarily unavailable, freeze a complete source-hash manifest and do not
-promote the slice until those exact sources are later checkpointed in a signed
-commit. Then give one device worker sole ownership of clean
+checkpoint first. Sign when the configured agent is available; otherwise create
+an unsigned local checkpoint and keep the complete source-hash manifest. Local
+validation can proceed with that frozen identity; signatures are required before
+any future authorized push. Then give one device worker sole ownership of clean
 terminate/uninstall/missing-container/run boundaries. A second worker may analyze
 backend intake, but it must not install, launch, or interact with the shared
 simulator until the owner releases it.

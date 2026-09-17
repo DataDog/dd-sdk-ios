@@ -330,6 +330,13 @@ class Runner:
     def capture(self, argv):
         return subprocess.check_output(argv, cwd=self.repo, env=self.environment, text=True, stderr=subprocess.DEVNULL)
 
+    def commit_signature(self, revision):
+        headers = self.capture(["git", "cat-file", "commit", revision]).split("\n\n", 1)[0]
+        signed = any(line.startswith(("gpgsig ", "gpgsig-sha256 ")) for line in headers.splitlines())
+        if signed:
+            self.command(["git", "verify-commit", revision], "signature")
+        return {"state": "VERIFIED" if signed else "UNSIGNED", "required_before_push": True}
+
     def stage(self, name, details):
         self.summary["stages"][name] = details
         self.flush()
@@ -357,7 +364,7 @@ class Runner:
             require(self.args.device, "explicit simulator UUID is required")
             self.summary["revision"] = self.capture(["git", "rev-parse", "HEAD"]).strip()
             self.summary["dirty_state"] = self.capture(["git", "status", "--porcelain=v1"]).splitlines()
-            self.command(["git", "verify-commit", "HEAD"], "signature")
+            self.summary["commit_signature"] = self.commit_signature(self.summary["revision"])
             self.summary["xcode"] = self.capture(["xcodebuild", "-version"]).strip()
             devices = json.loads(self.capture(["xcrun", "simctl", "list", "devices", "available", "--json"]))["devices"]
             matches = [(runtime, d) for runtime, ds in devices.items() for d in ds if d["udid"] == self.args.device]
