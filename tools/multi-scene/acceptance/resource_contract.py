@@ -66,7 +66,7 @@ def validate_local(records, run_id):
         require(claimed.get("evidenceSource") == "internal-hook" and
                 all(claimed.get("rumContext", {}).get(k) == initial[scene].get(k) for k in ["viewID", "sessionID"]),
                 "start snapshot differs from independent mapper owner", "FAIL")
-        require_before(foreground, claimed, "foreground readiness")
+        require_before(batch, claimed, "batch start")
     require(all(native.values()) and all(owners.values()) and len(set(native.values())) == 2 and len(set(owners.values())) == 2,
             "native scenes or owners alias", "FAIL")
     old_session = initial["scene-A"]["sessionID"]
@@ -77,10 +77,14 @@ def validate_local(records, run_id):
     boundary = assertion("resource-release-boundary")
     verified = assertion("resource-local-owners-verified")
     completed = assertion("resource-batch-finished")
-    ordered = [batch, started, navigation, new_owner, boundary, verified, completed]
+    retired = assertion("resource-a-owner-retired")
+    require(retired.get("evidenceSource") == "internal-hook" and retired.get("activationState") == "background" and
+            retired.get("semanticContext", {}).get("nativeSceneID", "").lower() == native["scene-A"].lower() and
+            retired.get("rumContext", {}).get("viewID") == owners["scene-A"], "A retirement lacks exact native evidence", "FAIL")
+    ordered = [batch, started, foreground, retired, navigation, new_owner, boundary, verified, completed]
     for earlier, later in zip(ordered, ordered[1:]):
         require_before(earlier, later, "Resource lifecycle assertion")
-    navigated = [s for s in snapshots if s.get("rumContext", {}).get("viewName") == "Resource Next A"
+    navigated = [s for s in snapshots if s.get("rumContext", {}).get("viewName") == "Resource Next B"
                  and s["sequence"] < navigation["sequence"]]
     require(navigated, "navigation assertion preceded mapper evidence", "FAIL")
     new_context = new_owner.get("rumContext", {})
@@ -95,6 +99,9 @@ def validate_local(records, run_id):
         start = assertion("resource-start-" + phase)
         require_before(batch, start, "Resource start")
         require_before(start, started, "Resource start")
+        prior = [s for s in snapshots if s.get("rumContext", {}).get("viewID") == owner.get("viewID")
+                 and s["sequence"] < start["sequence"]]
+        require(prior and prior[-1]["rumContext"].get("viewActive") is True, "owner ended before Resource start", "INCONCLUSIVE")
         require(all(start.get("rumContext", {}).get(k) == owner.get(k) for k in ["viewID", "sessionID"]),
                 "wrong captured start owner: " + phase, "FAIL")
     for phase in AUTO:
@@ -145,8 +152,8 @@ def validate_local(records, run_id):
     require(action.get("id") and action.get("type") == "tap" and action.get("target") == PEER and
             action.get("resourceCount") == 0 and action.get("errorCount") == 0, "old Resource contaminated peer action", "FAIL")
 
-    # A new A start excludes its old branch from restoration. B is restored once.
-    # This inventory is independent of the internal owner snapshot and includes launch.
+    # A retires through real background delivery after starts; B navigates, then
+    # explicitly starts in the fresh session. Inactive A is not restored.
     view_inventory = {}
     for s in snapshots:
         c = s.get("rumContext", {})
@@ -156,8 +163,7 @@ def validate_local(records, run_id):
             require(view_inventory[c["viewID"]] == value, "view identity mutated", "FAIL")
         view_inventory[c["viewID"]] = value
     roles = [(old_session, "ApplicationLaunch"), (old_session, "ProbeHomeView"), (old_session, "ProbeHomeView"),
-             (old_session, "Resource Next A"), (new_session, "ProbeHomeView"),
-             (new_session, "Resource New A"), (new_session, "Resource New B")]
+             (old_session, "Resource Next B"), (new_session, "Resource New B")]
     require(sorted((v["session_id"], v["name"] or "") for v in view_inventory.values()) == sorted(roles),
             "unexpected local view inventory", "FAIL")
     require(new_context.get("viewID") in view_inventory, "new peer snapshot lacks mapper evidence", "FAIL")
@@ -171,7 +177,7 @@ def validate_local(records, run_id):
 def validate_backend(local, run_id, resources, errors, views, actions, crashes):
     require(crashes == 0, "backend crash evidence", "FAIL")
     require(len(resources) == 5 and len(errors) == 4, "backend Resource/error inventory differs", "FAIL")
-    require(len(views) == 7 and len({v.get("view_id") for v in views}) == 7, "backend view inventory differs", "FAIL")
+    require(len(views) == 5 and len({v.get("view_id") for v in views}) == 5, "backend view inventory differs", "FAIL")
     for expected in local["views"]:
         row = unique([v for v in views if v.get("view_id") == expected["view_id"]], "backend view")
         require(row.get("run_id") == run_id, "restored view run ID hidden by query", "FAIL")
@@ -187,4 +193,4 @@ def validate_backend(local, run_id, resources, errors, views, actions, crashes):
     require(len(actions) == 1, "backend peer action count differs", "FAIL")
     require(actions[0].get("run_id") == run_id and all(actions[0].get(k) == v for k, v in local["peer"].items()),
             "backend peer action fields/counts differ", "FAIL")
-    return dict(state="PASS", resource_count=5, error_count=4, view_count=7, peer_action_count=1, crash_count=0)
+    return dict(state="PASS", resource_count=5, error_count=4, view_count=5, peer_action_count=1, crash_count=0)

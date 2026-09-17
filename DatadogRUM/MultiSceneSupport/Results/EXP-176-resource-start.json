@@ -786,7 +786,7 @@
     }
   ],
   "acceptance_oracle_controls": {
-    "python_tests": 52,
+    "python_tests": 53,
     "node_tests": 3,
     "state": "PASS"
   },
@@ -800,6 +800,11 @@
       "summary": "acceptance/exp176-20260917T163328Z-78a3649772d6.json",
       "disposition": "INVALID_FIXTURE",
       "reason": "Read asynchronous new-session snapshot before queued view commands completed; add foreground and mapper-confirmed barriers before release."
+    },
+    {
+      "summary": "acceptance/exp176-20260917T163814Z-25918a4c7847.json",
+      "disposition": "INCONCLUSIVE_TOPOLOGY",
+      "reason": "Foreground B wait retired A before starts; background A manual navigation is ineligible. Capture A before real background, navigate/renew B, preserve nine original completion owners."
     }
   ],
   "watchos_release": {

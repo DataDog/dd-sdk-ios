@@ -35,7 +35,6 @@ def fixture():
         signal("scene-ready", semanticContext=dict(logicalSceneID=scene, nativeSceneID="native-" + scene))
         view(scene, "ProbeHomeView", scene=scene, screen="home")
     signal("step-started", stepKind="run-resource-ownership-batch", stepIndex=4)
-    assertion("resource-foreground-ready")
     old_a = dict(viewID="scene-A", sessionID="old")
     old_b = dict(viewID="scene-B", sessionID="old")
     assertion("resource-owner-a", old_a)
@@ -45,10 +44,11 @@ def fixture():
     for phase in r.AUTO:
         assertion("transport-paused-" + phase)
     assertion("resource-all-started")
-    view("next-a", "Resource Next A")
+    assertion("resource-foreground-ready")
+    signal("assertion", name="resource-a-owner-retired", result="PASS", evidenceSource="internal-hook",
+           activationState="background", semanticContext=dict(nativeSceneID="native-scene-A"), rumContext=old_a)
+    view("next-b", "Resource Next B")
     assertion("resource-navigation-finished")
-    view("restored-b", "ProbeHomeView", "new")
-    view("new-a", "Resource New A", "new")
     view("new-b", "Resource New B", "new")
     assertion("resource-new-owner-b", dict(viewID="new-b", sessionID="new"))
     assertion("resource-release-boundary")
@@ -200,12 +200,12 @@ class ResourceContractTests(unittest.TestCase):
         self.named(r.PEER)["action"]["errorCount"] = 1
         self.rejects("contaminated peer")
 
-    def test_foreground_precondition_cannot_arrive_after_starts(self):
+    def test_foreground_precondition_must_follow_captured_starts(self):
         self.reorder("resource-foreground-ready", "resource-all-started")
         self.rejects("critical boundary")
 
     def test_lifecycle_markers_require_prior_mapper_evidence(self):
-        for name, marker in [("Resource Next A", "resource-navigation-finished"),
+        for name, marker in [("Resource Next B", "resource-navigation-finished"),
                              ("Resource New B", "resource-new-owner-b")]:
             with self.subTest(view=name):
                 self.records, self.run_id = fixture()
@@ -217,6 +217,19 @@ class ResourceContractTests(unittest.TestCase):
                     value["sequence"] = index + 1
                 self.records = [self.records[0]] + [dict(type="signal", signal=value) for value in signals] + [self.records[-1]]
                 self.rejects("preceded mapper evidence")
+
+    def test_owner_ending_between_batch_and_start_is_inconclusive(self):
+        signals = self.signals()
+        prior = copy.deepcopy(next(s for s in signals if s.get("rumContext", {}).get("viewID") == "scene-A"))
+        prior["rumContext"]["viewActive"] = False
+        signals.insert(signals.index(self.named("resource-start-" + r.SWIFT[0])), prior)
+        for index, value in enumerate(signals):
+            value["sequence"] = index + 1
+        self.records = [self.records[0]] + [dict(type="signal", signal=value) for value in signals] + [self.records[-1]]
+        with self.assertRaises(Rejected) as error:
+            r.validate_local(self.records, self.run_id)
+        self.assertEqual(error.exception.state, "INCONCLUSIVE")
+        self.assertIn("ended before Resource start", str(error.exception))
 
     def test_backend_mutations(self):
         local = r.validate_local(self.records, self.run_id)

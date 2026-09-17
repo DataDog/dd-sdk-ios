@@ -418,7 +418,7 @@ class Runner:
                 sessions = "(" + " OR ".join("@session.id:" + sid for sid in local["session_ids"]) + ")"
                 resources = self.exchange("resources", sessions + " @type:resource", 5)
                 errors = self.exchange("resource_errors", sessions + " @type:error", 4)
-                views = self.exchange("views", sessions + " @type:view", 7)
+                views = self.exchange("views", sessions + " @type:view", 5)
                 actions = self.exchange("peer_actions", sessions + " @type:action @context.probe.phase:" + resource_contract.PEER, 1)
                 crashes = self.exchange("crashes", sessions + " (@error.is_crash:true OR @view.crash.count:>0)")
                 backend = resource_contract.validate_backend(local, self.run_id, resources, errors, views, actions, crashes["count"])

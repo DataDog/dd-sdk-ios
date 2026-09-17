@@ -104,10 +104,6 @@ enum ProbeResourceAcceptance {
         let sceneA = try scene("scene-A")
         let sceneB = try scene("scene-B")
         try require(sceneA !== sceneB, "two distinct native scenes")
-        try await waitFor("foreground scene B") {
-            sceneB.activationState == .foregroundActive && UIApplication.shared.applicationState == .active
-        }
-        record("resource-foreground-ready")
         guard let monitor = RUMMonitor.shared() as? Monitor,
               let ownerA = monitor.rumContextSnapshot(for: .scene(RUMSceneIdentifier(rawValue: sceneA.session.persistentIdentifier))),
               let ownerB = monitor.rumContextSnapshot(for: .scene(RUMSceneIdentifier(rawValue: sceneB.session.persistentIdentifier))) else {
@@ -144,6 +140,8 @@ enum ProbeResourceAcceptance {
             }
         }
         try require(monitor.rumContextSnapshot(for: .processRepresentative)?.viewID == ownerB.viewID, "B representative before starts")
+        try require(monitor.rumContextSnapshot(for: .scene(RUMSceneIdentifier(rawValue: sceneA.session.persistentIdentifier)))?.viewID == ownerA.viewID,
+                    "A owner still current at start")
         record("resource-owner-a", context: ownerA)
         record("resource-owner-b", context: ownerB)
         for phase in manualSuccess + manualFailure {
@@ -191,6 +189,22 @@ enum ProbeResourceAcceptance {
             ($0.kind == .rumResource || $0.kind == .rumError) && allPhases.contains($0.name ?? "")
         }.isEmpty, "completion occurred before release")
 
+        try await waitFor("foreground B and retired A owner") {
+            sceneB.activationState == .foregroundActive && UIApplication.shared.applicationState == .active
+                && sceneA.activationState == .background
+                && monitor.rumContextSnapshot(for: .scene(RUMSceneIdentifier(rawValue: sceneA.session.persistentIdentifier))) == nil
+        }
+        record("resource-foreground-ready")
+        ProbeRuntime.eventRecorder.record(ProbeSignal(
+            kind: .assertion,
+            evidenceSource: .internalHook,
+            semanticContext: ProbeSemanticContext(logicalSceneID: "scene-A", nativeSceneID: sceneA.session.persistentIdentifier),
+            rumContext: ProbeRUMContext(sessionID: ownerA.sessionID, viewID: ownerA.viewID),
+            activationState: "background",
+            name: "resource-a-owner-retired",
+            result: .pass
+        ))
+
         func viewAttributes(_ scene: UIWindowScene, label: String, screen: String) -> [String: Encodable] {
             [
                 ProbeRuntime.Attribute.runID: ProbeRuntime.runID,
@@ -199,18 +213,16 @@ enum ProbeResourceAcceptance {
                 ProbeRuntime.Attribute.viewScreen: screen,
             ]
         }
-        monitor.startView(key: "resource-next-a", name: "Resource Next A", in: sceneA,
-                          attributes: viewAttributes(sceneA, label: "scene-A", screen: "resource-next"))
+        monitor.startView(key: "resource-next-b", name: "Resource Next B", in: sceneB,
+                          attributes: viewAttributes(sceneB, label: "scene-B", screen: "resource-next"))
         try await waitFor("navigation mapper") {
             ProbeRuntime.eventRecorder.snapshot().contains {
-                $0.kind == .rumViewSnapshot && $0.rumContext?.viewName == "Resource Next A"
+                $0.kind == .rumViewSnapshot && $0.rumContext?.viewName == "Resource Next B"
                     && $0.rumContext?.sessionID == ownerA.sessionID
             }
         }
         record("resource-navigation-finished")
         monitor.stopSession()
-        monitor.startView(key: "resource-new-a", name: "Resource New A", in: sceneA,
-                          attributes: viewAttributes(sceneA, label: "scene-A", screen: "resource-new"))
         monitor.startView(key: "resource-new-b", name: "Resource New B", in: sceneB,
                           attributes: viewAttributes(sceneB, label: "scene-B", screen: "resource-new"))
         try await waitFor("new B mapper and snapshot") {

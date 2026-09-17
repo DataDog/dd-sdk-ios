@@ -104,11 +104,11 @@ telemetry completion modes, closed-gate evidence and PLAN/register agreement.
 `resource-scenario-contract.json` pins six actual Swift/Objective-C target starts,
 one legacy fallback, two paused URLSession tasks and a new-session peer action.
 `resource_contract.py` requires22 app expectations plus independent strict checks:
-native Home mapper owners before starts, all starts before navigation/renewal,
+native Home mapper owners before starts, all starts before A backgrounds and B navigates/renews,
 zero completion before release, five Resources and four expected network errors
 on the original owners, exact request/status/method/size/duration fields, and zero
 old Resource/error counts on the fresh peer action. Session-only queries inventory
-all seven views and all Resource/error events across both sessions; no run filter
+all five views and all Resource/error events across both sessions; no run filter
 can conceal restored metadata or extra events. The separate crash count stays zero.
 
 The custom URLProtocol holds actual instrumented tasks, then delivers a successful
@@ -118,7 +118,12 @@ serial completion timeline. The SDK's independent unit checks cover missing targ
 completed-key reuse and compatibility fallback; native acceptance executes all six
 experimental entry points in real UIWindowScenes.
 
-The operational suite now includes52 Python tests (25 Resource tests, with further
+The operational suite now includes53 Python tests (26 Resource tests, with further
 backend mutation subcases) and three connector tests. A passing SDK/probe unit build
 alone does not close T03. Commit the fixture/runner before acceptance and retain all
 failed native/backend attempts alongside the final durable result.
+
+For the serial simulator contract, capture A before it backgrounds. Verify its real
+background state and retired current owner, navigate B, then renew B in a fresh
+session. Starting a manual view on already-background A is ineligible; do not
+manufacture foreground state or weaken the original-owner oracle to pass it.
