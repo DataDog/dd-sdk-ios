@@ -9,6 +9,7 @@
 import Combine
 import XCTest
 import SwiftUI
+import TestUtilities
 #if compiler(>=6.4)
 import Observation
 #endif
@@ -1372,6 +1373,152 @@ class RUMSwiftUIViewAuthorityRegistryTests: XCTestCase {
         XCTAssertFalse(registry.isAutomaticViewSuppressed(for: controllerA))
         XCTAssertTrue(registry.isAutomaticViewSuppressed(for: controllerB))
         XCTAssertFalse(registry.isAutomaticViewSuppressed(for: unrelated))
+    }
+}
+
+@MainActor
+final class RUMSwiftUINavigationOccurrenceContextTests: XCTestCase {
+    private let scene = RUMSceneIdentifier(rawValue: "scene-A")
+
+    func testRetainedCallbackDoesNotOwnItsCollaborators() {
+        var context: RUMSwiftUINavigationOccurrenceContext?
+        weak var releasedState: RUMViewTrackingState?
+        weak var releasedHandler: RUMViewsHandler?
+        weak var releasedArbiter: RUMSwiftUIInteractiveTransitionArbiter?
+        autoreleasepool {
+            let state = RUMViewTrackingState()
+            let handler = makeHandler()
+            let arbiter = RUMSwiftUIInteractiveTransitionArbiter(notificationCenter: NotificationCenter())
+            releasedState = state
+            releasedHandler = handler
+            releasedArbiter = arbiter
+            context = RUMSwiftUINavigationOccurrenceContext(state: state, viewsHandler: handler, fallback: configuration().descriptor)
+            context?.transitionArbiter = arbiter
+        }
+        XCTAssertNil(releasedState)
+        XCTAssertNil(releasedHandler)
+        XCTAssertNil(releasedArbiter)
+        context?.process(configuration: configuration(), sceneIdentifier: scene)
+        XCTAssertNotNil(context)
+    }
+
+    func testRegistrationReleaseDoesNotRequireSourceRelease() {
+        let source = RUMSwiftUINavigationOccurrenceSource()
+        weak var releasedRegistration: RUMSwiftUINavigationOccurrenceRegistration?
+        weak var releasedContext: RUMSwiftUINavigationOccurrenceContext?
+        weak var releasedState: RUMViewTrackingState?
+        autoreleasepool {
+            let state = RUMViewTrackingState()
+            let context = RUMSwiftUINavigationOccurrenceContext(state: state, viewsHandler: nil, fallback: configuration().descriptor)
+            let registration = RUMSwiftUINavigationOccurrenceRegistration()
+            releasedRegistration = registration
+            releasedContext = context
+            releasedState = state
+            registration.rebind(
+                to: source,
+                state: state,
+                configuration: configuration(),
+                attachment: .attached(scene),
+                process: context.process
+            )
+        }
+        XCTAssertNil(releasedRegistration)
+        XCTAssertNil(releasedContext)
+        XCTAssertNil(releasedState)
+        XCTAssertFalse(source.revealRetainedRoute(occurrenceKey: configuration().occurrenceKey, bindingGeneration: 2))
+    }
+
+    func testCancellationClearsCallbackAndRejectsRetainedReveal() {
+        let source = RUMSwiftUINavigationOccurrenceSource()
+        let state = RUMViewTrackingState()
+        _ = state.mount(in: scene, configuration: configuration())
+        _ = state.disappear(configuration: configuration())
+        let registration = RUMSwiftUINavigationOccurrenceRegistration()
+        weak var releasedToken: NSObject?
+        autoreleasepool {
+            let token = NSObject()
+            releasedToken = token
+            registration.rebind(to: source, state: state, configuration: configuration(), attachment: .attached(scene)) { _, _ in
+                withExtendedLifetime(token) { XCTFail("Cancelled callback must not be invoked") }
+            }
+        }
+        XCTAssertNotNil(releasedToken)
+        let epoch = registration.callbackEpoch
+        registration.cancel()
+        XCTAssertGreaterThan(registration.callbackEpoch, epoch)
+        XCTAssertNil(releasedToken)
+        XCTAssertFalse(source.revealRetainedRoute(occurrenceKey: configuration().occurrenceKey, bindingGeneration: 2))
+        XCTAssertNil(state.activeLifecycleGeneration)
+    }
+
+    func testRebindingMovesSourceAndPublishesLatestDescriptorOnFreshOccurrence() throws {
+        let oldSource = RUMSwiftUINavigationOccurrenceSource()
+        let newSource = RUMSwiftUINavigationOccurrenceSource()
+        let state = RUMViewTrackingState(occurrenceIdentityGenerator: RUMOccurrenceIdentityGenerator(["old", "fresh"]).next)
+        _ = state.mount(in: scene, configuration: configuration())
+        _ = state.disappear(configuration: configuration())
+        let registration = RUMSwiftUINavigationOccurrenceRegistration()
+        registration.rebind(to: oldSource, state: state, configuration: configuration(), attachment: .attached(scene)) { _, _ in
+            XCTFail("The previous source cannot deliver after rebinding")
+        }
+        let handler = makeHandler()
+        let subscriber = RUMCommandSubscriberMock()
+        handler.publish(to: subscriber)
+        let latest = configuration(generation: 2, name: "Updated")
+        let context = RUMSwiftUINavigationOccurrenceContext(state: state, viewsHandler: handler, fallback: latest.descriptor)
+        registration.rebind(
+            to: newSource,
+            state: state,
+            configuration: latest,
+            attachment: .attached(scene),
+            process: context.process
+        )
+
+        XCTAssertFalse(oldSource.revealRetainedRoute(occurrenceKey: latest.occurrenceKey, bindingGeneration: 3))
+        XCTAssertTrue(newSource.revealRetainedRoute(occurrenceKey: latest.occurrenceKey, bindingGeneration: 3))
+        let starts = subscriber.receivedCommands.compactMap { $0 as? RUMStartViewCommand }
+        let start = try XCTUnwrap(starts.first)
+        XCTAssertEqual(starts.count, 1)
+        XCTAssertEqual(start.identity, ViewIdentifier("fresh"))
+        XCTAssertEqual(start.target, .scene(scene))
+        XCTAssertEqual(start.name, "Updated")
+        XCTAssertEqual(start.path, "/Updated")
+        XCTAssertFalse(newSource.revealRetainedRoute(occurrenceKey: latest.occurrenceKey, bindingGeneration: 3))
+    }
+
+    func testContextPreservesInteractiveCancellationAndSingleCommit() {
+        for cancelled in [true, false] {
+            let coordinator = RUMSwiftUITransitionCoordinatorMock()
+            let arbiter = RUMSwiftUIInteractiveTransitionArbiter(notificationCenter: NotificationCenter()) { _, _ in coordinator }
+            let state = RUMViewTrackingState()
+            _ = state.update(configuration: configuration(), attachment: .attached(scene))
+            let handler = makeHandler()
+            let subscriber = RUMCommandSubscriberMock()
+            handler.publish(to: subscriber)
+            let context = RUMSwiftUINavigationOccurrenceContext(state: state, viewsHandler: handler, fallback: configuration().descriptor)
+            context.transitionArbiter = arbiter
+            context.process(configuration: configuration(), sceneIdentifier: scene)
+            XCTAssertEqual(coordinator.registrationCount, 1)
+            XCTAssertTrue(subscriber.receivedCommands.isEmpty)
+            coordinator.complete(isCancelled: cancelled)
+            coordinator.complete(isCancelled: cancelled)
+            XCTAssertEqual(subscriber.receivedCommands.compactMap { $0 as? RUMStartViewCommand }.count, cancelled ? 0 : 1)
+        }
+    }
+
+    private func configuration(generation: UInt64 = 1, name: String = "Home") -> RUMViewTrackingState.Configuration {
+        .init(occurrenceKey: RUMViewOccurrenceKey("home"), bindingGeneration: generation, descriptor: .init(name: name, path: "/\(name)", attributes: [:]))
+    }
+
+    private func makeHandler() -> RUMViewsHandler {
+        .init(
+            dateProvider: SystemDateProvider(),
+            uiKitPredicate: nil,
+            swiftUIPredicate: nil,
+            swiftUIViewNameExtractor: nil,
+            notificationCenter: NotificationCenter(),
+            isMultiSceneApplication: true
+        )
     }
 }
 
