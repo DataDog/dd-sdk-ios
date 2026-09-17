@@ -66,5 +66,10 @@ extension UIImage {
 
 extension CIContext {
     fileprivate static let sessionReplay = CIContext()
+
+    /// Clears Core Image resources retained by Session Replay.
+    internal static func clearSessionReplayCaches() {
+        sessionReplay.clearCaches()
+    }
 }
 #endif

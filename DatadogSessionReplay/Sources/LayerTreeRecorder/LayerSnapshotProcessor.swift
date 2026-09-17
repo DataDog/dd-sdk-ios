@@ -7,6 +7,7 @@
 #if os(iOS)
 import DatadogInternal
 import Foundation
+import CoreImage
 
 /// Turns layer tree, image, and touch snapshots into Session Replay records.
 internal protocol LayerSnapshotProcessing {
@@ -58,6 +59,8 @@ internal final class LayerSnapshotProcessor: LayerSnapshotProcessing {
                 imageSnapshots: imageSnapshots,
                 touchSnapshot: touchSnapshot
             )
+            // Release temporary images and textures after each batch
+            CIContext.clearSessionReplayCaches()
         }
     }
 
