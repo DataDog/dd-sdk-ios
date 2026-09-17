@@ -29,7 +29,8 @@ all remaining deliverables and dependencies; completed narratives are separate.
 EXP-162 closes D01/D02: complete watchOS RUM and macOS WebView targets pass
 Debug/Release builds after failing controls, and 70 Resource/action plus 28
 WebView iOS tests pass. Signed platform fixes end at `af8864528`. Ten assessed
-review repairs remain open; D09/D11/D12 compatibility is the next slice.
+review repairs remain open. EXP-163 is defined for D12 overdue-stop metadata;
+D09/D11 follow within the early compatibility group. No D12 pass is claimed yet.
 
 The released SDK baseline is not semantically safe for applications with
 concurrent scenes. Process-representative view state and process-global SwiftUI

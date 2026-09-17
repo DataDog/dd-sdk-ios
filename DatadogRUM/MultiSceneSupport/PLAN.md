@@ -46,9 +46,10 @@ Objective-C Release exposure still require normal API review.
 
 0. D01/D02 platform compatibility is closed by EXP-162; evidence is in the
    register and detailed record. Accepted experiment identities remain unchanged.
-1. Execute D09/D11/D12 existing-API compatibility repairs in the
-   [assessed order](REVIEW_TRIAGE.md). Define each bounded repair experiment
-   before implementation; preserve failing controls.
+1. Execute predefined EXP-163 for D12 overdue-stop metadata, the smallest
+   deterministic slice in the independent D09/D11/D12 compatibility group. Then
+   repair D09/D11 in the [assessed order](REVIEW_TRIAGE.md). Define each bounded
+   experiment before implementation; preserve failing controls.
 2. Repair D04 together with P02 allocation cost; normalize restoration in D05/D06.
 3. Repair D03/P03 lifetimes, D07/D08 authority/reconnect, and D10 accepted
    presentation state. Close the missing R04–R06 discriminators in those slices.
