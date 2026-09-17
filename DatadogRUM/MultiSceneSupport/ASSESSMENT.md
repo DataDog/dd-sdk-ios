@@ -133,6 +133,10 @@ and67 Python/3 connector checks pass. Frozen run
 one callback and exact backend9 errors/3 views/2 actions with7/2 error counts and
 0 Resources/crashes. T05 view attributes/removal is next.
 
+EXP-178 is defined for T05 single/batch view attributes and removal. Its oracle
+requires exact target-only changes and unchanged process-wide global precedence
+in SDK tests and a20-marker/3-view native/backend contract; no new gate closes yet.
+
 ## Support matrix
 
 | SDK surface | Current branch support | Strongest evidence | Confirmed gap or remaining gate |

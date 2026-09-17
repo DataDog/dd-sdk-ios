@@ -1,7 +1,7 @@
 **Production safety review of multi-scene SDK instrumentation**
 
 Updated 2026-09-17 during plan execution. **Release remains on hold: all 12
-review findings are closed, 0 remain open.** The finite checklist has 31/66
+review findings are closed, 0 remain open.** The finite checklist has 32/66
 release gates closed. [PLAN.md](PLAN.md) owns the release contract and
 [REVIEW_TRIAGE.md](REVIEW_TRIAGE.md) owns assessed repair order and evidence limits.
 Review IDs R01–R12 below map to repair gates D01–D12, not PLAN's responsibility
@@ -77,6 +77,10 @@ now closes T04: frozen42f2d3883 passes168 probe tests,24/24 local/61 signals,
 one callback and exact backend9 errors/3 views/2 actions with7/2 error counts,
 0 Resources/crashes. All12 original dispositions remain closed. Release remains
 held for the remaining finite gates; T05 view attributes/removal is next.
+
+EXP-178 is admitted for T05 attribute isolation and removal. Its bounded SDK and
+native/backend contract preserves accepted Resource/error ownership and global
+attribute precedence. All original review dispositions remain unchanged.
 
 **Original review at the source revision below**
 

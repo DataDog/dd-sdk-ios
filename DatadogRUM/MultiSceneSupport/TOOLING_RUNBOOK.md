@@ -1434,3 +1434,11 @@ frozen signed42f2d3883, sourcecb88001a47be2b77, binary88bc5ad533120ac7.
 168 probe tests,24 local expectations/61 signals,1 callback, exact backend
 9 errors/3 views/2 actions,0 Resources/crashes. All protected-path postconditions
 pass. Do not repeat this run merely to resume; reuse its discriminators for T05.
+
+### EXP-178 preparation
+
+T05 is defined before implementation. Freeze10 A/B attribute checkpoints (20 error
+markers),3 session views and0 Resources/crashes. Both Swift and Objective-C single/
+batch add/remove execute. Prove peer isolation, exact key absence and existing
+global/view/event precedence with independent backend synthetic field projections.
+Retain T04's accepted target marker API, readiness, clean-install and identity guards.

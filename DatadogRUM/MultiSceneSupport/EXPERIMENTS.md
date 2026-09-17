@@ -349,6 +349,7 @@ ordered acceptance contract is in
 | EXP-175 | PASS | Four failed controls repaired, seven new regressions and379 affected tests; completion/metrics stay on original owner without foreign action counts. Full T03 target/backend gate stays open | [Record](Experiments/EXP-143-199.md#exp-175--keep-resource-completion-on-its-owning-scope) |
 | EXP-176 | PASS | T03 closed:397 affected/8 ObjC, iOS/watchOS Release;167 probe tests,22 local/77 signals and exact5 Resource/4 error/5 view backend owners across2 sessions, peer counters0/0; all failed attempts retained | [Record](Experiments/EXP-143-199.md#exp-176--accept-explicit-resource-starts-and-captured-completion-owners) |
 | EXP-177 | PASS | T04 closed:376 SDK/8 ObjC, Release;168 probe,24/24 local/61 signals,1 callback and exact backend9 errors/3 views/2 actions with7/2 counts,0 Resources/crashes;67 Python/3 connector controls | [Record](Experiments/EXP-143-199.md#exp-177--target-current-view-errors-without-changing-resource-owners) |
+| EXP-178 | PLANNED | T05: all4 add/remove forms, custom/NOP fallback and unchanged global precedence;20 native/backend markers across10 states | [Record](Experiments/EXP-143-199.md#exp-178--target-view-attributes-and-removal) |
 
 ## Simulator-inconclusive and hardware-required evidence
 

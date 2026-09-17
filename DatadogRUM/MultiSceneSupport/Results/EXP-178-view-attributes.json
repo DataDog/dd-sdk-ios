@@ -1,0 +1,15 @@
+{
+  "experiment": "EXP-178",
+  "status": "PLANNED",
+  "gate": "T05",
+  "gates_closed": [],
+  "control_revision": "29ca719c2724a9490b2509b0915cf20d22ecd778",
+  "control_sdk_revision": "1e9c4788d280603fd6fdd572300aba71614b29a1",
+  "candidate_revision": null,
+  "unit_attempts": [],
+  "native_attempts": [],
+  "acceptance": {
+    "sdk": "PENDING",
+    "native_backend": "PENDING"
+  }
+}

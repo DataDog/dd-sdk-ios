@@ -53,8 +53,8 @@ Objective-C Release exposure still require normal API review.
    R04 retained-reader remount and P03 disconnected-registry retirement pass
    EXP-171/172 within their recorded boundaries.
 3. D10/R06 accepted presentations and R05 observer reentrancy pass EXP-173/174.
-   T03 Resource ownership closes with EXP-175/176. T04 closes with EXP-177. Define and execute T05
-   view attributes/removal next, then T06 timing/loading mutations.
+   T03 Resource ownership closes with EXP-175/176; T04 closes with EXP-177.
+   Execute defined EXP-178 for T05 view attributes/removal, then T06 timing/loading.
    Keep their distinct completion contracts and the accepted Resource owner rule.
    All six responsibility reviews have bounded evidence.
 4. Close the early compatibility/performance gates in available environments;
