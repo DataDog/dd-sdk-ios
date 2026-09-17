@@ -325,21 +325,48 @@ class RUMSessionSamplingStoreTests: XCTestCase {
         XCTAssertNil(store.sessionSamplingSnapshot(for: .featureRate, rate: featureRate))
     }
 
-    func testConcurrentReadsAndWrites() {
-        let store = makeStore()
-        let otherUUID = UUID(uuidString: "c5b3c4ab-fa4a-4de9-8199-a522131ec48a")!
+    func testConcurrentSessionRollover_neverPairsAnIDWithAnotherSessionsDecision() {
+        // Two sessions whose decisions are OPPOSITE at `sessionRate`, so a torn read is detectable:
+        // - keptUUID   (hash ~6.4%)  is sampled at 10%
+        // - droppedUUID (hash ~50.7%) is not
+        // A reader that observed one session's ID alongside the other's decision would break the
+        // correspondence asserted below. Identical decisions would make this test pass even if the
+        // store read the ID and the sampler under two separate lock acquisitions.
+        let keptUUID = sessionUUID
+        let keptID = sessionID
+        let droppedUUID = UUID(uuidString: "c5b3c4ab-fa4a-4de9-8199-a522131ec48a")!
+        let droppedID = "c5b3c4ab-fa4a-4de9-8199-a522131ec48a"
 
-        // Readers run on the request path while RUM rolls the session over, so both must be safe.
-        DispatchQueue.concurrentPerform(iterations: 200) { iteration in
-            if iteration % 4 == 0 {
-                store.setSession(
-                    id: "session-\(iteration)",
-                    sampler: DeterministicSampler(uuid: otherUUID, samplingRate: self.sessionRate)
-                )
-            } else if iteration % 7 == 0 {
+        XCTAssertTrue(DeterministicSampler(uuid: keptUUID, samplingRate: sessionRate).isSampled)
+        XCTAssertFalse(DeterministicSampler(uuid: droppedUUID, samplingRate: sessionRate).isSampled)
+
+        let store = RUMSessionSamplingStore()
+        store.setSession(id: keptID, sampler: DeterministicSampler(uuid: keptUUID, samplingRate: sessionRate))
+
+        // Readers run on the request path while RUM rolls the session over, so both must be safe and,
+        // more importantly, every snapshot must be internally consistent.
+        DispatchQueue.concurrentPerform(iterations: 1_000) { iteration in
+            switch iteration % 5 {
+            case 0:
+                store.setSession(id: keptID, sampler: DeterministicSampler(uuid: keptUUID, samplingRate: self.sessionRate))
+            case 1:
+                store.setSession(id: droppedID, sampler: DeterministicSampler(uuid: droppedUUID, samplingRate: self.sessionRate))
+            case 2:
                 store.clearSession()
-            } else {
-                _ = store.sessionSamplingSnapshot(for: .combinedWithSessionRate, rate: self.featureRate)
+            default:
+                // Composing with 100% leaves the session rate untouched, so `isSampled` here is the
+                // session's own decision and must match the ID it came back with.
+                guard let snapshot = store.sessionSamplingSnapshot(for: .combinedWithSessionRate, rate: .maxSampleRate) else {
+                    return // no active session, nothing to correlate
+                }
+                switch snapshot.sessionID {
+                case keptID:
+                    XCTAssertTrue(snapshot.isSampled, "Kept session's ID came back with the dropped session's decision")
+                case droppedID:
+                    XCTAssertFalse(snapshot.isSampled, "Dropped session's ID came back with the kept session's decision")
+                default:
+                    XCTFail("Unexpected session ID \(snapshot.sessionID)")
+                }
             }
         }
     }

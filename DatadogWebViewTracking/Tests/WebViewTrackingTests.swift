@@ -366,6 +366,51 @@ class WebViewTrackingTests: XCTestCase {
         )
     }
 
+    func testItComposesTheFirstPartyHostRateWithTheSessionRate() throws {
+        // Given
+        // Knuth hash fraction of this UUID is ~6.4%: kept at 20% applied alone, and at the 10% session
+        // rate, but dropped at the 2% that composing 20% with 10% produces. Without a vector inside
+        // that band, `.featureRate` and `.combinedWithSessionRate` return the same answer and this test
+        // would pass under either policy.
+        let sessionUUID = RUMUUID(rawValue: UUID(uuidString: "a1b2c3d4-e5f6-7890-abcd-ceb01cf21171")!)
+        let sessionRate: SampleRate = 10
+        let firstPartyHostRate: SampleRate = 20
+
+        let sessionSampler = DeterministicSampler(uuid: sessionUUID.rawValue, samplingRate: sessionRate)
+        XCTAssertTrue(sessionSampler.isSampled, "Premise: the session must be sampled at \(sessionRate)%")
+        XCTAssertTrue(
+            DeterministicSampler(uuid: sessionUUID.rawValue, samplingRate: firstPartyHostRate).isSampled,
+            "Premise: the vector must be kept at the first party host rate applied alone"
+        )
+        XCTAssertFalse(
+            sessionSampler.combined(with: firstPartyHostRate).isSampled,
+            "Premise: the vector must be dropped at the composed rate"
+        )
+
+        let core = FeatureRegistrationCoreMock()
+
+        // When
+        RUM.enable(
+            with: .mockWith(applicationID: "test-app-id") {
+                $0.sessionSampleRate = sessionRate
+                $0.uuidGenerator = RUMUUIDGeneratorMock(uuid: sessionUUID)
+                $0.urlSessionTracking = .init(
+                    firstPartyHostsTracing: .trace(hosts: ["localhost"], sampleRate: firstPartyHostRate)
+                )
+            },
+            in: core
+        )
+
+        // Then - `firstPartyHostsTracing`'s rate is a share of the sessions RUM keeps, so the effective
+        // rate is 10% x 20% = 2% and this session is out. Applying the 20% on its own would yield
+        // "true" here and hand the Browser SDK a decision the native session does not agree with.
+        XCTAssertEqual(
+            WebViewTracking.isTraceSampledStringValue(for: core),
+            "false",
+            "A 20% first party host rate inside a 10% session is an effective 2%, which drops this session"
+        )
+    }
+
     func testItChangesBridgeDecisionOnSessionRollover() throws {
         // Given
         // This session ID is not sampled at 50%, but it is sampled at 60%:

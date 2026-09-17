@@ -279,7 +279,8 @@ public enum WebViewTracking {
 
     /// Obtains the trace sampling decision for the given core, in `String` form ready to be used in the injected scripts.
     ///
-    /// Use this function on callers that don't have the RUM session sampler available.
+    /// The decision is read from RUM's sampling store on the calling thread, so it is available from the
+    /// moment `RUM.enable()` returns rather than once the RUM context reaches this feature.
     ///
     /// This is the decision if requests should be traced. The decision is positive if:
     /// * RUM is enabled, and the decision to sample the current session is positive; and

@@ -72,8 +72,6 @@ public protocol RUMSessionSamplerProvider: AnyObject {
     func sessionSamplingSnapshot(for policy: SamplingRatePolicy, rate: SampleRate) -> SessionSamplingSnapshot?
 }
 
-public extension DatadogFeature where Self: RUMSessionSamplerProvider { }
-
 public extension DatadogCoreProtocol {
     /// Synchronous access to the RUM session sampling state on this core, or `nil` when RUM is not
     /// enabled on it.

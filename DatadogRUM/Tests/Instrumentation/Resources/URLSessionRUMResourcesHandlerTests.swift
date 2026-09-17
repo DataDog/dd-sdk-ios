@@ -20,7 +20,15 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
     /// The sampler keeps everything except a 0% rate, which is what these tests previously got from
     /// `Sampler(samplingRate: .maxSampleRate)`.
     private static let testSessionID = "abcdef01-2345-6789-abcd-ef0123456789"
-    private static let testSessionSampling = RUMSessionSamplerProviderMock.keepAll(sessionID: testSessionID)
+    private lazy var testSessionSampling = RUMSessionSamplerProviderMock.keepAll(sessionID: Self.testSessionID)
+
+    /// A session ID that is deliberately NOT the one the store holds.
+    ///
+    /// Tests below still pass a `networkContext` carrying a RUM context, because the handler continues
+    /// to read the active span, user and account from it. Its session ID differs from the store's so
+    /// that every `rumSessionId` / `baggage` assertion proves the value came from the store, which is
+    /// the behaviour this handler changed. See RUM-17921.
+    private static let staleBusSessionID = "99999999-9999-4999-8999-999999999999"
 
     private func createHandler(
         rumAttributesProvider: RUM.ResourceAttributesProvider? = nil,
@@ -52,7 +60,7 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
                 traceIDGenerator: RelativeTracingUUIDGenerator(startingFrom: .init(idHi: 10, idLo: 100)),
                 spanIDGenerator: RelativeSpanIDGenerator(startingFrom: 100, advancingByCount: 0),
                 traceContextInjection: .all,
-                sessionSampling: Self.testSessionSampling
+                sessionSampling: testSessionSampling
             )
         )
 
@@ -63,7 +71,7 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
             networkContext: NetworkContext(
                 rumContext: .mockWith(
                     applicationID: .mockRandom(),
-                    sessionID: .mockWith("abcdef01-2345-6789-abcd-ef0123456789")
+                    sessionID: .mockWith(Self.staleBusSessionID)
                 )
             )
         )
@@ -94,7 +102,7 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
                 traceIDGenerator: RelativeTracingUUIDGenerator(startingFrom: .init(idHi: 10, idLo: 100)),
                 spanIDGenerator: RelativeSpanIDGenerator(startingFrom: 100, advancingByCount: 0),
                 traceContextInjection: .all,
-                sessionSampling: Self.testSessionSampling
+                sessionSampling: testSessionSampling
             )
         )
 
@@ -105,7 +113,7 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
             networkContext: NetworkContext(
                 rumContext: .mockWith(
                     applicationID: .mockRandom(),
-                    sessionID: .mockWith("abcdef01-2345-6789-abcd-ef0123456789")
+                    sessionID: .mockWith(Self.staleBusSessionID)
                 )
             )
         )
@@ -132,7 +140,7 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
                 traceIDGenerator: RelativeTracingUUIDGenerator(startingFrom: .init(idHi: 10, idLo: 100)),
                 spanIDGenerator: RelativeSpanIDGenerator(startingFrom: 100, advancingByCount: 0),
                 traceContextInjection: .all,
-                sessionSampling: Self.testSessionSampling
+                sessionSampling: testSessionSampling
             )
         )
 
@@ -143,7 +151,7 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
             networkContext: NetworkContext(
                 rumContext: .mockWith(
                     applicationID: .mockRandom(),
-                    sessionID: .mockWith("abcdef01-2345-6789-abcd-ef0123456789")
+                    sessionID: .mockWith(Self.staleBusSessionID)
                 )
             )
         )
@@ -173,7 +181,7 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
                 traceIDGenerator: RelativeTracingUUIDGenerator(startingFrom: .init(idHi: 10, idLo: 100)),
                 spanIDGenerator: RelativeSpanIDGenerator(startingFrom: 100, advancingByCount: 0),
                 traceContextInjection: .all,
-                sessionSampling: Self.testSessionSampling
+                sessionSampling: testSessionSampling
             )
         )
 
@@ -184,7 +192,7 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
             networkContext: NetworkContext(
                 rumContext: .mockWith(
                     applicationID: .mockRandom(),
-                    sessionID: .mockWith("abcdef01-2345-6789-abcd-ef0123456789")
+                    sessionID: .mockWith(Self.staleBusSessionID)
                 )
             )
         )
@@ -211,7 +219,7 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
                 traceIDGenerator: RelativeTracingUUIDGenerator(startingFrom: .init(idHi: 10, idLo: 100)),
                 spanIDGenerator: RelativeSpanIDGenerator(startingFrom: 100, advancingByCount: 0),
                 traceContextInjection: .sampled,
-                sessionSampling: Self.testSessionSampling
+                sessionSampling: testSessionSampling
             )
         )
 
@@ -222,7 +230,7 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
             networkContext: NetworkContext(
                 rumContext: .mockWith(
                     applicationID: .mockRandom(),
-                    sessionID: .mockWith("abcdef01-2345-6789-abcd-ef0123456789")
+                    sessionID: .mockWith(Self.staleBusSessionID)
                 )
             )
         )
@@ -244,7 +252,7 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
                 traceIDGenerator: RelativeTracingUUIDGenerator(startingFrom: .init(idHi: 10, idLo: 100)),
                 spanIDGenerator: RelativeSpanIDGenerator(startingFrom: 100, advancingByCount: 0),
                 traceContextInjection: .all,
-                sessionSampling: Self.testSessionSampling
+                sessionSampling: testSessionSampling
             )
         )
 
@@ -255,7 +263,7 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
             networkContext: NetworkContext(
                 rumContext: .mockWith(
                     applicationID: .mockRandom(),
-                    sessionID: .mockWith("abcdef01-2345-6789-abcd-ef0123456789")
+                    sessionID: .mockWith(Self.staleBusSessionID)
                 )
             )
         )
@@ -275,7 +283,7 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
                 traceIDGenerator: RelativeTracingUUIDGenerator(startingFrom: .init(idHi: 10, idLo: 100)),
                 spanIDGenerator: RelativeSpanIDGenerator(startingFrom: 100, advancingByCount: 0),
                 traceContextInjection: .all,
-                sessionSampling: Self.testSessionSampling
+                sessionSampling: testSessionSampling
             )
         )
 
@@ -286,7 +294,7 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
             networkContext: NetworkContext(
                 rumContext: .mockWith(
                     applicationID: .mockRandom(),
-                    sessionID: .mockWith("abcdef01-2345-6789-abcd-ef0123456789")
+                    sessionID: .mockWith(Self.staleBusSessionID)
                 )
             )
         )
@@ -309,7 +317,7 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
                 traceIDGenerator: RelativeTracingUUIDGenerator(startingFrom: .init(idHi: 10, idLo: 100)),
                 spanIDGenerator: RelativeSpanIDGenerator(startingFrom: 100, advancingByCount: 0),
                 traceContextInjection: .all,
-                sessionSampling: Self.testSessionSampling
+                sessionSampling: testSessionSampling
             )
         )
 
@@ -320,7 +328,7 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
             networkContext: NetworkContext(
                 rumContext: .mockWith(
                     applicationID: .mockRandom(),
-                    sessionID: .mockWith("abcdef01-2345-6789-abcd-ef0123456789")
+                    sessionID: .mockWith(Self.staleBusSessionID)
                 )
             )
         )
@@ -340,7 +348,7 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
                 traceIDGenerator: RelativeTracingUUIDGenerator(startingFrom: .init(idHi: 10, idLo: 100)),
                 spanIDGenerator: RelativeSpanIDGenerator(startingFrom: 100, advancingByCount: 0),
                 traceContextInjection: .all,
-                sessionSampling: Self.testSessionSampling
+                sessionSampling: testSessionSampling
             )
         )
 
@@ -371,7 +379,7 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
             networkContext: NetworkContext(
                 rumContext: .mockWith(
                     applicationID: .mockRandom(),
-                    sessionID: .mockWith("abcdef01-2345-6789-abcd-ef0123456789")
+                    sessionID: .mockWith(Self.staleBusSessionID)
                 ),
                 userConfigurationContext: .mockWith(id: "some_user_id"),
                 accountConfigurationContext: .mockRandom()
@@ -401,7 +409,7 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
                 traceIDGenerator: RelativeTracingUUIDGenerator(startingFrom: .init(idHi: 10, idLo: 100)),
                 spanIDGenerator: RelativeSpanIDGenerator(startingFrom: 100, advancingByCount: 0),
                 traceContextInjection: .all,
-                sessionSampling: Self.testSessionSampling
+                sessionSampling: testSessionSampling
             )
         )
 
@@ -429,7 +437,7 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
             networkContext: NetworkContext(
                 rumContext: .mockWith(
                     applicationID: .mockRandom(),
-                    sessionID: .mockWith("abcdef01-2345-6789-abcd-ef0123456789")
+                    sessionID: .mockWith(Self.staleBusSessionID)
                 ),
                 userConfigurationContext: .mockWith(id: "some_user_id"),
                 accountConfigurationContext: .mockRandom()
@@ -461,7 +469,7 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
                 traceIDGenerator: RelativeTracingUUIDGenerator(startingFrom: .init(idHi: 10, idLo: 100)),
                 spanIDGenerator: RelativeSpanIDGenerator(startingFrom: 100, advancingByCount: 0),
                 traceContextInjection: .all,
-                sessionSampling: Self.testSessionSampling
+                sessionSampling: testSessionSampling
             )
         )
 
@@ -550,7 +558,7 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
                 traceIDGenerator: DefaultTraceIDGenerator(),
                 spanIDGenerator: DefaultSpanIDGenerator(),
                 traceContextInjection: .all,
-                sessionSampling: Self.testSessionSampling
+                sessionSampling: testSessionSampling
             )
         )
 
@@ -779,7 +787,7 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
                 traceIDGenerator: RelativeTracingUUIDGenerator(startingFrom: .init(idHi: 10, idLo: 100)),
                 spanIDGenerator: RelativeSpanIDGenerator(startingFrom: 100, advancingByCount: 0),
                 traceContextInjection: .all,
-                sessionSampling: Self.testSessionSampling
+                sessionSampling: testSessionSampling
             )
         )
         let request: URLRequest = .mockWith(httpMethod: "GET")
@@ -789,7 +797,7 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
             networkContext: NetworkContext(
                 rumContext: .mockWith(
                     applicationID: .mockRandom(),
-                    sessionID: .mockWith("abcdef01-2345-6789-abcd-ef0123456789")
+                    sessionID: .mockWith(Self.staleBusSessionID)
                 )
             )
         )
@@ -824,7 +832,7 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
                 traceIDGenerator: RelativeTracingUUIDGenerator(startingFrom: .init(idHi: 10, idLo: 100)),
                 spanIDGenerator: RelativeSpanIDGenerator(startingFrom: 100, advancingByCount: 0),
                 traceContextInjection: .all,
-                sessionSampling: Self.testSessionSampling
+                sessionSampling: testSessionSampling
             )
         )
 
@@ -838,7 +846,7 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
             networkContext: NetworkContext(
                 rumContext: .mockWith(
                     applicationID: .mockRandom(),
-                    sessionID: .mockWith("abcdef01-2345-6789-abcd-ef0123456789")
+                    sessionID: .mockWith(Self.staleBusSessionID)
                 )
             )
         )
@@ -862,7 +870,7 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
                 traceIDGenerator: RelativeTracingUUIDGenerator(startingFrom: .init(idHi: 10, idLo: 100)),
                 spanIDGenerator: RelativeSpanIDGenerator(startingFrom: 100, advancingByCount: 0),
                 traceContextInjection: .all,
-                sessionSampling: Self.testSessionSampling
+                sessionSampling: testSessionSampling
             )
         )
 
@@ -876,7 +884,7 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
             networkContext: NetworkContext(
                 rumContext: .mockWith(
                     applicationID: .mockRandom(),
-                    sessionID: .mockWith("abcdef01-2345-6789-abcd-ef0123456789")
+                    sessionID: .mockWith(Self.staleBusSessionID)
                 )
             )
         )
@@ -901,7 +909,7 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
                 traceIDGenerator: RelativeTracingUUIDGenerator(startingFrom: .init(idHi: 10, idLo: 100)),
                 spanIDGenerator: RelativeSpanIDGenerator(startingFrom: 100, advancingByCount: 0),
                 traceContextInjection: .all,
-                sessionSampling: Self.testSessionSampling
+                sessionSampling: testSessionSampling
             )
         )
 
@@ -916,7 +924,7 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
             networkContext: NetworkContext(
                 rumContext: .mockWith(
                     applicationID: .mockRandom(),
-                    sessionID: .mockWith("abcdef01-2345-6789-abcd-ef0123456789")
+                    sessionID: .mockWith(Self.staleBusSessionID)
                 ),
                 userConfigurationContext: .init(id: "user123"),
                 accountConfigurationContext: .init(id: "account456")
@@ -955,7 +963,7 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
                 traceIDGenerator: RelativeTracingUUIDGenerator(startingFrom: .init(idHi: 10, idLo: 100)),
                 spanIDGenerator: RelativeSpanIDGenerator(startingFrom: 100, advancingByCount: 0),
                 traceContextInjection: .all,
-                sessionSampling: Self.testSessionSampling
+                sessionSampling: testSessionSampling
             )
         )
 
@@ -968,7 +976,7 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
             networkContext: NetworkContext(
                 rumContext: .mockWith(
                     applicationID: .mockRandom(),
-                    sessionID: .mockWith("abcdef01-2345-6789-abcd-ef0123456789")
+                    sessionID: .mockWith(Self.staleBusSessionID)
                 )
             )
         )
@@ -988,7 +996,7 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
                 traceIDGenerator: RelativeTracingUUIDGenerator(startingFrom: .init(idHi: 10, idLo: 100)),
                 spanIDGenerator: RelativeSpanIDGenerator(startingFrom: 100, advancingByCount: 0),
                 traceContextInjection: .all,
-                sessionSampling: Self.testSessionSampling
+                sessionSampling: testSessionSampling
             )
         )
 
@@ -1002,7 +1010,7 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
             networkContext: NetworkContext(
                 rumContext: .mockWith(
                     applicationID: .mockRandom(),
-                    sessionID: .mockWith("abcdef01-2345-6789-abcd-ef0123456789")
+                    sessionID: .mockWith(Self.staleBusSessionID)
                 )
             )
         )
@@ -1031,7 +1039,7 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
                 traceIDGenerator: RelativeTracingUUIDGenerator(startingFrom: .init(idHi: 10, idLo: 100)),
                 spanIDGenerator: RelativeSpanIDGenerator(startingFrom: 100, advancingByCount: 0),
                 traceContextInjection: .all,
-                sessionSampling: Self.testSessionSampling
+                sessionSampling: testSessionSampling
             )
         )
 
@@ -1048,7 +1056,7 @@ class URLSessionRUMResourcesHandlerTests: XCTestCase {
             networkContext: NetworkContext(
                 rumContext: .mockWith(
                     applicationID: .mockRandom(),
-                    sessionID: .mockWith("abcdef01-2345-6789-abcd-ef0123456789")
+                    sessionID: .mockWith(Self.staleBusSessionID)
                 )
             )
         )
