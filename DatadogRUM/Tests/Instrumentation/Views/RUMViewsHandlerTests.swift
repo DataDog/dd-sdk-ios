@@ -120,6 +120,7 @@ class RUMViewsHandlerTests: XCTestCase {
         isMultiSceneApplication: Bool = false,
         sceneIdentifierProvider: @escaping (UIViewController) -> RUMSceneIdentifier? = { _ in nil },
         sceneIdentifierFromNotification: @escaping (Notification) -> RUMSceneIdentifier? = { _ in nil },
+        initialSceneActivityProvider: @escaping () -> [RUMSceneIdentifier: Bool] = { [:] },
         uiKitSplitViewContextProvider: ((UIViewController) -> RUMViewsHandler.UIKitSplitViewContext?)? = nil,
         scheduleUIKitSplitViewReconciliation: @escaping (@escaping () -> Void) -> Void = { work in
             DispatchQueue.main.async(execute: work)
@@ -135,6 +136,7 @@ class RUMViewsHandlerTests: XCTestCase {
             isMultiSceneApplication: isMultiSceneApplication,
             sceneIdentifierProvider: sceneIdentifierProvider,
             sceneIdentifierFromNotification: sceneIdentifierFromNotification,
+            initialSceneActivityProvider: initialSceneActivityProvider,
             uiKitSplitViewContextProvider: uiKitSplitViewContextProvider,
             scheduleUIKitSplitViewReconciliation: scheduleUIKitSplitViewReconciliation
         )
@@ -2001,6 +2003,234 @@ class RUMViewsHandlerTests: XCTestCase {
     }
 
     #if os(iOS)
+    @MainActor
+    func testDisconnectedSceneRegistriesRetireAfterRepeatedControllerLifetimes() {
+        let handler = createHandler(
+            uiKitPredicate: UIKitRUMViewsPredicateMock(result: RUMView(name: "Lifetime")),
+            isMultiSceneApplication: true,
+            sceneIdentifierProvider: { controller in
+                controller.restorationIdentifier.map(RUMSceneIdentifier.init(rawValue:))
+            },
+            sceneIdentifierFromNotification: { notification in
+                (notification.object as? String).map(RUMSceneIdentifier.init(rawValue:))
+            }
+        )
+        for index in 0..<220 {
+            weak var releasedController: UIViewController?
+            autoreleasepool {
+                let controller = UIViewController()
+                controller.restorationIdentifier = "retired-\(index)"
+                releasedController = controller
+                notificationCenter.post(name: UIScene.willConnectNotification, object: controller.restorationIdentifier)
+                notificationCenter.post(name: UIScene.willEnterForegroundNotification, object: controller.restorationIdentifier)
+                handler.notify_viewDidAppear(viewController: controller, animated: false)
+                notificationCenter.post(name: UIScene.didDisconnectNotification, object: controller.restorationIdentifier)
+            }
+            XCTAssertNil(releasedController)
+        }
+        XCTAssertEqual(commandSubscriber.receivedCommands.count, 440)
+        XCTAssertEqual(nonemptyHandlerCollections(handler), [:])
+        notificationCenter.post(name: UIScene.didEnterBackgroundNotification, object: "retired-0")
+        XCTAssertFalse(handler.notify_semanticDestinationAppear(
+            identity: "stale",
+            name: "Stale",
+            path: "/stale",
+            attributes: [:],
+            sceneIdentifier: RUMSceneIdentifier(rawValue: "retired-0")
+        ))
+        XCTAssertEqual(commandSubscriber.receivedCommands.count, 440)
+        XCTAssertEqual(nonemptyHandlerCollections(handler), [:])
+    }
+
+    @MainActor
+    func testDisconnectWithoutTrackedViewRetiresStateAndRejectsLateBackground() {
+        let scene = RUMSceneIdentifier(rawValue: "scene-A")
+        let handler = createHandler(sceneIdentifierFromNotification: { _ in scene })
+        notificationCenter.post(name: UIScene.willConnectNotification, object: nil)
+        notificationCenter.post(name: UIScene.didDisconnectNotification, object: nil)
+        notificationCenter.post(name: UIScene.didEnterBackgroundNotification, object: nil)
+        XCTAssertEqual(nonemptyHandlerCollections(handler), [:])
+        XCTAssertFalse(handler.notify_semanticDestinationAppear(
+            identity: "stale", name: "Stale", path: "/stale", attributes: [:], sceneIdentifier: scene
+        ))
+        XCTAssertTrue(commandSubscriber.receivedCommands.isEmpty)
+        notificationCenter.post(name: UIScene.willConnectNotification, object: nil)
+        notificationCenter.post(name: UIScene.willEnterForegroundNotification, object: nil)
+        XCTAssertTrue(handler.notify_semanticDestinationAppear(
+            identity: "fresh", name: "Fresh", path: "/fresh", attributes: [:], sceneIdentifier: scene
+        ))
+        XCTAssertEqual(commandSubscriber.receivedCommands.count, 1)
+        notificationCenter.post(name: UIScene.didDisconnectNotification, object: nil)
+        XCTAssertEqual(commandSubscriber.receivedCommands.count, 2)
+        XCTAssertEqual(nonemptyHandlerCollections(handler), [:])
+    }
+
+    @MainActor
+    func testStaleUIKitAppearanceCannotRecreateDisconnectedSplitMetadata() {
+        let scene = RUMSceneIdentifier(rawValue: "scene-A")
+        let fixture = createUIKitSplitViewFixture()
+        let handler = createHandler(
+            uiKitPredicate: UIKitRUMViewsPredicateMock(result: RUMView(name: "Detail")),
+            isMultiSceneApplication: true,
+            sceneIdentifierProvider: { _ in scene },
+            sceneIdentifierFromNotification: { _ in scene },
+            uiKitSplitViewContextProvider: createUIKitSplitViewContextProvider(fixture: fixture)
+        )
+        handler.notify_viewDidAppear(viewController: fixture.secondaryRoot, animated: false)
+        XCTAssertEqual(nonemptyHandlerCollections(handler)["uiKitSplitViewContexts"], 1)
+        notificationCenter.post(name: UIScene.didDisconnectNotification, object: nil)
+        XCTAssertNil(nonemptyHandlerCollections(handler)["uiKitSplitViewContexts"])
+        handler.notify_viewDidAppear(viewController: fixture.secondaryRoot, animated: false)
+        handler.notify_viewDidDisappear(viewController: fixture.secondaryRoot, animated: false)
+        XCTAssertNil(nonemptyHandlerCollections(handler)["uiKitSplitViewContexts"])
+        XCTAssertEqual(commandSubscriber.receivedCommands.count, 2)
+    }
+
+    @MainActor
+    func testInitialConnectedPeerWithoutViewSurvivesAnotherSceneDisconnect() {
+        let sceneA = RUMSceneIdentifier(rawValue: "scene-A")
+        let sceneB = RUMSceneIdentifier(rawValue: "scene-B")
+        for peerIsActive in [true, false] {
+            commandSubscriber.receivedCommands = []
+            var inventoryReads = 0
+            let handler = createHandler(
+                sceneIdentifierFromNotification: { notification in
+                    (notification.object as? String).map(RUMSceneIdentifier.init(rawValue:))
+                },
+                initialSceneActivityProvider: {
+                    XCTAssertTrue(Thread.isMainThread)
+                    inventoryReads += 1
+                    return [sceneA: true, sceneB: peerIsActive]
+                }
+            )
+            notificationCenter.post(name: UIScene.didDisconnectNotification, object: "scene-A")
+            XCTAssertTrue(handler.notify_semanticDestinationAppear(
+                identity: "peer", name: "Peer", path: "/peer", attributes: [:], sceneIdentifier: sceneB
+            ))
+            XCTAssertEqual(commandSubscriber.receivedCommands.count, peerIsActive ? 1 : 0)
+            notificationCenter.post(name: UIScene.willEnterForegroundNotification, object: "scene-B")
+            XCTAssertEqual(commandSubscriber.receivedCommands.count, 1)
+            XCTAssertEqual((commandSubscriber.receivedCommands[0] as? RUMStartViewCommand)?.target, .scene(sceneB))
+            XCTAssertFalse(handler.canTrackViews(in: sceneA))
+            notificationCenter.post(name: UIScene.didDisconnectNotification, object: "scene-B")
+            XCTAssertEqual(nonemptyHandlerCollections(handler), [:])
+            XCTAssertEqual(inventoryReads, 1)
+        }
+    }
+
+    @MainActor
+    func testBootstrapPeerRemainsKnownAfterFirstSceneLifecycleBoundary() {
+        let sceneA = RUMSceneIdentifier(rawValue: "scene-A")
+        let sceneB = RUMSceneIdentifier(rawValue: "scene-B")
+        let handler = createHandler(sceneIdentifierFromNotification: { _ in sceneA })
+        for (scene, identity) in [(sceneA, "first"), (sceneB, "peer")] {
+            handler.notify_onAppear(identity: identity, name: identity, path: identity, attributes: [:], sceneIdentifier: scene)
+        }
+        notificationCenter.post(name: UIScene.didDisconnectNotification, object: nil)
+        XCTAssertFalse(handler.canTrackViews(in: sceneA))
+        XCTAssertTrue(handler.canTrackViews(in: sceneB))
+        handler.notify_onAppear(identity: "peer-next", name: "Peer Next", path: "/peer", attributes: [:], sceneIdentifier: sceneB)
+        XCTAssertEqual(commandSubscriber.receivedCommands.count, 5)
+        XCTAssertEqual((commandSubscriber.receivedCommands.last as? RUMStartViewCommand)?.target, .scene(sceneB))
+    }
+
+    @MainActor
+    func testAllSceneViewSourcesRejectRetiredIdentityUntilReconnection() {
+        let scene = RUMSceneIdentifier(rawValue: "reused")
+        let controller = UIViewController()
+        let handler = createHandler(
+            uiKitPredicate: UIKitRUMViewsPredicateMock(result: RUMView(name: "UIKit")),
+            sceneIdentifierProvider: { _ in scene },
+            sceneIdentifierFromNotification: { _ in scene }
+        )
+        for index in 0..<20 {
+            notificationCenter.post(name: UIScene.willConnectNotification, object: nil)
+            handler.startView(key: "manual", name: "Manual", attributes: [:], sceneIdentifier: scene)
+            XCTAssertEqual(commandSubscriber.receivedCommands.count, index * 2)
+            notificationCenter.post(name: UIScene.willEnterForegroundNotification, object: nil)
+            notificationCenter.post(name: UIScene.didDisconnectNotification, object: nil)
+            handler.notify_viewDidAppear(viewController: controller, animated: false)
+            handler.notify_onAppear(identity: "late", name: "Late", path: "/late", attributes: [:], sceneIdentifier: scene)
+            handler.startView(key: "late-manual", name: "Late", attributes: [:], sceneIdentifier: scene)
+            XCTAssertFalse(handler.notify_semanticDestinationAppear(
+                identity: "late-semantic", name: "Late", path: "/late", attributes: [:], sceneIdentifier: scene
+            ))
+            handler.notify_replaceOccurrence(
+                oldIdentity: "manual", newIdentity: "late-replace", name: "Late", path: "/late", attributes: [:], sceneIdentifier: scene
+            )
+            notificationCenter.post(name: UIScene.didEnterBackgroundNotification, object: nil)
+            XCTAssertEqual(commandSubscriber.receivedCommands.count, (index + 1) * 2)
+            XCTAssertEqual(nonemptyHandlerCollections(handler), [:])
+        }
+    }
+
+    @MainActor
+    func testBackgroundInitializationReadsInitialSceneInventoryOnceOnMain() async {
+        let seeded = expectation(description: "main-thread scene inventory")
+        let scene = RUMSceneIdentifier(rawValue: "initial")
+        let handler: RUMViewsHandler = await withCheckedContinuation { continuation in
+            DispatchQueue.global().async {
+                let handler = RUMViewsHandler(
+                    dateProvider: SystemDateProvider(),
+                    uiKitPredicate: nil,
+                    swiftUIPredicate: nil,
+                    swiftUIViewNameExtractor: nil,
+                    notificationCenter: NotificationCenter(),
+                    initialSceneActivityProvider: {
+                        XCTAssertTrue(Thread.isMainThread)
+                        seeded.fulfill()
+                        return [scene: true]
+                    }
+                )
+                continuation.resume(returning: handler)
+            }
+        }
+        await fulfillment(of: [seeded], timeout: 5)
+        XCTAssertTrue(handler.canTrackViews(in: scene))
+        XCTAssertEqual(nonemptyHandlerCollections(handler), ["sceneActivityByIdentifier": 1])
+    }
+
+    @MainActor
+    func testPendingInitialSceneInventoryDoesNotRetainHandler() async {
+        weak var releasedHandler: RUMViewsHandler?
+        let initialized = DispatchSemaphore(value: 0)
+        DispatchQueue.global().async {
+            XCTAssertFalse(Thread.isMainThread)
+            autoreleasepool {
+                let handler = RUMViewsHandler(
+                    dateProvider: SystemDateProvider(),
+                    uiKitPredicate: nil,
+                    swiftUIPredicate: nil,
+                    swiftUIViewNameExtractor: nil,
+                    notificationCenter: NotificationCenter(),
+                    initialSceneActivityProvider: {
+                        XCTFail("Released handler must not read scene inventory")
+                        return [:]
+                    }
+                )
+                releasedHandler = handler
+            }
+            initialized.signal()
+        }
+        XCTAssertEqual(initialized.wait(timeout: .now() + 5), .success)
+        XCTAssertNil(releasedHandler)
+        await Task.yield()
+        XCTAssertNil(releasedHandler)
+    }
+
+    private func nonemptyHandlerCollections(_ handler: RUMViewsHandler) -> [String: Int] {
+        var result: [String: Int] = [:]
+        for child in Mirror(reflecting: handler).children {
+            let value = Mirror(reflecting: child.value)
+            if let label = child.label,
+               [.collection, .dictionary, .set].contains(value.displayStyle),
+               !value.children.isEmpty {
+                result[label] = value.children.count
+            }
+        }
+        return result
+    }
+
     func testWhenSceneDisconnects_itRejectsStaleStateUntilFreshSceneConnection() throws {
         let sceneA = RUMSceneIdentifier(rawValue: "scene-A")
         let sceneB = RUMSceneIdentifier(rawValue: "scene-B")

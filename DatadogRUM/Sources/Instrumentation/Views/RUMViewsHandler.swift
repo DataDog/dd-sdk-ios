@@ -203,9 +203,13 @@ internal final class RUMViewsHandler {
     /// `viewDidAppear`, especially while creating or restoring a window.
     private var sceneActivityByIdentifier: [RUMSceneIdentifier: Bool] = [:]
 
-    /// Scene sessions that have disconnected and must reject stale lifecycle
-    /// callbacks until UIKit announces a new connection for that session.
-    private var disconnectedSceneIdentifiers: Set<RUMSceneIdentifier> = []
+    /// Once scene lifecycle has been observed, only known live scenes may
+    /// publish. This avoids retaining every disconnected session identifier.
+    private var hasObservedSceneLifecycle = false
+
+    /// Read once on the main thread, then released. Captures value-only state
+    /// for scenes that connected before the handler was initialized.
+    private var initialSceneActivityProvider: (() -> [RUMSceneIdentifier: Bool])?
 
     #if os(iOS)
     /// Split metadata captured while each UIKit controller is attached.
@@ -250,6 +254,15 @@ internal final class RUMViewsHandler {
             }
             return RUMSceneIdentifier(rawValue: scene.session.persistentIdentifier)
         },
+        initialSceneActivityProvider: @escaping () -> [RUMSceneIdentifier: Bool] = {
+            var activity: [RUMSceneIdentifier: Bool] = [:]
+            for scene in UIApplication.dd.managedShared?.connectedScenes ?? []
+                where scene.activationState != .unattached {
+                activity[RUMSceneIdentifier(rawValue: scene.session.persistentIdentifier)] =
+                    scene.activationState == .foregroundActive || scene.activationState == .foregroundInactive
+            }
+            return activity
+        },
         uiKitSplitViewContextProvider: ((UIViewController) -> UIKitSplitViewContext?)? = nil,
         scheduleUIKitSplitViewReconciliation: @escaping (@escaping () -> Void) -> Void = { work in
             DispatchQueue.main.async(execute: work)
@@ -262,6 +275,7 @@ internal final class RUMViewsHandler {
         self.isSwiftUIAutomaticViewSuppressed = isSwiftUIAutomaticViewSuppressed
         self.sceneIdentifierProvider = sceneIdentifierProvider
         self.sceneIdentifierFromNotification = sceneIdentifierFromNotification
+        self.initialSceneActivityProvider = initialSceneActivityProvider
         self.isMultiSceneApplication = isMultiSceneApplication
         self.scheduleUIKitSplitViewReconciliation = scheduleUIKitSplitViewReconciliation
         #if os(iOS)
@@ -308,6 +322,13 @@ internal final class RUMViewsHandler {
             name: UIScene.didDisconnectNotification,
             object: nil
         )
+        if Thread.isMainThread {
+            seedInitialSceneActivity()
+        } else {
+            DispatchQueue.main.async { [weak self] in
+                self?.seedInitialSceneActivity()
+            }
+        }
     }
 
     #else
@@ -361,9 +382,13 @@ internal final class RUMViewsHandler {
     @discardableResult
     private func add(view: View, stoppingCurrentAt time: Date? = nil) -> Bool {
         #if !os(watchOS)
-        if let sceneIdentifier = view.sceneIdentifier,
-           !canTrackViews(in: sceneIdentifier) {
-            return false
+        if let sceneIdentifier = view.sceneIdentifier {
+            guard canTrackViews(in: sceneIdentifier) else {
+                return false
+            }
+            if sceneActivityByIdentifier[sceneIdentifier] == nil {
+                sceneActivityByIdentifier[sceneIdentifier] = isApplicationActive
+            }
         }
         #endif
 
@@ -917,6 +942,7 @@ internal final class RUMViewsHandler {
     private func applicationDidEnterBackground() {
         isApplicationActive = false
         #if !os(watchOS)
+        seedInitialSceneActivity()
         for sceneIdentifier in Array(sceneActivityByIdentifier.keys) {
             sceneActivityByIdentifier[sceneIdentifier] = false
         }
@@ -966,10 +992,19 @@ internal final class RUMViewsHandler {
     }
 
     #if !os(watchOS)
-    /// Unknown scenes may establish their first view; only an explicit
-    /// disconnect rejects publication until a new connection is observed.
+    private func seedInitialSceneActivity() {
+        guard Thread.isMainThread, let provider = initialSceneActivityProvider else {
+            return
+        }
+        initialSceneActivityProvider = nil
+        sceneActivityByIdentifier.merge(provider()) { observed, _ in observed }
+    }
+
+    /// Preserve first-view bootstrap before scene lifecycle is observed. After
+    /// that boundary, only an initial live scene or a new connection may publish.
     func canTrackViews(in sceneIdentifier: RUMSceneIdentifier) -> Bool {
-        !disconnectedSceneIdentifiers.contains(sceneIdentifier)
+        seedInitialSceneActivity()
+        return !hasObservedSceneLifecycle || sceneActivityByIdentifier[sceneIdentifier] != nil
     }
 
     @objc
@@ -977,7 +1012,8 @@ internal final class RUMViewsHandler {
         guard let sceneIdentifier = sceneIdentifierFromNotification(notification) else {
             return
         }
-        disconnectedSceneIdentifiers.remove(sceneIdentifier)
+        seedInitialSceneActivity()
+        hasObservedSceneLifecycle = true
         sceneActivityByIdentifier[sceneIdentifier] = false
     }
 
@@ -986,6 +1022,10 @@ internal final class RUMViewsHandler {
         guard let sceneIdentifier = sceneIdentifierFromNotification(notification) else {
             return
         }
+        guard canTrackViews(in: sceneIdentifier) else {
+            return
+        }
+        hasObservedSceneLifecycle = true
         sceneActivityByIdentifier[sceneIdentifier] = false
         guard let index = stacks.firstIndex(where: { $0.sceneIdentifier == sceneIdentifier }) else {
             #if os(iOS)
@@ -1009,7 +1049,8 @@ internal final class RUMViewsHandler {
         guard let sceneIdentifier = sceneIdentifierFromNotification(notification) else {
             return
         }
-        disconnectedSceneIdentifiers.remove(sceneIdentifier)
+        seedInitialSceneActivity()
+        hasObservedSceneLifecycle = true
         sceneActivityByIdentifier[sceneIdentifier] = true
         guard let index = stacks.firstIndex(where: { $0.sceneIdentifier == sceneIdentifier }) else {
             return
@@ -1022,8 +1063,9 @@ internal final class RUMViewsHandler {
         guard let sceneIdentifier = sceneIdentifierFromNotification(notification) else {
             return
         }
-        disconnectedSceneIdentifiers.insert(sceneIdentifier)
-        sceneActivityByIdentifier[sceneIdentifier] = false
+        seedInitialSceneActivity()
+        hasObservedSceneLifecycle = true
+        sceneActivityByIdentifier.removeValue(forKey: sceneIdentifier)
         guard let index = stacks.firstIndex(where: { $0.sceneIdentifier == sceneIdentifier }) else {
             #if os(iOS)
             pendingUIKitSplitViewRemovals.removeAll { $0.sceneIdentifier == sceneIdentifier }
@@ -1053,6 +1095,10 @@ internal final class RUMViewsHandler {
 extension RUMViewsHandler: UIViewControllerHandler {
     func notify_viewDidAppear(viewController: UIViewController, animated: Bool) {
         let identity = ViewIdentifier(viewController)
+        let attachedSceneIdentifier = sceneIdentifierProvider(viewController)
+        if let attachedSceneIdentifier, !canTrackViews(in: attachedSceneIdentifier) {
+            return
+        }
         #if os(iOS)
         if isMultiSceneApplication,
             #available(iOS 27.0, *),
@@ -1071,7 +1117,7 @@ extension RUMViewsHandler: UIViewControllerHandler {
                 captureUIKitSplitViewContext(for: viewController, identity: identity)
             }
             #endif
-            let currentSceneIdentifier = sceneIdentifierProvider(viewController) ?? view.sceneIdentifier
+            let currentSceneIdentifier = attachedSceneIdentifier ?? view.sceneIdentifier
             if currentSceneIdentifier == view.sceneIdentifier {
                 #if os(iOS)
                 if consumePendingUIKitSplitViewRemoval(with: view) {
@@ -1108,7 +1154,7 @@ extension RUMViewsHandler: UIViewControllerHandler {
                 isUntrackedModal: rumView.isUntrackedModal,
                 attributes: rumView.attributes,
                 instrumentationType: .uikit,
-                sceneIdentifier: sceneIdentifierProvider(viewController)
+                sceneIdentifier: attachedSceneIdentifier
             )
             #if os(iOS)
             if consumePendingUIKitSplitViewRemoval(with: view) {
@@ -1129,7 +1175,7 @@ extension RUMViewsHandler: UIViewControllerHandler {
                     isUntrackedModal: rumView.isUntrackedModal,
                     attributes: rumView.attributes,
                     instrumentationType: .swiftuiAutomatic,
-                    sceneIdentifier: sceneIdentifierProvider(viewController),
+                    sceneIdentifier: attachedSceneIdentifier,
                     isGenericSwiftUIFallback: SwiftUIReflectionBasedViewNameExtractor
                         .isGenericFallbackViewName(rumViewName)
                 )
