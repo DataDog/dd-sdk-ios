@@ -10,7 +10,7 @@ Last updated: 2026-09-17
 
 ## Current verdict
 
-Current release accounting is **23/66 gates closed**. EXP-160 establishes early
+Current release accounting is **24/66 gates closed**. EXP-160 establishes early
 ordinary automatic/manual/custom/NOP and26.5 compatibility, dispatch and exact
 reentrancy baselines. EXP-166 repairs the enabled-handoff allocation failure:
 complete Release ABBA runs measure 1 allocation/64 bytes per event on27/26.5,
@@ -49,7 +49,10 @@ EXP-168 closes D03 and bounded R02 review at signed `7b77f60eb`: 303 affected
 tests and 37/37 mounted checks on each of 27/26.5. The control retains 25 keyed
 registrations/states; the candidate releases all weak objects and restores three
 method implementations after SDK stop. P03 still requires disconnected-registry
-retirement and D08. Three assessed review repairs remain open; D07/D08 are next. Physical scene and final release gates remain separate.
+retirement and D08. EXP-169 closes D07 at local unsigned `a9aaf25a7`: four failing
+authority controls, 119 tests and mounted hosts29/29 versus control19/29.
+Automatic eligibility persists before input, and the first semantic destination
+owns immediate work. Two assessed review repairs remain open; D08 is next. Physical scene and final release gates remain separate.
 
 The released SDK baseline is not semantically safe for applications with
 concurrent scenes. Process-representative view state and process-global SwiftUI

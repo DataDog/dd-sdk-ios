@@ -2,7 +2,7 @@
   "schema_version": 1,
   "scope": "Multi-scene RUM release",
   "baseline_revision": "92f021ba7e4a866f84a52da93ed8b63f3dc75882",
-  "candidate_revision": "7b77f60ebc7b6a194282c93a1e5e9c91d74afebe",
+  "candidate_revision": "a9aaf25a787421235e40b0c1714b1b7b5ab94cc6",
   "gates": [
     {
       "id": "C01",
@@ -798,8 +798,8 @@
       "decisive_test": "Reproduce/triage the reported finding, then require: Empty explicit/capability source and absent instrumentation do not suppress automatic tracking; first accepted snapshot acquires local authority",
       "environment": "iOS 27 simulator with real authority registry",
       "completion_mode": null,
-      "status": "REGRESSION BLOCKED",
-      "evidence": "REVIEW_TRIAGE.md: assessed relevant at af63657f0; source-confirmed path; required full regression/repair remains open."
+      "status": "CLOSED",
+      "evidence": "EXP-169; local unsigned a9aaf25a7. Four failing real-registry controls, 119 affected tests and mounted explicit/capability hosts29/29 versus control19/29. Automatic owner remains eligible before input; first accepted destination owns immediate marker. Missing handler/attachment, cancellation, duplicate input and source pinning covered. D08/R05 remain separate."
     },
     {
       "id": "D08",

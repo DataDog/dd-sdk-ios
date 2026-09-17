@@ -1205,3 +1205,22 @@ fixture requires the correct presence/absence before interpreting lifetime check
 Do not substitute controller release or process RSS for registration/state and
 instrumentation release. Mounted lifetime acceptance does not close P03's
 separate disconnected-history budget or physical scene lifecycle gates.
+
+
+## EXP-169 pending semantic authority
+
+`tools/multi-scene/pending-authority/run.py` repeats the frozen explicit/capability
+host comparison on a discovered iOS27 simulator. Require all29 named checks,
+real native mount/authority registry, clean installation and new run IDs. Automatic
+eligibility and mapper ownership must be checked before first semantic input;
+the unchanged control can correctly own later semantic work while losing all
+ordinary automatic work before it. Submit the immediate marker directly after
+input, before waiting for another render or lifecycle callback. Record both
+phases, exact occurrence IDs and duplicate/cancellation negatives.
+
+The four unit controls also cover absent instrumentation and attachment with the
+actual registry. Source selection is not authority. This acceptance does not
+prove disconnected publication/reconnect (D08), reentrant fan-out (R05), registry
+retirement (P03), or physical/backend/minimum-runtime gates. Local unsigned commits
+remain eligible under the user's policy; outgoing history must be signed before
+any separately authorized push.
