@@ -104,6 +104,24 @@ class ViewCacheTests: XCTestCase {
         )
     }
 
+    func testRequestSceneWithOnlyLegacyHistory_requiresExplicitFallbackOptIn() {
+        let dateProvider = RelativeDateProvider()
+        let cache = ViewCache(dateProvider: dateProvider)
+        let scene = RUMSceneIdentifier(rawValue: "scene-A")
+        let timestamp = dateProvider.now.timeIntervalSince1970.dd.toInt64Milliseconds
+        cache.insert(id: "legacy-view", timestamp: timestamp, hasReplay: true)
+
+        XCTAssertNil(cache.lastView(before: timestamp + 1, sceneIdentifier: scene))
+        XCTAssertEqual(
+            cache.lastView(before: timestamp + 1, sceneIdentifier: scene, allowLegacySceneFallback: true),
+            "legacy-view"
+        )
+        XCTAssertNil(cache.lastView(before: timestamp, sceneIdentifier: scene, allowLegacySceneFallback: true))
+        XCTAssertNil(
+            cache.lastView(before: timestamp + 1, hasReplay: false, sceneIdentifier: scene, allowLegacySceneFallback: true)
+        )
+    }
+
     func testViewOwnership_distinguishesSceneLegacyAndUnknownViews() {
         let dateProvider = RelativeDateProvider()
         let cache = ViewCache(dateProvider: dateProvider)

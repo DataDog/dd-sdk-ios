@@ -25,6 +25,9 @@ internal final class WebViewEventReceiver: FeatureMessageReceiver {
     /// The view cache containing ids of current and previous views.
     let viewCache: ViewCache
 
+    /// Declared multi-scene applications must not infer ownership from legacy views.
+    let isMultiSceneApplication: Bool
+
     /// Creates a new receiver.
     ///
     /// - Parameters:
@@ -32,16 +35,19 @@ internal final class WebViewEventReceiver: FeatureMessageReceiver {
     ///   - dateProvider: The date provider.
     ///   - commandSubscriber: Subscriber that can process a `RUMKeepSessionAliveCommand`.
     ///   - viewCache: The RUM view cache.
+    ///   - isMultiSceneApplication: Whether the app declares multiple-scene support.
     init(
         featureScope: FeatureScope,
         dateProvider: DateProvider,
         commandSubscriber: RUMCommandSubscriber,
-        viewCache: ViewCache
+        viewCache: ViewCache,
+        isMultiSceneApplication: Bool = false
     ) {
         self.featureScope = featureScope
         self.commandSubscriber = commandSubscriber
         self.dateProvider = dateProvider
         self.viewCache = viewCache
+        self.isMultiSceneApplication = isMultiSceneApplication
     }
 
     /// Writes a Browser RUM event to the core.
@@ -107,7 +113,8 @@ internal final class WebViewEventReceiver: FeatureMessageReceiver {
                     before: correctedDate,
                     hasReplay: true,
                     sceneIdentifier: sceneIdentifier,
-                    allowAmbiguousScene: false
+                    allowAmbiguousScene: false,
+                    allowLegacySceneFallback: !self.isMultiSceneApplication
                 ) {
                     event[RUMViewEvent.CodingKeys.container.rawValue] = RUMViewEvent.Container(
                         source: RUMViewEvent.Container.Source(rawValue: context.source) ?? .ios,

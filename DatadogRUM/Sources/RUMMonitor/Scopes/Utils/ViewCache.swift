@@ -125,23 +125,32 @@ internal final class ViewCache {
     /// - Parameters:
     ///   - timestamp: The requested epoch timestamp in milliseconds.
     ///   - hasReplay: Specify `true` to get the last view with replay.
+    ///   - sceneIdentifier: Restricts lookup to this scene when present.
+    ///   - allowAmbiguousScene: Allows source-less lookup across scene buckets.
+    ///   - allowLegacySceneFallback: Allows a scene request to use exclusively
+    ///     scene-less history. Only single-scene applications may opt in.
     /// - Returns: The view id if found.
     func lastView<Integer>(
         before timestamp: Integer,
         hasReplay: Bool? = nil,
         sceneIdentifier: RUMSceneIdentifier? = nil,
-        allowAmbiguousScene: Bool = true
+        allowAmbiguousScene: Bool = true,
+        allowLegacySceneFallback: Bool = false
     ) -> String? where Integer: BinaryInteger {
         purge()
         let cachedViews = views
-        if sceneIdentifier == nil,
+        // Ordinary single-scene apps can use string-key views without a scene.
+        // Never relax an exact lookup when any retained view has scene ownership.
+        let requestedScene = allowLegacySceneFallback && cachedViews.allSatisfy({ $0.sceneIdentifier == nil })
+            ? nil : sceneIdentifier
+        if requestedScene == nil,
            !allowAmbiguousScene,
            Set(cachedViews.map { $0.sceneIdentifier.map(SceneBucket.scene) ?? .legacy }).count > 1 {
             return nil
         }
 
         return cachedViews.first(where: {
-            if let sceneIdentifier, $0.sceneIdentifier != sceneIdentifier {
+            if let requestedScene, $0.sceneIdentifier != requestedScene {
                 return false
             }
             if $0.timestamp < timestamp {

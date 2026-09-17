@@ -341,7 +341,8 @@ internal final class RUMFeature: DatadogRemoteFeature, RUMSessionSamplerProvider
                 featureScope: featureScope,
                 dateProvider: configuration.dateProvider,
                 commandSubscriber: monitor,
-                viewCache: dependencies.viewCache
+                viewCache: dependencies.viewCache,
+                isMultiSceneApplication: isMultiSceneApplication
             ),
             CrashReportReceiver(
                 featureScope: featureScope,
