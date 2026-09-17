@@ -250,36 +250,46 @@ long-running actions, or other signal families.
 
 ### EXP-159: explicit scene-targeted long-running actions
 
-Defined before implementation on 2026-09-17. Extend the existing iOS 27 Swift
-SPI and Debug-only Objective-C action bridge with targeted `startAction` and
-`stopAction`. Keep each call's explicit and inferred targets separate. Resolve
-against a live view before updating the interaction representative, using the
-same fallback policy as EXP-158. Do not add protocol requirements, action
-handles, action-name matching, or new lifetime state.
+Accepted for the bounded synchronous live-view API batch. Signed SDK
+`24212cb48`, harness `cdd2239df`, and correction `4611d5f0b` preserve independent
+explicit/inferred candidates and existing lifetime rules. Equal-name A/B actions
+complete B before A with exact final names, stop attributes, and owner UUIDs;
+an empty B stop leaves A intact, and legacy source-A work remains on B.
 
-The smallest useful discriminator is two serially opened native scenes with
-stable explicit Home boundaries. Start equally named A/B actions, deliberately
-make the opposite scene representative before each targeted call, and stop B
-before A. A second B stop while only A has an action must leave A untouched.
-Then prove an unchanged source-A legacy start/stop remains on representative B.
-Require exact action UUID/count, final name/attributes, owner view, and stop
-order in focused tests and mapper/backend evidence. Unit gates additionally
-cover unavailable explicit input, contradictory exact/scene handoff, navigation,
-duplicate starts, expiry, custom/NOP forwarding, and one-shot regression.
+The corrected runtime passes 15/15 plus independent backend ownership. Full RUM
+passes 1,260/1,260, probe 166/166, Objective-C 8/8, Release and lint. The first
+background-interrupted attempt remains INCONCLUSIVE; this result does not close
+sustained simultaneous-window hardware gates. See the
+[full record](Experiments/EXP-143-199.md#exp-159--explicit-scene-targeted-long-running-actions).
 
-Proposed scenario: `actions.explicit-target.long-running-cross-scene-serial`.
-Its capability is `.multipleScenes`; no focus switch or simultaneous visibility
-claim is needed. Record the driver/oracle as pending until it exists. Resource,
-error, and view-mutation targets follow independently; their routing audit is in
-[ASSESSMENT.md](ASSESSMENT.md#downstream-routing-audit-for-exp-159).
-The full pre-implementation contract is
-[EXP-159](Experiments/EXP-143-199.md#exp-159--explicit-scene-targeted-long-running-actions).
+## Paused after EXP-159
+
+The user requested a pause after committing this experiment. No later experiment
+or implementation has started. On resume, the following requested work takes
+precedence over the older ordered slices below:
+
+1. Replace the remaining plan with a finite release checklist. Preserve approved
+   decisions; give every deliverable an owner, dependency, decisive test, and
+   required environment. Specify explicit target, captured start ownership, or
+   documented process fallback for each telemetry family. Admit experiments only
+   for a named gate or regression, and move completed narratives out of this plan.
+2. Establish representative ordinary automatic/manual, legacy lifecycle,
+   custom/NOP, and older-system compatibility baselines before further expansion.
+   Pin a comparison baseline and acceptance thresholds for dispatch overhead,
+   allocations, retained scene state, and reentrancy. Review stable SwiftUI
+   responsibilities incrementally; keep deferred extraction separate.
+3. Connect preflight, clean installation, frozen source/build identity, scenario,
+   topology, strict semantics, and backend ownership into a repeatable run with
+   a durable summary. Retain operational negative controls for stale fixtures,
+   consumed readiness, restored run identifiers, and late critical assertions.
+
+These are pending deliverables, not completed release gates or new experiments.
 
 ## Next ordered slices
 
 | Order | Expected outcome | Prerequisite evidence | Implementation boundary | Acceptance test | Environment |
 | ---: | --- | --- | --- | --- | --- |
-| 1 | Close remaining explicit downstream targets | Accepted shared `RUMViewTarget`, Operations, and one-shot action proofs | Continue one signal family per slice. Execute the defined EXP-159 long-running action slice, then Resource/error/view-mutation targets; then Traces, logs, WebView, and exported/fatal context where a public target is meaningful | Each targeted signal reaches the requested scene's current view; unresolved explicit input falls through safely; legacy source-less behavior is unchanged | Simulator for controlled attribution; hardware follow-up only where simultaneous topology is essential |
+| 1 | Close remaining explicit downstream targets | Accepted shared `RUMViewTarget`, Operations, and one-shot action proofs | Deferred until the finite checklist and early baselines above. Resource/error/view-mutation targets, then Traces, logs, WebView, and exported/fatal context need separate completion contracts | Each targeted signal reaches the requested scene's current view; unresolved explicit input falls through safely; legacy source-less behavior is unchanged | Simulator for controlled attribution; hardware follow-up only where simultaneous topology is essential |
 | 2 | Validate ordinary-app compatibility and overhead | Current simulator-capable semantic and target fixes | Single-scene automatic/manual apps, custom handlers, event handoff, swizzle paths | No new views/actions, no custom-handler regression, bounded `sendEvent` overhead/reentrancy, all module/API/lint gates green | Simulator and benchmark host |
 | 3 | Prepare semantic-navigation, shared-target, and Operation API review candidates | Accepted EXP-146-155 navigation/Operation evidence plus EXP-158 action evidence | Freeze the shared engine and accepted publisher/Observation/callback inputs. Present `RUMViewTarget.current(in:)` as evidence rather than a pre-approved name. | Review packet reconciles migration, occurrence and presentation semantics, scene isolation, target precedence, availability, Swift/Objective-C shape, and explicit limitations | API/RFC review, informed by physical results already recorded |
 | 4 | Resume the physical multi-window acceptance queue below | Prepared named scenarios, clean-run recipes, and a connected iPadOS 27 iPad | Run unchanged scenarios serially on one device; preserve topology failures as inconclusive and keep analog-only rows for a human | Exact mapper plus backend owner evidence on simultaneously usable scenes, lifecycle, close, coexistence, manual views, and shared Trace work | Paused while the physical iPad is unavailable; final parity on iPhone Duo 27.1 |
@@ -321,9 +331,10 @@ The full pre-implementation contract is
 | Two native Observation scenes (`EXP-154`) | Accepted serial simulator discriminator; simultaneous topology remains hardware-only | Existing per-window Observation router and exact scene-context markers; require `.multipleScenes`, not `.simultaneousVisibleWindows` | Signed correction `f92d72909`; 2/2 focused, 162/162 probe, lint and Release PASS; corrected frozen run 25/25; backend session `a6a5afd5-8089-4996-9805-ed62fb76927d` has distinct A/B H1/D1/H2 IDs, six exact marker pairs, and no error/crash |
 | Operation target API (`EXP-155`) | Accepted experimental `.current(in:)` engine proof; stable review pending | Opaque scene identifier, separate explicit/inferred candidates, extension fallback for custom/NOP handlers, Debug-only Objective-C companion | 7/7 focused API/session tests, 33/33 broadened Operation tests, Objective-C smoke 1/1, 163/163 probe, 24/24 runtime, eight raw steps and four reduced Operations with exact A/B owners |
 | One-shot action target (`EXP-158`) | Accepted experimental shared-target proof; stable review pending | Generalized `RUMViewTarget`, separate explicit/inferred candidates, exactly-once custom/NOP fallback, Debug-only Objective-C companion | Focused regressions, Objective-C smoke 8/8, 164/164 probe, 9/9 runtime, and exact backend A/B explicit owners plus unchanged B representative fallback |
-| Remaining targeted downstream signals | Shared target and one-shot action accepted | Long-running actions, Resources, errors, view mutations, Traces, logs, WebView, and exported/fatal context; one signal family per slice | Exact requested owner, unavailable-explicit fallback, custom/NOP compatibility, and unchanged legacy behavior |
-| Single-scene/custom-handler compatibility | After semantic state stabilizes | Existing integration paths | Full suites, representative behavior, no duplicate views/actions |
-| Performance/reentrancy | After code shape freezes | `UIApplication.sendEvent` handoff and locks | Measured bounded overhead, no recursion/deadlock, normal apps unaffected |
+| Long-running action targets (`EXP-159`) | Accepted bounded live-view API discriminator; stable review pending | Explicit start/stop, empty-slot isolation, unchanged timeout/navigation/custom/NOP behavior | 1,260/1,260 RUM, 166/166 probe, Objective-C 8/8, 15/15 runtime, exact backend completion ownership; sustained simultaneous use remains hardware-gated |
+| Remaining targeted downstream signals | Shared target and one-shot/long-running actions accepted; split this row on resume | Resources, errors, view mutations, Traces, logs, WebView, and exported/fatal context; define a finite completion contract for each | Exact requested owner, unavailable-explicit fallback, custom/NOP compatibility, and unchanged legacy behavior |
+| Single-scene/custom-handler compatibility | Before further expansion; baseline pending | Existing integration paths | Full suites, representative behavior, no duplicate views/actions |
+| Performance/reentrancy | Before further expansion; baseline and thresholds pending | `UIApplication.sendEvent` handoff and locks | Measured bounded overhead, no recursion/deadlock, normal apps unaffected |
 | Missing deterministic harness controls | Before WebView, mirrored log, and fatal/exported context rows | Probe only | Named scenario, fail-closed prerequisites, mapper/backend oracle |
 
 ## Physical-device and human-driven queue

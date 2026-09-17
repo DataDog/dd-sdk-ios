@@ -9,6 +9,13 @@ validated, and ready to become a supported contract.
 
 Last updated: 2026-09-17
 
+Current accepted update: EXP-159 adds targeted long-running action start/stop
+with exact empty-slot isolation and legacy fallback (15/15 mapper + backend).
+The first native-background-interrupted attempt is retained; sustained concurrent
+window use remains hardware-gated. Next work is the finite release checklist,
+early compatibility/performance baselines, incremental review, and acceptance
+automation requested after that experiment. [Full record](MultiSceneSupport/Experiments/EXP-143-199.md#exp-159--explicit-scene-targeted-long-running-actions).
+
 ## Goal
 
 RUM must correctly represent applications that have two or more independently

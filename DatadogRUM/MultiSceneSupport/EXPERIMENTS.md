@@ -15,10 +15,12 @@ Last updated: 2026-09-17
 
 ## Current checkpoint
 
-- Next defined slice: `EXP-159`, explicit long-running action start/stop. The
-  SDK and driver/oracle are implemented and pass full RUM/probe checks. The first
-  runtime lost A to normal background before explicit stops; a bounded synchronous
-  driver correction is defined. EXP-158 remains the latest accepted runtime result.
+- Latest accepted slice: `EXP-159`, targeted long-running action start/stop.
+  Bounded synchronous live-view runtime passes 15/15 and exact backend ownership;
+  full RUM 1,260/1,260, probe 166/166, Objective-C 8/8, Release and lint pass.
+  The earlier background-interrupted attempt remains INCONCLUSIVE. Next work is
+  finite release gates, early baselines, incremental review, and acceptance
+  automation before any further telemetry expansion.
 
 - Latest physical-device attempt is `EXP-157`. `EXP-156` now closes the tooling
   gate: after the earlier connection, unsigned-install, and restricted-context
@@ -311,7 +313,7 @@ ordered acceptance contract is in
 | EXP-156 | 2026-09-16 | PASS · physical-device tooling | Hardware automation | Two preflights found only a disconnected local-network record. A third passed repeated wired inventories and an `arm64` build; the expected unsigned rejection exposed signing. The restricted-context zero-identity result was false: one of two login-keychain identities matches the installed device profile. A copied app passed strict/deep verification, clean install, and physical launch. | [active record](Experiments/EXP-143-199.md#exp-156--physical-ipad-automation-preflight) |
 | EXP-157 | 2026-09-16 | PASS · physical Operations + backend; INCONCLUSIVE · simultaneous visibility | Operations/hardware | First signed `EXP-131` launch exposed a stale Home fixture before any Operation. With explicit per-scene Home boundaries, the physical retry passes 24/24 across two native scenes; backend contains eight raw steps and four exact reduced Operations with A→B, A→A, B→B ownership and beta-before-alpha completion. Both scenes were full-screen and A was background while B was active, so simultaneous on-screen visibility remains human-gated. | [active record](Experiments/EXP-143-199.md#exp-157--physical-inferred-operation-retry) |
 | EXP-158 | 2026-09-16 | PASS · tests + mapper + backend | Actions/API prototype | The generalized iOS 27 `RUMViewTarget.current(in:)` routes one-shot actions to a requested scene while retaining independent inferred fallback. Run `exp158-sim-66f922ee-19a3-4941-b8ca-c518216e6b0d` passes 9/9: explicit A and B own their requested Home, while a source-A legacy action remains on representative B. Backend session `f67c75b2-e839-4701-a283-7e4355682b6a` confirms the same owners across 30 events. The probe passes 164/164, Objective-C smoke passes 8/8, and the full RUM suite has zero failures. Stable API and long-running actions remain open. | [active record](Experiments/EXP-143-199.md#exp-158--explicit-scene-targeted-one-shot-action) |
-| EXP-159 | 2026-09-17 | PLANNED · source audit | Actions/API prototype | Extend explicit targeting to start/stop without changing the per-view action slot. Prove equal-name A/B reverse completion, a targeted stop on an action-free live view, unavailable-target fallback, and unchanged source-less behavior. Definition precedes implementation; no new runtime or test result yet. | [active record](Experiments/EXP-143-199.md#exp-159--explicit-scene-targeted-long-running-actions) |
+| EXP-159 | 2026-09-17 | PASS · tests + mapper + backend | Actions/API prototype | Targeted long-running action start/stop passes 15/15 in a bounded live-view batch, with exact backend owners, reverse completion, empty-slot isolation, and unchanged legacy fallback. The earlier background-interrupted attempt remains INCONCLUSIVE; sustained simultaneous-window use remains hardware-gated. | [active record](Experiments/EXP-143-199.md#exp-159--explicit-scene-targeted-long-running-actions) |
 
 ## Simulator-inconclusive and hardware-required evidence
 

@@ -404,6 +404,16 @@ No hardware row is promoted from simulator evidence. `EXP-039` remains a
 deterministic-harness gap rather than a device queue item because its candidate
 was never constructed.
 
+## EXP-159 acceptance update
+
+Targeted continuous-action start/stop is accepted for the bounded live-view API
+batch: 15/15 mapper assertions and exact backend final names, stop attributes,
+UUIDs, B-before-A order, empty-slot no-op, and legacy source-A→representative-B
+ownership. Full RUM 1,260/1,260; probe 166/166; ObjC 8/8; Release/lint PASS.
+The first run correctly failed when native background ended A before its stop;
+this does not prove sustained simultaneous-window use. See the
+[EXP-159 record](Experiments/EXP-143-199.md#exp-159--explicit-scene-targeted-long-running-actions).
+
 ## Release blockers
 
 P0 blockers:
@@ -414,7 +424,8 @@ P0 blockers:
    exact semantics from opaque state.
 2. Continue the required downstream target surfaces without changing legacy
    fallback. Operations and one-shot actions are accepted prototypes;
-   long-running actions and the remaining signal families are open.
+   long-running actions now pass the bounded EXP-159 discriminator; remaining
+   families must be split into finite gates.
 3. Close actual semantic-host removal and genuine scene disconnect/reconnect,
    then pass the rest of the P0 [physical-device and human-driven
    queue](PLAN.md#physical-device-and-human-driven-queue), including semantic A /

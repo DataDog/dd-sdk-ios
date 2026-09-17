@@ -1018,3 +1018,22 @@ runbook around them.
 - [ ] Exact run details appended to the active numbered shard and one compact
       locator row added to `EXPERIMENTS.md`.
 - [ ] Interaction session closed or confirmed automatically expired.
+
+## EXP-159 operational discriminators
+
+- A discovered test with `No result`/`notRun` invalidates current-build acceptance,
+  even if every older test passes. EXP-159 initially returned164 passes with two
+  new tests unexecuted; fresh derived data produced 166/166.
+- Resolve live-view prerequisites before the action interval. Native background
+  can correctly close a view/action between suspended driver steps. An API-only
+  synchronous batch is valid only with both live views and unchanged exact
+  completion oracle; it does not close sustained multi-window hardware gates.
+- Preserve final names and stop-phase attributes, exact owner UUIDs, counts, and
+  B-before-A ordering. Neither timeout nor a same-name early completion can pass.
+- Current full-module CLI uses `-enableCodeCoverage NO` for the previously
+  documented finalization issue; this is not a skipped test or a Release-build flag.
+- Mixed OSLog/stdout lines can contain a valid probe JSON object away from the
+  start of the line. Preserve raw logs and decode complete JSON objects at their
+  prefix; never manufacture missing records. Check sequence continuity after
+  terminal capture. EXP-159 recovered sequence 49 verbatim this way, yielding
+  all sequences 1–94; the stdio-only original remains available.
