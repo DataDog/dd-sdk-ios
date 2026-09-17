@@ -1,0 +1,21 @@
+{
+  "experiment": "EXP-179",
+  "status": "PLANNED",
+  "gate": "T06",
+  "gates_closed": [],
+  "control_revision": "f01637a65c4399838e93cfaaa10fca90ca99816d",
+  "control_sdk_revision": "1c6104cacb95751137c700e1812bcb1c0f05a359",
+  "definition": "Experiments/EXP-143-199.md#exp-179--target-custom-timing-and-loading-time",
+  "native_contract": {
+    "scenario": "timing.explicit-target.current-view-cross-scene-serial",
+    "checkpoints": 8,
+    "marker_errors": 16,
+    "views": 3,
+    "resources": 0,
+    "crashes": 0,
+    "app_expectations": 34,
+    "simultaneous_visibility_claimed": false
+  },
+  "unit_attempts": [],
+  "native_attempts": []
+}

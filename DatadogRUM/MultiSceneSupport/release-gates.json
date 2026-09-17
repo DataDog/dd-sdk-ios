@@ -293,7 +293,7 @@
       "environment": "iOS 27 simulator, focused compatibility tests, exact mapper and Datadog backend owners",
       "completion_mode": "explicit target",
       "status": "OPEN",
-      "evidence": ""
+      "evidence": "EXP-179 defined before implementation: explicit timing/loading targets, distinct expiration policy, repeated-name/overwrite rules, eight paired native checkpoints and whole-session backend final values. Results/EXP-179-timing-loading.json. Not accepted."
     },
     {
       "id": "T07",
