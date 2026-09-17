@@ -18,7 +18,7 @@ review gates R01–R06.
 | R07 / D07 | CLOSED | EXP-169, local unsigned `a9aaf25a7`: four failing controls, 119 tests and mounted29/29; automatic eligibility before input and exact immediate semantic owners |
 | R08 / D08 | CLOSED | EXP-170, signed `66d1ccb02`: three failing controls,314 affected tests and mounted51/51 versus39/51; fresh reconnect Resource/Log owners, peer continuity and delayed remount. H09 still requires genuine OS ordering. |
 | R09 / D09 | CLOSED | EXP-164 at local `a9abc092b`: 31 tests and actual mounted fixture 19/19; zero background reads/MTC diagnostics versus control 5 reads/4 diagnostics |
-| R10 / D10 | OPEN | Reject/canonicalize Binding writes and verify accepted-state callbacks/occurrences |
+| R10 / D10 | OPEN | Defined EXP-173: reject/canonicalize actual Binding writes, accepted-state markers, exact native dismissal and same-ID occurrence callbacks |
 | R11 / D11 | CLOSED | EXP-165, signed `9a1ee83a5`: 102 tests, 19/19 mounted WebView/Replay checks; legacy association restored, peers excluded |
 | R12 / D12 | CLOSED | EXP-163, signed `084dff4c1`: three failing recipient controls, 212 affected tests pass; own overdue-stop attributes retained without peer leakage |
 

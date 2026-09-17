@@ -1295,3 +1295,16 @@ EXP-172's first native attempt passed16 launches; keep its accepted result pinne
 Do not use a synchronous global queue call to prove background initialization:
 GCD may execute it on the caller. The unit fixture uses async dispatch and a
 bounded semaphore to hold the main seed until the handler is released.
+
+
+## EXP-173 accepted presentation boundaries
+
+Define control and closure separately for D10 and R06. An internal behavior-neutral
+Binding-factory relocation can expose the actual production closure to tests;
+record failing controls before changing its order. Native evidence must mount
+real sheet/cover content and deliver actual dismissal callbacks. Submit markers
+at setter-return/callback boundaries before awaiting another frame, then inspect
+queued events after drain. Distinguish a rejected proposal, accepted descriptor,
+customer item ID and occurrence UUID. Preserve old callback closures for stale
+same-ID and A→B→A controls. Opaque setter internals are not an accepted-state
+observation source; exact interior work uses the existing source contract.

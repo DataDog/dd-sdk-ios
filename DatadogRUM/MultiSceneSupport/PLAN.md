@@ -52,8 +52,8 @@ Objective-C Release exposure still require normal API review.
    reconnect acceptance are closed within their recorded boundaries.
    R04 retained-reader remount and P03 disconnected-registry retirement pass
    EXP-171/172 within their recorded boundaries.
-3. Define and execute D10 accepted presentation state with the R06 same-ID
-   occurrence discriminator. Then close R05 multi-observer reentrancy coverage.
+3. Execute defined EXP-173 for D10 accepted presentation state and the R06
+   same-ID occurrence discriminator. Then close R05 multi-observer reentrancy coverage.
 4. Close the early compatibility/performance gates in available environments;
    C06 remains blocked without a minimum-OS runtime. Resume T03–T14 only after
    relevant repair dependencies pass. A documented fallback remains a deliverable.

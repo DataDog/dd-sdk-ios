@@ -490,8 +490,8 @@ process fallback; each gate has an owner, dependency, decisive test and environm
 4. Close C03/C06 environment gaps, stable API review, final supported-platform
    matrix (including macOS/watchOS), Replay crash safety and Duo27.1 acceptance.
 
-No product decision blocks internal repair work. Define D10/R06 accepted
-presentation state and same-ID occurrence coverage next, followed by R05
+No product decision blocks internal repair work. Execute defined EXP-173 for D10/R06 accepted
+presentation state and same-ID occurrence coverage, followed by R05
 multi-observer fan-out. Preserve the accepted P03 lifetime and stale-callback evidence.
 Do not rerun accepted experiments merely to resume.
 

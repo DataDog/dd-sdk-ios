@@ -334,6 +334,7 @@ ordered acceptance contract is in
 | EXP-171 | PASS | R04: two failing no-body controls,318 tests, mounted57/57 versus43/57; first retained-reader callback owns latest input before body rebind | [Record](Experiments/EXP-143-199.md#exp-171--restore-retained-hosts-from-the-reader-without-body-reconstruction) |
 
 | EXP-172 | PASS | P03:326 tests, three failing controls; Release ABBA27/26.5 zero retired entries/weak survivors within frozen heap limits; eight ordinary smoke runs and watchOS Release pass | [Record](Experiments/EXP-143-199.md#exp-172--retire-disconnected-scene-history-without-accepting-stale-callbacks) |
+| EXP-173 | PLANNED | D10/R06: accepted presentation Binding writes, exact occurrence callbacks, rejected mounts and native dismissal ownership | [Record](Experiments/EXP-143-199.md#exp-173--commit-accepted-presentation-state-and-fence-occurrence-callbacks) |
 
 ## Simulator-inconclusive and hardware-required evidence
 
