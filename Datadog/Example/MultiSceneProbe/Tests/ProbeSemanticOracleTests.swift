@@ -7,6 +7,50 @@
 import XCTest
 
 final class ProbeSemanticOracleTests: XCTestCase {
+    func testTargetedContinuousActionOracleRejectsMissingDuplicateSwappedAndEarlyStop() throws {
+        let scenario = try scenario(named: "actions.explicit-target.long-running-cross-scene-serial")
+        for mutation in ["none", "missing", "duplicate", "swapped", "early-stop", "wrong-final-name"] {
+            let recorder = ProbeEventRecorder(
+                runID: "continuous-action-contract", scenarioID: scenario.identifier,
+                sink: { _ in }, clock: { 42 }
+            )
+            for letter in ["A", "B"] {
+                recorder.record(viewSignal(
+                    id: "view-\(letter)", screen: "home", active: true,
+                    scene: "scene-\(letter)", nativeSceneID: "native-\(letter)"
+                ))
+            }
+            let events = [
+                ("long-running-representative-b", "B", "B"),
+                ("long-running-representative-a", "A", "A"),
+                ("long-running-finished-b", "B", "B"),
+                ("long-running-empty-b-representative-a", "A", "A"),
+                ("long-running-finished-a", "A", "A"),
+                ("long-running-legacy-representative-b", "B", "B"),
+                ("long-running-legacy-finished-b", "B", "A"),
+            ]
+            for (name, owner, source) in events {
+                let isFinalA = name == "long-running-finished-a"
+                if isFinalA && mutation == "missing" { continue }
+                let phase = isFinalA && mutation == "early-stop" ? "long-running-shared" : name
+                let target = isFinalA && mutation == "wrong-final-name" ? "long-running-shared" : phase
+                let view = isFinalA && mutation == "swapped" ? "B" : owner
+                let signal = ProbeSignal(
+                    kind: .rumAction, evidenceSource: .rumMapper,
+                    sourceContext: ProbeSourceContext(logicalSceneID: "scene-\(source)", screen: "home", phase: phase),
+                    rumContext: ProbeRUMContext(sessionID: "session", viewID: "view-\(view)"),
+                    eventID: name, name: phase,
+                    action: ProbeActionSignal(id: name, type: "custom", target: target, loadingTimeNanoseconds: 1)
+                )
+                recorder.record(signal)
+                if isFinalA && mutation == "duplicate" { recorder.record(signal) }
+            }
+            let result = ProbeSemanticOracle.evaluate(scenario: scenario, signals: recorder.snapshot())
+            XCTAssertEqual(result.state, mutation == "none" ? .pass : .fail,
+                           "\(mutation): \(result.issues.map(\.reason))")
+        }
+    }
+
     func testEXP098ReturnedHomeAttributionPasses() throws {
         let scenario = try scenario(named: "swiftui.stack.return")
         let signals = try fixtureSignals(named: "exp-098-pass")

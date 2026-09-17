@@ -824,6 +824,28 @@ internal final class ProbeScenarioDriver {
             }
             return .acknowledged(signal)
 
+        case .startExplicitTargetAction, .stopExplicitTargetAction,
+             .startLegacyAction, .stopLegacyAction:
+            guard let scene = step.scene, let marker = step.value else {
+                return .failed("continuous action scene or marker is missing")
+            }
+            if case .rejected(let reason) = executeOnExactScene(step, scene: scene) {
+                return .failed(reason)
+            }
+            let requiresCompletedAction = (step.kind == .stopExplicitTargetAction || step.kind == .stopLegacyAction)
+                && marker != "long-running-empty-b"
+            let signalName = requiresCompletedAction
+                ? "marker:\(marker)"
+                : "assertion:continuous-action-submitted-\(marker)"
+            guard let signal = await wait(
+                for: .encoded(scene: scene, value: signalName),
+                after: commandSequence,
+                timeoutNanoseconds: stepTimeoutNanoseconds
+            ) else {
+                return .failed("timed out waiting for continuous action \(marker)")
+            }
+            return .acknowledged(signal)
+
         case .startTraceOnlyURLSessionRequest:
             guard
                 let scene = step.scene,

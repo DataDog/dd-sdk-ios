@@ -51,6 +51,7 @@ struct ProbeExpectation: Codable, Equatable {
     let interval: String?
     let outcome: ProbeTransitionOutcome?
     let actionType: String?
+    let actionTarget: String?
     let expectedCount: Int?
 
     init(
@@ -71,6 +72,7 @@ struct ProbeExpectation: Codable, Equatable {
         interval: String? = nil,
         outcome: ProbeTransitionOutcome? = nil,
         actionType: String? = nil,
+        actionTarget: String? = nil,
         expectedCount: Int? = nil
     ) {
         self.kind = kind
@@ -90,6 +92,7 @@ struct ProbeExpectation: Codable, Equatable {
         self.interval = interval
         self.outcome = outcome
         self.actionType = actionType
+        self.actionTarget = actionTarget
         self.expectedCount = expectedCount
     }
 }

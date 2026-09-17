@@ -15,6 +15,7 @@ enum ProbeScenarioCatalog {
         "operations.cross-scene.lifecycle",
         "operations.explicit-target.cross-scene-serial",
         "actions.explicit-target.cross-scene-serial",
+        "actions.explicit-target.long-running-cross-scene-serial",
         "swiftui.stack.abort",
         "swiftui.stack.same-type-replacement",
         "swiftui.stack.different-type-replacement",
@@ -71,6 +72,7 @@ enum ProbeScenarioCatalog {
         operationsCrossSceneLifecycle,
         operationsExplicitTargetCrossSceneSerial,
         actionsExplicitTargetCrossSceneSerial,
+        actionsExplicitTargetLongRunningCrossSceneSerial,
         swiftUIStackAbort,
         swiftUIStackSameTypeReplacement,
         swiftUIStackDifferentTypeReplacement,
@@ -707,6 +709,74 @@ enum ProbeScenarioCatalog {
         ],
         expectedSemanticTimeline: explicitActionTargetTimeline()
     )
+
+    /// All native-scene and view readiness is consumed before either action
+    /// starts. Final names and phase attributes require explicit stops, so the
+    /// automatic timeout cannot accidentally satisfy this contract.
+    private static let actionsExplicitTargetLongRunningCrossSceneSerial = ProbeScenario(
+        identifier: "actions.explicit-target.long-running-cross-scene-serial",
+        trackingMode: .manual,
+        layout: .stack,
+        initialWindows: ["scene-A", "scene-B"],
+        requiredCapabilities: [.multipleScenes],
+        steps: [
+            ProbeStep(.waitForSceneReady, scene: "scene-A"),
+            ProbeStep(.waitForSignal, scene: "scene-A", signal: "rum-view:home#1"),
+            ProbeStep(.openWindow, scene: "scene-A", value: "scene-B"),
+            ProbeStep(.waitForSignal, scene: "scene-B", signal: "rum-view:home#1"),
+            ProbeStep(.emitSceneContextMarker, scene: "scene-B", value: "long-running-representative-b"),
+            ProbeStep(.startExplicitTargetAction, scene: "scene-A", value: "long-running-shared"),
+            ProbeStep(.startExplicitTargetAction, scene: "scene-B", value: "long-running-shared"),
+            ProbeStep(.emitSceneContextMarker, scene: "scene-A", value: "long-running-representative-a"),
+            ProbeStep(.stopExplicitTargetAction, scene: "scene-B", value: "long-running-finished-b"),
+            ProbeStep(.emitSceneContextMarker, scene: "scene-A", value: "long-running-empty-b-representative-a"),
+            ProbeStep(.stopExplicitTargetAction, scene: "scene-B", value: "long-running-empty-b"),
+            ProbeStep(.stopExplicitTargetAction, scene: "scene-A", value: "long-running-finished-a"),
+            ProbeStep(.emitSceneContextMarker, scene: "scene-B", value: "long-running-legacy-representative-b"),
+            ProbeStep(.startLegacyAction, scene: "scene-A", value: "long-running-legacy-start"),
+            ProbeStep(.stopLegacyAction, scene: "scene-A", value: "long-running-legacy-finished-b"),
+        ],
+        completionConditions: [
+            continuousActionExpectation(name: "long-running-finished-b", scene: "scene-B"),
+            continuousActionExpectation(name: "long-running-finished-a", scene: "scene-A"),
+            continuousActionExpectation(name: "long-running-legacy-finished-b", scene: "scene-B", sourceScene: "scene-A"),
+            ProbeExpectation(.noEvent, name: "long-running-shared"),
+            ProbeExpectation(.noEvent, name: "long-running-empty-b"),
+            ProbeExpectation(.noEvent, name: "long-running-legacy-start"),
+        ],
+        expectedSemanticTimeline: [
+            ProbeExpectation(.viewStarted, scene: "scene-A", screen: "home", occurrence: 1, rumViewOrigin: .semantic),
+            ProbeExpectation(.viewStarted, scene: "scene-B", screen: "home", occurrence: 1, rumViewOrigin: .semantic),
+            continuousActionExpectation(name: "long-running-representative-b", scene: "scene-B", finalName: false),
+            continuousActionExpectation(name: "long-running-representative-a", scene: "scene-A", finalName: false),
+            continuousActionExpectation(name: "long-running-finished-b", scene: "scene-B"),
+            continuousActionExpectation(name: "long-running-empty-b-representative-a", scene: "scene-A", finalName: false),
+            continuousActionExpectation(name: "long-running-finished-a", scene: "scene-A"),
+            continuousActionExpectation(name: "long-running-legacy-representative-b", scene: "scene-B", finalName: false),
+            continuousActionExpectation(name: "long-running-legacy-finished-b", scene: "scene-B", sourceScene: "scene-A"),
+        ]
+    )
+
+    private static func continuousActionExpectation(
+        name: String,
+        scene: String,
+        sourceScene: String? = nil,
+        finalName: Bool = true
+    ) -> ProbeExpectation {
+        ProbeExpectation(
+            .action,
+            scene: scene,
+            screen: "home",
+            occurrence: 1,
+            name: name,
+            sourceScene: sourceScene ?? scene,
+            sourceScreen: "home",
+            rumViewOrigin: .semantic,
+            actionType: "custom",
+            actionTarget: finalName ? name : nil,
+            expectedCount: 1
+        )
+    }
 
     private static let swiftUIStackAbort = ProbeScenario(
         identifier: "swiftui.stack.abort",

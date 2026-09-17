@@ -522,6 +522,9 @@ internal enum ProbeSemanticOracle {
         if let expectedName = expectation.name, signal.name != expectedName {
             return .noMatch
         }
+        if let target = expectation.actionTarget, signal.action?.target != target {
+            return .violation("action target does not match explicit completion name \(target)")
+        }
         if let expectedActionType = expectation.actionType {
             guard signal.action?.type == expectedActionType else {
                 return .violation(
@@ -731,6 +734,9 @@ internal enum ProbeSemanticOracle {
             return false
         }
         if let name = expectation.name, signal.name != name {
+            return false
+        }
+        if let target = expectation.actionTarget, signal.action?.target != target {
             return false
         }
         if

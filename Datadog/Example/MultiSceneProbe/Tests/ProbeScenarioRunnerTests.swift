@@ -45,6 +45,7 @@ final class ProbeScenarioRunnerTests: XCTestCase {
                 "operations.navigation.lifecycle",
                 "operations.cross-scene.lifecycle",
                 "actions.explicit-target.cross-scene-serial",
+                "actions.explicit-target.long-running-cross-scene-serial",
                 "swiftui.stack.abort",
                 "swiftui.stack.same-type-replacement",
                 "swiftui.coexistence.semantic-a-automatic-b",
@@ -517,6 +518,20 @@ final class ProbeScenarioRunnerTests: XCTestCase {
                     && $0.ownerViewRelation == .same
             }
         )
+    }
+
+    func testContinuousActionScenarioConsumesReadinessBeforeStartingAndStopsEmptyPeerFirst() throws {
+        let scenario = try XCTUnwrap(ProbeScenarioCatalog.scenario(
+            identifier: "actions.explicit-target.long-running-cross-scene-serial"
+        ))
+        let start = try XCTUnwrap(scenario.steps.firstIndex { $0.kind == .startExplicitTargetAction })
+        XCTAssertFalse(scenario.steps.dropFirst(start).contains {
+            [.waitForSceneReady, .waitForSignal, .openWindow].contains($0.kind)
+        })
+        XCTAssertFalse(scenario.steps.contains { $0.kind == .waitForSceneReady && $0.scene == "scene-B" })
+        XCTAssertEqual(scenario.steps.filter { $0.kind == .stopExplicitTargetAction }.map(\.scene),
+                       ["scene-B", "scene-B", "scene-A"])
+        XCTAssertEqual(Set(scenario.requiredCapabilities), [.multipleScenes])
     }
 
     func testAutomaticManualSheetTargetsOnlyTheExceptionalScreen() throws {

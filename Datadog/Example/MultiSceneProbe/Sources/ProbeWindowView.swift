@@ -2905,6 +2905,45 @@ struct ProbeWindowRoot: View {
                         + "screen=\(currentSceneScreen) phase=\(marker) "
                         + "uptime=\(uptime)"
                 )
+            case .startExplicitTargetAction, .stopExplicitTargetAction,
+                 .startLegacyAction, .stopLegacyAction:
+                guard let marker = step.value else {
+                    return .rejected(reason: "continuous action marker is missing")
+                }
+                let attributes: [String: Encodable] = [
+                    ProbeRuntime.Attribute.runID: ProbeRuntime.runID,
+                    ProbeRuntime.Attribute.sourceScene: logicalSceneID,
+                    ProbeRuntime.Attribute.sceneSessionID: handle.nativeSceneID,
+                    ProbeRuntime.Attribute.screen: currentSceneScreen,
+                    ProbeRuntime.Attribute.phase: marker,
+                    ProbeRuntime.Attribute.uptime: ProcessInfo.processInfo.systemUptime,
+                ]
+                let monitor = RUMMonitor.shared()
+                switch step.kind {
+                case .startLegacyAction:
+                    monitor.startAction(type: .custom, name: marker, attributes: attributes)
+                case .stopLegacyAction:
+                    monitor.stopAction(type: .custom, name: marker, attributes: attributes)
+                default:
+                    guard #available(iOS 27.0, *),
+                          let scene = sceneTargetedWindowScene(operation: "continuous-action-target") else {
+                        return .rejected(reason: "continuous action target scene requires iOS 27")
+                    }
+                    let target = RUMViewTarget.current(in: scene)
+                    if step.kind == .startExplicitTargetAction {
+                        monitor.startAction(type: .custom, name: marker, view: target, attributes: attributes)
+                    } else {
+                        monitor.stopAction(type: .custom, name: marker, view: target, attributes: attributes)
+                    }
+                }
+                ProbeRuntime.eventRecorder.record(
+                    ProbeSignal(
+                        kind: .assertion,
+                        semanticContext: ProbeSemanticContext(logicalSceneID: logicalSceneID),
+                        name: "continuous-action-submitted-\(marker)",
+                        result: .pass
+                    )
+                )
             case .startTraceOnlyURLSessionRequest:
                 guard let requestName = step.value else {
                     return .rejected(reason: "Trace-only request name is missing")
