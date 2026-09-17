@@ -5504,6 +5504,10 @@ internal final class RUMSwiftUISemanticNavigationState<
         let depth: Int
     }
 
+    struct PresentationOccurrence: Hashable {
+        fileprivate let identity: String
+    }
+
     private struct ActivePresentation {
         var item: Presentation
         var descriptor: RUMNavigationPresentation
@@ -5688,6 +5692,39 @@ internal final class RUMSwiftUISemanticNavigationState<
         reconcile(path: path.wrappedValue)
     }
 
+    func presentationBinding(
+        for style: RUMNavigationPresentationStyle,
+        to presented: Binding<Presentation?>,
+        descriptor: @escaping (Presentation) -> RUMNavigationPresentation,
+        viewsHandler: @escaping () -> RUMViewsHandler?
+    ) -> Binding<Presentation?> {
+        Binding(
+            get: {
+                guard
+                    let item = presented.wrappedValue,
+                    self.presentationStyle(for: item) == style
+                else {
+                    return nil
+                }
+                return item
+            },
+            set: { newItem, transaction in
+                if
+                    newItem == nil,
+                    let currentItem = presented.wrappedValue,
+                    self.presentationStyle(for: currentItem) != style {
+                    return
+                }
+                presented.transaction(transaction).wrappedValue = newItem
+                self.reconcilePresentation(
+                    presented.wrappedValue,
+                    descriptor: descriptor,
+                    viewsHandler: viewsHandler()
+                )
+            }
+        )
+    }
+
     func reconcilePresentation(
         _ item: Presentation?,
         descriptor: ((Presentation) -> RUMNavigationPresentation),
@@ -5733,48 +5770,61 @@ internal final class RUMSwiftUISemanticNavigationState<
         return activePresentation.descriptor.style
     }
 
+    func presentationOccurrence(
+        for item: Presentation,
+        style: RUMNavigationPresentationStyle
+    ) -> PresentationOccurrence? {
+        guard
+            let activePresentation,
+            AnyHashable(activePresentation.item.id) == AnyHashable(item.id),
+            activePresentation.descriptor.style == style
+        else {
+            return nil
+        }
+        return PresentationOccurrence(identity: activePresentation.identity)
+    }
+
+    @discardableResult
     func mountPresentation(
-        _ item: Presentation,
+        _ occurrence: PresentationOccurrence?,
         in sceneIdentifier: RUMSceneIdentifier,
         viewsHandler: RUMViewsHandler?
-    ) {
+    ) -> Bool {
         guard
+            let occurrence,
             var activePresentation,
-            AnyHashable(activePresentation.item.id) == AnyHashable(item.id),
-            let viewsHandler
+            activePresentation.identity == occurrence.identity,
+            let viewsHandler,
+            viewsHandler.canTrackViews(in: sceneIdentifier)
         else {
-            return
+            return false
         }
 
-        if activePresentation.isStarted {
-            guard activePresentation.sceneIdentifier != sceneIdentifier else {
-                return
-            }
-            if let previousSceneIdentifier = activePresentation.sceneIdentifier {
-                viewsHandler.notify_semanticPresentationDisappear(
-                    identity: activePresentation.identity,
-                    sceneIdentifier: previousSceneIdentifier
-                )
-            }
+        if activePresentation.isStarted,
+           activePresentation.sceneIdentifier == sceneIdentifier {
+            return true
         }
 
+        let mountedPresentation = activePresentation.isStarted
+            ? activePresentation
+            : outgoingPresentation
         let view = activePresentation.descriptor.view
+        let accepted: Bool
         if
-            let outgoingPresentation,
-            outgoingPresentation.isStarted,
-            let outgoingSceneIdentifier = outgoingPresentation.sceneIdentifier {
-            viewsHandler.notify_semanticPresentationReplace(
-                identity: outgoingPresentation.identity,
-                sceneIdentifier: outgoingSceneIdentifier,
+            let mountedPresentation,
+            mountedPresentation.isStarted,
+            let previousSceneIdentifier = mountedPresentation.sceneIdentifier {
+            accepted = viewsHandler.notify_semanticPresentationReplace(
+                identity: mountedPresentation.identity,
+                sceneIdentifier: previousSceneIdentifier,
                 replacementIdentity: activePresentation.identity,
                 replacementName: view.name,
                 replacementPath: view.path ?? view.name,
                 replacementAttributes: view.attributes,
                 replacementSceneIdentifier: sceneIdentifier
             )
-            self.outgoingPresentation = nil
         } else {
-            viewsHandler.notify_semanticPresentationAppear(
+            accepted = viewsHandler.notify_semanticPresentationAppear(
                 identity: activePresentation.identity,
                 name: view.name,
                 path: view.path ?? view.name,
@@ -5782,19 +5832,25 @@ internal final class RUMSwiftUISemanticNavigationState<
                 sceneIdentifier: sceneIdentifier
             )
         }
+        guard accepted else {
+            return false
+        }
+        outgoingPresentation = nil
         activePresentation.sceneIdentifier = sceneIdentifier
         activePresentation.isStarted = true
         activePresentation.hasMounted = true
         self.activePresentation = activePresentation
+        return true
     }
 
     func presentationDidDisappear(
-        _ item: Presentation,
+        _ occurrence: PresentationOccurrence?,
         viewsHandler: RUMViewsHandler?
     ) {
         guard
+            let occurrence,
             var activePresentation,
-            AnyHashable(activePresentation.item.id) == AnyHashable(item.id),
+            activePresentation.identity == occurrence.identity,
             activePresentation.isStarted,
             let sceneIdentifier = activePresentation.sceneIdentifier
         else {
@@ -5939,9 +5995,8 @@ private struct RUMSemanticPresentationBoundary<
     Presentation: Identifiable,
     Content: SwiftUI.View
 >: SwiftUI.View {
-    let item: Presentation
-    let mount: (Presentation, RUMSceneIdentifier) -> Void
-    let disappear: (Presentation) -> Void
+    let mount: (RUMSceneIdentifier) -> Bool
+    let disappear: () -> Void
     let instrumentation: RUMInstrumentation?
     @ViewBuilder let content: Content
 
@@ -5950,23 +6005,22 @@ private struct RUMSemanticPresentationBoundary<
     @State private var suppressionState = RUMSwiftUIAutomaticViewSuppressionState()
 
     init<Route: Hashable>(
-        item: Presentation,
+        occurrence: RUMSwiftUISemanticNavigationState<Route, Presentation>.PresentationOccurrence?,
         navigationState: RUMSwiftUISemanticNavigationState<Route, Presentation>,
         instrumentation: RUMInstrumentation?,
         @ViewBuilder content: () -> Content
     ) {
-        self.item = item
         self.instrumentation = instrumentation
-        self.mount = { item, sceneIdentifier in
+        self.mount = { sceneIdentifier in
             navigationState.mountPresentation(
-                item,
+                occurrence,
                 in: sceneIdentifier,
                 viewsHandler: instrumentation?.viewsHandler
             )
         }
-        self.disappear = { item in
+        self.disappear = {
             navigationState.presentationDidDisappear(
-                item,
+                occurrence,
                 viewsHandler: instrumentation?.viewsHandler
             )
         }
@@ -5995,13 +6049,12 @@ private struct RUMSemanticPresentationBoundary<
                 )
             )
             .onAppear {
-                suppressionState.appear()
                 if let initialSceneIdentifier {
-                    mount(item, initialSceneIdentifier)
+                    activate(in: initialSceneIdentifier)
                 }
             }
             .onDisappear {
-                disappear(item)
+                disappear()
                 suppressionState.disappear()
             }
     }
@@ -6011,8 +6064,11 @@ private struct RUMSemanticPresentationBoundary<
     }
 
     private func activate(in sceneIdentifier: RUMSceneIdentifier) {
-        suppressionState.appear()
-        mount(item, sceneIdentifier)
+        if mount(sceneIdentifier) {
+            suppressionState.appear()
+        } else {
+            suppressionState.disappear()
+        }
     }
 }
 
@@ -6491,13 +6547,13 @@ public struct RUMNavigationStack<
             item: presentationBinding(for: .sheet),
             onDismiss: { deliverDismissal(for: .sheet) }
         ) { item in
-            semanticPresentation(item, instrumentation: instrumentation)
+            semanticPresentation(item, style: .sheet, instrumentation: instrumentation)
         }
         .fullScreenCover(
             item: presentationBinding(for: .fullScreenCover),
             onDismiss: { deliverDismissal(for: .fullScreenCover) }
         ) { item in
-            semanticPresentation(item, instrumentation: instrumentation)
+            semanticPresentation(item, style: .fullScreenCover, instrumentation: instrumentation)
         }
         .modifier(
             RUMSemanticNavigationHostLifetimeModifier(
@@ -6533,46 +6589,28 @@ public struct RUMNavigationStack<
     private func presentationBinding(
         for style: RUMNavigationPresentationStyle
     ) -> Binding<Presentation?> {
-        Binding(
-            get: {
-                guard
-                    let item = presented.wrappedValue,
-                    navigationState.presentationStyle(for: item) == style
-                else {
-                    return nil
-                }
-                return item
-            },
-            set: { newItem, transaction in
-                if
-                    newItem == nil,
-                    let currentItem = presented.wrappedValue,
-                    navigationState.presentationStyle(for: currentItem) != style {
-                    return
-                }
-                let instrumentation = core.get(feature: RUMFeature.self)?.instrumentation
-                navigationState.reconcilePresentation(
-                    newItem,
-                    descriptor: presentation,
-                    viewsHandler: instrumentation?.viewsHandler
-                )
-                presented.transaction(transaction).wrappedValue = newItem
-            }
+        navigationState.presentationBinding(
+            for: style,
+            to: presented,
+            descriptor: presentation,
+            viewsHandler: { core.get(feature: RUMFeature.self)?.instrumentation.viewsHandler }
         )
     }
 
     private func semanticPresentation(
         _ item: Presentation,
+        style: RUMNavigationPresentationStyle,
         instrumentation: RUMInstrumentation?
     ) -> some SwiftUI.View {
-        RUMSemanticPresentationBoundary(
-            item: item,
+        let occurrence = navigationState.presentationOccurrence(for: item, style: style)
+        return RUMSemanticPresentationBoundary(
+            occurrence: occurrence,
             navigationState: navigationState,
             instrumentation: instrumentation
         ) {
             presentedContent(item)
         }
-        .id(item.id)
+        .id(occurrence)
     }
 
     private func tracked<Content: SwiftUI.View>(

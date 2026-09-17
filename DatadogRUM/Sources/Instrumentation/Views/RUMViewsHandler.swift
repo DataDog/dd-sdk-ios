@@ -1388,13 +1388,14 @@ extension RUMViewsHandler {
     /// automatic navigation can continue underneath it without becoming the
     /// scene's current RUM destination.
     @MainActor
+    @discardableResult
     func notify_semanticPresentationAppear(
         identity: String,
         name: String,
         path: String,
         attributes: [AttributeKey: AttributeValue],
         sceneIdentifier: RUMSceneIdentifier
-    ) {
+    ) -> Bool {
         notify_semanticDestinationAppear(
             identity: identity,
             name: name,
@@ -1406,7 +1407,7 @@ extension RUMViewsHandler {
 
     /// Stops only the matching router-owned presentation. The manual stack
     /// reveals its latest committed underlying destination as a fresh
-    /// occurrence before the application receives the dismissal binding write.
+    /// occurrence after the application accepts the dismissal binding write.
     @MainActor
     func notify_semanticPresentationDisappear(
         identity: String,
@@ -1422,6 +1423,7 @@ extension RUMViewsHandler {
     /// revealing the destination staged below manual authority in the same
     /// scene. A cross-scene move still reveals the old scene independently.
     @MainActor
+    @discardableResult
     func notify_semanticPresentationReplace(
         identity: String,
         sceneIdentifier: RUMSceneIdentifier,
@@ -1430,7 +1432,7 @@ extension RUMViewsHandler {
         replacementPath: String,
         replacementAttributes: [AttributeKey: AttributeValue],
         replacementSceneIdentifier: RUMSceneIdentifier
-    ) {
+    ) -> Bool {
         notify_semanticDestinationReplace(
             identity: identity,
             sceneIdentifier: sceneIdentifier,

@@ -5,6 +5,7 @@
  */
 
 import Combine
+import SwiftUI
 import XCTest
 import TestUtilities
 @testable import DatadogInternal
@@ -2745,6 +2746,277 @@ class RUMViewsHandlerTests: XCTestCase {
     #if os(iOS)
     @available(iOS 27.0, *)
     @MainActor
+    func testPresentationBindingRejectsDismissalWithoutStoppingAcceptedOwner() {
+        let handler = createHandler()
+        let state = RUMSwiftUISemanticNavigationState<String, SemanticPresentation>()
+        let item = SemanticPresentation(id: "document", name: "Document", style: .sheet)
+        state.reconcilePresentation(item, descriptor: semanticDescriptor(for:), viewsHandler: handler)
+        state.mountPresentation(state.presentationOccurrence(for: item, style: item.style), in: RUMSceneIdentifier(rawValue: "scene"), viewsHandler: handler)
+        var writes = 0
+        var commandsInsideSetter = 0
+        var transactionForwarded = false
+        let binding = state.presentationBinding(
+            for: .sheet,
+            to: Binding(get: { item }, set: { _, transaction in
+                writes += 1
+                commandsInsideSetter = self.commandSubscriber.receivedCommands.count
+                transactionForwarded = transaction.disablesAnimations
+            }),
+            descriptor: semanticDescriptor(for:),
+            viewsHandler: { handler }
+        )
+        var transaction = Transaction()
+        transaction.disablesAnimations = true
+        binding.transaction(transaction).wrappedValue = nil
+        XCTAssertEqual(writes, 1)
+        XCTAssertTrue(transactionForwarded)
+        XCTAssertEqual(commandsInsideSetter, 1)
+        XCTAssertEqual(commandSubscriber.receivedCommands.count, 1)
+        XCTAssertEqual(binding.wrappedValue, item)
+        XCTAssertNil(state.consumeDismissed(style: .sheet))
+    }
+
+    @available(iOS 27.0, *)
+    @MainActor
+    func testPresentationBindingCanonicalizesProposedItemBeforeTrackingReplacement() {
+        let handler = createHandler()
+        let state = RUMSwiftUISemanticNavigationState<String, SemanticPresentation>()
+        let original = SemanticPresentation(id: "original", name: "Original", style: .sheet)
+        let proposal = SemanticPresentation(id: "proposal", name: "Proposal", style: .sheet)
+        let canonical = SemanticPresentation(id: "canonical", name: "Canonical", style: .fullScreenCover)
+        var accepted: SemanticPresentation? = original
+        state.reconcilePresentation(original, descriptor: semanticDescriptor(for:), viewsHandler: handler)
+        let scene = RUMSceneIdentifier(rawValue: "scene")
+        state.mountPresentation(state.presentationOccurrence(for: original, style: original.style), in: scene, viewsHandler: handler)
+        let binding = state.presentationBinding(
+            for: .sheet,
+            to: Binding(get: { accepted }, set: { _ in accepted = canonical }),
+            descriptor: semanticDescriptor(for:),
+            viewsHandler: { handler }
+        )
+        binding.wrappedValue = proposal
+        XCTAssertEqual(accepted, canonical)
+        XCTAssertEqual(state.presentationStyle(for: canonical), .fullScreenCover)
+        XCTAssertNil(state.presentationStyle(for: proposal))
+        state.mountPresentation(state.presentationOccurrence(for: canonical, style: canonical.style), in: scene, viewsHandler: handler)
+        XCTAssertEqual(commandSubscriber.receivedCommands.count, 3)
+        XCTAssertEqual((commandSubscriber.receivedCommands.last as? RUMStartViewCommand)?.name, "Canonical")
+        XCTAssertNil(state.consumeDismissed(style: .sheet))
+    }
+
+    @available(iOS 27.0, *)
+    @MainActor
+    func testPresentationBindingRejectsReplacementWithoutChangingAcceptedDescriptor() {
+        let handler = createHandler()
+        let state = RUMSwiftUISemanticNavigationState<String, SemanticPresentation>()
+        let item = SemanticPresentation(id: "accepted", name: "Accepted", style: .sheet)
+        let proposal = SemanticPresentation(id: "proposal", name: "Proposal", style: .fullScreenCover)
+        state.reconcilePresentation(item, descriptor: semanticDescriptor(for:), viewsHandler: handler)
+        state.mountPresentation(state.presentationOccurrence(for: item, style: item.style), in: RUMSceneIdentifier(rawValue: "scene"), viewsHandler: handler)
+        let binding = state.presentationBinding(
+            for: .sheet,
+            to: Binding(get: { item }, set: { _ in }),
+            descriptor: semanticDescriptor(for:),
+            viewsHandler: { handler }
+        )
+        binding.wrappedValue = proposal
+        XCTAssertEqual(binding.wrappedValue, item)
+        XCTAssertEqual(state.presentationStyle(for: item), .sheet)
+        XCTAssertNil(state.presentationStyle(for: proposal))
+        XCTAssertEqual(commandSubscriber.receivedCommands.count, 1)
+    }
+
+    @available(iOS 27.0, *)
+    @MainActor
+    func testOldSameIDSheetDisappearanceCannotStopReplacementCover() {
+        let handler = createHandler()
+        let state = RUMSwiftUISemanticNavigationState<String, SemanticPresentation>()
+        let sheet = SemanticPresentation(id: "same", name: "Sheet", style: .sheet)
+        let cover = SemanticPresentation(id: "same", name: "Cover", style: .fullScreenCover)
+        let scene = RUMSceneIdentifier(rawValue: "scene")
+        state.reconcilePresentation(sheet, descriptor: semanticDescriptor(for:), viewsHandler: handler)
+        state.mountPresentation(state.presentationOccurrence(for: sheet, style: sheet.style), in: scene, viewsHandler: handler)
+        let oldOccurrence = state.presentationOccurrence(for: sheet, style: sheet.style)
+        let oldDisappear = { state.presentationDidDisappear(oldOccurrence, viewsHandler: handler) }
+        state.reconcilePresentation(cover, descriptor: semanticDescriptor(for:), viewsHandler: handler)
+        XCTAssertNotNil(oldOccurrence)
+        XCTAssertFalse(state.mountPresentation(oldOccurrence, in: scene, viewsHandler: handler))
+        XCTAssertEqual(commandSubscriber.receivedCommands.count, 1)
+        state.mountPresentation(state.presentationOccurrence(for: cover, style: cover.style), in: scene, viewsHandler: handler)
+        XCTAssertEqual(commandSubscriber.receivedCommands.count, 3)
+        oldDisappear()
+        XCTAssertFalse(state.mountPresentation(oldOccurrence, in: scene, viewsHandler: handler))
+        XCTAssertEqual(commandSubscriber.receivedCommands.count, 3)
+    }
+
+    @available(iOS 27.0, *)
+    @MainActor
+    func testEarlierPresentationACallbackCannotStopLaterAOccurrence() {
+        let handler = createHandler()
+        let state = RUMSwiftUISemanticNavigationState<String, SemanticPresentation>()
+        let first = SemanticPresentation(id: "A", name: "A", style: .sheet)
+        let second = SemanticPresentation(id: "B", name: "B", style: .sheet)
+        let scene = RUMSceneIdentifier(rawValue: "scene")
+        state.reconcilePresentation(first, descriptor: semanticDescriptor(for:), viewsHandler: handler)
+        state.mountPresentation(state.presentationOccurrence(for: first, style: first.style), in: scene, viewsHandler: handler)
+        let oldOccurrence = state.presentationOccurrence(for: first, style: first.style)
+        let oldDisappear = { state.presentationDidDisappear(oldOccurrence, viewsHandler: handler) }
+        for item in [second, first] {
+            state.reconcilePresentation(item, descriptor: semanticDescriptor(for:), viewsHandler: handler)
+            state.mountPresentation(state.presentationOccurrence(for: item, style: item.style), in: scene, viewsHandler: handler)
+        }
+        XCTAssertEqual(commandSubscriber.receivedCommands.count, 5)
+        oldDisappear()
+        XCTAssertNotNil(oldOccurrence)
+        XCTAssertFalse(state.mountPresentation(oldOccurrence, in: scene, viewsHandler: handler))
+        XCTAssertEqual(commandSubscriber.receivedCommands.count, 5)
+    }
+
+    @available(iOS 27.0, *)
+    @MainActor
+    func testRejectedPresentationMountCanRetryAfterSceneReconnect() {
+        let scene = RUMSceneIdentifier(rawValue: "scene")
+        let handler = createHandler(sceneIdentifierFromNotification: { _ in scene })
+        let state = RUMSwiftUISemanticNavigationState<String, SemanticPresentation>()
+        let item = SemanticPresentation(id: "sheet", name: "Sheet", style: .sheet)
+        notificationCenter.post(name: UIScene.didDisconnectNotification, object: nil)
+        state.reconcilePresentation(item, descriptor: semanticDescriptor(for:), viewsHandler: handler)
+        state.mountPresentation(state.presentationOccurrence(for: item, style: item.style), in: scene, viewsHandler: handler)
+        XCTAssertTrue(commandSubscriber.receivedCommands.isEmpty)
+        notificationCenter.post(name: UIScene.willConnectNotification, object: nil)
+        notificationCenter.post(name: UIScene.willEnterForegroundNotification, object: nil)
+        state.mountPresentation(state.presentationOccurrence(for: item, style: item.style), in: scene, viewsHandler: handler)
+        XCTAssertEqual(commandSubscriber.receivedCommands.count, 1)
+        state.reconcilePresentation(nil, descriptor: semanticDescriptor(for:), viewsHandler: handler)
+        XCTAssertEqual(commandSubscriber.receivedCommands.count, 2)
+        XCTAssertEqual(state.consumeDismissed(style: .sheet), item)
+    }
+
+    @available(iOS 27.0, *)
+    @MainActor
+    func testAcceptedPresentationDismissalRevealsBeforeSetterReturnsToCaller() throws {
+        let handler = createHandler()
+        let state = RUMSwiftUISemanticNavigationState<String, SemanticPresentation>()
+        let item = SemanticPresentation(id: "sheet", name: "Sheet", style: .sheet)
+        let scene = RUMSceneIdentifier(rawValue: "scene")
+        var accepted: SemanticPresentation? = item
+        handler.notify_onAppear(identity: "home", name: "Home", path: "/home", attributes: [:], sceneIdentifier: scene)
+        state.reconcilePresentation(item, descriptor: semanticDescriptor(for:), viewsHandler: handler)
+        let occurrence = state.presentationOccurrence(for: item, style: item.style)
+        state.mountPresentation(occurrence, in: scene, viewsHandler: handler)
+        var writes = 0
+        let binding = state.presentationBinding(
+            for: .sheet,
+            to: Binding(get: { accepted }, set: { proposal in
+                writes += 1
+                XCTAssertEqual(self.commandSubscriber.receivedCommands.count, 3)
+                accepted = proposal
+            }),
+            descriptor: semanticDescriptor(for:),
+            viewsHandler: { handler }
+        )
+        binding.wrappedValue = nil
+        XCTAssertEqual(writes, 1)
+        XCTAssertNil(accepted)
+        XCTAssertEqual(commandSubscriber.receivedCommands.count, 5)
+        let reveal = try XCTUnwrap(commandSubscriber.receivedCommands.last as? RUMStartViewCommand)
+        XCTAssertEqual(reveal.name, "Home")
+        XCTAssertEqual(reveal.target, .scene(scene))
+        XCTAssertEqual(state.consumeDismissed(style: .sheet), item)
+        XCTAssertNil(state.consumeDismissed(style: .sheet))
+        state.presentationDidDisappear(occurrence, viewsHandler: handler)
+        XCTAssertEqual(commandSubscriber.receivedCommands.count, 5)
+    }
+
+    @available(iOS 27.0, *)
+    @MainActor
+    func testCanonicalizedDismissalKeepsMountedOwnerUntilAcceptedCoverMounts() {
+        let handler = createHandler()
+        let state = RUMSwiftUISemanticNavigationState<String, SemanticPresentation>()
+        let sheet = SemanticPresentation(id: "same", name: "Sheet", style: .sheet)
+        let cover = SemanticPresentation(id: "same", name: "Cover", style: .fullScreenCover)
+        let scene = RUMSceneIdentifier(rawValue: "scene")
+        var accepted: SemanticPresentation? = sheet
+        state.reconcilePresentation(sheet, descriptor: semanticDescriptor(for:), viewsHandler: handler)
+        let sheetOccurrence = state.presentationOccurrence(for: sheet, style: sheet.style)
+        state.mountPresentation(sheetOccurrence, in: scene, viewsHandler: handler)
+        var writes = 0
+        let binding = state.presentationBinding(
+            for: .sheet,
+            to: Binding(get: { accepted }, set: { _ in
+                writes += 1
+                accepted = cover
+            }),
+            descriptor: semanticDescriptor(for:),
+            viewsHandler: { handler }
+        )
+        binding.wrappedValue = nil
+        XCTAssertEqual(writes, 1)
+        XCTAssertEqual(commandSubscriber.receivedCommands.count, 1)
+        XCTAssertNil(state.consumeDismissed(style: .sheet))
+        let coverOccurrence = state.presentationOccurrence(for: cover, style: cover.style)
+        state.mountPresentation(coverOccurrence, in: scene, viewsHandler: handler)
+        XCTAssertEqual(commandSubscriber.receivedCommands.count, 3)
+        binding.wrappedValue = nil
+        XCTAssertEqual(writes, 1)
+        state.presentationDidDisappear(sheetOccurrence, viewsHandler: handler)
+        XCTAssertEqual(commandSubscriber.receivedCommands.count, 3)
+    }
+
+    @available(iOS 27.0, *)
+    @MainActor
+    func testPresentationDescriptorRefreshKeepsOccurrenceAndDuplicateMountIsIdempotent() {
+        let handler = createHandler()
+        let state = RUMSwiftUISemanticNavigationState<String, SemanticPresentation>()
+        let first = SemanticPresentation(id: "same", name: "First", style: .sheet)
+        let latest = SemanticPresentation(id: "same", name: "Latest", style: .sheet)
+        let scene = RUMSceneIdentifier(rawValue: "scene")
+        state.reconcilePresentation(first, descriptor: semanticDescriptor(for:), viewsHandler: handler)
+        let occurrence = state.presentationOccurrence(for: first, style: first.style)
+        XCTAssertFalse(state.mountPresentation(occurrence, in: scene, viewsHandler: nil))
+        XCTAssertNil(state.consumeDismissed(style: .sheet))
+        state.reconcilePresentation(latest, descriptor: semanticDescriptor(for:), viewsHandler: handler)
+        XCTAssertEqual(state.presentationOccurrence(for: latest, style: latest.style), occurrence)
+        XCTAssertTrue(state.mountPresentation(occurrence, in: scene, viewsHandler: handler))
+        XCTAssertTrue(state.mountPresentation(occurrence, in: scene, viewsHandler: handler))
+        XCTAssertEqual(commandSubscriber.receivedCommands.count, 1)
+        XCTAssertEqual((commandSubscriber.receivedCommands.last as? RUMStartViewCommand)?.name, "Latest")
+        state.reconcilePresentation(nil, descriptor: semanticDescriptor(for:), viewsHandler: handler)
+        XCTAssertEqual(state.consumeDismissed(style: .sheet), latest)
+        XCTAssertNil(state.consumeDismissed(style: .sheet))
+    }
+
+    @available(iOS 27.0, *)
+    @MainActor
+    func testRejectedPresentationMigrationPreservesOwnerAndDisconnectInvalidatesToken() {
+        let sceneA = RUMSceneIdentifier(rawValue: "A")
+        let sceneB = RUMSceneIdentifier(rawValue: "B")
+        let handler = createHandler(sceneIdentifierFromNotification: { notification in
+            (notification.object as? String).map(RUMSceneIdentifier.init(rawValue:))
+        })
+        let state = RUMSwiftUISemanticNavigationState<String, SemanticPresentation>()
+        let item = SemanticPresentation(id: "sheet", name: "Sheet", style: .sheet)
+        state.reconcilePresentation(item, descriptor: semanticDescriptor(for:), viewsHandler: handler)
+        let old = state.presentationOccurrence(for: item, style: item.style)
+        XCTAssertTrue(state.mountPresentation(old, in: sceneA, viewsHandler: handler))
+        notificationCenter.post(name: UIScene.didDisconnectNotification, object: "B")
+        XCTAssertFalse(state.mountPresentation(old, in: sceneB, viewsHandler: handler))
+        XCTAssertEqual(commandSubscriber.receivedCommands.count, 1)
+        notificationCenter.post(name: UIScene.didDisconnectNotification, object: "A")
+        state.sceneDidDisconnect(sceneA)
+        state.reconcilePresentation(item, descriptor: semanticDescriptor(for:), viewsHandler: handler)
+        let fresh = state.presentationOccurrence(for: item, style: item.style)
+        XCTAssertNotEqual(old, fresh)
+        notificationCenter.post(name: UIScene.willConnectNotification, object: "A")
+        notificationCenter.post(name: UIScene.willEnterForegroundNotification, object: "A")
+        XCTAssertFalse(state.mountPresentation(old, in: sceneA, viewsHandler: handler))
+        XCTAssertTrue(state.mountPresentation(fresh, in: sceneA, viewsHandler: handler))
+        state.presentationDidDisappear(old, viewsHandler: handler)
+        XCTAssertEqual(commandSubscriber.receivedCommands.count, 3)
+    }
+
+    @available(iOS 27.0, *)
+    @MainActor
     func testSemanticPresentationThatNeverMounts_doesNotPublishOrReportDismissal() {
         let handler = createHandler()
         let state = RUMSwiftUISemanticNavigationState<String, SemanticPresentation>()
@@ -2793,8 +3065,8 @@ class RUMViewsHandlerTests: XCTestCase {
             descriptor: semanticDescriptor(for:),
             viewsHandler: handler
         )
-        state.mountPresentation(presentation, in: scene, viewsHandler: handler)
-        state.mountPresentation(presentation, in: scene, viewsHandler: handler)
+        state.mountPresentation(state.presentationOccurrence(for: presentation, style: presentation.style), in: scene, viewsHandler: handler)
+        state.mountPresentation(state.presentationOccurrence(for: presentation, style: presentation.style), in: scene, viewsHandler: handler)
         state.reconcilePresentation(
             nil,
             descriptor: semanticDescriptor(for:),
@@ -2844,7 +3116,7 @@ class RUMViewsHandlerTests: XCTestCase {
             descriptor: semanticDescriptor(for:),
             viewsHandler: handler
         )
-        state.mountPresentation(presentation, in: scene, viewsHandler: handler)
+        state.mountPresentation(state.presentationOccurrence(for: presentation, style: presentation.style), in: scene, viewsHandler: handler)
         handler.notify_onAppear(
             identity: "detail",
             name: "Detail",
@@ -2908,7 +3180,7 @@ class RUMViewsHandlerTests: XCTestCase {
             descriptor: semanticDescriptor(for:),
             viewsHandler: handler
         )
-        state.mountPresentation(sheet, in: scene, viewsHandler: handler)
+        state.mountPresentation(state.presentationOccurrence(for: sheet, style: sheet.style), in: scene, viewsHandler: handler)
         state.reconcilePresentation(
             cover,
             descriptor: semanticDescriptor(for:),
@@ -2917,7 +3189,7 @@ class RUMViewsHandlerTests: XCTestCase {
 
         XCTAssertEqual(commandSubscriber.receivedCommands.count, 3)
 
-        state.mountPresentation(cover, in: scene, viewsHandler: handler)
+        state.mountPresentation(state.presentationOccurrence(for: cover, style: cover.style), in: scene, viewsHandler: handler)
 
         XCTAssertEqual(commandSubscriber.receivedCommands.count, 5)
         let sheetStart = try XCTUnwrap(
@@ -2981,7 +3253,7 @@ class RUMViewsHandlerTests: XCTestCase {
             descriptor: semanticDescriptor(for:),
             viewsHandler: handler
         )
-        state.mountPresentation(sheet, in: scene, viewsHandler: handler)
+        state.mountPresentation(state.presentationOccurrence(for: sheet, style: sheet.style), in: scene, viewsHandler: handler)
         state.reconcilePresentation(
             cover,
             descriptor: semanticDescriptor(for:),
@@ -3030,15 +3302,17 @@ class RUMViewsHandlerTests: XCTestCase {
             descriptor: semanticDescriptor(for:),
             viewsHandler: handler
         )
-        state.mountPresentation(sheet, in: scene, viewsHandler: handler)
+        state.mountPresentation(state.presentationOccurrence(for: sheet, style: sheet.style), in: scene, viewsHandler: handler)
         state.reconcilePresentation(
             cover,
             descriptor: semanticDescriptor(for:),
             viewsHandler: handler
         )
 
+        let pendingOccurrence = state.presentationOccurrence(for: cover, style: cover.style)
+        XCTAssertNotNil(pendingOccurrence)
         state.cancelPresentations(viewsHandler: handler)
-        state.mountPresentation(cover, in: scene, viewsHandler: handler)
+        XCTAssertFalse(state.mountPresentation(pendingOccurrence, in: scene, viewsHandler: handler))
 
         XCTAssertEqual(commandSubscriber.receivedCommands.count, 2)
         let sheetStart = try XCTUnwrap(
@@ -3072,8 +3346,8 @@ class RUMViewsHandlerTests: XCTestCase {
             descriptor: semanticDescriptor(for:),
             viewsHandler: handler
         )
-        state.mountPresentation(presentation, in: sceneA, viewsHandler: handler)
-        state.mountPresentation(presentation, in: sceneB, viewsHandler: handler)
+        state.mountPresentation(state.presentationOccurrence(for: presentation, style: presentation.style), in: sceneA, viewsHandler: handler)
+        state.mountPresentation(state.presentationOccurrence(for: presentation, style: presentation.style), in: sceneB, viewsHandler: handler)
 
         XCTAssertEqual(commandSubscriber.receivedCommands.count, 3)
         let startA = try XCTUnwrap(commandSubscriber.receivedCommands[0] as? RUMStartViewCommand)
