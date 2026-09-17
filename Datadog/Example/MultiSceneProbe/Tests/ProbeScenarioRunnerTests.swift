@@ -40,6 +40,7 @@ final class ProbeScenarioRunnerTests: XCTestCase {
         XCTAssertEqual(scenario.initialWindows, ["scene-A", "scene-B"])
         XCTAssertEqual(scenario.requiredCapabilities, [.multipleScenes])
         XCTAssertEqual(scenario.steps.last?.kind, .runResourceOwnershipBatch)
+        XCTAssertEqual(scenario.steps.last?.scene, "scene-B")
         XCTAssertTrue(ProbeScenarioCatalog.usesObservableDriver(scenario))
         let resources = scenario.completionConditions.filter { $0.kind == .resource }
         let errors = scenario.completionConditions.filter { $0.kind == .error }

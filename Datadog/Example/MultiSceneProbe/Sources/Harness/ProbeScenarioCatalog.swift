@@ -774,7 +774,7 @@ enum ProbeScenarioCatalog {
             ProbeStep(.waitForSignal, scene: "scene-A", signal: "rum-view:home#1"),
             ProbeStep(.openWindow, scene: "scene-A", value: "scene-B"),
             ProbeStep(.waitForSignal, scene: "scene-B", signal: "rum-view:home#1"),
-            ProbeStep(.runResourceOwnershipBatch),
+            ProbeStep(.runResourceOwnershipBatch, scene: "scene-B"),
         ],
         completionConditions: resourceCompletionExpectations,
         expectedSemanticTimeline: [

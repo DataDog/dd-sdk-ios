@@ -1,0 +1,117 @@
+{
+  "artifacts": {
+    "boot-ready.log": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/multi-scene-acceptance-fjtz_w1c/run/boot-ready.log",
+    "build-identity.json": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/multi-scene-acceptance-fjtz_w1c/run/build-identity.json",
+    "build-tests.log": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/multi-scene-acceptance-fjtz_w1c/run/build-tests.log",
+    "console.raw.log": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/multi-scene-acceptance-fjtz_w1c/run/console.raw.log",
+    "container-absence.log": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/multi-scene-acceptance-fjtz_w1c/run/container-absence.log",
+    "install.log": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/multi-scene-acceptance-fjtz_w1c/run/install.log",
+    "signature.log": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/multi-scene-acceptance-fjtz_w1c/run/signature.log",
+    "source-identity.json": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/multi-scene-acceptance-fjtz_w1c/run/source-identity.json",
+    "summary.json": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/multi-scene-acceptance-fjtz_w1c/run/summary.json",
+    "terminate-after.log": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/multi-scene-acceptance-fjtz_w1c/run/terminate-after.log",
+    "terminate-before.log": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/multi-scene-acceptance-fjtz_w1c/run/terminate-before.log",
+    "test-summary.json": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/multi-scene-acceptance-fjtz_w1c/run/test-summary.json",
+    "uninstall.log": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/multi-scene-acceptance-fjtz_w1c/run/uninstall.log"
+  },
+  "commit_signature": {
+    "required_before_push": true,
+    "state": "VERIFIED"
+  },
+  "device": {
+    "dataPath": "/Users/valentin.pertuisot/Library/Developer/CoreSimulator/Devices/92C9918B-FEC6-4440-9D6D-8E09475950BB/data",
+    "dataPathSize": 3237597184,
+    "deviceTypeIdentifier": "com.apple.CoreSimulator.SimDeviceType.iPad-mini-A17-Pro",
+    "isAvailable": true,
+    "lastUsedAt": "2026-09-16T22:19:15Z",
+    "logPath": "/Users/valentin.pertuisot/Library/Logs/CoreSimulator/92C9918B-FEC6-4440-9D6D-8E09475950BB",
+    "logPathSize": 462848,
+    "name": "iPad mini (A17 Pro)",
+    "runtime": "com.apple.CoreSimulator.SimRuntime.iOS-27-0",
+    "state": "Booted",
+    "udid": "92C9918B-FEC6-4440-9D6D-8E09475950BB"
+  },
+  "dirty_state": [
+    " M Datadog/Datadog.xcodeproj/project.pbxproj",
+    "A  xcconfigs/Datadog.local.xcconfig"
+  ],
+  "evidence": {
+    "build-identity.json": {
+      "executable_sha256": "28391c6241df67195900f05e7c9f5a3de0e1a9c2879737f6d0f39305f71e52c3",
+      "source_sha256": "1c6bd5b4674dc76fe0e77612b218a5a4beaac8cafd36f4f13b81d778a58a62c1",
+      "uuid": "UUID: DF224AEE-867C-3362-ABD2-D32BD122E532 (arm64) /private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/multi-scene-acceptance-fjtz_w1c/run/derived/Build/Products/Debug-iphonesimulator/RUMNativeMultiSceneProbe.app/RUMNativeMultiSceneProbe"
+    },
+    "test-summary.json": {
+      "devicesAndConfigurations": [
+        {
+          "device": {
+            "architecture": "arm64",
+            "deviceId": "92C9918B-FEC6-4440-9D6D-8E09475950BB",
+            "deviceName": "iPad mini (A17 Pro)",
+            "modelName": "iPad mini (A17 Pro)",
+            "osBuildNumber": "24A434",
+            "osVersion": "27.0",
+            "platform": "iOS Simulator"
+          },
+          "expectedFailures": 0,
+          "failedTests": 0,
+          "passedTests": 167,
+          "skippedTests": 0,
+          "testPlanConfiguration": {
+            "configurationId": "1",
+            "configurationName": "Test Scheme Action"
+          }
+        }
+      ],
+      "environmentDescription": "RUMNativeMultiSceneProbe \u00b7 Built with macOS 26.6.2",
+      "expectedFailures": 0,
+      "failedTests": 0,
+      "finishTime": 1789662663.347,
+      "passedTests": 167,
+      "result": "Passed",
+      "runtimeWarnings": [],
+      "skippedTests": 0,
+      "startTime": 1789662639.743,
+      "statistics": [],
+      "testFailures": [],
+      "title": "Test - RUMNativeMultiSceneProbe",
+      "topInsights": [],
+      "totalTestCount": 167
+    }
+  },
+  "experiment": "EXP-176",
+  "failures": [
+    "app oracle did not pass: [{'reason': 'step 4 run-resource-ownership-batch failed: step targeted nil, not scene-B', 'signalSequence': 38}]"
+  ],
+  "finished_at": "2026-09-17T16:31:11.040693+00:00",
+  "gate": "T03",
+  "oracle_contract_sha256": "39f21125b8afa5bb42b13192e4c7db189bec8468e7c009862a2e7a2d321d002c",
+  "rerun": "Use a fresh output directory and freshly resolved device; do not reuse run IDs or bridge responses.",
+  "revision": "6cb5b407a2566f0e8cb20b03532ebe38bf20d71b",
+  "run_id": "exp176-20260917T163012Z-fbc7a866e7b7",
+  "scenario_id": "resources.explicit-start.captured-owner-cross-scene-serial",
+  "schema_version": 1,
+  "source_file_count": 463,
+  "source_fingerprint": "1c6bd5b4674dc76fe0e77612b218a5a4beaac8cafd36f4f13b81d778a58a62c1",
+  "stages": {
+    "clean_install": {
+      "data_container_absent": true,
+      "installed_binary_sha256": "28391c6241df67195900f05e7c9f5a3de0e1a9c2879737f6d0f39305f71e52c3",
+      "state": "PASS"
+    },
+    "frozen_build": {
+      "executable_sha256": "28391c6241df67195900f05e7c9f5a3de0e1a9c2879737f6d0f39305f71e52c3",
+      "source_sha256": "1c6bd5b4674dc76fe0e77612b218a5a4beaac8cafd36f4f13b81d778a58a62c1",
+      "state": "PASS",
+      "test_count": 167,
+      "uuid": "UUID: DF224AEE-867C-3362-ABD2-D32BD122E532 (arm64) /private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/multi-scene-acceptance-fjtz_w1c/run/derived/Build/Products/Debug-iphonesimulator/RUMNativeMultiSceneProbe.app/RUMNativeMultiSceneProbe"
+    },
+    "preflight": {
+      "authenticated_read": true,
+      "state": "PASS"
+    }
+  },
+  "started_at": "2026-09-17T16:30:12.581225+00:00",
+  "state": "FAIL",
+  "xcode": "Xcode 27.0\nBuild version 27A266a"
+}

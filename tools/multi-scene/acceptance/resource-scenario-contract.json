@@ -273,7 +273,8 @@
       "signal": "rum-view:home#1"
     },
     {
-      "kind": "run-resource-ownership-batch"
+      "kind": "run-resource-ownership-batch",
+      "scene": "scene-B"
     }
   ],
   "trackingMode": "manual"

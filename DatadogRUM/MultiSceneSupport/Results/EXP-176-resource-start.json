@@ -789,5 +789,12 @@
     "python_tests": 50,
     "node_tests": 3,
     "state": "PASS"
-  }
+  },
+  "native_attempts": [
+    {
+      "summary": "acceptance/exp176-20260917T163012Z-fbc7a866e7b7.json",
+      "disposition": "INVALID_FIXTURE",
+      "reason": "Batch omitted explicit scene-B; unrelated lifecycle markers must be disabled before strict whole-session Resource acceptance."
+    }
+  ]
 }

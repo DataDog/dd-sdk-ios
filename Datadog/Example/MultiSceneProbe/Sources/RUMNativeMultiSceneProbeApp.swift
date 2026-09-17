@@ -378,6 +378,7 @@ enum ProbeRuntime {
         screen: String,
         phase: String
     ) {
+        guard scenario?.identifier != ProbeResourceContract.scenarioID else { return }
         let uptime = ProcessInfo.processInfo.systemUptime
         let marker = "\(window.label).\(screen).\(phase)"
         let attributes: [String: Encodable] = [
