@@ -29,11 +29,15 @@ internal class DDScriptMessageHandler: NSObject, WKScriptMessageHandler {
         didReceive message: WKScriptMessage
     ) {
         let hash = message.webView.map { String($0.hash) }
+        #if canImport(UIKit)
         let sceneIdentifier = message.webView?
             .window?
             .windowScene?
             .session
             .persistentIdentifier
+        #else
+        let sceneIdentifier: String? = nil
+        #endif
         // message.body must be called within UI thread
         let body = message.body
         queue.async {
