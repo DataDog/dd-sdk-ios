@@ -15,6 +15,8 @@ private final class SceneTargetedFallbackMonitor: RUMMonitorViewProtocol {
     var starts: [(key: String, name: String?, attributes: [AttributeKey: AttributeValue])] = []
     var stops: [(key: String, attributes: [AttributeKey: AttributeValue])] = []
 
+    var timingNames: [String] = []
+    var loadingOverwrites: [Bool] = []
     var attributeForms: [String] = []
     var singleValue: AttributeValue?
     var batchValues: [AttributeKey: AttributeValue] = [:]
@@ -59,8 +61,8 @@ private final class SceneTargetedFallbackMonitor: RUMMonitorViewProtocol {
     ) {
         stops.append((key: key, attributes: attributes))
     }
-    func addTiming(name: String) {}
-    func addViewLoadingTime(overwrite: Bool) {}
+    func addTiming(name: String) { timingNames.append(name) }
+    func addViewLoadingTime(overwrite: Bool) { loadingOverwrites.append(overwrite) }
 }
 
 private final class OperationTargetFallbackMonitor: NOPMonitor {
@@ -333,6 +335,24 @@ class NOPMonitorTests: XCTestCase {
         XCTAssertEqual(monitor.stops.count, 1)
         XCTAssertEqual(monitor.stops.first?.key, "compose")
         XCTAssertEqual(monitor.stops.first?.attributes["stop"] as? String, "attribute")
+    }
+
+    @MainActor
+    func testTimingTargetBridgePreservesCustomAndNOPMonitorCalls() {
+        let dd = DD.mockWith(logger: CoreLoggerMock())
+        defer { dd.reset() }
+        let custom = SceneTargetedFallbackMonitor()
+        let target = RUMCommandTarget.scene(RUMSceneIdentifier(rawValue: "scene-A"))
+        for monitor: any RUMMonitorViewProtocol in [custom, NOPMonitor()] {
+            RUMViewTimingTargetBridge.addTiming(on: monitor, name: "same-name", explicitTarget: target)
+            RUMViewTimingTargetBridge.addViewLoadingTime(on: monitor, overwrite: false, explicitTarget: target)
+            RUMViewTimingTargetBridge.addViewLoadingTime(on: monitor, overwrite: true, explicitTarget: target)
+        }
+        XCTAssertEqual(custom.timingNames, ["same-name"])
+        XCTAssertEqual(custom.loadingOverwrites, [false, true])
+        XCTAssertEqual(dd.logger.criticalLogs.count, 3)
+        XCTAssertEqual(dd.logger.criticalLogs.filter { $0.message.contains("addTiming(name:)") }.count, 1)
+        XCTAssertEqual(dd.logger.criticalLogs.filter { $0.message.contains("addViewLoadingTime(overwrite:)") }.count, 2)
     }
 
     @MainActor

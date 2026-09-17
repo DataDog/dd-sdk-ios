@@ -53,6 +53,8 @@ class RUMMonitorProtocol_ConvenienceTests: XCTestCase {
         if #available(iOS 27.0, *),
            let scene = UIApplication.shared.connectedScenes.first as? UIWindowScene {
             let target = RUMViewTarget.current(in: scene)
+            monitor.addTiming(name: "timing", view: target)
+            monitor.addViewLoadingTime(overwrite: false, view: target)
             monitor.addViewAttribute(forKey: "single", value: "value", view: target)
             monitor.addViewAttributes(["batch": 7], view: target)
             monitor.removeViewAttribute(forKey: "single", view: target)

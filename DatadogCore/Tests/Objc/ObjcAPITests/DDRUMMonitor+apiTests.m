@@ -76,6 +76,8 @@
             [monitor startViewWithKey:@"view" name:@"Scene View" inScene:scene attributes:@{}];
             [monitor stopViewWithKey:@"view" inScene:scene attributes:@{}];
             DDRUMViewTarget *target = [DDRUMViewTarget currentInScene:scene];
+            [monitor addTimingWithName:@"timing" view:target];
+            [monitor addViewLoadingTimeWithOverwrite:NO view:target];
             [monitor addViewAttributeForKey:@"single" value:@"value" view:target];
             [monitor addViewAttributes:@{@"batch": @7} view:target];
             [monitor removeViewAttributeForKey:@"single" view:target];

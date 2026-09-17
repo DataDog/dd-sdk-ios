@@ -481,7 +481,7 @@ internal struct RUMAddCurrentViewMemoryWarningCommand: RUMErrorCommand {
     let completionHandler: CompletionHandler = NOPCompletionHandler
 }
 
-internal struct RUMAddViewLoadingTime: RUMCommand {
+internal struct RUMAddViewLoadingTime: RUMExplicitViewTargetCommand {
     var time: Date
     var globalAttributes: [AttributeKey: AttributeValue]
     var attributes: [AttributeKey: AttributeValue]
@@ -492,12 +492,13 @@ internal struct RUMAddViewLoadingTime: RUMCommand {
     let canStartBackgroundViewAfterSessionStop = false
     let isUserInteraction = false // a custom view timing is not an interactive event
     var target: RUMCommandTarget = .processRepresentative
+    var explicitTarget: RUMCommandTarget?
 
     let missedEventType: SessionEndedMetric.MissedEventType? = .viewLoadingTime
     let overwrite: Bool
 }
 
-internal struct RUMAddViewTimingCommand: RUMCommand {
+internal struct RUMAddViewTimingCommand: RUMExplicitViewTargetCommand {
     var time: Date
     var globalAttributes: [AttributeKey: AttributeValue]
     var attributes: [AttributeKey: AttributeValue]
@@ -508,6 +509,7 @@ internal struct RUMAddViewTimingCommand: RUMCommand {
     let canStartBackgroundViewAfterSessionStop = false
     let isUserInteraction = false // a custom view timing is not an interactive event
     var target: RUMCommandTarget = .processRepresentative
+    var explicitTarget: RUMCommandTarget?
 
     /// The name of the timing. It will be used as a JSON key, whereas the value will be the timing duration,
     /// measured since the start of the View.

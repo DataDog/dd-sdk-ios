@@ -961,6 +961,191 @@ class MonitorTests: XCTestCase {
         XCTAssertTrue(didComplete)
     }
 
+    func testTargetedTimingOverridesPeerAndReplacesOnlyRequestedValue() throws {
+        let clock = DateProviderMock(now: Date(timeIntervalSinceReferenceDate: 0))
+        let monitor = Monitor(dependencies: .mockWith(featureScope: featureScope, samplingRate: 100), dateProvider: clock)
+        let (sceneA, sceneB) = startConcurrentSceneViews(in: monitor, dateProvider: clock)
+        let peer = try XCTUnwrap(monitor.rumContextSnapshot(for: .scene(sceneB)))
+        monitor.addAttribute(forKey: "process", value: "global")
+        RUMContextHandoff.withValue(owner: monitor.rumContextHandoffOwner, rumContext: peer, sceneIdentifier: sceneB.rawValue) {
+            clock.now = clock.now.addingTimeInterval(1)
+            monitor.addTiming(name: "same", explicitTarget: .scene(sceneA))
+            clock.now = clock.now.addingTimeInterval(2)
+            monitor.addTiming(name: "same", explicitTarget: .scene(sceneA))
+        }
+        let session = try XCTUnwrap(monitor.applicationScope.activeSession)
+        let a = try XCTUnwrap(session.viewScopes.first { $0.sceneIdentifier == sceneA })
+        let b = try XCTUnwrap(session.viewScopes.first { $0.sceneIdentifier == sceneB })
+        XCTAssertEqual(a.customTimings, ["same": 3_000_000_000])
+        XCTAssertTrue(b.customTimings.isEmpty)
+        XCTAssertEqual(monitor.rumContextSnapshot(for: .processRepresentative)?.viewID, peer.viewID)
+        XCTAssertEqual(monitor.globalAttributes["process"] as? String, "global")
+        let events = try XCTUnwrap(featureScope as? FeatureScopeMock).eventsWritten(ofType: RUMViewEvent.self)
+            .filter { $0.view.id == a.viewUUID.toRUMDataFormat }
+        XCTAssertTrue(events.contains { $0.view.customTimings?.customTimingsInfo["same"] == 1_000_000_000 })
+    }
+
+    func testTargetedLoadingPreservesOverwriteRulesAndPeerState() throws {
+        let clock = DateProviderMock(now: Date(timeIntervalSinceReferenceDate: 0))
+        let monitor = Monitor(dependencies: .mockWith(featureScope: featureScope, samplingRate: 100), dateProvider: clock)
+        let (sceneA, sceneB) = startConcurrentSceneViews(in: monitor, dateProvider: clock)
+        let peer = try XCTUnwrap(monitor.rumContextSnapshot(for: .scene(sceneB)))
+        let session = try XCTUnwrap(monitor.applicationScope.activeSession)
+        let a = try XCTUnwrap(session.viewScopes.first { $0.sceneIdentifier == sceneA })
+        let b = try XCTUnwrap(session.viewScopes.first { $0.sceneIdentifier == sceneB })
+        RUMContextHandoff.withValue(owner: monitor.rumContextHandoffOwner, rumContext: peer, sceneIdentifier: sceneB.rawValue) {
+            clock.now = clock.now.addingTimeInterval(1)
+            monitor.addViewLoadingTime(overwrite: false, explicitTarget: .scene(sceneA))
+            XCTAssertEqual(a.viewLoadingTime, 1)
+            clock.now = clock.now.addingTimeInterval(1)
+            monitor.addViewLoadingTime(overwrite: false, explicitTarget: .scene(sceneA))
+            XCTAssertEqual(a.viewLoadingTime, 1)
+            clock.now = clock.now.addingTimeInterval(1)
+            monitor.addViewLoadingTime(overwrite: true, explicitTarget: .scene(sceneA))
+        }
+        XCTAssertEqual(a.viewLoadingTime, 3)
+        XCTAssertNil(b.viewLoadingTime)
+        XCTAssertEqual(monitor.rumContextSnapshot(for: .processRepresentative)?.viewID, peer.viewID)
+    }
+
+    func testUnavailableTimingTargetsPreserveIndependentFallback() throws {
+        for fallback in ["exact", "scene", "representative", "ended"] {
+            let clock = DateProviderMock(now: Date(timeIntervalSinceReferenceDate: 0))
+            let monitor = Monitor(dependencies: .mockWith(featureScope: featureScope, samplingRate: 100), dateProvider: clock)
+            let (sceneA, sceneB) = startConcurrentSceneViews(in: monitor, dateProvider: clock)
+            let contextA = try XCTUnwrap(monitor.rumContextSnapshot(for: .scene(sceneA)))
+            let session = try XCTUnwrap(monitor.applicationScope.activeSession)
+            let oldViews = session.viewScopes
+            if fallback == "ended" {
+                monitor.process(command: RUMStopViewCommand.mockWith(time: clock.now, identity: ViewIdentifier("view-A"), target: .scene(sceneA)))
+            }
+            let target: RUMCommandTarget = fallback == "ended" ? .scene(sceneA) : .scene(RUMSceneIdentifier(rawValue: "missing"))
+            clock.now = clock.now.addingTimeInterval(2)
+            let operation = {
+                monitor.addTiming(name: "fallback", explicitTarget: target)
+                monitor.addViewLoadingTime(overwrite: false, explicitTarget: target)
+            }
+            if fallback == "exact" {
+                RUMContextHandoff.withValue(owner: monitor.rumContextHandoffOwner, rumContext: contextA, sceneIdentifier: sceneB.rawValue, operation: operation)
+            } else if fallback == "scene" {
+                RUMContextHandoff.withValue(owner: monitor.rumContextHandoffOwner, rumContext: nil, sceneIdentifier: sceneA.rawValue, operation: operation)
+            } else {
+                operation()
+            }
+            let selected = fallback == "exact" || fallback == "scene" ? sceneA : sceneB
+            for view in oldViews {
+                XCTAssertEqual(view.customTimings["fallback"], view.sceneIdentifier == selected ? 2_000_000_000 : nil, fallback)
+                XCTAssertEqual(view.viewLoadingTime, view.sceneIdentifier == selected ? 2 : nil, fallback)
+            }
+        }
+    }
+
+    func testTargetedTimingUsesNewOccurrenceStartWithoutMutatingRetainedViews() throws {
+        let clock = DateProviderMock(now: Date(timeIntervalSinceReferenceDate: 0))
+        let monitor = Monitor(dependencies: .mockWith(featureScope: featureScope, samplingRate: 100), dateProvider: clock)
+        let (sceneA, sceneB) = startConcurrentSceneViews(in: monitor, dateProvider: clock)
+        let peer = try XCTUnwrap(monitor.rumContextSnapshot(for: .scene(sceneB)))
+        let session = try XCTUnwrap(monitor.applicationScope.activeSession)
+        let old = try XCTUnwrap(session.viewScopes.first { $0.sceneIdentifier == sceneA })
+        startTargetedResource(in: monitor, form: .url, key: "retain-old-timing", target: .scene(sceneA))
+        clock.now = clock.now.addingTimeInterval(1)
+        monitor.addTiming(name: "value", explicitTarget: .scene(sceneA))
+        monitor.addViewLoadingTime(overwrite: false, explicitTarget: .scene(sceneA))
+        clock.now = clock.now.addingTimeInterval(4)
+        monitor.process(command: RUMStartViewCommand.mockWith(time: clock.now, identity: ViewIdentifier("next-A"), name: "Next A", target: .scene(sceneA)))
+        let next = try XCTUnwrap(session.viewScopes.first { $0.sceneIdentifier == sceneA && $0.isActiveView })
+        startTargetedResource(in: monitor, form: .url, key: "retain-next-timing", target: .scene(sceneA))
+        clock.now = clock.now.addingTimeInterval(3)
+        RUMContextHandoff.withValue(owner: monitor.rumContextHandoffOwner, rumContext: peer, sceneIdentifier: sceneB.rawValue) {
+            monitor.addTiming(name: "value", explicitTarget: .scene(sceneA))
+            monitor.addViewLoadingTime(overwrite: true, explicitTarget: .scene(sceneA))
+        }
+        XCTAssertNotEqual(old.viewUUID, next.viewUUID)
+        XCTAssertEqual(old.customTimings, ["value": 1_000_000_000])
+        XCTAssertEqual(old.viewLoadingTime, 1)
+        XCTAssertEqual(next.customTimings, ["value": 3_000_000_000])
+        XCTAssertEqual(next.viewLoadingTime, 3)
+        monitor.process(command: RUMStopViewCommand.mockWith(time: clock.now, identity: ViewIdentifier("next-A"), target: .scene(sceneA)))
+        clock.now = clock.now.addingTimeInterval(1)
+        RUMContextHandoff.withValue(owner: monitor.rumContextHandoffOwner, rumContext: peer, sceneIdentifier: sceneB.rawValue) {
+            monitor.addTiming(name: "ended", explicitTarget: .view(next.viewUUID))
+            monitor.addViewLoadingTime(overwrite: true, explicitTarget: .scene(sceneA))
+        }
+        let b = try XCTUnwrap(session.viewScopes.first { $0.sceneIdentifier == sceneB })
+        XCTAssertEqual(b.customTimings, ["ended": 9_000_000_000])
+        XCTAssertEqual(b.viewLoadingTime, 9)
+        XCTAssertNil(old.customTimings["ended"])
+        XCTAssertNil(next.customTimings["ended"])
+        XCTAssertEqual(old.viewLoadingTime, 1)
+        XCTAssertEqual(next.viewLoadingTime, 3)
+    }
+
+    func testTimingAndLoadingKeepDistinctSessionRestorationPolicies() throws {
+        for loading in [false, true] {
+            for boundary in ["stop", "expire-immediate", "expire-delayed"] {
+                let clock = DateProviderMock()
+                let scope = FeatureScopeMock(context: .mockWith(applicationStateHistory: .mockAppInForeground()))
+                let monitor = Monitor(dependencies: .mockWith(featureScope: scope, samplingRate: 100), dateProvider: clock)
+                let (sceneA, sceneB) = startConcurrentSceneViews(in: monitor, dateProvider: clock)
+                let oldSession = try XCTUnwrap(monitor.applicationScope.activeSession)
+                let oldViews = oldSession.viewScopes
+                let peer = try XCTUnwrap(monitor.rumContextSnapshot(for: .scene(sceneB)))
+                if boundary == "stop" {
+                    monitor.stopSession()
+                } else {
+                    clock.now = clock.now.addingTimeInterval(4 * 60 * 60 + 1)
+                    if boundary == "expire-delayed" {
+                        monitor.process(command: RUMHandleAppLifecycleEventCommand(time: clock.now, event: .willEnterForeground))
+                    }
+                }
+                RUMContextHandoff.withValue(owner: monitor.rumContextHandoffOwner, rumContext: peer, sceneIdentifier: sceneB.rawValue) {
+                    if loading {
+                        monitor.addViewLoadingTime(overwrite: true, explicitTarget: .scene(sceneA))
+                    } else {
+                        monitor.addTiming(name: "boundary", explicitTarget: .scene(sceneA))
+                    }
+                }
+                let active = monitor.applicationScope.sessionScopes.flatMap(\.viewScopes).filter(\.isActiveView)
+                if !loading && boundary != "stop" {
+                    XCTAssertEqual(active.count, 2, boundary)
+                    let restored = try XCTUnwrap(active.first { $0.sceneIdentifier == sceneA })
+                    XCTAssertFalse(oldViews.contains { $0.viewUUID == restored.viewUUID })
+                    XCTAssertEqual(restored.customTimings["boundary"], 0)
+                    XCTAssertNil(active.first { $0.sceneIdentifier == sceneB }?.customTimings["boundary"])
+                    XCTAssertNotEqual(monitor.rumContextSnapshot(for: .scene(sceneA))?.sessionID, peer.sessionID)
+                } else {
+                    XCTAssertTrue(active.isEmpty, boundary)
+                }
+                XCTAssertTrue(oldViews.allSatisfy { $0.customTimings["boundary"] == nil && $0.viewLoadingTime == nil })
+            }
+        }
+    }
+
+    func testTargetedTimingOffViewPolicyMatchesLegacyInForegroundAndBackground() throws {
+        for background in [false, true] {
+            for loading in [false, true] {
+                var observed: [[String]] = []
+                for targeted in [false, true] {
+                    let clock = DateProviderMock(now: Date(timeIntervalSinceReferenceDate: 0))
+                    let history: AppStateHistory = background ? .mockAppInBackground(since: clock.now) : .mockAppInForeground(since: clock.now)
+                    let scope = FeatureScopeMock(context: .mockWith(sdkInitDate: clock.now, applicationStateHistory: history))
+                    let monitor = Monitor(dependencies: .mockWith(featureScope: scope, samplingRate: 100), dateProvider: clock)
+                    clock.now = clock.now.addingTimeInterval(1)
+                    let target: RUMCommandTarget? = targeted ? .scene(RUMSceneIdentifier(rawValue: "missing")) : nil
+                    if loading {
+                        monitor.addViewLoadingTime(overwrite: false, explicitTarget: target)
+                    } else {
+                        monitor.addTiming(name: "offview", explicitTarget: target)
+                    }
+                    observed.append(scope.eventsWritten(ofType: RUMViewEvent.self).map {
+                        "\($0.view.url):\($0.view.customTimings?.customTimingsInfo["offview"] ?? -1):\($0.view.loadingTime ?? -1)"
+                    })
+                }
+                XCTAssertEqual(observed[0], observed[1], "background=\(background), loading=\(loading)")
+            }
+        }
+    }
+
     func testTargetedViewAttributeAddsMutateOnlyRequestedView() throws {
         let dateProvider = DateProviderMock()
         let monitor = Monitor(dependencies: .mockWith(featureScope: featureScope, samplingRate: 100), dateProvider: dateProvider)

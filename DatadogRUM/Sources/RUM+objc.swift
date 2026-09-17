@@ -881,6 +881,22 @@ public class objc_RUMMonitor: NSObject {
     public func removeViewAttributes(forKeys keys: [String], view: objc_RUMViewTarget) {
         swiftRUMMonitor.removeViewAttributes(forKeys: keys, view: view.swiftType)
     }
+
+    /// Adds a timing to the selected current view. This API is experimental.
+    @available(iOS 27.0, *)
+    @MainActor
+    @objc(addTimingWithName:view:)
+    public func addTiming(name: String, view: objc_RUMViewTarget) {
+        swiftRUMMonitor.addTiming(name: name, view: view.swiftType)
+    }
+
+    /// Adds loading time with the existing overwrite rule. This API is experimental.
+    @available(iOS 27.0, *)
+    @MainActor
+    @objc(addViewLoadingTimeWithOverwrite:view:)
+    public func addViewLoadingTime(overwrite: Bool, view: objc_RUMViewTarget) {
+        swiftRUMMonitor.addViewLoadingTime(overwrite: overwrite, view: view.swiftType)
+    }
     #endif
 
     #if !os(watchOS)

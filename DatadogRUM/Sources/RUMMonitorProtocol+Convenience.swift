@@ -44,6 +44,28 @@ public typealias RUMOperationViewTarget = RUMViewTarget
 
 #if os(iOS)
 public extension RUMMonitorViewProtocol {
+    /// Records a timing on the selected scene's current view.
+    ///
+    /// This API is experimental. An unavailable target preserves independent
+    /// inference. Repeated names retain the existing replacement behavior.
+    @_spi(Experimental)
+    @available(iOS 27.0, *)
+    @MainActor
+    func addTiming(name: String, view: RUMViewTarget) {
+        RUMViewTimingTargetBridge.addTiming(on: self, name: name, explicitTarget: .scene(view.sceneIdentifier))
+    }
+
+    /// Records loading time on the selected scene's current view.
+    ///
+    /// This API is experimental. An unavailable target preserves independent
+    /// inference. Loading time changes only when absent or overwrite is true.
+    @_spi(Experimental)
+    @available(iOS 27.0, *)
+    @MainActor
+    func addViewLoadingTime(overwrite: Bool, view: RUMViewTarget) {
+        RUMViewTimingTargetBridge.addViewLoadingTime(on: self, overwrite: overwrite, explicitTarget: .scene(view.sceneIdentifier))
+    }
+
     /// Adds an attribute to the selected scene's current view.
     ///
     /// This API is experimental. An unavailable target preserves independent
@@ -86,6 +108,31 @@ public extension RUMMonitorViewProtocol {
     @MainActor
     func removeViewAttributes(forKeys keys: [AttributeKey], view: RUMViewTarget) {
         RUMViewAttributeTargetBridge.removeViewAttributes(on: self, forKeys: keys, explicitTarget: .scene(view.sceneIdentifier))
+    }
+}
+
+/// Private capability preserving legacy custom-monitor timing/loading calls.
+internal protocol RUMViewTimingTargetHandling: AnyObject {
+    func addTiming(name: String, explicitTarget: RUMCommandTarget?)
+    func addViewLoadingTime(overwrite: Bool, explicitTarget: RUMCommandTarget?)
+}
+
+@MainActor
+internal enum RUMViewTimingTargetBridge {
+    static func addTiming(on monitor: any RUMMonitorViewProtocol, name: String, explicitTarget: RUMCommandTarget) {
+        guard let monitor = monitor as? any RUMViewTimingTargetHandling else {
+            monitor.addTiming(name: name)
+            return
+        }
+        monitor.addTiming(name: name, explicitTarget: explicitTarget)
+    }
+
+    static func addViewLoadingTime(on monitor: any RUMMonitorViewProtocol, overwrite: Bool, explicitTarget: RUMCommandTarget) {
+        guard let monitor = monitor as? any RUMViewTimingTargetHandling else {
+            monitor.addViewLoadingTime(overwrite: overwrite)
+            return
+        }
+        monitor.addViewLoadingTime(overwrite: overwrite, explicitTarget: explicitTarget)
     }
 }
 

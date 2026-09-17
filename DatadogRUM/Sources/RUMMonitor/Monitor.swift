@@ -1067,6 +1067,10 @@ extension Monitor: RUMMonitorViewProtocol {
     }
 
     func addTiming(name: String) {
+        addTiming(name: name, explicitTarget: nil)
+    }
+
+    func addTiming(name: String, explicitTarget: RUMCommandTarget?) {
         var command = RUMAddViewTimingCommand(
             time: dateProvider.now,
             globalAttributes: self.attributes,
@@ -1074,12 +1078,17 @@ extension Monitor: RUMMonitorViewProtocol {
             timingName: name
         )
         command.target = currentExecutionTarget
+        command.explicitTarget = explicitTarget
         process(
             command: command
         )
     }
 
     func addViewLoadingTime(overwrite: Bool) {
+        addViewLoadingTime(overwrite: overwrite, explicitTarget: nil)
+    }
+
+    func addViewLoadingTime(overwrite: Bool, explicitTarget: RUMCommandTarget?) {
         var command = RUMAddViewLoadingTime(
             time: dateProvider.now,
             globalAttributes: self.attributes,
@@ -1087,6 +1096,7 @@ extension Monitor: RUMMonitorViewProtocol {
             overwrite: overwrite
         )
         command.target = currentExecutionTarget
+        command.explicitTarget = explicitTarget
         process(
             command: command
         )
@@ -1094,6 +1104,8 @@ extension Monitor: RUMMonitorViewProtocol {
 }
 
 #if os(iOS)
+extension Monitor: RUMViewTimingTargetHandling {}
+
 extension Monitor: RUMViewAttributeTargetHandling {}
 
 extension Monitor: RUMErrorViewTargetHandling {}
