@@ -3,7 +3,7 @@
 Original review 2026-09-17 against `af63657f08dbecb66e7c3ae97ed53fc8f7b065b9`.
 R02 was reviewed again at signed `7b77f60eb` during EXP-168, and R04 at signed
 `66d1ccb02`/`4ba7179c6` during EXP-170/171. R06 was reviewed again at signed
-`7619eb8a2` during EXP-173. Original line ranges
+`7619eb8a2` during EXP-173, and R05 at signed `368c62a72` during EXP-174. Original line ranges
 below refer to the original review; current symbol names identify the boundaries.
 The 6,613-line `SwiftUIViewModifier.swift` was reviewed by responsibility before
 further API expansion. This is a source review with existing regression evidence,
@@ -25,7 +25,7 @@ because a report exists. No production source changed during this review.
 | R02 | Weak authority/occurrence registries and keyed registration (1358–2780): subtree-local suppression, exact occurrence stop, stale registration epoch rejection | Dormant/reveal, scoped suppression, exact host removal and disconnect tests | CLOSED in EXP-168 after weak callback context, explicit cancellation/rebind epoch tests, 303 affected tests and mounted release/teardown on27/26.5. |
 | R03 | Deferred intent and interactive arbitration (3060–3899): scene/coordinator key, cancel rearm, pending identity check, remove pending before commit, preserve peer on disconnect | Interactive cancel/finish, concurrent keyed disconnect, pending migration and reregister-cannot-bypass-cancel tests | Bounded arbitration review complete. H11–H13 remain real recognized-gesture gates. Source observer fan-out is R05, not this arbiter. |
 | R04 | Ordinary/keyed modifiers and attachment/lifetime boundaries (3900–4789, 5796–6096): single-scene branch, availability fallback, declaration-owned State, generation-checked one-turn detach grace | Retained reader and reconstruction tests; `testWhenDetachedStateIsReleased_queuedFinalDetachStillRuns`, detach/reattach cancellation | CLOSED in EXP-171: after D03/D08, no-body retained-reader controls and native first-callback57/57 versus43/57 prove fresh Latest ownership, weak configuration and teardown. H08/H09 physical ordering stays separate. |
-| R05 | Transition source, observed adapter and host engine (4790–5379): stable source pinning, lazy observed authority, Observation rearm before receive, FIFO main dispatch, exact source unsubscribe | Observation synchronous/nested mutation, adapter deallocation, publisher pinning, background FIFO and exact host disconnect tests | BLOCKED by missing multi-observer reentrancy coverage below. D07/D08 pass EXP-169/170. |
+| R05 | Transition source, observed adapter and host engine (4790–5379): stable source pinning, lazy observed authority, Observation rearm before receive, FIFO main dispatch, exact source unsubscribe | Observation synchronous/nested mutation, adapter deallocation, publisher pinning, background FIFO and exact host disconnect tests | CLOSED in EXP-174 after three failing controls, nine new regressions and346 affected tests; initial/commit generations, nested return, add/remove and actual two-host teardown pass. |
 | R06 | Native semantic state/public hosts (5380–5795, 6097–6496): accepted path getter, presentation ownership, automatic metadata, explicit-over-capability precedence, unchanged standard-container integration | Rejected/canonicalized path tests, native presentation tests, host reconstruction, capability precedence and pending-observed-input tests | CLOSED in EXP-173: accepted getter after one transaction write, occurrence-token callbacks, accepted mount authority and stable rematerialization;337 tests and native77/77. Stable API sign-off remains F01. |
 
 Names above identify coverage in `SwiftUIViewNameExtractorTests.swift` and
@@ -118,20 +118,33 @@ Opaque setter interiors still require an observed/explicit transition boundary;
 no speculative proposal ownership, public API, extraction or physical ordering
 claim was added. This closes the bounded R06 responsibility review.
 
-**R05, reentrant observer fan-out.** `commit` snapshots a generation and invokes
-`observers.values.forEach` synchronously (4834–4846). Existing nested-observer
-coverage has one observer. Multiple observers plus a nested commit need a decisive
-monotonic-generation test; a later outer callback must never regress a host that
-already consumed the nested generation. This is a source-identified coverage gap,
-not a reproduced SDK failure in this pass. Also cover observer removal/addition
-inside delivery before closing R05. Defined EXP-174 owns these deterministic
-controls and the synchronous latest-generation/host teardown acceptance.
+**R05, reentrant observer fan-out — closed in EXP-174.** Three deterministic
+controls reproduce `[0, 2, 1]` on nested commit, `[1, 0]` on nested initial
+publication, and three callbacks after the first callback removes all observers.
+Whichever observer receives the outer value first triggers the test; no dictionary
+ordering assumption is involved. The single new `publish` helper snapshots IDs,
+looks up live membership before each callback and stops an outer generation once
+a nested commit supersedes it. The initial and ordinary publication paths share
+this helper. Nested commit stays synchronous; every live observer has the newest
+generation before it returns. Added observers receive current state once through
+observe, and removals cancel pending delivery.
+
+The observed adapter updates identity and rearms Observation before delivering;
+actual multi-observer publisher and Observation tests preserve the latest value.
+Source pinning, weak host captures, source unsubscribe and background FIFO remain
+covered. Two actual host states emit distinct scene-local Latest occurrences,
+keep their independent peer untouched and stop exactly those occurrences; removal
+during nested delivery cannot revive a detached host. All346 affected tests and
+strict source/test lint pass at signed `368c62a72`. This closes the bounded R05
+review without deferring callbacks, adding API or changing event dispatch.
+[Durable result](Results/EXP-174-observer-delivery.json) retains three failed
+controls, all selectors and source identities. No physical/backend/final review
+claim follows from this synchronous in-memory contract.
 
 ## Review and extraction boundary
 
-R01/R02/R03/R04/R06 close only their bounded source-review obligations. R05 remains
-blocked until its stated regressions are tested and the findings are fixed or
-rejected with evidence. Keep the existing synchronous accepted-state boundary:
+All six responsibility gates close only their bounded source-review obligations.
+Independent final release review and stable API sign-off remain required. Keep the existing synchronous accepted-state boundary:
 blindly moving reconciliation to onAppear or another task would reintroduce the
 known immediate-telemetry ownership gap. Splitting the file is deferred; repairs
 should be small, independently reviewable changes tied to named gates.

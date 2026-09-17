@@ -1,7 +1,7 @@
 **Production safety review of multi-scene SDK instrumentation**
 
 Updated 2026-09-17 during plan execution. **Release remains on hold: all 12
-review findings are closed, 0 remain open.** The finite checklist has 29/66
+review findings are closed, 0 remain open.** The finite checklist has 30/66
 release gates closed. [PLAN.md](PLAN.md) owns the release contract and
 [REVIEW_TRIAGE.md](REVIEW_TRIAGE.md) owns assessed repair order and evidence limits.
 Review IDs R01–R12 below map to repair gates D01–D12, not PLAN's responsibility
@@ -52,8 +52,9 @@ additional same-ID occurrence risk with [presentation evidence](Results/EXP-173-
 337 tests and mounted77/77. Its first native candidate exposed content
 rematerialization before injected old callbacks; the accepted fix preserves that
 occurrence while its Binding remains accepted. All12 original findings are now
-closed, but R05 observer reentrancy, telemetry, physical and final release gates
-remain. Keep this review as the disposition and historical evidence record; it
+closed. EXP-174 also closes the bounded R05 observer reentrancy review with
+three deterministic failures repaired and346 tests; [evidence](Results/EXP-174-observer-delivery.json).
+Telemetry, physical and final release gates remain. Keep this review as the disposition and historical evidence record; it
 is not release certification.
 
 **Original review at the source revision below**

@@ -15,9 +15,11 @@ Last updated: 2026-09-17
 
 ## Current checkpoint
 
-Current release position: **29/66 gates closed**. EXP-173 closes D10/R06 at
+Current release position: **30/66 gates closed**. EXP-173 closes D10/R06 at
 signed `7619eb8a2` with337 affected tests and native77/77 versus55/77. All12
-original safety findings have repair evidence. R05 multi-observer fan-out is next.
+original safety findings have repair evidence. EXP-174 closes R05 at signed
+`368c62a72` with three failing controls and346 affected tests. T03 Resource
+ownership is next.
 Recent identities and attempts are in the finite gate register and active shard.
 
 The checkpoints below preserve the earlier telemetry/navigation milestones;
@@ -340,7 +342,7 @@ ordered acceptance contract is in
 
 | EXP-172 | PASS | P03:326 tests, three failing controls; Release ABBA27/26.5 zero retired entries/weak survivors within frozen heap limits; eight ordinary smoke runs and watchOS Release pass | [Record](Experiments/EXP-143-199.md#exp-172--retire-disconnected-scene-history-without-accepting-stale-callbacks) |
 | EXP-173 | PASS | D10/R06 closed:337 tests, mounted77/77 versus55/77; accepted Binding and occurrence callbacks, rematerialization regression fixed; all four native attempts retained | [Record](Experiments/EXP-143-199.md#exp-173--commit-accepted-presentation-state-and-fence-occurrence-callbacks) |
-| EXP-174 | PLANNED | R05: multiple observers, nested commit/remove/add, monotonic synchronous generations and exact host teardown | [Record](Experiments/EXP-143-199.md#exp-174--preserve-monotonic-reentrant-observer-delivery) |
+| EXP-174 | PASS | R05 closed: three failing controls, nine new regressions and346 affected tests; monotonic synchronous generations, membership and exact two-host teardown | [Record](Experiments/EXP-143-199.md#exp-174--preserve-monotonic-reentrant-observer-delivery) |
 
 ## Simulator-inconclusive and hardware-required evidence
 

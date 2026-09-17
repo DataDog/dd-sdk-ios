@@ -1340,3 +1340,10 @@ current snapshot. Initial publication needs the same oracle as commit. Run actua
 SDK source/observed-adapter/handler objects in XCTest; no physical/backend claim
 is appropriate for this synchronous in-memory gate. Keep the protected project
 and local configuration untouched and retain all failed controls before repair.
+
+EXP-174 is accepted at signed `368c62a72`: three failed controls and346 passing
+affected tests, with nine new regressions. The durable observer-delivery JSON
+records source identity and exact selectors. Its source-review environment is
+intentional; a new simulator app or backend run would not improve this synchronous
+fan-out oracle. Do not rerun it merely to resume. T03 needs its own captured-start
+and exact completion/backend discriminator before implementation.

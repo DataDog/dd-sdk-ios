@@ -1,13 +1,12 @@
 {
   "schema_version": 1,
-  "candidate_revision": "7619eb8a20eb20edceef84d59706e1cf7b7b838a",
+  "candidate_revision": "368c62a723968fdeacaef585e7087c0eef428715",
   "gate_count": 66,
   "counts": {
-    "CLOSED": 29,
+    "CLOSED": 30,
     "ENVIRONMENT BLOCKED": 17,
     "INCONCLUSIVE": 1,
-    "OPEN": 18,
-    "REVIEW BLOCKED": 1
+    "OPEN": 18
   },
   "closed": [
     "C01",
@@ -22,6 +21,7 @@
     "R02",
     "R03",
     "R04",
+    "R05",
     "R06",
     "A01",
     "T01",
@@ -52,15 +52,6 @@
       "status": "ENVIRONMENT BLOCKED",
       "owner": "SDK implementer",
       "dependencies": []
-    },
-    {
-      "id": "R05",
-      "status": "REVIEW BLOCKED",
-      "owner": "SDK reviewer",
-      "dependencies": [
-        "D07",
-        "D08"
-      ]
     },
     {
       "id": "T03",

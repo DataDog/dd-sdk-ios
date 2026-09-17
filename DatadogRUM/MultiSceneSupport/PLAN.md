@@ -52,9 +52,9 @@ Objective-C Release exposure still require normal API review.
    reconnect acceptance are closed within their recorded boundaries.
    R04 retained-reader remount and P03 disconnected-registry retirement pass
    EXP-171/172 within their recorded boundaries.
-3. D10 accepted presentations and R06 occurrence review pass EXP-173. Close
-   R05 multi-observer reentrancy through defined EXP-174, then execute T03 Resource
-   start/completion ownership before the remaining bounded telemetry gates.
+3. D10/R06 accepted presentations and R05 observer reentrancy pass EXP-173/174.
+   Execute T03 Resource start/completion ownership before the remaining bounded
+   telemetry gates. All six responsibility reviews have bounded evidence.
 4. Close the early compatibility/performance gates in available environments;
    C06 remains blocked without a minimum-OS runtime. Resume T03–T14 only after
    relevant repair dependencies pass. A documented fallback remains a deliverable.
@@ -105,7 +105,7 @@ SwiftUI remains required as H16; the former conditional row is resolved.
 | R02 | Authority and occurrence sources | SDK reviewer | D03 | Exact host release, local suppression, stale generation rejection and fresh reveals; record findings, evidence and dispositions in COMPONENT_REVIEW.md | Source review plus targeted regressions for any finding | CLOSED |
 | R03 | Transition arbitration | SDK reviewer | None | Accepted versus proposed state; cancel/finish exactly once; nested reentrancy; record findings, evidence and dispositions in COMPONENT_REVIEW.md | Source review plus targeted regressions for any finding | CLOSED |
 | R04 | View modifiers and attachment boundaries | SDK reviewer | D03, D08 | Main-thread/availability gates, host reconstruction and retained-reader teardown; record findings, evidence and dispositions in COMPONENT_REVIEW.md | Source review plus targeted regressions for any finding | CLOSED |
-| R05 | Observed input and semantic engine | SDK reviewer | D07, D08 | Publisher pinning, Observation rearming, background FIFO and atomic destination; record findings, evidence and dispositions in COMPONENT_REVIEW.md; multiple observers with nested commit/remove/add must preserve monotonic generations | Source review plus targeted regressions for any finding | REVIEW BLOCKED |
+| R05 | Observed input and semantic engine | SDK reviewer | D07, D08 | Publisher pinning, Observation rearming, background FIFO and atomic destination; record findings, evidence and dispositions in COMPONENT_REVIEW.md; multiple observers with nested commit/remove/add must preserve monotonic generations | Source review plus targeted regressions for any finding | CLOSED |
 | R06 | Public hosts and native convenience adapters | SDK reviewer | D10 | Migration budget, no screen/method edits, automatic metadata and platform fallback; record findings, evidence and dispositions in COMPONENT_REVIEW.md; delayed detach/remount and same-ID presentation replacement preserve occurrence ownership | Source review plus targeted regressions for any finding | CLOSED |
 
 ## Acceptance workflow

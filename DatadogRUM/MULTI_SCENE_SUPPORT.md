@@ -9,14 +9,14 @@ validated, and ready to become a supported contract.
 
 Last updated: 2026-09-17
 
-Current SDK checkpoint: signed `7619eb8a2` (EXP-173 accepted presentations and
-exact occurrence callbacks). The finite [release checklist](MultiSceneSupport/PLAN.md)
-has **29/66 gates closed**. All12 findings in the
+Current SDK checkpoint: signed `368c62a72` (EXP-174 monotonic observer delivery,
+after EXP-173 accepted presentations and exact occurrence callbacks). The finite [release checklist](MultiSceneSupport/PLAN.md)
+has **30/66 gates closed**. All12 findings in the
 [production safety review](MultiSceneSupport/PRODUCTION_SAFETY_REVIEW.md) have
 bounded repair evidence. EXP-173 passes337 affected tests and77/77 mounted checks
 versus55/77. Early dispatch/allocation/reentrancy and retained-scene budgets now
-pass on27/26.5. R05 multi-observer nested commit/remove/add is the next executable
-gate, followed by the finite remaining telemetry families. Minimum-runtime,
+pass on27/26.5. EXP-174 passes346 affected tests, closing all six bounded
+component reviews. T03 Resource ownership is the next executable telemetry gate. Minimum-runtime,
 physical iPad/Duo, API review and final release acceptance remain open. Preserve
 accepted experiment identities; do not rerun them merely to resume.
 [Current evidence](MultiSceneSupport/Experiments/EXP-143-199.md).

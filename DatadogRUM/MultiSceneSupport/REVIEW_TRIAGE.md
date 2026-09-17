@@ -23,7 +23,8 @@ acceptance, 37/37 each. EXP-169 closes D07 with four failing controls, 119 tests
 and mounted29/29 acceptance. EXP-170 closes D08; EXP-171 closes bounded R04,
 and EXP-172 closes P03 registry retention under its frozen budget. EXP-173 closes
 D10/R06 with337 tests and mounted77/77 at signed `7619eb8a2`; all12 original
-findings now have repair evidence. R05 observer fan-out remains next. Existing
+findings now have repair evidence. EXP-174 closes bounded R05 observer fan-out
+with346 tests at signed `368c62a72`. T03 Resource ownership is next. Existing
 accepted experiment slices remain valid within their recorded boundaries.
 
 ## Finding decisions
@@ -76,8 +77,8 @@ SwiftUI invariants and current test seams are detailed in
 3. D03 mounted lifetime passes EXP-168 and bounded R02 review is complete.
    D07 pending authority, D08 reconnect and R04 retained-reader remount pass
    EXP-169/170/171. P03 registry retirement passes EXP-172. Execute defined
-   EXP-173 closes D10/R06 accepted presentations; R05 observer fan-out is next.
-   Keep its nested commit/remove/add discriminators in that slice. Each fix is a small
+   EXP-173 closes D10/R06 accepted presentations; EXP-174 closes R05 observer
+   fan-out with deterministic nested commit/remove/add regressions. Each fix is a small
    component commit with explicit paths. Sign when available; if unavailable,
    continue unsigned locally and sign before any future authorized push.
    Deferred extraction still starts only after release freeze.

@@ -2,7 +2,7 @@
   "schema_version": 1,
   "scope": "Multi-scene RUM release",
   "baseline_revision": "92f021ba7e4a866f84a52da93ed8b63f3dc75882",
-  "candidate_revision": "7619eb8a20eb20edceef84d59706e1cf7b7b838a",
+  "candidate_revision": "368c62a723968fdeacaef585e7087c0eef428715",
   "gates": [
     {
       "id": "C01",
@@ -185,8 +185,8 @@
       "decisive_test": "Publisher pinning, Observation rearming, background FIFO and atomic destination; record findings, evidence and dispositions in COMPONENT_REVIEW.md; multiple observers with nested commit/remove/add must preserve monotonic generations",
       "environment": "Source review plus targeted regressions for any finding",
       "completion_mode": null,
-      "status": "REVIEW BLOCKED",
-      "evidence": "COMPONENT_REVIEW.md: concrete findings and decisive missing regressions; extraction deferred."
+      "status": "CLOSED",
+      "evidence": "EXP-174, signed368c62a72: three deterministic failing controls, nine new regressions,346 affected tests and strict lint. Initial/commit nested generations, current membership, publisher/Observation synchronous latest state and two-host exact teardown pass. COMPONENT_REVIEW.md and Results/EXP-174-observer-delivery.json."
     },
     {
       "id": "R06",
