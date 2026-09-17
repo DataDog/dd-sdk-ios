@@ -46,7 +46,7 @@ Objective-C Release exposure still require normal API review.
 
 0. D01/D02 platform compatibility is closed by EXP-162; evidence is in the
    register and detailed record. Accepted experiment identities remain unchanged.
-1. D12/T02, D09 and D11 compatibility repairs are accepted. Define D04 with P02
+1. D12/T02, D09 and D11 compatibility repairs are accepted. EXP-166 defines D04 with P02
    next in the [assessed order](REVIEW_TRIAGE.md): isolate handoff by SDK instance
    and lifecycle, and meet the frozen allocation budget. Preserve failing controls.
 2. Normalize restoration in D05/D06 after the shared ownership repair.
