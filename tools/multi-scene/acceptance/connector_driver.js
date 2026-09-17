@@ -86,6 +86,18 @@ async function runAcceptance({tools, notify, device, repo, scenario}) {
       const base = {run_id:at(payload,"context.probe.run_id"),
                     session_id:at(payload,"session.id"), view_id:at(payload,"view.id")};
       if (request.kind === "views") return {...base, name:at(payload,"view.name")};
+      if (request.kind === "current_errors") {
+        const phase = at(payload,"context.probe.phase");
+        const ids = at(payload,"action.id");
+        const stack = at(payload,"error.stack");
+        const stackMatches = phase === "error-swift-message" ? stack === "Exp177.swift:177" :
+          phase === "error-objc-message" ? stack === "exp177 stack" : true;
+        return {...base, phase, event_id:at(payload,"error.id"), source_scene:at(payload,"context.probe.source_scene"),
+          action_ids:Array.isArray(ids) ? ids : ids == null ? [] : [ids],
+          error_source:at(payload,"error.source"), error_type:at(payload,"error.type"),
+          is_crash:at(payload,"error.is_crash"), url:at(payload,"error.resource.url"), status:at(payload,"error.resource.status_code"),
+          payload_matches:at(payload,"error.message") === phase && stackMatches};
+      }
       if (request.kind === "resources" || request.kind === "resource_errors") {
         const error = request.kind === "resource_errors";
         const path = error ? "error.resource" : "resource";

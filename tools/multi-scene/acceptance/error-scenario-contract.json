@@ -1,0 +1,305 @@
+{
+  "completionConditions": [
+    {
+      "expectedCount": 1,
+      "kind": "error",
+      "name": "error-swift-message",
+      "occurrence": 1,
+      "rumViewOrigin": "semantic",
+      "scene": "scene-A",
+      "screen": "home",
+      "sourceScene": "scene-A"
+    },
+    {
+      "expectedCount": 1,
+      "kind": "error",
+      "name": "error-swift-error",
+      "occurrence": 1,
+      "rumViewOrigin": "semantic",
+      "scene": "scene-A",
+      "screen": "home",
+      "sourceScene": "scene-A"
+    },
+    {
+      "expectedCount": 1,
+      "kind": "error",
+      "name": "error-swift-callback",
+      "occurrence": 1,
+      "rumViewOrigin": "semantic",
+      "scene": "scene-A",
+      "screen": "home",
+      "sourceScene": "scene-A"
+    },
+    {
+      "expectedCount": 1,
+      "kind": "error",
+      "name": "error-objc-message",
+      "occurrence": 1,
+      "rumViewOrigin": "semantic",
+      "scene": "scene-A",
+      "screen": "home",
+      "sourceScene": "scene-A"
+    },
+    {
+      "expectedCount": 1,
+      "kind": "error",
+      "name": "error-objc-error",
+      "occurrence": 1,
+      "rumViewOrigin": "semantic",
+      "scene": "scene-A",
+      "screen": "home",
+      "sourceScene": "scene-A"
+    },
+    {
+      "expectedCount": 1,
+      "kind": "error",
+      "name": "error-invalid-exact-a",
+      "occurrence": 1,
+      "rumViewOrigin": "semantic",
+      "scene": "scene-A",
+      "screen": "home",
+      "sourceScene": "scene-A"
+    },
+    {
+      "expectedCount": 1,
+      "kind": "error",
+      "name": "error-invalid-representative-b",
+      "occurrence": 1,
+      "rumViewOrigin": "semantic",
+      "scene": "scene-B",
+      "screen": "home",
+      "sourceScene": "scene-A"
+    },
+    {
+      "expectedCount": 1,
+      "kind": "error",
+      "name": "error-legacy-source-a",
+      "occurrence": 1,
+      "rumViewOrigin": "semantic",
+      "scene": "scene-B",
+      "screen": "home",
+      "sourceScene": "scene-A"
+    },
+    {
+      "expectedCount": 1,
+      "kind": "error",
+      "name": "error-resource-captured-a",
+      "occurrence": 1,
+      "rumViewOrigin": "semantic",
+      "scene": "scene-A",
+      "screen": "home",
+      "sourceScene": "scene-A"
+    },
+    {
+      "actionTarget": "error-action-a",
+      "actionType": "tap",
+      "expectedCount": 1,
+      "kind": "action",
+      "name": "error-action-a",
+      "occurrence": 1,
+      "rumViewOrigin": "semantic",
+      "scene": "scene-A",
+      "screen": "home",
+      "sourceScene": "scene-A"
+    },
+    {
+      "actionTarget": "error-action-b",
+      "actionType": "tap",
+      "expectedCount": 1,
+      "kind": "action",
+      "name": "error-action-b",
+      "occurrence": 1,
+      "rumViewOrigin": "semantic",
+      "scene": "scene-B",
+      "screen": "home",
+      "sourceScene": "scene-B"
+    }
+  ],
+  "defaultRunMode": "clean",
+  "expectedSemanticTimeline": [
+    {
+      "kind": "view-started",
+      "occurrence": 1,
+      "rumViewOrigin": "semantic",
+      "scene": "scene-A",
+      "screen": "home"
+    },
+    {
+      "kind": "view-started",
+      "occurrence": 1,
+      "rumViewOrigin": "semantic",
+      "scene": "scene-B",
+      "screen": "home"
+    },
+    {
+      "expectedCount": 1,
+      "kind": "error",
+      "name": "error-swift-message",
+      "occurrence": 1,
+      "rumViewOrigin": "semantic",
+      "scene": "scene-A",
+      "screen": "home",
+      "sourceScene": "scene-A"
+    },
+    {
+      "expectedCount": 1,
+      "kind": "error",
+      "name": "error-swift-error",
+      "occurrence": 1,
+      "rumViewOrigin": "semantic",
+      "scene": "scene-A",
+      "screen": "home",
+      "sourceScene": "scene-A"
+    },
+    {
+      "expectedCount": 1,
+      "kind": "error",
+      "name": "error-swift-callback",
+      "occurrence": 1,
+      "rumViewOrigin": "semantic",
+      "scene": "scene-A",
+      "screen": "home",
+      "sourceScene": "scene-A"
+    },
+    {
+      "expectedCount": 1,
+      "kind": "error",
+      "name": "error-objc-message",
+      "occurrence": 1,
+      "rumViewOrigin": "semantic",
+      "scene": "scene-A",
+      "screen": "home",
+      "sourceScene": "scene-A"
+    },
+    {
+      "expectedCount": 1,
+      "kind": "error",
+      "name": "error-objc-error",
+      "occurrence": 1,
+      "rumViewOrigin": "semantic",
+      "scene": "scene-A",
+      "screen": "home",
+      "sourceScene": "scene-A"
+    },
+    {
+      "expectedCount": 1,
+      "kind": "error",
+      "name": "error-invalid-exact-a",
+      "occurrence": 1,
+      "rumViewOrigin": "semantic",
+      "scene": "scene-A",
+      "screen": "home",
+      "sourceScene": "scene-A"
+    },
+    {
+      "expectedCount": 1,
+      "kind": "error",
+      "name": "error-invalid-representative-b",
+      "occurrence": 1,
+      "rumViewOrigin": "semantic",
+      "scene": "scene-B",
+      "screen": "home",
+      "sourceScene": "scene-A"
+    },
+    {
+      "expectedCount": 1,
+      "kind": "error",
+      "name": "error-legacy-source-a",
+      "occurrence": 1,
+      "rumViewOrigin": "semantic",
+      "scene": "scene-B",
+      "screen": "home",
+      "sourceScene": "scene-A"
+    },
+    {
+      "expectedCount": 1,
+      "kind": "error",
+      "name": "error-resource-captured-a",
+      "occurrence": 1,
+      "rumViewOrigin": "semantic",
+      "scene": "scene-A",
+      "screen": "home",
+      "sourceScene": "scene-A"
+    },
+    {
+      "actionTarget": "error-action-a",
+      "actionType": "tap",
+      "expectedCount": 1,
+      "kind": "action",
+      "name": "error-action-a",
+      "occurrence": 1,
+      "rumViewOrigin": "semantic",
+      "scene": "scene-A",
+      "screen": "home",
+      "sourceScene": "scene-A"
+    },
+    {
+      "actionTarget": "error-action-b",
+      "actionType": "tap",
+      "expectedCount": 1,
+      "kind": "action",
+      "name": "error-action-b",
+      "occurrence": 1,
+      "rumViewOrigin": "semantic",
+      "scene": "scene-B",
+      "screen": "home",
+      "sourceScene": "scene-B"
+    }
+  ],
+  "identifier": "errors.explicit-target.current-view-cross-scene-serial",
+  "initialWindows": [
+    "scene-A",
+    "scene-B"
+  ],
+  "layout": "stack",
+  "requiredCapabilities": [
+    "multiple-scenes"
+  ],
+  "runtimeOptions": {
+    "automaticallyAbortsDetail": false,
+    "automaticallyAdvancesSplitSelection": true,
+    "automaticallyClosesSceneB": false,
+    "automaticallyNavigates": false,
+    "automaticallyOpensSecondWindow": false,
+    "automaticallyPopsUIKitSplitNavigation": true,
+    "automaticallyReplacesDetail": false,
+    "automaticallyReplacesDetailInstance": false,
+    "automaticallyReturnsSplitToDetail": false,
+    "exercisesSwiftUIButtonStructuredTask": false,
+    "exercisesTraceOnlyURLSessionOwnership": false,
+    "exercisesUIEventContextHandoff": false,
+    "exercisesUIKitScrollOwnership": false,
+    "forcesNavigationRouteIdentity": false,
+    "initialSwiftUIPath": [],
+    "manualSwiftUIViewScreensByScene": {},
+    "startsSplitWithoutSelection": false,
+    "swiftUIRouterWritePolicy": "accept",
+    "swiftUIStress": "none"
+  },
+  "steps": [
+    {
+      "kind": "wait-for-scene-ready",
+      "scene": "scene-A"
+    },
+    {
+      "kind": "wait-for-signal",
+      "scene": "scene-A",
+      "signal": "rum-view:home#1"
+    },
+    {
+      "kind": "open-window",
+      "scene": "scene-A",
+      "value": "scene-B"
+    },
+    {
+      "kind": "wait-for-signal",
+      "scene": "scene-B",
+      "signal": "rum-view:home#1"
+    },
+    {
+      "kind": "run-current-view-error-batch",
+      "scene": "scene-B"
+    }
+  ],
+  "trackingMode": "manual"
+}

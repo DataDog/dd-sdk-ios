@@ -35,6 +35,21 @@ final class ProbeScenarioRunnerTests: XCTestCase {
         XCTAssertTrue(normalizedWindow.opensPeer)
     }
 
+
+    func testErrorAcceptanceContractIncludesTargetFormsFallbacksAndResourceOwner() throws {
+        let scenario = try XCTUnwrap(ProbeScenarioCatalog.scenario(identifier: ProbeErrorContract.scenarioID))
+        XCTAssertEqual(scenario.steps.last?.kind, .runCurrentViewErrorBatch)
+        XCTAssertEqual(scenario.steps.last?.scene, "scene-B")
+        XCTAssertTrue(ProbeScenarioCatalog.usesObservableDriver(scenario))
+        let errors = scenario.completionConditions.filter { $0.kind == .error }
+        XCTAssertEqual(errors.count, 9)
+        XCTAssertEqual(errors.filter { $0.scene == "scene-A" }.count, 7)
+        XCTAssertEqual(errors.filter { $0.scene == "scene-B" }.count, 2)
+        XCTAssertTrue(errors.allSatisfy { $0.sourceScene == "scene-A" && $0.expectedCount == 1 })
+        XCTAssertEqual(scenario.completionConditions.filter { $0.kind == .action }.count, 2)
+        XCTAssertEqual(scenario.expectedSemanticTimeline.count + scenario.completionConditions.count, 24)
+    }
+
     func testResourceAcceptanceContractIncludesAllFormsAndCriticalReleaseBatch() throws {
         let scenario = try XCTUnwrap(ProbeScenarioCatalog.scenario(identifier: ProbeResourceContract.scenarioID))
         XCTAssertEqual(scenario.initialWindows, ["scene-A", "scene-B"])

@@ -2906,6 +2906,12 @@ struct ProbeWindowRoot: View {
                         + "screen=\(currentSceneScreen) phase=\(marker) "
                         + "uptime=\(uptime)"
                 )
+            case .runCurrentViewErrorBatch:
+                #if DEBUG
+                return ProbeErrorAcceptance.start()
+                #else
+                return .rejected(reason: "Error acceptance requires the Debug fixture")
+                #endif
             case .runResourceOwnershipBatch:
                 #if DEBUG
                 return ProbeResourceAcceptance.start()

@@ -17,6 +17,7 @@ enum ProbeScenarioCatalog {
         "actions.explicit-target.cross-scene-serial",
         "actions.explicit-target.long-running-cross-scene-serial",
         ProbeResourceContract.scenarioID,
+        ProbeErrorContract.scenarioID,
         "swiftui.stack.abort",
         "swiftui.stack.same-type-replacement",
         "swiftui.stack.different-type-replacement",
@@ -75,6 +76,7 @@ enum ProbeScenarioCatalog {
         actionsExplicitTargetCrossSceneSerial,
         actionsExplicitTargetLongRunningCrossSceneSerial,
         resourcesExplicitStartCapturedOwner,
+        errorsExplicitCurrentView,
         swiftUIStackAbort,
         swiftUIStackSameTypeReplacement,
         swiftUIStackDifferentTypeReplacement,
@@ -762,6 +764,40 @@ enum ProbeScenarioCatalog {
             ProbeStep(.startLegacyAction, scene: "scene-A", value: "long-running-legacy-start"),
             ProbeStep(.stopLegacyAction, scene: "scene-A", value: "long-running-legacy-finished-b"),
     ]
+
+
+    private static let errorsExplicitCurrentView = ProbeScenario(
+        identifier: ProbeErrorContract.scenarioID,
+        trackingMode: .manual,
+        layout: .stack,
+        initialWindows: ["scene-A", "scene-B"],
+        requiredCapabilities: [.multipleScenes],
+        steps: [
+            ProbeStep(.waitForSceneReady, scene: "scene-A"),
+            ProbeStep(.waitForSignal, scene: "scene-A", signal: "rum-view:home#1"),
+            ProbeStep(.openWindow, scene: "scene-A", value: "scene-B"),
+            ProbeStep(.waitForSignal, scene: "scene-B", signal: "rum-view:home#1"),
+            ProbeStep(.runCurrentViewErrorBatch, scene: "scene-B"),
+        ],
+        completionConditions: errorCompletionExpectations,
+        expectedSemanticTimeline: [
+            ProbeExpectation(.viewStarted, scene: "scene-A", screen: "home", occurrence: 1, rumViewOrigin: .semantic),
+            ProbeExpectation(.viewStarted, scene: "scene-B", screen: "home", occurrence: 1, rumViewOrigin: .semantic),
+        ] + errorCompletionExpectations
+    )
+
+    private static let errorCompletionExpectations: [ProbeExpectation] = {
+        ProbeErrorContract.phases.map { phase in
+            ProbeExpectation(.error,
+                             scene: ProbeErrorContract.peerPhases.contains(phase) ? "scene-B" : "scene-A",
+                             screen: "home", occurrence: 1, name: phase, sourceScene: "scene-A",
+                             rumViewOrigin: .semantic, expectedCount: 1)
+        } + [("scene-A", ProbeErrorContract.actionA), ("scene-B", ProbeErrorContract.actionB)].map { scene, name in
+            ProbeExpectation(.action, scene: scene, screen: "home", occurrence: 1,
+                             name: name, sourceScene: scene, rumViewOrigin: .semantic,
+                             actionType: "tap", actionTarget: name, expectedCount: 1)
+        }
+    }()
 
     private static let resourcesExplicitStartCapturedOwner = ProbeScenario(
         identifier: ProbeResourceContract.scenarioID,

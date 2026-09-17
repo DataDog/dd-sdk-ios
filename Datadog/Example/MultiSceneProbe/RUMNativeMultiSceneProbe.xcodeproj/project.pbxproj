@@ -34,6 +34,7 @@
 		2679280E305A5C66002C9CED /* EXP147InstrumentedComposition.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2679280D305A5C66002C9CED /* EXP147InstrumentedComposition.swift */; };
 		2679280F305A5C66002C9CED /* EXP147InstrumentedComposition.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2679280D305A5C66002C9CED /* EXP147InstrumentedComposition.swift */; };
 		26792811305C47CF002C9CED /* ProbeResourceAcceptance.swift in Sources */ = {isa = PBXBuildFile; fileRef = 26792810305C47CF002C9CED /* ProbeResourceAcceptance.swift */; };
+		26792813305C58FF002C9CED /* ProbeErrorAcceptance.swift in Sources */ = {isa = PBXBuildFile; fileRef = 26792812305C58FF002C9CED /* ProbeErrorAcceptance.swift */; };
 		2B5981885706E364F5011A3D /* DatadogCore in Frameworks */ = {isa = PBXBuildFile; productRef = B687B5705E5D4BD0978C21DF /* DatadogCore */; };
 		2C07E3A04E9579E1F7B581F0 /* ProbeScenarioDriverTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 06BAF138BE59AA8DB812BBB5 /* ProbeScenarioDriverTests.swift */; };
 		31216B1B65CFF78FF7B29FF2 /* ProbeEventRecorder.swift in Sources */ = {isa = PBXBuildFile; fileRef = E6DCA832EA79D2B51CCE8F71 /* ProbeEventRecorder.swift */; };
@@ -82,6 +83,7 @@
 		2679280A305A57FF002C9CED /* EXP147RuntimeProbeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EXP147RuntimeProbeView.swift; sourceTree = "<group>"; };
 		2679280D305A5C66002C9CED /* EXP147InstrumentedComposition.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EXP147InstrumentedComposition.swift; sourceTree = "<group>"; };
 		26792810305C47CF002C9CED /* ProbeResourceAcceptance.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProbeResourceAcceptance.swift; sourceTree = "<group>"; };
+		26792812305C58FF002C9CED /* ProbeErrorAcceptance.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProbeErrorAcceptance.swift; sourceTree = "<group>"; };
 		341303B1C383D8BAAAB80BC9 /* exp-098-pass.jsonl */ = {isa = PBXFileReference; lastKnownFileType = text; path = "exp-098-pass.jsonl"; sourceTree = "<group>"; };
 		3B81B7B3FD83726B0CC5B506 /* ProbeScenarioCatalog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProbeScenarioCatalog.swift; sourceTree = "<group>"; };
 		3EAEE3C2EFCE9D5BEBDD7B3F /* ProbeSceneRegistry.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProbeSceneRegistry.swift; sourceTree = "<group>"; };
@@ -184,6 +186,7 @@
 				B239EE95AC9926A8A9C68EBC /* Harness */,
 				267927F1305A55BF002C9CED /* EXP147MigrationFixture */,
 				26792810305C47CF002C9CED /* ProbeResourceAcceptance.swift */,
+				26792812305C58FF002C9CED /* ProbeErrorAcceptance.swift */,
 			);
 			path = Sources;
 			sourceTree = "<group>";
@@ -344,6 +347,7 @@
 				718C7C1DFDC6CD96C2A18678 /* ProbeSceneRegistry.swift in Sources */,
 				5F048A36A049F99C80DCD55A /* ProbeSemanticOracle.swift in Sources */,
 				26792805305A5662002C9CED /* EXP147BaselineNavigation.swift in Sources */,
+				26792813305C58FF002C9CED /* ProbeErrorAcceptance.swift in Sources */,
 				267927FC305A5626002C9CED /* EXP147NotesScreens.swift in Sources */,
 				474753A8459F5DC4D3FE60D8 /* ProbeSemanticTimeline.swift in Sources */,
 				26792811305C47CF002C9CED /* ProbeResourceAcceptance.swift in Sources */,

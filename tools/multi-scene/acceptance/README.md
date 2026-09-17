@@ -127,3 +127,8 @@ For the serial simulator contract, capture A before it backgrounds. Verify its r
 background state and retired current owner, navigate B, then renew B in a fresh
 session. Starting a manual view on already-background A is ineligible; do not
 manufacture foreground state or weaken the original-owner oracle to pass it.
+
+T04 current-view errors: pass scenario `errors.explicit-target.current-view-cross-scene-serial`
+to the connector driver. The runner freezes error-scenario-contract.json and requires
+9 errors,2 actions,3 views,0 Resources/crashes and exactly1 completion callback.
+67 Python controls and3 connector controls cover all three admitted contracts.

@@ -824,6 +824,22 @@ internal final class ProbeScenarioDriver {
             }
             return .acknowledged(signal)
 
+        case .runCurrentViewErrorBatch:
+            if case .rejected(let reason) = executeOnExactScene(step, scene: "scene-B") {
+                return .failed(reason)
+            }
+            guard let signal = await wait(
+                for: .encoded(scene: nil, value: "assertion:" + ProbeErrorContract.completed),
+                after: commandSequence,
+                timeoutNanoseconds: stepTimeoutNanoseconds
+            ) else {
+                return .inconclusive("Error batch did not produce its terminal assertion")
+            }
+            guard signal.result == .pass else {
+                return .failed(signal.reason ?? "Error batch failed")
+            }
+            return .acknowledged(signal)
+
         case .runResourceOwnershipBatch:
             if case .rejected(let reason) = executeOnExactScene(step, scene: "scene-B") {
                 return .failed(reason)

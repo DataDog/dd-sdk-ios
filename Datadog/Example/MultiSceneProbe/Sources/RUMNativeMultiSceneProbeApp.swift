@@ -280,6 +280,11 @@ enum ProbeRuntime {
                     return event
                 },
                 errorEventMapper: { event in
+                    #if DEBUG
+                    if scenario?.identifier == ProbeErrorContract.scenarioID {
+                        ProbeErrorAcceptance.recordPayloadCheck(event)
+                    }
+                    #endif
                     record(errorEvent: event)
                     return event
                 },
@@ -378,7 +383,7 @@ enum ProbeRuntime {
         screen: String,
         phase: String
     ) {
-        guard scenario?.identifier != ProbeResourceContract.scenarioID else { return }
+        guard ![ProbeResourceContract.scenarioID, ProbeErrorContract.scenarioID].contains(scenario?.identifier ?? "") else { return }
         let uptime = ProcessInfo.processInfo.systemUptime
         let marker = "\(window.label).\(screen).\(phase)"
         let attributes: [String: Encodable] = [

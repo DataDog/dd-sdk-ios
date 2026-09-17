@@ -28,6 +28,7 @@ enum ProbeStepKind: String, Codable, CaseIterable {
     case emitExplicitTargetAction = "emit-explicit-target-action"
     case runContinuousActionTargetBatch = "run-continuous-action-target-batch"
     case runResourceOwnershipBatch = "run-resource-ownership-batch"
+    case runCurrentViewErrorBatch = "run-current-view-error-batch"
     case startExplicitTargetAction = "start-explicit-target-action"
     case stopExplicitTargetAction = "stop-explicit-target-action"
     case startLegacyAction = "start-legacy-action"
@@ -185,4 +186,18 @@ enum ProbeResourceContract {
     static let legacy = "resource-legacy-source-a"
     static let peerAction = "resource-peer-finished"
     static let completed = "resource-batch-finished"
+}
+
+enum ProbeErrorContract {
+    static let scenarioID = "errors.explicit-target.current-view-cross-scene-serial"
+    static let phases = [
+        "error-swift-message", "error-swift-error", "error-swift-callback",
+        "error-objc-message", "error-objc-error", "error-invalid-exact-a",
+        "error-invalid-representative-b", "error-legacy-source-a", "error-resource-captured-a",
+    ]
+    static let peerPhases = Array(phases[6...7])
+    static let resource = phases[8]
+    static let actionA = "error-action-a"
+    static let actionB = "error-action-b"
+    static let completed = "error-batch-finished"
 }
