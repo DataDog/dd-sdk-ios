@@ -2837,7 +2837,7 @@ class RUMViewsHandlerTests: XCTestCase {
         state.reconcilePresentation(sheet, descriptor: semanticDescriptor(for:), viewsHandler: handler)
         state.mountPresentation(state.presentationOccurrence(for: sheet, style: sheet.style), in: scene, viewsHandler: handler)
         let oldOccurrence = state.presentationOccurrence(for: sheet, style: sheet.style)
-        let oldDisappear = { state.presentationDidDisappear(oldOccurrence, viewsHandler: handler) }
+        let oldDisappear = { state.presentationDidDisappear(oldOccurrence, acceptedItem: cover, descriptor: self.semanticDescriptor(for:), viewsHandler: handler) }
         state.reconcilePresentation(cover, descriptor: semanticDescriptor(for:), viewsHandler: handler)
         XCTAssertNotNil(oldOccurrence)
         XCTAssertFalse(state.mountPresentation(oldOccurrence, in: scene, viewsHandler: handler))
@@ -2860,7 +2860,7 @@ class RUMViewsHandlerTests: XCTestCase {
         state.reconcilePresentation(first, descriptor: semanticDescriptor(for:), viewsHandler: handler)
         state.mountPresentation(state.presentationOccurrence(for: first, style: first.style), in: scene, viewsHandler: handler)
         let oldOccurrence = state.presentationOccurrence(for: first, style: first.style)
-        let oldDisappear = { state.presentationDidDisappear(oldOccurrence, viewsHandler: handler) }
+        let oldDisappear = { state.presentationDidDisappear(oldOccurrence, acceptedItem: first, descriptor: self.semanticDescriptor(for:), viewsHandler: handler) }
         for item in [second, first] {
             state.reconcilePresentation(item, descriptor: semanticDescriptor(for:), viewsHandler: handler)
             state.mountPresentation(state.presentationOccurrence(for: item, style: item.style), in: scene, viewsHandler: handler)
@@ -2924,7 +2924,7 @@ class RUMViewsHandlerTests: XCTestCase {
         XCTAssertEqual(reveal.target, .scene(scene))
         XCTAssertEqual(state.consumeDismissed(style: .sheet), item)
         XCTAssertNil(state.consumeDismissed(style: .sheet))
-        state.presentationDidDisappear(occurrence, viewsHandler: handler)
+        state.presentationDidDisappear(occurrence, acceptedItem: accepted, descriptor: self.semanticDescriptor(for:), viewsHandler: handler)
         XCTAssertEqual(commandSubscriber.receivedCommands.count, 5)
     }
 
@@ -2959,7 +2959,7 @@ class RUMViewsHandlerTests: XCTestCase {
         XCTAssertEqual(commandSubscriber.receivedCommands.count, 3)
         binding.wrappedValue = nil
         XCTAssertEqual(writes, 1)
-        state.presentationDidDisappear(sheetOccurrence, viewsHandler: handler)
+        state.presentationDidDisappear(sheetOccurrence, acceptedItem: accepted, descriptor: self.semanticDescriptor(for:), viewsHandler: handler)
         XCTAssertEqual(commandSubscriber.receivedCommands.count, 3)
     }
 
@@ -3011,8 +3011,32 @@ class RUMViewsHandlerTests: XCTestCase {
         notificationCenter.post(name: UIScene.willEnterForegroundNotification, object: "A")
         XCTAssertFalse(state.mountPresentation(old, in: sceneA, viewsHandler: handler))
         XCTAssertTrue(state.mountPresentation(fresh, in: sceneA, viewsHandler: handler))
-        state.presentationDidDisappear(old, viewsHandler: handler)
+        state.presentationDidDisappear(old, acceptedItem: item, descriptor: self.semanticDescriptor(for:), viewsHandler: handler)
         XCTAssertEqual(commandSubscriber.receivedCommands.count, 3)
+    }
+
+    @available(iOS 27.0, *)
+    @MainActor
+    func testAcceptedPresentationContentRematerializationKeepsOccurrenceUntilAcceptedDismissal() {
+        let handler = createHandler()
+        let state = RUMSwiftUISemanticNavigationState<String, SemanticPresentation>()
+        let item = SemanticPresentation(id: "sheet", name: "Sheet", style: .sheet)
+        let scene = RUMSceneIdentifier(rawValue: "scene")
+        state.reconcilePresentation(item, descriptor: semanticDescriptor(for:), viewsHandler: handler)
+        let occurrence = state.presentationOccurrence(for: item, style: item.style)
+        XCTAssertTrue(state.mountPresentation(occurrence, in: scene, viewsHandler: handler))
+        state.presentationDidDisappear(occurrence, acceptedItem: item, descriptor: self.semanticDescriptor(for:), viewsHandler: handler)
+        XCTAssertTrue(state.mountPresentation(occurrence, in: scene, viewsHandler: handler))
+        XCTAssertEqual(commandSubscriber.receivedCommands.count, 1)
+        XCTAssertNil(state.consumeDismissed(style: .sheet))
+        state.presentationDidDisappear(
+            occurrence,
+            acceptedItem: nil,
+            descriptor: semanticDescriptor(for:),
+            viewsHandler: handler
+        )
+        XCTAssertEqual(commandSubscriber.receivedCommands.count, 2)
+        XCTAssertEqual(state.consumeDismissed(style: .sheet), item)
     }
 
     @available(iOS 27.0, *)

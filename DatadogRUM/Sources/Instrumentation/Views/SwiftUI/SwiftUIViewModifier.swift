@@ -5843,27 +5843,22 @@ internal final class RUMSwiftUISemanticNavigationState<
         return true
     }
 
+    /// A SwiftUI presentation can rematerialize its content while the same
+    /// accepted item remains presented. Read the application's accepted value
+    /// before treating a content disappearance as a semantic dismissal.
     func presentationDidDisappear(
         _ occurrence: PresentationOccurrence?,
+        acceptedItem: Presentation?,
+        descriptor: (Presentation) -> RUMNavigationPresentation,
         viewsHandler: RUMViewsHandler?
     ) {
         guard
             let occurrence,
-            var activePresentation,
-            activePresentation.identity == occurrence.identity,
-            activePresentation.isStarted,
-            let sceneIdentifier = activePresentation.sceneIdentifier
+            activePresentation?.identity == occurrence.identity
         else {
             return
         }
-
-        viewsHandler?.notify_semanticPresentationDisappear(
-            identity: activePresentation.identity,
-            sceneIdentifier: sceneIdentifier
-        )
-        activePresentation.isStarted = false
-        activePresentation.sceneIdentifier = nil
-        self.activePresentation = activePresentation
+        reconcilePresentation(acceptedItem, descriptor: descriptor, viewsHandler: viewsHandler)
     }
 
     func consumeDismissed(
@@ -6007,6 +6002,8 @@ private struct RUMSemanticPresentationBoundary<
     init<Route: Hashable>(
         occurrence: RUMSwiftUISemanticNavigationState<Route, Presentation>.PresentationOccurrence?,
         navigationState: RUMSwiftUISemanticNavigationState<Route, Presentation>,
+        acceptedPresentation: Binding<Presentation?>,
+        descriptor: @escaping (Presentation) -> RUMNavigationPresentation,
         instrumentation: RUMInstrumentation?,
         @ViewBuilder content: () -> Content
     ) {
@@ -6021,6 +6018,8 @@ private struct RUMSemanticPresentationBoundary<
         self.disappear = {
             navigationState.presentationDidDisappear(
                 occurrence,
+                acceptedItem: acceptedPresentation.wrappedValue,
+                descriptor: descriptor,
                 viewsHandler: instrumentation?.viewsHandler
             )
         }
@@ -6606,6 +6605,8 @@ public struct RUMNavigationStack<
         return RUMSemanticPresentationBoundary(
             occurrence: occurrence,
             navigationState: navigationState,
+            acceptedPresentation: presented,
+            descriptor: presentation,
             instrumentation: instrumentation
         ) {
             presentedContent(item)
