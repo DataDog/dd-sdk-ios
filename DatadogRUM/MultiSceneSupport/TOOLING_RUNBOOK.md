@@ -1356,3 +1356,10 @@ Assert emitted action Resource/error counts plus exact old Resource/error view a
 session IDs, not only the Resource event's correct owner. Include scene-targeted
 completion after navigation, metrics, duplicate completion and clock expiration.
 This regression slice does not close T03's explicit-start/backend gate.
+
+EXP-175 is accepted at signed `aefe337b6`: four failing controls and379 affected
+tests, seven of them new. The result retains the6/7 fixture attempt whose exact
+100ms expectation differed by24ns at a wall-clock origin. Use a fixed reference-
+date origin for this discriminator; do not widen the assertion enough to accept
+150ms activity extension. No native/backend run is claimed. Continue with T03's
+explicit-start and captured-owner fixture, keeping the new live-action counters.

@@ -18,8 +18,9 @@ Last updated: 2026-09-17
 Current release position: **30/66 gates closed**. EXP-173 closes D10/R06 at
 signed `7619eb8a2` with337 affected tests and native77/77 versus55/77. All12
 original safety findings have repair evidence. EXP-174 closes R05 at signed
-`368c62a72` with three failing controls and346 affected tests. T03 Resource
-ownership is next.
+`368c62a72` with three failing controls and346 affected tests. EXP-175 repairs
+late Resource completion at signed `aefe337b6` with379 affected tests; the remaining
+T03 explicit-start/URLSession/backend acceptance is next.
 Recent identities and attempts are in the finite gate register and active shard.
 
 The checkpoints below preserve the earlier telemetry/navigation milestones;
@@ -343,7 +344,7 @@ ordered acceptance contract is in
 | EXP-172 | PASS | P03:326 tests, three failing controls; Release ABBA27/26.5 zero retired entries/weak survivors within frozen heap limits; eight ordinary smoke runs and watchOS Release pass | [Record](Experiments/EXP-143-199.md#exp-172--retire-disconnected-scene-history-without-accepting-stale-callbacks) |
 | EXP-173 | PASS | D10/R06 closed:337 tests, mounted77/77 versus55/77; accepted Binding and occurrence callbacks, rematerialization regression fixed; all four native attempts retained | [Record](Experiments/EXP-143-199.md#exp-173--commit-accepted-presentation-state-and-fence-occurrence-callbacks) |
 | EXP-174 | PASS | R05 closed: three failing controls, nine new regressions and346 affected tests; monotonic synchronous generations, membership and exact two-host teardown | [Record](Experiments/EXP-143-199.md#exp-174--preserve-monotonic-reentrant-observer-delivery) |
-| EXP-175 | PLANNED | T03 regression: old/scene-targeted Resource completion must not alter another session or current view action; full target/backend gate remains open | [Record](Experiments/EXP-143-199.md#exp-175--keep-resource-completion-on-its-owning-scope) |
+| EXP-175 | PASS | Four failed controls repaired, seven new regressions and379 affected tests; completion/metrics stay on original owner without foreign action counts. Full T03 target/backend gate stays open | [Record](Experiments/EXP-143-199.md#exp-175--keep-resource-completion-on-its-owning-scope) |
 
 ## Simulator-inconclusive and hardware-required evidence
 

@@ -71,9 +71,11 @@ keep their exact view/session at setter return and native onDismiss. All12 safet
 findings are repaired within their evidence boundaries. EXP-174 closes R05 at
 signed `368c62a72`: three failing controls and346 tests prove monotonic nested
 publication, live observer membership and exact two-host teardown. All six bounded
-component reviews now pass. Defined EXP-175 investigates T03's existing late-
-completion regression before explicit-start/backend acceptance; physical scene, API
-and final release gates remain separate.
+component reviews now pass. EXP-175 repairs T03's existing late-completion
+regression at signed `aefe337b6`: four failing controls and379 affected tests.
+Resource metrics/completion keep their original scope while new-session and peer
+actions retain zero foreign counts. T03 explicit-start/backend acceptance, physical
+scene, API and final release gates remain separate.
 
 The released SDK baseline is not semantically safe for applications with
 concurrent scenes. Process-representative view state and process-global SwiftUI

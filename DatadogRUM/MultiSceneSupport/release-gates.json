@@ -2,7 +2,7 @@
   "schema_version": 1,
   "scope": "Multi-scene RUM release",
   "baseline_revision": "92f021ba7e4a866f84a52da93ed8b63f3dc75882",
-  "candidate_revision": "368c62a723968fdeacaef585e7087c0eef428715",
+  "candidate_revision": "aefe337b675623b2ad6e0b1a346e45ff4677e1bf",
   "gates": [
     {
       "id": "C01",
@@ -254,7 +254,7 @@
       "environment": "iOS 27 simulator, URLSession/manual Resource fixture, mapper and Datadog backend",
       "completion_mode": "explicit start target + captured start ownership",
       "status": "OPEN",
-      "evidence": ""
+      "evidence": "Partial: EXP-175 at signed aefe337b6 repairs late success/error/metrics ownership and foreign live-action counts; four failing controls, seven new regressions and379 affected tests. Results/EXP-175-resource-completion.json. Explicit-start/URLSession/mapper/backend acceptance remains required."
     },
     {
       "id": "T04",
