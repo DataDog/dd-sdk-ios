@@ -161,6 +161,118 @@ final class OTelSpanTests: XCTestCase {
         }
     }
 
+    func testCapturedOTelSpansKeepStartOwnersThroughReverseDuplicateEndAndDeferredWrite() throws {
+        for retireAfterStart in [false, true] {
+            let a: RUMCoreContext = .mockWith(
+                sessionID: UUID(), viewID: UUID().uuidString, userActionID: UUID().uuidString
+            )
+            let b: RUMCoreContext = .mockWith(
+                applicationID: a.applicationID,
+                sessionID: UUID(uuidString: a.sessionID)!,
+                viewID: UUID().uuidString,
+                userActionID: nil
+            )
+            let scope = FeatureScopeMock(context: .mockWith(additionalContext: [b]), deferEventWriteContext: true)
+            let tracer: DatadogTracer = .mockWith(featureScope: scope, spanEventBuilder: .mockWith(bundleWithRUM: true))
+            let owner = RUMContextHandoff.owner(in: scope)
+            let spanA = RUMContextHandoff.withValue(owner: owner, rumContext: a, sceneIdentifier: "scene-A") {
+                tracer.spanBuilder(spanName: "captured-A").setNoParent().startSpan()
+            }
+            scope.contextMock = .mockWith(additionalContext: [a])
+            let spanB = RUMContextHandoff.withValue(owner: owner, rumContext: b, sceneIdentifier: "scene-B") {
+                tracer.spanBuilder(spanName: "captured-B").setNoParent().startSpan()
+            }
+            if retireAfterStart { owner?.invalidate() }
+            RUMContextHandoff.withValue(owner: owner, rumContext: a, sceneIdentifier: "scene-A") {
+                spanB.end()
+                spanB.end()
+            }
+            RUMContextHandoff.withValue(owner: owner, rumContext: b, sceneIdentifier: "scene-B") {
+                spanA.end()
+                spanA.end()
+            }
+            XCTAssertTrue(try scope.spanEventsWritten().isEmpty)
+            let later: RUMCoreContext = .mockWith(
+                applicationID: "later-application",
+                sessionID: UUID(),
+                viewID: UUID().uuidString,
+                userActionID: UUID().uuidString
+            )
+            scope.contextMock = .mockWith(additionalContext: [later])
+            scope.flushDeferredEventWriteContexts()
+            let spans = try scope.spanEventsWritten()
+            XCTAssertEqual(spans.map(\.operationName), ["captured-B", "captured-A"])
+            for (span, expected) in zip(spans, [b, a]) {
+                XCTAssertEqual(span.tags[SpanTags.rumApplicationID], expected.applicationID)
+                XCTAssertEqual(span.tags[SpanTags.rumSessionID], expected.sessionID)
+                XCTAssertEqual(span.tags[SpanTags.rumViewID], expected.viewID)
+                XCTAssertEqual(span.tags[SpanTags.rumActionID], expected.userActionID)
+            }
+        }
+    }
+
+    func testDelayedOTelSpanKeepsNilOrStartRepresentativePolicy() throws {
+        for mode in ["explicit-nil", "source-less", "foreign", "retired"] {
+            let representative: RUMCoreContext = .mockWith(
+                sessionID: UUID(), viewID: UUID().uuidString, userActionID: UUID().uuidString
+            )
+            let peer: RUMCoreContext = .mockWith(
+                sessionID: UUID(), viewID: UUID().uuidString, userActionID: UUID().uuidString
+            )
+            let scope = FeatureScopeMock(context: .mockWith(additionalContext: [representative]), deferEventWriteContext: true)
+            let tracer: DatadogTracer = .mockWith(featureScope: scope, spanEventBuilder: .mockWith(bundleWithRUM: true))
+            let owner = RUMContextHandoff.owner(in: scope)
+            let handoffOwner = mode == "foreign" ? RUMContextHandoff.Owner() : owner
+            if mode == "retired" { handoffOwner?.invalidate() }
+            let span = RUMContextHandoff.withValue(
+                owner: mode == "source-less" ? nil : handoffOwner,
+                rumContext: mode == "explicit-nil" ? nil : peer,
+                sceneIdentifier: "unrelated-scene"
+            ) {
+                tracer.spanBuilder(spanName: mode).setNoParent().startSpan()
+            }
+            scope.contextMock = .mockWith(additionalContext: [peer])
+            RUMContextHandoff.withValue(owner: owner, rumContext: peer, sceneIdentifier: "completion-peer") {
+                span.end()
+                span.end()
+            }
+            scope.flushDeferredEventWriteContexts()
+            let spans = try scope.spanEventsWritten()
+            XCTAssertEqual(spans.count, 1, mode)
+            let event = try XCTUnwrap(spans.first)
+            let expected = mode == "explicit-nil" ? nil : representative
+            XCTAssertEqual(event.tags[SpanTags.rumApplicationID], expected?.applicationID, mode)
+            XCTAssertEqual(event.tags[SpanTags.rumSessionID], expected?.sessionID, mode)
+            XCTAssertEqual(event.tags[SpanTags.rumViewID], expected?.viewID, mode)
+            XCTAssertEqual(event.tags[SpanTags.rumActionID], expected?.userActionID, mode)
+        }
+    }
+
+    func testOTelBuilderCapturesRUMOwnerAtStartNotCreationOrEnd() throws {
+        let a: RUMCoreContext = .mockWith(sessionID: UUID(), viewID: UUID().uuidString, userActionID: UUID().uuidString)
+        let b: RUMCoreContext = .mockWith(sessionID: UUID(), viewID: UUID().uuidString, userActionID: nil)
+        let scope = FeatureScopeMock(context: .mockWith(additionalContext: [a]), deferEventWriteContext: true)
+        let tracer: DatadogTracer = .mockWith(featureScope: scope, spanEventBuilder: .mockWith(bundleWithRUM: true))
+        let owner = RUMContextHandoff.owner(in: scope)
+        let builder = RUMContextHandoff.withValue(owner: owner, rumContext: a, sceneIdentifier: "scene-A") {
+            tracer.spanBuilder(spanName: "delayed-builder").setNoParent()
+        }
+        let span = RUMContextHandoff.withValue(owner: owner, rumContext: b, sceneIdentifier: "scene-B") {
+            builder.startSpan()
+        }
+        RUMContextHandoff.withValue(owner: owner, rumContext: a, sceneIdentifier: "scene-A") {
+            span.end()
+        }
+        scope.flushDeferredEventWriteContexts()
+        let spans = try scope.spanEventsWritten()
+        XCTAssertEqual(spans.count, 1)
+        let event = try XCTUnwrap(spans.first)
+        XCTAssertEqual(event.tags[SpanTags.rumApplicationID], b.applicationID)
+        XCTAssertEqual(event.tags[SpanTags.rumSessionID], b.sessionID)
+        XCTAssertEqual(event.tags[SpanTags.rumViewID], b.viewID)
+        XCTAssertNil(event.tags[SpanTags.rumActionID])
+    }
+
     func testSpanOperationNameAttribute() throws {
         // Given
         let tracer: DatadogTracer = .mockWith(featureScope: featureScope)

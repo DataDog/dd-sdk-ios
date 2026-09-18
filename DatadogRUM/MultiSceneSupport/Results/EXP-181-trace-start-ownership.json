@@ -1,6 +1,6 @@
 {
   "experiment": "EXP-181",
-  "status": "PLANNED",
+  "status": "SDK tests PASS; native fixture pending",
   "gate": "T08",
   "gates_closed": [],
   "control_revision": "75442ca755eff170ea072e646d19e0ae54af2f1e",
@@ -47,6 +47,33 @@
     ],
     "isError": false
   },
-  "unit_attempts": [],
-  "native_attempts": []
+  "unit_attempts": [
+    {
+      "label": "Five new ownership regressions plus full affected Trace suite",
+      "sdk_unchanged": true,
+      "destination": "iPhone18 Pro / iOS27",
+      "result": {
+        "counts": {
+          "expectedFailures": 0,
+          "failed": 0,
+          "notRun": 0,
+          "passed": 158,
+          "skipped": 0,
+          "total": 158
+        },
+        "fullConsoleLogsPath": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/ActionArtifacts/default/RunAllTests/test-console-log-2026-09-18T01-19-30+01-00.txt",
+        "fullSummaryPath": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/ActionArtifacts/default/RunAllTests/4E0FB4AB-7852-49B1-98E8-1F14DDB4306D.txt",
+        "message": "Results truncated to 100 of 158 tests. Failed tests shown first. Full logs available at /var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/ActionArtifacts/default/RunAllTests/4E0FB4AB-7852-49B1-98E8-1F14DDB4306D.txt.",
+        "results": [],
+        "schemeName": "DatadogTrace",
+        "summary": "158 tests: 158 passed, 0 failed, 0 skipped, 0 expected failures, 0 not run",
+        "totalResults": 158,
+        "truncated": true,
+        "xcresultBundlePath": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/ActionArtifacts/default/RunAllTests/Test-DatadogTrace-2026.09.18_01-19-30-+0100.xcresult"
+      }
+    }
+  ],
+  "native_attempts": [],
+  "definition_revision": "33f7147f2f5c23f9e7c3bc149d799c5365d4ac0c",
+  "strict_test_lint": "PASS after correcting new multiline/whitespace formatting"
 }
