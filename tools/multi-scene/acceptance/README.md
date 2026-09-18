@@ -241,8 +241,11 @@ evidence decoder accepts only the six declared synthetic phase/messages.
 
 Preflight authenticates RUM and Logs reads. The source fingerprint now includes
 DatadogLogs. A fresh build requires at least181 probe tests. Backend acceptance
-counts the whole unique log run with DDSQL, reads every page with actual backend
-record IDs, and checks the full RUM session for three errors, two actions, three
+counts the whole unique log run with DDSQL, reads every page, and independently
+groups all ten selected semantic fields. Require six unique phases, each with
+count1, complete group metadata and exact raw/group/local agreement. Backend IDs
+remain null when unexposed; preserve and deduplicate any exposed IDs. The runner
+checks the full RUM session for three errors, two actions, three
 views and no Resources/crashes. Error and log owners/actions must agree exactly;
 private routing metadata must be absent. Attribute namespace ambiguity,
 malformed counts and incomplete/duplicate inventories fail closed. Logs/DDSQL

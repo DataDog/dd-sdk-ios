@@ -1314,8 +1314,10 @@ captured nil action, rather than treating the compatibility path as a routing de
 For native acceptance, compare exact encoded log correlation and mirrored RUM
 owners against independent view/action mapper records. Logs have no SDK log UUID
 in this payload: unique synthetic phases plus the complete run inventory identify
-expected entries; retain backend IDs to reject duplicates. Aggregate the full run,
-read all pages, and verify the full RUM session. Never accept only a filtered owner
+expected entries. Preserve optional exposed backend IDs; never fabricate absent
+IDs. Aggregate the full run, read all pages, independently group every selected
+semantic field and require one event per exact phase/owner. Require complete
+group metadata, exact raw/group/local agreement, and verify the full RUM session. Never accept only a filtered owner
 subset. The bounded contract is
 [EXP-182](Experiments/EXP-143-199.md#exp-182--accept-captured-logs-and-mirrored-error-ownership).
 
@@ -1323,7 +1325,11 @@ subset. The bounded contract is
 The Logs runner adds DatadogLogs source to the frozen identity and authenticates
 DDSQL count plus raw Logs reads. Count the entire unique run without owner filters;
 query all RUM-session actions/errors rather than named subsets. Preserve actual
-backend log record IDs and reject ambiguous attribute namespaces. When a probe
+backend log record IDs when exposed and reject ambiguous attribute namespaces.
+The current Logs connector omits IDs even when explicitly requested. Its absence
+must not weaken duplicate detection: the full count, unique phases, grouped
+multiplicity and raw/local agreement are all mandatory. Preserve an inconclusive
+attempt when changing this evidence contract; acceptance requires a fresh run. When a probe
 project mutation resets the active Xcode scheme, switch to the intended scheme and
 confirm its discovered test inventory before running. A scheme-selection failure
 does not constitute an executed test or native scenario.

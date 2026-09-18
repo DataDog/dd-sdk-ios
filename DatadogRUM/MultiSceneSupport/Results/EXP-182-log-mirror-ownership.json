@@ -53,9 +53,9 @@
     "timeline_conditions": 13
   },
   "workflow": "Predeclare precise native guards/expectations before fixture; add existing repository DatadogLogs product only to owned probe project; mapper Foundation wire projection; freeze source/contract before clean install, complete Logs run inventory and full RUM session check.",
-  "preflight": "Authenticated Logs DDSQL read PASS; no positive Logs from this service available in the bounded schema probe.",
+  "preflight": "Authenticated Logs/DDSQL and RUM reads pass. After Attempt A, positive raw/grouped Logs schema confirmed; backend record IDs are not exposed.",
   "closure": "Only close T09 after focused/affected tests and strict local/backend acceptance; preserve all invalid/inconclusive attempts.",
-  "status": "PREPARED",
+  "status": "INCONCLUSIVE",
   "gates_closed": [],
   "control_revision": "2a36cac8c40849426a862288b6c3789a7bd8386e",
   "definition": "Experiments/EXP-143-199.md#exp-182--accept-captured-logs-and-mirrored-error-ownership",
@@ -108,11 +108,26 @@
       "xcresult": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/ActionArtifacts/default/RunSomeTests/Test-DatadogRUM-2026.09.18_02-38-38-+0100.xcresult"
     }
   ],
-  "native_attempts": [],
+  "native_attempts": [
+    {
+      "attempt": "A",
+      "run_id": "exp182-20260918T020334Z-607f041f4df7",
+      "outcome": "INCONCLUSIVE",
+      "durable_summary": "Results/acceptance/exp182-20260918T020334Z-607f041f4df7.json",
+      "fixture_revision": "f0a8eb85a1faf8870ad14caaae9bdc5968c70bde",
+      "source_sha256": "b5be56862bffc223faada3f52d4465e915d65cc723be9212f06ab89bf142aa65",
+      "binary_sha256": "1fe92d7b26cde66f54f1ae3124f50deebd6975ff2645da205acc702ce0a59e9b",
+      "probe_tests": 181,
+      "native_assertions": 24,
+      "signals": 53,
+      "diagnosis": "Native semantics passed. The connector omits backend log record IDs in both TSV and explicit YAML fields. The bridge rejected Missing backend log ID and returned an explicit unsuccessful response; no backend acceptance was claimed.",
+      "raw_output": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/multi-scene-acceptance-wugt6oql/run"
+    }
+  ],
   "validation": {
     "strict_swiftlint": "PASS, zero violations in both changed test files",
     "production_source": "unchanged",
-    "next": "Freeze the prepared fixture and run clean-install acceptance on a freshly resolved iOS 27 iPad simulator; require complete Logs and RUM backend ownership."
+    "next": "Freeze corrected backend contract and execute fresh Attempt B; do not reuse or relabel Attempt A."
   },
   "fixture_validation": {
     "probe_tests": {
@@ -129,14 +144,32 @@
       "xcresult": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/ActionArtifacts/default/RunAllTests/Test-RUMNativeMultiSceneProbe-2026.09.18_02-47-30-+0100.xcresult"
     },
     "native_app_build": "PASS through Xcode MCP",
-    "python_controls": 137,
-    "node_controls": 29,
+    "python_controls": 141,
+    "node_controls": 32,
     "new_native_file_strict_lint": "PASS, zero violations",
     "production_source": "unchanged",
-    "native_scenario": "Not executed yet"
+    "native_scenario": "Attempt A passed 24 native assertions; backend inconclusive. Contract revision 2 prepared."
   },
   "workflow_findings": [
     "Changing the owned probe project can reset Xcode active scheme to a package scheme. Rediscover/switch and confirm test inventory after project mutation; two initial operations did not start tests.",
-    "Legacy-file lint contains pre-existing fixture style violations; the new native file is strict-clean, as are the SDK test changes."
-  ]
+    "Legacy-file lint contains pre-existing fixture style violations; the new native file is strict-clean, as are the SDK test changes.",
+    "Logs connector exposes no backend record IDs. Contract revision 2 uses independent full count, all raw rows and grouped exact owners with multiplicity one. Python signature controls require a writable temporary directory; the initial read-only run had three environment errors, then all141 passed under the authorized sandbox mode."
+  ],
+  "backend_contract_revision": 2,
+  "backend_contract": [
+    "Count the full unique log run independently; require exactly six events.",
+    "Retrieve every raw page, preserve optional exposed backend IDs as strings and missing IDs as null, and reject duplicate exposed IDs.",
+    "Independently GROUP BY all ten selected semantic fields. Require complete metadata, exactly six unique phases, one event per exact phase/owner, and agreement with every raw row and local mapper owner.",
+    "Check the entire RUM session for exactly three errors, two actions, three views and zero Resources/crashes; reject private metadata.",
+    "No fabricated log IDs and no retrospective acceptance of Attempt A. Run a new frozen, clean-install attempt with a fresh run ID."
+  ],
+  "projection_diagnostic": {
+    "source_run": "exp182-20260918T020334Z-607f041f4df7",
+    "acceptance": false,
+    "raw_rows": 6,
+    "groups": 6,
+    "events_per_group": 1,
+    "record_ids_exposed": 0,
+    "result": "Live raw and grouped projection shape confirmed; original native run remains inconclusive."
+  }
 }

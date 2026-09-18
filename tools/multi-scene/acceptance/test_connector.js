@@ -293,9 +293,9 @@ test("failed or missing detail batch results cannot produce a partial acceptance
 });
 
 
-const {parseLogCount, projectLogRow, hasPrivateMirrorMetadata} = new Function(source.replace(
+const {parseLogCount, parseLogGroups, validateLogInventory, logGroupColumns, projectLogRow, hasPrivateMirrorMetadata} = new Function(source.replace(
   'return runAcceptance({tools, notify, device, repo, scenario: typeof scenario === "undefined" ? undefined : scenario});',
-  'return {parseLogCount, projectLogRow, hasPrivateMirrorMetadata};'
+  'return {parseLogCount, parseLogGroups, validateLogInventory, logGroupColumns, projectLogRow, hasPrivateMirrorMetadata};'
 ))();
 const logRow = () => ({
   id:'backend-182', service:'probe', status:'info', message:'log-info-a',
@@ -321,8 +321,8 @@ test('Logs projection preserves actual record identity and emission correlation'
     service:'probe', status:'info', message:'log-info-a', leaked_internal_attribute:false
   });
 });
-test('Logs projection rejects missing ID and selected fields without borrowing labels', () => {
-  for (const key of ['id','service','status','message']) {
+test('Logs projection rejects missing selected fields without borrowing labels', () => {
+  for (const key of ['service','status','message']) {
     const row = logRow(); delete row[key];
     assert.throws(() => projectLogRow(row));
   }
@@ -355,4 +355,56 @@ test('Logs and mirror private metadata is detected across wire shapes', () => {
     assert.equal(hasPrivateMirrorMetadata({_dd:{internal:{rum:{error:{[key]:'value'}}}}}),true);
   }
   assert.equal(hasPrivateMirrorMetadata({_dd:{device:{architecture:'arm64'}}}),false);
+});
+
+test("Logs absent backend IDs remain null and malformed exposed IDs fail", () => {
+  const row = logRow(); delete row.id;
+  assert.equal(projectLogRow(row).log_id, null);
+  for (const id of ["", true, 182, []]) assert.throws(() => projectLogRow({...row, id}));
+});
+const logGroup = row => Object.fromEntries([
+  ...Object.keys(logGroupColumns).map(key => [key, row[key]]), ["events", 1]
+]);
+const groupBody = groups => '<METADATA><displayed_columns>11</displayed_columns>' +
+  '<displayed_rows>' + groups.length + '</displayed_rows><total_rows>' + groups.length +
+  '</total_rows></METADATA><TSV_DATA>\n' +
+  [...Object.keys(logGroupColumns), 'events'].join('\t') + '\n' +
+  groups.map(row => [...Object.keys(logGroupColumns), 'events'].map(key => row[key]).join('\t')).join('\n') +
+  '\n</TSV_DATA>';
+test("Logs grouped projection requires complete metadata and exact typed columns", () => {
+  const group = logGroup(projectLogRow(logRow()));
+  const body = groupBody([group]);
+  assert.deepEqual(parseLogGroups(body), [group]);
+  for (const changed of [
+    body.replace('total_rows>1', 'total_rows>2'),
+    body.replace('displayed_rows>1', 'displayed_rows>0'),
+    body.replace('displayed_columns>11', 'displayed_columns>10'),
+    body.replace('run_id\t', 'run\t'),
+    body.replace('<total_rows>1</total_rows>', ''),
+    body.replace('view-a\t', '\t')
+  ]) assert.throws(() => parseLogGroups(changed));
+  for (const events of [0, 2, true, '1.0', '01', '-1']) {
+    assert.throws(() => parseLogGroups(groupBody([{...group, events}])));
+  }
+});
+test("Logs independent counts bind every raw row to one exact grouped owner", () => {
+  const first = projectLogRow(logRow()); first.log_id = null;
+  const rows = [first, {...first, phase:'log-info-b', message:'log-info-b', view_id:'view-b'}];
+  const groups = rows.map(logGroup).reverse();
+  assert.deepEqual(validateLogInventory(2, rows, groups), {count:2, rows, groups});
+  for (const count of [true, 1, 3, 2.1]) assert.throws(() => validateLogInventory(count, rows, groups));
+  assert.throws(() => validateLogInventory(2, rows.slice(1), groups));
+  assert.throws(() => validateLogInventory(2, rows, groups.slice(1)));
+  assert.throws(() => validateLogInventory(2, [rows[0], rows[0]], groups));
+  assert.throws(() => validateLogInventory(2, rows, [groups[0], groups[0]]));
+  for (const key of Object.keys(logGroupColumns)) {
+    const changed = groups.map(row => ({...row}));
+    changed[0][key] = 'wrong';
+    assert.throws(() => validateLogInventory(2, rows, changed), undefined, key);
+  }
+  for (const events of [0, 2, true]) {
+    assert.throws(() => validateLogInventory(2, rows, [{...groups[0], events}, groups[1]]));
+  }
+  const withIDs = rows.map(row => ({...row, log_id:'same'}));
+  assert.throws(() => validateLogInventory(2, withIDs, groups), /Duplicate/);
 });

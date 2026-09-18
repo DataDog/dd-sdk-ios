@@ -193,6 +193,52 @@ function parseLogCount(body) {
   return count;
 }
 
+const logGroupColumns = {
+  run_id:"@probe.run_id", phase:"@probe.phase", application_id:"@application_id",
+  session_id:"@session_id", view_id:"@view.id", action_id:"@user_action.id",
+  source_scene:"@probe.source_scene", service:"service", status:"status", message:"message"
+};
+
+function parseLogGroups(body) {
+  const match = body.match(/<TSV_DATA>\s*([\s\S]*?)\s*<\/TSV_DATA>/);
+  if (!match) throw Error("Missing Logs grouped data");
+  const lines = match[1].trim().split("\n");
+  const keys = [...Object.keys(logGroupColumns), "events"];
+  if (lines.shift() !== keys.join("\t")) throw Error("Malformed Logs group columns");
+  for (const [name, expected] of [["displayed_columns", keys.length], ["displayed_rows", lines.length],
+                                 ["total_rows", lines.length]]) {
+    const value = body.match(new RegExp("<" + name + ">([0-9]+)</" + name + ">"));
+    if (!value || Number(value[1]) !== expected) throw Error("Incomplete Logs grouped inventory");
+  }
+  if (lines.length > 100) throw Error("Unbounded Logs grouped inventory");
+  return lines.map(line => {
+    const fields = line.split("\t");
+    if (fields.length !== keys.length || fields.some(value => !value) || fields.at(-1) !== "1") {
+      throw Error("Malformed or duplicated Logs group");
+    }
+    return {...Object.fromEntries(keys.map((key, i) => [key, fields[i]])), events:1};
+  });
+}
+
+function validateLogInventory(total, rows, groups) {
+  if (!Number.isSafeInteger(total) || total < 0 || total > 100 ||
+      rows.length !== total || groups.length !== total ||
+      new Set(rows.map(row => row.phase)).size !== total ||
+      new Set(groups.map(row => row.phase)).size !== total) {
+    throw Error("Logs count/pagination/group mismatch");
+  }
+  const ids = rows.map(row => row.log_id).filter(value => value !== null);
+  if (new Set(ids).size !== ids.length) throw Error("Duplicate backend log ID");
+  for (const row of rows) {
+    const group = groups.find(value => value.phase === row.phase);
+    if (!group || group.events !== 1 ||
+        Object.keys(logGroupColumns).some(key => row[key] !== group[key])) {
+      throw Error("Logs raw/group ownership mismatch");
+    }
+  }
+  return {count:total, rows, groups};
+}
+
 function logAttribute(row, key) {
   const attributes = row.attributes || {};
   const values = [];
@@ -221,9 +267,10 @@ function hasPrivateMirrorMetadata(payload) {
 }
 
 function projectLogRow(row) {
-  if (!row || typeof row.id !== "string" || !row.id) throw Error("Missing backend log ID");
+  if (!row || typeof row !== "object") throw Error("Malformed backend log row");
+  if (row.id != null && (typeof row.id !== "string" || !row.id)) throw Error("Malformed backend log ID");
   const get = key => logAttribute(row, key);
-  const selected = {log_id:row.id, run_id:get("probe.run_id"), phase:get("probe.phase"),
+  const selected = {run_id:get("probe.run_id"), phase:get("probe.phase"),
     application_id:get("application_id"), session_id:get("session_id"), view_id:get("view.id"),
     action_id:get("user_action.id"), source_scene:get("probe.source_scene"),
     service:row.service, status:row.status, message:row.message};
@@ -231,6 +278,7 @@ function projectLogRow(row) {
     throw Error("Missing or malformed selected Logs field");
   }
   const attributes = row.attributes || {};
+  selected.log_id = row.id ?? null;
   const privateFlat = Object.keys(attributes).some(key =>
     key.replace(/^(custom|attributes)\./, "").startsWith("_dd.internal.rum.error."));
   selected.leaked_internal_attribute = privateFlat || hasPrivateMirrorMetadata(attributes.custom) ||
@@ -432,11 +480,30 @@ async function runAcceptance({tools, notify, device, repo, scenario}) {
       if (all.length > 100) throw Error("Unexpected large Logs inventory");
       if (all.length < total && body.includes("<has_more>false</has_more>")) throw Error("Incomplete Logs inventory");
     }
-    const projected = all.map(projectLogRow);
-    if (projected.length !== total || new Set(projected.map(row => row.log_id)).size !== total) {
-      throw Error("Logs count/pagination mismatch");
+    if (all.length !== total) throw Error("Logs count/pagination mismatch");
+    return all.map(projectLogRow);
+  };
+  const logGroups = async request => {
+    const columns = Object.entries(logGroupColumns);
+    const quoted = value => '"' + value + '"';
+    const result = await tools.mcp__codex_apps__datadog__preview__datadog_preview_analyze_datadog_logs({
+      filter:request.query, from:request.from, to:"now", max_tokens:6000,
+      sql_query:"SELECT " + columns.map(([key, value]) => quoted(value) + " AS " + key).join(", ") +
+        ", COUNT(*) AS events FROM logs GROUP BY " + columns.map(([, value]) => quoted(value)).join(", "),
+      extra_columns:columns.filter(([, value]) => value.startsWith("@"))
+        .map(([, name]) => ({name, type:"varchar"})),
+      telemetry:{intent:"Independently verify one log for every exact phase and owner in the complete synthetic run."}
+    });
+    if (result.isError) throw Error("Logs grouped query failed");
+    return parseLogGroups(textContent(result));
+  };
+  const logEvidence = async (request, count) => {
+    const reads = await Promise.allSettled([logRows(request, count), logGroups(request)]);
+    if (reads.some(result => result.status !== "fulfilled")) {
+      throw Error("Incomplete Logs raw/group reads: " + reads.filter(r => r.status === "rejected")
+        .map(r => String(r.reason)).join("; "));
     }
-    return projected;
+    return validateLogInventory(count, reads[0].value, reads[1].value);
   };
   const spanRows = async (request, total) => {
     const all = [];
@@ -483,7 +550,7 @@ async function runAcceptance({tools, notify, device, repo, scenario}) {
         await pause(10000);
       } while (Date.now()<deadline);
       if (["auth", "trace_auth", "log_auth"].includes(request.kind)) data = {authenticated:true, count};
-      else if (request.kind === "logs") data = await logRows(request, count);
+      else if (request.kind === "logs") data = await logEvidence(request, count);
       else if (request.kind === "trace_spans") data = await spanRows(request, count);
       else if (request.kind === "errors" || request.kind === "crashes") data = {count};
       else data = await rows(request, count);

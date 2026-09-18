@@ -172,6 +172,7 @@ def validate_local(records, run_id):
         count = 2 if fallback["viewID"] == owner["viewID"] else 1
         require(info.get("id") == owner["actionIDs"][0] and event.get("eventID") == info["id"] and
                 info.get("target") == phase and info.get("type") == "tap" and
+                type(info.get("errorCount")) is int and type(info.get("resourceCount")) is int and
                 info.get("errorCount") == count and info.get("resourceCount") == 0, "action counts/identity", "FAIL")
         actions.append(dict(phase=phase, action_id=info["id"], target=phase, session_id=sid,
                             view_id=owner["viewID"], resource_count=0, error_count=count))
@@ -190,11 +191,28 @@ def validate_local(records, run_id):
 
 
 def validate_backend(local, run_id, logs, errors, views, actions, resources, crashes):
-    require(resources == [] and crashes == 0, "unexpected backend Resource/crash", "FAIL")
+    require(resources == [] and type(crashes) is int and crashes == 0, "unexpected backend Resource/crash", "FAIL")
+    require(isinstance(logs, dict) and set(logs) == {"count", "rows", "groups"},
+            "missing independent Logs evidence", "FAIL")
+    count, groups, logs = logs["count"], logs["groups"], logs["rows"]
+    require(type(count) is int and count == 6 and isinstance(groups, list) and isinstance(logs, list),
+            "malformed independent Logs inventory", "FAIL")
+    require(len(groups) == 6 and len({row.get("phase") for row in groups}) == 6,
+            "missing/duplicate Logs groups", "FAIL")
+    keys = set(local["logs"][0]) | {"run_id"}
+    for row in groups:
+        require(set(row) == keys | {"events"} and type(row.get("events")) is int and row["events"] == 1,
+                "malformed or duplicated backend Log group", "FAIL")
+        raw = unique([r for r in logs if r.get("phase") == row["phase"]], "raw/group Logs phase")
+        require(all(canonical(row[k]) == canonical(raw.get(k)) for k in keys),
+                "raw/group Logs ownership differs", "FAIL")
     require(len(logs) == 6 and len(errors) == 3 and len(views) == 3 and len(actions) == 2,
             "incomplete or extra backend inventory", "FAIL")
-    require(all(isinstance(row.get("log_id"), str) and row["log_id"] for row in logs) and
-            len({row["log_id"] for row in logs}) == 6, "missing/duplicate backend log IDs", "FAIL")
+    require(all("log_id" in row and (row["log_id"] is None or
+                isinstance(row["log_id"], str) and row["log_id"]) for row in logs),
+            "malformed optional backend log IDs", "FAIL")
+    exposed_ids = [row["log_id"] for row in logs if row["log_id"] is not None]
+    require(len(set(exposed_ids)) == len(exposed_ids), "duplicate exposed backend log IDs", "FAIL")
     require(len({row.get("event_id") for row in errors}) == 3 and
             len({row.get("view_id") for row in views}) == 3 and
             len({row.get("action_id") for row in actions}) == 2, "duplicate backend RUM IDs", "FAIL")
@@ -209,4 +227,4 @@ def validate_backend(local, run_id, logs, errors, views, actions, resources, cra
                 require(row.get("is_crash") is False, "backend mirror crash discriminator", "FAIL")
             if kind == "logs":
                 require(row.get("leaked_internal_attribute") is False, "private log metadata leaked", "FAIL")
-    return dict(state="PASS", log_count=6, error_count=3, view_count=3, action_count=2, resource_count=0, crash_count=0)
+    return dict(state="PASS", log_count=6, log_group_count=6, exposed_log_id_count=len(exposed_ids), error_count=3, view_count=3, action_count=2, resource_count=0, crash_count=0)

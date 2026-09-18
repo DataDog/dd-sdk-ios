@@ -85,17 +85,20 @@ def named(records, name):
     return next(r["signal"] for r in records if r["type"] == "signal" and r["signal"].get("name") == name)
 
 
-def backend(local, run):
+def backend(local, run, exposed_ids=False):
     rows = {k: [dict(v, run_id=run) for v in local[k]] for k in ["logs", "errors", "views", "actions"]}
     for i, row in enumerate(rows["logs"]):
-        row.update(log_id="backend-" + str(i), leaked_internal_attribute=False)
+        row.update(log_id="backend-" + str(i) if exposed_ids else None, leaked_internal_attribute=False)
+    rows["groups"] = [dict(v, run_id=run, events=1) for v in local["logs"]]
+    rows["count"] = 6
     for row in rows["errors"]:
         row["is_crash"] = False
     return rows
 
 
 def check_backend(local, run, rows):
-    return l.validate_backend(local, run, rows["logs"], rows["errors"], rows["views"], rows["actions"], [], 0)
+    return l.validate_backend(local, run, dict(rows=rows["logs"], groups=rows["groups"], count=rows["count"]),
+                              rows["errors"], rows["views"], rows["actions"], [], 0)
 
 
 class LogContractTests(unittest.TestCase):
@@ -182,7 +185,8 @@ class LogContractTests(unittest.TestCase):
 
     def test_wrong_action_counts_and_mirror_source_rejected(self):
         for name, field, key, value in [
-            ("log-action-a", "action", "errorCount", 2), ("log-action-b", "action", "resourceCount", 1),
+            ("log-action-a", "action", "errorCount", 2), ("log-action-a", "action", "errorCount", True),
+            ("log-action-a", "action", "resourceCount", False), ("log-action-b", "action", "resourceCount", 1),
             ("mirror-log-error-a", "error", "source", "custom"), ("mirror-log-error-a", "error", "isCrash", True),
         ]:
             records, run = fixture()
@@ -207,10 +211,10 @@ class LogContractTests(unittest.TestCase):
                 with self.assertRaises(Rejected, msg=(kind, mode)):
                     check_backend(local, run, rows)
 
-    def test_backend_metadata_and_log_record_identity_required(self):
+    def test_backend_metadata_and_optional_log_record_identity_checked(self):
         records, run = fixture()
         local = l.validate_local(records, run)
-        for kind, key, value in [("logs", "log_id", None), ("logs", "leaked_internal_attribute", True),
+        for kind, key, value in [("logs", "log_id", ""), ("logs", "log_id", True), ("logs", "leaked_internal_attribute", True),
                                 ("errors", "leaked_internal_attribute", True),
                                 ("errors", "payload_matches", False), ("errors", "action_ids", [])]:
             rows = backend(local, run)
@@ -224,7 +228,61 @@ class LogContractTests(unittest.TestCase):
         rows = backend(local, run)
         for resources, crashes in [([{}], 0), ([], 1)]:
             with self.assertRaises(Rejected):
-                l.validate_backend(local, run, rows["logs"], rows["errors"], rows["views"], rows["actions"], resources, crashes)
+                l.validate_backend(local, run, dict(rows=rows["logs"], groups=rows["groups"], count=rows["count"]),
+                              rows["errors"], rows["views"], rows["actions"], resources, crashes)
+
+
+    def test_absent_and_exposed_backend_ids_use_the_same_independent_inventory(self):
+        records, run = fixture()
+        local = l.validate_local(records, run)
+        for exposed in [False, True]:
+            rows = backend(local, run, exposed)
+            self.assertEqual(check_backend(local, run, rows)["exposed_log_id_count"], 6 if exposed else 0)
+        rows = backend(local, run, True)
+        rows["logs"][1]["log_id"] = rows["logs"][0]["log_id"]
+        with self.assertRaises(Rejected):
+            check_backend(local, run, rows)
+
+    def test_incomplete_duplicate_conflicting_or_stale_groups_rejected(self):
+        records, run = fixture()
+        local = l.validate_local(records, run)
+        for mode in ["missing", "extra", "duplicate", "owner", "run", "count", "boolean", "column"]:
+            rows = backend(local, run)
+            if mode == "missing":
+                rows["groups"].pop()
+            elif mode == "extra":
+                rows["groups"].append(copy.deepcopy(rows["groups"][0]))
+            elif mode == "duplicate":
+                rows["groups"][1] = copy.deepcopy(rows["groups"][0])
+            else:
+                key, value = {"owner": ("view_id", "peer"), "run": ("run_id", "stale"),
+                              "count": ("events", 2), "boolean": ("events", True),
+                              "column": ("unexpected", "unselected")}[mode]
+                rows["groups"][0][key] = value
+            with self.assertRaises(Rejected, msg=mode):
+                check_backend(local, run, rows)
+
+    def test_raw_and_group_agreement_cannot_hide_wrong_local_ownership(self):
+        records, run = fixture()
+        local = l.validate_local(records, run)
+        for key in ["run_id", "view_id", "action_id", "application_id", "session_id",
+                    "source_scene", "service", "status", "message"]:
+            rows = backend(local, run)
+            rows["logs"][0][key] = rows["groups"][0][key] = "wrong"
+            with self.assertRaises(Rejected, msg=key):
+                check_backend(local, run, rows)
+
+    def test_independent_total_and_group_evidence_required(self):
+        records, run = fixture()
+        local = l.validate_local(records, run)
+        for count in [None, True, 6.0, 5, 7, "6"]:
+            rows = backend(local, run)
+            rows["count"] = count
+            with self.assertRaises(Rejected):
+                check_backend(local, run, rows)
+        rows = backend(local, run)
+        with self.assertRaises(Rejected):
+            l.validate_backend(local, run, rows["logs"], rows["errors"], rows["views"], rows["actions"], [], 0)
 
 
 if __name__ == "__main__":
