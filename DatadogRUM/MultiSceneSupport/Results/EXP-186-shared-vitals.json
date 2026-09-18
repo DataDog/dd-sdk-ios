@@ -2,7 +2,7 @@
   "experiment": "EXP-186",
   "gate": "T13",
   "title": "Validate shared vitals and view association",
-  "status": "PREPARED",
+  "status": "INCONCLUSIVE",
   "control_revision": "5b4a56815e0661d050b94e93264470ae3d941a63",
   "sdk_revision": "04201edc7711361279d8487b385bc8b0ca9c63c7",
   "definition": "Experiments/EXP-143-199.md#exp-186--validate-shared-vitals-and-view-association",
@@ -58,10 +58,46 @@
       "diagnosis": "Exactly two empty mapper arrays are absent in backend results; the nonempty B slow-frame array and every other selected value match exactly.",
       "diagnostic": "EXP-186-attempt-A-empty-array-diagnostic.json",
       "repair": "Keep actual backend presence; allow only empty-array omission, never explicit null or missing nonempty frames. Original run remains FAIL."
+    },
+    {
+      "attempt": "B",
+      "run_id": "exp186-20260918T063555Z-7daba26932e5",
+      "revision": "00001c3773206a2c866c9e8dec1d7dda1931071b",
+      "state": "PASS",
+      "durable_result": "acceptance/exp186-20260918T063555Z-7daba26932e5.json",
+      "probe_tests": 196,
+      "native_expectations": 30,
+      "native_signals": 56,
+      "backend": {
+        "action_count": 0,
+        "crash_count": 0,
+        "error_count": 0,
+        "long_task_count": 0,
+        "measured_vitals_verified": true,
+        "omitted_empty_slow_frame_arrays": 3,
+        "physical_device_claimed": false,
+        "resource_count": 0,
+        "state": "PASS",
+        "view_count": 3
+      },
+      "owners": {
+        "a": {
+          "session_id": "b88a2188-eb82-4de4-80ac-2977ec475dc5",
+          "view_id": "184f22cb-3442-43b5-afe5-2144a5535c38"
+        },
+        "b": {
+          "session_id": "b88a2188-eb82-4de4-80ac-2977ec475dc5",
+          "view_id": "60d010dc-9f8f-47a2-a8ba-922e4aad41b4"
+        }
+      },
+      "final_view_reads": 1,
+      "source_fingerprint": "6e3e926b322b2f6ba2a133dcb14be9e0cf3bd68ae275b51a83eda650983d1245",
+      "binary_sha256": "b3fc14765dfd700270ec139d12b7f814776f71f30457a3789336f203066e1634",
+      "oracle_contract_sha256": "1ce8583c667d327ce0417d271835073cb987c2fb767745f191ff07d6dbbdc74c"
     }
   ],
   "device_attempts": [],
-  "next": "Commit the bounded empty-array representation repair, then execute a fresh one-invocation acceptance. Physical sample remains required.",
+  "next": "T13 awaits a representative physical-device sample. Do not rerun accepted simulator/deterministic work merely to resume. Continue T14/EXP-187 while hardware is unavailable.",
   "unit_source_sha256": "53c5cda262ec8932913d815d6c6273beff7e15c56a75fc9a2fe5495f027c7539",
   "unit_summary": {
     "total": 166,
@@ -107,7 +143,14 @@
     "new_connector_controls": 5,
     "swift_lint": "PASS strict new file; no added findings against eight existing probe source/test baselines",
     "harness_tests_added": 4,
-    "harness_execution": "PENDING fresh one-invocation acceptance",
+    "harness_execution": "PASS 196/196 in both native attempts; accepted attempt B",
     "oracle_contract_sha256": "1ce8583c667d327ce0417d271835073cb987c2fb767745f191ff07d6dbbdc74c"
-  }
+  },
+  "simulator_backend_status": "PASS",
+  "physical_status": "ENVIRONMENT BLOCKED",
+  "limits": [
+    "Shared process/system measurements retain existing view aggregation; no per-window CPU or frame attribution.",
+    "Native acceptance is serial A/B; no simultaneous visibility, physical sampling or Duo claim.",
+    "Attempt A remains FAIL; attempt B uses a newly frozen oracle and retains actual backend field presence."
+  ]
 }

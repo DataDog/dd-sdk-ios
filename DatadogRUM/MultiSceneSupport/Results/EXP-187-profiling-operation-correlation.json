@@ -1,0 +1,21 @@
+{
+  "experiment": "EXP-187",
+  "gate": "T14",
+  "title": "Validate process profile and Operation correlation",
+  "status": "PREPARED",
+  "control_revision": "00001c3773206a2c866c9e8dec1d7dda1931071b",
+  "sdk_revision": "04201edc7711361279d8487b385bc8b0ca9c63c7",
+  "definition": "Experiments/EXP-143-199.md#exp-187--validate-process-profile-and-operation-correlation",
+  "completion_mode": "documented process-level fallback with exact Operation identity",
+  "production_change_planned": false,
+  "gates_closed": [],
+  "required_environments": [
+    "focused RUM/Profiling and existing integration tests",
+    "supported physical profiling device",
+    "authenticated profile and RUM backend"
+  ],
+  "unit_attempts": [],
+  "native_attempts": [],
+  "device_attempts": [],
+  "next": "Implement the four predeclared deterministic controls; continue independent work while physical device and profile browser authentication are pending."
+}

@@ -240,6 +240,8 @@ fresh replacement and disabled behavior; scene churn keeps one session collector
 The actual-reader fixture passes196 probe tests/30 native expectations. The first
 backend comparison fails only two empty-array omissions; its diagnostic and failed
 record remain. The narrow presence repair passes248 Python/55 connector controls.
-No new production finding. Fresh backend acceptance and representative device
-evidence remain required for T13.
+Fresh attempt B passes the complete three-view/zero-extra-telemetry backend
+comparison with actual metric values. T13 awaits its representative physical
+sample. No new production finding; EXP-187 next checks serialized
+Profiling/Operation identity and flush lifetime under the existing process model.
 This is separate from the completed D01–D12 review cycle.

@@ -1499,3 +1499,20 @@ an empty mapper slowFrames array may appear as an absent backend field.
 Record field presence separately; never treat explicit null or a missing
 nonempty array as equivalent. Preserve the original projected values and the
 failed run, and rerun from a newly frozen source/tooling identity.
+
+## Profiling correlation validation (EXP-187/T14)
+
+Use actual ProfileAttachments from focused RUM/Profiling tests. Join profile
+rum-mobile-events.json entries and labels to RUM using the exact start Vital ID;
+operationKey/view are not attachment fields. Keep name/optional-key identity
+structured, require reverse completion and ongoing-operation retention across
+normal flushes, and preserve server-offset nanoseconds. Profile-level RUM labels
+do not establish per-scene CPU attribution.
+
+The existing BenchmarkTests Profiling runner already links the module; avoid
+adding a dependency to the native multi-scene probe. Freeze native counts/build/
+run identity and boundary assertions before a device run. Verify a real supported
+device and separate authenticated profile access. RUM connector success does not
+prove profile retrieval; use the supported browser UI if no profile tool exists,
+with user sign-in, without reading credentials or session storage. Physical and
+backend proof remain required even if simulator/integration tests pass.

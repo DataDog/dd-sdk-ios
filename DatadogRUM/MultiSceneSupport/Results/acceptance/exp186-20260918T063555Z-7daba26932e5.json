@@ -1,0 +1,2677 @@
+{
+  "artifacts": {
+    "backend-evidence.json": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/multi-scene-acceptance-9stwwt8s/run/backend-evidence.json",
+    "backend-exchanges.json": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/multi-scene-acceptance-9stwwt8s/run/backend-exchanges.json",
+    "boot-ready.log": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/multi-scene-acceptance-9stwwt8s/run/boot-ready.log",
+    "build-identity.json": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/multi-scene-acceptance-9stwwt8s/run/build-identity.json",
+    "build-tests.log": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/multi-scene-acceptance-9stwwt8s/run/build-tests.log",
+    "console.raw.log": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/multi-scene-acceptance-9stwwt8s/run/console.raw.log",
+    "container-absence.log": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/multi-scene-acceptance-9stwwt8s/run/container-absence.log",
+    "install.log": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/multi-scene-acceptance-9stwwt8s/run/install.log",
+    "local-evidence.json": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/multi-scene-acceptance-9stwwt8s/run/local-evidence.json",
+    "probe.jsonl": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/multi-scene-acceptance-9stwwt8s/run/probe.jsonl",
+    "source-identity.json": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/multi-scene-acceptance-9stwwt8s/run/source-identity.json",
+    "summary.json": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/multi-scene-acceptance-9stwwt8s/run/summary.json",
+    "terminal-screenshot.log": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/multi-scene-acceptance-9stwwt8s/run/terminal-screenshot.log",
+    "terminal.png": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/multi-scene-acceptance-9stwwt8s/run/terminal.png",
+    "terminate-after.log": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/multi-scene-acceptance-9stwwt8s/run/terminate-after.log",
+    "terminate-before.log": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/multi-scene-acceptance-9stwwt8s/run/terminate-before.log",
+    "test-summary.json": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/multi-scene-acceptance-9stwwt8s/run/test-summary.json",
+    "uninstall.log": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/multi-scene-acceptance-9stwwt8s/run/uninstall.log",
+    "vitals-records.json": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/multi-scene-acceptance-9stwwt8s/run/vitals-records.json"
+  },
+  "backend_bridge_timings": [
+    {
+      "kind": "auth",
+      "received": true,
+      "seconds": 28.859
+    },
+    {
+      "kind": "peer_actions",
+      "received": true,
+      "seconds": 10.672
+    },
+    {
+      "kind": "resources",
+      "received": true,
+      "seconds": 13.709
+    },
+    {
+      "kind": "process_long_tasks",
+      "received": true,
+      "seconds": 13.209
+    },
+    {
+      "kind": "errors",
+      "received": true,
+      "seconds": 14.722
+    },
+    {
+      "kind": "crashes",
+      "received": true,
+      "seconds": 23.344
+    },
+    {
+      "kind": "vitals_views",
+      "received": true,
+      "seconds": 17.255
+    }
+  ],
+  "commit_signature": {
+    "required_before_push": true,
+    "state": "UNSIGNED"
+  },
+  "device": {
+    "dataPath": "/Users/valentin.pertuisot/Library/Developer/CoreSimulator/Devices/92C9918B-FEC6-4440-9D6D-8E09475950BB/data",
+    "dataPathSize": 3352412160,
+    "deviceTypeIdentifier": "com.apple.CoreSimulator.SimDeviceType.iPad-mini-A17-Pro",
+    "isAvailable": true,
+    "lastUsedAt": "2026-09-16T22:19:15Z",
+    "logPath": "/Users/valentin.pertuisot/Library/Logs/CoreSimulator/92C9918B-FEC6-4440-9D6D-8E09475950BB",
+    "logPathSize": 536576,
+    "name": "iPad mini (A17 Pro)",
+    "runtime": "com.apple.CoreSimulator.SimRuntime.iOS-27-0",
+    "state": "Booted",
+    "udid": "92C9918B-FEC6-4440-9D6D-8E09475950BB"
+  },
+  "dirty_state": [
+    " M Datadog/Datadog.xcodeproj/project.pbxproj",
+    "A  xcconfigs/Datadog.local.xcconfig"
+  ],
+  "evidence": {
+    "backend-evidence.json": {
+      "actions": [],
+      "crashes": {
+        "count": 0
+      },
+      "errors": {
+        "count": 0
+      },
+      "long_tasks": [],
+      "resources": [],
+      "views": [
+        {
+          "container_present": false,
+          "counters": {
+            "actions": 0,
+            "crashes": 0,
+            "errors": 0,
+            "longTasks": 0,
+            "resources": 0
+          },
+          "is_active": false,
+          "metrics": {
+            "cpuRate": 142.38530146516956,
+            "cpuTicks": 168,
+            "memoryAverage": 30439752,
+            "memoryMax": 31525192,
+            "refreshRateAverage": 59.97663220813894,
+            "refreshRateMin": 59.602747314844564,
+            "slowFrames": null,
+            "slowFramesRate": null,
+            "timeSpentNanoseconds": 1179897070
+          },
+          "name": "ProbeHomeView",
+          "run_id": "exp186-20260918T063555Z-7daba26932e5",
+          "session_id": "b88a2188-eb82-4de4-80ac-2977ec475dc5",
+          "slow_frames_present": false,
+          "source": "ios",
+          "view_id": "60d010dc-9f8f-47a2-a8ba-922e4aad41b4"
+        },
+        {
+          "container_present": false,
+          "counters": {
+            "actions": 0,
+            "crashes": 0,
+            "errors": 0,
+            "longTasks": 0,
+            "resources": 0
+          },
+          "is_active": false,
+          "metrics": {
+            "cpuRate": 343.8383678211457,
+            "cpuTicks": 743,
+            "memoryAverage": 28828853.714285713,
+            "memoryMax": 30312776,
+            "refreshRateAverage": 59.80114958754021,
+            "refreshRateMin": 45.28506950591488,
+            "slowFrames": null,
+            "slowFramesRate": 2.5062099189341716,
+            "timeSpentNanoseconds": 2160899043
+          },
+          "name": "ProbeHomeView",
+          "run_id": "exp186-20260918T063555Z-7daba26932e5",
+          "session_id": "b88a2188-eb82-4de4-80ac-2977ec475dc5",
+          "slow_frames_present": false,
+          "source": "ios",
+          "view_id": "184f22cb-3442-43b5-afe5-2144a5535c38"
+        },
+        {
+          "container_present": false,
+          "counters": {
+            "actions": 0,
+            "crashes": 0,
+            "errors": 0,
+            "longTasks": 0,
+            "resources": 0
+          },
+          "is_active": false,
+          "metrics": {
+            "cpuRate": null,
+            "cpuTicks": 0,
+            "memoryAverage": 25872712,
+            "memoryMax": 25872712,
+            "refreshRateAverage": null,
+            "refreshRateMin": null,
+            "slowFrames": null,
+            "slowFramesRate": null,
+            "timeSpentNanoseconds": 218415022
+          },
+          "name": "ApplicationLaunch",
+          "run_id": "exp186-20260918T063555Z-7daba26932e5",
+          "session_id": "b88a2188-eb82-4de4-80ac-2977ec475dc5",
+          "slow_frames_present": false,
+          "source": "ios",
+          "view_id": "86c71fbd-6132-4127-8dc5-0be1369f2fb5"
+        }
+      ]
+    },
+    "backend-exchanges.json": [
+      {
+        "request": {
+          "created_at": "2026-09-18T06:35:56.206251+00:00",
+          "expected_count": 0,
+          "from": "2026-09-18T06:35:55.798862+00:00",
+          "kind": "auth",
+          "query": "@context.probe.run_id:exp186-20260918T063555Z-7daba26932e5-auth",
+          "request_id": "064f54dc-b5cd-4803-9406-52d58e4eb81d",
+          "run_id": "exp186-20260918T063555Z-7daba26932e5",
+          "schema_version": 1,
+          "to": "now"
+        },
+        "response": {
+          "complete": true,
+          "data": {
+            "authenticated": true,
+            "count": 0
+          },
+          "ok": true,
+          "provider": "datadog-mcp",
+          "query": "@context.probe.run_id:exp186-20260918T063555Z-7daba26932e5-auth",
+          "request_id": "064f54dc-b5cd-4803-9406-52d58e4eb81d",
+          "request_sha256": "4e60ad542aff1df3606f48aefa041366931b3d6a1955cec85593a67c0295195b"
+        }
+      },
+      {
+        "request": {
+          "created_at": "2026-09-18T06:37:03.430524+00:00",
+          "expected_count": 0,
+          "from": "2026-09-18T06:35:55.798862+00:00",
+          "kind": "peer_actions",
+          "query": "@session.id:b88a2188-eb82-4de4-80ac-2977ec475dc5 @type:action",
+          "request_id": "fd4b10b4-8f1d-460d-893a-adad5373786e",
+          "run_id": "exp186-20260918T063555Z-7daba26932e5",
+          "schema_version": 1,
+          "to": "now"
+        },
+        "response": {
+          "complete": true,
+          "data": [],
+          "ok": true,
+          "provider": "datadog-mcp",
+          "query": "@session.id:b88a2188-eb82-4de4-80ac-2977ec475dc5 @type:action",
+          "request_id": "fd4b10b4-8f1d-460d-893a-adad5373786e",
+          "request_sha256": "2155d23c3db7c6a6034d638a8c9935a06762d7c68a1319cc17ecd71aab24d27b"
+        }
+      },
+      {
+        "request": {
+          "created_at": "2026-09-18T06:37:14.103059+00:00",
+          "expected_count": 0,
+          "from": "2026-09-18T06:35:55.798862+00:00",
+          "kind": "resources",
+          "query": "@session.id:b88a2188-eb82-4de4-80ac-2977ec475dc5 @type:resource",
+          "request_id": "21ee535a-e692-4f68-a6e9-3440aac802a7",
+          "run_id": "exp186-20260918T063555Z-7daba26932e5",
+          "schema_version": 1,
+          "to": "now"
+        },
+        "response": {
+          "complete": true,
+          "data": [],
+          "ok": true,
+          "provider": "datadog-mcp",
+          "query": "@session.id:b88a2188-eb82-4de4-80ac-2977ec475dc5 @type:resource",
+          "request_id": "21ee535a-e692-4f68-a6e9-3440aac802a7",
+          "request_sha256": "a6c8ae20b6505b74eaa3b6084ea191d9cea8646250ccbee98d8c449c1db37c92"
+        }
+      },
+      {
+        "request": {
+          "created_at": "2026-09-18T06:37:27.812166+00:00",
+          "expected_count": 0,
+          "from": "2026-09-18T06:35:55.798862+00:00",
+          "kind": "process_long_tasks",
+          "query": "@session.id:b88a2188-eb82-4de4-80ac-2977ec475dc5 @type:long_task",
+          "request_id": "c8a2f2d7-db9f-4e07-931f-358ae358804c",
+          "run_id": "exp186-20260918T063555Z-7daba26932e5",
+          "schema_version": 1,
+          "to": "now"
+        },
+        "response": {
+          "complete": true,
+          "data": [],
+          "ok": true,
+          "provider": "datadog-mcp",
+          "query": "@session.id:b88a2188-eb82-4de4-80ac-2977ec475dc5 @type:long_task",
+          "request_id": "c8a2f2d7-db9f-4e07-931f-358ae358804c",
+          "request_sha256": "c074c323701906beac65afa59b09fdb44e4b883dcea8380e3a44304e1b5f6b5d"
+        }
+      },
+      {
+        "request": {
+          "created_at": "2026-09-18T06:37:41.021910+00:00",
+          "expected_count": 0,
+          "from": "2026-09-18T06:35:55.798862+00:00",
+          "kind": "errors",
+          "query": "@session.id:b88a2188-eb82-4de4-80ac-2977ec475dc5 @type:error",
+          "request_id": "0f2b0876-629e-4089-bb69-2b795c43437b",
+          "run_id": "exp186-20260918T063555Z-7daba26932e5",
+          "schema_version": 1,
+          "to": "now"
+        },
+        "response": {
+          "complete": true,
+          "data": {
+            "count": 0
+          },
+          "ok": true,
+          "provider": "datadog-mcp",
+          "query": "@session.id:b88a2188-eb82-4de4-80ac-2977ec475dc5 @type:error",
+          "request_id": "0f2b0876-629e-4089-bb69-2b795c43437b",
+          "request_sha256": "e35d7d04a0c75e13badd719dd0ff4ab17cc4873c51c5f1c095d3e00e185a4efe"
+        }
+      },
+      {
+        "request": {
+          "created_at": "2026-09-18T06:37:55.743857+00:00",
+          "expected_count": 0,
+          "from": "2026-09-18T06:35:55.798862+00:00",
+          "kind": "crashes",
+          "query": "@session.id:b88a2188-eb82-4de4-80ac-2977ec475dc5 (@error.is_crash:true OR @view.crash.count:>0)",
+          "request_id": "f27a7cd9-ade7-403a-b95b-31684b9e0617",
+          "run_id": "exp186-20260918T063555Z-7daba26932e5",
+          "schema_version": 1,
+          "to": "now"
+        },
+        "response": {
+          "complete": true,
+          "data": {
+            "count": 0
+          },
+          "ok": true,
+          "provider": "datadog-mcp",
+          "query": "@session.id:b88a2188-eb82-4de4-80ac-2977ec475dc5 (@error.is_crash:true OR @view.crash.count:>0)",
+          "request_id": "f27a7cd9-ade7-403a-b95b-31684b9e0617",
+          "request_sha256": "0d5d081e0e2a668fa16db27182dcd63add85c801fec3fd52cde72cad2be7c00e"
+        }
+      },
+      {
+        "request": {
+          "created_at": "2026-09-18T06:38:19.087702+00:00",
+          "expected_count": 3,
+          "from": "2026-09-18T06:35:55.798862+00:00",
+          "kind": "vitals_views",
+          "query": "@session.id:b88a2188-eb82-4de4-80ac-2977ec475dc5 @type:view",
+          "request_id": "e2213a6d-de35-4a4d-9665-899debfd2031",
+          "run_id": "exp186-20260918T063555Z-7daba26932e5",
+          "schema_version": 1,
+          "to": "now"
+        },
+        "response": {
+          "complete": true,
+          "data": [
+            {
+              "container_present": false,
+              "counters": {
+                "actions": 0,
+                "crashes": 0,
+                "errors": 0,
+                "longTasks": 0,
+                "resources": 0
+              },
+              "is_active": false,
+              "metrics": {
+                "cpuRate": 142.38530146516956,
+                "cpuTicks": 168,
+                "memoryAverage": 30439752,
+                "memoryMax": 31525192,
+                "refreshRateAverage": 59.97663220813894,
+                "refreshRateMin": 59.602747314844564,
+                "slowFrames": null,
+                "slowFramesRate": null,
+                "timeSpentNanoseconds": 1179897070
+              },
+              "name": "ProbeHomeView",
+              "run_id": "exp186-20260918T063555Z-7daba26932e5",
+              "session_id": "b88a2188-eb82-4de4-80ac-2977ec475dc5",
+              "slow_frames_present": false,
+              "source": "ios",
+              "view_id": "60d010dc-9f8f-47a2-a8ba-922e4aad41b4"
+            },
+            {
+              "container_present": false,
+              "counters": {
+                "actions": 0,
+                "crashes": 0,
+                "errors": 0,
+                "longTasks": 0,
+                "resources": 0
+              },
+              "is_active": false,
+              "metrics": {
+                "cpuRate": 343.8383678211457,
+                "cpuTicks": 743,
+                "memoryAverage": 28828853.714285713,
+                "memoryMax": 30312776,
+                "refreshRateAverage": 59.80114958754021,
+                "refreshRateMin": 45.28506950591488,
+                "slowFrames": null,
+                "slowFramesRate": 2.5062099189341716,
+                "timeSpentNanoseconds": 2160899043
+              },
+              "name": "ProbeHomeView",
+              "run_id": "exp186-20260918T063555Z-7daba26932e5",
+              "session_id": "b88a2188-eb82-4de4-80ac-2977ec475dc5",
+              "slow_frames_present": false,
+              "source": "ios",
+              "view_id": "184f22cb-3442-43b5-afe5-2144a5535c38"
+            },
+            {
+              "container_present": false,
+              "counters": {
+                "actions": 0,
+                "crashes": 0,
+                "errors": 0,
+                "longTasks": 0,
+                "resources": 0
+              },
+              "is_active": false,
+              "metrics": {
+                "cpuRate": null,
+                "cpuTicks": 0,
+                "memoryAverage": 25872712,
+                "memoryMax": 25872712,
+                "refreshRateAverage": null,
+                "refreshRateMin": null,
+                "slowFrames": null,
+                "slowFramesRate": null,
+                "timeSpentNanoseconds": 218415022
+              },
+              "name": "ApplicationLaunch",
+              "run_id": "exp186-20260918T063555Z-7daba26932e5",
+              "session_id": "b88a2188-eb82-4de4-80ac-2977ec475dc5",
+              "slow_frames_present": false,
+              "source": "ios",
+              "view_id": "86c71fbd-6132-4127-8dc5-0be1369f2fb5"
+            }
+          ],
+          "ok": true,
+          "provider": "datadog-mcp",
+          "query": "@session.id:b88a2188-eb82-4de4-80ac-2977ec475dc5 @type:view",
+          "request_id": "e2213a6d-de35-4a4d-9665-899debfd2031",
+          "request_sha256": "304f4f504c4339b967fbf09c1cb34a4d672ed8a8d7bd038961415a9e5902d7e6"
+        }
+      }
+    ],
+    "build-identity.json": {
+      "executable_sha256": "b3fc14765dfd700270ec139d12b7f814776f71f30457a3789336f203066e1634",
+      "source_sha256": "6e3e926b322b2f6ba2a133dcb14be9e0cf3bd68ae275b51a83eda650983d1245",
+      "uuid": "UUID: 2668790D-EF49-3754-8447-C861DDB557BD (arm64) /private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/multi-scene-acceptance-9stwwt8s/run/derived/Build/Products/Debug-iphonesimulator/RUMNativeMultiSceneProbe.app/RUMNativeMultiSceneProbe"
+    },
+    "local-evidence.json": {
+      "assertions": 30,
+      "native_scenes": {
+        "scene-A": "1406F62D-9002-48AB-AE59-CB1DA06D072F",
+        "scene-B": "E4837B67-52A9-4354-9550-6B8FEB9902F2"
+      },
+      "owners": {
+        "a": {
+          "session_id": "b88a2188-eb82-4de4-80ac-2977ec475dc5",
+          "view_id": "184f22cb-3442-43b5-afe5-2144a5535c38"
+        },
+        "b": {
+          "session_id": "b88a2188-eb82-4de4-80ac-2977ec475dc5",
+          "view_id": "60d010dc-9f8f-47a2-a8ba-922e4aad41b4"
+        }
+      },
+      "physical_device_claimed": false,
+      "session_id": "b88a2188-eb82-4de4-80ac-2977ec475dc5",
+      "signal_count": 56,
+      "simultaneous_visibility_claimed": false,
+      "timeseries_default_disabled": true,
+      "views": [
+        {
+          "container_present": false,
+          "counters": {
+            "actions": 0,
+            "crashes": 0,
+            "errors": 0,
+            "longTasks": 0,
+            "resources": 0
+          },
+          "is_active": false,
+          "metrics": {
+            "cpuRate": null,
+            "cpuTicks": 0,
+            "memoryAverage": 25872712,
+            "memoryMax": 25872712,
+            "refreshRateAverage": null,
+            "refreshRateMin": null,
+            "slowFrames": [],
+            "slowFramesRate": null,
+            "timeSpentNanoseconds": 218415022
+          },
+          "name": "ApplicationLaunch",
+          "run_id": "exp186-20260918T063555Z-7daba26932e5",
+          "session_id": "b88a2188-eb82-4de4-80ac-2977ec475dc5",
+          "slow_frames_present": true,
+          "source": "ios",
+          "view_id": "86c71fbd-6132-4127-8dc5-0be1369f2fb5"
+        },
+        {
+          "container_present": false,
+          "counters": {
+            "actions": 0,
+            "crashes": 0,
+            "errors": 0,
+            "longTasks": 0,
+            "resources": 0
+          },
+          "is_active": false,
+          "metrics": {
+            "cpuRate": 343.8383678211457,
+            "cpuTicks": 743,
+            "memoryAverage": 28828853.714285713,
+            "memoryMax": 30312776,
+            "refreshRateAverage": 59.80114958754021,
+            "refreshRateMin": 45.28506950591488,
+            "slowFrames": [],
+            "slowFramesRate": 2.5062099189341716,
+            "timeSpentNanoseconds": 2160899043
+          },
+          "name": "ProbeHomeView",
+          "run_id": "exp186-20260918T063555Z-7daba26932e5",
+          "session_id": "b88a2188-eb82-4de4-80ac-2977ec475dc5",
+          "slow_frames_present": true,
+          "source": "ios",
+          "view_id": "184f22cb-3442-43b5-afe5-2144a5535c38"
+        },
+        {
+          "container_present": false,
+          "counters": {
+            "actions": 0,
+            "crashes": 0,
+            "errors": 0,
+            "longTasks": 0,
+            "resources": 0
+          },
+          "is_active": false,
+          "metrics": {
+            "cpuRate": 142.38530146516956,
+            "cpuTicks": 168,
+            "memoryAverage": 30439752,
+            "memoryMax": 31525192,
+            "refreshRateAverage": 59.97663220813894,
+            "refreshRateMin": 59.602747314844564,
+            "slowFrames": [],
+            "slowFramesRate": null,
+            "timeSpentNanoseconds": 1179897070
+          },
+          "name": "ProbeHomeView",
+          "run_id": "exp186-20260918T063555Z-7daba26932e5",
+          "session_id": "b88a2188-eb82-4de4-80ac-2977ec475dc5",
+          "slow_frames_present": true,
+          "source": "ios",
+          "view_id": "60d010dc-9f8f-47a2-a8ba-922e4aad41b4"
+        }
+      ]
+    },
+    "test-summary.json": {
+      "devicesAndConfigurations": [
+        {
+          "device": {
+            "architecture": "arm64",
+            "deviceId": "92C9918B-FEC6-4440-9D6D-8E09475950BB",
+            "deviceName": "iPad mini (A17 Pro)",
+            "modelName": "iPad mini (A17 Pro)",
+            "osBuildNumber": "24A434",
+            "osVersion": "27.0",
+            "platform": "iOS Simulator"
+          },
+          "expectedFailures": 0,
+          "failedTests": 0,
+          "passedTests": 196,
+          "skippedTests": 0,
+          "testPlanConfiguration": {
+            "configurationId": "1",
+            "configurationName": "Test Scheme Action"
+          }
+        }
+      ],
+      "environmentDescription": "RUMNativeMultiSceneProbe \u00b7 Built with macOS 26.6.2",
+      "expectedFailures": 0,
+      "failedTests": 0,
+      "finishTime": 1789713416.02,
+      "passedTests": 196,
+      "result": "Passed",
+      "runtimeWarnings": [],
+      "skippedTests": 0,
+      "startTime": 1789713388.451,
+      "statistics": [],
+      "testFailures": [],
+      "title": "Test - RUMNativeMultiSceneProbe",
+      "topInsights": [],
+      "totalTestCount": 196
+    },
+    "vitals-records.json": [
+      {
+        "manifest": {
+          "resolutionSource": "command-line",
+          "runID": "exp186-20260918T063555Z-7daba26932e5",
+          "runMode": "clean",
+          "scenario": {
+            "completionConditions": [
+              {
+                "expectedCount": 1,
+                "kind": "assertion",
+                "name": "vitals-configuration"
+              },
+              {
+                "expectedCount": 1,
+                "kind": "assertion",
+                "name": "vitals-a-owner"
+              },
+              {
+                "expectedCount": 1,
+                "kind": "assertion",
+                "name": "vitals-a-sampling-began"
+              },
+              {
+                "expectedCount": 1,
+                "kind": "assertion",
+                "name": "vitals-a-samples-acknowledged"
+              },
+              {
+                "expectedCount": 1,
+                "kind": "assertion",
+                "name": "vitals-a-complete"
+              },
+              {
+                "expectedCount": 1,
+                "kind": "assertion",
+                "name": "vitals-b-owner"
+              },
+              {
+                "expectedCount": 1,
+                "kind": "assertion",
+                "name": "vitals-a-retired"
+              },
+              {
+                "expectedCount": 1,
+                "kind": "assertion",
+                "name": "vitals-b-sampling-began"
+              },
+              {
+                "expectedCount": 1,
+                "kind": "assertion",
+                "name": "vitals-b-samples-acknowledged"
+              },
+              {
+                "expectedCount": 1,
+                "kind": "assertion",
+                "name": "vitals-stop-boundary"
+              },
+              {
+                "expectedCount": 1,
+                "kind": "assertion",
+                "name": "vitals-final-a"
+              },
+              {
+                "expectedCount": 1,
+                "kind": "assertion",
+                "name": "vitals-final-b"
+              },
+              {
+                "expectedCount": 1,
+                "kind": "assertion",
+                "name": "vitals-inventory-verified"
+              },
+              {
+                "expectedCount": 1,
+                "kind": "assertion",
+                "name": "vitals-b-complete"
+              }
+            ],
+            "defaultRunMode": "clean",
+            "expectedSemanticTimeline": [
+              {
+                "kind": "view-started",
+                "occurrence": 1,
+                "rumViewOrigin": "semantic",
+                "scene": "scene-A",
+                "screen": "home"
+              },
+              {
+                "expectedCount": 1,
+                "kind": "assertion",
+                "name": "vitals-configuration"
+              },
+              {
+                "expectedCount": 1,
+                "kind": "assertion",
+                "name": "vitals-a-owner"
+              },
+              {
+                "expectedCount": 1,
+                "kind": "assertion",
+                "name": "vitals-a-sampling-began"
+              },
+              {
+                "expectedCount": 1,
+                "kind": "assertion",
+                "name": "vitals-a-samples-acknowledged"
+              },
+              {
+                "expectedCount": 1,
+                "kind": "assertion",
+                "name": "vitals-a-complete"
+              },
+              {
+                "kind": "view-started",
+                "occurrence": 1,
+                "rumViewOrigin": "semantic",
+                "scene": "scene-B",
+                "screen": "home"
+              },
+              {
+                "expectedCount": 1,
+                "kind": "assertion",
+                "name": "vitals-b-owner"
+              },
+              {
+                "expectedCount": 1,
+                "kind": "assertion",
+                "name": "vitals-a-retired"
+              },
+              {
+                "expectedCount": 1,
+                "kind": "assertion",
+                "name": "vitals-b-sampling-began"
+              },
+              {
+                "expectedCount": 1,
+                "kind": "assertion",
+                "name": "vitals-b-samples-acknowledged"
+              },
+              {
+                "expectedCount": 1,
+                "kind": "assertion",
+                "name": "vitals-stop-boundary"
+              },
+              {
+                "expectedCount": 1,
+                "kind": "assertion",
+                "name": "vitals-final-a"
+              },
+              {
+                "expectedCount": 1,
+                "kind": "assertion",
+                "name": "vitals-final-b"
+              },
+              {
+                "expectedCount": 1,
+                "kind": "assertion",
+                "name": "vitals-inventory-verified"
+              },
+              {
+                "expectedCount": 1,
+                "kind": "assertion",
+                "name": "vitals-b-complete"
+              }
+            ],
+            "identifier": "vitals.shared-process.cross-scene-serial",
+            "initialWindows": [
+              "scene-A",
+              "scene-B"
+            ],
+            "layout": "stack",
+            "requiredCapabilities": [
+              "multiple-scenes"
+            ],
+            "runtimeOptions": {
+              "automaticallyAbortsDetail": false,
+              "automaticallyAdvancesSplitSelection": true,
+              "automaticallyClosesSceneB": false,
+              "automaticallyNavigates": false,
+              "automaticallyOpensSecondWindow": false,
+              "automaticallyPopsUIKitSplitNavigation": true,
+              "automaticallyReplacesDetail": false,
+              "automaticallyReplacesDetailInstance": false,
+              "automaticallyReturnsSplitToDetail": false,
+              "exercisesSwiftUIButtonStructuredTask": false,
+              "exercisesTraceOnlyURLSessionOwnership": false,
+              "exercisesUIEventContextHandoff": false,
+              "exercisesUIKitScrollOwnership": false,
+              "forcesNavigationRouteIdentity": false,
+              "initialSwiftUIPath": [],
+              "manualSwiftUIViewScreensByScene": {},
+              "startsSplitWithoutSelection": false,
+              "swiftUIRouterWritePolicy": "accept",
+              "swiftUIStress": "none"
+            },
+            "steps": [
+              {
+                "kind": "wait-for-scene-ready",
+                "scene": "scene-A"
+              },
+              {
+                "kind": "wait-for-signal",
+                "scene": "scene-A",
+                "signal": "rum-view:home#1"
+              },
+              {
+                "kind": "sample-shared-vitals",
+                "scene": "scene-A"
+              },
+              {
+                "kind": "open-window",
+                "scene": "scene-A",
+                "value": "scene-B"
+              },
+              {
+                "kind": "wait-for-signal",
+                "scene": "scene-B",
+                "signal": "rum-view:home#1"
+              },
+              {
+                "kind": "sample-shared-vitals",
+                "scene": "scene-B"
+              }
+            ],
+            "trackingMode": "manual"
+          },
+          "schemaVersion": 3,
+          "validationErrors": []
+        },
+        "type": "manifest"
+      },
+      {
+        "signal": {
+          "evidenceSource": "rum-mapper",
+          "kind": "rum-session-started",
+          "rumContext": {
+            "sessionDiscarded": false,
+            "sessionID": "b88a2188-eb82-4de4-80ac-2977ec475dc5"
+          },
+          "runID": "exp186-20260918T063555Z-7daba26932e5",
+          "scenarioID": "vitals.shared-process.cross-scene-serial",
+          "schemaVersion": 5,
+          "sequence": 1,
+          "timestampMilliseconds": 1789713419955
+        },
+        "type": "signal"
+      },
+      {
+        "signal": {
+          "evidenceSource": "probe",
+          "kind": "destination-appearance-observed",
+          "runID": "exp186-20260918T063555Z-7daba26932e5",
+          "scenarioID": "vitals.shared-process.cross-scene-serial",
+          "schemaVersion": 5,
+          "semanticContext": {
+            "logicalSceneID": "scene-A",
+            "screen": "home"
+          },
+          "sequence": 2,
+          "timestampMilliseconds": 1789713420143
+        },
+        "type": "signal"
+      },
+      {
+        "signal": {
+          "evidenceSource": "rum-mapper",
+          "kind": "rum-view-snapshot",
+          "rumContext": {
+            "eventDateMilliseconds": 1789713419919,
+            "sessionHasReplay": false,
+            "sessionID": "b88a2188-eb82-4de4-80ac-2977ec475dc5",
+            "viewActive": true,
+            "viewDocumentVersion": 1,
+            "viewID": "86c71fbd-6132-4127-8dc5-0be1369f2fb5",
+            "viewName": "ApplicationLaunch",
+            "viewTimeSpentNanoseconds": 29355049,
+            "viewURL": "com/datadog/application-launch/view"
+          },
+          "runID": "exp186-20260918T063555Z-7daba26932e5",
+          "scenarioID": "vitals.shared-process.cross-scene-serial",
+          "schemaVersion": 5,
+          "sequence": 3,
+          "timestampMilliseconds": 1789713420169,
+          "vitals": {
+            "counters": {
+              "actions": 0,
+              "crashes": 0,
+              "errors": 0,
+              "longTasks": 0,
+              "resources": 0
+            },
+            "nativeSource": "ios",
+            "slowFrames": [],
+            "timeSpentNanoseconds": 29355049
+          }
+        },
+        "type": "signal"
+      },
+      {
+        "signal": {
+          "activationState": "foreground-inactive",
+          "evidenceSource": "probe",
+          "geometry": {
+            "height": 1133,
+            "width": 744,
+            "x": 0,
+            "y": 0
+          },
+          "horizontalSizeClass": "regular",
+          "kind": "scene-ready",
+          "navigationPath": [
+            "home"
+          ],
+          "runID": "exp186-20260918T063555Z-7daba26932e5",
+          "scenarioID": "vitals.shared-process.cross-scene-serial",
+          "sceneDisconnectGeneration": 0,
+          "scenePhase": "ready",
+          "schemaVersion": 5,
+          "semanticContext": {
+            "logicalSceneID": "scene-A",
+            "nativeSceneID": "1406F62D-9002-48AB-AE59-CB1DA06D072F",
+            "screen": "home"
+          },
+          "sequence": 4,
+          "timestampMilliseconds": 1789713420181,
+          "verticalSizeClass": "regular"
+        },
+        "type": "signal"
+      },
+      {
+        "signal": {
+          "evidenceSource": "rum-mapper",
+          "kind": "rum-view-snapshot",
+          "rumContext": {
+            "eventDateMilliseconds": 1789713419919,
+            "sessionHasReplay": false,
+            "sessionID": "b88a2188-eb82-4de4-80ac-2977ec475dc5",
+            "viewActive": false,
+            "viewDocumentVersion": 2,
+            "viewID": "86c71fbd-6132-4127-8dc5-0be1369f2fb5",
+            "viewName": "ApplicationLaunch",
+            "viewTimeSpentNanoseconds": 218415022,
+            "viewURL": "com/datadog/application-launch/view"
+          },
+          "runID": "exp186-20260918T063555Z-7daba26932e5",
+          "scenarioID": "vitals.shared-process.cross-scene-serial",
+          "schemaVersion": 5,
+          "sequence": 5,
+          "timestampMilliseconds": 1789713420183,
+          "vitals": {
+            "counters": {
+              "actions": 0,
+              "crashes": 0,
+              "errors": 0,
+              "longTasks": 0,
+              "resources": 0
+            },
+            "cpuTicks": 0,
+            "memoryAverage": 25872712,
+            "memoryMax": 25872712,
+            "nativeSource": "ios",
+            "originalRunID": "exp186-20260918T063555Z-7daba26932e5",
+            "slowFrames": [],
+            "timeSpentNanoseconds": 218415022
+          }
+        },
+        "type": "signal"
+      },
+      {
+        "signal": {
+          "evidenceSource": "rum-mapper",
+          "kind": "rum-view-snapshot",
+          "rumContext": {
+            "eventDateMilliseconds": 1789713420138,
+            "sessionHasReplay": false,
+            "sessionID": "b88a2188-eb82-4de4-80ac-2977ec475dc5",
+            "viewActive": true,
+            "viewDocumentVersion": 1,
+            "viewID": "184f22cb-3442-43b5-afe5-2144a5535c38",
+            "viewName": "ProbeHomeView",
+            "viewTimeSpentNanoseconds": 1,
+            "viewURL": "ProbeHomeView/-7431786466703804392"
+          },
+          "runID": "exp186-20260918T063555Z-7daba26932e5",
+          "scenarioID": "vitals.shared-process.cross-scene-serial",
+          "schemaVersion": 5,
+          "semanticContext": {
+            "logicalSceneID": "scene-A",
+            "screen": "home"
+          },
+          "sequence": 6,
+          "timestampMilliseconds": 1789713420183,
+          "vitals": {
+            "counters": {
+              "actions": 0,
+              "crashes": 0,
+              "errors": 0,
+              "longTasks": 0,
+              "resources": 0
+            },
+            "cpuTicks": 0,
+            "memoryAverage": 25872712,
+            "memoryMax": 25872712,
+            "nativeSource": "ios",
+            "originalRunID": "exp186-20260918T063555Z-7daba26932e5",
+            "slowFrames": [],
+            "timeSpentNanoseconds": 1
+          }
+        },
+        "type": "signal"
+      },
+      {
+        "signal": {
+          "evidenceSource": "probe",
+          "kind": "step-started",
+          "runID": "exp186-20260918T063555Z-7daba26932e5",
+          "scenarioID": "vitals.shared-process.cross-scene-serial",
+          "schemaVersion": 5,
+          "semanticContext": {
+            "logicalSceneID": "scene-A",
+            "nativeSceneID": "1406F62D-9002-48AB-AE59-CB1DA06D072F",
+            "screen": "home"
+          },
+          "sequence": 7,
+          "stepIndex": 0,
+          "stepKind": "wait-for-scene-ready",
+          "timestampMilliseconds": 1789713420190
+        },
+        "type": "signal"
+      },
+      {
+        "signal": {
+          "activationState": "foreground-active",
+          "evidenceSource": "probe",
+          "geometry": {
+            "height": 1133,
+            "width": 744,
+            "x": 0,
+            "y": 0
+          },
+          "horizontalSizeClass": "regular",
+          "kind": "scene-lifecycle",
+          "navigationPath": [
+            "home"
+          ],
+          "runID": "exp186-20260918T063555Z-7daba26932e5",
+          "scenarioID": "vitals.shared-process.cross-scene-serial",
+          "sceneDisconnectGeneration": 0,
+          "scenePhase": "ready",
+          "schemaVersion": 5,
+          "semanticContext": {
+            "logicalSceneID": "scene-A",
+            "nativeSceneID": "1406F62D-9002-48AB-AE59-CB1DA06D072F",
+            "screen": "home"
+          },
+          "sequence": 8,
+          "timestampMilliseconds": 1789713420201,
+          "verticalSizeClass": "regular"
+        },
+        "type": "signal"
+      },
+      {
+        "signal": {
+          "acknowledgedSignalSequence": 4,
+          "evidenceSource": "probe",
+          "kind": "step-acknowledged",
+          "runID": "exp186-20260918T063555Z-7daba26932e5",
+          "scenarioID": "vitals.shared-process.cross-scene-serial",
+          "schemaVersion": 5,
+          "semanticContext": {
+            "logicalSceneID": "scene-A",
+            "nativeSceneID": "1406F62D-9002-48AB-AE59-CB1DA06D072F",
+            "screen": "home"
+          },
+          "sequence": 9,
+          "stepIndex": 0,
+          "stepKind": "wait-for-scene-ready",
+          "timestampMilliseconds": 1789713420206
+        },
+        "type": "signal"
+      },
+      {
+        "signal": {
+          "evidenceSource": "probe",
+          "kind": "step-started",
+          "name": "rum-view:home#1",
+          "runID": "exp186-20260918T063555Z-7daba26932e5",
+          "scenarioID": "vitals.shared-process.cross-scene-serial",
+          "schemaVersion": 5,
+          "semanticContext": {
+            "logicalSceneID": "scene-A",
+            "nativeSceneID": "1406F62D-9002-48AB-AE59-CB1DA06D072F",
+            "screen": "home"
+          },
+          "sequence": 10,
+          "stepIndex": 1,
+          "stepKind": "wait-for-signal",
+          "timestampMilliseconds": 1789713420206
+        },
+        "type": "signal"
+      },
+      {
+        "signal": {
+          "acknowledgedSignalSequence": 6,
+          "evidenceSource": "probe",
+          "kind": "step-acknowledged",
+          "name": "rum-view:home#1",
+          "runID": "exp186-20260918T063555Z-7daba26932e5",
+          "scenarioID": "vitals.shared-process.cross-scene-serial",
+          "schemaVersion": 5,
+          "semanticContext": {
+            "logicalSceneID": "scene-A",
+            "nativeSceneID": "1406F62D-9002-48AB-AE59-CB1DA06D072F",
+            "screen": "home"
+          },
+          "sequence": 11,
+          "stepIndex": 1,
+          "stepKind": "wait-for-signal",
+          "timestampMilliseconds": 1789713420208
+        },
+        "type": "signal"
+      },
+      {
+        "signal": {
+          "evidenceSource": "probe",
+          "kind": "step-started",
+          "runID": "exp186-20260918T063555Z-7daba26932e5",
+          "scenarioID": "vitals.shared-process.cross-scene-serial",
+          "schemaVersion": 5,
+          "semanticContext": {
+            "logicalSceneID": "scene-A",
+            "nativeSceneID": "1406F62D-9002-48AB-AE59-CB1DA06D072F",
+            "screen": "home"
+          },
+          "sequence": 12,
+          "stepIndex": 2,
+          "stepKind": "sample-shared-vitals",
+          "timestampMilliseconds": 1789713420208
+        },
+        "type": "signal"
+      },
+      {
+        "signal": {
+          "evidenceSource": "internal-hook",
+          "kind": "assertion",
+          "name": "vitals-configuration",
+          "result": "PASS",
+          "runID": "exp186-20260918T063555Z-7daba26932e5",
+          "scenarioID": "vitals.shared-process.cross-scene-serial",
+          "schemaVersion": 5,
+          "sequence": 13,
+          "timestampMilliseconds": 1789713420211,
+          "vitals": {
+            "configuration": {
+              "appHangsDisabled": true,
+              "cpu": true,
+              "longTasksDisabled": true,
+              "memory": true,
+              "memoryWarningsDisabled": true,
+              "refreshRate": true,
+              "renderLoop": true,
+              "slowFrames": true,
+              "timeseriesDefaultDisabled": true
+            },
+            "samplingInterval": 0.1
+          }
+        },
+        "type": "signal"
+      },
+      {
+        "signal": {
+          "evidenceSource": "internal-hook",
+          "kind": "assertion",
+          "name": "vitals-a-owner",
+          "result": "PASS",
+          "rumContext": {
+            "sessionID": "b88a2188-eb82-4de4-80ac-2977ec475dc5",
+            "viewID": "184f22cb-3442-43b5-afe5-2144a5535c38"
+          },
+          "runID": "exp186-20260918T063555Z-7daba26932e5",
+          "scenarioID": "vitals.shared-process.cross-scene-serial",
+          "schemaVersion": 5,
+          "sequence": 14,
+          "sourceContext": {
+            "logicalSceneID": "scene-A",
+            "nativeSceneID": "1406F62D-9002-48AB-AE59-CB1DA06D072F",
+            "screen": "home"
+          },
+          "timestampMilliseconds": 1789713420211
+        },
+        "type": "signal"
+      },
+      {
+        "signal": {
+          "evidenceSource": "internal-hook",
+          "kind": "assertion",
+          "name": "vitals-a-sampling-began",
+          "result": "PASS",
+          "rumContext": {
+            "sessionID": "b88a2188-eb82-4de4-80ac-2977ec475dc5",
+            "viewID": "184f22cb-3442-43b5-afe5-2144a5535c38"
+          },
+          "runID": "exp186-20260918T063555Z-7daba26932e5",
+          "scenarioID": "vitals.shared-process.cross-scene-serial",
+          "schemaVersion": 5,
+          "sequence": 15,
+          "timestampMilliseconds": 1789713420211
+        },
+        "type": "signal"
+      },
+      {
+        "signal": {
+          "evidenceSource": "rum-mapper",
+          "kind": "rum-view-snapshot",
+          "rumContext": {
+            "eventDateMilliseconds": 1789713420138,
+            "sessionHasReplay": false,
+            "sessionID": "b88a2188-eb82-4de4-80ac-2977ec475dc5",
+            "viewActive": true,
+            "viewDocumentVersion": 2,
+            "viewID": "184f22cb-3442-43b5-afe5-2144a5535c38",
+            "viewName": "ProbeHomeView",
+            "viewTimeSpentNanoseconds": 74378014,
+            "viewURL": "ProbeHomeView/-7431786466703804392"
+          },
+          "runID": "exp186-20260918T063555Z-7daba26932e5",
+          "scenarioID": "vitals.shared-process.cross-scene-serial",
+          "schemaVersion": 5,
+          "semanticContext": {
+            "logicalSceneID": "scene-A",
+            "screen": "home"
+          },
+          "sequence": 16,
+          "timestampMilliseconds": 1789713420280,
+          "vitals": {
+            "counters": {
+              "actions": 0,
+              "crashes": 0,
+              "errors": 0,
+              "longTasks": 0,
+              "resources": 0
+            },
+            "cpuTicks": 0,
+            "memoryAverage": 25872712,
+            "memoryMax": 25872712,
+            "nativeSource": "ios",
+            "originalRunID": "exp186-20260918T063555Z-7daba26932e5",
+            "refreshRateAverage": 56.32126733456921,
+            "refreshRateMin": 45.28506950591488,
+            "slowFrames": [],
+            "timeSpentNanoseconds": 74378014
+          }
+        },
+        "type": "signal"
+      },
+      {
+        "signal": {
+          "evidenceSource": "rum-mapper",
+          "kind": "rum-view-snapshot",
+          "rumContext": {
+            "eventDateMilliseconds": 1789713420138,
+            "sessionHasReplay": false,
+            "sessionID": "b88a2188-eb82-4de4-80ac-2977ec475dc5",
+            "viewActive": true,
+            "viewDocumentVersion": 3,
+            "viewID": "184f22cb-3442-43b5-afe5-2144a5535c38",
+            "viewName": "ProbeHomeView",
+            "viewTimeSpentNanoseconds": 176560998,
+            "viewURL": "ProbeHomeView/-7431786466703804392"
+          },
+          "runID": "exp186-20260918T063555Z-7daba26932e5",
+          "scenarioID": "vitals.shared-process.cross-scene-serial",
+          "schemaVersion": 5,
+          "semanticContext": {
+            "logicalSceneID": "scene-A",
+            "screen": "home"
+          },
+          "sequence": 17,
+          "timestampMilliseconds": 1789713420314,
+          "vitals": {
+            "counters": {
+              "actions": 0,
+              "crashes": 0,
+              "errors": 0,
+              "longTasks": 0,
+              "resources": 0
+            },
+            "cpuTicks": 0,
+            "memoryAverage": 25872712,
+            "memoryMax": 25872712,
+            "nativeSource": "ios",
+            "originalRunID": "exp186-20260918T063555Z-7daba26932e5",
+            "refreshRateAverage": 57.54751156103608,
+            "refreshRateMin": 45.28506950591488,
+            "slowFrames": [],
+            "timeSpentNanoseconds": 176560998
+          }
+        },
+        "type": "signal"
+      },
+      {
+        "signal": {
+          "evidenceSource": "rum-mapper",
+          "kind": "rum-view-snapshot",
+          "rumContext": {
+            "eventDateMilliseconds": 1789713420138,
+            "sessionHasReplay": false,
+            "sessionID": "b88a2188-eb82-4de4-80ac-2977ec475dc5",
+            "viewActive": true,
+            "viewDocumentVersion": 4,
+            "viewID": "184f22cb-3442-43b5-afe5-2144a5535c38",
+            "viewName": "ProbeHomeView",
+            "viewTimeSpentNanoseconds": 277687073,
+            "viewURL": "ProbeHomeView/-7431786466703804392"
+          },
+          "runID": "exp186-20260918T063555Z-7daba26932e5",
+          "scenarioID": "vitals.shared-process.cross-scene-serial",
+          "schemaVersion": 5,
+          "semanticContext": {
+            "logicalSceneID": "scene-A",
+            "screen": "home"
+          },
+          "sequence": 18,
+          "timestampMilliseconds": 1789713420415,
+          "vitals": {
+            "counters": {
+              "actions": 0,
+              "crashes": 0,
+              "errors": 0,
+              "longTasks": 0,
+              "resources": 0
+            },
+            "cpuTicks": 0,
+            "memoryAverage": 25872712,
+            "memoryMax": 25872712,
+            "nativeSource": "ios",
+            "originalRunID": "exp186-20260918T063555Z-7daba26932e5",
+            "refreshRateAverage": 58.77375578750296,
+            "refreshRateMin": 45.28506950591488,
+            "slowFrames": [],
+            "timeSpentNanoseconds": 277687073
+          }
+        },
+        "type": "signal"
+      },
+      {
+        "signal": {
+          "evidenceSource": "rum-mapper",
+          "kind": "rum-view-snapshot",
+          "rumContext": {
+            "eventDateMilliseconds": 1789713420138,
+            "sessionHasReplay": false,
+            "sessionID": "b88a2188-eb82-4de4-80ac-2977ec475dc5",
+            "viewActive": true,
+            "viewDocumentVersion": 5,
+            "viewID": "184f22cb-3442-43b5-afe5-2144a5535c38",
+            "viewName": "ProbeHomeView",
+            "viewTimeSpentNanoseconds": 383625031,
+            "viewURL": "ProbeHomeView/-7431786466703804392"
+          },
+          "runID": "exp186-20260918T063555Z-7daba26932e5",
+          "scenarioID": "vitals.shared-process.cross-scene-serial",
+          "schemaVersion": 5,
+          "semanticContext": {
+            "logicalSceneID": "scene-A",
+            "screen": "home"
+          },
+          "sequence": 19,
+          "timestampMilliseconds": 1789713420521,
+          "vitals": {
+            "counters": {
+              "actions": 0,
+              "crashes": 0,
+              "errors": 0,
+              "longTasks": 0,
+              "resources": 0
+            },
+            "cpuTicks": 0,
+            "memoryAverage": 27243506.666666668,
+            "memoryMax": 28019016,
+            "nativeSource": "ios",
+            "originalRunID": "exp186-20260918T063555Z-7daba26932e5",
+            "refreshRateAverage": 59.18250386299192,
+            "refreshRateMin": 45.28506950591488,
+            "slowFrames": [],
+            "timeSpentNanoseconds": 383625031
+          }
+        },
+        "type": "signal"
+      },
+      {
+        "signal": {
+          "evidenceSource": "rum-mapper",
+          "kind": "rum-view-snapshot",
+          "rumContext": {
+            "eventDateMilliseconds": 1789713420138,
+            "sessionHasReplay": false,
+            "sessionID": "b88a2188-eb82-4de4-80ac-2977ec475dc5",
+            "viewActive": true,
+            "viewDocumentVersion": 6,
+            "viewID": "184f22cb-3442-43b5-afe5-2144a5535c38",
+            "viewName": "ProbeHomeView",
+            "viewTimeSpentNanoseconds": 484017015,
+            "viewURL": "ProbeHomeView/-7431786466703804392"
+          },
+          "runID": "exp186-20260918T063555Z-7daba26932e5",
+          "scenarioID": "vitals.shared-process.cross-scene-serial",
+          "schemaVersion": 5,
+          "semanticContext": {
+            "logicalSceneID": "scene-A",
+            "screen": "home"
+          },
+          "sequence": 20,
+          "timestampMilliseconds": 1789713420622,
+          "vitals": {
+            "counters": {
+              "actions": 0,
+              "crashes": 0,
+              "errors": 0,
+              "longTasks": 0,
+              "resources": 0
+            },
+            "cpuTicks": 0,
+            "memoryAverage": 27429192,
+            "memoryMax": 28019016,
+            "nativeSource": "ios",
+            "originalRunID": "exp186-20260918T063555Z-7daba26932e5",
+            "refreshRateAverage": 59.3868779007364,
+            "refreshRateMin": 45.28506950591488,
+            "slowFrames": [],
+            "timeSpentNanoseconds": 484017015
+          }
+        },
+        "type": "signal"
+      },
+      {
+        "signal": {
+          "evidenceSource": "rum-mapper",
+          "kind": "rum-view-snapshot",
+          "rumContext": {
+            "eventDateMilliseconds": 1789713420138,
+            "sessionHasReplay": false,
+            "sessionID": "b88a2188-eb82-4de4-80ac-2977ec475dc5",
+            "viewActive": true,
+            "viewDocumentVersion": 7,
+            "viewID": "184f22cb-3442-43b5-afe5-2144a5535c38",
+            "viewName": "ProbeHomeView",
+            "viewTimeSpentNanoseconds": 587395072,
+            "viewURL": "ProbeHomeView/-7431786466703804392"
+          },
+          "runID": "exp186-20260918T063555Z-7daba26932e5",
+          "scenarioID": "vitals.shared-process.cross-scene-serial",
+          "schemaVersion": 5,
+          "semanticContext": {
+            "logicalSceneID": "scene-A",
+            "screen": "home"
+          },
+          "sequence": 21,
+          "timestampMilliseconds": 1789713420726,
+          "vitals": {
+            "counters": {
+              "actions": 0,
+              "crashes": 0,
+              "errors": 0,
+              "longTasks": 0,
+              "resources": 0
+            },
+            "cpuTicks": 0,
+            "memoryAverage": 27543880,
+            "memoryMax": 28019016,
+            "nativeSource": "ios",
+            "originalRunID": "exp186-20260918T063555Z-7daba26932e5",
+            "refreshRateAverage": 59.50950230941325,
+            "refreshRateMin": 45.28506950591488,
+            "slowFrames": [],
+            "timeSpentNanoseconds": 587395072
+          }
+        },
+        "type": "signal"
+      },
+      {
+        "signal": {
+          "evidenceSource": "rum-mapper",
+          "kind": "rum-view-snapshot",
+          "rumContext": {
+            "eventDateMilliseconds": 1789713420138,
+            "sessionHasReplay": false,
+            "sessionID": "b88a2188-eb82-4de4-80ac-2977ec475dc5",
+            "viewActive": true,
+            "viewDocumentVersion": 8,
+            "viewID": "184f22cb-3442-43b5-afe5-2144a5535c38",
+            "viewName": "ProbeHomeView",
+            "viewTimeSpentNanoseconds": 688569069,
+            "viewURL": "ProbeHomeView/-7431786466703804392"
+          },
+          "runID": "exp186-20260918T063555Z-7daba26932e5",
+          "scenarioID": "vitals.shared-process.cross-scene-serial",
+          "schemaVersion": 5,
+          "semanticContext": {
+            "logicalSceneID": "scene-A",
+            "screen": "home"
+          },
+          "sequence": 22,
+          "timestampMilliseconds": 1789713420826,
+          "vitals": {
+            "counters": {
+              "actions": 0,
+              "crashes": 0,
+              "errors": 0,
+              "longTasks": 0,
+              "resources": 0
+            },
+            "cpuTicks": 0,
+            "memoryAverage": 27633992,
+            "memoryMax": 28084552,
+            "nativeSource": "ios",
+            "originalRunID": "exp186-20260918T063555Z-7daba26932e5",
+            "refreshRateAverage": 59.591251926839355,
+            "refreshRateMin": 45.28506950591488,
+            "slowFrames": [],
+            "timeSpentNanoseconds": 688569069
+          }
+        },
+        "type": "signal"
+      },
+      {
+        "signal": {
+          "evidenceSource": "rum-mapper",
+          "kind": "rum-view-snapshot",
+          "rumContext": {
+            "eventDateMilliseconds": 1789713420138,
+            "sessionHasReplay": false,
+            "sessionID": "b88a2188-eb82-4de4-80ac-2977ec475dc5",
+            "viewActive": true,
+            "viewDocumentVersion": 9,
+            "viewID": "184f22cb-3442-43b5-afe5-2144a5535c38",
+            "viewName": "ProbeHomeView",
+            "viewTimeSpentNanoseconds": 792768002,
+            "viewURL": "ProbeHomeView/-7431786466703804392"
+          },
+          "runID": "exp186-20260918T063555Z-7daba26932e5",
+          "scenarioID": "vitals.shared-process.cross-scene-serial",
+          "schemaVersion": 5,
+          "semanticContext": {
+            "logicalSceneID": "scene-A",
+            "screen": "home"
+          },
+          "sequence": 23,
+          "timestampMilliseconds": 1789713420930,
+          "vitals": {
+            "counters": {
+              "actions": 0,
+              "crashes": 0,
+              "errors": 0,
+              "longTasks": 0,
+              "resources": 0
+            },
+            "cpuTicks": 0,
+            "memoryAverage": 27700698.285714287,
+            "memoryMax": 28100936,
+            "nativeSource": "ios",
+            "originalRunID": "exp186-20260918T063555Z-7daba26932e5",
+            "refreshRateAverage": 59.65779230824321,
+            "refreshRateMin": 45.28506950591488,
+            "slowFrames": [],
+            "timeSpentNanoseconds": 792768002
+          }
+        },
+        "type": "signal"
+      },
+      {
+        "signal": {
+          "evidenceSource": "rum-mapper",
+          "kind": "rum-view-snapshot",
+          "rumContext": {
+            "eventDateMilliseconds": 1789713420138,
+            "sessionHasReplay": false,
+            "sessionID": "b88a2188-eb82-4de4-80ac-2977ec475dc5",
+            "viewActive": true,
+            "viewDocumentVersion": 10,
+            "viewID": "184f22cb-3442-43b5-afe5-2144a5535c38",
+            "viewName": "ProbeHomeView",
+            "viewTimeSpentNanoseconds": 895990014,
+            "viewURL": "ProbeHomeView/-7431786466703804392"
+          },
+          "runID": "exp186-20260918T063555Z-7daba26932e5",
+          "scenarioID": "vitals.shared-process.cross-scene-serial",
+          "schemaVersion": 5,
+          "semanticContext": {
+            "logicalSceneID": "scene-A",
+            "screen": "home"
+          },
+          "sequence": 24,
+          "timestampMilliseconds": 1789713421034,
+          "vitals": {
+            "counters": {
+              "actions": 0,
+              "crashes": 0,
+              "errors": 0,
+              "longTasks": 0,
+              "resources": 0
+            },
+            "cpuTicks": 0,
+            "memoryAverage": 27750728,
+            "memoryMax": 28100936,
+            "nativeSource": "ios",
+            "originalRunID": "exp186-20260918T063555Z-7daba26932e5",
+            "refreshRateAverage": 59.699695292617896,
+            "refreshRateMin": 45.28506950591488,
+            "slowFrames": [],
+            "timeSpentNanoseconds": 895990014
+          }
+        },
+        "type": "signal"
+      },
+      {
+        "signal": {
+          "evidenceSource": "rum-mapper",
+          "kind": "rum-view-snapshot",
+          "rumContext": {
+            "eventDateMilliseconds": 1789713420138,
+            "sessionHasReplay": false,
+            "sessionID": "b88a2188-eb82-4de4-80ac-2977ec475dc5",
+            "viewActive": true,
+            "viewDocumentVersion": 11,
+            "viewID": "184f22cb-3442-43b5-afe5-2144a5535c38",
+            "viewName": "ProbeHomeView",
+            "viewTimeSpentNanoseconds": 1000784039,
+            "viewURL": "ProbeHomeView/-7431786466703804392"
+          },
+          "runID": "exp186-20260918T063555Z-7daba26932e5",
+          "scenarioID": "vitals.shared-process.cross-scene-serial",
+          "schemaVersion": 5,
+          "semanticContext": {
+            "logicalSceneID": "scene-A",
+            "screen": "home"
+          },
+          "sequence": 25,
+          "timestampMilliseconds": 1789713421138,
+          "vitals": {
+            "counters": {
+              "actions": 0,
+              "crashes": 0,
+              "errors": 0,
+              "longTasks": 0,
+              "resources": 0
+            },
+            "cpuRate": 0,
+            "cpuTicks": 0,
+            "memoryAverage": 27789640,
+            "memoryMax": 28100936,
+            "nativeSource": "ios",
+            "originalRunID": "exp186-20260918T063555Z-7daba26932e5",
+            "refreshRateAverage": 59.73245580767448,
+            "refreshRateMin": 45.28506950591488,
+            "slowFrames": [],
+            "timeSpentNanoseconds": 1000784039
+          }
+        },
+        "type": "signal"
+      },
+      {
+        "signal": {
+          "evidenceSource": "rum-mapper",
+          "kind": "rum-view-snapshot",
+          "rumContext": {
+            "eventDateMilliseconds": 1789713420138,
+            "sessionHasReplay": false,
+            "sessionID": "b88a2188-eb82-4de4-80ac-2977ec475dc5",
+            "viewActive": true,
+            "viewDocumentVersion": 12,
+            "viewID": "184f22cb-3442-43b5-afe5-2144a5535c38",
+            "viewName": "ProbeHomeView",
+            "viewTimeSpentNanoseconds": 1102711082,
+            "viewURL": "ProbeHomeView/-7431786466703804392"
+          },
+          "runID": "exp186-20260918T063555Z-7daba26932e5",
+          "scenarioID": "vitals.shared-process.cross-scene-serial",
+          "schemaVersion": 5,
+          "semanticContext": {
+            "logicalSceneID": "scene-A",
+            "screen": "home"
+          },
+          "sequence": 26,
+          "timestampMilliseconds": 1789713421240,
+          "vitals": {
+            "counters": {
+              "actions": 0,
+              "crashes": 0,
+              "errors": 0,
+              "longTasks": 0,
+              "resources": 0
+            },
+            "cpuRate": 0,
+            "cpuTicks": 0,
+            "memoryAverage": 27820769.6,
+            "memoryMax": 28100936,
+            "nativeSource": "ios",
+            "originalRunID": "exp186-20260918T063555Z-7daba26932e5",
+            "refreshRateAverage": 59.75877163124451,
+            "refreshRateMin": 45.28506950591488,
+            "slowFrames": [],
+            "timeSpentNanoseconds": 1102711082
+          }
+        },
+        "type": "signal"
+      },
+      {
+        "signal": {
+          "evidenceSource": "rum-mapper",
+          "kind": "rum-view-snapshot",
+          "rumContext": {
+            "eventDateMilliseconds": 1789713420138,
+            "sessionHasReplay": false,
+            "sessionID": "b88a2188-eb82-4de4-80ac-2977ec475dc5",
+            "viewActive": true,
+            "viewDocumentVersion": 13,
+            "viewID": "184f22cb-3442-43b5-afe5-2144a5535c38",
+            "viewName": "ProbeHomeView",
+            "viewTimeSpentNanoseconds": 1208540082,
+            "viewURL": "ProbeHomeView/-7431786466703804392"
+          },
+          "runID": "exp186-20260918T063555Z-7daba26932e5",
+          "scenarioID": "vitals.shared-process.cross-scene-serial",
+          "schemaVersion": 5,
+          "semanticContext": {
+            "logicalSceneID": "scene-A",
+            "screen": "home"
+          },
+          "sequence": 27,
+          "timestampMilliseconds": 1789713421346,
+          "vitals": {
+            "counters": {
+              "actions": 0,
+              "crashes": 0,
+              "errors": 0,
+              "longTasks": 0,
+              "resources": 0
+            },
+            "cpuRate": 555.2153461901491,
+            "cpuTicks": 671,
+            "memoryAverage": 27847728.727272727,
+            "memoryMax": 28117320,
+            "nativeSource": "ios",
+            "originalRunID": "exp186-20260918T063555Z-7daba26932e5",
+            "refreshRateAverage": 59.78360396167877,
+            "refreshRateMin": 45.28506950591488,
+            "slowFrames": [],
+            "timeSpentNanoseconds": 1208540082
+          }
+        },
+        "type": "signal"
+      },
+      {
+        "signal": {
+          "evidenceSource": "internal-hook",
+          "kind": "assertion",
+          "name": "vitals-a-samples-acknowledged",
+          "result": "PASS",
+          "rumContext": {
+            "sessionID": "b88a2188-eb82-4de4-80ac-2977ec475dc5",
+            "viewID": "184f22cb-3442-43b5-afe5-2144a5535c38"
+          },
+          "runID": "exp186-20260918T063555Z-7daba26932e5",
+          "scenarioID": "vitals.shared-process.cross-scene-serial",
+          "schemaVersion": 5,
+          "sequence": 28,
+          "timestampMilliseconds": 1789713421447
+        },
+        "type": "signal"
+      },
+      {
+        "signal": {
+          "evidenceSource": "internal-hook",
+          "kind": "assertion",
+          "name": "vitals-a-complete",
+          "result": "PASS",
+          "runID": "exp186-20260918T063555Z-7daba26932e5",
+          "scenarioID": "vitals.shared-process.cross-scene-serial",
+          "schemaVersion": 5,
+          "sequence": 29,
+          "timestampMilliseconds": 1789713421447
+        },
+        "type": "signal"
+      },
+      {
+        "signal": {
+          "acknowledgedSignalSequence": 29,
+          "evidenceSource": "probe",
+          "kind": "step-acknowledged",
+          "runID": "exp186-20260918T063555Z-7daba26932e5",
+          "scenarioID": "vitals.shared-process.cross-scene-serial",
+          "schemaVersion": 5,
+          "semanticContext": {
+            "logicalSceneID": "scene-A",
+            "nativeSceneID": "1406F62D-9002-48AB-AE59-CB1DA06D072F",
+            "screen": "home"
+          },
+          "sequence": 30,
+          "stepIndex": 2,
+          "stepKind": "sample-shared-vitals",
+          "timestampMilliseconds": 1789713421447
+        },
+        "type": "signal"
+      },
+      {
+        "signal": {
+          "evidenceSource": "probe",
+          "kind": "step-started",
+          "name": "scene-B",
+          "runID": "exp186-20260918T063555Z-7daba26932e5",
+          "scenarioID": "vitals.shared-process.cross-scene-serial",
+          "schemaVersion": 5,
+          "semanticContext": {
+            "logicalSceneID": "scene-A",
+            "nativeSceneID": "1406F62D-9002-48AB-AE59-CB1DA06D072F",
+            "screen": "home"
+          },
+          "sequence": 31,
+          "stepIndex": 3,
+          "stepKind": "open-window",
+          "timestampMilliseconds": 1789713421447
+        },
+        "type": "signal"
+      },
+      {
+        "signal": {
+          "activationState": "foreground-inactive",
+          "evidenceSource": "probe",
+          "geometry": {
+            "height": 1133,
+            "width": 744,
+            "x": 0,
+            "y": 0
+          },
+          "horizontalSizeClass": "regular",
+          "kind": "scene-lifecycle",
+          "navigationPath": [
+            "home"
+          ],
+          "runID": "exp186-20260918T063555Z-7daba26932e5",
+          "scenarioID": "vitals.shared-process.cross-scene-serial",
+          "sceneDisconnectGeneration": 0,
+          "scenePhase": "ready",
+          "schemaVersion": 5,
+          "semanticContext": {
+            "logicalSceneID": "scene-A",
+            "nativeSceneID": "1406F62D-9002-48AB-AE59-CB1DA06D072F",
+            "screen": "home"
+          },
+          "sequence": 32,
+          "timestampMilliseconds": 1789713421463,
+          "verticalSizeClass": "regular"
+        },
+        "type": "signal"
+      },
+      {
+        "signal": {
+          "evidenceSource": "rum-mapper",
+          "kind": "rum-view-snapshot",
+          "rumContext": {
+            "eventDateMilliseconds": 1789713421576,
+            "sessionHasReplay": false,
+            "sessionID": "b88a2188-eb82-4de4-80ac-2977ec475dc5",
+            "viewActive": true,
+            "viewDocumentVersion": 1,
+            "viewID": "60d010dc-9f8f-47a2-a8ba-922e4aad41b4",
+            "viewName": "ProbeHomeView",
+            "viewTimeSpentNanoseconds": 1,
+            "viewURL": "ProbeHomeView/-7431786466703804392"
+          },
+          "runID": "exp186-20260918T063555Z-7daba26932e5",
+          "scenarioID": "vitals.shared-process.cross-scene-serial",
+          "schemaVersion": 5,
+          "semanticContext": {
+            "logicalSceneID": "scene-B",
+            "screen": "home"
+          },
+          "sequence": 33,
+          "timestampMilliseconds": 1789713421515,
+          "vitals": {
+            "counters": {
+              "actions": 0,
+              "crashes": 0,
+              "errors": 0,
+              "longTasks": 0,
+              "resources": 0
+            },
+            "nativeSource": "ios",
+            "originalRunID": "exp186-20260918T063555Z-7daba26932e5",
+            "slowFrames": [],
+            "timeSpentNanoseconds": 1
+          }
+        },
+        "type": "signal"
+      },
+      {
+        "signal": {
+          "evidenceSource": "probe",
+          "kind": "destination-appearance-observed",
+          "runID": "exp186-20260918T063555Z-7daba26932e5",
+          "scenarioID": "vitals.shared-process.cross-scene-serial",
+          "schemaVersion": 5,
+          "semanticContext": {
+            "logicalSceneID": "scene-B",
+            "screen": "home"
+          },
+          "sequence": 34,
+          "timestampMilliseconds": 1789713421515
+        },
+        "type": "signal"
+      },
+      {
+        "signal": {
+          "activationState": "foreground-inactive",
+          "evidenceSource": "probe",
+          "geometry": {
+            "height": 1133,
+            "width": 744,
+            "x": 0,
+            "y": 0
+          },
+          "horizontalSizeClass": "regular",
+          "kind": "scene-ready",
+          "navigationPath": [
+            "home"
+          ],
+          "runID": "exp186-20260918T063555Z-7daba26932e5",
+          "scenarioID": "vitals.shared-process.cross-scene-serial",
+          "sceneDisconnectGeneration": 0,
+          "scenePhase": "ready",
+          "schemaVersion": 5,
+          "semanticContext": {
+            "logicalSceneID": "scene-B",
+            "nativeSceneID": "E4837B67-52A9-4354-9550-6B8FEB9902F2",
+            "screen": "home"
+          },
+          "sequence": 35,
+          "timestampMilliseconds": 1789713421531,
+          "verticalSizeClass": "regular"
+        },
+        "type": "signal"
+      },
+      {
+        "signal": {
+          "acknowledgedSignalSequence": 35,
+          "evidenceSource": "probe",
+          "kind": "step-acknowledged",
+          "name": "scene-B",
+          "runID": "exp186-20260918T063555Z-7daba26932e5",
+          "scenarioID": "vitals.shared-process.cross-scene-serial",
+          "schemaVersion": 5,
+          "semanticContext": {
+            "logicalSceneID": "scene-A",
+            "nativeSceneID": "1406F62D-9002-48AB-AE59-CB1DA06D072F",
+            "screen": "home"
+          },
+          "sequence": 36,
+          "stepIndex": 3,
+          "stepKind": "open-window",
+          "timestampMilliseconds": 1789713421533
+        },
+        "type": "signal"
+      },
+      {
+        "signal": {
+          "evidenceSource": "probe",
+          "kind": "step-started",
+          "name": "rum-view:home#1",
+          "runID": "exp186-20260918T063555Z-7daba26932e5",
+          "scenarioID": "vitals.shared-process.cross-scene-serial",
+          "schemaVersion": 5,
+          "semanticContext": {
+            "logicalSceneID": "scene-B",
+            "nativeSceneID": "E4837B67-52A9-4354-9550-6B8FEB9902F2",
+            "screen": "home"
+          },
+          "sequence": 37,
+          "stepIndex": 4,
+          "stepKind": "wait-for-signal",
+          "timestampMilliseconds": 1789713421533
+        },
+        "type": "signal"
+      },
+      {
+        "signal": {
+          "acknowledgedSignalSequence": 33,
+          "evidenceSource": "probe",
+          "kind": "step-acknowledged",
+          "name": "rum-view:home#1",
+          "runID": "exp186-20260918T063555Z-7daba26932e5",
+          "scenarioID": "vitals.shared-process.cross-scene-serial",
+          "schemaVersion": 5,
+          "semanticContext": {
+            "logicalSceneID": "scene-B",
+            "nativeSceneID": "E4837B67-52A9-4354-9550-6B8FEB9902F2",
+            "screen": "home"
+          },
+          "sequence": 38,
+          "stepIndex": 4,
+          "stepKind": "wait-for-signal",
+          "timestampMilliseconds": 1789713421534
+        },
+        "type": "signal"
+      },
+      {
+        "signal": {
+          "evidenceSource": "probe",
+          "kind": "step-started",
+          "runID": "exp186-20260918T063555Z-7daba26932e5",
+          "scenarioID": "vitals.shared-process.cross-scene-serial",
+          "schemaVersion": 5,
+          "semanticContext": {
+            "logicalSceneID": "scene-B",
+            "nativeSceneID": "E4837B67-52A9-4354-9550-6B8FEB9902F2",
+            "screen": "home"
+          },
+          "sequence": 39,
+          "stepIndex": 5,
+          "stepKind": "sample-shared-vitals",
+          "timestampMilliseconds": 1789713421534
+        },
+        "type": "signal"
+      },
+      {
+        "signal": {
+          "evidenceSource": "internal-hook",
+          "kind": "assertion",
+          "name": "vitals-b-owner",
+          "result": "PASS",
+          "rumContext": {
+            "sessionID": "b88a2188-eb82-4de4-80ac-2977ec475dc5",
+            "viewID": "60d010dc-9f8f-47a2-a8ba-922e4aad41b4"
+          },
+          "runID": "exp186-20260918T063555Z-7daba26932e5",
+          "scenarioID": "vitals.shared-process.cross-scene-serial",
+          "schemaVersion": 5,
+          "sequence": 40,
+          "sourceContext": {
+            "logicalSceneID": "scene-B",
+            "nativeSceneID": "E4837B67-52A9-4354-9550-6B8FEB9902F2",
+            "screen": "home"
+          },
+          "timestampMilliseconds": 1789713421534
+        },
+        "type": "signal"
+      },
+      {
+        "signal": {
+          "activationState": "foreground-active",
+          "evidenceSource": "probe",
+          "geometry": {
+            "height": 1133,
+            "width": 744,
+            "x": 0,
+            "y": 0
+          },
+          "horizontalSizeClass": "regular",
+          "kind": "scene-lifecycle",
+          "navigationPath": [
+            "home"
+          ],
+          "runID": "exp186-20260918T063555Z-7daba26932e5",
+          "scenarioID": "vitals.shared-process.cross-scene-serial",
+          "sceneDisconnectGeneration": 0,
+          "scenePhase": "ready",
+          "schemaVersion": 5,
+          "semanticContext": {
+            "logicalSceneID": "scene-B",
+            "nativeSceneID": "E4837B67-52A9-4354-9550-6B8FEB9902F2",
+            "screen": "home"
+          },
+          "sequence": 41,
+          "timestampMilliseconds": 1789713422293,
+          "verticalSizeClass": "regular"
+        },
+        "type": "signal"
+      },
+      {
+        "signal": {
+          "activationState": "background",
+          "evidenceSource": "probe",
+          "geometry": {
+            "height": 1133,
+            "width": 744,
+            "x": 0,
+            "y": 0
+          },
+          "horizontalSizeClass": "regular",
+          "kind": "scene-lifecycle",
+          "navigationPath": [
+            "home"
+          ],
+          "runID": "exp186-20260918T063555Z-7daba26932e5",
+          "scenarioID": "vitals.shared-process.cross-scene-serial",
+          "sceneDisconnectGeneration": 0,
+          "scenePhase": "ready",
+          "schemaVersion": 5,
+          "semanticContext": {
+            "logicalSceneID": "scene-A",
+            "nativeSceneID": "1406F62D-9002-48AB-AE59-CB1DA06D072F",
+            "screen": "home"
+          },
+          "sequence": 42,
+          "timestampMilliseconds": 1789713422300,
+          "verticalSizeClass": "regular"
+        },
+        "type": "signal"
+      },
+      {
+        "signal": {
+          "evidenceSource": "rum-mapper",
+          "kind": "rum-view-snapshot",
+          "rumContext": {
+            "eventDateMilliseconds": 1789713420138,
+            "sessionHasReplay": false,
+            "sessionID": "b88a2188-eb82-4de4-80ac-2977ec475dc5",
+            "viewActive": false,
+            "viewDocumentVersion": 14,
+            "viewID": "184f22cb-3442-43b5-afe5-2144a5535c38",
+            "viewName": "ProbeHomeView",
+            "viewTimeSpentNanoseconds": 2160899043,
+            "viewURL": "ProbeHomeView/-7431786466703804392"
+          },
+          "runID": "exp186-20260918T063555Z-7daba26932e5",
+          "scenarioID": "vitals.shared-process.cross-scene-serial",
+          "schemaVersion": 5,
+          "semanticContext": {
+            "logicalSceneID": "scene-A",
+            "screen": "home"
+          },
+          "sequence": 43,
+          "timestampMilliseconds": 1789713422301,
+          "vitals": {
+            "counters": {
+              "actions": 0,
+              "crashes": 0,
+              "errors": 0,
+              "longTasks": 0,
+              "resources": 0
+            },
+            "cpuRate": 343.8383678211457,
+            "cpuTicks": 743,
+            "memoryAverage": 28828853.714285713,
+            "memoryMax": 30312776,
+            "nativeSource": "ios",
+            "originalRunID": "exp186-20260918T063555Z-7daba26932e5",
+            "refreshRateAverage": 59.80114958754021,
+            "refreshRateMin": 45.28506950591488,
+            "slowFrames": [],
+            "slowFramesRate": 2.5062099189341716,
+            "timeSpentNanoseconds": 2160899043
+          }
+        },
+        "type": "signal"
+      },
+      {
+        "signal": {
+          "evidenceSource": "internal-hook",
+          "kind": "assertion",
+          "name": "vitals-a-retired",
+          "result": "PASS",
+          "rumContext": {
+            "sessionID": "b88a2188-eb82-4de4-80ac-2977ec475dc5",
+            "viewID": "184f22cb-3442-43b5-afe5-2144a5535c38"
+          },
+          "runID": "exp186-20260918T063555Z-7daba26932e5",
+          "scenarioID": "vitals.shared-process.cross-scene-serial",
+          "schemaVersion": 5,
+          "sequence": 44,
+          "timestampMilliseconds": 1789713422384
+        },
+        "type": "signal"
+      },
+      {
+        "signal": {
+          "evidenceSource": "internal-hook",
+          "kind": "assertion",
+          "name": "vitals-b-sampling-began",
+          "result": "PASS",
+          "rumContext": {
+            "sessionID": "b88a2188-eb82-4de4-80ac-2977ec475dc5",
+            "viewID": "60d010dc-9f8f-47a2-a8ba-922e4aad41b4"
+          },
+          "runID": "exp186-20260918T063555Z-7daba26932e5",
+          "scenarioID": "vitals.shared-process.cross-scene-serial",
+          "schemaVersion": 5,
+          "sequence": 45,
+          "timestampMilliseconds": 1789713422384
+        },
+        "type": "signal"
+      },
+      {
+        "signal": {
+          "evidenceSource": "rum-mapper",
+          "kind": "rum-view-snapshot",
+          "rumContext": {
+            "eventDateMilliseconds": 1789713421576,
+            "sessionHasReplay": false,
+            "sessionID": "b88a2188-eb82-4de4-80ac-2977ec475dc5",
+            "viewActive": true,
+            "viewDocumentVersion": 2,
+            "viewID": "60d010dc-9f8f-47a2-a8ba-922e4aad41b4",
+            "viewName": "ProbeHomeView",
+            "viewTimeSpentNanoseconds": 870148063,
+            "viewURL": "ProbeHomeView/-7431786466703804392"
+          },
+          "runID": "exp186-20260918T063555Z-7daba26932e5",
+          "scenarioID": "vitals.shared-process.cross-scene-serial",
+          "schemaVersion": 5,
+          "semanticContext": {
+            "logicalSceneID": "scene-B",
+            "screen": "home"
+          },
+          "sequence": 46,
+          "timestampMilliseconds": 1789713422385,
+          "vitals": {
+            "counters": {
+              "actions": 0,
+              "crashes": 0,
+              "errors": 0,
+              "longTasks": 0,
+              "resources": 0
+            },
+            "cpuTicks": 0,
+            "memoryAverage": 30189896,
+            "memoryMax": 30312776,
+            "nativeSource": "ios",
+            "originalRunID": "exp186-20260918T063555Z-7daba26932e5",
+            "slowFrames": [],
+            "timeSpentNanoseconds": 870148063
+          }
+        },
+        "type": "signal"
+      },
+      {
+        "signal": {
+          "evidenceSource": "rum-mapper",
+          "kind": "rum-view-snapshot",
+          "rumContext": {
+            "eventDateMilliseconds": 1789713421576,
+            "sessionHasReplay": false,
+            "sessionID": "b88a2188-eb82-4de4-80ac-2977ec475dc5",
+            "viewActive": true,
+            "viewDocumentVersion": 3,
+            "viewID": "60d010dc-9f8f-47a2-a8ba-922e4aad41b4",
+            "viewName": "ProbeHomeView",
+            "viewTimeSpentNanoseconds": 973940015,
+            "viewURL": "ProbeHomeView/-7431786466703804392"
+          },
+          "runID": "exp186-20260918T063555Z-7daba26932e5",
+          "scenarioID": "vitals.shared-process.cross-scene-serial",
+          "schemaVersion": 5,
+          "semanticContext": {
+            "logicalSceneID": "scene-B",
+            "screen": "home"
+          },
+          "sequence": 47,
+          "timestampMilliseconds": 1789713422488,
+          "vitals": {
+            "counters": {
+              "actions": 0,
+              "crashes": 0,
+              "errors": 0,
+              "longTasks": 0,
+              "resources": 0
+            },
+            "cpuTicks": 109,
+            "memoryAverage": 30378312,
+            "memoryMax": 31525192,
+            "nativeSource": "ios",
+            "originalRunID": "exp186-20260918T063555Z-7daba26932e5",
+            "refreshRateAverage": 59.920549474144785,
+            "refreshRateMin": 59.602747314844564,
+            "slowFrames": [],
+            "timeSpentNanoseconds": 973940015
+          }
+        },
+        "type": "signal"
+      },
+      {
+        "signal": {
+          "evidenceSource": "rum-mapper",
+          "kind": "rum-view-snapshot",
+          "rumContext": {
+            "eventDateMilliseconds": 1789713421576,
+            "sessionHasReplay": false,
+            "sessionID": "b88a2188-eb82-4de4-80ac-2977ec475dc5",
+            "viewActive": true,
+            "viewDocumentVersion": 4,
+            "viewID": "60d010dc-9f8f-47a2-a8ba-922e4aad41b4",
+            "viewName": "ProbeHomeView",
+            "viewTimeSpentNanoseconds": 1076222062,
+            "viewURL": "ProbeHomeView/-7431786466703804392"
+          },
+          "runID": "exp186-20260918T063555Z-7daba26932e5",
+          "scenarioID": "vitals.shared-process.cross-scene-serial",
+          "schemaVersion": 5,
+          "semanticContext": {
+            "logicalSceneID": "scene-B",
+            "screen": "home"
+          },
+          "sequence": 48,
+          "timestampMilliseconds": 1789713422591,
+          "vitals": {
+            "counters": {
+              "actions": 0,
+              "crashes": 0,
+              "errors": 0,
+              "longTasks": 0,
+              "resources": 0
+            },
+            "cpuRate": 132.87220642877358,
+            "cpuTicks": 143,
+            "memoryAverage": 30411080,
+            "memoryMax": 31525192,
+            "nativeSource": "ios",
+            "originalRunID": "exp186-20260918T063555Z-7daba26932e5",
+            "refreshRateAverage": 59.96027476501207,
+            "refreshRateMin": 59.602747314844564,
+            "slowFrames": [],
+            "timeSpentNanoseconds": 1076222062
+          }
+        },
+        "type": "signal"
+      },
+      {
+        "signal": {
+          "evidenceSource": "internal-hook",
+          "kind": "assertion",
+          "name": "vitals-b-samples-acknowledged",
+          "result": "PASS",
+          "rumContext": {
+            "sessionID": "b88a2188-eb82-4de4-80ac-2977ec475dc5",
+            "viewID": "60d010dc-9f8f-47a2-a8ba-922e4aad41b4"
+          },
+          "runID": "exp186-20260918T063555Z-7daba26932e5",
+          "scenarioID": "vitals.shared-process.cross-scene-serial",
+          "schemaVersion": 5,
+          "sequence": 49,
+          "timestampMilliseconds": 1789713422694
+        },
+        "type": "signal"
+      },
+      {
+        "signal": {
+          "evidenceSource": "internal-hook",
+          "kind": "assertion",
+          "name": "vitals-stop-boundary",
+          "result": "PASS",
+          "rumContext": {
+            "sessionID": "b88a2188-eb82-4de4-80ac-2977ec475dc5",
+            "viewID": "60d010dc-9f8f-47a2-a8ba-922e4aad41b4"
+          },
+          "runID": "exp186-20260918T063555Z-7daba26932e5",
+          "scenarioID": "vitals.shared-process.cross-scene-serial",
+          "schemaVersion": 5,
+          "sequence": 50,
+          "timestampMilliseconds": 1789713422694
+        },
+        "type": "signal"
+      },
+      {
+        "signal": {
+          "evidenceSource": "rum-mapper",
+          "kind": "rum-view-snapshot",
+          "rumContext": {
+            "eventDateMilliseconds": 1789713421576,
+            "sessionHasReplay": false,
+            "sessionID": "b88a2188-eb82-4de4-80ac-2977ec475dc5",
+            "viewActive": false,
+            "viewDocumentVersion": 5,
+            "viewID": "60d010dc-9f8f-47a2-a8ba-922e4aad41b4",
+            "viewName": "ProbeHomeView",
+            "viewTimeSpentNanoseconds": 1179897070,
+            "viewURL": "ProbeHomeView/-7431786466703804392"
+          },
+          "runID": "exp186-20260918T063555Z-7daba26932e5",
+          "scenarioID": "vitals.shared-process.cross-scene-serial",
+          "schemaVersion": 5,
+          "semanticContext": {
+            "logicalSceneID": "scene-B",
+            "screen": "home"
+          },
+          "sequence": 51,
+          "timestampMilliseconds": 1789713422697,
+          "vitals": {
+            "counters": {
+              "actions": 0,
+              "crashes": 0,
+              "errors": 0,
+              "longTasks": 0,
+              "resources": 0
+            },
+            "cpuRate": 142.38530146516956,
+            "cpuTicks": 168,
+            "memoryAverage": 30439752,
+            "memoryMax": 31525192,
+            "nativeSource": "ios",
+            "originalRunID": "exp186-20260918T063555Z-7daba26932e5",
+            "refreshRateAverage": 59.97663220813894,
+            "refreshRateMin": 59.602747314844564,
+            "slowFrames": [],
+            "timeSpentNanoseconds": 1179897070
+          }
+        },
+        "type": "signal"
+      },
+      {
+        "signal": {
+          "evidenceSource": "internal-hook",
+          "kind": "assertion",
+          "name": "vitals-final-a",
+          "result": "PASS",
+          "rumContext": {
+            "sessionID": "b88a2188-eb82-4de4-80ac-2977ec475dc5",
+            "viewID": "184f22cb-3442-43b5-afe5-2144a5535c38"
+          },
+          "runID": "exp186-20260918T063555Z-7daba26932e5",
+          "scenarioID": "vitals.shared-process.cross-scene-serial",
+          "schemaVersion": 5,
+          "sequence": 52,
+          "timestampMilliseconds": 1789713422716,
+          "vitals": {
+            "counters": {
+              "actions": 0,
+              "crashes": 0,
+              "errors": 0,
+              "longTasks": 0,
+              "resources": 0
+            },
+            "cpuRate": 343.8383678211457,
+            "cpuTicks": 743,
+            "memoryAverage": 28828853.714285713,
+            "memoryMax": 30312776,
+            "nativeSource": "ios",
+            "originalRunID": "exp186-20260918T063555Z-7daba26932e5",
+            "refreshRateAverage": 59.80114958754021,
+            "refreshRateMin": 45.28506950591488,
+            "slowFrames": [],
+            "slowFramesRate": 2.5062099189341716,
+            "timeSpentNanoseconds": 2160899043
+          }
+        },
+        "type": "signal"
+      },
+      {
+        "signal": {
+          "evidenceSource": "internal-hook",
+          "kind": "assertion",
+          "name": "vitals-final-b",
+          "result": "PASS",
+          "rumContext": {
+            "sessionID": "b88a2188-eb82-4de4-80ac-2977ec475dc5",
+            "viewID": "60d010dc-9f8f-47a2-a8ba-922e4aad41b4"
+          },
+          "runID": "exp186-20260918T063555Z-7daba26932e5",
+          "scenarioID": "vitals.shared-process.cross-scene-serial",
+          "schemaVersion": 5,
+          "sequence": 53,
+          "timestampMilliseconds": 1789713422716,
+          "vitals": {
+            "counters": {
+              "actions": 0,
+              "crashes": 0,
+              "errors": 0,
+              "longTasks": 0,
+              "resources": 0
+            },
+            "cpuRate": 142.38530146516956,
+            "cpuTicks": 168,
+            "memoryAverage": 30439752,
+            "memoryMax": 31525192,
+            "nativeSource": "ios",
+            "originalRunID": "exp186-20260918T063555Z-7daba26932e5",
+            "refreshRateAverage": 59.97663220813894,
+            "refreshRateMin": 59.602747314844564,
+            "slowFrames": [],
+            "timeSpentNanoseconds": 1179897070
+          }
+        },
+        "type": "signal"
+      },
+      {
+        "signal": {
+          "evidenceSource": "internal-hook",
+          "kind": "assertion",
+          "name": "vitals-inventory-verified",
+          "result": "PASS",
+          "runID": "exp186-20260918T063555Z-7daba26932e5",
+          "scenarioID": "vitals.shared-process.cross-scene-serial",
+          "schemaVersion": 5,
+          "sequence": 54,
+          "timestampMilliseconds": 1789713422716
+        },
+        "type": "signal"
+      },
+      {
+        "signal": {
+          "evidenceSource": "internal-hook",
+          "kind": "assertion",
+          "name": "vitals-b-complete",
+          "result": "PASS",
+          "runID": "exp186-20260918T063555Z-7daba26932e5",
+          "scenarioID": "vitals.shared-process.cross-scene-serial",
+          "schemaVersion": 5,
+          "sequence": 55,
+          "timestampMilliseconds": 1789713422717
+        },
+        "type": "signal"
+      },
+      {
+        "signal": {
+          "acknowledgedSignalSequence": 55,
+          "evidenceSource": "probe",
+          "kind": "step-acknowledged",
+          "runID": "exp186-20260918T063555Z-7daba26932e5",
+          "scenarioID": "vitals.shared-process.cross-scene-serial",
+          "schemaVersion": 5,
+          "semanticContext": {
+            "logicalSceneID": "scene-B",
+            "nativeSceneID": "E4837B67-52A9-4354-9550-6B8FEB9902F2",
+            "screen": "home"
+          },
+          "sequence": 56,
+          "stepIndex": 5,
+          "stepKind": "sample-shared-vitals",
+          "timestampMilliseconds": 1789713422717
+        },
+        "type": "signal"
+      },
+      {
+        "result": {
+          "issues": [],
+          "matchedExpectationCount": 30,
+          "scenarioID": "vitals.shared-process.cross-scene-serial",
+          "schemaVersion": 1,
+          "state": "PASS"
+        },
+        "runID": "exp186-20260918T063555Z-7daba26932e5",
+        "type": "semantic-result"
+      }
+    ]
+  },
+  "experiment": "EXP-186",
+  "failures": [],
+  "finished_at": "2026-09-18T06:38:37.506162+00:00",
+  "gate": "T13",
+  "oracle_contract_sha256": "1ce8583c667d327ce0417d271835073cb987c2fb767745f191ff07d6dbbdc74c",
+  "rerun": "Use a fresh output directory and freshly resolved device; do not reuse run IDs or bridge responses.",
+  "revision": "00001c3773206a2c866c9e8dec1d7dda1931071b",
+  "run_id": "exp186-20260918T063555Z-7daba26932e5",
+  "scenario_id": "vitals.shared-process.cross-scene-serial",
+  "schema_version": 1,
+  "source_file_count": 704,
+  "source_fingerprint": "6e3e926b322b2f6ba2a133dcb14be9e0cf3bd68ae275b51a83eda650983d1245",
+  "stages": {
+    "backend": {
+      "action_count": 0,
+      "crash_count": 0,
+      "error_count": 0,
+      "long_task_count": 0,
+      "measured_vitals_verified": true,
+      "omitted_empty_slow_frame_arrays": 3,
+      "physical_device_claimed": false,
+      "resource_count": 0,
+      "state": "PASS",
+      "view_count": 3
+    },
+    "clean_install": {
+      "data_container_absent": true,
+      "installed_binary_sha256": "b3fc14765dfd700270ec139d12b7f814776f71f30457a3789336f203066e1634",
+      "state": "PASS"
+    },
+    "frozen_build": {
+      "executable_sha256": "b3fc14765dfd700270ec139d12b7f814776f71f30457a3789336f203066e1634",
+      "source_sha256": "6e3e926b322b2f6ba2a133dcb14be9e0cf3bd68ae275b51a83eda650983d1245",
+      "state": "PASS",
+      "test_count": 196,
+      "uuid": "UUID: 2668790D-EF49-3754-8447-C861DDB557BD (arm64) /private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/multi-scene-acceptance-9stwwt8s/run/derived/Build/Products/Debug-iphonesimulator/RUMNativeMultiSceneProbe.app/RUMNativeMultiSceneProbe"
+    },
+    "local_semantics": {
+      "assertions": 30,
+      "native_scenes": {
+        "scene-A": "1406F62D-9002-48AB-AE59-CB1DA06D072F",
+        "scene-B": "E4837B67-52A9-4354-9550-6B8FEB9902F2"
+      },
+      "owners": {
+        "a": {
+          "session_id": "b88a2188-eb82-4de4-80ac-2977ec475dc5",
+          "view_id": "184f22cb-3442-43b5-afe5-2144a5535c38"
+        },
+        "b": {
+          "session_id": "b88a2188-eb82-4de4-80ac-2977ec475dc5",
+          "view_id": "60d010dc-9f8f-47a2-a8ba-922e4aad41b4"
+        }
+      },
+      "physical_device_claimed": false,
+      "session_id": "b88a2188-eb82-4de4-80ac-2977ec475dc5",
+      "signal_count": 56,
+      "simultaneous_visibility_claimed": false,
+      "state": "PASS",
+      "timeseries_default_disabled": true,
+      "views": [
+        {
+          "container_present": false,
+          "counters": {
+            "actions": 0,
+            "crashes": 0,
+            "errors": 0,
+            "longTasks": 0,
+            "resources": 0
+          },
+          "is_active": false,
+          "metrics": {
+            "cpuRate": null,
+            "cpuTicks": 0,
+            "memoryAverage": 25872712,
+            "memoryMax": 25872712,
+            "refreshRateAverage": null,
+            "refreshRateMin": null,
+            "slowFrames": [],
+            "slowFramesRate": null,
+            "timeSpentNanoseconds": 218415022
+          },
+          "name": "ApplicationLaunch",
+          "run_id": "exp186-20260918T063555Z-7daba26932e5",
+          "session_id": "b88a2188-eb82-4de4-80ac-2977ec475dc5",
+          "slow_frames_present": true,
+          "source": "ios",
+          "view_id": "86c71fbd-6132-4127-8dc5-0be1369f2fb5"
+        },
+        {
+          "container_present": false,
+          "counters": {
+            "actions": 0,
+            "crashes": 0,
+            "errors": 0,
+            "longTasks": 0,
+            "resources": 0
+          },
+          "is_active": false,
+          "metrics": {
+            "cpuRate": 343.8383678211457,
+            "cpuTicks": 743,
+            "memoryAverage": 28828853.714285713,
+            "memoryMax": 30312776,
+            "refreshRateAverage": 59.80114958754021,
+            "refreshRateMin": 45.28506950591488,
+            "slowFrames": [],
+            "slowFramesRate": 2.5062099189341716,
+            "timeSpentNanoseconds": 2160899043
+          },
+          "name": "ProbeHomeView",
+          "run_id": "exp186-20260918T063555Z-7daba26932e5",
+          "session_id": "b88a2188-eb82-4de4-80ac-2977ec475dc5",
+          "slow_frames_present": true,
+          "source": "ios",
+          "view_id": "184f22cb-3442-43b5-afe5-2144a5535c38"
+        },
+        {
+          "container_present": false,
+          "counters": {
+            "actions": 0,
+            "crashes": 0,
+            "errors": 0,
+            "longTasks": 0,
+            "resources": 0
+          },
+          "is_active": false,
+          "metrics": {
+            "cpuRate": 142.38530146516956,
+            "cpuTicks": 168,
+            "memoryAverage": 30439752,
+            "memoryMax": 31525192,
+            "refreshRateAverage": 59.97663220813894,
+            "refreshRateMin": 59.602747314844564,
+            "slowFrames": [],
+            "slowFramesRate": null,
+            "timeSpentNanoseconds": 1179897070
+          },
+          "name": "ProbeHomeView",
+          "run_id": "exp186-20260918T063555Z-7daba26932e5",
+          "session_id": "b88a2188-eb82-4de4-80ac-2977ec475dc5",
+          "slow_frames_present": true,
+          "source": "ios",
+          "view_id": "60d010dc-9f8f-47a2-a8ba-922e4aad41b4"
+        }
+      ]
+    },
+    "preflight": {
+      "authenticated_read": true,
+      "state": "PASS"
+    }
+  },
+  "started_at": "2026-09-18T06:35:55.798862+00:00",
+  "state": "PASS",
+  "vitals_final_view_reads": 1,
+  "xcode": "Xcode 27.0\nBuild version 27A266a"
+}

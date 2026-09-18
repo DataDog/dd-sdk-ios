@@ -4,9 +4,9 @@
   "gate_count": 66,
   "counts": {
     "CLOSED": 40,
-    "ENVIRONMENT BLOCKED": 17,
+    "ENVIRONMENT BLOCKED": 18,
     "INCONCLUSIVE": 1,
-    "OPEN": 8
+    "OPEN": 7
   },
   "closed": [
     "C01",
@@ -65,7 +65,7 @@
     },
     {
       "id": "T13",
-      "status": "OPEN",
+      "status": "ENVIRONMENT BLOCKED",
       "owner": "SDK implementer",
       "dependencies": [
         "A01"
