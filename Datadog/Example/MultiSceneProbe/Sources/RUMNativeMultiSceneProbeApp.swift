@@ -413,6 +413,9 @@ enum ProbeRuntime {
         screen: String,
         phase: String
     ) {
+        guard !ProbeFatalContract.contains(scenario?.identifier ?? "") else {
+            return
+        }
         guard ![ProbeResourceContract.scenarioID, ProbeErrorContract.scenarioID, ProbeAttributeContract.scenarioID, ProbeTimingContract.scenarioID, ProbeFlagContract.scenarioID, ProbeTraceContract.scenarioID, ProbeLogContract.scenarioID, ProbeWebViewContract.scenarioID].contains(scenario?.identifier ?? "") else { return }
         let uptime = ProcessInfo.processInfo.systemUptime
         let marker = "\(window.label).\(screen).\(phase)"

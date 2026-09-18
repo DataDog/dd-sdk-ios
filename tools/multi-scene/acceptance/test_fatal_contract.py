@@ -170,6 +170,15 @@ class FatalContractTests(unittest.TestCase):
         records.append(returned)
         self.reject()
 
+    def test_unplanned_telemetry_during_preparation(self):
+        for kind in ["rum-action", "rum-resource", "rum-log", "rum-trace", "rum-operation", "rum-error"]:
+            with self.subTest(kind=kind):
+                self.phases, self.run = fixture()
+                record = next(r for r in self.phases[0]["records"]
+                              if r.get("signal", {}).get("kind") == "rum-view-snapshot")
+                record["signal"]["kind"] = kind
+                self.reject()
+
     def test_premature_crash(self):
         records = self.phases[0]["records"]
         records[-1], records[-2] = records[-2], records[-1]

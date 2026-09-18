@@ -221,3 +221,7 @@ The first actual attempt passed preparation ownership guards but failed its
 returning signal trigger. A stored report and disappeared process do not override
 that failure. The repair is confined to the probe trigger and launcher-status
 interpretation; no SDK ownership defect or T11 closure is claimed.
+
+The second attempt confirmed nonreturning termination but rejected default probe
+lifecycle markers. Suppression and a pre-crash inventory guard repair the fixture;
+the original review findings remain closed and T11 remains open.

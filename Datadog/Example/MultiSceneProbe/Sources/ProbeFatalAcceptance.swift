@@ -184,6 +184,12 @@ internal enum ProbeFatalAcceptance {
         provider.flush()
         feature.flush()
         try require(provider.currentCrashContext?.lastRUMViewEvent?.view.id == ownerB.viewID, "injected B")
+        try require(
+            !recorder.snapshot().contains {
+                [.rumAction, .rumResource, .rumError, .rumLog, .rumTrace, .rumOperation].contains($0.kind)
+            },
+            "unexpected telemetry before crash"
+        )
         record(
             "fatal-injection-drained",
             owner: ownerB,

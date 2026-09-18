@@ -1403,3 +1403,8 @@ the real recovered report's exact original identity and SIGABRT metadata. A miss
 process alone does not distinguish ordinary exit from crash. A returned trigger
 or any failed guard remains FAIL even when a crash report exists; retain that
 attempt and use a fresh clean install after fixing the fixture.
+
+Disable the probe's default lifecycle Action/Resource markers for bounded fatal
+acceptance. Check the complete observed telemetry inventory after draining queues
+and before preparation PASS/crash; checking it only on the next process boundary
+needlessly destroys an invalid preparation. Keep the later strict inventory check.
