@@ -1333,3 +1333,16 @@ attempt when changing this evidence contract; acceptance requires a fresh run. W
 project mutation resets the active Xcode scheme, switch to the intended scheme and
 confirm its discovered test inventory before running. A scheme-selection failure
 does not constitute an executed test or native scenario.
+
+## WebView container acceptance
+
+Require actual Replay-enabled native view records before checking browser container
+IDs. Observe each real WKScriptMessage on its UI-thread callback and forward it to
+the original SDK handler without changing routing. Use persistent acknowledgements
+keyed by exact browser UUID/run/phase; wait before navigation, detach or rebind.
+Record attachment and timestamp guards before emission. Keep browser input evidence
+distinct from encoded output: WebViewEventReceiver bypasses the native RUM mapper.
+Use complete-session backend inventory to verify each container ID and exact
+absence for an unowned detached WebView. Include a spoofed private scene input and
+require its removal from output. The bounded matrix is
+[EXP-183](Experiments/EXP-143-199.md#exp-183--accept-native-webview-container-ownership).

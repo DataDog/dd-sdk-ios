@@ -1,0 +1,98 @@
+{
+  "experiment": "EXP-183",
+  "gate": "T10",
+  "title": "Accept native WebView container ownership",
+  "status": "PLANNED",
+  "control_revision": "03142a4e8cba2d42254bec1335fe9a5dd0d5b96e",
+  "sdk_revision": "04201edc7711361279d8487b385bc8b0ca9c63c7",
+  "definition": "Experiments/EXP-143-199.md#exp-183--accept-native-webview-container-ownership",
+  "production_change_planned": false,
+  "gates_closed": [],
+  "question": "Do two actual WebViews retain the native container selected by their captured scene and event date through navigation, detachment, rebinding and peer teardown?",
+  "source_audit": [
+    "DDScriptMessageHandler reads message.webView.window.windowScene and body on the UI thread before enqueueing MessageEmitter.",
+    "MessageEmitter replaces or removes the private native scene key supplied by the browser; WebViewEventReceiver removes it before encoding.",
+    "Receiver resolves the cached native view before the corrected browser date, restricted to the captured scene and Replay-enabled views. Ambiguous source-less multi-scene history omits container.",
+    "WebViewEventReceiver writes AnyEncodable directly and bypasses the native RUM mapper. Native input guards and backend output must be distinguished.",
+    "D11 already accepts legacy single-scene fallback; do not reopen or conflate that compatibility gate with this two-container proof."
+  ],
+  "unit_contract": [
+    "Defer A/B browser writes, insert newer native views before draining, and require original scene/date owners independently of process representative; include subsequent A navigation and rebinding.",
+    "Captured unavailable scene and absent scene under multiple retained scene owners omit container; private routing metadata never survives encoding.",
+    "MessageEmitter overwrites spoofed private scene metadata with actual captured scene, or removes it for nil; preserve all original browser fields."
+  ],
+  "native_contract": {
+    "scenario": "webview.captured-container.native-navigation-rebind-serial",
+    "phases": [
+      {
+        "phase": "web-a-original",
+        "webview": "A",
+        "native_scene": "scene-A",
+        "container": "WebNativeA1"
+      },
+      {
+        "phase": "web-b-original",
+        "webview": "B",
+        "native_scene": "scene-B",
+        "container": "WebNativeB1"
+      },
+      {
+        "phase": "web-a-navigation",
+        "webview": "A",
+        "native_scene": "scene-A",
+        "container": "WebNativeA2"
+      },
+      {
+        "phase": "web-a-detached",
+        "webview": "A",
+        "native_scene": null,
+        "container": null
+      },
+      {
+        "phase": "web-a-rebound-b",
+        "webview": "A",
+        "native_scene": "scene-B",
+        "container": "WebNativeB1"
+      },
+      {
+        "phase": "web-b-after-teardown",
+        "webview": "B",
+        "native_scene": "scene-B",
+        "container": "WebNativeB1"
+      }
+    ],
+    "browser_views": 6,
+    "native_views": 6,
+    "actions": 0,
+    "resources": 0,
+    "errors": 0,
+    "crashes": 0,
+    "native_view_names": [
+      "ApplicationLaunch",
+      "ProbeHomeView",
+      "ProbeHomeView",
+      "WebNativeA1",
+      "WebNativeB1",
+      "WebNativeA2"
+    ],
+    "app_expectations": 14,
+    "completion_conditions": 6,
+    "timeline_conditions": 8,
+    "owners": "After actual Replay enablement, create three manual native view occurrences scoped to actual scene identities; require independently mapped IDs and Replay flags before browser dispatch. Bind browser dates strictly after the corresponding native start and before subsequent native navigation.",
+    "callback_evidence": "A fixture WKUserContentController wrapper observes the real WKScriptMessage and forwards it synchronously to the original installed SDK handler. Persist exact browser ID/phase/run, WebView instance and actual window scene before any mutation. Do not replace SDK routing or claim the input observation is encoded output.",
+    "guards": "Distinct actual scenes and WebViews; current-run navigation readiness; B representative before original A emission; exact attachment or nil before every dispatch; same A instance across rebind; disable/remove A before peer B emission. Source payload contains a spoofed private scene key that must be overwritten/removed.",
+    "limits": "Two serial native scenes; controlled browser bridge payloads through real WebKit, not Browser SDK integration certification. Replay is a prerequisite for container IDs; no per-scene replay or physical coexistence acceptance."
+  },
+  "backend_contract": [
+    "Query the complete native RUM session with an independent count and every page: twelve unique views, six native plus six declared browser views.",
+    "Bind each browser ID/run/phase/source/url to its independently mapped native container ID, or exact absence for detached A; never derive expectation from backend owner labels.",
+    "Require native application/session replacement, container source ios when present, browser source, exact payload counts/version and no private routing metadata.",
+    "Require zero session actions, Resources, errors and crashes; reject foreign, stale, missing, extra or duplicated events."
+  ],
+  "workflow": "Extend existing clean-install frozen-source runner; include WebViewTracking and SessionReplay source in identity. Link only existing repository products to owned probe project. Predeclare and freeze exact contract before native run; preserve every attempt.",
+  "validation": {
+    "next": "Add deferred receiver and metadata overwrite/removal controls, then run affected tests before implementing the native fixture."
+  },
+  "unit_attempts": [],
+  "native_attempts": []
+}
