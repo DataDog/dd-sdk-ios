@@ -7,6 +7,7 @@
 import Foundation
 
 enum ProbeExpectationKind: String, Codable, CaseIterable {
+    case assertion
     case sceneReady = "scene-ready"
     case sceneDisconnected = "scene-disconnected"
     case transitionBegan = "transition-began"

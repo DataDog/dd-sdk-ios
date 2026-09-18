@@ -314,6 +314,24 @@ internal struct ProbeAttributeState: Codable, Equatable {
     }
 }
 
+/// Bounded crash acceptance metadata; no full crash context or diagnostic stack.
+internal struct ProbeFatalObservation: Codable, Equatable {
+    let processID: Int32
+    var originalRunID: String? = nil
+    var launchDidCrash: Bool? = nil
+    var documentVersion: Int64? = nil
+    var viewErrorCount: Int64? = nil
+    var viewCrashCount: Int64? = nil
+    var peerMutation: String? = nil
+    var mutationTiming: Int64? = nil
+    var incidentIdentifier: String? = nil
+    var exceptionType: String? = nil
+    var crashedProcess: String? = nil
+    var nativeSource: String? = nil
+    var hasAction: Bool? = nil
+    var hasContainer: Bool? = nil
+}
+
 internal struct ProbeSignal: Codable, Equatable {
     static let schemaVersion = 5
     static let supportedSchemaVersions = 1 ... schemaVersion
@@ -353,6 +371,7 @@ internal struct ProbeSignal: Codable, Equatable {
     let resource: ProbeResourceSignal?
     let error: ProbeErrorSignal?
     let log: ProbeLogWireIdentity?
+    let fatal: ProbeFatalObservation?
     let webMessage: ProbeWebViewMessage?
     let trace: ProbeTraceSignal?
     let operation: ProbeOperationSignal?
@@ -397,6 +416,7 @@ internal struct ProbeSignal: Codable, Equatable {
         resource: ProbeResourceSignal? = nil,
         error: ProbeErrorSignal? = nil,
         log: ProbeLogWireIdentity? = nil,
+        fatal: ProbeFatalObservation? = nil,
         webMessage: ProbeWebViewMessage? = nil,
         trace: ProbeTraceSignal? = nil,
         operation: ProbeOperationSignal? = nil,
@@ -441,6 +461,7 @@ internal struct ProbeSignal: Codable, Equatable {
         self.resource = resource
         self.error = error
         self.log = log
+        self.fatal = fatal
         self.webMessage = webMessage
         self.trace = trace
         self.operation = operation
@@ -492,6 +513,7 @@ internal struct ProbeSignal: Codable, Equatable {
             resource: resource,
             error: error,
             log: log,
+            fatal: fatal,
             webMessage: webMessage,
             trace: trace,
             operation: operation,

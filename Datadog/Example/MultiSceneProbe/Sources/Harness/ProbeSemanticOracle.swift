@@ -522,6 +522,9 @@ internal enum ProbeSemanticOracle {
         if let expectedName = expectation.name, signal.name != expectedName {
             return .noMatch
         }
+        if expectation.kind == .assertion, signal.result != .pass {
+            return .violation("assertion has no explicit PASS")
+        }
         if let target = expectation.actionTarget, signal.action?.target != target {
             return .violation("action target does not match explicit completion name \(target)")
         }

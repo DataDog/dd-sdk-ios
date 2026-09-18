@@ -474,3 +474,44 @@ test('WebView missing or malformed source is preserved for oracle rejection', ()
   assert.equal(projectWebView({view:{id:'browser'}}).source, null);
   assert.equal(projectWebView({view:{id:'browser'}}, {source:17}).source, 17);
 });
+
+const {projectFatal} = new Function(source.replace(
+  'return runAcceptance({tools, notify, device, repo, scenario: typeof scenario === "undefined" ? undefined : scenario});',
+  'return {projectFatal};'
+))();
+test('fatal projection keeps original owner, incident and actual source envelope', () => {
+  const result = projectFatal({
+    session:{id:'old-session'}, view:{id:'old-view',error:{count:1},crash:{count:1}},
+    context:{probe:{run_id:'old-run',phase:'fatal-original'}},
+    error:{id:'error',source:'source',type:'SIGABRT (#0)',is_crash:true,
+      meta:{incident_identifier:'incident',exception_type:'SIGABRT',process:'Probe [184]'}}
+  }, {source:'ios'});
+  assert.equal(result.source, 'ios');
+  assert.equal(result.run_id, 'old-run');
+  assert.equal(result.session_id, 'old-session');
+  assert.equal(result.view_id, 'old-view');
+  assert.equal(result.incident_id, 'incident');
+  assert.equal(result.crashed_process, 'Probe [184]');
+  assert.equal(result.crash_count, 1);
+  assert.equal(result.is_crash, true);
+  assert.equal(result.action_present, false);
+  assert.equal(result.container_present, false);
+});
+test('fatal projection preserves malformed types and unexpected association for rejection', () => {
+  const result = projectFatal({'error.is_crash':'true','view.crash.count':'1','action.id':'unexpected',
+    'container.view.id':'unexpected','source':'browser'});
+  assert.equal(result.is_crash, 'true');
+  assert.equal(result.crash_count, '1');
+  assert.equal(result.action_present, true);
+  assert.equal(result.container_present, true);
+  assert.equal(result.source, 'browser');
+  assert.throws(() => projectFatal({source:'browser'}, {source:'ios'}), /Conflicting/);
+});
+test('fatal projection accepts flattened metadata without inventing absent origin', () => {
+  const result = projectFatal({'error.meta.incident_identifier':'incident','error.meta.exception_type':'SIGABRT'});
+  assert.equal(result.incident_id, 'incident');
+  assert.equal(result.exception_type, 'SIGABRT');
+  assert.equal(result.run_id, null);
+  assert.equal(result.view_id, null);
+  assert.equal(result.source, null);
+});

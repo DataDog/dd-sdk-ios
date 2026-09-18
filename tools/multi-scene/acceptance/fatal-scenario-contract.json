@@ -1,0 +1,361 @@
+{
+  "fatal.process-context.prepare-crash": {
+    "completionConditions": [
+      {
+        "kind": "assertion",
+        "name": "fatal-process",
+        "expectedCount": 1
+      },
+      {
+        "kind": "assertion",
+        "name": "fatal-owner-a",
+        "expectedCount": 1
+      },
+      {
+        "kind": "assertion",
+        "name": "fatal-owner-b",
+        "expectedCount": 1
+      },
+      {
+        "kind": "assertion",
+        "name": "fatal-export-before",
+        "expectedCount": 1
+      },
+      {
+        "kind": "assertion",
+        "name": "fatal-provider-before",
+        "expectedCount": 1
+      },
+      {
+        "kind": "assertion",
+        "name": "fatal-mutation-dispatched",
+        "expectedCount": 1
+      },
+      {
+        "kind": "assertion",
+        "name": "fatal-export-after",
+        "expectedCount": 1
+      },
+      {
+        "kind": "assertion",
+        "name": "fatal-provider-after",
+        "expectedCount": 1
+      },
+      {
+        "kind": "assertion",
+        "name": "fatal-capture-unchanged",
+        "expectedCount": 1
+      },
+      {
+        "kind": "assertion",
+        "name": "fatal-injection-drained",
+        "expectedCount": 1
+      },
+      {
+        "kind": "assertion",
+        "name": "fatal-prepare-complete",
+        "expectedCount": 1
+      }
+    ],
+    "defaultRunMode": "clean",
+    "expectedSemanticTimeline": [
+      {
+        "kind": "view-started",
+        "occurrence": 1,
+        "rumViewOrigin": "semantic",
+        "scene": "scene-A",
+        "screen": "home"
+      },
+      {
+        "kind": "view-started",
+        "occurrence": 1,
+        "rumViewOrigin": "semantic",
+        "scene": "scene-B",
+        "screen": "home"
+      },
+      {
+        "kind": "assertion",
+        "name": "fatal-process",
+        "expectedCount": 1
+      },
+      {
+        "kind": "assertion",
+        "name": "fatal-owner-a",
+        "expectedCount": 1
+      },
+      {
+        "kind": "assertion",
+        "name": "fatal-owner-b",
+        "expectedCount": 1
+      },
+      {
+        "kind": "assertion",
+        "name": "fatal-export-before",
+        "expectedCount": 1
+      },
+      {
+        "kind": "assertion",
+        "name": "fatal-provider-before",
+        "expectedCount": 1
+      },
+      {
+        "kind": "assertion",
+        "name": "fatal-mutation-dispatched",
+        "expectedCount": 1
+      },
+      {
+        "kind": "assertion",
+        "name": "fatal-export-after",
+        "expectedCount": 1
+      },
+      {
+        "kind": "assertion",
+        "name": "fatal-provider-after",
+        "expectedCount": 1
+      },
+      {
+        "kind": "assertion",
+        "name": "fatal-capture-unchanged",
+        "expectedCount": 1
+      },
+      {
+        "kind": "assertion",
+        "name": "fatal-injection-drained",
+        "expectedCount": 1
+      },
+      {
+        "kind": "assertion",
+        "name": "fatal-prepare-complete",
+        "expectedCount": 1
+      }
+    ],
+    "identifier": "fatal.process-context.prepare-crash",
+    "initialWindows": [
+      "scene-A",
+      "scene-B"
+    ],
+    "layout": "stack",
+    "requiredCapabilities": [
+      "multiple-scenes"
+    ],
+    "runtimeOptions": {
+      "automaticallyAbortsDetail": false,
+      "automaticallyAdvancesSplitSelection": true,
+      "automaticallyClosesSceneB": false,
+      "automaticallyNavigates": false,
+      "automaticallyOpensSecondWindow": false,
+      "automaticallyPopsUIKitSplitNavigation": true,
+      "automaticallyReplacesDetail": false,
+      "automaticallyReplacesDetailInstance": false,
+      "automaticallyReturnsSplitToDetail": false,
+      "exercisesSwiftUIButtonStructuredTask": false,
+      "exercisesTraceOnlyURLSessionOwnership": false,
+      "exercisesUIEventContextHandoff": false,
+      "exercisesUIKitScrollOwnership": false,
+      "forcesNavigationRouteIdentity": false,
+      "initialSwiftUIPath": [],
+      "manualSwiftUIViewScreensByScene": {},
+      "startsSplitWithoutSelection": false,
+      "swiftUIRouterWritePolicy": "accept",
+      "swiftUIStress": "none"
+    },
+    "steps": [
+      {
+        "kind": "wait-for-scene-ready",
+        "scene": "scene-A"
+      },
+      {
+        "kind": "wait-for-signal",
+        "scene": "scene-A",
+        "signal": "rum-view:home#1"
+      },
+      {
+        "kind": "open-window",
+        "scene": "scene-A",
+        "value": "scene-B"
+      },
+      {
+        "kind": "wait-for-signal",
+        "scene": "scene-B",
+        "signal": "rum-view:home#1"
+      },
+      {
+        "kind": "run-fatal-preparation",
+        "scene": "scene-B"
+      }
+    ],
+    "trackingMode": "manual"
+  },
+  "fatal.process-context.recover": {
+    "completionConditions": [
+      {
+        "kind": "assertion",
+        "name": "fatal-process",
+        "expectedCount": 1
+      },
+      {
+        "kind": "assertion",
+        "name": "fatal-recovery-current",
+        "expectedCount": 1
+      },
+      {
+        "kind": "assertion",
+        "name": "fatal-reporter-enable",
+        "expectedCount": 1
+      },
+      {
+        "kind": "assertion",
+        "name": "fatal-launch-report",
+        "expectedCount": 1
+      },
+      {
+        "kind": "assertion",
+        "name": "fatal-recovery-complete",
+        "expectedCount": 1
+      }
+    ],
+    "defaultRunMode": "clean",
+    "expectedSemanticTimeline": [
+      {
+        "kind": "assertion",
+        "name": "fatal-process",
+        "expectedCount": 1
+      },
+      {
+        "kind": "assertion",
+        "name": "fatal-recovery-current",
+        "expectedCount": 1
+      },
+      {
+        "kind": "assertion",
+        "name": "fatal-reporter-enable",
+        "expectedCount": 1
+      },
+      {
+        "kind": "assertion",
+        "name": "fatal-launch-report",
+        "expectedCount": 1
+      },
+      {
+        "kind": "assertion",
+        "name": "fatal-recovery-complete",
+        "expectedCount": 1
+      }
+    ],
+    "identifier": "fatal.process-context.recover",
+    "initialWindows": [
+      "recovery"
+    ],
+    "layout": "stack",
+    "requiredCapabilities": [],
+    "runtimeOptions": {
+      "automaticallyAbortsDetail": false,
+      "automaticallyAdvancesSplitSelection": true,
+      "automaticallyClosesSceneB": false,
+      "automaticallyNavigates": false,
+      "automaticallyOpensSecondWindow": false,
+      "automaticallyPopsUIKitSplitNavigation": true,
+      "automaticallyReplacesDetail": false,
+      "automaticallyReplacesDetailInstance": false,
+      "automaticallyReturnsSplitToDetail": false,
+      "exercisesSwiftUIButtonStructuredTask": false,
+      "exercisesTraceOnlyURLSessionOwnership": false,
+      "exercisesUIEventContextHandoff": false,
+      "exercisesUIKitScrollOwnership": false,
+      "forcesNavigationRouteIdentity": false,
+      "initialSwiftUIPath": [],
+      "manualSwiftUIViewScreensByScene": {},
+      "startsSplitWithoutSelection": false,
+      "swiftUIRouterWritePolicy": "accept",
+      "swiftUIStress": "none"
+    },
+    "steps": [],
+    "trackingMode": "manual"
+  },
+  "fatal.process-context.verify-consumed": {
+    "completionConditions": [
+      {
+        "kind": "assertion",
+        "name": "fatal-process",
+        "expectedCount": 1
+      },
+      {
+        "kind": "assertion",
+        "name": "fatal-recovery-current",
+        "expectedCount": 1
+      },
+      {
+        "kind": "assertion",
+        "name": "fatal-reporter-enable",
+        "expectedCount": 1
+      },
+      {
+        "kind": "assertion",
+        "name": "fatal-launch-report",
+        "expectedCount": 1
+      },
+      {
+        "kind": "assertion",
+        "name": "fatal-recovery-complete",
+        "expectedCount": 1
+      }
+    ],
+    "defaultRunMode": "clean",
+    "expectedSemanticTimeline": [
+      {
+        "kind": "assertion",
+        "name": "fatal-process",
+        "expectedCount": 1
+      },
+      {
+        "kind": "assertion",
+        "name": "fatal-recovery-current",
+        "expectedCount": 1
+      },
+      {
+        "kind": "assertion",
+        "name": "fatal-reporter-enable",
+        "expectedCount": 1
+      },
+      {
+        "kind": "assertion",
+        "name": "fatal-launch-report",
+        "expectedCount": 1
+      },
+      {
+        "kind": "assertion",
+        "name": "fatal-recovery-complete",
+        "expectedCount": 1
+      }
+    ],
+    "identifier": "fatal.process-context.verify-consumed",
+    "initialWindows": [
+      "recovery"
+    ],
+    "layout": "stack",
+    "requiredCapabilities": [],
+    "runtimeOptions": {
+      "automaticallyAbortsDetail": false,
+      "automaticallyAdvancesSplitSelection": true,
+      "automaticallyClosesSceneB": false,
+      "automaticallyNavigates": false,
+      "automaticallyOpensSecondWindow": false,
+      "automaticallyPopsUIKitSplitNavigation": true,
+      "automaticallyReplacesDetail": false,
+      "automaticallyReplacesDetailInstance": false,
+      "automaticallyReturnsSplitToDetail": false,
+      "exercisesSwiftUIButtonStructuredTask": false,
+      "exercisesTraceOnlyURLSessionOwnership": false,
+      "exercisesUIEventContextHandoff": false,
+      "exercisesUIKitScrollOwnership": false,
+      "forcesNavigationRouteIdentity": false,
+      "initialSwiftUIPath": [],
+      "manualSwiftUIViewScreensByScene": {},
+      "startsSplitWithoutSelection": false,
+      "swiftUIRouterWritePolicy": "accept",
+      "swiftUIStress": "none"
+    },
+    "steps": [],
+    "trackingMode": "manual"
+  }
+}

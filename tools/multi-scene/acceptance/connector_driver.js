@@ -328,6 +328,24 @@ function projectWebView(payload, envelope = {}) {
   };
 }
 
+function projectFatal(payload, envelope = {}) {
+  const get = path => webValue(payload, path).value;
+  const common = projectWebView(payload, envelope);
+  return {
+    run_id:common.run_id, session_id:common.session_id, view_id:common.view_id,
+    name:common.name, source:common.source, phase:common.phase,
+    container_present:common.container_present, is_active:common.is_active,
+    action_count:common.action_count, resource_count:common.resource_count,
+    error_count:common.error_count, crash_count:get("view.crash.count"),
+    document_version:common.document_version,
+    event_id:get("error.id"), error_source:get("error.source"),
+    error_type:get("error.type"), is_crash:get("error.is_crash"),
+    incident_id:get("error.meta.incident_identifier"), exception_type:get("error.meta.exception_type"),
+    crashed_process:get("error.meta.process"),
+    action_present:hasPayloadPath(payload, "action") || hasPayloadPath(payload, "action.id")
+  };
+}
+
 async function runAcceptance({tools, notify, device, repo, scenario}) {
   if (!repo || !device) throw Error("Explicit repository path and freshly resolved simulator UUID required");
   const shellQuote = value => "'" + value.replaceAll("'", "'\\''") + "'";
@@ -414,6 +432,7 @@ async function runAcceptance({tools, notify, device, repo, scenario}) {
       const payload = row.attributes?.custom || row.custom || row.attributes || row;
       const base = {run_id:at(payload,"context.probe.run_id"),
                     session_id:at(payload,"session.id"), view_id:at(payload,"view.id")};
+      if (["fatal_views", "fatal_errors"].includes(request.kind)) return projectFatal(payload, row.attributes || row);
       if (request.kind === "webview_views") return projectWebView(payload, row.attributes || row);
       if (request.kind === "views") return {...base, name:at(payload,"view.name")};
       if (request.kind === "flag_views") return {...base, name:at(payload, "view.name"),

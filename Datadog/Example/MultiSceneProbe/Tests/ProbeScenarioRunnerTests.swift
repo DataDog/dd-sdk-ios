@@ -35,6 +35,57 @@ final class ProbeScenarioRunnerTests: XCTestCase {
         XCTAssertTrue(normalizedWindow.opensPeer)
     }
 
+    func testFatalContractRequiresDistinctPreparationAndRecoveryScenarios() throws {
+        let preparation = try XCTUnwrap(ProbeScenarioCatalog.scenario(identifier: ProbeFatalContract.prepare))
+        XCTAssertTrue(ProbeScenarioCatalog.usesObservableDriver(preparation))
+        XCTAssertEqual(preparation.steps.last?.kind, .runFatalPreparation)
+        XCTAssertEqual(preparation.completionConditions.compactMap(\.name), ProbeFatalContract.prepareGuards)
+        XCTAssertEqual(preparation.completionConditions.count + preparation.expectedSemanticTimeline.count, 24)
+        for identifier in [ProbeFatalContract.recover, ProbeFatalContract.consumed] {
+            let recovery = try XCTUnwrap(ProbeScenarioCatalog.scenario(identifier: identifier))
+            XCTAssertFalse(ProbeScenarioCatalog.usesObservableDriver(recovery))
+            XCTAssertTrue(recovery.steps.isEmpty)
+            XCTAssertEqual(recovery.initialWindows, ["recovery"])
+            XCTAssertEqual(recovery.completionConditions.compactMap(\.name), ProbeFatalContract.recoveryGuards)
+            XCTAssertEqual(recovery.completionConditions.count + recovery.expectedSemanticTimeline.count, 10)
+        }
+    }
+
+    func testFatalRecoveryOracleRejectsMissingRepeatedLateAndUnacknowledgedGuards() throws {
+        let scenario = try XCTUnwrap(ProbeScenarioCatalog.scenario(identifier: ProbeFatalContract.recover))
+        func evaluate(_ names: [String], missingPass: Bool = false) -> ProbeSemanticResultState {
+            let signals = names.enumerated().map { index, name in
+                ProbeSignal(kind: .assertion, name: name, result: missingPass ? nil : .pass)
+                    .enveloped(sequence: UInt64(index + 1), timestampMilliseconds: Int64(index + 1),
+                               runID: "fresh-recovery", scenarioID: scenario.identifier)
+            }
+            return ProbeSemanticOracle.evaluate(scenario: scenario, signals: signals).state
+        }
+        let guards = ProbeFatalContract.recoveryGuards
+        XCTAssertEqual(evaluate(guards), .pass)
+        XCTAssertEqual(evaluate(Array(guards.dropLast())), .fail)
+        XCTAssertEqual(evaluate(guards + [guards[1]]), .fail)
+        var late = guards
+        late.swapAt(1, 2)
+        XCTAssertEqual(evaluate(late), .fail)
+        XCTAssertEqual(evaluate(guards, missingPass: true), .fail)
+    }
+
+    func testFatalObservationRoundTripPreservesCrashOriginAndCurrentProcess() throws {
+        let observation = ProbeFatalObservation(
+            processID: 184, originalRunID: "previous-run", launchDidCrash: true,
+            viewErrorCount: 1, viewCrashCount: 1, peerMutation: "A", mutationTiming: 42,
+            incidentIdentifier: UUID().uuidString, exceptionType: "SIGABRT",
+            crashedProcess: "Probe [183]", nativeSource: "ios", hasAction: false, hasContainer: false
+        )
+        let signal = ProbeSignal(kind: .rumViewSnapshot, evidenceSource: .rumMapper, fatal: observation)
+            .enveloped(sequence: 1, timestampMilliseconds: 184, runID: "current-run", scenarioID: ProbeFatalContract.recover)
+        let decoded = try JSONDecoder().decode(ProbeSignal.self, from: JSONEncoder().encode(signal))
+        XCTAssertEqual(decoded.fatal, observation)
+        XCTAssertNotEqual(decoded.runID, decoded.fatal?.originalRunID)
+        XCTAssertEqual(decoded.fatal?.hasContainer, false)
+    }
+
     func testWebViewContractKeepsCallbacksSeparateFromRUMOutput() throws {
         let scenario = try XCTUnwrap(ProbeScenarioCatalog.scenario(identifier: ProbeWebViewContract.scenarioID))
         XCTAssertTrue(ProbeScenarioCatalog.usesObservableDriver(scenario))

@@ -20,7 +20,11 @@ struct RUMNativeMultiSceneProbeApp: App {
     var body: some Scene {
         WindowGroup(id: ProbeWindow.windowGroupID, for: ProbeWindow.self) { $window in
             if ProbeRuntime.isRunnable {
-                ProbeWindowRoot(window: window)
+                if ProbeFatalContract.isRecovery(ProbeRuntime.resolution.scenario?.identifier ?? "") {
+                    Text("Crash report recovery").task { await ProbeFatalAcceptance.recover() }
+                } else {
+                    ProbeWindowRoot(window: window)
+                }
             } else {
                 ProbeConfigurationFailureView(
                     errors: ProbeRuntime.resolution.manifest.validationErrors
@@ -141,7 +145,9 @@ enum ProbeRuntime {
             scenario: scenario,
             recorder: eventRecorder,
             sceneRegistry: sceneRegistry,
-            stepTimeoutNanoseconds: usesSemanticNavigationValueLinks
+            stepTimeoutNanoseconds: ProbeFatalContract.contains(scenario.identifier)
+                ? 60_000_000_000
+                : usesSemanticNavigationValueLinks
                 ? 180_000_000_000
                 : options.exercisesSwiftUIButtonStructuredTask
                 ? 180_000_000_000
@@ -249,7 +255,8 @@ enum ProbeRuntime {
         RUM.enable(
             with: RUM.Configuration(
                 applicationID: applicationID,
-                uiKitViewsPredicate: ProbeUIKitViewsPredicate(),
+                uiKitViewsPredicate: ProbeFatalContract.isRecovery(scenario?.identifier ?? "")
+                    ? nil : ProbeUIKitViewsPredicate(),
                 uiKitActionsPredicate: exercisesUIEventContextHandoff
                     || exercisesUIKitScrollOwnership
                     ? ProbeUIKitActionsPredicate()
@@ -281,6 +288,9 @@ enum ProbeRuntime {
                 },
                 errorEventMapper: { event in
                     #if DEBUG
+                    if ProbeFatalContract.contains(scenario?.identifier ?? "") {
+                        ProbeFatalAcceptance.recordPayload(event)
+                    }
                     if scenario?.identifier == ProbeLogContract.scenarioID {
                         ProbeLogAcceptance.recordPayloadCheck(event)
                     } else if scenario?.identifier == ProbeErrorContract.scenarioID {
@@ -313,6 +323,9 @@ enum ProbeRuntime {
         RUMMonitor.shared().addAttribute(forKey: Attribute.host, value: "native-swiftui")
 
         #if DEBUG
+        if ProbeFatalContract.contains(scenario?.identifier ?? "") {
+            ProbeFatalAcceptance.configure()
+        }
         if scenario?.identifier == ProbeLogContract.scenarioID {
             ProbeLogAcceptance.configure()
         }
@@ -661,11 +674,14 @@ enum ProbeRuntime {
                 loading: event.view.loadingTime
             ) : nil
         #if DEBUG
+        let fatal = ProbeFatalContract.contains(scenario?.identifier ?? "")
+            ? ProbeFatalAcceptance.viewObservation(event) : nil
         let flagState = scenario?.identifier == ProbeFlagContract.scenarioID ? ProbeFlagAcceptance.state(event) : nil
         #else
+        let fatal: ProbeFatalObservation? = nil
         let flagState: ProbeFlagState? = nil
         #endif
-        eventRecorder.record(ProbeRUMEventAdapter.viewSnapshot(event, timingState: timingState, flagState: flagState))
+        eventRecorder.record(ProbeRUMEventAdapter.viewSnapshot(event, timingState: timingState, flagState: flagState, fatal: fatal))
         record(
             "payload type=view session=\(event.session.id) view=\(event.view.id) "
                 + "name=\(event.view.name ?? "nil") "

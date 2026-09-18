@@ -201,7 +201,7 @@ remain available for a specific question.
 | <a id="exp-181"></a>EXP-181 | T08, A01 | PASS | T08 closed:158 Trace/178 probe tests,20 native assertions and exact9-span APM ownership;3 RUM views and0 unexpected events. | [record](Experiments/EXP-143-199.md#exp-181--accept-captured-trace-ownership-through-cross-scene-completion) |
 | <a id="exp-182"></a>EXP-182 | T09, A01 | PASS | Deferred controls and24 native assertions;6 logs,3 mirrors,2 actions and3 views match exact backend owners. Attempt A remains inconclusive. | [record](Experiments/EXP-143-199.md#exp-182--accept-captured-logs-and-mirrored-error-ownership) |
 | <a id="exp-183"></a>EXP-183 | T10, A01, D02, D11 | PASS | T10 closed:33 SDK/184 probe tests,14 native expectations and exact12 backend views including detached omission; failed connector attempt retained. | [record](Experiments/EXP-143-199.md#exp-183--accept-native-webview-container-ownership) |
-| <a id="exp-184"></a>EXP-184 | T11, A01 | PREPARING | 131 selected SDK tests pass; no production repair. Three-process real crash and complete backend acceptance remain. | [record](Experiments/EXP-143-199.md#exp-184--accept-exported-and-fatal-process-context) |
+| <a id="exp-184"></a>EXP-184 | T11, A01 | PREPARED | SDK131, probe187, Python179 and connector44 controls pass. Three-process fixture/oracle ready; actual crash/backend acceptance remains. | [record](Experiments/EXP-143-199.md#exp-184--accept-exported-and-fatal-process-context) |
 
 Original detailed shards and frozen records remain unchanged. Superseded index
 prose is preserved in the [documentation checkpoint](Experiments/DOCUMENTATION_CHECKPOINT_EXP-178.md).

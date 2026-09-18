@@ -1383,3 +1383,14 @@ Attribute mutation alone need not emit a view event. For the pre-crash peer-upda
 guard, issue a targeted non-interactive timing update and observe the next mapper
 revision containing the attribute before reading export/fatal state. Do not treat
 the initial cached mapper event as proof that the mutation ran.
+
+The connector scenario fatal.process-context.prepare-crash selects all three
+launches automatically. Its frozen contract requires187 probe tests and44 native
+expectations (24/10/10). Run IDs are generated per launch; only the first launch
+uninstalls. The runner independently matches simctl/native PIDs, checks crash
+termination, and queries all three sessions for seven views and exactly one fatal
+error. B's injected document version must become exactly version+1 on recovery.
+The existing Internal Datadog flush runs off the main actor after recording the
+real launch acknowledgement; it clears LaunchReport and must never be used as
+evidence that no pending crash existed. Failed phase records are retained in the
+durable run summary. Build and source identities include CrashReporting sources.

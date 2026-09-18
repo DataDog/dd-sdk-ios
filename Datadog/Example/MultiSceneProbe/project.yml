@@ -46,6 +46,8 @@ targets:
         product: DatadogWebViewTracking
       - package: Datadog
         product: DatadogSessionReplay
+      - package: Datadog
+        product: DatadogCrashReporting
 
   RUMNativeMultiSceneProbeTests:
     type: bundle.unit-test

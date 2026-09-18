@@ -2,7 +2,7 @@
   "experiment": "EXP-184",
   "gate": "T11",
   "title": "Accept exported and fatal process context",
-  "status": "PREPARING",
+  "status": "PREPARED",
   "control_revision": "41b2f0595ef5101c87904d55b44fd326ad9d4267",
   "sdk_revision": "04201edc7711361279d8487b385bc8b0ca9c63c7",
   "definition": "Experiments/EXP-143-199.md#exp-184--accept-exported-and-fatal-process-context",
@@ -110,7 +110,7 @@
     }
   ],
   "native_attempts": [],
-  "next": "Implement and freeze the three-process native crash/recovery/consumption fixture and strict oracle; T11 remains open.",
+  "next": "Commit the prepared source/oracle, then run one fresh three-process simulator acceptance through the existing authenticated backend connector. T11 remains open until complete evidence passes.",
   "definition_revision": "c71db83b0b6e87a502cca789da3a3718dce507e1",
   "deterministic_result": {
     "state": "PASS",
@@ -119,5 +119,37 @@
     "initial_failure": "The new monitor fixture expected immediate view emission after attribute mutation. Attributes are deferred until a view update; a non-interactive targeted timing command supplies the mapper witness. The original 75/76 attempt is retained; corrected control passes 1/1.",
     "lint": "PASS with repository tools/lint/tests.swiftlint.yml. An initial invocation without that configuration produced irrelevant default-rule violations; it is not the repository lint result.",
     "production_changes": false
+  },
+  "deterministic_checkpoint": "7123617193f894ae8bc7fd2135ddbfbfc6f11da5",
+  "prepared_fixture": {
+    "native_build": "PASS",
+    "probe_tests": 187,
+    "python_controls": 179,
+    "connector_controls": 44,
+    "native_expectations": {
+      "prepare": 24,
+      "recover": 10,
+      "consumed": 10
+    },
+    "contract": "../../../tools/multi-scene/acceptance/fatal-scenario-contract.json",
+    "source_lint": "PASS with repository source configuration for ProbeFatalAcceptance.swift",
+    "preparation_fixes": [
+      "Named feature lookup corrected after compiler diagnostic.",
+      "Connector projection now unwraps the strict field reader; all three new controls pass."
+    ],
+    "process_contract": "Independent simctl/native PID, nonzero declared crash exit and absent process; three fresh runs share one installed binary/data container.",
+    "storage_boundary": "Datadog Internal flush off the main actor after observing LaunchReport. It drains/upload queues and resets launch context; saved acknowledgement is observed before flush.",
+    "negative_controls": [
+      "stale contract/install/run/report",
+      "late/missing/duplicate guards",
+      "peer export drift",
+      "missing mapper witness",
+      "recovery owner substitution",
+      "absent/contradictory consumption acknowledgement",
+      "missing/duplicate fatal inventory",
+      "wrong original process/source/incident",
+      "incorrect retained document revision",
+      "backend ownership/count/source drift"
+    ]
   }
 }

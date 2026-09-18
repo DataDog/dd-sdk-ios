@@ -22,6 +22,7 @@ enum ProbeScenarioCatalog {
         ProbeTimingContract.scenarioID,
         ProbeFlagContract.scenarioID,
         ProbeTraceContract.scenarioID,
+        ProbeFatalContract.prepare,
         ProbeWebViewContract.scenarioID,
         ProbeLogContract.scenarioID,
         "swiftui.stack.abort",
@@ -86,6 +87,9 @@ enum ProbeScenarioCatalog {
         attributesExplicitCurrentView,
         timingExplicitCurrentView,
         flagsExplicitCurrentView,
+        fatalPreparation,
+        fatalRecovery,
+        fatalConsumed,
         webViewCapturedContainer,
         logsCapturedEmission,
         tracesCapturedStart,
@@ -777,6 +781,47 @@ enum ProbeScenarioCatalog {
             ProbeStep(.stopLegacyAction, scene: "scene-A", value: "long-running-legacy-finished-b"),
     ]
 
+
+    private static let fatalPreparation = ProbeScenario(
+        identifier: ProbeFatalContract.prepare,
+        trackingMode: .manual,
+        layout: .stack,
+        initialWindows: ["scene-A", "scene-B"],
+        requiredCapabilities: [.multipleScenes],
+        steps: [
+            ProbeStep(.waitForSceneReady, scene: "scene-A"),
+            ProbeStep(.waitForSignal, scene: "scene-A", signal: "rum-view:home#1"),
+            ProbeStep(.openWindow, scene: "scene-A", value: "scene-B"),
+            ProbeStep(.waitForSignal, scene: "scene-B", signal: "rum-view:home#1"),
+            ProbeStep(.runFatalPreparation, scene: "scene-B"),
+        ],
+        completionConditions: fatalExpectations(ProbeFatalContract.prepareGuards),
+        expectedSemanticTimeline: [
+            ProbeExpectation(.viewStarted, scene: "scene-A", screen: "home", occurrence: 1, rumViewOrigin: .semantic),
+            ProbeExpectation(.viewStarted, scene: "scene-B", screen: "home", occurrence: 1, rumViewOrigin: .semantic),
+        ] + fatalExpectations(ProbeFatalContract.prepareGuards)
+    )
+
+    private static let fatalRecovery = fatalRecoveryScenario(ProbeFatalContract.recover)
+    private static let fatalConsumed = fatalRecoveryScenario(ProbeFatalContract.consumed)
+
+    private static func fatalRecoveryScenario(_ identifier: String) -> ProbeScenario {
+        let guards = fatalExpectations(ProbeFatalContract.recoveryGuards)
+        return ProbeScenario(
+            identifier: identifier,
+            trackingMode: .manual,
+            layout: .stack,
+            initialWindows: ["recovery"],
+            requiredCapabilities: [],
+            steps: [],
+            completionConditions: guards,
+            expectedSemanticTimeline: guards
+        )
+    }
+
+    private static func fatalExpectations(_ names: [String]) -> [ProbeExpectation] {
+        names.map { ProbeExpectation(.assertion, name: $0, expectedCount: 1) }
+    }
 
     private static let webViewCapturedContainer = ProbeScenario(
         identifier: ProbeWebViewContract.scenarioID,

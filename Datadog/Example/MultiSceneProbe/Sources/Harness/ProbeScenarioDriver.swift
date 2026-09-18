@@ -824,6 +824,20 @@ internal final class ProbeScenarioDriver {
             }
             return .acknowledged(signal)
 
+        case .runFatalPreparation:
+            if case .rejected(let reason) = executeOnExactScene(step, scene: "scene-B") {
+                return .failed(reason)
+            }
+            guard let signal = await wait(
+                for: .encoded(scene: nil, value: "assertion:" + ProbeFatalContract.prepared),
+                after: commandSequence,
+                timeoutNanoseconds: stepTimeoutNanoseconds
+            ) else {
+                return .inconclusive("fatal preparation did not produce its terminal assertion")
+            }
+            guard signal.result == .pass else { return .failed(signal.reason ?? "fatal preparation failed") }
+            return .acknowledged(signal)
+
         case .runWebViewOwnershipBatch:
             if case .rejected(let reason) = executeOnExactScene(step, scene: "scene-B") {
                 return .failed(reason)

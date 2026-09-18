@@ -31,6 +31,7 @@ enum ProbeStepKind: String, Codable, CaseIterable {
     case runCurrentViewErrorBatch = "run-current-view-error-batch"
     case runViewAttributeBatch = "run-view-attribute-batch"
     case runViewTimingBatch = "run-view-timing-batch"
+    case runFatalPreparation = "run-fatal-preparation"
     case runWebViewOwnershipBatch = "run-webview-ownership-batch"
     case runLogOwnershipBatch = "run-log-ownership-batch"
     case runTraceOwnershipBatch = "run-trace-ownership-batch"
@@ -295,5 +296,29 @@ enum ProbeWebViewContract {
         case "web-a-detached": return "detached"
         default: return "scene-B"
         }
+    }
+}
+
+enum ProbeFatalContract {
+    static let prepare = "fatal.process-context.prepare-crash"
+    static let recover = "fatal.process-context.recover"
+    static let consumed = "fatal.process-context.verify-consumed"
+    static let prepared = "fatal-prepare-complete"
+    static let prepareGuards = [
+        "fatal-process", "fatal-owner-a", "fatal-owner-b", "fatal-export-before", "fatal-provider-before",
+        "fatal-mutation-dispatched", "fatal-export-after", "fatal-provider-after",
+        "fatal-capture-unchanged", "fatal-injection-drained", prepared,
+    ]
+    static let recoveryGuards = [
+        "fatal-process", "fatal-recovery-current", "fatal-reporter-enable",
+        "fatal-launch-report", "fatal-recovery-complete",
+    ]
+
+    static func isRecovery(_ identifier: String) -> Bool {
+        identifier == recover || identifier == consumed
+    }
+
+    static func contains(_ identifier: String) -> Bool {
+        identifier == prepare || isRecovery(identifier)
     }
 }

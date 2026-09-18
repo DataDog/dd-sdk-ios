@@ -380,6 +380,8 @@ internal struct ProbeSemanticTimeline {
             return .resource
         case .rumError:
             return .error
+        case .assertion:
+            return .assertion
         case .webBridgeMessage:
             return .webBridgeMessage
         case .rumLog:
