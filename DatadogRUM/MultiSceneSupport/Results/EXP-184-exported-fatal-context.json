@@ -1,0 +1,42 @@
+{
+  "experiment": "EXP-184",
+  "gate": "T11",
+  "title": "Accept exported and fatal process context",
+  "status": "PLANNED",
+  "control_revision": "41b2f0595ef5101c87904d55b44fd326ad9d4267",
+  "sdk_revision": "04201edc7711361279d8487b385bc8b0ca9c63c7",
+  "definition": "Experiments/EXP-143-199.md#exp-184--accept-exported-and-fatal-process-context",
+  "completion_mode": "documented process-level fallback; trustworthy internal snapshot remains exact",
+  "production_change_planned": false,
+  "gates_closed": [],
+  "source_audit": [
+    "Monitor exports representative Core context and keeps per-scene value snapshots.",
+    "Session representative gates live fatal notifier and watchdog updates.",
+    "CrashContextCoreProvider serial queue and CrashReportingFeature injection preserve separate async boundaries.",
+    "CrashReportReceiver builds from retained crash context, not the new process representative."
+  ],
+  "deterministic_cases": [
+    "Exact A/B export and fatal identity, non-interaction peer update, retained A value.",
+    "B stop falls back to A; final view/session stop clears live fatal context.",
+    "Actual provider/feature value and serialized snapshots remain immutable after representative updates.",
+    "Deferred crash report writer preserves old view/session and count ownership under new current context.",
+    "Absent captured view retains existing sampled/consent/launch/background fallback without invented scene ownership."
+  ],
+  "native_phases": [
+    "Clean-install A/B prepare; independent mapper/export/provider guards; declared SIGABRT only after preparation PASS.",
+    "Same binary/store, fresh run and FatalRecovery current view before real pending-report recovery; didCrash true.",
+    "Same binary/store, another fresh run and FatalRecovery view; didCrash false and no second crash."
+  ],
+  "expected_inventory": {
+    "sessions": 3,
+    "views": 7,
+    "fatal_errors": 1,
+    "actions": 0,
+    "resources": 0,
+    "other_errors": 0
+  },
+  "acceptance_scope": "Serial actual scenes and isolated process crash/recovery; not hardware lifecycle, watchdog/hang, symbolication or Replay certification.",
+  "unit_attempts": [],
+  "native_attempts": [],
+  "next": "Add the predeclared exact-ID deterministic controls and validate affected SDK suites before native implementation."
+}

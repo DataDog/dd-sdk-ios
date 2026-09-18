@@ -1360,3 +1360,21 @@ Preserve that envelope field before projecting the custom payload. If both shape
 provide conflicting source values, reject them. Missing source cannot be derived
 from expected phase/name/container. EXP-183 attempt A retains the original failed
 projection; revised projection controls pass41 tests and require a fresh run.
+
+## Exported and fatal process context
+
+Keep exported Core context, scene snapshots, crash-provider state, serialized
+plugin injection and later report delivery as separate observed boundaries.
+For source-less crashes, require the process representative once; do not infer a
+scene from the thread performing recovery. A held snapshot must retain original
+IDs through later context updates.
+
+The [EXP-184 contract](Experiments/EXP-143-199.md#exp-184--accept-exported-and-fatal-process-context)
+uses clean prepare/crash, same-install recovery and a consumption-verification
+launch. Give each launch a fresh run identity while preserving the exact binary
+and data container. Crash only after explicit pre-crash guards and a preparation
+PASS. Recovery must establish a different current context before enabling the real
+reporter. Require actual didCrash acknowledgement in both later launches; a quiet
+timeout cannot replace report consumption. Compare all seven views/three sessions
+and the one original-owner fatal error. Synthetic receiver tests remain separate
+from actual process-crash evidence.
