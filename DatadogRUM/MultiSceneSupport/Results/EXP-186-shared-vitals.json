@@ -2,13 +2,15 @@
   "experiment": "EXP-186",
   "gate": "T13",
   "title": "Validate shared vitals and view association",
-  "status": "INCONCLUSIVE",
+  "status": "PASS",
   "control_revision": "5b4a56815e0661d050b94e93264470ae3d941a63",
   "sdk_revision": "04201edc7711361279d8487b385bc8b0ca9c63c7",
   "definition": "Experiments/EXP-143-199.md#exp-186--validate-shared-vitals-and-view-association",
   "completion_mode": "documented shared measurements with existing view association; session timeseries omit view",
   "production_change_planned": false,
-  "gates_closed": [],
+  "gates_closed": [
+    "T13"
+  ],
   "required_environments": [
     "focused SDK tests",
     "iOS27 simulator and authenticated backend",
@@ -126,7 +128,7 @@
       "run_id": "exp186-f7544129-5248-4001-a25b-f9da0d275376",
       "revision": "661ae6b9119e3b5b8fd21a10063166d0ba1b5e06",
       "execution_head": "e944e5ad4697b55ab6db2ee6235cc5e135cfb58d",
-      "state": "PASS NATIVE_AND_BACKEND; CLEANUP_UNVERIFIED",
+      "state": "PASS",
       "durable_result": "Results/acceptance/exp186-f7544129-5248-4001-a25b-f9da0d275376.json",
       "installed_code_identity": "PASS all3 signed Mach-O files and independently observed PID",
       "native_expectations": 17,
@@ -137,10 +139,11 @@
         "session": 1,
         "vital": 1
       },
-      "cleanup": "UNVERIFIED: CoreDevice4016; unavailable after successful native/backend capture"
+      "cleanup": "PASS after fresh reconnection: exact recorded process terminated and absence verified; original CoreDevice4016 attempt retained",
+      "completed_at": "2026-09-18T11:51:02.174462+00:00"
     }
   ],
-  "next": "On reconnection, verify or terminate only this recorded vitals test process and its absence; do not repeat the passing physical capture. T14 needs the exact physical profile export.",
+  "next": "T13 is closed within the shared-process metric contract. T14 awaits its exact physical profile export; physical simultaneous-window gates remain separate.",
   "unit_source_sha256": "53c5cda262ec8932913d815d6c6273beff7e15c56a75fc9a2fe5495f027c7539",
   "unit_summary": {
     "total": 166,
@@ -190,10 +193,10 @@
     "oracle_contract_sha256": "1ce8583c667d327ce0417d271835073cb987c2fb767745f191ff07d6dbbdc74c"
   },
   "simulator_backend_status": "PASS",
-  "physical_status": "PASS native17 and exact complete2-view backend metrics; cleanup pending after another disconnect",
+  "physical_status": "PASS: native17, exact2 final backend views, all3 installed signed code hashes and verified cleanup on real iPhone",
   "limits": [
     "Shared process/system measurements retain existing view aggregation; no per-window CPU or frame attribution.",
-    "Native acceptance is serial A/B; no simultaneous visibility, physical sampling or Duo claim.",
+    "Serial A/B simulator acceptance and one-scene representative physical sampling are separate proofs; neither establishes simultaneous visibility or Duo acceptance.",
     "Attempt A remains FAIL; attempt B uses a newly frozen oracle and retains actual backend field presence."
   ],
   "single_scene_variant": {
@@ -207,7 +210,7 @@
     "python_methods": 25,
     "simulator_mechanics": "PASS native17/17,32 signals, installed-code receipt and cleanup",
     "durable_result": "acceptance/exp186-046f9c57-1f72-4858-b67f-70be26648948.json",
-    "physical_execution": "PASS native17 and exact complete2-view backend metrics; cleanup pending after another disconnect",
+    "physical_execution": "PASS: native17, exact2 final backend views, all3 installed signed code hashes and verified cleanup on real iPhone",
     "serial_contract_replay": "PASS native30 and3 backend views; original capture unchanged",
     "physical_preparation": "PASS generic iOS arm64 build and strict/deep existing-identity signing; no new device execution",
     "physical_preparation_record": "EXP-186-physical-sample-preparation.json"

@@ -3,9 +3,9 @@
   "candidate_revision": "04201edc7711361279d8487b385bc8b0ca9c63c7",
   "gate_count": 66,
   "counts": {
-    "CLOSED": 40,
+    "CLOSED": 41,
     "ENVIRONMENT BLOCKED": 17,
-    "INCONCLUSIVE": 3,
+    "INCONCLUSIVE": 2,
     "OPEN": 5,
     "REVIEW BLOCKED": 1
   },
@@ -37,6 +37,7 @@
     "T10",
     "T11",
     "T12",
+    "T13",
     "T15",
     "D01",
     "D02",
@@ -63,14 +64,6 @@
       "status": "ENVIRONMENT BLOCKED",
       "owner": "SDK implementer",
       "dependencies": []
-    },
-    {
-      "id": "T13",
-      "status": "INCONCLUSIVE",
-      "owner": "SDK implementer",
-      "dependencies": [
-        "A01"
-      ]
     },
     {
       "id": "T14",

@@ -387,8 +387,8 @@
       "decisive_test": "CPU/memory/frame metrics retain documented process sampling and view association; never claim independent per-window measurement",
       "environment": "Fixed process metric fixture, view associations and backend; representative device sample before freeze",
       "completion_mode": "documented process-level measurement with existing view association",
-      "status": "INCONCLUSIVE",
-      "evidence": "EXP-186: accepted serial simulator/backend proof retained. Physical one-scene run exp186-f7544129 passes17 native assertions, all3 installed signed hashes and exact2-view backend metrics with zero unrelated counted telemetry. Device disconnect prevents cleanup confirmation; capture need not repeat. Results/EXP-186-shared-vitals.json."
+      "status": "CLOSED",
+      "evidence": "EXP-186:166 SDK/196 probe tests and accepted serial simulator/backend proof. Representative physical run exp186-f7544129 passes17 native assertions, all3 installed signed hashes and exact2-view backend metrics. Fresh reconnect cleanup verifies the exact recorded process is terminated and absent; original failures remain. Shared process metrics only; physical multi-window gates remain separate. Results/EXP-186-shared-vitals.json."
     },
     {
       "id": "T14",

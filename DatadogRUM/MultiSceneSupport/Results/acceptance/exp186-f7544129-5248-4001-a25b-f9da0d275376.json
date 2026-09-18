@@ -7,7 +7,7 @@
   "build_exit_code": 0,
   "bundle": "com.datadoghq.rum-native-multi-scene-probe",
   "clean_app_absence": true,
-  "cleanup": "UNVERIFIED: CoreDevice4016; unavailable after successful native/backend capture",
+  "cleanup": "PASS: exact test bundle and recorded PID rediscovered, terminated, then absent from fresh inventory",
   "cleanup_exit_code": 1,
   "configuration_presence": "PASS",
   "console_launcher_pid": 72976,
@@ -21,7 +21,7 @@
   "experiment": "EXP-186",
   "finished_at": "2026-09-18T11:30:41.049999+00:00",
   "gate": "T13",
-  "gate_status": "INCONCLUSIVE_PENDING_CLEANUP",
+  "gate_status": "PASS",
   "installed_code_identity": "PASS",
   "installed_device_identity": "NOT_RUN",
   "launched_at": "2026-09-18T11:23:45.720563+00:00",
@@ -322,12 +322,91 @@
     "run-physical.py": {
       "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp186-physical-single-0bjjfkcv/run-physical.py",
       "sha256": "c216057b4d6ade8d05d579ab14cf833c603c9948c40f933bbde5cec8cb930e42"
+    },
+    "reconnect-cleanup/apps.json": {
+      "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp186-cleanup-94du47bn/apps.json",
+      "sha256": "5740de8fc4468af55229056cf106b4eeff88732b40c9b8d355ebcd9e72dd5e0d"
+    },
+    "reconnect-cleanup/apps.log": {
+      "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp186-cleanup-94du47bn/apps.log",
+      "sha256": "75ae95c68e15fdbf686787f170481b22caad6041bbca26ca4b08acc5cba717d1"
+    },
+    "reconnect-cleanup/cleanup-context.json": {
+      "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp186-cleanup-94du47bn/cleanup-context.json",
+      "sha256": "59251fe587ad3d9890918a1c1efd65d7b41b1ffb3abc9607f1d626fe6a96d17d"
+    },
+    "reconnect-cleanup/devices.json": {
+      "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp186-cleanup-94du47bn/devices.json",
+      "sha256": "1af2a710b2c47cfcf2dc861fcbdd7f4a88c509de60045208a36b6930983f2e70"
+    },
+    "reconnect-cleanup/devices.log": {
+      "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp186-cleanup-94du47bn/devices.log",
+      "sha256": "52777724361bca5e6666cc6b6fdf45bc470584e304bcb237be14d024500255b9"
+    },
+    "reconnect-cleanup/processes-after.json": {
+      "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp186-cleanup-94du47bn/processes-after.json",
+      "sha256": "828f321cc515c613765779bbd384f09ad9e2ee05542a4603edf628f71f8e8a8b"
+    },
+    "reconnect-cleanup/processes-after.log": {
+      "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp186-cleanup-94du47bn/processes-after.log",
+      "sha256": "259067f5a02df1b880cd368c88ae914e8157dd1f0c7e54bdea8dfbc1bf5904a9"
+    },
+    "reconnect-cleanup/processes-before.json": {
+      "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp186-cleanup-94du47bn/processes-before.json",
+      "sha256": "a16ca9d36d392c8d2413bcea66d3b43c556e4c8cab64dbc6feca9a8e76845d6b"
+    },
+    "reconnect-cleanup/processes-before.log": {
+      "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp186-cleanup-94du47bn/processes-before.log",
+      "sha256": "4f398d0f19c1d790ce4f07ccf42cbc0e6454018ea22d8e0e7679673e25886e5c"
+    },
+    "reconnect-cleanup/terminate.json": {
+      "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp186-cleanup-94du47bn/terminate.json",
+      "sha256": "12f378db581eb12931e60b3e32fb0b3756524f48b5b3d70f50403e2b4124012b"
+    },
+    "reconnect-cleanup/terminate.log": {
+      "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp186-cleanup-94du47bn/terminate.log",
+      "sha256": "ebb8c907e39d3a628ec70afd3877eefc9811f7afc36310656441b58ef46a2663"
+    },
+    "reconnect-cleanup/cleanup-verification.json": {
+      "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp186-cleanup-94du47bn/cleanup-verification.json",
+      "sha256": "ecdc86236fec8c6892409304cdb0223773cd2889301519b26372075d0e8a0f30"
     }
   },
   "evidence_limits": [
     "One actual foreground native scene; accepted serial simulator proof remains separate.",
     "Process/system vitals with existing view association; no independent per-window measurement or H01\u2013H16 claim.",
     "Pure oracle physical_device_claimed=false is supplemented by independently saved live physical discovery, signed installed-code identity and process checks.",
-    "Earlier serial physical FAIL remains; no SDK repair. Cleanup after this successful capture awaits reconnection."
-  ]
+    "Earlier serial physical FAIL and disconnected cleanup attempt remain preserved; successful reconnect cleanup completes the one-scene sample without SDK repair or rerunning acceptance."
+  ],
+  "cleanup_initial_attempt": {
+    "status": "UNVERIFIED: CoreDevice4016; unavailable after successful native/backend capture",
+    "exit_code": 1,
+    "finished_at": "2026-09-18T11:30:41.049999+00:00",
+    "artifacts": [
+      "cleanup-apps.json",
+      "devices-after-backend.json"
+    ],
+    "preserved": true
+  },
+  "cleanup_exit_code_scope": "Original disconnected attempt; successful reconnect exit codes are in cleanup_after_reconnection.",
+  "cleanup_after_reconnection": {
+    "status": "PASS",
+    "run_id": "exp186-f7544129-5248-4001-a25b-f9da0d275376",
+    "verified_at": "2026-09-18T11:51:02.174462+00:00",
+    "method": "live_exact_bundle_path_and_recorded_pid_terminated_then_absent",
+    "bundle_identifier": "com.datadoghq.rum-native-multi-scene-probe",
+    "device_identifier": "C2FEA492-92EC-5F8F-BF83-27A850997042",
+    "app_url": "file:///private/var/containers/Bundle/Application/F6933988-06C9-470E-ACFA-B6BE1AC7F8F7/RUMNativeMultiSceneProbe.app/",
+    "recorded_pid": 9091,
+    "rediscovered_pid": 9091,
+    "terminate_exit_code": 0,
+    "verification_exit_code": 0,
+    "remaining_processes": [],
+    "artifact_root": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp186-cleanup-94du47bn",
+    "proof_sha256": "ecdc86236fec8c6892409304cdb0223773cd2889301519b26372075d0e8a0f30"
+  },
+  "gates_closed": [
+    "T13"
+  ],
+  "completed_at": "2026-09-18T11:51:02.174462+00:00"
 }

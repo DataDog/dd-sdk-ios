@@ -1684,9 +1684,13 @@ all simulators or alter the user's Xcode selection to mask that preparation erro
 
 
 After reconnecting, distinguish the earlier fixture process from a new run:
-resolve its installed bundle URL and compare fresh process inventory. Record
-absence even when no termination is needed, retaining the prior failed cleanup
-attempt. If transport drops after successful native/backend checks, preserve
-those components and request cleanup only; never repeat a passing capture merely
+resolve its installed bundle URL and compare fresh process inventory. A matching
+PID must also equal the recorded run PID; if it differs, verify the new process
+identity before termination. After termination, require a fresh inventory with
+no process at that exact bundle path. Record absence even when no termination is
+needed. Add a separately timestamped cleanup proof and artifact hashes to the
+durable result; preserve the original failed attempt and raw capture summary.
+If transport drops after successful native/backend checks, preserve those
+components and request cleanup only; never repeat a passing capture merely
 to stop its process. A raw RUM exhausted page can contain empty JSON_DATA rather
 than literal []; keep its count/provenance and require no additional rows.

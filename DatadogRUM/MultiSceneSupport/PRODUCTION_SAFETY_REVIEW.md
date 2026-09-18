@@ -241,9 +241,10 @@ The actual-reader fixture passes196 probe tests/30 native expectations. The firs
 backend comparison fails only two empty-array omissions; its diagnostic and failed
 record remain. The narrow presence repair passes248 Python/55 connector controls.
 Fresh attempt B passes the complete three-view/zero-extra-telemetry backend
-comparison with actual metric values. T13 awaits its representative physical
-sample. No new production finding. The subsequent profile-correlation section
-records EXP-187's serialized identity and flush-lifetime evidence.
+comparison with actual metric values. T13 is now closed with the representative
+physical sample and verified cleanup recorded below. No new production finding.
+The subsequent profile-correlation section records EXP-187's serialized identity
+and flush-lifetime evidence.
 This is separate from the completed D01–D12 review cycle.
 
 ## Subsequent bounded validation: profile correlation
@@ -284,8 +285,10 @@ reject a wrong stop owner. Saved serial native/backend evidence still passes.
 The MCP test-preparation mismatch and premature console-PID lookup are preserved
 as invalid attempts; neither establishes an SDK regression. The subsequent physical vitals sample passes17 native assertions, exact signed
 installed-code identity and complete two-view backend metric comparison. A second
-connection drop prevents cleanup confirmation for that test process; all measured
-evidence remains intact. No SDK defect is established.
+connection drop initially prevents cleanup confirmation; the next fresh reconnection
+resolves the exact installed bundle and recorded PID, terminates that process and
+verifies absence. T13 is closed, with the original disconnected attempt preserved.
+No accepted test is repeated and no SDK defect is established.
 
 ## Stable API review boundary
 
