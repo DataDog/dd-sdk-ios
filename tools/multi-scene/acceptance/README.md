@@ -211,3 +211,13 @@ installed system Ruby YAML/JSON libraries for span responses, with preflight and
 negative controls rejecting objects, aliases, duplicate keys and truncated data.
 No SDK dependency is added. Display durations cannot substitute for exact
 nanosecond values. Physical shared-request topology remains H07.
+
+
+APM search yields operationname/resourcename and exact decimal spanid/parentid
+strings. The bridge converts IDs with BigInt, retrieves each complete root trace,
+and joins full trace/span/parent identities before reading private RUM meta tags.
+Search and detail must agree on operation, resource, service and run identity.
+Known native/OTel operation hyphens normalize to underscores. HTTP resource
+grouping is retained as evidence; the exact original http.url from both responses
+must match the mapper URL. Duration comes only from the indexed integer
+nanoseconds, never the rounded duration_ms shown by trace details.

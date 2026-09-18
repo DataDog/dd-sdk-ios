@@ -79,12 +79,22 @@ def resequence(records):
         record["signal"]["sequence"] = index + 1
 
 
+def backend_spans(local, run):
+    rows = [dict(s, run_id=run, operation=s["operation"].replace("-", "_"), http_url=None)
+            for s in local["spans"]]
+    for row in rows:
+        if row["phase"].startswith("url-"):
+            row["http_url"] = row["resource"]
+            row["resource"] = row["resource"].replace(run, "normalized-run")
+    return rows
+
+
 class TraceContractTests(unittest.TestCase):
     def test_golden_exact_local_and_backend_ownership(self):
         records, run = fixture()
         local = t.validate_local(records, run)
         self.assertEqual((local["assertions"], len(local["spans"]), len(local["views"])), (20, 9, 3))
-        spans = [dict(s, run_id=run) for s in local["spans"]]
+        spans = backend_spans(local, run)
         views = [dict(s, run_id=run) for s in local["views"]]
         self.assertEqual(t.validate_backend(local, run, spans, views, [], 0, 0)["state"], "PASS")
 
@@ -193,7 +203,8 @@ class TraceContractTests(unittest.TestCase):
         local = t.validate_local(records, run)
         for kind in ["spans", "views"]:
             for mode in ["missing", "extra", "duplicate", "stale"]:
-                data = {k: [dict(copy.deepcopy(s), run_id=run) for s in local[k]] for k in ["spans", "views"]}
+                data = dict(spans=copy.deepcopy(backend_spans(local, run)),
+                            views=[dict(copy.deepcopy(s), run_id=run) for s in local["views"]])
                 if mode == "missing":
                     data[kind].pop()
                 elif mode == "extra":
@@ -212,12 +223,23 @@ class TraceContractTests(unittest.TestCase):
                    ("is_error", True), ("phase", "other"), ("action_ids", ["other"]),
                    ("application_id", "foreign"), ("session_id", "foreign"), ("parent_id", "f" * 16)]
         for key, value in changes:
-            spans = [dict(copy.deepcopy(s), run_id=run) for s in local["spans"]]
+            spans = copy.deepcopy(backend_spans(local, run))
             spans[0][key] = value
             views = [dict(s, run_id=run) for s in local["views"]]
             with self.assertRaises(Rejected, msg=key):
                 t.validate_backend(local, run, spans, views, [], 0, 0)
         for resources, errors, crashes in [([{}], 0, 0), ([], 1, 0), ([], 0, 1)]:
             with self.assertRaises(Rejected):
-                t.validate_backend(local, run, [dict(s, run_id=run) for s in local["spans"]],
+                t.validate_backend(local, run, backend_spans(local, run),
                                    [dict(s, run_id=run) for s in local["views"]], resources, errors, crashes)
+
+
+    def test_backend_normalization_cannot_hide_wrong_operation_resource_or_url(self):
+        records, run = fixture()
+        local = t.validate_local(records, run)
+        for index, key, value in [(0, "operation", "exp181.native_a"), (0, "resource", "other"),
+                                  (6, "http_url", None), (6, "http_url", "https://other.invalid")]:
+            rows = backend_spans(local, run)
+            rows[index][key] = value
+            with self.assertRaises(Rejected, msg=key):
+                t.validate_backend(local, run, rows, [dict(s, run_id=run) for s in local["views"]], [], 0, 0)

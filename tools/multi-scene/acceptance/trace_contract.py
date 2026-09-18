@@ -173,6 +173,16 @@ def validate_backend(local, run_id, spans, views, resources, errors, crashes):
         for expected in local[kind]:
             row = unique([r for r in rows if r.get(key) == expected[key]], "backend " + kind)
             require(row.get("run_id") == run_id, "stale backend run hidden", "FAIL")
-            require(all(canonical(row.get(k)) == canonical(v) for k, v in expected.items()),
+            compared = dict(expected)
+            if kind == "spans":
+                # APM normalizes operation hyphens; HTTP resource groups can obfuscate
+                # numbers. The separately retained HTTP URL proves the exact request.
+                compared["operation"] = expected["operation"].replace("-", "_")
+                if expected["phase"].startswith("url-"):
+                    compared.pop("resource")
+                    compared["http_url"] = expected["resource"]
+                else:
+                    compared["http_url"] = None
+            require(all(canonical(row.get(k)) == canonical(v) for k, v in compared.items()),
                     "backend fields differ: " + kind + "/" + expected[key], "FAIL")
     return dict(state="PASS", span_count=9, view_count=3, resource_count=0, error_count=0, crash_count=0)

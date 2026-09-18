@@ -1,6 +1,6 @@
 {
   "experiment": "EXP-181",
-  "status": "SDK/probe/operational tests PASS; native acceptance PREPARED",
+  "status": "First native attempt INCONCLUSIVE after local PASS; corrected backend bridge PREPARED",
   "gate": "T08",
   "gates_closed": [],
   "control_revision": "75442ca755eff170ea072e646d19e0ae54af2f1e",
@@ -84,7 +84,18 @@
       }
     }
   ],
-  "native_attempts": [],
+  "native_attempts": [
+    {
+      "run_id": "exp181-20260918T003931Z-5ed4c4212008",
+      "state": "INCONCLUSIVE",
+      "fixture_revision": "c6b1b5e0bb6fc76b45b6f8be66f21954464c3eeb",
+      "summary": "Results/acceptance/exp181-20260918T003931Z-5ed4c4212008.json",
+      "probe_tests": 178,
+      "local_assertions": 20,
+      "signal_count": 57,
+      "reason": "Search response uses operationname/resourcename and decimal spanid; private RUM owners require get_trace details. Original bridge rejected before ownership comparison, then runner timed out."
+    }
+  ],
   "definition_revision": "33f7147f2f5c23f9e7c3bc149d799c5365d4ac0c",
   "strict_test_lint": "PASS after correcting new multiline/whitespace formatting",
   "native_preparation": {
@@ -108,12 +119,216 @@
       "xcresultBundlePath": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/ActionArtifacts/default/RunAllTests/Test-RUMNativeMultiSceneProbe-2026.09.18_01-27-10-+0100.xcresult"
     },
     "operational_controls": {
-      "python_passed": 122,
-      "node_passed": 18
+      "python_passed": 123,
+      "node_passed": 21
     },
     "strict_new_fixture_lint": "PASS after formatting corrections",
     "fixture_test_minimum": 178,
-    "runtime_acceptance": "PENDING",
+    "runtime_acceptance": "Fresh run required after corrected bridge freeze; original attempt remains INCONCLUSIVE",
     "parser": "Existing system Ruby YAML/JSON; no installed package or SDK dependency. Reject objects, aliases, duplicate keys and unpaginated responses."
+  },
+  "backend_decoder_diagnostic": {
+    "original_state": "INCONCLUSIVE",
+    "checks": [
+      {
+        "phase": "native-b",
+        "matching": true
+      },
+      {
+        "phase": "otel-b",
+        "matching": true
+      },
+      {
+        "phase": "native-a",
+        "matching": true
+      },
+      {
+        "phase": "otel-a",
+        "matching": true
+      },
+      {
+        "phase": "native-fallback",
+        "matching": true
+      },
+      {
+        "phase": "otel-fallback",
+        "matching": true
+      },
+      {
+        "phase": "url-b",
+        "matching": true
+      },
+      {
+        "phase": "url-a",
+        "matching": true
+      },
+      {
+        "phase": "url-fallback",
+        "matching": true
+      }
+    ],
+    "rows": [
+      {
+        "phase": "native-b",
+        "trace_id": "6aac8954000000002dbf85a273e815b9",
+        "span_id": "6e00aaf08e1c7ef5",
+        "parent_id": "0000000000000000",
+        "run_id": "exp181-20260918T003931Z-5ed4c4212008",
+        "application_id": "43cbc59b-0626-438b-a3d9-c6417a4545a3",
+        "session_id": "107465a3-3dd8-464b-803a-4663a6a0ae7d",
+        "view_id": "c746f1c0-8a11-4e9e-8f08-3a0491038c34",
+        "action_ids": [],
+        "operation": "exp181.native_b",
+        "resource": "exp181.native-b",
+        "http_url": null,
+        "service": "ios-sdk-native-multi-scene-probe",
+        "duration_ns": 23038030,
+        "is_error": false
+      },
+      {
+        "phase": "otel-b",
+        "trace_id": "50b6dbc107354a9111c3cce2367c39b3",
+        "span_id": "afbe5d06f643c426",
+        "parent_id": "0000000000000000",
+        "run_id": "exp181-20260918T003931Z-5ed4c4212008",
+        "application_id": "43cbc59b-0626-438b-a3d9-c6417a4545a3",
+        "session_id": "107465a3-3dd8-464b-803a-4663a6a0ae7d",
+        "view_id": "c746f1c0-8a11-4e9e-8f08-3a0491038c34",
+        "action_ids": [],
+        "operation": "exp181.otel_b",
+        "resource": "exp181.otel-b",
+        "http_url": null,
+        "service": "ios-sdk-native-multi-scene-probe",
+        "duration_ns": 44654012,
+        "is_error": false
+      },
+      {
+        "phase": "native-a",
+        "trace_id": "6aac89540000000091ee05267956a400",
+        "span_id": "24cd1aa150659580",
+        "parent_id": "0000000000000000",
+        "run_id": "exp181-20260918T003931Z-5ed4c4212008",
+        "application_id": "43cbc59b-0626-438b-a3d9-c6417a4545a3",
+        "session_id": "107465a3-3dd8-464b-803a-4663a6a0ae7d",
+        "view_id": "5eb18c90-8e98-4c1f-97fb-ea8a157314e1",
+        "action_ids": [],
+        "operation": "exp181.native_a",
+        "resource": "exp181.native-a",
+        "http_url": null,
+        "service": "ios-sdk-native-multi-scene-probe",
+        "duration_ns": 51141024,
+        "is_error": false
+      },
+      {
+        "phase": "otel-a",
+        "trace_id": "718ae8d30659d9c2eba86485afbaf573",
+        "span_id": "a4e025cfcb7bb986",
+        "parent_id": "0000000000000000",
+        "run_id": "exp181-20260918T003931Z-5ed4c4212008",
+        "application_id": "43cbc59b-0626-438b-a3d9-c6417a4545a3",
+        "session_id": "107465a3-3dd8-464b-803a-4663a6a0ae7d",
+        "view_id": "5eb18c90-8e98-4c1f-97fb-ea8a157314e1",
+        "action_ids": [],
+        "operation": "exp181.otel_a",
+        "resource": "exp181.otel-a",
+        "http_url": null,
+        "service": "ios-sdk-native-multi-scene-probe",
+        "duration_ns": 72471023,
+        "is_error": false
+      },
+      {
+        "phase": "native-fallback",
+        "trace_id": "6aac89540000000030ee31efd604edaf",
+        "span_id": "150b82967258423f",
+        "parent_id": "0000000000000000",
+        "run_id": "exp181-20260918T003931Z-5ed4c4212008",
+        "application_id": "43cbc59b-0626-438b-a3d9-c6417a4545a3",
+        "session_id": "107465a3-3dd8-464b-803a-4663a6a0ae7d",
+        "view_id": "c746f1c0-8a11-4e9e-8f08-3a0491038c34",
+        "action_ids": [],
+        "operation": "exp181.native_fallback",
+        "resource": "exp181.native-fallback",
+        "http_url": null,
+        "service": "ios-sdk-native-multi-scene-probe",
+        "duration_ns": 88958025,
+        "is_error": false
+      },
+      {
+        "phase": "otel-fallback",
+        "trace_id": "ee13ba96b8e3b3548e029570275a614c",
+        "span_id": "fcea621abda48cce",
+        "parent_id": "0000000000000000",
+        "run_id": "exp181-20260918T003931Z-5ed4c4212008",
+        "application_id": "43cbc59b-0626-438b-a3d9-c6417a4545a3",
+        "session_id": "107465a3-3dd8-464b-803a-4663a6a0ae7d",
+        "view_id": "c746f1c0-8a11-4e9e-8f08-3a0491038c34",
+        "action_ids": [],
+        "operation": "exp181.otel_fallback",
+        "resource": "exp181.otel-fallback",
+        "http_url": null,
+        "service": "ios-sdk-native-multi-scene-probe",
+        "duration_ns": 111216903,
+        "is_error": false
+      },
+      {
+        "phase": "url-b",
+        "trace_id": "6aac895400000000dd141098a635c886",
+        "span_id": "00a0e78e792fbcda",
+        "parent_id": "0000000000000000",
+        "run_id": "exp181-20260918T003931Z-5ed4c4212008",
+        "application_id": "43cbc59b-0626-438b-a3d9-c6417a4545a3",
+        "session_id": "107465a3-3dd8-464b-803a-4663a6a0ae7d",
+        "view_id": "c746f1c0-8a11-4e9e-8f08-3a0491038c34",
+        "action_ids": [],
+        "operation": "urlsession.request",
+        "resource": "https://multi-scene-probe.invalid/trace-only/exp181-20260918T003931Z-5ed4c{num}/scene-B/home/url-b",
+        "http_url": "https://multi-scene-probe.invalid/trace-only/exp181-20260918T003931Z-5ed4c4212008/scene-B/home/url-b",
+        "service": "ios-sdk-native-multi-scene-probe",
+        "duration_ns": 132531762,
+        "is_error": false
+      },
+      {
+        "phase": "url-a",
+        "trace_id": "6aac895400000000b8019f8700d1ef78",
+        "span_id": "5c9f90e106fca0fb",
+        "parent_id": "0000000000000000",
+        "run_id": "exp181-20260918T003931Z-5ed4c4212008",
+        "application_id": "43cbc59b-0626-438b-a3d9-c6417a4545a3",
+        "session_id": "107465a3-3dd8-464b-803a-4663a6a0ae7d",
+        "view_id": "5eb18c90-8e98-4c1f-97fb-ea8a157314e1",
+        "action_ids": [],
+        "operation": "urlsession.request",
+        "resource": "https://multi-scene-probe.invalid/trace-only/exp181-20260918T003931Z-5ed4c{num}/scene-A/home/url-a",
+        "http_url": "https://multi-scene-probe.invalid/trace-only/exp181-20260918T003931Z-5ed4c4212008/scene-A/home/url-a",
+        "service": "ios-sdk-native-multi-scene-probe",
+        "duration_ns": 154846430,
+        "is_error": false
+      },
+      {
+        "phase": "url-fallback",
+        "trace_id": "6aac895400000000c9472f122084215c",
+        "span_id": "6509af55b15830ac",
+        "parent_id": "0000000000000000",
+        "run_id": "exp181-20260918T003931Z-5ed4c4212008",
+        "application_id": "43cbc59b-0626-438b-a3d9-c6417a4545a3",
+        "session_id": "107465a3-3dd8-464b-803a-4663a6a0ae7d",
+        "view_id": "c746f1c0-8a11-4e9e-8f08-3a0491038c34",
+        "action_ids": [],
+        "operation": "urlsession.request",
+        "resource": "https://multi-scene-probe.invalid/trace-only/exp181-20260918T003931Z-5ed4c{num}/source-less/home/url-fallback",
+        "http_url": "https://multi-scene-probe.invalid/trace-only/exp181-20260918T003931Z-5ed4c4212008/source-less/home/url-fallback",
+        "service": "ios-sdk-native-multi-scene-probe",
+        "duration_ns": 175398707,
+        "is_error": false
+      }
+    ],
+    "acceptance_claim": false,
+    "normalization": {
+      "span_ids": "Exact decimal strings converted with BigInt; reject numeric/lossy/out-of-range IDs.",
+      "owners": "Join one complete root detail per indexed span by exact full trace/span/parent identity; private _dd RUM tags come from detail meta.",
+      "operation": "Known native/OTel hyphens become underscores in APM operation names.",
+      "resource": "Native/OTel resource remains exact; URL resource grouping is retained separately and original http.url must match the exact locally encoded URL in both search and detail.",
+      "duration": "Exact indexed custom.duration nanoseconds; rounded detail duration_ms is never substituted."
+    }
   }
 }

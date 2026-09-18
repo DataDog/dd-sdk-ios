@@ -1268,3 +1268,18 @@ duplicate keys, and freeze its source with the runner. Aggregate
 counts and sampled detail queries alone cannot close the gate. Keep physical
 shared-request H07 separate. The current bounded definition is
 [EXP-181](Experiments/EXP-143-199.md#exp-181--accept-captured-trace-ownership-through-cross-scene-completion).
+
+
+Positive APM search and trace-detail responses have different contracts. Search
+uses decimal string span IDs and hexadecimal trace IDs; convert decimal strings
+with arbitrary-precision integers, never floating-point numbers. Private RUM tags
+may be absent from search, so retrieve each complete root trace and join exact
+trace/span/parent IDs before reading its owner metadata. Require one detail record
+and matching operation/resource/service/run fields; missing metadata is inconclusive.
+
+Compare declared normalized APM operation names and preserve grouped URL resources
+separately from the exact original http.url. Indexed nanosecond duration is the
+comparison source; a rounded detail duration_ms is not an exact duration oracle.
+Run the projection in the actual tool orchestrator as well as Node controls:
+browser globals such as URL are not available there. Preserve failed attempts
+before freezing a response-format correction and starting a fresh run.

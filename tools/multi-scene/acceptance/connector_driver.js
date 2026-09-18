@@ -123,37 +123,49 @@ function projectFlagState(payload, at) {
   return {flags, build, fbc, leakedInternalAttribute: hasInternalFlagAttribute(payload)};
 }
 
-function projectTraceRow(row, at) {
-  const pick = paths => {
-    const values = paths.map(path => at(row, path)).filter(value => value != null);
-    if (new Set(values.map(value => JSON.stringify(value))).size > 1) throw Error("Ambiguous span field");
-    return values[0] ?? null;
+function projectTraceRow(row, details, at) {
+  const exactText = (value, label) => {
+    if (typeof value !== "string" || !value) throw Error("Missing exact " + label);
+    return value;
   };
-  const field = name => pick([name, "attributes." + name]);
-  const custom = name => pick([name, "custom." + name, "custom_attributes." + name,
-    "attributes.custom." + name, "attributes.custom_attributes." + name]);
-  const hex = (value, width) => {
-    if (typeof value !== "string" || !new RegExp("^[0-9a-f]{1," + width + "}$").test(value)) {
-      throw Error("Missing or malformed exact span identity");
-    }
-    return value.padStart(width, "0");
+  const decimalID = value => {
+    if (typeof value !== "string" || !/^(0|[1-9][0-9]*)$/.test(value)) throw Error("Malformed decimal span identity");
+    const number = BigInt(value);
+    if (number > 0xffffffffffffffffn) throw Error("Span identity exceeds UInt64");
+    return number.toString(16).padStart(16, "0");
   };
-  const operation = field("operation_name");
-  const resource = field("resource_name");
-  if (typeof operation !== "string" || typeof resource !== "string") throw Error("Missing span operation/resource");
-  const phase = operation.startsWith("exp181.") ? operation.slice(7) :
-    operation === "urlsession.request" ? new URL(resource).pathname.split("/").at(-1) : null;
-  const duration = pick(["duration", "duration_ns", "attributes.duration", "custom.duration", "custom_attributes.duration"]);
+  const traceID = exactText(row.traceid, "trace identity");
+  if (!/^[0-9a-f]{32}$/.test(traceID) || /^0+$/.test(traceID)) throw Error("Malformed full trace identity");
+  const spanID = decimalID(row.spanid);
+  if (/^0+$/.test(spanID)) throw Error("Zero span identity");
+  if (!Array.isArray(details) || details.length !== 1) throw Error("Unexpected root trace detail inventory");
+  const detail = details[0];
+  const meta = name => at(detail, "meta." + name);
+  if (decimalID(detail.span_id) !== spanID || decimalID(detail.parent_id) !== decimalID(row.parentid) ||
+      meta("_dd.p.ftid") !== traceID) throw Error("Search/detail identity mismatch");
+  const operation = exactText(row.operationname, "span operation");
+  const resource = exactText(row.resourcename, "span resource");
+  if (detail.name !== operation || detail.resource !== resource || detail.service !== row.service) {
+    throw Error("Search/detail payload mismatch");
+  }
+  const runID = exactText(at(row, "custom.probe.run_id"), "run identity");
+  if (meta("probe.run_id") !== runID) throw Error("Search/detail run mismatch");
+  const duration = at(row, "custom.duration");
   if (!Number.isSafeInteger(duration) || duration <= 0) throw Error("Missing exact nanosecond span duration");
-  const status = field("status");
-  if (status !== "ok" && status !== "error") throw Error("Missing span status");
-  const action = custom("_dd.action.id");
-  return {phase, trace_id:hex(field("trace_id"), 32), span_id:hex(field("span_id"), 16),
-    parent_id:hex(pick(["parent_id", "attributes.parent_id", "custom.parent_id", "custom_attributes.parent_id"]), 16),
-    run_id:custom("probe.run_id"), application_id:custom("_dd.application.id"),
-    session_id:custom("_dd.session.id"), view_id:custom("_dd.view.id"),
-    action_ids:action == null ? [] : Array.isArray(action) ? action : [action],
-    operation, resource, service:field("service"), duration_ns:duration, is_error:status === "error"};
+  if (row.status !== "ok" && row.status !== "error") throw Error("Missing span status");
+  const httpURL = operation === "urlsession.request" ? exactText(at(row, "custom.http.url"), "original HTTP URL") : null;
+  if (httpURL !== null && meta("http.url") !== httpURL) throw Error("Search/detail URL mismatch");
+  const phase = operation === "urlsession.request" ? httpURL.split("/").at(-1) :
+    /^exp181\.(native|otel)_(a|b|fallback)$/.test(operation) ? operation.slice(7).replace("_", "-") : null;
+  if (!phase) throw Error("Undeclared span operation");
+  const action = meta("_dd.action.id");
+  if (action !== null && (typeof action !== "string" || !action)) throw Error("Malformed captured action");
+  return {phase, trace_id:traceID, span_id:spanID, parent_id:decimalID(row.parentid),
+    run_id:runID, application_id:exactText(meta("_dd.application.id"), "RUM application"),
+    session_id:exactText(meta("_dd.session.id"), "RUM session"),
+    view_id:exactText(meta("_dd.view.id"), "RUM view"), action_ids:action === null ? [] : [action],
+    operation, resource, http_url:httpURL, service:exactText(row.service, "service"),
+    duration_ns:duration, is_error:row.status === "error"};
 }
 
 async function runAcceptance({tools, notify, device, repo, scenario}) {
@@ -292,32 +304,43 @@ async function runAcceptance({tools, notify, device, repo, scenario}) {
         uptime:at(payload,"context.probe.uptime"), duration_ns:at(payload,"action.loading_time")};
     });
   };
+  const structuredSpans = async response => {
+    if (response.isError) throw Error("Datadog span query failed");
+    const body = textContent(response);
+    const yaml = body.match(/<YAML_DATA>\s*([\s\S]*?)\s*<\/YAML_DATA>/);
+    const json = body.match(/<JSON_DATA>\s*([\s\S]*?)\s*<\/JSON_DATA>/);
+    if (json) return {body, page:JSON.parse(json[1])};
+    if (!yaml) throw Error("Missing structured span evidence");
+    const decoded = await run("ruby tools/multi-scene/acceptance/parse_span_response.rb " + shellQuote(yaml[1]), 20000);
+    if (decoded.exit_code !== 0) throw Error("Could not safely decode span evidence");
+    return {body, page:JSON.parse(decoded.output)};
+  };
   const spanRows = async (request, total) => {
     const all = [];
     while (all.length < total) {
       const response = await tools.mcp__codex_apps__datadog__preview__datadog_preview_search_datadog_spans({
         query:request.query, from:request.from, to:"now", start_at:all.length, max_tokens:20000,
-        custom_attributes:["probe.run_id", "_dd.application.id", "_dd.session.id", "_dd.view.id",
-          "_dd.action.id", "duration", "parent_id"],
+        custom_attributes:["probe.run_id", "duration", "http.url"],
         telemetry:{intent:"Retrieve complete synthetic Trace inventory with exact captured RUM owners and span identities."}
       });
-      if (response.isError) throw Error("Datadog span search failed");
-      const body = textContent(response);
-      const yaml = body.match(/<YAML_DATA>\s*([\s\S]*?)\s*<\/YAML_DATA>/);
-      const json = body.match(/<JSON_DATA>\s*([\s\S]*?)\s*<\/JSON_DATA>/);
-      let page;
-      if (json) page = JSON.parse(json[1]);
-      else if (yaml) {
-        const decoded = await run("ruby tools/multi-scene/acceptance/parse_span_response.rb " + shellQuote(yaml[1]), 20000);
-        if (decoded.exit_code !== 0) throw Error("Could not safely decode span evidence");
-        page = JSON.parse(decoded.output);
-      } else throw Error("Missing structured span evidence");
+      const {body, page} = await structuredSpans(response);
       if (!Array.isArray(page) || !page.length) throw Error("Incomplete span pagination");
       all.push(...page);
       if (all.length > 100) throw Error("Unexpected large span inventory");
       if (all.length < total && /<has_more>false<\/has_more>/.test(body)) throw Error("Incomplete span inventory");
     }
-    const projected = all.map(row => projectTraceRow(row, at));
+    const projected = [];
+    for (const row of all) {
+      if (typeof row.traceid !== "string" || !/^[0-9a-f]{32}$/.test(row.traceid)) throw Error("Invalid search trace identity");
+      const response = await tools.mcp__codex_apps__datadog__preview__datadog_preview_get_datadog_trace({
+        trace_id:row.traceid, only_service_entry_spans:false, max_tokens:3500,
+        extra_fields:["_dd.application.id", "_dd.session.id", "_dd.view.id", "_dd.action.id",
+          "_dd.p.ftid", "probe.run_id"],
+        telemetry:{intent:"Bind indexed synthetic spans to exact retained RUM ownership in complete trace details."}
+      });
+      const {page} = await structuredSpans(response);
+      projected.push(projectTraceRow(row, page, at));
+    }
     if (projected.length !== total || new Set(projected.map(s => s.span_id)).size !== total) {
       throw Error("Span count/pagination mismatch");
     }

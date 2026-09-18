@@ -174,37 +174,88 @@ const traceAt = (object, path) => {
   return value ?? null;
 };
 const traceRow = () => ({
-  trace_id:"ffffffffffffffff1234567890abcdef", span_id:"f123456789abcdef", parent_id:"0",
-  operation_name:"exp181.native-a", resource_name:"exp181.native-a",
-  service:"ios-sdk-native-multi-scene-probe", status:"ok", duration:123456789,
-  custom_attributes:{"probe.run_id":"run", "_dd.application.id":"app", "_dd.session.id":"session", "_dd.view.id":"view"}
+  traceid:"ffffffffffffffff1234567890abcdef",
+  spanid:BigInt("0xf123456789abcdef").toString(), parentid:"0",
+  operationname:"exp181.native_a", resourcename:"exp181.native-a",
+  service:"ios-sdk-native-multi-scene-probe", status:"ok",
+  custom:{"probe.run_id":"run", duration:123456789}
 });
-test("span projection preserves full hex identity exact nanoseconds and captured owners", () => {
-  assert.deepEqual(projectTraceRow(traceRow(), traceAt), {
+const traceDetail = row => ({
+  span_id:row.spanid, parent_id:row.parentid, name:row.operationname,
+  resource:row.resourcename, service:row.service, duration_ms:123.456792,
+  meta:{"probe.run_id":"run", "_dd.p.ftid":row.traceid, "_dd.application.id":"app",
+    "_dd.session.id":"session", "_dd.view.id":"view"}
+});
+test("span projection joins exact decimal identities and private owners without display rounding", () => {
+  const row = traceRow();
+  assert.deepEqual(projectTraceRow(row, [traceDetail(row)], traceAt), {
     phase:"native-a", trace_id:"ffffffffffffffff1234567890abcdef", span_id:"f123456789abcdef",
-    parent_id:"0000000000000000", operation:"exp181.native-a", resource:"exp181.native-a",
+    parent_id:"0000000000000000", operation:"exp181.native_a", resource:"exp181.native-a", http_url:null,
     service:"ios-sdk-native-multi-scene-probe", is_error:false, duration_ns:123456789,
     run_id:"run", application_id:"app", session_id:"session", view_id:"view", action_ids:[]
   });
-  const wrapped = {attributes:{...traceRow(), custom:traceRow().custom_attributes}};
-  delete wrapped.attributes.custom_attributes;
-  assert.deepEqual(projectTraceRow(wrapped, traceAt), projectTraceRow(traceRow(), traceAt));
 });
-test("span projection rejects lost identity precision ambiguous fields and display durations", () => {
-  for (const [key, value] of [["trace_id",123], ["span_id",null], ["parent_id",null], ["duration",1.2],
-      ["duration","123456789"], ["duration",Infinity], ["duration",1e20], ["status",null]]) {
+test("span projection rejects numeric rounded hexadecimal and overflowing decimal identities", () => {
+  for (const [key, value] of [["traceid",123], ["spanid",null], ["parentid",null],
+      ["spanid",12345678901234567000], ["spanid","f123456789abcdef"],
+      ["spanid","18446744073709551616"], ["spanid","0"], ["parentid","-1"]]) {
     const row = {...traceRow(), [key]:value};
-    assert.throws(() => projectTraceRow(row, traceAt), undefined, key);
+    assert.throws(() => projectTraceRow(row, [traceDetail(row)], traceAt), undefined, key);
   }
-  assert.throws(() => projectTraceRow({...traceRow(), "duration_ns":987}, traceAt), /Ambiguous/);
+  for (const value of [1.2, "123456789", Infinity, 1e20, null, true]) {
+    const row = traceRow(); row.custom.duration = value;
+    assert.throws(() => projectTraceRow(row, [traceDetail(row)], traceAt), /nanosecond/);
+  }
 });
-test("automatic span phase comes from declared URL while owners remain independent fields", () => {
-  const row = {...traceRow(), operation_name:"urlsession.request",
-    resource_name:"https://multi-scene-probe.invalid/trace-only/run/scene-A/home/url-a"};
-  row.custom_attributes["_dd.view.id"] = "peer";
-  row.custom_attributes["_dd.action.id"] = "foreign-action";
-  const result = projectTraceRow(row, traceAt);
+test("span projection rejects missing duplicate foreign and mismatching trace detail records", () => {
+  const row = traceRow();
+  for (const details of [[], [traceDetail(row),traceDetail(row)]]) {
+    assert.throws(() => projectTraceRow(row, details, traceAt), /inventory/);
+  }
+  for (const [key,value] of [["span_id","3"],["parent_id","3"],["name","other"],["resource","other"],["service","other"]]) {
+    assert.throws(() => projectTraceRow(row,[{...traceDetail(row),[key]:value}],traceAt), /mismatch/);
+  }
+  for (const key of ["_dd.application.id","_dd.session.id","_dd.view.id","_dd.p.ftid","probe.run_id"]) {
+    const detail = traceDetail(row); delete detail.meta[key];
+    assert.throws(() => projectTraceRow(row,[detail],traceAt), undefined, key);
+  }
+  const detail = traceDetail(row); detail.meta["_dd.p.ftid"] = "e".repeat(32);
+  assert.throws(() => projectTraceRow(row,[detail],traceAt), /identity mismatch/);
+});
+test("automatic resource normalization keeps the exact original URL and independently captured owner", () => {
+  const row = {...traceRow(), operationname:"urlsession.request",
+    resourcename:"https://multi-scene-probe.invalid/trace-only/run-{num}/scene-A/home/url-a"};
+  row.custom["http.url"] = "https://multi-scene-probe.invalid/trace-only/run-123/scene-A/home/url-a";
+  const detail = traceDetail(row);
+  detail.meta["http.url"] = row.custom["http.url"];
+  detail.meta["_dd.view.id"] = "peer";
+  detail.meta["_dd.action.id"] = "foreign-action";
+  const result = projectTraceRow(row,[detail],traceAt);
   assert.equal(result.phase, "url-a");
+  assert.equal(result.resource, row.resourcename);
+  assert.equal(result.http_url, row.custom["http.url"]);
   assert.equal(result.view_id, "peer");
   assert.deepEqual(result.action_ids, ["foreign-action"]);
+  detail.meta["http.url"] = "https://other.invalid";
+  assert.throws(() => projectTraceRow(row,[detail],traceAt), /URL mismatch/);
+});
+test("undeclared operation and missing status are never synthesized from local evidence", () => {
+  const row = {...traceRow(), operationname:"exp181.other"};
+  assert.throws(() => projectTraceRow(row,[traceDetail(row)],traceAt), /Undeclared/);
+  const missing = traceRow(); delete missing.status;
+  assert.throws(() => projectTraceRow(missing,[traceDetail(missing)],traceAt), /status/);
+});
+
+
+test("Trace projection works in a tool sandbox without browser URL globals", () => {
+  const vm = require("node:vm");
+  const sandboxProject = vm.runInNewContext(source.replace(
+    'return runAcceptance({tools, notify, device, repo, scenario: typeof scenario === "undefined" ? undefined : scenario});',
+    'projectTraceRow;'
+  ), {});
+  const row = {...traceRow(), operationname:"urlsession.request",
+    resourcename:"https://multi-scene-probe.invalid/trace-only/run-{num}/scene-A/home/url-a"};
+  row.custom["http.url"] = "https://multi-scene-probe.invalid/trace-only/run-123/scene-A/home/url-a";
+  const detail = traceDetail(row); detail.meta["http.url"] = row.custom["http.url"];
+  assert.equal(sandboxProject(row, [detail], traceAt).phase, "url-a");
 });
