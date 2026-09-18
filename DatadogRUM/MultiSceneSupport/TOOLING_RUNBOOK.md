@@ -1443,9 +1443,16 @@ consent through live-session replacement and one-time consumption. Keep
 deterministic restart evidence separate from actual watchdog termination.
 
 T12 uses process-signals.representative.cross-scene-serial in the existing
-acceptance.py/connector_driver.js workflow. It requires192 probe tests and40
+acceptance.py/connector_driver.js workflow. It requires192 probe tests and46
 native expectations before full-session view/error/long-task/Action/Resource/crash
 queries. process-records.json is preserved in the durable summary on rejection.
 Decode nested/flattened measured fields without coercion; retain absent optional
 zero counters separately from malformed present values. Use source-tree-relative
 paths for lint baselines so custom rules restricted to Sources remain enabled.
+
+For serial process-signal acceptance, a peer scene can end while the other is
+active. Observe its ended view, request actual OS reactivation, and join fresh
+native lifecycle, SDK snapshot and mapper ownership before the next targeted
+Action. Do not reuse initial view IDs or accept readiness observed before that
+activation boundary. Preserve the retired view with zero counters in the complete
+four-view inventory. See the EXP-185 record for the failed original fixture.

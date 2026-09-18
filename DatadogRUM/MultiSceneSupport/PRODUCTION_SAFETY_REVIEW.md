@@ -226,5 +226,7 @@ Replay or overall release readiness.
 [EXP-185](Experiments/EXP-143-199.md#exp-185--validate-process-signal-routing)
 adds representative routing and captured pending-hang controls. All98 selected
 SDK tests and strict test lint pass without production changes. T12 remains open
-until actual producer and complete backend acceptance; this is no additional
-original-review finding or release certification.
+until actual producer and complete backend acceptance. Native attempt A exposes
+a fixture selecting an already ended A view; the SDK correctly falls back to B.
+Actual reactivation is required before retry. This is no additional original-review
+finding or release certification.

@@ -1,0 +1,1484 @@
+{
+  "artifacts": {
+    "boot-ready.log": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/multi-scene-acceptance-87dollo_/run/boot-ready.log",
+    "build-identity.json": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/multi-scene-acceptance-87dollo_/run/build-identity.json",
+    "build-tests.log": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/multi-scene-acceptance-87dollo_/run/build-tests.log",
+    "console.raw.log": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/multi-scene-acceptance-87dollo_/run/console.raw.log",
+    "container-absence.log": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/multi-scene-acceptance-87dollo_/run/container-absence.log",
+    "install.log": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/multi-scene-acceptance-87dollo_/run/install.log",
+    "process-records.json": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/multi-scene-acceptance-87dollo_/run/process-records.json",
+    "source-identity.json": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/multi-scene-acceptance-87dollo_/run/source-identity.json",
+    "summary.json": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/multi-scene-acceptance-87dollo_/run/summary.json",
+    "terminate-after.log": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/multi-scene-acceptance-87dollo_/run/terminate-after.log",
+    "terminate-before.log": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/multi-scene-acceptance-87dollo_/run/terminate-before.log",
+    "test-summary.json": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/multi-scene-acceptance-87dollo_/run/test-summary.json",
+    "uninstall.log": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/multi-scene-acceptance-87dollo_/run/uninstall.log"
+  },
+  "backend_bridge_timings": [
+    {
+      "kind": "auth",
+      "received": true,
+      "seconds": 10.658
+    }
+  ],
+  "commit_signature": {
+    "required_before_push": true,
+    "state": "UNSIGNED"
+  },
+  "device": {
+    "dataPath": "/Users/valentin.pertuisot/Library/Developer/CoreSimulator/Devices/92C9918B-FEC6-4440-9D6D-8E09475950BB/data",
+    "dataPathSize": 3337641984,
+    "deviceTypeIdentifier": "com.apple.CoreSimulator.SimDeviceType.iPad-mini-A17-Pro",
+    "isAvailable": true,
+    "lastUsedAt": "2026-09-16T22:19:15Z",
+    "logPath": "/Users/valentin.pertuisot/Library/Logs/CoreSimulator/92C9918B-FEC6-4440-9D6D-8E09475950BB",
+    "logPathSize": 536576,
+    "name": "iPad mini (A17 Pro)",
+    "runtime": "com.apple.CoreSimulator.SimRuntime.iOS-27-0",
+    "state": "Booted",
+    "udid": "92C9918B-FEC6-4440-9D6D-8E09475950BB"
+  },
+  "dirty_state": [
+    " M Datadog/Datadog.xcodeproj/project.pbxproj",
+    "A  xcconfigs/Datadog.local.xcconfig"
+  ],
+  "evidence": {
+    "build-identity.json": {
+      "executable_sha256": "b1d1d670b5f7a3587dc62738be9ac385541d18c7a52483e71fcb2365dfe0c5c8",
+      "source_sha256": "9646c651347c7ccba830a4a43d04905f5370b9c96c7f57678c4a629ef1731e48",
+      "uuid": "UUID: A7C04828-9F11-36F3-8CDC-E6F95C962BA1 (arm64) /private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/multi-scene-acceptance-87dollo_/run/derived/Build/Products/Debug-iphonesimulator/RUMNativeMultiSceneProbe.app/RUMNativeMultiSceneProbe"
+    },
+    "process-records.json": [
+      {
+        "manifest": {
+          "resolutionSource": "command-line",
+          "runID": "exp185-20260918T052229Z-cfc7a89a3645",
+          "runMode": "clean",
+          "scenario": {
+            "completionConditions": [
+              {
+                "expectedCount": 1,
+                "kind": "assertion",
+                "name": "process-configuration"
+              },
+              {
+                "expectedCount": 1,
+                "kind": "assertion",
+                "name": "process-owner-a"
+              },
+              {
+                "expectedCount": 1,
+                "kind": "assertion",
+                "name": "process-owner-b"
+              },
+              {
+                "expectedCount": 1,
+                "kind": "assertion",
+                "name": "process-b-representative"
+              },
+              {
+                "expectedCount": 1,
+                "kind": "assertion",
+                "name": "process-b-memory-boundary"
+              },
+              {
+                "expectedCount": 1,
+                "kind": "assertion",
+                "name": "process-b-memory-acknowledged"
+              },
+              {
+                "expectedCount": 1,
+                "kind": "assertion",
+                "name": "process-b-block-began"
+              },
+              {
+                "expectedCount": 1,
+                "kind": "assertion",
+                "name": "process-b-block-ended"
+              },
+              {
+                "expectedCount": 1,
+                "kind": "assertion",
+                "name": "process-b-signals-acknowledged"
+              },
+              {
+                "expectedCount": 1,
+                "kind": "assertion",
+                "name": "process-selection-boundary"
+              },
+              {
+                "expectedCount": 1,
+                "kind": "assertion",
+                "name": "process-selection-acknowledged"
+              },
+              {
+                "expectedCount": 1,
+                "kind": "assertion",
+                "name": "process-a-representative"
+              },
+              {
+                "expectedCount": 1,
+                "kind": "assertion",
+                "name": "process-a-memory-boundary"
+              },
+              {
+                "expectedCount": 1,
+                "kind": "assertion",
+                "name": "process-a-memory-acknowledged"
+              },
+              {
+                "expectedCount": 1,
+                "kind": "assertion",
+                "name": "process-a-block-began"
+              },
+              {
+                "expectedCount": 1,
+                "kind": "assertion",
+                "name": "process-a-block-ended"
+              },
+              {
+                "expectedCount": 1,
+                "kind": "assertion",
+                "name": "process-a-signals-acknowledged"
+              },
+              {
+                "expectedCount": 1,
+                "kind": "assertion",
+                "name": "process-inventory-verified"
+              },
+              {
+                "expectedCount": 1,
+                "kind": "assertion",
+                "name": "process-batch-complete"
+              }
+            ],
+            "defaultRunMode": "clean",
+            "expectedSemanticTimeline": [
+              {
+                "kind": "view-started",
+                "occurrence": 1,
+                "rumViewOrigin": "semantic",
+                "scene": "scene-A",
+                "screen": "home"
+              },
+              {
+                "kind": "view-started",
+                "occurrence": 1,
+                "rumViewOrigin": "semantic",
+                "scene": "scene-B",
+                "screen": "home"
+              },
+              {
+                "expectedCount": 1,
+                "kind": "assertion",
+                "name": "process-configuration"
+              },
+              {
+                "expectedCount": 1,
+                "kind": "assertion",
+                "name": "process-owner-a"
+              },
+              {
+                "expectedCount": 1,
+                "kind": "assertion",
+                "name": "process-owner-b"
+              },
+              {
+                "expectedCount": 1,
+                "kind": "assertion",
+                "name": "process-b-representative"
+              },
+              {
+                "expectedCount": 1,
+                "kind": "assertion",
+                "name": "process-b-memory-boundary"
+              },
+              {
+                "expectedCount": 1,
+                "kind": "assertion",
+                "name": "process-b-memory-acknowledged"
+              },
+              {
+                "expectedCount": 1,
+                "kind": "assertion",
+                "name": "process-b-block-began"
+              },
+              {
+                "expectedCount": 1,
+                "kind": "assertion",
+                "name": "process-b-block-ended"
+              },
+              {
+                "expectedCount": 1,
+                "kind": "assertion",
+                "name": "process-b-signals-acknowledged"
+              },
+              {
+                "expectedCount": 1,
+                "kind": "assertion",
+                "name": "process-selection-boundary"
+              },
+              {
+                "expectedCount": 1,
+                "kind": "assertion",
+                "name": "process-selection-acknowledged"
+              },
+              {
+                "expectedCount": 1,
+                "kind": "assertion",
+                "name": "process-a-representative"
+              },
+              {
+                "expectedCount": 1,
+                "kind": "assertion",
+                "name": "process-a-memory-boundary"
+              },
+              {
+                "expectedCount": 1,
+                "kind": "assertion",
+                "name": "process-a-memory-acknowledged"
+              },
+              {
+                "expectedCount": 1,
+                "kind": "assertion",
+                "name": "process-a-block-began"
+              },
+              {
+                "expectedCount": 1,
+                "kind": "assertion",
+                "name": "process-a-block-ended"
+              },
+              {
+                "expectedCount": 1,
+                "kind": "assertion",
+                "name": "process-a-signals-acknowledged"
+              },
+              {
+                "expectedCount": 1,
+                "kind": "assertion",
+                "name": "process-inventory-verified"
+              },
+              {
+                "expectedCount": 1,
+                "kind": "assertion",
+                "name": "process-batch-complete"
+              }
+            ],
+            "identifier": "process-signals.representative.cross-scene-serial",
+            "initialWindows": [
+              "scene-A",
+              "scene-B"
+            ],
+            "layout": "stack",
+            "requiredCapabilities": [
+              "multiple-scenes"
+            ],
+            "runtimeOptions": {
+              "automaticallyAbortsDetail": false,
+              "automaticallyAdvancesSplitSelection": true,
+              "automaticallyClosesSceneB": false,
+              "automaticallyNavigates": false,
+              "automaticallyOpensSecondWindow": false,
+              "automaticallyPopsUIKitSplitNavigation": true,
+              "automaticallyReplacesDetail": false,
+              "automaticallyReplacesDetailInstance": false,
+              "automaticallyReturnsSplitToDetail": false,
+              "exercisesSwiftUIButtonStructuredTask": false,
+              "exercisesTraceOnlyURLSessionOwnership": false,
+              "exercisesUIEventContextHandoff": false,
+              "exercisesUIKitScrollOwnership": false,
+              "forcesNavigationRouteIdentity": false,
+              "initialSwiftUIPath": [],
+              "manualSwiftUIViewScreensByScene": {},
+              "startsSplitWithoutSelection": false,
+              "swiftUIRouterWritePolicy": "accept",
+              "swiftUIStress": "none"
+            },
+            "steps": [
+              {
+                "kind": "wait-for-scene-ready",
+                "scene": "scene-A"
+              },
+              {
+                "kind": "wait-for-signal",
+                "scene": "scene-A",
+                "signal": "rum-view:home#1"
+              },
+              {
+                "kind": "open-window",
+                "scene": "scene-A",
+                "value": "scene-B"
+              },
+              {
+                "kind": "wait-for-signal",
+                "scene": "scene-B",
+                "signal": "rum-view:home#1"
+              },
+              {
+                "kind": "run-process-signal-batch",
+                "scene": "scene-B"
+              }
+            ],
+            "trackingMode": "manual"
+          },
+          "schemaVersion": 3,
+          "validationErrors": []
+        },
+        "type": "manifest"
+      },
+      {
+        "signal": {
+          "evidenceSource": "rum-mapper",
+          "kind": "rum-session-started",
+          "rumContext": {
+            "sessionDiscarded": false,
+            "sessionID": "3151b2dc-cb9f-4d78-9d43-0a83d06dbf7d"
+          },
+          "runID": "exp185-20260918T052229Z-cfc7a89a3645",
+          "scenarioID": "process-signals.representative.cross-scene-serial",
+          "schemaVersion": 5,
+          "sequence": 1,
+          "timestampMilliseconds": 1789708992862
+        },
+        "type": "signal"
+      },
+      {
+        "signal": {
+          "evidenceSource": "rum-mapper",
+          "kind": "rum-view-snapshot",
+          "processSignal": {
+            "nativeSource": "ios",
+            "viewActionCount": 0,
+            "viewCrashCount": 0,
+            "viewErrorCount": 0,
+            "viewLongTaskCount": 0,
+            "viewResourceCount": 0
+          },
+          "rumContext": {
+            "eventDateMilliseconds": 1789708992826,
+            "sessionHasReplay": false,
+            "sessionID": "3151b2dc-cb9f-4d78-9d43-0a83d06dbf7d",
+            "viewActive": true,
+            "viewDocumentVersion": 1,
+            "viewID": "b4153b6e-2c5e-49dc-95d4-439103caecba",
+            "viewName": "ApplicationLaunch",
+            "viewTimeSpentNanoseconds": 29973984,
+            "viewURL": "com/datadog/application-launch/view"
+          },
+          "runID": "exp185-20260918T052229Z-cfc7a89a3645",
+          "scenarioID": "process-signals.representative.cross-scene-serial",
+          "schemaVersion": 5,
+          "sequence": 2,
+          "timestampMilliseconds": 1789708992875
+        },
+        "type": "signal"
+      },
+      {
+        "signal": {
+          "evidenceSource": "rum-mapper",
+          "kind": "rum-view-snapshot",
+          "processSignal": {
+            "nativeSource": "ios",
+            "originalRunID": "exp185-20260918T052229Z-cfc7a89a3645",
+            "viewActionCount": 0,
+            "viewCrashCount": 0,
+            "viewErrorCount": 0,
+            "viewLongTaskCount": 0,
+            "viewResourceCount": 0
+          },
+          "rumContext": {
+            "eventDateMilliseconds": 1789708992826,
+            "sessionHasReplay": false,
+            "sessionID": "3151b2dc-cb9f-4d78-9d43-0a83d06dbf7d",
+            "viewActive": false,
+            "viewDocumentVersion": 2,
+            "viewID": "b4153b6e-2c5e-49dc-95d4-439103caecba",
+            "viewName": "ApplicationLaunch",
+            "viewTimeSpentNanoseconds": 193223953,
+            "viewURL": "com/datadog/application-launch/view"
+          },
+          "runID": "exp185-20260918T052229Z-cfc7a89a3645",
+          "scenarioID": "process-signals.representative.cross-scene-serial",
+          "schemaVersion": 5,
+          "sequence": 3,
+          "timestampMilliseconds": 1789708993022
+        },
+        "type": "signal"
+      },
+      {
+        "signal": {
+          "evidenceSource": "rum-mapper",
+          "kind": "rum-view-snapshot",
+          "processSignal": {
+            "nativeSource": "ios",
+            "originalRunID": "exp185-20260918T052229Z-cfc7a89a3645",
+            "viewActionCount": 0,
+            "viewCrashCount": 0,
+            "viewErrorCount": 0,
+            "viewLongTaskCount": 0,
+            "viewResourceCount": 0
+          },
+          "rumContext": {
+            "eventDateMilliseconds": 1789708993019,
+            "sessionHasReplay": false,
+            "sessionID": "3151b2dc-cb9f-4d78-9d43-0a83d06dbf7d",
+            "viewActive": true,
+            "viewDocumentVersion": 1,
+            "viewID": "075ba752-7fa9-4bdd-adf2-c1019d7d0bfe",
+            "viewName": "ProbeHomeView",
+            "viewTimeSpentNanoseconds": 1,
+            "viewURL": "ProbeHomeView/305356971223723918"
+          },
+          "runID": "exp185-20260918T052229Z-cfc7a89a3645",
+          "scenarioID": "process-signals.representative.cross-scene-serial",
+          "schemaVersion": 5,
+          "semanticContext": {
+            "logicalSceneID": "scene-A",
+            "screen": "home"
+          },
+          "sequence": 4,
+          "timestampMilliseconds": 1789708993023
+        },
+        "type": "signal"
+      },
+      {
+        "signal": {
+          "evidenceSource": "probe",
+          "kind": "destination-appearance-observed",
+          "runID": "exp185-20260918T052229Z-cfc7a89a3645",
+          "scenarioID": "process-signals.representative.cross-scene-serial",
+          "schemaVersion": 5,
+          "semanticContext": {
+            "logicalSceneID": "scene-A",
+            "screen": "home"
+          },
+          "sequence": 5,
+          "timestampMilliseconds": 1789708993025
+        },
+        "type": "signal"
+      },
+      {
+        "signal": {
+          "activationState": "foreground-inactive",
+          "evidenceSource": "probe",
+          "geometry": {
+            "height": 1133,
+            "width": 744,
+            "x": 0,
+            "y": 0
+          },
+          "horizontalSizeClass": "regular",
+          "kind": "scene-ready",
+          "navigationPath": [
+            "home"
+          ],
+          "runID": "exp185-20260918T052229Z-cfc7a89a3645",
+          "scenarioID": "process-signals.representative.cross-scene-serial",
+          "sceneDisconnectGeneration": 0,
+          "scenePhase": "ready",
+          "schemaVersion": 5,
+          "semanticContext": {
+            "logicalSceneID": "scene-A",
+            "nativeSceneID": "93D2828A-25EC-41FB-8630-03F90A6EF1AC",
+            "screen": "home"
+          },
+          "sequence": 6,
+          "timestampMilliseconds": 1789708993063,
+          "verticalSizeClass": "regular"
+        },
+        "type": "signal"
+      },
+      {
+        "signal": {
+          "evidenceSource": "probe",
+          "kind": "step-started",
+          "runID": "exp185-20260918T052229Z-cfc7a89a3645",
+          "scenarioID": "process-signals.representative.cross-scene-serial",
+          "schemaVersion": 5,
+          "semanticContext": {
+            "logicalSceneID": "scene-A",
+            "nativeSceneID": "93D2828A-25EC-41FB-8630-03F90A6EF1AC",
+            "screen": "home"
+          },
+          "sequence": 7,
+          "stepIndex": 0,
+          "stepKind": "wait-for-scene-ready",
+          "timestampMilliseconds": 1789708993073
+        },
+        "type": "signal"
+      },
+      {
+        "signal": {
+          "acknowledgedSignalSequence": 6,
+          "evidenceSource": "probe",
+          "kind": "step-acknowledged",
+          "runID": "exp185-20260918T052229Z-cfc7a89a3645",
+          "scenarioID": "process-signals.representative.cross-scene-serial",
+          "schemaVersion": 5,
+          "semanticContext": {
+            "logicalSceneID": "scene-A",
+            "nativeSceneID": "93D2828A-25EC-41FB-8630-03F90A6EF1AC",
+            "screen": "home"
+          },
+          "sequence": 8,
+          "stepIndex": 0,
+          "stepKind": "wait-for-scene-ready",
+          "timestampMilliseconds": 1789708993084
+        },
+        "type": "signal"
+      },
+      {
+        "signal": {
+          "evidenceSource": "probe",
+          "kind": "step-started",
+          "name": "rum-view:home#1",
+          "runID": "exp185-20260918T052229Z-cfc7a89a3645",
+          "scenarioID": "process-signals.representative.cross-scene-serial",
+          "schemaVersion": 5,
+          "semanticContext": {
+            "logicalSceneID": "scene-A",
+            "nativeSceneID": "93D2828A-25EC-41FB-8630-03F90A6EF1AC",
+            "screen": "home"
+          },
+          "sequence": 9,
+          "stepIndex": 1,
+          "stepKind": "wait-for-signal",
+          "timestampMilliseconds": 1789708993084
+        },
+        "type": "signal"
+      },
+      {
+        "signal": {
+          "acknowledgedSignalSequence": 4,
+          "evidenceSource": "probe",
+          "kind": "step-acknowledged",
+          "name": "rum-view:home#1",
+          "runID": "exp185-20260918T052229Z-cfc7a89a3645",
+          "scenarioID": "process-signals.representative.cross-scene-serial",
+          "schemaVersion": 5,
+          "semanticContext": {
+            "logicalSceneID": "scene-A",
+            "nativeSceneID": "93D2828A-25EC-41FB-8630-03F90A6EF1AC",
+            "screen": "home"
+          },
+          "sequence": 10,
+          "stepIndex": 1,
+          "stepKind": "wait-for-signal",
+          "timestampMilliseconds": 1789708993085
+        },
+        "type": "signal"
+      },
+      {
+        "signal": {
+          "evidenceSource": "probe",
+          "kind": "step-started",
+          "name": "scene-B",
+          "runID": "exp185-20260918T052229Z-cfc7a89a3645",
+          "scenarioID": "process-signals.representative.cross-scene-serial",
+          "schemaVersion": 5,
+          "semanticContext": {
+            "logicalSceneID": "scene-A",
+            "nativeSceneID": "93D2828A-25EC-41FB-8630-03F90A6EF1AC",
+            "screen": "home"
+          },
+          "sequence": 11,
+          "stepIndex": 2,
+          "stepKind": "open-window",
+          "timestampMilliseconds": 1789708993085
+        },
+        "type": "signal"
+      },
+      {
+        "signal": {
+          "activationState": "foreground-active",
+          "evidenceSource": "probe",
+          "geometry": {
+            "height": 1133,
+            "width": 744,
+            "x": 0,
+            "y": 0
+          },
+          "horizontalSizeClass": "regular",
+          "kind": "scene-lifecycle",
+          "navigationPath": [
+            "home"
+          ],
+          "runID": "exp185-20260918T052229Z-cfc7a89a3645",
+          "scenarioID": "process-signals.representative.cross-scene-serial",
+          "sceneDisconnectGeneration": 0,
+          "scenePhase": "ready",
+          "schemaVersion": 5,
+          "semanticContext": {
+            "logicalSceneID": "scene-A",
+            "nativeSceneID": "93D2828A-25EC-41FB-8630-03F90A6EF1AC",
+            "screen": "home"
+          },
+          "sequence": 12,
+          "timestampMilliseconds": 1789708993090,
+          "verticalSizeClass": "regular"
+        },
+        "type": "signal"
+      },
+      {
+        "signal": {
+          "activationState": "foreground-inactive",
+          "evidenceSource": "probe",
+          "geometry": {
+            "height": 1133,
+            "width": 744,
+            "x": 0,
+            "y": 0
+          },
+          "horizontalSizeClass": "regular",
+          "kind": "scene-lifecycle",
+          "navigationPath": [
+            "home"
+          ],
+          "runID": "exp185-20260918T052229Z-cfc7a89a3645",
+          "scenarioID": "process-signals.representative.cross-scene-serial",
+          "sceneDisconnectGeneration": 0,
+          "scenePhase": "ready",
+          "schemaVersion": 5,
+          "semanticContext": {
+            "logicalSceneID": "scene-A",
+            "nativeSceneID": "93D2828A-25EC-41FB-8630-03F90A6EF1AC",
+            "screen": "home"
+          },
+          "sequence": 13,
+          "timestampMilliseconds": 1789708993117,
+          "verticalSizeClass": "regular"
+        },
+        "type": "signal"
+      },
+      {
+        "signal": {
+          "evidenceSource": "rum-mapper",
+          "kind": "rum-view-snapshot",
+          "processSignal": {
+            "nativeSource": "ios",
+            "originalRunID": "exp185-20260918T052229Z-cfc7a89a3645",
+            "viewActionCount": 0,
+            "viewCrashCount": 0,
+            "viewErrorCount": 0,
+            "viewLongTaskCount": 0,
+            "viewResourceCount": 0
+          },
+          "rumContext": {
+            "eventDateMilliseconds": 1789708993272,
+            "sessionHasReplay": false,
+            "sessionID": "3151b2dc-cb9f-4d78-9d43-0a83d06dbf7d",
+            "viewActive": true,
+            "viewDocumentVersion": 1,
+            "viewID": "4e663eda-9a95-4ea8-93d5-5e338c2cf67f",
+            "viewName": "ProbeHomeView",
+            "viewTimeSpentNanoseconds": 1,
+            "viewURL": "ProbeHomeView/305356971223723918"
+          },
+          "runID": "exp185-20260918T052229Z-cfc7a89a3645",
+          "scenarioID": "process-signals.representative.cross-scene-serial",
+          "schemaVersion": 5,
+          "semanticContext": {
+            "logicalSceneID": "scene-B",
+            "screen": "home"
+          },
+          "sequence": 14,
+          "timestampMilliseconds": 1789708993166
+        },
+        "type": "signal"
+      },
+      {
+        "signal": {
+          "evidenceSource": "probe",
+          "kind": "destination-appearance-observed",
+          "runID": "exp185-20260918T052229Z-cfc7a89a3645",
+          "scenarioID": "process-signals.representative.cross-scene-serial",
+          "schemaVersion": 5,
+          "semanticContext": {
+            "logicalSceneID": "scene-B",
+            "screen": "home"
+          },
+          "sequence": 15,
+          "timestampMilliseconds": 1789708993167
+        },
+        "type": "signal"
+      },
+      {
+        "signal": {
+          "activationState": "foreground-inactive",
+          "evidenceSource": "probe",
+          "geometry": {
+            "height": 1133,
+            "width": 744,
+            "x": 0,
+            "y": 0
+          },
+          "horizontalSizeClass": "regular",
+          "kind": "scene-ready",
+          "navigationPath": [
+            "home"
+          ],
+          "runID": "exp185-20260918T052229Z-cfc7a89a3645",
+          "scenarioID": "process-signals.representative.cross-scene-serial",
+          "sceneDisconnectGeneration": 0,
+          "scenePhase": "ready",
+          "schemaVersion": 5,
+          "semanticContext": {
+            "logicalSceneID": "scene-B",
+            "nativeSceneID": "9601A0A6-5B26-46FD-80A9-9F58F7A3B574",
+            "screen": "home"
+          },
+          "sequence": 16,
+          "timestampMilliseconds": 1789708993193,
+          "verticalSizeClass": "regular"
+        },
+        "type": "signal"
+      },
+      {
+        "signal": {
+          "acknowledgedSignalSequence": 16,
+          "evidenceSource": "probe",
+          "kind": "step-acknowledged",
+          "name": "scene-B",
+          "runID": "exp185-20260918T052229Z-cfc7a89a3645",
+          "scenarioID": "process-signals.representative.cross-scene-serial",
+          "schemaVersion": 5,
+          "semanticContext": {
+            "logicalSceneID": "scene-A",
+            "nativeSceneID": "93D2828A-25EC-41FB-8630-03F90A6EF1AC",
+            "screen": "home"
+          },
+          "sequence": 17,
+          "stepIndex": 2,
+          "stepKind": "open-window",
+          "timestampMilliseconds": 1789708993197
+        },
+        "type": "signal"
+      },
+      {
+        "signal": {
+          "evidenceSource": "probe",
+          "kind": "step-started",
+          "name": "rum-view:home#1",
+          "runID": "exp185-20260918T052229Z-cfc7a89a3645",
+          "scenarioID": "process-signals.representative.cross-scene-serial",
+          "schemaVersion": 5,
+          "semanticContext": {
+            "logicalSceneID": "scene-B",
+            "nativeSceneID": "9601A0A6-5B26-46FD-80A9-9F58F7A3B574",
+            "screen": "home"
+          },
+          "sequence": 18,
+          "stepIndex": 3,
+          "stepKind": "wait-for-signal",
+          "timestampMilliseconds": 1789708993197
+        },
+        "type": "signal"
+      },
+      {
+        "signal": {
+          "acknowledgedSignalSequence": 14,
+          "evidenceSource": "probe",
+          "kind": "step-acknowledged",
+          "name": "rum-view:home#1",
+          "runID": "exp185-20260918T052229Z-cfc7a89a3645",
+          "scenarioID": "process-signals.representative.cross-scene-serial",
+          "schemaVersion": 5,
+          "semanticContext": {
+            "logicalSceneID": "scene-B",
+            "nativeSceneID": "9601A0A6-5B26-46FD-80A9-9F58F7A3B574",
+            "screen": "home"
+          },
+          "sequence": 19,
+          "stepIndex": 3,
+          "stepKind": "wait-for-signal",
+          "timestampMilliseconds": 1789708993197
+        },
+        "type": "signal"
+      },
+      {
+        "signal": {
+          "evidenceSource": "probe",
+          "kind": "step-started",
+          "runID": "exp185-20260918T052229Z-cfc7a89a3645",
+          "scenarioID": "process-signals.representative.cross-scene-serial",
+          "schemaVersion": 5,
+          "semanticContext": {
+            "logicalSceneID": "scene-B",
+            "nativeSceneID": "9601A0A6-5B26-46FD-80A9-9F58F7A3B574",
+            "screen": "home"
+          },
+          "sequence": 20,
+          "stepIndex": 4,
+          "stepKind": "run-process-signal-batch",
+          "timestampMilliseconds": 1789708993197
+        },
+        "type": "signal"
+      },
+      {
+        "signal": {
+          "evidenceSource": "internal-hook",
+          "kind": "assertion",
+          "name": "process-configuration",
+          "processSignal": {
+            "appHangThreshold": 0.5,
+            "hasAppHangMonitor": true,
+            "hasLongTaskObserver": true,
+            "hasMemoryWarningMonitor": true,
+            "longTaskThreshold": 0.5
+          },
+          "result": "PASS",
+          "runID": "exp185-20260918T052229Z-cfc7a89a3645",
+          "scenarioID": "process-signals.representative.cross-scene-serial",
+          "schemaVersion": 5,
+          "sequence": 21,
+          "timestampMilliseconds": 1789708993197
+        },
+        "type": "signal"
+      },
+      {
+        "signal": {
+          "evidenceSource": "internal-hook",
+          "kind": "assertion",
+          "name": "process-owner-a",
+          "result": "PASS",
+          "rumContext": {
+            "sessionID": "3151b2dc-cb9f-4d78-9d43-0a83d06dbf7d",
+            "viewID": "075ba752-7fa9-4bdd-adf2-c1019d7d0bfe"
+          },
+          "runID": "exp185-20260918T052229Z-cfc7a89a3645",
+          "scenarioID": "process-signals.representative.cross-scene-serial",
+          "schemaVersion": 5,
+          "sequence": 22,
+          "sourceContext": {
+            "logicalSceneID": "scene-A",
+            "nativeSceneID": "93D2828A-25EC-41FB-8630-03F90A6EF1AC",
+            "screen": "home"
+          },
+          "timestampMilliseconds": 1789708993198
+        },
+        "type": "signal"
+      },
+      {
+        "signal": {
+          "evidenceSource": "internal-hook",
+          "kind": "assertion",
+          "name": "process-owner-b",
+          "result": "PASS",
+          "rumContext": {
+            "sessionID": "3151b2dc-cb9f-4d78-9d43-0a83d06dbf7d",
+            "viewID": "4e663eda-9a95-4ea8-93d5-5e338c2cf67f"
+          },
+          "runID": "exp185-20260918T052229Z-cfc7a89a3645",
+          "scenarioID": "process-signals.representative.cross-scene-serial",
+          "schemaVersion": 5,
+          "sequence": 23,
+          "sourceContext": {
+            "logicalSceneID": "scene-B",
+            "nativeSceneID": "9601A0A6-5B26-46FD-80A9-9F58F7A3B574",
+            "screen": "home"
+          },
+          "timestampMilliseconds": 1789708993198
+        },
+        "type": "signal"
+      },
+      {
+        "signal": {
+          "evidenceSource": "internal-hook",
+          "kind": "assertion",
+          "name": "process-b-representative",
+          "processSignal": {
+            "serverTimeOffsetMilliseconds": 105.77213764190674
+          },
+          "result": "PASS",
+          "rumContext": {
+            "sessionID": "3151b2dc-cb9f-4d78-9d43-0a83d06dbf7d",
+            "viewID": "4e663eda-9a95-4ea8-93d5-5e338c2cf67f"
+          },
+          "runID": "exp185-20260918T052229Z-cfc7a89a3645",
+          "scenarioID": "process-signals.representative.cross-scene-serial",
+          "schemaVersion": 5,
+          "sequence": 24,
+          "timestampMilliseconds": 1789708993200
+        },
+        "type": "signal"
+      },
+      {
+        "signal": {
+          "evidenceSource": "internal-hook",
+          "kind": "assertion",
+          "name": "process-b-memory-boundary",
+          "result": "PASS",
+          "runID": "exp185-20260918T052229Z-cfc7a89a3645",
+          "scenarioID": "process-signals.representative.cross-scene-serial",
+          "schemaVersion": 5,
+          "sequence": 25,
+          "timestampMilliseconds": 1789708993200
+        },
+        "type": "signal"
+      },
+      {
+        "signal": {
+          "error": {
+            "category": "Memory Warning",
+            "id": "33b130c8-9121-44cb-a506-a9ddea054cff",
+            "isCrash": false,
+            "source": "source",
+            "type": "MemoryWarning"
+          },
+          "eventID": "33b130c8-9121-44cb-a506-a9ddea054cff",
+          "evidenceSource": "rum-mapper",
+          "kind": "rum-error",
+          "name": "MemoryWarning",
+          "processSignal": {
+            "hasAction": false,
+            "hasContainer": false,
+            "nativeSource": "ios",
+            "originalRunID": "exp185-20260918T052229Z-cfc7a89a3645"
+          },
+          "rumContext": {
+            "eventDateMilliseconds": 1789708993305,
+            "sessionID": "3151b2dc-cb9f-4d78-9d43-0a83d06dbf7d",
+            "viewID": "4e663eda-9a95-4ea8-93d5-5e338c2cf67f",
+            "viewName": "ProbeHomeView",
+            "viewURL": "ProbeHomeView/305356971223723918"
+          },
+          "runID": "exp185-20260918T052229Z-cfc7a89a3645",
+          "scenarioID": "process-signals.representative.cross-scene-serial",
+          "schemaVersion": 5,
+          "sequence": 26,
+          "sourceContext": {
+            "logicalSceneID": "scene-B",
+            "readerControlGeneration": 0,
+            "screen": "home"
+          },
+          "timestampMilliseconds": 1789708993203
+        },
+        "type": "signal"
+      },
+      {
+        "signal": {
+          "evidenceSource": "rum-mapper",
+          "kind": "rum-view-snapshot",
+          "processSignal": {
+            "nativeSource": "ios",
+            "originalRunID": "exp185-20260918T052229Z-cfc7a89a3645",
+            "viewActionCount": 0,
+            "viewCrashCount": 0,
+            "viewErrorCount": 1,
+            "viewLongTaskCount": 0,
+            "viewResourceCount": 0
+          },
+          "rumContext": {
+            "eventDateMilliseconds": 1789708993272,
+            "sessionHasReplay": false,
+            "sessionID": "3151b2dc-cb9f-4d78-9d43-0a83d06dbf7d",
+            "viewActive": true,
+            "viewDocumentVersion": 2,
+            "viewID": "4e663eda-9a95-4ea8-93d5-5e338c2cf67f",
+            "viewName": "ProbeHomeView",
+            "viewTimeSpentNanoseconds": 33902049,
+            "viewURL": "ProbeHomeView/305356971223723918"
+          },
+          "runID": "exp185-20260918T052229Z-cfc7a89a3645",
+          "scenarioID": "process-signals.representative.cross-scene-serial",
+          "schemaVersion": 5,
+          "semanticContext": {
+            "logicalSceneID": "scene-B",
+            "screen": "home"
+          },
+          "sequence": 27,
+          "timestampMilliseconds": 1789708993204
+        },
+        "type": "signal"
+      },
+      {
+        "signal": {
+          "evidenceSource": "internal-hook",
+          "kind": "assertion",
+          "name": "process-b-memory-acknowledged",
+          "result": "PASS",
+          "runID": "exp185-20260918T052229Z-cfc7a89a3645",
+          "scenarioID": "process-signals.representative.cross-scene-serial",
+          "schemaVersion": 5,
+          "sequence": 28,
+          "timestampMilliseconds": 1789708993222
+        },
+        "type": "signal"
+      },
+      {
+        "signal": {
+          "evidenceSource": "internal-hook",
+          "kind": "assertion",
+          "name": "process-b-block-began",
+          "result": "PASS",
+          "runID": "exp185-20260918T052229Z-cfc7a89a3645",
+          "scenarioID": "process-signals.representative.cross-scene-serial",
+          "schemaVersion": 5,
+          "sequence": 29,
+          "timestampMilliseconds": 1789708993222
+        },
+        "type": "signal"
+      },
+      {
+        "signal": {
+          "evidenceSource": "internal-hook",
+          "kind": "assertion",
+          "name": "process-b-block-ended",
+          "result": "PASS",
+          "runID": "exp185-20260918T052229Z-cfc7a89a3645",
+          "scenarioID": "process-signals.representative.cross-scene-serial",
+          "schemaVersion": 5,
+          "sequence": 30,
+          "timestampMilliseconds": 1789708994724
+        },
+        "type": "signal"
+      },
+      {
+        "signal": {
+          "eventID": "b5007321-6687-43db-8474-0d0e7fe6d553",
+          "evidenceSource": "rum-mapper",
+          "kind": "rum-long-task",
+          "name": "LongTask",
+          "processSignal": {
+            "durationNanoseconds": 1502298951,
+            "hasAction": false,
+            "hasContainer": false,
+            "nativeSource": "ios",
+            "originalRunID": "exp185-20260918T052229Z-cfc7a89a3645"
+          },
+          "rumContext": {
+            "eventDateMilliseconds": 1789708993328,
+            "sessionID": "3151b2dc-cb9f-4d78-9d43-0a83d06dbf7d",
+            "viewID": "4e663eda-9a95-4ea8-93d5-5e338c2cf67f",
+            "viewName": "ProbeHomeView",
+            "viewURL": "ProbeHomeView/305356971223723918"
+          },
+          "runID": "exp185-20260918T052229Z-cfc7a89a3645",
+          "scenarioID": "process-signals.representative.cross-scene-serial",
+          "schemaVersion": 5,
+          "sequence": 31,
+          "timestampMilliseconds": 1789708994728
+        },
+        "type": "signal"
+      },
+      {
+        "signal": {
+          "evidenceSource": "rum-mapper",
+          "kind": "rum-view-snapshot",
+          "processSignal": {
+            "nativeSource": "ios",
+            "originalRunID": "exp185-20260918T052229Z-cfc7a89a3645",
+            "viewActionCount": 0,
+            "viewCrashCount": 0,
+            "viewErrorCount": 1,
+            "viewLongTaskCount": 1,
+            "viewResourceCount": 0
+          },
+          "rumContext": {
+            "eventDateMilliseconds": 1789708993272,
+            "sessionHasReplay": false,
+            "sessionID": "3151b2dc-cb9f-4d78-9d43-0a83d06dbf7d",
+            "viewActive": true,
+            "viewDocumentVersion": 3,
+            "viewID": "4e663eda-9a95-4ea8-93d5-5e338c2cf67f",
+            "viewName": "ProbeHomeView",
+            "viewTimeSpentNanoseconds": 1558308005,
+            "viewURL": "ProbeHomeView/305356971223723918"
+          },
+          "runID": "exp185-20260918T052229Z-cfc7a89a3645",
+          "scenarioID": "process-signals.representative.cross-scene-serial",
+          "schemaVersion": 5,
+          "semanticContext": {
+            "logicalSceneID": "scene-B",
+            "screen": "home"
+          },
+          "sequence": 32,
+          "timestampMilliseconds": 1789708994728
+        },
+        "type": "signal"
+      },
+      {
+        "signal": {
+          "error": {
+            "category": "App Hang",
+            "id": "78770061-e361-4799-859a-007038333b67",
+            "isCrash": false,
+            "source": "source",
+            "type": "AppHang"
+          },
+          "eventID": "78770061-e361-4799-859a-007038333b67",
+          "evidenceSource": "rum-mapper",
+          "kind": "rum-error",
+          "name": "AppHang",
+          "processSignal": {
+            "durationNanoseconds": 1501497875,
+            "hasAction": false,
+            "hasContainer": false,
+            "nativeSource": "ios",
+            "originalRunID": "exp185-20260918T052229Z-cfc7a89a3645"
+          },
+          "rumContext": {
+            "eventDateMilliseconds": 1789708993330,
+            "sessionID": "3151b2dc-cb9f-4d78-9d43-0a83d06dbf7d",
+            "viewID": "4e663eda-9a95-4ea8-93d5-5e338c2cf67f",
+            "viewName": "ProbeHomeView",
+            "viewURL": "ProbeHomeView/305356971223723918"
+          },
+          "runID": "exp185-20260918T052229Z-cfc7a89a3645",
+          "scenarioID": "process-signals.representative.cross-scene-serial",
+          "schemaVersion": 5,
+          "sequence": 33,
+          "sourceContext": {
+            "logicalSceneID": "scene-B",
+            "readerControlGeneration": 0,
+            "screen": "home"
+          },
+          "timestampMilliseconds": 1789708994730
+        },
+        "type": "signal"
+      },
+      {
+        "signal": {
+          "evidenceSource": "rum-mapper",
+          "kind": "rum-view-snapshot",
+          "processSignal": {
+            "nativeSource": "ios",
+            "originalRunID": "exp185-20260918T052229Z-cfc7a89a3645",
+            "viewActionCount": 0,
+            "viewCrashCount": 0,
+            "viewErrorCount": 2,
+            "viewLongTaskCount": 1,
+            "viewResourceCount": 0
+          },
+          "rumContext": {
+            "eventDateMilliseconds": 1789708993272,
+            "sessionHasReplay": false,
+            "sessionID": "3151b2dc-cb9f-4d78-9d43-0a83d06dbf7d",
+            "viewActive": true,
+            "viewDocumentVersion": 4,
+            "viewID": "4e663eda-9a95-4ea8-93d5-5e338c2cf67f",
+            "viewName": "ProbeHomeView",
+            "viewTimeSpentNanoseconds": 58642983,
+            "viewURL": "ProbeHomeView/305356971223723918"
+          },
+          "runID": "exp185-20260918T052229Z-cfc7a89a3645",
+          "scenarioID": "process-signals.representative.cross-scene-serial",
+          "schemaVersion": 5,
+          "semanticContext": {
+            "logicalSceneID": "scene-B",
+            "screen": "home"
+          },
+          "sequence": 34,
+          "timestampMilliseconds": 1789708994730
+        },
+        "type": "signal"
+      },
+      {
+        "signal": {
+          "evidenceSource": "rum-mapper",
+          "kind": "rum-view-snapshot",
+          "processSignal": {
+            "nativeSource": "ios",
+            "originalRunID": "exp185-20260918T052229Z-cfc7a89a3645",
+            "viewActionCount": 0,
+            "viewCrashCount": 0,
+            "viewErrorCount": 0,
+            "viewLongTaskCount": 0,
+            "viewResourceCount": 0
+          },
+          "rumContext": {
+            "eventDateMilliseconds": 1789708993019,
+            "sessionHasReplay": false,
+            "sessionID": "3151b2dc-cb9f-4d78-9d43-0a83d06dbf7d",
+            "viewActive": false,
+            "viewDocumentVersion": 2,
+            "viewID": "075ba752-7fa9-4bdd-adf2-c1019d7d0bfe",
+            "viewName": "ProbeHomeView",
+            "viewTimeSpentNanoseconds": 1712756038,
+            "viewURL": "ProbeHomeView/305356971223723918"
+          },
+          "runID": "exp185-20260918T052229Z-cfc7a89a3645",
+          "scenarioID": "process-signals.representative.cross-scene-serial",
+          "schemaVersion": 5,
+          "semanticContext": {
+            "logicalSceneID": "scene-A",
+            "screen": "home"
+          },
+          "sequence": 35,
+          "timestampMilliseconds": 1789708994734
+        },
+        "type": "signal"
+      },
+      {
+        "signal": {
+          "activationState": "foreground-active",
+          "evidenceSource": "probe",
+          "geometry": {
+            "height": 1133,
+            "width": 744,
+            "x": 0,
+            "y": 0
+          },
+          "horizontalSizeClass": "regular",
+          "kind": "scene-lifecycle",
+          "navigationPath": [
+            "home"
+          ],
+          "runID": "exp185-20260918T052229Z-cfc7a89a3645",
+          "scenarioID": "process-signals.representative.cross-scene-serial",
+          "sceneDisconnectGeneration": 0,
+          "scenePhase": "ready",
+          "schemaVersion": 5,
+          "semanticContext": {
+            "logicalSceneID": "scene-B",
+            "nativeSceneID": "9601A0A6-5B26-46FD-80A9-9F58F7A3B574",
+            "screen": "home"
+          },
+          "sequence": 36,
+          "timestampMilliseconds": 1789708994734,
+          "verticalSizeClass": "regular"
+        },
+        "type": "signal"
+      },
+      {
+        "signal": {
+          "activationState": "background",
+          "evidenceSource": "probe",
+          "geometry": {
+            "height": 1133,
+            "width": 744,
+            "x": 0,
+            "y": 0
+          },
+          "horizontalSizeClass": "regular",
+          "kind": "scene-lifecycle",
+          "navigationPath": [
+            "home"
+          ],
+          "runID": "exp185-20260918T052229Z-cfc7a89a3645",
+          "scenarioID": "process-signals.representative.cross-scene-serial",
+          "sceneDisconnectGeneration": 0,
+          "scenePhase": "ready",
+          "schemaVersion": 5,
+          "semanticContext": {
+            "logicalSceneID": "scene-A",
+            "nativeSceneID": "93D2828A-25EC-41FB-8630-03F90A6EF1AC",
+            "screen": "home"
+          },
+          "sequence": 37,
+          "timestampMilliseconds": 1789708994737,
+          "verticalSizeClass": "regular"
+        },
+        "type": "signal"
+      },
+      {
+        "signal": {
+          "evidenceSource": "internal-hook",
+          "kind": "assertion",
+          "name": "process-b-signals-acknowledged",
+          "result": "PASS",
+          "rumContext": {
+            "sessionID": "3151b2dc-cb9f-4d78-9d43-0a83d06dbf7d",
+            "viewID": "4e663eda-9a95-4ea8-93d5-5e338c2cf67f"
+          },
+          "runID": "exp185-20260918T052229Z-cfc7a89a3645",
+          "scenarioID": "process-signals.representative.cross-scene-serial",
+          "schemaVersion": 5,
+          "sequence": 38,
+          "timestampMilliseconds": 1789708994777
+        },
+        "type": "signal"
+      },
+      {
+        "signal": {
+          "evidenceSource": "internal-hook",
+          "kind": "assertion",
+          "name": "process-selection-boundary",
+          "result": "PASS",
+          "runID": "exp185-20260918T052229Z-cfc7a89a3645",
+          "scenarioID": "process-signals.representative.cross-scene-serial",
+          "schemaVersion": 5,
+          "sequence": 39,
+          "timestampMilliseconds": 1789708994778
+        },
+        "type": "signal"
+      },
+      {
+        "signal": {
+          "action": {
+            "errorCount": 0,
+            "id": "50faf136-b00b-4318-90b2-95554860f559",
+            "loadingTimeNanoseconds": 0,
+            "resourceCount": 0,
+            "target": "process-select-a",
+            "type": "custom"
+          },
+          "eventID": "50faf136-b00b-4318-90b2-95554860f559",
+          "evidenceSource": "rum-mapper",
+          "kind": "rum-action",
+          "name": "process-select-a",
+          "rumContext": {
+            "actionIDs": [
+              "50faf136-b00b-4318-90b2-95554860f559"
+            ],
+            "eventDateMilliseconds": 1789708994884,
+            "sessionID": "3151b2dc-cb9f-4d78-9d43-0a83d06dbf7d",
+            "viewID": "4e663eda-9a95-4ea8-93d5-5e338c2cf67f",
+            "viewName": "ProbeHomeView",
+            "viewURL": "ProbeHomeView/305356971223723918"
+          },
+          "runID": "exp185-20260918T052229Z-cfc7a89a3645",
+          "scenarioID": "process-signals.representative.cross-scene-serial",
+          "schemaVersion": 5,
+          "sequence": 40,
+          "sourceContext": {
+            "logicalSceneID": "scene-B",
+            "readerControlGeneration": 0,
+            "screen": "home"
+          },
+          "timestampMilliseconds": 1789708994780
+        },
+        "type": "signal"
+      },
+      {
+        "signal": {
+          "evidenceSource": "rum-mapper",
+          "kind": "rum-view-snapshot",
+          "processSignal": {
+            "nativeSource": "ios",
+            "originalRunID": "exp185-20260918T052229Z-cfc7a89a3645",
+            "viewActionCount": 1,
+            "viewCrashCount": 0,
+            "viewErrorCount": 2,
+            "viewLongTaskCount": 1,
+            "viewResourceCount": 0
+          },
+          "rumContext": {
+            "eventDateMilliseconds": 1789708993272,
+            "sessionHasReplay": false,
+            "sessionID": "3151b2dc-cb9f-4d78-9d43-0a83d06dbf7d",
+            "viewActive": true,
+            "viewDocumentVersion": 5,
+            "viewID": "4e663eda-9a95-4ea8-93d5-5e338c2cf67f",
+            "viewName": "ProbeHomeView",
+            "viewTimeSpentNanoseconds": 1612511039,
+            "viewURL": "ProbeHomeView/305356971223723918"
+          },
+          "runID": "exp185-20260918T052229Z-cfc7a89a3645",
+          "scenarioID": "process-signals.representative.cross-scene-serial",
+          "schemaVersion": 5,
+          "semanticContext": {
+            "logicalSceneID": "scene-B",
+            "screen": "home"
+          },
+          "sequence": 41,
+          "timestampMilliseconds": 1789708994782
+        },
+        "type": "signal"
+      },
+      {
+        "signal": {
+          "evidenceSource": "internal-hook",
+          "kind": "assertion",
+          "name": "process-batch-complete",
+          "reason": "missing(\"selection owner\")",
+          "result": "FAIL",
+          "runID": "exp185-20260918T052229Z-cfc7a89a3645",
+          "scenarioID": "process-signals.representative.cross-scene-serial",
+          "schemaVersion": 5,
+          "sequence": 42,
+          "timestampMilliseconds": 1789708994803
+        },
+        "type": "signal"
+      },
+      {
+        "result": {
+          "issues": [
+            {
+              "reason": "step 4 run-process-signal-batch failed: missing(\"selection owner\")",
+              "signalSequence": 20
+            }
+          ],
+          "matchedExpectationCount": 0,
+          "scenarioID": "process-signals.representative.cross-scene-serial",
+          "schemaVersion": 1,
+          "state": "FAIL"
+        },
+        "runID": "exp185-20260918T052229Z-cfc7a89a3645",
+        "type": "semantic-result"
+      }
+    ],
+    "test-summary.json": {
+      "devicesAndConfigurations": [
+        {
+          "device": {
+            "architecture": "arm64",
+            "deviceId": "92C9918B-FEC6-4440-9D6D-8E09475950BB",
+            "deviceName": "iPad mini (A17 Pro)",
+            "modelName": "iPad mini (A17 Pro)",
+            "osBuildNumber": "24A434",
+            "osVersion": "27.0",
+            "platform": "iOS Simulator"
+          },
+          "expectedFailures": 0,
+          "failedTests": 0,
+          "passedTests": 192,
+          "skippedTests": 0,
+          "testPlanConfiguration": {
+            "configurationId": "1",
+            "configurationName": "Test Scheme Action"
+          }
+        }
+      ],
+      "environmentDescription": "RUMNativeMultiSceneProbe \u00b7 Built with macOS 26.6.2",
+      "expectedFailures": 0,
+      "failedTests": 0,
+      "finishTime": 1789708989.044,
+      "passedTests": 192,
+      "result": "Passed",
+      "runtimeWarnings": [],
+      "skippedTests": 0,
+      "startTime": 1789708963.369,
+      "statistics": [],
+      "testFailures": [],
+      "title": "Test - RUMNativeMultiSceneProbe",
+      "topInsights": [],
+      "totalTestCount": 192
+    }
+  },
+  "experiment": "EXP-185",
+  "failures": [
+    "native oracle did not pass"
+  ],
+  "finished_at": "2026-09-18T05:23:15.467863+00:00",
+  "gate": "T12",
+  "oracle_contract_sha256": "17c0ec575b968df6a24546a2865769d6f455d689bfdc19946af84fc383026d38",
+  "rerun": "Use a fresh output directory and freshly resolved device; do not reuse run IDs or bridge responses.",
+  "revision": "a1a841a0a77d721ae11fe1f1ef783b6c0a27c9fa",
+  "run_id": "exp185-20260918T052229Z-cfc7a89a3645",
+  "scenario_id": "process-signals.representative.cross-scene-serial",
+  "schema_version": 1,
+  "source_file_count": 700,
+  "source_fingerprint": "9646c651347c7ccba830a4a43d04905f5370b9c96c7f57678c4a629ef1731e48",
+  "stages": {
+    "clean_install": {
+      "data_container_absent": true,
+      "installed_binary_sha256": "b1d1d670b5f7a3587dc62738be9ac385541d18c7a52483e71fcb2365dfe0c5c8",
+      "state": "PASS"
+    },
+    "frozen_build": {
+      "executable_sha256": "b1d1d670b5f7a3587dc62738be9ac385541d18c7a52483e71fcb2365dfe0c5c8",
+      "source_sha256": "9646c651347c7ccba830a4a43d04905f5370b9c96c7f57678c4a629ef1731e48",
+      "state": "PASS",
+      "test_count": 192,
+      "uuid": "UUID: A7C04828-9F11-36F3-8CDC-E6F95C962BA1 (arm64) /private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/multi-scene-acceptance-87dollo_/run/derived/Build/Products/Debug-iphonesimulator/RUMNativeMultiSceneProbe.app/RUMNativeMultiSceneProbe"
+    },
+    "preflight": {
+      "authenticated_read": true,
+      "state": "PASS"
+    }
+  },
+  "started_at": "2026-09-18T05:22:29.039284+00:00",
+  "state": "FAIL",
+  "xcode": "Xcode 27.0\nBuild version 27A266a"
+}

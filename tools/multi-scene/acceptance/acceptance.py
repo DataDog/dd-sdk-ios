@@ -456,7 +456,7 @@ class Runner:
             # source fields, never a hand-entered semantic verdict.
             if self.is_process:
                 sessions = "@session.id:" + local["session_id"]
-                views = self.exchange("process_views", sessions + " @type:view", 3)
+                views = self.exchange("process_views", sessions + " @type:view", 4)
                 errors = self.exchange("process_errors", sessions + " @type:error", 4)
                 tasks = self.exchange("process_long_tasks", sessions + " @type:long_task", 2)
                 actions = self.exchange("process_actions", sessions + " @type:action", 1)

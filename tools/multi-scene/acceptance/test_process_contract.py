@@ -26,10 +26,10 @@ def fixture():
     def assertion(name, time=90000, **kw):
         return add("assertion", time, name=name, result="PASS", **kw)
 
-    def view(label, count=0, action=0, time=90000):
+    def view(label, count=0, action=0, time=90000, active=True):
         context = owners[label] if label else dict(sessionID=sid, viewID=uid(4))
         s = add("rum-view-snapshot", time, rumContext=dict(
-            context, viewName="ProbeHomeView" if label else "ApplicationLaunch", viewActive=True),
+            context, viewName="ProbeHomeView" if label else "ApplicationLaunch", viewActive=active),
             semanticContext=dict(logicalSceneID="scene-" + label.upper()) if label else {},
             processSignal=dict(nativeSource="ios", originalRunID=run, viewLongTaskCount=count,
                                viewErrorCount=2 * count, viewActionCount=action, viewResourceCount=0, viewCrashCount=0))
@@ -53,6 +53,16 @@ def fixture():
     for index, label in enumerate(["b", "a"]):
         base = 100000 + index * 4000
         if label == "a":
+            view("a", time=base - 2400, active=False)
+            assertion("process-a-retired", base - 2300, rumContext=owners["a"])
+            source = dict(logicalSceneID="scene-A", nativeSceneID="native-a", screen="home")
+            assertion("process-a-activation-requested", base - 2200, sourceContext=source)
+            activation = add("scene-lifecycle", base - 2150, semanticContext=dict(
+                logicalSceneID="scene-A", nativeSceneID="native-a"), activationState="foreground-active")
+            activation["evidenceSource"] = "probe"
+            owners["a"] = dict(sessionID=sid, viewID=uid(5))
+            view("a", time=base - 2100)
+            assertion("process-a-activation-acknowledged", base - 2050, rumContext=owners["a"], sourceContext=source)
             assertion("process-selection-boundary", base - 2000)
             action = add("rum-action", base - 1990, rumContext=owners["a"], eventID=uid(20),
                          action=dict(id=uid(20), type="custom", target="process-select-a"))
@@ -87,7 +97,7 @@ def fixture():
     assertion("process-inventory-verified", 110000)
     assertion("process-batch-complete", 110001)
     records.append(dict(type="semantic-result", runID=run, result=dict(
-        scenarioID=p.SCENARIO, state="PASS", issues=[], matchedExpectationCount=40)))
+        scenarioID=p.SCENARIO, state="PASS", issues=[], matchedExpectationCount=46)))
     return records, run
 
 
@@ -260,6 +270,58 @@ class ProcessContractTests(unittest.TestCase):
                 rows[0]["unreviewed"] = "extra"
             with self.subTest(mutation=mutation), self.assertRaises(Rejected):
                 p.validate_backend(local, self.run, *evidence)
+
+    def move_before(self, signal, boundary):
+        record = next(r for r in self.records if r.get("signal") is signal)
+        self.records.remove(record)
+        index = next(i for i, r in enumerate(self.records) if r.get("signal") is boundary)
+        self.records.insert(index, record)
+        for index, value in enumerate(events(self.records)):
+            value["sequence"] = index + 1
+
+    def test_reactivation_cannot_reuse_retired_view(self):
+        named(self.records, "process-a-activation-acknowledged")["rumContext"] = dict(sessionID=uid(1), viewID=uid(2))
+        self.reject()
+
+    def test_initial_view_must_end_before_activation(self):
+        for view in events(self.records, "rum-view-snapshot"):
+            if view["rumContext"]["viewID"] == uid(2):
+                view["rumContext"]["viewActive"] = True
+        self.reject()
+
+    def test_retired_view_counters_cannot_be_polluted(self):
+        retired = [s for s in events(self.records, "rum-view-snapshot") if s["rumContext"]["viewID"] == uid(2)][-1]
+        retired["processSignal"]["viewErrorCount"] = 1
+        self.reject()
+
+    def test_activation_native_identity_is_not_a_label(self):
+        named(self.records, "process-a-activation-acknowledged")["sourceContext"]["nativeSceneID"] = "native-b"
+        self.reject()
+
+    def test_preexisting_activation_cannot_satisfy_fresh_readiness(self):
+        self.move_before(events(self.records, "scene-lifecycle")[0],
+                         named(self.records, "process-a-activation-requested"))
+        self.reject()
+
+    def test_native_activation_after_acknowledgement_fails(self):
+        self.move_before(named(self.records, "process-a-activation-acknowledged"),
+                         events(self.records, "scene-lifecycle")[0])
+        self.reject()
+
+    def test_mapper_after_activation_acknowledgement_fails(self):
+        fresh = next(s for s in events(self.records, "rum-view-snapshot") if s["rumContext"]["viewID"] == uid(5))
+        self.move_before(named(self.records, "process-a-activation-acknowledged"), fresh)
+        self.reject()
+
+    def test_selection_before_fresh_owner_acknowledgement_fails(self):
+        self.move_before(events(self.records, "rum-action")[0],
+                         named(self.records, "process-a-activation-acknowledged"))
+        self.reject()
+
+    def test_fresh_mapper_cannot_borrow_peer_native_identity(self):
+        fresh = next(s for s in events(self.records, "rum-view-snapshot") if s["rumContext"]["viewID"] == uid(5))
+        fresh["semanticContext"]["nativeSceneID"] = "native-b"
+        self.reject()
 
     def test_optional_zero_counters_stay_optional(self):
         local = p.validate_local(self.records, self.run)

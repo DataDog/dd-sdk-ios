@@ -13,7 +13,9 @@ def round_guards(suffix):
     return ["process-" + suffix + "-" + part for part in [
         "representative", "memory-boundary", "memory-acknowledged",
         "block-began", "block-ended", "signals-acknowledged"]]
-GUARDS += round_guards("b") + ["process-selection-boundary", "process-selection-acknowledged"]
+GUARDS += round_guards("b") + ["process-a-retired", "process-a-activation-requested",
+                                   "process-a-activation-acknowledged", "process-selection-boundary",
+                                   "process-selection-acknowledged"]
 GUARDS += round_guards("a") + ["process-inventory-verified", "process-batch-complete"]
 PROJECT_KEYS = {
     "run_id", "session_id", "view_id", "name", "source", "container_present", "action_present",
@@ -50,7 +52,7 @@ def validate_local(records, run_id):
     result = terminal.get("result", {})
     require(terminal.get("runID") == run_id and result.get("scenarioID") == SCENARIO, "stale terminal")
     exact({k: result.get(k) for k in ["state", "matchedExpectationCount", "issues"]},
-          dict(state="PASS", matchedExpectationCount=40, issues=[]), "native oracle did not pass")
+          dict(state="PASS", matchedExpectationCount=46, issues=[]), "native oracle did not pass")
     assertions = [s for s in signals if s.get("kind") == "assertion"]
     exact([s.get("name") for s in assertions], GUARDS, "missing, duplicate or late process guard")
     require(all(s.get("result") == "PASS" and s.get("evidenceSource") == "internal-hook"
@@ -91,6 +93,35 @@ def validate_local(records, run_id):
     sessions = [s for s in signals if s.get("kind") == "rum-session-started"]
     require(len(sessions) == 1 and sessions[0].get("rumContext", {}).get("sessionID") == session_id
             and sessions[0].get("rumContext", {}).get("sessionDiscarded") is False, "one sampled session required")
+    initial_a = owners["a"]
+    retired = guard["process-a-retired"]
+    exact(owner(retired), initial_a, "retired A owner")
+    ended = [s for s in snapshots if owner(s) == initial_a and s["sequence"] < retired["sequence"]]
+    require(ended and ended[-1].get("rumContext", {}).get("viewActive") is False,
+            "initial A not retired before activation", "FAIL")
+    request = guard["process-a-activation-requested"]
+    restored = guard["process-a-activation-acknowledged"]
+    for boundary in [request, restored]:
+        exact(boundary.get("sourceContext"), dict(
+            logicalSceneID="scene-A", nativeSceneID=native["scene-A"], screen="home"), "reactivation native identity")
+    owners["a"] = owner(restored)
+    require(owners["a"]["session_id"] == session_id
+            and owners["a"]["view_id"] not in [initial_a["view_id"], owners["b"]["view_id"]],
+            "restored A reused ended/peer owner or changed session", "FAIL")
+    activations = [s for s in signals if s.get("kind") == "scene-lifecycle"
+                   and s.get("semanticContext", {}).get("logicalSceneID") == "scene-A"
+                   and s.get("semanticContext", {}).get("nativeSceneID") == native["scene-A"]
+                   and s.get("activationState") == "foreground-active"
+                   and s.get("evidenceSource") == "probe"
+                   and request["sequence"] < s["sequence"] < restored["sequence"]]
+    require(activations, "fresh native activation missing before owner acknowledgement", "FAIL")
+    fresh = [s for s in snapshots if owner(s) == owners["a"]]
+    require(fresh and request["sequence"] < fresh[0]["sequence"] < restored["sequence"]
+            and fresh[0].get("rumContext", {}).get("viewActive") is True
+            and fresh[0].get("semanticContext", {}).get("logicalSceneID") == "scene-A",
+            "fresh active mapper missing before owner acknowledgement", "FAIL")
+    require(all(s.get("semanticContext", {}).get("nativeSceneID") in [None, native["scene-A"]] for s in fresh),
+            "fresh mapper native scene mismatch", "FAIL")
     kinds = ["rum-long-task", "rum-error", "rum-action"]
     events = [s for s in signals if s.get("kind") in kinds]
     exact({k: sum(s["kind"] == k for s in events) for k in kinds},
@@ -174,9 +205,9 @@ def validate_local(records, run_id):
         value = owner(snapshot)
         require(value["session_id"] == session_id, "unexpected view session", "FAIL")
         latest[value["view_id"]] = snapshot
-    require(len(latest) == 3, "extra or missing view", "FAIL")
+    require(len(latest) == 4, "extra or missing view", "FAIL")
     require(sorted(s["rumContext"].get("viewName", "") for s in latest.values()) ==
-            ["ApplicationLaunch", "ProbeHomeView", "ProbeHomeView"], "view inventory changed", "FAIL")
+            ["ApplicationLaunch", "ProbeHomeView", "ProbeHomeView", "ProbeHomeView"], "view inventory changed", "FAIL")
     for view_id, snapshot in latest.items():
         process = snapshot.get("processSignal", {})
         count = int(view_id in [c["view_id"] for c in owners.values()])
@@ -191,15 +222,15 @@ def validate_local(records, run_id):
             owner(snapshot), name=snapshot["rumContext"]["viewName"], run_id=process.get("originalRunID"),
             source="ios", view_long_task_count=count, view_error_count=2 * count,
             view_action_count=int(view_id == owners["a"]["view_id"]), view_resource_count=0, view_crash_count=0))
-    return dict(assertions=40, signal_count=len(signals), session_id=session_id, owners=owners,
-                native_scenes=native, intervals=intervals, **expected,
+    return dict(assertions=46, signal_count=len(signals), session_id=session_id, owners=owners,
+                native_scenes=native, initial_a=initial_a, intervals=intervals, **expected,
                 simultaneous_visibility_claimed=False, real_memory_pressure_claimed=False,
                 fatal_watchdog_termination_claimed=False)
 
 
 def validate_backend(local, run_id, views, errors, tasks, actions, resources, crashes):
     require(resources == [] and type(crashes) is int and crashes == 0, "unexpected Resource/crash", "FAIL")
-    for kind, rows, count in [("views", views, 3), ("errors", errors, 4),
+    for kind, rows, count in [("views", views, 4), ("errors", errors, 4),
                               ("long_tasks", tasks, 2), ("actions", actions, 1)]:
         require(isinstance(rows, list) and len(rows) == count, "incomplete or extra backend " + kind, "FAIL")
         key = "view_id" if kind == "views" else "event_id"
@@ -214,5 +245,5 @@ def validate_backend(local, run_id, views, errors, tasks, actions, resources, cr
                 exact(actual, value, "backend " + kind + "/" + field + " differs")
     require(all(row.get("run_id") == run_id for rows in [errors, tasks, actions] for row in rows),
             "backend restored origin", "FAIL")
-    return dict(state="PASS", view_count=3, error_count=4, long_task_count=2, action_count=1,
+    return dict(state="PASS", view_count=4, error_count=4, long_task_count=2, action_count=1,
                 resource_count=0, crash_count=0, process_fallback_verified=True)

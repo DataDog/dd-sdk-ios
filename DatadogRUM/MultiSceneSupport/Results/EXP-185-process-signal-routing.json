@@ -29,11 +29,12 @@
     "accepted_duration_seconds": {
       "minimum": 0.5,
       "exclusive_maximum": 5
-    }
+    },
+    "reactivation": "After B acknowledgements, prove initial A ended/backgrounded; request actual OS reactivation, require fresh native active lifecycle, new SDK view UUID and mapper acknowledgement before A selection and second stimulus."
   },
   "expected_inventory": {
     "sessions": 1,
-    "views": 3,
+    "views": 4,
     "actions": 1,
     "long_tasks": 2,
     "nonfatal_errors": 4,
@@ -80,15 +81,29 @@
       }
     }
   ],
-  "native_attempts": [],
-  "next": "Fresh one-invocation acceptance on a newly resolved iOS27 iPad, requiring192 probe tests,40 native expectations and complete backend inventories.",
+  "native_attempts": [
+    {
+      "label": "A",
+      "run_id": "exp185-20260918T052229Z-cfc7a89a3645",
+      "state": "FAIL",
+      "fixture_revision": "a1a841a0a77d721ae11fe1f1ef783b6c0a27c9fa",
+      "artifact": "acceptance/exp185-20260918T052229Z-cfc7a89a3645.json",
+      "probe_tests": 192,
+      "source_sha256": "9646c651347c7ccba830a4a43d04905f5370b9c96c7f57678c4a629ef1731e48",
+      "binary_sha256": "b1d1d670b5f7a3587dc62738be9ac385541d18c7a52483e71fcb2365dfe0c5c8",
+      "binary_uuid": "A7C04828-9F11-36F3-8CDC-E6F95C962BA1",
+      "reason": "Selection Action correctly fell back to B after iPadOS ended initial A. Fixture failed to reactivate A; not a demonstrated SDK defect.",
+      "bounded_evidence": "B produced exactly one real long task, nonfatal AppHang and MemoryWarning with exact owner and counts; no second round or backend acceptance."
+    }
+  ],
+  "next": "Fresh retry after actual A reactivation repair and frozen 4-view/22-guard/46-expectation contract.",
   "native_preparation": {
     "deterministic_revision": "b197c3fe42e5e1153c8da7697fee9061d0069eb3",
     "scenario_id": "process-signals.representative.cross-scene-serial",
     "minimum_probe_tests": 192,
-    "native_expectations": 40,
-    "ordered_guards": 19,
-    "python_controls": 213,
+    "native_expectations": 46,
+    "ordered_guards": 22,
+    "python_controls": 222,
     "connector_controls": 50,
     "mcp_build": {
       "buildResult": "The project built successfully.",
@@ -126,7 +141,24 @@
       "memory_timestamp_boundary_allowance_ms": 50,
       "clock_offset_source": "observed Core serverTimeOffset before each round"
     },
-    "next": "Commit source and tooling, then fresh one-invocation acceptance; SDK production source unchanged.",
-    "contract_sha256": "17c0ec575b968df6a24546a2865769d6f455d689bfdc19946af84fc383026d38"
+    "next": "Commit reactivation repair and execute fresh one-invocation acceptance with a new run/build.",
+    "contract_sha256": "ea787cb1fc72b18677c8be7e6762e3e7981fcbf98f7bd189f5a4d140857d880f"
+  },
+  "reactivation_preparation": {
+    "state": "PASS",
+    "sdk_changes": 0,
+    "python_controls": 222,
+    "connector_controls": 50,
+    "added_negative_controls": 9,
+    "native_expectations": 46,
+    "ordered_guards": 22,
+    "minimum_probe_tests": 192,
+    "view_count": 4,
+    "mcp_build": {
+      "buildResult": "The project built successfully.",
+      "elapsedTime": 4.037,
+      "fullLogPath": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/ActionArtifacts/default/BuildProject/BuildProject-Log-20260918-063316.txt"
+    },
+    "lint": "PASS strict repository source lint for ProbeProcessAcceptance.swift"
   }
 }

@@ -127,11 +127,12 @@ internal enum ProbeProcessAcceptance {
                     && observed.hasLongTaskObserver == true && observed.hasAppHangMonitor == true
                     && observed.hasMemoryWarningMonitor == true, "actual configuration")
         record("process-configuration", observed: observed)
-        let (sceneA, ownerA) = try scene("scene-A", monitor: monitor)
+        let (sceneA, initialOwnerA) = try scene("scene-A", monitor: monitor)
         let (sceneB, ownerB) = try scene("scene-B", monitor: monitor)
-        try require(sceneA !== sceneB && ownerA.viewID != ownerB.viewID
-                    && ownerA.sessionID == ownerB.sessionID, "two distinct scene owners")
+        try require(sceneA !== sceneB && initialOwnerA.viewID != ownerB.viewID
+                    && initialOwnerA.sessionID == ownerB.sessionID, "two distinct scene owners")
         try await round("b", owner: ownerB, monitor: monitor)
+        let ownerA = try await reactivate(sceneA, initialOwner: initialOwnerA, monitor: monitor)
 
         record("process-selection-boundary")
         monitor.addAction(type: .custom, name: ProbeProcessContract.selection, view: .current(in: sceneA), attributes: [:])
@@ -153,7 +154,7 @@ internal enum ProbeProcessAcceptance {
         )
         let views = signals.filter { $0.kind == .rumViewSnapshot }
         let viewIDs = Set(views.compactMap { $0.rumContext?.viewID })
-        try require(viewIDs.count == 3, "complete view inventory")
+        try require(viewIDs.count == 4, "complete view inventory")
         for id in viewIDs {
             guard let view = views.last(where: { $0.rumContext?.viewID == id }) else {
                 throw FixtureError.missing("final view")
@@ -166,6 +167,50 @@ internal enum ProbeProcessAcceptance {
                         && view.processSignal?.viewCrashCount == 0, "final owner counts")
         }
         record("process-inventory-verified")
+    }
+
+    @MainActor
+    private static func reactivate(
+        _ scene: UIWindowScene,
+        initialOwner: RUMCoreContext,
+        monitor: Monitor
+    ) async throws -> RUMCoreContext {
+        try await waitFor("initial A retired") {
+            scene.activationState == .background && recorder.snapshot().last {
+                $0.kind == .rumViewSnapshot && $0.rumContext?.viewID == initialOwner.viewID
+            }?.rumContext?.viewActive == false
+        }
+        record("process-a-retired", owner: initialOwner)
+        guard let application = UIApplication.dd.managedShared else {
+            throw FixtureError.missing("application for actual scene activation")
+        }
+        let nativeID = scene.session.persistentIdentifier
+        let source = ProbeSourceContext(logicalSceneID: "scene-A", nativeSceneID: nativeID, screen: "home")
+        record("process-a-activation-requested", source: source)
+        let boundary = recorder.snapshot().last?.sequence ?? 0
+        application.requestSceneSessionActivation(scene.session, userActivity: nil, options: nil) { _ in
+            record(ProbeProcessContract.completed, result: .fail, reason: "actual A activation failed")
+        }
+        try await waitFor("fresh A activation and owner") {
+            guard scene.activationState == .foregroundActive,
+                  let owner = monitor.rumContextSnapshot(for: .scene(.init(rawValue: nativeID))),
+                  let viewID = owner.viewID, viewID != initialOwner.viewID,
+                  owner.sessionID == initialOwner.sessionID else { return false }
+            let fresh = recorder.snapshot().filter { $0.sequence > boundary }
+            return fresh.contains {
+                $0.kind == .sceneLifecycle && $0.semanticContext?.nativeSceneID == nativeID
+                    && $0.semanticContext?.logicalSceneID == "scene-A" && $0.activationState == "foreground-active"
+            } && fresh.contains {
+                $0.kind == .rumViewSnapshot && $0.evidenceSource == .rumMapper
+                    && $0.rumContext?.viewID == viewID && $0.rumContext?.viewActive == true
+                    && $0.semanticContext?.logicalSceneID == "scene-A"
+            }
+        }
+        guard let restored = monitor.rumContextSnapshot(for: .scene(.init(rawValue: nativeID))) else {
+            throw FixtureError.missing("restored A owner")
+        }
+        record("process-a-activation-acknowledged", owner: restored, source: source)
+        return restored
     }
 
     @MainActor

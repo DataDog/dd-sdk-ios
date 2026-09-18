@@ -47,6 +47,21 @@
     },
     {
       "kind": "assertion",
+      "name": "process-a-retired",
+      "expectedCount": 1
+    },
+    {
+      "kind": "assertion",
+      "name": "process-a-activation-requested",
+      "expectedCount": 1
+    },
+    {
+      "kind": "assertion",
+      "name": "process-a-activation-acknowledged",
+      "expectedCount": 1
+    },
+    {
+      "kind": "assertion",
       "name": "process-selection-boundary",
       "expectedCount": 1
     },
@@ -155,6 +170,21 @@
     {
       "kind": "assertion",
       "name": "process-b-signals-acknowledged",
+      "expectedCount": 1
+    },
+    {
+      "kind": "assertion",
+      "name": "process-a-retired",
+      "expectedCount": 1
+    },
+    {
+      "kind": "assertion",
+      "name": "process-a-activation-requested",
+      "expectedCount": 1
+    },
+    {
+      "kind": "assertion",
+      "name": "process-a-activation-acknowledged",
       "expectedCount": 1
     },
     {

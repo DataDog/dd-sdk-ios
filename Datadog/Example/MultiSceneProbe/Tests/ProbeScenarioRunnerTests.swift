@@ -40,7 +40,7 @@ final class ProbeScenarioRunnerTests: XCTestCase {
         XCTAssertTrue(ProbeScenarioCatalog.usesObservableDriver(scenario))
         XCTAssertEqual(scenario.steps.last?.kind, .runProcessSignalBatch)
         XCTAssertEqual(scenario.completionConditions.compactMap(\.name), ProbeProcessContract.guards)
-        XCTAssertEqual(scenario.completionConditions.count + scenario.expectedSemanticTimeline.count, 40)
+        XCTAssertEqual(scenario.completionConditions.count + scenario.expectedSemanticTimeline.count, 46)
         XCTAssertEqual(scenario.initialWindows, ["scene-A", "scene-B"])
     }
 
