@@ -1297,3 +1297,21 @@ Separate backend index visibility from detail retrieval cost in timing diagnosti
 A valid zero-result read can precede span visibility. Keep aggregate polling bounded,
 then validate every indexed span and its exact owner; measure the detail batch
 independently so query latency cannot be confused with SDK dispatch overhead.
+
+
+## Captured Logs and mirrored errors
+
+Treat emission, asynchronous context writes and message delivery as separate
+boundaries. Record the caller's handoff before logging, then test delayed writes
+and mirror delivery under changed context. A mirror's scene/view/action owner must
+come from its private captured envelope; remove that envelope before telemetry.
+Keep explicit nil, foreign/retired handoffs and ordinary source-less fallback
+distinct, including the legacy off-view case.
+
+For native acceptance, compare exact encoded log correlation and mirrored RUM
+owners against independent view/action mapper records. Logs have no SDK log UUID
+in this payload: unique synthetic phases plus the complete run inventory identify
+expected entries; retain backend IDs to reject duplicates. Aggregate the full run,
+read all pages, and verify the full RUM session. Never accept only a filtered owner
+subset. The bounded contract is
+[EXP-182](Experiments/EXP-143-199.md#exp-182--accept-captured-logs-and-mirrored-error-ownership).

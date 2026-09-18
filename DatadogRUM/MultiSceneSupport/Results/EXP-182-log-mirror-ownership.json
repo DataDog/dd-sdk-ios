@@ -1,0 +1,64 @@
+{
+  "experiment": "EXP-182",
+  "gate": "T09",
+  "sdk_revision": "04201edc7711361279d8487b385bc8b0ca9c63c7",
+  "title": "Accept captured Logs and mirrored error ownership",
+  "question": "Do Logs and mirrored RUM errors retain emission view/action ownership through deferred context writes and message delivery, with bounded documented nil and source-less policies?",
+  "production_change_planned": false,
+  "source_audit": [
+    "RemoteLogger.internalLog captures a core-owned handoff on the caller thread, then uses it in the asynchronous event write. Source-less work uses the ordered Core context read.",
+    "Pending action merge requires exact application/session/view identity and excludes the preceding action.",
+    "RUM error messages carry private view/action/scene/captured metadata after customer lookalikes are removed; ErrorMessageReceiver strips metadata and routes the captured target/action independently of current representative.",
+    "Known scene with nil snapshot can route only to that scene; nil without scene targets none. Ordinary no-view process contexts retain legacy off-view handling.",
+    "No SDK defect established. Add decisive regression tests before any repair."
+  ],
+  "unit_contract": [
+    "Deferred A/B info/error writes retain four exact application/session/view/action log payloads and two mirror envelopes after opposite or foreign context changes; include retirement after emission.",
+    "Explicit nil stays uncorrelated and never takes peer action; foreign or retired-at-emission handoffs retain the consumer fallback, and source-less uses ordered consumer context.",
+    "Deliver captured A/B mirror envelopes in reverse order after peer representative/action churn; assert exact event owner/action and no private-key leakage, including captured nil action and unavailable captured owner."
+  ],
+  "native_contract": {
+    "scenario": "logs.captured-emission.native-mirrors-cross-scene-serial",
+    "logs": 6,
+    "mirrored_errors": 3,
+    "views": 3,
+    "actions": 2,
+    "resources": 0,
+    "crashes": 0,
+    "phases": [
+      "log-info-a",
+      "log-error-a",
+      "log-info-b",
+      "log-error-b",
+      "log-info-fallback",
+      "log-error-fallback"
+    ],
+    "owners": "Two independent mapper Homes plus live snapshot action IDs. Assert B represents when A logs are emitted. Require an empty task handoff and an independently observed process representative for source-less logs. Source labels never prove ownership.",
+    "limits": "Serial native scenes; deterministic deferred tests supply controlled asynchronous churn. No simultaneous hardware claim or Flutter claim.",
+    "app_expectations": 24,
+    "ordered_inventory": [
+      "log-info-a",
+      "log-error-a",
+      "mirror-log-error-a",
+      "log-info-b",
+      "log-error-b",
+      "mirror-log-error-b",
+      "log-info-fallback",
+      "log-error-fallback",
+      "mirror-log-error-fallback",
+      "log-action-a",
+      "log-action-b"
+    ],
+    "completion_conditions": 11,
+    "timeline_conditions": 13
+  },
+  "workflow": "Predeclare precise native guards/expectations before fixture; add existing repository DatadogLogs product only to owned probe project; mapper Foundation wire projection; freeze source/contract before clean install, complete Logs run inventory and full RUM session check.",
+  "preflight": "Authenticated Logs DDSQL read PASS; no positive Logs from this service available in the bounded schema probe.",
+  "closure": "Only close T09 after focused/affected tests and strict local/backend acceptance; preserve all invalid/inconclusive attempts.",
+  "status": "PLANNED",
+  "gates_closed": [],
+  "control_revision": "2a36cac8c40849426a862288b6c3789a7bd8386e",
+  "definition": "Experiments/EXP-143-199.md#exp-182--accept-captured-logs-and-mirrored-error-ownership",
+  "unit_attempts": [],
+  "native_attempts": []
+}
