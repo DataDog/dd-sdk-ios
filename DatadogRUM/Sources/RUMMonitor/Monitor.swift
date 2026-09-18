@@ -753,6 +753,16 @@ extension Monitor: RUMMonitorViewProtocol {
         )
     }
 
+    func stopView() {
+        process(
+            command: RUMStopActiveViewCommand(
+                time: dateProvider.now,
+                globalAttributes: self.attributes,
+                attributes: [:]
+            )
+        )
+    }
+
     func addTiming(name: String) {
         process(
             command: RUMAddViewTimingCommand(

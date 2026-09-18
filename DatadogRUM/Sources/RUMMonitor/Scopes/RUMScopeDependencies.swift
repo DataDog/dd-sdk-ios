@@ -32,6 +32,7 @@ internal struct RUMScopeDependencies {
     let rumApplicationID: String
     let samplingRate: SampleRate
     let trackBackgroundEvents: Bool
+    let trackViewsAutomaticStopOnBackground: Bool
     let trackFrustrations: Bool
     let hasAppHangsEnabled: Bool
     let firstPartyHosts: FirstPartyHosts?
@@ -82,6 +83,7 @@ internal struct RUMScopeDependencies {
         rumApplicationID: String,
         samplingRate: SampleRate,
         trackBackgroundEvents: Bool,
+        trackViewsAutomaticStopOnBackground: Bool,
         trackFrustrations: Bool,
         hasAppHangsEnabled: Bool,
         firstPartyHosts: FirstPartyHosts?,
@@ -114,6 +116,7 @@ internal struct RUMScopeDependencies {
         self.rumApplicationID = rumApplicationID
         self.samplingRate = samplingRate
         self.trackBackgroundEvents = trackBackgroundEvents
+        self.trackViewsAutomaticStopOnBackground = trackViewsAutomaticStopOnBackground
         self.trackFrustrations = trackFrustrations
         self.hasAppHangsEnabled = hasAppHangsEnabled
         self.firstPartyHosts = firstPartyHosts
