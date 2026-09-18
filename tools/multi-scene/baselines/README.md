@@ -91,3 +91,27 @@ generator logs stay in the local attempt with hashes/locators in the result;
 raw console logs and complete crash reports are never copied into the repository.
 An iOS 27 legacy launch trap is recorded as inconclusive, and an unavailable iOS
 15 runtime remains blocked even when minimum-deployment compilation succeeds.
+
+## Genuine older-SDK legacy compatibility
+
+EXP-189 runs only C03's finite matrix through:
+
+```sh
+python3 -B tools/multi-scene/baselines/legacy_compatibility.py
+python3 -B -m unittest discover -s tools/multi-scene/baselines -p test_legacy_compatibility.py
+```
+
+The source definition pins both revisions. Actual Xcode26.6/SDK26.5 builds preserve
+the legacy customer contract on27.0/26.5; SDK27-built no-scene apps hit Apple's
+documented adoption requirement. Compiler/build SDK, minimum deployment, source,
+fixture, installed binary and fresh run identity are all checked. Only a passing
+baseline automatic27.0 control admits candidate/lifecycle builds and the remaining
+15 cells. Original navigation code is unchanged; lifecycle-only receipts check
+exact initial owners before background and actual background before foreground.
+Every fixture is cleaned up and simulators booted by the run return to shutdown.
+
+The runner accepts no old attempt/run ID. It requires committed inputs and writes
+a compact durable result plus hashed local raw/command inventories. Missing,
+duplicated or semantically wrong cells, stale readiness, late boundary assertions,
+unknown installed identity or failed cleanup cannot close C03. Performance,
+iOS15, physical topology and backend ingestion remain outside this command.

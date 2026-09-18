@@ -1731,3 +1731,12 @@ valid legacy control. Use a genuine installed earlier SDK for the existing-app
 contract, recording compiler/build/SDK/minimum-deployment identity. Never patch
 Mach-O SDK versions or suppress the platform check. EXP-189 preserves the original
 semantic assertions and runs only C03's finite compatibility cells.
+
+The C03 command is `python3 -B tools/multi-scene/baselines/legacy_compatibility.py`.
+It refuses uncommitted runner/fixture/definition inputs or another active build,
+creates fresh archives and outputs, and builds only the baseline until readiness
+passes. Navigation uses unchanged fixture sources; added lifecycle receipts are
+observations of actual notifications. Ready ownership is checked before the
+background command, background is observed before foreground, and both receipts
+are retained. Fourteen oracle-control methods pass before native execution.
+Actual compiler output owns toolchain identity when app plist metadata differs.
