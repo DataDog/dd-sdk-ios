@@ -66,6 +66,15 @@ def evidence_fixture():
     return receipt, rows, evidence
 
 
+def unprofiled_launch_fixture():
+    receipt, rows, evidence = evidence_fixture()
+    rows[8]["attributes"]["custom"]["profiling"] = {"has_profile": False}
+    evidence["service"] = tag_response({PROFILE: 1})
+    evidence["session"] = tag_response({PROFILE: 1})
+    evidence["joins"][2:5] = [tag_response({}) for _ in range(3)]
+    return receipt, rows, evidence
+
+
 def change_data(evidence, key, mutation):
     text = evidence[key]["content"][0]["text"]
     data = json.loads(text.removeprefix("<profiling_data>").removesuffix("</profiling_data>"))
@@ -133,6 +142,55 @@ class ProfileBackendTests(unittest.TestCase):
                     self.assertEqual(summary["attachment_validation"], "PASS")
                     self.assertEqual(summary["remaining"], [
                         "independent supported physical capture and frozen source/build/install identity"])
+
+
+    def test_unprofiled_launch_requires_exact_continuous_only_inventory(self):
+        receipt, rows, evidence = unprofiled_launch_fixture()
+        result = validate_profiles(receipt, response(rows), evidence)
+        self.assertEqual(result["state"], "PASS")
+        self.assertEqual(result["profile_count"], 1)
+        self.assertIsNone(result["launch_profile_id"])
+        self.assertFalse(result["launch_profiled"])
+        self.assertEqual(result["sample_start_id_joins"], 2)
+
+    def test_launch_declaration_and_profile_inventory_must_agree(self):
+        mutations = [
+            "missing_flag", "numeric_flag", "true_without_id", "false_with_id", "false_with_null_id",
+            "extra_profile", "repeated_continuous", "missing_continuous", "extra_session_profile",
+            "launch_mode", "launch_vital", "launch_view", "wrong_continuous_mode",
+            "declared_missing_profile", "declared_collapsed_profile", "declared_multiple_profiles",
+        ]
+        for mutation in mutations:
+            with self.subTest(mutation=mutation):
+                receipt, rows, e = unprofiled_launch_fixture()
+                declaration = rows[8]["attributes"]["custom"]["profiling"]
+                if mutation == "missing_flag": del declaration["has_profile"]
+                elif mutation == "numeric_flag": declaration["has_profile"] = 0
+                elif mutation == "true_without_id": declaration["has_profile"] = True
+                elif mutation == "false_with_id": declaration["profile_id"] = [LAUNCH]
+                elif mutation == "false_with_null_id": declaration["profile_id"] = None
+                elif mutation == "extra_profile":
+                    e["service"] = e["session"] = tag_response({PROFILE: 1, LAUNCH: 1})
+                elif mutation == "repeated_continuous":
+                    e["service"] = e["session"] = tag_response({PROFILE: 2})
+                elif mutation == "missing_continuous":
+                    e["service"] = e["session"] = tag_response({})
+                elif mutation == "extra_session_profile":
+                    e["session"] = tag_response({PROFILE: 1, LAUNCH: 1})
+                elif mutation == "launch_mode": e["joins"][2] = tag_response({"launch": 1})
+                elif mutation == "launch_vital": e["joins"][3] = tag_response({TTID: 1})
+                elif mutation == "launch_view":
+                    e["joins"][4] = tag_response({receipt["observations"]["views"][-1]["id"]: 1})
+                elif mutation == "wrong_continuous_mode": e["joins"][5] = tag_response({"launch": 1})
+                else:
+                    declaration.update(has_profile=True, profile_id=[LAUNCH])
+                    if mutation == "declared_collapsed_profile": declaration["profile_id"] = [PROFILE]
+                    elif mutation == "declared_multiple_profiles": declaration["profile_id"] = [LAUNCH, "extra"]
+                    e["joins"][2] = tag_response({"launch": 1})
+                    e["joins"][3] = tag_response({TTID: 1})
+                    e["joins"][4] = tag_response({receipt["observations"]["views"][-1]["id"]: 1})
+                with self.assertRaises(ValueError):
+                    validate_profiles(receipt, response(rows), e)
 
     def test_stale_mismatched_partial_and_filtered_evidence_fails(self):
         mutations = [

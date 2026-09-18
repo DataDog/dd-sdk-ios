@@ -126,5 +126,6 @@
   "native_clock_conversion": "Double seconds multiplied by 1e9, rounded to nearest with ties away from zero, matching Int64.ddWithNoOverflow; exact integer comparison, no tolerance",
   "foreground_drain_seconds": 70,
   "profile_mode": "Continuous Profiling at100%; sampled Operations correlate with a running profiler and do not start it. Await its normal60s timer without a test flush or synthetic lifecycle signal.",
-  "native_receipt_schema_version": 2
+  "native_receipt_schema_version": 2,
+  "optional_launch_profile": "Derive incidental launch-profile inventory from the independent RUM TTID declaration. has_profile=true requires one distinct declared launch profile and exact launch/vital/view joins; has_profile=false with no profile_id field requires no launch profile and empty launch joins. Always require exactly one continuous profile; reject all extra/repeated profiles and inconsistent session inventories."
 }

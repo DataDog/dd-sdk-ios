@@ -127,18 +127,8 @@ def validate_profiles(receipt, rum_response, evidence):
             "Operation starts select different or repeated profiles")
     profile_id = next(iter(first))
     inventory = tags(evidence["service"])
-    require(len(inventory) == 2 and set(inventory.values()) == {1} and profile_id in inventory,
-            "unexpected complete profile inventory")
     require(tags(evidence["session"]) == inventory, "service/session profile inventory differs")
-    launch_id = next(value for value in inventory if value != profile_id)
-    require(tags(joins[2]) == {"launch": 1} and tags(joins[5]) == {"continuous": 1},
-            "launch/continuous profiles collapsed or swapped")
-    require(tags(joins[6]) == {value: 1 for value in starts}, "wrong profile start Vital IDs")
     views = {v["name"]: v["id"] for v in receipt["observations"]["views"]}
-    require(tags(joins[7]) == {views["EXP187.Finish"]: 1}, "wrong final process view")
-    require(tags(evidence["view"]) == {"EXP187.Finish": 1}, "wrong final process view name")
-    require(tags(evidence["name"]) == {"exp187.parallel": 2}, "wrong Operation profile labels")
-    require(tags(evidence["session_label"]) == {session_id: 1}, "wrong profile session label")
     _, rows = rum_page(rum_response)
     launches = [row["attributes"]["custom"] for row in rows
                 if row["attributes"]["custom"]["type"] == "vital"
@@ -146,9 +136,31 @@ def validate_profiles(receipt, rum_response, evidence):
     require(len(launches) == 1, "missing RUM launch identity")
     launch = launches[0]
     ttid_id = uuid(launch["vital"]["id"])
-    require(tags(joins[3]) == {ttid_id: 1} and tags(joins[4]) == {views["ApplicationLaunch"]: 1},
-            "wrong built-in launch profile owner")
-    require(launch["profiling"]["profile_id"] == [launch_id], "wrong built-in launch profile identity")
+    declaration = launch.get("profiling", {})
+    require(type(declaration.get("has_profile")) is bool, "missing launch profile declaration")
+    launch_id = None
+    expected_inventory = {profile_id: 1}
+    if declaration["has_profile"]:
+        identifiers = declaration.get("profile_id")
+        require(isinstance(identifiers, list) and len(identifiers) == 1
+                and isinstance(identifiers[0], str) and identifiers[0]
+                and identifiers[0] != profile_id, "invalid or collapsed launch profile identity")
+        launch_id = identifiers[0]
+        expected_inventory[launch_id] = 1
+        require(tags(joins[2]) == {"launch": 1} and tags(joins[3]) == {ttid_id: 1}
+                and tags(joins[4]) == {views["ApplicationLaunch"]: 1},
+                "wrong built-in launch profile owner")
+    else:
+        require("profile_id" not in declaration, "unprofiled launch declares a profile identity")
+        require(all(tags(joins[index]) == {} for index in (2, 3, 4)),
+                "unexpected launch profile joins")
+    require(inventory == expected_inventory, "unexpected complete profile inventory")
+    require(tags(joins[5]) == {"continuous": 1}, "wrong continuous profile mode")
+    require(tags(joins[6]) == {value: 1 for value in starts}, "wrong profile start Vital IDs")
+    require(tags(joins[7]) == {views["EXP187.Finish"]: 1}, "wrong final process view")
+    require(tags(evidence["view"]) == {"EXP187.Finish": 1}, "wrong final process view name")
+    require(tags(evidence["name"]) == {"exp187.parallel": 2}, "wrong Operation profile labels")
+    require(tags(evidence["session_label"]) == {session_id: 1}, "wrong profile session label")
     profile_query = query["profile_query"] + " profile-id:" + profile_id
     full = flame(evidence["profile"], profile_query, start, end)
     samples = [flame(evidence[key], profile_query, start, end, vital)
@@ -156,7 +168,8 @@ def validate_profiles(receipt, rum_response, evidence):
     require(all(sample["duration"] == full["duration"] for sample in samples),
             "sample filters changed profile duration")
     return {"state": "PASS", "continuous_profile_id": profile_id, "launch_profile_id": launch_id,
-            "profile_count": 2, "exact_start_ids": starts, "launch_vital_id": ttid_id,
+            "profile_count": len(inventory), "launch_profiled": launch_id is not None,
+            "exact_start_ids": starts, "launch_vital_id": ttid_id,
             "nonempty_wall_time_stacks": True, "sample_start_id_joins": 2,
             "query_window": {"from": query["from"], "to": query["to"]},
             "visualizations": [value["visualizationLink"]["url"] for value in [full, *samples]],

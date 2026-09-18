@@ -171,3 +171,12 @@ reused file. Run acceptance/installed_code.py with --signed-app, --run-id,
 Mach-O files, including a Debug dylib, to the signed local inventory. No debugger
 is needed. Keep native/backend/topology acceptance separate from this identity
 check; a passing receipt alone closes no release gate.
+
+Launch sampling is disabled in this fixture. An incidental built-in launch profile
+is therefore inventoried only when the independent RUM TTID declares it. Its
+presence requires exact profile/vital/view joins and a distinct continuous profile;
+explicit absence requires the continuous profile alone and empty launch joins.
+Extra profiles and contradictory declarations still fail. The simulator capture
+contains the former case; the physical capture contains the latter. Preserve the
+original checker verdict and identify the new oracle revision when replaying saved
+evidence; neither case relaxes Operation IDs, samples or attachment nanoseconds.
