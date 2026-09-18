@@ -200,9 +200,9 @@ remain available for a specific question.
 | <a id="exp-180"></a>EXP-180 | T07, A01 | PASS after preserved failed/inconclusive attempts | T07 closed:175 probe,34/34 expectations,8 paired checkpoints and exact backend flags/build/owners. FBC ownership/encoding are local proof; native backend absence is expected. | [record](Experiments/EXP-143-199.md#exp-180--target-feature-flags-and-preserve-internal-mutation-ownership) |
 | <a id="exp-181"></a>EXP-181 | T08, A01 | PASS | T08 closed:158 Trace/178 probe tests,20 native assertions and exact9-span APM ownership;3 RUM views and0 unexpected events. | [record](Experiments/EXP-143-199.md#exp-181--accept-captured-trace-ownership-through-cross-scene-completion) |
 | <a id="exp-182"></a>EXP-182 | T09, A01 | PASS | Deferred controls and24 native assertions;6 logs,3 mirrors,2 actions and3 views match exact backend owners. Attempt A remains inconclusive. | [record](Experiments/EXP-143-199.md#exp-182--accept-captured-logs-and-mirrored-error-ownership) |
+| <a id="exp-183"></a>EXP-183 | T10, A01, D02, D11 | PREPARED | 33 SDK/184 probe tests and160 Python/38 Node controls pass; actual six-callback native/backend acceptance pending. | [record](Experiments/EXP-143-199.md#exp-183--accept-native-webview-container-ownership) |
 
 Original detailed shards and frozen records remain unchanged. Superseded index
 prose is preserved in the [documentation checkpoint](Experiments/DOCUMENTATION_CHECKPOINT_EXP-178.md).
 New results update only their owning record/result and this row; current support
 conclusions belong in [ASSESSMENT.md](ASSESSMENT.md).
-| <a id="exp-183"></a>EXP-183 | T10, A01, D02, D11 | SDK PASS; native PLANNED | 26 receiver/7 emitter tests pass with exact historical owners and private-key removal. Real two-container/backend acceptance remains planned. | [record](Experiments/EXP-143-199.md#exp-183--accept-native-webview-container-ownership) |

@@ -32,6 +32,7 @@ internal enum ProbeRUMEventAdapter {
             rumContext: ProbeRUMContext(
                 eventDateMilliseconds: event.date,
                 sessionID: event.session.id,
+                sessionHasReplay: event.session.hasReplay,
                 viewID: event.view.id,
                 viewName: event.view.name,
                 viewURL: event.view.url,

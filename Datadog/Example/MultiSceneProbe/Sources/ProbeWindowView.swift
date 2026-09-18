@@ -2906,6 +2906,8 @@ struct ProbeWindowRoot: View {
                         + "screen=\(currentSceneScreen) phase=\(marker) "
                         + "uptime=\(uptime)"
                 )
+            case .runWebViewOwnershipBatch:
+                return ProbeWebViewAcceptance.start()
             case .runLogOwnershipBatch:
                 #if DEBUG
                 return ProbeLogAcceptance.start()

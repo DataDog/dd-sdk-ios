@@ -1346,3 +1346,11 @@ Use complete-session backend inventory to verify each container ID and exact
 absence for an unowned detached WebView. Include a spoofed private scene input and
 require its removal from output. The bounded matrix is
 [EXP-183](Experiments/EXP-143-199.md#exp-183--accept-native-webview-container-ownership).
+
+The T10 driver now accepts the named WebView scenario and requires at least184
+probe tests in its fresh build. Operational controls pass160 Python/38 Node tests.
+Whole-session rows must preserve exact application/session replacement, five
+container UUIDs, detached absence, payload counts/version and private-key absence.
+The projection accepts nested or flattened fields but rejects ambiguous duplicates
+and preserves malformed types for the oracle to reject. Fresh runs freeze all
+WebViewTracking and SessionReplay source along with the fixture and oracle.

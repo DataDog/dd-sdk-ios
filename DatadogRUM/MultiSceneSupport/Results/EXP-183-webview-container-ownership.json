@@ -2,7 +2,7 @@
   "experiment": "EXP-183",
   "gate": "T10",
   "title": "Accept native WebView container ownership",
-  "status": "SDK PASS; native PLANNED",
+  "status": "PREPARED; SDK and probe controls PASS",
   "control_revision": "03142a4e8cba2d42254bec1335fe9a5dd0d5b96e",
   "sdk_revision": "04201edc7711361279d8487b385bc8b0ca9c63c7",
   "definition": "Experiments/EXP-143-199.md#exp-183--accept-native-webview-container-ownership",
@@ -93,7 +93,8 @@
   "validation": {
     "strict_swiftlint": "PASS, zero violations in both changed test files",
     "production_source": "unchanged",
-    "next": "Implement the predeclared six-callback native fixture and strict backend contract, then freeze before clean-install acceptance."
+    "next": "Commit/freeze the exact fixture/oracle, then run clean-install native/backend acceptance with a fresh run ID and freshly resolved device.",
+    "acceptance_controls": "160 Python tests and 38 Node tests pass; 19 new T10 Python methods and six new projection controls."
   },
   "unit_attempts": [
     {
@@ -127,5 +128,30 @@
       "xcresult": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/ActionArtifacts/default/RunSomeTests/Test-DatadogWebViewTracking-2026.09.18_03-32-56-+0100.xcresult"
     }
   ],
-  "native_attempts": []
+  "native_attempts": [],
+  "preparation": {
+    "probe": {
+      "counts": {
+        "expectedFailures": 0,
+        "failed": 0,
+        "notRun": 0,
+        "passed": 184,
+        "skipped": 0,
+        "total": 184
+      },
+      "summary": "184 tests: 184 passed, 0 failed, 0 skipped, 0 expected failures, 0 not run",
+      "summary_path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/ActionArtifacts/default/RunAllTests/431FD1D5-25EB-4B5B-B7E6-815949216D52.txt",
+      "xcresult": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/ActionArtifacts/default/RunAllTests/Test-RUMNativeMultiSceneProbe-2026.09.18_03-45-38-+0100.xcresult"
+    },
+    "build": {
+      "buildResult": "The project built successfully.",
+      "elapsedTime": 9.081,
+      "errors": [],
+      "fullLogPath": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/ActionArtifacts/default/BuildProject/BuildProject-Log-20260918-034338.txt"
+    },
+    "python_tests": 160,
+    "connector_tests": 38,
+    "native_lint": "PASS; zero violations in ProbeWebViewAcceptance.swift",
+    "scope": "No production source changes; native/backend acceptance pending"
+  }
 }

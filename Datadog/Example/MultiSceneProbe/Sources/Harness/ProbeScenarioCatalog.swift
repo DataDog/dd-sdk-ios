@@ -22,6 +22,7 @@ enum ProbeScenarioCatalog {
         ProbeTimingContract.scenarioID,
         ProbeFlagContract.scenarioID,
         ProbeTraceContract.scenarioID,
+        ProbeWebViewContract.scenarioID,
         ProbeLogContract.scenarioID,
         "swiftui.stack.abort",
         "swiftui.stack.same-type-replacement",
@@ -85,6 +86,7 @@ enum ProbeScenarioCatalog {
         attributesExplicitCurrentView,
         timingExplicitCurrentView,
         flagsExplicitCurrentView,
+        webViewCapturedContainer,
         logsCapturedEmission,
         tracesCapturedStart,
         swiftUIStackAbort,
@@ -775,6 +777,33 @@ enum ProbeScenarioCatalog {
             ProbeStep(.stopLegacyAction, scene: "scene-A", value: "long-running-legacy-finished-b"),
     ]
 
+
+    private static let webViewCapturedContainer = ProbeScenario(
+        identifier: ProbeWebViewContract.scenarioID,
+        trackingMode: .manual,
+        layout: .stack,
+        initialWindows: ["scene-A", "scene-B"],
+        requiredCapabilities: [.multipleScenes],
+        steps: [
+            ProbeStep(.waitForSceneReady, scene: "scene-A"),
+            ProbeStep(.waitForSignal, scene: "scene-A", signal: "rum-view:home#1"),
+            ProbeStep(.openWindow, scene: "scene-A", value: "scene-B"),
+            ProbeStep(.waitForSignal, scene: "scene-B", signal: "rum-view:home#1"),
+            ProbeStep(.runWebViewOwnershipBatch, scene: "scene-B"),
+        ],
+        completionConditions: webViewExpectations,
+        expectedSemanticTimeline: [
+            ProbeExpectation(.viewStarted, scene: "scene-A", screen: "home", occurrence: 1, rumViewOrigin: .semantic),
+            ProbeExpectation(.viewStarted, scene: "scene-B", screen: "home", occurrence: 1, rumViewOrigin: .semantic),
+        ] + webViewExpectations,
+        runtimeOptions: ProbeRuntimeOptions()
+    )
+
+    private static let webViewExpectations = ProbeWebViewContract.phases.map { phase in
+        ProbeExpectation(
+            .webBridgeMessage, name: phase, sourceScene: ProbeWebViewContract.source(for: phase), expectedCount: 1
+        )
+    }
 
     private static let logsCapturedEmission = ProbeScenario(
         identifier: ProbeLogContract.scenarioID,

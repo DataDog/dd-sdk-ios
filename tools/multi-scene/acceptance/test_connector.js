@@ -408,3 +408,56 @@ test("Logs independent counts bind every raw row to one exact grouped owner", ()
   const withIDs = rows.map(row => ({...row, log_id:'same'}));
   assert.throws(() => validateLogInventory(2, withIDs, groups), /Duplicate/);
 });
+
+const {projectWebView} = new Function(source.replace(
+  'return runAcceptance({tools, notify, device, repo, scenario: typeof scenario === "undefined" ? undefined : scenario});',
+  'return {projectWebView};'
+))();
+test('WebView projection preserves native replacement and exact container fields', () => {
+  const value = projectWebView({application:{id:'native-app'}, session:{id:'native-session',has_replay:true},
+    view:{id:'browser-id',name:'web-a-original',url:'https://multi-scene-probe.invalid/run/A/initial',
+      is_active:false,time_spent:1000000,action:{count:0},resource:{count:0},error:{count:0}},
+    context:{probe:{run_id:'run',phase:'web-a-original',source_scene:'scene-A',document_id:'run/A/initial'}},
+    container:{source:'ios',view:{id:'native-view'}}, source:'browser'});
+  assert.equal(value.application_id, 'native-app');
+  assert.equal(value.session_id, 'native-session');
+  assert.equal(value.container_id, 'native-view');
+  assert.equal(value.container_source, 'ios');
+  assert.equal(value.container_present, true);
+  assert.equal(value.leaked_internal_attribute, false);
+  assert.equal(value.time_spent, 1000000);
+});
+test('WebView detached absence differs from an empty or null container', () => {
+  assert.equal(projectWebView({view:{id:'browser'}}).container_present, false);
+  assert.equal(projectWebView({container:null}).container_present, true);
+  assert.equal(projectWebView({container:{}}).container_present, true);
+  assert.equal(projectWebView({'container.view.id':'native'}).container_present, true);
+});
+test('WebView projection supports nested flat and partially flat source fields', () => {
+  for (const payload of [{context:{probe:{run_id:'run'}}}, {'context.probe.run_id':'run'},
+                         {context:{'probe.run_id':'run'}}, {'context.probe':{run_id:'run'}}]) {
+    assert.equal(projectWebView(payload).run_id, 'run');
+  }
+});
+test('WebView projection detects private scene keys including null and context forms', () => {
+  for (const payload of [{'_dd.internal.native_scene_id':'spoof'},
+    {_dd:{internal:{native_scene_id:'spoof'}}}, {context:{'_dd.internal.native_scene_id':null}},
+    {'context._dd.internal':{native_scene_id:'spoof'}}]) {
+    assert.equal(projectWebView(payload).leaked_internal_attribute, true);
+  }
+});
+test('WebView projection preserves malformed types for rejection by semantic oracle', () => {
+  const value = projectWebView({view:{action:{count:false},time_spent:'1000000'},
+    session:{has_replay:1},container:{view:{id:true}}});
+  assert.equal(value.action_count, false);
+  assert.equal(value.time_spent, '1000000');
+  assert.equal(value.has_replay, 1);
+  assert.equal(value.container_id, true);
+});
+test('WebView projection rejects ambiguous source representations', () => {
+  for (const payload of [
+    {container:{view:{id:'native'}},'container.view.id':'native'},
+    {context:{probe:{run_id:'run'},'probe.run_id':'run'}},
+    {source:'browser',view:{id:'browser'},'view.id':'browser'}
+  ]) assert.throws(() => projectWebView(payload), /Ambiguous WebView/);
+});

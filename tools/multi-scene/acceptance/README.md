@@ -1,9 +1,9 @@
 # Multi-scene acceptance workflow
 
-This runner admits eight finite contracts: EXP-161/A01 long-running actions,
+This runner admits nine finite contracts: EXP-161/A01 long-running actions,
 EXP-176/T03 Resources, EXP-177/T04 errors, EXP-178/T05 attributes,
 EXP-179/T06 timing/loading, EXP-180/T07 flags/internal mutations,
-EXP-181/T08 Trace and EXP-182/T09 Logs/mirrors. It does not certify simultaneous
+EXP-181/T08 Trace, EXP-182/T09 Logs/mirrors and EXP-183/T10 WebView containers. It does not certify simultaneous
 visibility, real scene teardown, interactive gestures or hardware-only scenarios.
 
 The Python runner records commit signature status and performs environment and
@@ -250,3 +250,30 @@ views and no Resources/crashes. Error and log owners/actions must agree exactly;
 private routing metadata must be absent. Attribute namespace ambiguity,
 malformed counts and incomplete/duplicate inventories fail closed. Logs/DDSQL
 tool guides must be loaded before running the connector.
+
+## WebView containers (EXP-183/T10)
+
+Pass scenario webview.captured-container.native-navigation-rebind-serial.
+The contract freezes six real WebKit callbacks: original A/B, A navigation,
+A detached, the same A WebView rebound into B, and B after A tracking teardown.
+It requires two actual WebView instances in distinct native scenes, fresh document
+nonces, callback acknowledgement before attachment mutations and Replay-enabled
+native owners from independent RUM mapper output. Each callback observes and
+then forwards the real message to the SDK handler; it is input evidence, not
+the receiver's encoded output. Browser inputs carry deliberate peer-scene spoof
+metadata to test replacement/removal.
+
+The strict oracle requires fourteen app expectations and every pre-boundary
+guard, exact callback/document/instance identity and browser dates after dispatch
+guards. All twelve backend views are counted and paginated for the whole native
+session: six independently mapped native views and six unique browser views.
+Five browser events must name their exact native container; the detached event
+must have no container. Native application/session replacement, Replay state,
+zero counts, duration and private scene-key absence are checked directly.
+Wrong owners, stale/restored identities, late guards, premature teardown,
+duplicate inventories, ambiguous field representations and type coercion fail.
+
+The source inventory includes WebViewTracking and SessionReplay. A fresh build
+requires at least184 probe tests. This bounded controlled-payload bridge fixture
+does not certify the Browser SDK, per-scene Replay correctness, simultaneous
+visibility or the physical F05 coexistence gate.

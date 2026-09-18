@@ -316,6 +316,9 @@ enum ProbeRuntime {
         if scenario?.identifier == ProbeLogContract.scenarioID {
             ProbeLogAcceptance.configure()
         }
+        if scenario?.identifier == ProbeWebViewContract.scenarioID {
+            ProbeWebViewAcceptance.configure()
+        }
         #endif
 
         if exercisesTraceOnlyURLSessionOwnership {
@@ -397,7 +400,7 @@ enum ProbeRuntime {
         screen: String,
         phase: String
     ) {
-        guard ![ProbeResourceContract.scenarioID, ProbeErrorContract.scenarioID, ProbeAttributeContract.scenarioID, ProbeTimingContract.scenarioID, ProbeFlagContract.scenarioID, ProbeTraceContract.scenarioID, ProbeLogContract.scenarioID].contains(scenario?.identifier ?? "") else { return }
+        guard ![ProbeResourceContract.scenarioID, ProbeErrorContract.scenarioID, ProbeAttributeContract.scenarioID, ProbeTimingContract.scenarioID, ProbeFlagContract.scenarioID, ProbeTraceContract.scenarioID, ProbeLogContract.scenarioID, ProbeWebViewContract.scenarioID].contains(scenario?.identifier ?? "") else { return }
         let uptime = ProcessInfo.processInfo.systemUptime
         let marker = "\(window.label).\(screen).\(phase)"
         let attributes: [String: Encodable] = [

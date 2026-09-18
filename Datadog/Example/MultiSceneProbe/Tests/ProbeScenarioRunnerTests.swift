@@ -35,6 +35,75 @@ final class ProbeScenarioRunnerTests: XCTestCase {
         XCTAssertTrue(normalizedWindow.opensPeer)
     }
 
+    func testWebViewContractKeepsCallbacksSeparateFromRUMOutput() throws {
+        let scenario = try XCTUnwrap(ProbeScenarioCatalog.scenario(identifier: ProbeWebViewContract.scenarioID))
+        XCTAssertTrue(ProbeScenarioCatalog.usesObservableDriver(scenario))
+        XCTAssertEqual(scenario.steps.last?.kind, .runWebViewOwnershipBatch)
+        XCTAssertEqual(scenario.completionConditions.compactMap(\.name), ProbeWebViewContract.phases)
+        XCTAssertEqual(scenario.completionConditions.count + scenario.expectedSemanticTimeline.count, 14)
+        XCTAssertTrue(scenario.completionConditions.allSatisfy {
+            $0.kind == .webBridgeMessage && $0.expectedCount == 1 && $0.scene == nil
+        })
+        XCTAssertEqual(scenario.completionConditions[3].sourceScene, "detached")
+        XCTAssertEqual(scenario.completionConditions[4].sourceScene, "scene-B")
+    }
+
+    func testWebViewInputDecoderRejectsMalformedAndUndeclaredMessages() throws {
+        let event: [String: Any] = [
+            "type": "view", "source": "browser", "date": Int64(1_789_690_000_000),
+            "view": ["id": UUID().uuidString, "url": "https://multi-scene-probe.invalid/run/A/initial"],
+            "context": ["probe": [
+                "run_id": "run", "phase": "web-a-original", "source_scene": "scene-A", "document_id": "run/A/initial",
+            ]],
+            "_dd.internal.native_scene_id": "spoofed-peer",
+        ]
+        func decode(_ event: [String: Any], type: String = "view") throws -> ProbeWebViewMessage? {
+            let data = try JSONSerialization.data(withJSONObject: ["eventType": type, "event": event])
+            return ProbeWebViewMessage.decode(
+                try XCTUnwrap(String(data: data, encoding: .utf8)),
+                webViewIdentity: "actual-web-A", nativeSceneID: "native-A"
+            )
+        }
+        let valid = try XCTUnwrap(decode(event))
+        XCTAssertEqual(valid.phase, "web-a-original")
+        XCTAssertEqual(valid.spoofedSceneID, "spoofed-peer")
+        XCTAssertEqual(valid.nativeSceneID, "native-A")
+        for (key, value) in [
+            ("type", "error"), ("source", "ios"), ("date", true), ("date", "123"),
+            ("date", 0), ("_dd.internal.native_scene_id", NSNull()),
+            ("view", ["id": "invalid", "url": "https://multi-scene-probe.invalid"]),
+        ] as [(String, Any)] {
+            var changed = event
+            changed[key] = value
+            XCTAssertNil(try decode(changed), key)
+        }
+        for key in ["run_id", "phase", "source_scene", "document_id"] {
+            var changed = event
+            var context = try XCTUnwrap(event["context"] as? [String: [String: String]])
+            context["probe"]?[key] = ""
+            changed["context"] = context
+            XCTAssertNil(try decode(changed), key)
+        }
+        XCTAssertNil(try decode(event, type: "log"))
+    }
+
+    func testWebViewCallbackRoundTripPreservesDetachedOmissionAndReplayEvidence() throws {
+        let message = ProbeWebViewMessage(
+            browserViewID: UUID().uuidString, phase: "web-a-detached", runID: "run", sourceScene: "detached",
+            documentID: "run/A/navigation", url: "https://multi-scene-probe.invalid/run/A/navigation",
+            dateMilliseconds: 183, spoofedSceneID: "peer", webViewIdentity: "same-A", nativeSceneID: nil
+        )
+        let signal = ProbeSignal(
+            kind: .webBridgeMessage, evidenceSource: .webKitCallback, name: message.phase, webMessage: message
+        ).enveloped(sequence: 1, timestampMilliseconds: 184, runID: "run", scenarioID: ProbeWebViewContract.scenarioID)
+        let decoded = try JSONDecoder().decode(ProbeSignal.self, from: JSONEncoder().encode(signal))
+        XCTAssertEqual(decoded.webMessage, message)
+        XCTAssertNil(decoded.rumContext)
+        XCTAssertEqual(decoded.evidenceSource, .webKitCallback)
+        let context = ProbeRUMContext(sessionID: "session", sessionHasReplay: true, viewID: "native")
+        XCTAssertEqual(try JSONDecoder().decode(ProbeRUMContext.self, from: JSONEncoder().encode(context)).sessionHasReplay, true)
+    }
+
     func testLogContractRequiresExactInventoryAndDistinctSourceLessBoundary() throws {
         let scenario = try XCTUnwrap(ProbeScenarioCatalog.scenario(identifier: ProbeLogContract.scenarioID))
         XCTAssertEqual(scenario.steps.last?.kind, .runLogOwnershipBatch)

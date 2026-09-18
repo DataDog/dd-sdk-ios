@@ -349,7 +349,7 @@
       "environment": "Two native WebView containers on iOS simulator plus backend; macOS compile in D02",
       "completion_mode": "captured native-container ownership",
       "status": "OPEN",
-      "evidence": "EXP-183:26 receiver/7 emitter tests and strict lint pass; no SDK repair. Six real WebKit callbacks and complete twelve-view backend acceptance remain planned. Results/EXP-183-webview-container-ownership.json."
+      "evidence": "EXP-183 prepared:26 receiver/7 emitter and184 probe tests,160 Python/38 Node controls pass. Six actual-callback fixture builds; native/backend twelve-view acceptance pending. Results/EXP-183-webview-container-ownership.json."
     },
     {
       "id": "T11",

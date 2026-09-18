@@ -18,6 +18,7 @@ enum ProbeExpectationKind: String, Codable, CaseIterable {
     case resource = "resource"
     case error = "error"
     case log = "log"
+    case webBridgeMessage = "web-bridge-message"
     case trace = "trace"
     case operationStep = "operation-step"
     case noViewStarted = "no-view-started"

@@ -31,6 +31,7 @@ enum ProbeStepKind: String, Codable, CaseIterable {
     case runCurrentViewErrorBatch = "run-current-view-error-batch"
     case runViewAttributeBatch = "run-view-attribute-batch"
     case runViewTimingBatch = "run-view-timing-batch"
+    case runWebViewOwnershipBatch = "run-webview-ownership-batch"
     case runLogOwnershipBatch = "run-log-ownership-batch"
     case runTraceOwnershipBatch = "run-trace-ownership-batch"
     case runViewFlagBatch = "run-view-flag-batch"
@@ -276,5 +277,23 @@ enum ProbeLogContract {
 
     static func source(for phase: String) -> String {
         phase.hasSuffix("-a") ? "scene-A" : phase.hasSuffix("-b") ? "scene-B" : "source-less"
+    }
+}
+
+enum ProbeWebViewContract {
+    static let scenarioID = "webview.captured-container.native-navigation-rebind-serial"
+    static let phases = [
+        "web-a-original", "web-b-original", "web-a-navigation",
+        "web-a-detached", "web-a-rebound-b", "web-b-after-teardown",
+    ]
+    static let completed = "web-batch-finished"
+    static let host = "multi-scene-probe.invalid"
+
+    static func source(for phase: String) -> String {
+        switch phase {
+        case "web-a-original", "web-a-navigation": return "scene-A"
+        case "web-a-detached": return "detached"
+        default: return "scene-B"
+        }
     }
 }

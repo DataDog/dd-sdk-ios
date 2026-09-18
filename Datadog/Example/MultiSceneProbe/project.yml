@@ -42,6 +42,10 @@ targets:
         product: DatadogTrace
       - package: Datadog
         product: DatadogLogs
+      - package: Datadog
+        product: DatadogWebViewTracking
+      - package: Datadog
+        product: DatadogSessionReplay
 
   RUMNativeMultiSceneProbeTests:
     type: bundle.unit-test

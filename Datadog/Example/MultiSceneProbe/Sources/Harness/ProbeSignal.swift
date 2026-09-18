@@ -35,6 +35,7 @@ internal enum ProbeSignalKind: String, Codable, CaseIterable {
     case rumAction = "rum-action"
     case rumResource = "rum-resource"
     case rumError = "rum-error"
+    case webBridgeMessage = "web-bridge-message"
     case rumLog = "rum-log"
     case rumTrace = "rum-trace"
     case rumOperation = "rum-operation"
@@ -43,6 +44,7 @@ internal enum ProbeSignalKind: String, Codable, CaseIterable {
 
 internal enum ProbeEvidenceSource: String, Codable {
     case probe
+    case webKitCallback = "webkit-callback"
     case rumMapper = "rum-mapper"
     case logMapper = "log-mapper"
     case traceMapper = "trace-mapper"
@@ -102,6 +104,7 @@ internal struct ProbeRUMContext: Codable, Equatable {
     let eventDateMilliseconds: Int64?
     let sessionID: String?
     let sessionDiscarded: Bool?
+    let sessionHasReplay: Bool?
     let viewID: String?
     let viewName: String?
     let viewURL: String?
@@ -114,6 +117,7 @@ internal struct ProbeRUMContext: Codable, Equatable {
         eventDateMilliseconds: Int64? = nil,
         sessionID: String? = nil,
         sessionDiscarded: Bool? = nil,
+        sessionHasReplay: Bool? = nil,
         viewID: String? = nil,
         viewName: String? = nil,
         viewURL: String? = nil,
@@ -125,6 +129,7 @@ internal struct ProbeRUMContext: Codable, Equatable {
         self.eventDateMilliseconds = eventDateMilliseconds
         self.sessionID = sessionID
         self.sessionDiscarded = sessionDiscarded
+        self.sessionHasReplay = sessionHasReplay
         self.viewID = viewID
         self.viewName = viewName
         self.viewURL = viewURL
@@ -348,6 +353,7 @@ internal struct ProbeSignal: Codable, Equatable {
     let resource: ProbeResourceSignal?
     let error: ProbeErrorSignal?
     let log: ProbeLogWireIdentity?
+    let webMessage: ProbeWebViewMessage?
     let trace: ProbeTraceSignal?
     let operation: ProbeOperationSignal?
     let attributeState: ProbeAttributeState?
@@ -391,6 +397,7 @@ internal struct ProbeSignal: Codable, Equatable {
         resource: ProbeResourceSignal? = nil,
         error: ProbeErrorSignal? = nil,
         log: ProbeLogWireIdentity? = nil,
+        webMessage: ProbeWebViewMessage? = nil,
         trace: ProbeTraceSignal? = nil,
         operation: ProbeOperationSignal? = nil,
         attributeState: ProbeAttributeState? = nil,
@@ -434,6 +441,7 @@ internal struct ProbeSignal: Codable, Equatable {
         self.resource = resource
         self.error = error
         self.log = log
+        self.webMessage = webMessage
         self.trace = trace
         self.operation = operation
         self.attributeState = attributeState
@@ -484,6 +492,7 @@ internal struct ProbeSignal: Codable, Equatable {
             resource: resource,
             error: error,
             log: log,
+            webMessage: webMessage,
             trace: trace,
             operation: operation,
             attributeState: attributeState,
@@ -575,5 +584,66 @@ struct ProbeLogWireIdentity: Codable, Equatable {
               wire.source == ProbeLogContract.source(for: wire.phase),
               wire.status == (wire.phase.hasPrefix("log-error-") ? "error" : "info") else { return nil }
         return wire
+    }
+}
+
+/// Input observed at the actual WebKit callback; this is not encoded RUM output.
+struct ProbeWebViewMessage: Codable, Equatable {
+    let browserViewID: String
+    let phase: String
+    let runID: String
+    let sourceScene: String
+    let documentID: String
+    let url: String
+    let dateMilliseconds: Int64
+    let spoofedSceneID: String
+    let webViewIdentity: String
+    let nativeSceneID: String?
+
+    static func decode(_ body: String, webViewIdentity: String, nativeSceneID: String?) -> Self? {
+        struct Envelope: Decodable {
+            struct Event: Decodable {
+                struct View: Decodable { let id: String; let url: String }
+                struct Context: Decodable {
+                    struct Probe: Decodable {
+                        let run_id: String
+                        let phase: String
+                        let source_scene: String
+                        let document_id: String
+                    }
+                    let probe: Probe
+                }
+                let type: String
+                let source: String
+                let date: Int64
+                let view: View
+                let context: Context
+                let spoof: String
+                enum CodingKeys: String, CodingKey {
+                    case type, source, date, view, context
+                    case spoof = "_dd.internal.native_scene_id"
+                }
+            }
+            let eventType: String
+            let event: Event
+        }
+        guard let data = body.data(using: .utf8),
+              let wire = try? JSONDecoder().decode(Envelope.self, from: data),
+              wire.eventType == "view", wire.event.type == "view", wire.event.source == "browser",
+              UUID(uuidString: wire.event.view.id) != nil, wire.event.date > 0,
+              !wire.event.context.probe.run_id.isEmpty, !wire.event.context.probe.document_id.isEmpty,
+              ProbeWebViewContract.phases.contains(wire.event.context.probe.phase),
+              wire.event.context.probe.source_scene == ProbeWebViewContract.source(for: wire.event.context.probe.phase),
+              URL(string: wire.event.view.url)?.host == ProbeWebViewContract.host,
+              !wire.event.spoof.isEmpty, !webViewIdentity.isEmpty else {
+            return nil
+        }
+        let probe = wire.event.context.probe
+        return Self(
+            browserViewID: wire.event.view.id, phase: probe.phase, runID: probe.run_id,
+            sourceScene: probe.source_scene, documentID: probe.document_id, url: wire.event.view.url,
+            dateMilliseconds: wire.event.date, spoofedSceneID: wire.event.spoof,
+            webViewIdentity: webViewIdentity, nativeSceneID: nativeSceneID
+        )
     }
 }

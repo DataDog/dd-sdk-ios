@@ -286,6 +286,43 @@ function projectLogRow(row) {
   return selected;
 }
 
+function webValue(payload, path) {
+  const parts = path.split(".");
+  const values = [];
+  const walk = (object, remaining) => {
+    if (object == null || typeof object !== "object") return;
+    for (let i = 1; i <= remaining.length; i++) {
+      const key = remaining.slice(0, i).join(".");
+      if (!Object.hasOwn(object, key)) continue;
+      if (i === remaining.length) values.push(object[key]);
+      else walk(object[key], remaining.slice(i));
+    }
+  };
+  walk(payload, parts);
+  if (values.length > 1) throw Error("Ambiguous WebView backend field: " + path);
+  return {present:values.length === 1, value:values.length ? values[0] : null};
+}
+
+function projectWebView(payload) {
+  if (!payload || typeof payload !== "object" || Array.isArray(payload)) throw Error("Malformed WebView payload");
+  const get = path => webValue(payload, path).value;
+  const present = path => webValue(payload, path).present;
+  return {
+    run_id:get("context.probe.run_id"), session_id:get("session.id"),
+    application_id:get("application.id"), view_id:get("view.id"), name:get("view.name"),
+    source:get("source"), phase:get("context.probe.phase"), source_scene:get("context.probe.source_scene"),
+    document_id:get("context.probe.document_id"), url:get("view.url"),
+    container_id:get("container.view.id"), container_source:get("container.source"),
+    container_present:present("container") || present("container.view.id") || present("container.source"),
+    leaked_internal_attribute:present("_dd.internal.native_scene_id") || present("context._dd.internal.native_scene_id"),
+    has_replay:get("session.has_replay"), is_active:get("view.is_active"),
+    action_count:get("view.action.count"), resource_count:get("view.resource.count"),
+    error_count:get("view.error.count"), long_task_count:get("view.long_task.count"),
+    time_spent:get("view.time_spent"), loading_type:get("view.loading_type"),
+    format_version:get("_dd.format_version"), document_version:get("_dd.document_version")
+  };
+}
+
 async function runAcceptance({tools, notify, device, repo, scenario}) {
   if (!repo || !device) throw Error("Explicit repository path and freshly resolved simulator UUID required");
   const shellQuote = value => "'" + value.replaceAll("'", "'\\''") + "'";
@@ -372,6 +409,7 @@ async function runAcceptance({tools, notify, device, repo, scenario}) {
       const payload = row.attributes?.custom || row.custom || row.attributes || row;
       const base = {run_id:at(payload,"context.probe.run_id"),
                     session_id:at(payload,"session.id"), view_id:at(payload,"view.id")};
+      if (request.kind === "webview_views") return projectWebView(payload);
       if (request.kind === "views") return {...base, name:at(payload,"view.name")};
       if (request.kind === "flag_views") return {...base, name:at(payload, "view.name"),
         flag_state:projectFlagState(payload, at)};
