@@ -82,7 +82,7 @@ internal class TimeseriesSessionCollector: TimeseriesCollecting {
     private var hasReplay: Bool? = nil
 
     /// All buffer mutations and timer events run on this queue.
-    private let queue = DispatchQueue(label: "com.datadoghq.timeseries-collector", qos: .utility)
+    private let queue: DispatchQueue
 
     init(
         memoryReader: SamplingBasedVitalReader,
@@ -96,7 +96,8 @@ internal class TimeseriesSessionCollector: TimeseriesCollecting {
         syntheticsTest: RUMSyntheticsTest? = nil,
         sessionSampleRate: Double = 100,
         now: @escaping () -> Date = Date.init,
-        mediaTimeProvider: CACurrentMediaTimeProvider = MediaTimeProvider()
+        mediaTimeProvider: CACurrentMediaTimeProvider = MediaTimeProvider(),
+        queue: DispatchQueue = DispatchQueue(label: "com.datadoghq.timeseries-collector", qos: .utility)
     ) {
         self.memoryReader = memoryReader
         self.batchSize = max(2, batchSize)
@@ -110,6 +111,7 @@ internal class TimeseriesSessionCollector: TimeseriesCollecting {
         self.cpuUsageProvider = cpuUsageProvider ?? { TimeseriesSessionCollector.processCPU() }
         self.now = now
         self.mediaTimeProvider = mediaTimeProvider
+        self.queue = queue
     }
 
     deinit {

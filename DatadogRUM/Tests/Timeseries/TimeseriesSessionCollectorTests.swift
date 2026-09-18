@@ -757,12 +757,17 @@ class TimeseriesSessionCollectorTests: XCTestCase {
     func testWhenBackgrounded_pauseAlwaysStopsSampling() {
         // Given
         memoryReader.vitalData = 1_000_000
+        // Injecting the collector's own serial queue lets this test enqueue "read the count" and
+        // "pause" as a single atomic unit of work below, with no gap where the sampling timer
+        // (scheduled on this same queue) could sneak a tick in between the two.
+        let collectorQueue = DispatchQueue(label: "test.timeseries-collector")
         let collector = TimeseriesSessionCollector(
             memoryReader: memoryReader,
             featureScope: featureScope,
             batchSize: 2,
             samplingInterval: 0.05,
-            cpuUsageProvider: { nil }
+            cpuUsageProvider: { nil },
+            queue: collectorQueue
         )
         let contextReader = RUMActiveContextReaderMock()
         collector.activeContextReader = contextReader
@@ -774,19 +779,32 @@ class TimeseriesSessionCollectorTests: XCTestCase {
         collector.start(sessionID: "session-bg", applicationID: "app-1", sessionType: .user)
         waitForExpectations(timeout: 2)
 
-        let countBeforePause = featureScope.eventsWritten(ofType: RUMTimeseriesMemoryEvent.self).count
+        // When — pause on backgrounding. Reading `countBeforePause` and calling `pause()` inside the
+        // same block, dispatched onto the collector's own queue, makes them atomic with respect to the
+        // sampling timer (also scheduled on this queue): no tick can land between the two, unlike a
+        // `flush()`-then-read from the main thread which leaves a (very narrow but nonzero) gap.
+        let countBeforePause = collectorQueue.sync { () -> Int in
+            let count = featureScope.eventsWritten(ofType: RUMTimeseriesMemoryEvent.self).count
+            collector.pause(sessionID: "session-bg")
+            return count
+        }
         XCTAssertGreaterThan(countBeforePause, 0)
 
-        // When — pause on backgrounding
-        let afterPauseExpectation = self.expectation(description: "sampling stopped after pause")
-        afterPauseExpectation.assertForOverFulfill = false
-        collector.pause(sessionID: "session-bg")
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) { afterPauseExpectation.fulfill() }
-        waitForExpectations(timeout: 2)
+        // `flush()` is dispatched on the same serial FIFO queue right behind the `pause()` enqueued
+        // above, so this won't return until `pause()` itself has finished executing.
+        collector.flush()
 
-        // Then — no new events accumulate while paused
+        // Then — no new events accumulate immediately after pause completes
         let countAfterPause = featureScope.eventsWritten(ofType: RUMTimeseriesMemoryEvent.self).count
         XCTAssertEqual(countAfterPause, countBeforePause, "Sampling should stop while backgrounded, regardless of trackBackgroundEvents")
+
+        // And — no further events accumulate over time while paused
+        let afterPauseExpectation = self.expectation(description: "sampling stopped after pause")
+        afterPauseExpectation.assertForOverFulfill = false
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) { afterPauseExpectation.fulfill() }
+        waitForExpectations(timeout: 2)
+        let countAfterWait = featureScope.eventsWritten(ofType: RUMTimeseriesMemoryEvent.self).count
+        XCTAssertEqual(countAfterWait, countBeforePause, "No samples should accumulate over time while paused")
         collector.stop(sessionID: "session-bg")
     }
 
