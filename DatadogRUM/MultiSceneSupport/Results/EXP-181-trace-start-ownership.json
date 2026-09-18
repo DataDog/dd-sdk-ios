@@ -1,0 +1,52 @@
+{
+  "experiment": "EXP-181",
+  "status": "PLANNED",
+  "gate": "T08",
+  "gates_closed": [],
+  "control_revision": "75442ca755eff170ea072e646d19e0ae54af2f1e",
+  "sdk_revision": "04201edc7711361279d8487b385bc8b0ca9c63c7",
+  "definition": "Experiments/EXP-143-199.md#exp-181--accept-captured-trace-ownership-through-cross-scene-completion",
+  "production_change_planned": false,
+  "native_contract": {
+    "scenario": "traces.captured-start.native-otel-urlsession-cross-scene-serial",
+    "spans": 9,
+    "families": [
+      "native",
+      "OTel",
+      "URLSession"
+    ],
+    "origins": [
+      "scene-A",
+      "scene-B",
+      "source-less process representative"
+    ],
+    "completion_order": [
+      "native-b",
+      "otel-b",
+      "native-a",
+      "otel-a",
+      "native-fallback",
+      "otel-fallback",
+      "url-b",
+      "url-a",
+      "url-fallback"
+    ],
+    "views": 3,
+    "resources": 0,
+    "errors": 0,
+    "crashes": 0,
+    "app_expectations": 20,
+    "simultaneous_visibility_claimed": false
+  },
+  "preliminary_apm_access": {
+    "content": [
+      {
+        "type": "text",
+        "text": "<METADATA>\n  <total_buckets>0</total_buckets>\n  <traces_explorer_url>https://mobile-integration.datadoghq.com/apm/traces?end=1789688875296&historicalData=true&paused=true&query=%40probe.run_id%3Apreflight-exp181-1789688874086&start=1789687975296</traces_explorer_url>\n</METADATA>\n<TSV_DATA>\nspans\n</TSV_DATA>\n"
+      }
+    ],
+    "isError": false
+  },
+  "unit_attempts": [],
+  "native_attempts": []
+}

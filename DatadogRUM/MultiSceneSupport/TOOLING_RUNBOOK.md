@@ -1248,3 +1248,21 @@ FBC is a Flutter-only backend metric. In a native iOS fixture, prove its interna
 call-site ownership and exact encoded value locally, and expect downstream absence.
 Keep flag and build-sample backend comparisons exact. Do not scale durations or
 change SDK behavior to force a Flutter-only field into native backend events.
+
+
+## Captured Trace acceptance
+
+Bind native and OTel spans to their starting independent RUM snapshot, then
+finish under a different live handoff after representative churn. Creating an
+OTel builder does not start a span: change the handoff before startSpan and
+require the start-time owner. Repeated finish/end must emit one record.
+
+For real URLSession tasks, require every controlled loader to arrive and zero
+early completion before releasing responses in the declared order. Source-less
+starts require an empty handoff and an independently observed process owner.
+Record exact encoded trace/span IDs without logging unrelated tags or payloads.
+Inventory all spans for the synthetic run and all views for its RUM session;
+compare exact correlation, operation/resource, duration and status. Aggregate
+counts and sampled detail queries alone cannot close the gate. Keep physical
+shared-request H07 separate. The current bounded definition is
+[EXP-181](Experiments/EXP-143-199.md#exp-181--accept-captured-trace-ownership-through-cross-scene-completion).
