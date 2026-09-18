@@ -21,7 +21,7 @@
   "environment_discovery": {
     "artifact_root": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/duo271-discovery-l8u35_79",
     "command_line_default_verified": true,
-    "mcp_boundary": "Rediscovered MCP service still reports SDK27.0; do not use it to launch the Duo. Pin every execution command to verified27.1."
+    "mcp_boundary": "Fresh post-restart MCP reports SDK27.1 and eligible Duo destinations, matching CLI27.1. Rediscover identifiers per execution."
   },
   "protocol": [
     "Freeze source/fixture identities and signed-or-authorized-unsigned revision before build; fresh derived data, run ID and artifact directory.",
@@ -101,6 +101,6 @@
       }
     ]
   },
-  "checkpoint": "User requested a safe pause to restart Codex and refresh Xcode MCP. Eight selected H01 driver/oracle controls pass; no native same-key scenario or backend acceptance has run.",
+  "checkpoint": "Retained source manifest and three built Mach-O hashes revalidated after restart; eight passing controls reused. User prioritizes bounded simulator confidence assessment EXP-192 and all executable Duo gates.",
   "resume": "Rediscover the live Xcode27.1 MCP/service, selected toolchain, runtime and Duo identifiers. Verify the retained source manifest and all three built Mach-O hashes before reusing this unchanged build; use a fresh native run ID/output directory. The initial second display was inactive, so qualify unfolded/open-display and actual simultaneous scene topology before the critical H01 interval. Do not rerun the eight accepted controls merely to resume."
 }

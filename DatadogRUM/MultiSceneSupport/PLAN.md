@@ -18,10 +18,12 @@ action completes; read live gate status and dependencies from the register.
 2. Complete dependency-ready telemetry families in T05–T14 order. Keep explicit
    targeting, captured ownership and documented process fallback as distinct
    completion contracts; no expandable “remaining signals” row is admitted.
-3. Complete C06 with deployment15 compilation and the oldest debuggable iOS17
-   runtime sample; document unexecuted15/16 coverage. Qualify the newly available
-   Duo27.1 simulator for H01 under Xcode27.1 only. Preserve the independent
-   physical iPad/Duo and human-gesture requirements.
+3. Prioritize all dependency-ready Duo27.1 simulator validation under the user's
+   latest direction. [EXP-192](Results/EXP-192-duo-simulator-fidelity.json) and the
+   [finite routing table](DUO_SIMULATOR_ASSESSMENT.md) qualify each simulator
+   capability, starting with unchanged H01/EXP-191. Preserve physical and human
+   residuals. Then complete C06 deployment15 and the oldest debuggable17 runtime
+   matrix, explicitly recording unexecuted15/16 coverage.
 4. Complete F01 API review, F02 support documentation, F03 final compatibility
    matrix, F04 Duo acceptance, F05 Replay coexistence and F06 freeze according
    to their dependencies. Deferred extraction remains after freeze.
@@ -144,7 +146,7 @@ does not substitute for runtime, hardware or final release gates.
 | F01 | Stable API review | RUM API reviewers | T03, T04, T05, T06, T07, R06 | Reviewed RFC resolves Swift/ObjC names, availability, target forms, custom-conformer behavior and migration; only then update API baselines | API review | REVIEW BLOCKED | STABLE_API_REVIEW.md proposes eight finite decisions and records21 Swift overloads/21 Objective-C selectors at2baa06da0. Committed package a32acbdcc awaits the requested attributable RFC decision; off-main Objective-C safety and Release/client/API-baseline validation are required before promotion. Results/F01-proposed-api-inventory.json. |
 | F02 | Support documentation | SDK implementer | F01 | Each telemetry family documents its exact completion mode and automatic/opaque limits; feature docs match source | Source/doc review | OPEN | SUPPORT_GUIDE.md prepares the fixed T01–T15 ownership reference, current SPI call sites and automatic/opaque limits. NAVIGATION_API.md call labels corrected against source. Final approved examples, compile checks and full feature-doc audit remain after F01; no supported-publication claim. |
 | F03 | Final compatibility build/test matrix | SDK implementer | F01, D01, D02, D09, D11, D12 | All affected modules, ObjC Release, SPM iOS/macOS/tvOS/watchOS/visionOS, lint and approved API baselines pass at frozen revision | CI + supported SDK toolchains | OPEN | FINAL_COMPATIBILITY.md defines11 finite cells:11 full iOS schemes, external Swift/ObjC Release clients, complete platform packages, lint/API and feature-doc verification. Procedure prepared from current Makefile/source; final reviewed-candidate execution remains after F01. |
-| F04 | iPhone Duo release acceptance | Device operator | H01, H02, H03, H04, H05, H06, H07, H08, H09, H10, H11, H12, H13, H14, H15, H16 | Run the finite accepted scenario matrix on iPhone Duo iOS 27.1; exact mapper/backend owners and no SDK crash | iPhone Duo iOS 27.1 | OPEN | Pending |
+| F04 | iPhone Duo release acceptance | Device operator | H01, H02, H03, H04, H05, H06, H07, H08, H09, H10, H11, H12, H13, H14, H15, H16 | Run the finite accepted scenario matrix on iPhone Duo iOS 27.1; exact mapper/backend owners and no SDK crash | iPhone Duo iOS 27.1 | OPEN |  EXP-192 defines the six-cell simulator confidence assessment and finite H01-H16 execution routing; native observations pending, physical completion contract unchanged. |
 | F05 | Session Replay coexistence | SDK implementer | A01 | Enable Replay through two scenes, navigation and teardown without SDK-caused crash; no scene-correct replay claim | Physical multi-window device | OPEN | Pending |
 | F06 | Release freeze | RUM maintainers | All preceding gates | Every required gate closed on reviewed source; performance thresholds hold; no unresolved correctness/release-review finding | Review + CI | OPEN | Pending |
 

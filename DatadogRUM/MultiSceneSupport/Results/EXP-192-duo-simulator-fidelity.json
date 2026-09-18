@@ -1,0 +1,83 @@
+{
+  "experiment": "EXP-192",
+  "gate": "F04",
+  "related_gates": [
+    "H01",
+    "H02",
+    "H03",
+    "H04",
+    "H05",
+    "H06",
+    "H07",
+    "H08",
+    "H09",
+    "H10",
+    "H11",
+    "H12",
+    "H13",
+    "H14",
+    "H15",
+    "H16"
+  ],
+  "title": "Qualify Duo simulator evidence boundaries",
+  "status": "DEFINED",
+  "owner": "SDK implementer",
+  "admission": "User requests a bounded simulator-to-device assessment and execution of all simulator-capable existing release gates. No new product surface or gate.",
+  "candidate_revision": "04201edc7711361279d8487b385bc8b0ca9c63c7",
+  "definition_parent_revision": "e8560f72c4f0358b1b6231578051d3a72fa0d558",
+  "environment": "Xcode27.1/27A9269, iOS27.1/24A94401 iPhone Duo simulator. No physical Duo comparison available.",
+  "assessment": "../DUO_SIMULATOR_ASSESSMENT.md",
+  "protocol": [
+    "Verify actual CLI and MCP SDK27.1, preserve user simulator and protected files, use a freshly resolved idle Duo and restore its original state.",
+    "Revalidate the retained EXP-191 source manifest and all three Mach-O hashes; use fresh native run IDs, clean installation and complete local artifacts.",
+    "Qualify actual outer/inner display transitions, rotation and partial fold via Device Hub; record device display state and app scene/trait/geometry observations rather than inferring from pose controls.",
+    "Run unchanged EXP-191 first. Require simultaneous native scene activation/geometry before and through each critical ownership boundary. Preserve an inconclusive attempt before any harness repair.",
+    "Exercise genuine OS focus/background/foreground, close/disconnect/reconnect and recognized interactive gestures only where the simulator and existing harness can express them. No posted-notification substitutes.",
+    "For each capability retain strict native semantic and backend owners where applicable, negative controls, exact evidence boundary and hardware residual. Stop after two equivalent platform failures.",
+    "Complete the finite H01-H16 simulator routing table; reuse accepted telemetry and compatibility evidence. Measure confidence qualitatively per capability, never as an uncalibrated physical-equivalence percentage."
+  ],
+  "decisive_tests": [
+    {
+      "id": "Q1",
+      "capability": "Display and trait transitions",
+      "oracle": "Outer/inner/rotated/partially folded state changes produce measured scene bounds and traits; distinguish layout containers from native scene identity."
+    },
+    {
+      "id": "Q2",
+      "capability": "Concurrent windows",
+      "oracle": "Two different native scene sessions are simultaneously visible before/during H01 critical steps; distinct RUM owners and fresh occurrences satisfy the unchanged oracle."
+    },
+    {
+      "id": "Q3",
+      "capability": "Lifecycle and focus",
+      "oracle": "Actual OS activation/background/foreground preserves peer ownership and records callback order without fabricated notifications."
+    },
+    {
+      "id": "Q4",
+      "capability": "Teardown and restoration",
+      "oracle": "Actual close/disconnect/remount has one stop, fresh replacement ownership, no stale adoption, and uninterrupted peer ownership."
+    },
+    {
+      "id": "Q5",
+      "capability": "Interactive transitions",
+      "oracle": "Actual recognizer begins/cancels/completes; cancelled transitions preserve occurrence and completion creates the expected fresh destination. Button navigation is not gesture proof."
+    },
+    {
+      "id": "Q6",
+      "capability": "Confidence calibration",
+      "oracle": "Separate source equivalence, observed simulator behavior, unexecuted capabilities and physical residuals; exact owner/occurrence/topology controls remain decisive."
+    }
+  ],
+  "closure_rule": "Complete this assessment only when each Q1-Q6 cell has an observed result or concrete executable limitation and the finite H01-H16 simulator routing is recorded. Physical F04/F05 and existing human/device obligations are not waived.",
+  "attempts": [],
+  "gates_closed": [],
+  "source_audit": {
+    "rum_simulator_conditionals": 0,
+    "explicit_differences": [
+      "Core battery/low-power subscriptions excluded",
+      "DeviceInfo simulator model/host process CPU and RAM",
+      "Crash binary-image path classification"
+    ],
+    "scope": "Conditional-compilation search over first-party Core/Internal/RUM/Trace/Logs/SessionReplay/CrashReporting/Profiling sources; not proof of UIKit/SwiftUI or third-party runtime equivalence."
+  }
+}

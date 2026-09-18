@@ -66,8 +66,8 @@ Chronological conclusions and the superseded routing audit are retained in the
 [documentation checkpoint](Experiments/DOCUMENTATION_CHECKPOINT_EXP-178.md).
 Use the [compact index](EXPERIMENTS.md) to open only the experiment that owns a question.
 
-The newly discovered Duo27.1 simulator is qualified only through Xcode27.1.
-[EXP-191](Results/EXP-191-duo-same-key.json) has a signed prepared build and eight
-passing H01 driver/oracle controls. The user requested a restart checkpoint before
-native execution; no simultaneous-topology/backend or physical Duo acceptance is
-claimed. Original physical and human evidence remains required.
+The Duo27.1 simulator is available through Xcode27.1. Fresh MCP and CLI discovery
+now agree on SDK27.1. [EXP-192's assessment](DUO_SIMULATOR_ASSESSMENT.md) defines
+the finite simulator capability checks and H01-H16 routing; native observations
+remain pending. [EXP-191](Results/EXP-191-duo-same-key.json) retains its verified
+build and eight accepted controls. No physical or human requirement is waived.

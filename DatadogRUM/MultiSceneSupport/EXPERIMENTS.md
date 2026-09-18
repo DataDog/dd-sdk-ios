@@ -210,6 +210,8 @@ remain available for a specific question.
 | <a id="exp-190"></a>EXP-190 | C06 | ENVIRONMENT BLOCKED | Official15.0 universal/arm64 requests both unavailable;0 downloads/installs/native runs. Older-Xcode discovery finds no15 device. Exact responses preserved; user subsequently replaces impossible15 execution with deployment15 plus runnable17 coverage in C06. | [record](Experiments/EXP-143-199.md#exp-190--qualify-the-minimum-supported-ios-runtime) |
 | <a id="exp-191"></a>EXP-191 | H01, F04 | PREPARED | Signed Xcode27.1/SDK27.1 build and8 selected ownership controls pass; all3 binary hashes frozen. User-requested restart checkpoint before native scenario; cleanup/protected paths pass. Actual topology/backend/physical acceptance remain. | [record](Experiments/EXP-143-199.md#exp-191--qualify-duo-271-same-key-manual-ownership) |
 
+| <a id="exp-192"></a>EXP-192 | F04, H01 | DEFINED | Six bounded Duo capability checks and finite H01-H16 simulator routing; no physical-equivalence percentage or hardware waiver. | [record](Experiments/EXP-143-199.md#exp-192--qualify-duo-simulator-evidence-boundaries) |
+
 Original detailed shards and frozen records remain unchanged. Superseded index
 prose is preserved in the [documentation checkpoint](Experiments/DOCUMENTATION_CHECKPOINT_EXP-178.md).
 New results update only their owning record/result and this row; current support

@@ -338,3 +338,9 @@ EXP-191 preparation passes eight selected H01 driver/oracle controls under actua
 Xcode27.1/SDK27.1. The user-requested restart checkpoint precedes native scenario
 execution; it adds no production finding or runtime acceptance. Frozen build
 identity, cleanup and protected-path verification are retained in its result.
+
+EXP-192 begins the user-requested Duo simulator evidence assessment. Its
+[source audit](Results/EXP-192-duo-simulator-fidelity.json) records explicit
+simulator power/metadata/crash-classification differences and the limit of RUM
+source parity. These are validation boundaries, not newly reproduced production
+defects. Original D01-D12 dispositions and physical release obligations remain.

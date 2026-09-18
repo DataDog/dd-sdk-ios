@@ -6,7 +6,7 @@ workflows used by the project. Product behavior and support conclusions belong i
 `ASSESSMENT.md`; `EXPERIMENTS.md` indexes evidence; exact new experiment and
 session identifiers belong in the active numbered shard under `Experiments/`.
 
-Last updated: 2026-09-17
+Last updated: 2026-09-18
 
 ## Purpose
 
@@ -1790,3 +1790,11 @@ retained build against those artifacts, and use a fresh native run/output identi
 Do not repeat passing tests solely to reconnect MCP. EXP-191 display preflight
 found the second Duo display inactive; device type alone cannot replace verifying
 the open-display arrangement and simultaneous native scene topology.
+
+Fresh post-restart MCP now reports SDK27.1 and eligible Duo destinations, matching
+CLI27.1. Check that agreement on each new connection. Use Device Hub's observed
+pose controls for opening/closing/folding; neither device type nor a click alone
+proves the display transition. Capture devicectl display readback and app geometry.
+Apple restricts new Duo windows to the inner display; qualify it before an
+overlap scenario. EXP-192's finite routing preserves each original native and
+backend discriminator and records unexpressible simulator boundaries explicitly.
