@@ -1,0 +1,96 @@
+{
+  "run_id": "4a34977f-5143-4776-b821-ecd03fcfa1d9",
+  "signals": 47,
+  "manifest_errors": [],
+  "checkpoints": [
+    {
+      "runID": "4a34977f-5143-4776-b821-ecd03fcfa1d9",
+      "stage": "launch",
+      "timestamp": "1789770047.3367481"
+    },
+    {
+      "runID": "4a34977f-5143-4776-b821-ecd03fcfa1d9",
+      "stage": "drag-start window=(0.0, 5.684341886080802e-14, 669.0, 951.0) start=(334.5, 936.7350000000001) end=(13.38, 523.0500000000002)",
+      "timestamp": "1789770055.34907"
+    },
+    {
+      "runID": "4a34977f-5143-4776-b821-ecd03fcfa1d9",
+      "stage": "drag-returned",
+      "timestamp": "1789770059.174923"
+    }
+  ],
+  "installed_identity": true,
+  "native_sha256": "023d15967a3e476f60b16354cd8f5f07c2c66e44b55ad3c5458955a97b3b44e7",
+  "experiment": "EXP-192",
+  "attempt_id": "4a34977f-5143-4776-b821-ecd03fcfa1d9",
+  "status": "INCONCLUSIVE_INPUT",
+  "source_revision": "9b694cad7fc5fd5afe68f01b6c39890caa158437",
+  "artifact_root": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp192-duo-input2-taqdjea9",
+  "reason": "Corrected timed drag returns, but two hittable scenes are not established. Actual native A backgrounds while B stays full-screen. XCTest primary-screen PNGs are black and outer-sized; this does not establish whether input reaches the active inner display.",
+  "xcresult": {
+    "devicesAndConfigurations": [
+      {
+        "device": {
+          "architecture": "arm64",
+          "deviceId": "F91CCE46-2704-4E8B-9093-A6A0EF250B1A",
+          "deviceName": "iPhone Duo",
+          "modelName": "iPhone",
+          "osBuildNumber": "24A94401",
+          "osVersion": "27.1",
+          "platform": "iOS Simulator"
+        },
+        "expectedFailures": 0,
+        "failedTests": 1,
+        "passedTests": 0,
+        "skippedTests": 0,
+        "testPlanConfiguration": {
+          "configurationId": "1",
+          "configurationName": "Test Scheme Action"
+        }
+      }
+    ],
+    "environmentDescription": "RUMNativeMultiSceneProbeDuoUI \u00b7 Built with macOS 26.6.2",
+    "expectedFailures": 0,
+    "failedTests": 1,
+    "finishTime": 1789770082.24,
+    "passedTests": 0,
+    "result": "Failed",
+    "runtimeWarnings": [],
+    "skippedTests": 0,
+    "startTime": 1789770042.794,
+    "statistics": [],
+    "testFailures": [
+      {
+        "failureText": "XCTAssertEqual failed: (\"XCTWaiterResult(rawValue: 2)\") is not equal to (\"XCTWaiterResult(rawValue: 1)\") - The required two visible native scenes were not established; this is input qualification only.",
+        "targetName": "RUMNativeMultiSceneProbeUITests",
+        "testIdentifier": 1,
+        "testIdentifierString": "DuoSimulatorUITests/testInnerDisplaySplitViewInput()",
+        "testIdentifierURL": "test://com.apple.xcode/RUMNativeMultiSceneProbe/RUMNativeMultiSceneProbeUITests/DuoSimulatorUITests/testInnerDisplaySplitViewInput",
+        "testName": "testInnerDisplaySplitViewInput()"
+      }
+    ],
+    "title": "Test - RUMNativeMultiSceneProbeDuoUI",
+    "topInsights": [],
+    "totalTestCount": 1
+  },
+  "screenshots": {
+    "dimensions": [
+      1398,
+      2034
+    ],
+    "sha256": "5d26661e5205097f6c89f35447e7b74afac0e132a7a7619fdeefa2cf10e734ba",
+    "identical_count": 4
+  },
+  "backend_acceptance": "NOT_ADMITTED: simultaneous topology absent",
+  "next": "Stop equivalent XCTest pairing attempts after two; continue measured display/adaptive-layout cases.",
+  "artifact_sha256": {
+    "build-command.json": "437df6c923d550abf6d57338068d57727b44eb46759bb43b9aa4e77a688c8a49",
+    "built-code.json": "ee3c81b6840962da92a20ae5893d1f55bfa55d4d9cc4414b6c23b2e54dd0e56e",
+    "native.jsonl": "023d15967a3e476f60b16354cd8f5f07c2c66e44b55ad3c5458955a97b3b44e7",
+    "input-2.log": "722d690536c83237fad712ea08c13931621b842370fe5984f339c5881b4e5e1d",
+    "test-command.json": "3431f85d8ac64ed8dfd02faafb35ce7d2d31384d54c0c9ff58226d0e2828ba7c",
+    "test-result.json": "4a1f4853b57f4a8d40388489685463a4b18895c8cfe5ff3214b7ad8a63aacb0c",
+    "DuoInput/checkpoints.json": "c87ab3ca888f10e29a1908b312cc29b96d9739cc2d3d6486ffa96db9fce100c0",
+    "xcresult-summary.json": "c6407b0884461a5ff092e19920a133f06c410645bb56c051426b03ebb32d54a6"
+  }
+}

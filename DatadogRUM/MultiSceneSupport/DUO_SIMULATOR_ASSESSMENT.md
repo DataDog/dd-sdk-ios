@@ -57,7 +57,15 @@ geometry and lifecycle integration; they do not prove peer overlap or hardware
 callback timing. The unchanged H01 run passed22 ownership checks while its
 topology failed admission, demonstrating why those checks stay separate.
 
-Concurrent visibility, real disconnect and interactive cancellation remain
-unproven. Native calls and tool success responses alone did not establish them.
-The first XCTest calibration is invalid: synthesized input was transformed to\nthe top edge and result collection stalled. A bounded coordinate correction\nand independent input receipts are prepared. Original H/F release
-obligations remain open until their own completion contracts are met.
+Concurrent visibility and real disconnect remain unproven. Two bounded XCTest
+pairing attempts do not establish the required input. The corrected attempt
+finalizes with its visibility assertion failing; its primary-screen captures are
+black and outer-sized while the inner display is active. This limits this input
+path, not the platform's documented capability.
+
+Adaptive geometry is now observed through both actual display switching and a
+native resizable display. Nil selection remains nil with no Detail owner. Real
+selection exposed an obsolete fixture route/ownership path; EXP-193 qualifies the
+current accepted-state integration before H14 ownership can be accepted. The
+resizable display is a synthetic layout environment, separate from a physical
+hinge transition. Original H/F release obligations remain open.

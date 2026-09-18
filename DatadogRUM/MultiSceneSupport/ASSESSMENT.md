@@ -67,8 +67,10 @@ Chronological conclusions and the superseded routing audit are retained in the
 Use the [compact index](EXPERIMENTS.md) to open only the experiment that owns a question.
 
 The Duo27.1 simulator is available through Xcode27.1; fresh MCP and CLI agree.
-[EXP-192's assessment](DUO_SIMULATOR_ASSESSMENT.md) records measured outer/inner/
-rotated geometry, traits and genuine Home/foreground callbacks. H01's unchanged
-native22/22 result remains inconclusive because simultaneous visibility was not
-established. Gesture and disconnect qualification is still pending; probe-only
-XCTest calibration preserved an invalid input/collector attempt; a bounded\ncoordinate correction and independent checkpoints are prepared. No physical/human requirement closes.
+[EXP-192's assessment](DUO_SIMULATOR_ASSESSMENT.md) preserves display/trait and
+actual lifecycle observations, two bounded unqualified pairing attempts, and
+measured native resize capability. The unchanged H01 native22/22 pass remains
+inconclusive without overlap. H14's empty geometry cycle passes, but delivered
+selection bypasses the old fixture's accepted route and retains a structural
+owner; [EXP-193](Results/EXP-193-adaptive-split.json) owns the bounded current-host
+fixture correction. No physical/human obligation closes.

@@ -602,7 +602,7 @@
       "environment": "Physical iPad/iPhone Duo; human gesture for H11\u2013H13; resize-capable for H14",
       "completion_mode": null,
       "status": "ENVIRONMENT BLOCKED",
-      "evidence": ""
+      "evidence": "EXP-192 measured simulator geometry; selected ownership precondition fails. EXP-193 defines current accepted-state fixture validation. Physical H14 remains required."
     },
     {
       "id": "H15",

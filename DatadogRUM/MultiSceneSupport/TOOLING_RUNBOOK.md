@@ -1815,3 +1815,16 @@ readback. The UI calibration also writes checkpoints, PNGs and app hierarchy to
 its runner container's Documents/DuoInput. Export them before uninstall, bind them
 to the fresh run ID, and never treat partial xcresult output as a pass. Limit an
 equivalent failing input path to two attempts and continue independent checks.
+
+On the tested Duo27.1 runtime, appResize is supported: error24004 from an initial
+info request means no active session, not unsupported capability. Hold start
+until the sweep finishes; record requested display size separately from native
+window bounds (900×700 display yielded900×675 app). End only the owned session.
+Use devicectl's explicitly selected active-display unique ID for screenshots:
+XCUIScreen.main produced black outer-display images while the inner display was
+active. Neither AX tree presence nor a returned drag establishes visible pairing.
+
+Before adaptive ownership acceptance, verify the native selection binding
+publishes accepted state before immediate work and recorded path changes. Geometry
+callbacks can update a stale registry later and must not repair a missed boundary
+retroactively. The original EXP-192 failure is retained before EXP-193 correction.

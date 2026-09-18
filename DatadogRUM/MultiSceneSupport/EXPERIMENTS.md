@@ -210,7 +210,9 @@ remain available for a specific question.
 | <a id="exp-190"></a>EXP-190 | C06 | ENVIRONMENT BLOCKED | Official15.0 universal/arm64 requests both unavailable;0 downloads/installs/native runs. Older-Xcode discovery finds no15 device. Exact responses preserved; user subsequently replaces impossible15 execution with deployment15 plus runnable17 coverage in C06. | [record](Experiments/EXP-143-199.md#exp-190--qualify-the-minimum-supported-ios-runtime) |
 | <a id="exp-191"></a>EXP-191 | H01, F04 | INCONCLUSIVE | Unchanged native22/22 passes but B replaces A full-screen; no simultaneous boundary proof. Original preserved before bounded harness correction. | [record](Experiments/EXP-143-199.md#exp-191--qualify-duo-271-same-key-manual-ownership) |
 
-| <a id="exp-192"></a>EXP-192 | F04, H01 | IN PROGRESS | Actual display geometry/traits and Home/foreground callbacks observed. Concurrent visibility, disconnect and gestures remain unproven; first UI attempt invalid, bounded coordinate correction prepared. | [record](Experiments/EXP-143-199.md#exp-192--qualify-duo-simulator-evidence-boundaries) |
+| <a id="exp-192"></a>EXP-192 | F04, H01 | IN PROGRESS | Actual display geometry/traits and Home/foreground callbacks observed. Concurrent visibility, disconnect and gestures remain unproven; pairing input unqualified after two attempts. Measured adaptive geometry passes; selected fixture precondition moves to EXP-193. | [record](Experiments/EXP-143-199.md#exp-192--qualify-duo-simulator-evidence-boundaries) |
+
+| <a id="exp-193"></a>EXP-193 | H14 | DEFINED | Qualify current accepted-state split fixture after a native selection bypass; exact ownership through pose and resize, with negative controls. | [record](Experiments/EXP-143-199.md#exp-193--validate-accepted-split-selection-through-duo-adaptation) |
 
 Original detailed shards and frozen records remain unchanged. Superseded index
 prose is preserved in the [documentation checkpoint](Experiments/DOCUMENTATION_CHECKPOINT_EXP-178.md).

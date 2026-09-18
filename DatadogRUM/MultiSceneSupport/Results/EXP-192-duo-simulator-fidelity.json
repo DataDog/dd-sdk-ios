@@ -79,6 +79,16 @@
       "run_id": "f2d6e3e0-aaf0-4fca-994f-3a003d3b30b1",
       "status": "INVALID_AUTOMATION",
       "result": "acceptance/exp192-f2d6e3e0-aaf0-4fca-994f-3a003d3b30b1.json"
+    },
+    {
+      "run_id": "4a34977f-5143-4776-b821-ecd03fcfa1d9",
+      "status": "INCONCLUSIVE_INPUT",
+      "result": "acceptance/exp192-4a34977f-5143-4776-b821-ecd03fcfa1d9.json"
+    },
+    {
+      "run_id": "dedb89d2-c1e3-4748-b8b6-4efd95595240",
+      "status": "PARTIAL_FIXTURE_GAP",
+      "result": "acceptance/exp192-dedb89d2-c1e3-4748-b8b6-4efd95595240.json"
     }
   ],
   "gates_closed": [],
@@ -91,5 +101,19 @@
     ],
     "scope": "Conditional-compilation search over first-party Core/Internal/RUM/Trace/Logs/SessionReplay/CrashReporting/Profiling sources; not proof of UIKit/SwiftUI or third-party runtime equivalence."
   },
-  "bounded_harness_amendment": "Calibrate real timed gestures using an XCTest UI target, with before/after accessibility and screenshots. Require observed paired native windows before resuming H01; add live topology admission at and throughout its mutation interval, with serial/overlap/identity negative controls. Do not alter production SDK or weaken the original 22 semantic assertions."
+  "bounded_harness_amendment": "Calibrate real timed gestures using an XCTest UI target, with before/after accessibility and screenshots. Require observed paired native windows before resuming H01; add live topology admission at and throughout its mutation interval, with serial/overlap/identity negative controls. Do not alter production SDK or weaken the original 22 semantic assertions.",
+  "h14_protocol": {
+    "scenario": "swiftui.split.empty-selection",
+    "definition_before_execution": true,
+    "source": "unchanged signed9b694cad7 probe; current SDK04201edc7",
+    "steps": [
+      "Fresh clean installation and manifest; native ready inner regular width with no selected detail.",
+      "Close/open Duo: capture active display ID, geometry, traits and native path at each boundary; no Detail owner may appear while selection is nil.",
+      "Use documented native appResize to measure regular -> compact -> regular with actual readback if supported; preserve this as synthetic resize, separate from physical pose.",
+      "Select Detail1 through delivered native UI, then repeat acknowledged width transitions. Require retained selection/path and exact Detail owner if no native background occurred; otherwise preserve the different lifecycle boundary explicitly.",
+      "Export complete native sequence and query exact run/session backend views, markers/resources and errors before cleanup."
+    ],
+    "acceptance": "No stale source/run, no fabricated scene callbacks, no late-only geometry assertion, no unexpected Detail during nil selection, no duplicate or foreign owner at selected boundaries; hardware H14 residual remains."
+  },
+  "next": "EXP-193 qualifies H14 with the current accepted-state host; equivalent XCTest inner-display pairing attempts are stopped after two. Q5 outer-display gesture input remains dependency-ready."
 }

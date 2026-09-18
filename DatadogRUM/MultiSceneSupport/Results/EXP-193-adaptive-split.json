@@ -1,0 +1,28 @@
+{
+  "experiment": "EXP-193",
+  "gate": "H14",
+  "owner": "SDK implementer",
+  "status": "DEFINED",
+  "admission": "Closes the existing adaptive-layout simulator obligation and investigates the native selection fixture precondition found by EXP-192. No new product API or telemetry family.",
+  "candidate_sdk_revision": "04201edc7711361279d8487b385bc8b0ca9c63c7",
+  "definition_parent_revision": "9b694cad7fc5fd5afe68f01b6c39890caa158437",
+  "environment": "Verified Xcode27.1/SDK27.1 and task-owned Duo27.1 simulator; native pose and appResize readback, current Datadog MCP",
+  "reproduction": "EXP-192 run dedb89d2-c1e3-4748-b8b6-4efd95595240: delivered Detail1 materializes, but raw binding bypasses accepted route publication and work retains structural owner. Original attempt remains immutable.",
+  "implementation_boundary": [
+    "Add one isolated adaptive split fixture using the existing accepted-state publisher RUMNavigationHost SPI, standard NavigationSplitView and native selection binding. Preserve legacy diagnostic scenarios as evidence.",
+    "Accepted model publication precedes immediate work; one semantic root represents nil selection and selected Detail/Placeholder replace it. Sidebar remains structural. Same accepted selection across geometry changes creates no new occurrence.",
+    "Add strict external native/backend contract with mutation-negative controls; no production SDK change unless that valid fixture reproduces an SDK defect."
+  ],
+  "decisive_tests": [
+    "Fresh empty root across measured regular/compact/regular; no Detail owner while nil.",
+    "Delivered Detail1 accepted-state commit precedes immediate Action/Resource and materialization; exact owner and path agree.",
+    "Measured900x675 ->400x700 ->900x675 and inner/outer/inner preserve selected Detail1 ID when no native background occurs.",
+    "Real Detail2 and Placeholder selections create distinct exact owners; returning to a prior destination creates a fresh occurrence.",
+    "Reject structural marker owners, swapped/stale IDs, late-only route/geometry proof, owner churn on pure resize and missing backend rows."
+  ],
+  "acceptance": "All declared native/backend assertions plus negative controls pass with complete source/build/installed identity and cleanup. Close only the H14 simulator portion; original physical hinge/resize obligation remains.",
+  "dependencies": [
+    "A01"
+  ],
+  "gates_closed": []
+}

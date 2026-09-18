@@ -356,3 +356,11 @@ The first UI calibration's collector failure and transformed top-edge input are
 preserved as INVALID_AUTOMATION. Fresh native records and installed identity are
 valid, but concurrent/gesture acceptance is absent. The bounded correction changes
 only probe input/evidence collection; no production defect is inferred.
+
+EXP-192 now distinguishes measured adaptive geometry from failed ownership
+preconditions. Native Detail1 input bypasses the old probe's commit helper and
+uses an obsolete private occurrence-source path; backend work confirms the
+structural owner. EXP-193 must first qualify the current accepted-state host
+fixture. This is a harness repair gate, not a newly attributed SDK defect.
+The corrected inner-display XCTest still fails topology admission and captures
+the inactive outer screen; no concurrent or human-gesture evidence is promoted.

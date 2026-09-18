@@ -1,0 +1,353 @@
+{
+  "experiment": "EXP-192",
+  "related_gate": "H14",
+  "attempt_id": "dedb89d2-c1e3-4748-b8b6-4efd95595240",
+  "status": "PARTIAL_FIXTURE_GAP",
+  "source_revision": "9b694cad7fc5fd5afe68f01b6c39890caa158437",
+  "source_sha256": "dfb8234cf91f955f6fe36646d879ff4580b7e12537c379631d0353509e3deb18",
+  "artifact_root": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp192-duo-adaptive-rold5mgj",
+  "installed_code": {
+    "bundleIdentifier": "com.datadoghq.rum-native-multi-scene-probe",
+    "executable": "RUMNativeMultiSceneProbe",
+    "binaries": {
+      "RUMNativeMultiSceneProbe": "43e78be33b28cec3de7c4153b2b1837cdba5d2b95aa660322a434fa2362c41b7",
+      "RUMNativeMultiSceneProbe.debug.dylib": "eb5c4b4ad8fb8635ac6f7568683863bd2e9df919afecd912a165e2a75ab34c28",
+      "__preview.dylib": "f107d09b9d3b79f01789a45ef045bf4039904bf5eaa3c1a8c6a9e27de130563b"
+    }
+  },
+  "signal_count": 39,
+  "observations": {
+    "empty_pose_cycle": "PASS: native regular/compact/regular, nil path, no Detail occurrence before selection",
+    "resize_geometry": "PASS: acknowledged display900x700/400x700/900x700; actual native900x675/400x700/900x675, regular/compact/regular",
+    "selected_ownership": "FAIL_PRECONDITION: real Detail1 materializes at21; no navigation mutation is recorded; Action22 and Resource24 retain structural hosting owner, confirmed by backend",
+    "native_identity": "F94A1243-F08B-4C8C-8FD8-F78FDA93AB99",
+    "geometry_is_not_ownership": true
+  },
+  "phase_boundaries": {
+    "inner-empty": {
+      "last_sequence": 10,
+      "native": {
+        "activationState": "foreground-active",
+        "evidenceSource": "probe",
+        "geometry": {
+          "height": 951,
+          "width": 669,
+          "x": 0,
+          "y": 0
+        },
+        "horizontalSizeClass": "regular",
+        "kind": "scene-lifecycle",
+        "navigationPath": [],
+        "runID": "dedb89d2-c1e3-4748-b8b6-4efd95595240",
+        "scenarioID": "swiftui.split.empty-selection",
+        "sceneDisconnectGeneration": 0,
+        "scenePhase": "ready",
+        "schemaVersion": 5,
+        "semanticContext": {
+          "logicalSceneID": "scene-A",
+          "nativeSceneID": "F94A1243-F08B-4C8C-8FD8-F78FDA93AB99"
+        },
+        "sequence": 5,
+        "timestampMilliseconds": 1789770402730,
+        "verticalSizeClass": "regular"
+      },
+      "active_displays": [
+        {
+          "name": "LCD-1",
+          "displayId": 3,
+          "nativeSize": [
+            2007,
+            2853
+          ],
+          "pointScale": 3,
+          "currentOrientation": "rot0"
+        }
+      ]
+    },
+    "outer-empty": {
+      "last_sequence": 15,
+      "native": {
+        "activationState": "foreground-active",
+        "evidenceSource": "probe",
+        "geometry": {
+          "height": 466,
+          "width": 678,
+          "x": 0,
+          "y": 0
+        },
+        "horizontalSizeClass": "compact",
+        "kind": "scene-geometry",
+        "navigationPath": [],
+        "runID": "dedb89d2-c1e3-4748-b8b6-4efd95595240",
+        "scenarioID": "swiftui.split.empty-selection",
+        "sceneDisconnectGeneration": 0,
+        "scenePhase": "ready",
+        "schemaVersion": 5,
+        "semanticContext": {
+          "logicalSceneID": "scene-A",
+          "nativeSceneID": "F94A1243-F08B-4C8C-8FD8-F78FDA93AB99"
+        },
+        "sequence": 15,
+        "timestampMilliseconds": 1789770514288,
+        "verticalSizeClass": "compact"
+      },
+      "active_displays": [
+        {
+          "name": "LCD",
+          "displayId": 1,
+          "nativeSize": [
+            1398,
+            2034
+          ],
+          "pointScale": 3,
+          "currentOrientation": "rot270"
+        }
+      ]
+    },
+    "inner-empty-return": {
+      "last_sequence": 20,
+      "native": {
+        "activationState": "foreground-active",
+        "evidenceSource": "probe",
+        "geometry": {
+          "height": 951,
+          "width": 669,
+          "x": 0,
+          "y": 0
+        },
+        "horizontalSizeClass": "regular",
+        "kind": "scene-geometry",
+        "navigationPath": [],
+        "runID": "dedb89d2-c1e3-4748-b8b6-4efd95595240",
+        "scenarioID": "swiftui.split.empty-selection",
+        "sceneDisconnectGeneration": 0,
+        "scenePhase": "ready",
+        "schemaVersion": 5,
+        "semanticContext": {
+          "logicalSceneID": "scene-A",
+          "nativeSceneID": "F94A1243-F08B-4C8C-8FD8-F78FDA93AB99"
+        },
+        "sequence": 17,
+        "timestampMilliseconds": 1789770545499,
+        "verticalSizeClass": "regular"
+      },
+      "active_displays": [
+        {
+          "name": "LCD-1",
+          "displayId": 3,
+          "nativeSize": [
+            2007,
+            2853
+          ],
+          "pointScale": 3,
+          "currentOrientation": "rot0"
+        }
+      ]
+    },
+    "inner-selected": {
+      "last_sequence": 25,
+      "native": {
+        "activationState": "foreground-active",
+        "evidenceSource": "probe",
+        "geometry": {
+          "height": 951,
+          "width": 669,
+          "x": 0,
+          "y": 0
+        },
+        "horizontalSizeClass": "regular",
+        "kind": "scene-geometry",
+        "navigationPath": [],
+        "runID": "dedb89d2-c1e3-4748-b8b6-4efd95595240",
+        "scenarioID": "swiftui.split.empty-selection",
+        "sceneDisconnectGeneration": 0,
+        "scenePhase": "ready",
+        "schemaVersion": 5,
+        "semanticContext": {
+          "logicalSceneID": "scene-A",
+          "nativeSceneID": "F94A1243-F08B-4C8C-8FD8-F78FDA93AB99"
+        },
+        "sequence": 17,
+        "timestampMilliseconds": 1789770545499,
+        "verticalSizeClass": "regular"
+      },
+      "active_displays": [
+        {
+          "name": "LCD-1",
+          "displayId": 3,
+          "nativeSize": [
+            2007,
+            2853
+          ],
+          "pointScale": 3,
+          "currentOrientation": "rot0"
+        }
+      ]
+    },
+    "resize-regular": {
+      "last_sequence": 26,
+      "native": {
+        "activationState": "foreground-active",
+        "evidenceSource": "probe",
+        "geometry": {
+          "height": 675,
+          "width": 900,
+          "x": 0,
+          "y": 0
+        },
+        "horizontalSizeClass": "regular",
+        "kind": "scene-geometry",
+        "navigationPath": [
+          "detail-1"
+        ],
+        "runID": "dedb89d2-c1e3-4748-b8b6-4efd95595240",
+        "scenarioID": "swiftui.split.empty-selection",
+        "sceneDisconnectGeneration": 0,
+        "scenePhase": "ready",
+        "schemaVersion": 5,
+        "semanticContext": {
+          "logicalSceneID": "scene-A",
+          "nativeSceneID": "F94A1243-F08B-4C8C-8FD8-F78FDA93AB99",
+          "screen": "detail-1"
+        },
+        "sequence": 26,
+        "timestampMilliseconds": 1789770718051,
+        "verticalSizeClass": "regular"
+      },
+      "active_displays": [
+        {
+          "name": "LCD-1",
+          "displayId": 3,
+          "nativeSize": [
+            2007,
+            2853
+          ],
+          "pointScale": 3,
+          "currentOrientation": "rot0"
+        }
+      ]
+    },
+    "resize-compact": {
+      "last_sequence": 31,
+      "native": {
+        "activationState": "foreground-active",
+        "evidenceSource": "probe",
+        "geometry": {
+          "height": 700,
+          "width": 400,
+          "x": 0,
+          "y": 0
+        },
+        "horizontalSizeClass": "compact",
+        "kind": "scene-geometry",
+        "navigationPath": [
+          "detail-1"
+        ],
+        "runID": "dedb89d2-c1e3-4748-b8b6-4efd95595240",
+        "scenarioID": "swiftui.split.empty-selection",
+        "sceneDisconnectGeneration": 0,
+        "scenePhase": "ready",
+        "schemaVersion": 5,
+        "semanticContext": {
+          "logicalSceneID": "scene-A",
+          "nativeSceneID": "F94A1243-F08B-4C8C-8FD8-F78FDA93AB99",
+          "screen": "detail-1"
+        },
+        "sequence": 29,
+        "timestampMilliseconds": 1789770758696,
+        "verticalSizeClass": "regular"
+      },
+      "active_displays": [
+        {
+          "name": "LCD-1",
+          "displayId": 3,
+          "nativeSize": [
+            2007,
+            2853
+          ],
+          "pointScale": 3,
+          "currentOrientation": "rot0"
+        }
+      ]
+    },
+    "resize-return": {
+      "last_sequence": 36,
+      "native": {
+        "activationState": "foreground-active",
+        "evidenceSource": "probe",
+        "geometry": {
+          "height": 675,
+          "width": 900,
+          "x": 0,
+          "y": 0
+        },
+        "horizontalSizeClass": "regular",
+        "kind": "scene-geometry",
+        "navigationPath": [
+          "detail-1"
+        ],
+        "runID": "dedb89d2-c1e3-4748-b8b6-4efd95595240",
+        "scenarioID": "swiftui.split.empty-selection",
+        "sceneDisconnectGeneration": 0,
+        "scenePhase": "ready",
+        "schemaVersion": 5,
+        "semanticContext": {
+          "logicalSceneID": "scene-A",
+          "nativeSceneID": "F94A1243-F08B-4C8C-8FD8-F78FDA93AB99",
+          "screen": "detail-1"
+        },
+        "sequence": 34,
+        "timestampMilliseconds": 1789770834292,
+        "verticalSizeClass": "regular"
+      },
+      "active_displays": [
+        {
+          "name": "LCD-1",
+          "displayId": 3,
+          "nativeSize": [
+            2007,
+            2853
+          ],
+          "pointScale": 3,
+          "currentOrientation": "rot0"
+        }
+      ]
+    }
+  },
+  "backend": {
+    "view_count": 11,
+    "marker_pair_count": 2,
+    "errors_returned": 0,
+    "marker_view_id": "bdbc53cc-7140-4ea0-b112-ece298a010a8",
+    "acceptance": "Diagnosis only; no complete H14 acceptance or physical claim"
+  },
+  "source_finding": "The native List writes raw $splitSelection, bypassing commitSplitSelection. The legacy private occurrence source also predates the current accepted-state host contract. Qualify a current accepted-state fixture before attributing SDK defects.",
+  "cleanup": [
+    {
+      "command": "terminate",
+      "exit": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "command": "uninstall",
+      "exit": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "command": "get_app_container",
+      "exit": 2,
+      "stdout": "",
+      "stderr": "An error was encountered processing the command (domain=NSPOSIXErrorDomain, code=2):\nThe operation couldn\u2019t be completed. No such file or directory\nNo such file or directory\n"
+    }
+  ],
+  "gates_closed": [],
+  "artifact_sha256": {
+    "final-native.jsonl": "c500588bec28ba4ce2ba09b52af6368ef83cb13214fe80cf7eb8d7077cd2bb4f",
+    "backend-evidence.json": "487d93f3346132d3ccb1c4129ac4e80bf63666978c046710437509621b6ed130",
+    "installed-code.json": "ee3c81b6840962da92a20ae5893d1f55bfa55d4d9cc4414b6c23b2e54dd0e56e",
+    "cleanup.json": "5d7a759660cbbc5326a5a9552ba9f65df88ebd7d43199432eb048d7688df3b07",
+    "resize-session.log": "47f44661b79064093225a2f821fe76096b99a7abb60a8c4818bbb6302123fb71"
+  }
+}
