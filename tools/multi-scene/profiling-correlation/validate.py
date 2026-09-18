@@ -54,9 +54,11 @@ def validate_native(receipt, run_id, revision, allow_simulator=False):
     require(run_id.startswith("exp187-"), "invalid run prefix")
     uuid(run_id[7:])
     require(re.fullmatch("[a-f0-9]{40}", revision), "invalid source revision")
-    require(receipt["schemaVersion"] == 1 and receipt["experiment"] == "EXP-187", "wrong receipt schema")
+    require(receipt["schemaVersion"] == 2 and receipt["experiment"] == "EXP-187", "wrong receipt schema")
     require(receipt["runID"] == run_id and receipt["sourceRevision"] == revision, "stale run/source identity")
     require(receipt["nativeStatus"] == "PASS", "native fixture did not pass")
+    require(receipt["configuration"] == {"applicationLaunchSampleRate": 0, "continuousSampleRate": 100},
+            "fixture requires continuous profiling at 100 percent")
     allowed = {"PHYSICAL_DEVICE"}
     if allow_simulator:
         allowed.add("SIMULATOR_MECHANICS_ONLY")
@@ -70,9 +72,12 @@ def validate_native(receipt, run_id, revision, allow_simulator=False):
         require(checkpoint["number"] == index and checkpoint["passed"] is True, "failed or reordered assertion")
         require(checkpoint["boundary"] == BOUNDARIES.index("assert:" + str(index)) + 1, "assertion boundary mismatch")
         require(checkpoint["operationCount"] == OPERATION_COUNTS[index - 1], "assertion missed critical Operation inventory")
+        if index >= 3:
+            require(checkpoint["profilingRunning"] is True, "profiler not ready before critical Operation boundary")
 
     observations = receipt["observations"]
     require(observations["ttidCount"] == 1, "missing or repeated launch readiness")
+    require(observations["profilingRunning"] is True, "profiler stopped before receipt completion")
     views = observations["views"]
     require(len(views) == 4 and sorted(v["name"] for v in views) == sorted(VIEW_NAMES + [LAUNCH_VIEW]),
             "expected three fixture views and one built-in launch view")
@@ -90,6 +95,7 @@ def validate_native(receipt, run_id, revision, allow_simulator=False):
         require(op["operationKey"] == run_id + "/" + key and op["step"] == step, "wrong key/step order")
         require(op["viewID"] == by_name[view]["id"] and op["viewName"] == view, "wrong Operation owner")
         require(op["sessionID"] in sessions, "wrong Operation session")
+        require(op["profilingRunning"] is True, "Operation observed before profiler readiness")
         require(op["vital"]["type"] == "vital" and op["vital"]["name"] == "exp187.parallel", "wrong Operation name/type")
         integer(op["vital"]["start_ns"], "start_ns")
         require(type(op["referenceTime"]) in (int, float) and type(op["serverTimeOffset"]) in (int, float), "missing observed native clock")
@@ -119,6 +125,66 @@ def validate_attachment(expected, attachment):
             "profile attachment differs from exact observed start identities/times")
 
 
+
+def rum_page(response):
+    match = re.search(r"<JSON_DATA>(.*?)</JSON_DATA>", response, re.S)
+    count = re.search(r"<count>([0-9]+)</count>", response)
+    require(match is not None and count is not None, "missing RUM response envelope")
+    return int(count[1]), json.loads(match[1]) if match[1].strip() else []
+
+
+def validate_rum_backend(receipt, response, counts_response, end_response):
+    from collections import Counter
+    total, rows = rum_page(response)
+    end_total, end_rows = rum_page(end_response)
+    require(total == 12 and len(rows) == total and end_total == total and not end_rows,
+            "incomplete RUM session or pagination")
+    require(len({r["id"] for r in rows}) == total, "duplicate backend event")
+    match = re.search(r"<TSV_DATA>(.*?)</TSV_DATA>", counts_response, re.S)
+    require(match is not None, "missing independent backend count")
+    lines = match[1].strip().splitlines()
+    require(lines[0] == "@type\tcount" and len(lines) == 5, "wrong backend count schema")
+    counts = dict((kind, int(count)) for kind, count in (line.split("\t") for line in lines[1:]))
+    require(counts == {"vital": 5, "view": 4, "operation": 2, "session": 1}, "unexpected backend inventory")
+    events = [r["attributes"]["custom"] for r in rows]
+    require(dict(Counter(e["type"] for e in events)) == counts, "count/page mismatch")
+    observations = receipt["observations"]
+    session = observations["operations"][0]["sessionID"]
+    require(all(e["session"]["id"] == session and e["context"]["multiscene"]["run_id"] == receipt["runID"]
+                for e in events), "stale backend run or session")
+    views = {e["view"]["id"]: e["view"] for e in events if e["type"] == "view"}
+    require(len(views) == 4, "duplicate backend view")
+    for view in observations["views"]:
+        actual = views[view["id"]]
+        require(actual["name"] == view["name"] and actual["is_active"] is False, "wrong backend view occurrence")
+        require(all(actual[field]["count"] == 0 for field in ["action", "resource", "error", "crash", "long_task"]),
+                "unexpected telemetry count")
+    steps = {e["vital"]["id"]: e for e in events if e["type"] == "vital" and e["vital"]["type"] == "operation_step"}
+    require(set(steps) == {op["vital"]["id"] for op in observations["operations"]}, "wrong backend step identities")
+    for op in observations["operations"]:
+        event = steps[op["vital"]["id"]]
+        vital = event["vital"]
+        require((vital["name"], vital["operation_key"], vital["step_type"], event["view"]["id"]) ==
+                (op["vital"]["name"], op["operationKey"], op["step"], op["viewID"]), "wrong backend Operation owner/key/step")
+    operations = [e for e in events if e["type"] == "operation"]
+    require(len({e["operation"]["operation_key"] for e in operations}) == 2, "collapsed backend Operations")
+    for event in operations:
+        op = event["operation"]
+        starts = [x for x in observations["operations"] if x["operationKey"] == op["operation_key"] and x["step"] == "start"]
+        ends = [x for x in observations["operations"] if x["operationKey"] == op["operation_key"] and x["step"] == "end"]
+        require(len(starts) == len(ends) == 1, "unmatched backend Operation")
+        require(op["name"] == "exp187.parallel" and op["status"] == "success" and
+                event["vital"]["id"] == starts[0]["vital"]["id"] and
+                op["start_view"]["id"] == starts[0]["viewID"] and op["end_view"]["id"] == ends[0]["viewID"],
+                "wrong backend aggregate start/end ownership")
+    launches = [e for e in events if e["type"] == "vital" and e["vital"]["type"] == "app_launch"]
+    require(len(launches) == 1 and launches[0]["vital"]["name"] == "time_to_initial_display", "unexpected built-in vital")
+    return {"state": "PASS", "counts": counts, "unique_events": total, "pagination_exhausted": True,
+            "session_id": session, "exact_operation_step_ids": sorted(steps),
+            "profiler_statuses": sorted({e["_dd"]["profiling"]["status"] for e in steps.values()}),
+            "all_operation_steps_have_profile": all(e["profiling"]["has_profile"] is True for e in steps.values())}
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("receipt", type=Path)
@@ -126,15 +192,23 @@ def main():
     parser.add_argument("--source-revision", required=True)
     parser.add_argument("--allow-simulator", action="store_true", help="Fixture mechanics only; cannot close T14")
     parser.add_argument("--attachment", type=Path, help="Actual exported rum-mobile-events.json")
+    parser.add_argument("--rum-response", type=Path, help="Full-session detailed MCP response, unmodified")
+    parser.add_argument("--rum-counts", type=Path, help="Independent full-session aggregate MCP response")
+    parser.add_argument("--rum-end-response", type=Path, help="Unmodified exhausted page response")
     parser.add_argument("--output", type=Path, required=True)
     args = parser.parse_args()
     result = {"experiment": "EXP-187", "gate": "T14", "gate_status": "INCONCLUSIVE",
-              "native_validation": "NOT_RUN", "attachment_validation": "NOT_PROVIDED",
+              "native_validation": "NOT_RUN", "attachment_validation": "NOT_PROVIDED", "rum_validation": "NOT_PROVIDED",
               "remaining": ["complete backend RUM/profile inventory", "nonempty physical native wall-time stack samples",
                             "profile label/correlation evidence", "frozen build/install identity"]}
     try:
-        expected = validate_native(json.loads(args.receipt.read_text()), args.run_id, args.source_revision, args.allow_simulator)
+        receipt = json.loads(args.receipt.read_text())
+        expected = validate_native(receipt, args.run_id, args.source_revision, args.allow_simulator)
         result["native_validation"] = "PASS"
+        if any([args.rum_response, args.rum_counts, args.rum_end_response]):
+            require(all([args.rum_response, args.rum_counts, args.rum_end_response]), "all three RUM responses required")
+            result["rum_validation"] = validate_rum_backend(
+                receipt, args.rum_response.read_text(), args.rum_counts.read_text(), args.rum_end_response.read_text())
         if args.attachment:
             validate_attachment(expected, json.loads(args.attachment.read_text()))
             result["attachment_validation"] = "PASS"

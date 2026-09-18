@@ -1,0 +1,38 @@
+{
+  "experiment": "EXP-187",
+  "run_id": "exp187-9cdb15fb-ef6d-421c-9310-1eaab9161ca4",
+  "revision": "84b304d0e6b2041d3d9b8dc3a402eefbb7a5dfec",
+  "component": "complete RUM session ownership",
+  "state": "PASS",
+  "gate_status": "INCONCLUSIVE",
+  "counts": {
+    "vital": 5,
+    "view": 4,
+    "operation": 2,
+    "session": 1
+  },
+  "unique_events": 12,
+  "pagination_exhausted": true,
+  "session_id": "f1a77132-8df1-492a-a12f-e9d28e5b3639",
+  "exact_operation_step_ids": [
+    "0dbfbb51-57c2-4ab9-9ff3-0d65b81da796",
+    "61fd8298-51b9-4e85-ada8-21fab59de61c",
+    "c770de38-965c-4bd0-98f3-ecb614243722",
+    "504343a8-9abb-4c0b-8e29-691a606c1619"
+  ],
+  "exact_profile_start_ids": [
+    "504343a8-9abb-4c0b-8e29-691a606c1619",
+    "c770de38-965c-4bd0-98f3-ecb614243722"
+  ],
+  "all_operation_steps_profiler_status": [
+    "stopped"
+  ],
+  "any_profile_correlated": false,
+  "raw_response_sha256": "22f40dd3c0446069eedd1cb0001d660d6841bafdef4ad08f4105ba415848faef",
+  "limits": [
+    "Native mechanics and RUM ownership only",
+    "Continuous sampling was disabled; no matching profile or attachment accepted",
+    "Backend view names on step/operation summaries default to view URL; join exact view IDs to authoritative view events",
+    "No physical gate closure"
+  ]
+}

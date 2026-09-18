@@ -1,0 +1,79 @@
+{
+  "artifact_root": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp187-exact-oracle-37k2gyj_/attempt",
+  "backend_validation": "NOT_RUN",
+  "build": {
+    "bundle": "com.datadoghq.benchmarks.Runner",
+    "executable_sha256": "033663cf8af6b47503d8eadc0d36c324c3400a4c3e0696a3075fbf095e9cafc6",
+    "uuid": "UUID: C872FA95-C1F4-32D0-B2D1-E2E0CE1350FB (x86_64) /private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp187-exact-oracle-37k2gyj_/attempt/derived/Build/Products/Release-iphonesimulator/Runner.app/Runner\nUUID: C81ADC2B-D3DB-33CF-A722-E29961E43309 (arm64) /private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp187-exact-oracle-37k2gyj_/attempt/derived/Build/Products/Release-iphonesimulator/Runner.app/Runner"
+  },
+  "device": {
+    "dataPath": "/Users/valentin.pertuisot/Library/Developer/CoreSimulator/Devices/59A8E789-932A-48D0-9281-0F49DEB8E96D/data",
+    "dataPathSize": 5278081024,
+    "deviceTypeIdentifier": "com.apple.CoreSimulator.SimDeviceType.iPhone-18-Pro",
+    "isAvailable": true,
+    "lastUsedAt": "2026-09-18T08:17:36Z",
+    "logPath": "/Users/valentin.pertuisot/Library/Logs/CoreSimulator/59A8E789-932A-48D0-9281-0F49DEB8E96D",
+    "logPathSize": 380928,
+    "name": "iPhone 18 Pro",
+    "runtime": "com.apple.CoreSimulator.SimRuntime.iOS-27-0",
+    "state": "Booted",
+    "udid": "59A8E789-932A-48D0-9281-0F49DEB8E96D"
+  },
+  "experiment": "EXP-187",
+  "finished_at": "2026-09-18T08:33:52.655427+00:00",
+  "gate": "T14",
+  "gate_status": "INCONCLUSIVE",
+  "native_inventory": {
+    "assertions": 12,
+    "operation_steps": 4,
+    "profile_start_ids": [
+      "504343a8-9abb-4c0b-8e29-691a606c1619",
+      "c770de38-965c-4bd0-98f3-ecb614243722"
+    ],
+    "views": 4
+  },
+  "native_validation": "PASS",
+  "pid": 78134,
+  "remaining": [
+    "supported physical native wall-time stack samples",
+    "complete backend RUM/profile inventory",
+    "exact profile attachment and process labels"
+  ],
+  "revision": "84b304d0e6b2041d3d9b8dc3a402eefbb7a5dfec",
+  "run_id": "exp187-9cdb15fb-ef6d-421c-9310-1eaab9161ca4",
+  "schema_version": 1,
+  "scope": "SIMULATOR_MECHANICS_ONLY",
+  "signature": "UNSIGNED",
+  "source_fingerprint": "e02a7e771f8aabc1e3cd4e94b28d132baf72f47beec311eb21447f468332a27b",
+  "stages": {
+    "build": {
+      "state": "PASS"
+    },
+    "clean_install": {
+      "absent_before_install": true,
+      "installed_binary_sha256": "033663cf8af6b47503d8eadc0d36c324c3400a4c3e0696a3075fbf095e9cafc6",
+      "state": "PASS"
+    },
+    "configuration": {
+      "application_id_valid": true,
+      "client_token_resolved": true,
+      "state": "PASS"
+    },
+    "native_validation": {
+      "assertions": 12,
+      "operation_steps": 4,
+      "profile_start_ids": [
+        "504343a8-9abb-4c0b-8e29-691a606c1619",
+        "c770de38-965c-4bd0-98f3-ecb614243722"
+      ],
+      "state": "PASS",
+      "views": 4
+    },
+    "preflight": {
+      "state": "PASS"
+    }
+  },
+  "started_at": "2026-09-18T08:32:17.572137+00:00",
+  "workspace_preserved": true,
+  "xcode": "Xcode 27.0\nBuild version 27A266a"
+}

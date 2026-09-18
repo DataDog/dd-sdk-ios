@@ -269,6 +269,14 @@ independent duration validator also truncated rather than using SDK rounding.
 Both are acceptance-oracle defects; the contract now explicitly counts the
 launch view and keeps exact nanoseconds, with ten Python methods/42 malformed
 controls passing. The failed run remains and fresh native execution is required.
+The corrected run passes12 native assertions and all12 backend RUM events;
+ordinary Release excludes the fixture symbols and scene manifest. Profile capture
+remains incomplete because the initial fixture disabled continuous sampling,
+while sampled Operations are documented not to start profiling. The supported
+setup now enables continuous100% and requires observed readiness before/at each
+Operation. Fourteen Python methods/64 malformed controls pass, including the
+reusable full-session backend oracle. This is a fixture correction, not a new
+production finding. Physical/raw profile evidence remains required.
 No production source or original review disposition changes.
 
 ## Stable API review boundary

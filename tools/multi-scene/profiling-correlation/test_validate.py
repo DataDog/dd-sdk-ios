@@ -24,23 +24,43 @@ def fixture():
                       "start_ns": int((time + 2 + 978307200) * 1e9)},
             "operationKey": RUN + "/" + key, "step": step, "viewID": views[owner]["id"],
             "viewName": views[owner]["name"], "sessionID": ids[3],
-            "referenceTime": time, "serverTimeOffset": 2
+            "referenceTime": time, "serverTimeOffset": 2, "profilingRunning": True
         })
     expected = [dict(operations[n]["vital"], duration_ns=duration)
                 for n, duration in [(0, 6_000_000_000), (1, 2_000_000_000)]]
     return {
-        "schemaVersion": 1, "experiment": "EXP-187", "nativeStatus": "PASS",
+        "schemaVersion": 2, "configuration": {"applicationLaunchSampleRate": 0, "continuousSampleRate": 100},
+        "experiment": "EXP-187", "nativeStatus": "PASS",
         "backendStatus": "NOT_VERIFIED", "runID": RUN, "sourceRevision": REVISION,
         "platform": "PHYSICAL_DEVICE", "processID": 123,
         "boundaries": list(BOUNDARIES),
         "checkpoints": [{"number": n, "passed": True, "boundary": BOUNDARIES.index(f"assert:{n}") + 1,
-                         "operationCount": count} for n, count in enumerate(OPERATION_COUNTS, 1)],
-        "observations": {"ttidCount": 1, "views": views, "operations": operations},
+                         "operationCount": count, "profilingRunning": n >= 3} for n, count in enumerate(OPERATION_COUNTS, 1)],
+        "observations": {"ttidCount": 1, "profilingRunning": True, "views": views, "operations": operations},
         "expectedProfileVitals": expected
     }
 
 
 class NativeValidationTests(unittest.TestCase):
+    def test_disabled_missing_stopped_and_late_profiler_readiness_fail(self):
+        for mutation in ["disabled", "missing", "stopped", "late", "lost", "operation"]:
+            with self.subTest(mutation=mutation):
+                receipt = fixture()
+                if mutation == "disabled":
+                    receipt["configuration"]["continuousSampleRate"] = 0
+                elif mutation == "missing":
+                    receipt["observations"]["profilingRunning"] = None
+                elif mutation == "stopped":
+                    receipt["observations"]["profilingRunning"] = False
+                elif mutation == "late":
+                    receipt["checkpoints"][2]["profilingRunning"] = False
+                elif mutation == "lost":
+                    receipt["checkpoints"][5]["profilingRunning"] = False
+                else:
+                    receipt["observations"]["operations"][0]["profilingRunning"] = False
+                with self.assertRaises(ValueError):
+                    validate_native(receipt, RUN, REVISION)
+
     def test_builtin_launch_is_explicit_and_cannot_hide_inventory_errors(self):
         for mutation in ["missing", "extra", "session", "active", "collapsed", "name"]:
             with self.subTest(mutation=mutation):

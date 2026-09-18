@@ -11,7 +11,7 @@
   },
   "configuration": {
     "applicationLaunchSampleRate": 0,
-    "continuousSampleRate": 0,
+    "continuousSampleRate": 100,
     "operationSampleRate": 100,
     "sessionSampleRate": 100,
     "automatic_views": false,
@@ -66,7 +66,7 @@
   "native_assertions": [
     "Fresh externally supplied run identity and committed source identity",
     "Exactly one connected native scene with an attached visible window",
-    "StartA mapper owner and actual TTID message observed before starting work",
+    "StartA mapper owner, actual TTID message and observed running profiler context before starting work",
     "First Operation start message has StartA owner and key A",
     "StartB is a fresh mapper owner and StartA is ended before starting B",
     "Second Operation start has StartB owner, key B and a distinct start ID",
@@ -83,19 +83,19 @@
     "operation_ends": 2,
     "distinct_views": 4,
     "rum_sessions": 1,
-    "matching_custom_profiles": 1,
     "profile_operation_start_ids": 2,
     "fixture_actions": 0,
     "resources": 0,
     "errors": 0,
     "long_tasks": 0,
     "fixture_manual_views": 3,
-    "builtin_launch_views": 1
+    "builtin_launch_views": 1,
+    "matching_continuous_profiles": 1
   },
   "backend_assertions": [
     "Query the full RUM session and profile time range/service; validate all run identities rather than filtering away stale owners",
     "Join each of four RUM steps to the native observed exact Vital ID, key, step, session and view",
-    "One matching custom profile contains both exact start IDs, matching operation names and actual observed server-offset start_ns and duration_ns",
+    "One matching continuous profile contains both exact start IDs, matching operation names and actual observed server-offset start_ns and duration_ns",
     "The profile has nonempty native wall-time stack samples; a native testing stub or simulator cannot close T14",
     "Profile labels describe the final process context, not independent per-view CPU ownership",
     "Inventory unexpected profiles/events explicitly; preserve any built-in app-launch telemetry separately and admit no additional fixture Operation"
@@ -110,7 +110,9 @@
     "missing or duplicate step/profile",
     "native assertion recorded after its critical boundary",
     "missing/extra/wrong-session/active/collapsed/renamed built-in launch view",
-    "fractional native duration and plus/minus one nanosecond rejection"
+    "fractional native duration and plus/minus one nanosecond rejection",
+    "continuous sampling disabled",
+    "profiler readiness missing, stopped or first observed after an Operation start"
   ],
   "limits": [
     "Actual OS/device profile upload and backend attachment visibility remain required",
@@ -120,5 +122,8 @@
     "No SDK production, API, dependency, networking-format or existing build-script change"
   ],
   "builtin_launch_view_name": "ApplicationLaunch",
-  "native_clock_conversion": "Double seconds multiplied by 1e9, rounded to nearest with ties away from zero, matching Int64.ddWithNoOverflow; exact integer comparison, no tolerance"
+  "native_clock_conversion": "Double seconds multiplied by 1e9, rounded to nearest with ties away from zero, matching Int64.ddWithNoOverflow; exact integer comparison, no tolerance",
+  "foreground_drain_seconds": 70,
+  "profile_mode": "Continuous Profiling at100%; sampled Operations correlate with a running profiler and do not start it. Await its normal60s timer without a test flush or synthetic lifecycle signal.",
+  "native_receipt_schema_version": 2
 }

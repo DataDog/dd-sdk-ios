@@ -1543,6 +1543,18 @@ breaks existing CatalogSwiftUI iOS17 APIs. Xcode performs variable/include resol
 secret values into command arguments or artifact summaries. Validate resolved
 presence/application UUID in the built plist before installation.
 
+Operation sampling does not start a standalone profile. Use continuous sampling100%
+and observe actual running context before the first Operation and in each received
+step; never repair that evidence after the boundary. Keep70s of foreground time
+for the normal60s timer and upload. Receipt schema2 rejects disabled or late
+readiness. Preserve earlier mechanics passes with stopped profiling as incomplete
+profile evidence, not SDK regressions.
+
+The validator accepts unmodified full-session RUM search/count/exhausted-page
+responses and checks all12 events. Join step/aggregate view IDs to authoritative
+view events because backend summaries may use URL-derived names. Backend
+millisecond Operation aggregates cannot replace exact raw attachment nanoseconds.
+
 The restored profiling MCP supports authenticated wall-time flamegraphs.
 Discover actual sample types and perform a real read; type metadata alone may
 list CPU even when retrieval reports that type disabled. Native Mach profiles

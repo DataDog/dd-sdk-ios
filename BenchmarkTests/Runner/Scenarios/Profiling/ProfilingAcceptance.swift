@@ -46,7 +46,10 @@ final class ProfilingAcceptanceCoordinator {
 
             Datadog.initialize(with: .benchmark(info: info), trackingConsent: .granted)
             try CoreRegistry.default.register(feature: recorder)
-            Profiling.enable(with: .init(applicationLaunchSampleRate: 0, continuousSampleRate: 0))
+            Profiling.enable(with: .init(
+                applicationLaunchSampleRate: recorder.configuration.applicationLaunchSampleRate,
+                continuousSampleRate: recorder.configuration.continuousSampleRate
+            ))
             RUM.enable(
                 with: RUM.Configuration(
                     applicationID: info.applicationID,
@@ -144,7 +147,8 @@ private final class ProfilingAcceptanceViewController: UIViewController {
         recorder.command("view:A")
         monitor.startView(key: "exp187.view.A", name: "EXP187.StartA")
         try await checkpoint(3, recorder: recorder) {
-            recorder.hasView("EXP187.StartA", active: true) && recorder.snapshot().ttidCount == 1
+            recorder.hasView("EXP187.StartA", active: true)
+                && recorder.snapshot().ttidCount == 1 && recorder.snapshot().profilingRunning
         }
 
         let work = Task.detached(priority: .utility) {
@@ -218,8 +222,8 @@ private final class ProfilingAcceptanceViewController: UIViewController {
                 && (expected[0].duration ?? 0) > (expected[1].duration ?? 0)
                 && (expected[1].duration ?? 0) > 0
         )
-        // Keep foreground delivery alive after the last sampled Operation triggers its normal flush.
-        try await Task.sleep(nanoseconds: 8_000_000_000)
+        // Allow the normal 60-second continuous timer and upload; Operations do not start a standalone profile.
+        try await Task.sleep(nanoseconds: 70_000_000_000)
     }
 
     private func checkpoint(_ number: Int, recorder: ProfilingAcceptanceRecorder, ready: () -> Bool) async throws {
@@ -244,12 +248,18 @@ final class ProfilingAcceptanceRecorder: DatadogFeature, FeatureMessageReceiver,
     static let name = "profiling-acceptance-recorder"
     var messageReceiver: FeatureMessageReceiver { self }
     let runID: String
+    let configuration = Configuration()
     private let revision: String
     private let receiptURL: URL
     private let lock = NSLock()
     private var observed = Snapshot()
     private var checkpoints: [Checkpoint] = []
     private var boundaries: [String] = []
+
+    struct Configuration: Encodable {
+        let applicationLaunchSampleRate: SampleRate = 0
+        let continuousSampleRate: SampleRate = 100
+    }
 
     struct Operation: Encodable {
         let vital: Vital
@@ -260,6 +270,7 @@ final class ProfilingAcceptanceRecorder: DatadogFeature, FeatureMessageReceiver,
         let sessionID: String
         let referenceTime: TimeInterval
         let serverTimeOffset: TimeInterval
+        let profilingRunning: Bool
     }
 
     struct View: Encodable {
@@ -271,6 +282,7 @@ final class ProfilingAcceptanceRecorder: DatadogFeature, FeatureMessageReceiver,
 
     struct Snapshot: Encodable {
         var ttidCount = 0
+        var profilingRunning = false
         var operations: [Operation] = []
         var views: [View] = []
     }
@@ -280,6 +292,7 @@ final class ProfilingAcceptanceRecorder: DatadogFeature, FeatureMessageReceiver,
         let passed: Bool
         let boundary: Int
         let operationCount: Int
+        let profilingRunning: Bool
     }
 
     init(runID: String, revision: String, receiptURL: URL) {
@@ -292,7 +305,9 @@ final class ProfilingAcceptanceRecorder: DatadogFeature, FeatureMessageReceiver,
 
     func receive(message: FeatureMessage, from core: DatadogCoreProtocol) -> Bool {
         locked {
-            if case .payload(let payload) = message {
+            if case .context(let context) = message {
+                observed.profilingRunning = context.additionalContext(ofType: ProfilingContext.self)?.status == .running
+            } else if case .payload(let payload) = message {
                 if payload is TTIDMessage {
                     observed.ttidCount += 1
                 } else if let payload = payload as? OperationMessage {
@@ -304,7 +319,8 @@ final class ProfilingAcceptanceRecorder: DatadogFeature, FeatureMessageReceiver,
                         viewName: (payload.attributes[RUMCoreContext.IDs.viewName] as? [String])?.first ?? "",
                         sessionID: payload.attributes[RUMCoreContext.IDs.sessionID] as? String ?? "",
                         referenceTime: payload.operation.date.timeIntervalSinceReferenceDate,
-                        serverTimeOffset: payload.operation.serverTimeOffset
+                        serverTimeOffset: payload.operation.serverTimeOffset,
+                        profilingRunning: observed.profilingRunning
                     ))
                 }
             }
@@ -336,6 +352,7 @@ final class ProfilingAcceptanceRecorder: DatadogFeature, FeatureMessageReceiver,
         return operation.operationKey == key(suffix) && operation.step == step.rawValue
             && operation.vital.name == "exp187.parallel" && operation.viewID == views[0].id
             && operation.viewName == view && operation.sessionID == views[0].sessionID
+            && operation.profilingRunning
     }
 
     func command(_ name: String) { locked { boundaries.append("command:" + name) } }
@@ -343,7 +360,13 @@ final class ProfilingAcceptanceRecorder: DatadogFeature, FeatureMessageReceiver,
     func assertCheckpoint(_ number: Int, passed: Bool) throws {
         locked {
             boundaries.append("assert:\(number)")
-            checkpoints.append(Checkpoint(number: number, passed: passed, boundary: boundaries.count, operationCount: observed.operations.count))
+            checkpoints.append(Checkpoint(
+                number: number,
+                passed: passed,
+                boundary: boundaries.count,
+                operationCount: observed.operations.count,
+                profilingRunning: observed.profilingRunning
+            ))
         }
         try persist(status: passed ? "RUNNING" : "FAIL")
         guard passed else { throw ProfilingAcceptanceError.failedCheckpoint }
@@ -375,7 +398,8 @@ final class ProfilingAcceptanceRecorder: DatadogFeature, FeatureMessageReceiver,
 
     private func persist(status: String) throws {
         struct Receipt: Encodable {
-            let schemaVersion = 1
+            let schemaVersion = 2
+            let configuration: Configuration
             let experiment = "EXP-187"
             let nativeStatus: String
             let backendStatus = "NOT_VERIFIED"
@@ -395,6 +419,7 @@ final class ProfilingAcceptanceRecorder: DatadogFeature, FeatureMessageReceiver,
 #endif
         let state = locked { (observed, checkpoints, boundaries) }
         let receipt = Receipt(
+            configuration: configuration,
             nativeStatus: status,
             runID: runID,
             sourceRevision: revision,

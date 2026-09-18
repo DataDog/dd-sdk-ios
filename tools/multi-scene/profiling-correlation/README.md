@@ -6,6 +6,13 @@ then A. The [frozen contract](native-contract.json) owns the twelve native
 assertions and physical/backend acceptance. It does not prove simultaneous
 windows or scene-specific CPU attribution.
 
+Continuous sampling is100% and application-launch sampling is0%. Sampled
+Operations attach only to an already running profiler; they do not start a
+standalone profile. Receipt schema2 observes real running context before the
+first Operation and at each later checkpoint. The app remains foreground70s
+after its final assertions so the normal60s timer can flush and upload. No
+forced SDK flush or native testing starter is used.
+
 The implementation lives in the existing BenchmarkTests Runner behind
 MULTISCENE_PROFILING_ACCEPTANCE. The ordinary benchmark keeps its legacy
 lifecycle and excludes the acceptance classes. No new dependency or existing
@@ -68,6 +75,15 @@ python3 -B tools/multi-scene/profiling-correlation/validate.py \
   --attachment /actual/rum-mobile-events.json \
   --output /fresh/nonexistent/attachment-summary.json
 ```
+
+For the complete RUM comparison, add --rum-response, --rum-counts and
+--rum-end-response with the unmodified full-session search, independent type
+aggregate and exhausted-page responses. Query exactly the native session without
+filtering event types or owners. The validator checks all12 events, every native
+view/Operation ID, run/session identity and both aggregate start/end owners.
+Step summary names may be backend URL defaults; authoritative view-event names
+are checked by exact joined view ID. Profile correlation flags remain a separate
+reported result and cannot certify the raw attachment.
 
 Use --allow-simulator only for mechanics evidence. The validator requires the
 actual two start IDs and exact integer start_ns/duration_ns values; it does not

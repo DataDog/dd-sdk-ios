@@ -1,0 +1,41 @@
+{
+  "artifact_root": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp187-ordinary-release-ts_9365c/attempt",
+  "backend_validation": "NOT_RUN",
+  "build": {
+    "bundle": "com.datadoghq.benchmarks.Runner",
+    "executable_sha256": "1c5d84db363f595ceca126c4defdc952ce7f57081762c5e1af5f8f0e97eedf48",
+    "uuid": "UUID: DEE8C687-88E1-3526-8EBE-3AA04E9A5C0E (x86_64) /private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp187-ordinary-release-ts_9365c/attempt/derived/Build/Products/Release-iphonesimulator/Runner.app/Runner\nUUID: 0F8BBBDB-C33E-3010-974F-AE45852C367F (arm64) /private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp187-ordinary-release-ts_9365c/attempt/derived/Build/Products/Release-iphonesimulator/Runner.app/Runner"
+  },
+  "experiment": "EXP-187",
+  "finished_at": "2026-09-18T08:35:58.899021+00:00",
+  "gate": "T14",
+  "gate_status": "INCONCLUSIVE",
+  "native_validation": "NOT_RUN",
+  "remaining": [
+    "supported physical native wall-time stack samples",
+    "complete backend RUM/profile inventory",
+    "exact profile attachment and process labels"
+  ],
+  "revision": "84b304d0e6b2041d3d9b8dc3a402eefbb7a5dfec",
+  "run_id": "exp187-02fa67db-bee4-44da-948e-32bbb01ff38b",
+  "schema_version": 1,
+  "scope": "ORDINARY_BUILD_ONLY",
+  "signature": "UNSIGNED",
+  "source_fingerprint": "e02a7e771f8aabc1e3cd4e94b28d132baf72f47beec311eb21447f468332a27b",
+  "stages": {
+    "build": {
+      "state": "PASS"
+    },
+    "ordinary_compatibility": {
+      "acceptance_symbols_absent": true,
+      "scene_manifest_absent": true,
+      "state": "PASS"
+    },
+    "preflight": {
+      "state": "PASS"
+    }
+  },
+  "started_at": "2026-09-18T08:34:40.814170+00:00",
+  "workspace_preserved": true,
+  "xcode": "Xcode 27.0\nBuild version 27A266a"
+}

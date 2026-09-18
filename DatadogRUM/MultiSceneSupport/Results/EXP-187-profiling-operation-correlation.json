@@ -169,10 +169,31 @@
       "source_fingerprint": "83fd5c40a78752f22e0c7a463fe90ab5694fd32fc7420c4d97845ea8c3215cf7",
       "workspace_preserved": true,
       "physical_backend": "NOT ACCEPTED"
+    },
+    {
+      "run_id": "exp187-9cdb15fb-ef6d-421c-9310-1eaab9161ca4",
+      "state": "INCONCLUSIVE",
+      "native_status": "PASS",
+      "revision": "84b304d0e6b2041d3d9b8dc3a402eefbb7a5dfec",
+      "signature": "UNSIGNED",
+      "durable_result": "Results/acceptance/exp187-9cdb15fb-ef6d-421c-9310-1eaab9161ca4.json",
+      "artifact": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp187-exact-oracle-37k2gyj_/attempt",
+      "passed_assertions": 12,
+      "operation_steps": 4,
+      "fixture_manual_views": 3,
+      "builtin_launch_views": 1,
+      "configuration": "PASS",
+      "build": "PASS Release",
+      "clean_install": "PASS data-container absence and installed executable SHA-256 match",
+      "workspace_preserved": true,
+      "executable_sha256": "033663cf8af6b47503d8eadc0d36c324c3400a4c3e0696a3075fbf095e9cafc6",
+      "receipt_sha256": "4d1bf0a3a0ecf0d2acad46bb0b41df80560757947e31e6815dfafbe20df00344",
+      "rum_backend": "PASS complete12-event session; Results/EXP-187-simulator-rum-ownership.json",
+      "profile_backend": "No correlated profile; documented behavior with continuous sampling disabled. Schema2 corrects fixture setup without changing SDK."
     }
   ],
   "device_attempts": [],
-  "next": "Freeze the predeclared launch-inventory and Swift-compatible rounding correction; run a fresh complete simulator attempt and ordinary Release exclusion, then scoped exact backend reads. Physical execution and F01 decision remain pending.",
+  "next": "Freeze the supported continuous100% fixture and actual readiness observations, then run a fresh complete simulator attempt and exact MCP RUM/profile validation. Preserve prior mechanics/ordinary-build passes. Physical execution and raw attachment proof remain.",
   "deterministic_status": "PASS",
   "physical_backend_status": "ENVIRONMENT BLOCKED",
   "unit_summary": {
@@ -211,6 +232,11 @@
       "kind": "test lint",
       "resolved": true,
       "reason": "One extra blank line corrected before successful strict lint."
+    },
+    {
+      "kind": "native profiling mode",
+      "resolved_in_implementation": true,
+      "reason": "The initial contract disabled continuous sampling, but documented sampled Operations do not start a standalone profile. Native/RUM mechanics passed with profiler stopped. Before the next run, contract selects continuous100% and actual running readiness before/at each step, with normal60s timer/70s foreground drain. No production change."
     }
   ],
   "environment_observation": {
@@ -236,16 +262,20 @@
     "scope": "One physical scene, process-level profile correlation only",
     "definition_revision": "aaa70d2d17e860e1eb7f7bf67734d66bfdfe7622",
     "fixture_manual_views": 3,
-    "builtin_launch_views": 1
+    "builtin_launch_views": 1,
+    "native_receipt_schema_version": 2,
+    "continuous_sample_rate": 100,
+    "application_launch_sample_rate": 0,
+    "foreground_drain_seconds": 70
   },
   "native_implementation": {
-    "state": "ORACLE CORRECTIONS VALIDATED; FRESH FROZEN EXECUTION REQUIRED",
+    "state": "SUPPORTED CONTINUOUS SETUP AND READINESS VALIDATED; FRESH FROZEN EXECUTION REQUIRED",
     "fixture": "BenchmarkTests/Runner/Scenarios/Profiling/ProfilingAcceptance.swift",
     "driver": "tools/multi-scene/profiling-correlation/run_simulator.py",
     "validator": "tools/multi-scene/profiling-correlation/validate.py",
     "lint": "PASS strict repository test lint, zero violations",
-    "python_methods_passed": 10,
-    "malformed_evidence_cases_rejected": 42,
+    "python_methods_passed": 14,
+    "malformed_evidence_cases_rejected": 64,
     "simulator_requires_explicit_mechanics_mode": true,
     "initial_development_build": {
       "configuration": "Release, opt-in fixture, generic iOS Simulator",
@@ -255,7 +285,13 @@
     },
     "revision": "21c312a4312146ae920cf0e88e6494859a32fe02",
     "signature": "VERIFIED",
-    "ordinary_release_exclusion": "NOT RUN"
+    "ordinary_release_exclusion": {
+      "state": "PASS",
+      "revision": "84b304d0e6b2041d3d9b8dc3a402eefbb7a5dfec",
+      "durable_result": "Results/acceptance/exp187-02fa67db-bee4-44da-948e-32bbb01ff38b.json",
+      "acceptance_symbols_absent": true,
+      "scene_manifest_absent": true
+    }
   },
   "profile_access_preflight": {
     "state": "PASS for real profile reads; not experiment acceptance",
