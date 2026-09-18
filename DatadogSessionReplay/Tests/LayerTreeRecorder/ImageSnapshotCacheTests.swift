@@ -176,6 +176,8 @@ struct ImageSnapshotCacheTests {
     func expiresSnapshotDataAfterUnobservedFrames() throws {
         // Given
         let policy = ImageSnapshotCache.Policy(
+            contentCostLimit: 1,
+            maskCostLimit: 1,
             expirationFrameCount: 1,
             removalIntervalFrameCount: 1,
             maximumRemovals: 1
