@@ -362,7 +362,7 @@
       "environment": "Deterministic crash/export context tests and isolated simulator process/backend",
       "completion_mode": "documented process-level fallback; trustworthy internal snapshot remains exact",
       "status": "OPEN",
-      "evidence": "EXP-184 prepared: SDK131, probe187, Python179 and connector44 controls pass. No production repair. Real three-process crash/recovery/consumption plus seven-view/one-fatal backend acceptance remains. Results/EXP-184-exported-fatal-context.json."
+      "evidence": "EXP-184 deterministic131/probe187 pass. Native attempt A retained FAIL: returning trigger and mistaken launcher/app exit classification. Corrected fixture/oracle prepared with182 Python controls; actual crash recovery/consumption and complete backend ownership remain. Results/EXP-184-exported-fatal-context.json."
     },
     {
       "id": "T12",

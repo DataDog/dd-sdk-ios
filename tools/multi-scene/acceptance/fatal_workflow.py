@@ -16,7 +16,7 @@ def run_phases(runner, installed, executable, binary_sha, parse_records, file_ha
     phases = []
     for index, scenario in enumerate(fatal_contract.SCENARIOS):
         run_id = runner.run_id if index == 0 else runner.run_id + "-" + str(index) + "-" + uuid.uuid4().hex[:8]
-        phase = dict(scenario_id=scenario, run_id=run_id, process_exit=None, terminated=False)
+        phase = dict(scenario_id=scenario, run_id=run_id, launcher_exit=None, terminated=False)
         phases.append(phase)
         save(runner.out / "fatal-phases.json", phases)
         require(runner.capture(["xcrun", "simctl", "get_app_container", runner.args.device, bundle, "data"]).strip()
@@ -43,7 +43,7 @@ def run_phases(runner, installed, executable, binary_sha, parse_records, file_ha
             time.sleep(0.25)
         records = parse_records(console.read_text(errors="replace"))
         phase["records"] = records
-        phase["process_exit"] = runner.launch_process.poll()
+        phase["launcher_exit"] = runner.launch_process.poll()
         save(runner.out / "fatal-phases.json", phases)
         process = [r["signal"].get("fatal", {}).get("processID") for r in records
                    if r["type"] == "signal" and r["signal"].get("name") == "fatal-process"]
@@ -61,22 +61,19 @@ def run_phases(runner, installed, executable, binary_sha, parse_records, file_ha
             save(runner.out / "fatal-phases.json", phases)
             # Validate the declared boundary before a recovery launch can consume evidence.
             signals, _, terminal, _ = fatal_contract.phase_records(phase, scenario)
-            boundary = fatal_contract.assertion(signals, "fatal-crash-boundary")
-            boundary_record = next(r for r in records if r.get("signal") == boundary)
-            require(records.index(terminal) < records.index(boundary_record),
-                    "process crashed before preparation PASS", "FAIL")
-            require(phase["terminated"] and phase["process_exit"] not in [None, 0],
-                    "fixture did not terminate with declared crash", "FAIL")
+            fatal_contract.validate_crash_boundary(phase, signals, terminal)
+            # The launcher status is not the application's exit status. Recovery must
+            # independently prove the exact native crash before the run can pass.
         else:
             fatal_contract.phase_records(phase, scenario)
-            require(phase["process_exit"] is None, "recovery process terminated unexpectedly", "FAIL")
+            require(phase["launcher_exit"] is None, "recovery process terminated unexpectedly", "FAIL")
             runner.command(["xcrun", "simctl", "terminate", runner.args.device, bundle], "terminate-phase-" + str(index))
             runner.launch_process.wait(timeout=10)
             phase["terminated"] = True
-            phase["process_exit_after_cleanup"] = runner.launch_process.returncode
+            phase["launcher_exit_after_cleanup"] = runner.launch_process.returncode
         save(runner.out / "fatal-phases.json", phases)
         runner.stage("fatal_phase_" + str(index), dict(
             state="PASS", run_id=run_id, process_id=phase["process_id"], scenario=scenario,
             installed_binary_sha256=binary_sha, data_container=container,
-            process_exit=phase["process_exit"]))
+            launcher_exit=phase["launcher_exit"]))
     return phases, fatal_contract.validate_local(phases, runner.run_id)

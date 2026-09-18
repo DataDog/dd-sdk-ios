@@ -216,3 +216,8 @@ needed an explicit non-interactive view-update witness; its failed attempt is
 retained. This deterministic checkpoint does not close T11: actual crash,
 recovery, consumption and complete backend ownership remain in the
 [experiment record](Experiments/EXP-143-199.md#exp-184--accept-exported-and-fatal-process-context).
+
+The first actual attempt passed preparation ownership guards but failed its
+returning signal trigger. A stored report and disappeared process do not override
+that failure. The repair is confined to the probe trigger and launcher-status
+interpretation; no SDK ownership defect or T11 closure is claimed.

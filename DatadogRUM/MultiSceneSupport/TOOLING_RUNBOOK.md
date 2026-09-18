@@ -1394,3 +1394,12 @@ The existing Internal Datadog flush runs off the main actor after recording the
 real launch acknowledgement; it clears LaunchReport and must never be used as
 evidence that no pending crash existed. Failed phase records are retained in the
 durable run summary. Build and source identities include CrashReporting sources.
+
+A simulator launcher's exit status is not the launched application's exit status:
+simctl launch --console-pty may return0 after a fatal signal. Record it as
+launcher_exit. Use a nonreturning abort trigger, independently match launcher and
+native PIDs, prove process disappearance after the declared boundary, and require
+the real recovered report's exact original identity and SIGABRT metadata. A missing
+process alone does not distinguish ordinary exit from crash. A returned trigger
+or any failed guard remains FAIL even when a crash report exists; retain that
+attempt and use a fresh clean install after fixing the fixture.

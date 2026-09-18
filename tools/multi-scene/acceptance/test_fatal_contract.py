@@ -87,7 +87,7 @@ def fixture():
             assertion("fatal-crash-boundary", original)
         phases.append(dict(scenario_id=scenario, run_id=run_id, records=records, process_id=pid,
                            installed_binary_sha256="a" * 64, data_container="/synthetic/current-install",
-                           terminated=True, process_exit=-6 if index == 0 else None))
+                           terminated=True, launcher_exit=-6 if index == 0 else None))
     return phases, run
 
 
@@ -144,10 +144,31 @@ class FatalContractTests(unittest.TestCase):
         self.phases[1]["process_id"] = self.phases[0]["process_id"]
         self.reject()
 
-    def test_normal_or_unconfirmed_exit(self):
-        for code in [None, 0]:
-            self.phases[0]["process_exit"] = code
-            self.reject()
+    def test_launcher_status_does_not_classify_the_app_crash(self):
+        for code in [0, -6]:
+            with self.subTest(code=code):
+                self.phases[0]["launcher_exit"] = code
+                self.assertEqual(f.validate_local(self.phases, self.run)["state"], "PASS")
+
+    def test_unconfirmed_process_disappearance_or_launcher_completion(self):
+        for field, value in [("launcher_exit", None), ("launcher_exit", False), ("terminated", False)]:
+            with self.subTest(field=field, value=value):
+                self.phases, self.run = fixture()
+                self.phases[0][field] = value
+                self.reject()
+
+    def test_ordinary_exit_without_actual_crash_acknowledgement(self):
+        self.phases[0]["launcher_exit"] = 0
+        named(self.phases, 1, "fatal-launch-report")["fatal"]["launchDidCrash"] = False
+        self.reject()
+
+    def test_returned_crash_trigger_cannot_be_reclassified(self):
+        records = self.phases[0]["records"]
+        returned = copy.deepcopy(records[-1])
+        returned["signal"].update(name="fatal-crash-returned", result="FAIL")
+        returned["signal"]["sequence"] += 1
+        records.append(returned)
+        self.reject()
 
     def test_premature_crash(self):
         records = self.phases[0]["records"]

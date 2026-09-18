@@ -110,8 +110,7 @@ internal enum ProbeFatalAcceptance {
                     }
                     record("fatal-crash-boundary", owner: owner)
                     fflush(stdout)
-                    raise(SIGABRT)
-                    record("fatal-crash-returned", result: .fail, reason: "SIGABRT returned")
+                    abort()
                 }
             } catch {
                 record(ProbeFatalContract.prepared, result: .fail, reason: String(describing: error))

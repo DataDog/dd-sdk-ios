@@ -81,6 +81,19 @@ def phase_records(phase, scenario):
     return signals, snapshots, terminal, pid
 
 
+def validate_crash_boundary(phase, signals, terminal):
+    # simctl can finish successfully when the launched app crashes. Its exit code
+    # proves launcher completion only; the recovered report classifies the crash.
+    require(phase.get("terminated") is True and type(phase.get("launcher_exit")) is int,
+            "fixture process disappearance or launcher completion unconfirmed", "FAIL")
+    boundary = assertion(signals, "fatal-crash-boundary")
+    boundary_record = unique([r for r in phase["records"] if r.get("signal") == boundary], "crash boundary")
+    require(phase["records"].index(terminal) < phase["records"].index(boundary_record),
+            "termination boundary occurred before preparation PASS", "FAIL")
+    require(boundary["sequence"] == signals[-1]["sequence"], "unexpected work after crash boundary", "FAIL")
+    return boundary
+
+
 def validate_local(phases, run_id):
     require(len(phases) == 3 and [p["scenario_id"] for p in phases] == SCENARIOS, "three ordered phases required")
     run_ids = [p["run_id"] for p in phases]
@@ -94,13 +107,7 @@ def validate_local(phases, run_id):
     observed = [phase_records(p, scenario) for p, scenario in zip(phases, SCENARIOS)]
     require(len({o[3] for o in observed}) == 3, "process reused across phases", "FAIL")
     signals, snapshots, terminal, crashed_pid = observed[0]
-    require(phases[0].get("terminated") is True and phases[0].get("process_exit") not in [None, 0],
-            "declared crash did not terminate the fixture process", "FAIL")
-    boundary = assertion(signals, "fatal-crash-boundary")
-    boundary_record = unique([r for r in phases[0]["records"] if r.get("signal") == boundary], "crash boundary")
-    require(phases[0]["records"].index(terminal) < phases[0]["records"].index(boundary_record),
-            "crash occurred before preparation PASS", "FAIL")
-    require(boundary["sequence"] == signals[-1]["sequence"], "unexpected work after crash boundary", "FAIL")
+    boundary = validate_crash_boundary(phases[0], signals, terminal)
     a, b = assertion(signals, "fatal-owner-a"), assertion(signals, "fatal-owner-b")
     owner_a, owner_b = owner(a), owner(b)
     require(owner_a["session_id"] == owner_b["session_id"] and owner_a["view_id"] != owner_b["view_id"],
