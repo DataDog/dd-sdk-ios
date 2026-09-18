@@ -1,0 +1,52 @@
+{
+  "experiment": "EXP-185",
+  "gate": "T12",
+  "title": "Validate process signal routing",
+  "status": "PLANNED",
+  "control_revision": "224c099dc18d2acabe2d70d2ad0c9bf1f961167c",
+  "sdk_revision": "04201edc7711361279d8487b385bc8b0ca9c63c7",
+  "definition": "Experiments/EXP-143-199.md#exp-185--validate-process-signal-routing",
+  "completion_mode": "documented process-level fallback; captured pending fatal hang preserves its snapshot",
+  "production_change_planned": false,
+  "gates_closed": [],
+  "deterministic_cases": [
+    "Representative B owns one long task/hang/memory warning despite unrelated A handoff.",
+    "Targeted interaction selects A; repeat with exact counts and no broadcast.",
+    "Pending fatal hang preserves captured A across live replacement and simulated restart; consumption, consent and count update remain exact."
+  ],
+  "native_contract": {
+    "scenes": [
+      "A",
+      "B"
+    ],
+    "representative_order": [
+      "B",
+      "A"
+    ],
+    "long_task_threshold_seconds": 0.5,
+    "app_hang_threshold_seconds": 0.5,
+    "main_thread_block_seconds": 1.5,
+    "accepted_duration_seconds": {
+      "minimum": 0.5,
+      "exclusive_maximum": 5
+    }
+  },
+  "expected_inventory": {
+    "sessions": 1,
+    "views": 3,
+    "actions": 1,
+    "long_tasks": 2,
+    "nonfatal_errors": 4,
+    "resources": 0,
+    "crashes": 0
+  },
+  "scope_limits": [
+    "Serial actual simulator scenes",
+    "Controlled memory notification is not real memory pressure",
+    "Fatal-hang restart remains deterministic; no system watchdog termination claim",
+    "Not physical/Duo, vitals, profiling or Replay acceptance"
+  ],
+  "unit_attempts": [],
+  "native_attempts": [],
+  "next": "Add and execute the bounded deterministic tests before native fixture implementation."
+}

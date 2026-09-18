@@ -361,8 +361,8 @@
       "decisive_test": "Source-less export/fatal signal appears once on representative; explicit internal snapshot does not drift; no fabricated scene ownership",
       "environment": "Deterministic crash/export context tests and isolated simulator process/backend",
       "completion_mode": "documented process-level fallback; trustworthy internal snapshot remains exact",
-      "status": "OPEN",
-      "evidence": "EXP-184 SDK131/probe188 pass. A/B/D FAIL and C INCONCLUSIVE retained. All native phases pass in D; corrected independent topology oracle has188 controls. Fresh complete native/backend acceptance remains. Results/EXP-184-exported-fatal-context.json."
+      "status": "CLOSED",
+      "evidence": "EXP-184 accepted at fixture224c099dc, SDK04201edc7:131 selected SDK tests,188 probe tests,44 native expectations and complete7-view/1-fatal backend ownership plus consumption. Exact retained snapshot and SDK revision witness; no production repair. Results/EXP-184-exported-fatal-context.json."
     },
     {
       "id": "T12",
@@ -375,7 +375,7 @@
       "environment": "Controlled long-task/hang/memory-warning tests and simulator backend",
       "completion_mode": "documented process-level fallback",
       "status": "OPEN",
-      "evidence": ""
+      "evidence": "EXP-185 predeclared: deterministic representative/captured-hang ownership, then two rounds of actual run-loop/watchdog plus controlled memory-warning instrumentation on A/B; complete backend inventory. Results/EXP-185-process-signal-routing.json."
     },
     {
       "id": "T13",

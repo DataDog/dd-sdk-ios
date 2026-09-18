@@ -208,30 +208,15 @@ review cycle and the final independent release review.
 
 ## Subsequent bounded validation: exported and fatal context
 
-EXP-184 adds four exact-ID controls across Monitor, CrashContextCoreProvider,
-CrashReportingFeature and deferred CrashReportReceiver delivery. The selected131
-tests pass, including existing fallback, consent, sampling and mapper cases.
-No additional production defect was demonstrated. The first new monitor fixture
-needed an explicit non-interactive view-update witness; its failed attempt is
-retained. This deterministic checkpoint does not close T11: actual crash,
-recovery, consumption and complete backend ownership remain in the
-[experiment record](Experiments/EXP-143-199.md#exp-184--accept-exported-and-fatal-process-context).
+T11 closes in [EXP-184](Experiments/EXP-143-199.md#exp-184--accept-exported-and-fatal-process-context).
+Four added exact-ID controls and131 selected SDK tests pass. Actual SIGABRT
+recovery preserves original B after a new current session/view exists; a third
+launch acknowledges consumption. Fresh188 probe tests,44 native expectations
+and complete backend ownership/counts pass. Core export, provider state, retained
+snapshots and encoded recovery remain separate checked boundaries.
 
-The first actual attempt passed preparation ownership guards but failed its
-returning signal trigger. A stored report and disappeared process do not override
-that failure. The repair is confined to the probe trigger and launcher-status
-interpretation; no SDK ownership defect or T11 closure is claimed.
-
-The second attempt confirmed nonreturning termination but rejected default probe
-lifecycle markers. Suppression and a pre-crash inventory guard repair the fixture;
-the original review findings remain closed and T11 remains open.
-
-The next run locally recovers the original B crash under a different current
-session. Buffered launcher output prevents full acceptance; a decoded-attribute
-projection correction is also required in the fixture. Consumption and backend
-ownership still gate T11; production source remains unchanged.
-
-All three native phases now pass locally, including report consumption. A fixture
-oracle assumption about initial mapper scene attributes still prevents acceptance;
-the corrected oracle preserves separate actual topology, SDK snapshot and mapper
-evidence. T11 remains open pending a fresh complete backend run.
+No production defect or SDK repair was required. Failed/inconclusive fixture and
+oracle attempts remain in the experiment record, including the distinction between
+SDK revision and the backend search counter. This bounded validation is separate
+from the completed original D01–D12 review and does not imply hardware/Duo, T12–T14,
+Replay or overall release readiness.
