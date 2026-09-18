@@ -1243,3 +1243,8 @@ changing SDK behavior. An independent backend field-existence query distinguishe
 missing indexed data from a connector projection error. Declare any diagnostic
 input-scale change before execution, retain the original failed attempt and keep
 the backend equality requirement; local correctness does not close a backend gate.
+
+FBC is a Flutter-only backend metric. In a native iOS fixture, prove its internal
+call-site ownership and exact encoded value locally, and expect downstream absence.
+Keep flag and build-sample backend comparisons exact. Do not scale durations or
+change SDK behavior to force a Flutter-only field into native backend events.

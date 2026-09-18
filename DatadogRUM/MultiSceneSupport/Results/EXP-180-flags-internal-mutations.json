@@ -1,6 +1,6 @@
 {
   "experiment": "EXP-180",
-  "status": "SDK PASS; native local PASS; backend FBC FAIL",
+  "status": "SDK/native local PASS; corrected native backend contract PREPARED",
   "gate": "T07",
   "gates_closed": [],
   "control_revision": "db4a96dfabd3b0c3054203d9069905749e55907c",
@@ -14,7 +14,8 @@
     "resources": 0,
     "crashes": 0,
     "app_expectations": 34,
-    "simultaneous_visibility_claimed": false
+    "simultaneous_visibility_claimed": false,
+    "fbc_backend": "Absent in a native iOS app. Exact captured ownership and JSON encoding remain required locally; no Flutter runtime or ingestion claim."
   },
   "unit_attempts": [
     {
@@ -428,7 +429,7 @@
     "runtime_acceptance": "PENDING after first rejected attempt",
     "operational_controls": {
       "python": {
-        "passed": 107,
+        "passed": 108,
         "failed": 0
       },
       "node": {
@@ -531,6 +532,30 @@
       "node_passed": 15,
       "strict_test_lint": "PASS"
     },
-    "next_runtime_attempt": "PREPARED"
+    "next_runtime_attempt": "CANCELLED before execution: user clarified FBC is Flutter-only downstream.",
+    "fixture_revision": "cd0092d945648b9b356458b3d99c3ee095b25eaa"
+  },
+  "contract_correction": {
+    "authority": "User clarification2026-09-18: FBC is a Flutter metric and absent outside Flutter apps.",
+    "declared_before_next_run": true,
+    "restore_original_local_fbc_nanoseconds": [
+      101,
+      202
+    ],
+    "backend_required": [
+      "exact typed flags and owners for16 errors",
+      "exact three-view inventory/flags/build min/max/average",
+      "zero Resources/crashes",
+      "no leaked internal custom key",
+      "FBC absent for native app"
+    ],
+    "local_required": "Unchanged exact FBC101/202 on only the captured owner plus encoded-payload regression.",
+    "prior_attempt_verdicts_unchanged": true,
+    "operational_controls": {
+      "python_passed": 108,
+      "node_passed": 15,
+      "failed": 0,
+      "document_check": "410 links,180 experiments,66 gates PASS"
+    }
   }
 }

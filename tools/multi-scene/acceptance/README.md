@@ -185,9 +185,11 @@ minimum/maximum/average and FBC must match the declared samples on only their ow
 the internal attribute must never appear in custom context.
 
 Whole-session queries require16 marker errors,3 views and0 Resources/crashes.
-Every error preserves its checkpoint's typed flags. Final persisted view flags,
-sample aggregates and FBC match mapper evidence; intermediate view revisions remain
-local ordered evidence. The runner requires at least175 probe tests and executes
+Every error preserves its checkpoint's typed flags. Final persisted view flags
+and sample aggregates match mapper evidence; intermediate view revisions remain
+local ordered evidence. FBC is Flutter-only downstream: native backend records
+must omit it. Exact local FBC ownership and JSON encoding remain required; this
+fixture does not claim Flutter runtime or ingestion acceptance. The runner requires at least175 probe tests and executes
 the complete suite. It preserves all five earlier contracts.
 
 Negative controls reject stale identity, consumed readiness, late guards/snapshot

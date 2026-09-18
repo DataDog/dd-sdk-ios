@@ -14,7 +14,7 @@ def state_for(index):
     values = copy.deepcopy((a_values if is_a else b_values)[checkpoint])
     build = (dict(min=32.0, max=52.0, average=42.0) if is_a else dict(min=20.0, max=60.0, average=40.0))
     present = checkpoint >= (5 if is_a else 6)
-    return dict(flags=values, build=build if present else None, fbc=(101000000 if is_a else 202000000) if present else None,
+    return dict(flags=values, build=build if present else None, fbc=(101 if is_a else 202) if present else None,
                 leakedInternalAttribute=False)
 
 
@@ -80,6 +80,13 @@ def mutate_state(records, index, change):
     snapshot["flagState"] = copy.deepcopy(check["flagState"])
 
 
+def backend_rows(local, run):
+    data = {k: [dict(copy.deepcopy(r), run_id=run) for r in local[k]] for k in ["errors", "views"]}
+    for view in data["views"]:
+        view["flag_state"]["fbc"] = None
+    return data
+
+
 class FlagContractTests(unittest.TestCase):
     def test_golden_local_and_backend_contract(self):
         records, run = fixture()
@@ -87,7 +94,7 @@ class FlagContractTests(unittest.TestCase):
         self.assertEqual((local["assertions"], local["checkpoints"], len(local["errors"])), (34, 8, 16))
         self.assertEqual(local["views"][-2]["flag_state"], state_for(14))
         self.assertEqual(local["views"][-1]["flag_state"], state_for(15))
-        data = {k: [dict(r, run_id=run) for r in local[k]] for k in ["errors", "views"]}
+        data = backend_rows(local, run)
         self.assertEqual(t.validate_backend(local, run, [], data["errors"], data["views"], 0)["error_count"], 16)
 
     def test_changed_manifest_and_consumed_readiness(self):
@@ -133,10 +140,10 @@ class FlagContractTests(unittest.TestCase):
                               (10, lambda s: s["build"].update(min=52)),
                               (13, lambda s: s["build"].update(max=52)),
                               (10, lambda s: s.update(build=None)),
-                              (10, lambda s: s.update(fbc=202000000)),
+                              (10, lambda s: s.update(fbc=202)),
                               (13, lambda s: s.update(fbc=None)),
                               (10, lambda s: s.update(fbc=True)),
-                              (10, lambda s: s.update(fbc=101000000.0)),
+                              (10, lambda s: s.update(fbc=101.0)),
                               (13, lambda s: s.update(leakedInternalAttribute=True)),
                               (13, lambda s: s.pop("leakedInternalAttribute")),
                               (11, lambda s: s.update(build=dict(min=20, max=60, average=40)))]:
@@ -216,16 +223,27 @@ class FlagContractTests(unittest.TestCase):
                                        ("errors", 9, "flags", {t.SHARED: dict(enabled=0, weights=[2, 4])}),
                                        ("errors", 15, "leaked_internal_attribute", True),
                                        ("errors", 0, "payload_matches", False), ("errors", 0, "run_id", "restored")]:
-            data = {k: [dict(copy.deepcopy(r), run_id=run) for r in local[k]] for k in ["errors", "views"]}
+            data = backend_rows(local, run)
             data[kind][index][key] = value
             with self.assertRaises(Rejected):
                 t.validate_backend(local, run, [], data["errors"], data["views"], 0)
+
+    def test_native_backend_excludes_flutter_fbc_and_preserves_local_proof(self):
+        records, run = fixture()
+        local = t.validate_local(records, run)
+        self.assertEqual([v["flag_state"]["fbc"] for v in local["views"]], [None, 101, 202])
+        data = backend_rows(local, run)
+        self.assertEqual(t.validate_backend(local, run, [], data["errors"], data["views"], 0)["state"], "PASS")
+        data["views"][1]["flag_state"]["fbc"] = 101
+        with self.assertRaises(Rejected):
+            t.validate_backend(local, run, [], data["errors"], data["views"], 0)
+        self.assertEqual(local["views"][1]["flag_state"]["fbc"], 101)
 
     def test_backend_requires_complete_inventory_and_zero_crashes(self):
         records, run = fixture()
         local = t.validate_local(records, run)
         for kind in ["errors", "views", "resources", "crashes"]:
-            data = {k: [dict(r, run_id=run) for r in local[k]] for k in ["errors", "views"]}
+            data = backend_rows(local, run)
             if kind in data:
                 data[kind].append(copy.deepcopy(data[kind][0]))
             with self.assertRaises(Rejected):

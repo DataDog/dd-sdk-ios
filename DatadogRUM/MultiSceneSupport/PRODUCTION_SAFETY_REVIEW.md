@@ -185,8 +185,9 @@ The SDK repair is committed in signed `04201edc7711361279d8487b385bc8b0ca9c63c7`
 The unchanged-SDK control loses A; the candidate preserves it. Actual reporter
 and asynchronous bus delivery, foreign/retired generation rejection, ordinary
 compatibility and iOS/watchOS Release checks pass. Native flag/internal ownership
-now passes; backend flags and build aggregates match, but FBC is absent. T07 stays
-open through the declared encoding/duration diagnostic; see
+now passes; backend flags and build aggregates match. The user confirmed that FBC
+is Flutter-only downstream; native absence is expected, with exact local/encoded
+FBC proof retained. T07 awaits the corrected native backend acceptance; see
 [EXP-180](Experiments/EXP-143-199.md#exp-180--target-feature-flags-and-preserve-internal-mutation-ownership).
 This is a subsequent bounded disposition, separate from the completed original
 review cycle and the final independent release review.

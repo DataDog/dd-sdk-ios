@@ -50,7 +50,7 @@ def validate_checkpoint(state, previous, index):
     build, fbc = None, None
     if checkpoint >= (5 if is_a else 6):
         build = dict(min=32.0, max=52.0, average=42.0) if is_a else dict(min=20.0, max=60.0, average=40.0)
-        fbc = 101000000 if is_a else 202000000
+        fbc = 101 if is_a else 202
     expected = dict(flags=flags, build=build, fbc=fbc, leakedInternalAttribute=False)
     require(canonical(state) == canonical(expected), "flag/internal state or peer invariance differs", "FAIL")
 
@@ -194,6 +194,9 @@ def validate_backend(local, run_id, resources, errors, views, crashes):
             row = dict(row)
             if kind == "views":
                 row["flag_state"] = normalized_state(row.get("flag_state"))
+                # FBC is Flutter-only downstream. This native fixture proves its
+                # captured ownership locally and in encoded payloads, not ingestion.
+                expected = dict(expected, flag_state=dict(expected["flag_state"], fbc=None))
             else:
                 row["flags"] = normalized_flags(row.get("flags"))
                 require(row.get("leaked_internal_attribute") is False, "backend internal attribute leak", "FAIL")
@@ -202,4 +205,5 @@ def validate_backend(local, run_id, resources, errors, views, crashes):
                     "backend fields differ: " + kind, "FAIL")
             if kind == "errors":
                 require(row.get("is_crash") is not True, "backend error is a crash", "FAIL")
-    return dict(state="PASS", error_count=16, resource_count=0, view_count=3, checkpoints=8, crash_count=0)
+    return dict(state="PASS", error_count=16, resource_count=0, view_count=3, checkpoints=8, crash_count=0,
+                fbc_contract="native backend absence; exact ownership verified locally and in encoding")

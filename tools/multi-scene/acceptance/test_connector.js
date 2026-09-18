@@ -130,12 +130,12 @@ test('flag projection rejects type conversion unknown fields and ambiguous nesti
 });
 test('flag metrics preserve aggregate values and FBC in nested and flat payloads', () => {
   const expected = {flags:{exp180_shared:7},build:{min:32,max:52,average:42},
-    fbc:101000000,leakedInternalAttribute:false};
+    fbc:101,leakedInternalAttribute:false};
   assert.deepEqual(projectFlagState({feature_flags:{exp180_shared:7},
-    view:{flutter_build_time:{min:32,max:52,average:42},performance:{fbc:{timestamp:101000000}}}}, flagAt), expected);
+    view:{flutter_build_time:{min:32,max:52,average:42},performance:{fbc:{timestamp:101}}}}, flagAt), expected);
   assert.deepEqual(projectFlagState({'feature_flags.exp180_shared':7,
     'view.flutter_build_time.min':32,'view.flutter_build_time.max':52,'view.flutter_build_time.average':42,
-    'view.performance.fbc.timestamp':101000000}, flagAt), expected);
+    'view.performance.fbc.timestamp':101}, flagAt), expected);
 });
 test('flag metrics reject malformed present aggregates and FBC types', () => {
   for (const build of [null, {}, {min:null,max:null,average:null}, {min:32,max:52},
@@ -143,18 +143,18 @@ test('flag metrics reject malformed present aggregates and FBC types', () => {
     {min:NaN,max:52,average:42}, {min:0,max:52,average:42}]) {
     assert.deepEqual(projectFlagState({view:{flutter_build_time:build}}, flagAt), {invalid:true});
   }
-  for (const timestamp of [null,true,'101000000',0,-1,1.5]) {
+  for (const timestamp of [null,true,'101',0,-1,1.5]) {
     assert.deepEqual(projectFlagState({view:{performance:{fbc:{timestamp}}}}, flagAt), {invalid:true});
   }
 });
 test('internal mutation key leakage is visible even for null and flattened values', () => {
   for (const payload of [
     {context:{'_dd.performance.first_build_complete':null}},
-    {'context._dd.performance.first_build_complete':101000000},
-    {context:{_dd:{performance:{first_build_complete:101000000}}}}
+    {'context._dd.performance.first_build_complete':101},
+    {context:{_dd:{performance:{first_build_complete:101}}}}
   ]) {
     assert.equal(hasInternalFlagAttribute(payload), true);
     assert.equal(projectFlagState(payload, flagAt).leakedInternalAttribute, true);
   }
-  assert.equal(hasInternalFlagAttribute({context:{other:101000000}}), false);
+  assert.equal(hasInternalFlagAttribute({context:{other:101}}), false);
 });
