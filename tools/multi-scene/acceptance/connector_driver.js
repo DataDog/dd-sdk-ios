@@ -338,6 +338,7 @@ function projectFatal(payload, envelope = {}) {
     action_count:common.action_count, resource_count:common.resource_count,
     error_count:common.error_count, crash_count:get("view.crash.count"),
     document_version:common.document_version,
+    sdk_document_version:get("context.exp184_sdk_document_version"),
     event_id:get("error.id"), error_source:get("error.source"),
     error_type:get("error.type"), is_crash:get("error.is_crash"),
     incident_id:get("error.meta.incident_identifier"), exception_type:get("error.meta.exception_type"),

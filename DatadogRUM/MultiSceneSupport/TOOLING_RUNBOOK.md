@@ -1419,3 +1419,15 @@ Crash recovery decodes dynamic RUM attributes into type-erased Codable values.
 Extract the encoded String for the whitelisted run identity; a direct String cast
 can silently produce nil. Reject non-String values and compare the original run
 exactly. This projection correction does not replace report provenance checks.
+
+Initial Home mapper events can precede the native scene-ID attribute. Keep actual
+scene-ready topology, the SDK's scene-indexed view snapshot and the mapper's view
+UUID/logical scene as separate evidence. Require agreement before recovery, reject
+a conflicting native mapper field if present, and never manufacture a missing
+mapper field from expected ownership. This is serial native-scene evidence only.
+
+Do not assume the document counter returned by RUM search equals the SDK input
+revision. For fatal acceptance, copy the mapper's observed revision into the
+synthetic exp184_sdk_document_version attribute and require its exact preservation.
+Keep the local injected-version+1 check and all owner-specific counts. Record the
+search counter separately; never substitute it for a missing SDK witness.

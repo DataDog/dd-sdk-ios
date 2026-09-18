@@ -94,20 +94,9 @@ def validate_crash_boundary(phase, signals, terminal):
     return boundary
 
 
-def validate_local(phases, run_id):
-    require(len(phases) == 3 and [p["scenario_id"] for p in phases] == SCENARIOS, "three ordered phases required")
-    run_ids = [p["run_id"] for p in phases]
-    require(run_ids[0] == run_id and len(set(run_ids)) == 3 and all(run_ids), "reused phase/run identity")
-    binary = phases[0].get("installed_binary_sha256")
-    container = phases[0].get("data_container")
-    require(isinstance(binary, str) and re.fullmatch(r"[a-f0-9]{64}", binary) and container,
-            "missing installed identity")
-    require(all(p.get("installed_binary_sha256") == binary and p.get("data_container") == container for p in phases),
-            "installation changed between phases")
-    observed = [phase_records(p, scenario) for p, scenario in zip(phases, SCENARIOS)]
-    require(len({o[3] for o in observed}) == 3, "process reused across phases", "FAIL")
-    signals, snapshots, terminal, crashed_pid = observed[0]
-    boundary = validate_crash_boundary(phases[0], signals, terminal)
+def validate_preparation(phase):
+    signals, snapshots, terminal, _ = phase_records(phase, SCENARIO)
+    boundary = validate_crash_boundary(phase, signals, terminal)
     a, b = assertion(signals, "fatal-owner-a"), assertion(signals, "fatal-owner-b")
     owner_a, owner_b = owner(a), owner(b)
     require(owner_a["session_id"] == owner_b["session_id"] and owner_a["view_id"] != owner_b["view_id"],
@@ -118,11 +107,23 @@ def validate_local(phases, run_id):
         original = unique([s for s in snapshots if owner(s) == owner(record)
                            and s.get("rumContext", {}).get("viewActive") is True
                            and s.get("fatal", {}).get("documentVersion") == 1], "initial Home mapper")
-        require(original.get("semanticContext", {}).get("logicalSceneID") == label
-                and original.get("semanticContext", {}).get("nativeSceneID")
-                == record.get("sourceContext", {}).get("nativeSceneID"),
+        ready = unique([s for s in signals if s.get("kind") == "scene-ready"
+                        and s.get("semanticContext", {}).get("logicalSceneID") == label],
+                       "actual scene readiness")
+        actual_native = ready.get("semanticContext", {}).get("nativeSceneID")
+        require(ready.get("evidenceSource") == "probe" and ready.get("scenePhase") == "ready"
+                and ready.get("activationState") in ["foreground-active", "foreground-inactive", "background"]
+                and actual_native == record.get("sourceContext", {}).get("nativeSceneID"),
+                "native topology differs from scene snapshot", "FAIL")
+        require(record.get("evidenceSource") == "internal-hook"
+                and record.get("sourceContext", {}).get("logicalSceneID") == label
+                and original.get("semanticContext", {}).get("logicalSceneID") == label,
                 "call-site label substituted for native mapper owner", "FAIL")
+        mapper_native = original.get("semanticContext", {}).get("nativeSceneID")
+        require(mapper_native is None or mapper_native == actual_native,
+                "conflicting mapper native identity", "FAIL")
         require_before(original, record, "independent Home capture")
+        require_before(ready, record, "native readiness before scene snapshot")
     for name in ["fatal-export-before", "fatal-provider-before", "fatal-export-after",
                  "fatal-provider-after", "fatal-injection-drained", "fatal-crash-boundary"]:
         guard = assertion(signals, name)
@@ -139,6 +140,24 @@ def validate_local(phases, run_id):
     require(type(injected.get("documentVersion")) is int and injected.get("viewErrorCount") == 0
             and injected.get("viewCrashCount") == 0, "injected view already contains a fatal event", "FAIL")
     require(not any(s.get("kind") == "rum-error" for s in signals), "error before declared crash", "FAIL")
+
+    return owner_a, owner_b, injected, boundary
+
+
+def validate_local(phases, run_id):
+    require(len(phases) == 3 and [p["scenario_id"] for p in phases] == SCENARIOS, "three ordered phases required")
+    run_ids = [p["run_id"] for p in phases]
+    require(run_ids[0] == run_id and len(set(run_ids)) == 3 and all(run_ids), "reused phase/run identity")
+    binary = phases[0].get("installed_binary_sha256")
+    container = phases[0].get("data_container")
+    require(isinstance(binary, str) and re.fullmatch(r"[a-f0-9]{64}", binary) and container,
+            "missing installed identity")
+    require(all(p.get("installed_binary_sha256") == binary and p.get("data_container") == container for p in phases),
+            "installation changed between phases")
+    observed = [phase_records(p, scenario) for p, scenario in zip(phases, SCENARIOS)]
+    require(len({o[3] for o in observed}) == 3, "process reused across phases", "FAIL")
+    signals, snapshots, terminal, crashed_pid = observed[0]
+    owner_a, owner_b, injected, boundary = validate_preparation(phases[0])
 
     inventory = {}
     sessions = []
@@ -232,8 +251,9 @@ def validate_backend(local, run_id, views, errors, actions, resources, crash_cou
                 and view.get("action_count") == 0 and view.get("resource_count") == 0,
                 "backend counts assigned to wrong owner", "FAIL")
         if count:
-            require(view.get("is_active") is False and view.get("document_version") == local["fatal"]["document_version"],
-                    "backend fatal view revision differs", "FAIL")
+            require(view.get("is_active") is False and type(view.get("sdk_document_version")) is int
+                    and view["sdk_document_version"] == local["fatal"]["document_version"],
+                    "backend SDK revision witness differs", "FAIL")
         if view.get("name") == "FatalRecovery":
             index = local["session_ids"].index(view["session_id"])
             require(view.get("run_id") == local["run_ids"][index], "restored recovery run identifier", "FAIL")

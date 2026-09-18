@@ -230,3 +230,8 @@ The next run locally recovers the original B crash under a different current
 session. Buffered launcher output prevents full acceptance; a decoded-attribute
 projection correction is also required in the fixture. Consumption and backend
 ownership still gate T11; production source remains unchanged.
+
+All three native phases now pass locally, including report consumption. A fixture
+oracle assumption about initial mapper scene attributes still prevents acceptance;
+the corrected oracle preserves separate actual topology, SDK snapshot and mapper
+evidence. T11 remains open pending a fresh complete backend run.

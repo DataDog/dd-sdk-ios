@@ -73,8 +73,7 @@ def run_phases(runner, installed, executable, binary_sha, parse_records, file_ha
                 phase["terminated"] = True
             save(runner.out / "fatal-phases.json", phases)
             # Validate the declared boundary before a recovery launch can consume evidence.
-            signals, _, terminal, _ = fatal_contract.phase_records(phase, scenario)
-            fatal_contract.validate_crash_boundary(phase, signals, terminal)
+            fatal_contract.validate_preparation(phase)
             # The launcher status is not the application's exit status. Recovery must
             # independently prove the exact native crash before the run can pass.
         else:

@@ -515,3 +515,12 @@ test('fatal projection accepts flattened metadata without inventing absent origi
   assert.equal(result.view_id, null);
   assert.equal(result.source, null);
 });
+
+test('fatal projection separates observed SDK revision from backend document counter', () => {
+  const result = projectFatal({_dd:{document_version:56}, context:{exp184_sdk_document_version:2}});
+  assert.equal(result.document_version, 56);
+  assert.equal(result.sdk_document_version, 2);
+  assert.equal(projectFatal({_dd:{document_version:56}}).sdk_document_version, null);
+  assert.throws(() => projectFatal({context:{exp184_sdk_document_version:2},
+    'context.exp184_sdk_document_version':3}), /Ambiguous/);
+});

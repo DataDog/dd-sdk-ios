@@ -44,7 +44,7 @@ def fixture():
             if mutation:
                 observation.update(peerMutation="A", mutationTiming=1000)
             add("rum-view-snapshot", evidenceSource="rum-mapper", rumContext=context, fatal=observation,
-                semanticContext=dict(logicalSceneID=scene, nativeSceneID="native-" + str(scene)))
+                semanticContext=dict(logicalSceneID=scene))
             return context
 
         assertion("fatal-process")
@@ -53,6 +53,9 @@ def fixture():
         if index == 0:
             a = view(uid(20), "ProbeHomeView", "scene-A")
             b = view(uid(21), "ProbeHomeView", "scene-B")
+            for label in ["scene-A", "scene-B"]:
+                add("scene-ready", evidenceSource="probe", scenePhase="ready", activationState="foreground-inactive",
+                    semanticContext=dict(logicalSceneID=label, nativeSceneID="native-" + label))
             for name, context, scene in [("fatal-owner-a", a, "scene-A"), ("fatal-owner-b", b, "scene-B")]:
                 assertion(name, context)
                 signals[-1]["sourceContext"] = dict(logicalSceneID=scene, nativeSceneID="native-" + scene)
@@ -101,7 +104,7 @@ def backend(local):
         count = int(value["view_id"] == local["original_b"]["view_id"])
         phase_index = local["session_ids"].index(value["session_id"])
         views.append(dict(value, source="ios", container_present=False, error_count=count, crash_count=count,
-                          action_count=0, resource_count=0, is_active=not count, document_version=2 if count else 1,
+                          action_count=0, resource_count=0, is_active=not count, document_version=56 if count else 1, sdk_document_version=2 if count else 1,
                           run_id=local["run_ids"][phase_index]))
     error = dict(local["fatal"], source="ios", run_id=local["run_ids"][0], phase="fatal-original",
                  error_source="source", is_crash=True, container_present=False, action_present=False)
@@ -193,6 +196,24 @@ class FatalContractTests(unittest.TestCase):
         named(self.phases, 0, "fatal-export-after")["rumContext"] = named(self.phases, 0, "fatal-owner-a")["rumContext"]
         self.reject()
 
+    def test_native_topology_and_mapper_ownership_remain_independent(self):
+        for mutation in ["missing-ready", "foreign-ready", "wrong-mapper-label", "conflicting-mapper-native"]:
+            with self.subTest(mutation=mutation):
+                self.phases, self.run = fixture()
+                records = self.phases[0]["records"]
+                ready = next(r for r in records if r.get("signal", {}).get("kind") == "scene-ready")
+                mapper = next(r["signal"] for r in records if r.get("signal", {}).get("kind") == "rum-view-snapshot"
+                              and r["signal"].get("semanticContext", {}).get("logicalSceneID") == "scene-A")
+                if mutation == "missing-ready":
+                    records.remove(ready)
+                elif mutation == "foreign-ready":
+                    ready["signal"]["semanticContext"]["nativeSceneID"] = "foreign"
+                elif mutation == "wrong-mapper-label":
+                    mapper["semanticContext"]["logicalSceneID"] = "scene-B"
+                else:
+                    mapper["semanticContext"]["nativeSceneID"] = "foreign"
+                self.reject()
+
     def test_missing_peer_mapper_witness(self):
         for record in self.phases[0]["records"]:
             record.get("signal", {}).get("fatal", {}).pop("mutationTiming", None)
@@ -248,9 +269,19 @@ class FatalContractTests(unittest.TestCase):
                 with self.assertRaises(Rejected):
                     f.validate_backend(local, self.run, *values)
 
+    def test_backend_document_counter_does_not_replace_sdk_revision_witness(self):
+        local = f.validate_local(self.phases, self.run)
+        values = backend(local)
+        crashed = next(v for v in values[0] if v["crash_count"] == 1)
+        crashed["document_version"] = 901
+        self.assertEqual(f.validate_backend(local, self.run, *values)["state"], "PASS")
+        crashed["sdk_document_version"] = True
+        with self.assertRaises(Rejected):
+            f.validate_backend(local, self.run, *values)
+
     def test_backend_count_ownership_and_completeness(self):
         local = f.validate_local(self.phases, self.run)
-        for mutation in ["missing-view", "extra-error", "peer-count", "reused-run", "wrong-document"]:
+        for mutation in ["missing-view", "extra-error", "peer-count", "reused-run", "wrong-document", "missing-sdk-version"]:
             with self.subTest(mutation=mutation):
                 views, errors, actions, resources, count = backend(local)
                 if mutation == "missing-view":
@@ -261,8 +292,10 @@ class FatalContractTests(unittest.TestCase):
                     views[0]["crash_count"] = 1
                 elif mutation == "reused-run":
                     next(v for v in views if v["name"] == "FatalRecovery")["run_id"] = self.run
+                elif mutation == "missing-sdk-version":
+                    next(v for v in views if v["crash_count"] == 1).pop("sdk_document_version")
                 else:
-                    next(v for v in views if v["crash_count"] == 1)["document_version"] = 4
+                    next(v for v in views if v["crash_count"] == 1)["sdk_document_version"] = 4
                 with self.assertRaises(Rejected):
                     f.validate_backend(local, self.run, views, errors, actions, resources, count)
 

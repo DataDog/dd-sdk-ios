@@ -136,6 +136,10 @@ internal enum ProbeFatalAcceptance {
                   let owner = monitor.rumContextSnapshot(for: .scene(.init(rawValue: nativeID))),
                   let viewID = owner.viewID else { throw FixtureError.missing("native owner " + scene) }
             try require(recorder.snapshot().contains {
+                $0.kind == .sceneReady && $0.semanticContext?.logicalSceneID == scene
+                    && $0.semanticContext?.nativeSceneID == nativeID && $0.scenePhase == "ready"
+            }, "independent native readiness")
+            try require(recorder.snapshot().contains {
                 $0.kind == .rumViewSnapshot && $0.evidenceSource == .rumMapper
                     && $0.rumContext?.viewID == viewID && $0.rumContext?.viewActive == true
                     && $0.semanticContext?.logicalSceneID == scene
@@ -285,6 +289,14 @@ internal enum ProbeFatalAcceptance {
         }
         await Task.detached { Datadog.flush() }.value
         record("fatal-recovery-complete", owner: current)
+    }
+
+    static func annotateView(_ original: RUMViewEvent) -> RUMViewEvent {
+        var event = original
+        var attributes = event.context?.contextInfo ?? [:]
+        attributes["exp184_sdk_document_version"] = original.dd.documentVersion
+        event.context = .init(contextInfo: attributes)
+        return event
     }
 
     static func viewObservation(_ event: RUMViewEvent) -> ProbeFatalObservation {

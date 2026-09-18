@@ -275,6 +275,12 @@ enum ProbeRuntime {
                     : nil,
                 trackBackgroundEvents: true,
                 viewEventMapper: { event in
+                    var event = event
+                    #if DEBUG
+                    if ProbeFatalContract.contains(scenario?.identifier ?? "") {
+                        event = ProbeFatalAcceptance.annotateView(event)
+                    }
+                    #endif
                     record(viewEvent: event)
                     return event
                 },

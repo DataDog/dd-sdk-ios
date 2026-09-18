@@ -1,0 +1,1945 @@
+{
+  "artifacts": {
+    "boot-ready.log": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/multi-scene-acceptance-e3xut_8e/run/boot-ready.log",
+    "build-identity.json": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/multi-scene-acceptance-e3xut_8e/run/build-identity.json",
+    "build-tests.log": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/multi-scene-acceptance-e3xut_8e/run/build-tests.log",
+    "container-absence.log": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/multi-scene-acceptance-e3xut_8e/run/container-absence.log",
+    "fatal-phases.json": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/multi-scene-acceptance-e3xut_8e/run/fatal-phases.json",
+    "install.log": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/multi-scene-acceptance-e3xut_8e/run/install.log",
+    "phase-0.raw.log": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/multi-scene-acceptance-e3xut_8e/run/phase-0.raw.log",
+    "phase-1.raw.log": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/multi-scene-acceptance-e3xut_8e/run/phase-1.raw.log",
+    "phase-2.raw.log": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/multi-scene-acceptance-e3xut_8e/run/phase-2.raw.log",
+    "source-identity.json": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/multi-scene-acceptance-e3xut_8e/run/source-identity.json",
+    "summary.json": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/multi-scene-acceptance-e3xut_8e/run/summary.json",
+    "terminate-after.log": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/multi-scene-acceptance-e3xut_8e/run/terminate-after.log",
+    "terminate-before.log": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/multi-scene-acceptance-e3xut_8e/run/terminate-before.log",
+    "terminate-phase-1.log": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/multi-scene-acceptance-e3xut_8e/run/terminate-phase-1.log",
+    "terminate-phase-2.log": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/multi-scene-acceptance-e3xut_8e/run/terminate-phase-2.log",
+    "test-summary.json": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/multi-scene-acceptance-e3xut_8e/run/test-summary.json",
+    "uninstall.log": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/multi-scene-acceptance-e3xut_8e/run/uninstall.log"
+  },
+  "backend_bridge_timings": [
+    {
+      "kind": "auth",
+      "received": true,
+      "seconds": 9.666
+    }
+  ],
+  "commit_signature": {
+    "required_before_push": true,
+    "state": "UNSIGNED"
+  },
+  "device": {
+    "dataPath": "/Users/valentin.pertuisot/Library/Developer/CoreSimulator/Devices/92C9918B-FEC6-4440-9D6D-8E09475950BB/data",
+    "dataPathSize": 3327934464,
+    "deviceTypeIdentifier": "com.apple.CoreSimulator.SimDeviceType.iPad-mini-A17-Pro",
+    "isAvailable": true,
+    "lastUsedAt": "2026-09-16T22:19:15Z",
+    "logPath": "/Users/valentin.pertuisot/Library/Logs/CoreSimulator/92C9918B-FEC6-4440-9D6D-8E09475950BB",
+    "logPathSize": 471040,
+    "name": "iPad mini (A17 Pro)",
+    "runtime": "com.apple.CoreSimulator.SimRuntime.iOS-27-0",
+    "state": "Booted",
+    "udid": "92C9918B-FEC6-4440-9D6D-8E09475950BB"
+  },
+  "dirty_state": [
+    " M Datadog/Datadog.xcodeproj/project.pbxproj",
+    "A  xcconfigs/Datadog.local.xcconfig"
+  ],
+  "evidence": {
+    "build-identity.json": {
+      "executable_sha256": "502cbe291b3c8778b5ae76e9e99b12a391b96ecac47b47426a66022eba572029",
+      "source_sha256": "6d03099ccae5a80f4146499d6791eacf82439468443ffd8708a58671c29e70e9",
+      "uuid": "UUID: DDD37D57-31AB-3023-AC1B-E4DE58813A5E (arm64) /private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/multi-scene-acceptance-e3xut_8e/run/derived/Build/Products/Debug-iphonesimulator/RUMNativeMultiSceneProbe.app/RUMNativeMultiSceneProbe"
+    },
+    "fatal-phases.json": [
+      {
+        "data_container": "/Users/valentin.pertuisot/Library/Developer/CoreSimulator/Devices/92C9918B-FEC6-4440-9D6D-8E09475950BB/data/Containers/Data/Application/C78B2D60-567A-4695-BA0E-84A9D3BAD71C",
+        "installed_binary_sha256": "502cbe291b3c8778b5ae76e9e99b12a391b96ecac47b47426a66022eba572029",
+        "launcher_exit": 0,
+        "process_id": 98807,
+        "records": [
+          {
+            "manifest": {
+              "resolutionSource": "command-line",
+              "runID": "exp184-20260918T042833Z-4b79e3314fbc",
+              "runMode": "clean",
+              "scenario": {
+                "completionConditions": [
+                  {
+                    "expectedCount": 1,
+                    "kind": "assertion",
+                    "name": "fatal-process"
+                  },
+                  {
+                    "expectedCount": 1,
+                    "kind": "assertion",
+                    "name": "fatal-owner-a"
+                  },
+                  {
+                    "expectedCount": 1,
+                    "kind": "assertion",
+                    "name": "fatal-owner-b"
+                  },
+                  {
+                    "expectedCount": 1,
+                    "kind": "assertion",
+                    "name": "fatal-export-before"
+                  },
+                  {
+                    "expectedCount": 1,
+                    "kind": "assertion",
+                    "name": "fatal-provider-before"
+                  },
+                  {
+                    "expectedCount": 1,
+                    "kind": "assertion",
+                    "name": "fatal-mutation-dispatched"
+                  },
+                  {
+                    "expectedCount": 1,
+                    "kind": "assertion",
+                    "name": "fatal-export-after"
+                  },
+                  {
+                    "expectedCount": 1,
+                    "kind": "assertion",
+                    "name": "fatal-provider-after"
+                  },
+                  {
+                    "expectedCount": 1,
+                    "kind": "assertion",
+                    "name": "fatal-capture-unchanged"
+                  },
+                  {
+                    "expectedCount": 1,
+                    "kind": "assertion",
+                    "name": "fatal-injection-drained"
+                  },
+                  {
+                    "expectedCount": 1,
+                    "kind": "assertion",
+                    "name": "fatal-prepare-complete"
+                  }
+                ],
+                "defaultRunMode": "clean",
+                "expectedSemanticTimeline": [
+                  {
+                    "kind": "view-started",
+                    "occurrence": 1,
+                    "rumViewOrigin": "semantic",
+                    "scene": "scene-A",
+                    "screen": "home"
+                  },
+                  {
+                    "kind": "view-started",
+                    "occurrence": 1,
+                    "rumViewOrigin": "semantic",
+                    "scene": "scene-B",
+                    "screen": "home"
+                  },
+                  {
+                    "expectedCount": 1,
+                    "kind": "assertion",
+                    "name": "fatal-process"
+                  },
+                  {
+                    "expectedCount": 1,
+                    "kind": "assertion",
+                    "name": "fatal-owner-a"
+                  },
+                  {
+                    "expectedCount": 1,
+                    "kind": "assertion",
+                    "name": "fatal-owner-b"
+                  },
+                  {
+                    "expectedCount": 1,
+                    "kind": "assertion",
+                    "name": "fatal-export-before"
+                  },
+                  {
+                    "expectedCount": 1,
+                    "kind": "assertion",
+                    "name": "fatal-provider-before"
+                  },
+                  {
+                    "expectedCount": 1,
+                    "kind": "assertion",
+                    "name": "fatal-mutation-dispatched"
+                  },
+                  {
+                    "expectedCount": 1,
+                    "kind": "assertion",
+                    "name": "fatal-export-after"
+                  },
+                  {
+                    "expectedCount": 1,
+                    "kind": "assertion",
+                    "name": "fatal-provider-after"
+                  },
+                  {
+                    "expectedCount": 1,
+                    "kind": "assertion",
+                    "name": "fatal-capture-unchanged"
+                  },
+                  {
+                    "expectedCount": 1,
+                    "kind": "assertion",
+                    "name": "fatal-injection-drained"
+                  },
+                  {
+                    "expectedCount": 1,
+                    "kind": "assertion",
+                    "name": "fatal-prepare-complete"
+                  }
+                ],
+                "identifier": "fatal.process-context.prepare-crash",
+                "initialWindows": [
+                  "scene-A",
+                  "scene-B"
+                ],
+                "layout": "stack",
+                "requiredCapabilities": [
+                  "multiple-scenes"
+                ],
+                "runtimeOptions": {
+                  "automaticallyAbortsDetail": false,
+                  "automaticallyAdvancesSplitSelection": true,
+                  "automaticallyClosesSceneB": false,
+                  "automaticallyNavigates": false,
+                  "automaticallyOpensSecondWindow": false,
+                  "automaticallyPopsUIKitSplitNavigation": true,
+                  "automaticallyReplacesDetail": false,
+                  "automaticallyReplacesDetailInstance": false,
+                  "automaticallyReturnsSplitToDetail": false,
+                  "exercisesSwiftUIButtonStructuredTask": false,
+                  "exercisesTraceOnlyURLSessionOwnership": false,
+                  "exercisesUIEventContextHandoff": false,
+                  "exercisesUIKitScrollOwnership": false,
+                  "forcesNavigationRouteIdentity": false,
+                  "initialSwiftUIPath": [],
+                  "manualSwiftUIViewScreensByScene": {},
+                  "startsSplitWithoutSelection": false,
+                  "swiftUIRouterWritePolicy": "accept",
+                  "swiftUIStress": "none"
+                },
+                "steps": [
+                  {
+                    "kind": "wait-for-scene-ready",
+                    "scene": "scene-A"
+                  },
+                  {
+                    "kind": "wait-for-signal",
+                    "scene": "scene-A",
+                    "signal": "rum-view:home#1"
+                  },
+                  {
+                    "kind": "open-window",
+                    "scene": "scene-A",
+                    "value": "scene-B"
+                  },
+                  {
+                    "kind": "wait-for-signal",
+                    "scene": "scene-B",
+                    "signal": "rum-view:home#1"
+                  },
+                  {
+                    "kind": "run-fatal-preparation",
+                    "scene": "scene-B"
+                  }
+                ],
+                "trackingMode": "manual"
+              },
+              "schemaVersion": 3,
+              "validationErrors": []
+            },
+            "type": "manifest"
+          },
+          {
+            "signal": {
+              "evidenceSource": "rum-mapper",
+              "kind": "rum-session-started",
+              "rumContext": {
+                "sessionDiscarded": false,
+                "sessionID": "b43f1680-58be-4254-873e-95c4dd90c694"
+              },
+              "runID": "exp184-20260918T042833Z-4b79e3314fbc",
+              "scenarioID": "fatal.process-context.prepare-crash",
+              "schemaVersion": 5,
+              "sequence": 1,
+              "timestampMilliseconds": 1789705757121
+            },
+            "type": "signal"
+          },
+          {
+            "signal": {
+              "evidenceSource": "rum-mapper",
+              "fatal": {
+                "documentVersion": 1,
+                "processID": 98807,
+                "viewCrashCount": 0,
+                "viewErrorCount": 0
+              },
+              "kind": "rum-view-snapshot",
+              "rumContext": {
+                "eventDateMilliseconds": 1789705757081,
+                "sessionHasReplay": false,
+                "sessionID": "b43f1680-58be-4254-873e-95c4dd90c694",
+                "viewActive": true,
+                "viewDocumentVersion": 1,
+                "viewID": "718804a3-38e6-4f0d-b185-3e25a59c8ad0",
+                "viewName": "ApplicationLaunch",
+                "viewTimeSpentNanoseconds": 27782917,
+                "viewURL": "com/datadog/application-launch/view"
+              },
+              "runID": "exp184-20260918T042833Z-4b79e3314fbc",
+              "scenarioID": "fatal.process-context.prepare-crash",
+              "schemaVersion": 5,
+              "sequence": 2,
+              "timestampMilliseconds": 1789705757133
+            },
+            "type": "signal"
+          },
+          {
+            "signal": {
+              "evidenceSource": "rum-mapper",
+              "fatal": {
+                "documentVersion": 2,
+                "originalRunID": "exp184-20260918T042833Z-4b79e3314fbc",
+                "processID": 98807,
+                "viewCrashCount": 0,
+                "viewErrorCount": 0
+              },
+              "kind": "rum-view-snapshot",
+              "rumContext": {
+                "eventDateMilliseconds": 1789705757081,
+                "sessionHasReplay": false,
+                "sessionID": "b43f1680-58be-4254-873e-95c4dd90c694",
+                "viewActive": false,
+                "viewDocumentVersion": 2,
+                "viewID": "718804a3-38e6-4f0d-b185-3e25a59c8ad0",
+                "viewName": "ApplicationLaunch",
+                "viewTimeSpentNanoseconds": 192158937,
+                "viewURL": "com/datadog/application-launch/view"
+              },
+              "runID": "exp184-20260918T042833Z-4b79e3314fbc",
+              "scenarioID": "fatal.process-context.prepare-crash",
+              "schemaVersion": 5,
+              "sequence": 3,
+              "timestampMilliseconds": 1789705757275
+            },
+            "type": "signal"
+          },
+          {
+            "signal": {
+              "evidenceSource": "rum-mapper",
+              "fatal": {
+                "documentVersion": 1,
+                "originalRunID": "exp184-20260918T042833Z-4b79e3314fbc",
+                "processID": 98807,
+                "viewCrashCount": 0,
+                "viewErrorCount": 0
+              },
+              "kind": "rum-view-snapshot",
+              "rumContext": {
+                "eventDateMilliseconds": 1789705757273,
+                "sessionHasReplay": false,
+                "sessionID": "b43f1680-58be-4254-873e-95c4dd90c694",
+                "viewActive": true,
+                "viewDocumentVersion": 1,
+                "viewID": "0c5d0d6e-3a85-4e97-a480-cc5498ef5981",
+                "viewName": "ProbeHomeView",
+                "viewTimeSpentNanoseconds": 1,
+                "viewURL": "ProbeHomeView/-4224035406482423662"
+              },
+              "runID": "exp184-20260918T042833Z-4b79e3314fbc",
+              "scenarioID": "fatal.process-context.prepare-crash",
+              "schemaVersion": 5,
+              "semanticContext": {
+                "logicalSceneID": "scene-A",
+                "screen": "home"
+              },
+              "sequence": 4,
+              "timestampMilliseconds": 1789705757276
+            },
+            "type": "signal"
+          },
+          {
+            "signal": {
+              "evidenceSource": "probe",
+              "kind": "destination-appearance-observed",
+              "runID": "exp184-20260918T042833Z-4b79e3314fbc",
+              "scenarioID": "fatal.process-context.prepare-crash",
+              "schemaVersion": 5,
+              "semanticContext": {
+                "logicalSceneID": "scene-A",
+                "screen": "home"
+              },
+              "sequence": 5,
+              "timestampMilliseconds": 1789705757278
+            },
+            "type": "signal"
+          },
+          {
+            "signal": {
+              "evidenceSource": "rum-mapper",
+              "fatal": {
+                "documentVersion": 2,
+                "originalRunID": "exp184-20260918T042833Z-4b79e3314fbc",
+                "processID": 98807,
+                "viewCrashCount": 0,
+                "viewErrorCount": 0
+              },
+              "kind": "rum-view-snapshot",
+              "rumContext": {
+                "eventDateMilliseconds": 1789705757273,
+                "sessionHasReplay": false,
+                "sessionID": "b43f1680-58be-4254-873e-95c4dd90c694",
+                "viewActive": true,
+                "viewDocumentVersion": 2,
+                "viewID": "0c5d0d6e-3a85-4e97-a480-cc5498ef5981",
+                "viewName": "ProbeHomeView",
+                "viewTimeSpentNanoseconds": 37302017,
+                "viewURL": "ProbeHomeView/-4224035406482423662"
+              },
+              "runID": "exp184-20260918T042833Z-4b79e3314fbc",
+              "scenarioID": "fatal.process-context.prepare-crash",
+              "schemaVersion": 5,
+              "semanticContext": {
+                "logicalSceneID": "scene-A",
+                "screen": "home"
+              },
+              "sequence": 6,
+              "timestampMilliseconds": 1789705757313
+            },
+            "type": "signal"
+          },
+          {
+            "signal": {
+              "activationState": "foreground-inactive",
+              "evidenceSource": "probe",
+              "geometry": {
+                "height": 1133,
+                "width": 744,
+                "x": 0,
+                "y": 0
+              },
+              "horizontalSizeClass": "regular",
+              "kind": "scene-ready",
+              "navigationPath": [
+                "home"
+              ],
+              "runID": "exp184-20260918T042833Z-4b79e3314fbc",
+              "scenarioID": "fatal.process-context.prepare-crash",
+              "sceneDisconnectGeneration": 0,
+              "scenePhase": "ready",
+              "schemaVersion": 5,
+              "semanticContext": {
+                "logicalSceneID": "scene-A",
+                "nativeSceneID": "CBA50DE6-3904-4F3A-9204-DA592DB3F195",
+                "screen": "home"
+              },
+              "sequence": 7,
+              "timestampMilliseconds": 1789705757318,
+              "verticalSizeClass": "regular"
+            },
+            "type": "signal"
+          },
+          {
+            "signal": {
+              "evidenceSource": "probe",
+              "kind": "step-started",
+              "runID": "exp184-20260918T042833Z-4b79e3314fbc",
+              "scenarioID": "fatal.process-context.prepare-crash",
+              "schemaVersion": 5,
+              "semanticContext": {
+                "logicalSceneID": "scene-A",
+                "nativeSceneID": "CBA50DE6-3904-4F3A-9204-DA592DB3F195",
+                "screen": "home"
+              },
+              "sequence": 8,
+              "stepIndex": 0,
+              "stepKind": "wait-for-scene-ready",
+              "timestampMilliseconds": 1789705757330
+            },
+            "type": "signal"
+          },
+          {
+            "signal": {
+              "acknowledgedSignalSequence": 7,
+              "evidenceSource": "probe",
+              "kind": "step-acknowledged",
+              "runID": "exp184-20260918T042833Z-4b79e3314fbc",
+              "scenarioID": "fatal.process-context.prepare-crash",
+              "schemaVersion": 5,
+              "semanticContext": {
+                "logicalSceneID": "scene-A",
+                "nativeSceneID": "CBA50DE6-3904-4F3A-9204-DA592DB3F195",
+                "screen": "home"
+              },
+              "sequence": 9,
+              "stepIndex": 0,
+              "stepKind": "wait-for-scene-ready",
+              "timestampMilliseconds": 1789705757340
+            },
+            "type": "signal"
+          },
+          {
+            "signal": {
+              "evidenceSource": "probe",
+              "kind": "step-started",
+              "name": "rum-view:home#1",
+              "runID": "exp184-20260918T042833Z-4b79e3314fbc",
+              "scenarioID": "fatal.process-context.prepare-crash",
+              "schemaVersion": 5,
+              "semanticContext": {
+                "logicalSceneID": "scene-A",
+                "nativeSceneID": "CBA50DE6-3904-4F3A-9204-DA592DB3F195",
+                "screen": "home"
+              },
+              "sequence": 10,
+              "stepIndex": 1,
+              "stepKind": "wait-for-signal",
+              "timestampMilliseconds": 1789705757340
+            },
+            "type": "signal"
+          },
+          {
+            "signal": {
+              "acknowledgedSignalSequence": 6,
+              "evidenceSource": "probe",
+              "kind": "step-acknowledged",
+              "name": "rum-view:home#1",
+              "runID": "exp184-20260918T042833Z-4b79e3314fbc",
+              "scenarioID": "fatal.process-context.prepare-crash",
+              "schemaVersion": 5,
+              "semanticContext": {
+                "logicalSceneID": "scene-A",
+                "nativeSceneID": "CBA50DE6-3904-4F3A-9204-DA592DB3F195",
+                "screen": "home"
+              },
+              "sequence": 11,
+              "stepIndex": 1,
+              "stepKind": "wait-for-signal",
+              "timestampMilliseconds": 1789705757341
+            },
+            "type": "signal"
+          },
+          {
+            "signal": {
+              "evidenceSource": "probe",
+              "kind": "step-started",
+              "name": "scene-B",
+              "runID": "exp184-20260918T042833Z-4b79e3314fbc",
+              "scenarioID": "fatal.process-context.prepare-crash",
+              "schemaVersion": 5,
+              "semanticContext": {
+                "logicalSceneID": "scene-A",
+                "nativeSceneID": "CBA50DE6-3904-4F3A-9204-DA592DB3F195",
+                "screen": "home"
+              },
+              "sequence": 12,
+              "stepIndex": 2,
+              "stepKind": "open-window",
+              "timestampMilliseconds": 1789705757341
+            },
+            "type": "signal"
+          },
+          {
+            "signal": {
+              "activationState": "foreground-active",
+              "evidenceSource": "probe",
+              "geometry": {
+                "height": 1133,
+                "width": 744,
+                "x": 0,
+                "y": 0
+              },
+              "horizontalSizeClass": "regular",
+              "kind": "scene-lifecycle",
+              "navigationPath": [
+                "home"
+              ],
+              "runID": "exp184-20260918T042833Z-4b79e3314fbc",
+              "scenarioID": "fatal.process-context.prepare-crash",
+              "sceneDisconnectGeneration": 0,
+              "scenePhase": "ready",
+              "schemaVersion": 5,
+              "semanticContext": {
+                "logicalSceneID": "scene-A",
+                "nativeSceneID": "CBA50DE6-3904-4F3A-9204-DA592DB3F195",
+                "screen": "home"
+              },
+              "sequence": 13,
+              "timestampMilliseconds": 1789705757349,
+              "verticalSizeClass": "regular"
+            },
+            "type": "signal"
+          },
+          {
+            "signal": {
+              "activationState": "foreground-inactive",
+              "evidenceSource": "probe",
+              "geometry": {
+                "height": 1133,
+                "width": 744,
+                "x": 0,
+                "y": 0
+              },
+              "horizontalSizeClass": "regular",
+              "kind": "scene-lifecycle",
+              "navigationPath": [
+                "home"
+              ],
+              "runID": "exp184-20260918T042833Z-4b79e3314fbc",
+              "scenarioID": "fatal.process-context.prepare-crash",
+              "sceneDisconnectGeneration": 0,
+              "scenePhase": "ready",
+              "schemaVersion": 5,
+              "semanticContext": {
+                "logicalSceneID": "scene-A",
+                "nativeSceneID": "CBA50DE6-3904-4F3A-9204-DA592DB3F195",
+                "screen": "home"
+              },
+              "sequence": 14,
+              "timestampMilliseconds": 1789705757365,
+              "verticalSizeClass": "regular"
+            },
+            "type": "signal"
+          },
+          {
+            "signal": {
+              "evidenceSource": "rum-mapper",
+              "fatal": {
+                "documentVersion": 1,
+                "originalRunID": "exp184-20260918T042833Z-4b79e3314fbc",
+                "processID": 98807,
+                "viewCrashCount": 0,
+                "viewErrorCount": 0
+              },
+              "kind": "rum-view-snapshot",
+              "rumContext": {
+                "eventDateMilliseconds": 1789705757513,
+                "sessionHasReplay": false,
+                "sessionID": "b43f1680-58be-4254-873e-95c4dd90c694",
+                "viewActive": true,
+                "viewDocumentVersion": 1,
+                "viewID": "e2f8b256-66cd-497b-ae14-c36728eabf57",
+                "viewName": "ProbeHomeView",
+                "viewTimeSpentNanoseconds": 1,
+                "viewURL": "ProbeHomeView/-4224035406482423662"
+              },
+              "runID": "exp184-20260918T042833Z-4b79e3314fbc",
+              "scenarioID": "fatal.process-context.prepare-crash",
+              "schemaVersion": 5,
+              "semanticContext": {
+                "logicalSceneID": "scene-B",
+                "screen": "home"
+              },
+              "sequence": 15,
+              "timestampMilliseconds": 1789705757423
+            },
+            "type": "signal"
+          },
+          {
+            "signal": {
+              "evidenceSource": "probe",
+              "kind": "destination-appearance-observed",
+              "runID": "exp184-20260918T042833Z-4b79e3314fbc",
+              "scenarioID": "fatal.process-context.prepare-crash",
+              "schemaVersion": 5,
+              "semanticContext": {
+                "logicalSceneID": "scene-B",
+                "screen": "home"
+              },
+              "sequence": 16,
+              "timestampMilliseconds": 1789705757424
+            },
+            "type": "signal"
+          },
+          {
+            "signal": {
+              "activationState": "foreground-inactive",
+              "evidenceSource": "probe",
+              "geometry": {
+                "height": 1133,
+                "width": 744,
+                "x": 0,
+                "y": 0
+              },
+              "horizontalSizeClass": "regular",
+              "kind": "scene-ready",
+              "navigationPath": [
+                "home"
+              ],
+              "runID": "exp184-20260918T042833Z-4b79e3314fbc",
+              "scenarioID": "fatal.process-context.prepare-crash",
+              "sceneDisconnectGeneration": 0,
+              "scenePhase": "ready",
+              "schemaVersion": 5,
+              "semanticContext": {
+                "logicalSceneID": "scene-B",
+                "nativeSceneID": "692AC69C-AAA4-4596-9CD9-B8DCD37043AA",
+                "screen": "home"
+              },
+              "sequence": 17,
+              "timestampMilliseconds": 1789705757450,
+              "verticalSizeClass": "regular"
+            },
+            "type": "signal"
+          },
+          {
+            "signal": {
+              "acknowledgedSignalSequence": 17,
+              "evidenceSource": "probe",
+              "kind": "step-acknowledged",
+              "name": "scene-B",
+              "runID": "exp184-20260918T042833Z-4b79e3314fbc",
+              "scenarioID": "fatal.process-context.prepare-crash",
+              "schemaVersion": 5,
+              "semanticContext": {
+                "logicalSceneID": "scene-A",
+                "nativeSceneID": "CBA50DE6-3904-4F3A-9204-DA592DB3F195",
+                "screen": "home"
+              },
+              "sequence": 18,
+              "stepIndex": 2,
+              "stepKind": "open-window",
+              "timestampMilliseconds": 1789705757452
+            },
+            "type": "signal"
+          },
+          {
+            "signal": {
+              "evidenceSource": "probe",
+              "kind": "step-started",
+              "name": "rum-view:home#1",
+              "runID": "exp184-20260918T042833Z-4b79e3314fbc",
+              "scenarioID": "fatal.process-context.prepare-crash",
+              "schemaVersion": 5,
+              "semanticContext": {
+                "logicalSceneID": "scene-B",
+                "nativeSceneID": "692AC69C-AAA4-4596-9CD9-B8DCD37043AA",
+                "screen": "home"
+              },
+              "sequence": 19,
+              "stepIndex": 3,
+              "stepKind": "wait-for-signal",
+              "timestampMilliseconds": 1789705757452
+            },
+            "type": "signal"
+          },
+          {
+            "signal": {
+              "acknowledgedSignalSequence": 15,
+              "evidenceSource": "probe",
+              "kind": "step-acknowledged",
+              "name": "rum-view:home#1",
+              "runID": "exp184-20260918T042833Z-4b79e3314fbc",
+              "scenarioID": "fatal.process-context.prepare-crash",
+              "schemaVersion": 5,
+              "semanticContext": {
+                "logicalSceneID": "scene-B",
+                "nativeSceneID": "692AC69C-AAA4-4596-9CD9-B8DCD37043AA",
+                "screen": "home"
+              },
+              "sequence": 20,
+              "stepIndex": 3,
+              "stepKind": "wait-for-signal",
+              "timestampMilliseconds": 1789705757452
+            },
+            "type": "signal"
+          },
+          {
+            "signal": {
+              "evidenceSource": "probe",
+              "kind": "step-started",
+              "runID": "exp184-20260918T042833Z-4b79e3314fbc",
+              "scenarioID": "fatal.process-context.prepare-crash",
+              "schemaVersion": 5,
+              "semanticContext": {
+                "logicalSceneID": "scene-B",
+                "nativeSceneID": "692AC69C-AAA4-4596-9CD9-B8DCD37043AA",
+                "screen": "home"
+              },
+              "sequence": 21,
+              "stepIndex": 4,
+              "stepKind": "run-fatal-preparation",
+              "timestampMilliseconds": 1789705757452
+            },
+            "type": "signal"
+          },
+          {
+            "signal": {
+              "evidenceSource": "internal-hook",
+              "fatal": {
+                "processID": 98807
+              },
+              "kind": "assertion",
+              "name": "fatal-process",
+              "result": "PASS",
+              "runID": "exp184-20260918T042833Z-4b79e3314fbc",
+              "scenarioID": "fatal.process-context.prepare-crash",
+              "schemaVersion": 5,
+              "sequence": 22,
+              "timestampMilliseconds": 1789705757453
+            },
+            "type": "signal"
+          },
+          {
+            "signal": {
+              "evidenceSource": "internal-hook",
+              "fatal": {
+                "processID": 98807
+              },
+              "kind": "assertion",
+              "name": "fatal-owner-a",
+              "result": "PASS",
+              "rumContext": {
+                "sessionID": "b43f1680-58be-4254-873e-95c4dd90c694",
+                "viewID": "0c5d0d6e-3a85-4e97-a480-cc5498ef5981",
+                "viewName": "ProbeHomeView"
+              },
+              "runID": "exp184-20260918T042833Z-4b79e3314fbc",
+              "scenarioID": "fatal.process-context.prepare-crash",
+              "schemaVersion": 5,
+              "sequence": 23,
+              "sourceContext": {
+                "logicalSceneID": "scene-A",
+                "nativeSceneID": "CBA50DE6-3904-4F3A-9204-DA592DB3F195",
+                "screen": "home"
+              },
+              "timestampMilliseconds": 1789705757453
+            },
+            "type": "signal"
+          },
+          {
+            "signal": {
+              "evidenceSource": "internal-hook",
+              "fatal": {
+                "processID": 98807
+              },
+              "kind": "assertion",
+              "name": "fatal-owner-b",
+              "result": "PASS",
+              "rumContext": {
+                "sessionID": "b43f1680-58be-4254-873e-95c4dd90c694",
+                "viewID": "e2f8b256-66cd-497b-ae14-c36728eabf57",
+                "viewName": "ProbeHomeView"
+              },
+              "runID": "exp184-20260918T042833Z-4b79e3314fbc",
+              "scenarioID": "fatal.process-context.prepare-crash",
+              "schemaVersion": 5,
+              "sequence": 24,
+              "sourceContext": {
+                "logicalSceneID": "scene-B",
+                "nativeSceneID": "692AC69C-AAA4-4596-9CD9-B8DCD37043AA",
+                "screen": "home"
+              },
+              "timestampMilliseconds": 1789705757454
+            },
+            "type": "signal"
+          },
+          {
+            "signal": {
+              "evidenceSource": "internal-hook",
+              "fatal": {
+                "processID": 98807
+              },
+              "kind": "assertion",
+              "name": "fatal-export-before",
+              "result": "PASS",
+              "rumContext": {
+                "sessionID": "b43f1680-58be-4254-873e-95c4dd90c694",
+                "viewID": "e2f8b256-66cd-497b-ae14-c36728eabf57",
+                "viewName": "ProbeHomeView"
+              },
+              "runID": "exp184-20260918T042833Z-4b79e3314fbc",
+              "scenarioID": "fatal.process-context.prepare-crash",
+              "schemaVersion": 5,
+              "sequence": 25,
+              "timestampMilliseconds": 1789705757457
+            },
+            "type": "signal"
+          },
+          {
+            "signal": {
+              "evidenceSource": "internal-hook",
+              "fatal": {
+                "processID": 98807
+              },
+              "kind": "assertion",
+              "name": "fatal-provider-before",
+              "result": "PASS",
+              "rumContext": {
+                "sessionID": "b43f1680-58be-4254-873e-95c4dd90c694",
+                "viewID": "e2f8b256-66cd-497b-ae14-c36728eabf57",
+                "viewName": "ProbeHomeView"
+              },
+              "runID": "exp184-20260918T042833Z-4b79e3314fbc",
+              "scenarioID": "fatal.process-context.prepare-crash",
+              "schemaVersion": 5,
+              "sequence": 26,
+              "timestampMilliseconds": 1789705757457
+            },
+            "type": "signal"
+          },
+          {
+            "signal": {
+              "evidenceSource": "internal-hook",
+              "fatal": {
+                "processID": 98807
+              },
+              "kind": "assertion",
+              "name": "fatal-mutation-dispatched",
+              "result": "PASS",
+              "rumContext": {
+                "sessionID": "b43f1680-58be-4254-873e-95c4dd90c694",
+                "viewID": "0c5d0d6e-3a85-4e97-a480-cc5498ef5981",
+                "viewName": "ProbeHomeView"
+              },
+              "runID": "exp184-20260918T042833Z-4b79e3314fbc",
+              "scenarioID": "fatal.process-context.prepare-crash",
+              "schemaVersion": 5,
+              "sequence": 27,
+              "timestampMilliseconds": 1789705757457
+            },
+            "type": "signal"
+          },
+          {
+            "signal": {
+              "evidenceSource": "rum-mapper",
+              "fatal": {
+                "documentVersion": 3,
+                "mutationTiming": 185278058,
+                "originalRunID": "exp184-20260918T042833Z-4b79e3314fbc",
+                "peerMutation": "A",
+                "processID": 98807,
+                "viewCrashCount": 0,
+                "viewErrorCount": 0
+              },
+              "kind": "rum-view-snapshot",
+              "rumContext": {
+                "eventDateMilliseconds": 1789705757273,
+                "sessionHasReplay": false,
+                "sessionID": "b43f1680-58be-4254-873e-95c4dd90c694",
+                "viewActive": true,
+                "viewDocumentVersion": 3,
+                "viewID": "0c5d0d6e-3a85-4e97-a480-cc5498ef5981",
+                "viewName": "ProbeHomeView",
+                "viewTimeSpentNanoseconds": 185278058,
+                "viewURL": "ProbeHomeView/-4224035406482423662"
+              },
+              "runID": "exp184-20260918T042833Z-4b79e3314fbc",
+              "scenarioID": "fatal.process-context.prepare-crash",
+              "schemaVersion": 5,
+              "semanticContext": {
+                "logicalSceneID": "scene-A",
+                "screen": "home"
+              },
+              "sequence": 28,
+              "timestampMilliseconds": 1789705757461
+            },
+            "type": "signal"
+          },
+          {
+            "signal": {
+              "evidenceSource": "internal-hook",
+              "fatal": {
+                "processID": 98807
+              },
+              "kind": "assertion",
+              "name": "fatal-export-after",
+              "result": "PASS",
+              "rumContext": {
+                "sessionID": "b43f1680-58be-4254-873e-95c4dd90c694",
+                "viewID": "e2f8b256-66cd-497b-ae14-c36728eabf57",
+                "viewName": "ProbeHomeView"
+              },
+              "runID": "exp184-20260918T042833Z-4b79e3314fbc",
+              "scenarioID": "fatal.process-context.prepare-crash",
+              "schemaVersion": 5,
+              "sequence": 29,
+              "timestampMilliseconds": 1789705757480
+            },
+            "type": "signal"
+          },
+          {
+            "signal": {
+              "evidenceSource": "internal-hook",
+              "fatal": {
+                "processID": 98807
+              },
+              "kind": "assertion",
+              "name": "fatal-provider-after",
+              "result": "PASS",
+              "rumContext": {
+                "sessionID": "b43f1680-58be-4254-873e-95c4dd90c694",
+                "viewID": "e2f8b256-66cd-497b-ae14-c36728eabf57",
+                "viewName": "ProbeHomeView"
+              },
+              "runID": "exp184-20260918T042833Z-4b79e3314fbc",
+              "scenarioID": "fatal.process-context.prepare-crash",
+              "schemaVersion": 5,
+              "sequence": 30,
+              "timestampMilliseconds": 1789705757480
+            },
+            "type": "signal"
+          },
+          {
+            "signal": {
+              "evidenceSource": "internal-hook",
+              "fatal": {
+                "processID": 98807
+              },
+              "kind": "assertion",
+              "name": "fatal-capture-unchanged",
+              "result": "PASS",
+              "rumContext": {
+                "sessionID": "b43f1680-58be-4254-873e-95c4dd90c694",
+                "viewID": "0c5d0d6e-3a85-4e97-a480-cc5498ef5981",
+                "viewName": "ProbeHomeView"
+              },
+              "runID": "exp184-20260918T042833Z-4b79e3314fbc",
+              "scenarioID": "fatal.process-context.prepare-crash",
+              "schemaVersion": 5,
+              "sequence": 31,
+              "timestampMilliseconds": 1789705757480
+            },
+            "type": "signal"
+          },
+          {
+            "signal": {
+              "evidenceSource": "internal-hook",
+              "fatal": {
+                "documentVersion": 1,
+                "originalRunID": "exp184-20260918T042833Z-4b79e3314fbc",
+                "processID": 98807,
+                "viewCrashCount": 0,
+                "viewErrorCount": 0
+              },
+              "kind": "assertion",
+              "name": "fatal-injection-drained",
+              "result": "PASS",
+              "rumContext": {
+                "sessionID": "b43f1680-58be-4254-873e-95c4dd90c694",
+                "viewID": "e2f8b256-66cd-497b-ae14-c36728eabf57",
+                "viewName": "ProbeHomeView"
+              },
+              "runID": "exp184-20260918T042833Z-4b79e3314fbc",
+              "scenarioID": "fatal.process-context.prepare-crash",
+              "schemaVersion": 5,
+              "sequence": 32,
+              "timestampMilliseconds": 1789705757902
+            },
+            "type": "signal"
+          },
+          {
+            "signal": {
+              "evidenceSource": "internal-hook",
+              "fatal": {
+                "processID": 98807
+              },
+              "kind": "assertion",
+              "name": "fatal-prepare-complete",
+              "result": "PASS",
+              "runID": "exp184-20260918T042833Z-4b79e3314fbc",
+              "scenarioID": "fatal.process-context.prepare-crash",
+              "schemaVersion": 5,
+              "sequence": 33,
+              "timestampMilliseconds": 1789705757902
+            },
+            "type": "signal"
+          },
+          {
+            "signal": {
+              "acknowledgedSignalSequence": 33,
+              "evidenceSource": "probe",
+              "kind": "step-acknowledged",
+              "runID": "exp184-20260918T042833Z-4b79e3314fbc",
+              "scenarioID": "fatal.process-context.prepare-crash",
+              "schemaVersion": 5,
+              "semanticContext": {
+                "logicalSceneID": "scene-B",
+                "nativeSceneID": "692AC69C-AAA4-4596-9CD9-B8DCD37043AA",
+                "screen": "home"
+              },
+              "sequence": 34,
+              "stepIndex": 4,
+              "stepKind": "run-fatal-preparation",
+              "timestampMilliseconds": 1789705757902
+            },
+            "type": "signal"
+          },
+          {
+            "result": {
+              "issues": [],
+              "matchedExpectationCount": 24,
+              "scenarioID": "fatal.process-context.prepare-crash",
+              "schemaVersion": 1,
+              "state": "PASS"
+            },
+            "runID": "exp184-20260918T042833Z-4b79e3314fbc",
+            "type": "semantic-result"
+          },
+          {
+            "signal": {
+              "evidenceSource": "internal-hook",
+              "fatal": {
+                "processID": 98807
+              },
+              "kind": "assertion",
+              "name": "fatal-crash-boundary",
+              "result": "PASS",
+              "rumContext": {
+                "sessionID": "b43f1680-58be-4254-873e-95c4dd90c694",
+                "viewID": "e2f8b256-66cd-497b-ae14-c36728eabf57",
+                "viewName": "ProbeHomeView"
+              },
+              "runID": "exp184-20260918T042833Z-4b79e3314fbc",
+              "scenarioID": "fatal.process-context.prepare-crash",
+              "schemaVersion": 5,
+              "sequence": 35,
+              "timestampMilliseconds": 1789705757922
+            },
+            "type": "signal"
+          }
+        ],
+        "run_id": "exp184-20260918T042833Z-4b79e3314fbc",
+        "scenario_id": "fatal.process-context.prepare-crash",
+        "terminated": true
+      },
+      {
+        "data_container": "/Users/valentin.pertuisot/Library/Developer/CoreSimulator/Devices/92C9918B-FEC6-4440-9D6D-8E09475950BB/data/Containers/Data/Application/C78B2D60-567A-4695-BA0E-84A9D3BAD71C",
+        "installed_binary_sha256": "502cbe291b3c8778b5ae76e9e99b12a391b96ecac47b47426a66022eba572029",
+        "launcher_exit": null,
+        "launcher_exit_after_cleanup": 0,
+        "process_id": 98914,
+        "records": [
+          {
+            "manifest": {
+              "resolutionSource": "command-line",
+              "runID": "exp184-20260918T042833Z-4b79e3314fbc-1-92a5fdf7",
+              "runMode": "clean",
+              "scenario": {
+                "completionConditions": [
+                  {
+                    "expectedCount": 1,
+                    "kind": "assertion",
+                    "name": "fatal-process"
+                  },
+                  {
+                    "expectedCount": 1,
+                    "kind": "assertion",
+                    "name": "fatal-recovery-current"
+                  },
+                  {
+                    "expectedCount": 1,
+                    "kind": "assertion",
+                    "name": "fatal-reporter-enable"
+                  },
+                  {
+                    "expectedCount": 1,
+                    "kind": "assertion",
+                    "name": "fatal-launch-report"
+                  },
+                  {
+                    "expectedCount": 1,
+                    "kind": "assertion",
+                    "name": "fatal-recovery-complete"
+                  }
+                ],
+                "defaultRunMode": "clean",
+                "expectedSemanticTimeline": [
+                  {
+                    "expectedCount": 1,
+                    "kind": "assertion",
+                    "name": "fatal-process"
+                  },
+                  {
+                    "expectedCount": 1,
+                    "kind": "assertion",
+                    "name": "fatal-recovery-current"
+                  },
+                  {
+                    "expectedCount": 1,
+                    "kind": "assertion",
+                    "name": "fatal-reporter-enable"
+                  },
+                  {
+                    "expectedCount": 1,
+                    "kind": "assertion",
+                    "name": "fatal-launch-report"
+                  },
+                  {
+                    "expectedCount": 1,
+                    "kind": "assertion",
+                    "name": "fatal-recovery-complete"
+                  }
+                ],
+                "identifier": "fatal.process-context.recover",
+                "initialWindows": [
+                  "recovery"
+                ],
+                "layout": "stack",
+                "requiredCapabilities": [],
+                "runtimeOptions": {
+                  "automaticallyAbortsDetail": false,
+                  "automaticallyAdvancesSplitSelection": true,
+                  "automaticallyClosesSceneB": false,
+                  "automaticallyNavigates": false,
+                  "automaticallyOpensSecondWindow": false,
+                  "automaticallyPopsUIKitSplitNavigation": true,
+                  "automaticallyReplacesDetail": false,
+                  "automaticallyReplacesDetailInstance": false,
+                  "automaticallyReturnsSplitToDetail": false,
+                  "exercisesSwiftUIButtonStructuredTask": false,
+                  "exercisesTraceOnlyURLSessionOwnership": false,
+                  "exercisesUIEventContextHandoff": false,
+                  "exercisesUIKitScrollOwnership": false,
+                  "forcesNavigationRouteIdentity": false,
+                  "initialSwiftUIPath": [],
+                  "manualSwiftUIViewScreensByScene": {},
+                  "startsSplitWithoutSelection": false,
+                  "swiftUIRouterWritePolicy": "accept",
+                  "swiftUIStress": "none"
+                },
+                "steps": [],
+                "trackingMode": "manual"
+              },
+              "schemaVersion": 3,
+              "validationErrors": []
+            },
+            "type": "manifest"
+          },
+          {
+            "signal": {
+              "evidenceSource": "rum-mapper",
+              "kind": "rum-session-started",
+              "rumContext": {
+                "sessionDiscarded": false,
+                "sessionID": "6c205315-a083-4897-b0fb-80fa9df5d58a"
+              },
+              "runID": "exp184-20260918T042833Z-4b79e3314fbc-1-92a5fdf7",
+              "scenarioID": "fatal.process-context.recover",
+              "schemaVersion": 5,
+              "sequence": 1,
+              "timestampMilliseconds": 1789705760602
+            },
+            "type": "signal"
+          },
+          {
+            "signal": {
+              "evidenceSource": "rum-mapper",
+              "fatal": {
+                "documentVersion": 1,
+                "processID": 98914,
+                "viewCrashCount": 0,
+                "viewErrorCount": 0
+              },
+              "kind": "rum-view-snapshot",
+              "rumContext": {
+                "eventDateMilliseconds": 1789705760582,
+                "sessionHasReplay": false,
+                "sessionID": "6c205315-a083-4897-b0fb-80fa9df5d58a",
+                "viewActive": true,
+                "viewDocumentVersion": 1,
+                "viewID": "0879c3b2-2597-4551-9902-e6868d7e880b",
+                "viewName": "ApplicationLaunch",
+                "viewTimeSpentNanoseconds": 20360947,
+                "viewURL": "com/datadog/application-launch/view"
+              },
+              "runID": "exp184-20260918T042833Z-4b79e3314fbc-1-92a5fdf7",
+              "scenarioID": "fatal.process-context.recover",
+              "schemaVersion": 5,
+              "sequence": 2,
+              "timestampMilliseconds": 1789705760607
+            },
+            "type": "signal"
+          },
+          {
+            "signal": {
+              "evidenceSource": "internal-hook",
+              "fatal": {
+                "processID": 98914
+              },
+              "kind": "assertion",
+              "name": "fatal-process",
+              "result": "PASS",
+              "runID": "exp184-20260918T042833Z-4b79e3314fbc-1-92a5fdf7",
+              "scenarioID": "fatal.process-context.recover",
+              "schemaVersion": 5,
+              "sequence": 3,
+              "timestampMilliseconds": 1789705760685
+            },
+            "type": "signal"
+          },
+          {
+            "signal": {
+              "evidenceSource": "rum-mapper",
+              "fatal": {
+                "documentVersion": 2,
+                "originalRunID": "exp184-20260918T042833Z-4b79e3314fbc-1-92a5fdf7",
+                "processID": 98914,
+                "viewCrashCount": 0,
+                "viewErrorCount": 0
+              },
+              "kind": "rum-view-snapshot",
+              "rumContext": {
+                "eventDateMilliseconds": 1789705760582,
+                "sessionHasReplay": false,
+                "sessionID": "6c205315-a083-4897-b0fb-80fa9df5d58a",
+                "viewActive": false,
+                "viewDocumentVersion": 2,
+                "viewID": "0879c3b2-2597-4551-9902-e6868d7e880b",
+                "viewName": "ApplicationLaunch",
+                "viewTimeSpentNanoseconds": 111526012,
+                "viewURL": "com/datadog/application-launch/view"
+              },
+              "runID": "exp184-20260918T042833Z-4b79e3314fbc-1-92a5fdf7",
+              "scenarioID": "fatal.process-context.recover",
+              "schemaVersion": 5,
+              "sequence": 4,
+              "timestampMilliseconds": 1789705760696
+            },
+            "type": "signal"
+          },
+          {
+            "signal": {
+              "evidenceSource": "rum-mapper",
+              "fatal": {
+                "documentVersion": 1,
+                "originalRunID": "exp184-20260918T042833Z-4b79e3314fbc-1-92a5fdf7",
+                "processID": 98914,
+                "viewCrashCount": 0,
+                "viewErrorCount": 0
+              },
+              "kind": "rum-view-snapshot",
+              "rumContext": {
+                "eventDateMilliseconds": 1789705760754,
+                "sessionHasReplay": false,
+                "sessionID": "6c205315-a083-4897-b0fb-80fa9df5d58a",
+                "viewActive": true,
+                "viewDocumentVersion": 1,
+                "viewID": "9c537bc4-ca6a-4a73-845d-86b1ebf75cbe",
+                "viewName": "FatalRecovery",
+                "viewTimeSpentNanoseconds": 1,
+                "viewURL": "fatal-recovery"
+              },
+              "runID": "exp184-20260918T042833Z-4b79e3314fbc-1-92a5fdf7",
+              "scenarioID": "fatal.process-context.recover",
+              "schemaVersion": 5,
+              "sequence": 5,
+              "timestampMilliseconds": 1789705760696
+            },
+            "type": "signal"
+          },
+          {
+            "signal": {
+              "evidenceSource": "internal-hook",
+              "fatal": {
+                "processID": 98914
+              },
+              "kind": "assertion",
+              "name": "fatal-recovery-current",
+              "result": "PASS",
+              "rumContext": {
+                "sessionID": "6c205315-a083-4897-b0fb-80fa9df5d58a",
+                "viewID": "9c537bc4-ca6a-4a73-845d-86b1ebf75cbe",
+                "viewName": "FatalRecovery"
+              },
+              "runID": "exp184-20260918T042833Z-4b79e3314fbc-1-92a5fdf7",
+              "scenarioID": "fatal.process-context.recover",
+              "schemaVersion": 5,
+              "sequence": 6,
+              "timestampMilliseconds": 1789705760715
+            },
+            "type": "signal"
+          },
+          {
+            "signal": {
+              "evidenceSource": "internal-hook",
+              "fatal": {
+                "processID": 98914
+              },
+              "kind": "assertion",
+              "name": "fatal-reporter-enable",
+              "result": "PASS",
+              "runID": "exp184-20260918T042833Z-4b79e3314fbc-1-92a5fdf7",
+              "scenarioID": "fatal.process-context.recover",
+              "schemaVersion": 5,
+              "sequence": 7,
+              "timestampMilliseconds": 1789705760715
+            },
+            "type": "signal"
+          },
+          {
+            "signal": {
+              "eventID": "78b25761-8ba1-4d3e-85d0-d4f3086ebf3e",
+              "evidenceSource": "rum-mapper",
+              "fatal": {
+                "crashedProcess": "RUMNativeMultiSceneProbe [98807]",
+                "exceptionType": "SIGABRT",
+                "hasAction": false,
+                "hasContainer": false,
+                "incidentIdentifier": "FA6D3AE1-5A1A-4AD7-9AE3-5E9AB38F2F0D",
+                "nativeSource": "ios",
+                "originalRunID": "exp184-20260918T042833Z-4b79e3314fbc",
+                "processID": 98914
+              },
+              "kind": "assertion",
+              "name": "fatal-error-payload",
+              "result": "PASS",
+              "rumContext": {
+                "sessionID": "b43f1680-58be-4254-873e-95c4dd90c694",
+                "viewID": "e2f8b256-66cd-497b-ae14-c36728eabf57",
+                "viewName": "ProbeHomeView"
+              },
+              "runID": "exp184-20260918T042833Z-4b79e3314fbc-1-92a5fdf7",
+              "scenarioID": "fatal.process-context.recover",
+              "schemaVersion": 5,
+              "sequence": 8,
+              "timestampMilliseconds": 1789705760756
+            },
+            "type": "signal"
+          },
+          {
+            "signal": {
+              "error": {
+                "category": "Exception",
+                "id": "78b25761-8ba1-4d3e-85d0-d4f3086ebf3e",
+                "isCrash": true,
+                "source": "source",
+                "type": "SIGABRT (#0)"
+              },
+              "eventID": "78b25761-8ba1-4d3e-85d0-d4f3086ebf3e",
+              "evidenceSource": "rum-mapper",
+              "kind": "rum-error",
+              "name": "fatal-original",
+              "rumContext": {
+                "eventDateMilliseconds": 1789705758012,
+                "sessionID": "b43f1680-58be-4254-873e-95c4dd90c694",
+                "viewID": "e2f8b256-66cd-497b-ae14-c36728eabf57",
+                "viewName": "ProbeHomeView",
+                "viewURL": "ProbeHomeView/-4224035406482423662"
+              },
+              "runID": "exp184-20260918T042833Z-4b79e3314fbc-1-92a5fdf7",
+              "scenarioID": "fatal.process-context.recover",
+              "schemaVersion": 5,
+              "sequence": 9,
+              "sourceContext": {
+                "phase": "fatal-original"
+              },
+              "timestampMilliseconds": 1789705760756
+            },
+            "type": "signal"
+          },
+          {
+            "signal": {
+              "evidenceSource": "rum-mapper",
+              "fatal": {
+                "documentVersion": 2,
+                "originalRunID": "exp184-20260918T042833Z-4b79e3314fbc",
+                "processID": 98914,
+                "viewCrashCount": 1,
+                "viewErrorCount": 1
+              },
+              "kind": "rum-view-snapshot",
+              "rumContext": {
+                "eventDateMilliseconds": 1789705758011,
+                "sessionHasReplay": false,
+                "sessionID": "b43f1680-58be-4254-873e-95c4dd90c694",
+                "viewActive": false,
+                "viewDocumentVersion": 2,
+                "viewID": "e2f8b256-66cd-497b-ae14-c36728eabf57",
+                "viewName": "ProbeHomeView",
+                "viewTimeSpentNanoseconds": 1,
+                "viewURL": "ProbeHomeView/-4224035406482423662"
+              },
+              "runID": "exp184-20260918T042833Z-4b79e3314fbc-1-92a5fdf7",
+              "scenarioID": "fatal.process-context.recover",
+              "schemaVersion": 5,
+              "sequence": 10,
+              "timestampMilliseconds": 1789705760757
+            },
+            "type": "signal"
+          },
+          {
+            "signal": {
+              "evidenceSource": "internal-hook",
+              "fatal": {
+                "launchDidCrash": true,
+                "processID": 98914
+              },
+              "kind": "assertion",
+              "name": "fatal-launch-report",
+              "result": "PASS",
+              "runID": "exp184-20260918T042833Z-4b79e3314fbc-1-92a5fdf7",
+              "scenarioID": "fatal.process-context.recover",
+              "schemaVersion": 5,
+              "sequence": 11,
+              "timestampMilliseconds": 1789705760765
+            },
+            "type": "signal"
+          },
+          {
+            "signal": {
+              "evidenceSource": "internal-hook",
+              "fatal": {
+                "processID": 98914
+              },
+              "kind": "assertion",
+              "name": "fatal-recovery-complete",
+              "result": "PASS",
+              "rumContext": {
+                "sessionID": "6c205315-a083-4897-b0fb-80fa9df5d58a",
+                "viewID": "9c537bc4-ca6a-4a73-845d-86b1ebf75cbe",
+                "viewName": "FatalRecovery"
+              },
+              "runID": "exp184-20260918T042833Z-4b79e3314fbc-1-92a5fdf7",
+              "scenarioID": "fatal.process-context.recover",
+              "schemaVersion": 5,
+              "sequence": 12,
+              "timestampMilliseconds": 1789705761168
+            },
+            "type": "signal"
+          },
+          {
+            "result": {
+              "issues": [],
+              "matchedExpectationCount": 10,
+              "scenarioID": "fatal.process-context.recover",
+              "schemaVersion": 1,
+              "state": "PASS"
+            },
+            "runID": "exp184-20260918T042833Z-4b79e3314fbc-1-92a5fdf7",
+            "type": "semantic-result"
+          }
+        ],
+        "run_id": "exp184-20260918T042833Z-4b79e3314fbc-1-92a5fdf7",
+        "scenario_id": "fatal.process-context.recover",
+        "terminated": true
+      },
+      {
+        "data_container": "/Users/valentin.pertuisot/Library/Developer/CoreSimulator/Devices/92C9918B-FEC6-4440-9D6D-8E09475950BB/data/Containers/Data/Application/C78B2D60-567A-4695-BA0E-84A9D3BAD71C",
+        "installed_binary_sha256": "502cbe291b3c8778b5ae76e9e99b12a391b96ecac47b47426a66022eba572029",
+        "launcher_exit": null,
+        "launcher_exit_after_cleanup": 0,
+        "process_id": 98967,
+        "records": [
+          {
+            "manifest": {
+              "resolutionSource": "command-line",
+              "runID": "exp184-20260918T042833Z-4b79e3314fbc-2-02122b36",
+              "runMode": "clean",
+              "scenario": {
+                "completionConditions": [
+                  {
+                    "expectedCount": 1,
+                    "kind": "assertion",
+                    "name": "fatal-process"
+                  },
+                  {
+                    "expectedCount": 1,
+                    "kind": "assertion",
+                    "name": "fatal-recovery-current"
+                  },
+                  {
+                    "expectedCount": 1,
+                    "kind": "assertion",
+                    "name": "fatal-reporter-enable"
+                  },
+                  {
+                    "expectedCount": 1,
+                    "kind": "assertion",
+                    "name": "fatal-launch-report"
+                  },
+                  {
+                    "expectedCount": 1,
+                    "kind": "assertion",
+                    "name": "fatal-recovery-complete"
+                  }
+                ],
+                "defaultRunMode": "clean",
+                "expectedSemanticTimeline": [
+                  {
+                    "expectedCount": 1,
+                    "kind": "assertion",
+                    "name": "fatal-process"
+                  },
+                  {
+                    "expectedCount": 1,
+                    "kind": "assertion",
+                    "name": "fatal-recovery-current"
+                  },
+                  {
+                    "expectedCount": 1,
+                    "kind": "assertion",
+                    "name": "fatal-reporter-enable"
+                  },
+                  {
+                    "expectedCount": 1,
+                    "kind": "assertion",
+                    "name": "fatal-launch-report"
+                  },
+                  {
+                    "expectedCount": 1,
+                    "kind": "assertion",
+                    "name": "fatal-recovery-complete"
+                  }
+                ],
+                "identifier": "fatal.process-context.verify-consumed",
+                "initialWindows": [
+                  "recovery"
+                ],
+                "layout": "stack",
+                "requiredCapabilities": [],
+                "runtimeOptions": {
+                  "automaticallyAbortsDetail": false,
+                  "automaticallyAdvancesSplitSelection": true,
+                  "automaticallyClosesSceneB": false,
+                  "automaticallyNavigates": false,
+                  "automaticallyOpensSecondWindow": false,
+                  "automaticallyPopsUIKitSplitNavigation": true,
+                  "automaticallyReplacesDetail": false,
+                  "automaticallyReplacesDetailInstance": false,
+                  "automaticallyReturnsSplitToDetail": false,
+                  "exercisesSwiftUIButtonStructuredTask": false,
+                  "exercisesTraceOnlyURLSessionOwnership": false,
+                  "exercisesUIEventContextHandoff": false,
+                  "exercisesUIKitScrollOwnership": false,
+                  "forcesNavigationRouteIdentity": false,
+                  "initialSwiftUIPath": [],
+                  "manualSwiftUIViewScreensByScene": {},
+                  "startsSplitWithoutSelection": false,
+                  "swiftUIRouterWritePolicy": "accept",
+                  "swiftUIStress": "none"
+                },
+                "steps": [],
+                "trackingMode": "manual"
+              },
+              "schemaVersion": 3,
+              "validationErrors": []
+            },
+            "type": "manifest"
+          },
+          {
+            "signal": {
+              "evidenceSource": "rum-mapper",
+              "kind": "rum-session-started",
+              "rumContext": {
+                "sessionDiscarded": false,
+                "sessionID": "7923b72c-6cca-4102-8c9e-16aac0aefbf4"
+              },
+              "runID": "exp184-20260918T042833Z-4b79e3314fbc-2-02122b36",
+              "scenarioID": "fatal.process-context.verify-consumed",
+              "schemaVersion": 5,
+              "sequence": 1,
+              "timestampMilliseconds": 1789705764016
+            },
+            "type": "signal"
+          },
+          {
+            "signal": {
+              "evidenceSource": "rum-mapper",
+              "fatal": {
+                "documentVersion": 1,
+                "processID": 98967,
+                "viewCrashCount": 0,
+                "viewErrorCount": 0
+              },
+              "kind": "rum-view-snapshot",
+              "rumContext": {
+                "eventDateMilliseconds": 1789705763990,
+                "sessionHasReplay": false,
+                "sessionID": "7923b72c-6cca-4102-8c9e-16aac0aefbf4",
+                "viewActive": true,
+                "viewDocumentVersion": 1,
+                "viewID": "8f6e4d14-7747-4fc5-a5c4-3a01b2da0118",
+                "viewName": "ApplicationLaunch",
+                "viewTimeSpentNanoseconds": 26767969,
+                "viewURL": "com/datadog/application-launch/view"
+              },
+              "runID": "exp184-20260918T042833Z-4b79e3314fbc-2-02122b36",
+              "scenarioID": "fatal.process-context.verify-consumed",
+              "schemaVersion": 5,
+              "sequence": 2,
+              "timestampMilliseconds": 1789705764023
+            },
+            "type": "signal"
+          },
+          {
+            "signal": {
+              "evidenceSource": "internal-hook",
+              "fatal": {
+                "processID": 98967
+              },
+              "kind": "assertion",
+              "name": "fatal-process",
+              "result": "PASS",
+              "runID": "exp184-20260918T042833Z-4b79e3314fbc-2-02122b36",
+              "scenarioID": "fatal.process-context.verify-consumed",
+              "schemaVersion": 5,
+              "sequence": 3,
+              "timestampMilliseconds": 1789705764123
+            },
+            "type": "signal"
+          },
+          {
+            "signal": {
+              "evidenceSource": "rum-mapper",
+              "fatal": {
+                "documentVersion": 2,
+                "originalRunID": "exp184-20260918T042833Z-4b79e3314fbc-2-02122b36",
+                "processID": 98967,
+                "viewCrashCount": 0,
+                "viewErrorCount": 0
+              },
+              "kind": "rum-view-snapshot",
+              "rumContext": {
+                "eventDateMilliseconds": 1789705763990,
+                "sessionHasReplay": false,
+                "sessionID": "7923b72c-6cca-4102-8c9e-16aac0aefbf4",
+                "viewActive": false,
+                "viewDocumentVersion": 2,
+                "viewID": "8f6e4d14-7747-4fc5-a5c4-3a01b2da0118",
+                "viewName": "ApplicationLaunch",
+                "viewTimeSpentNanoseconds": 141512036,
+                "viewURL": "com/datadog/application-launch/view"
+              },
+              "runID": "exp184-20260918T042833Z-4b79e3314fbc-2-02122b36",
+              "scenarioID": "fatal.process-context.verify-consumed",
+              "schemaVersion": 5,
+              "sequence": 4,
+              "timestampMilliseconds": 1789705764134
+            },
+            "type": "signal"
+          },
+          {
+            "signal": {
+              "evidenceSource": "rum-mapper",
+              "fatal": {
+                "documentVersion": 1,
+                "originalRunID": "exp184-20260918T042833Z-4b79e3314fbc-2-02122b36",
+                "processID": 98967,
+                "viewCrashCount": 0,
+                "viewErrorCount": 0
+              },
+              "kind": "rum-view-snapshot",
+              "rumContext": {
+                "eventDateMilliseconds": 1789705764131,
+                "sessionHasReplay": false,
+                "sessionID": "7923b72c-6cca-4102-8c9e-16aac0aefbf4",
+                "viewActive": true,
+                "viewDocumentVersion": 1,
+                "viewID": "9953a771-6ba8-44d6-b2ff-3e6a9fefd5df",
+                "viewName": "FatalRecovery",
+                "viewTimeSpentNanoseconds": 1,
+                "viewURL": "fatal-recovery"
+              },
+              "runID": "exp184-20260918T042833Z-4b79e3314fbc-2-02122b36",
+              "scenarioID": "fatal.process-context.verify-consumed",
+              "schemaVersion": 5,
+              "sequence": 5,
+              "timestampMilliseconds": 1789705764134
+            },
+            "type": "signal"
+          },
+          {
+            "signal": {
+              "evidenceSource": "internal-hook",
+              "fatal": {
+                "processID": 98967
+              },
+              "kind": "assertion",
+              "name": "fatal-recovery-current",
+              "result": "PASS",
+              "rumContext": {
+                "sessionID": "7923b72c-6cca-4102-8c9e-16aac0aefbf4",
+                "viewID": "9953a771-6ba8-44d6-b2ff-3e6a9fefd5df",
+                "viewName": "FatalRecovery"
+              },
+              "runID": "exp184-20260918T042833Z-4b79e3314fbc-2-02122b36",
+              "scenarioID": "fatal.process-context.verify-consumed",
+              "schemaVersion": 5,
+              "sequence": 6,
+              "timestampMilliseconds": 1789705764153
+            },
+            "type": "signal"
+          },
+          {
+            "signal": {
+              "evidenceSource": "internal-hook",
+              "fatal": {
+                "processID": 98967
+              },
+              "kind": "assertion",
+              "name": "fatal-reporter-enable",
+              "result": "PASS",
+              "runID": "exp184-20260918T042833Z-4b79e3314fbc-2-02122b36",
+              "scenarioID": "fatal.process-context.verify-consumed",
+              "schemaVersion": 5,
+              "sequence": 7,
+              "timestampMilliseconds": 1789705764153
+            },
+            "type": "signal"
+          },
+          {
+            "signal": {
+              "evidenceSource": "internal-hook",
+              "fatal": {
+                "launchDidCrash": false,
+                "processID": 98967
+              },
+              "kind": "assertion",
+              "name": "fatal-launch-report",
+              "result": "PASS",
+              "runID": "exp184-20260918T042833Z-4b79e3314fbc-2-02122b36",
+              "scenarioID": "fatal.process-context.verify-consumed",
+              "schemaVersion": 5,
+              "sequence": 8,
+              "timestampMilliseconds": 1789705764181
+            },
+            "type": "signal"
+          },
+          {
+            "signal": {
+              "evidenceSource": "internal-hook",
+              "fatal": {
+                "processID": 98967
+              },
+              "kind": "assertion",
+              "name": "fatal-recovery-complete",
+              "result": "PASS",
+              "rumContext": {
+                "sessionID": "7923b72c-6cca-4102-8c9e-16aac0aefbf4",
+                "viewID": "9953a771-6ba8-44d6-b2ff-3e6a9fefd5df",
+                "viewName": "FatalRecovery"
+              },
+              "runID": "exp184-20260918T042833Z-4b79e3314fbc-2-02122b36",
+              "scenarioID": "fatal.process-context.verify-consumed",
+              "schemaVersion": 5,
+              "sequence": 9,
+              "timestampMilliseconds": 1789705764657
+            },
+            "type": "signal"
+          },
+          {
+            "result": {
+              "issues": [],
+              "matchedExpectationCount": 10,
+              "scenarioID": "fatal.process-context.verify-consumed",
+              "schemaVersion": 1,
+              "state": "PASS"
+            },
+            "runID": "exp184-20260918T042833Z-4b79e3314fbc-2-02122b36",
+            "type": "semantic-result"
+          }
+        ],
+        "run_id": "exp184-20260918T042833Z-4b79e3314fbc-2-02122b36",
+        "scenario_id": "fatal.process-context.verify-consumed",
+        "terminated": true
+      }
+    ],
+    "test-summary.json": {
+      "devicesAndConfigurations": [
+        {
+          "device": {
+            "architecture": "arm64",
+            "deviceId": "92C9918B-FEC6-4440-9D6D-8E09475950BB",
+            "deviceName": "iPad mini (A17 Pro)",
+            "modelName": "iPad mini (A17 Pro)",
+            "osBuildNumber": "24A434",
+            "osVersion": "27.0",
+            "platform": "iOS Simulator"
+          },
+          "expectedFailures": 0,
+          "failedTests": 0,
+          "passedTests": 188,
+          "skippedTests": 0,
+          "testPlanConfiguration": {
+            "configurationId": "1",
+            "configurationName": "Test Scheme Action"
+          }
+        }
+      ],
+      "environmentDescription": "RUMNativeMultiSceneProbe \u00b7 Built with macOS 26.6.2",
+      "expectedFailures": 0,
+      "failedTests": 0,
+      "finishTime": 1789705752.684,
+      "passedTests": 188,
+      "result": "Passed",
+      "runtimeWarnings": [],
+      "skippedTests": 0,
+      "startTime": 1789705726.867,
+      "statistics": [],
+      "testFailures": [],
+      "title": "Test - RUMNativeMultiSceneProbe",
+      "topInsights": [],
+      "totalTestCount": 188
+    }
+  },
+  "experiment": "EXP-184",
+  "failures": [
+    "call-site label substituted for native mapper owner"
+  ],
+  "finished_at": "2026-09-18T04:29:25.876438+00:00",
+  "gate": "T11",
+  "oracle_contract_sha256": "81636c8a34b8246374db27a8d0ef4d77f5a09e621111b37e21fb943f3b1d0fe3",
+  "rerun": "Use a fresh output directory and freshly resolved device; do not reuse run IDs or bridge responses.",
+  "revision": "735659caef03e3c8e210d01d3b22b9fbf5f9c872",
+  "run_id": "exp184-20260918T042833Z-4b79e3314fbc",
+  "scenario_id": "fatal.process-context.prepare-crash",
+  "schema_version": 1,
+  "source_file_count": 696,
+  "source_fingerprint": "6d03099ccae5a80f4146499d6791eacf82439468443ffd8708a58671c29e70e9",
+  "stages": {
+    "clean_install": {
+      "data_container_absent": true,
+      "installed_binary_sha256": "502cbe291b3c8778b5ae76e9e99b12a391b96ecac47b47426a66022eba572029",
+      "state": "PASS"
+    },
+    "fatal_phase_0": {
+      "data_container": "/Users/valentin.pertuisot/Library/Developer/CoreSimulator/Devices/92C9918B-FEC6-4440-9D6D-8E09475950BB/data/Containers/Data/Application/C78B2D60-567A-4695-BA0E-84A9D3BAD71C",
+      "installed_binary_sha256": "502cbe291b3c8778b5ae76e9e99b12a391b96ecac47b47426a66022eba572029",
+      "launcher_exit": 0,
+      "process_id": 98807,
+      "run_id": "exp184-20260918T042833Z-4b79e3314fbc",
+      "scenario": "fatal.process-context.prepare-crash",
+      "state": "PASS"
+    },
+    "fatal_phase_1": {
+      "data_container": "/Users/valentin.pertuisot/Library/Developer/CoreSimulator/Devices/92C9918B-FEC6-4440-9D6D-8E09475950BB/data/Containers/Data/Application/C78B2D60-567A-4695-BA0E-84A9D3BAD71C",
+      "installed_binary_sha256": "502cbe291b3c8778b5ae76e9e99b12a391b96ecac47b47426a66022eba572029",
+      "launcher_exit": null,
+      "process_id": 98914,
+      "run_id": "exp184-20260918T042833Z-4b79e3314fbc-1-92a5fdf7",
+      "scenario": "fatal.process-context.recover",
+      "state": "PASS"
+    },
+    "fatal_phase_2": {
+      "data_container": "/Users/valentin.pertuisot/Library/Developer/CoreSimulator/Devices/92C9918B-FEC6-4440-9D6D-8E09475950BB/data/Containers/Data/Application/C78B2D60-567A-4695-BA0E-84A9D3BAD71C",
+      "installed_binary_sha256": "502cbe291b3c8778b5ae76e9e99b12a391b96ecac47b47426a66022eba572029",
+      "launcher_exit": null,
+      "process_id": 98967,
+      "run_id": "exp184-20260918T042833Z-4b79e3314fbc-2-02122b36",
+      "scenario": "fatal.process-context.verify-consumed",
+      "state": "PASS"
+    },
+    "frozen_build": {
+      "executable_sha256": "502cbe291b3c8778b5ae76e9e99b12a391b96ecac47b47426a66022eba572029",
+      "source_sha256": "6d03099ccae5a80f4146499d6791eacf82439468443ffd8708a58671c29e70e9",
+      "state": "PASS",
+      "test_count": 188,
+      "uuid": "UUID: DDD37D57-31AB-3023-AC1B-E4DE58813A5E (arm64) /private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/multi-scene-acceptance-e3xut_8e/run/derived/Build/Products/Debug-iphonesimulator/RUMNativeMultiSceneProbe.app/RUMNativeMultiSceneProbe"
+    },
+    "preflight": {
+      "authenticated_read": true,
+      "state": "PASS"
+    }
+  },
+  "started_at": "2026-09-18T04:28:33.438186+00:00",
+  "state": "FAIL",
+  "xcode": "Xcode 27.0\nBuild version 27A266a"
+}
