@@ -304,3 +304,15 @@ an empty mapper slowFrames array may appear as an absent backend field.
 Record field presence separately; never treat explicit null or a missing
 nonempty array as equivalent. Preserve the original projected values and the
 failed run, and rerun from a newly frozen source/tooling identity.
+
+## Physical installed-code receipt
+
+For a physical run, supply MULTISCENE_CODE_IDENTITY_RUN_ID and
+MULTISCENE_CODE_IDENTITY_REVISION with the same fresh scenario identity. Retrieve
+Documents/<run-id>.installed-code.json through the appDataContainer after a
+normal launch. The receipt is created before SDK initialization and rejects a
+reused file. Run acceptance/installed_code.py with --signed-app, --run-id,
+--source-revision, --process-id and a fresh --output. It compares all installed
+Mach-O files, including a Debug dylib, to the signed local inventory. No debugger
+is needed. Keep native/backend/topology acceptance separate from this identity
+check; a passing receipt alone closes no release gate.

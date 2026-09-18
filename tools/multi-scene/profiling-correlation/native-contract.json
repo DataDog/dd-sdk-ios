@@ -23,7 +23,8 @@
     "run_id_format": "exp187-<fresh UUID>",
     "source_revision": "Freeze implementation commit before run",
     "installation": "Clean install; missing preexisting data container; hash installed executable against built executable",
-    "restoration": "Reject an existing receipt path; never reuse run identity"
+    "restoration": "Reject an existing receipt path; never reuse run identity",
+    "physical_receipt": "Before SDK initialization, write fresh run/source/process identity and SHA-256 of every installed Mach-O file; copy through appDataContainer and compare the exact signed build inventory. No debugger or suspended launch."
   },
   "view_names": [
     "EXP187.StartA",
