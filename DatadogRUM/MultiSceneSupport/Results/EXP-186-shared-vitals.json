@@ -1,0 +1,21 @@
+{
+  "experiment": "EXP-186",
+  "gate": "T13",
+  "title": "Validate shared vitals and view association",
+  "status": "PLANNED",
+  "control_revision": "5b4a56815e0661d050b94e93264470ae3d941a63",
+  "sdk_revision": "04201edc7711361279d8487b385bc8b0ca9c63c7",
+  "definition": "Experiments/EXP-143-199.md#exp-186--validate-shared-vitals-and-view-association",
+  "completion_mode": "documented shared measurements with existing view association; session timeseries omit view",
+  "production_change_planned": false,
+  "gates_closed": [],
+  "required_environments": [
+    "focused SDK tests",
+    "iOS27 simulator and authenticated backend",
+    "representative physical device before closure"
+  ],
+  "unit_attempts": [],
+  "native_attempts": [],
+  "device_attempts": [],
+  "next": "Implement fixed shared-reader/view-association and session-owned collector-lifecycle controls in existing registered tests."
+}

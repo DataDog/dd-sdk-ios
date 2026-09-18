@@ -202,7 +202,8 @@ remain available for a specific question.
 | <a id="exp-182"></a>EXP-182 | T09, A01 | PASS | Deferred controls and24 native assertions;6 logs,3 mirrors,2 actions and3 views match exact backend owners. Attempt A remains inconclusive. | [record](Experiments/EXP-143-199.md#exp-182--accept-captured-logs-and-mirrored-error-ownership) |
 | <a id="exp-183"></a>EXP-183 | T10, A01, D02, D11 | PASS | T10 closed:33 SDK/184 probe tests,14 native expectations and exact12 backend views including detached omission; failed connector attempt retained. | [record](Experiments/EXP-143-199.md#exp-183--accept-native-webview-container-ownership) |
 | <a id="exp-184"></a>EXP-184 | T11, A01 | PASS | SDK131/probe188,44 native expectations and complete7-view/1-fatal backend pass. Exact captured ownership and consumption; T11 closes. Earlier failures retained. | [record](Experiments/EXP-143-199.md#exp-184--accept-exported-and-fatal-process-context) |
-| <a id="exp-185"></a>EXP-185 | T12, A01 | PREPARED | 98 SDK/192 probe tests; repaired native46/46 passes. A/B failures retained; bounded exact backend convergence is prepared with228 controls. | [record](Experiments/EXP-143-199.md#exp-185--validate-process-signal-routing) |
+| <a id="exp-185"></a>EXP-185 | T12, A01 | PASS | 98 SDK/192 probe tests,46 native expectations/66 signals and exact four-view/seven-event backend pass. A/B failures retained; T12 closes. | [record](Experiments/EXP-143-199.md#exp-185--validate-process-signal-routing) |
+| <a id="exp-186"></a>EXP-186 | T13, A01 | PLANNED | Shared-reader/view-association and session-collector controls precede real native/backend and required device sampling. | [record](Experiments/EXP-143-199.md#exp-186--validate-shared-vitals-and-view-association) |
 
 Original detailed shards and frozen records remain unchanged. Superseded index
 prose is preserved in the [documentation checkpoint](Experiments/DOCUMENTATION_CHECKPOINT_EXP-178.md).

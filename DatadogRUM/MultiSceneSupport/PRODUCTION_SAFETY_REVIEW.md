@@ -224,11 +224,9 @@ Replay or overall release readiness.
 ## Subsequent bounded validation: process signals
 
 [EXP-185](Experiments/EXP-143-199.md#exp-185--validate-process-signal-routing)
-adds representative routing and captured pending-hang controls. All98 selected
-SDK tests and strict test lint pass without production changes. T12 remains open
-until actual producer and complete backend acceptance. Native attempt A exposes
-a fixture selecting an already ended A view; the SDK correctly falls back to B.
-The reactivation repair passes46 native expectations. Attempt B retains a failed
-early backend counter read, with a later exact match; bounded convergence is
-required before acceptance. This is no additional original-review finding or
-release certification.
+closes T12 with98 SDK tests,192 probe tests,46 native expectations and exact
+four-view/seven-event backend ownership and counters. Actual serial reactivation
+and source-less process routing pass without production changes. The ended-view
+fixture failure and early indexing failure remain preserved with their tooling
+repairs. This adds no original-review finding and does not certify real memory
+pressure, watchdog termination, physical/Duo topology, vitals or profiling.

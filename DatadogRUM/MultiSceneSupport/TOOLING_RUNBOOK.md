@@ -1464,3 +1464,11 @@ Keep exact identity/source/run checks and reject counter regression, overshoot,
 malformed types or extra rows immediately. Final values must match the mapper.
 Persist backend-exchanges.json before bridge and semantic validation so rejected
 responses survive in the durable summary. See EXP-185 attempt B for the witness.
+
+For shared vitals validation, separate the legacy view aggregates from optional
+session timeseries. Observe each Home long enough for real samples and stop the
+session before comparing final metrics. Preserve exact view identities and field
+presence; keep declared floating-point serialization tolerances explicit.
+A simulator sample does not close a gate requiring representative device data.
+Discover current Xcode test membership; legacy vitals test files also live under
+DatadogCore/Tests and are not in the RUM scheme's test inventory.

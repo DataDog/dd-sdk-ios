@@ -374,8 +374,8 @@
       "decisive_test": "One process signal appears once on representative; no per-scene broadcast or invented causal owner",
       "environment": "Controlled long-task/hang/memory-warning tests and simulator backend",
       "completion_mode": "documented process-level fallback",
-      "status": "OPEN",
-      "evidence": "EXP-185:98 SDK/192 probe tests and46 native expectations pass. Attempt B retained as FAIL on intermediate indexed counters; bounded exact convergence repair passes228 Python controls. Fresh backend acceptance remains. Results/EXP-185-process-signal-routing.json."
+      "status": "CLOSED",
+      "evidence": "EXP-185 accepted at5b4a56815:98 SDK/192 probe tests,46 native expectations/66 signals, complete4-view/2-long-task/4-error/1-Action backend with exact owners/counts and0 Resources/crashes. Earlier failures retained; no SDK repair. Results/EXP-185-process-signal-routing.json."
     },
     {
       "id": "T13",
@@ -388,7 +388,7 @@
       "environment": "Fixed process metric fixture, view associations and backend; representative device sample before freeze",
       "completion_mode": "documented process-level measurement with existing view association",
       "status": "OPEN",
-      "evidence": ""
+      "evidence": "EXP-186 predeclares fixed shared-reader/view-association controls, session-owned timeseries compatibility, actual serial view/backend metrics and a required physical sample. Results/EXP-186-shared-vitals.json."
     },
     {
       "id": "T14",
