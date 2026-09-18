@@ -1283,3 +1283,11 @@ comparison source; a rounded detail duration_ms is not an exact duration oracle.
 Run the projection in the actual tool orchestrator as well as Node controls:
 browser globals such as URL are not available there. Preserve failed attempts
 before freezing a response-format correction and starting a fresh run.
+
+
+Batch independent backend detail reads and inspect every settled result before
+decoding. Decode bounded YAML pages in one read-only helper; only artifact creation
+and bridge-response writes need escalation. Record bridge elapsed time in the
+durable summary. An otherwise correct response received after the deadline cannot
+retroactively pass the run. Measure the corrected read/decode path on preserved
+evidence before paying for another clean installation.

@@ -168,6 +168,18 @@ function projectTraceRow(row, details, at) {
     duration_ns:duration, is_error:row.status === "error"};
 }
 
+
+async function collectTraceDetails(rows, fetchTrace, decodePages, at) {
+  for (const row of rows) {
+    if (typeof row.traceid !== "string" || !/^[0-9a-f]{32}$/.test(row.traceid)) throw Error("Invalid search trace identity");
+  }
+  const results = await Promise.allSettled(rows.map(row => fetchTrace(row.traceid)));
+  if (results.some(result => result.status !== "fulfilled")) throw Error("Incomplete trace detail reads");
+  const pages = await decodePages(results.map(result => result.value));
+  if (pages.length !== rows.length) throw Error("Incomplete trace detail decoding");
+  return rows.map((row, index) => projectTraceRow(row, pages[index], at));
+}
+
 async function runAcceptance({tools, notify, device, repo, scenario}) {
   if (!repo || !device) throw Error("Explicit repository path and freshly resolved simulator UUID required");
   const shellQuote = value => "'" + value.replaceAll("'", "'\\''") + "'";
@@ -180,6 +192,9 @@ async function runAcceptance({tools, notify, device, repo, scenario}) {
     cmd, workdir: repo, sandbox_permissions: "require_escalated",
     justification: "Collect complete helper output for the authorized acceptance workflow.",
     yield_time_ms: 1000, max_output_tokens
+  });
+  const read = async (cmd, max_output_tokens = 1500) => execToCompletion(tools, {
+    cmd, workdir: repo, yield_time_ms:1000, max_output_tokens
   });
   const setup = await run("python3 - <<'PY'\nimport tempfile,json\nfrom pathlib import Path\np=Path(tempfile.mkdtemp(prefix='multi-scene-acceptance-'))/'run'\nprint(json.dumps({'output':str(p)}))\nPY");
   if (setup.exit_code !== 0) throw Error(setup.output);
@@ -304,16 +319,26 @@ async function runAcceptance({tools, notify, device, repo, scenario}) {
         uptime:at(payload,"context.probe.uptime"), duration_ns:at(payload,"action.loading_time")};
     });
   };
-  const structuredSpans = async response => {
-    if (response.isError) throw Error("Datadog span query failed");
-    const body = textContent(response);
-    const yaml = body.match(/<YAML_DATA>\s*([\s\S]*?)\s*<\/YAML_DATA>/);
-    const json = body.match(/<JSON_DATA>\s*([\s\S]*?)\s*<\/JSON_DATA>/);
-    if (json) return {body, page:JSON.parse(json[1])};
-    if (!yaml) throw Error("Missing structured span evidence");
-    const decoded = await run("ruby tools/multi-scene/acceptance/parse_span_response.rb " + shellQuote(yaml[1]), 20000);
-    if (decoded.exit_code !== 0) throw Error("Could not safely decode span evidence");
-    return {body, page:JSON.parse(decoded.output)};
+  const structuredSpanPages = async responses => {
+    const descriptors = responses.map(response => {
+      if (response.isError) throw Error("Datadog span query failed");
+      const body = textContent(response);
+      const yaml = body.match(/<YAML_DATA>\s*([\s\S]*?)\s*<\/YAML_DATA>/);
+      const json = body.match(/<JSON_DATA>\s*([\s\S]*?)\s*<\/JSON_DATA>/);
+      if (json) return {body, page:JSON.parse(json[1])};
+      if (!yaml) throw Error("Missing structured span evidence");
+      return {body, yaml:yaml[1]};
+    });
+    const yaml = descriptors.filter(item => Object.hasOwn(item, "yaml"));
+    if (yaml.length) {
+      const decoded = await read("ruby tools/multi-scene/acceptance/parse_span_response.rb --batch-json " +
+        shellQuote(JSON.stringify(yaml.map(item => item.yaml))), 20000);
+      if (decoded.exit_code !== 0) throw Error("Could not safely decode span evidence");
+      const pages = JSON.parse(decoded.output);
+      if (!Array.isArray(pages) || pages.length !== yaml.length) throw Error("Incomplete span decoding");
+      yaml.forEach((item, index) => { item.page = pages[index]; });
+    }
+    return descriptors;
   };
   const spanRows = async (request, total) => {
     const all = [];
@@ -323,31 +348,28 @@ async function runAcceptance({tools, notify, device, repo, scenario}) {
         custom_attributes:["probe.run_id", "duration", "http.url"],
         telemetry:{intent:"Retrieve complete synthetic Trace inventory with exact captured RUM owners and span identities."}
       });
-      const {body, page} = await structuredSpans(response);
+      const [{body, page}] = await structuredSpanPages([response]);
       if (!Array.isArray(page) || !page.length) throw Error("Incomplete span pagination");
       all.push(...page);
       if (all.length > 100) throw Error("Unexpected large span inventory");
       if (all.length < total && /<has_more>false<\/has_more>/.test(body)) throw Error("Incomplete span inventory");
     }
-    const projected = [];
-    for (const row of all) {
-      if (typeof row.traceid !== "string" || !/^[0-9a-f]{32}$/.test(row.traceid)) throw Error("Invalid search trace identity");
-      const response = await tools.mcp__codex_apps__datadog__preview__datadog_preview_get_datadog_trace({
-        trace_id:row.traceid, only_service_entry_spans:false, max_tokens:3500,
+    const detailStart = Date.now();
+    const projected = await collectTraceDetails(all, trace_id =>
+      tools.mcp__codex_apps__datadog__preview__datadog_preview_get_datadog_trace({
+        trace_id, only_service_entry_spans:false, max_tokens:3500,
         extra_fields:["_dd.application.id", "_dd.session.id", "_dd.view.id", "_dd.action.id",
           "_dd.p.ftid", "probe.run_id"],
         telemetry:{intent:"Bind indexed synthetic spans to exact retained RUM ownership in complete trace details."}
-      });
-      const {page} = await structuredSpans(response);
-      projected.push(projectTraceRow(row, page, at));
-    }
+      }), async responses => (await structuredSpanPages(responses)).map(item => item.page), at);
+    notify({backend_detail_count:projected.length, elapsed_ms:Date.now() - detailStart});
     if (projected.length !== total || new Set(projected.map(s => s.span_id)).size !== total) {
       throw Error("Span count/pagination mismatch");
     }
     return projected;
   };
   for (;;) {
-    const listing = await run("python3 - " + shellQuote(output) + " <<'PY'\nimport json,sys\nfrom pathlib import Path\np=Path(sys.argv[1])\nrequests=[]\nfor f in sorted((p/'bridge').glob('*.request.json')):\n if not f.with_name(f.name.replace('.request.json','.response.json')).exists():\n  requests.append({'path':str(f),'request':json.loads(f.read_text())})\nprint(json.dumps({'requests':requests,'state':json.loads((p/'summary.json').read_text())['state']}))\nPY", 3500);
+    const listing = await read("python3 - " + shellQuote(output) + " <<'PY'\nimport json,sys\nfrom pathlib import Path\np=Path(sys.argv[1])\nrequests=[]\nfor f in sorted((p/'bridge').glob('*.request.json')):\n if not f.with_name(f.name.replace('.request.json','.response.json')).exists():\n  requests.append({'path':str(f),'request':json.loads(f.read_text())})\nprint(json.dumps({'requests':requests,'state':json.loads((p/'summary.json').read_text())['state']}))\nPY", 3500);
     if (listing.exit_code !== 0) throw Error(listing.output);
     const pending = JSON.parse(listing.output);
     for (const item of pending.requests) {
@@ -377,8 +399,8 @@ async function runAcceptance({tools, notify, device, repo, scenario}) {
     const progress = await tools.write_stdin({session_id:execution.session_id,chars:"",yield_time_ms:1000,max_output_tokens:1500});
     if (progress.output) notify(progress.output);
     if (progress.exit_code !== undefined) {
-      const result = await run("python3 - " + shellQuote(output) +
-        " <<'PY'\nfrom pathlib import Path\nimport sys\nprint((Path(sys.argv[1])/'summary.json').read_text())\nPY",5000);
+      const result = await read("python3 - " + shellQuote(output) +
+        " <<'PY'\nfrom pathlib import Path\nimport sys\nimport json\nd=json.loads((Path(sys.argv[1])/'summary.json').read_text());print(json.dumps({k:d.get(k) for k in ['run_id','state','failures','backend_bridge_timings']}))\nPY",5000);
       notify(result.output);
       return {output, exit_code:progress.exit_code};
     }

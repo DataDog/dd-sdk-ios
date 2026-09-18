@@ -1,6 +1,6 @@
 {
   "experiment": "EXP-181",
-  "status": "First native attempt INCONCLUSIVE after local PASS; corrected backend bridge PREPARED",
+  "status": "Two native attempts local PASS/backend INCONCLUSIVE; batched bridge PREPARED",
   "gate": "T08",
   "gates_closed": [],
   "control_revision": "75442ca755eff170ea072e646d19e0ae54af2f1e",
@@ -94,6 +94,17 @@
       "local_assertions": 20,
       "signal_count": 57,
       "reason": "Search response uses operationname/resourcename and decimal spanid; private RUM owners require get_trace details. Original bridge rejected before ownership comparison, then runner timed out."
+    },
+    {
+      "run_id": "exp181-20260918T005841Z-ff1c0202f61e",
+      "state": "INCONCLUSIVE",
+      "fixture_revision": "2002b1e3f60004d0b4a52a0623d60e2e73de9b23",
+      "signature": "UNSIGNED: signing agent timed out; authorized local fallback",
+      "summary": "Results/acceptance/exp181-20260918T005841Z-ff1c0202f61e.json",
+      "probe_tests": 178,
+      "local_assertions": 20,
+      "signal_count": 57,
+      "reason": "Exact nine-span bridge response arrived331.06s after request, beyond the unchanged300s deadline. Late response does not relabel acceptance."
     }
   ],
   "definition_revision": "33f7147f2f5c23f9e7c3bc149d799c5365d4ac0c",
@@ -119,13 +130,17 @@
       "xcresultBundlePath": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/ActionArtifacts/default/RunAllTests/Test-RUMNativeMultiSceneProbe-2026.09.18_01-27-10-+0100.xcresult"
     },
     "operational_controls": {
-      "python_passed": 123,
-      "node_passed": 21
+      "python_passed": 125,
+      "node_passed": 23
     },
     "strict_new_fixture_lint": "PASS after formatting corrections",
     "fixture_test_minimum": 178,
-    "runtime_acceptance": "Fresh run required after corrected bridge freeze; original attempt remains INCONCLUSIVE",
-    "parser": "Existing system Ruby YAML/JSON; no installed package or SDK dependency. Reject objects, aliases, duplicate keys and unpaginated responses."
+    "runtime_acceptance": "Fresh complete run required after batching correction; both earlier outcomes remain INCONCLUSIVE",
+    "parser": "Existing system Ruby YAML/JSON; no installed package or SDK dependency. Reject objects, aliases, duplicate keys and unpaginated responses.",
+    "control_attempts": [
+      "Initial new YAML batch fixture had escaped literal newline; corrected before125/125 pass.",
+      "Read-only full-suite invocation could not create three signature-test temporary directories; authorized sandbox invocation passes all125."
+    ]
   },
   "backend_decoder_diagnostic": {
     "original_state": "INCONCLUSIVE",
@@ -330,5 +345,55 @@
       "resource": "Native/OTel resource remains exact; URL resource grouping is retained separately and original http.url must match the exact locally encoded URL in both search and detail.",
       "duration": "Exact indexed custom.duration nanoseconds; rounded detail duration_ms is never substituted."
     }
+  },
+  "backend_batch_diagnostic": {
+    "elapsed_ms": 3562,
+    "checks": [
+      {
+        "phase": "native-b",
+        "matching": true
+      },
+      {
+        "phase": "otel-b",
+        "matching": true
+      },
+      {
+        "phase": "native-a",
+        "matching": true
+      },
+      {
+        "phase": "otel-a",
+        "matching": true
+      },
+      {
+        "phase": "native-fallback",
+        "matching": true
+      },
+      {
+        "phase": "otel-fallback",
+        "matching": true
+      },
+      {
+        "phase": "url-b",
+        "matching": true
+      },
+      {
+        "phase": "url-a",
+        "matching": true
+      },
+      {
+        "phase": "url-fallback",
+        "matching": true
+      }
+    ],
+    "span_count": 9,
+    "acceptance_claim": false,
+    "original_state": "INCONCLUSIVE",
+    "changes": [
+      "Independent detail queries use Promise.allSettled with every result checked",
+      "Single bounded safe YAML decode for all detail responses",
+      "Read-only listing/parser/summary helpers use the read-only sandbox; mutations remain escalated",
+      "Durable runner summary records bridge response timing"
+    ]
   }
 }

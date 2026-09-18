@@ -320,7 +320,7 @@
       "environment": "iOS 27 simulator, Trace/OTel/URLSession fixtures and backend; shared request also H07",
       "completion_mode": "captured start ownership",
       "status": "OPEN",
-      "evidence": "EXP-181:158 Trace tests and178 probe tests pass; first native run20/20 PASS but backend bridge format INCONCLUSIVE. Corrected exact search/detail joins match all9 preserved spans;123 Python/21 Node controls. Fresh frozen acceptance remains required; Results/EXP-181-trace-start-ownership.json."
+      "evidence": "EXP-181:158 Trace tests and178 probe tests pass; two native20/20 runs retain backend-format/deadline INCONCLUSIVE outcomes. Batched exact9-span diagnostic joins pass in3.562s;125 Python/23 Node controls. Fresh frozen acceptance remains required; Results/EXP-181-trace-start-ownership.json."
     },
     {
       "id": "T09",

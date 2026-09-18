@@ -259,3 +259,35 @@ test("Trace projection works in a tool sandbox without browser URL globals", () 
   const detail = traceDetail(row); detail.meta["http.url"] = row.custom["http.url"];
   assert.equal(sandboxProject(row, [detail], traceAt).phase, "url-a");
 });
+
+const {collectTraceDetails} = new Function(source.replace(
+  'return runAcceptance({tools, notify, device, repo, scenario: typeof scenario === "undefined" ? undefined : scenario});',
+  'return {collectTraceDetails};'
+))();
+
+test("independent detail requests all start before decoding and preserve response identity", async () => {
+  const rows = [traceRow(), {...traceRow(), traceid:"a".repeat(32), spanid:"8"}];
+  const pending = [];
+  let decodes = 0;
+  const task = collectTraceDetails(rows, traceID => new Promise(resolve => pending.push({traceID, resolve})),
+    async responses => { decodes++; return responses.map(response => [response]); }, traceAt);
+  assert.equal(pending.length, 2);
+  assert.equal(decodes, 0);
+  pending[1].resolve(traceDetail(rows[1]));
+  pending[0].resolve(traceDetail(rows[0]));
+  const results = await task;
+  assert.equal(decodes, 1);
+  assert.deepEqual(results.map(result => result.trace_id), rows.map(row => row.traceid));
+});
+
+test("failed or missing detail batch results cannot produce a partial acceptance", async () => {
+  const rows = [traceRow(), {...traceRow(), traceid:"a".repeat(32), spanid:"8"}];
+  let reads = 0;
+  await assert.rejects(collectTraceDetails(rows, async traceID => {
+    reads++;
+    if (traceID === rows[0].traceid) throw Error("unavailable");
+    return traceDetail(rows[1]);
+  }, async () => { throw Error("decoder must not accept partial reads"); }, traceAt), /Incomplete trace detail reads/);
+  assert.equal(reads, 2);
+  await assert.rejects(collectTraceDetails(rows, async () => ({}), async () => [], traceAt), /Incomplete trace detail decoding/);
+});

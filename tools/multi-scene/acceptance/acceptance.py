@@ -334,12 +334,17 @@ class Runner:
         save(path, request)
         print(json.dumps({"backend_request": str(path), "kind": kind}), flush=True)
         response_path = path.with_name(request["request_id"] + ".response.json")
-        deadline = time.monotonic() + self.args.backend_timeout
+        started = time.monotonic()
+        deadline = started + self.args.backend_timeout
         while time.monotonic() < deadline:
             if response_path.exists():
                 response = json.loads(response_path.read_text())
+                self.summary.setdefault("backend_bridge_timings", []).append(
+                    dict(kind=kind, seconds=round(time.monotonic() - started, 3), received=True))
                 return validate_bridge(request, response)
             time.sleep(0.5)
+        self.summary.setdefault("backend_bridge_timings", []).append(
+            dict(kind=kind, seconds=round(time.monotonic() - started, 3), received=False))
         raise Rejected("backend connector deadline expired: " + kind, "INCONCLUSIVE")
 
     def run(self):

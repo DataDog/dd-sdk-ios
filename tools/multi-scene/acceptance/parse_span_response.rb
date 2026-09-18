@@ -14,8 +14,18 @@ def check_keys(node)
   end
   (node.children || []).each { |child| check_keys(child) }
 end
-check_keys(Psych.parse_stream(ARGV.fetch(0)))
+def parse_rows(text)
+  check_keys(Psych.parse_stream(text))
+  value = YAML.safe_load(text, permitted_classes: [Time, Date], aliases: false)
+  abort("Expected a span row array") unless value.is_a?(Array)
+  value
+end
 
-value = YAML.safe_load(ARGV.fetch(0), permitted_classes: [Time, Date], aliases: false)
-abort("Expected a span row array") unless value.is_a?(Array)
-puts JSON.generate(value)
+if ARGV.fetch(0) == "--batch-json"
+  inputs = JSON.parse(ARGV.fetch(1))
+  abort("Expected bounded string input batch") unless inputs.is_a?(Array) &&
+    inputs.length.between?(1, 100) && inputs.all? { |input| input.is_a?(String) }
+  puts JSON.generate(inputs.map { |input| parse_rows(input) })
+else
+  puts JSON.generate(parse_rows(ARGV.fetch(0)))
+end

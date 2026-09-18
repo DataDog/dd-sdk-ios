@@ -221,3 +221,9 @@ Known native/OTel operation hyphens normalize to underscores. HTTP resource
 grouping is retained as evidence; the exact original http.url from both responses
 must match the mapper URL. Duration comes only from the indexed integer
 nanoseconds, never the rounded duration_ms shown by trace details.
+
+
+Independent trace details are fetched together, every result is checked, and one
+bounded system-Ruby call decodes their YAML pages. Read-only bridge helpers use the
+read-only sandbox; setup and evidence writes keep escalation. The runner records
+backend_bridge_timings and retains its300s deadline. A late response is not acceptance.
