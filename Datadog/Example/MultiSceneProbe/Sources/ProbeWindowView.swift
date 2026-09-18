@@ -746,6 +746,7 @@ struct ProbeWindowRoot: View {
     @State private var semanticNavigationHostLifetimeControl =
         ProbeSemanticNavigationHostLifetimeControl()
 #endif
+    @StateObject private var adaptiveSplitRouter = ProbeAdaptiveSplitState()
     @State private var splitSelection: ProbeSplitSelection? =
         ProbeRuntime.startsSplitWithoutSelection ? nil : .detail(1)
     @State private var splitRUMViewBindingGeneration: UInt64 = 1
@@ -1157,6 +1158,13 @@ struct ProbeWindowRoot: View {
     private var splitSelectionContent: some View {
         if sceneSessionID == "unresolved" {
             ProgressView("Resolving scene")
+        } else if #available(iOS 27.0, *), ProbeRuntime.usesAdaptiveSplitAcceptance {
+            ProbeAdaptiveSplitView(
+                window: window,
+                sceneSessionID: sceneSessionID,
+                router: adaptiveSplitRouter,
+                didCommit: recordAdaptiveSplitCommit
+            )
         } else {
             ProbeSplitLayout(
                 window: window,
@@ -1644,6 +1652,9 @@ struct ProbeWindowRoot: View {
         if ProbeRuntime.usesEXP147NavigationFixture {
             return EXP147ProbeSemantics.screen(for: exp147Router.state)
         }
+        if ProbeRuntime.usesAdaptiveSplitAcceptance {
+            return adaptiveSplitRouter.current.destination.rawValue
+        }
         if ProbeRuntime.usesSplitSelectionLayout {
             return splitSelection?.screen ?? "split-empty"
         }
@@ -1667,6 +1678,9 @@ struct ProbeWindowRoot: View {
         }
         if ProbeRuntime.usesEXP147NavigationFixture {
             return EXP147ProbeSemantics.route(for: exp147Router.state)
+        }
+        if ProbeRuntime.usesAdaptiveSplitAcceptance {
+            return adaptiveSplitRouter.current.destination.route
         }
         if ProbeRuntime.usesSplitSelectionLayout {
             return splitSelection.map { [$0.screen] } ?? []
@@ -2468,6 +2482,26 @@ struct ProbeWindowRoot: View {
                 return "alternate"
             }
         }
+    }
+
+    private func recordAdaptiveSplitCommit(
+        previous: ProbeAdaptiveSplitState.Snapshot,
+        accepted: ProbeAdaptiveSplitState.Snapshot
+    ) {
+        updateSceneRoute()
+        ProbeRuntime.eventRecorder.record(
+            ProbeSignal(
+                kind: .navigationPathMutation,
+                semanticContext: ProbeSemanticContext(
+                    logicalSceneID: window.label,
+                    nativeSceneID: sceneSessionID,
+                    screen: accepted.destination.rawValue
+                ),
+                previousNavigationPath: previous.destination.route,
+                navigationPath: accepted.destination.route,
+                mutation: accepted.generation
+            )
+        )
     }
 
     private func commitSplitSelection(_ newSelection: ProbeSplitSelection) {

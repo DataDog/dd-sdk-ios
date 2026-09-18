@@ -2,7 +2,7 @@
   "experiment": "EXP-193",
   "gate": "H14",
   "owner": "SDK implementer",
-  "status": "DEFINED",
+  "status": "IMPLEMENTED_PENDING_VALIDATION",
   "admission": "Closes the existing adaptive-layout simulator obligation and investigates the native selection fixture precondition found by EXP-192. No new product API or telemetry family.",
   "candidate_sdk_revision": "04201edc7711361279d8487b385bc8b0ca9c63c7",
   "definition_parent_revision": "9b694cad7fc5fd5afe68f01b6c39890caa158437",
@@ -24,5 +24,11 @@
   "dependencies": [
     "A01"
   ],
-  "gates_closed": []
+  "gates_closed": [],
+  "pre_run_validation": {
+    "oracle_tests": 6,
+    "negative_mutations": 21,
+    "native_build_and_tests": "PENDING",
+    "native_backend_acceptance": "PENDING"
+  }
 }

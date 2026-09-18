@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		026AF52B11058EC95E2B6B3B /* ProbeTimingAcceptance.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2DD1D3A780FB64C8A08CA5C0 /* ProbeTimingAcceptance.swift */; };
+		034763EB64900F81C425F328 /* ProbeAdaptiveSplitView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 194B87D1ED3BE9DDFE226E22 /* ProbeAdaptiveSplitView.swift */; };
 		03A8C9CDB649A7F94DB09802 /* ProbeScenarioDriver.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D420A5A7488B5A09F0B4AD4 /* ProbeScenarioDriver.swift */; };
 		051A3319FAD022CC5035148E /* ProbeSemanticTimeline.swift in Sources */ = {isa = PBXBuildFile; fileRef = F3A70657709149B5CC243C87 /* ProbeSemanticTimeline.swift */; };
 		0570AADDD891864EA6535ED7 /* EXP147MessagingScreens.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2306A2BB018824900E35174 /* EXP147MessagingScreens.swift */; };
@@ -51,6 +52,7 @@
 		8BEB997B35146237E751C66D /* ProbeSceneRegistryTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F55027F10376A6DADE46708D /* ProbeSceneRegistryTests.swift */; };
 		90752CECE73F620060EEEC07 /* ProbeExpectation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9FFDBF628C7D3397C03389B8 /* ProbeExpectation.swift */; };
 		92C6BEFD713DBECAC15EFE1D /* ProbeErrorAcceptance.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6A91A62FAEE81DCE6430B26B /* ProbeErrorAcceptance.swift */; };
+		9368BF203BAF6920F15FE23A /* ProbeAdaptiveSplitState.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC342735614B47925AC1DC82 /* ProbeAdaptiveSplitState.swift */; };
 		93DEDE2B7D0D6C94BC875AFF /* EXP147SettingsScreens.swift in Sources */ = {isa = PBXBuildFile; fileRef = ED68F083385BBE053E5822F1 /* EXP147SettingsScreens.swift */; };
 		96B94BA75FE19EADE6D8AD4C /* exp-092-wrong-view.jsonl in Resources */ = {isa = PBXBuildFile; fileRef = 750CAEA78BE5151953F9B6E5 /* exp-092-wrong-view.jsonl */; };
 		97E61389A32F96AB30AD821B /* ProbeLogAcceptance.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3BA49AAD4C2484CCBD2C4BA3 /* ProbeLogAcceptance.swift */; };
@@ -74,9 +76,11 @@
 		E6889C87620131D366042620 /* EXP147SettingsScreens.swift in Sources */ = {isa = PBXBuildFile; fileRef = ED68F083385BBE053E5822F1 /* EXP147SettingsScreens.swift */; };
 		ED7E74A57647DB15D4590CDF /* DuoSimulatorUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 098190311F4249EBF3C98092 /* DuoSimulatorUITests.swift */; };
 		F0653AB971C90BD3CA791B4F /* ProbeScenarioRunner.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8015BAA8FC9E1F9E172E8C73 /* ProbeScenarioRunner.swift */; };
+		F4F4ABFB78849F517B480E47 /* ProbeAdaptiveSplitStateTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 64A4999A39F77710B777E77F /* ProbeAdaptiveSplitStateTests.swift */; };
 		F70BEA7173CC0EA2175910A9 /* missing-expected-event.jsonl in Resources */ = {isa = PBXBuildFile; fileRef = 87CBC080555B8D5FC2156FF4 /* missing-expected-event.jsonl */; };
 		F70D56CAF9FAEF8CA0F74A9B /* EXP147NotesScreens.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6B2DCC64C9718AFC247D6D2C /* EXP147NotesScreens.swift */; };
 		F96391CB33C27941992FB761 /* EXP147InstrumentedComposition.swift in Sources */ = {isa = PBXBuildFile; fileRef = 388604EBC2CB5A27A01A5FFB /* EXP147InstrumentedComposition.swift */; };
+		FA55073C5D388AC706288408 /* ProbeAdaptiveSplitState.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC342735614B47925AC1DC82 /* ProbeAdaptiveSplitState.swift */; };
 		FC509F38B0B193FEA18D62CA /* DatadogLogs in Frameworks */ = {isa = PBXBuildFile; productRef = CF24AC5FD79F4B2138E22830 /* DatadogLogs */; };
 		FEB852255135F2BEEAED1164 /* ProbeExpectation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9FFDBF628C7D3397C03389B8 /* ProbeExpectation.swift */; };
 		FED0604E6D6F348735C12F87 /* ProbeStep.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2650C73317A64214B77300AA /* ProbeStep.swift */; };
@@ -96,6 +100,7 @@
 		06BAF138BE59AA8DB812BBB5 /* ProbeScenarioDriverTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProbeScenarioDriverTests.swift; sourceTree = "<group>"; };
 		098190311F4249EBF3C98092 /* DuoSimulatorUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DuoSimulatorUITests.swift; sourceTree = "<group>"; };
 		159DE60CE09C6BF5C4FCAF51 /* RUMNativeMultiSceneProbeUITests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = RUMNativeMultiSceneProbeUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		194B87D1ED3BE9DDFE226E22 /* ProbeAdaptiveSplitView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProbeAdaptiveSplitView.swift; sourceTree = "<group>"; };
 		25668E902287A5FE703DBAB0 /* ProbeSemanticOracleTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProbeSemanticOracleTests.swift; sourceTree = "<group>"; };
 		2650C73317A64214B77300AA /* ProbeStep.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProbeStep.swift; sourceTree = "<group>"; };
 		28A01A1F5D1DF3E150096023 /* ProbeTraceAcceptance.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProbeTraceAcceptance.swift; sourceTree = "<group>"; };
@@ -113,6 +118,7 @@
 		51D96B297381A0382471A27B /* ProbeSemanticOracle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProbeSemanticOracle.swift; sourceTree = "<group>"; };
 		565369FC9871220DC8B28072 /* ProbeResourceAcceptance.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProbeResourceAcceptance.swift; sourceTree = "<group>"; };
 		592E243D1D0CDC8137FA0330 /* EXP147NavigationModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EXP147NavigationModel.swift; sourceTree = "<group>"; };
+		64A4999A39F77710B777E77F /* ProbeAdaptiveSplitStateTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProbeAdaptiveSplitStateTests.swift; sourceTree = "<group>"; };
 		66B2FF8D064F06646E5280E9 /* EXP147BaselineNavigation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EXP147BaselineNavigation.swift; sourceTree = "<group>"; };
 		6A91A62FAEE81DCE6430B26B /* ProbeErrorAcceptance.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProbeErrorAcceptance.swift; sourceTree = "<group>"; };
 		6B2DCC64C9718AFC247D6D2C /* EXP147NotesScreens.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EXP147NotesScreens.swift; sourceTree = "<group>"; };
@@ -136,6 +142,7 @@
 		BF4E2E59A851EE7F710B0C94 /* ignored-native-gesture.jsonl */ = {isa = PBXFileReference; path = "ignored-native-gesture.jsonl"; sourceTree = "<group>"; };
 		C8C347315337A830830F39F1 /* RUMNativeMultiSceneProbe.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = RUMNativeMultiSceneProbe.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		DBC73DDFA418A3CBF97D040F /* ProbeScenario.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProbeScenario.swift; sourceTree = "<group>"; };
+		DC342735614B47925AC1DC82 /* ProbeAdaptiveSplitState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProbeAdaptiveSplitState.swift; sourceTree = "<group>"; };
 		E1B4BBCB6618CBD634C9EF1C /* ProbeScenarioRunnerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProbeScenarioRunnerTests.swift; sourceTree = "<group>"; };
 		E4F3B54B94051E2692DBF384 /* EXP147ScreenScaffold.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EXP147ScreenScaffold.swift; sourceTree = "<group>"; };
 		E6DCA832EA79D2B51CCE8F71 /* ProbeEventRecorder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProbeEventRecorder.swift; sourceTree = "<group>"; };
@@ -204,6 +211,7 @@
 			isa = PBXGroup;
 			children = (
 				410FD6B2EE19433933438E6C /* Info.plist */,
+				194B87D1ED3BE9DDFE226E22 /* ProbeAdaptiveSplitView.swift */,
 				48BBDF8BE1D5EAFCC94A4EB8 /* ProbeAttributeAcceptance.swift */,
 				6A91A62FAEE81DCE6430B26B /* ProbeErrorAcceptance.swift */,
 				99DF97D45824770728491BB9 /* ProbeFatalAcceptance.swift */,
@@ -235,6 +243,7 @@
 		403FC2A18CF3CA92918E146D /* Tests */ = {
 			isa = PBXGroup;
 			children = (
+				64A4999A39F77710B777E77F /* ProbeAdaptiveSplitStateTests.swift */,
 				06BAF138BE59AA8DB812BBB5 /* ProbeScenarioDriverTests.swift */,
 				E1B4BBCB6618CBD634C9EF1C /* ProbeScenarioRunnerTests.swift */,
 				F55027F10376A6DADE46708D /* ProbeSceneRegistryTests.swift */,
@@ -272,6 +281,7 @@
 		B239EE95AC9926A8A9C68EBC /* Harness */ = {
 			isa = PBXGroup;
 			children = (
+				DC342735614B47925AC1DC82 /* ProbeAdaptiveSplitState.swift */,
 				E6DCA832EA79D2B51CCE8F71 /* ProbeEventRecorder.swift */,
 				9FFDBF628C7D3397C03389B8 /* ProbeExpectation.swift */,
 				DBC73DDFA418A3CBF97D040F /* ProbeScenario.swift */,
@@ -427,6 +437,8 @@
 				6BA9A49179FECE9020CF99F6 /* EXP147RuntimeProbeView.swift in Sources */,
 				BA8DAC9820C4DBAC792D0E8D /* EXP147ScreenScaffold.swift in Sources */,
 				93DEDE2B7D0D6C94BC875AFF /* EXP147SettingsScreens.swift in Sources */,
+				9368BF203BAF6920F15FE23A /* ProbeAdaptiveSplitState.swift in Sources */,
+				034763EB64900F81C425F328 /* ProbeAdaptiveSplitView.swift in Sources */,
 				A4C1FEBE4B54722DB64A78CE /* ProbeAttributeAcceptance.swift in Sources */,
 				92C6BEFD713DBECAC15EFE1D /* ProbeErrorAcceptance.swift in Sources */,
 				31216B1B65CFF78FF7B29FF2 /* ProbeEventRecorder.swift in Sources */,
@@ -469,6 +481,8 @@
 				80F5763A7E8293DBA9130E18 /* EXP147RuntimeProbeView.swift in Sources */,
 				BA56EEA05E573006E473FD41 /* EXP147ScreenScaffold.swift in Sources */,
 				E6889C87620131D366042620 /* EXP147SettingsScreens.swift in Sources */,
+				FA55073C5D388AC706288408 /* ProbeAdaptiveSplitState.swift in Sources */,
+				F4F4ABFB78849F517B480E47 /* ProbeAdaptiveSplitStateTests.swift in Sources */,
 				4B9EC25FEE9BBBDA64DAAA9D /* ProbeEventRecorder.swift in Sources */,
 				FEB852255135F2BEEAED1164 /* ProbeExpectation.swift in Sources */,
 				4A0A157743236432537BD024 /* ProbeScenario.swift in Sources */,

@@ -1828,3 +1828,10 @@ Before adaptive ownership acceptance, verify the native selection binding
 publishes accepted state before immediate work and recorded path changes. Geometry
 callbacks can update a stale registry later and must not repair a missed boundary
 retroactively. The original EXP-192 failure is retained before EXP-193 correction.
+
+EXP-193 uses adaptive_split_contract.py with a fixed14-phase sequence. Record
+the request sequence before each pose/resize, wait for matching fresh native
+geometry, then deliver the visible marker. Preserve the geometry receipt and
+post-resource sequence in phases.json; stale or post-marker geometry is rejected.
+The selected-state model commit must precede immediate work. Acceptance joins
+all50 work event IDs to exact backend owners plus the complete view inventory.

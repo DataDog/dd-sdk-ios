@@ -139,6 +139,7 @@ enum ProbeScenarioCatalog {
         swiftUISplitSameTypeSelectionTwoScenes,
         swiftUISplitRetainedReturn,
         swiftUISplitEmptySelection,
+        swiftUISplitAdaptiveAcceptedState,
         uikitSplitReplacement,
         uikitSplitSubclass,
         uikitSplitAutomaticPop,
@@ -4659,6 +4660,20 @@ enum ProbeScenarioCatalog {
         expectedSemanticTimeline: [
             ProbeExpectation(.noViewStarted, scene: "scene-A", screen: "detail-1", interval: "empty-selection")
         ],
+        runtimeOptions: runtime {
+            $0.startsSplitWithoutSelection = true
+            $0.automaticallyAdvancesSplitSelection = false
+        }
+    )
+
+    private static let swiftUISplitAdaptiveAcceptedState = ProbeScenario(
+        identifier: "swiftui.split.adaptive-accepted-state",
+        trackingMode: .navigationOccurrence,
+        layout: .splitSelection,
+        requiredCapabilities: [.regularWidth, .resizableWindow],
+        steps: [ProbeStep(.waitForSceneReady, scene: "scene-A")],
+        completionConditions: [ProbeExpectation(.sceneReady, scene: "scene-A")],
+        expectedSemanticTimeline: [],
         runtimeOptions: runtime {
             $0.startsSplitWithoutSelection = true
             $0.automaticallyAdvancesSplitSelection = false
