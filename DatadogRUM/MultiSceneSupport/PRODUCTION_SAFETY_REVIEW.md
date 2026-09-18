@@ -33,8 +33,10 @@ Additional risks raised alongside the original findings have separate evidence:
 [late Resource completion/T03](Results/EXP-175-resource-completion.json).
 Downstream validation of D04’s Trace consumer is recorded in
 [EXP-181](Results/EXP-181-trace-start-ownership.json). Deferred Logs and mirror
-consumer checks pass in [EXP-182](Results/EXP-182-log-mirror-ownership.json);
-its native/backend acceptance remains pending.
+consumer checks and native/backend acceptance pass in
+[EXP-182](Results/EXP-182-log-mirror-ownership.json): exact captured view/action
+owners agree across six logs, three mirrors and both final actions. No additional
+SDK repair was required; the original inconclusive connector attempt is retained.
 Physical lifecycle, API review and final release gates remain separate.
 
 The following original findings describe the reviewed revision, not current

@@ -333,8 +333,8 @@
       "decisive_test": "A-origin log and mirrored RUM error agree on captured view/action despite B representative churn; source-less log uses documented representative",
       "environment": "iOS 27 simulator, Logs/RUM mirror fixture and Datadog backend",
       "completion_mode": "captured emission ownership",
-      "status": "OPEN",
-      "evidence": "EXP-182:99 Logs/9 receiver/181 probe tests and24 native assertions pass. Attempt A backend INCONCLUSIVE: connector IDs absent. Revised full-count/raw/grouped contract prepared;141 Python/32 connector controls pass. Results/EXP-182-log-mirror-ownership.json."
+      "status": "CLOSED",
+      "evidence": "EXP-182:99 Logs/9 receiver/181 probe tests;141 Python/32 connector controls;24 native assertions and backend6 logs/6 count-one groups,3 mirrors,2 actions,3 views,0 Resources/crashes. Attempt A retained inconclusive. Results/EXP-182-log-mirror-ownership.json."
     },
     {
       "id": "T10",

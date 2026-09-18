@@ -55,8 +55,10 @@
   "workflow": "Predeclare precise native guards/expectations before fixture; add existing repository DatadogLogs product only to owned probe project; mapper Foundation wire projection; freeze source/contract before clean install, complete Logs run inventory and full RUM session check.",
   "preflight": "Authenticated Logs/DDSQL and RUM reads pass. After Attempt A, positive raw/grouped Logs schema confirmed; backend record IDs are not exposed.",
   "closure": "Only close T09 after focused/affected tests and strict local/backend acceptance; preserve all invalid/inconclusive attempts.",
-  "status": "INCONCLUSIVE",
-  "gates_closed": [],
+  "status": "PASS",
+  "gates_closed": [
+    "T09"
+  ],
   "control_revision": "2a36cac8c40849426a862288b6c3789a7bd8386e",
   "definition": "Experiments/EXP-143-199.md#exp-182--accept-captured-logs-and-mirrored-error-ownership",
   "unit_attempts": [
@@ -122,12 +124,78 @@
       "signals": 53,
       "diagnosis": "Native semantics passed. The connector omits backend log record IDs in both TSV and explicit YAML fields. The bridge rejected Missing backend log ID and returned an explicit unsuccessful response; no backend acceptance was claimed.",
       "raw_output": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/multi-scene-acceptance-wugt6oql/run"
+    },
+    {
+      "attempt": "B",
+      "run_id": "exp182-20260918T021950Z-2fc4f41678f5",
+      "outcome": "PASS",
+      "durable_summary": "Results/acceptance/exp182-20260918T021950Z-2fc4f41678f5.json",
+      "fixture_revision": "a95cef32cc5dce93041869fc1617a9c5ed666522",
+      "source_sha256": "c2c4e3657b71b532a9c6bd56cf3b2fb5d7dc2637ac61e1d65f6f7bac867fa1d5",
+      "binary_sha256": "71f16711abec21f791266a141fb7b2b54d3c1ccf07854339ef9f69c84d44857e",
+      "probe_tests": 181,
+      "native_assertions": 24,
+      "signals": 53,
+      "backend": {
+        "action_count": 2,
+        "crash_count": 0,
+        "error_count": 3,
+        "exposed_log_id_count": 0,
+        "log_count": 6,
+        "log_group_count": 6,
+        "resource_count": 0,
+        "state": "PASS",
+        "view_count": 3
+      },
+      "backend_bridge_timings": [
+        {
+          "kind": "auth",
+          "received": true,
+          "seconds": 12.179
+        },
+        {
+          "kind": "log_auth",
+          "received": true,
+          "seconds": 15.205
+        },
+        {
+          "kind": "logs",
+          "received": true,
+          "seconds": 25.379
+        },
+        {
+          "kind": "log_errors",
+          "received": true,
+          "seconds": 16.265
+        },
+        {
+          "kind": "views",
+          "received": true,
+          "seconds": 15.237
+        },
+        {
+          "kind": "peer_actions",
+          "received": true,
+          "seconds": 14.734
+        },
+        {
+          "kind": "resources",
+          "received": true,
+          "seconds": 14.207
+        },
+        {
+          "kind": "crashes",
+          "received": true,
+          "seconds": 15.227
+        }
+      ],
+      "raw_output": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/multi-scene-acceptance-ep0iewre/run"
     }
   ],
   "validation": {
     "strict_swiftlint": "PASS, zero violations in both changed test files",
     "production_source": "unchanged",
-    "next": "Freeze corrected backend contract and execute fresh Attempt B; do not reuse or relabel Attempt A."
+    "next": "T09 closed. Define the bounded T10 two-container WebView acceptance before implementation."
   },
   "fixture_validation": {
     "probe_tests": {
@@ -148,7 +216,7 @@
     "node_controls": 32,
     "new_native_file_strict_lint": "PASS, zero violations",
     "production_source": "unchanged",
-    "native_scenario": "Attempt A passed 24 native assertions; backend inconclusive. Contract revision 2 prepared."
+    "native_scenario": "Attempt B accepted with24 native assertions and complete Logs/RUM backend agreement. Attempt A remains inconclusive."
   },
   "workflow_findings": [
     "Changing the owned probe project can reset Xcode active scheme to a package scheme. Rediscover/switch and confirm test inventory after project mutation; two initial operations did not start tests.",
@@ -171,5 +239,8 @@
     "events_per_group": 1,
     "record_ids_exposed": 0,
     "result": "Live raw and grouped projection shape confirmed; original native run remains inconclusive."
-  }
+  },
+  "accepted_run": "Results/acceptance/exp182-20260918T021950Z-2fc4f41678f5.json",
+  "accepted_fixture_revision": "a95cef32cc5dce93041869fc1617a9c5ed666522",
+  "conclusion": "Deferred writes, reverse mirror delivery and native/backend ownership pass without SDK source change. Six logs bind to six independent count-one groups; three mirrors and two actions retain exact owners. Source-less pair uses B representative; no Resources or crashes."
 }

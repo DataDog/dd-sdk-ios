@@ -1,0 +1,760 @@
+{
+  "artifacts": {
+    "backend-evidence.json": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/multi-scene-acceptance-ep0iewre/run/backend-evidence.json",
+    "boot-ready.log": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/multi-scene-acceptance-ep0iewre/run/boot-ready.log",
+    "build-identity.json": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/multi-scene-acceptance-ep0iewre/run/build-identity.json",
+    "build-tests.log": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/multi-scene-acceptance-ep0iewre/run/build-tests.log",
+    "console.raw.log": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/multi-scene-acceptance-ep0iewre/run/console.raw.log",
+    "container-absence.log": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/multi-scene-acceptance-ep0iewre/run/container-absence.log",
+    "install.log": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/multi-scene-acceptance-ep0iewre/run/install.log",
+    "local-evidence.json": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/multi-scene-acceptance-ep0iewre/run/local-evidence.json",
+    "log-parser-preflight.log": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/multi-scene-acceptance-ep0iewre/run/log-parser-preflight.log",
+    "probe.jsonl": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/multi-scene-acceptance-ep0iewre/run/probe.jsonl",
+    "source-identity.json": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/multi-scene-acceptance-ep0iewre/run/source-identity.json",
+    "summary.json": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/multi-scene-acceptance-ep0iewre/run/summary.json",
+    "terminal-screenshot.log": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/multi-scene-acceptance-ep0iewre/run/terminal-screenshot.log",
+    "terminal.png": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/multi-scene-acceptance-ep0iewre/run/terminal.png",
+    "terminate-after.log": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/multi-scene-acceptance-ep0iewre/run/terminate-after.log",
+    "terminate-before.log": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/multi-scene-acceptance-ep0iewre/run/terminate-before.log",
+    "test-summary.json": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/multi-scene-acceptance-ep0iewre/run/test-summary.json",
+    "uninstall.log": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/multi-scene-acceptance-ep0iewre/run/uninstall.log"
+  },
+  "backend_bridge_timings": [
+    {
+      "kind": "auth",
+      "received": true,
+      "seconds": 12.179
+    },
+    {
+      "kind": "log_auth",
+      "received": true,
+      "seconds": 15.205
+    },
+    {
+      "kind": "logs",
+      "received": true,
+      "seconds": 25.379
+    },
+    {
+      "kind": "log_errors",
+      "received": true,
+      "seconds": 16.265
+    },
+    {
+      "kind": "views",
+      "received": true,
+      "seconds": 15.237
+    },
+    {
+      "kind": "peer_actions",
+      "received": true,
+      "seconds": 14.734
+    },
+    {
+      "kind": "resources",
+      "received": true,
+      "seconds": 14.207
+    },
+    {
+      "kind": "crashes",
+      "received": true,
+      "seconds": 15.227
+    }
+  ],
+  "commit_signature": {
+    "required_before_push": true,
+    "state": "UNSIGNED"
+  },
+  "device": {
+    "dataPath": "/Users/valentin.pertuisot/Library/Developer/CoreSimulator/Devices/92C9918B-FEC6-4440-9D6D-8E09475950BB/data",
+    "dataPathSize": 3289722880,
+    "deviceTypeIdentifier": "com.apple.CoreSimulator.SimDeviceType.iPad-mini-A17-Pro",
+    "isAvailable": true,
+    "lastUsedAt": "2026-09-16T22:19:15Z",
+    "logPath": "/Users/valentin.pertuisot/Library/Logs/CoreSimulator/92C9918B-FEC6-4440-9D6D-8E09475950BB",
+    "logPathSize": 405504,
+    "name": "iPad mini (A17 Pro)",
+    "runtime": "com.apple.CoreSimulator.SimRuntime.iOS-27-0",
+    "state": "Booted",
+    "udid": "92C9918B-FEC6-4440-9D6D-8E09475950BB"
+  },
+  "dirty_state": [
+    " M Datadog/Datadog.xcodeproj/project.pbxproj",
+    "A  xcconfigs/Datadog.local.xcconfig"
+  ],
+  "evidence": {
+    "backend-evidence.json": {
+      "actions": [
+        {
+          "action_id": "94e20493-9d58-4f2f-9044-450fcb6bc2ce",
+          "error_count": 2,
+          "phase": "log-action-b",
+          "resource_count": 0,
+          "run_id": "exp182-20260918T021950Z-2fc4f41678f5",
+          "session_id": "856bed4f-3428-4594-a140-a0e9933b959f",
+          "target": "log-action-b",
+          "view_id": "b4e21e9d-c459-4006-939f-064a09c4070b"
+        },
+        {
+          "action_id": "9d8d232f-c6e4-48fd-b96a-06fb8db09c74",
+          "error_count": 1,
+          "phase": "log-action-a",
+          "resource_count": 0,
+          "run_id": "exp182-20260918T021950Z-2fc4f41678f5",
+          "session_id": "856bed4f-3428-4594-a140-a0e9933b959f",
+          "target": "log-action-a",
+          "view_id": "cfbd3715-b858-434e-9ef4-390dd5acc77a"
+        }
+      ],
+      "crashes": {
+        "count": 0
+      },
+      "errors": [
+        {
+          "action_ids": [
+            "94e20493-9d58-4f2f-9044-450fcb6bc2ce"
+          ],
+          "error_source": "logger",
+          "event_id": "92ea64ee-4abe-40bd-9b64-691f594d4826",
+          "is_crash": false,
+          "leaked_internal_attribute": false,
+          "payload_matches": true,
+          "phase": "log-error-fallback",
+          "run_id": "exp182-20260918T021950Z-2fc4f41678f5",
+          "session_id": "856bed4f-3428-4594-a140-a0e9933b959f",
+          "source_scene": "source-less",
+          "view_id": "b4e21e9d-c459-4006-939f-064a09c4070b"
+        },
+        {
+          "action_ids": [
+            "94e20493-9d58-4f2f-9044-450fcb6bc2ce"
+          ],
+          "error_source": "logger",
+          "event_id": "a2df4f05-96a9-4cd7-9b17-631ec5f0c0e6",
+          "is_crash": false,
+          "leaked_internal_attribute": false,
+          "payload_matches": true,
+          "phase": "log-error-b",
+          "run_id": "exp182-20260918T021950Z-2fc4f41678f5",
+          "session_id": "856bed4f-3428-4594-a140-a0e9933b959f",
+          "source_scene": "scene-B",
+          "view_id": "b4e21e9d-c459-4006-939f-064a09c4070b"
+        },
+        {
+          "action_ids": [
+            "9d8d232f-c6e4-48fd-b96a-06fb8db09c74"
+          ],
+          "error_source": "logger",
+          "event_id": "3c840ba2-88ce-4fd5-935d-7199e646b494",
+          "is_crash": false,
+          "leaked_internal_attribute": false,
+          "payload_matches": true,
+          "phase": "log-error-a",
+          "run_id": "exp182-20260918T021950Z-2fc4f41678f5",
+          "session_id": "856bed4f-3428-4594-a140-a0e9933b959f",
+          "source_scene": "scene-A",
+          "view_id": "cfbd3715-b858-434e-9ef4-390dd5acc77a"
+        }
+      ],
+      "logs": {
+        "count": 6,
+        "groups": [
+          {
+            "action_id": "94e20493-9d58-4f2f-9044-450fcb6bc2ce",
+            "application_id": "43cbc59b-0626-438b-a3d9-c6417a4545a3",
+            "events": 1,
+            "message": "log-error-b",
+            "phase": "log-error-b",
+            "run_id": "exp182-20260918T021950Z-2fc4f41678f5",
+            "service": "ios-sdk-native-multi-scene-probe",
+            "session_id": "856bed4f-3428-4594-a140-a0e9933b959f",
+            "source_scene": "scene-B",
+            "status": "error",
+            "view_id": "b4e21e9d-c459-4006-939f-064a09c4070b"
+          },
+          {
+            "action_id": "94e20493-9d58-4f2f-9044-450fcb6bc2ce",
+            "application_id": "43cbc59b-0626-438b-a3d9-c6417a4545a3",
+            "events": 1,
+            "message": "log-error-fallback",
+            "phase": "log-error-fallback",
+            "run_id": "exp182-20260918T021950Z-2fc4f41678f5",
+            "service": "ios-sdk-native-multi-scene-probe",
+            "session_id": "856bed4f-3428-4594-a140-a0e9933b959f",
+            "source_scene": "source-less",
+            "status": "error",
+            "view_id": "b4e21e9d-c459-4006-939f-064a09c4070b"
+          },
+          {
+            "action_id": "9d8d232f-c6e4-48fd-b96a-06fb8db09c74",
+            "application_id": "43cbc59b-0626-438b-a3d9-c6417a4545a3",
+            "events": 1,
+            "message": "log-info-a",
+            "phase": "log-info-a",
+            "run_id": "exp182-20260918T021950Z-2fc4f41678f5",
+            "service": "ios-sdk-native-multi-scene-probe",
+            "session_id": "856bed4f-3428-4594-a140-a0e9933b959f",
+            "source_scene": "scene-A",
+            "status": "info",
+            "view_id": "cfbd3715-b858-434e-9ef4-390dd5acc77a"
+          },
+          {
+            "action_id": "94e20493-9d58-4f2f-9044-450fcb6bc2ce",
+            "application_id": "43cbc59b-0626-438b-a3d9-c6417a4545a3",
+            "events": 1,
+            "message": "log-info-fallback",
+            "phase": "log-info-fallback",
+            "run_id": "exp182-20260918T021950Z-2fc4f41678f5",
+            "service": "ios-sdk-native-multi-scene-probe",
+            "session_id": "856bed4f-3428-4594-a140-a0e9933b959f",
+            "source_scene": "source-less",
+            "status": "info",
+            "view_id": "b4e21e9d-c459-4006-939f-064a09c4070b"
+          },
+          {
+            "action_id": "9d8d232f-c6e4-48fd-b96a-06fb8db09c74",
+            "application_id": "43cbc59b-0626-438b-a3d9-c6417a4545a3",
+            "events": 1,
+            "message": "log-error-a",
+            "phase": "log-error-a",
+            "run_id": "exp182-20260918T021950Z-2fc4f41678f5",
+            "service": "ios-sdk-native-multi-scene-probe",
+            "session_id": "856bed4f-3428-4594-a140-a0e9933b959f",
+            "source_scene": "scene-A",
+            "status": "error",
+            "view_id": "cfbd3715-b858-434e-9ef4-390dd5acc77a"
+          },
+          {
+            "action_id": "94e20493-9d58-4f2f-9044-450fcb6bc2ce",
+            "application_id": "43cbc59b-0626-438b-a3d9-c6417a4545a3",
+            "events": 1,
+            "message": "log-info-b",
+            "phase": "log-info-b",
+            "run_id": "exp182-20260918T021950Z-2fc4f41678f5",
+            "service": "ios-sdk-native-multi-scene-probe",
+            "session_id": "856bed4f-3428-4594-a140-a0e9933b959f",
+            "source_scene": "scene-B",
+            "status": "info",
+            "view_id": "b4e21e9d-c459-4006-939f-064a09c4070b"
+          }
+        ],
+        "rows": [
+          {
+            "action_id": "9d8d232f-c6e4-48fd-b96a-06fb8db09c74",
+            "application_id": "43cbc59b-0626-438b-a3d9-c6417a4545a3",
+            "leaked_internal_attribute": false,
+            "log_id": null,
+            "message": "log-info-a",
+            "phase": "log-info-a",
+            "run_id": "exp182-20260918T021950Z-2fc4f41678f5",
+            "service": "ios-sdk-native-multi-scene-probe",
+            "session_id": "856bed4f-3428-4594-a140-a0e9933b959f",
+            "source_scene": "scene-A",
+            "status": "info",
+            "view_id": "cfbd3715-b858-434e-9ef4-390dd5acc77a"
+          },
+          {
+            "action_id": "9d8d232f-c6e4-48fd-b96a-06fb8db09c74",
+            "application_id": "43cbc59b-0626-438b-a3d9-c6417a4545a3",
+            "leaked_internal_attribute": false,
+            "log_id": null,
+            "message": "log-error-a",
+            "phase": "log-error-a",
+            "run_id": "exp182-20260918T021950Z-2fc4f41678f5",
+            "service": "ios-sdk-native-multi-scene-probe",
+            "session_id": "856bed4f-3428-4594-a140-a0e9933b959f",
+            "source_scene": "scene-A",
+            "status": "error",
+            "view_id": "cfbd3715-b858-434e-9ef4-390dd5acc77a"
+          },
+          {
+            "action_id": "94e20493-9d58-4f2f-9044-450fcb6bc2ce",
+            "application_id": "43cbc59b-0626-438b-a3d9-c6417a4545a3",
+            "leaked_internal_attribute": false,
+            "log_id": null,
+            "message": "log-info-b",
+            "phase": "log-info-b",
+            "run_id": "exp182-20260918T021950Z-2fc4f41678f5",
+            "service": "ios-sdk-native-multi-scene-probe",
+            "session_id": "856bed4f-3428-4594-a140-a0e9933b959f",
+            "source_scene": "scene-B",
+            "status": "info",
+            "view_id": "b4e21e9d-c459-4006-939f-064a09c4070b"
+          },
+          {
+            "action_id": "94e20493-9d58-4f2f-9044-450fcb6bc2ce",
+            "application_id": "43cbc59b-0626-438b-a3d9-c6417a4545a3",
+            "leaked_internal_attribute": false,
+            "log_id": null,
+            "message": "log-error-b",
+            "phase": "log-error-b",
+            "run_id": "exp182-20260918T021950Z-2fc4f41678f5",
+            "service": "ios-sdk-native-multi-scene-probe",
+            "session_id": "856bed4f-3428-4594-a140-a0e9933b959f",
+            "source_scene": "scene-B",
+            "status": "error",
+            "view_id": "b4e21e9d-c459-4006-939f-064a09c4070b"
+          },
+          {
+            "action_id": "94e20493-9d58-4f2f-9044-450fcb6bc2ce",
+            "application_id": "43cbc59b-0626-438b-a3d9-c6417a4545a3",
+            "leaked_internal_attribute": false,
+            "log_id": null,
+            "message": "log-info-fallback",
+            "phase": "log-info-fallback",
+            "run_id": "exp182-20260918T021950Z-2fc4f41678f5",
+            "service": "ios-sdk-native-multi-scene-probe",
+            "session_id": "856bed4f-3428-4594-a140-a0e9933b959f",
+            "source_scene": "source-less",
+            "status": "info",
+            "view_id": "b4e21e9d-c459-4006-939f-064a09c4070b"
+          },
+          {
+            "action_id": "94e20493-9d58-4f2f-9044-450fcb6bc2ce",
+            "application_id": "43cbc59b-0626-438b-a3d9-c6417a4545a3",
+            "leaked_internal_attribute": false,
+            "log_id": null,
+            "message": "log-error-fallback",
+            "phase": "log-error-fallback",
+            "run_id": "exp182-20260918T021950Z-2fc4f41678f5",
+            "service": "ios-sdk-native-multi-scene-probe",
+            "session_id": "856bed4f-3428-4594-a140-a0e9933b959f",
+            "source_scene": "source-less",
+            "status": "error",
+            "view_id": "b4e21e9d-c459-4006-939f-064a09c4070b"
+          }
+        ]
+      },
+      "resources": [],
+      "views": [
+        {
+          "name": "ProbeHomeView",
+          "run_id": "exp182-20260918T021950Z-2fc4f41678f5",
+          "session_id": "856bed4f-3428-4594-a140-a0e9933b959f",
+          "view_id": "b4e21e9d-c459-4006-939f-064a09c4070b"
+        },
+        {
+          "name": "ProbeHomeView",
+          "run_id": "exp182-20260918T021950Z-2fc4f41678f5",
+          "session_id": "856bed4f-3428-4594-a140-a0e9933b959f",
+          "view_id": "cfbd3715-b858-434e-9ef4-390dd5acc77a"
+        },
+        {
+          "name": "ApplicationLaunch",
+          "run_id": "exp182-20260918T021950Z-2fc4f41678f5",
+          "session_id": "856bed4f-3428-4594-a140-a0e9933b959f",
+          "view_id": "0f437056-a596-4cf6-bb3b-f7a51f1d899c"
+        }
+      ]
+    },
+    "build-identity.json": {
+      "executable_sha256": "71f16711abec21f791266a141fb7b2b54d3c1ccf07854339ef9f69c84d44857e",
+      "source_sha256": "c2c4e3657b71b532a9c6bd56cf3b2fb5d7dc2637ac61e1d65f6f7bac867fa1d5",
+      "uuid": "UUID: 0DEA27AD-3870-3FD6-B30C-D69FB3B2D91A (arm64) /private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/multi-scene-acceptance-ep0iewre/run/derived/Build/Products/Debug-iphonesimulator/RUMNativeMultiSceneProbe.app/RUMNativeMultiSceneProbe"
+    },
+    "local-evidence.json": {
+      "actions": [
+        {
+          "action_id": "9d8d232f-c6e4-48fd-b96a-06fb8db09c74",
+          "error_count": 1,
+          "phase": "log-action-a",
+          "resource_count": 0,
+          "session_id": "856bed4f-3428-4594-a140-a0e9933b959f",
+          "target": "log-action-a",
+          "view_id": "cfbd3715-b858-434e-9ef4-390dd5acc77a"
+        },
+        {
+          "action_id": "94e20493-9d58-4f2f-9044-450fcb6bc2ce",
+          "error_count": 2,
+          "phase": "log-action-b",
+          "resource_count": 0,
+          "session_id": "856bed4f-3428-4594-a140-a0e9933b959f",
+          "target": "log-action-b",
+          "view_id": "b4e21e9d-c459-4006-939f-064a09c4070b"
+        }
+      ],
+      "assertions": 24,
+      "errors": [
+        {
+          "action_ids": [
+            "9d8d232f-c6e4-48fd-b96a-06fb8db09c74"
+          ],
+          "error_source": "logger",
+          "event_id": "3c840ba2-88ce-4fd5-935d-7199e646b494",
+          "leaked_internal_attribute": false,
+          "payload_matches": true,
+          "phase": "log-error-a",
+          "session_id": "856bed4f-3428-4594-a140-a0e9933b959f",
+          "source_scene": "scene-A",
+          "view_id": "cfbd3715-b858-434e-9ef4-390dd5acc77a"
+        },
+        {
+          "action_ids": [
+            "94e20493-9d58-4f2f-9044-450fcb6bc2ce"
+          ],
+          "error_source": "logger",
+          "event_id": "a2df4f05-96a9-4cd7-9b17-631ec5f0c0e6",
+          "leaked_internal_attribute": false,
+          "payload_matches": true,
+          "phase": "log-error-b",
+          "session_id": "856bed4f-3428-4594-a140-a0e9933b959f",
+          "source_scene": "scene-B",
+          "view_id": "b4e21e9d-c459-4006-939f-064a09c4070b"
+        },
+        {
+          "action_ids": [
+            "94e20493-9d58-4f2f-9044-450fcb6bc2ce"
+          ],
+          "error_source": "logger",
+          "event_id": "92ea64ee-4abe-40bd-9b64-691f594d4826",
+          "leaked_internal_attribute": false,
+          "payload_matches": true,
+          "phase": "log-error-fallback",
+          "session_id": "856bed4f-3428-4594-a140-a0e9933b959f",
+          "source_scene": "source-less",
+          "view_id": "b4e21e9d-c459-4006-939f-064a09c4070b"
+        }
+      ],
+      "logs": [
+        {
+          "action_id": "9d8d232f-c6e4-48fd-b96a-06fb8db09c74",
+          "application_id": "43cbc59b-0626-438b-a3d9-c6417a4545a3",
+          "message": "log-info-a",
+          "phase": "log-info-a",
+          "service": "ios-sdk-native-multi-scene-probe",
+          "session_id": "856bed4f-3428-4594-a140-a0e9933b959f",
+          "source_scene": "scene-A",
+          "status": "info",
+          "view_id": "cfbd3715-b858-434e-9ef4-390dd5acc77a"
+        },
+        {
+          "action_id": "9d8d232f-c6e4-48fd-b96a-06fb8db09c74",
+          "application_id": "43cbc59b-0626-438b-a3d9-c6417a4545a3",
+          "message": "log-error-a",
+          "phase": "log-error-a",
+          "service": "ios-sdk-native-multi-scene-probe",
+          "session_id": "856bed4f-3428-4594-a140-a0e9933b959f",
+          "source_scene": "scene-A",
+          "status": "error",
+          "view_id": "cfbd3715-b858-434e-9ef4-390dd5acc77a"
+        },
+        {
+          "action_id": "94e20493-9d58-4f2f-9044-450fcb6bc2ce",
+          "application_id": "43cbc59b-0626-438b-a3d9-c6417a4545a3",
+          "message": "log-info-b",
+          "phase": "log-info-b",
+          "service": "ios-sdk-native-multi-scene-probe",
+          "session_id": "856bed4f-3428-4594-a140-a0e9933b959f",
+          "source_scene": "scene-B",
+          "status": "info",
+          "view_id": "b4e21e9d-c459-4006-939f-064a09c4070b"
+        },
+        {
+          "action_id": "94e20493-9d58-4f2f-9044-450fcb6bc2ce",
+          "application_id": "43cbc59b-0626-438b-a3d9-c6417a4545a3",
+          "message": "log-error-b",
+          "phase": "log-error-b",
+          "service": "ios-sdk-native-multi-scene-probe",
+          "session_id": "856bed4f-3428-4594-a140-a0e9933b959f",
+          "source_scene": "scene-B",
+          "status": "error",
+          "view_id": "b4e21e9d-c459-4006-939f-064a09c4070b"
+        },
+        {
+          "action_id": "94e20493-9d58-4f2f-9044-450fcb6bc2ce",
+          "application_id": "43cbc59b-0626-438b-a3d9-c6417a4545a3",
+          "message": "log-info-fallback",
+          "phase": "log-info-fallback",
+          "service": "ios-sdk-native-multi-scene-probe",
+          "session_id": "856bed4f-3428-4594-a140-a0e9933b959f",
+          "source_scene": "source-less",
+          "status": "info",
+          "view_id": "b4e21e9d-c459-4006-939f-064a09c4070b"
+        },
+        {
+          "action_id": "94e20493-9d58-4f2f-9044-450fcb6bc2ce",
+          "application_id": "43cbc59b-0626-438b-a3d9-c6417a4545a3",
+          "message": "log-error-fallback",
+          "phase": "log-error-fallback",
+          "service": "ios-sdk-native-multi-scene-probe",
+          "session_id": "856bed4f-3428-4594-a140-a0e9933b959f",
+          "source_scene": "source-less",
+          "status": "error",
+          "view_id": "b4e21e9d-c459-4006-939f-064a09c4070b"
+        }
+      ],
+      "native_scenes": {
+        "scene-A": "5EA81067-08DB-4DDA-86B8-D05E9E58466C",
+        "scene-B": "D87878B9-0DFD-490F-A0CB-C4D3858A0F62"
+      },
+      "owners": {
+        "scene-A": "cfbd3715-b858-434e-9ef4-390dd5acc77a",
+        "scene-B": "b4e21e9d-c459-4006-939f-064a09c4070b",
+        "source-less": "b4e21e9d-c459-4006-939f-064a09c4070b"
+      },
+      "session_id": "856bed4f-3428-4594-a140-a0e9933b959f",
+      "signal_count": 53,
+      "simultaneous_visibility_claimed": false,
+      "views": [
+        {
+          "name": "ApplicationLaunch",
+          "session_id": "856bed4f-3428-4594-a140-a0e9933b959f",
+          "view_id": "0f437056-a596-4cf6-bb3b-f7a51f1d899c"
+        },
+        {
+          "name": "ProbeHomeView",
+          "session_id": "856bed4f-3428-4594-a140-a0e9933b959f",
+          "view_id": "cfbd3715-b858-434e-9ef4-390dd5acc77a"
+        },
+        {
+          "name": "ProbeHomeView",
+          "session_id": "856bed4f-3428-4594-a140-a0e9933b959f",
+          "view_id": "b4e21e9d-c459-4006-939f-064a09c4070b"
+        }
+      ]
+    },
+    "test-summary.json": {
+      "devicesAndConfigurations": [
+        {
+          "device": {
+            "architecture": "arm64",
+            "deviceId": "92C9918B-FEC6-4440-9D6D-8E09475950BB",
+            "deviceName": "iPad mini (A17 Pro)",
+            "modelName": "iPad mini (A17 Pro)",
+            "osBuildNumber": "24A434",
+            "osVersion": "27.0",
+            "platform": "iOS Simulator"
+          },
+          "expectedFailures": 0,
+          "failedTests": 0,
+          "passedTests": 181,
+          "skippedTests": 0,
+          "testPlanConfiguration": {
+            "configurationId": "1",
+            "configurationName": "Test Scheme Action"
+          }
+        }
+      ],
+      "environmentDescription": "RUMNativeMultiSceneProbe \u00b7 Built with macOS 26.6.2",
+      "expectedFailures": 0,
+      "failedTests": 0,
+      "finishTime": 1789698043.862,
+      "passedTests": 181,
+      "result": "Passed",
+      "runtimeWarnings": [],
+      "skippedTests": 0,
+      "startTime": 1789698022.322,
+      "statistics": [],
+      "testFailures": [],
+      "title": "Test - RUMNativeMultiSceneProbe",
+      "topInsights": [],
+      "totalTestCount": 181
+    }
+  },
+  "experiment": "EXP-182",
+  "failures": [],
+  "finished_at": "2026-09-18T02:22:29.272050+00:00",
+  "gate": "T09",
+  "oracle_contract_sha256": "d207fe9dd0c665280ac252a56c4eb23978a12b576c611fc75626fcf55de7d1d0",
+  "rerun": "Use a fresh output directory and freshly resolved device; do not reuse run IDs or bridge responses.",
+  "revision": "a95cef32cc5dce93041869fc1617a9c5ed666522",
+  "run_id": "exp182-20260918T021950Z-2fc4f41678f5",
+  "scenario_id": "logs.captured-emission.native-mirrors-cross-scene-serial",
+  "schema_version": 1,
+  "source_file_count": 507,
+  "source_fingerprint": "c2c4e3657b71b532a9c6bd56cf3b2fb5d7dc2637ac61e1d65f6f7bac867fa1d5",
+  "stages": {
+    "backend": {
+      "action_count": 2,
+      "crash_count": 0,
+      "error_count": 3,
+      "exposed_log_id_count": 0,
+      "log_count": 6,
+      "log_group_count": 6,
+      "resource_count": 0,
+      "state": "PASS",
+      "view_count": 3
+    },
+    "clean_install": {
+      "data_container_absent": true,
+      "installed_binary_sha256": "71f16711abec21f791266a141fb7b2b54d3c1ccf07854339ef9f69c84d44857e",
+      "state": "PASS"
+    },
+    "frozen_build": {
+      "executable_sha256": "71f16711abec21f791266a141fb7b2b54d3c1ccf07854339ef9f69c84d44857e",
+      "source_sha256": "c2c4e3657b71b532a9c6bd56cf3b2fb5d7dc2637ac61e1d65f6f7bac867fa1d5",
+      "state": "PASS",
+      "test_count": 181,
+      "uuid": "UUID: 0DEA27AD-3870-3FD6-B30C-D69FB3B2D91A (arm64) /private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/multi-scene-acceptance-ep0iewre/run/derived/Build/Products/Debug-iphonesimulator/RUMNativeMultiSceneProbe.app/RUMNativeMultiSceneProbe"
+    },
+    "local_semantics": {
+      "actions": [
+        {
+          "action_id": "9d8d232f-c6e4-48fd-b96a-06fb8db09c74",
+          "error_count": 1,
+          "phase": "log-action-a",
+          "resource_count": 0,
+          "session_id": "856bed4f-3428-4594-a140-a0e9933b959f",
+          "target": "log-action-a",
+          "view_id": "cfbd3715-b858-434e-9ef4-390dd5acc77a"
+        },
+        {
+          "action_id": "94e20493-9d58-4f2f-9044-450fcb6bc2ce",
+          "error_count": 2,
+          "phase": "log-action-b",
+          "resource_count": 0,
+          "session_id": "856bed4f-3428-4594-a140-a0e9933b959f",
+          "target": "log-action-b",
+          "view_id": "b4e21e9d-c459-4006-939f-064a09c4070b"
+        }
+      ],
+      "assertions": 24,
+      "errors": [
+        {
+          "action_ids": [
+            "9d8d232f-c6e4-48fd-b96a-06fb8db09c74"
+          ],
+          "error_source": "logger",
+          "event_id": "3c840ba2-88ce-4fd5-935d-7199e646b494",
+          "leaked_internal_attribute": false,
+          "payload_matches": true,
+          "phase": "log-error-a",
+          "session_id": "856bed4f-3428-4594-a140-a0e9933b959f",
+          "source_scene": "scene-A",
+          "view_id": "cfbd3715-b858-434e-9ef4-390dd5acc77a"
+        },
+        {
+          "action_ids": [
+            "94e20493-9d58-4f2f-9044-450fcb6bc2ce"
+          ],
+          "error_source": "logger",
+          "event_id": "a2df4f05-96a9-4cd7-9b17-631ec5f0c0e6",
+          "leaked_internal_attribute": false,
+          "payload_matches": true,
+          "phase": "log-error-b",
+          "session_id": "856bed4f-3428-4594-a140-a0e9933b959f",
+          "source_scene": "scene-B",
+          "view_id": "b4e21e9d-c459-4006-939f-064a09c4070b"
+        },
+        {
+          "action_ids": [
+            "94e20493-9d58-4f2f-9044-450fcb6bc2ce"
+          ],
+          "error_source": "logger",
+          "event_id": "92ea64ee-4abe-40bd-9b64-691f594d4826",
+          "leaked_internal_attribute": false,
+          "payload_matches": true,
+          "phase": "log-error-fallback",
+          "session_id": "856bed4f-3428-4594-a140-a0e9933b959f",
+          "source_scene": "source-less",
+          "view_id": "b4e21e9d-c459-4006-939f-064a09c4070b"
+        }
+      ],
+      "logs": [
+        {
+          "action_id": "9d8d232f-c6e4-48fd-b96a-06fb8db09c74",
+          "application_id": "43cbc59b-0626-438b-a3d9-c6417a4545a3",
+          "message": "log-info-a",
+          "phase": "log-info-a",
+          "service": "ios-sdk-native-multi-scene-probe",
+          "session_id": "856bed4f-3428-4594-a140-a0e9933b959f",
+          "source_scene": "scene-A",
+          "status": "info",
+          "view_id": "cfbd3715-b858-434e-9ef4-390dd5acc77a"
+        },
+        {
+          "action_id": "9d8d232f-c6e4-48fd-b96a-06fb8db09c74",
+          "application_id": "43cbc59b-0626-438b-a3d9-c6417a4545a3",
+          "message": "log-error-a",
+          "phase": "log-error-a",
+          "service": "ios-sdk-native-multi-scene-probe",
+          "session_id": "856bed4f-3428-4594-a140-a0e9933b959f",
+          "source_scene": "scene-A",
+          "status": "error",
+          "view_id": "cfbd3715-b858-434e-9ef4-390dd5acc77a"
+        },
+        {
+          "action_id": "94e20493-9d58-4f2f-9044-450fcb6bc2ce",
+          "application_id": "43cbc59b-0626-438b-a3d9-c6417a4545a3",
+          "message": "log-info-b",
+          "phase": "log-info-b",
+          "service": "ios-sdk-native-multi-scene-probe",
+          "session_id": "856bed4f-3428-4594-a140-a0e9933b959f",
+          "source_scene": "scene-B",
+          "status": "info",
+          "view_id": "b4e21e9d-c459-4006-939f-064a09c4070b"
+        },
+        {
+          "action_id": "94e20493-9d58-4f2f-9044-450fcb6bc2ce",
+          "application_id": "43cbc59b-0626-438b-a3d9-c6417a4545a3",
+          "message": "log-error-b",
+          "phase": "log-error-b",
+          "service": "ios-sdk-native-multi-scene-probe",
+          "session_id": "856bed4f-3428-4594-a140-a0e9933b959f",
+          "source_scene": "scene-B",
+          "status": "error",
+          "view_id": "b4e21e9d-c459-4006-939f-064a09c4070b"
+        },
+        {
+          "action_id": "94e20493-9d58-4f2f-9044-450fcb6bc2ce",
+          "application_id": "43cbc59b-0626-438b-a3d9-c6417a4545a3",
+          "message": "log-info-fallback",
+          "phase": "log-info-fallback",
+          "service": "ios-sdk-native-multi-scene-probe",
+          "session_id": "856bed4f-3428-4594-a140-a0e9933b959f",
+          "source_scene": "source-less",
+          "status": "info",
+          "view_id": "b4e21e9d-c459-4006-939f-064a09c4070b"
+        },
+        {
+          "action_id": "94e20493-9d58-4f2f-9044-450fcb6bc2ce",
+          "application_id": "43cbc59b-0626-438b-a3d9-c6417a4545a3",
+          "message": "log-error-fallback",
+          "phase": "log-error-fallback",
+          "service": "ios-sdk-native-multi-scene-probe",
+          "session_id": "856bed4f-3428-4594-a140-a0e9933b959f",
+          "source_scene": "source-less",
+          "status": "error",
+          "view_id": "b4e21e9d-c459-4006-939f-064a09c4070b"
+        }
+      ],
+      "native_scenes": {
+        "scene-A": "5EA81067-08DB-4DDA-86B8-D05E9E58466C",
+        "scene-B": "D87878B9-0DFD-490F-A0CB-C4D3858A0F62"
+      },
+      "owners": {
+        "scene-A": "cfbd3715-b858-434e-9ef4-390dd5acc77a",
+        "scene-B": "b4e21e9d-c459-4006-939f-064a09c4070b",
+        "source-less": "b4e21e9d-c459-4006-939f-064a09c4070b"
+      },
+      "session_id": "856bed4f-3428-4594-a140-a0e9933b959f",
+      "signal_count": 53,
+      "simultaneous_visibility_claimed": false,
+      "state": "PASS",
+      "views": [
+        {
+          "name": "ApplicationLaunch",
+          "session_id": "856bed4f-3428-4594-a140-a0e9933b959f",
+          "view_id": "0f437056-a596-4cf6-bb3b-f7a51f1d899c"
+        },
+        {
+          "name": "ProbeHomeView",
+          "session_id": "856bed4f-3428-4594-a140-a0e9933b959f",
+          "view_id": "cfbd3715-b858-434e-9ef4-390dd5acc77a"
+        },
+        {
+          "name": "ProbeHomeView",
+          "session_id": "856bed4f-3428-4594-a140-a0e9933b959f",
+          "view_id": "b4e21e9d-c459-4006-939f-064a09c4070b"
+        }
+      ]
+    },
+    "preflight": {
+      "authenticated_read": true,
+      "state": "PASS"
+    }
+  },
+  "started_at": "2026-09-18T02:19:50.070899+00:00",
+  "state": "PASS",
+  "xcode": "Xcode 27.0\nBuild version 27A266a"
+}
