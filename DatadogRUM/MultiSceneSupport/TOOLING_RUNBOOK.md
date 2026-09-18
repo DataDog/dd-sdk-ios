@@ -1431,3 +1431,13 @@ revision. For fatal acceptance, copy the mapper's observed revision into the
 synthetic exp184_sdk_document_version attribute and require its exact preservation.
 Keep the local injected-version+1 check and all owner-specific counts. Record the
 search counter separately; never substitute it for a missing SDK witness.
+
+### Process signal acceptance
+
+Use the real run-loop/watchdog producers for long tasks and nonfatal hangs.
+A controlled UIApplication memory-warning notification proves the monitor route,
+not actual pressure. Observe the representative and absent active action before
+each stimulus; require exact mapper acknowledgements and view counts before the
+next boundary. Pending fatal-hang tests preserve the serialized owner and prior
+consent through live-session replacement and one-time consumption. Keep
+deterministic restart evidence separate from actual watchdog termination.

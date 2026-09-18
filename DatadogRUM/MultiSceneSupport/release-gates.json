@@ -375,7 +375,7 @@
       "environment": "Controlled long-task/hang/memory-warning tests and simulator backend",
       "completion_mode": "documented process-level fallback",
       "status": "OPEN",
-      "evidence": "EXP-185 predeclared: deterministic representative/captured-hang ownership, then two rounds of actual run-loop/watchdog plus controlled memory-warning instrumentation on A/B; complete backend inventory. Results/EXP-185-process-signal-routing.json."
+      "evidence": "EXP-185 deterministic checkpoint:98 SDK tests and strict test lint pass; representative routing and retained fatal-hang consumption. Actual native producers and backend remain. Results/EXP-185-process-signal-routing.json."
     },
     {
       "id": "T13",

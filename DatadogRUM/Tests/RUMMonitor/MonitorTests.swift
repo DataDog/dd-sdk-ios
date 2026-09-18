@@ -189,6 +189,115 @@ class MonitorTests: XCTestCase {
         }
     }
 
+    func testProcessSignalsFollowRepresentativeWithoutAdoptingPeerHandoffOrBroadcasting() throws {
+        let scope = FeatureScopeMock(context: .mockWith(
+            serverTimeOffset: 0,
+            launchInfo: .mockWith(launchReason: .userLaunch)
+        ))
+        let clock = DateProviderMock()
+        let monitor = Monitor(
+            dependencies: .mockWith(featureScope: scope, samplingRate: 100),
+            dateProvider: clock
+        )
+        let (sceneA, sceneB) = startConcurrentSceneViews(in: monitor, dateProvider: clock)
+        let contextA = try XCTUnwrap(monitor.rumContextSnapshot(for: .scene(sceneA)))
+        let contextB = try XCTUnwrap(monitor.rumContextSnapshot(for: .scene(sceneB)))
+        XCTAssertNotEqual(contextA.viewID, contextB.viewID)
+        XCTAssertEqual(contextA.sessionID, contextB.sessionID)
+
+        for (index, owner) in [contextB, contextA].enumerated() {
+            clock.now = clock.now.addingTimeInterval(3)
+            if index == 1 {
+                monitor.addAction(type: .custom, name: "Select A", attributes: [:], explicitTarget: .scene(sceneA))
+            }
+            XCTAssertEqual(scope.contextMock.additionalContext(ofType: RUMCoreContext.self)?.viewID, owner.viewID)
+            XCTAssertNil(monitor.rumContextSnapshot(for: .processRepresentative)?.userActionID)
+
+            let commands: [RUMCommand] = [
+                RUMAddLongTaskCommand(time: clock.now, globalAttributes: [:], attributes: [:], duration: 1.5),
+                RUMAddCurrentViewAppHangCommand.mockWith(
+                    time: clock.now,
+                    message: "App Hang",
+                    type: "AppHang",
+                    stack: nil,
+                    threads: nil,
+                    binaryImages: nil,
+                    isStackTraceTruncated: nil,
+                    hangDuration: 1.5
+                ),
+                RUMAddCurrentViewMemoryWarningCommand(
+                    time: clock.now,
+                    globalAttributes: [:],
+                    attributes: [:],
+                    message: "Memory Warning",
+                    type: "MemoryWarning",
+                    stack: nil,
+                    threads: nil,
+                    binaryImages: nil,
+                    isStackTraceTruncated: nil
+                )
+            ]
+            let peerScene = index == 0 ? sceneA : sceneB
+            let peerContext = index == 0 ? contextA : contextB
+            for command in commands {
+                XCTAssertEqual(command.target, .processRepresentative)
+                RUMContextHandoff.withValue(
+                    owner: monitor.rumContextHandoffOwner,
+                    rumContext: peerContext,
+                    sceneIdentifier: peerScene.rawValue
+                ) {
+                    monitor.process(command: command)
+                }
+                XCTAssertEqual(scope.contextMock.additionalContext(ofType: RUMCoreContext.self)?.viewID, owner.viewID)
+            }
+
+            let tasks = scope.eventsWritten(ofType: RUMLongTaskEvent.self)
+            let errors = scope.eventsWritten(ofType: RUMErrorEvent.self)
+            XCTAssertEqual(tasks.count, index + 1)
+            XCTAssertEqual(errors.count, (index + 1) * 2)
+            let task = try XCTUnwrap(tasks.last)
+            XCTAssertEqual(task.view.id, owner.viewID)
+            XCTAssertEqual(task.session.id, owner.sessionID)
+            XCTAssertEqual(task.longTask.duration, 1_500_000_000)
+            XCTAssertEqual(task.date, (clock.now - 1.5).timeIntervalSince1970.dd.toInt64Milliseconds)
+            XCTAssertNil(task.action)
+            XCTAssertNil(task.container)
+            DDTAssertValidRUMUUID(task.longTask.id)
+            let roundErrors = Array(errors.suffix(2))
+            XCTAssertEqual(roundErrors.map { $0.error.category }, [.appHang, .memoryWarning])
+            XCTAssertEqual(roundErrors.map { $0.error.type }, ["AppHang", "MemoryWarning"])
+            XCTAssertEqual(roundErrors.first?.freeze?.duration, 1_500_000_000)
+            for error in roundErrors {
+                XCTAssertEqual(error.view.id, owner.viewID)
+                XCTAssertEqual(error.session.id, owner.sessionID)
+                XCTAssertEqual(error.date, clock.now.timeIntervalSince1970.dd.toInt64Milliseconds)
+                XCTAssertEqual(error.error.isCrash, false)
+                XCTAssertEqual(error.error.sourceType, .ios)
+                XCTAssertEqual(error.error.source, .source)
+                XCTAssertNil(error.action)
+                XCTAssertNil(error.container)
+                DDTAssertValidRUMUUID(error.error.id)
+            }
+
+            for context in [contextA, contextB] {
+                let view = try XCTUnwrap(scope.eventsWritten(ofType: RUMViewEvent.self).last { $0.view.id == context.viewID })
+                let expectedCount: Int64 = index == 1 || context.viewID == contextB.viewID ? 1 : 0
+                XCTAssertEqual(view.view.longTask?.count ?? 0, expectedCount)
+                XCTAssertEqual(view.view.error.count, expectedCount * 2)
+                XCTAssertEqual(view.view.crash?.count ?? 0, 0)
+            }
+        }
+
+        let tasks = scope.eventsWritten(ofType: RUMLongTaskEvent.self)
+        let errors = scope.eventsWritten(ofType: RUMErrorEvent.self)
+        XCTAssertEqual(Set(tasks.compactMap { $0.longTask.id }).count, 2)
+        XCTAssertEqual(Set(errors.map { $0.error.id }).count, 4)
+        let actions = scope.eventsWritten(ofType: RUMActionEvent.self)
+        XCTAssertEqual(actions.count, 1)
+        XCTAssertEqual(actions.first?.view.id, contextA.viewID)
+        XCTAssertTrue(scope.eventsWritten(ofType: RUMResourceEvent.self).isEmpty)
+    }
+
     func testGivenOperationStartedDuringSceneHandoff_itUsesThatSceneInsteadOfRepresentative() throws {
         let dateProvider = DateProviderMock()
         let monitor = Monitor(

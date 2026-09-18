@@ -220,3 +220,11 @@ oracle attempts remain in the experiment record, including the distinction betwe
 SDK revision and the backend search counter. This bounded validation is separate
 from the completed original D01–D12 review and does not imply hardware/Duo, T12–T14,
 Replay or overall release readiness.
+
+## Subsequent bounded validation: process signals
+
+[EXP-185](Experiments/EXP-143-199.md#exp-185--validate-process-signal-routing)
+adds representative routing and captured pending-hang controls. All98 selected
+SDK tests and strict test lint pass without production changes. T12 remains open
+until actual producer and complete backend acceptance; this is no additional
+original-review finding or release certification.

@@ -2,7 +2,7 @@
   "experiment": "EXP-185",
   "gate": "T12",
   "title": "Validate process signal routing",
-  "status": "PLANNED",
+  "status": "PREPARED",
   "control_revision": "224c099dc18d2acabe2d70d2ad0c9bf1f961167c",
   "sdk_revision": "04201edc7711361279d8487b385bc8b0ca9c63c7",
   "definition": "Experiments/EXP-143-199.md#exp-185--validate-process-signal-routing",
@@ -46,7 +46,40 @@
     "Fatal-hang restart remains deterministic; no system watchdog termination claim",
     "Not physical/Duo, vitals, profiling or Replay acceptance"
   ],
-  "unit_attempts": [],
+  "unit_attempts": [
+    {
+      "state": "PASS",
+      "base_revision": "7ef87c830c41fde4022113d49f81733c95dade22",
+      "sdk_revision": "04201edc7711361279d8487b385bc8b0ca9c63c7",
+      "counts": {
+        "expectedFailures": 0,
+        "failed": 0,
+        "notRun": 0,
+        "passed": 98,
+        "skipped": 0,
+        "total": 98
+      },
+      "suites": {
+        "MonitorTests": 71,
+        "AppHangsMonitorTests": 17,
+        "AppHangsWatchdogThreadTests": 8,
+        "MemoryWarningMonitorTests": 2
+      },
+      "summary_path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/ActionArtifacts/default/RunSomeTests/3E86078F-B60A-4876-AC8D-F5DDCF51D357.txt",
+      "xcresult": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/ActionArtifacts/default/RunSomeTests/Test-DatadogRUM-2026.09.18_05-57-23-+0100.xcresult",
+      "destination": "iPhone 18 Pro / iOS 27.0",
+      "added_tests": [
+        "MonitorTests/testProcessSignalsFollowRepresentativeWithoutAdoptingPeerHandoffOrBroadcasting()",
+        "AppHangsMonitorTests/testPendingHangKeepsCapturedOwnerAfterLiveSessionChangesAndIsConsumedOnce()"
+      ],
+      "lint": "PASS: strict tools/lint/tests.swiftlint.yml on both changed test files",
+      "production_changes": 0,
+      "test_sources": {
+        "DatadogRUM/Tests/RUMMonitor/MonitorTests.swift": "ba6037e4edd2bd2adf8fe31468695fef2cc9a99b0cc65736e783ef286d1ba641",
+        "DatadogRUM/Tests/Instrumentation/AppHangs/AppHangsMonitorTests.swift": "a355b5eb805142eddeb84dbaeaa09206fcae2e280c6a23190e2aedbb31c4cba5"
+      }
+    }
+  ],
   "native_attempts": [],
-  "next": "Add and execute the bounded deterministic tests before native fixture implementation."
+  "next": "Implement the bounded native fixture and strict local/backend oracle, freeze identities, then execute fresh acceptance."
 }
