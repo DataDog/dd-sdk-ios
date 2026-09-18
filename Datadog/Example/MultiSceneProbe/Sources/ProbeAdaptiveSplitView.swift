@@ -67,6 +67,40 @@ struct ProbeAdaptiveSplitView: View {
             }
             .navigationSplitViewStyle(.balanced)
         }
+        .task {
+            guard ProbeRuntime.usesAdaptiveSplitResizeAcceptance else { return }
+            for await signal in ProbeRuntime.eventRecorder.signalStream() {
+                guard !Task.isCancelled,
+                      signal.runID == window.runID,
+                      let handle = ProbeRuntime.sceneRegistry.handle(logicalSceneID: window.label),
+                      handle.nativeSceneID == sceneSessionID,
+                      let nativeWindow = ProbeRuntime.sceneRegistry.window(for: handle),
+                      ProbeRuntime.sceneRegistry.snapshot(logicalSceneID: window.label)?.currentRoute
+                        == router.current.destination.route
+                else { continue }
+                let live = ProbeScenePresentation.capture(window: nativeWindow)
+                guard let ordinal = router.consumeResize(
+                    signal, live: live, logicalSceneID: window.label, nativeSceneID: sceneSessionID
+                ) else { continue }
+                ProbeRuntime.eventRecorder.record(ProbeSignal(
+                    kind: .assertion,
+                    semanticContext: ProbeSemanticContext(
+                        logicalSceneID: window.label,
+                        nativeSceneID: sceneSessionID,
+                        screen: router.current.destination.rawValue
+                    ),
+                    activationState: live.activationState.rawValue,
+                    geometry: live.geometry,
+                    horizontalSizeClass: live.horizontalSizeClass,
+                    verticalSizeClass: live.verticalSizeClass,
+                    navigationPath: router.current.destination.route,
+                    acknowledgedSignalSequence: signal.sequence,
+                    name: "adaptive-resize-guard-\(ordinal)",
+                    result: .pass
+                ))
+                emit("adaptive-resize-\(ordinal)")
+            }
+        }
     }
 
     private var selection: Binding<ProbeAdaptiveSplitDestination?> {

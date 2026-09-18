@@ -69,3 +69,10 @@ selection exposed an obsolete fixture route/ownership path; EXP-193 qualifies th
 current accepted-state integration before H14 ownership can be accepted. The
 resizable display is a synthetic layout environment, separate from a physical
 hinge transition. Original H/F release obligations remain open.
+
+EXP-193 preserves another execution boundary: appResize produces real native
+geometry, but the Resizable app surface is black in Device Hub and explicit
+display capture. Ending the headless resize session backgrounds the scene.
+Separate pose/selection acceptance from callback-driven resize ownership; the
+latter requires live native geometry before dispatch and makes no visible-layout
+or input-parity claim. Both original incomplete attempts remain attributable.

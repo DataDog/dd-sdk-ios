@@ -1,0 +1,82 @@
+{
+  "experiment": "EXP-193",
+  "attempt_id": "17e56bf4-eedf-4b35-a498-91032414dd8e",
+  "status": "INCONCLUSIVE_RESIZE_INPUT",
+  "artifact_root": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp193-duo-adaptive2-7j3a6lsb",
+  "source_revision": "d859557f937ac0a059675952f07ebc36a3ebf481",
+  "source_sha256": "6b4c995a6540f3d6c26f1a386e039b6f5c4d2ab8942b4ce5d2d5403512c62572",
+  "build_reuse": {
+    "build_artifact_root": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp193-duo-adaptive-5eb5tqlx",
+    "built_revision": "25e419d489af0efe2324c010544a7815d8c2e354",
+    "all_compiled_inputs_identical": true,
+    "only_changed_source_inventory_paths": [
+      "tools/multi-scene/acceptance/adaptive_split_contract.py",
+      "tools/multi-scene/acceptance/test_adaptive_split_contract.py"
+    ],
+    "unit_tests": "4/4 PASS on unchanged compiled inputs"
+  },
+  "observations": [
+    "Empty inner/outer/inner custom pairs share one owner.",
+    "Native Detail1 mutation28 precedes commit Action34 and Resource38; materialized work and marker4 share the new owner.",
+    "Resize geometry46 is900x675 regular; input to the resized app is unqualified. Native background48 occurs after ending the headless session.",
+    "Device Hub visual resize also displays black; native geometry52 is466x678. Capture of the explicit Resizable display shows black app area. No ownership continuity across real background is expected."
+  ],
+  "phase_boundaries": [
+    {
+      "name": "empty-inner",
+      "request_sequence": 12,
+      "requested_at": "2026-09-18T23:07:27.201211+00:00",
+      "geometry_sequence": 6,
+      "end_sequence": 16
+    },
+    {
+      "name": "empty-outer",
+      "request_sequence": 16,
+      "requested_at": "2026-09-18T23:07:49.776483+00:00",
+      "geometry_sequence": 17,
+      "end_sequence": 22
+    },
+    {
+      "name": "empty-inner-return",
+      "request_sequence": 22,
+      "requested_at": "2026-09-18T23:08:20.967578+00:00",
+      "geometry_sequence": 23,
+      "end_sequence": 27
+    },
+    {
+      "name": "detail1",
+      "request_sequence": 27,
+      "requested_at": "2026-09-18T23:08:53.348065+00:00",
+      "geometry_sequence": 23,
+      "end_sequence": 45
+    },
+    {
+      "name": "resize-detail1-regular",
+      "request_sequence": 45,
+      "requested_at": "2026-09-18T23:09:37.041107+00:00",
+      "geometry_sequence": 46
+    }
+  ],
+  "cleanup": [
+    {
+      "command": "terminate",
+      "exit": 0
+    },
+    {
+      "command": "uninstall",
+      "exit": 0
+    },
+    {
+      "command": "get_app_container",
+      "exit": 2
+    }
+  ],
+  "gates_closed": [],
+  "artifact_sha256": {
+    "final-native.jsonl": "b05a5bbc4a6219f7408fd2909836994c9ea3b38ea8b21b8b540b655173d47e8e",
+    "visual-resize.png": "a5f90a030804cab1dcd9e5f118c72c1fd3cdc01b177eee4add315e8006e44794",
+    "resize-session.log": "f05f23414f94ba80747915e54db61ed85baffe3a18b8d738d7ab69136b4a077c",
+    "resize-session2.log": "24b9c65830d4d557327d78d54806d164e5d708e189bb20d6a6b292b147974e59",
+    "cleanup.json": "d0ddf307758663688515994f9b4cc18bb0f210824ff1c8ed9c78dcb921450ef8"
+  }
+}

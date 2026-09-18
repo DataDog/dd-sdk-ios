@@ -26,17 +26,31 @@
   ],
   "gates_closed": [],
   "pre_run_validation": {
-    "oracle_tests": 7,
-    "negative_mutations": 22,
+    "oracle_tests": 9,
+    "negative_mutations": 27,
     "native_build": "PASS",
     "new_model_and_catalog_tests": "4/4 PASS",
-    "native_backend_acceptance": "PENDING"
+    "native_backend_acceptance": "PENDING",
+    "revised_fixture_build": "PENDING"
   },
   "attempts": [
     {
       "run_id": "79a993ac-c316-477f-8a5f-7ca6cbd96f95",
       "status": "INVALID_ORACLE",
       "result": "acceptance/exp193-79a993ac-c316-477f-8a5f-7ca6cbd96f95.json"
+    },
+    {
+      "run_id": "17e56bf4-eedf-4b35-a498-91032414dd8e",
+      "status": "INCONCLUSIVE_RESIZE_INPUT",
+      "result": "acceptance/exp193-17e56bf4-eedf-4b35-a498-91032414dd8e.json"
     }
-  ]
+  ],
+  "revised_acceptance_defined_before_implementation": {
+    "reason": "Headless resize renders no interactive app surface and ending it backgrounds the scene. Preserve full14-phase oracle; use two finite fresh runs without crossing that cleanup boundary.",
+    "pose_run": "10 phases: empty inner/outer/inner, Detail1 inner/outer/inner, Detail2, Placeholder, Detail1 return, clear; six owners and42 explicit work events.",
+    "resize_run": "5 phases: empty inner, accepted Detail1,900x675 regular,400x700 compact,900x675 regular. Two owners and16 explicit work events. Native geometry signals plus a fresh live registry guard must precede each automatic resize marker.",
+    "negative_controls": "Retain all original controls; add mismatched resize guard, late guard, wrong geometry receipt and owner churn. Test the native marker state machine before execution.",
+    "boundary": "Resize proves callback-driven semantic ownership under measured geometry; black Resizable display prevents visible-layout/input equivalence claims. End/export acceptance before session cleanup backgrounds the app.",
+    "required_backend": "Complete per-run view inventory, exact custom Action/Resource IDs and owners, zero errors. Original physical obligation remains."
+  }
 }

@@ -4,17 +4,19 @@ import unittest
 import adaptive_split_contract as contract
 
 
-def fixture():
+def fixture(mode="full"):
     run = "adaptive-unit"
     records = [dict(type="manifest", manifest=dict(
         schemaVersion=3, runID=run, runMode="clean", validationErrors=[],
         scenario=copy.deepcopy(contract.MANIFEST)))]
+    if mode == "resize":
+        records[0]["manifest"]["scenario"]["identifier"] = "swiftui.split.adaptive-resize"
     signals, phases = [], []
     context = dict(logicalSceneID="scene-A", nativeSceneID="native-A")
 
     def signal(kind, **values):
         item = dict(kind=kind, sequence=len(signals) + 1, runID=run,
-                    scenarioID=contract.SCENARIO, schemaVersion=5, evidenceSource="probe")
+                    scenarioID=records[0]["manifest"]["scenario"]["identifier"], schemaVersion=5, evidenceSource="probe")
         item.update(values)
         signals.append(item)
         return item
@@ -31,7 +33,7 @@ def fixture():
                    **({"action": {"type": "custom"}} if kind == "action" else {}))
 
     last_generation = None
-    for ordinal, (name, screen, generation, size_class, dimensions, _) in enumerate(contract.PHASES, 1):
+    for ordinal, (name, screen, generation, size_class, dimensions, _) in enumerate(contract.phase_specs(mode), 1):
         request = len(signals)
         if generation != last_generation:
             if generation:
@@ -48,7 +50,13 @@ def fixture():
                           navigationPath=[] if screen == "split-empty" else [screen],
                           activationState="foreground-active", horizontalSizeClass=size_class,
                           geometry=dict(width=dimensions[0], height=dimensions[1], x=0, y=0))
-        pair("adaptive-marker-" + str(ordinal), screen, generation)
+        if mode == "resize" and ordinal >= 3:
+            signal("assertion", name="adaptive-resize-guard-" + str(ordinal - 2),
+                   acknowledgedSignalSequence=geometry["sequence"], result="PASS",
+                   geometry=copy.deepcopy(geometry["geometry"]), activationState="foreground-active",
+                   horizontalSizeClass=size_class, navigationPath=["detail-1"],
+                   semanticContext=dict(context, screen=screen))
+        pair(contract.marker_name(mode, ordinal), screen, generation)
         phases.append(dict(name=name, request_sequence=request,
                            geometry_sequence=geometry["sequence"], end_sequence=len(signals)))
     records += [dict(type="signal", signal=s) for s in signals]
@@ -78,6 +86,32 @@ class AdaptiveSplitContractTests(unittest.TestCase):
         result = contract.validate_native(records, phases, run)
         self.assertEqual((result["phases"], len(result["owners"]), len(result["work"])), (14, 6, 50))
         self.assertEqual(contract.validate_backend(result, backend(result))["work_count"], 50)
+
+    def test_finite_pose_and_resize_variants(self):
+        for mode, counts in [("pose", (10, 6, 42)), ("resize", (5, 2, 16))]:
+            records, phases, run = fixture(mode)
+            native = contract.validate_native(records, phases, run, mode)
+            self.assertEqual((native["phases"], len(native["owners"]), len(native["work"])), counts)
+            self.assertEqual(contract.validate_backend(native, backend(native))["work_count"], counts[2])
+
+    def test_resize_guard_must_precede_work_and_match_live_geometry(self):
+        for change in ("late", "receipt", "geometry", "background", "churn"):
+            records, phases, run = fixture("resize")
+            guard = named(records, "adaptive-resize-guard-1", "assertion")
+            if change == "late":
+                action = named(records, "adaptive-resize-1")
+                guard["sequence"], action["sequence"] = action["sequence"], guard["sequence"]
+                records[1:] = sorted(records[1:], key=lambda r: r["signal"]["sequence"])
+            elif change == "receipt":
+                guard["acknowledgedSignalSequence"] = 1
+            elif change == "geometry":
+                guard["geometry"]["width"] = 400
+            elif change == "background":
+                guard["activationState"] = "background"
+            else:
+                named(records, "adaptive-resize-1")["rumContext"]["viewID"] = "new-owner"
+            with self.subTest(change=change), self.assertRaises(ValueError):
+                contract.validate_native(records, phases, run, "resize")
 
     def test_automatic_tap_with_merged_marker_attributes_is_not_custom_work(self):
         records, phases, run = fixture()

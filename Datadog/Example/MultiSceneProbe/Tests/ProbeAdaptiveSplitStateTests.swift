@@ -45,4 +45,57 @@ final class ProbeAdaptiveSplitStateTests: XCTestCase {
         XCTAssertEqual(first.current.generation, 2)
         XCTAssertEqual(second.current.generation, 0)
     }
+
+    func testResizeRequiresAcceptedSelectionAndConsumesFiniteNativeSequence() {
+        let router = ProbeAdaptiveSplitState()
+        XCTAssertNil(consume(router, sequence: 10, width: 900, height: 675, sizeClass: "regular"))
+        router.select(.detailOne)
+        XCTAssertEqual(consume(router, sequence: 10, width: 900, height: 675, sizeClass: "regular"), 1)
+        XCTAssertNil(consume(router, sequence: 10, width: 400, height: 700, sizeClass: "compact"))
+        XCTAssertEqual(consume(router, sequence: 11, width: 400, height: 700, sizeClass: "compact"), 2)
+        XCTAssertEqual(consume(router, sequence: 12, width: 900, height: 675, sizeClass: "regular"), 3)
+        XCTAssertNil(consume(router, sequence: 13, width: 900, height: 675, sizeClass: "regular"))
+    }
+
+    func testResizeRejectsWrongSceneBackgroundAndStaleLiveGeometry() {
+        for variation in ["scene", "background", "geometry", "route"] {
+            let router = ProbeAdaptiveSplitState()
+            router.select(.detailOne)
+            XCTAssertNil(consume(
+                router, sequence: 10, width: 900, height: 675, sizeClass: "regular",
+                variation: variation
+            ))
+            XCTAssertEqual(consume(router, sequence: 11, width: 900, height: 675, sizeClass: "regular"), 1)
+        }
+    }
+
+    private func consume(
+        _ router: ProbeAdaptiveSplitState,
+        sequence: UInt64,
+        width: Double,
+        height: Double,
+        sizeClass: String,
+        variation: String? = nil
+    ) -> Int? {
+        let geometry = ProbeGeometry(x: 0, y: 0, width: width, height: height)
+        let signal = ProbeSignal(
+            kind: .sceneGeometry,
+            sequence: sequence,
+            semanticContext: ProbeSemanticContext(
+                logicalSceneID: "scene-A", nativeSceneID: variation == "scene" ? "other" : "native-A"
+            ),
+            activationState: variation == "background" ? "background" : "foreground-active",
+            geometry: geometry,
+            horizontalSizeClass: sizeClass,
+            navigationPath: variation == "route" ? [] : ["detail-1"]
+        )
+        let live = ProbeScenePresentation(
+            activationState: .foregroundActive,
+            geometry: variation == "geometry" ? ProbeGeometry(x: 0, y: 0, width: 1, height: 1) : geometry,
+            horizontalSizeClass: sizeClass,
+            verticalSizeClass: "regular"
+        )
+        return router.consumeResize(signal, live: live, logicalSceneID: "scene-A", nativeSceneID: "native-A")
+    }
+
 }

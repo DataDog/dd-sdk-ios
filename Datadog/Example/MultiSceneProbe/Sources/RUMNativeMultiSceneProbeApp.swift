@@ -90,8 +90,11 @@ enum ProbeRuntime {
         }
     )
     @MainActor static let sceneRegistry = ProbeSceneRegistry()
-    static let usesAdaptiveSplitAcceptance =
-        scenario?.identifier == "swiftui.split.adaptive-accepted-state"
+    static let usesAdaptiveSplitAcceptance = [
+        "swiftui.split.adaptive-accepted-state", "swiftui.split.adaptive-resize"
+    ].contains(scenario?.identifier ?? "")
+    static let usesAdaptiveSplitResizeAcceptance =
+        scenario?.identifier == "swiftui.split.adaptive-resize"
     static let usesObservableScenarioDriver = scenario.map(
         ProbeScenarioCatalog.usesObservableDriver
     ) ?? false

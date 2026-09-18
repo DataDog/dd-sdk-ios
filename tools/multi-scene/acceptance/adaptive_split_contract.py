@@ -34,6 +34,19 @@ MANIFEST = {
     "completionConditions": [{"kind": "scene-ready", "scene": "scene-A"}],
     "expectedSemanticTimeline": [],
 }
+POSE_PHASES = PHASES[:4] + PHASES[8:]
+RESIZE_PHASES = [PHASES[0], PHASES[3]] + PHASES[4:7]
+
+
+def phase_specs(mode):
+    return {"full": PHASES, "pose": POSE_PHASES, "resize": RESIZE_PHASES}[mode]
+
+
+def marker_name(mode, ordinal):
+    return ("adaptive-resize-" + str(ordinal - 2) if mode == "resize" and ordinal >= 3
+            else "adaptive-marker-" + str(ordinal))
+
+
 NAMES = {"split-empty": "ProbeSplitEmptyView", "detail-1": "ProbeSplitDetailView",
          "detail-2": "ProbeSplitDetailView", "placeholder": "ProbeSplitPlaceholderView"}
 
@@ -48,18 +61,24 @@ def unique(rows, label):
     return rows[0]
 
 
-def validate_native(records, phases, run_id):
+def validate_native(records, phases, run_id, mode="full"):
+    specs = phase_specs(mode)
+    scenario = "swiftui.split.adaptive-resize" if mode == "resize" else SCENARIO
+    manifest_contract = dict(MANIFEST, identifier=scenario)
+    accepted_screens = ("detail-1",) if mode == "resize" else (
+        "detail-1", "detail-2", "placeholder", "detail-1", "split-empty"
+    )
     manifest = unique([r["manifest"] for r in records if r["type"] == "manifest"], "manifest")
     require(manifest["runID"] == run_id and manifest["runMode"] == "clean", "stale manifest")
-    require(not manifest["validationErrors"] and manifest["scenario"]["identifier"] == SCENARIO,
+    require(not manifest["validationErrors"] and manifest["scenario"]["identifier"] == scenario,
             "wrong scenario or invalid manifest")
     require(manifest.get("schemaVersion") == 3, "manifest schema")
-    require(all(manifest["scenario"].get(k) == v for k, v in MANIFEST.items()), "changed scenario")
+    require(all(manifest["scenario"].get(k) == v for k, v in manifest_contract.items()), "changed scenario")
     signals = [r["signal"] for r in records if r["type"] == "signal"]
     require(all(s.get("schemaVersion") == 5 for s in signals), "signal schema")
     require([s["sequence"] for s in signals] == list(range(1, len(signals) + 1)), "incomplete sequence")
-    require(all(s["runID"] == run_id and s["scenarioID"] == SCENARIO for s in signals), "stale signal")
-    require([p["name"] for p in phases] == [p[0] for p in PHASES], "finite phase sequence changed")
+    require(all(s["runID"] == run_id and s["scenarioID"] == scenario for s in signals), "stale signal")
+    require([p["name"] for p in phases] == [p[0] for p in specs], "finite phase sequence changed")
     require(not any(s["kind"] == "rum-error" for s in signals), "unexpected RUM error")
     native_ids = {s["semanticContext"]["nativeSceneID"] for s in signals
                   if s.get("semanticContext", {}).get("nativeSceneID")}
@@ -103,10 +122,10 @@ def validate_native(records, phases, run_id):
         return action, resource
 
     previous_end = 0
-    for ordinal, (phase, spec) in enumerate(zip(phases, PHASES), 1):
+    for ordinal, (phase, spec) in enumerate(zip(phases, specs), 1):
         name, screen, generation, size_class, dimensions, fresh = spec
         require(previous_end <= phase["request_sequence"] < phase["end_sequence"], "phase ordering")
-        action, resource = pair("adaptive-marker-" + str(ordinal), screen, generation)
+        action, resource = pair(marker_name(mode, ordinal), screen, generation)
         require(phase["request_sequence"] < action["sequence"] < resource["sequence"]
                 <= phase["end_sequence"], "marker outside measured phase")
         geometry = unique([s for s in signals if s["sequence"] == phase["geometry_sequence"]],
@@ -118,6 +137,20 @@ def validate_native(records, phases, run_id):
         require(geometry["horizontalSizeClass"] == size_class and
                 (geometry["geometry"]["width"], geometry["geometry"]["height"]) == dimensions,
                 "wrong measured geometry " + name)
+        if mode == "resize" and ordinal >= 3:
+            guard = unique([s for s in signals if s["kind"] == "assertion"
+                            and s.get("name") == "adaptive-resize-guard-" + str(ordinal - 2)],
+                           "resize live guard")
+            require(geometry["sequence"] < guard["sequence"] < action["sequence"]
+                    and guard["acknowledgedSignalSequence"] == geometry["sequence"],
+                    "late or detached resize guard")
+            require(guard.get("result") == "PASS" and guard["evidenceSource"] == "probe"
+                    and guard["geometry"] == geometry["geometry"]
+                    and guard["horizontalSizeClass"] == size_class
+                    and guard["activationState"] == "foreground-active"
+                    and guard["navigationPath"] == ["detail-1"]
+                    and guard["semanticContext"]["nativeSceneID"] == native_id,
+                    "wrong resize live state")
         route = [s for s in signals if s["sequence"] < action["sequence"] and
                  s["kind"] in ("navigation-path-mutation", "scene-ready", "scene-lifecycle", "scene-geometry")
                  and s.get("semanticContext", {}).get("logicalSceneID") == "scene-A"]
@@ -125,17 +158,17 @@ def validate_native(records, phases, run_id):
         require(route and route[-1]["navigationPath"] == expected_route, "stale route before work")
         previous_end = phase["end_sequence"]
 
-    require(len(owners) == 6 and len(set(owners.values())) == 6, "reused occurrence after commit/return")
-    for generation, screen in enumerate(("detail-1", "detail-2", "placeholder", "detail-1", "split-empty"), 1):
+    require(len(owners) == len(accepted_screens) + 1 and len(set(owners.values())) == len(owners), "reused occurrence after commit/return")
+    for generation, screen in enumerate(accepted_screens, 1):
         mutation = unique([s for s in signals if s["kind"] == "navigation-path-mutation"
                            and s.get("mutation") == generation], "accepted mutation")
         action, _ = pair("adaptive-commit-" + str(generation), screen, generation)
         require(mutation["sequence"] < action["sequence"], "late accepted route")
         require(mutation["navigationPath"] == ([] if screen == "split-empty" else [screen]),
                 "wrong accepted route")
-    for generation, screen in enumerate(("split-empty", "detail-1", "detail-2", "placeholder", "detail-1", "split-empty")):
+    for generation, screen in enumerate(("split-empty",) + accepted_screens):
         pair("adaptive-materialized-" + str(generation), screen, generation)
-    require(len(pairs) == 2 * (len(PHASES) + 5 + 6), "unexpected/missing adaptive work")
+    require(len(pairs) == 2 * (len(specs) + len(accepted_screens) * 2 + 1), "unexpected/missing adaptive work")
     first_marker = pairs[("adaptive-marker-1", "rum-action")]["sequence"]
     require(not any(s["kind"] == "rum-view-snapshot" and s["sequence"] >= first_marker
                     and s["rumContext"].get("viewActive") is True
@@ -147,7 +180,7 @@ def validate_native(records, phases, run_id):
             "native_scene_id": native_id, "owners": owners, "native_view_ids": sorted(views),
             "work": [{"type": s["kind"].removeprefix("rum-"), "phase": s["name"],
                       "event_id": s["eventID"], "view_id": s["rumContext"]["viewID"]}
-                     for s in pairs.values()], "phases": len(PHASES)}
+                     for s in pairs.values()], "phases": len(specs), "mode": mode}
 
 
 def validate_backend(native, rows):
@@ -173,10 +206,11 @@ def main():
     parser.add_argument("phases", type=Path)
     parser.add_argument("--run-id", required=True)
     parser.add_argument("--backend", type=Path)
+    parser.add_argument("--mode", choices=("full", "pose", "resize"), default="full")
     parser.add_argument("--output", type=Path, required=True)
     args = parser.parse_args()
     records = [json.loads(line) for line in args.records.read_text().splitlines() if line.strip()]
-    result = validate_native(records, json.loads(args.phases.read_text()), args.run_id)
+    result = validate_native(records, json.loads(args.phases.read_text()), args.run_id, args.mode)
     if args.backend:
         result["backend"] = validate_backend(result, json.loads(args.backend.read_text()))
     args.output.write_text(json.dumps(result, indent=2) + "\n")

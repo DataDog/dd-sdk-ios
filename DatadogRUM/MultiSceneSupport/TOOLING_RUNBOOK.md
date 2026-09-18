@@ -1841,3 +1841,11 @@ marker attributes when the custom action flushes it; names/phases alone do not
 identify the declared work. Join action.type=custom and exact event IDs. Preserve
 automatic actions separately. A phase cannot begin unless the prior resource and
 end receipt were verified; run dependent shell steps with fail-fast semantics.
+
+For the measured Duo27.1 resize limitation, use separate fresh pose and resize
+runs. The resize fixture observes native geometry and checks the current UIWindow
+presentation and scene route before recording a guard and emitting work. Join
+each guard to its earlier geometry receipt and exact custom Action/Resource.
+Do not require uninterrupted ownership across ending appResize: the measured
+cleanup path backgrounds the scene. Export before that boundary. A black
+Resizable capture prevents visible-layout claims even when geometry is valid.

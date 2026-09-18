@@ -40,4 +40,37 @@ final class ProbeAdaptiveSplitState: ObservableObject {
         accepted.send(current)
         return true
     }
+
+    private var resizeOrdinal = 0
+    private var lastResizeSequence: UInt64 = 0
+
+    /// Consume one native resize receipt only when the current window still agrees.
+    func consumeResize(
+        _ signal: ProbeSignal,
+        live: ProbeScenePresentation,
+        logicalSceneID: String,
+        nativeSceneID: String
+    ) -> Int? {
+        let widths = [900.0, 400.0, 900.0]
+        let heights = [675.0, 700.0, 675.0]
+        let classes = ["regular", "compact", "regular"]
+        guard current.destination == .detailOne, current.generation == 1,
+              resizeOrdinal < widths.count, signal.sequence > lastResizeSequence,
+              signal.kind == .sceneGeometry, signal.evidenceSource == .probe,
+              signal.semanticContext?.logicalSceneID == logicalSceneID,
+              signal.semanticContext?.nativeSceneID == nativeSceneID,
+              signal.navigationPath == ["detail-1"],
+              signal.activationState == "foreground-active",
+              live.activationState == .foregroundActive,
+              signal.geometry == live.geometry,
+              signal.horizontalSizeClass == live.horizontalSizeClass,
+              live.geometry?.width == widths[resizeOrdinal],
+              live.geometry?.height == heights[resizeOrdinal],
+              live.horizontalSizeClass == classes[resizeOrdinal]
+        else { return nil }
+        lastResizeSequence = signal.sequence
+        resizeOrdinal += 1
+        return resizeOrdinal
+    }
+
 }
