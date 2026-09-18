@@ -154,6 +154,11 @@ internal enum ProbeRUMEventAdapter {
     }
 
     static func trace(_ event: SpanEvent, runID: String) -> ProbeSignal? {
+        #if DEBUG
+        if ProbeRuntime.resolution.scenario?.identifier == ProbeTraceContract.scenarioID {
+            return ProbeTraceAcceptance.signal(event)
+        }
+        #endif
         guard
             event.operationName == "urlsession.request",
             event.tags[ProbeRuntime.Attribute.runID] == runID,

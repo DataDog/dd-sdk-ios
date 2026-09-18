@@ -31,6 +31,7 @@ enum ProbeStepKind: String, Codable, CaseIterable {
     case runCurrentViewErrorBatch = "run-current-view-error-batch"
     case runViewAttributeBatch = "run-view-attribute-batch"
     case runViewTimingBatch = "run-view-timing-batch"
+    case runTraceOwnershipBatch = "run-trace-ownership-batch"
     case runViewFlagBatch = "run-view-flag-batch"
     case startExplicitTargetAction = "start-explicit-target-action"
     case stopExplicitTargetAction = "stop-explicit-target-action"
@@ -242,4 +243,18 @@ enum ProbeFlagContract {
     static let finalB = "exp180_final_b"
     static let keys = [shared, finalA, finalB]
     static let completed = "flag-batch-finished"
+}
+
+enum ProbeTraceContract {
+    static let scenarioID = "traces.captured-start.native-otel-urlsession-cross-scene-serial"
+    static let phases = [
+        "native-b", "otel-b", "native-a", "otel-a",
+        "native-fallback", "otel-fallback", "url-b", "url-a", "url-fallback",
+    ]
+    static let urlPhases = ["url-a", "url-b", "url-fallback"]
+    static let completed = "trace-batch-finished"
+
+    static func source(for phase: String) -> String {
+        phase.hasSuffix("-a") ? "scene-A" : phase.hasSuffix("-b") ? "scene-B" : "source-less"
+    }
 }

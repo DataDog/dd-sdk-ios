@@ -1,6 +1,6 @@
 {
   "experiment": "EXP-181",
-  "status": "SDK tests PASS; native fixture pending",
+  "status": "SDK/probe/operational tests PASS; native acceptance PREPARED",
   "gate": "T08",
   "gates_closed": [],
   "control_revision": "75442ca755eff170ea072e646d19e0ae54af2f1e",
@@ -36,7 +36,18 @@
     "errors": 0,
     "crashes": 0,
     "app_expectations": 20,
-    "simultaneous_visibility_claimed": false
+    "simultaneous_visibility_claimed": false,
+    "wire_fields": [
+      "full128bit trace_id",
+      "span_id",
+      "parent_id",
+      "exact encoded duration_ns",
+      "operation",
+      "resource",
+      "service",
+      "error status",
+      "RUM application/session/view/action"
+    ]
   },
   "preliminary_apm_access": {
     "content": [
@@ -75,5 +86,34 @@
   ],
   "native_attempts": [],
   "definition_revision": "33f7147f2f5c23f9e7c3bc149d799c5365d4ac0c",
-  "strict_test_lint": "PASS after correcting new multiline/whitespace formatting"
+  "strict_test_lint": "PASS after correcting new multiline/whitespace formatting",
+  "native_preparation": {
+    "probe_tests": {
+      "counts": {
+        "expectedFailures": 0,
+        "failed": 0,
+        "notRun": 0,
+        "passed": 178,
+        "skipped": 0,
+        "total": 178
+      },
+      "fullConsoleLogsPath": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/ActionArtifacts/default/RunAllTests/test-console-log-2026-09-18T01-27-10+01-00.txt",
+      "fullSummaryPath": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/ActionArtifacts/default/RunAllTests/EFDE47F8-87BB-42CF-8DAB-FD60270F5E63.txt",
+      "message": "Results truncated to 100 of 178 tests. Failed tests shown first. Full logs available at /var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/ActionArtifacts/default/RunAllTests/EFDE47F8-87BB-42CF-8DAB-FD60270F5E63.txt.",
+      "results": [],
+      "schemeName": "RUMNativeMultiSceneProbe",
+      "summary": "178 tests: 178 passed, 0 failed, 0 skipped, 0 expected failures, 0 not run",
+      "totalResults": 178,
+      "truncated": true,
+      "xcresultBundlePath": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/ActionArtifacts/default/RunAllTests/Test-RUMNativeMultiSceneProbe-2026.09.18_01-27-10-+0100.xcresult"
+    },
+    "operational_controls": {
+      "python_passed": 122,
+      "node_passed": 18
+    },
+    "strict_new_fixture_lint": "PASS after formatting corrections",
+    "fixture_test_minimum": 178,
+    "runtime_acceptance": "PENDING",
+    "parser": "Existing system Ruby YAML/JSON; no installed package or SDK dependency. Reject objects, aliases, duplicate keys and unpaginated responses."
+  }
 }

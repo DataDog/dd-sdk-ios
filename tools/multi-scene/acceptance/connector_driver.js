@@ -123,6 +123,39 @@ function projectFlagState(payload, at) {
   return {flags, build, fbc, leakedInternalAttribute: hasInternalFlagAttribute(payload)};
 }
 
+function projectTraceRow(row, at) {
+  const pick = paths => {
+    const values = paths.map(path => at(row, path)).filter(value => value != null);
+    if (new Set(values.map(value => JSON.stringify(value))).size > 1) throw Error("Ambiguous span field");
+    return values[0] ?? null;
+  };
+  const field = name => pick([name, "attributes." + name]);
+  const custom = name => pick([name, "custom." + name, "custom_attributes." + name,
+    "attributes.custom." + name, "attributes.custom_attributes." + name]);
+  const hex = (value, width) => {
+    if (typeof value !== "string" || !new RegExp("^[0-9a-f]{1," + width + "}$").test(value)) {
+      throw Error("Missing or malformed exact span identity");
+    }
+    return value.padStart(width, "0");
+  };
+  const operation = field("operation_name");
+  const resource = field("resource_name");
+  if (typeof operation !== "string" || typeof resource !== "string") throw Error("Missing span operation/resource");
+  const phase = operation.startsWith("exp181.") ? operation.slice(7) :
+    operation === "urlsession.request" ? new URL(resource).pathname.split("/").at(-1) : null;
+  const duration = pick(["duration", "duration_ns", "attributes.duration", "custom.duration", "custom_attributes.duration"]);
+  if (!Number.isSafeInteger(duration) || duration <= 0) throw Error("Missing exact nanosecond span duration");
+  const status = field("status");
+  if (status !== "ok" && status !== "error") throw Error("Missing span status");
+  const action = custom("_dd.action.id");
+  return {phase, trace_id:hex(field("trace_id"), 32), span_id:hex(field("span_id"), 16),
+    parent_id:hex(pick(["parent_id", "attributes.parent_id", "custom.parent_id", "custom_attributes.parent_id"]), 16),
+    run_id:custom("probe.run_id"), application_id:custom("_dd.application.id"),
+    session_id:custom("_dd.session.id"), view_id:custom("_dd.view.id"),
+    action_ids:action == null ? [] : Array.isArray(action) ? action : [action],
+    operation, resource, service:field("service"), duration_ns:duration, is_error:status === "error"};
+}
+
 async function runAcceptance({tools, notify, device, repo, scenario}) {
   if (!repo || !device) throw Error("Explicit repository path and freshly resolved simulator UUID required");
   const shellQuote = value => "'" + value.replaceAll("'", "'\\''") + "'";
@@ -148,8 +181,10 @@ async function runAcceptance({tools, notify, device, repo, scenario}) {
   const handled = new Set();
   const pause = ms => new Promise(resolve => setTimeout(resolve, ms));
   const textContent = result => (result.content || []).filter(c => c.type === "text").map(c => c.text).join("\n");
-  const aggregate = async query => {
-    const result = await tools.mcp__codex_apps__datadog__preview__datadog_preview_aggregate_rum_events({
+  const aggregate = async (query, apm = false) => {
+    const aggregateTool = apm ? tools.mcp__codex_apps__datadog__preview__datadog_preview_aggregate_spans
+      : tools.mcp__codex_apps__datadog__preview__datadog_preview_aggregate_rum_events;
+    const result = await aggregateTool({
       computes: [{aggregation:"COUNT",field:"*",output:"events"}],
       query, from:"now-2h", to:"now", max_tokens:1000,
       telemetry:{intent:"Validate exact run inventory for automated multi-scene acceptance."}
@@ -257,6 +292,37 @@ async function runAcceptance({tools, notify, device, repo, scenario}) {
         uptime:at(payload,"context.probe.uptime"), duration_ns:at(payload,"action.loading_time")};
     });
   };
+  const spanRows = async (request, total) => {
+    const all = [];
+    while (all.length < total) {
+      const response = await tools.mcp__codex_apps__datadog__preview__datadog_preview_search_datadog_spans({
+        query:request.query, from:request.from, to:"now", start_at:all.length, max_tokens:20000,
+        custom_attributes:["probe.run_id", "_dd.application.id", "_dd.session.id", "_dd.view.id",
+          "_dd.action.id", "duration", "parent_id"],
+        telemetry:{intent:"Retrieve complete synthetic Trace inventory with exact captured RUM owners and span identities."}
+      });
+      if (response.isError) throw Error("Datadog span search failed");
+      const body = textContent(response);
+      const yaml = body.match(/<YAML_DATA>\s*([\s\S]*?)\s*<\/YAML_DATA>/);
+      const json = body.match(/<JSON_DATA>\s*([\s\S]*?)\s*<\/JSON_DATA>/);
+      let page;
+      if (json) page = JSON.parse(json[1]);
+      else if (yaml) {
+        const decoded = await run("ruby tools/multi-scene/acceptance/parse_span_response.rb " + shellQuote(yaml[1]), 20000);
+        if (decoded.exit_code !== 0) throw Error("Could not safely decode span evidence");
+        page = JSON.parse(decoded.output);
+      } else throw Error("Missing structured span evidence");
+      if (!Array.isArray(page) || !page.length) throw Error("Incomplete span pagination");
+      all.push(...page);
+      if (all.length > 100) throw Error("Unexpected large span inventory");
+      if (all.length < total && /<has_more>false<\/has_more>/.test(body)) throw Error("Incomplete span inventory");
+    }
+    const projected = all.map(row => projectTraceRow(row, at));
+    if (projected.length !== total || new Set(projected.map(s => s.span_id)).size !== total) {
+      throw Error("Span count/pagination mismatch");
+    }
+    return projected;
+  };
   for (;;) {
     const listing = await run("python3 - " + shellQuote(output) + " <<'PY'\nimport json,sys\nfrom pathlib import Path\np=Path(sys.argv[1])\nrequests=[]\nfor f in sorted((p/'bridge').glob('*.request.json')):\n if not f.with_name(f.name.replace('.request.json','.response.json')).exists():\n  requests.append({'path':str(f),'request':json.loads(f.read_text())})\nprint(json.dumps({'requests':requests,'state':json.loads((p/'summary.json').read_text())['state']}))\nPY", 3500);
     if (listing.exit_code !== 0) throw Error(listing.output);
@@ -268,11 +334,12 @@ async function runAcceptance({tools, notify, device, repo, scenario}) {
       const deadline = Date.now()+240000;
       let count;
       do {
-        count = await aggregate(request.query);
+        count = await aggregate(request.query, ["trace_auth", "trace_spans"].includes(request.kind));
         if (count >= request.expected_count) break;
         await pause(10000);
       } while (Date.now()<deadline);
-      if (request.kind === "auth") data = {authenticated:true, count};
+      if (["auth", "trace_auth"].includes(request.kind)) data = {authenticated:true, count};
+      else if (request.kind === "trace_spans") data = await spanRows(request, count);
       else if (request.kind === "errors" || request.kind === "crashes") data = {count};
       else data = await rows(request, count);
       // Digest is calculated by the same canonical encoder as the runner.

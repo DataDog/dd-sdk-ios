@@ -320,7 +320,7 @@
       "environment": "iOS 27 simulator, Trace/OTel/URLSession fixtures and backend; shared request also H07",
       "completion_mode": "captured start ownership",
       "status": "OPEN",
-      "evidence": "EXP-181 defined before implementation at75442ca75. Source audit finds shared native/OTel capture-at-start and URLSession interception ownership. Planned delayed/duplicate completion regressions and a finite nine-span native/APM plus full-session RUM acceptance run; no SDK change without a failing discriminator."
+      "evidence": "EXP-181 defined in signed33f7147f2; unchanged SDK passes158 Trace tests including five new regressions, committed262d38f90. Native fixture passes178 probe tests;122 Python/18 Node controls and strict new-fixture lint pass. Nine-span APM/full-session RUM acceptance prepared; Results/EXP-181-trace-start-ownership.json."
     },
     {
       "id": "T09",

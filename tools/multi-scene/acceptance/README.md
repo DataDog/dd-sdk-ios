@@ -201,3 +201,13 @@ normalizes the known nested flag fields and rejects ambiguous representations.
 The native contract exercises explicit flag calls and internal mutations. The
 asynchronous Flags reporter/message-bus ownership contract is covered separately by
 the experiment's actual reporter, Core-bus and RUM-receiver integration checks.
+
+
+The named EXP-181 Trace contract freezes nine native/OTel/URLSession spans and
+20 app expectations. It binds exact encoded trace/span identities to independent
+starting RUM owners, verifies held loaders and peer completion before dispatch,
+and compares the entire APM run plus full RUM session. The connector uses the
+installed system Ruby YAML/JSON libraries for span responses, with preflight and
+negative controls rejecting objects, aliases, duplicate keys and truncated data.
+No SDK dependency is added. Display durations cannot substitute for exact
+nanosecond values. Physical shared-request topology remains H07.

@@ -181,6 +181,11 @@ internal struct ProbeTraceSignal: Codable, Equatable {
     let rumSessionID: String?
     let rumViewID: String?
     let rumActionIDs: [String]?
+    var traceID: String? = nil
+    var spanID: String? = nil
+    var parentSpanID: String? = nil
+    var startTimeNanoseconds: Int64? = nil
+    var rumApplicationID: String? = nil
 }
 
 internal struct ProbeOperationSignal: Codable, Equatable {
@@ -491,5 +496,41 @@ internal struct ProbeSignalRecord: Codable, Equatable {
     init(signal: ProbeSignal) {
         self.type = "signal"
         self.signal = signal
+    }
+}
+
+/// Exact selected wire identity; shared by the mapper and SDK-independent fixture tests.
+struct ProbeTraceWireIdentity: Decodable, Equatable {
+    let traceID: String
+    let traceHigh: String
+    let spanID: String
+    let parentID: String
+    let start: Int64
+    let duration: Int64
+
+    var fullTraceID: String { Self.padded(traceHigh) + Self.padded(traceID) }
+    var normalizedSpanID: String { Self.padded(spanID) }
+    var normalizedParentID: String { Self.padded(parentID) }
+
+    private static func padded(_ hex: String) -> String {
+        String(repeating: "0", count: 16 - hex.count) + hex
+    }
+
+    enum CodingKeys: String, CodingKey {
+        case traceID = "trace_id"
+        case traceHigh = "meta._dd.p.tid"
+        case spanID = "span_id"
+        case parentID = "parent_id"
+        case start, duration
+    }
+
+    static func decode(_ data: Data) -> Self? {
+        guard let wire = try? JSONDecoder().decode(Self.self, from: data),
+              [wire.traceID, wire.traceHigh, wire.spanID, wire.parentID].allSatisfy({ value in
+                  (1...16).contains(value.count) && value.allSatisfy { "0123456789abcdef".contains($0) }
+              }),
+              UInt64(wire.traceID, radix: 16) != 0, UInt64(wire.spanID, radix: 16) != 0,
+              wire.start > 0, wire.duration > 0 else { return nil }
+        return wire
     }
 }

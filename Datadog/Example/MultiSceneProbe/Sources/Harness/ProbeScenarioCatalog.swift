@@ -21,6 +21,7 @@ enum ProbeScenarioCatalog {
         ProbeAttributeContract.scenarioID,
         ProbeTimingContract.scenarioID,
         ProbeFlagContract.scenarioID,
+        ProbeTraceContract.scenarioID,
         "swiftui.stack.abort",
         "swiftui.stack.same-type-replacement",
         "swiftui.stack.different-type-replacement",
@@ -83,6 +84,7 @@ enum ProbeScenarioCatalog {
         attributesExplicitCurrentView,
         timingExplicitCurrentView,
         flagsExplicitCurrentView,
+        tracesCapturedStart,
         swiftUIStackAbort,
         swiftUIStackSameTypeReplacement,
         swiftUIStackDifferentTypeReplacement,
@@ -771,6 +773,37 @@ enum ProbeScenarioCatalog {
             ProbeStep(.stopLegacyAction, scene: "scene-A", value: "long-running-legacy-finished-b"),
     ]
 
+
+    private static let tracesCapturedStart = ProbeScenario(
+        identifier: ProbeTraceContract.scenarioID,
+        trackingMode: .manual,
+        layout: .stack,
+        initialWindows: ["scene-A", "scene-B"],
+        requiredCapabilities: [.multipleScenes],
+        steps: [
+            ProbeStep(.waitForSceneReady, scene: "scene-A"),
+            ProbeStep(.waitForSignal, scene: "scene-A", signal: "rum-view:home#1"),
+            ProbeStep(.openWindow, scene: "scene-A", value: "scene-B"),
+            ProbeStep(.waitForSignal, scene: "scene-B", signal: "rum-view:home#1"),
+            ProbeStep(.runTraceOwnershipBatch, scene: "scene-B"),
+        ],
+        completionConditions: traceOwnershipExpectations,
+        expectedSemanticTimeline: [
+            ProbeExpectation(.viewStarted, scene: "scene-A", screen: "home", occurrence: 1, rumViewOrigin: .semantic),
+            ProbeExpectation(.viewStarted, scene: "scene-B", screen: "home", occurrence: 1, rumViewOrigin: .semantic),
+        ] + traceOwnershipExpectations,
+        runtimeOptions: runtime { $0.exercisesTraceOnlyURLSessionOwnership = true }
+    )
+
+    private static let traceOwnershipExpectations: [ProbeExpectation] = ProbeTraceContract.phases.map { phase in
+        let source = ProbeTraceContract.source(for: phase)
+        let fallback = source == "source-less"
+        return ProbeExpectation(
+            .trace, scene: fallback ? nil : source, screen: fallback ? nil : "home",
+            occurrence: fallback ? nil : 1, name: phase, sourceScene: source, sourceScreen: "home",
+            expectedCount: 1
+        )
+    }
 
     private static let flagsExplicitCurrentView = ProbeScenario(
         identifier: ProbeFlagContract.scenarioID,

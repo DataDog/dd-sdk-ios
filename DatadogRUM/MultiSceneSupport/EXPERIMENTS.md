@@ -198,7 +198,7 @@ remain available for a specific question.
 | <a id="exp-178"></a>EXP-178 | T05 | PASS | T05 closed: SDK compatibility plus42/42 native expectations and20 exact typed backend markers; serial topology only. | [record](Experiments/EXP-143-199.md#exp-178--target-view-attributes-and-removal) |
 | <a id="exp-179"></a>EXP-179 | T06, A01 | PASS | T06 closed: 8 paired overwrite checkpoints,34/34 expectations,16 backend markers and exact final timing/loading values; serial topology only. | [record](Experiments/EXP-143-199.md#exp-179--target-custom-timing-and-loading-time) |
 | <a id="exp-180"></a>EXP-180 | T07, A01 | PASS after preserved failed/inconclusive attempts | T07 closed:175 probe,34/34 expectations,8 paired checkpoints and exact backend flags/build/owners. FBC ownership/encoding are local proof; native backend absence is expected. | [record](Experiments/EXP-143-199.md#exp-180--target-feature-flags-and-preserve-internal-mutation-ownership) |
-| <a id="exp-181"></a>EXP-181 | T08, A01 | PLANNED | Nine native/OTel/URLSession starts must retain captured owners through peer completion; exact APM and RUM inventories. | [record](Experiments/EXP-143-199.md#exp-181--accept-captured-trace-ownership-through-cross-scene-completion) |
+| <a id="exp-181"></a>EXP-181 | T08, A01 | PREPARED | 158 Trace/178 probe and122 Python/18 connector checks pass; nine-span native/APM ownership acceptance pending. | [record](Experiments/EXP-143-199.md#exp-181--accept-captured-trace-ownership-through-cross-scene-completion) |
 
 Original detailed shards and frozen records remain unchanged. Superseded index
 prose is preserved in the [documentation checkpoint](Experiments/DOCUMENTATION_CHECKPOINT_EXP-178.md).

@@ -1262,7 +1262,9 @@ early completion before releasing responses in the declared order. Source-less
 starts require an empty handoff and an independently observed process owner.
 Record exact encoded trace/span IDs without logging unrelated tags or payloads.
 Inventory all spans for the synthetic run and all views for its RUM session;
-compare exact correlation, operation/resource, duration and status. Aggregate
+compare exact correlation, operation/resource, duration and status. Span responses
+use the preflighted system Ruby YAML/JSON parser; reject object tags, aliases and
+duplicate keys, and freeze its source with the runner. Aggregate
 counts and sampled detail queries alone cannot close the gate. Keep physical
 shared-request H07 separate. The current bounded definition is
 [EXP-181](Experiments/EXP-143-199.md#exp-181--accept-captured-trace-ownership-through-cross-scene-completion).

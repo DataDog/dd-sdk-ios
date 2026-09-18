@@ -36,6 +36,52 @@ final class ProbeScenarioRunnerTests: XCTestCase {
     }
 
 
+    func testTraceContractDeclaresExactFamiliesCompletionOrderAndSourceLessBoundary() throws {
+        let scenario = try XCTUnwrap(ProbeScenarioCatalog.scenario(identifier: ProbeTraceContract.scenarioID))
+        XCTAssertEqual(scenario.steps.last?.kind, .runTraceOwnershipBatch)
+        XCTAssertTrue(scenario.runtimeOptions.exercisesTraceOnlyURLSessionOwnership)
+        XCTAssertTrue(ProbeScenarioCatalog.usesObservableDriver(scenario))
+        XCTAssertEqual(scenario.completionConditions.compactMap(\.name), [
+            "native-b", "otel-b", "native-a", "otel-a",
+            "native-fallback", "otel-fallback", "url-b", "url-a", "url-fallback",
+        ])
+        XCTAssertEqual(scenario.completionConditions.count + scenario.expectedSemanticTimeline.count, 20)
+        XCTAssertEqual(scenario.completionConditions.filter { $0.scene == nil }.count, 3)
+        XCTAssertTrue(scenario.completionConditions.allSatisfy { $0.kind == .trace && $0.expectedCount == 1 })
+    }
+
+    func testTraceWireIdentityPreservesFullPrecisionAndRejectsMalformedTypes() throws {
+        let valid: [String: Any] = [
+            "trace_id": "ff", "meta._dd.p.tid": "1", "span_id": "a", "parent_id": "0",
+            "start": Int64(1_789_680_000_123_456_789), "duration": Int64(123_456_789),
+        ]
+        let wire = try XCTUnwrap(ProbeTraceWireIdentity.decode(JSONSerialization.data(withJSONObject: valid)))
+        XCTAssertEqual(wire.fullTraceID, "000000000000000100000000000000ff")
+        XCTAssertEqual(wire.normalizedSpanID, "000000000000000a")
+        XCTAssertEqual(wire.normalizedParentID, "0000000000000000")
+        XCTAssertEqual(wire.start, 1_789_680_000_123_456_789)
+        for (key, value) in [("span_id", 10), ("trace_id", "z"), ("meta._dd.p.tid", ""), ("parent_id", "fffffffffffffffff"),
+                             ("duration", true), ("start", "123"), ("duration", 0), ("span_id", "0")] as [(String, Any)] {
+            var malformed = valid
+            malformed[key] = value
+            XCTAssertNil(ProbeTraceWireIdentity.decode(try JSONSerialization.data(withJSONObject: malformed)), key)
+        }
+    }
+
+    func testTraceEvidenceRoundTripRetainsWireIdentityAndCapturedCorrelation() throws {
+        let trace = ProbeTraceSignal(
+            operationName: "exp181.native-a", serviceName: "probe", resourceName: "exp181.native-a",
+            startTimeMilliseconds: 1_789_680_000_123, durationNanoseconds: 123_456_789, isError: false,
+            rumSessionID: "session", rumViewID: "view", rumActionIDs: nil,
+            traceID: "000000000000000100000000000000ff", spanID: "000000000000000a",
+            parentSpanID: "0000000000000000", startTimeNanoseconds: 1_789_680_000_123_456_789,
+            rumApplicationID: "application"
+        )
+        let signal = ProbeSignal(kind: .rumTrace, trace: trace)
+        let decoded = try JSONDecoder().decode(ProbeSignal.self, from: JSONEncoder().encode(signal))
+        XCTAssertEqual(decoded.trace, trace)
+    }
+
     func testFlagContractHasAllMutationCheckpointsAndBothOwners() throws {
         let scenario = try XCTUnwrap(ProbeScenarioCatalog.scenario(identifier: ProbeFlagContract.scenarioID))
         XCTAssertEqual(scenario.steps.last?.kind, .runViewFlagBatch)

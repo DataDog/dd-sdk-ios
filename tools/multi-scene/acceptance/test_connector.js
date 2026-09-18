@@ -158,3 +158,53 @@ test('internal mutation key leakage is visible even for null and flattened value
   }
   assert.equal(hasInternalFlagAttribute({context:{other:101}}), false);
 });
+
+const {projectTraceRow} = new Function(source.replace(
+  'return runAcceptance({tools, notify, device, repo, scenario: typeof scenario === "undefined" ? undefined : scenario});',
+  'return {projectTraceRow};'
+))();
+const traceAt = (object, path) => {
+  const parts = path.split(".");
+  let value = object;
+  for (let i = 0; i < parts.length; i++) {
+    if (value == null) return null;
+    if (Object.hasOwn(value, parts.slice(i).join("."))) return value[parts.slice(i).join(".")];
+    value = value[parts[i]];
+  }
+  return value ?? null;
+};
+const traceRow = () => ({
+  trace_id:"ffffffffffffffff1234567890abcdef", span_id:"f123456789abcdef", parent_id:"0",
+  operation_name:"exp181.native-a", resource_name:"exp181.native-a",
+  service:"ios-sdk-native-multi-scene-probe", status:"ok", duration:123456789,
+  custom_attributes:{"probe.run_id":"run", "_dd.application.id":"app", "_dd.session.id":"session", "_dd.view.id":"view"}
+});
+test("span projection preserves full hex identity exact nanoseconds and captured owners", () => {
+  assert.deepEqual(projectTraceRow(traceRow(), traceAt), {
+    phase:"native-a", trace_id:"ffffffffffffffff1234567890abcdef", span_id:"f123456789abcdef",
+    parent_id:"0000000000000000", operation:"exp181.native-a", resource:"exp181.native-a",
+    service:"ios-sdk-native-multi-scene-probe", is_error:false, duration_ns:123456789,
+    run_id:"run", application_id:"app", session_id:"session", view_id:"view", action_ids:[]
+  });
+  const wrapped = {attributes:{...traceRow(), custom:traceRow().custom_attributes}};
+  delete wrapped.attributes.custom_attributes;
+  assert.deepEqual(projectTraceRow(wrapped, traceAt), projectTraceRow(traceRow(), traceAt));
+});
+test("span projection rejects lost identity precision ambiguous fields and display durations", () => {
+  for (const [key, value] of [["trace_id",123], ["span_id",null], ["parent_id",null], ["duration",1.2],
+      ["duration","123456789"], ["duration",Infinity], ["duration",1e20], ["status",null]]) {
+    const row = {...traceRow(), [key]:value};
+    assert.throws(() => projectTraceRow(row, traceAt), undefined, key);
+  }
+  assert.throws(() => projectTraceRow({...traceRow(), "duration_ns":987}, traceAt), /Ambiguous/);
+});
+test("automatic span phase comes from declared URL while owners remain independent fields", () => {
+  const row = {...traceRow(), operation_name:"urlsession.request",
+    resource_name:"https://multi-scene-probe.invalid/trace-only/run/scene-A/home/url-a"};
+  row.custom_attributes["_dd.view.id"] = "peer";
+  row.custom_attributes["_dd.action.id"] = "foreign-action";
+  const result = projectTraceRow(row, traceAt);
+  assert.equal(result.phase, "url-a");
+  assert.equal(result.view_id, "peer");
+  assert.deepEqual(result.action_ids, ["foreign-action"]);
+});
