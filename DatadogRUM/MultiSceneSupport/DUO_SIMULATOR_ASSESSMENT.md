@@ -59,5 +59,5 @@ topology failed admission, demonstrating why those checks stay separate.
 
 Concurrent visibility, real disconnect and interactive cancellation remain
 unproven. Native calls and tool success responses alone did not establish them.
-Bounded XCTest input calibration is in preparation. Original H/F release
+The first XCTest calibration is invalid: synthesized input was transformed to\nthe top edge and result collection stalled. A bounded coordinate correction\nand independent input receipts are prepared. Original H/F release
 obligations remain open until their own completion contracts are met.

@@ -10,9 +10,27 @@ import XCTest
 /// Passing this input check alone does not prove RUM ownership or hardware parity.
 @MainActor
 final class DuoSimulatorUITests: XCTestCase {
+    private var checkpoints: [[String: String]] = []
+
+    private var artifactDirectory: URL {
+        FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
+            .appendingPathComponent("DuoInput")
+    }
+
+    private func checkpoint(_ stage: String, runID: String) throws {
+        try FileManager.default.createDirectory(at: artifactDirectory, withIntermediateDirectories: true)
+        checkpoints.append([
+            "runID": runID,
+            "stage": stage,
+            "timestamp": String(Date().timeIntervalSince1970)
+        ])
+        let data = try JSONSerialization.data(withJSONObject: checkpoints, options: [.sortedKeys])
+        try data.write(to: artifactDirectory.appendingPathComponent("checkpoints.json"), options: .atomic)
+    }
     func testInnerDisplaySplitViewInput() throws {
         continueAfterFailure = false
-        XCUIDevice.shared.orientation = .landscapeRight
+        // Device Hub establishes the pose; forcing orientation can transform
+        // injected coordinates independently from the active Duo display.
         let app = XCUIApplication()
         let runID = UUID().uuidString.lowercased()
         app.launchArguments = [
@@ -20,14 +38,19 @@ final class DuoSimulatorUITests: XCTestCase {
             "--probe-run-id", runID, "--probe-run-mode", "clean"
         ]
         app.launchEnvironment["DD_PROBE_CAPTURE_JSONL"] = "1"
+        try checkpoint("launch", runID: runID)
         app.launch()
-        defer { app.terminate() }
+        defer {
+            try? checkpoint("terminate", runID: runID)
+            app.terminate()
+            try? checkpoint("terminated", runID: runID)
+        }
 
         let sourceA = app.staticTexts.matching(
             NSPredicate(format: "label == %@", "source: scene-A")
         ).firstMatch
         XCTAssertTrue(sourceA.waitForExistence(timeout: 15))
-        attachState(app, name: "before-open-b-\(runID)")
+        try attachState(app, name: "before-open-b-\(runID)")
         let openB = app.buttons.matching(
             NSPredicate(
                 format: "identifier == %@ AND label == %@",
@@ -41,20 +64,22 @@ final class DuoSimulatorUITests: XCTestCase {
         ).firstMatch
         XCTAssertTrue(sourceB.waitForExistence(timeout: 15))
         XCTAssertTrue(sourceB.isHittable)
-        attachState(app, name: "before-system-split-\(runID)")
+        try attachState(app, name: "before-system-split-\(runID)")
 
         // Coordinates come from the current application window. A slow move
         // with a held endpoint distinguishes split placement from a Home swipe.
         let window = app.windows.firstMatch
         let start = window.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.985))
         let end = window.coordinate(withNormalizedOffset: CGVector(dx: 0.02, dy: 0.55))
+        try checkpoint("drag-start window=\(window.frame) start=\(start.screenPoint) end=\(end.screenPoint)", runID: runID)
         start.press(
             forDuration: 0.15,
             thenDragTo: end,
             withVelocity: .slow,
             thenHoldForDuration: 1
         )
-        attachState(app, name: "after-system-split-\(runID)")
+        try checkpoint("drag-returned", runID: runID)
+        try attachState(app, name: "after-system-split-\(runID)")
         let bothVisible = NSPredicate { _, _ in
             sourceA.exists && sourceA.isHittable && sourceB.exists && sourceB.isHittable
         }
@@ -62,7 +87,7 @@ final class DuoSimulatorUITests: XCTestCase {
             for: [XCTNSPredicateExpectation(predicate: bothVisible, object: app)],
             timeout: 8
         )
-        attachState(app, name: "split-result-\(runID)")
+        try attachState(app, name: "split-result-\(runID)")
         XCTAssertEqual(
             result, .completed,
             "The required two visible native scenes were not established; this is input qualification only."
@@ -70,12 +95,17 @@ final class DuoSimulatorUITests: XCTestCase {
         XCTAssertFalse(sourceA.frame.intersects(sourceB.frame))
     }
 
-    private func attachState(_ app: XCUIApplication, name: String) {
-        let screenshot = XCTAttachment(screenshot: XCUIScreen.main.screenshot())
+    private func attachState(_ app: XCUIApplication, name: String) throws {
+        let capture = XCUIScreen.main.screenshot()
+        let screenshot = XCTAttachment(screenshot: capture)
         screenshot.name = name
         screenshot.lifetime = .keepAlways
         add(screenshot)
-        let hierarchy = XCTAttachment(string: app.debugDescription + "\n" + XCUIApplication(bundleIdentifier: "com.apple.springboard").debugDescription)
+        let screenshotURL = artifactDirectory.appendingPathComponent(name + ".png")
+        try capture.pngRepresentation.write(to: screenshotURL)
+        let description = app.debugDescription
+        try description.write(to: artifactDirectory.appendingPathComponent(name + ".txt"), atomically: true, encoding: .utf8)
+        let hierarchy = XCTAttachment(string: description)
         hierarchy.name = name + "-hierarchy"
         hierarchy.lifetime = .keepAlways
         add(hierarchy)

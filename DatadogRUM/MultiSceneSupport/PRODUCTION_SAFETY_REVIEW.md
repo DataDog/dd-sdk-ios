@@ -351,3 +351,8 @@ requests without a disconnect and input tools without observed gesture effects.
 These admit bounded harness/input investigation, not a production SDK repair or
 physical waiver. The proposed UI calibration and persisted probe JSONL are
 fixture-only; validation must verify exact installed/source and record identities.
+
+The first UI calibration's collector failure and transformed top-edge input are
+preserved as INVALID_AUTOMATION. Fresh native records and installed identity are
+valid, but concurrent/gesture acceptance is absent. The bounded correction changes
+only probe input/evidence collection; no production defect is inferred.

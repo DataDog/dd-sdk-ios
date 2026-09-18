@@ -74,6 +74,11 @@
       "run_id": "52086984-e5e3-499a-afc8-cdc3f55c2e2c",
       "status": "PARTIAL",
       "result": "acceptance/exp192-52086984-e5e3-499a-afc8-cdc3f55c2e2c.json"
+    },
+    {
+      "run_id": "f2d6e3e0-aaf0-4fca-994f-3a003d3b30b1",
+      "status": "INVALID_AUTOMATION",
+      "result": "acceptance/exp192-f2d6e3e0-aaf0-4fca-994f-3a003d3b30b1.json"
     }
   ],
   "gates_closed": [],

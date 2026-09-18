@@ -177,5 +177,5 @@
   "artifact_root": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp192-duo-fidelity-5mxx6u20",
   "console_sha256": "1541a43778af8e7cdcd606b0b68439a5c2a2ce7a5bc6ca305f95b1dbaff36a56",
   "backend_acceptance": "NOT_ADMITTED: required topology absent",
-  "cleanup": "PENDING; same installed app used only for separately labeled EXP-192 post-terminal capability observations"
+  "cleanup": "COMPLETE: original probe terminated/uninstalled and data-container absence verified before the independent interactive run; h01-terminate.log, h01-uninstall.log and h01-absence.log remain in artifact_root."
 }

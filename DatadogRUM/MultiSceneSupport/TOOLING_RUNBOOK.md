@@ -1807,3 +1807,11 @@ reset once at process launch. Export it before uninstall and verify the manifest
 fresh run ID and contiguous sequence. This fixture file contains the same JSONL
 as stdout; its existence is not an acceptance verdict. A tool reporting a tap,
 drag or scene-close request is insufficient without the expected native effect.
+
+When the Duo UI collector does not finalize, preserve native JSONL and the
+bounded testmanagerd/runner unified log before cleanup. Record actual synthesized
+touch coordinates against display orientation; a requested orientation is not
+readback. The UI calibration also writes checkpoints, PNGs and app hierarchy to
+its runner container's Documents/DuoInput. Export them before uninstall, bind them
+to the fresh run ID, and never treat partial xcresult output as a pass. Limit an
+equivalent failing input path to two attempts and continue independent checks.

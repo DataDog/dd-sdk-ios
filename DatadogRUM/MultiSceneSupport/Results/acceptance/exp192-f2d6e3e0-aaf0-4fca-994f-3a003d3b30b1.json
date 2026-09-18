@@ -1,0 +1,46 @@
+{
+  "run_id": "f2d6e3e0-aaf0-4fca-994f-3a003d3b30b1",
+  "scenario": "interactive.manual",
+  "record_count": 46,
+  "signal_count": 45,
+  "contiguous_fresh_identity": true,
+  "manifest_errors": [],
+  "native_jsonl_sha256": "7316a47a67131ee78b8a9c7312ea1b579c62ace8e0d6d5618a58b8d7c31f63c7",
+  "installed_matches_all_built_code": true,
+  "source_unchanged": true,
+  "state": "INVALID_AUTOMATION",
+  "reason": "Test runner exited without final result bundle; no proof the timed gesture reached its decisive boundary.",
+  "experiment": "EXP-192",
+  "attempt_id": "f2d6e3e0-aaf0-4fca-994f-3a003d3b30b1",
+  "status": "INVALID_AUTOMATION",
+  "source_revision": "37265ac351e2cb02794d58b406ebc2fd40ad3aa4",
+  "artifact_root": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp192-duo-ui-_mnimpya",
+  "build": "PASS: build-for-testing",
+  "collector_exit": -15,
+  "backend_acceptance": "NOT_ADMITTED: no valid concurrent topology",
+  "input_observation": {
+    "source": "test-runner-unified.log",
+    "drag_started_at": "2026-09-19 00:00:59.243 local",
+    "touch_down": [
+      334.5,
+      14.265
+    ],
+    "touch_up": [
+      655.62,
+      427.95
+    ],
+    "conclusion": "Synthesized drag observed at top edge after orientation transform; no proof of a recognized home-indicator split gesture. Test connection ended and result finalization stalled. SDK behavior is not implicated."
+  },
+  "artifact_sha256": {
+    "build-command.json": "b6b5cfe4ef1a5aad46a8ab66bf10e5c768ef64a79628807a31f67826fdb0fe21",
+    "build.log": "7f3cc9fe1d2f03a8e5fbd9a0cd94fe699723c471e637254fa4a63ac4d1e12de0",
+    "built-code.json": "20051d7e5e05794538c7f1354ffa14823a84811db87dc9fe7d149f51524ed2c9",
+    "native.jsonl": "7316a47a67131ee78b8a9c7312ea1b579c62ace8e0d6d5618a58b8d7c31f63c7",
+    "native-summary.json": "896292637f08d32c094532a365e07a931d1dfa335d3f5474c21aab55d18d52da",
+    "input-1.log": "40f23639fc7379355f29688e40a5dedd5aa001db0ba38d4c88563ee00f72f209",
+    "test-command.json": "a17d60f3d87480777540137991a1bf3a9b6b59b2a66c9372dfc85c2d7a2a81be",
+    "test-result.json": "b0bd0d2885e7c33c83d0f122adbd35a6749e8e5d19554b81cd37e2261330c7af",
+    "test-runner-unified.log": "02866452071df335afc38ea3f001674de361a8aeb40c5886e6acea447dde3975"
+  },
+  "correction": "Align Device Hub display orientation, remove forced XCTest orientation, persist timed-input checkpoints and screenshots outside the result collector; one bounded second attempt."
+}

@@ -71,4 +71,4 @@ The Duo27.1 simulator is available through Xcode27.1; fresh MCP and CLI agree.
 rotated geometry, traits and genuine Home/foreground callbacks. H01's unchanged
 native22/22 result remains inconclusive because simultaneous visibility was not
 established. Gesture and disconnect qualification is still pending; probe-only
-XCTest input calibration is being prepared. No physical/human requirement closes.
+XCTest calibration preserved an invalid input/collector attempt; a bounded\ncoordinate correction and independent checkpoints are prepared. No physical/human requirement closes.
