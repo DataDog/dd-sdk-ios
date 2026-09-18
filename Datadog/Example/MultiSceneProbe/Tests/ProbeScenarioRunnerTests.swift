@@ -35,6 +35,56 @@ final class ProbeScenarioRunnerTests: XCTestCase {
         XCTAssertTrue(normalizedWindow.opensPeer)
     }
 
+    func testPhysicalVitalsContractRequiresOneSceneAndFinalInactiveMetrics() throws {
+        let scenario = try XCTUnwrap(ProbeScenarioCatalog.scenario(identifier: ProbeVitalsContract.physicalScenarioID))
+        XCTAssertTrue(ProbeScenarioCatalog.usesObservableDriver(scenario))
+        XCTAssertTrue(ProbeVitalsContract.contains(scenario.identifier))
+        XCTAssertEqual(scenario.initialWindows, ["scene-A"])
+        XCTAssertTrue(scenario.requiredCapabilities.isEmpty)
+        XCTAssertEqual(scenario.steps.map(\.kind), [.waitForSceneReady, .waitForSignal, .sampleSharedVitals])
+        XCTAssertTrue(scenario.steps.allSatisfy { $0.scene == "scene-A" })
+        XCTAssertEqual(scenario.completionConditions.compactMap(\.name), ProbeVitalsContract.physicalGuards)
+        XCTAssertEqual(scenario.completionConditions.count + scenario.expectedSemanticTimeline.count, 17)
+        XCTAssertFalse(scenario.runtimeOptions.automaticallyOpensSecondWindow)
+    }
+
+    func testPhysicalVitalsOracleRejectsMissingRepeatedLateAndUnacknowledgedGuards() {
+        let scenario = ProbeScenario(
+            identifier: ProbeVitalsContract.physicalScenarioID,
+            trackingMode: .manual,
+            layout: .stack,
+            initialWindows: [],
+            requiredCapabilities: [],
+            steps: [],
+            completionConditions: ProbeVitalsContract.physicalGuards.map {
+                ProbeExpectation(.assertion, name: $0, expectedCount: 1)
+            },
+            expectedSemanticTimeline: ProbeVitalsContract.physicalGuards.map {
+                ProbeExpectation(.assertion, name: $0, expectedCount: 1)
+            }
+        )
+        func evaluate(_ names: [String], missingPass: Bool = false) -> ProbeSemanticResultState {
+            let signals = names.enumerated().map { index, name in
+                ProbeSignal(kind: .assertion, name: name, result: missingPass ? nil : .pass)
+                    .enveloped(
+                        sequence: UInt64(index + 1),
+                        timestampMilliseconds: Int64(index + 1),
+                        runID: "fresh-physical-vitals",
+                        scenarioID: scenario.identifier
+                    )
+            }
+            return ProbeSemanticOracle.evaluate(scenario: scenario, signals: signals).state
+        }
+        let guards = ProbeVitalsContract.physicalGuards
+        XCTAssertEqual(evaluate(guards), .pass)
+        XCTAssertEqual(evaluate(Array(guards.dropLast())), .fail)
+        XCTAssertEqual(evaluate(guards + [guards[1]]), .fail)
+        var late = guards
+        late.swapAt(4, 5)
+        XCTAssertEqual(evaluate(late), .fail)
+        XCTAssertEqual(evaluate(guards, missingPass: true), .fail)
+    }
+
     func testVitalsContractSamplesABeforeOpeningBAndStopsBeforeFinalAssertions() throws {
         let scenario = try XCTUnwrap(ProbeScenarioCatalog.scenario(identifier: ProbeVitalsContract.scenarioID))
         XCTAssertTrue(ProbeScenarioCatalog.usesObservableDriver(scenario))

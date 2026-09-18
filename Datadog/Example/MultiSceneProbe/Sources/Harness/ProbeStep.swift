@@ -327,6 +327,17 @@ enum ProbeFatalContract {
 
 internal enum ProbeVitalsContract {
     static let scenarioID = "vitals.shared-process.cross-scene-serial"
+    static let physicalScenarioID = "vitals.shared-process.single-scene-physical"
+    static let physicalGuards = [
+        "vitals-configuration", "vitals-a-owner", "vitals-a-sampling-began",
+        "vitals-a-samples-acknowledged", "vitals-stop-boundary",
+        "vitals-final-a", "vitals-inventory-verified", "vitals-a-complete",
+    ]
+
+    static func contains(_ identifier: String?) -> Bool {
+        [scenarioID, physicalScenarioID].contains(identifier ?? "")
+    }
+
     static let zeroCounters: [String: Int64] = ["actions": 0, "resources": 0, "errors": 0, "longTasks": 0, "crashes": 0]
     static let guards = [
         "vitals-configuration", "vitals-a-owner", "vitals-a-sampling-began",

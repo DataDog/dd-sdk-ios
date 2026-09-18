@@ -143,6 +143,10 @@ class VitalsContractTests(unittest.TestCase):
         for change in changes:
             self.reject_local(change)
 
+    def test_stop_boundary_requires_final_sampled_owner(self):
+        for field in ["sessionID", "viewID"]:
+            self.reject_local(lambda r, f=field: named(r, "vitals-stop-boundary").update(rumContext={**named(r, "vitals-stop-boundary")["rumContext"], f: uid(99)}))
+
     def test_configuration_must_be_actual_and_all_unrelated_producers_disabled(self):
         for key in v.CONFIGURATION:
             self.reject_local(lambda r, k=key: named(r, "vitals-configuration")["vitals"]["configuration"].update({k: False}))

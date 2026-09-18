@@ -158,7 +158,7 @@ enum ProbeRuntime {
             recorder: eventRecorder,
             sceneRegistry: sceneRegistry,
             stepTimeoutNanoseconds: ProbeFatalContract.contains(scenario.identifier)
-                || scenario.identifier == ProbeVitalsContract.scenarioID
+                || ProbeVitalsContract.contains(scenario.identifier)
                 || scenario.identifier == ProbeProcessContract.scenarioID
                 ? 60_000_000_000
                 : usesSemanticNavigationValueLinks
@@ -288,10 +288,10 @@ enum ProbeRuntime {
                     })
                     : nil,
                 trackBackgroundEvents: true,
-                longTaskThreshold: scenario?.identifier == ProbeVitalsContract.scenarioID ? nil
+                longTaskThreshold: ProbeVitalsContract.contains(scenario?.identifier) ? nil
                     : scenario?.identifier == ProbeProcessContract.scenarioID ? 0.5 : 0.1,
                 appHangThreshold: scenario?.identifier == ProbeProcessContract.scenarioID ? 0.5 : nil,
-                vitalsUpdateFrequency: scenario?.identifier == ProbeVitalsContract.scenarioID ? .frequent : .average,
+                vitalsUpdateFrequency: ProbeVitalsContract.contains(scenario?.identifier) ? .frequent : .average,
                 viewEventMapper: { event in
                     var event = event
                     #if DEBUG
@@ -347,7 +347,7 @@ enum ProbeRuntime {
                     )
                     record("session id=\(sessionID) discarded=\(isDiscarded)")
                 },
-                trackMemoryWarnings: scenario?.identifier != ProbeVitalsContract.scenarioID,
+                trackMemoryWarnings: !ProbeVitalsContract.contains(scenario?.identifier),
                 telemetrySampleRate: 100
             )
         )
@@ -449,7 +449,7 @@ enum ProbeRuntime {
         guard !ProbeFatalContract.contains(scenario?.identifier ?? "") else {
             return
         }
-        guard ![ProbeVitalsContract.scenarioID, ProbeProcessContract.scenarioID, ProbeResourceContract.scenarioID, ProbeErrorContract.scenarioID, ProbeAttributeContract.scenarioID, ProbeTimingContract.scenarioID, ProbeFlagContract.scenarioID, ProbeTraceContract.scenarioID, ProbeLogContract.scenarioID, ProbeWebViewContract.scenarioID].contains(scenario?.identifier ?? "") else { return }
+        guard ![ProbeVitalsContract.scenarioID, ProbeVitalsContract.physicalScenarioID, ProbeProcessContract.scenarioID, ProbeResourceContract.scenarioID, ProbeErrorContract.scenarioID, ProbeAttributeContract.scenarioID, ProbeTimingContract.scenarioID, ProbeFlagContract.scenarioID, ProbeTraceContract.scenarioID, ProbeLogContract.scenarioID, ProbeWebViewContract.scenarioID].contains(scenario?.identifier ?? "") else { return }
         let uptime = ProcessInfo.processInfo.systemUptime
         let marker = "\(window.label).\(screen).\(phase)"
         let attributes: [String: Encodable] = [
@@ -710,7 +710,7 @@ enum ProbeRuntime {
                 loading: event.view.loadingTime
             ) : nil
         #if DEBUG
-        let vitals = scenario?.identifier == ProbeVitalsContract.scenarioID
+        let vitals = ProbeVitalsContract.contains(scenario?.identifier)
             ? ProbeVitalsAcceptance.viewObservation(event) : nil
         let process = scenario?.identifier == ProbeProcessContract.scenarioID
             ? ProbeProcessAcceptance.viewObservation(event) : nil

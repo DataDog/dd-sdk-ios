@@ -23,6 +23,7 @@ enum ProbeScenarioCatalog {
         ProbeFlagContract.scenarioID,
         ProbeTraceContract.scenarioID,
         ProbeVitalsContract.scenarioID,
+        ProbeVitalsContract.physicalScenarioID,
         ProbeProcessContract.scenarioID,
         ProbeFatalContract.prepare,
         ProbeWebViewContract.scenarioID,
@@ -90,6 +91,7 @@ enum ProbeScenarioCatalog {
         timingExplicitCurrentView,
         flagsExplicitCurrentView,
         sharedVitals,
+        physicalVitals,
         processSignals,
         fatalPreparation,
         fatalRecovery,
@@ -810,6 +812,27 @@ enum ProbeScenarioCatalog {
         ] + Array(vitalsExpectations.prefix(5)) + [
             ProbeExpectation(.viewStarted, scene: "scene-B", screen: "home", occurrence: 1, rumViewOrigin: .semantic),
         ] + Array(vitalsExpectations.dropFirst(5))
+    )
+
+    private static let physicalVitalsExpectations = ProbeVitalsContract.physicalGuards.map {
+        ProbeExpectation(.assertion, name: $0, expectedCount: 1)
+    }
+
+    private static let physicalVitals = ProbeScenario(
+        identifier: ProbeVitalsContract.physicalScenarioID,
+        trackingMode: .manual,
+        layout: .stack,
+        initialWindows: ["scene-A"],
+        requiredCapabilities: [],
+        steps: [
+            ProbeStep(.waitForSceneReady, scene: "scene-A"),
+            ProbeStep(.waitForSignal, scene: "scene-A", signal: "rum-view:home#1"),
+            ProbeStep(.sampleSharedVitals, scene: "scene-A"),
+        ],
+        completionConditions: physicalVitalsExpectations,
+        expectedSemanticTimeline: [
+            ProbeExpectation(.viewStarted, scene: "scene-A", screen: "home", occurrence: 1, rumViewOrigin: .semantic),
+        ] + physicalVitalsExpectations
     )
 
     private static let processSignalExpectations = ProbeProcessContract.guards.map {

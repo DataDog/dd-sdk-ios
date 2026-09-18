@@ -8,6 +8,13 @@ from log_contract import valid_uuid
 SCENARIO = "vitals.shared-process.cross-scene-serial"
 CONTRACT = "vitals-scenario-contract.json"
 MINIMUM_TESTS = 196
+PHYSICAL_SCENARIO = "vitals.shared-process.single-scene-physical"
+PHYSICAL_CONTRACT = "physical-vitals-scenario-contract.json"
+PHYSICAL_GUARDS = [
+    "vitals-configuration", "vitals-a-owner", "vitals-a-sampling-began",
+    "vitals-a-samples-acknowledged", "vitals-stop-boundary",
+    "vitals-final-a", "vitals-inventory-verified", "vitals-a-complete",
+]
 GUARDS = [
     "vitals-configuration", "vitals-a-owner", "vitals-a-sampling-began",
     "vitals-a-samples-acknowledged", "vitals-a-complete",
@@ -82,24 +89,37 @@ def metrics(signal):
 
 
 def validate_local(records, run_id):
+    return _validate_local(records, run_id, single_scene=False)
+
+
+def validate_physical_local(records, run_id):
+    return _validate_local(records, run_id, single_scene=True)
+
+
+def _validate_local(records, run_id, single_scene):
+    scenario_id = PHYSICAL_SCENARIO if single_scene else SCENARIO
+    contract_file = PHYSICAL_CONTRACT if single_scene else CONTRACT
+    guards = PHYSICAL_GUARDS if single_scene else GUARDS
+    phases = [("a", 2)] if single_scene else [("a", 2), ("b", 5)]
+    expected_count = 17 if single_scene else 30
     manifest = unique([r["manifest"] for r in records if r["type"] == "manifest"], "manifest")
     require(manifest.get("runID") == run_id and manifest.get("runMode") == "clean"
             and not manifest.get("validationErrors"), "stale or invalid clean manifest")
-    require_identity(manifest.get("scenario"), json.loads(Path(__file__).with_name(CONTRACT).read_text()),
+    require_identity(manifest.get("scenario"), json.loads(Path(__file__).with_name(contract_file).read_text()),
                      "vitals fixture")
     signals = [r["signal"] for r in records if r["type"] == "signal"]
     require(signals and all(s.get("schemaVersion") == 5 and s.get("runID") == run_id
-                           and s.get("scenarioID") == SCENARIO for s in signals), "stale signal identity")
+                           and s.get("scenarioID") == scenario_id for s in signals), "stale signal identity")
     require([s.get("sequence") for s in signals] == list(range(1, len(signals) + 1)), "signal sequence")
     require(all(type(s.get("timestampMilliseconds")) is int and s["timestampMilliseconds"] > 0
                 for s in signals), "missing native clock")
     terminal = unique([r for r in records if r["type"] == "semantic-result"], "terminal")
     result = terminal.get("result", {})
-    require(terminal.get("runID") == run_id and result.get("scenarioID") == SCENARIO, "stale terminal")
+    require(terminal.get("runID") == run_id and result.get("scenarioID") == scenario_id, "stale terminal")
     exact({k: result.get(k) for k in ["state", "matchedExpectationCount", "issues"]},
-          dict(state="PASS", matchedExpectationCount=30, issues=[]), "native oracle did not pass")
+          dict(state="PASS", matchedExpectationCount=expected_count, issues=[]), "native oracle did not pass")
     assertions = [s for s in signals if s.get("kind") == "assertion"]
-    exact([s.get("name") for s in assertions], GUARDS, "missing, duplicate or late vitals guard")
+    exact([s.get("name") for s in assertions], guards, "missing, duplicate or late vitals guard")
     require(all(s.get("result") == "PASS" and s.get("evidenceSource") == "internal-hook"
                 for s in assertions), "unacknowledged vitals guard", "FAIL")
     require(not any(s.get("result") == "FAIL" for s in signals), "failed native assertion", "FAIL")
@@ -107,18 +127,23 @@ def validate_local(records, run_id):
     exact(guard["vitals-configuration"].get("vitals"),
           dict(configuration=CONFIGURATION, samplingInterval=0.1), "actual reader configuration differs")
     steps = [s for s in signals if s.get("kind") == "step-started"]
-    exact([s.get("stepKind") for s in steps],
-          ["wait-for-scene-ready", "wait-for-signal", "sample-shared-vitals",
-           "open-window", "wait-for-signal", "sample-shared-vitals"], "serialized sampling steps")
+    expected_steps = ["wait-for-scene-ready", "wait-for-signal", "sample-shared-vitals"]
+    if not single_scene:
+        expected_steps += ["open-window", "wait-for-signal", "sample-shared-vitals"]
+    exact([s.get("stepKind") for s in steps], expected_steps, "serialized sampling steps")
     require_before(steps[2], guard["vitals-configuration"], "configuration after phase A begins")
-    require_before(guard["vitals-a-complete"], steps[3], "A samples before opening B")
+    if not single_scene:
+        require_before(guard["vitals-a-complete"], steps[3], "A samples before opening B")
+    else:
+        require(len([s for s in signals if s.get("kind") == "scene-ready"]) == 1,
+                "physical sample requires exactly one native readiness", "FAIL")
     snapshots = [s for s in signals if s.get("kind") == "rum-view-snapshot"]
     require(all(s.get("evidenceSource") == "rum-mapper" for s in snapshots), "view mapper source", "FAIL")
     require(not any(s.get("kind") in ["rum-action", "rum-resource", "rum-error", "rum-long-task",
                                     "rum-log", "rum-trace", "rum-operation"] for s in signals),
             "unexpected telemetry", "FAIL")
     owners, native = {}, {}
-    for suffix, index in [("a", 2), ("b", 5)]:
+    for suffix, index in phases:
         label = "scene-" + suffix.upper()
         claimed = guard["vitals-" + suffix + "-owner"]
         owners[suffix] = owner(claimed)
@@ -148,21 +173,28 @@ def validate_local(records, run_id):
         require(samples and samples[-1].get("rumContext", {}).get("viewActive") is True,
                 "no active samples before acknowledgement", "FAIL")
         validate_metrics(metrics(samples[-1]), complete=True)
-    require(len(set(native.values())) == 2 and owners["a"]["view_id"] != owners["b"]["view_id"]
-            and owners["a"]["session_id"] == owners["b"]["session_id"], "scene/view alias or split session", "FAIL")
+    if not single_scene:
+        require(len(set(native.values())) == 2 and owners["a"]["view_id"] != owners["b"]["view_id"]
+                and owners["a"]["session_id"] == owners["b"]["session_id"], "scene/view alias or split session", "FAIL")
+    else:
+        require(all(s.get("semanticContext", {}).get("logicalSceneID") == "scene-A"
+                    for s in snapshots if s.get("rumContext", {}).get("viewName") == "ProbeHomeView"),
+                "unexpected physical Home scene", "FAIL")
+    exact(owner(guard["vitals-stop-boundary"]), owners["a" if single_scene else "b"], "session stop owner")
     session_id = owners["a"]["session_id"]
     sessions = [s for s in signals if s.get("kind") == "rum-session-started"]
     require(len(sessions) == 1 and sessions[0].get("rumContext", {}).get("sessionID") == session_id
             and sessions[0].get("rumContext", {}).get("sessionDiscarded") is False, "one sampled session required")
-    retired = guard["vitals-a-retired"]
-    exact(owner(retired), owners["a"], "retired A owner")
-    ended_a = [s for s in snapshots if owner(s) == owners["a"] and s["sequence"] < retired["sequence"]]
-    require(ended_a and ended_a[-1].get("rumContext", {}).get("viewActive") is False,
-            "A still active before B samples", "FAIL")
-    background = [s for s in signals if s.get("kind") == "scene-lifecycle"
-                  and s.get("semanticContext", {}).get("nativeSceneID") == native["scene-A"]
-                  and s.get("activationState") == "background" and s["sequence"] < retired["sequence"]]
-    require(background, "actual serial scene topology missing before retirement", "FAIL")
+    if not single_scene:
+        retired = guard["vitals-a-retired"]
+        exact(owner(retired), owners["a"], "retired A owner")
+        ended_a = [s for s in snapshots if owner(s) == owners["a"] and s["sequence"] < retired["sequence"]]
+        require(ended_a and ended_a[-1].get("rumContext", {}).get("viewActive") is False,
+                "A still active before B samples", "FAIL")
+        background = [s for s in signals if s.get("kind") == "scene-lifecycle"
+                      and s.get("semanticContext", {}).get("nativeSceneID") == native["scene-A"]
+                      and s.get("activationState") == "background" and s["sequence"] < retired["sequence"]]
+        require(background, "actual serial scene topology missing before retirement", "FAIL")
     latest = {}
     for snapshot in snapshots:
         value = owner(snapshot)
@@ -177,8 +209,9 @@ def validate_local(records, run_id):
         exact(observed.get("counters"), ZERO, "unexpected view counts")
         metrics(snapshot)
         latest[value["view_id"]] = snapshot
-    require(len(latest) == 3 and sorted(s["rumContext"].get("viewName", "") for s in latest.values()) ==
-            ["ApplicationLaunch", "ProbeHomeView", "ProbeHomeView"], "complete three-view inventory", "FAIL")
+    names = ["ApplicationLaunch"] + ["ProbeHomeView"] * len(phases)
+    require(len(latest) == len(names) and sorted(s["rumContext"].get("viewName", "") for s in latest.values()) ==
+            names, "complete final view inventory", "FAIL")
     final_views = []
     for snapshot in latest.values():
         context, observed = snapshot["rumContext"], snapshot["vitals"]
@@ -194,16 +227,18 @@ def validate_local(records, run_id):
                                 source="ios", is_active=False, container_present=False,
                                 counters=ZERO, metrics=metrics(snapshot),
                                 slow_frames_present=observed.get("slowFrames") is not None))
-    for suffix in ["a", "b"]:
+    for suffix, _ in phases:
         final = guard["vitals-final-" + suffix]
         snapshot = latest[owners[suffix]["view_id"]]
         exact(owner(final), owners[suffix], "final owner differs")
         exact(final.get("vitals"), snapshot.get("vitals"), "final assertion does not reflect actual mapper")
         require_before(snapshot, final, "final mapper before acknowledgement")
-        if suffix == "b":
-            require_before(guard["vitals-stop-boundary"], snapshot, "B ended before session stop")
-    exact(ended_a[-1]["vitals"], latest[owners["a"]["view_id"]]["vitals"], "ended A metrics mutated during B")
-    return dict(assertions=30, signal_count=len(signals), session_id=session_id, owners=owners,
+        if suffix == "b" or single_scene:
+            require_before(guard["vitals-stop-boundary"], snapshot, "final sampled view ended before session stop")
+    if not single_scene:
+        exact(ended_a[-1]["vitals"], latest[owners["a"]["view_id"]]["vitals"], "ended A metrics mutated during B")
+    return dict(assertions=expected_count, signal_count=len(signals), session_id=session_id, owners=owners,
+                single_scene_physical_sample=single_scene,
                 native_scenes=native, views=final_views, simultaneous_visibility_claimed=False,
                 physical_device_claimed=False, timeseries_default_disabled=True)
 
@@ -223,8 +258,10 @@ def compare_metrics(actual, expected, slow_frames_present):
 
 
 def validate_views(local, rows, allow_pending=False, previous=None):
-    require(isinstance(rows, list) and len(rows) == 3, "incomplete or extra backend views", "FAIL")
-    require(len({r.get("view_id") for r in rows}) == 3, "duplicate backend views", "FAIL")
+    view_count = 2 if local.get("single_scene_physical_sample") is True else 3
+    require(len(local["views"]) == view_count, "invalid local view inventory", "FAIL")
+    require(isinstance(rows, list) and len(rows) == view_count, "incomplete or extra backend views", "FAIL")
+    require(len({r.get("view_id") for r in rows}) == view_count, "duplicate backend views", "FAIL")
     pending = False
     for expected in local["views"]:
         row = unique([r for r in rows if r.get("view_id") == expected["view_id"]], "backend view identity")
@@ -269,7 +306,7 @@ def validate_backend(local, views, actions, resources, tasks, errors, crashes):
             and type(errors) is int and errors == 0 and type(crashes) is int and crashes == 0,
             "unexpected backend telemetry", "FAIL")
     validate_views(local, views)
-    return dict(state="PASS", view_count=3, action_count=0, resource_count=0, long_task_count=0,
+    return dict(state="PASS", view_count=len(local["views"]), action_count=0, resource_count=0, long_task_count=0,
                 error_count=0, crash_count=0, measured_vitals_verified=True, physical_device_claimed=False,
                 omitted_empty_slow_frame_arrays=sum(
                     expected["metrics"]["slowFrames"] == [] and not row["slow_frames_present"]

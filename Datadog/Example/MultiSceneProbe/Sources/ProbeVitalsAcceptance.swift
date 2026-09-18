@@ -91,7 +91,7 @@ internal enum ProbeVitalsAcceptance {
             "memory": readers.memory is VitalMemoryReader,
             "refreshRate": readers.refreshRate is VitalRefreshRateReader,
             "renderLoop": dependencies.renderLoopObserver != nil,
-            "slowFrames": config.trackSlowFrames && dependencies.viewHitchesReaderFactory != nil,
+            "slowFrames": config.trackSlowFrames && dependencies.viewHitchesReaderFactory() is ViewHitchesReader,
             "longTasksDisabled": config.longTaskThreshold == nil && feature.instrumentation.longTasks == nil,
             "appHangsDisabled": config.appHangThreshold == nil && feature.instrumentation.appHangs == nil,
             "memoryWarningsDisabled": !config.trackMemoryWarnings && feature.instrumentation.memoryWarningMonitor == nil,
@@ -107,6 +107,12 @@ internal enum ProbeVitalsAcceptance {
               let scene = ProbeRuntime.sceneRegistry.window(for: handle)?.windowScene,
               let owner = monitor.rumContextSnapshot(for: .scene(.init(rawValue: scene.session.persistentIdentifier))),
               let viewID = owner.viewID else { throw FixtureError.missing("native owner " + label) }
+        if ProbeRuntime.resolution.scenario?.identifier == ProbeVitalsContract.physicalScenarioID {
+            try require(
+                UIApplication.dd.managedShared?.connectedScenes.count == 1 && scene.activationState == .foregroundActive,
+                "one actual foreground native scene before sampling"
+            )
+        }
         let nativeID = scene.session.persistentIdentifier
         try require(recorder.snapshot().contains {
             $0.kind == .sceneReady && $0.semanticContext?.logicalSceneID == label
@@ -163,7 +169,12 @@ internal enum ProbeVitalsAcceptance {
         }
         try require(sampled, "actual CPU, memory and render-loop samples")
         record("vitals-" + suffix + "-samples-acknowledged", owner: owner)
-        if label == "scene-B" { try await finish(ownerB: owner, monitor: monitor) }
+        if ProbeRuntime.resolution.scenario?.identifier == ProbeVitalsContract.physicalScenarioID {
+            try require(label == "scene-A", "physical sample uses scene A")
+            try await finishSingleScene(owner: owner, monitor: monitor)
+        } else if label == "scene-B" {
+            try await finish(ownerB: owner, monitor: monitor)
+        }
     }
 
     private static func hasSamples(_ value: ProbeVitalsObservation) -> Bool {
@@ -190,6 +201,30 @@ internal enum ProbeVitalsAcceptance {
             try require(hasSamples(vitals), "final metric fields")
             record("vitals-final-" + suffix, owner: owner, observed: vitals)
         }
+        try verifyFinalInventory(viewCount: 3)
+    }
+
+    @MainActor
+    private static func finishSingleScene(owner: RUMCoreContext, monitor: Monitor) async throws {
+        let scenes = UIApplication.dd.managedShared?.connectedScenes
+        try require(
+            scenes?.count == 1 && scenes?.first?.activationState == .foregroundActive,
+            "one actual foreground native scene"
+        )
+        record("vitals-stop-boundary", owner: owner)
+        monitor.stopSession()
+        try await waitFor("final inactive physical Home") {
+            latest(owner)?.rumContext?.viewActive == false
+        }
+        guard let view = latest(owner), let vitals = view.vitals else {
+            throw FixtureError.missing("final physical vitals")
+        }
+        try require(hasSamples(vitals), "final physical metric fields")
+        record("vitals-final-a", owner: owner, observed: vitals)
+        try verifyFinalInventory(viewCount: 2)
+    }
+
+    private static func verifyFinalInventory(viewCount: Int) throws {
         let signals = recorder.snapshot()
         try require(!signals.contains {
             [.rumAction, .rumResource, .rumError, .rumLongTask, .rumLog, .rumTrace, .rumOperation].contains($0.kind)
@@ -197,8 +232,8 @@ internal enum ProbeVitalsAcceptance {
         let views = signals.filter { $0.kind == .rumViewSnapshot }
         let ids = Set(views.compactMap { $0.rumContext?.viewID })
         try require(
-            ids.count == 3 && Set(views.compactMap { $0.rumContext?.sessionID }).count == 1,
-            "complete three-view inventory"
+            ids.count == viewCount && Set(views.compactMap { $0.rumContext?.sessionID }).count == 1,
+            "complete final view inventory"
         )
         for id in ids {
             guard let view = views.last(where: { $0.rumContext?.viewID == id }) else {
