@@ -2,7 +2,7 @@
   "schema_version": 1,
   "scope": "Multi-scene RUM release",
   "baseline_revision": "92f021ba7e4a866f84a52da93ed8b63f3dc75882",
-  "candidate_revision": "1e9c4788d280603fd6fdd572300aba71614b29a1",
+  "candidate_revision": "04201edc7711361279d8487b385bc8b0ca9c63c7",
   "gates": [
     {
       "id": "C01",
@@ -305,8 +305,8 @@
       "decisive_test": "Flags and internal performance/cross-platform attributes preserve same-scene stale-view fallback; no public API for internal-only fields",
       "environment": "iOS 27 simulator, focused compatibility tests, exact mapper and Datadog backend owners",
       "completion_mode": "explicit target where customer-callable; captured call-site ownership internally",
-      "status": "OPEN",
-      "evidence": "EXP-180 SDK signed04201edc7 passes443 affected RUM,24 Flags,22 Core/ObjC,4 integration and four Release builds. Fixture dd3edc322 passes175 tests and34 local assertions. Backend flags/owners/build aggregates match. User confirms native FBC absence is expected; local/encoded FBC proof passes. Fresh corrected native backend contract pending. Results/EXP-180-flags-internal-mutations.json."
+      "status": "CLOSED",
+      "evidence": "EXP-180; signed SDK04201edc7 and fixture1c19f95cc.443 affected RUM,24 Flags,22 Core/ObjC,4 integration and four Release builds. Fresh run exp180-20260918T000950Z-01537c7580ee passes175 probe tests,34/34 expectations,8 paired checkpoints/98 signals,16 backend error owners and3 exact views/flags/build aggregates,0 Resources/crashes. FBC ownership/encoding pass locally; native backend absence is required because FBC is Flutter-only.108 Python/15 Node controls. Results/EXP-180-flags-internal-mutations.json; serial topology only."
     },
     {
       "id": "T08",

@@ -187,7 +187,8 @@ and asynchronous bus delivery, foreign/retired generation rejection, ordinary
 compatibility and iOS/watchOS Release checks pass. Native flag/internal ownership
 now passes; backend flags and build aggregates match. The user confirmed that FBC
 is Flutter-only downstream; native absence is expected, with exact local/encoded
-FBC proof retained. T07 awaits the corrected native backend acceptance; see
+FBC proof retained. Corrected fresh acceptance at signed1c19f95cc passes175 probe
+tests,34 local expectations and the complete backend inventory, closing T07; see
 [EXP-180](Experiments/EXP-143-199.md#exp-180--target-feature-flags-and-preserve-internal-mutation-ownership).
 This is a subsequent bounded disposition, separate from the completed original
 review cycle and the final independent release review.

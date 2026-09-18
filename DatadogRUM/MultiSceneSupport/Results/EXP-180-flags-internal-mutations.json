@@ -1,8 +1,10 @@
 {
   "experiment": "EXP-180",
-  "status": "SDK/native local PASS; corrected native backend contract PREPARED",
+  "status": "PASS",
   "gate": "T07",
-  "gates_closed": [],
+  "gates_closed": [
+    "T07"
+  ],
   "control_revision": "db4a96dfabd3b0c3054203d9069905749e55907c",
   "control_sdk_revision": "e2ba9afe561a0a6d5afae16c828350f883e0425c",
   "definition": "Experiments/EXP-143-199.md#exp-180--target-feature-flags-and-preserve-internal-mutation-ownership",
@@ -91,6 +93,14 @@
       "backend_crashes": 0,
       "diagnosis": "Fresh exact-session detailed queries show no performance/FBC field; independent field-existence aggregate is zero. SDK source encodes performance and sanitizes only custom attributes.",
       "next": "Add exact encoded-payload regression and one predeclared realistic-duration diagnostic. Preserve required backend FBC equality; if still absent, keep T07 open and record the external observability boundary."
+    },
+    {
+      "result": "PASS",
+      "summary": "Results/acceptance/exp180-20260918T000950Z-01537c7580ee.json",
+      "reason": "Corrected native FBC contract passes with exact local ownership and encoding, exact backend flags/build aggregates,16 error owners,3 views and zero Resources/crashes.",
+      "probe_tests": 175,
+      "app_expectations": 34,
+      "signals": 98
     }
   ],
   "definition_revision": "5e35f3f95a866963629b9aa32a5091b6ef3c316a",
@@ -426,7 +436,7 @@
       "errors": [],
       "fullLogPath": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/ActionArtifacts/default/BuildProject/BuildProject-Log-20260918-002635.txt"
     },
-    "runtime_acceptance": "PENDING after first rejected attempt",
+    "runtime_acceptance": "PASS",
     "operational_controls": {
       "python": {
         "passed": 108,
@@ -556,6 +566,23 @@
       "node_passed": 15,
       "failed": 0,
       "document_check": "410 links,180 experiments,66 gates PASS"
+    },
+    "definition_revision": "1c19f95cc2f017830d8589d9ca762567f5e48e3c"
+  },
+  "accepted_fixture_revision": "1c19f95cc2f017830d8589d9ca762567f5e48e3c",
+  "accepted_run": {
+    "summary": "Results/acceptance/exp180-20260918T000950Z-01537c7580ee.json",
+    "revision": "1c19f95cc2f017830d8589d9ca762567f5e48e3c",
+    "source_sha256": "19ca2125d480261bc5b550e962acb7992b335237746ccd59942c75cc775f489c",
+    "binary_sha256": "bbbff3fa8a7227b065e418c3e508b06ed5575c75f064f133ede58145b9df33ea",
+    "backend": {
+      "checkpoints": 8,
+      "crash_count": 0,
+      "error_count": 16,
+      "fbc_contract": "native backend absence; exact ownership verified locally and in encoding",
+      "resource_count": 0,
+      "state": "PASS",
+      "view_count": 3
     }
   }
 }
