@@ -103,6 +103,7 @@ class SpanSanitizerTests: XCTestCase {
         let sanitized = SpanSanitizer().sanitize(span: span)
 
         // Then
+        // `meta.usr.*` and `meta.*` are flattened into the same JSON object, so they share the limit.
         XCTAssertEqual(
             sanitized.userInfo.extraInfo.count + sanitized.tags.count,
             AttributesSanitizer.Constraints.maxNumberOfAttributes

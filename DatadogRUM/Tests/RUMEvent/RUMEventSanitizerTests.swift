@@ -97,6 +97,7 @@ class RUMEventSanitizerTests: XCTestCase {
 
             let numberOfAttributes: Int = .random(in: oneHalfOfTheLimit...twiceTheLimit)
             let numberOfUserInfoAttributes: Int = .random(in: oneHalfOfTheLimit...twiceTheLimit)
+            let numberOfAccountInfoAttributes: Int = .random(in: oneHalfOfTheLimit...twiceTheLimit)
 
             let mockAttributes = (0..<numberOfAttributes).map { index in
                 ("attribute-\(index)", mockValue())
@@ -104,24 +105,24 @@ class RUMEventSanitizerTests: XCTestCase {
             let mockUserInfoAttributes = (0..<numberOfUserInfoAttributes).map { index in
                 ("user-info-\(index)", mockValue())
             }
+            let mockAccountInfoAttributes = (0..<numberOfAccountInfoAttributes).map { index in
+                ("account-info-\(index)", mockValue())
+            }
 
             var event = event
             event.context?.contextInfo = Dictionary(uniqueKeysWithValues: mockAttributes)
             event.usr?.usrInfo = Dictionary(uniqueKeysWithValues: mockUserInfoAttributes)
+            event.account?.accountInfo = Dictionary(uniqueKeysWithValues: mockAccountInfoAttributes)
 
             // When
             let sanitized = RUMEventSanitizer().sanitize(event: event)
 
             // Then
-            var remaining = AttributesSanitizer.Constraints.maxNumberOfAttributes
-            let expectedSanitizedUserInfo = min(sanitized.usr!.usrInfo.count , remaining)
-            remaining -= expectedSanitizedUserInfo
-            let expectedSanitizedAttrs = min(sanitized.context!.contextInfo.count, remaining)
-            remaining -= expectedSanitizedAttrs
-
-            XCTAssertGreaterThanOrEqual(remaining, 0)
-            XCTAssertEqual(sanitized.usr?.usrInfo.count, expectedSanitizedUserInfo, "If number of attributes needs to be limited, `usrInfo` are removed second")
-            XCTAssertEqual(sanitized.context?.contextInfo.count, expectedSanitizedAttrs, "If number of attributes needs to be limited, `contextInfo` are removed first.")
+            // The limit is applied per field, so each one is capped independently of the others.
+            let limit = AttributesSanitizer.Constraints.maxNumberOfAttributes
+            XCTAssertEqual(sanitized.usr?.usrInfo.count, min(numberOfUserInfoAttributes, limit))
+            XCTAssertEqual(sanitized.account?.accountInfo.count, min(numberOfAccountInfoAttributes, limit))
+            XCTAssertEqual(sanitized.context?.contextInfo.count, min(numberOfAttributes, limit))
         }
 
         test(event: viewEvent)
