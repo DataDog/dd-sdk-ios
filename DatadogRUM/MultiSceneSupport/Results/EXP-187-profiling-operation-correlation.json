@@ -305,8 +305,8 @@
     "driver": "tools/multi-scene/profiling-correlation/run_simulator.py",
     "validator": "tools/multi-scene/profiling-correlation/validate.py",
     "lint": "PASS strict repository test lint, zero violations",
-    "python_methods_passed": 14,
-    "malformed_evidence_cases_rejected": 64,
+    "python_methods_passed": 19,
+    "malformed_evidence_cases_rejected": 107,
     "simulator_requires_explicit_mechanics_mode": true,
     "initial_development_build": {
       "configuration": "Release, opt-in fixture, generic iOS Simulator",
@@ -323,7 +323,9 @@
       "acceptance_symbols_absent": true,
       "scene_manifest_absent": true
     },
-    "accepted_capture_revision": "95a6bdeb735b8dc803cc4d88e9fca5908c433a3c"
+    "accepted_capture_revision": "95a6bdeb735b8dc803cc4d88e9fca5908c433a3c",
+    "profile_backend_validator": "tools/multi-scene/profiling-correlation/profile_backend.py",
+    "profile_validation_scope": "Saved MCP responses and original user export pass the reusable combined checker; native source remains95a6bdeb7."
   },
   "profile_access_preflight": {
     "state": "PASS for real profile reads; not experiment acceptance",

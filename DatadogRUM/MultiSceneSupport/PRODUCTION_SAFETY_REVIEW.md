@@ -255,7 +255,9 @@ The frozen continuous simulator run passes12 native assertions, all12 RUM
 backend events, complete profile inventory/labels, exact per-vital sample joins
 and the actual exported attachment's integer timestamps and durations. Ordinary
 Release excludes the fixture. The [durable profile result](Results/EXP-187-simulator-profile-correlation.json)
-records source/build identity and unchanged protected paths.
+records source/build identity and unchanged protected paths. Reusable checking
+passes 19 methods/107 malformed controls and accepts the same saved evidence;
+physical/source/build/install requirements remain explicit.
 
 The RUM profile-link flag remains false for the four Operation steps in two
 reads despite independent profile/sample/export correlation; UI enrichment is

@@ -158,7 +158,9 @@
     "backend-query.json": "5f197cf651533defd40abbaa366a0f04c6606051e233e35eb35fdd1313eaa9ab",
     "backend-export-validation.json": "c43878e43a2f8a12c7b1988fbfadd906ebddbd9a80bcc21fe3e50d7700234cab",
     "user-export/rum-mobile-events.json": "b64165f2e6839fc602da86653d8babd03436b9540892bcbe03063aa1e05ffc80",
-    "user-export/wall.pprof": "e11f0ff8c81cb87f48a04cb8d29103cf6453e346a16905477eab1cacbea215ad"
+    "user-export/wall.pprof": "e11f0ff8c81cb87f48a04cb8d29103cf6453e346a16905477eab1cacbea215ad",
+    "backend-complete-validation.json": "e91e620b591de8b2715000181f6892087f42d07caf1e6a4b4539e17b6f15a68f",
+    "backend-final-validation.json": "96c90e41434f4a9421beab2472b003f29333e0ccd3e98234c8e1669f614e38b7"
   },
   "remaining": [
     "Fresh supported physical-device execution of the same contract, with its own complete RUM/profile inventory, nonempty native samples and exact exported attachment"
@@ -168,5 +170,19 @@
     "No simultaneous-window or Duo proof",
     "MCP stack symbols are unresolved for this simulator build",
     "No manufactured attachment or substituted expected data"
-  ]
+  ],
+  "automated_profile_validation": {
+    "state": "PASS",
+    "validator": "tools/multi-scene/profiling-correlation/validate.py --profile-artifacts",
+    "summary": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp187-continuous-capture-w5wio778/attempt/backend-final-validation.json",
+    "validator_source_sha256": {
+      "profile_backend.py": "8c0b6ee37c99be68b5160ee54881a7aebda174537d7cb9f979fc9d9294d2be8b",
+      "validate.py": "659d14b4d6f29d9e4b9cb1e197f5cceb6ba27bd1bac2218ca98dafd0499e2065",
+      "test_profiles.py": "c509e2e94e1d8ad2c32ebc5f142f2b721cef58ae9c9fd0188cd33158d2520d59"
+    },
+    "python_methods_passed": 19,
+    "malformed_evidence_cases_rejected": 107,
+    "new_profile_malformed_cases_rejected": 43,
+    "scope": "Read-only validation of the saved accepted capture; no new native, SDK-test, backend-query or physical run."
+  }
 }

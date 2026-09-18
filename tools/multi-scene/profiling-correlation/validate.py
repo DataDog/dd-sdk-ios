@@ -195,10 +195,11 @@ def main():
     parser.add_argument("--rum-response", type=Path, help="Full-session detailed MCP response, unmodified")
     parser.add_argument("--rum-counts", type=Path, help="Independent full-session aggregate MCP response")
     parser.add_argument("--rum-end-response", type=Path, help="Unmodified exhausted page response")
+    parser.add_argument("--profile-artifacts", type=Path, help="Saved MCP profile responses and absolute query metadata")
     parser.add_argument("--output", type=Path, required=True)
     args = parser.parse_args()
     result = {"experiment": "EXP-187", "gate": "T14", "gate_status": "INCONCLUSIVE",
-              "native_validation": "NOT_RUN", "attachment_validation": "NOT_PROVIDED", "rum_validation": "NOT_PROVIDED",
+              "native_validation": "NOT_RUN", "attachment_validation": "NOT_PROVIDED", "rum_validation": "NOT_PROVIDED", "profile_validation": "NOT_PROVIDED",
               "remaining": ["complete backend RUM/profile inventory", "nonempty physical native wall-time stack samples",
                             "profile label/correlation evidence", "frozen build/install identity"]}
     try:
@@ -209,12 +210,28 @@ def main():
             require(all([args.rum_response, args.rum_counts, args.rum_end_response]), "all three RUM responses required")
             result["rum_validation"] = validate_rum_backend(
                 receipt, args.rum_response.read_text(), args.rum_counts.read_text(), args.rum_end_response.read_text())
+        if args.profile_artifacts:
+            require(args.rum_response is not None, "profile evidence requires the complete RUM response")
+            from profile_backend import load_evidence, validate_profiles
+            evidence, hashes = load_evidence(args.profile_artifacts)
+            result["profile_validation"] = validate_profiles(receipt, args.rum_response.read_text(), evidence)
+            result["profile_validation"]["artifact_sha256"] = hashes
         if args.attachment:
             validate_attachment(expected, json.loads(args.attachment.read_text()))
             result["attachment_validation"] = "PASS"
-    except (ValueError, KeyError, TypeError, OverflowError, OSError) as error:
+    except (ValueError, KeyError, TypeError, IndexError, OverflowError, OSError) as error:
         result["gate_status"] = "FAIL"
         result["validation_error"] = str(error)
+    result["remaining"] = ["independent supported physical capture and frozen source/build/install identity"]
+    for field, requirement in [
+        ("native_validation", "complete native receipt and critical-boundary validation"),
+        ("rum_validation", "complete backend RUM inventory and ownership"),
+        ("profile_validation", "complete profile inventory, labels and native sample correlation"),
+        ("attachment_validation", "actual exported attachment with exact integer timestamps and durations"),
+    ]:
+        state = result[field]
+        if state != "PASS" and not (isinstance(state, dict) and state.get("state") == "PASS"):
+            result["remaining"].append(requirement)
     with args.output.open("x") as output:
         output.write(json.dumps(result, indent=2) + "\n")
     print(json.dumps(result))

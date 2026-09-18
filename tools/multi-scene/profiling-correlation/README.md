@@ -73,6 +73,10 @@ python3 -B tools/multi-scene/profiling-correlation/validate.py \
   --run-id exp187-FRESH_UUID \
   --source-revision FROZEN_40_CHARACTER_REVISION \
   --attachment /actual/rum-mobile-events.json \
+  --rum-response /actual/attempt/backend-raw.txt \
+  --rum-counts /actual/attempt/backend-count.txt \
+  --rum-end-response /actual/attempt/backend-end.txt \
+  --profile-artifacts /actual/attempt \
   --output /fresh/nonexistent/attachment-summary.json
 ```
 
@@ -101,6 +105,40 @@ steps, wrong view/session owners, nonfinite clocks and late assertions.
 ```sh
 python3 -B -m unittest discover -s tools/multi-scene/profiling-correlation -p 'test_*.py'
 ```
+
+## Saved MCP profile inputs
+
+The --profile-artifacts directory contains unmodified MCP response objects as
+JSON. backend-query.json records the actual run_id, session, absolute UTC from/to,
+rum_query (the full session) and profile_query (service:ios-benchmark). Retain the
+query interval used during collection; do not reconstruct a relative window.
+
+| File | Query/result role |
+| --- | --- |
+| backend-profileInventory.json | profile-id values for the complete service/time window |
+| backend-sessionProfiles.json | profile-id values for that service/time window plus exact native session |
+| backend-profileJoins.json | Eight ordered get_profiling_tag_values responses, listed below |
+| backend-name.json | Continuous profile @vital.label values |
+| backend-view.json | Continuous profile @view.name values |
+| backend-sessionLabel.json | Continuous profile @session.id values |
+| backend-profile.json | Continuous profile wall-time flamegraph, no attribute filter |
+| backend-sampleA.json | Same profile/window, attribute=vital_id and exact start-A ID filter |
+| backend-sampleB.json | Same profile/window, attribute=vital_id and exact start-B ID filter |
+
+The eight joins are, in order: profile-id selected independently by start A;
+profile-id selected independently by start B; launch profile operation;
+launch profile @vital.id; launch profile @view.id; continuous profile operation;
+continuous profile @vital.id; continuous profile @view.id. Scope every call to
+the same service and absolute interval. Profile-specific calls use their actual
+profile-id; preserve the launch profile separately from the matching continuous
+profile. An unexpected or missing result fails the fixed inventory.
+
+The checker joins the launch profile back to the actual RUM TTID/profile ID,
+checks both start IDs and final process labels, and validates each flamegraph's
+query/window/type/selection URL and nonempty samples. RUM link flags remain an
+independent observation. Its output hashes every supplied profile response and
+never treats sample values normalized per minute as exact Operation duration.
+The native receipt and actual JSON attachment retain the exact integer oracle.
 
 ## Physical and backend boundary
 

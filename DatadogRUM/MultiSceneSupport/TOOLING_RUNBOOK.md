@@ -1574,7 +1574,12 @@ responses. Never substitute native expected entries for the downloaded attachmen
 Keep the validation output separate from earlier attempt summaries. An exported
 attachment can close that simulator component without browser authentication;
 physical evidence still requires its own fresh run. RUM has_profile flags are
-reported separately from exact profile/sample/attachment joins. Do not silently
+reported separately from exact profile/sample/attachment joins. The combined
+validator's --profile-artifacts option checks the saved inventories, eight exact
+joins, final labels and three flamegraphs. It rejects mismatched run/session,
+absolute query windows, profile types and sample selections; see the fixture
+README for the fixed artifact roles. Its summary lists unmet components while
+always retaining independent physical/source/build/install proof. Do not silently
 drop a false flag or infer UI enrichment from those independent joins.
 
 The existing BenchmarkTests Profiling runner already links the module; avoid
