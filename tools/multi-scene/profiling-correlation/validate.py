@@ -8,6 +8,7 @@ from pathlib import Path
 from uuid import UUID
 
 VIEW_NAMES = ["EXP187.StartA", "EXP187.StartB", "EXP187.Finish"]
+LAUNCH_VIEW = "ApplicationLaunch"
 BOUNDARIES = [
     "assert:1", "assert:2", "command:view:A", "assert:3",
     "command:start:A", "assert:4", "command:view:B", "assert:5",
@@ -38,6 +39,17 @@ def integer(value, name):
     return value
 
 
+def seconds_to_nanoseconds(seconds):
+    # Match Swift Double.rounded() (nearest, ties away from zero), then Int64 saturation.
+    value = float(seconds) * 1_000_000_000
+    require(math.isfinite(value), "nonfinite nanosecond clock")
+    fraction, integral = math.modf(value)
+    rounded = int(integral)
+    if abs(fraction) >= 0.5:
+        rounded += 1 if fraction > 0 else -1
+    return min(max(rounded, -(2 ** 63)), 2 ** 63 - 1)
+
+
 def validate_native(receipt, run_id, revision, allow_simulator=False):
     require(run_id.startswith("exp187-"), "invalid run prefix")
     uuid(run_id[7:])
@@ -62,8 +74,9 @@ def validate_native(receipt, run_id, revision, allow_simulator=False):
     observations = receipt["observations"]
     require(observations["ttidCount"] == 1, "missing or repeated launch readiness")
     views = observations["views"]
-    require(len(views) == 3 and sorted(v["name"] for v in views) == sorted(VIEW_NAMES), "wrong view inventory")
-    require(len({uuid(v["id"]) for v in views}) == 3, "collapsed view occurrences")
+    require(len(views) == 4 and sorted(v["name"] for v in views) == sorted(VIEW_NAMES + [LAUNCH_VIEW]),
+            "expected three fixture views and one built-in launch view")
+    require(len({uuid(v["id"]) for v in views}) == 4, "collapsed view occurrences")
     require(all(v["active"] is False for v in views), "view not ended")
     sessions = {uuid(v["sessionID"]) for v in views}
     require(len(sessions) == 1, "views split across sessions")
@@ -81,13 +94,13 @@ def validate_native(receipt, run_id, revision, allow_simulator=False):
         integer(op["vital"]["start_ns"], "start_ns")
         require(type(op["referenceTime"]) in (int, float) and type(op["serverTimeOffset"]) in (int, float), "missing observed native clock")
         require(math.isfinite(op["referenceTime"]) and math.isfinite(op["serverTimeOffset"]), "nonfinite observed native clock")
-        expected_start = int((op["referenceTime"] + op["serverTimeOffset"] + 978307200) * 1_000_000_000)
+        expected_start = seconds_to_nanoseconds(op["referenceTime"] + op["serverTimeOffset"] + 978307200)
         require(op["vital"]["start_ns"] == expected_start, "clock/serialized timestamp mismatch")
 
     expected = []
     for start, end in [(operations[0], operations[3]), (operations[1], operations[2])]:
         vital = dict(start["vital"])
-        vital["duration_ns"] = int((end["referenceTime"] - start["referenceTime"]) * 1_000_000_000)
+        vital["duration_ns"] = seconds_to_nanoseconds(end["referenceTime"] - start["referenceTime"])
         require(set(vital) == VITAL_FIELDS and vital["duration_ns"] > 0, "invalid expected duration/schema")
         expected.append(vital)
     require(expected[0]["duration_ns"] > expected[1]["duration_ns"], "independent durations collapsed or swapped")

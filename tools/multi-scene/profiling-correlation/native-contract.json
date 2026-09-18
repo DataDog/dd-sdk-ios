@@ -74,21 +74,23 @@
     "First end message has key B and Finish owner before the later A end",
     "Second end message has key A and Finish owner",
     "Exactly four distinct step IDs, one RUM session and the frozen name/key/step order",
-    "Exactly three final inactive views with the frozen names and distinct IDs",
+    "Exactly three final inactive fixture views plus one inactive built-in ApplicationLaunch view; four distinct IDs in one session",
     "Observed start/end dates produce two positive durations with A greater than B"
   ],
   "expected_inventory": {
     "operation_steps": 4,
     "operation_starts": 2,
     "operation_ends": 2,
-    "distinct_views": 3,
+    "distinct_views": 4,
     "rum_sessions": 1,
     "matching_custom_profiles": 1,
     "profile_operation_start_ids": 2,
     "fixture_actions": 0,
     "resources": 0,
     "errors": 0,
-    "long_tasks": 0
+    "long_tasks": 0,
+    "fixture_manual_views": 3,
+    "builtin_launch_views": 1
   },
   "backend_assertions": [
     "Query the full RUM session and profile time range/service; validate all run identities rather than filtering away stale owners",
@@ -106,7 +108,9 @@
     "duration swap",
     "stale run/source identity",
     "missing or duplicate step/profile",
-    "native assertion recorded after its critical boundary"
+    "native assertion recorded after its critical boundary",
+    "missing/extra/wrong-session/active/collapsed/renamed built-in launch view",
+    "fractional native duration and plus/minus one nanosecond rejection"
   ],
   "limits": [
     "Actual OS/device profile upload and backend attachment visibility remain required",
@@ -114,5 +118,7 @@
     "No simultaneous topology or scene-specific CPU claim",
     "Simulator fixture checks establish mechanics only",
     "No SDK production, API, dependency, networking-format or existing build-script change"
-  ]
+  ],
+  "builtin_launch_view_name": "ApplicationLaunch",
+  "native_clock_conversion": "Double seconds multiplied by 1e9, rounded to nearest with ties away from zero, matching Int64.ddWithNoOverflow; exact integer comparison, no tolerance"
 }

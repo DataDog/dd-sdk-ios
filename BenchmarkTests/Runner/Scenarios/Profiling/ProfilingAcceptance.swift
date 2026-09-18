@@ -206,8 +206,9 @@ private final class ProfilingAcceptanceViewController: UIViewController {
         monitor.stopView(key: "exp187.view.C")
         try await checkpoint(11, recorder: recorder) {
             let views = recorder.snapshot().views
-            return views.count == 3 && Set(views.map(\.id)).count == 3
-                && Set(views.map(\.name)) == Set(["EXP187.StartA", "EXP187.StartB", "EXP187.Finish"])
+            return views.count == 4 && Set(views.map(\.id)).count == 4
+                && Set(views.map(\.name)) == Set(["ApplicationLaunch", "EXP187.StartA", "EXP187.StartB", "EXP187.Finish"])
+                && Set(views.map(\.sessionID)).count == 1
                 && views.allSatisfy { $0.active == false }
         }
         let expected = recorder.expectedProfileVitals()

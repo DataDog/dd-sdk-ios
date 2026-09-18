@@ -1,0 +1,61 @@
+{
+  "artifact_root": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp187-narrow-config-cdz1j3ja/attempt",
+  "backend_validation": "NOT_RUN",
+  "build": {
+    "bundle": "com.datadoghq.benchmarks.Runner",
+    "executable_sha256": "fa75b4c30168bee4e2238b0cb09b45384d4a7a3bc7d2792059f7c7e0f4983e4e",
+    "uuid": "UUID: BB683F75-7BD7-3CA5-9843-3B8E00F70109 (x86_64) /private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp187-narrow-config-cdz1j3ja/attempt/derived/Build/Products/Release-iphonesimulator/Runner.app/Runner\nUUID: 8A344488-2DA3-304D-8B3F-34231A63B5FA (arm64) /private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp187-narrow-config-cdz1j3ja/attempt/derived/Build/Products/Release-iphonesimulator/Runner.app/Runner"
+  },
+  "device": {
+    "dataPath": "/Users/valentin.pertuisot/Library/Developer/CoreSimulator/Devices/59A8E789-932A-48D0-9281-0F49DEB8E96D/data",
+    "dataPathSize": 5275967488,
+    "deviceTypeIdentifier": "com.apple.CoreSimulator.SimDeviceType.iPhone-18-Pro",
+    "isAvailable": true,
+    "lastUsedAt": "2026-09-18T08:13:31Z",
+    "logPath": "/Users/valentin.pertuisot/Library/Logs/CoreSimulator/59A8E789-932A-48D0-9281-0F49DEB8E96D",
+    "logPathSize": 315392,
+    "name": "iPhone 18 Pro",
+    "runtime": "com.apple.CoreSimulator.SimRuntime.iOS-27-0",
+    "state": "Booted",
+    "udid": "59A8E789-932A-48D0-9281-0F49DEB8E96D"
+  },
+  "experiment": "EXP-187",
+  "failure": "native fixture did not pass",
+  "finished_at": "2026-09-18T08:19:17.400032+00:00",
+  "gate": "T14",
+  "gate_status": "INVALID",
+  "native_validation": "NOT_RUN",
+  "pid": 66095,
+  "remaining": [
+    "supported physical native wall-time stack samples",
+    "complete backend RUM/profile inventory",
+    "exact profile attachment and process labels"
+  ],
+  "revision": "f4bb1263292646b656c26734f5a7e74dc7821dbe",
+  "run_id": "exp187-8a4fc90f-9dc3-4bf0-b793-d86640565500",
+  "schema_version": 1,
+  "scope": "SIMULATOR_MECHANICS_ONLY",
+  "signature": "UNSIGNED",
+  "source_fingerprint": "83fd5c40a78752f22e0c7a463fe90ab5694fd32fc7420c4d97845ea8c3215cf7",
+  "stages": {
+    "build": {
+      "state": "PASS"
+    },
+    "clean_install": {
+      "absent_before_install": true,
+      "installed_binary_sha256": "fa75b4c30168bee4e2238b0cb09b45384d4a7a3bc7d2792059f7c7e0f4983e4e",
+      "state": "PASS"
+    },
+    "configuration": {
+      "application_id_valid": true,
+      "client_token_resolved": true,
+      "state": "PASS"
+    },
+    "preflight": {
+      "state": "PASS"
+    }
+  },
+  "started_at": "2026-09-18T08:17:34.475963+00:00",
+  "workspace_preserved": true,
+  "xcode": "Xcode 27.0\nBuild version 27A266a"
+}

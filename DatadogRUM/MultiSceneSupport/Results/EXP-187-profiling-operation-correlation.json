@@ -143,10 +143,36 @@
       "reason": "The generated -xcconfig included the full Example chain; Base.xcconfig globally lowered benchmark deployment settings. Narrowed to the existing optional local credential include, resolved only by Xcode, with original Benchmark Runner settings.",
       "workspace_preserved": true,
       "physical_backend": "NOT RUN"
+    },
+    {
+      "run_id": "exp187-8a4fc90f-9dc3-4bf0-b793-d86640565500",
+      "state": "INVALID",
+      "native_status": "FAIL",
+      "revision": "f4bb1263292646b656c26734f5a7e74dc7821dbe",
+      "signature": "UNSIGNED",
+      "durable_result": "Results/acceptance/exp187-8a4fc90f-9dc3-4bf0-b793-d86640565500.json",
+      "artifact": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp187-narrow-config-cdz1j3ja/attempt",
+      "configuration": "PASS",
+      "build": "PASS Release",
+      "clean_install": "PASS data-container absence and installed executable SHA-256 match",
+      "passed_assertions": 10,
+      "failed_assertion": 11,
+      "not_run_assertion": 12,
+      "operation_steps": 4,
+      "fixture_manual_views": 3,
+      "builtin_launch_views": 1,
+      "ttid_count": 1,
+      "session_id": "ac27b586-64e1-4d96-abef-bef8a840d515",
+      "reason": "Native final inventory omitted the built-in ApplicationLaunch view. All four Operation steps have exact expected owners. The independent validator also truncated a fractional duration, one nanosecond below the SDK nearest rounding; no clock serialization loss was found.",
+      "receipt_sha256": "ae62618682d9ae92e0e24b6a9b38f8ad1eeb9d2e76f06fa328290c59eb8a1eef",
+      "executable_sha256": "fa75b4c30168bee4e2238b0cb09b45384d4a7a3bc7d2792059f7c7e0f4983e4e",
+      "source_fingerprint": "83fd5c40a78752f22e0c7a463fe90ab5694fd32fc7420c4d97845ea8c3215cf7",
+      "workspace_preserved": true,
+      "physical_backend": "NOT ACCEPTED"
     }
   ],
   "device_attempts": [],
-  "next": "Freeze the isolated configuration-wiring repair, run a fresh full simulator attempt, then ordinary Release exclusion. Use restored profiling MCP for scoped backend reads; physical device and F01 decision remain pending.",
+  "next": "Freeze the predeclared launch-inventory and Swift-compatible rounding correction; run a fresh complete simulator attempt and ordinary Release exclusion, then scoped exact backend reads. Physical execution and F01 decision remain pending.",
   "deterministic_status": "PASS",
   "physical_backend_status": "ENVIRONMENT BLOCKED",
   "unit_summary": {
@@ -205,19 +231,21 @@
     "status": "DEFINED BEFORE IMPLEMENTATION",
     "assertions": 12,
     "operation_steps": 4,
-    "distinct_views": 3,
+    "distinct_views": 4,
     "matching_profiles": 1,
     "scope": "One physical scene, process-level profile correlation only",
-    "definition_revision": "aaa70d2d17e860e1eb7f7bf67734d66bfdfe7622"
+    "definition_revision": "aaa70d2d17e860e1eb7f7bf67734d66bfdfe7622",
+    "fixture_manual_views": 3,
+    "builtin_launch_views": 1
   },
   "native_implementation": {
-    "state": "NARROWED CONFIGURATION INCLUDE; FRESH FROZEN EXECUTION REQUIRED",
+    "state": "ORACLE CORRECTIONS VALIDATED; FRESH FROZEN EXECUTION REQUIRED",
     "fixture": "BenchmarkTests/Runner/Scenarios/Profiling/ProfilingAcceptance.swift",
     "driver": "tools/multi-scene/profiling-correlation/run_simulator.py",
     "validator": "tools/multi-scene/profiling-correlation/validate.py",
     "lint": "PASS strict repository test lint, zero violations",
-    "python_methods_passed": 7,
-    "malformed_evidence_cases_rejected": 32,
+    "python_methods_passed": 10,
+    "malformed_evidence_cases_rejected": 42,
     "simulator_requires_explicit_mechanics_mode": true,
     "initial_development_build": {
       "configuration": "Release, opt-in fixture, generic iOS Simulator",
@@ -244,6 +272,6 @@
     "wall_response_sha256": "4613fc4757bc7a2a8f42489f4c7f5b49375d5784cf013a89eee6ffdd263a0f05",
     "raw_attachment_access": "UNPROVEN",
     "sample_type_source": "DatadogProfiling/Mach/profile_pprof_packer.cpp:120",
-    "limits": "Existing service profiles only; no EXP-187 scenario has emitted telemetry yet."
+    "limits": "Existing service profiles establish connection health only; the later failed native run emitted RUM telemetry but has no accepted profile evidence."
   }
 }

@@ -263,6 +263,12 @@ failure. The configuration repair is confined to the opt-in runner, with five ne
 negative controls. Profile MCP reads now work; physical execution, exact profile
 correlation and ordinary-build exclusion verification remain. Native sample
 terminology is corrected to wall-time from the Mach serialization source.
+The third attempt reaches all four correctly owned Operation steps but fails
+its final inventory because the fixture omitted the built-in launch view. Its
+independent duration validator also truncated rather than using SDK rounding.
+Both are acceptance-oracle defects; the contract now explicitly counts the
+launch view and keeps exact nanoseconds, with ten Python methods/42 malformed
+controls passing. The failed run remains and fresh native execution is required.
 No production source or original review disposition changes.
 
 ## Stable API review boundary

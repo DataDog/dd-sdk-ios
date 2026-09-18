@@ -1,7 +1,8 @@
 import copy
 import unittest
 from run_simulator import require_configuration
-from validate import BOUNDARIES, OPERATION_COUNTS, VIEW_NAMES, validate_attachment, validate_native
+from validate import (BOUNDARIES, LAUNCH_VIEW, OPERATION_COUNTS, VIEW_NAMES,
+                      seconds_to_nanoseconds, validate_attachment, validate_native)
 
 RUN = "exp187-00000000-0000-0000-0000-000000000001"
 REVISION = "a" * 40
@@ -11,6 +12,8 @@ def fixture():
     ids = [f"00000000-0000-0000-0000-{n:012}" for n in range(2, 10)]
     views = [{"id": ids[n], "name": name, "sessionID": ids[3], "active": False}
              for n, name in enumerate(VIEW_NAMES)]
+    views.append({"id": "00000000-0000-0000-0000-000000000010", "name": LAUNCH_VIEW,
+                  "sessionID": ids[3], "active": False})
     operations = []
     for index, (key, step, owner, time) in enumerate([
         ("A", "start", 0, 100), ("B", "start", 1, 101),
@@ -38,6 +41,61 @@ def fixture():
 
 
 class NativeValidationTests(unittest.TestCase):
+    def test_builtin_launch_is_explicit_and_cannot_hide_inventory_errors(self):
+        for mutation in ["missing", "extra", "session", "active", "collapsed", "name"]:
+            with self.subTest(mutation=mutation):
+                receipt = fixture()
+                views = receipt["observations"]["views"]
+                if mutation == "missing":
+                    views.pop()
+                elif mutation == "extra":
+                    views.append(copy.deepcopy(views[-1]))
+                elif mutation == "session":
+                    views[-1]["sessionID"] = views[0]["id"]
+                elif mutation == "active":
+                    views[-1]["active"] = True
+                elif mutation == "collapsed":
+                    views[-1]["id"] = views[0]["id"]
+                else:
+                    views[-1]["name"] = "unexpected.view"
+                with self.assertRaises(ValueError):
+                    validate_native(receipt, RUN, REVISION)
+
+    def test_nanosecond_conversion_matches_swift_rounding_and_saturation(self):
+        for seconds, expected in [(0.5e-9, 1), (-0.5e-9, -1), (1.5e-9, 2), (-1.5e-9, -2),
+                                  (0.49e-9, 0), (-0.49e-9, 0), (1e12, 2 ** 63 - 1), (-1e12, -(2 ** 63))]:
+            with self.subTest(seconds=seconds):
+                self.assertEqual(seconds_to_nanoseconds(seconds), expected)
+
+    def test_observed_fractional_duration_keeps_exact_nanosecond_oracle(self):
+        # Actual attempt C clocks. Truncation loses one nanosecond for A.
+        receipt = fixture()
+        operations = receipt["observations"]["operations"]
+        clocks = [
+            (811412335.529603, 0.04941272735595703, 1789719535579015680),
+            (811412336.632536, 0.07980263233184814, 1789719536712338688),
+            (811412338.744279, 0.07980263233184814, 1789719538824081664),
+            (811412341.925247, 0.07980263233184814, 1789719542005049600),
+        ]
+        for operation, (reference, offset, start) in zip(operations, clocks):
+            operation["referenceTime"] = reference
+            operation["serverTimeOffset"] = offset
+            operation["vital"]["start_ns"] = start
+        receipt["expectedProfileVitals"] = [dict(operations[n]["vital"], duration_ns=duration)
+                                            for n, duration in [(0, 6395643950), (1, 2111742973)]]
+        expected = validate_native(receipt, RUN, REVISION)
+        validate_attachment(expected, expected)
+        for delta in [-1, 1]:
+            with self.subTest(delta=delta):
+                wrong_receipt = copy.deepcopy(receipt)
+                wrong_receipt["expectedProfileVitals"][0]["duration_ns"] += delta
+                with self.assertRaises(ValueError):
+                    validate_native(wrong_receipt, RUN, REVISION)
+                wrong_attachment = copy.deepcopy(expected)
+                wrong_attachment[0]["duration_ns"] += delta
+                with self.assertRaises(ValueError):
+                    validate_attachment(expected, wrong_attachment)
+
     def test_missing_or_unresolved_configuration_rejected_before_install(self):
         for configuration in [
             {}, {"ClientToken": "", "ApplicationID": RUN[7:]},

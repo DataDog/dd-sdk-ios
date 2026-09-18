@@ -401,7 +401,7 @@
       "environment": "Profiling/Operation fixture and supported profiling device/backend",
       "completion_mode": "documented process-level fallback",
       "status": "ENVIRONMENT BLOCKED",
-      "evidence": "EXP-187:115 selected SDK/integration tests pass for exact identity/routing/flush behavior. Signed native fixture21c312a43 builds and clean-installs; first frozen run is INVALID before SDK initialization due empty benchmark configuration and remains preserved. Physical profile/backend proof remains. Results/EXP-187-profiling-operation-correlation.json."
+      "evidence": "EXP-187:115 selected SDK/integration tests pass. Configuration now passes; third native attempt records four correctly owned Operation steps before a fixture launch-inventory failure. Ten Python methods validate the bounded inventory/rounding correction; fresh execution required. Profile MCP reads work; physical and exact profile/backend proof remain. Results/EXP-187-profiling-operation-correlation.json."
     },
     {
       "id": "T15",

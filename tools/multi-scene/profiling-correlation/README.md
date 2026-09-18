@@ -31,7 +31,10 @@ installs and compares executable hashes, supplies a fresh run UUID and committed
 source identity, then checks the twelve assertions and native process ID.
 Readiness is observed without consuming it; each assertion precedes its next
 critical command. Actual native reference times and server offsets independently
-determine exact serialized timestamps and durations.
+determine exact serialized timestamps and durations, using the SDK's nearest
+integer rounding with ties away from zero. The three manual views and the one
+built-in ApplicationLaunch view must all be distinct, inactive and in one session;
+no extra view or Operation is ignored.
 
 The acceptance build generates an isolated xcconfig that includes the tracked
 Benchmark Runner settings, then lets Xcode resolve the existing optional

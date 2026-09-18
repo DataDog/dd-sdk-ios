@@ -1519,7 +1519,11 @@ The repeatable [profiling fixture procedure](../../tools/multi-scene/profiling-c
 owns the opt-in build and simulator driver. Commit relevant sources first; use a
 fresh output path and run UUID. It verifies source/signature, clean-install absence,
 installed executable and native process identity before accepting12 assertions.
-Native clock values independently reproduce exact attachment timestamps/durations.
+Native clock values independently reproduce exact attachment timestamps/durations,
+using Swift nearest rounding with ties away from zero, not Python truncation.
+Require three fixture views plus exactly one built-in ApplicationLaunch view;
+all four are distinct, inactive and in one session. Do not filter unexpected
+views or widen nanosecond tolerances after a failed run.
 Its durable summary remains INCONCLUSIVE for T14 even when simulator mechanics
 pass. The ordinary-build mode checks the acceptance implementation and scene
 manifest are absent from normal Release builds.
