@@ -2619,6 +2619,173 @@ class RUMSessionScopeTests: XCTestCase {
         XCTAssertTrue(result)
     }
 
+    func testConcurrentScenesKeepSharedVitalsInTheirOwnViewIntervals() throws {
+        let cpu = BoundedVitalReader()
+        let memory = BoundedVitalReader()
+        let refresh = ContinuousVitalReaderMock()
+        var readers = VitalsReaders(frequency: 0.1)
+        readers.cpu = cpu
+        readers.memory = memory
+        readers.refreshRate = refresh
+        let start = Date()
+        let scope: RUMSessionScope = .mockWith(
+            parent: parent,
+            startTime: start,
+            dependencies: .mockWith(vitalsReaders: readers)
+        )
+        let sceneA = RUMSceneIdentifier(rawValue: "vitals-A")
+        let sceneB = RUMSceneIdentifier(rawValue: "vitals-B")
+
+        func samples(cpuValues: [Double], memoryValues: [Double]) -> XCTestExpectation {
+            let sampled = expectation(description: "bounded memory samples")
+            cpu.values = cpuValues
+            memory.values = memoryValues
+            memory.onDrained = { sampled.fulfill() }
+            return sampled
+        }
+
+        func startView(_ key: String, scene: RUMSceneIdentifier, time: Date) {
+            _ = scope.process(
+                command: startViewCommand(identity: ViewIdentifier(key), name: key, sceneIdentifier: scene, time: time),
+                context: context,
+                writer: writer
+            )
+        }
+
+        func stopView(_ key: String, scene: RUMSceneIdentifier, time: Date) {
+            var command = RUMStopViewCommand.mockWith(time: time, identity: ViewIdentifier(key))
+            command.target = .scene(scene)
+            _ = scope.process(command: command, context: context, writer: writer)
+        }
+
+        let initial = samples(cpuValues: [100, 100], memoryValues: [1_024, 1_024])
+        startView("A", scene: sceneA, time: start)
+        startView("B", scene: sceneB, time: start)
+        XCTAssertEqual(refresh.publishers.count, 2)
+        wait(for: [initial], timeout: 2)
+        let second = samples(cpuValues: [140, 140], memoryValues: [3_072, 3_072])
+        wait(for: [second], timeout: 2)
+        var frames = VitalInfo()
+        frames.addSample(60)
+        frames.addSample(30)
+        refresh.vitalInfo = frames
+
+        let viewAID = try XCTUnwrap(scope.viewScopes.first { $0.sceneIdentifier == sceneA }?.viewUUID.toRUMDataFormat)
+        let viewBID = try XCTUnwrap(scope.viewScopes.first { $0.sceneIdentifier == sceneB }?.viewUUID.toRUMDataFormat)
+        XCTAssertNotEqual(viewAID, viewBID)
+        stopView("A", scene: sceneA, time: start.addingTimeInterval(10))
+        XCTAssertEqual(refresh.publishers.count, 1)
+        XCTAssertEqual(scope.activeView?.viewUUID.toRUMDataFormat, viewBID)
+        let finalA = try XCTUnwrap(writer.events(ofType: RUMViewEvent.self).last { $0.view.id == viewAID })
+        XCTAssertEqual(finalA.view.cpuTicksCount, 40)
+        XCTAssertEqual(finalA.view.cpuTicksPerSecond, 4)
+        XCTAssertEqual(finalA.view.memoryAverage, 2_048)
+        XCTAssertEqual(finalA.view.memoryMax, 3_072)
+        XCTAssertEqual(finalA.view.refreshRateAverage, 45)
+        XCTAssertEqual(finalA.view.refreshRateMin, 30)
+        XCTAssertEqual(finalA.view.isActive, false)
+
+        var survivingFrames = VitalInfo()
+        survivingFrames.addSample(15)
+        refresh.vitalInfo = survivingFrames
+        stopView("B", scene: sceneB, time: start.addingTimeInterval(20))
+        XCTAssertEqual(refresh.publishers.count, 0)
+        let finalB = try XCTUnwrap(writer.events(ofType: RUMViewEvent.self).last { $0.view.id == viewBID })
+        XCTAssertEqual(finalB.session.id, finalA.session.id)
+        XCTAssertEqual(finalB.view.cpuTicksCount, 40)
+        XCTAssertEqual(finalB.view.cpuTicksPerSecond, 2)
+        XCTAssertEqual(finalB.view.memoryAverage, 2_048)
+        XCTAssertEqual(finalB.view.memoryMax, 3_072)
+        XCTAssertEqual(finalB.view.refreshRateAverage, 15)
+        XCTAssertEqual(finalB.view.refreshRateMin, 15)
+        XCTAssertEqual(writer.events(ofType: RUMViewEvent.self).last { $0.view.id == viewAID }, finalA)
+
+        let replacement = samples(cpuValues: [240], memoryValues: [4_096])
+        startView("A", scene: sceneA, time: start.addingTimeInterval(30))
+        wait(for: [replacement], timeout: 2)
+        refresh.vitalInfo = survivingFrames
+        stopView("A", scene: sceneA, time: start.addingTimeInterval(30.5))
+        let freshA = try XCTUnwrap(writer.events(ofType: RUMViewEvent.self).last)
+        XCTAssertNotEqual(freshA.view.id, viewAID)
+        XCTAssertEqual(freshA.session.id, finalA.session.id)
+        XCTAssertEqual(freshA.view.cpuTicksCount, 0)
+        XCTAssertNil(freshA.view.cpuTicksPerSecond)
+        XCTAssertEqual(freshA.view.memoryAverage, 4_096)
+        XCTAssertEqual(freshA.view.memoryMax, 4_096)
+        XCTAssertEqual(freshA.view.refreshRateAverage, 15)
+        XCTAssertEqual(refresh.publishers.count, 0)
+        XCTAssertEqual(Set(writer.events(ofType: RUMViewEvent.self).map { $0.view.id }).count, 3)
+        XCTAssertTrue(writer.events(ofType: RUMActionEvent.self).isEmpty)
+        XCTAssertTrue(writer.events(ofType: RUMErrorEvent.self).isEmpty)
+        XCTAssertTrue(writer.events(ofType: RUMResourceEvent.self).isEmpty)
+    }
+
+    func testConcurrentScenesWithDisabledVitalsKeepMetricFieldsAbsent() {
+        let start = Date()
+        let scope: RUMSessionScope = .mockWith(parent: parent, startTime: start, dependencies: .mockWith(vitalsReaders: nil))
+        for label in ["A", "B"] {
+            _ = scope.process(
+                command: startViewCommand(
+                    identity: ViewIdentifier(label),
+                    name: label,
+                    sceneIdentifier: RUMSceneIdentifier(rawValue: label),
+                    time: start
+                ),
+                context: context,
+                writer: writer
+            )
+        }
+        _ = scope.process(
+            command: RUMStopSessionCommand.mockWith(time: start.addingTimeInterval(2)),
+            context: context,
+            writer: writer
+        )
+        let views = writer.events(ofType: RUMViewEvent.self)
+        XCTAssertEqual(Set(views.map { $0.view.id }).count, 2)
+        for event in views {
+            XCTAssertNil(event.view.cpuTicksCount)
+            XCTAssertNil(event.view.cpuTicksPerSecond)
+            XCTAssertNil(event.view.memoryAverage)
+            XCTAssertNil(event.view.memoryMax)
+            XCTAssertNil(event.view.refreshRateAverage)
+            XCTAssertNil(event.view.refreshRateMin)
+        }
+    }
+
+    func testConcurrentSceneChurnDoesNotRestartOrPauseSessionTimeseries() {
+        let collector = TimeseriesCollectorSpy()
+        let start = Date()
+        let scope: RUMSessionScope = .mockWith(
+            parent: parent,
+            startTime: start,
+            dependencies: .mockWith(timeseriesCollector: collector)
+        )
+        for (key, scene) in [("A1", "A"), ("B1", "B"), ("A2", "A")] {
+            _ = scope.process(
+                command: startViewCommand(
+                    identity: ViewIdentifier(key),
+                    name: key,
+                    sceneIdentifier: RUMSceneIdentifier(rawValue: scene),
+                    time: start
+                ),
+                context: context,
+                writer: writer
+            )
+        }
+        var stop = RUMStopViewCommand.mockWith(time: start, identity: ViewIdentifier("A2"))
+        stop.target = .scene(RUMSceneIdentifier(rawValue: "A"))
+        _ = scope.process(command: stop, context: context, writer: writer)
+        XCTAssertEqual(scope.activeView?.viewName, "B1")
+        XCTAssertEqual(collector.startCallCount, 1)
+        XCTAssertEqual(collector.pauseCallCount, 0)
+        XCTAssertEqual(collector.resumeCallCount, 0)
+        XCTAssertEqual(collector.stopCallCount, 0)
+        _ = scope.process(command: RUMStopSessionCommand.mockWith(time: start), context: context, writer: writer)
+        XCTAssertEqual(collector.startCallCount, 1)
+        XCTAssertEqual(collector.stopCallCount, 1)
+        XCTAssertEqual(collector.lastStartedSessionID, scope.context.sessionID.toRUMDataFormat)
+    }
+
     // MARK: - Timeseries collector lifecycle
 
     func testWhenSessionScopeIsCreated_itStartsTimeseriesCollector() {
@@ -2785,6 +2952,22 @@ private func storedWatchdogViewID(in featureScope: FeatureScopeMock) throws -> S
     let json = try XCTUnwrap(JSONSerialization.jsonObject(with: data) as? [String: Any])
     let view = try XCTUnwrap(json["view"] as? [String: Any])
     return try XCTUnwrap(view["id"] as? String)
+}
+
+private final class BoundedVitalReader: SamplingBasedVitalReader {
+    var values: [Double] = []
+    var onDrained: (() -> Void)?
+
+    func readVitalData() -> Double? {
+        guard !values.isEmpty else {
+            return nil
+        }
+        let value = values.removeFirst()
+        if values.isEmpty {
+            onDrained?()
+        }
+        return value
+    }
 }
 
 private class TimeseriesCollectorSpy: TimeseriesCollecting {

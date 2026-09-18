@@ -2,7 +2,7 @@
   "experiment": "EXP-186",
   "gate": "T13",
   "title": "Validate shared vitals and view association",
-  "status": "PLANNED",
+  "status": "PREPARED",
   "control_revision": "5b4a56815e0661d050b94e93264470ae3d941a63",
   "sdk_revision": "04201edc7711361279d8487b385bc8b0ca9c63c7",
   "definition": "Experiments/EXP-143-199.md#exp-186--validate-shared-vitals-and-view-association",
@@ -14,8 +14,66 @@
     "iOS27 simulator and authenticated backend",
     "representative physical device before closure"
   ],
-  "unit_attempts": [],
+  "unit_attempts": [
+    {
+      "scheme": "DatadogRUM",
+      "state": "PASS",
+      "counts": {
+        "expectedFailures": 0,
+        "failed": 0,
+        "notRun": 0,
+        "passed": 131,
+        "skipped": 0,
+        "total": 131
+      },
+      "summary_path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/ActionArtifacts/default/RunSomeTests/02D70B11-BE86-45CF-BF20-2A4925E366B3.txt",
+      "xcresult": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/ActionArtifacts/default/RunSomeTests/Test-DatadogRUM-2026.09.18_06-58-48-+0100.xcresult"
+    },
+    {
+      "scheme": "DatadogCore",
+      "state": "PASS",
+      "counts": {
+        "expectedFailures": 0,
+        "failed": 0,
+        "notRun": 0,
+        "passed": 35,
+        "skipped": 0,
+        "total": 35
+      },
+      "summary_path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/ActionArtifacts/default/RunSomeTests/E8F4CA70-C1AB-4BAC-8443-6E9D4D6DDE4A.txt",
+      "xcresult": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/ActionArtifacts/default/RunSomeTests/Test-DatadogCore-2026.09.18_07-00-46-+0100.xcresult"
+    }
+  ],
   "native_attempts": [],
   "device_attempts": [],
-  "next": "Implement fixed shared-reader/view-association and session-owned collector-lifecycle controls in existing registered tests."
+  "next": "Implement the predeclared actual-reader fixture and strict oracle, build/lint/controls, then commit and execute fresh one-invocation acceptance; physical sample still required.",
+  "unit_source_sha256": "53c5cda262ec8932913d815d6c6273beff7e15c56a75fc9a2fe5495f027c7539",
+  "unit_summary": {
+    "total": 166,
+    "added_tests": 3,
+    "lint": "PASS strict repository test lint",
+    "production_changes": 0
+  },
+  "preparation_issues": [
+    {
+      "kind": "test compilation",
+      "reason": "Optional view.isActive assertion required equality with false; corrected before131 passing tests.",
+      "resolved": true
+    }
+  ],
+  "native_definition": {
+    "scenario_id": "vitals.shared-process.cross-scene-serial",
+    "sampling_interval_seconds": 0.1,
+    "minimum_probe_tests": 196,
+    "ordered_guards": 14,
+    "native_expectations": 30,
+    "views": 3,
+    "sessions": 1,
+    "actions": 0,
+    "resources": 0,
+    "errors": 0,
+    "long_tasks": 0,
+    "crashes": 0,
+    "final_views_inactive": true
+  }
 }

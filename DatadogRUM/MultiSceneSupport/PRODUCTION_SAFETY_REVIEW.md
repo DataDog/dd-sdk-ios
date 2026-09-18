@@ -230,3 +230,12 @@ and source-less process routing pass without production changes. The ended-view
 fixture failure and early indexing failure remain preserved with their tooling
 repairs. This adds no original-review finding and does not certify real memory
 pressure, watchdog termination, physical/Duo topology, vitals or profiling.
+
+## Subsequent bounded validation: shared vitals
+
+[EXP-186](Experiments/EXP-143-199.md#exp-186--validate-shared-vitals-and-view-association)
+passes166 selected SDK tests and strict test lint with no production repair.
+Fixed inputs preserve exact scene-view aggregates, ended subscription cleanup,
+fresh replacement and disabled behavior; scene churn keeps one session collector.
+Native/backend and representative device evidence remain required for T13.
+This is separate from the completed D01–D12 review cycle.
