@@ -1,0 +1,333 @@
+{
+  "artifact_root": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp186-physical-single-0bjjfkcv",
+  "backend_assertion_record": "backend-validation.json",
+  "backend_final_views": 2,
+  "backend_validation": "PASS",
+  "build_destination": "generic/platform=iOS",
+  "build_exit_code": 0,
+  "bundle": "com.datadoghq.rum-native-multi-scene-probe",
+  "clean_app_absence": true,
+  "cleanup": "UNVERIFIED: CoreDevice4016; unavailable after successful native/backend capture",
+  "cleanup_exit_code": 1,
+  "configuration_presence": "PASS",
+  "console_launcher_pid": 72976,
+  "device": "iPhone 16 Pro Max",
+  "device_core_id": "C2FEA492-92EC-5F8F-BF83-27A850997042",
+  "device_state": "CONNECTED",
+  "device_udid": "00008140-000C69440CDB001C",
+  "executable": "RUMNativeMultiSceneProbe",
+  "executable_sha256": "8b4ff82011f05cfb5d12003b8d6320daf411a4d529021d9ae71c22a72488a1aa",
+  "execution_head": "e944e5ad4697b55ab6db2ee6235cc5e135cfb58d",
+  "experiment": "EXP-186",
+  "finished_at": "2026-09-18T11:30:41.049999+00:00",
+  "gate": "T13",
+  "gate_status": "INCONCLUSIVE_PENDING_CLEANUP",
+  "installed_code_identity": "PASS",
+  "installed_device_identity": "NOT_RUN",
+  "launched_at": "2026-09-18T11:23:45.720563+00:00",
+  "native_assertions": 17,
+  "native_finished_at": "2026-09-18T11:23:48.751378+00:00",
+  "native_terminal_seen": true,
+  "native_validation": "PASS",
+  "os": "27.2",
+  "os_build": "24B5084k",
+  "physical_sample": "PASS native17, exact2 final backend views and3 installed signed code hashes on real iPhone",
+  "pid": 9091,
+  "platform": "PHYSICAL_DEVICE",
+  "preparation_artifact": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp186-physical-receipt-_d82qn0q",
+  "revision": "661ae6b9119e3b5b8fd21a10063166d0ba1b5e06",
+  "run_id": "exp186-f7544129-5248-4001-a25b-f9da0d275376",
+  "scenario_id": "vitals.shared-process.single-scene-physical",
+  "session_id": "161842a7-48da-4c13-a116-288314da7c7c",
+  "signature": "UNSIGNED",
+  "signed_app": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp186-physical-receipt-_d82qn0q/signed-_08qratl/RUMNativeMultiSceneProbe.app",
+  "signed_inventory": {
+    "binaries": {
+      "RUMNativeMultiSceneProbe": "6835e2388f2a041b23fdf7ebbc7694e80fd08e37bcdad97c53212d387919a9ed",
+      "RUMNativeMultiSceneProbe.debug.dylib": "79d5ad3a537dcb17c064bc902743cdb91dbb4b93f9029a148b827b310493cf49",
+      "__preview.dylib": "1aa8c5f7362de0342376a5ed2558846a4f422e8b6fcab53844b2d2a783e98041"
+    },
+    "bundleIdentifier": "com.datadoghq.rum-native-multi-scene-probe",
+    "executable": "RUMNativeMultiSceneProbe"
+  },
+  "signing_status": "PASS",
+  "source_fingerprint": "83d481c0cc528a229a15d64884e3a0467f865434a8d25a525db2d78312252f43",
+  "source_preserved": true,
+  "started_at": "2026-09-18T11:22:18.271860+00:00",
+  "test_policy": "Accepted SDK proof retained;7 focused probe tests and25 Python oracle tests pass. New one-scene native fixture also checked on simulator; physical execution remains separate.",
+  "transport": "wired",
+  "unsigned_app": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp186-physical-receipt-_d82qn0q/derived/Build/Products/Debug-iphoneos/RUMNativeMultiSceneProbe.app",
+  "usb_phone_names": [],
+  "workspace_preserved": true,
+  "native_evidence": {
+    "assertions": 17,
+    "native_scenes": {
+      "scene-A": "0DD55B54-309A-4FE2-B388-08C6215987F8"
+    },
+    "owners": {
+      "a": {
+        "session_id": "161842a7-48da-4c13-a116-288314da7c7c",
+        "view_id": "5ad94e5e-3294-43f4-9792-e792102aa877"
+      }
+    },
+    "physical_device_claimed": false,
+    "session_id": "161842a7-48da-4c13-a116-288314da7c7c",
+    "signal_count": 33,
+    "simultaneous_visibility_claimed": false,
+    "single_scene_physical_sample": true,
+    "timeseries_default_disabled": true,
+    "views": [
+      {
+        "container_present": false,
+        "counters": {
+          "actions": 0,
+          "crashes": 0,
+          "errors": 0,
+          "longTasks": 0,
+          "resources": 0
+        },
+        "is_active": false,
+        "metrics": {
+          "cpuRate": null,
+          "cpuTicks": 0,
+          "memoryAverage": 61523664,
+          "memoryMax": 61523664,
+          "refreshRateAverage": null,
+          "refreshRateMin": null,
+          "slowFrames": [],
+          "slowFramesRate": null,
+          "timeSpentNanoseconds": 91408014
+        },
+        "name": "ApplicationLaunch",
+        "run_id": "exp186-f7544129-5248-4001-a25b-f9da0d275376",
+        "session_id": "161842a7-48da-4c13-a116-288314da7c7c",
+        "slow_frames_present": true,
+        "source": "ios",
+        "view_id": "30611bbb-23f8-465d-aee4-2cc174f5e7f0"
+      },
+      {
+        "container_present": false,
+        "counters": {
+          "actions": 0,
+          "crashes": 0,
+          "errors": 0,
+          "longTasks": 0,
+          "resources": 0
+        },
+        "is_active": false,
+        "metrics": {
+          "cpuRate": 304.9040783262734,
+          "cpuTicks": 368,
+          "memoryAverage": 75312827.0769231,
+          "memoryMax": 75892576,
+          "refreshRateAverage": 58.52116894462598,
+          "refreshRateMin": 19.607845707918184,
+          "slowFrames": [
+            {
+              "duration": 12501625,
+              "start": 133345333
+            },
+            {
+              "duration": 16668167,
+              "start": 304194625
+            },
+            {
+              "duration": 16668167,
+              "start": 337530958
+            },
+            {
+              "duration": 16668167,
+              "start": 820907792
+            },
+            {
+              "duration": 34336417,
+              "start": 1070930292
+            }
+          ],
+          "slowFramesRate": null,
+          "timeSpentNanoseconds": 1206936955
+        },
+        "name": "ProbeHomeView",
+        "run_id": "exp186-f7544129-5248-4001-a25b-f9da0d275376",
+        "session_id": "161842a7-48da-4c13-a116-288314da7c7c",
+        "slow_frames_present": true,
+        "source": "ios",
+        "view_id": "5ad94e5e-3294-43f4-9792-e792102aa877"
+      }
+    ]
+  },
+  "backend_evidence": {
+    "state": "PASS",
+    "view_count": 2,
+    "action_count": 0,
+    "resource_count": 0,
+    "long_task_count": 0,
+    "error_count": 0,
+    "crash_count": 0,
+    "measured_vitals_verified": true,
+    "physical_device_claimed": false,
+    "omitted_empty_slow_frame_arrays": 1,
+    "complete_session_count": 4,
+    "event_type_counts": {
+      "view": 2,
+      "session": 1,
+      "vital": 1
+    },
+    "built_in_launch": {
+      "name": "time_to_initial_display",
+      "type": "app_launch",
+      "view_id": "5ad94e5e-3294-43f4-9792-e792102aa877"
+    },
+    "pagination_exhausted": true,
+    "first_final_view_read": true,
+    "projection": "committed connector_driver.js, numeric values independently match Python parsed raw data",
+    "query": {
+      "query": "@session.id:161842a7-48da-4c13-a116-288314da7c7c",
+      "from": "2026-09-18T11:23:00Z",
+      "to": "2026-09-18T11:25:00Z",
+      "run_id": "exp186-f7544129-5248-4001-a25b-f9da0d275376"
+    }
+  },
+  "installed_code_evidence": {
+    "binaries": {
+      "RUMNativeMultiSceneProbe": "6835e2388f2a041b23fdf7ebbc7694e80fd08e37bcdad97c53212d387919a9ed",
+      "RUMNativeMultiSceneProbe.debug.dylib": "79d5ad3a537dcb17c064bc902743cdb91dbb4b93f9029a148b827b310493cf49",
+      "__preview.dylib": "1aa8c5f7362de0342376a5ed2558846a4f422e8b6fcab53844b2d2a783e98041"
+    },
+    "boundary": "before-sdk-initialization",
+    "bundleIdentifier": "com.datadoghq.rum-native-multi-scene-probe",
+    "executable": "RUMNativeMultiSceneProbe",
+    "process_id": 9091,
+    "run_id": "exp186-f7544129-5248-4001-a25b-f9da0d275376",
+    "source_revision": "661ae6b9119e3b5b8fd21a10063166d0ba1b5e06",
+    "state": "PASS"
+  },
+  "artifacts": {
+    "summary.json": {
+      "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp186-physical-single-0bjjfkcv/summary.json",
+      "sha256": "1d29224672fda4f4d6d24cf4128a4432a89505453feae1e0917e5eb9bb3a3d62"
+    },
+    "source-identity.json": {
+      "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp186-physical-single-0bjjfkcv/source-identity.json",
+      "sha256": "105e628f6550b14f9eb410551c3b015f613a308dbe256950a165fa2f172c424f"
+    },
+    "protected-state.json": {
+      "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp186-physical-single-0bjjfkcv/protected-state.json",
+      "sha256": "392958ad223b5aec126511da27f3dc3d737e85d5149f0299501210b0191fd41a"
+    },
+    "devices.json": {
+      "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp186-physical-single-0bjjfkcv/devices.json",
+      "sha256": "b857d759c457b83ed619c08643ed1bd2e9ceb3d72f56d26fe9c5483ab725d90f"
+    },
+    "lock.json": {
+      "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp186-physical-single-0bjjfkcv/lock.json",
+      "sha256": "f90a28de6f321633b256cd3cb6effff4c54b2565199756af05d4c26bca8b4aa1"
+    },
+    "apps.json": {
+      "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp186-physical-single-0bjjfkcv/apps.json",
+      "sha256": "7eaeb00afb72f0b58b30b6ff73268b2b7a7a97c70f35a1476207518369a232b3"
+    },
+    "processes.json": {
+      "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp186-physical-single-0bjjfkcv/processes.json",
+      "sha256": "05447df6b76c9900e0db4bcea21045b1259eeaf56e2e52503d118b1672c83d29"
+    },
+    "run-apps-absent.json": {
+      "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp186-physical-single-0bjjfkcv/run-apps-absent.json",
+      "sha256": "0794bc50a882f6c9c258171548edb9f8545e37c17a9a4d96870f5846addb7401"
+    },
+    "run-apps-installed.json": {
+      "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp186-physical-single-0bjjfkcv/run-apps-installed.json",
+      "sha256": "c5b5240cd125ceb93769b3758a35d7c20a88a16172b0f84994a8a96f7885c8ef"
+    },
+    "run-processes-started.json": {
+      "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp186-physical-single-0bjjfkcv/run-processes-started.json",
+      "sha256": "ff8d76bb81eff852ebccc8e80ae78779cc9217f90c2ec057f93fa9760644148a"
+    },
+    "installed-app.json": {
+      "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp186-physical-single-0bjjfkcv/installed-app.json",
+      "sha256": "8fb639caaa066a1a61b518b4fce8bba14d2bc7a8fd036724653b198bfe818583"
+    },
+    "installed-code-receipt.json": {
+      "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp186-physical-single-0bjjfkcv/installed-code-receipt.json",
+      "sha256": "b2dd933f198e7f4ee4587ea8d89bfc4906cdb23ac6b6a0e8508be771cb24914d"
+    },
+    "installed-code-verification.json": {
+      "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp186-physical-single-0bjjfkcv/installed-code-verification.json",
+      "sha256": "2456720c8dea4f025ff192b2d27b7f700335f35072a4706bb60886aabc86173b"
+    },
+    "probe.jsonl": {
+      "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp186-physical-single-0bjjfkcv/probe.jsonl",
+      "sha256": "c7137a8a4e31344627dfbbddcd878722901e8710ea123141be49f535a5246af8"
+    },
+    "vitals-records.json": {
+      "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp186-physical-single-0bjjfkcv/vitals-records.json",
+      "sha256": "2575dd28c50aec7dfb8f85c7039bb1cea55661a17665ca4b263fad831efc693b"
+    },
+    "local-evidence.json": {
+      "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp186-physical-single-0bjjfkcv/local-evidence.json",
+      "sha256": "87ad1a20d607faa5e0dc3f80608aad7e262279e41564d7b284148085fe5a6f96"
+    },
+    "backend-query.json": {
+      "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp186-physical-single-0bjjfkcv/backend-query.json",
+      "sha256": "4e53ddfb4311b4981d97f2c54b651e0724915fbb399a03bd0594c7effe336661"
+    },
+    "backend-count.txt": {
+      "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp186-physical-single-0bjjfkcv/backend-count.txt",
+      "sha256": "3bd32835306a57a121540b9bafb9d16b8b38f6180d6a754142b39f58aa2bfb6a"
+    },
+    "backend-types.txt": {
+      "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp186-physical-single-0bjjfkcv/backend-types.txt",
+      "sha256": "6e1840d91cae084bcea53b17f5ce1d9b2e00ea556b1783b823d73187eae488aa"
+    },
+    "backend-views.txt": {
+      "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp186-physical-single-0bjjfkcv/backend-views.txt",
+      "sha256": "3a674705bc086541a62ab186b618366e3a55e5115275a7058ed9ad339b10fd16"
+    },
+    "backend-all.txt": {
+      "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp186-physical-single-0bjjfkcv/backend-all.txt",
+      "sha256": "23311cf82405e3fb922aac13bb42ceec6edcdf13259bd68daabc7e9f78849123"
+    },
+    "backend-end.txt": {
+      "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp186-physical-single-0bjjfkcv/backend-end.txt",
+      "sha256": "d5cabe0b7f34f46225028b5061dff17d1cd259becee7b108e9e10dd2dfe92952"
+    },
+    "backend-view-rows.json": {
+      "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp186-physical-single-0bjjfkcv/backend-view-rows.json",
+      "sha256": "a9f11eb42c0870795a2af059ee6067b5b201d8155e6cee5d164251df7937e7ee"
+    },
+    "backend-views-projected.json": {
+      "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp186-physical-single-0bjjfkcv/backend-views-projected.json",
+      "sha256": "72afbee22dc0de1ecbe3048416239556b9457b1fbe8808f1ab408644c5fd1730"
+    },
+    "backend-validation.json": {
+      "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp186-physical-single-0bjjfkcv/backend-validation.json",
+      "sha256": "f0276bb3f6935ffa6c2f30ada2fa52f25656db1edf35f1da9fe7f4d5e5a49520"
+    },
+    "cleanup-apps.json": {
+      "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp186-physical-single-0bjjfkcv/cleanup-apps.json",
+      "sha256": "ac59e28e5c2bf0f28add435b4e247c1d8f4ddb6cb67d86bad873c17f24d5a319"
+    },
+    "devices-after-backend.json": {
+      "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp186-physical-single-0bjjfkcv/devices-after-backend.json",
+      "sha256": "7877ce9b82e118d127040e77586fb66dff8dc0b0ee5749f297eebeae91418ab5"
+    },
+    "profile-cleanup-verification.json": {
+      "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp186-physical-single-0bjjfkcv/profile-cleanup-verification.json",
+      "sha256": "f6942933f68df7abdaf39b88a65e5287925eefe878cf5d7d4ee69247651c67c5"
+    },
+    "profile-cleanup-check.json": {
+      "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp186-physical-single-0bjjfkcv/profile-cleanup-check.json",
+      "sha256": "9dfd1e77db5c27a501ca7a60f07b63bdb0a5e5a5259095fb74a67731b4fe1f04"
+    },
+    "run-physical.py": {
+      "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp186-physical-single-0bjjfkcv/run-physical.py",
+      "sha256": "c216057b4d6ade8d05d579ab14cf833c603c9948c40f933bbde5cec8cb930e42"
+    }
+  },
+  "evidence_limits": [
+    "One actual foreground native scene; accepted serial simulator proof remains separate.",
+    "Process/system vitals with existing view association; no independent per-window measurement or H01\u2013H16 claim.",
+    "Pure oracle physical_device_claimed=false is supplemented by independently saved live physical discovery, signed installed-code identity and process checks.",
+    "Earlier serial physical FAIL remains; no SDK repair. Cleanup after this successful capture awaits reconnection."
+  ]
+}

@@ -121,9 +121,26 @@
       "native": "A configuration/owner/sampling checks PASS; step3 open-window times out waiting for native scene B",
       "backend": "NOT_RUN strict local oracle failed",
       "sdk_finding": false
+    },
+    {
+      "run_id": "exp186-f7544129-5248-4001-a25b-f9da0d275376",
+      "revision": "661ae6b9119e3b5b8fd21a10063166d0ba1b5e06",
+      "execution_head": "e944e5ad4697b55ab6db2ee6235cc5e135cfb58d",
+      "state": "PASS NATIVE_AND_BACKEND; CLEANUP_UNVERIFIED",
+      "durable_result": "Results/acceptance/exp186-f7544129-5248-4001-a25b-f9da0d275376.json",
+      "installed_code_identity": "PASS all3 signed Mach-O files and independently observed PID",
+      "native_expectations": 17,
+      "native_signals": 33,
+      "backend_views": 2,
+      "backend_complete_session_counts": {
+        "view": 2,
+        "session": 1,
+        "vital": 1
+      },
+      "cleanup": "UNVERIFIED: CoreDevice4016; unavailable after successful native/backend capture"
     }
   ],
-  "next": "Rediscover an unlocked physical device; execute the frozen one-scene variant with a new clean install, installed-code identity, native17 and complete two-view backend comparison. Retain the original serial phone failure and simulator proof.",
+  "next": "On reconnection, verify or terminate only this recorded vitals test process and its absence; do not repeat the passing physical capture. T14 needs the exact physical profile export.",
   "unit_source_sha256": "53c5cda262ec8932913d815d6c6273beff7e15c56a75fc9a2fe5495f027c7539",
   "unit_summary": {
     "total": 166,
@@ -173,7 +190,7 @@
     "oracle_contract_sha256": "1ce8583c667d327ce0417d271835073cb987c2fb767745f191ff07d6dbbdc74c"
   },
   "simulator_backend_status": "PASS",
-  "physical_status": "PARTIAL A samples; full serial contract FAIL",
+  "physical_status": "PASS native17 and exact complete2-view backend metrics; cleanup pending after another disconnect",
   "limits": [
     "Shared process/system measurements retain existing view aggregation; no per-window CPU or frame attribution.",
     "Native acceptance is serial A/B; no simultaneous visibility, physical sampling or Duo claim.",
@@ -190,7 +207,7 @@
     "python_methods": 25,
     "simulator_mechanics": "PASS native17/17,32 signals, installed-code receipt and cleanup",
     "durable_result": "acceptance/exp186-046f9c57-1f72-4858-b67f-70be26648948.json",
-    "physical_execution": "PENDING reconnection",
+    "physical_execution": "PASS native17 and exact complete2-view backend metrics; cleanup pending after another disconnect",
     "serial_contract_replay": "PASS native30 and3 backend views; original capture unchanged",
     "physical_preparation": "PASS generic iOS arm64 build and strict/deep existing-identity signing; no new device execution",
     "physical_preparation_record": "EXP-186-physical-sample-preparation.json"

@@ -123,10 +123,9 @@
     "reason": "unexpected complete profile inventory",
     "artifact": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp187-physical-receipt-wosqgf3z/frozen-profile-validation.json"
   },
-  "cleanup_status": "UNVERIFIED CoreDevice4016; later unavailable and no iPhone in USB enumeration",
+  "cleanup_status": "PASS: earlier profiling test process absent on fresh reconnection; original CoreDevice4016 attempt preserved",
   "remaining": [
-    "actual physical rum-mobile-events attachment exact integer comparison",
-    "verify test-process cleanup after reconnect"
+    "actual physical rum-mobile-events attachment exact integer comparison"
   ],
   "artifact_sha256": {
     "native-receipt.json": "96acc09b5d6300779e97915fd394eeb68f1a56897097fcf264ace40d7ac08881",
@@ -136,5 +135,16 @@
     "backend-end.txt": "13a9420e20ae8722a71ea85a87e61707cb91592989c4698e1c604a2c115f2cbb",
     "frozen-profile-validation.json": "0f14e2dd565f9a6f3f00f655e95f5f4b879d7048e86cdcadcdc33bd824a65a3c",
     "oracle-eb0cfcff4-validation.json": "a90601ce06117fba84c96ad29f3633e7a07dfa5d217948f766b14b4cdd97e281"
+  },
+  "cleanup_after_reconnection": {
+    "checked_at": "2026-09-18T11:22:18.271860+00:00",
+    "device_core_id": "C2FEA492-92EC-5F8F-BF83-27A850997042",
+    "bundle": "com.datadoghq.benchmarks.Runner",
+    "fresh_matching_pids": [],
+    "state": "PASS",
+    "fresh_absence_verified": true,
+    "meaning": "Profiling fixture process absent after reconnection; earlier disconnected cleanup attempt remains unverified at its original timestamp.",
+    "artifact": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp186-physical-single-0bjjfkcv/profile-cleanup-verification.json",
+    "sha256": "f6942933f68df7abdaf39b88a65e5287925eefe878cf5d7d4ee69247651c67c5"
   }
 }

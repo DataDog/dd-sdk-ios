@@ -1681,3 +1681,12 @@ invalidates that attempt even if an unrelated test is shown as passed. Pin the
 intended DEVELOPER_DIR and use a fresh CLI result bundle with the exact discovered
 test selection; require total=passed and no skipped/not-run tests. Do not restart
 all simulators or alter the user's Xcode selection to mask that preparation error.
+
+
+After reconnecting, distinguish the earlier fixture process from a new run:
+resolve its installed bundle URL and compare fresh process inventory. Record
+absence even when no termination is needed, retaining the prior failed cleanup
+attempt. If transport drops after successful native/backend checks, preserve
+those components and request cleanup only; never repeat a passing capture merely
+to stop its process. A raw RUM exhausted page can contain empty JSON_DATA rather
+than literal []; keep its count/provenance and require no additional rows.

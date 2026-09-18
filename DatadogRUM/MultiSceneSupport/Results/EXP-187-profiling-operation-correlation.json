@@ -248,9 +248,9 @@
       "original_checker": "FAIL preserved; mandatory simulator launch profile was an oracle defect"
     }
   ],
-  "next": "Execute the frozen native contract on a freshly available supported physical device, retaining fresh source/build/install/run identity and the same complete RUM/profile/raw attachment checks. Accepted simulator and SDK work must not be repeated merely to resume. F01 review and physical-device requests remain pending.",
+  "next": "Validate the actual export for physical profile AaC0DbPGAADaqwCZd8sERwAA against the saved native receipt and complete RUM/profile evidence. Its folder path has already been requested. Profiling test-process cleanup is confirmed after reconnection; no native or SDK rerun is needed.",
   "deterministic_status": "PASS",
-  "physical_backend_status": "ENVIRONMENT BLOCKED",
+  "physical_backend_status": "PASS native12, exact12-event RUM and continuous-profile start/sample joins; actual raw export pending",
   "unit_summary": {
     "total": 115,
     "profiling_ios27": 77,
@@ -381,5 +381,6 @@
     "malformed_controls": 123,
     "simulator_replay": "PASS two-profile inventory and original attachment",
     "physical_replay": "PASS one-profile inventory and actual samples; raw export pending"
-  }
+  },
+  "physical_cleanup_after_reconnection": "PASS fresh process absence; physical result owns evidence"
 }

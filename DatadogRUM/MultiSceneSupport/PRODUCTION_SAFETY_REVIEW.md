@@ -261,9 +261,8 @@ physical/source/build/install requirements remain explicit.
 
 The RUM profile-link flag remains false for the four Operation steps in two
 reads despite independent profile/sample/export correlation; UI enrichment is
-not claimed. No production defect or repair is established. T14 still requires
-supported physical execution, and this evidence makes no per-scene CPU or
-simultaneous-window claim. Configuration, launch-inventory, rounding and sampling
+not claimed. No production defect or repair is established. The supported physical evidence is recorded below. Neither capture makes a
+per-scene CPU or simultaneous-window claim. Configuration, launch-inventory, rounding and sampling
 setup failures remain in the detailed experiment record with their corrected
 controls; they are acceptance-fixture issues, separate from D01–D12.
 
@@ -275,15 +274,18 @@ T14 passes native12/12, exact12-event RUM ownership and actual continuous-profil
 start/sample correlation. The original checker overfit an incidental simulator
 launch profile; the corrected declaration-driven oracle passes21 methods/123
 malformed controls and both saved captures. Its original FAIL remains. Physical
-raw attachment and cleanup after disconnect are pending. These are acceptance
+raw attachment is pending; the profiling test process is confirmed absent after
+reconnection. These are acceptance
 findings; D01–D12 dispositions and SDK production source are unchanged. The
 one-scene vitals variant now passes7 focused tests,25 Python methods and a frozen
 simulator17/17 run with installed-code identity/cleanup. Its configuration guard
 now checks the slow-frame factory's actual reader type, and both vitals oracles
 reject a wrong stop owner. Saved serial native/backend evidence still passes.
 The MCP test-preparation mismatch and premature console-PID lookup are preserved
-as invalid attempts; neither establishes an SDK regression. Physical execution
-remains required.
+as invalid attempts; neither establishes an SDK regression. The subsequent physical vitals sample passes17 native assertions, exact signed
+installed-code identity and complete two-view backend metric comparison. A second
+connection drop prevents cleanup confirmation for that test process; all measured
+evidence remains intact. No SDK defect is established.
 
 ## Stable API review boundary
 

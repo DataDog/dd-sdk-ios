@@ -388,7 +388,7 @@
       "environment": "Fixed process metric fixture, view associations and backend; representative device sample before freeze",
       "completion_mode": "documented process-level measurement with existing view association",
       "status": "INCONCLUSIVE",
-      "evidence": "EXP-186: accepted serial simulator/backend proof retained; phone serial FAIL waiting for B after actual A samples. One-scene variant661ae6b91 passes7 focused tests,25 Python methods and frozen simulator17/17, exact installed hashes/cleanup. Physical one-scene sample remains pending reconnection. Results/EXP-186-shared-vitals.json."
+      "evidence": "EXP-186: accepted serial simulator/backend proof retained. Physical one-scene run exp186-f7544129 passes17 native assertions, all3 installed signed hashes and exact2-view backend metrics with zero unrelated counted telemetry. Device disconnect prevents cleanup confirmation; capture need not repeat. Results/EXP-186-shared-vitals.json."
     },
     {
       "id": "T14",
@@ -401,7 +401,7 @@
       "environment": "Profiling/Operation fixture and supported profiling device/backend",
       "completion_mode": "documented process-level fallback",
       "status": "INCONCLUSIVE",
-      "evidence": "EXP-187: physical installed-code identity,12 native assertions, exact12-event RUM ownership and one continuous profile with exact start labels/sample joins pass. Original overfitted checker FAIL preserved; corrected oracle passes21 methods/123 malformed controls and both saved captures. Physical raw export and cleanup after reconnect remain. Results/EXP-187-physical-profile-correlation.json."
+      "evidence": "EXP-187: physical installed-code identity,12 native assertions, exact12-event RUM and continuous-profile start/sample joins pass; corrected oracle and original failure retained. Profiling process absence verified after reconnection. Only actual physical raw export remains. Results/EXP-187-physical-profile-correlation.json."
     },
     {
       "id": "T15",
