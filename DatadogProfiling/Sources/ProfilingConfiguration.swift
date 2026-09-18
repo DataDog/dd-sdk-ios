@@ -11,7 +11,7 @@ import DatadogInternal
 
 extension Profiling {
     /// Configuration options for the profiling feature.
-    public struct Configuration {
+    public struct Configuration: Sendable {
         /// Overrides the custom server endpoint where Profiles are sent.
         /// If `nil`, the default Datadog endpoint will be used.
         public var customEndpoint: URL?

@@ -43,6 +43,15 @@ typedef struct profile dd_pprof_t;
 dd_pprof_t* dd_pprof_create(uint64_t sampling_interval_ns);
 
 /**
+ * Create a new pprof profile aggregator with optional CPU-time sample values.
+ *
+ * @param sampling_interval_ns The sampling interval in nanoseconds
+ * @param record_cpu_time Whether samples should include CPU time as a second value
+ * @return Pointer to the created profile, or NULL on failure
+ */
+dd_pprof_t* dd_pprof_create_with_cpu_time(uint64_t sampling_interval_ns, bool record_cpu_time);
+
+/**
  * Destroy a pprof profile aggregator and free all associated memory
  *
  * @param profile Pointer to the profile to destroy
@@ -72,7 +81,7 @@ size_t dd_pprof_serialize(dd_pprof_t* profile, uint8_t** data);
  *
  * @param data Pointer to the data to free
  */
-void dd_pprof_free_serialized_data(uint8_t* data);
+void dd_pprof_free_serialized_data(const uint8_t* data);
 
 /**
  * Callback function that resolves binary images and forwards stack traces
