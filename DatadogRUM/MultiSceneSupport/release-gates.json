@@ -400,8 +400,8 @@
       "decisive_test": "Process profile and exact Operation identity remain correlated; docs make no per-scene CPU attribution claim",
       "environment": "Profiling/Operation fixture and supported profiling device/backend",
       "completion_mode": "documented process-level fallback",
-      "status": "INCONCLUSIVE",
-      "evidence": "EXP-187: physical installed-code identity,12 native assertions, exact12-event RUM and continuous-profile start/sample joins pass; corrected oracle and original failure retained. Profiling process absence verified after reconnection. Only actual physical raw export remains. Results/EXP-187-physical-profile-correlation.json."
+      "status": "CLOSED",
+      "evidence": "EXP-187:115 SDK/integration tests; physical installed-code identity,12 native assertions, exact12-event RUM, one continuous profile and both start/sample joins. Actual physical export matches both start IDs and every integer timestamp/duration exactly; cleanup verified. Corrected oracle and original failures retained. RUM profile-link flags remain false; no UI-enrichment or per-scene CPU claim. Results/EXP-187-physical-profile-correlation.json and Results/EXP-187-physical-export.json."
     },
     {
       "id": "T15",

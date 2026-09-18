@@ -274,10 +274,12 @@ addresses the representative-hardware obligation. No routing defect is establish
 T14 passes native12/12, exact12-event RUM ownership and actual continuous-profile
 start/sample correlation. The original checker overfit an incidental simulator
 launch profile; the corrected declaration-driven oracle passes21 methods/123
-malformed controls and both saved captures. Its original FAIL remains. Physical
-raw attachment is pending; the profiling test process is confirmed absent after
-reconnection. These are acceptance
-findings; D01–D12 dispositions and SDK production source are unchanged. The
+malformed controls and both saved captures. Its original FAIL remains. The actual
+[physical export](Results/EXP-187-physical-export.json) now matches both start IDs
+and every integer timestamp/duration exactly. Together with installed-code identity
+and confirmed process cleanup, this closes T14. False RUM profile-link flags remain
+a separate observation; UI enrichment is not claimed. These are acceptance findings;
+D01–D12 dispositions and SDK production source are unchanged. The
 one-scene vitals variant now passes7 focused tests,25 Python methods and a frozen
 simulator17/17 run with installed-code identity/cleanup. Its configuration guard
 now checks the slow-frame factory's actual reader type, and both vitals oracles

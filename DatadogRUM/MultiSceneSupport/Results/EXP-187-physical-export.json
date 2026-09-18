@@ -1,0 +1,128 @@
+{
+  "experiment": "EXP-187",
+  "gate": "T14",
+  "profile_id": "AaC0DbPGAADaqwCZd8sERwAA",
+  "run_id": "exp187-c8fa06e2-fbce-46dd-82e7-6e78a947de94",
+  "capture_revision": "77a5532c06f5f707f4400cecd0732ab5e3a3c84e",
+  "oracle_revision": "eb0cfcff49ac15a16e811efbf22d90ac3cac12a8",
+  "validation_head": "f023951b493614608058617c130618b8d38efb0e",
+  "provided_export": "/Users/valentin.pertuisot/Downloads/20260918-102518_ios-benchmark_AaC0DbPGAADaqwCZd8sERwAA",
+  "received_at": "2026-09-18T19:42:19.389111+00:00",
+  "capture_artifact_root": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp187-physical-receipt-wosqgf3z",
+  "artifact_root": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp187-physical-export-2zex8ett",
+  "files": {
+    "rum-mobile-events.json": {
+      "source": "/Users/valentin.pertuisot/Downloads/20260918-102518_ios-benchmark_AaC0DbPGAADaqwCZd8sERwAA/rum-mobile-events.json",
+      "preserved_copy": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp187-physical-export-2zex8ett/rum-mobile-events.json",
+      "bytes": 285,
+      "sha256": "7442a80abd09118c49c110a8a564321ec33d933ddea5ccadea7fb98e8042ef90"
+    },
+    "wall.pprof": {
+      "source": "/Users/valentin.pertuisot/Downloads/20260918-102518_ios-benchmark_AaC0DbPGAADaqwCZd8sERwAA/wall.pprof",
+      "preserved_copy": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp187-physical-export-2zex8ett/wall.pprof",
+      "bytes": 1661316,
+      "sha256": "1bc47b6fb23ebd884a2406773a2e9167030c20c1585896b000c53c518cf8faeb"
+    }
+  },
+  "provenance": "Actual physical profile export supplied by the user; original files preserved unchanged.",
+  "historical_capture_hashes_verified": 17,
+  "cleanup_hash_verified": true,
+  "status": "PASS",
+  "validated_at": "2026-09-18T19:47:07.288238+00:00",
+  "attachment_entries": [
+    {
+      "duration_ns": 6317497969,
+      "id": "e50ab440-03a0-47a6-9ba7-84fd76abdacc",
+      "name": "exp187.parallel",
+      "start_ns": 1789727118714328064,
+      "type": "vital"
+    },
+    {
+      "duration_ns": 2098007917,
+      "id": "e1acd2a8-bc72-49f1-92fe-a96ad9ea6b57",
+      "name": "exp187.parallel",
+      "start_ns": 1789727119784420608,
+      "type": "vital"
+    }
+  ],
+  "attachment_validation": "PASS",
+  "native_validation": "PASS",
+  "rum_validation": {
+    "state": "PASS",
+    "counts": {
+      "vital": 5,
+      "view": 4,
+      "operation": 2,
+      "session": 1
+    },
+    "unique_events": 12,
+    "pagination_exhausted": true,
+    "session_id": "1885e121-a151-4dff-9262-252bf9b4138b",
+    "exact_operation_step_ids": [
+      "9348010b-9290-40d9-a000-dacf40692dc8",
+      "e1acd2a8-bc72-49f1-92fe-a96ad9ea6b57",
+      "e50ab440-03a0-47a6-9ba7-84fd76abdacc",
+      "eac388d1-029b-4a7e-b244-460e82f5ad64"
+    ],
+    "profiler_statuses": [
+      "running"
+    ],
+    "all_operation_steps_have_profile": false
+  },
+  "profile_validation": {
+    "state": "PASS",
+    "continuous_profile_id": "AaC0DbPGAADaqwCZd8sERwAA",
+    "launch_profile_id": null,
+    "profile_count": 1,
+    "launch_profiled": false,
+    "exact_start_ids": [
+      "e50ab440-03a0-47a6-9ba7-84fd76abdacc",
+      "e1acd2a8-bc72-49f1-92fe-a96ad9ea6b57"
+    ],
+    "nonempty_wall_time_stacks": true,
+    "sample_start_id_joins": 2,
+    "query_window": {
+      "from": "2026-09-18T10:25:00Z",
+      "to": "2026-09-18T10:27:00Z"
+    }
+  },
+  "validator_result": {
+    "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp187-physical-export-2zex8ett/attachment-validation.json",
+    "sha256": "15549c76d7ba9668f765a3c27de6d3ae352feea5bc992b0c3d80f8e7a6cf5b73",
+    "gate_status": "INCONCLUSIVE",
+    "remaining": [
+      "independent supported physical capture and frozen source/build/install identity"
+    ]
+  },
+  "limits": [
+    "The component validator deliberately cannot certify physical source/build/install identity; the physical capture record independently supplies that evidence and verified cleanup.",
+    "RUM Operation has_profile flags remain false; exact raw attachment and profile sample joins do not claim UI enrichment.",
+    "One physical native scene and process-level samples; no independent per-window CPU attribution or simultaneous-window/Duo acceptance."
+  ],
+  "artifacts": {
+    "attachment-validation.json": {
+      "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp187-physical-export-2zex8ett/attachment-validation.json",
+      "sha256": "15549c76d7ba9668f765a3c27de6d3ae352feea5bc992b0c3d80f8e7a6cf5b73"
+    },
+    "export-identity.json": {
+      "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp187-physical-export-2zex8ett/export-identity.json",
+      "sha256": "f437f7c6c5b4dc10c62b51195779bc616bbd308979faab62989fe6b320b3b2d3"
+    },
+    "rum-mobile-events.json": {
+      "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp187-physical-export-2zex8ett/rum-mobile-events.json",
+      "sha256": "7442a80abd09118c49c110a8a564321ec33d933ddea5ccadea7fb98e8042ef90"
+    },
+    "validation-command.json": {
+      "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp187-physical-export-2zex8ett/validation-command.json",
+      "sha256": "587ead0cf67c6e3e6c9fca5885c6a1d06a4506f5b210b201e8bdf7feea8de9c1"
+    },
+    "validation.log": {
+      "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp187-physical-export-2zex8ett/validation.log",
+      "sha256": "20b90293dcb9dd7e5319a50b8fb8fed44bb875f5f8b349dbf3e63e2b9ae24faa"
+    },
+    "wall.pprof": {
+      "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp187-physical-export-2zex8ett/wall.pprof",
+      "sha256": "1bc47b6fb23ebd884a2406773a2e9167030c20c1585896b000c53c518cf8faeb"
+    }
+  }
+}

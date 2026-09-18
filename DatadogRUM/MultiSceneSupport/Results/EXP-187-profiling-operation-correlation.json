@@ -2,13 +2,15 @@
   "experiment": "EXP-187",
   "gate": "T14",
   "title": "Validate process profile and Operation correlation",
-  "status": "INCONCLUSIVE",
+  "status": "PASS",
   "control_revision": "00001c3773206a2c866c9e8dec1d7dda1931071b",
   "sdk_revision": "04201edc7711361279d8487b385bc8b0ca9c63c7",
   "definition": "Experiments/EXP-143-199.md#exp-187--validate-process-profile-and-operation-correlation",
   "completion_mode": "documented process-level fallback with exact Operation identity",
   "production_change_planned": false,
-  "gates_closed": [],
+  "gates_closed": [
+    "T14"
+  ],
   "required_environments": [
     "focused RUM/Profiling and existing integration tests",
     "supported physical profiling device",
@@ -236,21 +238,21 @@
     },
     {
       "run_id": "exp187-c8fa06e2-fbce-46dd-82e7-6e78a947de94",
-      "state": "INCONCLUSIVE",
+      "state": "PASS",
       "capture_revision": "77a5532c06f5f707f4400cecd0732ab5e3a3c84e",
       "oracle_revision": "eb0cfcff49ac15a16e811efbf22d90ac3cac12a8",
       "durable_result": "Results/acceptance/exp187-c8fa06e2-fbce-46dd-82e7-6e78a947de94.json",
       "native": "PASS12/12",
       "rum": "PASS12 complete events",
       "profile": "PASS one continuous profile, exact start labels and2 sample joins",
-      "attachment": "pending physical export",
-      "cleanup": "unverified after disconnect",
-      "original_checker": "FAIL preserved; mandatory simulator launch profile was an oracle defect"
+      "attachment": "PASS exact two Operation start IDs, names, types, start_ns and duration_ns; actual user export preserved",
+      "cleanup": "PASS after fresh reconnection; original disconnected attempt retained",
+      "original_checker": "FAIL preserved; mandatory simulator launch profile was an oracle defect",
+      "completed_at": "2026-09-18T19:47:07.288238+00:00"
     }
   ],
-  "next": "Validate the actual export for physical profile AaC0DbPGAADaqwCZd8sERwAA against the saved native receipt and complete RUM/profile evidence. Its folder path has already been requested. Profiling test-process cleanup is confirmed after reconnection; no native or SDK rerun is needed.",
   "deterministic_status": "PASS",
-  "physical_backend_status": "PASS native12, exact12-event RUM and continuous-profile start/sample joins; actual raw export pending",
+  "physical_backend_status": "PASS physical native12, exact12-event RUM, complete profile/start/sample correlation, exact user-exported attachment and verified cleanup",
   "unit_summary": {
     "total": 115,
     "profiling_ios27": 77,
@@ -304,7 +306,7 @@
     "One process sampler; profile-level view labels do not attribute CPU samples independently to scenes.",
     "Written profile attachments retain exact start Vital IDs, names, server-offset timestamps and durations; key/view are not attachment fields.",
     "Ongoing Operations survive a normal background-triggered profile flush; completed peers are absent from the next profile.",
-    "No physical, simultaneous-window, Duo or stable API approval claim. Simulator native profile/RUM correlation and actual attachment comparison pass; RUM UI profile-link enrichment remains observed false."
+    "Supported physical single-scene and simulator profile/RUM/actual-export correlation pass. No simultaneous-window, Duo or stable API approval claim. RUM UI profile-link flags remain false and are reported separately."
   ],
   "unit_revision": "2baa06da0060bcc4ae3b54fe2f4cfc64be5b4cce",
   "native_fixture_definition": {
@@ -324,7 +326,7 @@
     "foreground_drain_seconds": 70
   },
   "native_implementation": {
-    "state": "PASS SIMULATOR NATIVE, COMPLETE RUM/PROFILE CORRELATION AND EXACT EXPORTED ATTACHMENT; PHYSICAL EXECUTION REQUIRED",
+    "state": "PASS SIMULATOR AND PHYSICAL NATIVE, COMPLETE RUM/PROFILE CORRELATION, EXACT EXPORTED ATTACHMENT AND CLEANUP",
     "fixture": "BenchmarkTests/Runner/Scenarios/Profiling/ProfilingAcceptance.swift",
     "driver": "tools/multi-scene/profiling-correlation/run_simulator.py",
     "validator": "tools/multi-scene/profiling-correlation/validate.py",
@@ -380,7 +382,8 @@
     "python_methods": 21,
     "malformed_controls": 123,
     "simulator_replay": "PASS two-profile inventory and original attachment",
-    "physical_replay": "PASS one-profile inventory and actual samples; raw export pending"
+    "physical_replay": "PASS one-profile inventory, actual samples and physical user export with exact integer timestamps/durations"
   },
-  "physical_cleanup_after_reconnection": "PASS fresh process absence; physical result owns evidence"
+  "physical_cleanup_after_reconnection": "PASS fresh process absence; physical result owns evidence",
+  "actual_physical_export": "EXP-187-physical-export.json"
 }

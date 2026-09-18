@@ -1,6 +1,6 @@
 {
   "artifact_root": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp187-physical-receipt-wosqgf3z",
-  "backend_validation": "NOT_RUN",
+  "backend_validation": "PASS",
   "build_destination": "generic/platform=iOS",
   "build_exit_code": 0,
   "bundle": "com.datadoghq.benchmarks.Runner",
@@ -11,7 +11,7 @@
   "executable_sha256": "02ca10594f866d573c3935289481da2bb10032f4688b15558153b7213fc653dd",
   "experiment": "EXP-187",
   "gate": "T14",
-  "gate_status": "INCONCLUSIVE",
+  "gate_status": "PASS",
   "installed_code_identity": {
     "binaries": {
       "Frameworks/CatalogSwiftUI.framework/CatalogSwiftUI": "a0f2a8b89b6f652a8e1d4e5621b1098288052437015253d9716ff3a186f60987",
@@ -117,16 +117,14 @@
       "backend-sampleB.json": "1c3ebcd0169cb9cadd6df8cf8a0511deba152b30b66b0174a2763f62182cd50f"
     }
   },
-  "attachment_validation": "NOT_PROVIDED",
+  "attachment_validation": "PASS",
   "original_profile_validation": {
     "state": "FAIL",
     "reason": "unexpected complete profile inventory",
     "artifact": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp187-physical-receipt-wosqgf3z/frozen-profile-validation.json"
   },
   "cleanup_status": "PASS: earlier profiling test process absent on fresh reconnection; original CoreDevice4016 attempt preserved",
-  "remaining": [
-    "actual physical rum-mobile-events attachment exact integer comparison"
-  ],
+  "remaining": [],
   "artifact_sha256": {
     "native-receipt.json": "96acc09b5d6300779e97915fd394eeb68f1a56897097fcf264ace40d7ac08881",
     "installed-code-receipt.json": "b81774a60732b25b5820431be2a99a39a15334c94d1055d40544125bc29db6fd",
@@ -146,5 +144,31 @@
     "meaning": "Profiling fixture process absent after reconnection; earlier disconnected cleanup attempt remains unverified at its original timestamp.",
     "artifact": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp186-physical-single-0bjjfkcv/profile-cleanup-verification.json",
     "sha256": "f6942933f68df7abdaf39b88a65e5287925eefe878cf5d7d4ee69247651c67c5"
-  }
+  },
+  "gates_closed": [
+    "T14"
+  ],
+  "completed_at": "2026-09-18T19:47:07.288238+00:00",
+  "actual_export_result": "EXP-187-physical-export.json",
+  "actual_export": {
+    "profile_id": "AaC0DbPGAADaqwCZd8sERwAA",
+    "provenance": "Actual physical profile export supplied by the user; original files preserved unchanged.",
+    "files": {
+      "rum-mobile-events.json": {
+        "source": "/Users/valentin.pertuisot/Downloads/20260918-102518_ios-benchmark_AaC0DbPGAADaqwCZd8sERwAA/rum-mobile-events.json",
+        "preserved_copy": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp187-physical-export-2zex8ett/rum-mobile-events.json",
+        "bytes": 285,
+        "sha256": "7442a80abd09118c49c110a8a564321ec33d933ddea5ccadea7fb98e8042ef90"
+      },
+      "wall.pprof": {
+        "source": "/Users/valentin.pertuisot/Downloads/20260918-102518_ios-benchmark_AaC0DbPGAADaqwCZd8sERwAA/wall.pprof",
+        "preserved_copy": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp187-physical-export-2zex8ett/wall.pprof",
+        "bytes": 1661316,
+        "sha256": "1bc47b6fb23ebd884a2406773a2e9167030c20c1585896b000c53c518cf8faeb"
+      }
+    },
+    "validation_head": "f023951b493614608058617c130618b8d38efb0e",
+    "validation_sha256": "15549c76d7ba9668f765a3c27de6d3ae352feea5bc992b0c3d80f8e7a6cf5b73"
+  },
+  "closure_basis": "Physical source/build/clean-install/three-file installed-code identity and native12; complete RUM12 inventory/owners; one continuous profile with both start IDs and actual wall-time samples; exact actual exported attachment; verified test-process cleanup. Original checker and cleanup failures remain preserved."
 }

@@ -1596,7 +1596,11 @@ Raw rum-mobile-events.json remains a separate exact check. If MCP has no raw
 download, accept the user's actual profile export: preserve original files,
 record the profile ID/provenance and SHA-256 of both attachment and pprof, and
 run the committed validator against the frozen native receipt and complete RUM
-responses. Never substitute native expected entries for the downloaded attachment.
+responses. Share the exact MCP visualizationLink, including its organization-switch
+redirect; do not reconstruct a shorter profiling URL that can select another
+organization. If the user cannot find the profile, recheck the exact ID inventory
+and flamegraph before asking for another capture. Never substitute native expected
+entries for the downloaded attachment.
 Keep the validation output separate from earlier attempt summaries. An exported
 attachment can close that simulator component without browser authentication;
 physical evidence still requires its own fresh run. RUM has_profile flags are
@@ -1606,7 +1610,11 @@ joins, final labels and three flamegraphs. It rejects mismatched run/session,
 absolute query windows, profile types and sample selections; see the fixture
 README for the fixed artifact roles. Its summary lists unmet components while
 always retaining independent physical/source/build/install proof. Do not silently
-drop a false flag or infer UI enrichment from those independent joins.
+drop a false flag or infer UI enrichment from those independent joins. For a
+physical export, assemble the final gate verdict only after matching the separate
+physical source/build/installed-code and cleanup records; retain the pure validator's
+independent-proof requirement unchanged. [The accepted physical export](Results/EXP-187-physical-export.json)
+records that composition without repeating the native run.
 
 The existing BenchmarkTests Profiling runner already links the module; avoid
 adding a dependency to the native multi-scene probe. Freeze native counts/build/
