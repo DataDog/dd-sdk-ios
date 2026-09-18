@@ -348,8 +348,8 @@
       "decisive_test": "Two actual web containers retain their bound native view owners; navigation/rebind/teardown cannot inherit the peer",
       "environment": "Two native WebView containers on iOS simulator plus backend; macOS compile in D02",
       "completion_mode": "captured native-container ownership",
-      "status": "OPEN",
-      "evidence": "EXP-183:33 SDK/184 probe tests and14 native expectations pass. Attempt A FAIL retained for envelope-source projection; repaired connector41 controls pass. Fresh backend acceptance pending. Results/EXP-183-webview-container-ownership.json."
+      "status": "CLOSED",
+      "evidence": "EXP-183 accepted at local9594756a7; unchanged SDK04201edc7.33 SDK/184 probe tests,160 Python/41 Node controls;14 native expectations/64 signals and exact12 backend views:6 native,5 correlated browser,1 detached without container.0 actions/Resources/errors/crashes; private scene metadata absent. Failed projection attempt preserved. Results/EXP-183-webview-container-ownership.json; serial topology only."
     },
     {
       "id": "T11",

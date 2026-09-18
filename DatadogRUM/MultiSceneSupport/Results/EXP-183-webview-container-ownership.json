@@ -2,12 +2,14 @@
   "experiment": "EXP-183",
   "gate": "T10",
   "title": "Accept native WebView container ownership",
-  "status": "PREPARED after preserved failed connector attempt",
+  "status": "PASS after preserved failed connector attempt",
   "control_revision": "03142a4e8cba2d42254bec1335fe9a5dd0d5b96e",
   "sdk_revision": "04201edc7711361279d8487b385bc8b0ca9c63c7",
   "definition": "Experiments/EXP-143-199.md#exp-183--accept-native-webview-container-ownership",
   "production_change_planned": false,
-  "gates_closed": [],
+  "gates_closed": [
+    "T10"
+  ],
   "question": "Do two actual WebViews retain the native container selected by their captured scene and event date through navigation, detachment, rebinding and peer teardown?",
   "source_audit": [
     "DDScriptMessageHandler reads message.webView.window.windowScene and body on the UI thread before enqueueing MessageEmitter.",
@@ -93,7 +95,7 @@
   "validation": {
     "strict_swiftlint": "PASS, zero violations in both changed test files",
     "production_source": "unchanged",
-    "next": "Freeze the envelope-source projection repair and run fresh clean-install native/backend acceptance.",
+    "next": "Audit and predeclare T11 exported/fatal context acceptance before implementation.",
     "acceptance_controls": "160 Python tests and 38 Node tests pass; 19 new T10 Python methods and six new projection controls.",
     "connector_tests": 41
   },
@@ -180,6 +182,72 @@
         "format_version": 2,
         "document_version": 1
       }
+    },
+    {
+      "attempt": "B",
+      "outcome": "PASS",
+      "run_id": "exp183-20260918T031027Z-ef2ab74e710b",
+      "fixture_revision": "9594756a7c4ee6052fe3f75bd1ca7f46c45cddda",
+      "durable_summary": "Results/acceptance/exp183-20260918T031027Z-ef2ab74e710b.json",
+      "source_sha256": "8bda30b03a5123dba707dbb47bf2aedf72227ed343f59204820d6ce04c4f43db",
+      "build": {
+        "executable_sha256": "1d06c4f9a4dcaa304bdeceb79e115eeb5173d50d37cac2cb0f97aa4caea19d9b",
+        "source_sha256": "8bda30b03a5123dba707dbb47bf2aedf72227ed343f59204820d6ce04c4f43db",
+        "state": "PASS",
+        "test_count": 184,
+        "uuid": "UUID: F6626687-074A-3E2A-A963-9E8964017FB3 (arm64) /private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/multi-scene-acceptance-u6ghr8fw/run/derived/Build/Products/Debug-iphonesimulator/RUMNativeMultiSceneProbe.app/RUMNativeMultiSceneProbe"
+      },
+      "local": {
+        "assertions": 14,
+        "signals": 63,
+        "native_views": 6,
+        "browser_callbacks": 6
+      },
+      "backend": {
+        "action_count": 0,
+        "browser_view_count": 6,
+        "correlated_browser_view_count": 5,
+        "crash_count": 0,
+        "detached_container_count": 0,
+        "error_count": 0,
+        "native_view_count": 6,
+        "resource_count": 0,
+        "state": "PASS",
+        "view_count": 12
+      },
+      "backend_bridge_timings": [
+        {
+          "kind": "auth",
+          "received": true,
+          "seconds": 8.128
+        },
+        {
+          "kind": "webview_views",
+          "received": true,
+          "seconds": 30.925
+        },
+        {
+          "kind": "peer_actions",
+          "received": true,
+          "seconds": 13.691
+        },
+        {
+          "kind": "resources",
+          "received": true,
+          "seconds": 13.183
+        },
+        {
+          "kind": "errors",
+          "received": true,
+          "seconds": 14.69
+        },
+        {
+          "kind": "crashes",
+          "received": true,
+          "seconds": 13.224
+        }
+      ],
+      "disposition": "T10 accepted. Exact real-container ownership and detached omission agree with complete backend inventory."
     }
   ],
   "preparation": {
@@ -206,5 +274,13 @@
     "connector_tests": 38,
     "native_lint": "PASS; zero violations in ProbeWebViewAcceptance.swift",
     "scope": "No production source changes; native/backend acceptance pending"
-  }
+  },
+  "accepted_run": "Results/acceptance/exp183-20260918T031027Z-ef2ab74e710b.json",
+  "accepted_fixture_revision": "9594756a7c4ee6052fe3f75bd1ca7f46c45cddda",
+  "conclusion": "Two actual WebViews preserve captured native scene/date ownership through native navigation, detachment, rebinding and peer teardown. Source-less detached input omits container; spoofed scene metadata is removed. No production repair.",
+  "limitations": [
+    "Serial topology; no simultaneous visibility claim.",
+    "Controlled bridge payloads; no Browser SDK integration certification.",
+    "Replay enabled for native correlation; no per-scene Replay or physical F05 acceptance."
+  ]
 }

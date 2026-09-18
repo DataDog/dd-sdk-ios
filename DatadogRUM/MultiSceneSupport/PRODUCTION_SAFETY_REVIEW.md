@@ -39,12 +39,12 @@ owners agree across six logs, three mirrors and both final actions. No additiona
 SDK repair was required; the original inconclusive connector attempt is retained.
 Physical lifecycle, API review and final release gates remain separate.
 
-T10's follow-up WebView receiver/metadata controls pass33 tests with no additional
-SDK repair. The two-container native fixture passes14 expectations; the first
-backend verdict exposed a connector source-field projection error. That attempt
-is retained and direct backend acceptance remains pending in
-[EXP-183](Results/EXP-183-webview-container-ownership.json). D02/D11 remain closed
-within their original platform/legacy boundaries.
+T10's follow-up [EXP-183](Results/EXP-183-webview-container-ownership.json)
+passes33 SDK/184 probe tests,14 native expectations and complete twelve-view
+backend ownership, including detached omission and private scene-key removal.
+No additional SDK repair was needed. The original connector projection failure
+is retained; D02/D11 keep their original platform/legacy evidence, and physical
+Replay coexistence remains F05.
 
 The following original findings describe the reviewed revision, not current
 unrepaired behavior. Original line numbers are historical source locators.
