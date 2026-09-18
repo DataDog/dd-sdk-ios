@@ -1354,3 +1354,9 @@ container UUIDs, detached absence, payload counts/version and private-key absenc
 The projection accepts nested or flattened fields but rejects ambiguous duplicates
 and preserves malformed types for the oracle to reject. Fresh runs freeze all
 WebViewTracking and SessionReplay source along with the fixture and oracle.
+
+Detailed RUM search puts source in attributes.source, outside attributes.custom.
+Preserve that envelope field before projecting the custom payload. If both shapes
+provide conflicting source values, reject them. Missing source cannot be derived
+from expected phase/name/container. EXP-183 attempt A retains the original failed
+projection; revised projection controls pass41 tests and require a fresh run.

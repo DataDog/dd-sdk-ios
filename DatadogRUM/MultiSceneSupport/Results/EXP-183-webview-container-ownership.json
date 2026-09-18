@@ -2,7 +2,7 @@
   "experiment": "EXP-183",
   "gate": "T10",
   "title": "Accept native WebView container ownership",
-  "status": "PREPARED; SDK and probe controls PASS",
+  "status": "PREPARED after preserved failed connector attempt",
   "control_revision": "03142a4e8cba2d42254bec1335fe9a5dd0d5b96e",
   "sdk_revision": "04201edc7711361279d8487b385bc8b0ca9c63c7",
   "definition": "Experiments/EXP-143-199.md#exp-183--accept-native-webview-container-ownership",
@@ -93,8 +93,9 @@
   "validation": {
     "strict_swiftlint": "PASS, zero violations in both changed test files",
     "production_source": "unchanged",
-    "next": "Commit/freeze the exact fixture/oracle, then run clean-install native/backend acceptance with a fresh run ID and freshly resolved device.",
-    "acceptance_controls": "160 Python tests and 38 Node tests pass; 19 new T10 Python methods and six new projection controls."
+    "next": "Freeze the envelope-source projection repair and run fresh clean-install native/backend acceptance.",
+    "acceptance_controls": "160 Python tests and 38 Node tests pass; 19 new T10 Python methods and six new projection controls.",
+    "connector_tests": 41
   },
   "unit_attempts": [
     {
@@ -128,7 +129,59 @@
       "xcresult": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/ActionArtifacts/default/RunSomeTests/Test-DatadogWebViewTracking-2026.09.18_03-32-56-+0100.xcresult"
     }
   ],
-  "native_attempts": [],
+  "native_attempts": [
+    {
+      "attempt": "A",
+      "outcome": "FAIL",
+      "run_id": "exp183-20260918T030350Z-b77bc35ea6e6",
+      "fixture_revision": "9b65d32892731ccbf240e9be1ea6acf7b66b811c",
+      "durable_summary": "Results/acceptance/exp183-20260918T030350Z-b77bc35ea6e6.json",
+      "source_sha256": "f3aec5d6270fc6ea02b66302aa817ba2e30484b3f5a5053a10eb6e25b5d628b5",
+      "build": {
+        "executable_sha256": "07adbf91958b7206b3a00cf74b19841cd950191fe3b289e460fbc21f6089cbda",
+        "source_sha256": "f3aec5d6270fc6ea02b66302aa817ba2e30484b3f5a5053a10eb6e25b5d628b5",
+        "state": "PASS",
+        "test_count": 184,
+        "uuid": "UUID: 32670450-11E8-3CB7-B4FE-7024E4783F23 (arm64) /private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/multi-scene-acceptance-vs0bpy8x/run/derived/Build/Products/Debug-iphonesimulator/RUMNativeMultiSceneProbe.app/RUMNativeMultiSceneProbe"
+      },
+      "local": {
+        "assertions": 14,
+        "signals": 64,
+        "native_views": 6,
+        "browser_callbacks": 6
+      },
+      "failure": [
+        "native view mislabeled as browser container"
+      ],
+      "disposition": "Connector projection defect: Datadog exposes source in attributes.source, outside custom payload. Preserve FAIL; no SDK repair. Exact semantics unchanged; fresh run required.",
+      "diagnostic_projection": {
+        "run_id": "exp183-20260918T030350Z-b77bc35ea6e6",
+        "session_id": "e4d7e22e-49d9-4936-9f1a-18dcbf445df4",
+        "application_id": "43cbc59b-0626-438b-a3d9-c6417a4545a3",
+        "view_id": "8cca3b67-ff0e-482f-8d90-52d80a1f7ce5",
+        "name": "web-b-after-teardown",
+        "source": "browser",
+        "phase": "web-b-after-teardown",
+        "source_scene": "scene-B",
+        "document_id": "exp183-20260918T030350Z-b77bc35ea6e6/B/initial",
+        "url": "https://multi-scene-probe.invalid/exp183-20260918T030350Z-b77bc35ea6e6/B/initial",
+        "container_id": "2fdb26b5-77ab-4c7e-a8e0-17d28abbd25d",
+        "container_source": "ios",
+        "container_present": true,
+        "leaked_internal_attribute": false,
+        "has_replay": true,
+        "is_active": false,
+        "action_count": 0,
+        "resource_count": 0,
+        "error_count": 0,
+        "long_task_count": 0,
+        "time_spent": 1000000,
+        "loading_type": "initial_load",
+        "format_version": 2,
+        "document_version": 1
+      }
+    }
+  ],
   "preparation": {
     "probe": {
       "counts": {

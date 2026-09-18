@@ -461,3 +461,16 @@ test('WebView projection rejects ambiguous source representations', () => {
     {source:'browser',view:{id:'browser'},'view.id':'browser'}
   ]) assert.throws(() => projectWebView(payload), /Ambiguous WebView/);
 });
+
+test('WebView source comes from actual detailed event envelope when absent from custom payload', () => {
+  assert.equal(projectWebView({view:{id:'browser'}}, {source:'browser'}).source, 'browser');
+  assert.equal(projectWebView({view:{id:'native'}}, {source:'ios'}).source, 'ios');
+  assert.equal(projectWebView({source:'browser'}, {source:'browser'}).source, 'browser');
+});
+test('WebView source conflicts fail without replacing actual evidence', () => {
+  assert.throws(() => projectWebView({source:'browser'}, {source:'ios'}), /Conflicting/);
+});
+test('WebView missing or malformed source is preserved for oracle rejection', () => {
+  assert.equal(projectWebView({view:{id:'browser'}}).source, null);
+  assert.equal(projectWebView({view:{id:'browser'}}, {source:17}).source, 17);
+});

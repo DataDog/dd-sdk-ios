@@ -303,14 +303,19 @@ function webValue(payload, path) {
   return {present:values.length === 1, value:values.length ? values[0] : null};
 }
 
-function projectWebView(payload) {
+function projectWebView(payload, envelope = {}) {
   if (!payload || typeof payload !== "object" || Array.isArray(payload)) throw Error("Malformed WebView payload");
   const get = path => webValue(payload, path).value;
   const present = path => webValue(payload, path).present;
+  const source = get("source");
+  const envelopeSource = Object.hasOwn(envelope, "source") ? envelope.source : null;
+  if (present("source") && envelopeSource !== null && source !== envelopeSource) {
+    throw Error("Conflicting WebView envelope source");
+  }
   return {
     run_id:get("context.probe.run_id"), session_id:get("session.id"),
     application_id:get("application.id"), view_id:get("view.id"), name:get("view.name"),
-    source:get("source"), phase:get("context.probe.phase"), source_scene:get("context.probe.source_scene"),
+    source:envelopeSource !== null ? envelopeSource : source, phase:get("context.probe.phase"), source_scene:get("context.probe.source_scene"),
     document_id:get("context.probe.document_id"), url:get("view.url"),
     container_id:get("container.view.id"), container_source:get("container.source"),
     container_present:present("container") || present("container.view.id") || present("container.source"),
@@ -409,7 +414,7 @@ async function runAcceptance({tools, notify, device, repo, scenario}) {
       const payload = row.attributes?.custom || row.custom || row.attributes || row;
       const base = {run_id:at(payload,"context.probe.run_id"),
                     session_id:at(payload,"session.id"), view_id:at(payload,"view.id")};
-      if (request.kind === "webview_views") return projectWebView(payload);
+      if (request.kind === "webview_views") return projectWebView(payload, row.attributes || row);
       if (request.kind === "views") return {...base, name:at(payload,"view.name")};
       if (request.kind === "flag_views") return {...base, name:at(payload, "view.name"),
         flag_state:projectFlagState(payload, at)};
