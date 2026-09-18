@@ -622,3 +622,18 @@ test('vitals projection retains owner source and unexpected view counters', () =
   assert.equal(row.counters.longTasks,2);
   assert.equal(row.counters.crashes,3);
 });
+
+
+test('vitals slow-frame presence distinguishes absent empty nonempty and explicit null', () => {
+  const cases = [
+    [{view:{}}, false, null],
+    [{view:{slow_frames:[]}}, true, []],
+    [{'view.slow_frames':[{start:100,duration:50}]}, true, [{start:100,duration:50}]],
+    [{view:{slow_frames:null}}, true, null]
+  ];
+  for (const [payload,present,value] of cases) {
+    const row = projectVitals(payload);
+    assert.equal(row.slow_frames_present,present);
+    assert.deepEqual(row.metrics.slowFrames,value);
+  }
+});

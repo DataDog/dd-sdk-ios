@@ -24,7 +24,7 @@ METRICS = ["cpuTicks", "cpuRate", "memoryAverage", "memoryMax", "refreshRateAver
            "refreshRateMin", "timeSpentNanoseconds", "slowFrames", "slowFramesRate"]
 FLOATS = set(METRICS) - {"timeSpentNanoseconds", "slowFrames"}
 PROJECT_KEYS = {"run_id", "session_id", "view_id", "name", "source", "is_active",
-                "container_present", "counters", "metrics"}
+                "container_present", "counters", "metrics", "slow_frames_present"}
 
 
 def exact(actual, expected, label):
@@ -192,7 +192,8 @@ def validate_local(records, run_id):
         require_before(snapshot, guard["vitals-inventory-verified"], "final mapper before inventory")
         final_views.append(dict(owner(snapshot), name=context["viewName"], run_id=observed.get("originalRunID"),
                                 source="ios", is_active=False, container_present=False,
-                                counters=ZERO, metrics=metrics(snapshot)))
+                                counters=ZERO, metrics=metrics(snapshot),
+                                slow_frames_present=observed.get("slowFrames") is not None))
     for suffix in ["a", "b"]:
         final = guard["vitals-final-" + suffix]
         snapshot = latest[owners[suffix]["view_id"]]
@@ -207,10 +208,14 @@ def validate_local(records, run_id):
                 physical_device_claimed=False, timeseries_default_disabled=True)
 
 
-def compare_metrics(actual, expected):
+def compare_metrics(actual, expected, slow_frames_present):
     validate_metrics(actual)
     for field in METRICS:
         a, e = actual[field], expected[field]
+        if field == "slowFrames" and e == [] and a is None and not slow_frames_present:
+            # Observed backend representation: an empty SDK array is omitted.
+            # Keep the original projection and permit no other missing metric.
+            continue
         if field in FLOATS and e is not None:
             require(close(a, e), "backend metric differs: " + field, "FAIL")
         else:
@@ -224,9 +229,12 @@ def validate_views(local, rows, allow_pending=False, previous=None):
     for expected in local["views"]:
         row = unique([r for r in rows if r.get("view_id") == expected["view_id"]], "backend view identity")
         require(set(row) == PROJECT_KEYS, "malformed backend projection", "FAIL")
-        for field in PROJECT_KEYS - {"metrics", "is_active"}:
+        for field in PROJECT_KEYS - {"metrics", "is_active", "slow_frames_present"}:
             exact(row[field], expected[field], "backend view differs: " + field)
         validate_metrics(row["metrics"])
+        present = row["slow_frames_present"]
+        require(type(present) is bool and present == (row["metrics"]["slowFrames"] is not None),
+                "explicit null or inconsistent slow-frame presence", "FAIL")
         time, final_time = row["metrics"]["timeSpentNanoseconds"], expected["metrics"]["timeSpentNanoseconds"]
         require(type(row["is_active"]) is bool, "missing backend view activity", "FAIL")
         if allow_pending:
@@ -239,7 +247,7 @@ def validate_views(local, rows, allow_pending=False, previous=None):
                 pending = True
                 continue
         exact(row["is_active"], False, "backend final view remains active")
-        compare_metrics(row["metrics"], expected["metrics"])
+        compare_metrics(row["metrics"], expected["metrics"], row["slow_frames_present"])
     return pending
 
 
@@ -262,4 +270,7 @@ def validate_backend(local, views, actions, resources, tasks, errors, crashes):
             "unexpected backend telemetry", "FAIL")
     validate_views(local, views)
     return dict(state="PASS", view_count=3, action_count=0, resource_count=0, long_task_count=0,
-                error_count=0, crash_count=0, measured_vitals_verified=True, physical_device_claimed=False)
+                error_count=0, crash_count=0, measured_vitals_verified=True, physical_device_claimed=False,
+                omitted_empty_slow_frame_arrays=sum(
+                    expected["metrics"]["slowFrames"] == [] and not row["slow_frames_present"]
+                    for expected in local["views"] for row in views if row["view_id"] == expected["view_id"]))

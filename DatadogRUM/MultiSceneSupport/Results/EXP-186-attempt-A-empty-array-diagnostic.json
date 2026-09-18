@@ -1,0 +1,40 @@
+{
+  "experiment": "EXP-186",
+  "attempt": "A",
+  "run_id": "exp186-20260918T062720Z-33af91535469",
+  "frozen_revision": "1727749c05f1e4397e3713eebc41d74a0cd2a512",
+  "original_result": "FAIL",
+  "original_failure": "backend metric presence/integer differs: slowFrames",
+  "original_durable": "acceptance/exp186-20260918T062720Z-33af91535469.json",
+  "query": "@session.id:926aa74d-bb88-4edb-99a4-5e49094fb9dc @type:view",
+  "observations": [
+    {
+      "view_id": "944c8d33-9e82-4b0c-8196-44e0ee211c3f",
+      "slow_frames_present": true,
+      "slow_frames": [
+        {
+          "duration": 90016167,
+          "start": 16666667
+        }
+      ],
+      "slow_frames_rate_present": false,
+      "slow_frames_rate": null
+    },
+    {
+      "view_id": "ecf3ed2e-b98c-48fb-a97e-15ad1a699a79",
+      "slow_frames_present": false,
+      "slow_frames": null,
+      "slow_frames_rate_present": true,
+      "slow_frames_rate": 0
+    },
+    {
+      "view_id": "76c62a17-2173-40a3-ba91-7750447b5f52",
+      "slow_frames_present": false,
+      "slow_frames": null,
+      "slow_frames_rate_present": false,
+      "slow_frames_rate": null
+    }
+  ],
+  "conclusion": "A fresh detailed backend query preserves B's nonempty slow_frames array exactly and omits the field for A and ApplicationLaunch, whose final mapper arrays are empty. All other final metrics and owners match the original received projections. This is a bounded backend representation difference, not evidence of an SDK measurement or ownership defect.",
+  "next_rule": "Only a mapper empty array may match an absent backend slow_frames field. Preserve presence explicitly; explicit null, a missing nonempty array, changed frames, counts, owners and all other metric mismatches still fail. Original run remains FAIL; require fresh acceptance."
+}

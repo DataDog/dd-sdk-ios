@@ -1492,3 +1492,10 @@ Wrong owners, malformed/extra data or interval regression/overshoot fail at once
 Persist vitals-records.json and backend-exchanges.json in the durable summary.
 This simulator workflow does not satisfy the required representative physical
 sample, simultaneous visibility or Duo acceptance.
+
+
+EXP-186 attempt A establishes one narrow backend representation exception:
+an empty mapper slowFrames array may appear as an absent backend field.
+Record field presence separately; never treat explicit null or a missing
+nonempty array as equivalent. Preserve the original projected values and the
+failed run, and rerun from a newly frozen source/tooling identity.

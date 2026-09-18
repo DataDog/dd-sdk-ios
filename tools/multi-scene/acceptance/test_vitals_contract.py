@@ -201,6 +201,33 @@ class VitalsContractTests(unittest.TestCase):
             with self.assertRaises(Rejected):
                 v.validate_views(self.local, rows)
 
+    def test_only_empty_mapper_arrays_may_match_backend_absence(self):
+        for row in self.rows:
+            self.assertEqual(row["metrics"]["slowFrames"], [])
+            row["metrics"]["slowFrames"] = None
+            row["slow_frames_present"] = False
+        v.validate_views(self.local, self.rows)
+        result = v.validate_backend(self.local, self.rows, [], [], [], 0, 0)
+        self.assertEqual(result["omitted_empty_slow_frame_arrays"], 3)
+        self.assertIsNone(self.rows[0]["metrics"]["slowFrames"])
+
+    def test_missing_nonempty_slow_frames_and_explicit_null_are_rejected(self):
+        local = copy.deepcopy(self.local)
+        local["views"][1]["metrics"]["slowFrames"] = [dict(start=100, duration=50)]
+        for present in [False, True]:
+            rows = copy.deepcopy(self.rows)
+            rows[1]["metrics"]["slowFrames"] = None
+            rows[1]["slow_frames_present"] = present
+            with self.assertRaises(Rejected):
+                v.validate_views(local, rows)
+
+    def test_backend_slow_frame_presence_cannot_be_faked_or_coerced(self):
+        for present in [False, "true", 1, None]:
+            rows = copy.deepcopy(self.rows)
+            rows[1]["slow_frames_present"] = present
+            with self.assertRaises(Rejected):
+                v.validate_views(self.local, rows)
+
     def test_backend_complete_inventory_and_ownership_are_required(self):
         for rows in [self.rows[:-1], self.rows + [self.rows[0]], [self.rows[0]] * 3]:
             with self.assertRaises(Rejected):

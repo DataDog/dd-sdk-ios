@@ -377,6 +377,7 @@ function projectVitals(payload, envelope = {}) {
     run_id:common.run_id, session_id:common.session_id, view_id:common.view_id,
     name:common.name, source:common.source, is_active:common.is_active,
     container_present:common.container_present,
+    slow_frames_present:webValue(payload, "view.slow_frames").present,
     counters:{
       actions:common.action_count, resources:common.resource_count, errors:common.error_count,
       longTasks:common.long_task_count ?? 0, crashes:get("view.crash.count") ?? 0
