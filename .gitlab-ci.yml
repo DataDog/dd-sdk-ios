@@ -335,9 +335,7 @@ SR Layer Snapshot Tests:
   # artifacts: when: always are needed together to capture logs on a hang.
   timeout: 55m
   variables:
-    PLATFORM: "iOS Simulator"
-    IOS_OS: "26.0.1"
-    DEVICE: "iPhone 17"
+    SNAPSHOT_ENV: "ios-26.0.1-iphone17"
     ARTIFACTS_PATH: "artifacts"
     RUNNER_SCRIPT_TIMEOUT: "50m"
   artifacts:
@@ -348,7 +346,7 @@ SR Layer Snapshot Tests:
   script:
     - ./tools/runner-setup.sh --xcode "$DEFAULT_XCODE" --ssh
     - make clean repo-setup ENV=ci
-    - make sr-layer-snapshots-pull sr-layer-snapshot-test OS="$IOS_OS" PLATFORM="$PLATFORM" DEVICE="$DEVICE" ARTIFACTS_PATH="$ARTIFACTS_PATH"
+    - make sr-layer-snapshots-pull sr-layer-snapshot-test SNAPSHOT_ENV="$SNAPSHOT_ENV" ARTIFACTS_PATH="$ARTIFACTS_PATH"
 
 Tools Tests:
   stage: test

@@ -42,6 +42,11 @@
       </MacroExpansion>
       <EnvironmentVariables>
          <EnvironmentVariable
+            key = "SNAPSHOT_ENV"
+            value = "$(SNAPSHOT_ENV)"
+            isEnabled = "YES">
+         </EnvironmentVariable>
+         <EnvironmentVariable
             key = "DD_TEST_RUNNER"
             value = "$(DD_TEST_RUNNER)"
             isEnabled = "YES">
