@@ -32,7 +32,9 @@ Additional risks raised alongside the original findings have separate evidence:
 [observer delivery/R05](Results/EXP-174-observer-delivery.json) and
 [late Resource completion/T03](Results/EXP-175-resource-completion.json).
 Downstream validation of D04’s Trace consumer is recorded in
-[EXP-181](Results/EXP-181-trace-start-ownership.json).
+[EXP-181](Results/EXP-181-trace-start-ownership.json). Deferred Logs and mirror
+consumer checks pass in [EXP-182](Results/EXP-182-log-mirror-ownership.json);
+its native/backend acceptance remains pending.
 Physical lifecycle, API review and final release gates remain separate.
 
 The following original findings describe the reviewed revision, not current

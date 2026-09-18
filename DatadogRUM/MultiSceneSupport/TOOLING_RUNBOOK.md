@@ -1306,7 +1306,10 @@ boundaries. Record the caller's handoff before logging, then test delayed writes
 and mirror delivery under changed context. A mirror's scene/view/action owner must
 come from its private captured envelope; remove that envelope before telemetry.
 Keep explicit nil, foreign/retired handoffs and ordinary source-less fallback
-distinct, including the legacy off-view case.
+distinct, including the legacy off-view case. A no-peer regression for an unknown
+captured view must create a scene-owned peer: an unknown view in a legacy-only app
+intentionally retains representative fallback. Verify that separately, including
+captured nil action, rather than treating the compatibility path as a routing defect.
 
 For native acceptance, compare exact encoded log correlation and mirrored RUM
 owners against independent view/action mapper records. Logs have no SDK log UUID

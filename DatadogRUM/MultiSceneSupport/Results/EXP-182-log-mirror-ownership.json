@@ -15,7 +15,7 @@
   "unit_contract": [
     "Deferred A/B info/error writes retain four exact application/session/view/action log payloads and two mirror envelopes after opposite or foreign context changes; include retirement after emission.",
     "Explicit nil stays uncorrelated and never takes peer action; foreign or retired-at-emission handoffs retain the consumer fallback, and source-less uses ordered consumer context.",
-    "Deliver captured A/B mirror envelopes in reverse order after peer representative/action churn; assert exact event owner/action and no private-key leakage, including captured nil action and unavailable captured owner."
+    "Deliver captured A/B mirror envelopes in reverse order after peer representative/action churn; assert exact event owner/action and no private-key leakage, including captured nil action and unavailable captured owner. The unavailable-owner no-peer assertion requires a scene-owned peer; preserve the known legacy-only unknown-view fallback with captured nil action."
   ],
   "native_contract": {
     "scenario": "logs.captured-emission.native-mirrors-cross-scene-serial",
@@ -55,10 +55,63 @@
   "workflow": "Predeclare precise native guards/expectations before fixture; add existing repository DatadogLogs product only to owned probe project; mapper Foundation wire projection; freeze source/contract before clean install, complete Logs run inventory and full RUM session check.",
   "preflight": "Authenticated Logs DDSQL read PASS; no positive Logs from this service available in the bounded schema probe.",
   "closure": "Only close T09 after focused/affected tests and strict local/backend acceptance; preserve all invalid/inconclusive attempts.",
-  "status": "PLANNED",
+  "status": "PREPARED",
   "gates_closed": [],
   "control_revision": "2a36cac8c40849426a862288b6c3789a7bd8386e",
   "definition": "Experiments/EXP-143-199.md#exp-182--accept-captured-logs-and-mirrored-error-ownership",
-  "unit_attempts": [],
-  "native_attempts": []
+  "unit_attempts": [
+    {
+      "component": "DatadogLogs",
+      "outcome": "PASS",
+      "summary": "99 tests: 99 passed, 0 failed, 0 skipped, 0 expected failures, 0 not run",
+      "counts": {
+        "expectedFailures": 0,
+        "failed": 0,
+        "notRun": 0,
+        "passed": 99,
+        "skipped": 0,
+        "total": 99
+      },
+      "summary_path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/ActionArtifacts/default/RunAllTests/D6E20B48-9FF6-4D94-A040-51534CD77A29.txt",
+      "xcresult": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/ActionArtifacts/default/RunAllTests/Test-DatadogLogs-2026.09.18_02-36-07-+0100.xcresult"
+    },
+    {
+      "component": "ErrorMessageReceiver",
+      "outcome": "INVALID FIXTURE",
+      "diagnosis": "The unavailable-owner control created a legacy scene-less view. An unknown captured view intentionally retains representative fallback when no scene-owned active branch exists. Its first emitted error persisted through later assertions. No production defect.",
+      "summary": "8 tests: 7 passed, 1 failed, 0 skipped, 0 expected failures, 0 not run",
+      "counts": {
+        "expectedFailures": 0,
+        "failed": 1,
+        "notRun": 0,
+        "passed": 7,
+        "skipped": 0,
+        "total": 8
+      },
+      "summary_path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/ActionArtifacts/default/RunSomeTests/B9B436D7-C085-4806-A0F3-1D37DF1A050C.txt",
+      "xcresult": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/ActionArtifacts/default/RunSomeTests/Test-DatadogRUM-2026.09.18_02-36-46-+0100.xcresult"
+    },
+    {
+      "component": "ErrorMessageReceiver",
+      "outcome": "PASS",
+      "diagnosis": "Peer is now explicitly scene-owned; unknown view, unavailable scene and captured absence all emit no peer error. Separate legacy control preserves unknown-view fallback while captured nil action stays nil.",
+      "summary": "9 tests: 9 passed, 0 failed, 0 skipped, 0 expected failures, 0 not run",
+      "counts": {
+        "expectedFailures": 0,
+        "failed": 0,
+        "notRun": 0,
+        "passed": 9,
+        "skipped": 0,
+        "total": 9
+      },
+      "summary_path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/ActionArtifacts/default/RunSomeTests/0EE05C1F-2E8C-4DDE-A4CE-FDF60B556663.txt",
+      "xcresult": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/ActionArtifacts/default/RunSomeTests/Test-DatadogRUM-2026.09.18_02-38-38-+0100.xcresult"
+    }
+  ],
+  "native_attempts": [],
+  "validation": {
+    "strict_swiftlint": "PASS, zero violations in both changed test files",
+    "production_source": "unchanged",
+    "next": "Implement the predeclared native Logs/mirror fixture and bounded acceptance runner."
+  }
 }
