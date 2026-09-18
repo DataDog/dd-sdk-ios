@@ -1,0 +1,172 @@
+{
+  "schema_version": 1,
+  "experiment": "EXP-187",
+  "gate": "T14",
+  "status": "INCONCLUSIVE",
+  "component_status": "PASS simulator native, complete RUM ownership, profile inventory/labels, sample-level Operation correlation and exact exported attachment",
+  "run_id": "exp187-702f95f5-b0fc-4023-9277-4070f98a97ca",
+  "revision": "95a6bdeb735b8dc803cc4d88e9fca5908c433a3c",
+  "signature": "UNSIGNED",
+  "sdk_production_changed": false,
+  "native_assertions": 12,
+  "configuration": {
+    "applicationLaunchSampleRate": 0,
+    "continuousSampleRate": 100
+  },
+  "executable_sha256": "f95722aae345552bfc35e862bf9ab9bbf96f96a5908f39b59c5d806f98a8300a",
+  "source_fingerprint": "1c398d940fe4473f42e431504943377ef5035570eedd900bd34d54793cc28fa7",
+  "workspace_preserved": true,
+  "rum_validation": {
+    "state": "PASS",
+    "counts": {
+      "vital": 5,
+      "view": 4,
+      "operation": 2,
+      "session": 1
+    },
+    "unique_events": 12,
+    "pagination_exhausted": true,
+    "session_id": "2ee12d1d-4039-4b11-8ca5-5cf365e8fb2c",
+    "exact_operation_step_ids": [
+      "087d2f7e-22d2-49e2-adde-7f1d4d406fef",
+      "4b2cd296-84a4-4351-b650-de48d3d49dac",
+      "a73f4232-c29a-460f-8fb6-17902236fe02",
+      "bbde5532-33f4-424d-b5b3-3146465b36dd"
+    ],
+    "profiler_statuses": [
+      "running"
+    ],
+    "all_operation_steps_have_profile": false
+  },
+  "profiles": {
+    "continuous": "AaCztF9RAAAo85FPlNdWJQAA",
+    "built_in_launch": "AaCzs22wAACbFWHjG5k3hwAA",
+    "total_in_service_and_session_window": 2,
+    "matching_continuous_profiles": 1,
+    "exact_start_ids": [
+      "4b2cd296-84a4-4351-b650-de48d3d49dac",
+      "a73f4232-c29a-460f-8fb6-17902236fe02"
+    ],
+    "operation_name": "exp187.parallel",
+    "view_id": "923e8d75-f2d1-42ff-ae76-1bb730ecfdfd",
+    "view_name": "EXP187.Finish",
+    "session_id": "2ee12d1d-4039-4b11-8ca5-5cf365e8fb2c",
+    "duration_ns": 59967000000,
+    "nonempty_wall_time_stacks": true,
+    "sample_correlations": [
+      {
+        "vital_id": "a73f4232-c29a-460f-8fb6-17902236fe02",
+        "nonempty_wall_time_stacks": true,
+        "matching_sample_value": {
+          "value": 1.7907538736304969,
+          "unit": "minutes",
+          "isPerMinute": true
+        },
+        "visualization": "https://app.datadoghq.com/api/v2/switch_to_user/d8aa6650-dfe0-11ef-960d-f2a6cd7d9e6c?next=%2Fprofiling%2Fexplorer%3Fquery%3Dservice%253Aios-benchmark%2Bprofile-id%253AAaCztF9RAAAo85FPlNdWJQAA%26profile_type%3Dwall-time%26attribute%3Dvital_id%26selection%3D%257B%2522incl%2522%253A%255B%2522a73f4232-c29a-460f-8fb6-17902236fe02%2522%255D%257D%26start%3D1789721160000%26end%3D1789721400000%26viz%3Dflame_graph%26my_code%3Denabled%26paused%3Dtrue&flow=org_switch"
+      },
+      {
+        "vital_id": "4b2cd296-84a4-4351-b650-de48d3d49dac",
+        "nonempty_wall_time_stacks": true,
+        "matching_sample_value": {
+          "value": 42.795814497973886,
+          "unit": "seconds",
+          "isPerMinute": true
+        },
+        "visualization": "https://app.datadoghq.com/api/v2/switch_to_user/d8aa6650-dfe0-11ef-960d-f2a6cd7d9e6c?next=%2Fprofiling%2Fexplorer%3Fquery%3Dservice%253Aios-benchmark%2Bprofile-id%253AAaCztF9RAAAo85FPlNdWJQAA%26profile_type%3Dwall-time%26attribute%3Dvital_id%26selection%3D%257B%2522incl%2522%253A%255B%25224b2cd296-84a4-4351-b650-de48d3d49dac%2522%255D%257D%26start%3D1789721160000%26end%3D1789721400000%26viz%3Dflame_graph%26my_code%3Denabled%26paused%3Dtrue&flow=org_switch"
+      }
+    ],
+    "visualization": "https://app.datadoghq.com/api/v2/switch_to_user/d8aa6650-dfe0-11ef-960d-f2a6cd7d9e6c?next=%2Fprofiling%2Fexplorer%3Fquery%3Dservice%253Aios-benchmark%2Bprofile-id%253AAaCztF9RAAAo85FPlNdWJQAA%26profile_type%3Dwall-time%26start%3D1789721160000%26end%3D1789721400000%26viz%3Dflame_graph%26my_code%3Denabled%26paused%3Dtrue&flow=org_switch"
+  },
+  "native_expected_attachment": [
+    {
+      "duration_ns": 6482576013,
+      "id": "a73f4232-c29a-460f-8fb6-17902236fe02",
+      "name": "exp187.parallel",
+      "start_ns": 1789721264033287168,
+      "type": "vital"
+    },
+    {
+      "duration_ns": 2167635918,
+      "id": "4b2cd296-84a4-4351-b650-de48d3d49dac",
+      "name": "exp187.parallel",
+      "start_ns": 1789721265153831168,
+      "type": "vital"
+    }
+  ],
+  "raw_attachment_validation": {
+    "state": "PASS",
+    "provenance": "User-provided export of continuous profile AaCztF9RAAAo85FPlNdWJQAA; original files unchanged.",
+    "source_directory": "/Users/valentin.pertuisot/Downloads/20260918-084744_ios-benchmark_AaCztF9RAAAo85FPlNdWJQAA",
+    "preserved_copy_directory": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp187-continuous-capture-w5wio778/attempt/user-export",
+    "files": {
+      "rum-mobile-events.json": {
+        "bytes": 285,
+        "sha256": "b64165f2e6839fc602da86653d8babd03436b9540892bcbe03063aa1e05ffc80"
+      },
+      "wall.pprof": {
+        "bytes": 1800848,
+        "sha256": "e11f0ff8c81cb87f48a04cb8d29103cf6453e346a16905477eab1cacbea215ad"
+      }
+    },
+    "actual_attachment": [
+      {
+        "id": "4b2cd296-84a4-4351-b650-de48d3d49dac",
+        "name": "exp187.parallel",
+        "duration_ns": 2167635918,
+        "type": "vital",
+        "start_ns": 1789721265153831168
+      },
+      {
+        "id": "a73f4232-c29a-460f-8fb6-17902236fe02",
+        "name": "exp187.parallel",
+        "duration_ns": 6482576013,
+        "type": "vital",
+        "start_ns": 1789721264033287168
+      }
+    ],
+    "comparison": "Exactly two actual start IDs, types, names, integer start_ns and duration_ns; no tolerance or end-ID substitution.",
+    "validator_summary": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp187-continuous-capture-w5wio778/attempt/backend-export-validation.json",
+    "simulator_rejected_as_physical_evidence": true
+  },
+  "physical_validation": "NOT RUN; simulator mechanics only",
+  "rum_enrichment_observation": "Four Operation steps report profiler running but has_profile=false in both initial and later complete RUM reads. Profile tags and vital_id sample filters independently correlate both exact starts; UI enrichment is not claimed. Built-in launch vital has_profile=true.",
+  "artifact_root": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp187-continuous-capture-w5wio778/attempt",
+  "query_window": {
+    "session": "2ee12d1d-4039-4b11-8ca5-5cf365e8fb2c",
+    "run_id": "exp187-702f95f5-b0fc-4023-9277-4070f98a97ca",
+    "from": "2026-09-18T08:46:00Z",
+    "to": "2026-09-18T08:50:00Z",
+    "rum_query": "@session.id:2ee12d1d-4039-4b11-8ca5-5cf365e8fb2c",
+    "profile_query": "service:ios-benchmark"
+  },
+  "artifact_sha256": {
+    "native-receipt.json": "40b4360d2b833a179ee22d015ff10fd8377c771ade33dad8d9b6f26760edb8a0",
+    "backend-raw.txt": "7e46a305dd7e77bddda8ca55b6846a2fbe6ab0dc5a3967084c5e9a2c8f593629",
+    "backend-count.txt": "33f98bc21a1214234c4f351ca27134eb52e2db812ed6353d2d0915f3c0c1ca46",
+    "backend-end.txt": "13a9420e20ae8722a71ea85a87e61707cb91592989c4698e1c604a2c115f2cbb",
+    "backend-ownership-summary.json": "7feb8cccb52e2587057994d7075dd5860a6250c4eda7658034b42628076f765e",
+    "backend-profileInventory.json": "eb2441c5f1821b64972f5d576a20127e73b320d054e5fe85b830f535ff4ccc06",
+    "backend-sessionProfiles.json": "eb2441c5f1821b64972f5d576a20127e73b320d054e5fe85b830f535ff4ccc06",
+    "backend-profileJoins.json": "2b19b73549a1d01b5f7dcf36838e3cdbe7e195708bd278c273bf9c9a4f28225f",
+    "backend-profile.json": "9f8d0a53be57a5f9e1f5dc18701ff2a32df819b9d6fb1e6ad7faae9c5323d547",
+    "backend-name.json": "758d071d3f59a1950826e0bafaf90200dd4897dd68a78bbca4f4b1117435fc63",
+    "backend-view.json": "0dbe917bdefb9718d648cb539845a7a61e370333e678f5cf9707dd296551c6e2",
+    "backend-sessionLabel.json": "b21f9bc4292d6c7a3bbe49f75f142bc2bff4903fe358378564ee982b841fb15e",
+    "backend-sampleA.json": "5edfd24007eff2ec1efc80499e0f6f5859cb1d16f84f09d4ec308f508eaad6e1",
+    "backend-sampleB.json": "ffae30a44e3bdac58553c8bc4201c93576dad20f69abc185f324e74026712491",
+    "backend-enrichment-refresh.txt": "7e46a305dd7e77bddda8ca55b6846a2fbe6ab0dc5a3967084c5e9a2c8f593629",
+    "backend-query.json": "5f197cf651533defd40abbaa366a0f04c6606051e233e35eb35fdd1313eaa9ab",
+    "backend-export-validation.json": "c43878e43a2f8a12c7b1988fbfadd906ebddbd9a80bcc21fe3e50d7700234cab",
+    "user-export/rum-mobile-events.json": "b64165f2e6839fc602da86653d8babd03436b9540892bcbe03063aa1e05ffc80",
+    "user-export/wall.pprof": "e11f0ff8c81cb87f48a04cb8d29103cf6453e346a16905477eab1cacbea215ad"
+  },
+  "remaining": [
+    "Fresh supported physical-device execution of the same contract, with its own complete RUM/profile inventory, nonempty native samples and exact exported attachment"
+  ],
+  "limits": [
+    "No per-scene CPU attribution",
+    "No simultaneous-window or Duo proof",
+    "MCP stack symbols are unresolved for this simulator build",
+    "No manufactured attachment or substituted expected data"
+  ]
+}

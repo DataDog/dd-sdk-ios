@@ -85,6 +85,13 @@ Step summary names may be backend URL defaults; authoritative view-event names
 are checked by exact joined view ID. Profile correlation flags remain a separate
 reported result and cannot certify the raw attachment.
 
+An actual user-downloaded export is valid attachment input when MCP exposes
+profiles but no raw download. Preserve the source export unchanged and record
+its selected profile ID, provenance, file sizes and SHA-256 for the JSON and
+pprof. Retain the unmodified attachment alongside the attempt artifacts. Never
+use the receipt's expectedProfileVitals as an exported attachment. Preserve
+profile/sample joins and RUM has_profile observations as separate evidence.
+
 Use --allow-simulator only for mechanics evidence. The validator requires the
 actual two start IDs and exact integer start_ns/duration_ns values; it does not
 accept end IDs, swapped durations, collapsed keys or manufactured expected

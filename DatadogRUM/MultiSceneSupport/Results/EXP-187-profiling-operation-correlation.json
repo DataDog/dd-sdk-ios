@@ -190,10 +190,41 @@
       "receipt_sha256": "4d1bf0a3a0ecf0d2acad46bb0b41df80560757947e31e6815dfafbe20df00344",
       "rum_backend": "PASS complete12-event session; Results/EXP-187-simulator-rum-ownership.json",
       "profile_backend": "No correlated profile; documented behavior with continuous sampling disabled. Schema2 corrects fixture setup without changing SDK."
+    },
+    {
+      "run_id": "exp187-702f95f5-b0fc-4023-9277-4070f98a97ca",
+      "state": "INCONCLUSIVE",
+      "component_status": "PASS",
+      "native_status": "PASS",
+      "revision": "95a6bdeb735b8dc803cc4d88e9fca5908c433a3c",
+      "signature": "UNSIGNED",
+      "durable_result": "Results/acceptance/exp187-702f95f5-b0fc-4023-9277-4070f98a97ca.json",
+      "correlation_result": "Results/EXP-187-simulator-profile-correlation.json",
+      "artifact": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp187-continuous-capture-w5wio778/attempt",
+      "passed_assertions": 12,
+      "operation_steps": 4,
+      "fixture_manual_views": 3,
+      "builtin_launch_views": 1,
+      "configuration": {
+        "continuousSampleRate": 100,
+        "applicationLaunchSampleRate": 0
+      },
+      "build": "PASS Release",
+      "clean_install": "PASS data-container absence and installed executable SHA-256 match",
+      "workspace_preserved": true,
+      "executable_sha256": "f95722aae345552bfc35e862bf9ab9bbf96f96a5908f39b59c5d806f98a8300a",
+      "receipt_sha256": "40b4360d2b833a179ee22d015ff10fd8377c771ade33dad8d9b6f26760edb8a0",
+      "rum_backend": "PASS all12 events, exact four step IDs and start/end owners; independent counts and exhausted pagination",
+      "profile_backend": "PASS service/session inventory of one continuous and one separate built-in launch profile; both exact start IDs select the same continuous profile and nonempty vital_id-filtered wall-time samples",
+      "continuous_profile_id": "AaCztF9RAAAo85FPlNdWJQAA",
+      "raw_attachment": "PASS actual user export: exact start IDs, names, types, start_ns and duration_ns with no tolerance",
+      "raw_attachment_sha256": "b64165f2e6839fc602da86653d8babd03436b9540892bcbe03063aa1e05ffc80",
+      "physical_validation": "NOT RUN; simulator mechanics only",
+      "rum_enrichment": "Operation steps report running but has_profile=false in two full-session reads; independent profile/sample and raw attachment joins pass. UI link enrichment is not claimed."
     }
   ],
   "device_attempts": [],
-  "next": "Freeze the supported continuous100% fixture and actual readiness observations, then run a fresh complete simulator attempt and exact MCP RUM/profile validation. Preserve prior mechanics/ordinary-build passes. Physical execution and raw attachment proof remain.",
+  "next": "Execute the frozen native contract on a freshly available supported physical device, retaining fresh source/build/install/run identity and the same complete RUM/profile/raw attachment checks. Accepted simulator and SDK work must not be repeated merely to resume. F01 review and physical-device requests remain pending.",
   "deterministic_status": "PASS",
   "physical_backend_status": "ENVIRONMENT BLOCKED",
   "unit_summary": {
@@ -241,7 +272,7 @@
   ],
   "environment_observation": {
     "physical_devices": "Paired iPhone27.2 and iPad27 unavailable; DDI false for both.",
-    "profile_backend": "Restored mcp__datadog exposes13 profiling tools; authenticated service/type discovery and nonempty ios-benchmark wall-time flamegraph read pass. CPU query explicitly not enabled despite broader metadata. Actual raw attachment retrieval unproven.",
+    "profile_backend": "Authenticated MCP profile inventory, exact labels and per-vital nonempty wall-time samples pass for the frozen simulator run. User-provided raw export passes exact nanosecond attachment comparison; no browser sign-in is needed for this capture.",
     "fresh_device_discovery": "2026-09-18T07:25:35Z",
     "fresh_device_artifact": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp187-device-refresh-zlzyj43u/devices.json"
   },
@@ -249,7 +280,7 @@
     "One process sampler; profile-level view labels do not attribute CPU samples independently to scenes.",
     "Written profile attachments retain exact start Vital IDs, names, server-offset timestamps and durations; key/view are not attachment fields.",
     "Ongoing Operations survive a normal background-triggered profile flush; completed peers are absent from the next profile.",
-    "No physical, native profile-backend, simultaneous-window, Duo or stable API approval claim."
+    "No physical, simultaneous-window, Duo or stable API approval claim. Simulator native profile/RUM correlation and actual attachment comparison pass; RUM UI profile-link enrichment remains observed false."
   ],
   "unit_revision": "2baa06da0060bcc4ae3b54fe2f4cfc64be5b4cce",
   "native_fixture_definition": {
@@ -269,7 +300,7 @@
     "foreground_drain_seconds": 70
   },
   "native_implementation": {
-    "state": "SUPPORTED CONTINUOUS SETUP AND READINESS VALIDATED; FRESH FROZEN EXECUTION REQUIRED",
+    "state": "PASS SIMULATOR NATIVE, COMPLETE RUM/PROFILE CORRELATION AND EXACT EXPORTED ATTACHMENT; PHYSICAL EXECUTION REQUIRED",
     "fixture": "BenchmarkTests/Runner/Scenarios/Profiling/ProfilingAcceptance.swift",
     "driver": "tools/multi-scene/profiling-correlation/run_simulator.py",
     "validator": "tools/multi-scene/profiling-correlation/validate.py",
@@ -291,7 +322,8 @@
       "durable_result": "Results/acceptance/exp187-02fa67db-bee4-44da-948e-32bbb01ff38b.json",
       "acceptance_symbols_absent": true,
       "scene_manifest_absent": true
-    }
+    },
+    "accepted_capture_revision": "95a6bdeb735b8dc803cc4d88e9fca5908c433a3c"
   },
   "profile_access_preflight": {
     "state": "PASS for real profile reads; not experiment acceptance",
@@ -306,8 +338,8 @@
     "cpu_query": "profile-type-not-enabled",
     "artifact": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp187-profile-access-bq6voe9j",
     "wall_response_sha256": "4613fc4757bc7a2a8f42489f4c7f5b49375d5784cf013a89eee6ffdd263a0f05",
-    "raw_attachment_access": "UNPROVEN",
+    "raw_attachment_access": "MCP raw download unproven; subsequent actual user export accepted in Results/EXP-187-simulator-profile-correlation.json",
     "sample_type_source": "DatadogProfiling/Mach/profile_pprof_packer.cpp:120",
-    "limits": "Existing service profiles establish connection health only; the later failed native run emitted RUM telemetry but has no accepted profile evidence."
+    "limits": "This preflight established connection health only. Subsequent exact run acceptance is recorded separately in native_attempts and Results/EXP-187-simulator-profile-correlation.json."
   }
 }

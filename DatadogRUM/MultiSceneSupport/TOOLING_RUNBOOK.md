@@ -1560,7 +1560,22 @@ Discover actual sample types and perform a real read; type metadata alone may
 list CPU even when retrieval reports that type disabled. Native Mach profiles
 serialize wall-time/nanoseconds. Scope acceptance reads to the actual run and
 exact Vital IDs; existing service aggregates prove connection health only.
-Raw rum-mobile-events.json attachment access remains a separate capability check.
+Use the complete service/time inventory and the exact session inventory. For the
+selected continuous profile, query each native start ID independently, then its
+full vital-ID set, name, view and session labels. Keep the built-in launch profile
+and TTID identity separate. A nonempty flamegraph filtered by exact vital_id
+proves sampled correlation; normalized wall-time values are not Operation duration.
+
+Raw rum-mobile-events.json remains a separate exact check. If MCP has no raw
+download, accept the user's actual profile export: preserve original files,
+record the profile ID/provenance and SHA-256 of both attachment and pprof, and
+run the committed validator against the frozen native receipt and complete RUM
+responses. Never substitute native expected entries for the downloaded attachment.
+Keep the validation output separate from earlier attempt summaries. An exported
+attachment can close that simulator component without browser authentication;
+physical evidence still requires its own fresh run. RUM has_profile flags are
+reported separately from exact profile/sample/attachment joins. Do not silently
+drop a false flag or infer UI enrichment from those independent joins.
 
 The existing BenchmarkTests Profiling runner already links the module; avoid
 adding a dependency to the native multi-scene probe. Freeze native counts/build/

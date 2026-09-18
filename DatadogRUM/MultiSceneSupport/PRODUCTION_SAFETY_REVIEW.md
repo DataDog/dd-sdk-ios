@@ -249,35 +249,21 @@ This is separate from the completed D01–D12 review cycle.
 ## Subsequent bounded validation: profile correlation
 
 [EXP-187](Experiments/EXP-143-199.md#exp-187--validate-process-profile-and-operation-correlation)
-passes115 selected SDK/integration tests and strict lint. Actual serialized
-attachments preserve exact Operation start IDs, structured identity, reverse
-completion and ongoing-operation retention across flushes; message-bus view
-correlation follows each resolved step. The first fixture error and iOS27
-legacy-host non-run are preserved with their bounded corrections/environment
-choice. No production finding or repair is added. T14 still requires physical
-profiling and authenticated profile-backend proof; no per-scene CPU claim.
-The signed opt-in native fixture21c312a43 builds and clean-installs, but its first
-run rejects empty benchmark configuration before SDK initialization. The invalid
-receipt is preserved; no new production finding follows from this preparation
-failure. The configuration repair is confined to the opt-in runner, with five new
-negative controls. Profile MCP reads now work; physical execution, exact profile
-correlation and ordinary-build exclusion verification remain. Native sample
-terminology is corrected to wall-time from the Mach serialization source.
-The third attempt reaches all four correctly owned Operation steps but fails
-its final inventory because the fixture omitted the built-in launch view. Its
-independent duration validator also truncated rather than using SDK rounding.
-Both are acceptance-oracle defects; the contract now explicitly counts the
-launch view and keeps exact nanoseconds, with ten Python methods/42 malformed
-controls passing. The failed run remains and fresh native execution is required.
-The corrected run passes12 native assertions and all12 backend RUM events;
-ordinary Release excludes the fixture symbols and scene manifest. Profile capture
-remains incomplete because the initial fixture disabled continuous sampling,
-while sampled Operations are documented not to start profiling. The supported
-setup now enables continuous100% and requires observed readiness before/at each
-Operation. Fourteen Python methods/64 malformed controls pass, including the
-reusable full-session backend oracle. This is a fixture correction, not a new
-production finding. Physical/raw profile evidence remains required.
-No production source or original review disposition changes.
+passes115 selected SDK/integration tests for serialized Operation start identity,
+reverse completion, per-step view correlation and ongoing-operation retention.
+The frozen continuous simulator run passes12 native assertions, all12 RUM
+backend events, complete profile inventory/labels, exact per-vital sample joins
+and the actual exported attachment's integer timestamps and durations. Ordinary
+Release excludes the fixture. The [durable profile result](Results/EXP-187-simulator-profile-correlation.json)
+records source/build identity and unchanged protected paths.
+
+The RUM profile-link flag remains false for the four Operation steps in two
+reads despite independent profile/sample/export correlation; UI enrichment is
+not claimed. No production defect or repair is established. T14 still requires
+supported physical execution, and this evidence makes no per-scene CPU or
+simultaneous-window claim. Configuration, launch-inventory, rounding and sampling
+setup failures remain in the detailed experiment record with their corrected
+controls; they are acceptance-fixture issues, separate from D01–D12.
 
 ## Stable API review boundary
 
