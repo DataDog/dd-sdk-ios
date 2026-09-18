@@ -333,3 +333,8 @@ current executable minimum coverage starts at17. C06 now records that separation
 and the unexecuted15/16 limit. Newly available Duo27.1 simulation is scoped by
 [EXP-191](Results/EXP-191-duo-same-key.json) under Xcode27.1 only. Neither change
 is a production fix, executed pass or waiver of physical/human evidence.
+
+EXP-191 preparation passes eight selected H01 driver/oracle controls under actual
+Xcode27.1/SDK27.1. The user-requested restart checkpoint precedes native scenario
+execution; it adds no production finding or runtime acceptance. Frozen build
+identity, cleanup and protected-path verification are retained in its result.

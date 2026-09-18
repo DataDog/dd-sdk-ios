@@ -1783,3 +1783,10 @@ and existing compile evidence. Qualify the oldest available17.x environment for
 C06's finite matrix, record its exact patch and disclose unavailable15/16 runtime
 coverage. EXP-190's failed15.0 requests remain historical; do not repeat them or
 present compilation/17 execution as an iOS15 runtime pass.
+
+At a restart between build and launch, retain the source manifest, test summary
+and every built Mach-O hash. Rediscover current tooling/device IDs, revalidate the
+retained build against those artifacts, and use a fresh native run/output identity.
+Do not repeat passing tests solely to reconnect MCP. EXP-191 display preflight
+found the second Duo display inactive; device type alone cannot replace verifying
+the open-display arrangement and simultaneous native scene topology.

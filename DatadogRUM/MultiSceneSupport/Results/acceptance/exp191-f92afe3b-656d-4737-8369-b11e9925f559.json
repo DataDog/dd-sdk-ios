@@ -1,0 +1,239 @@
+{
+  "app": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp191-duo271-c15ubr54/derived/Build/Products/Debug-iphonesimulator/RUMNativeMultiSceneProbe.app",
+  "artifact_root": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp191-duo271-c15ubr54",
+  "artifacts": {
+    "boot.stderr": {
+      "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp191-duo271-c15ubr54/boot.stderr",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "boot.stdout": {
+      "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp191-duo271-c15ubr54/boot.stdout",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "bootstatus.stderr": {
+      "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp191-duo271-c15ubr54/bootstatus.stderr",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "bootstatus.stdout": {
+      "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp191-duo271-c15ubr54/bootstatus.stdout",
+      "sha256": "7a8a876e081a585d8117e3182629cb9c8a922b3856f5226c1ad1a21753d506f9"
+    },
+    "build-tests.stderr": {
+      "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp191-duo271-c15ubr54/build-tests.stderr",
+      "sha256": "8d60d7dc71a33f2dbc47959b6dc6a6ce2b207ae349ee2adbef1e59cc30e91065"
+    },
+    "build-tests.stdout": {
+      "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp191-duo271-c15ubr54/build-tests.stdout",
+      "sha256": "c66fb2a910619f6db4fb1d4345fa4b3624ec01c9fd239dd460414fe6dafe86b0"
+    },
+    "checkpoint-absence.stderr": {
+      "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp191-duo271-c15ubr54/checkpoint-absence.stderr",
+      "sha256": "eff64c578677a922269a71122a28c8c3b6bd9bdfa33f2ee67bf4aef68a42d1db"
+    },
+    "checkpoint-absence.stdout": {
+      "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp191-duo271-c15ubr54/checkpoint-absence.stdout",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "checkpoint-devices.stderr": {
+      "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp191-duo271-c15ubr54/checkpoint-devices.stderr",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "checkpoint-devices.stdout": {
+      "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp191-duo271-c15ubr54/checkpoint-devices.stdout",
+      "sha256": "df1f48acb33a8c52e24ba49f8f6d5a98eabfc4a2e6c5a6fa87f82cbe9bebd16f"
+    },
+    "checkpoint-processes.stderr": {
+      "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp191-duo271-c15ubr54/checkpoint-processes.stderr",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "checkpoint-processes.stdout": {
+      "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp191-duo271-c15ubr54/checkpoint-processes.stdout",
+      "sha256": "37cfbe53310172dfcd99601d16c13fe3b769b224db1d83b61e09f3221a31f5aa"
+    },
+    "checkpoint-shutdown.stderr": {
+      "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp191-duo271-c15ubr54/checkpoint-shutdown.stderr",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "checkpoint-shutdown.stdout": {
+      "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp191-duo271-c15ubr54/checkpoint-shutdown.stdout",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "checkpoint-terminate.stderr": {
+      "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp191-duo271-c15ubr54/checkpoint-terminate.stderr",
+      "sha256": "3dc08fdbb47fdbcfd8dd6cfd35f1b3e39883ca18a2836da934dd84a1a1da1e84"
+    },
+    "checkpoint-terminate.stdout": {
+      "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp191-duo271-c15ubr54/checkpoint-terminate.stdout",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "checkpoint-uninstall.stderr": {
+      "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp191-duo271-c15ubr54/checkpoint-uninstall.stderr",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "checkpoint-uninstall.stdout": {
+      "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp191-duo271-c15ubr54/checkpoint-uninstall.stdout",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "commands.json": {
+      "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp191-duo271-c15ubr54/commands.json",
+      "sha256": "ceea97eeb0b5f857a85af4269348ec9d7fef30447ddd6fc477cf380827d2a8b9"
+    },
+    "discovery.stderr": {
+      "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp191-duo271-c15ubr54/discovery.stderr",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "discovery.stdout": {
+      "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp191-duo271-c15ubr54/discovery.stdout",
+      "sha256": "943d8799c6cb56de87793fef0c453029e9599520a6c7f3a88d369de25bf37a36"
+    },
+    "duo-displays.stderr": {
+      "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp191-duo271-c15ubr54/duo-displays.stderr",
+      "sha256": "f968b462a2a0994c612225874ce35a5037b8eed6e2c14bda10e1595575aac72b"
+    },
+    "duo-displays.stdout": {
+      "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp191-duo271-c15ubr54/duo-displays.stdout",
+      "sha256": "7b73ac70d72a53767ab7ae7775d3e7455fa73c65c03511a968c08b9ec1eb7db0"
+    },
+    "head.stderr": {
+      "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp191-duo271-c15ubr54/head.stderr",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "head.stdout": {
+      "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp191-duo271-c15ubr54/head.stdout",
+      "sha256": "137e73e542dd1bd6359ee3919e4cafd36d293c73fce04bed36f1633fc823984d"
+    },
+    "sdk.stderr": {
+      "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp191-duo271-c15ubr54/sdk.stderr",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "sdk.stdout": {
+      "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp191-duo271-c15ubr54/sdk.stdout",
+      "sha256": "27d73d70ecb0bcfc37d60b534a2298ae2c6e9ee26ed5154f558f11640d11d0b9"
+    },
+    "signature.stderr": {
+      "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp191-duo271-c15ubr54/signature.stderr",
+      "sha256": "c942c2dfd246945c1ee8acb0bb3dfd7a7942e0a989b4a503f65ee040c6d5a739"
+    },
+    "signature.stdout": {
+      "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp191-duo271-c15ubr54/signature.stdout",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "source-identity.json": {
+      "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp191-duo271-c15ubr54/source-identity.json",
+      "sha256": "105e628f6550b14f9eb410551c3b015f613a308dbe256950a165fa2f172c424f"
+    },
+    "test-summary.stderr": {
+      "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp191-duo271-c15ubr54/test-summary.stderr",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "test-summary.stdout": {
+      "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp191-duo271-c15ubr54/test-summary.stdout",
+      "sha256": "7eddef79e8f8b5bbaeeb90ce3092b1af12484f291ccd2eabca7b1bff637047a4"
+    },
+    "xcode.stderr": {
+      "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp191-duo271-c15ubr54/xcode.stderr",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "xcode.stdout": {
+      "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp191-duo271-c15ubr54/xcode.stdout",
+      "sha256": "c0beac337d70cf6a8ff1846acf28d598299e6faa0feac2c04902b906c61e4edb"
+    }
+  },
+  "built_code": {
+    "binaries": {
+      "RUMNativeMultiSceneProbe": "d8d1f13659e888a3b611ccb83eab724be45b0ca33557ce1e1178ecea46b4876b",
+      "RUMNativeMultiSceneProbe.debug.dylib": "0d32b55982108f49beeb123cf7d42ccc2d3e6b0ab03a8ceaf95b2e17a0da9606",
+      "__preview.dylib": "f107d09b9d3b79f01789a45ef045bf4039904bf5eaa3c1a8c6a9e27de130563b"
+    },
+    "bundleIdentifier": "com.datadoghq.rum-native-multi-scene-probe",
+    "executable": "RUMNativeMultiSceneProbe"
+  },
+  "checkpoint_at": "2026-09-18T21:10:55.336357+00:00",
+  "cleanup": {
+    "prior_boot_state_restored": "Shutdown",
+    "probe_data_absent": true,
+    "probe_process_absent": true,
+    "state": "PASS"
+  },
+  "command_inventory": {
+    "count": 16,
+    "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp191-duo271-c15ubr54/commands.json",
+    "sha256": "ceea97eeb0b5f857a85af4269348ec9d7fef30447ddd6fc477cf380827d2a8b9"
+  },
+  "device": {
+    "deviceTypeIdentifier": "com.apple.CoreSimulator.SimDeviceType.iPhone-Duo",
+    "name": "iPhone Duo",
+    "state": "Shutdown",
+    "udid": "F91CCE46-2704-4E8B-9093-A6A0EF250B1A"
+  },
+  "display_preflight": [
+    {
+      "active": true,
+      "currentOrientation": "rot0",
+      "displayId": 1,
+      "name": "LCD",
+      "nativeSize": [
+        1398,
+        2034
+      ],
+      "pointScale": 3,
+      "primary": true
+    },
+    {
+      "active": false,
+      "currentOrientation": "rot90",
+      "displayId": 3,
+      "name": "LCD-1",
+      "nativeSize": [
+        2007,
+        2853
+      ],
+      "pointScale": 3,
+      "primary": false
+    }
+  ],
+  "experiment": "EXP-191",
+  "frozen_source_unchanged": true,
+  "gate": "H01",
+  "gates_closed": [],
+  "native_scenario_runs": 0,
+  "pause_reason": "User requested a safe checkpoint to restart Codex and refresh Xcode MCP",
+  "protected_unchanged": true,
+  "resume": "Rediscover Xcode27.1 MCP/toolchain and Duo identifiers. Verify frozen source and all built Mach-O hashes before reusing this build; assign a new native run ID. Qualify actual open-display/overlapping scene topology before H01 boundary. No accepted test rerun merely to resume.",
+  "revision": "fffdc1234866903eef77ccdb7ab36132ad84d180",
+  "run_id": "exp191-f92afe3b-656d-4737-8369-b11e9925f559",
+  "runtime": {
+    "buildversion": "24A94401",
+    "identifier": "com.apple.CoreSimulator.SimRuntime.iOS-27-1",
+    "version": "27.1"
+  },
+  "sdk": "27.1",
+  "selected_tests": [
+    "ProbeScenarioDriverTests/testDrivesSameManualKeyAcrossExactScenesAndStopsInReverseOrder",
+    "ProbeScenarioRunnerTests/testSameKeyManualTwoScenesUsesExactContextAndReverseOrderStops",
+    "ProbeSemanticOracleTests/testSameKeyManualTwoSceneContractPasses",
+    "ProbeSemanticOracleTests/testSameKeyManualTwoSceneRejectsOneComposeViewIDAcrossScenes",
+    "ProbeSemanticOracleTests/testSameKeyManualTwoSceneRejectsBWorkOnACompose",
+    "ProbeSemanticOracleTests/testSameKeyManualTwoSceneRejectsBStopPreemptingA",
+    "ProbeSemanticOracleTests/testSameKeyManualTwoSceneRejectsReusedBHome",
+    "ProbeSemanticOracleTests/testSameKeyManualTwoSceneRejectsReusedAHome"
+  ],
+  "signature": "VERIFIED",
+  "source_identity": {
+    "file_count": 708,
+    "sha256": "83d481c0cc528a229a15d64884e3a0467f865434a8d25a525db2d78312252f43"
+  },
+  "source_manifest": {
+    "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp191-duo271-c15ubr54/source-identity.json",
+    "sha256": "105e628f6550b14f9eb410551c3b015f613a308dbe256950a165fa2f172c424f"
+  },
+  "started_at": "2026-09-18T21:07:41.269395+00:00",
+  "state": "PREPARED",
+  "tests": {
+    "failedTests": 0,
+    "passedTests": 8,
+    "skippedTests": 0,
+    "totalTestCount": 8
+  },
+  "xcode": "Xcode 27.1\nBuild version 27A9269"
+}

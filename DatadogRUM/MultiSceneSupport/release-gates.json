@@ -427,7 +427,7 @@
       "environment": "Physical iPad/iPhone Duo; human gesture for H11\u2013H13; resize-capable for H14",
       "completion_mode": null,
       "status": "ENVIRONMENT BLOCKED",
-      "evidence": "EXP-191 defined for the newly available Duo27.1 simulator under verified Xcode27.1 only. Run unchanged EXP-129 same-key/reverse-stop semantics with actual topology and exact backend owners. Simulator proof is recorded separately; original physical requirement is not waived."
+      "evidence": "EXP-191 preparation at signedfffdc1234: genuineXcode27.1/SDK27.1 Duo build and8 selected driver/oracle controls pass; all3 Mach-O hashes frozen and cleanup verified. User-requested restart before native scenario;0 native acceptance runs. Actual overlapping topology/backend proof and original physical requirement remain. Results/EXP-191-duo-same-key.json."
     },
     {
       "id": "H02",

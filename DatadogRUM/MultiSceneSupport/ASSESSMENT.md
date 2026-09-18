@@ -67,6 +67,7 @@ Chronological conclusions and the superseded routing audit are retained in the
 Use the [compact index](EXPERIMENTS.md) to open only the experiment that owns a question.
 
 The newly discovered Duo27.1 simulator is qualified only through Xcode27.1.
-[EXP-191](Results/EXP-191-duo-same-key.json) defines H01 topology and ownership
-acceptance there. Simulator availability is not an executed result or physical
-Duo acceptance; original physical and human evidence remains required.
+[EXP-191](Results/EXP-191-duo-same-key.json) has a signed prepared build and eight
+passing H01 driver/oracle controls. The user requested a restart checkpoint before
+native execution; no simultaneous-topology/backend or physical Duo acceptance is
+claimed. Original physical and human evidence remains required.
