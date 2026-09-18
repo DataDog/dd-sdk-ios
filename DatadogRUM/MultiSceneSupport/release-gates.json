@@ -400,8 +400,8 @@
       "decisive_test": "Process profile and exact Operation identity remain correlated; docs make no per-scene CPU attribution claim",
       "environment": "Profiling/Operation fixture and supported profiling device/backend",
       "completion_mode": "documented process-level fallback",
-      "status": "OPEN",
-      "evidence": "EXP-187 is predeclared: exact Operation start IDs, structured identity and flush retention in actual profile attachments; no production repair assumed. Physical device and authenticated profile backend remain required. Results/EXP-187-profiling-operation-correlation.json."
+      "status": "ENVIRONMENT BLOCKED",
+      "evidence": "EXP-187:77 Profiling/30 RUM tests on27 and8 integration tests on26.5 pass, including four exact serialized identity/routing/flush controls. First fixture failure and27 host non-run preserved. Physical profile/backend proof remains. Results/EXP-187-profiling-operation-correlation.json."
     },
     {
       "id": "T15",

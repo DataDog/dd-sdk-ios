@@ -1516,3 +1516,12 @@ device and separate authenticated profile access. RUM connector success does not
 prove profile retrieval; use the supported browser UI if no profile tool exists,
 with user sign-in, without reading credentials or session storage. Physical and
 backend proof remain required even if simulator/integration tests pass.
+
+For the existing DatadogIntegrationTests Example host, an iOS27
+___UIApplicationEvaluateRuntimeIssueForNoSceneLifecycleAdoption trap occurs
+before XCTest connects. A successful build plus eight tests marked not-run is
+invalid validation, and the returned xcresult path may not contain a bundle.
+Preserve that console/summary evidence, rediscover an available iOS26.5 destination,
+and run the same integration selection there. Do not alter the protected project
+or reinterpret the host trap as a Profiling result. Unit controls remain valid
+on their exercised iOS27 host.

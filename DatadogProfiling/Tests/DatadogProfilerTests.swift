@@ -50,6 +50,98 @@ final class DatadogProfilerTests: XCTestCase {
         XCTAssertNotEqual(RUMVitalIdentity(omittedKey), RUMVitalIdentity(emptyKey))
     }
 
+    func testParallelOperationsKeepStartIdentityInSerializedProfileAfterReverseCompletion() throws {
+        let dateProvider = DateProviderMock()
+        let profiler = continuousProfiler(dateProvider: dateProvider)
+        dd_profiler_start_testing(100, false, 5.seconds.dd.toInt64Nanoseconds, 0)
+        let start = Date(timeIntervalSince1970: 100)
+        recordOperations([
+            .mockWith(id: "a-start", name: "load", operationKey: "a", date: start, serverTimeOffset: 2),
+            .mockWith(id: "b-start", name: "load", operationKey: "b", date: start.addingTimeInterval(1), serverTimeOffset: 2),
+            .mockWith(id: "b-end", name: "load", operationKey: "b", stepType: .end, date: start.addingTimeInterval(3)),
+            .mockWith(id: "a-end", name: "load", operationKey: "a", stepType: .end, date: start.addingTimeInterval(5))
+        ], in: profiler)
+
+        flushProfileInBackground(profiler, at: dateProvider.now)
+
+        XCTAssertEqual(core.metadata.count, 1)
+        let vitals = try writtenOperationVitals()
+        XCTAssertEqual(Set(vitals.keys), ["a-start", "b-start"])
+        XCTAssertEqual(vitals["a-start"]?["name"] as? String, "load")
+        XCTAssertEqual(vitals["b-start"]?["name"] as? String, "load")
+        XCTAssertEqual(vitals["a-start"]?["start_ns"] as? Int64, 102_000_000_000)
+        XCTAssertEqual(vitals["b-start"]?["start_ns"] as? Int64, 103_000_000_000)
+        XCTAssertEqual(vitals["a-start"]?["duration_ns"] as? Int64, 5_000_000_000)
+        XCTAssertEqual(vitals["b-start"]?["duration_ns"] as? Int64, 2_000_000_000)
+        let profile = try XCTUnwrap(core.events.first as? ProfileEvent)
+        XCTAssertEqual(profile.additionalAttributes?[RUMCoreContext.IDs.viewID] as? [String], ["view-3"])
+    }
+
+    func testCollidingOperationKeysAndDuplicateStartKeepExactSerializedIdentity() throws {
+        let dateProvider = DateProviderMock()
+        let profiler = continuousProfiler(dateProvider: dateProvider)
+        dd_profiler_start_testing(100, false, 5.seconds.dd.toInt64Nanoseconds, 0)
+        let start = Date(timeIntervalSince1970: 100)
+        recordOperations([
+            .mockWith(id: "replaced", name: "a-b", operationKey: "c", date: start),
+            .mockWith(id: "peer", name: "a", operationKey: "b-c", date: start.addingTimeInterval(1)),
+            .mockWith(id: "replacement", name: "a-b", operationKey: "c", date: start.addingTimeInterval(2)),
+            .mockWith(id: "peer-end", name: "a", operationKey: "b-c", stepType: .end, date: start.addingTimeInterval(4)),
+            .mockWith(id: "replacement-end", name: "a-b", operationKey: "c", stepType: .end, date: start.addingTimeInterval(6))
+        ], in: profiler)
+
+        flushProfileInBackground(profiler, at: dateProvider.now)
+
+        XCTAssertEqual(core.metadata.count, 1)
+        let vitals = try writtenOperationVitals()
+        XCTAssertEqual(Set(vitals.keys), ["peer", "replacement"])
+        XCTAssertEqual(vitals["peer"]?["name"] as? String, "a")
+        XCTAssertEqual(vitals["replacement"]?["name"] as? String, "a-b")
+        XCTAssertEqual(vitals["peer"]?["start_ns"] as? Int64, 101_000_000_000)
+        XCTAssertEqual(vitals["replacement"]?["start_ns"] as? Int64, 102_000_000_000)
+        XCTAssertEqual(vitals["peer"]?["duration_ns"] as? Int64, 3_000_000_000)
+        XCTAssertEqual(vitals["replacement"]?["duration_ns"] as? Int64, 4_000_000_000)
+    }
+
+    func testOngoingOperationRetainsOriginalStartAcrossProfileFlushes() throws {
+        let startSeconds = floor(Date().timeIntervalSince1970)
+        let start = Date(timeIntervalSince1970: startSeconds)
+        let dateProvider = DateProviderMock(now: start.addingTimeInterval(3))
+        let sampler = profilingSamplerProvider(isContinuousProfiling: true)
+        sampler.updateWith(deterministicSampler: DeterministicSampler(uuid: .mockRandom(), samplingRate: .maxSampleRate))
+        let profiler = continuousProfiler(profilingSamplerProvider: sampler, dateProvider: dateProvider)
+        dd_profiler_start_testing(100, false, 5.seconds.dd.toInt64Nanoseconds, 0)
+        recordOperations([
+            .mockWith(id: "ongoing", name: "load", operationKey: "a", date: start, serverTimeOffset: 2),
+            .mockWith(id: "completed", name: "load", operationKey: "b", date: start.addingTimeInterval(1), serverTimeOffset: 2),
+            .mockWith(id: "completed-end", name: "load", operationKey: "b", stepType: .end, date: start.addingTimeInterval(2))
+        ], in: profiler)
+
+        flushProfileInBackground(profiler, at: dateProvider.now)
+
+        let first = try writtenOperationVitals()
+        XCTAssertEqual(Set(first.keys), ["ongoing", "completed"])
+        XCTAssertEqual(first["ongoing"]?["start_ns"] as? Int64, Int64(startSeconds + 2) * 1_000_000_000)
+        XCTAssertNil(first["ongoing"]?["duration_ns"])
+        XCTAssertEqual(first["completed"]?["duration_ns"] as? Int64, 1_000_000_000)
+
+        dateProvider.now = start.addingTimeInterval(4)
+        core.context = .mockWith(applicationStateHistory: .mockAppInForeground())
+        shareCurrentContext(with: profiler)
+        dd_profiler_start_testing(100, false, 5.seconds.dd.toInt64Nanoseconds, 0)
+        recordOperations([
+            .mockWith(id: "ongoing-end", name: "load", operationKey: "a", stepType: .end, date: start.addingTimeInterval(6))
+        ], in: profiler)
+        dateProvider.now = start.addingTimeInterval(7)
+        flushProfileInBackground(profiler, at: dateProvider.now)
+
+        XCTAssertEqual(core.metadata.count, 2)
+        let second = try writtenOperationVitals(at: 1)
+        XCTAssertEqual(Set(second.keys), ["ongoing"])
+        XCTAssertEqual(second["ongoing"]?["start_ns"] as? Int64, Int64(startSeconds + 2) * 1_000_000_000)
+        XCTAssertEqual(second["ongoing"]?["duration_ns"] as? Int64, 6_000_000_000)
+    }
+
     func testReceiveRUMEvents() {
         // Given
         let profiler = continuousProfiler()
@@ -2023,6 +2115,55 @@ extension DatadogProfilerTests {
 // MARK: - Private
 
 private extension DatadogProfilerTests {
+    func recordOperations(_ operations: [Vital], in profiler: DatadogProfiler) {
+        for (index, operation) in operations.enumerated() {
+            _ = profiler.receive(
+                message: .payload(OperationMessage(
+                    attributes: [RUMCoreContext.IDs.viewID: ["view-\(index)"]],
+                    operation: operation
+                )),
+                from: core
+            )
+        }
+        flushQueue()
+    }
+
+    func flushProfileInBackground(_ profiler: DatadogProfiler, at date: Date) {
+        core.context = .mockWith(applicationStateHistory: .mockWith(
+            initialState: .active,
+            date: date.addingTimeInterval(-1),
+            transitions: [(state: .background, date: date)]
+        ))
+        waitForProfileWrite {
+            _ = profiler.receive(message: .context(core.context), from: core)
+        }
+        flushQueue()
+    }
+
+    func writtenOperationVitals(at index: Int = 0) throws -> [String: [String: Any]] {
+        let metadata = try XCTUnwrap(core.metadata.dropFirst(index).first as? ProfileAttachments)
+        XCTAssertFalse(metadata.pprof.isEmpty)
+        let events = try typedRUMEvents(from: metadata)
+        let ids = try events.map { try XCTUnwrap($0["id"] as? String) }
+        XCTAssertEqual(Set(ids).count, events.count)
+        for event in events {
+            XCTAssertEqual(event["type"] as? String, "vital")
+            let expectedKeys: Set<String> = event["duration_ns"] == nil
+                ? ["id", "type", "name", "start_ns"]
+                : ["id", "type", "name", "start_ns", "duration_ns"]
+            XCTAssertEqual(Set(event.keys), expectedKeys)
+        }
+        let profile = try XCTUnwrap(core.events.compactMap { $0 as? ProfileEvent }.dropFirst(index).first)
+        let labels = try XCTUnwrap(profile.additionalAttributes?[RUMCoreContext.IDs.vitalID] as? [String])
+        XCTAssertEqual(Set(labels), Set(ids))
+        XCTAssertEqual(labels.count, ids.count)
+        XCTAssertEqual(
+            profile.additionalAttributes?[RUMCoreContext.IDs.vitalLabel] as? [String],
+            events.compactMap { $0["name"] as? String }
+        )
+        return Dictionary(zip(ids, events), uniquingKeysWith: { first, _ in first })
+    }
+
     func waitForProfileWrite(
         expectingWrite: Bool = true,
         timeout: TimeInterval = 0.1,

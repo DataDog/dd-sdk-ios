@@ -2,7 +2,7 @@
   "experiment": "EXP-187",
   "gate": "T14",
   "title": "Validate process profile and Operation correlation",
-  "status": "PREPARED",
+  "status": "INCONCLUSIVE",
   "control_revision": "00001c3773206a2c866c9e8dec1d7dda1931071b",
   "sdk_revision": "04201edc7711361279d8487b385bc8b0ca9c63c7",
   "definition": "Experiments/EXP-143-199.md#exp-187--validate-process-profile-and-operation-correlation",
@@ -14,8 +14,154 @@
     "supported physical profiling device",
     "authenticated profile and RUM backend"
   ],
-  "unit_attempts": [],
+  "unit_attempts": [
+    {
+      "scheme": "Profiling",
+      "environment": "iPhone 18 Pro / iOS27",
+      "state": "PASS",
+      "counts": {
+        "expectedFailures": 0,
+        "failed": 0,
+        "notRun": 0,
+        "passed": 77,
+        "skipped": 0,
+        "total": 77
+      },
+      "summary_path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/ActionArtifacts/default/RunSomeTests/8C73AD52-97B9-4A84-B59F-775C10141E34.txt",
+      "xcresult": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/ActionArtifacts/default/RunSomeTests/Test-DatadogProfiling-2026.09.18_07-52-10-+0100.xcresult",
+      "failures": []
+    },
+    {
+      "scheme": "RUM",
+      "environment": "iPhone 18 Pro / iOS27",
+      "state": "FAIL",
+      "counts": {
+        "expectedFailures": 0,
+        "failed": 1,
+        "notRun": 0,
+        "passed": 29,
+        "skipped": 0,
+        "total": 30
+      },
+      "summary_path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/ActionArtifacts/default/RunSomeTests/69155FA1-FFAD-48B1-BA97-A5C7A0935303.txt",
+      "xcresult": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/ActionArtifacts/default/RunSomeTests/Test-DatadogRUM-2026.09.18_07-53-22-+0100.xcresult",
+      "failures": [
+        {
+          "displayName": "testParallelSampledOperationsSendEachStepsResolvedViewAndExactVitalIdentity()",
+          "errorMessages": [
+            "Datadog/DatadogRUMTests/RUMMonitor/RUMFeatureOperationManagerTests.swift:229 RUMFeatureOperationManagerTests/testParallelSampledOperationsSendEachStepsResolvedViewAndExactVitalIdentity(): XCTAssertEqual failed: (\"Optional([\"8c67c788-b636-46a5-82ea-0cca40354e20\"])\") is not equal to (\"Optional([\"889d6684-f0a5-4bc1-a102-c6ed14409b68\"])\")",
+            "Datadog/DatadogRUMTests/RUMMonitor/RUMFeatureOperationManagerTests.swift:230 RUMFeatureOperationManagerTests/testParallelSampledOperationsSendEachStepsResolvedViewAndExactVitalIdentity(): XCTAssertEqual failed: (\"nil\") is not equal to (\"Optional([\"20f7787e-f14c-4e00-ba48-cbef10bcb51e\"])\")",
+            "Datadog/DatadogRUMTests/RUMMonitor/RUMFeatureOperationManagerTests.swift:231 RUMFeatureOperationManagerTests/testParallelSampledOperationsSendEachStepsResolvedViewAndExactVitalIdentity(): XCTAssertEqual failed: (\"8c67c788-b636-46a5-82ea-0cca40354e20\") is not equal to (\"889d6684-f0a5-4bc1-a102-c6ed14409b68\")",
+            "Datadog/DatadogRUMTests/RUMMonitor/RUMFeatureOperationManagerTests.swift:229 RUMFeatureOperationManagerTests/testParallelSampledOperationsSendEachStepsResolvedViewAndExactVitalIdentity(): XCTAssertEqual failed: (\"Optional([\"889d6684-f0a5-4bc1-a102-c6ed14409b68\"])\") is not equal to (\"Optional([\"8c67c788-b636-46a5-82ea-0cca40354e20\"])\")",
+            "Datadog/DatadogRUMTests/RUMMonitor/RUMFeatureOperationManagerTests.swift:230 RUMFeatureOperationManagerTests/testParallelSampledOperationsSendEachStepsResolvedViewAndExactVitalIdentity(): XCTAssertEqual failed: (\"nil\") is not equal to (\"Optional([\"20f7787e-f14c-4e00-ba48-cbef10bcb51e\"])\")"
+          ],
+          "identifier": "RUMFeatureOperationManagerTests/testParallelSampledOperationsSendEachStepsResolvedViewAndExactVitalIdentity()",
+          "state": "Failed",
+          "targetName": "DatadogRUMTests"
+        }
+      ]
+    },
+    {
+      "scheme": "RUM",
+      "environment": "iPhone 18 Pro / iOS27",
+      "state": "PASS",
+      "counts": {
+        "expectedFailures": 0,
+        "failed": 0,
+        "notRun": 0,
+        "passed": 30,
+        "skipped": 0,
+        "total": 30
+      },
+      "summary_path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/ActionArtifacts/default/RunSomeTests/C615D8CD-1DAF-45C3-9C9B-D52DE9F5E70E.txt",
+      "xcresult": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/ActionArtifacts/default/RunSomeTests/Test-DatadogRUM-2026.09.18_07-55-33-+0100.xcresult",
+      "failures": []
+    },
+    {
+      "scheme": "Integration",
+      "environment": "iPhone 18 Pro / iOS27",
+      "state": "INVALID",
+      "counts": {
+        "expectedFailures": 0,
+        "failed": 0,
+        "notRun": 8,
+        "passed": 0,
+        "skipped": 0,
+        "total": 8
+      },
+      "summary_path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/ActionArtifacts/default/RunSomeTests/302B8530-7057-4026-B4E0-62DE220FBFA4.txt",
+      "xcresult": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/ActionArtifacts/default/RunSomeTests/Test-DatadogIntegrationTests-2026.09.18_07-56-45-+0100.xcresult",
+      "failures": []
+    },
+    {
+      "scheme": "Integration",
+      "environment": "iPhone 17 Pro / iOS26.5",
+      "state": "PASS",
+      "counts": {
+        "expectedFailures": 0,
+        "failed": 0,
+        "notRun": 0,
+        "passed": 8,
+        "skipped": 0,
+        "total": 8
+      },
+      "summary_path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/ActionArtifacts/default/RunSomeTests/9662B0D3-19FF-4385-BF6F-3AD6146AA0AB.txt",
+      "xcresult": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/ActionArtifacts/default/RunSomeTests/Test-DatadogIntegrationTests-2026.09.18_07-59-20-+0100.xcresult",
+      "failures": []
+    }
+  ],
   "native_attempts": [],
   "device_attempts": [],
-  "next": "Implement the four predeclared deterministic controls; continue independent work while physical device and profile browser authentication are pending."
+  "next": "T14 awaits a supported physical profiling device and authenticated profile backend. Freeze the bounded native runner scenario before device execution. Continue dependency-ready F01 review preparation while environments are unavailable.",
+  "deterministic_status": "PASS",
+  "physical_backend_status": "ENVIRONMENT BLOCKED",
+  "unit_summary": {
+    "total": 115,
+    "profiling_ios27": 77,
+    "rum_ios27": 30,
+    "integration_ios26_5": 8,
+    "new_controls": 4,
+    "lint": "PASS strict repository test lint",
+    "production_changes": 0
+  },
+  "unit_sources": [
+    {
+      "path": "DatadogProfiling/Tests/DatadogProfilerTests.swift",
+      "sha256": "30332affaa130c8c160c10c8cdf7e66c2e2cdc10199ce9e098f8b030f5ccb8dc"
+    },
+    {
+      "path": "DatadogRUM/Tests/RUMMonitor/RUMFeatureOperationManagerTests.swift",
+      "sha256": "2586f875e6d4c81ed466a069aa43e02b29b2fd5f37849d9187d4b9653a1766e5"
+    }
+  ],
+  "definition_revision": "42972797763f2fed0266dcc5b6cfd2486665503d",
+  "preparation_issues": [
+    {
+      "kind": "RUM test fixture",
+      "resolved": true,
+      "reason": "Manager activeView is already resolved by RUMSessionScope. First fixture incorrectly supplied the opposing representative there and expected array-valued session correlation. Corrected resolved-view input, separate opposing processRepresentativeView and existing String session label; exact ownership assertions retained. First29/30 result remains FAIL; corrected30/30 passes."
+    },
+    {
+      "kind": "integration host environment",
+      "resolved_in_alternative_environment": true,
+      "reason": "iOS27 Example host exits in ___UIApplicationEvaluateRuntimeIssueForNoSceneLifecycleAdoption_block_invoke before XCTest connection. Build succeeded;8 not run and no readable xcresult bundle. Existing C03 limitation, not a new Profiling failure. Rediscovered iOS26.5 destination passes8/8.",
+      "console": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/ActionArtifacts/default/RunSomeTests/test-console-log-2026-09-18T07-56-45+01-00.txt"
+    },
+    {
+      "kind": "test lint",
+      "resolved": true,
+      "reason": "One extra blank line corrected before successful strict lint."
+    }
+  ],
+  "environment_observation": {
+    "physical_devices": "Paired iPhone27.2 unavailable, paired iPad27 unavailable; DDI false for both.",
+    "profile_backend": "In-app browser sign-in pending; RUM connector authentication does not establish profile retrieval.",
+    "fresh_device_discovery": "2026-09-18T06:59Z"
+  },
+  "limits": [
+    "One process sampler; profile-level view labels do not attribute CPU samples independently to scenes.",
+    "Written profile attachments retain exact start Vital IDs, names, server-offset timestamps and durations; key/view are not attachment fields.",
+    "Ongoing Operations survive a normal background-triggered profile flush; completed peers are absent from the next profile.",
+    "No physical, native profile-backend, simultaneous-window, Duo or stable API approval claim."
+  ]
 }

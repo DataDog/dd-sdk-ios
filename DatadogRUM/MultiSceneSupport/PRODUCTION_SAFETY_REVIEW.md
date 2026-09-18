@@ -245,3 +245,14 @@ comparison with actual metric values. T13 awaits its representative physical
 sample. No new production finding; EXP-187 next checks serialized
 Profiling/Operation identity and flush lifetime under the existing process model.
 This is separate from the completed D01–D12 review cycle.
+
+## Subsequent bounded validation: profile correlation
+
+[EXP-187](Experiments/EXP-143-199.md#exp-187--validate-process-profile-and-operation-correlation)
+passes115 selected SDK/integration tests and strict lint. Actual serialized
+attachments preserve exact Operation start IDs, structured identity, reverse
+completion and ongoing-operation retention across flushes; message-bus view
+correlation follows each resolved step. The first fixture error and iOS27
+legacy-host non-run are preserved with their bounded corrections/environment
+choice. No production finding or repair is added. T14 still requires physical
+profiling and authenticated profile-backend proof; no per-scene CPU claim.

@@ -175,6 +175,68 @@ class RUMFeatureOperationManagerTests: XCTestCase {
         )
     }
 
+    func testParallelSampledOperationsSendEachStepsResolvedViewAndExactVitalIdentity() throws {
+        let featureScope = FeatureScopeMock()
+        manager = RUMFeatureOperationManager(
+            parent: mockParent,
+            dependencies: .mockWith(featureScope: featureScope),
+            sessionSampler: .mockKeepAll()
+        )
+        mockContext.serverTimeOffset = 2
+        let sceneA = RUMSceneIdentifier(rawValue: "scene-a")
+        let sceneB = RUMSceneIdentifier(rawValue: "scene-b")
+        let viewA = RUMViewScope.mockWith(name: "View A", sceneIdentifier: sceneA)
+        let viewB = RUMViewScope.mockWith(name: "View B", sceneIdentifier: sceneB)
+        let steps: [(RUMVitalOperationStepEvent.Vital.StepType, String, RUMSceneIdentifier, RUMViewScope)] = [
+            (.start, "a", sceneA, viewA),
+            (.start, "b", sceneB, viewB),
+            (.end, "b", sceneA, viewA),
+            (.end, "a", sceneB, viewB)
+        ]
+
+        for (index, step) in steps.enumerated() {
+            var command = RUMOperationStepVitalCommand.mockWith(
+                vitalId: "step-\(index)",
+                name: "load",
+                operationKey: step.1,
+                stepType: step.0,
+                options: step.0 == .start ? ProfilingOptions(sampleRate: .maxSampleRate) : nil,
+                time: Date(timeIntervalSince1970: 100 + Double(index))
+            )
+            command.target = .scene(step.2)
+            manager.process(
+                command,
+                context: mockContext,
+                writer: mockWriter,
+                activeView: step.3,
+                activeViews: [viewA, viewB],
+                processRepresentativeView: step.2 == sceneA ? viewB : viewA
+            )
+        }
+
+        let messages = featureScope.messagesSent().compactMap { $0.asPayload as? OperationMessage }
+        let events = mockWriter.events(ofType: RUMVitalOperationStepEvent.self)
+        XCTAssertEqual(messages.count, 4)
+        XCTAssertEqual(events.count, 4)
+        for (index, pair) in zip(messages.prefix(steps.count), events).enumerated() {
+            let (message, event) = pair
+            let viewID = steps[index].3.viewUUID.toRUMDataFormat
+            XCTAssertEqual(message.operation.id, "step-\(index)")
+            XCTAssertEqual(message.operation.name, "load")
+            XCTAssertEqual(message.operation.operationKey, steps[index].1)
+            XCTAssertEqual(message.operation.stepType, steps[index].0)
+            XCTAssertEqual(message.operation.date, Date(timeIntervalSince1970: 100 + Double(index)))
+            XCTAssertEqual(message.operation.serverTimeOffset, 2)
+            XCTAssertEqual(message.attributes[RUMCoreContext.IDs.viewID] as? [String], [viewID])
+            XCTAssertEqual(message.attributes[RUMCoreContext.IDs.sessionID] as? String, event.session.id)
+            XCTAssertEqual(event.view.id, viewID)
+            XCTAssertEqual(event.vital.id, message.operation.id)
+            XCTAssertEqual(event.vital.operationKey, message.operation.operationKey)
+            XCTAssertEqual(event.vital.stepType, message.operation.stepType)
+            XCTAssertEqual(event.date, Int64(102 + index) * 1_000)
+        }
+    }
+
     func testProcess_MultipleOperations_CreatesCorrectNumberOfEvents() {
         // Given
         let commandCount = Int.random(in: 1...10)
