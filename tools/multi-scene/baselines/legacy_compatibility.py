@@ -150,6 +150,16 @@ def check_boundaries(item):
     require(times == sorted(times), "critical assertions ran after their transition")
 
 
+def compatibility_source(text):
+    # C03 never executes the separate performance/retention workload.
+    start = text.index('        if mode == "internal" {')
+    end = text.index('        result["failures"] = failures', start)
+    removed = text[start:end]
+    require(removed.count("InternalFixture.run") == 1
+            and text.count("InternalFixture.run") == 1, "internal-only fixture anchor changed")
+    return text[:start] + text[end:]
+
+
 def observed_lifecycle_source(text):
     text = lifecycle.app_variant(text)
     ready = '["run_id": value("--run-id")]'
@@ -260,6 +270,9 @@ class Runner:
         self.summary["original_fixture"] = {k: v for k, v in self.manifest["fixture"].items() if k != "files"}
         for arm in ARMS:
             directory = self.attempt / arm
+            navigation_source = directory / "Sources/App.swift"
+            navigation_source.write_text(compatibility_source(navigation_source.read_text()))
+            (directory / "Sources/InternalFixture.swift").unlink()
             lifecycle_sources = directory / "LifecycleSources"
             shutil.copytree(directory / "Sources", lifecycle_sources)
             (lifecycle_sources / "App.swift").write_text(observed_lifecycle_source((directory / "Sources/App.swift").read_text()))

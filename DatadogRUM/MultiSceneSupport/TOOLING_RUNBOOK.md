@@ -1735,8 +1735,15 @@ semantic assertions and runs only C03's finite compatibility cells.
 The C03 command is `python3 -B tools/multi-scene/baselines/legacy_compatibility.py`.
 It refuses uncommitted runner/fixture/definition inputs or another active build,
 creates fresh archives and outputs, and builds only the baseline until readiness
-passes. Navigation uses unchanged fixture sources; added lifecycle receipts are
+passes. Navigation/mapper code is unchanged; the C03-only projection omits unused internal
+performance code in both arms. Added lifecycle receipts are
 observations of actual notifications. Ready ownership is checked before the
 background command, background is observed before foreground, and both receipts
 are retained. Fourteen oracle-control methods pass before native execution.
 Actual compiler output owns toolchain identity when app plist metadata differs.
+
+An unrelated historical performance fixture can stop a compatibility-only build
+after the SDK compiles if internal API shapes have changed. Preserve that failed
+attempt. Exclude only the unused workload in both arms before comparing the new
+source identities; do not patch the current SDK to satisfy an out-of-scope fixture.
+EXP-189 records this preparation failure and the justified common-fixture rebuild.

@@ -1,0 +1,181 @@
+{
+  "experiment": "EXP-189",
+  "gate": "C03",
+  "run_id": "exp189-fcf3b82b-246a-40c8-a0fd-4b166e4b575f",
+  "implementation_revision": "6db5d3667bc13f6c7d508007929fab2e2625c1fb",
+  "artifact_root": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp189-legacy-sdk26-9nfsfmyo",
+  "started_at": "2026-09-18T20:27:08.542126+00:00",
+  "status": "INCONCLUSIVE",
+  "definition_sha256": "11a044c87847fd8eea810770fc198c7bab06fb0911e71ecb1ed6badb50892cce",
+  "cases": [
+    {
+      "run_id": "exp189-1bf144f0-e8f5-4b4a-b97f-c8b6405b04d4",
+      "arm": "baseline",
+      "os": "27.0",
+      "mode": "automatic",
+      "status": "PASS",
+      "binary_sha256": "5b0b53e2770e4782ce748017e699c47b80cd8a94ee19f86cfbe77e12ee15af21",
+      "artifact_root": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp189-legacy-sdk26-9nfsfmyo/exp189-1bf144f0-e8f5-4b4a-b97f-c8b6405b04d4",
+      "clean_install": true,
+      "installed_identity": true,
+      "launched_at": "2026-09-18T20:28:32.650545+00:00",
+      "pid": 55312,
+      "signature": {
+        "view_names": [
+          "Home",
+          "Detail",
+          "Home"
+        ],
+        "view_ids": [
+          "e45ce874-727e-4ccc-a745-4f3170eb976e",
+          "03fd9657-5501-474d-a6ec-036dddf215b2",
+          "6736881f-86a2-43c6-b8ca-6b353f22006f"
+        ],
+        "stopped": [
+          true,
+          true,
+          false
+        ],
+        "owners": [
+          {
+            "kind": "action",
+            "phase": "Home1",
+            "occurrence": 0
+          },
+          {
+            "kind": "resource",
+            "phase": "https://fixture.invalid/Home1",
+            "occurrence": 0
+          },
+          {
+            "kind": "action",
+            "phase": "Detail1",
+            "occurrence": 1
+          },
+          {
+            "kind": "resource",
+            "phase": "https://fixture.invalid/Detail1",
+            "occurrence": 1
+          },
+          {
+            "kind": "action",
+            "phase": "Home2",
+            "occurrence": 2
+          },
+          {
+            "kind": "resource",
+            "phase": "https://fixture.invalid/Home2",
+            "occurrence": 2
+          }
+        ],
+        "notifications": []
+      },
+      "result": {
+        "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp189-legacy-sdk26-9nfsfmyo/exp189-1bf144f0-e8f5-4b4a-b97f-c8b6405b04d4/result.json",
+        "sha256": "e0ceac1dccd8e62e90644c58b85ca22f5eda45a1629fc25056a8a52822b21a35"
+      },
+      "cleanup": {
+        "status": "PASS",
+        "process_absent": true,
+        "data_container_absent": true
+      },
+      "finished_at": "2026-09-18T20:28:36.309027+00:00"
+    }
+  ],
+  "builds": {
+    "baseline/Navigation": {
+      "app": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp189-legacy-sdk26-9nfsfmyo/builds/baseline/derived/Build/Products/Release-iphonesimulator/FixtureLegacy.app",
+      "executable": "FixtureLegacy",
+      "bundle": "com.datadoghq.exp189.baseline.legacy",
+      "sha256": "5b0b53e2770e4782ce748017e699c47b80cd8a94ee19f86cfbe77e12ee15af21",
+      "uuid": "c1eeb9a6-88e0-34e9-aa9d-aee86f618bb6",
+      "sdk": "iphonesimulator26.5",
+      "minimum_os": "15.0",
+      "fixture": {
+        "file_count": 4,
+        "sha256": "44bf7b154f4cf0c25e8fc1ab62131dcd1027d6d29b6f0e08e45a81c440564d3e",
+        "files": {
+          "AllocationCounter.c": "4fc68475a35fdbb805786a79455defc5725b6e0deb4847778cd75be228f9119d",
+          "AllocationCounter.h": "d668fa6258ccbf16ce011374af0aa4178ae4ca0f8a1c4f28a51bee2077ce52ab",
+          "App.swift": "4e9438781d5e17ef4cbfd06871a6938bdf9b25cc81e2b0dc5d2bff1645dc69ee",
+          "InternalFixture.swift": "5cfa2d46df2345e0868966690ce168e7154b281ef93a5f97e3e9c18a2c7e79e8"
+        }
+      },
+      "mach_o_build_version": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp189-legacy-sdk26-9nfsfmyo/builds/baseline/derived/Build/Products/Release-iphonesimulator/FixtureLegacy.app/FixtureLegacy:\nLoad command 11\n      cmd LC_BUILD_VERSION\n  cmdsize 32\n platform IOSSIMULATOR\n    minos 15.0\n      sdk 26.5\n   ntools 1\n     tool LD\n  version 1267.0"
+    }
+  },
+  "devices": {
+    "27.0": {
+      "udid": "B85C64AB-E854-4280-BCEF-A5AAA5AB187C",
+      "name": "iPhone 17",
+      "state": "Shutdown",
+      "runtime": "com.apple.CoreSimulator.SimRuntime.iOS-27-0",
+      "runtime_build": "24A434"
+    },
+    "26.5": {
+      "udid": "65A76904-154E-4C79-9DFD-A57B526C85E6",
+      "name": "iPhone 17",
+      "state": "Shutdown",
+      "runtime": "com.apple.CoreSimulator.SimRuntime.iOS-26-5",
+      "runtime_build": "23F77"
+    }
+  },
+  "gates_closed": [],
+  "inputs": {
+    "tools/multi-scene/baselines/legacy_compatibility.py": "e2fa25374e8b4ed5852f07be2a1cce62b9d3fdd3840812824e8a826dc54d2596",
+    "tools/multi-scene/baselines/run.py": "d14fa5cd77aed6147386e0815a3f711f8d2c45d0018cf5512da79e9db4943398",
+    "tools/multi-scene/baselines/lifecycle.py": "d763b0e85646d1cbcdf919aa4901f890efd5a11a194cad10028b565c87792acb",
+    "tools/multi-scene/baselines/analyze.py": "79de1e8ea99f1d27f84ef98d8a39d1b2b8a8e7fbfdc996b0278258189c15e306",
+    "tools/multi-scene/baselines/Fixture/AllocationCounter.c": "4fc68475a35fdbb805786a79455defc5725b6e0deb4847778cd75be228f9119d",
+    "tools/multi-scene/baselines/Fixture/AllocationCounter.h": "d668fa6258ccbf16ce011374af0aa4178ae4ca0f8a1c4f28a51bee2077ce52ab",
+    "tools/multi-scene/baselines/Fixture/App.swift": "4e9438781d5e17ef4cbfd06871a6938bdf9b25cc81e2b0dc5d2bff1645dc69ee",
+    "tools/multi-scene/baselines/Fixture/InternalFixture.swift": "5cfa2d46df2345e0868966690ce168e7154b281ef93a5f97e3e9c18a2c7e79e8",
+    "DatadogRUM/MultiSceneSupport/Results/EXP-189-legacy-build-sdk.json": "11a044c87847fd8eea810770fc198c7bab06fb0911e71ecb1ed6badb50892cce"
+  },
+  "environment": {
+    "build_xcode": "Xcode 26.6\nBuild version 17F113",
+    "build_sdk": "26.5",
+    "swift": "Apple Swift version 6.3.3 (swiftlang-6.3.3.1.3 clang-2100.1.1.101)\nTarget: arm64-apple-macosx26.0",
+    "runtime_xcode": "Xcode 27.0\nBuild version 27A266a"
+  },
+  "source_fingerprints": {
+    "baseline": {
+      "file_count": 369,
+      "sha256": "dde2012968e33c3b0058acf6003ec15b18fce8182ca30e4befdfd8b36463e06c"
+    },
+    "candidate": {
+      "file_count": 369,
+      "sha256": "47bd1eb3a75bf117e2cfbb197f1bed8834e94df8f7555921ec015fb8027f11d0"
+    }
+  },
+  "source_revisions": {
+    "baseline": "92f021ba7e4a866f84a52da93ed8b63f3dc75882",
+    "candidate": "04201edc7711361279d8487b385bc8b0ca9c63c7"
+  },
+  "original_fixture": {
+    "file_count": 4,
+    "sha256": "44bf7b154f4cf0c25e8fc1ab62131dcd1027d6d29b6f0e08e45a81c440564d3e"
+  },
+  "baseline_readiness": "PASS",
+  "error": "build-candidate-Navigation failed (65); see /var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp189-legacy-sdk26-9nfsfmyo/024-build-candidate-Navigation",
+  "restored_shutdown_runtimes": [
+    "27.0"
+  ],
+  "protected_paths_unchanged": true,
+  "finished_at": "2026-09-18T20:29:49.439007+00:00",
+  "gate_status": "INCONCLUSIVE",
+  "commands_inventory": {
+    "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp189-legacy-sdk26-9nfsfmyo/commands.json",
+    "sha256": "7e10fca87a7b37f08c5b587fc2d5c698accd0325fe069e4b656a6f4308f9ae75",
+    "count": 27
+  },
+  "artifacts_inventory": {
+    "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp189-legacy-sdk26-9nfsfmyo/artifacts.json",
+    "sha256": "246f56586b0d48bb27998d6e3ba8cbae51ed4e01e3477d65ed8c63c063016139",
+    "count": 55
+  },
+  "source_manifest": {
+    "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp189-legacy-sdk26-9nfsfmyo/builds/manifest.json",
+    "sha256": "7ae31cb694e99f0d563b920f3d497cab40de5a282b64d4de3aceef87bbce053a"
+  }
+}

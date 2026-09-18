@@ -106,7 +106,8 @@ the legacy customer contract on27.0/26.5; SDK27-built no-scene apps hit Apple's
 documented adoption requirement. Compiler/build SDK, minimum deployment, source,
 fixture, installed binary and fresh run identity are all checked. Only a passing
 baseline automatic27.0 control admits candidate/lifecycle builds and the remaining
-15 cells. Original navigation code is unchanged; lifecycle-only receipts check
+15 cells. Original navigation/mapper code is unchanged; the common projection
+omits only the unused internal-performance branch/file. Lifecycle-only receipts check
 exact initial owners before background and actual background before foreground.
 Every fixture is cleaned up and simulators booted by the run return to shutdown.
 

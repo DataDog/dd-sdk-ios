@@ -2,7 +2,7 @@
   "experiment": "EXP-189",
   "gate": "C03",
   "title": "Validate legacy hosts built with the pre-scene-required SDK",
-  "status": "READY",
+  "status": "READY_AFTER_PRESERVED_PREPARATION_FAILURE",
   "owner": "SDK implementer",
   "definition": "Experiments/EXP-143-199.md#exp-189--validate-legacy-hosts-built-with-the-pre-scene-required-sdk",
   "baseline_revision": "92f021ba7e4a866f84a52da93ed8b63f3dc75882",
@@ -65,7 +65,20 @@
     "No production SDK change, public API promotion, protected-path access or push."
   ],
   "gates_closed": [],
-  "attempts": [],
+  "attempts": [
+    {
+      "run_id": "exp189-fcf3b82b-246a-40c8-a0fd-4b166e4b575f",
+      "implementation_revision": "6db5d3667bc13f6c7d508007929fab2e2625c1fb",
+      "status": "INCONCLUSIVE",
+      "durable_result": "acceptance/exp189-fcf3b82b-246a-40c8-a0fd-4b166e4b575f.json",
+      "baseline_automatic_27": "PASS",
+      "candidate_build": "FAILED_IN_UNUSED_INTERNAL_PERFORMANCE_FIXTURE",
+      "finding": "The original InternalFixture.swift references the previous RUMContextHandoff.current/currentSceneIdentifier property shapes. Current SDK compilation reaches the app fixture; the out-of-scope performance fixture fails to compile.",
+      "sdk_regression_established": false,
+      "cleanup": "Baseline app/process/data absent and27.0 simulator restored to original shutdown state.",
+      "protected_paths_unchanged": true
+    }
+  ],
   "toolchain_preflight": {
     "artifact_root": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp189-toolchains-wzt8o3sv",
     "compiler_and_sdk_commands": "PASS",
@@ -75,7 +88,8 @@
     "runner": "tools/multi-scene/baselines/legacy_compatibility.py",
     "negative_controls": "tools/multi-scene/baselines/test_legacy_compatibility.py",
     "test_methods_passed": 14,
-    "fixture_adaptation": "Navigation sources remain exact. The existing lifecycle variant additionally writes run-bound initial event/failure and actual notification snapshots; the driver validates readiness before background and observes actual background before foreground. No notification is synthesized.",
-    "durable_summary": "Finite16-cell semantic results, build/source/install identity and cleanup; command/raw artifact inventories remain locally hashed and linked."
+    "fixture_adaptation": "Both arms use an identical C03 projection: remove only the unused internal-performance branch and InternalFixture.swift. Navigation/mapper/lifecycle code remains unchanged. The lifecycle variant additionally writes run-bound initial event/failure and actual notification snapshots before OS transitions; no notification is synthesized.",
+    "durable_summary": "Finite16-cell semantic results, build/source/install identity and cleanup; command/raw artifact inventories remain locally hashed and linked.",
+    "repeat_rationale": "The original baseline navigation readiness passed. The common fixture projection changes built inputs, so the next paired matrix requires a fresh matching baseline/candidate build and launch identity; this is not a resume-only rerun."
   }
 }
