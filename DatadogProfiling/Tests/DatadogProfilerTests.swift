@@ -287,6 +287,173 @@ extension DatadogProfilerTests {
         withExtendedLifetime(profiler) {}
     }
 
+    func testTrackingConsentNotGranted_contextBroadcastSettlesAndProfilerCanResume() {
+        // Given
+        let profiler = continuousProfiler(continuousProfilingSampled: true)
+        var publishedStatuses: [ProfilingContext.Status] = []
+        core.onContextSet = { [weak core, weak profiler] context in
+            publishedStatuses.append(context.additionalContext(ofType: ProfilingContext.self)!.status)
+            // Bound feedback so a regression fails instead of leaving an endless queue of messages.
+            if publishedStatuses.count < 5, let core, let profiler {
+                _ = profiler.receive(message: .context(context), from: core)
+            }
+        }
+        shareCurrentContext(with: profiler)
+        XCTAssertEqual(dd_profiler_get_status(), DD_PROFILER_STATUS_RUNNING)
+
+        // When
+        core.context.trackingConsent = .notGranted
+        shareCurrentContext(with: profiler)
+        for _ in 0..<5 { flushQueue() }
+
+        // Then
+        XCTAssertEqual(publishedStatuses, [.running, .stopped(reason: .manual)])
+        XCTAssertEqual(dd_profiler_get_status(), DD_PROFILER_STATUS_STOPPED)
+
+        // When
+        core.context.trackingConsent = .granted
+        shareCurrentContext(with: profiler)
+        for _ in 0..<5 { flushQueue() }
+
+        // Then
+        XCTAssertEqual(publishedStatuses, [.running, .stopped(reason: .manual), .running])
+        XCTAssertEqual(dd_profiler_get_status(), DD_PROFILER_STATUS_RUNNING)
+        withExtendedLifetime(profiler) {}
+    }
+
+    func testApplicationDidEnterBackground_contextBroadcastSettlesAndProfilerCanResume() {
+        // Given
+        let dateProvider = DateProviderMock()
+        let profiler = continuousProfiler(continuousProfilingSampled: true, dateProvider: dateProvider)
+        var publishedStatuses: [ProfilingContext.Status] = []
+        core.onContextSet = { [weak core, weak profiler] context in
+            publishedStatuses.append(context.additionalContext(ofType: ProfilingContext.self)!.status)
+            // Bound feedback so a regression fails instead of leaving an endless queue of messages.
+            if publishedStatuses.count < 5, let core, let profiler {
+                _ = profiler.receive(message: .context(context), from: core)
+            }
+        }
+        shareCurrentContext(with: profiler)
+        XCTAssertEqual(dd_profiler_get_status(), DD_PROFILER_STATUS_RUNNING)
+
+        // When
+        core.context.applicationStateHistory = .mockWith(
+            initialState: .active,
+            date: dateProvider.now.addingTimeInterval(-1),
+            transitions: [(state: .background, date: dateProvider.now)]
+        )
+        shareCurrentContext(with: profiler)
+        for _ in 0..<5 { flushQueue() }
+
+        // Then
+        XCTAssertEqual(publishedStatuses, [.running, .stopped(reason: .manual)])
+        XCTAssertEqual(dd_profiler_get_status(), DD_PROFILER_STATUS_STOPPED)
+
+        // When
+        core.context.applicationStateHistory = .mockAppInForeground()
+        shareCurrentContext(with: profiler)
+        for _ in 0..<5 { flushQueue() }
+
+        // Then
+        XCTAssertEqual(publishedStatuses, [.running, .stopped(reason: .manual), .running])
+        XCTAssertEqual(dd_profiler_get_status(), DD_PROFILER_STATUS_RUNNING)
+        withExtendedLifetime(profiler) {}
+    }
+
+    func testReceiveContext_whenProfilerIsNotCreated_publishesUnknownStatusOnlyOnce() {
+        // Given
+        let profiler = customProfiler()
+        core.context.trackingConsent = .notGranted
+        var contexts: [ProfilingContext] = []
+        core.onContextSet = { context in
+            contexts.append(context.additionalContext(ofType: ProfilingContext.self)!)
+        }
+        XCTAssertEqual(dd_profiler_get_status(), DD_PROFILER_STATUS_NOT_CREATED)
+
+        // When
+        shareCurrentContext(with: profiler)
+        shareCurrentContext(with: profiler)
+
+        // Then
+        XCTAssertEqual(contexts.map(\.status), [.unknown])
+        XCTAssertNil(contexts.first?.quotaReason)
+    }
+
+    func testReceiveContext_whenProfilerIsRunning_publishesRunningStatus() throws {
+        // Given
+        let profiler = continuousProfiler(continuousProfilingSampled: true)
+        XCTAssertEqual(dd_profiler_start(), 1)
+
+        // When
+        shareCurrentContext(with: profiler)
+
+        // Then
+        let context = try XCTUnwrap(core.context.additionalContext(ofType: ProfilingContext.self))
+        XCTAssertEqual(context.status, .running)
+    }
+
+    func testReceiveContext_whenProfilerIsStopped_publishesStoppedStatus() throws {
+        // Given
+        let profiler = customProfiler()
+        XCTAssertEqual(dd_profiler_start(), 1)
+        dd_profiler_stop()
+
+        // When
+        shareCurrentContext(with: profiler)
+
+        // Then
+        let context = try XCTUnwrap(core.context.additionalContext(ofType: ProfilingContext.self))
+        XCTAssertEqual(context.status, .stopped(reason: .manual))
+    }
+
+    func testReceiveContext_whenStopReasonChanges_publishesEachChange() {
+        // Given
+        let profiler = customProfiler()
+        core.context.trackingConsent = .notGranted
+        var contexts: [ProfilingContext] = []
+        core.onContextSet = { context in
+            contexts.append(context.additionalContext(ofType: ProfilingContext.self)!)
+        }
+        dd_profiler_start_testing(100, true, Int64.max, 0)
+        XCTAssertEqual(dd_profiler_get_status(), DD_PROFILER_STATUS_PREWARMED)
+
+        // When
+        shareCurrentContext(with: profiler)
+        shareCurrentContext(with: profiler)
+        XCTAssertEqual(dd_profiler_start(), 1)
+        shareCurrentContext(with: profiler)
+        shareCurrentContext(with: profiler)
+
+        // Then
+        XCTAssertEqual(contexts.map(\.status), [.stopped(reason: .prewarmed), .stopped(reason: .manual)])
+    }
+
+    func testQuotaResultUpdate_whenOnlyQuotaReasonChanges_publishesEachChange() {
+        // Given
+        let quotaChecker = ProfilingQuotaCheckerMock()
+        let profiler = continuousProfiler(continuousProfilingSampled: true, quotaChecker: quotaChecker)
+        core.context.trackingConsent = .notGranted
+        XCTAssertEqual(dd_profiler_start(), 1)
+        dd_profiler_stop()
+        var contexts: [ProfilingContext] = []
+        core.onContextSet = { context in
+            contexts.append(context.additionalContext(ofType: ProfilingContext.self)!)
+        }
+        let quotaReasons: [DDProfiling.QuotaReason?] = [nil, .quotaExceeded, .orgDisabled, nil]
+
+        // When
+        for quotaReason in quotaReasons {
+            quotaChecker.quotaResult = quotaReason.map { .init(decision: .quotaKO, reason: $0) }
+            quotaChecker.onQuotaResultUpdate?(quotaChecker.quotaResult)
+            shareCurrentContext(with: profiler)
+            shareCurrentContext(with: profiler)
+        }
+
+        // Then
+        XCTAssertEqual(contexts.map(\.quotaReason), quotaReasons)
+        XCTAssertTrue(contexts.allSatisfy { $0.status == .stopped(reason: .manual) })
+    }
+
     func testTrackingConsentPending_doesNotStopProfiler() {
         // Given
         let profilingSamplerProvider = profilingSamplerProvider(isContinuousProfiling: true)

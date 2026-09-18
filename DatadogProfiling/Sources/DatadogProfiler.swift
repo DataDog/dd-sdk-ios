@@ -44,6 +44,8 @@ internal final class DatadogProfiler: ProfilingHandler, @unchecked Sendable {
     let encoder: JSONEncoder
     let dateProvider: DateProvider
 
+    private var lastProfilingContext: ProfilingContext?
+
     @ReadWriteLock
     private(set) var attributes: [String: AttributeValue] = [:]
     /// Whether TTID has been received.
@@ -532,6 +534,16 @@ private extension DatadogProfiler {
 // MARK: - Helpers
 
 private extension DatadogProfiler {
+    func updateProfilingContext(quotaReason: DDProfiling.QuotaReason? = nil) {
+        let context = ProfilingContext(status: .current, quotaReason: quotaReason)
+        guard lastProfilingContext?.status != context.status || lastProfilingContext?.quotaReason != context.quotaReason else {
+            return
+        }
+
+        lastProfilingContext = context
+        featureScope.set(context: context)
+    }
+
     var profileDropReason: ProfilingSessionMetric.ProfileDropReason {
         quotaChecker.isRejectedByQuota ? .quotaRejected(quotaChecker.quotaResult?.reason) : .noProfiledEvents
     }

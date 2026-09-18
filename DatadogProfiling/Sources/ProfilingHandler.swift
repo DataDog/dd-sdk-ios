@@ -23,17 +23,6 @@ internal protocol ProfilingHandler {
 }
 
 extension ProfilingHandler {
-    @discardableResult
-    func updateProfilingContext(
-        status: ProfilingContext.Status = .current,
-        quotaReason: DDProfiling.QuotaReason? = nil
-    ) -> ProfilingContext {
-        let profilingContext = ProfilingContext(status: status, quotaReason: quotaReason)
-        self.featureScope.set(context: profilingContext)
-
-        return profilingContext
-    }
-
     func write(
         profile: OpaquePointer,
         operation: ProfilingOperation,

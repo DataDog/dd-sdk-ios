@@ -40,49 +40,6 @@ final class ProfilingHandlerTests: XCTestCase {
         super.tearDown()
     }
 
-    // MARK: - updateProfilingContext
-
-    func testUpdateProfilingContext_whenProfilerIsNotStarted_returnsUnknownStatus() throws {
-        // Given
-        XCTAssertEqual(dd_profiler_get_status(), DD_PROFILER_STATUS_NOT_CREATED)
-
-        // When
-        let result = handler.updateProfilingContext()
-
-        // Then
-        XCTAssertEqual(result.status, .unknown)
-        let stored = try XCTUnwrap(core.context.additionalContext(ofType: ProfilingContext.self))
-        XCTAssertEqual(stored.status, .unknown)
-    }
-
-    func testUpdateProfilingContext_whenProfilerIsRunning_returnsRunningStatus() throws {
-        // Given
-        XCTAssertEqual(dd_profiler_start(), 1)
-
-        // When
-        let result = handler.updateProfilingContext()
-
-        // Then
-        XCTAssertEqual(result.status, .running)
-        let stored = try XCTUnwrap(core.context.additionalContext(ofType: ProfilingContext.self))
-        XCTAssertEqual(stored.status, .running)
-    }
-
-    func testUpdateProfilingContext_whenProfilerIsStopped_returnsStoppedStatus() throws {
-        // Given
-        XCTAssertEqual(dd_profiler_start(), 1)
-        dd_profiler_stop()
-        XCTAssertEqual(dd_profiler_get_status(), DD_PROFILER_STATUS_STOPPED)
-
-        // When
-        let result = handler.updateProfilingContext()
-
-        // Then
-        XCTAssertEqual(result.status, .stopped(reason: .manual))
-        let stored = try XCTUnwrap(core.context.additionalContext(ofType: ProfilingContext.self))
-        XCTAssertEqual(stored.status, .stopped(reason: .manual))
-    }
-
     // MARK: - write(profile:rumVitals:)
 
     func testWriteWithNoVitals_doesNotAddVitalAttributesToEvent() throws {
