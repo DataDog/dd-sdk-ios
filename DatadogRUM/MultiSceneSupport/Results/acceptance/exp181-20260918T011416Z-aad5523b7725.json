@@ -1,0 +1,688 @@
+{
+  "artifacts": {
+    "backend-evidence.json": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/multi-scene-acceptance-84_nbcc5/run/backend-evidence.json",
+    "boot-ready.log": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/multi-scene-acceptance-84_nbcc5/run/boot-ready.log",
+    "build-identity.json": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/multi-scene-acceptance-84_nbcc5/run/build-identity.json",
+    "build-tests.log": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/multi-scene-acceptance-84_nbcc5/run/build-tests.log",
+    "console.raw.log": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/multi-scene-acceptance-84_nbcc5/run/console.raw.log",
+    "container-absence.log": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/multi-scene-acceptance-84_nbcc5/run/container-absence.log",
+    "install.log": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/multi-scene-acceptance-84_nbcc5/run/install.log",
+    "local-evidence.json": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/multi-scene-acceptance-84_nbcc5/run/local-evidence.json",
+    "probe.jsonl": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/multi-scene-acceptance-84_nbcc5/run/probe.jsonl",
+    "source-identity.json": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/multi-scene-acceptance-84_nbcc5/run/source-identity.json",
+    "span-parser-preflight.log": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/multi-scene-acceptance-84_nbcc5/run/span-parser-preflight.log",
+    "summary.json": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/multi-scene-acceptance-84_nbcc5/run/summary.json",
+    "terminal-screenshot.log": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/multi-scene-acceptance-84_nbcc5/run/terminal-screenshot.log",
+    "terminal.png": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/multi-scene-acceptance-84_nbcc5/run/terminal.png",
+    "terminate-after.log": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/multi-scene-acceptance-84_nbcc5/run/terminate-after.log",
+    "terminate-before.log": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/multi-scene-acceptance-84_nbcc5/run/terminate-before.log",
+    "test-summary.json": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/multi-scene-acceptance-84_nbcc5/run/test-summary.json",
+    "uninstall.log": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/multi-scene-acceptance-84_nbcc5/run/uninstall.log"
+  },
+  "backend_bridge_timings": [
+    {
+      "kind": "auth",
+      "received": true,
+      "seconds": 9.643
+    },
+    {
+      "kind": "trace_auth",
+      "received": true,
+      "seconds": 14.682
+    },
+    {
+      "kind": "trace_spans",
+      "received": true,
+      "seconds": 245.545
+    },
+    {
+      "kind": "views",
+      "received": true,
+      "seconds": 15.219
+    },
+    {
+      "kind": "resources",
+      "received": true,
+      "seconds": 14.703
+    },
+    {
+      "kind": "errors",
+      "received": true,
+      "seconds": 13.203
+    },
+    {
+      "kind": "crashes",
+      "received": true,
+      "seconds": 44.573
+    }
+  ],
+  "commit_signature": {
+    "required_before_push": true,
+    "state": "UNSIGNED"
+  },
+  "device": {
+    "dataPath": "/Users/valentin.pertuisot/Library/Developer/CoreSimulator/Devices/92C9918B-FEC6-4440-9D6D-8E09475950BB/data",
+    "dataPathSize": 3282329600,
+    "deviceTypeIdentifier": "com.apple.CoreSimulator.SimDeviceType.iPad-mini-A17-Pro",
+    "isAvailable": true,
+    "lastUsedAt": "2026-09-16T22:19:15Z",
+    "logPath": "/Users/valentin.pertuisot/Library/Logs/CoreSimulator/92C9918B-FEC6-4440-9D6D-8E09475950BB",
+    "logPathSize": 385024,
+    "name": "iPad mini (A17 Pro)",
+    "runtime": "com.apple.CoreSimulator.SimRuntime.iOS-27-0",
+    "state": "Booted",
+    "udid": "92C9918B-FEC6-4440-9D6D-8E09475950BB"
+  },
+  "dirty_state": [
+    " M Datadog/Datadog.xcodeproj/project.pbxproj",
+    "A  xcconfigs/Datadog.local.xcconfig"
+  ],
+  "evidence": {
+    "backend-evidence.json": {
+      "crashes": {
+        "count": 0
+      },
+      "errors": {
+        "count": 0
+      },
+      "resources": [],
+      "spans": [
+        {
+          "action_ids": [],
+          "application_id": "43cbc59b-0626-438b-a3d9-c6417a4545a3",
+          "duration_ns": 174545169,
+          "http_url": "https://multi-scene-probe.invalid/trace-only/exp181-20260918T011416Z-aad5523b7725/source-less/home/url-fallback",
+          "is_error": false,
+          "operation": "urlsession.request",
+          "parent_id": "0000000000000000",
+          "phase": "url-fallback",
+          "resource": "https://multi-scene-probe.invalid/trace-only/exp181-20260918T011416Z-aad5523b7725/source-less/home/url-fallback",
+          "run_id": "exp181-20260918T011416Z-aad5523b7725",
+          "service": "ios-sdk-native-multi-scene-probe",
+          "session_id": "f116322e-5a5d-4a0c-bc9a-b9a3054d7873",
+          "span_id": "4d8e6881f05727c6",
+          "trace_id": "6aac909c00000000ab66ddd1a865e8b7",
+          "view_id": "47ab2bf3-e4e1-40f2-ad15-7ca045fe80f4"
+        },
+        {
+          "action_ids": [],
+          "application_id": "43cbc59b-0626-438b-a3d9-c6417a4545a3",
+          "duration_ns": 153803825,
+          "http_url": "https://multi-scene-probe.invalid/trace-only/exp181-20260918T011416Z-aad5523b7725/scene-A/home/url-a",
+          "is_error": false,
+          "operation": "urlsession.request",
+          "parent_id": "0000000000000000",
+          "phase": "url-a",
+          "resource": "https://multi-scene-probe.invalid/trace-only/exp181-20260918T011416Z-aad5523b7725/scene-A/home/url-a",
+          "run_id": "exp181-20260918T011416Z-aad5523b7725",
+          "service": "ios-sdk-native-multi-scene-probe",
+          "session_id": "f116322e-5a5d-4a0c-bc9a-b9a3054d7873",
+          "span_id": "32013973117f1585",
+          "trace_id": "6aac909c00000000f4748213395d4ffc",
+          "view_id": "851b1219-c6d2-4e76-a3e4-e6450f3e3815"
+        },
+        {
+          "action_ids": [],
+          "application_id": "43cbc59b-0626-438b-a3d9-c6417a4545a3",
+          "duration_ns": 131078362,
+          "http_url": "https://multi-scene-probe.invalid/trace-only/exp181-20260918T011416Z-aad5523b7725/scene-B/home/url-b",
+          "is_error": false,
+          "operation": "urlsession.request",
+          "parent_id": "0000000000000000",
+          "phase": "url-b",
+          "resource": "https://multi-scene-probe.invalid/trace-only/exp181-20260918T011416Z-aad5523b7725/scene-B/home/url-b",
+          "run_id": "exp181-20260918T011416Z-aad5523b7725",
+          "service": "ios-sdk-native-multi-scene-probe",
+          "session_id": "f116322e-5a5d-4a0c-bc9a-b9a3054d7873",
+          "span_id": "0f51031df96cf540",
+          "trace_id": "6aac909c00000000daf62c5ebfbd7207",
+          "view_id": "47ab2bf3-e4e1-40f2-ad15-7ca045fe80f4"
+        },
+        {
+          "action_ids": [],
+          "application_id": "43cbc59b-0626-438b-a3d9-c6417a4545a3",
+          "duration_ns": 109465003,
+          "http_url": null,
+          "is_error": false,
+          "operation": "exp181.otel_fallback",
+          "parent_id": "0000000000000000",
+          "phase": "otel-fallback",
+          "resource": "exp181.otel-fallback",
+          "run_id": "exp181-20260918T011416Z-aad5523b7725",
+          "service": "ios-sdk-native-multi-scene-probe",
+          "session_id": "f116322e-5a5d-4a0c-bc9a-b9a3054d7873",
+          "span_id": "54e7d6191d8325ea",
+          "trace_id": "90320b2035089d987a20ccb594a42ac5",
+          "view_id": "47ab2bf3-e4e1-40f2-ad15-7ca045fe80f4"
+        },
+        {
+          "action_ids": [],
+          "application_id": "43cbc59b-0626-438b-a3d9-c6417a4545a3",
+          "duration_ns": 87243080,
+          "http_url": null,
+          "is_error": false,
+          "operation": "exp181.native_fallback",
+          "parent_id": "0000000000000000",
+          "phase": "native-fallback",
+          "resource": "exp181.native-fallback",
+          "run_id": "exp181-20260918T011416Z-aad5523b7725",
+          "service": "ios-sdk-native-multi-scene-probe",
+          "session_id": "f116322e-5a5d-4a0c-bc9a-b9a3054d7873",
+          "span_id": "138370dc1e6d097d",
+          "trace_id": "6aac909c00000000b61d253125d7d163",
+          "view_id": "47ab2bf3-e4e1-40f2-ad15-7ca045fe80f4"
+        },
+        {
+          "action_ids": [],
+          "application_id": "43cbc59b-0626-438b-a3d9-c6417a4545a3",
+          "duration_ns": 67818999,
+          "http_url": null,
+          "is_error": false,
+          "operation": "exp181.otel_a",
+          "parent_id": "0000000000000000",
+          "phase": "otel-a",
+          "resource": "exp181.otel-a",
+          "run_id": "exp181-20260918T011416Z-aad5523b7725",
+          "service": "ios-sdk-native-multi-scene-probe",
+          "session_id": "f116322e-5a5d-4a0c-bc9a-b9a3054d7873",
+          "span_id": "e3a3adc9da48137b",
+          "trace_id": "8279893259bd44e430b0391d6f2dc103",
+          "view_id": "851b1219-c6d2-4e76-a3e4-e6450f3e3815"
+        },
+        {
+          "action_ids": [],
+          "application_id": "43cbc59b-0626-438b-a3d9-c6417a4545a3",
+          "duration_ns": 48465014,
+          "http_url": null,
+          "is_error": false,
+          "operation": "exp181.native_a",
+          "parent_id": "0000000000000000",
+          "phase": "native-a",
+          "resource": "exp181.native-a",
+          "run_id": "exp181-20260918T011416Z-aad5523b7725",
+          "service": "ios-sdk-native-multi-scene-probe",
+          "session_id": "f116322e-5a5d-4a0c-bc9a-b9a3054d7873",
+          "span_id": "3b7d1506b543e121",
+          "trace_id": "6aac909c000000001793de3fafcb16f0",
+          "view_id": "851b1219-c6d2-4e76-a3e4-e6450f3e3815"
+        },
+        {
+          "action_ids": [],
+          "application_id": "43cbc59b-0626-438b-a3d9-c6417a4545a3",
+          "duration_ns": 44043899,
+          "http_url": null,
+          "is_error": false,
+          "operation": "exp181.otel_b",
+          "parent_id": "0000000000000000",
+          "phase": "otel-b",
+          "resource": "exp181.otel-b",
+          "run_id": "exp181-20260918T011416Z-aad5523b7725",
+          "service": "ios-sdk-native-multi-scene-probe",
+          "session_id": "f116322e-5a5d-4a0c-bc9a-b9a3054d7873",
+          "span_id": "111e3fd96807e8d6",
+          "trace_id": "b0e804fa9bdf2573ab56e3f6e1346ef9",
+          "view_id": "47ab2bf3-e4e1-40f2-ad15-7ca045fe80f4"
+        },
+        {
+          "action_ids": [],
+          "application_id": "43cbc59b-0626-438b-a3d9-c6417a4545a3",
+          "duration_ns": 21791101,
+          "http_url": null,
+          "is_error": false,
+          "operation": "exp181.native_b",
+          "parent_id": "0000000000000000",
+          "phase": "native-b",
+          "resource": "exp181.native-b",
+          "run_id": "exp181-20260918T011416Z-aad5523b7725",
+          "service": "ios-sdk-native-multi-scene-probe",
+          "session_id": "f116322e-5a5d-4a0c-bc9a-b9a3054d7873",
+          "span_id": "01c739058ff1c6b8",
+          "trace_id": "6aac909c000000002f86774aa16d71aa",
+          "view_id": "47ab2bf3-e4e1-40f2-ad15-7ca045fe80f4"
+        }
+      ],
+      "views": [
+        {
+          "name": "ProbeHomeView",
+          "run_id": "exp181-20260918T011416Z-aad5523b7725",
+          "session_id": "f116322e-5a5d-4a0c-bc9a-b9a3054d7873",
+          "view_id": "47ab2bf3-e4e1-40f2-ad15-7ca045fe80f4"
+        },
+        {
+          "name": "ProbeHomeView",
+          "run_id": "exp181-20260918T011416Z-aad5523b7725",
+          "session_id": "f116322e-5a5d-4a0c-bc9a-b9a3054d7873",
+          "view_id": "851b1219-c6d2-4e76-a3e4-e6450f3e3815"
+        },
+        {
+          "name": "ApplicationLaunch",
+          "run_id": "exp181-20260918T011416Z-aad5523b7725",
+          "session_id": "f116322e-5a5d-4a0c-bc9a-b9a3054d7873",
+          "view_id": "2e7c08e2-1776-492e-89da-b41d322fd84c"
+        }
+      ]
+    },
+    "build-identity.json": {
+      "executable_sha256": "de9961ecc804c3da38d6408c9d846a89c06a7c8f30200461e82052992041e27e",
+      "source_sha256": "388d215f66d2fbfcbb78bc05fecdf8e7ce6b388cd5aaba9742e9294e30c223ce",
+      "uuid": "UUID: A9A9ECD4-63BF-3E43-842B-32EA35FB2947 (arm64) /private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/multi-scene-acceptance-84_nbcc5/run/derived/Build/Products/Debug-iphonesimulator/RUMNativeMultiSceneProbe.app/RUMNativeMultiSceneProbe"
+    },
+    "local-evidence.json": {
+      "assertions": 20,
+      "native_scenes": {
+        "scene-A": "981CC016-C662-4147-B0F0-6952843FA1C1",
+        "scene-B": "D9B07D9F-174F-401B-AEE6-0DA3A5F69D98"
+      },
+      "owners": {
+        "scene-A": "851b1219-c6d2-4e76-a3e4-e6450f3e3815",
+        "scene-B": "47ab2bf3-e4e1-40f2-ad15-7ca045fe80f4",
+        "source-less": "47ab2bf3-e4e1-40f2-ad15-7ca045fe80f4"
+      },
+      "session_id": "f116322e-5a5d-4a0c-bc9a-b9a3054d7873",
+      "signal_count": 57,
+      "simultaneous_visibility_claimed": false,
+      "spans": [
+        {
+          "action_ids": [],
+          "application_id": "43cbc59b-0626-438b-a3d9-c6417a4545a3",
+          "duration_ns": 21791101,
+          "is_error": false,
+          "operation": "exp181.native-b",
+          "parent_id": "0000000000000000",
+          "phase": "native-b",
+          "resource": "exp181.native-b",
+          "service": "ios-sdk-native-multi-scene-probe",
+          "session_id": "f116322e-5a5d-4a0c-bc9a-b9a3054d7873",
+          "span_id": "01c739058ff1c6b8",
+          "trace_id": "6aac909c000000002f86774aa16d71aa",
+          "view_id": "47ab2bf3-e4e1-40f2-ad15-7ca045fe80f4"
+        },
+        {
+          "action_ids": [],
+          "application_id": "43cbc59b-0626-438b-a3d9-c6417a4545a3",
+          "duration_ns": 44043899,
+          "is_error": false,
+          "operation": "exp181.otel-b",
+          "parent_id": "0000000000000000",
+          "phase": "otel-b",
+          "resource": "exp181.otel-b",
+          "service": "ios-sdk-native-multi-scene-probe",
+          "session_id": "f116322e-5a5d-4a0c-bc9a-b9a3054d7873",
+          "span_id": "111e3fd96807e8d6",
+          "trace_id": "b0e804fa9bdf2573ab56e3f6e1346ef9",
+          "view_id": "47ab2bf3-e4e1-40f2-ad15-7ca045fe80f4"
+        },
+        {
+          "action_ids": [],
+          "application_id": "43cbc59b-0626-438b-a3d9-c6417a4545a3",
+          "duration_ns": 48465014,
+          "is_error": false,
+          "operation": "exp181.native-a",
+          "parent_id": "0000000000000000",
+          "phase": "native-a",
+          "resource": "exp181.native-a",
+          "service": "ios-sdk-native-multi-scene-probe",
+          "session_id": "f116322e-5a5d-4a0c-bc9a-b9a3054d7873",
+          "span_id": "3b7d1506b543e121",
+          "trace_id": "6aac909c000000001793de3fafcb16f0",
+          "view_id": "851b1219-c6d2-4e76-a3e4-e6450f3e3815"
+        },
+        {
+          "action_ids": [],
+          "application_id": "43cbc59b-0626-438b-a3d9-c6417a4545a3",
+          "duration_ns": 67818999,
+          "is_error": false,
+          "operation": "exp181.otel-a",
+          "parent_id": "0000000000000000",
+          "phase": "otel-a",
+          "resource": "exp181.otel-a",
+          "service": "ios-sdk-native-multi-scene-probe",
+          "session_id": "f116322e-5a5d-4a0c-bc9a-b9a3054d7873",
+          "span_id": "e3a3adc9da48137b",
+          "trace_id": "8279893259bd44e430b0391d6f2dc103",
+          "view_id": "851b1219-c6d2-4e76-a3e4-e6450f3e3815"
+        },
+        {
+          "action_ids": [],
+          "application_id": "43cbc59b-0626-438b-a3d9-c6417a4545a3",
+          "duration_ns": 87243080,
+          "is_error": false,
+          "operation": "exp181.native-fallback",
+          "parent_id": "0000000000000000",
+          "phase": "native-fallback",
+          "resource": "exp181.native-fallback",
+          "service": "ios-sdk-native-multi-scene-probe",
+          "session_id": "f116322e-5a5d-4a0c-bc9a-b9a3054d7873",
+          "span_id": "138370dc1e6d097d",
+          "trace_id": "6aac909c00000000b61d253125d7d163",
+          "view_id": "47ab2bf3-e4e1-40f2-ad15-7ca045fe80f4"
+        },
+        {
+          "action_ids": [],
+          "application_id": "43cbc59b-0626-438b-a3d9-c6417a4545a3",
+          "duration_ns": 109465003,
+          "is_error": false,
+          "operation": "exp181.otel-fallback",
+          "parent_id": "0000000000000000",
+          "phase": "otel-fallback",
+          "resource": "exp181.otel-fallback",
+          "service": "ios-sdk-native-multi-scene-probe",
+          "session_id": "f116322e-5a5d-4a0c-bc9a-b9a3054d7873",
+          "span_id": "54e7d6191d8325ea",
+          "trace_id": "90320b2035089d987a20ccb594a42ac5",
+          "view_id": "47ab2bf3-e4e1-40f2-ad15-7ca045fe80f4"
+        },
+        {
+          "action_ids": [],
+          "application_id": "43cbc59b-0626-438b-a3d9-c6417a4545a3",
+          "duration_ns": 131078362,
+          "is_error": false,
+          "operation": "urlsession.request",
+          "parent_id": "0000000000000000",
+          "phase": "url-b",
+          "resource": "https://multi-scene-probe.invalid/trace-only/exp181-20260918T011416Z-aad5523b7725/scene-B/home/url-b",
+          "service": "ios-sdk-native-multi-scene-probe",
+          "session_id": "f116322e-5a5d-4a0c-bc9a-b9a3054d7873",
+          "span_id": "0f51031df96cf540",
+          "trace_id": "6aac909c00000000daf62c5ebfbd7207",
+          "view_id": "47ab2bf3-e4e1-40f2-ad15-7ca045fe80f4"
+        },
+        {
+          "action_ids": [],
+          "application_id": "43cbc59b-0626-438b-a3d9-c6417a4545a3",
+          "duration_ns": 153803825,
+          "is_error": false,
+          "operation": "urlsession.request",
+          "parent_id": "0000000000000000",
+          "phase": "url-a",
+          "resource": "https://multi-scene-probe.invalid/trace-only/exp181-20260918T011416Z-aad5523b7725/scene-A/home/url-a",
+          "service": "ios-sdk-native-multi-scene-probe",
+          "session_id": "f116322e-5a5d-4a0c-bc9a-b9a3054d7873",
+          "span_id": "32013973117f1585",
+          "trace_id": "6aac909c00000000f4748213395d4ffc",
+          "view_id": "851b1219-c6d2-4e76-a3e4-e6450f3e3815"
+        },
+        {
+          "action_ids": [],
+          "application_id": "43cbc59b-0626-438b-a3d9-c6417a4545a3",
+          "duration_ns": 174545169,
+          "is_error": false,
+          "operation": "urlsession.request",
+          "parent_id": "0000000000000000",
+          "phase": "url-fallback",
+          "resource": "https://multi-scene-probe.invalid/trace-only/exp181-20260918T011416Z-aad5523b7725/source-less/home/url-fallback",
+          "service": "ios-sdk-native-multi-scene-probe",
+          "session_id": "f116322e-5a5d-4a0c-bc9a-b9a3054d7873",
+          "span_id": "4d8e6881f05727c6",
+          "trace_id": "6aac909c00000000ab66ddd1a865e8b7",
+          "view_id": "47ab2bf3-e4e1-40f2-ad15-7ca045fe80f4"
+        }
+      ],
+      "views": [
+        {
+          "name": "ApplicationLaunch",
+          "session_id": "f116322e-5a5d-4a0c-bc9a-b9a3054d7873",
+          "view_id": "2e7c08e2-1776-492e-89da-b41d322fd84c"
+        },
+        {
+          "name": "ProbeHomeView",
+          "session_id": "f116322e-5a5d-4a0c-bc9a-b9a3054d7873",
+          "view_id": "851b1219-c6d2-4e76-a3e4-e6450f3e3815"
+        },
+        {
+          "name": "ProbeHomeView",
+          "session_id": "f116322e-5a5d-4a0c-bc9a-b9a3054d7873",
+          "view_id": "47ab2bf3-e4e1-40f2-ad15-7ca045fe80f4"
+        }
+      ]
+    },
+    "test-summary.json": {
+      "devicesAndConfigurations": [
+        {
+          "device": {
+            "architecture": "arm64",
+            "deviceId": "92C9918B-FEC6-4440-9D6D-8E09475950BB",
+            "deviceName": "iPad mini (A17 Pro)",
+            "modelName": "iPad mini (A17 Pro)",
+            "osBuildNumber": "24A434",
+            "osVersion": "27.0",
+            "platform": "iOS Simulator"
+          },
+          "expectedFailures": 0,
+          "failedTests": 0,
+          "passedTests": 178,
+          "skippedTests": 0,
+          "testPlanConfiguration": {
+            "configurationId": "1",
+            "configurationName": "Test Scheme Action"
+          }
+        }
+      ],
+      "environmentDescription": "RUMNativeMultiSceneProbe \u00b7 Built with macOS 26.6.2",
+      "expectedFailures": 0,
+      "failedTests": 0,
+      "finishTime": 1789694105.993,
+      "passedTests": 178,
+      "result": "Passed",
+      "runtimeWarnings": [],
+      "skippedTests": 0,
+      "startTime": 1789694084.974,
+      "statistics": [],
+      "testFailures": [],
+      "title": "Test - RUMNativeMultiSceneProbe",
+      "topInsights": [],
+      "totalTestCount": 178
+    }
+  },
+  "experiment": "EXP-181",
+  "failures": [],
+  "finished_at": "2026-09-18T01:20:44.420233+00:00",
+  "gate": "T08",
+  "oracle_contract_sha256": "30c585396434dc8b808cc3d178addffa19a17f2d1a922085232872097d048903",
+  "rerun": "Use a fresh output directory and freshly resolved device; do not reuse run IDs or bridge responses.",
+  "revision": "23520bc9b71f04d80226ddaba23bc74bf938e6d1",
+  "run_id": "exp181-20260918T011416Z-aad5523b7725",
+  "scenario_id": "traces.captured-start.native-otel-urlsession-cross-scene-serial",
+  "schema_version": 1,
+  "source_file_count": 485,
+  "source_fingerprint": "388d215f66d2fbfcbb78bc05fecdf8e7ce6b388cd5aaba9742e9294e30c223ce",
+  "stages": {
+    "backend": {
+      "crash_count": 0,
+      "error_count": 0,
+      "resource_count": 0,
+      "span_count": 9,
+      "state": "PASS",
+      "view_count": 3
+    },
+    "clean_install": {
+      "data_container_absent": true,
+      "installed_binary_sha256": "de9961ecc804c3da38d6408c9d846a89c06a7c8f30200461e82052992041e27e",
+      "state": "PASS"
+    },
+    "frozen_build": {
+      "executable_sha256": "de9961ecc804c3da38d6408c9d846a89c06a7c8f30200461e82052992041e27e",
+      "source_sha256": "388d215f66d2fbfcbb78bc05fecdf8e7ce6b388cd5aaba9742e9294e30c223ce",
+      "state": "PASS",
+      "test_count": 178,
+      "uuid": "UUID: A9A9ECD4-63BF-3E43-842B-32EA35FB2947 (arm64) /private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/multi-scene-acceptance-84_nbcc5/run/derived/Build/Products/Debug-iphonesimulator/RUMNativeMultiSceneProbe.app/RUMNativeMultiSceneProbe"
+    },
+    "local_semantics": {
+      "assertions": 20,
+      "native_scenes": {
+        "scene-A": "981CC016-C662-4147-B0F0-6952843FA1C1",
+        "scene-B": "D9B07D9F-174F-401B-AEE6-0DA3A5F69D98"
+      },
+      "owners": {
+        "scene-A": "851b1219-c6d2-4e76-a3e4-e6450f3e3815",
+        "scene-B": "47ab2bf3-e4e1-40f2-ad15-7ca045fe80f4",
+        "source-less": "47ab2bf3-e4e1-40f2-ad15-7ca045fe80f4"
+      },
+      "session_id": "f116322e-5a5d-4a0c-bc9a-b9a3054d7873",
+      "signal_count": 57,
+      "simultaneous_visibility_claimed": false,
+      "spans": [
+        {
+          "action_ids": [],
+          "application_id": "43cbc59b-0626-438b-a3d9-c6417a4545a3",
+          "duration_ns": 21791101,
+          "is_error": false,
+          "operation": "exp181.native-b",
+          "parent_id": "0000000000000000",
+          "phase": "native-b",
+          "resource": "exp181.native-b",
+          "service": "ios-sdk-native-multi-scene-probe",
+          "session_id": "f116322e-5a5d-4a0c-bc9a-b9a3054d7873",
+          "span_id": "01c739058ff1c6b8",
+          "trace_id": "6aac909c000000002f86774aa16d71aa",
+          "view_id": "47ab2bf3-e4e1-40f2-ad15-7ca045fe80f4"
+        },
+        {
+          "action_ids": [],
+          "application_id": "43cbc59b-0626-438b-a3d9-c6417a4545a3",
+          "duration_ns": 44043899,
+          "is_error": false,
+          "operation": "exp181.otel-b",
+          "parent_id": "0000000000000000",
+          "phase": "otel-b",
+          "resource": "exp181.otel-b",
+          "service": "ios-sdk-native-multi-scene-probe",
+          "session_id": "f116322e-5a5d-4a0c-bc9a-b9a3054d7873",
+          "span_id": "111e3fd96807e8d6",
+          "trace_id": "b0e804fa9bdf2573ab56e3f6e1346ef9",
+          "view_id": "47ab2bf3-e4e1-40f2-ad15-7ca045fe80f4"
+        },
+        {
+          "action_ids": [],
+          "application_id": "43cbc59b-0626-438b-a3d9-c6417a4545a3",
+          "duration_ns": 48465014,
+          "is_error": false,
+          "operation": "exp181.native-a",
+          "parent_id": "0000000000000000",
+          "phase": "native-a",
+          "resource": "exp181.native-a",
+          "service": "ios-sdk-native-multi-scene-probe",
+          "session_id": "f116322e-5a5d-4a0c-bc9a-b9a3054d7873",
+          "span_id": "3b7d1506b543e121",
+          "trace_id": "6aac909c000000001793de3fafcb16f0",
+          "view_id": "851b1219-c6d2-4e76-a3e4-e6450f3e3815"
+        },
+        {
+          "action_ids": [],
+          "application_id": "43cbc59b-0626-438b-a3d9-c6417a4545a3",
+          "duration_ns": 67818999,
+          "is_error": false,
+          "operation": "exp181.otel-a",
+          "parent_id": "0000000000000000",
+          "phase": "otel-a",
+          "resource": "exp181.otel-a",
+          "service": "ios-sdk-native-multi-scene-probe",
+          "session_id": "f116322e-5a5d-4a0c-bc9a-b9a3054d7873",
+          "span_id": "e3a3adc9da48137b",
+          "trace_id": "8279893259bd44e430b0391d6f2dc103",
+          "view_id": "851b1219-c6d2-4e76-a3e4-e6450f3e3815"
+        },
+        {
+          "action_ids": [],
+          "application_id": "43cbc59b-0626-438b-a3d9-c6417a4545a3",
+          "duration_ns": 87243080,
+          "is_error": false,
+          "operation": "exp181.native-fallback",
+          "parent_id": "0000000000000000",
+          "phase": "native-fallback",
+          "resource": "exp181.native-fallback",
+          "service": "ios-sdk-native-multi-scene-probe",
+          "session_id": "f116322e-5a5d-4a0c-bc9a-b9a3054d7873",
+          "span_id": "138370dc1e6d097d",
+          "trace_id": "6aac909c00000000b61d253125d7d163",
+          "view_id": "47ab2bf3-e4e1-40f2-ad15-7ca045fe80f4"
+        },
+        {
+          "action_ids": [],
+          "application_id": "43cbc59b-0626-438b-a3d9-c6417a4545a3",
+          "duration_ns": 109465003,
+          "is_error": false,
+          "operation": "exp181.otel-fallback",
+          "parent_id": "0000000000000000",
+          "phase": "otel-fallback",
+          "resource": "exp181.otel-fallback",
+          "service": "ios-sdk-native-multi-scene-probe",
+          "session_id": "f116322e-5a5d-4a0c-bc9a-b9a3054d7873",
+          "span_id": "54e7d6191d8325ea",
+          "trace_id": "90320b2035089d987a20ccb594a42ac5",
+          "view_id": "47ab2bf3-e4e1-40f2-ad15-7ca045fe80f4"
+        },
+        {
+          "action_ids": [],
+          "application_id": "43cbc59b-0626-438b-a3d9-c6417a4545a3",
+          "duration_ns": 131078362,
+          "is_error": false,
+          "operation": "urlsession.request",
+          "parent_id": "0000000000000000",
+          "phase": "url-b",
+          "resource": "https://multi-scene-probe.invalid/trace-only/exp181-20260918T011416Z-aad5523b7725/scene-B/home/url-b",
+          "service": "ios-sdk-native-multi-scene-probe",
+          "session_id": "f116322e-5a5d-4a0c-bc9a-b9a3054d7873",
+          "span_id": "0f51031df96cf540",
+          "trace_id": "6aac909c00000000daf62c5ebfbd7207",
+          "view_id": "47ab2bf3-e4e1-40f2-ad15-7ca045fe80f4"
+        },
+        {
+          "action_ids": [],
+          "application_id": "43cbc59b-0626-438b-a3d9-c6417a4545a3",
+          "duration_ns": 153803825,
+          "is_error": false,
+          "operation": "urlsession.request",
+          "parent_id": "0000000000000000",
+          "phase": "url-a",
+          "resource": "https://multi-scene-probe.invalid/trace-only/exp181-20260918T011416Z-aad5523b7725/scene-A/home/url-a",
+          "service": "ios-sdk-native-multi-scene-probe",
+          "session_id": "f116322e-5a5d-4a0c-bc9a-b9a3054d7873",
+          "span_id": "32013973117f1585",
+          "trace_id": "6aac909c00000000f4748213395d4ffc",
+          "view_id": "851b1219-c6d2-4e76-a3e4-e6450f3e3815"
+        },
+        {
+          "action_ids": [],
+          "application_id": "43cbc59b-0626-438b-a3d9-c6417a4545a3",
+          "duration_ns": 174545169,
+          "is_error": false,
+          "operation": "urlsession.request",
+          "parent_id": "0000000000000000",
+          "phase": "url-fallback",
+          "resource": "https://multi-scene-probe.invalid/trace-only/exp181-20260918T011416Z-aad5523b7725/source-less/home/url-fallback",
+          "service": "ios-sdk-native-multi-scene-probe",
+          "session_id": "f116322e-5a5d-4a0c-bc9a-b9a3054d7873",
+          "span_id": "4d8e6881f05727c6",
+          "trace_id": "6aac909c00000000ab66ddd1a865e8b7",
+          "view_id": "47ab2bf3-e4e1-40f2-ad15-7ca045fe80f4"
+        }
+      ],
+      "state": "PASS",
+      "views": [
+        {
+          "name": "ApplicationLaunch",
+          "session_id": "f116322e-5a5d-4a0c-bc9a-b9a3054d7873",
+          "view_id": "2e7c08e2-1776-492e-89da-b41d322fd84c"
+        },
+        {
+          "name": "ProbeHomeView",
+          "session_id": "f116322e-5a5d-4a0c-bc9a-b9a3054d7873",
+          "view_id": "851b1219-c6d2-4e76-a3e4-e6450f3e3815"
+        },
+        {
+          "name": "ProbeHomeView",
+          "session_id": "f116322e-5a5d-4a0c-bc9a-b9a3054d7873",
+          "view_id": "47ab2bf3-e4e1-40f2-ad15-7ca045fe80f4"
+        }
+      ]
+    },
+    "preflight": {
+      "authenticated_read": true,
+      "state": "PASS"
+    }
+  },
+  "started_at": "2026-09-18T01:14:16.398025+00:00",
+  "state": "PASS",
+  "xcode": "Xcode 27.0\nBuild version 27A266a"
+}

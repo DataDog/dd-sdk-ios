@@ -1291,3 +1291,9 @@ and bridge-response writes need escalation. Record bridge elapsed time in the
 durable summary. An otherwise correct response received after the deadline cannot
 retroactively pass the run. Measure the corrected read/decode path on preserved
 evidence before paying for another clean installation.
+
+
+Separate backend index visibility from detail retrieval cost in timing diagnostics.
+A valid zero-result read can precede span visibility. Keep aggregate polling bounded,
+then validate every indexed span and its exact owner; measure the detail batch
+independently so query latency cannot be confused with SDK dispatch overhead.

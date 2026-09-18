@@ -31,6 +31,8 @@ Additional risks raised alongside the original findings have separate evidence:
 [retained scene state/P03](Results/EXP-172-scene-retention.json),
 [observer delivery/R05](Results/EXP-174-observer-delivery.json) and
 [late Resource completion/T03](Results/EXP-175-resource-completion.json).
+Downstream validation of D04’s Trace consumer is recorded in
+[EXP-181](Results/EXP-181-trace-start-ownership.json).
 Physical lifecycle, API review and final release gates remain separate.
 
 The following original findings describe the reviewed revision, not current

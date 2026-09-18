@@ -319,8 +319,8 @@
       "decisive_test": "Native/OTel/URLSession start in A then complete under B; one span, A context, no retarget or duplicate; source-less starts document representative fallback",
       "environment": "iOS 27 simulator, Trace/OTel/URLSession fixtures and backend; shared request also H07",
       "completion_mode": "captured start ownership",
-      "status": "OPEN",
-      "evidence": "EXP-181:158 Trace tests and178 probe tests pass; two native20/20 runs retain backend-format/deadline INCONCLUSIVE outcomes. Batched exact9-span diagnostic joins pass in3.562s;125 Python/23 Node controls. Fresh frozen acceptance remains required; Results/EXP-181-trace-start-ownership.json."
+      "status": "CLOSED",
+      "evidence": "EXP-181 accepted at local23520bc9b; unchanged SDK04201edc7.158 Trace/178 probe tests,125 Python/23 Node controls,20/20 native assertions; exact9 APM spans/3 RUM views,0 Resources/errors/crashes. Original format/deadline attempts preserved; Results/EXP-181-trace-start-ownership.json. H07 remains separate."
     },
     {
       "id": "T09",
