@@ -5,7 +5,9 @@
  */
 
 import Foundation
-#if !os(watchOS)
+#if canImport(AppKit)
+import AppKit
+#elseif !os(watchOS)
 import UIKit
 #endif
 import DatadogInternal
@@ -92,7 +94,7 @@ extension RUM.Configuration: AnyMockable, RandomMockable {
             telemetrySampleRate: .mockRandom(min: 0, max: 100)
         )
     }
-    #else
+    #elseif !os(macOS)
     public static func mockWith(
         applicationID: String = .mockAny(),
         sessionSampleRate: SampleRate = .maxSampleRate,
@@ -148,7 +150,65 @@ extension RUM.Configuration: AnyMockable, RandomMockable {
             telemetrySampleRate: telemetrySampleRate
         )
     }
+    #else
+    public static func mockWith(
+        applicationID: String = .mockAny(),
+        sessionSampleRate: SampleRate = .maxSampleRate,
+        appKitViewsPredicate: DDKitRUMViewsPredicate? = DefaultAppKitRUMViewsPredicate(),
+        macOSActionsPredicate: DDKitRUMActionsPredicate? = DefaultMacOSRUMActionsPredicate(),
+        swiftUIViewsPredicate: SwiftUIRUMViewsPredicate? = DefaultSwiftUIRUMViewsPredicate(),
+        urlSessionTracking: URLSessionTracking? = nil,
+        trackFrustrations: Bool = .mockAny(),
+        trackBackgroundEvents: Bool = .mockAny(),
+        longTaskThreshold: TimeInterval? = 0.1,
+        appHangThreshold: TimeInterval? = nil,
+        trackWatchdogTerminations: Bool = .mockAny(),
+        vitalsUpdateFrequency: VitalsFrequency? = .average,
+        networkSettledResourcePredicate: NetworkSettledResourcePredicate = TimeBasedTNSResourcePredicate(),
+        nextViewActionPredicate: NextViewActionPredicate? = TimeBasedINVActionPredicate(),
+        viewEventMapper: RUM.ViewEventMapper? = nil,
+        resourceEventMapper: RUM.ResourceEventMapper? = nil,
+        actionEventMapper: RUM.ActionEventMapper? = nil,
+        errorEventMapper: RUM.ErrorEventMapper? = nil,
+        longTaskEventMapper: RUM.LongTaskEventMapper? = nil,
+        onSessionStart: RUM.SessionListener? = nil,
+        customEndpoint: URL? = .mockAny(),
+        trackAnonymousUser: Bool = .mockAny(),
+        trackMemoryWarnings: Bool = .mockAny(),
+        trackSlowFrames: Bool = .mockAny(),
+        telemetrySampleRate: SampleRate = 0
+    ) -> RUM.Configuration {
+        .init(
+            applicationID: applicationID,
+            sessionSampleRate: sessionSampleRate,
+            appKitViewsPredicate: appKitViewsPredicate,
+            macOSActionsPredicate: macOSActionsPredicate,
+            swiftUIViewsPredicate: swiftUIViewsPredicate,
+            urlSessionTracking: urlSessionTracking,
+            trackFrustrations: trackFrustrations,
+            trackBackgroundEvents: trackBackgroundEvents,
+            longTaskThreshold: longTaskThreshold,
+            appHangThreshold: appHangThreshold,
+            trackWatchdogTerminations: trackWatchdogTerminations,
+            vitalsUpdateFrequency: vitalsUpdateFrequency,
+            networkSettledResourcePredicate: networkSettledResourcePredicate,
+            nextViewActionPredicate: nextViewActionPredicate,
+            viewEventMapper: viewEventMapper,
+            resourceEventMapper: resourceEventMapper,
+            actionEventMapper: actionEventMapper,
+            errorEventMapper: errorEventMapper,
+            longTaskEventMapper: longTaskEventMapper,
+            onSessionStart: onSessionStart,
+            customEndpoint: customEndpoint,
+            trackAnonymousUser: trackAnonymousUser,
+            trackMemoryWarnings: trackMemoryWarnings,
+            trackSlowFrames: trackSlowFrames,
+            telemetrySampleRate: telemetrySampleRate
+        )
+    }
+    #endif
 
+    #if !os(watchOS)
     public static func mockRandom() -> RUM.Configuration {
         .mockWith(
             applicationID: .mockRandom(),
@@ -281,7 +341,7 @@ extension RUMEventsMapper {
 
 /// Holds the `mockView` object so it can be weakly referenced by `RUMViewScope` mocks.
 #if !os(watchOS)
-public let mockView: UIViewController = createMockViewInWindow()
+public let mockView: DDViewController = createMockViewInWindow()
 #endif
 
 extension ViewIdentifier {
@@ -1411,31 +1471,45 @@ extension RUMUserActionScope {
 }
 
 #if !os(watchOS)
-private let mockWindow = UIWindow(frame: .zero)
+#if os(macOS)
+private let mockWindow = DDWindow()
+#else
+private let mockWindow = DDWindow(frame: .zero)
+#endif
 
-public func createMockViewInWindow() -> UIViewController {
-    let viewController = UIViewController()
+public func createMockViewInWindow() -> DDViewController {
+    let viewController = DDViewController()
+    #if os(macOS)
+    mockWindow.contentViewController = viewController
+    mockWindow.makeKeyAndOrderFront(nil)
+    #else
     mockWindow.rootViewController = viewController
     mockWindow.makeKeyAndVisible()
+    #endif
     return viewController
 }
 
 /// Creates an instance of `UIViewController` subclass with a given name.
-public func createMockView(viewControllerClassName: String) -> UIViewController {
+public func createMockView(viewControllerClassName: String) -> DDViewController {
     var theClass: AnyClass! // swiftlint:disable:this implicitly_unwrapped_optional
 
     if let existingClass = objc_lookUpClass(viewControllerClassName) {
         theClass = existingClass
     } else {
-        let newClass: AnyClass = objc_allocateClassPair(UIViewController.classForCoder(), viewControllerClassName, 0)!
+        let newClass: AnyClass = objc_allocateClassPair(DDViewController.classForCoder(), viewControllerClassName, 0)!
         objc_registerClassPair(newClass)
         theClass = newClass
     }
 
-    let viewController = UIViewController()
+    let viewController = DDViewController()
     object_setClass(viewController, theClass)
+    #if os(macOS)
+    mockWindow.contentViewController = viewController
+    mockWindow.makeKeyAndOrderFront(nil)
+    #else
     mockWindow.rootViewController = viewController
     mockWindow.makeKeyAndVisible()
+    #endif
     return viewController
 }
 #endif
@@ -1465,23 +1539,24 @@ public class RUMCommandSubscriberMock: RUMCommandSubscriber {
 }
 
 #if !os(watchOS)
-public class UIKitRUMViewsPredicateMock: UIKitRUMViewsPredicate {
-    public var resultByViewController: [UIViewController: RUMView] = [:]
+public class UIKitRUMViewsPredicateMock: DDKitRUMViewsPredicate {
+    public var resultByViewController: [DDViewController: RUMView] = [:]
     public var result: RUMView?
 
     public init(result: RUMView? = nil) {
         self.result = result
     }
 
-    public func rumView(for viewController: UIViewController) -> RUMView? {
+    public func rumView(for viewController: DDViewController) -> RUMView? {
         return resultByViewController[viewController] ?? result
     }
 }
 
-public class UIKitRUMViewsHandlerMock: UIViewControllerHandler {
+#if os(macOS)
+public class AppKitRUMViewsHandlerMock: NSViewControllerHandler {
     public var onSubscribe: ((RUMCommandSubscriber) -> Void)?
-    public var notifyViewDidAppear: ((UIViewController, Bool) -> Void)?
-    public var notifyViewDidDisappear: ((UIViewController, Bool) -> Void)?
+    public var notifyViewDidAppear: ((DDViewController) -> Void)?
+    public var notifyViewDidDisappear: ((DDViewController) -> Void)?
 
     public init() {}
 
@@ -1489,21 +1564,43 @@ public class UIKitRUMViewsHandlerMock: UIViewControllerHandler {
         onSubscribe?(subscriber)
     }
 
-    public func notify_viewDidAppear(viewController: UIViewController, animated: Bool) {
+    public func notify_viewDidAppear(viewController: DDViewController) {
+        notifyViewDidAppear?(viewController)
+    }
+
+    public func notify_viewDidDisappear(viewController: DDViewController) {
+        notifyViewDidDisappear?(viewController)
+    }
+}
+#else
+public class UIKitRUMViewsHandlerMock: UIViewControllerHandler {
+    public var onSubscribe: ((RUMCommandSubscriber) -> Void)?
+    public var notifyViewDidAppear: ((DDViewController, Bool) -> Void)?
+    public var notifyViewDidDisappear: ((DDViewController, Bool) -> Void)?
+
+    public init() {}
+
+    public func publish(to subscriber: RUMCommandSubscriber) {
+        onSubscribe?(subscriber)
+    }
+
+    public func notify_viewDidAppear(viewController: DDViewController, animated: Bool) {
         notifyViewDidAppear?(viewController, animated)
     }
 
-    public func notify_viewDidDisappear(viewController: UIViewController, animated: Bool) {
+    public func notify_viewDidDisappear(viewController: DDViewController, animated: Bool) {
         notifyViewDidDisappear?(viewController, animated)
     }
 }
+#endif
 
 #if os(tvOS)
 public typealias UIKitRUMActionsPredicateMock = UIPressRUMActionsPredicateMock
-#else
+#elseif !os(macOS)
 public typealias UIKitRUMActionsPredicateMock = UITouchRUMActionsPredicateMock
 #endif
 
+#if !os(macOS)
 public class UITouchRUMActionsPredicateMock: UITouchRUMActionsPredicate {
     public var resultByView: [UIView: RUMAction] = [:]
     public var result: RUMAction?
@@ -1529,7 +1626,38 @@ public class UIPressRUMActionsPredicateMock: UIPressRUMActionsPredicate {
         return resultByView[targetView] ?? result
     }
 }
+#else
+public class MacOSRUMActionsPredicateMock: MacOSRUMActionsPredicate {
+    public var resultByView: [NSView: RUMAction] = [:]
+    public var resultByMenuItem: [NSMenuItem: RUMAction] = [:]
+    public var resultByAccessibilityRole: [NSAccessibility.Role: RUMAction] = [:]
+    public var result: RUMAction?
+    public private(set) var receivedViews: [NSView] = []
+    public private(set) var receivedAccessibilityRoles: [NSAccessibility.Role] = []
+    public private(set) var receivedAccessibilityIdentifiers: [String?] = []
 
+    public init(result: RUMAction? = nil) {
+        self.result = result
+    }
+
+    public func rumAction(targetView: NSView) -> RUMAction? {
+        receivedViews.append(targetView)
+        return resultByView[targetView] ?? result
+    }
+
+    public func rumAction(targetMenuItem: NSMenuItem) -> RUMAction? {
+        return resultByMenuItem[targetMenuItem] ?? result
+    }
+
+    public func rumAction(accessibilityRole: NSAccessibility.Role, identifier: String?) -> RUMAction? {
+        receivedAccessibilityRoles.append(accessibilityRole)
+        receivedAccessibilityIdentifiers.append(identifier)
+        return resultByAccessibilityRole[accessibilityRole] ?? result
+    }
+}
+#endif
+
+#if !os(macOS)
 public class MockSwiftUIRUMActionsPredicate: SwiftUIRUMActionsPredicate {
     var returnAction: RUMAction?
 
@@ -1541,10 +1669,15 @@ public class MockSwiftUIRUMActionsPredicate: SwiftUIRUMActionsPredicate {
         return returnAction
     }
 }
+#endif
 
 public class RUMActionsHandlerMock: RUMActionsHandling {
     public var onSubscribe: ((RUMCommandSubscriber) -> Void)?
+    #if os(macOS)
+    public var onSendEvent: ((NSEvent) -> Void)?
+    #else
     public var onSendEvent: ((UIApplication, UIEvent) -> Void)?
+    #endif
     public var onViewModifierTapped: ((String, [String: any Encodable]) -> Void)?
 
     public init() { }
@@ -1553,9 +1686,21 @@ public class RUMActionsHandlerMock: RUMActionsHandling {
         onSubscribe?(subscriber)
     }
 
+    #if os(macOS)
+    public func notify_sendEvent(event: NSEvent) {
+        onSendEvent?(event)
+    }
+
+    public func notify_sendAction(app: NSApplication, action: Selector?, target: Any?, from: Any?) {
+    }
+
+    public func notify_menuItemSelected(_ menuItem: NSMenuItem) {
+    }
+    #else
     public func notify_sendEvent(application: UIApplication, event: UIEvent) {
         onSendEvent?(application, event)
     }
+    #endif
 
     public func notify_viewModifierTapped(actionName: String, actionAttributes: [String: any Encodable]) {
         onViewModifierTapped?(actionName, actionAttributes)
@@ -1929,27 +2074,27 @@ extension RUMResourceScope {
 // MARK: - Auto Instrumentation Mocks
 
 #if !os(watchOS)
-public class UIKitPredicateWithTrackingMock: UIKitRUMViewsPredicate {
+public class UIKitPredicateWithTrackingMock: DDKitRUMViewsPredicate {
     public var numberOfCalls: Int
 
     public init(numberOfCalls: Int = 0) {
         self.numberOfCalls = numberOfCalls
     }
 
-    public func rumView(for viewController: UIViewController) -> RUMView? {
+    public func rumView(for viewController: DDViewController) -> RUMView? {
         numberOfCalls += 1
         return .init(name: .mockRandom())
     }
 }
 
-public class UIKitPredicateWithModalMock: UIKitRUMViewsPredicate {
-    let untrackedModal: UIViewController
+public class UIKitPredicateWithModalMock: DDKitRUMViewsPredicate {
+    let untrackedModal: DDViewController
 
-    public init(untrackedModal: UIViewController) {
+    public init(untrackedModal: DDViewController) {
         self.untrackedModal = untrackedModal
     }
 
-    public func rumView(for viewController: UIViewController) -> RUMView? {
+    public func rumView(for viewController: DDViewController) -> RUMView? {
         let isUntrackedModal = viewController == untrackedModal
         return .init(name: .mockRandom(), isUntrackedModal: isUntrackedModal)
     }
@@ -1969,18 +2114,19 @@ public class SwiftUIRUMViewsPredicateMock: SwiftUIRUMViewsPredicate {
 }
 
 public class SwiftUIViewNameExtractorMock: SwiftUIViewNameExtractor {
-    public var resultByViewController: [UIViewController: String] = [:]
+    public var resultByViewController: [DDViewController: String] = [:]
     public var defaultResult: String?
 
     public init(defaultResult: String? = nil) {
         self.defaultResult = defaultResult
     }
 
-    public func extractName(from viewController: UIViewController) -> String? {
+    public func extractName(from viewController: DDViewController) -> String? {
         return resultByViewController[viewController] ?? defaultResult
     }
 }
 
+#if !os(macOS)
 public class SwiftUIRUMActionsPredicateMock: SwiftUIRUMActionsPredicate {
     public var resultByName: [String: RUMAction] = [:]
     public var result: RUMAction?
@@ -1993,4 +2139,5 @@ public class SwiftUIRUMActionsPredicateMock: SwiftUIRUMActionsPredicate {
         return resultByName[componentName] ?? result
     }
 }
+#endif
 #endif

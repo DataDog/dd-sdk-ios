@@ -10,6 +10,7 @@ import TestUtilities
 @testable import DatadogCore
 @testable import DatadogRUM
 
+@MainActor
 class RUMSessionWithNoViewTests: RUMSessionTestsBase {
     // MARK: - Scenarios for session with no view
 
