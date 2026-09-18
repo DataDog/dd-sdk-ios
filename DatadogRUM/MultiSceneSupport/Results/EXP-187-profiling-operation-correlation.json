@@ -110,9 +110,30 @@
       "failures": []
     }
   ],
-  "native_attempts": [],
+  "native_attempts": [
+    {
+      "run_id": "exp187-185940ce-ddf9-4019-a082-ff731036a29c",
+      "state": "INVALID",
+      "revision": "21c312a4312146ae920cf0e88e6494859a32fe02",
+      "durable_result": "Results/acceptance/exp187-185940ce-ddf9-4019-a082-ff731036a29c.json",
+      "artifact": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp187-simulator-0wop77wx/attempt",
+      "build": "PASS Release opt-in fixture, arm64 and x86_64",
+      "clean_install": "PASS data-container absence and installed executable SHA-256 match",
+      "native_status": "INVALID",
+      "completed_assertions": 1,
+      "operation_steps": 0,
+      "views": 0,
+      "ttid_count": 0,
+      "reason": "Built BenchmarkTests Runner has empty ClientToken and invalid/empty ApplicationID. Presence/UUID booleans only were inspected in built Info.plist; protected local xcconfig was not read. Preparation rejected before SDK initialization/scenario.",
+      "receipt_sha256": "aa16c2bf00eea567e44c07681a179521633f5ebc5e6d46ef6a1cc7747d264aba",
+      "executable_sha256": "59906d095d5898861f045edf1c7513c6422a978fe419885846cd2b46c99c8613",
+      "source_fingerprint": "0d0058e2c468320acf71c371f7000b8af0853708756ddb680af019b452eaaeb7",
+      "workspace_preserved": true,
+      "physical_backend": "NOT RUN"
+    }
+  ],
   "device_attempts": [],
-  "next": "Freeze native implementation and execute its repeatable simulator mechanics and ordinary Release exclusion checks; physical/profile access and F01 decision remain pending.",
+  "next": "User requested pause for Codex restart. On resume, repair benchmark configuration wiring using existing non-secret source/build settings without reading or changing protected local xcconfig; freeze repair, then use a fresh full simulator attempt and separate ordinary Release exclusion build. Do not rerun accepted SDK tests.",
   "deterministic_status": "PASS",
   "physical_backend_status": "ENVIRONMENT BLOCKED",
   "unit_summary": {
@@ -155,7 +176,7 @@
   ],
   "environment_observation": {
     "physical_devices": "Paired iPhone27.2 and iPad27 unavailable; DDI false for both.",
-    "profile_backend": "RUM query authenticated. Profile browser redirects to login; sign-in request pending. Current MCP tools and skill discovery expose no profile-retrieval tool.",
+    "profile_backend": "Latest live inventory exposes34 Datadog tools and no profiling/profile/pprof tool. RUM access authenticated earlier; browser remains at sign-in. No universal Datadog MCP capability claim.",
     "fresh_device_discovery": "2026-09-18T07:25:35Z"
   },
   "limits": [
@@ -176,7 +197,7 @@
     "definition_revision": "aaa70d2d17e860e1eb7f7bf67734d66bfdfe7622"
   },
   "native_implementation": {
-    "state": "IMPLEMENTED; FROZEN NATIVE EXECUTION PENDING",
+    "state": "COMMITTED; FIRST FROZEN RUN INVALID DURING CONFIGURATION",
     "fixture": "BenchmarkTests/Runner/Scenarios/Profiling/ProfilingAcceptance.swift",
     "driver": "tools/multi-scene/profiling-correlation/run_simulator.py",
     "validator": "tools/multi-scene/profiling-correlation/validate.py",
@@ -189,6 +210,9 @@
       "exit_code": 0,
       "artifact": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp187-native-build-s9mha1ja",
       "limits": "Development build precedes final native clock/process receipt fields; no native run or gate closure"
-    }
+    },
+    "revision": "21c312a4312146ae920cf0e88e6494859a32fe02",
+    "signature": "VERIFIED",
+    "ordinary_release_exclusion": "NOT RUN"
   }
 }

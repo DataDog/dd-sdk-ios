@@ -1,0 +1,56 @@
+{
+  "artifact_root": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp187-simulator-0wop77wx/attempt",
+  "backend_validation": "NOT_RUN",
+  "build": {
+    "bundle": "com.datadoghq.benchmarks.Runner",
+    "executable_sha256": "59906d095d5898861f045edf1c7513c6422a978fe419885846cd2b46c99c8613",
+    "uuid": "UUID: 00E79011-3047-3684-B184-A30AF6A39F33 (x86_64) /private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp187-simulator-0wop77wx/attempt/derived/Build/Products/Release-iphonesimulator/Runner.app/Runner\nUUID: D2824300-911D-308C-9797-F3850DCAE0DB (arm64) /private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp187-simulator-0wop77wx/attempt/derived/Build/Products/Release-iphonesimulator/Runner.app/Runner"
+  },
+  "device": {
+    "dataPath": "/Users/valentin.pertuisot/Library/Developer/CoreSimulator/Devices/59A8E789-932A-48D0-9281-0F49DEB8E96D/data",
+    "dataPathSize": 5198508032,
+    "deviceTypeIdentifier": "com.apple.CoreSimulator.SimDeviceType.iPhone-18-Pro",
+    "isAvailable": true,
+    "lastUsedAt": "2026-09-18T07:38:12Z",
+    "logPath": "/Users/valentin.pertuisot/Library/Logs/CoreSimulator/59A8E789-932A-48D0-9281-0F49DEB8E96D",
+    "logPathSize": 315392,
+    "name": "iPhone 18 Pro",
+    "runtime": "com.apple.CoreSimulator.SimRuntime.iOS-27-0",
+    "state": "Booted",
+    "udid": "59A8E789-932A-48D0-9281-0F49DEB8E96D"
+  },
+  "experiment": "EXP-187",
+  "failure": "native fixture did not pass",
+  "finished_at": "2026-09-18T07:57:30.888295+00:00",
+  "gate": "T14",
+  "gate_status": "INVALID",
+  "native_validation": "NOT_RUN",
+  "pid": 44864,
+  "remaining": [
+    "supported physical native samples",
+    "complete backend RUM/profile inventory",
+    "exact profile attachment and process labels"
+  ],
+  "revision": "21c312a4312146ae920cf0e88e6494859a32fe02",
+  "run_id": "exp187-185940ce-ddf9-4019-a082-ff731036a29c",
+  "schema_version": 1,
+  "scope": "SIMULATOR_MECHANICS_ONLY",
+  "signature": "VERIFIED",
+  "source_fingerprint": "0d0058e2c468320acf71c371f7000b8af0853708756ddb680af019b452eaaeb7",
+  "stages": {
+    "build": {
+      "state": "PASS"
+    },
+    "clean_install": {
+      "absent_before_install": true,
+      "installed_binary_sha256": "59906d095d5898861f045edf1c7513c6422a978fe419885846cd2b46c99c8613",
+      "state": "PASS"
+    },
+    "preflight": {
+      "state": "PASS"
+    }
+  },
+  "started_at": "2026-09-18T07:55:52.531316+00:00",
+  "workspace_preserved": true,
+  "xcode": "Xcode 27.0\nBuild version 27A266a"
+}

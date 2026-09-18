@@ -256,6 +256,10 @@ correlation follows each resolved step. The first fixture error and iOS27
 legacy-host non-run are preserved with their bounded corrections/environment
 choice. No production finding or repair is added. T14 still requires physical
 profiling and authenticated profile-backend proof; no per-scene CPU claim.
+The signed opt-in native fixture21c312a43 builds and clean-installs, but its first
+run rejects empty benchmark configuration before SDK initialization. The invalid
+receipt is preserved; no new production finding follows from this preparation
+failure. Configuration repair and ordinary-build exclusion verification remain.
 
 ## Stable API review boundary
 

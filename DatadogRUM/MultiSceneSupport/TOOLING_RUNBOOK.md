@@ -1524,6 +1524,13 @@ Its durable summary remains INCONCLUSIVE for T14 even when simulator mechanics
 pass. The ordinary-build mode checks the acceptance implementation and scene
 manifest are absent from normal Release builds.
 
+The first frozen native attempt showed that BenchmarkTests can build with empty
+client-token/application-ID substitutions. Build and clean-install success do not
+prove telemetry configuration. Require the fixture's configuration check before
+SDK initialization; inspect only presence/format booleans if diagnosing the built
+app, and never read the protected local xcconfig. Repair existing build-setting
+wiring, freeze it and use a new full attempt; preserve the original INVALID receipt.
+
 The existing BenchmarkTests Profiling runner already links the module; avoid
 adding a dependency to the native multi-scene probe. Freeze native counts/build/
 run identity and boundary assertions before a device run. Verify a real supported
