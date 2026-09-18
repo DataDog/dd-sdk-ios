@@ -233,6 +233,19 @@
       "durable_result": "Results/acceptance/exp187-95431cc7-32de-42ba-b7e5-2b9cb29c7b90.json",
       "reason": "Exact Xcode destination timed out with reported device preparation error; CoreDevice still reports connected. No physical app installation or execution.",
       "build_exit_code": 70
+    },
+    {
+      "run_id": "exp187-c8fa06e2-fbce-46dd-82e7-6e78a947de94",
+      "state": "INCONCLUSIVE",
+      "capture_revision": "77a5532c06f5f707f4400cecd0732ab5e3a3c84e",
+      "oracle_revision": "eb0cfcff49ac15a16e811efbf22d90ac3cac12a8",
+      "durable_result": "Results/acceptance/exp187-c8fa06e2-fbce-46dd-82e7-6e78a947de94.json",
+      "native": "PASS12/12",
+      "rum": "PASS12 complete events",
+      "profile": "PASS one continuous profile, exact start labels and2 sample joins",
+      "attachment": "pending physical export",
+      "cleanup": "unverified after disconnect",
+      "original_checker": "FAIL preserved; mandatory simulator launch profile was an oracle defect"
     }
   ],
   "next": "Execute the frozen native contract on a freshly available supported physical device, retaining fresh source/build/install/run identity and the same complete RUM/profile/raw attachment checks. Accepted simulator and SDK work must not be repeated merely to resume. F01 review and physical-device requests remain pending.",
@@ -361,5 +374,12 @@
     "malformed_controls": 18,
     "swift_typecheck": "PASS both fixture helpers",
     "sdk_changes": false
+  },
+  "profile_checker": {
+    "revision": "eb0cfcff49ac15a16e811efbf22d90ac3cac12a8",
+    "python_methods": 21,
+    "malformed_controls": 123,
+    "simulator_replay": "PASS two-profile inventory and original attachment",
+    "physical_replay": "PASS one-profile inventory and actual samples; raw export pending"
   }
 }

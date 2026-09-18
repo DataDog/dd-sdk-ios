@@ -1,0 +1,140 @@
+{
+  "artifact_root": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp187-physical-receipt-wosqgf3z",
+  "backend_validation": "NOT_RUN",
+  "build_destination": "generic/platform=iOS",
+  "build_exit_code": 0,
+  "bundle": "com.datadoghq.benchmarks.Runner",
+  "clean_app_absence": true,
+  "configuration_presence": "PASS",
+  "device": "iPhone 16 Pro Max",
+  "executable": "Runner",
+  "executable_sha256": "02ca10594f866d573c3935289481da2bb10032f4688b15558153b7213fc653dd",
+  "experiment": "EXP-187",
+  "gate": "T14",
+  "gate_status": "INCONCLUSIVE",
+  "installed_code_identity": {
+    "binaries": {
+      "Frameworks/CatalogSwiftUI.framework/CatalogSwiftUI": "a0f2a8b89b6f652a8e1d4e5621b1098288052437015253d9716ff3a186f60987",
+      "Frameworks/CatalogUIKit.framework/CatalogUIKit": "483e0c874af67bafe6522ce9baa580c376e2848cb51f59b8f3866f3fc43ee61e",
+      "Runner": "fb76090362b98e6a10bf113c8c83880ce0a7719ff4fd3b7609e291bf24449f62"
+    },
+    "boundary": "before-sdk-initialization",
+    "bundleIdentifier": "com.datadoghq.benchmarks.Runner",
+    "executable": "Runner",
+    "process_id": 8411,
+    "run_id": "exp187-c8fa06e2-fbce-46dd-82e7-6e78a947de94",
+    "source_revision": "77a5532c06f5f707f4400cecd0732ab5e3a3c84e",
+    "state": "PASS"
+  },
+  "launched_at": "2026-09-18T10:25:17.903579+00:00",
+  "native_assertions": 12,
+  "native_finished_at": "2026-09-18T10:26:36.798804+00:00",
+  "native_terminal_seen": true,
+  "native_validation": "PASS",
+  "os": "27.2",
+  "pid": 8411,
+  "platform": "PHYSICAL_DEVICE",
+  "revision": "77a5532c06f5f707f4400cecd0732ab5e3a3c84e",
+  "run_id": "exp187-c8fa06e2-fbce-46dd-82e7-6e78a947de94",
+  "session_id": "1885e121-a151-4dff-9262-252bf9b4138b",
+  "signature": "VERIFIED",
+  "signed_inventory": {
+    "binaries": {
+      "Frameworks/CatalogSwiftUI.framework/CatalogSwiftUI": "a0f2a8b89b6f652a8e1d4e5621b1098288052437015253d9716ff3a186f60987",
+      "Frameworks/CatalogUIKit.framework/CatalogUIKit": "483e0c874af67bafe6522ce9baa580c376e2848cb51f59b8f3866f3fc43ee61e",
+      "Runner": "fb76090362b98e6a10bf113c8c83880ce0a7719ff4fd3b7609e291bf24449f62"
+    },
+    "bundleIdentifier": "com.datadoghq.benchmarks.Runner",
+    "executable": "Runner"
+  },
+  "signing_status": "PASS",
+  "source_fingerprint": "2fb3aa22babfd99a2f766ad6ba3ca568c00fa01e9200e227042f5ca1bb11cde0",
+  "source_preserved": true,
+  "started_at": "2026-09-18T10:14:30.038715+00:00",
+  "test_policy": "Accepted SDK and semantic-oracle tests retained. Only opt-in pre-SDK code receipt changed; both helpers type-check, no added lint,9 checker tests/18 malformed controls pass.",
+  "transport": "wired",
+  "workspace_preserved": true,
+  "terminated_at": "2026-09-18T10:28:22.451778+00:00",
+  "cleanup_exit_code": 1,
+  "capture_revision": "77a5532c06f5f707f4400cecd0732ab5e3a3c84e",
+  "oracle_revision": "eb0cfcff49ac15a16e811efbf22d90ac3cac12a8",
+  "oracle_signature": "UNSIGNED authorized fallback after signing timeout",
+  "rum_validation": {
+    "state": "PASS",
+    "counts": {
+      "vital": 5,
+      "view": 4,
+      "operation": 2,
+      "session": 1
+    },
+    "unique_events": 12,
+    "pagination_exhausted": true,
+    "session_id": "1885e121-a151-4dff-9262-252bf9b4138b",
+    "exact_operation_step_ids": [
+      "9348010b-9290-40d9-a000-dacf40692dc8",
+      "e1acd2a8-bc72-49f1-92fe-a96ad9ea6b57",
+      "e50ab440-03a0-47a6-9ba7-84fd76abdacc",
+      "eac388d1-029b-4a7e-b244-460e82f5ad64"
+    ],
+    "profiler_statuses": [
+      "running"
+    ],
+    "all_operation_steps_have_profile": false
+  },
+  "profile_validation": {
+    "state": "PASS",
+    "continuous_profile_id": "AaC0DbPGAADaqwCZd8sERwAA",
+    "launch_profile_id": null,
+    "profile_count": 1,
+    "launch_profiled": false,
+    "exact_start_ids": [
+      "e50ab440-03a0-47a6-9ba7-84fd76abdacc",
+      "e1acd2a8-bc72-49f1-92fe-a96ad9ea6b57"
+    ],
+    "launch_vital_id": "ebf73a6a-745c-4ecf-bd4c-d558011a7cb8",
+    "nonempty_wall_time_stacks": true,
+    "sample_start_id_joins": 2,
+    "query_window": {
+      "from": "2026-09-18T10:25:00Z",
+      "to": "2026-09-18T10:27:00Z"
+    },
+    "visualizations": [
+      "https://app.datadoghq.com/api/v2/switch_to_user/d8aa6650-dfe0-11ef-960d-f2a6cd7d9e6c?next=%2Fprofiling%2Fexplorer%3Fquery%3Dservice%253Aios-benchmark%2Bprofile-id%253AAaC0DbPGAADaqwCZd8sERwAA%26profile_type%3Dwall-time%26start%3D1789727100000%26end%3D1789727220000%26viz%3Dflame_graph%26my_code%3Denabled%26paused%3Dtrue&flow=org_switch",
+      "https://app.datadoghq.com/api/v2/switch_to_user/d8aa6650-dfe0-11ef-960d-f2a6cd7d9e6c?next=%2Fprofiling%2Fexplorer%3Fquery%3Dservice%253Aios-benchmark%2Bprofile-id%253AAaC0DbPGAADaqwCZd8sERwAA%26profile_type%3Dwall-time%26attribute%3Dvital_id%26selection%3D%257B%2522incl%2522%253A%255B%2522e50ab440-03a0-47a6-9ba7-84fd76abdacc%2522%255D%257D%26start%3D1789727100000%26end%3D1789727220000%26viz%3Dflame_graph%26my_code%3Denabled%26paused%3Dtrue&flow=org_switch",
+      "https://app.datadoghq.com/api/v2/switch_to_user/d8aa6650-dfe0-11ef-960d-f2a6cd7d9e6c?next=%2Fprofiling%2Fexplorer%3Fquery%3Dservice%253Aios-benchmark%2Bprofile-id%253AAaC0DbPGAADaqwCZd8sERwAA%26profile_type%3Dwall-time%26attribute%3Dvital_id%26selection%3D%257B%2522incl%2522%253A%255B%2522e1acd2a8-bc72-49f1-92fe-a96ad9ea6b57%2522%255D%257D%26start%3D1789727100000%26end%3D1789727220000%26viz%3Dflame_graph%26my_code%3Denabled%26paused%3Dtrue&flow=org_switch"
+    ],
+    "limits": "Saved MCP inventory/sample proof; exact attachment and physical build/install evidence remain separate.",
+    "artifact_sha256": {
+      "backend-query.json": "240ceee13437cea54e3746910cf8d63377b1853d4c7582f37723a2440e9a8088",
+      "backend-profileInventory.json": "d785674c3be171973b71fbdc24396da12a43fcc06f3291af7e497ddeddc98a60",
+      "backend-sessionProfiles.json": "d785674c3be171973b71fbdc24396da12a43fcc06f3291af7e497ddeddc98a60",
+      "backend-profileJoins.json": "1e063326ed9ea3e4a66e8847538ba5592266448f6f8353fab3b670bbd8cf0665",
+      "backend-profile.json": "6e17c637a19169baa8283f5635700b3c3fa381c5d941a443b18f87cf541f9b6f",
+      "backend-name.json": "84afb7f184ab6819800ad6e77cef682e64d6679931010404d7eac2539f1f5295",
+      "backend-view.json": "0dbe917bdefb9718d648cb539845a7a61e370333e678f5cf9707dd296551c6e2",
+      "backend-sessionLabel.json": "16d5eda88ded118bcad319b69d2648d05459639f0a1d6c8a38b1f2266467ec93",
+      "backend-sampleA.json": "f8bbcc578843635bde5036be521ace0cbc4a5a5764b064cc48b75a7a10b8008c",
+      "backend-sampleB.json": "1c3ebcd0169cb9cadd6df8cf8a0511deba152b30b66b0174a2763f62182cd50f"
+    }
+  },
+  "attachment_validation": "NOT_PROVIDED",
+  "original_profile_validation": {
+    "state": "FAIL",
+    "reason": "unexpected complete profile inventory",
+    "artifact": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp187-physical-receipt-wosqgf3z/frozen-profile-validation.json"
+  },
+  "cleanup_status": "UNVERIFIED CoreDevice4016; later unavailable and no iPhone in USB enumeration",
+  "remaining": [
+    "actual physical rum-mobile-events attachment exact integer comparison",
+    "verify test-process cleanup after reconnect"
+  ],
+  "artifact_sha256": {
+    "native-receipt.json": "96acc09b5d6300779e97915fd394eeb68f1a56897097fcf264ace40d7ac08881",
+    "installed-code-receipt.json": "b81774a60732b25b5820431be2a99a39a15334c94d1055d40544125bc29db6fd",
+    "backend-raw.txt": "49c502eb458edfda57638ea2180275e5d98307dbe82504b60fd1499cf83b9546",
+    "backend-count.txt": "33f98bc21a1214234c4f351ca27134eb52e2db812ed6353d2d0915f3c0c1ca46",
+    "backend-end.txt": "13a9420e20ae8722a71ea85a87e61707cb91592989c4698e1c604a2c115f2cbb",
+    "frozen-profile-validation.json": "0f14e2dd565f9a6f3f00f655e95f5f4b879d7048e86cdcadcdc33bd824a65a3c",
+    "oracle-eb0cfcff4-validation.json": "a90601ce06117fba84c96ad29f3633e7a07dfa5d217948f766b14b4cdd97e281"
+  }
+}

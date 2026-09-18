@@ -267,12 +267,16 @@ simultaneous-window claim. Configuration, launch-inventory, rounding and samplin
 setup failures remain in the detailed experiment record with their corrected
 controls; they are acceptance-fixture issues, separate from D01–D12.
 
-The subsequent connected-phone preparations expose only acceptance tooling
-limits: bundle transfer cannot verify installed code, a suspended preflight has
-no native records, and Xcode's destination picker times out while CoreDevice is
-connected. Opt-in pre-SDK code-hash receipts address the identity prerequisite;
-no SDK source changes or new production finding follow. Physical scenario and
-backend evidence remain required before closing T13/T14.
+Physical preparation now verifies all installed Mach-O files before SDK
+initialization. T13's actual A samples pass, but its original serial fixture fails
+waiting for scene B on the phone; a separately defined single-scene device sample
+addresses the representative-hardware obligation. No routing defect is established.
+T14 passes native12/12, exact12-event RUM ownership and actual continuous-profile
+start/sample correlation. The original checker overfit an incidental simulator
+launch profile; the corrected declaration-driven oracle passes21 methods/123
+malformed controls and both saved captures. Its original FAIL remains. Physical
+raw attachment and cleanup after disconnect are pending. These are acceptance
+findings; D01–D12 dispositions and SDK production source are unchanged.
 
 ## Stable API review boundary
 

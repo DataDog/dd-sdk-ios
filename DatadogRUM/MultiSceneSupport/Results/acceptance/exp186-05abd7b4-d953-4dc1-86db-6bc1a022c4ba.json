@@ -1,0 +1,91 @@
+{
+  "artifact_root": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp186-physical-receipt-gazeo32v",
+  "backend_validation": "NOT_RUN",
+  "build_destination": "generic/platform=iOS",
+  "build_exit_code": 0,
+  "bundle": "com.datadoghq.rum-native-multi-scene-probe",
+  "clean_app_absence": true,
+  "configuration_presence": "PASS",
+  "device": "iPhone 16 Pro Max",
+  "executable": "RUMNativeMultiSceneProbe",
+  "executable_sha256": "6a38a5530faafdc7075fa276a80275120fa6294c1ecd2ff408885c575a808e70",
+  "experiment": "EXP-186",
+  "gate": "T13",
+  "gate_status": "FAIL",
+  "installed_code_identity": "PASS",
+  "launched_at": "2026-09-18T10:21:52.443436+00:00",
+  "native_failure": "native oracle did not pass",
+  "native_finished_at": "2026-09-18T10:22:57.657531+00:00",
+  "native_terminal_seen": true,
+  "native_validation": "FAIL",
+  "os": "27.2",
+  "pid": 8386,
+  "platform": "PHYSICAL_DEVICE",
+  "revision": "77a5532c06f5f707f4400cecd0732ab5e3a3c84e",
+  "run_id": "exp186-05abd7b4-d953-4dc1-86db-6bc1a022c4ba",
+  "signature": "VERIFIED",
+  "signed_inventory": {
+    "bundleIdentifier": "com.datadoghq.rum-native-multi-scene-probe",
+    "executable": "RUMNativeMultiSceneProbe",
+    "binaries": {
+      "RUMNativeMultiSceneProbe": "813e78435806b304ecc93fabc2ddcc2e24b33096fc0550a9c70be363b0baa027",
+      "RUMNativeMultiSceneProbe.debug.dylib": "fdd4d28279ec49bc1b63b5b877856fef7e053713612b28860933ed38e01a413a",
+      "__preview.dylib": "7fccf63abe27cc2b5f9f15a6511d2047f7b1014ecb991f44391fbfa9b4207e1d"
+    }
+  },
+  "signing_status": "PASS",
+  "source_fingerprint": "7620b474a83c58f591b9ca9afc61f775a0c14c7c7aecd7e034a08c2c3940ffe3",
+  "source_preserved": true,
+  "started_at": "2026-09-18T10:14:29.357999+00:00",
+  "test_policy": "Accepted SDK and semantic-oracle tests retained. Only opt-in pre-SDK code receipt changed; both helpers type-check, no added lint,9 checker tests/18 malformed controls pass.",
+  "transport": "wired",
+  "workspace_preserved": true,
+  "native_result": {
+    "issues": [
+      {
+        "reason": "step 3 open-window failed: timed out waiting for scene-ready in scene-B",
+        "signalSequence": 29
+      }
+    ],
+    "matchedExpectationCount": 0,
+    "scenarioID": "vitals.shared-process.cross-scene-serial",
+    "schemaVersion": 1,
+    "state": "FAIL"
+  },
+  "physical_scope": "Actual scene A samples only; requested scene B never reached native readiness",
+  "partial_owner": {
+    "sessionID": "69bd8e9e-6eb5-4972-bf0e-ca7be91c2280",
+    "viewID": "134f562c-cdec-4a64-8d6d-41a7f3b8cdd9"
+  },
+  "partial_metrics": {
+    "counters": {
+      "actions": 0,
+      "crashes": 0,
+      "errors": 0,
+      "longTasks": 0,
+      "resources": 0
+    },
+    "cpuRate": 265.4445172931467,
+    "cpuTicks": 271,
+    "memoryAverage": 74720333.81818181,
+    "memoryMax": 75695944,
+    "nativeSource": "ios",
+    "originalRunID": "exp186-05abd7b4-d953-4dc1-86db-6bc1a022c4ba",
+    "refreshRateAverage": 59.425330130457276,
+    "refreshRateMin": 27.85088437464849,
+    "slowFrames": [
+      {
+        "duration": 19240375,
+        "start": 16668000
+      },
+      {
+        "duration": 50004667,
+        "start": 250977125
+      }
+    ],
+    "timeSpentNanoseconds": 1020928979
+  },
+  "installed_code_receipt_sha256": "0f023c3daeb081a8394d6d985758660f9bf49a08aea8703e8bf6d0277a0cff3b",
+  "native_records_sha256": "c91f04fcbbf95934965ed274c087a6402e97dc674f455814fd65da7466cb5c73",
+  "cleanup_status": "PASS exact test PID terminated"
+}

@@ -111,9 +111,19 @@
       "signing": "PASS existing development identity/profile",
       "clean_install": "PASS app absent before install",
       "native_records": 0
+    },
+    {
+      "run_id": "exp186-05abd7b4-d953-4dc1-86db-6bc1a022c4ba",
+      "state": "FAIL",
+      "revision": "77a5532c06f5f707f4400cecd0732ab5e3a3c84e",
+      "durable_result": "Results/acceptance/exp186-05abd7b4-d953-4dc1-86db-6bc1a022c4ba.json",
+      "installed_code_identity": "PASS all3 Mach-O files",
+      "native": "A configuration/owner/sampling checks PASS; step3 open-window times out waiting for native scene B",
+      "backend": "NOT_RUN strict local oracle failed",
+      "sdk_finding": false
     }
   ],
-  "next": "Freeze opt-in installed-code receipts, then retry the existing physical T13 contract with a new clean installation/run ID. Phone second-scene capability must be demonstrated; no topology substitution.",
+  "next": "Define and prepare a one-scene physical sample for the remaining representative-device obligation, retaining the accepted cross-scene simulator contract unchanged.",
   "unit_source_sha256": "53c5cda262ec8932913d815d6c6273beff7e15c56a75fc9a2fe5495f027c7539",
   "unit_summary": {
     "total": 166,
@@ -163,7 +173,7 @@
     "oracle_contract_sha256": "1ce8583c667d327ce0417d271835073cb987c2fb767745f191ff07d6dbbdc74c"
   },
   "simulator_backend_status": "PASS",
-  "physical_status": "ENVIRONMENT BLOCKED",
+  "physical_status": "PARTIAL A samples; full serial contract FAIL",
   "limits": [
     "Shared process/system measurements retain existing view aggregation; no per-window CPU or frame attribution.",
     "Native acceptance is serial A/B; no simultaneous visibility, physical sampling or Duo claim.",

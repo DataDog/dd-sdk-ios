@@ -1624,3 +1624,18 @@ Preserve that console/summary evidence, rediscover an available iOS26.5 destinat
 and run the same integration selection there. Do not alter the protected project
 or reinterpret the host trap as a Profiling result. Unit controls remain valid
 on their exercised iOS27 host.
+
+### Optional launch profile in the EXP-187 inventory
+
+Launch sampling is0 in the frozen fixture. The simulator capture contains an
+incidental launch profile; the physical capture does not. Derive that inventory
+from independent RUM TTID metadata: a declared profile requires its exact distinct
+ID and launch/vital/view joins; explicit has_profile=false with no profile_id
+requires its absence and empty launch joins. Always require exactly one continuous
+profile with both start IDs and actual samples. Preserve extra/repeated/inconsistent
+inventory failures. Retain the original checker verdict and separate capture and
+oracle revisions when replaying immutable evidence.
+
+A successful native receipt is not cleanup proof. If CoreDevice returns4016 and
+USB no longer enumerates the phone, retain cleanup as unverified and wait for a
+fresh reconnection before inspecting/terminating only that test app.
