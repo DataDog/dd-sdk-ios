@@ -327,3 +327,9 @@ variants are unavailable through the verified older toolchain, and its device
 inventory contains no15 device. No runtime was installed or SDK/native case run.
 C06 remains required; this creates no SDK defect or compatibility-pass claim.
 The [durable record](Results/EXP-190-minimum-runtime.json) owns exact evidence.
+
+User environment correction, 2026-09-18: keep deployment15 compatibility, but
+current executable minimum coverage starts at17. C06 now records that separation
+and the unexecuted15/16 limit. Newly available Duo27.1 simulation is scoped by
+[EXP-191](Results/EXP-191-duo-same-key.json) under Xcode27.1 only. Neither change
+is a production fix, executed pass or waiver of physical/human evidence.

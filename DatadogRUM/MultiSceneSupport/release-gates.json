@@ -61,14 +61,14 @@
     },
     {
       "id": "C06",
-      "deliverable": "Minimum-supported runtime",
+      "deliverable": "iOS 15 deployment and oldest debuggable runtime",
       "owner": "SDK implementer",
       "dependencies": [],
-      "decisive_test": "Repeat automatic/manual/legacy smoke on iOS 15; compile minimum deployment target independently",
-      "environment": "iOS 15 device/runtime",
+      "decisive_test": "Compile/link at iOS 15 deployment; repeat baseline/current automatic/manual/legacy and actual legacy lifecycle smoke on the oldest available iOS 17 runtime, recording the exact patch. Disclose unexecuted iOS 15/16 coverage.",
+      "environment": "Genuine iOS 15 deployment build plus iOS 17 simulator/device supported by the available Xcode toolchain",
       "completion_mode": null,
       "status": "ENVIRONMENT BLOCKED",
-      "evidence": "EXP-160/189 verify minimum deployment15 compilation only. EXP-190: Xcode26.6 official15.0 universal/arm64 requests both return70/unavailable;0 downloads/installs/native runs. Older-Xcode physical discovery finds only27.2 iPhone; no15 environment. Results/EXP-190-minimum-runtime.json preserves exact responses and resume condition. No compatibility failure or waiver."
+      "evidence": "User correction on 2026-09-18: iOS15 debugging is unavailable; iOS17 is the minimum runnable family. EXP-160/189 retain deployment15 compile evidence; EXP-190 retains both unavailable15.0 requests without a runtime-pass claim. No17 runtime is installed at latest discovery; qualify it before the finite12-cell matrix. SDK deployment/support remains15."
     },
     {
       "id": "P01",
@@ -427,7 +427,7 @@
       "environment": "Physical iPad/iPhone Duo; human gesture for H11\u2013H13; resize-capable for H14",
       "completion_mode": null,
       "status": "ENVIRONMENT BLOCKED",
-      "evidence": ""
+      "evidence": "EXP-191 defined for the newly available Duo27.1 simulator under verified Xcode27.1 only. Run unchanged EXP-129 same-key/reverse-stop semantics with actual topology and exact backend owners. Simulator proof is recorded separately; original physical requirement is not waived."
     },
     {
       "id": "H02",

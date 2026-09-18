@@ -18,9 +18,10 @@ action completes; read live gate status and dependencies from the register.
 2. Complete dependency-ready telemetry families in T05–T14 order. Keep explicit
    targeting, captured ownership and documented process fallback as distinct
    completion contracts; no expandable “remaining signals” row is admitted.
-3. Resolve C03/C06 when their required runtime is available. Resume the physical
-   queue at H01 when capable iPad/Duo hardware is live, preserving repair
-   dependencies and required human/topology evidence.
+3. Complete C06 with deployment15 compilation and the oldest debuggable iOS17
+   runtime sample; document unexecuted15/16 coverage. Qualify the newly available
+   Duo27.1 simulator for H01 under Xcode27.1 only. Preserve the independent
+   physical iPad/Duo and human-gesture requirements.
 4. Complete F01 API review, F02 support documentation, F03 final compatibility
    matrix, F04 Duo acceptance, F05 Replay coexistence and F06 freeze according
    to their dependencies. Deferred extraction remains after freeze.
@@ -46,7 +47,7 @@ approved automatic/opaque limits. UIKit-hosted SwiftUI parity remains H16.
 | C03 | Legacy UIApplication lifecycle app | SDK implementer | None | No scene manifest; automatic and manual chains match baseline without a scene registry dependency | iOS 27 and 26.5 simulators; genuine pre27-SDK build for the legacy host | CLOSED | EXP-189 at b3a75d01f: genuineSDK26.5 builds of baseline92f021ba7/current SDK04201edc7 pass16 exact navigation/actual-lifecycle cells on27.0/26.5. All installed identities, source/fixture hashes, cleanup and restored simulator state pass. Original EXP-160/188 platform traps and EXP-189 preparation failure remain. Apple requires scene adoption forSDK27-built apps; no iOS15 claim. Results/EXP-189-legacy-build-sdk.json. |
 | C04 | Custom and NOP monitor compatibility | SDK implementer | None | Legacy-only conformer receives exactly one call; NOP emits nothing and never crashes | iOS 27 and 26.5 simulators | CLOSED | EXP-160; BASELINES.md and Results/EXP-160-baseline.json. Bounded workload passes on27/26.5; see recorded limitations. |
 | C05 | Older supported runtime sample | SDK implementer | None | Repeat C01–C04 on iOS 26.5 with no new experimental availability requirement | iOS 27 and 26.5 simulators | CLOSED | EXP-160; BASELINES.md and Results/EXP-160-baseline.json. Bounded workload passes on27/26.5; see recorded limitations. |
-| C06 | Minimum-supported runtime | SDK implementer | None | Repeat automatic/manual/legacy smoke on iOS 15; compile minimum deployment target independently | iOS 15 device/runtime | ENVIRONMENT BLOCKED | EXP-160/189 verify minimum deployment15 compilation only. EXP-190: Xcode26.6 official15.0 universal/arm64 requests both return70/unavailable;0 downloads/installs/native runs. Older-Xcode physical discovery finds only27.2 iPhone; no15 environment. Results/EXP-190-minimum-runtime.json preserves exact responses and resume condition. No compatibility failure or waiver. |
+| C06 | iOS 15 deployment and oldest debuggable runtime | SDK implementer | None | Compile/link at iOS 15 deployment; repeat baseline/current automatic/manual/legacy and actual legacy lifecycle smoke on the oldest available iOS 17 runtime, recording the exact patch. Disclose unexecuted iOS 15/16 coverage. | Genuine iOS 15 deployment build plus iOS 17 simulator/device supported by the available Xcode toolchain | ENVIRONMENT BLOCKED | User correction on 2026-09-18: iOS15 debugging is unavailable; iOS17 is the minimum runnable family. EXP-160/189 retain deployment15 compile evidence; EXP-190 retains both unavailable15.0 requests without a runtime-pass claim. No17 runtime is installed at latest discovery; qualify it before the finite12-cell matrix. SDK deployment/support remains15. |
 
 ## Performance and reentrancy
 
@@ -98,7 +99,7 @@ approved automatic/opaque limits. UIKit-hosted SwiftUI parity remains H16.
 
 | Gate | Deliverable / completion mode | Owner | Depends on | Decisive test | Environment | Status | Evidence |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| H01 | Same-key manual A/B reverse stop | Device operator + SDK implementer | A01 | EXP-129: distinct Compose IDs, B stop preserves A, fresh Home per scene | Physical iPad/iPhone Duo; human gesture for H11–H13; resize-capable for H14 | ENVIRONMENT BLOCKED | Pending |
+| H01 | Same-key manual A/B reverse stop | Device operator + SDK implementer | A01 | EXP-129: distinct Compose IDs, B stop preserves A, fresh Home per scene | Physical iPad/iPhone Duo; human gesture for H11–H13; resize-capable for H14 | ENVIRONMENT BLOCKED | EXP-191 defined for the newly available Duo27.1 simulator under verified Xcode27.1 only. Run unchanged EXP-129 same-key/reverse-stop semantics with actual topology and exact backend owners. Simulator proof is recorded separately; original physical requirement is not waived. |
 | H02 | Concurrent UIKit and SwiftUI split navigation | Device operator + SDK implementer | A01 | EXP-086/103: simultaneously visible A/B chains, distinct occurrences, no structural view | Physical iPad/iPhone Duo; human gesture for H11–H13; resize-capable for H14 | ENVIRONMENT BLOCKED | Pending |
 | H03 | Visible peer attribution and close continuity | Device operator + SDK implementer | A01 | EXP-041/089/113: A work stays on A while B represents; B close never stops A | Physical iPad/iPhone Duo; human gesture for H11–H13; resize-capable for H14 | ENVIRONMENT BLOCKED | Pending |
 | H04 | Actual focus and activation | Device operator + SDK implementer | A01 | EXP-114: target foreground-active, peer background, exact lifecycle and event owners | Physical iPad/iPhone Duo; human gesture for H11–H13; resize-capable for H14 | ENVIRONMENT BLOCKED | Pending |

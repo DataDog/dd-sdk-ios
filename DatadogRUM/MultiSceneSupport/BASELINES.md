@@ -17,7 +17,9 @@ API expansion; repeat at release freeze and after a relevant architectural chang
   discard an explicit warm-up batch. Preserve every sample and environment.
 - iOS 27 plus available older supported iOS 26.5; minimum iOS 15 compilation is
   separate from runtime proof. No iOS 15 runtime is installed at definition time.
-  Do not substitute a newer simulator for C06.
+  Historical EXP-160 did not substitute a runtime. Per the user correction on
+  2026-09-18, C06 now pairs deployment15 with the oldest available runnable17.x
+  sample; iOS15/16 execution remains explicitly untested.
 
 ## Representative correctness workload
 
@@ -77,7 +79,7 @@ committed.
 | C03 legacy lifecycle | INCONCLUSIVE | iOS 26.5 navigation and real OS background/foreground pairs pass for automatic/manual apps. Both SDK revisions trap in UIKit's no-scene-lifecycle adoption check on iOS 27 before completion; four binary-UUID-matched excerpts are recorded. This is an environment limit, not an SDK regression conclusion. |
 | C04 custom/NOP monitors | PASS | Eight focused launches preserve exact legacy forwarding and one nil NOP callback; the candidate's targeted action bridge also forwards exactly once on iOS 27. |
 | C05 available older runtime | PASS | iOS 26.5 ordinary apps, legacy navigation/background/foreground and custom/NOP checks pass. |
-| C06 minimum supported runtime | ENVIRONMENT BLOCKED | No iOS 15 runtime is installed. Both Release app variants compile/link with Mach-O minimum OS 15.0; this does not prove iOS 15 execution. |
+| C06 deployment15 / oldest debuggable runtime | ENVIRONMENT BLOCKED | Release app variants compile/link with Mach-O minimum OS15.0. User confirms debugging starts at17; qualify and execute the finite matrix on the oldest available17.x runtime, disclosing unexecuted15/16 coverage. |
 | P01 dispatch overhead | PASS | All frozen median/p95 budgets pass in complete ABBA quartets on both runtimes; numerical comparisons below. |
 | P02 allocation churn | FAIL | Ordinary filtered dispatch adds zero allocations. Enabled handoff adds **3 allocations and 416 requested bytes per event**, above the fixed **1 allocation / 64-byte** excess budgets, replicated in both candidate processes on both runtimes. |
 | P03 retained scene state | FAIL | After 20 warm-up + 200 lifetimes, both `sceneActivityByIdentifier` and `disconnectedSceneIdentifiers` retain **220 entries** in every candidate run. Zero controller weak references survive. First 100-cycle live-heap growth is 31,072–47,472 bytes; second is 15,616 bytes. Heap budgets pass, but registry ownership fails. This posted-handler fixture does not establish real OS scene or mounted SwiftUI host teardown. |
@@ -194,5 +196,8 @@ This is not iOS15 execution, physical/Duo acceptance or the final Release matrix
 C06 remains environment-blocked after [EXP-190](Results/EXP-190-minimum-runtime.json):
 official exact15.0 universal and arm64 requests through verified Xcode26.6 both
 return unavailable, and older-device discovery finds no15 device. Zero runtime
-downloads/installs/native runs occurred. Compilation at deployment15 remains
-separate from minimum-runtime acceptance; the fixed oracle and thresholds stand.
+downloads/installs/native runs occurred. The user subsequently confirmed that current debugging starts at17. C06 now
+requires the oldest available runnable17.x matrix plus deployment15 compilation
+and explicit15/16 runtime coverage limits. Preserve the original failed requests;
+no further15 download attempt is needed. Correctness oracles and performance
+thresholds remain unchanged.

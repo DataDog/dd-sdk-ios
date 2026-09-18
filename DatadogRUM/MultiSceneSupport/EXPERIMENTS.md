@@ -208,6 +208,7 @@ remain available for a specific question.
 | <a id="exp-188"></a>EXP-188 | C03 | INCONCLUSIVE | SDK27-built baseline repeats UIKit legacy-host trap on27.2. Exact offline crash identity/cleanup pass; original timestamp-parser INVALID preserved. No candidate or gate closure. | [record](Experiments/EXP-143-199.md#exp-188--check-legacy-lifecycle-readiness-on-ios-272) |
 | <a id="exp-189"></a>EXP-189 | C03 | PASS | C03 closed: genuineSDK26.5 baseline/current builds pass16 exact navigation/actual-lifecycle cells on27.0/26.5, installed/source identity and cleanup. Preparation failure preserved. | [record](Experiments/EXP-143-199.md#exp-189--validate-legacy-hosts-built-with-the-pre-scene-required-sdk) |
 | <a id="exp-190"></a>EXP-190 | C06 | ENVIRONMENT BLOCKED | Official15.0 universal/arm64 requests both unavailable;0 downloads/installs/native runs. Older-Xcode discovery finds no15 device. Exact responses preserved;12-cell matrix awaits an eligible environment. | [record](Experiments/EXP-143-199.md#exp-190--qualify-the-minimum-supported-ios-runtime) |
+| <a id="exp-191"></a>EXP-191 | H01, F04 | PLANNED | Qualify newly available Duo27.1 with pinned Xcode27.1; unchanged same-key/reverse-stop oracle, actual overlap and exact backend owners. Physical acceptance remains separate. | [record](Experiments/EXP-143-199.md#exp-191--qualify-duo-271-same-key-manual-ownership) |
 
 Original detailed shards and frozen records remain unchanged. Superseded index
 prose is preserved in the [documentation checkpoint](Experiments/DOCUMENTATION_CHECKPOINT_EXP-178.md).

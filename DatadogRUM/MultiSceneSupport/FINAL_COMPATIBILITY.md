@@ -18,7 +18,9 @@ passing matrix.
 
 The current package minimums are iOS15, tvOS15, macOS12.6, watchOS9 and visionOS1.
 These are compile deployment settings, not evidence of execution on each minimum.
-C06 still requires a real minimum-iOS runtime sample.
+Per the user correction on 2026-09-18, C06 requires deployment15 compilation
+and the oldest available debuggable17.x runtime sample. iOS15/16 execution is
+unavailable and must be disclosed; this does not raise SDK deployment support.
 
 All cells require a real zero exit status, readable result artifacts and the
 complete selected inventory. Discover targets/tests before execution and compare

@@ -1,0 +1,44 @@
+{
+  "experiment": "EXP-191",
+  "gate": "H01",
+  "related_gate": "F04",
+  "title": "Qualify Duo 27.1 same-key manual ownership",
+  "status": "PLANNED",
+  "owner": "SDK implementer",
+  "definition": "Experiments/EXP-143-199.md#exp-191--qualify-duo-271-same-key-manual-ownership",
+  "admission": "User supplies a newly available Duo27.1 simulator restricted to Xcode27.1. This makes the existing EXP-129/H01 ownership discriminator executable in the intended device family; no new telemetry family or release gate.",
+  "candidate_revision": "04201edc7711361279d8487b385bc8b0ca9c63c7",
+  "definition_parent_revision": "cad6d7304cfd4b3d4a56a75989de8b55b0d6d977",
+  "scenario": "swiftui.coexistence.same-key-manual-two-scenes",
+  "toolchain": {
+    "developer_directory": "/Applications/Xcode_27.1.app/Contents/Developer",
+    "xcode": "27.1",
+    "build": "27A9269",
+    "runtime": "27.1",
+    "runtime_build": "24A94401",
+    "device_type": "com.apple.CoreSimulator.SimDeviceType.iPhone-Duo"
+  },
+  "environment_discovery": {
+    "artifact_root": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/duo271-discovery-l8u35_79",
+    "command_line_default_verified": true,
+    "mcp_boundary": "Rediscovered MCP service still reports SDK27.0; do not use it to launch the Duo. Pin every execution command to verified27.1."
+  },
+  "protocol": [
+    "Freeze source/fixture identities and signed-or-authorized-unsigned revision before build; fresh derived data, run ID and artifact directory.",
+    "Discover an eligible Duo27.1 simulator and its prior boot state; prove clean app absence before install; verify all installed executable identities.",
+    "Run the unchanged EXP-129 scenario first. Capture native scene IDs, activation/geometry sequence and terminal screenshot; capability declarations alone do not prove overlap.",
+    "Require genuine overlapping visible scenes before and throughout manual A/B start and B-before-A stop. Posted lifecycle, logical peers, serial background replacement and after-boundary checks cannot establish this prerequisite.",
+    "If the existing fixture cannot prove a prerequisite, preserve INCONCLUSIVE; freeze a bounded observation/readiness correction before a new run. Never weaken owner or occurrence assertions.",
+    "Query complete session-only backend inventories, bind exact synthetic Action/Resource IDs to mapper owners, and preserve unexpected events. Terminate/uninstall only the probe and restore prior boot state.",
+    "Stop after two equivalent simulator system failures before the decisive boundary; preserve every invalid/inconclusive attempt."
+  ],
+  "oracle": {
+    "native": "All original ordered semantic and completion expectations; distinct native scenes and Compose UUIDs; B stop leaves exact A Compose active; each returned Home has a fresh UUID; no automatic duplicate during manual authority.",
+    "backend": "Exact seven named action/Resource marker pairs match mapper IDs, session IDs and owning view IDs; complete session view inventory agrees with mapper occurrences; zero unexpected error/crash events.",
+    "topology": "Actual scene activation and geometry plus visible UI evidence at the critical interval; no assertion inferred from manifest capabilities.",
+    "cleanup": "Exact protected file metadata/index state, frozen source/fixture identity, app/process absence and prior simulator boot state."
+  },
+  "closure_rule": "A complete run accepts this Duo simulator H01 slice only. H01 physical closure, F04 physical Duo acceptance, H11-H13 human gestures and F05 physical Replay remain separate and are not waived.",
+  "gates_closed": [],
+  "attempts": []
+}

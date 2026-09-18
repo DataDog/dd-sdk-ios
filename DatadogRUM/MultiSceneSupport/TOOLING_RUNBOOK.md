@@ -1762,3 +1762,24 @@ Record that specific limit without claiming permanent runtime incompatibility.
 Use older Xcode's xcdevice inventory as well as CoreDevice for older iOS devices;
 exclude virtual CoreDevice entries by their reality field. Resume only when the
 required runtime/device/host or catalog availability changes.
+
+## Xcode 27.1-only Duo and runnable minimum
+
+The user's Duo27.1 simulator is available only through Xcode27.1. Verify
+xcode-select -p and xcodebuild -version, then pin DEVELOPER_DIR explicitly for
+all build, simctl and device operations. Current discovery verified
+/Applications/Xcode_27.1.app/Contents/Developer, Xcode27.1/27A9269 and
+runtime27.1/24A94401. Rediscover IDs each execution. Existing MCP bridges/services
+can remain bound to27.0 after the default changes; their run-destination SDK is
+an independent check. Do not launch Duo through an old bridge.
+
+Preserve the simulator's prior boot state and isolate only the probe bundle.
+Duo device identity alone does not establish simultaneous windows: require actual
+native activation, geometry and visible evidence through the critical boundary.
+[EXP-191](Results/EXP-191-duo-same-key.json) owns the first bounded qualification.
+
+Current debugging starts at17 per the user correction. Keep SDK deployment15
+and existing compile evidence. Qualify the oldest available17.x environment for
+C06's finite matrix, record its exact patch and disclose unavailable15/16 runtime
+coverage. EXP-190's failed15.0 requests remain historical; do not repeat them or
+present compilation/17 execution as an iOS15 runtime pass.
