@@ -29,9 +29,9 @@
     "oracle_tests": 9,
     "negative_mutations": 27,
     "native_build": "PASS",
-    "new_model_and_catalog_tests": "4/4 PASS",
+    "new_model_and_catalog_tests": "6/6 PASS",
     "native_backend_acceptance": "PENDING",
-    "revised_fixture_build": "PENDING"
+    "revised_fixture_build": "PASS"
   },
   "attempts": [
     {
@@ -43,6 +43,11 @@
       "run_id": "17e56bf4-eedf-4b35-a498-91032414dd8e",
       "status": "INCONCLUSIVE_RESIZE_INPUT",
       "result": "acceptance/exp193-17e56bf4-eedf-4b35-a498-91032414dd8e.json"
+    },
+    {
+      "run_id": "ff7e105a-66db-4f55-8add-12ab3d46dfbe",
+      "status": "PREFLIGHT_INPUT_BLOCKED",
+      "result": "acceptance/exp193-ff7e105a-66db-4f55-8add-12ab3d46dfbe.json"
     }
   ],
   "revised_acceptance_defined_before_implementation": {
@@ -52,5 +57,6 @@
     "negative_controls": "Retain all original controls; add mismatched resize guard, late guard, wrong geometry receipt and owner churn. Test the native marker state machine before execution.",
     "boundary": "Resize proves callback-driven semantic ownership under measured geometry; black Resizable display prevents visible-layout/input equivalence claims. End/export acceptance before session cleanup backgrounds the app.",
     "required_backend": "Complete per-run view inventory, exact custom Action/Resource IDs and owners, zero errors. Original physical obligation remains."
-  }
+  },
+  "resume": "Mac unlock requested asynchronously. Both app and any resize session are removed. Reuse signed68d679221 build after source/protected/all3 Mach-O checks; no test repeat solely to resume. Start fresh5-phase resize and10-phase pose runs, exact native/backend validation, then outer-display gesture qualification and regular-plan dependency-ready work."
 }

@@ -115,5 +115,12 @@
     ],
     "acceptance": "No stale source/run, no fabricated scene callbacks, no late-only geometry assertion, no unexpected Detail during nil selection, no duplicate or foreign owner at selected boundaries; hardware H14 residual remains."
   },
-  "next": "EXP-193 qualifies H14 with the current accepted-state host; equivalent XCTest inner-display pairing attempts are stopped after two. Q5 outer-display gesture input remains dependency-ready."
+  "next": "EXP-193 qualifies H14 with the current accepted-state host; equivalent XCTest inner-display pairing attempts are stopped after two. Q5 outer-display gesture input remains dependency-ready.",
+  "adaptive_followup": {
+    "experiment": "EXP-193",
+    "result": "EXP-193-adaptive-split.json",
+    "current_state": "Fixture and finite pose/resize variants build;6 model/catalog and9 oracle tests pass. Native/backend acceptance waits for Mac unlock.",
+    "observed_limit": "Resizable display remains black despite native geometry; ending headless resize backgrounds the scene. Preserve callback ownership and visible-layout/input claims separately.",
+    "physical_obligations_waived": false
+  }
 }

@@ -68,7 +68,7 @@
       "environment": "Genuine iOS 15 deployment build plus iOS 17 simulator/device supported by the available Xcode toolchain",
       "completion_mode": null,
       "status": "ENVIRONMENT BLOCKED",
-      "evidence": "User correction on 2026-09-18: iOS15 debugging is unavailable; iOS17 is the minimum runnable family. EXP-160/189 retain deployment15 compile evidence; EXP-190 retains both unavailable15.0 requests without a runtime-pass claim. No17 runtime is installed at latest discovery; qualify it before the finite12-cell matrix. SDK deployment/support remains15."
+      "evidence": "User-corrected deployment15 plus oldest runnable17.x contract. EXP-190 official27.1 requests for17.0/17.0.1/17.2/17.4/17.5 all unavailable;26.6 also rejects17.0. No installed17 runtime/native case. Historical catalog/direct HTML is not runtime availability;15/16 execution remains unexecuted."
     },
     {
       "id": "P01",
@@ -427,7 +427,7 @@
       "environment": "Physical iPad/iPhone Duo; human gesture for H11\u2013H13; resize-capable for H14",
       "completion_mode": null,
       "status": "ENVIRONMENT BLOCKED",
-      "evidence": "EXP-191 preparation at signedfffdc1234: genuineXcode27.1/SDK27.1 Duo build and8 selected driver/oracle controls pass; all3 Mach-O hashes frozen and cleanup verified. User-requested restart before native scenario;0 native acceptance runs. Actual overlapping topology/backend proof and original physical requirement remain. Results/EXP-191-duo-same-key.json."
+      "evidence": "EXP-191 native22/22 ownership checks are INCONCLUSIVE because B replaces A full-screen. Two EXP-192 inner-display input attempts do not prove simultaneous visibility. Actual precritical overlap/backend proof and physical requirement remain."
     },
     {
       "id": "H02",
@@ -602,7 +602,7 @@
       "environment": "Physical iPad/iPhone Duo; human gesture for H11\u2013H13; resize-capable for H14",
       "completion_mode": null,
       "status": "ENVIRONMENT BLOCKED",
-      "evidence": "EXP-192 measured simulator geometry; selected ownership precondition fails. EXP-193 defines current accepted-state fixture validation. Physical H14 remains required."
+      "evidence": "EXP-192 proves native pose/resize geometry. EXP-193 current fixture builds and6/6 model/catalog plus9/9 oracle tests pass; native10-phase pose and5-phase guarded resize runs await Mac unlock. Original fixture/oracle/input failures preserved. Physical H14 remains required."
     },
     {
       "id": "H15",
@@ -705,7 +705,7 @@
       "environment": "iPhone Duo iOS 27.1",
       "completion_mode": null,
       "status": "OPEN",
-      "evidence": " EXP-192 defines the six-cell simulator confidence assessment and finite H01-H16 execution routing; native observations pending, physical completion contract unchanged."
+      "evidence": "EXP-192 preserves observed native display/trait and app lifecycle results with bounded input/disconnect limits. EXP-193 adaptive acceptance is in progress. Simulator confidence remains capability-specific; physical completion contract unchanged."
     },
     {
       "id": "F05",

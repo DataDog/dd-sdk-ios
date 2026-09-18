@@ -1,0 +1,87 @@
+{
+  "experiment": "EXP-190",
+  "gate": "C06",
+  "attempt_id": "exp190-ios17-ceefc1f2-0b2b-4440-a659-49a979de8c64",
+  "status": "RUNTIME_ACCESS_BLOCKED",
+  "authority": "User-corrected deployment15 plus oldest runnable17.x contract; original15 attempts remain historical.",
+  "attempts": [
+    {
+      "runtime": "17.0",
+      "xcode": "27.1",
+      "exit": 70,
+      "artifact_root": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp190-ios17-qualification-2xdoxugm",
+      "message": "Finding content...\niOS 17.0 (universal) is not available for download.",
+      "log_sha256": "4250cbd521466bc93aa92a811edf4694a2e216d04dc61cd5c5835937aa137e89",
+      "exported_files": 0
+    },
+    {
+      "runtime": "17.0.1",
+      "xcode": "27.1",
+      "exit": 70,
+      "artifact_root": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp190-ios17-qualification-2xdoxugm/17.0.1",
+      "message": "Finding content...\niOS 17.0.1 (universal) is not available for download.",
+      "log_sha256": "28901db32c6b3913c1b296251f7bbb53bff99d5f09b1757cbb8587e7aa153e04",
+      "exported_files": 0
+    },
+    {
+      "runtime": "17.2",
+      "xcode": "27.1",
+      "exit": 70,
+      "artifact_root": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp190-ios17-qualification-2xdoxugm/17.2",
+      "message": "Finding content...\niOS 17.2 (universal) is not available for download.",
+      "log_sha256": "341222f32b93018dcf555a6eaf23b1f1901e76ecc1769538f4c9a951301283ed",
+      "exported_files": 0
+    },
+    {
+      "runtime": "17.4",
+      "xcode": "27.1",
+      "exit": 70,
+      "artifact_root": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp190-ios17-qualification-2xdoxugm/17.4",
+      "message": "Finding content...\niOS 17.4 (universal) is not available for download.",
+      "log_sha256": "ec30a0471ea5d0f6f2fd2e21d664ec52aea37a5bb28da53eb9c4c078f7a69327",
+      "exported_files": 0
+    },
+    {
+      "runtime": "17.5",
+      "xcode": "27.1",
+      "exit": 70,
+      "artifact_root": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp190-ios17-qualification-2xdoxugm/17.5",
+      "message": "Finding content...\niOS 17.5 (universal) is not available for download.",
+      "log_sha256": "b23faaf157eb01d1775eef843f6d0a60d50f6dd3d022e4f773d141aa87d8c3d0",
+      "exported_files": 0
+    },
+    {
+      "runtime": "17.0",
+      "xcode": "26.6",
+      "exit": 70,
+      "artifact_root": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp190-ios17-legacy-toolchain-jq2o44pj",
+      "message": "Finding content...\niOS 17.0 (universal) is not available for download.",
+      "log_sha256": "4250cbd521466bc93aa92a811edf4694a2e216d04dc61cd5c5835937aa137e89",
+      "exported_files": 0
+    }
+  ],
+  "official_catalog": {
+    "url": "https://devimages-cdn.apple.com/downloads/xcode/simulators/index2.dvtdownloadableindex",
+    "artifact": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp190-ios17-qualification-2xdoxugm/official-runtime-catalog.plist",
+    "sha256": "ea4044a611eb85795f90ebf00a9cbf73f1f8873647d7f318257ee8877f6af96a",
+    "stable17_versions": [
+      "17.0",
+      "17.0.1",
+      "17.2",
+      "17.4",
+      "17.5"
+    ],
+    "oldest_source_head": {
+      "status": 200,
+      "content_type": "text/html; charset=UTF-8",
+      "length": null,
+      "host": "developer.apple.com"
+    },
+    "interpretation": "Historical catalog presence does not prove a usable download. Oldest direct source returned HTML rather than a runtime image."
+  },
+  "runtime_installs": 0,
+  "native_cases": 0,
+  "default_xcode_changed": false,
+  "gates_closed": [],
+  "resume_condition": "An accessible official17.x runtime, eligible device or test host; retain exact patch and genuine pre27 build SDK for the finite12-cell matrix."
+}

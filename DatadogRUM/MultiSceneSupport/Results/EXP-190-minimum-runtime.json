@@ -94,5 +94,20 @@
     "eligible_physical_multiwindow_device": false
   },
   "outcome": "Official Xcode26.6 catalog requests for exact15.0 universal and arm64 both return70 without an exported file. No runtime was installed or native case run. Older-Xcode device discovery finds only the ordinary27.2 iPhone. This proves a current environment/access limit, not permanent runtime incompatibility or SDK failure.",
-  "resume_condition": "A genuine exact15.0 runtime/device or compatible accessible test host becomes available; revalidate identity/boot and freeze the defined12-cell matrix before execution. Do not repeat unchanged catalog requests automatically."
+  "resume_condition": "A genuine exact15.0 runtime/device or compatible accessible test host becomes available; revalidate identity/boot and freeze the defined12-cell matrix before execution. Do not repeat unchanged catalog requests automatically.",
+  "current_C06_followup": {
+    "defined": "2026-09-19 before new environment action",
+    "authority": "User correction and authoritative C06 register; historical exact15 definition/attempts remain unchanged above.",
+    "target": "Oldest officially available debuggable17.x runtime; deployment15 still required. No15 request or metadata patch.",
+    "preflight": [
+      "Use verified Xcode27.1 official downloadPlatform export, starting with17.0 universal. Preserve response and fresh artifacts.",
+      "If17.0 is unavailable, inspect official catalog for the oldest available17.x rather than guessing or repeating the same failed request.",
+      "Only import an actual official compatible runtime; prove boot before the finite12-cell baseline/current matrix. Legacy fixtures continue to build with genuine SDK26.5."
+    ],
+    "matrix": "Same six cases per arm already defined, on the recorded17.x runtime. Preserve exact owners, source/build/install identity, cleanup and unexecuted15/16 disclosure.",
+    "state": "RUNTIME_ACCESS_BLOCKED",
+    "result": "acceptance/exp190-ios17-ceefc1f2-0b2b-4440-a659-49a979de8c64.json",
+    "outcome": "All five stable17 catalog versions unavailable through Xcode27.1; Xcode26.6 also rejects17.0. Zero runtime files/install/native cases. Direct oldest catalog source returns HTML.",
+    "resume_condition": "An accessible official17.x runtime, eligible device or test host; retain exact patch and genuine pre27 build SDK for the finite12-cell matrix."
+  }
 }

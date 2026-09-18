@@ -70,7 +70,15 @@ The Duo27.1 simulator is available through Xcode27.1; fresh MCP and CLI agree.
 [EXP-192's assessment](DUO_SIMULATOR_ASSESSMENT.md) preserves display/trait and
 actual lifecycle observations, two bounded unqualified pairing attempts, and
 measured native resize capability. The unchanged H01 native22/22 pass remains
-inconclusive without overlap. H14's empty geometry cycle passes, but delivered
-selection bypasses the old fixture's accepted route and retains a structural
-owner; [EXP-193](Results/EXP-193-adaptive-split.json) owns the bounded current-host
-fixture correction. No physical/human obligation closes.
+inconclusive without overlap. The old split fixture bypassed accepted routing;
+[EXP-193](Results/EXP-193-adaptive-split.json) corrects the fixture and preserves
+the failure. Its first four native boundaries show an unchanged empty owner and
+a fresh selected owner before immediate work. Full acceptance remains pending:
+resize renders black and cleanup backgrounds the app. The separate pose/guarded
+resize variants build and pass6 model/catalog and9 oracle tests; native/backend
+execution awaits Mac unlock. No physical/human obligation closes.
+
+C06's corrected17.x qualification checks all five stable versions in Apple's
+historical catalog through27.1; all downloads are unavailable, as is17.0 through
+26.6. No runtime is installed or native matrix cell claimed. An accessible
+official runtime or eligible test environment is still required.

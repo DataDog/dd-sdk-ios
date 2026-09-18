@@ -1,0 +1,44 @@
+{
+  "experiment": "EXP-193",
+  "attempt_id": "ff7e105a-66db-4f55-8add-12ab3d46dfbe",
+  "status": "PREFLIGHT_INPUT_BLOCKED",
+  "artifact_root": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp193-resize-e2pgp0mm",
+  "source_revision": "68d67922117de8971bdd88ef1358c9f30bc313f6",
+  "source_sha256": "f9d4109cc7f058811ac18384940a4f19584f0302e17cd3f1531142dabdf85133",
+  "installed_code": {
+    "bundleIdentifier": "com.datadoghq.rum-native-multi-scene-probe",
+    "executable": "RUMNativeMultiSceneProbe",
+    "binaries": {
+      "RUMNativeMultiSceneProbe": "c795ba00f8f3b1649c91a0e320c67be89582a392a1facf7d5bebb65288f29b94",
+      "RUMNativeMultiSceneProbe.debug.dylib": "f9896384450eaf1a30e17dac0340e3af4d0c46a048b7e991ac3c709646ef9c1f",
+      "__preview.dylib": "f107d09b9d3b79f01789a45ef045bf4039904bf5eaa3c1a8c6a9e27de130563b"
+    }
+  },
+  "build_and_tests": {
+    "artifact_root": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp193-split-build-p5qfpehb",
+    "build": "PASS",
+    "unit_tests": "6/6 PASS",
+    "oracle_tests": "9/9 PASS;27 rejected mutations"
+  },
+  "boundary": "Fresh empty inner native geometry recorded. Mac locked before the first delivered marker/selection. No resize acceptance work performed; no SDK failure or backend acceptance claimed.",
+  "cleanup": [
+    {
+      "command": "terminate",
+      "exit": 0
+    },
+    {
+      "command": "uninstall",
+      "exit": 0
+    },
+    {
+      "command": "get_app_container",
+      "exit": 2
+    }
+  ],
+  "gates_closed": [],
+  "artifact_sha256": {
+    "final-native.jsonl": "631761ad320aecfabf93e85216acf10cd813e12c6d8004e166b3a90804c56247",
+    "installed-code.json": "6872dc3d0279b036c71a78ff0acd41b6aae5a106f46a866bc7470573449900c5",
+    "cleanup.json": "d0ddf307758663688515994f9b4cc18bb0f210824ff1c8ed9c78dcb921450ef8"
+  }
+}

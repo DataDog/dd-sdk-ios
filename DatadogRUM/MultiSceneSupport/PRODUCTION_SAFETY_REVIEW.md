@@ -46,6 +46,12 @@ No additional SDK repair was needed. The original connector projection failure
 is retained; D02/D11 keep their original platform/legacy evidence, and physical
 Replay coexistence remains F05.
 
+The Duo [assessment](DUO_SIMULATOR_ASSESSMENT.md) and
+[EXP-193](Results/EXP-193-adaptive-split.json) extend environment qualification
+with fixture/tooling changes only. Production SDK remains04201edc7; the original
+repair dispositions stay closed. Native adaptive acceptance and physical release
+evidence retain their separate gates.
+
 The following original findings describe the reviewed revision, not current
 unrepaired behavior. Original line numbers are historical source locators.
 

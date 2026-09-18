@@ -1849,3 +1849,14 @@ each guard to its earlier geometry receipt and exact custom Action/Resource.
 Do not require uninterrupted ownership across ending appResize: the measured
 cleanup path backgrounds the scene. Export before that boundary. A black
 Resizable capture prevents visible-layout claims even when geometry is valid.
+
+EXP-190’s corrected17.x qualification records all five stable historical Apple
+catalog versions as unavailable through27.1 downloadPlatform;26.6 also rejects
+17.0. Direct catalog presence/HTML response is not a usable runtime. Do not
+repeat unchanged requests or patch metadata. Resume from accessible official
+content or an eligible test host/device.
+
+If the Mac locks before a delivered native control, preserve the incomplete run
+and request unlock asynchronously. Export and clean the owned app before its
+run/session becomes stale. Preserve the frozen build and passing tests; recheck
+source/installed identity and use a new run ID after unlock.
