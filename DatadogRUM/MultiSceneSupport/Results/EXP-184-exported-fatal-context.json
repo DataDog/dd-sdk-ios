@@ -145,9 +145,30 @@
       "recovery_executed": false,
       "failure": "Strict inventory rejected six default lifecycle Actions and six Resources. abort did not return; matched process disappeared after the preparation boundary with launcher status0.",
       "repair": "Suppress default lifecycle markers for all fatal scenarios and check the telemetry inventory before preparation PASS/crash. Preserve the strict zero Action/Resource contract."
+    },
+    {
+      "attempt": "C",
+      "run_id": "exp184-20260918T041855Z-682f969c86b8",
+      "state": "INCONCLUSIVE",
+      "summary": "Results/acceptance/exp184-20260918T041855Z-682f969c86b8.json",
+      "revision": "fd1cff87d202f1a6cdf09a8f0db22bcaa3e995cc",
+      "source_sha256": "ba54215a8874d03e3509b221773bc18ff3a1b76d015f54f237a3715ee6442ebd",
+      "build_identity": {
+        "executable_sha256": "a2fa3465cda66c35002bcc4ef60019f2c6b59a34f1410bfe763989738799272e",
+        "source_sha256": "ba54215a8874d03e3509b221773bc18ff3a1b76d015f54f237a3715ee6442ebd",
+        "uuid": "UUID: E542D534-8325-3343-975E-D9DC7CDA68C4 (arm64) /private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/multi-scene-acceptance-aayr95b6/run/derived/Build/Products/Debug-iphonesimulator/RUMNativeMultiSceneProbe.app/RUMNativeMultiSceneProbe"
+      },
+      "probe_tests": 187,
+      "prepare_expectations": 24,
+      "recovery_expectations": 10,
+      "consumption_executed": false,
+      "failure": "simctl console buffered the recovery PID until cleanup; the runner compared it before the buffer was flushed.",
+      "observed": "Preparation PASS, actual SIGABRT recovery PASS with old B identity under a distinct current session; no consumption/backend acceptance.",
+      "projection_audit": "Recovered RUMEventAttributes stores AnyCodable values. The fixture direct String cast omitted originalRunID; serialize/decode the whitelisted String without coercion before validating exact provenance.",
+      "repair": "After a terminal record, terminate the isolated recovery process, wait for console closure, reparse all records, and verify the independent PID plus every guard before launching consumption."
     }
   ],
-  "next": "Commit the fixture inventory correction, then run fresh three-process acceptance; do not consume failed attempts as acceptance.",
+  "next": "Commit the recovery collection/projection corrections, then perform a fresh complete three-process acceptance. T11 remains open.",
   "definition_revision": "c71db83b0b6e87a502cca789da3a3718dce507e1",
   "deterministic_result": {
     "state": "PASS",
@@ -161,7 +182,7 @@
   "prepared_fixture": {
     "native_build": "PASS",
     "probe_tests": 187,
-    "python_controls": 183,
+    "python_controls": 186,
     "connector_controls": 44,
     "native_expectations": {
       "prepare": 24,
@@ -174,7 +195,9 @@
       "Named feature lookup corrected after compiler diagnostic.",
       "Connector projection now unwraps the strict field reader; all three new controls pass.",
       "Attempt A retained FAIL. Replace returning raise(SIGABRT) with nonreturning abort(); classify simulator launcher status separately from actual process disappearance and recovered native report.",
-      "Attempt B retained FAIL. Suppress default lifecycle markers and enforce no unrelated telemetry before the crash boundary."
+      "Attempt B retained FAIL. Suppress default lifecycle markers and enforce no unrelated telemetry before the crash boundary.",
+      "Attempt C remains INCONCLUSIVE. Collect buffered launcher PID after cleanup; reject late failed guards and foreign PID before advancing.",
+      "Normalize only the encoded String value for recovered run attributes; preserve exact equality and reject non-String values."
     ],
     "process_contract": "Independent simctl/native PID, completed launcher and absent native process after preparation PASS/boundary. Launcher exit is not app exit status; the real recovered SIGABRT report must independently match original run/process/incident/owner. Three fresh runs share one binary/data container.",
     "storage_boundary": "Datadog Internal flush off the main actor after observing LaunchReport. It drains/upload queues and resets launch context; saved acknowledgement is observed before flush.",
@@ -198,6 +221,39 @@
       "fatal_helper": "PASS",
       "probe_app_existing_findings": 4,
       "baseline": "Compared against HEAD04e06123d; same rule/reason multiset."
+    },
+    "minimum_probe_tests": 188,
+    "new_projection_control": {
+      "counts": {
+        "expectedFailures": 0,
+        "failed": 0,
+        "notRun": 0,
+        "passed": 1,
+        "skipped": 0,
+        "total": 1
+      },
+      "fullConsoleLogsPath": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/ActionArtifacts/default/RunSomeTests/test-console-log-2026-09-18T05-25-33+01-00.txt",
+      "fullSummaryPath": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/ActionArtifacts/default/RunSomeTests/850E2A27-CC7A-4281-9897-8AFDFF5D2C3C.txt",
+      "results": [
+        {
+          "displayName": "testFatalRunIdentitySurvivesDecodedAttributeTypeErasure()",
+          "errorMessages": [],
+          "identifier": "ProbeScenarioRunnerTests/testFatalRunIdentitySurvivesDecodedAttributeTypeErasure()",
+          "state": "Passed",
+          "targetName": "RUMNativeMultiSceneProbeTests"
+        }
+      ],
+      "schemeName": "RUMNativeMultiSceneProbe",
+      "summary": "1 tests: 1 passed, 0 failed, 0 skipped, 0 expected failures, 0 not run",
+      "totalResults": 1,
+      "truncated": false,
+      "xcresultBundlePath": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/ActionArtifacts/default/RunSomeTests/Test-RUMNativeMultiSceneProbe-2026.09.18_05-25-33-+0100.xcresult"
+    },
+    "projection_repair_lint": {
+      "new_findings": 0,
+      "fatal_helper": "PASS",
+      "existing_harness_findings": 16,
+      "existing_test_findings": 52
     }
   }
 }

@@ -225,3 +225,8 @@ interpretation; no SDK ownership defect or T11 closure is claimed.
 The second attempt confirmed nonreturning termination but rejected default probe
 lifecycle markers. Suppression and a pre-crash inventory guard repair the fixture;
 the original review findings remain closed and T11 remains open.
+
+The next run locally recovers the original B crash under a different current
+session. Buffered launcher output prevents full acceptance; a decoded-attribute
+projection correction is also required in the fixture. Consumption and backend
+ownership still gate T11; production source remains unchanged.

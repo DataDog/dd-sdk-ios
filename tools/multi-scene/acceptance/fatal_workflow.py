@@ -45,6 +45,19 @@ def run_phases(runner, installed, executable, binary_sha, parse_records, file_ha
         phase["records"] = records
         phase["launcher_exit"] = runner.launch_process.poll()
         save(runner.out / "fatal-phases.json", phases)
+        if index > 0:
+            require(phase["launcher_exit"] is None, "recovery process terminated unexpectedly", "FAIL")
+            require(any(r["type"] == "semantic-result" for r in records),
+                    "recovery terminal not observed before cleanup", "INCONCLUSIVE")
+            runner.command(["xcrun", "simctl", "terminate", runner.args.device, bundle], "terminate-phase-" + str(index))
+            runner.launch_process.wait(timeout=10)
+            phase["terminated"] = True
+            phase["launcher_exit_after_cleanup"] = runner.launch_process.returncode
+            # simctl buffers its independent PID line until the console closes.
+            # Reparse everything after cleanup so late failures cannot be hidden.
+            records = parse_records(console.read_text(errors="replace"))
+            phase["records"] = records
+            save(runner.out / "fatal-phases.json", phases)
         process = [r["signal"].get("fatal", {}).get("processID") for r in records
                    if r["type"] == "signal" and r["signal"].get("name") == "fatal-process"]
         require(len(process) == 1 and type(process[0]) is int, "native process identity not observed", "INCONCLUSIVE")
@@ -66,11 +79,6 @@ def run_phases(runner, installed, executable, binary_sha, parse_records, file_ha
             # independently prove the exact native crash before the run can pass.
         else:
             fatal_contract.phase_records(phase, scenario)
-            require(phase["launcher_exit"] is None, "recovery process terminated unexpectedly", "FAIL")
-            runner.command(["xcrun", "simctl", "terminate", runner.args.device, bundle], "terminate-phase-" + str(index))
-            runner.launch_process.wait(timeout=10)
-            phase["terminated"] = True
-            phase["launcher_exit_after_cleanup"] = runner.launch_process.returncode
         save(runner.out / "fatal-phases.json", phases)
         runner.stage("fatal_phase_" + str(index), dict(
             state="PASS", run_id=run_id, process_id=phase["process_id"], scenario=scenario,

@@ -71,6 +71,25 @@ final class ProbeScenarioRunnerTests: XCTestCase {
         XCTAssertEqual(evaluate(guards, missingPass: true), .fail)
     }
 
+    func testFatalRunIdentitySurvivesDecodedAttributeTypeErasure() throws {
+        struct DecodedAttribute: Decodable, Encodable {
+            let value: String
+            init(from decoder: Decoder) throws {
+                value = try decoder.singleValueContainer().decode(String.self)
+            }
+            func encode(to encoder: Encoder) throws {
+                var container = encoder.singleValueContainer()
+                try container.encode(value)
+            }
+        }
+        let encoded = try JSONEncoder().encode("original-run")
+        let restored = try JSONDecoder().decode(DecodedAttribute.self, from: encoded)
+        XCTAssertEqual(ProbeFatalObservation.stringAttribute("original-run"), "original-run")
+        XCTAssertEqual(ProbeFatalObservation.stringAttribute(restored), "original-run")
+        XCTAssertNil(ProbeFatalObservation.stringAttribute(184))
+        XCTAssertNil(ProbeFatalObservation.stringAttribute(nil))
+    }
+
     func testFatalObservationRoundTripPreservesCrashOriginAndCurrentProcess() throws {
         let observation = ProbeFatalObservation(
             processID: 184, originalRunID: "previous-run", launchDidCrash: true,

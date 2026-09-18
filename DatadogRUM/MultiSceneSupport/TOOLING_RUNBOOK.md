@@ -1385,7 +1385,7 @@ revision containing the attribute before reading export/fatal state. Do not trea
 the initial cached mapper event as proof that the mutation ran.
 
 The connector scenario fatal.process-context.prepare-crash selects all three
-launches automatically. Its frozen contract requires187 probe tests and44 native
+launches automatically. Its frozen contract requires188 probe tests and44 native
 expectations (24/10/10). Run IDs are generated per launch; only the first launch
 uninstalls. The runner independently matches simctl/native PIDs, checks crash
 termination, and queries all three sessions for seven views and exactly one fatal
@@ -1408,3 +1408,14 @@ Disable the probe's default lifecycle Action/Resource markers for bounded fatal
 acceptance. Check the complete observed telemetry inventory after draining queues
 and before preparation PASS/crash; checking it only on the next process boundary
 needlessly destroys an invalid preparation. Keep the later strict inventory check.
+
+
+For recovery/consumption launches, simctl may buffer its PID line until the console
+closes. After the native terminal record, terminate only that fixture process,
+wait for the launcher, reparse all output, and then verify independent PID agreement
+and every guard before advancing. Keep late failure and foreign PID controls.
+
+Crash recovery decodes dynamic RUM attributes into type-erased Codable values.
+Extract the encoded String for the whitelisted run identity; a direct String cast
+can silently produce nil. Reject non-String values and compare the original run
+exactly. This projection correction does not replace report provenance checks.

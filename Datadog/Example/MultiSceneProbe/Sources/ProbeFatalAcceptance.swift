@@ -290,7 +290,7 @@ internal enum ProbeFatalAcceptance {
     static func viewObservation(_ event: RUMViewEvent) -> ProbeFatalObservation {
         .init(
             processID: ProcessInfo.processInfo.processIdentifier,
-            originalRunID: event.context?.contextInfo[ProbeRuntime.Attribute.runID] as? String,
+            originalRunID: ProbeFatalObservation.stringAttribute(event.context?.contextInfo[ProbeRuntime.Attribute.runID]),
             documentVersion: event.dd.documentVersion,
             viewErrorCount: event.view.error.count,
             viewCrashCount: event.view.crash?.count ?? 0,
@@ -311,7 +311,7 @@ internal enum ProbeFatalAcceptance {
             name: "fatal-error-payload",
             fatal: .init(
                 processID: ProcessInfo.processInfo.processIdentifier,
-                originalRunID: event.context?.contextInfo[ProbeRuntime.Attribute.runID] as? String,
+                originalRunID: ProbeFatalObservation.stringAttribute(event.context?.contextInfo[ProbeRuntime.Attribute.runID]),
                 incidentIdentifier: event.error.meta?.incidentIdentifier,
                 exceptionType: event.error.meta?.exceptionType,
                 crashedProcess: event.error.meta?.process,

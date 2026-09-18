@@ -316,6 +316,13 @@ internal struct ProbeAttributeState: Codable, Equatable {
 
 /// Bounded crash acceptance metadata; no full crash context or diagnostic stack.
 internal struct ProbeFatalObservation: Codable, Equatable {
+    static func stringAttribute(_ value: Encodable?) -> String? {
+        guard let value, let data = try? JSONEncoder().encode(value) else {
+            return nil
+        }
+        return try? JSONDecoder().decode(String.self, from: data)
+    }
+
     let processID: Int32
     var originalRunID: String? = nil
     var launchDidCrash: Bool? = nil

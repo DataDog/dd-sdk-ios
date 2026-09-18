@@ -10,7 +10,7 @@ RECOVER = "fatal.process-context.recover"
 CONSUMED = "fatal.process-context.verify-consumed"
 SCENARIOS = [SCENARIO, RECOVER, CONSUMED]
 CONTRACT = "fatal-scenario-contract.json"
-MINIMUM_TESTS = 187
+MINIMUM_TESTS = 188
 PREPARE_GUARDS = [
     "fatal-process", "fatal-owner-a", "fatal-owner-b", "fatal-export-before", "fatal-provider-before",
     "fatal-mutation-dispatched", "fatal-export-after", "fatal-provider-after",
