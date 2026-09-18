@@ -362,7 +362,7 @@
       "environment": "Deterministic crash/export context tests and isolated simulator process/backend",
       "completion_mode": "documented process-level fallback; trustworthy internal snapshot remains exact",
       "status": "OPEN",
-      "evidence": "EXP-184 defined before implementation: exact snapshot/export/provider controls and three-process real crash/recovery/consumption contract. Seven views/one fatal backend error; no fabricated source ownership. Results/EXP-184-exported-fatal-context.json."
+      "evidence": "EXP-184: 131 selected SDK tests pass, including four exact-ID export/provider/deferred-report controls; no production repair. Three-process real crash/recovery/consumption and seven-view/one-fatal backend acceptance remain. Results/EXP-184-exported-fatal-context.json."
     },
     {
       "id": "T12",

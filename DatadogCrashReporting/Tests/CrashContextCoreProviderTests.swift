@@ -95,6 +95,34 @@ class CrashContextCoreProviderTests: XCTestCase {
         XCTAssertNil(provider.currentCrashContext?.lastRUMViewEvent)
     }
 
+    func testCapturedViewContextSurvivesRepresentativeReplacementAndReset() throws {
+        let provider = CrashContextCoreProvider()
+        let core = PassthroughCoreMock()
+        let sessionID = UUID()
+        let viewA: RUMViewEvent = .mockRandomWith(sessionID: sessionID, viewID: UUID().uuidString.lowercased(), crashCount: 0)
+        let viewB: RUMViewEvent = .mockRandomWith(sessionID: sessionID, viewID: UUID().uuidString.lowercased(), crashCount: 0)
+        XCTAssertTrue(provider.receive(message: .context(.mockWith(service: "original")), from: core))
+        XCTAssertTrue(provider.receive(message: .payload(viewA), from: core))
+        provider.flush()
+        let capturedA = try XCTUnwrap(provider.currentCrashContext)
+
+        XCTAssertTrue(provider.receive(message: .context(.mockWith(service: "replacement")), from: core))
+        XCTAssertTrue(provider.receive(message: .payload(viewB), from: core))
+        provider.flush()
+
+        XCTAssertEqual(provider.currentCrashContext?.service, "replacement")
+        DDAssertJSONEqual(provider.currentCrashContext?.lastRUMViewEvent, viewB)
+        XCTAssertEqual(capturedA.service, "original")
+        DDAssertJSONEqual(capturedA.lastRUMViewEvent, viewA)
+
+        XCTAssertTrue(provider.receive(message: .payload(RUMPayloadMessages.viewReset), from: core))
+        provider.flush()
+
+        XCTAssertNil(provider.currentCrashContext?.lastRUMViewEvent)
+        DDAssertJSONEqual(capturedA.lastRUMViewEvent, viewA)
+        XCTAssertNotEqual(viewA.view.id, viewB.view.id)
+    }
+
     // MARK: - RUM Session State Tests
 
     func testItStoresRUMSessionState() {

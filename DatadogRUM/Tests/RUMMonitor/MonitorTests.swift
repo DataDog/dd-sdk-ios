@@ -123,6 +123,72 @@ class MonitorTests: XCTestCase {
         XCTAssertNil(provider.rumContextSnapshot(for: .scene(sceneA), at: nil))
     }
 
+    func testConcurrentSceneExportAndFatalContextIgnorePeerMutationAndClearAfterStop() throws {
+        for stopSession in [false, true] {
+            let scope = FeatureScopeMock(context: .mockWith(launchInfo: .mockWith(launchReason: .userLaunch)))
+            let fatalContext = FatalErrorContextNotifierMock()
+            let dateProvider = DateProviderMock()
+            let monitor = Monitor(
+                dependencies: .mockWith(featureScope: scope, samplingRate: 100, fatalErrorContext: fatalContext),
+                dateProvider: dateProvider
+            )
+            let (sceneA, sceneB) = startConcurrentSceneViews(in: monitor, dateProvider: dateProvider)
+            let capturedA = try XCTUnwrap(monitor.rumContextSnapshot(for: .scene(sceneA)))
+            let capturedB = try XCTUnwrap(monitor.rumContextSnapshot(for: .scene(sceneB)))
+            let fatalB = try XCTUnwrap(fatalContext.view)
+            XCTAssertNotEqual(capturedA.viewID, capturedB.viewID)
+            XCTAssertEqual(capturedA.sessionID, capturedB.sessionID)
+            XCTAssertEqual(scope.contextMock.additionalContext(ofType: RUMCoreContext.self), capturedB)
+            XCTAssertEqual(fatalB.view.id, capturedB.viewID)
+            XCTAssertEqual(fatalB.session.id, capturedB.sessionID)
+
+            dateProvider.now = dateProvider.now.addingTimeInterval(1)
+            monitor.process(command: RUMAddViewAttributesCommand(
+                time: dateProvider.now,
+                attributes: ["peer.mutation": "A"],
+                target: .scene(sceneA)
+            ))
+            // Attributes are emitted with the next view update; timing supplies a non-interactive witness.
+            monitor.process(command: RUMAddViewTimingCommand(
+                time: dateProvider.now,
+                globalAttributes: [:],
+                attributes: [:],
+                target: .scene(sceneA),
+                timingName: "peer-mutation-visible"
+            ))
+
+            let updatedA = try XCTUnwrap(scope.eventsWritten(ofType: RUMViewEvent.self).last {
+                $0.view.id == capturedA.viewID
+            })
+            XCTAssertEqual(updatedA.context?.contextInfo["peer.mutation"] as? String, "A")
+            XCTAssertEqual(scope.contextMock.additionalContext(ofType: RUMCoreContext.self), capturedB)
+            DDAssertJSONEqual(fatalContext.view, fatalB)
+            XCTAssertEqual(monitor.rumContextSnapshot(for: .scene(sceneA)), capturedA)
+
+            var stopB = RUMStopViewCommand.mockWith(time: dateProvider.now, identity: ViewIdentifier("view-B"))
+            stopB.target = .scene(sceneB)
+            monitor.process(command: stopB)
+            XCTAssertEqual(scope.contextMock.additionalContext(ofType: RUMCoreContext.self), capturedA)
+            XCTAssertEqual(fatalContext.view?.view.id, capturedA.viewID)
+            XCTAssertEqual(fatalContext.view?.session.id, capturedA.sessionID)
+            XCTAssertNil(monitor.rumContextSnapshot(for: .scene(sceneB)))
+
+            if stopSession {
+                monitor.process(command: RUMStopSessionCommand.mockWith(time: dateProvider.now))
+            } else {
+                var stopA = RUMStopViewCommand.mockWith(time: dateProvider.now, identity: ViewIdentifier("view-A"))
+                stopA.target = .scene(sceneA)
+                monitor.process(command: stopA)
+            }
+
+            XCTAssertNil(fatalContext.view)
+            XCTAssertNil(scope.contextMock.additionalContext(ofType: RUMCoreContext.self)?.viewID)
+            XCTAssertNil(monitor.rumContextSnapshot(for: .scene(sceneA)))
+            XCTAssertEqual(capturedA.viewID, updatedA.view.id)
+            XCTAssertEqual(capturedA.sessionID, updatedA.session.id)
+        }
+    }
+
     func testGivenOperationStartedDuringSceneHandoff_itUsesThatSceneInsteadOfRepresentative() throws {
         let dateProvider = DateProviderMock()
         let monitor = Monitor(

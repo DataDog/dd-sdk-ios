@@ -205,3 +205,14 @@ tests,34 local expectations and the complete backend inventory, closing T07; see
 [EXP-180](Experiments/EXP-143-199.md#exp-180--target-feature-flags-and-preserve-internal-mutation-ownership).
 This is a subsequent bounded disposition, separate from the completed original
 review cycle and the final independent release review.
+
+## Subsequent bounded validation: exported and fatal context
+
+EXP-184 adds four exact-ID controls across Monitor, CrashContextCoreProvider,
+CrashReportingFeature and deferred CrashReportReceiver delivery. The selected131
+tests pass, including existing fallback, consent, sampling and mapper cases.
+No additional production defect was demonstrated. The first new monitor fixture
+needed an explicit non-interactive view-update witness; its failed attempt is
+retained. This deterministic checkpoint does not close T11: actual crash,
+recovery, consumption and complete backend ownership remain in the
+[experiment record](Experiments/EXP-143-199.md#exp-184--accept-exported-and-fatal-process-context).

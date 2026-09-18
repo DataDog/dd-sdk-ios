@@ -2,7 +2,7 @@
   "experiment": "EXP-184",
   "gate": "T11",
   "title": "Accept exported and fatal process context",
-  "status": "PLANNED",
+  "status": "PREPARING",
   "control_revision": "41b2f0595ef5101c87904d55b44fd326ad9d4267",
   "sdk_revision": "04201edc7711361279d8487b385bc8b0ca9c63c7",
   "definition": "Experiments/EXP-143-199.md#exp-184--accept-exported-and-fatal-process-context",
@@ -36,7 +36,88 @@
     "other_errors": 0
   },
   "acceptance_scope": "Serial actual scenes and isolated process crash/recovery; not hardware lifecycle, watchdog/hang, symbolication or Replay certification.",
-  "unit_attempts": [],
+  "unit_attempts": [
+    {
+      "scope": "exp184RUMResult",
+      "counts": {
+        "expectedFailures": 0,
+        "failed": 1,
+        "notRun": 0,
+        "passed": 75,
+        "skipped": 0,
+        "total": 76
+      },
+      "result": "FAIL",
+      "summary": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/ActionArtifacts/default/RunSomeTests/2B9DE1AD-9392-4800-87B8-123E4DB5A099.txt",
+      "xcresult": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/ActionArtifacts/default/RunSomeTests/Test-DatadogRUM-2026.09.18_04-30-10-+0100.xcresult",
+      "failures": [
+        {
+          "displayName": "testConcurrentSceneExportAndFatalContextIgnorePeerMutationAndClearAfterStop()",
+          "errorMessages": [
+            "Datadog/DatadogRUMTests/RUMMonitor/MonitorTests.swift:155 MonitorTests/testConcurrentSceneExportAndFatalContextIgnorePeerMutationAndClearAfterStop(): XCTAssertEqual failed: (\"nil\") is not equal to (\"Optional(\"A\")\")",
+            "Datadog/DatadogRUMTests/RUMMonitor/MonitorTests.swift:155 MonitorTests/testConcurrentSceneExportAndFatalContextIgnorePeerMutationAndClearAfterStop(): XCTAssertEqual failed: (\"nil\") is not equal to (\"Optional(\"A\")\")"
+          ],
+          "identifier": "MonitorTests/testConcurrentSceneExportAndFatalContextIgnorePeerMutationAndClearAfterStop()",
+          "state": "Failed",
+          "targetName": "DatadogRUMTests"
+        }
+      ]
+    },
+    {
+      "scope": "exp184RUMRetest",
+      "counts": {
+        "expectedFailures": 0,
+        "failed": 0,
+        "notRun": 0,
+        "passed": 1,
+        "skipped": 0,
+        "total": 1
+      },
+      "result": "PASS",
+      "summary": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/ActionArtifacts/default/RunSomeTests/2FA2756C-3BF1-490C-98C3-D65D0E65ACEC.txt",
+      "xcresult": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/ActionArtifacts/default/RunSomeTests/Test-DatadogRUM-2026.09.18_04-33-12-+0100.xcresult",
+      "failures": []
+    },
+    {
+      "scope": "exp184CrashResult",
+      "counts": {
+        "expectedFailures": 0,
+        "failed": 0,
+        "notRun": 0,
+        "passed": 23,
+        "skipped": 0,
+        "total": 23
+      },
+      "result": "PASS",
+      "summary": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/ActionArtifacts/default/RunSomeTests/6E7859AA-04BE-43D0-AF0E-04828356ECB3.txt",
+      "xcresult": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/ActionArtifacts/default/RunSomeTests/Test-DatadogCrashReporting-2026.09.18_04-31-17-+0100.xcresult",
+      "failures": []
+    },
+    {
+      "scope": "exp184CoreResult",
+      "counts": {
+        "expectedFailures": 0,
+        "failed": 0,
+        "notRun": 0,
+        "passed": 32,
+        "skipped": 0,
+        "total": 32
+      },
+      "result": "PASS",
+      "summary": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/ActionArtifacts/default/RunSomeTests/88B4B54A-A9BF-4264-BCCF-87413B5BF3B0.txt",
+      "xcresult": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/ActionArtifacts/default/RunSomeTests/Test-DatadogCore-2026.09.18_04-32-36-+0100.xcresult",
+      "failures": []
+    }
+  ],
   "native_attempts": [],
-  "next": "Add the predeclared exact-ID deterministic controls and validate affected SDK suites before native implementation."
+  "next": "Implement and freeze the three-process native crash/recovery/consumption fixture and strict oracle; T11 remains open.",
+  "definition_revision": "c71db83b0b6e87a502cca789da3a3718dce507e1",
+  "deterministic_result": {
+    "state": "PASS",
+    "unique_selected_tests": 131,
+    "new_controls": 4,
+    "initial_failure": "The new monitor fixture expected immediate view emission after attribute mutation. Attributes are deferred until a view update; a non-interactive targeted timing command supplies the mapper witness. The original 75/76 attempt is retained; corrected control passes 1/1.",
+    "lint": "PASS with repository tools/lint/tests.swiftlint.yml. An initial invocation without that configuration produced irrelevant default-rule violations; it is not the repository lint result.",
+    "production_changes": false
+  }
 }

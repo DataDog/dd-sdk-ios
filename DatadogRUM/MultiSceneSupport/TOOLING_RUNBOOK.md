@@ -1378,3 +1378,8 @@ reporter. Require actual didCrash acknowledgement in both later launches; a quie
 timeout cannot replace report consumption. Compare all seven views/three sessions
 and the one original-owner fatal error. Synthetic receiver tests remain separate
 from actual process-crash evidence.
+
+Attribute mutation alone need not emit a view event. For the pre-crash peer-update
+guard, issue a targeted non-interactive timing update and observe the next mapper
+revision containing the attribute before reading export/fatal state. Do not treat
+the initial cached mapper event as proof that the mutation ran.

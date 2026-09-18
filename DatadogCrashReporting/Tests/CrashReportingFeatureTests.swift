@@ -364,6 +364,50 @@ class CrashReportingFeatureTests: XCTestCase {
         XCTAssertEqual(decodedContext?.env, "new-env")
     }
 
+    func testPendingReportKeepsEncodedOwnerAfterLiveProviderChanges() throws {
+        let provider = CrashContextCoreProvider()
+        let core = PassthroughCoreMock()
+        let plugin = CrashReportingPluginMock()
+        let sender = CrashReportSenderMock()
+        let feature = CrashReportingFeature.mockWith(
+            integration: sender,
+            crashReportingPlugin: plugin,
+            crashContextProvider: provider
+        )
+        let viewA: RUMViewEvent = .mockRandomWith(viewID: UUID().uuidString.lowercased(), crashCount: 0)
+        let viewB: RUMViewEvent = .mockRandomWith(viewID: UUID().uuidString.lowercased(), crashCount: 0)
+
+        XCTAssertTrue(provider.receive(message: .context(.mockWith(service: "captured", trackingConsent: .granted)), from: core))
+        XCTAssertTrue(provider.receive(message: .payload(viewA), from: core))
+        provider.flush()
+        feature.flush()
+        let encodedA = try XCTUnwrap(plugin.injectedContextData)
+        let capturedA = try CrashReportingFeature.crashContextDecoder.decode(CrashContext.self, from: encodedA)
+        let report: DDCrashReport = .mockWith(type: "SIGABRT (#0)", context: encodedA)
+        plugin.pendingCrashReport = report
+
+        XCTAssertTrue(provider.receive(message: .context(.mockWith(service: "recovery", trackingConsent: .notGranted)), from: core))
+        XCTAssertTrue(provider.receive(message: .payload(viewB), from: core))
+        provider.flush()
+        feature.flush()
+        let encodedB = try XCTUnwrap(plugin.injectedContextData)
+        let current = try CrashReportingFeature.crashContextDecoder.decode(CrashContext.self, from: encodedB)
+        DDAssertJSONEqual(current.lastRUMViewEvent, viewB)
+        XCTAssertEqual(current.service, "recovery")
+        XCTAssertNotEqual(encodedA, encodedB)
+
+        feature.sendCrashReportIfFound()
+        feature.flush()
+
+        DDAssertJSONEqual(sender.sentCrashContext, capturedA)
+        DDAssertReflectionEqual(sender.sentCrashReport, report)
+        XCTAssertEqual(sender.sentCrashContext?.lastRUMViewEvent?.view.id, viewA.view.id)
+        XCTAssertEqual(sender.sentCrashContext?.lastRUMViewEvent?.session.id, viewA.session.id)
+        XCTAssertEqual(sender.sentCrashContext?.trackingConsent, .granted)
+        XCTAssertEqual(provider.currentCrashContext?.lastRUMViewEvent?.view.id, viewB.view.id)
+        XCTAssertEqual(plugin.hasPurgedCrashReport, true)
+    }
+
     // MARK: - Telemetry Tests
 
     func testItReportsTelemetryOnDecodingError() {

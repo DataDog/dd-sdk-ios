@@ -53,6 +53,80 @@ class CrashReportReceiverTests: XCTestCase {
         XCTAssertEqual(featureScope.eventsWritten(ofType: RUMViewEvent.self).count, 1, "It should send view event")
     }
 
+    func testDeferredCrashDeliveryKeepsCapturedOwnerAfterCurrentSessionChanges() throws {
+        let crashDate = Date.mockDecember15th2019At10AMUTC()
+        let scope = FeatureScopeMock(deferEventWriteContext: true)
+        let capturedView: RUMViewEvent = .mockRandomWith(
+            sessionID: UUID(),
+            viewID: UUID().uuidString.lowercased(),
+            viewIsActive: true,
+            crashCount: 0
+        )
+        let report: DDCrashReport = .mockWith(
+            date: crashDate,
+            type: "SIGABRT (#0)",
+            meta: .mockWith(incidentIdentifier: "captured-incident")
+        )
+        var mappedOwners: [String] = []
+        let receiver: CrashReportReceiver = .mockWith(
+            featureScope: scope,
+            dateProvider: RelativeDateProvider(using: crashDate),
+            sessionSampler: .mockRejectAll(),
+            trackBackgroundEvents: false,
+            eventsMapper: .mockWith(
+                viewEventMapper: { event in
+                    mappedOwners.append(event.view.id)
+                    return event
+                },
+                errorEventMapper: { event in
+                    mappedOwners.append(event.view.id)
+                    var event = event
+                    event.error.fingerprint = "captured-fatal"
+                    return event
+                }
+            )
+        )
+        let context: CrashContext = .mockWith(trackingConsent: .granted, lastRUMViewEvent: capturedView)
+        XCTAssertTrue(receiver.receive(message: .payload(Crash(report: report, context: context)), from: NOPDatadogCore()))
+        XCTAssertTrue(scope.eventsWritten.isEmpty)
+        XCTAssertTrue(mappedOwners.isEmpty)
+
+        let recovery: RUMCoreContext = .mockWith(sessionID: UUID(), viewID: UUID().uuidString.lowercased())
+        scope.contextMock = .mockWith(trackingConsent: .notGranted)
+        scope.contextMock.set(additionalContext: recovery)
+        scope.flushDeferredEventWriteContexts()
+
+        let errors = scope.eventsWritten(ofType: RUMErrorEvent.self, withBypassConsent: true)
+        let views = scope.eventsWritten(ofType: RUMViewEvent.self, withBypassConsent: true)
+        XCTAssertEqual(scope.eventsWritten.count, 2)
+        XCTAssertEqual(errors.count, 1)
+        XCTAssertEqual(views.count, 1)
+        let error = try XCTUnwrap(errors.first)
+        let updated = try XCTUnwrap(views.first)
+        XCTAssertEqual(mappedOwners, [capturedView.view.id, capturedView.view.id])
+        XCTAssertEqual(error.application.id, capturedView.application.id)
+        XCTAssertEqual(error.session.id, capturedView.session.id)
+        XCTAssertEqual(error.view.id, capturedView.view.id)
+        XCTAssertEqual(updated.session.id, capturedView.session.id)
+        XCTAssertEqual(updated.view.id, capturedView.view.id)
+        XCTAssertNotEqual(error.view.id, recovery.viewID)
+        XCTAssertNotEqual(error.session.id, recovery.sessionID)
+        XCTAssertEqual(error.error.meta?.incidentIdentifier, "captured-incident")
+        XCTAssertEqual(error.error.type, report.type)
+        XCTAssertEqual(error.error.isCrash, true)
+        XCTAssertEqual(error.error.source, .source)
+        XCTAssertEqual(error.error.fingerprint, "captured-fatal")
+        XCTAssertNil(error.action)
+        XCTAssertNil(error.container)
+        XCTAssertEqual(updated.view.error.count, capturedView.view.error.count + 1)
+        XCTAssertEqual(updated.view.crash?.count, 1)
+        XCTAssertEqual(updated.view.resource.count, capturedView.view.resource.count)
+        XCTAssertEqual(updated.view.action.count, capturedView.view.action.count)
+        XCTAssertEqual(updated.dd.documentVersion, capturedView.dd.documentVersion + 1)
+        XCTAssertEqual(updated.view.isActive, false)
+        XCTAssertEqual(scope.contextMock.additionalContext(ofType: RUMCoreContext.self), recovery)
+    }
+
     // MARK: - Testing Conditional Uploads
 
     func testGivenCrashDuringRUMSessionWithActiveViewCollectedLessThan4HoursAgo_whenSending_itSendsBothRUMErrorAndRUMViewEvent() throws {
