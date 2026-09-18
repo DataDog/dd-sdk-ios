@@ -146,7 +146,7 @@ class SimulatorRun:
                 config_path = self.out / "Acceptance.xcconfig"
                 config_path.write_text(
                     '#include "' + str(self.repo / "BenchmarkTests/xcconfigs/Runner.xcconfig") + '"\n'
-                    '#include "' + str(self.repo / "xcconfigs/Datadog.xcconfig") + '"\n'
+                    '#include? "' + str(self.repo / "xcconfigs/Datadog.local.xcconfig") + '"\n'
                     'CLIENT_TOKEN = $(DATADOG_CLIENT_TOKEN)\n')
                 command += ["-xcconfig", str(config_path),
                             "SWIFT_ACTIVE_COMPILATION_CONDITIONS=$(inherited) MULTISCENE_PROFILING_ACCEPTANCE",

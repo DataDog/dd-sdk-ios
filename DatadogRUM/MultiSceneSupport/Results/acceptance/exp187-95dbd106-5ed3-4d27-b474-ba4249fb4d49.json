@@ -1,0 +1,42 @@
+{
+  "artifact_root": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp187-configured-u05qcnbw/attempt",
+  "backend_validation": "NOT_RUN",
+  "device": {
+    "dataPath": "/Users/valentin.pertuisot/Library/Developer/CoreSimulator/Devices/59A8E789-932A-48D0-9281-0F49DEB8E96D/data",
+    "dataPathSize": 5274767360,
+    "deviceTypeIdentifier": "com.apple.CoreSimulator.SimDeviceType.iPhone-18-Pro",
+    "isAvailable": true,
+    "lastUsedAt": "2026-09-18T07:55:54Z",
+    "logPath": "/Users/valentin.pertuisot/Library/Logs/CoreSimulator/59A8E789-932A-48D0-9281-0F49DEB8E96D",
+    "logPathSize": 315392,
+    "name": "iPhone 18 Pro",
+    "runtime": "com.apple.CoreSimulator.SimRuntime.iOS-27-0",
+    "state": "Booted",
+    "udid": "59A8E789-932A-48D0-9281-0F49DEB8E96D"
+  },
+  "experiment": "EXP-187",
+  "failure": "build failed; inspect scoped artifact",
+  "finished_at": "2026-09-18T08:13:50.702325+00:00",
+  "gate": "T14",
+  "gate_status": "INVALID",
+  "native_validation": "NOT_RUN",
+  "remaining": [
+    "supported physical native wall-time stack samples",
+    "complete backend RUM/profile inventory",
+    "exact profile attachment and process labels"
+  ],
+  "revision": "b3b4079888bc7b2dadc3506f187561eed88e5359",
+  "run_id": "exp187-95dbd106-5ed3-4d27-b474-ba4249fb4d49",
+  "schema_version": 1,
+  "scope": "SIMULATOR_MECHANICS_ONLY",
+  "signature": "UNSIGNED",
+  "source_fingerprint": "7d813063fdaa8e8988ddd4e198b1484c88d83ec9ab642f735ddd1bb88610cc2c",
+  "stages": {
+    "preflight": {
+      "state": "PASS"
+    }
+  },
+  "started_at": "2026-09-18T08:13:29.445963+00:00",
+  "workspace_preserved": true,
+  "xcode": "Xcode 27.0\nBuild version 27A266a"
+}

@@ -130,6 +130,19 @@
       "source_fingerprint": "0d0058e2c468320acf71c371f7000b8af0853708756ddb680af019b452eaaeb7",
       "workspace_preserved": true,
       "physical_backend": "NOT RUN"
+    },
+    {
+      "run_id": "exp187-95dbd106-5ed3-4d27-b474-ba4249fb4d49",
+      "state": "INVALID",
+      "revision": "b3b4079888bc7b2dadc3506f187561eed88e5359",
+      "signature": "UNSIGNED",
+      "durable_result": "Results/acceptance/exp187-95dbd106-5ed3-4d27-b474-ba4249fb4d49.json",
+      "artifact": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp187-configured-u05qcnbw/attempt",
+      "build": "FAIL; existing CatalogSwiftUI iOS17 APIs compiled under imported lower deployment setting",
+      "native_status": "NOT RUN",
+      "reason": "The generated -xcconfig included the full Example chain; Base.xcconfig globally lowered benchmark deployment settings. Narrowed to the existing optional local credential include, resolved only by Xcode, with original Benchmark Runner settings.",
+      "workspace_preserved": true,
+      "physical_backend": "NOT RUN"
     }
   ],
   "device_attempts": [],
@@ -198,7 +211,7 @@
     "definition_revision": "aaa70d2d17e860e1eb7f7bf67734d66bfdfe7622"
   },
   "native_implementation": {
-    "state": "CONFIGURATION REPAIR PREPARED; FRESH FROZEN EXECUTION REQUIRED",
+    "state": "NARROWED CONFIGURATION INCLUDE; FRESH FROZEN EXECUTION REQUIRED",
     "fixture": "BenchmarkTests/Runner/Scenarios/Profiling/ProfilingAcceptance.swift",
     "driver": "tools/multi-scene/profiling-correlation/run_simulator.py",
     "validator": "tools/multi-scene/profiling-correlation/validate.py",

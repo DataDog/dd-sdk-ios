@@ -1531,9 +1531,11 @@ SDK initialization; inspect only presence/format booleans if diagnosing the buil
 app, and never read the protected local xcconfig. Repair existing build-setting
 wiring, freeze it and use a new full attempt; preserve the original INVALID receipt.
 
-The repaired acceptance override includes the tracked Benchmark Runner template,
-then the tracked Example Datadog template, and maps CLIENT_TOKEN to
-DATADOG_CLIENT_TOKEN. Xcode performs variable/include resolution; never expand
+The acceptance override includes the tracked Benchmark Runner template, then
+lets Xcode resolve the existing optional Datadog.local.xcconfig include, and maps
+CLIENT_TOKEN to DATADOG_CLIENT_TOKEN. Do not include the full Example chain in
+-xcconfig: Base.xcconfig globally lowers the benchmark deployment settings and
+breaks existing CatalogSwiftUI iOS17 APIs. Xcode performs variable/include resolution; never expand
 secret values into command arguments or artifact summaries. Validate resolved
 presence/application UUID in the built plist before installation.
 

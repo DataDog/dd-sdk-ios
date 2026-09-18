@@ -34,9 +34,11 @@ critical command. Actual native reference times and server offsets independently
 determine exact serialized timestamps and durations.
 
 The acceptance build generates an isolated xcconfig that includes the tracked
-Benchmark Runner settings, then the existing Example Datadog settings, and maps
-CLIENT_TOKEN to DATADOG_CLIENT_TOKEN. Xcode resolves the existing configuration;
-the runner never reads the local xcconfig. A post-build presence/UUID check
+Benchmark Runner settings, then lets Xcode resolve the existing optional
+Datadog.local.xcconfig include and maps CLIENT_TOKEN to DATADOG_CLIENT_TOKEN.
+The runner never reads the local xcconfig. Do not include the full Example
+Datadog.xcconfig chain: its Base.xcconfig overrides deployment settings on every
+benchmark target. A post-build presence/UUID check
 rejects unresolved credentials before install without recording values. Ordinary
 build mode does not apply this override. The frozen source inventory includes
 the native Mach profiler and the tracked configuration templates.
