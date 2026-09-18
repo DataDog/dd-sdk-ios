@@ -67,7 +67,8 @@ ACTIVE_DOCUMENTS = [
     '.continue-here.md', 'DatadogRUM/MULTI_SCENE_SUPPORT.md',
     *['DatadogRUM/MultiSceneSupport/' + name + '.md' for name in [
         'PLAN', 'ASSESSMENT', 'EXPERIMENTS', 'TOOLING_RUNBOOK',
-        'PRODUCTION_SAFETY_REVIEW', 'REVIEW_TRIAGE', 'COMPONENT_REVIEW']],
+        'PRODUCTION_SAFETY_REVIEW', 'REVIEW_TRIAGE', 'COMPONENT_REVIEW',
+        'STABLE_API_REVIEW']],
 ]
 
 

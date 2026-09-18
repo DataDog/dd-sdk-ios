@@ -9,6 +9,7 @@ Current support and evidence limits: [ASSESSMENT.md](MultiSceneSupport/ASSESSMEN
 Authoritative obligations/status: [release-gates.json](MultiSceneSupport/release-gates.json)
 and its generated [checklist](MultiSceneSupport/PLAN.md).
 The sole restart cursor is [.continue-here.md](../.continue-here.md).
+Concrete pending public API proposal: [stable API review](MultiSceneSupport/STABLE_API_REVIEW.md).
 
 ## Goal
 

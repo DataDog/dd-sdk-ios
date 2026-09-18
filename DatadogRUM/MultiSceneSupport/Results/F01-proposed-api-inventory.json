@@ -1,0 +1,183 @@
+{
+  "swift_methods": [
+    {
+      "line": 54,
+      "signature": "func addFeatureFlagEvaluation(name: String, value: Encodable, view: RUMViewTarget)"
+    },
+    {
+      "line": 83,
+      "signature": "func addTiming(name: String, view: RUMViewTarget)"
+    },
+    {
+      "line": 94,
+      "signature": "func addViewLoadingTime(overwrite: Bool, view: RUMViewTarget)"
+    },
+    {
+      "line": 105,
+      "signature": "func addViewAttribute(forKey key: AttributeKey, value: AttributeValue, view: RUMViewTarget)"
+    },
+    {
+      "line": 116,
+      "signature": "func addViewAttributes(_ attributes: [AttributeKey: AttributeValue], view: RUMViewTarget)"
+    },
+    {
+      "line": 127,
+      "signature": "func removeViewAttribute(forKey key: AttributeKey, view: RUMViewTarget)"
+    },
+    {
+      "line": 138,
+      "signature": "func removeViewAttributes(forKeys keys: [AttributeKey], view: RUMViewTarget)"
+    },
+    {
+      "line": 285,
+      "signature": "func startView(\nkey: String,\nname: String? = nil,\nin scene: UIWindowScene,\nattributes: [AttributeKey: AttributeValue] = [:]\n)"
+    },
+    {
+      "line": 314,
+      "signature": "func stopView(\nkey: String,\nin scene: UIWindowScene,\nattributes: [AttributeKey: AttributeValue] = [:]\n)"
+    },
+    {
+      "line": 383,
+      "signature": "func addError(\nmessage: String,\ntype: String? = nil,\nstack: String? = nil,\nsource: RUMErrorSource = .custom,\nview: RUMViewTarget,\nattributes: [AttributeKey: AttributeValue] = [:],\nfile: StaticString? = #fileID,\nline: UInt? = #line\n)"
+    },
+    {
+      "line": 413,
+      "signature": "func addError(\nerror: Error,\nsource: RUMErrorSource = .custom,\nview: RUMViewTarget,\nattributes: [AttributeKey: AttributeValue] = [:]\n)"
+    },
+    {
+      "line": 432,
+      "signature": "func addError(\nerror: Error,\nsource: RUMErrorSource = .custom,\nview: RUMViewTarget,\nattributes: [AttributeKey: AttributeValue] = [:],\ncompletionHandler: @escaping CompletionHandler\n)"
+    },
+    {
+      "line": 504,
+      "signature": "func startResource(\nresourceKey: String,\nrequest: URLRequest,\nview: RUMViewTarget,\nattributes: [AttributeKey: AttributeValue] = [:]\n)"
+    },
+    {
+      "line": 529,
+      "signature": "func startResource(\nresourceKey: String,\nurl: URL,\nview: RUMViewTarget,\nattributes: [AttributeKey: AttributeValue] = [:]\n)"
+    },
+    {
+      "line": 554,
+      "signature": "func startResource(\nresourceKey: String,\nhttpMethod: RUMMethod,\nurlString: String,\nview: RUMViewTarget,\nattributes: [AttributeKey: AttributeValue] = [:]\n)"
+    },
+    {
+      "line": 698,
+      "signature": "func addAction(\ntype: RUMActionType,\nname: String,\nview: RUMViewTarget,\nattributes: [AttributeKey: AttributeValue] = [:]\n)"
+    },
+    {
+      "line": 739,
+      "signature": "func startAction(\ntype: RUMActionType,\nname: String,\nview: RUMViewTarget,\nattributes: [AttributeKey: AttributeValue] = [:]\n)"
+    },
+    {
+      "line": 781,
+      "signature": "func stopAction(\ntype: RUMActionType,\nname: String? = nil,\nview: RUMViewTarget,\nattributes: [AttributeKey: AttributeValue] = [:]\n)"
+    },
+    {
+      "line": 899,
+      "signature": "func startOperation(\nname: String,\noperationKey: String? = nil,\nview: RUMViewTarget,\nattributes: [AttributeKey: AttributeValue] = [:],\noptions: OperationOptions? = nil\n)"
+    },
+    {
+      "line": 921,
+      "signature": "func succeedOperation(\nname: String,\noperationKey: String? = nil,\nview: RUMViewTarget,\nattributes: [AttributeKey: AttributeValue] = [:]\n)"
+    },
+    {
+      "line": 941,
+      "signature": "func failOperation(\nname: String,\noperationKey: String? = nil,\nreason: RUMFeatureOperationFailureReason,\nview: RUMViewTarget,\nattributes: [AttributeKey: AttributeValue] = [:]\n)"
+    }
+  ],
+  "objc_selectors": [
+    {
+      "line": 793,
+      "selector": "currentInScene:"
+    },
+    {
+      "line": 856,
+      "selector": "addViewAttributeForKey:value:view:"
+    },
+    {
+      "line": 864,
+      "selector": "addViewAttributes:view:"
+    },
+    {
+      "line": 872,
+      "selector": "removeViewAttributeForKey:view:"
+    },
+    {
+      "line": 880,
+      "selector": "removeViewAttributesForKeys:view:"
+    },
+    {
+      "line": 888,
+      "selector": "addTimingWithName:view:"
+    },
+    {
+      "line": 896,
+      "selector": "addViewLoadingTimeWithOverwrite:view:"
+    },
+    {
+      "line": 943,
+      "selector": "startViewWithKey:name:inScene:attributes:"
+    },
+    {
+      "line": 964,
+      "selector": "stopViewWithKey:inScene:attributes:"
+    },
+    {
+      "line": 1009,
+      "selector": "addErrorWithMessage:stack:source:view:attributes:"
+    },
+    {
+      "line": 1026,
+      "selector": "addErrorWithError:source:view:attributes:"
+    },
+    {
+      "line": 1066,
+      "selector": "startResourceWithResourceKey:request:view:attributes:"
+    },
+    {
+      "line": 1084,
+      "selector": "startResourceWithResourceKey:url:view:attributes:"
+    },
+    {
+      "line": 1102,
+      "selector": "startResourceWithResourceKey:httpMethod:urlString:view:attributes:"
+    },
+    {
+      "line": 1200,
+      "selector": "addActionWithType:name:view:attributes:"
+    },
+    {
+      "line": 1217,
+      "selector": "startActionWithType:name:view:attributes:"
+    },
+    {
+      "line": 1234,
+      "selector": "stopActionWithType:name:view:attributes:"
+    },
+    {
+      "line": 1277,
+      "selector": "addFeatureFlagEvaluationWithName:value:view:"
+    },
+    {
+      "line": 1342,
+      "selector": "startOperationWithName:operationKey:view:attributes:options:"
+    },
+    {
+      "line": 1363,
+      "selector": "succeedOperationWithName:operationKey:view:attributes:"
+    },
+    {
+      "line": 1382,
+      "selector": "failOperationWithName:operationKey:reason:view:attributes:"
+    }
+  ],
+  "source_hashes": {
+    "DatadogRUM/Sources/RUMMonitorProtocol+Convenience.swift": "f750cd5ee674c95304c76731bec2bd0a9a11efad87d6c09040aa83d70292464f",
+    "DatadogRUM/Sources/RUM+objc.swift": "88bfdba32da15cef67d4ce3953f7ff32cb2077eed8e7ba6db4176b4620234510",
+    "DatadogRUM/Sources/Instrumentation/Views/SwiftUI/SwiftUIViewModifier.swift": "82541ee0f2b4111baaa5c3a4d88f7f3564d86a70c6a0af3be10b6a69b18d9ae8"
+  },
+  "review_revision": "2baa06da0060bcc4ae3b54fe2f4cfc64be5b4cce",
+  "status": "PROPOSED",
+  "gate": "F01",
+  "is_public_api_baseline": false
+}

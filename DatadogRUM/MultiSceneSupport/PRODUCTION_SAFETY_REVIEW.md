@@ -256,3 +256,13 @@ correlation follows each resolved step. The first fixture error and iOS27
 legacy-host non-run are preserved with their bounded corrections/environment
 choice. No production finding or repair is added. T14 still requires physical
 profiling and authenticated profile-backend proof; no per-scene CPU claim.
+
+## Stable API review boundary
+
+[F01's concrete proposal](STABLE_API_REVIEW.md) covers the 21 implemented Swift
+target overloads and 21 Objective-C selectors, with a bounded semantic host surface.
+Before Release exposure, its Objective-C contract must settle nullable target
+creation and crash-safe off-main misuse handling. Debug @MainActor smoke tests
+do not establish that behavior; this is an open F01 review/validation obligation,
+not a demonstrated regression or a reopened D01–D12 disposition. The proposal
+does not promote any public declaration.

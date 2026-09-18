@@ -53,7 +53,7 @@ logical peers do not establish simultaneous-window or genuine OS lifecycle proof
   [Evidence levels](TOOLING_RUNBOOK.md#evidence-levels) define the boundary.
 - The completed [production safety review cycle](PRODUCTION_SAFETY_REVIEW.md) and
   [bounded component reviews](COMPONENT_REVIEW.md) do not certify release readiness.
-  Stable API approval, supported-runtime checks, physical topology, Duo27.1
+  The [concrete stable API proposal](STABLE_API_REVIEW.md) awaits reviewer approval. Supported-runtime checks, physical topology, Duo27.1
   acceptance and final freeze remain governed by the register.
 - Current availability must be rediscovered when execution needs it. Earlier
   devices, sessions and temporary artifacts are evidence locators, not instructions

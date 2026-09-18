@@ -880,40 +880,16 @@ Semantic SwiftUI navigation requires:
 - scene disconnect, reconnect, restoration, and session rollover; and
 - unchanged automatic-only, source-less, and single-scene behavior.
 
-## API-review questions
+## API review
 
-No product-behavior decision blocks the next experiment. `EXP-148` validates the
-SDK-owned low-cost publisher path, `EXP-149` closes its deterministic lifetime
-and scene-isolation matrix, `EXP-151` accepts the iOS 27 Observation input for
-one atomic accepted-state property, and `EXP-152` closes programmatic native
-dismissal callback timing. `EXP-153` closes callback-driven custom/third-party
-parity through one boundary and the existing publisher host. `EXP-154` closes
-serial two-native-scene Observation parity with exact per-scene owners. EXP-146's
-low-level semantic oracle alone remains insufficient for API promotion, but the
-combined accepted evidence is now ready for normal review. The remaining
-questions are public shape, compatibility, and implementation-boundary review:
+The finite [stable API review package](STABLE_API_REVIEW.md) owns the concrete
+first-release recommendation for names, availability, adapter boundaries,
+custom-conformer behavior and Objective-C safety. Its eight decisions await
+review; this document retains the semantic contract and experimental evidence.
+The package proposes stable accepted-state Publisher/Observation hosts and
+scene-current targeting, with low-level transitions and native convenience
+remaining experimental. The proposal does not authorize public promotion.
 
-1. Which parts of the transition source remain internal, become adapter-author
-   SPI, or warrant public exposure, and what are the exact host/adapter names?
-2. Which small type-erased capabilities should be independently detectable, and
-   how should runtime discovery preserve a stable source across SwiftUI value
-   reconstruction without retaining customer containers?
-3. How much native `NavigationStack` convenience should `RUMNavigationStack`
-   expose while delegating to the shared engine and avoiding a mirrored Apple API
-   surface?
-4. What automatic metadata policy supplies usable names/paths without customer
-   enumeration, and should sparse overrides reuse `RUMView` or a smaller
-   navigation-specific descriptor?
-5. Extension-only manual overload with private capability, or defaulted public
-   protocol requirements after library-evolution review?
-6. How should the public integration create, retain, and remove the proven
-   container-local authority boundary without exposing controller hierarchy or
-   requiring customers to understand its internal containment model?
-7. How should Objective-C callers that invoke a `UIWindowScene` overload away
-   from the main thread be handled without retaining or asynchronously dereferencing
-   the scene?
-
-The Operation target proposal and its additional exact-view forms remain in
-[OPERATIONS.md](OPERATIONS.md). Both reviews should share one internal logical
-target representation, but they do not need to expose one public type unless that
-improves actual call sites.
+Operation and telemetry targeting share that review package. Manual-key/controller
+target factories remain outside its proposed first release, rather than creating
+additional open-ended experiments.

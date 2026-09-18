@@ -646,7 +646,7 @@
       "environment": "API review",
       "completion_mode": null,
       "status": "OPEN",
-      "evidence": ""
+      "evidence": "STABLE_API_REVIEW.md proposes eight finite decisions and records21 Swift overloads/21 Objective-C selectors at2baa06da0. Approval pending; off-main Objective-C safety and Release/client/API-baseline validation required before promotion. Results/F01-proposed-api-inventory.json."
     },
     {
       "id": "F02",

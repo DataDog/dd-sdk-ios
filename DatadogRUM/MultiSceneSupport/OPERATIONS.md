@@ -213,10 +213,11 @@ Required test coverage is tracked explicitly:
 | Duplicate identity has corrected warning and no synthetic end | Manager warning plus exact `[start, start, end]` step sequence, with both a reused key and omitted key; `EXP-130` raw/reduced backend proof | Focused and live backend pass; earlier raw start is orphaned as specified |
 | Existing single-scene and source-less behavior | Representative-change and legacy no-view regressions | Focused pass; current full 1,255-test RUM suite passes with zero failures |
 
-API review must settle the public Operation target type/name, availability, and
-exact Swift/Objective-C signatures. It must also decide whether and how to add
-manual-key/controller forms. That review blocks stable exposure, not the now-
-accepted `.current(in:)` SPI experiment. The requested
+The [stable API review package](STABLE_API_REVIEW.md) proposes the concrete
+RUMViewTarget name, iOS27 availability, existing Swift/Objective-C signatures and
+extension-only fallback. Manual-key/controller factories are outside its proposed
+first release. Reviewer approval remains required before stable exposure;
+accepted scene-current SPI evidence is unchanged. The requested
 application-wide identity means that scenes do not
 namespace an Operation; it does not add a new cross-session persistence contract.
 The manager and its retained view snapshot remain session-local, while duplicate
