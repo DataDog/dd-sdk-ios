@@ -8,6 +8,14 @@
                 "name": "iPhone 17",
                 "osVersion": "26.0.1"
             }
+        },
+        {
+            "name": "ios-18.5-iphone16",
+            "simulator": {
+                "modelIdentifier": "iPhone17,3",
+                "name": "iPhone 16",
+                "osVersion": "18.5"
+            }
         }
     ]
 }
