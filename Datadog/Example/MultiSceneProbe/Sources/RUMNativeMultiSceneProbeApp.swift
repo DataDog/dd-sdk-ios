@@ -281,7 +281,9 @@ enum ProbeRuntime {
                 },
                 errorEventMapper: { event in
                     #if DEBUG
-                    if scenario?.identifier == ProbeErrorContract.scenarioID {
+                    if scenario?.identifier == ProbeLogContract.scenarioID {
+                        ProbeLogAcceptance.recordPayloadCheck(event)
+                    } else if scenario?.identifier == ProbeErrorContract.scenarioID {
                         ProbeErrorAcceptance.recordPayloadCheck(event)
                     } else if scenario?.identifier == ProbeAttributeContract.scenarioID {
                         ProbeAttributeAcceptance.recordPayloadCheck(event)
@@ -309,6 +311,12 @@ enum ProbeRuntime {
         RUMMonitor.shared().debug = true
         RUMMonitor.shared().addAttribute(forKey: Attribute.runID, value: runID)
         RUMMonitor.shared().addAttribute(forKey: Attribute.host, value: "native-swiftui")
+
+        #if DEBUG
+        if scenario?.identifier == ProbeLogContract.scenarioID {
+            ProbeLogAcceptance.configure()
+        }
+        #endif
 
         if exercisesTraceOnlyURLSessionOwnership {
             Trace.enable(
@@ -389,7 +397,7 @@ enum ProbeRuntime {
         screen: String,
         phase: String
     ) {
-        guard ![ProbeResourceContract.scenarioID, ProbeErrorContract.scenarioID, ProbeAttributeContract.scenarioID, ProbeTimingContract.scenarioID, ProbeFlagContract.scenarioID, ProbeTraceContract.scenarioID].contains(scenario?.identifier ?? "") else { return }
+        guard ![ProbeResourceContract.scenarioID, ProbeErrorContract.scenarioID, ProbeAttributeContract.scenarioID, ProbeTimingContract.scenarioID, ProbeFlagContract.scenarioID, ProbeTraceContract.scenarioID, ProbeLogContract.scenarioID].contains(scenario?.identifier ?? "") else { return }
         let uptime = ProcessInfo.processInfo.systemUptime
         let marker = "\(window.label).\(screen).\(phase)"
         let attributes: [String: Encodable] = [

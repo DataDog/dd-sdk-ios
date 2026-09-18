@@ -380,6 +380,8 @@ internal struct ProbeSemanticTimeline {
             return .resource
         case .rumError:
             return .error
+        case .rumLog:
+            return .log
         case .rumTrace:
             return .trace
         case .rumOperation:

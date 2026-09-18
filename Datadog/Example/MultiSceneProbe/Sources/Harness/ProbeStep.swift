@@ -31,6 +31,7 @@ enum ProbeStepKind: String, Codable, CaseIterable {
     case runCurrentViewErrorBatch = "run-current-view-error-batch"
     case runViewAttributeBatch = "run-view-attribute-batch"
     case runViewTimingBatch = "run-view-timing-batch"
+    case runLogOwnershipBatch = "run-log-ownership-batch"
     case runTraceOwnershipBatch = "run-trace-ownership-batch"
     case runViewFlagBatch = "run-view-flag-batch"
     case startExplicitTargetAction = "start-explicit-target-action"
@@ -253,6 +254,25 @@ enum ProbeTraceContract {
     ]
     static let urlPhases = ["url-a", "url-b", "url-fallback"]
     static let completed = "trace-batch-finished"
+
+    static func source(for phase: String) -> String {
+        phase.hasSuffix("-a") ? "scene-A" : phase.hasSuffix("-b") ? "scene-B" : "source-less"
+    }
+}
+
+enum ProbeLogContract {
+    static let scenarioID = "logs.captured-emission.native-mirrors-cross-scene-serial"
+    static let phases = ["log-info-a", "log-error-a", "log-info-b", "log-error-b", "log-info-fallback", "log-error-fallback"]
+    static let errorPhases = ["log-error-a", "log-error-b", "log-error-fallback"]
+    static let actionA = "log-action-a"
+    static let actionB = "log-action-b"
+    static let inventory = [
+        "log-info-a", "log-error-a", "mirror-log-error-a",
+        "log-info-b", "log-error-b", "mirror-log-error-b",
+        "log-info-fallback", "log-error-fallback", "mirror-log-error-fallback",
+        actionA, actionB,
+    ]
+    static let completed = "log-batch-finished"
 
     static func source(for phase: String) -> String {
         phase.hasSuffix("-a") ? "scene-A" : phase.hasSuffix("-b") ? "scene-B" : "source-less"

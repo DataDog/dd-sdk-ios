@@ -1318,3 +1318,12 @@ expected entries; retain backend IDs to reject duplicates. Aggregate the full ru
 read all pages, and verify the full RUM session. Never accept only a filtered owner
 subset. The bounded contract is
 [EXP-182](Experiments/EXP-143-199.md#exp-182--accept-captured-logs-and-mirrored-error-ownership).
+
+
+The Logs runner adds DatadogLogs source to the frozen identity and authenticates
+DDSQL count plus raw Logs reads. Count the entire unique run without owner filters;
+query all RUM-session actions/errors rather than named subsets. Preserve actual
+backend log record IDs and reject ambiguous attribute namespaces. When a probe
+project mutation resets the active Xcode scheme, switch to the intended scheme and
+confirm its discovered test inventory before running. A scheme-selection failure
+does not constitute an executed test or native scenario.

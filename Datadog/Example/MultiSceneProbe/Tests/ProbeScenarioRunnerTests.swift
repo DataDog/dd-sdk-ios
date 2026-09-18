@@ -35,6 +35,72 @@ final class ProbeScenarioRunnerTests: XCTestCase {
         XCTAssertTrue(normalizedWindow.opensPeer)
     }
 
+    func testLogContractRequiresExactInventoryAndDistinctSourceLessBoundary() throws {
+        let scenario = try XCTUnwrap(ProbeScenarioCatalog.scenario(identifier: ProbeLogContract.scenarioID))
+        XCTAssertEqual(scenario.steps.last?.kind, .runLogOwnershipBatch)
+        XCTAssertTrue(ProbeScenarioCatalog.usesObservableDriver(scenario))
+        XCTAssertFalse(scenario.runtimeOptions.exercisesTraceOnlyURLSessionOwnership)
+        XCTAssertEqual(scenario.completionConditions.compactMap(\.name), [
+            "log-info-a", "log-error-a", "mirror-log-error-a",
+            "log-info-b", "log-error-b", "mirror-log-error-b",
+            "log-info-fallback", "log-error-fallback", "mirror-log-error-fallback",
+            "log-action-a", "log-action-b",
+        ])
+        XCTAssertEqual(scenario.completionConditions.count + scenario.expectedSemanticTimeline.count, 24)
+        XCTAssertEqual(scenario.completionConditions.filter { $0.kind == .log }.count, 6)
+        XCTAssertEqual(scenario.completionConditions.filter { $0.kind == .error }.count, 3)
+        XCTAssertEqual(scenario.completionConditions.filter { $0.kind == .action }.count, 2)
+        XCTAssertEqual(scenario.completionConditions.filter { $0.scene == nil }.count, 3)
+        XCTAssertTrue(scenario.completionConditions.allSatisfy { $0.expectedCount == 1 })
+    }
+
+    func testLogWireProjectionRejectsMissingMalformedAndPrivateValues() throws {
+        let valid: [String: Any] = [
+            "application_id": UUID().uuidString, "session_id": UUID().uuidString,
+            "view.id": UUID().uuidString, "user_action.id": UUID().uuidString,
+            "probe.run_id": "exp182-test", "probe.phase": "log-info-a",
+            "probe.source_scene": "scene-A", "status": "info", "message": "log-info-a", "service": "probe",
+        ]
+        let wire = try XCTUnwrap(ProbeLogWireIdentity.decode(JSONSerialization.data(withJSONObject: valid)))
+        XCTAssertEqual(wire.viewID, valid["view.id"] as? String)
+        XCTAssertEqual(wire.actionID, valid["user_action.id"] as? String)
+        for key in valid.keys {
+            var malformed = valid
+            malformed.removeValue(forKey: key)
+            XCTAssertNil(ProbeLogWireIdentity.decode(try JSONSerialization.data(withJSONObject: malformed)), key)
+        }
+        for (key, value) in [
+            ("application_id", 182), ("session_id", "wrong"), ("user_action.id", NSNull()),
+            ("probe.run_id", ""), ("probe.source_scene", "scene-B"), ("probe.phase", "uncontrolled"),
+            ("message", "arbitrary customer text"), ("status", "error"),
+            ("_dd.internal.rum.error.target_view_id", UUID().uuidString),
+        ] as [(String, Any)] {
+            var malformed = valid
+            malformed[key] = value
+            XCTAssertNil(ProbeLogWireIdentity.decode(try JSONSerialization.data(withJSONObject: malformed)), key)
+        }
+    }
+
+    func testLogEvidenceRoundTripAndEnvelopeRetainExactWireCorrelation() throws {
+        let wire = ProbeLogWireIdentity(
+            status: "error",
+            message: "log-error-a",
+            service: "probe",
+            applicationID: UUID().uuidString,
+            sessionID: UUID().uuidString,
+            viewID: UUID().uuidString,
+            actionID: UUID().uuidString,
+            runID: "exp182-test",
+            phase: "log-error-a",
+            source: "scene-A"
+        )
+        let signal = ProbeSignal(kind: .rumLog, evidenceSource: .logMapper, name: wire.phase, log: wire)
+            .enveloped(sequence: 1, timestampMilliseconds: 182, runID: wire.runID, scenarioID: ProbeLogContract.scenarioID)
+        let decoded = try JSONDecoder().decode(ProbeSignal.self, from: JSONEncoder().encode(signal))
+        XCTAssertEqual(decoded.log, wire)
+        XCTAssertEqual(decoded.kind, .rumLog)
+        XCTAssertEqual(decoded.evidenceSource, .logMapper)
+    }
 
     func testTraceContractDeclaresExactFamiliesCompletionOrderAndSourceLessBoundary() throws {
         let scenario = try XCTUnwrap(ProbeScenarioCatalog.scenario(identifier: ProbeTraceContract.scenarioID))

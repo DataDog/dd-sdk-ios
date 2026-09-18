@@ -112,6 +112,31 @@
   "validation": {
     "strict_swiftlint": "PASS, zero violations in both changed test files",
     "production_source": "unchanged",
-    "next": "Implement the predeclared native Logs/mirror fixture and bounded acceptance runner."
-  }
+    "next": "Freeze the prepared fixture and run clean-install acceptance on a freshly resolved iOS 27 iPad simulator; require complete Logs and RUM backend ownership."
+  },
+  "fixture_validation": {
+    "probe_tests": {
+      "summary": "181 tests: 181 passed, 0 failed, 0 skipped, 0 expected failures, 0 not run",
+      "counts": {
+        "expectedFailures": 0,
+        "failed": 0,
+        "notRun": 0,
+        "passed": 181,
+        "skipped": 0,
+        "total": 181
+      },
+      "summary_path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/ActionArtifacts/default/RunAllTests/F49305E4-BEA8-42A8-B1D2-08A28A95ADEA.txt",
+      "xcresult": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/ActionArtifacts/default/RunAllTests/Test-RUMNativeMultiSceneProbe-2026.09.18_02-47-30-+0100.xcresult"
+    },
+    "native_app_build": "PASS through Xcode MCP",
+    "python_controls": 137,
+    "node_controls": 29,
+    "new_native_file_strict_lint": "PASS, zero violations",
+    "production_source": "unchanged",
+    "native_scenario": "Not executed yet"
+  },
+  "workflow_findings": [
+    "Changing the owned probe project can reset Xcode active scheme to a package scheme. Rediscover/switch and confirm test inventory after project mutation; two initial operations did not start tests.",
+    "Legacy-file lint contains pre-existing fixture style violations; the new native file is strict-clean, as are the SDK test changes."
+  ]
 }

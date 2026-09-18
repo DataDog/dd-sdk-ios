@@ -22,6 +22,7 @@ enum ProbeScenarioCatalog {
         ProbeTimingContract.scenarioID,
         ProbeFlagContract.scenarioID,
         ProbeTraceContract.scenarioID,
+        ProbeLogContract.scenarioID,
         "swiftui.stack.abort",
         "swiftui.stack.same-type-replacement",
         "swiftui.stack.different-type-replacement",
@@ -84,6 +85,7 @@ enum ProbeScenarioCatalog {
         attributesExplicitCurrentView,
         timingExplicitCurrentView,
         flagsExplicitCurrentView,
+        logsCapturedEmission,
         tracesCapturedStart,
         swiftUIStackAbort,
         swiftUIStackSameTypeReplacement,
@@ -773,6 +775,38 @@ enum ProbeScenarioCatalog {
             ProbeStep(.stopLegacyAction, scene: "scene-A", value: "long-running-legacy-finished-b"),
     ]
 
+
+    private static let logsCapturedEmission = ProbeScenario(
+        identifier: ProbeLogContract.scenarioID,
+        trackingMode: .manual,
+        layout: .stack,
+        initialWindows: ["scene-A", "scene-B"],
+        requiredCapabilities: [.multipleScenes],
+        steps: [
+            ProbeStep(.waitForSceneReady, scene: "scene-A"),
+            ProbeStep(.waitForSignal, scene: "scene-A", signal: "rum-view:home#1"),
+            ProbeStep(.openWindow, scene: "scene-A", value: "scene-B"),
+            ProbeStep(.waitForSignal, scene: "scene-B", signal: "rum-view:home#1"),
+            ProbeStep(.runLogOwnershipBatch, scene: "scene-B"),
+        ],
+        completionConditions: logOwnershipExpectations,
+        expectedSemanticTimeline: [
+            ProbeExpectation(.viewStarted, scene: "scene-A", screen: "home", occurrence: 1, rumViewOrigin: .semantic),
+            ProbeExpectation(.viewStarted, scene: "scene-B", screen: "home", occurrence: 1, rumViewOrigin: .semantic),
+        ] + logOwnershipExpectations,
+        runtimeOptions: ProbeRuntimeOptions()
+    )
+
+    private static let logOwnershipExpectations: [ProbeExpectation] = ProbeLogContract.inventory.map { phase in
+        let source = ProbeLogContract.source(for: phase)
+        let fallback = source == "source-less"
+        let kind: ProbeExpectationKind = phase.hasPrefix("mirror-") ? .error : phase.hasPrefix("log-action-") ? .action : .log
+        return ProbeExpectation(
+            kind, scene: fallback ? nil : source, screen: fallback ? nil : "home",
+            occurrence: fallback ? nil : 1, name: phase, sourceScene: source, sourceScreen: "home",
+            expectedCount: 1
+        )
+    }
 
     private static let tracesCapturedStart = ProbeScenario(
         identifier: ProbeTraceContract.scenarioID,

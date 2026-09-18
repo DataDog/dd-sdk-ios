@@ -35,6 +35,7 @@ internal enum ProbeSignalKind: String, Codable, CaseIterable {
     case rumAction = "rum-action"
     case rumResource = "rum-resource"
     case rumError = "rum-error"
+    case rumLog = "rum-log"
     case rumTrace = "rum-trace"
     case rumOperation = "rum-operation"
     case assertion
@@ -43,6 +44,7 @@ internal enum ProbeSignalKind: String, Codable, CaseIterable {
 internal enum ProbeEvidenceSource: String, Codable {
     case probe
     case rumMapper = "rum-mapper"
+    case logMapper = "log-mapper"
     case traceMapper = "trace-mapper"
     case internalHook = "internal-hook"
 }
@@ -345,6 +347,7 @@ internal struct ProbeSignal: Codable, Equatable {
     let action: ProbeActionSignal?
     let resource: ProbeResourceSignal?
     let error: ProbeErrorSignal?
+    let log: ProbeLogWireIdentity?
     let trace: ProbeTraceSignal?
     let operation: ProbeOperationSignal?
     let attributeState: ProbeAttributeState?
@@ -387,6 +390,7 @@ internal struct ProbeSignal: Codable, Equatable {
         action: ProbeActionSignal? = nil,
         resource: ProbeResourceSignal? = nil,
         error: ProbeErrorSignal? = nil,
+        log: ProbeLogWireIdentity? = nil,
         trace: ProbeTraceSignal? = nil,
         operation: ProbeOperationSignal? = nil,
         attributeState: ProbeAttributeState? = nil,
@@ -429,6 +433,7 @@ internal struct ProbeSignal: Codable, Equatable {
         self.action = action
         self.resource = resource
         self.error = error
+        self.log = log
         self.trace = trace
         self.operation = operation
         self.attributeState = attributeState
@@ -478,6 +483,7 @@ internal struct ProbeSignal: Codable, Equatable {
             action: action,
             resource: resource,
             error: error,
+            log: log,
             trace: trace,
             operation: operation,
             attributeState: attributeState,
@@ -531,6 +537,43 @@ struct ProbeTraceWireIdentity: Decodable, Equatable {
               }),
               UInt64(wire.traceID, radix: 16) != 0, UInt64(wire.spanID, radix: 16) != 0,
               wire.start > 0, wire.duration > 0 else { return nil }
+        return wire
+    }
+}
+
+/// Only the synthetic acceptance log payload; no arbitrary customer message is retained.
+struct ProbeLogWireIdentity: Codable, Equatable {
+    let status: String
+    let message: String
+    let service: String
+    let applicationID: String
+    let sessionID: String
+    let viewID: String
+    let actionID: String
+    let runID: String
+    let phase: String
+    let source: String
+
+    enum CodingKeys: String, CodingKey {
+        case status, message, service
+        case applicationID = "application_id"
+        case sessionID = "session_id"
+        case viewID = "view.id"
+        case actionID = "user_action.id"
+        case runID = "probe.run_id"
+        case phase = "probe.phase"
+        case source = "probe.source_scene"
+    }
+
+    static func decode(_ data: Data) -> Self? {
+        guard let object = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
+              !object.keys.contains(where: { $0.hasPrefix("_dd.internal.rum.error.") }),
+              let wire = try? JSONDecoder().decode(Self.self, from: data),
+              [wire.applicationID, wire.sessionID, wire.viewID, wire.actionID].allSatisfy({ UUID(uuidString: $0) != nil }),
+              !wire.runID.isEmpty, !wire.service.isEmpty,
+              ProbeLogContract.phases.contains(wire.phase), wire.message == wire.phase,
+              wire.source == ProbeLogContract.source(for: wire.phase),
+              wire.status == (wire.phase.hasPrefix("log-error-") ? "error" : "info") else { return nil }
         return wire
     }
 }

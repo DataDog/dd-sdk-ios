@@ -291,3 +291,68 @@ test("failed or missing detail batch results cannot produce a partial acceptance
   assert.equal(reads, 2);
   await assert.rejects(collectTraceDetails(rows, async () => ({}), async () => [], traceAt), /Incomplete trace detail decoding/);
 });
+
+
+const {parseLogCount, projectLogRow, hasPrivateMirrorMetadata} = new Function(source.replace(
+  'return runAcceptance({tools, notify, device, repo, scenario: typeof scenario === "undefined" ? undefined : scenario});',
+  'return {parseLogCount, projectLogRow, hasPrivateMirrorMetadata};'
+))();
+const logRow = () => ({
+  id:'backend-182', service:'probe', status:'info', message:'log-info-a',
+  attributes:{
+    'custom.application_id':'application', 'custom.session_id':'session',
+    'custom.view.id':'view-a', 'custom.user_action.id':'action-a',
+    'custom.probe.run_id':'run', 'custom.probe.phase':'log-info-a',
+    'custom.probe.source_scene':'scene-A'
+  }
+});
+test('Logs aggregate requires one exact integer count', () => {
+  assert.equal(parseLogCount('<TSV_DATA>\nevents\n6\n</TSV_DATA>'), 6);
+  assert.equal(parseLogCount('<TSV_DATA>\nevents\n0\n</TSV_DATA>'), 0);
+  for (const value of ['6\n7', '6.0', 'true', '-1', '101', '6\t7']) {
+    assert.throws(() => parseLogCount('<TSV_DATA>\nevents\n' + value + '\n</TSV_DATA>'));
+  }
+  assert.throws(() => parseLogCount('<TSV_DATA>\ncount\n6\n</TSV_DATA>'));
+});
+test('Logs projection preserves actual record identity and emission correlation', () => {
+  assert.deepEqual(projectLogRow(logRow()), {
+    log_id:'backend-182', run_id:'run', phase:'log-info-a', application_id:'application',
+    session_id:'session', view_id:'view-a', action_id:'action-a', source_scene:'scene-A',
+    service:'probe', status:'info', message:'log-info-a', leaked_internal_attribute:false
+  });
+});
+test('Logs projection rejects missing ID and selected fields without borrowing labels', () => {
+  for (const key of ['id','service','status','message']) {
+    const row = logRow(); delete row[key];
+    assert.throws(() => projectLogRow(row));
+  }
+  for (const key of Object.keys(logRow().attributes)) {
+    for (const value of [null, true, 182, '', []]) {
+      const row = logRow(); row.attributes[key] = value;
+      assert.throws(() => projectLogRow(row));
+    }
+  }
+});
+test('Logs projection rejects duplicate namespace or flat/nested ownership', () => {
+  for (const key of ['custom.view.id', 'attributes.view.id']) {
+    const row = logRow();
+    if (key === 'custom.view.id') row.attributes.custom = {view:{id:'view-a'}};
+    else row.attributes[key] = 'view-a';
+    assert.throws(() => projectLogRow(row), /Ambiguous/);
+  }
+});
+test('Logs projection accepts the documented alternate attribute namespace', () => {
+  const row = logRow();
+  row.attributes = Object.fromEntries(Object.entries(row.attributes).map(([key,value]) =>
+    [key.replace(/^custom\./,'attributes.'),value]));
+  assert.equal(projectLogRow(row).action_id,'action-a');
+});
+test('Logs and mirror private metadata is detected across wire shapes', () => {
+  for (const key of ['target_view_id','target_action_id','target_scene_id','context_captured']) {
+    const row = logRow(); row.attributes['custom._dd.internal.rum.error.' + key] = null;
+    assert.equal(projectLogRow(row).leaked_internal_attribute,true);
+    assert.equal(hasPrivateMirrorMetadata({['_dd.internal.rum.error.' + key]:null}),true);
+    assert.equal(hasPrivateMirrorMetadata({_dd:{internal:{rum:{error:{[key]:'value'}}}}}),true);
+  }
+  assert.equal(hasPrivateMirrorMetadata({_dd:{device:{architecture:'arm64'}}}),false);
+});

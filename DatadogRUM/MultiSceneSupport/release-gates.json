@@ -334,7 +334,7 @@
       "environment": "iOS 27 simulator, Logs/RUM mirror fixture and Datadog backend",
       "completion_mode": "captured emission ownership",
       "status": "OPEN",
-      "evidence": "EXP-182:99 Logs/9 receiver tests pass, including deferred ownership and legacy fallback; initial invalid fixture retained. Native six-log/three-mirror/two-action acceptance pending. No SDK repair; Results/EXP-182-log-mirror-ownership.json."
+      "evidence": "EXP-182:99 Logs/9 receiver/181 probe tests,137 Python/29 connector controls pass; bounded native/backend fixture prepared. Initial invalid legacy-only fixture retained. No SDK repair; Results/EXP-182-log-mirror-ownership.json."
     },
     {
       "id": "T10",

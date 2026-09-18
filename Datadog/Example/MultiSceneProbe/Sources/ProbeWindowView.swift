@@ -2906,6 +2906,12 @@ struct ProbeWindowRoot: View {
                         + "screen=\(currentSceneScreen) phase=\(marker) "
                         + "uptime=\(uptime)"
                 )
+            case .runLogOwnershipBatch:
+                #if DEBUG
+                return ProbeLogAcceptance.start()
+                #else
+                return .rejected(reason: "Log acceptance requires the Debug fixture")
+                #endif
             case .runTraceOwnershipBatch:
                 #if DEBUG
                 return ProbeTraceAcceptance.start()

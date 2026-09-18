@@ -180,6 +180,64 @@ async function collectTraceDetails(rows, fetchTrace, decodePages, at) {
   return rows.map((row, index) => projectTraceRow(row, pages[index], at));
 }
 
+
+function parseLogCount(body) {
+  const match = body.match(/<TSV_DATA>\s*([\s\S]*?)\s*<\/TSV_DATA>/);
+  if (!match) throw Error("Missing Logs aggregate data");
+  const lines = match[1].trim().split("\n");
+  if (lines.length !== 2 || lines[0].trim() !== "events" || !/^\d+$/.test(lines[1].trim())) {
+    throw Error("Malformed Logs aggregate count");
+  }
+  const count = Number(lines[1].trim());
+  if (!Number.isSafeInteger(count) || count > 100) throw Error("Unbounded Logs inventory");
+  return count;
+}
+
+function logAttribute(row, key) {
+  const attributes = row.attributes || {};
+  const values = [];
+  function collect(object, path) {
+    if (object == null || typeof object !== "object") return;
+    if (Object.hasOwn(object, path)) values.push(object[path]);
+    const dot = path.indexOf(".");
+    if (dot !== -1) collect(object[path.slice(0, dot)], path.slice(dot + 1));
+  }
+  collect(attributes, "custom." + key);
+  collect(attributes, "attributes." + key);
+  if (values.length > 1) throw Error("Ambiguous Logs attribute: " + key);
+  return values.length ? values[0] : null;
+}
+
+function hasPrivateMirrorMetadata(payload) {
+  const prefix = "_dd.internal.rum.error.";
+  function visit(value, path = "") {
+    if (value == null || typeof value !== "object") return false;
+    return Object.entries(value).some(([key, child]) => {
+      const joined = path ? path + "." + key : key;
+      return joined.startsWith(prefix) || visit(child, joined);
+    });
+  }
+  return visit(payload);
+}
+
+function projectLogRow(row) {
+  if (!row || typeof row.id !== "string" || !row.id) throw Error("Missing backend log ID");
+  const get = key => logAttribute(row, key);
+  const selected = {log_id:row.id, run_id:get("probe.run_id"), phase:get("probe.phase"),
+    application_id:get("application_id"), session_id:get("session_id"), view_id:get("view.id"),
+    action_id:get("user_action.id"), source_scene:get("probe.source_scene"),
+    service:row.service, status:row.status, message:row.message};
+  if (Object.values(selected).some(value => typeof value !== "string" || !value)) {
+    throw Error("Missing or malformed selected Logs field");
+  }
+  const attributes = row.attributes || {};
+  const privateFlat = Object.keys(attributes).some(key =>
+    key.replace(/^(custom|attributes)\./, "").startsWith("_dd.internal.rum.error."));
+  selected.leaked_internal_attribute = privateFlat || hasPrivateMirrorMetadata(attributes.custom) ||
+    hasPrivateMirrorMetadata(attributes.attributes);
+  return selected;
+}
+
 async function runAcceptance({tools, notify, device, repo, scenario}) {
   if (!repo || !device) throw Error("Explicit repository path and freshly resolved simulator UUID required");
   const shellQuote = value => "'" + value.replaceAll("'", "'\\''") + "'";
@@ -225,6 +283,14 @@ async function runAcceptance({tools, notify, device, repo, scenario}) {
     const count = Number(lines.at(-1).split("\t").at(-1));
     if (!Number.isInteger(count) || count < 0) throw Error("Malformed aggregate count");
     return count;
+  };
+  const logAggregate = async request => {
+    const result = await tools.mcp__codex_apps__datadog__preview__datadog_preview_analyze_datadog_logs({
+      filter:request.query, from:request.from, to:"now", sql_query:"SELECT COUNT(*) AS events FROM logs",
+      max_tokens:1000, telemetry:{intent:"Count the complete synthetic log run independently of ownership filters."}
+    });
+    if (result.isError) throw Error("Logs aggregate failed");
+    return parseLogCount(textContent(result));
   };
   const at = (obj, path) => {
     const parts = path.split(".");
@@ -286,6 +352,18 @@ async function runAcceptance({tools, notify, device, repo, scenario}) {
           is_crash:at(payload, "error.is_crash"), attribute_state:projectAttributeState(payload, at),
           payload_matches:at(payload, "error.message") === phase};
       }
+      if (request.kind === "log_errors") {
+        const phase = at(payload, "context.probe.phase");
+        const ids = at(payload, "action.id");
+        return {...base, phase, event_id:at(payload, "error.id"),
+          source_scene:at(payload, "context.probe.source_scene"),
+          action_ids:Array.isArray(ids) ? ids : ids == null ? [] : [ids],
+          error_source:at(payload, "error.source"), is_crash:at(payload, "error.is_crash"),
+          payload_matches:at(payload, "error.message") === phase,
+          leaked_internal_attribute:hasPrivateMirrorMetadata(at(payload, "context")) ||
+            ["target_view_id", "target_action_id", "target_scene_id", "context_captured"].some(key =>
+              hasPayloadPath(payload, "context._dd.internal.rum.error." + key))};
+      }
       if (request.kind === "current_errors") {
         const phase = at(payload,"context.probe.phase");
         const ids = at(payload,"action.id");
@@ -340,6 +418,26 @@ async function runAcceptance({tools, notify, device, repo, scenario}) {
     }
     return descriptors;
   };
+  const logRows = async (request, total) => {
+    const all = [];
+    while (all.length < total) {
+      const response = await tools.mcp__codex_apps__datadog__preview__datadog_preview_search_datadog_logs({
+        query:request.query, from:request.from, to:"now", sort:"timestamp", start_at:all.length, max_tokens:12000,
+        extra_fields:["application_id", "session_id", "view.id", "user_action.id", "probe.*", "_dd.internal.rum.error.*"],
+        telemetry:{intent:"Bind all synthetic Logs to exact emission owners and mirrored RUM errors."}
+      });
+      const [{body, page}] = await structuredSpanPages([response]);
+      if (!Array.isArray(page) || !page.length) throw Error("Incomplete Logs pagination");
+      all.push(...page);
+      if (all.length > 100) throw Error("Unexpected large Logs inventory");
+      if (all.length < total && body.includes("<has_more>false</has_more>")) throw Error("Incomplete Logs inventory");
+    }
+    const projected = all.map(projectLogRow);
+    if (projected.length !== total || new Set(projected.map(row => row.log_id)).size !== total) {
+      throw Error("Logs count/pagination mismatch");
+    }
+    return projected;
+  };
   const spanRows = async (request, total) => {
     const all = [];
     while (all.length < total) {
@@ -379,11 +477,13 @@ async function runAcceptance({tools, notify, device, repo, scenario}) {
       const deadline = Date.now()+240000;
       let count;
       do {
-        count = await aggregate(request.query, ["trace_auth", "trace_spans"].includes(request.kind));
+        count = ["log_auth", "logs"].includes(request.kind) ? await logAggregate(request)
+          : await aggregate(request.query, ["trace_auth", "trace_spans"].includes(request.kind));
         if (count >= request.expected_count) break;
         await pause(10000);
       } while (Date.now()<deadline);
-      if (["auth", "trace_auth"].includes(request.kind)) data = {authenticated:true, count};
+      if (["auth", "trace_auth", "log_auth"].includes(request.kind)) data = {authenticated:true, count};
+      else if (request.kind === "logs") data = await logRows(request, count);
       else if (request.kind === "trace_spans") data = await spanRows(request, count);
       else if (request.kind === "errors" || request.kind === "crashes") data = {count};
       else data = await rows(request, count);

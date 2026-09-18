@@ -136,7 +136,8 @@ internal enum ProbeRUMEventAdapter {
                 actionIDs: correlatedActionIDs
             ),
             eventID: event.error.id,
-            name: source?.phase ?? event.error.type,
+            name: ProbeRuntime.resolution.scenario?.identifier == ProbeLogContract.scenarioID
+                ? source?.phase.map { "mirror-" + $0 } : source?.phase ?? event.error.type,
             error: ProbeErrorSignal(
                 id: event.error.id,
                 source: event.error.source.rawValue,

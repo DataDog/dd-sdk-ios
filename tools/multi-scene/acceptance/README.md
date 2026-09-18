@@ -1,10 +1,10 @@
 # Multi-scene acceptance workflow
 
-This runner admits six finite contracts: EXP-161/A01 long-running actions,
-EXP-176/T03 captured Resource starts, EXP-177/T04 current-view errors and
-EXP-178/T05 current-view attributes, EXP-179/T06 timing/loading and EXP-180/T07
-flags/internal mutations. It does not certify simultaneous visibility,
-real scene teardown, interactive gestures or hardware-only scenarios.
+This runner admits eight finite contracts: EXP-161/A01 long-running actions,
+EXP-176/T03 Resources, EXP-177/T04 errors, EXP-178/T05 attributes,
+EXP-179/T06 timing/loading, EXP-180/T07 flags/internal mutations,
+EXP-181/T08 Trace and EXP-182/T09 Logs/mirrors. It does not certify simultaneous
+visibility, real scene teardown, interactive gestures or hardware-only scenarios.
 
 The Python runner records commit signature status and performs environment and
 authentication preflight, a fresh probe build with all current tests and the selected contract's minimum inventory, frozen source
@@ -227,3 +227,23 @@ Independent trace details are fetched together, every result is checked, and one
 bounded system-Ruby call decodes their YAML pages. Read-only bridge helpers use the
 read-only sandbox; setup and evidence writes keep escalation. The runner records
 backend_bridge_timings and retains its300s deadline. A late response is not acceptance.
+
+
+## Logs and mirrored errors (EXP-182/T09)
+
+Pass scenario logs.captured-emission.native-mirrors-cross-scene-serial.
+The frozen contract has six encoded logs, three mirrors, two final actions and
+twenty-four app expectations. Live action snapshots bind to independently mapped
+Home views and final action records. B must represent before A logs; the detached
+source-less pair must have an empty handoff. Guards precede each pair and all
+mirrors precede the action stops. No arbitrary log messages are recorded: the
+evidence decoder accepts only the six declared synthetic phase/messages.
+
+Preflight authenticates RUM and Logs reads. The source fingerprint now includes
+DatadogLogs. A fresh build requires at least181 probe tests. Backend acceptance
+counts the whole unique log run with DDSQL, reads every page with actual backend
+record IDs, and checks the full RUM session for three errors, two actions, three
+views and no Resources/crashes. Error and log owners/actions must agree exactly;
+private routing metadata must be absent. Attribute namespace ambiguity,
+malformed counts and incomplete/duplicate inventories fail closed. Logs/DDSQL
+tool guides must be loaded before running the connector.

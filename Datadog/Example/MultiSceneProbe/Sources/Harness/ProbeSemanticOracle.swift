@@ -811,7 +811,7 @@ internal enum ProbeSemanticOracle {
 
     private static func isRUMEvent(_ kind: ProbeExpectationKind) -> Bool {
         switch kind {
-        case .action, .resource, .error, .trace, .operationStep:
+        case .action, .resource, .error, .log, .trace, .operationStep:
             return true
         default:
             return false
@@ -822,7 +822,7 @@ internal enum ProbeSemanticOracle {
         _ expectation: ProbeExpectation
     ) -> Bool {
         switch expectation.kind {
-        case .action, .resource, .error, .trace, .operationStep:
+        case .action, .resource, .error, .log, .trace, .operationStep:
             return true
         default:
             return false
