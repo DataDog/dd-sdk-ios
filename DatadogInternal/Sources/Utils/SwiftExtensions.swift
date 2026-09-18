@@ -6,6 +6,56 @@
 
 import Foundation
 
+// MARK: - URLRequest
+extension URLRequest {
+    private static let isInternalRequestPropertyKey = "com.datadoghq.is-internal-request"
+
+    /// Marks this request as originating from the SDK so automatic instrumentation ignores it.
+    /// The marker is local URLProtocol metadata and is never sent as an HTTP header.
+    public mutating func markAsInternal() {
+        setProtocolProperty(true, forKey: Self.isInternalRequestPropertyKey)
+    }
+
+    /// Whether this request was marked as originating from the SDK.
+    public var isMarkedInternal: Bool {
+        URLProtocol.property(forKey: Self.isInternalRequestPropertyKey, in: self) != nil
+    }
+
+    /// The copied instrumentation token, provided the request's URL and method are unchanged.
+    internal func instrumentationID(forKey key: String) -> String? {
+        guard let metadata = URLProtocol.property(forKey: key, in: self) as? [String: String],
+              metadata["url"] == url?.absoluteString,
+              metadata["method"] == httpMethod else {
+            return nil
+        }
+        return metadata["id"]
+    }
+
+    /// Marks this request for instrumentation and returns the identifier copied to forwarded requests.
+    /// Returns nil if the request cannot be marked.
+    internal mutating func markAsInstrumented(forKey key: String) -> String? {
+        let identifier = UUID().uuidString
+        // URLProtocol metadata must contain only property-list types. Headers may change during forwarding.
+        var metadata = ["id": identifier]
+        metadata["url"] = url?.absoluteString
+        metadata["method"] = httpMethod
+        guard setProtocolProperty(metadata, forKey: key) else {
+            return nil
+        }
+        return identifier
+    }
+
+    @discardableResult
+    private mutating func setProtocolProperty(_ value: Any, forKey key: String) -> Bool {
+        guard let mutableRequest = (self as NSURLRequest).mutableCopy() as? NSMutableURLRequest else {
+            return false
+        }
+        URLProtocol.setProperty(value, forKey: key, in: mutableRequest)
+        self = mutableRequest as URLRequest
+        return true
+    }
+}
+
 // MARK: - Optional
 public struct DDOptionalExtension<Wrapped> {
     private let optional: Wrapped?

@@ -65,6 +65,17 @@ internal final class NetworkInstrumentationFeature: DatadogFeature {
     /// The interceptions **must** be accessed using the `queue`.
     private var interceptions: [URLSessionTask: URLSessionTaskInterception] = [:]
 
+    /// Maps copied request tokens to their tasks without extending task lifetimes.
+    /// Accessed synchronously before resume under `instrumentedRequestsLock`.
+    private let instrumentedRequests = NSMapTable<NSString, URLSessionTask>(
+        keyOptions: .strongMemory,
+        valueOptions: .weakMemory
+    )
+    private let instrumentedRequestsLock = NSLock()
+
+    /// Each SDK instance instruments requests independently. This property is never sent as an HTTP header.
+    private let requestInstrumentationKey = "com.datadoghq.network-instrumentation.\(UUID().uuidString)"
+
     init(
         networkContextProvider: NetworkContextProvider,
         messageReceiver: FeatureMessageReceiver,
@@ -134,16 +145,23 @@ internal final class NetworkInstrumentationFeature: DatadogFeature {
                     return
                 }
 
-                // Only perform interception if this swizzler should handle this task
-                // This allows the swizzler chain to continue for tasks we don't handle
-                var injectedTraceContexts = [RequestInstrumentationContext]()
+                guard task.state != .completed, task.state != .canceling,
+                      !self.isInstrumentedRequest(currentRequest) else {
+                    return
+                }
 
                 let configuredFirstPartyHosts = FirstPartyHosts(firstPartyHosts: configuration?.firstPartyHostsTracing) ?? .init()
-                let (request, traceContexts) = self.intercept(request: currentRequest, additionalFirstPartyHosts: configuredFirstPartyHosts)
+                let (modifiedRequest, traceContexts) = self.intercept(request: currentRequest, additionalFirstPartyHosts: configuredFirstPartyHosts)
+                var request = modifiedRequest
+                self.markAsInstrumented(&request, for: task)
                 task.dd.override(currentRequest: request)
-                injectedTraceContexts = traceContexts
 
-                self.intercept(task: task, with: injectedTraceContexts, additionalFirstPartyHosts: configuredFirstPartyHosts, trackingMode: trackingMode)
+                self.intercept(
+                    task: task,
+                    with: traceContexts,
+                    additionalFirstPartyHosts: configuredFirstPartyHosts,
+                    trackingMode: trackingMode
+                )
             }
         )
 
@@ -336,6 +354,32 @@ internal final class NetworkInstrumentationFeature: DatadogFeature {
 }
 
 extension NetworkInstrumentationFeature {
+    /// Marks a request and associates its copied token with the task instrumenting it.
+    func markAsInstrumented(_ request: inout URLRequest, for task: URLSessionTask) {
+        guard let identifier = request.markAsInstrumented(forKey: requestInstrumentationKey) else {
+            return
+        }
+        instrumentedRequestsLock.lock()
+        defer { instrumentedRequestsLock.unlock() }
+        instrumentedRequests.setObject(task, forKey: identifier as NSString)
+    }
+
+    /// Recognizes repeated resumes and requests forwarded by a custom URLProtocol while the outer task is active.
+    func isInstrumentedRequest(_ request: URLRequest) -> Bool {
+        guard let identifier = request.instrumentationID(forKey: requestInstrumentationKey) else {
+            return false
+        }
+        instrumentedRequestsLock.lock()
+        let task = instrumentedRequests.object(forKey: identifier as NSString)
+        instrumentedRequestsLock.unlock()
+
+        guard let task else {
+            return false
+        }
+        // Completion callbacks can reuse the request before our queue has processed the completion.
+        return task.state != .completed
+    }
+
     /// Determines whether a task should be intercepted based on the tracking mode.
     ///
     /// - Registered delegate mode (delegate class configured): Only intercepts tasks with the registered delegate
@@ -379,7 +423,7 @@ extension NetworkInstrumentationFeature {
         }
         return request.value(forHTTPHeaderField: URLRequestBuilder.HTTPHeader.ddAPIKeyHeaderField) != nil
             || request.value(forHTTPHeaderField: URLRequestBuilder.HTTPHeader.ddClientTokenHeaderField) != nil
-            || URLRequestBuilder.isMarkedInternal(request)
+            || request.isMarkedInternal
     }
 
     /// Helper structure that optionally contains a trace context and captured state, used to pass this

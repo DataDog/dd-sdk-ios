@@ -1909,7 +1909,7 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
         // fetch), which cannot carry DD-API-KEY/DD-CLIENT-TOKEN since those must not reach a public CDN.
         let cdnURL = URL(string: "http://custom-endpoint.example.com/v1/remote-configuration.json")!
         var request = URLRequest(url: cdnURL)
-        URLRequestBuilder.markAsInternal(&request)
+        request.markAsInternal()
 
         let taskCompleted = expectation(description: "Task completed")
         let task = session.dataTask(with: request) { _, _, _ in
@@ -1922,7 +1922,7 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
         wait(for: [taskCompleted], timeout: 1)
 
         // Then - Verify SDK request marked internal was not intercepted
-        XCTAssertEqual(interceptedSDKRequests.count, 0, "Should not intercept SDK requests marked internal via URLRequestBuilder.markAsInternal")
+        XCTAssertEqual(interceptedSDKRequests.count, 0, "Should not intercept SDK requests marked internal")
     }
 
     func testAutomaticMode_doesNotTrackDatadogSDKTestingRequests() throws {
@@ -2255,6 +2255,337 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
         XCTAssertNil(modifiedRequest.value(forHTTPHeaderField: GraphQLHeaders.payload), "GraphQL payload header should be removed")
     }
 
+    // MARK: - Forwarded Requests
+
+    func testInstrumentedRequest_doesNotRetainTask() throws {
+        let feature = try XCTUnwrap(core.get(feature: NetworkInstrumentationFeature.self))
+        var request: URLRequest = .mockAny()
+        weak var weakTask: URLSessionTask?
+        autoreleasepool {
+            let task = URLSessionTask.mockWith(request: request)
+            weakTask = task
+            feature.markAsInstrumented(&request, for: task)
+            XCTAssertTrue(feature.isInstrumentedRequest(request))
+        }
+
+        XCTAssertNil(weakTask, "Keeping the registry and request alive must not extend the task's lifetime")
+        XCTAssertFalse(feature.isInstrumentedRequest(request))
+    }
+
+    func testInstrumentedRequest_isScopedToSDKInstance() throws {
+        let feature = try XCTUnwrap(core.get(feature: NetworkInstrumentationFeature.self))
+        let secondCore = SingleFeatureCoreMock<NetworkInstrumentationFeature>()
+        try secondCore.register(urlSessionHandler: URLSessionHandlerMock())
+        let secondFeature = try XCTUnwrap(secondCore.get(feature: NetworkInstrumentationFeature.self))
+        var request: URLRequest = .mockAny()
+        let task = URLSessionTask.mockWith(request: request)
+        feature.markAsInstrumented(&request, for: task)
+
+        withExtendedLifetime(task) {
+            XCTAssertTrue(feature.isInstrumentedRequest(request))
+            XCTAssertFalse(secondFeature.isInstrumentedRequest(request))
+        }
+    }
+
+    func testInstrumentedRequest_metadataIsPropertyListCompatible() throws {
+        var request: URLRequest = .mockAny()
+        let key = UUID().uuidString
+        let identifier = try XCTUnwrap(request.markAsInstrumented(forKey: key))
+        let metadata = try XCTUnwrap(URLProtocol.property(forKey: key, in: request))
+
+        XCTAssertTrue(PropertyListSerialization.propertyList(metadata, isValidFor: .binary))
+        XCTAssertEqual(request.instrumentationID(forKey: key), identifier)
+        let data = try NSKeyedArchiver.archivedData(withRootObject: request as NSURLRequest, requiringSecureCoding: true)
+        let decoded = try XCTUnwrap(NSKeyedUnarchiver.unarchivedObject(ofClass: NSURLRequest.self, from: data))
+        XCTAssertEqual(decoded.url, request.url)
+        XCTAssertEqual(decoded.httpMethod, request.httpMethod)
+    }
+
+    func testWhenMarkingRequestsConcurrently_itRecognizesAllActiveTasks() throws {
+        let feature = try XCTUnwrap(core.get(feature: NetworkInstrumentationFeature.self))
+        let tasks = (0..<50).map { _ in URLSessionTask.mockAny() }
+
+        withExtendedLifetime(tasks) {
+            DispatchQueue.concurrentPerform(iterations: tasks.count) { index in
+                var request = tasks[index].currentRequest!
+                feature.markAsInstrumented(&request, for: tasks[index])
+                XCTAssertTrue(feature.isInstrumentedRequest(request))
+            }
+        }
+    }
+
+    #if !os(watchOS)
+    func testAutomaticMode_whenURLProtocolForwardsMutableCopyWithAddedHeaders_itTracksOnlyOuterTask() throws {
+        try assertForwardedRequestIsInstrumentedOnce(registerDelegate: false, useOuterDelegate: false, isFirstParty: true)
+    }
+
+    func testRegisteredDelegate_whenURLProtocolForwardsMutableCopyWithAddedHeaders_itTracksOnlyOuterTask() throws {
+        try assertForwardedRequestIsInstrumentedOnce(registerDelegate: true, useOuterDelegate: true, isFirstParty: true)
+    }
+
+    func testAutomaticMode_whenURLProtocolForwardsToRegisteredDelegate_itTracksOnlyOuterTask() throws {
+        try assertForwardedRequestIsInstrumentedOnce(registerDelegate: true, useOuterDelegate: false, isFirstParty: false)
+    }
+
+    func testAutomaticMode_whenForwardedRequestFails_itTracksOnlyOuterError() throws {
+        try assertForwardedRequestIsInstrumentedOnce(
+            registerDelegate: false,
+            useOuterDelegate: false,
+            isFirstParty: false,
+            error: NSError(domain: NSURLErrorDomain, code: NSURLErrorNotConnectedToInternet)
+        )
+    }
+
+    private func assertForwardedRequestIsInstrumentedOnce(
+        registerDelegate: Bool,
+        useOuterDelegate: Bool,
+        isFirstParty: Bool,
+        error: NSError? = nil
+    ) throws {
+        let (server, started, completed) = setupInterceptionTest(error: error)
+        started.assertForOverFulfill = false
+        completed.assertForOverFulfill = false
+        let feature = try XCTUnwrap(core.get(feature: NetworkInstrumentationFeature.self))
+        let url: URL = .mockAny()
+        let trace: TraceContext = .mockAny()
+        let mutationCount = ReadWriteLock(wrappedValue: 0)
+        if isFirstParty {
+            handler.firstPartyHosts = .init(hostsWithTracingHeaderTypes: [url.host!: [.datadog]])
+            handler.injectedTraceContext = trace
+            handler.onRequestMutation = { _, _, _ in mutationCount.mutate { $0 += 1 } }
+        }
+        try URLSessionInstrumentation.enableOrThrow(with: nil, in: core)
+        if registerDelegate {
+            try URLSessionInstrumentation.enableOrThrow(with: .init(delegateClass: SessionDataDelegateMock.self), in: core)
+        }
+
+        let transportSession = server.getInterceptedURLSession()
+        defer { transportSession.invalidateAndCancel() }
+        let configuration = transportSession.configuration
+        configuration.protocolClasses = [ForwardingURLProtocol.self]
+        let session = URLSession(configuration: configuration, delegate: useOuterDelegate ? SessionDataDelegateMock() : nil, delegateQueue: nil)
+        defer { session.invalidateAndCancel() }
+        let responseReceived = expectation(description: "Outer task completed")
+        var request = URLRequest(url: url)
+        request.setValue("existing-trace-id", forHTTPHeaderField: "x-datadog-trace-id")
+
+        let task = session.dataTask(with: request) { data, response, receivedError in
+            XCTAssertEqual((receivedError as NSError?)?.code, error?.code)
+            if error == nil {
+                XCTAssertEqual(data?.count, 10)
+                XCTAssertEqual((response as? HTTPURLResponse)?.statusCode, 200)
+            }
+            responseReceived.fulfill()
+        }
+        task.resume()
+
+        waitForExpectations(timeout: 5)
+        let sentRequest = try XCTUnwrap(server.waitAndReturnRequests(count: 1).first)
+        feature.flush()
+        XCTAssertEqual(mutationCount.wrappedValue, isFirstParty ? 1 : 0)
+        XCTAssertEqual(sentRequest.value(forHTTPHeaderField: "x-datadog-trace-id"), "existing-trace-id")
+        XCTAssertEqual(sentRequest.value(forHTTPHeaderField: "X-Forwarded-By"), "ForwardingURLProtocol")
+        let interception = try XCTUnwrap(handler.interceptions.values.first)
+        XCTAssertEqual(handler.interceptions.count, 1)
+        XCTAssertEqual(interception.trackingMode, useOuterDelegate ? .registeredDelegate : .automatic)
+        XCTAssertEqual(interception.trace?.traceID, isFirstParty ? trace.traceID : nil)
+        XCTAssertEqual(interception.isFirstPartyRequest, isFirstParty)
+        if useOuterDelegate {
+            XCTAssertNotNil(interception.metrics)
+        }
+    }
+
+    func testWhenActiveRequestIsCopiedWithDifferentURL_itTracksBothTasks() throws {
+        try assertModifiedActiveRequestIsInstrumented { request in
+            request.url = URL(string: "https://example.com/independent")!
+        }
+    }
+
+    func testWhenActiveRequestIsCopiedWithDifferentHTTPMethod_itTracksBothTasks() throws {
+        try assertModifiedActiveRequestIsInstrumented { request in
+            request.httpMethod = "POST"
+        }
+    }
+
+    private func assertModifiedActiveRequestIsInstrumented(modify: (inout URLRequest) -> Void) throws {
+        let originalURL = URL(string: "https://example.com/original")!
+        let firstLoaded = expectation(description: "First network load started")
+        let secondLoaded = expectation(description: "Second network load started")
+        let bothCompleted = expectation(description: "Both network loads completed")
+        bothCompleted.expectedFulfillmentCount = 2
+        let loads = ReadWriteLock(wrappedValue: [PendingURLProtocol]())
+        PendingURLProtocol.onStart.wrappedValue = { load in
+            loads.mutate { $0.append(load) }
+            if load.request.url == originalURL && load.request.httpMethod == "GET" {
+                firstLoaded.fulfill()
+            } else {
+                secondLoaded.fulfill()
+            }
+        }
+        defer { PendingURLProtocol.onStart.wrappedValue = nil }
+        handler.shouldInterceptRequest = { $0.url?.host == originalURL.host }
+        handler.firstPartyHosts = .init(hostsWithTracingHeaderTypes: [originalURL.host!: [.datadog]])
+        let mutationCount = ReadWriteLock(wrappedValue: 0)
+        handler.onRequestMutation = { _, _, _ in mutationCount.mutate { $0 += 1 } }
+        try URLSessionInstrumentation.enableOrThrow(with: nil, in: core)
+        let configuration = URLSessionConfiguration.ephemeral
+        configuration.protocolClasses = [PendingURLProtocol.self]
+        let session = URLSession(configuration: configuration)
+        defer { session.invalidateAndCancel() }
+        let firstTask = session.dataTask(with: originalURL) { _, _, error in
+            XCTAssertNil(error)
+            bothCompleted.fulfill()
+        }
+        firstTask.resume()
+        wait(for: [firstLoaded], timeout: 5)
+
+        var request = try XCTUnwrap(firstTask.currentRequest)
+        modify(&request)
+        let secondTask = session.dataTask(with: request) { _, _, error in
+            XCTAssertNil(error)
+            bothCompleted.fulfill()
+        }
+        XCTAssertEqual(firstTask.state, .running)
+        secondTask.resume()
+        wait(for: [secondLoaded], timeout: 5)
+        XCTAssertEqual(loads.wrappedValue.count, 2)
+        loads.wrappedValue.forEach { $0.finish() }
+        wait(for: [bothCompleted], timeout: 5)
+        core.get(feature: NetworkInstrumentationFeature.self)?.flush()
+
+        XCTAssertEqual(mutationCount.wrappedValue, 2)
+        XCTAssertEqual(handler.interceptions.count, 2)
+        XCTAssertTrue(handler.interceptions.values.allSatisfy { $0.isDone })
+        XCTAssertTrue(handler.interceptions.values.contains { $0.request.url == request.url && $0.request.httpMethod == request.httpMethod })
+    }
+    #endif
+
+    func testWhenCompletedRequestIsReusedBeforeCompletionIsProcessed_itTracksNewTask() throws {
+        let server = ServerMock(delivery: .success(response: .mockAny(), data: .mockAny()), skipIsMainThreadCheck: true)
+        scopeHandler(to: server)
+        try URLSessionInstrumentation.enableOrThrow(with: nil, in: core)
+        let feature = try XCTUnwrap(core.get(feature: NetworkInstrumentationFeature.self))
+        let session = server.getInterceptedURLSession()
+        defer { session.invalidateAndCancel() }
+
+        // Hold the instrumentation queue until the completed request has been reused.
+        let releaseInterception = DispatchSemaphore(value: 0)
+        defer { releaseInterception.signal() }
+        let firstInterceptionStarted = expectation(description: "First interception started")
+        var isFirstInterception = true
+        handler.onInterceptionDidStart = { _ in
+            if isFirstInterception {
+                isFirstInterception = false
+                firstInterceptionStarted.fulfill()
+                releaseInterception.wait()
+            }
+        }
+        let firstTaskCompleted = expectation(description: "First task completed")
+        let firstTask = session.dataTask(with: URL.mockAny()) { _, _, _ in firstTaskCompleted.fulfill() }
+        firstTask.resume()
+        wait(for: [firstInterceptionStarted, firstTaskCompleted], timeout: 5)
+        XCTAssertEqual(firstTask.state, .completed)
+
+        let secondTaskCompleted = expectation(description: "Second task completed")
+        session.dataTask(with: try XCTUnwrap(firstTask.currentRequest)) { _, _, _ in secondTaskCompleted.fulfill() }.resume()
+        releaseInterception.signal()
+        wait(for: [secondTaskCompleted], timeout: 5)
+        _ = server.waitAndReturnRequests(count: 2)
+        feature.flush()
+
+        XCTAssertEqual(handler.interceptions.count, 2)
+        XCTAssertTrue(handler.interceptions.values.allSatisfy { $0.isDone })
+    }
+
+    func testWhenSameRequestIsUsedForIndependentTasks_itTracksBoth() throws {
+        let (server, started, completed) = setupInterceptionTest(expectedFulfillmentCount: 2)
+        try URLSessionInstrumentation.enableOrThrow(with: nil, in: core)
+        let session = server.getInterceptedURLSession()
+        defer { session.invalidateAndCancel() }
+        let request: URLRequest = .mockAny()
+
+        session.dataTask(with: request).resume()
+        session.dataTask(with: request).resume()
+
+        wait(for: [started, completed], timeout: 5)
+        _ = server.waitAndReturnRequests(count: 2)
+        core.get(feature: NetworkInstrumentationFeature.self)?.flush()
+        XCTAssertEqual(handler.interceptions.count, 2)
+    }
+
+    func testWhenFailedRequestIsReused_itTracksNewTask() throws {
+        let (server, started, completed) = setupInterceptionTest(
+            error: NSError(domain: NSURLErrorDomain, code: NSURLErrorCancelled),
+            expectedFulfillmentCount: 2
+        )
+        try URLSessionInstrumentation.enableOrThrow(with: nil, in: core)
+        let feature = try XCTUnwrap(core.get(feature: NetworkInstrumentationFeature.self))
+        let session = server.getInterceptedURLSession()
+        defer { session.invalidateAndCancel() }
+        let firstTaskCompleted = expectation(description: "First task failed")
+        let firstTask = session.dataTask(with: URL.mockAny()) { _, _, _ in firstTaskCompleted.fulfill() }
+        firstTask.resume()
+        wait(for: [firstTaskCompleted], timeout: 5)
+        feature.flush()
+
+        session.dataTask(with: try XCTUnwrap(firstTask.currentRequest)).resume()
+        wait(for: [started, completed], timeout: 5)
+        _ = server.waitAndReturnRequests(count: 2)
+        feature.flush()
+
+        XCTAssertEqual(handler.interceptions.count, 2)
+        XCTAssertTrue(handler.interceptions.values.allSatisfy { ($0.completion?.error as NSError?)?.code == NSURLErrorCancelled })
+    }
+
+    func testWhenMultipleSDKInstancesTrackSameTask_eachInstrumentsIt() throws {
+        let (server, started, completed) = setupInterceptionTest()
+        let secondCore = SingleFeatureCoreMock<NetworkInstrumentationFeature>()
+        let secondHandler = URLSessionHandlerMock()
+        secondHandler.shouldInterceptRequest = { [weak server] in server?.isMyRequest($0) ?? false }
+        let secondStarted = expectation(description: "Second SDK interception started")
+        let secondCompleted = expectation(description: "Second SDK interception completed")
+        secondHandler.onInterceptionDidStart = { _ in secondStarted.fulfill() }
+        secondHandler.onInterceptionDidComplete = { _ in secondCompleted.fulfill() }
+        try secondCore.register(urlSessionHandler: secondHandler)
+        defer { secondCore.get(feature: NetworkInstrumentationFeature.self)?.flush() }
+        try URLSessionInstrumentation.enableOrThrow(with: nil, in: core)
+        try URLSessionInstrumentation.enableOrThrow(with: nil, in: secondCore)
+        let session = server.getInterceptedURLSession()
+        defer { session.invalidateAndCancel() }
+
+        session.dataTask(with: URL.mockAny()).resume()
+        wait(for: [started, completed, secondStarted, secondCompleted], timeout: 5)
+        _ = server.waitAndReturnRequests(count: 1)
+        core.get(feature: NetworkInstrumentationFeature.self)?.flush()
+        secondCore.get(feature: NetworkInstrumentationFeature.self)?.flush()
+
+        XCTAssertEqual(handler.interceptions.count, 1)
+        XCTAssertEqual(secondHandler.interceptions.count, 1)
+        XCTAssertNotEqual(handler.interceptions.keys.first, secondHandler.interceptions.keys.first)
+    }
+
+    func testWhenTaskIsResumedRepeatedly_itGeneratesOnlyOneTraceContext() throws {
+        let (server, started, completed) = setupInterceptionTest()
+        let request: URLRequest = .mockAny()
+        handler.firstPartyHosts = .init(hostsWithTracingHeaderTypes: [request.url!.host!: [.datadog]])
+        let mutationCount = ReadWriteLock(wrappedValue: 0)
+        handler.onRequestMutation = { _, _, _ in mutationCount.mutate { $0 += 1 } }
+        try URLSessionInstrumentation.enableOrThrow(with: nil, in: core)
+        let session = server.getInterceptedURLSession()
+        defer { session.invalidateAndCancel() }
+        let task = session.dataTask(with: request)
+
+        for _ in 0..<10 { task.resume() }
+        wait(for: [started, completed], timeout: 5)
+        _ = server.waitAndReturnRequests(count: 1)
+        core.get(feature: NetworkInstrumentationFeature.self)?.flush()
+        task.resume()
+        core.get(feature: NetworkInstrumentationFeature.self)?.flush()
+
+        XCTAssertEqual(mutationCount.wrappedValue, 1)
+        XCTAssertEqual(handler.interceptions.count, 1)
+    }
+
     // MARK: - Thread Safety
 
     func testRandomlyCallingDifferentAPIsConcurrentlyDoesNotCrash() throws {
@@ -2410,3 +2741,68 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
     class DelegateSubClass: DelegateBaseClass {
     }
 }
+
+#if !os(watchOS)
+/// Forwards a mutable request copy with added headers through a separate transport task.
+private final class ForwardingURLProtocol: URLProtocol {
+    private var transportSession: URLSession?
+    private var transportTask: URLSessionDataTask?
+
+    override class func canInit(with request: URLRequest) -> Bool { true }
+
+    override class func canonicalRequest(for request: URLRequest) -> URLRequest { request }
+
+    override func startLoading() {
+        let configuration = URLSessionConfiguration.ephemeral
+        configuration.protocolClasses = [ServerMockProtocol.self]
+        let session = URLSession(configuration: configuration, delegate: SessionDataDelegateMock(), delegateQueue: nil)
+        transportSession = session
+        let forwardedRequest = (request as NSURLRequest).mutableCopy() as! NSMutableURLRequest
+        forwardedRequest.setValue("ForwardingURLProtocol", forHTTPHeaderField: "X-Forwarded-By")
+        let task = session.dataTask(with: forwardedRequest as URLRequest) { [weak self] data, response, error in
+            guard let self else {
+                return
+            }
+            if let error {
+                client?.urlProtocol(self, didFailWithError: error)
+            } else {
+                if let response {
+                    client?.urlProtocol(self, didReceive: response, cacheStoragePolicy: .notAllowed)
+                }
+                if let data {
+                    client?.urlProtocol(self, didLoad: data)
+                }
+                client?.urlProtocolDidFinishLoading(self)
+            }
+            session.finishTasksAndInvalidate()
+        }
+        transportTask = task
+        task.resume()
+    }
+
+    override func stopLoading() {
+        transportTask?.cancel()
+        transportSession?.invalidateAndCancel()
+    }
+}
+
+/// Keeps requests active until the test explicitly completes them.
+private final class PendingURLProtocol: URLProtocol {
+    static let onStart = ReadWriteLock<((PendingURLProtocol) -> Void)?>(wrappedValue: nil)
+
+    override class func canInit(with request: URLRequest) -> Bool { true }
+
+    override class func canonicalRequest(for request: URLRequest) -> URLRequest { request }
+
+    override func startLoading() { Self.onStart.wrappedValue?(self) }
+
+    override func stopLoading() {}
+
+    func finish() {
+        let response = HTTPURLResponse(url: request.url!, statusCode: 200, httpVersion: nil, headerFields: nil)!
+        client?.urlProtocol(self, didReceive: response, cacheStoragePolicy: .notAllowed)
+        client?.urlProtocol(self, didLoad: Data([1]))
+        client?.urlProtocolDidFinishLoading(self)
+    }
+}
+#endif
