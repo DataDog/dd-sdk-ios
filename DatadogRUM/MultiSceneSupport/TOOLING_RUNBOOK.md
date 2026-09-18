@@ -1835,3 +1835,9 @@ geometry, then deliver the visible marker. Preserve the geometry receipt and
 post-resource sequence in phases.json; stale or post-marker geometry is rejected.
 The selected-state model commit must precede immediate work. Acceptance joins
 all50 work event IDs to exact backend owners plus the complete view inventory.
+
+Explicit lifecycle markers are custom actions. An automatic tap can inherit
+marker attributes when the custom action flushes it; names/phases alone do not
+identify the declared work. Join action.type=custom and exact event IDs. Preserve
+automatic actions separately. A phase cannot begin unless the prior resource and
+end receipt were verified; run dependent shell steps with fail-fast semantics.

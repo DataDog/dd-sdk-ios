@@ -27,7 +27,8 @@ def fixture():
         for kind in ("action", "resource"):
             signal("rum-" + kind, name=name, evidenceSource="rum-mapper",
                    eventID=name + "-" + kind, rumContext=owner(screen, generation),
-                   sourceContext=dict(context, screen=screen, phase=name))
+                   sourceContext=dict(context, screen=screen, phase=name),
+                   **({"action": {"type": "custom"}} if kind == "action" else {}))
 
     last_generation = None
     for ordinal, (name, screen, generation, size_class, dimensions, _) in enumerate(contract.PHASES, 1):
@@ -77,6 +78,19 @@ class AdaptiveSplitContractTests(unittest.TestCase):
         result = contract.validate_native(records, phases, run)
         self.assertEqual((result["phases"], len(result["owners"]), len(result["work"])), (14, 6, 50))
         self.assertEqual(contract.validate_backend(result, backend(result))["work_count"], 50)
+
+    def test_automatic_tap_with_merged_marker_attributes_is_not_custom_work(self):
+        records, phases, run = fixture()
+        tap = copy.deepcopy(named(records, "adaptive-marker-2"))
+        tap["action"]["type"] = "tap"
+        tap["eventID"] = "automatic-tap"
+        tap["sequence"] = len(records)
+        records.append(dict(type="signal", signal=tap))
+        result = contract.validate_native(records, phases, run)
+        self.assertEqual(len(result["work"]), 50)
+        tap["action"]["type"] = "custom"
+        with self.assertRaises(ValueError):
+            contract.validate_native(records, phases, run)
 
     def test_stale_run_schema_and_changed_manifest(self):
         for change in ("run", "schema", "steps"):

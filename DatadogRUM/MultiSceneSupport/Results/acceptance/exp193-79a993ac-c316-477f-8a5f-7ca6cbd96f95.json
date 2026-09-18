@@ -1,0 +1,68 @@
+{
+  "experiment": "EXP-193",
+  "attempt_id": "79a993ac-c316-477f-8a5f-7ca6cbd96f95",
+  "status": "INVALID_ORACLE",
+  "source_revision": "25e419d489af0efe2324c010544a7815d8c2e354",
+  "source_sha256": "e66db7c21389e971b7e06a727fabe359194b2d037699ab7a2e34ff21ffb1f1ea",
+  "artifact_root": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp193-duo-adaptive-5eb5tqlx",
+  "build": "PASS",
+  "unit_tests": 4,
+  "installed_code": {
+    "bundleIdentifier": "com.datadoghq.rum-native-multi-scene-probe",
+    "executable": "RUMNativeMultiSceneProbe",
+    "binaries": {
+      "RUMNativeMultiSceneProbe": "ab02290f6af9e93b46a1675075724d1628b16c21c698c74405b9f215b23a0566",
+      "RUMNativeMultiSceneProbe.debug.dylib": "62971c522d7711ea1480ded53124e9ba157290e48c685f4a525f226b77a54260",
+      "__preview.dylib": "f107d09b9d3b79f01789a45ef045bf4039904bf5eaa3c1a8c6a9e27de130563b"
+    }
+  },
+  "observed": "Empty inner/outer retain the same exact owner. Sequence17 is an automatic tap with merged next-marker attributes; sequence18 is the explicit custom action and20 its resource. Counting by name alone rejects a valid pair.",
+  "oracle_correction": "Require action.type=custom for the declared custom work; retain automatic tap diagnostics. Duplicate custom actions remain rejected. Stop before subsequent phases and use a fresh run.",
+  "phase_boundaries": [
+    {
+      "name": "empty-inner",
+      "request_sequence": 11,
+      "requested_at": "2026-09-18T23:02:14.787512+00:00",
+      "geometry_sequence": 3,
+      "end_sequence": 15
+    },
+    {
+      "name": "empty-outer",
+      "request_sequence": 15,
+      "requested_at": "2026-09-18T23:02:40.187815+00:00",
+      "geometry_sequence": 16
+    },
+    {
+      "name": "empty-inner-return",
+      "request_sequence": 21,
+      "requested_at": "2026-09-18T23:03:34.684185+00:00"
+    }
+  ],
+  "cleanup": [
+    {
+      "command": "terminate",
+      "exit": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "command": "uninstall",
+      "exit": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "command": "get_app_container",
+      "exit": 2,
+      "stdout": "",
+      "stderr": "An error was encountered processing the command (domain=NSPOSIXErrorDomain, code=2):\nThe operation couldn\u2019t be completed. No such file or directory\nNo such file or directory\n"
+    }
+  ],
+  "gates_closed": [],
+  "artifact_sha256": {
+    "first-attempt-native.jsonl": "e350cb91467facffe6d77874bb5b82c5cd7a7926a2583df898aa981057559f59",
+    "unit-summary.json": "0424620a03883ef5fed80004d69f95881ce619e9554b0c566a909e07457d03bc",
+    "installed-code.json": "48b7c0d920807001b093b27e7ab0468fa98bcd8bf9441681c9b0ffc650d5336b",
+    "cleanup.json": "5d7a759660cbbc5326a5a9552ba9f65df88ebd7d43199432eb048d7688df3b07"
+  }
+}

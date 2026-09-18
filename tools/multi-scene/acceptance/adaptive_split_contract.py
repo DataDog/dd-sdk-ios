@@ -3,6 +3,11 @@ import argparse
 import json
 from pathlib import Path
 
+def is_marker_work(signal):
+    return (signal["kind"] == "rum-resource" or
+            (signal["kind"] == "rum-action" and signal.get("action", {}).get("type") == "custom"))
+
+
 SCENARIO = "swiftui.split.adaptive-accepted-state"
 # Name, accepted screen, generation, size class, native dimensions, fresh geometry.
 PHASES = [
@@ -66,7 +71,7 @@ def validate_native(records, phases, run_id):
     owners, session_ids = {}, set()
     pairs = {}
     for s in signals:
-        if s["kind"] in ("rum-action", "rum-resource") and s.get("name", "").startswith("adaptive-"):
+        if is_marker_work(s) and s.get("name", "").startswith("adaptive-"):
             require(s["evidenceSource"] == "rum-mapper", "non-mapper work")
             key = (s["name"], s["kind"])
             require(key not in pairs, "duplicate adaptive work")
