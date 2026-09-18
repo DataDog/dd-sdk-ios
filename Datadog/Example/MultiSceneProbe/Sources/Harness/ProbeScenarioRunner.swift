@@ -118,7 +118,12 @@ enum ProbeScenarioRunner {
         )
     }
 
-    static func emitManifest(_ manifest: ProbeScenarioManifest) {
+    static func emitManifest(
+        _ manifest: ProbeScenarioManifest,
+        sink: (String) -> Void = {
+            print("🔬 [RUM Native Multi-Scene JSONL] \($0)")
+        }
+    ) {
         let encoder = JSONEncoder()
         encoder.outputFormatting = [.sortedKeys, .withoutEscapingSlashes]
         guard
@@ -131,7 +136,7 @@ enum ProbeScenarioRunner {
             )
             return
         }
-        print("🔬 [RUM Native Multi-Scene JSONL] \(json)")
+        sink(json)
     }
 
     private static func parse(arguments: [String]) -> ParsedArguments {

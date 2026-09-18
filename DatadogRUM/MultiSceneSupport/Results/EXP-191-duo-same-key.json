@@ -3,7 +3,7 @@
   "gate": "H01",
   "related_gate": "F04",
   "title": "Qualify Duo 27.1 same-key manual ownership",
-  "status": "PREPARED",
+  "status": "INCONCLUSIVE",
   "owner": "SDK implementer",
   "definition": "Experiments/EXP-143-199.md#exp-191--qualify-duo-271-same-key-manual-ownership",
   "admission": "User supplies a newly available Duo27.1 simulator restricted to Xcode27.1. This makes the existing EXP-129/H01 ownership discriminator executable in the intended device family; no new telemetry family or release gate.",
@@ -40,7 +40,15 @@
   },
   "closure_rule": "A complete run accepts this Duo simulator H01 slice only. H01 physical closure, F04 physical Duo acceptance, H11-H13 human gestures and F05 physical Replay remain separate and are not waived.",
   "gates_closed": [],
-  "attempts": [],
+  "attempts": [
+    {
+      "run_id": "78bdc5f4-42e2-49cc-b595-157c9441ece1",
+      "status": "INCONCLUSIVE",
+      "native_semantics": "22/22 PASS",
+      "topology": "NOT ESTABLISHED: B full-screen replaces A",
+      "result": "acceptance/exp191-78bdc5f4-42e2-49cc-b595-157c9441ece1.json"
+    }
+  ],
   "preparation": {
     "revision": "fffdc1234866903eef77ccdb7ab36132ad84d180",
     "signature": "VERIFIED",
@@ -66,7 +74,7 @@
       "executable": "RUMNativeMultiSceneProbe"
     },
     "durable_result": "acceptance/exp191-f92afe3b-656d-4737-8369-b11e9925f559.json",
-    "native_scenario_runs": 0,
+    "native_scenario_runs": 1,
     "cleanup": {
       "prior_boot_state_restored": "Shutdown",
       "probe_data_absent": true,

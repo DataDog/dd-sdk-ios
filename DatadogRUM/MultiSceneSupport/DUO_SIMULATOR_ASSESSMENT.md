@@ -49,7 +49,15 @@ the critical boundary.
 | H14 | Open/close/rotate/fold and adaptive split | Measured regular/compact transitions, exact semantic destination owners | Physical hinge and display transitions |
 | F05 | Simulator coexistence if dependencies allow | Crash safety and stated scope only | Required physical Replay coexistence |
 
-Current result: protocol defined; native capability observations pending. EXP-191
-already has a verified retained build and eight accepted driver/oracle controls;
-those controls will not be repeated merely to resume. All original H/F release
+Current observed results are owned by the
+[first capability record](Results/acceptance/exp192-52086984-e5e3-499a-afc8-cdc3f55c2e2c.json):
+outer/inner/rotated dimensions and expected traits, stable native identity and
+actual app background/foreground callbacks. These support simulator use for
+geometry and lifecycle integration; they do not prove peer overlap or hardware
+callback timing. The unchanged H01 run passed22 ownership checks while its
+topology failed admission, demonstrating why those checks stay separate.
+
+Concurrent visibility, real disconnect and interactive cancellation remain
+unproven. Native calls and tool success responses alone did not establish them.
+Bounded XCTest input calibration is in preparation. Original H/F release
 obligations remain open until their own completion contracts are met.

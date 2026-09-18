@@ -58,6 +58,7 @@ targets:
         excludes:
           - Fixtures/**
       - path: Sources/Harness
+      - path: Sources/EXP147MigrationFixture
       - path: Tests/Fixtures
         type: group
         buildPhase: resources
@@ -66,12 +67,32 @@ targets:
         PRODUCT_BUNDLE_IDENTIFIER: com.datadoghq.rum-native-multi-scene-probe.tests
         PRODUCT_NAME: RUMNativeMultiSceneProbeTests
         SWIFT_VERSION: 5.9
+        SWIFT_ACTIVE_COMPILATION_CONDITIONS: "$(inherited) DEBUG EXP147_PROBE_TESTS"
         IPHONEOS_DEPLOYMENT_TARGET: 27.0
         GENERATE_INFOPLIST_FILE: YES
         TARGETED_DEVICE_FAMILY: "1,2"
         SUPPORTS_MACCATALYST: NO
         CODE_SIGNING_ALLOWED: NO
         CODE_SIGNING_REQUIRED: NO
+
+
+  RUMNativeMultiSceneProbeUITests:
+    type: bundle.ui-testing
+    platform: iOS
+    deploymentTarget: "27.1"
+    sources:
+      - path: UITests
+    dependencies:
+      - target: RUMNativeMultiSceneProbe
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.datadoghq.rum-native-multi-scene-probe.uitests
+        SWIFT_VERSION: 5.9
+        GENERATE_INFOPLIST_FILE: YES
+        TARGETED_DEVICE_FAMILY: "1,2"
+        SUPPORTS_MACCATALYST: NO
+        CODE_SIGNING_ALLOWED: YES
+        CODE_SIGN_IDENTITY: "-"
 
 schemes:
   RUMNativeMultiSceneProbe:
@@ -85,3 +106,14 @@ schemes:
       config: Debug
       targets:
         - RUMNativeMultiSceneProbeTests
+
+
+  RUMNativeMultiSceneProbeDuoUI:
+    build:
+      targets:
+        RUMNativeMultiSceneProbe: all
+        RUMNativeMultiSceneProbeUITests: [test]
+    test:
+      config: Debug
+      targets:
+        - RUMNativeMultiSceneProbeUITests

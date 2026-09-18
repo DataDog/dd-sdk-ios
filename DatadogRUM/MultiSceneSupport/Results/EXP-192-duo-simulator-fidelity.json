@@ -20,7 +20,7 @@
     "H16"
   ],
   "title": "Qualify Duo simulator evidence boundaries",
-  "status": "DEFINED",
+  "status": "IN PROGRESS",
   "owner": "SDK implementer",
   "admission": "User requests a bounded simulator-to-device assessment and execution of all simulator-capable existing release gates. No new product surface or gate.",
   "candidate_revision": "04201edc7711361279d8487b385bc8b0ca9c63c7",
@@ -69,7 +69,13 @@
     }
   ],
   "closure_rule": "Complete this assessment only when each Q1-Q6 cell has an observed result or concrete executable limitation and the finite H01-H16 simulator routing is recorded. Physical F04/F05 and existing human/device obligations are not waived.",
-  "attempts": [],
+  "attempts": [
+    {
+      "run_id": "52086984-e5e3-499a-afc8-cdc3f55c2e2c",
+      "status": "PARTIAL",
+      "result": "acceptance/exp192-52086984-e5e3-499a-afc8-cdc3f55c2e2c.json"
+    }
+  ],
   "gates_closed": [],
   "source_audit": {
     "rum_simulator_conditionals": 0,
@@ -79,5 +85,6 @@
       "Crash binary-image path classification"
     ],
     "scope": "Conditional-compilation search over first-party Core/Internal/RUM/Trace/Logs/SessionReplay/CrashReporting/Profiling sources; not proof of UIKit/SwiftUI or third-party runtime equivalence."
-  }
+  },
+  "bounded_harness_amendment": "Calibrate real timed gestures using an XCTest UI target, with before/after accessibility and screenshots. Require observed paired native windows before resuming H01; add live topology admission at and throughout its mutation interval, with serial/overlap/identity negative controls. Do not alter production SDK or weaken the original 22 semantic assertions."
 }

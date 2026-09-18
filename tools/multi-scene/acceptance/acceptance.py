@@ -93,7 +93,7 @@ def protected_state(repo):
 def source_identity(repo):
     roots = ["DatadogCore/Sources", "DatadogInternal/Sources", "DatadogRUM/Sources",
              "DatadogTrace/Sources", "DatadogLogs/Sources", "DatadogWebViewTracking/Sources",
-             "DatadogSessionReplay/Sources", "DatadogCrashReporting/Sources", str(PROBE / "Sources"), str(PROBE / "Tests")]
+             "DatadogSessionReplay/Sources", "DatadogCrashReporting/Sources", str(PROBE / "Sources"), str(PROBE / "Tests"), str(PROBE / "UITests")]
     paths = set()
     for root in roots:
         paths.update(p for p in (repo / root).rglob("*") if p.is_file())
@@ -102,6 +102,7 @@ def source_identity(repo):
         str(PROBE / "RUMNativeMultiSceneProbe.xcodeproj/project.pbxproj"),
         str(PROBE / "RUMNativeMultiSceneProbe.xcodeproj/xcshareddata/xcschemes/RUMNativeMultiSceneProbe.xcscheme"),
     ] if (repo / p).is_file())
+    paths.update((repo / PROBE / "RUMNativeMultiSceneProbe.xcodeproj/xcshareddata/xcschemes").glob("*.xcscheme"))
     paths.update(p for p in (repo / "tools/multi-scene/acceptance").glob("*")
                  if p.is_file() and p.suffix in {".py", ".js", ".json", ".rb"})
     entries = {str(p.relative_to(repo)): file_hash(p) for p in sorted(paths)}

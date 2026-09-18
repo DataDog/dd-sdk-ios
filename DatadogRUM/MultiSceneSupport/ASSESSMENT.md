@@ -66,8 +66,9 @@ Chronological conclusions and the superseded routing audit are retained in the
 [documentation checkpoint](Experiments/DOCUMENTATION_CHECKPOINT_EXP-178.md).
 Use the [compact index](EXPERIMENTS.md) to open only the experiment that owns a question.
 
-The Duo27.1 simulator is available through Xcode27.1. Fresh MCP and CLI discovery
-now agree on SDK27.1. [EXP-192's assessment](DUO_SIMULATOR_ASSESSMENT.md) defines
-the finite simulator capability checks and H01-H16 routing; native observations
-remain pending. [EXP-191](Results/EXP-191-duo-same-key.json) retains its verified
-build and eight accepted controls. No physical or human requirement is waived.
+The Duo27.1 simulator is available through Xcode27.1; fresh MCP and CLI agree.
+[EXP-192's assessment](DUO_SIMULATOR_ASSESSMENT.md) records measured outer/inner/
+rotated geometry, traits and genuine Home/foreground callbacks. H01's unchanged
+native22/22 result remains inconclusive because simultaneous visibility was not
+established. Gesture and disconnect qualification is still pending; probe-only
+XCTest input calibration is being prepared. No physical/human requirement closes.

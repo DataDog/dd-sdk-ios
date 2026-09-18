@@ -1,0 +1,38 @@
+{
+  "run_id": "52086984-e5e3-499a-afc8-cdc3f55c2e2c",
+  "status": "PARTIAL",
+  "artifact_root": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp192-duo-fidelity-5mxx6u20",
+  "source_revision": "53433e0b082aa3042a59a9925b4f3e75d0770aad",
+  "Q1": {
+    "outer": [
+      466,
+      678,
+      "compact",
+      "regular"
+    ],
+    "inner": [
+      951,
+      669,
+      "regular",
+      "regular"
+    ],
+    "rotated_inner": [
+      669,
+      951,
+      "regular",
+      "regular"
+    ],
+    "scene_identity_preserved": true,
+    "book_pose": "Device Hub control and active inner display captured; unchanged app geometry; no measured hinge-angle equivalence claim"
+  },
+  "Q2": "NOT ESTABLISHED: opening B backgrounds A. Original unchanged H01 22/22 is separately INCONCLUSIVE.",
+  "Q3": {
+    "background_sequence": 50,
+    "foreground_sequence": 53,
+    "native_scene_id": "2710FAD2-05BA-44D2-8E70-211D9EFD0410",
+    "limit": "Actual OS Home/foreground callbacks; no simultaneously usable peer or hardware suspension proof"
+  },
+  "Q4": "Two delivered SwiftUI dismissWindow calls produced no disconnect; OS secondary close action rejected by the computer-use adapter. No teardown acceptance.",
+  "Q5": "Computer-use drags did not establish the required recognizer or Split View transition; installed AXe taps returned success with no native UI change. No gesture acceptance.",
+  "next": "Use bounded XCTest UI input calibration, then add live topology prerequisites before H01 critical mutations. Preserve original fixture result and all current semantic assertions."
+}

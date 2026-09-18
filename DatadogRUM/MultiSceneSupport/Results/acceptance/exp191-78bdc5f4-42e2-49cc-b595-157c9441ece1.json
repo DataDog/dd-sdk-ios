@@ -1,0 +1,181 @@
+{
+  "attempt_id": "78bdc5f4-42e2-49cc-b595-157c9441ece1",
+  "status": "INCONCLUSIVE",
+  "experiment": "EXP-191",
+  "related": "EXP-192/Q2",
+  "reason": "The unchanged 22/22 semantic oracle passed, but B replaced A full-screen. Both ready frames are 951x669 at origin zero, A becomes inactive before the critical interval then background, and no boundary-time overlapping visibility assertion exists. This is not H01 acceptance.",
+  "original_semantic_result": {
+    "result": {
+      "issues": [],
+      "matchedExpectationCount": 22,
+      "scenarioID": "swiftui.coexistence.same-key-manual-two-scenes",
+      "schemaVersion": 1,
+      "state": "PASS"
+    },
+    "runID": "78bdc5f4-42e2-49cc-b595-157c9441ece1",
+    "type": "semantic-result"
+  },
+  "signal_count": 165,
+  "native_topology": [
+    {
+      "activationState": "foreground-inactive",
+      "evidenceSource": "probe",
+      "geometry": {
+        "height": 669,
+        "width": 951,
+        "x": 0,
+        "y": 0
+      },
+      "horizontalSizeClass": "regular",
+      "kind": "scene-ready",
+      "navigationPath": [
+        "home"
+      ],
+      "runID": "78bdc5f4-42e2-49cc-b595-157c9441ece1",
+      "scenarioID": "swiftui.coexistence.same-key-manual-two-scenes",
+      "sceneDisconnectGeneration": 0,
+      "scenePhase": "ready",
+      "schemaVersion": 5,
+      "semanticContext": {
+        "logicalSceneID": "scene-A",
+        "nativeSceneID": "CACA994D-B756-4981-9DCC-A5E8D890ADB8",
+        "screen": "home"
+      },
+      "sequence": 8,
+      "timestampMilliseconds": 1789767264803,
+      "verticalSizeClass": "regular"
+    },
+    {
+      "activationState": "foreground-active",
+      "evidenceSource": "probe",
+      "geometry": {
+        "height": 669,
+        "width": 951,
+        "x": 0,
+        "y": 0
+      },
+      "horizontalSizeClass": "regular",
+      "kind": "scene-lifecycle",
+      "navigationPath": [
+        "home"
+      ],
+      "runID": "78bdc5f4-42e2-49cc-b595-157c9441ece1",
+      "scenarioID": "swiftui.coexistence.same-key-manual-two-scenes",
+      "sceneDisconnectGeneration": 0,
+      "scenePhase": "ready",
+      "schemaVersion": 5,
+      "semanticContext": {
+        "logicalSceneID": "scene-A",
+        "nativeSceneID": "CACA994D-B756-4981-9DCC-A5E8D890ADB8",
+        "screen": "home"
+      },
+      "sequence": 19,
+      "timestampMilliseconds": 1789767264946,
+      "verticalSizeClass": "regular"
+    },
+    {
+      "activationState": "foreground-inactive",
+      "evidenceSource": "probe",
+      "geometry": {
+        "height": 669,
+        "width": 951,
+        "x": 0,
+        "y": 0
+      },
+      "horizontalSizeClass": "regular",
+      "kind": "scene-lifecycle",
+      "navigationPath": [
+        "home"
+      ],
+      "runID": "78bdc5f4-42e2-49cc-b595-157c9441ece1",
+      "scenarioID": "swiftui.coexistence.same-key-manual-two-scenes",
+      "sceneDisconnectGeneration": 0,
+      "scenePhase": "ready",
+      "schemaVersion": 5,
+      "semanticContext": {
+        "logicalSceneID": "scene-A",
+        "nativeSceneID": "CACA994D-B756-4981-9DCC-A5E8D890ADB8",
+        "screen": "home"
+      },
+      "sequence": 32,
+      "timestampMilliseconds": 1789767265105,
+      "verticalSizeClass": "regular"
+    },
+    {
+      "activationState": "foreground-active",
+      "evidenceSource": "probe",
+      "geometry": {
+        "height": 669,
+        "width": 951,
+        "x": 0,
+        "y": 0
+      },
+      "horizontalSizeClass": "regular",
+      "kind": "scene-ready",
+      "navigationPath": [
+        "home"
+      ],
+      "runID": "78bdc5f4-42e2-49cc-b595-157c9441ece1",
+      "scenarioID": "swiftui.coexistence.same-key-manual-two-scenes",
+      "sceneDisconnectGeneration": 0,
+      "scenePhase": "ready",
+      "schemaVersion": 5,
+      "semanticContext": {
+        "logicalSceneID": "scene-B",
+        "nativeSceneID": "F94A1243-F08B-4C8C-8FD8-F78FDA93AB99",
+        "screen": "home"
+      },
+      "sequence": 44,
+      "timestampMilliseconds": 1789767265373,
+      "verticalSizeClass": "regular"
+    },
+    {
+      "activationState": "background",
+      "evidenceSource": "probe",
+      "geometry": {
+        "height": 669,
+        "width": 951,
+        "x": 0,
+        "y": 0
+      },
+      "horizontalSizeClass": "regular",
+      "kind": "scene-lifecycle",
+      "navigationPath": [
+        "home"
+      ],
+      "runID": "78bdc5f4-42e2-49cc-b595-157c9441ece1",
+      "scenarioID": "swiftui.coexistence.same-key-manual-two-scenes",
+      "sceneDisconnectGeneration": 0,
+      "scenePhase": "ready",
+      "schemaVersion": 5,
+      "semanticContext": {
+        "logicalSceneID": "scene-A",
+        "nativeSceneID": "CACA994D-B756-4981-9DCC-A5E8D890ADB8",
+        "screen": "home"
+      },
+      "sequence": 165,
+      "timestampMilliseconds": 1789767265969,
+      "verticalSizeClass": "regular"
+    }
+  ],
+  "critical_step_sequences": {
+    "first_manual_start": 58,
+    "last_manual_stop": 112
+  },
+  "source_revision": "53433e0b082aa3042a59a9925b4f3e75d0770aad",
+  "prepared_app_revision": "fffdc1234866903eef77ccdb7ab36132ad84d180",
+  "source_sha256": "83d481c0cc528a229a15d64884e3a0467f865434a8d25a525db2d78312252f43",
+  "installed_code": {
+    "bundleIdentifier": "com.datadoghq.rum-native-multi-scene-probe",
+    "executable": "RUMNativeMultiSceneProbe",
+    "binaries": {
+      "RUMNativeMultiSceneProbe": "d8d1f13659e888a3b611ccb83eab724be45b0ca33557ce1e1178ecea46b4876b",
+      "RUMNativeMultiSceneProbe.debug.dylib": "0d32b55982108f49beeb123cf7d42ccc2d3e6b0ab03a8ceaf95b2e17a0da9606",
+      "__preview.dylib": "f107d09b9d3b79f01789a45ef045bf4039904bf5eaa3c1a8c6a9e27de130563b"
+    }
+  },
+  "artifact_root": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp192-duo-fidelity-5mxx6u20",
+  "console_sha256": "1541a43778af8e7cdcd606b0b68439a5c2a2ce7a5bc6ca305f95b1dbaff36a56",
+  "backend_acceptance": "NOT_ADMITTED: required topology absent",
+  "cleanup": "PENDING; same installed app used only for separately labeled EXP-192 post-terminal capability observations"
+}

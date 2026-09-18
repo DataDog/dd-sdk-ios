@@ -84,6 +84,7 @@ enum ProbeRuntime {
     static let eventRecorder = ProbeEventRecorder(
         runID: runID,
         scenarioID: scenario?.identifier ?? "invalid",
+        sink: ProbeArtifactCapture.record,
         terminalSink: { result in
             logger.notice("semantic-result \(result, privacy: .public)")
         }
@@ -236,7 +237,7 @@ enum ProbeRuntime {
     )
 
     static func configureDatadog() {
-        ProbeScenarioRunner.emitManifest(resolution.manifest)
+        ProbeScenarioRunner.emitManifest(resolution.manifest, sink: ProbeArtifactCapture.record)
 
         guard isRunnable else {
             record(
@@ -1231,5 +1232,47 @@ private enum InstalledCodeReceipt {
             "boundary": "before-sdk-initialization", "executable": mainPath, "binaries": hashes
         ]
         try JSONSerialization.data(withJSONObject: value, options: [.sortedKeys]).write(to: receipt, options: .atomic)
+    }
+}
+
+
+/// Optional fixture evidence for UI tests, whose app stdout is not a reliable
+/// collection channel. The external acceptance runner verifies run identity,
+/// contiguous sequences and the terminal oracle before accepting this file.
+private enum ProbeArtifactCapture {
+    private static let lock = NSLock()
+    private static let file: FileHandle? = {
+        guard ProcessInfo.processInfo.environment["DD_PROBE_CAPTURE_JSONL"] == "1" else {
+            return nil
+        }
+        do {
+            let directory = try FileManager.default.url(
+                for: .applicationSupportDirectory,
+                in: .userDomainMask,
+                appropriateFor: nil,
+                create: true
+            ).appendingPathComponent("ProbeAcceptance", isDirectory: true)
+            try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+            let url = directory.appendingPathComponent("probe.jsonl")
+            guard FileManager.default.createFile(atPath: url.path, contents: Data()) else {
+                print("INVALID: probe artifact could not be created")
+                return nil
+            }
+            return try FileHandle(forWritingTo: url)
+        } catch {
+            print("INVALID: probe artifact capture could not be initialized")
+            return nil
+        }
+    }()
+
+    static func record(_ json: String) {
+        print("🔬 [RUM Native Multi-Scene JSONL] \(json)")
+        lock.lock()
+        defer { lock.unlock() }
+        do {
+            try file?.write(contentsOf: Data((json + "\n").utf8))
+        } catch {
+            print("INVALID: probe artifact write failed")
+        }
     }
 }

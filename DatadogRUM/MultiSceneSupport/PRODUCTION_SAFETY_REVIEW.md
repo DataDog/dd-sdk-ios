@@ -344,3 +344,10 @@ EXP-192 begins the user-requested Duo simulator evidence assessment. Its
 simulator power/metadata/crash-classification differences and the limit of RUM
 source parity. These are validation boundaries, not newly reproduced production
 defects. Original D01-D12 dispositions and physical release obligations remain.
+
+First Duo execution preserves a native22/22 H01 pass as INCONCLUSIVE because
+topology was not established. EXP-192 also records delivered fixture close
+requests without a disconnect and input tools without observed gesture effects.
+These admit bounded harness/input investigation, not a production SDK repair or
+physical waiver. The proposed UI calibration and persisted probe JSONL are
+fixture-only; validation must verify exact installed/source and record identities.

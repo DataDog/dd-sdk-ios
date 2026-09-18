@@ -1798,3 +1798,12 @@ proves the display transition. Capture devicectl display readback and app geomet
 Apple restricts new Duo windows to the inner display; qualify it before an
 overlap scenario. EXP-192's finite routing preserves each original native and
 backend discriminator and records unexpressible simulator boundaries explicitly.
+
+For timed Duo input qualification, the isolated RUMNativeMultiSceneProbeDuoUI
+scheme preserves screenshot and accessibility attachments. UI-test apps can
+enable DD_PROBE_CAPTURE_JSONL=1; the probe then writes
+Library/Application Support/ProbeAcceptance/probe.jsonl in its own container,
+reset once at process launch. Export it before uninstall and verify the manifest,
+fresh run ID and contiguous sequence. This fixture file contains the same JSONL
+as stdout; its existence is not an acceptance verdict. A tool reporting a tap,
+drag or scene-close request is insufficient without the expected native effect.
