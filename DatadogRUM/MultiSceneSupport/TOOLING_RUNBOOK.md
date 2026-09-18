@@ -1515,6 +1515,15 @@ structured, require reverse completion and ongoing-operation retention across
 normal flushes, and preserve server-offset nanoseconds. Profile-level RUM labels
 do not establish per-scene CPU attribution.
 
+The repeatable [profiling fixture procedure](../../tools/multi-scene/profiling-correlation/README.md)
+owns the opt-in build and simulator driver. Commit relevant sources first; use a
+fresh output path and run UUID. It verifies source/signature, clean-install absence,
+installed executable and native process identity before accepting12 assertions.
+Native clock values independently reproduce exact attachment timestamps/durations.
+Its durable summary remains INCONCLUSIVE for T14 even when simulator mechanics
+pass. The ordinary-build mode checks the acceptance implementation and scene
+manifest are absent from normal Release builds.
+
 The existing BenchmarkTests Profiling runner already links the module; avoid
 adding a dependency to the native multi-scene probe. Freeze native counts/build/
 run identity and boundary assertions before a device run. Verify a real supported

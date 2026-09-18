@@ -1,0 +1,87 @@
+# EXP-187 profile correlation fixture
+
+This fixture exercises one native scene, three sequential manual views and two
+overlapping Operations with the same name and distinct keys. Completion is B
+then A. The [frozen contract](native-contract.json) owns the twelve native
+assertions and physical/backend acceptance. It does not prove simultaneous
+windows or scene-specific CPU attribution.
+
+The implementation lives in the existing BenchmarkTests Runner behind
+MULTISCENE_PROFILING_ACCEPTANCE. The ordinary benchmark keeps its legacy
+lifecycle and excludes the acceptance classes. No new dependency or existing
+build script is changed.
+
+## Repeatable simulator mechanics
+
+Commit the fixture, runner and SDK sources first. Rediscover the simulator UUID
+and Xcode installation through live tooling. Use a new nonexistent output path:
+
+```sh
+python3 -B tools/multi-scene/profiling-correlation/run_simulator.py \
+  --repo /absolute/checkout \
+  --developer-dir /Applications/Xcode_27.app/Contents/Developer \
+  --device FRESH_SIMULATOR_UUID \
+  --output /fresh/nonexistent/exp187-attempt
+```
+
+The runner verifies signed HEADs (records authorized unsigned local HEADs),
+rejects uncommitted relevant sources, freezes the source inventory, builds
+Release with a generated scene manifest, proves the old data container absent,
+installs and compares executable hashes, supplies a fresh run UUID and committed
+source identity, then checks the twelve assertions and native process ID.
+Readiness is observed without consuming it; each assertion precedes its next
+critical command. Actual native reference times and server offsets independently
+determine exact serialized timestamps and durations.
+
+The app persists the receipt in Documents/<run-id>.json. The runner retains it,
+build/command logs, source manifest and executable identity under the attempt
+directory, and writes a compact durable result to the release Results/acceptance
+directory. Failed/invalid attempts remain. Local configuration contents are
+never inventoried or logged; the two protected paths are checked through the
+existing acceptance helper, using metadata only for the local xcconfig.
+
+To verify exclusion from ordinary Release builds, run a separate fresh attempt
+with --ordinary-build-only and omit --device. It checks that acceptance symbols
+and the scene manifest are absent. This is compile compatibility, not a new
+legacy runtime result. Existing SDK tests are not rerun by either mode.
+
+## Native receipt and actual attachment validation
+
+```sh
+python3 -B tools/multi-scene/profiling-correlation/validate.py \
+  /actual/native-receipt.json \
+  --run-id exp187-FRESH_UUID \
+  --source-revision FROZEN_40_CHARACTER_REVISION \
+  --attachment /actual/rum-mobile-events.json \
+  --output /fresh/nonexistent/attachment-summary.json
+```
+
+Use --allow-simulator only for mechanics evidence. The validator requires the
+actual two start IDs and exact integer start_ns/duration_ns values; it does not
+accept end IDs, swapped durations, collapsed keys or manufactured expected
+attachments. Negative controls also reject stale identities, missing/duplicate
+steps, wrong view/session owners, nonfinite clocks and late assertions.
+
+```sh
+python3 -B -m unittest discover -s tools/multi-scene/profiling-correlation -p 'test_*.py'
+```
+
+## Physical and backend boundary
+
+The simulator runner deliberately keeps gate_status INCONCLUSIVE even when
+native_validation is PASS. Physical execution requires a freshly discovered,
+usable supported device, a frozen signed or authorized unsigned implementation,
+clean-install proof, executable identity and the same native contract. A native
+profile with nonempty CPU samples and authenticated backend access are required.
+
+Retrieve the complete RUM session and profile time/service inventory. Join all
+four RUM steps to the exact native Vital IDs and owners, then compare the real
+rum-mobile-events.json attachment with validate.py. Preserve the actual profile
+identifier, sample evidence, labels and unexpected inventory. Profile labels
+describe process context; they cannot establish per-view CPU ownership.
+
+The receipt/attachment validator checks components only. Its output never
+closes T14 by itself: complete backend inventory, physical samples and process
+labels remain independent obligations. Missing profile access or attachment
+visibility remains INCONCLUSIVE. Do not substitute test attachments, echoed
+expectations, successful RUM authentication or simulator sampling for that proof.

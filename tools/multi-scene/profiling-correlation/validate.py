@@ -1,0 +1,138 @@
+#!/usr/bin/env python3
+"""Validate EXP-187 native receipts and an actual rum-mobile-events attachment."""
+import argparse
+import json
+import math
+import re
+from pathlib import Path
+from uuid import UUID
+
+VIEW_NAMES = ["EXP187.StartA", "EXP187.StartB", "EXP187.Finish"]
+BOUNDARIES = [
+    "assert:1", "assert:2", "command:view:A", "assert:3",
+    "command:start:A", "assert:4", "command:view:B", "assert:5",
+    "command:start:B", "assert:6", "command:view:C", "assert:7",
+    "command:end:B", "assert:8", "command:end:A", "assert:9", "assert:10",
+    "command:stop:C", "assert:11", "assert:12",
+]
+OPERATION_COUNTS = [0, 0, 0, 1, 1, 2, 2, 3, 4, 4, 4, 4]
+VITAL_FIELDS = {"id", "type", "name", "start_ns", "duration_ns"}
+
+
+def require(value, message):
+    if not value:
+        raise ValueError(message)
+
+
+def uuid(value):
+    require(isinstance(value, str), "UUID must be a string")
+    try:
+        UUID(value)
+    except (ValueError, AttributeError):
+        raise ValueError("invalid UUID") from None
+    return value
+
+
+def integer(value, name):
+    require(type(value) is int, name + " must be an integer")
+    return value
+
+
+def validate_native(receipt, run_id, revision, allow_simulator=False):
+    require(run_id.startswith("exp187-"), "invalid run prefix")
+    uuid(run_id[7:])
+    require(re.fullmatch("[a-f0-9]{40}", revision), "invalid source revision")
+    require(receipt["schemaVersion"] == 1 and receipt["experiment"] == "EXP-187", "wrong receipt schema")
+    require(receipt["runID"] == run_id and receipt["sourceRevision"] == revision, "stale run/source identity")
+    require(receipt["nativeStatus"] == "PASS", "native fixture did not pass")
+    allowed = {"PHYSICAL_DEVICE"}
+    if allow_simulator:
+        allowed.add("SIMULATOR_MECHANICS_ONLY")
+    require(receipt["platform"] in allowed, "physical device evidence required")
+    require(integer(receipt["processID"], "processID") > 0, "invalid native process identity")
+    require(receipt["backendStatus"] == "NOT_VERIFIED", "native receipt cannot certify backend")
+    require(receipt["boundaries"] == BOUNDARIES, "missing, repeated or late critical boundary")
+    checkpoints = receipt["checkpoints"]
+    require(len(checkpoints) == 12, "expected 12 native assertions")
+    for index, checkpoint in enumerate(checkpoints, 1):
+        require(checkpoint["number"] == index and checkpoint["passed"] is True, "failed or reordered assertion")
+        require(checkpoint["boundary"] == BOUNDARIES.index("assert:" + str(index)) + 1, "assertion boundary mismatch")
+        require(checkpoint["operationCount"] == OPERATION_COUNTS[index - 1], "assertion missed critical Operation inventory")
+
+    observations = receipt["observations"]
+    require(observations["ttidCount"] == 1, "missing or repeated launch readiness")
+    views = observations["views"]
+    require(len(views) == 3 and sorted(v["name"] for v in views) == sorted(VIEW_NAMES), "wrong view inventory")
+    require(len({uuid(v["id"]) for v in views}) == 3, "collapsed view occurrences")
+    require(all(v["active"] is False for v in views), "view not ended")
+    sessions = {uuid(v["sessionID"]) for v in views}
+    require(len(sessions) == 1, "views split across sessions")
+    by_name = {v["name"]: v for v in views}
+    operations = observations["operations"]
+    require(len(operations) == 4, "wrong Operation inventory")
+    require(len({uuid(op["vital"]["id"]) for op in operations}) == 4, "duplicate step ID")
+    order = [("A", "start", VIEW_NAMES[0]), ("B", "start", VIEW_NAMES[1]),
+             ("B", "end", VIEW_NAMES[2]), ("A", "end", VIEW_NAMES[2])]
+    for op, (key, step, view) in zip(operations, order):
+        require(op["operationKey"] == run_id + "/" + key and op["step"] == step, "wrong key/step order")
+        require(op["viewID"] == by_name[view]["id"] and op["viewName"] == view, "wrong Operation owner")
+        require(op["sessionID"] in sessions, "wrong Operation session")
+        require(op["vital"]["type"] == "vital" and op["vital"]["name"] == "exp187.parallel", "wrong Operation name/type")
+        integer(op["vital"]["start_ns"], "start_ns")
+        require(type(op["referenceTime"]) in (int, float) and type(op["serverTimeOffset"]) in (int, float), "missing observed native clock")
+        require(math.isfinite(op["referenceTime"]) and math.isfinite(op["serverTimeOffset"]), "nonfinite observed native clock")
+        expected_start = int((op["referenceTime"] + op["serverTimeOffset"] + 978307200) * 1_000_000_000)
+        require(op["vital"]["start_ns"] == expected_start, "clock/serialized timestamp mismatch")
+
+    expected = []
+    for start, end in [(operations[0], operations[3]), (operations[1], operations[2])]:
+        vital = dict(start["vital"])
+        vital["duration_ns"] = int((end["referenceTime"] - start["referenceTime"]) * 1_000_000_000)
+        require(set(vital) == VITAL_FIELDS and vital["duration_ns"] > 0, "invalid expected duration/schema")
+        expected.append(vital)
+    require(expected[0]["duration_ns"] > expected[1]["duration_ns"], "independent durations collapsed or swapped")
+    require(receipt["expectedProfileVitals"] == expected, "receipt expectation differs from actual messages")
+    return expected
+
+
+def validate_attachment(expected, attachment):
+    require(isinstance(attachment, list) and len(attachment) == 2, "expected two profile Operation starts")
+    require(all(isinstance(v, dict) and set(v) == VITAL_FIELDS for v in attachment), "attachment schema mismatch")
+    require(len({v["id"] for v in attachment}) == 2, "duplicate attachment ID")
+    for vital in attachment:
+        integer(vital["start_ns"], "start_ns")
+        integer(vital["duration_ns"], "duration_ns")
+    require(sorted(attachment, key=lambda v: v["id"]) == sorted(expected, key=lambda v: v["id"]),
+            "profile attachment differs from exact observed start identities/times")
+
+
+def main():
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("receipt", type=Path)
+    parser.add_argument("--run-id", required=True)
+    parser.add_argument("--source-revision", required=True)
+    parser.add_argument("--allow-simulator", action="store_true", help="Fixture mechanics only; cannot close T14")
+    parser.add_argument("--attachment", type=Path, help="Actual exported rum-mobile-events.json")
+    parser.add_argument("--output", type=Path, required=True)
+    args = parser.parse_args()
+    result = {"experiment": "EXP-187", "gate": "T14", "gate_status": "INCONCLUSIVE",
+              "native_validation": "NOT_RUN", "attachment_validation": "NOT_PROVIDED",
+              "remaining": ["complete backend RUM/profile inventory", "nonempty physical native samples",
+                            "profile label/correlation evidence", "frozen build/install identity"]}
+    try:
+        expected = validate_native(json.loads(args.receipt.read_text()), args.run_id, args.source_revision, args.allow_simulator)
+        result["native_validation"] = "PASS"
+        if args.attachment:
+            validate_attachment(expected, json.loads(args.attachment.read_text()))
+            result["attachment_validation"] = "PASS"
+    except (ValueError, KeyError, TypeError, OverflowError, OSError) as error:
+        result["gate_status"] = "FAIL"
+        result["validation_error"] = str(error)
+    with args.output.open("x") as output:
+        output.write(json.dumps(result, indent=2) + "\n")
+    print(json.dumps(result))
+    raise SystemExit(1 if result["gate_status"] == "FAIL" else 0)
+
+
+if __name__ == "__main__":
+    main()

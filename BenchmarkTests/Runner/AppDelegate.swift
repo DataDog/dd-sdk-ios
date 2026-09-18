@@ -17,6 +17,10 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     var vitals: Vitals?
 
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
+#if MULTISCENE_PROFILING_ACCEPTANCE
+        ProfilingAcceptanceCoordinator.shared.configure()
+        return true
+#else
         applicationInfo = try! AppInfo() // crash if info are missing or malformed
 
         window = UIWindow(frame: UIScreen.main.bounds)
@@ -30,9 +34,21 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
         window?.makeKeyAndVisible()
         return true
+#endif
     }
 
+#if MULTISCENE_PROFILING_ACCEPTANCE
+    func application(_ application: UIApplication, configurationForConnecting session: UISceneSession, options: UIScene.ConnectionOptions) -> UISceneConfiguration {
+        let configuration = UISceneConfiguration(name: "Profiling Acceptance", sessionRole: session.role)
+        configuration.delegateClass = ProfilingAcceptanceSceneDelegate.self
+        return configuration
+    }
+#endif
+
     func application(_ app: UIApplication, open url: URL, options: [UIApplication.OpenURLOptionsKey: Any] = [:]) -> Bool {
+#if MULTISCENE_PROFILING_ACCEPTANCE
+        return false
+#else
         guard let components = URLComponents(url: url, resolvingAgainstBaseURL: false) else {
             return false
         }
@@ -50,6 +66,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         }
 
         return false
+#endif
     }
 
     /// Starts instruments for the given run and scenario.
