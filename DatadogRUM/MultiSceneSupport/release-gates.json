@@ -35,7 +35,7 @@
       "environment": "iOS 27 and 26.5 simulators",
       "completion_mode": null,
       "status": "INCONCLUSIVE",
-      "evidence": "EXP-160; BASELINES.md and Results/EXP-160-baseline.json. 26.5 navigation and actual legacy background/foreground pass;27 UIKit no-scene-lifecycle trap affects both revisions."
+      "evidence": "EXP-160:26.5 navigation and actual legacy background/foreground pass;27.0 UIKit no-scene-lifecycle trap affects both revisions. EXP-188 defines one reverified baseline readiness launch on newly available27.2 before any current-candidate paired matrix. Results/EXP-188-legacy-runtime.json; original BASELINES.md thresholds unchanged."
     },
     {
       "id": "C04",

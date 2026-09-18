@@ -1702,3 +1702,16 @@ If transport drops after successful native/backend checks, preserve those
 components and request cleanup only; never repeat a passing capture merely
 to stop its process. A raw RUM exhausted page can contain empty JSON_DATA rather
 than literal []; keep its count/provenance and require no additional rows.
+
+
+## Legacy runtime readiness after a platform trap
+
+For C03, test a newly available runtime with the frozen original control before
+rebuilding the complete paired matrix. Verify source/fixture/binary identity and
+an absent scene manifest, then use a fresh run, clean installation and installed
+hash. A platform-startup failure requires a new bundle/PID/time/UUID-matched crash;
+never attach a historical report merely because its symbol matches. Stop the
+bounded readiness slice if the control cannot reach the decisive fixture result.
+A passing readiness check alone does not close C03. Preserve the original matrix,
+thresholds and actual OS lifecycle oracle; [EXP-188](Experiments/EXP-143-199.md#exp-188--check-legacy-lifecycle-readiness-on-ios-272)
+owns the conditional full-matrix admission and cleanup requirements.

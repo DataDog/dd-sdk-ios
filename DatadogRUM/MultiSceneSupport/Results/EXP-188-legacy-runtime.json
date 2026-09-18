@@ -1,0 +1,49 @@
+{
+  "experiment": "EXP-188",
+  "gate": "C03",
+  "title": "Check legacy lifecycle readiness on iOS 27.2",
+  "status": "DEFINED",
+  "owner": "SDK implementer",
+  "definition": "Experiments/EXP-143-199.md#exp-188--check-legacy-lifecycle-readiness-on-ios-272",
+  "baseline_revision": "92f021ba7e4a866f84a52da93ed8b63f3dc75882",
+  "candidate_revision": "04201edc7711361279d8487b385bc8b0ca9c63c7",
+  "runtime": {
+    "version": "27.2",
+    "build": "24B5084k"
+  },
+  "toolchain": "Xcode 27.0 / 27A266a",
+  "scope": "C03 only; first check unmodified pre-scene baseline host readiness on the unexercised 27.2 runtime",
+  "baseline_build": {
+    "app": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp160-212ced16a66c/baseline/derived/Build/Products/Release-iphonesimulator/FixtureLegacy.app",
+    "sha256": "51547439b72245cb301b0c1874f37b358248fc2d93e9694bde793930b766d5f6",
+    "uuid": "UUID: 93DF80C1-2932-3A43-B242-6A7973A412C8 (x86_64) /var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp160-212ced16a66c/baseline/derived/Build/Products/Release-iphonesimulator/FixtureLegacy.app/FixtureLegacy\nUUID: 080EC4C6-42CD-3126-8FBB-CDD938E42953 (arm64) /var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp160-212ced16a66c/baseline/derived/Build/Products/Release-iphonesimulator/FixtureLegacy.app/FixtureLegacy",
+    "deployment_target": "15.0"
+  },
+  "baseline_source_fingerprint": {
+    "file_count": 369,
+    "sha256": "dde2012968e33c3b0058acf6003ec15b18fce8182ca30e4befdfd8b36463e06c"
+  },
+  "fixture_fingerprint": {
+    "sha256": "44bf7b154f4cf0c25e8fc1ab62131dcd1027d6d29b6f0e08e45a81c440564d3e",
+    "file_count": 4
+  },
+  "frozen_control_reverified": true,
+  "source_verification": "All369 source files from the exact Git revision match the recorded archive manifest; all4 current fixture files and the retained binary match original recorded hashes. The old extracted source directory is incomplete and is not reused.",
+  "preflight_sequence": [
+    "Discover a usable iPhone simulator on iOS27.2 and use a fresh run ID/output directory.",
+    "Verify exact Git archive and current fixture hashes against original records, executable hash/UUID and absent scene manifest.",
+    "Copy the frozen control app unchanged, prove clean app/data absence, install and verify installed executable hash.",
+    "Run automatic Home/Detail/freshHome once and require exact recorded run identity, no scene manifest and existing ownership oracle.",
+    "If the known UIKit startup trap recurs before a terminal result, record fresh PID/time/UUID-matched crash evidence and stop before candidate rebuild or further modes.",
+    "Always terminate only the fixture if present, prove cleanup and restore a simulator booted by this run to its prior shutdown state."
+  ],
+  "conditional_full_matrix": "Only if baseline readiness passes: freeze an implementation for current-candidate vs original-baseline automatic/manual navigation and actual OS background/foreground pairs on27.2. Retain accepted26.5 proof; do not rerun unrelated gates.",
+  "closure_rule": "C03 closes only after the complete unchanged exact-ownership/occurrence/lifecycle oracle passes for both arms. A baseline-only PASS is readiness, and a repeated baseline platform trap is INCONCLUSIVE rather than SDK regression or compatibility acceptance.",
+  "prohibited_shortcuts": [
+    "No scene manifest or synthetic lifecycle notifications to bypass the legacy requirement.",
+    "No binary SDK-version patching, UIKit assertion suppression, debugger launch, threshold changes or new public API.",
+    "No reuse of old run IDs or alteration of original EXP-160 evidence."
+  ],
+  "gates_closed": [],
+  "attempts": []
+}
