@@ -1,0 +1,22 @@
+{
+  "artifact_root": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp187-physical-5tu7j2kf",
+  "backend_validation": "NOT_RUN",
+  "build_exit_code": 70,
+  "device": "iPhone 16 Pro Max",
+  "experiment": "EXP-187",
+  "gate": "T14",
+  "gate_status": "INVALID",
+  "native_validation": "NOT_RUN",
+  "os": "27.2",
+  "platform": "PHYSICAL_DEVICE",
+  "revision": "fb01ee5201336114e69684b31bebabd2e5f45481",
+  "run_id": "exp187-95431cc7-32de-42ba-b7e5-2b9cb29c7b90",
+  "scope": "PHYSICAL_DEVICE",
+  "signature": "UNSIGNED",
+  "source_fingerprint": "f817e1a59dcf3ada18fd8a1d634e789824f59a3c9e32bf89d73a25899589b67a",
+  "source_preserved": true,
+  "started_at": "2026-09-18T09:46:45.227636+00:00",
+  "transport": "wired",
+  "workspace_preserved": true,
+  "reason": "Exact Xcode destination timed out with reported device preparation error; CoreDevice still reports connected. No physical app installation or execution."
+}

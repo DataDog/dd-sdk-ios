@@ -4,8 +4,8 @@
   "gate_count": 66,
   "counts": {
     "CLOSED": 40,
-    "ENVIRONMENT BLOCKED": 19,
-    "INCONCLUSIVE": 1,
+    "ENVIRONMENT BLOCKED": 17,
+    "INCONCLUSIVE": 3,
     "OPEN": 5,
     "REVIEW BLOCKED": 1
   },
@@ -66,7 +66,7 @@
     },
     {
       "id": "T13",
-      "status": "ENVIRONMENT BLOCKED",
+      "status": "INCONCLUSIVE",
       "owner": "SDK implementer",
       "dependencies": [
         "A01"
@@ -74,7 +74,7 @@
     },
     {
       "id": "T14",
-      "status": "ENVIRONMENT BLOCKED",
+      "status": "INCONCLUSIVE",
       "owner": "SDK implementer",
       "dependencies": [
         "A01"

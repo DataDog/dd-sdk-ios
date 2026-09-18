@@ -267,6 +267,13 @@ simultaneous-window claim. Configuration, launch-inventory, rounding and samplin
 setup failures remain in the detailed experiment record with their corrected
 controls; they are acceptance-fixture issues, separate from D01–D12.
 
+The subsequent connected-phone preparations expose only acceptance tooling
+limits: bundle transfer cannot verify installed code, a suspended preflight has
+no native records, and Xcode's destination picker times out while CoreDevice is
+connected. Opt-in pre-SDK code-hash receipts address the identity prerequisite;
+no SDK source changes or new production finding follow. Physical scenario and
+backend evidence remain required before closing T13/T14.
+
 ## Stable API review boundary
 
 [F01's concrete proposal](STABLE_API_REVIEW.md) covers the 21 implemented Swift

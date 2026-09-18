@@ -96,8 +96,24 @@
       "oracle_contract_sha256": "1ce8583c667d327ce0417d271835073cb987c2fb767745f191ff07d6dbbdc74c"
     }
   ],
-  "device_attempts": [],
-  "next": "T13 awaits a representative physical-device sample. Do not rerun accepted simulator/deterministic work merely to resume. Continue T14/EXP-187 while hardware is unavailable.",
+  "device_attempts": [
+    {
+      "run_id": "exp186-20260918T093506Z-ed6b6cbefb78",
+      "state": "INVALID",
+      "stage": "installed identity preparation",
+      "revision": "fb01ee5201336114e69684b31bebabd2e5f45481",
+      "source_fingerprint": "6e3e926b322b2f6ba2a133dcb14be9e0cf3bd68ae275b51a83eda650983d1245",
+      "artifact": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp186-physical-x0ke6n4y",
+      "durable_result": "Results/acceptance/exp186-20260918T093506Z-ed6b6cbefb78.json",
+      "reason": "Installed bundle transfer unavailable. Suspended preparation produced no native records and ended with signal9; no SDK scenario verdict.",
+      "source_matches_accepted_simulator": true,
+      "build": "PASS arm64",
+      "signing": "PASS existing development identity/profile",
+      "clean_install": "PASS app absent before install",
+      "native_records": 0
+    }
+  ],
+  "next": "Freeze opt-in installed-code receipts, then retry the existing physical T13 contract with a new clean installation/run ID. Phone second-scene capability must be demonstrated; no topology substitution.",
   "unit_source_sha256": "53c5cda262ec8932913d815d6c6273beff7e15c56a75fc9a2fe5495f027c7539",
   "unit_summary": {
     "total": 166,

@@ -223,7 +223,18 @@
       "rum_enrichment": "Operation steps report running but has_profile=false in two full-session reads; independent profile/sample and raw attachment joins pass. UI link enrichment is not claimed."
     }
   ],
-  "device_attempts": [],
+  "device_attempts": [
+    {
+      "run_id": "exp187-95431cc7-32de-42ba-b7e5-2b9cb29c7b90",
+      "state": "INVALID",
+      "stage": "build destination",
+      "revision": "fb01ee5201336114e69684b31bebabd2e5f45481",
+      "artifact": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp187-physical-5tu7j2kf",
+      "durable_result": "Results/acceptance/exp187-95431cc7-32de-42ba-b7e5-2b9cb29c7b90.json",
+      "reason": "Exact Xcode destination timed out with reported device preparation error; CoreDevice still reports connected. No physical app installation or execution.",
+      "build_exit_code": 70
+    }
+  ],
   "next": "Execute the frozen native contract on a freshly available supported physical device, retaining fresh source/build/install/run identity and the same complete RUM/profile/raw attachment checks. Accepted simulator and SDK work must not be repeated merely to resume. F01 review and physical-device requests remain pending.",
   "deterministic_status": "PASS",
   "physical_backend_status": "ENVIRONMENT BLOCKED",
@@ -343,5 +354,12 @@
     "raw_attachment_access": "MCP raw download unproven; subsequent actual user export accepted in Results/EXP-187-simulator-profile-correlation.json",
     "sample_type_source": "DatadogProfiling/Mach/profile_pprof_packer.cpp:120",
     "limits": "This preflight established connection health only. Subsequent exact run acceptance is recorded separately in native_attempts and Results/EXP-187-simulator-profile-correlation.json."
+  },
+  "physical_identity_preparation": {
+    "implementation": "Opt-in pre-SDK SHA-256 receipt of all installed Mach-O files, compared to signed build inventory",
+    "validator_tests": 9,
+    "malformed_controls": 18,
+    "swift_typecheck": "PASS both fixture helpers",
+    "sdk_changes": false
   }
 }

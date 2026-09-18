@@ -736,6 +736,32 @@ The transport (`usb`, `local-network`, or another reported path) is evidence too
 a physically attached device can still be reached only through a flaky
 local-network tunnel.
 
+### Physical installed-code identity
+
+CoreDevice appDataContainer transfer does not expose the app bundle. Standalone
+LLDB device commands may leave the host platform selected; command exit0 is not
+proof of attachment or file retrieval. Do not suspend an acceptance launch to
+work around this: the recorded preparation emitted no native records and ended
+with signal9. No SDK crash or scenario verdict follows from that preparation.
+
+The native probe and opt-in profiling fixture accept
+MULTISCENE_CODE_IDENTITY_RUN_ID and MULTISCENE_CODE_IDENTITY_REVISION. Before SDK
+initialization they stream SHA-256 over every installed Mach-O file and persist
+Documents/<run-id>.installed-code.json. A prior receipt or malformed identity
+prevents SDK initialization. Retrieve only that receipt through the app's own
+appDataContainer, then compare it with the exact independently signed local app
+using tools/multi-scene/acceptance/installed_code.py. Require exact run/revision,
+observed process, bundle/executable, pre-SDK boundary and complete binary map;
+the Debug dylib matters as well as the executable. Preserve clean-install and
+source-freeze checks. This is installation evidence, never a native/backend PASS.
+The nine checker tests reject18 malformed identities/inventories.
+
+If CoreDevice remains usable while Xcode's exact destination reports preparation
+errors, a generic iOS arm64 build can prepare the same hardware executable.
+Record that build destination honestly; actual install/run/OS/profile evidence
+must still come from the exact freshly discovered device. No simulator result
+can replace physical execution.
+
 ### Physical-device signing preflight
 
 Run signing diagnostics before terminate/uninstall work. The probe project

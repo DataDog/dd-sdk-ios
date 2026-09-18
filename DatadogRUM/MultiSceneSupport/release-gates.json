@@ -387,8 +387,8 @@
       "decisive_test": "CPU/memory/frame metrics retain documented process sampling and view association; never claim independent per-window measurement",
       "environment": "Fixed process metric fixture, view associations and backend; representative device sample before freeze",
       "completion_mode": "documented process-level measurement with existing view association",
-      "status": "ENVIRONMENT BLOCKED",
-      "evidence": "EXP-186:166 SDK/196 probe tests,30 native expectations and exact three-view backend metrics pass in fresh attempt B. Attempt A remains FAIL. Representative physical sample is pending. Results/EXP-186-shared-vitals.json."
+      "status": "INCONCLUSIVE",
+      "evidence": "EXP-186:166 SDK/196 probe tests,30 native expectations and exact three-view backend metrics pass in fresh attempt B. Attempt A remains FAIL. Representative physical sample is pending. Results/EXP-186-shared-vitals.json. Connected physical iPhone preparation is recorded; pre-SDK installed-code receipts are being frozen before a fresh run. No physical scenario accepted yet."
     },
     {
       "id": "T14",
@@ -400,8 +400,8 @@
       "decisive_test": "Process profile and exact Operation identity remain correlated; docs make no per-scene CPU attribution claim",
       "environment": "Profiling/Operation fixture and supported profiling device/backend",
       "completion_mode": "documented process-level fallback",
-      "status": "ENVIRONMENT BLOCKED",
-      "evidence": "EXP-187:115 selected SDK/integration tests; native12/12, complete12-event RUM ownership, exact profile labels/sample joins and actual exported attachment nanoseconds pass at95a6bdeb7. Ordinary Release exclusion passes. Reusable combined checking passes19 Python methods/107 malformed controls. Simulator proof only; supported physical execution remains. Results/EXP-187-simulator-profile-correlation.json preserves RUM profile-link flag=false separately."
+      "status": "INCONCLUSIVE",
+      "evidence": "EXP-187:115 selected SDK/integration tests; native12/12, complete12-event RUM ownership, exact profile labels/sample joins and actual exported attachment nanoseconds pass at95a6bdeb7. Ordinary Release exclusion passes. Reusable combined checking passes19 Python methods/107 malformed controls. Simulator proof only; supported physical execution remains. Results/EXP-187-simulator-profile-correlation.json preserves RUM profile-link flag=false separately. Connected physical iPhone preparation is recorded; pre-SDK installed-code receipts are being frozen before a fresh run. No physical scenario accepted yet."
     },
     {
       "id": "T15",
