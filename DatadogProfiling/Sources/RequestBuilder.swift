@@ -49,8 +49,8 @@ internal struct RequestBuilder: FeatureRequestBuilder {
         )
 
         multipart.addFormData(
-            name: ProfileAttachments.Constants.wallFilename,
-            filename: ProfileAttachments.Constants.wallFilename,
+            name: ProfileAttachments.Constants.pprofFilename,
+            filename: ProfileAttachments.Constants.pprofFilename,
             data: attachments.pprof,
             mimeType: "application/octet-stream"
         )

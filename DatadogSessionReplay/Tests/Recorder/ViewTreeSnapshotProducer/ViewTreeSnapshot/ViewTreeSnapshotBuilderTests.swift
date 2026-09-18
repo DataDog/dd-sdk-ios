@@ -95,7 +95,7 @@ class ViewTreeSnapshotBuilderTests: XCTestCase {
         XCTAssertEqual(queryContext.recorder.date, randomRecorderContext.date)
     }
 
-    func testWhenCreatingSnapshot_itWritesHeatmapIdentifiersToRegistry() throws {
+    func testWhenCreatingSnapshot_itWritesHeatmapIdentifiersToRegistryByLayer() throws {
         // Given
         let view = UIView.mock(withFixture: .visible(.someAppearance))
         let core = FeatureRegistrationCoreMock()
@@ -114,7 +114,9 @@ class ViewTreeSnapshotBuilderTests: XCTestCase {
         _ = builder.createSnapshot(of: view, with: context)
 
         // Then
-        XCTAssertFalse(registry.identifiers.isEmpty)
+        XCTAssertNotNil(registry.identifiers[ObjectIdentifier(view.layer)])
+        XCTAssertNil(registry.identifiers[ObjectIdentifier(view)])
+        XCTAssertFalse(registry.requiresDescendantLookup)
     }
 
     func testWhenCreatingSnapshot_withNoViewPath_itDoesNotWriteToRegistry() throws {

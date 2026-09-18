@@ -11,15 +11,13 @@ import XCTest
 @available(iOS 16.0, *)
 @MainActor
 final class SRLayerSnapshotTests: LayerSnapshotTestCase {
-    private let snapshotsFolderPath = "_snapshots_/png"
     private var shouldRecord = false
 
     func testSwiftUIText() async throws {
         try await takeLayerSnapshotFor(
             TextFixtureView(),
             with: TextAndInputPrivacyLevel.allCases,
-            shouldRecord: shouldRecord,
-            folderPath: snapshotsFolderPath
+            shouldRecord: shouldRecord
         )
     }
 
@@ -27,8 +25,7 @@ final class SRLayerSnapshotTests: LayerSnapshotTestCase {
         try await takeLayerSnapshotFor(
             BasicControlsAndIndicatorsFixtureView(),
             imagePrivacyLevel: .maskAll,
-            shouldRecord: shouldRecord,
-            folderPath: snapshotsFolderPath
+            shouldRecord: shouldRecord
         )
     }
 
@@ -36,8 +33,7 @@ final class SRLayerSnapshotTests: LayerSnapshotTestCase {
         try await takeLayerSnapshotFor(
             StepperFixtureView(),
             imagePrivacyLevel: .maskAll,
-            shouldRecord: shouldRecord,
-            folderPath: snapshotsFolderPath
+            shouldRecord: shouldRecord
         )
     }
 
@@ -45,8 +41,7 @@ final class SRLayerSnapshotTests: LayerSnapshotTestCase {
         try await takeLayerSnapshotFor(
             AlertFixtureView(),
             with: [.maskAll, .maskSensitiveInputs],
-            shouldRecord: shouldRecord,
-            folderPath: snapshotsFolderPath
+            shouldRecord: shouldRecord
         )
     }
 
@@ -54,16 +49,14 @@ final class SRLayerSnapshotTests: LayerSnapshotTestCase {
         try await takeLayerSnapshotFor(
             TabFixtureView(),
             with: [.maskAll, .maskSensitiveInputs],
-            shouldRecord: shouldRecord,
-            folderPath: snapshotsFolderPath
+            shouldRecord: shouldRecord
         )
     }
 
     func testToolbar() async throws {
         try await takeLayerSnapshotFor(
             ToolbarFixtureView(),
-            shouldRecord: shouldRecord,
-            folderPath: snapshotsFolderPath
+            shouldRecord: shouldRecord
         )
     }
 }

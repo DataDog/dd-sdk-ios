@@ -61,7 +61,7 @@ Common oversights:
 4. RUM context provides session IDs and deterministic session sampling; Profiling composes `continuousSampleRate` with the active RUM session sampler for Continuous Profiling.
 5. For Custom Profiling, RUM composes `ProfilingOptions(sampleRate:)` with the active session sampler before sending sampled operation payloads to Profiling.
 6. RUM payload messages provide TTID, operation, app hang, and long task data for profile correlation.
-7. `ProfilingHandler` serializes a `ProfileEvent` plus `wall.pprof` and optional `rum-mobile-events.json` attachments.
+7. `ProfilingHandler` serializes a `ProfileEvent` plus `profile.pprof` and optional `rum-mobile-events.json` attachments.
 8. `RequestBuilder` sends one multipart upload per profile to `/api/v2/profile`.
 
 ### Storage Pipeline

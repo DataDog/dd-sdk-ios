@@ -52,9 +52,9 @@ endif
 	@$(ECHO_SUBTITLE2) "➔ Testing SCHEME='$(SCHEME1)'"
 	set -eo pipefail; \
 	xcodebuild -version; \
-	xcodebuild -workspace "CPProject.xcworkspace" -destination "platform=$(PLATFORM),name=$(DEVICE),OS=$(OS)" -scheme "$(SCHEME1)" test | xcbeautify
+	xcodebuild -workspace "CPProject.xcworkspace" -destination "platform=$(PLATFORM),name=$(DEVICE),OS=$(OS)" -scheme "$(SCHEME1)" test | $(call XCBEAUTIFY,dynamic)
 
 	@$(ECHO_SUBTITLE2) "➔ Testing SCHEME='$(SCHEME2)'"
 	set -eo pipefail; \
 	xcodebuild -version; \
-	xcodebuild -workspace "CPProject.xcworkspace" -destination "platform=$(PLATFORM),name=$(DEVICE),OS=$(OS)" -scheme "$(SCHEME2)" test | xcbeautify
+	xcodebuild -workspace "CPProject.xcworkspace" -destination "platform=$(PLATFORM),name=$(DEVICE),OS=$(OS)" -scheme "$(SCHEME2)" test | $(call XCBEAUTIFY,static)

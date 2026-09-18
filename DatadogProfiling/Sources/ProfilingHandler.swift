@@ -9,18 +9,13 @@ import DatadogInternal
 
 #if !os(watchOS)
 
-// swiftlint:disable duplicate_imports
-#if swift(>=6.0)
-internal import DatadogMachProfiler
-#else
+// Keep this implementation-only. Otherwise, Swift 6 records DatadogMachProfiler as a
+// transitive module dependency, but it is not distributed as an XCFramework.
 @_implementationOnly import DatadogMachProfiler
-#endif
-// swiftlint:enable duplicate_imports
 
 internal protocol ProfilingHandler {
     var attributes: [AttributeKey: AttributeValue] { get }
     var currentServerTimeOffset: TimeInterval { get }
-    var operation: ProfilingOperation { get }
 
     var featureScope: FeatureScope { get }
     var telemetryController: ProfilingTelemetryController { get }
@@ -28,16 +23,9 @@ internal protocol ProfilingHandler {
 }
 
 extension ProfilingHandler {
-    @discardableResult
-    func updateProfilingContext(quotaReason: DDProfiling.QuotaReason? = nil) -> ProfilingContext {
-        let profilingContext = ProfilingContext(status: .current, quotaReason: quotaReason)
-        self.featureScope.set(context: profilingContext)
-
-        return profilingContext
-    }
-
     func write(
         profile: OpaquePointer,
+        operation: ProfilingOperation,
         rumVitals: [Vital],
         hangs: [DurationEvent]? = nil,
         longTasks: [DurationEvent]? = nil
@@ -63,6 +51,7 @@ extension ProfilingHandler {
 
         self.writeProfilingEvent(
             with: profile,
+            operation: operation,
             rumEvents: rumEvents,
             attributes: attributes
         )
@@ -70,6 +59,7 @@ extension ProfilingHandler {
 
     private func writeProfilingEvent(
         with profile: OpaquePointer,
+        operation: ProfilingOperation,
         rumEvents: [RUMEvent],
         attributes: [AttributeKey: AttributeValue]
     ) {
@@ -79,12 +69,11 @@ extension ProfilingHandler {
         var data: UnsafeMutablePointer<UInt8>?
         let start = dd_pprof_get_start_timestamp_s(profile)
         let end = dd_pprof_get_end_timestamp_s(profile)
-        let durationNs = (end - start).dd.toInt64Nanoseconds
+        let durationMs = (end - start).dd.toInt64Milliseconds
         let size = dd_pprof_serialize(profile, &data)
-        let operation = self.operation
 
         guard let data else {
-            telemetryController.sendNoData(durationNs: durationNs, for: operation)
+            telemetryController.sendNoData(durationMs: durationMs, for: operation)
             return
         }
 
@@ -106,7 +95,7 @@ extension ProfilingHandler {
                 start: Date(timeIntervalSince1970: start),
                 end: Date(timeIntervalSince1970: end),
                 attachments: [
-                    ProfileAttachments.Constants.wallFilename,
+                    ProfileAttachments.Constants.pprofFilename,
                     ProfileAttachments.Constants.rumEventsFilename
                 ],
                 tags: [
@@ -129,7 +118,7 @@ extension ProfilingHandler {
             let attachments = ProfileAttachments(pprof: pprof, rumEvents: rumEventsData)
             writer.write(value: event, metadata: attachments)
             self.telemetryController.sendProfile(
-                durationNs: durationNs,
+                durationMs: durationMs,
                 fileSize: Int64(clamping: size),
                 for: operation
             )
