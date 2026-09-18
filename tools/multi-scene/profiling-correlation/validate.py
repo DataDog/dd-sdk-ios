@@ -117,7 +117,7 @@ def main():
     args = parser.parse_args()
     result = {"experiment": "EXP-187", "gate": "T14", "gate_status": "INCONCLUSIVE",
               "native_validation": "NOT_RUN", "attachment_validation": "NOT_PROVIDED",
-              "remaining": ["complete backend RUM/profile inventory", "nonempty physical native samples",
+              "remaining": ["complete backend RUM/profile inventory", "nonempty physical native wall-time stack samples",
                             "profile label/correlation evidence", "frozen build/install identity"]}
     try:
         expected = validate_native(json.loads(args.receipt.read_text()), args.run_id, args.source_revision, args.allow_simulator)

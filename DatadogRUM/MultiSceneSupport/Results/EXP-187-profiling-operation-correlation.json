@@ -133,7 +133,7 @@
     }
   ],
   "device_attempts": [],
-  "next": "User requested pause for Codex restart. On resume, repair benchmark configuration wiring using existing non-secret source/build settings without reading or changing protected local xcconfig; freeze repair, then use a fresh full simulator attempt and separate ordinary Release exclusion build. Do not rerun accepted SDK tests.",
+  "next": "Freeze the isolated configuration-wiring repair, run a fresh full simulator attempt, then ordinary Release exclusion. Use restored profiling MCP for scoped backend reads; physical device and F01 decision remain pending.",
   "deterministic_status": "PASS",
   "physical_backend_status": "ENVIRONMENT BLOCKED",
   "unit_summary": {
@@ -176,8 +176,9 @@
   ],
   "environment_observation": {
     "physical_devices": "Paired iPhone27.2 and iPad27 unavailable; DDI false for both.",
-    "profile_backend": "Latest live inventory exposes34 Datadog tools and no profiling/profile/pprof tool. RUM access authenticated earlier; browser remains at sign-in. No universal Datadog MCP capability claim.",
-    "fresh_device_discovery": "2026-09-18T07:25:35Z"
+    "profile_backend": "Restored mcp__datadog exposes13 profiling tools; authenticated service/type discovery and nonempty ios-benchmark wall-time flamegraph read pass. CPU query explicitly not enabled despite broader metadata. Actual raw attachment retrieval unproven.",
+    "fresh_device_discovery": "2026-09-18T07:25:35Z",
+    "fresh_device_artifact": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp187-device-refresh-zlzyj43u/devices.json"
   },
   "limits": [
     "One process sampler; profile-level view labels do not attribute CPU samples independently to scenes.",
@@ -197,13 +198,13 @@
     "definition_revision": "aaa70d2d17e860e1eb7f7bf67734d66bfdfe7622"
   },
   "native_implementation": {
-    "state": "COMMITTED; FIRST FROZEN RUN INVALID DURING CONFIGURATION",
+    "state": "CONFIGURATION REPAIR PREPARED; FRESH FROZEN EXECUTION REQUIRED",
     "fixture": "BenchmarkTests/Runner/Scenarios/Profiling/ProfilingAcceptance.swift",
     "driver": "tools/multi-scene/profiling-correlation/run_simulator.py",
     "validator": "tools/multi-scene/profiling-correlation/validate.py",
     "lint": "PASS strict repository test lint, zero violations",
-    "python_methods_passed": 6,
-    "malformed_evidence_cases_rejected": 27,
+    "python_methods_passed": 7,
+    "malformed_evidence_cases_rejected": 32,
     "simulator_requires_explicit_mechanics_mode": true,
     "initial_development_build": {
       "configuration": "Release, opt-in fixture, generic iOS Simulator",
@@ -214,5 +215,22 @@
     "revision": "21c312a4312146ae920cf0e88e6494859a32fe02",
     "signature": "VERIFIED",
     "ordinary_release_exclusion": "NOT RUN"
+  },
+  "profile_access_preflight": {
+    "state": "PASS for real profile reads; not experiment acceptance",
+    "query": "service:ios-benchmark family:ios",
+    "time_range": "last24h at query time",
+    "wall_time_window_unix_ms": [
+      1789632411377,
+      1789718811377
+    ],
+    "enabled_sample_type": "wall-time",
+    "nonempty_stacks": true,
+    "cpu_query": "profile-type-not-enabled",
+    "artifact": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp187-profile-access-bq6voe9j",
+    "wall_response_sha256": "4613fc4757bc7a2a8f42489f4c7f5b49375d5784cf013a89eee6ffdd263a0f05",
+    "raw_attachment_access": "UNPROVEN",
+    "sample_type_source": "DatadogProfiling/Mach/profile_pprof_packer.cpp:120",
+    "limits": "Existing service profiles only; no EXP-187 scenario has emitted telemetry yet."
   }
 }

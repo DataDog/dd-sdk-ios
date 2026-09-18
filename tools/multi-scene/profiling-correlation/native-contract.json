@@ -94,7 +94,7 @@
     "Query the full RUM session and profile time range/service; validate all run identities rather than filtering away stale owners",
     "Join each of four RUM steps to the native observed exact Vital ID, key, step, session and view",
     "One matching custom profile contains both exact start IDs, matching operation names and actual observed server-offset start_ns and duration_ns",
-    "The profile has nonempty native samples; a native testing stub or simulator cannot close T14",
+    "The profile has nonempty native wall-time stack samples; a native testing stub or simulator cannot close T14",
     "Profile labels describe the final process context, not independent per-view CPU ownership",
     "Inventory unexpected profiles/events explicitly; preserve any built-in app-launch telemetry separately and admit no additional fixture Operation"
   ],

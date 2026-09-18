@@ -1,5 +1,6 @@
 import copy
 import unittest
+from run_simulator import require_configuration
 from validate import BOUNDARIES, OPERATION_COUNTS, VIEW_NAMES, validate_attachment, validate_native
 
 RUN = "exp187-00000000-0000-0000-0000-000000000001"
@@ -37,6 +38,19 @@ def fixture():
 
 
 class NativeValidationTests(unittest.TestCase):
+    def test_missing_or_unresolved_configuration_rejected_before_install(self):
+        for configuration in [
+            {}, {"ClientToken": "", "ApplicationID": RUN[7:]},
+            {"ClientToken": "$(DATADOG_CLIENT_TOKEN)", "ApplicationID": RUN[7:]},
+            {"ClientToken": "synthetic-test-token", "ApplicationID": ""},
+            {"ClientToken": "synthetic-test-token", "ApplicationID": "$(RUM_APPLICATION_ID)"},
+        ]:
+            with self.subTest(configuration=configuration):
+                with self.assertRaises(ValueError):
+                    require_configuration({"DatadogConfiguration": configuration})
+        require_configuration({"DatadogConfiguration": {
+            "ClientToken": "synthetic-test-token", "ApplicationID": RUN[7:]}})
+
     def test_actual_identity_and_reverse_attachment_order_pass(self):
         receipt = fixture()
         expected = validate_native(receipt, RUN, REVISION)

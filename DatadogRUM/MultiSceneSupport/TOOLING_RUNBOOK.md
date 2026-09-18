@@ -1531,6 +1531,19 @@ SDK initialization; inspect only presence/format booleans if diagnosing the buil
 app, and never read the protected local xcconfig. Repair existing build-setting
 wiring, freeze it and use a new full attempt; preserve the original INVALID receipt.
 
+The repaired acceptance override includes the tracked Benchmark Runner template,
+then the tracked Example Datadog template, and maps CLIENT_TOKEN to
+DATADOG_CLIENT_TOKEN. Xcode performs variable/include resolution; never expand
+secret values into command arguments or artifact summaries. Validate resolved
+presence/application UUID in the built plist before installation.
+
+The restored profiling MCP supports authenticated wall-time flamegraphs.
+Discover actual sample types and perform a real read; type metadata alone may
+list CPU even when retrieval reports that type disabled. Native Mach profiles
+serialize wall-time/nanoseconds. Scope acceptance reads to the actual run and
+exact Vital IDs; existing service aggregates prove connection health only.
+Raw rum-mobile-events.json attachment access remains a separate capability check.
+
 The existing BenchmarkTests Profiling runner already links the module; avoid
 adding a dependency to the native multi-scene probe. Freeze native counts/build/
 run identity and boundary assertions before a device run. Verify a real supported

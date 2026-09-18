@@ -33,6 +33,14 @@ Readiness is observed without consuming it; each assertion precedes its next
 critical command. Actual native reference times and server offsets independently
 determine exact serialized timestamps and durations.
 
+The acceptance build generates an isolated xcconfig that includes the tracked
+Benchmark Runner settings, then the existing Example Datadog settings, and maps
+CLIENT_TOKEN to DATADOG_CLIENT_TOKEN. Xcode resolves the existing configuration;
+the runner never reads the local xcconfig. A post-build presence/UUID check
+rejects unresolved credentials before install without recording values. Ordinary
+build mode does not apply this override. The frozen source inventory includes
+the native Mach profiler and the tracked configuration templates.
+
 The app persists the receipt in Documents/<run-id>.json. The runner retains it,
 build/command logs, source manifest and executable identity under the attempt
 directory, and writes a compact durable result to the release Results/acceptance
@@ -72,7 +80,7 @@ The simulator runner deliberately keeps gate_status INCONCLUSIVE even when
 native_validation is PASS. Physical execution requires a freshly discovered,
 usable supported device, a frozen signed or authorized unsigned implementation,
 clean-install proof, executable identity and the same native contract. A native
-profile with nonempty CPU samples and authenticated backend access are required.
+profile with nonempty wall-time stack samples and authenticated backend access are required.
 
 Retrieve the complete RUM session and profile time/service inventory. Join all
 four RUM steps to the exact native Vital IDs and owners, then compare the real

@@ -19,14 +19,16 @@ from validate import validate_native, require
 
 SOURCE_ROOTS = [
     "DatadogCore/Sources", "DatadogInternal/Sources", "DatadogRUM/Sources",
-    "DatadogProfiling/Sources", "DatadogTrace/Sources", "DatadogLogs/Sources",
+    "DatadogProfiling/Sources", "DatadogProfiling/Mach", "DatadogTrace/Sources", "DatadogLogs/Sources",
     "DatadogWebViewTracking/Sources", "DatadogSessionReplay/Sources",
     "DatadogCrashReporting/Sources", "BenchmarkTests/Runner",
     "BenchmarkTests/Benchmarks/Sources", "BenchmarkTests/Benchmarks/Package.swift",
     "BenchmarkTests/BenchmarkTests.xcodeproj/project.pbxproj",
     "BenchmarkTests/BenchmarkTests.xcodeproj/xcshareddata",
     "BenchmarkTests/BenchmarkTests.xcodeproj/project.xcworkspace/xcshareddata",
-    "Package.swift", "Package.resolved", "tools/multi-scene/profiling-correlation",
+    "Package.swift", "Package.resolved", "BenchmarkTests/xcconfigs/Runner.xcconfig",
+    "xcconfigs/Datadog.xcconfig", "xcconfigs/Base.xcconfig",
+    "tools/multi-scene/profiling-correlation",
     "tools/multi-scene/acceptance",
 ]
 
@@ -52,6 +54,18 @@ def scene_manifest(info):
     return result
 
 
+def require_configuration(info):
+    configuration = info.get("DatadogConfiguration", {})
+    token = configuration.get("ClientToken", "")
+    application_id = configuration.get("ApplicationID", "")
+    require(isinstance(token, str) and bool(token.strip()) and "$(" not in token,
+            "built acceptance app has no resolved client token")
+    try:
+        uuid.UUID(application_id)
+    except (ValueError, AttributeError, TypeError):
+        raise ValueError("built acceptance app has no valid RUM application ID") from None
+
+
 class SimulatorRun:
     def __init__(self, args):
         self.args = args
@@ -68,7 +82,7 @@ class SimulatorRun:
             "backend_validation": "NOT_RUN", "run_id": self.run_id,
             "scope": "ORDINARY_BUILD_ONLY" if args.ordinary_build_only else "SIMULATOR_MECHANICS_ONLY",
             "started_at": now(), "artifact_root": str(self.out), "stages": {},
-            "remaining": ["supported physical native samples", "complete backend RUM/profile inventory",
+            "remaining": ["supported physical native wall-time stack samples", "complete backend RUM/profile inventory",
                           "exact profile attachment and process labels"],
         }
         self.protected = protected_state(self.repo)
@@ -129,7 +143,13 @@ class SimulatorRun:
                 info = plistlib.loads((self.repo / "BenchmarkTests/Runner/Info.plist").read_bytes())
                 info_path = self.out / "Acceptance-Info.plist"
                 info_path.write_bytes(plistlib.dumps(scene_manifest(info)))
-                command += ["SWIFT_ACTIVE_COMPILATION_CONDITIONS=$(inherited) MULTISCENE_PROFILING_ACCEPTANCE",
+                config_path = self.out / "Acceptance.xcconfig"
+                config_path.write_text(
+                    '#include "' + str(self.repo / "BenchmarkTests/xcconfigs/Runner.xcconfig") + '"\n'
+                    '#include "' + str(self.repo / "xcconfigs/Datadog.xcconfig") + '"\n'
+                    'CLIENT_TOKEN = $(DATADOG_CLIENT_TOKEN)\n')
+                command += ["-xcconfig", str(config_path),
+                            "SWIFT_ACTIVE_COMPILATION_CONDITIONS=$(inherited) MULTISCENE_PROFILING_ACCEPTANCE",
                             "INFOPLIST_FILE=" + str(info_path)]
             save(self.out / "build-command.json", command)
             self.command(command, "build")
@@ -137,6 +157,10 @@ class SimulatorRun:
             app = self.out / "derived/Build/Products/Release-iphonesimulator/Runner.app"
             # Only bundle identity is retained from the built property list.
             info = plistlib.loads((app / "Info.plist").read_bytes())
+            if not self.args.ordinary_build_only:
+                require_configuration(info)
+                self.stage("configuration", {"state": "PASS", "client_token_resolved": True,
+                                               "application_id_valid": True})
             self.bundle = info["CFBundleIdentifier"]
             executable = info["CFBundleExecutable"]
             require(self.bundle == "com.datadoghq.benchmarks.Runner", "unexpected benchmark bundle")

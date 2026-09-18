@@ -259,7 +259,11 @@ profiling and authenticated profile-backend proof; no per-scene CPU claim.
 The signed opt-in native fixture21c312a43 builds and clean-installs, but its first
 run rejects empty benchmark configuration before SDK initialization. The invalid
 receipt is preserved; no new production finding follows from this preparation
-failure. Configuration repair and ordinary-build exclusion verification remain.
+failure. The configuration repair is confined to the opt-in runner, with five new
+negative controls. Profile MCP reads now work; physical execution, exact profile
+correlation and ordinary-build exclusion verification remain. Native sample
+terminology is corrected to wall-time from the Mach serialization source.
+No production source or original review disposition changes.
 
 ## Stable API review boundary
 
