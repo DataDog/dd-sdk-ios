@@ -57,6 +57,13 @@ internal struct SpanEventBuilder: Sendable {
                 tags[SpanTags.rumSessionID] = rum.sessionID
                 tags[SpanTags.rumViewID] = rum.viewID
                 tags[SpanTags.rumActionID] = rum.userActionID
+
+                // A `view.name` already carried by the span wins: setting it by hand is the
+                // documented approach for apps that run Trace without RUM, and enabling RUM
+                // later must not silently replace names the app provides itself.
+                if tags[SpanTags.rumViewName] == nil {
+                    tags[SpanTags.rumViewName] = rum.viewName
+                }
             }
         }
 

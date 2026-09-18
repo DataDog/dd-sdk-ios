@@ -4,6 +4,7 @@
 - [FEATURE] Add CPU-time samples alongside wall-time samples by default for application launch and Continuous Profiling. See [#3195][]
 - [IMPROVEMENT] Migrate `DatadogProfiling` to Swift 6. See [#3186][]
 - [FIX] Fix truncated profiler stacks on arm64e-capable devices by handling pointer authentication when unwinding stack frames. See [#3200][]
+- [IMPROVEMENT] Add the `view.name` tag to spans enriched with a sampled-in RUM context, so APM spans can be searched and grouped by RUM view. A `view.name` already set on the span is preserved. See [#3208][]
 
 # 3.17.0 / 09-09-2026
 
@@ -1253,6 +1254,7 @@ Release `2.0` introduces breaking changes. Follow the [Migration Guide](MIGRATIO
 [#3186]: https://github.com/DataDog/dd-sdk-ios/pull/3186
 [#3195]: https://github.com/DataDog/dd-sdk-ios/pull/3195
 [#3200]: https://github.com/DataDog/dd-sdk-ios/pull/3200
+[#3208]: https://github.com/DataDog/dd-sdk-ios/pull/3208
 
 [@00fa9a]: https://github.com/00FA9A
 [@britton-earnin]: https://github.com/Britton-Earnin

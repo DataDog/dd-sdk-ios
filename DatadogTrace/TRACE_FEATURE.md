@@ -1,7 +1,7 @@
 ---
-last_updated: 2026-09-08
+last_updated: 2026-09-18
 sdk_version: 3.17.0
-verified_against_commit: ac1c0a102
+verified_against_commit: 68a5160e5
 tracked_files:
   - DatadogTrace/Sources/Trace.swift
   - DatadogTrace/Sources/TraceConfiguration.swift
@@ -247,7 +247,23 @@ Set `urlSessionTracking` to connect Trace to the shared automatic `URLSession` n
 - **Service**: `service` (default: SDK service value) — overrides the `service.name` tag.
 - **Global tags**: `tags: [String: OTTagValue]?` — applied to every span from the default tracer. `OTTagValue` is `Encodable & Sendable`; any custom tag type must conform to both.
 - **RUM bundling**: `bundleWithRumEnabled` (default: `true`) — adds `_dd.application.id`, `_dd.session.id`, `_dd.view.id`, `_dd.action.id` tags only when a RUM context exists and the RUM session is sampled in. Trace spans from sampled-out RUM sessions can still be sent according to Trace sampling, but they are not linked to RUM.
+- **RUM view name**: under the same conditions as the `_dd.*` tags above (a RUM context exists and the RUM session is sampled in), the current RUM view name is added as the `view.name` tag, searchable in APM as `@view.name`. Because it follows the RUM sampling decision, `@view.name` only matches spans from sampled-in RUM sessions. A `view.name` already present in the span's own tags is never overwritten, so apps can set it themselves (see below) and keep that value if they later enable RUM.
 - **Network info**: `networkInfoEnabled` (default: `false`) — adds reachability, connection type, mobile carrier, etc. to every span and span log. Mobile carrier info is only available on iOS versions below 16, since Apple deprecated the required Core Telephony APIs (`CTCarrier`) without a replacement.
+
+### Tagging Spans With a View Name
+
+When RUM is enabled in the same SDK core, `view.name` is added automatically (see **RUM view name** above). Apps that use Trace **without** RUM get no RUM context, so no view tags are added, including `_dd.view.id`. To make spans searchable by `@view.name` in that setup, set the tag on the span while the view is current:
+
+```swift
+let span = tracer.startSpan(operationName: "fetch-article")
+span.setTag(key: "view.name", value: routeName)
+```
+
+`Configuration.tags` is not a substitute: it is applied once when the feature starts, so it cannot follow navigation.
+
+Automatically instrumented `URLSession` spans have no call site to tag. Do **not** reach for `eventMapper` to fill the gap by reading a "current route" variable: the mapper runs when the span finishes, so a request that starts on one view and completes after navigation would be labelled with the view the user ended on. If you tag those spans from a mapper, resolve the route from `span.startTime` against a thread-safe route history rather than from the route that is current when the mapper runs.
+
+`view.name` makes spans searchable and groupable by view. It does not add the `_dd.*` RUM correlation tags, which are only set from a RUM context.
 
 ### Event Modification
 - **`eventMapper`** — `@Sendable (SpanEvent) -> SpanEvent`. Modify spans before upload (e.g. scrub sensitive data, override tags). Cannot drop spans — must return an event. Runs on a background thread; keep it fast and `Sendable`-safe.
