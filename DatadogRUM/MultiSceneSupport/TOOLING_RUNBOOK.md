@@ -1755,3 +1755,10 @@ required15.0 runtime into fresh output and retain catalog/download/import/boot
 outcomes. Do not substitute a later runtime or alter its metadata. EXP-190 requires
 a separate frozen native matrix after qualification; neither catalog availability
 nor boot closes C06.
+
+EXP-190's official exact15.0 requests return70 for both universal and arm64, with
+no file exported. A support-table entry does not establish present catalog access.
+Record that specific limit without claiming permanent runtime incompatibility.
+Use older Xcode's xcdevice inventory as well as CoreDevice for older iOS devices;
+exclude virtual CoreDevice entries by their reality field. Resume only when the
+required runtime/device/host or catalog availability changes.

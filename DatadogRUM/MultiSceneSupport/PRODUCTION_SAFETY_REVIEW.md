@@ -321,3 +321,9 @@ Source/installed identity, exact owners/stops/notifications and cleanup pass.
 The unrelated historical performance-fixture compile failure is retained; both
 apps omit only that unused workload. No production repair or new D01–D12 finding.
 Minimum-runtime, physical and final review obligations remain separate.
+
+EXP-190 is environment qualification only: both official exact15.0 runtime
+variants are unavailable through the verified older toolchain, and its device
+inventory contains no15 device. No runtime was installed or SDK/native case run.
+C06 remains required; this creates no SDK defect or compatibility-pass claim.
+The [durable record](Results/EXP-190-minimum-runtime.json) owns exact evidence.

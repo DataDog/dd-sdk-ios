@@ -190,3 +190,9 @@ Original SDK27-built host failures and the unused performance-fixture compilatio
 failure remain preserved. The common C03 projection omits only that unused
 workload. No SDK source, performance budget or accepted performance result changes.
 This is not iOS15 execution, physical/Duo acceptance or the final Release matrix.
+
+C06 remains environment-blocked after [EXP-190](Results/EXP-190-minimum-runtime.json):
+official exact15.0 universal and arm64 requests through verified Xcode26.6 both
+return unavailable, and older-device discovery finds no15 device. Zero runtime
+downloads/installs/native runs occurred. Compilation at deployment15 remains
+separate from minimum-runtime acceptance; the fixed oracle and thresholds stand.

@@ -2,7 +2,7 @@
   "experiment": "EXP-190",
   "gate": "C06",
   "title": "Qualify the minimum supported iOS runtime",
-  "status": "DEFINED",
+  "status": "ENVIRONMENT BLOCKED",
   "owner": "SDK implementer",
   "definition": "Experiments/EXP-143-199.md#exp-190--qualify-the-minimum-supported-ios-runtime",
   "baseline_revision": "92f021ba7e4a866f84a52da93ed8b63f3dc75882",
@@ -48,5 +48,51 @@
     "No protected user file access or push."
   ],
   "gates_closed": [],
-  "attempts": []
+  "attempts": [
+    {
+      "run_id": "exp190-af6d889a-9c38-474b-a903-1db1e9b31da1",
+      "variant": "universal",
+      "status": "RUNTIME_REQUEST_UNAVAILABLE",
+      "tool_exit_code": 70,
+      "tool_message": "iOS 15.0 (universal) is not available for download.",
+      "durable_result": "acceptance/exp190-af6d889a-9c38-474b-a903-1db1e9b31da1.json",
+      "durable_sha256": "0e88092a642f1d30b4d7be4d37126fadc7dc776e71e98c6a8582ff9aa188bba5",
+      "exported_files": 0,
+      "native_runs": 0,
+      "protected_paths_unchanged": true
+    },
+    {
+      "run_id": "exp190-f94e475f-73ce-4358-85a9-f4031e83fd73",
+      "variant": "arm64",
+      "status": "RUNTIME_REQUEST_UNAVAILABLE",
+      "tool_exit_code": 70,
+      "tool_message": "iOS 15.0 (arm64Only) is not available for download.",
+      "durable_result": "acceptance/exp190-f94e475f-73ce-4358-85a9-f4031e83fd73.json",
+      "durable_sha256": "9c09cc4d41e9ccd24fe078a085f93b8d7c0db4ccbaff58bba6b7ecf5651510a6",
+      "exported_files": 0,
+      "native_runs": 0,
+      "protected_paths_unchanged": true
+    }
+  ],
+  "device_preflight": {
+    "tool": "Xcode26.6 xcdevice list --timeout10; includes older-device discovery unavailable through newer CoreDevice alone",
+    "artifact": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp190-device-discovery-l8axwi19/devices.stdout",
+    "sha256": "9f419d85c9a9e496018f44f6a96d168c877a12485f5f39710ee295c6a7b75e6f",
+    "physical_ios_devices": [
+      {
+        "platform": "com.apple.platform.iphoneos",
+        "simulator": false,
+        "available": true,
+        "operatingSystemVersion": "27.2 (24B5084k)",
+        "modelName": "iPhone 16 Pro Max"
+      }
+    ],
+    "eligible_minimum_runtime_device": false,
+    "coredevice_artifact": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/multi-scene-remaining-devices-wsiszqgd/devices.json",
+    "coredevice_sha256": "7724d5866a3665e9301dbc5cfb2212a1ed4f89dd73ee27259adee2eebdbdc7bb",
+    "coredevice_filter": "hardwareProperties.reality == physical; simulated iPads/iPhones are excluded",
+    "eligible_physical_multiwindow_device": false
+  },
+  "outcome": "Official Xcode26.6 catalog requests for exact15.0 universal and arm64 both return70 without an exported file. No runtime was installed or native case run. Older-Xcode device discovery finds only the ordinary27.2 iPhone. This proves a current environment/access limit, not permanent runtime incompatibility or SDK failure.",
+  "resume_condition": "A genuine exact15.0 runtime/device or compatible accessible test host becomes available; revalidate identity/boot and freeze the defined12-cell matrix before execution. Do not repeat unchanged catalog requests automatically."
 }

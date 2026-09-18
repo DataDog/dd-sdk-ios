@@ -1,0 +1,84 @@
+{
+  "experiment": "EXP-190",
+  "gate": "C06",
+  "run_id": "exp190-f94e475f-73ce-4358-85a9-f4031e83fd73",
+  "definition_revision": "92c0436dac2d707d13de9467b052d8b6489bc281",
+  "definition_sha256": "84e691fa48d7cbdd26f8eef1984d979a8549d81c0f9cd7872eb7a797f6667a50",
+  "artifact_root": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp190-runtime-y0ptpgaa",
+  "started_at": "2026-09-18T20:47:16.920966+00:00",
+  "status": "RUNTIME_REQUEST_UNAVAILABLE",
+  "requested_runtime": "15.0",
+  "requested_architecture": "arm64",
+  "native_runs": 0,
+  "gate_status": "ENVIRONMENT BLOCKED",
+  "commands": [
+    {
+      "name": "toolchain",
+      "args": [
+        "xcodebuild",
+        "-version"
+      ],
+      "started_at": "2026-09-18T20:47:16.921393+00:00",
+      "exit_code": 0,
+      "finished_at": "2026-09-18T20:47:16.995666+00:00"
+    },
+    {
+      "name": "sdk",
+      "args": [
+        "xcrun",
+        "--sdk",
+        "iphonesimulator",
+        "--show-sdk-version"
+      ],
+      "started_at": "2026-09-18T20:47:16.996008+00:00",
+      "exit_code": 0,
+      "finished_at": "2026-09-18T20:47:17.005942+00:00"
+    },
+    {
+      "name": "download",
+      "args": [
+        "xcodebuild",
+        "-downloadPlatform",
+        "iOS",
+        "-buildVersion",
+        "15.0",
+        "-architectureVariant",
+        "arm64",
+        "-exportPath",
+        "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp190-runtime-y0ptpgaa/export"
+      ],
+      "started_at": "2026-09-18T20:47:17.006262+00:00",
+      "exit_code": 70,
+      "finished_at": "2026-09-18T20:47:17.671426+00:00"
+    }
+  ],
+  "finished_at": "2026-09-18T20:47:17.671705+00:00",
+  "protected_paths_unchanged": true,
+  "exported_files": [],
+  "logs": {
+    "download.stderr": {
+      "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp190-runtime-y0ptpgaa/download.stderr",
+      "sha256": "c115f61739740af36e6a56bcd23c068d71b20b15af191d272ef4311c8cc4b99d"
+    },
+    "download.stdout": {
+      "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp190-runtime-y0ptpgaa/download.stdout",
+      "sha256": "3b1d0b40838c1bdf72f92da0d61cb2f2e919d1488a5d9f921b2a6bdf96fbb6f4"
+    },
+    "sdk.stderr": {
+      "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp190-runtime-y0ptpgaa/sdk.stderr",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "sdk.stdout": {
+      "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp190-runtime-y0ptpgaa/sdk.stdout",
+      "sha256": "25205f2e2f02dc71036ee827e19c49b893b231a3d1af240e35a3ac55aa8cdcb6"
+    },
+    "toolchain.stderr": {
+      "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp190-runtime-y0ptpgaa/toolchain.stderr",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "toolchain.stdout": {
+      "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp190-runtime-y0ptpgaa/toolchain.stdout",
+      "sha256": "18730ed2ae28a2c9cf0c2d5db549033a4f07089331391a7133b7b32187454fa9"
+    }
+  }
+}

@@ -68,7 +68,7 @@
       "environment": "iOS 15 device/runtime",
       "completion_mode": null,
       "status": "ENVIRONMENT BLOCKED",
-      "evidence": "EXP-160/189 verify minimum deployment15 compilation, not15 execution. No15 runtime is installed. EXP-190 defines a bounded official15.0 runtime check through verified Xcode26.6, whose Apple support table includes15. Execution remains blocked until a usable environment and the complete minimum-runtime matrix are proved."
+      "evidence": "EXP-160/189 verify minimum deployment15 compilation only. EXP-190: Xcode26.6 official15.0 universal/arm64 requests both return70/unavailable;0 downloads/installs/native runs. Older-Xcode physical discovery finds only27.2 iPhone; no15 environment. Results/EXP-190-minimum-runtime.json preserves exact responses and resume condition. No compatibility failure or waiver."
     },
     {
       "id": "P01",
