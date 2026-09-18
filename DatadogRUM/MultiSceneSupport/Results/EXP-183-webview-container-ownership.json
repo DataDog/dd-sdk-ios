@@ -2,7 +2,7 @@
   "experiment": "EXP-183",
   "gate": "T10",
   "title": "Accept native WebView container ownership",
-  "status": "PLANNED",
+  "status": "SDK PASS; native PLANNED",
   "control_revision": "03142a4e8cba2d42254bec1335fe9a5dd0d5b96e",
   "sdk_revision": "04201edc7711361279d8487b385bc8b0ca9c63c7",
   "definition": "Experiments/EXP-143-199.md#exp-183--accept-native-webview-container-ownership",
@@ -91,8 +91,41 @@
   ],
   "workflow": "Extend existing clean-install frozen-source runner; include WebViewTracking and SessionReplay source in identity. Link only existing repository products to owned probe project. Predeclare and freeze exact contract before native run; preserve every attempt.",
   "validation": {
-    "next": "Add deferred receiver and metadata overwrite/removal controls, then run affected tests before implementing the native fixture."
+    "strict_swiftlint": "PASS, zero violations in both changed test files",
+    "production_source": "unchanged",
+    "next": "Implement the predeclared six-callback native fixture and strict backend contract, then freeze before clean-install acceptance."
   },
-  "unit_attempts": [],
+  "unit_attempts": [
+    {
+      "component": "WebViewEventReceiver",
+      "outcome": "PASS",
+      "counts": {
+        "expectedFailures": 0,
+        "failed": 0,
+        "notRun": 0,
+        "passed": 26,
+        "skipped": 0,
+        "total": 26
+      },
+      "summary": "26 tests: 26 passed, 0 failed, 0 skipped, 0 expected failures, 0 not run",
+      "summary_path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/ActionArtifacts/default/RunSomeTests/8E950665-1833-46B2-821D-D529051E346E.txt",
+      "xcresult": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/ActionArtifacts/default/RunSomeTests/Test-DatadogRUM-2026.09.18_03-31-33-+0100.xcresult"
+    },
+    {
+      "component": "MessageEmitter",
+      "outcome": "PASS",
+      "counts": {
+        "expectedFailures": 0,
+        "failed": 0,
+        "notRun": 0,
+        "passed": 7,
+        "skipped": 0,
+        "total": 7
+      },
+      "summary": "7 tests: 7 passed, 0 failed, 0 skipped, 0 expected failures, 0 not run",
+      "summary_path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/ActionArtifacts/default/RunSomeTests/C6DD1A5D-0BA6-4980-84F2-8A9500DB83F3.txt",
+      "xcresult": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/ActionArtifacts/default/RunSomeTests/Test-DatadogWebViewTracking-2026.09.18_03-32-56-+0100.xcresult"
+    }
+  ],
   "native_attempts": []
 }

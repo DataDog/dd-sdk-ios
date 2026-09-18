@@ -205,4 +205,4 @@ Original detailed shards and frozen records remain unchanged. Superseded index
 prose is preserved in the [documentation checkpoint](Experiments/DOCUMENTATION_CHECKPOINT_EXP-178.md).
 New results update only their owning record/result and this row; current support
 conclusions belong in [ASSESSMENT.md](ASSESSMENT.md).
-| <a id="exp-183"></a>EXP-183 | T10, A01, D02, D11 | PLANNED | Six real WebKit callbacks across two containers; navigation, detached omission, rebind and peer teardown require exact backend container owners. | [record](Experiments/EXP-143-199.md#exp-183--accept-native-webview-container-ownership) |
+| <a id="exp-183"></a>EXP-183 | T10, A01, D02, D11 | SDK PASS; native PLANNED | 26 receiver/7 emitter tests pass with exact historical owners and private-key removal. Real two-container/backend acceptance remains planned. | [record](Experiments/EXP-143-199.md#exp-183--accept-native-webview-container-ownership) |

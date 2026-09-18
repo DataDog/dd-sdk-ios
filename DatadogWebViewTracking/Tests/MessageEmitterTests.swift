@@ -123,6 +123,44 @@ class MessageEmitterTests: XCTestCase {
         XCTAssertEqual(event[MessageEmitter.nativeSceneIdentifierKey] as? String, "scene-A")
     }
 
+    func testCapturedSceneReplacesBrowserSpoofAndNilCaptureRemovesIt() throws {
+        let receiver = FeatureMessageReceiverMock()
+        let core = PassthroughCoreMock(messageReceiver: receiver)
+        let emitter = MessageEmitter(logsSampler: .mockRandom(), core: core)
+        let scenes: [String?] = ["scene-A", nil]
+        for scene in scenes {
+            let message: [String: Any] = [
+                "eventType": "view",
+                "event": [
+                    "type": "view",
+                    "view": ["id": "browser-view"],
+                    MessageEmitter.nativeSceneIdentifierKey: "spoofed-peer-scene",
+                ],
+            ]
+            let body = try JSONSerialization.data(withJSONObject: message)
+            emitter.send(
+                body: try XCTUnwrap(String(data: body, encoding: .utf8)),
+                slotId: "same-webview",
+                sceneIdentifier: scene
+            )
+        }
+        let events = receiver.messages.compactMap { message -> [String: Any]? in
+            guard case let .webview(.rum(event)) = message else {
+                return nil
+            }
+            return event
+        }
+        XCTAssertEqual(events.count, scenes.count)
+        for (event, scene) in zip(events, scenes) {
+            XCTAssertEqual(event[MessageEmitter.nativeSceneIdentifierKey] as? String, scene)
+            XCTAssertEqual(event["type"] as? String, "view")
+            XCTAssertEqual((event["view"] as? [String: Any])?["id"] as? String, "browser-view")
+            if scene == nil {
+                XCTAssertFalse(event.keys.contains(MessageEmitter.nativeSceneIdentifierKey))
+            }
+        }
+    }
+
     func testWhenReceivingTelemetryEvent_itForwardsToTelemetry() throws {
         // Given
         let receiverMock = FeatureMessageReceiverMock()
