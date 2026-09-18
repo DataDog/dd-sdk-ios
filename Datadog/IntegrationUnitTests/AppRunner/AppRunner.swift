@@ -126,7 +126,19 @@ internal class AppRunner {
         appStateObservers.forEach { notificationCenter.removeObserver($0) }
         appStateObservers = []
 
-        DeleteTemporaryDirectory()
+        if let core {
+            do {
+                try core.flushAndTearDown()
+            } catch {
+                XCTFail("Failed to tear down AppRunner core: \(error)")
+            }
+        }
+        core = nil
+
+        #if !os(watchOS)
+        frameInfoProvider = nil
+        lastAppearedViewController = nil
+        #endif
 
         appDirectory = nil
         processInfo = nil
@@ -134,7 +146,8 @@ internal class AppRunner {
         dateProvider = nil
         appStateProvider = nil
         appLaunchHandler = nil
-        core = nil
+
+        DeleteTemporaryDirectory()
     }
 
     // swiftlint:disable implicitly_unwrapped_optional
