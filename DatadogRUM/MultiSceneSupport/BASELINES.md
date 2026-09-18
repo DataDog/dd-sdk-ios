@@ -174,3 +174,19 @@ Eight ordinary automatic/manual native runs and the watchOS Release product pass
 remains accepted from EXP-168/171, and H08/H09 remain physical. P01/P02/P04 are
 not rerun. See [raw samples and identities](Results/EXP-172-scene-retention.json).
 The protocol prefix above and original baseline workloads remain frozen.
+
+## Legacy compatibility closure after build-SDK qualification
+
+[EXP-189](Results/EXP-189-legacy-build-sdk.json) closes C03 at runner b3a75d01f.
+Baseline92f021ba7 and production04201edc7 use genuine SDK26.5, Swift5 mode,
+Release optimization and minimum deployment15. Both arms pass automatic/manual
+Home → Detail → fresh Home plus actual automatic/manual background/foreground
+on27.0 and26.5:16 cells. Exact occurrences, stop states, notification order and
+Action/Resource ownership pass. Readiness is checked before background; actual
+background is observed before foreground. Source/fixture/build/installed identity,
+every fixture cleanup and restored simulator shutdown states pass.
+
+Original SDK27-built host failures and the unused performance-fixture compilation
+failure remain preserved. The common C03 projection omits only that unused
+workload. No SDK source, performance budget or accepted performance result changes.
+This is not iOS15 execution, physical/Duo acceptance or the final Release matrix.

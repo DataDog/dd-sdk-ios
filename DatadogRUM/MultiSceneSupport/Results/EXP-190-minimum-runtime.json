@@ -1,0 +1,52 @@
+{
+  "experiment": "EXP-190",
+  "gate": "C06",
+  "title": "Qualify the minimum supported iOS runtime",
+  "status": "DEFINED",
+  "owner": "SDK implementer",
+  "definition": "Experiments/EXP-143-199.md#exp-190--qualify-the-minimum-supported-ios-runtime",
+  "baseline_revision": "92f021ba7e4a866f84a52da93ed8b63f3dc75882",
+  "candidate_revision": "04201edc7711361279d8487b385bc8b0ca9c63c7",
+  "toolchain": {
+    "developer_directory": "/Applications/Xcode.app/Contents/Developer",
+    "xcode": "26.6",
+    "build": "17F113",
+    "sdk": "26.5",
+    "swift": "6.3.3",
+    "deployment_target": "15.0",
+    "host_macos": "26.6.2"
+  },
+  "platform_source": "https://developer.apple.com/xcode/system-requirements",
+  "scope": "C06 only: official exact15.0 runtime availability and compatibility first; native matrix only if it can boot.",
+  "runtime_preflight": [
+    "Request only15.0 through verified Xcode26.6 downloadPlatform into a fresh export directory; retain response and artifact identity.",
+    "Stop if unavailable/incompatible; no15.5/17+ substitute or metadata patch.",
+    "If available, install with supported tools without replacing user runtimes, rediscover the actual runtime/device and prove clean boot before freezing the native harness."
+  ],
+  "conditional_matrix": {
+    "runtime": "15.0",
+    "arms": [
+      "baseline",
+      "candidate"
+    ],
+    "cases_per_arm": [
+      "scene-automatic",
+      "scene-manual",
+      "legacy-automatic",
+      "legacy-manual",
+      "legacy-lifecycle-automatic",
+      "legacy-lifecycle-manual"
+    ],
+    "required_cases": 12,
+    "readiness": "Baseline ordinary automatic first; its accepted frozen run can count toward the matrix."
+  },
+  "oracle": "Original exact Home/Detail/freshHome occurrences and marker ownership; ordinary manifest/one scene versus genuine legacy no manifest; actual UIKit notifications and pre-transition receipts; source/fixture/build/install identity; all12 unique cells and cleanup.",
+  "closure_rule": "C06 closes only on the complete exact15.0 matrix. Deployment compilation, catalog availability, boot alone and a newer15.x runtime do not close it.",
+  "prohibited_shortcuts": [
+    "No runtime/SDK metadata patching, platform-check suppression, inserted scene manifest or synthetic lifecycle.",
+    "No unrelated accepted suite repeat, changed performance threshold, SDK repair or public API promotion.",
+    "No protected user file access or push."
+  ],
+  "gates_closed": [],
+  "attempts": []
+}

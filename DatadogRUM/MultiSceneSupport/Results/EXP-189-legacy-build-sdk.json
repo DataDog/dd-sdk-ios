@@ -2,7 +2,7 @@
   "experiment": "EXP-189",
   "gate": "C03",
   "title": "Validate legacy hosts built with the pre-scene-required SDK",
-  "status": "READY_AFTER_PRESERVED_PREPARATION_FAILURE",
+  "status": "PASS",
   "owner": "SDK implementer",
   "definition": "Experiments/EXP-143-199.md#exp-189--validate-legacy-hosts-built-with-the-pre-scene-required-sdk",
   "baseline_revision": "92f021ba7e4a866f84a52da93ed8b63f3dc75882",
@@ -64,7 +64,9 @@
     "No repeated accepted telemetry or performance matrix.",
     "No production SDK change, public API promotion, protected-path access or push."
   ],
-  "gates_closed": [],
+  "gates_closed": [
+    "C03"
+  ],
   "attempts": [
     {
       "run_id": "exp189-fcf3b82b-246a-40c8-a0fd-4b166e4b575f",
@@ -77,6 +79,27 @@
       "sdk_regression_established": false,
       "cleanup": "Baseline app/process/data absent and27.0 simulator restored to original shutdown state.",
       "protected_paths_unchanged": true
+    },
+    {
+      "run_id": "exp189-2fdac542-ec81-4c6f-a705-45b4780d0704",
+      "implementation_revision": "b3a75d01fa63b17438e39f72706f6404879200b5",
+      "status": "PASS",
+      "durable_result": "acceptance/exp189-2fdac542-ec81-4c6f-a705-45b4780d0704.json",
+      "durable_sha256": "35b6cead74fe9d08ac3abbce0f1c80a7a310dd0fe8dfc19183066add2ad8a541",
+      "required_cells": 16,
+      "passed_cells": 16,
+      "source_files_verified_per_arm": 369,
+      "installed_binary_checks": 16,
+      "actual_lifecycle_cases": 8,
+      "all_fixture_cleanup": "PASS",
+      "original_shutdown_states_restored": [
+        "26.5",
+        "27.0"
+      ],
+      "frozen_inputs_verified": true,
+      "protected_paths_unchanged": true,
+      "raw_artifacts_reverified": 472,
+      "command_count": 220
     }
   ],
   "toolchain_preflight": {
@@ -91,5 +114,6 @@
     "fixture_adaptation": "Both arms use an identical C03 projection: remove only the unused internal-performance branch and InternalFixture.swift. Navigation/mapper/lifecycle code remains unchanged. The lifecycle variant additionally writes run-bound initial event/failure and actual notification snapshots before OS transitions; no notification is synthesized.",
     "durable_summary": "Finite16-cell semantic results, build/source/install identity and cleanup; command/raw artifact inventories remain locally hashed and linked.",
     "repeat_rationale": "The original baseline navigation readiness passed. The common fixture projection changes built inputs, so the next paired matrix requires a fresh matching baseline/candidate build and launch identity; this is not a resume-only rerun."
-  }
+  },
+  "accepted_boundary": "Current production04201edc7 and baseline92f021ba7 preserve legacy navigation and actual UIApplication lifecycle on27.0/26.5 when built with genuineSDK26.5, minimum deployment15. No SDK repair. SDK27-built no-scene hosts remain subject to Apple launch enforcement; no iOS15 execution, physical topology, performance or final API/Release claim."
 }

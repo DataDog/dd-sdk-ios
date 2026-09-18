@@ -315,6 +315,9 @@ failure; original INVALID collection and verified cleanup remain distinct. The
 candidate was not run, C03 stays inconclusive and no new SDK defect is established.
 
 [Apple's requirement](https://developer.apple.com/documentation/uikit/transitioning-to-the-uikit-scene-based-life-cycle)
-depends on the build SDK. EXP-189 checks genuine26.5-SDK legacy hosts on the
-required runtimes, with the existing ownership and actual-lifecycle assertions.
-It must pass before C03 closes. This adds no D01–D12 finding or release approval.
+depends on the build SDK. EXP-189 closes C03: both SDK revisions built with
+genuine26.5 SDK pass all16 legacy navigation/actual-lifecycle cells on27.0/26.5.
+Source/installed identity, exact owners/stops/notifications and cleanup pass.
+The unrelated historical performance-fixture compile failure is retained; both
+apps omit only that unused workload. No production repair or new D01–D12 finding.
+Minimum-runtime, physical and final review obligations remain separate.

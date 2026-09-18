@@ -1,0 +1,1363 @@
+{
+  "experiment": "EXP-189",
+  "gate": "C03",
+  "run_id": "exp189-2fdac542-ec81-4c6f-a705-45b4780d0704",
+  "implementation_revision": "b3a75d01fa63b17438e39f72706f6404879200b5",
+  "artifact_root": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp189-legacy-sdk26-navydx41",
+  "started_at": "2026-09-18T20:33:43.187181+00:00",
+  "status": "PASS",
+  "definition_sha256": "125aafcf402613195b9fdade105844000986d9c6673cc81e373f12c300e73102",
+  "cases": [
+    {
+      "run_id": "exp189-71db0e47-5a9a-4e37-bc7d-9b7f8075cae2",
+      "arm": "baseline",
+      "os": "27.0",
+      "mode": "automatic",
+      "status": "PASS",
+      "binary_sha256": "f563b27f7e37892342d43a32291d8d41bb6f1c8e010c55d948d6dd7bd1a157a7",
+      "artifact_root": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp189-legacy-sdk26-navydx41/exp189-71db0e47-5a9a-4e37-bc7d-9b7f8075cae2",
+      "clean_install": true,
+      "installed_identity": true,
+      "launched_at": "2026-09-18T20:34:49.128021+00:00",
+      "pid": 58614,
+      "signature": {
+        "view_names": [
+          "Home",
+          "Detail",
+          "Home"
+        ],
+        "view_ids": [
+          "cf353d79-b8d5-4a61-94a1-fdde83cbeeed",
+          "a376a023-d8ef-4bbd-afa9-44638abf6b51",
+          "41f9f5ec-4618-48d7-9391-572bda4d6e4a"
+        ],
+        "stopped": [
+          true,
+          true,
+          false
+        ],
+        "owners": [
+          {
+            "kind": "action",
+            "phase": "Home1",
+            "occurrence": 0
+          },
+          {
+            "kind": "resource",
+            "phase": "https://fixture.invalid/Home1",
+            "occurrence": 0
+          },
+          {
+            "kind": "action",
+            "phase": "Detail1",
+            "occurrence": 1
+          },
+          {
+            "kind": "resource",
+            "phase": "https://fixture.invalid/Detail1",
+            "occurrence": 1
+          },
+          {
+            "kind": "action",
+            "phase": "Home2",
+            "occurrence": 2
+          },
+          {
+            "kind": "resource",
+            "phase": "https://fixture.invalid/Home2",
+            "occurrence": 2
+          }
+        ],
+        "notifications": []
+      },
+      "result": {
+        "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp189-legacy-sdk26-navydx41/exp189-71db0e47-5a9a-4e37-bc7d-9b7f8075cae2/result.json",
+        "sha256": "b79da9ee1cbcb667432b1a2f34e3b7a4b63af4324e8d61cbffd45cf6c7952d81"
+      },
+      "cleanup": {
+        "status": "PASS",
+        "process_absent": true,
+        "data_container_absent": true
+      },
+      "finished_at": "2026-09-18T20:34:50.967732+00:00"
+    },
+    {
+      "run_id": "exp189-2411dbe5-21c0-4509-9c5c-3f230184b94c",
+      "arm": "candidate",
+      "os": "27.0",
+      "mode": "automatic",
+      "status": "PASS",
+      "binary_sha256": "6ac6bfb285f821172730275440a95627528d6d1aeb429401746a89241a4aadd7",
+      "artifact_root": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp189-legacy-sdk26-navydx41/exp189-2411dbe5-21c0-4509-9c5c-3f230184b94c",
+      "clean_install": true,
+      "installed_identity": true,
+      "launched_at": "2026-09-18T20:36:06.083260+00:00",
+      "pid": 59506,
+      "signature": {
+        "view_names": [
+          "Home",
+          "Detail",
+          "Home"
+        ],
+        "view_ids": [
+          "e5da30ad-893b-4402-8ddb-26cdc60e933e",
+          "4ad00f05-148a-4fed-abce-f667def85c1d",
+          "8e92b301-8e36-4159-b3c5-909b85b4bd33"
+        ],
+        "stopped": [
+          true,
+          true,
+          false
+        ],
+        "owners": [
+          {
+            "kind": "action",
+            "phase": "Home1",
+            "occurrence": 0
+          },
+          {
+            "kind": "resource",
+            "phase": "https://fixture.invalid/Home1",
+            "occurrence": 0
+          },
+          {
+            "kind": "action",
+            "phase": "Detail1",
+            "occurrence": 1
+          },
+          {
+            "kind": "resource",
+            "phase": "https://fixture.invalid/Detail1",
+            "occurrence": 1
+          },
+          {
+            "kind": "action",
+            "phase": "Home2",
+            "occurrence": 2
+          },
+          {
+            "kind": "resource",
+            "phase": "https://fixture.invalid/Home2",
+            "occurrence": 2
+          }
+        ],
+        "notifications": []
+      },
+      "result": {
+        "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp189-legacy-sdk26-navydx41/exp189-2411dbe5-21c0-4509-9c5c-3f230184b94c/result.json",
+        "sha256": "1b2d5a479d7d4865dd093167f0939629312bb511808a3c3c5db60f1943935a47"
+      },
+      "cleanup": {
+        "status": "PASS",
+        "process_absent": true,
+        "data_container_absent": true
+      },
+      "finished_at": "2026-09-18T20:36:07.857413+00:00"
+    },
+    {
+      "run_id": "exp189-16fe4bb8-c39e-45d0-9077-3218e51b77df",
+      "arm": "baseline",
+      "os": "27.0",
+      "mode": "manual",
+      "status": "PASS",
+      "binary_sha256": "f563b27f7e37892342d43a32291d8d41bb6f1c8e010c55d948d6dd7bd1a157a7",
+      "artifact_root": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp189-legacy-sdk26-navydx41/exp189-16fe4bb8-c39e-45d0-9077-3218e51b77df",
+      "clean_install": true,
+      "installed_identity": true,
+      "launched_at": "2026-09-18T20:36:08.927958+00:00",
+      "pid": 59616,
+      "signature": {
+        "view_names": [
+          "Home",
+          "Detail",
+          "Home"
+        ],
+        "view_ids": [
+          "8f973f92-2818-43ae-b435-551b9867ab76",
+          "031aa252-79c3-4f85-a184-82216f2ea7ef",
+          "fdb5b8f5-bd98-433a-b79c-299a0635e9af"
+        ],
+        "stopped": [
+          true,
+          true,
+          false
+        ],
+        "owners": [
+          {
+            "kind": "action",
+            "phase": "Home1",
+            "occurrence": 0
+          },
+          {
+            "kind": "resource",
+            "phase": "https://fixture.invalid/Home1",
+            "occurrence": 0
+          },
+          {
+            "kind": "action",
+            "phase": "Detail1",
+            "occurrence": 1
+          },
+          {
+            "kind": "resource",
+            "phase": "https://fixture.invalid/Detail1",
+            "occurrence": 1
+          },
+          {
+            "kind": "action",
+            "phase": "Home2",
+            "occurrence": 2
+          },
+          {
+            "kind": "resource",
+            "phase": "https://fixture.invalid/Home2",
+            "occurrence": 2
+          }
+        ],
+        "notifications": []
+      },
+      "result": {
+        "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp189-legacy-sdk26-navydx41/exp189-16fe4bb8-c39e-45d0-9077-3218e51b77df/result.json",
+        "sha256": "a44d483b828b04890297fc20f809139a2dc3c4e6eea8ed3a8bc3a00e4a2f48d2"
+      },
+      "cleanup": {
+        "status": "PASS",
+        "process_absent": true,
+        "data_container_absent": true
+      },
+      "finished_at": "2026-09-18T20:36:10.704948+00:00"
+    },
+    {
+      "run_id": "exp189-370d2afb-8557-4bbd-a04a-9f1817f86dcf",
+      "arm": "candidate",
+      "os": "27.0",
+      "mode": "manual",
+      "status": "PASS",
+      "binary_sha256": "6ac6bfb285f821172730275440a95627528d6d1aeb429401746a89241a4aadd7",
+      "artifact_root": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp189-legacy-sdk26-navydx41/exp189-370d2afb-8557-4bbd-a04a-9f1817f86dcf",
+      "clean_install": true,
+      "installed_identity": true,
+      "launched_at": "2026-09-18T20:36:11.749386+00:00",
+      "pid": 59735,
+      "signature": {
+        "view_names": [
+          "Home",
+          "Detail",
+          "Home"
+        ],
+        "view_ids": [
+          "8d6588db-f958-4b39-bce8-2b95e7e55b72",
+          "cc1c605f-875d-45e7-be16-f099b106714e",
+          "d5358b7f-22e3-4cb1-8441-83e80e5a2636"
+        ],
+        "stopped": [
+          true,
+          true,
+          false
+        ],
+        "owners": [
+          {
+            "kind": "action",
+            "phase": "Home1",
+            "occurrence": 0
+          },
+          {
+            "kind": "resource",
+            "phase": "https://fixture.invalid/Home1",
+            "occurrence": 0
+          },
+          {
+            "kind": "action",
+            "phase": "Detail1",
+            "occurrence": 1
+          },
+          {
+            "kind": "resource",
+            "phase": "https://fixture.invalid/Detail1",
+            "occurrence": 1
+          },
+          {
+            "kind": "action",
+            "phase": "Home2",
+            "occurrence": 2
+          },
+          {
+            "kind": "resource",
+            "phase": "https://fixture.invalid/Home2",
+            "occurrence": 2
+          }
+        ],
+        "notifications": []
+      },
+      "result": {
+        "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp189-legacy-sdk26-navydx41/exp189-370d2afb-8557-4bbd-a04a-9f1817f86dcf/result.json",
+        "sha256": "34f25dc19f08d93bc9e7f9620a1a46b8046905d52058d4fce22b196666d2fa17"
+      },
+      "cleanup": {
+        "status": "PASS",
+        "process_absent": true,
+        "data_container_absent": true
+      },
+      "finished_at": "2026-09-18T20:36:13.369868+00:00"
+    },
+    {
+      "run_id": "exp189-0ce7ca2f-57c0-45bb-88bc-c7c3e3de9b8f",
+      "arm": "baseline",
+      "os": "27.0",
+      "mode": "lifecycle-automatic",
+      "status": "PASS",
+      "binary_sha256": "99b6be6739e50a3f78810ec3f2dd8c32ba08faa991df8edfbce4a48bec555a8b",
+      "artifact_root": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp189-legacy-sdk26-navydx41/exp189-0ce7ca2f-57c0-45bb-88bc-c7c3e3de9b8f",
+      "clean_install": true,
+      "installed_identity": true,
+      "launched_at": "2026-09-18T20:36:14.478031+00:00",
+      "pid": 59853,
+      "readiness": {
+        "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp189-legacy-sdk26-navydx41/exp189-0ce7ca2f-57c0-45bb-88bc-c7c3e3de9b8f/accepted-readiness.json",
+        "sha256": "933b62531da8cdd36622f40948f9974afbf0928ecd135ba58dd815a69bf8c017"
+      },
+      "readiness_accepted_at": "2026-09-18T20:36:15.301008+00:00",
+      "background_command_started_at": "2026-09-18T20:36:15.301015+00:00",
+      "background": {
+        "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp189-legacy-sdk26-navydx41/exp189-0ce7ca2f-57c0-45bb-88bc-c7c3e3de9b8f/accepted-background.json",
+        "sha256": "6227c82a7e865edee98fa533c50f4cb0876ed4de9e4d6016d48135517829b395"
+      },
+      "background_observed_at": "2026-09-18T20:36:18.592179+00:00",
+      "foreground_command_started_at": "2026-09-18T20:36:18.592196+00:00",
+      "foreground_command_finished_at": "2026-09-18T20:36:18.810189+00:00",
+      "signature": {
+        "view_names": [
+          "Home",
+          "Home"
+        ],
+        "view_ids": [
+          "0cafd9e3-2202-4e80-9cad-a995b62c966e",
+          "3ddd3e4c-72cb-4710-b8c5-d59a0baaf473"
+        ],
+        "stopped": [
+          true,
+          false
+        ],
+        "owners": [
+          {
+            "kind": "action",
+            "phase": "BeforeBackground",
+            "occurrence": 0
+          },
+          {
+            "kind": "resource",
+            "phase": "https://fixture.invalid/BeforeBackground",
+            "occurrence": 0
+          },
+          {
+            "kind": "action",
+            "phase": "AfterForeground",
+            "occurrence": 1
+          },
+          {
+            "kind": "resource",
+            "phase": "https://fixture.invalid/AfterForeground",
+            "occurrence": 1
+          }
+        ],
+        "notifications": [
+          "UIApplicationDidBecomeActiveNotification",
+          "UIApplicationDidEnterBackgroundNotification",
+          "UIApplicationWillEnterForegroundNotification",
+          "UIApplicationDidBecomeActiveNotification"
+        ]
+      },
+      "result": {
+        "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp189-legacy-sdk26-navydx41/exp189-0ce7ca2f-57c0-45bb-88bc-c7c3e3de9b8f/result.json",
+        "sha256": "23a6c9be361f5fbf5cf01c7d7bff77ffe8d6d9cb072944a73ebc44781bb07255"
+      },
+      "cleanup": {
+        "status": "PASS",
+        "process_absent": true,
+        "data_container_absent": true
+      },
+      "finished_at": "2026-09-18T20:36:20.271142+00:00"
+    },
+    {
+      "run_id": "exp189-7f063784-8324-4ae7-a175-54edf59a83a6",
+      "arm": "candidate",
+      "os": "27.0",
+      "mode": "lifecycle-automatic",
+      "status": "PASS",
+      "binary_sha256": "4c40cf5ed7a2c9dffbb72fbfe0b447f738d846387aa6d1ee189ae7f2046b737e",
+      "artifact_root": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp189-legacy-sdk26-navydx41/exp189-7f063784-8324-4ae7-a175-54edf59a83a6",
+      "clean_install": true,
+      "installed_identity": true,
+      "launched_at": "2026-09-18T20:36:21.398300+00:00",
+      "pid": 60020,
+      "readiness": {
+        "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp189-legacy-sdk26-navydx41/exp189-7f063784-8324-4ae7-a175-54edf59a83a6/accepted-readiness.json",
+        "sha256": "46f3b5efda7d2c077b72a73e386f9dbe5748f24534262358a6bafb4dbbd2d422"
+      },
+      "readiness_accepted_at": "2026-09-18T20:36:22.219307+00:00",
+      "background_command_started_at": "2026-09-18T20:36:22.219319+00:00",
+      "background": {
+        "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp189-legacy-sdk26-navydx41/exp189-7f063784-8324-4ae7-a175-54edf59a83a6/accepted-background.json",
+        "sha256": "4887a622d87832424266d011537f740f8fdf27fbde93f1fc8dc6d12e00ed4780"
+      },
+      "background_observed_at": "2026-09-18T20:36:23.254718+00:00",
+      "foreground_command_started_at": "2026-09-18T20:36:23.254729+00:00",
+      "foreground_command_finished_at": "2026-09-18T20:36:23.464635+00:00",
+      "signature": {
+        "view_names": [
+          "Home",
+          "Home"
+        ],
+        "view_ids": [
+          "ab367301-cd67-41d6-9e2d-665125d3636d",
+          "b66802b6-803a-435d-9d54-735b6ab5f154"
+        ],
+        "stopped": [
+          true,
+          false
+        ],
+        "owners": [
+          {
+            "kind": "action",
+            "phase": "BeforeBackground",
+            "occurrence": 0
+          },
+          {
+            "kind": "resource",
+            "phase": "https://fixture.invalid/BeforeBackground",
+            "occurrence": 0
+          },
+          {
+            "kind": "action",
+            "phase": "AfterForeground",
+            "occurrence": 1
+          },
+          {
+            "kind": "resource",
+            "phase": "https://fixture.invalid/AfterForeground",
+            "occurrence": 1
+          }
+        ],
+        "notifications": [
+          "UIApplicationDidBecomeActiveNotification",
+          "UIApplicationDidEnterBackgroundNotification",
+          "UIApplicationWillEnterForegroundNotification",
+          "UIApplicationDidBecomeActiveNotification"
+        ]
+      },
+      "result": {
+        "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp189-legacy-sdk26-navydx41/exp189-7f063784-8324-4ae7-a175-54edf59a83a6/result.json",
+        "sha256": "9a6af653312160e2743b6bf7c617c20fd681ad13144f17b95871b2bb5f028b78"
+      },
+      "cleanup": {
+        "status": "PASS",
+        "process_absent": true,
+        "data_container_absent": true
+      },
+      "finished_at": "2026-09-18T20:36:24.958287+00:00"
+    },
+    {
+      "run_id": "exp189-a3391fc1-e756-4571-8985-c25ca0b9c4bd",
+      "arm": "baseline",
+      "os": "27.0",
+      "mode": "lifecycle-manual",
+      "status": "PASS",
+      "binary_sha256": "99b6be6739e50a3f78810ec3f2dd8c32ba08faa991df8edfbce4a48bec555a8b",
+      "artifact_root": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp189-legacy-sdk26-navydx41/exp189-a3391fc1-e756-4571-8985-c25ca0b9c4bd",
+      "clean_install": true,
+      "installed_identity": true,
+      "launched_at": "2026-09-18T20:36:25.996987+00:00",
+      "pid": 60166,
+      "readiness": {
+        "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp189-legacy-sdk26-navydx41/exp189-a3391fc1-e756-4571-8985-c25ca0b9c4bd/accepted-readiness.json",
+        "sha256": "fcc96b6507c7e4be36f3daff2771013a6f2a22a034081f4e6babd73819201b97"
+      },
+      "readiness_accepted_at": "2026-09-18T20:36:26.844246+00:00",
+      "background_command_started_at": "2026-09-18T20:36:26.844263+00:00",
+      "background": {
+        "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp189-legacy-sdk26-navydx41/exp189-a3391fc1-e756-4571-8985-c25ca0b9c4bd/accepted-background.json",
+        "sha256": "584f75f9965c1e2cb3a3c6d3d7ef35e34cca7fccbf787f6a90c6226e8a88094b"
+      },
+      "background_observed_at": "2026-09-18T20:36:27.920063+00:00",
+      "foreground_command_started_at": "2026-09-18T20:36:27.920084+00:00",
+      "foreground_command_finished_at": "2026-09-18T20:36:28.090620+00:00",
+      "signature": {
+        "view_names": [
+          "Home"
+        ],
+        "view_ids": [
+          "f630e9dc-46c7-41bf-affb-43d232a0d0db"
+        ],
+        "stopped": [
+          false
+        ],
+        "owners": [
+          {
+            "kind": "action",
+            "phase": "BeforeBackground",
+            "occurrence": 0
+          },
+          {
+            "kind": "resource",
+            "phase": "https://fixture.invalid/BeforeBackground",
+            "occurrence": 0
+          },
+          {
+            "kind": "action",
+            "phase": "AfterForeground",
+            "occurrence": 0
+          },
+          {
+            "kind": "resource",
+            "phase": "https://fixture.invalid/AfterForeground",
+            "occurrence": 0
+          }
+        ],
+        "notifications": [
+          "UIApplicationDidBecomeActiveNotification",
+          "UIApplicationDidEnterBackgroundNotification",
+          "UIApplicationWillEnterForegroundNotification",
+          "UIApplicationDidBecomeActiveNotification"
+        ]
+      },
+      "result": {
+        "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp189-legacy-sdk26-navydx41/exp189-a3391fc1-e756-4571-8985-c25ca0b9c4bd/result.json",
+        "sha256": "550c73b6bd55cc4fa26bc1053d1e104e7b95ef91638ccaba1bb1569adf75fa3f"
+      },
+      "cleanup": {
+        "status": "PASS",
+        "process_absent": true,
+        "data_container_absent": true
+      },
+      "finished_at": "2026-09-18T20:36:29.589370+00:00"
+    },
+    {
+      "run_id": "exp189-b540287d-e884-4a73-bb94-73d7298f2d08",
+      "arm": "candidate",
+      "os": "27.0",
+      "mode": "lifecycle-manual",
+      "status": "PASS",
+      "binary_sha256": "4c40cf5ed7a2c9dffbb72fbfe0b447f738d846387aa6d1ee189ae7f2046b737e",
+      "artifact_root": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp189-legacy-sdk26-navydx41/exp189-b540287d-e884-4a73-bb94-73d7298f2d08",
+      "clean_install": true,
+      "installed_identity": true,
+      "launched_at": "2026-09-18T20:36:30.645855+00:00",
+      "pid": 60303,
+      "readiness": {
+        "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp189-legacy-sdk26-navydx41/exp189-b540287d-e884-4a73-bb94-73d7298f2d08/accepted-readiness.json",
+        "sha256": "27c6b46d944b5dc5a49906b364492d35d7675ff9d5541f5558bc923678a200a8"
+      },
+      "readiness_accepted_at": "2026-09-18T20:36:31.361802+00:00",
+      "background_command_started_at": "2026-09-18T20:36:31.361821+00:00",
+      "background": {
+        "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp189-legacy-sdk26-navydx41/exp189-b540287d-e884-4a73-bb94-73d7298f2d08/accepted-background.json",
+        "sha256": "68e3901930810000f4feafc8fd7cdd1625058db17f2a328f59e38bb463a5fe10"
+      },
+      "background_observed_at": "2026-09-18T20:36:32.405157+00:00",
+      "foreground_command_started_at": "2026-09-18T20:36:32.405178+00:00",
+      "foreground_command_finished_at": "2026-09-18T20:36:32.599007+00:00",
+      "signature": {
+        "view_names": [
+          "Home"
+        ],
+        "view_ids": [
+          "28206874-64c7-47e6-98d0-2e58f56048c9"
+        ],
+        "stopped": [
+          false
+        ],
+        "owners": [
+          {
+            "kind": "action",
+            "phase": "BeforeBackground",
+            "occurrence": 0
+          },
+          {
+            "kind": "resource",
+            "phase": "https://fixture.invalid/BeforeBackground",
+            "occurrence": 0
+          },
+          {
+            "kind": "action",
+            "phase": "AfterForeground",
+            "occurrence": 0
+          },
+          {
+            "kind": "resource",
+            "phase": "https://fixture.invalid/AfterForeground",
+            "occurrence": 0
+          }
+        ],
+        "notifications": [
+          "UIApplicationDidBecomeActiveNotification",
+          "UIApplicationDidEnterBackgroundNotification",
+          "UIApplicationWillEnterForegroundNotification",
+          "UIApplicationDidBecomeActiveNotification"
+        ]
+      },
+      "result": {
+        "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp189-legacy-sdk26-navydx41/exp189-b540287d-e884-4a73-bb94-73d7298f2d08/result.json",
+        "sha256": "aac9bd6ef0dab1ffcea103616f775ce1d516d41d1e3bf50e68f6c3ac200067b2"
+      },
+      "cleanup": {
+        "status": "PASS",
+        "process_absent": true,
+        "data_container_absent": true
+      },
+      "finished_at": "2026-09-18T20:36:34.072141+00:00"
+    },
+    {
+      "run_id": "exp189-cee8049c-d744-4446-9628-e06eae2e1f5d",
+      "arm": "baseline",
+      "os": "26.5",
+      "mode": "automatic",
+      "status": "PASS",
+      "binary_sha256": "f563b27f7e37892342d43a32291d8d41bb6f1c8e010c55d948d6dd7bd1a157a7",
+      "artifact_root": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp189-legacy-sdk26-navydx41/exp189-cee8049c-d744-4446-9628-e06eae2e1f5d",
+      "clean_install": true,
+      "installed_identity": true,
+      "launched_at": "2026-09-18T20:36:47.288018+00:00",
+      "pid": 60865,
+      "signature": {
+        "view_names": [
+          "Home",
+          "Detail",
+          "Home"
+        ],
+        "view_ids": [
+          "a976095f-b546-43b5-9051-8d002ea80696",
+          "4d2bddde-ae0c-43fd-b33c-d8886f0708ad",
+          "1ab8f517-5b3c-4d3a-9551-98e03f447858"
+        ],
+        "stopped": [
+          true,
+          true,
+          false
+        ],
+        "owners": [
+          {
+            "kind": "action",
+            "phase": "Home1",
+            "occurrence": 0
+          },
+          {
+            "kind": "resource",
+            "phase": "https://fixture.invalid/Home1",
+            "occurrence": 0
+          },
+          {
+            "kind": "action",
+            "phase": "Detail1",
+            "occurrence": 1
+          },
+          {
+            "kind": "resource",
+            "phase": "https://fixture.invalid/Detail1",
+            "occurrence": 1
+          },
+          {
+            "kind": "action",
+            "phase": "Home2",
+            "occurrence": 2
+          },
+          {
+            "kind": "resource",
+            "phase": "https://fixture.invalid/Home2",
+            "occurrence": 2
+          }
+        ],
+        "notifications": []
+      },
+      "result": {
+        "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp189-legacy-sdk26-navydx41/exp189-cee8049c-d744-4446-9628-e06eae2e1f5d/result.json",
+        "sha256": "08ebdb260fe488f2e98fd93d4ff1825d698c1a097cc669e7636e8a7c52735973"
+      },
+      "cleanup": {
+        "status": "PASS",
+        "process_absent": true,
+        "data_container_absent": true
+      },
+      "finished_at": "2026-09-18T20:36:49.951291+00:00"
+    },
+    {
+      "run_id": "exp189-3fdfbf23-f17e-44de-8100-441a21acd993",
+      "arm": "candidate",
+      "os": "26.5",
+      "mode": "automatic",
+      "status": "PASS",
+      "binary_sha256": "6ac6bfb285f821172730275440a95627528d6d1aeb429401746a89241a4aadd7",
+      "artifact_root": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp189-legacy-sdk26-navydx41/exp189-3fdfbf23-f17e-44de-8100-441a21acd993",
+      "clean_install": true,
+      "installed_identity": true,
+      "launched_at": "2026-09-18T20:36:51.504634+00:00",
+      "pid": 61016,
+      "signature": {
+        "view_names": [
+          "Home",
+          "Detail",
+          "Home"
+        ],
+        "view_ids": [
+          "c409d184-6e7c-420e-a2e3-48d819743c30",
+          "b099f81a-45b4-4343-9889-a35c1c686095",
+          "f8f2a98b-3b25-47c9-98ac-f8f5028ac460"
+        ],
+        "stopped": [
+          true,
+          true,
+          false
+        ],
+        "owners": [
+          {
+            "kind": "action",
+            "phase": "Home1",
+            "occurrence": 0
+          },
+          {
+            "kind": "resource",
+            "phase": "https://fixture.invalid/Home1",
+            "occurrence": 0
+          },
+          {
+            "kind": "action",
+            "phase": "Detail1",
+            "occurrence": 1
+          },
+          {
+            "kind": "resource",
+            "phase": "https://fixture.invalid/Detail1",
+            "occurrence": 1
+          },
+          {
+            "kind": "action",
+            "phase": "Home2",
+            "occurrence": 2
+          },
+          {
+            "kind": "resource",
+            "phase": "https://fixture.invalid/Home2",
+            "occurrence": 2
+          }
+        ],
+        "notifications": []
+      },
+      "result": {
+        "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp189-legacy-sdk26-navydx41/exp189-3fdfbf23-f17e-44de-8100-441a21acd993/result.json",
+        "sha256": "cd320d11891aee6519e6cf0e01a7a52cffb04eb4b05dcd385a989f52dcc88297"
+      },
+      "cleanup": {
+        "status": "PASS",
+        "process_absent": true,
+        "data_container_absent": true
+      },
+      "finished_at": "2026-09-18T20:36:53.419517+00:00"
+    },
+    {
+      "run_id": "exp189-a83503b8-7e17-4d14-8c7c-ffd452b83f61",
+      "arm": "baseline",
+      "os": "26.5",
+      "mode": "manual",
+      "status": "PASS",
+      "binary_sha256": "f563b27f7e37892342d43a32291d8d41bb6f1c8e010c55d948d6dd7bd1a157a7",
+      "artifact_root": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp189-legacy-sdk26-navydx41/exp189-a83503b8-7e17-4d14-8c7c-ffd452b83f61",
+      "clean_install": true,
+      "installed_identity": true,
+      "launched_at": "2026-09-18T20:36:54.507194+00:00",
+      "pid": 61143,
+      "signature": {
+        "view_names": [
+          "Home",
+          "Detail",
+          "Home"
+        ],
+        "view_ids": [
+          "d2292878-e1c9-42c5-aa1d-1e13eba5ad0c",
+          "3522f53a-2553-454a-8ba9-404271a3e5b9",
+          "ac751acc-42a8-433d-88ed-13481779384f"
+        ],
+        "stopped": [
+          true,
+          true,
+          false
+        ],
+        "owners": [
+          {
+            "kind": "action",
+            "phase": "Home1",
+            "occurrence": 0
+          },
+          {
+            "kind": "resource",
+            "phase": "https://fixture.invalid/Home1",
+            "occurrence": 0
+          },
+          {
+            "kind": "action",
+            "phase": "Detail1",
+            "occurrence": 1
+          },
+          {
+            "kind": "resource",
+            "phase": "https://fixture.invalid/Detail1",
+            "occurrence": 1
+          },
+          {
+            "kind": "action",
+            "phase": "Home2",
+            "occurrence": 2
+          },
+          {
+            "kind": "resource",
+            "phase": "https://fixture.invalid/Home2",
+            "occurrence": 2
+          }
+        ],
+        "notifications": []
+      },
+      "result": {
+        "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp189-legacy-sdk26-navydx41/exp189-a83503b8-7e17-4d14-8c7c-ffd452b83f61/result.json",
+        "sha256": "440c5d7d46896563d3495beffcc7ffbd852651df7300c8ea6d88133e097e3e4c"
+      },
+      "cleanup": {
+        "status": "PASS",
+        "process_absent": true,
+        "data_container_absent": true
+      },
+      "finished_at": "2026-09-18T20:36:56.339282+00:00"
+    },
+    {
+      "run_id": "exp189-ea6acb82-333d-4059-8f6d-efeafb887ced",
+      "arm": "candidate",
+      "os": "26.5",
+      "mode": "manual",
+      "status": "PASS",
+      "binary_sha256": "6ac6bfb285f821172730275440a95627528d6d1aeb429401746a89241a4aadd7",
+      "artifact_root": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp189-legacy-sdk26-navydx41/exp189-ea6acb82-333d-4059-8f6d-efeafb887ced",
+      "clean_install": true,
+      "installed_identity": true,
+      "launched_at": "2026-09-18T20:36:57.501401+00:00",
+      "pid": 61274,
+      "signature": {
+        "view_names": [
+          "Home",
+          "Detail",
+          "Home"
+        ],
+        "view_ids": [
+          "2fafddd6-b113-457c-8f85-f60f4d3de71f",
+          "90461bfe-7450-4cb5-a1b7-f100f4eece6c",
+          "afd2cc6f-c02b-47a0-90eb-bb1aaac5741f"
+        ],
+        "stopped": [
+          true,
+          true,
+          false
+        ],
+        "owners": [
+          {
+            "kind": "action",
+            "phase": "Home1",
+            "occurrence": 0
+          },
+          {
+            "kind": "resource",
+            "phase": "https://fixture.invalid/Home1",
+            "occurrence": 0
+          },
+          {
+            "kind": "action",
+            "phase": "Detail1",
+            "occurrence": 1
+          },
+          {
+            "kind": "resource",
+            "phase": "https://fixture.invalid/Detail1",
+            "occurrence": 1
+          },
+          {
+            "kind": "action",
+            "phase": "Home2",
+            "occurrence": 2
+          },
+          {
+            "kind": "resource",
+            "phase": "https://fixture.invalid/Home2",
+            "occurrence": 2
+          }
+        ],
+        "notifications": []
+      },
+      "result": {
+        "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp189-legacy-sdk26-navydx41/exp189-ea6acb82-333d-4059-8f6d-efeafb887ced/result.json",
+        "sha256": "fe5c5b66d639da00e28478b79fa4f5e8af955022ac8ae9b3fc447e488fa299f2"
+      },
+      "cleanup": {
+        "status": "PASS",
+        "process_absent": true,
+        "data_container_absent": true
+      },
+      "finished_at": "2026-09-18T20:36:59.209848+00:00"
+    },
+    {
+      "run_id": "exp189-384076f6-53f8-49ab-95ea-3666b8714c80",
+      "arm": "baseline",
+      "os": "26.5",
+      "mode": "lifecycle-automatic",
+      "status": "PASS",
+      "binary_sha256": "99b6be6739e50a3f78810ec3f2dd8c32ba08faa991df8edfbce4a48bec555a8b",
+      "artifact_root": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp189-legacy-sdk26-navydx41/exp189-384076f6-53f8-49ab-95ea-3666b8714c80",
+      "clean_install": true,
+      "installed_identity": true,
+      "launched_at": "2026-09-18T20:37:00.370759+00:00",
+      "pid": 61407,
+      "readiness": {
+        "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp189-legacy-sdk26-navydx41/exp189-384076f6-53f8-49ab-95ea-3666b8714c80/accepted-readiness.json",
+        "sha256": "98472d407ca5604521cf162ae075c20b710668be4464c9e6f4794cd8a4d5b70e"
+      },
+      "readiness_accepted_at": "2026-09-18T20:37:01.155340+00:00",
+      "background_command_started_at": "2026-09-18T20:37:01.155353+00:00",
+      "background": {
+        "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp189-legacy-sdk26-navydx41/exp189-384076f6-53f8-49ab-95ea-3666b8714c80/accepted-background.json",
+        "sha256": "63fedf35086d55c18999104ed5988b7efe4f0676ba80e5478cf585cce24e577b"
+      },
+      "background_observed_at": "2026-09-18T20:37:02.814420+00:00",
+      "foreground_command_started_at": "2026-09-18T20:37:02.814437+00:00",
+      "foreground_command_finished_at": "2026-09-18T20:37:03.015584+00:00",
+      "signature": {
+        "view_names": [
+          "Home",
+          "Home"
+        ],
+        "view_ids": [
+          "704e8043-4b01-4faa-b7ec-02fd1426c770",
+          "ff922eac-257a-403b-aba5-448e6c02cdff"
+        ],
+        "stopped": [
+          true,
+          false
+        ],
+        "owners": [
+          {
+            "kind": "action",
+            "phase": "BeforeBackground",
+            "occurrence": 0
+          },
+          {
+            "kind": "resource",
+            "phase": "https://fixture.invalid/BeforeBackground",
+            "occurrence": 0
+          },
+          {
+            "kind": "action",
+            "phase": "AfterForeground",
+            "occurrence": 1
+          },
+          {
+            "kind": "resource",
+            "phase": "https://fixture.invalid/AfterForeground",
+            "occurrence": 1
+          }
+        ],
+        "notifications": [
+          "UIApplicationDidBecomeActiveNotification",
+          "UIApplicationDidEnterBackgroundNotification",
+          "UIApplicationWillEnterForegroundNotification",
+          "UIApplicationDidBecomeActiveNotification"
+        ]
+      },
+      "result": {
+        "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp189-legacy-sdk26-navydx41/exp189-384076f6-53f8-49ab-95ea-3666b8714c80/result.json",
+        "sha256": "a02c75e41c46fe1f7450fcb56b0fc23dc92b34f2e22cd369b9e6f120af4e2557"
+      },
+      "cleanup": {
+        "status": "PASS",
+        "process_absent": true,
+        "data_container_absent": true
+      },
+      "finished_at": "2026-09-18T20:37:04.529060+00:00"
+    },
+    {
+      "run_id": "exp189-745cedca-7c85-4369-bfa4-8b35a896a77a",
+      "arm": "candidate",
+      "os": "26.5",
+      "mode": "lifecycle-automatic",
+      "status": "PASS",
+      "binary_sha256": "4c40cf5ed7a2c9dffbb72fbfe0b447f738d846387aa6d1ee189ae7f2046b737e",
+      "artifact_root": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp189-legacy-sdk26-navydx41/exp189-745cedca-7c85-4369-bfa4-8b35a896a77a",
+      "clean_install": true,
+      "installed_identity": true,
+      "launched_at": "2026-09-18T20:37:05.723403+00:00",
+      "pid": 61563,
+      "readiness": {
+        "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp189-legacy-sdk26-navydx41/exp189-745cedca-7c85-4369-bfa4-8b35a896a77a/accepted-readiness.json",
+        "sha256": "228f3142aba751f914bb0631fc9964d85c6d61d1d9780dabbceee15ff8393387"
+      },
+      "readiness_accepted_at": "2026-09-18T20:37:06.517088+00:00",
+      "background_command_started_at": "2026-09-18T20:37:06.517100+00:00",
+      "background": {
+        "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp189-legacy-sdk26-navydx41/exp189-745cedca-7c85-4369-bfa4-8b35a896a77a/accepted-background.json",
+        "sha256": "62e77053f98d486e62dccdc0ab7a2df707b178483eccc372b592cb0c4b9d50bb"
+      },
+      "background_observed_at": "2026-09-18T20:37:07.564810+00:00",
+      "foreground_command_started_at": "2026-09-18T20:37:07.564825+00:00",
+      "foreground_command_finished_at": "2026-09-18T20:37:07.760747+00:00",
+      "signature": {
+        "view_names": [
+          "Home",
+          "Home"
+        ],
+        "view_ids": [
+          "c0b8883a-9d6a-4ad9-b54f-0aaff62b3ce2",
+          "b6ba0496-47c1-4398-8c1b-184dac5f80b4"
+        ],
+        "stopped": [
+          true,
+          false
+        ],
+        "owners": [
+          {
+            "kind": "action",
+            "phase": "BeforeBackground",
+            "occurrence": 0
+          },
+          {
+            "kind": "resource",
+            "phase": "https://fixture.invalid/BeforeBackground",
+            "occurrence": 0
+          },
+          {
+            "kind": "action",
+            "phase": "AfterForeground",
+            "occurrence": 1
+          },
+          {
+            "kind": "resource",
+            "phase": "https://fixture.invalid/AfterForeground",
+            "occurrence": 1
+          }
+        ],
+        "notifications": [
+          "UIApplicationDidBecomeActiveNotification",
+          "UIApplicationDidEnterBackgroundNotification",
+          "UIApplicationWillEnterForegroundNotification",
+          "UIApplicationDidBecomeActiveNotification"
+        ]
+      },
+      "result": {
+        "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp189-legacy-sdk26-navydx41/exp189-745cedca-7c85-4369-bfa4-8b35a896a77a/result.json",
+        "sha256": "65df9f7b366b2ce137b11a23b137027f13ad59e73534e5714e6369024c022de0"
+      },
+      "cleanup": {
+        "status": "PASS",
+        "process_absent": true,
+        "data_container_absent": true
+      },
+      "finished_at": "2026-09-18T20:37:09.221504+00:00"
+    },
+    {
+      "run_id": "exp189-98422051-8ef3-4faa-9e3b-2e82d199cf32",
+      "arm": "baseline",
+      "os": "26.5",
+      "mode": "lifecycle-manual",
+      "status": "PASS",
+      "binary_sha256": "99b6be6739e50a3f78810ec3f2dd8c32ba08faa991df8edfbce4a48bec555a8b",
+      "artifact_root": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp189-legacy-sdk26-navydx41/exp189-98422051-8ef3-4faa-9e3b-2e82d199cf32",
+      "clean_install": true,
+      "installed_identity": true,
+      "launched_at": "2026-09-18T20:37:10.229932+00:00",
+      "pid": 61703,
+      "readiness": {
+        "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp189-legacy-sdk26-navydx41/exp189-98422051-8ef3-4faa-9e3b-2e82d199cf32/accepted-readiness.json",
+        "sha256": "c8226781504d89fe42d590327b445328ffc9e2311d330f69096ccfbe95859971"
+      },
+      "readiness_accepted_at": "2026-09-18T20:37:11.007533+00:00",
+      "background_command_started_at": "2026-09-18T20:37:11.007546+00:00",
+      "background": {
+        "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp189-legacy-sdk26-navydx41/exp189-98422051-8ef3-4faa-9e3b-2e82d199cf32/accepted-background.json",
+        "sha256": "252ca4d2c748c3d68aed68efb74ae58d895c495ff1f0e03bb5775558ee09a794"
+      },
+      "background_observed_at": "2026-09-18T20:37:12.056076+00:00",
+      "foreground_command_started_at": "2026-09-18T20:37:12.056092+00:00",
+      "foreground_command_finished_at": "2026-09-18T20:37:12.238112+00:00",
+      "signature": {
+        "view_names": [
+          "Home"
+        ],
+        "view_ids": [
+          "0d72ba93-2802-4c36-bbe6-4a74068e2332"
+        ],
+        "stopped": [
+          false
+        ],
+        "owners": [
+          {
+            "kind": "action",
+            "phase": "BeforeBackground",
+            "occurrence": 0
+          },
+          {
+            "kind": "resource",
+            "phase": "https://fixture.invalid/BeforeBackground",
+            "occurrence": 0
+          },
+          {
+            "kind": "action",
+            "phase": "AfterForeground",
+            "occurrence": 0
+          },
+          {
+            "kind": "resource",
+            "phase": "https://fixture.invalid/AfterForeground",
+            "occurrence": 0
+          }
+        ],
+        "notifications": [
+          "UIApplicationDidBecomeActiveNotification",
+          "UIApplicationDidEnterBackgroundNotification",
+          "UIApplicationWillEnterForegroundNotification",
+          "UIApplicationDidBecomeActiveNotification"
+        ]
+      },
+      "result": {
+        "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp189-legacy-sdk26-navydx41/exp189-98422051-8ef3-4faa-9e3b-2e82d199cf32/result.json",
+        "sha256": "049b5bf2bd71ec63f6132a5709170392100868c09caf358d3099ba296f473512"
+      },
+      "cleanup": {
+        "status": "PASS",
+        "process_absent": true,
+        "data_container_absent": true
+      },
+      "finished_at": "2026-09-18T20:37:13.746962+00:00"
+    },
+    {
+      "run_id": "exp189-a2ca6c2b-41be-4f30-9f9e-a02b727ccebf",
+      "arm": "candidate",
+      "os": "26.5",
+      "mode": "lifecycle-manual",
+      "status": "PASS",
+      "binary_sha256": "4c40cf5ed7a2c9dffbb72fbfe0b447f738d846387aa6d1ee189ae7f2046b737e",
+      "artifact_root": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp189-legacy-sdk26-navydx41/exp189-a2ca6c2b-41be-4f30-9f9e-a02b727ccebf",
+      "clean_install": true,
+      "installed_identity": true,
+      "launched_at": "2026-09-18T20:37:14.758574+00:00",
+      "pid": 61850,
+      "readiness": {
+        "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp189-legacy-sdk26-navydx41/exp189-a2ca6c2b-41be-4f30-9f9e-a02b727ccebf/accepted-readiness.json",
+        "sha256": "5199ea182b812abcc58ad2168c9ebedd367f58d6ff6597034e07bd7e57a7ee22"
+      },
+      "readiness_accepted_at": "2026-09-18T20:37:15.332233+00:00",
+      "background_command_started_at": "2026-09-18T20:37:15.332246+00:00",
+      "background": {
+        "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp189-legacy-sdk26-navydx41/exp189-a2ca6c2b-41be-4f30-9f9e-a02b727ccebf/accepted-background.json",
+        "sha256": "5070533aedadf573a0c2a2a9e7c59aa55b0f0648e1645048a83d4ba84523cc9c"
+      },
+      "background_observed_at": "2026-09-18T20:37:16.379175+00:00",
+      "foreground_command_started_at": "2026-09-18T20:37:16.379188+00:00",
+      "foreground_command_finished_at": "2026-09-18T20:37:16.546159+00:00",
+      "signature": {
+        "view_names": [
+          "Home"
+        ],
+        "view_ids": [
+          "bd399f90-c013-4eea-913e-dfcc36c46b5f"
+        ],
+        "stopped": [
+          false
+        ],
+        "owners": [
+          {
+            "kind": "action",
+            "phase": "BeforeBackground",
+            "occurrence": 0
+          },
+          {
+            "kind": "resource",
+            "phase": "https://fixture.invalid/BeforeBackground",
+            "occurrence": 0
+          },
+          {
+            "kind": "action",
+            "phase": "AfterForeground",
+            "occurrence": 0
+          },
+          {
+            "kind": "resource",
+            "phase": "https://fixture.invalid/AfterForeground",
+            "occurrence": 0
+          }
+        ],
+        "notifications": [
+          "UIApplicationDidBecomeActiveNotification",
+          "UIApplicationDidEnterBackgroundNotification",
+          "UIApplicationWillEnterForegroundNotification",
+          "UIApplicationDidBecomeActiveNotification"
+        ]
+      },
+      "result": {
+        "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp189-legacy-sdk26-navydx41/exp189-a2ca6c2b-41be-4f30-9f9e-a02b727ccebf/result.json",
+        "sha256": "ca27e151689dcb242dd0841a2066ca4c37959399ab93901f18f68192ffba3776"
+      },
+      "cleanup": {
+        "status": "PASS",
+        "process_absent": true,
+        "data_container_absent": true
+      },
+      "finished_at": "2026-09-18T20:37:17.976624+00:00"
+    }
+  ],
+  "builds": {
+    "baseline/Navigation": {
+      "app": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp189-legacy-sdk26-navydx41/builds/baseline/derived/Build/Products/Release-iphonesimulator/FixtureLegacy.app",
+      "executable": "FixtureLegacy",
+      "bundle": "com.datadoghq.exp189.baseline.legacy",
+      "sha256": "f563b27f7e37892342d43a32291d8d41bb6f1c8e010c55d948d6dd7bd1a157a7",
+      "uuid": "e601acae-72c1-3979-9f3e-812eab4dbc4d",
+      "sdk": "iphonesimulator26.5",
+      "minimum_os": "15.0",
+      "fixture": {
+        "file_count": 3,
+        "sha256": "37abb3d2289b6a577ac03befa815510c18979bf565e81d8e73787a49776780de",
+        "files": {
+          "AllocationCounter.c": "4fc68475a35fdbb805786a79455defc5725b6e0deb4847778cd75be228f9119d",
+          "AllocationCounter.h": "d668fa6258ccbf16ce011374af0aa4178ae4ca0f8a1c4f28a51bee2077ce52ab",
+          "App.swift": "0091052eef290c22d198246604783a66036e7b492725d7c09ef762c3a39aa9a0"
+        }
+      },
+      "mach_o_build_version": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp189-legacy-sdk26-navydx41/builds/baseline/derived/Build/Products/Release-iphonesimulator/FixtureLegacy.app/FixtureLegacy:\nLoad command 11\n      cmd LC_BUILD_VERSION\n  cmdsize 32\n platform IOSSIMULATOR\n    minos 15.0\n      sdk 26.5\n   ntools 1\n     tool LD\n  version 1267.0"
+    },
+    "candidate/Navigation": {
+      "app": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp189-legacy-sdk26-navydx41/builds/candidate/derived/Build/Products/Release-iphonesimulator/FixtureLegacy.app",
+      "executable": "FixtureLegacy",
+      "bundle": "com.datadoghq.exp189.candidate.legacy",
+      "sha256": "6ac6bfb285f821172730275440a95627528d6d1aeb429401746a89241a4aadd7",
+      "uuid": "7c18a2bf-e994-3cfc-af2d-1b911d0fa61a",
+      "sdk": "iphonesimulator26.5",
+      "minimum_os": "15.0",
+      "fixture": {
+        "file_count": 3,
+        "sha256": "37abb3d2289b6a577ac03befa815510c18979bf565e81d8e73787a49776780de",
+        "files": {
+          "AllocationCounter.c": "4fc68475a35fdbb805786a79455defc5725b6e0deb4847778cd75be228f9119d",
+          "AllocationCounter.h": "d668fa6258ccbf16ce011374af0aa4178ae4ca0f8a1c4f28a51bee2077ce52ab",
+          "App.swift": "0091052eef290c22d198246604783a66036e7b492725d7c09ef762c3a39aa9a0"
+        }
+      },
+      "mach_o_build_version": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp189-legacy-sdk26-navydx41/builds/candidate/derived/Build/Products/Release-iphonesimulator/FixtureLegacy.app/FixtureLegacy:\nLoad command 11\n      cmd LC_BUILD_VERSION\n  cmdsize 32\n platform IOSSIMULATOR\n    minos 15.0\n      sdk 26.5\n   ntools 1\n     tool LD\n  version 1267.0"
+    },
+    "baseline/Lifecycle": {
+      "app": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp189-legacy-sdk26-navydx41/builds/baseline/derived/Build/Products/Release-iphonesimulator/FixtureLegacyLifecycle.app",
+      "executable": "FixtureLegacyLifecycle",
+      "bundle": "com.datadoghq.exp189.baseline.lifecycle",
+      "sha256": "99b6be6739e50a3f78810ec3f2dd8c32ba08faa991df8edfbce4a48bec555a8b",
+      "uuid": "6ebac6f4-7d2b-3673-8c98-8ac8632a7407",
+      "sdk": "iphonesimulator26.5",
+      "minimum_os": "15.0",
+      "fixture": {
+        "file_count": 3,
+        "sha256": "c284c2529e5ac0c0041f2ff975e18cbc8c009591cd47478d4e9db56bc78f7e5d",
+        "files": {
+          "AllocationCounter.c": "4fc68475a35fdbb805786a79455defc5725b6e0deb4847778cd75be228f9119d",
+          "AllocationCounter.h": "d668fa6258ccbf16ce011374af0aa4178ae4ca0f8a1c4f28a51bee2077ce52ab",
+          "App.swift": "0193441439b184c155f0079bfc884ea994fc947c0056dae1a7d7efd8964acbbf"
+        }
+      },
+      "mach_o_build_version": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp189-legacy-sdk26-navydx41/builds/baseline/derived/Build/Products/Release-iphonesimulator/FixtureLegacyLifecycle.app/FixtureLegacyLifecycle:\nLoad command 11\n      cmd LC_BUILD_VERSION\n  cmdsize 32\n platform IOSSIMULATOR\n    minos 15.0\n      sdk 26.5\n   ntools 1\n     tool LD\n  version 1267.0"
+    },
+    "candidate/Lifecycle": {
+      "app": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp189-legacy-sdk26-navydx41/builds/candidate/derived/Build/Products/Release-iphonesimulator/FixtureLegacyLifecycle.app",
+      "executable": "FixtureLegacyLifecycle",
+      "bundle": "com.datadoghq.exp189.candidate.lifecycle",
+      "sha256": "4c40cf5ed7a2c9dffbb72fbfe0b447f738d846387aa6d1ee189ae7f2046b737e",
+      "uuid": "9c44c2d5-5253-307d-a313-5f9a23e56b16",
+      "sdk": "iphonesimulator26.5",
+      "minimum_os": "15.0",
+      "fixture": {
+        "file_count": 3,
+        "sha256": "c284c2529e5ac0c0041f2ff975e18cbc8c009591cd47478d4e9db56bc78f7e5d",
+        "files": {
+          "AllocationCounter.c": "4fc68475a35fdbb805786a79455defc5725b6e0deb4847778cd75be228f9119d",
+          "AllocationCounter.h": "d668fa6258ccbf16ce011374af0aa4178ae4ca0f8a1c4f28a51bee2077ce52ab",
+          "App.swift": "0193441439b184c155f0079bfc884ea994fc947c0056dae1a7d7efd8964acbbf"
+        }
+      },
+      "mach_o_build_version": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp189-legacy-sdk26-navydx41/builds/candidate/derived/Build/Products/Release-iphonesimulator/FixtureLegacyLifecycle.app/FixtureLegacyLifecycle:\nLoad command 11\n      cmd LC_BUILD_VERSION\n  cmdsize 32\n platform IOSSIMULATOR\n    minos 15.0\n      sdk 26.5\n   ntools 1\n     tool LD\n  version 1267.0"
+    }
+  },
+  "devices": {
+    "27.0": {
+      "udid": "B85C64AB-E854-4280-BCEF-A5AAA5AB187C",
+      "name": "iPhone 17",
+      "state": "Shutdown",
+      "runtime": "com.apple.CoreSimulator.SimRuntime.iOS-27-0",
+      "runtime_build": "24A434"
+    },
+    "26.5": {
+      "udid": "65A76904-154E-4C79-9DFD-A57B526C85E6",
+      "name": "iPhone 17",
+      "state": "Shutdown",
+      "runtime": "com.apple.CoreSimulator.SimRuntime.iOS-26-5",
+      "runtime_build": "23F77"
+    }
+  },
+  "gates_closed": [
+    "C03"
+  ],
+  "inputs": {
+    "tools/multi-scene/baselines/legacy_compatibility.py": "9de1d6c7e84b22089e8480b6084b5f50e4fea2d17f34e0664f6d7484ef961205",
+    "tools/multi-scene/baselines/run.py": "d14fa5cd77aed6147386e0815a3f711f8d2c45d0018cf5512da79e9db4943398",
+    "tools/multi-scene/baselines/lifecycle.py": "d763b0e85646d1cbcdf919aa4901f890efd5a11a194cad10028b565c87792acb",
+    "tools/multi-scene/baselines/analyze.py": "79de1e8ea99f1d27f84ef98d8a39d1b2b8a8e7fbfdc996b0278258189c15e306",
+    "tools/multi-scene/baselines/Fixture/AllocationCounter.c": "4fc68475a35fdbb805786a79455defc5725b6e0deb4847778cd75be228f9119d",
+    "tools/multi-scene/baselines/Fixture/AllocationCounter.h": "d668fa6258ccbf16ce011374af0aa4178ae4ca0f8a1c4f28a51bee2077ce52ab",
+    "tools/multi-scene/baselines/Fixture/App.swift": "4e9438781d5e17ef4cbfd06871a6938bdf9b25cc81e2b0dc5d2bff1645dc69ee",
+    "tools/multi-scene/baselines/Fixture/InternalFixture.swift": "5cfa2d46df2345e0868966690ce168e7154b281ef93a5f97e3e9c18a2c7e79e8",
+    "DatadogRUM/MultiSceneSupport/Results/EXP-189-legacy-build-sdk.json": "125aafcf402613195b9fdade105844000986d9c6673cc81e373f12c300e73102"
+  },
+  "environment": {
+    "build_xcode": "Xcode 26.6\nBuild version 17F113",
+    "build_sdk": "26.5",
+    "swift": "Apple Swift version 6.3.3 (swiftlang-6.3.3.1.3 clang-2100.1.1.101)\nTarget: arm64-apple-macosx26.0",
+    "runtime_xcode": "Xcode 27.0\nBuild version 27A266a"
+  },
+  "source_fingerprints": {
+    "baseline": {
+      "file_count": 369,
+      "sha256": "dde2012968e33c3b0058acf6003ec15b18fce8182ca30e4befdfd8b36463e06c"
+    },
+    "candidate": {
+      "file_count": 369,
+      "sha256": "47bd1eb3a75bf117e2cfbb197f1bed8834e94df8f7555921ec015fb8027f11d0"
+    }
+  },
+  "source_revisions": {
+    "baseline": "92f021ba7e4a866f84a52da93ed8b63f3dc75882",
+    "candidate": "04201edc7711361279d8487b385bc8b0ca9c63c7"
+  },
+  "original_fixture": {
+    "file_count": 4,
+    "sha256": "44bf7b154f4cf0c25e8fc1ab62131dcd1027d6d29b6f0e08e45a81c440564d3e"
+  },
+  "baseline_readiness": "PASS",
+  "protected_paths_unchanged": true,
+  "frozen_inputs_verified": true,
+  "restored_shutdown_runtimes": [
+    "26.5",
+    "27.0"
+  ],
+  "finished_at": "2026-09-18T20:37:22.629232+00:00",
+  "gate_status": "PASS",
+  "commands_inventory": {
+    "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp189-legacy-sdk26-navydx41/commands.json",
+    "sha256": "0340dd56d154c56d4b6aaaf18125cf4b279306755bcff46535aef4a2b0b30ac4",
+    "count": 220
+  },
+  "artifacts_inventory": {
+    "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp189-legacy-sdk26-navydx41/artifacts.json",
+    "sha256": "6dc29eed51922c0d87963dafd59d17924e1c1f9e40e2e878e23f9469d74f8379",
+    "count": 472
+  },
+  "source_manifest": {
+    "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp189-legacy-sdk26-navydx41/builds/manifest.json",
+    "sha256": "c5c102dc23057169b43c0d5263efeb32aad435a82998250e272bc8fabfc3e12c"
+  }
+}

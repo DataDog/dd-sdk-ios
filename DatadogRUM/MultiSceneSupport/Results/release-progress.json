@@ -3,15 +3,15 @@
   "candidate_revision": "04201edc7711361279d8487b385bc8b0ca9c63c7",
   "gate_count": 66,
   "counts": {
-    "CLOSED": 42,
+    "CLOSED": 43,
     "ENVIRONMENT BLOCKED": 17,
-    "INCONCLUSIVE": 1,
     "OPEN": 5,
     "REVIEW BLOCKED": 1
   },
   "closed": [
     "C01",
     "C02",
+    "C03",
     "C04",
     "C05",
     "P01",
@@ -54,12 +54,6 @@
     "D12"
   ],
   "remaining": [
-    {
-      "id": "C03",
-      "status": "INCONCLUSIVE",
-      "owner": "SDK implementer",
-      "dependencies": []
-    },
     {
       "id": "C06",
       "status": "ENVIRONMENT BLOCKED",

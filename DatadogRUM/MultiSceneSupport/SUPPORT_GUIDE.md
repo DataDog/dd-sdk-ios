@@ -9,6 +9,13 @@ change availability or declare release gates closed.
 ## Choose an integration
 
 Existing single-scene applications keep their current setup and APIs.
+Legacy UIApplication lifecycle remains compatible for apps built with an earlier
+SDK: [C03's comparison](Results/EXP-189-legacy-build-sdk.json) checks genuine26.5-SDK
+hosts on27.0/26.5. When building with SDK27, adopt the scene lifecycle required by
+[Apple](https://developer.apple.com/documentation/uikit/transitioning-to-the-uikit-scene-based-life-cycle).
+The SDK cannot make a platform-rejected legacy host launch. Scene-lifecycle
+adoption does not require enabling multiple windows.
+
 Automatic UIKit and SwiftUI tracking remains the default. Each scene has one
 current destination, while different scenes may have overlapping views within
 the same RUM session. Sidebars, split panes and tab bars are structural regions,

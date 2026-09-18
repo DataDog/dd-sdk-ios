@@ -1747,3 +1747,11 @@ after the SDK compiles if internal API shapes have changed. Preserve that failed
 attempt. Exclude only the unused workload in both arms before comparing the new
 source identities; do not patch the current SDK to satisfy an out-of-scope fixture.
 EXP-189 records this preparation failure and the justified common-fixture rebuild.
+
+For minimum-runtime preflight, distinguish deployment targets from device and
+simulator support. [Apple's table](https://developer.apple.com/xcode/system-requirements)
+lists15 support for26.6 and17+ for27. Verify actual toolchain/host, request only the
+required15.0 runtime into fresh output and retain catalog/download/import/boot
+outcomes. Do not substitute a later runtime or alter its metadata. EXP-190 requires
+a separate frozen native matrix after qualification; neither catalog availability
+nor boot closes C06.
