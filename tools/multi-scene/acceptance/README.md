@@ -316,3 +316,37 @@ reused file. Run acceptance/installed_code.py with --signed-app, --run-id,
 Mach-O files, including a Debug dylib, to the signed local inventory. No debugger
 is needed. Keep native/backend/topology acceptance separate from this identity
 check; a passing receipt alone closes no release gate.
+
+
+### One-scene representative hardware sample
+
+Use the separately frozen vitals.shared-process.single-scene-physical contract
+for an ordinary iPhone. Keep the accepted serial contract and its source/capture
+identities unchanged. The dedicated validate_physical_local entry point requires
+one native readiness,17 expectations/eight ordered guards and exactly two final
+inactive views (Home plus ApplicationLaunch). It rejects the serial manifest;
+validate_local rejects the one-scene manifest. Both require the stop assertion's
+owner to equal the final sampled owner and preserve exact mapper metric values.
+The slow-frame configuration guard requires the actual factory to produce
+ViewHitchesReader, not merely that a nonoptional factory exists.
+
+Freeze fixture/oracle source before building. Discover the current physical
+device and provisioning/signing material, verify unlock and real process/app
+inventory, clean-install only the probe bundle and prove its prior absence.
+Normal launch arguments are --probe-scenario followed by the exact variant ID,
+--probe-run-id followed by a new run UUID, and --probe-run-mode clean. Supply the
+matching installed-code receipt environment values. Compare every installed
+Mach-O hash with that exact signed app and the independently observed process ID.
+Keep the build/source, native records and receipt artifacts together.
+
+Validate the native records with validate_physical_local, then query the complete
+session through the same authenticated backend projections used by serial T13:
+exactly two vitals_views and no peer_actions, resources, process_long_tasks,
+errors or crashes. Use settled_views and validate_backend with that local result;
+retain all raw exchanges, pagination/count provenance and exact integer metrics.
+The original acceptance.py simulator runner intentionally accepts only the serial
+T13 contract; do not pass the hardware variant to it or claim physical proof from
+a pure oracle result. Independent device/build/install evidence is still required.
+Verify test-app cleanup with fresh process inventory; a disconnected device is
+unverified cleanup. A simulator mechanics pass checks this variant's implementation
+but cannot discharge the representative-device requirement or H01–H16.

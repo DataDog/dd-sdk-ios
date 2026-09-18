@@ -388,7 +388,7 @@
       "environment": "Fixed process metric fixture, view associations and backend; representative device sample before freeze",
       "completion_mode": "documented process-level measurement with existing view association",
       "status": "INCONCLUSIVE",
-      "evidence": "EXP-186: accepted simulator/backend proof retained. Physical installed-code identity and scene A samples pass; unchanged serial contract FAIL waiting for B readiness. A separately defined one-scene hardware sample will close only the representative-device obligation. Results/EXP-186-shared-vitals.json."
+      "evidence": "EXP-186: accepted serial simulator/backend proof retained; phone serial FAIL waiting for B after actual A samples. One-scene variant661ae6b91 passes7 focused tests,25 Python methods and frozen simulator17/17, exact installed hashes/cleanup. Physical one-scene sample remains pending reconnection. Results/EXP-186-shared-vitals.json."
     },
     {
       "id": "T14",

@@ -1639,3 +1639,45 @@ oracle revisions when replaying immutable evidence.
 A successful native receipt is not cleanup proof. If CoreDevice returns4016 and
 USB no longer enumerates the phone, retain cleanup as unverified and wait for a
 fresh reconnection before inspecting/terminating only that test app.
+
+
+### One-scene representative hardware sample
+
+Use the separately frozen vitals.shared-process.single-scene-physical contract
+for an ordinary iPhone. Keep the accepted serial contract and its source/capture
+identities unchanged. The dedicated validate_physical_local entry point requires
+one native readiness,17 expectations/eight ordered guards and exactly two final
+inactive views (Home plus ApplicationLaunch). It rejects the serial manifest;
+validate_local rejects the one-scene manifest. Both require the stop assertion's
+owner to equal the final sampled owner and preserve exact mapper metric values.
+The slow-frame configuration guard requires the actual factory to produce
+ViewHitchesReader, not merely that a nonoptional factory exists.
+
+Freeze fixture/oracle source before building. Discover the current physical
+device and provisioning/signing material, verify unlock and real process/app
+inventory, clean-install only the probe bundle and prove its prior absence.
+Normal launch arguments are --probe-scenario followed by the exact variant ID,
+--probe-run-id followed by a new run UUID, and --probe-run-mode clean. Supply the
+matching installed-code receipt environment values. Compare every installed
+Mach-O hash with that exact signed app and the independently observed process ID.
+Keep the build/source, native records and receipt artifacts together.
+
+Validate the native records with validate_physical_local, then query the complete
+session through the same authenticated backend projections used by serial T13:
+exactly two vitals_views and no peer_actions, resources, process_long_tasks,
+errors or crashes. Use settled_views and validate_backend with that local result;
+retain all raw exchanges, pagination/count provenance and exact integer metrics.
+The original acceptance.py simulator runner intentionally accepts only the serial
+T13 contract; do not pass the hardware variant to it or claim physical proof from
+a pure oracle result. Independent device/build/install evidence is still required.
+Verify test-app cleanup with fresh process inventory; a disconnected device is
+unverified cleanup. A simulator mechanics pass checks this variant's implementation
+but cannot discharge the representative-device requirement or H01–H16.
+
+
+If Xcode MCP reports tests as not run, read its console and xcresult before
+accepting any partial count. A CoreSimulator service/framework version mismatch
+invalidates that attempt even if an unrelated test is shown as passed. Pin the
+intended DEVELOPER_DIR and use a fresh CLI result bundle with the exact discovered
+test selection; require total=passed and no skipped/not-run tests. Do not restart
+all simulators or alter the user's Xcode selection to mask that preparation error.

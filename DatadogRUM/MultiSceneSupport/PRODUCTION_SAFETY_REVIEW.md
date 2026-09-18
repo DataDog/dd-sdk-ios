@@ -276,7 +276,14 @@ start/sample correlation. The original checker overfit an incidental simulator
 launch profile; the corrected declaration-driven oracle passes21 methods/123
 malformed controls and both saved captures. Its original FAIL remains. Physical
 raw attachment and cleanup after disconnect are pending. These are acceptance
-findings; D01–D12 dispositions and SDK production source are unchanged.
+findings; D01–D12 dispositions and SDK production source are unchanged. The
+one-scene vitals variant now passes7 focused tests,25 Python methods and a frozen
+simulator17/17 run with installed-code identity/cleanup. Its configuration guard
+now checks the slow-frame factory's actual reader type, and both vitals oracles
+reject a wrong stop owner. Saved serial native/backend evidence still passes.
+The MCP test-preparation mismatch and premature console-PID lookup are preserved
+as invalid attempts; neither establishes an SDK regression. Physical execution
+remains required.
 
 ## Stable API review boundary
 

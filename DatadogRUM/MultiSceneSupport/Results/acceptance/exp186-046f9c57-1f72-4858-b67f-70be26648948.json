@@ -1,0 +1,159 @@
+{
+  "app": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp186-one-scene-smoke-t9q0lnmu/derived/Build/Products/Debug-iphonesimulator/RUMNativeMultiSceneProbe.app",
+  "artifact_root": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp186-one-scene-smoke-25caxoex",
+  "binary_inventory": {
+    "binaries": {
+      "RUMNativeMultiSceneProbe": "132a39ae991bf9bba0c148473430724eb0cc9c5eab17a0ada15322ba6770de03",
+      "RUMNativeMultiSceneProbe.debug.dylib": "a2fffccd217d73eedd0708aec5eacab316266e9c3ca315bfadefefeddba29b55",
+      "__preview.dylib": "641bb4cd6a4d02f5f6bb2490a838530e97c871c0e6f1d2f65460dd5ed488b8fa"
+    },
+    "bundleIdentifier": "com.datadoghq.rum-native-multi-scene-probe",
+    "executable": "RUMNativeMultiSceneProbe"
+  },
+  "build": "REUSED_IDENTICAL_FROZEN_BUILD",
+  "build_artifact": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp186-one-scene-smoke-t9q0lnmu",
+  "bundle": "com.datadoghq.rum-native-multi-scene-probe",
+  "clean_install": "PASS",
+  "cleanup_exit_code": 0,
+  "device": "59A8E789-932A-48D0-9281-0F49DEB8E96D",
+  "experiment": "EXP-186",
+  "finished_at": "2026-09-18T11:09:45.957011+00:00",
+  "gate": "T13",
+  "gate_status": "INCONCLUSIVE",
+  "installed_code": "PASS",
+  "installed_receipt": "PASS",
+  "native_assertions": 17,
+  "native_signals": 32,
+  "native_validation": "PASS",
+  "physical_sample": "NOT_CLAIMED",
+  "pid": 64983,
+  "platform": "iOS Simulator",
+  "revision": "661ae6b9119e3b5b8fd21a10063166d0ba1b5e06",
+  "run_id": "exp186-046f9c57-1f72-4858-b67f-70be26648948",
+  "runtime": "com.apple.CoreSimulator.SimRuntime.iOS-27-0",
+  "scenario_id": "vitals.shared-process.single-scene-physical",
+  "session_id": "1c94302c-6bf5-4bf9-9888-85ef9d17a8d4",
+  "signature": "UNSIGNED",
+  "source_fingerprint": "83d481c0cc528a229a15d64884e3a0467f865434a8d25a525db2d78312252f43",
+  "source_preserved": true,
+  "started_at": "2026-09-18T11:09:40.114804+00:00",
+  "workspace_preserved": true,
+  "native_evidence": {
+    "assertions": 17,
+    "native_scenes": {
+      "scene-A": "52E1A7EC-8A2D-4D5C-94F2-F0B3AAA691C0"
+    },
+    "owners": {
+      "a": {
+        "session_id": "1c94302c-6bf5-4bf9-9888-85ef9d17a8d4",
+        "view_id": "c2fc3991-7d2d-42f0-825f-be50d581dcdb"
+      }
+    },
+    "physical_device_claimed": false,
+    "session_id": "1c94302c-6bf5-4bf9-9888-85ef9d17a8d4",
+    "signal_count": 32,
+    "simultaneous_visibility_claimed": false,
+    "single_scene_physical_sample": true,
+    "timeseries_default_disabled": true,
+    "views": [
+      {
+        "container_present": false,
+        "counters": {
+          "actions": 0,
+          "crashes": 0,
+          "errors": 0,
+          "longTasks": 0,
+          "resources": 0
+        },
+        "is_active": false,
+        "metrics": {
+          "cpuRate": null,
+          "cpuTicks": 0,
+          "memoryAverage": 65980744,
+          "memoryMax": 65980744,
+          "refreshRateAverage": null,
+          "refreshRateMin": null,
+          "slowFrames": [],
+          "slowFramesRate": null,
+          "timeSpentNanoseconds": 180442095
+        },
+        "name": "ApplicationLaunch",
+        "run_id": "exp186-046f9c57-1f72-4858-b67f-70be26648948",
+        "session_id": "1c94302c-6bf5-4bf9-9888-85ef9d17a8d4",
+        "slow_frames_present": true,
+        "source": "ios",
+        "view_id": "b0d622c6-7d03-42e9-8af5-8af6b60dfc09"
+      },
+      {
+        "container_present": false,
+        "counters": {
+          "actions": 0,
+          "crashes": 0,
+          "errors": 0,
+          "longTasks": 0,
+          "resources": 0
+        },
+        "is_active": false,
+        "metrics": {
+          "cpuRate": 638.5427476767123,
+          "cpuTicks": 728,
+          "memoryAverage": 79634645.81818181,
+          "memoryMax": 80021904,
+          "refreshRateAverage": 60.16996877292844,
+          "refreshRateMin": 59.99999980442226,
+          "slowFrames": [],
+          "slowFramesRate": null,
+          "timeSpentNanoseconds": 1140095949
+        },
+        "name": "ProbeHomeView",
+        "run_id": "exp186-046f9c57-1f72-4858-b67f-70be26648948",
+        "session_id": "1c94302c-6bf5-4bf9-9888-85ef9d17a8d4",
+        "slow_frames_present": true,
+        "source": "ios",
+        "view_id": "c2fc3991-7d2d-42f0-825f-be50d581dcdb"
+      }
+    ]
+  },
+  "installed_code_evidence": {
+    "binaries": {
+      "RUMNativeMultiSceneProbe": "132a39ae991bf9bba0c148473430724eb0cc9c5eab17a0ada15322ba6770de03",
+      "RUMNativeMultiSceneProbe.debug.dylib": "a2fffccd217d73eedd0708aec5eacab316266e9c3ca315bfadefefeddba29b55",
+      "__preview.dylib": "641bb4cd6a4d02f5f6bb2490a838530e97c871c0e6f1d2f65460dd5ed488b8fa"
+    },
+    "boundary": "before-sdk-initialization",
+    "bundleIdentifier": "com.datadoghq.rum-native-multi-scene-probe",
+    "executable": "RUMNativeMultiSceneProbe",
+    "process_id": 64983,
+    "run_id": "exp186-046f9c57-1f72-4858-b67f-70be26648948",
+    "source_revision": "661ae6b9119e3b5b8fd21a10063166d0ba1b5e06",
+    "state": "PASS"
+  },
+  "backend_validation": "NOT_RUN: simulator fixture mechanics only",
+  "focused_tests": {
+    "passed": 7,
+    "total": 7,
+    "failed": 0,
+    "skipped": 0,
+    "artifact": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp186-single-scene-tests-tzxpj6da",
+    "note": "Final reader guard change is exercised by this subsequent frozen native run."
+  },
+  "python_methods": 25,
+  "serial_offline_replay": "PASS native30 and complete3-view backend from exp186-20260918T063555Z-7daba26932e5",
+  "lint": "No new findings in five changed Swift files; final reader guard strict lint PASS",
+  "prior_invalid_attempts": [
+    {
+      "type": "MCP test preparation",
+      "passed": 1,
+      "not_run": 6,
+      "reason": "CoreSimulator service/framework version mismatch; not accepted as a passing test run",
+      "artifact": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/ActionArtifacts/default/RunSomeTests/D4E34C93-A09B-4D45-8688-9AB64C7379BB.txt"
+    },
+    {
+      "run_id": "exp186-d25cf4bb-e6e7-4936-8444-dd4f18b4714f",
+      "state": "INVALID",
+      "native_assertions": 17,
+      "reason": "Wrapper looked for console PID before console launcher emitted it. Native semantics passed; independent process identity missing. Original wrapper FAIL retained.",
+      "artifact": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp186-one-scene-smoke-t9q0lnmu"
+    }
+  ]
+}
