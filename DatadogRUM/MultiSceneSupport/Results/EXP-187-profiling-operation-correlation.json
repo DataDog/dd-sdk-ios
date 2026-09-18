@@ -112,7 +112,7 @@
   ],
   "native_attempts": [],
   "device_attempts": [],
-  "next": "T14 awaits a supported physical profiling device and authenticated profile backend. Freeze the bounded native runner scenario before device execution. Continue dependency-ready F01 review preparation while environments are unavailable.",
+  "next": "Implement the predeclared bounded native fixture while physical device and profile access requests remain pending. F01 RFC decision is requested separately; the restart cursor owns execution.",
   "deterministic_status": "PASS",
   "physical_backend_status": "ENVIRONMENT BLOCKED",
   "unit_summary": {
@@ -154,9 +154,9 @@
     }
   ],
   "environment_observation": {
-    "physical_devices": "Paired iPhone27.2 unavailable, paired iPad27 unavailable; DDI false for both.",
-    "profile_backend": "In-app browser sign-in pending; RUM connector authentication does not establish profile retrieval.",
-    "fresh_device_discovery": "2026-09-18T06:59Z"
+    "physical_devices": "Paired iPhone27.2 and iPad27 unavailable; DDI false for both.",
+    "profile_backend": "RUM query authenticated. Profile browser redirects to login; sign-in request pending. Current MCP tools and skill discovery expose no profile-retrieval tool.",
+    "fresh_device_discovery": "2026-09-18T07:25:35Z"
   },
   "limits": [
     "One process sampler; profile-level view labels do not attribute CPU samples independently to scenes.",
@@ -164,5 +164,14 @@
     "Ongoing Operations survive a normal background-triggered profile flush; completed peers are absent from the next profile.",
     "No physical, native profile-backend, simultaneous-window, Duo or stable API approval claim."
   ],
-  "unit_revision": "2baa06da0060bcc4ae3b54fe2f4cfc64be5b4cce"
+  "unit_revision": "2baa06da0060bcc4ae3b54fe2f4cfc64be5b4cce",
+  "native_fixture_definition": {
+    "contract": "../../../tools/multi-scene/profiling-correlation/native-contract.json",
+    "status": "DEFINED BEFORE IMPLEMENTATION",
+    "assertions": 12,
+    "operation_steps": 4,
+    "distinct_views": 3,
+    "matching_profiles": 1,
+    "scope": "One physical scene, process-level profile correlation only"
+  }
 }

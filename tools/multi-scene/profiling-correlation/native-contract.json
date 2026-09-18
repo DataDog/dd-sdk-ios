@@ -1,0 +1,118 @@
+{
+  "schema_version": 1,
+  "experiment": "EXP-187",
+  "gate": "T14",
+  "scenario": "profiling.operation-reverse-completion",
+  "scope": "One native scene and one process profiler; three sequential manual RUM views. This is process-profile correlation evidence, not simultaneous-window or per-scene CPU evidence.",
+  "required_environment": {
+    "native": "Supported physical iOS device with profiling conditions satisfied",
+    "backend": "Authenticated RUM and Continuous Profiler access",
+    "host": "Opt-in scene lifecycle in the existing BenchmarkTests runner; ordinary benchmark build unchanged"
+  },
+  "configuration": {
+    "applicationLaunchSampleRate": 0,
+    "continuousSampleRate": 0,
+    "operationSampleRate": 100,
+    "sessionSampleRate": 100,
+    "automatic_views": false,
+    "automatic_actions": false,
+    "long_tasks": false,
+    "app_hangs": false
+  },
+  "identity": {
+    "run_id_format": "exp187-<fresh UUID>",
+    "source_revision": "Freeze implementation commit before run",
+    "installation": "Clean install; missing preexisting data container; hash installed executable against built executable",
+    "restoration": "Reject an existing receipt path; never reuse run identity"
+  },
+  "view_names": [
+    "EXP187.StartA",
+    "EXP187.StartB",
+    "EXP187.Finish"
+  ],
+  "operation_name": "exp187.parallel",
+  "operation_keys": [
+    "<run_id>/A",
+    "<run_id>/B"
+  ],
+  "steps": [
+    {
+      "step": "start",
+      "key": "A",
+      "view": "EXP187.StartA"
+    },
+    {
+      "step": "start",
+      "key": "B",
+      "view": "EXP187.StartB"
+    },
+    {
+      "step": "end",
+      "key": "B",
+      "view": "EXP187.Finish"
+    },
+    {
+      "step": "end",
+      "key": "A",
+      "view": "EXP187.Finish"
+    }
+  ],
+  "minimum_holds_seconds": {
+    "after_start_a": 1,
+    "after_start_b": 2,
+    "after_end_b": 3
+  },
+  "checkpoint_timeout_seconds": 15,
+  "native_assertions": [
+    "Fresh externally supplied run identity and committed source identity",
+    "Exactly one connected native scene with an attached visible window",
+    "StartA mapper owner and actual TTID message observed before starting work",
+    "First Operation start message has StartA owner and key A",
+    "StartB is a fresh mapper owner and StartA is ended before starting B",
+    "Second Operation start has StartB owner, key B and a distinct start ID",
+    "Finish is a third fresh mapper owner and StartB is ended before completion",
+    "First end message has key B and Finish owner before the later A end",
+    "Second end message has key A and Finish owner",
+    "Exactly four distinct step IDs, one RUM session and the frozen name/key/step order",
+    "Exactly three final inactive views with the frozen names and distinct IDs",
+    "Observed start/end dates produce two positive durations with A greater than B"
+  ],
+  "expected_inventory": {
+    "operation_steps": 4,
+    "operation_starts": 2,
+    "operation_ends": 2,
+    "distinct_views": 3,
+    "rum_sessions": 1,
+    "matching_custom_profiles": 1,
+    "profile_operation_start_ids": 2,
+    "fixture_actions": 0,
+    "resources": 0,
+    "errors": 0,
+    "long_tasks": 0
+  },
+  "backend_assertions": [
+    "Query the full RUM session and profile time range/service; validate all run identities rather than filtering away stale owners",
+    "Join each of four RUM steps to the native observed exact Vital ID, key, step, session and view",
+    "One matching custom profile contains both exact start IDs, matching operation names and actual observed server-offset start_ns and duration_ns",
+    "The profile has nonempty native samples; a native testing stub or simulator cannot close T14",
+    "Profile labels describe the final process context, not independent per-view CPU ownership",
+    "Inventory unexpected profiles/events explicitly; preserve any built-in app-launch telemetry separately and admit no additional fixture Operation"
+  ],
+  "controls": [
+    "swapped start IDs",
+    "end ID substituted for start ID",
+    "same-name key collapse",
+    "wrong view or session",
+    "duration swap",
+    "stale run/source identity",
+    "missing or duplicate step/profile",
+    "native assertion recorded after its critical boundary"
+  ],
+  "limits": [
+    "Actual OS/device profile upload and backend attachment visibility remain required",
+    "No app-launch profiling acceptance",
+    "No simultaneous topology or scene-specific CPU claim",
+    "Simulator fixture checks establish mechanics only",
+    "No SDK production, API, dependency, networking-format or existing build-script change"
+  ]
+}
