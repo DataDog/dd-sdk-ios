@@ -1441,3 +1441,11 @@ each stimulus; require exact mapper acknowledgements and view counts before the
 next boundary. Pending fatal-hang tests preserve the serialized owner and prior
 consent through live-session replacement and one-time consumption. Keep
 deterministic restart evidence separate from actual watchdog termination.
+
+T12 uses process-signals.representative.cross-scene-serial in the existing
+acceptance.py/connector_driver.js workflow. It requires192 probe tests and40
+native expectations before full-session view/error/long-task/Action/Resource/crash
+queries. process-records.json is preserved in the durable summary on rejection.
+Decode nested/flattened measured fields without coercion; retain absent optional
+zero counters separately from malformed present values. Use source-tree-relative
+paths for lint baselines so custom rules restricted to Sources remain enabled.

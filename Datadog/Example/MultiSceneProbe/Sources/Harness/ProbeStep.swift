@@ -31,6 +31,7 @@ enum ProbeStepKind: String, Codable, CaseIterable {
     case runCurrentViewErrorBatch = "run-current-view-error-batch"
     case runViewAttributeBatch = "run-view-attribute-batch"
     case runViewTimingBatch = "run-view-timing-batch"
+    case runProcessSignalBatch = "run-process-signal-batch"
     case runFatalPreparation = "run-fatal-preparation"
     case runWebViewOwnershipBatch = "run-webview-ownership-batch"
     case runLogOwnershipBatch = "run-log-ownership-batch"
@@ -321,4 +322,31 @@ enum ProbeFatalContract {
     static func contains(_ identifier: String) -> Bool {
         identifier == prepare || isRecovery(identifier)
     }
+}
+
+internal enum ProbeProcessContract {
+    static let scenarioID = "process-signals.representative.cross-scene-serial"
+    static let selection = "process-select-a"
+    static let completed = "process-batch-complete"
+    static let guards = [
+        "process-configuration",
+        "process-owner-a",
+        "process-owner-b",
+        "process-b-representative",
+        "process-b-memory-boundary",
+        "process-b-memory-acknowledged",
+        "process-b-block-began",
+        "process-b-block-ended",
+        "process-b-signals-acknowledged",
+        "process-selection-boundary",
+        "process-selection-acknowledged",
+        "process-a-representative",
+        "process-a-memory-boundary",
+        "process-a-memory-acknowledged",
+        "process-a-block-began",
+        "process-a-block-ended",
+        "process-a-signals-acknowledged",
+        "process-inventory-verified",
+        "process-batch-complete",
+    ]
 }

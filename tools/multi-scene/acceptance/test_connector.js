@@ -524,3 +524,61 @@ test('fatal projection separates observed SDK revision from backend document cou
   assert.throws(() => projectFatal({context:{exp184_sdk_document_version:2},
     'context.exp184_sdk_document_version':3}), /Ambiguous/);
 });
+
+const {projectProcess} = new Function(source.replace(
+  'return runAcceptance({tools, notify, device, repo, scenario: typeof scenario === "undefined" ? undefined : scenario});',
+  'return {projectProcess};'
+))();
+
+test('process projection keeps measured long-task identity duration and actual source', () => {
+  const result = projectProcess({
+    context:{"probe.run_id":"current"}, session:{id:"session"}, view:{id:"view"},
+    long_task:{id:"task",duration:1500000000}
+  }, {source:"ios"}, "process_long_tasks");
+  assert.equal(result.event_id, "task");
+  assert.equal(result.duration_ns, 1500000000);
+  assert.equal(result.run_id, "current");
+  assert.equal(result.source, "ios");
+  assert.equal(result.action_present, false);
+  assert.equal(result.container_present, false);
+});
+
+test('process projection preserves errors category fatality and independently observed duration', () => {
+  const result = projectProcess({"error.id":"hang","error.category":"App Hang","error.type":"AppHang",
+    "error.is_crash":false,"error.source":"source","error.source_type":"ios","freeze.duration":1500000000},
+    {source:"ios"}, "process_errors");
+  assert.equal(result.error_type, "AppHang");
+  assert.equal(result.error_category, "App Hang");
+  assert.equal(result.error_source_type, "ios");
+  assert.equal(result.is_crash, false);
+  assert.equal(result.duration_ns, 1500000000);
+  const memory = projectProcess({"error.type":"MemoryWarning"}, {}, "process_errors");
+  assert.equal(memory.duration_ns, null);
+  assert.equal(memory.run_id, null);
+});
+
+test('process projection rejects conflicting or ambiguous source and duration', () => {
+  assert.throws(() => projectProcess({source:"browser"}, {source:"ios"}, "process_errors"), /Conflicting/);
+  assert.throws(() => projectProcess({long_task:{duration:1},"long_task.duration":2}, {}, "process_long_tasks"), /Ambiguous/);
+  assert.throws(() => projectProcess({}, {}, "unexpected"), /Unknown/);
+});
+
+test('process projection preserves malformed counters and unexpected associations', () => {
+  const result = projectProcess({"view.long_task.count":"1","view.error.count":true,
+    "action.id":"foreign","container.view.id":"container"}, {}, "process_views");
+  assert.equal(result.view_long_task_count, "1");
+  assert.equal(result.view_error_count, true);
+  assert.equal(result.view_crash_count, null);
+  assert.equal(result.action_present, true);
+  assert.equal(result.container_present, true);
+});
+
+test('process selection Action projection uses actual Action identity and target', () => {
+  const result = projectProcess({action:{id:"selection",type:"custom",target:{name:"process-select-a"}},
+    view:{id:"a"},context:{probe:{run_id:"run"}}}, {source:"ios"}, "process_actions");
+  assert.equal(result.event_id, "selection");
+  assert.equal(result.action_type, "custom");
+  assert.equal(result.action_target, "process-select-a");
+  assert.equal(result.view_id, "a");
+  assert.equal(result.run_id, "run");
+});

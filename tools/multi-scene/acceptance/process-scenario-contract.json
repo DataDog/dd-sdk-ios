@@ -1,0 +1,267 @@
+{
+  "completionConditions": [
+    {
+      "kind": "assertion",
+      "name": "process-configuration",
+      "expectedCount": 1
+    },
+    {
+      "kind": "assertion",
+      "name": "process-owner-a",
+      "expectedCount": 1
+    },
+    {
+      "kind": "assertion",
+      "name": "process-owner-b",
+      "expectedCount": 1
+    },
+    {
+      "kind": "assertion",
+      "name": "process-b-representative",
+      "expectedCount": 1
+    },
+    {
+      "kind": "assertion",
+      "name": "process-b-memory-boundary",
+      "expectedCount": 1
+    },
+    {
+      "kind": "assertion",
+      "name": "process-b-memory-acknowledged",
+      "expectedCount": 1
+    },
+    {
+      "kind": "assertion",
+      "name": "process-b-block-began",
+      "expectedCount": 1
+    },
+    {
+      "kind": "assertion",
+      "name": "process-b-block-ended",
+      "expectedCount": 1
+    },
+    {
+      "kind": "assertion",
+      "name": "process-b-signals-acknowledged",
+      "expectedCount": 1
+    },
+    {
+      "kind": "assertion",
+      "name": "process-selection-boundary",
+      "expectedCount": 1
+    },
+    {
+      "kind": "assertion",
+      "name": "process-selection-acknowledged",
+      "expectedCount": 1
+    },
+    {
+      "kind": "assertion",
+      "name": "process-a-representative",
+      "expectedCount": 1
+    },
+    {
+      "kind": "assertion",
+      "name": "process-a-memory-boundary",
+      "expectedCount": 1
+    },
+    {
+      "kind": "assertion",
+      "name": "process-a-memory-acknowledged",
+      "expectedCount": 1
+    },
+    {
+      "kind": "assertion",
+      "name": "process-a-block-began",
+      "expectedCount": 1
+    },
+    {
+      "kind": "assertion",
+      "name": "process-a-block-ended",
+      "expectedCount": 1
+    },
+    {
+      "kind": "assertion",
+      "name": "process-a-signals-acknowledged",
+      "expectedCount": 1
+    },
+    {
+      "kind": "assertion",
+      "name": "process-inventory-verified",
+      "expectedCount": 1
+    },
+    {
+      "kind": "assertion",
+      "name": "process-batch-complete",
+      "expectedCount": 1
+    }
+  ],
+  "defaultRunMode": "clean",
+  "expectedSemanticTimeline": [
+    {
+      "kind": "view-started",
+      "occurrence": 1,
+      "rumViewOrigin": "semantic",
+      "scene": "scene-A",
+      "screen": "home"
+    },
+    {
+      "kind": "view-started",
+      "occurrence": 1,
+      "rumViewOrigin": "semantic",
+      "scene": "scene-B",
+      "screen": "home"
+    },
+    {
+      "kind": "assertion",
+      "name": "process-configuration",
+      "expectedCount": 1
+    },
+    {
+      "kind": "assertion",
+      "name": "process-owner-a",
+      "expectedCount": 1
+    },
+    {
+      "kind": "assertion",
+      "name": "process-owner-b",
+      "expectedCount": 1
+    },
+    {
+      "kind": "assertion",
+      "name": "process-b-representative",
+      "expectedCount": 1
+    },
+    {
+      "kind": "assertion",
+      "name": "process-b-memory-boundary",
+      "expectedCount": 1
+    },
+    {
+      "kind": "assertion",
+      "name": "process-b-memory-acknowledged",
+      "expectedCount": 1
+    },
+    {
+      "kind": "assertion",
+      "name": "process-b-block-began",
+      "expectedCount": 1
+    },
+    {
+      "kind": "assertion",
+      "name": "process-b-block-ended",
+      "expectedCount": 1
+    },
+    {
+      "kind": "assertion",
+      "name": "process-b-signals-acknowledged",
+      "expectedCount": 1
+    },
+    {
+      "kind": "assertion",
+      "name": "process-selection-boundary",
+      "expectedCount": 1
+    },
+    {
+      "kind": "assertion",
+      "name": "process-selection-acknowledged",
+      "expectedCount": 1
+    },
+    {
+      "kind": "assertion",
+      "name": "process-a-representative",
+      "expectedCount": 1
+    },
+    {
+      "kind": "assertion",
+      "name": "process-a-memory-boundary",
+      "expectedCount": 1
+    },
+    {
+      "kind": "assertion",
+      "name": "process-a-memory-acknowledged",
+      "expectedCount": 1
+    },
+    {
+      "kind": "assertion",
+      "name": "process-a-block-began",
+      "expectedCount": 1
+    },
+    {
+      "kind": "assertion",
+      "name": "process-a-block-ended",
+      "expectedCount": 1
+    },
+    {
+      "kind": "assertion",
+      "name": "process-a-signals-acknowledged",
+      "expectedCount": 1
+    },
+    {
+      "kind": "assertion",
+      "name": "process-inventory-verified",
+      "expectedCount": 1
+    },
+    {
+      "kind": "assertion",
+      "name": "process-batch-complete",
+      "expectedCount": 1
+    }
+  ],
+  "identifier": "process-signals.representative.cross-scene-serial",
+  "initialWindows": [
+    "scene-A",
+    "scene-B"
+  ],
+  "layout": "stack",
+  "requiredCapabilities": [
+    "multiple-scenes"
+  ],
+  "runtimeOptions": {
+    "automaticallyAbortsDetail": false,
+    "automaticallyAdvancesSplitSelection": true,
+    "automaticallyClosesSceneB": false,
+    "automaticallyNavigates": false,
+    "automaticallyOpensSecondWindow": false,
+    "automaticallyPopsUIKitSplitNavigation": true,
+    "automaticallyReplacesDetail": false,
+    "automaticallyReplacesDetailInstance": false,
+    "automaticallyReturnsSplitToDetail": false,
+    "exercisesSwiftUIButtonStructuredTask": false,
+    "exercisesTraceOnlyURLSessionOwnership": false,
+    "exercisesUIEventContextHandoff": false,
+    "exercisesUIKitScrollOwnership": false,
+    "forcesNavigationRouteIdentity": false,
+    "initialSwiftUIPath": [],
+    "manualSwiftUIViewScreensByScene": {},
+    "startsSplitWithoutSelection": false,
+    "swiftUIRouterWritePolicy": "accept",
+    "swiftUIStress": "none"
+  },
+  "steps": [
+    {
+      "kind": "wait-for-scene-ready",
+      "scene": "scene-A"
+    },
+    {
+      "kind": "wait-for-signal",
+      "scene": "scene-A",
+      "signal": "rum-view:home#1"
+    },
+    {
+      "kind": "open-window",
+      "scene": "scene-A",
+      "value": "scene-B"
+    },
+    {
+      "kind": "wait-for-signal",
+      "scene": "scene-B",
+      "signal": "rum-view:home#1"
+    },
+    {
+      "kind": "run-process-signal-batch",
+      "scene": "scene-B"
+    }
+  ],
+  "trackingMode": "manual"
+}

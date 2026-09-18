@@ -375,7 +375,7 @@
       "environment": "Controlled long-task/hang/memory-warning tests and simulator backend",
       "completion_mode": "documented process-level fallback",
       "status": "OPEN",
-      "evidence": "EXP-185 deterministic checkpoint:98 SDK tests and strict test lint pass; representative routing and retained fatal-hang consumption. Actual native producers and backend remain. Results/EXP-185-process-signal-routing.json."
+      "evidence": "EXP-185:98 SDK tests; native fixture build and213 Python/50 connector controls pass. Fresh192-probe/40-expectation actual-producer/backend acceptance remains. Results/EXP-185-process-signal-routing.json."
     },
     {
       "id": "T13",

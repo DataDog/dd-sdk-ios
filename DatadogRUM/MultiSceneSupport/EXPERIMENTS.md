@@ -202,7 +202,7 @@ remain available for a specific question.
 | <a id="exp-182"></a>EXP-182 | T09, A01 | PASS | Deferred controls and24 native assertions;6 logs,3 mirrors,2 actions and3 views match exact backend owners. Attempt A remains inconclusive. | [record](Experiments/EXP-143-199.md#exp-182--accept-captured-logs-and-mirrored-error-ownership) |
 | <a id="exp-183"></a>EXP-183 | T10, A01, D02, D11 | PASS | T10 closed:33 SDK/184 probe tests,14 native expectations and exact12 backend views including detached omission; failed connector attempt retained. | [record](Experiments/EXP-143-199.md#exp-183--accept-native-webview-container-ownership) |
 | <a id="exp-184"></a>EXP-184 | T11, A01 | PASS | SDK131/probe188,44 native expectations and complete7-view/1-fatal backend pass. Exact captured ownership and consumption; T11 closes. Earlier failures retained. | [record](Experiments/EXP-143-199.md#exp-184--accept-exported-and-fatal-process-context) |
-| <a id="exp-185"></a>EXP-185 | T12, A01 | PREPARED | 98 SDK tests and strict test lint pass; process fallback and pending-hang snapshot controls. Native producers/backend remain. | [record](Experiments/EXP-143-199.md#exp-185--validate-process-signal-routing) |
+| <a id="exp-185"></a>EXP-185 | T12, A01 | PREPARED | 98 SDK tests; native fixture builds with192 discovered tests,213 Python/50 connector controls and40 frozen expectations. Fresh actual-producer/backend acceptance remains. | [record](Experiments/EXP-143-199.md#exp-185--validate-process-signal-routing) |
 
 Original detailed shards and frozen records remain unchanged. Superseded index
 prose is preserved in the [documentation checkpoint](Experiments/DOCUMENTATION_CHECKPOINT_EXP-178.md).

@@ -146,6 +146,7 @@ enum ProbeRuntime {
             recorder: eventRecorder,
             sceneRegistry: sceneRegistry,
             stepTimeoutNanoseconds: ProbeFatalContract.contains(scenario.identifier)
+                || scenario.identifier == ProbeProcessContract.scenarioID
                 ? 60_000_000_000
                 : usesSemanticNavigationValueLinks
                 ? 180_000_000_000
@@ -274,6 +275,8 @@ enum ProbeRuntime {
                     })
                     : nil,
                 trackBackgroundEvents: true,
+                longTaskThreshold: scenario?.identifier == ProbeProcessContract.scenarioID ? 0.5 : 0.1,
+                appHangThreshold: scenario?.identifier == ProbeProcessContract.scenarioID ? 0.5 : nil,
                 viewEventMapper: { event in
                     var event = event
                     #if DEBUG
@@ -310,6 +313,14 @@ enum ProbeRuntime {
                     }
                     #endif
                     record(errorEvent: event)
+                    return event
+                },
+                longTaskEventMapper: { event in
+                    #if DEBUG
+                    if scenario?.identifier == ProbeProcessContract.scenarioID {
+                        ProbeProcessAcceptance.recordLongTask(event)
+                    }
+                    #endif
                     return event
                 },
                 onSessionStart: { sessionID, isDiscarded in
@@ -422,7 +433,7 @@ enum ProbeRuntime {
         guard !ProbeFatalContract.contains(scenario?.identifier ?? "") else {
             return
         }
-        guard ![ProbeResourceContract.scenarioID, ProbeErrorContract.scenarioID, ProbeAttributeContract.scenarioID, ProbeTimingContract.scenarioID, ProbeFlagContract.scenarioID, ProbeTraceContract.scenarioID, ProbeLogContract.scenarioID, ProbeWebViewContract.scenarioID].contains(scenario?.identifier ?? "") else { return }
+        guard ![ProbeProcessContract.scenarioID, ProbeResourceContract.scenarioID, ProbeErrorContract.scenarioID, ProbeAttributeContract.scenarioID, ProbeTimingContract.scenarioID, ProbeFlagContract.scenarioID, ProbeTraceContract.scenarioID, ProbeLogContract.scenarioID, ProbeWebViewContract.scenarioID].contains(scenario?.identifier ?? "") else { return }
         let uptime = ProcessInfo.processInfo.systemUptime
         let marker = "\(window.label).\(screen).\(phase)"
         let attributes: [String: Encodable] = [
@@ -683,14 +694,17 @@ enum ProbeRuntime {
                 loading: event.view.loadingTime
             ) : nil
         #if DEBUG
+        let process = scenario?.identifier == ProbeProcessContract.scenarioID
+            ? ProbeProcessAcceptance.viewObservation(event) : nil
         let fatal = ProbeFatalContract.contains(scenario?.identifier ?? "")
             ? ProbeFatalAcceptance.viewObservation(event) : nil
         let flagState = scenario?.identifier == ProbeFlagContract.scenarioID ? ProbeFlagAcceptance.state(event) : nil
         #else
+        let process: ProbeProcessObservation? = nil
         let fatal: ProbeFatalObservation? = nil
         let flagState: ProbeFlagState? = nil
         #endif
-        eventRecorder.record(ProbeRUMEventAdapter.viewSnapshot(event, timingState: timingState, flagState: flagState, fatal: fatal))
+        eventRecorder.record(ProbeRUMEventAdapter.viewSnapshot(event, timingState: timingState, flagState: flagState, process: process, fatal: fatal))
         record(
             "payload type=view session=\(event.session.id) view=\(event.view.id) "
                 + "name=\(event.view.name ?? "nil") "
@@ -726,7 +740,13 @@ enum ProbeRuntime {
     }
 
     private static func record(errorEvent event: RUMErrorEvent) {
-        eventRecorder.record(ProbeRUMEventAdapter.error(event))
+        #if DEBUG
+        let process = scenario?.identifier == ProbeProcessContract.scenarioID
+            ? ProbeProcessAcceptance.errorObservation(event) : nil
+        #else
+        let process: ProbeProcessObservation? = nil
+        #endif
+        eventRecorder.record(ProbeRUMEventAdapter.error(event, process: process))
         record(
             "payload type=error session=\(event.session.id) view=\(event.view.id) "
                 + "error=\(event.error.id ?? "nil") name=\(event.view.name ?? "nil") "

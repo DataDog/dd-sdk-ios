@@ -35,6 +35,7 @@ internal enum ProbeSignalKind: String, Codable, CaseIterable {
     case rumAction = "rum-action"
     case rumResource = "rum-resource"
     case rumError = "rum-error"
+    case rumLongTask = "rum-long-task"
     case webBridgeMessage = "web-bridge-message"
     case rumLog = "rum-log"
     case rumTrace = "rum-trace"
@@ -339,6 +340,25 @@ internal struct ProbeFatalObservation: Codable, Equatable {
     var hasContainer: Bool? = nil
 }
 
+internal struct ProbeProcessObservation: Codable, Equatable {
+    var longTaskThreshold: Double? = nil
+    var appHangThreshold: Double? = nil
+    var hasLongTaskObserver: Bool? = nil
+    var hasAppHangMonitor: Bool? = nil
+    var hasMemoryWarningMonitor: Bool? = nil
+    var serverTimeOffsetMilliseconds: Double? = nil
+    var durationNanoseconds: Int64? = nil
+    var nativeSource: String? = nil
+    var originalRunID: String? = nil
+    var hasAction: Bool? = nil
+    var hasContainer: Bool? = nil
+    var viewLongTaskCount: Int64? = nil
+    var viewErrorCount: Int64? = nil
+    var viewActionCount: Int64? = nil
+    var viewResourceCount: Int64? = nil
+    var viewCrashCount: Int64? = nil
+}
+
 internal struct ProbeSignal: Codable, Equatable {
     static let schemaVersion = 5
     static let supportedSchemaVersions = 1 ... schemaVersion
@@ -378,6 +398,7 @@ internal struct ProbeSignal: Codable, Equatable {
     let resource: ProbeResourceSignal?
     let error: ProbeErrorSignal?
     let log: ProbeLogWireIdentity?
+    let processSignal: ProbeProcessObservation?
     let fatal: ProbeFatalObservation?
     let webMessage: ProbeWebViewMessage?
     let trace: ProbeTraceSignal?
@@ -423,6 +444,7 @@ internal struct ProbeSignal: Codable, Equatable {
         resource: ProbeResourceSignal? = nil,
         error: ProbeErrorSignal? = nil,
         log: ProbeLogWireIdentity? = nil,
+        processSignal: ProbeProcessObservation? = nil,
         fatal: ProbeFatalObservation? = nil,
         webMessage: ProbeWebViewMessage? = nil,
         trace: ProbeTraceSignal? = nil,
@@ -468,6 +490,7 @@ internal struct ProbeSignal: Codable, Equatable {
         self.resource = resource
         self.error = error
         self.log = log
+        self.processSignal = processSignal
         self.fatal = fatal
         self.webMessage = webMessage
         self.trace = trace
@@ -520,6 +543,7 @@ internal struct ProbeSignal: Codable, Equatable {
             resource: resource,
             error: error,
             log: log,
+            processSignal: processSignal,
             fatal: fatal,
             webMessage: webMessage,
             trace: trace,

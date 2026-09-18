@@ -347,6 +347,29 @@ function projectFatal(payload, envelope = {}) {
   };
 }
 
+function projectProcess(payload, envelope = {}, kind) {
+  if (!["process_views", "process_errors", "process_long_tasks", "process_actions"].includes(kind)) {
+    throw Error("Unknown process projection kind");
+  }
+  const get = path => webValue(payload, path).value;
+  const common = projectWebView(payload, envelope);
+  const idPath = {process_views:null, process_errors:"error.id",
+    process_long_tasks:"long_task.id", process_actions:"action.id"}[kind];
+  return {
+    run_id:common.run_id, session_id:common.session_id, view_id:common.view_id,
+    name:common.name, source:common.source, container_present:common.container_present,
+    action_present:hasPayloadPath(payload, "action") || hasPayloadPath(payload, "action.id"),
+    event_id:idPath === null ? null : get(idPath),
+    duration_ns:kind === "process_long_tasks" ? get("long_task.duration") : get("freeze.duration"),
+    error_source:get("error.source"), error_source_type:get("error.source_type"),
+    error_type:get("error.type"), error_category:get("error.category"), is_crash:get("error.is_crash"),
+    action_type:get("action.type"), action_target:get("action.target.name"),
+    view_long_task_count:common.long_task_count, view_error_count:common.error_count,
+    view_action_count:common.action_count, view_resource_count:common.resource_count,
+    view_crash_count:get("view.crash.count")
+  };
+}
+
 async function runAcceptance({tools, notify, device, repo, scenario}) {
   if (!repo || !device) throw Error("Explicit repository path and freshly resolved simulator UUID required");
   const shellQuote = value => "'" + value.replaceAll("'", "'\\''") + "'";
@@ -433,6 +456,9 @@ async function runAcceptance({tools, notify, device, repo, scenario}) {
       const payload = row.attributes?.custom || row.custom || row.attributes || row;
       const base = {run_id:at(payload,"context.probe.run_id"),
                     session_id:at(payload,"session.id"), view_id:at(payload,"view.id")};
+      if (["process_views", "process_errors", "process_long_tasks", "process_actions"].includes(request.kind)) {
+        return projectProcess(payload, row.attributes || row, request.kind);
+      }
       if (["fatal_views", "fatal_errors"].includes(request.kind)) return projectFatal(payload, row.attributes || row);
       if (request.kind === "webview_views") return projectWebView(payload, row.attributes || row);
       if (request.kind === "views") return {...base, name:at(payload,"view.name")};

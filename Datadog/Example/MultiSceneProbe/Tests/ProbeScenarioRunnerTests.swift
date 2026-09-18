@@ -35,6 +35,75 @@ final class ProbeScenarioRunnerTests: XCTestCase {
         XCTAssertTrue(normalizedWindow.opensPeer)
     }
 
+    func testProcessSignalContractRequiresBothRoundsBeforeCompletion() throws {
+        let scenario = try XCTUnwrap(ProbeScenarioCatalog.scenario(identifier: ProbeProcessContract.scenarioID))
+        XCTAssertTrue(ProbeScenarioCatalog.usesObservableDriver(scenario))
+        XCTAssertEqual(scenario.steps.last?.kind, .runProcessSignalBatch)
+        XCTAssertEqual(scenario.completionConditions.compactMap(\.name), ProbeProcessContract.guards)
+        XCTAssertEqual(scenario.completionConditions.count + scenario.expectedSemanticTimeline.count, 40)
+        XCTAssertEqual(scenario.initialWindows, ["scene-A", "scene-B"])
+    }
+
+    func testProcessSignalOracleRejectsMissingRepeatedLateAndUnacknowledgedGuards() throws {
+        let original = try XCTUnwrap(ProbeScenarioCatalog.scenario(identifier: ProbeProcessContract.scenarioID))
+        let scenario = ProbeScenario(
+            identifier: original.identifier,
+            trackingMode: .manual,
+            layout: .stack,
+            initialWindows: [],
+            requiredCapabilities: [],
+            steps: [],
+            completionConditions: original.completionConditions,
+            expectedSemanticTimeline: original.completionConditions
+        )
+        func evaluate(_ names: [String], missingPass: Bool = false) -> ProbeSemanticResultState {
+            let signals = names.enumerated().map { index, name in
+                ProbeSignal(kind: .assertion, name: name, result: missingPass ? nil : .pass)
+                    .enveloped(
+                        sequence: UInt64(index + 1),
+                        timestampMilliseconds: Int64(index + 1),
+                        runID: "fresh-process-signals",
+                        scenarioID: scenario.identifier
+                    )
+            }
+            return ProbeSemanticOracle.evaluate(scenario: scenario, signals: signals).state
+        }
+        let guards = ProbeProcessContract.guards
+        XCTAssertEqual(evaluate(guards), .pass)
+        XCTAssertEqual(evaluate(Array(guards.dropLast())), .fail)
+        XCTAssertEqual(evaluate(guards + [guards[1]]), .fail)
+        var late = guards
+        late.swapAt(3, 4)
+        XCTAssertEqual(evaluate(late), .fail)
+        XCTAssertEqual(evaluate(guards, missingPass: true), .fail)
+    }
+
+    func testProcessObservationRoundTripPreservesMeasuredDurationAndOrigin() throws {
+        let observed = ProbeProcessObservation(
+            durationNanoseconds: 1_500_000_000,
+            nativeSource: "ios",
+            originalRunID: "original",
+            hasAction: false,
+            hasContainer: false,
+            viewLongTaskCount: 1,
+            viewErrorCount: 2
+        )
+        let signal = ProbeSignal(kind: .rumLongTask, evidenceSource: .rumMapper, processSignal: observed)
+            .enveloped(sequence: 1, timestampMilliseconds: 185, runID: "current", scenarioID: ProbeProcessContract.scenarioID)
+        let decoded = try JSONDecoder().decode(ProbeSignal.self, from: JSONEncoder().encode(signal))
+        XCTAssertEqual(decoded.processSignal, observed)
+        XCTAssertNotEqual(decoded.runID, decoded.processSignal?.originalRunID)
+        XCTAssertEqual(decoded.kind, .rumLongTask)
+    }
+
+    func testLegacySignalWithoutProcessObservationStillDecodes() throws {
+        let signal = ProbeSignal(kind: .rumViewSnapshot, evidenceSource: .rumMapper)
+        let data = try JSONEncoder().encode(signal)
+        let object = try XCTUnwrap(JSONSerialization.jsonObject(with: data) as? [String: Any])
+        XCTAssertNil(object["processSignal"])
+        XCTAssertNil(try JSONDecoder().decode(ProbeSignal.self, from: data).processSignal)
+    }
+
     func testFatalContractRequiresDistinctPreparationAndRecoveryScenarios() throws {
         let preparation = try XCTUnwrap(ProbeScenarioCatalog.scenario(identifier: ProbeFatalContract.prepare))
         XCTAssertTrue(ProbeScenarioCatalog.usesObservableDriver(preparation))

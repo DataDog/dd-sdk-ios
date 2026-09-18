@@ -81,5 +81,52 @@
     }
   ],
   "native_attempts": [],
-  "next": "Implement the bounded native fixture and strict local/backend oracle, freeze identities, then execute fresh acceptance."
+  "next": "Fresh one-invocation acceptance on a newly resolved iOS27 iPad, requiring192 probe tests,40 native expectations and complete backend inventories.",
+  "native_preparation": {
+    "deterministic_revision": "b197c3fe42e5e1153c8da7697fee9061d0069eb3",
+    "scenario_id": "process-signals.representative.cross-scene-serial",
+    "minimum_probe_tests": 192,
+    "native_expectations": 40,
+    "ordered_guards": 19,
+    "python_controls": 213,
+    "connector_controls": 50,
+    "mcp_build": {
+      "buildResult": "The project built successfully.",
+      "elapsedTime": 4.179,
+      "errors": [],
+      "fullLogPath": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/ActionArtifacts/default/BuildProject/BuildProject-Log-20260918-061808.txt"
+    },
+    "environment": {
+      "xcode": "27.0",
+      "build": "27A266a",
+      "simulator": "iPad mini (A17 Pro)",
+      "os": "27.0",
+      "device": "92C9918B-FEC6-4440-9D6D-8E09475950BB",
+      "physical": {
+        "iphone": "27.2 paired, tunnel disconnected, DDI unavailable; MCP eligible",
+        "ipad": "27.0 paired, tunnel unavailable",
+        "watch": "27.0 paired, tunnel disconnected"
+      }
+    },
+    "lint": {
+      "new_fixture": "PASS strict repository source lint",
+      "changed_existing_files": "No added rule/reason findings versus HEAD with matching source/test configurations and path-sensitive baselines"
+    },
+    "clock_contract": {
+      "block_ms_minimum": 1400,
+      "block_ms_exclusive_maximum": 5000,
+      "event_start_relative_to_block_ms": [
+        -600,
+        600
+      ],
+      "event_end_relative_to_block_end_ms": [
+        -100,
+        600
+      ],
+      "memory_timestamp_boundary_allowance_ms": 50,
+      "clock_offset_source": "observed Core serverTimeOffset before each round"
+    },
+    "next": "Commit source and tooling, then fresh one-invocation acceptance; SDK production source unchanged.",
+    "contract_sha256": "17c0ec575b968df6a24546a2865769d6f455d689bfdc19946af84fc383026d38"
+  }
 }

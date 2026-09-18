@@ -24,7 +24,7 @@ internal enum ProbeRUMEventAdapter {
         )
     }
 
-    static func viewSnapshot(_ event: RUMViewEvent, timingState: ProbeTimingState? = nil, flagState: ProbeFlagState? = nil, fatal: ProbeFatalObservation? = nil) -> ProbeSignal {
+    static func viewSnapshot(_ event: RUMViewEvent, timingState: ProbeTimingState? = nil, flagState: ProbeFlagState? = nil, process: ProbeProcessObservation? = nil, fatal: ProbeFatalObservation? = nil) -> ProbeSignal {
         ProbeSignal(
             kind: .rumViewSnapshot,
             evidenceSource: .rumMapper,
@@ -40,6 +40,7 @@ internal enum ProbeRUMEventAdapter {
                 viewDocumentVersion: event.dd.documentVersion,
                 viewTimeSpentNanoseconds: event.view.timeSpent
             ),
+            processSignal: process,
             fatal: fatal,
             timingState: timingState,
             flagState: flagState
@@ -114,7 +115,7 @@ internal enum ProbeRUMEventAdapter {
         )
     }
 
-    static func error(_ event: RUMErrorEvent) -> ProbeSignal {
+    static func error(_ event: RUMErrorEvent, process: ProbeProcessObservation? = nil) -> ProbeSignal {
         let source = sourceContext(from: event.context?.contextInfo)
         let correlatedActionIDs: [String]?
         switch event.action?.id {
@@ -152,7 +153,8 @@ internal enum ProbeRUMEventAdapter {
                 traceID: event.dd.traceId,
                 spanID: event.dd.spanId,
                 parentSpanID: event.dd.parentSpanId
-            )
+            ),
+            processSignal: process
         )
     }
 
