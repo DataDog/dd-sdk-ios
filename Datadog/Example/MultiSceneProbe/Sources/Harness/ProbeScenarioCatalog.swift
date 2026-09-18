@@ -22,6 +22,7 @@ enum ProbeScenarioCatalog {
         ProbeTimingContract.scenarioID,
         ProbeFlagContract.scenarioID,
         ProbeTraceContract.scenarioID,
+        ProbeVitalsContract.scenarioID,
         ProbeProcessContract.scenarioID,
         ProbeFatalContract.prepare,
         ProbeWebViewContract.scenarioID,
@@ -88,6 +89,7 @@ enum ProbeScenarioCatalog {
         attributesExplicitCurrentView,
         timingExplicitCurrentView,
         flagsExplicitCurrentView,
+        sharedVitals,
         processSignals,
         fatalPreparation,
         fatalRecovery,
@@ -783,6 +785,32 @@ enum ProbeScenarioCatalog {
             ProbeStep(.stopLegacyAction, scene: "scene-A", value: "long-running-legacy-finished-b"),
     ]
 
+
+    private static let vitalsExpectations = ProbeVitalsContract.guards.map {
+        ProbeExpectation(.assertion, name: $0, expectedCount: 1)
+    }
+
+    private static let sharedVitals = ProbeScenario(
+        identifier: ProbeVitalsContract.scenarioID,
+        trackingMode: .manual,
+        layout: .stack,
+        initialWindows: ["scene-A", "scene-B"],
+        requiredCapabilities: [.multipleScenes],
+        steps: [
+            ProbeStep(.waitForSceneReady, scene: "scene-A"),
+            ProbeStep(.waitForSignal, scene: "scene-A", signal: "rum-view:home#1"),
+            ProbeStep(.sampleSharedVitals, scene: "scene-A"),
+            ProbeStep(.openWindow, scene: "scene-A", value: "scene-B"),
+            ProbeStep(.waitForSignal, scene: "scene-B", signal: "rum-view:home#1"),
+            ProbeStep(.sampleSharedVitals, scene: "scene-B"),
+        ],
+        completionConditions: vitalsExpectations,
+        expectedSemanticTimeline: [
+            ProbeExpectation(.viewStarted, scene: "scene-A", screen: "home", occurrence: 1, rumViewOrigin: .semantic),
+        ] + Array(vitalsExpectations.prefix(5)) + [
+            ProbeExpectation(.viewStarted, scene: "scene-B", screen: "home", occurrence: 1, rumViewOrigin: .semantic),
+        ] + Array(vitalsExpectations.dropFirst(5))
+    )
 
     private static let processSignalExpectations = ProbeProcessContract.guards.map {
         ProbeExpectation(.assertion, name: $0, expectedCount: 1)

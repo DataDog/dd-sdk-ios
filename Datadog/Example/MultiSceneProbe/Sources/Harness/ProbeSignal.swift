@@ -340,6 +340,28 @@ internal struct ProbeFatalObservation: Codable, Equatable {
     var hasContainer: Bool? = nil
 }
 
+internal struct ProbeVitalsObservation: Codable, Equatable {
+    struct SlowFrame: Codable, Equatable {
+        let start: Int64
+        let duration: Int64
+    }
+
+    var configuration: [String: Bool]? = nil
+    var samplingInterval: Double? = nil
+    var cpuTicks: Double? = nil
+    var cpuRate: Double? = nil
+    var memoryAverage: Double? = nil
+    var memoryMax: Double? = nil
+    var refreshRateAverage: Double? = nil
+    var refreshRateMin: Double? = nil
+    var timeSpentNanoseconds: Int64? = nil
+    var slowFrames: [SlowFrame]? = nil
+    var slowFramesRate: Double? = nil
+    var nativeSource: String? = nil
+    var originalRunID: String? = nil
+    var counters: [String: Int64]? = nil
+}
+
 internal struct ProbeProcessObservation: Codable, Equatable {
     var longTaskThreshold: Double? = nil
     var appHangThreshold: Double? = nil
@@ -398,6 +420,7 @@ internal struct ProbeSignal: Codable, Equatable {
     let resource: ProbeResourceSignal?
     let error: ProbeErrorSignal?
     let log: ProbeLogWireIdentity?
+    let vitals: ProbeVitalsObservation?
     let processSignal: ProbeProcessObservation?
     let fatal: ProbeFatalObservation?
     let webMessage: ProbeWebViewMessage?
@@ -444,6 +467,7 @@ internal struct ProbeSignal: Codable, Equatable {
         resource: ProbeResourceSignal? = nil,
         error: ProbeErrorSignal? = nil,
         log: ProbeLogWireIdentity? = nil,
+        vitals: ProbeVitalsObservation? = nil,
         processSignal: ProbeProcessObservation? = nil,
         fatal: ProbeFatalObservation? = nil,
         webMessage: ProbeWebViewMessage? = nil,
@@ -490,6 +514,7 @@ internal struct ProbeSignal: Codable, Equatable {
         self.resource = resource
         self.error = error
         self.log = log
+        self.vitals = vitals
         self.processSignal = processSignal
         self.fatal = fatal
         self.webMessage = webMessage
@@ -543,6 +568,7 @@ internal struct ProbeSignal: Codable, Equatable {
             resource: resource,
             error: error,
             log: log,
+            vitals: vitals,
             processSignal: processSignal,
             fatal: fatal,
             webMessage: webMessage,

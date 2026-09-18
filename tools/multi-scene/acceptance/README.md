@@ -1,9 +1,9 @@
 # Multi-scene acceptance workflow
 
-This runner admits nine finite contracts: EXP-161/A01 long-running actions,
+This runner admits twelve finite contracts: EXP-161/A01 long-running actions,
 EXP-176/T03 Resources, EXP-177/T04 errors, EXP-178/T05 attributes,
 EXP-179/T06 timing/loading, EXP-180/T07 flags/internal mutations,
-EXP-181/T08 Trace, EXP-182/T09 Logs/mirrors and EXP-183/T10 WebView containers. It does not certify simultaneous
+EXP-181/T08 Trace, EXP-182/T09 Logs/mirrors, EXP-183/T10 WebView containers,\nEXP-184/T11 fatal recovery, EXP-185/T12 process signals and EXP-186/T13 shared vitals.\nIt does not certify simultaneous
 visibility, real scene teardown, interactive gestures or hardware-only scenarios.
 
 The Python runner records commit signature status and performs environment and
@@ -277,3 +277,23 @@ The source inventory includes WebViewTracking and SessionReplay. A fresh build
 requires at least184 probe tests. This bounded controlled-payload bridge fixture
 does not certify the Browser SDK, per-scene Replay correctness, simultaneous
 visibility or the physical F05 coexistence gate.
+
+
+## Shared vitals acceptance (EXP-186/T13)
+
+Use vitals.shared-process.cross-scene-serial through the existing connector driver.
+The frozen contract requires196 probe tests and30 native expectations from14
+ordered guards plus two Home starts. A must produce actual100ms reader samples
+before opening B; native background retirement precedes B sampling. Targeted
+timing checkpoints request updates without modifying observed metric values.
+Unrelated Actions/Resources, long tasks, hangs and memory warnings are disabled.
+
+After stopping the session, require exactly three inactive views, one session
+and zero extra telemetry. Query the whole session. Compare actual final
+CPU/memory/refresh and optional slow-frame values with exact identities,
+presence/integers and the predeclared floating tolerance. At most three fresh
+view reads,10s apart, may wait for an earlier valid interval/still-active view.
+Wrong owners, malformed/extra data or interval regression/overshoot fail at once.
+Persist vitals-records.json and backend-exchanges.json in the durable summary.
+This simulator workflow does not satisfy the required representative physical
+sample, simultaneous visibility or Duo acceptance.

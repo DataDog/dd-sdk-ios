@@ -35,6 +35,84 @@ final class ProbeScenarioRunnerTests: XCTestCase {
         XCTAssertTrue(normalizedWindow.opensPeer)
     }
 
+    func testVitalsContractSamplesABeforeOpeningBAndStopsBeforeFinalAssertions() throws {
+        let scenario = try XCTUnwrap(ProbeScenarioCatalog.scenario(identifier: ProbeVitalsContract.scenarioID))
+        XCTAssertTrue(ProbeScenarioCatalog.usesObservableDriver(scenario))
+        XCTAssertEqual(scenario.steps.map(\.kind), [
+            .waitForSceneReady, .waitForSignal, .sampleSharedVitals, .openWindow, .waitForSignal, .sampleSharedVitals,
+        ])
+        XCTAssertEqual(scenario.steps[2].scene, "scene-A")
+        XCTAssertEqual(scenario.steps[5].scene, "scene-B")
+        XCTAssertEqual(scenario.completionConditions.compactMap(\.name), ProbeVitalsContract.guards)
+        XCTAssertEqual(scenario.completionConditions.count + scenario.expectedSemanticTimeline.count, 30)
+        XCTAssertEqual(scenario.expectedSemanticTimeline[5].name, "vitals-a-complete")
+        XCTAssertEqual(scenario.expectedSemanticTimeline[6].scene, "scene-B")
+    }
+
+    func testVitalsOracleRejectsMissingRepeatedLateAndUnacknowledgedGuards() throws {
+        let original = try XCTUnwrap(ProbeScenarioCatalog.scenario(identifier: ProbeVitalsContract.scenarioID))
+        let scenario = ProbeScenario(
+            identifier: original.identifier,
+            trackingMode: .manual,
+            layout: .stack,
+            initialWindows: [],
+            requiredCapabilities: [],
+            steps: [],
+            completionConditions: original.completionConditions,
+            expectedSemanticTimeline: original.completionConditions
+        )
+        func evaluate(_ names: [String], missingPass: Bool = false) -> ProbeSemanticResultState {
+            let signals = names.enumerated().map { index, name in
+                ProbeSignal(kind: .assertion, name: name, result: missingPass ? nil : .pass)
+                    .enveloped(
+                        sequence: UInt64(index + 1),
+                        timestampMilliseconds: Int64(index + 1),
+                        runID: "fresh-vitals",
+                        scenarioID: scenario.identifier
+                    )
+            }
+            return ProbeSemanticOracle.evaluate(scenario: scenario, signals: signals).state
+        }
+        let guards = ProbeVitalsContract.guards
+        XCTAssertEqual(evaluate(guards), .pass)
+        XCTAssertEqual(evaluate(Array(guards.dropLast())), .fail)
+        XCTAssertEqual(evaluate(guards + [guards[1]]), .fail)
+        var late = guards
+        late.swapAt(3, 4)
+        XCTAssertEqual(evaluate(late), .fail)
+        XCTAssertEqual(evaluate(guards, missingPass: true), .fail)
+    }
+
+    func testVitalsObservationRoundTripPreservesMeasuredValuesAndOriginalRun() throws {
+        let observed = ProbeVitalsObservation(
+            cpuTicks: 40,
+            cpuRate: 4,
+            memoryAverage: 2_048,
+            memoryMax: 3_072,
+            refreshRateAverage: 45,
+            refreshRateMin: 30,
+            timeSpentNanoseconds: 10_000_000_000,
+            slowFrames: [.init(start: 100, duration: 50)],
+            slowFramesRate: 0.000005,
+            nativeSource: "ios",
+            originalRunID: "original",
+            counters: ProbeVitalsContract.zeroCounters
+        )
+        let signal = ProbeSignal(kind: .rumViewSnapshot, evidenceSource: .rumMapper, vitals: observed)
+            .enveloped(sequence: 1, timestampMilliseconds: 186, runID: "current", scenarioID: ProbeVitalsContract.scenarioID)
+        let decoded = try JSONDecoder().decode(ProbeSignal.self, from: JSONEncoder().encode(signal))
+        XCTAssertEqual(decoded.vitals, observed)
+        XCTAssertNotEqual(decoded.runID, decoded.vitals?.originalRunID)
+    }
+
+    func testLegacySignalWithoutVitalsObservationStillDecodes() throws {
+        let signal = ProbeSignal(kind: .rumViewSnapshot, evidenceSource: .rumMapper)
+        let data = try JSONEncoder().encode(signal)
+        let object = try XCTUnwrap(JSONSerialization.jsonObject(with: data) as? [String: Any])
+        XCTAssertNil(object["vitals"])
+        XCTAssertNil(try JSONDecoder().decode(ProbeSignal.self, from: data).vitals)
+    }
+
     func testProcessSignalContractRequiresBothRoundsBeforeCompletion() throws {
         let scenario = try XCTUnwrap(ProbeScenarioCatalog.scenario(identifier: ProbeProcessContract.scenarioID))
         XCTAssertTrue(ProbeScenarioCatalog.usesObservableDriver(scenario))

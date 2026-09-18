@@ -46,7 +46,7 @@
   ],
   "native_attempts": [],
   "device_attempts": [],
-  "next": "Implement the predeclared actual-reader fixture and strict oracle, build/lint/controls, then commit and execute fresh one-invocation acceptance; physical sample still required.",
+  "next": "Commit the prepared fixture/tooling and execute fresh one-invocation simulator/backend acceptance. Preserve any failure; physical-device sampling remains required.",
   "unit_source_sha256": "53c5cda262ec8932913d815d6c6273beff7e15c56a75fc9a2fe5495f027c7539",
   "unit_summary": {
     "total": 166,
@@ -59,6 +59,12 @@
       "kind": "test compilation",
       "reason": "Optional view.isActive assertion required equality with false; corrected before131 passing tests.",
       "resolved": true
+    },
+    {
+      "kind": "strict oracle negative control",
+      "reason": "Stale original run ID on an intermediate mapper snapshot escaped a final-only check. Validate source/run identity and interval on every snapshot.",
+      "resolved": true,
+      "validation": "245 Python controls pass, including stale intermediate snapshot rejection."
     }
   ],
   "native_definition": {
@@ -75,5 +81,18 @@
     "long_tasks": 0,
     "crashes": 0,
     "final_views_inactive": true
+  },
+  "unit_revision": "7388ba00174d4e9493432b29bdb777519de95e3e",
+  "native_preparation": {
+    "build": "PASS Xcode MCP build-for-testing",
+    "build_log": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/ActionArtifacts/default/BuildProject/BuildProject-Log-20260918-071453.txt",
+    "python_controls": 245,
+    "connector_controls": 54,
+    "new_python_controls": 17,
+    "new_connector_controls": 4,
+    "swift_lint": "PASS strict new file; no added findings against eight existing probe source/test baselines",
+    "harness_tests_added": 4,
+    "harness_execution": "PENDING fresh one-invocation acceptance",
+    "oracle_contract_sha256": "1ce8583c667d327ce0417d271835073cb987c2fb767745f191ff07d6dbbdc74c"
   }
 }

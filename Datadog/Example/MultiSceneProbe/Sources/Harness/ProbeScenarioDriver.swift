@@ -824,6 +824,26 @@ internal final class ProbeScenarioDriver {
             }
             return .acknowledged(signal)
 
+        case .sampleSharedVitals:
+            guard let scene = step.scene, ["scene-A", "scene-B"].contains(scene) else {
+                return .failed("missing exact scene for vitals phase")
+            }
+            if case .rejected(let reason) = executeOnExactScene(step, scene: scene) {
+                return .failed(reason)
+            }
+            let name = scene == "scene-A" ? "vitals-a-complete" : "vitals-b-complete"
+            guard let signal = await wait(
+                for: .encoded(scene: nil, value: "assertion:" + name),
+                after: commandSequence,
+                timeoutNanoseconds: stepTimeoutNanoseconds
+            ) else {
+                return .inconclusive("vitals phase did not produce its terminal assertion")
+            }
+            guard signal.result == .pass else {
+                return .failed(signal.reason ?? "vitals phase failed")
+            }
+            return .acknowledged(signal)
+
         case .runProcessSignalBatch:
             if case .rejected(let reason) = executeOnExactScene(step, scene: "scene-B") {
                 return .failed(reason)

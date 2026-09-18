@@ -1,0 +1,221 @@
+{
+  "completionConditions": [
+    {
+      "expectedCount": 1,
+      "kind": "assertion",
+      "name": "vitals-configuration"
+    },
+    {
+      "expectedCount": 1,
+      "kind": "assertion",
+      "name": "vitals-a-owner"
+    },
+    {
+      "expectedCount": 1,
+      "kind": "assertion",
+      "name": "vitals-a-sampling-began"
+    },
+    {
+      "expectedCount": 1,
+      "kind": "assertion",
+      "name": "vitals-a-samples-acknowledged"
+    },
+    {
+      "expectedCount": 1,
+      "kind": "assertion",
+      "name": "vitals-a-complete"
+    },
+    {
+      "expectedCount": 1,
+      "kind": "assertion",
+      "name": "vitals-b-owner"
+    },
+    {
+      "expectedCount": 1,
+      "kind": "assertion",
+      "name": "vitals-a-retired"
+    },
+    {
+      "expectedCount": 1,
+      "kind": "assertion",
+      "name": "vitals-b-sampling-began"
+    },
+    {
+      "expectedCount": 1,
+      "kind": "assertion",
+      "name": "vitals-b-samples-acknowledged"
+    },
+    {
+      "expectedCount": 1,
+      "kind": "assertion",
+      "name": "vitals-stop-boundary"
+    },
+    {
+      "expectedCount": 1,
+      "kind": "assertion",
+      "name": "vitals-final-a"
+    },
+    {
+      "expectedCount": 1,
+      "kind": "assertion",
+      "name": "vitals-final-b"
+    },
+    {
+      "expectedCount": 1,
+      "kind": "assertion",
+      "name": "vitals-inventory-verified"
+    },
+    {
+      "expectedCount": 1,
+      "kind": "assertion",
+      "name": "vitals-b-complete"
+    }
+  ],
+  "defaultRunMode": "clean",
+  "expectedSemanticTimeline": [
+    {
+      "kind": "view-started",
+      "occurrence": 1,
+      "rumViewOrigin": "semantic",
+      "scene": "scene-A",
+      "screen": "home"
+    },
+    {
+      "expectedCount": 1,
+      "kind": "assertion",
+      "name": "vitals-configuration"
+    },
+    {
+      "expectedCount": 1,
+      "kind": "assertion",
+      "name": "vitals-a-owner"
+    },
+    {
+      "expectedCount": 1,
+      "kind": "assertion",
+      "name": "vitals-a-sampling-began"
+    },
+    {
+      "expectedCount": 1,
+      "kind": "assertion",
+      "name": "vitals-a-samples-acknowledged"
+    },
+    {
+      "expectedCount": 1,
+      "kind": "assertion",
+      "name": "vitals-a-complete"
+    },
+    {
+      "kind": "view-started",
+      "occurrence": 1,
+      "rumViewOrigin": "semantic",
+      "scene": "scene-B",
+      "screen": "home"
+    },
+    {
+      "expectedCount": 1,
+      "kind": "assertion",
+      "name": "vitals-b-owner"
+    },
+    {
+      "expectedCount": 1,
+      "kind": "assertion",
+      "name": "vitals-a-retired"
+    },
+    {
+      "expectedCount": 1,
+      "kind": "assertion",
+      "name": "vitals-b-sampling-began"
+    },
+    {
+      "expectedCount": 1,
+      "kind": "assertion",
+      "name": "vitals-b-samples-acknowledged"
+    },
+    {
+      "expectedCount": 1,
+      "kind": "assertion",
+      "name": "vitals-stop-boundary"
+    },
+    {
+      "expectedCount": 1,
+      "kind": "assertion",
+      "name": "vitals-final-a"
+    },
+    {
+      "expectedCount": 1,
+      "kind": "assertion",
+      "name": "vitals-final-b"
+    },
+    {
+      "expectedCount": 1,
+      "kind": "assertion",
+      "name": "vitals-inventory-verified"
+    },
+    {
+      "expectedCount": 1,
+      "kind": "assertion",
+      "name": "vitals-b-complete"
+    }
+  ],
+  "identifier": "vitals.shared-process.cross-scene-serial",
+  "initialWindows": [
+    "scene-A",
+    "scene-B"
+  ],
+  "layout": "stack",
+  "requiredCapabilities": [
+    "multiple-scenes"
+  ],
+  "runtimeOptions": {
+    "automaticallyAbortsDetail": false,
+    "automaticallyAdvancesSplitSelection": true,
+    "automaticallyClosesSceneB": false,
+    "automaticallyNavigates": false,
+    "automaticallyOpensSecondWindow": false,
+    "automaticallyPopsUIKitSplitNavigation": true,
+    "automaticallyReplacesDetail": false,
+    "automaticallyReplacesDetailInstance": false,
+    "automaticallyReturnsSplitToDetail": false,
+    "exercisesSwiftUIButtonStructuredTask": false,
+    "exercisesTraceOnlyURLSessionOwnership": false,
+    "exercisesUIEventContextHandoff": false,
+    "exercisesUIKitScrollOwnership": false,
+    "forcesNavigationRouteIdentity": false,
+    "initialSwiftUIPath": [],
+    "manualSwiftUIViewScreensByScene": {},
+    "startsSplitWithoutSelection": false,
+    "swiftUIRouterWritePolicy": "accept",
+    "swiftUIStress": "none"
+  },
+  "steps": [
+    {
+      "kind": "wait-for-scene-ready",
+      "scene": "scene-A"
+    },
+    {
+      "kind": "wait-for-signal",
+      "scene": "scene-A",
+      "signal": "rum-view:home#1"
+    },
+    {
+      "kind": "sample-shared-vitals",
+      "scene": "scene-A"
+    },
+    {
+      "kind": "open-window",
+      "scene": "scene-A",
+      "value": "scene-B"
+    },
+    {
+      "kind": "wait-for-signal",
+      "scene": "scene-B",
+      "signal": "rum-view:home#1"
+    },
+    {
+      "kind": "sample-shared-vitals",
+      "scene": "scene-B"
+    }
+  ],
+  "trackingMode": "manual"
+}

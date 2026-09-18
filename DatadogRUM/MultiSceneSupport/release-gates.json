@@ -388,7 +388,7 @@
       "environment": "Fixed process metric fixture, view associations and backend; representative device sample before freeze",
       "completion_mode": "documented process-level measurement with existing view association",
       "status": "OPEN",
-      "evidence": "EXP-186:166 selected SDK tests/3 new controls and strict lint pass without production changes. Native196-test/30-expectation real-reader fixture is predeclared; backend and physical sample remain. Results/EXP-186-shared-vitals.json."
+      "evidence": "EXP-186:166 selected SDK tests/3 new controls pass without production changes. Actual-reader fixture builds;245 Python/54 connector controls and lint pass. Fresh196-test/30-expectation native/backend acceptance and physical sample remain. Results/EXP-186-shared-vitals.json."
     },
     {
       "id": "T14",

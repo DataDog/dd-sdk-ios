@@ -31,6 +31,7 @@ enum ProbeStepKind: String, Codable, CaseIterable {
     case runCurrentViewErrorBatch = "run-current-view-error-batch"
     case runViewAttributeBatch = "run-view-attribute-batch"
     case runViewTimingBatch = "run-view-timing-batch"
+    case sampleSharedVitals = "sample-shared-vitals"
     case runProcessSignalBatch = "run-process-signal-batch"
     case runFatalPreparation = "run-fatal-preparation"
     case runWebViewOwnershipBatch = "run-webview-ownership-batch"
@@ -322,6 +323,18 @@ enum ProbeFatalContract {
     static func contains(_ identifier: String) -> Bool {
         identifier == prepare || isRecovery(identifier)
     }
+}
+
+internal enum ProbeVitalsContract {
+    static let scenarioID = "vitals.shared-process.cross-scene-serial"
+    static let zeroCounters: [String: Int64] = ["actions": 0, "resources": 0, "errors": 0, "longTasks": 0, "crashes": 0]
+    static let guards = [
+        "vitals-configuration", "vitals-a-owner", "vitals-a-sampling-began",
+        "vitals-a-samples-acknowledged", "vitals-a-complete",
+        "vitals-b-owner", "vitals-a-retired", "vitals-b-sampling-began",
+        "vitals-b-samples-acknowledged", "vitals-stop-boundary",
+        "vitals-final-a", "vitals-final-b", "vitals-inventory-verified", "vitals-b-complete",
+    ]
 }
 
 internal enum ProbeProcessContract {

@@ -582,3 +582,43 @@ test('process selection Action projection uses actual Action identity and target
   assert.equal(result.view_id, "a");
   assert.equal(result.run_id, "run");
 });
+
+const {projectVitals} = new Function(source.replace(
+  'return runAcceptance({tools, notify, device, repo, scenario: typeof scenario === "undefined" ? undefined : scenario});',
+  'return {projectVitals};'
+))();
+test('vitals projection preserves actual samples slow frames and final interval', () => {
+  const metrics = {cpu_ticks_count:40, cpu_ticks_per_second:4, memory_average:2048, memory_max:3072,
+    refresh_rate_average:45, refresh_rate_min:30, time_spent:10000000000,
+    slow_frames:[{start:100,duration:50}], slow_frames_rate:0.000005};
+  const row = projectVitals({source:'ios',session:{id:'session'},context:{'probe.run_id':'fresh'},
+    view:{...metrics,id:'view',name:'Home',is_active:false,action:{count:0},resource:{count:0},error:{count:0}}});
+  assert.deepEqual(row.metrics, {cpuTicks:40,cpuRate:4,memoryAverage:2048,memoryMax:3072,
+    refreshRateAverage:45,refreshRateMin:30,timeSpentNanoseconds:10000000000,
+    slowFrames:[{start:100,duration:50}],slowFramesRate:0.000005});
+  assert.deepEqual(row.counters,{actions:0,resources:0,errors:0,longTasks:0,crashes:0});
+  assert.equal(row.run_id,'fresh');
+  assert.equal(row.is_active,false);
+});
+test('vitals projection preserves absence and values without converting them', () => {
+  const row = projectVitals({'view.cpu_ticks_count':'40','view.memory_average':true,'view.slow_frames':[]});
+  assert.equal(row.metrics.cpuTicks,'40');
+  assert.equal(row.metrics.memoryAverage,true);
+  assert.equal(row.metrics.cpuRate,null);
+  assert.deepEqual(row.metrics.slowFrames,[]);
+  assert.equal(row.counters.actions,null);
+});
+test('vitals projection rejects ambiguous flattened and nested samples', () => {
+  assert.throws(() => projectVitals({'view.memory_average':100,view:{memory_average:200}}), /Ambiguous/);
+});
+test('vitals projection retains owner source and unexpected view counters', () => {
+  const row = projectVitals({session:{id:'other-session'},view:{id:'other-view',action:{count:1},
+    long_task:{count:2},crash:{count:3}},container:{view:{id:'peer'}}}, {source:'ios'});
+  assert.equal(row.session_id,'other-session');
+  assert.equal(row.view_id,'other-view');
+  assert.equal(row.source,'ios');
+  assert.equal(row.container_present,true);
+  assert.equal(row.counters.actions,1);
+  assert.equal(row.counters.longTasks,2);
+  assert.equal(row.counters.crashes,3);
+});

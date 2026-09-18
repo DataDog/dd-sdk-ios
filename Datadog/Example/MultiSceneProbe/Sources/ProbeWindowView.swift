@@ -2906,6 +2906,8 @@ struct ProbeWindowRoot: View {
                         + "screen=\(currentSceneScreen) phase=\(marker) "
                         + "uptime=\(uptime)"
                 )
+            case .sampleSharedVitals:
+                return ProbeVitalsAcceptance.start(scene: logicalSceneID)
             case .runProcessSignalBatch:
                 return ProbeProcessAcceptance.start()
             case .runFatalPreparation:

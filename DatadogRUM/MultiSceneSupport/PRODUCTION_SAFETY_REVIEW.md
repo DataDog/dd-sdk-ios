@@ -237,5 +237,7 @@ pressure, watchdog termination, physical/Duo topology, vitals or profiling.
 passes166 selected SDK tests and strict test lint with no production repair.
 Fixed inputs preserve exact scene-view aggregates, ended subscription cleanup,
 fresh replacement and disabled behavior; scene churn keeps one session collector.
-Native/backend and representative device evidence remain required for T13.
+The actual-reader fixture builds and245 Python/54 connector controls pass,
+including stale intermediate-snapshot rejection. No new production finding.
+Native/backend execution and representative device evidence remain required for T13.
 This is separate from the completed D01–D12 review cycle.

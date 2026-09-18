@@ -370,6 +370,27 @@ function projectProcess(payload, envelope = {}, kind) {
   };
 }
 
+function projectVitals(payload, envelope = {}) {
+  const get = path => webValue(payload, path).value;
+  const common = projectWebView(payload, envelope);
+  return {
+    run_id:common.run_id, session_id:common.session_id, view_id:common.view_id,
+    name:common.name, source:common.source, is_active:common.is_active,
+    container_present:common.container_present,
+    counters:{
+      actions:common.action_count, resources:common.resource_count, errors:common.error_count,
+      longTasks:common.long_task_count ?? 0, crashes:get("view.crash.count") ?? 0
+    },
+    metrics:{
+      cpuTicks:get("view.cpu_ticks_count"), cpuRate:get("view.cpu_ticks_per_second"),
+      memoryAverage:get("view.memory_average"), memoryMax:get("view.memory_max"),
+      refreshRateAverage:get("view.refresh_rate_average"), refreshRateMin:get("view.refresh_rate_min"),
+      timeSpentNanoseconds:common.time_spent, slowFrames:get("view.slow_frames"),
+      slowFramesRate:get("view.slow_frames_rate")
+    }
+  };
+}
+
 async function runAcceptance({tools, notify, device, repo, scenario}) {
   if (!repo || !device) throw Error("Explicit repository path and freshly resolved simulator UUID required");
   const shellQuote = value => "'" + value.replaceAll("'", "'\\''") + "'";
@@ -456,6 +477,7 @@ async function runAcceptance({tools, notify, device, repo, scenario}) {
       const payload = row.attributes?.custom || row.custom || row.attributes || row;
       const base = {run_id:at(payload,"context.probe.run_id"),
                     session_id:at(payload,"session.id"), view_id:at(payload,"view.id")};
+      if (request.kind === "vitals_views") return projectVitals(payload, row.attributes || row);
       if (["process_views", "process_errors", "process_long_tasks", "process_actions"].includes(request.kind)) {
         return projectProcess(payload, row.attributes || row, request.kind);
       }
