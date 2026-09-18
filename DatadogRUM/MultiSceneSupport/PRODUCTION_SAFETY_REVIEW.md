@@ -242,8 +242,8 @@ backend comparison fails only two empty-array omissions; its diagnostic and fail
 record remain. The narrow presence repair passes248 Python/55 connector controls.
 Fresh attempt B passes the complete three-view/zero-extra-telemetry backend
 comparison with actual metric values. T13 awaits its representative physical
-sample. No new production finding; EXP-187 next checks serialized
-Profiling/Operation identity and flush lifetime under the existing process model.
+sample. No new production finding. The subsequent profile-correlation section
+records EXP-187's serialized identity and flush-lifetime evidence.
 This is separate from the completed D01–D12 review cycle.
 
 ## Subsequent bounded validation: profile correlation
@@ -265,4 +265,8 @@ Before Release exposure, its Objective-C contract must settle nullable target
 creation and crash-safe off-main misuse handling. Debug @MainActor smoke tests
 do not establish that behavior; this is an open F01 review/validation obligation,
 not a demonstrated regression or a reopened D01–D12 disposition. The proposal
-does not promote any public declaration.
+does not promote any public declaration. The prepared
+[final matrix](FINAL_COMPATIBILITY.md) preserves the off-main Release obligation
+and D01/D02 platform regression checks. The [support guide](SUPPORT_GUIDE.md)
+separates explicit, captured and process ownership, including Flutter-only FBC.
+These documentation preparations add no new production finding or release proof.

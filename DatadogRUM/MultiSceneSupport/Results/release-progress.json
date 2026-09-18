@@ -6,7 +6,8 @@
     "CLOSED": 40,
     "ENVIRONMENT BLOCKED": 19,
     "INCONCLUSIVE": 1,
-    "OPEN": 6
+    "OPEN": 5,
+    "REVIEW BLOCKED": 1
   },
   "closed": [
     "C01",
@@ -215,7 +216,7 @@
     },
     {
       "id": "F01",
-      "status": "OPEN",
+      "status": "REVIEW BLOCKED",
       "owner": "RUM API reviewers",
       "dependencies": [
         "T03",

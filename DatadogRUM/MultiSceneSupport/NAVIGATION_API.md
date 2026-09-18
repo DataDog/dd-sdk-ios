@@ -6,7 +6,7 @@ the concrete public API is not. The [canonical overview](../MULTI_SCENE_SUPPORT.
 owns the support verdict, [PLAN.md](PLAN.md) owns delivery order, and
 [EXPERIMENTS.md](EXPERIMENTS.md) owns runtime evidence.
 
-Last updated: 2026-09-16
+Last updated: 2026-09-18
 
 ## Status
 
@@ -21,7 +21,9 @@ behavior, and Objective-C exposure. The native-convenience SwiftUI container is
 also implemented as an iOS 27 experimental Swift SPI. `EXP-141` validates its complete
 Home → Detail → Home → Sheet → Home → full-screen-cover → Home stream locally and
 in backend intake while automatic tracking remains enabled. Examples below are
-the exercised review starting point, not settled signatures. `EXP-142`-`144`
+the exercised review starting point, not settled signatures. The compact
+[integration guide](SUPPORT_GUIDE.md) describes the current call sites and every
+telemetry family's ownership boundary. `EXP-142`-`144`
 then close repeated equal routes, external router/restoration behavior, and
 direct Sheet ↔ Cover replacement without an intermediate underlying view;
 `EXP-145` closes its actual-SPI sibling authority boundary.
@@ -409,7 +411,7 @@ any customer `View` as its content. For native SwiftUI, the intended low-cost
 shape is one container integration with automatic metadata:
 
 ```swift
-RUMNavigationHost(metadata: .automatic) {
+RUMNavigationHost {
     NavigationStack(path: $path) {
         ExistingContent()
             .navigationDestination(for: Route.self) { route in
@@ -429,10 +431,7 @@ An application that already owns an observable router may connect one dedicated
 adapter at that boundary. Its navigation methods remain unchanged:
 
 ```swift
-RUMNavigationHost(
-    transitions: router.rumNavigationTransitions,
-    metadata: .automatic
-) {
+RUMNavigationHost(transitions: router.rumNavigationTransitions) {
     ExistingApplicationNavigation(router: router)
 }
 ```

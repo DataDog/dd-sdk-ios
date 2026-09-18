@@ -72,6 +72,10 @@ SwiftUI host lifetime proof. Predeclared thresholds cannot be raised after resul
 
 ## Full-target platform compatibility checks
 
+[F03's finite matrix](FINAL_COMPATIBILITY.md) names the final module, client and
+platform cells. Freeze the approved candidate before execution; this procedure
+is reusable build guidance, not proof that the matrix has passed.
+
 For a platform compile gate, extract explicitly named production source/private/
 resource paths from the pinned Git revision into a fresh isolated package. Use
 all production sources of the selected target and preserve the repository's
@@ -123,6 +127,8 @@ Do not load the frozen history wholesale.
 | Experiment definition, attempts and outcome | Owning detailed record and durable result | Preserve stable IDs, frozen sources/builds, failed/invalid attempts and negative controls; add/update one compact index row. |
 | Experiment lookup | [Index](EXPERIMENTS.md) | ID, related gates, bounded outcome, decisive conclusion and exact record link; no restart instructions. |
 | Reusable execution lesson | This runbook | Add the discriminator/procedure and link the detailed result rather than repeating it. |
+| Customer integration and ownership guidance | [Support guide](SUPPORT_GUIDE.md) | Match the approved API and fixed T01–T15 contracts; status remains in the register. Compile final examples before supported publication. |
+| Final compatibility execution contract | [Final matrix](FINAL_COMPATIBILITY.md) | Preserve finite cells and frozen source/inventory/artifact rules; record attempts separately from the procedure. |
 | Review attribution and disposition | [Safety review](PRODUCTION_SAFETY_REVIEW.md), [triage](REVIEW_TRIAGE.md), [component review](COMPONENT_REVIEW.md) | Map finding to gate and repair evidence; distinguish completed review from release readiness. |
 | Baseline thresholds/results and rejected lessons | [BASELINES](BASELINES.md), [REJECTED_APPROACHES](REJECTED_APPROACHES.md) | Preserve predeclared thresholds and failed results; append evidence without rewriting history. |
 

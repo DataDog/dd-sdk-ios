@@ -214,6 +214,8 @@ Duo27.1 matrix; no SDK or review checkpoint alone establishes them all.
 | What remains and what closes it? | [Gate register](MultiSceneSupport/release-gates.json), generated [PLAN](MultiSceneSupport/PLAN.md) and [progress](MultiSceneSupport/Results/release-progress.json). |
 | What is supported and how strong is the proof? | [Assessment](MultiSceneSupport/ASSESSMENT.md). |
 | Where should work resume? | [.continue-here.md](../.continue-here.md), exclusively. |
+| How does an application integrate and attribute telemetry? | [Integration guide](MultiSceneSupport/SUPPORT_GUIDE.md), pending F01 approval and F02 publication checks. |
+| What executes the final compatibility gate? | [Finite matrix](MultiSceneSupport/FINAL_COMPATIBILITY.md), with results owned by F03. |
 | Where is an experiment? | [Compact index](MultiSceneSupport/EXPERIMENTS.md), then its exact detailed record; never load frozen history wholesale. |
 | How should a run be executed? | [Runbook](MultiSceneSupport/TOOLING_RUNBOOK.md) and [document update rules](MultiSceneSupport/TOOLING_RUNBOOK.md#documentation-reading-and-update-workflow). |
 | Which thresholds and lessons remain fixed? | [Baselines](MultiSceneSupport/BASELINES.md) and [rejected approaches](MultiSceneSupport/REJECTED_APPROACHES.md). |

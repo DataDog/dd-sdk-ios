@@ -645,8 +645,8 @@
       "decisive_test": "Reviewed RFC resolves Swift/ObjC names, availability, target forms, custom-conformer behavior and migration; only then update API baselines",
       "environment": "API review",
       "completion_mode": null,
-      "status": "OPEN",
-      "evidence": "STABLE_API_REVIEW.md proposes eight finite decisions and records21 Swift overloads/21 Objective-C selectors at2baa06da0. Approval pending; off-main Objective-C safety and Release/client/API-baseline validation required before promotion. Results/F01-proposed-api-inventory.json."
+      "status": "REVIEW BLOCKED",
+      "evidence": "STABLE_API_REVIEW.md proposes eight finite decisions and records21 Swift overloads/21 Objective-C selectors at2baa06da0. Committed package a32acbdcc awaits the requested attributable RFC decision; off-main Objective-C safety and Release/client/API-baseline validation are required before promotion. Results/F01-proposed-api-inventory.json."
     },
     {
       "id": "F02",
@@ -659,7 +659,7 @@
       "environment": "Source/doc review",
       "completion_mode": null,
       "status": "OPEN",
-      "evidence": ""
+      "evidence": "SUPPORT_GUIDE.md prepares the fixed T01\u2013T15 ownership reference, current SPI call sites and automatic/opaque limits. NAVIGATION_API.md call labels corrected against source. Final approved examples, compile checks and full feature-doc audit remain after F01; no supported-publication claim."
     },
     {
       "id": "F03",
@@ -677,7 +677,7 @@
       "environment": "CI + supported SDK toolchains",
       "completion_mode": null,
       "status": "OPEN",
-      "evidence": ""
+      "evidence": "FINAL_COMPATIBILITY.md defines11 finite cells:11 full iOS schemes, external Swift/ObjC Release clients, complete platform packages, lint/API and feature-doc verification. Procedure prepared from current Makefile/source; final reviewed-candidate execution remains after F01."
     },
     {
       "id": "F04",
