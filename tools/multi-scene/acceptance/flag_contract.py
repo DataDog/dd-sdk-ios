@@ -50,7 +50,7 @@ def validate_checkpoint(state, previous, index):
     build, fbc = None, None
     if checkpoint >= (5 if is_a else 6):
         build = dict(min=32.0, max=52.0, average=42.0) if is_a else dict(min=20.0, max=60.0, average=40.0)
-        fbc = 101 if is_a else 202
+        fbc = 101000000 if is_a else 202000000
     expected = dict(flags=flags, build=build, fbc=fbc, leakedInternalAttribute=False)
     require(canonical(state) == canonical(expected), "flag/internal state or peer invariance differs", "FAIL")
 

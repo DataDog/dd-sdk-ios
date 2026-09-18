@@ -14,7 +14,7 @@ def state_for(index):
     values = copy.deepcopy((a_values if is_a else b_values)[checkpoint])
     build = (dict(min=32.0, max=52.0, average=42.0) if is_a else dict(min=20.0, max=60.0, average=40.0))
     present = checkpoint >= (5 if is_a else 6)
-    return dict(flags=values, build=build if present else None, fbc=(101 if is_a else 202) if present else None,
+    return dict(flags=values, build=build if present else None, fbc=(101000000 if is_a else 202000000) if present else None,
                 leakedInternalAttribute=False)
 
 
@@ -133,10 +133,10 @@ class FlagContractTests(unittest.TestCase):
                               (10, lambda s: s["build"].update(min=52)),
                               (13, lambda s: s["build"].update(max=52)),
                               (10, lambda s: s.update(build=None)),
-                              (10, lambda s: s.update(fbc=202)),
+                              (10, lambda s: s.update(fbc=202000000)),
                               (13, lambda s: s.update(fbc=None)),
                               (10, lambda s: s.update(fbc=True)),
-                              (10, lambda s: s.update(fbc=101.0)),
+                              (10, lambda s: s.update(fbc=101000000.0)),
                               (13, lambda s: s.update(leakedInternalAttribute=True)),
                               (13, lambda s: s.pop("leakedInternalAttribute")),
                               (11, lambda s: s.update(build=dict(min=20, max=60, average=40)))]:

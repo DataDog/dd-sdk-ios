@@ -154,13 +154,13 @@ enum ProbeFlagAcceptance {
         RUMContextHandoff.withValue(owner: monitor.rumContextHandoffOwner, rumContext: ownerA, sceneIdentifier: bID.rawValue) {
             monitor._internal?.updatePerformanceMetric(at: Date(), metric: .flutterBuildTime, value: 32)
             monitor._internal?.updatePerformanceMetric(at: Date(), metric: .flutterBuildTime, value: 52)
-            monitor._internal?.setInternalViewAttribute(at: Date(), key: CrossPlatformAttributes.flutterFirstBuildComplete, value: 101)
+            monitor._internal?.setInternalViewAttribute(at: Date(), key: CrossPlatformAttributes.flutterFirstBuildComplete, value: 101_000_000)
             checkpoint(5)
         }
         RUMContextHandoff.withValue(owner: monitor.rumContextHandoffOwner, rumContext: ownerB, sceneIdentifier: aID.rawValue) {
             monitor._internal?.updatePerformanceMetric(at: Date(), metric: .flutterBuildTime, value: 20)
             monitor._internal?.updatePerformanceMetric(at: Date(), metric: .flutterBuildTime, value: 60)
-            monitor._internal?.setInternalViewAttribute(at: Date(), key: CrossPlatformAttributes.flutterFirstBuildComplete, value: 202)
+            monitor._internal?.setInternalViewAttribute(at: Date(), key: CrossPlatformAttributes.flutterFirstBuildComplete, value: 202_000_000)
             checkpoint(6)
         }
         RUMContextHandoff.withValue(owner: monitor.rumContextHandoffOwner, rumContext: ownerB, sceneIdentifier: bID.rawValue) {

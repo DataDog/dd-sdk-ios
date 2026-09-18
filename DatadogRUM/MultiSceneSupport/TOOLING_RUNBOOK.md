@@ -1237,3 +1237,9 @@ Typed mapper fixtures must encode selected Encodable values and decode their
 declared Codable evidence type. AttributeValue.dd.decode only casts an underlying
 value; it does not construct a custom Codable enum. Test the actual projection
 with primitive and Objective-C-wrapped values before accepting populated states.
+
+When a mapper value is absent downstream, compare exact encoded JSON before
+changing SDK behavior. An independent backend field-existence query distinguishes
+missing indexed data from a connector projection error. Declare any diagnostic
+input-scale change before execution, retain the original failed attempt and keep
+the backend equality requirement; local correctness does not close a backend gate.

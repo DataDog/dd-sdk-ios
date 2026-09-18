@@ -1439,6 +1439,37 @@ class MonitorTests: XCTestCase {
         }
     }
 
+    func testCapturedInternalFBCIsEncodedOnlyOnItsOwnerAtBothDiagnosticScales() throws {
+        for scale in [1, 1_000_000] {
+            let scope = FeatureScopeMock()
+            let clock = DateProviderMock()
+            let monitor = Monitor(dependencies: .mockWith(featureScope: scope, samplingRate: 100), dateProvider: clock)
+            let (sceneA, sceneB) = startConcurrentSceneViews(in: monitor, dateProvider: clock)
+            let a = try XCTUnwrap(monitor.rumContextSnapshot(for: .scene(sceneA)))
+            let b = try XCTUnwrap(monitor.rumContextSnapshot(for: .scene(sceneB)))
+            for (owner, peer, value) in [(a, sceneB, 101 * scale), (b, sceneA, 202 * scale)] {
+                RUMContextHandoff.withValue(owner: monitor.rumContextHandoffOwner, rumContext: owner, sceneIdentifier: peer.rawValue) {
+                    monitor._internal?.setInternalViewAttribute(
+                        at: clock.now, key: CrossPlatformAttributes.flutterFirstBuildComplete, value: value
+                    )
+                }
+            }
+            for (scene, owner, expected) in [(sceneA, a, 101 * scale), (sceneB, b, 202 * scale)] {
+                monitor.addTiming(name: "encoding-flush", explicitTarget: .scene(scene))
+                let event = try XCTUnwrap(scope.eventsWritten(ofType: RUMViewEvent.self).last { $0.view.id == owner.viewID })
+                let data = try JSONEncoder().encode(event)
+                let payload = try XCTUnwrap(JSONSerialization.jsonObject(with: data) as? [String: Any])
+                let view = try XCTUnwrap(payload["view"] as? [String: Any])
+                let performance = try XCTUnwrap(view["performance"] as? [String: Any])
+                let fbc = try XCTUnwrap(performance["fbc"] as? [String: Any])
+                XCTAssertEqual(view["id"] as? String, owner.viewID)
+                XCTAssertEqual(fbc["timestamp"] as? Int, expected)
+                let context = payload["context"] as? [String: Any]
+                XCTAssertNil(context?[CrossPlatformAttributes.flutterFirstBuildComplete])
+            }
+        }
+    }
+
     func testInternalMutationsCaptureBeforeDeferredProcessingUnderPeer() throws {
         let scope = FeatureScopeMock(deferEventWriteContext: true)
         let clock = DateProviderMock()

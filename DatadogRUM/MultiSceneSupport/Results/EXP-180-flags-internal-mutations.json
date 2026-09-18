@@ -415,7 +415,8 @@
     "The443 affected RUM checks pass; the same stale-occurrence test was extended with fresh explicit targeting and source-less metric fallback, then passed separately.",
     "Unescalated xcresulttool inspection could not create Xcode cache/temp files. Repeated read with allowed cache access succeeded; no test rerun.",
     "No known iOS27 legacy app-host trap was rerun; affected integration runs on26.5.",
-    "Runner controls first hit read-only temporary-directory errors in three signature fixtures. The full107 Python checks pass with temporary Git access; all15 Node checks pass. No SDK checks rerun."
+    "Runner controls first hit read-only temporary-directory errors in three signature fixtures. The full107 Python checks pass with temporary Git access; all15 Node checks pass. No SDK checks rerun.",
+    "Encoding diagnostic passes on26.5: exact A/B FBC JSON at both101/202ns and101/202ms, no internal custom key. Strict test lint passes with toolchain cache access;107 Python/15 Node controls pass at the new declared scale."
   ],
   "native_preparation": {
     "build_for_testing": {
@@ -497,6 +498,39 @@
       "16errors/3views/0Resources/crashes",
       "backend FBC equality"
     ],
-    "purpose": "Determine whether sub-microsecond synthetic FBC values explain absent backend fields; test encoding at both original and scaled values. One further native attempt for this diagnostic."
+    "purpose": "Determine whether sub-microsecond synthetic FBC values explain absent backend fields; test encoding at both original and scaled values. One further native attempt for this diagnostic.",
+    "definition_revision": "9b4a3b91ce63c294848ddc97266520b9c979175f",
+    "encoded_payload_test": {
+      "counts": {
+        "expectedFailures": 0,
+        "failed": 0,
+        "notRun": 0,
+        "passed": 1,
+        "skipped": 0,
+        "total": 1
+      },
+      "fullConsoleLogsPath": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/ActionArtifacts/default/RunSomeTests/test-console-log-2026-09-18T01-00-34+01-00.txt",
+      "fullSummaryPath": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/ActionArtifacts/default/RunSomeTests/39794C2F-9316-4243-A81B-17DA2524CC89.txt",
+      "results": [
+        {
+          "displayName": "testCapturedInternalFBCIsEncodedOnlyOnItsOwnerAtBothDiagnosticScales()",
+          "errorMessages": [],
+          "identifier": "MonitorTests/testCapturedInternalFBCIsEncodedOnlyOnItsOwnerAtBothDiagnosticScales()",
+          "state": "Passed",
+          "targetName": "DatadogRUMTests"
+        }
+      ],
+      "schemeName": "DatadogRUM",
+      "summary": "1 tests: 1 passed, 0 failed, 0 skipped, 0 expected failures, 0 not run",
+      "totalResults": 1,
+      "truncated": false,
+      "xcresultBundlePath": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/ActionArtifacts/default/RunSomeTests/Test-DatadogRUM-2026.09.18_01-00-34-+0100.xcresult"
+    },
+    "operational_controls": {
+      "python_passed": 107,
+      "node_passed": 15,
+      "strict_test_lint": "PASS"
+    },
+    "next_runtime_attempt": "PREPARED"
   }
 }
