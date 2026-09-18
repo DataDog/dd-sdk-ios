@@ -323,6 +323,69 @@ class ProcessContractTests(unittest.TestCase):
         fresh["semanticContext"]["nativeSceneID"] = "native-b"
         self.reject()
 
+    def test_final_views_wait_for_exact_counters_and_return_observed_rows(self):
+        local = p.validate_local(self.records, self.run)
+        final = backend(local)[0]
+        intermediate = copy.deepcopy(final)
+        owner_a = next(r for r in intermediate if r["view_id"] == uid(5))
+        owner_a.update(view_long_task_count=0, view_error_count=1)
+        calls, pauses = [], []
+        def fetch():
+            calls.append(True)
+            return intermediate if len(calls) == 1 else final
+        actual, attempts = p.settled_views(local, fetch, pauses.append)
+        self.assertIs(actual, final)
+        self.assertEqual((attempts, len(calls), pauses), (2, 2, [10]))
+        self.assertEqual(owner_a["view_long_task_count"], 0)
+
+    def test_final_views_never_accept_unconverged_counters(self):
+        local = p.validate_local(self.records, self.run)
+        rows = backend(local)[0]
+        next(r for r in rows if r["view_id"] == uid(5))["view_error_count"] = 1
+        calls, pauses = [], []
+        def fetch():
+            calls.append(True)
+            return copy.deepcopy(rows)
+        with self.assertRaisesRegex(Rejected, "did not converge"):
+            p.settled_views(local, fetch, pauses.append)
+        self.assertEqual((len(calls), pauses), (3, [10, 10]))
+
+    def test_final_views_reject_regressing_counters(self):
+        local = p.validate_local(self.records, self.run)
+        previous = backend(local)[0]
+        rows = copy.deepcopy(previous)
+        next(r for r in rows if r["view_id"] == uid(5))["view_error_count"] = 1
+        with self.assertRaisesRegex(Rejected, "regressed"):
+            p.validate_views(local, rows, allow_pending=True, previous=previous)
+
+    def test_final_views_reject_malformed_excess_wrong_owner_and_duplicate_without_wait(self):
+        local = p.validate_local(self.records, self.run)
+        for field, value in [("view_error_count", True), ("view_long_task_count", "0"),
+                             ("view_error_count", -1), ("view_error_count", 3),
+                             ("view_id", uid(99)), ("run_id", "stale"), ("source", "browser")]:
+            rows = backend(local)[0]
+            next(r for r in rows if r["view_id"] == uid(5))[field] = value
+            pauses = []
+            with self.subTest(field=field, value=value), self.assertRaises(Rejected):
+                p.settled_views(local, lambda: rows, pauses.append)
+            self.assertEqual(pauses, [])
+        rows = backend(local)[0]
+        rows[1] = rows[0]
+        with self.assertRaises(Rejected):
+            p.validate_views(local, rows, allow_pending=True)
+
+    def test_final_views_allow_absent_optional_zero_but_not_absent_required_counter(self):
+        local = p.validate_local(self.records, self.run)
+        rows = backend(local)[0]
+        target = next(r for r in rows if r["view_id"] == uid(5))
+        target["view_long_task_count"] = None
+        self.assertTrue(p.validate_views(local, rows, allow_pending=True))
+        with self.assertRaises(Rejected):
+            p.validate_views(local, rows)
+        target["view_error_count"] = None
+        with self.assertRaises(Rejected):
+            p.validate_views(local, rows, allow_pending=True)
+
     def test_optional_zero_counters_stay_optional(self):
         local = p.validate_local(self.records, self.run)
         evidence = backend(local)

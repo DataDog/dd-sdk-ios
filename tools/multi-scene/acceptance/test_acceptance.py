@@ -6,6 +6,8 @@ from pathlib import Path
 import subprocess
 import tempfile
 import unittest
+from types import SimpleNamespace
+from unittest.mock import patch
 
 spec = importlib.util.spec_from_file_location("acceptance", Path(__file__).with_name("acceptance.py"))
 a = importlib.util.module_from_spec(spec)
@@ -203,6 +205,39 @@ class AcceptanceTests(unittest.TestCase):
             bad = {**good, field: value}
             with self.assertRaises(a.Rejected):
                 a.validate_bridge(request, bad)
+
+
+class BridgeEvidenceTests(unittest.TestCase):
+    def test_each_received_response_is_preserved_before_rejection(self):
+        with tempfile.TemporaryDirectory(prefix="acceptance-bridge-") as temporary:
+            runner = a.Runner.__new__(a.Runner)
+            runner.out = Path(temporary)
+            (runner.out / "bridge").mkdir()
+            runner.run_id = "current"
+            runner.summary = dict(started_at="2026-09-18T00:00:00Z")
+            runner.args = SimpleNamespace(backend_timeout=1)
+            original_save = a.save
+            calls = []
+
+            def respond(path, value):
+                original_save(path, value)
+                if not path.name.endswith(".request.json"):
+                    return
+                calls.append(value)
+                response = dict(provider="datadog-mcp", ok=True, complete=True, query=value["query"],
+                                data=[dict(view_id="actual", count=len(calls))], request_id=value["request_id"],
+                                request_sha256=a.digest(value) if len(calls) == 1 else "stale")
+                original_save(path.with_name(path.name.replace(".request.json", ".response.json")), response)
+
+            with patch.object(a, "save", side_effect=respond), patch("builtins.print"):
+                self.assertEqual(runner.exchange("process_views", "bounded", 1), [dict(view_id="actual", count=1)])
+                with self.assertRaisesRegex(a.Rejected, "stale backend"):
+                    runner.exchange("process_views", "bounded", 1)
+            history = json.loads((runner.out / "backend-exchanges.json").read_text())
+            self.assertEqual(len(history), 2)
+            self.assertNotEqual(history[0]["request"]["request_id"], history[1]["request"]["request_id"])
+            self.assertEqual(history[1]["response"]["request_sha256"], "stale")
+            self.assertEqual(history[1]["response"]["data"], [dict(view_id="actual", count=2)])
 
 
 class SignaturePreflightTests(unittest.TestCase):

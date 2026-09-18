@@ -228,5 +228,7 @@ adds representative routing and captured pending-hang controls. All98 selected
 SDK tests and strict test lint pass without production changes. T12 remains open
 until actual producer and complete backend acceptance. Native attempt A exposes
 a fixture selecting an already ended A view; the SDK correctly falls back to B.
-Actual reactivation is required before retry. This is no additional original-review
-finding or release certification.
+The reactivation repair passes46 native expectations. Attempt B retains a failed
+early backend counter read, with a later exact match; bounded convergence is
+required before acceptance. This is no additional original-review finding or
+release certification.

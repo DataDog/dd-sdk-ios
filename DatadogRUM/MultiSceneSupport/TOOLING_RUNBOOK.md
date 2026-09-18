@@ -1456,3 +1456,11 @@ native lifecycle, SDK snapshot and mapper ownership before the next targeted
 Action. Do not reuse initial view IDs or accept readiness observed before that
 activation boundary. Preserve the retired view with zero counters in the complete
 four-view inventory. See the EXP-185 record for the failed original fixture.
+
+A complete count of indexed view IDs can precede their final counter updates.
+For the process fixture, query view rows after individual events and allow at most
+three fresh reads with10s between reads for lower integer counters to converge.
+Keep exact identity/source/run checks and reject counter regression, overshoot,
+malformed types or extra rows immediately. Final values must match the mapper.
+Persist backend-exchanges.json before bridge and semantic validation so rejected
+responses survive in the durable summary. See EXP-185 attempt B for the witness.

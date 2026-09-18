@@ -228,10 +228,50 @@ def validate_local(records, run_id):
                 fatal_watchdog_termination_claimed=False)
 
 
+def validate_views(local, rows, allow_pending=False, previous=None):
+    require(isinstance(rows, list) and len(rows) == 4, "incomplete or extra backend views", "FAIL")
+    require(len({r.get("view_id") for r in rows}) == 4, "duplicate backend views", "FAIL")
+    pending = False
+    for expected in local["views"]:
+        row = unique([r for r in rows if r.get("view_id") == expected["view_id"]], "backend view identity")
+        require(set(row) == PROJECT_KEYS, "malformed backend projection", "FAIL")
+        prior = next((r for r in previous or [] if r.get("view_id") == expected["view_id"]), None)
+        for field, value in expected.items():
+            actual = row.get(field)
+            counter = field.startswith("view_") and field.endswith("_count")
+            optional = field in ["view_crash_count", "view_long_task_count"]
+            if optional and actual is None and (value == 0 or allow_pending):
+                actual = 0
+            if allow_pending and counter:
+                require(type(actual) is int and 0 <= actual <= value, "malformed or excessive view counter", "FAIL")
+                if prior:
+                    before = prior.get(field)
+                    if optional and before is None:
+                        before = 0
+                    require(type(before) is int and actual >= before, "backend view counter regressed", "FAIL")
+                pending |= actual != value
+            else:
+                exact(actual, value, "backend views/" + field + " differs")
+    return pending
+
+
+def settled_views(local, fetch, pause):
+    previous = None
+    for attempt in range(3):
+        rows = fetch()
+        if not validate_views(local, rows, allow_pending=True, previous=previous):
+            validate_views(local, rows)
+            return rows, attempt + 1
+        previous = rows
+        if attempt < 2:
+            pause(10)
+    require(False, "backend final view counters did not converge after three fresh reads", "FAIL")
+
+
 def validate_backend(local, run_id, views, errors, tasks, actions, resources, crashes):
     require(resources == [] and type(crashes) is int and crashes == 0, "unexpected Resource/crash", "FAIL")
-    for kind, rows, count in [("views", views, 4), ("errors", errors, 4),
-                              ("long_tasks", tasks, 2), ("actions", actions, 1)]:
+    validate_views(local, views)
+    for kind, rows, count in [("errors", errors, 4), ("long_tasks", tasks, 2), ("actions", actions, 1)]:
         require(isinstance(rows, list) and len(rows) == count, "incomplete or extra backend " + kind, "FAIL")
         key = "view_id" if kind == "views" else "event_id"
         require(len({r.get(key) for r in rows}) == count, "duplicate backend " + kind, "FAIL")

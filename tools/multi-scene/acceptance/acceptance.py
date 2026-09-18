@@ -349,6 +349,10 @@ class Runner:
         while time.monotonic() < deadline:
             if response_path.exists():
                 response = json.loads(response_path.read_text())
+                history_path = self.out / "backend-exchanges.json"
+                history = json.loads(history_path.read_text()) if history_path.exists() else []
+                history.append(dict(request=request, response=response))
+                save(history_path, history)
                 self.summary.setdefault("backend_bridge_timings", []).append(
                     dict(kind=kind, seconds=round(time.monotonic() - started, 3), received=True))
                 return validate_bridge(request, response)
@@ -456,12 +460,14 @@ class Runner:
             # source fields, never a hand-entered semantic verdict.
             if self.is_process:
                 sessions = "@session.id:" + local["session_id"]
-                views = self.exchange("process_views", sessions + " @type:view", 4)
                 errors = self.exchange("process_errors", sessions + " @type:error", 4)
                 tasks = self.exchange("process_long_tasks", sessions + " @type:long_task", 2)
                 actions = self.exchange("process_actions", sessions + " @type:action", 1)
                 resources = self.exchange("resources", sessions + " @type:resource", 0)
                 crashes = self.exchange("crashes", sessions + " (@error.is_crash:true OR @view.crash.count:>0)", 0)
+                views, view_reads = process_contract.settled_views(
+                    local, lambda: self.exchange("process_views", sessions + " @type:view", 4), time.sleep)
+                self.summary["process_final_view_reads"] = view_reads
                 backend = process_contract.validate_backend(
                     local, self.run_id, views, errors, tasks, actions, resources, crashes["count"])
                 evidence = dict(views=views, errors=errors, long_tasks=tasks, actions=actions,
@@ -586,7 +592,7 @@ class Runner:
                 record["source_file_count"] = locals().get("frozen", {}).get("file_count")
                 record["oracle_contract_sha256"] = file_hash(Path(__file__).with_name(self.contract_file))
                 record["evidence"] = {}
-                for name in ["build-identity.json", "test-summary.json", "local-evidence.json", "backend-evidence.json", "fatal-phases.json", "process-records.json"]:
+                for name in ["build-identity.json", "test-summary.json", "local-evidence.json", "backend-evidence.json", "fatal-phases.json", "process-records.json", "backend-exchanges.json"]:
                     artifact = self.out / name
                     if artifact.exists():
                         record["evidence"][name] = json.loads(artifact.read_text())
