@@ -32,10 +32,10 @@
       "owner": "SDK implementer",
       "dependencies": [],
       "decisive_test": "No scene manifest; automatic and manual chains match baseline without a scene registry dependency",
-      "environment": "iOS 27 and 26.5 simulators",
+      "environment": "iOS 27 and 26.5 simulators; genuine pre27-SDK build for the legacy host",
       "completion_mode": null,
       "status": "INCONCLUSIVE",
-      "evidence": "EXP-160:26.5 navigation and actual legacy background/foreground pass;27.0 UIKit no-scene-lifecycle trap affects both revisions. EXP-188 defines one reverified baseline readiness launch on newly available27.2 before any current-candidate paired matrix. Results/EXP-188-legacy-runtime.json; original BASELINES.md thresholds unchanged."
+      "evidence": "EXP-160:26.5 legacy navigation/actual lifecycle pass; SDK27-built hosts trap on27.0. EXP-188 repeats that baseline trap on27.2 with exact recovered crash/cleanup proof; original collection INVALID preserved. Apple requires scene adoption for27-SDK builds. EXP-189 defines the genuine26.5-SDK paired16-cell legacy matrix; no compatibility waiver. Results/EXP-188-legacy-runtime.json and Results/EXP-189-legacy-build-sdk.json."
     },
     {
       "id": "C04",

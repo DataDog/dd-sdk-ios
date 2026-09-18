@@ -1,0 +1,67 @@
+{
+  "experiment": "EXP-189",
+  "gate": "C03",
+  "title": "Validate legacy hosts built with the pre-scene-required SDK",
+  "status": "DEFINED",
+  "owner": "SDK implementer",
+  "definition": "Experiments/EXP-143-199.md#exp-189--validate-legacy-hosts-built-with-the-pre-scene-required-sdk",
+  "baseline_revision": "92f021ba7e4a866f84a52da93ed8b63f3dc75882",
+  "candidate_revision": "04201edc7711361279d8487b385bc8b0ca9c63c7",
+  "build_toolchain": {
+    "developer_directory": "/Applications/Xcode.app/Contents/Developer",
+    "observed_version": "26.6",
+    "observed_build": "17F112",
+    "sdk": "26.5",
+    "deployment_target": "15.0",
+    "configuration": "Release",
+    "swift_language_mode": "5"
+  },
+  "runtime_toolchain": "Rediscover Xcode27 and actual available iOS27.0/26.5 simulators independently of the build toolchain.",
+  "admission": "EXP-188 confirms SDK27-built legacy-host launch enforcement. Apple documents that it depends on the build SDK. An installed real SDK26.5 allows the customer-relevant older-built legacy contract to be tested without patching or bypassing UIKit.",
+  "platform_source": "https://developer.apple.com/documentation/uikit/transitioning-to-the-uikit-scene-based-life-cycle",
+  "source_paths": [
+    "DatadogCore/Sources",
+    "DatadogCore/Private",
+    "DatadogCore/Resources",
+    "DatadogInternal/Sources",
+    "DatadogRUM/Sources",
+    "DatadogRUM/Private",
+    "DatadogRUM/Resources"
+  ],
+  "fixture_basis": "Original EXP-160 navigation fixture and its separately identified actual-lifecycle variant. Keep exact mapper ownership/occurrence assertions and source inputs; any required fixture-only adaptation must be identified before execution.",
+  "readiness": "Build only the baseline navigation host with the genuine26.5 SDK, verify Mach-O/Info.plist/installed identity and absent scene manifest, and run automatic navigation on27.0 once. Stop on any non-PASS; no candidate build until this control passes.",
+  "matrix": {
+    "runtimes": [
+      "27.0",
+      "26.5"
+    ],
+    "arms": [
+      "baseline",
+      "candidate"
+    ],
+    "modes": [
+      "automatic",
+      "manual",
+      "lifecycle-automatic",
+      "lifecycle-manual"
+    ],
+    "required_cases": 16,
+    "readiness_counts_as_matrix_case_if_frozen_identity_matches": true
+  },
+  "decisive_oracle": [
+    "Fresh run identifier and clean app/data absence; exact archived source, fixture, build SDK, deployment target and installed binary identity.",
+    "No UIApplicationSceneManifest; no scene-registry dependency in the legacy host.",
+    "Automatic/manual Home -> Detail -> fresh Home with distinct occurrences and exactly one correctly owned Action and Resource per marker.",
+    "Actual OS background/foreground after fresh run-bound readiness; automatic stops and creates fresh Home, manual retains Home; markers match exact owners and lifecycle notifications occur before result.",
+    "All16 unique cells pass the unchanged semantic contract; missing cells, stale readiness/results, wrong owners, duplicates or lifecycle substitutions cannot pass.",
+    "Prove process/data cleanup for each fixture, restore simulators booted by the run, and preserve both user-owned paths."
+  ],
+  "closure_rule": "C03 closes only when the complete genuine-SDK26.5 legacy matrix passes. SDK27-built manifest-less hosts remain a documented Apple launch restriction; EXP-160/188 failures remain preserved. No C06, physical topology, performance or final Release matrix claim.",
+  "prohibited_shortcuts": [
+    "No SDK-version or binary patching, assertion suppression, debugger launch, scene manifest, synthetic lifecycle notification, test-threshold relaxation or source change.",
+    "No repeated accepted telemetry or performance matrix.",
+    "No production SDK change, public API promotion, protected-path access or push."
+  ],
+  "gates_closed": [],
+  "attempts": []
+}

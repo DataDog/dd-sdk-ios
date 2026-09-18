@@ -1,0 +1,60 @@
+{
+  "experiment": "EXP-188",
+  "gate": "C03",
+  "run_id": "exp188-3e3e2842-d7ea-4597-ae4e-ab57f3908313",
+  "state": "PASS",
+  "readiness": "BLOCKED_BY_KNOWN_UIKIT_STARTUP_TRAP",
+  "native_rerun": false,
+  "original_collection_state": "INVALID",
+  "original_collection_error": "Invalid isoformat string: '2026-09-18 21:59:01.7739 +0200'",
+  "capture_time_raw": "2026-09-18 21:59:01.7739 +0200",
+  "capture_time_utc": "2026-09-18T19:59:01.773900+00:00",
+  "launch_interval": [
+    "2026-09-18T19:59:00.822864+00:00",
+    "2026-09-18T19:59:56.711606+00:00"
+  ],
+  "pid": 6053,
+  "bundle": "com.datadoghq.exp160.baseline.legacy",
+  "binary_uuid": "080ec4c6-42cd-3126-8fbb-cdd938e42953",
+  "exception_type": "EXC_BREAKPOINT",
+  "signal": "SIGTRAP",
+  "triggered_symbols": [
+    "___UIApplicationEvaluateRuntimeIssueForNoSceneLifecycleAdoption_block_invoke",
+    "_dispatch_client_callout",
+    "_dispatch_once_callout",
+    "-[UIApplication workspace:didCreateScene:withTransitionContext:completion:]",
+    "-[UIApplicationSceneClientAgent scene:didInitializeWithEvent:completion:]",
+    "__95-[FBSScene _callOutQueue_didCreateWithTransitionContext:alternativeCreationCallout:completion:]_block_invoke",
+    "-[FBSScene _callOutQueue_maybeCoalesceClientSettingsUpdates:]",
+    "-[FBSScene _callOutQueue_didCreateWithTransitionContext:alternativeCreationCallout:completion:]",
+    "__93-[FBSWorkspaceScenesClient _callOutQueue_sendDidCreateForScene:transitionContext:completion:]_block_invoke.282",
+    "-[FBSWorkspace _calloutQueue_executeCalloutFromSource:withBlock:]",
+    "-[FBSWorkspaceScenesClient _callOutQueue_sendDidCreateForScene:transitionContext:completion:]",
+    "__92-[FBSWorkspaceScenesClient createSceneWithIdentity:parameters:transitionContext:completion:]_block_invoke_2",
+    "-[FBSWorkspace _calloutQueue_executeCalloutFromSource:withBlock:]",
+    "_dispatch_client_callout",
+    "_dispatch_block_invoke_direct",
+    "__BSSERVICEMAINRUNLOOPQUEUE_IS_CALLING_OUT_TO_A_BLOCK__"
+  ],
+  "raw_report": {
+    "original": "/Users/valentin.pertuisot/Library/Logs/DiagnosticReports/FixtureLegacy-2026-09-18-215951.ips",
+    "preserved_copy": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp188-crash-analysis-v8yx3k2g/fresh-crash.ips",
+    "sha256": "41e1d9ba5990ca211f4da1de234f7925baefc621ba6ca77582bed739c0cebcb6",
+    "bytes": 20455
+  },
+  "source_acceptance": {
+    "path": "DatadogRUM/MultiSceneSupport/Results/acceptance/exp188-3e3e2842-d7ea-4597-ae4e-ab57f3908313.json",
+    "sha256": "bc450057ca1aa8b07b299832574ec12e13450e27ddf39e2b1257377475c92405"
+  },
+  "cleanup": {
+    "process_absent": true,
+    "data_container_absent": true,
+    "status": "PASS",
+    "original_shutdown_state_restored": true
+  },
+  "artifact_root": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp188-crash-analysis-v8yx3k2g",
+  "parser_recovery": "Accept the observed Apple timestamp with a space before its numeric timezone using strptime; PID, bundle, UUID and original launch interval remain exact requirements.",
+  "sdk_finding": false,
+  "candidate_executed": false,
+  "gate_closed": false
+}

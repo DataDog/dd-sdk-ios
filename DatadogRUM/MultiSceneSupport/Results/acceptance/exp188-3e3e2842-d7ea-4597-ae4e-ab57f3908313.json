@@ -1,0 +1,394 @@
+{
+  "experiment": "EXP-188",
+  "gate": "C03",
+  "run_id": "exp188-3e3e2842-d7ea-4597-ae4e-ab57f3908313",
+  "definition_revision": "97d713a941a055f457b7f64c374794b41593ff23",
+  "artifact_root": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp188-legacy27-2-kwpefz7h",
+  "status": "INVALID",
+  "gate_status": "INCONCLUSIVE",
+  "started_at": "2026-09-18T19:58:24.763490+00:00",
+  "baseline_revision": "92f021ba7e4a866f84a52da93ed8b63f3dc75882",
+  "candidate_revision": "04201edc7711361279d8487b385bc8b0ca9c63c7",
+  "candidate_executed": false,
+  "readiness": "INVALID_PREPARATION",
+  "commands": [
+    {
+      "name": "binary-uuids",
+      "args": [
+        "dwarfdump",
+        "--uuid",
+        "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp188-legacy27-2-kwpefz7h/control/FixtureLegacy.app/FixtureLegacy"
+      ]
+    },
+    {
+      "name": "runtimes",
+      "args": [
+        "xcrun",
+        "simctl",
+        "list",
+        "runtimes",
+        "--json"
+      ]
+    },
+    {
+      "name": "devices-before",
+      "args": [
+        "xcrun",
+        "simctl",
+        "list",
+        "devices",
+        "available",
+        "--json"
+      ]
+    },
+    {
+      "name": "boot",
+      "args": [
+        "xcrun",
+        "simctl",
+        "boot",
+        "F3F30399-15BA-47FC-821D-997E3AF325D5"
+      ]
+    },
+    {
+      "name": "boot-status",
+      "args": [
+        "xcrun",
+        "simctl",
+        "bootstatus",
+        "F3F30399-15BA-47FC-821D-997E3AF325D5",
+        "-b"
+      ]
+    },
+    {
+      "name": "prior-terminate",
+      "args": [
+        "xcrun",
+        "simctl",
+        "terminate",
+        "F3F30399-15BA-47FC-821D-997E3AF325D5",
+        "com.datadoghq.exp160.baseline.legacy"
+      ]
+    },
+    {
+      "name": "prior-uninstall",
+      "args": [
+        "xcrun",
+        "simctl",
+        "uninstall",
+        "F3F30399-15BA-47FC-821D-997E3AF325D5",
+        "com.datadoghq.exp160.baseline.legacy"
+      ]
+    },
+    {
+      "name": "prior-container",
+      "args": [
+        "xcrun",
+        "simctl",
+        "get_app_container",
+        "F3F30399-15BA-47FC-821D-997E3AF325D5",
+        "com.datadoghq.exp160.baseline.legacy",
+        "data"
+      ]
+    },
+    {
+      "name": "install",
+      "args": [
+        "xcrun",
+        "simctl",
+        "install",
+        "F3F30399-15BA-47FC-821D-997E3AF325D5",
+        "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp188-legacy27-2-kwpefz7h/control/FixtureLegacy.app"
+      ]
+    },
+    {
+      "name": "installed-app",
+      "args": [
+        "xcrun",
+        "simctl",
+        "get_app_container",
+        "F3F30399-15BA-47FC-821D-997E3AF325D5",
+        "com.datadoghq.exp160.baseline.legacy",
+        "app"
+      ]
+    },
+    {
+      "name": "data-container",
+      "args": [
+        "xcrun",
+        "simctl",
+        "get_app_container",
+        "F3F30399-15BA-47FC-821D-997E3AF325D5",
+        "com.datadoghq.exp160.baseline.legacy",
+        "data"
+      ]
+    },
+    {
+      "name": "launch",
+      "args": [
+        "xcrun",
+        "simctl",
+        "launch",
+        "--arch=arm64",
+        "--stdout=/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp188-legacy27-2-kwpefz7h/app.stdout",
+        "--stderr=/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp188-legacy27-2-kwpefz7h/app.stderr",
+        "F3F30399-15BA-47FC-821D-997E3AF325D5",
+        "com.datadoghq.exp160.baseline.legacy",
+        "--mode",
+        "automatic",
+        "--run-id",
+        "exp188-3e3e2842-d7ea-4597-ae4e-ab57f3908313"
+      ]
+    },
+    {
+      "name": "cleanup-terminate",
+      "args": [
+        "xcrun",
+        "simctl",
+        "terminate",
+        "F3F30399-15BA-47FC-821D-997E3AF325D5",
+        "com.datadoghq.exp160.baseline.legacy"
+      ]
+    },
+    {
+      "name": "cleanup-jobs",
+      "args": [
+        "xcrun",
+        "simctl",
+        "spawn",
+        "F3F30399-15BA-47FC-821D-997E3AF325D5",
+        "launchctl",
+        "list"
+      ]
+    },
+    {
+      "name": "cleanup-uninstall",
+      "args": [
+        "xcrun",
+        "simctl",
+        "uninstall",
+        "F3F30399-15BA-47FC-821D-997E3AF325D5",
+        "com.datadoghq.exp160.baseline.legacy"
+      ]
+    },
+    {
+      "name": "cleanup-container",
+      "args": [
+        "xcrun",
+        "simctl",
+        "get_app_container",
+        "F3F30399-15BA-47FC-821D-997E3AF325D5",
+        "com.datadoghq.exp160.baseline.legacy",
+        "data"
+      ]
+    },
+    {
+      "name": "restore-shutdown",
+      "args": [
+        "xcrun",
+        "simctl",
+        "shutdown",
+        "F3F30399-15BA-47FC-821D-997E3AF325D5"
+      ]
+    },
+    {
+      "name": "devices-after",
+      "args": [
+        "xcrun",
+        "simctl",
+        "list",
+        "devices",
+        "available",
+        "--json"
+      ]
+    }
+  ],
+  "control_identity": {
+    "bundle": "com.datadoghq.exp160.baseline.legacy",
+    "binary_sha256": "51547439b72245cb301b0c1874f37b358248fc2d93e9694bde793930b766d5f6",
+    "binary_uuids": [
+      "93DF80C1-2932-3A43-B242-6A7973A412C8",
+      "080EC4C6-42CD-3126-8FBB-CDD938E42953"
+    ],
+    "source_files_verified": 369,
+    "fixture_files_verified": 4,
+    "minimum_os": "15.0",
+    "sdk": "iphonesimulator27.0",
+    "has_scene_manifest": false
+  },
+  "device": {
+    "udid": "F3F30399-15BA-47FC-821D-997E3AF325D5",
+    "name": "iPhone 18 Pro",
+    "initial_state": "Shutdown",
+    "runtime": "27.2",
+    "build": "24B5084k"
+  },
+  "clean_install_absence": true,
+  "installed_binary_identity": "PASS",
+  "installed_scene_manifest": false,
+  "launched_at": "2026-09-18T19:59:00.822864+00:00",
+  "pid": 6053,
+  "error": "Invalid isoformat string: '2026-09-18 21:59:01.7739 +0200'",
+  "cleanup": {
+    "process_absent": true,
+    "data_container_absent": true,
+    "status": "PASS",
+    "original_shutdown_state_restored": true
+  },
+  "protected_paths_unchanged": true,
+  "finished_at": "2026-09-18T19:59:56.711606+00:00",
+  "artifacts": {
+    "binary-uuids.stderr": {
+      "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp188-legacy27-2-kwpefz7h/binary-uuids.stderr",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "binary-uuids.stdout": {
+      "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp188-legacy27-2-kwpefz7h/binary-uuids.stdout",
+      "sha256": "9ec673612a6d03589e574adb11312a7994378c7621b027f348bec848093a2f5a"
+    },
+    "boot-status.stderr": {
+      "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp188-legacy27-2-kwpefz7h/boot-status.stderr",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "boot-status.stdout": {
+      "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp188-legacy27-2-kwpefz7h/boot-status.stdout",
+      "sha256": "89237fe646b7e36d9361bce8799a19f654367cfb2c84be5589928814d900e308"
+    },
+    "boot.stderr": {
+      "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp188-legacy27-2-kwpefz7h/boot.stderr",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "boot.stdout": {
+      "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp188-legacy27-2-kwpefz7h/boot.stdout",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "cleanup-container.stderr": {
+      "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp188-legacy27-2-kwpefz7h/cleanup-container.stderr",
+      "sha256": "eff64c578677a922269a71122a28c8c3b6bd9bdfa33f2ee67bf4aef68a42d1db"
+    },
+    "cleanup-container.stdout": {
+      "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp188-legacy27-2-kwpefz7h/cleanup-container.stdout",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "cleanup-jobs.stderr": {
+      "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp188-legacy27-2-kwpefz7h/cleanup-jobs.stderr",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "cleanup-jobs.stdout": {
+      "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp188-legacy27-2-kwpefz7h/cleanup-jobs.stdout",
+      "sha256": "010aacb564d3f3bcad8a1bceb58ad89be4f2e1a0fd019d297e5a042e492fd8af"
+    },
+    "cleanup-terminate.stderr": {
+      "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp188-legacy27-2-kwpefz7h/cleanup-terminate.stderr",
+      "sha256": "8a47733e1360fa0bf45f160f1fb85862596c4767eebc9f542ffc1f34a4ee786f"
+    },
+    "cleanup-terminate.stdout": {
+      "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp188-legacy27-2-kwpefz7h/cleanup-terminate.stdout",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "cleanup-uninstall.stderr": {
+      "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp188-legacy27-2-kwpefz7h/cleanup-uninstall.stderr",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "cleanup-uninstall.stdout": {
+      "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp188-legacy27-2-kwpefz7h/cleanup-uninstall.stdout",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "data-container.stderr": {
+      "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp188-legacy27-2-kwpefz7h/data-container.stderr",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "data-container.stdout": {
+      "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp188-legacy27-2-kwpefz7h/data-container.stdout",
+      "sha256": "8bafa0579aa4cc3c33562c072952ddde5f433b4fa721cf59e5591cb25956d024"
+    },
+    "devices-after.stderr": {
+      "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp188-legacy27-2-kwpefz7h/devices-after.stderr",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "devices-after.stdout": {
+      "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp188-legacy27-2-kwpefz7h/devices-after.stdout",
+      "sha256": "1c4f3840dce816b9b8968b664768b51519789dcefb16a46bcfa5e062b07d16e9"
+    },
+    "devices-before.stderr": {
+      "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp188-legacy27-2-kwpefz7h/devices-before.stderr",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "devices-before.stdout": {
+      "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp188-legacy27-2-kwpefz7h/devices-before.stdout",
+      "sha256": "34401c1445ea879b86624c6e63b07c27ddf75faab58dce7f447e64b3b88e4ec3"
+    },
+    "install.stderr": {
+      "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp188-legacy27-2-kwpefz7h/install.stderr",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "install.stdout": {
+      "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp188-legacy27-2-kwpefz7h/install.stdout",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "installed-app.stderr": {
+      "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp188-legacy27-2-kwpefz7h/installed-app.stderr",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "installed-app.stdout": {
+      "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp188-legacy27-2-kwpefz7h/installed-app.stdout",
+      "sha256": "a3afe20c1e8f7673fe011a617688ec607f34cfab05486564446d595d0186c91d"
+    },
+    "launch.stderr": {
+      "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp188-legacy27-2-kwpefz7h/launch.stderr",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "launch.stdout": {
+      "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp188-legacy27-2-kwpefz7h/launch.stdout",
+      "sha256": "f4932bfaa815c4a6f117f1181a71a83367fdadd7398b0ebf08d893539d30d0f8"
+    },
+    "prior-container.stderr": {
+      "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp188-legacy27-2-kwpefz7h/prior-container.stderr",
+      "sha256": "eff64c578677a922269a71122a28c8c3b6bd9bdfa33f2ee67bf4aef68a42d1db"
+    },
+    "prior-container.stdout": {
+      "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp188-legacy27-2-kwpefz7h/prior-container.stdout",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "prior-terminate.stderr": {
+      "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp188-legacy27-2-kwpefz7h/prior-terminate.stderr",
+      "sha256": "8a47733e1360fa0bf45f160f1fb85862596c4767eebc9f542ffc1f34a4ee786f"
+    },
+    "prior-terminate.stdout": {
+      "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp188-legacy27-2-kwpefz7h/prior-terminate.stdout",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "prior-uninstall.stderr": {
+      "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp188-legacy27-2-kwpefz7h/prior-uninstall.stderr",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "prior-uninstall.stdout": {
+      "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp188-legacy27-2-kwpefz7h/prior-uninstall.stdout",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "protected-before.json": {
+      "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp188-legacy27-2-kwpefz7h/protected-before.json",
+      "sha256": "c970bfb026e0baa75ad50cdbc64c01c80dd0b73de00b04f9dcfe6d075405d279"
+    },
+    "restore-shutdown.stderr": {
+      "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp188-legacy27-2-kwpefz7h/restore-shutdown.stderr",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "restore-shutdown.stdout": {
+      "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp188-legacy27-2-kwpefz7h/restore-shutdown.stdout",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "run-preflight.py": {
+      "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp188-legacy27-2-kwpefz7h/run-preflight.py",
+      "sha256": "c1512b2e219285faba2cf756299a12ccdb1b139ea20428030cc28eaa4ba24422"
+    },
+    "runtimes.stderr": {
+      "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp188-legacy27-2-kwpefz7h/runtimes.stderr",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "runtimes.stdout": {
+      "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp188-legacy27-2-kwpefz7h/runtimes.stdout",
+      "sha256": "3c31d71603cfdd2dd8c62f19bce16488bea3424ddcf20cacc275275711c284ac"
+    }
+  }
+}

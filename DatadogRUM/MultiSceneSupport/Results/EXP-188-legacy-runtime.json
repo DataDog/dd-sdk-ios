@@ -2,7 +2,7 @@
   "experiment": "EXP-188",
   "gate": "C03",
   "title": "Check legacy lifecycle readiness on iOS 27.2",
-  "status": "DEFINED",
+  "status": "INCONCLUSIVE",
   "owner": "SDK implementer",
   "definition": "Experiments/EXP-143-199.md#exp-188--check-legacy-lifecycle-readiness-on-ios-272",
   "baseline_revision": "92f021ba7e4a866f84a52da93ed8b63f3dc75882",
@@ -45,5 +45,38 @@
     "No reuse of old run IDs or alteration of original EXP-160 evidence."
   ],
   "gates_closed": [],
-  "attempts": []
+  "attempts": [
+    {
+      "run_id": "exp188-3e3e2842-d7ea-4597-ae4e-ab57f3908313",
+      "collection_status": "INVALID",
+      "collection_result": "acceptance/exp188-3e3e2842-d7ea-4597-ae4e-ab57f3908313.json",
+      "collection_sha256": "bc450057ca1aa8b07b299832574ec12e13450e27ddf39e2b1257377475c92405",
+      "collection_error": "Invalid isoformat string: '2026-09-18 21:59:01.7739 +0200'",
+      "offline_analysis": "EXP-188-crash-analysis.json",
+      "offline_analysis_sha256": "c45a2f1514c43d082e995b8feda0818d87aa8e4166336a8495a2b6507a228192",
+      "offline_analysis_state": "PASS",
+      "readiness": "BLOCKED_BY_KNOWN_UIKIT_STARTUP_TRAP",
+      "native_rerun": false,
+      "candidate_executed": false,
+      "sdk_finding": false,
+      "control_identity": "369 source files,4 fixture files and unchanged binary verified; clean installation and installed hash pass; no scene manifest.",
+      "raw_artifacts_reverified": 38,
+      "crash_identity": "Exact bundle, PID6053, arm64 UUID and original launch interval; EXC_BREAKPOINT/SIGTRAP at UIApplicationEvaluateRuntimeIssueForNoSceneLifecycleAdoption.",
+      "cleanup": {
+        "process_absent": true,
+        "data_container_absent": true,
+        "status": "PASS",
+        "original_shutdown_state_restored": true
+      },
+      "protected_paths_unchanged": true
+    }
+  ],
+  "definition_revision": "97d713a941a055f457b7f64c374794b41593ff23",
+  "outcome": "The unchanged SDK27.0-built baseline repeats UIKit no-scene-lifecycle startup enforcement on27.2. C03 is not accepted and the current candidate was not built or executed.",
+  "platform_contract": {
+    "source": "https://developer.apple.com/documentation/uikit/transitioning-to-the-uikit-scene-based-life-cycle",
+    "checked_on": "2026-09-18",
+    "finding": "Apple requires scene lifecycle for apps built with SDK27 and running on27; legacy compatibility must distinguish the build SDK from the runtime.",
+    "interpretation": "This explains the SDK27-built control failure. It does not prove older-SDK legacy host behavior or waive C03."
+  }
 }

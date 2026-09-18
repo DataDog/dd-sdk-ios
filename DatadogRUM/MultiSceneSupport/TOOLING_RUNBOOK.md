@@ -1715,3 +1715,19 @@ bounded readiness slice if the control cannot reach the decisive fixture result.
 A passing readiness check alone does not close C03. Preserve the original matrix,
 thresholds and actual OS lifecycle oracle; [EXP-188](Experiments/EXP-143-199.md#exp-188--check-legacy-lifecycle-readiness-on-ios-272)
 owns the conditional full-matrix admission and cleanup requirements.
+
+Apple crash capture timestamps may contain a space before a numeric timezone,
+for example `2026-09-18 21:59:01.7739 +0200`. Accept that observed syntax with
+`datetime.strptime(value, "%Y-%m-%d %H:%M:%S.%f %z")` after the ISO parser, while
+requiring an aware timestamp and the exact original launch interval. Keep the
+failed collector summary unchanged; record any recovered analysis separately
+with source-report hashes and unchanged bundle/PID/UUID checks. EXP-188 recovered
+its saved report this way without rerunning the app.
+
+For legacy hosts, record **build SDK and runtime separately**. [Apple requires
+scene adoption](https://developer.apple.com/documentation/uikit/transitioning-to-the-uikit-scene-based-life-cycle)
+for apps built with SDK27 on27. A newer runtime alone does not make that host a
+valid legacy control. Use a genuine installed earlier SDK for the existing-app
+contract, recording compiler/build/SDK/minimum-deployment identity. Never patch
+Mach-O SDK versions or suppress the platform check. EXP-189 preserves the original
+semantic assertions and runs only C03's finite compatibility cells.

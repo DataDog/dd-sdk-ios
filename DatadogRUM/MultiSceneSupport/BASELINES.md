@@ -88,6 +88,12 @@ Home for automatic tracking, and retains the same Home for manual tracking, in
 both revisions. Its bounded pass does not dismiss other legacy lifecycle cases
 or source-review findings.
 
+EXP-188 separately repeats the SDK27-built baseline startup trap on27.2, with
+exact recovered crash identity and successful cleanup; its original parser failure
+remains INVALID. [Apple's scene-lifecycle requirement](https://developer.apple.com/documentation/uikit/transitioning-to-the-uikit-scene-based-life-cycle)
+depends on the build SDK. EXP-189 defines a real26.5-SDK build matrix for legacy
+customer hosts; this leaves the original EXP-160 results and thresholds unchanged.
+
 All timing values below are **nanoseconds per event**, baseline → candidate.
 Handoff rows compare the candidate's ordinary → enabled path. Each arm has two
 fresh processes with a discarded 20,000-operation warm-up, fourteen measured

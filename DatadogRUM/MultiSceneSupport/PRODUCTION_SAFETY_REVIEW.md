@@ -305,3 +305,16 @@ does not promote any public declaration. The prepared
 and D01/D02 platform regression checks. The [support guide](SUPPORT_GUIDE.md)
 separates explicit, captured and process ownership, including Flutter-only FBC.
 These documentation preparations add no new production finding or release proof.
+
+## Subsequent bounded validation: legacy host launch boundary
+
+[EXP-188](Experiments/EXP-143-199.md#exp-188--check-legacy-lifecycle-readiness-on-ios-272)
+repeats the UIKit no-scene-lifecycle startup trap in the unchanged SDK27-built
+baseline on27.2. Exact crash identity is recovered offline after a timestamp-parser
+failure; original INVALID collection and verified cleanup remain distinct. The
+candidate was not run, C03 stays inconclusive and no new SDK defect is established.
+
+[Apple's requirement](https://developer.apple.com/documentation/uikit/transitioning-to-the-uikit-scene-based-life-cycle)
+depends on the build SDK. EXP-189 checks genuine26.5-SDK legacy hosts on the
+required runtimes, with the existing ownership and actual-lifecycle assertions.
+It must pass before C03 closes. This adds no D01–D12 finding or release approval.
