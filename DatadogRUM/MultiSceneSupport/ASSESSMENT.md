@@ -140,3 +140,5 @@ historical catalog through27.1; all downloads are unavailable, as is17.0 through
 official runtime or eligible test environment is still required.
 
 EXP-196 physical work remains in progress. H01 proves two visible native scenes in approved Windowed Apps but admits no mutation without recording. Both H04 close paths lack an observed disconnect; the view-local collector needs investigation. H05 exposes a stale fixture that never accepts its semantic destination; its complete backend inventory matches the failed native run. H07 shares that path and awaits the predefined fixture repair. See the [owning result](Results/EXP-196-physical-ipad-suite.json); these observations do not justify an SDK change.
+
+Physical H05 now closes the original settled semantic/automatic coexistence discriminator: A semantic Home and B’s newly discovered automatic owner remain distinct with complete backend equality. EXP-118’s early source-less B fallback remains observed and explicit. H07’s first repaired native8/8 run is not acceptance because its external contract has a serialization typo; preserve and correct it before a fresh run.

@@ -92,7 +92,7 @@
       ],
       "decisive_test": "EXP-118: semantic A and automatic B neither suppress nor own each other",
       "required_environment": "Authorized physical iPad27.0; genuine OS/window input and fresh native evidence",
-      "status": "DEFINED",
+      "status": "PASS_PHYSICAL",
       "execution_boundary": "Require topology/lifecycle prerequisites before the critical boundary; incomplete input is not SDK evidence."
     },
     {
@@ -755,10 +755,335 @@
           "sha256": "3c24d13e46d8f4099d81f6cb99349492f530158eb3b6356c715051eb7758e995"
         }
       }
+    },
+    {
+      "gate": "H05",
+      "status": "PASS_PHYSICAL",
+      "run_id": "exp196-h05-20260919t183418z-dee33b17452f",
+      "capture_source_revision": "a823ad86cc9a04395988dc0e6075fe325e7a7c68",
+      "artifact_root": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp196-physical-h05-4qbmp58q",
+      "native_expectations": 7,
+      "local": {
+        "state": "PASS",
+        "gate": "H05",
+        "session_id": "f3ca7b20-186c-4da3-a0ab-1628b3b75106",
+        "native_scenes": {
+          "scene-A": "D3A93309-B043-4100-A69B-851C98F41094",
+          "scene-B": "EA17102B-CFF0-43FE-A9C1-5620A265766B"
+        },
+        "owners": {
+          "scene-A": "f7e994d3-326b-4e13-9216-51b02ca1f8bd",
+          "scene-B": "e88ccbac-30b0-43d5-8450-f431843004d2"
+        },
+        "views": [
+          {
+            "view_id": "62f4ca00-91bf-4be3-946d-1e4faf2ebd56",
+            "session_id": "f3ca7b20-186c-4da3-a0ab-1628b3b75106",
+            "name": "ApplicationLaunch"
+          },
+          {
+            "view_id": "f7e994d3-326b-4e13-9216-51b02ca1f8bd",
+            "session_id": "f3ca7b20-186c-4da3-a0ab-1628b3b75106",
+            "name": "ProbeHomeView"
+          },
+          {
+            "view_id": "291a39e3-ac13-40a2-9f7d-54fba2b718c6",
+            "session_id": "f3ca7b20-186c-4da3-a0ab-1628b3b75106",
+            "name": "AutoTracked_HostingController_Fallback"
+          },
+          {
+            "view_id": "e88ccbac-30b0-43d5-8450-f431843004d2",
+            "session_id": "f3ca7b20-186c-4da3-a0ab-1628b3b75106",
+            "name": "NavigationStackHostingController<AnyView>"
+          }
+        ],
+        "work": [
+          {
+            "kind": "action",
+            "event_id": "de23a50a-d1b7-47e8-ad22-583940a9f9dc",
+            "session_id": "f3ca7b20-186c-4da3-a0ab-1628b3b75106",
+            "view_id": "f7e994d3-326b-4e13-9216-51b02ca1f8bd",
+            "phase": "navigation-appearance-1",
+            "source_scene": "scene-A"
+          },
+          {
+            "kind": "action",
+            "event_id": "cd96a2c3-651c-4838-b4ad-802e6a781a4b",
+            "session_id": "f3ca7b20-186c-4da3-a0ab-1628b3b75106",
+            "view_id": "f7e994d3-326b-4e13-9216-51b02ca1f8bd",
+            "phase": "on-appear",
+            "source_scene": "scene-A"
+          },
+          {
+            "kind": "action",
+            "event_id": "67be7385-4767-4b0e-9cdf-56ef35545692",
+            "session_id": "f3ca7b20-186c-4da3-a0ab-1628b3b75106",
+            "view_id": "f7e994d3-326b-4e13-9216-51b02ca1f8bd",
+            "phase": "task-immediate",
+            "source_scene": "scene-A"
+          },
+          {
+            "kind": "resource",
+            "event_id": "563adcbe-d05f-451f-8082-7b0dbff380c8",
+            "session_id": "f3ca7b20-186c-4da3-a0ab-1628b3b75106",
+            "view_id": "f7e994d3-326b-4e13-9216-51b02ca1f8bd",
+            "phase": "navigation-appearance-1",
+            "source_scene": "scene-A"
+          },
+          {
+            "kind": "resource",
+            "event_id": "170d82c2-b420-4bd9-b5ae-26a5d75d77a9",
+            "session_id": "f3ca7b20-186c-4da3-a0ab-1628b3b75106",
+            "view_id": "f7e994d3-326b-4e13-9216-51b02ca1f8bd",
+            "phase": "on-appear",
+            "source_scene": "scene-A"
+          },
+          {
+            "kind": "resource",
+            "event_id": "e0f83574-99d7-4007-96ae-e44dc51bae61",
+            "session_id": "f3ca7b20-186c-4da3-a0ab-1628b3b75106",
+            "view_id": "f7e994d3-326b-4e13-9216-51b02ca1f8bd",
+            "phase": "task-immediate",
+            "source_scene": "scene-A"
+          },
+          {
+            "kind": "action",
+            "event_id": "537ee2d5-93c8-4721-af8b-d9da58cae651",
+            "session_id": "f3ca7b20-186c-4da3-a0ab-1628b3b75106",
+            "view_id": "f7e994d3-326b-4e13-9216-51b02ca1f8bd",
+            "phase": "semantic-a-before-peer",
+            "source_scene": "scene-A"
+          },
+          {
+            "kind": "resource",
+            "event_id": "58675940-e143-4c64-9a20-375c47414c21",
+            "session_id": "f3ca7b20-186c-4da3-a0ab-1628b3b75106",
+            "view_id": "f7e994d3-326b-4e13-9216-51b02ca1f8bd",
+            "phase": "semantic-a-before-peer",
+            "source_scene": "scene-A"
+          },
+          {
+            "kind": "action",
+            "event_id": "a8f13804-1824-40a7-86c3-6fc6968ad9e7",
+            "session_id": "f3ca7b20-186c-4da3-a0ab-1628b3b75106",
+            "view_id": "f7e994d3-326b-4e13-9216-51b02ca1f8bd",
+            "phase": "task-delayed",
+            "source_scene": "scene-A"
+          },
+          {
+            "kind": "action",
+            "event_id": "fc335461-c9fd-4fc4-bcb7-c7a5c2037cb2",
+            "session_id": "f3ca7b20-186c-4da3-a0ab-1628b3b75106",
+            "view_id": "f7e994d3-326b-4e13-9216-51b02ca1f8bd",
+            "phase": "navigation-appearance-1",
+            "source_scene": "scene-B"
+          },
+          {
+            "kind": "action",
+            "event_id": "7eac18f5-ab2f-4316-bb9b-324699ac4d65",
+            "session_id": "f3ca7b20-186c-4da3-a0ab-1628b3b75106",
+            "view_id": "f7e994d3-326b-4e13-9216-51b02ca1f8bd",
+            "phase": "on-appear",
+            "source_scene": "scene-B"
+          },
+          {
+            "kind": "action",
+            "event_id": "0202dec2-2b50-4069-8ca3-24c8e80a816f",
+            "session_id": "f3ca7b20-186c-4da3-a0ab-1628b3b75106",
+            "view_id": "f7e994d3-326b-4e13-9216-51b02ca1f8bd",
+            "phase": "task-immediate",
+            "source_scene": "scene-B"
+          },
+          {
+            "kind": "resource",
+            "event_id": "413dcb40-c21b-4c11-8f33-e51a123134a1",
+            "session_id": "f3ca7b20-186c-4da3-a0ab-1628b3b75106",
+            "view_id": "f7e994d3-326b-4e13-9216-51b02ca1f8bd",
+            "phase": "task-delayed",
+            "source_scene": "scene-A"
+          },
+          {
+            "kind": "resource",
+            "event_id": "3c3c1385-6166-4111-aabd-12a198202a0a",
+            "session_id": "f3ca7b20-186c-4da3-a0ab-1628b3b75106",
+            "view_id": "f7e994d3-326b-4e13-9216-51b02ca1f8bd",
+            "phase": "navigation-appearance-1",
+            "source_scene": "scene-B"
+          },
+          {
+            "kind": "resource",
+            "event_id": "4a5f04ca-acb3-4286-a577-c830ba6c276e",
+            "session_id": "f3ca7b20-186c-4da3-a0ab-1628b3b75106",
+            "view_id": "f7e994d3-326b-4e13-9216-51b02ca1f8bd",
+            "phase": "on-appear",
+            "source_scene": "scene-B"
+          },
+          {
+            "kind": "resource",
+            "event_id": "144aaf32-86c4-44b4-91ce-bd8c7baec707",
+            "session_id": "f3ca7b20-186c-4da3-a0ab-1628b3b75106",
+            "view_id": "f7e994d3-326b-4e13-9216-51b02ca1f8bd",
+            "phase": "task-immediate",
+            "source_scene": "scene-B"
+          },
+          {
+            "kind": "action",
+            "event_id": "6005a8a1-eb55-4dfe-8d92-58a6bd679faa",
+            "session_id": "f3ca7b20-186c-4da3-a0ab-1628b3b75106",
+            "view_id": "e88ccbac-30b0-43d5-8450-f431843004d2",
+            "phase": "task-delayed",
+            "source_scene": "scene-B"
+          },
+          {
+            "kind": "action",
+            "event_id": "4a5501d2-1892-47dd-afc7-c56c0b99a8be",
+            "session_id": "f3ca7b20-186c-4da3-a0ab-1628b3b75106",
+            "view_id": "e88ccbac-30b0-43d5-8450-f431843004d2",
+            "phase": "automatic-b-after-ready",
+            "source_scene": "scene-B"
+          },
+          {
+            "kind": "resource",
+            "event_id": "2e231302-a078-4c0d-8cd1-59c7c5f8e116",
+            "session_id": "f3ca7b20-186c-4da3-a0ab-1628b3b75106",
+            "view_id": "e88ccbac-30b0-43d5-8450-f431843004d2",
+            "phase": "task-delayed",
+            "source_scene": "scene-B"
+          },
+          {
+            "kind": "resource",
+            "event_id": "7ec75a33-fcd6-47ff-b724-b1f6dfdda660",
+            "session_id": "f3ca7b20-186c-4da3-a0ab-1628b3b75106",
+            "view_id": "e88ccbac-30b0-43d5-8450-f431843004d2",
+            "phase": "automatic-b-after-ready",
+            "source_scene": "scene-B"
+          }
+        ],
+        "simultaneous_visibility_claimed": false,
+        "documented_source_less_fallback": [
+          {
+            "kind": "action",
+            "event_id": "fc335461-c9fd-4fc4-bcb7-c7a5c2037cb2",
+            "session_id": "f3ca7b20-186c-4da3-a0ab-1628b3b75106",
+            "view_id": "f7e994d3-326b-4e13-9216-51b02ca1f8bd",
+            "phase": "navigation-appearance-1",
+            "source_scene": "scene-B"
+          },
+          {
+            "kind": "action",
+            "event_id": "7eac18f5-ab2f-4316-bb9b-324699ac4d65",
+            "session_id": "f3ca7b20-186c-4da3-a0ab-1628b3b75106",
+            "view_id": "f7e994d3-326b-4e13-9216-51b02ca1f8bd",
+            "phase": "on-appear",
+            "source_scene": "scene-B"
+          },
+          {
+            "kind": "action",
+            "event_id": "0202dec2-2b50-4069-8ca3-24c8e80a816f",
+            "session_id": "f3ca7b20-186c-4da3-a0ab-1628b3b75106",
+            "view_id": "f7e994d3-326b-4e13-9216-51b02ca1f8bd",
+            "phase": "task-immediate",
+            "source_scene": "scene-B"
+          },
+          {
+            "kind": "resource",
+            "event_id": "3c3c1385-6166-4111-aabd-12a198202a0a",
+            "session_id": "f3ca7b20-186c-4da3-a0ab-1628b3b75106",
+            "view_id": "f7e994d3-326b-4e13-9216-51b02ca1f8bd",
+            "phase": "navigation-appearance-1",
+            "source_scene": "scene-B"
+          },
+          {
+            "kind": "resource",
+            "event_id": "4a5f04ca-acb3-4286-a577-c830ba6c276e",
+            "session_id": "f3ca7b20-186c-4da3-a0ab-1628b3b75106",
+            "view_id": "f7e994d3-326b-4e13-9216-51b02ca1f8bd",
+            "phase": "on-appear",
+            "source_scene": "scene-B"
+          },
+          {
+            "kind": "resource",
+            "event_id": "144aaf32-86c4-44b4-91ce-bd8c7baec707",
+            "session_id": "f3ca7b20-186c-4da3-a0ab-1628b3b75106",
+            "view_id": "f7e994d3-326b-4e13-9216-51b02ca1f8bd",
+            "phase": "task-immediate",
+            "source_scene": "scene-B"
+          }
+        ]
+      },
+      "backend": {
+        "state": "PASS",
+        "view_count": 4,
+        "work_count": 20,
+        "marker_pairs": 2,
+        "error_crash_count": 0
+      },
+      "backend_count": 27,
+      "cleanup": {
+        "state": "PASS",
+        "app_absent": true,
+        "process_absent": true,
+        "protected_unchanged": true,
+        "native_source_unchanged": true,
+        "time_ms": 1789843093104
+      },
+      "scope": "Original EXP-118 settled-owner discriminator. Six early source-less B work events retain representative A before automatic discovery; this is the explicitly documented EXP-118 fallback, not source-bearing automatic action attribution. No simultaneous visibility or zero automatic-host churn claim.",
+      "receipt_recovery": "Initial immediate copy returned file-not-found; original before-SDK receipt recovered from same PID1516 without relaunch, all3 binaries match.",
+      "artifacts": {
+        "frozen.json": {
+          "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp196-physical-h05-4qbmp58q/frozen.json",
+          "sha256": "5567be4fc39ff4071da31d1ad756a2435fc2dc7cc47e0550377841b02a9392a2"
+        },
+        "native.jsonl": {
+          "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp196-physical-h05-4qbmp58q/native.jsonl",
+          "sha256": "2b813de566b4fbff210bec29cb67cf130409b43287526c752a37d45d12d4074b"
+        },
+        "local-result.json": {
+          "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp196-physical-h05-4qbmp58q/local-result.json",
+          "sha256": "00373c9242cf8ac08b4288b1beac01c1e57732d89ef23299a5ee0549a7f10554"
+        },
+        "backend-raw.json": {
+          "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp196-physical-h05-4qbmp58q/backend-raw.json",
+          "sha256": "9dbda3c7d6fc71f98b41fedf593f74209609fbbd072a5e3b6fa44d490b9d4cb4"
+        },
+        "backend-result.json": {
+          "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp196-physical-h05-4qbmp58q/backend-result.json",
+          "sha256": "5cf5524d403341318a4293c06be433d0954961976c63a4e2905838182df5424b"
+        },
+        "installed-identity.json": {
+          "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp196-physical-h05-4qbmp58q/installed-identity.json",
+          "sha256": "c8e6cdf5c867bc6e04f45f933c8a250bbb19c592aca8894866a70c8ef31eb4aa"
+        },
+        "cleanup.json": {
+          "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp196-physical-h05-4qbmp58q/cleanup.json",
+          "sha256": "e98ae82c91eb70225f5bc8a959dcdf5891a34dfba22121ec2fa569bbc030e638"
+        }
+      }
+    },
+    {
+      "gate": "H07",
+      "status": "INVALID_EXTERNAL_CONTRACT",
+      "run_id": "exp196-h07-20260919t183839z-62f90c17ddf4",
+      "capture_source_revision": "a823ad86cc9a04395988dc0e6075fe325e7a7c68",
+      "artifact_root": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp196-physical-h07-388qngrp",
+      "native_expectations_passed": 8,
+      "reason": "External fixture misspells three serialized URLSession step names. Native Swift raw values include url-session. Original manifest rejection preserved; no physical gate acceptance.",
+      "trace_id": "6aaed6b1000000006f7ce5c3572cbe57",
+      "span_id": "6c61d83d24b99096",
+      "cleanup": {
+        "state": "PASS",
+        "app_absent": true,
+        "process_absent": true,
+        "protected_unchanged": true,
+        "native_source_unchanged": true,
+        "time_ms": 1789843387194
+      },
+      "reanalysis_artifact": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp196-physical-h07-388qngrp/partial-reanalysis.json"
     }
   ],
   "gates_closed": [
-    "F05"
+    "F05",
+    "H05"
   ],
   "f05_physical_oracle_definition": {
     "defined_at": 1789835528.922011,
@@ -972,5 +1297,19 @@
       "protected_unchanged": true
     },
     "physical_runs_pending": true
+  },
+  "h07_contract_correction": {
+    "defined_at": 1789843355.388017,
+    "before_fresh_execution": true,
+    "source": "ProbeStep.swift:46-48",
+    "correction": "Three expected wire step names change urlsession to url-session; original native steps and eight expectations unchanged.",
+    "discriminator": "Validate every frozen step kind against the independent Swift wire schema before execution; preserve original rejected run and require a fresh clean run.",
+    "timing_projection": "Retain exact encoded integer start/duration in native evidence. Compare raw backend duration when exposed and disclose rounded MCP display fields; do not infer nanosecond equality from duration_ms or second-resolution start_time."
+  },
+  "physical_serial_oracle_verification": {
+    "tests": 5,
+    "negative_controls": 45,
+    "source_schema_check": true,
+    "physical_evidence": false
   }
 }

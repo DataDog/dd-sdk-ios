@@ -236,7 +236,7 @@
         "value": "trace-shared-creator-representative"
       },
       {
-        "kind": "start-trace-only-urlsession-request",
+        "kind": "start-trace-only-url-session-request",
         "scene": "scene-A",
         "value": "trace-only-shared-request"
       },
@@ -256,12 +256,12 @@
         "value": "trace-shared-consumer-representative"
       },
       {
-        "kind": "join-trace-only-urlsession-request",
+        "kind": "join-trace-only-url-session-request",
         "scene": "scene-B",
         "value": "trace-only-shared-request"
       },
       {
-        "kind": "complete-trace-only-urlsession-request",
+        "kind": "complete-trace-only-url-session-request",
         "scene": "scene-B",
         "value": "trace-only-shared-request"
       }
