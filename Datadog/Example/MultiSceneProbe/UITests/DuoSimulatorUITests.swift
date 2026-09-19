@@ -95,6 +95,76 @@ final class DuoSimulatorUITests: XCTestCase {
         XCTAssertFalse(sourceA.frame.intersects(sourceB.frame))
     }
 
+    /// The host collector owns phase admission; the runner only delivers native controls.
+    func testAdaptiveResizePrefix() throws {
+        continueAfterFailure = false
+        let app = XCUIApplication()
+        let runID = UUID().uuidString.lowercased()
+        let controlDirectory = artifactDirectory.appendingPathComponent(runID)
+        try FileManager.default.createDirectory(at: controlDirectory, withIntermediateDirectories: true)
+        let identity = try JSONSerialization.data(withJSONObject: [
+            "runID": runID,
+            "scenario": "swiftui.split.adaptive-resize",
+            "createdAt": String(Date().timeIntervalSince1970)
+        ], options: [.sortedKeys])
+        try identity.write(to: artifactDirectory.appendingPathComponent("active-run.json"), options: .atomic)
+        app.launchArguments = [
+            "--probe-scenario", "swiftui.split.adaptive-resize",
+            "--probe-run-id", runID, "--probe-run-mode", "clean"
+        ]
+        app.launchEnvironment["DD_PROBE_CAPTURE_JSONL"] = "1"
+        try checkpoint("adaptive-launch", runID: runID)
+        app.launch()
+        defer {
+            try? checkpoint("adaptive-terminate", runID: runID)
+            app.terminate()
+            try? checkpoint("adaptive-terminated", runID: runID)
+        }
+        XCTAssertTrue(app.staticTexts["accepted generation: 0"].waitForExistence(timeout: 15))
+        try checkpoint("adaptive-ready", runID: runID)
+        try waitForControl("marker-1", runID: runID, directory: controlDirectory)
+        try tapAdaptiveMarker(app)
+        try checkpoint("adaptive-marker-1-delivered", runID: runID)
+
+        try waitForControl("select-detail", runID: runID, directory: controlDirectory)
+        let sidebar = app.buttons["Show Sidebar"]
+        if sidebar.exists && sidebar.isHittable { sidebar.tap() }
+        let detail = app.buttons["Detail 1"]
+        XCTAssertTrue(detail.waitForExistence(timeout: 10))
+        XCTAssertTrue(detail.isHittable)
+        detail.tap()
+        XCTAssertTrue(app.staticTexts["accepted generation: 1"].waitForExistence(timeout: 10))
+        try checkpoint("adaptive-detail-1-selected", runID: runID)
+        try waitForControl("marker-2", runID: runID, directory: controlDirectory)
+        try tapAdaptiveMarker(app)
+        try checkpoint("adaptive-marker-2-delivered", runID: runID)
+
+        // Keep the process alive through the externally measured resize and backend checks.
+        try waitForControl("finish", runID: runID, directory: controlDirectory)
+        try checkpoint("adaptive-acceptance-exported", runID: runID)
+    }
+
+    private func tapAdaptiveMarker(_ app: XCUIApplication) throws {
+        let candidates = app.buttons.matching(NSPredicate(format: "label == %@", "Emit adaptive marker"))
+        let marker = try XCTUnwrap(candidates.allElementsBoundByIndex.first { $0.isHittable })
+        marker.tap()
+    }
+
+    private func waitForControl(_ command: String, runID: String, directory: URL) throws {
+        let path = directory.appendingPathComponent(command + ".json")
+        let ready = XCTNSPredicateExpectation(
+            predicate: NSPredicate { _, _ in FileManager.default.fileExists(atPath: path.path) },
+            object: nil
+        )
+        XCTAssertEqual(XCTWaiter.wait(for: [ready], timeout: 600), .completed)
+        let payload = try XCTUnwrap(
+            JSONSerialization.jsonObject(with: Data(contentsOf: path)) as? [String: String]
+        )
+        XCTAssertEqual(payload["runID"], runID)
+        XCTAssertEqual(payload["command"], command)
+        try checkpoint("adaptive-control-" + command, runID: runID)
+    }
+
     private func attachState(_ app: XCUIApplication, name: String) throws {
         let capture = XCUIScreen.main.screenshot()
         let screenshot = XCTAttachment(screenshot: capture)
