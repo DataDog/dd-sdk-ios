@@ -6,6 +6,16 @@ and decisive tests belong to [release-gates.json](release-gates.json) and the
 generated [checklist](PLAN.md). The sole restart cursor is
 [.continue-here.md](../../.continue-here.md).
 
+## Immediate compatibility priority
+
+The short-term criterion is no RUM degradation when an existing app rebuilds with
+the iOS27 SDK and runs on Duo without adopting new RUM/navigation integration.
+Automatic UIKit views/actions and automatic SwiftUI views/actions are four
+separate open gates C07–C10. [EXP-195](Results/EXP-195-automatic-tracking.json)
+compares unchanged apps and preserves baseline limitations. C01’s early UIKit
+view/custom-marker fixture does not prove automatic taps/scrolls; EXP-193’s
+accepted-state RUMNavigationHost does not prove automatic-only SwiftUI.
+
 ## Current support
 
 The branch remains experimental and is not release-ready. It supports independent

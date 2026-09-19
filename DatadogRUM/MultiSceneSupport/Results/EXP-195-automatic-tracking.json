@@ -1,0 +1,87 @@
+{
+  "experiment": "EXP-195",
+  "status": "DEFINED",
+  "gates": [
+    "C07",
+    "C08",
+    "C09",
+    "C10"
+  ],
+  "defined_before_implementation": true,
+  "question": "Does an existing single-scene app lose automatic UIKit/SwiftUI view or action coverage when rebuilt with the iOS27 SDK and run on Duo, without adopting semantic tracking or changing navigation?",
+  "source": {
+    "baseline": "92f021ba7e4a866f84a52da93ed8b63f3dc75882",
+    "candidate": "04201edc7711361279d8487b385bc8b0ca9c63c7",
+    "definition_head": "1ffd5648e85b0f346ad1b942b9ace2c88700601b"
+  },
+  "matrix": {
+    "sdk_arms": [
+      "baseline",
+      "candidate"
+    ],
+    "build_sdk": [
+      "26.5",
+      "27.1"
+    ],
+    "runtime_devices": [
+      "regular iPhone iOS27.0",
+      "iPhone Duo iOS27.1"
+    ],
+    "fixtures": [
+      "UIKit stack",
+      "UIKit split",
+      "native SwiftUI stack",
+      "native SwiftUI split"
+    ],
+    "cells": 32,
+    "duo_phases": [
+      "outer initial flow",
+      "inner flow after real open with geometry receipt",
+      "close/reopen unchanged destination"
+    ]
+  },
+  "unchanged_application_contract": [
+    "public default automatic predicates only",
+    "scene manifest declares multiple scenes false",
+    "no manual view/action calls",
+    "no RUMNavigationHost, scene target or experimental API",
+    "same app source in every arm; genuine compiler/SDK identity retained",
+    "UI test identifiers, mapper observation and independent native interaction/geometry receipts only"
+  ],
+  "oracle": {
+    "views": [
+      "detected name/path and ordered unique occurrences",
+      "missing or duplicate views",
+      "owner retained or changed across presentation, navigation and geometry"
+    ],
+    "actions": [
+      "real native tap/scroll outcome required before assessing detection",
+      "action type/name/count and originating view relationship",
+      "no custom marker counted as automatic action",
+      "application_start action reported separately"
+    ],
+    "classification": [
+      "UNCHANGED_SUPPORTED",
+      "UNCHANGED_LIMITATION",
+      "IMPROVED",
+      "REGRESSION",
+      "UNQUALIFIED_INPUT",
+      "UNEXECUTED"
+    ],
+    "acceptance": "Every finite cell has a classified outcome; all four gates require no new unexplained loss, duplicate or ownership/name degradation. Pre-existing imperfections remain visible, never silently accepted as ideal semantics.",
+    "integrity": [
+      "fresh UUID and clean installation each cell",
+      "source/fixture/build/installed hashes",
+      "native outcome independent of RUM discovery",
+      "timestamps and sequence retained through critical boundary",
+      "negative controls reject wrong owners, missing actions and stale run evidence"
+    ],
+    "evidence_boundary": "Primary comparison uses complete local RUM mapper events, not a backend claim. Existing semantic-host acceptance is not reused as automatic tracking evidence."
+  },
+  "environment_limits": [
+    "Installed27.1 runtime supports Duo only. The regular control runs27.0; cross-device deltas alone cannot isolate hardware/model from OS patch. Same-device old/new build pairs isolate rebuild changes.",
+    "Simulator functional observation does not establish physical Duo performance or callback parity.",
+    "Single scene declared false is the immediate no-adoption contract; simultaneous windows and declared-multi-scene variants remain their separate gates."
+  ],
+  "attempts": []
+}

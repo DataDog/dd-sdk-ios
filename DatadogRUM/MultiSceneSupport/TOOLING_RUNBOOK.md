@@ -1965,3 +1965,15 @@ pending unlock request and immediately continue work that needs no desktop.
 Review F02 ownership guidance against source/evidence or prepare F03 inventories
 within their existing scope. F01 still gates API promotion, publishing and the
 final candidate; do not infer approval or repeat accepted tests to fill the wait.
+
+## Automatic-only compatibility comparisons
+
+EXP-195 keeps UIKit views/actions and SwiftUI views/actions separate. Default
+public predicates and unchanged app sources are the subject; semantic hosts,
+manual RUM calls and custom marker actions cannot substitute for automatic
+coverage. Qualify actual native input and geometry independently of RUM output.
+Use genuine old/new build SDKs, record installed binary identities and retain
+existing limitations when comparing names, counts, occurrences and owners.
+A Duo27.1 versus regular27.0 delta retains an OS-patch confound; same-device
+old/new build pairs isolate rebuild changes. No mapper-only result is a backend
+claim. The fixed matrix and failure classifications live in the owning result.

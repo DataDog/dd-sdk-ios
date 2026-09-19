@@ -15,16 +15,20 @@ action completes; read live gate status and dependencies from the register.
 1. Investigate a concrete compatibility, ownership or performance regression
    before expanding the affected surface. Preserve predeclared baseline budgets
    and stable responsibility-review boundaries.
-2. Complete dependency-ready telemetry families in T05–T14 order. Keep explicit
+2. First close C07–C10: the user’s immediate priority is no automatic UIKit or
+   SwiftUI view/action degradation for an existing app rebuilt with SDK27, without
+   new navigation integration. EXP-195 owns the finite comparison; existing
+   limitations are acceptable when unchanged and documented.
+3. Complete dependency-ready telemetry families in T05–T14 order. Keep explicit
    targeting, captured ownership and documented process fallback as distinct
    completion contracts; no expandable “remaining signals” row is admitted.
-3. Prioritize all dependency-ready Duo27.1 simulator validation under the user's
+4. Prioritize all dependency-ready Duo27.1 simulator validation under the user's
    latest direction. [EXP-192](Results/EXP-192-duo-simulator-fidelity.json) and the
    [finite routing table](DUO_SIMULATOR_ASSESSMENT.md) qualify each simulator
    capability, starting with unchanged H01/EXP-191. Preserve physical and human
    residuals. Then complete C06 deployment15 and the oldest debuggable17 runtime
    matrix, explicitly recording unexecuted15/16 coverage.
-4. Complete F01 API review, F02 support documentation, F03 final compatibility
+5. Complete F01 API review, F02 support documentation, F03 final compatibility
    matrix, F04 Duo acceptance, F05 Replay coexistence and F06 freeze according
    to their dependencies. Deferred extraction remains after freeze.
 
@@ -50,12 +54,17 @@ approved automatic/opaque limits. UIKit-hosted SwiftUI parity remains H16.
 
 | Gate | Deliverable / completion mode | Owner | Depends on | Decisive test | Environment | Status | Evidence |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| C01 | Ordinary single-scene automatic app | SDK implementer | None | Unchanged Home → Detail → fresh Home owner/name/count chain, no duplicate views/actions | iOS 27 and 26.5 simulators | CLOSED | EXP-160; BASELINES.md and Results/EXP-160-baseline.json. Bounded workload passes on27/26.5; see recorded limitations. |
+| C01 | Early ordinary UIKit single-scene automatic-view app | SDK implementer | None | Unchanged Home → Detail → fresh Home owner/name/count chain, no duplicate views/actions | iOS 27 and 26.5 simulators | CLOSED | EXP-160; BASELINES.md and Results/EXP-160-baseline.json. Bounded workload passes on27/26.5; see recorded limitations. |
 | C02 | Ordinary single-scene manual app | SDK implementer | None | Exact manual start/stop and marker owners match the pinned baseline | iOS 27 and 26.5 simulators | CLOSED | EXP-160; BASELINES.md and Results/EXP-160-baseline.json. Bounded workload passes on27/26.5; see recorded limitations. |
 | C03 | Legacy UIApplication lifecycle app | SDK implementer | None | No scene manifest; automatic and manual chains match baseline without a scene registry dependency | iOS 27 and 26.5 simulators; genuine pre27-SDK build for the legacy host | CLOSED | EXP-189 at b3a75d01f: genuineSDK26.5 builds of baseline92f021ba7/current SDK04201edc7 pass16 exact navigation/actual-lifecycle cells on27.0/26.5. All installed identities, source/fixture hashes, cleanup and restored simulator state pass. Original EXP-160/188 platform traps and EXP-189 preparation failure remain. Apple requires scene adoption forSDK27-built apps; no iOS15 claim. Results/EXP-189-legacy-build-sdk.json. |
 | C04 | Custom and NOP monitor compatibility | SDK implementer | None | Legacy-only conformer receives exactly one call; NOP emits nothing and never crashes | iOS 27 and 26.5 simulators | CLOSED | EXP-160; BASELINES.md and Results/EXP-160-baseline.json. Bounded workload passes on27/26.5; see recorded limitations. |
 | C05 | Older supported runtime sample | SDK implementer | None | Repeat C01–C04 on iOS 26.5 with no new experimental availability requirement | iOS 27 and 26.5 simulators | CLOSED | EXP-160; BASELINES.md and Results/EXP-160-baseline.json. Bounded workload passes on27/26.5; see recorded limitations. |
 | C06 | iOS 15 deployment and oldest debuggable runtime | SDK implementer | None | Compile/link at iOS 15 deployment; repeat baseline/current automatic/manual/legacy and actual legacy lifecycle smoke on the oldest available iOS 17 runtime, recording the exact patch. Disclose unexecuted iOS 15/16 coverage. | Genuine iOS 15 deployment build plus iOS 17 simulator/device supported by the available Xcode toolchain | ENVIRONMENT BLOCKED | User-corrected deployment15 plus oldest runnable17.x contract. EXP-190 official27.1 requests for17.0/17.0.1/17.2/17.4/17.5 all unavailable;26.6 also rejects17.0. No installed17 runtime/native case. Historical catalog/direct HTML is not runtime availability;15/16 execution remains unexecuted. |
+
+| C07 | UIKit automatic view non-regression after an iOS 27 rebuild | SDK implementer | None | EXP-195 fixed automatic-only stack/split matrix: paired pre-scene/current SDK and genuine SDK26.5/27.1 builds on regular iPhone27.0 and Duo27.1. Qualify actual inputs and geometry; preserve existing view/action detection, names, counts and owner relationships; classify every difference and close only with no new unexplained degradation. | Xcode26.6 with SDK26.5 and Xcode27.1; regular iPhone27.0 and Duo27.1 simulators; physical Duo remains F04 | OPEN | User priority 2026-09-19. C01 proves only the earlier UIKit fixture with custom action markers; EXP-193 uses accepted-state integration. Neither establishes automatic-only Duo view/action parity. EXP-195 is defined before implementation. |
+| C08 | UIKit automatic action non-regression after an iOS 27 rebuild | SDK implementer | None | EXP-195 fixed automatic-only stack/split matrix: paired pre-scene/current SDK and genuine SDK26.5/27.1 builds on regular iPhone27.0 and Duo27.1. Qualify actual inputs and geometry; preserve existing view/action detection, names, counts and owner relationships; classify every difference and close only with no new unexplained degradation. | Xcode26.6 with SDK26.5 and Xcode27.1; regular iPhone27.0 and Duo27.1 simulators; physical Duo remains F04 | OPEN | User priority 2026-09-19. C01 proves only the earlier UIKit fixture with custom action markers; EXP-193 uses accepted-state integration. Neither establishes automatic-only Duo view/action parity. EXP-195 is defined before implementation. |
+| C09 | SwiftUI automatic view non-regression after an iOS 27 rebuild | SDK implementer | None | EXP-195 fixed automatic-only stack/split matrix: paired pre-scene/current SDK and genuine SDK26.5/27.1 builds on regular iPhone27.0 and Duo27.1. Qualify actual inputs and geometry; preserve existing view/action detection, names, counts and owner relationships; classify every difference and close only with no new unexplained degradation. | Xcode26.6 with SDK26.5 and Xcode27.1; regular iPhone27.0 and Duo27.1 simulators; physical Duo remains F04 | OPEN | User priority 2026-09-19. C01 proves only the earlier UIKit fixture with custom action markers; EXP-193 uses accepted-state integration. Neither establishes automatic-only Duo view/action parity. EXP-195 is defined before implementation. |
+| C10 | SwiftUI automatic action non-regression after an iOS 27 rebuild | SDK implementer | None | EXP-195 fixed automatic-only stack/split matrix: paired pre-scene/current SDK and genuine SDK26.5/27.1 builds on regular iPhone27.0 and Duo27.1. Qualify actual inputs and geometry; preserve existing view/action detection, names, counts and owner relationships; classify every difference and close only with no new unexplained degradation. | Xcode26.6 with SDK26.5 and Xcode27.1; regular iPhone27.0 and Duo27.1 simulators; physical Duo remains F04 | OPEN | User priority 2026-09-19. C01 proves only the earlier UIKit fixture with custom action markers; EXP-193 uses accepted-state integration. Neither establishes automatic-only Duo view/action parity. EXP-195 is defined before implementation. |
 
 ## Performance and reentrancy
 

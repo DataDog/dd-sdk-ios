@@ -19,6 +19,13 @@ closing one scene must not end or replace the view that remains visible in anoth
 scene. Automatically and manually captured events must be attributed to the scene
 that produced them whenever that identity is available.
 
+The immediate compatibility priority is that RUM is no worse for an existing
+application rebuilt with the iOS27 SDK on iPhone Duo, even without major app-side
+support changes. Assess automatic UIKit and SwiftUI views and actions separately;
+pre-existing limitations are acceptable when unchanged and clearly documented.
+C07–C10 own this finite no-adoption comparison independently of optional exact
+semantic APIs and their pending review.
+
 The primary validation areas are:
 
 1. UIKit and SwiftUI view creation and lifetime.

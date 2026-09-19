@@ -6,7 +6,7 @@
   "gates": [
     {
       "id": "C01",
-      "deliverable": "Ordinary single-scene automatic app",
+      "deliverable": "Early ordinary UIKit single-scene automatic-view app",
       "owner": "SDK implementer",
       "dependencies": [],
       "decisive_test": "Unchanged Home \u2192 Detail \u2192 fresh Home owner/name/count chain, no duplicate views/actions",
@@ -69,6 +69,50 @@
       "completion_mode": null,
       "status": "ENVIRONMENT BLOCKED",
       "evidence": "User-corrected deployment15 plus oldest runnable17.x contract. EXP-190 official27.1 requests for17.0/17.0.1/17.2/17.4/17.5 all unavailable;26.6 also rejects17.0. No installed17 runtime/native case. Historical catalog/direct HTML is not runtime availability;15/16 execution remains unexecuted."
+    },
+    {
+      "id": "C07",
+      "deliverable": "UIKit automatic view non-regression after an iOS 27 rebuild",
+      "owner": "SDK implementer",
+      "dependencies": [],
+      "decisive_test": "EXP-195 fixed automatic-only stack/split matrix: paired pre-scene/current SDK and genuine SDK26.5/27.1 builds on regular iPhone27.0 and Duo27.1. Qualify actual inputs and geometry; preserve existing view/action detection, names, counts and owner relationships; classify every difference and close only with no new unexplained degradation.",
+      "environment": "Xcode26.6 with SDK26.5 and Xcode27.1; regular iPhone27.0 and Duo27.1 simulators; physical Duo remains F04",
+      "completion_mode": null,
+      "status": "OPEN",
+      "evidence": "User priority 2026-09-19. C01 proves only the earlier UIKit fixture with custom action markers; EXP-193 uses accepted-state integration. Neither establishes automatic-only Duo view/action parity. EXP-195 is defined before implementation."
+    },
+    {
+      "id": "C08",
+      "deliverable": "UIKit automatic action non-regression after an iOS 27 rebuild",
+      "owner": "SDK implementer",
+      "dependencies": [],
+      "decisive_test": "EXP-195 fixed automatic-only stack/split matrix: paired pre-scene/current SDK and genuine SDK26.5/27.1 builds on regular iPhone27.0 and Duo27.1. Qualify actual inputs and geometry; preserve existing view/action detection, names, counts and owner relationships; classify every difference and close only with no new unexplained degradation.",
+      "environment": "Xcode26.6 with SDK26.5 and Xcode27.1; regular iPhone27.0 and Duo27.1 simulators; physical Duo remains F04",
+      "completion_mode": null,
+      "status": "OPEN",
+      "evidence": "User priority 2026-09-19. C01 proves only the earlier UIKit fixture with custom action markers; EXP-193 uses accepted-state integration. Neither establishes automatic-only Duo view/action parity. EXP-195 is defined before implementation."
+    },
+    {
+      "id": "C09",
+      "deliverable": "SwiftUI automatic view non-regression after an iOS 27 rebuild",
+      "owner": "SDK implementer",
+      "dependencies": [],
+      "decisive_test": "EXP-195 fixed automatic-only stack/split matrix: paired pre-scene/current SDK and genuine SDK26.5/27.1 builds on regular iPhone27.0 and Duo27.1. Qualify actual inputs and geometry; preserve existing view/action detection, names, counts and owner relationships; classify every difference and close only with no new unexplained degradation.",
+      "environment": "Xcode26.6 with SDK26.5 and Xcode27.1; regular iPhone27.0 and Duo27.1 simulators; physical Duo remains F04",
+      "completion_mode": null,
+      "status": "OPEN",
+      "evidence": "User priority 2026-09-19. C01 proves only the earlier UIKit fixture with custom action markers; EXP-193 uses accepted-state integration. Neither establishes automatic-only Duo view/action parity. EXP-195 is defined before implementation."
+    },
+    {
+      "id": "C10",
+      "deliverable": "SwiftUI automatic action non-regression after an iOS 27 rebuild",
+      "owner": "SDK implementer",
+      "dependencies": [],
+      "decisive_test": "EXP-195 fixed automatic-only stack/split matrix: paired pre-scene/current SDK and genuine SDK26.5/27.1 builds on regular iPhone27.0 and Duo27.1. Qualify actual inputs and geometry; preserve existing view/action detection, names, counts and owner relationships; classify every difference and close only with no new unexplained degradation.",
+      "environment": "Xcode26.6 with SDK26.5 and Xcode27.1; regular iPhone27.0 and Duo27.1 simulators; physical Duo remains F04",
+      "completion_mode": null,
+      "status": "OPEN",
+      "evidence": "User priority 2026-09-19. C01 proves only the earlier UIKit fixture with custom action markers; EXP-193 uses accepted-state integration. Neither establishes automatic-only Duo view/action parity. EXP-195 is defined before implementation."
     },
     {
       "id": "P01",
@@ -928,7 +972,11 @@
         "D09",
         "D10",
         "D11",
-        "D12"
+        "D12",
+        "C07",
+        "C08",
+        "C09",
+        "C10"
       ],
       "decisive_test": "Every required gate closed on reviewed source; performance thresholds hold; no unresolved correctness/release-review finding",
       "environment": "Review + CI",
