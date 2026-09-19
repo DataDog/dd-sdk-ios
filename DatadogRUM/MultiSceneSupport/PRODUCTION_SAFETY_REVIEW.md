@@ -5,6 +5,10 @@ gates D01–D12 and have the repair evidence below. These IDs are distinct from
 the responsibility-review gates R01–R06. The original reviewer, source revision,
 comparison base, findings and limitations remain attributable below.
 
+Review closure does not certify automatic-only UIKit/SwiftUI view or action parity
+for SDK27-rebuilt Duo apps; C07–C10/EXP-195 own that newly prioritized comparison.
+No new SDK defect has been established by its collector calibration.
+
 Review closure does not imply overall release readiness. Current release status
 belongs exclusively to [release-gates.json](release-gates.json) and [PLAN](PLAN.md).
 [Triage](REVIEW_TRIAGE.md) records the initial assessment and finding boundaries;

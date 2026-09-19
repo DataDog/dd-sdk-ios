@@ -1977,3 +1977,9 @@ existing limitations when comparing names, counts, occurrences and owners.
 A Duo27.1 versus regular27.0 delta retains an OS-patch confound; same-device
 old/new build pairs isolate rebuild changes. No mapper-only result is a backend
 claim. The fixed matrix and failure classifications live in the owning result.
+
+The EXP-195 calibration exposed two important discriminators: terminate-only
+collection may lose an otherwise pending final automatic action, so end with
+a qualified real background boundary; a SwiftUI switch element can be found
+and tapped without changing value, so require both its native callback and
+value change. Preserve either failure as collector/input evidence, not SDK loss.

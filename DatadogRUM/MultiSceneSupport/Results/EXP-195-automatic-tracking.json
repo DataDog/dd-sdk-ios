@@ -1,6 +1,6 @@
 {
   "experiment": "EXP-195",
-  "status": "DEFINED",
+  "status": "IN PROGRESS",
   "gates": [
     "C07",
     "C08",
@@ -83,5 +83,43 @@
     "Simulator functional observation does not establish physical Duo performance or callback parity.",
     "Single scene declared false is the immediate no-adoption contract; simultaneous windows and declared-multi-scene variants remain their separate gates."
   ],
-  "attempts": []
+  "attempts": [
+    {
+      "directory": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp195-automatic-qjv1qony",
+      "status": "BUILD FAILED",
+      "reason": "UI collector obsolete geometry-string function; no SDK defect or native data"
+    },
+    {
+      "directory": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp195-automatic-ttlcly3x",
+      "status": "CALIBRATION ONLY",
+      "reason": "Format1 test-plan parser repaired before launch. UIKit input passed but final tap was not flushed; SwiftUI switch tap had no native effect. Apps/runners cleaned. No gate evidence."
+    },
+    {
+      "directory": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp195-automatic-ll6bo13r",
+      "status": "BUILT",
+      "builds": [
+        "baseline-26.5",
+        "candidate-26.5",
+        "baseline-27.1",
+        "candidate-27.1"
+      ],
+      "oracle_controls": 24,
+      "native_cells": 0
+    }
+  ],
+  "preflight": {
+    "directory": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp195-preflight-17l2p618",
+    "definition_commit": "b6cc484a22ceedf96f634fd4b328074ac2735bbd",
+    "definition_signature": "verified G",
+    "xcode_mcp": "rediscovered actual workspace/scheme and27.1 destinations",
+    "datadog_read_access": "fresh empty discriminator query succeeded",
+    "protected_paths": "metadata/index and permitted project hash unchanged"
+  },
+  "source_audit": {
+    "UIKit_view_predicate": "unchanged default controller-name predicate; split reconciliation/structural suppression is gated by declared multiple-scene support",
+    "SwiftUI_view_discovery": "reflection/name algorithm unchanged from baseline; only generic-fallback classification helper was added",
+    "UIKit_action_predicate": "unchanged default names; touch/scroll ownership dispatch changed in this branch",
+    "SwiftUI_action_detection": "modern detector and component-name helper unchanged from baseline; relies on OS gesture descriptions, so source parity does not prove runtime compatibility",
+    "limits": "Source comparison is explanatory evidence only. Pending real-input matrix determines non-regression."
+  }
 }
