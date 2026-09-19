@@ -2667,7 +2667,44 @@ struct ProbeWindowRoot: View {
                     value: requestedWindow
                 )
             case .closeWindow:
-                closeCurrentWindow()
+                if ProcessInfo.processInfo.environment["DD_PROBE_PHYSICAL_SCENE_DESTRUCTION"] == "1" {
+                    guard
+                        let resolvedWindow = ProbeRuntime.sceneRegistry.window(for: handle),
+                        let windowScene = resolvedWindow.windowScene,
+                        windowScene.session.persistentIdentifier == handle.nativeSceneID,
+                        UIApplication.shared.connectedScenes.contains(windowScene)
+                    else {
+                        return .rejected(reason: "no exact connected window to destroy")
+                    }
+                    ProbeRuntime.eventRecorder.record(
+                        ProbeSignal(
+                            kind: .assertion,
+                            semanticContext: ProbeSemanticContext(
+                                logicalSceneID: logicalSceneID,
+                                nativeSceneID: handle.nativeSceneID
+                            ),
+                            name: "physical-scene-destruction-requested"
+                        )
+                    )
+                    UIApplication.shared.requestSceneSessionDestruction(
+                        windowScene.session,
+                        options: nil
+                    ) { _ in
+                        ProbeRuntime.eventRecorder.record(
+                            ProbeSignal(
+                                kind: .assertion,
+                                semanticContext: ProbeSemanticContext(
+                                    logicalSceneID: logicalSceneID,
+                                    nativeSceneID: handle.nativeSceneID
+                                ),
+                                result: .fail,
+                                reason: "native scene destruction request failed"
+                            )
+                        )
+                    }
+                } else {
+                    closeCurrentWindow()
+                }
             case .activateWindow:
                 guard
                     let resolvedWindow = ProbeRuntime.sceneRegistry.window(for: handle),

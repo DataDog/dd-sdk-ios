@@ -138,3 +138,5 @@ C06's corrected17.x qualification checks all five stable versions in Apple's
 historical catalog through27.1; all downloads are unavailable, as is17.0 through
 26.6. No runtime is installed or native matrix cell claimed. An accessible
 official runtime or eligible test environment is still required.
+
+EXP-196 physical activation work is in progress. Four native activation/background transitions and their exact partial backend owners qualify; the final background-scene close lacks a disconnect callback, so H04 stays open. H01 is stopped before mutation on the full-screen mode dependency. See the [owning result](Results/EXP-196-physical-ipad-suite.json); neither case justifies an SDK change.

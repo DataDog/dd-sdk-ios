@@ -1,0 +1,236 @@
+{
+  "completionConditions": [
+    {
+      "kind": "scene-disconnected",
+      "scene": "scene-B"
+    },
+    {
+      "kind": "action",
+      "name": "after-activated-peer-close",
+      "occurrence": 3,
+      "scene": "scene-A",
+      "screen": "home"
+    },
+    {
+      "kind": "resource",
+      "name": "after-activated-peer-close",
+      "occurrence": 3,
+      "scene": "scene-A",
+      "screen": "home"
+    }
+  ],
+  "defaultRunMode": "clean",
+  "expectedSemanticTimeline": [
+    {
+      "kind": "view-started",
+      "occurrence": 1,
+      "scene": "scene-A",
+      "screen": "home"
+    },
+    {
+      "kind": "view-started",
+      "occurrence": 1,
+      "scene": "scene-B",
+      "screen": "home"
+    },
+    {
+      "kind": "action",
+      "name": "after-initial-activate-B",
+      "occurrence": 1,
+      "scene": "scene-B",
+      "screen": "home"
+    },
+    {
+      "kind": "resource",
+      "name": "after-initial-activate-B",
+      "occurrence": 1,
+      "scene": "scene-B",
+      "screen": "home"
+    },
+    {
+      "kind": "view-started",
+      "occurrence": 2,
+      "scene": "scene-A",
+      "screen": "home"
+    },
+    {
+      "kind": "action",
+      "name": "after-activate-A",
+      "occurrence": 2,
+      "scene": "scene-A",
+      "screen": "home"
+    },
+    {
+      "kind": "resource",
+      "name": "after-activate-A",
+      "occurrence": 2,
+      "scene": "scene-A",
+      "screen": "home"
+    },
+    {
+      "kind": "view-started",
+      "occurrence": 2,
+      "scene": "scene-B",
+      "screen": "home"
+    },
+    {
+      "kind": "action",
+      "name": "after-reactivate-B",
+      "occurrence": 2,
+      "scene": "scene-B",
+      "screen": "home"
+    },
+    {
+      "kind": "resource",
+      "name": "after-reactivate-B",
+      "occurrence": 2,
+      "scene": "scene-B",
+      "screen": "home"
+    },
+    {
+      "kind": "view-started",
+      "occurrence": 3,
+      "scene": "scene-A",
+      "screen": "home"
+    },
+    {
+      "kind": "action",
+      "name": "after-reactivate-A",
+      "occurrence": 3,
+      "scene": "scene-A",
+      "screen": "home"
+    },
+    {
+      "kind": "resource",
+      "name": "after-reactivate-A",
+      "occurrence": 3,
+      "scene": "scene-A",
+      "screen": "home"
+    },
+    {
+      "kind": "scene-disconnected",
+      "scene": "scene-B"
+    },
+    {
+      "kind": "action",
+      "name": "after-activated-peer-close",
+      "occurrence": 3,
+      "scene": "scene-A",
+      "screen": "home"
+    },
+    {
+      "kind": "resource",
+      "name": "after-activated-peer-close",
+      "occurrence": 3,
+      "scene": "scene-A",
+      "screen": "home"
+    }
+  ],
+  "identifier": "windows.activation-sequence",
+  "initialWindows": [
+    "scene-A",
+    "scene-B"
+  ],
+  "layout": "stack",
+  "requiredCapabilities": [
+    "multiple-scenes"
+  ],
+  "runtimeOptions": {
+    "automaticallyAbortsDetail": false,
+    "automaticallyAdvancesSplitSelection": true,
+    "automaticallyClosesSceneB": false,
+    "automaticallyNavigates": false,
+    "automaticallyOpensSecondWindow": false,
+    "automaticallyPopsUIKitSplitNavigation": true,
+    "automaticallyReplacesDetail": false,
+    "automaticallyReplacesDetailInstance": false,
+    "automaticallyReturnsSplitToDetail": false,
+    "exercisesSwiftUIButtonStructuredTask": false,
+    "exercisesTraceOnlyURLSessionOwnership": false,
+    "exercisesUIEventContextHandoff": false,
+    "exercisesUIKitScrollOwnership": false,
+    "forcesNavigationRouteIdentity": false,
+    "initialSwiftUIPath": [],
+    "manualSwiftUIViewScreensByScene": {},
+    "startsSplitWithoutSelection": false,
+    "swiftUIRouterWritePolicy": "accept",
+    "swiftUIStress": "none"
+  },
+  "steps": [
+    {
+      "kind": "wait-for-scene-ready",
+      "scene": "scene-A"
+    },
+    {
+      "kind": "open-window",
+      "scene": "scene-A",
+      "value": "scene-B"
+    },
+    {
+      "kind": "activate-window",
+      "scene": "scene-B"
+    },
+    {
+      "kind": "wait-for-signal",
+      "scene": "scene-A",
+      "signal": "scene-state:background"
+    },
+    {
+      "kind": "emit-marker",
+      "scene": "scene-B",
+      "value": "after-initial-activate-B"
+    },
+    {
+      "kind": "activate-window",
+      "scene": "scene-A"
+    },
+    {
+      "kind": "wait-for-signal",
+      "scene": "scene-B",
+      "signal": "scene-state:background"
+    },
+    {
+      "kind": "emit-marker",
+      "scene": "scene-A",
+      "value": "after-activate-A"
+    },
+    {
+      "kind": "activate-window",
+      "scene": "scene-B"
+    },
+    {
+      "kind": "wait-for-signal",
+      "scene": "scene-A",
+      "signal": "scene-state:background"
+    },
+    {
+      "kind": "emit-marker",
+      "scene": "scene-B",
+      "value": "after-reactivate-B"
+    },
+    {
+      "kind": "activate-window",
+      "scene": "scene-A"
+    },
+    {
+      "kind": "wait-for-signal",
+      "scene": "scene-B",
+      "signal": "scene-state:background"
+    },
+    {
+      "kind": "emit-marker",
+      "scene": "scene-A",
+      "value": "after-reactivate-A"
+    },
+    {
+      "kind": "close-window",
+      "scene": "scene-B"
+    },
+    {
+      "kind": "emit-marker",
+      "scene": "scene-A",
+      "value": "after-activated-peer-close"
+    }
+  ],
+  "trackingMode": "manual"
+}

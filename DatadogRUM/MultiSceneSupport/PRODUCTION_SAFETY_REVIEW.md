@@ -419,3 +419,5 @@ pass with seven exact backend views and zero errors/crashes. Each UI slice passe
 not a production SDK defect; all physical and final review obligations remain.
 
 EXP-196 closes F05 with physical iPad native Replay recording/teardown and exact backend ownership. The original timing rejection and independent physical oracle remain in the owning result; all3 installed binaries and cleanup pass. No production SDK source changed. This closes coexistence only; simultaneous visibility, per-scene Replay correctness and physical Duo behavior are not claimed.
+
+EXP-196 H01/H04 follow-up changes only the fixture and acceptance tooling. H01 fails closed before manual mutation without independent overlap evidence. H04’s background SwiftUI close never produces disconnect; the planned opt-in UIKit destruction must target the exact connected session and retain the real-callback/final-owner oracle. Partial ownership matches are not release acceptance. Existing SDK review dispositions remain unchanged.

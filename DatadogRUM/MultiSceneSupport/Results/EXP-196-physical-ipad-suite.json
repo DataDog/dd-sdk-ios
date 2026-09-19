@@ -560,6 +560,63 @@
         "cleanup-apps.json": "9c35f02b66ee144c2141f74e4338f8085dbb57ce4bb1570996b186b6ac27bfc7",
         "cleanup-processes.json": "05e904262f03b85a4d9cad70a9cb7addc48a66e2c63a36035afbfa924002d8a0"
       }
+    },
+    {
+      "boundary": "precritical; no admission receipt issued and no manual mutation executed",
+      "reason": "Physical iPad uses Full Screen Apps; temporary Windowed Apps preference approval pending. Remote touch itself works.",
+      "run_id": "exp196-h01-20260919t170254z-129a2afd38d2",
+      "process_id": 1403,
+      "app_absent": true,
+      "process_absent": true,
+      "protected_unchanged": true,
+      "time_ms": 1789838007949,
+      "gate": "H01",
+      "status": "INCONCLUSIVE",
+      "artifact_root": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp196-physical-h01-8zeapams",
+      "capture_source_revision": "5d8646358150521e37eaf1201394b40ae0d71fc0"
+    },
+    {
+      "gate": "H04",
+      "status": "FAIL_NATIVE_CLOSE",
+      "run_id": "exp196-h04-20260919t171804z-68b08f16d640",
+      "capture_source_revision": "5d8646358150521e37eaf1201394b40ae0d71fc0",
+      "artifact_root": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp196-physical-h04-4md1e1x2",
+      "reason": "Original driver fails step14: no disconnect after SwiftUI dismissWindow on background B; final A marker correctly not executed.",
+      "qualified_partial": "Four genuine activation sequences; five distinct Home IDs; six backend views and all20 native work IDs join exactly;28 all-type backend events;zero errors/crashes. No gate acceptance.",
+      "installed_binaries": 3,
+      "cleanup": {
+        "state": "PASS",
+        "app_absent": true,
+        "process_absent": true,
+        "protected_unchanged": true,
+        "time_ms": 1789838717713
+      },
+      "artifacts": {
+        "native.jsonl": {
+          "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp196-physical-h04-4md1e1x2/native.jsonl",
+          "sha256": "622c7d91490dd52c80f1377cd0bfc228074e9408961f5f29ad7267881d914bfb"
+        },
+        "local-result.json": {
+          "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp196-physical-h04-4md1e1x2/local-result.json",
+          "sha256": "02145fd1b12a9ca9b466043e0c01e6a7cc4887ab33f1671987656c4bf1fd454d"
+        },
+        "partial-backend-result.json": {
+          "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp196-physical-h04-4md1e1x2/partial-backend-result.json",
+          "sha256": "08448e8b062d04742423c0fce166b34f1e0a0a761c43cddfdb62fbc180490fbf"
+        },
+        "backend-evidence.json": {
+          "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp196-physical-h04-4md1e1x2/backend-evidence.json",
+          "sha256": "a8508ac2f7a7606181f67645740937be8947e1db39e07c8d2ea8354f47d1630e"
+        },
+        "installed-identity.json": {
+          "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp196-physical-h04-4md1e1x2/installed-identity.json",
+          "sha256": "b91ef59b6efed7cb02cb102571a209cba342e6d4eafdb9ef2521e1773e41d1da"
+        },
+        "cleanup.json": {
+          "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp196-physical-h04-4md1e1x2/cleanup.json",
+          "sha256": "276f0259d7f8b7da2aa8290238fa7f8220aad46dd525e0a74524288c3f61b9a0"
+        }
+      }
     }
   ],
   "gates_closed": [
@@ -594,7 +651,7 @@
     ],
     "implementation": "Separate validate_physical_local entrypoint implemented; original timing still rejects the physical record. Focused six tests pass. Fresh physical run required."
   },
-  "next": "H01 precritical simultaneous-window admission, then each independent case in execution_order.",
+  "next": "Execute H04 in current full-screen mode while temporary Windowed Apps approval is pending, then resume H01 with fresh run identity.",
   "h01_collector_definition": {
     "defined_at": 1789836265.35157,
     "before_implementation": true,
@@ -627,5 +684,28 @@
     "sdk_source_changed": false,
     "new_swift_files": "Created and registered through Xcode MCP; app and unit-test compilation verified",
     "status": "collector tests pass; physical H01 not yet run"
+  },
+  "h04_definition": {
+    "defined_at": "2026-09-19T17:16:55.828810+00:00",
+    "before_execution": true,
+    "scenario": "windows.activation-sequence",
+    "contract": "tools/multi-scene/acceptance/physical-activation-scenario-contract.json",
+    "boundary": "Physical full-screen lifecycle acceptance only; no simultaneous visibility claim. Four actual activation requests, five exact Action/Resource pairs, fresh A1/A2/A3 and B1/B2 owners, same A3 after B OS disconnect. Each activation and peer background must precede the associated marker. No stale lifecycle signal may satisfy a later transition.",
+    "native_expectations": 19,
+    "backend": "Complete session-only count/pagination, exact all-view and all-work owners; zero errors/crashes.",
+    "native_build_reuse": "Only acceptance tooling changes; independently compare every native input and all signed Mach-O files."
+  },
+  "h04_native_close_followup": {
+    "defined_at": "2026-09-19T17:20:57.969771+00:00",
+    "before_implementation": true,
+    "trigger": "First physical H04 run reached all four activations but SwiftUI dismissWindow from background B produced no actual disconnect; driver correctly failed before final A marker.",
+    "repair": "Opt-in fixture-only native UIApplication scene-session destruction on the exact live registered B handle; retain original SwiftUI default, require real disconnect callback before final A marker, no fabricated lifecycle.",
+    "scope": "No production SDK change or weakened assertion; rebuild native fixture and preserve first failure.",
+    "oracle_correction": "Legacy manual mapper view context has logical scene/screen but no native ID; bind marker native IDs to lifecycle identities, reject conflicting mapper native IDs if present. This does not relax exact RUM ownership.",
+    "oracle_tests": {
+      "passed": 3,
+      "negative_controls": 26,
+      "synthetic_fixture_only": true
+    }
   }
 }

@@ -471,7 +471,7 @@
       "environment": "Physical iPad/iPhone Duo; human gesture for H11\u2013H13; resize-capable for H14",
       "completion_mode": null,
       "status": "OPEN",
-      "evidence": "EXP-191 native22/22 ownership checks are INCONCLUSIVE because B replaces A full-screen. Two EXP-192 inner-display input attempts do not prove simultaneous visibility. Actual precritical overlap/backend proof and physical requirement remain. Results/H01-physical-preparation.json records a newly reachable physical iPad27.0 and the exact precritical topology/identity/ownership requirements; device use is now explicitly authorized and EXP-196 defines unattended execution. No physical acceptance yet."
+      "evidence": "EXP-191 native22/22 ownership checks are INCONCLUSIVE because B replaces A full-screen. Two EXP-192 inner-display input attempts do not prove simultaneous visibility. Actual precritical overlap/backend proof and physical requirement remain. Results/H01-physical-preparation.json records a newly reachable physical iPad27.0 and the exact precritical topology/identity/ownership requirements; device use is now explicitly authorized and EXP-196 defines unattended execution. No physical acceptance yet. EXP-196 fresh physical attempt is stopped before first mutation: Full Screen Apps mode does not establish overlap; temporary Windowed Apps approval is pending. All3 code identities and app/process cleanup pass."
     },
     {
       "id": "H02",
@@ -510,7 +510,7 @@
       "environment": "Physical iPad/iPhone Duo; human gesture for H11\u2013H13; resize-capable for H14",
       "completion_mode": null,
       "status": "OPEN",
-      "evidence": ""
+      "evidence": "EXP-196 first physical run completes four actual activations but fails at background-B SwiftUI close before disconnect/final A marker. Exact partial backend join: six views,20 work,28 all-type events,zero errors/crashes. A fixture-only exact UIKit session-destruction follow-up is defined; no gate acceptance or SDK defect assigned."
     },
     {
       "id": "H05",

@@ -1,0 +1,3167 @@
+{
+  "warning": "Synthetic unit fixture: incomplete physical prefix plus invented successful destruction tail. NEVER physical acceptance evidence.",
+  "records": [
+    {
+      "manifest": {
+        "resolutionSource": "command-line",
+        "runID": "exp196-unit-activation",
+        "runMode": "clean",
+        "scenario": {
+          "completionConditions": [
+            {
+              "kind": "scene-disconnected",
+              "scene": "scene-B"
+            },
+            {
+              "kind": "action",
+              "name": "after-activated-peer-close",
+              "occurrence": 3,
+              "scene": "scene-A",
+              "screen": "home"
+            },
+            {
+              "kind": "resource",
+              "name": "after-activated-peer-close",
+              "occurrence": 3,
+              "scene": "scene-A",
+              "screen": "home"
+            }
+          ],
+          "defaultRunMode": "clean",
+          "expectedSemanticTimeline": [
+            {
+              "kind": "view-started",
+              "occurrence": 1,
+              "scene": "scene-A",
+              "screen": "home"
+            },
+            {
+              "kind": "view-started",
+              "occurrence": 1,
+              "scene": "scene-B",
+              "screen": "home"
+            },
+            {
+              "kind": "action",
+              "name": "after-initial-activate-B",
+              "occurrence": 1,
+              "scene": "scene-B",
+              "screen": "home"
+            },
+            {
+              "kind": "resource",
+              "name": "after-initial-activate-B",
+              "occurrence": 1,
+              "scene": "scene-B",
+              "screen": "home"
+            },
+            {
+              "kind": "view-started",
+              "occurrence": 2,
+              "scene": "scene-A",
+              "screen": "home"
+            },
+            {
+              "kind": "action",
+              "name": "after-activate-A",
+              "occurrence": 2,
+              "scene": "scene-A",
+              "screen": "home"
+            },
+            {
+              "kind": "resource",
+              "name": "after-activate-A",
+              "occurrence": 2,
+              "scene": "scene-A",
+              "screen": "home"
+            },
+            {
+              "kind": "view-started",
+              "occurrence": 2,
+              "scene": "scene-B",
+              "screen": "home"
+            },
+            {
+              "kind": "action",
+              "name": "after-reactivate-B",
+              "occurrence": 2,
+              "scene": "scene-B",
+              "screen": "home"
+            },
+            {
+              "kind": "resource",
+              "name": "after-reactivate-B",
+              "occurrence": 2,
+              "scene": "scene-B",
+              "screen": "home"
+            },
+            {
+              "kind": "view-started",
+              "occurrence": 3,
+              "scene": "scene-A",
+              "screen": "home"
+            },
+            {
+              "kind": "action",
+              "name": "after-reactivate-A",
+              "occurrence": 3,
+              "scene": "scene-A",
+              "screen": "home"
+            },
+            {
+              "kind": "resource",
+              "name": "after-reactivate-A",
+              "occurrence": 3,
+              "scene": "scene-A",
+              "screen": "home"
+            },
+            {
+              "kind": "scene-disconnected",
+              "scene": "scene-B"
+            },
+            {
+              "kind": "action",
+              "name": "after-activated-peer-close",
+              "occurrence": 3,
+              "scene": "scene-A",
+              "screen": "home"
+            },
+            {
+              "kind": "resource",
+              "name": "after-activated-peer-close",
+              "occurrence": 3,
+              "scene": "scene-A",
+              "screen": "home"
+            }
+          ],
+          "identifier": "windows.activation-sequence",
+          "initialWindows": [
+            "scene-A",
+            "scene-B"
+          ],
+          "layout": "stack",
+          "requiredCapabilities": [
+            "multiple-scenes"
+          ],
+          "runtimeOptions": {
+            "automaticallyAbortsDetail": false,
+            "automaticallyAdvancesSplitSelection": true,
+            "automaticallyClosesSceneB": false,
+            "automaticallyNavigates": false,
+            "automaticallyOpensSecondWindow": false,
+            "automaticallyPopsUIKitSplitNavigation": true,
+            "automaticallyReplacesDetail": false,
+            "automaticallyReplacesDetailInstance": false,
+            "automaticallyReturnsSplitToDetail": false,
+            "exercisesSwiftUIButtonStructuredTask": false,
+            "exercisesTraceOnlyURLSessionOwnership": false,
+            "exercisesUIEventContextHandoff": false,
+            "exercisesUIKitScrollOwnership": false,
+            "forcesNavigationRouteIdentity": false,
+            "initialSwiftUIPath": [],
+            "manualSwiftUIViewScreensByScene": {},
+            "startsSplitWithoutSelection": false,
+            "swiftUIRouterWritePolicy": "accept",
+            "swiftUIStress": "none"
+          },
+          "steps": [
+            {
+              "kind": "wait-for-scene-ready",
+              "scene": "scene-A"
+            },
+            {
+              "kind": "open-window",
+              "scene": "scene-A",
+              "value": "scene-B"
+            },
+            {
+              "kind": "activate-window",
+              "scene": "scene-B"
+            },
+            {
+              "kind": "wait-for-signal",
+              "scene": "scene-A",
+              "signal": "scene-state:background"
+            },
+            {
+              "kind": "emit-marker",
+              "scene": "scene-B",
+              "value": "after-initial-activate-B"
+            },
+            {
+              "kind": "activate-window",
+              "scene": "scene-A"
+            },
+            {
+              "kind": "wait-for-signal",
+              "scene": "scene-B",
+              "signal": "scene-state:background"
+            },
+            {
+              "kind": "emit-marker",
+              "scene": "scene-A",
+              "value": "after-activate-A"
+            },
+            {
+              "kind": "activate-window",
+              "scene": "scene-B"
+            },
+            {
+              "kind": "wait-for-signal",
+              "scene": "scene-A",
+              "signal": "scene-state:background"
+            },
+            {
+              "kind": "emit-marker",
+              "scene": "scene-B",
+              "value": "after-reactivate-B"
+            },
+            {
+              "kind": "activate-window",
+              "scene": "scene-A"
+            },
+            {
+              "kind": "wait-for-signal",
+              "scene": "scene-B",
+              "signal": "scene-state:background"
+            },
+            {
+              "kind": "emit-marker",
+              "scene": "scene-A",
+              "value": "after-reactivate-A"
+            },
+            {
+              "kind": "close-window",
+              "scene": "scene-B"
+            },
+            {
+              "kind": "emit-marker",
+              "scene": "scene-A",
+              "value": "after-activated-peer-close"
+            }
+          ],
+          "trackingMode": "manual"
+        },
+        "schemaVersion": 3,
+        "validationErrors": []
+      },
+      "type": "manifest"
+    },
+    {
+      "signal": {
+        "evidenceSource": "rum-mapper",
+        "kind": "rum-session-started",
+        "rumContext": {
+          "sessionDiscarded": false,
+          "sessionID": "1df1cbff-6d51-4259-ac7b-50030ae35d86"
+        },
+        "runID": "exp196-unit-activation",
+        "scenarioID": "windows.activation-sequence",
+        "schemaVersion": 5,
+        "sequence": 1,
+        "timestampMilliseconds": 1789838286018
+      },
+      "type": "signal"
+    },
+    {
+      "signal": {
+        "evidenceSource": "rum-mapper",
+        "kind": "rum-view-snapshot",
+        "rumContext": {
+          "eventDateMilliseconds": 1789838285991,
+          "sessionHasReplay": false,
+          "sessionID": "1df1cbff-6d51-4259-ac7b-50030ae35d86",
+          "viewActive": true,
+          "viewDocumentVersion": 1,
+          "viewID": "b53fe874-44c2-4967-8b81-24ac80e27aa8",
+          "viewName": "ApplicationLaunch",
+          "viewTimeSpentNanoseconds": 12851000,
+          "viewURL": "com/datadog/application-launch/view"
+        },
+        "runID": "exp196-unit-activation",
+        "scenarioID": "windows.activation-sequence",
+        "schemaVersion": 5,
+        "sequence": 2,
+        "timestampMilliseconds": 1789838286051
+      },
+      "type": "signal"
+    },
+    {
+      "signal": {
+        "evidenceSource": "rum-mapper",
+        "kind": "rum-view-snapshot",
+        "rumContext": {
+          "eventDateMilliseconds": 1789838285991,
+          "sessionHasReplay": false,
+          "sessionID": "1df1cbff-6d51-4259-ac7b-50030ae35d86",
+          "viewActive": false,
+          "viewDocumentVersion": 2,
+          "viewID": "b53fe874-44c2-4967-8b81-24ac80e27aa8",
+          "viewName": "ApplicationLaunch",
+          "viewTimeSpentNanoseconds": 81460953,
+          "viewURL": "com/datadog/application-launch/view"
+        },
+        "runID": "exp196-unit-activation",
+        "scenarioID": "windows.activation-sequence",
+        "schemaVersion": 5,
+        "sequence": 3,
+        "timestampMilliseconds": 1789838286073
+      },
+      "type": "signal"
+    },
+    {
+      "signal": {
+        "evidenceSource": "rum-mapper",
+        "kind": "rum-view-snapshot",
+        "rumContext": {
+          "eventDateMilliseconds": 1789838286072,
+          "sessionHasReplay": false,
+          "sessionID": "1df1cbff-6d51-4259-ac7b-50030ae35d86",
+          "viewActive": true,
+          "viewDocumentVersion": 1,
+          "viewID": "d8ca6509-2bcf-4a07-9190-afe963d04c5d",
+          "viewName": "ProbeHomeView",
+          "viewTimeSpentNanoseconds": 1,
+          "viewURL": "ProbeHomeView/2152684264960655860"
+        },
+        "runID": "exp196-unit-activation",
+        "scenarioID": "windows.activation-sequence",
+        "schemaVersion": 5,
+        "semanticContext": {
+          "logicalSceneID": "scene-A",
+          "screen": "home"
+        },
+        "sequence": 4,
+        "timestampMilliseconds": 1789838286074
+      },
+      "type": "signal"
+    },
+    {
+      "signal": {
+        "evidenceSource": "probe",
+        "kind": "destination-appearance-observed",
+        "runID": "exp196-unit-activation",
+        "scenarioID": "windows.activation-sequence",
+        "schemaVersion": 5,
+        "semanticContext": {
+          "logicalSceneID": "scene-A",
+          "screen": "home"
+        },
+        "sequence": 5,
+        "timestampMilliseconds": 1789838286075
+      },
+      "type": "signal"
+    },
+    {
+      "signal": {
+        "action": {
+          "errorCount": 0,
+          "id": "6a477a91-c4e1-43e8-a389-2d5e27f015bc",
+          "loadingTimeNanoseconds": 0,
+          "resourceCount": 0,
+          "target": "probe-lifecycle-scene-A.home.on-appear",
+          "type": "custom"
+        },
+        "eventID": "6a477a91-c4e1-43e8-a389-2d5e27f015bc",
+        "evidenceSource": "rum-mapper",
+        "kind": "rum-action",
+        "name": "on-appear",
+        "rumContext": {
+          "actionIDs": [
+            "6a477a91-c4e1-43e8-a389-2d5e27f015bc"
+          ],
+          "eventDateMilliseconds": 1789838286075,
+          "sessionID": "1df1cbff-6d51-4259-ac7b-50030ae35d86",
+          "viewID": "d8ca6509-2bcf-4a07-9190-afe963d04c5d",
+          "viewName": "ProbeHomeView",
+          "viewURL": "ProbeHomeView/2152684264960655860"
+        },
+        "runID": "exp196-unit-activation",
+        "scenarioID": "windows.activation-sequence",
+        "schemaVersion": 5,
+        "sequence": 6,
+        "sourceContext": {
+          "logicalSceneID": "scene-A",
+          "phase": "on-appear",
+          "readerControlGeneration": 0,
+          "screen": "home",
+          "uptime": 8237.198860375
+        },
+        "timestampMilliseconds": 1789838286077
+      },
+      "type": "signal"
+    },
+    {
+      "signal": {
+        "evidenceSource": "rum-mapper",
+        "kind": "rum-view-snapshot",
+        "rumContext": {
+          "eventDateMilliseconds": 1789838286072,
+          "sessionHasReplay": false,
+          "sessionID": "1df1cbff-6d51-4259-ac7b-50030ae35d86",
+          "viewActive": true,
+          "viewDocumentVersion": 2,
+          "viewID": "d8ca6509-2bcf-4a07-9190-afe963d04c5d",
+          "viewName": "ProbeHomeView",
+          "viewTimeSpentNanoseconds": 2779007,
+          "viewURL": "ProbeHomeView/2152684264960655860"
+        },
+        "runID": "exp196-unit-activation",
+        "scenarioID": "windows.activation-sequence",
+        "schemaVersion": 5,
+        "semanticContext": {
+          "logicalSceneID": "scene-A",
+          "screen": "home"
+        },
+        "sequence": 7,
+        "timestampMilliseconds": 1789838286078
+      },
+      "type": "signal"
+    },
+    {
+      "signal": {
+        "action": {
+          "errorCount": 0,
+          "id": "ac1d8798-fd07-4840-8219-bd293fe7763d",
+          "loadingTimeNanoseconds": 0,
+          "resourceCount": 0,
+          "target": "probe-lifecycle-scene-A.home.task-immediate",
+          "type": "custom"
+        },
+        "eventID": "ac1d8798-fd07-4840-8219-bd293fe7763d",
+        "evidenceSource": "rum-mapper",
+        "kind": "rum-action",
+        "name": "task-immediate",
+        "rumContext": {
+          "actionIDs": [
+            "ac1d8798-fd07-4840-8219-bd293fe7763d"
+          ],
+          "eventDateMilliseconds": 1789838286075,
+          "sessionID": "1df1cbff-6d51-4259-ac7b-50030ae35d86",
+          "viewID": "d8ca6509-2bcf-4a07-9190-afe963d04c5d",
+          "viewName": "ProbeHomeView",
+          "viewURL": "ProbeHomeView/2152684264960655860"
+        },
+        "runID": "exp196-unit-activation",
+        "scenarioID": "windows.activation-sequence",
+        "schemaVersion": 5,
+        "sequence": 8,
+        "sourceContext": {
+          "logicalSceneID": "scene-A",
+          "phase": "task-immediate",
+          "readerControlGeneration": 0,
+          "screen": "home",
+          "uptime": 8237.199068125
+        },
+        "timestampMilliseconds": 1789838286079
+      },
+      "type": "signal"
+    },
+    {
+      "signal": {
+        "evidenceSource": "rum-mapper",
+        "kind": "rum-view-snapshot",
+        "rumContext": {
+          "eventDateMilliseconds": 1789838286072,
+          "sessionHasReplay": false,
+          "sessionID": "1df1cbff-6d51-4259-ac7b-50030ae35d86",
+          "viewActive": true,
+          "viewDocumentVersion": 3,
+          "viewID": "d8ca6509-2bcf-4a07-9190-afe963d04c5d",
+          "viewName": "ProbeHomeView",
+          "viewTimeSpentNanoseconds": 2963066,
+          "viewURL": "ProbeHomeView/2152684264960655860"
+        },
+        "runID": "exp196-unit-activation",
+        "scenarioID": "windows.activation-sequence",
+        "schemaVersion": 5,
+        "semanticContext": {
+          "logicalSceneID": "scene-A",
+          "screen": "home"
+        },
+        "sequence": 9,
+        "timestampMilliseconds": 1789838286079
+      },
+      "type": "signal"
+    },
+    {
+      "signal": {
+        "activationState": "foreground-inactive",
+        "evidenceSource": "probe",
+        "geometry": {
+          "height": 834,
+          "width": 1194,
+          "x": 0,
+          "y": 0
+        },
+        "horizontalSizeClass": "regular",
+        "kind": "scene-ready",
+        "navigationPath": [
+          "home"
+        ],
+        "runID": "exp196-unit-activation",
+        "scenarioID": "windows.activation-sequence",
+        "sceneDisconnectGeneration": 0,
+        "scenePhase": "ready",
+        "schemaVersion": 5,
+        "semanticContext": {
+          "logicalSceneID": "scene-A",
+          "nativeSceneID": "76FD6D3C-6680-47B4-BDA0-083F88E6D6C5",
+          "screen": "home"
+        },
+        "sequence": 10,
+        "timestampMilliseconds": 1789838286107,
+        "verticalSizeClass": "regular"
+      },
+      "type": "signal"
+    },
+    {
+      "signal": {
+        "evidenceSource": "probe",
+        "kind": "step-started",
+        "runID": "exp196-unit-activation",
+        "scenarioID": "windows.activation-sequence",
+        "schemaVersion": 5,
+        "semanticContext": {
+          "logicalSceneID": "scene-A",
+          "nativeSceneID": "76FD6D3C-6680-47B4-BDA0-083F88E6D6C5",
+          "screen": "home"
+        },
+        "sequence": 11,
+        "stepIndex": 0,
+        "stepKind": "wait-for-scene-ready",
+        "timestampMilliseconds": 1789838286117
+      },
+      "type": "signal"
+    },
+    {
+      "signal": {
+        "acknowledgedSignalSequence": 10,
+        "evidenceSource": "probe",
+        "kind": "step-acknowledged",
+        "runID": "exp196-unit-activation",
+        "scenarioID": "windows.activation-sequence",
+        "schemaVersion": 5,
+        "semanticContext": {
+          "logicalSceneID": "scene-A",
+          "nativeSceneID": "76FD6D3C-6680-47B4-BDA0-083F88E6D6C5",
+          "screen": "home"
+        },
+        "sequence": 12,
+        "stepIndex": 0,
+        "stepKind": "wait-for-scene-ready",
+        "timestampMilliseconds": 1789838286122
+      },
+      "type": "signal"
+    },
+    {
+      "signal": {
+        "evidenceSource": "probe",
+        "kind": "step-started",
+        "name": "scene-B",
+        "runID": "exp196-unit-activation",
+        "scenarioID": "windows.activation-sequence",
+        "schemaVersion": 5,
+        "semanticContext": {
+          "logicalSceneID": "scene-A",
+          "nativeSceneID": "76FD6D3C-6680-47B4-BDA0-083F88E6D6C5",
+          "screen": "home"
+        },
+        "sequence": 13,
+        "stepIndex": 1,
+        "stepKind": "open-window",
+        "timestampMilliseconds": 1789838286122
+      },
+      "type": "signal"
+    },
+    {
+      "signal": {
+        "eventID": "c3efb39e-ee10-465e-bbfe-3eeb6675161c",
+        "evidenceSource": "rum-mapper",
+        "kind": "rum-resource",
+        "name": "on-appear",
+        "resource": {
+          "durationNanoseconds": 56849957,
+          "id": "c3efb39e-ee10-465e-bbfe-3eeb6675161c",
+          "method": "GET",
+          "size": 1,
+          "statusCode": 200,
+          "type": "other",
+          "url": "https://multi-scene-probe.invalid/native/scene-A/home/on-appear"
+        },
+        "rumContext": {
+          "eventDateMilliseconds": 1789838286075,
+          "sessionID": "1df1cbff-6d51-4259-ac7b-50030ae35d86",
+          "viewID": "d8ca6509-2bcf-4a07-9190-afe963d04c5d",
+          "viewName": "ProbeHomeView",
+          "viewURL": "ProbeHomeView/2152684264960655860"
+        },
+        "runID": "exp196-unit-activation",
+        "scenarioID": "windows.activation-sequence",
+        "schemaVersion": 5,
+        "sequence": 14,
+        "sourceContext": {
+          "logicalSceneID": "scene-A",
+          "phase": "on-appear",
+          "readerControlGeneration": 0,
+          "screen": "home",
+          "uptime": 8237.198860375
+        },
+        "timestampMilliseconds": 1789838286133
+      },
+      "type": "signal"
+    },
+    {
+      "signal": {
+        "evidenceSource": "rum-mapper",
+        "kind": "rum-view-snapshot",
+        "rumContext": {
+          "eventDateMilliseconds": 1789838286072,
+          "sessionHasReplay": false,
+          "sessionID": "1df1cbff-6d51-4259-ac7b-50030ae35d86",
+          "viewActive": true,
+          "viewDocumentVersion": 4,
+          "viewID": "d8ca6509-2bcf-4a07-9190-afe963d04c5d",
+          "viewName": "ProbeHomeView",
+          "viewTimeSpentNanoseconds": 59749007,
+          "viewURL": "ProbeHomeView/2152684264960655860"
+        },
+        "runID": "exp196-unit-activation",
+        "scenarioID": "windows.activation-sequence",
+        "schemaVersion": 5,
+        "semanticContext": {
+          "logicalSceneID": "scene-A",
+          "screen": "home"
+        },
+        "sequence": 15,
+        "timestampMilliseconds": 1789838286135
+      },
+      "type": "signal"
+    },
+    {
+      "signal": {
+        "eventID": "67f98523-ebe9-4cc9-9f4c-7e94f91140d4",
+        "evidenceSource": "rum-mapper",
+        "kind": "rum-resource",
+        "name": "task-immediate",
+        "resource": {
+          "durationNanoseconds": 56797028,
+          "id": "67f98523-ebe9-4cc9-9f4c-7e94f91140d4",
+          "method": "GET",
+          "size": 1,
+          "statusCode": 200,
+          "type": "other",
+          "url": "https://multi-scene-probe.invalid/native/scene-A/home/task-immediate"
+        },
+        "rumContext": {
+          "eventDateMilliseconds": 1789838286075,
+          "sessionID": "1df1cbff-6d51-4259-ac7b-50030ae35d86",
+          "viewID": "d8ca6509-2bcf-4a07-9190-afe963d04c5d",
+          "viewName": "ProbeHomeView",
+          "viewURL": "ProbeHomeView/2152684264960655860"
+        },
+        "runID": "exp196-unit-activation",
+        "scenarioID": "windows.activation-sequence",
+        "schemaVersion": 5,
+        "sequence": 16,
+        "sourceContext": {
+          "logicalSceneID": "scene-A",
+          "phase": "task-immediate",
+          "readerControlGeneration": 0,
+          "screen": "home",
+          "uptime": 8237.199068125
+        },
+        "timestampMilliseconds": 1789838286136
+      },
+      "type": "signal"
+    },
+    {
+      "signal": {
+        "evidenceSource": "rum-mapper",
+        "kind": "rum-view-snapshot",
+        "rumContext": {
+          "eventDateMilliseconds": 1789838286072,
+          "sessionHasReplay": false,
+          "sessionID": "1df1cbff-6d51-4259-ac7b-50030ae35d86",
+          "viewActive": true,
+          "viewDocumentVersion": 5,
+          "viewID": "d8ca6509-2bcf-4a07-9190-afe963d04c5d",
+          "viewName": "ProbeHomeView",
+          "viewTimeSpentNanoseconds": 59771061,
+          "viewURL": "ProbeHomeView/2152684264960655860"
+        },
+        "runID": "exp196-unit-activation",
+        "scenarioID": "windows.activation-sequence",
+        "schemaVersion": 5,
+        "semanticContext": {
+          "logicalSceneID": "scene-A",
+          "screen": "home"
+        },
+        "sequence": 17,
+        "timestampMilliseconds": 1789838286136
+      },
+      "type": "signal"
+    },
+    {
+      "signal": {
+        "evidenceSource": "probe",
+        "kind": "destination-appearance-observed",
+        "runID": "exp196-unit-activation",
+        "scenarioID": "windows.activation-sequence",
+        "schemaVersion": 5,
+        "semanticContext": {
+          "logicalSceneID": "scene-B",
+          "screen": "home"
+        },
+        "sequence": 18,
+        "timestampMilliseconds": 1789838286203
+      },
+      "type": "signal"
+    },
+    {
+      "signal": {
+        "activationState": "foreground-inactive",
+        "evidenceSource": "probe",
+        "geometry": {
+          "height": 834,
+          "width": 1194,
+          "x": 0,
+          "y": 0
+        },
+        "horizontalSizeClass": "regular",
+        "kind": "scene-ready",
+        "navigationPath": [
+          "home"
+        ],
+        "runID": "exp196-unit-activation",
+        "scenarioID": "windows.activation-sequence",
+        "sceneDisconnectGeneration": 0,
+        "scenePhase": "ready",
+        "schemaVersion": 5,
+        "semanticContext": {
+          "logicalSceneID": "scene-B",
+          "nativeSceneID": "5E7397C1-1283-4E00-BD47-0A96139511D0",
+          "screen": "home"
+        },
+        "sequence": 19,
+        "timestampMilliseconds": 1789838286236,
+        "verticalSizeClass": "regular"
+      },
+      "type": "signal"
+    },
+    {
+      "signal": {
+        "acknowledgedSignalSequence": 19,
+        "evidenceSource": "probe",
+        "kind": "step-acknowledged",
+        "name": "scene-B",
+        "runID": "exp196-unit-activation",
+        "scenarioID": "windows.activation-sequence",
+        "schemaVersion": 5,
+        "semanticContext": {
+          "logicalSceneID": "scene-A",
+          "nativeSceneID": "76FD6D3C-6680-47B4-BDA0-083F88E6D6C5",
+          "screen": "home"
+        },
+        "sequence": 20,
+        "stepIndex": 1,
+        "stepKind": "open-window",
+        "timestampMilliseconds": 1789838286239
+      },
+      "type": "signal"
+    },
+    {
+      "signal": {
+        "evidenceSource": "probe",
+        "kind": "step-started",
+        "runID": "exp196-unit-activation",
+        "scenarioID": "windows.activation-sequence",
+        "schemaVersion": 5,
+        "semanticContext": {
+          "logicalSceneID": "scene-B",
+          "nativeSceneID": "5E7397C1-1283-4E00-BD47-0A96139511D0",
+          "screen": "home"
+        },
+        "sequence": 21,
+        "stepIndex": 2,
+        "stepKind": "activate-window",
+        "timestampMilliseconds": 1789838286239
+      },
+      "type": "signal"
+    },
+    {
+      "signal": {
+        "activationState": "background",
+        "evidenceSource": "probe",
+        "geometry": {
+          "height": 834,
+          "width": 1194,
+          "x": 0,
+          "y": 0
+        },
+        "horizontalSizeClass": "regular",
+        "kind": "scene-lifecycle",
+        "navigationPath": [
+          "home"
+        ],
+        "runID": "exp196-unit-activation",
+        "scenarioID": "windows.activation-sequence",
+        "sceneDisconnectGeneration": 0,
+        "scenePhase": "ready",
+        "schemaVersion": 5,
+        "semanticContext": {
+          "logicalSceneID": "scene-A",
+          "nativeSceneID": "76FD6D3C-6680-47B4-BDA0-083F88E6D6C5",
+          "screen": "home"
+        },
+        "sequence": 22,
+        "timestampMilliseconds": 1789838286253,
+        "verticalSizeClass": "regular"
+      },
+      "type": "signal"
+    },
+    {
+      "signal": {
+        "evidenceSource": "rum-mapper",
+        "kind": "rum-view-snapshot",
+        "rumContext": {
+          "eventDateMilliseconds": 1789838286201,
+          "sessionHasReplay": false,
+          "sessionID": "1df1cbff-6d51-4259-ac7b-50030ae35d86",
+          "viewActive": true,
+          "viewDocumentVersion": 1,
+          "viewID": "a93e5375-872b-4d5c-920d-cb1a0e39895b",
+          "viewName": "ProbeHomeView",
+          "viewTimeSpentNanoseconds": 1,
+          "viewURL": "ProbeHomeView/2152684264960655860"
+        },
+        "runID": "exp196-unit-activation",
+        "scenarioID": "windows.activation-sequence",
+        "schemaVersion": 5,
+        "semanticContext": {
+          "logicalSceneID": "scene-B",
+          "screen": "home"
+        },
+        "sequence": 23,
+        "timestampMilliseconds": 1789838286255
+      },
+      "type": "signal"
+    },
+    {
+      "signal": {
+        "action": {
+          "errorCount": 0,
+          "id": "4afd3b9e-bbb5-4c22-8bb1-38970232fd10",
+          "loadingTimeNanoseconds": 0,
+          "resourceCount": 0,
+          "target": "probe-lifecycle-scene-B.home.on-appear",
+          "type": "custom"
+        },
+        "eventID": "4afd3b9e-bbb5-4c22-8bb1-38970232fd10",
+        "evidenceSource": "rum-mapper",
+        "kind": "rum-action",
+        "name": "on-appear",
+        "rumContext": {
+          "actionIDs": [
+            "4afd3b9e-bbb5-4c22-8bb1-38970232fd10"
+          ],
+          "eventDateMilliseconds": 1789838286203,
+          "sessionID": "1df1cbff-6d51-4259-ac7b-50030ae35d86",
+          "viewID": "a93e5375-872b-4d5c-920d-cb1a0e39895b",
+          "viewName": "ProbeHomeView",
+          "viewURL": "ProbeHomeView/2152684264960655860"
+        },
+        "runID": "exp196-unit-activation",
+        "scenarioID": "windows.activation-sequence",
+        "schemaVersion": 5,
+        "sequence": 24,
+        "sourceContext": {
+          "logicalSceneID": "scene-B",
+          "phase": "on-appear",
+          "readerControlGeneration": 0,
+          "screen": "home",
+          "uptime": 8237.32725375
+        },
+        "timestampMilliseconds": 1789838286260
+      },
+      "type": "signal"
+    },
+    {
+      "signal": {
+        "evidenceSource": "rum-mapper",
+        "kind": "rum-view-snapshot",
+        "rumContext": {
+          "eventDateMilliseconds": 1789838286201,
+          "sessionHasReplay": false,
+          "sessionID": "1df1cbff-6d51-4259-ac7b-50030ae35d86",
+          "viewActive": true,
+          "viewDocumentVersion": 2,
+          "viewID": "a93e5375-872b-4d5c-920d-cb1a0e39895b",
+          "viewName": "ProbeHomeView",
+          "viewTimeSpentNanoseconds": 2043962,
+          "viewURL": "ProbeHomeView/2152684264960655860"
+        },
+        "runID": "exp196-unit-activation",
+        "scenarioID": "windows.activation-sequence",
+        "schemaVersion": 5,
+        "semanticContext": {
+          "logicalSceneID": "scene-B",
+          "screen": "home"
+        },
+        "sequence": 25,
+        "timestampMilliseconds": 1789838286261
+      },
+      "type": "signal"
+    },
+    {
+      "signal": {
+        "action": {
+          "errorCount": 0,
+          "id": "83e65843-d561-44ee-9f29-0153d9b29b1a",
+          "loadingTimeNanoseconds": 0,
+          "resourceCount": 0,
+          "target": "probe-lifecycle-scene-B.home.task-immediate",
+          "type": "custom"
+        },
+        "eventID": "83e65843-d561-44ee-9f29-0153d9b29b1a",
+        "evidenceSource": "rum-mapper",
+        "kind": "rum-action",
+        "name": "task-immediate",
+        "rumContext": {
+          "actionIDs": [
+            "83e65843-d561-44ee-9f29-0153d9b29b1a"
+          ],
+          "eventDateMilliseconds": 1789838286203,
+          "sessionID": "1df1cbff-6d51-4259-ac7b-50030ae35d86",
+          "viewID": "a93e5375-872b-4d5c-920d-cb1a0e39895b",
+          "viewName": "ProbeHomeView",
+          "viewURL": "ProbeHomeView/2152684264960655860"
+        },
+        "runID": "exp196-unit-activation",
+        "scenarioID": "windows.activation-sequence",
+        "schemaVersion": 5,
+        "sequence": 26,
+        "sourceContext": {
+          "logicalSceneID": "scene-B",
+          "phase": "task-immediate",
+          "readerControlGeneration": 0,
+          "screen": "home",
+          "uptime": 8237.327336291668
+        },
+        "timestampMilliseconds": 1789838286264
+      },
+      "type": "signal"
+    },
+    {
+      "signal": {
+        "evidenceSource": "rum-mapper",
+        "kind": "rum-view-snapshot",
+        "rumContext": {
+          "eventDateMilliseconds": 1789838286201,
+          "sessionHasReplay": false,
+          "sessionID": "1df1cbff-6d51-4259-ac7b-50030ae35d86",
+          "viewActive": true,
+          "viewDocumentVersion": 3,
+          "viewID": "a93e5375-872b-4d5c-920d-cb1a0e39895b",
+          "viewName": "ProbeHomeView",
+          "viewTimeSpentNanoseconds": 2115965,
+          "viewURL": "ProbeHomeView/2152684264960655860"
+        },
+        "runID": "exp196-unit-activation",
+        "scenarioID": "windows.activation-sequence",
+        "schemaVersion": 5,
+        "semanticContext": {
+          "logicalSceneID": "scene-B",
+          "screen": "home"
+        },
+        "sequence": 27,
+        "timestampMilliseconds": 1789838286264
+      },
+      "type": "signal"
+    },
+    {
+      "signal": {
+        "action": {
+          "errorCount": 0,
+          "id": "e38882d5-29d4-4aa7-8d65-6068f57b88de",
+          "loadingTimeNanoseconds": 0,
+          "resourceCount": 0,
+          "target": "probe-lifecycle-scene-A.home.task-delayed",
+          "type": "custom"
+        },
+        "eventID": "e38882d5-29d4-4aa7-8d65-6068f57b88de",
+        "evidenceSource": "rum-mapper",
+        "kind": "rum-action",
+        "name": "task-delayed",
+        "rumContext": {
+          "actionIDs": [
+            "e38882d5-29d4-4aa7-8d65-6068f57b88de"
+          ],
+          "eventDateMilliseconds": 1789838286236,
+          "sessionID": "1df1cbff-6d51-4259-ac7b-50030ae35d86",
+          "viewID": "a93e5375-872b-4d5c-920d-cb1a0e39895b",
+          "viewName": "ProbeHomeView",
+          "viewURL": "ProbeHomeView/2152684264960655860"
+        },
+        "runID": "exp196-unit-activation",
+        "scenarioID": "windows.activation-sequence",
+        "schemaVersion": 5,
+        "sequence": 28,
+        "sourceContext": {
+          "logicalSceneID": "scene-A",
+          "phase": "task-delayed",
+          "readerControlGeneration": 0,
+          "screen": "home",
+          "uptime": 8237.359346083334
+        },
+        "timestampMilliseconds": 1789838286265
+      },
+      "type": "signal"
+    },
+    {
+      "signal": {
+        "evidenceSource": "rum-mapper",
+        "kind": "rum-view-snapshot",
+        "rumContext": {
+          "eventDateMilliseconds": 1789838286201,
+          "sessionHasReplay": false,
+          "sessionID": "1df1cbff-6d51-4259-ac7b-50030ae35d86",
+          "viewActive": true,
+          "viewDocumentVersion": 4,
+          "viewID": "a93e5375-872b-4d5c-920d-cb1a0e39895b",
+          "viewName": "ProbeHomeView",
+          "viewTimeSpentNanoseconds": 34152985,
+          "viewURL": "ProbeHomeView/2152684264960655860"
+        },
+        "runID": "exp196-unit-activation",
+        "scenarioID": "windows.activation-sequence",
+        "schemaVersion": 5,
+        "semanticContext": {
+          "logicalSceneID": "scene-B",
+          "screen": "home"
+        },
+        "sequence": 29,
+        "timestampMilliseconds": 1789838286265
+      },
+      "type": "signal"
+    },
+    {
+      "signal": {
+        "evidenceSource": "rum-mapper",
+        "kind": "rum-view-snapshot",
+        "rumContext": {
+          "eventDateMilliseconds": 1789838286072,
+          "sessionHasReplay": false,
+          "sessionID": "1df1cbff-6d51-4259-ac7b-50030ae35d86",
+          "viewActive": false,
+          "viewDocumentVersion": 6,
+          "viewID": "d8ca6509-2bcf-4a07-9190-afe963d04c5d",
+          "viewName": "ProbeHomeView",
+          "viewTimeSpentNanoseconds": 178002000,
+          "viewURL": "ProbeHomeView/2152684264960655860"
+        },
+        "runID": "exp196-unit-activation",
+        "scenarioID": "windows.activation-sequence",
+        "schemaVersion": 5,
+        "semanticContext": {
+          "logicalSceneID": "scene-A",
+          "screen": "home"
+        },
+        "sequence": 30,
+        "timestampMilliseconds": 1789838286269
+      },
+      "type": "signal"
+    },
+    {
+      "signal": {
+        "eventID": "92bea11f-5ff6-4339-8fea-aa5695323848",
+        "evidenceSource": "rum-mapper",
+        "kind": "rum-resource",
+        "name": "on-appear",
+        "resource": {
+          "durationNanoseconds": 105368972,
+          "id": "92bea11f-5ff6-4339-8fea-aa5695323848",
+          "method": "GET",
+          "size": 1,
+          "statusCode": 200,
+          "type": "other",
+          "url": "https://multi-scene-probe.invalid/native/scene-B/home/on-appear"
+        },
+        "rumContext": {
+          "eventDateMilliseconds": 1789838286203,
+          "sessionID": "1df1cbff-6d51-4259-ac7b-50030ae35d86",
+          "viewID": "a93e5375-872b-4d5c-920d-cb1a0e39895b",
+          "viewName": "ProbeHomeView",
+          "viewURL": "ProbeHomeView/2152684264960655860"
+        },
+        "runID": "exp196-unit-activation",
+        "scenarioID": "windows.activation-sequence",
+        "schemaVersion": 5,
+        "sequence": 31,
+        "sourceContext": {
+          "logicalSceneID": "scene-B",
+          "phase": "on-appear",
+          "readerControlGeneration": 0,
+          "screen": "home",
+          "uptime": 8237.32725375
+        },
+        "timestampMilliseconds": 1789838286311
+      },
+      "type": "signal"
+    },
+    {
+      "signal": {
+        "evidenceSource": "rum-mapper",
+        "kind": "rum-view-snapshot",
+        "rumContext": {
+          "eventDateMilliseconds": 1789838286201,
+          "sessionHasReplay": false,
+          "sessionID": "1df1cbff-6d51-4259-ac7b-50030ae35d86",
+          "viewActive": true,
+          "viewDocumentVersion": 5,
+          "viewID": "a93e5375-872b-4d5c-920d-cb1a0e39895b",
+          "viewName": "ProbeHomeView",
+          "viewTimeSpentNanoseconds": 107450962,
+          "viewURL": "ProbeHomeView/2152684264960655860"
+        },
+        "runID": "exp196-unit-activation",
+        "scenarioID": "windows.activation-sequence",
+        "schemaVersion": 5,
+        "semanticContext": {
+          "logicalSceneID": "scene-B",
+          "screen": "home"
+        },
+        "sequence": 32,
+        "timestampMilliseconds": 1789838286312
+      },
+      "type": "signal"
+    },
+    {
+      "signal": {
+        "eventID": "ec120d54-6666-4484-bda8-b9902d004a01",
+        "evidenceSource": "rum-mapper",
+        "kind": "rum-resource",
+        "name": "task-immediate",
+        "resource": {
+          "durationNanoseconds": 105345964,
+          "id": "ec120d54-6666-4484-bda8-b9902d004a01",
+          "method": "GET",
+          "size": 1,
+          "statusCode": 200,
+          "type": "other",
+          "url": "https://multi-scene-probe.invalid/native/scene-B/home/task-immediate"
+        },
+        "rumContext": {
+          "eventDateMilliseconds": 1789838286204,
+          "sessionID": "1df1cbff-6d51-4259-ac7b-50030ae35d86",
+          "viewID": "a93e5375-872b-4d5c-920d-cb1a0e39895b",
+          "viewName": "ProbeHomeView",
+          "viewURL": "ProbeHomeView/2152684264960655860"
+        },
+        "runID": "exp196-unit-activation",
+        "scenarioID": "windows.activation-sequence",
+        "schemaVersion": 5,
+        "sequence": 33,
+        "sourceContext": {
+          "logicalSceneID": "scene-B",
+          "phase": "task-immediate",
+          "readerControlGeneration": 0,
+          "screen": "home",
+          "uptime": 8237.327336291668
+        },
+        "timestampMilliseconds": 1789838286312
+      },
+      "type": "signal"
+    },
+    {
+      "signal": {
+        "evidenceSource": "rum-mapper",
+        "kind": "rum-view-snapshot",
+        "rumContext": {
+          "eventDateMilliseconds": 1789838286201,
+          "sessionHasReplay": false,
+          "sessionID": "1df1cbff-6d51-4259-ac7b-50030ae35d86",
+          "viewActive": true,
+          "viewDocumentVersion": 6,
+          "viewID": "a93e5375-872b-4d5c-920d-cb1a0e39895b",
+          "viewName": "ProbeHomeView",
+          "viewTimeSpentNanoseconds": 107472897,
+          "viewURL": "ProbeHomeView/2152684264960655860"
+        },
+        "runID": "exp196-unit-activation",
+        "scenarioID": "windows.activation-sequence",
+        "schemaVersion": 5,
+        "semanticContext": {
+          "logicalSceneID": "scene-B",
+          "screen": "home"
+        },
+        "sequence": 34,
+        "timestampMilliseconds": 1789838286313
+      },
+      "type": "signal"
+    },
+    {
+      "signal": {
+        "eventID": "d9edbd49-a8f8-48b1-b712-b0d671eb9fe9",
+        "evidenceSource": "rum-mapper",
+        "kind": "rum-resource",
+        "name": "task-delayed",
+        "resource": {
+          "durationNanoseconds": 75127959,
+          "id": "d9edbd49-a8f8-48b1-b712-b0d671eb9fe9",
+          "method": "GET",
+          "size": 1,
+          "statusCode": 200,
+          "type": "other",
+          "url": "https://multi-scene-probe.invalid/native/scene-A/home/task-delayed"
+        },
+        "rumContext": {
+          "eventDateMilliseconds": 1789838286236,
+          "sessionID": "1df1cbff-6d51-4259-ac7b-50030ae35d86",
+          "viewID": "a93e5375-872b-4d5c-920d-cb1a0e39895b",
+          "viewName": "ProbeHomeView",
+          "viewURL": "ProbeHomeView/2152684264960655860"
+        },
+        "runID": "exp196-unit-activation",
+        "scenarioID": "windows.activation-sequence",
+        "schemaVersion": 5,
+        "sequence": 35,
+        "sourceContext": {
+          "logicalSceneID": "scene-A",
+          "phase": "task-delayed",
+          "readerControlGeneration": 0,
+          "screen": "home",
+          "uptime": 8237.359346083334
+        },
+        "timestampMilliseconds": 1789838286313
+      },
+      "type": "signal"
+    },
+    {
+      "signal": {
+        "evidenceSource": "rum-mapper",
+        "kind": "rum-view-snapshot",
+        "rumContext": {
+          "eventDateMilliseconds": 1789838286201,
+          "sessionHasReplay": false,
+          "sessionID": "1df1cbff-6d51-4259-ac7b-50030ae35d86",
+          "viewActive": true,
+          "viewDocumentVersion": 7,
+          "viewID": "a93e5375-872b-4d5c-920d-cb1a0e39895b",
+          "viewName": "ProbeHomeView",
+          "viewTimeSpentNanoseconds": 109326959,
+          "viewURL": "ProbeHomeView/2152684264960655860"
+        },
+        "runID": "exp196-unit-activation",
+        "scenarioID": "windows.activation-sequence",
+        "schemaVersion": 5,
+        "semanticContext": {
+          "logicalSceneID": "scene-B",
+          "screen": "home"
+        },
+        "sequence": 36,
+        "timestampMilliseconds": 1789838286316
+      },
+      "type": "signal"
+    },
+    {
+      "signal": {
+        "action": {
+          "errorCount": 0,
+          "id": "d442d54b-9880-4d9f-b54c-137492480410",
+          "loadingTimeNanoseconds": 0,
+          "resourceCount": 0,
+          "target": "probe-lifecycle-scene-B.home.task-delayed",
+          "type": "custom"
+        },
+        "eventID": "d442d54b-9880-4d9f-b54c-137492480410",
+        "evidenceSource": "rum-mapper",
+        "kind": "rum-action",
+        "name": "task-delayed",
+        "rumContext": {
+          "actionIDs": [
+            "d442d54b-9880-4d9f-b54c-137492480410"
+          ],
+          "eventDateMilliseconds": 1789838286322,
+          "sessionID": "1df1cbff-6d51-4259-ac7b-50030ae35d86",
+          "viewID": "a93e5375-872b-4d5c-920d-cb1a0e39895b",
+          "viewName": "ProbeHomeView",
+          "viewURL": "ProbeHomeView/2152684264960655860"
+        },
+        "runID": "exp196-unit-activation",
+        "scenarioID": "windows.activation-sequence",
+        "schemaVersion": 5,
+        "sequence": 37,
+        "sourceContext": {
+          "logicalSceneID": "scene-B",
+          "phase": "task-delayed",
+          "readerControlGeneration": 0,
+          "screen": "home",
+          "uptime": 8237.445963916667
+        },
+        "timestampMilliseconds": 1789838286323
+      },
+      "type": "signal"
+    },
+    {
+      "signal": {
+        "evidenceSource": "rum-mapper",
+        "kind": "rum-view-snapshot",
+        "rumContext": {
+          "eventDateMilliseconds": 1789838286201,
+          "sessionHasReplay": false,
+          "sessionID": "1df1cbff-6d51-4259-ac7b-50030ae35d86",
+          "viewActive": true,
+          "viewDocumentVersion": 8,
+          "viewID": "a93e5375-872b-4d5c-920d-cb1a0e39895b",
+          "viewName": "ProbeHomeView",
+          "viewTimeSpentNanoseconds": 120756984,
+          "viewURL": "ProbeHomeView/2152684264960655860"
+        },
+        "runID": "exp196-unit-activation",
+        "scenarioID": "windows.activation-sequence",
+        "schemaVersion": 5,
+        "semanticContext": {
+          "logicalSceneID": "scene-B",
+          "screen": "home"
+        },
+        "sequence": 38,
+        "timestampMilliseconds": 1789838286323
+      },
+      "type": "signal"
+    },
+    {
+      "signal": {
+        "eventID": "30377a40-f838-496f-bbd0-184da2d781b8",
+        "evidenceSource": "rum-mapper",
+        "kind": "rum-resource",
+        "name": "task-delayed",
+        "resource": {
+          "durationNanoseconds": 51253915,
+          "id": "30377a40-f838-496f-bbd0-184da2d781b8",
+          "method": "GET",
+          "size": 1,
+          "statusCode": 200,
+          "type": "other",
+          "url": "https://multi-scene-probe.invalid/native/scene-B/home/task-delayed"
+        },
+        "rumContext": {
+          "eventDateMilliseconds": 1789838286322,
+          "sessionID": "1df1cbff-6d51-4259-ac7b-50030ae35d86",
+          "viewID": "a93e5375-872b-4d5c-920d-cb1a0e39895b",
+          "viewName": "ProbeHomeView",
+          "viewURL": "ProbeHomeView/2152684264960655860"
+        },
+        "runID": "exp196-unit-activation",
+        "scenarioID": "windows.activation-sequence",
+        "schemaVersion": 5,
+        "sequence": 39,
+        "sourceContext": {
+          "logicalSceneID": "scene-B",
+          "phase": "task-delayed",
+          "readerControlGeneration": 0,
+          "screen": "home",
+          "uptime": 8237.445963916667
+        },
+        "timestampMilliseconds": 1789838286374
+      },
+      "type": "signal"
+    },
+    {
+      "signal": {
+        "evidenceSource": "rum-mapper",
+        "kind": "rum-view-snapshot",
+        "rumContext": {
+          "eventDateMilliseconds": 1789838286201,
+          "sessionHasReplay": false,
+          "sessionID": "1df1cbff-6d51-4259-ac7b-50030ae35d86",
+          "viewActive": true,
+          "viewDocumentVersion": 9,
+          "viewID": "a93e5375-872b-4d5c-920d-cb1a0e39895b",
+          "viewName": "ProbeHomeView",
+          "viewTimeSpentNanoseconds": 172054887,
+          "viewURL": "ProbeHomeView/2152684264960655860"
+        },
+        "runID": "exp196-unit-activation",
+        "scenarioID": "windows.activation-sequence",
+        "schemaVersion": 5,
+        "semanticContext": {
+          "logicalSceneID": "scene-B",
+          "screen": "home"
+        },
+        "sequence": 40,
+        "timestampMilliseconds": 1789838286375
+      },
+      "type": "signal"
+    },
+    {
+      "signal": {
+        "activationState": "foreground-active",
+        "evidenceSource": "probe",
+        "geometry": {
+          "height": 834,
+          "width": 1194,
+          "x": 0,
+          "y": 0
+        },
+        "horizontalSizeClass": "regular",
+        "kind": "scene-lifecycle",
+        "navigationPath": [
+          "home"
+        ],
+        "runID": "exp196-unit-activation",
+        "scenarioID": "windows.activation-sequence",
+        "sceneDisconnectGeneration": 0,
+        "scenePhase": "ready",
+        "schemaVersion": 5,
+        "semanticContext": {
+          "logicalSceneID": "scene-B",
+          "nativeSceneID": "5E7397C1-1283-4E00-BD47-0A96139511D0",
+          "screen": "home"
+        },
+        "sequence": 41,
+        "timestampMilliseconds": 1789838286915,
+        "verticalSizeClass": "regular"
+      },
+      "type": "signal"
+    },
+    {
+      "signal": {
+        "acknowledgedSignalSequence": 41,
+        "evidenceSource": "probe",
+        "kind": "step-acknowledged",
+        "runID": "exp196-unit-activation",
+        "scenarioID": "windows.activation-sequence",
+        "schemaVersion": 5,
+        "semanticContext": {
+          "logicalSceneID": "scene-B",
+          "nativeSceneID": "5E7397C1-1283-4E00-BD47-0A96139511D0",
+          "screen": "home"
+        },
+        "sequence": 42,
+        "stepIndex": 2,
+        "stepKind": "activate-window",
+        "timestampMilliseconds": 1789838286922
+      },
+      "type": "signal"
+    },
+    {
+      "signal": {
+        "evidenceSource": "probe",
+        "kind": "step-started",
+        "name": "scene-state:background",
+        "runID": "exp196-unit-activation",
+        "scenarioID": "windows.activation-sequence",
+        "schemaVersion": 5,
+        "semanticContext": {
+          "logicalSceneID": "scene-A",
+          "nativeSceneID": "76FD6D3C-6680-47B4-BDA0-083F88E6D6C5",
+          "screen": "home"
+        },
+        "sequence": 43,
+        "stepIndex": 3,
+        "stepKind": "wait-for-signal",
+        "timestampMilliseconds": 1789838286922
+      },
+      "type": "signal"
+    },
+    {
+      "signal": {
+        "acknowledgedSignalSequence": 22,
+        "evidenceSource": "probe",
+        "kind": "step-acknowledged",
+        "name": "scene-state:background",
+        "runID": "exp196-unit-activation",
+        "scenarioID": "windows.activation-sequence",
+        "schemaVersion": 5,
+        "semanticContext": {
+          "logicalSceneID": "scene-A",
+          "nativeSceneID": "76FD6D3C-6680-47B4-BDA0-083F88E6D6C5",
+          "screen": "home"
+        },
+        "sequence": 44,
+        "stepIndex": 3,
+        "stepKind": "wait-for-signal",
+        "timestampMilliseconds": 1789838286922
+      },
+      "type": "signal"
+    },
+    {
+      "signal": {
+        "evidenceSource": "probe",
+        "kind": "step-started",
+        "name": "after-initial-activate-B",
+        "runID": "exp196-unit-activation",
+        "scenarioID": "windows.activation-sequence",
+        "schemaVersion": 5,
+        "semanticContext": {
+          "logicalSceneID": "scene-B",
+          "nativeSceneID": "5E7397C1-1283-4E00-BD47-0A96139511D0",
+          "screen": "home"
+        },
+        "sequence": 45,
+        "stepIndex": 4,
+        "stepKind": "emit-marker",
+        "timestampMilliseconds": 1789838286922
+      },
+      "type": "signal"
+    },
+    {
+      "signal": {
+        "action": {
+          "errorCount": 0,
+          "id": "cd54dc52-3c4e-468f-9963-29413afa2dd6",
+          "loadingTimeNanoseconds": 0,
+          "resourceCount": 0,
+          "target": "probe-lifecycle-scene-B.home.after-initial-activate-B",
+          "type": "custom"
+        },
+        "eventID": "cd54dc52-3c4e-468f-9963-29413afa2dd6",
+        "evidenceSource": "rum-mapper",
+        "kind": "rum-action",
+        "name": "after-initial-activate-B",
+        "rumContext": {
+          "actionIDs": [
+            "cd54dc52-3c4e-468f-9963-29413afa2dd6"
+          ],
+          "eventDateMilliseconds": 1789838286922,
+          "sessionID": "1df1cbff-6d51-4259-ac7b-50030ae35d86",
+          "viewID": "a93e5375-872b-4d5c-920d-cb1a0e39895b",
+          "viewName": "ProbeHomeView",
+          "viewURL": "ProbeHomeView/2152684264960655860"
+        },
+        "runID": "exp196-unit-activation",
+        "scenarioID": "windows.activation-sequence",
+        "schemaVersion": 5,
+        "sequence": 46,
+        "sourceContext": {
+          "logicalSceneID": "scene-B",
+          "nativeSceneID": "5E7397C1-1283-4E00-BD47-0A96139511D0",
+          "phase": "after-initial-activate-B",
+          "readerControlGeneration": 0,
+          "screen": "home",
+          "uptime": 8238.045653000001
+        },
+        "timestampMilliseconds": 1789838286922
+      },
+      "type": "signal"
+    },
+    {
+      "signal": {
+        "acknowledgedSignalSequence": 46,
+        "evidenceSource": "probe",
+        "kind": "step-acknowledged",
+        "name": "after-initial-activate-B",
+        "runID": "exp196-unit-activation",
+        "scenarioID": "windows.activation-sequence",
+        "schemaVersion": 5,
+        "semanticContext": {
+          "logicalSceneID": "scene-B",
+          "nativeSceneID": "5E7397C1-1283-4E00-BD47-0A96139511D0",
+          "screen": "home"
+        },
+        "sequence": 47,
+        "stepIndex": 4,
+        "stepKind": "emit-marker",
+        "timestampMilliseconds": 1789838286923
+      },
+      "type": "signal"
+    },
+    {
+      "signal": {
+        "evidenceSource": "probe",
+        "kind": "step-started",
+        "runID": "exp196-unit-activation",
+        "scenarioID": "windows.activation-sequence",
+        "schemaVersion": 5,
+        "semanticContext": {
+          "logicalSceneID": "scene-A",
+          "nativeSceneID": "76FD6D3C-6680-47B4-BDA0-083F88E6D6C5",
+          "screen": "home"
+        },
+        "sequence": 48,
+        "stepIndex": 5,
+        "stepKind": "activate-window",
+        "timestampMilliseconds": 1789838286923
+      },
+      "type": "signal"
+    },
+    {
+      "signal": {
+        "evidenceSource": "rum-mapper",
+        "kind": "rum-view-snapshot",
+        "rumContext": {
+          "eventDateMilliseconds": 1789838286201,
+          "sessionHasReplay": false,
+          "sessionID": "1df1cbff-6d51-4259-ac7b-50030ae35d86",
+          "viewActive": true,
+          "viewDocumentVersion": 10,
+          "viewID": "a93e5375-872b-4d5c-920d-cb1a0e39895b",
+          "viewName": "ProbeHomeView",
+          "viewTimeSpentNanoseconds": 720446944,
+          "viewURL": "ProbeHomeView/2152684264960655860"
+        },
+        "runID": "exp196-unit-activation",
+        "scenarioID": "windows.activation-sequence",
+        "schemaVersion": 5,
+        "semanticContext": {
+          "logicalSceneID": "scene-B",
+          "screen": "home"
+        },
+        "sequence": 49,
+        "timestampMilliseconds": 1789838286923
+      },
+      "type": "signal"
+    },
+    {
+      "signal": {
+        "activationState": "foreground-inactive",
+        "evidenceSource": "probe",
+        "geometry": {
+          "height": 834,
+          "width": 1194,
+          "x": 0,
+          "y": 0
+        },
+        "horizontalSizeClass": "regular",
+        "kind": "scene-lifecycle",
+        "navigationPath": [
+          "home"
+        ],
+        "runID": "exp196-unit-activation",
+        "scenarioID": "windows.activation-sequence",
+        "sceneDisconnectGeneration": 0,
+        "scenePhase": "ready",
+        "schemaVersion": 5,
+        "semanticContext": {
+          "logicalSceneID": "scene-B",
+          "nativeSceneID": "5E7397C1-1283-4E00-BD47-0A96139511D0",
+          "screen": "home"
+        },
+        "sequence": 50,
+        "timestampMilliseconds": 1789838286942,
+        "verticalSizeClass": "regular"
+      },
+      "type": "signal"
+    },
+    {
+      "signal": {
+        "evidenceSource": "rum-mapper",
+        "kind": "rum-view-snapshot",
+        "rumContext": {
+          "eventDateMilliseconds": 1789838286964,
+          "sessionHasReplay": false,
+          "sessionID": "1df1cbff-6d51-4259-ac7b-50030ae35d86",
+          "viewActive": true,
+          "viewDocumentVersion": 1,
+          "viewID": "de5ec7bc-16fa-4a27-b9fe-71600a08f27d",
+          "viewName": "ProbeHomeView",
+          "viewTimeSpentNanoseconds": 1,
+          "viewURL": "ProbeHomeView/2152684264960655860"
+        },
+        "runID": "exp196-unit-activation",
+        "scenarioID": "windows.activation-sequence",
+        "schemaVersion": 5,
+        "semanticContext": {
+          "logicalSceneID": "scene-A",
+          "screen": "home"
+        },
+        "sequence": 51,
+        "timestampMilliseconds": 1789838286973
+      },
+      "type": "signal"
+    },
+    {
+      "signal": {
+        "activationState": "foreground-inactive",
+        "evidenceSource": "probe",
+        "geometry": {
+          "height": 834,
+          "width": 1194,
+          "x": 0,
+          "y": 0
+        },
+        "horizontalSizeClass": "regular",
+        "kind": "scene-lifecycle",
+        "navigationPath": [
+          "home"
+        ],
+        "runID": "exp196-unit-activation",
+        "scenarioID": "windows.activation-sequence",
+        "sceneDisconnectGeneration": 0,
+        "scenePhase": "ready",
+        "schemaVersion": 5,
+        "semanticContext": {
+          "logicalSceneID": "scene-A",
+          "nativeSceneID": "76FD6D3C-6680-47B4-BDA0-083F88E6D6C5",
+          "screen": "home"
+        },
+        "sequence": 52,
+        "timestampMilliseconds": 1789838286975,
+        "verticalSizeClass": "regular"
+      },
+      "type": "signal"
+    },
+    {
+      "signal": {
+        "eventID": "bdc79419-3f7b-40bb-9a07-586c5e7208b7",
+        "evidenceSource": "rum-mapper",
+        "kind": "rum-resource",
+        "name": "after-initial-activate-B",
+        "resource": {
+          "durationNanoseconds": 53766966,
+          "id": "bdc79419-3f7b-40bb-9a07-586c5e7208b7",
+          "method": "GET",
+          "size": 1,
+          "statusCode": 200,
+          "type": "other",
+          "url": "https://multi-scene-probe.invalid/native/scene-B/home/after-initial-activate-B"
+        },
+        "rumContext": {
+          "eventDateMilliseconds": 1789838286922,
+          "sessionID": "1df1cbff-6d51-4259-ac7b-50030ae35d86",
+          "viewID": "a93e5375-872b-4d5c-920d-cb1a0e39895b",
+          "viewName": "ProbeHomeView",
+          "viewURL": "ProbeHomeView/2152684264960655860"
+        },
+        "runID": "exp196-unit-activation",
+        "scenarioID": "windows.activation-sequence",
+        "schemaVersion": 5,
+        "sequence": 53,
+        "sourceContext": {
+          "logicalSceneID": "scene-B",
+          "nativeSceneID": "5E7397C1-1283-4E00-BD47-0A96139511D0",
+          "phase": "after-initial-activate-B",
+          "readerControlGeneration": 0,
+          "screen": "home",
+          "uptime": 8238.045653000001
+        },
+        "timestampMilliseconds": 1789838286977
+      },
+      "type": "signal"
+    },
+    {
+      "signal": {
+        "evidenceSource": "rum-mapper",
+        "kind": "rum-view-snapshot",
+        "rumContext": {
+          "eventDateMilliseconds": 1789838286201,
+          "sessionHasReplay": false,
+          "sessionID": "1df1cbff-6d51-4259-ac7b-50030ae35d86",
+          "viewActive": true,
+          "viewDocumentVersion": 11,
+          "viewID": "a93e5375-872b-4d5c-920d-cb1a0e39895b",
+          "viewName": "ProbeHomeView",
+          "viewTimeSpentNanoseconds": 774252892,
+          "viewURL": "ProbeHomeView/2152684264960655860"
+        },
+        "runID": "exp196-unit-activation",
+        "scenarioID": "windows.activation-sequence",
+        "schemaVersion": 5,
+        "semanticContext": {
+          "logicalSceneID": "scene-B",
+          "screen": "home"
+        },
+        "sequence": 54,
+        "timestampMilliseconds": 1789838286979
+      },
+      "type": "signal"
+    },
+    {
+      "signal": {
+        "activationState": "foreground-active",
+        "evidenceSource": "probe",
+        "geometry": {
+          "height": 834,
+          "width": 1194,
+          "x": 0,
+          "y": 0
+        },
+        "horizontalSizeClass": "regular",
+        "kind": "scene-lifecycle",
+        "navigationPath": [
+          "home"
+        ],
+        "runID": "exp196-unit-activation",
+        "scenarioID": "windows.activation-sequence",
+        "sceneDisconnectGeneration": 0,
+        "scenePhase": "ready",
+        "schemaVersion": 5,
+        "semanticContext": {
+          "logicalSceneID": "scene-A",
+          "nativeSceneID": "76FD6D3C-6680-47B4-BDA0-083F88E6D6C5",
+          "screen": "home"
+        },
+        "sequence": 55,
+        "timestampMilliseconds": 1789838287430,
+        "verticalSizeClass": "regular"
+      },
+      "type": "signal"
+    },
+    {
+      "signal": {
+        "acknowledgedSignalSequence": 55,
+        "evidenceSource": "probe",
+        "kind": "step-acknowledged",
+        "runID": "exp196-unit-activation",
+        "scenarioID": "windows.activation-sequence",
+        "schemaVersion": 5,
+        "semanticContext": {
+          "logicalSceneID": "scene-A",
+          "nativeSceneID": "76FD6D3C-6680-47B4-BDA0-083F88E6D6C5",
+          "screen": "home"
+        },
+        "sequence": 56,
+        "stepIndex": 5,
+        "stepKind": "activate-window",
+        "timestampMilliseconds": 1789838287444
+      },
+      "type": "signal"
+    },
+    {
+      "signal": {
+        "evidenceSource": "probe",
+        "kind": "step-started",
+        "name": "scene-state:background",
+        "runID": "exp196-unit-activation",
+        "scenarioID": "windows.activation-sequence",
+        "schemaVersion": 5,
+        "semanticContext": {
+          "logicalSceneID": "scene-B",
+          "nativeSceneID": "5E7397C1-1283-4E00-BD47-0A96139511D0",
+          "screen": "home"
+        },
+        "sequence": 57,
+        "stepIndex": 6,
+        "stepKind": "wait-for-signal",
+        "timestampMilliseconds": 1789838287444
+      },
+      "type": "signal"
+    },
+    {
+      "signal": {
+        "evidenceSource": "rum-mapper",
+        "kind": "rum-view-snapshot",
+        "rumContext": {
+          "eventDateMilliseconds": 1789838286201,
+          "sessionHasReplay": false,
+          "sessionID": "1df1cbff-6d51-4259-ac7b-50030ae35d86",
+          "viewActive": false,
+          "viewDocumentVersion": 12,
+          "viewID": "a93e5375-872b-4d5c-920d-cb1a0e39895b",
+          "viewName": "ProbeHomeView",
+          "viewTimeSpentNanoseconds": 1415643930,
+          "viewURL": "ProbeHomeView/2152684264960655860"
+        },
+        "runID": "exp196-unit-activation",
+        "scenarioID": "windows.activation-sequence",
+        "schemaVersion": 5,
+        "semanticContext": {
+          "logicalSceneID": "scene-B",
+          "screen": "home"
+        },
+        "sequence": 58,
+        "timestampMilliseconds": 1789838287618
+      },
+      "type": "signal"
+    },
+    {
+      "signal": {
+        "activationState": "background",
+        "evidenceSource": "probe",
+        "geometry": {
+          "height": 834,
+          "width": 1194,
+          "x": 0,
+          "y": 0
+        },
+        "horizontalSizeClass": "regular",
+        "kind": "scene-lifecycle",
+        "navigationPath": [
+          "home"
+        ],
+        "runID": "exp196-unit-activation",
+        "scenarioID": "windows.activation-sequence",
+        "sceneDisconnectGeneration": 0,
+        "scenePhase": "ready",
+        "schemaVersion": 5,
+        "semanticContext": {
+          "logicalSceneID": "scene-B",
+          "nativeSceneID": "5E7397C1-1283-4E00-BD47-0A96139511D0",
+          "screen": "home"
+        },
+        "sequence": 59,
+        "timestampMilliseconds": 1789838287622,
+        "verticalSizeClass": "regular"
+      },
+      "type": "signal"
+    },
+    {
+      "signal": {
+        "acknowledgedSignalSequence": 59,
+        "evidenceSource": "probe",
+        "kind": "step-acknowledged",
+        "name": "scene-state:background",
+        "runID": "exp196-unit-activation",
+        "scenarioID": "windows.activation-sequence",
+        "schemaVersion": 5,
+        "semanticContext": {
+          "logicalSceneID": "scene-B",
+          "nativeSceneID": "5E7397C1-1283-4E00-BD47-0A96139511D0",
+          "screen": "home"
+        },
+        "sequence": 60,
+        "stepIndex": 6,
+        "stepKind": "wait-for-signal",
+        "timestampMilliseconds": 1789838287678
+      },
+      "type": "signal"
+    },
+    {
+      "signal": {
+        "evidenceSource": "probe",
+        "kind": "step-started",
+        "name": "after-activate-A",
+        "runID": "exp196-unit-activation",
+        "scenarioID": "windows.activation-sequence",
+        "schemaVersion": 5,
+        "semanticContext": {
+          "logicalSceneID": "scene-A",
+          "nativeSceneID": "76FD6D3C-6680-47B4-BDA0-083F88E6D6C5",
+          "screen": "home"
+        },
+        "sequence": 61,
+        "stepIndex": 7,
+        "stepKind": "emit-marker",
+        "timestampMilliseconds": 1789838287678
+      },
+      "type": "signal"
+    },
+    {
+      "signal": {
+        "action": {
+          "errorCount": 0,
+          "id": "ae6c79f7-8b74-42c2-b8ae-85b0e1fc138f",
+          "loadingTimeNanoseconds": 0,
+          "resourceCount": 0,
+          "target": "probe-lifecycle-scene-A.home.after-activate-A",
+          "type": "custom"
+        },
+        "eventID": "ae6c79f7-8b74-42c2-b8ae-85b0e1fc138f",
+        "evidenceSource": "rum-mapper",
+        "kind": "rum-action",
+        "name": "after-activate-A",
+        "rumContext": {
+          "actionIDs": [
+            "ae6c79f7-8b74-42c2-b8ae-85b0e1fc138f"
+          ],
+          "eventDateMilliseconds": 1789838287671,
+          "sessionID": "1df1cbff-6d51-4259-ac7b-50030ae35d86",
+          "viewID": "de5ec7bc-16fa-4a27-b9fe-71600a08f27d",
+          "viewName": "ProbeHomeView",
+          "viewURL": "ProbeHomeView/2152684264960655860"
+        },
+        "runID": "exp196-unit-activation",
+        "scenarioID": "windows.activation-sequence",
+        "schemaVersion": 5,
+        "sequence": 62,
+        "sourceContext": {
+          "logicalSceneID": "scene-A",
+          "nativeSceneID": "76FD6D3C-6680-47B4-BDA0-083F88E6D6C5",
+          "phase": "after-activate-A",
+          "readerControlGeneration": 0,
+          "screen": "home",
+          "uptime": 8238.80201675
+        },
+        "timestampMilliseconds": 1789838287679
+      },
+      "type": "signal"
+    },
+    {
+      "signal": {
+        "evidenceSource": "rum-mapper",
+        "kind": "rum-view-snapshot",
+        "rumContext": {
+          "eventDateMilliseconds": 1789838286964,
+          "sessionHasReplay": false,
+          "sessionID": "1df1cbff-6d51-4259-ac7b-50030ae35d86",
+          "viewActive": true,
+          "viewDocumentVersion": 2,
+          "viewID": "de5ec7bc-16fa-4a27-b9fe-71600a08f27d",
+          "viewName": "ProbeHomeView",
+          "viewTimeSpentNanoseconds": 707403064,
+          "viewURL": "ProbeHomeView/2152684264960655860"
+        },
+        "runID": "exp196-unit-activation",
+        "scenarioID": "windows.activation-sequence",
+        "schemaVersion": 5,
+        "semanticContext": {
+          "logicalSceneID": "scene-A",
+          "screen": "home"
+        },
+        "sequence": 63,
+        "timestampMilliseconds": 1789838287679
+      },
+      "type": "signal"
+    },
+    {
+      "signal": {
+        "acknowledgedSignalSequence": 62,
+        "evidenceSource": "probe",
+        "kind": "step-acknowledged",
+        "name": "after-activate-A",
+        "runID": "exp196-unit-activation",
+        "scenarioID": "windows.activation-sequence",
+        "schemaVersion": 5,
+        "semanticContext": {
+          "logicalSceneID": "scene-A",
+          "nativeSceneID": "76FD6D3C-6680-47B4-BDA0-083F88E6D6C5",
+          "screen": "home"
+        },
+        "sequence": 64,
+        "stepIndex": 7,
+        "stepKind": "emit-marker",
+        "timestampMilliseconds": 1789838287684
+      },
+      "type": "signal"
+    },
+    {
+      "signal": {
+        "evidenceSource": "probe",
+        "kind": "step-started",
+        "runID": "exp196-unit-activation",
+        "scenarioID": "windows.activation-sequence",
+        "schemaVersion": 5,
+        "semanticContext": {
+          "logicalSceneID": "scene-B",
+          "nativeSceneID": "5E7397C1-1283-4E00-BD47-0A96139511D0",
+          "screen": "home"
+        },
+        "sequence": 65,
+        "stepIndex": 8,
+        "stepKind": "activate-window",
+        "timestampMilliseconds": 1789838287684
+      },
+      "type": "signal"
+    },
+    {
+      "signal": {
+        "activationState": "foreground-inactive",
+        "evidenceSource": "probe",
+        "geometry": {
+          "height": 834,
+          "width": 1194,
+          "x": 0,
+          "y": 0
+        },
+        "horizontalSizeClass": "regular",
+        "kind": "scene-lifecycle",
+        "navigationPath": [
+          "home"
+        ],
+        "runID": "exp196-unit-activation",
+        "scenarioID": "windows.activation-sequence",
+        "sceneDisconnectGeneration": 0,
+        "scenePhase": "ready",
+        "schemaVersion": 5,
+        "semanticContext": {
+          "logicalSceneID": "scene-A",
+          "nativeSceneID": "76FD6D3C-6680-47B4-BDA0-083F88E6D6C5",
+          "screen": "home"
+        },
+        "sequence": 66,
+        "timestampMilliseconds": 1789838287703,
+        "verticalSizeClass": "regular"
+      },
+      "type": "signal"
+    },
+    {
+      "signal": {
+        "evidenceSource": "rum-mapper",
+        "kind": "rum-view-snapshot",
+        "rumContext": {
+          "eventDateMilliseconds": 1789838287724,
+          "sessionHasReplay": false,
+          "sessionID": "1df1cbff-6d51-4259-ac7b-50030ae35d86",
+          "viewActive": true,
+          "viewDocumentVersion": 1,
+          "viewID": "b6057689-d5f8-4651-8b0b-75c86eff257c",
+          "viewName": "ProbeHomeView",
+          "viewTimeSpentNanoseconds": 1,
+          "viewURL": "ProbeHomeView/2152684264960655860"
+        },
+        "runID": "exp196-unit-activation",
+        "scenarioID": "windows.activation-sequence",
+        "schemaVersion": 5,
+        "semanticContext": {
+          "logicalSceneID": "scene-B",
+          "screen": "home"
+        },
+        "sequence": 67,
+        "timestampMilliseconds": 1789838287732
+      },
+      "type": "signal"
+    },
+    {
+      "signal": {
+        "activationState": "foreground-inactive",
+        "evidenceSource": "probe",
+        "geometry": {
+          "height": 834,
+          "width": 1194,
+          "x": 0,
+          "y": 0
+        },
+        "horizontalSizeClass": "regular",
+        "kind": "scene-lifecycle",
+        "navigationPath": [
+          "home"
+        ],
+        "runID": "exp196-unit-activation",
+        "scenarioID": "windows.activation-sequence",
+        "sceneDisconnectGeneration": 0,
+        "scenePhase": "ready",
+        "schemaVersion": 5,
+        "semanticContext": {
+          "logicalSceneID": "scene-B",
+          "nativeSceneID": "5E7397C1-1283-4E00-BD47-0A96139511D0",
+          "screen": "home"
+        },
+        "sequence": 68,
+        "timestampMilliseconds": 1789838287735,
+        "verticalSizeClass": "regular"
+      },
+      "type": "signal"
+    },
+    {
+      "signal": {
+        "eventID": "fa321850-4534-4810-b1c6-89a1afbde36b",
+        "evidenceSource": "rum-mapper",
+        "kind": "rum-resource",
+        "name": "after-activate-A",
+        "resource": {
+          "durationNanoseconds": 57448983,
+          "id": "fa321850-4534-4810-b1c6-89a1afbde36b",
+          "method": "GET",
+          "size": 1,
+          "statusCode": 200,
+          "type": "other",
+          "url": "https://multi-scene-probe.invalid/native/scene-A/home/after-activate-A"
+        },
+        "rumContext": {
+          "eventDateMilliseconds": 1789838287671,
+          "sessionID": "1df1cbff-6d51-4259-ac7b-50030ae35d86",
+          "viewID": "de5ec7bc-16fa-4a27-b9fe-71600a08f27d",
+          "viewName": "ProbeHomeView",
+          "viewURL": "ProbeHomeView/2152684264960655860"
+        },
+        "runID": "exp196-unit-activation",
+        "scenarioID": "windows.activation-sequence",
+        "schemaVersion": 5,
+        "sequence": 69,
+        "sourceContext": {
+          "logicalSceneID": "scene-A",
+          "nativeSceneID": "76FD6D3C-6680-47B4-BDA0-083F88E6D6C5",
+          "phase": "after-activate-A",
+          "readerControlGeneration": 0,
+          "screen": "home",
+          "uptime": 8238.80201675
+        },
+        "timestampMilliseconds": 1789838287736
+      },
+      "type": "signal"
+    },
+    {
+      "signal": {
+        "evidenceSource": "rum-mapper",
+        "kind": "rum-view-snapshot",
+        "rumContext": {
+          "eventDateMilliseconds": 1789838286964,
+          "sessionHasReplay": false,
+          "sessionID": "1df1cbff-6d51-4259-ac7b-50030ae35d86",
+          "viewActive": true,
+          "viewDocumentVersion": 3,
+          "viewID": "de5ec7bc-16fa-4a27-b9fe-71600a08f27d",
+          "viewName": "ProbeHomeView",
+          "viewTimeSpentNanoseconds": 764919043,
+          "viewURL": "ProbeHomeView/2152684264960655860"
+        },
+        "runID": "exp196-unit-activation",
+        "scenarioID": "windows.activation-sequence",
+        "schemaVersion": 5,
+        "semanticContext": {
+          "logicalSceneID": "scene-A",
+          "screen": "home"
+        },
+        "sequence": 70,
+        "timestampMilliseconds": 1789838287737
+      },
+      "type": "signal"
+    },
+    {
+      "signal": {
+        "activationState": "foreground-active",
+        "evidenceSource": "probe",
+        "geometry": {
+          "height": 834,
+          "width": 1194,
+          "x": 0,
+          "y": 0
+        },
+        "horizontalSizeClass": "regular",
+        "kind": "scene-lifecycle",
+        "navigationPath": [
+          "home"
+        ],
+        "runID": "exp196-unit-activation",
+        "scenarioID": "windows.activation-sequence",
+        "sceneDisconnectGeneration": 0,
+        "scenePhase": "ready",
+        "schemaVersion": 5,
+        "semanticContext": {
+          "logicalSceneID": "scene-B",
+          "nativeSceneID": "5E7397C1-1283-4E00-BD47-0A96139511D0",
+          "screen": "home"
+        },
+        "sequence": 71,
+        "timestampMilliseconds": 1789838288181,
+        "verticalSizeClass": "regular"
+      },
+      "type": "signal"
+    },
+    {
+      "signal": {
+        "acknowledgedSignalSequence": 71,
+        "evidenceSource": "probe",
+        "kind": "step-acknowledged",
+        "runID": "exp196-unit-activation",
+        "scenarioID": "windows.activation-sequence",
+        "schemaVersion": 5,
+        "semanticContext": {
+          "logicalSceneID": "scene-B",
+          "nativeSceneID": "5E7397C1-1283-4E00-BD47-0A96139511D0",
+          "screen": "home"
+        },
+        "sequence": 72,
+        "stepIndex": 8,
+        "stepKind": "activate-window",
+        "timestampMilliseconds": 1789838288191
+      },
+      "type": "signal"
+    },
+    {
+      "signal": {
+        "evidenceSource": "probe",
+        "kind": "step-started",
+        "name": "scene-state:background",
+        "runID": "exp196-unit-activation",
+        "scenarioID": "windows.activation-sequence",
+        "schemaVersion": 5,
+        "semanticContext": {
+          "logicalSceneID": "scene-A",
+          "nativeSceneID": "76FD6D3C-6680-47B4-BDA0-083F88E6D6C5",
+          "screen": "home"
+        },
+        "sequence": 73,
+        "stepIndex": 9,
+        "stepKind": "wait-for-signal",
+        "timestampMilliseconds": 1789838288191
+      },
+      "type": "signal"
+    },
+    {
+      "signal": {
+        "evidenceSource": "rum-mapper",
+        "kind": "rum-view-snapshot",
+        "rumContext": {
+          "eventDateMilliseconds": 1789838286964,
+          "sessionHasReplay": false,
+          "sessionID": "1df1cbff-6d51-4259-ac7b-50030ae35d86",
+          "viewActive": false,
+          "viewDocumentVersion": 4,
+          "viewID": "de5ec7bc-16fa-4a27-b9fe-71600a08f27d",
+          "viewName": "ProbeHomeView",
+          "viewTimeSpentNanoseconds": 1404434085,
+          "viewURL": "ProbeHomeView/2152684264960655860"
+        },
+        "runID": "exp196-unit-activation",
+        "scenarioID": "windows.activation-sequence",
+        "schemaVersion": 5,
+        "semanticContext": {
+          "logicalSceneID": "scene-A",
+          "screen": "home"
+        },
+        "sequence": 74,
+        "timestampMilliseconds": 1789838288376
+      },
+      "type": "signal"
+    },
+    {
+      "signal": {
+        "activationState": "background",
+        "evidenceSource": "probe",
+        "geometry": {
+          "height": 834,
+          "width": 1194,
+          "x": 0,
+          "y": 0
+        },
+        "horizontalSizeClass": "regular",
+        "kind": "scene-lifecycle",
+        "navigationPath": [
+          "home"
+        ],
+        "runID": "exp196-unit-activation",
+        "scenarioID": "windows.activation-sequence",
+        "sceneDisconnectGeneration": 0,
+        "scenePhase": "ready",
+        "schemaVersion": 5,
+        "semanticContext": {
+          "logicalSceneID": "scene-A",
+          "nativeSceneID": "76FD6D3C-6680-47B4-BDA0-083F88E6D6C5",
+          "screen": "home"
+        },
+        "sequence": 75,
+        "timestampMilliseconds": 1789838288383,
+        "verticalSizeClass": "regular"
+      },
+      "type": "signal"
+    },
+    {
+      "signal": {
+        "acknowledgedSignalSequence": 75,
+        "evidenceSource": "probe",
+        "kind": "step-acknowledged",
+        "name": "scene-state:background",
+        "runID": "exp196-unit-activation",
+        "scenarioID": "windows.activation-sequence",
+        "schemaVersion": 5,
+        "semanticContext": {
+          "logicalSceneID": "scene-A",
+          "nativeSceneID": "76FD6D3C-6680-47B4-BDA0-083F88E6D6C5",
+          "screen": "home"
+        },
+        "sequence": 76,
+        "stepIndex": 9,
+        "stepKind": "wait-for-signal",
+        "timestampMilliseconds": 1789838288446
+      },
+      "type": "signal"
+    },
+    {
+      "signal": {
+        "evidenceSource": "probe",
+        "kind": "step-started",
+        "name": "after-reactivate-B",
+        "runID": "exp196-unit-activation",
+        "scenarioID": "windows.activation-sequence",
+        "schemaVersion": 5,
+        "semanticContext": {
+          "logicalSceneID": "scene-B",
+          "nativeSceneID": "5E7397C1-1283-4E00-BD47-0A96139511D0",
+          "screen": "home"
+        },
+        "sequence": 77,
+        "stepIndex": 10,
+        "stepKind": "emit-marker",
+        "timestampMilliseconds": 1789838288446
+      },
+      "type": "signal"
+    },
+    {
+      "signal": {
+        "action": {
+          "errorCount": 0,
+          "id": "17f48060-181b-4e84-b4ea-3dee1f1e9a02",
+          "loadingTimeNanoseconds": 0,
+          "resourceCount": 0,
+          "target": "probe-lifecycle-scene-B.home.after-reactivate-B",
+          "type": "custom"
+        },
+        "eventID": "17f48060-181b-4e84-b4ea-3dee1f1e9a02",
+        "evidenceSource": "rum-mapper",
+        "kind": "rum-action",
+        "name": "after-reactivate-B",
+        "rumContext": {
+          "actionIDs": [
+            "17f48060-181b-4e84-b4ea-3dee1f1e9a02"
+          ],
+          "eventDateMilliseconds": 1789838288439,
+          "sessionID": "1df1cbff-6d51-4259-ac7b-50030ae35d86",
+          "viewID": "b6057689-d5f8-4651-8b0b-75c86eff257c",
+          "viewName": "ProbeHomeView",
+          "viewURL": "ProbeHomeView/2152684264960655860"
+        },
+        "runID": "exp196-unit-activation",
+        "scenarioID": "windows.activation-sequence",
+        "schemaVersion": 5,
+        "sequence": 78,
+        "sourceContext": {
+          "logicalSceneID": "scene-B",
+          "nativeSceneID": "5E7397C1-1283-4E00-BD47-0A96139511D0",
+          "phase": "after-reactivate-B",
+          "readerControlGeneration": 0,
+          "screen": "home",
+          "uptime": 8239.569981208333
+        },
+        "timestampMilliseconds": 1789838288447
+      },
+      "type": "signal"
+    },
+    {
+      "signal": {
+        "acknowledgedSignalSequence": 78,
+        "evidenceSource": "probe",
+        "kind": "step-acknowledged",
+        "name": "after-reactivate-B",
+        "runID": "exp196-unit-activation",
+        "scenarioID": "windows.activation-sequence",
+        "schemaVersion": 5,
+        "semanticContext": {
+          "logicalSceneID": "scene-B",
+          "nativeSceneID": "5E7397C1-1283-4E00-BD47-0A96139511D0",
+          "screen": "home"
+        },
+        "sequence": 79,
+        "stepIndex": 10,
+        "stepKind": "emit-marker",
+        "timestampMilliseconds": 1789838288448
+      },
+      "type": "signal"
+    },
+    {
+      "signal": {
+        "evidenceSource": "probe",
+        "kind": "step-started",
+        "runID": "exp196-unit-activation",
+        "scenarioID": "windows.activation-sequence",
+        "schemaVersion": 5,
+        "semanticContext": {
+          "logicalSceneID": "scene-A",
+          "nativeSceneID": "76FD6D3C-6680-47B4-BDA0-083F88E6D6C5",
+          "screen": "home"
+        },
+        "sequence": 80,
+        "stepIndex": 11,
+        "stepKind": "activate-window",
+        "timestampMilliseconds": 1789838288448
+      },
+      "type": "signal"
+    },
+    {
+      "signal": {
+        "evidenceSource": "rum-mapper",
+        "kind": "rum-view-snapshot",
+        "rumContext": {
+          "eventDateMilliseconds": 1789838287724,
+          "sessionHasReplay": false,
+          "sessionID": "1df1cbff-6d51-4259-ac7b-50030ae35d86",
+          "viewActive": true,
+          "viewDocumentVersion": 2,
+          "viewID": "b6057689-d5f8-4651-8b0b-75c86eff257c",
+          "viewName": "ProbeHomeView",
+          "viewTimeSpentNanoseconds": 714924932,
+          "viewURL": "ProbeHomeView/2152684264960655860"
+        },
+        "runID": "exp196-unit-activation",
+        "scenarioID": "windows.activation-sequence",
+        "schemaVersion": 5,
+        "semanticContext": {
+          "logicalSceneID": "scene-B",
+          "screen": "home"
+        },
+        "sequence": 81,
+        "timestampMilliseconds": 1789838288449
+      },
+      "type": "signal"
+    },
+    {
+      "signal": {
+        "activationState": "foreground-inactive",
+        "evidenceSource": "probe",
+        "geometry": {
+          "height": 834,
+          "width": 1194,
+          "x": 0,
+          "y": 0
+        },
+        "horizontalSizeClass": "regular",
+        "kind": "scene-lifecycle",
+        "navigationPath": [
+          "home"
+        ],
+        "runID": "exp196-unit-activation",
+        "scenarioID": "windows.activation-sequence",
+        "sceneDisconnectGeneration": 0,
+        "scenePhase": "ready",
+        "schemaVersion": 5,
+        "semanticContext": {
+          "logicalSceneID": "scene-B",
+          "nativeSceneID": "5E7397C1-1283-4E00-BD47-0A96139511D0",
+          "screen": "home"
+        },
+        "sequence": 82,
+        "timestampMilliseconds": 1789838288467,
+        "verticalSizeClass": "regular"
+      },
+      "type": "signal"
+    },
+    {
+      "signal": {
+        "evidenceSource": "rum-mapper",
+        "kind": "rum-view-snapshot",
+        "rumContext": {
+          "eventDateMilliseconds": 1789838288484,
+          "sessionHasReplay": false,
+          "sessionID": "1df1cbff-6d51-4259-ac7b-50030ae35d86",
+          "viewActive": true,
+          "viewDocumentVersion": 1,
+          "viewID": "eb799562-8b83-4f49-ad25-84f473b1a61a",
+          "viewName": "ProbeHomeView",
+          "viewTimeSpentNanoseconds": 1,
+          "viewURL": "ProbeHomeView/2152684264960655860"
+        },
+        "runID": "exp196-unit-activation",
+        "scenarioID": "windows.activation-sequence",
+        "schemaVersion": 5,
+        "semanticContext": {
+          "logicalSceneID": "scene-A",
+          "screen": "home"
+        },
+        "sequence": 83,
+        "timestampMilliseconds": 1789838288492
+      },
+      "type": "signal"
+    },
+    {
+      "signal": {
+        "activationState": "foreground-inactive",
+        "evidenceSource": "probe",
+        "geometry": {
+          "height": 834,
+          "width": 1194,
+          "x": 0,
+          "y": 0
+        },
+        "horizontalSizeClass": "regular",
+        "kind": "scene-lifecycle",
+        "navigationPath": [
+          "home"
+        ],
+        "runID": "exp196-unit-activation",
+        "scenarioID": "windows.activation-sequence",
+        "sceneDisconnectGeneration": 0,
+        "scenePhase": "ready",
+        "schemaVersion": 5,
+        "semanticContext": {
+          "logicalSceneID": "scene-A",
+          "nativeSceneID": "76FD6D3C-6680-47B4-BDA0-083F88E6D6C5",
+          "screen": "home"
+        },
+        "sequence": 84,
+        "timestampMilliseconds": 1789838288495,
+        "verticalSizeClass": "regular"
+      },
+      "type": "signal"
+    },
+    {
+      "signal": {
+        "eventID": "772ac2bf-3e10-4629-8a91-992450d1a8f8",
+        "evidenceSource": "rum-mapper",
+        "kind": "rum-resource",
+        "name": "after-reactivate-B",
+        "resource": {
+          "durationNanoseconds": 53065062,
+          "id": "772ac2bf-3e10-4629-8a91-992450d1a8f8",
+          "method": "GET",
+          "size": 1,
+          "statusCode": 200,
+          "type": "other",
+          "url": "https://multi-scene-probe.invalid/native/scene-B/home/after-reactivate-B"
+        },
+        "rumContext": {
+          "eventDateMilliseconds": 1789838288439,
+          "sessionID": "1df1cbff-6d51-4259-ac7b-50030ae35d86",
+          "viewID": "b6057689-d5f8-4651-8b0b-75c86eff257c",
+          "viewName": "ProbeHomeView",
+          "viewURL": "ProbeHomeView/2152684264960655860"
+        },
+        "runID": "exp196-unit-activation",
+        "scenarioID": "windows.activation-sequence",
+        "schemaVersion": 5,
+        "sequence": 85,
+        "sourceContext": {
+          "logicalSceneID": "scene-B",
+          "nativeSceneID": "5E7397C1-1283-4E00-BD47-0A96139511D0",
+          "phase": "after-reactivate-B",
+          "readerControlGeneration": 0,
+          "screen": "home",
+          "uptime": 8239.569981208333
+        },
+        "timestampMilliseconds": 1789838288500
+      },
+      "type": "signal"
+    },
+    {
+      "signal": {
+        "evidenceSource": "rum-mapper",
+        "kind": "rum-view-snapshot",
+        "rumContext": {
+          "eventDateMilliseconds": 1789838287724,
+          "sessionHasReplay": false,
+          "sessionID": "1df1cbff-6d51-4259-ac7b-50030ae35d86",
+          "viewActive": true,
+          "viewDocumentVersion": 3,
+          "viewID": "b6057689-d5f8-4651-8b0b-75c86eff257c",
+          "viewName": "ProbeHomeView",
+          "viewTimeSpentNanoseconds": 768033028,
+          "viewURL": "ProbeHomeView/2152684264960655860"
+        },
+        "runID": "exp196-unit-activation",
+        "scenarioID": "windows.activation-sequence",
+        "schemaVersion": 5,
+        "semanticContext": {
+          "logicalSceneID": "scene-B",
+          "screen": "home"
+        },
+        "sequence": 86,
+        "timestampMilliseconds": 1789838288500
+      },
+      "type": "signal"
+    },
+    {
+      "signal": {
+        "activationState": "foreground-active",
+        "evidenceSource": "probe",
+        "geometry": {
+          "height": 834,
+          "width": 1194,
+          "x": 0,
+          "y": 0
+        },
+        "horizontalSizeClass": "regular",
+        "kind": "scene-lifecycle",
+        "navigationPath": [
+          "home"
+        ],
+        "runID": "exp196-unit-activation",
+        "scenarioID": "windows.activation-sequence",
+        "sceneDisconnectGeneration": 0,
+        "scenePhase": "ready",
+        "schemaVersion": 5,
+        "semanticContext": {
+          "logicalSceneID": "scene-A",
+          "nativeSceneID": "76FD6D3C-6680-47B4-BDA0-083F88E6D6C5",
+          "screen": "home"
+        },
+        "sequence": 87,
+        "timestampMilliseconds": 1789838288944,
+        "verticalSizeClass": "regular"
+      },
+      "type": "signal"
+    },
+    {
+      "signal": {
+        "acknowledgedSignalSequence": 87,
+        "evidenceSource": "probe",
+        "kind": "step-acknowledged",
+        "runID": "exp196-unit-activation",
+        "scenarioID": "windows.activation-sequence",
+        "schemaVersion": 5,
+        "semanticContext": {
+          "logicalSceneID": "scene-A",
+          "nativeSceneID": "76FD6D3C-6680-47B4-BDA0-083F88E6D6C5",
+          "screen": "home"
+        },
+        "sequence": 88,
+        "stepIndex": 11,
+        "stepKind": "activate-window",
+        "timestampMilliseconds": 1789838288952
+      },
+      "type": "signal"
+    },
+    {
+      "signal": {
+        "evidenceSource": "probe",
+        "kind": "step-started",
+        "name": "scene-state:background",
+        "runID": "exp196-unit-activation",
+        "scenarioID": "windows.activation-sequence",
+        "schemaVersion": 5,
+        "semanticContext": {
+          "logicalSceneID": "scene-B",
+          "nativeSceneID": "5E7397C1-1283-4E00-BD47-0A96139511D0",
+          "screen": "home"
+        },
+        "sequence": 89,
+        "stepIndex": 12,
+        "stepKind": "wait-for-signal",
+        "timestampMilliseconds": 1789838288953
+      },
+      "type": "signal"
+    },
+    {
+      "signal": {
+        "evidenceSource": "rum-mapper",
+        "kind": "rum-view-snapshot",
+        "rumContext": {
+          "eventDateMilliseconds": 1789838287724,
+          "sessionHasReplay": false,
+          "sessionID": "1df1cbff-6d51-4259-ac7b-50030ae35d86",
+          "viewActive": false,
+          "viewDocumentVersion": 4,
+          "viewID": "b6057689-d5f8-4651-8b0b-75c86eff257c",
+          "viewName": "ProbeHomeView",
+          "viewTimeSpentNanoseconds": 1402217031,
+          "viewURL": "ProbeHomeView/2152684264960655860"
+        },
+        "runID": "exp196-unit-activation",
+        "scenarioID": "windows.activation-sequence",
+        "schemaVersion": 5,
+        "semanticContext": {
+          "logicalSceneID": "scene-B",
+          "screen": "home"
+        },
+        "sequence": 90,
+        "timestampMilliseconds": 1789838289134
+      },
+      "type": "signal"
+    },
+    {
+      "signal": {
+        "activationState": "background",
+        "evidenceSource": "probe",
+        "geometry": {
+          "height": 834,
+          "width": 1194,
+          "x": 0,
+          "y": 0
+        },
+        "horizontalSizeClass": "regular",
+        "kind": "scene-lifecycle",
+        "navigationPath": [
+          "home"
+        ],
+        "runID": "exp196-unit-activation",
+        "scenarioID": "windows.activation-sequence",
+        "sceneDisconnectGeneration": 0,
+        "scenePhase": "ready",
+        "schemaVersion": 5,
+        "semanticContext": {
+          "logicalSceneID": "scene-B",
+          "nativeSceneID": "5E7397C1-1283-4E00-BD47-0A96139511D0",
+          "screen": "home"
+        },
+        "sequence": 91,
+        "timestampMilliseconds": 1789838289139,
+        "verticalSizeClass": "regular"
+      },
+      "type": "signal"
+    },
+    {
+      "signal": {
+        "acknowledgedSignalSequence": 91,
+        "evidenceSource": "probe",
+        "kind": "step-acknowledged",
+        "name": "scene-state:background",
+        "runID": "exp196-unit-activation",
+        "scenarioID": "windows.activation-sequence",
+        "schemaVersion": 5,
+        "semanticContext": {
+          "logicalSceneID": "scene-B",
+          "nativeSceneID": "5E7397C1-1283-4E00-BD47-0A96139511D0",
+          "screen": "home"
+        },
+        "sequence": 92,
+        "stepIndex": 12,
+        "stepKind": "wait-for-signal",
+        "timestampMilliseconds": 1789838289200
+      },
+      "type": "signal"
+    },
+    {
+      "signal": {
+        "evidenceSource": "probe",
+        "kind": "step-started",
+        "name": "after-reactivate-A",
+        "runID": "exp196-unit-activation",
+        "scenarioID": "windows.activation-sequence",
+        "schemaVersion": 5,
+        "semanticContext": {
+          "logicalSceneID": "scene-A",
+          "nativeSceneID": "76FD6D3C-6680-47B4-BDA0-083F88E6D6C5",
+          "screen": "home"
+        },
+        "sequence": 93,
+        "stepIndex": 13,
+        "stepKind": "emit-marker",
+        "timestampMilliseconds": 1789838289201
+      },
+      "type": "signal"
+    },
+    {
+      "signal": {
+        "action": {
+          "errorCount": 0,
+          "id": "d0f0b64a-bb66-4f99-86ed-ad6093579ac5",
+          "loadingTimeNanoseconds": 0,
+          "resourceCount": 0,
+          "target": "probe-lifecycle-scene-A.home.after-reactivate-A",
+          "type": "custom"
+        },
+        "eventID": "d0f0b64a-bb66-4f99-86ed-ad6093579ac5",
+        "evidenceSource": "rum-mapper",
+        "kind": "rum-action",
+        "name": "after-reactivate-A",
+        "rumContext": {
+          "actionIDs": [
+            "d0f0b64a-bb66-4f99-86ed-ad6093579ac5"
+          ],
+          "eventDateMilliseconds": 1789838289193,
+          "sessionID": "1df1cbff-6d51-4259-ac7b-50030ae35d86",
+          "viewID": "eb799562-8b83-4f49-ad25-84f473b1a61a",
+          "viewName": "ProbeHomeView",
+          "viewURL": "ProbeHomeView/2152684264960655860"
+        },
+        "runID": "exp196-unit-activation",
+        "scenarioID": "windows.activation-sequence",
+        "schemaVersion": 5,
+        "sequence": 94,
+        "sourceContext": {
+          "logicalSceneID": "scene-A",
+          "nativeSceneID": "76FD6D3C-6680-47B4-BDA0-083F88E6D6C5",
+          "phase": "after-reactivate-A",
+          "readerControlGeneration": 0,
+          "screen": "home",
+          "uptime": 8240.324288541668
+        },
+        "timestampMilliseconds": 1789838289201
+      },
+      "type": "signal"
+    },
+    {
+      "signal": {
+        "acknowledgedSignalSequence": 94,
+        "evidenceSource": "probe",
+        "kind": "step-acknowledged",
+        "name": "after-reactivate-A",
+        "runID": "exp196-unit-activation",
+        "scenarioID": "windows.activation-sequence",
+        "schemaVersion": 5,
+        "semanticContext": {
+          "logicalSceneID": "scene-A",
+          "nativeSceneID": "76FD6D3C-6680-47B4-BDA0-083F88E6D6C5",
+          "screen": "home"
+        },
+        "sequence": 95,
+        "stepIndex": 13,
+        "stepKind": "emit-marker",
+        "timestampMilliseconds": 1789838289202
+      },
+      "type": "signal"
+    },
+    {
+      "signal": {
+        "evidenceSource": "probe",
+        "kind": "step-started",
+        "runID": "exp196-unit-activation",
+        "scenarioID": "windows.activation-sequence",
+        "schemaVersion": 5,
+        "semanticContext": {
+          "logicalSceneID": "scene-B",
+          "nativeSceneID": "5E7397C1-1283-4E00-BD47-0A96139511D0",
+          "screen": "home"
+        },
+        "sequence": 96,
+        "stepIndex": 14,
+        "stepKind": "close-window",
+        "timestampMilliseconds": 1789838289202
+      },
+      "type": "signal"
+    },
+    {
+      "signal": {
+        "evidenceSource": "rum-mapper",
+        "kind": "rum-view-snapshot",
+        "rumContext": {
+          "eventDateMilliseconds": 1789838288484,
+          "sessionHasReplay": false,
+          "sessionID": "1df1cbff-6d51-4259-ac7b-50030ae35d86",
+          "viewActive": true,
+          "viewDocumentVersion": 2,
+          "viewID": "eb799562-8b83-4f49-ad25-84f473b1a61a",
+          "viewName": "ProbeHomeView",
+          "viewTimeSpentNanoseconds": 709624052,
+          "viewURL": "ProbeHomeView/2152684264960655860"
+        },
+        "runID": "exp196-unit-activation",
+        "scenarioID": "windows.activation-sequence",
+        "schemaVersion": 5,
+        "semanticContext": {
+          "logicalSceneID": "scene-A",
+          "screen": "home"
+        },
+        "sequence": 97,
+        "timestampMilliseconds": 1789838289202
+      },
+      "type": "signal"
+    },
+    {
+      "signal": {
+        "eventID": "23f73e0f-3e0b-4ee5-8b48-50a07ac70e8f",
+        "evidenceSource": "rum-mapper",
+        "kind": "rum-resource",
+        "name": "after-reactivate-A",
+        "resource": {
+          "durationNanoseconds": 50663948,
+          "id": "23f73e0f-3e0b-4ee5-8b48-50a07ac70e8f",
+          "method": "GET",
+          "size": 1,
+          "statusCode": 200,
+          "type": "other",
+          "url": "https://multi-scene-probe.invalid/native/scene-A/home/after-reactivate-A"
+        },
+        "rumContext": {
+          "eventDateMilliseconds": 1789838289193,
+          "sessionID": "1df1cbff-6d51-4259-ac7b-50030ae35d86",
+          "viewID": "eb799562-8b83-4f49-ad25-84f473b1a61a",
+          "viewName": "ProbeHomeView",
+          "viewURL": "ProbeHomeView/2152684264960655860"
+        },
+        "runID": "exp196-unit-activation",
+        "scenarioID": "windows.activation-sequence",
+        "schemaVersion": 5,
+        "sequence": 98,
+        "sourceContext": {
+          "logicalSceneID": "scene-A",
+          "nativeSceneID": "76FD6D3C-6680-47B4-BDA0-083F88E6D6C5",
+          "phase": "after-reactivate-A",
+          "readerControlGeneration": 0,
+          "screen": "home",
+          "uptime": 8240.324288541668
+        },
+        "timestampMilliseconds": 1789838289252
+      },
+      "type": "signal"
+    },
+    {
+      "signal": {
+        "evidenceSource": "rum-mapper",
+        "kind": "rum-view-snapshot",
+        "rumContext": {
+          "eventDateMilliseconds": 1789838288484,
+          "sessionHasReplay": false,
+          "sessionID": "1df1cbff-6d51-4259-ac7b-50030ae35d86",
+          "viewActive": true,
+          "viewDocumentVersion": 3,
+          "viewID": "eb799562-8b83-4f49-ad25-84f473b1a61a",
+          "viewName": "ProbeHomeView",
+          "viewTimeSpentNanoseconds": 760329008,
+          "viewURL": "ProbeHomeView/2152684264960655860"
+        },
+        "runID": "exp196-unit-activation",
+        "scenarioID": "windows.activation-sequence",
+        "schemaVersion": 5,
+        "semanticContext": {
+          "logicalSceneID": "scene-A",
+          "screen": "home"
+        },
+        "sequence": 99,
+        "timestampMilliseconds": 1789838289253
+      },
+      "type": "signal"
+    },
+    {
+      "type": "signal",
+      "signal": {
+        "kind": "assertion",
+        "evidenceSource": "probe",
+        "name": "physical-scene-destruction-requested",
+        "semanticContext": {
+          "logicalSceneID": "scene-B",
+          "nativeSceneID": "5E7397C1-1283-4E00-BD47-0A96139511D0",
+          "screen": "home"
+        },
+        "sequence": 100,
+        "timestampMilliseconds": 1789838289254,
+        "runID": "exp196-unit-activation",
+        "scenarioID": "windows.activation-sequence",
+        "schemaVersion": 5
+      }
+    },
+    {
+      "type": "signal",
+      "signal": {
+        "activationState": "unattached",
+        "evidenceSource": "probe",
+        "geometry": {
+          "height": 834,
+          "width": 1194,
+          "x": 0,
+          "y": 0
+        },
+        "horizontalSizeClass": "regular",
+        "kind": "scene-lifecycle",
+        "navigationPath": [
+          "home"
+        ],
+        "runID": "exp196-unit-activation",
+        "scenarioID": "windows.activation-sequence",
+        "sceneDisconnectGeneration": 0,
+        "scenePhase": "disconnected",
+        "schemaVersion": 5,
+        "semanticContext": {
+          "logicalSceneID": "scene-B",
+          "nativeSceneID": "5E7397C1-1283-4E00-BD47-0A96139511D0",
+          "screen": "home"
+        },
+        "sequence": 101,
+        "timestampMilliseconds": 1789838289255,
+        "verticalSizeClass": "regular"
+      }
+    },
+    {
+      "type": "signal",
+      "signal": {
+        "kind": "step-acknowledged",
+        "evidenceSource": "probe",
+        "stepIndex": 14,
+        "stepKind": "close-window",
+        "semanticContext": {
+          "logicalSceneID": "scene-B",
+          "nativeSceneID": "5E7397C1-1283-4E00-BD47-0A96139511D0",
+          "screen": "home"
+        },
+        "acknowledgedSignalSequence": 101,
+        "sequence": 102,
+        "timestampMilliseconds": 1789838289256,
+        "runID": "exp196-unit-activation",
+        "scenarioID": "windows.activation-sequence",
+        "schemaVersion": 5
+      }
+    },
+    {
+      "type": "signal",
+      "signal": {
+        "kind": "step-started",
+        "evidenceSource": "probe",
+        "stepIndex": 15,
+        "stepKind": "emit-marker",
+        "semanticContext": {
+          "logicalSceneID": "scene-A",
+          "nativeSceneID": "76FD6D3C-6680-47B4-BDA0-083F88E6D6C5",
+          "screen": "home"
+        },
+        "sequence": 103,
+        "timestampMilliseconds": 1789838289257,
+        "runID": "exp196-unit-activation",
+        "scenarioID": "windows.activation-sequence",
+        "schemaVersion": 5
+      }
+    },
+    {
+      "type": "signal",
+      "signal": {
+        "action": {
+          "errorCount": 0,
+          "id": "00000000-0000-4000-8000-000000000100",
+          "loadingTimeNanoseconds": 0,
+          "resourceCount": 0,
+          "target": "probe-lifecycle-scene-A.home.after-reactivate-A",
+          "type": "custom"
+        },
+        "eventID": "00000000-0000-4000-8000-000000000100",
+        "evidenceSource": "rum-mapper",
+        "kind": "rum-action",
+        "name": "after-activated-peer-close",
+        "rumContext": {
+          "actionIDs": [
+            "00000000-0000-4000-8000-000000000100"
+          ],
+          "eventDateMilliseconds": 1789838289193,
+          "sessionID": "1df1cbff-6d51-4259-ac7b-50030ae35d86",
+          "viewID": "eb799562-8b83-4f49-ad25-84f473b1a61a",
+          "viewName": "ProbeHomeView",
+          "viewURL": "ProbeHomeView/2152684264960655860"
+        },
+        "runID": "exp196-unit-activation",
+        "scenarioID": "windows.activation-sequence",
+        "schemaVersion": 5,
+        "sequence": 104,
+        "sourceContext": {
+          "logicalSceneID": "scene-A",
+          "nativeSceneID": "76FD6D3C-6680-47B4-BDA0-083F88E6D6C5",
+          "phase": "after-activated-peer-close",
+          "readerControlGeneration": 0,
+          "screen": "home",
+          "uptime": 8240.324288541668
+        },
+        "timestampMilliseconds": 1789838289258
+      }
+    },
+    {
+      "type": "signal",
+      "signal": {
+        "eventID": "00000000-0000-4000-8000-000000000101",
+        "evidenceSource": "rum-mapper",
+        "kind": "rum-resource",
+        "name": "after-activated-peer-close",
+        "resource": {
+          "durationNanoseconds": 50663948,
+          "id": "23f73e0f-3e0b-4ee5-8b48-50a07ac70e8f",
+          "method": "GET",
+          "size": 1,
+          "statusCode": 200,
+          "type": "other",
+          "url": "https://multi-scene-probe.invalid/native/scene-A/home/after-reactivate-A"
+        },
+        "rumContext": {
+          "eventDateMilliseconds": 1789838289193,
+          "sessionID": "1df1cbff-6d51-4259-ac7b-50030ae35d86",
+          "viewID": "eb799562-8b83-4f49-ad25-84f473b1a61a",
+          "viewName": "ProbeHomeView",
+          "viewURL": "ProbeHomeView/2152684264960655860"
+        },
+        "runID": "exp196-unit-activation",
+        "scenarioID": "windows.activation-sequence",
+        "schemaVersion": 5,
+        "sequence": 105,
+        "sourceContext": {
+          "logicalSceneID": "scene-A",
+          "nativeSceneID": "76FD6D3C-6680-47B4-BDA0-083F88E6D6C5",
+          "phase": "after-activated-peer-close",
+          "readerControlGeneration": 0,
+          "screen": "home",
+          "uptime": 8240.324288541668
+        },
+        "timestampMilliseconds": 1789838289259
+      }
+    },
+    {
+      "type": "signal",
+      "signal": {
+        "kind": "step-acknowledged",
+        "evidenceSource": "probe",
+        "stepIndex": 15,
+        "stepKind": "emit-marker",
+        "acknowledgedSignalSequence": 104,
+        "sequence": 106,
+        "timestampMilliseconds": 1789838289260,
+        "runID": "exp196-unit-activation",
+        "scenarioID": "windows.activation-sequence",
+        "schemaVersion": 5
+      }
+    },
+    {
+      "type": "semantic-result",
+      "runID": "exp196-unit-activation",
+      "result": {
+        "scenarioID": "windows.activation-sequence",
+        "schemaVersion": 1,
+        "state": "PASS",
+        "matchedExpectationCount": 19,
+        "issues": []
+      }
+    }
+  ]
+}
