@@ -1895,3 +1895,14 @@ Datadog detailed results expose probe attributes under context.probe. Project th
 to the oracle's flat probe.* keys without supplying missing values. A count0 query
 can contain an empty JSON_DATA body; preserve its zero count as an empty inventory.
 Never relax exact event IDs, full view inventory or error checks to repair a parser.
+
+
+For native edge gestures, admit input only after actual compact geometry and the
+expected active RUM destination, not merely application launch. A compact split
+can hide Primary before viewDidAppear; native-only fixture installation may use
+the attached split container, while leaving other scenarios' readiness unchanged.
+Observe the actual interactive transition coordinator. Delivered short/long drags
+with no began/resolved callbacks are inconclusive, even when XCTest passes.
+After the two equivalent Q5 failures, stop retries and preserve the unexecuted
+SwiftUI/presentation prerequisite. Export native and runner artifacts before
+removing both apps and verifying app/data absence.

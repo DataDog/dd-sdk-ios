@@ -84,5 +84,13 @@ The selected Detail occurrence stays unchanged through900×675 regular,
 explicit collector handshakes and passes1/1; app/runner/resize cleanup is verified.
 This is strong evidence for SDK ownership across those measured native geometry
 callbacks. The10-phase pose sequence remains pending and physical hinge behavior
-is still uncalibrated. Q5 proceeds with passive actual UIKit coordinator observation
-and finite outer-display gestures; the original inner-pairing failures remain.
+is still uncalibrated.
+
+Q5 now records two actual outer-display XCTest edge drags after a compact-layout
+fixture repair. Both runs prove visible secondary-2, fresh code/run identity and
+live compact geometry before input. Neither short nor long drag produces a native
+interactive began/resolved callback, destination or work. Their1/1 UI-test results
+prove collection only. Equivalent UIKit retries stop; SwiftUI and presentation
+input remain unexecuted because the prerequisite path is unqualified. This limits
+the tested input/fixture combination, not documented platform capability. Both
+app/runner pairs are removed and physical human H11–H13 obligations remain.

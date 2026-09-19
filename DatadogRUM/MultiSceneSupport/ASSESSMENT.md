@@ -80,7 +80,10 @@ rewriting the accepted empty route; corrected fixture4b3ce9d57 builds and passes
 focused checks, and native readback confirms `[]`. The Mac relocks before work;
 guarded XCTest then completes resize5/5 with16 exact native/backend work events,
 3 views and0 errors.10-phase pose acceptance awaits the pending unlock. No
-physical/human obligation closes.
+physical/human obligation closes. Q5 corrects compact fixture readiness, then
+two fresh actual outer UIKit drags produce no interactive callbacks. Both native
+traces and cleanups are retained; stop equivalent input retries. SwiftUI/sheet
+qualification remains unexecuted under the same prerequisite.
 
 C06's corrected17.x qualification checks all five stable versions in Apple's
 historical catalog through27.1; all downloads are unavailable, as is17.0 through

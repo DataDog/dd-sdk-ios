@@ -562,7 +562,7 @@
       "environment": "Physical iPad/iPhone Duo; human gesture for H11\u2013H13; resize-capable for H14",
       "completion_mode": null,
       "status": "ENVIRONMENT BLOCKED",
-      "evidence": ""
+      "evidence": "EXP-192 qualifies actual compact outer S2 readiness after fixture repair, but two fresh bounded UIKit drags produce no native interactive callback. Input collection passes1/1 each; no gesture semantics accepted. Equivalent retries stop. SwiftUI/presentation remain unexecuted and physical human obligations unchanged."
     },
     {
       "id": "H12",
@@ -575,7 +575,7 @@
       "environment": "Physical iPad/iPhone Duo; human gesture for H11\u2013H13; resize-capable for H14",
       "completion_mode": null,
       "status": "ENVIRONMENT BLOCKED",
-      "evidence": ""
+      "evidence": "EXP-192 qualifies actual compact outer S2 readiness after fixture repair, but two fresh bounded UIKit drags produce no native interactive callback. Input collection passes1/1 each; no gesture semantics accepted. Equivalent retries stop. SwiftUI/presentation remain unexecuted and physical human obligations unchanged."
     },
     {
       "id": "H13",
@@ -589,7 +589,7 @@
       "environment": "Physical iPad/iPhone Duo; human gesture for H11\u2013H13; resize-capable for H14",
       "completion_mode": null,
       "status": "ENVIRONMENT BLOCKED",
-      "evidence": ""
+      "evidence": "EXP-192 qualifies actual compact outer S2 readiness after fixture repair, but two fresh bounded UIKit drags produce no native interactive callback. Input collection passes1/1 each; no gesture semantics accepted. Equivalent retries stop. SwiftUI/presentation remain unexecuted and physical human obligations unchanged."
     },
     {
       "id": "H14",
@@ -705,7 +705,7 @@
       "environment": "iPhone Duo iOS 27.1",
       "completion_mode": null,
       "status": "OPEN",
-      "evidence": "EXP-192 preserves observed native display/trait and app lifecycle results with bounded input/disconnect limits. EXP-193 adaptive acceptance is in progress. Simulator confidence remains capability-specific; physical completion contract unchanged."
+      "evidence": "EXP-192 records measured display/lifecycle behavior and bounded pairing, disconnect and outer gesture input limits. EXP-193 resize native/backend acceptance passes; pose remains pending. Capability-specific simulator confidence does not replace physical F04."
     },
     {
       "id": "F05",

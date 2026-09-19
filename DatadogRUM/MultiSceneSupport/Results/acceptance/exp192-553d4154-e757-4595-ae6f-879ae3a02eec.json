@@ -1,0 +1,89 @@
+{
+  "experiment": "EXP-192",
+  "cell": "Q5",
+  "status": "INCONCLUSIVE_INPUT",
+  "run_id": "553d4154-e757-4595-ae6f-879ae3a02eec",
+  "source_revision": "f71fb3996d50ce03f7ced6b2c60b695a097a68ea",
+  "artifact_root": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp192-ui-outer-t_wywx48",
+  "input_observation": {
+    "status": "INCONCLUSIVE_INPUT",
+    "gesture": "short slow edge drag with1s held endpoint",
+    "signals_before": 24,
+    "signals_after": 24,
+    "transitions": 0,
+    "cancellation_proven": false,
+    "reason": "No native transition, destination or work signal follows the delivered XCTest drag; unchanged owner alone is not cancellation proof."
+  },
+  "admission": {
+    "run_id": "553d4154-e757-4595-ae6f-879ae3a02eec",
+    "request_sequence": 24,
+    "geometry_sequence": 8,
+    "owner_before": {
+      "evidenceSource": "rum-mapper",
+      "kind": "rum-view-snapshot",
+      "rumContext": {
+        "eventDateMilliseconds": 1789797686772,
+        "sessionHasReplay": false,
+        "sessionID": "ead1294b-b1a6-4d2f-a3d5-b334b1b08b79",
+        "viewActive": true,
+        "viewDocumentVersion": 3,
+        "viewID": "92130f06-ef29-4777-8f15-0789c622e217",
+        "viewName": "secondary-2",
+        "viewTimeSpentNanoseconds": 72026014,
+        "viewURL": "secondary-2"
+      },
+      "runID": "553d4154-e757-4595-ae6f-879ae3a02eec",
+      "scenarioID": "uikit.split.native-pop-control",
+      "schemaVersion": 5,
+      "semanticContext": {
+        "logicalSceneID": "scene-A",
+        "nativeSceneID": "28CDEC04-2D41-4669-ACC5-0758BA2CAC0F",
+        "screen": "secondary-2"
+      },
+      "sequence": 24,
+      "timestampMilliseconds": 1789797686845
+    },
+    "expected_outcome": "cancel"
+  },
+  "installed_app": {
+    "bundleIdentifier": "com.datadoghq.rum-native-multi-scene-probe",
+    "executable": "RUMNativeMultiSceneProbe",
+    "binaries": {
+      "RUMNativeMultiSceneProbe": "9dbf688190d31580b26a5b4f92e4975e52d86e6f1a9ad98f3d2272cb0247490b",
+      "RUMNativeMultiSceneProbe.debug.dylib": "1653ee21b74f578b7c35aa5dbcb5a9fa823307b1603e620d19b716bbdfef4d6f",
+      "__preview.dylib": "f107d09b9d3b79f01789a45ef045bf4039904bf5eaa3c1a8c6a9e27de130563b"
+    }
+  },
+  "installed_runner": {
+    "bundleIdentifier": "com.datadoghq.rum-native-multi-scene-probe.uitests.xctrunner",
+    "executable": "RUMNativeMultiSceneProbeUITests-Runner",
+    "binaries": {
+      "PlugIns/RUMNativeMultiSceneProbeUITests.xctest/RUMNativeMultiSceneProbeUITests": "6b2188056a5bc18ab4dea095c185b3d2224ab2657d875ecdcc3169ea13d19579",
+      "RUMNativeMultiSceneProbeUITests-Runner": "37a2505ef5126e61c263c66540be2627737ac21c7fee1fe389f7446555305a53"
+    }
+  },
+  "ui_test": {
+    "result": "Passed",
+    "passedTests": 1,
+    "scope": "native input collection only; no semantic acceptance"
+  },
+  "cleanup": {
+    "com.datadoghq.rum-native-multi-scene-probe/app": {
+      "exit": 2,
+      "stderr": "An error was encountered processing the command (domain=NSPOSIXErrorDomain, code=2):\nThe operation couldn\u2019t be completed. No such file or directory\nNo such file or directory\n"
+    },
+    "com.datadoghq.rum-native-multi-scene-probe/data": {
+      "exit": 2,
+      "stderr": "An error was encountered processing the command (domain=NSPOSIXErrorDomain, code=2):\nThe operation couldn\u2019t be completed. No such file or directory\nNo such file or directory\n"
+    },
+    "com.datadoghq.rum-native-multi-scene-probe.uitests.xctrunner/app": {
+      "exit": 2,
+      "stderr": "An error was encountered processing the command (domain=NSPOSIXErrorDomain, code=2):\nThe operation couldn\u2019t be completed. No such file or directory\nNo such file or directory\n"
+    },
+    "com.datadoghq.rum-native-multi-scene-probe.uitests.xctrunner/data": {
+      "exit": 2,
+      "stderr": "An error was encountered processing the command (domain=NSPOSIXErrorDomain, code=2):\nThe operation couldn\u2019t be completed. No such file or directory\nNo such file or directory\n"
+    }
+  },
+  "gates_closed": []
+}

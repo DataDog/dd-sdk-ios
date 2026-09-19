@@ -94,6 +94,16 @@
       "run_id": "e507a465-d42e-4e66-bd63-ff4bc68d4f27",
       "status": "INVALID_FIXTURE_PRECONDITION",
       "result": "acceptance/exp192-e507a465-d42e-4e66-bd63-ff4bc68d4f27.json"
+    },
+    {
+      "run_id": "553d4154-e757-4595-ae6f-879ae3a02eec",
+      "status": "INCONCLUSIVE_INPUT",
+      "result": "acceptance/exp192-553d4154-e757-4595-ae6f-879ae3a02eec.json"
+    },
+    {
+      "run_id": "3246978d-fee0-4d09-9600-3f569e16194e",
+      "status": "INCONCLUSIVE_INPUT",
+      "result": "acceptance/exp192-3246978d-fee0-4d09-9600-3f569e16194e.json"
     }
   ],
   "gates_closed": [],
@@ -120,7 +130,7 @@
     ],
     "acceptance": "No stale source/run, no fabricated scene callbacks, no late-only geometry assertion, no unexpected Detail during nil selection, no duplicate or foreign owner at selected boundaries; hardware H14 residual remains."
   },
-  "next": "Correct the preserved compact-layout fixture precondition, then execute bounded outer UIKit cancel/finish qualification. No gesture was attempted in e507a465; do not count it as an ignored native gesture.",
+  "next": "EXP-193 pose acceptance awaits the pending desktop unlock. Do not repeat accepted resize or equivalent pairing/gesture retries. Continue dependency-ready F05 Replay coexistence preparation.",
   "adaptive_followup": {
     "experiment": "EXP-193",
     "result": "EXP-193-adaptive-split.json",
@@ -135,5 +145,17 @@
     "oracle": "Before input, native compact geometry and active secondary-2 owner. Genuine began/resolved pair after the command; cancel retains exact secondary-2 ID and creates no secondary-1 occurrence, finish reveals one fresh secondary-1 before callback Action/Resource. Exact backend owners and errors remain decisive.",
     "automation": "Fresh XCTest run ID, per-command host admission, captured window/touch coordinates and native JSONL; release cleanup only after export. Tool return or XCTest pass alone never proves recognized gesture.",
     "stop_rule": "At most two equivalent input failures. Record concrete limitations and retain physical/human gates. If recognized input works, continue the remaining SwiftUI/presentation simulator slices under their unchanged semantic contracts."
+  },
+  "q5_result": {
+    "status": "INCONCLUSIVE_INPUT",
+    "fixture_correction": "f71fb3996 prepares the native navigation container even when compact layout hides Primary. e507a465 failed readiness before input and is not a gesture attempt.",
+    "qualified_preconditions": "Both fresh actual outer466x678 compact runs observe active secondary-2 and verified app/runner identity before host admission.",
+    "attempts": [
+      "553d4154-e757-4595-ae6f-879ae3a02eec",
+      "3246978d-fee0-4d09-9600-3f569e16194e"
+    ],
+    "observation": "Short and long slow edge drags return with unchanged24 native signals and no interactive began/resolved, destination or work. XCTest1/1 in each means input collection only.",
+    "limit": "Stop equivalent UIKit input retries. This does not deny platform capability. SwiftUI/presentation input remains unexecuted because the prerequisite path was not qualified; physical/human H11-H13 remain.",
+    "cleanup": "Both app and runner bundle/data absent after each run; source/protected states exact."
   }
 }

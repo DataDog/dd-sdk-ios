@@ -380,5 +380,8 @@ Mac. No production SDK change, D01–D12 reopening or H14 closure is claimed.
 The subsequent guarded XCTest resize run passes native/backend ownership across
 regular/compact/regular geometry and verifies cleanup. Passive native UIKit
 coordinator observation is now added only to gesture-control fixtures to qualify
-actual outer-display input. Both changes remain validation work; production source
-and completed review dispositions are unchanged, and physical residuals remain.
+actual outer-display input. A compact-layout fixture correction then establishes
+S2 readiness, but two bounded real drags produce no interactive callbacks. This
+is an input qualification limit, not an SDK regression or gesture pass. Both
+runs export complete evidence and verify app/runner cleanup. Production source,
+completed review dispositions and physical residuals remain unchanged.
