@@ -83,7 +83,8 @@ struct ProbeAdaptiveSplitView: View {
                 else { continue }
                 let live = ProbeScenePresentation.capture(window: nativeWindow)
                 guard let ordinal = router.consumeResize(
-                    signal, live: live, logicalSceneID: window.label, nativeSceneID: sceneSessionID
+                    signal, live: live, logicalSceneID: window.label, nativeSceneID: sceneSessionID,
+                    profile: ProbeRuntime.usesPhysicalAdaptiveSplitResizeAcceptance ? .physicalIPad : .duoSimulator
                 ) else { continue }
                 ProbeRuntime.eventRecorder.record(ProbeSignal(
                     kind: .assertion,

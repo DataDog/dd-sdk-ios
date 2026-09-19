@@ -120,7 +120,7 @@
       ],
       "decisive_test": "EXP-136: A-created request joined in B yields exactly one A span and no RUM Resource in trace-only mode",
       "required_environment": "Authorized physical iPad27.0; genuine OS/window input and fresh native evidence",
-      "status": "DEFINED",
+      "status": "PASS_PHYSICAL",
       "execution_boundary": "Require topology/lifecycle prerequisites before the critical boundary; incomplete input is not SDK evidence."
     },
     {
@@ -1079,11 +1079,360 @@
         "time_ms": 1789843387194
       },
       "reanalysis_artifact": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp196-physical-h07-388qngrp/partial-reanalysis.json"
+    },
+    {
+      "gate": "H07",
+      "status": "REJECTED_START_PROJECTION",
+      "run_id": "exp196-h07-20260919t184638z-b8df867829d0",
+      "capture_source_revision": "a823ad86cc9a04395988dc0e6075fe325e7a7c68",
+      "oracle_revision": "1232d40220067d6609cf553e13cc099a49a8878d",
+      "artifact_root": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp196-physical-h07-6ie67sh5",
+      "native_expectations_passed": 8,
+      "backend_rum": {
+        "state": "PASS",
+        "view_count": 3,
+        "work_count": 20,
+        "marker_pairs": 2,
+        "error_crash_count": 0
+      },
+      "trace_id": "6aaed8900000000031907689c320e1cc",
+      "span_id": "60ae5baff1ba3e97",
+      "native_start_ns": 1789843600717825024,
+      "backend_start": "2026-09-19T18:46:40.718Z",
+      "reason": "Oracle assumed truncation to milliseconds. Native .717825024 and MCP .718 differ under that assumption; exact IDs, captured A owner and duration match. No gate acceptance.",
+      "cleanup": {
+        "state": "PASS",
+        "app_absent": true,
+        "process_absent": true,
+        "protected_unchanged": true,
+        "native_source_unchanged": true,
+        "time_ms": 1789843799822
+      },
+      "artifacts": {
+        "frozen.json": {
+          "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp196-physical-h07-6ie67sh5/frozen.json",
+          "sha256": "ea2463da3f3bb502c5b63868e2b519414d195992d1aa145beb06fc40b13114e5"
+        },
+        "native.jsonl": {
+          "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp196-physical-h07-6ie67sh5/native.jsonl",
+          "sha256": "eaad32406f9d61d7b4be2e5562a39d93bb447d769628b3c7f626fcaf2f75472b"
+        },
+        "local-result.json": {
+          "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp196-physical-h07-6ie67sh5/local-result.json",
+          "sha256": "ec4e452337aac96c6a87581613cd2ce3f82c1b041f72aef574881191c2c020bb"
+        },
+        "backend-indexed.json": {
+          "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp196-physical-h07-6ie67sh5/backend-indexed.json",
+          "sha256": "e7cccc91be16caea1fb1a42a0f72b721abdf3b455e83c28a3714d4c22023d2a5"
+        },
+        "backend-raw-initial.json": {
+          "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp196-physical-h07-6ie67sh5/backend-raw-initial.json",
+          "sha256": "a546ff6ed6eaf0b78497049caec1abdbb04c4822a8fbb326bbc179633fdae806"
+        },
+        "backend-rum-result.json": {
+          "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp196-physical-h07-6ie67sh5/backend-rum-result.json",
+          "sha256": "7f0499aedca0154e32c1cdd41d0b8c43f99bce27efb4223809702aba52ea6c9a"
+        },
+        "installed-identity.json": {
+          "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp196-physical-h07-6ie67sh5/installed-identity.json",
+          "sha256": "51316d4b3d764a80df6a83bfdc87b38ef23f817cbacabed8a2560d0e3e4c4a98"
+        },
+        "cleanup.json": {
+          "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp196-physical-h07-6ie67sh5/cleanup.json",
+          "sha256": "2c9012d25b2da4e19e7f44aaf44fa0e333ab5637ca47d7eb5a886e3afaf22d75"
+        }
+      }
+    },
+    {
+      "gate": "H07",
+      "status": "PASS_PHYSICAL",
+      "run_id": "exp196-h07-20260919t190123z-036a45d6a957",
+      "capture_source_revision": "a823ad86cc9a04395988dc0e6075fe325e7a7c68",
+      "artifact_root": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp196-physical-h07-r7bhkqqr",
+      "native_expectations": 8,
+      "local": {
+        "state": "PASS",
+        "gate": "H07",
+        "session_id": "02dcfa3d-710f-418a-9668-968d6e3c8472",
+        "native_scenes": {
+          "scene-A": "B8957408-AC46-475E-9D52-9AB8C85A6F2B",
+          "scene-B": "AE90238B-2E51-4529-9F86-FF37C1987A0E"
+        },
+        "owners": {
+          "scene-A": "20e31c34-89b6-4c24-9270-7753ed2a59a0",
+          "scene-B": "70a1fd02-d194-47b9-b683-cd8ac0663d09"
+        },
+        "views": [
+          {
+            "view_id": "950d2416-33cd-4aa9-8695-ec25f0832371",
+            "session_id": "02dcfa3d-710f-418a-9668-968d6e3c8472",
+            "name": "ApplicationLaunch"
+          },
+          {
+            "view_id": "20e31c34-89b6-4c24-9270-7753ed2a59a0",
+            "session_id": "02dcfa3d-710f-418a-9668-968d6e3c8472",
+            "name": "ProbeHomeView"
+          },
+          {
+            "view_id": "70a1fd02-d194-47b9-b683-cd8ac0663d09",
+            "session_id": "02dcfa3d-710f-418a-9668-968d6e3c8472",
+            "name": "ProbeHomeView"
+          }
+        ],
+        "work": [
+          {
+            "kind": "action",
+            "event_id": "3620a606-fc05-4c64-a0ac-6d8ad9b87925",
+            "session_id": "02dcfa3d-710f-418a-9668-968d6e3c8472",
+            "view_id": "20e31c34-89b6-4c24-9270-7753ed2a59a0",
+            "phase": "navigation-appearance-1",
+            "source_scene": "scene-A"
+          },
+          {
+            "kind": "action",
+            "event_id": "ccac7ccb-bbd7-4ceb-86e1-5a031ebd0e6f",
+            "session_id": "02dcfa3d-710f-418a-9668-968d6e3c8472",
+            "view_id": "20e31c34-89b6-4c24-9270-7753ed2a59a0",
+            "phase": "on-appear",
+            "source_scene": "scene-A"
+          },
+          {
+            "kind": "action",
+            "event_id": "0fd823b5-d5f7-4fe2-b20a-bf308a6c09f4",
+            "session_id": "02dcfa3d-710f-418a-9668-968d6e3c8472",
+            "view_id": "20e31c34-89b6-4c24-9270-7753ed2a59a0",
+            "phase": "task-immediate",
+            "source_scene": "scene-A"
+          },
+          {
+            "kind": "resource",
+            "event_id": "748d833e-e94d-4132-889e-5ad3bf40964b",
+            "session_id": "02dcfa3d-710f-418a-9668-968d6e3c8472",
+            "view_id": "20e31c34-89b6-4c24-9270-7753ed2a59a0",
+            "phase": "navigation-appearance-1",
+            "source_scene": "scene-A"
+          },
+          {
+            "kind": "resource",
+            "event_id": "bad29e19-b453-45c3-9c44-9cde9c98b3d2",
+            "session_id": "02dcfa3d-710f-418a-9668-968d6e3c8472",
+            "view_id": "20e31c34-89b6-4c24-9270-7753ed2a59a0",
+            "phase": "on-appear",
+            "source_scene": "scene-A"
+          },
+          {
+            "kind": "resource",
+            "event_id": "f73f7c13-f103-4b0f-bec0-ffa3c3f5db49",
+            "session_id": "02dcfa3d-710f-418a-9668-968d6e3c8472",
+            "view_id": "20e31c34-89b6-4c24-9270-7753ed2a59a0",
+            "phase": "task-immediate",
+            "source_scene": "scene-A"
+          },
+          {
+            "kind": "action",
+            "event_id": "d1c7c32f-c6aa-499a-a6e1-07190970c64d",
+            "session_id": "02dcfa3d-710f-418a-9668-968d6e3c8472",
+            "view_id": "20e31c34-89b6-4c24-9270-7753ed2a59a0",
+            "phase": "trace-shared-creator-representative",
+            "source_scene": "scene-A"
+          },
+          {
+            "kind": "resource",
+            "event_id": "7c0a81d9-238f-4bd1-aa6c-3112bc26d50f",
+            "session_id": "02dcfa3d-710f-418a-9668-968d6e3c8472",
+            "view_id": "20e31c34-89b6-4c24-9270-7753ed2a59a0",
+            "phase": "trace-shared-creator-representative",
+            "source_scene": "scene-A"
+          },
+          {
+            "kind": "action",
+            "event_id": "bbc728c7-7371-4fb1-a3c5-51a600944a41",
+            "session_id": "02dcfa3d-710f-418a-9668-968d6e3c8472",
+            "view_id": "20e31c34-89b6-4c24-9270-7753ed2a59a0",
+            "phase": "task-delayed",
+            "source_scene": "scene-A"
+          },
+          {
+            "kind": "action",
+            "event_id": "16912b5a-9de2-4bfb-9f6b-0b247820b781",
+            "session_id": "02dcfa3d-710f-418a-9668-968d6e3c8472",
+            "view_id": "70a1fd02-d194-47b9-b683-cd8ac0663d09",
+            "phase": "navigation-appearance-1",
+            "source_scene": "scene-B"
+          },
+          {
+            "kind": "action",
+            "event_id": "be54af30-581d-4ca7-bc6f-18338c503bec",
+            "session_id": "02dcfa3d-710f-418a-9668-968d6e3c8472",
+            "view_id": "70a1fd02-d194-47b9-b683-cd8ac0663d09",
+            "phase": "on-appear",
+            "source_scene": "scene-B"
+          },
+          {
+            "kind": "action",
+            "event_id": "e95a59d6-a55d-4990-9ba6-df0e9266057e",
+            "session_id": "02dcfa3d-710f-418a-9668-968d6e3c8472",
+            "view_id": "70a1fd02-d194-47b9-b683-cd8ac0663d09",
+            "phase": "task-immediate",
+            "source_scene": "scene-B"
+          },
+          {
+            "kind": "resource",
+            "event_id": "76250c9c-0796-4749-817f-2ed4fde6a236",
+            "session_id": "02dcfa3d-710f-418a-9668-968d6e3c8472",
+            "view_id": "20e31c34-89b6-4c24-9270-7753ed2a59a0",
+            "phase": "task-delayed",
+            "source_scene": "scene-A"
+          },
+          {
+            "kind": "action",
+            "event_id": "abc9e65c-31f9-4646-9af1-253261492b4b",
+            "session_id": "02dcfa3d-710f-418a-9668-968d6e3c8472",
+            "view_id": "70a1fd02-d194-47b9-b683-cd8ac0663d09",
+            "phase": "trace-shared-consumer-representative",
+            "source_scene": "scene-B"
+          },
+          {
+            "kind": "resource",
+            "event_id": "f2f2ddd1-39b6-4f21-940e-53c657b94ebc",
+            "session_id": "02dcfa3d-710f-418a-9668-968d6e3c8472",
+            "view_id": "70a1fd02-d194-47b9-b683-cd8ac0663d09",
+            "phase": "navigation-appearance-1",
+            "source_scene": "scene-B"
+          },
+          {
+            "kind": "resource",
+            "event_id": "0265301a-fce8-482d-b450-b69734caf6bb",
+            "session_id": "02dcfa3d-710f-418a-9668-968d6e3c8472",
+            "view_id": "70a1fd02-d194-47b9-b683-cd8ac0663d09",
+            "phase": "on-appear",
+            "source_scene": "scene-B"
+          },
+          {
+            "kind": "resource",
+            "event_id": "03e51d46-482c-4a26-8465-cb160bbd4c9b",
+            "session_id": "02dcfa3d-710f-418a-9668-968d6e3c8472",
+            "view_id": "70a1fd02-d194-47b9-b683-cd8ac0663d09",
+            "phase": "task-immediate",
+            "source_scene": "scene-B"
+          },
+          {
+            "kind": "resource",
+            "event_id": "6b054724-b753-4a0f-8bb9-c856a96608c8",
+            "session_id": "02dcfa3d-710f-418a-9668-968d6e3c8472",
+            "view_id": "70a1fd02-d194-47b9-b683-cd8ac0663d09",
+            "phase": "trace-shared-consumer-representative",
+            "source_scene": "scene-B"
+          },
+          {
+            "kind": "action",
+            "event_id": "0ca96313-eef6-4a65-9b03-5a6e47f0eeae",
+            "session_id": "02dcfa3d-710f-418a-9668-968d6e3c8472",
+            "view_id": "70a1fd02-d194-47b9-b683-cd8ac0663d09",
+            "phase": "task-delayed",
+            "source_scene": "scene-B"
+          },
+          {
+            "kind": "resource",
+            "event_id": "7cdea691-292c-4d89-9281-2b77143970b3",
+            "session_id": "02dcfa3d-710f-418a-9668-968d6e3c8472",
+            "view_id": "70a1fd02-d194-47b9-b683-cd8ac0663d09",
+            "phase": "task-delayed",
+            "source_scene": "scene-B"
+          }
+        ],
+        "simultaneous_visibility_claimed": false,
+        "span": {
+          "durationNanoseconds": 146408439,
+          "isError": false,
+          "operationName": "urlsession.request",
+          "parentSpanID": "0000000000000000",
+          "resourceName": "https://multi-scene-probe.invalid/trace-only/exp196-h07-20260919t190123z-036a45d6a957/scene-A/home/trace-only-shared-request",
+          "rumApplicationID": "43cbc59b-0626-438b-a3d9-c6417a4545a3",
+          "rumSessionID": "02dcfa3d-710f-418a-9668-968d6e3c8472",
+          "rumViewID": "20e31c34-89b6-4c24-9270-7753ed2a59a0",
+          "serviceName": "ios-sdk-native-multi-scene-probe",
+          "spanID": "4f165016e245cfa0",
+          "startTimeMilliseconds": 1789844485344,
+          "startTimeNanoseconds": 1789844485344409344,
+          "traceID": "6aaedc05000000002f20ad51201059b3"
+        }
+      },
+      "backend": {
+        "state": "PASS",
+        "view_count": 3,
+        "work_count": 20,
+        "marker_pairs": 2,
+        "error_crash_count": 0
+      },
+      "backend_count": 25,
+      "backend_apm": {
+        "state": "PASS",
+        "span_count": 1,
+        "trace_id": "6aaedc05000000002f20ad51201059b3",
+        "span_id": "4f165016e245cfa0",
+        "view_id": "20e31c34-89b6-4c24-9270-7753ed2a59a0",
+        "duration_nanoseconds": 146408439,
+        "start_precision": "observed nearest millisecond; submillisecond backend start unverified",
+        "backend_start_milliseconds": 1789844485344,
+        "native_start_nanoseconds": 1789844485344409344,
+        "start_projection_inferred": true,
+        "duplicate_span_count": 0
+      },
+      "cleanup": {
+        "state": "PASS",
+        "app_absent": true,
+        "process_absent": true,
+        "protected_unchanged": true,
+        "native_source_unchanged": true,
+        "time_ms": 1789844538570
+      },
+      "scope": "Actual A-created URLSession task joined/released from B retains A captured owner; exactly one automatic span and no matching RUM Resource. Serial scenes; no simultaneous-visibility claim. Start verified only at observed MCP nearest-millisecond projection; exact native start and raw backend duration retained.",
+      "oracle_sha256": "67e43938595ec3da139fdff6861d68700e75b18558dbc59eab9a1b94305404d8",
+      "artifacts": {
+        "frozen.json": {
+          "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp196-physical-h07-r7bhkqqr/frozen.json",
+          "sha256": "1799f6d9d32d16efc2a9d4d4532fc1d722487c8111269ec0ccb4164b8b3b95c4"
+        },
+        "native.jsonl": {
+          "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp196-physical-h07-r7bhkqqr/native.jsonl",
+          "sha256": "f542967d845d4f803d51809ffd88a6fd54a8f96ee73bc164b26ea67714e4e7bb"
+        },
+        "local-result.json": {
+          "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp196-physical-h07-r7bhkqqr/local-result.json",
+          "sha256": "bdd2ae76ffb696d6d7156adf74dfb83085fc1d0ab1ff7dfbb4aa8ecf57fedd10"
+        },
+        "backend-raw-initial.json": {
+          "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp196-physical-h07-r7bhkqqr/backend-raw-initial.json",
+          "sha256": "23270ec25ce7969ebbfe071f21dad2e721d538b7241f1a3585590754778dcc7b"
+        },
+        "backend-indexed.json": {
+          "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp196-physical-h07-r7bhkqqr/backend-indexed.json",
+          "sha256": "593518ec7c74a486d4041f611fe473e412a9e10f6b2e97e87d3c9e710811465c"
+        },
+        "backend-rum-result.json": {
+          "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp196-physical-h07-r7bhkqqr/backend-rum-result.json",
+          "sha256": "7f0499aedca0154e32c1cdd41d0b8c43f99bce27efb4223809702aba52ea6c9a"
+        },
+        "backend-apm-result.json": {
+          "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp196-physical-h07-r7bhkqqr/backend-apm-result.json",
+          "sha256": "5d691bb6579188942da100d436c2a8e5bad83d1d86ff570d75faa5e33f02d121"
+        },
+        "installed-identity.json": {
+          "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp196-physical-h07-r7bhkqqr/installed-identity.json",
+          "sha256": "39faef4bffb34f46227f47edc3b5037cae19c58986c06d3c03203dd505725e7b"
+        },
+        "cleanup.json": {
+          "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp196-physical-h07-r7bhkqqr/cleanup.json",
+          "sha256": "0037520be476ad77eb8a016c28e2b275443c17ad8dce374275dd0c7630194f4f"
+        }
+      }
     }
   ],
   "gates_closed": [
     "F05",
-    "H05"
+    "H05",
+    "H07"
   ],
   "f05_physical_oracle_definition": {
     "defined_at": 1789835528.922011,
@@ -1114,7 +1463,7 @@
     ],
     "implementation": "Separate validate_physical_local entrypoint implemented; original timing still rejects the physical record. Focused six tests pass. Fresh physical run required."
   },
-  "next": "Repair and qualify the defined H05/H07 fixture routes, then continue independent physical matrix cases and bounded topology/lifecycle collector follow-ups; restore original iPad mode at completion.",
+  "next": "Build and execute predefined H14 physical resize; then continue bounded topology/lifecycle and other independent physical cases. Restore Full Screen Apps at suite completion.",
   "h01_collector_definition": {
     "defined_at": 1789836265.35157,
     "before_implementation": true,
@@ -1308,8 +1657,158 @@
   },
   "physical_serial_oracle_verification": {
     "tests": 5,
-    "negative_controls": 45,
+    "negative_controls": 60,
     "source_schema_check": true,
-    "physical_evidence": false
+    "physical_evidence": false,
+    "start_projection_boundary_controls": 15
+  },
+  "h07_start_projection_definition": {
+    "defined_at": 1789844400.770732,
+    "before_implementation": true,
+    "scope": "Backend representation only; no SDK/fixture change.",
+    "observations": [
+      "Prior native .855424512 became MCP .855",
+      "Fresh native .717825024 became MCP .718"
+    ],
+    "source": "https://docs.datadoghq.com/api/latest/spans/search-spans/",
+    "evidence_limit": "Official schema calls start_timestamp date-time but specifies no rounding algorithm. Nearest-millisecond projection is inferred from observed MCP values, not an official nanosecond guarantee.",
+    "decisive_test": "Require the one nearest integer millisecond (positive epoch, half-up) using integer arithmetic; reject either adjacent millisecond, unaligned/missing timestamp and changed exact duration/identity/owner. Retain exact native nanoseconds and report backend submillisecond start as unverified.",
+    "next": "Verify boundary controls, freeze and execute one fresh clean H07 run. If the projection still fails, retain timing as an explicit tooling limitation rather than expanding tolerance or repeating equivalent attempts."
+  },
+  "h14_definition": {
+    "defined_at": 1789844667.1061518,
+    "before_implementation": true,
+    "gate": "H14",
+    "scenario": "swiftui.split.adaptive-resize",
+    "source": "Existing EXP-193 accepted-state fixture and physical native1194x834 regular/592x834 compact observations; no SDK change.",
+    "phases": [
+      {
+        "name": "empty-physical-full",
+        "screen": "split-empty",
+        "generation": 0,
+        "width": 1194,
+        "height": 834,
+        "size_class": "regular"
+      },
+      {
+        "name": "detail1-physical-full",
+        "screen": "detail-1",
+        "generation": 1,
+        "width": 1194,
+        "height": 834,
+        "size_class": "regular"
+      },
+      {
+        "name": "detail1-physical-compact",
+        "screen": "detail-1",
+        "generation": 1,
+        "width": 592,
+        "height": 834,
+        "size_class": "compact"
+      },
+      {
+        "name": "detail1-physical-return",
+        "screen": "detail-1",
+        "generation": 1,
+        "width": 1194,
+        "height": 834,
+        "size_class": "regular"
+      }
+    ],
+    "fixture_change": "Opt-in physical resize profile with two finite geometry transitions, retaining the unchanged three-transition Duo profile. Emit work only after fresh native geometry agrees with the live registered window, accepted detail1 generation1 and path.",
+    "input": "Real iPad Window > Move and Resize controls through Device Hub; capture each boundary and native receipt. No synthetic trait/lifecycle changes.",
+    "decisive_test": "One native scene, initial empty occurrence then one fresh detail1 occurrence; same detail1 owner/path/generation through regular-compact-regular, exactly14 adaptive Action/Resource events, exact whole-session backend inventory and no errors/crashes.",
+    "negative_controls": [
+      "wrong geometry or size class",
+      "stale geometry or receipt reuse",
+      "late guard/work before geometry",
+      "changed native scene or generation",
+      "background/disconnect",
+      "unexpected structural/changed detail owner",
+      "missing or foreign backend work"
+    ],
+    "stop_rule": "One real input path plus one materially changed input follow-up; preserve partial evidence if the native prerequisite cannot be observed. No simulator substitute for physical acceptance."
+  },
+  "h14_fixture_verification": {
+    "native_tests": 7,
+    "passed": 7,
+    "python_tests": 9,
+    "artifact_root": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp196-h14-fixture-tests-ofoxdh_o",
+    "result": {
+      "counts": {
+        "expectedFailures": 0,
+        "failed": 0,
+        "notRun": 0,
+        "passed": 7,
+        "skipped": 0,
+        "total": 7
+      },
+      "fullConsoleLogsPath": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/ActionArtifacts/default/RunSomeTests/test-console-log-2026-09-19T21-07-46+02-00.txt",
+      "fullSummaryPath": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/ActionArtifacts/default/RunSomeTests/70525682-FA74-4203-8D00-DE125D961EC6.txt",
+      "results": [
+        {
+          "displayName": "testPublishesAcceptedModelBeforeObserverAndImmediateWork()",
+          "errorMessages": [],
+          "identifier": "ProbeAdaptiveSplitStateTests/testPublishesAcceptedModelBeforeObserverAndImmediateWork()",
+          "state": "Passed",
+          "targetName": "RUMNativeMultiSceneProbeTests"
+        },
+        {
+          "displayName": "testEqualSelectionDoesNotCreateOccurrenceAndReturnIsFresh()",
+          "errorMessages": [],
+          "identifier": "ProbeAdaptiveSplitStateTests/testEqualSelectionDoesNotCreateOccurrenceAndReturnIsFresh()",
+          "state": "Passed",
+          "targetName": "RUMNativeMultiSceneProbeTests"
+        },
+        {
+          "displayName": "testClearingSelectionAndIndependentSceneState()",
+          "errorMessages": [],
+          "identifier": "ProbeAdaptiveSplitStateTests/testClearingSelectionAndIndependentSceneState()",
+          "state": "Passed",
+          "targetName": "RUMNativeMultiSceneProbeTests"
+        },
+        {
+          "displayName": "testResizeRequiresAcceptedSelectionAndConsumesFiniteNativeSequence()",
+          "errorMessages": [],
+          "identifier": "ProbeAdaptiveSplitStateTests/testResizeRequiresAcceptedSelectionAndConsumesFiniteNativeSequence()",
+          "state": "Passed",
+          "targetName": "RUMNativeMultiSceneProbeTests"
+        },
+        {
+          "displayName": "testResizeRejectsWrongSceneBackgroundAndStaleLiveGeometry()",
+          "errorMessages": [],
+          "identifier": "ProbeAdaptiveSplitStateTests/testResizeRejectsWrongSceneBackgroundAndStaleLiveGeometry()",
+          "state": "Passed",
+          "targetName": "RUMNativeMultiSceneProbeTests"
+        },
+        {
+          "displayName": "testPhysicalResizeConsumesOnlyCompactThenFullWithTheSameSelection()",
+          "errorMessages": [],
+          "identifier": "ProbeAdaptiveSplitStateTests/testPhysicalResizeConsumesOnlyCompactThenFullWithTheSameSelection()",
+          "state": "Passed",
+          "targetName": "RUMNativeMultiSceneProbeTests"
+        },
+        {
+          "displayName": "testPhysicalResizeRejectsForeignOrStaleLiveStateBeforeConsumption()",
+          "errorMessages": [],
+          "identifier": "ProbeAdaptiveSplitStateTests/testPhysicalResizeRejectsForeignOrStaleLiveStateBeforeConsumption()",
+          "state": "Passed",
+          "targetName": "RUMNativeMultiSceneProbeTests"
+        }
+      ],
+      "schemeName": "RUMNativeMultiSceneProbe",
+      "summary": "7 tests: 7 passed, 0 failed, 0 skipped, 0 expected failures, 0 not run",
+      "totalResults": 7,
+      "truncated": false,
+      "xcresultBundlePath": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/ActionArtifacts/default/RunSomeTests/Test-RUMNativeMultiSceneProbe-2026.09.19_21-07-46-+0200.xcresult"
+    },
+    "cleanup": {
+      "state": "PASS",
+      "owned_simulator_deleted": true,
+      "original_destination_restored": "iPhone 18 Pro (27.0)",
+      "native_sources_unchanged": true,
+      "protected_unchanged": true
+    },
+    "physical_acceptance_pending": true
   }
 }

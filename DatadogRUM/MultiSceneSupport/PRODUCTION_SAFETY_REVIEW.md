@@ -418,10 +418,13 @@ pass with seven exact backend views and zero errors/crashes. Each UI slice passe
 1/1 with verified source/code and cleanup. This resolves fixture acceptance,
 not a production SDK defect; all physical and final review obligations remain.
 
-EXP-196 closes F05 with physical iPad native Replay recording/teardown and exact backend ownership. The original timing rejection and independent physical oracle remain in the owning result; all3 installed binaries and cleanup pass. No production SDK source changed. This closes coexistence only; simultaneous visibility, per-scene Replay correctness and physical Duo behavior are not claimed.
-
-EXP-196 H01/H04 follow-up changes only the fixture and acceptance tooling. H01 fails closed before manual mutation without independent overlap evidence. H04’s background SwiftUI close never produces disconnect; the planned opt-in UIKit destruction must target the exact connected session and retain the real-callback/final-owner oracle. Partial ownership matches are not release acceptance. Existing SDK review dispositions remain unchanged.
-
-EXP-196 subsequent audit preserves the SDK candidate: H05 supplies an empty internal occurrence source, which the accepted-destination fence correctly rejects. Repair only the H05/H07 fixtures through the existing semantic container, retain H05 automatic B, and compare exact native/backend owners on fresh runs. H04 has no disconnect from either close path; inspect actual notification collection before inferring an SDK defect. Windowed Apps is authorized temporarily and must be restored; no H01 critical interval is accepted without independent display proof.
-
-EXP-196 H05 physical closure validates the fixture repair without changing the reviewed SDK: original7 native checks and full27-event backend inventory pass. The six early source-less B callback events retain the approved representative fallback and are explicitly inventoried. The H07 wire-contract mismatch is a harness defect; its native8/8 result alone does not close that gate.
+EXP-196 closes F05, H05 and H07 on the authorized physical iPad with exact
+native/backend ownership, installed-code identity and cleanup. The stale semantic
+fixture, wire-step typo and backend timestamp projection failures remain preserved.
+H05's early source-less fallback is the approved compatibility behavior; H07's
+backend start precision is explicitly limited to milliseconds. No SDK source or
+original review disposition changes. H01 remains unadmitted without independent
+critical-interval display proof; H04 requires a collector surviving view teardown.
+H14's fixture-only physical resize profile has focused passing controls and awaits
+physical execution. Restore the approved temporary Windowed Apps preference when
+the suite completes. Physical Duo and final review gates remain separate.

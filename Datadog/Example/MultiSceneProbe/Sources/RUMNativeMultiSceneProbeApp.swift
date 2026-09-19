@@ -95,6 +95,8 @@ enum ProbeRuntime {
     ].contains(scenario?.identifier ?? "")
     static let usesAdaptiveSplitResizeAcceptance =
         scenario?.identifier == "swiftui.split.adaptive-resize"
+    static let usesPhysicalAdaptiveSplitResizeAcceptance = usesAdaptiveSplitResizeAcceptance
+        && ProcessInfo.processInfo.environment["DD_PROBE_PHYSICAL_ADAPTIVE_RESIZE"] == "1"
     static let usesObservableScenarioDriver = scenario.map(
         ProbeScenarioCatalog.usesObservableDriver
     ) ?? false

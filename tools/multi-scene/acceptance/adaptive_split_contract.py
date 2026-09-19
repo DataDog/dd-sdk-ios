@@ -37,13 +37,20 @@ MANIFEST = {
 POSE_PHASES = PHASES[:4] + PHASES[8:]
 RESIZE_PHASES = [PHASES[0], PHASES[3]] + PHASES[4:7]
 
+PHYSICAL_RESIZE_PHASES = [
+    ("empty-physical-full", "split-empty", 0, "regular", (1194, 834), False),
+    ("detail1-physical-full", "detail-1", 1, "regular", (1194, 834), False),
+    ("detail1-physical-compact", "detail-1", 1, "compact", (592, 834), True),
+    ("detail1-physical-return", "detail-1", 1, "regular", (1194, 834), True),
+]
+
 
 def phase_specs(mode):
-    return {"full": PHASES, "pose": POSE_PHASES, "resize": RESIZE_PHASES}[mode]
+    return {"full": PHASES, "pose": POSE_PHASES, "resize": RESIZE_PHASES, "physical-resize": PHYSICAL_RESIZE_PHASES}[mode]
 
 
 def marker_name(mode, ordinal):
-    return ("adaptive-resize-" + str(ordinal - 2) if mode == "resize" and ordinal >= 3
+    return ("adaptive-resize-" + str(ordinal - 2) if mode in ("resize", "physical-resize") and ordinal >= 3
             else "adaptive-marker-" + str(ordinal))
 
 
@@ -63,9 +70,9 @@ def unique(rows, label):
 
 def validate_native(records, phases, run_id, mode="full"):
     specs = phase_specs(mode)
-    scenario = "swiftui.split.adaptive-resize" if mode == "resize" else SCENARIO
+    scenario = "swiftui.split.adaptive-resize" if mode in ("resize", "physical-resize") else SCENARIO
     manifest_contract = dict(MANIFEST, identifier=scenario)
-    accepted_screens = ("detail-1",) if mode == "resize" else (
+    accepted_screens = ("detail-1",) if mode in ("resize", "physical-resize") else (
         "detail-1", "detail-2", "placeholder", "detail-1", "split-empty"
     )
     manifest = unique([r["manifest"] for r in records if r["type"] == "manifest"], "manifest")
@@ -137,7 +144,7 @@ def validate_native(records, phases, run_id, mode="full"):
         require(geometry["horizontalSizeClass"] == size_class and
                 (geometry["geometry"]["width"], geometry["geometry"]["height"]) == dimensions,
                 "wrong measured geometry " + name)
-        if mode == "resize" and ordinal >= 3:
+        if mode in ("resize", "physical-resize") and ordinal >= 3:
             guard = unique([s for s in signals if s["kind"] == "assertion"
                             and s.get("name") == "adaptive-resize-guard-" + str(ordinal - 2)],
                            "resize live guard")
@@ -206,7 +213,7 @@ def main():
     parser.add_argument("phases", type=Path)
     parser.add_argument("--run-id", required=True)
     parser.add_argument("--backend", type=Path)
-    parser.add_argument("--mode", choices=("full", "pose", "resize"), default="full")
+    parser.add_argument("--mode", choices=("full", "pose", "resize", "physical-resize"), default="full")
     parser.add_argument("--output", type=Path, required=True)
     args = parser.parse_args()
     records = [json.loads(line) for line in args.records.read_text().splitlines() if line.strip()]

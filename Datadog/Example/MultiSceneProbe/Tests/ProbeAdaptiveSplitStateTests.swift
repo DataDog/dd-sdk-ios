@@ -69,13 +69,41 @@ final class ProbeAdaptiveSplitStateTests: XCTestCase {
         }
     }
 
+    func testPhysicalResizeConsumesOnlyCompactThenFullWithTheSameSelection() {
+        let router = ProbeAdaptiveSplitState()
+        router.select(.detailOne)
+        XCTAssertNil(consume(router, sequence: 10, width: 900, height: 675, sizeClass: "regular", profile: .physicalIPad))
+        XCTAssertNil(consume(router, sequence: 11, width: 1194, height: 834, sizeClass: "regular", profile: .physicalIPad))
+        XCTAssertEqual(consume(router, sequence: 12, width: 592, height: 834, sizeClass: "compact", profile: .physicalIPad), 1)
+        XCTAssertNil(consume(router, sequence: 12, width: 1194, height: 834, sizeClass: "regular", profile: .physicalIPad))
+        XCTAssertEqual(consume(router, sequence: 13, width: 1194, height: 834, sizeClass: "regular", profile: .physicalIPad), 2)
+        XCTAssertNil(consume(router, sequence: 14, width: 592, height: 834, sizeClass: "compact", profile: .physicalIPad))
+        XCTAssertEqual(router.current, .init(destination: .detailOne, generation: 1))
+    }
+
+    func testPhysicalResizeRejectsForeignOrStaleLiveStateBeforeConsumption() {
+        for variation in ["scene", "background", "geometry", "route", "class", "generation"] {
+            let router = ProbeAdaptiveSplitState()
+            router.select(.detailOne)
+            if variation == "generation" {
+                router.select(.detailTwo)
+                router.select(.detailOne)
+            }
+            XCTAssertNil(consume(
+                router, sequence: 10, width: 592, height: 834, sizeClass: "compact",
+                variation: variation, profile: .physicalIPad
+            ))
+        }
+    }
+
     private func consume(
         _ router: ProbeAdaptiveSplitState,
         sequence: UInt64,
         width: Double,
         height: Double,
         sizeClass: String,
-        variation: String? = nil
+        variation: String? = nil,
+        profile: ProbeAdaptiveSplitState.ResizeProfile = .duoSimulator
     ) -> Int? {
         let geometry = ProbeGeometry(x: 0, y: 0, width: width, height: height)
         let signal = ProbeSignal(
@@ -92,10 +120,10 @@ final class ProbeAdaptiveSplitStateTests: XCTestCase {
         let live = ProbeScenePresentation(
             activationState: .foregroundActive,
             geometry: variation == "geometry" ? ProbeGeometry(x: 0, y: 0, width: 1, height: 1) : geometry,
-            horizontalSizeClass: sizeClass,
+            horizontalSizeClass: variation == "class" ? "regular" : sizeClass,
             verticalSizeClass: "regular"
         )
-        return router.consumeResize(signal, live: live, logicalSceneID: "scene-A", nativeSceneID: "native-A")
+        return router.consumeResize(signal, live: live, logicalSceneID: "scene-A", nativeSceneID: "native-A", profile: profile)
     }
 
 }

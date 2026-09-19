@@ -548,8 +548,8 @@
       "decisive_test": "EXP-136: A-created request joined in B yields exactly one A span and no RUM Resource in trace-only mode",
       "environment": "Physical iPad/iPhone Duo; human gesture for H11\u2013H13; resize-capable for H14",
       "completion_mode": null,
-      "status": "OPEN",
-      "evidence": "EXP-196 repaired semantic fixture reaches native8/8 and one A-owned span, but external contract misspells three wire step names. Preserve invalid attempt; Swift-schema-checked correction and fresh physical run are required before closure."
+      "status": "CLOSED",
+      "evidence": "EXP-196 signeda823ad86c physical capture passes native8/8, exact3 views/20 work IDs/25 all-type RUM events, exactly1 A-owned span with exact IDs/correlation/raw duration, observed millisecond start projection, no matching Resource, installed3 binaries and cleanup. Both earlier contract/projection failures preserved; backend submillisecond start and simultaneous visibility not claimed. Results/EXP-196-physical-ipad-suite.json."
     },
     {
       "id": "H08",

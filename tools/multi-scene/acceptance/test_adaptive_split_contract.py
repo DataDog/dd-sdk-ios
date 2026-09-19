@@ -9,7 +9,7 @@ def fixture(mode="full"):
     records = [dict(type="manifest", manifest=dict(
         schemaVersion=3, runID=run, runMode="clean", validationErrors=[],
         scenario=copy.deepcopy(contract.MANIFEST)))]
-    if mode == "resize":
+    if mode in ("resize", "physical-resize"):
         records[0]["manifest"]["scenario"]["identifier"] = "swiftui.split.adaptive-resize"
     signals, phases = [], []
     context = dict(logicalSceneID="scene-A", nativeSceneID="native-A")
@@ -50,7 +50,7 @@ def fixture(mode="full"):
                           navigationPath=[] if screen == "split-empty" else [screen],
                           activationState="foreground-active", horizontalSizeClass=size_class,
                           geometry=dict(width=dimensions[0], height=dimensions[1], x=0, y=0))
-        if mode == "resize" and ordinal >= 3:
+        if mode in ("resize", "physical-resize") and ordinal >= 3:
             signal("assertion", name="adaptive-resize-guard-" + str(ordinal - 2),
                    acknowledgedSignalSequence=geometry["sequence"], result="PASS",
                    geometry=copy.deepcopy(geometry["geometry"]), activationState="foreground-active",
@@ -88,30 +88,31 @@ class AdaptiveSplitContractTests(unittest.TestCase):
         self.assertEqual(contract.validate_backend(result, backend(result))["work_count"], 50)
 
     def test_finite_pose_and_resize_variants(self):
-        for mode, counts in [("pose", (10, 6, 42)), ("resize", (5, 2, 16))]:
+        for mode, counts in [("pose", (10, 6, 42)), ("resize", (5, 2, 16)), ("physical-resize", (4, 2, 14))]:
             records, phases, run = fixture(mode)
             native = contract.validate_native(records, phases, run, mode)
             self.assertEqual((native["phases"], len(native["owners"]), len(native["work"])), counts)
             self.assertEqual(contract.validate_backend(native, backend(native))["work_count"], counts[2])
 
     def test_resize_guard_must_precede_work_and_match_live_geometry(self):
-        for change in ("late", "receipt", "geometry", "background", "churn"):
-            records, phases, run = fixture("resize")
-            guard = named(records, "adaptive-resize-guard-1", "assertion")
-            if change == "late":
-                action = named(records, "adaptive-resize-1")
-                guard["sequence"], action["sequence"] = action["sequence"], guard["sequence"]
-                records[1:] = sorted(records[1:], key=lambda r: r["signal"]["sequence"])
-            elif change == "receipt":
-                guard["acknowledgedSignalSequence"] = 1
-            elif change == "geometry":
-                guard["geometry"]["width"] = 400
-            elif change == "background":
-                guard["activationState"] = "background"
-            else:
-                named(records, "adaptive-resize-1")["rumContext"]["viewID"] = "new-owner"
-            with self.subTest(change=change), self.assertRaises(ValueError):
-                contract.validate_native(records, phases, run, "resize")
+        for mode in ("resize", "physical-resize"):
+            for change in ("late", "receipt", "geometry", "background", "churn"):
+                records, phases, run = fixture(mode)
+                guard = named(records, "adaptive-resize-guard-1", "assertion")
+                if change == "late":
+                    action = named(records, "adaptive-resize-1")
+                    guard["sequence"], action["sequence"] = action["sequence"], guard["sequence"]
+                    records[1:] = sorted(records[1:], key=lambda r: r["signal"]["sequence"])
+                elif change == "receipt":
+                    guard["acknowledgedSignalSequence"] = 1
+                elif change == "geometry":
+                    guard["geometry"]["width"] = 400
+                elif change == "background":
+                    guard["activationState"] = "background"
+                else:
+                    named(records, "adaptive-resize-1")["rumContext"]["viewID"] = "new-owner"
+                with self.subTest(change=change), self.assertRaises(ValueError):
+                    contract.validate_native(records, phases, run, mode)
 
     def test_automatic_tap_with_merged_marker_attributes_is_not_custom_work(self):
         records, phases, run = fixture()

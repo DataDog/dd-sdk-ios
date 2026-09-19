@@ -179,7 +179,13 @@ def validate_shared_span_backend(local, run_id, spans, count, details):
     require(isinstance(start,datetime) and start.tzinfo is not None, 'missing backend timestamp')
     delta=start.astimezone(timezone.utc)-datetime(1970,1,1,tzinfo=timezone.utc)
     milliseconds=(delta.days*86400+delta.seconds)*1000+delta.microseconds//1000
-    require(milliseconds == expected['startTimeNanoseconds']//1_000_000, 'backend start differs at exposed precision', 'FAIL')
+    # MCP observations round positive epoch starts to the nearest millisecond.
+    # This validates that exposed projection, never submillisecond equality.
+    require(start.microsecond % 1000 == 0, 'unexpected backend start precision')
+    projected = (expected['startTimeNanoseconds'] + 500_000) // 1_000_000
+    require(milliseconds == projected, 'backend start differs at exposed precision', 'FAIL')
     return dict(state='PASS',span_count=1,trace_id=expected['traceID'],span_id=expected['spanID'],
                 view_id=expected['rumViewID'],duration_nanoseconds=expected['durationNanoseconds'],
-                start_precision='milliseconds; submillisecond backend start not exposed by MCP',duplicate_span_count=0)
+                start_precision='observed nearest millisecond; submillisecond backend start unverified',
+                backend_start_milliseconds=milliseconds, native_start_nanoseconds=expected['startTimeNanoseconds'],
+                start_projection_inferred=True, duplicate_span_count=0)

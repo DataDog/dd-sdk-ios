@@ -41,6 +41,20 @@ final class ProbeAdaptiveSplitState: ObservableObject {
         return true
     }
 
+    enum ResizeProfile {
+        case duoSimulator
+        case physicalIPad
+
+        var transitions: [(width: Double, height: Double, sizeClass: String)] {
+            switch self {
+            case .duoSimulator:
+                return [(900, 675, "regular"), (400, 700, "compact"), (900, 675, "regular")]
+            case .physicalIPad:
+                return [(592, 834, "compact"), (1194, 834, "regular")]
+            }
+        }
+    }
+
     private var resizeOrdinal = 0
     private var lastResizeSequence: UInt64 = 0
 
@@ -49,13 +63,12 @@ final class ProbeAdaptiveSplitState: ObservableObject {
         _ signal: ProbeSignal,
         live: ProbeScenePresentation,
         logicalSceneID: String,
-        nativeSceneID: String
+        nativeSceneID: String,
+        profile: ResizeProfile = .duoSimulator
     ) -> Int? {
-        let widths = [900.0, 400.0, 900.0]
-        let heights = [675.0, 700.0, 675.0]
-        let classes = ["regular", "compact", "regular"]
+        let transitions = profile.transitions
         guard current.destination == .detailOne, current.generation == 1,
-              resizeOrdinal < widths.count, signal.sequence > lastResizeSequence,
+              resizeOrdinal < transitions.count, signal.sequence > lastResizeSequence,
               signal.kind == .sceneGeometry, signal.evidenceSource == .probe,
               signal.semanticContext?.logicalSceneID == logicalSceneID,
               signal.semanticContext?.nativeSceneID == nativeSceneID,
@@ -64,9 +77,9 @@ final class ProbeAdaptiveSplitState: ObservableObject {
               live.activationState == .foregroundActive,
               signal.geometry == live.geometry,
               signal.horizontalSizeClass == live.horizontalSizeClass,
-              live.geometry?.width == widths[resizeOrdinal],
-              live.geometry?.height == heights[resizeOrdinal],
-              live.horizontalSizeClass == classes[resizeOrdinal]
+              live.geometry?.width == transitions[resizeOrdinal].width,
+              live.geometry?.height == transitions[resizeOrdinal].height,
+              live.horizontalSizeClass == transitions[resizeOrdinal].sizeClass
         else { return nil }
         lastResizeSequence = signal.sequence
         resizeOrdinal += 1

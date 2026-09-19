@@ -115,6 +115,27 @@ class PhysicalSerialContractTests(unittest.TestCase):
             else:d['meta']['_dd.action.id']='foreign'
             with self.subTest(mutation=mutation),self.assertRaises(Rejected):validate_shared_span_backend(local,'unit',[r],count,[d])
 
+
+        from datetime import datetime, timezone, timedelta
+        base=datetime(2026,9,19,18,20,tzinfo=timezone.utc)
+        for nanoseconds,milliseconds in [(0,0),(123499999,123),(123500000,124),(123999999,124),(999499999,999),(999500000,1000)]:
+            projected=copy.deepcopy(local)
+            projected['span']['startTimeNanoseconds']=1789842000000000000+nanoseconds
+            projected['span']['startTimeMilliseconds']=1789842000000+nanoseconds//1000000
+            r=copy.deepcopy(row);r['starttimestamp']=base+timedelta(milliseconds=milliseconds)
+            with self.subTest(nanoseconds=nanoseconds):
+                result=validate_shared_span_backend(projected,'unit',[r],1,[detail])
+                self.assertEqual(result['backend_start_milliseconds'],1789842000000+milliseconds)
+                self.assertTrue(result['start_projection_inferred'])
+            for shift in [-1,1]:
+                r['starttimestamp']=base+timedelta(milliseconds=milliseconds+shift)
+                with self.subTest(nanoseconds=nanoseconds,shift=shift),self.assertRaises(Rejected):
+                    validate_shared_span_backend(projected,'unit',[r],1,[detail])
+        for invalid in [None,datetime(2026,9,19,18,20),base+timedelta(microseconds=123001)]:
+            r=copy.deepcopy(row);r['starttimestamp']=invalid
+            with self.subTest(invalid=invalid),self.assertRaises(Rejected):
+                validate_shared_span_backend(local,'unit',[r],1,[detail])
+
     def testSharedSpanIdentityAndCapturedOwnerControls(self):
         for field,value in [('rumViewID','scene-B-home'),('rumApplicationID','foreign'),('traceID','x'),('spanID','a'),('startTimeNanoseconds',1.2),('durationNanoseconds',0),('isError',True),('rumActionIDs',['foreign'])]:
             records=fixture('H07');signal=next(r['signal'] for r in records if r['type']=='signal' and r['signal']['kind']=='rum-trace');signal['trace'][field]=value
