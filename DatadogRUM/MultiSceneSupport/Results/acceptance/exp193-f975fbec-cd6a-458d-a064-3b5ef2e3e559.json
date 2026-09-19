@@ -1,0 +1,118 @@
+{
+  "experiment": "EXP-193",
+  "run_id": "f975fbec-cd6a-458d-a064-3b5ef2e3e559",
+  "status": "PASS_POSE_SLICE",
+  "mode": "pose",
+  "source_revision": "7c8154aca83b9f9c932305f1afd34c23bb788e52",
+  "source_signature": "VERIFIED_GIT_SIGNATURE",
+  "candidate_sdk_revision": "04201edc7711361279d8487b385bc8b0ca9c63c7",
+  "artifact_root": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp193-ui-pose-97a9s4it",
+  "native": {
+    "phases": 10,
+    "work_count": 42,
+    "semantic_owners": {
+      "0": "912ba949-f6b8-47c3-b6db-9bdc77580eaa",
+      "1": "b81b170b-9ec6-4721-babf-438688ee798e",
+      "2": "6f36f6d7-abbb-4713-b559-f700df1ae381",
+      "3": "291cdd25-7b9d-42ff-af31-0f1adf2bd007",
+      "4": "885444f3-94d0-4c20-9f47-33e5c4b14eea",
+      "5": "4e48ff05-bfbd-4a04-a6a6-b7f6b58d24f7"
+    },
+    "native_scene_id": "1B71B251-C0C8-4CEE-9809-5A7348BD4D27",
+    "session_id": "7374a087-1357-4e7d-bcab-f38273d94d02",
+    "background_during_acceptance": false
+  },
+  "backend": {
+    "state": "PASS",
+    "view_count": 7,
+    "work_count": 42,
+    "errors": 0,
+    "crashes": 0,
+    "queries": "backend-queries.json",
+    "full_session_inventory": true
+  },
+  "ui_tests": {
+    "passed": 1,
+    "failed": 0,
+    "skipped": 0,
+    "exit": 0
+  },
+  "code_identity": {
+    "app_mach_o": 3,
+    "runner_mach_o": 2,
+    "before_after_equal": true,
+    "source_equal": true,
+    "protected_equal": true
+  },
+  "cleanup": {
+    "com.datadoghq.rum-native-multi-scene-probe/app": {
+      "exit": 2,
+      "stderr": "An error was encountered processing the command (domain=NSPOSIXErrorDomain, code=2):\nThe operation couldn\u2019t be completed. No such file or directory\nNo such file or directory\n"
+    },
+    "com.datadoghq.rum-native-multi-scene-probe/data": {
+      "exit": 2,
+      "stderr": "An error was encountered processing the command (domain=NSPOSIXErrorDomain, code=2):\nThe operation couldn\u2019t be completed. No such file or directory\nNo such file or directory\n"
+    },
+    "com.datadoghq.rum-native-multi-scene-probe.uitests.xctrunner/app": {
+      "exit": 2,
+      "stderr": "An error was encountered processing the command (domain=NSPOSIXErrorDomain, code=2):\nThe operation couldn\u2019t be completed. No such file or directory\nNo such file or directory\n"
+    },
+    "com.datadoghq.rum-native-multi-scene-probe.uitests.xctrunner/data": {
+      "exit": 2,
+      "stderr": "An error was encountered processing the command (domain=NSPOSIXErrorDomain, code=2):\nThe operation couldn\u2019t be completed. No such file or directory\nNo such file or directory\n"
+    }
+  },
+  "simulator_cleanup": {
+    "task_prior_state": "Shutdown",
+    "task_final_state": "Shutdown",
+    "user_booted_devices_untouched": true
+  },
+  "boundary": "Native simulator pose and semantic ownership only. Direct active-display captures show the inner app despite a black Device Hub canvas; no physical hinge, concurrent-window or human-gesture parity. Physical H14 remains.",
+  "gates_closed": [],
+  "artifacts": {
+    "source.json": {
+      "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp193-ui-pose-97a9s4it/source.json",
+      "sha256": "d8c80665d55b72da09a2d5a69c941292b2b02e3b272293512735d537ff173ed5"
+    },
+    "revision.txt": {
+      "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp193-ui-pose-97a9s4it/revision.txt",
+      "sha256": "f0402a34f0249d38ff56d4a104c2c5036dace7ea78e021cf6d670407d01bb743"
+    },
+    "installed-code.json": {
+      "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp193-ui-pose-97a9s4it/installed-code.json",
+      "sha256": "4f80f80fd6350e47c8d88e652b02bead71541fc2e80d688eb56f2cbd11d3351a"
+    },
+    "installed-runner-code.json": {
+      "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp193-ui-pose-97a9s4it/installed-runner-code.json",
+      "sha256": "bc4f1f76720af7e620f9248b63301da8ce4f502c86e405853972e09dbe0a881b"
+    },
+    "phases.json": {
+      "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp193-ui-pose-97a9s4it/phases.json",
+      "sha256": "b51b241a33717a37e605af6ed01649bf187221bab16d9b73358a29ae9e4f81e8"
+    },
+    "final-native.jsonl": {
+      "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp193-ui-pose-97a9s4it/final-native.jsonl",
+      "sha256": "3b1a2ac82c23acbc69b4b5333ef0ed409816aae9763567a049e1b1aac15df0cd"
+    },
+    "oracle-result.json": {
+      "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp193-ui-pose-97a9s4it/oracle-result.json",
+      "sha256": "890448cde4e05d5fd77308543478808979b396d96d4ae1f7801bb8de79c633a3"
+    },
+    "backend.json": {
+      "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp193-ui-pose-97a9s4it/backend.json",
+      "sha256": "79a02a36eda4477c4cb32198545fbb35f362a99e025a82cdd8456649cbf4eacf"
+    },
+    "backend-queries.json": {
+      "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp193-ui-pose-97a9s4it/backend-queries.json",
+      "sha256": "7360fe1d932d419a0079b2366be255b28636be71125202a4efd11a4ced739fc4"
+    },
+    "ui-summary.json": {
+      "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp193-ui-pose-97a9s4it/ui-summary.json",
+      "sha256": "58479f3060b44be1c640ab301eb80e76ed036ff817585fe5f016c045dff35da5"
+    },
+    "helper-hashes.json": {
+      "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp193-ui-pose-97a9s4it/helper-hashes.json",
+      "sha256": "fde63bc1b60041b7c864ee6ed6a966302c0766fc8d4461c638d364cadfae285f"
+    }
+  }
+}

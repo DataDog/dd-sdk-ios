@@ -66,7 +66,7 @@ path, not the platform's documented capability.
 Adaptive geometry is now observed through both actual display switching and a
 native resizable display. Nil selection remains nil with no Detail owner. Real
 selection exposed an obsolete fixture route/ownership path; EXP-193 qualifies the
-current accepted-state integration before H14 ownership can be accepted. The
+current accepted-state integration; both finite ownership slices now pass. The
 resizable display is a synthetic layout environment, separate from a physical
 hinge transition. Original H/F release obligations remain open.
 
@@ -83,8 +83,14 @@ The selected Detail occurrence stays unchanged through900×675 regular,
 400×700 compact and900×675 regular. XCTest delivers the native prefix through
 explicit collector handshakes and passes1/1; app/runner/resize cleanup is verified.
 This is strong evidence for SDK ownership across those measured native geometry
-callbacks. The10-phase pose sequence remains pending and physical hinge behavior
-is still uncalibrated.
+callbacks. The10-phase pose sequence now also passes42 exact native/backend work events,
+six distinct semantic owners and seven complete backend views, with zero errors
+and1/1 XCTest at signed7c8154aca. Empty/Detail1 owners survive actual open/close;
+accepted selection, return and clear produce fresh occurrences. Active-display
+captures show the inner app while Device Hub renders its inactive canvas black.
+The first controlled attempt stops at a covered Clear selection button; the
+corrected input dismisses the overlay before a hittable native tap. All code
+identities and cleanup pass. Physical hinge behavior is still uncalibrated.
 
 Q5 now records two actual outer-display XCTest edge drags after a compact-layout
 fixture repair. Both runs prove visible secondary-2, fresh code/run identity and
@@ -94,3 +100,8 @@ prove collection only. Equivalent UIKit retries stop; SwiftUI and presentation
 input remain unexecuted because the prerequisite path is unqualified. This limits
 the tested input/fixture combination, not documented platform capability. Both
 app/runner pairs are removed and physical human H11–H13 obligations remain.
+
+The finite Q1–Q6 assessment is complete: use the observed geometry, callback and
+exact ownership evidence for SDK logic confidence. Do not infer concurrent-window,
+human-gesture, restoration, hardware scheduling or performance equivalence from
+it. Those capabilities retain the recorded execution limits and physical gates.

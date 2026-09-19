@@ -66,24 +66,20 @@ Chronological conclusions and the superseded routing audit are retained in the
 [documentation checkpoint](Experiments/DOCUMENTATION_CHECKPOINT_EXP-178.md).
 Use the [compact index](EXPERIMENTS.md) to open only the experiment that owns a question.
 
-The Duo27.1 simulator is available through Xcode27.1; fresh MCP and CLI agree.
-[EXP-192's assessment](DUO_SIMULATOR_ASSESSMENT.md) preserves display/trait and
-actual lifecycle observations, two bounded unqualified pairing attempts, and
-measured native resize capability. The unchanged H01 native22/22 pass remains
-inconclusive without overlap. The old split fixture bypassed accepted routing;
-[EXP-193](Results/EXP-193-adaptive-split.json) corrects the fixture and preserves
-the failure. Its first four native boundaries show an unchanged empty owner and
-a fresh selected owner before immediate work. Full acceptance remains pending:
-resize renders black and cleanup backgrounds the app. The separate pose/guarded
-resize variants pass9 oracle tests. A later preflight catches materialization
-rewriting the accepted empty route; corrected fixture4b3ce9d57 builds and passes6
-focused checks, and native readback confirms `[]`. The Mac relocks before work;
-guarded XCTest then completes resize5/5 with16 exact native/backend work events,
-3 views and0 errors.10-phase pose acceptance awaits the pending unlock. No
-physical/human obligation closes. Q5 corrects compact fixture readiness, then
-two fresh actual outer UIKit drags produce no interactive callbacks. Both native
-traces and cleanups are retained; stop equivalent input retries. SwiftUI/sheet
-qualification remains unexecuted under the same prerequisite.
+The Duo27.1 simulator assessment is complete within its finite boundaries.
+[EXP-192](DUO_SIMULATOR_ASSESSMENT.md) records actual display/trait and OS lifecycle
+observations, plus concrete limits for concurrent visibility, disconnect and
+interactive gestures. The unchanged H01 native22/22 remains inconclusive without
+overlap; two pairing and two outer gesture attempts do not qualify those inputs.
+
+[EXP-193](Results/EXP-193-adaptive-split.json) now accepts both adaptive slices:
+resize5 phases/16 exact work/3 backend views and pose10 phases/42 exact work/7
+backend views, zero errors and each guarded XCTest1/1. Exact semantic ownership
+survives measured geometry and actual open/close; accepted selections and returns
+produce distinct occurrences. Source/installed identities and full cleanup pass.
+This is strong SDK ownership evidence for the observed simulator callbacks, not
+physical hinge or scheduling parity. Original fixture, input, hit-target and
+projection failures remain attributable. Physical/human obligations stay open.
 
 C06's corrected17.x qualification checks all five stable versions in Apple's
 historical catalog through27.1; all downloads are unavailable, as is17.0 through

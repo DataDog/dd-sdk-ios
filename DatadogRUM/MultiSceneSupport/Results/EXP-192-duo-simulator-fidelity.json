@@ -20,7 +20,7 @@
     "H16"
   ],
   "title": "Qualify Duo simulator evidence boundaries",
-  "status": "IN PROGRESS",
+  "status": "COMPLETE - BOUNDED ASSESSMENT",
   "owner": "SDK implementer",
   "admission": "User requests a bounded simulator-to-device assessment and execution of all simulator-capable existing release gates. No new product surface or gate.",
   "candidate_revision": "04201edc7711361279d8487b385bc8b0ca9c63c7",
@@ -130,11 +130,11 @@
     ],
     "acceptance": "No stale source/run, no fabricated scene callbacks, no late-only geometry assertion, no unexpected Detail during nil selection, no duplicate or foreign owner at selected boundaries; hardware H14 residual remains."
   },
-  "next": "EXP-193 pose acceptance awaits the pending desktop unlock. Do not repeat accepted resize or equivalent pairing/gesture retries. Continue dependency-ready F05 Replay coexistence preparation.",
+  "next": "Finite Q1-Q6 assessment complete with observed results and explicit execution limits. EXP-193 accepts both simulator slices; EXP-194 accepts serial Replay. Continue regular dependency-ready plan preparation. Do not repeat exhausted pairing/gesture paths.",
   "adaptive_followup": {
     "experiment": "EXP-193",
     "result": "EXP-193-adaptive-split.json",
-    "current_state": "EXP-193 resize slice passes5 phases,16 exact native/backend work,3-view inventory,0 errors and1/1 guarded XCTest prefix. Both task bundles/data and resize process are cleaned; pose10-phase run still awaits unlock.",
+    "current_state": "Both EXP-193 slices pass: resize5 phases/16 work/3 backend views and pose10 phases/42 work/7 backend views, zero errors, each UI test1/1 and full app/runner/device cleanup.",
     "observed_limit": "Resizable display remains black despite native geometry; ending headless resize backgrounds the scene. Preserve callback ownership and visible-layout/input claims separately.",
     "physical_obligations_waived": false
   },
@@ -157,5 +157,13 @@
     "observation": "Short and long slow edge drags return with unchanged24 native signals and no interactive began/resolved, destination or work. XCTest1/1 in each means input collection only.",
     "limit": "Stop equivalent UIKit input retries. This does not deny platform capability. SwiftUI/presentation input remains unexecuted because the prerequisite path was not qualified; physical/human H11-H13 remain.",
     "cleanup": "Both app and runner bundle/data absent after each run; source/protected states exact."
+  },
+  "qualification_disposition": {
+    "Q1": "Observed actual outer/inner/rotation/book geometry and traits. EXP-193 adds exact accepted-state pose and resize ownership; no measured hinge-angle equivalence.",
+    "Q2": "Inconclusive after two bounded pairing attempts; simultaneous native windows unqualified.",
+    "Q3": "Actual OS Home/background/foreground observed for one scene; peer continuity requires Q2.",
+    "Q4": "Two delivered close requests did not produce disconnect; restoration remains unqualified.",
+    "Q5": "Two actual outer UIKit drags did not produce interactive coordinator callbacks. SwiftUI/presentation remain unexecuted because the input prerequisite is unqualified.",
+    "Q6": "Source differences and per-capability confidence documented; no matched physical Duo run or equivalence percentage."
   }
 }

@@ -602,7 +602,7 @@
       "environment": "Physical iPad/iPhone Duo; human gesture for H11\u2013H13; resize-capable for H14",
       "completion_mode": null,
       "status": "ENVIRONMENT BLOCKED",
-      "evidence": "EXP-193 resize slice passes5 phases,16 exact native/backend work events,complete3-view inventory,0 errors and1/1 guarded XCTest prefix at3c5a267b0; cleanup verified. Detail1 owner survives900x675/400x700/900x675.10-phase pose acceptance awaits unlock. Black virtual display and physical H14 obligation remain."
+      "evidence": "EXP-193 accepts resize5 phases/16 exact work/3 backend views at3c5a267b0 and pose10 phases/42 exact work/7 backend views at signed7c8154aca, zero errors/crashes and each guarded XCTest1/1. Exact owners survive measured geometry and actual open/close; accepted selections/returns produce six distinct occurrences. All code identities and cleanup pass. Physical hinge/resize H14 remains required."
     },
     {
       "id": "H15",

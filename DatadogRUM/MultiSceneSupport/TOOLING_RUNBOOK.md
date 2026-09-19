@@ -1949,3 +1949,19 @@ End the owned session without sending unsupported interactions, restore the
 prior simulator state and retain the pending desktop-unlock dependency. This is
 a bounded workflow limitation, not a platform capability result. Retry only when
 desktop access or the supported interaction workflow changes.
+
+EXP-193 pose input uses testAdaptivePoseSequence with a fresh runner UUID and
+unique run-bound marker/selection command files. Admit every marker after native
+geometry, accepted route and completed materialization evidence. A sidebar
+overlay can leave detail text discoverable while Clear selection is not hittable;
+dismiss the observed overlay through native input and require the button hittable.
+Do not treat element existence as input readiness. Preserve the original failed
+run, then rebuild the changed UI fixture and use a fresh run. Keep the app alive
+through exact42-work/seven-view backend verification before releasing finish.
+Direct active-display captures remain necessary when Device Hub shows black.
+
+When the desktop locks, preserve and clean any partial UI run, keep a single
+pending unlock request and immediately continue work that needs no desktop.
+Review F02 ownership guidance against source/evidence or prepare F03 inventories
+within their existing scope. F01 still gates API promotion, publishing and the
+final candidate; do not infer approval or repeat accepted tests to fill the wait.

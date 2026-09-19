@@ -395,3 +395,10 @@ foreground Home. Fresh backend acceptance now matches all six owners with zero
 stray work/errors/crashes; app/data and owned-simulator cleanup pass. F05 remains
 blocked on the physical multi-window environment. No SDK defect is assigned, and
 production source/review dispositions remain unchanged.
+
+EXP-193 now accepts both guarded simulator slices. The pose helper initially
+rejects a Clear selection button covered by the native sidebar; dismissing the
+overlay through native input permits the unchanged ten-phase/42-work oracle to
+pass with seven exact backend views and zero errors/crashes. Each UI slice passes
+1/1 with verified source/code and cleanup. This resolves fixture acceptance,
+not a production SDK defect; all physical and final review obligations remain.

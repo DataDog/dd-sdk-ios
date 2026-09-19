@@ -2,7 +2,7 @@
   "experiment": "EXP-193",
   "gate": "H14",
   "owner": "SDK implementer",
-  "status": "IN PROGRESS",
+  "status": "PASS - SIMULATOR SLICES",
   "admission": "Closes the existing adaptive-layout simulator obligation and investigates the native selection fixture precondition found by EXP-192. No new product API or telemetry family.",
   "candidate_sdk_revision": "04201edc7711361279d8487b385bc8b0ca9c63c7",
   "definition_parent_revision": "9b694cad7fc5fd5afe68f01b6c39890caa158437",
@@ -30,7 +30,7 @@
     "negative_mutations": 27,
     "native_build": "PASS",
     "new_model_and_catalog_tests": "6/6 PASS",
-    "native_backend_acceptance": "Resize5/5 phases,16 exact work,3 views and0 backend errors PASS; pose remains pending.",
+    "native_backend_acceptance": "Resize5/5 phases,16 exact work,3 views,0 errors and pose10/10 phases,42 exact work,7 views,0 errors/crashes PASS. Each UI test1/1 and full cleanup.",
     "revised_fixture_build": "PASS"
   },
   "attempts": [
@@ -73,6 +73,11 @@
       "run_id": "35a10966-15ba-4631-9b06-6d7778998d8e",
       "status": "FAIL_UI_HIT_TARGET",
       "result": "acceptance/exp193-35a10966-15ba-4631-9b06-6d7778998d8e.json"
+    },
+    {
+      "run_id": "f975fbec-cd6a-458d-a064-3b5ef2e3e559",
+      "status": "PASS_POSE_SLICE",
+      "result": "acceptance/exp193-f975fbec-cd6a-458d-a064-3b5ef2e3e559.json"
     }
   ],
   "revised_acceptance_defined_before_implementation": {
@@ -83,12 +88,12 @@
     "boundary": "Resize proves callback-driven semantic ownership under measured geometry; black Resizable display prevents visible-layout/input equivalence claims. End/export acceptance before session cleanup backgrounds the app.",
     "required_backend": "Complete per-run view inventory, exact custom Action/Resource IDs and owners, zero errors. Original physical obligation remains."
   },
-  "resume": "Build the declared XCTest pose collector, qualify fresh ten-phase native/backend acceptance, then resume dependency-ready regular plan work. Preserve accepted resize and exhausted direct input attempts.",
+  "resume": "Both finite simulator slices accepted. Do not repeat them merely to resume. Physical H14 remains; continue dependency-ready regular plan preparation.",
   "current_build": {
-    "source_revision": "3c5a267b0075f0fed85650430383eb4baf4d594f",
-    "signature": "UNSIGNED_LOCAL_SIGNER_UNAVAILABLE",
-    "artifact_root": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp193-ui-resize-ziw76thy",
-    "native_ui_prefix": "1/1 PASS",
+    "source_revision": "7c8154aca83b9f9c932305f1afd34c23bb788e52",
+    "signature": "VERIFIED_GIT_SIGNATURE",
+    "artifact_root": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp193-ui-pose-97a9s4it",
+    "native_ui_pose": "1/1 PASS",
     "source_manifest": "source.json",
     "built_app": "DerivedData/Build/Products/Debug-iphonesimulator/RUMNativeMultiSceneProbe.app",
     "reuse_after_identity_verification": true
@@ -121,7 +126,8 @@
       "user_devices_untouched": true
     },
     "resume": "Use actual desktop pose controls after unlock, or a newly available supported device-interaction workflow. Revalidate native source/build identity and use fresh run/session IDs. Do not repeat accepted resize or unchanged tooling discovery.",
-    "boundary": "A workflow availability limit, not proof that Xcode or the Duo simulator cannot support pose controls."
+    "boundary": "A workflow availability limit, not proof that Xcode or the Duo simulator cannot support pose controls.",
+    "resolved_by": "acceptance/exp193-f975fbec-cd6a-458d-a064-3b5ef2e3e559.json"
   },
   "automated_pose_input_defined_before_implementation": {
     "reason": "Desktop pose controls produce native geometry while Device Hub shows the inactive black canvas and two direct tap modes do not deliver markers. Reuse the separately qualified XCTest button-input mechanism.",
@@ -135,5 +141,6 @@
     "boundary": "Qualifies only controlled native buttons and measured simulator pose callbacks, not human gesture or physical hinge parity. No production SDK or semantic oracle change.",
     "validation": "Build changed UI harness and execute only the new ten-phase UI test. Reuse the unchanged six model/catalog checks and nine oracle tests; no repeat resize or bulk tests."
   },
-  "pose_input_followup": "Preserve nine completed native phases and the phase10 non-hittable clear failure. Dismiss the observed sidebar overlay with actual native input, require Clear selection hittable, then use a fresh frozen run with unchanged semantic oracle."
+  "pose_input_followup": "Preserve nine completed native phases and the phase10 non-hittable clear failure. Dismiss the observed sidebar overlay with actual native input, require Clear selection hittable, then use a fresh frozen run with unchanged semantic oracle.",
+  "accepted_pose": "acceptance/exp193-f975fbec-cd6a-458d-a064-3b5ef2e3e559.json"
 }
