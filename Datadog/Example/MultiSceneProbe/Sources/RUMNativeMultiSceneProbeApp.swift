@@ -159,6 +159,15 @@ enum ProbeRuntime {
         guard usesObservableScenarioDriver, let scenario else {
             return nil
         }
+        let physicalAdmission: ProbePhysicalTopologyAdmission?
+        if scenario.identifier == ProbePhysicalTopologyAdmission.scenarioID,
+           ProcessInfo.processInfo.environment["DD_PROBE_PHYSICAL_TOPOLOGY"] == "1",
+           let documents = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first {
+            physicalAdmission = .init(runID: runID, registry: sceneRegistry,
+                                      recorder: eventRecorder, directory: documents)
+        } else {
+            physicalAdmission = nil
+        }
         return ProbeScenarioDriver(
             scenario: scenario,
             recorder: eventRecorder,
@@ -173,7 +182,10 @@ enum ProbeRuntime {
                 ? 180_000_000_000
                 : options.exercisesUIKitScrollOwnership
                     ? 60_000_000_000
-                    : 10_000_000_000
+                    : 10_000_000_000,
+            stepAdmission: physicalAdmission.map { admission in
+                { index, step, after in await admission.check(index: index, step: step, after: after) }
+            }
         )
     }()
 

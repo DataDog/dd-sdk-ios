@@ -1,0 +1,335 @@
+{
+  "completionConditions": [
+    {
+      "interval": "keyed-manual-authority-scene-B",
+      "kind": "no-view-started",
+      "rumViewOrigin": "automatic"
+    },
+    {
+      "kind": "action",
+      "name": "same-key-home-b-returned",
+      "ownerViewReferenceAction": "same-key-home-b-before-manual",
+      "ownerViewRelation": "different",
+      "rumViewOrigin": "automatic",
+      "sourceScene": "scene-B",
+      "sourceScreen": "home"
+    },
+    {
+      "kind": "action",
+      "name": "same-key-compose-a-after-b-stop",
+      "occurrence": 1,
+      "ownerViewReferenceAction": "same-key-compose-a-active",
+      "ownerViewRelation": "same",
+      "rumViewOrigin": "semantic",
+      "scene": "scene-A",
+      "screen": "compose",
+      "sourceScene": "scene-A",
+      "sourceScreen": "compose"
+    },
+    {
+      "kind": "action",
+      "name": "same-key-home-a-returned",
+      "ownerViewReferenceAction": "same-key-home-a-before-manual",
+      "ownerViewRelation": "different",
+      "rumViewOrigin": "automatic",
+      "sourceScene": "scene-A",
+      "sourceScreen": "home"
+    }
+  ],
+  "defaultRunMode": "clean",
+  "expectedSemanticTimeline": [
+    {
+      "kind": "action",
+      "name": "same-key-home-a-before-manual",
+      "rumViewOrigin": "automatic",
+      "sourceScene": "scene-A",
+      "sourceScreen": "home"
+    },
+    {
+      "kind": "resource",
+      "name": "same-key-home-a-before-manual",
+      "ownerViewReferenceAction": "same-key-home-a-before-manual",
+      "ownerViewRelation": "same",
+      "rumViewOrigin": "automatic",
+      "sourceScene": "scene-A",
+      "sourceScreen": "home"
+    },
+    {
+      "kind": "action",
+      "name": "same-key-home-b-before-manual",
+      "ownerViewReferenceAction": "same-key-home-a-before-manual",
+      "ownerViewRelation": "different",
+      "ownerViewStartedAfterSceneOpen": "scene-B",
+      "rumViewOrigin": "automatic",
+      "sourceScene": "scene-B",
+      "sourceScreen": "home"
+    },
+    {
+      "kind": "resource",
+      "name": "same-key-home-b-before-manual",
+      "ownerViewReferenceAction": "same-key-home-b-before-manual",
+      "ownerViewRelation": "same",
+      "rumViewOrigin": "automatic",
+      "sourceScene": "scene-B",
+      "sourceScreen": "home"
+    },
+    {
+      "kind": "view-started",
+      "occurrence": 1,
+      "rumViewOrigin": "semantic",
+      "scene": "scene-A",
+      "screen": "compose"
+    },
+    {
+      "kind": "action",
+      "name": "same-key-compose-a-active",
+      "occurrence": 1,
+      "ownerViewReferenceAction": "same-key-home-a-before-manual",
+      "ownerViewRelation": "different",
+      "rumViewOrigin": "semantic",
+      "scene": "scene-A",
+      "screen": "compose",
+      "sourceScene": "scene-A",
+      "sourceScreen": "compose"
+    },
+    {
+      "kind": "resource",
+      "name": "same-key-compose-a-active",
+      "occurrence": 1,
+      "ownerViewReferenceAction": "same-key-compose-a-active",
+      "ownerViewRelation": "same",
+      "rumViewOrigin": "semantic",
+      "scene": "scene-A",
+      "screen": "compose",
+      "sourceScene": "scene-A",
+      "sourceScreen": "compose"
+    },
+    {
+      "kind": "view-started",
+      "occurrence": 1,
+      "rumViewOrigin": "semantic",
+      "scene": "scene-B",
+      "screen": "compose"
+    },
+    {
+      "kind": "action",
+      "name": "same-key-compose-b-active",
+      "occurrence": 1,
+      "ownerViewReferenceAction": "same-key-compose-a-active",
+      "ownerViewRelation": "different",
+      "rumViewOrigin": "semantic",
+      "scene": "scene-B",
+      "screen": "compose",
+      "sourceScene": "scene-B",
+      "sourceScreen": "compose"
+    },
+    {
+      "kind": "resource",
+      "name": "same-key-compose-b-active",
+      "occurrence": 1,
+      "ownerViewReferenceAction": "same-key-compose-b-active",
+      "ownerViewRelation": "same",
+      "rumViewOrigin": "semantic",
+      "scene": "scene-B",
+      "screen": "compose",
+      "sourceScene": "scene-B",
+      "sourceScreen": "compose"
+    },
+    {
+      "kind": "view-stopped",
+      "occurrence": 1,
+      "rumViewOrigin": "semantic",
+      "scene": "scene-B",
+      "screen": "compose"
+    },
+    {
+      "kind": "action",
+      "name": "same-key-home-b-returned",
+      "ownerViewReferenceAction": "same-key-compose-b-active",
+      "ownerViewRelation": "different",
+      "ownerViewStartedAfterStep": "stop-keyed-manual-view",
+      "ownerViewStartedAfterStepValue": "compose",
+      "rumViewOrigin": "automatic",
+      "sourceScene": "scene-B",
+      "sourceScreen": "home"
+    },
+    {
+      "kind": "resource",
+      "name": "same-key-home-b-returned",
+      "ownerViewReferenceAction": "same-key-home-b-returned",
+      "ownerViewRelation": "same",
+      "rumViewOrigin": "automatic",
+      "sourceScene": "scene-B",
+      "sourceScreen": "home"
+    },
+    {
+      "kind": "action",
+      "name": "same-key-compose-a-after-b-stop",
+      "occurrence": 1,
+      "ownerViewReferenceAction": "same-key-compose-a-active",
+      "ownerViewRelation": "same",
+      "rumViewOrigin": "semantic",
+      "scene": "scene-A",
+      "screen": "compose",
+      "sourceScene": "scene-A",
+      "sourceScreen": "compose"
+    },
+    {
+      "kind": "resource",
+      "name": "same-key-compose-a-after-b-stop",
+      "occurrence": 1,
+      "ownerViewReferenceAction": "same-key-compose-a-after-b-stop",
+      "ownerViewRelation": "same",
+      "rumViewOrigin": "semantic",
+      "scene": "scene-A",
+      "screen": "compose",
+      "sourceScene": "scene-A",
+      "sourceScreen": "compose"
+    },
+    {
+      "kind": "view-stopped",
+      "occurrence": 1,
+      "rumViewOrigin": "semantic",
+      "scene": "scene-A",
+      "screen": "compose"
+    },
+    {
+      "kind": "action",
+      "name": "same-key-home-a-returned",
+      "ownerViewReferenceAction": "same-key-compose-a-after-b-stop",
+      "ownerViewRelation": "different",
+      "ownerViewStartedAfterStep": "stop-keyed-manual-view",
+      "ownerViewStartedAfterStepValue": "compose",
+      "rumViewOrigin": "automatic",
+      "sourceScene": "scene-A",
+      "sourceScreen": "home"
+    },
+    {
+      "kind": "resource",
+      "name": "same-key-home-a-returned",
+      "ownerViewReferenceAction": "same-key-home-a-returned",
+      "ownerViewRelation": "same",
+      "rumViewOrigin": "automatic",
+      "sourceScene": "scene-A",
+      "sourceScreen": "home"
+    }
+  ],
+  "identifier": "swiftui.coexistence.same-key-manual-two-scenes",
+  "initialWindows": [
+    "scene-A",
+    "scene-B"
+  ],
+  "layout": "stack",
+  "requiredCapabilities": [
+    "multiple-scenes",
+    "simultaneous-visible-windows"
+  ],
+  "runtimeOptions": {
+    "automaticallyAbortsDetail": false,
+    "automaticallyAdvancesSplitSelection": true,
+    "automaticallyClosesSceneB": false,
+    "automaticallyNavigates": false,
+    "automaticallyOpensSecondWindow": false,
+    "automaticallyPopsUIKitSplitNavigation": true,
+    "automaticallyReplacesDetail": false,
+    "automaticallyReplacesDetailInstance": false,
+    "automaticallyReturnsSplitToDetail": false,
+    "exercisesSwiftUIButtonStructuredTask": false,
+    "exercisesTraceOnlyURLSessionOwnership": false,
+    "exercisesUIEventContextHandoff": false,
+    "exercisesUIKitScrollOwnership": false,
+    "forcesNavigationRouteIdentity": false,
+    "initialSwiftUIPath": [],
+    "manualSwiftUIViewScreensByScene": {},
+    "startsSplitWithoutSelection": false,
+    "swiftUIRouterWritePolicy": "accept",
+    "swiftUIStress": "none"
+  },
+  "steps": [
+    {
+      "kind": "wait-for-scene-ready",
+      "scene": "scene-A"
+    },
+    {
+      "kind": "wait-for-signal",
+      "scene": "scene-A",
+      "signal": "marker:task-delayed"
+    },
+    {
+      "kind": "emit-scene-context-marker",
+      "scene": "scene-A",
+      "value": "same-key-home-a-before-manual"
+    },
+    {
+      "kind": "open-window",
+      "scene": "scene-A",
+      "value": "scene-B"
+    },
+    {
+      "kind": "wait-for-signal",
+      "scene": "scene-B",
+      "signal": "marker:task-delayed"
+    },
+    {
+      "kind": "emit-scene-context-marker",
+      "scene": "scene-B",
+      "value": "same-key-home-b-before-manual"
+    },
+    {
+      "kind": "start-keyed-manual-view",
+      "scene": "scene-A",
+      "value": "compose"
+    },
+    {
+      "kind": "wait-for-signal",
+      "scene": "scene-A",
+      "signal": "rum-view:compose#1"
+    },
+    {
+      "kind": "emit-scene-context-marker",
+      "scene": "scene-A",
+      "value": "same-key-compose-a-active"
+    },
+    {
+      "kind": "start-keyed-manual-view",
+      "scene": "scene-B",
+      "value": "compose"
+    },
+    {
+      "kind": "wait-for-signal",
+      "scene": "scene-B",
+      "signal": "rum-view:compose#1"
+    },
+    {
+      "kind": "emit-scene-context-marker",
+      "scene": "scene-B",
+      "value": "same-key-compose-b-active"
+    },
+    {
+      "kind": "stop-keyed-manual-view",
+      "scene": "scene-B",
+      "value": "compose"
+    },
+    {
+      "kind": "emit-scene-context-marker",
+      "scene": "scene-B",
+      "value": "same-key-home-b-returned"
+    },
+    {
+      "kind": "emit-scene-context-marker",
+      "scene": "scene-A",
+      "value": "same-key-compose-a-after-b-stop"
+    },
+    {
+      "kind": "stop-keyed-manual-view",
+      "scene": "scene-A",
+      "value": "compose"
+    },
+    {
+      "kind": "emit-scene-context-marker",
+      "scene": "scene-A",
+      "value": "same-key-home-a-returned"
+    }
+  ],
+  "trackingMode": "automatic"
+}

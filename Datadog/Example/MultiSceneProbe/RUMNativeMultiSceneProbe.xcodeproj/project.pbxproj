@@ -18,6 +18,9 @@
 		11DB445B2C9284F5F9BA1138 /* DatadogSessionReplay in Frameworks */ = {isa = PBXBuildFile; productRef = 3619B1ED27145B33E7C63ADC /* DatadogSessionReplay */; };
 		15F3958E3D257745B782A89A /* forbidden-view-start.jsonl in Resources */ = {isa = PBXBuildFile; fileRef = 98D75AA30A615CC0F681F85E /* forbidden-view-start.jsonl */; };
 		268E845A305E61A700526130 /* ProbeReplayAcceptance.swift in Sources */ = {isa = PBXBuildFile; fileRef = 268E8459305E61A700526130 /* ProbeReplayAcceptance.swift */; };
+		268E845C305EF3D200526130 /* ProbePhysicalTopologyAdmission.swift in Sources */ = {isa = PBXBuildFile; fileRef = 268E845B305EF3D200526130 /* ProbePhysicalTopologyAdmission.swift */; };
+		268E845D305EF3D200526130 /* ProbePhysicalTopologyAdmission.swift in Sources */ = {isa = PBXBuildFile; fileRef = 268E845B305EF3D200526130 /* ProbePhysicalTopologyAdmission.swift */; };
+		268E845F305EF46F00526130 /* ProbePhysicalTopologyAdmissionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 268E845E305EF46F00526130 /* ProbePhysicalTopologyAdmissionTests.swift */; };
 		2B5981885706E364F5011A3D /* DatadogCore in Frameworks */ = {isa = PBXBuildFile; productRef = B687B5705E5D4BD0978C21DF /* DatadogCore */; };
 		2C07E3A04E9579E1F7B581F0 /* ProbeScenarioDriverTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 06BAF138BE59AA8DB812BBB5 /* ProbeScenarioDriverTests.swift */; };
 		31216B1B65CFF78FF7B29FF2 /* ProbeEventRecorder.swift in Sources */ = {isa = PBXBuildFile; fileRef = E6DCA832EA79D2B51CCE8F71 /* ProbeEventRecorder.swift */; };
@@ -105,6 +108,8 @@
 		25668E902287A5FE703DBAB0 /* ProbeSemanticOracleTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProbeSemanticOracleTests.swift; sourceTree = "<group>"; };
 		2650C73317A64214B77300AA /* ProbeStep.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProbeStep.swift; sourceTree = "<group>"; };
 		268E8459305E61A700526130 /* ProbeReplayAcceptance.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProbeReplayAcceptance.swift; sourceTree = "<group>"; };
+		268E845B305EF3D200526130 /* ProbePhysicalTopologyAdmission.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProbePhysicalTopologyAdmission.swift; sourceTree = "<group>"; };
+		268E845E305EF46F00526130 /* ProbePhysicalTopologyAdmissionTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProbePhysicalTopologyAdmissionTests.swift; sourceTree = "<group>"; };
 		28A01A1F5D1DF3E150096023 /* ProbeTraceAcceptance.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProbeTraceAcceptance.swift; sourceTree = "<group>"; };
 		2DD1D3A780FB64C8A08CA5C0 /* ProbeTimingAcceptance.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProbeTimingAcceptance.swift; sourceTree = "<group>"; };
 		33866757DCBF462D1D2194B2 /* ProbeVitalsAcceptance.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProbeVitalsAcceptance.swift; sourceTree = "<group>"; };
@@ -251,6 +256,7 @@
 				E1B4BBCB6618CBD634C9EF1C /* ProbeScenarioRunnerTests.swift */,
 				F55027F10376A6DADE46708D /* ProbeSceneRegistryTests.swift */,
 				25668E902287A5FE703DBAB0 /* ProbeSemanticOracleTests.swift */,
+				268E845E305EF46F00526130 /* ProbePhysicalTopologyAdmissionTests.swift */,
 			);
 			path = Tests;
 			sourceTree = "<group>";
@@ -296,6 +302,7 @@
 				F3A70657709149B5CC243C87 /* ProbeSemanticTimeline.swift */,
 				49C216758C04BBEEBAACFC20 /* ProbeSignal.swift */,
 				2650C73317A64214B77300AA /* ProbeStep.swift */,
+				268E845B305EF3D200526130 /* ProbePhysicalTopologyAdmission.swift */,
 			);
 			path = Harness;
 			sourceTree = "<group>";
@@ -458,6 +465,7 @@
 				03A8C9CDB649A7F94DB09802 /* ProbeScenarioDriver.swift in Sources */,
 				F0653AB971C90BD3CA791B4F /* ProbeScenarioRunner.swift in Sources */,
 				718C7C1DFDC6CD96C2A18678 /* ProbeSceneRegistry.swift in Sources */,
+				268E845D305EF3D200526130 /* ProbePhysicalTopologyAdmission.swift in Sources */,
 				5F048A36A049F99C80DCD55A /* ProbeSemanticOracle.swift in Sources */,
 				474753A8459F5DC4D3FE60D8 /* ProbeSemanticTimeline.swift in Sources */,
 				713DBF2CBCC5C4A4DE6E3875 /* ProbeSignal.swift in Sources */,
@@ -475,6 +483,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				268E845F305EF46F00526130 /* ProbePhysicalTopologyAdmissionTests.swift in Sources */,
 				E5B1119EF4E23D8B253956E8 /* EXP147BaselineNavigation.swift in Sources */,
 				E0B8CA8CFEACD357B5F47829 /* EXP147InstrumentedComposition.swift in Sources */,
 				0570AADDD891864EA6535ED7 /* EXP147MessagingScreens.swift in Sources */,
@@ -491,6 +500,7 @@
 				FEB852255135F2BEEAED1164 /* ProbeExpectation.swift in Sources */,
 				4A0A157743236432537BD024 /* ProbeScenario.swift in Sources */,
 				076A381651E81D748B1220CA /* ProbeScenarioCatalog.swift in Sources */,
+				268E845C305EF3D200526130 /* ProbePhysicalTopologyAdmission.swift in Sources */,
 				5708C4F0B8ABB9CA57E5DC0F /* ProbeScenarioDriver.swift in Sources */,
 				2C07E3A04E9579E1F7B581F0 /* ProbeScenarioDriverTests.swift in Sources */,
 				0D516852A5B5DA83F90F3FAA /* ProbeScenarioRunner.swift in Sources */,

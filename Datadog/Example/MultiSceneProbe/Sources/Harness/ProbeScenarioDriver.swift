@@ -298,6 +298,7 @@ internal final class ProbeScenarioDriver {
     private let sceneRegistry: ProbeSceneRegistry
     private let stepTimeoutNanoseconds: UInt64
     private let terminalTimeoutNanoseconds: UInt64
+    private let stepAdmission: ((Int, ProbeStep, Bool) async -> String?)?
     private var registrations: [String: Registration] = [:]
     private var runTask: Task<Void, Never>?
     private(set) var terminalResult: ProbeSemanticResult?
@@ -307,13 +308,15 @@ internal final class ProbeScenarioDriver {
         recorder: ProbeEventRecorder,
         sceneRegistry: ProbeSceneRegistry,
         stepTimeoutNanoseconds: UInt64 = 10_000_000_000,
-        terminalTimeoutNanoseconds: UInt64 = 10_000_000_000
+        terminalTimeoutNanoseconds: UInt64 = 10_000_000_000,
+        stepAdmission: ((Int, ProbeStep, Bool) async -> String?)? = nil
     ) {
         self.scenario = scenario
         self.recorder = recorder
         self.sceneRegistry = sceneRegistry
         self.stepTimeoutNanoseconds = stepTimeoutNanoseconds
         self.terminalTimeoutNanoseconds = terminalTimeoutNanoseconds
+        self.stepAdmission = stepAdmission
     }
 
     func register(
@@ -365,6 +368,14 @@ internal final class ProbeScenarioDriver {
                 )
             )
 
+            if let reason = await stepAdmission?(index, step, false) {
+                finish(state: .inconclusive, matchedExpectationCount: 0,
+                       issue: ProbeSemanticIssue(expectationIndex: nil, expectation: nil,
+                                                 signalSequence: started.sequence,
+                                                 reason: "precritical admission: \(reason)"))
+                return
+            }
+
             let outcome = await execute(
                 step,
                 after: observationCursor,
@@ -400,6 +411,14 @@ internal final class ProbeScenarioDriver {
                         reason: "step \(index) \(step.kind.rawValue) failed: \(reason)"
                     )
                 )
+                return
+            }
+
+            if let reason = await stepAdmission?(index, step, true) {
+                finish(state: .inconclusive, matchedExpectationCount: 0,
+                       issue: ProbeSemanticIssue(expectationIndex: nil, expectation: nil,
+                                                 signalSequence: observation.sequence,
+                                                 reason: "critical interval admission: \(reason)"))
                 return
             }
 

@@ -434,6 +434,7 @@ internal struct ProbeSignal: Codable, Equatable {
     let error: ProbeErrorSignal?
     let log: ProbeLogWireIdentity?
     let replay: ProbeReplayObservation?
+    let physicalTopology: ProbePhysicalTopologyObservation?
     let vitals: ProbeVitalsObservation?
     let processSignal: ProbeProcessObservation?
     let fatal: ProbeFatalObservation?
@@ -482,6 +483,7 @@ internal struct ProbeSignal: Codable, Equatable {
         error: ProbeErrorSignal? = nil,
         log: ProbeLogWireIdentity? = nil,
         replay: ProbeReplayObservation? = nil,
+        physicalTopology: ProbePhysicalTopologyObservation? = nil,
         vitals: ProbeVitalsObservation? = nil,
         processSignal: ProbeProcessObservation? = nil,
         fatal: ProbeFatalObservation? = nil,
@@ -530,6 +532,7 @@ internal struct ProbeSignal: Codable, Equatable {
         self.error = error
         self.log = log
         self.replay = replay
+        self.physicalTopology = physicalTopology
         self.vitals = vitals
         self.processSignal = processSignal
         self.fatal = fatal
@@ -585,6 +588,7 @@ internal struct ProbeSignal: Codable, Equatable {
             error: error,
             log: log,
             replay: replay,
+            physicalTopology: physicalTopology,
             vitals: vitals,
             processSignal: processSignal,
             fatal: fatal,

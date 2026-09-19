@@ -594,5 +594,38 @@
     ],
     "implementation": "Separate validate_physical_local entrypoint implemented; original timing still rejects the physical record. Focused six tests pass. Fresh physical run required."
   },
-  "next": "H01 precritical simultaneous-window admission, then each independent case in execution_order."
+  "next": "H01 precritical simultaneous-window admission, then each independent case in execution_order.",
+  "h01_collector_definition": {
+    "defined_at": 1789836265.35157,
+    "before_implementation": true,
+    "scope": "Existing same-key A/B scenario only; native fixture and acceptance tooling, no SDK behavior change.",
+    "barrier": "Before step6 first manual start, publish a fresh run/process/nonce challenge. Wait boundedly for a host receipt tied to independent two-visible-window screenshot and continuous capture. No manual mutation executes before receipt validation and fresh live native topology.",
+    "live_checks": "Exact two distinct scene sessions and generations, attached visible windows, finite positive geometry and foreground active/inactive at each before/after step6-16; sample during asynchronous waits. Any loss is sticky INCONCLUSIVE and prevents later mutation.",
+    "receipt_checks": "Exact run/scenario/process/nonce, fresh capture time, nonempty capture identifier and valid screenshot SHA256, exact native/generation map; consume once. Capability flags and local frames alone cannot establish visibility.",
+    "ui": "Use actual device controls to arrange both probe windows; retain physical display capture before receipt admission and through the last marker. No user gestures requested.",
+    "semantic": "Original seven named Action/Resource pairs and strict22-expectation ownership unchanged; complete backend session inventory joins exact mapper IDs.",
+    "negative_controls": [
+      "wrong run/scenario/process/nonce",
+      "late/stale capture",
+      "malformed evidence hash",
+      "same native scene",
+      "changed generation",
+      "hidden/background/detached/zero geometry",
+      "barrier failure before executor",
+      "loss after B stop before A marker",
+      "receipt reuse",
+      "wrong owner/stale Home/extra work"
+    ]
+  },
+  "h01_collector_verification": {
+    "artifact_root": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp196-h01-collector-tests-dl8t92u8",
+    "native_tests": 28,
+    "native_breakdown": "6 new topology tests plus22 existing driver tests",
+    "native_environment": "Fresh task-owned iPad27.0 simulator; deleted after pass. Physical tool-hosted unit target explicitly rejected by Xcode, preserved separately.",
+    "python_tests": 5,
+    "python_negative_controls": 37,
+    "sdk_source_changed": false,
+    "new_swift_files": "Created and registered through Xcode MCP; app and unit-test compilation verified",
+    "status": "collector tests pass; physical H01 not yet run"
+  }
 }
