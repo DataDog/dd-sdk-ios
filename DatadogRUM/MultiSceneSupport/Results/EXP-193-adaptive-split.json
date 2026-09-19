@@ -63,6 +63,11 @@
       "run_id": "fe320ebe-295b-416d-b807-006dcc66298f",
       "status": "PASS_RESIZE_SLICE",
       "result": "acceptance/exp193-fe320ebe-295b-416d-b807-006dcc66298f.json"
+    },
+    {
+      "run_id": "aa1545a0-366b-4974-b442-365e9d6f78b7",
+      "status": "INCONCLUSIVE_INPUT",
+      "result": "acceptance/exp193-aa1545a0-366b-4974-b442-365e9d6f78b7.json"
     }
   ],
   "revised_acceptance_defined_before_implementation": {
@@ -73,7 +78,7 @@
     "boundary": "Resize proves callback-driven semantic ownership under measured geometry; black Resizable display prevents visible-layout/input equivalence claims. End/export acceptance before session cleanup backgrounds the app.",
     "required_backend": "Complete per-run view inventory, exact custom Action/Resource IDs and owners, zero errors. Original physical obligation remains."
   },
-  "resume": "Resize slice accepted and cleaned. Reuse current_build after identity checks for fresh10-phase pose acceptance when unlock arrives; do not repeat accepted resize. Q5 outer gesture qualification remains independently possible through XCTest after native outer-display readback.",
+  "resume": "Build the declared XCTest pose collector, qualify fresh ten-phase native/backend acceptance, then resume dependency-ready regular plan work. Preserve accepted resize and exhausted direct input attempts.",
   "current_build": {
     "source_revision": "3c5a267b0075f0fed85650430383eb4baf4d594f",
     "signature": "UNSIGNED_LOCAL_SIGNER_UNAVAILABLE",
@@ -112,5 +117,17 @@
     },
     "resume": "Use actual desktop pose controls after unlock, or a newly available supported device-interaction workflow. Revalidate native source/build identity and use fresh run/session IDs. Do not repeat accepted resize or unchanged tooling discovery.",
     "boundary": "A workflow availability limit, not proof that Xcode or the Duo simulator cannot support pose controls."
+  },
+  "automated_pose_input_defined_before_implementation": {
+    "reason": "Desktop pose controls produce native geometry while Device Hub shows the inactive black canvas and two direct tap modes do not deliver markers. Reuse the separately qualified XCTest button-input mechanism.",
+    "protocol": [
+      "Fresh runner/run identity and clean installation; freeze all app/runner binaries and source before marker1.",
+      "Host records each phase request before actual Device Hub pose changes; fresh native geometry receipt precedes marker authorization.",
+      "For phases4,7,8,9,10, authorize only the declared actual Detail1/Detail2/Placeholder/return/clear input, then verify accepted route/generation before marker authorization.",
+      "Runner waits for each unique run-bound command and delivers one native button tap. Host requires the exact pair before the next boundary.",
+      "Keep the app alive through the unchanged ten-phase/42-work native/backend oracle; export before authorizing termination."
+    ],
+    "boundary": "Qualifies only controlled native buttons and measured simulator pose callbacks, not human gesture or physical hinge parity. No production SDK or semantic oracle change.",
+    "validation": "Build changed UI harness and execute only the new ten-phase UI test. Reuse the unchanged six model/catalog checks and nine oracle tests; no repeat resize or bulk tests."
   }
 }

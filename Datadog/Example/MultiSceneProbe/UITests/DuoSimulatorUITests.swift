@@ -144,6 +144,62 @@ final class DuoSimulatorUITests: XCTestCase {
         try checkpoint("adaptive-acceptance-exported", runID: runID)
     }
 
+    /// Measures pose boundaries through host-admitted native buttons and exact mapper evidence.
+    func testAdaptivePoseSequence() throws {
+        continueAfterFailure = false
+        let app = XCUIApplication()
+        let runID = UUID().uuidString.lowercased()
+        let directory = artifactDirectory.appendingPathComponent(runID)
+        try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+        let scenario = "swiftui.split.adaptive-accepted-state"
+        let identity = try JSONSerialization.data(withJSONObject: [
+            "runID": runID, "scenario": scenario,
+            "createdAt": String(Date().timeIntervalSince1970)
+        ], options: [.sortedKeys])
+        try identity.write(to: artifactDirectory.appendingPathComponent("active-run.json"), options: .atomic)
+        app.launchArguments = [
+            "--probe-scenario", scenario, "--probe-run-id", runID, "--probe-run-mode", "clean"
+        ]
+        app.launchEnvironment["DD_PROBE_CAPTURE_JSONL"] = "1"
+        try checkpoint("pose-launch", runID: runID)
+        app.launch()
+        defer {
+            try? checkpoint("pose-terminate", runID: runID)
+            app.terminate()
+            try? checkpoint("pose-terminated", runID: runID)
+        }
+        XCTAssertTrue(app.staticTexts["accepted generation: 0"].waitForExistence(timeout: 15))
+        try checkpoint("pose-ready", runID: runID)
+        let selections: [Int: (label: String, generation: Int)] = [
+            4: ("Detail 1", 1), 7: ("Detail 2", 2), 8: ("Placeholder", 3),
+            9: ("Detail 1", 4), 10: ("Clear selection", 5)
+        ]
+        for ordinal in 1...10 {
+            if let selection = selections[ordinal] {
+                try waitForControl("select-phase-" + String(ordinal), runID: runID, directory: directory)
+                if selection.label != "Clear selection" {
+                    let sidebar = app.buttons["Show Sidebar"]
+                    if sidebar.exists && sidebar.isHittable { sidebar.tap() }
+                }
+                let candidates = app.buttons.matching(NSPredicate(format: "label == %@", selection.label))
+                XCTAssertTrue(candidates.firstMatch.waitForExistence(timeout: 10))
+                let button = try XCTUnwrap(candidates.allElementsBoundByIndex.first { $0.isHittable })
+                button.tap()
+                XCTAssertTrue(
+                    app.staticTexts["accepted generation: " + String(selection.generation)]
+                        .waitForExistence(timeout: 10)
+                )
+                try checkpoint("pose-selected-" + String(ordinal), runID: runID)
+            }
+            try waitForControl("marker-" + String(ordinal), runID: runID, directory: directory)
+            try tapAdaptiveMarker(app)
+            try checkpoint("pose-marker-" + String(ordinal) + "-delivered", runID: runID)
+        }
+        // Termination follows the host's complete native and backend export.
+        try waitForControl("finish", runID: runID, directory: directory)
+        try checkpoint("pose-acceptance-exported", runID: runID)
+    }
+
     func testOuterUIKitCancelInput() throws {
         try qualifyOuterUIKitInput(outcome: "cancel", endFraction: 0.18)
     }

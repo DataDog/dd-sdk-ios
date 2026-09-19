@@ -1,0 +1,24 @@
+{
+  "experiment": "EXP-193",
+  "run_id": "aa1545a0-366b-4974-b442-365e9d6f78b7",
+  "status": "INCONCLUSIVE_INPUT",
+  "mode": "pose",
+  "source_revision": "6e8980bbc598b4bb80df06610ff613ecd25f9eef",
+  "oracle_revision": "7da8a752530d5c2d435d39c7e12e5aef1babf25a",
+  "artifact_root": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp193-pose-fyw03cni",
+  "build_reuse": "build-reuse.json",
+  "installed_code": "installed-code.json",
+  "native_signal_count": 13,
+  "reason": "Fresh inner669x951 regular empty-route evidence and active-display screenshot pass. Device Hub displays a black inactive canvas. AXe simulator and physical tap modes report delivery but produce no adaptive marker; stop equivalent direct taps.",
+  "gates_closed": [],
+  "cleanup": {
+    "app": {
+      "exit": 2,
+      "stderr": "An error was encountered processing the command (domain=NSPOSIXErrorDomain, code=2):\nThe operation couldn\u2019t be completed. No such file or directory\nNo such file or directory\n"
+    },
+    "data": {
+      "exit": 2,
+      "stderr": "An error was encountered processing the command (domain=NSPOSIXErrorDomain, code=2):\nThe operation couldn\u2019t be completed. No such file or directory\nNo such file or directory\n"
+    }
+  }
+}
