@@ -1915,3 +1915,10 @@ navigation, and after acknowledged OS disconnect plus A navigation. The native
 UIView stimulus creates recorder input under default privacy; do not inject
 records or use a browser bridge. The oracle requires complete five-view inventory,
 zero errors/crashes and clean removal. Physical F05 remains a separate requirement.
+
+
+Scene-ready means attached, not necessarily foreground-active. EXP-194 waits for
+the actual UIWindowScene activation before its counter baseline; a sleep or later
+record cannot repair early admission. Disable the probe's generic lifecycle
+markers for this finite recorder-only workload so undeclared Action/Resource
+noise remains a failing discriminator.

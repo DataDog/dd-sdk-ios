@@ -458,7 +458,7 @@ enum ProbeRuntime {
         guard !ProbeFatalContract.contains(scenario?.identifier ?? "") else {
             return
         }
-        guard ![ProbeVitalsContract.scenarioID, ProbeVitalsContract.physicalScenarioID, ProbeProcessContract.scenarioID, ProbeResourceContract.scenarioID, ProbeErrorContract.scenarioID, ProbeAttributeContract.scenarioID, ProbeTimingContract.scenarioID, ProbeFlagContract.scenarioID, ProbeTraceContract.scenarioID, ProbeLogContract.scenarioID, ProbeWebViewContract.scenarioID].contains(scenario?.identifier ?? "") else { return }
+        guard ![ProbeVitalsContract.scenarioID, ProbeVitalsContract.physicalScenarioID, ProbeProcessContract.scenarioID, ProbeResourceContract.scenarioID, ProbeErrorContract.scenarioID, ProbeAttributeContract.scenarioID, ProbeTimingContract.scenarioID, ProbeFlagContract.scenarioID, ProbeTraceContract.scenarioID, ProbeLogContract.scenarioID, ProbeWebViewContract.scenarioID, ProbeReplayContract.scenarioID].contains(scenario?.identifier ?? "") else { return }
         let uptime = ProcessInfo.processInfo.systemUptime
         let marker = "\(window.label).\(screen).\(phase)"
         let attributes: [String: Encodable] = [

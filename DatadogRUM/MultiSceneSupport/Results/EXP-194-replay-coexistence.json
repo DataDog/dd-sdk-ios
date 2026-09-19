@@ -67,6 +67,14 @@
       "status": "BUILD_FAILED",
       "result": "acceptance/exp194-20260919T063432Z-0b853adc3798.json",
       "reason": "Fixture treated optional RUMCoreContext.viewID as a dictionary key. Add explicit non-nil admission; native tests/scenario did not run."
+    },
+    {
+      "run_id": "exp194-20260919T063749Z-51ba25cc04e8",
+      "status": "FAIL_FIXTURE_ADMISSION",
+      "result": "acceptance/exp194-20260919T063749Z-51ba25cc04e8.json",
+      "native_tests": 205,
+      "observation": "R1 native count0->3 under exact A Home. B scene-ready is foreground-inactive at37 and R2 rejects at42 before any B record claim. Default generic lifecycle Action/Resource also remained enabled outside the declared contract. Both bundle/data cleanup exit2.",
+      "correction": "Wait boundedly for actual native foregroundActive before the recording baseline; exclude this controlled scenario from generic marker emission. No synthetic callbacks or relaxed oracle."
     }
   ],
   "gates_closed": [],
@@ -77,7 +85,7 @@
     "verification": {
       "python_tests": 3,
       "negative_controls": 29,
-      "xctest": "205 methods declared; native build/tests pending"
+      "xctest": "205/205 pass on corrected357f56277 build; next fixture admission adjustment needs a fresh build."
     }
   },
   "preflight": {
@@ -86,5 +94,5 @@
     "artifact_root": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp194-replay-vmpu3y31",
     "owned_device": "1B0D0EB0-CF23-4CEB-AEF1-2C8462184C03"
   },
-  "next": "Rebuild corrected fixture on the verified task iPad27.0, run205 native tests, then execute the unchanged four recording checkpoints."
+  "next": "Run unchanged four-checkpoint oracle after actual foreground activation and removal of undeclared generic fixture markers."
 }

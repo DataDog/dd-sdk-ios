@@ -1,0 +1,1708 @@
+{
+  "artifacts": {
+    "backend-exchanges.json": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp194-replay-vmpu3y31/attempt-2/backend-exchanges.json",
+    "boot-ready.log": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp194-replay-vmpu3y31/attempt-2/boot-ready.log",
+    "build-identity.json": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp194-replay-vmpu3y31/attempt-2/build-identity.json",
+    "build-tests.log": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp194-replay-vmpu3y31/attempt-2/build-tests.log",
+    "bundle-absence.log": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp194-replay-vmpu3y31/attempt-2/bundle-absence.log",
+    "console.raw.log": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp194-replay-vmpu3y31/attempt-2/console.raw.log",
+    "container-absence.log": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp194-replay-vmpu3y31/attempt-2/container-absence.log",
+    "frozen-code.json": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp194-replay-vmpu3y31/attempt-2/frozen-code.json",
+    "install.log": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp194-replay-vmpu3y31/attempt-2/install.log",
+    "installed-code.json": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp194-replay-vmpu3y31/attempt-2/installed-code.json",
+    "replay-absence-after-app.log": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp194-replay-vmpu3y31/attempt-2/replay-absence-after-app.log",
+    "replay-absence-after-data.log": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp194-replay-vmpu3y31/attempt-2/replay-absence-after-data.log",
+    "replay-cleanup.json": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp194-replay-vmpu3y31/attempt-2/replay-cleanup.json",
+    "replay-records.json": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp194-replay-vmpu3y31/attempt-2/replay-records.json",
+    "replay-uninstall-after.log": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp194-replay-vmpu3y31/attempt-2/replay-uninstall-after.log",
+    "source-identity.json": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp194-replay-vmpu3y31/attempt-2/source-identity.json",
+    "summary.json": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp194-replay-vmpu3y31/attempt-2/summary.json",
+    "terminate-after.log": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp194-replay-vmpu3y31/attempt-2/terminate-after.log",
+    "terminate-before.log": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp194-replay-vmpu3y31/attempt-2/terminate-before.log",
+    "test-summary.json": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp194-replay-vmpu3y31/attempt-2/test-summary.json",
+    "uninstall.log": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp194-replay-vmpu3y31/attempt-2/uninstall.log"
+  },
+  "backend_bridge_timings": [
+    {
+      "kind": "auth",
+      "received": true,
+      "seconds": 51.222
+    }
+  ],
+  "commit_signature": {
+    "required_before_push": true,
+    "state": "UNSIGNED"
+  },
+  "device": {
+    "dataPath": "/Users/valentin.pertuisot/Library/Developer/CoreSimulator/Devices/1B0D0EB0-CF23-4CEB-AEF1-2C8462184C03/data",
+    "dataPathSize": 2730393600,
+    "deviceTypeIdentifier": "com.apple.CoreSimulator.SimDeviceType.iPad-Pro-13-inch-M4-8GB",
+    "isAvailable": true,
+    "lastUsedAt": "2026-09-19T06:35:28Z",
+    "logPath": "/Users/valentin.pertuisot/Library/Logs/CoreSimulator/1B0D0EB0-CF23-4CEB-AEF1-2C8462184C03",
+    "logPathSize": 114688,
+    "name": "RUM Replay EXP-194",
+    "runtime": "com.apple.CoreSimulator.SimRuntime.iOS-27-0",
+    "state": "Booted",
+    "udid": "1B0D0EB0-CF23-4CEB-AEF1-2C8462184C03"
+  },
+  "dirty_state": [
+    " M Datadog/Datadog.xcodeproj/project.pbxproj",
+    "A  xcconfigs/Datadog.local.xcconfig"
+  ],
+  "evidence": {
+    "backend-exchanges.json": [
+      {
+        "request": {
+          "created_at": "2026-09-19T06:37:49.940964+00:00",
+          "expected_count": 0,
+          "from": "2026-09-19T06:37:49.282921+00:00",
+          "kind": "auth",
+          "query": "@context.probe.run_id:exp194-20260919T063749Z-51ba25cc04e8-auth",
+          "request_id": "42466520-17a4-4b93-b933-d80d62d614f0",
+          "run_id": "exp194-20260919T063749Z-51ba25cc04e8",
+          "schema_version": 1,
+          "to": "now"
+        },
+        "response": {
+          "complete": true,
+          "data": {
+            "authenticated": true
+          },
+          "executed_query": "@application.id:43cbc59b-0626-438b-a3d9-c6417a4545a3 @context.probe.run_id:exp194-20260919T063749Z-51ba25cc04e8-auth",
+          "ok": true,
+          "provider": "datadog-mcp",
+          "query": "@context.probe.run_id:exp194-20260919T063749Z-51ba25cc04e8-auth",
+          "request_id": "42466520-17a4-4b93-b933-d80d62d614f0",
+          "request_sha256": "312324a34dae5c48c2b568c6e5216ac887716b7d2fb6d3c270b4f035a587d858"
+        }
+      }
+    ],
+    "build-identity.json": {
+      "executable_sha256": "ee4966e6f2904e48929fdca32bff320c551afebd1e683b73dbf2a7a5ec3f99bb",
+      "source_sha256": "b47c95fc155dd0320e19223c709c7d62b3ac8a95526d71b24271efc9df7e3a38",
+      "uuid": "UUID: 65487A45-B3F7-3034-AEF7-A199C22456E1 (arm64) /private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp194-replay-vmpu3y31/attempt-2/derived/Build/Products/Debug-iphonesimulator/RUMNativeMultiSceneProbe.app/RUMNativeMultiSceneProbe"
+    },
+    "frozen-code.json": {
+      "binaries": {
+        "RUMNativeMultiSceneProbe": "ee4966e6f2904e48929fdca32bff320c551afebd1e683b73dbf2a7a5ec3f99bb",
+        "RUMNativeMultiSceneProbe.debug.dylib": "02c55f8564dd98e086b6a4739f5181734a6d92a9cad6eea6d979d9d39c201e91",
+        "__preview.dylib": "f107d09b9d3b79f01789a45ef045bf4039904bf5eaa3c1a8c6a9e27de130563b"
+      },
+      "bundleIdentifier": "com.datadoghq.rum-native-multi-scene-probe",
+      "executable": "RUMNativeMultiSceneProbe"
+    },
+    "installed-code.json": {
+      "binaries": {
+        "RUMNativeMultiSceneProbe": "ee4966e6f2904e48929fdca32bff320c551afebd1e683b73dbf2a7a5ec3f99bb",
+        "RUMNativeMultiSceneProbe.debug.dylib": "02c55f8564dd98e086b6a4739f5181734a6d92a9cad6eea6d979d9d39c201e91",
+        "__preview.dylib": "f107d09b9d3b79f01789a45ef045bf4039904bf5eaa3c1a8c6a9e27de130563b"
+      },
+      "bundleIdentifier": "com.datadoghq.rum-native-multi-scene-probe",
+      "executable": "RUMNativeMultiSceneProbe"
+    },
+    "replay-cleanup.json": {
+      "app": 2,
+      "data": 2
+    },
+    "replay-records.json": [
+      {
+        "manifest": {
+          "resolutionSource": "command-line",
+          "runID": "exp194-20260919T063749Z-51ba25cc04e8",
+          "runMode": "clean",
+          "scenario": {
+            "completionConditions": [
+              {
+                "expectedCount": 1,
+                "kind": "assertion",
+                "name": "replay-a-before-peer",
+                "scene": "scene-A"
+              },
+              {
+                "expectedCount": 1,
+                "kind": "assertion",
+                "name": "replay-b-after-open",
+                "scene": "scene-B"
+              },
+              {
+                "expectedCount": 1,
+                "kind": "assertion",
+                "name": "replay-b-after-navigation",
+                "scene": "scene-B"
+              },
+              {
+                "expectedCount": 1,
+                "kind": "assertion",
+                "name": "replay-a-after-teardown",
+                "scene": "scene-A"
+              }
+            ],
+            "defaultRunMode": "clean",
+            "expectedSemanticTimeline": [
+              {
+                "expectedCount": 1,
+                "kind": "assertion",
+                "name": "replay-a-before-peer",
+                "scene": "scene-A"
+              },
+              {
+                "expectedCount": 1,
+                "kind": "assertion",
+                "name": "replay-b-after-open",
+                "scene": "scene-B"
+              },
+              {
+                "expectedCount": 1,
+                "kind": "assertion",
+                "name": "replay-b-after-navigation",
+                "scene": "scene-B"
+              },
+              {
+                "expectedCount": 1,
+                "kind": "assertion",
+                "name": "replay-a-after-teardown",
+                "scene": "scene-A"
+              }
+            ],
+            "identifier": "replay.native-recording.navigation-teardown-serial",
+            "initialWindows": [
+              "scene-A",
+              "scene-B"
+            ],
+            "layout": "stack",
+            "requiredCapabilities": [
+              "multiple-scenes"
+            ],
+            "runtimeOptions": {
+              "automaticallyAbortsDetail": false,
+              "automaticallyAdvancesSplitSelection": true,
+              "automaticallyClosesSceneB": false,
+              "automaticallyNavigates": false,
+              "automaticallyOpensSecondWindow": false,
+              "automaticallyPopsUIKitSplitNavigation": true,
+              "automaticallyReplacesDetail": false,
+              "automaticallyReplacesDetailInstance": false,
+              "automaticallyReturnsSplitToDetail": false,
+              "exercisesSwiftUIButtonStructuredTask": false,
+              "exercisesTraceOnlyURLSessionOwnership": false,
+              "exercisesUIEventContextHandoff": false,
+              "exercisesUIKitScrollOwnership": false,
+              "forcesNavigationRouteIdentity": false,
+              "initialSwiftUIPath": [],
+              "manualSwiftUIViewScreensByScene": {},
+              "startsSplitWithoutSelection": false,
+              "swiftUIRouterWritePolicy": "accept",
+              "swiftUIStress": "none"
+            },
+            "steps": [
+              {
+                "kind": "wait-for-scene-ready",
+                "scene": "scene-A"
+              },
+              {
+                "kind": "wait-for-signal",
+                "scene": "scene-A",
+                "signal": "rum-view:home#1"
+              },
+              {
+                "kind": "capture-replay-records",
+                "scene": "scene-A",
+                "value": "replay-a-before-peer"
+              },
+              {
+                "kind": "open-window",
+                "scene": "scene-A",
+                "value": "scene-B"
+              },
+              {
+                "kind": "wait-for-signal",
+                "scene": "scene-B",
+                "signal": "rum-view:home#1"
+              },
+              {
+                "kind": "capture-replay-records",
+                "scene": "scene-B",
+                "value": "replay-b-after-open"
+              },
+              {
+                "kind": "set-swiftui-path",
+                "scene": "scene-B",
+                "value": "detail-1"
+              },
+              {
+                "kind": "wait-for-signal",
+                "scene": "scene-B",
+                "signal": "rum-view:detail-1#1"
+              },
+              {
+                "kind": "capture-replay-records",
+                "scene": "scene-B",
+                "value": "replay-b-after-navigation"
+              },
+              {
+                "kind": "close-window",
+                "scene": "scene-B"
+              },
+              {
+                "kind": "activate-window",
+                "scene": "scene-A"
+              },
+              {
+                "kind": "set-swiftui-path",
+                "scene": "scene-A",
+                "value": "detail-1"
+              },
+              {
+                "kind": "wait-for-signal",
+                "scene": "scene-A",
+                "signal": "rum-view:detail-1#1"
+              },
+              {
+                "kind": "capture-replay-records",
+                "scene": "scene-A",
+                "value": "replay-a-after-teardown"
+              }
+            ],
+            "trackingMode": "manual"
+          },
+          "schemaVersion": 3,
+          "validationErrors": []
+        },
+        "type": "manifest"
+      },
+      {
+        "signal": {
+          "evidenceSource": "rum-mapper",
+          "kind": "rum-session-started",
+          "rumContext": {
+            "sessionDiscarded": false,
+            "sessionID": "ad656ba3-6031-4cdf-9ac0-3e7403841fa1"
+          },
+          "runID": "exp194-20260919T063749Z-51ba25cc04e8",
+          "scenarioID": "replay.native-recording.navigation-teardown-serial",
+          "schemaVersion": 5,
+          "sequence": 1,
+          "timestampMilliseconds": 1789799958905
+        },
+        "type": "signal"
+      },
+      {
+        "signal": {
+          "evidenceSource": "rum-mapper",
+          "kind": "rum-view-snapshot",
+          "rumContext": {
+            "eventDateMilliseconds": 1789799958882,
+            "sessionHasReplay": false,
+            "sessionID": "ad656ba3-6031-4cdf-9ac0-3e7403841fa1",
+            "viewActive": true,
+            "viewDocumentVersion": 1,
+            "viewID": "fab491a9-0da2-4e2a-953c-c670c4f6e3d1",
+            "viewName": "ApplicationLaunch",
+            "viewTimeSpentNanoseconds": 22609949,
+            "viewURL": "com/datadog/application-launch/view"
+          },
+          "runID": "exp194-20260919T063749Z-51ba25cc04e8",
+          "scenarioID": "replay.native-recording.navigation-teardown-serial",
+          "schemaVersion": 5,
+          "sequence": 2,
+          "timestampMilliseconds": 1789799958911
+        },
+        "type": "signal"
+      },
+      {
+        "signal": {
+          "evidenceSource": "rum-mapper",
+          "kind": "rum-view-snapshot",
+          "rumContext": {
+            "eventDateMilliseconds": 1789799958882,
+            "sessionHasReplay": false,
+            "sessionID": "ad656ba3-6031-4cdf-9ac0-3e7403841fa1",
+            "viewActive": false,
+            "viewDocumentVersion": 2,
+            "viewID": "fab491a9-0da2-4e2a-953c-c670c4f6e3d1",
+            "viewName": "ApplicationLaunch",
+            "viewTimeSpentNanoseconds": 273716927,
+            "viewURL": "com/datadog/application-launch/view"
+          },
+          "runID": "exp194-20260919T063749Z-51ba25cc04e8",
+          "scenarioID": "replay.native-recording.navigation-teardown-serial",
+          "schemaVersion": 5,
+          "sequence": 3,
+          "timestampMilliseconds": 1789799959157
+        },
+        "type": "signal"
+      },
+      {
+        "signal": {
+          "evidenceSource": "rum-mapper",
+          "kind": "rum-view-snapshot",
+          "rumContext": {
+            "eventDateMilliseconds": 1789799959156,
+            "sessionHasReplay": false,
+            "sessionID": "ad656ba3-6031-4cdf-9ac0-3e7403841fa1",
+            "viewActive": true,
+            "viewDocumentVersion": 1,
+            "viewID": "d9f557ad-8f69-479f-9d2b-5d1281b7e553",
+            "viewName": "ProbeHomeView",
+            "viewTimeSpentNanoseconds": 1,
+            "viewURL": "ProbeHomeView/8076581811149472644"
+          },
+          "runID": "exp194-20260919T063749Z-51ba25cc04e8",
+          "scenarioID": "replay.native-recording.navigation-teardown-serial",
+          "schemaVersion": 5,
+          "semanticContext": {
+            "logicalSceneID": "scene-A",
+            "screen": "home"
+          },
+          "sequence": 4,
+          "timestampMilliseconds": 1789799959158
+        },
+        "type": "signal"
+      },
+      {
+        "signal": {
+          "evidenceSource": "probe",
+          "kind": "destination-appearance-observed",
+          "runID": "exp194-20260919T063749Z-51ba25cc04e8",
+          "scenarioID": "replay.native-recording.navigation-teardown-serial",
+          "schemaVersion": 5,
+          "semanticContext": {
+            "logicalSceneID": "scene-A",
+            "screen": "home"
+          },
+          "sequence": 5,
+          "timestampMilliseconds": 1789799959179
+        },
+        "type": "signal"
+      },
+      {
+        "signal": {
+          "action": {
+            "errorCount": 0,
+            "id": "300bd2af-bdab-4382-9911-8bbfe7ce7953",
+            "loadingTimeNanoseconds": 0,
+            "resourceCount": 0,
+            "target": "probe-lifecycle-scene-A.home.on-appear",
+            "type": "custom"
+          },
+          "eventID": "300bd2af-bdab-4382-9911-8bbfe7ce7953",
+          "evidenceSource": "rum-mapper",
+          "kind": "rum-action",
+          "name": "on-appear",
+          "rumContext": {
+            "actionIDs": [
+              "300bd2af-bdab-4382-9911-8bbfe7ce7953"
+            ],
+            "eventDateMilliseconds": 1789799959179,
+            "sessionID": "ad656ba3-6031-4cdf-9ac0-3e7403841fa1",
+            "viewID": "d9f557ad-8f69-479f-9d2b-5d1281b7e553",
+            "viewName": "ProbeHomeView",
+            "viewURL": "ProbeHomeView/8076581811149472644"
+          },
+          "runID": "exp194-20260919T063749Z-51ba25cc04e8",
+          "scenarioID": "replay.native-recording.navigation-teardown-serial",
+          "schemaVersion": 5,
+          "sequence": 6,
+          "sourceContext": {
+            "logicalSceneID": "scene-A",
+            "phase": "on-appear",
+            "readerControlGeneration": 0,
+            "screen": "home",
+            "uptime": 732893.2337439584
+          },
+          "timestampMilliseconds": 1789799959181
+        },
+        "type": "signal"
+      },
+      {
+        "signal": {
+          "evidenceSource": "rum-mapper",
+          "kind": "rum-view-snapshot",
+          "rumContext": {
+            "eventDateMilliseconds": 1789799959156,
+            "sessionHasReplay": false,
+            "sessionID": "ad656ba3-6031-4cdf-9ac0-3e7403841fa1",
+            "viewActive": true,
+            "viewDocumentVersion": 2,
+            "viewID": "d9f557ad-8f69-479f-9d2b-5d1281b7e553",
+            "viewName": "ProbeHomeView",
+            "viewTimeSpentNanoseconds": 23334026,
+            "viewURL": "ProbeHomeView/8076581811149472644"
+          },
+          "runID": "exp194-20260919T063749Z-51ba25cc04e8",
+          "scenarioID": "replay.native-recording.navigation-teardown-serial",
+          "schemaVersion": 5,
+          "semanticContext": {
+            "logicalSceneID": "scene-A",
+            "screen": "home"
+          },
+          "sequence": 7,
+          "timestampMilliseconds": 1789799959183
+        },
+        "type": "signal"
+      },
+      {
+        "signal": {
+          "action": {
+            "errorCount": 0,
+            "id": "a03f4ea8-656a-4007-9777-8fadb8e742cc",
+            "loadingTimeNanoseconds": 0,
+            "resourceCount": 0,
+            "target": "probe-lifecycle-scene-A.home.task-immediate",
+            "type": "custom"
+          },
+          "eventID": "a03f4ea8-656a-4007-9777-8fadb8e742cc",
+          "evidenceSource": "rum-mapper",
+          "kind": "rum-action",
+          "name": "task-immediate",
+          "rumContext": {
+            "actionIDs": [
+              "a03f4ea8-656a-4007-9777-8fadb8e742cc"
+            ],
+            "eventDateMilliseconds": 1789799959180,
+            "sessionID": "ad656ba3-6031-4cdf-9ac0-3e7403841fa1",
+            "viewID": "d9f557ad-8f69-479f-9d2b-5d1281b7e553",
+            "viewName": "ProbeHomeView",
+            "viewURL": "ProbeHomeView/8076581811149472644"
+          },
+          "runID": "exp194-20260919T063749Z-51ba25cc04e8",
+          "scenarioID": "replay.native-recording.navigation-teardown-serial",
+          "schemaVersion": 5,
+          "sequence": 8,
+          "sourceContext": {
+            "logicalSceneID": "scene-A",
+            "phase": "task-immediate",
+            "readerControlGeneration": 0,
+            "screen": "home",
+            "uptime": 732893.2344007083
+          },
+          "timestampMilliseconds": 1789799959184
+        },
+        "type": "signal"
+      },
+      {
+        "signal": {
+          "evidenceSource": "rum-mapper",
+          "kind": "rum-view-snapshot",
+          "rumContext": {
+            "eventDateMilliseconds": 1789799959156,
+            "sessionHasReplay": false,
+            "sessionID": "ad656ba3-6031-4cdf-9ac0-3e7403841fa1",
+            "viewActive": true,
+            "viewDocumentVersion": 3,
+            "viewID": "d9f557ad-8f69-479f-9d2b-5d1281b7e553",
+            "viewName": "ProbeHomeView",
+            "viewTimeSpentNanoseconds": 23965001,
+            "viewURL": "ProbeHomeView/8076581811149472644"
+          },
+          "runID": "exp194-20260919T063749Z-51ba25cc04e8",
+          "scenarioID": "replay.native-recording.navigation-teardown-serial",
+          "schemaVersion": 5,
+          "semanticContext": {
+            "logicalSceneID": "scene-A",
+            "screen": "home"
+          },
+          "sequence": 9,
+          "timestampMilliseconds": 1789799959184
+        },
+        "type": "signal"
+      },
+      {
+        "signal": {
+          "activationState": "foreground-inactive",
+          "evidenceSource": "probe",
+          "geometry": {
+            "height": 1376,
+            "width": 1032,
+            "x": 0,
+            "y": 0
+          },
+          "horizontalSizeClass": "regular",
+          "kind": "scene-ready",
+          "navigationPath": [
+            "home"
+          ],
+          "runID": "exp194-20260919T063749Z-51ba25cc04e8",
+          "scenarioID": "replay.native-recording.navigation-teardown-serial",
+          "sceneDisconnectGeneration": 0,
+          "scenePhase": "ready",
+          "schemaVersion": 5,
+          "semanticContext": {
+            "logicalSceneID": "scene-A",
+            "nativeSceneID": "25B5E0B7-4E56-4074-B6E2-045847672088",
+            "screen": "home"
+          },
+          "sequence": 10,
+          "timestampMilliseconds": 1789799959238,
+          "verticalSizeClass": "regular"
+        },
+        "type": "signal"
+      },
+      {
+        "signal": {
+          "eventID": "9dbe6e9f-46eb-4596-912b-f7dc04dc59d9",
+          "evidenceSource": "rum-mapper",
+          "kind": "rum-resource",
+          "name": "on-appear",
+          "resource": {
+            "durationNanoseconds": 58809042,
+            "id": "9dbe6e9f-46eb-4596-912b-f7dc04dc59d9",
+            "method": "GET",
+            "size": 1,
+            "statusCode": 200,
+            "type": "other",
+            "url": "https://multi-scene-probe.invalid/native/scene-A/home/on-appear"
+          },
+          "rumContext": {
+            "eventDateMilliseconds": 1789799959179,
+            "sessionID": "ad656ba3-6031-4cdf-9ac0-3e7403841fa1",
+            "viewID": "d9f557ad-8f69-479f-9d2b-5d1281b7e553",
+            "viewName": "ProbeHomeView",
+            "viewURL": "ProbeHomeView/8076581811149472644"
+          },
+          "runID": "exp194-20260919T063749Z-51ba25cc04e8",
+          "scenarioID": "replay.native-recording.navigation-teardown-serial",
+          "schemaVersion": 5,
+          "sequence": 11,
+          "sourceContext": {
+            "logicalSceneID": "scene-A",
+            "phase": "on-appear",
+            "readerControlGeneration": 0,
+            "screen": "home",
+            "uptime": 732893.2337439584
+          },
+          "timestampMilliseconds": 1789799959240
+        },
+        "type": "signal"
+      },
+      {
+        "signal": {
+          "evidenceSource": "rum-mapper",
+          "kind": "rum-view-snapshot",
+          "rumContext": {
+            "eventDateMilliseconds": 1789799959156,
+            "sessionHasReplay": true,
+            "sessionID": "ad656ba3-6031-4cdf-9ac0-3e7403841fa1",
+            "viewActive": true,
+            "viewDocumentVersion": 4,
+            "viewID": "d9f557ad-8f69-479f-9d2b-5d1281b7e553",
+            "viewName": "ProbeHomeView",
+            "viewTimeSpentNanoseconds": 82705021,
+            "viewURL": "ProbeHomeView/8076581811149472644"
+          },
+          "runID": "exp194-20260919T063749Z-51ba25cc04e8",
+          "scenarioID": "replay.native-recording.navigation-teardown-serial",
+          "schemaVersion": 5,
+          "semanticContext": {
+            "logicalSceneID": "scene-A",
+            "screen": "home"
+          },
+          "sequence": 12,
+          "timestampMilliseconds": 1789799959241
+        },
+        "type": "signal"
+      },
+      {
+        "signal": {
+          "eventID": "18ffa622-626e-43d8-a902-5087882cbfad",
+          "evidenceSource": "rum-mapper",
+          "kind": "rum-resource",
+          "name": "task-immediate",
+          "resource": {
+            "durationNanoseconds": 58743000,
+            "id": "18ffa622-626e-43d8-a902-5087882cbfad",
+            "method": "GET",
+            "size": 1,
+            "statusCode": 200,
+            "type": "other",
+            "url": "https://multi-scene-probe.invalid/native/scene-A/home/task-immediate"
+          },
+          "rumContext": {
+            "eventDateMilliseconds": 1789799959180,
+            "sessionID": "ad656ba3-6031-4cdf-9ac0-3e7403841fa1",
+            "viewID": "d9f557ad-8f69-479f-9d2b-5d1281b7e553",
+            "viewName": "ProbeHomeView",
+            "viewURL": "ProbeHomeView/8076581811149472644"
+          },
+          "runID": "exp194-20260919T063749Z-51ba25cc04e8",
+          "scenarioID": "replay.native-recording.navigation-teardown-serial",
+          "schemaVersion": 5,
+          "sequence": 13,
+          "sourceContext": {
+            "logicalSceneID": "scene-A",
+            "phase": "task-immediate",
+            "readerControlGeneration": 0,
+            "screen": "home",
+            "uptime": 732893.2344007083
+          },
+          "timestampMilliseconds": 1789799959241
+        },
+        "type": "signal"
+      },
+      {
+        "signal": {
+          "evidenceSource": "rum-mapper",
+          "kind": "rum-view-snapshot",
+          "rumContext": {
+            "eventDateMilliseconds": 1789799959156,
+            "sessionHasReplay": true,
+            "sessionID": "ad656ba3-6031-4cdf-9ac0-3e7403841fa1",
+            "viewActive": true,
+            "viewDocumentVersion": 5,
+            "viewID": "d9f557ad-8f69-479f-9d2b-5d1281b7e553",
+            "viewName": "ProbeHomeView",
+            "viewTimeSpentNanoseconds": 82719088,
+            "viewURL": "ProbeHomeView/8076581811149472644"
+          },
+          "runID": "exp194-20260919T063749Z-51ba25cc04e8",
+          "scenarioID": "replay.native-recording.navigation-teardown-serial",
+          "schemaVersion": 5,
+          "semanticContext": {
+            "logicalSceneID": "scene-A",
+            "screen": "home"
+          },
+          "sequence": 14,
+          "timestampMilliseconds": 1789799959241
+        },
+        "type": "signal"
+      },
+      {
+        "signal": {
+          "evidenceSource": "rum-mapper",
+          "kind": "rum-view-snapshot",
+          "rumContext": {
+            "eventDateMilliseconds": 1789799959156,
+            "sessionHasReplay": true,
+            "sessionID": "ad656ba3-6031-4cdf-9ac0-3e7403841fa1",
+            "viewActive": true,
+            "viewDocumentVersion": 6,
+            "viewID": "d9f557ad-8f69-479f-9d2b-5d1281b7e553",
+            "viewName": "ProbeHomeView",
+            "viewTimeSpentNanoseconds": 82810044,
+            "viewURL": "ProbeHomeView/8076581811149472644"
+          },
+          "runID": "exp194-20260919T063749Z-51ba25cc04e8",
+          "scenarioID": "replay.native-recording.navigation-teardown-serial",
+          "schemaVersion": 5,
+          "semanticContext": {
+            "logicalSceneID": "scene-A",
+            "screen": "home"
+          },
+          "sequence": 15,
+          "timestampMilliseconds": 1789799959243
+        },
+        "type": "signal"
+      },
+      {
+        "signal": {
+          "evidenceSource": "probe",
+          "kind": "step-started",
+          "runID": "exp194-20260919T063749Z-51ba25cc04e8",
+          "scenarioID": "replay.native-recording.navigation-teardown-serial",
+          "schemaVersion": 5,
+          "semanticContext": {
+            "logicalSceneID": "scene-A",
+            "nativeSceneID": "25B5E0B7-4E56-4074-B6E2-045847672088",
+            "screen": "home"
+          },
+          "sequence": 16,
+          "stepIndex": 0,
+          "stepKind": "wait-for-scene-ready",
+          "timestampMilliseconds": 1789799959257
+        },
+        "type": "signal"
+      },
+      {
+        "signal": {
+          "activationState": "foreground-active",
+          "evidenceSource": "probe",
+          "geometry": {
+            "height": 1376,
+            "width": 1032,
+            "x": 0,
+            "y": 0
+          },
+          "horizontalSizeClass": "regular",
+          "kind": "scene-lifecycle",
+          "navigationPath": [
+            "home"
+          ],
+          "runID": "exp194-20260919T063749Z-51ba25cc04e8",
+          "scenarioID": "replay.native-recording.navigation-teardown-serial",
+          "sceneDisconnectGeneration": 0,
+          "scenePhase": "ready",
+          "schemaVersion": 5,
+          "semanticContext": {
+            "logicalSceneID": "scene-A",
+            "nativeSceneID": "25B5E0B7-4E56-4074-B6E2-045847672088",
+            "screen": "home"
+          },
+          "sequence": 17,
+          "timestampMilliseconds": 1789799959271,
+          "verticalSizeClass": "regular"
+        },
+        "type": "signal"
+      },
+      {
+        "signal": {
+          "acknowledgedSignalSequence": 10,
+          "evidenceSource": "probe",
+          "kind": "step-acknowledged",
+          "runID": "exp194-20260919T063749Z-51ba25cc04e8",
+          "scenarioID": "replay.native-recording.navigation-teardown-serial",
+          "schemaVersion": 5,
+          "semanticContext": {
+            "logicalSceneID": "scene-A",
+            "nativeSceneID": "25B5E0B7-4E56-4074-B6E2-045847672088",
+            "screen": "home"
+          },
+          "sequence": 18,
+          "stepIndex": 0,
+          "stepKind": "wait-for-scene-ready",
+          "timestampMilliseconds": 1789799959277
+        },
+        "type": "signal"
+      },
+      {
+        "signal": {
+          "evidenceSource": "probe",
+          "kind": "step-started",
+          "name": "rum-view:home#1",
+          "runID": "exp194-20260919T063749Z-51ba25cc04e8",
+          "scenarioID": "replay.native-recording.navigation-teardown-serial",
+          "schemaVersion": 5,
+          "semanticContext": {
+            "logicalSceneID": "scene-A",
+            "nativeSceneID": "25B5E0B7-4E56-4074-B6E2-045847672088",
+            "screen": "home"
+          },
+          "sequence": 19,
+          "stepIndex": 1,
+          "stepKind": "wait-for-signal",
+          "timestampMilliseconds": 1789799959277
+        },
+        "type": "signal"
+      },
+      {
+        "signal": {
+          "acknowledgedSignalSequence": 15,
+          "evidenceSource": "probe",
+          "kind": "step-acknowledged",
+          "name": "rum-view:home#1",
+          "runID": "exp194-20260919T063749Z-51ba25cc04e8",
+          "scenarioID": "replay.native-recording.navigation-teardown-serial",
+          "schemaVersion": 5,
+          "semanticContext": {
+            "logicalSceneID": "scene-A",
+            "nativeSceneID": "25B5E0B7-4E56-4074-B6E2-045847672088",
+            "screen": "home"
+          },
+          "sequence": 20,
+          "stepIndex": 1,
+          "stepKind": "wait-for-signal",
+          "timestampMilliseconds": 1789799959279
+        },
+        "type": "signal"
+      },
+      {
+        "signal": {
+          "evidenceSource": "probe",
+          "kind": "step-started",
+          "name": "replay-a-before-peer",
+          "runID": "exp194-20260919T063749Z-51ba25cc04e8",
+          "scenarioID": "replay.native-recording.navigation-teardown-serial",
+          "schemaVersion": 5,
+          "semanticContext": {
+            "logicalSceneID": "scene-A",
+            "nativeSceneID": "25B5E0B7-4E56-4074-B6E2-045847672088",
+            "screen": "home"
+          },
+          "sequence": 21,
+          "stepIndex": 2,
+          "stepKind": "capture-replay-records",
+          "timestampMilliseconds": 1789799959279
+        },
+        "type": "signal"
+      },
+      {
+        "signal": {
+          "evidenceSource": "internal-hook",
+          "kind": "assertion",
+          "name": "baseline-replay-a-before-peer",
+          "replay": {
+            "hasReplay": true,
+            "recordsByViewID": {},
+            "scenes": [
+              {
+                "activationState": "foreground-active",
+                "geometry": {
+                  "height": 1376,
+                  "width": 1032,
+                  "x": 0,
+                  "y": 0
+                },
+                "logicalSceneID": "scene-A",
+                "nativeSceneID": "25B5E0B7-4E56-4074-B6E2-045847672088"
+              }
+            ]
+          },
+          "result": "PASS",
+          "rumContext": {
+            "sessionHasReplay": true,
+            "sessionID": "ad656ba3-6031-4cdf-9ac0-3e7403841fa1",
+            "viewID": "d9f557ad-8f69-479f-9d2b-5d1281b7e553",
+            "viewName": "ProbeHomeView"
+          },
+          "runID": "exp194-20260919T063749Z-51ba25cc04e8",
+          "scenarioID": "replay.native-recording.navigation-teardown-serial",
+          "schemaVersion": 5,
+          "semanticContext": {
+            "logicalSceneID": "scene-A",
+            "nativeSceneID": "25B5E0B7-4E56-4074-B6E2-045847672088",
+            "occurrence": 1,
+            "screen": "home"
+          },
+          "sequence": 22,
+          "timestampMilliseconds": 1789799959282
+        },
+        "type": "signal"
+      },
+      {
+        "signal": {
+          "action": {
+            "errorCount": 0,
+            "id": "08f5d8ce-2bb2-4b6b-8fa3-2991cf986ec6",
+            "loadingTimeNanoseconds": 0,
+            "resourceCount": 0,
+            "target": "probe-lifecycle-scene-A.home.task-delayed",
+            "type": "custom"
+          },
+          "eventID": "08f5d8ce-2bb2-4b6b-8fa3-2991cf986ec6",
+          "evidenceSource": "rum-mapper",
+          "kind": "rum-action",
+          "name": "task-delayed",
+          "rumContext": {
+            "actionIDs": [
+              "08f5d8ce-2bb2-4b6b-8fa3-2991cf986ec6"
+            ],
+            "eventDateMilliseconds": 1789799959360,
+            "sessionID": "ad656ba3-6031-4cdf-9ac0-3e7403841fa1",
+            "viewID": "d9f557ad-8f69-479f-9d2b-5d1281b7e553",
+            "viewName": "ProbeHomeView",
+            "viewURL": "ProbeHomeView/8076581811149472644"
+          },
+          "runID": "exp194-20260919T063749Z-51ba25cc04e8",
+          "scenarioID": "replay.native-recording.navigation-teardown-serial",
+          "schemaVersion": 5,
+          "sequence": 23,
+          "sourceContext": {
+            "logicalSceneID": "scene-A",
+            "phase": "task-delayed",
+            "readerControlGeneration": 0,
+            "screen": "home",
+            "uptime": 732893.4143974168
+          },
+          "timestampMilliseconds": 1789799959360
+        },
+        "type": "signal"
+      },
+      {
+        "signal": {
+          "evidenceSource": "rum-mapper",
+          "kind": "rum-view-snapshot",
+          "rumContext": {
+            "eventDateMilliseconds": 1789799959156,
+            "sessionHasReplay": true,
+            "sessionID": "ad656ba3-6031-4cdf-9ac0-3e7403841fa1",
+            "viewActive": true,
+            "viewDocumentVersion": 7,
+            "viewID": "d9f557ad-8f69-479f-9d2b-5d1281b7e553",
+            "viewName": "ProbeHomeView",
+            "viewTimeSpentNanoseconds": 203975081,
+            "viewURL": "ProbeHomeView/8076581811149472644"
+          },
+          "runID": "exp194-20260919T063749Z-51ba25cc04e8",
+          "scenarioID": "replay.native-recording.navigation-teardown-serial",
+          "schemaVersion": 5,
+          "semanticContext": {
+            "logicalSceneID": "scene-A",
+            "screen": "home"
+          },
+          "sequence": 24,
+          "timestampMilliseconds": 1789799959360
+        },
+        "type": "signal"
+      },
+      {
+        "signal": {
+          "evidenceSource": "internal-hook",
+          "kind": "assertion",
+          "name": "replay-a-before-peer",
+          "replay": {
+            "hasReplay": true,
+            "recordsByViewID": {
+              "d9f557ad-8f69-479f-9d2b-5d1281b7e553": 3
+            },
+            "scenes": [
+              {
+                "activationState": "foreground-active",
+                "geometry": {
+                  "height": 1376,
+                  "width": 1032,
+                  "x": 0,
+                  "y": 0
+                },
+                "logicalSceneID": "scene-A",
+                "nativeSceneID": "25B5E0B7-4E56-4074-B6E2-045847672088"
+              }
+            ]
+          },
+          "result": "PASS",
+          "rumContext": {
+            "sessionHasReplay": true,
+            "sessionID": "ad656ba3-6031-4cdf-9ac0-3e7403841fa1",
+            "viewID": "d9f557ad-8f69-479f-9d2b-5d1281b7e553",
+            "viewName": "ProbeHomeView"
+          },
+          "runID": "exp194-20260919T063749Z-51ba25cc04e8",
+          "scenarioID": "replay.native-recording.navigation-teardown-serial",
+          "schemaVersion": 5,
+          "semanticContext": {
+            "logicalSceneID": "scene-A",
+            "nativeSceneID": "25B5E0B7-4E56-4074-B6E2-045847672088",
+            "occurrence": 1,
+            "screen": "home"
+          },
+          "sequence": 25,
+          "timestampMilliseconds": 1789799959360
+        },
+        "type": "signal"
+      },
+      {
+        "signal": {
+          "acknowledgedSignalSequence": 25,
+          "evidenceSource": "probe",
+          "kind": "step-acknowledged",
+          "name": "replay-a-before-peer",
+          "runID": "exp194-20260919T063749Z-51ba25cc04e8",
+          "scenarioID": "replay.native-recording.navigation-teardown-serial",
+          "schemaVersion": 5,
+          "semanticContext": {
+            "logicalSceneID": "scene-A",
+            "nativeSceneID": "25B5E0B7-4E56-4074-B6E2-045847672088",
+            "screen": "home"
+          },
+          "sequence": 26,
+          "stepIndex": 2,
+          "stepKind": "capture-replay-records",
+          "timestampMilliseconds": 1789799959361
+        },
+        "type": "signal"
+      },
+      {
+        "signal": {
+          "evidenceSource": "probe",
+          "kind": "step-started",
+          "name": "scene-B",
+          "runID": "exp194-20260919T063749Z-51ba25cc04e8",
+          "scenarioID": "replay.native-recording.navigation-teardown-serial",
+          "schemaVersion": 5,
+          "semanticContext": {
+            "logicalSceneID": "scene-A",
+            "nativeSceneID": "25B5E0B7-4E56-4074-B6E2-045847672088",
+            "screen": "home"
+          },
+          "sequence": 27,
+          "stepIndex": 3,
+          "stepKind": "open-window",
+          "timestampMilliseconds": 1789799959361
+        },
+        "type": "signal"
+      },
+      {
+        "signal": {
+          "activationState": "foreground-inactive",
+          "evidenceSource": "probe",
+          "geometry": {
+            "height": 1376,
+            "width": 1032,
+            "x": 0,
+            "y": 0
+          },
+          "horizontalSizeClass": "regular",
+          "kind": "scene-lifecycle",
+          "navigationPath": [
+            "home"
+          ],
+          "runID": "exp194-20260919T063749Z-51ba25cc04e8",
+          "scenarioID": "replay.native-recording.navigation-teardown-serial",
+          "sceneDisconnectGeneration": 0,
+          "scenePhase": "ready",
+          "schemaVersion": 5,
+          "semanticContext": {
+            "logicalSceneID": "scene-A",
+            "nativeSceneID": "25B5E0B7-4E56-4074-B6E2-045847672088",
+            "screen": "home"
+          },
+          "sequence": 28,
+          "timestampMilliseconds": 1789799959398,
+          "verticalSizeClass": "regular"
+        },
+        "type": "signal"
+      },
+      {
+        "signal": {
+          "eventID": "e7bca5c8-d259-4054-89eb-3dd974c660f4",
+          "evidenceSource": "rum-mapper",
+          "kind": "rum-resource",
+          "name": "task-delayed",
+          "resource": {
+            "durationNanoseconds": 52559018,
+            "id": "e7bca5c8-d259-4054-89eb-3dd974c660f4",
+            "method": "GET",
+            "size": 1,
+            "statusCode": 200,
+            "type": "other",
+            "url": "https://multi-scene-probe.invalid/native/scene-A/home/task-delayed"
+          },
+          "rumContext": {
+            "eventDateMilliseconds": 1789799959360,
+            "sessionID": "ad656ba3-6031-4cdf-9ac0-3e7403841fa1",
+            "viewID": "d9f557ad-8f69-479f-9d2b-5d1281b7e553",
+            "viewName": "ProbeHomeView",
+            "viewURL": "ProbeHomeView/8076581811149472644"
+          },
+          "runID": "exp194-20260919T063749Z-51ba25cc04e8",
+          "scenarioID": "replay.native-recording.navigation-teardown-serial",
+          "schemaVersion": 5,
+          "sequence": 29,
+          "sourceContext": {
+            "logicalSceneID": "scene-A",
+            "phase": "task-delayed",
+            "readerControlGeneration": 0,
+            "screen": "home",
+            "uptime": 732893.4143974168
+          },
+          "timestampMilliseconds": 1789799959412
+        },
+        "type": "signal"
+      },
+      {
+        "signal": {
+          "evidenceSource": "rum-mapper",
+          "kind": "rum-view-snapshot",
+          "rumContext": {
+            "eventDateMilliseconds": 1789799959156,
+            "sessionHasReplay": true,
+            "sessionID": "ad656ba3-6031-4cdf-9ac0-3e7403841fa1",
+            "viewActive": true,
+            "viewDocumentVersion": 8,
+            "viewID": "d9f557ad-8f69-479f-9d2b-5d1281b7e553",
+            "viewName": "ProbeHomeView",
+            "viewTimeSpentNanoseconds": 256571054,
+            "viewURL": "ProbeHomeView/8076581811149472644"
+          },
+          "runID": "exp194-20260919T063749Z-51ba25cc04e8",
+          "scenarioID": "replay.native-recording.navigation-teardown-serial",
+          "schemaVersion": 5,
+          "semanticContext": {
+            "logicalSceneID": "scene-A",
+            "screen": "home"
+          },
+          "sequence": 30,
+          "timestampMilliseconds": 1789799959413
+        },
+        "type": "signal"
+      },
+      {
+        "signal": {
+          "evidenceSource": "rum-mapper",
+          "kind": "rum-view-snapshot",
+          "rumContext": {
+            "eventDateMilliseconds": 1789799959458,
+            "sessionHasReplay": true,
+            "sessionID": "ad656ba3-6031-4cdf-9ac0-3e7403841fa1",
+            "viewActive": true,
+            "viewDocumentVersion": 1,
+            "viewID": "40581882-04da-4c3e-968d-8662a7779ac7",
+            "viewName": "ProbeHomeView",
+            "viewTimeSpentNanoseconds": 1,
+            "viewURL": "ProbeHomeView/8076581811149472644"
+          },
+          "runID": "exp194-20260919T063749Z-51ba25cc04e8",
+          "scenarioID": "replay.native-recording.navigation-teardown-serial",
+          "schemaVersion": 5,
+          "semanticContext": {
+            "logicalSceneID": "scene-B",
+            "screen": "home"
+          },
+          "sequence": 31,
+          "timestampMilliseconds": 1789799959460
+        },
+        "type": "signal"
+      },
+      {
+        "signal": {
+          "evidenceSource": "probe",
+          "kind": "destination-appearance-observed",
+          "runID": "exp194-20260919T063749Z-51ba25cc04e8",
+          "scenarioID": "replay.native-recording.navigation-teardown-serial",
+          "schemaVersion": 5,
+          "semanticContext": {
+            "logicalSceneID": "scene-B",
+            "screen": "home"
+          },
+          "sequence": 32,
+          "timestampMilliseconds": 1789799959461
+        },
+        "type": "signal"
+      },
+      {
+        "signal": {
+          "action": {
+            "errorCount": 0,
+            "id": "e61a5ab4-d4d1-4984-9927-3f77d03a3f10",
+            "loadingTimeNanoseconds": 0,
+            "resourceCount": 0,
+            "target": "probe-lifecycle-scene-B.home.on-appear",
+            "type": "custom"
+          },
+          "eventID": "e61a5ab4-d4d1-4984-9927-3f77d03a3f10",
+          "evidenceSource": "rum-mapper",
+          "kind": "rum-action",
+          "name": "on-appear",
+          "rumContext": {
+            "actionIDs": [
+              "e61a5ab4-d4d1-4984-9927-3f77d03a3f10"
+            ],
+            "eventDateMilliseconds": 1789799959459,
+            "sessionID": "ad656ba3-6031-4cdf-9ac0-3e7403841fa1",
+            "viewID": "40581882-04da-4c3e-968d-8662a7779ac7",
+            "viewName": "ProbeHomeView",
+            "viewURL": "ProbeHomeView/8076581811149472644"
+          },
+          "runID": "exp194-20260919T063749Z-51ba25cc04e8",
+          "scenarioID": "replay.native-recording.navigation-teardown-serial",
+          "schemaVersion": 5,
+          "sequence": 33,
+          "sourceContext": {
+            "logicalSceneID": "scene-B",
+            "phase": "on-appear",
+            "readerControlGeneration": 0,
+            "screen": "home",
+            "uptime": 732893.5155905833
+          },
+          "timestampMilliseconds": 1789799959461
+        },
+        "type": "signal"
+      },
+      {
+        "signal": {
+          "evidenceSource": "rum-mapper",
+          "kind": "rum-view-snapshot",
+          "rumContext": {
+            "eventDateMilliseconds": 1789799959458,
+            "sessionHasReplay": true,
+            "sessionID": "ad656ba3-6031-4cdf-9ac0-3e7403841fa1",
+            "viewActive": true,
+            "viewDocumentVersion": 2,
+            "viewID": "40581882-04da-4c3e-968d-8662a7779ac7",
+            "viewName": "ProbeHomeView",
+            "viewTimeSpentNanoseconds": 1399994,
+            "viewURL": "ProbeHomeView/8076581811149472644"
+          },
+          "runID": "exp194-20260919T063749Z-51ba25cc04e8",
+          "scenarioID": "replay.native-recording.navigation-teardown-serial",
+          "schemaVersion": 5,
+          "semanticContext": {
+            "logicalSceneID": "scene-B",
+            "screen": "home"
+          },
+          "sequence": 34,
+          "timestampMilliseconds": 1789799959461
+        },
+        "type": "signal"
+      },
+      {
+        "signal": {
+          "action": {
+            "errorCount": 0,
+            "id": "def3f4ff-d358-484d-950c-26e57ff4ebd3",
+            "loadingTimeNanoseconds": 0,
+            "resourceCount": 0,
+            "target": "probe-lifecycle-scene-B.home.task-immediate",
+            "type": "custom"
+          },
+          "eventID": "def3f4ff-d358-484d-950c-26e57ff4ebd3",
+          "evidenceSource": "rum-mapper",
+          "kind": "rum-action",
+          "name": "task-immediate",
+          "rumContext": {
+            "actionIDs": [
+              "def3f4ff-d358-484d-950c-26e57ff4ebd3"
+            ],
+            "eventDateMilliseconds": 1789799959459,
+            "sessionID": "ad656ba3-6031-4cdf-9ac0-3e7403841fa1",
+            "viewID": "40581882-04da-4c3e-968d-8662a7779ac7",
+            "viewName": "ProbeHomeView",
+            "viewURL": "ProbeHomeView/8076581811149472644"
+          },
+          "runID": "exp194-20260919T063749Z-51ba25cc04e8",
+          "scenarioID": "replay.native-recording.navigation-teardown-serial",
+          "schemaVersion": 5,
+          "sequence": 35,
+          "sourceContext": {
+            "logicalSceneID": "scene-B",
+            "phase": "task-immediate",
+            "readerControlGeneration": 0,
+            "screen": "home",
+            "uptime": 732893.5156651667
+          },
+          "timestampMilliseconds": 1789799959461
+        },
+        "type": "signal"
+      },
+      {
+        "signal": {
+          "evidenceSource": "rum-mapper",
+          "kind": "rum-view-snapshot",
+          "rumContext": {
+            "eventDateMilliseconds": 1789799959458,
+            "sessionHasReplay": true,
+            "sessionID": "ad656ba3-6031-4cdf-9ac0-3e7403841fa1",
+            "viewActive": true,
+            "viewDocumentVersion": 3,
+            "viewID": "40581882-04da-4c3e-968d-8662a7779ac7",
+            "viewName": "ProbeHomeView",
+            "viewTimeSpentNanoseconds": 1479983,
+            "viewURL": "ProbeHomeView/8076581811149472644"
+          },
+          "runID": "exp194-20260919T063749Z-51ba25cc04e8",
+          "scenarioID": "replay.native-recording.navigation-teardown-serial",
+          "schemaVersion": 5,
+          "semanticContext": {
+            "logicalSceneID": "scene-B",
+            "screen": "home"
+          },
+          "sequence": 36,
+          "timestampMilliseconds": 1789799959461
+        },
+        "type": "signal"
+      },
+      {
+        "signal": {
+          "activationState": "foreground-inactive",
+          "evidenceSource": "probe",
+          "geometry": {
+            "height": 1376,
+            "width": 1032,
+            "x": 0,
+            "y": 0
+          },
+          "horizontalSizeClass": "regular",
+          "kind": "scene-ready",
+          "navigationPath": [
+            "home"
+          ],
+          "runID": "exp194-20260919T063749Z-51ba25cc04e8",
+          "scenarioID": "replay.native-recording.navigation-teardown-serial",
+          "sceneDisconnectGeneration": 0,
+          "scenePhase": "ready",
+          "schemaVersion": 5,
+          "semanticContext": {
+            "logicalSceneID": "scene-B",
+            "nativeSceneID": "92A57E4D-1BC4-48D1-B95B-85E830E65691",
+            "screen": "home"
+          },
+          "sequence": 37,
+          "timestampMilliseconds": 1789799959476,
+          "verticalSizeClass": "regular"
+        },
+        "type": "signal"
+      },
+      {
+        "signal": {
+          "acknowledgedSignalSequence": 37,
+          "evidenceSource": "probe",
+          "kind": "step-acknowledged",
+          "name": "scene-B",
+          "runID": "exp194-20260919T063749Z-51ba25cc04e8",
+          "scenarioID": "replay.native-recording.navigation-teardown-serial",
+          "schemaVersion": 5,
+          "semanticContext": {
+            "logicalSceneID": "scene-A",
+            "nativeSceneID": "25B5E0B7-4E56-4074-B6E2-045847672088",
+            "screen": "home"
+          },
+          "sequence": 38,
+          "stepIndex": 3,
+          "stepKind": "open-window",
+          "timestampMilliseconds": 1789799959480
+        },
+        "type": "signal"
+      },
+      {
+        "signal": {
+          "evidenceSource": "probe",
+          "kind": "step-started",
+          "name": "rum-view:home#1",
+          "runID": "exp194-20260919T063749Z-51ba25cc04e8",
+          "scenarioID": "replay.native-recording.navigation-teardown-serial",
+          "schemaVersion": 5,
+          "semanticContext": {
+            "logicalSceneID": "scene-B",
+            "nativeSceneID": "92A57E4D-1BC4-48D1-B95B-85E830E65691",
+            "screen": "home"
+          },
+          "sequence": 39,
+          "stepIndex": 4,
+          "stepKind": "wait-for-signal",
+          "timestampMilliseconds": 1789799959481
+        },
+        "type": "signal"
+      },
+      {
+        "signal": {
+          "acknowledgedSignalSequence": 36,
+          "evidenceSource": "probe",
+          "kind": "step-acknowledged",
+          "name": "rum-view:home#1",
+          "runID": "exp194-20260919T063749Z-51ba25cc04e8",
+          "scenarioID": "replay.native-recording.navigation-teardown-serial",
+          "schemaVersion": 5,
+          "semanticContext": {
+            "logicalSceneID": "scene-B",
+            "nativeSceneID": "92A57E4D-1BC4-48D1-B95B-85E830E65691",
+            "screen": "home"
+          },
+          "sequence": 40,
+          "stepIndex": 4,
+          "stepKind": "wait-for-signal",
+          "timestampMilliseconds": 1789799959481
+        },
+        "type": "signal"
+      },
+      {
+        "signal": {
+          "evidenceSource": "probe",
+          "kind": "step-started",
+          "name": "replay-b-after-open",
+          "runID": "exp194-20260919T063749Z-51ba25cc04e8",
+          "scenarioID": "replay.native-recording.navigation-teardown-serial",
+          "schemaVersion": 5,
+          "semanticContext": {
+            "logicalSceneID": "scene-B",
+            "nativeSceneID": "92A57E4D-1BC4-48D1-B95B-85E830E65691",
+            "screen": "home"
+          },
+          "sequence": 41,
+          "stepIndex": 5,
+          "stepKind": "capture-replay-records",
+          "timestampMilliseconds": 1789799959481
+        },
+        "type": "signal"
+      },
+      {
+        "signal": {
+          "evidenceSource": "probe",
+          "kind": "assertion",
+          "name": "replay-b-after-open",
+          "reason": "missing(\"active native scene and representative\")",
+          "result": "FAIL",
+          "runID": "exp194-20260919T063749Z-51ba25cc04e8",
+          "scenarioID": "replay.native-recording.navigation-teardown-serial",
+          "schemaVersion": 5,
+          "semanticContext": {
+            "logicalSceneID": "scene-B"
+          },
+          "sequence": 42,
+          "timestampMilliseconds": 1789799959488
+        },
+        "type": "signal"
+      },
+      {
+        "result": {
+          "issues": [
+            {
+              "reason": "step 5 capture-replay-records failed: missing(\"active native scene and representative\")",
+              "signalSequence": 41
+            }
+          ],
+          "matchedExpectationCount": 0,
+          "scenarioID": "replay.native-recording.navigation-teardown-serial",
+          "schemaVersion": 1,
+          "state": "FAIL"
+        },
+        "runID": "exp194-20260919T063749Z-51ba25cc04e8",
+        "type": "semantic-result"
+      },
+      {
+        "signal": {
+          "eventID": "9be44190-b395-459b-9ebb-66eb7bd99548",
+          "evidenceSource": "rum-mapper",
+          "kind": "rum-resource",
+          "name": "on-appear",
+          "resource": {
+            "durationNanoseconds": 51581025,
+            "id": "9be44190-b395-459b-9ebb-66eb7bd99548",
+            "method": "GET",
+            "size": 1,
+            "statusCode": 200,
+            "type": "other",
+            "url": "https://multi-scene-probe.invalid/native/scene-B/home/on-appear"
+          },
+          "rumContext": {
+            "eventDateMilliseconds": 1789799959459,
+            "sessionID": "ad656ba3-6031-4cdf-9ac0-3e7403841fa1",
+            "viewID": "40581882-04da-4c3e-968d-8662a7779ac7",
+            "viewName": "ProbeHomeView",
+            "viewURL": "ProbeHomeView/8076581811149472644"
+          },
+          "runID": "exp194-20260919T063749Z-51ba25cc04e8",
+          "scenarioID": "replay.native-recording.navigation-teardown-serial",
+          "schemaVersion": 5,
+          "sequence": 43,
+          "sourceContext": {
+            "logicalSceneID": "scene-B",
+            "phase": "on-appear",
+            "readerControlGeneration": 0,
+            "screen": "home",
+            "uptime": 732893.5155905833
+          },
+          "timestampMilliseconds": 1789799959512
+        },
+        "type": "signal"
+      },
+      {
+        "signal": {
+          "evidenceSource": "rum-mapper",
+          "kind": "rum-view-snapshot",
+          "rumContext": {
+            "eventDateMilliseconds": 1789799959458,
+            "sessionHasReplay": true,
+            "sessionID": "ad656ba3-6031-4cdf-9ac0-3e7403841fa1",
+            "viewActive": true,
+            "viewDocumentVersion": 4,
+            "viewID": "40581882-04da-4c3e-968d-8662a7779ac7",
+            "viewName": "ProbeHomeView",
+            "viewTimeSpentNanoseconds": 53007960,
+            "viewURL": "ProbeHomeView/8076581811149472644"
+          },
+          "runID": "exp194-20260919T063749Z-51ba25cc04e8",
+          "scenarioID": "replay.native-recording.navigation-teardown-serial",
+          "schemaVersion": 5,
+          "semanticContext": {
+            "logicalSceneID": "scene-B",
+            "screen": "home"
+          },
+          "sequence": 44,
+          "timestampMilliseconds": 1789799959513
+        },
+        "type": "signal"
+      },
+      {
+        "signal": {
+          "eventID": "0395c129-c513-4c6c-b78d-817e1025918e",
+          "evidenceSource": "rum-mapper",
+          "kind": "rum-resource",
+          "name": "task-immediate",
+          "resource": {
+            "durationNanoseconds": 51537991,
+            "id": "0395c129-c513-4c6c-b78d-817e1025918e",
+            "method": "GET",
+            "size": 1,
+            "statusCode": 200,
+            "type": "other",
+            "url": "https://multi-scene-probe.invalid/native/scene-B/home/task-immediate"
+          },
+          "rumContext": {
+            "eventDateMilliseconds": 1789799959459,
+            "sessionID": "ad656ba3-6031-4cdf-9ac0-3e7403841fa1",
+            "viewID": "40581882-04da-4c3e-968d-8662a7779ac7",
+            "viewName": "ProbeHomeView",
+            "viewURL": "ProbeHomeView/8076581811149472644"
+          },
+          "runID": "exp194-20260919T063749Z-51ba25cc04e8",
+          "scenarioID": "replay.native-recording.navigation-teardown-serial",
+          "schemaVersion": 5,
+          "sequence": 45,
+          "sourceContext": {
+            "logicalSceneID": "scene-B",
+            "phase": "task-immediate",
+            "readerControlGeneration": 0,
+            "screen": "home",
+            "uptime": 732893.5156651667
+          },
+          "timestampMilliseconds": 1789799959513
+        },
+        "type": "signal"
+      },
+      {
+        "signal": {
+          "evidenceSource": "rum-mapper",
+          "kind": "rum-view-snapshot",
+          "rumContext": {
+            "eventDateMilliseconds": 1789799959458,
+            "sessionHasReplay": true,
+            "sessionID": "ad656ba3-6031-4cdf-9ac0-3e7403841fa1",
+            "viewActive": true,
+            "viewDocumentVersion": 5,
+            "viewID": "40581882-04da-4c3e-968d-8662a7779ac7",
+            "viewName": "ProbeHomeView",
+            "viewTimeSpentNanoseconds": 53025961,
+            "viewURL": "ProbeHomeView/8076581811149472644"
+          },
+          "runID": "exp194-20260919T063749Z-51ba25cc04e8",
+          "scenarioID": "replay.native-recording.navigation-teardown-serial",
+          "schemaVersion": 5,
+          "semanticContext": {
+            "logicalSceneID": "scene-B",
+            "screen": "home"
+          },
+          "sequence": 46,
+          "timestampMilliseconds": 1789799959513
+        },
+        "type": "signal"
+      },
+      {
+        "signal": {
+          "action": {
+            "errorCount": 0,
+            "id": "e6ca8cd1-d63c-452d-91bb-76e8e1d0d3f7",
+            "loadingTimeNanoseconds": 0,
+            "resourceCount": 0,
+            "target": "probe-lifecycle-scene-B.home.task-delayed",
+            "type": "custom"
+          },
+          "eventID": "e6ca8cd1-d63c-452d-91bb-76e8e1d0d3f7",
+          "evidenceSource": "rum-mapper",
+          "kind": "rum-action",
+          "name": "task-delayed",
+          "rumContext": {
+            "actionIDs": [
+              "e6ca8cd1-d63c-452d-91bb-76e8e1d0d3f7"
+            ],
+            "eventDateMilliseconds": 1789799959575,
+            "sessionID": "ad656ba3-6031-4cdf-9ac0-3e7403841fa1",
+            "viewID": "40581882-04da-4c3e-968d-8662a7779ac7",
+            "viewName": "ProbeHomeView",
+            "viewURL": "ProbeHomeView/8076581811149472644"
+          },
+          "runID": "exp194-20260919T063749Z-51ba25cc04e8",
+          "scenarioID": "replay.native-recording.navigation-teardown-serial",
+          "schemaVersion": 5,
+          "sequence": 47,
+          "sourceContext": {
+            "logicalSceneID": "scene-B",
+            "phase": "task-delayed",
+            "readerControlGeneration": 0,
+            "screen": "home",
+            "uptime": 732893.6311945834
+          },
+          "timestampMilliseconds": 1789799959576
+        },
+        "type": "signal"
+      },
+      {
+        "signal": {
+          "evidenceSource": "rum-mapper",
+          "kind": "rum-view-snapshot",
+          "rumContext": {
+            "eventDateMilliseconds": 1789799959458,
+            "sessionHasReplay": true,
+            "sessionID": "ad656ba3-6031-4cdf-9ac0-3e7403841fa1",
+            "viewActive": true,
+            "viewDocumentVersion": 6,
+            "viewID": "40581882-04da-4c3e-968d-8662a7779ac7",
+            "viewName": "ProbeHomeView",
+            "viewTimeSpentNanoseconds": 117015958,
+            "viewURL": "ProbeHomeView/8076581811149472644"
+          },
+          "runID": "exp194-20260919T063749Z-51ba25cc04e8",
+          "scenarioID": "replay.native-recording.navigation-teardown-serial",
+          "schemaVersion": 5,
+          "semanticContext": {
+            "logicalSceneID": "scene-B",
+            "screen": "home"
+          },
+          "sequence": 48,
+          "timestampMilliseconds": 1789799959577
+        },
+        "type": "signal"
+      }
+    ],
+    "test-summary.json": {
+      "devicesAndConfigurations": [
+        {
+          "device": {
+            "architecture": "arm64",
+            "deviceId": "1B0D0EB0-CF23-4CEB-AEF1-2C8462184C03",
+            "deviceName": "RUM Replay EXP-194",
+            "modelName": "iPad Pro 13-inch (M4)",
+            "osBuildNumber": "24A434",
+            "osVersion": "27.0",
+            "platform": "iOS Simulator"
+          },
+          "expectedFailures": 0,
+          "failedTests": 0,
+          "passedTests": 205,
+          "skippedTests": 0,
+          "testPlanConfiguration": {
+            "configurationId": "1",
+            "configurationName": "Test Scheme Action"
+          }
+        }
+      ],
+      "environmentDescription": "RUMNativeMultiSceneProbe \u00b7 Built with macOS 26.6.2",
+      "expectedFailures": 0,
+      "failedTests": 0,
+      "finishTime": 1789799949.965,
+      "passedTests": 205,
+      "result": "Passed",
+      "runtimeWarnings": [],
+      "skippedTests": 0,
+      "startTime": 1789799924.399,
+      "statistics": [],
+      "testFailures": [],
+      "title": "Test - RUMNativeMultiSceneProbe",
+      "topInsights": [],
+      "totalTestCount": 205
+    }
+  },
+  "experiment": "EXP-194",
+  "failures": [
+    "native scenario did not pass"
+  ],
+  "finished_at": "2026-09-19T06:39:21.220048+00:00",
+  "gate": "F05",
+  "oracle_contract_sha256": "ee8beca6a95ded0c83ab86a512eb061d4fc5e2b4dc891f7a31a50af4665ae322",
+  "rerun": "Use a fresh output directory and freshly resolved device; do not reuse run IDs or bridge responses.",
+  "revision": "357f56277f100068bd9e3bdc2a41dfbc3eb2bcb3",
+  "run_id": "exp194-20260919T063749Z-51ba25cc04e8",
+  "scenario_id": "replay.native-recording.navigation-teardown-serial",
+  "schema_version": 1,
+  "source_file_count": 719,
+  "source_fingerprint": "b47c95fc155dd0320e19223c709c7d62b3ac8a95526d71b24271efc9df7e3a38",
+  "stages": {
+    "clean_install": {
+      "data_container_absent": true,
+      "installed_binary_sha256": "ee4966e6f2904e48929fdca32bff320c551afebd1e683b73dbf2a7a5ec3f99bb",
+      "state": "PASS"
+    },
+    "frozen_build": {
+      "executable_sha256": "ee4966e6f2904e48929fdca32bff320c551afebd1e683b73dbf2a7a5ec3f99bb",
+      "source_sha256": "b47c95fc155dd0320e19223c709c7d62b3ac8a95526d71b24271efc9df7e3a38",
+      "state": "PASS",
+      "test_count": 205,
+      "uuid": "UUID: 65487A45-B3F7-3034-AEF7-A199C22456E1 (arm64) /private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp194-replay-vmpu3y31/attempt-2/derived/Build/Products/Debug-iphonesimulator/RUMNativeMultiSceneProbe.app/RUMNativeMultiSceneProbe"
+    },
+    "preflight": {
+      "authenticated_read": true,
+      "state": "PASS"
+    }
+  },
+  "started_at": "2026-09-19T06:37:49.282921+00:00",
+  "state": "FAIL",
+  "xcode": "Xcode 27.1\nBuild version 27A9269"
+}

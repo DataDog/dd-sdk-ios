@@ -113,8 +113,14 @@ internal enum ProbeReplayAcceptance {
               let handle = ProbeRuntime.sceneRegistry.handle(logicalSceneID: scene),
               let window = ProbeRuntime.sceneRegistry.window(for: handle),
               let nativeScene = window.windowScene,
-              nativeScene.activationState == .foregroundActive,
-              let host = window.rootViewController?.view,
+              let host = window.rootViewController?.view else {
+            throw FixtureError.missing("attached native scene")
+        }
+        for _ in 0..<100 {
+            if nativeScene.activationState == .foregroundActive { break }
+            try await Task.sleep(nanoseconds: 20_000_000)
+        }
+        guard nativeScene.activationState == .foregroundActive,
               let owner = monitor.rumContextSnapshot(for: .scene(.init(rawValue: handle.nativeSceneID))),
               let viewID = owner.viewID,
               monitor.rumContextSnapshot(for: .processRepresentative)?.viewID == owner.viewID else {
