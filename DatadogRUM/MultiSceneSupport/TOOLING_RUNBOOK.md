@@ -2037,3 +2037,12 @@ source/build/installed metadata, hashes, differences and failed-input records.
 The old375x667 compact viewport can qualify a real display transition only with
 fresh native inventory and display evidence; label it unchanged compatibility
 geometry, never resized. Modern duplicate windows alone are rejected.
+
+Duo's compact UISplitViewController can expose BackButton in a floating toolbar.
+The collector may follow that observed unique native identifier when the normal
+nav-bar Back is absent, and must still prove the sidebar became visible. Rebuild
+only isolated UI collectors via `automatic-coverage/collector_variant.py`; retain
+all original application code/build identities. A test-manager delivery delay that
+eventually produces the exact native callback is retained as operational evidence,
+not silently dropped or reused as a performance result. Compare fold/background
+view occurrence timing against independent native callbacks before classification.

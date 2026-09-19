@@ -79,10 +79,18 @@ import XCTest
                 // A standard compact UISplitViewController initially exposes its
                 // empty secondary column. Follow its observed native Back control.
                 let buttons = app.navigationBars["Empty"].buttons
-                XCTAssertEqual(buttons.count, 1, app.debugDescription)
-                let back = buttons.element(boundBy: 0)
+                let back: XCUIElement
+                if buttons.count == 1 {
+                    back = buttons.element(boundBy: 0)
+                } else {
+                    // Duo exposes the same native split Back control in a floating toolbar.
+                    let floating = app.buttons.matching(identifier: "BackButton")
+                    XCTAssertEqual(floating.count, 1, app.debugDescription)
+                    back = floating.element(boundBy: 0)
+                }
                 wait("native sidebar navigation hittable") { back.isHittable }
                 try record(phase + ".revealSidebar.before", ["native_control": back.label,
+                    "native_identifier": back.identifier,
                     "frame": String(describing: back.frame)])
                 back.tap()
                 visible(app, "sidebar")

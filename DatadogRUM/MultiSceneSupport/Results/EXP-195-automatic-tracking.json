@@ -54,8 +54,24 @@
       "oracle_controls": 49,
       "source": "Same apps/SDK; Duo-only external real Device Hub Home and native background receipt.",
       "status": "RUNNING"
+    },
+    {
+      "builds": "Two modern collectors built successfully; genuine application build SDKs remain unchanged.",
+      "collector_change": "UIKit compact split supports its observed floating BackButton as well as the ordinary navigation-bar Back.",
+      "directory": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp195-collector-t92yhxza",
+      "source": "Standalone SDK27 XCTest collectors only; original app/SDK binaries and Swift fixture sources retained.",
+      "status": "RUNNING"
     }
   ],
+  "classification_followup": {
+    "acceptance": "Explain every view/owner difference against native callback/geometry/background timing; no lost named destination or automatic interaction; classify any new unexplained loss as regression.",
+    "cells": 2,
+    "defined_before_execution": true,
+    "gate": "C09/C10",
+    "reason": "Classify native generic-hosting occurrence differences around fold/background; preserve all original inventories rather than normalizing them away.",
+    "scope": "One additional baseline/current SDK27 manifest-false SwiftUI split pair, same frozen applications and real fold flow.",
+    "stop_rule": "One pair only before deciding source repair or a documented unresolved limit."
+  },
   "collector_followups": [
     {
       "repair": "Use frozen SDK27.1 XCTest collector for old-built Duo apps; retain original SDK26.5 app identity, rewrite only test-plan app paths, check installed app identities again after execution. Not yet executed on old-built Duo.",
@@ -66,6 +82,16 @@
       "reason": "External Open receipt timed out across context recovery; no fold acceptance. Cleanup verified. Retry fresh ID.",
       "run_id": "exp195-39ba4eb3845a4377a51c300df86aecc7",
       "status": "UNQUALIFIED_INPUT"
+    },
+    {
+      "reason": "Duo initial compact split exposes a floating toolbar BackButton; collector wrongly required navigation-bar button count1. Native hierarchy preserved; apps/runners cleaned. Repair collector only.",
+      "run_id": "exp195-cf24cdc394c044148be22b1ac6c1e5e3",
+      "status": "UNQUALIFIED_INPUT"
+    },
+    {
+      "reason": "Closed Detail tap took about122 seconds across XCTest delivery/completion. Actual native callback then complete input/background/cleanup passed. Scoped testmanagerd log and app sample retained; sample near recovery mostly idle main run loop. No performance claim.",
+      "run_id": "exp195-5dec782ae1044c09b40724766794beab",
+      "status": "QUALIFIED_INPUT_WITH_DRIVER_DELAY"
     }
   ],
   "defined_before_implementation": true,
@@ -86,7 +112,7 @@
   ],
   "manifest_true_followup": {
     "application_delta": "Only UIApplicationSupportsMultipleScenes=true in the independently hashed installed app Info.plist; frozen Swift sources and every Mach-O remain identical to the SDK27 original arms.",
-    "attempt": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp195-manifest-true-22e4rnwk",
+    "attempt": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp195-manifest-true-el0w6t79",
     "binary_delta": "All Mach-O inventories identical to original arms; only verified plist flag changed.",
     "cells": 8,
     "decisive_test": "All eight complete real-input/fold cells with exactly one actual native scene, source-paired view/action inventories and owners; classify every difference. No new unexplained loss, duplicate or attribution degradation.",
@@ -106,7 +132,8 @@
     "reason": "RUMFeature.swift:70 and RUMInstrumentation.swift:109/120/129 gate the changed automatic path on the manifest declaration, not actual scene count. Existing one-window apps may already declare true without adopting this project.",
     "scope_limit": "Proves this SDK source-path comparison on SDK27 only; does not expand the manifest-true old-build compiler matrix or claim physical/concurrent-window acceptance.",
     "status": "PREPARED",
-    "stop_rule": "No extra UI families or matrices without a gate-specific regression. Existing32 cells remain separate and their accepted results are not repeated."
+    "stop_rule": "No extra UI families or matrices without a gate-specific regression. Existing32 cells remain separate and their accepted results are not repeated.",
+    "superseded_preparation": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp195-manifest-true-22e4rnwk"
   },
   "matrix": {
     "build_sdk": [
@@ -165,6 +192,7 @@
     ]
   },
   "partial_findings": {
+    "Duo_SwiftUI_split_SDK27": "Both native inputs qualify with21 taps/4 swipes and four Toggle omissions. Outer view/action comparison unchanged. Complete view inventories differ15 candidate versus17 baseline, and generic occurrence owners differ around open/close/reopen. Two baseline-only occurrences begin after actual background. Source/native-timeline audit and bounded replay pending; no no-regression verdict yet.",
     "Duo_SwiftUI_stack_SDK27": "Both sources match:17 view occurrences including launch;21 taps/4 swipes;four Toggle omissions. Outer matches regular iPhone. Detail ownership retained through close/reopen, same native scene with466x678 compact outer and951x669 regular inner.",
     "Duo_UIKit_stack_SDK27": "Both sources qualify and match:11 views including launch;21 taps/4 swipes;four switch omissions. Outer matches regular iPhone and Detail ownership survives close/reopen.",
     "boundary": "All16 regular cells, both SDK27 Duo stack pairs, and candidate SwiftUI split qualify. Remaining Duo pairs/follow-up pending.",
@@ -181,11 +209,11 @@
     "xcode_mcp": "rediscovered actual workspace/scheme and27.1 destinations"
   },
   "progress": {
-    "captured_at": 1789821405.462056,
-    "comparison_artifact": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp195-automatic-8w6fdb1_/comparison.json",
-    "duo": 5,
+    "captured_at": 1789822281.190193,
+    "comparison_artifact": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp195-collector-t92yhxza/comparison.json",
+    "duo": 6,
     "durable_duo_result": "EXP-195-duo-automatic-coverage.json",
-    "qualified_unique_cells": 21,
+    "qualified_unique_cells": 22,
     "regular": 16
   },
   "question": "Does an existing single-scene app lose automatic UIKit/SwiftUI view or action coverage when rebuilt with the iOS27 SDK and run on Duo, without adopting semantic tracking or changing navigation?",

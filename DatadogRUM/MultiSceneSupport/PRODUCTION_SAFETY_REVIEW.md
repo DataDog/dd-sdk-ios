@@ -9,7 +9,8 @@ Review closure does not certify automatic-only UIKit/SwiftUI view or action pari
 for SDK27-rebuilt Duo apps; C07–C10/EXP-195 own that newly prioritized comparison.
 All16 regular cells and the SDK27 Duo SwiftUI stack pair currently match their
 baselines. Collector input/finalization failures remain separate; no new production
-SDK defect has been established. Other Duo comparisons remain open.
+SDK defect has been established. SwiftUI split has a qualified generic-occurrence/owner difference under
+classification; remaining Duo comparisons stay open.
 
 Review closure does not imply overall release readiness. Current release status
 belongs exclusively to [release-gates.json](release-gates.json) and [PLAN](PLAN.md).

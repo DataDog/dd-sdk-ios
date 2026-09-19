@@ -40,6 +40,7 @@ def report(attempt, device=None):
                       pose_receipts=[r for r in receipts if r['phase'].startswith(('await-', 'received-'))])
         artifacts = [directory / name for name in ['events.jsonl', 'receipts.json', 'test-summary.json', 'run.json']]
         artifacts += sorted(directory.glob('*-command.json')) + sorted(directory.glob('*-displays.json'))
+        artifacts += sorted(directory.glob('*.sample.txt')) + sorted(directory.glob('*runner.log'))
         record['artifacts_sha256'] = {p.name: hashlib.sha256(p.read_bytes()).hexdigest() for p in artifacts}
         output['cells'].append(record)
     output['comparison_statuses'] = dict(Counter(c['status'] for c in output['comparisons']))

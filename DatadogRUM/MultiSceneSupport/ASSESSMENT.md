@@ -16,17 +16,18 @@ compares unchanged apps and preserves baseline limitations. C01’s early UIKit
 view/custom-marker fixture does not prove automatic taps/scrolls; EXP-193’s
 accepted-state RUMNavigationHost does not prove automatic-only SwiftUI.
 
-All16 regular-iPhone cells now qualify. All32 source/compiler comparisons preserve
-view/action inventories and owners across UIKit stack/split and SwiftUI stack/split.
-Both SDKs omit the exercised switches; SwiftUI keeps generic hosting names in
-several positions. The SDK27-built Duo SwiftUI stack pair also matches:21 taps/
-4 swipes, unchanged outer coverage and retained Detail ownership through close/
-reopen. Remaining Duo pairs are in progress. The old-built Duo SwiftUI input
-cannot yet qualify inner interaction; the modern-collector follow-up retains
-its original app identity. Collector failures are not RUM regressions.
-[Regular evidence](Results/EXP-195-regular-automatic-coverage.json) preserves every
-accepted cell's inventory and source/build/installed provenance. No production
-SDK repair has been justified so far.
+All16 regular-iPhone cells qualify; all32 source/compiler comparisons preserve
+view/action inventories and owners. The SDK27 Duo UIKit and SwiftUI stack pairs
+also match, including Detail ownership through close/reopen. Switch/Toggle gaps
+and generic SwiftUI names are unchanged limitations. SwiftUI split qualifies all
+native input and has equal21 taps/4 swipes, but generic view occurrences differ
+(15 current versus17 baseline) around fold/background. Its view/owner difference
+remains under classification; a bounded same-source replay is defined. UIKit split
+needs only a collector correction for Duo's observed floating native Back control.
+The old-built Duo SwiftUI inner-input issue remains a separate driver probe.
+[Regular evidence](Results/EXP-195-regular-automatic-coverage.json) and the
+[generated Duo evidence](Results/EXP-195-duo-automatic-coverage.json) own the exact
+inventories and provenance. No production SDK repair has yet been justified.
 
 EXP-195's fixed matrix explicitly declares multiple scenes false. An app with
 one current window and an already-enabled multiple-scene manifest follows a

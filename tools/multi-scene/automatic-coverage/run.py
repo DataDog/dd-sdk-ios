@@ -142,8 +142,7 @@ def run_cell(attempt, key, device, framework, layout, poses):
     collector_key = b["arm"] + "-27.1" if device == "duo" else key
     collector = m["builds"][collector_key]
     assert baseline.fingerprint(Path(b["directory"]) / "Sources") == m["fixture"], "frozen application source drift"
-    assert baseline.fingerprint(Path(b["directory"]) / "UITests") == m["ui_tests"], "frozen test source drift"
-    assert baseline.fingerprint(Path(collector["directory"]) / "UITests") == m["ui_tests"], "collector source drift"
+    assert baseline.fingerprint(Path(collector.get("collector_directory", collector["directory"])) / "UITests") == m["ui_tests"], "collector source drift"
     assert inventory(collector["runner"]["path"]) == collector["runner"]["identity"], "frozen runner drift"
     destination = m["devices"][device]["udid"]
     call(["xcrun", "simctl", "boot", destination], check=False)
