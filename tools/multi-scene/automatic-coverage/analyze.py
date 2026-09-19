@@ -11,6 +11,19 @@ def require(value, message):
     if not value: raise ValueError(message)
 
 
+
+def qualify_home(receipts, backgrounds, run_id):
+    start = next((r for r in receipts if r["phase"] == "background.before"), None)
+    waiting = next((r for r in receipts if r["phase"] == "await-home"), None)
+    home = next((r for r in receipts if r["phase"] == "received-home"), None)
+    require(start is not None and waiting is not None and home is not None, "missing external Home receipt")
+    payload = home["payload"]
+    require(payload.get("run_id") == run_id and bool(payload.get("command_id")), "stale external Home command")
+    background = next((r for r in backgrounds if r["sequence"] == payload.get("native_background_sequence")), None)
+    require(background is not None and start["timestamp"] <= waiting["timestamp"] <= background["timestamp"]
+            <= payload["observed_at"] <= home["timestamp"], "stale or late external Home boundary")
+
+
 def qualify(run, rows, receipts, summary):
     ident = run["run_id"]
     require(run.get("clean_install") is True and run.get("cleanup") is True, "install/cleanup absent")
@@ -54,6 +67,7 @@ def qualify(run, rows, receipts, summary):
     final_background = next((r for r in receipts if r["phase"] == "background.before"), None)
     require(final_background is not None and any(final_background["timestamp"] <= row["timestamp"] for row in backgrounds), "background boundary was stale")
     if run["poses"]:
+        qualify_home(receipts, backgrounds, ident)
         for name in ["open", "close", "reopen"]:
             require("await-" + name in phases and "received-" + name in phases, "missing pose boundary")
             receipt = next(r for r in receipts if r["phase"] == "received-" + name)
@@ -140,11 +154,18 @@ def analyze(attempt, seen=None):
     for run in m["runs"]:
         d = Path(run["directory"])
         try:
+            if run["state"] == "STARTED":
+                result["cells"].append({"run_id": run["run_id"], "cell": [run["build"], run["device"], run["framework"], run["layout"]],
+                    "state": "INCOMPLETE", "attempt": str(attempt)})
+                continue
             rows = [json.loads(l) for l in (d / "events.jsonl").read_text().splitlines()]
             receipts = json.loads((d / "receipts.json").read_text()); summary = json.loads((d / "test-summary.json").read_text())
             build = m["builds"][run["build"]]
             require(all(run["installed"][fw] == build["apps"][fw]["identity"] for fw in ["UIKit", "SwiftUI"]), "frozen/installed code mismatch")
+            if "installed_runner" in run:
+                require(run["installed_runner"] == build["runner"]["identity"], "frozen/installed test runner mismatch")
             launch = qualify(run, rows, receipts, summary)
+            require(run["device"] != "duo" or run["poses"], "Duo calibration omitted required fold phases")
             require(launch["build_sdk"] == "iphonesimulator" + build["sdk"], "wrong build SDK")
             item = summarize(run, rows, receipts); item["state"] = "QUALIFIED_INPUT"
             accepted[tuple(item["cell"])] = item

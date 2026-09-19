@@ -55,3 +55,11 @@ identity and chronology before releasing the test. It never changes the pose.
 `comparison_prior_attempts` retains qualified cells from earlier collector-only
 revisions, provided app and all SDK source fingerprints remain identical. Each
 cell keeps its own manifest, build identity and raw evidence.
+
+
+On Duo the final drain waits at `await-home`: use Device Hub's actual Home control,
+then `pose.py home-ack --attempt PATH`. A fresh native app-background event must
+precede that receipt. The earlier XCTest Home finalization failure stays preserved.
+Regular cells keep their existing XCTest Home path. Frozen archived app/test
+sources and all app/runner binaries are checked independently of later collector
+edits in the working tree.

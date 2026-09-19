@@ -16,6 +16,21 @@ compares unchanged apps and preserves baseline limitations. C01’s early UIKit
 view/custom-marker fixture does not prove automatic taps/scrolls; EXP-193’s
 accepted-state RUMNavigationHost does not prove automatic-only SwiftUI.
 
+The first qualified regular-iPhone SDK27.1 pairs preserve UIKit stack/split and
+SwiftUI stack view/action inventories across baseline/current Datadog sources.
+Both SDKs omit the exercised switches; SwiftUI keeps generic hosting names in
+several positions. Compiler-rebuild and Duo acceptance remain pending. The first
+Duo flow records real open/close/reopen inputs but fails runner finalization, so it
+is not accepted evidence. The corrected current-source Duo SwiftUI stack cell
+now qualifies:21 taps/4 swipes, unchanged outer coverage and retained Detail
+ownership through close/reopen. Paired Duo compiler/source comparisons remain
+pending. The owning result retains the failure and bounded collector correction. No production SDK repair has been justified so far.
+
+EXP-195's fixed matrix explicitly declares multiple scenes false. An app with
+one current window and an already-enabled multiple-scene manifest follows a
+different code path: RUMFeature reads that flag, not the scene count. Do not extend
+the present comparison to that case without its own finite paired slice.
+
 ## Current support
 
 The branch remains experimental and is not release-ready. It supports independent

@@ -136,7 +136,11 @@ import XCTest
             visible(app, "detail"); try tap(app, "detail.tap", phase: "reopened.detail.tap")
         }
         try record("background.before")
-        XCUIDevice.shared.press(.home)
+        if ProcessInfo.processInfo.environment["EXP195_DUO_PHASES"] == "1" {
+            try poseBoundary(app, name: "home")
+        } else {
+            XCUIDevice.shared.press(.home)
+        }
         wait("actual app background") { app.state == .runningBackground || app.state == .runningBackgroundSuspended }
         try record("background.effect")
         captureWindow()

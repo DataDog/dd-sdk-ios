@@ -4,6 +4,8 @@ import argparse
 import json
 from pathlib import Path
 import time
+import subprocess
+import sys
 import uuid
 from run import call, save, read_rows
 
@@ -59,11 +61,35 @@ def transition_valid(before, after, name, requested):
 
 
 def main():
-    p = argparse.ArgumentParser(); p.add_argument('stage', choices=['status', 'before', 'ack'])
+    p = argparse.ArgumentParser(); p.add_argument('stage', choices=['status', 'before', 'ack', 'home-ack', 'serve'])
     p.add_argument('--attempt', type=Path, required=True); p.add_argument('--pose', choices=['open', 'close', 'reopen'])
-    args = p.parse_args(); run, directory, receipts, rows = live(args.attempt)
+    args = p.parse_args()
+    if args.stage == 'serve':
+        print('READY: status | before/ack open/close/reopen | home-ack | quit', flush=True)
+        for line in sys.stdin:
+            parts = line.strip().split()
+            if parts == ['quit']: return
+            valid = parts in [['status'], ['home-ack']] or (len(parts) == 2 and parts[0] in ['before', 'ack'] and parts[1] in ['open', 'close', 'reopen'])
+            if not valid:
+                print('REJECTED: unknown bounded receipt command', flush=True); continue
+            command = [sys.executable, '-B', str(Path(__file__).resolve()), parts[0], '--attempt', str(args.attempt)]
+            if len(parts) == 2: command += ['--pose', parts[1]]
+            subprocess.run(command, check=False)
+            print('READY', flush=True)
+        return
+    run, directory, receipts, rows = live(args.attempt)
     if args.stage == 'status':
         print(json.dumps({'run_id': run['run_id'], 'phase': receipts[-1]['phase'], 'geometry': geometry(rows)})); return
+    if args.stage == 'home-ack':
+        assert receipts[-1]['phase'] == 'await-home', 'not waiting at Home boundary'
+        requested = next(r['timestamp'] for r in receipts if r['phase'] == 'background.before')
+        backgrounds = [r for r in rows if r['kind'] == 'native_background' and r['timestamp'] >= requested]
+        assert len(backgrounds) == 1, 'missing or ambiguous actual native background'
+        payload = {'run_id': run['run_id'], 'command_id': str(uuid.uuid4()),
+                   'native_background_sequence': backgrounds[0]['sequence'], 'observed_at': time.time()}
+        destination = directory / 'home.json'; assert not destination.exists(), 'Home receipt already delivered'
+        save(Path(run['directory']) / 'home-command.json', payload); save(destination, payload)
+        print(json.dumps(payload)); return
     assert receipts[-1]['phase'] == 'await-' + args.pose, 'not waiting at this pose boundary'
     requested = receipts[-1]['timestamp']
     checkpoint = Path(run['directory']) / (args.pose + '-before.json')

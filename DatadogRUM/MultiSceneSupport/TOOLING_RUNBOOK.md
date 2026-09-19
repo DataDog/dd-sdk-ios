@@ -2000,3 +2000,20 @@ assertion or inactive display cannot qualify a fold. Preserve each collector
 revision in a separate attempt. Prior qualified cells may be compared only when
 app fixture and all archived SDK source fingerprints match; keep their original
 build/installed identities and disclose the collector-only change.
+
+
+The first automatic-only Duo XCTest Home attempt loses app/runner finalization
+and emits no native background receipt. Preserve its XPC log and incomplete
+result; successful preceding folds do not qualify the full cell. The Duo collector
+now waits for actual Device Hub Home, then `pose.py home-ack` admits only the
+fresh native background event before completing.49 oracle controls cover both
+fold geometry/display and external Home chronology.
+
+For this user-authorized UI session, `caffeinate -d -i -u -t 3600` keeps display
+and system awake with a bounded user-active assertion. Verify the owned PID in
+`pmset -g assertions`, record its deadline and terminate only that process at
+completion. It does not change persistent lock settings or replace manual unlock.
+Independent regular/Duo runs require separate manifests to avoid update races;
+all comparisons retain per-run source and installed identities. Freeze/check the
+archived source and runner binary, rather than requiring the working tree to stay
+at an older collector version while another slice is prepared.

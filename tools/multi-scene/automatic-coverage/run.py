@@ -110,6 +110,8 @@ def build(attempt, key):
             info = plistlib.loads((app / "Info.plist").read_bytes())
             b["apps"][fw] = {"path": str(app), "identity": inventory(app), "build_sdk": info.get("DTSDKName"), "deployment": info.get("MinimumOSVersion")}
             if not str(info.get("DTSDKName", "")).endswith(b["sdk"]): raise RuntimeError("built SDK identity mismatch")
+        b["runner"] = {"path": str(root / "derived/Build/Products/Release-iphonesimulator/CoverageUITests-Runner.app")}
+        b["runner"]["identity"] = inventory(b["runner"]["path"])
         b["xctestrun"] = str(next((root / "derived/Build/Products").glob("*.xctestrun")))
         b["state"] = "BUILT"
     except Exception as e:
@@ -131,8 +133,9 @@ def read_rows(path):
 def run_cell(attempt, key, device, framework, layout, poses):
     path = attempt / "manifest.json"; m = json.loads(path.read_text()); b = m["builds"][key]
     assert b["state"] == "BUILT"
-    assert baseline.fingerprint(HERE / "Fixture") == m["fixture"], "source fixture drift"
-    assert baseline.fingerprint(HERE / "UITests") == m["ui_tests"], "test fixture drift"
+    assert baseline.fingerprint(Path(b["directory"]) / "Sources") == m["fixture"], "frozen application source drift"
+    assert baseline.fingerprint(Path(b["directory"]) / "UITests") == m["ui_tests"], "frozen test source drift"
+    assert inventory(b["runner"]["path"]) == b["runner"]["identity"], "frozen runner drift"
     destination = m["devices"][device]["udid"]
     call(["xcrun", "simctl", "boot", destination], check=False)
     call(["xcrun", "simctl", "bootstatus", destination, "-b"], timeout=120)
@@ -188,6 +191,10 @@ def run_cell(attempt, key, device, framework, layout, poses):
     runner = call(["xcrun", "simctl", "get_app_container", destination, runner_bundle, "data"], check=False)
     receipt_path = Path(runner) / "Documents" / run_id / "receipts.json"
     if receipt_path.exists(): shutil.copyfile(receipt_path, directory / "receipts.json")
+    runner_app = call(["xcrun", "simctl", "get_app_container", destination, runner_bundle, "app"], check=False)
+    if runner_app:
+        item["installed_runner"] = inventory(runner_app)
+        assert item["installed_runner"] == b["runner"]["identity"], "installed test runner differs"
     if (directory / "result.xcresult").exists():
         call(["xcrun", "xcresulttool", "get", "test-results", "summary", "--path", str(directory / "result.xcresult")], log=directory / "test-summary.json", check=False)
     item["state"] = "COLLECTED" if code == 0 and (directory / "events.jsonl").exists() and (directory / "receipts.json").exists() else "INPUT_OR_FIXTURE_FAILED"

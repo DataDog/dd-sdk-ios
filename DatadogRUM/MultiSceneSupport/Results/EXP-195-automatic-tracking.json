@@ -110,7 +110,7 @@
     },
     {
       "directory": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp195-automatic-mo8om5bc",
-      "status": "BUILT",
+      "status": "PARTIAL COLLECTION",
       "builds": [
         "baseline-26.5",
         "candidate-26.5",
@@ -118,7 +118,22 @@
         "candidate-27.1"
       ],
       "oracle_controls": 41,
-      "collector_change": "Use native UIKit switch center, observed compact split Back control and reverse scroll when previously moved. Application/SDK sources unchanged; prior qualified cells retained with their own identities."
+      "collector_change": "Use native UIKit switch center, observed compact split Back control and reverse scroll when previously moved. Application/SDK sources unchanged; prior qualified cells retained with their own identities.",
+      "native_cells": 2,
+      "qualified_cells": 1,
+      "reason": "Regular UIKit stack qualifies. First Duo SwiftUI stack completes actual fold input but loses app/runner finalization at XCTest Home; no native background/complete receipt, original XPC log and scoped interruption retained, cleanup true."
+    },
+    {
+      "directory": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp195-regular-shard-nzo1zp4e",
+      "status": "RUNNING",
+      "source": "Exact frozen mo8om5bc apps/tests; independent manifest on regular simulator.",
+      "scope": "Remaining fixed regular-iPhone cells."
+    },
+    {
+      "directory": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp195-automatic-8w6fdb1_",
+      "status": "RUNNING",
+      "source": "Same apps/SDK; Duo-only external real Device Hub Home and native background receipt.",
+      "oracle_controls": 49
     }
   ],
   "preflight": {
@@ -140,6 +155,19 @@
     "boundary": "Two candidate SDK27.1-built regular-iPhone SwiftUI inputs only; no paired non-regression or Duo verdict yet.",
     "SwiftUI_stack": "11 automatic actions (9 taps, 2 swipes); both Toggle changes lack actions. Home uses hosting/fallback names; Detail and Sheet are named. Nine unique view occurrences including ApplicationLaunch.",
     "SwiftUI_split": "11 automatic actions (9 taps, 2 swipes); both Toggle changes lack actions. Home/sidebar and Detail use hosting/fallback names; Sheet is named. Nine unique view occurrences including ApplicationLaunch.",
-    "new_sdk_defect": "Not established."
+    "new_sdk_defect": "Not established.",
+    "paired_regular_SDK27": "UIKit stack/split and SwiftUI stack baseline/current source comparisons match view and action inventories/owners. Unchanged switch/Toggle omissions and SwiftUI hosting names remain explicit. Compiler-rebuild and Duo verdicts remain pending.",
+    "Duo_SwiftUI_stack_SDK27": "Qualified current-source cell: 17 unique view occurrences including launch; 21 taps/4 swipes across outer/inner/fold phases; four Toggle omissions. Outer view/action comparison matches regular iPhone. Close/reopen taps retain Detail owner. Genuine old/new SDK and baseline-source Duo pairs are still pending."
+  },
+  "environment_support": {
+    "keep_awake": "User requested temporary caffeinate. One-hour display/system/user-active assertions verified with pmset. Owned PID and deadline in mo8om5bc/keep-awake.json; stop at completion."
+  },
+  "scope_caution": "This fixed matrix declares multiple scenes false. RUMFeature reads the manifest flag, not the actual current scene count. A one-window app that already declares multiple-scene support exercises a different automatic path; do not generalize these cells to it. Assess the smallest finite additional slice before claiming broad no-adoption parity.",
+  "progress": {
+    "captured_at": 1789818926.89143,
+    "qualified_unique_cells": 17,
+    "regular": 16,
+    "duo": 1,
+    "comparison_artifact": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp195-automatic-8w6fdb1_/comparison.json"
   }
 }

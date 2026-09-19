@@ -90,4 +90,21 @@ class ComparisonTests(unittest.TestCase):
         args=self.sample();args[1].pop();value=analyze.summarize(*args)
         self.assertEqual(analyze.compare(value,value,"actions")["status"],"UNCHANGED_LIMITATION")
 
+class ExternalHomeTests(unittest.TestCase):
+    def fixture(self):
+        return ([{"phase":"background.before","timestamp":1}, {"phase":"await-home","timestamp":2},
+                 {"phase":"received-home","timestamp":5,"payload":{"run_id":"home-control","command_id":"fresh-command",
+                  "native_background_sequence":10,"observed_at":4}}], [{"sequence":10,"timestamp":3}], "home-control")
+    def test_actual_native_boundary(self): analyze.qualify_home(*self.fixture())
+    def rejects(self, mutate):
+        receipts, rows, ident = self.fixture(); mutate(receipts, rows)
+        with self.assertRaises(ValueError): analyze.qualify_home(receipts, rows, ident)
+    def test_old_run(self): self.rejects(lambda r,b: r[-1]["payload"].update(run_id="old"))
+    def test_missing_command_identity(self): self.rejects(lambda r,b: r[-1]["payload"].pop("command_id"))
+    def test_unknown_native_sequence(self): self.rejects(lambda r,b: r[-1]["payload"].update(native_background_sequence=9))
+    def test_native_boundary_before_wait(self): self.rejects(lambda r,b: b[0].update(timestamp=1.5))
+    def test_native_boundary_after_observation(self): self.rejects(lambda r,b: b[0].update(timestamp=4.5))
+    def test_observation_after_receipt(self): self.rejects(lambda r,b: r[-1]["payload"].update(observed_at=6))
+    def test_missing_wait(self): self.rejects(lambda r,b: r.pop(1))
+
 if __name__ == "__main__": unittest.main()
