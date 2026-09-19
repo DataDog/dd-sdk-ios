@@ -1860,3 +1860,24 @@ If the Mac locks before a delivered native control, preserve the incomplete run
 and request unlock asynchronously. Export and clean the owned app before its
 run/session becomes stale. Preserve the frozen build and passing tests; recheck
 source/installed identity and use a new run ID after unlock.
+
+Adaptive materialization is an observation, not a route commit. The generic probe
+recordDestination helper writes `[screen]`; using it for an accepted empty split
+route corrupts the topology evidence. Keep the route owned by accepted state and
+record materialization without changing it. Select geometry receipts only from
+scene-ready/lifecycle/geometry signals: a later assertion that copies geometry is
+not the receipt acknowledged by the live resize guard.
+
+After simulator reboot, get_app_container can return a stale registration whose
+bundle/data paths no longer exist. Preserve exit code and path-existence evidence,
+uninstall only the known task probe, and require failed app/data lookup before
+fresh installation. Installed-code hashing remains required after install.
+
+For F05 Replay coexistence, reuse existing probe dependency/configuration rather
+than adding a feature dependency. The live `hasReplay` context is only an enablement
+precondition. Require increasing native Replay records before scene expansion and
+after navigation/teardown, observed native scene identities/activation states,
+exact RUM owner inventory and verified no-crash completion/cleanup. WebView bridge
+records alone do not prove the native recorder ran. Keep scene-correct Replay
+outside the approved scope and report serial simulator topology explicitly; final
+F05 acceptance still requires the stated physical multi-window environment.

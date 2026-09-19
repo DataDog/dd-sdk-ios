@@ -75,8 +75,10 @@ inconclusive without overlap. The old split fixture bypassed accepted routing;
 the failure. Its first four native boundaries show an unchanged empty owner and
 a fresh selected owner before immediate work. Full acceptance remains pending:
 resize renders black and cleanup backgrounds the app. The separate pose/guarded
-resize variants build and pass6 model/catalog and9 oracle tests; native/backend
-execution awaits Mac unlock. No physical/human obligation closes.
+resize variants pass9 oracle tests. A later preflight catches materialization
+rewriting the accepted empty route; corrected fixture4b3ce9d57 builds and passes6
+focused checks, and native readback confirms `[]`. The Mac relocks before work;
+native/backend acceptance still awaits the pending unlock. No physical/human obligation closes.
 
 C06's corrected17.x qualification checks all five stable versions in Apple's
 historical catalog through27.1; all downloads are unavailable, as is17.0 through

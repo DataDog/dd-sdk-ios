@@ -53,6 +53,11 @@
       "run_id": "0896e42e-1282-4a10-ba25-1f6ed95ab108",
       "status": "INVALID_FIXTURE_ROUTE",
       "result": "acceptance/exp193-0896e42e-1282-4a10-ba25-1f6ed95ab108.json"
+    },
+    {
+      "run_id": "fd3718a6-033a-47ff-8397-ab183cab181c",
+      "status": "PREFLIGHT_INPUT_BLOCKED",
+      "result": "acceptance/exp193-fd3718a6-033a-47ff-8397-ab183cab181c.json"
     }
   ],
   "revised_acceptance_defined_before_implementation": {
@@ -63,5 +68,27 @@
     "boundary": "Resize proves callback-driven semantic ownership under measured geometry; black Resizable display prevents visible-layout/input equivalence claims. End/export acceptance before session cleanup backgrounds the app.",
     "required_backend": "Complete per-run view inventory, exact custom Action/Resource IDs and owners, zero errors. Original physical obligation remains."
   },
-  "resume": "Correct materialization observation so it cannot replace the accepted empty route, rebuild with frozen identity, then execute fresh resize and pose runs."
+  "resume": "Mac relocked after the materialization correction; new unlock request pending. Both interrupted runs and cleanup are preserved. Reuse current_build without repeat tests; fresh5-phase resize and10-phase pose runs remain before Q5 outer gesture qualification.",
+  "current_build": {
+    "source_revision": "4b3ce9d572d4988d23c347b38423003c99e6efb8",
+    "signature": "UNSIGNED_LOCAL_SIGNER_UNAVAILABLE",
+    "artifact_root": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp193-route-build-_pd_um5q",
+    "unit_tests": "6/6 PASS",
+    "source_manifest": "source.json",
+    "built_app": "DerivedData/Build/Products/Debug-iphonesimulator/RUMNativeMultiSceneProbe.app",
+    "reuse_after_identity_verification": true
+  },
+  "automated_resize_prefix_defined_before_implementation": {
+    "reason": "Mac relocks before native marker delivery; existing XCTest inner-display button taps were previously delivered even though system pairing gestures failed. Qualify this distinct input path without retrying pairing.",
+    "protocol": [
+      "Fresh runner directory and run UUID; launch the unchanged resize scenario through XCTest with JSONL enabled.",
+      "Host verifies clean install, all installed code hashes, fresh manifest and initial native geometry before authorizing marker1.",
+      "Wait for exact marker1 Action/Resource before authorizing actual sidebar/Detail1 selection. Verify accepted mutation before authorizing marker2.",
+      "Keep XCTest running while the host executes the predeclared three native resize boundaries and exact16-work native/backend oracle.",
+      "Only after acceptance export may the host release XCTest and end resize; cleanup remains outside the uninterrupted-ownership interval."
+    ],
+    "control_safety": "Each host-to-runner control file includes the fresh run ID and exact command. No timer-driven navigation or reused readiness signal; timeout is failure.",
+    "boundary": "Automated simulator native controls only; no human gesture, visible virtual-resize layout, or physical parity claim.",
+    "build_policy": "Freeze new UI-test source/build/runner and app identities. Reuse unchanged passing model/oracle controls; execute the new native UI calibration rather than repeating them."
+  }
 }

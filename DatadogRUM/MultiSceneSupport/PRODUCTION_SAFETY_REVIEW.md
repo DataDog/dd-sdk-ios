@@ -370,3 +370,9 @@ structural owner. EXP-193 must first qualify the current accepted-state host
 fixture. This is a harness repair gate, not a newly attributed SDK defect.
 The corrected inner-display XCTest still fails topology admission and captures
 the inactive outer screen; no concurrent or human-gesture evidence is promoted.
+
+EXP-193's precritical route check catches a second fixture-only issue: the
+materialization observer writes `[split-empty]` over accepted `[]`. The bounded
+correction removes that write; the rebuilt fixture passes6 focused checks and
+native empty-route readback before work. Input remains blocked by the relocked
+Mac. No production SDK change, D01–D12 reopening or H14 closure is claimed.

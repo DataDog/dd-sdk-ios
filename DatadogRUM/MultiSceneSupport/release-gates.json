@@ -602,7 +602,7 @@
       "environment": "Physical iPad/iPhone Duo; human gesture for H11\u2013H13; resize-capable for H14",
       "completion_mode": null,
       "status": "ENVIRONMENT BLOCKED",
-      "evidence": "EXP-192 proves native pose/resize geometry. EXP-193 current fixture builds and6/6 model/catalog plus9/9 oracle tests pass; native10-phase pose and5-phase guarded resize runs await Mac unlock. Original fixture/oracle/input failures preserved. Physical H14 remains required."
+      "evidence": "EXP-192 proves native pose/resize geometry. EXP-193 corrects a materialization helper that rewrote the accepted empty route;4b3ce9d57 builds and6/6 focused checks pass. Fresh native preflight confirms[] before first marker, then Mac relocks. Native/backend5-phase resize and10-phase pose acceptance remain pending. Physical H14 remains required."
     },
     {
       "id": "H15",
@@ -718,7 +718,7 @@
       "environment": "Physical multi-window device",
       "completion_mode": null,
       "status": "OPEN",
-      "evidence": ""
+      "evidence": "Preparation identifies existing Replay-enabled WebView fixture and live core-context counters. Configuration/hasReplay alone cannot prove recording. Finite execution must establish native record production before and after two-scene navigation/teardown, exact RUM owners and no crash; physical multi-window environment remains required. TOOLING_RUNBOOK.md documents admission and limits."
     },
     {
       "id": "D01",

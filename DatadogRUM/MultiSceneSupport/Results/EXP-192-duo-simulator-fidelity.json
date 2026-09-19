@@ -119,7 +119,7 @@
   "adaptive_followup": {
     "experiment": "EXP-193",
     "result": "EXP-193-adaptive-split.json",
-    "current_state": "Fixture and finite pose/resize variants build;6 model/catalog and9 oracle tests pass. Native/backend acceptance waits for Mac unlock.",
+    "current_state": "Fixture4b3ce9d57 fixes materialization route overwrite, builds and6 focused checks pass. Empty route[] observed before first marker; Mac relocks. EXP-193 predefines a bounded XCTest button-prefix handshake for resize while pose controls await unlock.",
     "observed_limit": "Resizable display remains black despite native geometry; ending headless resize backgrounds the scene. Preserve callback ownership and visible-layout/input claims separately.",
     "physical_obligations_waived": false
   }

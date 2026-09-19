@@ -1,0 +1,64 @@
+{
+  "experiment": "EXP-193",
+  "run_id": "fd3718a6-033a-47ff-8397-ab183cab181c",
+  "status": "PREFLIGHT_INPUT_BLOCKED",
+  "source_revision": "4b3ce9d572d4988d23c347b38423003c99e6efb8",
+  "source_signature": "UNSIGNED_LOCAL_SIGNER_UNAVAILABLE",
+  "mode": "resize",
+  "artifact_root": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp193-resize-c8enx7b1",
+  "build": {
+    "artifact_root": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp193-route-build-_pd_um5q",
+    "unit_summary": {
+      "devicesAndConfigurations": [
+        {
+          "device": {
+            "architecture": "arm64",
+            "deviceId": "F91CCE46-2704-4E8B-9093-A6A0EF250B1A",
+            "deviceName": "iPhone Duo",
+            "modelName": "iPhone",
+            "osBuildNumber": "24A94401",
+            "osVersion": "27.1",
+            "platform": "iOS Simulator"
+          },
+          "expectedFailures": 0,
+          "failedTests": 0,
+          "passedTests": 6,
+          "skippedTests": 0,
+          "testPlanConfiguration": {
+            "configurationId": "1",
+            "configurationName": "Test Scheme Action"
+          }
+        }
+      ],
+      "environmentDescription": "RUMNativeMultiSceneProbe \u00b7 Built with macOS 26.6.2",
+      "expectedFailures": 0,
+      "failedTests": 0,
+      "finishTime": 1789795813.123,
+      "passedTests": 6,
+      "result": "Passed",
+      "runtimeWarnings": [],
+      "skippedTests": 0,
+      "startTime": 1789795810.066,
+      "statistics": [],
+      "testFailures": [],
+      "title": "Test - RUMNativeMultiSceneProbe",
+      "topInsights": [],
+      "totalTestCount": 6
+    }
+  },
+  "source_identity": "source.json",
+  "installed_code": "installed-code.json",
+  "native_preflight": "Empty route remains [] in foreground-active inner669x951 regular geometry at sequence15; correction is observed before first marker.",
+  "reason": "Mac relocked after earlier unlock; no first marker delivered. New asynchronous unlock request pending.",
+  "cleanup": {
+    "app": {
+      "exit": 2,
+      "stderr": "An error was encountered processing the command (domain=NSPOSIXErrorDomain, code=2):\nThe operation couldn\u2019t be completed. No such file or directory\nNo such file or directory\n"
+    },
+    "data": {
+      "exit": 2,
+      "stderr": "An error was encountered processing the command (domain=NSPOSIXErrorDomain, code=2):\nThe operation couldn\u2019t be completed. No such file or directory\nNo such file or directory\n"
+    }
+  },
+  "gates_closed": []
+}

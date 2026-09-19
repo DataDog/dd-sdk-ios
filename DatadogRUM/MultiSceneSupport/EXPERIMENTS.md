@@ -212,7 +212,7 @@ remain available for a specific question.
 
 | <a id="exp-192"></a>EXP-192 | F04, H01 | IN PROGRESS | Actual display geometry/traits and Home/foreground callbacks observed. Concurrent visibility, disconnect and gestures remain unproven; pairing input unqualified after two attempts. Measured adaptive geometry passes; selected fixture precondition moves to EXP-193. | [record](Experiments/EXP-143-199.md#exp-192--qualify-duo-simulator-evidence-boundaries) |
 
-| <a id="exp-193"></a>EXP-193 | H14 | IN PROGRESS | Signed fixture builds;6/6 model/catalog and9/9 oracle tests pass. Native pose/resize variants await Mac unlock; original oracle/input failures and exact cleanup retained. | [record](Experiments/EXP-143-199.md#exp-193--validate-accepted-split-selection-through-duo-adaptation) |
+| <a id="exp-193"></a>EXP-193 | H14 | IN PROGRESS | Materialization route overwrite caught before work and corrected in4b3ce9d57;6/6 focused checks and native empty-route preflight pass.9/9 oracle controls retained. Mac relocks before first marker; pose/resize ownership still pending. Original failures/cleanup preserved. | [record](Experiments/EXP-143-199.md#exp-193--validate-accepted-split-selection-through-duo-adaptation) |
 
 Original detailed shards and frozen records remain unchanged. Superseded index
 prose is preserved in the [documentation checkpoint](Experiments/DOCUMENTATION_CHECKPOINT_EXP-178.md).
