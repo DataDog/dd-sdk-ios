@@ -100,6 +100,19 @@
       "remaining_limit": "Both sources still attribute the reopened Detail tap to Sidebar with manifest=false. This is preserved automatic split imprecision, not exact semantic tracking.",
       "source": "RUMViewsHandler.swift add(view:) isActive guards and applicationDidEnterBackground/sceneDidEnterBackground suspend the stack before later appearance callbacks; SDK04201edc7.",
       "status": "IMPROVED"
+    },
+    {
+      "baseline_run": "exp195-ad9871e1340b4da2b31d7011e7f457d4",
+      "candidate_run": "exp195-5300a8de8eff41e9bc311d6a17684c33",
+      "evidence": "All automatic interaction names/types/counts match22 taps/4 swipes. Every owner name matches except reopened.detail.tap: baseline SidebarController becomes candidate DetailController. The native route remains Detail through close/reopen; candidate retains that occurrence.13 current versus21 baseline views remove transient structural Sidebar reveals, reopen churn and two post-background starts while preserving initial compact navigation, named Detail and Sheet destinations.",
+      "gates": [
+        "C07",
+        "C08"
+      ],
+      "id": "SDK27-manifest-true-UIKit-split",
+      "remaining_limit": "Inner Sidebar taps remain associated with the single current Empty/Detail destination. This does not add independent pane modeling. UISwitch omissions remain unchanged.",
+      "source": "RUMViewsHandler.swift:762 deferUIKitSplitViewRemovalIfNeeded, :798 consumePendingUIKitSplitViewRemoval, :1105 structural-column suppression, and inactive stack guards at SDK04201edc7.",
+      "status": "IMPROVED"
     }
   ],
   "collector_followups": [
@@ -137,7 +150,7 @@
     "Single scene declared false is the immediate no-adoption contract; simultaneous windows and declared-multi-scene variants remain their separate gates."
   ],
   "environment_support": {
-    "keep_awake": "Temporary one-hour assertion renewed at1789821276; verified PID50334, expires1789824876. Owned record mo8om5bc/keep-awake.json retains predecessor. Stop on completion; persistent settings unchanged."
+    "keep_awake": "Temporary assertion renewed; owned PID/deadline and prior assertions in mo8om5bc/keep-awake.json. Start identity checked before replacing prior process; stop on completion. No persistent settings changes."
   },
   "experiment": "EXP-195",
   "gates": [
@@ -166,7 +179,8 @@
     ],
     "matrix": "baseline/current Datadog x UIKit/native SwiftUI stack/split x SDK27.1 Duo only",
     "owner": "SDK implementer",
-    "qualified_unique_cells": 1,
+    "partial_finding": "UIKit stack source pair matches. UIKit split preserves22 taps/4 swipes and all owners except the reopened Detail tap, which improves from Sidebar to Detail; current13 versus baseline21 views suppress structural churn and post-background starts.",
+    "qualified_unique_cells": 4,
     "reason": "RUMFeature.swift:70 and RUMInstrumentation.swift:109/120/129 gate the changed automatic path on the manifest declaration, not actual scene count. Existing one-window apps may already declare true without adopting this project.",
     "scope_limit": "Proves this SDK source-path comparison on SDK27 only; does not expand the manifest-true old-build compiler matrix or claim physical/concurrent-window acceptance.",
     "status": "RUNNING",

@@ -38,8 +38,12 @@ been justified; no broad non-regression verdict is issued.
 
 EXP-195's fixed matrix explicitly declares multiple scenes false. An app with
 one current window and an already-enabled multiple-scene manifest follows a
-different code path: RUMFeature reads that flag, not the scene count. Do not extend
-the present comparison to that case without its own finite paired slice.
+different code path: RUMFeature reads that flag, not the scene count. Its separately
+defined eight-cell comparison has completed the four UIKit cells. Stack matches;
+split preserves22 taps/4 swipes, suppresses structural churn and improves the
+reopened Detail tap from Sidebar to Detail ownership. SwiftUI remains in progress.
+[Manifest-enabled evidence](Results/EXP-195-manifest-true-coverage.json) preserves
+installed plist/binary identity and confirms one actual scene throughout.
 
 ## Current support
 

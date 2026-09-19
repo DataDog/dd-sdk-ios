@@ -79,7 +79,7 @@
       "environment": "Xcode26.6 with SDK26.5 and Xcode27.1; regular iPhone27.0 and Duo27.1 simulators; physical Duo remains F04",
       "completion_mode": null,
       "status": "OPEN",
-      "evidence": "EXP-195: regular16 and original SDK27 Duo8 inputs qualify. UIKit stack matches; split preserves all19 foreground views and exact22 tap/4 swipe owners, suppressing two baseline post-background starts. Reopened Detail-to-Sidebar attribution and switch omissions persist in both sources. Fixed manifest-true8 follow-up is running; old-build Duo cells remain pending. Results/EXP-195-automatic-tracking.json and generated regular/Duo evidence own provenance and classifications."
+      "evidence": "EXP-195: regular16 and original SDK27 Duo8 qualify. UIKit stack matches; manifest-false split preserves foreground views/action owners and suppresses two post-background starts, with existing reopened Detail-to-Sidebar attribution. Four manifest-true UIKit cells qualify: stack matches, split preserves22 taps/4 swipes and improves reopened Detail ownership while suppressing structural churn. Old-build Duo cells remain pending. Owning result and generated regular/Duo/manifest evidence preserve full provenance and failed inputs."
     },
     {
       "id": "C08",
@@ -90,7 +90,7 @@
       "environment": "Xcode26.6 with SDK26.5 and Xcode27.1; regular iPhone27.0 and Duo27.1 simulators; physical Duo remains F04",
       "completion_mode": null,
       "status": "OPEN",
-      "evidence": "EXP-195: regular16 and original SDK27 Duo8 inputs qualify. UIKit stack matches; split preserves all19 foreground views and exact22 tap/4 swipe owners, suppressing two baseline post-background starts. Reopened Detail-to-Sidebar attribution and switch omissions persist in both sources. Fixed manifest-true8 follow-up is running; old-build Duo cells remain pending. Results/EXP-195-automatic-tracking.json and generated regular/Duo evidence own provenance and classifications."
+      "evidence": "EXP-195: regular16 and original SDK27 Duo8 qualify. UIKit stack matches; manifest-false split preserves foreground views/action owners and suppresses two post-background starts, with existing reopened Detail-to-Sidebar attribution. Four manifest-true UIKit cells qualify: stack matches, split preserves22 taps/4 swipes and improves reopened Detail ownership while suppressing structural churn. Old-build Duo cells remain pending. Owning result and generated regular/Duo/manifest evidence preserve full provenance and failed inputs."
     },
     {
       "id": "C09",
