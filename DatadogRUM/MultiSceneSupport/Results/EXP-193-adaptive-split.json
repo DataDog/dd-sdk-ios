@@ -96,5 +96,21 @@
     "boundary": "Automated simulator native controls only; no human gesture, visible virtual-resize layout, or physical parity claim.",
     "build_policy": "Freeze new UI-test source/build/runner and app identities. Reuse unchanged passing model/oracle controls; execute the new native UI calibration rather than repeating them."
   },
-  "accepted_resize": "acceptance/exp193-fe320ebe-295b-416d-b807-006dcc66298f.json"
+  "accepted_resize": "acceptance/exp193-fe320ebe-295b-416d-b807-006dcc66298f.json",
+  "pose_tooling_qualification": {
+    "recorded_at_utc": "2026-09-19T07:01:29Z",
+    "source_checkpoint": "6655fdcb531659f77f9fa73f8e46402f87a2472a",
+    "status": "BLOCKED_TOOLING",
+    "desktop": "Fresh Device Hub access reports the Mac locked; the existing asynchronous unlock request remains pending.",
+    "mcp": "A fresh exact-task-device interaction session started and ended successfully. Its required device-interaction skill was unavailable in the exposed and searched local catalogs. Xcode resource and template discovery returned Unexpected response type.",
+    "interaction_sent": false,
+    "pose_capability_qualified": false,
+    "cleanup": {
+      "session_ended": true,
+      "task_duo_state": "Shutdown",
+      "user_devices_untouched": true
+    },
+    "resume": "Use actual desktop pose controls after unlock, or a newly available supported device-interaction workflow. Revalidate native source/build identity and use fresh run/session IDs. Do not repeat accepted resize or unchanged tooling discovery.",
+    "boundary": "A workflow availability limit, not proof that Xcode or the Duo simulator cannot support pose controls."
+  }
 }

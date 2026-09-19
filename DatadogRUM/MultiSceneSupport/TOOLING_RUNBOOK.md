@@ -1941,3 +1941,11 @@ complete six-view backend identity, zero stray work/errors/crashes and full clea
 Reuse those results within their source/oracle boundary. Physical F05 still needs
 an actual multi-window device; ordinary single-window hardware and Duo simulator
 geometry cannot substitute for it.
+
+For the current MCP pose probe, session creation succeeds but the returned
+workflow requires a device-interaction skill absent from the available/local
+catalogs; Xcode resource/template discovery returns Unexpected response type.
+End the owned session without sending unsupported interactions, restore the
+prior simulator state and retain the pending desktop-unlock dependency. This is
+a bounded workflow limitation, not a platform capability result. Retry only when
+desktop access or the supported interaction workflow changes.
