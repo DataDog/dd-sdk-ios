@@ -19,6 +19,39 @@ class ReleaseChecklistTests(unittest.TestCase):
             "dependencies": [], "decisive_test": "Exact owner", "environment": "Simulator",
             "completion_mode": "explicit target", "status": "OPEN", "evidence": None}]}
 
+    def release_register(self):
+        register = self.register()
+        register["releases"] = [
+            {"id": "S1", "name": "Reliability", "deadline": "2026-10-01", "shipping_rule": "required gates closed"},
+            {"id": "S2", "name": "No worse", "deadline": "2026-10-08", "shipping_rule": "required gates closed"},
+            {"id": "S3", "name": "Release", "deadline": "2026-10-16", "shipping_rule": "required gates closed"},
+        ]
+
+        def gate(ident):
+            return {
+                "id": ident, "deliverable": ident + " deliverable", "owner": "Implementer",
+                "dependencies": [], "decisive_test": "Reference test", "environment": "Simulator",
+                "completion_mode": None, "status": "OPEN", "evidence": None,
+            }
+
+        register["gates"].extend([gate("C07"), gate("F01"), gate("F04"), gate("F09")])
+        register["gates"][0]["release_requirements"] = {
+            "S1": {"scope": "prepared single scene", "status": "CLOSED", "dependencies": [],
+                   "decisive_test": "human session", "environment": "Duo", "evidence": "proof", "required": True}}
+        register["gates"][1]["release_requirements"] = {
+            "S2": {"scope": "candidate comparison", "status": "OPEN", "dependencies": [],
+                   "decisive_test": "paired session", "environment": "Duo", "evidence": None, "required": True}}
+        register["gates"][2]["release_requirements"] = {
+            "S3": {"scope": "API review", "status": "OPEN", "dependencies": [],
+                   "decisive_test": "review", "environment": "CI", "evidence": None, "required": True}}
+        register["gates"][3]["release_requirements"] = {
+            "S2": {"scope": "physical acceptance", "status": "OPEN", "dependencies": [],
+                   "decisive_test": "device matrix", "environment": "Duo", "evidence": None, "required": False}}
+        register["gates"][4]["release_requirements"] = {
+            "S2": {"scope": "optional observation", "status": "CONDITIONAL", "dependencies": ["S2:C07"],
+                   "decisive_test": "follow-up", "environment": "Duo", "evidence": None, "required": False}}
+        return register
+
     def test_closed_gate_requires_evidence_and_known_dependencies(self):
         register = self.register()
         register["gates"][0]["status"] = "CLOSED"
@@ -52,12 +85,104 @@ class ReleaseChecklistTests(unittest.TestCase):
             with self.assertRaisesRegex(ValueError, "stale"):
                 CHECKLIST.check_progress(path, expected)
 
+    def test_release_schema_validates_instances_and_preserves_reference_progress(self):
+        register = self.release_register()
+        gates = CHECKLIST.validate(register)
+        progress = CHECKLIST.progress_document(register, gates)
+        self.assertEqual(progress["gate_count"], 5)
+        self.assertEqual(progress["release_progress"]["S2"]["required"]["count"], 1)
+        self.assertEqual(progress["release_progress"]["S2"]["required"]["remaining"][0]["id"], "S2:C07")
+        self.assertIn(
+            {"id": "S2:F09", "status": "CONDITIONAL", "owner": "Implementer", "dependencies": ["S2:C07"]},
+            progress["release_progress"]["S2"]["optional_follow_ups"],
+        )
+
+    def test_release_schema_rejects_bad_proof_dependencies_cycles_and_stage_contamination(self):
+        register = self.release_register()
+        register["gates"][0]["release_requirements"]["S1"]["evidence"] = None
+        with self.assertRaisesRegex(ValueError, "closed release requirement without evidence"):
+            CHECKLIST.validate(register)
+
+        register = self.release_register()
+        register["gates"][1]["release_requirements"]["S2"]["dependencies"] = ["C07"]
+        with self.assertRaisesRegex(ValueError, "fully qualified"):
+            CHECKLIST.validate(register)
+
+        register = self.release_register()
+        register["gates"][1]["release_requirements"]["S2"]["dependencies"] = ["S2:F09"]
+        with self.assertRaisesRegex(ValueError, "release dependency cycle"):
+            CHECKLIST.validate(register)
+
+        register = self.release_register()
+        register["gates"][0]["release_requirements"]["S1"]["dependencies"] = ["S3:F01"]
+        with self.assertRaisesRegex(ValueError, "S1/S2 cannot depend on S3"):
+            CHECKLIST.validate(register)
+
+    def test_release_schema_rejects_invalid_release_scope_and_f01_f04_violations(self):
+        register = self.release_register()
+        register["releases"].append(copy.deepcopy(register["releases"][0]))
+        with self.assertRaisesRegex(ValueError, "duplicate release"):
+            CHECKLIST.validate(register)
+
+        register = self.release_register()
+        register["gates"][2]["release_requirements"] = {
+            "S2": register["gates"][2]["release_requirements"]["S3"]}
+        with self.assertRaisesRegex(ValueError, "F01 is S3-only"):
+            CHECKLIST.validate(register)
+
+        register = self.release_register()
+        register["gates"][3]["release_requirements"]["S2"]["required"] = True
+        with self.assertRaisesRegex(ValueError, "F04 cannot be required"):
+            CHECKLIST.validate(register)
+
+        register = self.release_register()
+        register["gates"][1]["release_requirements"]["S2"]["dependencies"] = ["S2:F04"]
+        with self.assertRaisesRegex(ValueError, "dependency on F04"):
+            CHECKLIST.validate(register)
+
+    def test_release_views_render_and_require_markers(self):
+        register = self.release_register()
+        gates = CHECKLIST.validate(register)
+        progress = CHECKLIST.progress_document(register, gates)
+        gate_rows = '\n'.join('| ' + gate_id + ' | stale |' for gate_id in gates)
+        rendered = CHECKLIST.render_release_views(
+            CHECKLIST.plan_rows(gate_rows + "\n<!-- release-views:start -->old<!-- release-views:end -->\n", gates), register, progress)
+        self.assertIn("| S1 — Reliability | 2026-10-01 | required gates closed | 1 | 1 | 0 |", rendered)
+        self.assertIn("### S2 release gates", rendered)
+        self.assertIn("| S2:F09 | F09 deliverable: optional observation |", rendered)
+        self.assertIn("follow-up · CONDITIONAL", rendered)
+        rerendered = CHECKLIST.render_release_views(
+            CHECKLIST.plan_rows(rendered, CHECKLIST.validate(register)), register,
+            CHECKLIST.progress_document(register, CHECKLIST.validate(register)))
+        self.assertEqual(rerendered, rendered)
+        with self.assertRaisesRegex(ValueError, "marker pair"):
+            CHECKLIST.render_release_views("no markers", register, progress)
+
+    def test_release_specific_f06_plan_row_replaces_only_the_legacy_dependency_summary(self):
+        register = self.release_register()
+        register["gates"].append({
+            "id": "F06", "deliverable": "Release freeze", "owner": "Maintainer",
+            "dependencies": [], "decisive_test": "release review", "environment": "CI",
+            "completion_mode": None, "status": "OPEN", "evidence": None,
+            "release_requirements": {
+                "S3": {"scope": "final release", "status": "OPEN", "dependencies": [],
+                       "decisive_test": "release review", "environment": "CI", "evidence": None, "required": True},
+            },
+        })
+        gates = CHECKLIST.validate(register)
+        rendered = CHECKLIST.plan_rows('\n'.join('| ' + gate_id + ' | stale |' for gate_id in gates), gates)
+        self.assertIn('| F06 | Release freeze | Maintainer | Release-specific dependencies below |', rendered)
+
+    def test_active_documents_include_new_single_scene_and_human_acceptance_records(self):
+        self.assertIn('DatadogRUM/MultiSceneSupport/DEFERRED_SINGLE_SCENE_EXTRACTION.md', CHECKLIST.ACTIVE_DOCUMENTS)
+        self.assertIn('DatadogRUM/MultiSceneSupport/HUMAN_ACCEPTANCE.md', CHECKLIST.ACTIVE_DOCUMENTS)
+
     def test_generated_rows_include_evidence_and_reject_missing_or_duplicate_gate(self):
         register = self.register()
         register["gates"][0]["evidence"] = "frozen proof"
         gates = CHECKLIST.validate(register)
         rendered = CHECKLIST.plan_rows("| T01 | stale |\n", gates)
-        self.assertIn("| OPEN | frozen proof |", rendered)
+        self.assertIn("| OPEN | [register evidence](release-gates.json) |", rendered)
         with self.assertRaisesRegex(ValueError, "duplicate plan row"):
             CHECKLIST.plan_rows(rendered + rendered, gates)
         with self.assertRaisesRegex(ValueError, "gates missing"):

@@ -6,12 +6,29 @@ and decisive tests belong to [release-gates.json](release-gates.json) and the
 generated [checklist](PLAN.md). The sole restart cursor is
 [.continue-here.md](../../.continue-here.md).
 
+## Release evidence boundaries
+
+S1 extracts independently proven existing-customer reliability fixes. S2 targets
+single-scene SDK27 Duo readiness by October 16, 2026. S3 retains full multi-scene
+APIs, ownership/lifecycle and hardware acceptance. The reference results below
+remain valid within their original source/environment limits; they do not certify
+a newly extracted candidate. F07 must prove deferred behavior absent from each
+S1/S2 shipped artifact, then F03/F06 qualify that exact candidate.
+
+Physical Duo hardware is unavailable until after release. S2 may use qualified
+simulator and relevant physical iPhone/iPad evidence, disclosing that uncertainty;
+F09 provides later targeted confirmation, while full F04 remains S3. Unchanged
+automatic SwiftUI naming/control limitations are outside new S2 scope. Exact API
+review F01 remains attributable and pending for S3; assessment assumptions are not
+approval. [Stage views](PLAN.md) own readiness.
+
 ## Immediate compatibility priority
 
 The short-term criterion is no RUM degradation when an existing app rebuilds with
 the iOS27 SDK and runs on Duo without adopting new RUM/navigation integration.
 Automatic UIKit views/actions and automatic SwiftUI views/actions are four
-separate gates C07–C10; their remaining old-build Duo cells are input-blocked. [EXP-195](Results/EXP-195-automatic-tracking.json)
+separate S2 gates C07–C10; their eight old-build Duo cells remain unresolved.
+A prepared human-assisted simulator session is now an available changed input path. [EXP-195](Results/EXP-195-automatic-tracking.json)
 compares unchanged apps and preserves baseline limitations. C01’s early UIKit
 view/custom-marker fixture does not prove automatic taps/scrolls; EXP-193’s
 accepted-state RUMNavigationHost does not prove automatic-only SwiftUI.
@@ -136,8 +153,10 @@ projection failures remain attributable. Physical/human obligations stay open.
 
 C06's corrected17.x qualification checks all five stable versions in Apple's
 historical catalog through27.1; all downloads are unavailable, as is17.0 through
-26.6. No runtime is installed or native matrix cell claimed. An accessible
-official runtime or eligible test environment is still required.
+26.6. The user subsequently supplied17.5(21F79), now verified installed/available with
+a booted iPad simulator. No candidate matrix cell is claimed yet. The S1/S2 runtime
+exception has not been used; actual tests and deployment15/availability checks
+remain required.
 
 EXP-196 closes physical F05 Replay coexistence, H05 settled semantic/automatic
 coexistence and H07 shared-request captured ownership with complete native/backend
@@ -157,3 +176,11 @@ H04's independent process-lifetime witness also receives no disconnect; the late
 observer alone does not explain the missing notification and no SDK defect is established. H14 now closes with measured regular–compact–regular physical resizing, unchanged
 accepted selection/path/owner and a complete22-event backend match. The [owning result](Results/EXP-196-physical-ipad-suite.json)
 preserves every rejection and scope limit. The SDK candidate is unchanged.
+
+The physical EXP-196 suite is checkpointed after H01 acceptance. Full Screen Apps
+is restored, both task apps/processes are absent, and the owned keep-awake process
+is stopped. Remaining scene combinations move to S3; no deferred case is accepted.
+The Datadog app uses manual SwiftUI views, allowlisted automatic UIKit and native/
+WebView tracking in one scene. Existing XCTest paths skip RUM bootstrap, so F08
+requires normal-mode app journeys alongside separate automatic fixtures; see
+[the source audit](Results/Datadog-app-source-audit.json).

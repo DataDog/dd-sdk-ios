@@ -11,8 +11,10 @@ R02 was reviewed again at signed `7b77f60eb` during EXP-168, and R04 at signed
 below refer to the original review; current symbol names identify the boundaries.
 The 6,613-line `SwiftUIViewModifier.swift` was reviewed by responsibility before
 further API expansion. This is a source review with existing regression evidence,
-not final independent release sign-off or a new device run. Deferred extraction
-remains in [its separate plan](DEFERRED_SINGLE_SCENE_EXTRACTION.md).
+not final independent release sign-off or a new device run. Independent extraction
+now proceeds under [its plan](DEFERRED_SINGLE_SCENE_EXTRACTION.md), with a generic
+current-develop reproducer and separate candidate review; this completed audit
+does not establish that an experimental repair affects existing customers.
 
 The original review consulted `PRODUCTION_SAFETY_REVIEW.md` without editing it.
 That document now has a tracked live disposition table at the user’s request.

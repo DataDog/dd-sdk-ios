@@ -1,6 +1,6 @@
 {
-  "schema_version": 1,
-  "scope": "Multi-scene RUM release",
+  "schema_version": 2,
+  "scope": "Three releases: independent reliability fixes, single-scene Duo readiness, full multi-scene support",
   "baseline_revision": "92f021ba7e4a866f84a52da93ed8b63f3dc75882",
   "candidate_revision": "04201edc7711361279d8487b385bc8b0ca9c63c7",
   "gates": [
@@ -13,7 +13,36 @@
       "environment": "iOS 27 and 26.5 simulators",
       "completion_mode": null,
       "status": "CLOSED",
-      "evidence": "EXP-160; BASELINES.md and Results/EXP-160-baseline.json. Bounded workload passes on27/26.5; see recorded limitations."
+      "evidence": "EXP-160; BASELINES.md and Results/EXP-160-baseline.json. Bounded workload passes on27/26.5; see recorded limitations.",
+      "release_requirements": {
+        "S3": {
+          "scope": "Early ordinary UIKit single-scene automatic-view app",
+          "status": "CLOSED",
+          "dependencies": [],
+          "decisive_test": "Unchanged Home \u2192 Detail \u2192 fresh Home owner/name/count chain, no duplicate views/actions",
+          "environment": "iOS 27 and 26.5 simulators",
+          "evidence": "EXP-160; BASELINES.md and Results/EXP-160-baseline.json. Bounded workload passes on27/26.5; see recorded limitations.",
+          "required": true
+        },
+        "S1": {
+          "scope": "Candidate compatibility: Early ordinary UIKit single-scene automatic-view app",
+          "status": "OPEN",
+          "dependencies": [],
+          "decisive_test": "Unchanged Home \u2192 Detail \u2192 fresh Home owner/name/count chain, no duplicate views/actions; exact affected shipped code, no new integration.",
+          "environment": "Qualified simulator for frozen candidate; actual toolchain/runtime identity",
+          "evidence": "Reference evidence retained; this release candidate is not qualified.",
+          "required": true
+        },
+        "S2": {
+          "scope": "Candidate compatibility: Early ordinary UIKit single-scene automatic-view app",
+          "status": "OPEN",
+          "dependencies": [],
+          "decisive_test": "Unchanged Home \u2192 Detail \u2192 fresh Home owner/name/count chain, no duplicate views/actions; exact affected shipped code, no new integration.",
+          "environment": "Qualified simulator for frozen candidate; actual toolchain/runtime identity",
+          "evidence": "Reference evidence retained; this release candidate is not qualified.",
+          "required": true
+        }
+      }
     },
     {
       "id": "C02",
@@ -24,7 +53,36 @@
       "environment": "iOS 27 and 26.5 simulators",
       "completion_mode": null,
       "status": "CLOSED",
-      "evidence": "EXP-160; BASELINES.md and Results/EXP-160-baseline.json. Bounded workload passes on27/26.5; see recorded limitations."
+      "evidence": "EXP-160; BASELINES.md and Results/EXP-160-baseline.json. Bounded workload passes on27/26.5; see recorded limitations.",
+      "release_requirements": {
+        "S3": {
+          "scope": "Ordinary single-scene manual app",
+          "status": "CLOSED",
+          "dependencies": [],
+          "decisive_test": "Exact manual start/stop and marker owners match the pinned baseline",
+          "environment": "iOS 27 and 26.5 simulators",
+          "evidence": "EXP-160; BASELINES.md and Results/EXP-160-baseline.json. Bounded workload passes on27/26.5; see recorded limitations.",
+          "required": true
+        },
+        "S1": {
+          "scope": "Candidate compatibility: Ordinary single-scene manual app",
+          "status": "OPEN",
+          "dependencies": [],
+          "decisive_test": "Exact manual start/stop and marker owners match the pinned baseline; exact affected shipped code, no new integration.",
+          "environment": "Qualified simulator for frozen candidate; actual toolchain/runtime identity",
+          "evidence": "Reference evidence retained; this release candidate is not qualified.",
+          "required": true
+        },
+        "S2": {
+          "scope": "Candidate compatibility: Ordinary single-scene manual app",
+          "status": "OPEN",
+          "dependencies": [],
+          "decisive_test": "Exact manual start/stop and marker owners match the pinned baseline; exact affected shipped code, no new integration.",
+          "environment": "Qualified simulator for frozen candidate; actual toolchain/runtime identity",
+          "evidence": "Reference evidence retained; this release candidate is not qualified.",
+          "required": true
+        }
+      }
     },
     {
       "id": "C03",
@@ -35,7 +93,36 @@
       "environment": "iOS 27 and 26.5 simulators; genuine pre27-SDK build for the legacy host",
       "completion_mode": null,
       "status": "CLOSED",
-      "evidence": "EXP-189 at b3a75d01f: genuineSDK26.5 builds of baseline92f021ba7/current SDK04201edc7 pass16 exact navigation/actual-lifecycle cells on27.0/26.5. All installed identities, source/fixture hashes, cleanup and restored simulator state pass. Original EXP-160/188 platform traps and EXP-189 preparation failure remain. Apple requires scene adoption forSDK27-built apps; no iOS15 claim. Results/EXP-189-legacy-build-sdk.json."
+      "evidence": "EXP-189 at b3a75d01f: genuineSDK26.5 builds of baseline92f021ba7/current SDK04201edc7 pass16 exact navigation/actual-lifecycle cells on27.0/26.5. All installed identities, source/fixture hashes, cleanup and restored simulator state pass. Original EXP-160/188 platform traps and EXP-189 preparation failure remain. Apple requires scene adoption forSDK27-built apps; no iOS15 claim. Results/EXP-189-legacy-build-sdk.json.",
+      "release_requirements": {
+        "S3": {
+          "scope": "Legacy UIApplication lifecycle app",
+          "status": "CLOSED",
+          "dependencies": [],
+          "decisive_test": "No scene manifest; automatic and manual chains match baseline without a scene registry dependency",
+          "environment": "iOS 27 and 26.5 simulators; genuine pre27-SDK build for the legacy host",
+          "evidence": "EXP-189 at b3a75d01f: genuineSDK26.5 builds of baseline92f021ba7/current SDK04201edc7 pass16 exact navigation/actual-lifecycle cells on27.0/26.5. All installed identities, source/fixture hashes, cleanup and restored simulator state pass. Original EXP-160/188 platform traps and EXP-189 preparation failure remain. Apple requires scene adoption forSDK27-built apps; no iOS15 claim. Results/EXP-189-legacy-build-sdk.json.",
+          "required": true
+        },
+        "S1": {
+          "scope": "Candidate compatibility: Legacy UIApplication lifecycle app",
+          "status": "OPEN",
+          "dependencies": [],
+          "decisive_test": "No scene manifest; automatic and manual chains match baseline without a scene registry dependency; exact affected shipped code, no new integration.",
+          "environment": "Qualified simulator for frozen candidate; actual toolchain/runtime identity",
+          "evidence": "Reference evidence retained; this release candidate is not qualified.",
+          "required": true
+        },
+        "S2": {
+          "scope": "Candidate compatibility: Legacy UIApplication lifecycle app",
+          "status": "OPEN",
+          "dependencies": [],
+          "decisive_test": "No scene manifest; automatic and manual chains match baseline without a scene registry dependency; exact affected shipped code, no new integration.",
+          "environment": "Qualified simulator for frozen candidate; actual toolchain/runtime identity",
+          "evidence": "Reference evidence retained; this release candidate is not qualified.",
+          "required": true
+        }
+      }
     },
     {
       "id": "C04",
@@ -46,7 +133,36 @@
       "environment": "iOS 27 and 26.5 simulators",
       "completion_mode": null,
       "status": "CLOSED",
-      "evidence": "EXP-160; BASELINES.md and Results/EXP-160-baseline.json. Bounded workload passes on27/26.5; see recorded limitations."
+      "evidence": "EXP-160; BASELINES.md and Results/EXP-160-baseline.json. Bounded workload passes on27/26.5; see recorded limitations.",
+      "release_requirements": {
+        "S3": {
+          "scope": "Custom and NOP monitor compatibility",
+          "status": "CLOSED",
+          "dependencies": [],
+          "decisive_test": "Legacy-only conformer receives exactly one call; NOP emits nothing and never crashes",
+          "environment": "iOS 27 and 26.5 simulators",
+          "evidence": "EXP-160; BASELINES.md and Results/EXP-160-baseline.json. Bounded workload passes on27/26.5; see recorded limitations.",
+          "required": true
+        },
+        "S1": {
+          "scope": "Candidate compatibility: Custom and NOP monitor compatibility",
+          "status": "OPEN",
+          "dependencies": [],
+          "decisive_test": "Legacy-only conformer receives exactly one call; NOP emits nothing and never crashes; exact affected shipped code, no new integration.",
+          "environment": "Qualified simulator for frozen candidate; actual toolchain/runtime identity",
+          "evidence": "Reference evidence retained; this release candidate is not qualified.",
+          "required": true
+        },
+        "S2": {
+          "scope": "Candidate compatibility: Custom and NOP monitor compatibility",
+          "status": "OPEN",
+          "dependencies": [],
+          "decisive_test": "Legacy-only conformer receives exactly one call; NOP emits nothing and never crashes; exact affected shipped code, no new integration.",
+          "environment": "Qualified simulator for frozen candidate; actual toolchain/runtime identity",
+          "evidence": "Reference evidence retained; this release candidate is not qualified.",
+          "required": true
+        }
+      }
     },
     {
       "id": "C05",
@@ -57,7 +173,36 @@
       "environment": "iOS 27 and 26.5 simulators",
       "completion_mode": null,
       "status": "CLOSED",
-      "evidence": "EXP-160; BASELINES.md and Results/EXP-160-baseline.json. Bounded workload passes on27/26.5; see recorded limitations."
+      "evidence": "EXP-160; BASELINES.md and Results/EXP-160-baseline.json. Bounded workload passes on27/26.5; see recorded limitations.",
+      "release_requirements": {
+        "S3": {
+          "scope": "Older supported runtime sample",
+          "status": "CLOSED",
+          "dependencies": [],
+          "decisive_test": "Repeat C01\u2013C04 on iOS 26.5 with no new experimental availability requirement",
+          "environment": "iOS 27 and 26.5 simulators",
+          "evidence": "EXP-160; BASELINES.md and Results/EXP-160-baseline.json. Bounded workload passes on27/26.5; see recorded limitations.",
+          "required": true
+        },
+        "S1": {
+          "scope": "Candidate compatibility: Older supported runtime sample",
+          "status": "OPEN",
+          "dependencies": [],
+          "decisive_test": "Repeat C01\u2013C04 on iOS 26.5 with no new experimental availability requirement; exact affected shipped code, no new integration.",
+          "environment": "Qualified simulator for frozen candidate; actual toolchain/runtime identity",
+          "evidence": "Reference evidence retained; this release candidate is not qualified.",
+          "required": true
+        },
+        "S2": {
+          "scope": "Candidate compatibility: Older supported runtime sample",
+          "status": "OPEN",
+          "dependencies": [],
+          "decisive_test": "Repeat C01\u2013C04 on iOS 26.5 with no new experimental availability requirement; exact affected shipped code, no new integration.",
+          "environment": "Qualified simulator for frozen candidate; actual toolchain/runtime identity",
+          "evidence": "Reference evidence retained; this release candidate is not qualified.",
+          "required": true
+        }
+      }
     },
     {
       "id": "C06",
@@ -67,8 +212,37 @@
       "decisive_test": "Compile/link at iOS 15 deployment; repeat baseline/current automatic/manual/legacy and actual legacy lifecycle smoke on the oldest available iOS 17 runtime, recording the exact patch. Disclose unexecuted iOS 15/16 coverage.",
       "environment": "Genuine iOS 15 deployment build plus iOS 17 simulator/device supported by the available Xcode toolchain",
       "completion_mode": null,
-      "status": "ENVIRONMENT BLOCKED",
-      "evidence": "User-corrected deployment15 plus oldest runnable17.x contract. EXP-190 official27.1 requests for17.0/17.0.1/17.2/17.4/17.5 all unavailable;26.6 also rejects17.0. No installed17 runtime/native case. Historical catalog/direct HTML is not runtime availability;15/16 execution remains unexecuted."
+      "status": "OPEN",
+      "evidence": "User-corrected deployment15 plus oldest runnable17.x contract. EXP-190 official27.1 requests for17.0/17.0.1/17.2/17.4/17.5 all unavailable;26.6 also rejects17.0. No installed17 runtime/native case. Historical catalog/direct HTML is not runtime availability;15/16 execution remains unexecuted. User supplied17.5 on2026-09-19: fresh inventory confirms runtime21F79 available and iPad Pro11-inch(M4)(16GB) booted. Candidate tests remain unexecuted; environment availability is not acceptance.",
+      "release_requirements": {
+        "S3": {
+          "scope": "iOS 15 deployment and oldest debuggable runtime",
+          "status": "OPEN",
+          "dependencies": [],
+          "decisive_test": "Compile/link at iOS 15 deployment; repeat baseline/current automatic/manual/legacy and actual legacy lifecycle smoke on the oldest available iOS 17 runtime, recording the exact patch. Disclose unexecuted iOS 15/16 coverage.",
+          "environment": "Installed available iOS17.5(21F79), booted iPad simulator; candidate test-host execution and deployment15 compile/link remain required.",
+          "evidence": "Fresh runtime/device inventory verifies actual17.5 availability. No matrix cell passed yet. Prior failed acquisitions retained; no runtime exception used.",
+          "required": true
+        },
+        "S1": {
+          "scope": "Deployment15 and oldest runnable runtime compatibility",
+          "status": "OPEN",
+          "dependencies": [],
+          "decisive_test": "Compile/link deployment15, audit availability, launch and run affected suite on actual17.5 when installed. If genuinely unavailable after bounded checks, document the user-approved runtime exception and oldest runnable coverage.",
+          "environment": "Installed available iOS17.5(21F79), booted iPad simulator; candidate test-host execution and deployment15 compile/link remain required.",
+          "evidence": "Fresh runtime/device inventory verifies actual17.5 availability. No matrix cell passed yet. Prior failed acquisitions retained; no runtime exception used.",
+          "required": true
+        },
+        "S2": {
+          "scope": "Deployment15 and oldest runnable runtime compatibility",
+          "status": "OPEN",
+          "dependencies": [],
+          "decisive_test": "Compile/link deployment15, audit availability, launch and run affected suite on actual17.5 when installed. If genuinely unavailable after bounded checks, document the user-approved runtime exception and oldest runnable coverage.",
+          "environment": "Installed available iOS17.5(21F79), booted iPad simulator; candidate test-host execution and deployment15 compile/link remain required.",
+          "evidence": "Fresh runtime/device inventory verifies actual17.5 availability. No matrix cell passed yet. Prior failed acquisitions retained; no runtime exception used.",
+          "required": true
+        }
+      }
     },
     {
       "id": "C07",
@@ -79,7 +253,30 @@
       "environment": "Xcode26.6 with SDK26.5 and Xcode27.1; regular iPhone27.0 and Duo27.1 simulators; physical Duo remains F04",
       "completion_mode": null,
       "status": "ENVIRONMENT BLOCKED",
-      "evidence": "EXP-195 qualifies16 regular cells,16 SDK27 Duo cells across both scene-manifest settings and the bounded split replay2. SDK27 source pairs show no new foreground detection/name/owner loss in these fixtures; UIKit manifest-true Detail ownership improves and baseline SwiftUI generic fold churn varies. Original old-build Duo matrix remains8 cells short. Both modern XCTest probes lose their runner after Open; the bounded external collector stops after its initial button tap because the switch produces no native effect. Original failures, unchanged app identities and cleanup are retained. No SDK defect or old-app usability verdict; resume only with a materially changed input environment. Results/EXP-195-automatic-tracking.json owns the four classified inventories and all limits."
+      "evidence": "EXP-195 qualifies16 regular cells,16 SDK27 Duo cells across both scene-manifest settings and the bounded split replay2. SDK27 source pairs show no new foreground detection/name/owner loss in these fixtures; UIKit manifest-true Detail ownership improves and baseline SwiftUI generic fold churn varies. Original old-build Duo matrix remains8 cells short. Both modern XCTest probes lose their runner after Open; the bounded external collector stops after its initial button tap because the switch produces no native effect. Original failures, unchanged app identities and cleanup are retained. No SDK defect or old-app usability verdict; resume only with a materially changed input environment. Results/EXP-195-automatic-tracking.json owns the four classified inventories and all limits.",
+      "release_requirements": {
+        "S3": {
+          "scope": "UIKit automatic view non-regression after an iOS 27 rebuild",
+          "status": "ENVIRONMENT BLOCKED",
+          "dependencies": [],
+          "decisive_test": "EXP-195 fixed automatic-only stack/split matrix: paired pre-scene/current SDK and genuine SDK26.5/27.1 builds on regular iPhone27.0 and Duo27.1. Qualify actual inputs and geometry; preserve existing view/action detection, names, counts and owner relationships; classify every difference and close only with no new unexplained degradation. Also execute the separately defined eight SDK27 Duo source-paired cells with only the manifest flag true and exactly one actual native scene; no other UI families added.",
+          "environment": "Xcode26.6 with SDK26.5 and Xcode27.1; regular iPhone27.0 and Duo27.1 simulators; physical Duo remains F04",
+          "evidence": "EXP-195 qualifies16 regular cells,16 SDK27 Duo cells across both scene-manifest settings and the bounded split replay2. SDK27 source pairs show no new foreground detection/name/owner loss in these fixtures; UIKit manifest-true Detail ownership improves and baseline SwiftUI generic fold churn varies. Original old-build Duo matrix remains8 cells short. Both modern XCTest probes lose their runner after Open; the bounded external collector stops after its initial button tap because the switch produces no native effect. Original failures, unchanged app identities and cleanup are retained. No SDK defect or old-app usability verdict; resume only with a materially changed input environment. Results/EXP-195-automatic-tracking.json owns the four classified inventories and all limits.",
+          "required": true
+        },
+        "S2": {
+          "scope": "UIKit automatic view non-regression after an iOS 27 rebuild",
+          "status": "OPEN",
+          "dependencies": [
+            "S2:A02",
+            "S2:F07"
+          ],
+          "decisive_test": "Keep both comparisons separate: old-build vs SDK27 rebuild, and current-vs-baseline RUM SDK on rebuilt apps. Complete eight unresolved old-build Duo cells through prepared human input; rerun only affected candidate cells after F07. No changed automatic detection/owner regression.",
+          "environment": "Xcode27.1 Duo simulator with preflighted frozen builds and one human session",
+          "evidence": "EXP-195 accepted SDK27 reference cells remain intact. Eight old-build cells are unresolved; human-assisted input is newly available but not yet qualified.",
+          "required": true
+        }
+      }
     },
     {
       "id": "C08",
@@ -90,7 +287,30 @@
       "environment": "Xcode26.6 with SDK26.5 and Xcode27.1; regular iPhone27.0 and Duo27.1 simulators; physical Duo remains F04",
       "completion_mode": null,
       "status": "ENVIRONMENT BLOCKED",
-      "evidence": "EXP-195 qualifies16 regular cells,16 SDK27 Duo cells across both scene-manifest settings and the bounded split replay2. SDK27 source pairs show no new foreground detection/name/owner loss in these fixtures; UIKit manifest-true Detail ownership improves and baseline SwiftUI generic fold churn varies. Original old-build Duo matrix remains8 cells short. Both modern XCTest probes lose their runner after Open; the bounded external collector stops after its initial button tap because the switch produces no native effect. Original failures, unchanged app identities and cleanup are retained. No SDK defect or old-app usability verdict; resume only with a materially changed input environment. Results/EXP-195-automatic-tracking.json owns the four classified inventories and all limits."
+      "evidence": "EXP-195 qualifies16 regular cells,16 SDK27 Duo cells across both scene-manifest settings and the bounded split replay2. SDK27 source pairs show no new foreground detection/name/owner loss in these fixtures; UIKit manifest-true Detail ownership improves and baseline SwiftUI generic fold churn varies. Original old-build Duo matrix remains8 cells short. Both modern XCTest probes lose their runner after Open; the bounded external collector stops after its initial button tap because the switch produces no native effect. Original failures, unchanged app identities and cleanup are retained. No SDK defect or old-app usability verdict; resume only with a materially changed input environment. Results/EXP-195-automatic-tracking.json owns the four classified inventories and all limits.",
+      "release_requirements": {
+        "S3": {
+          "scope": "UIKit automatic action non-regression after an iOS 27 rebuild",
+          "status": "ENVIRONMENT BLOCKED",
+          "dependencies": [],
+          "decisive_test": "EXP-195 fixed automatic-only stack/split matrix: paired pre-scene/current SDK and genuine SDK26.5/27.1 builds on regular iPhone27.0 and Duo27.1. Qualify actual inputs and geometry; preserve existing view/action detection, names, counts and owner relationships; classify every difference and close only with no new unexplained degradation. Also execute the separately defined eight SDK27 Duo source-paired cells with only the manifest flag true and exactly one actual native scene; no other UI families added.",
+          "environment": "Xcode26.6 with SDK26.5 and Xcode27.1; regular iPhone27.0 and Duo27.1 simulators; physical Duo remains F04",
+          "evidence": "EXP-195 qualifies16 regular cells,16 SDK27 Duo cells across both scene-manifest settings and the bounded split replay2. SDK27 source pairs show no new foreground detection/name/owner loss in these fixtures; UIKit manifest-true Detail ownership improves and baseline SwiftUI generic fold churn varies. Original old-build Duo matrix remains8 cells short. Both modern XCTest probes lose their runner after Open; the bounded external collector stops after its initial button tap because the switch produces no native effect. Original failures, unchanged app identities and cleanup are retained. No SDK defect or old-app usability verdict; resume only with a materially changed input environment. Results/EXP-195-automatic-tracking.json owns the four classified inventories and all limits.",
+          "required": true
+        },
+        "S2": {
+          "scope": "UIKit automatic action non-regression after an iOS 27 rebuild",
+          "status": "OPEN",
+          "dependencies": [
+            "S2:A02",
+            "S2:F07"
+          ],
+          "decisive_test": "Keep both comparisons separate: old-build vs SDK27 rebuild, and current-vs-baseline RUM SDK on rebuilt apps. Complete eight unresolved old-build Duo cells through prepared human input; rerun only affected candidate cells after F07. No changed automatic detection/owner regression.",
+          "environment": "Xcode27.1 Duo simulator with preflighted frozen builds and one human session",
+          "evidence": "EXP-195 accepted SDK27 reference cells remain intact. Eight old-build cells are unresolved; human-assisted input is newly available but not yet qualified.",
+          "required": true
+        }
+      }
     },
     {
       "id": "C09",
@@ -101,7 +321,30 @@
       "environment": "Xcode26.6 with SDK26.5 and Xcode27.1; regular iPhone27.0 and Duo27.1 simulators; physical Duo remains F04",
       "completion_mode": null,
       "status": "ENVIRONMENT BLOCKED",
-      "evidence": "EXP-195 qualifies16 regular cells,16 SDK27 Duo cells across both scene-manifest settings and the bounded split replay2. SDK27 source pairs show no new foreground detection/name/owner loss in these fixtures; UIKit manifest-true Detail ownership improves and baseline SwiftUI generic fold churn varies. Original old-build Duo matrix remains8 cells short. Both modern XCTest probes lose their runner after Open; the bounded external collector stops after its initial button tap because the switch produces no native effect. Original failures, unchanged app identities and cleanup are retained. No SDK defect or old-app usability verdict; resume only with a materially changed input environment. Results/EXP-195-automatic-tracking.json owns the four classified inventories and all limits."
+      "evidence": "EXP-195 qualifies16 regular cells,16 SDK27 Duo cells across both scene-manifest settings and the bounded split replay2. SDK27 source pairs show no new foreground detection/name/owner loss in these fixtures; UIKit manifest-true Detail ownership improves and baseline SwiftUI generic fold churn varies. Original old-build Duo matrix remains8 cells short. Both modern XCTest probes lose their runner after Open; the bounded external collector stops after its initial button tap because the switch produces no native effect. Original failures, unchanged app identities and cleanup are retained. No SDK defect or old-app usability verdict; resume only with a materially changed input environment. Results/EXP-195-automatic-tracking.json owns the four classified inventories and all limits.",
+      "release_requirements": {
+        "S3": {
+          "scope": "SwiftUI automatic view non-regression after an iOS 27 rebuild",
+          "status": "ENVIRONMENT BLOCKED",
+          "dependencies": [],
+          "decisive_test": "EXP-195 fixed automatic-only stack/split matrix: paired pre-scene/current SDK and genuine SDK26.5/27.1 builds on regular iPhone27.0 and Duo27.1. Qualify actual inputs and geometry; preserve existing view/action detection, names, counts and owner relationships; classify every difference and close only with no new unexplained degradation. Also execute the separately defined eight SDK27 Duo source-paired cells with only the manifest flag true and exactly one actual native scene; no other UI families added.",
+          "environment": "Xcode26.6 with SDK26.5 and Xcode27.1; regular iPhone27.0 and Duo27.1 simulators; physical Duo remains F04",
+          "evidence": "EXP-195 qualifies16 regular cells,16 SDK27 Duo cells across both scene-manifest settings and the bounded split replay2. SDK27 source pairs show no new foreground detection/name/owner loss in these fixtures; UIKit manifest-true Detail ownership improves and baseline SwiftUI generic fold churn varies. Original old-build Duo matrix remains8 cells short. Both modern XCTest probes lose their runner after Open; the bounded external collector stops after its initial button tap because the switch produces no native effect. Original failures, unchanged app identities and cleanup are retained. No SDK defect or old-app usability verdict; resume only with a materially changed input environment. Results/EXP-195-automatic-tracking.json owns the four classified inventories and all limits.",
+          "required": true
+        },
+        "S2": {
+          "scope": "SwiftUI automatic view non-regression after an iOS 27 rebuild",
+          "status": "OPEN",
+          "dependencies": [
+            "S2:A02",
+            "S2:F07"
+          ],
+          "decisive_test": "Keep both comparisons separate: old-build vs SDK27 rebuild, and current-vs-baseline RUM SDK on rebuilt apps. Complete eight unresolved old-build Duo cells through prepared human input; rerun only affected candidate cells after F07. No changed automatic detection/owner regression.",
+          "environment": "Xcode27.1 Duo simulator with preflighted frozen builds and one human session",
+          "evidence": "EXP-195 accepted SDK27 reference cells remain intact. Eight old-build cells are unresolved; human-assisted input is newly available but not yet qualified.",
+          "required": true
+        }
+      }
     },
     {
       "id": "C10",
@@ -112,7 +355,30 @@
       "environment": "Xcode26.6 with SDK26.5 and Xcode27.1; regular iPhone27.0 and Duo27.1 simulators; physical Duo remains F04",
       "completion_mode": null,
       "status": "ENVIRONMENT BLOCKED",
-      "evidence": "EXP-195 qualifies16 regular cells,16 SDK27 Duo cells across both scene-manifest settings and the bounded split replay2. SDK27 source pairs show no new foreground detection/name/owner loss in these fixtures; UIKit manifest-true Detail ownership improves and baseline SwiftUI generic fold churn varies. Original old-build Duo matrix remains8 cells short. Both modern XCTest probes lose their runner after Open; the bounded external collector stops after its initial button tap because the switch produces no native effect. Original failures, unchanged app identities and cleanup are retained. No SDK defect or old-app usability verdict; resume only with a materially changed input environment. Results/EXP-195-automatic-tracking.json owns the four classified inventories and all limits."
+      "evidence": "EXP-195 qualifies16 regular cells,16 SDK27 Duo cells across both scene-manifest settings and the bounded split replay2. SDK27 source pairs show no new foreground detection/name/owner loss in these fixtures; UIKit manifest-true Detail ownership improves and baseline SwiftUI generic fold churn varies. Original old-build Duo matrix remains8 cells short. Both modern XCTest probes lose their runner after Open; the bounded external collector stops after its initial button tap because the switch produces no native effect. Original failures, unchanged app identities and cleanup are retained. No SDK defect or old-app usability verdict; resume only with a materially changed input environment. Results/EXP-195-automatic-tracking.json owns the four classified inventories and all limits.",
+      "release_requirements": {
+        "S3": {
+          "scope": "SwiftUI automatic action non-regression after an iOS 27 rebuild",
+          "status": "ENVIRONMENT BLOCKED",
+          "dependencies": [],
+          "decisive_test": "EXP-195 fixed automatic-only stack/split matrix: paired pre-scene/current SDK and genuine SDK26.5/27.1 builds on regular iPhone27.0 and Duo27.1. Qualify actual inputs and geometry; preserve existing view/action detection, names, counts and owner relationships; classify every difference and close only with no new unexplained degradation. Also execute the separately defined eight SDK27 Duo source-paired cells with only the manifest flag true and exactly one actual native scene; no other UI families added.",
+          "environment": "Xcode26.6 with SDK26.5 and Xcode27.1; regular iPhone27.0 and Duo27.1 simulators; physical Duo remains F04",
+          "evidence": "EXP-195 qualifies16 regular cells,16 SDK27 Duo cells across both scene-manifest settings and the bounded split replay2. SDK27 source pairs show no new foreground detection/name/owner loss in these fixtures; UIKit manifest-true Detail ownership improves and baseline SwiftUI generic fold churn varies. Original old-build Duo matrix remains8 cells short. Both modern XCTest probes lose their runner after Open; the bounded external collector stops after its initial button tap because the switch produces no native effect. Original failures, unchanged app identities and cleanup are retained. No SDK defect or old-app usability verdict; resume only with a materially changed input environment. Results/EXP-195-automatic-tracking.json owns the four classified inventories and all limits.",
+          "required": true
+        },
+        "S2": {
+          "scope": "SwiftUI automatic action non-regression after an iOS 27 rebuild",
+          "status": "OPEN",
+          "dependencies": [
+            "S2:A02",
+            "S2:F07"
+          ],
+          "decisive_test": "Keep both comparisons separate: old-build vs SDK27 rebuild, and current-vs-baseline RUM SDK on rebuilt apps. Complete eight unresolved old-build Duo cells through prepared human input; rerun only affected candidate cells after F07. No changed automatic detection/owner regression.",
+          "environment": "Xcode27.1 Duo simulator with preflighted frozen builds and one human session",
+          "evidence": "EXP-195 accepted SDK27 reference cells remain intact. Eight old-build cells are unresolved; human-assisted input is newly available but not yet qualified.",
+          "required": true
+        }
+      }
     },
     {
       "id": "P01",
@@ -125,7 +391,42 @@
       "environment": "Same simulator/toolchain, Release build; focused internal lifecycle tests",
       "completion_mode": null,
       "status": "CLOSED",
-      "evidence": "EXP-160; BASELINES.md and Results/EXP-160-baseline.json. Bounded workload passes on27/26.5; see recorded limitations. EXP-166 revalidates the same frozen dispatch/reentrancy budgets after D04."
+      "evidence": "EXP-160; BASELINES.md and Results/EXP-160-baseline.json. Bounded workload passes on27/26.5; see recorded limitations. EXP-166 revalidates the same frozen dispatch/reentrancy budgets after D04.",
+      "release_requirements": {
+        "S3": {
+          "scope": "Event-dispatch overhead",
+          "status": "CLOSED",
+          "dependencies": [
+            "S3:C01"
+          ],
+          "decisive_test": "Release ABBA comparison passes predeclared median/p95 thresholds in BASELINES.md",
+          "environment": "Same simulator/toolchain, Release build; focused internal lifecycle tests",
+          "evidence": "EXP-160; BASELINES.md and Results/EXP-160-baseline.json. Bounded workload passes on27/26.5; see recorded limitations. EXP-166 revalidates the same frozen dispatch/reentrancy budgets after D04.",
+          "required": true
+        },
+        "S1": {
+          "scope": "Candidate event dispatch overhead",
+          "status": "OPEN",
+          "dependencies": [
+            "S1:C01"
+          ],
+          "decisive_test": "Paired current-develop baseline and exact candidate meet existing BASELINES.md thresholds; audit newly retained state and teardown. No threshold increase.",
+          "environment": "One host, isolated measurements; relevant physical sample and qualified simulator",
+          "evidence": "Reference evidence retained; this release candidate is not qualified.",
+          "required": true
+        },
+        "S2": {
+          "scope": "Candidate event dispatch overhead",
+          "status": "OPEN",
+          "dependencies": [
+            "S2:C01"
+          ],
+          "decisive_test": "Paired current-develop baseline and exact candidate meet existing BASELINES.md thresholds; audit newly retained state and teardown. No threshold increase.",
+          "environment": "One host, isolated measurements; relevant physical sample and qualified simulator",
+          "evidence": "Reference evidence retained; this release candidate is not qualified.",
+          "required": true
+        }
+      }
     },
     {
       "id": "P02",
@@ -139,7 +440,43 @@
       "environment": "Same simulator/toolchain, Release build; focused internal lifecycle tests",
       "completion_mode": null,
       "status": "CLOSED",
-      "evidence": "EXP-166; full Release ABBA on27/26.5: ordinary0 allocations/0 bytes; enabled1 allocation/64 bytes per event. Original thresholds unchanged; source/fixture/binary identities verified. Results/EXP-166-handoff-performance.json."
+      "evidence": "EXP-166; full Release ABBA on27/26.5: ordinary0 allocations/0 bytes; enabled1 allocation/64 bytes per event. Original thresholds unchanged; source/fixture/binary identities verified. Results/EXP-166-handoff-performance.json.",
+      "release_requirements": {
+        "S3": {
+          "scope": "Allocation cost",
+          "status": "CLOSED",
+          "dependencies": [
+            "S3:C01",
+            "S3:D04"
+          ],
+          "decisive_test": "Measured allocation count and bytes per fixed workload pass baseline deltas; net heap is not allocation churn",
+          "environment": "Same simulator/toolchain, Release build; focused internal lifecycle tests",
+          "evidence": "EXP-166; full Release ABBA on27/26.5: ordinary0 allocations/0 bytes; enabled1 allocation/64 bytes per event. Original thresholds unchanged; source/fixture/binary identities verified. Results/EXP-166-handoff-performance.json.",
+          "required": true
+        },
+        "S1": {
+          "scope": "Candidate allocations",
+          "status": "OPEN",
+          "dependencies": [
+            "S1:C01"
+          ],
+          "decisive_test": "Paired current-develop baseline and exact candidate meet existing BASELINES.md thresholds; audit newly retained state and teardown. No threshold increase.",
+          "environment": "One host, isolated measurements; relevant physical sample and qualified simulator",
+          "evidence": "Reference evidence retained; this release candidate is not qualified.",
+          "required": true
+        },
+        "S2": {
+          "scope": "Candidate allocations",
+          "status": "OPEN",
+          "dependencies": [
+            "S2:C01"
+          ],
+          "decisive_test": "Paired current-develop baseline and exact candidate meet existing BASELINES.md thresholds; audit newly retained state and teardown. No threshold increase.",
+          "environment": "One host, isolated measurements; relevant physical sample and qualified simulator",
+          "evidence": "Reference evidence retained; this release candidate is not qualified.",
+          "required": true
+        }
+      }
     },
     {
       "id": "P03",
@@ -154,7 +491,44 @@
       "environment": "Same simulator/toolchain, Release build; focused internal lifecycle tests",
       "completion_mode": null,
       "status": "CLOSED",
-      "evidence": "EXP-172, signed 4653e0a72: three failing controls;326 affected tests; Release ABBA on27/26.5 has zero retired registry entries/weak controller survivors, first100 heap delta512-832 bytes and second100 delta512-1152 bytes within frozen65536/16384 limits. All four controls retain220 entries per history registry. Eight ordinary automatic/manual runs and watchOS Release compile pass. Results/EXP-172-scene-retention.json; mounted host release prerequisites EXP-168/171 retained. Physical H08/H09 remain separate."
+      "evidence": "EXP-172, signed 4653e0a72: three failing controls;326 affected tests; Release ABBA on27/26.5 has zero retired registry entries/weak controller survivors, first100 heap delta512-832 bytes and second100 delta512-1152 bytes within frozen65536/16384 limits. All four controls retain220 entries per history registry. Eight ordinary automatic/manual runs and watchOS Release compile pass. Results/EXP-172-scene-retention.json; mounted host release prerequisites EXP-168/171 retained. Physical H08/H09 remain separate.",
+      "release_requirements": {
+        "S3": {
+          "scope": "Retained scene state",
+          "status": "CLOSED",
+          "dependencies": [
+            "S3:C01",
+            "S3:D03",
+            "S3:D08"
+          ],
+          "decisive_test": "Repeated create/disconnect/release leaves no SDK-owned scene/controller/host and no growing registry",
+          "environment": "Same simulator/toolchain, Release build; focused internal lifecycle tests",
+          "evidence": "EXP-172, signed 4653e0a72: three failing controls;326 affected tests; Release ABBA on27/26.5 has zero retired registry entries/weak controller survivors, first100 heap delta512-832 bytes and second100 delta512-1152 bytes within frozen65536/16384 limits. All four controls retain220 entries per history registry. Eight ordinary automatic/manual runs and watchOS Release compile pass. Results/EXP-172-scene-retention.json; mounted host release prerequisites EXP-168/171 retained. Physical H08/H09 remain separate.",
+          "required": true
+        },
+        "S1": {
+          "scope": "Candidate view/resource/cache retention",
+          "status": "OPEN",
+          "dependencies": [
+            "S1:C01"
+          ],
+          "decisive_test": "Paired current-develop baseline and exact candidate meet existing BASELINES.md thresholds; audit newly retained state and teardown. No threshold increase.",
+          "environment": "One host, isolated measurements; relevant physical sample and qualified simulator",
+          "evidence": "Reference evidence retained; this release candidate is not qualified.",
+          "required": true
+        },
+        "S2": {
+          "scope": "Candidate view/resource/cache retention",
+          "status": "OPEN",
+          "dependencies": [
+            "S2:C01"
+          ],
+          "decisive_test": "Paired current-develop baseline and exact candidate meet existing BASELINES.md thresholds; audit newly retained state and teardown. No threshold increase.",
+          "environment": "One host, isolated measurements; relevant physical sample and qualified simulator",
+          "evidence": "Reference evidence retained; this release candidate is not qualified.",
+          "required": true
+        }
+      }
     },
     {
       "id": "P04",
@@ -167,7 +541,42 @@
       "environment": "Same simulator/toolchain, Release build; focused internal lifecycle tests",
       "completion_mode": null,
       "status": "CLOSED",
-      "evidence": "EXP-160; BASELINES.md and Results/EXP-160-baseline.json. Bounded workload passes on27/26.5; see recorded limitations. EXP-166 revalidates the same frozen dispatch/reentrancy budgets after D04."
+      "evidence": "EXP-160; BASELINES.md and Results/EXP-160-baseline.json. Bounded workload passes on27/26.5; see recorded limitations. EXP-166 revalidates the same frozen dispatch/reentrancy budgets after D04.",
+      "release_requirements": {
+        "S3": {
+          "scope": "Reentrancy",
+          "status": "CLOSED",
+          "dependencies": [
+            "S3:C01"
+          ],
+          "decisive_test": "Nested A\u2192B\u2192A dispatch restores exact outer context; one original call each, no deadlock or leaked task/thread context",
+          "environment": "Same simulator/toolchain, Release build; focused internal lifecycle tests",
+          "evidence": "EXP-160; BASELINES.md and Results/EXP-160-baseline.json. Bounded workload passes on27/26.5; see recorded limitations. EXP-166 revalidates the same frozen dispatch/reentrancy budgets after D04.",
+          "required": true
+        },
+        "S1": {
+          "scope": "Candidate reentrancy",
+          "status": "OPEN",
+          "dependencies": [
+            "S1:C01"
+          ],
+          "decisive_test": "Paired current-develop baseline and exact candidate meet existing BASELINES.md thresholds; audit newly retained state and teardown. No threshold increase.",
+          "environment": "One host, isolated measurements; relevant physical sample and qualified simulator",
+          "evidence": "Reference evidence retained; this release candidate is not qualified.",
+          "required": true
+        },
+        "S2": {
+          "scope": "Candidate reentrancy",
+          "status": "OPEN",
+          "dependencies": [
+            "S2:C01"
+          ],
+          "decisive_test": "Paired current-develop baseline and exact candidate meet existing BASELINES.md thresholds; audit newly retained state and teardown. No threshold increase.",
+          "environment": "One host, isolated measurements; relevant physical sample and qualified simulator",
+          "evidence": "Reference evidence retained; this release candidate is not qualified.",
+          "required": true
+        }
+      }
     },
     {
       "id": "R01",
@@ -178,7 +587,18 @@
       "environment": "Source review plus targeted regressions for any finding",
       "completion_mode": null,
       "status": "CLOSED",
-      "evidence": "COMPONENT_REVIEW.md: bounded source review at af63657f0; existing EXP-159 regression evidence, no new device claim."
+      "evidence": "COMPONENT_REVIEW.md: bounded source review at af63657f0; existing EXP-159 regression evidence, no new device claim.",
+      "release_requirements": {
+        "S3": {
+          "scope": "Trait readers and tracking lifetimes",
+          "status": "CLOSED",
+          "dependencies": [],
+          "decisive_test": "Reader identity, migration, remount, weak ownership and disconnect fencing; record findings, evidence and dispositions in COMPONENT_REVIEW.md",
+          "environment": "Source review plus targeted regressions for any finding",
+          "evidence": "COMPONENT_REVIEW.md: bounded source review at af63657f0; existing EXP-159 regression evidence, no new device claim.",
+          "required": true
+        }
+      }
     },
     {
       "id": "R02",
@@ -191,7 +611,20 @@
       "environment": "Source review plus targeted regressions for any finding",
       "completion_mode": null,
       "status": "CLOSED",
-      "evidence": "COMPONENT_REVIEW.md, EXP-168 at 7b77f60eb: weak callback/context and source registration review; cancellation, stale epochs, fresh reveals, descriptor/peer suppression, 303 affected tests and mounted host release/SDK teardown on27/26.5. Final independent review remains separate."
+      "evidence": "COMPONENT_REVIEW.md, EXP-168 at 7b77f60eb: weak callback/context and source registration review; cancellation, stale epochs, fresh reveals, descriptor/peer suppression, 303 affected tests and mounted host release/SDK teardown on27/26.5. Final independent review remains separate.",
+      "release_requirements": {
+        "S3": {
+          "scope": "Authority and occurrence sources",
+          "status": "CLOSED",
+          "dependencies": [
+            "S3:D03"
+          ],
+          "decisive_test": "Exact host release, local suppression, stale generation rejection and fresh reveals; record findings, evidence and dispositions in COMPONENT_REVIEW.md",
+          "environment": "Source review plus targeted regressions for any finding",
+          "evidence": "COMPONENT_REVIEW.md, EXP-168 at 7b77f60eb: weak callback/context and source registration review; cancellation, stale epochs, fresh reveals, descriptor/peer suppression, 303 affected tests and mounted host release/SDK teardown on27/26.5. Final independent review remains separate.",
+          "required": true
+        }
+      }
     },
     {
       "id": "R03",
@@ -202,7 +635,18 @@
       "environment": "Source review plus targeted regressions for any finding",
       "completion_mode": null,
       "status": "CLOSED",
-      "evidence": "COMPONENT_REVIEW.md: bounded source review at af63657f0; existing EXP-159 regression evidence, no new device claim."
+      "evidence": "COMPONENT_REVIEW.md: bounded source review at af63657f0; existing EXP-159 regression evidence, no new device claim.",
+      "release_requirements": {
+        "S3": {
+          "scope": "Transition arbitration",
+          "status": "CLOSED",
+          "dependencies": [],
+          "decisive_test": "Accepted versus proposed state; cancel/finish exactly once; nested reentrancy; record findings, evidence and dispositions in COMPONENT_REVIEW.md",
+          "environment": "Source review plus targeted regressions for any finding",
+          "evidence": "COMPONENT_REVIEW.md: bounded source review at af63657f0; existing EXP-159 regression evidence, no new device claim.",
+          "required": true
+        }
+      }
     },
     {
       "id": "R04",
@@ -216,7 +660,21 @@
       "environment": "Source review plus targeted regressions for any finding",
       "completion_mode": null,
       "status": "CLOSED",
-      "evidence": "EXP-171, signed SDK4ba7179c6: two failing no-body controls,318 affected tests and mounted57/57 versus43/57. First retained-reader callback runs with zero source observers, then owns exact fresh Latest Resource/Log markers before any body rebind. Weak configuration/source withdrawal and final teardown pass; H08/H09 stay physical."
+      "evidence": "EXP-171, signed SDK4ba7179c6: two failing no-body controls,318 affected tests and mounted57/57 versus43/57. First retained-reader callback runs with zero source observers, then owns exact fresh Latest Resource/Log markers before any body rebind. Weak configuration/source withdrawal and final teardown pass; H08/H09 stay physical.",
+      "release_requirements": {
+        "S3": {
+          "scope": "View modifiers and attachment boundaries",
+          "status": "CLOSED",
+          "dependencies": [
+            "S3:D03",
+            "S3:D08"
+          ],
+          "decisive_test": "Main-thread/availability gates, host reconstruction and retained-reader teardown; record findings, evidence and dispositions in COMPONENT_REVIEW.md",
+          "environment": "Source review plus targeted regressions for any finding",
+          "evidence": "EXP-171, signed SDK4ba7179c6: two failing no-body controls,318 affected tests and mounted57/57 versus43/57. First retained-reader callback runs with zero source observers, then owns exact fresh Latest Resource/Log markers before any body rebind. Weak configuration/source withdrawal and final teardown pass; H08/H09 stay physical.",
+          "required": true
+        }
+      }
     },
     {
       "id": "R05",
@@ -230,7 +688,21 @@
       "environment": "Source review plus targeted regressions for any finding",
       "completion_mode": null,
       "status": "CLOSED",
-      "evidence": "EXP-174, signed368c62a72: three deterministic failing controls, nine new regressions,346 affected tests and strict lint. Initial/commit nested generations, current membership, publisher/Observation synchronous latest state and two-host exact teardown pass. COMPONENT_REVIEW.md and Results/EXP-174-observer-delivery.json."
+      "evidence": "EXP-174, signed368c62a72: three deterministic failing controls, nine new regressions,346 affected tests and strict lint. Initial/commit nested generations, current membership, publisher/Observation synchronous latest state and two-host exact teardown pass. COMPONENT_REVIEW.md and Results/EXP-174-observer-delivery.json.",
+      "release_requirements": {
+        "S3": {
+          "scope": "Observed input and semantic engine",
+          "status": "CLOSED",
+          "dependencies": [
+            "S3:D07",
+            "S3:D08"
+          ],
+          "decisive_test": "Publisher pinning, Observation rearming, background FIFO and atomic destination; record findings, evidence and dispositions in COMPONENT_REVIEW.md; multiple observers with nested commit/remove/add must preserve monotonic generations",
+          "environment": "Source review plus targeted regressions for any finding",
+          "evidence": "EXP-174, signed368c62a72: three deterministic failing controls, nine new regressions,346 affected tests and strict lint. Initial/commit nested generations, current membership, publisher/Observation synchronous latest state and two-host exact teardown pass. COMPONENT_REVIEW.md and Results/EXP-174-observer-delivery.json.",
+          "required": true
+        }
+      }
     },
     {
       "id": "R06",
@@ -243,7 +715,20 @@
       "environment": "Source review plus targeted regressions for any finding",
       "completion_mode": null,
       "status": "CLOSED",
-      "evidence": "COMPONENT_REVIEW.md and EXP-173: exact occurrence tokens, same-ID sheet/cover/A return, duplicate and stale callbacks, rejected mount/migration and rematerialization;337 affected tests and native77/77. EXP-171 retained-reader evidence remains valid. No final API or physical sign-off."
+      "evidence": "COMPONENT_REVIEW.md and EXP-173: exact occurrence tokens, same-ID sheet/cover/A return, duplicate and stale callbacks, rejected mount/migration and rematerialization;337 affected tests and native77/77. EXP-171 retained-reader evidence remains valid. No final API or physical sign-off.",
+      "release_requirements": {
+        "S3": {
+          "scope": "Public hosts and native convenience adapters",
+          "status": "CLOSED",
+          "dependencies": [
+            "S3:D10"
+          ],
+          "decisive_test": "Migration budget, no screen/method edits, automatic metadata and platform fallback; record findings, evidence and dispositions in COMPONENT_REVIEW.md; delayed detach/remount and same-ID presentation replacement preserve occurrence ownership",
+          "environment": "Source review plus targeted regressions for any finding",
+          "evidence": "COMPONENT_REVIEW.md and EXP-173: exact occurrence tokens, same-ID sheet/cover/A return, duplicate and stale callbacks, rejected mount/migration and rematerialization;337 affected tests and native77/77. EXP-171 retained-reader evidence remains valid. No final API or physical sign-off.",
+          "required": true
+        }
+      }
     },
     {
       "id": "A01",
@@ -254,7 +739,36 @@
       "environment": "Simulator + authenticated Datadog connector; physical/human capabilities remain explicit",
       "completion_mode": null,
       "status": "CLOSED",
-      "evidence": "EXP-161 third attempt:166tests,15assertions/86signals,7exact backend actions,3session-only views,0errors/crashes. Results/acceptance/exp161-20260917T011012Z-9bb629c7c630.json;24Python+3Node controls."
+      "evidence": "EXP-161 third attempt:166tests,15assertions/86signals,7exact backend actions,3session-only views,0errors/crashes. Results/acceptance/exp161-20260917T011012Z-9bb629c7c630.json;24Python+3Node controls.",
+      "release_requirements": {
+        "S3": {
+          "scope": "Repeatable acceptance workflow",
+          "status": "CLOSED",
+          "dependencies": [],
+          "decisive_test": "One invocation performs preflight \u2192 clean install \u2192 frozen build \u2192 scenario \u2192 topology \u2192 strict semantics \u2192 backend; negative controls fail closed and durable summary is produced",
+          "environment": "Simulator + authenticated Datadog connector; physical/human capabilities remain explicit",
+          "evidence": "EXP-161 third attempt:166tests,15assertions/86signals,7exact backend actions,3session-only views,0errors/crashes. Results/acceptance/exp161-20260917T011012Z-9bb629c7c630.json;24Python+3Node controls.",
+          "required": true
+        },
+        "S1": {
+          "scope": "Reusable candidate acceptance automation",
+          "status": "OPEN",
+          "dependencies": [],
+          "decisive_test": "One frozen run binds preflight, clean install, source/build/install identity, actual input/lifecycle, strict local inventory, whole-session backend and cleanup; reject known stale/readiness/run-ID/late-oracle controls.",
+          "environment": "Qualified simulator for frozen candidate; actual toolchain/runtime identity and authenticated Datadog",
+          "evidence": "Reference evidence retained; this release candidate is not qualified.",
+          "required": true
+        },
+        "S2": {
+          "scope": "Reusable candidate acceptance automation",
+          "status": "OPEN",
+          "dependencies": [],
+          "decisive_test": "One frozen run binds preflight, clean install, source/build/install identity, actual input/lifecycle, strict local inventory, whole-session backend and cleanup; reject known stale/readiness/run-ID/late-oracle controls.",
+          "environment": "Qualified simulator for frozen candidate; actual toolchain/runtime identity and authenticated Datadog",
+          "evidence": "Reference evidence retained; this release candidate is not qualified.",
+          "required": true
+        }
+      }
     },
     {
       "id": "T01",
@@ -267,7 +781,20 @@
       "environment": "iOS 27 simulator, focused compatibility tests, exact mapper and Datadog backend owners",
       "completion_mode": "explicit target",
       "status": "CLOSED",
-      "evidence": "EXP-158"
+      "evidence": "EXP-158",
+      "release_requirements": {
+        "S3": {
+          "scope": "One-shot actions",
+          "status": "CLOSED",
+          "dependencies": [
+            "S3:C04"
+          ],
+          "decisive_test": "EXP-158 exact A/B owner and unresolved-target/custom/NOP fallback",
+          "environment": "iOS 27 simulator, focused compatibility tests, exact mapper and Datadog backend owners",
+          "evidence": "EXP-158",
+          "required": true
+        }
+      }
     },
     {
       "id": "T02",
@@ -281,7 +808,21 @@
       "environment": "iOS 27 simulator, focused compatibility tests, exact mapper and Datadog backend owners",
       "completion_mode": "explicit target",
       "status": "CLOSED",
-      "evidence": "EXP-159 accepted 15/15 exact mapper/backend targeted slice; EXP-163 closes missing D12 expired-stop metadata discriminator and passes target/fallback/navigation/timeout tests. Hardware duration/visibility remains separate."
+      "evidence": "EXP-159 accepted 15/15 exact mapper/backend targeted slice; EXP-163 closes missing D12 expired-stop metadata discriminator and passes target/fallback/navigation/timeout tests. Hardware duration/visibility remains separate.",
+      "release_requirements": {
+        "S3": {
+          "scope": "Long-running actions",
+          "status": "CLOSED",
+          "dependencies": [
+            "S3:C04",
+            "S3:D12"
+          ],
+          "decisive_test": "EXP-159 B-before-A, empty B stop isolation, exact final metadata; navigation/timeout retain original owner",
+          "environment": "iOS 27 simulator, focused compatibility tests, exact mapper and Datadog backend owners",
+          "evidence": "EXP-159 accepted 15/15 exact mapper/backend targeted slice; EXP-163 closes missing D12 expired-stop metadata discriminator and passes target/fallback/navigation/timeout tests. Hardware duration/visibility remains separate.",
+          "required": true
+        }
+      }
     },
     {
       "id": "T03",
@@ -298,7 +839,48 @@
       "environment": "iOS 27 simulator, URLSession/manual Resource fixture, mapper and Datadog backend",
       "completion_mode": "explicit start target + captured start ownership",
       "status": "CLOSED",
-      "evidence": "EXP-175 and EXP-176: SDK signed5e41d0b11, native fixture signed797ab135c.397 affected tests across396+1,8 Objective-C API checks, iOS/watchOS Release and strict lint;53 Python/3 connector controls. Frozen run exp176-20260917T164857Z-a72e79966b23 passes167 probe tests,22 local expectations/77 signals, exact5 Resources/4 expected errors/5 session-only views across2 sessions, fresh peer action counts0/0 and0 crashes. All6 Swift/Objective-C target starts and automatic task capture preserve original owners across real A background retirement, B manual view navigation and session renewal; legacy source-A Resource stays on B. Results/EXP-176-resource-start.json and Results/acceptance/exp176-20260917T164857Z-a72e79966b23.json retain all prior attempts. No simultaneous-visibility or physical gate claim."
+      "evidence": "EXP-175 and EXP-176: SDK signed5e41d0b11, native fixture signed797ab135c.397 affected tests across396+1,8 Objective-C API checks, iOS/watchOS Release and strict lint;53 Python/3 connector controls. Frozen run exp176-20260917T164857Z-a72e79966b23 passes167 probe tests,22 local expectations/77 signals, exact5 Resources/4 expected errors/5 session-only views across2 sessions, fresh peer action counts0/0 and0 crashes. All6 Swift/Objective-C target starts and automatic task capture preserve original owners across real A background retirement, B manual view navigation and session renewal; legacy source-A Resource stays on B. Results/EXP-176-resource-start.json and Results/acceptance/exp176-20260917T164857Z-a72e79966b23.json retain all prior attempts. No simultaneous-visibility or physical gate claim.",
+      "release_requirements": {
+        "S3": {
+          "scope": "Manual and automatic Resources",
+          "status": "CLOSED",
+          "dependencies": [
+            "S3:A01",
+            "S3:D01",
+            "S3:D04",
+            "S3:D05",
+            "S3:D06"
+          ],
+          "decisive_test": "Target A start while B represents; success/error/metrics after navigation/teardown remain A-owned; duplicate-key behavior documented; late failed completion cannot increment another session's live continuous action",
+          "environment": "iOS 27 simulator, URLSession/manual Resource fixture, mapper and Datadog backend",
+          "evidence": "EXP-175 and EXP-176: SDK signed5e41d0b11, native fixture signed797ab135c.397 affected tests across396+1,8 Objective-C API checks, iOS/watchOS Release and strict lint;53 Python/3 connector controls. Frozen run exp176-20260917T164857Z-a72e79966b23 passes167 probe tests,22 local expectations/77 signals, exact5 Resources/4 expected errors/5 session-only views across2 sessions, fresh peer action counts0/0 and0 crashes. All6 Swift/Objective-C target starts and automatic task capture preserve original owners across real A background retirement, B manual view navigation and session renewal; legacy source-A Resource stays on B. Results/EXP-176-resource-start.json and Results/acceptance/exp176-20260917T164857Z-a72e79966b23.json retain all prior attempts. No simultaneous-visibility or physical gate claim.",
+          "required": true
+        },
+        "S1": {
+          "scope": "E01 affected Resource lifecycle",
+          "status": "OPEN",
+          "dependencies": [
+            "S1:A01",
+            "S1:F07"
+          ],
+          "decisive_test": "Repeated/resumed tasks produce one Resource start and one completion with unchanged baseline ownership/metrics/error behavior; no new foreign action counts.",
+          "environment": "Source-less fixtures and relevant native/backend inventory",
+          "evidence": "Required for selected E01 because shared network instrumentation feeds Resource and Trace handlers. Other extraction candidates receive their own affected-family audit.",
+          "required": true
+        },
+        "S2": {
+          "scope": "Single-scene active-work Resource ownership",
+          "status": "OPEN",
+          "dependencies": [
+            "S2:A01",
+            "S2:F07"
+          ],
+          "decisive_test": "Complete delayed work across navigation/session/fold; success/error/metrics keep exact owner and no foreign action/error counts.",
+          "environment": "Candidate-vs-baseline native fixtures and Datadog app where integrated",
+          "evidence": "Reference evidence retained; this release candidate is not qualified.",
+          "required": true
+        }
+      }
     },
     {
       "id": "T04",
@@ -311,7 +893,20 @@
       "environment": "iOS 27 simulator, focused compatibility tests, exact mapper and Datadog backend owners",
       "completion_mode": "explicit target",
       "status": "CLOSED",
-      "evidence": "EXP-177 PASS at signed SDK1e9c4788d, frozen42f2d3883:376 affected/11 new,8 ObjC, iOS/watchOS Release;168 probe,24/24 local/61 signals,1 callback and backend9 errors/3 views/2 actions with7/2 error counts,0 Resources/crashes. Results/EXP-177-current-view-errors.json"
+      "evidence": "EXP-177 PASS at signed SDK1e9c4788d, frozen42f2d3883:376 affected/11 new,8 ObjC, iOS/watchOS Release;168 probe,24/24 local/61 signals,1 callback and backend9 errors/3 views/2 actions with7/2 error counts,0 Resources/crashes. Results/EXP-177-current-view-errors.json",
+      "release_requirements": {
+        "S3": {
+          "scope": "Current-view errors",
+          "status": "CLOSED",
+          "dependencies": [
+            "S3:A01"
+          ],
+          "decisive_test": "Requested live view owns message/Error/completion-handler forms; invalid target falls back; Resource errors retain T03 owner",
+          "environment": "iOS 27 simulator, focused compatibility tests, exact mapper and Datadog backend owners",
+          "evidence": "EXP-177 PASS at signed SDK1e9c4788d, frozen42f2d3883:376 affected/11 new,8 ObjC, iOS/watchOS Release;168 probe,24/24 local/61 signals,1 callback and backend9 errors/3 views/2 actions with7/2 error counts,0 Resources/crashes. Results/EXP-177-current-view-errors.json",
+          "required": true
+        }
+      }
     },
     {
       "id": "T05",
@@ -324,7 +919,20 @@
       "environment": "iOS 27 simulator, focused compatibility tests, exact mapper and Datadog backend owners",
       "completion_mode": "explicit target",
       "status": "CLOSED",
-      "evidence": "EXP-178; signed SDK1c6104cac and fixture7956000fa. Two failing controls,419 affected,8 ObjC,46 integration on26.5; iOS/watchOS Release and lint. Fresh native170 tests,42/42 expectations,20 typed A/B marker errors,3 views,0 Resources/crashes, independent whole-session backend owners.81 Python/6 connector controls. Results/EXP-178-view-attributes.json; serial topology only."
+      "evidence": "EXP-178; signed SDK1c6104cac and fixture7956000fa. Two failing controls,419 affected,8 ObjC,46 integration on26.5; iOS/watchOS Release and lint. Fresh native170 tests,42/42 expectations,20 typed A/B marker errors,3 views,0 Resources/crashes, independent whole-session backend owners.81 Python/6 connector controls. Results/EXP-178-view-attributes.json; serial topology only.",
+      "release_requirements": {
+        "S3": {
+          "scope": "View attributes and removal",
+          "status": "CLOSED",
+          "dependencies": [
+            "S3:A01"
+          ],
+          "decisive_test": "Single/batch add/remove changes only requested current view; global monitor attributes remain process-wide",
+          "environment": "iOS 27 simulator, focused compatibility tests, exact mapper and Datadog backend owners",
+          "evidence": "EXP-178; signed SDK1c6104cac and fixture7956000fa. Two failing controls,419 affected,8 ObjC,46 integration on26.5; iOS/watchOS Release and lint. Fresh native170 tests,42/42 expectations,20 typed A/B marker errors,3 views,0 Resources/crashes, independent whole-session backend owners.81 Python/6 connector controls. Results/EXP-178-view-attributes.json; serial topology only.",
+          "required": true
+        }
+      }
     },
     {
       "id": "T06",
@@ -337,7 +945,20 @@
       "environment": "iOS 27 simulator, focused compatibility tests, exact mapper and Datadog backend owners",
       "completion_mode": "explicit target",
       "status": "CLOSED",
-      "evidence": "EXP-179; signed SDK e2ba9afe5 and fixture 2eed88863. Two failing controls; 426 affected, 11 ObjC/Core, 3 integration on26.5, iOS/watchOS Release and lint pass. Fresh native172 tests,34/34 expectations,87 signals,8 paired timing/loading checkpoints,16 exact backend errors,3 views,0 Resources/crashes. Final persisted values match mapper states; intermediate overwrite proof is local.94 Python/9 connector controls. Results/EXP-179-timing-loading.json; serial topology only."
+      "evidence": "EXP-179; signed SDK e2ba9afe5 and fixture 2eed88863. Two failing controls; 426 affected, 11 ObjC/Core, 3 integration on26.5, iOS/watchOS Release and lint pass. Fresh native172 tests,34/34 expectations,87 signals,8 paired timing/loading checkpoints,16 exact backend errors,3 views,0 Resources/crashes. Final persisted values match mapper states; intermediate overwrite proof is local.94 Python/9 connector controls. Results/EXP-179-timing-loading.json; serial topology only.",
+      "release_requirements": {
+        "S3": {
+          "scope": "Custom timing and loading time",
+          "status": "CLOSED",
+          "dependencies": [
+            "S3:A01"
+          ],
+          "decisive_test": "Requested occurrence receives timing/loading mutation with existing overwrite rules and no peer mutation",
+          "environment": "iOS 27 simulator, focused compatibility tests, exact mapper and Datadog backend owners",
+          "evidence": "EXP-179; signed SDK e2ba9afe5 and fixture 2eed88863. Two failing controls; 426 affected, 11 ObjC/Core, 3 integration on26.5, iOS/watchOS Release and lint pass. Fresh native172 tests,34/34 expectations,87 signals,8 paired timing/loading checkpoints,16 exact backend errors,3 views,0 Resources/crashes. Final persisted values match mapper states; intermediate overwrite proof is local.94 Python/9 connector controls. Results/EXP-179-timing-loading.json; serial topology only.",
+          "required": true
+        }
+      }
     },
     {
       "id": "T07",
@@ -350,7 +971,20 @@
       "environment": "iOS 27 simulator, focused compatibility tests, exact mapper and Datadog backend owners",
       "completion_mode": "explicit target where customer-callable; captured call-site ownership internally",
       "status": "CLOSED",
-      "evidence": "EXP-180; signed SDK04201edc7 and fixture1c19f95cc.443 affected RUM,24 Flags,22 Core/ObjC,4 integration and four Release builds. Fresh run exp180-20260918T000950Z-01537c7580ee passes175 probe tests,34/34 expectations,8 paired checkpoints/98 signals,16 backend error owners and3 exact views/flags/build aggregates,0 Resources/crashes. FBC ownership/encoding pass locally; native backend absence is required because FBC is Flutter-only.108 Python/15 Node controls. Results/EXP-180-flags-internal-mutations.json; serial topology only."
+      "evidence": "EXP-180; signed SDK04201edc7 and fixture1c19f95cc.443 affected RUM,24 Flags,22 Core/ObjC,4 integration and four Release builds. Fresh run exp180-20260918T000950Z-01537c7580ee passes175 probe tests,34/34 expectations,8 paired checkpoints/98 signals,16 backend error owners and3 exact views/flags/build aggregates,0 Resources/crashes. FBC ownership/encoding pass locally; native backend absence is required because FBC is Flutter-only.108 Python/15 Node controls. Results/EXP-180-flags-internal-mutations.json; serial topology only.",
+      "release_requirements": {
+        "S3": {
+          "scope": "Feature flags and internal view mutations",
+          "status": "CLOSED",
+          "dependencies": [
+            "S3:A01"
+          ],
+          "decisive_test": "Flags and internal performance/cross-platform attributes preserve same-scene stale-view fallback; no public API for internal-only fields",
+          "environment": "iOS 27 simulator, focused compatibility tests, exact mapper and Datadog backend owners",
+          "evidence": "EXP-180; signed SDK04201edc7 and fixture1c19f95cc.443 affected RUM,24 Flags,22 Core/ObjC,4 integration and four Release builds. Fresh run exp180-20260918T000950Z-01537c7580ee passes175 probe tests,34/34 expectations,8 paired checkpoints/98 signals,16 backend error owners and3 exact views/flags/build aggregates,0 Resources/crashes. FBC ownership/encoding pass locally; native backend absence is required because FBC is Flutter-only.108 Python/15 Node controls. Results/EXP-180-flags-internal-mutations.json; serial topology only.",
+          "required": true
+        }
+      }
     },
     {
       "id": "T08",
@@ -364,7 +998,45 @@
       "environment": "iOS 27 simulator, Trace/OTel/URLSession fixtures and backend; shared request also H07",
       "completion_mode": "captured start ownership",
       "status": "CLOSED",
-      "evidence": "EXP-181 accepted at local23520bc9b; unchanged SDK04201edc7.158 Trace/178 probe tests,125 Python/23 Node controls,20/20 native assertions; exact9 APM spans/3 RUM views,0 Resources/errors/crashes. Original format/deadline attempts preserved; Results/EXP-181-trace-start-ownership.json. H07 remains separate."
+      "evidence": "EXP-181 accepted at local23520bc9b; unchanged SDK04201edc7.158 Trace/178 probe tests,125 Python/23 Node controls,20/20 native assertions; exact9 APM spans/3 RUM views,0 Resources/errors/crashes. Original format/deadline attempts preserved; Results/EXP-181-trace-start-ownership.json. H07 remains separate.",
+      "release_requirements": {
+        "S3": {
+          "scope": "Manual/automatic/OpenTelemetry Traces",
+          "status": "CLOSED",
+          "dependencies": [
+            "S3:A01",
+            "S3:D04"
+          ],
+          "decisive_test": "Native/OTel/URLSession start in A then complete under B; one span, A context, no retarget or duplicate; source-less starts document representative fallback",
+          "environment": "iOS 27 simulator, Trace/OTel/URLSession fixtures and backend; shared request also H07",
+          "evidence": "EXP-181 accepted at local23520bc9b; unchanged SDK04201edc7.158 Trace/178 probe tests,125 Python/23 Node controls,20/20 native assertions; exact9 APM spans/3 RUM views,0 Resources/errors/crashes. Original format/deadline attempts preserved; Results/EXP-181-trace-start-ownership.json. H07 remains separate.",
+          "required": true
+        },
+        "S1": {
+          "scope": "E01 affected Trace lifecycle and header compatibility",
+          "status": "OPEN",
+          "dependencies": [
+            "S1:A01",
+            "S1:F07"
+          ],
+          "decisive_test": "Repeated/resumed tasks produce one Trace interception/start/completion with unchanged baseline context, sampling and headers; E05 request-time correlation is separately qualified and does not block E01.",
+          "environment": "Source-less fixtures and relevant native/backend inventory",
+          "evidence": "Required for selected E01 because shared network instrumentation feeds Resource and Trace handlers. Other extraction candidates receive their own affected-family audit.",
+          "required": true
+        },
+        "S2": {
+          "scope": "Single-scene active-work Trace correlation",
+          "status": "OPEN",
+          "dependencies": [
+            "S2:A01",
+            "S2:F07"
+          ],
+          "decisive_test": "Existing start correlation survives completion after navigation/fold, with unchanged sampling/header behavior.",
+          "environment": "Candidate-vs-baseline native fixtures and Datadog app where integrated",
+          "evidence": "Reference evidence retained; this release candidate is not qualified.",
+          "required": true
+        }
+      }
     },
     {
       "id": "T09",
@@ -378,7 +1050,21 @@
       "environment": "iOS 27 simulator, Logs/RUM mirror fixture and Datadog backend",
       "completion_mode": "captured emission ownership",
       "status": "CLOSED",
-      "evidence": "EXP-182:99 Logs/9 receiver/181 probe tests;141 Python/32 connector controls;24 native assertions and backend6 logs/6 count-one groups,3 mirrors,2 actions,3 views,0 Resources/crashes. Attempt A retained inconclusive. Results/EXP-182-log-mirror-ownership.json."
+      "evidence": "EXP-182:99 Logs/9 receiver/181 probe tests;141 Python/32 connector controls;24 native assertions and backend6 logs/6 count-one groups,3 mirrors,2 actions,3 views,0 Resources/crashes. Attempt A retained inconclusive. Results/EXP-182-log-mirror-ownership.json.",
+      "release_requirements": {
+        "S3": {
+          "scope": "Logs and mirrored errors",
+          "status": "CLOSED",
+          "dependencies": [
+            "S3:A01",
+            "S3:D04"
+          ],
+          "decisive_test": "A-origin log and mirrored RUM error agree on captured view/action despite B representative churn; source-less log uses documented representative",
+          "environment": "iOS 27 simulator, Logs/RUM mirror fixture and Datadog backend",
+          "evidence": "EXP-182:99 Logs/9 receiver/181 probe tests;141 Python/32 connector controls;24 native assertions and backend6 logs/6 count-one groups,3 mirrors,2 actions,3 views,0 Resources/crashes. Attempt A retained inconclusive. Results/EXP-182-log-mirror-ownership.json.",
+          "required": true
+        }
+      }
     },
     {
       "id": "T10",
@@ -393,7 +1079,46 @@
       "environment": "Two native WebView containers on iOS simulator plus backend; macOS compile in D02",
       "completion_mode": "captured native-container ownership",
       "status": "CLOSED",
-      "evidence": "EXP-183 accepted at local9594756a7; unchanged SDK04201edc7.33 SDK/184 probe tests,160 Python/41 Node controls;14 native expectations/64 signals and exact12 backend views:6 native,5 correlated browser,1 detached without container.0 actions/Resources/errors/crashes; private scene metadata absent. Failed projection attempt preserved. Results/EXP-183-webview-container-ownership.json; serial topology only."
+      "evidence": "EXP-183 accepted at local9594756a7; unchanged SDK04201edc7.33 SDK/184 probe tests,160 Python/41 Node controls;14 native expectations/64 signals and exact12 backend views:6 native,5 correlated browser,1 detached without container.0 actions/Resources/errors/crashes; private scene metadata absent. Failed projection attempt preserved. Results/EXP-183-webview-container-ownership.json; serial topology only.",
+      "release_requirements": {
+        "S3": {
+          "scope": "WebView bridge",
+          "status": "CLOSED",
+          "dependencies": [
+            "S3:A01",
+            "S3:D02",
+            "S3:D11"
+          ],
+          "decisive_test": "Two actual web containers retain their bound native view owners; navigation/rebind/teardown cannot inherit the peer",
+          "environment": "Two native WebView containers on iOS simulator plus backend; macOS compile in D02",
+          "evidence": "EXP-183 accepted at local9594756a7; unchanged SDK04201edc7.33 SDK/184 probe tests,160 Python/41 Node controls;14 native expectations/64 signals and exact12 backend views:6 native,5 correlated browser,1 detached without container.0 actions/Resources/errors/crashes; private scene metadata absent. Failed projection attempt preserved. Results/EXP-183-webview-container-ownership.json; serial topology only.",
+          "required": true
+        },
+        "S1": {
+          "scope": "Existing source-less native/WebView correlation",
+          "status": "OPEN",
+          "dependencies": [
+            "S1:A01",
+            "S1:F07"
+          ],
+          "decisive_test": "If view/cache/WebView is touched, preserve long-lived native container and delayed browser event ownership, then release detached state.",
+          "environment": "Source-less fixtures and relevant native/backend inventory",
+          "evidence": "Required only for an extraction whose source dependency audit touches this family; E01 needs Resource/Trace checks, E04 needs WebView/cache checks.",
+          "required": false
+        },
+        "S2": {
+          "scope": "Single-scene active-work native/WebView correlation",
+          "status": "OPEN",
+          "dependencies": [
+            "S2:A01",
+            "S2:F07"
+          ],
+          "decisive_test": "Long-lived native/WebView association and delayed web events survive navigation/fold then detach without stale ownership.",
+          "environment": "Candidate-vs-baseline native fixtures and Datadog app where integrated",
+          "evidence": "Reference evidence retained; this release candidate is not qualified.",
+          "required": true
+        }
+      }
     },
     {
       "id": "T11",
@@ -406,7 +1131,20 @@
       "environment": "Deterministic crash/export context tests and isolated simulator process/backend",
       "completion_mode": "documented process-level fallback; trustworthy internal snapshot remains exact",
       "status": "CLOSED",
-      "evidence": "EXP-184 accepted at fixture224c099dc, SDK04201edc7:131 selected SDK tests,188 probe tests,44 native expectations and complete7-view/1-fatal backend ownership plus consumption. Exact retained snapshot and SDK revision witness; no production repair. Results/EXP-184-exported-fatal-context.json."
+      "evidence": "EXP-184 accepted at fixture224c099dc, SDK04201edc7:131 selected SDK tests,188 probe tests,44 native expectations and complete7-view/1-fatal backend ownership plus consumption. Exact retained snapshot and SDK revision witness; no production repair. Results/EXP-184-exported-fatal-context.json.",
+      "release_requirements": {
+        "S3": {
+          "scope": "Exported and fatal/crash context",
+          "status": "CLOSED",
+          "dependencies": [
+            "S3:A01"
+          ],
+          "decisive_test": "Source-less export/fatal signal appears once on representative; explicit internal snapshot does not drift; no fabricated scene ownership",
+          "environment": "Deterministic crash/export context tests and isolated simulator process/backend",
+          "evidence": "EXP-184 accepted at fixture224c099dc, SDK04201edc7:131 selected SDK tests,188 probe tests,44 native expectations and complete7-view/1-fatal backend ownership plus consumption. Exact retained snapshot and SDK revision witness; no production repair. Results/EXP-184-exported-fatal-context.json.",
+          "required": true
+        }
+      }
     },
     {
       "id": "T12",
@@ -419,7 +1157,20 @@
       "environment": "Controlled long-task/hang/memory-warning tests and simulator backend",
       "completion_mode": "documented process-level fallback",
       "status": "CLOSED",
-      "evidence": "EXP-185 accepted at5b4a56815:98 SDK/192 probe tests,46 native expectations/66 signals, complete4-view/2-long-task/4-error/1-Action backend with exact owners/counts and0 Resources/crashes. Earlier failures retained; no SDK repair. Results/EXP-185-process-signal-routing.json."
+      "evidence": "EXP-185 accepted at5b4a56815:98 SDK/192 probe tests,46 native expectations/66 signals, complete4-view/2-long-task/4-error/1-Action backend with exact owners/counts and0 Resources/crashes. Earlier failures retained; no SDK repair. Results/EXP-185-process-signal-routing.json.",
+      "release_requirements": {
+        "S3": {
+          "scope": "Long tasks, app hangs and memory warnings",
+          "status": "CLOSED",
+          "dependencies": [
+            "S3:A01"
+          ],
+          "decisive_test": "One process signal appears once on representative; no per-scene broadcast or invented causal owner",
+          "environment": "Controlled long-task/hang/memory-warning tests and simulator backend",
+          "evidence": "EXP-185 accepted at5b4a56815:98 SDK/192 probe tests,46 native expectations/66 signals, complete4-view/2-long-task/4-error/1-Action backend with exact owners/counts and0 Resources/crashes. Earlier failures retained; no SDK repair. Results/EXP-185-process-signal-routing.json.",
+          "required": true
+        }
+      }
     },
     {
       "id": "T13",
@@ -432,7 +1183,20 @@
       "environment": "Fixed process metric fixture, view associations and backend; representative device sample before freeze",
       "completion_mode": "documented process-level measurement with existing view association",
       "status": "CLOSED",
-      "evidence": "EXP-186:166 SDK/196 probe tests and accepted serial simulator/backend proof. Representative physical run exp186-f7544129 passes17 native assertions, all3 installed signed hashes and exact2-view backend metrics. Fresh reconnect cleanup verifies the exact recorded process is terminated and absent; original failures remain. Shared process metrics only; physical multi-window gates remain separate. Results/EXP-186-shared-vitals.json."
+      "evidence": "EXP-186:166 SDK/196 probe tests and accepted serial simulator/backend proof. Representative physical run exp186-f7544129 passes17 native assertions, all3 installed signed hashes and exact2-view backend metrics. Fresh reconnect cleanup verifies the exact recorded process is terminated and absent; original failures remain. Shared process metrics only; physical multi-window gates remain separate. Results/EXP-186-shared-vitals.json.",
+      "release_requirements": {
+        "S3": {
+          "scope": "Vitals",
+          "status": "CLOSED",
+          "dependencies": [
+            "S3:A01"
+          ],
+          "decisive_test": "CPU/memory/frame metrics retain documented process sampling and view association; never claim independent per-window measurement",
+          "environment": "Fixed process metric fixture, view associations and backend; representative device sample before freeze",
+          "evidence": "EXP-186:166 SDK/196 probe tests and accepted serial simulator/backend proof. Representative physical run exp186-f7544129 passes17 native assertions, all3 installed signed hashes and exact2-view backend metrics. Fresh reconnect cleanup verifies the exact recorded process is terminated and absent; original failures remain. Shared process metrics only; physical multi-window gates remain separate. Results/EXP-186-shared-vitals.json.",
+          "required": true
+        }
+      }
     },
     {
       "id": "T14",
@@ -445,7 +1209,20 @@
       "environment": "Profiling/Operation fixture and supported profiling device/backend",
       "completion_mode": "documented process-level fallback",
       "status": "CLOSED",
-      "evidence": "EXP-187:115 SDK/integration tests; physical installed-code identity,12 native assertions, exact12-event RUM, one continuous profile and both start/sample joins. Actual physical export matches both start IDs and every integer timestamp/duration exactly; cleanup verified. Corrected oracle and original failures retained. RUM profile-link flags remain false; no UI-enrichment or per-scene CPU claim. Results/EXP-187-physical-profile-correlation.json and Results/EXP-187-physical-export.json."
+      "evidence": "EXP-187:115 SDK/integration tests; physical installed-code identity,12 native assertions, exact12-event RUM, one continuous profile and both start/sample joins. Actual physical export matches both start IDs and every integer timestamp/duration exactly; cleanup verified. Corrected oracle and original failures retained. RUM profile-link flags remain false; no UI-enrichment or per-scene CPU claim. Results/EXP-187-physical-profile-correlation.json and Results/EXP-187-physical-export.json.",
+      "release_requirements": {
+        "S3": {
+          "scope": "Profiling",
+          "status": "CLOSED",
+          "dependencies": [
+            "S3:A01"
+          ],
+          "decisive_test": "Process profile and exact Operation identity remain correlated; docs make no per-scene CPU attribution claim",
+          "environment": "Profiling/Operation fixture and supported profiling device/backend",
+          "evidence": "EXP-187:115 SDK/integration tests; physical installed-code identity,12 native assertions, exact12-event RUM, one continuous profile and both start/sample joins. Actual physical export matches both start IDs and every integer timestamp/duration exactly; cleanup verified. Corrected oracle and original failures retained. RUM profile-link flags remain false; no UI-enrichment or per-scene CPU claim. Results/EXP-187-physical-profile-correlation.json and Results/EXP-187-physical-export.json.",
+          "required": true
+        }
+      }
     },
     {
       "id": "T15",
@@ -458,7 +1235,20 @@
       "environment": "iOS 27 simulator, focused compatibility tests, exact mapper and Datadog backend owners",
       "completion_mode": "explicit per-step target or captured call-site ownership; last-proven then process fallback",
       "status": "CLOSED",
-      "evidence": "EXP-155, EXP-157"
+      "evidence": "EXP-155, EXP-157",
+      "release_requirements": {
+        "S3": {
+          "scope": "Operations",
+          "status": "CLOSED",
+          "dependencies": [
+            "S3:C04"
+          ],
+          "decisive_test": "Application-wide name/key identity, A\u2192B start/end and reverse parallel completion; duplicate starts leave older backend timeout",
+          "environment": "iOS 27 simulator, focused compatibility tests, exact mapper and Datadog backend owners",
+          "evidence": "EXP-155, EXP-157",
+          "required": true
+        }
+      }
     },
     {
       "id": "H01",
@@ -471,7 +1261,20 @@
       "environment": "Physical iPad/iPhone Duo; human gesture for H11\u2013H13; resize-capable for H14",
       "completion_mode": null,
       "status": "CLOSED",
-      "evidence": "EXP-196 signedc6ac2a335 physical capture: original22 expectations/17 steps/23 topology guards, distinct same-key Compose IDs, B stop preserves A and fresh Home returns. Both actual592x834 foreground-active windows visible through critical interval in328.878s XCTest video; all90 boundary frames reviewed. Complete61 backend events match11 views/46 work IDs; zero errors/crashes, installed3 binaries and cleanup. Earlier unadmitted attempts retained. Results/EXP-196-physical-ipad-suite.json."
+      "evidence": "EXP-196 signedc6ac2a335 physical capture: original22 expectations/17 steps/23 topology guards, distinct same-key Compose IDs, B stop preserves A and fresh Home returns. Both actual592x834 foreground-active windows visible through critical interval in328.878s XCTest video; all90 boundary frames reviewed. Complete61 backend events match11 views/46 work IDs; zero errors/crashes, installed3 binaries and cleanup. Earlier unadmitted attempts retained. Results/EXP-196-physical-ipad-suite.json.",
+      "release_requirements": {
+        "S3": {
+          "scope": "Same-key manual A/B reverse stop",
+          "status": "CLOSED",
+          "dependencies": [
+            "S3:A01"
+          ],
+          "decisive_test": "EXP-129: distinct Compose IDs, B stop preserves A, fresh Home per scene",
+          "environment": "Physical iPad/iPhone Duo; human gesture for H11\u2013H13; resize-capable for H14",
+          "evidence": "EXP-196 signedc6ac2a335 physical capture: original22 expectations/17 steps/23 topology guards, distinct same-key Compose IDs, B stop preserves A and fresh Home returns. Both actual592x834 foreground-active windows visible through critical interval in328.878s XCTest video; all90 boundary frames reviewed. Complete61 backend events match11 views/46 work IDs; zero errors/crashes, installed3 binaries and cleanup. Earlier unadmitted attempts retained. Results/EXP-196-physical-ipad-suite.json.",
+          "required": true
+        }
+      }
     },
     {
       "id": "H02",
@@ -484,7 +1287,20 @@
       "environment": "Physical iPad/iPhone Duo; human gesture for H11\u2013H13; resize-capable for H14",
       "completion_mode": null,
       "status": "OPEN",
-      "evidence": ""
+      "evidence": "",
+      "release_requirements": {
+        "S3": {
+          "scope": "Concurrent UIKit and SwiftUI split navigation",
+          "status": "OPEN",
+          "dependencies": [
+            "S3:A01"
+          ],
+          "decisive_test": "EXP-086/103: simultaneously visible A/B chains, distinct occurrences, no structural view",
+          "environment": "Physical iPad/iPhone Duo; human gesture for H11\u2013H13; resize-capable for H14",
+          "evidence": "Pending; unchanged reference obligation.",
+          "required": true
+        }
+      }
     },
     {
       "id": "H03",
@@ -497,7 +1313,20 @@
       "environment": "Physical iPad/iPhone Duo; human gesture for H11\u2013H13; resize-capable for H14",
       "completion_mode": null,
       "status": "OPEN",
-      "evidence": ""
+      "evidence": "",
+      "release_requirements": {
+        "S3": {
+          "scope": "Visible peer attribution and close continuity",
+          "status": "OPEN",
+          "dependencies": [
+            "S3:A01"
+          ],
+          "decisive_test": "EXP-041/089/113: A work stays on A while B represents; B close never stops A",
+          "environment": "Physical iPad/iPhone Duo; human gesture for H11\u2013H13; resize-capable for H14",
+          "evidence": "Pending; unchanged reference obligation.",
+          "required": true
+        }
+      }
     },
     {
       "id": "H04",
@@ -510,7 +1339,20 @@
       "environment": "Physical iPad/iPhone Duo; human gesture for H11\u2013H13; resize-capable for H14",
       "completion_mode": null,
       "status": "OPEN",
-      "evidence": "EXP-196 four genuine activations and exact partial backend owners qualify. SwiftUI close, exact UIKit destruction and the bounded process-lifetime witness run lack actual B disconnect. Latest complete partial inventory29 events/6 views/20 work matches; original step14 fails before final peer marker. Neither observer receives notification; stop equivalent retries. No SDK-defect inference. Results/EXP-196-physical-ipad-suite.json."
+      "evidence": "EXP-196 four genuine activations and exact partial backend owners qualify. SwiftUI close, exact UIKit destruction and the bounded process-lifetime witness run lack actual B disconnect. Latest complete partial inventory29 events/6 views/20 work matches; original step14 fails before final peer marker. Neither observer receives notification; stop equivalent retries. No SDK-defect inference. Results/EXP-196-physical-ipad-suite.json.",
+      "release_requirements": {
+        "S3": {
+          "scope": "Actual focus and activation",
+          "status": "OPEN",
+          "dependencies": [
+            "S3:A01"
+          ],
+          "decisive_test": "EXP-114: target foreground-active, peer background, exact lifecycle and event owners",
+          "environment": "Physical iPad/iPhone Duo; human gesture for H11\u2013H13; resize-capable for H14",
+          "evidence": "EXP-196 four genuine activations and exact partial backend owners qualify. SwiftUI close, exact UIKit destruction and the bounded process-lifetime witness run lack actual B disconnect. Latest complete partial inventory29 events/6 views/20 work matches; original step14 fails before final peer marker. Neither observer receives notification; stop equivalent retries. No SDK-defect inference. Results/EXP-196-physical-ipad-suite.json.",
+          "required": true
+        }
+      }
     },
     {
       "id": "H05",
@@ -523,7 +1365,20 @@
       "environment": "Physical iPad/iPhone Duo; human gesture for H11\u2013H13; resize-capable for H14",
       "completion_mode": null,
       "status": "CLOSED",
-      "evidence": "EXP-196 signeda823ad86c physical capture passes original7 expectations, exact4 views/20 work IDs/27 all-type backend events, zero errors/crashes, installed3 binaries and cleanup. Semantic A and settled automatic B have distinct exact owners. Six early source-less B callbacks use the already documented EXP-118 representative fallback; no simultaneous visibility or automatic-churn improvement claimed. Original stale-fixture failure preserved. Results/EXP-196-physical-ipad-suite.json."
+      "evidence": "EXP-196 signeda823ad86c physical capture passes original7 expectations, exact4 views/20 work IDs/27 all-type backend events, zero errors/crashes, installed3 binaries and cleanup. Semantic A and settled automatic B have distinct exact owners. Six early source-less B callbacks use the already documented EXP-118 representative fallback; no simultaneous visibility or automatic-churn improvement claimed. Original stale-fixture failure preserved. Results/EXP-196-physical-ipad-suite.json.",
+      "release_requirements": {
+        "S3": {
+          "scope": "Semantic/automatic coexistence across scenes",
+          "status": "CLOSED",
+          "dependencies": [
+            "S3:A01"
+          ],
+          "decisive_test": "EXP-118: semantic A and automatic B neither suppress nor own each other",
+          "environment": "Physical iPad/iPhone Duo; human gesture for H11\u2013H13; resize-capable for H14",
+          "evidence": "EXP-196 signeda823ad86c physical capture passes original7 expectations, exact4 views/20 work IDs/27 all-type backend events, zero errors/crashes, installed3 binaries and cleanup. Semantic A and settled automatic B have distinct exact owners. Six early source-less B callbacks use the already documented EXP-118 representative fallback; no simultaneous visibility or automatic-churn improvement claimed. Original stale-fixture failure preserved. Results/EXP-196-physical-ipad-suite.json.",
+          "required": true
+        }
+      }
     },
     {
       "id": "H06",
@@ -536,7 +1391,20 @@
       "environment": "Physical iPad/iPhone Duo; human gesture for H11\u2013H13; resize-capable for H14",
       "completion_mode": null,
       "status": "OPEN",
-      "evidence": ""
+      "evidence": "",
+      "release_requirements": {
+        "S3": {
+          "scope": "Concurrent inferred Operations topology",
+          "status": "OPEN",
+          "dependencies": [
+            "S3:A01"
+          ],
+          "decisive_test": "EXP-131/157 accepted ownership repeated with simultaneous visible topology evidence",
+          "environment": "Physical iPad/iPhone Duo; human gesture for H11\u2013H13; resize-capable for H14",
+          "evidence": "Pending; unchanged reference obligation.",
+          "required": true
+        }
+      }
     },
     {
       "id": "H07",
@@ -549,7 +1417,20 @@
       "environment": "Physical iPad/iPhone Duo; human gesture for H11\u2013H13; resize-capable for H14",
       "completion_mode": null,
       "status": "CLOSED",
-      "evidence": "EXP-196 signeda823ad86c physical capture passes native8/8, exact3 views/20 work IDs/25 all-type RUM events, exactly1 A-owned span with exact IDs/correlation/raw duration, observed millisecond start projection, no matching Resource, installed3 binaries and cleanup. Both earlier contract/projection failures preserved; backend submillisecond start and simultaneous visibility not claimed. Results/EXP-196-physical-ipad-suite.json."
+      "evidence": "EXP-196 signeda823ad86c physical capture passes native8/8, exact3 views/20 work IDs/25 all-type RUM events, exactly1 A-owned span with exact IDs/correlation/raw duration, observed millisecond start projection, no matching Resource, installed3 binaries and cleanup. Both earlier contract/projection failures preserved; backend submillisecond start and simultaneous visibility not claimed. Results/EXP-196-physical-ipad-suite.json.",
+      "release_requirements": {
+        "S3": {
+          "scope": "Shared URLSession request",
+          "status": "CLOSED",
+          "dependencies": [
+            "S3:A01"
+          ],
+          "decisive_test": "EXP-136: A-created request joined in B yields exactly one A span and no RUM Resource in trace-only mode",
+          "environment": "Physical iPad/iPhone Duo; human gesture for H11\u2013H13; resize-capable for H14",
+          "evidence": "EXP-196 signeda823ad86c physical capture passes native8/8, exact3 views/20 work IDs/25 all-type RUM events, exactly1 A-owned span with exact IDs/correlation/raw duration, observed millisecond start projection, no matching Resource, installed3 binaries and cleanup. Both earlier contract/projection failures preserved; backend submillisecond start and simultaneous visibility not claimed. Results/EXP-196-physical-ipad-suite.json.",
+          "required": true
+        }
+      }
     },
     {
       "id": "H08",
@@ -564,7 +1445,22 @@
       "environment": "Physical iPad/iPhone Duo; human gesture for H11\u2013H13; resize-capable for H14",
       "completion_mode": null,
       "status": "OPEN",
-      "evidence": ""
+      "evidence": "",
+      "release_requirements": {
+        "S3": {
+          "scope": "Final semantic host removal",
+          "status": "OPEN",
+          "dependencies": [
+            "S3:A01",
+            "S3:D03",
+            "S3:D07"
+          ],
+          "decisive_test": "EXP-146: real final A removal stops A once, releases source, preserves B and rejects resurrection",
+          "environment": "Physical iPad/iPhone Duo; human gesture for H11\u2013H13; resize-capable for H14",
+          "evidence": "Pending; unchanged reference obligation.",
+          "required": true
+        }
+      }
     },
     {
       "id": "H09",
@@ -580,7 +1476,23 @@
       "environment": "Physical iPad/iPhone Duo; human gesture for H11\u2013H13; resize-capable for H14",
       "completion_mode": null,
       "status": "OPEN",
-      "evidence": ""
+      "evidence": "",
+      "release_requirements": {
+        "S3": {
+          "scope": "Genuine disconnect, reconnect and remount",
+          "status": "OPEN",
+          "dependencies": [
+            "S3:A01",
+            "S3:D03",
+            "S3:D08",
+            "S3:P03"
+          ],
+          "decisive_test": "OS-driven disconnect/remount, no posted substitutes; fresh occurrence, stale callbacks fenced, peer continuity",
+          "environment": "Physical iPad/iPhone Duo; human gesture for H11\u2013H13; resize-capable for H14",
+          "evidence": "Pending; unchanged reference obligation.",
+          "required": true
+        }
+      }
     },
     {
       "id": "H10",
@@ -593,7 +1505,20 @@
       "environment": "Physical iPad/iPhone Duo; human gesture for H11\u2013H13; resize-capable for H14",
       "completion_mode": null,
       "status": "OPEN",
-      "evidence": ""
+      "evidence": "",
+      "release_requirements": {
+        "S3": {
+          "scope": "Isolated per-scene background/foreground",
+          "status": "OPEN",
+          "dependencies": [
+            "S3:A01"
+          ],
+          "decisive_test": "Background A while B remains usable; neither lifecycle transition replaces peer current view",
+          "environment": "Physical iPad/iPhone Duo; human gesture for H11\u2013H13; resize-capable for H14",
+          "evidence": "Pending; unchanged reference obligation.",
+          "required": true
+        }
+      }
     },
     {
       "id": "H11",
@@ -606,7 +1531,32 @@
       "environment": "Physical iPad/iPhone Duo; human gesture for H11\u2013H13; resize-capable for H14",
       "completion_mode": null,
       "status": "OPEN",
-      "evidence": "EXP-196 actual CUA drag and two bounded XCTest touch attempts produce no native interactive callback. The corrected visible-edge finish run passes collector1/1 and exact13-event partial inventory, installed identity and cleanup, but no gesture semantics. Cancel remains unexecuted pending actual recognition; stop equivalent retries. Physical video capture is qualified separately. Results/EXP-196-physical-ipad-suite.json."
+      "evidence": "EXP-196 actual CUA drag and two bounded XCTest touch attempts produce no native interactive callback. The corrected visible-edge finish run passes collector1/1 and exact13-event partial inventory, installed identity and cleanup, but no gesture semantics. Cancel remains unexecuted pending actual recognition; stop equivalent retries. Physical video capture is qualified separately. Results/EXP-196-physical-ipad-suite.json.",
+      "release_requirements": {
+        "S3": {
+          "scope": "Full multi-scene combinations: UIKit interactive edge pop",
+          "status": "OPEN",
+          "dependencies": [
+            "S3:A01"
+          ],
+          "decisive_test": "EXP-081: recognized cancel preserves Detail ID; recognized completion reveals fresh Home",
+          "environment": "Physical iPad/iPhone Duo; human gesture for H11\u2013H13; resize-capable for H14",
+          "evidence": "EXP-196 actual CUA drag and two bounded XCTest touch attempts produce no native interactive callback. The corrected visible-edge finish run passes collector1/1 and exact13-event partial inventory, installed identity and cleanup, but no gesture semantics. Cancel remains unexecuted pending actual recognition; stop equivalent retries. Physical video capture is qualified separately. Results/EXP-196-physical-ipad-suite.json.",
+          "required": true
+        },
+        "S2": {
+          "scope": "Ordinary single-scene UIKit interactive navigation",
+          "status": "OPEN",
+          "dependencies": [
+            "S2:A02",
+            "S2:F07"
+          ],
+          "decisive_test": "Recognized cancellation preserves outgoing owner; completion produces fresh return owner; baseline/candidate agree. Exclude unchanged paths only through F07 source evidence; full multi-scene combinations remain S3.",
+          "environment": "Qualified Duo simulator and relevant physical iPhone/iPad; prepared human native input as needed",
+          "evidence": "Reference evidence retained; this release candidate is not qualified.",
+          "required": true
+        }
+      }
     },
     {
       "id": "H12",
@@ -619,7 +1569,32 @@
       "environment": "Physical iPad/iPhone Duo; human gesture for H11\u2013H13; resize-capable for H14",
       "completion_mode": null,
       "status": "OPEN",
-      "evidence": "EXP-192 qualifies actual compact outer S2 readiness after fixture repair, but two fresh bounded UIKit drags produce no native interactive callback. Input collection passes1/1 each; no gesture semantics accepted. Equivalent retries stop. SwiftUI/presentation remain unexecuted and physical human obligations unchanged."
+      "evidence": "EXP-192 qualifies actual compact outer S2 readiness after fixture repair, but two fresh bounded UIKit drags produce no native interactive callback. Input collection passes1/1 each; no gesture semantics accepted. Equivalent retries stop. SwiftUI/presentation remain unexecuted and physical human obligations unchanged.",
+      "release_requirements": {
+        "S3": {
+          "scope": "Full multi-scene combinations: SwiftUI interactive edge pop",
+          "status": "OPEN",
+          "dependencies": [
+            "S3:A01"
+          ],
+          "decisive_test": "EXP-100: recognized cancel preserves Detail ID; completion commits fresh Home before work",
+          "environment": "Physical iPad/iPhone Duo; human gesture for H11\u2013H13; resize-capable for H14",
+          "evidence": "EXP-192 qualifies actual compact outer S2 readiness after fixture repair, but two fresh bounded UIKit drags produce no native interactive callback. Input collection passes1/1 each; no gesture semantics accepted. Equivalent retries stop. SwiftUI/presentation remain unexecuted and physical human obligations unchanged.",
+          "required": true
+        },
+        "S2": {
+          "scope": "Ordinary single-scene SwiftUI interactive navigation",
+          "status": "OPEN",
+          "dependencies": [
+            "S2:A02",
+            "S2:F07"
+          ],
+          "decisive_test": "Recognized native cancellation/completion preserves documented automatic/manual coverage and exact changed-path ownership. Exclude unchanged paths only through F07 source evidence; full multi-scene combinations remain S3.",
+          "environment": "Qualified Duo simulator and relevant physical iPhone/iPad; prepared human native input as needed",
+          "evidence": "Reference evidence retained; this release candidate is not qualified.",
+          "required": true
+        }
+      }
     },
     {
       "id": "H13",
@@ -633,7 +1608,33 @@
       "environment": "Physical iPad/iPhone Duo; human gesture for H11\u2013H13; resize-capable for H14",
       "completion_mode": null,
       "status": "OPEN",
-      "evidence": "EXP-192 qualifies actual compact outer S2 readiness after fixture repair, but two fresh bounded UIKit drags produce no native interactive callback. Input collection passes1/1 each; no gesture semantics accepted. Equivalent retries stop. SwiftUI/presentation remain unexecuted and physical human obligations unchanged."
+      "evidence": "EXP-192 qualifies actual compact outer S2 readiness after fixture repair, but two fresh bounded UIKit drags produce no native interactive callback. Input collection passes1/1 each; no gesture semantics accepted. Equivalent retries stop. SwiftUI/presentation remain unexecuted and physical human obligations unchanged.",
+      "release_requirements": {
+        "S3": {
+          "scope": "Full multi-scene combinations: Interactive presentation dismissal",
+          "status": "OPEN",
+          "dependencies": [
+            "S3:A01",
+            "S3:D10"
+          ],
+          "decisive_test": "EXP-152: cancelled Sheet retains ID; completed dismissal yields one fresh Home before actual callback work",
+          "environment": "Physical iPad/iPhone Duo; human gesture for H11\u2013H13; resize-capable for H14",
+          "evidence": "EXP-192 qualifies actual compact outer S2 readiness after fixture repair, but two fresh bounded UIKit drags produce no native interactive callback. Input collection passes1/1 each; no gesture semantics accepted. Equivalent retries stop. SwiftUI/presentation remain unexecuted and physical human obligations unchanged.",
+          "required": true
+        },
+        "S2": {
+          "scope": "Ordinary single-scene presentation dismissal",
+          "status": "OPEN",
+          "dependencies": [
+            "S2:A02",
+            "S2:F07"
+          ],
+          "decisive_test": "Actual cancel/dismiss callbacks preserve outgoing/fresh return ownership and callback work; no synthetic completion. Exclude unchanged paths only through F07 source evidence; full multi-scene combinations remain S3.",
+          "environment": "Qualified Duo simulator and relevant physical iPhone/iPad; prepared human native input as needed",
+          "evidence": "Reference evidence retained; this release candidate is not qualified.",
+          "required": true
+        }
+      }
     },
     {
       "id": "H14",
@@ -646,7 +1647,32 @@
       "environment": "Physical iPad/iPhone Duo; human gesture for H11\u2013H13; resize-capable for H14",
       "completion_mode": null,
       "status": "CLOSED",
-      "evidence": "EXP-196 signeda9069714f physical four-phase regular-compact-regular resize preserves accepted detail1 generation/path and exact owner. Complete3 views/16 work (14 markers plus2 automatic taps)/22 all-type backend events, zero errors/crashes, installed3 binaries and cleanup. Results/EXP-196-physical-ipad-suite.json."
+      "evidence": "EXP-196 signeda9069714f physical four-phase regular-compact-regular resize preserves accepted detail1 generation/path and exact owner. Complete3 views/16 work (14 markers plus2 automatic taps)/22 all-type backend events, zero errors/crashes, installed3 binaries and cleanup. Results/EXP-196-physical-ipad-suite.json.",
+      "release_requirements": {
+        "S3": {
+          "scope": "Full multi-scene combinations: Adaptive split resize",
+          "status": "CLOSED",
+          "dependencies": [
+            "S3:A01"
+          ],
+          "decisive_test": "EXP-076/087: measured regular \u2192 compact \u2192 regular geometry, selection, path and exact owners",
+          "environment": "Physical iPad/iPhone Duo; human gesture for H11\u2013H13; resize-capable for H14",
+          "evidence": "EXP-196 signeda9069714f physical four-phase regular-compact-regular resize preserves accepted detail1 generation/path and exact owner. Complete3 views/16 work (14 markers plus2 automatic taps)/22 all-type backend events, zero errors/crashes, installed3 binaries and cleanup. Results/EXP-196-physical-ipad-suite.json.",
+          "required": true
+        },
+        "S2": {
+          "scope": "Ordinary single-scene adaptive resize/fold",
+          "status": "OPEN",
+          "dependencies": [
+            "S2:A02",
+            "S2:F07"
+          ],
+          "decisive_test": "Measured geometry/selection/path and relevant automatic/manual owner behavior match baseline through resize/fold. Exclude unchanged paths only through F07 source evidence; full multi-scene combinations remain S3.",
+          "environment": "Qualified Duo simulator and relevant physical iPhone/iPad; prepared human native input as needed",
+          "evidence": "Reference evidence retained; this release candidate is not qualified.",
+          "required": true
+        }
+      }
     },
     {
       "id": "H15",
@@ -659,7 +1685,20 @@
       "environment": "Physical iPad/iPhone Duo; human gesture for H11\u2013H13; resize-capable for H14",
       "completion_mode": null,
       "status": "OPEN",
-      "evidence": ""
+      "evidence": "",
+      "release_requirements": {
+        "S3": {
+          "scope": "Concurrent scene restoration",
+          "status": "OPEN",
+          "dependencies": [
+            "S3:A01"
+          ],
+          "decisive_test": "EXP-042: both native sessions reconnect with fresh RUM IDs and no stale run attributes",
+          "environment": "Physical iPad/iPhone Duo; human gesture for H11\u2013H13; resize-capable for H14",
+          "evidence": "Pending; unchanged reference obligation.",
+          "required": true
+        }
+      }
     },
     {
       "id": "H16",
@@ -672,7 +1711,32 @@
       "environment": "Physical iPad/iPhone Duo; human gesture for H11\u2013H13; resize-capable for H14",
       "completion_mode": null,
       "status": "OPEN",
-      "evidence": ""
+      "evidence": "",
+      "release_requirements": {
+        "S3": {
+          "scope": "Full multi-scene combinations: UIKit-hosted SwiftUI parity",
+          "status": "OPEN",
+          "dependencies": [
+            "S3:A01"
+          ],
+          "decisive_test": "EXP-001 follow-up: same semantic/lifecycle/ownership contract in UIHostingController as WindowGroup",
+          "environment": "Physical iPad/iPhone Duo; human gesture for H11\u2013H13; resize-capable for H14",
+          "evidence": "Pending; unchanged reference obligation.",
+          "required": true
+        },
+        "S2": {
+          "scope": "Ordinary UIKit-hosted SwiftUI tracking",
+          "status": "OPEN",
+          "dependencies": [
+            "S2:A02",
+            "S2:F07"
+          ],
+          "decisive_test": "Existing automatic/manual UIHostingController integration matches baseline on changed shipped paths, without adopting semantic scene APIs. Exclude unchanged paths only through F07 source evidence; full multi-scene combinations remain S3.",
+          "environment": "Qualified Duo simulator and relevant physical iPhone/iPad; prepared human native input as needed",
+          "evidence": "Reference evidence retained; this release candidate is not qualified.",
+          "required": true
+        }
+      }
     },
     {
       "id": "F01",
@@ -690,7 +1754,25 @@
       "environment": "API review",
       "completion_mode": null,
       "status": "REVIEW BLOCKED",
-      "evidence": "STABLE_API_REVIEW.md proposes eight finite decisions and records21 Swift overloads/21 Objective-C selectors at2baa06da0. Committed package a32acbdcc awaits the requested attributable RFC decision; off-main Objective-C safety and Release/client/API-baseline validation are required before promotion. Results/F01-proposed-api-inventory.json."
+      "evidence": "STABLE_API_REVIEW.md proposes eight finite decisions and records21 Swift overloads/21 Objective-C selectors at2baa06da0. Committed package a32acbdcc awaits the requested attributable RFC decision; off-main Objective-C safety and Release/client/API-baseline validation are required before promotion. Results/F01-proposed-api-inventory.json.",
+      "release_requirements": {
+        "S3": {
+          "scope": "Stable API review",
+          "status": "REVIEW BLOCKED",
+          "dependencies": [
+            "S3:T03",
+            "S3:T04",
+            "S3:T05",
+            "S3:T06",
+            "S3:T07",
+            "S3:R06"
+          ],
+          "decisive_test": "Reviewed RFC resolves Swift/ObjC names, availability, target forms, custom-conformer behavior and migration; only then update API baselines",
+          "environment": "API review",
+          "evidence": "STABLE_API_REVIEW.md proposes eight finite decisions and records21 Swift overloads/21 Objective-C selectors at2baa06da0. Committed package a32acbdcc awaits the requested attributable RFC decision; off-main Objective-C safety and Release/client/API-baseline validation are required before promotion. Results/F01-proposed-api-inventory.json.",
+          "required": true
+        }
+      }
     },
     {
       "id": "F02",
@@ -703,7 +1785,42 @@
       "environment": "Source/doc review",
       "completion_mode": null,
       "status": "OPEN",
-      "evidence": "SUPPORT_GUIDE.md ownership review covers15/15 fixed families at unchanged SDK04201edc7. Results/F02-guide-ownership-audit.json anchors source/evidence and clarifies stale mirror routing, replay-enabled container history, native/cross-platform signals, shared CPU and profile-label limits. Approved examples, compilation and full feature-doc audit remain after F01; no public promotion."
+      "evidence": "SUPPORT_GUIDE.md ownership review covers15/15 fixed families at unchanged SDK04201edc7. Results/F02-guide-ownership-audit.json anchors source/evidence and clarifies stale mirror routing, replay-enabled container history, native/cross-platform signals, shared CPU and profile-label limits. Approved examples, compilation and full feature-doc audit remain after F01; no public promotion.",
+      "release_requirements": {
+        "S3": {
+          "scope": "Support documentation",
+          "status": "OPEN",
+          "dependencies": [
+            "S3:F01"
+          ],
+          "decisive_test": "Each telemetry family documents its exact completion mode and automatic/opaque limits; feature docs match source",
+          "environment": "Source/doc review",
+          "evidence": "SUPPORT_GUIDE.md ownership review covers15/15 fixed families at unchanged SDK04201edc7. Results/F02-guide-ownership-audit.json anchors source/evidence and clarifies stale mirror routing, replay-enabled container history, native/cross-platform signals, shared CPU and profile-label limits. Approved examples, compilation and full feature-doc audit remain after F01; no public promotion.",
+          "required": true
+        },
+        "S1": {
+          "scope": "Documentation for the actual shipped changes",
+          "status": "OPEN",
+          "dependencies": [
+            "S1:F07"
+          ],
+          "decisive_test": "Review changelog/support limitations and affected feature docs against exact source; preserve existing API and customer setup. Publish no unrelated experimental scene API.",
+          "environment": "Source and compiling examples for affected modules",
+          "evidence": "Reference evidence retained; this release candidate is not qualified.",
+          "required": true
+        },
+        "S2": {
+          "scope": "Documentation for the actual shipped changes",
+          "status": "OPEN",
+          "dependencies": [
+            "S2:F07"
+          ],
+          "decisive_test": "Review changelog/support limitations and affected feature docs against exact source; preserve existing API and customer setup. Publish no unrelated experimental scene API.",
+          "environment": "Source and compiling examples for affected modules",
+          "evidence": "Reference evidence retained; this release candidate is not qualified.",
+          "required": true
+        }
+      }
     },
     {
       "id": "F03",
@@ -721,7 +1838,49 @@
       "environment": "CI + supported SDK toolchains",
       "completion_mode": null,
       "status": "OPEN",
-      "evidence": "FINAL_COMPATIBILITY.md defines11 finite cells:11 full iOS schemes, external Swift/ObjC Release clients, complete platform packages, lint/API and feature-doc verification. Procedure prepared from current Makefile/source; final reviewed-candidate execution remains after F01."
+      "evidence": "FINAL_COMPATIBILITY.md defines11 finite cells:11 full iOS schemes, external Swift/ObjC Release clients, complete platform packages, lint/API and feature-doc verification. Procedure prepared from current Makefile/source; final reviewed-candidate execution remains after F01.",
+      "release_requirements": {
+        "S3": {
+          "scope": "Final compatibility build/test matrix",
+          "status": "OPEN",
+          "dependencies": [
+            "S3:F01",
+            "S3:D01",
+            "S3:D02",
+            "S3:D09",
+            "S3:D11",
+            "S3:D12"
+          ],
+          "decisive_test": "All affected modules, ObjC Release, SPM iOS/macOS/tvOS/watchOS/visionOS, lint and approved API baselines pass at frozen revision",
+          "environment": "CI + supported SDK toolchains",
+          "evidence": "FINAL_COMPATIBILITY.md defines11 finite cells:11 full iOS schemes, external Swift/ObjC Release clients, complete platform packages, lint/API and feature-doc verification. Procedure prepared from current Makefile/source; final reviewed-candidate execution remains after F01.",
+          "required": true
+        },
+        "S1": {
+          "scope": "Candidate-scoped final compatibility matrix",
+          "status": "OPEN",
+          "dependencies": [
+            "S1:F07",
+            "S1:C06"
+          ],
+          "decisive_test": "Freeze affected modules/platforms via F07; run relevant complete suites, deployment builds, existing Swift/Objective-C clients, lint and unchanged API/wire/privacy checks.",
+          "environment": "FINAL_COMPATIBILITY.md release applicability matrix",
+          "evidence": "Reference evidence retained; this release candidate is not qualified.",
+          "required": true
+        },
+        "S2": {
+          "scope": "Candidate-scoped final compatibility matrix",
+          "status": "OPEN",
+          "dependencies": [
+            "S2:F07",
+            "S2:C06"
+          ],
+          "decisive_test": "Freeze affected modules/platforms via F07; run relevant complete suites, deployment builds, existing Swift/Objective-C clients, lint and unchanged API/wire/privacy checks.",
+          "environment": "FINAL_COMPATIBILITY.md release applicability matrix",
+          "evidence": "Reference evidence retained; this release candidate is not qualified.",
+          "required": true
+        }
+      }
     },
     {
       "id": "F04",
@@ -749,7 +1908,35 @@
       "environment": "iPhone Duo iOS 27.1",
       "completion_mode": null,
       "status": "OPEN",
-      "evidence": "EXP-192 completes its bounded simulator assessment with measured display/lifecycle behavior and concrete pairing, disconnect and gesture limits. EXP-193 accepts both resize and pose with exact native/backend ownership and cleanup. Capability-specific simulator confidence does not replace physical F04."
+      "evidence": "EXP-192 completes its bounded simulator assessment with measured display/lifecycle behavior and concrete pairing, disconnect and gesture limits. EXP-193 accepts both resize and pose with exact native/backend ownership and cleanup. Capability-specific simulator confidence does not replace physical F04.",
+      "release_requirements": {
+        "S3": {
+          "scope": "iPhone Duo release acceptance",
+          "status": "OPEN",
+          "dependencies": [
+            "S3:H01",
+            "S3:H02",
+            "S3:H03",
+            "S3:H04",
+            "S3:H05",
+            "S3:H06",
+            "S3:H07",
+            "S3:H08",
+            "S3:H09",
+            "S3:H10",
+            "S3:H11",
+            "S3:H12",
+            "S3:H13",
+            "S3:H14",
+            "S3:H15",
+            "S3:H16"
+          ],
+          "decisive_test": "Run the finite accepted scenario matrix on iPhone Duo iOS 27.1; exact mapper/backend owners and no SDK crash",
+          "environment": "iPhone Duo iOS 27.1",
+          "evidence": "EXP-192 completes its bounded simulator assessment with measured display/lifecycle behavior and concrete pairing, disconnect and gesture limits. EXP-193 accepts both resize and pose with exact native/backend ownership and cleanup. Capability-specific simulator confidence does not replace physical F04.",
+          "required": true
+        }
+      }
     },
     {
       "id": "F05",
@@ -762,7 +1949,20 @@
       "environment": "Physical multi-window device",
       "completion_mode": null,
       "status": "CLOSED",
-      "evidence": "EXP-196 fresh physical iPad27.0 run passes native8/8, four actual Replay record-growth checkpoints, OS B disconnect and exact six-view backend inventory; zero Action/Resource/error/crash. All3 signed/installed Mach-O, exact source reuse and app/process cleanup verified. First simulator-timing rejection preserved; separate physical close-return oracle5e25b6af2. No simultaneous-visible or scene-correct Replay claim. Results/EXP-196-physical-ipad-suite.json owns evidence."
+      "evidence": "EXP-196 fresh physical iPad27.0 run passes native8/8, four actual Replay record-growth checkpoints, OS B disconnect and exact six-view backend inventory; zero Action/Resource/error/crash. All3 signed/installed Mach-O, exact source reuse and app/process cleanup verified. First simulator-timing rejection preserved; separate physical close-return oracle5e25b6af2. No simultaneous-visible or scene-correct Replay claim. Results/EXP-196-physical-ipad-suite.json owns evidence.",
+      "release_requirements": {
+        "S3": {
+          "scope": "Session Replay coexistence",
+          "status": "CLOSED",
+          "dependencies": [
+            "S3:A01"
+          ],
+          "decisive_test": "Enable Replay through two scenes, navigation and teardown without SDK-caused crash; no scene-correct replay claim",
+          "environment": "Physical multi-window device",
+          "evidence": "EXP-196 fresh physical iPad27.0 run passes native8/8, four actual Replay record-growth checkpoints, OS B disconnect and exact six-view backend inventory; zero Action/Resource/error/crash. All3 signed/installed Mach-O, exact source reuse and app/process cleanup verified. First simulator-timing rejection preserved; separate physical close-return oracle5e25b6af2. No simultaneous-visible or scene-correct Replay claim. Results/EXP-196-physical-ipad-suite.json owns evidence.",
+          "required": true
+        }
+      }
     },
     {
       "id": "D01",
@@ -773,7 +1973,18 @@
       "environment": "watchOS SDK build",
       "completion_mode": null,
       "status": "CLOSED",
-      "evidence": "EXP-162: failing full-target control, passing Debug/Release builds and source-manifest/module checks; Results/EXP-162-platform-compatibility.json. Signed e420528f7; 70 iOS Resource/action tests pass."
+      "evidence": "EXP-162: failing full-target control, passing Debug/Release builds and source-manifest/module checks; Results/EXP-162-platform-compatibility.json. Signed e420528f7; 70 iOS Resource/action tests pass.",
+      "release_requirements": {
+        "S3": {
+          "scope": "watchOS Resource compile compatibility",
+          "status": "CLOSED",
+          "dependencies": [],
+          "decisive_test": "Reproduce/triage the reported finding, then require: DatadogRUM watchOS build including absent UI handoff",
+          "environment": "watchOS SDK build",
+          "evidence": "EXP-162: failing full-target control, passing Debug/Release builds and source-manifest/module checks; Results/EXP-162-platform-compatibility.json. Signed e420528f7; 70 iOS Resource/action tests pass.",
+          "required": true
+        }
+      }
     },
     {
       "id": "D02",
@@ -784,7 +1995,18 @@
       "environment": "macOS SDK build",
       "completion_mode": null,
       "status": "CLOSED",
-      "evidence": "EXP-162: failing full-target control, passing Debug/Release builds and source-manifest/module checks; Results/EXP-162-platform-compatibility.json. Signed af8864528; 28 iOS WebView forwarding/ownership tests pass."
+      "evidence": "EXP-162: failing full-target control, passing Debug/Release builds and source-manifest/module checks; Results/EXP-162-platform-compatibility.json. Signed af8864528; 28 iOS WebView forwarding/ownership tests pass.",
+      "release_requirements": {
+        "S3": {
+          "scope": "macOS WebView compile compatibility",
+          "status": "CLOSED",
+          "dependencies": [],
+          "decisive_test": "Reproduce/triage the reported finding, then require: DatadogWebViewTracking macOS build with absent UIKit scene metadata",
+          "environment": "macOS SDK build",
+          "evidence": "EXP-162: failing full-target control, passing Debug/Release builds and source-manifest/module checks; Results/EXP-162-platform-compatibility.json. Signed af8864528; 28 iOS WebView forwarding/ownership tests pass.",
+          "required": true
+        }
+      }
     },
     {
       "id": "D03",
@@ -795,7 +2017,18 @@
       "environment": "iOS 27 simulator, mounted SwiftUI host and lifetime checks",
       "completion_mode": null,
       "status": "CLOSED",
-      "evidence": "EXP-168; signed 7b77f60eb. 303 affected tests and mounted 27/26.5 control/candidate acceptance, 37/37 each. Control retains 25 registrations/states; candidate has zero weak survivors and releases core/instrumentation/handler/arbiter with three original method implementations restored. Initial 26.5 fixture availability mistake retained as INCONCLUSIVE."
+      "evidence": "EXP-168; signed 7b77f60eb. 303 affected tests and mounted 27/26.5 control/candidate acceptance, 37/37 each. Control retains 25 registrations/states; candidate has zero weak survivors and releases core/instrumentation/handler/arbiter with three original method implementations restored. Initial 26.5 fixture availability mistake retained as INCONCLUSIVE.",
+      "release_requirements": {
+        "S3": {
+          "scope": "Keyed SwiftUI registration teardown",
+          "status": "CLOSED",
+          "dependencies": [],
+          "decisive_test": "Reproduce/triage the reported finding, then require: Mounted keyed destination removal plus SDK release: weak registration/instrumentation release and balanced unswizzling; repeat cycles",
+          "environment": "iOS 27 simulator, mounted SwiftUI host and lifetime checks",
+          "evidence": "EXP-168; signed 7b77f60eb. 303 affected tests and mounted 27/26.5 control/candidate acceptance, 37/37 each. Control retains 25 registrations/states; candidate has zero weak survivors and releases core/instrumentation/handler/arbiter with three original method implementations restored. Initial 26.5 fixture availability mistake retained as INCONCLUSIVE.",
+          "required": true
+        }
+      }
     },
     {
       "id": "D04",
@@ -806,7 +2039,18 @@
       "environment": "Internal, RUM, Logs, Trace and network focused tests",
       "completion_mode": null,
       "status": "CLOSED",
-      "evidence": "EXP-166; signed 5eb3c1aac. Three failing actual-dispatch controls, 282 affected tests plus strengthened session/clock checks, per-consumer and core/task/lifetime isolation; complete watchOS RUM/macOS Core Debug/Release builds."
+      "evidence": "EXP-166; signed 5eb3c1aac. Three failing actual-dispatch controls, 282 affected tests plus strengthened session/clock checks, per-consumer and core/task/lifetime isolation; complete watchOS RUM/macOS Core Debug/Release builds.",
+      "release_requirements": {
+        "S3": {
+          "scope": "Named-core handoff isolation",
+          "status": "CLOSED",
+          "dependencies": [],
+          "decisive_test": "Reproduce/triage the reported finding, then require: Different cores, same application/different sessions, no-RUM core, nested dispatch and inherited work after stop/reinitialize never consume foreign context",
+          "environment": "Internal, RUM, Logs, Trace and network focused tests",
+          "evidence": "EXP-166; signed 5eb3c1aac. Three failing actual-dispatch controls, 282 affected tests plus strengthened session/clock checks, per-consumer and core/task/lifetime isolation; complete watchOS RUM/macOS Core Debug/Release builds.",
+          "required": true
+        }
+      }
     },
     {
       "id": "D05",
@@ -817,7 +2061,18 @@
       "environment": "RUM application/session tests plus two-scene simulator",
       "completion_mode": null,
       "status": "CLOSED",
-      "evidence": "EXP-167; signed 0aaafa7bd. Six failing scope controls, 198 affected tests including 44 new matrix cases; two actual iPad simulator scenes, candidate 47/47 versus control 20/47. Exact old-owner resolution, fresh occurrences and peer action/Resource attribution; explicit/immediate/delayed and background/legacy controls. Initial native readiness-invalid attempt preserved."
+      "evidence": "EXP-167; signed 0aaafa7bd. Six failing scope controls, 198 affected tests including 44 new matrix cases; two actual iPad simulator scenes, candidate 47/47 versus control 20/47. Exact old-owner resolution, fresh occurrences and peer action/Resource attribution; explicit/immediate/delayed and background/legacy controls. Initial native readiness-invalid attempt preserved.",
+      "release_requirements": {
+        "S3": {
+          "scope": "Resolve ownership before explicit session restart",
+          "status": "CLOSED",
+          "dependencies": [],
+          "decisive_test": "Reproduce/triage the reported finding, then require: After stopSession with A/B and B representative, source-less start replaces B and preserves A; identity-stop A preserves B",
+          "environment": "RUM application/session tests plus two-scene simulator",
+          "evidence": "EXP-167; signed 0aaafa7bd. Six failing scope controls, 198 affected tests including 44 new matrix cases; two actual iPad simulator scenes, candidate 47/47 versus control 20/47. Exact old-owner resolution, fresh occurrences and peer action/Resource attribution; explicit/immediate/delayed and background/legacy controls. Initial native readiness-invalid attempt preserved.",
+          "required": true
+        }
+      }
     },
     {
       "id": "D06",
@@ -830,7 +2085,20 @@
       "environment": "RUM application/session tests plus two-scene simulator",
       "completion_mode": null,
       "status": "CLOSED",
-      "evidence": "EXP-167; signed 0aaafa7bd. Six failing scope controls, 198 affected tests including 44 new matrix cases; two actual iPad simulator scenes, candidate 47/47 versus control 20/47. Exact old-owner resolution, fresh occurrences and peer action/Resource attribution; explicit/immediate/delayed and background/legacy controls. Initial native readiness-invalid attempt preserved."
+      "evidence": "EXP-167; signed 0aaafa7bd. Six failing scope controls, 198 affected tests including 44 new matrix cases; two actual iPad simulator scenes, candidate 47/47 versus control 20/47. Exact old-owner resolution, fresh occurrences and peer action/Resource attribution; explicit/immediate/delayed and background/legacy controls. Initial native readiness-invalid attempt preserved.",
+      "release_requirements": {
+        "S3": {
+          "scope": "Preserve peers on lazy session expiration",
+          "status": "CLOSED",
+          "dependencies": [
+            "S3:D05"
+          ],
+          "decisive_test": "Reproduce/triage the reported finding, then require: Expiring lifecycle command followed by start/stop in A restores eligible B with fresh new-session ownership",
+          "environment": "RUM application/session tests plus two-scene simulator",
+          "evidence": "EXP-167; signed 0aaafa7bd. Six failing scope controls, 198 affected tests including 44 new matrix cases; two actual iPad simulator scenes, candidate 47/47 versus control 20/47. Exact old-owner resolution, fresh occurrences and peer action/Resource attribution; explicit/immediate/delayed and background/legacy controls. Initial native readiness-invalid attempt preserved.",
+          "required": true
+        }
+      }
     },
     {
       "id": "D07",
@@ -843,7 +2111,20 @@
       "environment": "iOS 27 simulator with real authority registry",
       "completion_mode": null,
       "status": "CLOSED",
-      "evidence": "EXP-169; local unsigned a9aaf25a7. Four failing real-registry controls, 119 affected tests and mounted explicit/capability hosts29/29 versus control19/29. Automatic owner remains eligible before input; first accepted destination owns immediate marker. Missing handler/attachment, cancellation, duplicate input and source pinning covered. D08/R05 remain separate."
+      "evidence": "EXP-169; local unsigned a9aaf25a7. Four failing real-registry controls, 119 affected tests and mounted explicit/capability hosts29/29 versus control19/29. Automatic owner remains eligible before input; first accepted destination owns immediate marker. Missing handler/attachment, cancellation, duplicate input and source pinning covered. D08/R05 remain separate.",
+      "release_requirements": {
+        "S3": {
+          "scope": "Pending semantic authority",
+          "status": "CLOSED",
+          "dependencies": [
+            "S3:D03"
+          ],
+          "decisive_test": "Reproduce/triage the reported finding, then require: Empty explicit/capability source and absent instrumentation do not suppress automatic tracking; first accepted snapshot acquires local authority",
+          "environment": "iOS 27 simulator with real authority registry",
+          "evidence": "EXP-169; local unsigned a9aaf25a7. Four failing real-registry controls, 119 affected tests and mounted explicit/capability hosts29/29 versus control19/29. Automatic owner remains eligible before input; first accepted destination owns immediate marker. Missing handler/attachment, cancellation, duplicate input and source pinning covered. D08/R05 remain separate.",
+          "required": true
+        }
+      }
     },
     {
       "id": "D08",
@@ -857,7 +2138,21 @@
       "environment": "Deterministic iOS 27 regression; genuine lifecycle remains H09",
       "completion_mode": null,
       "status": "CLOSED",
-      "evidence": "EXP-170, signed SDK66d1ccb02; three failing controls, seven focused and314 affected tests. Mounted explicit/capability hosts51/51 versus39/51; stale trait and rejected reader cannot consume generation; fresh Resource/Log owners, peer continuity, delayed remount. Deterministic simulator ordering only; H09 remains physical."
+      "evidence": "EXP-170, signed SDK66d1ccb02; three failing controls, seven focused and314 affected tests. Mounted explicit/capability hosts51/51 versus39/51; stale trait and rejected reader cannot consume generation; fresh Resource/Log owners, peer continuity, delayed remount. Deterministic simulator ordering only; H09 remains physical.",
+      "release_requirements": {
+        "S3": {
+          "scope": "Reconnect generation acceptance",
+          "status": "CLOSED",
+          "dependencies": [
+            "S3:D03",
+            "S3:D07"
+          ],
+          "decisive_test": "Reproduce/triage the reported finding, then require: Stale trait between disconnect and real connection/reader mount cannot consume generation; exactly one fresh occurrence and correct immediate telemetry",
+          "environment": "Deterministic iOS 27 regression; genuine lifecycle remains H09",
+          "evidence": "EXP-170, signed SDK66d1ccb02; three failing controls, seven focused and314 affected tests. Mounted explicit/capability hosts51/51 versus39/51; stale trait and rejected reader cannot consume generation; fresh Resource/Log owners, peer continuity, delayed remount. Deterministic simulator ordering only; H09 remains physical.",
+          "required": true
+        }
+      }
     },
     {
       "id": "D09",
@@ -868,7 +2163,18 @@
       "environment": "iOS simulator focused test plus Main Thread Checker",
       "completion_mode": null,
       "status": "CLOSED",
-      "evidence": "EXP-164, local a9abc092b: two getter-spy controls fail, 31 monitor/convenience tests pass; actual mounted scene passes 19/19 with Main Thread Checker loaded, zero background reads/diagnostics versus control 5 reads/4 diagnostics. Results/EXP-164-controller-threads.json."
+      "evidence": "EXP-164, local a9abc092b: two getter-spy controls fail, 31 monitor/convenience tests pass; actual mounted scene passes 19/19 with Main Thread Checker loaded, zero background reads/diagnostics versus control 5 reads/4 diagnostics. Results/EXP-164-controller-threads.json.",
+      "release_requirements": {
+        "S3": {
+          "scope": "Controller API caller-thread compatibility",
+          "status": "CLOSED",
+          "dependencies": [],
+          "decisive_test": "Reproduce/triage the reported finding, then require: Background start/stop getter spy records no UIKit hierarchy access; main-thread target resolves correctly without sync-to-main deadlock",
+          "environment": "iOS simulator focused test plus Main Thread Checker",
+          "evidence": "EXP-164, local a9abc092b: two getter-spy controls fail, 31 monitor/convenience tests pass; actual mounted scene passes 19/19 with Main Thread Checker loaded, zero background reads/diagnostics versus control 5 reads/4 diagnostics. Results/EXP-164-controller-threads.json.",
+          "required": true
+        }
+      }
     },
     {
       "id": "D10",
@@ -879,7 +2185,18 @@
       "environment": "Mounted iOS 27 SwiftUI adapter tests",
       "completion_mode": null,
       "status": "CLOSED",
-      "evidence": "EXP-173; signed SDK7619eb8a2 after7f13b2203. Six failing controls plus native content-rematerialization regression;337 affected tests, strict lint, mounted77/77 versus55/77. Accepted Binding/transaction and exact Resource/Log ownership at rejecting setter, return and native dismissal. Results/EXP-173-presentation-acceptance.json."
+      "evidence": "EXP-173; signed SDK7619eb8a2 after7f13b2203. Six failing controls plus native content-rematerialization regression;337 affected tests, strict lint, mounted77/77 versus55/77. Accepted Binding/transaction and exact Resource/Log ownership at rejecting setter, return and native dismissal. Results/EXP-173-presentation-acceptance.json.",
+      "release_requirements": {
+        "S3": {
+          "scope": "Accepted presentation state",
+          "status": "CLOSED",
+          "dependencies": [],
+          "decisive_test": "Reproduce/triage the reported finding, then require: Rejected/canonicalized Binding writes, transaction forwarding, immediate setter work and dismissal callbacks follow accepted occurrence",
+          "environment": "Mounted iOS 27 SwiftUI adapter tests",
+          "evidence": "EXP-173; signed SDK7619eb8a2 after7f13b2203. Six failing controls plus native content-rematerialization regression;337 affected tests, strict lint, mounted77/77 versus55/77. Accepted Binding/transaction and exact Resource/Log ownership at rejecting setter, return and native dismissal. Results/EXP-173-presentation-acceptance.json.",
+          "required": true
+        }
+      }
     },
     {
       "id": "D11",
@@ -890,7 +2207,18 @@
       "environment": "Single-scene simulator WebView with Replay correlation enabled",
       "completion_mode": null,
       "status": "CLOSED",
-      "evidence": "EXP-165; signed 9a1ee83a5. Legacy failure reproduced; 71 RUM plus 31 WebView tests, strict lint and mounted Replay/bridge 19/19 pass (control 18/19). Four collector controls pass. Results/EXP-165-webview-correlation.json; T10 two-container/backend scope remains open."
+      "evidence": "EXP-165; signed 9a1ee83a5. Legacy failure reproduced; 71 RUM plus 31 WebView tests, strict lint and mounted Replay/bridge 19/19 pass (control 18/19). Four collector controls pass. Results/EXP-165-webview-correlation.json; T10 two-container/backend scope remains open.",
+      "release_requirements": {
+        "S3": {
+          "scope": "Legacy native/WebView correlation",
+          "status": "CLOSED",
+          "dependencies": [],
+          "decisive_test": "Reproduce/triage the reported finding, then require: Legacy string-key view plus mounted WKWebView retains unambiguous container.view.id; peer scene never used as fallback",
+          "environment": "Single-scene simulator WebView with Replay correlation enabled",
+          "evidence": "EXP-165; signed 9a1ee83a5. Legacy failure reproduced; 71 RUM plus 31 WebView tests, strict lint and mounted Replay/bridge 19/19 pass (control 18/19). Four collector controls pass. Results/EXP-165-webview-correlation.json; T10 two-container/backend scope remains open.",
+          "required": true
+        }
+      }
     },
     {
       "id": "D12",
@@ -901,11 +2229,22 @@
       "environment": "RUM scope regression with controlled clock",
       "completion_mode": null,
       "status": "CLOSED",
-      "evidence": "EXP-163, signed 084dff4c1: three recipient metadata regressions fail before repair; 212 session/view/action/monitor tests pass after repair, including both peer controls. Results/EXP-163-action-stop-attributes.json."
+      "evidence": "EXP-163, signed 084dff4c1: three recipient metadata regressions fail before repair; 212 session/view/action/monitor tests pass after repair, including both peer controls. Results/EXP-163-action-stop-attributes.json.",
+      "release_requirements": {
+        "S3": {
+          "scope": "Expired action stop attributes",
+          "status": "CLOSED",
+          "dependencies": [],
+          "decisive_test": "Reproduce/triage the reported finding, then require: Single-scene continuous action stopped after timeout retains original stop attributes; peer timeout still cannot inherit foreign attributes",
+          "environment": "RUM scope regression with controlled clock",
+          "evidence": "EXP-163, signed 084dff4c1: three recipient metadata regressions fail before repair; 212 session/view/action/monitor tests pass after repair, including both peer controls. Results/EXP-163-action-stop-attributes.json.",
+          "required": true
+        }
+      }
     },
     {
       "id": "F06",
-      "deliverable": "Release freeze",
+      "deliverable": "Release-specific freezes (S1/S2/S3)",
       "owner": "RUM maintainers",
       "dependencies": [
         "C01",
@@ -982,7 +2321,519 @@
       "environment": "Review + CI",
       "completion_mode": null,
       "status": "OPEN",
-      "evidence": ""
+      "evidence": "",
+      "release_requirements": {
+        "S3": {
+          "scope": "Full multi-scene candidate freeze after all original required gates",
+          "status": "OPEN",
+          "dependencies": [
+            "S3:C01",
+            "S3:C02",
+            "S3:C03",
+            "S3:C04",
+            "S3:C05",
+            "S3:C06",
+            "S3:P01",
+            "S3:P02",
+            "S3:P03",
+            "S3:P04",
+            "S3:R01",
+            "S3:R02",
+            "S3:R03",
+            "S3:R04",
+            "S3:R05",
+            "S3:R06",
+            "S3:A01",
+            "S3:T01",
+            "S3:T02",
+            "S3:T03",
+            "S3:T04",
+            "S3:T05",
+            "S3:T06",
+            "S3:T07",
+            "S3:T08",
+            "S3:T09",
+            "S3:T10",
+            "S3:T11",
+            "S3:T12",
+            "S3:T13",
+            "S3:T14",
+            "S3:T15",
+            "S3:H01",
+            "S3:H02",
+            "S3:H03",
+            "S3:H04",
+            "S3:H05",
+            "S3:H06",
+            "S3:H07",
+            "S3:H08",
+            "S3:H09",
+            "S3:H10",
+            "S3:H11",
+            "S3:H12",
+            "S3:H13",
+            "S3:H14",
+            "S3:H15",
+            "S3:H16",
+            "S3:F01",
+            "S3:F02",
+            "S3:F03",
+            "S3:F04",
+            "S3:F05",
+            "S3:D01",
+            "S3:D02",
+            "S3:D03",
+            "S3:D04",
+            "S3:D05",
+            "S3:D06",
+            "S3:D07",
+            "S3:D08",
+            "S3:D09",
+            "S3:D10",
+            "S3:D11",
+            "S3:D12",
+            "S3:C07",
+            "S3:C08",
+            "S3:C09",
+            "S3:C10",
+            "S3:A02"
+          ],
+          "decisive_test": "Every required gate closed on reviewed source; performance thresholds hold; no unresolved correctness/release-review finding",
+          "environment": "Review + CI",
+          "evidence": "Pending; unchanged reference obligation.",
+          "required": true
+        },
+        "S1": {
+          "scope": "First independent extraction candidate freeze; repeat per later eligible fix",
+          "status": "OPEN",
+          "dependencies": [
+            "S1:C01",
+            "S1:C02",
+            "S1:C03",
+            "S1:C04",
+            "S1:C05",
+            "S1:C06",
+            "S1:P01",
+            "S1:P02",
+            "S1:P03",
+            "S1:P04",
+            "S1:A01",
+            "S1:F02",
+            "S1:F03",
+            "S1:F07",
+            "S1:E01",
+            "S1:T03",
+            "S1:T08"
+          ],
+          "decisive_test": "Require applicable release checks, attributable review, exact source/artifact inventory, existing performance/privacy/crash/API thresholds, signed outgoing history before any separately authorized push. Other releases are not prerequisites.",
+          "environment": "Exact candidate; one host; no concurrent measurement contamination",
+          "evidence": "Reference evidence retained; this release candidate is not qualified.",
+          "required": true
+        },
+        "S2": {
+          "scope": "Independent S2 candidate freeze",
+          "status": "OPEN",
+          "dependencies": [
+            "S2:C01",
+            "S2:C02",
+            "S2:C03",
+            "S2:C04",
+            "S2:C05",
+            "S2:C06",
+            "S2:P01",
+            "S2:P02",
+            "S2:P03",
+            "S2:P04",
+            "S2:A01",
+            "S2:F02",
+            "S2:F03",
+            "S2:F07",
+            "S2:C07",
+            "S2:C08",
+            "S2:C09",
+            "S2:C10",
+            "S2:H11",
+            "S2:H12",
+            "S2:H13",
+            "S2:H14",
+            "S2:H16",
+            "S2:T03",
+            "S2:T08",
+            "S2:T10",
+            "S2:F08",
+            "S2:A02"
+          ],
+          "decisive_test": "Require applicable release checks, attributable review, exact source/artifact inventory, existing performance/privacy/crash/API thresholds, signed outgoing history before any separately authorized push. Other releases are not prerequisites.",
+          "environment": "Exact candidate; one host; no concurrent measurement contamination",
+          "evidence": "Reference evidence retained; this release candidate is not qualified.",
+          "required": true
+        }
+      }
+    },
+    {
+      "id": "E01",
+      "deliverable": "URLSession exactly-once interception",
+      "owner": "SDK implementer + independent reviewer",
+      "dependencies": [],
+      "decisive_test": "Source-less repeated/suspend/resume handler mutation regression fails current develop and passes a synchronized narrow task-claim/lifecycle fix; automatic and registered delegates remain compatible.",
+      "environment": "Isolated clean checkout of then-current develop; affected unit and native fixtures",
+      "completion_mode": null,
+      "status": "OPEN",
+      "evidence": "",
+      "release_requirements": {
+        "S1": {
+          "scope": "URLSession exactly-once interception",
+          "status": "OPEN",
+          "dependencies": [
+            "S1:F07"
+          ],
+          "decisive_test": "Source-less repeated/suspend/resume handler mutation regression fails current develop and passes a synchronized narrow task-claim/lifecycle fix; automatic and registered delegates remain compatible.",
+          "environment": "Isolated clean checkout of then-current develop; affected unit and native fixtures",
+          "evidence": "Candidate only; mixed experimental commits and scene-targeted tests are not customer-defect proof.",
+          "required": true
+        }
+      }
+    },
+    {
+      "id": "E02",
+      "deliverable": "Repeated view occurrence isolation",
+      "owner": "SDK implementer + independent reviewer",
+      "dependencies": [],
+      "decisive_test": "Retained H1 cannot absorb H2 start/stop attributes; old Resource remains H1, new action H2; restoration leaves one active occurrence. Must first fail current develop.",
+      "environment": "Isolated clean checkout of then-current develop; affected unit and native fixtures",
+      "completion_mode": null,
+      "status": "OPEN",
+      "evidence": "",
+      "release_requirements": {
+        "S1": {
+          "scope": "Repeated view occurrence isolation",
+          "status": "CONDITIONAL",
+          "dependencies": [
+            "S1:F07"
+          ],
+          "decisive_test": "Retained H1 cannot absorb H2 start/stop attributes; old Resource remains H1, new action H2; restoration leaves one active occurrence. Must first fail current develop.",
+          "environment": "Isolated clean checkout of then-current develop; affected unit and native fixtures",
+          "evidence": "Candidate only; mixed experimental commits and scene-targeted tests are not customer-defect proof.",
+          "required": false
+        }
+      }
+    },
+    {
+      "id": "E03",
+      "deliverable": "Resource completion ownership extraction",
+      "owner": "SDK implementer + independent reviewer",
+      "dependencies": [],
+      "decisive_test": "Source-less late success/error/metrics belong only to resourceKey owner after sequential navigation/session change; new view action/error_tap counts remain unchanged. Must first fail current develop.",
+      "environment": "Isolated clean checkout of then-current develop; affected unit and native fixtures",
+      "completion_mode": null,
+      "status": "OPEN",
+      "evidence": "",
+      "release_requirements": {
+        "S1": {
+          "scope": "Resource completion ownership extraction",
+          "status": "CONDITIONAL",
+          "dependencies": [
+            "S1:F07"
+          ],
+          "decisive_test": "Source-less late success/error/metrics belong only to resourceKey owner after sequential navigation/session change; new view action/error_tap counts remain unchanged. Must first fail current develop.",
+          "environment": "Isolated clean checkout of then-current develop; affected unit and native fixtures",
+          "evidence": "Candidate only; mixed experimental commits and scene-targeted tests are not customer-defect proof.",
+          "required": false
+        }
+      }
+    },
+    {
+      "id": "E04",
+      "deliverable": "Active-view cache lifetime extraction",
+      "owner": "SDK implementer + independent reviewer",
+      "dependencies": [],
+      "decisive_test": "Delayed WebView event from long-lived A after navigation to B preserves A container for inactive retention window; capacity/newest-first and release stay bounded. Must first fail current develop.",
+      "environment": "Isolated clean checkout of then-current develop; affected unit and native fixtures",
+      "completion_mode": null,
+      "status": "OPEN",
+      "evidence": "",
+      "release_requirements": {
+        "S1": {
+          "scope": "Active-view cache lifetime extraction",
+          "status": "CONDITIONAL",
+          "dependencies": [
+            "S1:F07"
+          ],
+          "decisive_test": "Delayed WebView event from long-lived A after navigation to B preserves A container for inactive retention window; capacity/newest-first and release stay bounded. Must first fail current develop.",
+          "environment": "Isolated clean checkout of then-current develop; affected unit and native fixtures",
+          "evidence": "Candidate only; mixed experimental commits and scene-targeted tests are not customer-defect proof.",
+          "required": false
+        }
+      }
+    },
+    {
+      "id": "E05",
+      "deliverable": "Conditional request-time Trace correlation",
+      "owner": "SDK implementer + independent reviewer",
+      "dependencies": [],
+      "decisive_test": "Prove a current-develop source-less defect, then bounded existing NetworkContext.rumContext/fixed write context correction; nil start never adopts later view and sampling/headers/user/account behavior stays unchanged.",
+      "environment": "Isolated clean checkout of then-current develop; affected unit and native fixtures",
+      "completion_mode": null,
+      "status": "OPEN",
+      "evidence": "",
+      "release_requirements": {
+        "S1": {
+          "scope": "Conditional request-time Trace correlation",
+          "status": "CONDITIONAL",
+          "dependencies": [
+            "S1:F07"
+          ],
+          "decisive_test": "Prove a current-develop source-less defect, then bounded existing NetworkContext.rumContext/fixed write context correction; nil start never adopts later view and sampling/headers/user/account behavior stays unchanged.",
+          "environment": "Isolated clean checkout of then-current develop; affected unit and native fixtures",
+          "evidence": "Candidate only; mixed experimental commits and scene-targeted tests are not customer-defect proof.",
+          "required": false
+        }
+      }
+    },
+    {
+      "id": "F07",
+      "deliverable": "Shipped-source dependency and exclusion audit",
+      "owner": "SDK implementer + independent reviewer",
+      "dependencies": [],
+      "decisive_test": "Inventory exact production diff, imports/callers/API/wire and transitive dependencies. Prove deferred scene routing/lifecycle/authority is absent, not merely hidden by API/manifest flags.",
+      "environment": "Fresh develop baseline and isolated source candidate",
+      "completion_mode": null,
+      "status": "OPEN",
+      "evidence": "",
+      "release_requirements": {
+        "S1": {
+          "scope": "Shipped-source dependency and exclusion audit",
+          "status": "OPEN",
+          "dependencies": [],
+          "decisive_test": "Inventory exact production diff, imports/callers/API/wire and transitive dependencies. Prove deferred scene routing/lifecycle/authority is absent, not merely hidden by API/manifest flags. Preserve upstream changes absent from the experimental branch.",
+          "environment": "Fresh develop baseline and isolated source candidate",
+          "evidence": "Reference evidence retained; this release candidate is not qualified.",
+          "required": true
+        },
+        "S2": {
+          "scope": "Shipped-source dependency and exclusion audit",
+          "status": "OPEN",
+          "dependencies": [],
+          "decisive_test": "Inventory exact production diff, imports/callers/API/wire and transitive dependencies. Prove deferred scene routing/lifecycle/authority is absent, not merely hidden by API/manifest flags. Preserve upstream changes absent from the experimental branch.",
+          "environment": "Fresh develop baseline and isolated source candidate",
+          "evidence": "Reference evidence retained; this release candidate is not qualified.",
+          "required": true
+        }
+      }
+    },
+    {
+      "id": "F08",
+      "deliverable": "Datadog app candidate evaluation",
+      "owner": "SDK implementer + app owner",
+      "dependencies": [],
+      "decisive_test": "Freeze app and SDK source/build identity; compare ordinary journeys and exact telemetry expectations, long sessions, resources and WebView correlation. Include internal TestFlight evaluation after separate distribution authorization.",
+      "environment": "Existing single-scene Datadog app; RUM application4f33b0ca-bd9a-4206-bb4d-0047c4f88895; simulator/physical host",
+      "completion_mode": null,
+      "status": "OPEN",
+      "evidence": "",
+      "release_requirements": {
+        "S1": {
+          "scope": "Existing single-scene Datadog app evaluation",
+          "status": "OPEN",
+          "dependencies": [
+            "S1:A01",
+            "S1:F07"
+          ],
+          "decisive_test": "Freeze app and SDK source/build identity; compare ordinary journeys and exact telemetry expectations, long sessions, resources and WebView correlation. Include internal TestFlight evaluation after separate distribution authorization.",
+          "environment": "Existing single-scene Datadog app; RUM application4f33b0ca-bd9a-4206-bb4d-0047c4f88895; simulator/physical host",
+          "evidence": "App source audit complete at6e33f1c18. User authorizes controlled normal-mode app sessions in the probes RUM application with a distinct service. Candidate/baseline configuration, builds and exact backend comparison remain; no live-customer baseline claimed. Original app organization lookup failure is preserved but no longer blocks controlled runs.",
+          "required": false
+        },
+        "S2": {
+          "scope": "Existing single-scene Datadog app evaluation",
+          "status": "OPEN",
+          "dependencies": [
+            "S2:A01",
+            "S2:F07"
+          ],
+          "decisive_test": "Freeze app and SDK source/build identity; compare ordinary journeys and exact telemetry expectations, long sessions, resources and WebView correlation. Include internal TestFlight evaluation after separate distribution authorization.",
+          "environment": "Existing single-scene Datadog app; RUM application4f33b0ca-bd9a-4206-bb4d-0047c4f88895; simulator/physical host",
+          "evidence": "App source audit complete at6e33f1c18. User authorizes controlled normal-mode app sessions in the probes RUM application with a distinct service. Candidate/baseline configuration, builds and exact backend comparison remain; no live-customer baseline claimed. Original app organization lookup failure is preserved but no longer blocks controlled runs.",
+          "required": true
+        },
+        "S3": {
+          "scope": "Bounded app multi-window readiness audit",
+          "status": "OPEN",
+          "dependencies": [],
+          "decisive_test": "Audit process-global bootstrap/appearance state versus WindowDependencies/session lifetime. Separate optional two-window test branch; full application conversion is not an SDK prerequisite.",
+          "environment": "Datadog app source audit; isolated test branch only if needed",
+          "evidence": "Reference evidence retained; this release candidate is not qualified.",
+          "required": false
+        }
+      }
+    },
+    {
+      "id": "A02",
+      "deliverable": "One prepared human acceptance session",
+      "owner": "Harness implementer + user device operator",
+      "dependencies": [],
+      "decisive_test": "Freeze ordered scenarios, automated reset/capture/assertions and source/input/topology proof before requesting one session. Preserve failed automation; no weaker oracle.",
+      "environment": "Single host; Duo simulator27.1 and connected eligible iPhone/iPad",
+      "completion_mode": null,
+      "status": "OPEN",
+      "evidence": "",
+      "release_requirements": {
+        "S2": {
+          "scope": "Prepared blocked-input and app-journey session",
+          "status": "OPEN",
+          "dependencies": [
+            "S2:A01",
+            "S2:F07"
+          ],
+          "decisive_test": "Freeze ordered scenarios, automated reset/capture/assertions and source/input/topology proof before requesting one session. Preserve failed automation; no weaker oracle. Include eight unresolved old-build Duo cells and changed ordinary gestures/dismissal/resize/hosting; candidate app journeys and adversarial active-work folds. Freeze finite inventory before execution.",
+          "environment": "Single host; Duo simulator27.1 and connected eligible iPhone/iPad",
+          "evidence": "Reference evidence retained; this release candidate is not qualified.",
+          "required": true
+        },
+        "S3": {
+          "scope": "Prepared residual multi-scene human session",
+          "status": "OPEN",
+          "dependencies": [
+            "S3:A01"
+          ],
+          "decisive_test": "Freeze ordered scenarios, automated reset/capture/assertions and source/input/topology proof before requesting one session. Preserve failed automation; no weaker oracle. Only remaining scene combinations; hardware Duo session follows availability.",
+          "environment": "Single host; Duo simulator27.1 and connected eligible iPhone/iPad",
+          "evidence": "Reference evidence retained; this release candidate is not qualified.",
+          "required": true
+        }
+      }
+    },
+    {
+      "id": "F09",
+      "deliverable": "Later targeted physical-Duo confirmation",
+      "owner": "SDK implementer + device operator",
+      "dependencies": [],
+      "decisive_test": "Repeat stage2 affected ordinary app navigation/actions/fold-active-work journeys on actual Duo; record simulator/device differences and regressions explicitly.",
+      "environment": "Physical Duo after release; currently unavailable",
+      "completion_mode": null,
+      "status": "OPEN",
+      "evidence": "",
+      "release_requirements": {
+        "S2": {
+          "scope": "Post-availability physical-Duo confirmation",
+          "status": "ENVIRONMENT BLOCKED",
+          "dependencies": [
+            "S2:F06"
+          ],
+          "decisive_test": "Repeat stage2 affected ordinary app navigation/actions/fold-active-work journeys on actual Duo; record simulator/device differences and regressions explicitly.",
+          "environment": "Physical Duo after release; currently unavailable",
+          "evidence": "Physical hardware expected only after release, more than four weeks away. No physical-Duo validation claimed.",
+          "required": false
+        }
+      }
     }
-  ]
+  ],
+  "reference_branch": "valpertui/multiple-windows-scenes",
+  "reference_checkpoint": "929817243",
+  "reference_status_meaning": "Base gate status/evidence describes the preserved experimental reference. Release requirements below separately decide the shipped candidate; deferred work is never a pass.",
+  "releases": [
+    {
+      "id": "S1",
+      "name": "Independent reliability fixes",
+      "deadline": null,
+      "shipping_rule": "Release each eligible narrow fix independently on then-current develop after its applicable candidate checks and S1:F06. Other general improvements do not block it. First selected candidate E01; E02-E05 remain separate qualification work.",
+      "selected_candidate": "E01"
+    },
+    {
+      "id": "S2",
+      "name": "Single-scene iPhone Duo readiness",
+      "deadline": "2026-10-16",
+      "shipping_rule": "No worse RUM after SDK27 rebuild without major application changes. Use a clean develop-based artifact plus only required S1/compatibility slices, qualified Duo simulator and relevant physical evidence. S2:F06 excludes unrelated scene APIs and full physical-Duo acceptance.",
+      "hardware_uncertainty": "No physical Duo validated. Targeted F09 follows when hardware is available; it is not pre-release readiness proof."
+    },
+    {
+      "id": "S3",
+      "name": "Full multi-scene support",
+      "deadline": null,
+      "shipping_rule": "Complete exact scene APIs, full ownership/lifecycle/client/docs matrix, physical Duo F04 and S3:F06 after hardware release. Preserve all prior evidence boundaries."
+    }
+  ],
+  "strategy_decision": {
+    "date": "2026-09-19",
+    "source": "User-approved strategy relayed from side conversation 01a0bb32-951a-70e2-a917-e060bf15f26c at safe EXP-196 H01 checkpoint.",
+    "original_gate_ids": [
+      "C01",
+      "C02",
+      "C03",
+      "C04",
+      "C05",
+      "C06",
+      "C07",
+      "C08",
+      "C09",
+      "C10",
+      "P01",
+      "P02",
+      "P03",
+      "P04",
+      "R01",
+      "R02",
+      "R03",
+      "R04",
+      "R05",
+      "R06",
+      "A01",
+      "T01",
+      "T02",
+      "T03",
+      "T04",
+      "T05",
+      "T06",
+      "T07",
+      "T08",
+      "T09",
+      "T10",
+      "T11",
+      "T12",
+      "T13",
+      "T14",
+      "T15",
+      "H01",
+      "H02",
+      "H03",
+      "H04",
+      "H05",
+      "H06",
+      "H07",
+      "H08",
+      "H09",
+      "H10",
+      "H11",
+      "H12",
+      "H13",
+      "H14",
+      "H15",
+      "H16",
+      "F01",
+      "F02",
+      "F03",
+      "F04",
+      "F05",
+      "D01",
+      "D02",
+      "D03",
+      "D04",
+      "D05",
+      "D06",
+      "D07",
+      "D08",
+      "D09",
+      "D10",
+      "D11",
+      "D12",
+      "F06"
+    ],
+    "original_gate_count": 70,
+    "new_gate_rationale": "E01-E05 make extraction qualification finite; F07 proves source-level release exclusion, F08 owns real-app evaluation, A02 owns one prepared human session, F09 owns later targeted hardware confirmation. No old obligation is deleted.",
+    "runtime_exception": "iOS17.5(21F79) is now installed/available with a booted iPad simulator. Execute actual candidate tests and deployment15 checks before C06 closure. User-approved S1/S2 fallback exception remains conditional on a new genuine runtime failure; not applied.",
+    "api_approval": "Assuming API acceptance for assessment was not an attributable F01 decision. F01 promotion remains pending for S3; unrelated APIs do not block S1/S2.",
+    "execution": "One build/device controller per host; no performance measurements alongside builds/tests/profiling. Astra Max for consequential correctness decisions; Terra for bounded implementation and Luna for established execution/artifact summaries. Isolate edits.",
+    "gap_discovery": "One timeboxed falsifiable investigation per admitted customer-visible invariant, tied to an existing release requirement. Freeze hypothesis, discriminating oracle, timebox and stop rule; return reproducer, evidence or specific unresolved hypothesis. No indefinite scope growth.",
+    "datadog_app_access": "2026-09-19 user authorizes probe RUM application plus distinct service for controlled app runs; no live customer baseline. Original app organization access remains separate and is not needed for this lane."
+  }
 }

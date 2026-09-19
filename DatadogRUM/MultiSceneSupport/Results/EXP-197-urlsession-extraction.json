@@ -1,0 +1,48 @@
+{
+  "schema_version": 1,
+  "experiment": "EXP-197",
+  "status": "DEFINED; NOT EXECUTED",
+  "defined_at": "2026-09-19T20:54:08Z",
+  "gates": [
+    "S1:E01",
+    "S1:F07",
+    "S1:C06"
+  ],
+  "hypothesis": "Current develop mutates URLSession requests repeatedly when resume is intercepted more than once, although asynchronous lifecycle starts are deduplicated. A task-identity claim before handler mutation can make interception exactly once without new scene dependencies.",
+  "baseline": {
+    "revision": "62f64d7b655bdc83f3036c4ad81090a270f6202b",
+    "remote_verification": "Authenticated GitHub ref lookup; SSH fetch agent failed; recheck before worktree creation"
+  },
+  "production_boundary": [
+    "DatadogInternal/Sources/NetworkInstrumentation/NetworkInstrumentationFeature.swift"
+  ],
+  "test_boundary": [
+    "DatadogInternal/Tests/NetworkInstrumentation/NetworkInstrumentationFeatureTests.swift"
+  ],
+  "excluded": [
+    "UI-event/scene handoff",
+    "third-party capture changes",
+    "public APIs",
+    "wire/header policy changes",
+    "unrelated weak-self changes",
+    "whole-file or mixed-commit cherry-picking"
+  ],
+  "decisive_tests": [
+    "One mutating request-handler call and one lifecycle start for repeated first-party task resume; baseline must fail mutation count",
+    "Suspend/resume preserves prepared request and one start",
+    "Registered delegate and dual instrumentation preserve one start/completion",
+    "Concurrent first entry is exactly once",
+    "Completion removes per-task state without leaks; post-completion resume must not reinstrument a completed task",
+    "Header/sampling and third-party behavior match baseline"
+  ],
+  "environment": "Isolated clean current-develop worktree; Xcode27.1; newly available iPad iOS17.5; one build/device controller",
+  "admission_rule": "Only a demonstrated baseline customer defect permits E01 implementation. Green focused controls plus scoped module/client/platform/performance checks are required for release; no gate closes from availability or source prediction.",
+  "timebox": "Two hours for the first baseline reproducer and narrow repair qualification; stop equivalent infrastructure retries after two unchanged failures and continue independent documented work.",
+  "stop_rules": [
+    "No baseline failure: record not eligible and choose the next fixed candidate without transplanting branch-specific behavior",
+    "Failed environment is not a correctness verdict; retain build/test diagnostics and exact IDs",
+    "New related correctness regression must be bounded and linked to E01; unrelated work remains separate"
+  ],
+  "attempts": [],
+  "result": null
+}

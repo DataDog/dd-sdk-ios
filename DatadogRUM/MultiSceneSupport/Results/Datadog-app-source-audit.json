@@ -1,0 +1,69 @@
+{
+  "schema_version": 1,
+  "status": "SOURCE AUDIT COMPLETE; CONTROLLED-RUN CONFIGURATION AUTHORIZED",
+  "date": "2026-09-19",
+  "repository": "/Users/valentin.pertuisot/work/datadog-ios",
+  "branch": "develop",
+  "revision": "6e33f1c18a52d04b0793e6954f456bdbc1affe2f",
+  "working_tree": "clean at audit",
+  "sdk_revision": "d962a4a524a168fd1d04100df53adcbcf91ab91c",
+  "sdk_branch": "dogfooding",
+  "application_id": "4f33b0ca-bd9a-4206-bb4d-0047c4f88895",
+  "findings": [
+    {
+      "claim": "Custom allowlisted UIKit view predicate and default UIKit actions",
+      "sources": [
+        "Targets/Platform/DatadogObservability/ObservabilitySystem.swift:133",
+        "Targets/Platform/DatadogObservability/ObservabilitySystem.swift:139",
+        "Targets/Platform/DatadogObservability/UserMonitorLive.swift:159"
+      ]
+    },
+    {
+      "claim": "Manual SwiftUI tracking via trackView; 101 production call sites; not generic automatic SwiftUI proof",
+      "sources": [
+        "Targets/Platform/UserMonitoring/UserMonitor.swift:238",
+        "Targets/Platform/DatadogObservability/UserMonitorLive.swift:75"
+      ]
+    },
+    {
+      "claim": "Single-scene application manifest",
+      "sources": [
+        "Tuist/ProjectDescriptionHelpers/Targets/DatadogApp.swift:73"
+      ]
+    },
+    {
+      "claim": "Native WebView instrumentation at dashboard/BitsCode/notebook boundaries; generic settings browser alone does not prove correlation",
+      "sources": [
+        "Targets/DatadogApp/UI/App/Root/Signed In Root/Datadog Products/Dashboards/Details/DashboardDetailViewController.swift:90"
+      ]
+    },
+    {
+      "claim": "XCTest isTesting guard skips observability bootstrap; removing no-tracking-mode argument alone is insufficient",
+      "sources": [
+        "Targets/DatadogApp/AppDelegate.swift:118",
+        "Targets/DatadogApp/SceneDelegate.swift:24",
+        "Targets/DatadogApp/_UITests/Helpers/XCUIApplication+.swift:13"
+      ]
+    }
+  ],
+  "normal_mode_journeys": [
+    "Monitors list and detail",
+    "Dashboard list and detail including instrumented WebView",
+    "Scrolling",
+    "Account journey"
+  ],
+  "stage3_bounded_audit": [
+    "AppDelegate bootstrap/debug/appearance fanout",
+    "WindowController and WindowDependencies",
+    "DependenciesContainers and session controllers"
+  ],
+  "backend": {
+    "status": "CONTROLLED RUNS AUTHORIZED",
+    "application_lookup": "No match including inactive applications in current organization",
+    "user_confirmation": "2026-09-19: another organization; answer expected in two days",
+    "traffic_claim": null,
+    "controlled_run_authorization": "Use probes RUM application and a distinct service; user confirms these are only sessions we run, not live customer sessions."
+  },
+  "publication": "No app source changed; no build uploaded/published; preparation only authorized",
+  "secret_policy": "Do not inspect flavored GoogleService-Info, observability Configuration, UI-test credential environment or Gitlab secrets."
+}

@@ -2,7 +2,7 @@
   "experiment": "EXP-190",
   "gate": "C06",
   "title": "Qualify the minimum supported iOS runtime",
-  "status": "ENVIRONMENT BLOCKED",
+  "status": "OPEN",
   "owner": "SDK implementer",
   "definition": "Experiments/EXP-143-199.md#exp-190--qualify-the-minimum-supported-ios-runtime",
   "baseline_revision": "92f021ba7e4a866f84a52da93ed8b63f3dc75882",
@@ -94,7 +94,7 @@
     "eligible_physical_multiwindow_device": false
   },
   "outcome": "Official Xcode26.6 catalog requests for exact15.0 universal and arm64 both return70 without an exported file. No runtime was installed or native case run. Older-Xcode device discovery finds only the ordinary27.2 iPhone. This proves a current environment/access limit, not permanent runtime incompatibility or SDK failure.",
-  "resume_condition": "A genuine exact15.0 runtime/device or compatible accessible test host becomes available; revalidate identity/boot and freeze the defined12-cell matrix before execution. Do not repeat unchanged catalog requests automatically.",
+  "resume_condition": "The newly installed17.5 runtime permits actual test-host and candidate-scoped compatibility execution; preserve earlier failed acquisition attempts.",
   "current_C06_followup": {
     "defined": "2026-09-19 before new environment action",
     "authority": "User correction and authoritative C06 register; historical exact15 definition/attempts remain unchanged above.",
@@ -109,5 +109,25 @@
     "result": "acceptance/exp190-ios17-ceefc1f2-0b2b-4440-a659-49a979de8c64.json",
     "outcome": "All five stable17 catalog versions unavailable through Xcode27.1; Xcode26.6 also rejects17.0. Zero runtime files/install/native cases. Direct oldest catalog source returns HTML.",
     "resume_condition": "An accessible official17.x runtime, eligible device or test host; retain exact patch and genuine pre27 build SDK for the finite12-cell matrix."
+  },
+  "environment_update_20260919": {
+    "at": "2026-09-19T20:44:31.044941+00:00",
+    "status": "AVAILABLE_NOT_TESTED",
+    "runtime": {
+      "version": "17.5",
+      "build": "21F79",
+      "identifier": "com.apple.CoreSimulator.SimRuntime.iOS-17-5",
+      "is_available": true
+    },
+    "device": {
+      "name": "iPad Pro 11-inch (M4) (16GB)",
+      "id": "EEF49588-982B-492E-92AF-57F900ACEACD",
+      "state": "Booted"
+    },
+    "artifact": {
+      "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/physical-suite-preflight-mo8c6uq3/runtime17-5-discovery.json",
+      "sha256": "2c8e6ea85b36e3f0dd4bf93eee5be3bb8a0a53cc806bfebd6ab71d3033c963ba"
+    },
+    "boundary": "No candidate test host or native matrix cell executed yet; no runtime exception applied."
   }
 }

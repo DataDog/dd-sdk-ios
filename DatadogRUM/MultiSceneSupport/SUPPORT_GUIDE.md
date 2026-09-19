@@ -1,6 +1,8 @@
 # Multi-scene integration and ownership guide
 
-Review draft for F02. This branch remains experimental; the
+Review draft for S3:F02. S1/S2 publish only their actual candidate changes and
+existing-API limitations; this guide does not require those releases to adopt new
+scene APIs. This branch remains experimental; the
 [assessment](ASSESSMENT.md) defines its evidence limits.
 [Stable API review](STABLE_API_REVIEW.md) owns the proposed public surface and
 pending approval. This guide explains integration and attribution; it does not

@@ -1,10 +1,11 @@
-# Final multi-scene compatibility matrix
+# Candidate compatibility matrix
 
 Prepared procedure for F03; no final matrix execution is claimed here.
 [release-gates.json](release-gates.json) owns F03's status, owner, dependencies
 and closure rule. This file makes its existing checks executable and finite.
-It adds no release gates. F01 approval and the reviewed implementation must be
-complete before freezing the final candidate.
+The register scopes F03 separately to S1/S2/S3. F01 approval is required only for
+S3 new public scene APIs; S1/S2 keep existing API and do not wait for that package.
+Each release freezes its exact candidate and affected module/platform inventory.
 
 ## Freeze and acceptance
 
@@ -32,8 +33,13 @@ attempt; attach a new attempt after a correction.
 
 The SDK implementer owns execution of all cells. RUM API reviewers own the
 approved API diff; CI/toolchain and device operators supply missing environments.
-Every cell depends on the frozen F01 implementation. Closed D01/D02/D09/D11/D12
-repairs remain part of the source and regression selection.
+S3 cells use the frozen F01 implementation. For S1/S2, F07 records each cell as
+required or source-proven not applicable: M01/M04/M10 and affected-module tests
+remain required; M02/M03 verify existing Swift/Objective-C APIs instead of promoting
+new scene declarations; M05–M09 cover affected supported platforms/transitive
+modules; M11 audits affected feature docs. No cell is omitted just because its API
+is hidden. Existing experimental repair evidence is reference material, not proof
+of a current-develop customer defect.
 
 | Cell | Required environment and scope | Decisive result |
 | --- | --- | --- |
@@ -103,9 +109,17 @@ owns the current executable action.
 
 ## Boundaries that remain separate
 
-This matrix cannot close physical/Duo H01–H16/F04, minimum-runtime C06, unresolved
-legacy-host C03, physical vitals/profiling T13/T14 or Replay coexistence F05.
+This matrix does not replace each gate’s own evidence boundary: physical/Duo
+H01–H16/F04, minimum-runtime C06, legacy-host C03, physical vitals/profiling
+T13/T14 and Replay coexistence F05 retain their separately recorded status.
 It does not replace F06's final independent review or the paired performance,
 allocation, retained-state and reentrancy checks with unchanged
 [baseline thresholds](BASELINES.md). Run performance without competing builds,
-tests or profiling. Deferred extraction remains after freeze.
+tests or profiling. Independent extraction proceeds now; S1/S2/S3 have separate
+F06 freezes. Full physical-Duo F04 is S3, with optional later S2 confirmation F09.
+
+The user supplied iOS17.5; fresh inventory confirms21F79 available and an iPad
+simulator booted. Require candidate test-host execution before C06 acceptance. If a bounded genuine
+attempt still cannot run17, document the approved S1/S2 runtime exception without
+calling17 passed; retain deployment15 compile/link, availability audit, oldest
+runnable tests and explicit unexecuted15/16/17 coverage.

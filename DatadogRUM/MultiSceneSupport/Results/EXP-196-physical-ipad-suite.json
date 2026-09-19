@@ -1,7 +1,7 @@
 {
   "experiment": "EXP-196",
   "title": "Run the finite unattended physical iPad acceptance matrix",
-  "status": "IN PROGRESS",
+  "status": "CHECKPOINTED; remaining physical multi-scene cases assigned to S3",
   "defined_at": 1789834658.146247,
   "defined_before_implementation": true,
   "definition_parent_revision": "d888d8112a2dcfe902555df2b1940a6819e04b60",
@@ -2849,7 +2849,7 @@
     ],
     "implementation": "Separate validate_physical_local entrypoint implemented; original timing still rejects the physical record. Focused six tests pass. Fresh physical run required."
   },
-  "next": "Audit and execute the existing H08 final semantic-host-removal contract, then continue independent H02/H03/H06/H09/H10/H12/H13/H15/H16 cases. H04 disconnect and H11 native gesture remain unqualified; stop equivalent retries. Restore Full Screen Apps and stop the owned keep-awake assertion after the physical suite.",
+  "next": "Follow release-gates.json S1/S2 priority. Do not continue the old physical matrix by default; remaining multi-scene cases belong to S3 and single-scene subsets use prepared human input. All accepted and failed attempts remain preserved.",
   "h01_collector_definition": {
     "defined_at": 1789836265.35157,
     "before_implementation": true,
@@ -2922,9 +2922,15 @@
     "original": "Full Screen Apps",
     "temporary": "Windowed Apps",
     "explicit_user_approval": true,
+    "applied_ms": 1789839448443,
     "restoration_required": true,
-    "restored": false,
-    "independent_pairing": "System Window menu, Move and Resize: B left then A right. Both actual contents visible and native scenes foreground-active, each592x834. Native screen-record API unsupported; H01 remains unadmitted."
+    "restored": true,
+    "restored_to": "Full Screen Apps",
+    "restored_at_ms": 1789849915181,
+    "evidence": {
+      "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/physical-suite-preflight-mo8c6uq3/restored-full-screen-apps.png",
+      "sha256": "0528338173c0b8e1d819d4aac2e7429243c2dc3c423b0b4ea6f92d1cd68d69c0"
+    }
   },
   "physical_serial_fixture_repair": {
     "defined_at": 1789842145.418182,
@@ -3253,5 +3259,38 @@
     "change": "Add a physical same-key capture method to the existing UI test file. Host-supplied fresh run/revision, clean signed install, original same-key scenario and opt-in topology barrier. Record continuously via XCTest while the host tiles actual windows through Device Hub, binds fresh screenshot/challenge/receipt before mutation, and exports original semantic results plus complete backend.",
     "decisive_test": "Original22 expectations and17 steps,23 topology observations, unchanged native identities/generations and both real visible windows throughout critical interval. Exported actual video must bind run/device/test identity and span screenshot/admission/final boundary; missing video fails admission evidence. No screenshot-only substitution.",
     "stop_rule": "Preserve incomplete topology or capture as unqualified; do not reopen the accepted contract or repeat equivalent recorder failures."
+  },
+  "suite_checkpoint_cleanup": {
+    "state": "PASS",
+    "reason": "User-approved three-stage reprioritization at safe H01 checkpoint; remaining matrix deferred without acceptance.",
+    "app_absent": true,
+    "runner_absent": true,
+    "process_absent": true,
+    "window_mode": {
+      "original": "Full Screen Apps",
+      "temporary": "Windowed Apps",
+      "explicit_user_approval": true,
+      "applied_ms": 1789839448443,
+      "restoration_required": true,
+      "restored": true,
+      "restored_to": "Full Screen Apps",
+      "restored_at_ms": 1789849915181,
+      "evidence": {
+        "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/physical-suite-preflight-mo8c6uq3/restored-full-screen-apps.png",
+        "sha256": "0528338173c0b8e1d819d4aac2e7429243c2dc3c423b0b4ea6f92d1cd68d69c0"
+      }
+    },
+    "keep_awake_stopped": {
+      "pid": 63285,
+      "command": "/usr/bin/caffeinate -d -i -u -t 14400",
+      "started_epoch": 1789847287.0066419,
+      "expires_epoch": 1789861687.0066419,
+      "lstart": "Sat Sep 19 21:48:07 2026",
+      "replaced_owned_pid": 50569,
+      "reason": "Continue user-authorized unattended physical suite without persistent lock preference changes",
+      "stopped": true,
+      "stopped_at_ms": 1789849915183
+    },
+    "protected_unchanged": true
   }
 }

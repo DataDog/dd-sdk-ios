@@ -1,11 +1,11 @@
 {
   "schema_version": 1,
   "candidate_revision": "04201edc7711361279d8487b385bc8b0ca9c63c7",
-  "gate_count": 70,
+  "gate_count": 79,
   "counts": {
     "CLOSED": 48,
-    "ENVIRONMENT BLOCKED": 5,
-    "OPEN": 16,
+    "ENVIRONMENT BLOCKED": 4,
+    "OPEN": 26,
     "REVIEW BLOCKED": 1
   },
   "closed": [
@@ -61,7 +61,7 @@
   "remaining": [
     {
       "id": "C06",
-      "status": "ENVIRONMENT BLOCKED",
+      "status": "OPEN",
       "owner": "SDK implementer",
       "dependencies": []
     },
@@ -323,6 +323,844 @@
         "C09",
         "C10"
       ]
+    },
+    {
+      "id": "E01",
+      "status": "OPEN",
+      "owner": "SDK implementer + independent reviewer",
+      "dependencies": []
+    },
+    {
+      "id": "E02",
+      "status": "OPEN",
+      "owner": "SDK implementer + independent reviewer",
+      "dependencies": []
+    },
+    {
+      "id": "E03",
+      "status": "OPEN",
+      "owner": "SDK implementer + independent reviewer",
+      "dependencies": []
+    },
+    {
+      "id": "E04",
+      "status": "OPEN",
+      "owner": "SDK implementer + independent reviewer",
+      "dependencies": []
+    },
+    {
+      "id": "E05",
+      "status": "OPEN",
+      "owner": "SDK implementer + independent reviewer",
+      "dependencies": []
+    },
+    {
+      "id": "F07",
+      "status": "OPEN",
+      "owner": "SDK implementer + independent reviewer",
+      "dependencies": []
+    },
+    {
+      "id": "F08",
+      "status": "OPEN",
+      "owner": "SDK implementer + app owner",
+      "dependencies": []
+    },
+    {
+      "id": "A02",
+      "status": "OPEN",
+      "owner": "Harness implementer + user device operator",
+      "dependencies": []
+    },
+    {
+      "id": "F09",
+      "status": "OPEN",
+      "owner": "SDK implementer + device operator",
+      "dependencies": []
     }
-  ]
+  ],
+  "release_progress": {
+    "S1": {
+      "name": "Independent reliability fixes",
+      "deadline": null,
+      "shipping_rule": "Release each eligible narrow fix independently on then-current develop after its applicable candidate checks and S1:F06. Other general improvements do not block it. First selected candidate E01; E02-E05 remain separate qualification work.",
+      "required": {
+        "count": 18,
+        "closed": 0,
+        "remaining": [
+          {
+            "id": "S1:C01",
+            "status": "OPEN",
+            "owner": "SDK implementer",
+            "dependencies": []
+          },
+          {
+            "id": "S1:C02",
+            "status": "OPEN",
+            "owner": "SDK implementer",
+            "dependencies": []
+          },
+          {
+            "id": "S1:C03",
+            "status": "OPEN",
+            "owner": "SDK implementer",
+            "dependencies": []
+          },
+          {
+            "id": "S1:C04",
+            "status": "OPEN",
+            "owner": "SDK implementer",
+            "dependencies": []
+          },
+          {
+            "id": "S1:C05",
+            "status": "OPEN",
+            "owner": "SDK implementer",
+            "dependencies": []
+          },
+          {
+            "id": "S1:C06",
+            "status": "OPEN",
+            "owner": "SDK implementer",
+            "dependencies": []
+          },
+          {
+            "id": "S1:P01",
+            "status": "OPEN",
+            "owner": "SDK implementer",
+            "dependencies": [
+              "S1:C01"
+            ]
+          },
+          {
+            "id": "S1:P02",
+            "status": "OPEN",
+            "owner": "SDK implementer",
+            "dependencies": [
+              "S1:C01"
+            ]
+          },
+          {
+            "id": "S1:P03",
+            "status": "OPEN",
+            "owner": "SDK implementer",
+            "dependencies": [
+              "S1:C01"
+            ]
+          },
+          {
+            "id": "S1:P04",
+            "status": "OPEN",
+            "owner": "SDK implementer",
+            "dependencies": [
+              "S1:C01"
+            ]
+          },
+          {
+            "id": "S1:A01",
+            "status": "OPEN",
+            "owner": "Harness implementer",
+            "dependencies": []
+          },
+          {
+            "id": "S1:T03",
+            "status": "OPEN",
+            "owner": "SDK implementer",
+            "dependencies": [
+              "S1:A01",
+              "S1:F07"
+            ]
+          },
+          {
+            "id": "S1:T08",
+            "status": "OPEN",
+            "owner": "SDK implementer",
+            "dependencies": [
+              "S1:A01",
+              "S1:F07"
+            ]
+          },
+          {
+            "id": "S1:F02",
+            "status": "OPEN",
+            "owner": "SDK implementer",
+            "dependencies": [
+              "S1:F07"
+            ]
+          },
+          {
+            "id": "S1:F03",
+            "status": "OPEN",
+            "owner": "SDK implementer",
+            "dependencies": [
+              "S1:F07",
+              "S1:C06"
+            ]
+          },
+          {
+            "id": "S1:F06",
+            "status": "OPEN",
+            "owner": "RUM maintainers",
+            "dependencies": [
+              "S1:C01",
+              "S1:C02",
+              "S1:C03",
+              "S1:C04",
+              "S1:C05",
+              "S1:C06",
+              "S1:P01",
+              "S1:P02",
+              "S1:P03",
+              "S1:P04",
+              "S1:A01",
+              "S1:F02",
+              "S1:F03",
+              "S1:F07",
+              "S1:E01",
+              "S1:T03",
+              "S1:T08"
+            ]
+          },
+          {
+            "id": "S1:E01",
+            "status": "OPEN",
+            "owner": "SDK implementer + independent reviewer",
+            "dependencies": [
+              "S1:F07"
+            ]
+          },
+          {
+            "id": "S1:F07",
+            "status": "OPEN",
+            "owner": "SDK implementer + independent reviewer",
+            "dependencies": []
+          }
+        ]
+      },
+      "optional_follow_ups": [
+        {
+          "id": "S1:T10",
+          "status": "OPEN",
+          "owner": "SDK implementer",
+          "dependencies": [
+            "S1:A01",
+            "S1:F07"
+          ]
+        },
+        {
+          "id": "S1:E02",
+          "status": "CONDITIONAL",
+          "owner": "SDK implementer + independent reviewer",
+          "dependencies": [
+            "S1:F07"
+          ]
+        },
+        {
+          "id": "S1:E03",
+          "status": "CONDITIONAL",
+          "owner": "SDK implementer + independent reviewer",
+          "dependencies": [
+            "S1:F07"
+          ]
+        },
+        {
+          "id": "S1:E04",
+          "status": "CONDITIONAL",
+          "owner": "SDK implementer + independent reviewer",
+          "dependencies": [
+            "S1:F07"
+          ]
+        },
+        {
+          "id": "S1:E05",
+          "status": "CONDITIONAL",
+          "owner": "SDK implementer + independent reviewer",
+          "dependencies": [
+            "S1:F07"
+          ]
+        },
+        {
+          "id": "S1:F08",
+          "status": "OPEN",
+          "owner": "SDK implementer + app owner",
+          "dependencies": [
+            "S1:A01",
+            "S1:F07"
+          ]
+        }
+      ]
+    },
+    "S2": {
+      "name": "Single-scene iPhone Duo readiness",
+      "deadline": "2026-10-16",
+      "shipping_rule": "No worse RUM after SDK27 rebuild without major application changes. Use a clean develop-based artifact plus only required S1/compatibility slices, qualified Duo simulator and relevant physical evidence. S2:F06 excludes unrelated scene APIs and full physical-Duo acceptance.",
+      "required": {
+        "count": 29,
+        "closed": 0,
+        "remaining": [
+          {
+            "id": "S2:C01",
+            "status": "OPEN",
+            "owner": "SDK implementer",
+            "dependencies": []
+          },
+          {
+            "id": "S2:C02",
+            "status": "OPEN",
+            "owner": "SDK implementer",
+            "dependencies": []
+          },
+          {
+            "id": "S2:C03",
+            "status": "OPEN",
+            "owner": "SDK implementer",
+            "dependencies": []
+          },
+          {
+            "id": "S2:C04",
+            "status": "OPEN",
+            "owner": "SDK implementer",
+            "dependencies": []
+          },
+          {
+            "id": "S2:C05",
+            "status": "OPEN",
+            "owner": "SDK implementer",
+            "dependencies": []
+          },
+          {
+            "id": "S2:C06",
+            "status": "OPEN",
+            "owner": "SDK implementer",
+            "dependencies": []
+          },
+          {
+            "id": "S2:C07",
+            "status": "OPEN",
+            "owner": "SDK implementer",
+            "dependencies": [
+              "S2:A02",
+              "S2:F07"
+            ]
+          },
+          {
+            "id": "S2:C08",
+            "status": "OPEN",
+            "owner": "SDK implementer",
+            "dependencies": [
+              "S2:A02",
+              "S2:F07"
+            ]
+          },
+          {
+            "id": "S2:C09",
+            "status": "OPEN",
+            "owner": "SDK implementer",
+            "dependencies": [
+              "S2:A02",
+              "S2:F07"
+            ]
+          },
+          {
+            "id": "S2:C10",
+            "status": "OPEN",
+            "owner": "SDK implementer",
+            "dependencies": [
+              "S2:A02",
+              "S2:F07"
+            ]
+          },
+          {
+            "id": "S2:P01",
+            "status": "OPEN",
+            "owner": "SDK implementer",
+            "dependencies": [
+              "S2:C01"
+            ]
+          },
+          {
+            "id": "S2:P02",
+            "status": "OPEN",
+            "owner": "SDK implementer",
+            "dependencies": [
+              "S2:C01"
+            ]
+          },
+          {
+            "id": "S2:P03",
+            "status": "OPEN",
+            "owner": "SDK implementer",
+            "dependencies": [
+              "S2:C01"
+            ]
+          },
+          {
+            "id": "S2:P04",
+            "status": "OPEN",
+            "owner": "SDK implementer",
+            "dependencies": [
+              "S2:C01"
+            ]
+          },
+          {
+            "id": "S2:A01",
+            "status": "OPEN",
+            "owner": "Harness implementer",
+            "dependencies": []
+          },
+          {
+            "id": "S2:T03",
+            "status": "OPEN",
+            "owner": "SDK implementer",
+            "dependencies": [
+              "S2:A01",
+              "S2:F07"
+            ]
+          },
+          {
+            "id": "S2:T08",
+            "status": "OPEN",
+            "owner": "SDK implementer",
+            "dependencies": [
+              "S2:A01",
+              "S2:F07"
+            ]
+          },
+          {
+            "id": "S2:T10",
+            "status": "OPEN",
+            "owner": "SDK implementer",
+            "dependencies": [
+              "S2:A01",
+              "S2:F07"
+            ]
+          },
+          {
+            "id": "S2:H11",
+            "status": "OPEN",
+            "owner": "Device operator + SDK implementer",
+            "dependencies": [
+              "S2:A02",
+              "S2:F07"
+            ]
+          },
+          {
+            "id": "S2:H12",
+            "status": "OPEN",
+            "owner": "Device operator + SDK implementer",
+            "dependencies": [
+              "S2:A02",
+              "S2:F07"
+            ]
+          },
+          {
+            "id": "S2:H13",
+            "status": "OPEN",
+            "owner": "Device operator + SDK implementer",
+            "dependencies": [
+              "S2:A02",
+              "S2:F07"
+            ]
+          },
+          {
+            "id": "S2:H14",
+            "status": "OPEN",
+            "owner": "Device operator + SDK implementer",
+            "dependencies": [
+              "S2:A02",
+              "S2:F07"
+            ]
+          },
+          {
+            "id": "S2:H16",
+            "status": "OPEN",
+            "owner": "Device operator + SDK implementer",
+            "dependencies": [
+              "S2:A02",
+              "S2:F07"
+            ]
+          },
+          {
+            "id": "S2:F02",
+            "status": "OPEN",
+            "owner": "SDK implementer",
+            "dependencies": [
+              "S2:F07"
+            ]
+          },
+          {
+            "id": "S2:F03",
+            "status": "OPEN",
+            "owner": "SDK implementer",
+            "dependencies": [
+              "S2:F07",
+              "S2:C06"
+            ]
+          },
+          {
+            "id": "S2:F06",
+            "status": "OPEN",
+            "owner": "RUM maintainers",
+            "dependencies": [
+              "S2:C01",
+              "S2:C02",
+              "S2:C03",
+              "S2:C04",
+              "S2:C05",
+              "S2:C06",
+              "S2:P01",
+              "S2:P02",
+              "S2:P03",
+              "S2:P04",
+              "S2:A01",
+              "S2:F02",
+              "S2:F03",
+              "S2:F07",
+              "S2:C07",
+              "S2:C08",
+              "S2:C09",
+              "S2:C10",
+              "S2:H11",
+              "S2:H12",
+              "S2:H13",
+              "S2:H14",
+              "S2:H16",
+              "S2:T03",
+              "S2:T08",
+              "S2:T10",
+              "S2:F08",
+              "S2:A02"
+            ]
+          },
+          {
+            "id": "S2:F07",
+            "status": "OPEN",
+            "owner": "SDK implementer + independent reviewer",
+            "dependencies": []
+          },
+          {
+            "id": "S2:F08",
+            "status": "OPEN",
+            "owner": "SDK implementer + app owner",
+            "dependencies": [
+              "S2:A01",
+              "S2:F07"
+            ]
+          },
+          {
+            "id": "S2:A02",
+            "status": "OPEN",
+            "owner": "Harness implementer + user device operator",
+            "dependencies": [
+              "S2:A01",
+              "S2:F07"
+            ]
+          }
+        ]
+      },
+      "optional_follow_ups": [
+        {
+          "id": "S2:F09",
+          "status": "ENVIRONMENT BLOCKED",
+          "owner": "SDK implementer + device operator",
+          "dependencies": [
+            "S2:F06"
+          ]
+        }
+      ]
+    },
+    "S3": {
+      "name": "Full multi-scene support",
+      "deadline": null,
+      "shipping_rule": "Complete exact scene APIs, full ownership/lifecycle/client/docs matrix, physical Duo F04 and S3:F06 after hardware release. Preserve all prior evidence boundaries.",
+      "required": {
+        "count": 71,
+        "closed": 48,
+        "remaining": [
+          {
+            "id": "S3:C06",
+            "status": "OPEN",
+            "owner": "SDK implementer",
+            "dependencies": []
+          },
+          {
+            "id": "S3:C07",
+            "status": "ENVIRONMENT BLOCKED",
+            "owner": "SDK implementer",
+            "dependencies": []
+          },
+          {
+            "id": "S3:C08",
+            "status": "ENVIRONMENT BLOCKED",
+            "owner": "SDK implementer",
+            "dependencies": []
+          },
+          {
+            "id": "S3:C09",
+            "status": "ENVIRONMENT BLOCKED",
+            "owner": "SDK implementer",
+            "dependencies": []
+          },
+          {
+            "id": "S3:C10",
+            "status": "ENVIRONMENT BLOCKED",
+            "owner": "SDK implementer",
+            "dependencies": []
+          },
+          {
+            "id": "S3:H02",
+            "status": "OPEN",
+            "owner": "Device operator + SDK implementer",
+            "dependencies": [
+              "S3:A01"
+            ]
+          },
+          {
+            "id": "S3:H03",
+            "status": "OPEN",
+            "owner": "Device operator + SDK implementer",
+            "dependencies": [
+              "S3:A01"
+            ]
+          },
+          {
+            "id": "S3:H04",
+            "status": "OPEN",
+            "owner": "Device operator + SDK implementer",
+            "dependencies": [
+              "S3:A01"
+            ]
+          },
+          {
+            "id": "S3:H06",
+            "status": "OPEN",
+            "owner": "Device operator + SDK implementer",
+            "dependencies": [
+              "S3:A01"
+            ]
+          },
+          {
+            "id": "S3:H08",
+            "status": "OPEN",
+            "owner": "Device operator + SDK implementer",
+            "dependencies": [
+              "S3:A01",
+              "S3:D03",
+              "S3:D07"
+            ]
+          },
+          {
+            "id": "S3:H09",
+            "status": "OPEN",
+            "owner": "Device operator + SDK implementer",
+            "dependencies": [
+              "S3:A01",
+              "S3:D03",
+              "S3:D08",
+              "S3:P03"
+            ]
+          },
+          {
+            "id": "S3:H10",
+            "status": "OPEN",
+            "owner": "Device operator + SDK implementer",
+            "dependencies": [
+              "S3:A01"
+            ]
+          },
+          {
+            "id": "S3:H11",
+            "status": "OPEN",
+            "owner": "Device operator + SDK implementer",
+            "dependencies": [
+              "S3:A01"
+            ]
+          },
+          {
+            "id": "S3:H12",
+            "status": "OPEN",
+            "owner": "Device operator + SDK implementer",
+            "dependencies": [
+              "S3:A01"
+            ]
+          },
+          {
+            "id": "S3:H13",
+            "status": "OPEN",
+            "owner": "Device operator + SDK implementer",
+            "dependencies": [
+              "S3:A01",
+              "S3:D10"
+            ]
+          },
+          {
+            "id": "S3:H15",
+            "status": "OPEN",
+            "owner": "Device operator + SDK implementer",
+            "dependencies": [
+              "S3:A01"
+            ]
+          },
+          {
+            "id": "S3:H16",
+            "status": "OPEN",
+            "owner": "Device operator + SDK implementer",
+            "dependencies": [
+              "S3:A01"
+            ]
+          },
+          {
+            "id": "S3:F01",
+            "status": "REVIEW BLOCKED",
+            "owner": "RUM API reviewers",
+            "dependencies": [
+              "S3:T03",
+              "S3:T04",
+              "S3:T05",
+              "S3:T06",
+              "S3:T07",
+              "S3:R06"
+            ]
+          },
+          {
+            "id": "S3:F02",
+            "status": "OPEN",
+            "owner": "SDK implementer",
+            "dependencies": [
+              "S3:F01"
+            ]
+          },
+          {
+            "id": "S3:F03",
+            "status": "OPEN",
+            "owner": "SDK implementer",
+            "dependencies": [
+              "S3:F01",
+              "S3:D01",
+              "S3:D02",
+              "S3:D09",
+              "S3:D11",
+              "S3:D12"
+            ]
+          },
+          {
+            "id": "S3:F04",
+            "status": "OPEN",
+            "owner": "Device operator",
+            "dependencies": [
+              "S3:H01",
+              "S3:H02",
+              "S3:H03",
+              "S3:H04",
+              "S3:H05",
+              "S3:H06",
+              "S3:H07",
+              "S3:H08",
+              "S3:H09",
+              "S3:H10",
+              "S3:H11",
+              "S3:H12",
+              "S3:H13",
+              "S3:H14",
+              "S3:H15",
+              "S3:H16"
+            ]
+          },
+          {
+            "id": "S3:F06",
+            "status": "OPEN",
+            "owner": "RUM maintainers",
+            "dependencies": [
+              "S3:C01",
+              "S3:C02",
+              "S3:C03",
+              "S3:C04",
+              "S3:C05",
+              "S3:C06",
+              "S3:P01",
+              "S3:P02",
+              "S3:P03",
+              "S3:P04",
+              "S3:R01",
+              "S3:R02",
+              "S3:R03",
+              "S3:R04",
+              "S3:R05",
+              "S3:R06",
+              "S3:A01",
+              "S3:T01",
+              "S3:T02",
+              "S3:T03",
+              "S3:T04",
+              "S3:T05",
+              "S3:T06",
+              "S3:T07",
+              "S3:T08",
+              "S3:T09",
+              "S3:T10",
+              "S3:T11",
+              "S3:T12",
+              "S3:T13",
+              "S3:T14",
+              "S3:T15",
+              "S3:H01",
+              "S3:H02",
+              "S3:H03",
+              "S3:H04",
+              "S3:H05",
+              "S3:H06",
+              "S3:H07",
+              "S3:H08",
+              "S3:H09",
+              "S3:H10",
+              "S3:H11",
+              "S3:H12",
+              "S3:H13",
+              "S3:H14",
+              "S3:H15",
+              "S3:H16",
+              "S3:F01",
+              "S3:F02",
+              "S3:F03",
+              "S3:F04",
+              "S3:F05",
+              "S3:D01",
+              "S3:D02",
+              "S3:D03",
+              "S3:D04",
+              "S3:D05",
+              "S3:D06",
+              "S3:D07",
+              "S3:D08",
+              "S3:D09",
+              "S3:D10",
+              "S3:D11",
+              "S3:D12",
+              "S3:C07",
+              "S3:C08",
+              "S3:C09",
+              "S3:C10",
+              "S3:A02"
+            ]
+          },
+          {
+            "id": "S3:A02",
+            "status": "OPEN",
+            "owner": "Harness implementer + user device operator",
+            "dependencies": [
+              "S3:A01"
+            ]
+          }
+        ]
+      },
+      "optional_follow_ups": [
+        {
+          "id": "S3:F08",
+          "status": "OPEN",
+          "owner": "SDK implementer + app owner",
+          "dependencies": []
+        }
+      ]
+    }
+  }
 }

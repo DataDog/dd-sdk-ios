@@ -16,6 +16,12 @@ Physical acceptance remains separate. The
 [assessment](ASSESSMENT.md) and [owning result](Results/EXP-195-automatic-tracking.json)
 retain exact boundaries; no new production SDK defect has been established.
 
+The user-approved delivery stages retain these original findings and dispositions.
+S1/S2 qualify develop-based artifacts independently and use F07 source exclusion
+before deferring S3 behavior; this review is not a generic extraction eligibility
+certificate. New scene API promotion remains pending. Physical EXP-196 is safely
+checkpointed: Full Screen Apps restored and task apps/keep-awake cleaned up.
+
 Review closure does not imply overall release readiness. Current release status
 belongs exclusively to [release-gates.json](release-gates.json) and [PLAN](PLAN.md).
 [Triage](REVIEW_TRIAGE.md) records the initial assessment and finding boundaries;

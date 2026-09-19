@@ -8,7 +8,7 @@ Review source: 2baa06da0060bcc4ae3b54fe2f4cfc64be5b4cce. SDK production remains
 [gate register](release-gates.json) owns F01 status; the
 [approved contract](../MULTI_SCENE_SUPPORT.md) owns product behavior.
 [Navigation](NAVIGATION_API.md) and [Operations](OPERATIONS.md) retain the semantic
-contracts and experimental evidence. This package selects a first-release proposal
+contracts and experimental evidence. This package selects the S3 first multi-scene release proposal
 from their alternatives without treating it as approval.
 
 ## Decision requested
@@ -16,7 +16,9 @@ from their alternatives without treating it as approval.
 Approve or amend these eight decisions as one bounded RFC direction. Record the
 reviewer, date and approval reference before implementation. F01 closes when the
 reviewed contract is implemented and verified, with an attributable disposition.
-F02 documentation, F03 final platform matrix and F06 freeze retain their own gates.
+S3 F02 documentation, F03 final platform matrix and F06 freeze retain their own gates.
+S1/S2 preserve existing APIs and do not wait for unrelated scene declarations. The
+earlier assessment assumption of accepted APIs is not an attributable F01 decision.
 
 | Decision | Proposed first-release contract | Evidence and decisive follow-up |
 | --- | --- | --- |

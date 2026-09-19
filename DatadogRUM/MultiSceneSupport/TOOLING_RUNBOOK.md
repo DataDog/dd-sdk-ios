@@ -2096,3 +2096,43 @@ For physical XCTest input, override only the task build to deployment27.0; the e
 Physical XCTest capture is now verified after the one-time iPadOS UI Automation passcode prompt: generated PreferredScreenCaptureFormat=screenRecording plus keepAlways exports an actual MP4 through xcresulttool export attachments. Keep copy-command JSON output paths distinct from copied checkpoint JSON. In the iPad split fixture, the navigation AX frame extends behind the visible320-point primary; derive the touch edge from the visible region and recheck both frames before input. A passing UI collector is never semantic or ownership acceptance by itself.
 
 H01 physical acceptance now combines the unchanged22-expectation oracle,23 native topology guards, fresh screenshot/nonce admission, complete backend inventory and real XCTest video. Review every decoded frame around the critical boundary with both attachment and creation-time alignment margins. Inspect the MP4 display matrix: this recording reports minus45 degrees while stored pixels are correctly oriented; use ffmpeg -noautorotate for review only and retain original video bytes/hash. A video proves observed display continuity, not unrecorded sub-frame visibility. The bounded corrected H11 edge touch still produces no interactive callback; stop equivalent retries and keep collector success distinct from gesture acceptance.
+
+
+### Release-specific execution after the EXP-196 checkpoint
+
+The register now qualifies S1/S2/S3 separately. Preserve reference evidence and
+never relabel it as acceptance of a new extraction. Regenerate PLAN and progress
+with release_checklist.py --update, then run the checker again without --update;
+qualified release dependency IDs prevent reference/candidate status confusion.
+Keep historical experiment narratives in their owning records.
+
+Use a clean isolated checkout from remotely verified current develop for each
+admitted extraction; record the actual remote SHA even when SSH fetch is blocked
+and an authenticated read-only GitHub API query proves the same locally available
+object. Do not copy the original checkout's protected local configuration. Prove
+red on that baseline, then green on the narrow fix. Inspect upstream platform
+behavior before extracting older source. F07 freezes included/excluded symbols,
+transitive dependencies and affected validation; runtime flags do not prove an
+excluded implementation is absent from the shipped artifact.
+
+Only one host controller runs builds/devices. Use the new available iOS17.5 iPad
+for C06 actual test-host execution and retain its user-owned boot state; do not
+repeat obsolete failed download probes. Availability does not close compatibility.
+S1/S2 may use the approved runtime exception only after a genuine bounded runtime
+failure, with explicit deployment15 compile/link, availability and oldest runnable
+coverage; no exception is currently applied.
+
+EXP-196 is safely checkpointed. The original Full Screen Apps preference is
+restored and screenshot-verified, test app/runner and process are absent, and the
+exact task-owned caffeinate assertion was stopped. Its durable cleanup receipt
+belongs to the EXP-196 result. Future device work requires fresh preflight and
+new control/run identities; do not reuse its old PID or temporary outputs as a
+new run. Remaining physical combinations are S3, not the next automatic task.
+
+[Human acceptance](HUMAN_ACCEPTANCE.md) owns the changed input path. Prepare and
+validate the whole session before asking for gestures. The Datadog app skips RUM
+bootstrap under XCTest, so normal-mode or separately authorized internal TestFlight
+is required for app telemetry. Current organization cannot discover its app ID;
+the user now authorizes controlled runs in the probes RUM application with a distinct
+service. Freeze that isolated configuration, preserve production defaults, and
+claim only the sessions actually run, with no live-customer baseline.

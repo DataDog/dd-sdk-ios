@@ -1,8 +1,9 @@
 # RUM multi-scene support
 
 This document owns the stable project goal, approved behavior and non-goals.
-The implementation remains experimental until the finite release gates pass and
-normal API review approves the supported surface. Keep it separate from
+The multi-scene implementation remains experimental until its stage S3 gates pass
+and normal API review approves that supported surface. S1 reliability fixes and
+S2 single-scene Duo readiness have independent candidate gates. Keep it separate from
 RUM_FEATURE.md until that contract is ready to ship.
 
 Current support and evidence limits: [ASSESSMENT.md](MultiSceneSupport/ASSESSMENT.md).
@@ -36,7 +37,17 @@ The primary validation areas are:
 5. No behavior or performance regression for applications with one scene or no
    scene lifecycle.
 
-The release target for this work is iPhone Duo on iOS 27.1. Correct multi-scene
+Delivery has three releases: independently ready reliability fixes to develop;
+single-scene iPhone Duo readiness by October 16, 2026; then full multi-scene
+support. S2 means no worse RUM after rebuilding with SDK27 without major
+application integration changes. It can use qualified Duo simulator and relevant
+physical iPhone/iPad evidence while explicitly retaining untested Duo hardware
+uncertainty. Targeted physical confirmation follows availability; full F04 belongs
+to S3. S1/S2 artifacts must exclude deferred behavior through a source dependency
+audit, not merely hide new APIs. [The register](MultiSceneSupport/release-gates.json)
+owns per-release obligations and freezes.
+
+The full multi-scene release target is iPhone Duo on iOS 27.1. Correct multi-scene
 behavior on earlier systems is welcome when the same implementation provides it
 without compromise, but it is not a release requirement. The SDK must continue
 to build and behave normally on its iOS 15 deployment target even where semantic
@@ -210,8 +221,10 @@ Duo27.1 matrix; no SDK or review checkpoint alone establishes them all.
 - Profiling and shared process/render metrics remain process-level.
 - Stable API names, overload breadth and Objective-C Release exposure require
   review. No internal RUM UUIDs or returned view handles become public.
-- Generic single-scene extraction starts only after multi-scene freeze, under
-  [its separate plan](MultiSceneSupport/DEFERRED_SINGLE_SCENE_EXTRACTION.md).
+- Generic single-scene extraction proceeds independently under
+  [its plan](MultiSceneSupport/DEFERRED_SINGLE_SCENE_EXTRACTION.md). A source-less
+  current-develop defect and narrow red/green proof are prerequisites; completing
+  the experimental multi-scene branch is not.
 
 ## Document map
 
