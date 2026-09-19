@@ -16,34 +16,41 @@ compares unchanged apps and preserves baseline limitations. C01’s early UIKit
 view/custom-marker fixture does not prove automatic taps/scrolls; EXP-193’s
 accepted-state RUMNavigationHost does not prove automatic-only SwiftUI.
 
-All16 regular-iPhone cells and all eight original SDK27 Duo cells qualify.
-Regular source/compiler comparisons preserve view/action inventories and owners.
-For SDK27 Duo apps declaring multiple scenes false, the present findings are:
+All16 regular-iPhone cells, all eight original SDK27 Duo cells, all eight
+manifest-enabled SDK27 Duo cells and the defined two-cell split replay qualify.
+For the exercised apps rebuilt with SDK27, no new foreground view/action coverage
+loss is established when comparing the current branch with the pre-scene SDK.
+This is separate from the incomplete old-build-versus-rebuilt Duo comparison.
 
-| Tracking family | Current finding | Remaining boundary |
+| Tracking family | Current SDK27 Duo finding | Existing limitation |
 | --- | --- | --- |
-| UIKit views | Stack matches. Split preserves all19 foreground occurrences and suppresses two baseline post-background starts. | Manifest-true one-window and old-build Duo cells remain separate. |
-| UIKit actions | All exercised taps/swipes and exact owners match; switches remain omitted. Both sources can assign a reopened Detail tap to Sidebar in split layout. | Equal detection is not exact split semantics. |
-| SwiftUI views | Stack matches. Split retains generic hosting names; fold-related occurrence timing differs, with a bounded replay defined. | Split classification pending. |
-| SwiftUI actions | Equal taps/swipes and Toggle omissions. Stack owners match; split generic occurrence owners differ with view churn. | Split classification pending. |
+| UIKit views | Stack matches. Manifest-false split preserves all foreground occurrences and suppresses post-background starts. Manifest-true split also suppresses transient structural views. | One current destination per scene; sidebars are not independently modeled. |
+| UIKit actions | Same exercised taps/swipes and owner names, except manifest-true reopened Detail improves from Sidebar to retained Detail ownership. | UISwitch changes remain omitted. Manifest-false reopened Detail can still belong to Sidebar. |
+| SwiftUI views | Stack matches with named Detail/Sheet and generic Home. Split preserves its generic names and named Sheets; the replay matches the original baseline foreground sequence exactly. Manifest-true suppresses generic reopen/background churn. | Split does not reliably name Sidebar/Empty/Detail or create a fresh occurrence for every logical navigation. Generic fold occurrences vary even within the frozen baseline. |
+| SwiftUI actions | All source pairs preserve21 taps/4 swipes and four Toggle omissions. Stack retains Detail through folds. Split replay exactly reproduces original baseline action/occurrence ownership. | Generic split owners do not provide exact semantic navigation. |
+
+An app with one current window and an already-enabled multiple-scene manifest
+selects a different code path: RUMFeature reads the flag, not scene count. The
+separate eight-cell slice changes only that independently hashed plist flag,
+preserves every app/SDK binary and verifies one actual scene throughout. It does
+not establish a manifest-true old-build comparison or simultaneous windows.
 
 The genuineSDK26.5 SwiftUI app remains visibly letterboxed on the inner display,
 but both old/modern collector probes fail to qualify inner input. The modern
-runner disappears while its app stays alive; scoped interruption and cleanup are
-preserved. This is neither an old-app usability verdict nor proof about the
-remaining UIKit cells. [Regular evidence](Results/EXP-195-regular-automatic-coverage.json)
-and [Duo evidence](Results/EXP-195-duo-automatic-coverage.json) own exact inventories,
-provenance, native timing and retained failures. No production SDK repair has yet
-been justified; no broad non-regression verdict is issued.
+runner disappears while its app stays alive; interruption and cleanup are retained.
+The old-built UIKit probe reaches the same runner-disappearance limit. A separately
+recorded Device Hub tap changes receipt3 to4 with one fresh native callback, proving
+that app responds to this input. It does not qualify the failed full cell. A bounded
+external collector is defined for the eight remaining old-build cells. Regular source/compiler comparisons are complete;
+old-build-versus-rebuilt Duo fold coverage and physical acceptance remain incomplete.
 
-EXP-195's fixed matrix explicitly declares multiple scenes false. An app with
-one current window and an already-enabled multiple-scene manifest follows a
-different code path: RUMFeature reads that flag, not the scene count. Its separately
-defined eight-cell comparison has completed the four UIKit cells. Stack matches;
-split preserves22 taps/4 swipes, suppresses structural churn and improves the
-reopened Detail tap from Sidebar to Detail ownership. SwiftUI remains in progress.
-[Manifest-enabled evidence](Results/EXP-195-manifest-true-coverage.json) preserves
-installed plist/binary identity and confirms one actual scene throughout.
+[Regular evidence](Results/EXP-195-regular-automatic-coverage.json),
+[original Duo evidence](Results/EXP-195-duo-automatic-coverage.json),
+[manifest-enabled evidence](Results/EXP-195-manifest-true-coverage.json) and
+[split replay](Results/EXP-195-split-replay.json) retain exact inventories, identities,
+native timing and raw hashes. The [owning result](Results/EXP-195-automatic-tracking.json)
+classifies every SDK27 source-pair difference without hiding the raw comparisons.
+No production SDK repair has been justified by these runs.
 
 ## Current support
 

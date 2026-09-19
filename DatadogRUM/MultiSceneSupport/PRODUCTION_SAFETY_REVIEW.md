@@ -5,15 +5,14 @@ gates D01–D12 and have the repair evidence below. These IDs are distinct from
 the responsibility-review gates R01–R06. The original reviewer, source revision,
 comparison base, findings and limitations remain attributable below.
 
-Review closure does not certify automatic-only UIKit/SwiftUI parity for SDK27
-Duo apps. C07–C10/EXP-195 own that comparison. All16 regular cells and eight original
-SDK27 Duo inputs qualify. Manifest-false UIKit preserves existing split limitations
-and suppresses post-background starts; SwiftUI split occurrence differences remain
-under classification. The four manifest-true UIKit cells also qualify: stack matches
-and split improves reopened Detail ownership while preserving action detection.
-SwiftUI follow-ups and old-build input limits remain separate. Current evidence is
-in the [assessment](ASSESSMENT.md) and [owning result](Results/EXP-195-automatic-tracking.json);
-no new production SDK defect has yet been established.
+Review closure does not certify overall automatic compatibility. C07–C10/EXP-195
+now have16 regular cells,16 SDK27 Duo cells across both manifest settings and the
+bounded two-cell split replay. Source-paired SDK27 findings show preserved detection
+and foreground names/owners, documented generic SwiftUI variability, fewer spurious
+background/structural occurrences and improved manifest-enabled UIKit Detail ownership.
+Old-build Duo input qualification and physical acceptance remain separate. The
+[assessment](ASSESSMENT.md) and [owning result](Results/EXP-195-automatic-tracking.json)
+retain exact boundaries; no new production SDK defect has been established.
 
 Review closure does not imply overall release readiness. Current release status
 belongs exclusively to [release-gates.json](release-gates.json) and [PLAN](PLAN.md).

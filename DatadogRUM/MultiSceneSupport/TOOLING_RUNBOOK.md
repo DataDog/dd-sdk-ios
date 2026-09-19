@@ -2046,3 +2046,11 @@ all original application code/build identities. A test-manager delivery delay th
 eventually produces the exact native callback is retained as operational evidence,
 not silently dropped or reused as a performance result. Compare fold/background
 view occurrence timing against independent native callbacks before classification.
+
+For a bounded replay, keep a separate manifest/result with the same frozen app and
+collector identities and reverse source order where useful. Preserve originals.
+Compare same-source variability, exact foreground occurrence/action ownership and
+native callback sequences before attributing generic hosting churn to an SDK change.
+A sample requested during a delay may arrive near recovery: retain its actual
+timestamp against the native callback. Idle app stacks and XCTest snapshot work
+do not by themselves prove the cause or qualify a performance budget.

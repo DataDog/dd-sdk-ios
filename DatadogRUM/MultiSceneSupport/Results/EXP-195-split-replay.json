@@ -1,0 +1,4640 @@
+{
+  "boundary": "Local mapper comparison; not backend or physical proof",
+  "cells": [
+    {
+      "action_types": {
+        "swipe": 4,
+        "tap": 21
+      },
+      "app_metadata_after_test": {
+        "SwiftUI": {
+          "build_sdk": "iphonesimulator27.1",
+          "declared_multiple_scenes": false,
+          "info_sha256": "2daab1a25909e2066bc6bd661955701d752efd14df3d5fd5b4122013d9700619"
+        },
+        "UIKit": {
+          "build_sdk": "iphonesimulator27.1",
+          "declared_multiple_scenes": false,
+          "info_sha256": "5c177b3cc1d6d072905600cfae3914134ab15805d8bbc511b9366cc278d7cdec"
+        }
+      },
+      "artifact_directory": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp195-split-replay-ccp0oipi/runs/exp195-a9e3cdb44e7342849566d0fef328f707",
+      "artifacts_sha256": {
+        "close-after-displays.json": "cd5d8cd5d8021e8eb2ae88200d13c753ac1b6cfeaf20bd9b749d87b33c7d4de1",
+        "close-before-displays.json": "14196c9e233bf08cad9b487f711b85ca377fa836943d4ef30eefad0a2d9a3f65",
+        "close-command.json": "14f97a4a0710a997c9a011ea52886e5a63047b59f7614ec2c14ee3d9b6b5c570",
+        "closed-tap-stall.sample.txt": "14a186d9e8a50db317d41868799172255b9162bbb32b03e6abf822f3d25ce14d",
+        "events.jsonl": "cc1511cd081f4afc9a4c1a863cc65dd94744e24a9bcd363ab802d3fec057e773",
+        "home-command.json": "a84ff8793479ab37bc7394ef207c8be1954c5d88290812aad03e207033cedb2e",
+        "open-after-displays.json": "2e07c3da1225dcf531a4e2fe585ed16a4444b7ace79b147912f9ed59077c0d24",
+        "open-before-displays.json": "9fe3c4c04b8dbd173a612b9487e7c049a44828f462217764e1366e1eee29ae65",
+        "open-command.json": "e9fa35e48410c3165bff6a7db696078e4c05dc9763b85bb71b58abc77af5d271",
+        "receipts.json": "68b4d6e65e5b002232f986943e8560c8ad31c5e833cb9fa537c7fc3dfbc85919",
+        "reopen-after-displays.json": "423aaa77bff6c863bcf2ce7c572e3196f87b0fe707dfee629acf785b0aac7099",
+        "reopen-before-displays.json": "1cac458244689b728c40d0f26fcd22b9f85313463536a2785e599df6ff8463f2",
+        "reopen-command.json": "51cb422de13d9d0833486f8d258cd5cbd8ef95d2e3c7278a1e1bd82b544bdaa9",
+        "run.json": "374165aa94065ee2a20d079ebe99a84e8cbe10cc4f39db254bb50521085ccafc",
+        "test-summary.json": "2d7cae61df9df59cbe521377c52db3a6a9e6087fb090de667e2af64d807e92d8"
+      },
+      "automatic_action_count": 25,
+      "build_sdk": "27.1",
+      "built_app_metadata": {
+        "SwiftUI": {
+          "build_sdk": "iphonesimulator27.1",
+          "declared_multiple_scenes": false,
+          "info_sha256": "2daab1a25909e2066bc6bd661955701d752efd14df3d5fd5b4122013d9700619"
+        },
+        "UIKit": {
+          "build_sdk": "iphonesimulator27.1",
+          "declared_multiple_scenes": false,
+          "info_sha256": "5c177b3cc1d6d072905600cfae3914134ab15805d8bbc511b9366cc278d7cdec"
+        }
+      },
+      "cell": [
+        "baseline-27.1",
+        "duo",
+        "SwiftUI",
+        "split"
+      ],
+      "clean_install": true,
+      "cleanup": true,
+      "collector_build_key": "baseline-27.1",
+      "collector_sources": {
+        "file_count": 1,
+        "files": {
+          "AutomaticCoverageUITests.swift": "6ed952e7172dce17ae5cc3b31f77b84eda3533fa86f8e41446c53df5182573f3"
+        },
+        "sha256": "d81e24049d830654370d9a55ecaa6476bca946e39567c894e49469c0484816ba"
+      },
+      "coverage": [
+        {
+          "actions": [
+            {
+              "id": "ff8518b8-ff61-4129-852b-bc0f93f33dd8",
+              "name": "SwiftUI_Button",
+              "owner_index": 2,
+              "owner_name": "NavigationStackHostingController<AnyView>",
+              "type": "tap",
+              "view_id": "e8221c0c-037b-427b-a51d-34d3828be9e0"
+            }
+          ],
+          "phase": "initial.root.tap"
+        },
+        {
+          "actions": [],
+          "phase": "initial.root.toggle"
+        },
+        {
+          "actions": [
+            {
+              "id": "b7c98364-c42c-4872-818b-621cae4818a4",
+              "name": "SwiftUI.HostingScrollView(sidebar.scroll)",
+              "owner_index": 2,
+              "owner_name": "NavigationStackHostingController<AnyView>",
+              "type": "swipe",
+              "view_id": "e8221c0c-037b-427b-a51d-34d3828be9e0"
+            }
+          ],
+          "phase": "initial.root.scroll"
+        },
+        {
+          "actions": [
+            {
+              "id": "adf1bfa3-56da-4180-bd09-8ea39be07b76",
+              "name": "ListCollectionViewCell",
+              "owner_index": 2,
+              "owner_name": "NavigationStackHostingController<AnyView>",
+              "type": "tap",
+              "view_id": "e8221c0c-037b-427b-a51d-34d3828be9e0"
+            }
+          ],
+          "phase": "initial.navigate"
+        },
+        {
+          "actions": [
+            {
+              "id": "7ca93a91-14a8-4acf-b7bf-dc97f96c2bf5",
+              "name": "SwiftUI_Button",
+              "owner_index": 4,
+              "owner_name": "NavigationStackHostingController<AnyView>",
+              "type": "tap",
+              "view_id": "4a6455e3-6b38-40d1-bdb6-7b97bdefca31"
+            }
+          ],
+          "phase": "initial.detail.tap"
+        },
+        {
+          "actions": [],
+          "phase": "initial.detail.toggle"
+        },
+        {
+          "actions": [
+            {
+              "id": "40b9359b-6b85-411a-8691-66c52bb987e4",
+              "name": "SwiftUI.HostingScrollView(detail.scroll)",
+              "owner_index": 4,
+              "owner_name": "NavigationStackHostingController<AnyView>",
+              "type": "swipe",
+              "view_id": "4a6455e3-6b38-40d1-bdb6-7b97bdefca31"
+            }
+          ],
+          "phase": "initial.detail.scroll"
+        },
+        {
+          "actions": [
+            {
+              "id": "9ff87914-fcd9-4edd-be77-37250508ce61",
+              "name": "SwiftUI_Button",
+              "owner_index": 4,
+              "owner_name": "NavigationStackHostingController<AnyView>",
+              "type": "tap",
+              "view_id": "4a6455e3-6b38-40d1-bdb6-7b97bdefca31"
+            }
+          ],
+          "phase": "initial.present"
+        },
+        {
+          "actions": [
+            {
+              "id": "766ed720-9b35-44f0-ad43-5895ffd31bf7",
+              "name": "SwiftUI_Button",
+              "owner_index": 5,
+              "owner_name": "SheetScreen",
+              "type": "tap",
+              "view_id": "247ff690-08e3-4052-a978-2c2400e52e81"
+            }
+          ],
+          "phase": "initial.sheet.tap"
+        },
+        {
+          "actions": [
+            {
+              "id": "460a1a21-9035-4b2f-8ee2-cba6ff746a30",
+              "name": "SwiftUI_Button",
+              "owner_index": 5,
+              "owner_name": "SheetScreen",
+              "type": "tap",
+              "view_id": "247ff690-08e3-4052-a978-2c2400e52e81"
+            }
+          ],
+          "phase": "initial.dismiss"
+        },
+        {
+          "actions": [
+            {
+              "id": "e4a9416c-7ad1-475d-a842-b9edd95dee11",
+              "name": "SwiftUI_Button",
+              "owner_index": 6,
+              "owner_name": "NavigationStackHostingController<AnyView>",
+              "type": "tap",
+              "view_id": "4c52c10e-a8e4-4a8f-9294-d22c6d5e8bcf"
+            }
+          ],
+          "phase": "initial.detail.return.tap"
+        },
+        {
+          "actions": [
+            {
+              "id": "beabd5ff-0c42-49b5-be61-afc016401c84",
+              "name": "SwiftUI_Button",
+              "owner_index": 6,
+              "owner_name": "NavigationStackHostingController<AnyView>",
+              "type": "tap",
+              "view_id": "4c52c10e-a8e4-4a8f-9294-d22c6d5e8bcf"
+            }
+          ],
+          "phase": "initial.back"
+        },
+        {
+          "actions": [
+            {
+              "id": "db916df4-aab3-46c6-a146-f6dedff1d829",
+              "name": "SwiftUI_Button",
+              "owner_index": 8,
+              "owner_name": "NavigationStackHostingController<AnyView>",
+              "type": "tap",
+              "view_id": "b82593ae-2b1b-4256-84e8-fc4ce30afe1a"
+            }
+          ],
+          "phase": "initial.root.return.tap"
+        },
+        {
+          "actions": [
+            {
+              "id": "b61ad535-1206-460d-9208-76c35f95b48b",
+              "name": "SwiftUI_Button",
+              "owner_index": 9,
+              "owner_name": "NavigationStackHostingController<AnyView>",
+              "type": "tap",
+              "view_id": "af58d45f-eb86-4243-b153-bb95dc8e324a"
+            }
+          ],
+          "phase": "inner.root.tap"
+        },
+        {
+          "actions": [],
+          "phase": "inner.root.toggle"
+        },
+        {
+          "actions": [
+            {
+              "id": "efc7f529-f8d5-4573-946e-fd6610e0e2c4",
+              "name": "SwiftUI.HostingScrollView(sidebar.scroll)",
+              "owner_index": 9,
+              "owner_name": "NavigationStackHostingController<AnyView>",
+              "type": "swipe",
+              "view_id": "af58d45f-eb86-4243-b153-bb95dc8e324a"
+            }
+          ],
+          "phase": "inner.root.scroll"
+        },
+        {
+          "actions": [
+            {
+              "id": "0799ff5c-c787-4f30-85fd-1776dd9eba2c",
+              "name": "ListCollectionViewCell",
+              "owner_index": 9,
+              "owner_name": "NavigationStackHostingController<AnyView>",
+              "type": "tap",
+              "view_id": "af58d45f-eb86-4243-b153-bb95dc8e324a"
+            }
+          ],
+          "phase": "inner.navigate"
+        },
+        {
+          "actions": [
+            {
+              "id": "f6e2825b-2579-48a7-a38b-988c883209fa",
+              "name": "SwiftUI_Button",
+              "owner_index": 9,
+              "owner_name": "NavigationStackHostingController<AnyView>",
+              "type": "tap",
+              "view_id": "af58d45f-eb86-4243-b153-bb95dc8e324a"
+            }
+          ],
+          "phase": "inner.detail.tap"
+        },
+        {
+          "actions": [],
+          "phase": "inner.detail.toggle"
+        },
+        {
+          "actions": [
+            {
+              "id": "a5bd28b9-659c-457a-92af-659414e79113",
+              "name": "SwiftUI.HostingScrollView(detail.scroll)",
+              "owner_index": 9,
+              "owner_name": "NavigationStackHostingController<AnyView>",
+              "type": "swipe",
+              "view_id": "af58d45f-eb86-4243-b153-bb95dc8e324a"
+            }
+          ],
+          "phase": "inner.detail.scroll"
+        },
+        {
+          "actions": [
+            {
+              "id": "90de4744-575f-45dd-97b3-dc6f65fc60ec",
+              "name": "SwiftUI_Button",
+              "owner_index": 9,
+              "owner_name": "NavigationStackHostingController<AnyView>",
+              "type": "tap",
+              "view_id": "af58d45f-eb86-4243-b153-bb95dc8e324a"
+            }
+          ],
+          "phase": "inner.present"
+        },
+        {
+          "actions": [
+            {
+              "id": "06bbafa8-387f-4bbf-82fe-b6937c8db2a1",
+              "name": "SwiftUI_Button",
+              "owner_index": 10,
+              "owner_name": "SheetScreen",
+              "type": "tap",
+              "view_id": "148dbba0-c236-4a96-bf03-735e000e1d5e"
+            }
+          ],
+          "phase": "inner.sheet.tap"
+        },
+        {
+          "actions": [
+            {
+              "id": "caf92b5c-80d1-490a-a86a-93ec5fe4bd87",
+              "name": "SwiftUI_Button",
+              "owner_index": 10,
+              "owner_name": "SheetScreen",
+              "type": "tap",
+              "view_id": "148dbba0-c236-4a96-bf03-735e000e1d5e"
+            }
+          ],
+          "phase": "inner.dismiss"
+        },
+        {
+          "actions": [
+            {
+              "id": "491b88b5-cf1a-4ecc-88f4-9319d0caacb4",
+              "name": "SwiftUI_Button",
+              "owner_index": 11,
+              "owner_name": "NavigationStackHostingController<AnyView>",
+              "type": "tap",
+              "view_id": "8aff8d26-f975-4064-a3b5-ee53d87c15b5"
+            }
+          ],
+          "phase": "inner.detail.return.tap"
+        },
+        {
+          "actions": [
+            {
+              "id": "3eb6f7cd-5741-42fd-8336-6cb2e7596b7c",
+              "name": "SwiftUI_Button",
+              "owner_index": 11,
+              "owner_name": "NavigationStackHostingController<AnyView>",
+              "type": "tap",
+              "view_id": "8aff8d26-f975-4064-a3b5-ee53d87c15b5"
+            }
+          ],
+          "phase": "inner.back"
+        },
+        {
+          "actions": [
+            {
+              "id": "ff3e40f1-e8c2-4d38-bcd0-adf89cfc2112",
+              "name": "SwiftUI_Button",
+              "owner_index": 11,
+              "owner_name": "NavigationStackHostingController<AnyView>",
+              "type": "tap",
+              "view_id": "8aff8d26-f975-4064-a3b5-ee53d87c15b5"
+            }
+          ],
+          "phase": "inner.root.return.tap"
+        },
+        {
+          "actions": [
+            {
+              "id": "81b8943f-ba53-4603-bccb-ec02aa4535d6",
+              "name": "ListCollectionViewCell",
+              "owner_index": 11,
+              "owner_name": "NavigationStackHostingController<AnyView>",
+              "type": "tap",
+              "view_id": "8aff8d26-f975-4064-a3b5-ee53d87c15b5"
+            }
+          ],
+          "phase": "stable.navigate"
+        },
+        {
+          "actions": [
+            {
+              "id": "6eb48f4c-90f6-4cb8-b647-84ab32643cdb",
+              "name": "SwiftUI_Button",
+              "owner_index": 11,
+              "owner_name": "NavigationStackHostingController<AnyView>",
+              "type": "tap",
+              "view_id": "8aff8d26-f975-4064-a3b5-ee53d87c15b5"
+            }
+          ],
+          "phase": "closed.detail.tap"
+        },
+        {
+          "actions": [
+            {
+              "id": "0ec10080-fd87-42d5-8353-f9582f9d7a9d",
+              "name": "SwiftUI_Button",
+              "owner_index": 12,
+              "owner_name": "NavigationStackHostingController<AnyView>",
+              "type": "tap",
+              "view_id": "be74bc4f-9277-413f-b469-74c5f3f37f7d"
+            }
+          ],
+          "phase": "reopened.detail.tap"
+        }
+      ],
+      "duplicate_action_ids": [],
+      "errors": [],
+      "fixture_sources": {
+        "file_count": 3,
+        "files": {
+          "Observation.swift": "dd0a252e94a70a2b021c2b301ee2353e7439be79b546ca4d7615e28f4d458aba",
+          "SwiftUIApp.swift": "f99ed78c8f77a59698e4a05198bb0a314074bfd063be53e03e99b448d30508eb",
+          "UIKitApp.swift": "4cd33b4038d949f80836a2f448132751da098652d9fb4c12bf16c09333b06bfa"
+        },
+        "sha256": "dc7ee138917fff8e6f20d240273a29bbf35ab236fd99da3bda4790274ee7b418"
+      },
+      "geometry": [
+        {
+          "kind": "geometry",
+          "payload": {
+            "scenes": [
+              {
+                "activation": 1,
+                "id": "6A3D09A2-645C-4832-9DF6-CF1C8CF17164",
+                "orientation": 1,
+                "windows": [
+                  {
+                    "height": 678,
+                    "horizontal_size_class": 1,
+                    "vertical_size_class": 2,
+                    "width": 466
+                  }
+                ]
+              }
+            ]
+          },
+          "run_id": "exp195-a9e3cdb44e7342849566d0fef328f707",
+          "sequence": 4,
+          "timestamp": 1789827296.2537751
+        },
+        {
+          "kind": "geometry",
+          "payload": {
+            "scenes": [
+              {
+                "activation": 0,
+                "id": "6A3D09A2-645C-4832-9DF6-CF1C8CF17164",
+                "orientation": 1,
+                "windows": [
+                  {
+                    "height": 678,
+                    "horizontal_size_class": 1,
+                    "vertical_size_class": 2,
+                    "width": 466
+                  }
+                ]
+              }
+            ]
+          },
+          "run_id": "exp195-a9e3cdb44e7342849566d0fef328f707",
+          "sequence": 11,
+          "timestamp": 1789827296.4661689
+        },
+        {
+          "kind": "geometry",
+          "payload": {
+            "scenes": [
+              {
+                "activation": 0,
+                "id": "6A3D09A2-645C-4832-9DF6-CF1C8CF17164",
+                "orientation": 4,
+                "windows": [
+                  {
+                    "height": 669,
+                    "horizontal_size_class": 2,
+                    "vertical_size_class": 2,
+                    "width": 951
+                  }
+                ]
+              }
+            ]
+          },
+          "run_id": "exp195-a9e3cdb44e7342849566d0fef328f707",
+          "sequence": 56,
+          "timestamp": 1789827406.121156
+        },
+        {
+          "kind": "geometry",
+          "payload": {
+            "scenes": [
+              {
+                "activation": 0,
+                "id": "6A3D09A2-645C-4832-9DF6-CF1C8CF17164",
+                "orientation": 4,
+                "windows": [
+                  {
+                    "height": 669,
+                    "horizontal_size_class": 2,
+                    "vertical_size_class": 2,
+                    "width": 951
+                  },
+                  {
+                    "height": 669,
+                    "horizontal_size_class": 2,
+                    "vertical_size_class": 2,
+                    "width": 951
+                  }
+                ]
+              }
+            ]
+          },
+          "run_id": "exp195-a9e3cdb44e7342849566d0fef328f707",
+          "sequence": 60,
+          "timestamp": 1789827406.30934
+        },
+        {
+          "kind": "geometry",
+          "payload": {
+            "scenes": [
+              {
+                "activation": 0,
+                "id": "6A3D09A2-645C-4832-9DF6-CF1C8CF17164",
+                "orientation": 1,
+                "windows": [
+                  {
+                    "height": 678,
+                    "horizontal_size_class": 1,
+                    "vertical_size_class": 2,
+                    "width": 466
+                  },
+                  {
+                    "height": 678,
+                    "horizontal_size_class": 1,
+                    "vertical_size_class": 2,
+                    "width": 466
+                  }
+                ]
+              }
+            ]
+          },
+          "run_id": "exp195-a9e3cdb44e7342849566d0fef328f707",
+          "sequence": 99,
+          "timestamp": 1789827535.89486
+        },
+        {
+          "kind": "geometry",
+          "payload": {
+            "scenes": [
+              {
+                "activation": 0,
+                "id": "6A3D09A2-645C-4832-9DF6-CF1C8CF17164",
+                "orientation": 1,
+                "windows": [
+                  {
+                    "height": 678,
+                    "horizontal_size_class": 2,
+                    "vertical_size_class": 2,
+                    "width": 466
+                  },
+                  {
+                    "height": 678,
+                    "horizontal_size_class": 2,
+                    "vertical_size_class": 2,
+                    "width": 466
+                  }
+                ]
+              }
+            ]
+          },
+          "run_id": "exp195-a9e3cdb44e7342849566d0fef328f707",
+          "sequence": 104,
+          "timestamp": 1789827700.695108
+        },
+        {
+          "kind": "geometry",
+          "payload": {
+            "scenes": [
+              {
+                "activation": 0,
+                "id": "6A3D09A2-645C-4832-9DF6-CF1C8CF17164",
+                "orientation": 4,
+                "windows": [
+                  {
+                    "height": 669,
+                    "horizontal_size_class": 2,
+                    "vertical_size_class": 2,
+                    "width": 951
+                  },
+                  {
+                    "height": 669,
+                    "horizontal_size_class": 2,
+                    "vertical_size_class": 2,
+                    "width": 951
+                  }
+                ]
+              }
+            ]
+          },
+          "run_id": "exp195-a9e3cdb44e7342849566d0fef328f707",
+          "sequence": 108,
+          "timestamp": 1789827700.7781339
+        },
+        {
+          "kind": "geometry",
+          "payload": {
+            "scenes": [
+              {
+                "activation": 1,
+                "id": "6A3D09A2-645C-4832-9DF6-CF1C8CF17164",
+                "orientation": 4,
+                "windows": [
+                  {
+                    "height": 669,
+                    "horizontal_size_class": 2,
+                    "vertical_size_class": 2,
+                    "width": 951
+                  },
+                  {
+                    "height": 669,
+                    "horizontal_size_class": 2,
+                    "vertical_size_class": 2,
+                    "width": 951
+                  }
+                ]
+              }
+            ]
+          },
+          "run_id": "exp195-a9e3cdb44e7342849566d0fef328f707",
+          "sequence": 110,
+          "timestamp": 1789827764.6956
+        },
+        {
+          "kind": "geometry",
+          "payload": {
+            "scenes": [
+              {
+                "activation": 2,
+                "id": "6A3D09A2-645C-4832-9DF6-CF1C8CF17164",
+                "orientation": 4,
+                "windows": [
+                  {
+                    "height": 669,
+                    "horizontal_size_class": 2,
+                    "vertical_size_class": 2,
+                    "width": 951
+                  },
+                  {
+                    "height": 678,
+                    "horizontal_size_class": 2,
+                    "vertical_size_class": 2,
+                    "width": 466
+                  }
+                ]
+              }
+            ]
+          },
+          "run_id": "exp195-a9e3cdb44e7342849566d0fef328f707",
+          "sequence": 116,
+          "timestamp": 1789827765.5019798
+        },
+        {
+          "kind": "geometry",
+          "payload": {
+            "scenes": [
+              {
+                "activation": 2,
+                "id": "6A3D09A2-645C-4832-9DF6-CF1C8CF17164",
+                "orientation": 4,
+                "windows": [
+                  {
+                    "height": 669,
+                    "horizontal_size_class": 2,
+                    "vertical_size_class": 2,
+                    "width": 951
+                  },
+                  {
+                    "height": 669,
+                    "horizontal_size_class": 2,
+                    "vertical_size_class": 2,
+                    "width": 951
+                  }
+                ]
+              }
+            ]
+          },
+          "run_id": "exp195-a9e3cdb44e7342849566d0fef328f707",
+          "sequence": 117,
+          "timestamp": 1789827765.515582
+        }
+      ],
+      "initial_views": [
+        {
+          "date": 1789827293949,
+          "id": "66670e4d-bf4d-4b87-9749-be35863bca25",
+          "index": 0,
+          "name": "ApplicationLaunch",
+          "url": "com/datadog/application-launch/view"
+        },
+        {
+          "date": 1789827296356,
+          "id": "f17d1dee-0a41-428f-b387-75de1ad34854",
+          "index": 1,
+          "name": "AutoTracked_HostingController_Fallback",
+          "url": "_TtGC7SwiftUI19UIHostingControllerGVS_15ModifiedContentGVS_8LazyViewGVS_19_ConditionalContentV14SwiftUIFixture14AutomaticSplitVS4_14AutomaticStack__VS_12RootModifier__"
+        },
+        {
+          "date": 1789827296365,
+          "id": "e8221c0c-037b-427b-a51d-34d3828be9e0",
+          "index": 2,
+          "name": "NavigationStackHostingController<AnyView>",
+          "url": "_TtGC7SwiftUI32NavigationStackHostingControllerVS_7AnyView_"
+        },
+        {
+          "date": 1789827318059,
+          "id": "3f034cdf-019a-49da-a2ef-c600b24fced7",
+          "index": 3,
+          "name": "AutoTracked_HostingController_Fallback",
+          "url": "_TtGC7SwiftUI19UIHostingControllerGVS_15ModifiedContentGVS_8LazyViewGVS_19_ConditionalContentV14SwiftUIFixture14AutomaticSplitVS4_14AutomaticStack__VS_12RootModifier__"
+        },
+        {
+          "date": 1789827318065,
+          "id": "4a6455e3-6b38-40d1-bdb6-7b97bdefca31",
+          "index": 4,
+          "name": "NavigationStackHostingController<AnyView>",
+          "url": "_TtGC7SwiftUI32NavigationStackHostingControllerVS_7AnyView_"
+        },
+        {
+          "date": 1789827341608,
+          "id": "247ff690-08e3-4052-a978-2c2400e52e81",
+          "index": 5,
+          "name": "SheetScreen",
+          "url": "_TtGC7SwiftUI29PresentationHostingControllerVS_7AnyView_"
+        },
+        {
+          "date": 1789827350284,
+          "id": "4c52c10e-a8e4-4a8f-9294-d22c6d5e8bcf",
+          "index": 6,
+          "name": "NavigationStackHostingController<AnyView>",
+          "url": "_TtGC7SwiftUI32NavigationStackHostingControllerVS_7AnyView_"
+        },
+        {
+          "date": 1789827358793,
+          "id": "d98a54c2-9cff-47b3-bd03-57e430114a12",
+          "index": 7,
+          "name": "AutoTracked_HostingController_Fallback",
+          "url": "_TtGC7SwiftUI19UIHostingControllerGVS_15ModifiedContentGVS_8LazyViewGVS_19_ConditionalContentV14SwiftUIFixture14AutomaticSplitVS4_14AutomaticStack__VS_12RootModifier__"
+        },
+        {
+          "date": 1789827358794,
+          "id": "b82593ae-2b1b-4256-84e8-fc4ce30afe1a",
+          "index": 8,
+          "name": "NavigationStackHostingController<AnyView>",
+          "url": "_TtGC7SwiftUI32NavigationStackHostingControllerVS_7AnyView_"
+        }
+      ],
+      "installed_after_test": {
+        "SwiftUI": {
+          "binaries": {
+            "SwiftUIFixture": "1f714af7e70a179100a05eb0d9063e7b3e26f05f830059501ff212b65cd9519e"
+          },
+          "bundleIdentifier": "com.datadoghq.exp195.baseline.sdk271.swiftui",
+          "executable": "SwiftUIFixture"
+        },
+        "UIKit": {
+          "binaries": {
+            "UIKitFixture": "ceb9f631b8fb639c19ee6250953f43f843b078cfa447ec84ff1da8e189b5e863"
+          },
+          "bundleIdentifier": "com.datadoghq.exp195.baseline.sdk271.uikit",
+          "executable": "UIKitFixture"
+        }
+      },
+      "installed_app_metadata": {
+        "SwiftUI": {
+          "build_sdk": "iphonesimulator27.1",
+          "declared_multiple_scenes": false,
+          "info_sha256": "2daab1a25909e2066bc6bd661955701d752efd14df3d5fd5b4122013d9700619"
+        },
+        "UIKit": {
+          "build_sdk": "iphonesimulator27.1",
+          "declared_multiple_scenes": false,
+          "info_sha256": "5c177b3cc1d6d072905600cfae3914134ab15805d8bbc511b9366cc278d7cdec"
+        }
+      },
+      "installed_apps": {
+        "SwiftUI": {
+          "binaries": {
+            "SwiftUIFixture": "1f714af7e70a179100a05eb0d9063e7b3e26f05f830059501ff212b65cd9519e"
+          },
+          "bundleIdentifier": "com.datadoghq.exp195.baseline.sdk271.swiftui",
+          "executable": "SwiftUIFixture"
+        },
+        "UIKit": {
+          "binaries": {
+            "UIKitFixture": "ceb9f631b8fb639c19ee6250953f43f843b078cfa447ec84ff1da8e189b5e863"
+          },
+          "bundleIdentifier": "com.datadoghq.exp195.baseline.sdk271.uikit",
+          "executable": "UIKitFixture"
+        }
+      },
+      "installed_runner": {
+        "binaries": {
+          "CoverageUITests-Runner": "bd8ddf46543a4e3b5ccd4a4ff295ae2bf1c90d3056fbd245269cf014021246bb",
+          "PlugIns/CoverageUITests.xctest.dSYM/Contents/Resources/DWARF/CoverageUITests": "308fffea2744ec186c21b4af7706955eecf331e31ffacd175cc85f765254d1a8",
+          "PlugIns/CoverageUITests.xctest/CoverageUITests": "ad576e934b72ad77091d0634cbd4f03120da3163fa1d6d611022a3496a396949"
+        },
+        "bundleIdentifier": "com.datadoghq.exp195.baseline.sdk271.uitests.xctrunner",
+        "executable": "CoverageUITests-Runner"
+      },
+      "missing_action_phases": [
+        "initial.root.toggle",
+        "initial.detail.toggle",
+        "inner.root.toggle",
+        "inner.detail.toggle"
+      ],
+      "native_appearances": [
+        "empty",
+        "sidebar",
+        "detail",
+        "sheet",
+        "empty",
+        "sidebar",
+        "empty",
+        "detail",
+        "sheet",
+        "empty",
+        "detail",
+        "sidebar",
+        "sidebar"
+      ],
+      "native_test": {
+        "devicesAndConfigurations": [
+          {
+            "device": {
+              "architecture": "arm64",
+              "deviceId": "C3B8746E-C786-4309-BEA0-20A63F772E3F",
+              "deviceName": "EXP195 duo 1dda08",
+              "modelName": "iPhone",
+              "osBuildNumber": "24A94401",
+              "osVersion": "27.1",
+              "platform": "iOS Simulator"
+            },
+            "expectedFailures": 0,
+            "failedTests": 0,
+            "passedTests": 1,
+            "skippedTests": 0,
+            "testPlanConfiguration": {
+              "configurationId": "1",
+              "configurationName": "Test Scheme Action"
+            }
+          }
+        ],
+        "environmentDescription": "Coverage \u00b7 Built with macOS 26.6.2",
+        "expectedFailures": 0,
+        "failedTests": 0,
+        "finishTime": 1789827780.567,
+        "passedTests": 1,
+        "result": "Passed",
+        "runtimeWarnings": [],
+        "skippedTests": 0,
+        "startTime": 1789827289.901,
+        "statistics": [],
+        "testFailures": [],
+        "title": "Test - Coverage",
+        "topInsights": [],
+        "totalTestCount": 1
+      },
+      "native_timeline": [
+        {
+          "kind": "native_appear",
+          "payload": {
+            "screen": "empty"
+          },
+          "run_id": "exp195-a9e3cdb44e7342849566d0fef328f707",
+          "sequence": 3,
+          "timestamp": 1789827296.2533932
+        },
+        {
+          "kind": "native_appear",
+          "payload": {
+            "screen": "sidebar"
+          },
+          "run_id": "exp195-a9e3cdb44e7342849566d0fef328f707",
+          "sequence": 5,
+          "timestamp": 1789827296.253855
+        },
+        {
+          "kind": "native_input",
+          "payload": {
+            "name": "sidebar.tap"
+          },
+          "run_id": "exp195-a9e3cdb44e7342849566d0fef328f707",
+          "sequence": 13,
+          "timestamp": 1789827300.04359
+        },
+        {
+          "kind": "native_input",
+          "payload": {
+            "name": "sidebar.toggle"
+          },
+          "run_id": "exp195-a9e3cdb44e7342849566d0fef328f707",
+          "sequence": 14,
+          "timestamp": 1789827304.762502
+        },
+        {
+          "kind": "native_appear",
+          "payload": {
+            "screen": "detail"
+          },
+          "run_id": "exp195-a9e3cdb44e7342849566d0fef328f707",
+          "sequence": 19,
+          "timestamp": 1789827317.500636
+        },
+        {
+          "kind": "native_input",
+          "payload": {
+            "name": "detail.tap"
+          },
+          "run_id": "exp195-a9e3cdb44e7342849566d0fef328f707",
+          "sequence": 25,
+          "timestamp": 1789827323.6270251
+        },
+        {
+          "kind": "native_input",
+          "payload": {
+            "name": "detail.toggle"
+          },
+          "run_id": "exp195-a9e3cdb44e7342849566d0fef328f707",
+          "sequence": 26,
+          "timestamp": 1789827328.328861
+        },
+        {
+          "kind": "native_input",
+          "payload": {
+            "name": "detail.sheet"
+          },
+          "run_id": "exp195-a9e3cdb44e7342849566d0fef328f707",
+          "sequence": 31,
+          "timestamp": 1789827341.010376
+        },
+        {
+          "kind": "native_appear",
+          "payload": {
+            "screen": "sheet"
+          },
+          "run_id": "exp195-a9e3cdb44e7342849566d0fef328f707",
+          "sequence": 32,
+          "timestamp": 1789827341.027559
+        },
+        {
+          "kind": "native_input",
+          "payload": {
+            "name": "sheet.tap"
+          },
+          "run_id": "exp195-a9e3cdb44e7342849566d0fef328f707",
+          "sequence": 36,
+          "timestamp": 1789827346.093714
+        },
+        {
+          "kind": "native_input",
+          "payload": {
+            "name": "sheet.close"
+          },
+          "run_id": "exp195-a9e3cdb44e7342849566d0fef328f707",
+          "sequence": 37,
+          "timestamp": 1789827349.727051
+        },
+        {
+          "kind": "native_input",
+          "payload": {
+            "name": "detail.tap"
+          },
+          "run_id": "exp195-a9e3cdb44e7342849566d0fef328f707",
+          "sequence": 43,
+          "timestamp": 1789827354.677213
+        },
+        {
+          "kind": "native_input",
+          "payload": {
+            "name": "detail.back"
+          },
+          "run_id": "exp195-a9e3cdb44e7342849566d0fef328f707",
+          "sequence": 44,
+          "timestamp": 1789827358.260546
+        },
+        {
+          "kind": "native_appear",
+          "payload": {
+            "screen": "empty"
+          },
+          "run_id": "exp195-a9e3cdb44e7342849566d0fef328f707",
+          "sequence": 47,
+          "timestamp": 1789827358.2695022
+        },
+        {
+          "kind": "native_appear",
+          "payload": {
+            "screen": "sidebar"
+          },
+          "run_id": "exp195-a9e3cdb44e7342849566d0fef328f707",
+          "sequence": 48,
+          "timestamp": 1789827358.2752771
+        },
+        {
+          "kind": "native_input",
+          "payload": {
+            "name": "sidebar.tap"
+          },
+          "run_id": "exp195-a9e3cdb44e7342849566d0fef328f707",
+          "sequence": 54,
+          "timestamp": 1789827363.227203
+        },
+        {
+          "kind": "native_appear",
+          "payload": {
+            "screen": "empty"
+          },
+          "run_id": "exp195-a9e3cdb44e7342849566d0fef328f707",
+          "sequence": 55,
+          "timestamp": 1789827406.1208758
+        },
+        {
+          "kind": "native_input",
+          "payload": {
+            "name": "sidebar.tap"
+          },
+          "run_id": "exp195-a9e3cdb44e7342849566d0fef328f707",
+          "sequence": 61,
+          "timestamp": 1789827418.110767
+        },
+        {
+          "kind": "native_input",
+          "payload": {
+            "name": "sidebar.toggle"
+          },
+          "run_id": "exp195-a9e3cdb44e7342849566d0fef328f707",
+          "sequence": 62,
+          "timestamp": 1789827422.997038
+        },
+        {
+          "kind": "native_appear",
+          "payload": {
+            "screen": "detail"
+          },
+          "run_id": "exp195-a9e3cdb44e7342849566d0fef328f707",
+          "sequence": 67,
+          "timestamp": 1789827435.893132
+        },
+        {
+          "kind": "native_input",
+          "payload": {
+            "name": "detail.tap"
+          },
+          "run_id": "exp195-a9e3cdb44e7342849566d0fef328f707",
+          "sequence": 68,
+          "timestamp": 1789827441.810924
+        },
+        {
+          "kind": "native_input",
+          "payload": {
+            "name": "detail.toggle"
+          },
+          "run_id": "exp195-a9e3cdb44e7342849566d0fef328f707",
+          "sequence": 71,
+          "timestamp": 1789827446.7462502
+        },
+        {
+          "kind": "native_input",
+          "payload": {
+            "name": "detail.sheet"
+          },
+          "run_id": "exp195-a9e3cdb44e7342849566d0fef328f707",
+          "sequence": 76,
+          "timestamp": 1789827459.67763
+        },
+        {
+          "kind": "native_appear",
+          "payload": {
+            "screen": "sheet"
+          },
+          "run_id": "exp195-a9e3cdb44e7342849566d0fef328f707",
+          "sequence": 77,
+          "timestamp": 1789827459.690987
+        },
+        {
+          "kind": "native_input",
+          "payload": {
+            "name": "sheet.tap"
+          },
+          "run_id": "exp195-a9e3cdb44e7342849566d0fef328f707",
+          "sequence": 81,
+          "timestamp": 1789827464.8943028
+        },
+        {
+          "kind": "native_input",
+          "payload": {
+            "name": "sheet.close"
+          },
+          "run_id": "exp195-a9e3cdb44e7342849566d0fef328f707",
+          "sequence": 82,
+          "timestamp": 1789827468.66102
+        },
+        {
+          "kind": "native_input",
+          "payload": {
+            "name": "detail.tap"
+          },
+          "run_id": "exp195-a9e3cdb44e7342849566d0fef328f707",
+          "sequence": 88,
+          "timestamp": 1789827473.76106
+        },
+        {
+          "kind": "native_input",
+          "payload": {
+            "name": "detail.back"
+          },
+          "run_id": "exp195-a9e3cdb44e7342849566d0fef328f707",
+          "sequence": 90,
+          "timestamp": 1789827477.394627
+        },
+        {
+          "kind": "native_appear",
+          "payload": {
+            "screen": "empty"
+          },
+          "run_id": "exp195-a9e3cdb44e7342849566d0fef328f707",
+          "sequence": 92,
+          "timestamp": 1789827477.4020581
+        },
+        {
+          "kind": "native_input",
+          "payload": {
+            "name": "sidebar.tap"
+          },
+          "run_id": "exp195-a9e3cdb44e7342849566d0fef328f707",
+          "sequence": 94,
+          "timestamp": 1789827482.161272
+        },
+        {
+          "kind": "native_appear",
+          "payload": {
+            "screen": "detail"
+          },
+          "run_id": "exp195-a9e3cdb44e7342849566d0fef328f707",
+          "sequence": 98,
+          "timestamp": 1789827485.787852
+        },
+        {
+          "kind": "native_input",
+          "payload": {
+            "name": "detail.tap"
+          },
+          "run_id": "exp195-a9e3cdb44e7342849566d0fef328f707",
+          "sequence": 100,
+          "timestamp": 1789827609.695162
+        },
+        {
+          "kind": "native_appear",
+          "payload": {
+            "screen": "sidebar"
+          },
+          "run_id": "exp195-a9e3cdb44e7342849566d0fef328f707",
+          "sequence": 103,
+          "timestamp": 1789827700.694855
+        },
+        {
+          "kind": "native_input",
+          "payload": {
+            "name": "detail.tap"
+          },
+          "run_id": "exp195-a9e3cdb44e7342849566d0fef328f707",
+          "sequence": 109,
+          "timestamp": 1789827717.578927
+        },
+        {
+          "kind": "native_background",
+          "payload": {},
+          "run_id": "exp195-a9e3cdb44e7342849566d0fef328f707",
+          "sequence": 111,
+          "timestamp": 1789827765.222588
+        },
+        {
+          "kind": "native_appear",
+          "payload": {
+            "screen": "sidebar"
+          },
+          "run_id": "exp195-a9e3cdb44e7342849566d0fef328f707",
+          "sequence": 115,
+          "timestamp": 1789827765.5017052
+        }
+      ],
+      "pose_receipts": [
+        {
+          "payload": {
+            "frame": "(0.0, 0.0, 466.0, 678.0)"
+          },
+          "phase": "await-open",
+          "run_id": "exp195-a9e3cdb44e7342849566d0fef328f707",
+          "timestamp": 1789827365.501265
+        },
+        {
+          "payload": {
+            "after": {
+              "display": {
+                "active": {
+                  "active": true,
+                  "backlightState": "activeOn",
+                  "bounds": [
+                    [
+                      0,
+                      0
+                    ],
+                    [
+                      2007,
+                      2853
+                    ]
+                  ],
+                  "chromeIdentifier": "com.apple.dt.devicekit.chrome.phone14",
+                  "currentOrientation": "rot90",
+                  "displayId": 3,
+                  "framebufferMaskIdentifier": "BF0DC480-5EE2-4EC1-B02B-C75E94759832",
+                  "name": "LCD-1",
+                  "nativeOrientation": "rot0",
+                  "nativeSize": [
+                    2007,
+                    2853
+                  ],
+                  "physicalSize": [
+                    4.363043308258057,
+                    6.202173709869385
+                  ],
+                  "pointScale": 3,
+                  "primary": false,
+                  "type": {
+                    "integrated": {}
+                  },
+                  "uniqueId": "27A59591-6E45-436F-AFF4-593734A03C81"
+                },
+                "artifact": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp195-split-replay-ccp0oipi/runs/exp195-a9e3cdb44e7342849566d0fef328f707/open-after-displays.json",
+                "observed_at": 1789827415.0848691
+              },
+              "geometry": {
+                "kind": "geometry",
+                "payload": {
+                  "scenes": [
+                    {
+                      "activation": 0,
+                      "id": "6A3D09A2-645C-4832-9DF6-CF1C8CF17164",
+                      "orientation": 4,
+                      "windows": [
+                        {
+                          "height": 669,
+                          "horizontal_size_class": 2,
+                          "vertical_size_class": 2,
+                          "width": 951
+                        },
+                        {
+                          "height": 669,
+                          "horizontal_size_class": 2,
+                          "vertical_size_class": 2,
+                          "width": 951
+                        }
+                      ]
+                    }
+                  ]
+                },
+                "run_id": "exp195-a9e3cdb44e7342849566d0fef328f707",
+                "sequence": 60,
+                "timestamp": 1789827406.30934
+              }
+            },
+            "before": {
+              "display": {
+                "active": {
+                  "active": true,
+                  "backlightState": "activeOn",
+                  "bounds": [
+                    [
+                      0,
+                      0
+                    ],
+                    [
+                      1398,
+                      2034
+                    ]
+                  ],
+                  "chromeIdentifier": "com.apple.dt.devicekit.chrome.phone15",
+                  "currentOrientation": "rot0",
+                  "displayId": 1,
+                  "framebufferMaskIdentifier": "1C896A2B-F0D7-405C-8D0F-66E4B80AD044",
+                  "name": "LCD",
+                  "nativeOrientation": "rot0",
+                  "nativeSize": [
+                    1398,
+                    2034
+                  ],
+                  "physicalSize": [
+                    3.039130449295044,
+                    4.421739101409912
+                  ],
+                  "pointScale": 3,
+                  "primary": true,
+                  "type": {
+                    "integrated": {}
+                  },
+                  "uniqueId": "04F36ECF-6E86-4B5C-A806-E146F63EB2D8"
+                },
+                "artifact": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp195-split-replay-ccp0oipi/runs/exp195-a9e3cdb44e7342849566d0fef328f707/open-before-displays.json",
+                "observed_at": 1789827398.142473
+              },
+              "geometry": {
+                "kind": "geometry",
+                "payload": {
+                  "scenes": [
+                    {
+                      "activation": 0,
+                      "id": "6A3D09A2-645C-4832-9DF6-CF1C8CF17164",
+                      "orientation": 1,
+                      "windows": [
+                        {
+                          "height": 678,
+                          "horizontal_size_class": 1,
+                          "vertical_size_class": 2,
+                          "width": 466
+                        }
+                      ]
+                    }
+                  ]
+                },
+                "run_id": "exp195-a9e3cdb44e7342849566d0fef328f707",
+                "sequence": 11,
+                "timestamp": 1789827296.4661689
+              },
+              "requested_at": 1789827365.501265,
+              "run_id": "exp195-a9e3cdb44e7342849566d0fef328f707"
+            },
+            "command_id": "c08fbf71-aba0-4bb3-893f-3e48868c43a8",
+            "geometry_mode": "resized",
+            "geometry_sequence": 60,
+            "pose": "open",
+            "run_id": "exp195-a9e3cdb44e7342849566d0fef328f707"
+          },
+          "phase": "received-open",
+          "run_id": "exp195-a9e3cdb44e7342849566d0fef328f707",
+          "timestamp": 1789827415.584358
+        },
+        {
+          "payload": {
+            "frame": "(0.0, -5.684341886080802e-14, 951.0, 669.0)"
+          },
+          "phase": "await-close",
+          "run_id": "exp195-a9e3cdb44e7342849566d0fef328f707",
+          "timestamp": 1789827489.179652
+        },
+        {
+          "payload": {
+            "after": {
+              "display": {
+                "active": {
+                  "active": true,
+                  "backlightState": "activeOn",
+                  "bounds": [
+                    [
+                      0,
+                      0
+                    ],
+                    [
+                      1398,
+                      2034
+                    ]
+                  ],
+                  "chromeIdentifier": "com.apple.dt.devicekit.chrome.phone15",
+                  "currentOrientation": "rot0",
+                  "displayId": 1,
+                  "framebufferMaskIdentifier": "1C896A2B-F0D7-405C-8D0F-66E4B80AD044",
+                  "name": "LCD",
+                  "nativeOrientation": "rot0",
+                  "nativeSize": [
+                    1398,
+                    2034
+                  ],
+                  "physicalSize": [
+                    3.039130449295044,
+                    4.421739101409912
+                  ],
+                  "pointScale": 3,
+                  "primary": true,
+                  "type": {
+                    "integrated": {}
+                  },
+                  "uniqueId": "04F36ECF-6E86-4B5C-A806-E146F63EB2D8"
+                },
+                "artifact": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp195-split-replay-ccp0oipi/runs/exp195-a9e3cdb44e7342849566d0fef328f707/close-after-displays.json",
+                "observed_at": 1789827546.876438
+              },
+              "geometry": {
+                "kind": "geometry",
+                "payload": {
+                  "scenes": [
+                    {
+                      "activation": 0,
+                      "id": "6A3D09A2-645C-4832-9DF6-CF1C8CF17164",
+                      "orientation": 1,
+                      "windows": [
+                        {
+                          "height": 678,
+                          "horizontal_size_class": 1,
+                          "vertical_size_class": 2,
+                          "width": 466
+                        },
+                        {
+                          "height": 678,
+                          "horizontal_size_class": 1,
+                          "vertical_size_class": 2,
+                          "width": 466
+                        }
+                      ]
+                    }
+                  ]
+                },
+                "run_id": "exp195-a9e3cdb44e7342849566d0fef328f707",
+                "sequence": 99,
+                "timestamp": 1789827535.89486
+              }
+            },
+            "before": {
+              "display": {
+                "active": {
+                  "active": true,
+                  "backlightState": "activeOn",
+                  "bounds": [
+                    [
+                      0,
+                      0
+                    ],
+                    [
+                      2007,
+                      2853
+                    ]
+                  ],
+                  "chromeIdentifier": "com.apple.dt.devicekit.chrome.phone14",
+                  "currentOrientation": "rot90",
+                  "displayId": 3,
+                  "framebufferMaskIdentifier": "BF0DC480-5EE2-4EC1-B02B-C75E94759832",
+                  "name": "LCD-1",
+                  "nativeOrientation": "rot0",
+                  "nativeSize": [
+                    2007,
+                    2853
+                  ],
+                  "physicalSize": [
+                    4.363043308258057,
+                    6.202173709869385
+                  ],
+                  "pointScale": 3,
+                  "primary": false,
+                  "type": {
+                    "integrated": {}
+                  },
+                  "uniqueId": "27A59591-6E45-436F-AFF4-593734A03C81"
+                },
+                "artifact": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp195-split-replay-ccp0oipi/runs/exp195-a9e3cdb44e7342849566d0fef328f707/close-before-displays.json",
+                "observed_at": 1789827524.0772018
+              },
+              "geometry": {
+                "kind": "geometry",
+                "payload": {
+                  "scenes": [
+                    {
+                      "activation": 0,
+                      "id": "6A3D09A2-645C-4832-9DF6-CF1C8CF17164",
+                      "orientation": 4,
+                      "windows": [
+                        {
+                          "height": 669,
+                          "horizontal_size_class": 2,
+                          "vertical_size_class": 2,
+                          "width": 951
+                        },
+                        {
+                          "height": 669,
+                          "horizontal_size_class": 2,
+                          "vertical_size_class": 2,
+                          "width": 951
+                        }
+                      ]
+                    }
+                  ]
+                },
+                "run_id": "exp195-a9e3cdb44e7342849566d0fef328f707",
+                "sequence": 60,
+                "timestamp": 1789827406.30934
+              },
+              "requested_at": 1789827489.179652,
+              "run_id": "exp195-a9e3cdb44e7342849566d0fef328f707"
+            },
+            "command_id": "c70e2dbc-2911-4cc9-898a-604df9e9a24c",
+            "geometry_mode": "resized",
+            "geometry_sequence": 99,
+            "pose": "close",
+            "run_id": "exp195-a9e3cdb44e7342849566d0fef328f707"
+          },
+          "phase": "received-close",
+          "run_id": "exp195-a9e3cdb44e7342849566d0fef328f707",
+          "timestamp": 1789827547.2605438
+        },
+        {
+          "payload": {
+            "frame": "(0.0, 0.0, 466.0, 678.0)"
+          },
+          "phase": "await-reopen",
+          "run_id": "exp195-a9e3cdb44e7342849566d0fef328f707",
+          "timestamp": 1789827672.020383
+        },
+        {
+          "payload": {
+            "after": {
+              "display": {
+                "active": {
+                  "active": true,
+                  "backlightState": "activeOn",
+                  "bounds": [
+                    [
+                      0,
+                      0
+                    ],
+                    [
+                      2007,
+                      2853
+                    ]
+                  ],
+                  "chromeIdentifier": "com.apple.dt.devicekit.chrome.phone14",
+                  "currentOrientation": "rot90",
+                  "displayId": 3,
+                  "framebufferMaskIdentifier": "BF0DC480-5EE2-4EC1-B02B-C75E94759832",
+                  "name": "LCD-1",
+                  "nativeOrientation": "rot0",
+                  "nativeSize": [
+                    2007,
+                    2853
+                  ],
+                  "physicalSize": [
+                    4.363043308258057,
+                    6.202173709869385
+                  ],
+                  "pointScale": 3,
+                  "primary": false,
+                  "type": {
+                    "integrated": {}
+                  },
+                  "uniqueId": "27A59591-6E45-436F-AFF4-593734A03C81"
+                },
+                "artifact": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp195-split-replay-ccp0oipi/runs/exp195-a9e3cdb44e7342849566d0fef328f707/reopen-after-displays.json",
+                "observed_at": 1789827714.692571
+              },
+              "geometry": {
+                "kind": "geometry",
+                "payload": {
+                  "scenes": [
+                    {
+                      "activation": 0,
+                      "id": "6A3D09A2-645C-4832-9DF6-CF1C8CF17164",
+                      "orientation": 4,
+                      "windows": [
+                        {
+                          "height": 669,
+                          "horizontal_size_class": 2,
+                          "vertical_size_class": 2,
+                          "width": 951
+                        },
+                        {
+                          "height": 669,
+                          "horizontal_size_class": 2,
+                          "vertical_size_class": 2,
+                          "width": 951
+                        }
+                      ]
+                    }
+                  ]
+                },
+                "run_id": "exp195-a9e3cdb44e7342849566d0fef328f707",
+                "sequence": 108,
+                "timestamp": 1789827700.7781339
+              }
+            },
+            "before": {
+              "display": {
+                "active": {
+                  "active": true,
+                  "backlightState": "activeOn",
+                  "bounds": [
+                    [
+                      0,
+                      0
+                    ],
+                    [
+                      1398,
+                      2034
+                    ]
+                  ],
+                  "chromeIdentifier": "com.apple.dt.devicekit.chrome.phone15",
+                  "currentOrientation": "rot0",
+                  "displayId": 1,
+                  "framebufferMaskIdentifier": "1C896A2B-F0D7-405C-8D0F-66E4B80AD044",
+                  "name": "LCD",
+                  "nativeOrientation": "rot0",
+                  "nativeSize": [
+                    1398,
+                    2034
+                  ],
+                  "physicalSize": [
+                    3.039130449295044,
+                    4.421739101409912
+                  ],
+                  "pointScale": 3,
+                  "primary": true,
+                  "type": {
+                    "integrated": {}
+                  },
+                  "uniqueId": "04F36ECF-6E86-4B5C-A806-E146F63EB2D8"
+                },
+                "artifact": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp195-split-replay-ccp0oipi/runs/exp195-a9e3cdb44e7342849566d0fef328f707/reopen-before-displays.json",
+                "observed_at": 1789827692.188318
+              },
+              "geometry": {
+                "kind": "geometry",
+                "payload": {
+                  "scenes": [
+                    {
+                      "activation": 0,
+                      "id": "6A3D09A2-645C-4832-9DF6-CF1C8CF17164",
+                      "orientation": 1,
+                      "windows": [
+                        {
+                          "height": 678,
+                          "horizontal_size_class": 1,
+                          "vertical_size_class": 2,
+                          "width": 466
+                        },
+                        {
+                          "height": 678,
+                          "horizontal_size_class": 1,
+                          "vertical_size_class": 2,
+                          "width": 466
+                        }
+                      ]
+                    }
+                  ]
+                },
+                "run_id": "exp195-a9e3cdb44e7342849566d0fef328f707",
+                "sequence": 99,
+                "timestamp": 1789827535.89486
+              },
+              "requested_at": 1789827672.020383,
+              "run_id": "exp195-a9e3cdb44e7342849566d0fef328f707"
+            },
+            "command_id": "494dd0b8-63b0-4f1b-867e-57e4140da6bf",
+            "geometry_mode": "resized",
+            "geometry_sequence": 108,
+            "pose": "reopen",
+            "run_id": "exp195-a9e3cdb44e7342849566d0fef328f707"
+          },
+          "phase": "received-reopen",
+          "run_id": "exp195-a9e3cdb44e7342849566d0fef328f707",
+          "timestamp": 1789827715.1023068
+        },
+        {
+          "payload": {
+            "frame": "(0.0, -5.684341886080802e-14, 951.0, 669.0)"
+          },
+          "phase": "await-home",
+          "run_id": "exp195-a9e3cdb44e7342849566d0fef328f707",
+          "timestamp": 1789827719.895797
+        },
+        {
+          "payload": {
+            "command_id": "142c4478-30cd-4549-a44a-4f8da1ba75d4",
+            "native_background_sequence": 111,
+            "observed_at": 1789827775.043777,
+            "run_id": "exp195-a9e3cdb44e7342849566d0fef328f707"
+          },
+          "phase": "received-home",
+          "run_id": "exp195-a9e3cdb44e7342849566d0fef328f707",
+          "timestamp": 1789827775.9926639
+        }
+      ],
+      "run_id": "exp195-a9e3cdb44e7342849566d0fef328f707",
+      "source_revision": "92f021ba7e4a866f84a52da93ed8b63f3dc75882",
+      "toolchain": "Xcode 27.1\nBuild version 27A9269",
+      "unassigned_actions": [],
+      "unknown_action_owners": [],
+      "view_count": 15,
+      "view_phase_timeline": [
+        {
+          "index": 0,
+          "name": "ApplicationLaunch",
+          "preceding_input_phase": "launch",
+          "seconds_after_last_background": -471.273588180542,
+          "timestamp": 1789827293.949,
+          "view_id": "66670e4d-bf4d-4b87-9749-be35863bca25"
+        },
+        {
+          "index": 1,
+          "name": "AutoTracked_HostingController_Fallback",
+          "preceding_input_phase": "launch",
+          "seconds_after_last_background": -468.86658811569214,
+          "timestamp": 1789827296.356,
+          "view_id": "f17d1dee-0a41-428f-b387-75de1ad34854"
+        },
+        {
+          "index": 2,
+          "name": "NavigationStackHostingController<AnyView>",
+          "preceding_input_phase": "launch",
+          "seconds_after_last_background": -468.85758805274963,
+          "timestamp": 1789827296.365,
+          "view_id": "e8221c0c-037b-427b-a51d-34d3828be9e0"
+        },
+        {
+          "index": 3,
+          "name": "AutoTracked_HostingController_Fallback",
+          "preceding_input_phase": "initial.navigate.delivered",
+          "seconds_after_last_background": -447.1635880470276,
+          "timestamp": 1789827318.059,
+          "view_id": "3f034cdf-019a-49da-a2ef-c600b24fced7"
+        },
+        {
+          "index": 4,
+          "name": "NavigationStackHostingController<AnyView>",
+          "preceding_input_phase": "initial.navigate.delivered",
+          "seconds_after_last_background": -447.1575880050659,
+          "timestamp": 1789827318.065,
+          "view_id": "4a6455e3-6b38-40d1-bdb6-7b97bdefca31"
+        },
+        {
+          "index": 5,
+          "name": "SheetScreen",
+          "preceding_input_phase": "initial.present.delivered",
+          "seconds_after_last_background": -423.61458802223206,
+          "timestamp": 1789827341.608,
+          "view_id": "247ff690-08e3-4052-a978-2c2400e52e81"
+        },
+        {
+          "index": 6,
+          "name": "NavigationStackHostingController<AnyView>",
+          "preceding_input_phase": "initial.dismiss.delivered",
+          "seconds_after_last_background": -414.938588142395,
+          "timestamp": 1789827350.284,
+          "view_id": "4c52c10e-a8e4-4a8f-9294-d22c6d5e8bcf"
+        },
+        {
+          "index": 7,
+          "name": "AutoTracked_HostingController_Fallback",
+          "preceding_input_phase": "initial.back.delivered",
+          "seconds_after_last_background": -406.4295880794525,
+          "timestamp": 1789827358.793,
+          "view_id": "d98a54c2-9cff-47b3-bd03-57e430114a12"
+        },
+        {
+          "index": 8,
+          "name": "NavigationStackHostingController<AnyView>",
+          "preceding_input_phase": "initial.back.delivered",
+          "seconds_after_last_background": -406.42858815193176,
+          "timestamp": 1789827358.794,
+          "view_id": "b82593ae-2b1b-4256-84e8-fc4ce30afe1a"
+        },
+        {
+          "index": 9,
+          "name": "NavigationStackHostingController<AnyView>",
+          "preceding_input_phase": "await-open",
+          "seconds_after_last_background": -359.0145881175995,
+          "timestamp": 1789827406.208,
+          "view_id": "af58d45f-eb86-4243-b153-bb95dc8e324a"
+        },
+        {
+          "index": 10,
+          "name": "SheetScreen",
+          "preceding_input_phase": "inner.present.delivered",
+          "seconds_after_last_background": -304.94358801841736,
+          "timestamp": 1789827460.279,
+          "view_id": "148dbba0-c236-4a96-bf03-735e000e1d5e"
+        },
+        {
+          "index": 11,
+          "name": "NavigationStackHostingController<AnyView>",
+          "preceding_input_phase": "inner.dismiss.delivered",
+          "seconds_after_last_background": -295.98758816719055,
+          "timestamp": 1789827469.235,
+          "view_id": "8aff8d26-f975-4064-a3b5-ee53d87c15b5"
+        },
+        {
+          "index": 12,
+          "name": "NavigationStackHostingController<AnyView>",
+          "preceding_input_phase": "await-reopen",
+          "seconds_after_last_background": -64.42858815193176,
+          "timestamp": 1789827700.794,
+          "view_id": "be74bc4f-9277-413f-b469-74c5f3f37f7d"
+        },
+        {
+          "index": 13,
+          "name": "NavigationStackHostingController<AnyView>",
+          "preceding_input_phase": "await-home",
+          "seconds_after_last_background": 0.2374119758605957,
+          "timestamp": 1789827765.46,
+          "view_id": "c0965d83-447e-4b2a-b4b8-2fe32fc74318"
+        },
+        {
+          "index": 14,
+          "name": "NavigationStackHostingController<AnyView>",
+          "preceding_input_phase": "await-home",
+          "seconds_after_last_background": 0.3134119510650635,
+          "timestamp": 1789827765.536,
+          "view_id": "d2c740c3-4d24-41bc-937c-efc02e3b2ea0"
+        }
+      ],
+      "views": [
+        {
+          "date": 1789827293949,
+          "id": "66670e4d-bf4d-4b87-9749-be35863bca25",
+          "index": 0,
+          "name": "ApplicationLaunch",
+          "url": "com/datadog/application-launch/view"
+        },
+        {
+          "date": 1789827296356,
+          "id": "f17d1dee-0a41-428f-b387-75de1ad34854",
+          "index": 1,
+          "name": "AutoTracked_HostingController_Fallback",
+          "url": "_TtGC7SwiftUI19UIHostingControllerGVS_15ModifiedContentGVS_8LazyViewGVS_19_ConditionalContentV14SwiftUIFixture14AutomaticSplitVS4_14AutomaticStack__VS_12RootModifier__"
+        },
+        {
+          "date": 1789827296365,
+          "id": "e8221c0c-037b-427b-a51d-34d3828be9e0",
+          "index": 2,
+          "name": "NavigationStackHostingController<AnyView>",
+          "url": "_TtGC7SwiftUI32NavigationStackHostingControllerVS_7AnyView_"
+        },
+        {
+          "date": 1789827318059,
+          "id": "3f034cdf-019a-49da-a2ef-c600b24fced7",
+          "index": 3,
+          "name": "AutoTracked_HostingController_Fallback",
+          "url": "_TtGC7SwiftUI19UIHostingControllerGVS_15ModifiedContentGVS_8LazyViewGVS_19_ConditionalContentV14SwiftUIFixture14AutomaticSplitVS4_14AutomaticStack__VS_12RootModifier__"
+        },
+        {
+          "date": 1789827318065,
+          "id": "4a6455e3-6b38-40d1-bdb6-7b97bdefca31",
+          "index": 4,
+          "name": "NavigationStackHostingController<AnyView>",
+          "url": "_TtGC7SwiftUI32NavigationStackHostingControllerVS_7AnyView_"
+        },
+        {
+          "date": 1789827341608,
+          "id": "247ff690-08e3-4052-a978-2c2400e52e81",
+          "index": 5,
+          "name": "SheetScreen",
+          "url": "_TtGC7SwiftUI29PresentationHostingControllerVS_7AnyView_"
+        },
+        {
+          "date": 1789827350284,
+          "id": "4c52c10e-a8e4-4a8f-9294-d22c6d5e8bcf",
+          "index": 6,
+          "name": "NavigationStackHostingController<AnyView>",
+          "url": "_TtGC7SwiftUI32NavigationStackHostingControllerVS_7AnyView_"
+        },
+        {
+          "date": 1789827358793,
+          "id": "d98a54c2-9cff-47b3-bd03-57e430114a12",
+          "index": 7,
+          "name": "AutoTracked_HostingController_Fallback",
+          "url": "_TtGC7SwiftUI19UIHostingControllerGVS_15ModifiedContentGVS_8LazyViewGVS_19_ConditionalContentV14SwiftUIFixture14AutomaticSplitVS4_14AutomaticStack__VS_12RootModifier__"
+        },
+        {
+          "date": 1789827358794,
+          "id": "b82593ae-2b1b-4256-84e8-fc4ce30afe1a",
+          "index": 8,
+          "name": "NavigationStackHostingController<AnyView>",
+          "url": "_TtGC7SwiftUI32NavigationStackHostingControllerVS_7AnyView_"
+        },
+        {
+          "date": 1789827406208,
+          "id": "af58d45f-eb86-4243-b153-bb95dc8e324a",
+          "index": 9,
+          "name": "NavigationStackHostingController<AnyView>",
+          "url": "_TtGC7SwiftUI32NavigationStackHostingControllerVS_7AnyView_"
+        },
+        {
+          "date": 1789827460279,
+          "id": "148dbba0-c236-4a96-bf03-735e000e1d5e",
+          "index": 10,
+          "name": "SheetScreen",
+          "url": "_TtGC7SwiftUI29PresentationHostingControllerVS_7AnyView_"
+        },
+        {
+          "date": 1789827469235,
+          "id": "8aff8d26-f975-4064-a3b5-ee53d87c15b5",
+          "index": 11,
+          "name": "NavigationStackHostingController<AnyView>",
+          "url": "_TtGC7SwiftUI32NavigationStackHostingControllerVS_7AnyView_"
+        },
+        {
+          "date": 1789827700794,
+          "id": "be74bc4f-9277-413f-b469-74c5f3f37f7d",
+          "index": 12,
+          "name": "NavigationStackHostingController<AnyView>",
+          "url": "_TtGC7SwiftUI32NavigationStackHostingControllerVS_7AnyView_"
+        },
+        {
+          "date": 1789827765460,
+          "id": "c0965d83-447e-4b2a-b4b8-2fe32fc74318",
+          "index": 13,
+          "name": "NavigationStackHostingController<AnyView>",
+          "url": "_TtGC7SwiftUI32NavigationStackHostingControllerVS_7AnyView_"
+        },
+        {
+          "date": 1789827765536,
+          "id": "d2c740c3-4d24-41bc-937c-efc02e3b2ea0",
+          "index": 14,
+          "name": "NavigationStackHostingController<AnyView>",
+          "url": "_TtGC7SwiftUI32NavigationStackHostingControllerVS_7AnyView_"
+        }
+      ]
+    },
+    {
+      "action_types": {
+        "swipe": 4,
+        "tap": 21
+      },
+      "app_metadata_after_test": {
+        "SwiftUI": {
+          "build_sdk": "iphonesimulator27.1",
+          "declared_multiple_scenes": false,
+          "info_sha256": "af65fd96a7c5b398b0c24cdb1b15dfd52c0e01fde1ef474b3b85af712b976c31"
+        },
+        "UIKit": {
+          "build_sdk": "iphonesimulator27.1",
+          "declared_multiple_scenes": false,
+          "info_sha256": "a65f7f2e385da2095c36309d8e1ab2583355f53ba47de28dfd4fc8874ad2d84c"
+        }
+      },
+      "artifact_directory": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp195-split-replay-ccp0oipi/runs/exp195-718c04f2ad5c4ba6b1d28690e3ef9133",
+      "artifacts_sha256": {
+        "close-after-displays.json": "f21b7c325e056ef31191ae79ec4994269933a7bd083d48482bdb624d6d8ac2bb",
+        "close-before-displays.json": "8edc96064611a1d8894d74bea73d52759c203afc646d6e04d03507af95da8fb4",
+        "close-command.json": "1a8e7237d9670a676fcbd33f3a1b1747bbeebb238ec6015c82c47e7dc72e4333",
+        "closed-tap-stall.sample.txt": "bc29103b4e87c8dabf89bd2304470b710a2d2581c6ef5ead023f8aec61afb025",
+        "events.jsonl": "0de8249f4473fe8cb872ea7fac42f3913d2913aa1c659dbaa5d2a4cdb8aa9b23",
+        "home-command.json": "960a179f6acdbedc90ada298269b4b80b4010e1507cbc9019f03f5d8f9d3c04c",
+        "open-after-displays.json": "a45b158953f9054faf5100c90b8d544fdafca1588189697e567e3522a021b065",
+        "open-before-displays.json": "63566b2cafa2620d952b6963142fd4eb84a04171c93ea7410b954f2bf0c6332e",
+        "open-command.json": "dea666be9cf82b274d02af42ddf20e9d8b71c4edb0f34520bcbc70f705e34968",
+        "receipts.json": "d02d983f43ced55ffe16caf3cfa8179d10b71ecf6da4c08f87ad69b0fc5ff180",
+        "reopen-after-displays.json": "68be4fc668ca104393cb7113c2c945b260e03855747e2faaf177526c26ee6e4b",
+        "reopen-before-displays.json": "f77c387930f6e3d5182a229eb16468db72495d323f74eda3a4f7810ffd1c0e45",
+        "reopen-command.json": "2be5a40e1333d7ad614a2be6fda9c3e4d802faa9a24c9443130a8dc3f2c89c23",
+        "run.json": "11d5c097097a209079e18566c77cae01e258a40be7d3e4b38be515d34433c5c4",
+        "test-summary.json": "4e0fb4a053e387e511577b5cfbd6892bbbc905409b00f64f5f000cbc77cc0534"
+      },
+      "automatic_action_count": 25,
+      "build_sdk": "27.1",
+      "built_app_metadata": {
+        "SwiftUI": {
+          "build_sdk": "iphonesimulator27.1",
+          "declared_multiple_scenes": false,
+          "info_sha256": "af65fd96a7c5b398b0c24cdb1b15dfd52c0e01fde1ef474b3b85af712b976c31"
+        },
+        "UIKit": {
+          "build_sdk": "iphonesimulator27.1",
+          "declared_multiple_scenes": false,
+          "info_sha256": "a65f7f2e385da2095c36309d8e1ab2583355f53ba47de28dfd4fc8874ad2d84c"
+        }
+      },
+      "cell": [
+        "candidate-27.1",
+        "duo",
+        "SwiftUI",
+        "split"
+      ],
+      "clean_install": true,
+      "cleanup": true,
+      "collector_build_key": "candidate-27.1",
+      "collector_sources": {
+        "file_count": 1,
+        "files": {
+          "AutomaticCoverageUITests.swift": "6ed952e7172dce17ae5cc3b31f77b84eda3533fa86f8e41446c53df5182573f3"
+        },
+        "sha256": "d81e24049d830654370d9a55ecaa6476bca946e39567c894e49469c0484816ba"
+      },
+      "coverage": [
+        {
+          "actions": [
+            {
+              "id": "dc587ea5-a5c9-4cf3-a390-d392893b8ef5",
+              "name": "SwiftUI_Button",
+              "owner_index": 2,
+              "owner_name": "NavigationStackHostingController<AnyView>",
+              "type": "tap",
+              "view_id": "4bc7bb7a-4ba5-4b5d-af84-252e3ac3c5ab"
+            }
+          ],
+          "phase": "initial.root.tap"
+        },
+        {
+          "actions": [],
+          "phase": "initial.root.toggle"
+        },
+        {
+          "actions": [
+            {
+              "id": "908c8f1e-e579-4422-98d8-eeab82e238fb",
+              "name": "SwiftUI.HostingScrollView(sidebar.scroll)",
+              "owner_index": 2,
+              "owner_name": "NavigationStackHostingController<AnyView>",
+              "type": "swipe",
+              "view_id": "4bc7bb7a-4ba5-4b5d-af84-252e3ac3c5ab"
+            }
+          ],
+          "phase": "initial.root.scroll"
+        },
+        {
+          "actions": [
+            {
+              "id": "45f8a29c-a336-4ee8-bbb1-2589b372ead4",
+              "name": "ListCollectionViewCell",
+              "owner_index": 2,
+              "owner_name": "NavigationStackHostingController<AnyView>",
+              "type": "tap",
+              "view_id": "4bc7bb7a-4ba5-4b5d-af84-252e3ac3c5ab"
+            }
+          ],
+          "phase": "initial.navigate"
+        },
+        {
+          "actions": [
+            {
+              "id": "5e7ec7ad-ff32-4e7c-bc25-7e5f08d0f531",
+              "name": "SwiftUI_Button",
+              "owner_index": 4,
+              "owner_name": "NavigationStackHostingController<AnyView>",
+              "type": "tap",
+              "view_id": "961f24e6-9cad-497c-b254-ab2d5156ad00"
+            }
+          ],
+          "phase": "initial.detail.tap"
+        },
+        {
+          "actions": [],
+          "phase": "initial.detail.toggle"
+        },
+        {
+          "actions": [
+            {
+              "id": "7fac24fe-d7ba-46ef-befb-134f7037dfc6",
+              "name": "SwiftUI.HostingScrollView(detail.scroll)",
+              "owner_index": 4,
+              "owner_name": "NavigationStackHostingController<AnyView>",
+              "type": "swipe",
+              "view_id": "961f24e6-9cad-497c-b254-ab2d5156ad00"
+            }
+          ],
+          "phase": "initial.detail.scroll"
+        },
+        {
+          "actions": [
+            {
+              "id": "a9c41020-d4f1-4d18-9dcb-d52bb1ec6625",
+              "name": "SwiftUI_Button",
+              "owner_index": 4,
+              "owner_name": "NavigationStackHostingController<AnyView>",
+              "type": "tap",
+              "view_id": "961f24e6-9cad-497c-b254-ab2d5156ad00"
+            }
+          ],
+          "phase": "initial.present"
+        },
+        {
+          "actions": [
+            {
+              "id": "b0420975-736d-45d5-88d3-a5bb83572784",
+              "name": "SwiftUI_Button",
+              "owner_index": 5,
+              "owner_name": "SheetScreen",
+              "type": "tap",
+              "view_id": "d5202687-9e33-4e8a-b375-bd83cfc7509a"
+            }
+          ],
+          "phase": "initial.sheet.tap"
+        },
+        {
+          "actions": [
+            {
+              "id": "2dbf35c2-18ee-43d0-817f-e02028eee6b0",
+              "name": "SwiftUI_Button",
+              "owner_index": 5,
+              "owner_name": "SheetScreen",
+              "type": "tap",
+              "view_id": "d5202687-9e33-4e8a-b375-bd83cfc7509a"
+            }
+          ],
+          "phase": "initial.dismiss"
+        },
+        {
+          "actions": [
+            {
+              "id": "db04724c-e38f-4860-bb76-478f8d49a887",
+              "name": "SwiftUI_Button",
+              "owner_index": 6,
+              "owner_name": "NavigationStackHostingController<AnyView>",
+              "type": "tap",
+              "view_id": "c5fd1bae-7b97-45d6-bd93-f6077a02a224"
+            }
+          ],
+          "phase": "initial.detail.return.tap"
+        },
+        {
+          "actions": [
+            {
+              "id": "c2f6eae8-25b5-41e3-80c1-0837983c7b93",
+              "name": "SwiftUI_Button",
+              "owner_index": 6,
+              "owner_name": "NavigationStackHostingController<AnyView>",
+              "type": "tap",
+              "view_id": "c5fd1bae-7b97-45d6-bd93-f6077a02a224"
+            }
+          ],
+          "phase": "initial.back"
+        },
+        {
+          "actions": [
+            {
+              "id": "e455577a-31f1-41a6-adb5-14087f5e13b0",
+              "name": "SwiftUI_Button",
+              "owner_index": 8,
+              "owner_name": "NavigationStackHostingController<AnyView>",
+              "type": "tap",
+              "view_id": "99559aca-1ca7-4a1b-ae91-bd5d6fcc0d53"
+            }
+          ],
+          "phase": "initial.root.return.tap"
+        },
+        {
+          "actions": [
+            {
+              "id": "58c3865d-e073-4f8f-8257-0dd7e0f81cb4",
+              "name": "SwiftUI_Button",
+              "owner_index": 10,
+              "owner_name": "NavigationStackHostingController<AnyView>",
+              "type": "tap",
+              "view_id": "8c9d6eb5-cbe5-4a20-b693-c8ef9b2824a1"
+            }
+          ],
+          "phase": "inner.root.tap"
+        },
+        {
+          "actions": [],
+          "phase": "inner.root.toggle"
+        },
+        {
+          "actions": [
+            {
+              "id": "112963bf-5cfe-4ed8-8d5e-885d21ff2194",
+              "name": "SwiftUI.HostingScrollView(sidebar.scroll)",
+              "owner_index": 10,
+              "owner_name": "NavigationStackHostingController<AnyView>",
+              "type": "swipe",
+              "view_id": "8c9d6eb5-cbe5-4a20-b693-c8ef9b2824a1"
+            }
+          ],
+          "phase": "inner.root.scroll"
+        },
+        {
+          "actions": [
+            {
+              "id": "6b328c3f-7eeb-42b3-a6b2-a341ce8b8c2e",
+              "name": "ListCollectionViewCell",
+              "owner_index": 10,
+              "owner_name": "NavigationStackHostingController<AnyView>",
+              "type": "tap",
+              "view_id": "8c9d6eb5-cbe5-4a20-b693-c8ef9b2824a1"
+            }
+          ],
+          "phase": "inner.navigate"
+        },
+        {
+          "actions": [
+            {
+              "id": "336522f3-0eaa-4103-90bd-f7c25a05d212",
+              "name": "SwiftUI_Button",
+              "owner_index": 10,
+              "owner_name": "NavigationStackHostingController<AnyView>",
+              "type": "tap",
+              "view_id": "8c9d6eb5-cbe5-4a20-b693-c8ef9b2824a1"
+            }
+          ],
+          "phase": "inner.detail.tap"
+        },
+        {
+          "actions": [],
+          "phase": "inner.detail.toggle"
+        },
+        {
+          "actions": [
+            {
+              "id": "63e73255-6c03-4ea2-882e-e05786a390ab",
+              "name": "SwiftUI.HostingScrollView(detail.scroll)",
+              "owner_index": 10,
+              "owner_name": "NavigationStackHostingController<AnyView>",
+              "type": "swipe",
+              "view_id": "8c9d6eb5-cbe5-4a20-b693-c8ef9b2824a1"
+            }
+          ],
+          "phase": "inner.detail.scroll"
+        },
+        {
+          "actions": [
+            {
+              "id": "016fc575-475d-4de0-a7bd-d7e91fca0028",
+              "name": "SwiftUI_Button",
+              "owner_index": 10,
+              "owner_name": "NavigationStackHostingController<AnyView>",
+              "type": "tap",
+              "view_id": "8c9d6eb5-cbe5-4a20-b693-c8ef9b2824a1"
+            }
+          ],
+          "phase": "inner.present"
+        },
+        {
+          "actions": [
+            {
+              "id": "3de03cff-8296-42d5-af97-127aa7f73eba",
+              "name": "SwiftUI_Button",
+              "owner_index": 11,
+              "owner_name": "SheetScreen",
+              "type": "tap",
+              "view_id": "0485864e-0d07-42aa-a2d6-41521c6e418d"
+            }
+          ],
+          "phase": "inner.sheet.tap"
+        },
+        {
+          "actions": [
+            {
+              "id": "3dc0eabb-566d-4b71-9800-c7e09cc5cd6f",
+              "name": "SwiftUI_Button",
+              "owner_index": 11,
+              "owner_name": "SheetScreen",
+              "type": "tap",
+              "view_id": "0485864e-0d07-42aa-a2d6-41521c6e418d"
+            }
+          ],
+          "phase": "inner.dismiss"
+        },
+        {
+          "actions": [
+            {
+              "id": "71230c7b-99de-4d22-aaa3-9732eaf8d126",
+              "name": "SwiftUI_Button",
+              "owner_index": 12,
+              "owner_name": "NavigationStackHostingController<AnyView>",
+              "type": "tap",
+              "view_id": "5d2b3b37-6779-44b2-bf43-246259d36488"
+            }
+          ],
+          "phase": "inner.detail.return.tap"
+        },
+        {
+          "actions": [
+            {
+              "id": "81af8bce-e3c9-4064-aa1b-e09a91e0d6dd",
+              "name": "SwiftUI_Button",
+              "owner_index": 12,
+              "owner_name": "NavigationStackHostingController<AnyView>",
+              "type": "tap",
+              "view_id": "5d2b3b37-6779-44b2-bf43-246259d36488"
+            }
+          ],
+          "phase": "inner.back"
+        },
+        {
+          "actions": [
+            {
+              "id": "5146499a-9c94-4291-b35f-b638c433a81a",
+              "name": "SwiftUI_Button",
+              "owner_index": 12,
+              "owner_name": "NavigationStackHostingController<AnyView>",
+              "type": "tap",
+              "view_id": "5d2b3b37-6779-44b2-bf43-246259d36488"
+            }
+          ],
+          "phase": "inner.root.return.tap"
+        },
+        {
+          "actions": [
+            {
+              "id": "b57ef579-7da0-4cb4-86b1-ff515f43f805",
+              "name": "ListCollectionViewCell",
+              "owner_index": 12,
+              "owner_name": "NavigationStackHostingController<AnyView>",
+              "type": "tap",
+              "view_id": "5d2b3b37-6779-44b2-bf43-246259d36488"
+            }
+          ],
+          "phase": "stable.navigate"
+        },
+        {
+          "actions": [
+            {
+              "id": "f1965474-6156-45d0-bc65-a9459949f552",
+              "name": "SwiftUI_Button",
+              "owner_index": 13,
+              "owner_name": "NavigationStackHostingController<AnyView>",
+              "type": "tap",
+              "view_id": "cf42d8d0-64cc-4696-9991-93afab98cdf3"
+            }
+          ],
+          "phase": "closed.detail.tap"
+        },
+        {
+          "actions": [
+            {
+              "id": "7e4b4324-18c7-4f79-98c9-4a539070bc38",
+              "name": "SwiftUI_Button",
+              "owner_index": 14,
+              "owner_name": "NavigationStackHostingController<AnyView>",
+              "type": "tap",
+              "view_id": "465021c4-828a-4261-ac0d-74fc6552e9d8"
+            }
+          ],
+          "phase": "reopened.detail.tap"
+        }
+      ],
+      "duplicate_action_ids": [],
+      "errors": [],
+      "fixture_sources": {
+        "file_count": 3,
+        "files": {
+          "Observation.swift": "dd0a252e94a70a2b021c2b301ee2353e7439be79b546ca4d7615e28f4d458aba",
+          "SwiftUIApp.swift": "f99ed78c8f77a59698e4a05198bb0a314074bfd063be53e03e99b448d30508eb",
+          "UIKitApp.swift": "4cd33b4038d949f80836a2f448132751da098652d9fb4c12bf16c09333b06bfa"
+        },
+        "sha256": "dc7ee138917fff8e6f20d240273a29bbf35ab236fd99da3bda4790274ee7b418"
+      },
+      "geometry": [
+        {
+          "kind": "geometry",
+          "payload": {
+            "scenes": [
+              {
+                "activation": 1,
+                "id": "6C455723-EA58-41AE-9572-7F871624FE9B",
+                "orientation": 1,
+                "windows": [
+                  {
+                    "height": 678,
+                    "horizontal_size_class": 1,
+                    "vertical_size_class": 2,
+                    "width": 466
+                  }
+                ]
+              }
+            ]
+          },
+          "run_id": "exp195-718c04f2ad5c4ba6b1d28690e3ef9133",
+          "sequence": 4,
+          "timestamp": 1789827793.644867
+        },
+        {
+          "kind": "geometry",
+          "payload": {
+            "scenes": [
+              {
+                "activation": 0,
+                "id": "6C455723-EA58-41AE-9572-7F871624FE9B",
+                "orientation": 1,
+                "windows": [
+                  {
+                    "height": 678,
+                    "horizontal_size_class": 1,
+                    "vertical_size_class": 2,
+                    "width": 466
+                  }
+                ]
+              }
+            ]
+          },
+          "run_id": "exp195-718c04f2ad5c4ba6b1d28690e3ef9133",
+          "sequence": 11,
+          "timestamp": 1789827793.842352
+        },
+        {
+          "kind": "geometry",
+          "payload": {
+            "scenes": [
+              {
+                "activation": 0,
+                "id": "6C455723-EA58-41AE-9572-7F871624FE9B",
+                "orientation": 1,
+                "windows": [
+                  {
+                    "height": 678,
+                    "horizontal_size_class": 2,
+                    "vertical_size_class": 2,
+                    "width": 466
+                  }
+                ]
+              }
+            ]
+          },
+          "run_id": "exp195-718c04f2ad5c4ba6b1d28690e3ef9133",
+          "sequence": 60,
+          "timestamp": 1789827896.989521
+        },
+        {
+          "kind": "geometry",
+          "payload": {
+            "scenes": [
+              {
+                "activation": 0,
+                "id": "6C455723-EA58-41AE-9572-7F871624FE9B",
+                "orientation": 4,
+                "windows": [
+                  {
+                    "height": 669,
+                    "horizontal_size_class": 2,
+                    "vertical_size_class": 2,
+                    "width": 951
+                  }
+                ]
+              }
+            ]
+          },
+          "run_id": "exp195-718c04f2ad5c4ba6b1d28690e3ef9133",
+          "sequence": 66,
+          "timestamp": 1789827897.046138
+        },
+        {
+          "kind": "geometry",
+          "payload": {
+            "scenes": [
+              {
+                "activation": 0,
+                "id": "6C455723-EA58-41AE-9572-7F871624FE9B",
+                "orientation": 4,
+                "windows": [
+                  {
+                    "height": 669,
+                    "horizontal_size_class": 2,
+                    "vertical_size_class": 2,
+                    "width": 951
+                  },
+                  {
+                    "height": 669,
+                    "horizontal_size_class": 2,
+                    "vertical_size_class": 2,
+                    "width": 951
+                  }
+                ]
+              }
+            ]
+          },
+          "run_id": "exp195-718c04f2ad5c4ba6b1d28690e3ef9133",
+          "sequence": 69,
+          "timestamp": 1789827897.282922
+        },
+        {
+          "kind": "geometry",
+          "payload": {
+            "scenes": [
+              {
+                "activation": 0,
+                "id": "6C455723-EA58-41AE-9572-7F871624FE9B",
+                "orientation": 1,
+                "windows": [
+                  {
+                    "height": 678,
+                    "horizontal_size_class": 1,
+                    "vertical_size_class": 2,
+                    "width": 466
+                  },
+                  {
+                    "height": 678,
+                    "horizontal_size_class": 1,
+                    "vertical_size_class": 2,
+                    "width": 466
+                  }
+                ]
+              }
+            ]
+          },
+          "run_id": "exp195-718c04f2ad5c4ba6b1d28690e3ef9133",
+          "sequence": 114,
+          "timestamp": 1789828019.883452
+        },
+        {
+          "kind": "geometry",
+          "payload": {
+            "scenes": [
+              {
+                "activation": 0,
+                "id": "6C455723-EA58-41AE-9572-7F871624FE9B",
+                "orientation": 1,
+                "windows": [
+                  {
+                    "height": 678,
+                    "horizontal_size_class": 2,
+                    "vertical_size_class": 2,
+                    "width": 466
+                  },
+                  {
+                    "height": 678,
+                    "horizontal_size_class": 2,
+                    "vertical_size_class": 2,
+                    "width": 466
+                  }
+                ]
+              }
+            ]
+          },
+          "run_id": "exp195-718c04f2ad5c4ba6b1d28690e3ef9133",
+          "sequence": 119,
+          "timestamp": 1789828181.4970798
+        },
+        {
+          "kind": "geometry",
+          "payload": {
+            "scenes": [
+              {
+                "activation": 0,
+                "id": "6C455723-EA58-41AE-9572-7F871624FE9B",
+                "orientation": 4,
+                "windows": [
+                  {
+                    "height": 669,
+                    "horizontal_size_class": 2,
+                    "vertical_size_class": 2,
+                    "width": 951
+                  },
+                  {
+                    "height": 669,
+                    "horizontal_size_class": 2,
+                    "vertical_size_class": 2,
+                    "width": 951
+                  }
+                ]
+              }
+            ]
+          },
+          "run_id": "exp195-718c04f2ad5c4ba6b1d28690e3ef9133",
+          "sequence": 124,
+          "timestamp": 1789828181.579194
+        },
+        {
+          "kind": "geometry",
+          "payload": {
+            "scenes": [
+              {
+                "activation": 1,
+                "id": "6C455723-EA58-41AE-9572-7F871624FE9B",
+                "orientation": 4,
+                "windows": [
+                  {
+                    "height": 669,
+                    "horizontal_size_class": 2,
+                    "vertical_size_class": 2,
+                    "width": 951
+                  },
+                  {
+                    "height": 669,
+                    "horizontal_size_class": 2,
+                    "vertical_size_class": 2,
+                    "width": 951
+                  }
+                ]
+              }
+            ]
+          },
+          "run_id": "exp195-718c04f2ad5c4ba6b1d28690e3ef9133",
+          "sequence": 126,
+          "timestamp": 1789828245.088616
+        },
+        {
+          "kind": "geometry",
+          "payload": {
+            "scenes": [
+              {
+                "activation": 2,
+                "id": "6C455723-EA58-41AE-9572-7F871624FE9B",
+                "orientation": 4,
+                "windows": [
+                  {
+                    "height": 669,
+                    "horizontal_size_class": 2,
+                    "vertical_size_class": 2,
+                    "width": 951
+                  },
+                  {
+                    "height": 678,
+                    "horizontal_size_class": 2,
+                    "vertical_size_class": 2,
+                    "width": 466
+                  }
+                ]
+              }
+            ]
+          },
+          "run_id": "exp195-718c04f2ad5c4ba6b1d28690e3ef9133",
+          "sequence": 132,
+          "timestamp": 1789828246.027705
+        },
+        {
+          "kind": "geometry",
+          "payload": {
+            "scenes": [
+              {
+                "activation": 2,
+                "id": "6C455723-EA58-41AE-9572-7F871624FE9B",
+                "orientation": 4,
+                "windows": [
+                  {
+                    "height": 669,
+                    "horizontal_size_class": 2,
+                    "vertical_size_class": 2,
+                    "width": 951
+                  },
+                  {
+                    "height": 669,
+                    "horizontal_size_class": 2,
+                    "vertical_size_class": 2,
+                    "width": 951
+                  }
+                ]
+              }
+            ]
+          },
+          "run_id": "exp195-718c04f2ad5c4ba6b1d28690e3ef9133",
+          "sequence": 133,
+          "timestamp": 1789828246.040681
+        }
+      ],
+      "initial_views": [
+        {
+          "date": 1789827791324,
+          "id": "accad00a-0385-45b2-b740-d83883d14be4",
+          "index": 0,
+          "name": "ApplicationLaunch",
+          "url": "com/datadog/application-launch/view"
+        },
+        {
+          "date": 1789827793743,
+          "id": "2e13ec08-e40e-426e-b7fd-60430f1417a1",
+          "index": 1,
+          "name": "AutoTracked_HostingController_Fallback",
+          "url": "_TtGC7SwiftUI19UIHostingControllerGVS_15ModifiedContentGVS_8LazyViewGVS_19_ConditionalContentV14SwiftUIFixture14AutomaticSplitVS4_14AutomaticStack__VS_12RootModifier__"
+        },
+        {
+          "date": 1789827793752,
+          "id": "4bc7bb7a-4ba5-4b5d-af84-252e3ac3c5ab",
+          "index": 2,
+          "name": "NavigationStackHostingController<AnyView>",
+          "url": "_TtGC7SwiftUI32NavigationStackHostingControllerVS_7AnyView_"
+        },
+        {
+          "date": 1789827815426,
+          "id": "3e75d219-b81e-4b30-9d65-2d2473311c67",
+          "index": 3,
+          "name": "AutoTracked_HostingController_Fallback",
+          "url": "_TtGC7SwiftUI19UIHostingControllerGVS_15ModifiedContentGVS_8LazyViewGVS_19_ConditionalContentV14SwiftUIFixture14AutomaticSplitVS4_14AutomaticStack__VS_12RootModifier__"
+        },
+        {
+          "date": 1789827815430,
+          "id": "961f24e6-9cad-497c-b254-ab2d5156ad00",
+          "index": 4,
+          "name": "NavigationStackHostingController<AnyView>",
+          "url": "_TtGC7SwiftUI32NavigationStackHostingControllerVS_7AnyView_"
+        },
+        {
+          "date": 1789827838901,
+          "id": "d5202687-9e33-4e8a-b375-bd83cfc7509a",
+          "index": 5,
+          "name": "SheetScreen",
+          "url": "_TtGC7SwiftUI29PresentationHostingControllerVS_7AnyView_"
+        },
+        {
+          "date": 1789827847581,
+          "id": "c5fd1bae-7b97-45d6-bd93-f6077a02a224",
+          "index": 6,
+          "name": "NavigationStackHostingController<AnyView>",
+          "url": "_TtGC7SwiftUI32NavigationStackHostingControllerVS_7AnyView_"
+        },
+        {
+          "date": 1789827856089,
+          "id": "4fcc7876-c1a4-4b68-9129-b419b620ce91",
+          "index": 7,
+          "name": "AutoTracked_HostingController_Fallback",
+          "url": "_TtGC7SwiftUI19UIHostingControllerGVS_15ModifiedContentGVS_8LazyViewGVS_19_ConditionalContentV14SwiftUIFixture14AutomaticSplitVS4_14AutomaticStack__VS_12RootModifier__"
+        },
+        {
+          "date": 1789827856089,
+          "id": "99559aca-1ca7-4a1b-ae91-bd5d6fcc0d53",
+          "index": 8,
+          "name": "NavigationStackHostingController<AnyView>",
+          "url": "_TtGC7SwiftUI32NavigationStackHostingControllerVS_7AnyView_"
+        }
+      ],
+      "installed_after_test": {
+        "SwiftUI": {
+          "binaries": {
+            "SwiftUIFixture": "45e6d077f477599a21ecac27b9d98b80dd2ec6d1ca67166772d53a086715722a"
+          },
+          "bundleIdentifier": "com.datadoghq.exp195.candidate.sdk271.swiftui",
+          "executable": "SwiftUIFixture"
+        },
+        "UIKit": {
+          "binaries": {
+            "UIKitFixture": "9faafc49abac57382b499803b6ce105901a85415d8c5105c4733c8ef218f34a6"
+          },
+          "bundleIdentifier": "com.datadoghq.exp195.candidate.sdk271.uikit",
+          "executable": "UIKitFixture"
+        }
+      },
+      "installed_app_metadata": {
+        "SwiftUI": {
+          "build_sdk": "iphonesimulator27.1",
+          "declared_multiple_scenes": false,
+          "info_sha256": "af65fd96a7c5b398b0c24cdb1b15dfd52c0e01fde1ef474b3b85af712b976c31"
+        },
+        "UIKit": {
+          "build_sdk": "iphonesimulator27.1",
+          "declared_multiple_scenes": false,
+          "info_sha256": "a65f7f2e385da2095c36309d8e1ab2583355f53ba47de28dfd4fc8874ad2d84c"
+        }
+      },
+      "installed_apps": {
+        "SwiftUI": {
+          "binaries": {
+            "SwiftUIFixture": "45e6d077f477599a21ecac27b9d98b80dd2ec6d1ca67166772d53a086715722a"
+          },
+          "bundleIdentifier": "com.datadoghq.exp195.candidate.sdk271.swiftui",
+          "executable": "SwiftUIFixture"
+        },
+        "UIKit": {
+          "binaries": {
+            "UIKitFixture": "9faafc49abac57382b499803b6ce105901a85415d8c5105c4733c8ef218f34a6"
+          },
+          "bundleIdentifier": "com.datadoghq.exp195.candidate.sdk271.uikit",
+          "executable": "UIKitFixture"
+        }
+      },
+      "installed_runner": {
+        "binaries": {
+          "CoverageUITests-Runner": "bd8ddf46543a4e3b5ccd4a4ff295ae2bf1c90d3056fbd245269cf014021246bb",
+          "PlugIns/CoverageUITests.xctest.dSYM/Contents/Resources/DWARF/CoverageUITests": "188153c7f7fb85229347a72ea9d2cd3691427275f1dd95697666d4ccdf8a382d",
+          "PlugIns/CoverageUITests.xctest/CoverageUITests": "8fb440db07b1e8bbce8cc902af0141b465f627cb8a5fdcd030ac1004e20fef96"
+        },
+        "bundleIdentifier": "com.datadoghq.exp195.candidate.sdk271.uitests.xctrunner",
+        "executable": "CoverageUITests-Runner"
+      },
+      "missing_action_phases": [
+        "initial.root.toggle",
+        "initial.detail.toggle",
+        "inner.root.toggle",
+        "inner.detail.toggle"
+      ],
+      "native_appearances": [
+        "empty",
+        "sidebar",
+        "detail",
+        "sheet",
+        "empty",
+        "sidebar",
+        "empty",
+        "sidebar",
+        "detail",
+        "sheet",
+        "empty",
+        "detail",
+        "sidebar",
+        "sidebar"
+      ],
+      "native_test": {
+        "devicesAndConfigurations": [
+          {
+            "device": {
+              "architecture": "arm64",
+              "deviceId": "C3B8746E-C786-4309-BEA0-20A63F772E3F",
+              "deviceName": "EXP195 duo 1dda08",
+              "modelName": "iPhone",
+              "osBuildNumber": "24A94401",
+              "osVersion": "27.1",
+              "platform": "iOS Simulator"
+            },
+            "expectedFailures": 0,
+            "failedTests": 0,
+            "passedTests": 1,
+            "skippedTests": 0,
+            "testPlanConfiguration": {
+              "configurationId": "1",
+              "configurationName": "Test Scheme Action"
+            }
+          }
+        ],
+        "environmentDescription": "Coverage \u00b7 Built with macOS 26.6.2",
+        "expectedFailures": 0,
+        "failedTests": 0,
+        "finishTime": 1789828261.456,
+        "passedTests": 1,
+        "result": "Passed",
+        "runtimeWarnings": [],
+        "skippedTests": 0,
+        "startTime": 1789827787.345,
+        "statistics": [],
+        "testFailures": [],
+        "title": "Test - Coverage",
+        "topInsights": [],
+        "totalTestCount": 1
+      },
+      "native_timeline": [
+        {
+          "kind": "native_appear",
+          "payload": {
+            "screen": "empty"
+          },
+          "run_id": "exp195-718c04f2ad5c4ba6b1d28690e3ef9133",
+          "sequence": 3,
+          "timestamp": 1789827793.644578
+        },
+        {
+          "kind": "native_appear",
+          "payload": {
+            "screen": "sidebar"
+          },
+          "run_id": "exp195-718c04f2ad5c4ba6b1d28690e3ef9133",
+          "sequence": 5,
+          "timestamp": 1789827793.644939
+        },
+        {
+          "kind": "native_input",
+          "payload": {
+            "name": "sidebar.tap"
+          },
+          "run_id": "exp195-718c04f2ad5c4ba6b1d28690e3ef9133",
+          "sequence": 13,
+          "timestamp": 1789827797.4127479
+        },
+        {
+          "kind": "native_input",
+          "payload": {
+            "name": "sidebar.toggle"
+          },
+          "run_id": "exp195-718c04f2ad5c4ba6b1d28690e3ef9133",
+          "sequence": 14,
+          "timestamp": 1789827802.148165
+        },
+        {
+          "kind": "native_appear",
+          "payload": {
+            "screen": "detail"
+          },
+          "run_id": "exp195-718c04f2ad5c4ba6b1d28690e3ef9133",
+          "sequence": 19,
+          "timestamp": 1789827814.8536072
+        },
+        {
+          "kind": "native_input",
+          "payload": {
+            "name": "detail.tap"
+          },
+          "run_id": "exp195-718c04f2ad5c4ba6b1d28690e3ef9133",
+          "sequence": 26,
+          "timestamp": 1789827820.9461598
+        },
+        {
+          "kind": "native_input",
+          "payload": {
+            "name": "detail.toggle"
+          },
+          "run_id": "exp195-718c04f2ad5c4ba6b1d28690e3ef9133",
+          "sequence": 27,
+          "timestamp": 1789827825.664764
+        },
+        {
+          "kind": "native_input",
+          "payload": {
+            "name": "detail.sheet"
+          },
+          "run_id": "exp195-718c04f2ad5c4ba6b1d28690e3ef9133",
+          "sequence": 32,
+          "timestamp": 1789827838.312951
+        },
+        {
+          "kind": "native_appear",
+          "payload": {
+            "screen": "sheet"
+          },
+          "run_id": "exp195-718c04f2ad5c4ba6b1d28690e3ef9133",
+          "sequence": 33,
+          "timestamp": 1789827838.3304892
+        },
+        {
+          "kind": "native_input",
+          "payload": {
+            "name": "sheet.tap"
+          },
+          "run_id": "exp195-718c04f2ad5c4ba6b1d28690e3ef9133",
+          "sequence": 38,
+          "timestamp": 1789827843.396288
+        },
+        {
+          "kind": "native_input",
+          "payload": {
+            "name": "sheet.close"
+          },
+          "run_id": "exp195-718c04f2ad5c4ba6b1d28690e3ef9133",
+          "sequence": 39,
+          "timestamp": 1789827847.02958
+        },
+        {
+          "kind": "native_input",
+          "payload": {
+            "name": "detail.tap"
+          },
+          "run_id": "exp195-718c04f2ad5c4ba6b1d28690e3ef9133",
+          "sequence": 46,
+          "timestamp": 1789827851.996304
+        },
+        {
+          "kind": "native_input",
+          "payload": {
+            "name": "detail.back"
+          },
+          "run_id": "exp195-718c04f2ad5c4ba6b1d28690e3ef9133",
+          "sequence": 47,
+          "timestamp": 1789827855.562979
+        },
+        {
+          "kind": "native_appear",
+          "payload": {
+            "screen": "empty"
+          },
+          "run_id": "exp195-718c04f2ad5c4ba6b1d28690e3ef9133",
+          "sequence": 50,
+          "timestamp": 1789827855.5709991
+        },
+        {
+          "kind": "native_appear",
+          "payload": {
+            "screen": "sidebar"
+          },
+          "run_id": "exp195-718c04f2ad5c4ba6b1d28690e3ef9133",
+          "sequence": 51,
+          "timestamp": 1789827855.576448
+        },
+        {
+          "kind": "native_input",
+          "payload": {
+            "name": "sidebar.tap"
+          },
+          "run_id": "exp195-718c04f2ad5c4ba6b1d28690e3ef9133",
+          "sequence": 58,
+          "timestamp": 1789827860.4963899
+        },
+        {
+          "kind": "native_appear",
+          "payload": {
+            "screen": "empty"
+          },
+          "run_id": "exp195-718c04f2ad5c4ba6b1d28690e3ef9133",
+          "sequence": 59,
+          "timestamp": 1789827896.9892411
+        },
+        {
+          "kind": "native_appear",
+          "payload": {
+            "screen": "sidebar"
+          },
+          "run_id": "exp195-718c04f2ad5c4ba6b1d28690e3ef9133",
+          "sequence": 65,
+          "timestamp": 1789827897.045854
+        },
+        {
+          "kind": "native_input",
+          "payload": {
+            "name": "sidebar.tap"
+          },
+          "run_id": "exp195-718c04f2ad5c4ba6b1d28690e3ef9133",
+          "sequence": 70,
+          "timestamp": 1789827912.3133001
+        },
+        {
+          "kind": "native_input",
+          "payload": {
+            "name": "sidebar.toggle"
+          },
+          "run_id": "exp195-718c04f2ad5c4ba6b1d28690e3ef9133",
+          "sequence": 71,
+          "timestamp": 1789827917.232949
+        },
+        {
+          "kind": "native_appear",
+          "payload": {
+            "screen": "detail"
+          },
+          "run_id": "exp195-718c04f2ad5c4ba6b1d28690e3ef9133",
+          "sequence": 76,
+          "timestamp": 1789827929.762834
+        },
+        {
+          "kind": "native_input",
+          "payload": {
+            "name": "detail.tap"
+          },
+          "run_id": "exp195-718c04f2ad5c4ba6b1d28690e3ef9133",
+          "sequence": 78,
+          "timestamp": 1789827935.680258
+        },
+        {
+          "kind": "native_input",
+          "payload": {
+            "name": "detail.toggle"
+          },
+          "run_id": "exp195-718c04f2ad5c4ba6b1d28690e3ef9133",
+          "sequence": 80,
+          "timestamp": 1789827940.598733
+        },
+        {
+          "kind": "native_input",
+          "payload": {
+            "name": "detail.sheet"
+          },
+          "run_id": "exp195-718c04f2ad5c4ba6b1d28690e3ef9133",
+          "sequence": 85,
+          "timestamp": 1789827953.530181
+        },
+        {
+          "kind": "native_appear",
+          "payload": {
+            "screen": "sheet"
+          },
+          "run_id": "exp195-718c04f2ad5c4ba6b1d28690e3ef9133",
+          "sequence": 86,
+          "timestamp": 1789827953.545675
+        },
+        {
+          "kind": "native_input",
+          "payload": {
+            "name": "sheet.tap"
+          },
+          "run_id": "exp195-718c04f2ad5c4ba6b1d28690e3ef9133",
+          "sequence": 91,
+          "timestamp": 1789827958.74682
+        },
+        {
+          "kind": "native_input",
+          "payload": {
+            "name": "sheet.close"
+          },
+          "run_id": "exp195-718c04f2ad5c4ba6b1d28690e3ef9133",
+          "sequence": 92,
+          "timestamp": 1789827962.513556
+        },
+        {
+          "kind": "native_input",
+          "payload": {
+            "name": "detail.tap"
+          },
+          "run_id": "exp195-718c04f2ad5c4ba6b1d28690e3ef9133",
+          "sequence": 99,
+          "timestamp": 1789827967.630331
+        },
+        {
+          "kind": "native_input",
+          "payload": {
+            "name": "detail.back"
+          },
+          "run_id": "exp195-718c04f2ad5c4ba6b1d28690e3ef9133",
+          "sequence": 101,
+          "timestamp": 1789827971.247239
+        },
+        {
+          "kind": "native_appear",
+          "payload": {
+            "screen": "empty"
+          },
+          "run_id": "exp195-718c04f2ad5c4ba6b1d28690e3ef9133",
+          "sequence": 103,
+          "timestamp": 1789827971.2543921
+        },
+        {
+          "kind": "native_input",
+          "payload": {
+            "name": "sidebar.tap"
+          },
+          "run_id": "exp195-718c04f2ad5c4ba6b1d28690e3ef9133",
+          "sequence": 105,
+          "timestamp": 1789827976.013926
+        },
+        {
+          "kind": "native_appear",
+          "payload": {
+            "screen": "detail"
+          },
+          "run_id": "exp195-718c04f2ad5c4ba6b1d28690e3ef9133",
+          "sequence": 109,
+          "timestamp": 1789827979.6390638
+        },
+        {
+          "kind": "native_input",
+          "payload": {
+            "name": "detail.tap"
+          },
+          "run_id": "exp195-718c04f2ad5c4ba6b1d28690e3ef9133",
+          "sequence": 117,
+          "timestamp": 1789828093.664257
+        },
+        {
+          "kind": "native_appear",
+          "payload": {
+            "screen": "sidebar"
+          },
+          "run_id": "exp195-718c04f2ad5c4ba6b1d28690e3ef9133",
+          "sequence": 118,
+          "timestamp": 1789828181.496772
+        },
+        {
+          "kind": "native_input",
+          "payload": {
+            "name": "detail.tap"
+          },
+          "run_id": "exp195-718c04f2ad5c4ba6b1d28690e3ef9133",
+          "sequence": 125,
+          "timestamp": 1789828196.531353
+        },
+        {
+          "kind": "native_background",
+          "payload": {},
+          "run_id": "exp195-718c04f2ad5c4ba6b1d28690e3ef9133",
+          "sequence": 130,
+          "timestamp": 1789828245.740942
+        },
+        {
+          "kind": "native_appear",
+          "payload": {
+            "screen": "sidebar"
+          },
+          "run_id": "exp195-718c04f2ad5c4ba6b1d28690e3ef9133",
+          "sequence": 131,
+          "timestamp": 1789828246.027439
+        }
+      ],
+      "pose_receipts": [
+        {
+          "payload": {
+            "frame": "(0.0, 0.0, 466.0, 678.0)"
+          },
+          "phase": "await-open",
+          "run_id": "exp195-718c04f2ad5c4ba6b1d28690e3ef9133",
+          "timestamp": 1789827862.760973
+        },
+        {
+          "payload": {
+            "after": {
+              "display": {
+                "active": {
+                  "active": true,
+                  "backlightState": "activeOn",
+                  "bounds": [
+                    [
+                      0,
+                      0
+                    ],
+                    [
+                      2007,
+                      2853
+                    ]
+                  ],
+                  "chromeIdentifier": "com.apple.dt.devicekit.chrome.phone14",
+                  "currentOrientation": "rot90",
+                  "displayId": 3,
+                  "framebufferMaskIdentifier": "BF0DC480-5EE2-4EC1-B02B-C75E94759832",
+                  "name": "LCD-1",
+                  "nativeOrientation": "rot0",
+                  "nativeSize": [
+                    2007,
+                    2853
+                  ],
+                  "physicalSize": [
+                    4.363043308258057,
+                    6.202173709869385
+                  ],
+                  "pointScale": 3,
+                  "primary": false,
+                  "type": {
+                    "integrated": {}
+                  },
+                  "uniqueId": "27A59591-6E45-436F-AFF4-593734A03C81"
+                },
+                "artifact": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp195-split-replay-ccp0oipi/runs/exp195-718c04f2ad5c4ba6b1d28690e3ef9133/open-after-displays.json",
+                "observed_at": 1789827909.053586
+              },
+              "geometry": {
+                "kind": "geometry",
+                "payload": {
+                  "scenes": [
+                    {
+                      "activation": 0,
+                      "id": "6C455723-EA58-41AE-9572-7F871624FE9B",
+                      "orientation": 4,
+                      "windows": [
+                        {
+                          "height": 669,
+                          "horizontal_size_class": 2,
+                          "vertical_size_class": 2,
+                          "width": 951
+                        },
+                        {
+                          "height": 669,
+                          "horizontal_size_class": 2,
+                          "vertical_size_class": 2,
+                          "width": 951
+                        }
+                      ]
+                    }
+                  ]
+                },
+                "run_id": "exp195-718c04f2ad5c4ba6b1d28690e3ef9133",
+                "sequence": 69,
+                "timestamp": 1789827897.282922
+              }
+            },
+            "before": {
+              "display": {
+                "active": {
+                  "active": true,
+                  "backlightState": "activeOn",
+                  "bounds": [
+                    [
+                      0,
+                      0
+                    ],
+                    [
+                      1398,
+                      2034
+                    ]
+                  ],
+                  "chromeIdentifier": "com.apple.dt.devicekit.chrome.phone15",
+                  "currentOrientation": "rot0",
+                  "displayId": 1,
+                  "framebufferMaskIdentifier": "1C896A2B-F0D7-405C-8D0F-66E4B80AD044",
+                  "name": "LCD",
+                  "nativeOrientation": "rot0",
+                  "nativeSize": [
+                    1398,
+                    2034
+                  ],
+                  "physicalSize": [
+                    3.039130449295044,
+                    4.421739101409912
+                  ],
+                  "pointScale": 3,
+                  "primary": true,
+                  "type": {
+                    "integrated": {}
+                  },
+                  "uniqueId": "04F36ECF-6E86-4B5C-A806-E146F63EB2D8"
+                },
+                "artifact": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp195-split-replay-ccp0oipi/runs/exp195-718c04f2ad5c4ba6b1d28690e3ef9133/open-before-displays.json",
+                "observed_at": 1789827885.2330291
+              },
+              "geometry": {
+                "kind": "geometry",
+                "payload": {
+                  "scenes": [
+                    {
+                      "activation": 0,
+                      "id": "6C455723-EA58-41AE-9572-7F871624FE9B",
+                      "orientation": 1,
+                      "windows": [
+                        {
+                          "height": 678,
+                          "horizontal_size_class": 1,
+                          "vertical_size_class": 2,
+                          "width": 466
+                        }
+                      ]
+                    }
+                  ]
+                },
+                "run_id": "exp195-718c04f2ad5c4ba6b1d28690e3ef9133",
+                "sequence": 11,
+                "timestamp": 1789827793.842352
+              },
+              "requested_at": 1789827862.760973,
+              "run_id": "exp195-718c04f2ad5c4ba6b1d28690e3ef9133"
+            },
+            "command_id": "d53a6f77-ca69-49b7-9ab3-c0537a525ce4",
+            "geometry_mode": "resized",
+            "geometry_sequence": 69,
+            "pose": "open",
+            "run_id": "exp195-718c04f2ad5c4ba6b1d28690e3ef9133"
+          },
+          "phase": "received-open",
+          "run_id": "exp195-718c04f2ad5c4ba6b1d28690e3ef9133",
+          "timestamp": 1789827909.7858791
+        },
+        {
+          "payload": {
+            "frame": "(0.0, -5.684341886080802e-14, 951.0, 669.0)"
+          },
+          "phase": "await-close",
+          "run_id": "exp195-718c04f2ad5c4ba6b1d28690e3ef9133",
+          "timestamp": 1789827983.028788
+        },
+        {
+          "payload": {
+            "after": {
+              "display": {
+                "active": {
+                  "active": true,
+                  "backlightState": "activeOn",
+                  "bounds": [
+                    [
+                      0,
+                      0
+                    ],
+                    [
+                      1398,
+                      2034
+                    ]
+                  ],
+                  "chromeIdentifier": "com.apple.dt.devicekit.chrome.phone15",
+                  "currentOrientation": "rot0",
+                  "displayId": 1,
+                  "framebufferMaskIdentifier": "1C896A2B-F0D7-405C-8D0F-66E4B80AD044",
+                  "name": "LCD",
+                  "nativeOrientation": "rot0",
+                  "nativeSize": [
+                    1398,
+                    2034
+                  ],
+                  "physicalSize": [
+                    3.039130449295044,
+                    4.421739101409912
+                  ],
+                  "pointScale": 3,
+                  "primary": true,
+                  "type": {
+                    "integrated": {}
+                  },
+                  "uniqueId": "04F36ECF-6E86-4B5C-A806-E146F63EB2D8"
+                },
+                "artifact": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp195-split-replay-ccp0oipi/runs/exp195-718c04f2ad5c4ba6b1d28690e3ef9133/close-after-displays.json",
+                "observed_at": 1789828029.693022
+              },
+              "geometry": {
+                "kind": "geometry",
+                "payload": {
+                  "scenes": [
+                    {
+                      "activation": 0,
+                      "id": "6C455723-EA58-41AE-9572-7F871624FE9B",
+                      "orientation": 1,
+                      "windows": [
+                        {
+                          "height": 678,
+                          "horizontal_size_class": 1,
+                          "vertical_size_class": 2,
+                          "width": 466
+                        },
+                        {
+                          "height": 678,
+                          "horizontal_size_class": 1,
+                          "vertical_size_class": 2,
+                          "width": 466
+                        }
+                      ]
+                    }
+                  ]
+                },
+                "run_id": "exp195-718c04f2ad5c4ba6b1d28690e3ef9133",
+                "sequence": 114,
+                "timestamp": 1789828019.883452
+              }
+            },
+            "before": {
+              "display": {
+                "active": {
+                  "active": true,
+                  "backlightState": "activeOn",
+                  "bounds": [
+                    [
+                      0,
+                      0
+                    ],
+                    [
+                      2007,
+                      2853
+                    ]
+                  ],
+                  "chromeIdentifier": "com.apple.dt.devicekit.chrome.phone14",
+                  "currentOrientation": "rot90",
+                  "displayId": 3,
+                  "framebufferMaskIdentifier": "BF0DC480-5EE2-4EC1-B02B-C75E94759832",
+                  "name": "LCD-1",
+                  "nativeOrientation": "rot0",
+                  "nativeSize": [
+                    2007,
+                    2853
+                  ],
+                  "physicalSize": [
+                    4.363043308258057,
+                    6.202173709869385
+                  ],
+                  "pointScale": 3,
+                  "primary": false,
+                  "type": {
+                    "integrated": {}
+                  },
+                  "uniqueId": "27A59591-6E45-436F-AFF4-593734A03C81"
+                },
+                "artifact": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp195-split-replay-ccp0oipi/runs/exp195-718c04f2ad5c4ba6b1d28690e3ef9133/close-before-displays.json",
+                "observed_at": 1789828007.62313
+              },
+              "geometry": {
+                "kind": "geometry",
+                "payload": {
+                  "scenes": [
+                    {
+                      "activation": 0,
+                      "id": "6C455723-EA58-41AE-9572-7F871624FE9B",
+                      "orientation": 4,
+                      "windows": [
+                        {
+                          "height": 669,
+                          "horizontal_size_class": 2,
+                          "vertical_size_class": 2,
+                          "width": 951
+                        },
+                        {
+                          "height": 669,
+                          "horizontal_size_class": 2,
+                          "vertical_size_class": 2,
+                          "width": 951
+                        }
+                      ]
+                    }
+                  ]
+                },
+                "run_id": "exp195-718c04f2ad5c4ba6b1d28690e3ef9133",
+                "sequence": 69,
+                "timestamp": 1789827897.282922
+              },
+              "requested_at": 1789827983.028788,
+              "run_id": "exp195-718c04f2ad5c4ba6b1d28690e3ef9133"
+            },
+            "command_id": "be15efc3-86ae-4d3c-977c-cdb3d8b65c3d",
+            "geometry_mode": "resized",
+            "geometry_sequence": 114,
+            "pose": "close",
+            "run_id": "exp195-718c04f2ad5c4ba6b1d28690e3ef9133"
+          },
+          "phase": "received-close",
+          "run_id": "exp195-718c04f2ad5c4ba6b1d28690e3ef9133",
+          "timestamp": 1789828030.0344648
+        },
+        {
+          "payload": {
+            "frame": "(0.0, 0.0, 466.0, 678.0)"
+          },
+          "phase": "await-reopen",
+          "run_id": "exp195-718c04f2ad5c4ba6b1d28690e3ef9133",
+          "timestamp": 1789828155.9969869
+        },
+        {
+          "payload": {
+            "after": {
+              "display": {
+                "active": {
+                  "active": true,
+                  "backlightState": "activeOn",
+                  "bounds": [
+                    [
+                      0,
+                      0
+                    ],
+                    [
+                      2007,
+                      2853
+                    ]
+                  ],
+                  "chromeIdentifier": "com.apple.dt.devicekit.chrome.phone14",
+                  "currentOrientation": "rot90",
+                  "displayId": 3,
+                  "framebufferMaskIdentifier": "BF0DC480-5EE2-4EC1-B02B-C75E94759832",
+                  "name": "LCD-1",
+                  "nativeOrientation": "rot0",
+                  "nativeSize": [
+                    2007,
+                    2853
+                  ],
+                  "physicalSize": [
+                    4.363043308258057,
+                    6.202173709869385
+                  ],
+                  "pointScale": 3,
+                  "primary": false,
+                  "type": {
+                    "integrated": {}
+                  },
+                  "uniqueId": "27A59591-6E45-436F-AFF4-593734A03C81"
+                },
+                "artifact": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp195-split-replay-ccp0oipi/runs/exp195-718c04f2ad5c4ba6b1d28690e3ef9133/reopen-after-displays.json",
+                "observed_at": 1789828193.12133
+              },
+              "geometry": {
+                "kind": "geometry",
+                "payload": {
+                  "scenes": [
+                    {
+                      "activation": 0,
+                      "id": "6C455723-EA58-41AE-9572-7F871624FE9B",
+                      "orientation": 4,
+                      "windows": [
+                        {
+                          "height": 669,
+                          "horizontal_size_class": 2,
+                          "vertical_size_class": 2,
+                          "width": 951
+                        },
+                        {
+                          "height": 669,
+                          "horizontal_size_class": 2,
+                          "vertical_size_class": 2,
+                          "width": 951
+                        }
+                      ]
+                    }
+                  ]
+                },
+                "run_id": "exp195-718c04f2ad5c4ba6b1d28690e3ef9133",
+                "sequence": 124,
+                "timestamp": 1789828181.579194
+              }
+            },
+            "before": {
+              "display": {
+                "active": {
+                  "active": true,
+                  "backlightState": "activeOn",
+                  "bounds": [
+                    [
+                      0,
+                      0
+                    ],
+                    [
+                      1398,
+                      2034
+                    ]
+                  ],
+                  "chromeIdentifier": "com.apple.dt.devicekit.chrome.phone15",
+                  "currentOrientation": "rot0",
+                  "displayId": 1,
+                  "framebufferMaskIdentifier": "1C896A2B-F0D7-405C-8D0F-66E4B80AD044",
+                  "name": "LCD",
+                  "nativeOrientation": "rot0",
+                  "nativeSize": [
+                    1398,
+                    2034
+                  ],
+                  "physicalSize": [
+                    3.039130449295044,
+                    4.421739101409912
+                  ],
+                  "pointScale": 3,
+                  "primary": true,
+                  "type": {
+                    "integrated": {}
+                  },
+                  "uniqueId": "04F36ECF-6E86-4B5C-A806-E146F63EB2D8"
+                },
+                "artifact": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp195-split-replay-ccp0oipi/runs/exp195-718c04f2ad5c4ba6b1d28690e3ef9133/reopen-before-displays.json",
+                "observed_at": 1789828170.1663868
+              },
+              "geometry": {
+                "kind": "geometry",
+                "payload": {
+                  "scenes": [
+                    {
+                      "activation": 0,
+                      "id": "6C455723-EA58-41AE-9572-7F871624FE9B",
+                      "orientation": 1,
+                      "windows": [
+                        {
+                          "height": 678,
+                          "horizontal_size_class": 1,
+                          "vertical_size_class": 2,
+                          "width": 466
+                        },
+                        {
+                          "height": 678,
+                          "horizontal_size_class": 1,
+                          "vertical_size_class": 2,
+                          "width": 466
+                        }
+                      ]
+                    }
+                  ]
+                },
+                "run_id": "exp195-718c04f2ad5c4ba6b1d28690e3ef9133",
+                "sequence": 114,
+                "timestamp": 1789828019.883452
+              },
+              "requested_at": 1789828155.9969869,
+              "run_id": "exp195-718c04f2ad5c4ba6b1d28690e3ef9133"
+            },
+            "command_id": "e26e3922-d410-4c11-9b39-e4a0c4adb242",
+            "geometry_mode": "resized",
+            "geometry_sequence": 124,
+            "pose": "reopen",
+            "run_id": "exp195-718c04f2ad5c4ba6b1d28690e3ef9133"
+          },
+          "phase": "received-reopen",
+          "run_id": "exp195-718c04f2ad5c4ba6b1d28690e3ef9133",
+          "timestamp": 1789828194.0400891
+        },
+        {
+          "payload": {
+            "frame": "(0.0, -5.684341886080802e-14, 951.0, 669.0)"
+          },
+          "phase": "await-home",
+          "run_id": "exp195-718c04f2ad5c4ba6b1d28690e3ef9133",
+          "timestamp": 1789828198.832364
+        },
+        {
+          "payload": {
+            "command_id": "5c501664-7ea6-4c3f-a8c9-62690ab5f6f4",
+            "native_background_sequence": 130,
+            "observed_at": 1789828256.121757,
+            "run_id": "exp195-718c04f2ad5c4ba6b1d28690e3ef9133"
+          },
+          "phase": "received-home",
+          "run_id": "exp195-718c04f2ad5c4ba6b1d28690e3ef9133",
+          "timestamp": 1789828256.8413649
+        }
+      ],
+      "run_id": "exp195-718c04f2ad5c4ba6b1d28690e3ef9133",
+      "source_revision": "04201edc7711361279d8487b385bc8b0ca9c63c7",
+      "toolchain": "Xcode 27.1\nBuild version 27A9269",
+      "unassigned_actions": [],
+      "unknown_action_owners": [],
+      "view_count": 15,
+      "view_phase_timeline": [
+        {
+          "index": 0,
+          "name": "ApplicationLaunch",
+          "preceding_input_phase": "launch",
+          "seconds_after_last_background": -454.4169421195984,
+          "timestamp": 1789827791.324,
+          "view_id": "accad00a-0385-45b2-b740-d83883d14be4"
+        },
+        {
+          "index": 1,
+          "name": "AutoTracked_HostingController_Fallback",
+          "preceding_input_phase": "launch",
+          "seconds_after_last_background": -451.9979419708252,
+          "timestamp": 1789827793.743,
+          "view_id": "2e13ec08-e40e-426e-b7fd-60430f1417a1"
+        },
+        {
+          "index": 2,
+          "name": "NavigationStackHostingController<AnyView>",
+          "preceding_input_phase": "launch",
+          "seconds_after_last_background": -451.9889419078827,
+          "timestamp": 1789827793.752,
+          "view_id": "4bc7bb7a-4ba5-4b5d-af84-252e3ac3c5ab"
+        },
+        {
+          "index": 3,
+          "name": "AutoTracked_HostingController_Fallback",
+          "preceding_input_phase": "initial.navigate.delivered",
+          "seconds_after_last_background": -430.31494188308716,
+          "timestamp": 1789827815.426,
+          "view_id": "3e75d219-b81e-4b30-9d65-2d2473311c67"
+        },
+        {
+          "index": 4,
+          "name": "NavigationStackHostingController<AnyView>",
+          "preceding_input_phase": "initial.navigate.delivered",
+          "seconds_after_last_background": -430.31094193458557,
+          "timestamp": 1789827815.43,
+          "view_id": "961f24e6-9cad-497c-b254-ab2d5156ad00"
+        },
+        {
+          "index": 5,
+          "name": "SheetScreen",
+          "preceding_input_phase": "initial.present.delivered",
+          "seconds_after_last_background": -406.8399419784546,
+          "timestamp": 1789827838.901,
+          "view_id": "d5202687-9e33-4e8a-b375-bd83cfc7509a"
+        },
+        {
+          "index": 6,
+          "name": "NavigationStackHostingController<AnyView>",
+          "preceding_input_phase": "initial.dismiss.delivered",
+          "seconds_after_last_background": -398.1599419116974,
+          "timestamp": 1789827847.581,
+          "view_id": "c5fd1bae-7b97-45d6-bd93-f6077a02a224"
+        },
+        {
+          "index": 7,
+          "name": "AutoTracked_HostingController_Fallback",
+          "preceding_input_phase": "initial.back.delivered",
+          "seconds_after_last_background": -389.6519420146942,
+          "timestamp": 1789827856.089,
+          "view_id": "4fcc7876-c1a4-4b68-9129-b419b620ce91"
+        },
+        {
+          "index": 8,
+          "name": "NavigationStackHostingController<AnyView>",
+          "preceding_input_phase": "initial.back.delivered",
+          "seconds_after_last_background": -389.6519420146942,
+          "timestamp": 1789827856.089,
+          "view_id": "99559aca-1ca7-4a1b-ae91-bd5d6fcc0d53"
+        },
+        {
+          "index": 9,
+          "name": "NavigationStackHostingController<AnyView>",
+          "preceding_input_phase": "await-open",
+          "seconds_after_last_background": -348.70794200897217,
+          "timestamp": 1789827897.033,
+          "view_id": "dbed9bac-c520-44cd-827a-d287e1258f62"
+        },
+        {
+          "index": 10,
+          "name": "NavigationStackHostingController<AnyView>",
+          "preceding_input_phase": "await-open",
+          "seconds_after_last_background": -348.6389420032501,
+          "timestamp": 1789827897.102,
+          "view_id": "8c9d6eb5-cbe5-4a20-b693-c8ef9b2824a1"
+        },
+        {
+          "index": 11,
+          "name": "SheetScreen",
+          "preceding_input_phase": "inner.present.delivered",
+          "seconds_after_last_background": -291.61294198036194,
+          "timestamp": 1789827954.128,
+          "view_id": "0485864e-0d07-42aa-a2d6-41521c6e418d"
+        },
+        {
+          "index": 12,
+          "name": "NavigationStackHostingController<AnyView>",
+          "preceding_input_phase": "inner.dismiss.delivered",
+          "seconds_after_last_background": -282.65494203567505,
+          "timestamp": 1789827963.086,
+          "view_id": "5d2b3b37-6779-44b2-bf43-246259d36488"
+        },
+        {
+          "index": 13,
+          "name": "NavigationStackHostingController<AnyView>",
+          "preceding_input_phase": "await-close",
+          "seconds_after_last_background": -225.86794209480286,
+          "timestamp": 1789828019.873,
+          "view_id": "cf42d8d0-64cc-4696-9991-93afab98cdf3"
+        },
+        {
+          "index": 14,
+          "name": "NavigationStackHostingController<AnyView>",
+          "preceding_input_phase": "await-reopen",
+          "seconds_after_last_background": -64.14794206619263,
+          "timestamp": 1789828181.593,
+          "view_id": "465021c4-828a-4261-ac0d-74fc6552e9d8"
+        }
+      ],
+      "views": [
+        {
+          "date": 1789827791324,
+          "id": "accad00a-0385-45b2-b740-d83883d14be4",
+          "index": 0,
+          "name": "ApplicationLaunch",
+          "url": "com/datadog/application-launch/view"
+        },
+        {
+          "date": 1789827793743,
+          "id": "2e13ec08-e40e-426e-b7fd-60430f1417a1",
+          "index": 1,
+          "name": "AutoTracked_HostingController_Fallback",
+          "url": "_TtGC7SwiftUI19UIHostingControllerGVS_15ModifiedContentGVS_8LazyViewGVS_19_ConditionalContentV14SwiftUIFixture14AutomaticSplitVS4_14AutomaticStack__VS_12RootModifier__"
+        },
+        {
+          "date": 1789827793752,
+          "id": "4bc7bb7a-4ba5-4b5d-af84-252e3ac3c5ab",
+          "index": 2,
+          "name": "NavigationStackHostingController<AnyView>",
+          "url": "_TtGC7SwiftUI32NavigationStackHostingControllerVS_7AnyView_"
+        },
+        {
+          "date": 1789827815426,
+          "id": "3e75d219-b81e-4b30-9d65-2d2473311c67",
+          "index": 3,
+          "name": "AutoTracked_HostingController_Fallback",
+          "url": "_TtGC7SwiftUI19UIHostingControllerGVS_15ModifiedContentGVS_8LazyViewGVS_19_ConditionalContentV14SwiftUIFixture14AutomaticSplitVS4_14AutomaticStack__VS_12RootModifier__"
+        },
+        {
+          "date": 1789827815430,
+          "id": "961f24e6-9cad-497c-b254-ab2d5156ad00",
+          "index": 4,
+          "name": "NavigationStackHostingController<AnyView>",
+          "url": "_TtGC7SwiftUI32NavigationStackHostingControllerVS_7AnyView_"
+        },
+        {
+          "date": 1789827838901,
+          "id": "d5202687-9e33-4e8a-b375-bd83cfc7509a",
+          "index": 5,
+          "name": "SheetScreen",
+          "url": "_TtGC7SwiftUI29PresentationHostingControllerVS_7AnyView_"
+        },
+        {
+          "date": 1789827847581,
+          "id": "c5fd1bae-7b97-45d6-bd93-f6077a02a224",
+          "index": 6,
+          "name": "NavigationStackHostingController<AnyView>",
+          "url": "_TtGC7SwiftUI32NavigationStackHostingControllerVS_7AnyView_"
+        },
+        {
+          "date": 1789827856089,
+          "id": "4fcc7876-c1a4-4b68-9129-b419b620ce91",
+          "index": 7,
+          "name": "AutoTracked_HostingController_Fallback",
+          "url": "_TtGC7SwiftUI19UIHostingControllerGVS_15ModifiedContentGVS_8LazyViewGVS_19_ConditionalContentV14SwiftUIFixture14AutomaticSplitVS4_14AutomaticStack__VS_12RootModifier__"
+        },
+        {
+          "date": 1789827856089,
+          "id": "99559aca-1ca7-4a1b-ae91-bd5d6fcc0d53",
+          "index": 8,
+          "name": "NavigationStackHostingController<AnyView>",
+          "url": "_TtGC7SwiftUI32NavigationStackHostingControllerVS_7AnyView_"
+        },
+        {
+          "date": 1789827897033,
+          "id": "dbed9bac-c520-44cd-827a-d287e1258f62",
+          "index": 9,
+          "name": "NavigationStackHostingController<AnyView>",
+          "url": "_TtGC7SwiftUI32NavigationStackHostingControllerVS_7AnyView_"
+        },
+        {
+          "date": 1789827897102,
+          "id": "8c9d6eb5-cbe5-4a20-b693-c8ef9b2824a1",
+          "index": 10,
+          "name": "NavigationStackHostingController<AnyView>",
+          "url": "_TtGC7SwiftUI32NavigationStackHostingControllerVS_7AnyView_"
+        },
+        {
+          "date": 1789827954128,
+          "id": "0485864e-0d07-42aa-a2d6-41521c6e418d",
+          "index": 11,
+          "name": "SheetScreen",
+          "url": "_TtGC7SwiftUI29PresentationHostingControllerVS_7AnyView_"
+        },
+        {
+          "date": 1789827963086,
+          "id": "5d2b3b37-6779-44b2-bf43-246259d36488",
+          "index": 12,
+          "name": "NavigationStackHostingController<AnyView>",
+          "url": "_TtGC7SwiftUI32NavigationStackHostingControllerVS_7AnyView_"
+        },
+        {
+          "date": 1789828019873,
+          "id": "cf42d8d0-64cc-4696-9991-93afab98cdf3",
+          "index": 13,
+          "name": "NavigationStackHostingController<AnyView>",
+          "url": "_TtGC7SwiftUI32NavigationStackHostingControllerVS_7AnyView_"
+        },
+        {
+          "date": 1789828181593,
+          "id": "465021c4-828a-4261-ac0d-74fc6552e9d8",
+          "index": 14,
+          "name": "NavigationStackHostingController<AnyView>",
+          "url": "_TtGC7SwiftUI32NavigationStackHostingControllerVS_7AnyView_"
+        }
+      ]
+    }
+  ],
+  "comparison_statuses": {
+    "DIFFERENCE_REQUIRES_CLASSIFICATION": 2
+  },
+  "comparisons": [
+    {
+      "after": [
+        [
+          "ApplicationLaunch",
+          "com/datadog/application-launch/view"
+        ],
+        [
+          "AutoTracked_HostingController_Fallback",
+          "_TtGC7SwiftUI19UIHostingControllerGVS_15ModifiedContentGVS_8LazyViewGVS_19_ConditionalContentV14SwiftUIFixture14AutomaticSplitVS4_14AutomaticStack__VS_12RootModifier__"
+        ],
+        [
+          "NavigationStackHostingController<AnyView>",
+          "_TtGC7SwiftUI32NavigationStackHostingControllerVS_7AnyView_"
+        ],
+        [
+          "AutoTracked_HostingController_Fallback",
+          "_TtGC7SwiftUI19UIHostingControllerGVS_15ModifiedContentGVS_8LazyViewGVS_19_ConditionalContentV14SwiftUIFixture14AutomaticSplitVS4_14AutomaticStack__VS_12RootModifier__"
+        ],
+        [
+          "NavigationStackHostingController<AnyView>",
+          "_TtGC7SwiftUI32NavigationStackHostingControllerVS_7AnyView_"
+        ],
+        [
+          "SheetScreen",
+          "_TtGC7SwiftUI29PresentationHostingControllerVS_7AnyView_"
+        ],
+        [
+          "NavigationStackHostingController<AnyView>",
+          "_TtGC7SwiftUI32NavigationStackHostingControllerVS_7AnyView_"
+        ],
+        [
+          "AutoTracked_HostingController_Fallback",
+          "_TtGC7SwiftUI19UIHostingControllerGVS_15ModifiedContentGVS_8LazyViewGVS_19_ConditionalContentV14SwiftUIFixture14AutomaticSplitVS4_14AutomaticStack__VS_12RootModifier__"
+        ],
+        [
+          "NavigationStackHostingController<AnyView>",
+          "_TtGC7SwiftUI32NavigationStackHostingControllerVS_7AnyView_"
+        ],
+        [
+          "NavigationStackHostingController<AnyView>",
+          "_TtGC7SwiftUI32NavigationStackHostingControllerVS_7AnyView_"
+        ],
+        [
+          "NavigationStackHostingController<AnyView>",
+          "_TtGC7SwiftUI32NavigationStackHostingControllerVS_7AnyView_"
+        ],
+        [
+          "SheetScreen",
+          "_TtGC7SwiftUI29PresentationHostingControllerVS_7AnyView_"
+        ],
+        [
+          "NavigationStackHostingController<AnyView>",
+          "_TtGC7SwiftUI32NavigationStackHostingControllerVS_7AnyView_"
+        ],
+        [
+          "NavigationStackHostingController<AnyView>",
+          "_TtGC7SwiftUI32NavigationStackHostingControllerVS_7AnyView_"
+        ],
+        [
+          "NavigationStackHostingController<AnyView>",
+          "_TtGC7SwiftUI32NavigationStackHostingControllerVS_7AnyView_"
+        ]
+      ],
+      "after_cell": [
+        "candidate-27.1",
+        "duo",
+        "SwiftUI",
+        "split"
+      ],
+      "axis": "SDK change",
+      "before": [
+        [
+          "ApplicationLaunch",
+          "com/datadog/application-launch/view"
+        ],
+        [
+          "AutoTracked_HostingController_Fallback",
+          "_TtGC7SwiftUI19UIHostingControllerGVS_15ModifiedContentGVS_8LazyViewGVS_19_ConditionalContentV14SwiftUIFixture14AutomaticSplitVS4_14AutomaticStack__VS_12RootModifier__"
+        ],
+        [
+          "NavigationStackHostingController<AnyView>",
+          "_TtGC7SwiftUI32NavigationStackHostingControllerVS_7AnyView_"
+        ],
+        [
+          "AutoTracked_HostingController_Fallback",
+          "_TtGC7SwiftUI19UIHostingControllerGVS_15ModifiedContentGVS_8LazyViewGVS_19_ConditionalContentV14SwiftUIFixture14AutomaticSplitVS4_14AutomaticStack__VS_12RootModifier__"
+        ],
+        [
+          "NavigationStackHostingController<AnyView>",
+          "_TtGC7SwiftUI32NavigationStackHostingControllerVS_7AnyView_"
+        ],
+        [
+          "SheetScreen",
+          "_TtGC7SwiftUI29PresentationHostingControllerVS_7AnyView_"
+        ],
+        [
+          "NavigationStackHostingController<AnyView>",
+          "_TtGC7SwiftUI32NavigationStackHostingControllerVS_7AnyView_"
+        ],
+        [
+          "AutoTracked_HostingController_Fallback",
+          "_TtGC7SwiftUI19UIHostingControllerGVS_15ModifiedContentGVS_8LazyViewGVS_19_ConditionalContentV14SwiftUIFixture14AutomaticSplitVS4_14AutomaticStack__VS_12RootModifier__"
+        ],
+        [
+          "NavigationStackHostingController<AnyView>",
+          "_TtGC7SwiftUI32NavigationStackHostingControllerVS_7AnyView_"
+        ],
+        [
+          "NavigationStackHostingController<AnyView>",
+          "_TtGC7SwiftUI32NavigationStackHostingControllerVS_7AnyView_"
+        ],
+        [
+          "SheetScreen",
+          "_TtGC7SwiftUI29PresentationHostingControllerVS_7AnyView_"
+        ],
+        [
+          "NavigationStackHostingController<AnyView>",
+          "_TtGC7SwiftUI32NavigationStackHostingControllerVS_7AnyView_"
+        ],
+        [
+          "NavigationStackHostingController<AnyView>",
+          "_TtGC7SwiftUI32NavigationStackHostingControllerVS_7AnyView_"
+        ],
+        [
+          "NavigationStackHostingController<AnyView>",
+          "_TtGC7SwiftUI32NavigationStackHostingControllerVS_7AnyView_"
+        ],
+        [
+          "NavigationStackHostingController<AnyView>",
+          "_TtGC7SwiftUI32NavigationStackHostingControllerVS_7AnyView_"
+        ]
+      ],
+      "before_cell": [
+        "baseline-27.1",
+        "duo",
+        "SwiftUI",
+        "split"
+      ],
+      "family": "views",
+      "status": "DIFFERENCE_REQUIRES_CLASSIFICATION"
+    },
+    {
+      "after": [
+        [
+          "initial.root.tap",
+          [
+            [
+              "tap",
+              "SwiftUI_Button",
+              2,
+              "NavigationStackHostingController<AnyView>"
+            ]
+          ]
+        ],
+        [
+          "initial.root.toggle",
+          []
+        ],
+        [
+          "initial.root.scroll",
+          [
+            [
+              "swipe",
+              "SwiftUI.HostingScrollView(sidebar.scroll)",
+              2,
+              "NavigationStackHostingController<AnyView>"
+            ]
+          ]
+        ],
+        [
+          "initial.navigate",
+          [
+            [
+              "tap",
+              "ListCollectionViewCell",
+              2,
+              "NavigationStackHostingController<AnyView>"
+            ]
+          ]
+        ],
+        [
+          "initial.detail.tap",
+          [
+            [
+              "tap",
+              "SwiftUI_Button",
+              4,
+              "NavigationStackHostingController<AnyView>"
+            ]
+          ]
+        ],
+        [
+          "initial.detail.toggle",
+          []
+        ],
+        [
+          "initial.detail.scroll",
+          [
+            [
+              "swipe",
+              "SwiftUI.HostingScrollView(detail.scroll)",
+              4,
+              "NavigationStackHostingController<AnyView>"
+            ]
+          ]
+        ],
+        [
+          "initial.present",
+          [
+            [
+              "tap",
+              "SwiftUI_Button",
+              4,
+              "NavigationStackHostingController<AnyView>"
+            ]
+          ]
+        ],
+        [
+          "initial.sheet.tap",
+          [
+            [
+              "tap",
+              "SwiftUI_Button",
+              5,
+              "SheetScreen"
+            ]
+          ]
+        ],
+        [
+          "initial.dismiss",
+          [
+            [
+              "tap",
+              "SwiftUI_Button",
+              5,
+              "SheetScreen"
+            ]
+          ]
+        ],
+        [
+          "initial.detail.return.tap",
+          [
+            [
+              "tap",
+              "SwiftUI_Button",
+              6,
+              "NavigationStackHostingController<AnyView>"
+            ]
+          ]
+        ],
+        [
+          "initial.back",
+          [
+            [
+              "tap",
+              "SwiftUI_Button",
+              6,
+              "NavigationStackHostingController<AnyView>"
+            ]
+          ]
+        ],
+        [
+          "initial.root.return.tap",
+          [
+            [
+              "tap",
+              "SwiftUI_Button",
+              8,
+              "NavigationStackHostingController<AnyView>"
+            ]
+          ]
+        ],
+        [
+          "inner.root.tap",
+          [
+            [
+              "tap",
+              "SwiftUI_Button",
+              10,
+              "NavigationStackHostingController<AnyView>"
+            ]
+          ]
+        ],
+        [
+          "inner.root.toggle",
+          []
+        ],
+        [
+          "inner.root.scroll",
+          [
+            [
+              "swipe",
+              "SwiftUI.HostingScrollView(sidebar.scroll)",
+              10,
+              "NavigationStackHostingController<AnyView>"
+            ]
+          ]
+        ],
+        [
+          "inner.navigate",
+          [
+            [
+              "tap",
+              "ListCollectionViewCell",
+              10,
+              "NavigationStackHostingController<AnyView>"
+            ]
+          ]
+        ],
+        [
+          "inner.detail.tap",
+          [
+            [
+              "tap",
+              "SwiftUI_Button",
+              10,
+              "NavigationStackHostingController<AnyView>"
+            ]
+          ]
+        ],
+        [
+          "inner.detail.toggle",
+          []
+        ],
+        [
+          "inner.detail.scroll",
+          [
+            [
+              "swipe",
+              "SwiftUI.HostingScrollView(detail.scroll)",
+              10,
+              "NavigationStackHostingController<AnyView>"
+            ]
+          ]
+        ],
+        [
+          "inner.present",
+          [
+            [
+              "tap",
+              "SwiftUI_Button",
+              10,
+              "NavigationStackHostingController<AnyView>"
+            ]
+          ]
+        ],
+        [
+          "inner.sheet.tap",
+          [
+            [
+              "tap",
+              "SwiftUI_Button",
+              11,
+              "SheetScreen"
+            ]
+          ]
+        ],
+        [
+          "inner.dismiss",
+          [
+            [
+              "tap",
+              "SwiftUI_Button",
+              11,
+              "SheetScreen"
+            ]
+          ]
+        ],
+        [
+          "inner.detail.return.tap",
+          [
+            [
+              "tap",
+              "SwiftUI_Button",
+              12,
+              "NavigationStackHostingController<AnyView>"
+            ]
+          ]
+        ],
+        [
+          "inner.back",
+          [
+            [
+              "tap",
+              "SwiftUI_Button",
+              12,
+              "NavigationStackHostingController<AnyView>"
+            ]
+          ]
+        ],
+        [
+          "inner.root.return.tap",
+          [
+            [
+              "tap",
+              "SwiftUI_Button",
+              12,
+              "NavigationStackHostingController<AnyView>"
+            ]
+          ]
+        ],
+        [
+          "stable.navigate",
+          [
+            [
+              "tap",
+              "ListCollectionViewCell",
+              12,
+              "NavigationStackHostingController<AnyView>"
+            ]
+          ]
+        ],
+        [
+          "closed.detail.tap",
+          [
+            [
+              "tap",
+              "SwiftUI_Button",
+              13,
+              "NavigationStackHostingController<AnyView>"
+            ]
+          ]
+        ],
+        [
+          "reopened.detail.tap",
+          [
+            [
+              "tap",
+              "SwiftUI_Button",
+              14,
+              "NavigationStackHostingController<AnyView>"
+            ]
+          ]
+        ]
+      ],
+      "after_cell": [
+        "candidate-27.1",
+        "duo",
+        "SwiftUI",
+        "split"
+      ],
+      "axis": "SDK change",
+      "before": [
+        [
+          "initial.root.tap",
+          [
+            [
+              "tap",
+              "SwiftUI_Button",
+              2,
+              "NavigationStackHostingController<AnyView>"
+            ]
+          ]
+        ],
+        [
+          "initial.root.toggle",
+          []
+        ],
+        [
+          "initial.root.scroll",
+          [
+            [
+              "swipe",
+              "SwiftUI.HostingScrollView(sidebar.scroll)",
+              2,
+              "NavigationStackHostingController<AnyView>"
+            ]
+          ]
+        ],
+        [
+          "initial.navigate",
+          [
+            [
+              "tap",
+              "ListCollectionViewCell",
+              2,
+              "NavigationStackHostingController<AnyView>"
+            ]
+          ]
+        ],
+        [
+          "initial.detail.tap",
+          [
+            [
+              "tap",
+              "SwiftUI_Button",
+              4,
+              "NavigationStackHostingController<AnyView>"
+            ]
+          ]
+        ],
+        [
+          "initial.detail.toggle",
+          []
+        ],
+        [
+          "initial.detail.scroll",
+          [
+            [
+              "swipe",
+              "SwiftUI.HostingScrollView(detail.scroll)",
+              4,
+              "NavigationStackHostingController<AnyView>"
+            ]
+          ]
+        ],
+        [
+          "initial.present",
+          [
+            [
+              "tap",
+              "SwiftUI_Button",
+              4,
+              "NavigationStackHostingController<AnyView>"
+            ]
+          ]
+        ],
+        [
+          "initial.sheet.tap",
+          [
+            [
+              "tap",
+              "SwiftUI_Button",
+              5,
+              "SheetScreen"
+            ]
+          ]
+        ],
+        [
+          "initial.dismiss",
+          [
+            [
+              "tap",
+              "SwiftUI_Button",
+              5,
+              "SheetScreen"
+            ]
+          ]
+        ],
+        [
+          "initial.detail.return.tap",
+          [
+            [
+              "tap",
+              "SwiftUI_Button",
+              6,
+              "NavigationStackHostingController<AnyView>"
+            ]
+          ]
+        ],
+        [
+          "initial.back",
+          [
+            [
+              "tap",
+              "SwiftUI_Button",
+              6,
+              "NavigationStackHostingController<AnyView>"
+            ]
+          ]
+        ],
+        [
+          "initial.root.return.tap",
+          [
+            [
+              "tap",
+              "SwiftUI_Button",
+              8,
+              "NavigationStackHostingController<AnyView>"
+            ]
+          ]
+        ],
+        [
+          "inner.root.tap",
+          [
+            [
+              "tap",
+              "SwiftUI_Button",
+              9,
+              "NavigationStackHostingController<AnyView>"
+            ]
+          ]
+        ],
+        [
+          "inner.root.toggle",
+          []
+        ],
+        [
+          "inner.root.scroll",
+          [
+            [
+              "swipe",
+              "SwiftUI.HostingScrollView(sidebar.scroll)",
+              9,
+              "NavigationStackHostingController<AnyView>"
+            ]
+          ]
+        ],
+        [
+          "inner.navigate",
+          [
+            [
+              "tap",
+              "ListCollectionViewCell",
+              9,
+              "NavigationStackHostingController<AnyView>"
+            ]
+          ]
+        ],
+        [
+          "inner.detail.tap",
+          [
+            [
+              "tap",
+              "SwiftUI_Button",
+              9,
+              "NavigationStackHostingController<AnyView>"
+            ]
+          ]
+        ],
+        [
+          "inner.detail.toggle",
+          []
+        ],
+        [
+          "inner.detail.scroll",
+          [
+            [
+              "swipe",
+              "SwiftUI.HostingScrollView(detail.scroll)",
+              9,
+              "NavigationStackHostingController<AnyView>"
+            ]
+          ]
+        ],
+        [
+          "inner.present",
+          [
+            [
+              "tap",
+              "SwiftUI_Button",
+              9,
+              "NavigationStackHostingController<AnyView>"
+            ]
+          ]
+        ],
+        [
+          "inner.sheet.tap",
+          [
+            [
+              "tap",
+              "SwiftUI_Button",
+              10,
+              "SheetScreen"
+            ]
+          ]
+        ],
+        [
+          "inner.dismiss",
+          [
+            [
+              "tap",
+              "SwiftUI_Button",
+              10,
+              "SheetScreen"
+            ]
+          ]
+        ],
+        [
+          "inner.detail.return.tap",
+          [
+            [
+              "tap",
+              "SwiftUI_Button",
+              11,
+              "NavigationStackHostingController<AnyView>"
+            ]
+          ]
+        ],
+        [
+          "inner.back",
+          [
+            [
+              "tap",
+              "SwiftUI_Button",
+              11,
+              "NavigationStackHostingController<AnyView>"
+            ]
+          ]
+        ],
+        [
+          "inner.root.return.tap",
+          [
+            [
+              "tap",
+              "SwiftUI_Button",
+              11,
+              "NavigationStackHostingController<AnyView>"
+            ]
+          ]
+        ],
+        [
+          "stable.navigate",
+          [
+            [
+              "tap",
+              "ListCollectionViewCell",
+              11,
+              "NavigationStackHostingController<AnyView>"
+            ]
+          ]
+        ],
+        [
+          "closed.detail.tap",
+          [
+            [
+              "tap",
+              "SwiftUI_Button",
+              11,
+              "NavigationStackHostingController<AnyView>"
+            ]
+          ]
+        ],
+        [
+          "reopened.detail.tap",
+          [
+            [
+              "tap",
+              "SwiftUI_Button",
+              12,
+              "NavigationStackHostingController<AnyView>"
+            ]
+          ]
+        ]
+      ],
+      "before_cell": [
+        "baseline-27.1",
+        "duo",
+        "SwiftUI",
+        "split"
+      ],
+      "family": "actions",
+      "status": "DIFFERENCE_REQUIRES_CLASSIFICATION"
+    }
+  ],
+  "declared_multiple_scenes": false,
+  "device_filter": "duo",
+  "experiment": "EXP-195",
+  "qualified_unique_cells": 2,
+  "retained_unqualified": []
+}

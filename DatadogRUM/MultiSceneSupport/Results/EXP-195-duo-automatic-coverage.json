@@ -16908,6 +16908,186 @@
       "run_id": "exp195-6186523000d545d2b0e6fe588c0ae5bc",
       "state": "UNQUALIFIED_INPUT",
       "test_exit": -15
+    },
+    {
+      "artifact_directory": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp195-collector-t92yhxza/runs/exp195-2490db8fdfee4d03931e4b296781cebe",
+      "artifacts_sha256": {
+        "bounded-interruption.json": "9d35f7cca3c2c8ba310a67bd9792e7087eda9c43211ac682a9bc93fbb6e2fe6d",
+        "compatibility-inner.png": "36788e0f92fbb94324a78fd33baaa6da400c0fe6fe68032325f3e758bf8a3606",
+        "events.jsonl": "a15ac0fbb27fb27b7b99b06cc47c515f7a6e680de10b4358b9451f08cdad9207",
+        "receipts.json": "3944ce9c71ecb17662f3af7be3bc5164763767b177a8b30639560da3bf04fa4e",
+        "run.json": "4836cd09631b5feddc2f65e687241ae85e64e3d3829930df22ded13eda251508",
+        "test-summary.json": "9cc4e859f80107461d28d4cf6fabb6b582b090ef4778bd7d495c358443cb0c9d"
+      },
+      "attempt": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp195-collector-t92yhxza",
+      "bounded-interruption": {
+        "interrupted_at": 1789828752.946443,
+        "pgid": 16335,
+        "pid": 16335,
+        "reason": "No XCTest progress for over180 seconds after Open; runner absent, app alive. Separate Device Hub tap proves native responsiveness, never original test acceptance.",
+        "run_id": "exp195-2490db8fdfee4d03931e4b296781cebe",
+        "signal": "SIGTERM",
+        "verified_command": "16335 16335 /Applications/Xcode_27.1.app/Contents/Developer/usr/bin/xcodebuild test-without-building -xctestrun /var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp195-collector-t92yhxza/candidate-27.1/derived/Build/Products/exp195-2490db8fdfee4d03931e4b296781cebe.xctestrun -destination platform=iOS Simulator,id=C3B8746E-C786-4309-BEA0-20A63F772E3F -only-testing:CoverageUITests/AutomaticCoverageUITests/testUIKitStack -parallel-testing-enabled NO -maximum-concurrent-test-simulator-destinations 1 -resultBundlePath /var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp195-collector-t92yhxza/runs/exp195-2490db8fdfee4d03931e4b296781cebe/result.xcresult -quiet"
+      },
+      "cell": [
+        "candidate-26.5",
+        "duo",
+        "UIKit",
+        "stack"
+      ],
+      "clean_install": true,
+      "cleanup": true,
+      "last_input_receipt": {
+        "payload": {
+          "after": {
+            "display": {
+              "active": {
+                "active": true,
+                "backlightState": "activeOn",
+                "bounds": [
+                  [
+                    0,
+                    0
+                  ],
+                  [
+                    2007,
+                    2853
+                  ]
+                ],
+                "chromeIdentifier": "com.apple.dt.devicekit.chrome.phone14",
+                "currentOrientation": "rot90",
+                "displayId": 3,
+                "framebufferMaskIdentifier": "BF0DC480-5EE2-4EC1-B02B-C75E94759832",
+                "name": "LCD-1",
+                "nativeOrientation": "rot0",
+                "nativeSize": [
+                  2007,
+                  2853
+                ],
+                "physicalSize": [
+                  4.363043308258057,
+                  6.202173709869385
+                ],
+                "pointScale": 3,
+                "primary": false,
+                "type": {
+                  "integrated": {}
+                },
+                "uniqueId": "27A59591-6E45-436F-AFF4-593734A03C81"
+              },
+              "artifact": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp195-collector-t92yhxza/runs/exp195-2490db8fdfee4d03931e4b296781cebe/open-after-displays.json",
+              "observed_at": 1789828472.5987918
+            },
+            "geometry": {
+              "kind": "geometry",
+              "payload": {
+                "scenes": [
+                  {
+                    "activation": 0,
+                    "id": "FC56ED99-C9A4-47E4-85D8-A4EE7B05E0CD",
+                    "orientation": 1,
+                    "windows": [
+                      {
+                        "height": 667,
+                        "horizontal_size_class": 1,
+                        "vertical_size_class": 2,
+                        "width": 375
+                      },
+                      {
+                        "height": 667,
+                        "horizontal_size_class": 1,
+                        "vertical_size_class": 2,
+                        "width": 375
+                      }
+                    ]
+                  }
+                ]
+              },
+              "run_id": "exp195-2490db8fdfee4d03931e4b296781cebe",
+              "sequence": 56,
+              "timestamp": 1789828463.96452
+            }
+          },
+          "before": {
+            "display": {
+              "active": {
+                "active": true,
+                "backlightState": "activeOn",
+                "bounds": [
+                  [
+                    0,
+                    0
+                  ],
+                  [
+                    1398,
+                    2034
+                  ]
+                ],
+                "chromeIdentifier": "com.apple.dt.devicekit.chrome.phone15",
+                "currentOrientation": "rot0",
+                "displayId": 1,
+                "framebufferMaskIdentifier": "1C896A2B-F0D7-405C-8D0F-66E4B80AD044",
+                "name": "LCD",
+                "nativeOrientation": "rot0",
+                "nativeSize": [
+                  1398,
+                  2034
+                ],
+                "physicalSize": [
+                  3.039130449295044,
+                  4.421739101409912
+                ],
+                "pointScale": 3,
+                "primary": true,
+                "type": {
+                  "integrated": {}
+                },
+                "uniqueId": "04F36ECF-6E86-4B5C-A806-E146F63EB2D8"
+              },
+              "artifact": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp195-collector-t92yhxza/runs/exp195-2490db8fdfee4d03931e4b296781cebe/open-before-displays.json",
+              "observed_at": 1789828453.301891
+            },
+            "geometry": {
+              "kind": "geometry",
+              "payload": {
+                "scenes": [
+                  {
+                    "activation": 0,
+                    "id": "FC56ED99-C9A4-47E4-85D8-A4EE7B05E0CD",
+                    "orientation": 1,
+                    "windows": [
+                      {
+                        "height": 667,
+                        "horizontal_size_class": 1,
+                        "vertical_size_class": 2,
+                        "width": 375
+                      }
+                    ]
+                  }
+                ]
+              },
+              "run_id": "exp195-2490db8fdfee4d03931e4b296781cebe",
+              "sequence": 9,
+              "timestamp": 1789828349.478469
+            },
+            "requested_at": 1789828418.95209,
+            "run_id": "exp195-2490db8fdfee4d03931e4b296781cebe"
+          },
+          "command_id": "14cad17b-d9c0-46d4-a579-cd00b372bdff",
+          "geometry_mode": "legacy_viewport_unchanged",
+          "geometry_sequence": 56,
+          "pose": "open",
+          "run_id": "exp195-2490db8fdfee4d03931e4b296781cebe"
+        },
+        "phase": "received-open",
+        "run_id": "exp195-2490db8fdfee4d03931e4b296781cebe",
+        "timestamp": 1789828472.95714
+      },
+      "native_summary_state": "incomplete result bundle; raw output retained",
+      "reason": "Expecting value: line 1 column 1 (char 0)",
+      "run_id": "exp195-2490db8fdfee4d03931e4b296781cebe",
+      "state": "UNQUALIFIED_INPUT",
+      "test_exit": -15
     }
   ]
 }

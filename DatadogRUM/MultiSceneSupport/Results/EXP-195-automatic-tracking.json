@@ -65,11 +65,37 @@
   ],
   "classification_followup": {
     "acceptance": "Explain every view/owner difference against native callback/geometry/background timing; no lost named destination or automatic interaction; classify any new unexplained loss as regression.",
+    "additional_repeats": "None; finite replay complete.",
+    "attempt": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp195-split-replay-ccp0oipi",
     "cells": 2,
     "defined_before_execution": true,
+    "delivery_diagnostics": [
+      {
+        "before": 1789827549.4809809,
+        "build": "baseline-27.1",
+        "delivered": 1789827669.934438,
+        "run_id": "exp195-a9e3cdb44e7342849566d0fef328f707",
+        "sample_precedes_delivery": true,
+        "sample_started_at": 1789827662.033,
+        "seconds": 120.45345711708069
+      },
+      {
+        "before": 1789828032.231412,
+        "build": "candidate-27.1",
+        "delivered": 1789828153.907123,
+        "run_id": "exp195-718c04f2ad5c4ba6b1d28690e3ef9133",
+        "sample_precedes_delivery": true,
+        "sample_started_at": 1789828091.694,
+        "seconds": 121.67571115493774
+      }
+    ],
+    "durable_result": "EXP-195-split-replay.json",
     "gate": "C09/C10",
+    "original_result": "EXP-195-duo-automatic-coverage.json",
+    "qualified_cells": 2,
     "reason": "Classify native generic-hosting occurrence differences around fold/background; preserve all original inventories rather than normalizing them away.",
     "scope": "One additional baseline/current SDK27 manifest-false SwiftUI split pair, same frozen applications and real fold flow.",
+    "status": "CLASSIFIED",
     "stop_rule": "One pair only before deciding source repair or a documented unresolved limit."
   },
   "classifications": [
@@ -113,6 +139,34 @@
       "remaining_limit": "Inner Sidebar taps remain associated with the single current Empty/Detail destination. This does not add independent pane modeling. UISwitch omissions remain unchanged.",
       "source": "RUMViewsHandler.swift:762 deferUIKitSplitViewRemovalIfNeeded, :798 consumePendingUIKitSplitViewRemoval, :1105 structural-column suppression, and inactive stack guards at SDK04201edc7.",
       "status": "IMPROVED"
+    },
+    {
+      "baseline_run": "exp195-3ceb266fa81e4a4680f11a074bbd579e",
+      "candidate_run": "exp195-d4da4c2562f44278a0e5afe688ee667b",
+      "evidence": "Every automatic action phase has identical type, name and owner name:21 taps/4 swipes, four unchanged Toggle omissions. First12 view occurrences match, including both named SheetScreen presentations. Baseline adds one generic occurrence at reopen and two0.235/0.312 seconds after native background; current adds none. Both native appearance timelines include the same Sidebar callbacks at reopen/background. Current close/reopen Detail taps retain generic occurrence11 instead of baseline11/12.",
+      "gates": [
+        "C09",
+        "C10"
+      ],
+      "id": "SDK27-manifest-true-SwiftUI-split",
+      "remaining_limit": "SwiftUI split still names Sidebar/Empty/Detail generically and does not represent every accepted route as a distinct occurrence. This is automatic continuity evidence, not exact semantic navigation or independent pane support.",
+      "source": "RUMViewsHandler.swift:1105 rejects structural split-column appearances in manifest-enabled apps, independent of whether the predicate subsequently identifies UIKit or SwiftUI; inactive-stack guards prevent background starts. SDK04201edc7.",
+      "status": "IMPROVED"
+    },
+    {
+      "baseline_original": "exp195-5dec782ae1044c09b40724766794beab",
+      "baseline_replay": "exp195-a9e3cdb44e7342849566d0fef328f707",
+      "candidate_original": "exp195-49320ea812684920ac4bb45145271510",
+      "candidate_replay": "exp195-718c04f2ad5c4ba6b1d28690e3ef9133",
+      "conclusion": "Observed fold-related generic view churn is the existing callback-sensitive automatic limitation, not a new loss of named screens or actions in these fixtures. No deterministic foreground regression reproduced by the fixed replay. Exact semantic split navigation is not claimed.",
+      "delay_evidence": "Both replay arms eventually deliver a roughly120-second delayed closed Detail tap. Scoped samples taken before delivery show main-thread run-loop waiting (baseline2469/2500; current1468/1555, with XCTest snapshot activity). Samples and exact chronology are retained; no performance or causal attribution claim.",
+      "evidence": "All four runs preserve21 taps/4 swipes, four Toggle omissions, generic split names and two named SheetScreen presentations. The candidate replay exactly matches the original baseline foreground name/path sequence and complete action occurrence-ordinal/name ownership. Both also have identical native appearance sequences. Baseline foreground generic occurrences vary15 to13 on replay; current remains15 with variable fold distribution. The current source suppresses the baseline-only two post-background starts in both pairs.",
+      "gates": [
+        "C09",
+        "C10"
+      ],
+      "id": "SDK27-manifest-false-SwiftUI-split-replay",
+      "status": "UNCHANGED_LIMITATION"
     }
   ],
   "collector_followups": [
@@ -153,6 +207,24 @@
     "keep_awake": "Temporary assertion renewed; owned PID/deadline and prior assertions in mo8om5bc/keep-awake.json. Start identity checked before replacing prior process; stop on completion. No persistent settings changes."
   },
   "experiment": "EXP-195",
+  "external_collector_followup": {
+    "collector": "Use CUA for UI actions and a bounded CLI for pre-input records, independent native callback/state evidence, actual display/geometry receipts, screenshots and collection. Record this as external CUA/native evidence, never fabricate an XCTest pass.",
+    "decisive_test": "Complete the same action/navigation/pose phases. Require fresh exact native callbacks for taps/toggles, native appearances for navigation/present/dismiss, native offsets for UIKit scroll and independently reviewed before/after screenshots for SwiftUI scroll. Reject stale/late/duplicate/identity-mismatched or visually unproved input. Compare exact event names/counts/owners against the existing frozen source/build pairs.",
+    "defined_at": 1789828965.49572,
+    "defined_before_implementation": true,
+    "frozen_contract": "Reuse original Swift sources, all app/SDK binaries and manifest=false. Fresh run IDs, clean installation, installed identity before/after, actual one-scene geometry, real Open/Close/Reopen/Home and cleanup remain mandatory. No app instrumentation or public predicate changes.",
+    "gates": [
+      "C07",
+      "C08",
+      "C09",
+      "C10"
+    ],
+    "owner": "SDK implementer",
+    "reason": "Modern XCTest runner disappears after Open for both genuine old-built SwiftUI and UIKit apps. Separate Device Hub tap in the old UIKit app changes receipt3 to4 with exactly one native callback after runner disappearance, proving an alternative input path is viable.",
+    "scope": "Only the eight still-unaccepted genuineSDK26.5 Duo cells from the original32-cell matrix. First current UIKit stack cell is collector qualification; no accepted SDK27 or regular cell rerun.",
+    "status": "DEFINED",
+    "stop_rule": "Qualify one old UIKit cell before the other seven; if the external driver cannot prove an input effect, retain that failure and report the concrete remaining limitation. No blind equivalent retries or additional UI families."
+  },
   "gates": [
     "C07",
     "C08",
@@ -179,11 +251,11 @@
     ],
     "matrix": "baseline/current Datadog x UIKit/native SwiftUI stack/split x SDK27.1 Duo only",
     "owner": "SDK implementer",
-    "partial_finding": "UIKit stack source pair matches. UIKit split preserves22 taps/4 swipes and all owners except the reopened Detail tap, which improves from Sidebar to Detail; current13 versus baseline21 views suppress structural churn and post-background starts.",
-    "qualified_unique_cells": 4,
+    "partial_finding": "All8 inputs qualify. Stack pairs match. UIKit split improves reopened Detail ownership; SwiftUI split retains21 taps/4 swipes and generic names while avoiding one baseline reopen occurrence and two post-background starts. Classification records preserve exact evidence.",
+    "qualified_unique_cells": 8,
     "reason": "RUMFeature.swift:70 and RUMInstrumentation.swift:109/120/129 gate the changed automatic path on the manifest declaration, not actual scene count. Existing one-window apps may already declare true without adopting this project.",
     "scope_limit": "Proves this SDK source-path comparison on SDK27 only; does not expand the manifest-true old-build compiler matrix or claim physical/concurrent-window acceptance.",
-    "status": "RUNNING",
+    "status": "CLASSIFIED",
     "stop_rule": "No extra UI families or matrices without a gate-specific regression. Existing32 cells remain separate and their accepted results are not repeated.",
     "superseded_preparation": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp195-manifest-true-22e4rnwk"
   },
@@ -212,6 +284,41 @@
       "baseline",
       "candidate"
     ]
+  },
+  "old_build_UIKit_probe": {
+    "acceptance": "Exactly one fresh native home.tap callback and visible receipt increment after recorded request, same process/run and display; retain all failures.",
+    "artifact_directory": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp195-collector-t92yhxza/runs/exp195-2490db8fdfee4d03931e4b296781cebe",
+    "artifacts_sha256": {
+      "bounded-interruption.json": "9d35f7cca3c2c8ba310a67bd9792e7087eda9c43211ac682a9bc93fbb6e2fe6d",
+      "compatibility-inner.png": "36788e0f92fbb94324a78fd33baaa6da400c0fe6fe68032325f3e758bf8a3606",
+      "compatibility-input-probe.json": "37551c370f189108c32012401aa51e1a90172624ac8ab3e00b1fe9b8ae56b4ac",
+      "events.jsonl": "a15ac0fbb27fb27b7b99b06cc47c515f7a6e680de10b4358b9451f08cdad9207",
+      "old-build-process-state.json": "d095eea817bcf5f910d848c34cce5cad74f2727e4eb389bcaf5d5502a5c2e91b",
+      "run.json": "4836cd09631b5feddc2f65e687241ae85e64e3d3829930df22ded13eda251508"
+    },
+    "attempts_allowed": 1,
+    "defined_at": 1789828678.239237,
+    "expected_native_before": "receipt:3",
+    "full_matrix_acceptance": false,
+    "native_callbacks": [
+      {
+        "kind": "native_input",
+        "payload": {
+          "name": "home.tap"
+        },
+        "run_id": "exp195-2490db8fdfee4d03931e4b296781cebe",
+        "sequence": 57,
+        "timestamp": 1789828697.084344
+      }
+    ],
+    "observed_at": 1789828752.838659,
+    "observed_ui_after": "receipt:4",
+    "observed_ui_before": "receipt:3",
+    "purpose": "One native Home tap through Device Hub after XCTest runner disappearance; distinguish visible app responsiveness from collector failure. Never qualifies or repairs the failed original test.",
+    "requested_at": 1789828678.2392378,
+    "result": "RESPONSIVE_SINGLE_TAP",
+    "run_id": "exp195-2490db8fdfee4d03931e4b296781cebe",
+    "target": "home.tap"
   },
   "oracle": {
     "acceptance": "Every finite cell has a classified outcome; all four gates require no new unexplained loss, duplicate or ownership/name degradation. Pre-existing imperfections remain visible, never silently accepted as ideal semantics.",
