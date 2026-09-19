@@ -746,11 +746,23 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
             appCompleted.fulfill()
         }
 
+        let firstRunning = expectation(for: NSPredicate { object, _ in
+            (object as? URLSessionTask)?.state == .running
+        }, evaluatedWith: task)
         task.resume()
+        wait(for: [firstRunning], timeout: 5)
         XCTAssertEqual(task.state, .running)
+        let suspended = expectation(for: NSPredicate { object, _ in
+            (object as? URLSessionTask)?.state == .suspended
+        }, evaluatedWith: task)
         task.suspend()
+        wait(for: [suspended], timeout: 5)
         XCTAssertEqual(task.state, .suspended)
+        let secondRunning = expectation(for: NSPredicate { object, _ in
+            (object as? URLSessionTask)?.state == .running
+        }, evaluatedWith: task)
         task.resume()
+        wait(for: [secondRunning], timeout: 5)
         XCTAssertEqual(task.state, .running)
         task.cancel()
         wait(for: [started, completed, appCompleted], timeout: 5)
@@ -1023,9 +1035,14 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
         let order = ReadWriteLock(wrappedValue: [String]())
         handler.onInterceptionDidStart = { _ in order.mutate { $0.append("start") } }
         handler.onInterceptionDidComplete = { _ in order.mutate { $0.append("complete") } }
+        weak var weakPreparation: AnyObject?
         handler.onRequestMutation = { [weak feature, weak task] request, _, _ in
             guard request.url == url, let feature, let task else {
                 return
+            }
+            if completeDuringPreparation {
+                weakPreparation = try? Self.preparation(for: task, in: feature)
+                XCTAssertNotNil(weakPreparation, "The active preparation must exist", file: file, line: line)
             }
             chunks.forEach { feature.task(task, didReceive: $0) }
             feature.task(task, didFinishCollecting: .mockWith())
@@ -1041,6 +1058,10 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
         task.resume()
         feature.flush()
 
+        if completeDuringPreparation {
+            XCTAssertNil(weakPreparation, "Early completion must release the preparation while the task remains alive", file: file, line: line)
+            XCTAssertNil(try Self.preparation(for: task, in: feature), file: file, line: line)
+        }
         XCTAssertEqual(forwarding.wrappedValue, 1, file: file, line: line)
         XCTAssertEqual(task.state, .suspended, "Native transport is deliberately withheld", file: file, line: line)
         XCTAssertEqual(order.wrappedValue, ["start", "complete"], file: file, line: line)
@@ -1075,6 +1096,125 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
 
         XCTAssertEqual(mutations.wrappedValue, 0)
         XCTAssertTrue(handler.interceptions.isEmpty)
+    }
+
+    func testPreparation_terminalCallbackRemovesPreparationBeforeNativeStateChanges() throws {
+        let feature = try XCTUnwrap(core.get(feature: NetworkInstrumentationFeature.self))
+        let url = URL(string: "https://example.com/terminal-preparation-release")!
+        let session = URLSession(configuration: .ephemeral)
+        let task = session.dataTask(with: url)
+        defer { session.invalidateAndCancel() }
+        let forwarded = ReadWriteLock(wrappedValue: 0)
+        let previous = URLSessionTaskSwizzler()
+        try previous.swizzle { [weak task] candidate, continuation in
+            guard candidate === task else {
+                continuation()
+                return
+            }
+            forwarded.mutate { $0 += 1 }
+        }
+        defer { previous.unswizzle() }
+        let mutations = ReadWriteLock(wrappedValue: 0)
+        handler.firstPartyHosts = .init(hostsWithTracingHeaderTypes: ["example.com": [.datadog]])
+        handler.shouldInterceptRequest = { $0.url == url }
+        handler.onRequestMutation = { request, _, _ in
+            guard request.url == url else {
+                return
+            }
+            mutations.mutate { $0 += 1 }
+        }
+        try URLSessionInstrumentation.enableOrThrow(with: nil, in: core)
+
+        task.resume()
+        feature.flush()
+        XCTAssertNotNil(try Self.preparation(for: task, in: feature))
+        feature.task(task, didChangeToState: URLSessionTask.State.completed.rawValue)
+        feature.flush()
+
+        XCTAssertEqual(task.state, .suspended, "The callback precedes the native state setter")
+        XCTAssertNil(try Self.preparation(for: task, in: feature), "Terminal identity must not retain a preparation")
+        task.resume()
+        feature.flush()
+        XCTAssertNil(try Self.preparation(for: task, in: feature))
+        XCTAssertEqual(mutations.wrappedValue, 1)
+        XCTAssertEqual(forwarded.wrappedValue, 2)
+        XCTAssertEqual(handler.interceptions.count, 1)
+        XCTAssertNotNil(handler.interceptions.first?.value.completion)
+    }
+
+    func testPreparation_terminalIdentityIsScopedToFeature() throws {
+        let feature = try XCTUnwrap(core.get(feature: NetworkInstrumentationFeature.self))
+        let url = URL(string: "https://example.com/feature-terminal-identity")!
+        let session = URLSession(configuration: .ephemeral)
+        let task = session.dataTask(with: url)
+        defer { session.invalidateAndCancel() }
+        let forwarded = ReadWriteLock(wrappedValue: 0)
+        let previous = URLSessionTaskSwizzler()
+        try previous.swizzle { [weak task] candidate, continuation in
+            guard candidate === task else {
+                continuation()
+                return
+            }
+            forwarded.mutate { $0 += 1 }
+        }
+        defer { previous.unswizzle() }
+        let firstMutations = ReadWriteLock(wrappedValue: 0)
+        handler.firstPartyHosts = .init(hostsWithTracingHeaderTypes: ["example.com": [.datadog]])
+        handler.shouldInterceptRequest = { $0.url == url }
+        handler.onRequestMutation = { request, _, _ in
+            guard request.url == url else {
+                return
+            }
+            firstMutations.mutate { $0 += 1 }
+        }
+        feature.task(task, didChangeToState: URLSessionTask.State.completed.rawValue)
+        feature.flush()
+        try URLSessionInstrumentation.enableOrThrow(with: nil, in: core)
+        weak var releasedFeature: NetworkInstrumentationFeature?
+
+        try autoreleasepool {
+            let secondCore = SingleFeatureCoreMock<NetworkInstrumentationFeature>()
+            let secondHandler = URLSessionHandlerMock()
+            let secondMutations = ReadWriteLock(wrappedValue: 0)
+            secondHandler.firstPartyHosts = .init(hostsWithTracingHeaderTypes: ["example.com": [.datadog]])
+            secondHandler.shouldInterceptRequest = { $0.url == url }
+            secondHandler.onRequestMutation = { request, _, _ in
+                guard request.url == url else {
+                    return
+                }
+                secondMutations.mutate { $0 += 1 }
+            }
+            try secondCore.register(urlSessionHandler: secondHandler)
+            let secondFeature = try XCTUnwrap(secondCore.get(feature: NetworkInstrumentationFeature.self))
+            releasedFeature = secondFeature
+            try URLSessionInstrumentation.enableOrThrow(with: nil, in: secondCore)
+
+            task.resume()
+            secondFeature.task(task, didCompleteWithError: nil)
+            secondFeature.flush()
+            task.resume()
+            feature.flush()
+            secondFeature.flush()
+
+            XCTAssertEqual(firstMutations.wrappedValue, 0)
+            XCTAssertTrue(handler.interceptions.isEmpty)
+            XCTAssertEqual(secondMutations.wrappedValue, 1)
+            XCTAssertEqual(secondHandler.interceptions.count, 1)
+            XCTAssertNotNil(secondHandler.interceptions.first?.value.completion)
+            XCTAssertEqual(forwarded.wrappedValue, 2)
+        }
+        XCTAssertNil(releasedFeature, "A live completed task must not retain a different SDK feature")
+        XCTAssertEqual(task.state, .suspended)
+    }
+
+    /// Observes ownership without adding a production test hook or keeping the record alive.
+    private static func preparation(for task: URLSessionTask, in feature: NetworkInstrumentationFeature) throws -> AnyObject? {
+        let fields = Mirror(reflecting: feature).children
+        let lock = try XCTUnwrap(fields.first { $0.label == "preparationLock" }?.value as? NSLock)
+        let table = try XCTUnwrap(fields.first { $0.label == "preparations" }?.value as? NSMapTable<AnyObject, AnyObject>)
+        lock.lock()
+        defer { lock.unlock() }
+        return table.object(forKey: task)
     }
 
     func testPreparation_terminalRecordsDoNotRetainTasksOrFeature() throws {

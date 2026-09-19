@@ -65,15 +65,16 @@ internal final class NetworkInstrumentationFeature: DatadogFeature {
     /// The interceptions **must** be accessed using the `queue`.
     private var interceptions: [URLSessionTask: URLSessionTaskInterception] = [:]
 
-    /// Weak identity keys retain terminal state without retaining completed tasks.
+    /// Coordinates active preparations and weak terminal identities without retaining tasks.
     private let preparationLock = NSLock()
     private let preparations = NSMapTable<URLSessionTask, TaskPreparation>(
         keyOptions: [.weakMemory, .objectPointerPersonality],
         valueOptions: .strongMemory
     )
+    private let terminalTasks = NSHashTable<URLSessionTask>(options: [.weakMemory, .objectPointerPersonality])
 
     private final class TaskPreparation {
-        enum Phase { case preparing, ready, terminal }
+        enum Phase { case preparing, ready }
         var phase: Phase
         let trackingMode: TrackingMode
         var continuations: [URLSessionTaskSwizzler.ResumeContinuation] = []
@@ -430,10 +431,10 @@ extension NetworkInstrumentationFeature {
     ) -> ResumeAction? {
         preparationLock.lock()
         defer { preparationLock.unlock() }
-        guard let preparation = preparations.object(forKey: task) else {
-            return nil
+        if let preparation = preparations.object(forKey: task) {
+            return resumeAction(for: preparation, continuation: continuation)
         }
-        return resumeAction(for: preparation, continuation: continuation)
+        return terminalTasks.contains(task) ? .forward : nil
     }
 
     /// Called only while holding `preparationLock`; never invokes customer or native code.
@@ -445,7 +446,7 @@ extension NetworkInstrumentationFeature {
         case .preparing:
             preparation.continuations.append(continuation)
             return .deferred
-        case .ready, .terminal:
+        case .ready:
             return .forward
         }
     }
@@ -468,11 +469,12 @@ extension NetworkInstrumentationFeature {
         if let preparation = preparations.object(forKey: task) {
             return resumeAction(for: preparation, continuation: continuation)
         }
-        let preparation = TaskPreparation(phase: isCompleted ? .terminal : .preparing, trackingMode: trackingMode)
-        preparations.setObject(preparation, forKey: task)
-        guard !isCompleted else {
+        if terminalTasks.contains(task) || isCompleted {
+            terminalTasks.add(task)
             return .forward
         }
+        let preparation = TaskPreparation(phase: .preparing, trackingMode: trackingMode)
+        preparations.setObject(preparation, forKey: task)
         preparation.continuations.append(continuation)
         return .prepare
     }
@@ -489,16 +491,25 @@ extension NetworkInstrumentationFeature {
         let continuations = preparation.continuations
         preparation.events.removeAll()
         preparation.continuations.removeAll()
-        preparation.phase = preparation.observedTerminal ? .terminal : .ready
+        if preparation.observedTerminal {
+            terminalTasks.add(task)
+            preparations.removeObject(forKey: task)
+        } else {
+            preparation.phase = .ready
+        }
         preparationLock.unlock()
-        withExtendedLifetime(events) {}
+        withExtendedLifetime((preparation, events)) {}
         continuations.forEach { $0() }
     }
 
     private func route(_ event: TaskEvent, for task: URLSessionTask) {
         preparationLock.lock()
-        defer { preparationLock.unlock() }
-        if let preparation = preparations.object(forKey: task), preparation.phase == .preparing {
+        let preparation = preparations.object(forKey: task)
+        defer {
+            preparationLock.unlock()
+            withExtendedLifetime(preparation) {}
+        }
+        if let preparation, preparation.phase == .preparing {
             preparation.observedTerminal = preparation.observedTerminal || event.isTerminal
             if case let .data(data) = event, preparation.trackingMode == .registeredDelegate {
                 guard !preparation.discardedBody else {
@@ -516,7 +527,8 @@ extension NetworkInstrumentationFeature {
         }
         if event.isTerminal {
             // State interception precedes the native setter, so task.state alone is insufficient.
-            preparations.setObject(TaskPreparation(phase: .terminal), forKey: task)
+            terminalTasks.add(task)
+            preparations.removeObject(forKey: task)
         }
         enqueue(event, for: task)
     }
