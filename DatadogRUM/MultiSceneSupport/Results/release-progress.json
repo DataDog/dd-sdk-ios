@@ -4,8 +4,8 @@
   "gate_count": 70,
   "counts": {
     "CLOSED": 43,
-    "ENVIRONMENT BLOCKED": 18,
-    "OPEN": 8,
+    "ENVIRONMENT BLOCKED": 22,
+    "OPEN": 4,
     "REVIEW BLOCKED": 1
   },
   "closed": [
@@ -62,25 +62,25 @@
     },
     {
       "id": "C07",
-      "status": "OPEN",
+      "status": "ENVIRONMENT BLOCKED",
       "owner": "SDK implementer",
       "dependencies": []
     },
     {
       "id": "C08",
-      "status": "OPEN",
+      "status": "ENVIRONMENT BLOCKED",
       "owner": "SDK implementer",
       "dependencies": []
     },
     {
       "id": "C09",
-      "status": "OPEN",
+      "status": "ENVIRONMENT BLOCKED",
       "owner": "SDK implementer",
       "dependencies": []
     },
     {
       "id": "C10",
-      "status": "OPEN",
+      "status": "ENVIRONMENT BLOCKED",
       "owner": "SDK implementer",
       "dependencies": []
     },

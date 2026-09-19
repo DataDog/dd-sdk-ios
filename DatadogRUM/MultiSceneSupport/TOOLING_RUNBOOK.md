@@ -2054,3 +2054,13 @@ native callback sequences before attributing generic hosting churn to an SDK cha
 A sample requested during a delay may arrive near recovery: retain its actual
 timestamp against the native callback. Idle app stacks and XCTest snapshot work
 do not by themselves prove the cause or qualify a performance budget.
+
+
+A modern XCTest runner can disappear after a real Duo display switch while the
+unchanged old-built app remains alive and responsive to a separately verified tap.
+That diagnostic does not qualify a full cell. EXP-195's bounded external collector
+also fails its initial switch effect despite successful button input. Stop equivalent
+retries at the declared limit; preserve partial native input, screenshot, source/app
+identity and cleanup. Keep an unqualified collector prototype as an experiment
+artifact instead of adding it to the supported acceptance path. A successful input
+in one control never establishes that the remaining controls or scrolls are usable.

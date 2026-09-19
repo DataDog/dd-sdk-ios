@@ -53,14 +53,19 @@
       "directory": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp195-automatic-8w6fdb1_",
       "oracle_controls": 49,
       "source": "Same apps/SDK; Duo-only external real Device Hub Home and native background receipt.",
-      "status": "RUNNING"
+      "status": "COLLECTION ENDED \u2014 QUALIFIED CELLS AND INPUT FAILURES RETAINED"
     },
     {
       "builds": "Two modern collectors built successfully; genuine application build SDKs remain unchanged.",
       "collector_change": "UIKit compact split supports its observed floating BackButton as well as the ordinary navigation-bar Back.",
       "directory": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp195-collector-t92yhxza",
       "source": "Standalone SDK27 XCTest collectors only; original app/SDK binaries and Swift fixture sources retained.",
-      "status": "RUNNING"
+      "status": "COLLECTION ENDED \u2014 QUALIFIED CELLS AND INPUT FAILURES RETAINED"
+    },
+    {
+      "directory": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp195-external-90i2izen",
+      "reason": "Standalone old UIKit accepts initial Tap but no switch callback/value effect after bounded pointer/drag attempts. One step only, verified code/plist identity and cleanup. Rejected prototype archived; no accepted cell or XCTest claim.",
+      "status": "UNQUALIFIED_INPUT"
     }
   ],
   "classification_followup": {
@@ -171,7 +176,7 @@
   ],
   "collector_followups": [
     {
-      "repair": "Use frozen SDK27.1 XCTest collector for old-built Duo apps; retain original SDK26.5 app identity, rewrite only test-plan app paths, check installed app identities again after execution. Not yet executed on old-built Duo.",
+      "repair": "Frozen modern SDK27.1 collectors were used with unchanged genuine SDK26.5 apps; the subsequent SwiftUI/UIKit probes still lose their runners after actual Open. See preserved follow-up runs; equivalent retries stop.",
       "run_id": "exp195-0d83a88a158e4801a1c423c25d3a024b",
       "status": "UNQUALIFIED_INPUT"
     },
@@ -204,14 +209,122 @@
     "Single scene declared false is the immediate no-adoption contract; simultaneous windows and declared-multi-scene variants remain their separate gates."
   ],
   "environment_support": {
-    "keep_awake": "Temporary assertion renewed; owned PID/deadline and prior assertions in mo8om5bc/keep-awake.json. Start identity checked before replacing prior process; stop on completion. No persistent settings changes."
+    "cleanup": {
+      "devices": [
+        {
+          "deleted": true,
+          "role": "duo",
+          "udid": "C3B8746E-C786-4309-BEA0-20A63F772E3F"
+        },
+        {
+          "deleted": true,
+          "role": "regular",
+          "udid": "71F488A4-B90B-48E4-B900-417E5BB1AFCE"
+        }
+      ],
+      "keep_awake": {
+        "already_exited": false,
+        "pid": 6358,
+        "recorded_at": 1789830778.380432,
+        "stopped_owned_assertion": true,
+        "verified_start": "Sat Sep 19 16:14:06 2026"
+      },
+      "recorded_at": 1789830778.566582
+    },
+    "keep_awake": "User-authorized bounded caffeinate was renewed only while needed. Owned PID6358 command/start identity verified and stopped after UI collection; both EXP195-owned simulators deleted. No persistent security settings changed. Full assertion history remains in mo8om5bc/keep-awake.json.",
+    "physical_preflight": {
+      "artifact_directory": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/multiscene-physical-preflight-oc4ka7dv",
+      "observed": "Physical iPad Pro11-inch third generation, iOS27.0, developer mode enabled, Wi-Fi connected; Xcode eligible. DDI services not yet available.",
+      "scope": "Read-only device rediscovery; use confirmation requested asynchronously. No physical test or install."
+    }
   },
   "experiment": "EXP-195",
   "external_collector_followup": {
+    "app_metadata_after_test": {
+      "SwiftUI": {
+        "build_sdk": "iphonesimulator26.5",
+        "declared_multiple_scenes": false,
+        "info_sha256": "e383d520ed68a441f293d2ef385f7af21e417bc486b8ad54919110e4e9b48290"
+      },
+      "UIKit": {
+        "build_sdk": "iphonesimulator26.5",
+        "declared_multiple_scenes": false,
+        "info_sha256": "c459a6a3aa780ba87d6dea72e856d8fbf6c7ed0cd2b2d1ef4786091ebd8d5a20"
+      }
+    },
+    "artifacts_sha256": {
+      "events.jsonl": "b681b4528814230ea1faa5dfa969c48b0bc050f1e46fd6bc00a3ad06274ede1b",
+      "external-summary.json": "ee8d5a8152936e9d565c1c85d7bd915854de0122d7550d75671e51ab19135d6d",
+      "input-limitation.json": "b20c27b7cfb28da8d727264f02faabe7341767f0eabc3e4b2ddc05cc0a5408f0",
+      "receipts.json": "137d162b27aa0e812b2def4da13b827f7241b1f0e2dc5d7592d8ca89bfb0ac1f",
+      "run.json": "ce7b90b19a33c8ee0946fd0d91fea8758f66b45309725381a6d6b02d7d5f4673",
+      "unqualified-switch-displays.json": "e86651a548cb4095157cf890f68bfb107e994d83178c0292ddb0bb3ce211ace0",
+      "unqualified-switch.png": "4a168b0844e8164803f73b89c6288223661f753d5a2eed05d09d624b84363175"
+    },
+    "attempt": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp195-external-90i2izen",
+    "built_app_metadata": {
+      "SwiftUI": {
+        "build_sdk": "iphonesimulator26.5",
+        "declared_multiple_scenes": false,
+        "info_sha256": "e383d520ed68a441f293d2ef385f7af21e417bc486b8ad54919110e4e9b48290"
+      },
+      "UIKit": {
+        "build_sdk": "iphonesimulator26.5",
+        "declared_multiple_scenes": false,
+        "info_sha256": "c459a6a3aa780ba87d6dea72e856d8fbf6c7ed0cd2b2d1ef4786091ebd8d5a20"
+      }
+    },
+    "clean_install": true,
+    "cleanup": true,
     "collector": "Use CUA for UI actions and a bounded CLI for pre-input records, independent native callback/state evidence, actual display/geometry receipts, screenshots and collection. Record this as external CUA/native evidence, never fabricate an XCTest pass.",
+    "completed_steps": 1,
     "decisive_test": "Complete the same action/navigation/pose phases. Require fresh exact native callbacks for taps/toggles, native appearances for navigation/present/dismiss, native offsets for UIKit scroll and independently reviewed before/after screenshots for SwiftUI scroll. Reject stale/late/duplicate/identity-mismatched or visually unproved input. Compare exact event names/counts/owners against the existing frozen source/build pairs.",
     "defined_at": 1789828965.49572,
     "defined_before_implementation": true,
+    "definition_commit": "8f923622b4bfe26a5a91b0262989468a6041f057",
+    "diagnostic": {
+      "attempted_inputs": [
+        "pointer tap on visible switch",
+        "pointer tap at stretched switch frame center",
+        "one Device Hub zoom increment then drag of visible switch thumb"
+      ],
+      "collector_kind": "external_cua",
+      "completed_steps": 1,
+      "limitation": "No exact individual attempt timestamps were recorded; these attempts are calibration only and cannot qualify a cell. No native toggle callback or visible receipt increment followed.",
+      "native_inputs": [
+        {
+          "kind": "native_input",
+          "payload": {
+            "name": "home.tap"
+          },
+          "run_id": "exp195-209b6a5ec0ca481ea7a9c56adf70d695",
+          "sequence": 8,
+          "timestamp": 1789829768.210596
+        }
+      ],
+      "observed_ui": "Home remains visible; receipt:1; switch remains off",
+      "pending": {
+        "kind": "toggle",
+        "native_sequence": 8,
+        "phase": "initial.root.toggle",
+        "requested_at": 1789829828.90297,
+        "screen": "home",
+        "target": "home.toggle"
+      },
+      "recorded_at": 1789830493.83393,
+      "run_id": "exp195-209b6a5ec0ca481ea7a9c56adf70d695",
+      "screenshot": {
+        "captured_at": 1789830493.833859,
+        "display_file": "unqualified-switch-displays.json",
+        "display_id": "04F36ECF-6E86-4B5C-A806-E146F63EB2D8",
+        "display_sha256": "e86651a548cb4095157cf890f68bfb107e994d83178c0292ddb0bb3ce211ace0",
+        "file": "unqualified-switch.png",
+        "sha256": "4a168b0844e8164803f73b89c6288223661f753d5a2eed05d09d624b84363175"
+      },
+      "status": "UNQUALIFIED_INPUT",
+      "stop_rule": "Stop equivalent external-input retries; none of the eight remaining old-build Duo cells is accepted."
+    },
+    "disposition": "Stop equivalent retries. Preserve the rejected prototype in the hashed experiment archive; do not add an unqualified collector to the supported harness. All eight old-build Duo cells remain unaccepted.",
     "frozen_contract": "Reuse original Swift sources, all app/SDK binaries and manifest=false. Fresh run IDs, clean installation, installed identity before/after, actual one-scene geometry, real Open/Close/Reopen/Home and cleanup remain mandatory. No app instrumentation or public predicate changes.",
     "gates": [
       "C07",
@@ -219,10 +332,65 @@
       "C09",
       "C10"
     ],
+    "installed_after_test": {
+      "SwiftUI": {
+        "binaries": {
+          "SwiftUIFixture": "470e3f6e35fbfb219d58039417c4c59654ec4715723c47e2b4d7d3bb2171cdb1"
+        },
+        "bundleIdentifier": "com.datadoghq.exp195.candidate.sdk265.swiftui",
+        "executable": "SwiftUIFixture"
+      },
+      "UIKit": {
+        "binaries": {
+          "UIKitFixture": "f90b31cf5ff107068b5e92f86c03c763c15952e166305e35fdb68b5393090719"
+        },
+        "bundleIdentifier": "com.datadoghq.exp195.candidate.sdk265.uikit",
+        "executable": "UIKitFixture"
+      }
+    },
+    "installed_apps": {
+      "SwiftUI": {
+        "binaries": {
+          "SwiftUIFixture": "470e3f6e35fbfb219d58039417c4c59654ec4715723c47e2b4d7d3bb2171cdb1"
+        },
+        "bundleIdentifier": "com.datadoghq.exp195.candidate.sdk265.swiftui",
+        "executable": "SwiftUIFixture"
+      },
+      "UIKit": {
+        "binaries": {
+          "UIKitFixture": "f90b31cf5ff107068b5e92f86c03c763c15952e166305e35fdb68b5393090719"
+        },
+        "bundleIdentifier": "com.datadoghq.exp195.candidate.sdk265.uikit",
+        "executable": "UIKitFixture"
+      }
+    },
+    "native_summary": {
+      "collector_kind": "external_cua",
+      "problems": [],
+      "result": "Aborted",
+      "steps": 1
+    },
     "owner": "SDK implementer",
+    "qualified_cells": 0,
     "reason": "Modern XCTest runner disappears after Open for both genuine old-built SwiftUI and UIKit apps. Separate Device Hub tap in the old UIKit app changes receipt3 to4 with exactly one native callback after runner disappearance, proving an alternative input path is viable.",
+    "run_id": "exp195-209b6a5ec0ca481ea7a9c56adf70d695",
     "scope": "Only the eight still-unaccepted genuineSDK26.5 Duo cells from the original32-cell matrix. First current UIKit stack cell is collector qualification; no accepted SDK27 or regular cell rerun.",
-    "status": "DEFINED",
+    "source_prototype": {
+      "definition_commit": "8f923622b4bfe26a5a91b0262989468a6041f057",
+      "disposition": "Preserve prototype as an experiment artifact; do not add unqualified collector to supported acceptance path.",
+      "recorded_at": 1789830493.834713,
+      "sources": {
+        "analyze.py": "a2147432053ec95cfa811946c507a46f1679f5c088a6ff92fee4bf3ed35d7e9a",
+        "external.py": "83158e1d503663729e993e451fd06dae3fb8cdbc1bbe766bb384e7a7896ce313",
+        "pose.py": "fec5ca6ce4d4305755ddefa99040391ee75f9072ca9151febcec6dedf26890a4",
+        "report.py": "fbfbb82497c8498e3fafe9ea488abc1f6ec42881326587a0cccaa4909115c85e",
+        "run.py": "7bdba337e6911d84f0354f32765e8b3e6bb8ec3a068a4eccc06ec9fe0bb784ca",
+        "test_external.py": "e42c83ba9e7b9d9ecbacff82dbd110fccfcb60daa2cc680457ce1c7d6e4e8256"
+      },
+      "status": "REJECTED_CALIBRATION_PROTOTYPE",
+      "tests": "75 total Python tests passed during implementation, including 13 external collector controls; no full external native cell qualified"
+    },
+    "status": "UNQUALIFIED_INPUT",
     "stop_rule": "Qualify one old UIKit cell before the other seven; if the external driver cannot prove an input effect, retain that failure and report the concrete remaining limitation. No blind equivalent retries or additional UI families."
   },
   "gates": [
@@ -369,12 +537,19 @@
     "xcode_mcp": "rediscovered actual workspace/scheme and27.1 destinations"
   },
   "progress": {
-    "captured_at": 1789823630.514807,
+    "captured_at": 1789830933.640084,
     "comparison_artifact": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp195-collector-t92yhxza/comparison.json",
     "duo": 8,
     "durable_duo_result": "EXP-195-duo-automatic-coverage.json",
+    "manifest_true_qualified": 8,
+    "manifest_true_total": 8,
+    "original_matrix_qualified": 24,
+    "original_matrix_total": 32,
     "qualified_unique_cells": 24,
-    "regular": 16
+    "regular": 16,
+    "remaining_original_cells": 8,
+    "split_replay_qualified": 2,
+    "split_replay_total": 2
   },
   "question": "Does an existing single-scene app lose automatic UIKit/SwiftUI view or action coverage when rebuilt with the iOS27 SDK and run on Duo, without adopting semantic tracking or changing navigation?",
   "scope_caution": "This fixed matrix declares multiple scenes false. RUMFeature reads the manifest flag, not the actual current scene count. A one-window app that already declares multiple-scene support exercises a different automatic path; do not generalize these cells to it. Assess the smallest finite additional slice before claiming broad no-adoption parity.",
@@ -390,7 +565,7 @@
     "UIKit_view_predicate": "unchanged default controller-name predicate; split reconciliation/structural suppression is gated by declared multiple-scene support",
     "limits": "Source comparison is explanatory evidence only. Pending real-input matrix determines non-regression."
   },
-  "status": "IN PROGRESS",
+  "status": "PARTIAL \u2014 INPUT BLOCKED",
   "unchanged_application_contract": [
     "public default automatic predicates only",
     "scene manifest declares multiple scenes false",

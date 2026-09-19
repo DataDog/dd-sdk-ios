@@ -11,7 +11,7 @@ generated [checklist](PLAN.md). The sole restart cursor is
 The short-term criterion is no RUM degradation when an existing app rebuilds with
 the iOS27 SDK and runs on Duo without adopting new RUM/navigation integration.
 Automatic UIKit views/actions and automatic SwiftUI views/actions are four
-separate open gates C07–C10. [EXP-195](Results/EXP-195-automatic-tracking.json)
+separate gates C07–C10; their remaining old-build Duo cells are input-blocked. [EXP-195](Results/EXP-195-automatic-tracking.json)
 compares unchanged apps and preserves baseline limitations. C01’s early UIKit
 view/custom-marker fixture does not prove automatic taps/scrolls; EXP-193’s
 accepted-state RUMNavigationHost does not prove automatic-only SwiftUI.
@@ -40,9 +40,13 @@ but both old/modern collector probes fail to qualify inner input. The modern
 runner disappears while its app stays alive; interruption and cleanup are retained.
 The old-built UIKit probe reaches the same runner-disappearance limit. A separately
 recorded Device Hub tap changes receipt3 to4 with one fresh native callback, proving
-that app responds to this input. It does not qualify the failed full cell. A bounded
-external collector is defined for the eight remaining old-build cells. Regular source/compiler comparisons are complete;
-old-build-versus-rebuilt Duo fold coverage and physical acceptance remain incomplete.
+that app responds to this input. It does not qualify the failed full cell. The
+bounded external collector qualifies one initial Tap but cannot produce a switch
+callback or visible state change. It stops with the partial run, frozen identities
+and verified cleanup preserved. No old-build Duo cell is accepted; equivalent
+retries stop until the input environment materially changes. Regular source/compiler
+comparisons are complete; old-build-versus-rebuilt Duo fold coverage and physical
+acceptance remain incomplete.
 
 [Regular evidence](Results/EXP-195-regular-automatic-coverage.json),
 [original Duo evidence](Results/EXP-195-duo-automatic-coverage.json),

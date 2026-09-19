@@ -10,7 +10,9 @@ now have16 regular cells,16 SDK27 Duo cells across both manifest settings and th
 bounded two-cell split replay. Source-paired SDK27 findings show preserved detection
 and foreground names/owners, documented generic SwiftUI variability, fewer spurious
 background/structural occurrences and improved manifest-enabled UIKit Detail ownership.
-Old-build Duo input qualification and physical acceptance remain separate. The
+Old-build Duo input qualification is blocked after the bounded XCTest/external
+collector attempts; neither an SDK defect nor old-app usability failure is inferred.
+Physical acceptance remains separate. The
 [assessment](ASSESSMENT.md) and [owning result](Results/EXP-195-automatic-tracking.json)
 retain exact boundaries; no new production SDK defect has been established.
 

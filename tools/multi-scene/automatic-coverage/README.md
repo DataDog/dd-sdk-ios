@@ -83,3 +83,11 @@ never count as a spatial resize. A missing native input remains unqualified.
 accepted inventories, source/build/installed identities, geometry/pose evidence,
 raw-artifact hashes, comparison classifications and retained input failures.
 It evaluates the current strict oracle without rerunning any accepted native cell.
+
+The bounded old-build Duo recovery is input-blocked: both modern XCTest probes
+lose their runner after actual Open; the external CUA prototype cannot qualify
+its initial native switch effect. Its rejected source and partial evidence are
+referenced by the owning result. It is not a supported collector. Preserve the
+34 qualified runs across the original matrix, manifest follow-up and replay;
+resume only the eight missing original cells after a material input-environment
+change. The EXP195-owned simulators were deleted after evidence collection.
