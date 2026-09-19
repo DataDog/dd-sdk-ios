@@ -227,7 +227,7 @@
       ],
       "decisive_test": "EXP-076/087: measured regular \u2192 compact \u2192 regular geometry, selection, path and exact owners",
       "required_environment": "Authorized physical iPad27.0; genuine OS/window input and fresh native evidence",
-      "status": "DEFINED",
+      "status": "PASS_PHYSICAL",
       "execution_boundary": "Require topology/lifecycle prerequisites before the critical boundary; incomplete input is not SDK evidence."
     },
     {
@@ -1427,12 +1427,203 @@
           "sha256": "0037520be476ad77eb8a016c28e2b275443c17ad8dce374275dd0c7630194f4f"
         }
       }
+    },
+    {
+      "gate": "H14",
+      "status": "PASS_PHYSICAL",
+      "run_id": "exp196-h14-20260919t191605z-92a96f9fbf17",
+      "capture_source_revision": "a9069714f50b739dc8c711c96ec83484394e5354",
+      "artifact_root": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp196-physical-h14-aauscj2k",
+      "local": {
+        "state": "PASS",
+        "run_id": "exp196-h14-20260919t191605z-92a96f9fbf17",
+        "session_id": "3dfc611f-9948-46a0-9b1d-dd34611bfc81",
+        "native_scene_id": "AE90238B-2E51-4529-9F86-FF37C1987A0E",
+        "owners": {
+          "0": "80b65946-8110-4776-865a-f135d490bde7",
+          "1": "a40d0dce-70cc-4f33-b124-d0cd97f1697c"
+        },
+        "native_view_ids": [
+          "634c91cd-cabe-41e2-a2c2-aae58be93c84",
+          "80b65946-8110-4776-865a-f135d490bde7",
+          "a40d0dce-70cc-4f33-b124-d0cd97f1697c"
+        ],
+        "work": [
+          {
+            "type": "action",
+            "phase": "adaptive-materialized-0",
+            "event_id": "09e73258-05c1-411d-bd58-5646d51b2929",
+            "view_id": "80b65946-8110-4776-865a-f135d490bde7"
+          },
+          {
+            "type": "resource",
+            "phase": "adaptive-materialized-0",
+            "event_id": "077b2498-59ee-424b-8936-1120cb3aa0fe",
+            "view_id": "80b65946-8110-4776-865a-f135d490bde7"
+          },
+          {
+            "type": "action",
+            "phase": "adaptive-marker-1",
+            "event_id": "f4fa648e-964d-4f2b-b30e-533e70583905",
+            "view_id": "80b65946-8110-4776-865a-f135d490bde7"
+          },
+          {
+            "type": "resource",
+            "phase": "adaptive-marker-1",
+            "event_id": "822e3689-acf4-40b3-83f5-30b847259a6e",
+            "view_id": "80b65946-8110-4776-865a-f135d490bde7"
+          },
+          {
+            "type": "action",
+            "phase": "adaptive-commit-1",
+            "event_id": "58e07d84-dcbf-44e8-86a3-c86d5edb44fb",
+            "view_id": "a40d0dce-70cc-4f33-b124-d0cd97f1697c"
+          },
+          {
+            "type": "action",
+            "phase": "adaptive-materialized-1",
+            "event_id": "67ce9c6f-8f4f-4658-b003-3745ccb3cc4a",
+            "view_id": "a40d0dce-70cc-4f33-b124-d0cd97f1697c"
+          },
+          {
+            "type": "resource",
+            "phase": "adaptive-commit-1",
+            "event_id": "0e7e0384-7147-4f36-837f-8cf36fc88279",
+            "view_id": "a40d0dce-70cc-4f33-b124-d0cd97f1697c"
+          },
+          {
+            "type": "resource",
+            "phase": "adaptive-materialized-1",
+            "event_id": "520b91c7-f049-4807-bca8-57f70354c800",
+            "view_id": "a40d0dce-70cc-4f33-b124-d0cd97f1697c"
+          },
+          {
+            "type": "action",
+            "phase": "adaptive-marker-2",
+            "event_id": "0a3d932d-ba1c-4993-abd3-246b73c0e63d",
+            "view_id": "a40d0dce-70cc-4f33-b124-d0cd97f1697c"
+          },
+          {
+            "type": "resource",
+            "phase": "adaptive-marker-2",
+            "event_id": "e2877f27-c356-483d-82d5-278ef143134d",
+            "view_id": "a40d0dce-70cc-4f33-b124-d0cd97f1697c"
+          },
+          {
+            "type": "action",
+            "phase": "adaptive-resize-1",
+            "event_id": "a1ea4ca4-3558-44e7-9618-833b1c247e02",
+            "view_id": "a40d0dce-70cc-4f33-b124-d0cd97f1697c"
+          },
+          {
+            "type": "resource",
+            "phase": "adaptive-resize-1",
+            "event_id": "9accda4e-b05d-43a4-8b73-bdd4ca61a825",
+            "view_id": "a40d0dce-70cc-4f33-b124-d0cd97f1697c"
+          },
+          {
+            "type": "action",
+            "phase": "adaptive-resize-2",
+            "event_id": "a1e75ea2-58cc-4000-b1cd-57d40ab88b6e",
+            "view_id": "a40d0dce-70cc-4f33-b124-d0cd97f1697c"
+          },
+          {
+            "type": "resource",
+            "phase": "adaptive-resize-2",
+            "event_id": "54781b74-950b-4a56-9612-2e4e9cf24da0",
+            "view_id": "a40d0dce-70cc-4f33-b124-d0cd97f1697c"
+          }
+        ],
+        "phases": 4,
+        "mode": "physical-resize"
+      },
+      "backend": {
+        "state": "PASS",
+        "view_count": 3,
+        "work_count": 16,
+        "marker_pairs": 7,
+        "error_crash_count": 0,
+        "adaptive_marker_work_count": 14,
+        "automatic_tap_count": 2,
+        "all_type_count": 22,
+        "type_counts": {
+          "resource": 7,
+          "action": 9,
+          "view": 3,
+          "session": 1,
+          "long_task": 1,
+          "vital": 1
+        }
+      },
+      "cleanup": {
+        "state": "PASS",
+        "app_absent": true,
+        "process_absent": true,
+        "protected_unchanged": true,
+        "native_source_unchanged": true
+      },
+      "scope": "Actual iPad Window-menu resize:1194x834 regular to592x834 compact to1194x834 regular. Same native scene, accepted detail1 generation1/path and exact RUM owner across both transitions. Three views and all16 work including two automatic taps match complete22-event inventory; no errors/crashes. No Duo folding or simultaneous-window claim.",
+      "artifacts": {
+        "frozen.json": {
+          "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp196-physical-h14-aauscj2k/frozen.json",
+          "sha256": "45d5fe82883ab34e4f1877efd321c277ee146f5de11ca879fafd7b2fc1ea1969"
+        },
+        "native.jsonl": {
+          "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp196-physical-h14-aauscj2k/native.jsonl",
+          "sha256": "0c27166aca303e9b237ca7cbc6a13c1c522f0d9234c0355f1527f08f7059296d"
+        },
+        "phases.json": {
+          "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp196-physical-h14-aauscj2k/phases.json",
+          "sha256": "db44151d3a51e23fe3990ec6e6210329a607d5d523116f9d36fa62fe5a769eaa"
+        },
+        "local-result.json": {
+          "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp196-physical-h14-aauscj2k/local-result.json",
+          "sha256": "69b47cfea0a2a942b4c3399cad241b5c912825461edbd13c892fa9dd7d823e5a"
+        },
+        "complete-native-inventory.json": {
+          "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp196-physical-h14-aauscj2k/complete-native-inventory.json",
+          "sha256": "77019ce6938944dcceca7db0a815f7fe55e2255182a0a081bf297fb4e9e80f1f"
+        },
+        "backend-raw.json": {
+          "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp196-physical-h14-aauscj2k/backend-raw.json",
+          "sha256": "60a42a0659aa97f7f2432974e397a177fc2bcaca4811eff16fb642d13fcfa9a8"
+        },
+        "backend-result.json": {
+          "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp196-physical-h14-aauscj2k/backend-result.json",
+          "sha256": "6c74c75a10cadd5cb188d114fb6fd8361f3cb083647137a243a4976eaf43399d"
+        },
+        "installed-identity.json": {
+          "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp196-physical-h14-aauscj2k/installed-identity.json",
+          "sha256": "1b7e447f7ca24d121178bf7a621600cc53cbe28cfd4d20c7494aee1843f530bd"
+        },
+        "cleanup.json": {
+          "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp196-physical-h14-aauscj2k/cleanup.json",
+          "sha256": "9104f5d023ebd83edce5ab17de6749abf3fc0cc71a166710d12b4a5ea11c5e95"
+        },
+        "phase-1.png": {
+          "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp196-physical-h14-aauscj2k/phase-1.png",
+          "sha256": "b6ac9f63532e1c2667f909896c6520c0b86f321a12c792370d0c1844d752dc44"
+        },
+        "phase-2.png": {
+          "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp196-physical-h14-aauscj2k/phase-2.png",
+          "sha256": "f1e8be82b6f27b6f175023ce9e5243a3aaa432087b31ba80d4b1df2a0063902c"
+        },
+        "phase-3.png": {
+          "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp196-physical-h14-aauscj2k/phase-3.png",
+          "sha256": "9f840caff5a61d940cce26ae06d87b6a6f4f7a2d8406c9fbbdde02abba484c46"
+        },
+        "phase-4.png": {
+          "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp196-physical-h14-aauscj2k/phase-4.png",
+          "sha256": "9a2fa78ab0e836b5080dba975bf48038d6c08c1260e3cacd3a1d34433244e8c9"
+        }
+      }
     }
   ],
   "gates_closed": [
     "F05",
     "H05",
-    "H07"
+    "H07",
+    "H14"
   ],
   "f05_physical_oracle_definition": {
     "defined_at": 1789835528.922011,
@@ -1463,7 +1654,7 @@
     ],
     "implementation": "Separate validate_physical_local entrypoint implemented; original timing still rejects the physical record. Focused six tests pass. Fresh physical run required."
   },
-  "next": "Build and execute predefined H14 physical resize; then continue bounded topology/lifecycle and other independent physical cases. Restore Full Screen Apps at suite completion.",
+  "next": "Run the bounded H04 process-lifetime notification witness, then other independent physical matrix cases and topology capture follow-ups. Restore Full Screen Apps at suite completion.",
   "h01_collector_definition": {
     "defined_at": 1789836265.35157,
     "before_implementation": true,
@@ -1809,6 +2000,20 @@
       "native_sources_unchanged": true,
       "protected_unchanged": true
     },
-    "physical_acceptance_pending": true
+    "physical_acceptance_pending": false
+  },
+  "h04_process_observer_followup": {
+    "defined_at": 1789845858.0878751,
+    "before_implementation": true,
+    "trigger": "Both exact close requests lack view-local disconnect evidence; subscription is attached to the SwiftUI view being destroyed.",
+    "change": "Install an opt-in process-lifetime observer before scene creation. Record actual UIScene.didDisconnectNotification object/native identity and current registry generation independently, without changing registry/driver state or posting notifications.",
+    "decisive_test": "One fresh physical activation-sequence run with exact UIKit destruction. If the process witness receives B while the view-local collector misses it, classify and repair the collector before a fresh semantic acceptance run. If neither sees a callback, stop equivalent close retries as an execution limit.",
+    "scope": "Fixture diagnostic only; original19 assertions and backend ownership remain mandatory for H04 closure. No SDK or public API change.",
+    "compile": {
+      "buildResult": "The project built successfully.",
+      "elapsedTime": 7.725,
+      "errors": [],
+      "fullLogPath": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/ActionArtifacts/default/BuildProject/BuildProject-Log-20260919-212624.txt"
+    }
   }
 }

@@ -645,8 +645,8 @@
       "decisive_test": "EXP-076/087: measured regular \u2192 compact \u2192 regular geometry, selection, path and exact owners",
       "environment": "Physical iPad/iPhone Duo; human gesture for H11\u2013H13; resize-capable for H14",
       "completion_mode": null,
-      "status": "OPEN",
-      "evidence": "EXP-193 accepts resize5 phases/16 exact work/3 backend views at3c5a267b0 and pose10 phases/42 exact work/7 backend views at signed7c8154aca, zero errors/crashes and each guarded XCTest1/1. Exact owners survive measured geometry and actual open/close; accepted selections/returns produce six distinct occurrences. All code identities and cleanup pass. Physical hinge/resize H14 remains required."
+      "status": "CLOSED",
+      "evidence": "EXP-196 signeda9069714f physical four-phase regular-compact-regular resize preserves accepted detail1 generation/path and exact owner. Complete3 views/16 work (14 markers plus2 automatic taps)/22 all-type backend events, zero errors/crashes, installed3 binaries and cleanup. Results/EXP-196-physical-ipad-suite.json."
     },
     {
       "id": "H15",

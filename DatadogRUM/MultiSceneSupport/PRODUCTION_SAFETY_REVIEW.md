@@ -425,6 +425,7 @@ H05's early source-less fallback is the approved compatibility behavior; H07's
 backend start precision is explicitly limited to milliseconds. No SDK source or
 original review disposition changes. H01 remains unadmitted without independent
 critical-interval display proof; H04 requires a collector surviving view teardown.
-H14's fixture-only physical resize profile has focused passing controls and awaits
-physical execution. Restore the approved temporary Windowed Apps preference when
+H14 closes with actual physical resizing and complete22-event ownership equality.
+The predefined H04 process-lifetime witness will distinguish missed view-local
+observation from absent native notification without changing SDK or driver state. Restore the approved temporary Windowed Apps preference when
 the suite completes. Physical Duo and final review gates remain separate.

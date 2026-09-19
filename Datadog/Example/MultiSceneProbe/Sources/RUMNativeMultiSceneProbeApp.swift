@@ -21,6 +21,7 @@ struct RUMNativeMultiSceneProbeApp: App {
             try InstalledCodeReceipt.writeIfRequested(runID: ProbeRuntime.runID)
             installedCodeVerified = true
             ProbeRuntime.configureDatadog()
+            ProbeRuntime.installPhysicalDisconnectWitnessIfRequested()
         } catch {
             installedCodeVerified = false
             print("INVALID: installed code identity could not be recorded")
@@ -260,6 +261,46 @@ enum ProbeRuntime {
         subsystem: "com.datadoghq.rum-native-multi-scene-probe",
         category: "probe"
     )
+
+    @MainActor private static var physicalDisconnectObserver: NSObjectProtocol?
+
+    /// Observe actual OS delivery independently of the window view being removed.
+    @MainActor
+    static func installPhysicalDisconnectWitnessIfRequested() {
+        guard isRunnable,
+              scenario?.identifier == "windows.activation-sequence",
+              ProcessInfo.processInfo.environment["DD_PROBE_PHYSICAL_DISCONNECT_WITNESS"] == "1",
+              physicalDisconnectObserver == nil
+        else { return }
+        physicalDisconnectObserver = NotificationCenter.default.addObserver(
+            forName: UIScene.didDisconnectNotification,
+            object: nil,
+            queue: .main
+        ) { notification in
+            MainActor.assumeIsolated {
+                guard let scene = notification.object as? UIWindowScene else { return }
+                let nativeID = scene.session.persistentIdentifier
+                let snapshot = sceneRegistry.snapshot(nativeSceneID: nativeID)
+                eventRecorder.record(ProbeSignal(
+                    kind: .assertion,
+                    semanticContext: ProbeSemanticContext(
+                        logicalSceneID: snapshot?.logicalSceneID ?? "unregistered",
+                        nativeSceneID: nativeID
+                    ),
+                    activationState: ProbeSceneActivationState(scene.activationState).rawValue,
+                    sceneDisconnectGeneration: snapshot?.disconnectGeneration,
+                    name: "physical-scene-disconnect-notification",
+                    result: .pass,
+                    reason: "process-lifetime OS notification witness; registry and driver unchanged"
+                ))
+            }
+        }
+        eventRecorder.record(ProbeSignal(
+            kind: .assertion,
+            name: "physical-scene-disconnect-witness-installed",
+            result: .pass
+        ))
+    }
 
     static func configureDatadog() {
         ProbeScenarioRunner.emitManifest(resolution.manifest, sink: ProbeArtifactCapture.record)

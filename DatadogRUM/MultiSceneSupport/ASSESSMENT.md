@@ -148,6 +148,6 @@ No simultaneous-visibility conclusion follows from these serial cases.
 
 H01 proves two visible native scenes but remains unadmitted without recording.
 Both H04 close paths lack an observed disconnect; inspect the view-local collector
-before assigning an SDK defect. H14's finite physical resize profile and focused
-controls pass; physical execution is next. The [owning result](Results/EXP-196-physical-ipad-suite.json)
+before assigning an SDK defect. H14 now closes with measured regular–compact–regular physical resizing, unchanged
+accepted selection/path/owner and a complete22-event backend match. The [owning result](Results/EXP-196-physical-ipad-suite.json)
 preserves every rejection and scope limit. The SDK candidate is unchanged.
