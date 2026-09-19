@@ -1,0 +1,83 @@
+{
+  "gate": "H01",
+  "status": "PREPARED \u2014 DEVICE AVAILABILITY ANSWER PENDING",
+  "owner": "SDK implementer + device operator",
+  "prepared_at": 1789831239.288801,
+  "source_checkpoint": "fb9972e4df2c78e65bdd678ea6e80314174781d7",
+  "candidate_revision": "04201edc7711361279d8487b385bc8b0ca9c63c7",
+  "scope": "Preparation for the existing same-key manual A/B reverse-stop physical obligation. No new gate, SDK behavior, public API, experiment execution or physical acceptance.",
+  "scenario": "swiftui.coexistence.same-key-manual-two-scenes",
+  "environment_observation": {
+    "name": "IPad de Sandrine",
+    "model": "iPad Pro (11-inch) (3rd generation)",
+    "reality": "physical",
+    "os": "27.0",
+    "connection": "connected",
+    "transport": "localNetwork",
+    "developer_mode_enabled": true,
+    "ddi_services_available": false,
+    "xcode_eligible": true,
+    "developer_directory": "/Applications/Xcode_27.1.app/Contents/Developer",
+    "artifact_directory": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/multiscene-physical-preflight-oc4ka7dv",
+    "artifacts_sha256": {
+      "device.json": "f52527fdf0e7e27fd1b2c32082d25f6b416bda41d54388065783119abfd7b80a",
+      "query.log": "7e4e5c35d2dc1204a59252534d6e18750996f8325213a38e1464aba02a0c17ea"
+    }
+  },
+  "availability_boundary": "This network-paired iPad has not been offered explicitly as a test device in the active session. A single asynchronous use/availability question is pending. No installation, screen interaction or device setting change is authorized by the discovery result itself.",
+  "source_findings": [
+    {
+      "file": "Datadog/Example/MultiSceneProbe/Sources/Harness/ProbeScenarioCatalog.swift",
+      "symbol": "swiftUICoexistenceSameKeyManualTwoScenes",
+      "finding": "Existing fixed seven marker pairs and original ordered ownership oracle already require simultaneous-visible-windows, but the declaration is not a runtime admission check."
+    },
+    {
+      "file": "Datadog/Example/MultiSceneProbe/Sources/Harness/ProbeScenarioDriver.swift",
+      "symbol": "run()/execute(.startKeyedManualView/.stopKeyedManualView)",
+      "finding": "The driver proceeds from B readiness directly toward the manual boundary. Runtime overlap must be qualified before that boundary; a post-run screenshot or22/22 semantic pass is insufficient."
+    },
+    {
+      "file": "Datadog/Example/MultiSceneProbe/Sources/Harness/ProbeSceneRegistry.swift",
+      "symbol": "handle(logicalSceneID:)/window(for:)/ProbeScenePresentation.capture",
+      "finding": "Existing exact logical/native/generation/window access can collect live main-thread observations without changing SDK behavior. Cached snapshots, readiness alone and local window frames do not prove simultaneously visible content."
+    },
+    {
+      "file": "Datadog/Example/MultiSceneProbe/Sources/RUMNativeMultiSceneProbeApp.swift",
+      "symbol": "InstalledCodeReceipt/ProbeArtifactCapture",
+      "finding": "Existing pre-SDK installed-Mach-O receipt and optional native JSONL capture support physical collection without a debugger."
+    },
+    {
+      "file": "Datadog/Example/MultiSceneProbe/project.yml",
+      "symbol": "RUMNativeMultiSceneProbe/RUMNativeMultiSceneProbeUITests",
+      "finding": "App deployment27.0 is compatible with the discovered physical27.0 device; existing Duo UI-test target deployment27.1 is not. Do not silently relabel or run that UI target on27.0."
+    }
+  ],
+  "next_definition_requirements": [
+    "After device availability is confirmed, define one physical H01 slice before any new collector implementation or native run; freeze signed source/fixture/oracle identities.",
+    "Add a bounded precritical admission seam to this scenario only. No manual start may run before a fresh run-bound operator/host topology receipt and a fresh live native check agree on two distinct current scene identities/generations.",
+    "Require visible A and B content in independent active-display evidence captured before admission; retain a continuous capture through the critical interval. Activation and local frames alone never establish visibility or occlusion.",
+    "Record live native topology immediately before each manual start/stop and corresponding ownership marker, then retain lifecycle/geometry observations through the final marker. Reject hidden/background/detached/replaced scenes or changed identities during the critical interval.",
+    "Preserve the original seven named Action/Resource pairs, exact ordered semantics, two distinct Compose owners, B stop preserving A Compose and fresh Home returns. Do not treat logical peers as physical windows.",
+    "Use fresh clean installation and run UUID, verify every installed Mach-O against the exact signed app via its pre-SDK receipt and independently observed process ID. Refresh authentication only when backend collection becomes executable.",
+    "Require complete session-only backend view/work/error/crash inventories with exact mapper event IDs/owners; preserve raw exchanges and pagination/count provenance.",
+    "If topology or an input cannot be qualified, stop before mutation and retain INCONCLUSIVE. Allow at most two equivalent environment failures; any collector repair requires a new frozen source and fresh run.",
+    "Verify scoped probe/runner cleanup and unchanged protected paths. H01 physical iPad acceptance would not replace F04 Duo hardware acceptance or other H02\u2013H16/F05 obligations."
+  ],
+  "required_negative_controls": [
+    "stale or wrong run receipt",
+    "reused receipt/nonce",
+    "late topology assertion",
+    "same native scene for A/B",
+    "generation change after admission",
+    "one scene hidden/background/detached",
+    "only full-screen replacement despite two registered scenes",
+    "topology failure before first manual call",
+    "topology failure between B stop and A marker",
+    "wrong or shared Compose owner",
+    "B stop ending A Compose",
+    "stale Home occurrence",
+    "installed-code mismatch",
+    "extra/missing backend work"
+  ],
+  "validation_this_preparation": "Source/read-only environment inspection and documentation checker only. No physical test, SDK test rerun, install or settings change."
+}
