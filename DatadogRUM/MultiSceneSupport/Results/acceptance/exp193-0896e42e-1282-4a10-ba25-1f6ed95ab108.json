@@ -1,0 +1,31 @@
+{
+  "experiment": "EXP-193",
+  "run_id": "0896e42e-1282-4a10-ba25-1f6ed95ab108",
+  "status": "INVALID_FIXTURE_ROUTE",
+  "source_revision": "68d67922117de8971bdd88ef1358c9f30bc313f6",
+  "artifact_root": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp193-resize-w5j6cxjw",
+  "mode": "resize",
+  "source_identity": "source.json",
+  "installed_code": "installed-code.json",
+  "precritical_failure": {
+    "expected_route": [],
+    "observed_route": [
+      "split-empty"
+    ],
+    "sequence": 11,
+    "cause": "ProbeAdaptiveSplitView materialization calls generic recordDestination, which replaces accepted route with [screen]."
+  },
+  "first_marker_emitted": false,
+  "cleanup": {
+    "app": {
+      "exit": 2,
+      "stderr": "An error was encountered processing the command (domain=NSPOSIXErrorDomain, code=2):\nThe operation couldn\u2019t be completed. No such file or directory\nNo such file or directory\n"
+    },
+    "data": {
+      "exit": 2,
+      "stderr": "An error was encountered processing the command (domain=NSPOSIXErrorDomain, code=2):\nThe operation couldn\u2019t be completed. No such file or directory\nNo such file or directory\n"
+    }
+  },
+  "stale_registration_preflight": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp193-stale-registration-pbmqhnnu/result.json",
+  "gates_closed": []
+}

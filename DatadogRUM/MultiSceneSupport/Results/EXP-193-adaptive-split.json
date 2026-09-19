@@ -48,6 +48,11 @@
       "run_id": "ff7e105a-66db-4f55-8add-12ab3d46dfbe",
       "status": "PREFLIGHT_INPUT_BLOCKED",
       "result": "acceptance/exp193-ff7e105a-66db-4f55-8add-12ab3d46dfbe.json"
+    },
+    {
+      "run_id": "0896e42e-1282-4a10-ba25-1f6ed95ab108",
+      "status": "INVALID_FIXTURE_ROUTE",
+      "result": "acceptance/exp193-0896e42e-1282-4a10-ba25-1f6ed95ab108.json"
     }
   ],
   "revised_acceptance_defined_before_implementation": {
@@ -58,5 +63,5 @@
     "boundary": "Resize proves callback-driven semantic ownership under measured geometry; black Resizable display prevents visible-layout/input equivalence claims. End/export acceptance before session cleanup backgrounds the app.",
     "required_backend": "Complete per-run view inventory, exact custom Action/Resource IDs and owners, zero errors. Original physical obligation remains."
   },
-  "resume": "Mac unlock requested asynchronously. Both app and any resize session are removed. Reuse signed68d679221 build after source/protected/all3 Mach-O checks; no test repeat solely to resume. Start fresh5-phase resize and10-phase pose runs, exact native/backend validation, then outer-display gesture qualification and regular-plan dependency-ready work."
+  "resume": "Correct materialization observation so it cannot replace the accepted empty route, rebuild with frozen identity, then execute fresh resize and pose runs."
 }

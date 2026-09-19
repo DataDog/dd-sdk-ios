@@ -56,12 +56,15 @@ struct ProbeAdaptiveSplitView: View {
                 .task(id: router.current) {
                     guard materializedGeneration != router.current.generation else { return }
                     materializedGeneration = router.current.generation
-                    ProbeRuntime.recordDestination(
-                        window: window,
-                        sceneSessionID: sceneSessionID,
-                        screen: router.current.destination.rawValue,
-                        isCommitted: true
-                    )
+                    // Materialization observes accepted state; it cannot rewrite the route.
+                    ProbeRuntime.eventRecorder.record(ProbeSignal(
+                        kind: .destinationMaterialized,
+                        semanticContext: ProbeSemanticContext(
+                            logicalSceneID: window.label,
+                            nativeSceneID: sceneSessionID,
+                            screen: router.current.destination.rawValue
+                        )
+                    ))
                     emit("adaptive-materialized-\(router.current.generation)")
                 }
             }
