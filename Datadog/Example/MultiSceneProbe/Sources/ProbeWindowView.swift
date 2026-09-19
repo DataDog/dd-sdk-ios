@@ -1359,7 +1359,10 @@ struct ProbeWindowRoot: View {
                     standardNavigationStack
                 }
             }
-        } else if #available(iOS 27.0, *), ProbeRuntime.usesSemanticNavigationSPI {
+        } else if
+            #available(iOS 27.0, *),
+            ProbeRuntime.usesSemanticNavigationContainer(in: window.label)
+        {
             RUMNavigationStack(
                 path: navigationPath,
                 presented: semanticNavigationPresentation,

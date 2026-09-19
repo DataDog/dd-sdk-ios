@@ -231,6 +231,16 @@ enum ProbeScenarioCatalog {
             || scenario.identifier == swiftUISemanticAPIRejectedLinkWrite.identifier
             || scenario.identifier == swiftUISemanticAPICanonicalizedLinkWrite.identifier
             || scenario.identifier == swiftUISemanticAPISiblingContainerIsolation.identifier
+            || scenario.identifier == swiftUICoexistenceSemanticAAutomaticB.identifier
+            || scenario.identifier == tracesURLSessionSharedRequest.identifier
+    }
+
+    static func usesSemanticNavigationContainer(
+        _ scenario: ProbeScenario,
+        in logicalSceneID: String
+    ) -> Bool {
+        usesSemanticNavigationSPI(scenario)
+            && (scenario.runtimeOptions.semanticNavigationSceneIDs?.contains(logicalSceneID) ?? true)
     }
 
     static func usesSemanticNavigationHostSPI(_ scenario: ProbeScenario) -> Bool {

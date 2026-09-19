@@ -172,7 +172,9 @@ internal enum ProbeRUMEventAdapter {
             let source = ProbeTraceOnlyURLSessionContract.sourceContext(
                 from: url,
                 expectedRunID: runID
-            )
+            ),
+            let encoded = try? JSONEncoder().encode(event),
+            let wire = ProbeTraceWireIdentity.decode(encoded)
         else {
             return nil
         }
@@ -181,28 +183,28 @@ internal enum ProbeRUMEventAdapter {
             evidenceSource: .traceMapper,
             sourceContext: source,
             rumContext: ProbeRUMContext(
-                eventDateMilliseconds: Int64(
-                    (event.startTime.timeIntervalSince1970 * 1_000).rounded()
-                ),
+                eventDateMilliseconds: wire.start / 1_000_000,
                 sessionID: event.tags["_dd.session.id"],
                 viewID: event.tags["_dd.view.id"],
                 actionIDs: event.tags["_dd.action.id"].map { [$0] }
             ),
+            eventID: wire.normalizedSpanID,
             name: source.phase,
             trace: ProbeTraceSignal(
                 operationName: event.operationName,
                 serviceName: event.serviceName,
                 resourceName: event.resource,
-                startTimeMilliseconds: Int64(
-                    (event.startTime.timeIntervalSince1970 * 1_000).rounded()
-                ),
-                durationNanoseconds: Int64(
-                    (event.duration * 1_000_000_000).rounded()
-                ),
+                startTimeMilliseconds: wire.start / 1_000_000,
+                durationNanoseconds: wire.duration,
                 isError: event.isError,
                 rumSessionID: event.tags["_dd.session.id"],
                 rumViewID: event.tags["_dd.view.id"],
-                rumActionIDs: event.tags["_dd.action.id"].map { [$0] }
+                rumActionIDs: event.tags["_dd.action.id"].map { [$0] },
+                traceID: wire.fullTraceID,
+                spanID: wire.normalizedSpanID,
+                parentSpanID: wire.normalizedParentID,
+                startTimeNanoseconds: wire.start,
+                rumApplicationID: event.tags["_dd.application.id"]
             )
         )
     }

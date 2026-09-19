@@ -617,6 +617,144 @@
           "sha256": "276f0259d7f8b7da2aa8290238fa7f8220aad46dd525e0a74524288c3f61b9a0"
         }
       }
+    },
+    {
+      "gate": "H01",
+      "status": "INCONCLUSIVE_UNADMITTED",
+      "run_id": "exp196-h01-20260919t173728z-c0093f42fb87",
+      "capture_source_revision": "a6f028ca17f4c778c68a69ba8cb03f5df90bb101",
+      "artifact_root": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp196-physical-h01-windowed-3rymisls",
+      "native_terminal": [
+        {
+          "result": {
+            "issues": [
+              {
+                "reason": "precritical admission: timed out before physical topology admission",
+                "signalSequence": 53
+              }
+            ],
+            "matchedExpectationCount": 0,
+            "scenarioID": "swiftui.coexistence.same-key-manual-two-scenes",
+            "schemaVersion": 1,
+            "state": "INCONCLUSIVE"
+          },
+          "runID": "exp196-h01-20260919t173728z-c0093f42fb87",
+          "type": "semantic-result"
+        }
+      ],
+      "visible_pair_verified": true,
+      "critical_interval_executed": false,
+      "reason": "Both windows are visibly tiled; native records two distinct foreground-active592x834 scenes. Physical screen-record is unsupported. QuickTime/Screenshot app controls time out. No admission receipt was issued; no manual mutation executes.",
+      "cleanup": {
+        "state": "PASS",
+        "app_absent": true,
+        "process_absent": true,
+        "protected_unchanged": true,
+        "native_source_unchanged": true
+      },
+      "artifacts": {
+        "native.jsonl": {
+          "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp196-physical-h01-windowed-3rymisls/native.jsonl",
+          "sha256": "e68c811e6146b756a4b170ae0b60c8e0fe30618f9be32f2fd65d8347ed1826fe"
+        },
+        "paired-screen.png": {
+          "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp196-physical-h01-windowed-3rymisls/paired-screen.png",
+          "sha256": "b5cf3f38af244e24824b4cba66e62f0537937ed18f67fb88db43f4d034958a20"
+        },
+        "paired-challenge.json": {
+          "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp196-physical-h01-windowed-3rymisls/paired-challenge.json",
+          "sha256": "51a8d91f8211449f0d585f342e7daeecadb90362799ead4a95078e813a896d64"
+        },
+        "video.log": {
+          "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp196-physical-h01-windowed-3rymisls/video.log",
+          "sha256": "a43a85f5d30aadc0f156050732512929f231b3f4553b6c25268d08acfe35f6b6"
+        },
+        "video-result.json": {
+          "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp196-physical-h01-windowed-3rymisls/video-result.json",
+          "sha256": "aed96fdbacc31e09b2621d52bdb251a861a203afe5e9c3e4ac97b59b83c053f9"
+        },
+        "installed-identity.json": {
+          "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp196-physical-h01-windowed-3rymisls/installed-identity.json",
+          "sha256": "72395febc9ffe47a828588201e51ea5c357c2b3a746c12b9d93232219d028008"
+        },
+        "cleanup.json": {
+          "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp196-physical-h01-windowed-3rymisls/cleanup.json",
+          "sha256": "9104f5d023ebd83edce5ab17de6749abf3fc0cc71a166710d12b4a5ea11c5e95"
+        }
+      }
+    },
+    {
+      "gate": "H04",
+      "status": "FAIL_NATIVE_CLOSE",
+      "run_id": "exp196-h04-20260919t173042z-786bdc7ac58f",
+      "capture_source_revision": "a6f028ca17f4c778c68a69ba8cb03f5df90bb101",
+      "artifact_root": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp196-physical-h04-native-close-evs5prk5",
+      "reason": "Exact connected UIKit session destruction requested, no native disconnect callback observed; final peer work never executes. Stop equivalent retries.",
+      "partial_backend": {
+        "views": 6,
+        "work": 20,
+        "total": 29,
+        "errors_crashes": 0
+      },
+      "cleanup": {
+        "state": "PASS",
+        "app_absent": true,
+        "process_absent": true,
+        "source_unchanged": true,
+        "protected_unchanged": true,
+        "time_ms": 1789839351704
+      }
+    },
+    {
+      "gate": "H05",
+      "status": "FAIL_STALE_FIXTURE",
+      "run_id": "exp196-h05-20260919t181139z-5ec7b4aa0e7f",
+      "capture_source_revision": "a6f028ca17f4c778c68a69ba8cb03f5df90bb101",
+      "artifact_root": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp196-physical-h05-0uhfxj3u",
+      "reason": "Old ProbeRUMNavigationStack supplies an empty RUMSwiftUINavigationOccurrenceSource without acceptDestination/reconcileCurrentDestination; current SDK correctly rejects its unaccepted semantic candidate. No A semantic view; five automatic views. H07 uses the same stale fixture and is not executed unchanged.",
+      "partial_backend": {
+        "state": "PASS",
+        "view_count": 5,
+        "work_count": 20,
+        "error_crash_count": 0,
+        "gate_acceptance": false,
+        "semantic_result": "FAIL",
+        "total": 27
+      },
+      "cleanup": {
+        "state": "PASS",
+        "app_absent": true,
+        "process_absent": true,
+        "protected_unchanged": true,
+        "native_source_unchanged": true,
+        "time_ms": 1789841931455
+      },
+      "artifacts": {
+        "native.jsonl": {
+          "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp196-physical-h05-0uhfxj3u/native.jsonl",
+          "sha256": "89282cf298e532bf2b0075bd0bacf592507b59914f621b69e3937a9a7a93b33c"
+        },
+        "frozen.json": {
+          "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp196-physical-h05-0uhfxj3u/frozen.json",
+          "sha256": "8937ab10c9d856de32358f0586ef37372216c0c5928585f51efdf0b4cf21198f"
+        },
+        "installed-identity.json": {
+          "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp196-physical-h05-0uhfxj3u/installed-identity.json",
+          "sha256": "b72596f5f45098a4a8d106f560c3a37309de189a77bd80d3982a300e53bdff86"
+        },
+        "backend-raw.json": {
+          "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp196-physical-h05-0uhfxj3u/backend-raw.json",
+          "sha256": "6f226c39850b859f039f225fb0d1ff814f3d301ff99b4e6d463e27a119cc77ea"
+        },
+        "partial-backend-result.json": {
+          "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp196-physical-h05-0uhfxj3u/partial-backend-result.json",
+          "sha256": "c82a782512a08dd8d226ae0e2d9f1b434d45b596dd7dcefa0f40ccc4864906e6"
+        },
+        "cleanup.json": {
+          "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp196-physical-h05-0uhfxj3u/cleanup.json",
+          "sha256": "3c24d13e46d8f4099d81f6cb99349492f530158eb3b6356c715051eb7758e995"
+        }
+      }
     }
   ],
   "gates_closed": [
@@ -651,7 +789,7 @@
     ],
     "implementation": "Separate validate_physical_local entrypoint implemented; original timing still rejects the physical record. Focused six tests pass. Fresh physical run required."
   },
-  "next": "Execute H04 in current full-screen mode while temporary Windowed Apps approval is pending, then resume H01 with fresh run identity.",
+  "next": "Repair and qualify the defined H05/H07 fixture routes, then continue independent physical matrix cases and bounded topology/lifecycle collector follow-ups; restore original iPad mode at completion.",
   "h01_collector_definition": {
     "defined_at": 1789836265.35157,
     "before_implementation": true,
@@ -707,5 +845,132 @@
       "negative_controls": 26,
       "synthetic_fixture_only": true
     }
+  },
+  "physical_serial_definition": {
+    "defined_at": "2026-09-19T18:09:20.942948+00:00",
+    "before_execution": true,
+    "gates": [
+      "H05",
+      "H07"
+    ],
+    "contract": "tools/multi-scene/acceptance/physical-serial-scenario-contracts.json",
+    "H05": "Original7 expectations plus independent A semantic Home and newly started B automatic owner, paired marker Resource owners, exact whole-session backend inventory, no errors/crashes. No simultaneous-visibility closure inferred.",
+    "H07": "Original8 expectations; one actual A-created task, B join and B release after B owns its own Home, exactly one automatic span with A captured Home, exact trace/span/app/session/view IDs and encoded timing, no matching RUM Resource, complete session inventory and service/run span inventory.",
+    "native_build": "a6f028ca17f4c778c68a69ba8cb03f5df90bb101; reuse only after every native source and signed Mach-O verifies."
+  },
+  "window_mode": {
+    "original": "Full Screen Apps",
+    "temporary": "Windowed Apps",
+    "explicit_user_approval": true,
+    "restoration_required": true,
+    "restored": false,
+    "independent_pairing": "System Window menu, Move and Resize: B left then A right. Both actual contents visible and native scenes foreground-active, each592x834. Native screen-record API unsupported; H01 remains unadmitted."
+  },
+  "physical_serial_fixture_repair": {
+    "defined_at": 1789842145.418182,
+    "before_implementation": true,
+    "gates": [
+      "H05",
+      "H07"
+    ],
+    "source_evidence": [
+      "ProbeWindowView.swift ProbeRUMNavigationStack creates no accepted destination",
+      "SwiftUIViewModifier.swift resolveCandidate rejects absent acceptedDestinationConfiguration"
+    ],
+    "change": "Route only H05/H07 through existing experimental RUMNavigationStack, retaining H05 semantic scene filter so B stays automatic. Preserve every original step and semantic expectation. Decode old trace mapper identity/timing through existing ProbeTraceWireIdentity, using encoded integers rather than rounded Double.",
+    "decisive_tests": [
+      "H05 accepts semantic A marker and independent newly started automatic B marker with exact backend join",
+      "H07 one A-created/B-joined span keeps exact A RUM owner, span/trace IDs and encoded integer timing; no matching RUM Resource",
+      "focused catalog routing and trace wire identity tests, original semantic negative controls"
+    ],
+    "scope": "Fixture only; no SDK change, public API promotion, gate expansion or accepted scenario rerun. Fresh signed native build/install identities required."
+  },
+  "physical_serial_fixture_verification": {
+    "focused_native_tests": 8,
+    "passed": 8,
+    "artifact_root": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp196-serial-fixture-tests-2s1p_lrz",
+    "result": {
+      "counts": {
+        "expectedFailures": 0,
+        "failed": 0,
+        "notRun": 0,
+        "passed": 8,
+        "skipped": 0,
+        "total": 8
+      },
+      "fullConsoleLogsPath": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/ActionArtifacts/default/RunSomeTests/test-console-log-2026-09-19T20-26-04+02-00.txt",
+      "fullSummaryPath": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/ActionArtifacts/default/RunSomeTests/6E26C49F-3A9D-44B3-9F49-FA66ACDA2D7E.txt",
+      "results": [
+        {
+          "displayName": "testSemanticAutomaticCoexistenceTargetsOnlySceneA()",
+          "errorMessages": [],
+          "identifier": "ProbeScenarioRunnerTests/testSemanticAutomaticCoexistenceTargetsOnlySceneA()",
+          "state": "Passed",
+          "targetName": "RUMNativeMultiSceneProbeTests"
+        },
+        {
+          "displayName": "testTraceOnlySharedRequestHasOneCreatorAndOneJoiningConsumer()",
+          "errorMessages": [],
+          "identifier": "ProbeScenarioRunnerTests/testTraceOnlySharedRequestHasOneCreatorAndOneJoiningConsumer()",
+          "state": "Passed",
+          "targetName": "RUMNativeMultiSceneProbeTests"
+        },
+        {
+          "displayName": "testTraceWireIdentityPreservesFullPrecisionAndRejectsMalformedTypes()",
+          "errorMessages": [],
+          "identifier": "ProbeScenarioRunnerTests/testTraceWireIdentityPreservesFullPrecisionAndRejectsMalformedTypes()",
+          "state": "Passed",
+          "targetName": "RUMNativeMultiSceneProbeTests"
+        },
+        {
+          "displayName": "testTraceEvidenceRoundTripRetainsWireIdentityAndCapturedCorrelation()",
+          "errorMessages": [],
+          "identifier": "ProbeScenarioRunnerTests/testTraceEvidenceRoundTripRetainsWireIdentityAndCapturedCorrelation()",
+          "state": "Passed",
+          "targetName": "RUMNativeMultiSceneProbeTests"
+        },
+        {
+          "displayName": "testTraceOnlySharedRequestContractPasses()",
+          "errorMessages": [],
+          "identifier": "ProbeSemanticOracleTests/testTraceOnlySharedRequestContractPasses()",
+          "state": "Passed",
+          "targetName": "RUMNativeMultiSceneProbeTests"
+        },
+        {
+          "displayName": "testTraceOnlySharedRequestRejectsJoiningSceneAsOwner()",
+          "errorMessages": [],
+          "identifier": "ProbeSemanticOracleTests/testTraceOnlySharedRequestRejectsJoiningSceneAsOwner()",
+          "state": "Passed",
+          "targetName": "RUMNativeMultiSceneProbeTests"
+        },
+        {
+          "displayName": "testTraceOnlySharedRequestRejectsMissingSpan()",
+          "errorMessages": [],
+          "identifier": "ProbeSemanticOracleTests/testTraceOnlySharedRequestRejectsMissingSpan()",
+          "state": "Passed",
+          "targetName": "RUMNativeMultiSceneProbeTests"
+        },
+        {
+          "displayName": "testTraceOnlySharedRequestRejectsDuplicateSpan()",
+          "errorMessages": [],
+          "identifier": "ProbeSemanticOracleTests/testTraceOnlySharedRequestRejectsDuplicateSpan()",
+          "state": "Passed",
+          "targetName": "RUMNativeMultiSceneProbeTests"
+        }
+      ],
+      "schemeName": "RUMNativeMultiSceneProbe",
+      "summary": "8 tests: 8 passed, 0 failed, 0 skipped, 0 expected failures, 0 not run",
+      "totalResults": 8,
+      "truncated": false,
+      "xcresultBundlePath": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/ActionArtifacts/default/RunSomeTests/Test-RUMNativeMultiSceneProbe-2026.09.19_20-26-04-+0200.xcresult"
+    },
+    "cleanup": {
+      "state": "PASS",
+      "owned_simulator_deleted": true,
+      "original_destination_restored": "iPhone 18 Pro (27.0)",
+      "native_sources_unchanged": true,
+      "protected_unchanged": true
+    },
+    "physical_runs_pending": true
   }
 }

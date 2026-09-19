@@ -234,6 +234,12 @@ enum ProbeRuntime {
     static let usesSiblingContainerAuthorityStress =
         options.swiftUIStress == .siblingContainerAuthority
 
+    static func usesSemanticNavigationContainer(in logicalSceneID: String) -> Bool {
+        scenario.map {
+            ProbeScenarioCatalog.usesSemanticNavigationContainer($0, in: logicalSceneID)
+        } ?? false
+    }
+
     static func usesSemanticNavigationTracking(in logicalSceneID: String) -> Bool {
         guard usesNavigationOccurrenceSwiftUIViewTracking else {
             return false

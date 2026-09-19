@@ -866,6 +866,8 @@ final class ProbeScenarioRunnerTests: XCTestCase {
         XCTAssertEqual(scenario.requiredCapabilities, [.multipleScenes])
         XCTAssertTrue(ProbeScenarioCatalog.usesObservableDriver(scenario))
         XCTAssertTrue(scenario.runtimeOptions.exercisesTraceOnlyURLSessionOwnership)
+        XCTAssertTrue(ProbeScenarioCatalog.usesSemanticNavigationContainer(scenario, in: "scene-A"))
+        XCTAssertTrue(ProbeScenarioCatalog.usesSemanticNavigationContainer(scenario, in: "scene-B"))
         XCTAssertEqual(
             scenario.steps.filter {
                 $0.kind == .startTraceOnlyURLSessionRequest
@@ -951,6 +953,8 @@ final class ProbeScenarioRunnerTests: XCTestCase {
         )
 
         XCTAssertEqual(scenario.runtimeOptions.semanticNavigationSceneIDs, ["scene-A"])
+        XCTAssertTrue(ProbeScenarioCatalog.usesSemanticNavigationContainer(scenario, in: "scene-A"))
+        XCTAssertFalse(ProbeScenarioCatalog.usesSemanticNavigationContainer(scenario, in: "scene-B"))
         XCTAssertTrue(
             scenario.expectedSemanticTimeline.contains {
                 $0.sourceScene == "scene-B"

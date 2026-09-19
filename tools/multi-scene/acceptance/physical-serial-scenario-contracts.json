@@ -1,0 +1,271 @@
+{
+  "H05": {
+    "completionConditions": [
+      {
+        "kind": "action",
+        "name": "automatic-b-after-ready",
+        "ownerViewStartedAfterSceneOpen": "scene-B",
+        "rumViewOrigin": "automatic",
+        "sourceScene": "scene-B",
+        "sourceScreen": "home"
+      },
+      {
+        "kind": "resource",
+        "name": "automatic-b-after-ready",
+        "ownerViewStartedAfterSceneOpen": "scene-B",
+        "rumViewOrigin": "automatic",
+        "sourceScene": "scene-B",
+        "sourceScreen": "home"
+      }
+    ],
+    "defaultRunMode": "clean",
+    "expectedSemanticTimeline": [
+      {
+        "kind": "view-started",
+        "occurrence": 1,
+        "rumViewOrigin": "semantic",
+        "scene": "scene-A",
+        "screen": "home"
+      },
+      {
+        "kind": "action",
+        "name": "semantic-a-before-peer",
+        "occurrence": 1,
+        "rumViewOrigin": "semantic",
+        "scene": "scene-A",
+        "screen": "home",
+        "sourceScene": "scene-A",
+        "sourceScreen": "home"
+      },
+      {
+        "kind": "resource",
+        "name": "semantic-a-before-peer",
+        "occurrence": 1,
+        "rumViewOrigin": "semantic",
+        "scene": "scene-A",
+        "screen": "home",
+        "sourceScene": "scene-A",
+        "sourceScreen": "home"
+      },
+      {
+        "kind": "action",
+        "name": "automatic-b-after-ready",
+        "ownerViewStartedAfterSceneOpen": "scene-B",
+        "rumViewOrigin": "automatic",
+        "sourceScene": "scene-B",
+        "sourceScreen": "home"
+      },
+      {
+        "kind": "resource",
+        "name": "automatic-b-after-ready",
+        "ownerViewStartedAfterSceneOpen": "scene-B",
+        "rumViewOrigin": "automatic",
+        "sourceScene": "scene-B",
+        "sourceScreen": "home"
+      }
+    ],
+    "identifier": "swiftui.coexistence.semantic-a-automatic-b",
+    "initialWindows": [
+      "scene-A",
+      "scene-B"
+    ],
+    "layout": "stack",
+    "requiredCapabilities": [
+      "multiple-scenes"
+    ],
+    "runtimeOptions": {
+      "automaticallyAbortsDetail": false,
+      "automaticallyAdvancesSplitSelection": true,
+      "automaticallyClosesSceneB": false,
+      "automaticallyNavigates": false,
+      "automaticallyOpensSecondWindow": false,
+      "automaticallyPopsUIKitSplitNavigation": true,
+      "automaticallyReplacesDetail": false,
+      "automaticallyReplacesDetailInstance": false,
+      "automaticallyReturnsSplitToDetail": false,
+      "exercisesSwiftUIButtonStructuredTask": false,
+      "exercisesTraceOnlyURLSessionOwnership": false,
+      "exercisesUIEventContextHandoff": false,
+      "exercisesUIKitScrollOwnership": false,
+      "forcesNavigationRouteIdentity": false,
+      "initialSwiftUIPath": [],
+      "manualSwiftUIViewScreensByScene": {},
+      "semanticNavigationSceneIDs": [
+        "scene-A"
+      ],
+      "startsSplitWithoutSelection": false,
+      "swiftUIRouterWritePolicy": "accept",
+      "swiftUIStress": "none"
+    },
+    "steps": [
+      {
+        "kind": "wait-for-scene-ready",
+        "scene": "scene-A"
+      },
+      {
+        "kind": "emit-marker",
+        "scene": "scene-A",
+        "value": "semantic-a-before-peer"
+      },
+      {
+        "kind": "open-window",
+        "scene": "scene-A",
+        "value": "scene-B"
+      },
+      {
+        "kind": "wait-for-signal",
+        "scene": "scene-B",
+        "signal": "marker:task-delayed"
+      },
+      {
+        "kind": "emit-marker",
+        "scene": "scene-B",
+        "value": "automatic-b-after-ready"
+      }
+    ],
+    "trackingMode": "navigation-occurrence"
+  },
+  "H07": {
+    "completionConditions": [
+      {
+        "expectedCount": 1,
+        "kind": "trace",
+        "name": "trace-only-shared-request",
+        "occurrence": 1,
+        "scene": "scene-A",
+        "screen": "home",
+        "sourceScene": "scene-A",
+        "sourceScreen": "home"
+      }
+    ],
+    "defaultRunMode": "clean",
+    "expectedSemanticTimeline": [
+      {
+        "kind": "view-started",
+        "occurrence": 1,
+        "scene": "scene-A",
+        "screen": "home"
+      },
+      {
+        "kind": "action",
+        "name": "trace-shared-creator-representative",
+        "occurrence": 1,
+        "scene": "scene-A",
+        "screen": "home"
+      },
+      {
+        "kind": "resource",
+        "name": "trace-shared-creator-representative",
+        "occurrence": 1,
+        "scene": "scene-A",
+        "screen": "home"
+      },
+      {
+        "kind": "view-started",
+        "occurrence": 1,
+        "scene": "scene-B",
+        "screen": "home"
+      },
+      {
+        "kind": "action",
+        "name": "trace-shared-consumer-representative",
+        "occurrence": 1,
+        "scene": "scene-B",
+        "screen": "home"
+      },
+      {
+        "kind": "resource",
+        "name": "trace-shared-consumer-representative",
+        "occurrence": 1,
+        "scene": "scene-B",
+        "screen": "home"
+      },
+      {
+        "kind": "trace",
+        "name": "trace-only-shared-request",
+        "occurrence": 1,
+        "scene": "scene-A",
+        "screen": "home",
+        "sourceScene": "scene-A",
+        "sourceScreen": "home"
+      }
+    ],
+    "identifier": "traces.urlsession-shared-request",
+    "initialWindows": [
+      "scene-A",
+      "scene-B"
+    ],
+    "layout": "stack",
+    "requiredCapabilities": [
+      "multiple-scenes"
+    ],
+    "runtimeOptions": {
+      "automaticallyAbortsDetail": false,
+      "automaticallyAdvancesSplitSelection": true,
+      "automaticallyClosesSceneB": false,
+      "automaticallyNavigates": false,
+      "automaticallyOpensSecondWindow": false,
+      "automaticallyPopsUIKitSplitNavigation": true,
+      "automaticallyReplacesDetail": false,
+      "automaticallyReplacesDetailInstance": false,
+      "automaticallyReturnsSplitToDetail": false,
+      "exercisesSwiftUIButtonStructuredTask": false,
+      "exercisesTraceOnlyURLSessionOwnership": true,
+      "exercisesUIEventContextHandoff": false,
+      "exercisesUIKitScrollOwnership": false,
+      "forcesNavigationRouteIdentity": false,
+      "initialSwiftUIPath": [],
+      "manualSwiftUIViewScreensByScene": {},
+      "startsSplitWithoutSelection": false,
+      "swiftUIRouterWritePolicy": "accept",
+      "swiftUIStress": "none"
+    },
+    "steps": [
+      {
+        "kind": "wait-for-scene-ready",
+        "scene": "scene-A"
+      },
+      {
+        "kind": "wait-for-signal",
+        "scene": "scene-A",
+        "signal": "rum-view:home#1"
+      },
+      {
+        "kind": "emit-scene-context-marker",
+        "scene": "scene-A",
+        "value": "trace-shared-creator-representative"
+      },
+      {
+        "kind": "start-trace-only-urlsession-request",
+        "scene": "scene-A",
+        "value": "trace-only-shared-request"
+      },
+      {
+        "kind": "open-window",
+        "scene": "scene-A",
+        "value": "scene-B"
+      },
+      {
+        "kind": "wait-for-signal",
+        "scene": "scene-B",
+        "signal": "rum-view:home#1"
+      },
+      {
+        "kind": "emit-scene-context-marker",
+        "scene": "scene-B",
+        "value": "trace-shared-consumer-representative"
+      },
+      {
+        "kind": "join-trace-only-urlsession-request",
+        "scene": "scene-B",
+        "value": "trace-only-shared-request"
+      },
+      {
+        "kind": "complete-trace-only-urlsession-request",
+        "scene": "scene-B",
+        "value": "trace-only-shared-request"
+      }
+    ],
+    "trackingMode": "navigation-occurrence"
+  }
+}
