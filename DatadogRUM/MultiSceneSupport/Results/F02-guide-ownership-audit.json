@@ -1,0 +1,306 @@
+{
+  "schema_version": 1,
+  "gate": "F02",
+  "status": "PASS - bounded ownership reference review",
+  "reviewed_on": "2026-09-19",
+  "review_head": "9bd0f123a08c0ac616976668df9196b2e679abc1",
+  "sdk_revision": "04201edc7711361279d8487b385bc8b0ca9c63c7",
+  "scope": "Publication checklist item 3 only: fixed T01-T15 source and accepted evidence. No API approval, new runtime acceptance or final feature-doc verification.",
+  "production_source_identity": {
+    "roots": [
+      "DatadogCore/Sources",
+      "DatadogInternal/Sources",
+      "DatadogRUM/Sources",
+      "DatadogTrace/Sources",
+      "DatadogLogs/Sources",
+      "DatadogWebViewTracking/Sources",
+      "DatadogProfiling/Sources",
+      "DatadogSessionReplay/Sources",
+      "DatadogCrashReporting/Sources",
+      "DatadogFlags/Sources"
+    ],
+    "tracked_files": 662,
+    "unchanged_from_sdk_revision": true,
+    "working_tree_matches_review_head": true
+  },
+  "reviewed_source_sha256": {
+    "DatadogFlags/Sources/Client/RUMFlagEvaluationReporter.swift": "0d10e11490e5a24faf43e95c00ef9693a1a5cd8f6a0c69f77bc2eb34979faa67",
+    "DatadogInternal/Sources/MessageBus/FeatureMessage.swift": "e7fbdf5d46653ad3b645e34bb08cf7e4ed7d1d4663c41bb6deab346061bd72a6",
+    "DatadogInternal/Sources/NetworkInstrumentation/NetworkContext.swift": "4d0bfa7736102c4419630bf759e0b59cafda1cfa435be53c78daa93999dc9e37",
+    "DatadogLogs/Sources/RemoteLogger.swift": "7fb76a1b79f64839bf429147a2b7f02b9af7ee8a0bbf897fb7af86448d9307de",
+    "DatadogProfiling/Sources/AppLaunchProfiler.swift": "ff79bd8073cce72c7e81fb8288035be474297d571afe82dc6ec365110ba02443",
+    "DatadogProfiling/Sources/DatadogProfiler.swift": "c67e3f6bf45d4e2def1aa9e96f5f13ec236aed743921e5dfee066979ba24a425",
+    "DatadogProfiling/Sources/Models/ProfileAttachments.swift": "130a74d3e4112d5933cf3478fda2af75a0f77a7901d56f9accb789985bd883d6",
+    "DatadogProfiling/Sources/ProfilingHandler.swift": "fc1d260b2a803a7982707776c9711699b81959801c55cb4e5d903e8da2492589",
+    "DatadogRUM/Sources/Instrumentation/Actions/RUMActionsHandler.swift": "5c4c196bce46332a9407250edd514387e4ac2b7366312976d74f5d1b3cdc01f6",
+    "DatadogRUM/Sources/Instrumentation/AppHangs/NonFatalAppHangsHandler.swift": "652545ce579baf7cad1df535e70b9e14af4f88933885ded3d20e9a358f4622bf",
+    "DatadogRUM/Sources/Instrumentation/LongTasks/LongTaskObserver.swift": "7624a6cba63ea60e4ad725678e0d64c0a9c38bda18dba459a654f3c933e572bc",
+    "DatadogRUM/Sources/Instrumentation/MemoryWarnings/MemoryWarningReporter.swift": "2d014183b03dce5c3c37aa64d292892d54cf882545e9e20dec79ca24030bc27e",
+    "DatadogRUM/Sources/Instrumentation/Resources/URLSessionRUMResourcesHandler.swift": "d4a68ca999bee8a4615b125d043ae3ee6e60249b5b16df8fac0a80c91f508c9d",
+    "DatadogRUM/Sources/Integrations/CrashReportReceiver.swift": "882662fc8275acf9e74933069ea23017787afa91a7f2592bf84fb2e5a1370213",
+    "DatadogRUM/Sources/Integrations/ErrorMessageReceiver.swift": "4d6b12f5b52f6437e3057ccfc0c8aac479c98e17d3b56549b8255eb6b45df4be",
+    "DatadogRUM/Sources/Integrations/FatalErrorContextNotifier.swift": "5d907cddb9a62838604cee847156123ab9adf2eb43a8aec67eca874852172e76",
+    "DatadogRUM/Sources/Integrations/FlagEvaluationReceiver.swift": "0eb9407b46815d7f39fe5667a769054e01c866b6d8a8f508648aae18591da627",
+    "DatadogRUM/Sources/Integrations/WebViewEventReceiver.swift": "5da61faee0851be668dd7002f93b44472d05c6c2596a357ed6f0802365d98ab7",
+    "DatadogRUM/Sources/RUMMonitor/Monitor.swift": "200738e4bc3a45e831f1dfc7793cdf80d1ca8d406cebb9d5b62d3d4d22985d94",
+    "DatadogRUM/Sources/RUMMonitor/RUMCommand.swift": "2d48dbc0779db2311d0097a65202de15f9620764de92d61e46ecdca20e618c35",
+    "DatadogRUM/Sources/RUMMonitor/Scopes/RUMFeatureOperationManager.swift": "ec9d9bd61906b1b2efe7e2bd35eda8713f478ce7243b31ca393ddefc091fe911",
+    "DatadogRUM/Sources/RUMMonitor/Scopes/RUMResourceScope.swift": "37abdd6805bc40d3e4d6724ca502d5f2b678e695a02a90b69dd462bc06837dae",
+    "DatadogRUM/Sources/RUMMonitor/Scopes/RUMSessionScope.swift": "aafd4e7fccc31b721841f05357c681a1ce283eb8a3c2c83447bfc4d1e4577557",
+    "DatadogRUM/Sources/RUMMonitor/Scopes/RUMUserActionScope.swift": "3582e8a379d55adecfd0a27e692e02cdfdfd0414126783d1189004b2adcd44d6",
+    "DatadogRUM/Sources/RUMMonitor/Scopes/RUMViewScope.swift": "a41d853b5e73c345db951197f5399c327f8fe869b3216fbb6bc0d2cdc3e61e2b",
+    "DatadogRUM/Sources/RUMMonitor/Scopes/Utils/ViewCache.swift": "960984f244024fc44a16404969f765e8d15f9d02ae98e19f49d66b5d602b10f3",
+    "DatadogRUM/Sources/RUMMonitorProtocol+Internal.swift": "a14b31487c92d5247901a766477b84ede41d573e41108310d0e0e56f456183bd",
+    "DatadogRUM/Sources/RUMVitals/VitalCPUReader.swift": "65317741fa375c219a35891458ba762c93260bb761859429eee95e91ea67b160",
+    "DatadogRUM/Sources/RUMVitals/VitalInfoSampler.swift": "5f327d5dcc67ce641145bec682293ffc272c185fa5dad267fe27fcf19817dabb",
+    "DatadogRUM/Sources/RUMVitals/VitalMemoryReader.swift": "c3544c18395d078ad645dd9196714582bf4266bddde46d087dd161a06e2716ae",
+    "DatadogRUM/Tests/Integrations/ErrorMessageReceiverTests.swift": "c2e157157754f183fe921672f5a9ddaafa85b659a0b0ec2870b6b3e946037c5a",
+    "DatadogRUM/Tests/RUMMonitor/Scopes/RUMSessionScopeTests.swift": "53c5cda262ec8932913d815d6c6273beff7e15c56a75fc9a2fe5495f027c7539",
+    "DatadogTrace/Sources/DatadogTracer.swift": "7039b0718ea53b97674f930995a02169c0b458e8f94695cd48e8dab38b4dfd59",
+    "DatadogTrace/Sources/Integrations/TracingURLSessionHandler.swift": "07bc1f6677d738f3557b145dbae3d0ea5d71a992a16fd63feadd94edd2baf997",
+    "DatadogTrace/Sources/OpenTelemetry/OTelSpanBuilder.swift": "b64f6efcb8b8c310ce13ceeb14633c9d139f070d2eae842c6b7eec3da3e8979b",
+    "DatadogTrace/Sources/Span/SpanWriteContext.swift": "45f68a31058297c18f55f041eb3b94fd57acb98b6c6080e6e4b9e46975629991",
+    "DatadogWebViewTracking/Sources/DDScriptMessageHandler.swift": "4c515304c83eb891e00855d57aa6fc940c55acf26d98ff9ef9458570047d2ed1",
+    "DatadogWebViewTracking/Sources/MessageEmitter.swift": "56704bf30c80bfdada9ef7c17ff0c7c9fcb3e8bd6b7bd1a6073f3a0a6a228dfe"
+  },
+  "guide_sha256": "d5991a0ed4cc87a686533c344b019b27afee6b9d7f53cba55d7f57f945cea7ee",
+  "checks": [
+    {
+      "gate": "T01",
+      "outcome": "MATCH",
+      "source": [
+        "DatadogRUM/Sources/RUMMonitor/Monitor.swift:654-682",
+        "DatadogRUM/Sources/RUMMonitor/Scopes/RUMSessionScope.swift:337-385",
+        "DatadogRUM/Sources/Instrumentation/Actions/RUMActionsHandler.swift:220-257",
+        "DatadogInternal/Sources/NetworkInstrumentation/NetworkContext.swift:70-99"
+      ],
+      "evidence": [
+        "Experiments/EXP-143-199.md#exp-158--explicit-scene-targeted-one-shot-action"
+      ],
+      "finding": "A live explicit scene overrides independent inference. Source-less calls keep representative routing; core-scoped handoff does not establish arbitrary later task causality."
+    },
+    {
+      "gate": "T02",
+      "outcome": "MATCH",
+      "source": [
+        "DatadogRUM/Sources/RUMMonitor/Monitor.swift:684-731",
+        "DatadogRUM/Sources/RUMMonitor/Scopes/RUMSessionScope.swift:399-407",
+        "DatadogRUM/Sources/RUMMonitor/Scopes/RUMSessionScope.swift:798-809",
+        "DatadogRUM/Sources/RUMMonitor/Scopes/RUMUserActionScope.swift:112-175"
+      ],
+      "evidence": [
+        "Experiments/EXP-143-199.md#exp-159--explicit-scene-targeted-long-running-actions",
+        "Results/EXP-163-action-stop-attributes.json"
+      ],
+      "finding": "Each start/stop chooses a live recipient. Recipient stop attributes survive overdue completion; peers advance timeout without those attributes. The target does not retain an Action."
+    },
+    {
+      "gate": "T03",
+      "outcome": "MATCH",
+      "source": [
+        "DatadogRUM/Sources/RUMMonitor/Monitor.swift:491-570",
+        "DatadogRUM/Sources/Instrumentation/Resources/URLSessionRUMResourcesHandler.swift:135-230",
+        "DatadogRUM/Sources/RUMMonitor/Scopes/RUMSessionScope.swift:747-755",
+        "DatadogRUM/Sources/RUMMonitor/Scopes/RUMSessionScope.swift:824-829",
+        "DatadogRUM/Sources/RUMMonitor/Scopes/RUMResourceScope.swift:62-110",
+        "DatadogRUM/Sources/RUMMonitor/Scopes/RUMResourceScope.swift:260-274"
+      ],
+      "evidence": [
+        "Results/EXP-175-resource-completion.json",
+        "Results/EXP-176-resource-start.json"
+      ],
+      "finding": "Explicit starts resolve at processing; manual/automatic starts create an owning Resource scope. Metrics and completion route by Resource identity, retaining the original view/session through navigation and renewal. Active keys must be distinct."
+    },
+    {
+      "gate": "T04",
+      "outcome": "MATCH",
+      "source": [
+        "DatadogRUM/Sources/RUMMonitor/Monitor.swift:434-488",
+        "DatadogRUM/Sources/RUMMonitor/Monitor.swift:945-963",
+        "DatadogRUM/Sources/RUMMonitor/Scopes/RUMSessionScope.swift:347-363"
+      ],
+      "evidence": [
+        "Results/EXP-177-current-view-errors.json"
+      ],
+      "finding": "All three current-view error forms use separate explicit/inferred targets. Completion delivery is distinct from sampling/mapper acceptance. Resource failure ownership remains T03."
+    },
+    {
+      "gate": "T05",
+      "outcome": "MATCH",
+      "source": [
+        "DatadogRUM/Sources/RUMMonitor/Monitor.swift:382-401",
+        "DatadogRUM/Sources/RUMMonitor/Monitor.swift:970-1006",
+        "DatadogRUM/Sources/RUMMonitor/Scopes/RUMViewScope.swift:306-318",
+        "DatadogRUM/Sources/RUMMonitor/Scopes/RUMResourceScope.swift:197-197"
+      ],
+      "evidence": [
+        "Results/EXP-178-view-attributes.json"
+      ],
+      "finding": "View mutations affect only the selected active scope; global monitor attributes remain separate. Removing a view override exposes the global value in subsequent event merging, without rewriting an already built event."
+    },
+    {
+      "gate": "T06",
+      "outcome": "MATCH",
+      "source": [
+        "DatadogRUM/Sources/RUMMonitor/Monitor.swift:1078-1112",
+        "DatadogRUM/Sources/RUMMonitor/Scopes/RUMViewScope.swift:340-347",
+        "DatadogRUM/Sources/RUMMonitor/Scopes/RUMViewScope.swift:425-439",
+        "DatadogRUM/Sources/RUMMonitor/RUMCommand.swift:484-518"
+      ],
+      "evidence": [
+        "Results/EXP-179-timing-loading.json"
+      ],
+      "finding": "Timings replace by name; loading replaces only when absent or overwrite is true. Timing can restart after expiration while loading cannot; neither restart rule is changed by targeting. Intermediate mapper states are not final backend revisions."
+    },
+    {
+      "gate": "T07",
+      "outcome": "CLARIFIED",
+      "source": [
+        "DatadogRUM/Sources/RUMMonitor/Monitor.swift:735-755",
+        "DatadogFlags/Sources/Client/RUMFlagEvaluationReporter.swift:18-30",
+        "DatadogInternal/Sources/MessageBus/FeatureMessage.swift:34-60",
+        "DatadogRUM/Sources/Integrations/FlagEvaluationReceiver.swift:16-49",
+        "DatadogRUM/Sources/RUMMonitorProtocol+Internal.swift:63-124",
+        "DatadogRUM/Sources/RUMMonitor/Scopes/RUMViewScope.swift:593-600"
+      ],
+      "evidence": [
+        "Results/EXP-180-flags-internal-mutations.json"
+      ],
+      "finding": "Flag-bus and internal mutations capture call-site ownership, with same-scene stale-view routing and rejected foreign/retired flag envelopes. FBC is Flutter-only. Cross-platform long-task injection can also capture context, unlike native process detection."
+    },
+    {
+      "gate": "T08",
+      "outcome": "CLARIFIED",
+      "source": [
+        "DatadogTrace/Sources/DatadogTracer.swift:147-189",
+        "DatadogTrace/Sources/OpenTelemetry/OTelSpanBuilder.swift:122-150",
+        "DatadogTrace/Sources/Span/SpanWriteContext.swift:30-79",
+        "DatadogTrace/Sources/Integrations/TracingURLSessionHandler.swift:201-210",
+        "DatadogTrace/Sources/Integrations/TracingURLSessionHandler.swift:232-273"
+      ],
+      "evidence": [
+        "Results/EXP-181-trace-start-ownership.json"
+      ],
+      "finding": "Native, OTel and automatic trace-only completion preserve the captured start context, including authoritative absence. An unavailable explicit target and captured absence are different cases. Source-less start context remains the compatibility fallback."
+    },
+    {
+      "gate": "T09",
+      "outcome": "CLARIFIED",
+      "source": [
+        "DatadogLogs/Sources/RemoteLogger.swift:112-182",
+        "DatadogLogs/Sources/RemoteLogger.swift:228-269",
+        "DatadogRUM/Sources/Integrations/ErrorMessageReceiver.swift:22-62",
+        "DatadogRUM/Sources/RUMMonitor/Scopes/RUMSessionScope.swift:991-1041",
+        "DatadogRUM/Tests/RUMMonitor/Scopes/RUMSessionScopeTests.swift:1489-1555",
+        "DatadogRUM/Tests/Integrations/ErrorMessageReceiverTests.swift:293-361"
+      ],
+      "evidence": [
+        "Results/EXP-182-log-mirror-ownership.json"
+      ],
+      "finding": "The log freezes emission context. Its mirror carries captured view/action intent but remains a current-view command: a known ended view can fall forward within its scene, and missing scene-owned history must not borrow a peer. Legacy fallback and captured nil action remain distinct."
+    },
+    {
+      "gate": "T10",
+      "outcome": "CLARIFIED",
+      "source": [
+        "DatadogWebViewTracking/Sources/DDScriptMessageHandler.swift:28-49",
+        "DatadogWebViewTracking/Sources/MessageEmitter.swift:40-70",
+        "DatadogRUM/Sources/Integrations/WebViewEventReceiver.swift:86-125",
+        "DatadogRUM/Sources/RUMMonitor/Scopes/Utils/ViewCache.swift:133-170"
+      ],
+      "evidence": [
+        "Results/EXP-183-webview-container-ownership.json"
+      ],
+      "finding": "Bridge delivery carries the native scene captured on main; native container lookup uses browser event date and cached replay-enabled native history. Ambiguous source-less history cannot invent a container. Single-scene legacy fallback remains; private scene metadata is stripped."
+    },
+    {
+      "gate": "T11",
+      "outcome": "MATCH",
+      "source": [
+        "DatadogRUM/Sources/RUMMonitor/Monitor.swift:231-281",
+        "DatadogRUM/Sources/RUMMonitor/Scopes/RUMSessionScope.swift:688-714",
+        "DatadogRUM/Sources/Integrations/FatalErrorContextNotifier.swift:33-63",
+        "DatadogRUM/Sources/Integrations/CrashReportReceiver.swift:73-145"
+      ],
+      "evidence": [
+        "Results/EXP-184-exported-fatal-context.json"
+      ],
+      "finding": "The live fatal notifier exports one representative. Recovery consumes the retained crash snapshot rather than a new process view. This does not establish which physical window caused a source-less crash or authorize temporary scene payload fields."
+    },
+    {
+      "gate": "T12",
+      "outcome": "CLARIFIED",
+      "source": [
+        "DatadogRUM/Sources/Instrumentation/LongTasks/LongTaskObserver.swift:73-85",
+        "DatadogRUM/Sources/Instrumentation/AppHangs/NonFatalAppHangsHandler.swift:21-37",
+        "DatadogRUM/Sources/Instrumentation/MemoryWarnings/MemoryWarningReporter.swift:31-47",
+        "DatadogRUM/Sources/RUMMonitor/RUMCommand.swift:80-82",
+        "DatadogRUM/Sources/RUMMonitor/Scopes/RUMSessionScope.swift:858-874"
+      ],
+      "evidence": [
+        "Results/EXP-185-process-signal-routing.json"
+      ],
+      "finding": "Native detector commands default to one process representative. Fatal recovery uses T11. Context-bearing cross-platform addLongTask is a separate internal path, not evidence of per-window native detection. Controlled warnings/hangs do not certify physical pressure or watchdog behavior."
+    },
+    {
+      "gate": "T13",
+      "outcome": "CLARIFIED",
+      "source": [
+        "DatadogRUM/Sources/RUMVitals/VitalCPUReader.swift:73-116",
+        "DatadogRUM/Sources/RUMVitals/VitalMemoryReader.swift:17-33",
+        "DatadogRUM/Sources/RUMVitals/VitalInfoSampler.swift:55-104",
+        "DatadogRUM/Sources/RUMMonitor/Scopes/RUMViewScope.swift:185-201",
+        "DatadogRUM/Sources/RUMMonitor/Scopes/RUMViewScope.swift:566-579"
+      ],
+      "evidence": [
+        "Results/EXP-186-shared-vitals.json"
+      ],
+      "finding": "CPU reads shared host counters; memory reads process footprint. View samplers/hitch readers aggregate shared CPU, memory and render-loop measurements over their own lifetime. No independent scene CPU or frame attribution is claimed."
+    },
+    {
+      "gate": "T14",
+      "outcome": "CLARIFIED",
+      "source": [
+        "DatadogRUM/Sources/RUMMonitor/Scopes/RUMFeatureOperationManager.swift:193-209",
+        "DatadogProfiling/Sources/DatadogProfiler.swift:294-343",
+        "DatadogProfiling/Sources/ProfilingHandler.swift:39-69",
+        "DatadogProfiling/Sources/Models/ProfileAttachments.swift:15-40",
+        "DatadogProfiling/Sources/AppLaunchProfiler.swift:110-123"
+      ],
+      "evidence": [
+        "Results/EXP-187-physical-profile-correlation.json",
+        "Results/EXP-187-physical-export.json"
+      ],
+      "finding": "One process profile uses correlation attributes from received RUM messages. Operation completion updates the retained start Vital duration/ID; the attachment contains no per-step view. Exact exported ID/time joins passed, while RUM profile-link flags remain false. No UI enrichment or per-scene CPU claim."
+    },
+    {
+      "gate": "T15",
+      "outcome": "CLARIFIED",
+      "source": [
+        "DatadogRUM/Sources/RUMMonitor/Monitor.swift:870-881",
+        "DatadogRUM/Sources/RUMMonitor/Scopes/RUMSessionScope.swift:878-914",
+        "DatadogRUM/Sources/RUMMonitor/Scopes/RUMFeatureOperationManager.swift:29-78",
+        "DatadogRUM/Sources/RUMMonitor/Scopes/RUMFeatureOperationManager.swift:275-326",
+        "DatadogRUM/Sources/RUMMonitor/Scopes/RUMFeatureOperationManager.swift:400-459"
+      ],
+      "evidence": [
+        "Experiments/EXP-143-199.md#exp-155--explicit-cross-scene-operation-targeting",
+        "Experiments/EXP-143-199.md#exp-157--physical-inferred-operation-retry",
+        "OPERATIONS.md"
+      ],
+      "finding": "Exact name/key identity is shared across scenes; each step resolves independently before last-proven/process fallback. Local tracking is bounded and session-local. Duplicate starts emit no synthetic end. The four-hour timeout is the documented backend contract, not a newly observed four-hour run."
+    }
+  ],
+  "remaining": [
+    "Attributable F01 RFC decision and implementation of its final contract.",
+    "Compile approved normal-import Swift/Objective-C examples and fallback in F03.",
+    "Full feature-doc workflow after approved contract; do not bump verification metadata for this draft."
+  ],
+  "review_invalidation": "Recheck affected rows after source/contract changes; accepted simulator/device evidence retains its original limits.",
+  "validation": {
+    "source_references": 70,
+    "families": 15,
+    "sdk_or_runtime_tests_rerun": false,
+    "test_reason": "Documentation-only review of unchanged production source; reuse accepted evidence, validate source references, links and finite register."
+  }
+}

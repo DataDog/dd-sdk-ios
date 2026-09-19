@@ -659,7 +659,7 @@
       "environment": "Source/doc review",
       "completion_mode": null,
       "status": "OPEN",
-      "evidence": "SUPPORT_GUIDE.md prepares the fixed T01\u2013T15 ownership reference, current SPI call sites and automatic/opaque limits. NAVIGATION_API.md call labels corrected against source. Final approved examples, compile checks and full feature-doc audit remain after F01; no supported-publication claim."
+      "evidence": "SUPPORT_GUIDE.md ownership review covers15/15 fixed families at unchanged SDK04201edc7. Results/F02-guide-ownership-audit.json anchors source/evidence and clarifies stale mirror routing, replay-enabled container history, native/cross-platform signals, shared CPU and profile-label limits. Approved examples, compilation and full feature-doc audit remain after F01; no public promotion."
     },
     {
       "id": "F03",
@@ -705,7 +705,7 @@
       "environment": "iPhone Duo iOS 27.1",
       "completion_mode": null,
       "status": "OPEN",
-      "evidence": "EXP-192 records measured display/lifecycle behavior and bounded pairing, disconnect and outer gesture input limits. EXP-193 resize native/backend acceptance passes; pose remains pending. Capability-specific simulator confidence does not replace physical F04."
+      "evidence": "EXP-192 completes its bounded simulator assessment with measured display/lifecycle behavior and concrete pairing, disconnect and gesture limits. EXP-193 accepts both resize and pose with exact native/backend ownership and cleanup. Capability-specific simulator confidence does not replace physical F04."
     },
     {
       "id": "F05",

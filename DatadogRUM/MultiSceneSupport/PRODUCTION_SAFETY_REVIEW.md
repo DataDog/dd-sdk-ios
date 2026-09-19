@@ -310,7 +310,11 @@ does not promote any public declaration. The prepared
 [final matrix](FINAL_COMPATIBILITY.md) preserves the off-main Release obligation
 and D01/D02 platform regression checks. The [support guide](SUPPORT_GUIDE.md)
 separates explicit, captured and process ownership, including Flutter-only FBC.
-These documentation preparations add no new production finding or release proof.
+The bounded [F02 ownership audit](Results/F02-guide-ownership-audit.json) now
+checks all15 families against unchanged source and accepted evidence, correcting
+guide limits for deferred and process-level signals. These documentation
+preparations add no new production finding or release proof; the final feature-doc
+audit remains after F01.
 
 ## Subsequent bounded validation: legacy host launch boundary
 

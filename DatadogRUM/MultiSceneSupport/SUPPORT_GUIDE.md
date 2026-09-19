@@ -117,15 +117,22 @@ No row implies simultaneous-device validation or adds a new telemetry family.
 | T04 / Current-view errors | Message, Error and completion forms accept an explicit live target. | Resource failures retain their Resource's captured owner instead. Callback completion does not prove an event was sampled or retained by a mapper. |
 | T05 / View attributes/removal | Single/batch mutations accept an explicit live target. Global attributes still affect the process. | Ended views are not restored. Removing a view attribute can reveal the same-key global value; events already created keep their values. |
 | T06 / Timing/loading | Explicit target selects the current view. Repeated timing names replace; loading time changes when absent or overwrite is true. | Timing/loading retain their separate expiration rules. Intermediate mapper revisions and final backend views are different evidence. |
-| T07 / Flags/internal mutations | Customer flag evaluations accept an explicit target; Flags-bus and internal mutations carry captured call-site ownership where available. | FBC is a Flutter metric. Its absence from native iOS backend events is expected; native tests do not certify a Flutter integration. Internal metric/FBC APIs are not new customer APIs. |
-| T08 / Traces | Manual, automatic and OpenTelemetry spans preserve captured start ownership through completion. | Source-less spans use process context. Do not infer ownership after causality is lost or rewrite requests across capture/header-injection boundaries. |
-| T09 / Logs/mirrored errors | Capture context at emission and preserve it through deferred writing and mirrored-error delivery. | A log without trustworthy source context uses the process representative. Later queue context must not retarget it. |
-| T10 / WebView | Capture native-container scene/date correlation; preserve it through bridge delivery and exact rebind/teardown. | Detached content has no invented scene owner. Internal scene metadata is removed; this does not promise scene-correct Session Replay. |
+| T07 / Flags/internal mutations | Customer flag evaluations accept an explicit target; Flags-bus and internal mutations carry captured call-site ownership where available. | FBC is a Flutter metric. Its absence from native iOS backend events is expected; native tests do not certify a Flutter integration. Internal metric/FBC APIs are not new customer APIs; delayed mutations follow the same-scene stale-view rules below. |
+| T08 / Traces | Manual, automatic and OpenTelemetry spans preserve captured start ownership through completion. | Source-less spans capture process context at start; an authoritative captured absence stays absent. Do not infer ownership after causality is lost or rewrite requests across capture/header-injection boundaries. |
+| T09 / Logs/mirrored errors | Freeze log context at emission; carry captured view/action intent into mirrored-error routing. | Source-less logs use process context. A delayed mirror follows current-view stale-owner rules; it can move to the next view in its known scene or be dropped, while the log keeps its snapshot. |
+| T10 / WebView | Capture native-container scene/date correlation; preserve it through bridge delivery and exact rebind/teardown. | Native container correlation requires matching replay-enabled view history. Ambiguous source-less history stays uncorrelated; single-scene legacy fallback remains. Private scene metadata is removed. Replay scene correctness remains separate. |
 | T11 / Exported/fatal context | Export one process representative; retain an exact trustworthy internal snapshot for recovery. | A generic context read or crash has no independently proven originating window. Do not broadcast it or persist temporary scene metadata. |
-| T12 / Long tasks, hangs, memory warnings | Emit once on the process representative. | These are process signals, not per-window measurements. The fallback may differ from the window a user associates with the symptom. |
-| T13 / Vitals | Measure shared process/render-loop values and retain existing view association. | Concurrent views may observe shared values; they are not independent per-scene CPU/memory samples. |
-| T14 / Profiling | One process profiler. Operation correlation uses exact start Vital IDs; profile labels carry the process context available to the profiler. | Profile-level view labels do not allocate CPU to scenes. A profile attachment's Operation ID joins to its RUM start; it does not carry a per-step view field. |
-| T15 / Operations | Exact application-wide name/key identity; resolve each step's explicit or captured call-site owner independently, then last-proven/process fallback. | Scenes never namespace keys or permanently own later steps. Duplicate starts replace only the latest client instance and leave the earlier backend instance to its four-hour timeout. |
+| T12 / Native long tasks, hangs, memory warnings | Native detectors emit once on the process representative; fatal recovery uses T11. | These are process signals, not per-window measurements. Cross-platform internal long-task injection can carry call-site context; it does not make native detection scene-specific. |
+| T13 / Vitals | Aggregate shared system CPU ticks, process memory and render-loop values over each view's lifetime. | Concurrent views may observe shared values; they are not independent per-scene CPU/memory samples. |
+| T14 / Profiling | One process profiler. Operation correlation uses exact start Vital IDs; profile-level attributes come from received RUM correlation messages. | Profile-level view labels do not allocate CPU to scenes. A profile attachment's Operation ID joins to its RUM start; it does not carry a per-step view field. |
+| T15 / Operations | Exact application-wide name/key identity; resolve each step's explicit or captured call-site owner independently, then last-proven/process fallback. | Scenes never namespace keys or permanently own later steps. Local tracking is bounded and session-local. Duplicate starts replace only the latest client instance and leave the earlier backend instance to its documented four-hour timeout. |
+
+Delayed current-view commands do not restore ended occurrences. When retained
+history identifies an old view's scene, routing may select that scene's current
+view; missing scene-owned history cannot borrow a peer. Existing scene-less
+legacy fallback remains. This differs from a Resource or span whose start owner
+is retained, and from an unavailable explicit target that leaves independent
+inference intact.
 
 Use a unique Operation key for each concurrent instance. Complete it from the
 scene performing that step rather than assuming its start scene owns every step.
@@ -158,8 +165,10 @@ cursor.
 1. Apply the recorded F01 decision to names, availability and Objective-C guidance.
 2. Compile these examples and the approved semantic-host examples using normal
    imports in the F03 external-client cell, with the supported older fallback.
-3. Review every T01–T15 row against its owning source and evidence, including FBC,
-   captured Resource/Trace ownership and process-level signals.
+3. Ownership review complete for T01–T15 at unchanged SDK04201edc7;
+   [source and evidence audit](Results/F02-guide-ownership-audit.json) records the
+   exact files, clarified limits and accepted predecessors. Recheck affected rows
+   if F01 changes their implementation; this is not the final feature-doc audit.
 4. Once the contract is ready to ship, update affected feature documentation
    through the repository's full feature-doc workflow, including cross-feature
    snippets and registries. Until then preserve the overview's separation from

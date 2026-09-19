@@ -56,7 +56,10 @@ logical peers do not establish simultaneous-window or genuine OS lifecycle proof
   The [concrete stable API proposal](STABLE_API_REVIEW.md) awaits the requested
   RFC decision. The [integration guide](SUPPORT_GUIDE.md) and
   [final compatibility matrix](FINAL_COMPATIBILITY.md) are prepared drafts, not
-  public API promotion or completed F02/F03 evidence. Supported-runtime checks,
+  public API promotion or completed F02/F03 evidence. The guide's fixed15-family
+  [ownership audit](Results/F02-guide-ownership-audit.json) is complete against
+  unchanged source and accepted evidence; approved examples and the full feature-doc
+  audit remain after F01. Supported-runtime checks,
   physical topology, Duo27.1 acceptance and final freeze remain governed by the register.
 - Current availability must be rediscovered when execution needs it. Earlier
   devices, sessions and temporary artifacts are evidence locators, not instructions
