@@ -423,9 +423,11 @@ native/backend ownership, installed-code identity and cleanup. The stale semanti
 fixture, wire-step typo and backend timestamp projection failures remain preserved.
 H05's early source-less fallback is the approved compatibility behavior; H07's
 backend start precision is explicitly limited to milliseconds. No SDK source or
-original review disposition changes. H01 remains unadmitted without independent
-critical-interval display proof. Physical XCTest now exports continuous video;
-its fresh H01 integration and corrected H11 visible-edge input remain unqualified.
+original review disposition changes. H01 now closes with original22 assertions,
+exact61-event ownership and continuous physical video proving both windows remain
+visible through the critical interval. The corrected H11 visible-edge finish input
+still has no native interactive callback; preserve its exact13-event partial join
+and stop equivalent retries. No gesture or SDK-defect claim follows.
 H04's process-lifetime witness also receives no
 actual disconnect; preserve the original failure and exact29-event partial join,
 and stop equivalent retries without assigning an SDK defect. H14 closes with

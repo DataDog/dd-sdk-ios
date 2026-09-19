@@ -34,7 +34,7 @@
       ],
       "decisive_test": "EXP-129: distinct Compose IDs, B stop preserves A, fresh Home per scene",
       "required_environment": "Authorized physical iPad27.0; genuine OS/window input and fresh native evidence",
-      "status": "DEFINED",
+      "status": "PASS_PHYSICAL",
       "execution_boundary": "Require topology/lifecycle prerequisites before the critical boundary; incomplete input is not SDK evidence."
     },
     {
@@ -182,7 +182,7 @@
       ],
       "decisive_test": "EXP-081: recognized cancel preserves Detail ID; recognized completion reveals fresh Home",
       "required_environment": "Authorized physical iPad27.0; genuine OS/window input and fresh native evidence",
-      "status": "DEFINED",
+      "status": "INCONCLUSIVE_INPUT",
       "execution_boundary": "Automated gestures must produce native interactive callbacks; no synthetic transitions or human-gesture equivalence claim."
     },
     {
@@ -1838,6 +1838,977 @@
         "attachments/manifest.json": {
           "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp196-physical-xctest-finish-jld1i49y/attachments/manifest.json",
           "sha256": "5873e8187f4a902ea9d9f07a5c02a14480794bce7869b791009621ca7c8a53ac"
+        },
+        "partial-backend-result.json": {
+          "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp196-physical-xctest-finish-jld1i49y/partial-backend-result.json",
+          "sha256": "97a4816011bfb247213a6e49f6a3878020d6e7860943672f5c86b0e6f0fd7702"
+        },
+        "partial-native-inventory.json": {
+          "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp196-physical-xctest-finish-jld1i49y/partial-native-inventory.json",
+          "sha256": "6f6ff8b3dff8bfacd3acb1e5174814f8022cf9c5a5af51de79b1dea22dfb6874"
+        },
+        "attachments/F1CDB9C9-77CB-43C1-A78F-6055D0E846E6.mp4": {
+          "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp196-physical-xctest-finish-jld1i49y/attachments/F1CDB9C9-77CB-43C1-A78F-6055D0E846E6.mp4",
+          "sha256": "9a84296cab4c2c4e53cc0be0b579d13c9ec76497843e001100343674cd26522c"
+        }
+      },
+      "partial_backend": {
+        "state": "PASS",
+        "view_count": 4,
+        "work_count": 6,
+        "error_crash_count": 0,
+        "all_type_count": 13,
+        "gate_acceptance": false
+      }
+    },
+    {
+      "gate": "H11",
+      "status": "INCONCLUSIVE_INPUT",
+      "run_id": "exp196-h11-finish--20260919t200356z-4928e6de7249",
+      "capture_source_revision": "c6ac2a3353606effca4e08c342696a80ce3c0b37",
+      "artifact_root": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp196-physical-xctest-finish-a3ejdmu6",
+      "reason": "The predefined visible-edge correction uses actual detail region x320,y32,width874,height782. One slow physical finish drag completes XCTest1/1 but produces no native interactive began/resolved callback; native sequence27 is unchanged. Stop equivalent gesture retries. Cancel is unexecuted because actual interactive recognition is still unqualified. This is not an SDK defect or H11 acceptance.",
+      "partial_backend": {
+        "state": "PASS",
+        "view_count": 4,
+        "work_count": 6,
+        "error_crash_count": 0,
+        "all_type_count": 13,
+        "gate_acceptance": false
+      },
+      "test_result": {
+        "exit_code": 0,
+        "source_unchanged": true,
+        "protected_unchanged": true,
+        "finished_ms": 1789848324490
+      },
+      "cleanup": {
+        "state": "PASS",
+        "app_absent": true,
+        "runner_absent": true,
+        "process_absent": true,
+        "protected_unchanged": true,
+        "source_unchanged": true
+      },
+      "artifacts": {
+        "frozen.json": {
+          "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp196-physical-xctest-finish-a3ejdmu6/frozen.json",
+          "sha256": "2d9fb878706a49f299b91d2e6eb64e6cc33feb9368f5793e8b64fe3dbfa52858"
+        },
+        "native.jsonl": {
+          "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp196-physical-xctest-finish-a3ejdmu6/native.jsonl",
+          "sha256": "8e484c3d63d79730815abc890175d1247f874453aeb66c827bea944d1f89033a"
+        },
+        "before-input.json": {
+          "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp196-physical-xctest-finish-a3ejdmu6/before-input.json",
+          "sha256": "098fc1450702e21b3f1541f9cb7b88e34681c02bf321b90c4edd0cc56b106ffb"
+        },
+        "before-input.png": {
+          "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp196-physical-xctest-finish-a3ejdmu6/before-input.png",
+          "sha256": "92917422f43febd0d170483ece1855a4762795304c138f55611e5318af717ff3"
+        },
+        "partial-native-inventory.json": {
+          "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp196-physical-xctest-finish-a3ejdmu6/partial-native-inventory.json",
+          "sha256": "43619ff8b14399eff0a4bdd439f62987a8447f02e4f4df005423a08a10b117ac"
+        },
+        "partial-backend-result.json": {
+          "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp196-physical-xctest-finish-a3ejdmu6/partial-backend-result.json",
+          "sha256": "97a4816011bfb247213a6e49f6a3878020d6e7860943672f5c86b0e6f0fd7702"
+        },
+        "backend-raw.json": {
+          "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp196-physical-xctest-finish-a3ejdmu6/backend-raw.json",
+          "sha256": "887b597d205cdb1e5252b345f01557f8cbe71be5704753729b3ce1d77d4fda8e"
+        },
+        "installed-identity.json": {
+          "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp196-physical-xctest-finish-a3ejdmu6/installed-identity.json",
+          "sha256": "d24f26b37404f675af8b32c2cb0588afcf904cd8974262600d298b8d9a895465"
+        },
+        "test-result.json": {
+          "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp196-physical-xctest-finish-a3ejdmu6/test-result.json",
+          "sha256": "dd2bcecd894e0eeccfb9ac410ef62eef2472edfd00087bb20a7fdfa6e79b7d59"
+        },
+        "cleanup.json": {
+          "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp196-physical-xctest-finish-a3ejdmu6/cleanup.json",
+          "sha256": "1c9d576f40155d5029e22962833cfa2775cd1f0db51615d318a990d784d0ab8f"
+        },
+        "attachments/manifest.json": {
+          "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp196-physical-xctest-finish-a3ejdmu6/attachments/manifest.json",
+          "sha256": "9c1239d9f6262c90e03d0aa96a685cc6b89d4215233daffb930f95f78698054b"
+        },
+        "attachments/1567A2DF-9283-4590-A5CE-B7048276062F.mp4": {
+          "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp196-physical-xctest-finish-a3ejdmu6/attachments/1567A2DF-9283-4590-A5CE-B7048276062F.mp4",
+          "sha256": "60232e59eb7b968c05a2c9327b6d0405887ff5c52e13f856b7079394e1713cb1"
+        }
+      }
+    },
+    {
+      "gate": "H01",
+      "status": "PASS_PHYSICAL",
+      "run_id": "exp196-h01--20260919t200631z-fc09656d2e80",
+      "capture_source_revision": "c6ac2a3353606effca4e08c342696a80ce3c0b37",
+      "artifact_root": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp196-physical-xctest-topology-bfxoyeno",
+      "local": {
+        "state": "PASS",
+        "session_id": "4e0f4563-1dab-4870-97a6-0c97d19e9f5a",
+        "views": [
+          {
+            "view_id": "59f882d2-8537-494e-8fac-79811f13e70e",
+            "session_id": "4e0f4563-1dab-4870-97a6-0c97d19e9f5a",
+            "name": "ApplicationLaunch"
+          },
+          {
+            "view_id": "8edd6fcc-a8df-4981-bf33-fe2edfcb7eb2",
+            "session_id": "4e0f4563-1dab-4870-97a6-0c97d19e9f5a",
+            "name": "AutoTracked_HostingController_Fallback"
+          },
+          {
+            "view_id": "8e3c2eee-936c-4d18-b0ba-b6c52fb9542d",
+            "session_id": "4e0f4563-1dab-4870-97a6-0c97d19e9f5a",
+            "name": "NavigationStackHostingController<AnyView>"
+          },
+          {
+            "view_id": "9f87dcc5-dc23-4e97-9c76-375b3f93f373",
+            "session_id": "4e0f4563-1dab-4870-97a6-0c97d19e9f5a",
+            "name": "AutoTracked_HostingController_Fallback"
+          },
+          {
+            "view_id": "62546120-995b-45c6-a88c-8a3a0cfa03e2",
+            "session_id": "4e0f4563-1dab-4870-97a6-0c97d19e9f5a",
+            "name": "NavigationStackHostingController<AnyView>"
+          },
+          {
+            "view_id": "5281241f-15b7-4997-a79d-69f3fa21cb62",
+            "session_id": "4e0f4563-1dab-4870-97a6-0c97d19e9f5a",
+            "name": "NavigationStackHostingController<AnyView>"
+          },
+          {
+            "view_id": "67d918ee-a829-4952-866d-cf12200d26ac",
+            "session_id": "4e0f4563-1dab-4870-97a6-0c97d19e9f5a",
+            "name": "NavigationStackHostingController<AnyView>"
+          },
+          {
+            "view_id": "5ddae72a-12fe-4b1b-a745-8986286a60ba",
+            "session_id": "4e0f4563-1dab-4870-97a6-0c97d19e9f5a",
+            "name": "ProbeKeyedManualView"
+          },
+          {
+            "view_id": "7b24191d-a2ef-4bc2-8ef3-4ac15fb25863",
+            "session_id": "4e0f4563-1dab-4870-97a6-0c97d19e9f5a",
+            "name": "ProbeKeyedManualView"
+          },
+          {
+            "view_id": "f6a313a4-29fe-4591-a281-e87703779a0e",
+            "session_id": "4e0f4563-1dab-4870-97a6-0c97d19e9f5a",
+            "name": "NavigationStackHostingController<AnyView>"
+          },
+          {
+            "view_id": "a5bf4660-6a8a-4608-80a0-f273282df213",
+            "session_id": "4e0f4563-1dab-4870-97a6-0c97d19e9f5a",
+            "name": "NavigationStackHostingController<AnyView>"
+          }
+        ],
+        "work": [
+          {
+            "kind": "action",
+            "event_id": "20873f88-e6af-47fe-b674-34a1d24af1d5",
+            "session_id": "4e0f4563-1dab-4870-97a6-0c97d19e9f5a",
+            "view_id": "59f882d2-8537-494e-8fac-79811f13e70e",
+            "phase": "on-appear",
+            "source_scene": "scene-A"
+          },
+          {
+            "kind": "action",
+            "event_id": "4e0d114b-1eed-4e2a-84e6-fc8417fda79c",
+            "session_id": "4e0f4563-1dab-4870-97a6-0c97d19e9f5a",
+            "view_id": "59f882d2-8537-494e-8fac-79811f13e70e",
+            "phase": "task-immediate",
+            "source_scene": "scene-A"
+          },
+          {
+            "kind": "resource",
+            "event_id": "040a644c-007c-44e3-a85f-0aa26dc7b67e",
+            "session_id": "4e0f4563-1dab-4870-97a6-0c97d19e9f5a",
+            "view_id": "59f882d2-8537-494e-8fac-79811f13e70e",
+            "phase": "on-appear",
+            "source_scene": "scene-A"
+          },
+          {
+            "kind": "resource",
+            "event_id": "55c718d3-8853-433a-9e43-1a77ba4248e8",
+            "session_id": "4e0f4563-1dab-4870-97a6-0c97d19e9f5a",
+            "view_id": "59f882d2-8537-494e-8fac-79811f13e70e",
+            "phase": "task-immediate",
+            "source_scene": "scene-A"
+          },
+          {
+            "kind": "action",
+            "event_id": "1eb865d3-5862-44de-acd6-c48c6b748207",
+            "session_id": "4e0f4563-1dab-4870-97a6-0c97d19e9f5a",
+            "view_id": "8e3c2eee-936c-4d18-b0ba-b6c52fb9542d",
+            "phase": "task-delayed",
+            "source_scene": "scene-A"
+          },
+          {
+            "kind": "action",
+            "event_id": "5f71da89-808f-4540-acf9-0af65f600acd",
+            "session_id": "4e0f4563-1dab-4870-97a6-0c97d19e9f5a",
+            "view_id": "8e3c2eee-936c-4d18-b0ba-b6c52fb9542d",
+            "phase": "same-key-home-a-before-manual",
+            "source_scene": "scene-A"
+          },
+          {
+            "kind": "resource",
+            "event_id": "354b60b3-4c67-4404-bba3-295898930e50",
+            "session_id": "4e0f4563-1dab-4870-97a6-0c97d19e9f5a",
+            "view_id": "8e3c2eee-936c-4d18-b0ba-b6c52fb9542d",
+            "phase": "task-delayed",
+            "source_scene": "scene-A"
+          },
+          {
+            "kind": "resource",
+            "event_id": "09824c76-100f-4bae-9a84-26dbb078a8bd",
+            "session_id": "4e0f4563-1dab-4870-97a6-0c97d19e9f5a",
+            "view_id": "8e3c2eee-936c-4d18-b0ba-b6c52fb9542d",
+            "phase": "same-key-home-a-before-manual",
+            "source_scene": "scene-A"
+          },
+          {
+            "kind": "action",
+            "event_id": "f142831e-a37e-4dad-944a-92124f7be56e",
+            "session_id": "4e0f4563-1dab-4870-97a6-0c97d19e9f5a",
+            "view_id": "8e3c2eee-936c-4d18-b0ba-b6c52fb9542d",
+            "phase": "on-appear",
+            "source_scene": "scene-B"
+          },
+          {
+            "kind": "action",
+            "event_id": "cc681f13-39d3-47bc-bbf1-cce3eaad44f2",
+            "session_id": "4e0f4563-1dab-4870-97a6-0c97d19e9f5a",
+            "view_id": "8e3c2eee-936c-4d18-b0ba-b6c52fb9542d",
+            "phase": "task-immediate",
+            "source_scene": "scene-B"
+          },
+          {
+            "kind": "resource",
+            "event_id": "d7e03d1a-5238-4ec1-b75a-26933f72cb46",
+            "session_id": "4e0f4563-1dab-4870-97a6-0c97d19e9f5a",
+            "view_id": "8e3c2eee-936c-4d18-b0ba-b6c52fb9542d",
+            "phase": "on-appear",
+            "source_scene": "scene-B"
+          },
+          {
+            "kind": "resource",
+            "event_id": "53d06f60-6db6-4be1-ac43-37c4ba0760b8",
+            "session_id": "4e0f4563-1dab-4870-97a6-0c97d19e9f5a",
+            "view_id": "8e3c2eee-936c-4d18-b0ba-b6c52fb9542d",
+            "phase": "task-immediate",
+            "source_scene": "scene-B"
+          },
+          {
+            "kind": "action",
+            "event_id": "06b212fe-4aa2-4e7d-ac7b-b610f3e719d8",
+            "session_id": "4e0f4563-1dab-4870-97a6-0c97d19e9f5a",
+            "view_id": "62546120-995b-45c6-a88c-8a3a0cfa03e2",
+            "phase": "task-delayed",
+            "source_scene": "scene-B"
+          },
+          {
+            "kind": "action",
+            "event_id": "c1200a14-c1e2-4ea1-a57c-3d5b14bb3502",
+            "session_id": "4e0f4563-1dab-4870-97a6-0c97d19e9f5a",
+            "view_id": "62546120-995b-45c6-a88c-8a3a0cfa03e2",
+            "phase": "same-key-home-b-before-manual",
+            "source_scene": "scene-B"
+          },
+          {
+            "kind": "resource",
+            "event_id": "8efd59b6-abf5-40bb-8b6b-4651c09a590d",
+            "session_id": "4e0f4563-1dab-4870-97a6-0c97d19e9f5a",
+            "view_id": "62546120-995b-45c6-a88c-8a3a0cfa03e2",
+            "phase": "task-delayed",
+            "source_scene": "scene-B"
+          },
+          {
+            "kind": "resource",
+            "event_id": "d4edc976-c000-4e01-86d6-a529e02c874c",
+            "session_id": "4e0f4563-1dab-4870-97a6-0c97d19e9f5a",
+            "view_id": "62546120-995b-45c6-a88c-8a3a0cfa03e2",
+            "phase": "same-key-home-b-before-manual",
+            "source_scene": "scene-B"
+          },
+          {
+            "kind": "action",
+            "event_id": "50077346-2ccb-4e05-90ba-59e64566d16f",
+            "session_id": "4e0f4563-1dab-4870-97a6-0c97d19e9f5a",
+            "view_id": "5ddae72a-12fe-4b1b-a745-8986286a60ba",
+            "phase": "same-key-compose-a-active",
+            "source_scene": "scene-A"
+          },
+          {
+            "kind": "action",
+            "event_id": "beb65261-f826-4d2c-98a8-d555512175a0",
+            "session_id": "4e0f4563-1dab-4870-97a6-0c97d19e9f5a",
+            "view_id": "7b24191d-a2ef-4bc2-8ef3-4ac15fb25863",
+            "phase": "same-key-compose-b-active",
+            "source_scene": "scene-B"
+          },
+          {
+            "kind": "action",
+            "event_id": "29fd9770-7a80-4f32-9532-cba08de22520",
+            "session_id": "4e0f4563-1dab-4870-97a6-0c97d19e9f5a",
+            "view_id": "f6a313a4-29fe-4591-a281-e87703779a0e",
+            "phase": "keyed-manual-stopped-immediate",
+            "source_scene": "scene-B"
+          },
+          {
+            "kind": "action",
+            "event_id": "c4d4a541-8e53-4b58-894c-cb6fb618a9cd",
+            "session_id": "4e0f4563-1dab-4870-97a6-0c97d19e9f5a",
+            "view_id": "f6a313a4-29fe-4591-a281-e87703779a0e",
+            "phase": "on-appear",
+            "source_scene": "scene-B"
+          },
+          {
+            "kind": "action",
+            "event_id": "a238755b-27ed-4912-85ab-7f3d2f22da7b",
+            "session_id": "4e0f4563-1dab-4870-97a6-0c97d19e9f5a",
+            "view_id": "f6a313a4-29fe-4591-a281-e87703779a0e",
+            "phase": "task-immediate",
+            "source_scene": "scene-B"
+          },
+          {
+            "kind": "resource",
+            "event_id": "0d101dbb-e569-4145-a7d8-492668627285",
+            "session_id": "4e0f4563-1dab-4870-97a6-0c97d19e9f5a",
+            "view_id": "5ddae72a-12fe-4b1b-a745-8986286a60ba",
+            "phase": "same-key-compose-a-active",
+            "source_scene": "scene-A"
+          },
+          {
+            "kind": "action",
+            "event_id": "20f141c7-b65e-4d44-978e-0259476ae60b",
+            "session_id": "4e0f4563-1dab-4870-97a6-0c97d19e9f5a",
+            "view_id": "f6a313a4-29fe-4591-a281-e87703779a0e",
+            "phase": "same-key-home-b-returned",
+            "source_scene": "scene-B"
+          },
+          {
+            "kind": "action",
+            "event_id": "73aa9c82-4ac2-4272-873a-2eab0d97532b",
+            "session_id": "4e0f4563-1dab-4870-97a6-0c97d19e9f5a",
+            "view_id": "5ddae72a-12fe-4b1b-a745-8986286a60ba",
+            "phase": "same-key-compose-a-after-b-stop",
+            "source_scene": "scene-A"
+          },
+          {
+            "kind": "action",
+            "event_id": "9440c978-d2b9-447f-bc88-44c7880ab54d",
+            "session_id": "4e0f4563-1dab-4870-97a6-0c97d19e9f5a",
+            "view_id": "a5bf4660-6a8a-4608-80a0-f273282df213",
+            "phase": "keyed-manual-stopped-immediate",
+            "source_scene": "scene-A"
+          },
+          {
+            "kind": "action",
+            "event_id": "8d7b1b41-40c0-4e6c-ad83-a356bab2e048",
+            "session_id": "4e0f4563-1dab-4870-97a6-0c97d19e9f5a",
+            "view_id": "a5bf4660-6a8a-4608-80a0-f273282df213",
+            "phase": "on-appear",
+            "source_scene": "scene-A"
+          },
+          {
+            "kind": "action",
+            "event_id": "067ce49d-ff81-4889-b1f2-ba9f831beeac",
+            "session_id": "4e0f4563-1dab-4870-97a6-0c97d19e9f5a",
+            "view_id": "a5bf4660-6a8a-4608-80a0-f273282df213",
+            "phase": "task-immediate",
+            "source_scene": "scene-A"
+          },
+          {
+            "kind": "resource",
+            "event_id": "2a2d1d9c-edf8-4714-8a9c-f0a7ca8ccb8f",
+            "session_id": "4e0f4563-1dab-4870-97a6-0c97d19e9f5a",
+            "view_id": "7b24191d-a2ef-4bc2-8ef3-4ac15fb25863",
+            "phase": "same-key-compose-b-active",
+            "source_scene": "scene-B"
+          },
+          {
+            "kind": "resource",
+            "event_id": "a37ace35-5e7b-495e-a7be-f139094a5b31",
+            "session_id": "4e0f4563-1dab-4870-97a6-0c97d19e9f5a",
+            "view_id": "f6a313a4-29fe-4591-a281-e87703779a0e",
+            "phase": "keyed-manual-stopped-immediate",
+            "source_scene": "scene-B"
+          },
+          {
+            "kind": "action",
+            "event_id": "e7b96f1f-a173-460c-8bef-8ad396636472",
+            "session_id": "4e0f4563-1dab-4870-97a6-0c97d19e9f5a",
+            "view_id": "a5bf4660-6a8a-4608-80a0-f273282df213",
+            "phase": "same-key-home-a-returned",
+            "source_scene": "scene-A"
+          },
+          {
+            "kind": "resource",
+            "event_id": "b4b6a825-5951-4693-806a-01a3a0ef8e01",
+            "session_id": "4e0f4563-1dab-4870-97a6-0c97d19e9f5a",
+            "view_id": "f6a313a4-29fe-4591-a281-e87703779a0e",
+            "phase": "on-appear",
+            "source_scene": "scene-B"
+          },
+          {
+            "kind": "resource",
+            "event_id": "e4869b80-8164-4127-887e-d2878e70b274",
+            "session_id": "4e0f4563-1dab-4870-97a6-0c97d19e9f5a",
+            "view_id": "f6a313a4-29fe-4591-a281-e87703779a0e",
+            "phase": "task-immediate",
+            "source_scene": "scene-B"
+          },
+          {
+            "kind": "resource",
+            "event_id": "8d2923af-1e80-4592-8222-e3b80c27bcdc",
+            "session_id": "4e0f4563-1dab-4870-97a6-0c97d19e9f5a",
+            "view_id": "f6a313a4-29fe-4591-a281-e87703779a0e",
+            "phase": "same-key-home-b-returned",
+            "source_scene": "scene-B"
+          },
+          {
+            "kind": "resource",
+            "event_id": "b35dd82d-5589-40d9-ad5d-526312d4ef66",
+            "session_id": "4e0f4563-1dab-4870-97a6-0c97d19e9f5a",
+            "view_id": "5ddae72a-12fe-4b1b-a745-8986286a60ba",
+            "phase": "same-key-compose-a-after-b-stop",
+            "source_scene": "scene-A"
+          },
+          {
+            "kind": "resource",
+            "event_id": "4787596b-8b13-44fd-95f7-3ff6d341353c",
+            "session_id": "4e0f4563-1dab-4870-97a6-0c97d19e9f5a",
+            "view_id": "a5bf4660-6a8a-4608-80a0-f273282df213",
+            "phase": "keyed-manual-stopped-immediate",
+            "source_scene": "scene-A"
+          },
+          {
+            "kind": "resource",
+            "event_id": "ac053eec-9479-48b6-a29c-e636616a66ed",
+            "session_id": "4e0f4563-1dab-4870-97a6-0c97d19e9f5a",
+            "view_id": "a5bf4660-6a8a-4608-80a0-f273282df213",
+            "phase": "on-appear",
+            "source_scene": "scene-A"
+          },
+          {
+            "kind": "resource",
+            "event_id": "54fb44b2-50e5-4aec-b8e5-9e0623c1fd8e",
+            "session_id": "4e0f4563-1dab-4870-97a6-0c97d19e9f5a",
+            "view_id": "a5bf4660-6a8a-4608-80a0-f273282df213",
+            "phase": "task-immediate",
+            "source_scene": "scene-A"
+          },
+          {
+            "kind": "resource",
+            "event_id": "3effe005-67c0-4837-b50d-84e1eb0546ad",
+            "session_id": "4e0f4563-1dab-4870-97a6-0c97d19e9f5a",
+            "view_id": "a5bf4660-6a8a-4608-80a0-f273282df213",
+            "phase": "same-key-home-a-returned",
+            "source_scene": "scene-A"
+          },
+          {
+            "kind": "action",
+            "event_id": "62cc83de-d137-4936-b49d-6b1b923d21cd",
+            "session_id": "4e0f4563-1dab-4870-97a6-0c97d19e9f5a",
+            "view_id": "a5bf4660-6a8a-4608-80a0-f273282df213",
+            "phase": "task-delayed",
+            "source_scene": "scene-B"
+          },
+          {
+            "kind": "action",
+            "event_id": "045d187b-113e-47a5-bbd3-d552721c1101",
+            "session_id": "4e0f4563-1dab-4870-97a6-0c97d19e9f5a",
+            "view_id": "a5bf4660-6a8a-4608-80a0-f273282df213",
+            "phase": "task-delayed",
+            "source_scene": "scene-A"
+          },
+          {
+            "kind": "resource",
+            "event_id": "cf1564d7-bf14-46af-907c-2953d74d0d85",
+            "session_id": "4e0f4563-1dab-4870-97a6-0c97d19e9f5a",
+            "view_id": "a5bf4660-6a8a-4608-80a0-f273282df213",
+            "phase": "task-delayed",
+            "source_scene": "scene-B"
+          },
+          {
+            "kind": "resource",
+            "event_id": "212236e9-1ba2-4be5-a3a7-6694e071a0a1",
+            "session_id": "4e0f4563-1dab-4870-97a6-0c97d19e9f5a",
+            "view_id": "a5bf4660-6a8a-4608-80a0-f273282df213",
+            "phase": "task-delayed",
+            "source_scene": "scene-A"
+          },
+          {
+            "kind": "action",
+            "event_id": "f56c56dc-c7e1-486c-b933-27d4e28dbeee",
+            "session_id": "4e0f4563-1dab-4870-97a6-0c97d19e9f5a",
+            "view_id": "a5bf4660-6a8a-4608-80a0-f273282df213",
+            "phase": "keyed-manual-stopped-settled",
+            "source_scene": "scene-B"
+          },
+          {
+            "kind": "action",
+            "event_id": "366599a9-40b3-4690-af9a-84f0c4179c9e",
+            "session_id": "4e0f4563-1dab-4870-97a6-0c97d19e9f5a",
+            "view_id": "a5bf4660-6a8a-4608-80a0-f273282df213",
+            "phase": "keyed-manual-stopped-settled",
+            "source_scene": "scene-A"
+          },
+          {
+            "kind": "resource",
+            "event_id": "8114d98d-486a-4a29-9387-8c216f75613a",
+            "session_id": "4e0f4563-1dab-4870-97a6-0c97d19e9f5a",
+            "view_id": "a5bf4660-6a8a-4608-80a0-f273282df213",
+            "phase": "keyed-manual-stopped-settled",
+            "source_scene": "scene-B"
+          },
+          {
+            "kind": "resource",
+            "event_id": "5c1f68ff-e7f3-461f-bc49-2cf0c4962c80",
+            "session_id": "4e0f4563-1dab-4870-97a6-0c97d19e9f5a",
+            "view_id": "a5bf4660-6a8a-4608-80a0-f273282df213",
+            "phase": "keyed-manual-stopped-settled",
+            "source_scene": "scene-A"
+          }
+        ],
+        "marker_owners": {
+          "same-key-home-a-before-manual": "8e3c2eee-936c-4d18-b0ba-b6c52fb9542d",
+          "same-key-home-b-before-manual": "62546120-995b-45c6-a88c-8a3a0cfa03e2",
+          "same-key-compose-a-active": "5ddae72a-12fe-4b1b-a745-8986286a60ba",
+          "same-key-compose-b-active": "7b24191d-a2ef-4bc2-8ef3-4ac15fb25863",
+          "same-key-home-b-returned": "f6a313a4-29fe-4591-a281-e87703779a0e",
+          "same-key-compose-a-after-b-stop": "5ddae72a-12fe-4b1b-a745-8986286a60ba",
+          "same-key-home-a-returned": "a5bf4660-6a8a-4608-80a0-f273282df213"
+        },
+        "native_scenes": {
+          "scene-A": "AE90238B-2E51-4529-9F86-FF37C1987A0E",
+          "scene-B": "6B480E87-A630-434D-B3EF-008306133CE1"
+        },
+        "admission": {
+          "evidenceSource": "probe",
+          "kind": "assertion",
+          "name": "physical-topology-admitted",
+          "physicalTopology": {
+            "captureID": "3170c33f-17fa-40f4-9a69-fc0f80495262",
+            "evidenceSHA256": "6a2a554499ced7382a573e8570c5b320935057198579061d2d2d1148c929a822",
+            "nonce": "FD86DB1A-D812-441C-B5B4-288CB068667F",
+            "scenes": [
+              {
+                "activationState": "foreground-active",
+                "alpha": 1,
+                "connected": true,
+                "generation": 0,
+                "geometry": {
+                  "height": 834,
+                  "width": 592,
+                  "x": 0,
+                  "y": 0
+                },
+                "hidden": false,
+                "logicalSceneID": "scene-A",
+                "nativeSceneID": "AE90238B-2E51-4529-9F86-FF37C1987A0E"
+              },
+              {
+                "activationState": "foreground-active",
+                "alpha": 1,
+                "connected": true,
+                "generation": 0,
+                "geometry": {
+                  "height": 834,
+                  "width": 592,
+                  "x": 0,
+                  "y": 0
+                },
+                "hidden": false,
+                "logicalSceneID": "scene-B",
+                "nativeSceneID": "6B480E87-A630-434D-B3EF-008306133CE1"
+              }
+            ]
+          },
+          "result": "PASS",
+          "runID": "exp196-h01--20260919t200631z-fc09656d2e80",
+          "scenarioID": "swiftui.coexistence.same-key-manual-two-scenes",
+          "schemaVersion": 5,
+          "sequence": 77,
+          "timestampMilliseconds": 1789848621580
+        },
+        "critical_end": {
+          "evidenceSource": "probe",
+          "kind": "assertion",
+          "name": "physical-topology-after-16",
+          "physicalTopology": {
+            "captureID": "3170c33f-17fa-40f4-9a69-fc0f80495262",
+            "evidenceSHA256": "6a2a554499ced7382a573e8570c5b320935057198579061d2d2d1148c929a822",
+            "nonce": "FD86DB1A-D812-441C-B5B4-288CB068667F",
+            "scenes": [
+              {
+                "activationState": "foreground-active",
+                "alpha": 1,
+                "connected": true,
+                "generation": 0,
+                "geometry": {
+                  "height": 834,
+                  "width": 592,
+                  "x": 0,
+                  "y": 0
+                },
+                "hidden": false,
+                "logicalSceneID": "scene-A",
+                "nativeSceneID": "AE90238B-2E51-4529-9F86-FF37C1987A0E"
+              },
+              {
+                "activationState": "foreground-active",
+                "alpha": 1,
+                "connected": true,
+                "generation": 0,
+                "geometry": {
+                  "height": 834,
+                  "width": 592,
+                  "x": 0,
+                  "y": 0
+                },
+                "hidden": false,
+                "logicalSceneID": "scene-B",
+                "nativeSceneID": "6B480E87-A630-434D-B3EF-008306133CE1"
+              }
+            ]
+          },
+          "result": "PASS",
+          "runID": "exp196-h01--20260919t200631z-fc09656d2e80",
+          "scenarioID": "swiftui.coexistence.same-key-manual-two-scenes",
+          "schemaVersion": 5,
+          "sequence": 166,
+          "timestampMilliseconds": 1789848621708
+        },
+        "physical_display_proof_still_required": true
+      },
+      "backend": {
+        "state": "PASS",
+        "view_count": 11,
+        "work_count": 46,
+        "marker_pairs": 7,
+        "error_crash_count": 0,
+        "all_type_count": 61
+      },
+      "display": {
+        "state": "PASS",
+        "capture_id": "3170c33f-17fa-40f4-9a69-fc0f80495262"
+      },
+      "display_proof": {
+        "run_id": "exp196-h01--20260919t200631z-fc09656d2e80",
+        "device_reality": "physical",
+        "capture_id": "3170c33f-17fa-40f4-9a69-fc0f80495262",
+        "nonce": "FD86DB1A-D812-441C-B5B4-288CB068667F",
+        "visible_native_scenes": {
+          "scene-A": "AE90238B-2E51-4529-9F86-FF37C1987A0E",
+          "scene-B": "6B480E87-A630-434D-B3EF-008306133CE1"
+        },
+        "visibility_review": "both-window-content-visible-through-critical-interval",
+        "process_id": 1598,
+        "screenshot": {
+          "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp196-physical-xctest-topology-bfxoyeno/candidate-admission.png",
+          "sha256": "6a2a554499ced7382a573e8570c5b320935057198579061d2d2d1148c929a822",
+          "captured_at_ms": 1789848590114
+        },
+        "video": {
+          "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp196-physical-xctest-topology-bfxoyeno/attachments/15861A51-3971-4B07-8250-6C652A6C54AE.mp4",
+          "sha256": "ee1efd143a862ff7d2ede63eb346270ba04a6b4aac9312aa4f19f18f9432c0b8",
+          "start_ms": 1789848394541,
+          "end_ms": 1789848723419
+        },
+        "receipt": {
+          "runID": "exp196-h01--20260919t200631z-fc09656d2e80",
+          "scenarioID": "swiftui.coexistence.same-key-manual-two-scenes",
+          "processID": 1598,
+          "nonce": "FD86DB1A-D812-441C-B5B4-288CB068667F",
+          "capturedAtMilliseconds": 1789848590114,
+          "captureID": "3170c33f-17fa-40f4-9a69-fc0f80495262",
+          "evidenceSHA256": "6a2a554499ced7382a573e8570c5b320935057198579061d2d2d1148c929a822",
+          "nativeSceneIDs": {
+            "scene-A": "AE90238B-2E51-4529-9F86-FF37C1987A0E",
+            "scene-B": "6B480E87-A630-434D-B3EF-008306133CE1"
+          },
+          "generations": {
+            "scene-A": 0,
+            "scene-B": 0
+          }
+        },
+        "challenge": {
+          "scenarioID": "swiftui.coexistence.same-key-manual-two-scenes",
+          "runID": "exp196-h01--20260919t200631z-fc09656d2e80",
+          "createdAtMilliseconds": 1789848396704,
+          "observedAtMilliseconds": 1789848589726,
+          "nonce": "FD86DB1A-D812-441C-B5B4-288CB068667F",
+          "processID": 1598,
+          "scenes": [
+            {
+              "hidden": false,
+              "connected": true,
+              "activationState": "foreground-active",
+              "geometry": {
+                "width": 592,
+                "x": 0,
+                "y": 0,
+                "height": 834
+              },
+              "nativeSceneID": "AE90238B-2E51-4529-9F86-FF37C1987A0E",
+              "generation": 0,
+              "logicalSceneID": "scene-A",
+              "alpha": 1
+            },
+            {
+              "hidden": false,
+              "connected": true,
+              "activationState": "foreground-active",
+              "geometry": {
+                "width": 592,
+                "x": 0,
+                "y": 0,
+                "height": 834
+              },
+              "nativeSceneID": "6B480E87-A630-434D-B3EF-008306133CE1",
+              "generation": 0,
+              "logicalSceneID": "scene-B",
+              "alpha": 1
+            }
+          ]
+        },
+        "review": {
+          "video": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp196-physical-xctest-topology-bfxoyeno/attachments/15861A51-3971-4B07-8250-6C652A6C54AE.mp4",
+          "review_window_seconds": [
+            226,
+            229
+          ],
+          "selected_frame_count": 90,
+          "timestamps": [
+            226.008333,
+            226.041667,
+            226.075,
+            226.108333,
+            226.141667,
+            226.175,
+            226.208333,
+            226.241667,
+            226.275,
+            226.308333,
+            226.341667,
+            226.375,
+            226.408333,
+            226.441667,
+            226.475,
+            226.508333,
+            226.541667,
+            226.575,
+            226.608333,
+            226.641667,
+            226.675,
+            226.708333,
+            226.741667,
+            226.775,
+            226.808333,
+            226.841667,
+            226.875,
+            226.908333,
+            226.941667,
+            226.975,
+            227.008333,
+            227.041667,
+            227.075,
+            227.108333,
+            227.141667,
+            227.175,
+            227.208333,
+            227.241667,
+            227.275,
+            227.308333,
+            227.341667,
+            227.375,
+            227.408333,
+            227.441667,
+            227.475,
+            227.508333,
+            227.541667,
+            227.575,
+            227.608333,
+            227.641667,
+            227.675,
+            227.708333,
+            227.743333,
+            227.776667,
+            227.81,
+            227.843333,
+            227.876667,
+            227.91,
+            227.943333,
+            227.976667,
+            228.01,
+            228.043333,
+            228.076667,
+            228.11,
+            228.143333,
+            228.176667,
+            228.21,
+            228.243333,
+            228.276667,
+            228.31,
+            228.343333,
+            228.376667,
+            228.41,
+            228.443333,
+            228.476667,
+            228.51,
+            228.543333,
+            228.576667,
+            228.61,
+            228.643333,
+            228.676667,
+            228.71,
+            228.743333,
+            228.776667,
+            228.81,
+            228.843333,
+            228.876667,
+            228.91,
+            228.943333,
+            228.976667
+          ],
+          "maximum_frame_gap": 0.03499999999999659,
+          "purpose": "All decoded frames across actual critical interval with more than one second clock margin on both sides; visual review remains required.",
+          "state": "PASS",
+          "visibility_review": "both-window-content-visible-through-critical-interval",
+          "review_method": "Visually inspected all90 decoded frames226-229s without applying the MP4 display matrix; full-resolution frame verifies run and both native scene identities. Both left B and right A remain visible throughout.",
+          "display_matrix_rotation_degrees": -45,
+          "decoder_option": "-noautorotate",
+          "raw_video_unchanged": true,
+          "attachment_timestamp_ms": 1789848394541,
+          "creation_time_ms": 1789848394000,
+          "clock_alignment_difference_ms": 541,
+          "native_critical_interval_ms": [
+            1789848621580,
+            1789848621708
+          ],
+          "timing_limit": "Review window covers both creation-time and attachment-time alignments; no sub-frame visibility claim.",
+          "contact_sheet": {
+            "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp196-physical-xctest-topology-bfxoyeno/critical-unrotated-all-frames.png",
+            "sha256": "b75a7807d62be1a32ffd76fb11a95ffc9d29fd8a7417104f678ce106e5f253b2"
+          },
+          "identity_frame": {
+            "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp196-physical-xctest-topology-bfxoyeno/critical-unrotated-full-frame.png",
+            "sha256": "c1bc7ccdb0368e9dad81ac85741958d3dc7f65b3ebc11a56d8e8200c0c48db12"
+          }
+        }
+      },
+      "test_result": {
+        "exit_code": 0,
+        "source_unchanged": true,
+        "protected_unchanged": true,
+        "finished_ms": 1789848725023
+      },
+      "cleanup": {
+        "state": "PASS",
+        "app_absent": true,
+        "runner_absent": true,
+        "process_absent": true,
+        "protected_unchanged": true,
+        "source_unchanged": true
+      },
+      "installed_identity": {
+        "state": "PASS",
+        "run_id": "exp196-h01--20260919t200631z-fc09656d2e80",
+        "source_revision": "c6ac2a3353606effca4e08c342696a80ce3c0b37",
+        "process_id": 1598,
+        "boundary": "before-sdk-initialization",
+        "bundleIdentifier": "com.datadoghq.rum-native-multi-scene-probe",
+        "executable": "RUMNativeMultiSceneProbe",
+        "binaries": {
+          "RUMNativeMultiSceneProbe": "89ec58a89d3553123fd4adc128efcd76d654ffd5a1ad93980e1f5423813d05fa",
+          "RUMNativeMultiSceneProbe.debug.dylib": "4cadd0859a4433474f69b21b5b69a31d2421df29c43feec20c2c06a3d2af0e26",
+          "__preview.dylib": "9de15f8d1281bc2ea826a2ed1972cd36d3872ab982f616ff8d4e573f306f7a5a"
+        }
+      },
+      "scope": "Original22 expectations,17 steps,23 pre/post topology observations and complete61-event backend inventory. Actual B-left/A-right592x834 foreground-active windows remain visible through native interval1789848621580-1789848621708ms; all90 decoded frames226-229s reviewed from328.878333s video. Same-key manual IDs differ; B stop preserves A; each Home return is fresh. Physical iPad only; no Duo-hardware or interactive-gesture claim.",
+      "artifacts": {
+        "frozen.json": {
+          "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp196-physical-xctest-topology-bfxoyeno/frozen.json",
+          "sha256": "b17d1767d1d3fe12a152df039f673025ab401c6cadbc90c5817c830e6982793b"
+        },
+        "native.jsonl": {
+          "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp196-physical-xctest-topology-bfxoyeno/native.jsonl",
+          "sha256": "d754179e7d1489ae7bf23ee6128aac6a6436d5b582498968f8f681f0bf4295cd"
+        },
+        "local-result.json": {
+          "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp196-physical-xctest-topology-bfxoyeno/local-result.json",
+          "sha256": "a69b6c11e77c0dbaf45b00c7ab536762e359ce43f2ada3495128bd92aecd4f95"
+        },
+        "backend-raw.json": {
+          "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp196-physical-xctest-topology-bfxoyeno/backend-raw.json",
+          "sha256": "d193ecaf4308ded97919912f342eb5b0e97c01c640f23bf80f11f874b51a97c4"
+        },
+        "backend-result.json": {
+          "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp196-physical-xctest-topology-bfxoyeno/backend-result.json",
+          "sha256": "027405ba57c9f1a76a8ef7dbd969e484beb8b7cd67e61b27a0eb870a9193f342"
+        },
+        "challenge.json": {
+          "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp196-physical-xctest-topology-bfxoyeno/challenge.json",
+          "sha256": "135fcddfcd1a4cc33ab41acad24905f15ce10ce1531c1399349c89b0fc1d165a"
+        },
+        "candidate-admission.json": {
+          "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp196-physical-xctest-topology-bfxoyeno/candidate-admission.json",
+          "sha256": "de25886d3819243ba54fb7a99e2b8ef2c23257891220b94c7c565a7f488eff05"
+        },
+        "candidate-admission.png": {
+          "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp196-physical-xctest-topology-bfxoyeno/candidate-admission.png",
+          "sha256": "6a2a554499ced7382a573e8570c5b320935057198579061d2d2d1148c929a822"
+        },
+        "admission-receipt.json": {
+          "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp196-physical-xctest-topology-bfxoyeno/admission-receipt.json",
+          "sha256": "7a8fd503d435949e6f65c351fd182454e31c309fc4572dbee798c7360d783e3a"
+        },
+        "display-proof.json": {
+          "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp196-physical-xctest-topology-bfxoyeno/display-proof.json",
+          "sha256": "708b51e04ea7ae6b358beba7e2dd5b34ede0a35cbddd224ec2c6e66f16d1e9ed"
+        },
+        "display-result.json": {
+          "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp196-physical-xctest-topology-bfxoyeno/display-result.json",
+          "sha256": "4ba37140070ce5820ad2e9b206c050f9fef82c4dfb0a0fd9622d04631d2c73a3"
+        },
+        "critical-frame-review.json": {
+          "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp196-physical-xctest-topology-bfxoyeno/critical-frame-review.json",
+          "sha256": "5975d7248244894e2631df6beb16323f3dd88c69a968978ec6fb7ef44083f600"
+        },
+        "critical-unrotated-all-frames.png": {
+          "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp196-physical-xctest-topology-bfxoyeno/critical-unrotated-all-frames.png",
+          "sha256": "b75a7807d62be1a32ffd76fb11a95ffc9d29fd8a7417104f678ce106e5f253b2"
+        },
+        "critical-unrotated-full-frame.png": {
+          "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp196-physical-xctest-topology-bfxoyeno/critical-unrotated-full-frame.png",
+          "sha256": "c1bc7ccdb0368e9dad81ac85741958d3dc7f65b3ebc11a56d8e8200c0c48db12"
+        },
+        "installed-identity.json": {
+          "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp196-physical-xctest-topology-bfxoyeno/installed-identity.json",
+          "sha256": "3d0555756ce129f9232f6f203764fd963c4bf9cab56cf8b10a47925305670b58"
+        },
+        "test-result.json": {
+          "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp196-physical-xctest-topology-bfxoyeno/test-result.json",
+          "sha256": "6b09461461e335d8490087a6a0f1797037af96f70460978dfbf1a6ee89cc594f"
+        },
+        "cleanup.json": {
+          "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp196-physical-xctest-topology-bfxoyeno/cleanup.json",
+          "sha256": "1c9d576f40155d5029e22962833cfa2775cd1f0db51615d318a990d784d0ab8f"
+        },
+        "attachments/manifest.json": {
+          "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp196-physical-xctest-topology-bfxoyeno/attachments/manifest.json",
+          "sha256": "33eaaae42a23c548b7a2735db87d8b8da9aa8fb1eb5e32e6e9b1052fa72efcdf"
+        },
+        "attachments/15861A51-3971-4B07-8250-6C652A6C54AE.mp4": {
+          "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp196-physical-xctest-topology-bfxoyeno/attachments/15861A51-3971-4B07-8250-6C652A6C54AE.mp4",
+          "sha256": "ee1efd143a862ff7d2ede63eb346270ba04a6b4aac9312aa4f19f18f9432c0b8"
         }
       }
     }
@@ -1846,7 +2817,8 @@
     "F05",
     "H05",
     "H07",
-    "H14"
+    "H14",
+    "H01"
   ],
   "f05_physical_oracle_definition": {
     "defined_at": 1789835528.922011,
@@ -1877,7 +2849,7 @@
     ],
     "implementation": "Separate validate_physical_local entrypoint implemented; original timing still rejects the physical record. Focused six tests pass. Fresh physical run required."
   },
-  "next": "Build and execute the predefined physical XCTest input collector; verify actual native callbacks and whether continuous video is retained. Continue independent physical gates; restore Full Screen Apps after suite.",
+  "next": "Audit and execute the existing H08 final semantic-host-removal contract, then continue independent H02/H03/H06/H09/H10/H12/H13/H15/H16 cases. H04 disconnect and H11 native gesture remain unqualified; stop equivalent retries. Restore Full Screen Apps and stop the owned keep-awake assertion after the physical suite.",
   "h01_collector_definition": {
     "defined_at": 1789836265.35157,
     "before_implementation": true,

@@ -470,8 +470,8 @@
       "decisive_test": "EXP-129: distinct Compose IDs, B stop preserves A, fresh Home per scene",
       "environment": "Physical iPad/iPhone Duo; human gesture for H11\u2013H13; resize-capable for H14",
       "completion_mode": null,
-      "status": "OPEN",
-      "evidence": "EXP-196 approved temporary Windowed Apps establishes two visibly tiled foreground-active592x834 native scenes. No critical mutation admitted: physical screen recording unsupported; recorder app control times out. Preserve both attempts; independent critical-interval display proof remains. Restore Full Screen Apps after suite."
+      "status": "CLOSED",
+      "evidence": "EXP-196 signedc6ac2a335 physical capture: original22 expectations/17 steps/23 topology guards, distinct same-key Compose IDs, B stop preserves A and fresh Home returns. Both actual592x834 foreground-active windows visible through critical interval in328.878s XCTest video; all90 boundary frames reviewed. Complete61 backend events match11 views/46 work IDs; zero errors/crashes, installed3 binaries and cleanup. Earlier unadmitted attempts retained. Results/EXP-196-physical-ipad-suite.json."
     },
     {
       "id": "H02",
@@ -606,7 +606,7 @@
       "environment": "Physical iPad/iPhone Duo; human gesture for H11\u2013H13; resize-capable for H14",
       "completion_mode": null,
       "status": "OPEN",
-      "evidence": "EXP-192 qualifies actual compact outer S2 readiness after fixture repair, but two fresh bounded UIKit drags produce no native interactive callback. Input collection passes1/1 each; no gesture semantics accepted. Equivalent retries stop. SwiftUI/presentation remain unexecuted and physical human obligations unchanged."
+      "evidence": "EXP-196 actual CUA drag and two bounded XCTest touch attempts produce no native interactive callback. The corrected visible-edge finish run passes collector1/1 and exact13-event partial inventory, installed identity and cleanup, but no gesture semantics. Cancel remains unexecuted pending actual recognition; stop equivalent retries. Physical video capture is qualified separately. Results/EXP-196-physical-ipad-suite.json."
     },
     {
       "id": "H12",
