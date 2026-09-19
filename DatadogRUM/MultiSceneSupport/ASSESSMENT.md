@@ -147,7 +147,8 @@ MCP millisecond projection; exact native timing and raw backend duration remain.
 No simultaneous-visibility conclusion follows from these serial cases.
 
 H01 proves two visible native scenes but remains unadmitted without recording.
-Both H04 close paths lack an observed disconnect; inspect the view-local collector
-before assigning an SDK defect. H14 now closes with measured regular–compact–regular physical resizing, unchanged
+H04's independent process-lifetime witness also receives no disconnect; the latest
+29-event partial inventory matches. Stop equivalent close retries; the view-local
+observer alone does not explain the missing notification and no SDK defect is established. H14 now closes with measured regular–compact–regular physical resizing, unchanged
 accepted selection/path/owner and a complete22-event backend match. The [owning result](Results/EXP-196-physical-ipad-suite.json)
 preserves every rejection and scope limit. The SDK candidate is unchanged.

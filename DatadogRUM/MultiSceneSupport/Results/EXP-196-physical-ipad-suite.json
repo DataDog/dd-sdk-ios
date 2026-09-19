@@ -361,19 +361,13 @@
       "unlockedSinceBoot": true
     },
     "keep_awake": {
-      "pid": 50569,
-      "started_at": 1789834296.715756,
-      "expires_at": 1789848696.715756,
-      "command": [
-        "/usr/bin/caffeinate",
-        "-d",
-        "-i",
-        "-u",
-        "-t",
-        "14400"
-      ],
-      "authorization": "User explicitly requests unattended physical iPad suite and Mac caffeinate",
-      "stop_on_suite_completion": true
+      "pid": 63285,
+      "command": "/usr/bin/caffeinate -d -i -u -t 14400",
+      "started_epoch": 1789847287.0066419,
+      "expires_epoch": 1789861687.0066419,
+      "lstart": "Sat Sep 19 21:48:07 2026",
+      "replaced_owned_pid": 50569,
+      "reason": "Continue user-authorized unattended physical suite without persistent lock preference changes"
     },
     "source_identity": {
       "sha256": "bb0c75f9e5bfd812a7a0a4ad498f811a5b57eaacb6ecef8eb7f3307b7528f61b",
@@ -1617,6 +1611,127 @@
           "sha256": "9a2fa78ab0e836b5080dba975bf48038d6c08c1260e3cacd3a1d34433244e8c9"
         }
       }
+    },
+    {
+      "gate": "H04",
+      "status": "FAIL_NO_NATIVE_DISCONNECT",
+      "run_id": "exp196-h04-20260919t192927z-d884ca4e2bed",
+      "capture_source_revision": "af296f6e705b5519e62f8d72bbde4ed26600ba11",
+      "artifact_root": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp196-physical-h04-1yv_10h7",
+      "reason": "Process-lifetime witness installed before first scene; exact B destruction request100 follows close step99. Neither process witness nor view-local observer receives disconnect. Original step14 times out before final A marker. Stop equivalent retries; no SDK-defect inference.",
+      "partial_backend": {
+        "state": "PASS",
+        "view_count": 6,
+        "work_count": 20,
+        "error_crash_count": 0,
+        "all_type_count": 29,
+        "gate_acceptance": false,
+        "scope": "Partial inventory only; original close-boundary assertion failed."
+      },
+      "cleanup": {
+        "state": "PASS",
+        "app_absent": true,
+        "process_absent": true,
+        "protected_unchanged": true,
+        "native_source_unchanged": true,
+        "time_ms": 1789846298386
+      },
+      "artifacts": {
+        "frozen.json": {
+          "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp196-physical-h04-1yv_10h7/frozen.json",
+          "sha256": "fdc92516d238f160268d00bab6cfb1f52fab67e6da75903ce8c11cdaed75de2a"
+        },
+        "native.jsonl": {
+          "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp196-physical-h04-1yv_10h7/native.jsonl",
+          "sha256": "de499eb6b10b67708e333b54bcc8b0a6eea166721e831ab2281df9ec275f75ea"
+        },
+        "capture-result.json": {
+          "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp196-physical-h04-1yv_10h7/capture-result.json",
+          "sha256": "8d0dfa4d5c93cdd057ef581f07bf5d004c6cadd94087e8cb1b52cc5c3660b199"
+        },
+        "partial-native-inventory.json": {
+          "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp196-physical-h04-1yv_10h7/partial-native-inventory.json",
+          "sha256": "8e5fe2b90be49a9b363cb169546f09ea8ad3c47967130ed8832723557315cf4c"
+        },
+        "partial-backend-result.json": {
+          "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp196-physical-h04-1yv_10h7/partial-backend-result.json",
+          "sha256": "4f3a093e33029b0087c05d4872b1392c6afcb1e1fd4074f1af7f4c479ef1d85e"
+        },
+        "backend-raw.json": {
+          "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp196-physical-h04-1yv_10h7/backend-raw.json",
+          "sha256": "15641c0c59e05a17fdabd873430904db4765514eaba6c5c1aa3c4e93c0c98a41"
+        },
+        "installed-identity.json": {
+          "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp196-physical-h04-1yv_10h7/installed-identity.json",
+          "sha256": "f8023bb7ce15c6bf9241051aa8d1bd40ed918fcec9b36f9eecf42246a7d58b54"
+        },
+        "cleanup.json": {
+          "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp196-physical-h04-1yv_10h7/cleanup.json",
+          "sha256": "40d5a6d67eb5f6143eff37749cff567e6f10e8c1a1c6be881ab5c5aae5ffb00e"
+        }
+      }
+    },
+    {
+      "gate": "H11",
+      "status": "INCONCLUSIVE_INPUT",
+      "run_id": "exp196-h11-finish-20260919t194155z-36eb94124c1b",
+      "artifact_root": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp196-physical-h11-finish-smgqybv_",
+      "capture_source_revision": "af296f6e705b5519e62f8d72bbde4ed26600ba11",
+      "reason": "Initial collector wrongly awaited destination-materialized rather than emitted destination-appearance-observed; original timeout retained. Screenshot/native secondary2 confirmed before diagnostic CUA drag. Actual detail-column drag leaves native sequence25 unchanged, no interactive callbacks. Xcode DeviceInteractionStartSession rejects this physical UDID and offers only simulators; no session created. No acceptance.",
+      "cleanup": {
+        "state": "PASS",
+        "app_absent": true,
+        "process_absent": true,
+        "protected_unchanged": true,
+        "native_source_unchanged": true
+      },
+      "artifacts": {
+        "frozen.json": {
+          "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp196-physical-h11-finish-smgqybv_/frozen.json",
+          "sha256": "bd10b0474b659b090be8dfc1b818da61355fdb38bacbebb36f30def56776a772"
+        },
+        "native.jsonl": {
+          "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp196-physical-h11-finish-smgqybv_/native.jsonl",
+          "sha256": "1a4885eaeca635ada96049646514c5bcb91d8af43b858a071830141932480703"
+        },
+        "input-1-request.json": {
+          "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp196-physical-h11-finish-smgqybv_/input-1-request.json",
+          "sha256": "6d8b9c819ed68c9fa339aaf43ca0b26f287a6482c6e8e0583c0142206c4c56f8"
+        },
+        "input-1.png": {
+          "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp196-physical-h11-finish-smgqybv_/input-1.png",
+          "sha256": "e5284fb01fee4f763e67b9b1c2cf9bd28f9ba54ba9bca3ce11766a069872a482"
+        },
+        "backend-raw.json": {
+          "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp196-physical-h11-finish-smgqybv_/backend-raw.json",
+          "sha256": "af6c271ac97a115fa5594d4c6cb743c5a93a34ddfc5e071806dc46e74a38740f"
+        },
+        "installed-identity.json": {
+          "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp196-physical-h11-finish-smgqybv_/installed-identity.json",
+          "sha256": "9f3f84c275b3f90c0074ded3bd39a640555009f367dda3d05c319ffaf3777901"
+        },
+        "cleanup.json": {
+          "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp196-physical-h11-finish-smgqybv_/cleanup.json",
+          "sha256": "9104f5d023ebd83edce5ab17de6749abf3fc0cc71a166710d12b4a5ea11c5e95"
+        },
+        "partial-native-inventory.json": {
+          "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp196-physical-h11-finish-smgqybv_/partial-native-inventory.json",
+          "sha256": "1504c7d569eaab9ab8763fd1380c3662177d0bf6b87abcd15ffc5f9adde776e8"
+        },
+        "partial-backend-result.json": {
+          "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp196-physical-h11-finish-smgqybv_/partial-backend-result.json",
+          "sha256": "50305a46cd65d23433b830e6c5e2efb3e5c18a7e469618f888ff7efeb3caf5be"
+        }
+      },
+      "partial_backend": {
+        "state": "PASS",
+        "view_count": 4,
+        "work_count": 6,
+        "error_crash_count": 0,
+        "all_type_count": 12,
+        "gate_acceptance": false,
+        "scope": "Partial inventory; no interactive input boundary qualified."
+      }
     }
   ],
   "gates_closed": [
@@ -1654,7 +1769,7 @@
     ],
     "implementation": "Separate validate_physical_local entrypoint implemented; original timing still rejects the physical record. Focused six tests pass. Fresh physical run required."
   },
-  "next": "Run the bounded H04 process-lifetime notification witness, then other independent physical matrix cases and topology capture follow-ups. Restore Full Screen Apps at suite completion.",
+  "next": "Build and execute the predefined physical XCTest input collector; verify actual native callbacks and whether continuous video is retained. Continue independent physical gates; restore Full Screen Apps after suite.",
   "h01_collector_definition": {
     "defined_at": 1789836265.35157,
     "before_implementation": true,
@@ -2014,6 +2129,35 @@
       "elapsedTime": 7.725,
       "errors": [],
       "fullLogPath": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/ActionArtifacts/default/BuildProject/BuildProject-Log-20260919-212624.txt"
-    }
+    },
+    "outcome": "Neither observer receives actual disconnect; diagnostic hypothesis not established. Exact29-event partial ownership passes; H04 remains open."
+  },
+  "h11_definition": {
+    "defined_at": 1789846846.1899729,
+    "before_execution": true,
+    "candidate_revision": "af296f6e705b5519e62f8d72bbde4ed26600ba11",
+    "cases": [
+      "uikit.split.native-pop-finish",
+      "uikit.split.native-pop-cancel"
+    ],
+    "input": "Fresh clean physical install per outcome. Observe actual secondary2 and freeze native sequence/screenshot before a CUA drag from its visible navigation edge. Long drag for finish, short drag for cancel.",
+    "decisive_test": "Require actual interactive UINavigationController coordinator begin/completion with matching native scene and outcome; cancel preserves secondary2 ID, finish returns a fresh secondary1 ID before work. Original scenario assertions plus whole-session exact view/work inventory, all3 installed binaries and cleanup remain mandatory.",
+    "stop_rule": "If a drag has no genuine interactive callbacks, preserve as unqualified input; at most one geometry-qualified alternative before stopping equivalent retries. Do not substitute deterministic UIPercentDrivenInteractiveTransition or Back taps.",
+    "scope": "H11 only; no new telemetry family, production change or simultaneous topology claim."
+  },
+  "physical_xctest_input_definition": {
+    "defined_at": 1789847247.110123,
+    "before_implementation": true,
+    "gates": [
+      "H11",
+      "H01"
+    ],
+    "change": "Add physical UIKit cancel/finish input methods to existing UI test file. Host-supplied fresh run/source identity; current actual navigation-container frame and secondary2 hittability; exact scene native readiness before one slow XCUI drag and callback/owner export. Build runner for iPad27.0 with scoped build override, keep both system and custom test attachments. Preserve existing Duo tests.",
+    "decisive_test": "Input qualifies only on actual native interactive coordinator. Continuous test video is useful for H01 only if an actual exported attachment spans the critical interval with bound identity; video availability is unproven before this run.",
+    "limits": "At most one native touch case per outcome and a bounded concrete correction for a fixture/input defect. No SDK/public API change or deterministic transition substitute.",
+    "sources": [
+      "https://developer.apple.com/videos/play/wwdc2025/344/",
+      "Xcode27.1 xcodebuild.xctestrun(5) SystemAttachmentLifetime keepAlways"
+    ]
   }
 }

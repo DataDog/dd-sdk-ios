@@ -424,8 +424,8 @@ fixture, wire-step typo and backend timestamp projection failures remain preserv
 H05's early source-less fallback is the approved compatibility behavior; H07's
 backend start precision is explicitly limited to milliseconds. No SDK source or
 original review disposition changes. H01 remains unadmitted without independent
-critical-interval display proof; H04 requires a collector surviving view teardown.
-H14 closes with actual physical resizing and complete22-event ownership equality.
-The predefined H04 process-lifetime witness will distinguish missed view-local
-observation from absent native notification without changing SDK or driver state. Restore the approved temporary Windowed Apps preference when
+critical-interval display proof. H04's process-lifetime witness also receives no
+actual disconnect; preserve the original failure and exact29-event partial join,
+and stop equivalent retries without assigning an SDK defect. H14 closes with
+actual physical resizing and complete22-event ownership equality. Restore the approved temporary Windowed Apps preference when
 the suite completes. Physical Duo and final review gates remain separate.

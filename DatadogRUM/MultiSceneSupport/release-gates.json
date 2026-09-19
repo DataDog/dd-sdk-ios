@@ -510,7 +510,7 @@
       "environment": "Physical iPad/iPhone Duo; human gesture for H11\u2013H13; resize-capable for H14",
       "completion_mode": null,
       "status": "OPEN",
-      "evidence": "EXP-196 four genuine activations and exact partial backend owners qualify. Both SwiftUI close and exact UIKit session-destruction request lack observed background-B disconnect; final peer marker never executes. Stop equivalent retries; investigate the view-local notification collector before assigning an OS/SDK defect."
+      "evidence": "EXP-196 four genuine activations and exact partial backend owners qualify. SwiftUI close, exact UIKit destruction and the bounded process-lifetime witness run lack actual B disconnect. Latest complete partial inventory29 events/6 views/20 work matches; original step14 fails before final peer marker. Neither observer receives notification; stop equivalent retries. No SDK-defect inference. Results/EXP-196-physical-ipad-suite.json."
     },
     {
       "id": "H05",

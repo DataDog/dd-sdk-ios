@@ -264,6 +264,73 @@ final class DuoSimulatorUITests: XCTestCase {
         try waitForControl("finish", runID: runID, directory: directory)
     }
 
+    func testPhysicalUIKitFinishInput() throws {
+        try qualifyPhysicalUIKitInput(outcome: "finish", endFraction: 0.85)
+    }
+
+    func testPhysicalUIKitCancelInput() throws {
+        try qualifyPhysicalUIKitInput(outcome: "cancel", endFraction: 0.18)
+    }
+
+    private func qualifyPhysicalUIKitInput(outcome: String, endFraction: CGFloat) throws {
+        continueAfterFailure = false
+        let environment = ProcessInfo.processInfo.environment
+        let runID = try XCTUnwrap(environment["PHYSICAL_PROBE_RUN_ID"])
+        let revision = try XCTUnwrap(environment["PHYSICAL_PROBE_REVISION"])
+        XCTAssertTrue(runID.hasPrefix("exp196-h11-"))
+        XCTAssertEqual(revision.count, 40)
+        XCTAssertTrue(revision.allSatisfy { $0.isHexDigit })
+        let app = XCUIApplication()
+        let directory = artifactDirectory.appendingPathComponent(runID)
+        try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+        XCTAssertFalse(FileManager.default.fileExists(atPath: directory.appendingPathComponent("gesture.json").path))
+        XCTAssertFalse(FileManager.default.fileExists(atPath: directory.appendingPathComponent("finish.json").path))
+        let scenario = "uikit.split.native-pop-" + outcome
+        let identity = try JSONSerialization.data(withJSONObject: [
+            "runID": runID, "scenario": scenario, "outcome": outcome,
+            "sourceRevision": revision, "createdAt": String(Date().timeIntervalSince1970)
+        ], options: [.sortedKeys])
+        try identity.write(to: artifactDirectory.appendingPathComponent("active-run.json"), options: .atomic)
+        app.launchArguments = [
+            "--probe-scenario", scenario, "--probe-run-id", runID, "--probe-run-mode", "clean"
+        ]
+        app.launchEnvironment["DD_PROBE_CAPTURE_JSONL"] = "1"
+        app.launchEnvironment["MULTISCENE_CODE_IDENTITY_RUN_ID"] = runID
+        app.launchEnvironment["MULTISCENE_CODE_IDENTITY_REVISION"] = revision
+        try checkpoint("physical-" + outcome + "-launch", runID: runID)
+        app.launch()
+        defer {
+            try? checkpoint("physical-terminate", runID: runID)
+            app.terminate()
+            try? checkpoint("physical-terminated", runID: runID)
+        }
+        let detail = app.staticTexts.matching(
+            NSPredicate(format: "label CONTAINS %@", "scene-A: uikit-navigation-secondary-2")
+        ).firstMatch
+        XCTAssertTrue(detail.waitForExistence(timeout: 20))
+        XCTAssertTrue(detail.isHittable)
+        try attachState(app, name: "physical-before-" + runID)
+        let navigation = app.otherElements["probe.native.scene-A.uikit-split-navigation-secondary"]
+        XCTAssertTrue(navigation.exists)
+        let frame = navigation.frame
+        XCTAssertGreaterThan(frame.width, 200)
+        XCTAssertGreaterThan(frame.height, 200)
+        XCTAssertTrue(frame.contains(detail.frame))
+        try checkpoint("physical-ready navigation=" + frame.debugDescription, runID: runID)
+        // The host verifies the installed code, exact native scene and mapper owner before releasing input.
+        try waitForControl("gesture", runID: runID, directory: directory)
+        XCTAssertTrue(detail.isHittable)
+        XCTAssertEqual(navigation.frame, frame)
+        let start = navigation.coordinate(withNormalizedOffset: CGVector(dx: 0.005, dy: 0.55))
+        let end = navigation.coordinate(withNormalizedOffset: CGVector(dx: endFraction, dy: 0.55))
+        try checkpoint("physical-drag start=\(start.screenPoint) end=\(end.screenPoint)", runID: runID)
+        start.press(forDuration: 0.1, thenDragTo: end, withVelocity: .slow, thenHoldForDuration: 1)
+        try checkpoint("physical-drag-returned", runID: runID)
+        try attachState(app, name: "physical-after-" + runID)
+        // A returned drag is input evidence only. Actual native callbacks and backend owners decide acceptance.
+        try waitForControl("finish", runID: runID, directory: directory)
+    }
+
     private func tapAdaptiveMarker(_ app: XCUIApplication) throws {
         let candidates = app.buttons.matching(NSPredicate(format: "label == %@", "Emit adaptive marker"))
         let marker = try XCTUnwrap(candidates.allElementsBoundByIndex.first { $0.isHittable })
