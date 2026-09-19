@@ -79,7 +79,7 @@
       "environment": "Xcode26.6 with SDK26.5 and Xcode27.1; regular iPhone27.0 and Duo27.1 simulators; physical Duo remains F04",
       "completion_mode": null,
       "status": "OPEN",
-      "evidence": "User priority 2026-09-19. C01 proves only the earlier UIKit fixture with custom action markers; EXP-193 uses accepted-state integration. Neither establishes automatic-only Duo view/action parity. EXP-195 is defined before implementation."
+      "evidence": "EXP-195 regular matrix complete:16 qualified cells/32 unchanged view-action comparisons across genuineSDK26.5/27.1 builds and baseline/current source. Existing switch/Toggle omissions and SwiftUI hosting-name limits remain. Results/EXP-195-regular-automatic-coverage.json retains exact inventories, owners, installed identities and evidence hashes. Duo pairs are running; original collector failures remain unqualified. Manifest-false scope only; no broad one-window manifest-true or physical claim."
     },
     {
       "id": "C08",
@@ -90,7 +90,7 @@
       "environment": "Xcode26.6 with SDK26.5 and Xcode27.1; regular iPhone27.0 and Duo27.1 simulators; physical Duo remains F04",
       "completion_mode": null,
       "status": "OPEN",
-      "evidence": "User priority 2026-09-19. C01 proves only the earlier UIKit fixture with custom action markers; EXP-193 uses accepted-state integration. Neither establishes automatic-only Duo view/action parity. EXP-195 is defined before implementation."
+      "evidence": "EXP-195 regular matrix complete:16 qualified cells/32 unchanged view-action comparisons across genuineSDK26.5/27.1 builds and baseline/current source. Existing switch/Toggle omissions and SwiftUI hosting-name limits remain. Results/EXP-195-regular-automatic-coverage.json retains exact inventories, owners, installed identities and evidence hashes. Duo pairs are running; original collector failures remain unqualified. Manifest-false scope only; no broad one-window manifest-true or physical claim."
     },
     {
       "id": "C09",
@@ -101,7 +101,7 @@
       "environment": "Xcode26.6 with SDK26.5 and Xcode27.1; regular iPhone27.0 and Duo27.1 simulators; physical Duo remains F04",
       "completion_mode": null,
       "status": "OPEN",
-      "evidence": "User priority 2026-09-19. C01 proves only the earlier UIKit fixture with custom action markers; EXP-193 uses accepted-state integration. Neither establishes automatic-only Duo view/action parity. EXP-195 is defined before implementation."
+      "evidence": "EXP-195 regular matrix complete:16 qualified cells/32 unchanged view-action comparisons across genuineSDK26.5/27.1 builds and baseline/current source. Existing switch/Toggle omissions and SwiftUI hosting-name limits remain. Results/EXP-195-regular-automatic-coverage.json retains exact inventories, owners, installed identities and evidence hashes. Duo pairs are running; original collector failures remain unqualified. Manifest-false scope only; no broad one-window manifest-true or physical claim."
     },
     {
       "id": "C10",
@@ -112,7 +112,7 @@
       "environment": "Xcode26.6 with SDK26.5 and Xcode27.1; regular iPhone27.0 and Duo27.1 simulators; physical Duo remains F04",
       "completion_mode": null,
       "status": "OPEN",
-      "evidence": "User priority 2026-09-19. C01 proves only the earlier UIKit fixture with custom action markers; EXP-193 uses accepted-state integration. Neither establishes automatic-only Duo view/action parity. EXP-195 is defined before implementation."
+      "evidence": "EXP-195 regular matrix complete:16 qualified cells/32 unchanged view-action comparisons across genuineSDK26.5/27.1 builds and baseline/current source. Existing switch/Toggle omissions and SwiftUI hosting-name limits remain. Results/EXP-195-regular-automatic-coverage.json retains exact inventories, owners, installed identities and evidence hashes. Duo pairs are running; original collector failures remain unqualified. Manifest-false scope only; no broad one-window manifest-true or physical claim."
     },
     {
       "id": "P01",

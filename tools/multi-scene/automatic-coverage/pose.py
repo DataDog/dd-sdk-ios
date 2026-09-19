@@ -17,7 +17,8 @@ def live(attempt):
     assert manifest['devices']['duo']['owned'] is True
     build = manifest['builds'][run['build']]
     def container(suffix):
-        return Path(call(['xcrun', 'simctl', 'get_app_container', run['udid'], build['bundle_prefix'] + suffix, 'data']))
+        bundle = run.get('runner_bundle', build['bundle_prefix'] + suffix) if suffix == '.uitests.xctrunner' else build['bundle_prefix'] + suffix
+        return Path(call(['xcrun', 'simctl', 'get_app_container', run['udid'], bundle, 'data']))
     directory = container('.uitests.xctrunner') / 'Documents' / run['run_id']
     receipts = json.loads((directory / 'receipts.json').read_text())
     rows = read_rows(container('.' + run['framework'].lower()) / 'Documents/events.jsonl')

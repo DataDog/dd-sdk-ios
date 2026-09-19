@@ -2017,3 +2017,12 @@ Independent regular/Duo runs require separate manifests to avoid update races;
 all comparisons retain per-run source and installed identities. Freeze/check the
 archived source and runner binary, rather than requiring the working tree to stay
 at an older collector version while another slice is prepared.
+
+An old-built app and its XCTest collector have separate identities. When the old
+runner cannot address a new display, use a frozen modern collector and rewrite
+only UITargetAppPath/DependentProductPaths to the genuine old applications.
+Verify both installed apps again after XCTest, plus the chosen runner inventory.
+Never relabel a modern-built app as the old build. A duplicate-size native window
+is not evidence of a spatial resize; preserve that distinction when evaluating
+compatibility viewports. An external boundary timeout is input failure, never a
+coverage verdict; preserve it and retry only that unaccepted cell with a fresh ID.

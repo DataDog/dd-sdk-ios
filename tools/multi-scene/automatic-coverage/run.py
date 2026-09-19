@@ -133,20 +133,24 @@ def read_rows(path):
 def run_cell(attempt, key, device, framework, layout, poses):
     path = attempt / "manifest.json"; m = json.loads(path.read_text()); b = m["builds"][key]
     assert b["state"] == "BUILT"
+    collector_key = b["arm"] + "-27.1" if device == "duo" else key
+    collector = m["builds"][collector_key]
     assert baseline.fingerprint(Path(b["directory"]) / "Sources") == m["fixture"], "frozen application source drift"
     assert baseline.fingerprint(Path(b["directory"]) / "UITests") == m["ui_tests"], "frozen test source drift"
-    assert inventory(b["runner"]["path"]) == b["runner"]["identity"], "frozen runner drift"
+    assert baseline.fingerprint(Path(collector["directory"]) / "UITests") == m["ui_tests"], "collector source drift"
+    assert inventory(collector["runner"]["path"]) == collector["runner"]["identity"], "frozen runner drift"
     destination = m["devices"][device]["udid"]
     call(["xcrun", "simctl", "boot", destination], check=False)
     call(["xcrun", "simctl", "bootstatus", destination, "-b"], timeout=120)
     run_id = "exp195-" + uuid.uuid4().hex
     directory = attempt / "runs" / run_id; directory.mkdir(parents=True)
     item = {"run_id": run_id, "build": key, "device": device, "udid": destination,
-            "framework": framework, "layout": layout, "poses": poses, "directory": str(directory), "state": "STARTED"}
+            "framework": framework, "layout": layout, "poses": poses, "directory": str(directory), "state": "STARTED",
+            "collector_build_key": collector_key, "runner_bundle": collector["runner"]["identity"]["bundleIdentifier"]}
     m["runs"].append(item); save(path, m)
     save(attempt / "active-run.json", item)
     bundles = [b["bundle_prefix"] + "." + fw.lower() for fw in ["UIKit", "SwiftUI"]]
-    runner_bundle = b["bundle_prefix"] + ".uitests.xctrunner"
+    runner_bundle = item["runner_bundle"]
     for bundle in [*bundles, runner_bundle]:
         call(["xcrun", "simctl", "terminate", destination, bundle], check=False)
         call(["xcrun", "simctl", "uninstall", destination, bundle], check=False)
@@ -160,9 +164,18 @@ def run_cell(attempt, key, device, framework, layout, poses):
         installed = call(["xcrun", "simctl", "get_app_container", destination, app["identity"]["bundleIdentifier"], "app"])
         item["installed"][fw] = inventory(installed)
         assert item["installed"][fw] == app["identity"], "installed code differs"
-    test_file = Path(b["xctestrun"])
+    test_file = Path(collector["xctestrun"])
     spec = plistlib.loads(test_file.read_bytes())
     target = spec["TestConfigurations"][0]["TestTargets"][0] if "TestConfigurations" in spec else spec["CoverageUITests"]
+    # Modern XCTest understands Duo displays even when the observed app was
+    # genuinely built with an older SDK. Keep app and collector identities separate.
+    target["UITargetAppPath"] = b["apps"]["UIKit"]["path"]
+    target["DependentProductPaths"] = [
+        b["apps"]["UIKit"]["path"] if value.endswith("/UIKitFixture.app") else
+        b["apps"]["SwiftUI"]["path"] if value.endswith("/SwiftUIFixture.app") else value
+        for value in target.get("DependentProductPaths", [])
+    ]
+    target["BundleIdentifiersForCrashReportEmphasis"] = [*bundles, runner_bundle]
     target["EnvironmentVariables"] = {**target.get("EnvironmentVariables", {}), "EXP195_RUN_ID": run_id,
         "EXP195_BUNDLE_PREFIX": b["bundle_prefix"], "EXP195_DUO_PHASES": "1" if poses else "0"}
     # Keep __TESTROOT__ resolution at the original products directory.
@@ -194,9 +207,14 @@ def run_cell(attempt, key, device, framework, layout, poses):
     runner_app = call(["xcrun", "simctl", "get_app_container", destination, runner_bundle, "app"], check=False)
     if runner_app:
         item["installed_runner"] = inventory(runner_app)
-        assert item["installed_runner"] == b["runner"]["identity"], "installed test runner differs"
+        assert item["installed_runner"] == collector["runner"]["identity"], "installed test runner differs"
     if (directory / "result.xcresult").exists():
         call(["xcrun", "xcresulttool", "get", "test-results", "summary", "--path", str(directory / "result.xcresult")], log=directory / "test-summary.json", check=False)
+    item["installed_after_test"] = {}
+    for fw in ["UIKit", "SwiftUI"]:
+        installed_app = call(["xcrun", "simctl", "get_app_container", destination, b["apps"][fw]["identity"]["bundleIdentifier"], "app"])
+        item["installed_after_test"][fw] = inventory(installed_app)
+        assert item["installed_after_test"][fw] == b["apps"][fw]["identity"], "test execution replaced an observed app"
     item["state"] = "COLLECTED" if code == 0 and (directory / "events.jsonl").exists() and (directory / "receipts.json").exists() else "INPUT_OR_FIXTURE_FAILED"
     for name in [*bundles, runner_bundle]:
         call(["xcrun", "simctl", "terminate", destination, name], check=False)
@@ -222,8 +240,10 @@ def main():
         except Exception as error:
             path = a.attempt / "manifest.json"; m = json.loads(path.read_text())
             b = m["builds"][a.build]; destination = m["devices"][a.device]["udid"]
-            for suffix in ["uikit", "swiftui", "uitests.xctrunner"]:
-                bundle = b["bundle_prefix"] + "." + suffix
+            collector_key = b["arm"] + "-27.1" if a.device == "duo" else a.build
+            bundles = [b["bundle_prefix"] + "." + suffix for suffix in ["uikit", "swiftui"]]
+            bundles.append(m["builds"][collector_key]["runner"]["identity"]["bundleIdentifier"])
+            for bundle in bundles:
                 call(["xcrun", "simctl", "terminate", destination, bundle], check=False)
                 call(["xcrun", "simctl", "uninstall", destination, bundle], check=False)
                 result = subprocess.run(["xcrun", "simctl", "get_app_container", destination, bundle, "data"], env=RUN_ENV, capture_output=True)

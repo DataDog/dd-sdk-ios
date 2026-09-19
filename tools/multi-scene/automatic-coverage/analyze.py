@@ -163,7 +163,9 @@ def analyze(attempt, seen=None):
             build = m["builds"][run["build"]]
             require(all(run["installed"][fw] == build["apps"][fw]["identity"] for fw in ["UIKit", "SwiftUI"]), "frozen/installed code mismatch")
             if "installed_runner" in run:
-                require(run["installed_runner"] == build["runner"]["identity"], "frozen/installed test runner mismatch")
+                require(run["installed_runner"] == m["builds"][run.get("collector_build_key", run["build"])]["runner"]["identity"], "frozen/installed test runner mismatch")
+            if "installed_after_test" in run:
+                require(all(run["installed_after_test"][fw] == build["apps"][fw]["identity"] for fw in ["UIKit", "SwiftUI"]), "app code changed during test execution")
             launch = qualify(run, rows, receipts, summary)
             require(run["device"] != "duo" or run["poses"], "Duo calibration omitted required fold phases")
             require(launch["build_sdk"] == "iphonesimulator" + build["sdk"], "wrong build SDK")

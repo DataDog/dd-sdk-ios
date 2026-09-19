@@ -1,31 +1,99 @@
 {
+  "attempts": [
+    {
+      "directory": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp195-automatic-qjv1qony",
+      "reason": "UI collector obsolete geometry-string function; no SDK defect or native data",
+      "status": "BUILD FAILED"
+    },
+    {
+      "directory": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp195-automatic-ttlcly3x",
+      "reason": "Format1 test-plan parser repaired before launch. UIKit input passed but final tap was not flushed; SwiftUI switch tap had no native effect. Apps/runners cleaned. No gate evidence.",
+      "status": "CALIBRATION ONLY"
+    },
+    {
+      "builds": [
+        "baseline-26.5",
+        "candidate-26.5",
+        "baseline-27.1",
+        "candidate-27.1"
+      ],
+      "directory": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp195-automatic-ll6bo13r",
+      "native_cells": 4,
+      "oracle_controls": 24,
+      "qualified_cells": 2,
+      "reason": "Regular SwiftUI stack/split inputs qualify. UIKit stack switch target and compact split initial-column assumptions failed before decisive input; both preserved and cleaned.",
+      "status": "PARTIAL COLLECTION"
+    },
+    {
+      "builds": [
+        "baseline-26.5",
+        "candidate-26.5",
+        "baseline-27.1",
+        "candidate-27.1"
+      ],
+      "collector_change": "Use native UIKit switch center, observed compact split Back control and reverse scroll when previously moved. Application/SDK sources unchanged; prior qualified cells retained with their own identities.",
+      "directory": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp195-automatic-mo8om5bc",
+      "native_cells": 2,
+      "oracle_controls": 41,
+      "qualified_cells": 1,
+      "reason": "Regular UIKit stack qualifies. First Duo SwiftUI stack completes actual fold input but loses app/runner finalization at XCTest Home; no native background/complete receipt, original XPC log and scoped interruption retained, cleanup true.",
+      "status": "PARTIAL COLLECTION"
+    },
+    {
+      "comparisons": 32,
+      "directory": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp195-regular-shard-nzo1zp4e",
+      "durable_result": "EXP-195-regular-automatic-coverage.json",
+      "outcome": "All source and genuine compiler-rebuild comparisons unchanged; existing limitations retained.",
+      "qualified_unique_cells": 16,
+      "scope": "Remaining fixed regular-iPhone cells.",
+      "source": "Exact frozen mo8om5bc apps/tests; independent manifest on regular simulator.",
+      "status": "COMPLETE"
+    },
+    {
+      "directory": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp195-automatic-8w6fdb1_",
+      "oracle_controls": 49,
+      "source": "Same apps/SDK; Duo-only external real Device Hub Home and native background receipt.",
+      "status": "RUNNING"
+    }
+  ],
+  "collector_followups": [
+    {
+      "repair": "Use frozen SDK27.1 XCTest collector for old-built Duo apps; retain original SDK26.5 app identity, rewrite only test-plan app paths, check installed app identities again after execution. Not yet executed on old-built Duo.",
+      "run_id": "exp195-0d83a88a158e4801a1c423c25d3a024b",
+      "status": "UNQUALIFIED_INPUT"
+    },
+    {
+      "reason": "External Open receipt timed out across context recovery; no fold acceptance. Cleanup verified. Retry fresh ID.",
+      "run_id": "exp195-39ba4eb3845a4377a51c300df86aecc7",
+      "status": "UNQUALIFIED_INPUT"
+    }
+  ],
+  "defined_before_implementation": true,
+  "environment_limits": [
+    "Installed27.1 runtime supports Duo only. The regular control runs27.0; cross-device deltas alone cannot isolate hardware/model from OS patch. Same-device old/new build pairs isolate rebuild changes.",
+    "Simulator functional observation does not establish physical Duo performance or callback parity.",
+    "Single scene declared false is the immediate no-adoption contract; simultaneous windows and declared-multi-scene variants remain their separate gates."
+  ],
+  "environment_support": {
+    "keep_awake": "User requested temporary caffeinate. One-hour display/system/user-active assertions verified with pmset. Owned PID and deadline in mo8om5bc/keep-awake.json; stop at completion."
+  },
   "experiment": "EXP-195",
-  "status": "IN PROGRESS",
   "gates": [
     "C07",
     "C08",
     "C09",
     "C10"
   ],
-  "defined_before_implementation": true,
-  "question": "Does an existing single-scene app lose automatic UIKit/SwiftUI view or action coverage when rebuilt with the iOS27 SDK and run on Duo, without adopting semantic tracking or changing navigation?",
-  "source": {
-    "baseline": "92f021ba7e4a866f84a52da93ed8b63f3dc75882",
-    "candidate": "04201edc7711361279d8487b385bc8b0ca9c63c7",
-    "definition_head": "1ffd5648e85b0f346ad1b942b9ace2c88700601b"
-  },
   "matrix": {
-    "sdk_arms": [
-      "baseline",
-      "candidate"
-    ],
     "build_sdk": [
       "26.5",
       "27.1"
     ],
-    "runtime_devices": [
-      "regular iPhone iOS27.0",
-      "iPhone Duo iOS27.1"
+    "cells": 32,
+    "duo_phases": [
+      "outer initial flow",
+      "inner flow after real open with geometry receipt",
+      "close/reopen unchanged destination"
     ],
     "fixtures": [
       "UIKit stack",
@@ -33,27 +101,17 @@
       "native SwiftUI stack",
       "native SwiftUI split"
     ],
-    "cells": 32,
-    "duo_phases": [
-      "outer initial flow",
-      "inner flow after real open with geometry receipt",
-      "close/reopen unchanged destination"
+    "runtime_devices": [
+      "regular iPhone iOS27.0",
+      "iPhone Duo iOS27.1"
+    ],
+    "sdk_arms": [
+      "baseline",
+      "candidate"
     ]
   },
-  "unchanged_application_contract": [
-    "public default automatic predicates only",
-    "scene manifest declares multiple scenes false",
-    "no manual view/action calls",
-    "no RUMNavigationHost, scene target or experimental API",
-    "same app source in every arm; genuine compiler/SDK identity retained",
-    "UI test identifiers, mapper observation and independent native interaction/geometry receipts only"
-  ],
   "oracle": {
-    "views": [
-      "detected name/path and ordered unique occurrences",
-      "missing or duplicate views",
-      "owner retained or changed across presentation, navigation and geometry"
-    ],
+    "acceptance": "Every finite cell has a classified outcome; all four gates require no new unexplained loss, duplicate or ownership/name degradation. Pre-existing imperfections remain visible, never silently accepted as ideal semantics.",
     "actions": [
       "real native tap/scroll outcome required before assessing detection",
       "action type/name/count and originating view relationship",
@@ -68,7 +126,7 @@
       "UNQUALIFIED_INPUT",
       "UNEXECUTED"
     ],
-    "acceptance": "Every finite cell has a classified outcome; all four gates require no new unexplained loss, duplicate or ownership/name degradation. Pre-existing imperfections remain visible, never silently accepted as ideal semantics.",
+    "evidence_boundary": "Primary comparison uses complete local RUM mapper events, not a backend claim. Existing semantic-host acceptance is not reused as automatic tracking evidence.",
     "integrity": [
       "fresh UUID and clean installation each cell",
       "source/fixture/build/installed hashes",
@@ -76,98 +134,55 @@
       "timestamps and sequence retained through critical boundary",
       "negative controls reject wrong owners, missing actions and stale run evidence"
     ],
-    "evidence_boundary": "Primary comparison uses complete local RUM mapper events, not a backend claim. Existing semantic-host acceptance is not reused as automatic tracking evidence."
-  },
-  "environment_limits": [
-    "Installed27.1 runtime supports Duo only. The regular control runs27.0; cross-device deltas alone cannot isolate hardware/model from OS patch. Same-device old/new build pairs isolate rebuild changes.",
-    "Simulator functional observation does not establish physical Duo performance or callback parity.",
-    "Single scene declared false is the immediate no-adoption contract; simultaneous windows and declared-multi-scene variants remain their separate gates."
-  ],
-  "attempts": [
-    {
-      "directory": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp195-automatic-qjv1qony",
-      "status": "BUILD FAILED",
-      "reason": "UI collector obsolete geometry-string function; no SDK defect or native data"
-    },
-    {
-      "directory": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp195-automatic-ttlcly3x",
-      "status": "CALIBRATION ONLY",
-      "reason": "Format1 test-plan parser repaired before launch. UIKit input passed but final tap was not flushed; SwiftUI switch tap had no native effect. Apps/runners cleaned. No gate evidence."
-    },
-    {
-      "directory": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp195-automatic-ll6bo13r",
-      "status": "PARTIAL COLLECTION",
-      "builds": [
-        "baseline-26.5",
-        "candidate-26.5",
-        "baseline-27.1",
-        "candidate-27.1"
-      ],
-      "oracle_controls": 24,
-      "native_cells": 4,
-      "qualified_cells": 2,
-      "reason": "Regular SwiftUI stack/split inputs qualify. UIKit stack switch target and compact split initial-column assumptions failed before decisive input; both preserved and cleaned."
-    },
-    {
-      "directory": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp195-automatic-mo8om5bc",
-      "status": "PARTIAL COLLECTION",
-      "builds": [
-        "baseline-26.5",
-        "candidate-26.5",
-        "baseline-27.1",
-        "candidate-27.1"
-      ],
-      "oracle_controls": 41,
-      "collector_change": "Use native UIKit switch center, observed compact split Back control and reverse scroll when previously moved. Application/SDK sources unchanged; prior qualified cells retained with their own identities.",
-      "native_cells": 2,
-      "qualified_cells": 1,
-      "reason": "Regular UIKit stack qualifies. First Duo SwiftUI stack completes actual fold input but loses app/runner finalization at XCTest Home; no native background/complete receipt, original XPC log and scoped interruption retained, cleanup true."
-    },
-    {
-      "directory": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp195-regular-shard-nzo1zp4e",
-      "status": "RUNNING",
-      "source": "Exact frozen mo8om5bc apps/tests; independent manifest on regular simulator.",
-      "scope": "Remaining fixed regular-iPhone cells."
-    },
-    {
-      "directory": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp195-automatic-8w6fdb1_",
-      "status": "RUNNING",
-      "source": "Same apps/SDK; Duo-only external real Device Hub Home and native background receipt.",
-      "oracle_controls": 49
-    }
-  ],
-  "preflight": {
-    "directory": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp195-preflight-17l2p618",
-    "definition_commit": "b6cc484a22ceedf96f634fd4b328074ac2735bbd",
-    "definition_signature": "verified G",
-    "xcode_mcp": "rediscovered actual workspace/scheme and27.1 destinations",
-    "datadog_read_access": "fresh empty discriminator query succeeded",
-    "protected_paths": "metadata/index and permitted project hash unchanged"
-  },
-  "source_audit": {
-    "UIKit_view_predicate": "unchanged default controller-name predicate; split reconciliation/structural suppression is gated by declared multiple-scene support",
-    "SwiftUI_view_discovery": "reflection/name algorithm unchanged from baseline; only generic-fallback classification helper was added",
-    "UIKit_action_predicate": "unchanged default names; touch/scroll ownership dispatch changed in this branch",
-    "SwiftUI_action_detection": "modern detector and component-name helper unchanged from baseline; relies on OS gesture descriptions, so source parity does not prove runtime compatibility",
-    "limits": "Source comparison is explanatory evidence only. Pending real-input matrix determines non-regression."
+    "views": [
+      "detected name/path and ordered unique occurrences",
+      "missing or duplicate views",
+      "owner retained or changed across presentation, navigation and geometry"
+    ]
   },
   "partial_findings": {
-    "boundary": "Two candidate SDK27.1-built regular-iPhone SwiftUI inputs only; no paired non-regression or Duo verdict yet.",
-    "SwiftUI_stack": "11 automatic actions (9 taps, 2 swipes); both Toggle changes lack actions. Home uses hosting/fallback names; Detail and Sheet are named. Nine unique view occurrences including ApplicationLaunch.",
-    "SwiftUI_split": "11 automatic actions (9 taps, 2 swipes); both Toggle changes lack actions. Home/sidebar and Detail use hosting/fallback names; Sheet is named. Nine unique view occurrences including ApplicationLaunch.",
+    "Duo_SwiftUI_stack_SDK27": "Both sources match:17 view occurrences including launch;21 taps/4 swipes;four Toggle omissions. Outer matches regular iPhone. Detail ownership retained through close/reopen, same native scene with466x678 compact outer and951x669 regular inner.",
+    "boundary": "All16 regular-iPhone cells and the two SDK27 Duo SwiftUI stack source arms qualify. Other Duo comparisons remain in progress; no broad non-regression verdict.",
     "new_sdk_defect": "Not established.",
-    "paired_regular_SDK27": "UIKit stack/split and SwiftUI stack baseline/current source comparisons match view and action inventories/owners. Unchanged switch/Toggle omissions and SwiftUI hosting names remain explicit. Compiler-rebuild and Duo verdicts remain pending.",
-    "Duo_SwiftUI_stack_SDK27": "Qualified current-source cell: 17 unique view occurrences including launch; 21 taps/4 swipes across outer/inner/fold phases; four Toggle omissions. Outer view/action comparison matches regular iPhone. Close/reopen taps retain Detail owner. Genuine old/new SDK and baseline-source Duo pairs are still pending."
+    "old_build_input": "CandidateSDK26.5 SwiftUI stack outer flow passed, but inner native Home was not hittable after actual Open. Native375x667 compact viewport stayed unchanged while a duplicate-size window appeared. Preserved input failure, not a classified RUM regression.",
+    "regular": "All32 view/action comparisons unchanged across baseline/current Datadog and genuine SDK26.5/27.1 builds. UIKit stack has6 view occurrences, split7; SwiftUI stack/split9, including ApplicationLaunch. Switch/Toggle omissions and generic SwiftUI hosting names are unchanged."
   },
-  "environment_support": {
-    "keep_awake": "User requested temporary caffeinate. One-hour display/system/user-active assertions verified with pmset. Owned PID and deadline in mo8om5bc/keep-awake.json; stop at completion."
+  "preflight": {
+    "datadog_read_access": "fresh empty discriminator query succeeded",
+    "definition_commit": "b6cc484a22ceedf96f634fd4b328074ac2735bbd",
+    "definition_signature": "verified G",
+    "directory": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp195-preflight-17l2p618",
+    "protected_paths": "metadata/index and permitted project hash unchanged",
+    "xcode_mcp": "rediscovered actual workspace/scheme and27.1 destinations"
   },
-  "scope_caution": "This fixed matrix declares multiple scenes false. RUMFeature reads the manifest flag, not the actual current scene count. A one-window app that already declares multiple-scene support exercises a different automatic path; do not generalize these cells to it. Assess the smallest finite additional slice before claiming broad no-adoption parity.",
   "progress": {
-    "captured_at": 1789818926.89143,
-    "qualified_unique_cells": 17,
-    "regular": 16,
-    "duo": 1,
-    "comparison_artifact": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp195-automatic-8w6fdb1_/comparison.json"
-  }
+    "captured_at": 1789820317.566294,
+    "comparison_artifact": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp195-automatic-8w6fdb1_/comparison.json",
+    "duo": 2,
+    "qualified_unique_cells": 18,
+    "regular": 16
+  },
+  "question": "Does an existing single-scene app lose automatic UIKit/SwiftUI view or action coverage when rebuilt with the iOS27 SDK and run on Duo, without adopting semantic tracking or changing navigation?",
+  "scope_caution": "This fixed matrix declares multiple scenes false. RUMFeature reads the manifest flag, not the actual current scene count. A one-window app that already declares multiple-scene support exercises a different automatic path; do not generalize these cells to it. Assess the smallest finite additional slice before claiming broad no-adoption parity.",
+  "source": {
+    "baseline": "92f021ba7e4a866f84a52da93ed8b63f3dc75882",
+    "candidate": "04201edc7711361279d8487b385bc8b0ca9c63c7",
+    "definition_head": "1ffd5648e85b0f346ad1b942b9ace2c88700601b"
+  },
+  "source_audit": {
+    "SwiftUI_action_detection": "modern detector and component-name helper unchanged from baseline; relies on OS gesture descriptions, so source parity does not prove runtime compatibility",
+    "SwiftUI_view_discovery": "reflection/name algorithm unchanged from baseline; only generic-fallback classification helper was added",
+    "UIKit_action_predicate": "unchanged default names; touch/scroll ownership dispatch changed in this branch",
+    "UIKit_view_predicate": "unchanged default controller-name predicate; split reconciliation/structural suppression is gated by declared multiple-scene support",
+    "limits": "Source comparison is explanatory evidence only. Pending real-input matrix determines non-regression."
+  },
+  "status": "IN PROGRESS",
+  "unchanged_application_contract": [
+    "public default automatic predicates only",
+    "scene manifest declares multiple scenes false",
+    "no manual view/action calls",
+    "no RUMNavigationHost, scene target or experimental API",
+    "same app source in every arm; genuine compiler/SDK identity retained",
+    "UI test identifiers, mapper observation and independent native interaction/geometry receipts only"
+  ]
 }
