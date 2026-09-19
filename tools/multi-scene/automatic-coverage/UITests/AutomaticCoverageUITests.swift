@@ -2,6 +2,7 @@ import XCTest
 
 @MainActor final class AutomaticCoverageUITests: XCTestCase {
     private var receipts: [[String: Any]] = []
+    private var usesSwiftUI = false
     private var runID: String { ProcessInfo.processInfo.environment["EXP195_RUN_ID"] ?? "missing" }
     private var directory: URL {
         FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
@@ -47,8 +48,12 @@ import XCTest
         let toggle = app.switches[screen + ".toggle"]
         wait("toggle hittable") { toggle.exists && toggle.isHittable }
         let oldToggle = toggle.value as? String
-        try record(phase + ".toggle.before", ["target": screen + ".toggle"])
-        toggle.coordinate(withNormalizedOffset: CGVector(dx: 0.93, dy: 0.5)).tap()
+        try record(phase + ".toggle.before", ["target": screen + ".toggle", "frame": String(describing: toggle.frame)])
+        if usesSwiftUI {
+            toggle.coordinate(withNormalizedOffset: CGVector(dx: 0.93, dy: 0.5)).tap()
+        } else {
+            toggle.tap()
+        }
         wait("toggle changed") { toggle.value as? String != oldToggle }
         try record(phase + ".toggle.effect", ["value": toggle.value as? String ?? "missing"])
         captureWindow()
@@ -56,13 +61,35 @@ import XCTest
         wait("scroll hittable") { scroll.exists && scroll.isHittable }
         let before = scroll.staticTexts["Row 0"].frame
         try record(phase + ".scroll.before", ["frame": String(describing: before)])
-        scroll.swipeUp(velocity: .slow)
+        if scroll.staticTexts["Row 0"].isHittable { scroll.swipeUp(velocity: .slow) }
+        else { scroll.swipeDown(velocity: .slow) }
         wait("scroll content moved") { scroll.staticTexts["Row 0"].frame != before }
         try record(phase + ".scroll.effect", ["frame": String(describing: scroll.staticTexts["Row 0"].frame)])
         captureWindow()
     }
     private func flow(_ app: XCUIApplication, layout: String, phase: String) throws {
         let root = layout == "split" ? "sidebar" : "home"
+        if layout == "split" && !usesSwiftUI {
+            let sidebar = app.staticTexts["screen.sidebar"]
+            let empty = app.staticTexts["screen.empty"]
+            wait("split has a visible native column") {
+                (sidebar.exists && sidebar.isHittable) || (empty.exists && empty.isHittable)
+            }
+            if !sidebar.isHittable {
+                // A standard compact UISplitViewController initially exposes its
+                // empty secondary column. Follow its observed native Back control.
+                let buttons = app.navigationBars["Empty"].buttons
+                XCTAssertEqual(buttons.count, 1, app.debugDescription)
+                let back = buttons.element(boundBy: 0)
+                wait("native sidebar navigation hittable") { back.isHittable }
+                try record(phase + ".revealSidebar.before", ["native_control": back.label,
+                    "frame": String(describing: back.frame)])
+                back.tap()
+                visible(app, "sidebar")
+                try record(phase + ".revealSidebar.effect")
+                captureWindow()
+            }
+        }
         try interact(app, root, phase: phase + ".root")
         try tap(app, root + ".next", phase: phase + ".navigate")
         visible(app, "detail"); try record(phase + ".navigate.effect")
@@ -88,6 +115,7 @@ import XCTest
     }
     private func run(_ framework: String, layout: String) throws {
         continueAfterFailure = false
+        usesSwiftUI = framework == "SwiftUI"
         XCTAssertNotEqual(runID, "missing")
         let prefix = ProcessInfo.processInfo.environment["EXP195_BUNDLE_PREFIX"]!
         let app = XCUIApplication(bundleIdentifier: prefix + "." + framework.lowercased())

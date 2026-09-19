@@ -4,6 +4,7 @@ import argparse
 from collections import Counter
 import json
 from pathlib import Path
+from pose import transition_valid
 
 
 def require(value, message):
@@ -62,6 +63,12 @@ def qualify(run, rows, receipts, summary):
             require(geometry is not None and geometry["kind"] == "geometry", "unknown pose geometry")
             requested = next(r["timestamp"] for r in receipts if r["phase"] == "await-" + name)
             require(requested <= geometry["timestamp"] <= receipt["timestamp"], "stale or late pose geometry")
+            require(payload.get("pose") == name and bool(payload.get("command_id")), "missing pose command identity")
+            require(payload["after"]["geometry"] == geometry, "pose geometry differs from native inventory")
+            require(payload["before"]["geometry"] in rows, "pose precondition differs from native inventory")
+            require(payload["after"]["display"]["observed_at"] <= receipt["timestamp"], "late display readback")
+            try: transition_valid(payload["before"], payload["after"], name, requested)
+            except AssertionError as error: raise ValueError(str(error)) from error
     return launch
 
 
@@ -115,9 +122,21 @@ def compare(before, after, family, initial_only=False):
     return {"status": "UNCHANGED_LIMITATION" if limitation else "UNCHANGED_OBSERVED_COVERAGE"}
 
 
-def analyze(attempt):
+def analyze(attempt, seen=None):
     m = json.loads((attempt / "manifest.json").read_text()); result = {"experiment": "EXP-195", "cells": [], "comparisons": [], "boundary": "Local mapper comparison; not backend or physical proof"}
+    seen = set() if seen is None else seen
+    require(str(attempt.resolve()) not in seen, "cyclic prior attempts")
+    seen.add(str(attempt.resolve()))
     accepted = {}
+    for prior in m.get("comparison_prior_attempts", []):
+        previous = Path(prior)
+        prior_manifest = json.loads((previous / "manifest.json").read_text())
+        require(prior_manifest["fixture"] == m["fixture"], "application fixture changed between attempts")
+        require({k: (v["revision"], v["sdk"], v["sdk_sources"]) for k,v in prior_manifest["builds"].items()}
+                == {k: (v["revision"], v["sdk"], v["sdk_sources"]) for k,v in m["builds"].items()}, "SDK source changed between attempts")
+        result["cells"].extend(analyze(previous, seen)["cells"])
+    for item in result["cells"]:
+        if item["state"] == "QUALIFIED_INPUT": accepted[tuple(item["cell"])] = item
     for run in m["runs"]:
         d = Path(run["directory"])
         try:
@@ -131,6 +150,7 @@ def analyze(attempt):
             accepted[tuple(item["cell"])] = item
         except (ValueError, KeyError, FileNotFoundError) as e:
             item = {"run_id": run["run_id"], "cell": [run["build"], run["device"], run["framework"], run["layout"]], "state": "UNQUALIFIED_INPUT", "reason": str(e)}
+        item["attempt"] = str(attempt)
         result["cells"].append(item)
     for key, current in accepted.items():
         build, device, fw, layout = key

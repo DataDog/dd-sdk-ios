@@ -96,7 +96,7 @@
     },
     {
       "directory": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp195-automatic-ll6bo13r",
-      "status": "BUILT",
+      "status": "PARTIAL COLLECTION",
       "builds": [
         "baseline-26.5",
         "candidate-26.5",
@@ -104,7 +104,21 @@
         "candidate-27.1"
       ],
       "oracle_controls": 24,
-      "native_cells": 0
+      "native_cells": 4,
+      "qualified_cells": 2,
+      "reason": "Regular SwiftUI stack/split inputs qualify. UIKit stack switch target and compact split initial-column assumptions failed before decisive input; both preserved and cleaned."
+    },
+    {
+      "directory": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp195-automatic-mo8om5bc",
+      "status": "BUILT",
+      "builds": [
+        "baseline-26.5",
+        "candidate-26.5",
+        "baseline-27.1",
+        "candidate-27.1"
+      ],
+      "oracle_controls": 41,
+      "collector_change": "Use native UIKit switch center, observed compact split Back control and reverse scroll when previously moved. Application/SDK sources unchanged; prior qualified cells retained with their own identities."
     }
   ],
   "preflight": {
@@ -121,5 +135,11 @@
     "UIKit_action_predicate": "unchanged default names; touch/scroll ownership dispatch changed in this branch",
     "SwiftUI_action_detection": "modern detector and component-name helper unchanged from baseline; relies on OS gesture descriptions, so source parity does not prove runtime compatibility",
     "limits": "Source comparison is explanatory evidence only. Pending real-input matrix determines non-regression."
+  },
+  "partial_findings": {
+    "boundary": "Two candidate SDK27.1-built regular-iPhone SwiftUI inputs only; no paired non-regression or Duo verdict yet.",
+    "SwiftUI_stack": "11 automatic actions (9 taps, 2 swipes); both Toggle changes lack actions. Home uses hosting/fallback names; Detail and Sheet are named. Nine unique view occurrences including ApplicationLaunch.",
+    "SwiftUI_split": "11 automatic actions (9 taps, 2 swipes); both Toggle changes lack actions. Home/sidebar and Detail use hosting/fallback names; Sheet is named. Nine unique view occurrences including ApplicationLaunch.",
+    "new_sdk_defect": "Not established."
   }
 }

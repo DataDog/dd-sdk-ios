@@ -1983,3 +1983,20 @@ collection may lose an otherwise pending final automatic action, so end with
 a qualified real background boundary; a SwiftUI switch element can be found
 and tapped without changing value, so require both its native callback and
 value change. Preserve either failure as collector/input evidence, not SDK loss.
+
+
+For UIKit, do not reuse the SwiftUI trailing-label switch coordinate: the native
+stretched switch's clickable content differs. Follow a compact split's actual
+initial column and native Back control before assuming its sidebar is visible.
+A repeated scroll must still move content; reverse the direction when Row0 is
+already offscreen. These are collector changes, not app layout fixes.
+
+`automatic-coverage/pose.py before --attempt PATH --pose open|close|reopen`
+freezes the waiting run's geometry/display precondition. After real Device Hub
+input, `ack` requires changed native geometry, unchanged scene identity and a
+fresh active-display readback before writing a single-use run-bound receipt.
+The offline oracle checks those same records. A click, stale geometry, late
+assertion or inactive display cannot qualify a fold. Preserve each collector
+revision in a separate attempt. Prior qualified cells may be compared only when
+app fixture and all archived SDK source fingerprints match; keep their original
+build/installed identities and disclose the collector-only change.

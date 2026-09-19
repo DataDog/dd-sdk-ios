@@ -45,3 +45,13 @@ confound. Same-device old/new build comparisons isolate rebuild changes.
 
 All RUM events are synthetic, observed locally through pass-through mappers with
 a dummy token and loopback upload endpoint. No backend ingestion claim is made.
+
+
+Use `pose.py status --attempt PATH` to locate the current native input boundary.
+`pose.py before --attempt PATH --pose NAME` freezes its actual display/geometry;
+perform the real Device Hub transition, then `pose.py ack` with the same arguments.
+The helper checks active outer/inner display, foreground native geometry, scene
+identity and chronology before releasing the test. It never changes the pose.
+`comparison_prior_attempts` retains qualified cells from earlier collector-only
+revisions, provided app and all SDK source fingerprints remain identical. Each
+cell keeps its own manifest, build identity and raw evidence.
