@@ -75,44 +75,44 @@
       "deliverable": "UIKit automatic view non-regression after an iOS 27 rebuild",
       "owner": "SDK implementer",
       "dependencies": [],
-      "decisive_test": "EXP-195 fixed automatic-only stack/split matrix: paired pre-scene/current SDK and genuine SDK26.5/27.1 builds on regular iPhone27.0 and Duo27.1. Qualify actual inputs and geometry; preserve existing view/action detection, names, counts and owner relationships; classify every difference and close only with no new unexplained degradation.",
+      "decisive_test": "EXP-195 fixed automatic-only stack/split matrix: paired pre-scene/current SDK and genuine SDK26.5/27.1 builds on regular iPhone27.0 and Duo27.1. Qualify actual inputs and geometry; preserve existing view/action detection, names, counts and owner relationships; classify every difference and close only with no new unexplained degradation. Also execute the separately defined eight SDK27 Duo source-paired cells with only the manifest flag true and exactly one actual native scene; no other UI families added.",
       "environment": "Xcode26.6 with SDK26.5 and Xcode27.1; regular iPhone27.0 and Duo27.1 simulators; physical Duo remains F04",
       "completion_mode": null,
       "status": "OPEN",
-      "evidence": "EXP-195 regular matrix complete:16 qualified cells/32 unchanged view-action comparisons across genuineSDK26.5/27.1 builds and baseline/current source. Existing switch/Toggle omissions and SwiftUI hosting-name limits remain. Results/EXP-195-regular-automatic-coverage.json retains exact inventories, owners, installed identities and evidence hashes. Duo pairs are running; original collector failures remain unqualified. Manifest-false scope only; no broad one-window manifest-true or physical claim."
+      "evidence": "EXP-195 regular matrix complete:16 qualified cells/32 unchanged view-action comparisons across genuineSDK26.5/27.1 builds and baseline/current source. Existing switch/Toggle omissions and SwiftUI hosting-name limits remain. Results/EXP-195-regular-automatic-coverage.json retains exact inventories, owners, installed identities and evidence hashes. Duo pairs are running; original collector failures remain unqualified. Manifest-false scope only; no broad one-window manifest-true or physical claim. Fixed eight-cell manifest-true source-path follow-up defined before implementation in the owning result."
     },
     {
       "id": "C08",
       "deliverable": "UIKit automatic action non-regression after an iOS 27 rebuild",
       "owner": "SDK implementer",
       "dependencies": [],
-      "decisive_test": "EXP-195 fixed automatic-only stack/split matrix: paired pre-scene/current SDK and genuine SDK26.5/27.1 builds on regular iPhone27.0 and Duo27.1. Qualify actual inputs and geometry; preserve existing view/action detection, names, counts and owner relationships; classify every difference and close only with no new unexplained degradation.",
+      "decisive_test": "EXP-195 fixed automatic-only stack/split matrix: paired pre-scene/current SDK and genuine SDK26.5/27.1 builds on regular iPhone27.0 and Duo27.1. Qualify actual inputs and geometry; preserve existing view/action detection, names, counts and owner relationships; classify every difference and close only with no new unexplained degradation. Also execute the separately defined eight SDK27 Duo source-paired cells with only the manifest flag true and exactly one actual native scene; no other UI families added.",
       "environment": "Xcode26.6 with SDK26.5 and Xcode27.1; regular iPhone27.0 and Duo27.1 simulators; physical Duo remains F04",
       "completion_mode": null,
       "status": "OPEN",
-      "evidence": "EXP-195 regular matrix complete:16 qualified cells/32 unchanged view-action comparisons across genuineSDK26.5/27.1 builds and baseline/current source. Existing switch/Toggle omissions and SwiftUI hosting-name limits remain. Results/EXP-195-regular-automatic-coverage.json retains exact inventories, owners, installed identities and evidence hashes. Duo pairs are running; original collector failures remain unqualified. Manifest-false scope only; no broad one-window manifest-true or physical claim."
+      "evidence": "EXP-195 regular matrix complete:16 qualified cells/32 unchanged view-action comparisons across genuineSDK26.5/27.1 builds and baseline/current source. Existing switch/Toggle omissions and SwiftUI hosting-name limits remain. Results/EXP-195-regular-automatic-coverage.json retains exact inventories, owners, installed identities and evidence hashes. Duo pairs are running; original collector failures remain unqualified. Manifest-false scope only; no broad one-window manifest-true or physical claim. Fixed eight-cell manifest-true source-path follow-up defined before implementation in the owning result."
     },
     {
       "id": "C09",
       "deliverable": "SwiftUI automatic view non-regression after an iOS 27 rebuild",
       "owner": "SDK implementer",
       "dependencies": [],
-      "decisive_test": "EXP-195 fixed automatic-only stack/split matrix: paired pre-scene/current SDK and genuine SDK26.5/27.1 builds on regular iPhone27.0 and Duo27.1. Qualify actual inputs and geometry; preserve existing view/action detection, names, counts and owner relationships; classify every difference and close only with no new unexplained degradation.",
+      "decisive_test": "EXP-195 fixed automatic-only stack/split matrix: paired pre-scene/current SDK and genuine SDK26.5/27.1 builds on regular iPhone27.0 and Duo27.1. Qualify actual inputs and geometry; preserve existing view/action detection, names, counts and owner relationships; classify every difference and close only with no new unexplained degradation. Also execute the separately defined eight SDK27 Duo source-paired cells with only the manifest flag true and exactly one actual native scene; no other UI families added.",
       "environment": "Xcode26.6 with SDK26.5 and Xcode27.1; regular iPhone27.0 and Duo27.1 simulators; physical Duo remains F04",
       "completion_mode": null,
       "status": "OPEN",
-      "evidence": "EXP-195 regular matrix complete:16 qualified cells/32 unchanged view-action comparisons across genuineSDK26.5/27.1 builds and baseline/current source. Existing switch/Toggle omissions and SwiftUI hosting-name limits remain. Results/EXP-195-regular-automatic-coverage.json retains exact inventories, owners, installed identities and evidence hashes. Duo pairs are running; original collector failures remain unqualified. Manifest-false scope only; no broad one-window manifest-true or physical claim."
+      "evidence": "EXP-195 regular matrix complete:16 qualified cells/32 unchanged view-action comparisons across genuineSDK26.5/27.1 builds and baseline/current source. Existing switch/Toggle omissions and SwiftUI hosting-name limits remain. Results/EXP-195-regular-automatic-coverage.json retains exact inventories, owners, installed identities and evidence hashes. Duo pairs are running; original collector failures remain unqualified. Manifest-false scope only; no broad one-window manifest-true or physical claim. Fixed eight-cell manifest-true source-path follow-up defined before implementation in the owning result."
     },
     {
       "id": "C10",
       "deliverable": "SwiftUI automatic action non-regression after an iOS 27 rebuild",
       "owner": "SDK implementer",
       "dependencies": [],
-      "decisive_test": "EXP-195 fixed automatic-only stack/split matrix: paired pre-scene/current SDK and genuine SDK26.5/27.1 builds on regular iPhone27.0 and Duo27.1. Qualify actual inputs and geometry; preserve existing view/action detection, names, counts and owner relationships; classify every difference and close only with no new unexplained degradation.",
+      "decisive_test": "EXP-195 fixed automatic-only stack/split matrix: paired pre-scene/current SDK and genuine SDK26.5/27.1 builds on regular iPhone27.0 and Duo27.1. Qualify actual inputs and geometry; preserve existing view/action detection, names, counts and owner relationships; classify every difference and close only with no new unexplained degradation. Also execute the separately defined eight SDK27 Duo source-paired cells with only the manifest flag true and exactly one actual native scene; no other UI families added.",
       "environment": "Xcode26.6 with SDK26.5 and Xcode27.1; regular iPhone27.0 and Duo27.1 simulators; physical Duo remains F04",
       "completion_mode": null,
       "status": "OPEN",
-      "evidence": "EXP-195 regular matrix complete:16 qualified cells/32 unchanged view-action comparisons across genuineSDK26.5/27.1 builds and baseline/current source. Existing switch/Toggle omissions and SwiftUI hosting-name limits remain. Results/EXP-195-regular-automatic-coverage.json retains exact inventories, owners, installed identities and evidence hashes. Duo pairs are running; original collector failures remain unqualified. Manifest-false scope only; no broad one-window manifest-true or physical claim."
+      "evidence": "EXP-195 regular matrix complete:16 qualified cells/32 unchanged view-action comparisons across genuineSDK26.5/27.1 builds and baseline/current source. Existing switch/Toggle omissions and SwiftUI hosting-name limits remain. Results/EXP-195-regular-automatic-coverage.json retains exact inventories, owners, installed identities and evidence hashes. Duo pairs are running; original collector failures remain unqualified. Manifest-false scope only; no broad one-window manifest-true or physical claim. Fixed eight-cell manifest-true source-path follow-up defined before implementation in the owning result."
     },
     {
       "id": "P01",

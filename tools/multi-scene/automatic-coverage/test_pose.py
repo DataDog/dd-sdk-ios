@@ -39,4 +39,31 @@ class PoseReceiptTests(unittest.TestCase):
     def test_empty_windows(self): self.rejects(lambda b,a: a['geometry']['payload']['scenes'][0].update(windows=[]))
     def test_late_precondition_geometry(self): self.rejects(lambda b,a: b['geometry'].update(timestamp=2))
 
+    def duplicate_legacy_windows(self):
+        before, after = fixture()
+        window = {'width': 375, 'height': 667, 'horizontal_size_class': 1, 'vertical_size_class': 2}
+        before['geometry']['payload']['scenes'][0]['windows'] = [window]
+        after['geometry']['payload']['scenes'][0]['windows'] = [window.copy(), window.copy()]
+        return before, after
+    def test_duplicate_windows_do_not_prove_spatial_resize(self):
+        with self.assertRaisesRegex(AssertionError, 'duplicate windows'):
+            transition_valid(*self.duplicate_legacy_windows(), 'open', 1)
+    def test_fresh_legacy_inventory_and_display_change_are_labeled_honestly(self):
+        self.assertEqual(transition_valid(*self.duplicate_legacy_windows(), 'open', 1,
+                                        allow_legacy_viewport=True), 'legacy_viewport_unchanged')
+    def test_legacy_mode_still_requires_fresh_geometry(self):
+        before, after = self.duplicate_legacy_windows(); after['geometry']['timestamp'] = 0.5
+        with self.assertRaisesRegex(AssertionError, 'stale native geometry'):
+            transition_valid(before, after, 'open', 1, allow_legacy_viewport=True)
+    def test_legacy_mode_does_not_allow_other_stable_geometry(self):
+        before, after = self.duplicate_legacy_windows()
+        for state in [before, after]:
+            for window in state['geometry']['payload']['scenes'][0]['windows']: window['width'] = 466
+        with self.assertRaisesRegex(AssertionError, 'duplicate windows'):
+            transition_valid(before, after, 'open', 1, allow_legacy_viewport=True)
+    def test_legacy_mode_still_requires_actual_display_change(self):
+        before, after = self.duplicate_legacy_windows(); after['display']['active']['uniqueId'] = 'outer'
+        with self.assertRaisesRegex(AssertionError, 'active display did not change'):
+            transition_valid(before, after, 'open', 1, allow_legacy_viewport=True)
+
 if __name__ == '__main__': unittest.main()

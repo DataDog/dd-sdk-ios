@@ -42,7 +42,7 @@ def geometry(rows, before=None):
     return values[-1]
 
 
-def transition_valid(before, after, name, requested):
+def transition_valid(before, after, name, requested, *, allow_legacy_viewport=False):
     assert before['display']['observed_at'] >= requested, 'stale display precondition'
     assert after['display']['observed_at'] > before['display']['observed_at'], 'stale display readback'
     old, new = before['display']['active'], after['display']['active']
@@ -58,7 +58,14 @@ def transition_valid(before, after, name, requested):
     assert len(a) == len(b) == 1 and a[0]['id'] == b[0]['id'], 'native scene replaced'
     assert b[0]['activation'] == 0, 'not foreground-active'
     assert b[0]['windows'] and all(w['width'] > 0 and w['height'] > 0 for w in b[0]['windows']), 'empty native geometry'
-    assert a[0]['windows'] != b[0]['windows'], 'window geometry did not change'
+    assert a[0]['windows'] != b[0]['windows'], 'native window inventory did not change'
+    def spatial(windows):
+        return {(w['width'], w['height'], w.get('horizontal_size_class'), w.get('vertical_size_class')) for w in windows}
+    old_geometry, new_geometry = spatial(a[0]['windows']), spatial(b[0]['windows'])
+    if old_geometry == new_geometry:
+        assert allow_legacy_viewport and new_geometry == {(375, 667, 1, 2)}, 'duplicate windows do not prove a resize'
+        return 'legacy_viewport_unchanged'
+    return 'resized'
 
 
 def main():
@@ -102,10 +109,10 @@ def main():
         save(checkpoint, value); print(json.dumps(value)); return
     before = json.loads(checkpoint.read_text()); assert before['run_id'] == run['run_id']
     after = {'geometry': geometry(rows), 'display': display(run, args.pose + '-after')}
-    transition_valid(before, after, args.pose, requested)
+    mode = transition_valid(before, after, args.pose, requested, allow_legacy_viewport=run['build'].endswith('-26.5'))
     destination = directory / (args.pose + '.json'); assert not destination.exists(), 'command already delivered'
     payload = {'run_id': run['run_id'], 'command_id': str(uuid.uuid4()), 'pose': args.pose,
-               'geometry_sequence': after['geometry']['sequence'], 'before': before, 'after': after}
+               'geometry_sequence': after['geometry']['sequence'], 'geometry_mode': mode, 'before': before, 'after': after}
     save(Path(run['directory']) / (args.pose + '-command.json'), payload)
     save(destination, payload)
     print(json.dumps({'run_id': run['run_id'], 'pose': args.pose, 'geometry_sequence': payload['geometry_sequence']}))

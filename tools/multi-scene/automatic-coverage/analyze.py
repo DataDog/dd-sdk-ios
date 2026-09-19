@@ -81,7 +81,10 @@ def qualify(run, rows, receipts, summary):
             require(payload["after"]["geometry"] == geometry, "pose geometry differs from native inventory")
             require(payload["before"]["geometry"] in rows, "pose precondition differs from native inventory")
             require(payload["after"]["display"]["observed_at"] <= receipt["timestamp"], "late display readback")
-            try: transition_valid(payload["before"], payload["after"], name, requested)
+            try:
+                mode = transition_valid(payload["before"], payload["after"], name, requested,
+                                        allow_legacy_viewport=run.get("build", "").endswith("-26.5"))
+                require(payload.get("geometry_mode", "resized") == mode, "misclassified pose geometry")
             except AssertionError as error: raise ValueError(str(error)) from error
     return launch
 
