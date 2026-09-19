@@ -470,8 +470,8 @@
       "decisive_test": "EXP-129: distinct Compose IDs, B stop preserves A, fresh Home per scene",
       "environment": "Physical iPad/iPhone Duo; human gesture for H11\u2013H13; resize-capable for H14",
       "completion_mode": null,
-      "status": "ENVIRONMENT BLOCKED",
-      "evidence": "EXP-191 native22/22 ownership checks are INCONCLUSIVE because B replaces A full-screen. Two EXP-192 inner-display input attempts do not prove simultaneous visibility. Actual precritical overlap/backend proof and physical requirement remain. Results/H01-physical-preparation.json records a newly reachable physical iPad27.0 and the exact precritical topology/identity/ownership requirements; device availability answer remains pending. No physical execution or closure."
+      "status": "OPEN",
+      "evidence": "EXP-191 native22/22 ownership checks are INCONCLUSIVE because B replaces A full-screen. Two EXP-192 inner-display input attempts do not prove simultaneous visibility. Actual precritical overlap/backend proof and physical requirement remain. Results/H01-physical-preparation.json records a newly reachable physical iPad27.0 and the exact precritical topology/identity/ownership requirements; device use is now explicitly authorized and EXP-196 defines unattended execution. No physical acceptance yet."
     },
     {
       "id": "H02",
@@ -483,7 +483,7 @@
       "decisive_test": "EXP-086/103: simultaneously visible A/B chains, distinct occurrences, no structural view",
       "environment": "Physical iPad/iPhone Duo; human gesture for H11\u2013H13; resize-capable for H14",
       "completion_mode": null,
-      "status": "ENVIRONMENT BLOCKED",
+      "status": "OPEN",
       "evidence": ""
     },
     {
@@ -496,7 +496,7 @@
       "decisive_test": "EXP-041/089/113: A work stays on A while B represents; B close never stops A",
       "environment": "Physical iPad/iPhone Duo; human gesture for H11\u2013H13; resize-capable for H14",
       "completion_mode": null,
-      "status": "ENVIRONMENT BLOCKED",
+      "status": "OPEN",
       "evidence": ""
     },
     {
@@ -509,7 +509,7 @@
       "decisive_test": "EXP-114: target foreground-active, peer background, exact lifecycle and event owners",
       "environment": "Physical iPad/iPhone Duo; human gesture for H11\u2013H13; resize-capable for H14",
       "completion_mode": null,
-      "status": "ENVIRONMENT BLOCKED",
+      "status": "OPEN",
       "evidence": ""
     },
     {
@@ -522,7 +522,7 @@
       "decisive_test": "EXP-118: semantic A and automatic B neither suppress nor own each other",
       "environment": "Physical iPad/iPhone Duo; human gesture for H11\u2013H13; resize-capable for H14",
       "completion_mode": null,
-      "status": "ENVIRONMENT BLOCKED",
+      "status": "OPEN",
       "evidence": ""
     },
     {
@@ -535,7 +535,7 @@
       "decisive_test": "EXP-131/157 accepted ownership repeated with simultaneous visible topology evidence",
       "environment": "Physical iPad/iPhone Duo; human gesture for H11\u2013H13; resize-capable for H14",
       "completion_mode": null,
-      "status": "ENVIRONMENT BLOCKED",
+      "status": "OPEN",
       "evidence": ""
     },
     {
@@ -548,7 +548,7 @@
       "decisive_test": "EXP-136: A-created request joined in B yields exactly one A span and no RUM Resource in trace-only mode",
       "environment": "Physical iPad/iPhone Duo; human gesture for H11\u2013H13; resize-capable for H14",
       "completion_mode": null,
-      "status": "ENVIRONMENT BLOCKED",
+      "status": "OPEN",
       "evidence": ""
     },
     {
@@ -563,7 +563,7 @@
       "decisive_test": "EXP-146: real final A removal stops A once, releases source, preserves B and rejects resurrection",
       "environment": "Physical iPad/iPhone Duo; human gesture for H11\u2013H13; resize-capable for H14",
       "completion_mode": null,
-      "status": "ENVIRONMENT BLOCKED",
+      "status": "OPEN",
       "evidence": ""
     },
     {
@@ -579,7 +579,7 @@
       "decisive_test": "OS-driven disconnect/remount, no posted substitutes; fresh occurrence, stale callbacks fenced, peer continuity",
       "environment": "Physical iPad/iPhone Duo; human gesture for H11\u2013H13; resize-capable for H14",
       "completion_mode": null,
-      "status": "ENVIRONMENT BLOCKED",
+      "status": "OPEN",
       "evidence": ""
     },
     {
@@ -592,7 +592,7 @@
       "decisive_test": "Background A while B remains usable; neither lifecycle transition replaces peer current view",
       "environment": "Physical iPad/iPhone Duo; human gesture for H11\u2013H13; resize-capable for H14",
       "completion_mode": null,
-      "status": "ENVIRONMENT BLOCKED",
+      "status": "OPEN",
       "evidence": ""
     },
     {
@@ -605,7 +605,7 @@
       "decisive_test": "EXP-081: recognized cancel preserves Detail ID; recognized completion reveals fresh Home",
       "environment": "Physical iPad/iPhone Duo; human gesture for H11\u2013H13; resize-capable for H14",
       "completion_mode": null,
-      "status": "ENVIRONMENT BLOCKED",
+      "status": "OPEN",
       "evidence": "EXP-192 qualifies actual compact outer S2 readiness after fixture repair, but two fresh bounded UIKit drags produce no native interactive callback. Input collection passes1/1 each; no gesture semantics accepted. Equivalent retries stop. SwiftUI/presentation remain unexecuted and physical human obligations unchanged."
     },
     {
@@ -618,7 +618,7 @@
       "decisive_test": "EXP-100: recognized cancel preserves Detail ID; completion commits fresh Home before work",
       "environment": "Physical iPad/iPhone Duo; human gesture for H11\u2013H13; resize-capable for H14",
       "completion_mode": null,
-      "status": "ENVIRONMENT BLOCKED",
+      "status": "OPEN",
       "evidence": "EXP-192 qualifies actual compact outer S2 readiness after fixture repair, but two fresh bounded UIKit drags produce no native interactive callback. Input collection passes1/1 each; no gesture semantics accepted. Equivalent retries stop. SwiftUI/presentation remain unexecuted and physical human obligations unchanged."
     },
     {
@@ -632,7 +632,7 @@
       "decisive_test": "EXP-152: cancelled Sheet retains ID; completed dismissal yields one fresh Home before actual callback work",
       "environment": "Physical iPad/iPhone Duo; human gesture for H11\u2013H13; resize-capable for H14",
       "completion_mode": null,
-      "status": "ENVIRONMENT BLOCKED",
+      "status": "OPEN",
       "evidence": "EXP-192 qualifies actual compact outer S2 readiness after fixture repair, but two fresh bounded UIKit drags produce no native interactive callback. Input collection passes1/1 each; no gesture semantics accepted. Equivalent retries stop. SwiftUI/presentation remain unexecuted and physical human obligations unchanged."
     },
     {
@@ -645,7 +645,7 @@
       "decisive_test": "EXP-076/087: measured regular \u2192 compact \u2192 regular geometry, selection, path and exact owners",
       "environment": "Physical iPad/iPhone Duo; human gesture for H11\u2013H13; resize-capable for H14",
       "completion_mode": null,
-      "status": "ENVIRONMENT BLOCKED",
+      "status": "OPEN",
       "evidence": "EXP-193 accepts resize5 phases/16 exact work/3 backend views at3c5a267b0 and pose10 phases/42 exact work/7 backend views at signed7c8154aca, zero errors/crashes and each guarded XCTest1/1. Exact owners survive measured geometry and actual open/close; accepted selections/returns produce six distinct occurrences. All code identities and cleanup pass. Physical hinge/resize H14 remains required."
     },
     {
@@ -658,7 +658,7 @@
       "decisive_test": "EXP-042: both native sessions reconnect with fresh RUM IDs and no stale run attributes",
       "environment": "Physical iPad/iPhone Duo; human gesture for H11\u2013H13; resize-capable for H14",
       "completion_mode": null,
-      "status": "ENVIRONMENT BLOCKED",
+      "status": "OPEN",
       "evidence": ""
     },
     {
@@ -671,7 +671,7 @@
       "decisive_test": "EXP-001 follow-up: same semantic/lifecycle/ownership contract in UIHostingController as WindowGroup",
       "environment": "Physical iPad/iPhone Duo; human gesture for H11\u2013H13; resize-capable for H14",
       "completion_mode": null,
-      "status": "ENVIRONMENT BLOCKED",
+      "status": "OPEN",
       "evidence": ""
     },
     {
@@ -761,7 +761,7 @@
       "decisive_test": "Enable Replay through two scenes, navigation and teardown without SDK-caused crash; no scene-correct replay claim",
       "environment": "Physical multi-window device",
       "completion_mode": null,
-      "status": "ENVIRONMENT BLOCKED",
+      "status": "OPEN",
       "evidence": "EXP-194 simulator slice passes four native record-growth checkpoints, actual B disconnect, complete six-view backend ownership and zero stray Action/Resource/errors/crashes on iPad27.0.205 native/275 Python tests,36 new negative controls; every app binary and cleanup verified. Native6e8980bbc/oracle31ac062b3 provenance remains distinct. Physical multi-window run still required; no scene-correct Replay claim."
     },
     {

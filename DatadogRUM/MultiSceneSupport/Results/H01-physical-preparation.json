@@ -1,6 +1,6 @@
 {
   "gate": "H01",
-  "status": "PREPARED \u2014 DEVICE AVAILABILITY ANSWER PENDING",
+  "status": "AUTHORIZED \u2014 EXECUTION DEFINED IN EXP-196",
   "owner": "SDK implementer + device operator",
   "prepared_at": 1789831239.288801,
   "source_checkpoint": "fb9972e4df2c78e65bdd678ea6e80314174781d7",
@@ -24,7 +24,7 @@
       "query.log": "7e4e5c35d2dc1204a59252534d6e18750996f8325213a38e1464aba02a0c17ea"
     }
   },
-  "availability_boundary": "This network-paired iPad has not been offered explicitly as a test device in the active session. A single asynchronous use/availability question is pending. No installation, screen interaction or device setting change is authorized by the discovery result itself.",
+  "availability_boundary": "User explicitly connected the physical iPad, disabled auto-lock and authorized all unattended physical-iPad tests. No further device-use confirmation required.",
   "source_findings": [
     {
       "file": "Datadog/Example/MultiSceneProbe/Sources/Harness/ProbeScenarioCatalog.swift",
@@ -79,5 +79,6 @@
     "installed-code mismatch",
     "extra/missing backend work"
   ],
-  "validation_this_preparation": "Source/read-only environment inspection and documentation checker only. No physical test, SDK test rerun, install or settings change."
+  "validation_this_preparation": "Source/read-only environment inspection and documentation checker only. No physical test, SDK test rerun, install or settings change.",
+  "execution_definition": "EXP-196-physical-ipad-suite.json"
 }

@@ -4,8 +4,8 @@
   "gate_count": 70,
   "counts": {
     "CLOSED": 43,
-    "ENVIRONMENT BLOCKED": 22,
-    "OPEN": 4,
+    "ENVIRONMENT BLOCKED": 5,
+    "OPEN": 21,
     "REVIEW BLOCKED": 1
   },
   "closed": [
@@ -86,7 +86,7 @@
     },
     {
       "id": "H01",
-      "status": "ENVIRONMENT BLOCKED",
+      "status": "OPEN",
       "owner": "Device operator + SDK implementer",
       "dependencies": [
         "A01"
@@ -94,7 +94,7 @@
     },
     {
       "id": "H02",
-      "status": "ENVIRONMENT BLOCKED",
+      "status": "OPEN",
       "owner": "Device operator + SDK implementer",
       "dependencies": [
         "A01"
@@ -102,7 +102,7 @@
     },
     {
       "id": "H03",
-      "status": "ENVIRONMENT BLOCKED",
+      "status": "OPEN",
       "owner": "Device operator + SDK implementer",
       "dependencies": [
         "A01"
@@ -110,7 +110,7 @@
     },
     {
       "id": "H04",
-      "status": "ENVIRONMENT BLOCKED",
+      "status": "OPEN",
       "owner": "Device operator + SDK implementer",
       "dependencies": [
         "A01"
@@ -118,7 +118,7 @@
     },
     {
       "id": "H05",
-      "status": "ENVIRONMENT BLOCKED",
+      "status": "OPEN",
       "owner": "Device operator + SDK implementer",
       "dependencies": [
         "A01"
@@ -126,7 +126,7 @@
     },
     {
       "id": "H06",
-      "status": "ENVIRONMENT BLOCKED",
+      "status": "OPEN",
       "owner": "Device operator + SDK implementer",
       "dependencies": [
         "A01"
@@ -134,7 +134,7 @@
     },
     {
       "id": "H07",
-      "status": "ENVIRONMENT BLOCKED",
+      "status": "OPEN",
       "owner": "Device operator + SDK implementer",
       "dependencies": [
         "A01"
@@ -142,7 +142,7 @@
     },
     {
       "id": "H08",
-      "status": "ENVIRONMENT BLOCKED",
+      "status": "OPEN",
       "owner": "Device operator + SDK implementer",
       "dependencies": [
         "A01",
@@ -152,7 +152,7 @@
     },
     {
       "id": "H09",
-      "status": "ENVIRONMENT BLOCKED",
+      "status": "OPEN",
       "owner": "Device operator + SDK implementer",
       "dependencies": [
         "A01",
@@ -163,7 +163,7 @@
     },
     {
       "id": "H10",
-      "status": "ENVIRONMENT BLOCKED",
+      "status": "OPEN",
       "owner": "Device operator + SDK implementer",
       "dependencies": [
         "A01"
@@ -171,7 +171,7 @@
     },
     {
       "id": "H11",
-      "status": "ENVIRONMENT BLOCKED",
+      "status": "OPEN",
       "owner": "Device operator + SDK implementer",
       "dependencies": [
         "A01"
@@ -179,7 +179,7 @@
     },
     {
       "id": "H12",
-      "status": "ENVIRONMENT BLOCKED",
+      "status": "OPEN",
       "owner": "Device operator + SDK implementer",
       "dependencies": [
         "A01"
@@ -187,7 +187,7 @@
     },
     {
       "id": "H13",
-      "status": "ENVIRONMENT BLOCKED",
+      "status": "OPEN",
       "owner": "Device operator + SDK implementer",
       "dependencies": [
         "A01",
@@ -196,7 +196,7 @@
     },
     {
       "id": "H14",
-      "status": "ENVIRONMENT BLOCKED",
+      "status": "OPEN",
       "owner": "Device operator + SDK implementer",
       "dependencies": [
         "A01"
@@ -204,7 +204,7 @@
     },
     {
       "id": "H15",
-      "status": "ENVIRONMENT BLOCKED",
+      "status": "OPEN",
       "owner": "Device operator + SDK implementer",
       "dependencies": [
         "A01"
@@ -212,7 +212,7 @@
     },
     {
       "id": "H16",
-      "status": "ENVIRONMENT BLOCKED",
+      "status": "OPEN",
       "owner": "Device operator + SDK implementer",
       "dependencies": [
         "A01"
@@ -277,7 +277,7 @@
     },
     {
       "id": "F05",
-      "status": "ENVIRONMENT BLOCKED",
+      "status": "OPEN",
       "owner": "SDK implementer",
       "dependencies": [
         "A01"

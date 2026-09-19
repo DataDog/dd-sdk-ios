@@ -1,0 +1,399 @@
+{
+  "experiment": "EXP-196",
+  "title": "Run the finite unattended physical iPad acceptance matrix",
+  "status": "DEFINED",
+  "defined_at": 1789834658.146247,
+  "defined_before_implementation": true,
+  "definition_parent_revision": "d888d8112a2dcfe902555df2b1940a6819e04b60",
+  "candidate_revision": "04201edc7711361279d8487b385bc8b0ca9c63c7",
+  "admission": "User connected the physical iPad, disabled its auto-lock and explicitly requested all physical-iPad tests without human interactions. Existing H01-H16 and F05 only; no new gate or product scope.",
+  "owner": "SDK implementer",
+  "cases": [
+    {
+      "gate": "F05",
+      "owner": "SDK implementer; automated device control",
+      "dependency": [
+        "A01"
+      ],
+      "cases": [
+        "replay.native-recording.navigation-teardown-serial"
+      ],
+      "decisive_test": "Enable Replay through two scenes, navigation and teardown without SDK-caused crash; no scene-correct replay claim",
+      "required_environment": "Authorized physical iPad27.0; genuine OS/window input and fresh native evidence",
+      "status": "DEFINED",
+      "execution_boundary": "Require topology/lifecycle prerequisites before the critical boundary; incomplete input is not SDK evidence."
+    },
+    {
+      "gate": "H01",
+      "owner": "SDK implementer; automated device control",
+      "dependency": [
+        "A01"
+      ],
+      "cases": [
+        "swiftui.coexistence.same-key-manual-two-scenes"
+      ],
+      "decisive_test": "EXP-129: distinct Compose IDs, B stop preserves A, fresh Home per scene",
+      "required_environment": "Authorized physical iPad27.0; genuine OS/window input and fresh native evidence",
+      "status": "DEFINED",
+      "execution_boundary": "Require topology/lifecycle prerequisites before the critical boundary; incomplete input is not SDK evidence."
+    },
+    {
+      "gate": "H02",
+      "owner": "SDK implementer; automated device control",
+      "dependency": [
+        "A01"
+      ],
+      "cases": [
+        "uikit.split.concurrent-scenes",
+        "swiftui.split.same-type-selection-two-scenes"
+      ],
+      "decisive_test": "EXP-086/103: simultaneously visible A/B chains, distinct occurrences, no structural view",
+      "required_environment": "Authorized physical iPad27.0; genuine OS/window input and fresh native evidence",
+      "status": "DEFINED",
+      "execution_boundary": "Require topology/lifecycle prerequisites before the critical boundary; incomplete input is not SDK evidence."
+    },
+    {
+      "gate": "H03",
+      "owner": "SDK implementer; automated device control",
+      "dependency": [
+        "A01"
+      ],
+      "cases": [
+        "windows.parallel-navigation",
+        "windows.close-with-resource"
+      ],
+      "decisive_test": "EXP-041/089/113: A work stays on A while B represents; B close never stops A",
+      "required_environment": "Authorized physical iPad27.0; genuine OS/window input and fresh native evidence",
+      "status": "DEFINED",
+      "execution_boundary": "Require topology/lifecycle prerequisites before the critical boundary; incomplete input is not SDK evidence."
+    },
+    {
+      "gate": "H04",
+      "owner": "SDK implementer; automated device control",
+      "dependency": [
+        "A01"
+      ],
+      "cases": [
+        "windows.activation-sequence"
+      ],
+      "decisive_test": "EXP-114: target foreground-active, peer background, exact lifecycle and event owners",
+      "required_environment": "Authorized physical iPad27.0; genuine OS/window input and fresh native evidence",
+      "status": "DEFINED",
+      "execution_boundary": "Require topology/lifecycle prerequisites before the critical boundary; incomplete input is not SDK evidence."
+    },
+    {
+      "gate": "H05",
+      "owner": "SDK implementer; automated device control",
+      "dependency": [
+        "A01"
+      ],
+      "cases": [
+        "swiftui.coexistence.semantic-a-automatic-b"
+      ],
+      "decisive_test": "EXP-118: semantic A and automatic B neither suppress nor own each other",
+      "required_environment": "Authorized physical iPad27.0; genuine OS/window input and fresh native evidence",
+      "status": "DEFINED",
+      "execution_boundary": "Require topology/lifecycle prerequisites before the critical boundary; incomplete input is not SDK evidence."
+    },
+    {
+      "gate": "H06",
+      "owner": "SDK implementer; automated device control",
+      "dependency": [
+        "A01"
+      ],
+      "cases": [
+        "operations.cross-scene.lifecycle"
+      ],
+      "decisive_test": "EXP-131/157 accepted ownership repeated with simultaneous visible topology evidence",
+      "required_environment": "Authorized physical iPad27.0; genuine OS/window input and fresh native evidence",
+      "status": "DEFINED",
+      "execution_boundary": "Require topology/lifecycle prerequisites before the critical boundary; incomplete input is not SDK evidence."
+    },
+    {
+      "gate": "H07",
+      "owner": "SDK implementer; automated device control",
+      "dependency": [
+        "A01"
+      ],
+      "cases": [
+        "traces.urlsession-shared-request"
+      ],
+      "decisive_test": "EXP-136: A-created request joined in B yields exactly one A span and no RUM Resource in trace-only mode",
+      "required_environment": "Authorized physical iPad27.0; genuine OS/window input and fresh native evidence",
+      "status": "DEFINED",
+      "execution_boundary": "Require topology/lifecycle prerequisites before the critical boundary; incomplete input is not SDK evidence."
+    },
+    {
+      "gate": "H08",
+      "owner": "SDK implementer; automated device control",
+      "dependency": [
+        "A01",
+        "D03",
+        "D07"
+      ],
+      "cases": [
+        "swiftui.semantic-host.final-removal-isolation"
+      ],
+      "decisive_test": "EXP-146: real final A removal stops A once, releases source, preserves B and rejects resurrection",
+      "required_environment": "Authorized physical iPad27.0; genuine OS/window input and fresh native evidence",
+      "status": "DEFINED",
+      "execution_boundary": "Require topology/lifecycle prerequisites before the critical boundary; incomplete input is not SDK evidence."
+    },
+    {
+      "gate": "H09",
+      "owner": "SDK implementer; automated device control",
+      "dependency": [
+        "A01",
+        "D03",
+        "D08",
+        "P03"
+      ],
+      "cases": [
+        "OS disconnect/reconnect/remount of exact retained scene"
+      ],
+      "decisive_test": "OS-driven disconnect/remount, no posted substitutes; fresh occurrence, stale callbacks fenced, peer continuity",
+      "required_environment": "Authorized physical iPad27.0; genuine OS/window input and fresh native evidence",
+      "status": "DEFINED",
+      "execution_boundary": "Require topology/lifecycle prerequisites before the critical boundary; incomplete input is not SDK evidence."
+    },
+    {
+      "gate": "H10",
+      "owner": "SDK implementer; automated device control",
+      "dependency": [
+        "A01"
+      ],
+      "cases": [
+        "actual isolated background/foreground of A with B usable"
+      ],
+      "decisive_test": "Background A while B remains usable; neither lifecycle transition replaces peer current view",
+      "required_environment": "Authorized physical iPad27.0; genuine OS/window input and fresh native evidence",
+      "status": "DEFINED",
+      "execution_boundary": "Require topology/lifecycle prerequisites before the critical boundary; incomplete input is not SDK evidence."
+    },
+    {
+      "gate": "H11",
+      "owner": "SDK implementer; automated device control",
+      "dependency": [
+        "A01"
+      ],
+      "cases": [
+        "uikit.split.native-pop-cancel",
+        "uikit.split.native-pop-finish"
+      ],
+      "decisive_test": "EXP-081: recognized cancel preserves Detail ID; recognized completion reveals fresh Home",
+      "required_environment": "Authorized physical iPad27.0; genuine OS/window input and fresh native evidence",
+      "status": "DEFINED",
+      "execution_boundary": "Automated gestures must produce native interactive callbacks; no synthetic transitions or human-gesture equivalence claim."
+    },
+    {
+      "gate": "H12",
+      "owner": "SDK implementer; automated device control",
+      "dependency": [
+        "A01"
+      ],
+      "cases": [
+        "native SwiftUI edge-pop cancel",
+        "native SwiftUI edge-pop finish"
+      ],
+      "decisive_test": "EXP-100: recognized cancel preserves Detail ID; completion commits fresh Home before work",
+      "required_environment": "Authorized physical iPad27.0; genuine OS/window input and fresh native evidence",
+      "status": "DEFINED",
+      "execution_boundary": "Automated gestures must produce native interactive callbacks; no synthetic transitions or human-gesture equivalence claim."
+    },
+    {
+      "gate": "H13",
+      "owner": "SDK implementer; automated device control",
+      "dependency": [
+        "A01",
+        "D10"
+      ],
+      "cases": [
+        "native presentation dismissal cancel",
+        "native presentation dismissal finish"
+      ],
+      "decisive_test": "EXP-152: cancelled Sheet retains ID; completed dismissal yields one fresh Home before actual callback work",
+      "required_environment": "Authorized physical iPad27.0; genuine OS/window input and fresh native evidence",
+      "status": "DEFINED",
+      "execution_boundary": "Automated gestures must produce native interactive callbacks; no synthetic transitions or human-gesture equivalence claim."
+    },
+    {
+      "gate": "H14",
+      "owner": "SDK implementer; automated device control",
+      "dependency": [
+        "A01"
+      ],
+      "cases": [
+        "swiftui.split.adaptive-accepted-state"
+      ],
+      "decisive_test": "EXP-076/087: measured regular \u2192 compact \u2192 regular geometry, selection, path and exact owners",
+      "required_environment": "Authorized physical iPad27.0; genuine OS/window input and fresh native evidence",
+      "status": "DEFINED",
+      "execution_boundary": "Require topology/lifecycle prerequisites before the critical boundary; incomplete input is not SDK evidence."
+    },
+    {
+      "gate": "H15",
+      "owner": "SDK implementer; automated device control",
+      "dependency": [
+        "A01"
+      ],
+      "cases": [
+        "two-scene process restoration with fresh run identity"
+      ],
+      "decisive_test": "EXP-042: both native sessions reconnect with fresh RUM IDs and no stale run attributes",
+      "required_environment": "Authorized physical iPad27.0; genuine OS/window input and fresh native evidence",
+      "status": "DEFINED",
+      "execution_boundary": "Require topology/lifecycle prerequisites before the critical boundary; incomplete input is not SDK evidence."
+    },
+    {
+      "gate": "H16",
+      "owner": "SDK implementer; automated device control",
+      "dependency": [
+        "A01"
+      ],
+      "cases": [
+        "UIKit-hosted SwiftUI stack/navigation/lifecycle parity"
+      ],
+      "decisive_test": "EXP-001 follow-up: same semantic/lifecycle/ownership contract in UIHostingController as WindowGroup",
+      "required_environment": "Authorized physical iPad27.0; genuine OS/window input and fresh native evidence",
+      "status": "DEFINED",
+      "execution_boundary": "Require topology/lifecycle prerequisites before the critical boundary; incomplete input is not SDK evidence."
+    }
+  ],
+  "execution_order": [
+    "F05",
+    "H01",
+    "H02",
+    "H03",
+    "H04",
+    "H05",
+    "H06",
+    "H07",
+    "H08",
+    "H09",
+    "H10",
+    "H14",
+    "H15",
+    "H16",
+    "H11",
+    "H12",
+    "H13"
+  ],
+  "preflight": {
+    "artifact_directory": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/physical-suite-preflight-mo8c6uq3",
+    "device": {
+      "udid": "00008103-000258CE0239001E",
+      "identifier": "40AF8B13-F6F6-5090-A400-F8E6476A6189",
+      "name": "IPad de Sandrine",
+      "model": "iPad Pro (11-inch) (3rd generation)",
+      "os": "27.0",
+      "transport": "wired",
+      "capabilities": [
+        "com.apple.coredevice.feature.acquireusageassertion",
+        "com.apple.coredevice.feature.applicationcontrol",
+        "com.apple.coredevice.feature.capturescreenshot",
+        "com.apple.coredevice.feature.capturesysdiagnose",
+        "com.apple.coredevice.feature.configurationprofiles",
+        "com.apple.dt.serviceconnection.create",
+        "com.apple.dt.servicesocket.create",
+        "com.apple.coredevice.feature.customizeappearancesettings",
+        "com.apple.coredevice.feature.customizeliquidglass",
+        "com.apple.coredevice.feature.customizeuistyle",
+        "com.apple.coredevice.feature.remote.devicecontrol.orientation",
+        "com.apple.coredevice.feature.disableddiservices",
+        "com.apple.coredevice.feature.disconnectdevice",
+        "com.apple.coredevice.feature.fetchappicons",
+        "com.apple.coredevice.feature.getauthlistingidentifiers",
+        "com.apple.coredevice.feature.fetchddimetadata",
+        "com.apple.coredevice.feature.getdeviceinfo",
+        "com.apple.coredevice.feature.fetchdyldsharecache",
+        "com.apple.coredevice.feature.filesystemoperation",
+        "com.apple.coredevice.feature.getdisplayinfo",
+        "com.apple.coredevice.feature.getlockstate",
+        "com.apple.coredevice.feature.getmediastreamserverstatus",
+        "com.apple.coredevice.feature.getmediasupportinfo",
+        "com.apple.coredevice.feature.remote.hid.button",
+        "com.apple.coredevice.feature.remote.hid.digitizer",
+        "com.apple.coredevice.feature.remote.hid.keyboard",
+        "com.apple.coredevice.feature.remote.hid.scroll",
+        "com.apple.coredevice.feature.remote.hid.vendordefined",
+        "com.apple.coredevice.feature.installapp",
+        "com.apple.coredevice.feature.installroot",
+        "com.apple.coredevice.feature.launchapplication",
+        "com.apple.coredevice.feature.listFiles",
+        "com.apple.coredevice.feature.listroots",
+        "com.apple.coredevice.feature.default.user.credentials",
+        "com.apple.coredevice.feature.tags",
+        "com.apple.coredevice.feature.monitorfilechanges",
+        "com.apple.coredevice.feature.monitormotion",
+        "com.apple.coredevice.feature.monitorprocesstermination",
+        "com.apple.coredevice.feature.pasteboard",
+        "com.apple.dt.customer.postdarwinnotification",
+        "com.apple.coredevice.feature.processcontrol",
+        "com.apple.coredevice.feature.provisioningprofiles",
+        "com.apple.coredevice.feature.querymobilegestalt",
+        "com.apple.coredevice.feature.rebootdevice",
+        "com.apple.coredevice.feature.renamedevice",
+        "com.apple.coredevice.feature.sendmemorywarningtoprocess",
+        "com.apple.coredevice.feature.sendsignaltoprocess",
+        "com.apple.dt.profile",
+        "com.apple.coredevice.feature.servicexpcpeerconnection",
+        "com.apple.coredevice.feature.simulatelocation",
+        "com.apple.coredevice.feature.spawnexecutable",
+        "com.apple.coredevice.feature.startaudiooutput",
+        "com.apple.coredevice.feature.startmediastream",
+        "com.apple.coredevice.feature.startvideooutput",
+        "com.apple.coredevice.feature.stopmediastream",
+        "com.apple.coredevice.feature.streamapplist",
+        "com.apple.coredevice.feature.streamprocesslist",
+        "com.apple.coredevice.feature.transferFiles",
+        "com.apple.coredevice.feature.uninstallapp",
+        "com.apple.coredevice.feature.uninstallroot",
+        "com.apple.coredevice.feature.remote.universalhid",
+        "com.apple.coredevice.feature.remote.universalhidservice",
+        "com.apple.coredevice.feature.unpairdevice",
+        "com.apple.coredevice.feature.viewdevicescreen",
+        "com.apple.coredevice.feature.voiceover"
+      ]
+    },
+    "lock": {
+      "deviceIdentifier": "40AF8B13-F6F6-5090-A400-F8E6476A6189",
+      "passcodeRequired": false,
+      "unlockedSinceBoot": true
+    },
+    "keep_awake": {
+      "pid": 50569,
+      "started_at": 1789834296.715756,
+      "expires_at": 1789848696.715756,
+      "command": [
+        "/usr/bin/caffeinate",
+        "-d",
+        "-i",
+        "-u",
+        "-t",
+        "14400"
+      ],
+      "authorization": "User explicitly requests unattended physical iPad suite and Mac caffeinate",
+      "stop_on_suite_completion": true
+    },
+    "source_identity": {
+      "sha256": "bb0c75f9e5bfd812a7a0a4ad498f811a5b57eaacb6ecef8eb7f3307b7528f61b",
+      "file_count": 719
+    },
+    "toolchain": "Xcode27.1/27A9269, command-line selection verified",
+    "datadog_authentication": "Live synthetic RUM query and exact test application lookup succeeded; no credentials read or logged.",
+    "application_id": "43cbc59b-0626-438b-a3d9-c6417a4545a3"
+  },
+  "protocol": [
+    "Fresh run UUID/clean probe installation for each case; freeze native fixture, complete SDK source, signed build and every installed Mach-O via pre-SDK receipt before acceptance.",
+    "Reuse existing named scenarios/oracles where they meet the gate. Freeze each collector-only correction before its fresh run; never overwrite a failed attempt or alter an accepted inventory.",
+    "F05 first reuses its unchanged native-recording contract; physical simultaneous-visible gates additionally require independent precritical screenshot/video plus live exact-scene activation/geometry. Capability declarations, cached snapshots and terminal assertion counts are insufficient.",
+    "For H01 add the prepared precritical admission seam before manual starts if required; verify topology throughout critical start/stop/marker boundaries. Preserve seven exact Action/Resource pairs and original semantic assertions.",
+    "All UI actions use CUA or the project native test harness, with observed controls and independently qualified native effects. Do not ask the user to arrange windows or perform gestures. If automation cannot establish the prerequisite, retain the concrete limit and continue independent cases.",
+    "Backend acceptance uses complete session-only inventory with pagination/count provenance, exact mapper event IDs/owners, strict absence/error/crash checks and original integer units. Local/native success alone never closes a backend gate.",
+    "Stop at most two equivalent environment/input failures per dependency; source/oracle repairs require new frozen identity and fresh run. Do not rerun accepted cells without a changed source or specific regression.",
+    "Clean only task-owned app/runner installations; preserve all user apps/data, both protected dirty paths and persistent Mac/iPad security settings. Stop the owned caffeinate assertion after the suite."
+  ],
+  "closure_rule": "Close each existing gate independently only when its exact native, topology, backend and cleanup obligations pass on physical hardware. Record partial automated gesture evidence separately from any required human residual. Physical iPad does not satisfy F04 Duo hardware acceptance; C06/C07-C10 and F01 remain separate.",
+  "attempts": [],
+  "gates_closed": []
+}
