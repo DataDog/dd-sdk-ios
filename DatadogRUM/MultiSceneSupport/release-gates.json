@@ -761,8 +761,8 @@
       "decisive_test": "Enable Replay through two scenes, navigation and teardown without SDK-caused crash; no scene-correct replay claim",
       "environment": "Physical multi-window device",
       "completion_mode": null,
-      "status": "OPEN",
-      "evidence": "EXP-194 simulator slice passes four native record-growth checkpoints, actual B disconnect, complete six-view backend ownership and zero stray Action/Resource/errors/crashes on iPad27.0.205 native/275 Python tests,36 new negative controls; every app binary and cleanup verified. Native6e8980bbc/oracle31ac062b3 provenance remains distinct. Physical multi-window run still required; no scene-correct Replay claim."
+      "status": "CLOSED",
+      "evidence": "EXP-196 fresh physical iPad27.0 run passes native8/8, four actual Replay record-growth checkpoints, OS B disconnect and exact six-view backend inventory; zero Action/Resource/error/crash. All3 signed/installed Mach-O, exact source reuse and app/process cleanup verified. First simulator-timing rejection preserved; separate physical close-return oracle5e25b6af2. No simultaneous-visible or scene-correct Replay claim. Results/EXP-196-physical-ipad-suite.json owns evidence."
     },
     {
       "id": "D01",

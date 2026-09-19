@@ -20,7 +20,7 @@
       ],
       "decisive_test": "Enable Replay through two scenes, navigation and teardown without SDK-caused crash; no scene-correct replay claim",
       "required_environment": "Authorized physical iPad27.0; genuine OS/window input and fresh native evidence",
-      "status": "DEFINED",
+      "status": "PASS_PHYSICAL",
       "execution_boundary": "Require topology/lifecycle prerequisites before the critical boundary; incomplete input is not SDK evidence."
     },
     {
@@ -428,9 +428,143 @@
         "new_negative_controls": 14,
         "wrong_native_control": "Initially exposed missing scene-identity check; fixed before acceptance run."
       }
+    },
+    {
+      "gate": "F05",
+      "run_id": "exp196-f05-20260919t163820z-cb6437688077",
+      "status": "PASS_PHYSICAL",
+      "artifact_root": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp196-physical-f05-confirm-ft7g4s8e",
+      "capture_source_revision": "b49947d1f8e3835eba72c5a2dff31512fa98969e",
+      "oracle_revision": "5e25b6af2f7c8132813b5f2539d9a611bd939700",
+      "native_tests_repeated": false,
+      "native_build_reuse": "Every native input and all3 signed Mach-O hashes match; only the Python oracle changed.",
+      "installed_binaries": 3,
+      "native_expectations": 8,
+      "native_issues": [],
+      "session_id": "4269a62e-bc32-4e3b-97ef-481421d271aa",
+      "recording_checkpoints": [
+        {
+          "phase": "replay-a-before-peer",
+          "view_id": "44e28409-6214-4bca-99d8-59f8b3765606",
+          "before": 3,
+          "after": 4,
+          "topology": [
+            {
+              "activationState": "foreground-active",
+              "geometry": {
+                "height": 834,
+                "width": 1194,
+                "x": 0,
+                "y": 0
+              },
+              "logicalSceneID": "scene-A",
+              "nativeSceneID": "79629D55-0A08-4274-810B-2B3A1D8993B2"
+            }
+          ]
+        },
+        {
+          "phase": "replay-b-after-open",
+          "view_id": "9c3c4f47-3fb0-4201-a778-af7ec47c22af",
+          "before": 3,
+          "after": 4,
+          "topology": [
+            {
+              "activationState": "foreground-inactive",
+              "geometry": {
+                "height": 834,
+                "width": 1194,
+                "x": 0,
+                "y": 0
+              },
+              "logicalSceneID": "scene-A",
+              "nativeSceneID": "79629D55-0A08-4274-810B-2B3A1D8993B2"
+            },
+            {
+              "activationState": "foreground-active",
+              "geometry": {
+                "height": 834,
+                "width": 1194,
+                "x": 0,
+                "y": 0
+              },
+              "logicalSceneID": "scene-B",
+              "nativeSceneID": "AABB5421-76DD-4F8A-8F18-BAF53924F756"
+            }
+          ]
+        },
+        {
+          "phase": "replay-b-after-navigation",
+          "view_id": "79730fc9-688d-4aad-a46e-ae2f9ec4fa7f",
+          "before": 0,
+          "after": 3,
+          "topology": [
+            {
+              "activationState": "background",
+              "geometry": {
+                "height": 834,
+                "width": 1194,
+                "x": 0,
+                "y": 0
+              },
+              "logicalSceneID": "scene-A",
+              "nativeSceneID": "79629D55-0A08-4274-810B-2B3A1D8993B2"
+            },
+            {
+              "activationState": "foreground-active",
+              "geometry": {
+                "height": 834,
+                "width": 1194,
+                "x": 0,
+                "y": 0
+              },
+              "logicalSceneID": "scene-B",
+              "nativeSceneID": "AABB5421-76DD-4F8A-8F18-BAF53924F756"
+            }
+          ]
+        },
+        {
+          "phase": "replay-a-after-teardown",
+          "view_id": "2aa5216d-a166-48e2-b0b8-a4f16bf75dfb",
+          "before": 3,
+          "after": 4,
+          "topology": [
+            {
+              "activationState": "foreground-active",
+              "geometry": {
+                "height": 834,
+                "width": 1194,
+                "x": 0,
+                "y": 0
+              },
+              "logicalSceneID": "scene-A",
+              "nativeSceneID": "79629D55-0A08-4274-810B-2B3A1D8993B2"
+            }
+          ]
+        }
+      ],
+      "backend_counts": {
+        "view": 6,
+        "session": 1,
+        "vital": 1
+      },
+      "stray_action_resource_error_crash_count": 0,
+      "cleanup": "PASS: exact app/process absent; source and both protected paths exact",
+      "scope": "Physical multi-window-device serial coexistence; no simultaneous-visible-window, scene-correct Replay, or physical Duo claim",
+      "artifacts_sha256": {
+        "frozen.json": "bdc0031c89b5547c3428ca49d7f4208c6d7a2563b67d7aa3baabdfbaa92a9bd0",
+        "records.json": "6102f53e027a5758da9915265d77dad973a710da531d1d90958bb155a246a302",
+        "installed-identity.json": "d29f8baaa1d030c3a2150062ff2ebe0ca8fefab505adad6a2b7a0aa8d6648440",
+        "local-evidence.json": "4c66ef99a7ea80e5fd5f2404bdbb622b629001e3d5680984d533dc2ec6e0e39b",
+        "backend-complete.json": "1c9fef82f7632cd064ebd78aad920c9637a2e7c88f7c16b8a3922d7eaae8e8b3",
+        "backend-evidence.json": "69d615b036a7edd0ecc452f1af0ce9cd976254013e32248570aec3b228e8cfe5",
+        "cleanup-apps.json": "9c35f02b66ee144c2141f74e4338f8085dbb57ce4bb1570996b186b6ac27bfc7",
+        "cleanup-processes.json": "05e904262f03b85a4d9cad70a9cb7addc48a66e2c63a36035afbfa924002d8a0"
+      }
     }
   ],
-  "gates_closed": [],
+  "gates_closed": [
+    "F05"
+  ],
   "f05_physical_oracle_definition": {
     "defined_at": 1789835528.922011,
     "before_implementation": true,
@@ -459,5 +593,6 @@
       "record growth and stale-run controls remain"
     ],
     "implementation": "Separate validate_physical_local entrypoint implemented; original timing still rejects the physical record. Focused six tests pass. Fresh physical run required."
-  }
+  },
+  "next": "H01 precritical simultaneous-window admission, then each independent case in execution_order."
 }

@@ -417,3 +417,5 @@ overlay through native input permits the unchanged ten-phase/42-work oracle to
 pass with seven exact backend views and zero errors/crashes. Each UI slice passes
 1/1 with verified source/code and cleanup. This resolves fixture acceptance,
 not a production SDK defect; all physical and final review obligations remain.
+
+EXP-196 closes F05 with physical iPad native Replay recording/teardown and exact backend ownership. The original timing rejection and independent physical oracle remain in the owning result; all3 installed binaries and cleanup pass. No production SDK source changed. This closes coexistence only; simultaneous visibility, per-scene Replay correctness and physical Duo behavior are not claimed.
