@@ -367,3 +367,7 @@ Replay view bridge rows require view_id, session_id, name, run_id and has_replay
 Empty action/resource/error/crash queries still require complete query provenance.
 A passed simulator slice does not close physical F05 and makes no scene-correct
 Replay claim.
+
+### Physical Replay timing
+
+For a physical iPad that reveals A during B close, use `replay_contract.validate_physical_local`. It requires fresh A Home and an actual same-native foreground callback between the B close request and acknowledgement, old A Home stopped after actual background, B disconnect before navigation, and uninterrupted returned ownership. The simulator entrypoint retains explicit-reactivation timing. Both require the same six native/backend views and four real native record-growth checkpoints. The oracle alone never proves physical execution: retain signed build, exact device, all installed Mach-O receipts, complete backend inventory and cleanup. EXP-196 preserves the first timing rejection and requires a fresh run after the oracle freeze.

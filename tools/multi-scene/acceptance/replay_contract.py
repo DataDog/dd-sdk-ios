@@ -1,4 +1,4 @@
-"""F05 simulator slice: real native Replay record production across actual scene lifecycle."""
+"""F05 native Replay recording with separately qualified simulator/physical return timing."""
 import json
 import uuid
 from pathlib import Path
@@ -22,6 +22,15 @@ def valid_uuid(value):
 
 
 def validate_local(records, run_id):
+    return _validate_local(records, run_id, physical_close_return=False)
+
+
+def validate_physical_local(records, run_id):
+    """Require the OS to reveal A during B close, before explicit reactivation."""
+    return _validate_local(records, run_id, physical_close_return=True)
+
+
+def _validate_local(records, run_id, physical_close_return):
     manifest = unique([r["manifest"] for r in records if r["type"] == "manifest"], "manifest")
     require(manifest.get("runID") == run_id and manifest.get("runMode") == "clean"
             and not manifest.get("validationErrors"), "stale/invalid Replay manifest")
@@ -88,31 +97,44 @@ def validate_local(records, run_id):
             "disconnect wrong scene", "FAIL")
     require_before(starts[9], disconnect, "disconnect precedes request")
     require_before(disconnect, starts[11], "navigation before OS disconnect")
-    # The serial platform transition backgrounds A, then reveals a fresh Home
-    # before the explicit Detail navigation. Admit only that bounded occurrence.
+    # Both contracts require A to background and its old Home to stop. The
+    # physical iPad reveals A while closing B; the simulator contract requires
+    # a subsequent explicit activation. Keep those admission windows separate.
+    return_start = starts[9] if physical_close_return else starts[10]
+    return_end = acks[9] if physical_close_return else starts[11]
     backgrounds = [s for s in signals if s.get("kind") == "scene-lifecycle"
                    and s.get("semanticContext", {}).get("logicalSceneID") == "scene-A"
                    and s.get("semanticContext", {}).get("nativeSceneID") == native["scene-A"]
                    and s.get("activationState") == "background"
-                   and starts[3]["sequence"] < s["sequence"] < starts[10]["sequence"]]
+                   and starts[3]["sequence"] < s["sequence"] < return_start["sequence"]]
     require(backgrounds, "returned Home without actual A background", "FAIL")
     homes = [s for s in views if s.get("semanticContext", {}).get("logicalSceneID") == "scene-A"
              and s.get("semanticContext", {}).get("screen") == "home"]
     original = [s for s in homes if s["sequence"] < starts[3]["sequence"]]
-    returned = [s for s in homes if starts[10]["sequence"] < s["sequence"] < starts[11]["sequence"]
+    returned = [s for s in homes if return_start["sequence"] < s["sequence"] < return_end["sequence"]
                 and s.get("rumContext", {}).get("viewActive") is True]
     require(original and returned, "missing original/foreground Home", "FAIL")
     old_id, new_id = original[-1]["rumContext"]["viewID"], returned[0]["rumContext"]["viewID"]
     require(old_id != new_id and {s["rumContext"]["viewID"] for s in homes} == {old_id, new_id},
             "returned Home is reused or unexplained", "FAIL")
     require(any(s["rumContext"]["viewID"] == old_id and s["rumContext"].get("viewActive") is False
-                and starts[3]["sequence"] < s["sequence"] < starts[10]["sequence"] for s in homes),
+                and starts[3]["sequence"] < s["sequence"] < return_start["sequence"] for s in homes),
             "old Home never stopped before foreground return", "FAIL")
     active = [s for s in signals if s.get("kind") == "scene-lifecycle"
               and s.get("semanticContext", {}).get("logicalSceneID") == "scene-A"
+              and s.get("semanticContext", {}).get("nativeSceneID") == native["scene-A"]
               and s.get("activationState") == "foreground-active"
-              and starts[10]["sequence"] < s["sequence"] < starts[11]["sequence"]]
+              and return_start["sequence"] < s["sequence"] < return_end["sequence"]]
     require(active, "missing actual A reactivation before Detail", "FAIL")
+    require(not any(s["rumContext"]["viewID"] == new_id
+                    and s["rumContext"].get("viewActive") is False
+                    and returned[0]["sequence"] < s["sequence"] < starts[11]["sequence"]
+                    for s in homes), "returned Home stopped before navigation", "FAIL")
+    require(not any(s.get("kind") == "scene-lifecycle"
+                    and s.get("semanticContext", {}).get("logicalSceneID") == "scene-A"
+                    and s.get("activationState") in ["background", "unattached"]
+                    and returned[0]["sequence"] < s["sequence"] < starts[11]["sequence"]
+                    for s in signals), "returned A lost foreground before navigation", "FAIL")
     observations, previous = [], {}
     for i, phase in enumerate(PHASES):
         baseline = unique([s for s in signals if s.get("name") == "baseline-" + phase], "baseline " + phase)
@@ -173,7 +195,8 @@ def validate_local(records, run_id):
     require(len({o["view_id"] for o in observations}) == 4, "destination occurrence reused", "FAIL")
     return {"state": "PASS", "session_id": session, "view_ids": sorted(inventory),
             "views": list(inventory.values()), "recording_checkpoints": observations,
-            "scope": "Native recorder coexistence; no scene-correct Replay or physical acceptance"}
+            "return_contract": "physical-close-return" if physical_close_return else "simulator-explicit-reactivation",
+            "scope": "Native recorder coexistence; installed-device proof is separate; no scene-correct Replay claim"}
 
 
 def validate_backend(local, run_id, views, actions, resources, errors, crashes):

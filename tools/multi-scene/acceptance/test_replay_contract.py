@@ -11,7 +11,7 @@ IDS = {n: f"00000000-0000-0000-0000-{i:012d}" for i, n in enumerate(
     ["session", "launch", "scene-A:home", "scene-B:home", "scene-B:detail-1", "scene-A:detail-1", "scene-A:home-returned"], 1)}
 
 
-def fixture():
+def fixture(physical=False):
     scenario = json.loads(Path(__file__).with_name(r.CONTRACT).read_text())
     records = [dict(type="manifest", manifest=dict(runID=RUN, runMode="clean", validationErrors=[], scenario=scenario))]
     signals, counts, connected, current = [], {}, {}, {}
@@ -56,10 +56,15 @@ def fixture():
             evidence = signal("navigation-path-mutation", semanticContext=context(scene, step["value"]),
                               navigationPath=[step["value"]])
         elif kind == "close-window":
+            if physical:
+                view("scene-A", "home", returned=True)
+                signal("scene-lifecycle", semanticContext=context("scene-A", "home"),
+                       activationState="foreground-active")
             connected.pop(scene)
             evidence = signal("scene-lifecycle", semanticContext=context(scene, "detail-1"), scenePhase="disconnected")
         elif kind == "activate-window":
-            view("scene-A", "home", returned=True)
+            if not physical:
+                view("scene-A", "home", returned=True)
             evidence = signal("scene-lifecycle", semanticContext=context(scene, "home"), activationState="foreground-active")
         elif kind == "capture-replay-records":
             screen, owner = current[scene]
@@ -81,6 +86,58 @@ def fixture():
 
 
 class ReplayContractTests(unittest.TestCase):
+    def test_physical_close_return_and_simulator_timing_remain_distinct(self):
+        actual = r.validate_physical_local(fixture(physical=True), RUN)
+        self.assertEqual(actual["return_contract"], "physical-close-return")
+        self.assertEqual(len(actual["views"]), 6)
+        self.assertEqual(len(actual["recording_checkpoints"]), 4)
+        with self.assertRaises(Rejected):
+            r.validate_local(fixture(physical=True), RUN)
+        with self.assertRaises(Rejected):
+            r.validate_physical_local(fixture(), RUN)
+
+    def test_physical_return_rejects_missing_or_stale_os_evidence(self):
+        cases = ["no-background", "old-home-live", "reused-home", "wrong-native",
+                 "no-foreground", "fake-foreground", "before-close", "after-close",
+                 "stopped-return", "background-again", "missing-disconnect", "stale-run"]
+        for case in cases:
+            with self.subTest(case=case):
+                records = fixture(physical=True)
+                signals = [x["signal"] for x in records if x["type"] == "signal"]
+                home = next(s for s in signals if s.get("rumContext", {}).get("viewID") == IDS["scene-A:home-returned"])
+                active = next(s for s in signals if s["kind"] == "scene-lifecycle" and s.get("activationState") == "foreground-active")
+                old_stop = next(s for s in signals if s.get("rumContext", {}).get("viewActive") is False)
+                if case == "no-background":
+                    next(s for s in signals if s.get("activationState") == "background")["activationState"] = "foreground-inactive"
+                elif case == "old-home-live": old_stop["rumContext"]["viewActive"] = True
+                elif case == "reused-home": home["rumContext"]["viewID"] = IDS["scene-A:home"]
+                elif case == "wrong-native": active["semanticContext"]["nativeSceneID"] = "native-scene-B"
+                elif case == "no-foreground": active["activationState"] = "foreground-inactive"
+                elif case == "fake-foreground": active["kind"] = "assertion"
+                elif case in ["before-close", "after-close"]:
+                    boundary = next(s for s in signals if s["kind"] == ("step-started" if case == "before-close" else "step-acknowledged") and s.get("stepIndex") == 9)
+                    # Preserve contiguous signal/ack identities while moving the actual observations.
+                    moved = [home, active]
+                    signals = [s for s in signals if s not in moved]
+                    at = signals.index(boundary) + (case == "after-close")
+                    signals[at:at] = moved
+                    remap = {s["sequence"]: i+1 for i, s in enumerate(signals)}
+                    for s in signals:
+                        s["sequence"] = remap[s["sequence"]]
+                        if "acknowledgedSignalSequence" in s:
+                            s["acknowledgedSignalSequence"] = remap[s["acknowledgedSignalSequence"]]
+                    records = [records[0]] + [dict(type="signal", signal=s) for s in signals] + [records[-1]]
+                elif case in ["stopped-return", "background-again"]:
+                    late = next(s for s in signals if s["kind"] == "scene-lifecycle" and s.get("activationState") == "foreground-active" and s is not active)
+                    if case == "stopped-return":
+                        late.update(kind="rum-view-snapshot", evidenceSource="rum-mapper", rumContext=copy.deepcopy(home["rumContext"]))
+                        late["rumContext"]["viewActive"] = False
+                    else: late["activationState"] = "background"
+                elif case == "missing-disconnect": next(s for s in signals if s.get("scenePhase") == "disconnected")["scenePhase"] = "ready"
+                elif case == "stale-run": home["runID"] = "exp196-old"
+                with self.assertRaises(Rejected):
+                    r.validate_physical_local(records, RUN)
+
     def test_reuse_rejects_changed_added_or_removed_native_input(self):
         before = {"files": {"DatadogRUM/Sources/A.swift": "one", "Package.swift": "two",
                             "tools/multi-scene/acceptance/replay_contract.py": "old"}}

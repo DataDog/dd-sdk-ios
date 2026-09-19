@@ -1,7 +1,7 @@
 {
   "experiment": "EXP-196",
   "title": "Run the finite unattended physical iPad acceptance matrix",
-  "status": "DEFINED",
+  "status": "IN PROGRESS",
   "defined_at": 1789834658.146247,
   "defined_before_implementation": true,
   "definition_parent_revision": "d888d8112a2dcfe902555df2b1940a6819e04b60",
@@ -394,6 +394,70 @@
     "Clean only task-owned app/runner installations; preserve all user apps/data, both protected dirty paths and persistent Mac/iPad security settings. Stop the owned caffeinate assertion after the suite."
   ],
   "closure_rule": "Close each existing gate independently only when its exact native, topology, backend and cleanup obligations pass on physical hardware. Record partial automated gesture evidence separately from any required human residual. Physical iPad does not satisfy F04 Duo hardware acceptance; C06/C07-C10 and F01 remain separate.",
-  "attempts": [],
-  "gates_closed": []
+  "attempts": [
+    {
+      "gate": "F05",
+      "run_id": "exp196-f05-20260919t162458z-46c3091b6ec6",
+      "artifact_root": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp196-physical-f05-4mbtuh16",
+      "source_revision": "b49947d1f8e3835eba72c5a2dff31512fa98969e",
+      "status": "STRICT_ORACLE_REJECTED",
+      "installed_binaries": 3,
+      "native_expectations": 8,
+      "native_issues": [],
+      "reason": "missing original/foreground Home",
+      "finding": "Actual B close begins45; A fresh Home47 and actual foreground49 precede B disconnect52/close ack54 and explicit A activation55. Four native recorder growth checkpoints pass. Simulator oracle requires returned Home after55. Preserve failure; no gate closure.",
+      "artifacts_sha256": {
+        "frozen.json": "a208b81f8d890fea5004d756adc1f6756ce960070f2f442cebcebece496a6bfa",
+        "records.json": "760541a1a5cdd6a0ab176d52c3a9c75d90e2b14ff9347ecebe27e8d08ff5a540",
+        "native.jsonl": "7206cb61a2c23570d6297955e58b7c903cbdb96c8e9b5e7d7267991435683dde",
+        "installed-identity.json": "f50ab93bfb141c84e479e7454bb8f287e6dcbcd3274f80b088382747278f20fc",
+        "local-failure.json": "9e8a14eb5ae59c052f8d5301b16060d0d9e60d4c93f95a48f125db9c9684192d"
+      },
+      "backend_diagnostic": {
+        "view": 6,
+        "action": 0,
+        "resource": 0,
+        "error": 0,
+        "long_task": 1,
+        "vital": 1,
+        "session": 1
+      },
+      "cleanup": "PASS: probe app/process absent; protected state exact",
+      "oracle_verification": {
+        "tests": 6,
+        "new_negative_controls": 14,
+        "wrong_native_control": "Initially exposed missing scene-identity check; fixed before acceptance run."
+      }
+    }
+  ],
+  "gates_closed": [],
+  "f05_physical_oracle_definition": {
+    "defined_at": 1789835528.922011,
+    "before_implementation": true,
+    "entrypoint": "validate_physical_local",
+    "change": "Separate physical close-triggered return contract; keep original validate_local strict and unchanged for simulator timing.",
+    "required": [
+      "same exact manifest,14 acknowledged steps,eight semantics,six exact native/backend owners,four native record-growth checkpoints",
+      "A old Home stopped and actual background before B close",
+      "A distinct fresh Home and actual same-native foreground callback after actual close request and before close acknowledgement",
+      "actual B disconnect still precedes A Detail navigation and final native recording",
+      "no intervening A background or stopped returned Home before A navigation",
+      "fresh clean run/code identity and complete backend inventory after the revised oracle freeze"
+    ],
+    "negative_controls": [
+      "physical/simulator timing cross-rejection",
+      "return before close",
+      "return after close acknowledgement",
+      "wrong native callback",
+      "no actual callback",
+      "live old Home",
+      "reused returned Home",
+      "returned Home stopped before navigation",
+      "A background before navigation",
+      "missing peer disconnect",
+      "extra native/backend owner",
+      "record growth and stale-run controls remain"
+    ],
+    "implementation": "Separate validate_physical_local entrypoint implemented; original timing still rejects the physical record. Focused six tests pass. Fresh physical run required."
+  }
 }

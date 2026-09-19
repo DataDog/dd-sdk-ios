@@ -2064,3 +2064,11 @@ retries at the declared limit; preserve partial native input, screenshot, source
 identity and cleanup. Keep an unqualified collector prototype as an experiment
 artifact instead of adding it to the supported acceptance path. A successful input
 in one control never establishes that the remaining controls or scrolls are usable.
+
+### EXP-196 unattended physical iPad execution
+
+Use the connected, authorized physical device and a bounded task-owned `caffeinate -d -i -u -t 14400` assertion; record command/PID/start/deadline, renew if needed and stop only that owned process. Device auto-lock is disabled by the user. Physical scene/gesture acceptance still requires native evidence before critical mutations.
+
+When an existing valid Apple Development identity lacks a cached profile for the authorized test device, Xcode automatic provisioning with command-only team overrides can register the test device and obtain its profile. Use `CODE_SIGN_IDENTITY=Apple Development` with automatic signing; a certificate hash conflicts with that mode. Verify the actual selected signing certificate is one of the preflight identities. Compare a wildcard profile grant against the concrete signed app entitlement, exact device membership and expiry; do not require the profile wildcard itself to equal the app identifier. `codesign -d --extract-certificates=<temporary-prefix>` extracts the public certificate for comparison. Keep profiles/team overrides local and never read the protected local xcconfig.
+
+The first physical F05 run observed A Home/foreground during B close before explicit reactivation. Preserve that original strict rejection. The separately defined `validate_physical_local` requires that exact close-triggered interval; the existing simulator oracle retains its earlier explicit-reactivation contract. Six focused oracle tests pass, including fourteen new boundary/identity controls. No native test rerun is needed for an oracle-only repair when every frozen native input and signed/installed Mach-O still matches.
