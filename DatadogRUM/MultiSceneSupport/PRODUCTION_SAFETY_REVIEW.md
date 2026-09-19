@@ -23,13 +23,16 @@ certificate. New scene API promotion remains pending. Physical EXP-196 is safely
 checkpointed: Full Screen Apps restored and task apps/keep-awake cleaned up.
 
 EXP-197 now reproduces an independent current-develop request-mutation defect
-under S1:E01; this does not reopen the historical D01–D12 dispositions. A proposed
-three-file internal URLSession ordering repair is under review. Automatic approval
-review rejected applying it for crash, request-start and telemetry risk. No
-production change has been applied; green regression, forwarding/reentrancy,
-cancellation, retention and release checks remain required after informed approval.
-The [owning result](Results/EXP-197-urlsession-extraction.json) retains the red test
-and proposal boundary.
+under S1:E01; this does not reopen the historical D01–D12 dispositions. The user approved the reviewed
+three-file internal URLSession ordering repair for local testing after the automatic
+review rejection. Signed464af911 passes full Internal453 tests/489 executions,
+including early callback/body ordering, deallocator reentry, weak release, native
+suspend/resume and forwarding controls. Paired17.5 ordinary/legacy coverage also
+passes. These close bounded E01/F07 and S1 compatibility requirements. Task-state
+retention/performance is admitted as EXP-198; affected Resource/Trace/backend and
+final release checks remain required.
+The [owning result](Results/EXP-197-urlsession-extraction.json) retains the red test,
+approval, failed test preparation and exact candidate test artifacts.
 
 Review closure does not imply overall release readiness. Current release status
 belongs exclusively to [release-gates.json](release-gates.json) and [PLAN](PLAN.md).

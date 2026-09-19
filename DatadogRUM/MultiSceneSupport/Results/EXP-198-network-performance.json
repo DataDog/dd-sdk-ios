@@ -1,0 +1,57 @@
+{
+  "schema_version": 1,
+  "experiment": "EXP-198",
+  "status": "DEFINED BEFORE IMPLEMENTATION; FIXTURE AND COUNTER QUALIFICATION NEXT",
+  "defined_at": "2026-09-19T22:38:13.806518+00:00",
+  "gates": [
+    "S1:P01",
+    "S1:P02",
+    "S1:P03",
+    "S1:P04"
+  ],
+  "owner": "SDK implementer; independent oracle reviewer; root sole build/device/measurement controller",
+  "depends_on": [
+    "S1:E01",
+    "S1:F07"
+  ],
+  "baseline_revision": "62f64d7b655bdc83f3036c4ad81090a270f6202b",
+  "candidate_revision": "464af9110daeb9211040e202b42d5ce446e06153",
+  "protocol": "Experiments/EXP-198-network-performance-protocol.md",
+  "protocol_sha256": "d94d439cf3ebca860236d0974097e2483b41b2b9e0f5b526e5b1f0747dbe0a3b",
+  "admission": "Close the four existing S1 performance/retention/reentrancy gates for the changed real URLSession path; no new product scope or telemetry family.",
+  "source_policy": "Fixture-only adaptation outside SDK product; no production mutation admitted by this experiment. Exact same fixture and generated source projection in both arms.",
+  "decisive_tests": [
+    "Release ABBA automatic and registered actual task/resume plus controlled production callback entry rows meet unchanged per-row median/p95 budgets",
+    "Calibrated atomic all-thread heap logger proves real asynchronous feature-queue allocations counted; caller-only negative control rejected; unchanged allocation/byte budgets",
+    "20+100+100 real task lifetimes retain zero owned task/interception/feature objects or terminal payloads and satisfy existing64KiB/16KiB retained-byte limits",
+    "No wrong lifecycle, duplicate original forwarding, lost early callback, deadlock or crash in frozen reentry controls"
+  ],
+  "environment": "Xcode27.1 arm64 Release; actual iOS17.5 and qualified27.x simulator identities rediscovered before execution; one host, no competing builds/tests/profiles. No physical-device claim.",
+  "measurement_cells": {
+    "runtimes": 2,
+    "tracking_modes": [
+      "automatic",
+      "registeredDelegate"
+    ],
+    "instrument_modes": [
+      "timing",
+      "allocations-retention"
+    ],
+    "order": [
+      "A",
+      "B",
+      "B",
+      "A"
+    ],
+    "fresh_launches": 32
+  },
+  "timebox": "First counter/fixture qualification bounded to90minutes; stop after two equivalent unchanged failures, retain partial evidence, and continue independent release gates. Accepted ABBA execution begins only after all builds and calibrations qualify.",
+  "stop_rules": [
+    "No failed or absent calibration becomes allocation PASS",
+    "Do not reuse historical scene workloads or aggregate away an unfavorable changed-path row",
+    "Preserve every failed preparation or measurement; a corrected fixture requires a newly frozen attempt",
+    "No measurements while other build/test/profile work is active"
+  ],
+  "attempts": [],
+  "result": null
+}

@@ -2153,8 +2153,12 @@ A proposed patch must be generated against the actual frozen base and pass
 `git apply --check` in that exact checkout. An intermediate candidate is not the
 base. A read-only applicable patch does not authorize applying a production change
 that automatic approval review rejected; retain that decision and obtain explicit
-informed approval after review. Independent source-neutral compatibility work can
-continue.
+informed approval after review. EXP-197 received that explicit approval and the
+reviewed patch is applied for local testing. Preserve each failed preparation
+attempt; a missing test import is not an SDK behavioral failure. A forwarding
+test must drain its ServerMock requests before teardown: an initial focused pass
+missed that fixture lifetime trap in the broader run. The final full Internal
+run at signed464af911 passes453 tests/489 executions; preserve both predecessors.
 
 For controlled Datadog app telemetry, use the accepted probe application and a
 separate service. Follow the existing profiling runner's ephemeral Xcode include
@@ -2164,12 +2168,20 @@ identity and configuration-validity booleans. Normal app launch is required beca
 XCTest skips observability bootstrap. Preserve the original app organization
 lookup result and make no live-customer traffic claim.
 
-The bounded EXP-197 S1:C06 adapter now qualifies six current-develop baseline
-cells on17.5. Keep source projection limited to the unused internal benchmark
+The bounded EXP-197 S1:C06 adapters now qualify six baseline and six candidate
+cells on17.5, reusing the accepted baseline without rerunning it. Keep source projection limited to the unused internal benchmark
 branch; apply it once before copying ordinary/legacy variants. `prepare` owns its
 new directory, and XcodeGen runs in that generated directory. Record real
 readiness/background/foreground assertion timestamps and invoke the inherited
 boundary checker. Cleanup must reject command errors, prove the expected absent
 container condition, and preserve the original simulator boot state. The owning
-result keeps the adapter hash and durable summary; do not relabel baseline passes
-as candidate or S3 acceptance.
+result keeps adapter hashes and the paired durable summary. Reference tooling
+and candidate SDK archives have separate roots. Verify the generated project name
+before invoking Xcode; a stale project name caused one retained preparation
+failure before any install. Never infer S2/S3 acceptance from the S1 matrix.
+
+EXP-198 is defined in its own protocol before fixture implementation. Its real
+URLSession workload uses the unchanged performance budgets. The old allocation
+collector observes only its installation thread; asynchronous coverage needs
+independent all-thread calibration before measurement can qualify. Keep timing
+and allocation processes separate and hold competing host workloads during ABBA.

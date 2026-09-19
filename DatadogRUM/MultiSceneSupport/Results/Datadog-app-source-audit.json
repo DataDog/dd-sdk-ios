@@ -88,6 +88,28 @@
       "TestFlight upload",
       "Publication"
     ],
-    "configuration_provisioning": "Use an ephemeral Xcode configuration wrapper following the existing profiling runner optional-include pattern. Xcode resolves the existing probe settings; never extract/copy the protected file or emit resolved tokens."
+    "configuration_provisioning": "Use an ephemeral Xcode configuration wrapper following the existing profiling runner optional-include pattern. Xcode resolves the existing probe settings; never extract/copy the protected file or emit resolved tokens.",
+    "build_preparation": {
+      "definition": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/rum-app-baseline-pw3wdvwa/definition.json",
+      "artifact_root": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/rum-app-baseline-pw3wdvwa",
+      "sdk_revision": "62f64d7b655bdc83f3036c4ad81090a270f6202b",
+      "attribution": "3.17.0+62f64d7b",
+      "original_package_pins_sha256": "1bea7eedc0f8871a2eadae01a19786ebb592c28c80d3b9c05a704181f8035fa5",
+      "phase": "RESOLVING BASELINE DEPENDENCIES",
+      "preparation_failure": "Initial version lookup used wrong module path; corrected using git source search before dependency execution."
+    },
+    "dependencies": {
+      "status": "PASS",
+      "command": "make tuist-install-cached",
+      "artifact_root": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/rum-app-baseline-pw3wdvwa",
+      "lock_comparison": {
+        "removed": [
+          "dd-sdk-ios"
+        ],
+        "added": [],
+        "changed": []
+      },
+      "meaning": "All existing app dependencies resolved at original pinned versions; only SDK pin replaced by frozen local source. No app build/run yet."
+    }
   }
 }

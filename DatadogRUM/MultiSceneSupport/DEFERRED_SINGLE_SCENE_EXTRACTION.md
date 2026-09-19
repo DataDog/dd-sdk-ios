@@ -39,10 +39,12 @@ The initial audit proposed a one-file E01 slice. EXP-197 now proves the generic
 mutation-count regression red on current develop and real17.5 execution. Independent
 review rejects a simple claim flag: concurrent/reentrant native resume can outrun
 preparation and early completion can be lost. The bounded three-file internal
-continuation/preparation repair is a draft pending informed approval after automatic
-approval review rejected production ordering changes. Duplicate resumes during
-preparation would be forwarded later on the preparation thread; call counts,
-headers, lifecycle and compatibility require decisive controls before acceptance. E02/E03's existing
+continuation/preparation repair was explicitly approved for local implementation
+and testing after the automatic review rejection. Signed464af911 passes the full
+Internal suite and paired17.5 ordinary/legacy matrix. E01/F07 and the bounded S1
+compatibility gates close; affected consumers, performance and release checks remain
+required. Duplicate resumes during preparation are forwarded later on the
+preparation thread; no arbitrary same-stack/thread transparency is claimed. E02/E03's existing
 scene-targeted tests require separate generic reproducers. E04's corrected delayed
 container hypothesis and E05's limited writer boundary remain qualification work.
 The audit also found upstream macOS click/errorClick handling absent from the
@@ -64,8 +66,8 @@ candidate's F03 platform/Swift/Objective-C/build/API/lint inventory; preserve cr
 safety, privacy/wire compatibility, ownership and original performance/retention
 thresholds. Do not run device measurements concurrently with builds or tests.
 Compatibility checks follow the shipped modules; unrelated new scene APIs do not
-block S1/S2. C06 now has an installed available17.5(21F79) runtime and booted iPad simulator;
-actual candidate test-host execution remains required.
+block S1/S2. S1:C06 passes deployment15 and actual17.5(21F79) candidate coverage;
+S2/S3 still require their own frozen candidate matrix.
 Only a bounded genuine failure permits the documented S1/S2 runtime exception,
 with deployment15 compile/link, availability review and oldest runnable coverage.
 

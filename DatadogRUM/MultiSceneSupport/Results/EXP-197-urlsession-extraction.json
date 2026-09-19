@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "experiment": "EXP-197",
-  "status": "BASELINE RED; REPAIR DRAFT PENDING APPROVAL REVIEW",
+  "status": "E01/F07 CLOSED; SIGNED CANDIDATE COMPATIBILITY AND RELEASE QUALIFICATION IN PROGRESS",
   "defined_at": "2026-09-19T20:54:08Z",
   "gates": [
     "S1:E01",
@@ -163,6 +163,119 @@
       "exit_code": 65,
       "finished_at": "2026-09-19T21:06:14.695871+00:00",
       "classification": "EXPECTED REGRESSION: one test executed on iOS17.5; repeated request-handler mutation overfulfills exact-once expectation"
+    },
+    {
+      "command": [
+        "xcodebuild",
+        "test",
+        "-quiet",
+        "-workspace",
+        "Datadog.xcworkspace",
+        "-scheme",
+        "DatadogInternal",
+        "-configuration",
+        "Debug",
+        "-destination",
+        "platform=iOS Simulator,id=EEF49588-982B-492E-92AF-57F900ACEACD",
+        "-derivedDataPath",
+        "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp197-first-green-g0efmduf/DerivedData",
+        "-resultBundlePath",
+        "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp197-first-green-g0efmduf/focused.xcresult",
+        "-only-testing:DatadogInternalTests/NetworkInstrumentationFeatureTests",
+        "-only-testing:DatadogInternalTests/URLSessionTaskSwizzlerTests",
+        "-parallel-testing-enabled",
+        "NO",
+        "-enableCodeCoverage",
+        "NO",
+        "CODE_SIGNING_ALLOWED=NO",
+        "DD_API_KEY=",
+        "DD_TEST_RUNNER=",
+        "OTHER_SWIFT_FLAGS=$(inherited) -D DD_SDK_COMPILED_FOR_TESTING"
+      ],
+      "started_at": "2026-09-19T21:59:14.488741+00:00",
+      "source_patch_sha256": "c604a0396a7953e3b93e7c2bc997447962fe4f109ce5d943e4fe7da803f66d6f",
+      "artifact_root": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp197-first-green-g0efmduf",
+      "exit_code": 65,
+      "finished_at": "2026-09-19T21:59:47.608793+00:00",
+      "classification": "PREPARATION FAILED: new swizzler test omitted TestUtilities import; production compiled, no tests executed. Add only missing test import before retry."
+    },
+    {
+      "command": [
+        "xcodebuild",
+        "test",
+        "-quiet",
+        "-workspace",
+        "Datadog.xcworkspace",
+        "-scheme",
+        "DatadogInternal",
+        "-configuration",
+        "Debug",
+        "-destination",
+        "platform=iOS Simulator,id=EEF49588-982B-492E-92AF-57F900ACEACD",
+        "-derivedDataPath",
+        "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp197-first-green-g0efmduf/DerivedData",
+        "-resultBundlePath",
+        "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp197-focused-retry-b1by3ss6/focused.xcresult",
+        "-only-testing:DatadogInternalTests/NetworkInstrumentationFeatureTests",
+        "-only-testing:DatadogInternalTests/URLSessionTaskSwizzlerTests",
+        "-parallel-testing-enabled",
+        "NO",
+        "-enableCodeCoverage",
+        "NO",
+        "CODE_SIGNING_ALLOWED=NO",
+        "DD_API_KEY=",
+        "DD_TEST_RUNNER=",
+        "OTHER_SWIFT_FLAGS=$(inherited) -D DD_SDK_COMPILED_FOR_TESTING"
+      ],
+      "source_patch_sha256": "a01069437422707c8072f18158737aba5299f94b91ba9c11e60f1b97ff607892",
+      "started_at": "2026-09-19T22:04:40.605009+00:00",
+      "artifact_root": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp197-focused-retry-b1by3ss6",
+      "derived_data_reused_after_test_import_fix": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp197-first-green-g0efmduf/DerivedData",
+      "exit_code": 0,
+      "finished_at": "2026-09-19T22:05:03.067401+00:00",
+      "classification": "FOCUSED PASS: 79/79, no skipped/failed/expected failures on iPadOS17.5; remaining frozen callback/lifetime and candidate qualification controls are pending.",
+      "summary": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp197-focused-retry-b1by3ss6/summary.json"
+    },
+    {
+      "command": [
+        "xcodebuild",
+        "test",
+        "-quiet",
+        "-workspace",
+        "Datadog.xcworkspace",
+        "-scheme",
+        "DatadogInternal",
+        "-configuration",
+        "Debug",
+        "-destination",
+        "platform=iOS Simulator,id=EEF49588-982B-492E-92AF-57F900ACEACD",
+        "-derivedDataPath",
+        "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp197-first-green-g0efmduf/DerivedData",
+        "-resultBundlePath",
+        "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp197-internal-final-8cdwa00x/internal.xcresult",
+        "-parallel-testing-enabled",
+        "NO",
+        "-enableCodeCoverage",
+        "NO",
+        "CODE_SIGNING_ALLOWED=NO",
+        "DD_API_KEY=",
+        "DD_TEST_RUNNER=",
+        "OTHER_SWIFT_FLAGS=$(inherited) -D DD_SDK_COMPILED_FOR_TESTING",
+        "-only-testing:DatadogInternalTests"
+      ],
+      "source_patch_sha256": "9d396684936a121260761a9c042ca2681906ff480a59e158d958a0df4ee01f83",
+      "source_files": {
+        "DatadogInternal/Sources/NetworkInstrumentation/NetworkInstrumentationFeature.swift": "399e7b06489d38dbac0d2d121a2d12ba31ad7a161f1ef73b29763a12c8472e6b",
+        "DatadogInternal/Sources/NetworkInstrumentation/URLSession/NetworkInstrumentationSwizzler.swift": "a00edec0d9451c3b78c52f308c2a7f771d0e8b9cfafada79a2848f1b164cfef7",
+        "DatadogInternal/Sources/NetworkInstrumentation/URLSession/URLSessionTaskSwizzler.swift": "96d302999632cc609a98e774106f1e51c4ef9fecfe089287426285aa524e4570",
+        "DatadogInternal/Tests/NetworkInstrumentation/NetworkInstrumentationFeatureTests.swift": "e9068103fea4d9f9433e7c119838297e3d2fa0142e0ea76115ade2d8195850d5",
+        "DatadogInternal/Tests/NetworkInstrumentation/URLSessionTaskSwizzlerTests.swift": "0d3586be978915dfa11be06a2938eff836af61296b8ae629fd7e51e225fa5b58"
+      },
+      "started_at": "2026-09-19T22:27:03.338621+00:00",
+      "artifact_root": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp197-internal-final-8cdwa00x",
+      "scope": "Final Internal target after lint and real suspend/resume control",
+      "exit_code": 0,
+      "finished_at": "2026-09-19T22:27:27.263623+00:00"
     }
   ],
   "result": null,
@@ -175,7 +288,7 @@
       "Claim-only duplicate resume returns into native previousImplementation before first preparation completes, risking missing headers/start/completion under concurrent or reentrant entry.",
       "Removing the claim at completion plus task.state is insufficient: completed interception may run before native state setter updates task.state."
     ],
-    "implementation_admission": "No production edit yet. A minimal safe source-bound expansion must be frozen before implementation."
+    "implementation_admission": "User explicitly approved the reviewed three-file repair; applied only in isolated worktree for local testing."
   },
   "scope_amendment_before_implementation": {
     "reason": "Independent source review proves one-file claim-only repair cannot order native resume or retain cancellation callbacks during preparation. Expand only the existing internal resume forwarding seam, not scene/routing behavior.",
@@ -202,22 +315,24 @@
     ]
   },
   "production_mutation_approval": {
-    "status": "INFORMED USER APPROVAL PENDING",
+    "status": "APPROVED BY USER; APPLIED FOR LOCAL TESTING",
     "action": "Apply the three-file production URLSession continuation/preparation ordering repair",
-    "reason": "This changes production URLSession swizzling and resume ordering, creating substantial crash, request-start, and telemetry risks; the trusted user messages do not authorize this specific code modification.",
-    "required_next": "Ask informed approval once; apply only after explicit answer. No production source has changed.",
-    "production_files_changed": false,
+    "required_next": "Run frozen regression and compatibility checks; local approval does not authorize push or release.",
+    "production_files_changed": true,
     "review_artifact": "Results/EXP-197-proposed-repair.patch",
     "review_artifact_sha256": "5ef37bb787bfbb06630f37ca094eb82cd1cfe2b6fc3e570befb8e7942d8d1664",
     "feature_test_artifact": "Results/EXP-197-feature-regressions.patch",
-    "review": "Independent reviewer confirmed suitability for implementation/testing after retaining drained event batch through unlock; root applied only that review-artifact adjustment and verified applicability."
+    "review": "Independent reviewer confirmed suitability for implementation/testing after retaining drained event batch through unlock; root applied only that review-artifact adjustment and verified applicability.",
+    "user_reply": "Approve local implementation and testing",
+    "approved_at": "2026-09-19T21:59:14.488131+00:00",
+    "original_rejection_reason": "This changes production URLSession swizzling and resume ordering, creating substantial crash, request-start, and telemetry risks; the trusted user messages do not authorize this specific code modification."
   },
   "c06_baseline_extension": {
     "definition": "/private/tmp/exp197-c06-MMLmt1/EXP-197-S1-C06-baseline-definition.json",
     "definition_sha256": "8d4c10faef9689044a729837b4a12477e663dcac880bc57a2b2b414971211bf4",
     "adapter": "/tmp/exp197-c06-MMLmt1/run_baseline.py",
     "adapter_sha256": "c1d4c336de38a13f005af91080de6129388ce4c811c7e68993741bad8da316a8",
-    "status": "BASELINE 6/6 PASS; CANDIDATE PENDING",
+    "status": "BASELINE6/6 REUSED IN ACCEPTED PAIRED RESULT",
     "scope": "Six baseline-only S1:C06 cells on17.5; no candidate or S3 closure.",
     "artifacts": "/tmp/exp197-c06-MMLmt1",
     "durable_summary": "Results/EXP-197-ios17-baseline.json",
@@ -229,5 +344,343 @@
     "status": "UNSIGNED LOCAL FALLBACK AUTHORIZED",
     "reason": "Signed attempt failed: communication with agent failed; no commit created by that attempt.",
     "push": "Not authorized; outgoing history must be signed before any future separately authorized push."
+  },
+  "f07_proposal_audit": {
+    "status": "SOURCE BOUNDARY AUDITED; REPAIR APPLIED, FINAL CANDIDATE NOT FROZEN",
+    "base_revision": "62f64d7b655bdc83f3036c4ad81090a270f6202b",
+    "callsite_inventory": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp197-urlsession-b_i306ve/proposal-call-sites.txt",
+    "callsite_inventory_sha256": "b3797121609a32af4c8d49927fc4f8cf51d368c91c0a54eca00513a6def5615b",
+    "production_paths": [
+      "DatadogInternal/Sources/NetworkInstrumentation/NetworkInstrumentationFeature.swift",
+      "DatadogInternal/Sources/NetworkInstrumentation/URLSession/NetworkInstrumentationSwizzler.swift",
+      "DatadogInternal/Sources/NetworkInstrumentation/URLSession/URLSessionTaskSwizzler.swift"
+    ],
+    "exports": "Changes remain in private/internal types and callbacks; existing Objective-C resume selector and block ABI unchanged. Final API/build checks still required.",
+    "excluded": "No scene handoff/routing, public API, generated models, project configuration, endpoints or wire model changes. Existing upstream body/header policy retained.",
+    "affected_validation": [
+      "Internal URLSession automatic/registered/dual/rebind suites and all new concurrency/cancellation/ARC controls",
+      "RUM Resource and Trace integration preserve existing capture/header/sampling and owner behavior",
+      "Deployment15 and17.5 candidate counterparts to accepted baseline",
+      "Affected supported-platform/client compilation and API comparison",
+      "P01/P02 must include the changed network resume/callback path; ordinary manual event-dispatch results alone do not qualify it",
+      "P03/P04 task and feature lifetime plus reentrant handler/deallocator controls"
+    ],
+    "release_qualification": false
+  },
+  "initial_green_artifact_root": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp197-first-green-g0efmduf",
+  "focused_result": {
+    "executed": 79,
+    "passed": 79,
+    "failed": 0,
+    "skipped": 0,
+    "runtime": "17.5 (21F79)",
+    "artifact_root": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp197-focused-retry-b1by3ss6",
+    "source_patch_sha256": "a01069437422707c8072f18158737aba5299f94b91ba9c11e60f1b97ff607892",
+    "release_qualification": false,
+    "qualification_limit": "The first focused 79/79 count remains recorded but is not release qualification: the broader run exposed an asynchronous ServerMock lifetime failure in the added forwarding test. It now waits for both native requests before releasing the server."
+  },
+  "additional_controls": {
+    "count": 7,
+    "status": "Each passed in the broader run before an unrelated test-fixture lifetime trap; full target retry required",
+    "coverage": [
+      "Automatic preparation-time body above512KB retained",
+      "Registered above512KB discards buffered and later chunks",
+      "Registered body at512KB retained",
+      "Early completion follows buffered data and metrics",
+      "Terminal callback before native state setter blocks first claim",
+      "Weak terminal task and feature release",
+      "Prepared request fallback when currentRequest is nil"
+    ],
+    "transport_boundary": "Existing callback entry points inject deterministic schedules; target-specific preceding swizzle withholds native transport. Actual transport controls remain separate."
+  },
+  "fixture_failure": {
+    "artifact_root": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp197-internal-suite-47oh04u7",
+    "failure": "ServerMock.swift:135 precondition: server deallocated before deferred requests arrived",
+    "classification": "TEST FIXTURE LIFETIME BUG; NOT AN ACCEPTED FULL TARGET RESULT",
+    "fix": "Wait for both target and foreign native requests using existing ServerMock.waitAndReturnRequests(count:2) before scope exit",
+    "interruption": "Owned xcodebuild stalled collecting diagnostics after test-host crash; exact process interrupted after preserving failure."
+  },
+  "candidate_checkpoint": {
+    "revision": "464af9110daeb9211040e202b42d5ce446e06153",
+    "mode": "SIGNED",
+    "signature_verification_exit_code": 0,
+    "source_files": {
+      "DatadogInternal/Sources/NetworkInstrumentation/NetworkInstrumentationFeature.swift": "399e7b06489d38dbac0d2d121a2d12ba31ad7a161f1ef73b29763a12c8472e6b",
+      "DatadogInternal/Sources/NetworkInstrumentation/URLSession/NetworkInstrumentationSwizzler.swift": "a00edec0d9451c3b78c52f308c2a7f771d0e8b9cfafada79a2848f1b164cfef7",
+      "DatadogInternal/Sources/NetworkInstrumentation/URLSession/URLSessionTaskSwizzler.swift": "96d302999632cc609a98e774106f1e51c4ef9fecfe089287426285aa524e4570",
+      "DatadogInternal/Tests/NetworkInstrumentation/NetworkInstrumentationFeatureTests.swift": "e9068103fea4d9f9433e7c119838297e3d2fa0142e0ea76115ade2d8195850d5",
+      "DatadogInternal/Tests/NetworkInstrumentation/URLSessionTaskSwizzlerTests.swift": "0d3586be978915dfa11be06a2938eff836af61296b8ae629fd7e51e225fa5b58"
+    },
+    "paths": [
+      "DatadogInternal/Sources/NetworkInstrumentation/NetworkInstrumentationFeature.swift",
+      "DatadogInternal/Sources/NetworkInstrumentation/URLSession/NetworkInstrumentationSwizzler.swift",
+      "DatadogInternal/Sources/NetworkInstrumentation/URLSession/URLSessionTaskSwizzler.swift",
+      "DatadogInternal/Tests/NetworkInstrumentation/NetworkInstrumentationFeatureTests.swift",
+      "DatadogInternal/Tests/NetworkInstrumentation/URLSessionTaskSwizzlerTests.swift"
+    ],
+    "lint_exit_code": 0,
+    "timestamp": "2026-09-19T22:30:07.978602+00:00",
+    "pushed": false
+  },
+  "candidate_c06_extension": {
+    "status": "PASS: SIX CANDIDATE CELLS MATCH REUSED BASELINE",
+    "candidate_revision": "464af9110daeb9211040e202b42d5ce446e06153",
+    "artifact_root": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp197-c06-candidate-project-fix-4z4bk1xn",
+    "adapter_sha256": "decf5bfbf1393021fb5b67d1aa36e659c59480e31eadd2a20576632fb1404342",
+    "definition_sha256": "264f0645fa3961f14ef71c46f79fa72984a440accfa14550d6db07748c11d13c",
+    "baseline_reused": "Results/EXP-197-ios17-baseline.json",
+    "scope": "S1:C01/C02/C03/C06; A01 backend and C04/C05 remain separate",
+    "durable_summary": "Results/EXP-197-ios17-paired.json",
+    "all_builds_deployment15": true,
+    "all_cells_cleaned": true,
+    "original_boot_state_preserved": true
+  },
+  "final_internal_result": {
+    "candidate_revision": "464af9110daeb9211040e202b42d5ce446e06153",
+    "tests": 453,
+    "parameterized_executions": 489,
+    "failed": 0,
+    "skipped": 0,
+    "exit_code": 0,
+    "source_files": {
+      "DatadogInternal/Sources/NetworkInstrumentation/NetworkInstrumentationFeature.swift": "399e7b06489d38dbac0d2d121a2d12ba31ad7a161f1ef73b29763a12c8472e6b",
+      "DatadogInternal/Sources/NetworkInstrumentation/URLSession/NetworkInstrumentationSwizzler.swift": "a00edec0d9451c3b78c52f308c2a7f771d0e8b9cfafada79a2848f1b164cfef7",
+      "DatadogInternal/Sources/NetworkInstrumentation/URLSession/URLSessionTaskSwizzler.swift": "96d302999632cc609a98e774106f1e51c4ef9fecfe089287426285aa524e4570",
+      "DatadogInternal/Tests/NetworkInstrumentation/NetworkInstrumentationFeatureTests.swift": "e9068103fea4d9f9433e7c119838297e3d2fa0142e0ea76115ade2d8195850d5",
+      "DatadogInternal/Tests/NetworkInstrumentation/URLSessionTaskSwizzlerTests.swift": "0d3586be978915dfa11be06a2938eff836af61296b8ae629fd7e51e225fa5b58"
+    },
+    "artifact_root": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp197-internal-final-8cdwa00x",
+    "lint": {
+      "exit_code": 0,
+      "sources": 734,
+      "tests": 709,
+      "violations": 0,
+      "artifact_root": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp197-source-checkpoint-4cm3im0i"
+    }
+  },
+  "f07_final_source_audit": {
+    "status": "CLOSED FOR E01 SOURCE BOUNDARY",
+    "base_revision": "62f64d7b655bdc83f3036c4ad81090a270f6202b",
+    "candidate_revision": "464af9110daeb9211040e202b42d5ce446e06153",
+    "all_changed_paths": [
+      "DatadogInternal/Sources/NetworkInstrumentation/NetworkInstrumentationFeature.swift",
+      "DatadogInternal/Sources/NetworkInstrumentation/URLSession/NetworkInstrumentationSwizzler.swift",
+      "DatadogInternal/Sources/NetworkInstrumentation/URLSession/URLSessionTaskSwizzler.swift",
+      "DatadogInternal/Tests/NetworkInstrumentation/NetworkInstrumentationFeatureTests.swift",
+      "DatadogInternal/Tests/NetworkInstrumentation/URLSessionTaskSwizzlerTests.swift"
+    ],
+    "production_paths": [
+      "DatadogInternal/Sources/NetworkInstrumentation/NetworkInstrumentationFeature.swift",
+      "DatadogInternal/Sources/NetworkInstrumentation/URLSession/NetworkInstrumentationSwizzler.swift",
+      "DatadogInternal/Sources/NetworkInstrumentation/URLSession/URLSessionTaskSwizzler.swift"
+    ],
+    "test_paths": [
+      "DatadogInternal/Tests/NetworkInstrumentation/NetworkInstrumentationFeatureTests.swift",
+      "DatadogInternal/Tests/NetworkInstrumentation/URLSessionTaskSwizzlerTests.swift"
+    ],
+    "all_other_tracked_files": "Byte-identical Git trees between baseline and candidate",
+    "public_api": "All three changed types are internal; continuation callback remains internal; Objective-C resume selector and native block ABI unchanged. Existing-client/API tool checks remain F03.",
+    "wire_privacy": "No generated model, encoder, intake, endpoint, persistence, credential, header policy, public declaration or manifest/project change.",
+    "deferred_exclusion": "Candidate is baseline plus only enumerated three internal implementation files and two tests. RUMContextHandoff/RUMViewTarget/RUMSceneTarget/datadogSemantic absent from Core/Internal/RUM source. No reference-branch scene implementation is transplanted.",
+    "transitive_consumers": [
+      "DatadogCore handler registration and URLSession instrumentation lifecycle",
+      "RUM URLSessionRUMResourcesHandler",
+      "Trace TracingURLSessionHandler and existing header/sampling contracts",
+      "Supported Foundation URLSession platforms: iOS, tvOS, watchOS, visionOS, macOS and Catalyst"
+    ],
+    "required_remaining_checks": [
+      "Full affected Core/RUM/Trace suites and Resource/Trace native ownership acceptance",
+      "Existing Swift/Objective-C public clients; unchanged API surface and documentation",
+      "Affected platform packages, deployment minima and17.5/26.5 runtime cells",
+      "URLSession-path paired performance/all-thread allocations, retained-task state and reentrancy",
+      "Reusable native/backend acceptance and attributable final review"
+    ],
+    "review_attribution": "Independent proposal review plus required drained-event lifetime correction; exact source differs only by lint formatting from approved three-file patch. This source-boundary closure is not release approval."
+  },
+  "remaining_frozen_limits": [
+    "Deterministic payload release test proves reentrant destruction completes; it does not force every possible lock-scheduling interleaving. Static lifetime review remains relevant.",
+    "Fallback capture is exercised with a nil-currentRequest test task; no platform claim that real URLSession necessarily clears currentRequest during cancellation.",
+    "Duplicate native resume timing/thread limit remains disclosed.",
+    "No performance, all-platform, backend or shipping pass yet."
+  ],
+  "candidate_c06_attempts": [
+    {
+      "artifact_root": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp197-c06-qualified-candidate-3wow32zw",
+      "status": "PREPARATION FAILED: generated-project name mismatch",
+      "actual_runtime_cells": 0,
+      "app_installations": 0,
+      "protected_device_boot_state": "Booted unchanged"
+    }
+  ],
+  "affected_modules_validation": {
+    "status": "PASS WITH FOUR DOCUMENTED OS SKIPS",
+    "artifact_root": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp197-affected-modules-enkow9ju",
+    "candidate": "464af9110daeb9211040e202b42d5ce446e06153",
+    "targets": [
+      "DatadogCoreTests",
+      "DatadogRUMTests",
+      "DatadogTraceTests"
+    ],
+    "runtime": "17.5(21F79)",
+    "stop": "Stop on first module failure or30minute module timeout; inspect evidence before any retry.",
+    "runs": [
+      {
+        "module": "DatadogCore",
+        "started_at": "2026-09-19T22:44:12.222625+00:00",
+        "finished_at": "2026-09-19T22:45:07.853630+00:00",
+        "exit_code": 0,
+        "summary": {
+          "devicesAndConfigurations": [
+            {
+              "device": {
+                "architecture": "arm64",
+                "deviceId": "EEF49588-982B-492E-92AF-57F900ACEACD",
+                "deviceName": "iPad Pro 11-inch (M4) (16GB)",
+                "modelName": "iPad Pro 11-inch (M4)",
+                "osBuildNumber": "21F79",
+                "osVersion": "17.5",
+                "platform": "iOS Simulator"
+              },
+              "expectedFailures": 0,
+              "failedTests": 0,
+              "passedTests": 815,
+              "skippedTests": 4,
+              "testPlanConfiguration": {
+                "configurationId": "1",
+                "configurationName": "Test Scheme Action"
+              }
+            }
+          ],
+          "environmentDescription": "DatadogCore \u00b7 Built with macOS 26.6.2",
+          "expectedFailures": 0,
+          "failedTests": 0,
+          "finishTime": 1789857907.57,
+          "passedTests": 815,
+          "result": "Passed",
+          "runtimeWarnings": [],
+          "skippedTests": 4,
+          "startTime": 1789857855.457,
+          "statistics": [],
+          "testFailures": [],
+          "title": "Test - DatadogCore",
+          "topInsights": [
+            {
+              "category": "Longest Test Runs",
+              "impact": "58% of duration",
+              "text": "7 longest test runs with outlier durations exceeding 0.85s (three standard deviations)"
+            }
+          ],
+          "totalTestCount": 819
+        }
+      },
+      {
+        "module": "DatadogRUM",
+        "started_at": "2026-09-19T22:45:08.388753+00:00",
+        "finished_at": "2026-09-19T22:45:48.966833+00:00",
+        "exit_code": 0,
+        "summary": {
+          "devicesAndConfigurations": [
+            {
+              "device": {
+                "architecture": "arm64",
+                "deviceId": "EEF49588-982B-492E-92AF-57F900ACEACD",
+                "deviceName": "iPad Pro 11-inch (M4) (16GB)",
+                "modelName": "iPad Pro 11-inch (M4)",
+                "osBuildNumber": "21F79",
+                "osVersion": "17.5",
+                "platform": "iOS Simulator"
+              },
+              "expectedFailures": 0,
+              "failedTests": 0,
+              "passedTests": 937,
+              "skippedTests": 0,
+              "testPlanConfiguration": {
+                "configurationId": "1",
+                "configurationName": "Test Scheme Action"
+              }
+            }
+          ],
+          "environmentDescription": "DatadogRUM \u00b7 Built with macOS 26.6.2",
+          "expectedFailures": 0,
+          "failedTests": 0,
+          "finishTime": 1789857948.799,
+          "passedTests": 901,
+          "result": "Passed",
+          "runtimeWarnings": [],
+          "skippedTests": 0,
+          "startTime": 1789857909.476,
+          "statistics": [
+            {
+              "subtitle": "40 test runs",
+              "title": "4 tests ran with dynamic parameters"
+            }
+          ],
+          "testFailures": [],
+          "title": "Test - DatadogRUM",
+          "topInsights": [
+            {
+              "category": "Longest Test Runs",
+              "impact": "85% of duration",
+              "text": "38 longest test runs with outlier durations exceeding 0.40s (three standard deviations)"
+            }
+          ],
+          "totalTestCount": 901
+        }
+      },
+      {
+        "module": "DatadogTrace",
+        "started_at": "2026-09-19T22:45:49.502719+00:00",
+        "finished_at": "2026-09-19T22:46:00.618326+00:00",
+        "exit_code": 0,
+        "summary": {
+          "devicesAndConfigurations": [
+            {
+              "device": {
+                "architecture": "arm64",
+                "deviceId": "EEF49588-982B-492E-92AF-57F900ACEACD",
+                "deviceName": "iPad Pro 11-inch (M4) (16GB)",
+                "modelName": "iPad Pro 11-inch (M4)",
+                "osBuildNumber": "21F79",
+                "osVersion": "17.5",
+                "platform": "iOS Simulator"
+              },
+              "expectedFailures": 0,
+              "failedTests": 0,
+              "passedTests": 141,
+              "skippedTests": 0,
+              "testPlanConfiguration": {
+                "configurationId": "1",
+                "configurationName": "Test Scheme Action"
+              }
+            }
+          ],
+          "environmentDescription": "DatadogTrace \u00b7 Built with macOS 26.6.2",
+          "expectedFailures": 0,
+          "failedTests": 0,
+          "finishTime": 1789857960.508,
+          "passedTests": 141,
+          "result": "Passed",
+          "runtimeWarnings": [],
+          "skippedTests": 0,
+          "startTime": 1789857950.534,
+          "statistics": [],
+          "testFailures": [],
+          "title": "Test - DatadogTrace",
+          "topInsights": [
+            {
+              "category": "Longest Test Runs",
+              "impact": "96% of duration",
+              "text": "8 longest test runs with outlier durations exceeding 0.39s (three standard deviations)"
+            }
+          ],
+          "totalTestCount": 141
+        }
+      }
+    ],
+    "core_skips": {
+      "CarrierInfoPublisherTests": "3 tests skip because carrier information is nil on iOS16+; companion current-system tests pass",
+      "NetworkConnectionInfoConversionTests/testNWPathLinkQuality": "1 test requires iOS26+; not exercised on17.5"
+    },
+    "scope_limit": "Unit consumers pass; platform/client/API, actual26.5, native backend and performance remain separate"
   }
 }

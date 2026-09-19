@@ -26,11 +26,11 @@
         },
         "S1": {
           "scope": "Candidate compatibility: Early ordinary UIKit single-scene automatic-view app",
-          "status": "OPEN",
+          "status": "CLOSED",
           "dependencies": [],
           "decisive_test": "Unchanged Home \u2192 Detail \u2192 fresh Home owner/name/count chain, no duplicate views/actions; exact affected shipped code, no new integration.",
-          "environment": "Qualified simulator for frozen candidate; actual toolchain/runtime identity",
-          "evidence": "Reference evidence retained; this release candidate is not qualified.",
+          "environment": "Xcode27.1 and genuine legacy-build Xcode26.6/SDK26.5; actual iPad17.5(21F79); deployment15",
+          "evidence": "EXP-197 signed464af911 against current-develop62f64:6/6 candidate and reused6/6 baseline actual17.5(21F79) cells match exact view/action/resource ownership and genuine legacy lifecycle boundaries. Three deployment15 builds per arm; legacy SDK26.5. Frozen source/fixture/installed identities and cleanup pass. Results/EXP-197-ios17-paired.json. No15/16 runtime or S2/S3 claim.",
           "required": true
         },
         "S2": {
@@ -66,11 +66,11 @@
         },
         "S1": {
           "scope": "Candidate compatibility: Ordinary single-scene manual app",
-          "status": "OPEN",
+          "status": "CLOSED",
           "dependencies": [],
           "decisive_test": "Exact manual start/stop and marker owners match the pinned baseline; exact affected shipped code, no new integration.",
-          "environment": "Qualified simulator for frozen candidate; actual toolchain/runtime identity",
-          "evidence": "Reference evidence retained; this release candidate is not qualified.",
+          "environment": "Xcode27.1 and genuine legacy-build Xcode26.6/SDK26.5; actual iPad17.5(21F79); deployment15",
+          "evidence": "EXP-197 signed464af911 against current-develop62f64:6/6 candidate and reused6/6 baseline actual17.5(21F79) cells match exact view/action/resource ownership and genuine legacy lifecycle boundaries. Three deployment15 builds per arm; legacy SDK26.5. Frozen source/fixture/installed identities and cleanup pass. Results/EXP-197-ios17-paired.json. No15/16 runtime or S2/S3 claim.",
           "required": true
         },
         "S2": {
@@ -106,11 +106,11 @@
         },
         "S1": {
           "scope": "Candidate compatibility: Legacy UIApplication lifecycle app",
-          "status": "OPEN",
+          "status": "CLOSED",
           "dependencies": [],
           "decisive_test": "No scene manifest; automatic and manual chains match baseline without a scene registry dependency; exact affected shipped code, no new integration.",
-          "environment": "Qualified simulator for frozen candidate; actual toolchain/runtime identity",
-          "evidence": "Reference evidence retained; this release candidate is not qualified.",
+          "environment": "Xcode27.1 and genuine legacy-build Xcode26.6/SDK26.5; actual iPad17.5(21F79); deployment15",
+          "evidence": "EXP-197 signed464af911 against current-develop62f64:6/6 candidate and reused6/6 baseline actual17.5(21F79) cells match exact view/action/resource ownership and genuine legacy lifecycle boundaries. Three deployment15 builds per arm; legacy SDK26.5. Frozen source/fixture/installed identities and cleanup pass. Results/EXP-197-ios17-paired.json. No15/16 runtime or S2/S3 claim.",
           "required": true
         },
         "S2": {
@@ -226,11 +226,11 @@
         },
         "S1": {
           "scope": "Deployment15 and oldest runnable runtime compatibility",
-          "status": "OPEN",
+          "status": "CLOSED",
           "dependencies": [],
           "decisive_test": "Compile/link deployment15, audit availability, launch and run affected suite on actual17.5 when installed. If genuinely unavailable after bounded checks, document the user-approved runtime exception and oldest runnable coverage.",
-          "environment": "Xcode27.1, actual iPad17.5(21F79); genuine SDK26.5 legacy builds; deployment15 verified on baseline",
-          "evidence": "EXP-197 current-develop62f64d7b6 baseline passes6/6 actual17.5(21F79) Scene/Legacy automatic/manual and legacy lifecycle cells. Three builds verify deployment15; genuine26.5 SDK used for legacy hosts. Cleanup and Booted state preserved. Candidate and15/16 runtime execution remain untested; no C06 closure or exception.",
+          "environment": "Xcode27.1 and genuine legacy-build Xcode26.6/SDK26.5; actual iPad17.5(21F79); deployment15",
+          "evidence": "EXP-197 signed464af911 against current-develop62f64:6/6 candidate and reused6/6 baseline actual17.5(21F79) cells match exact view/action/resource ownership and genuine legacy lifecycle boundaries. Three deployment15 builds per arm; legacy SDK26.5. Frozen source/fixture/installed identities and cleanup pass. Results/EXP-197-ios17-paired.json. No15/16 runtime or S2/S3 claim.",
           "required": true
         },
         "S2": {
@@ -2478,18 +2478,18 @@
       "decisive_test": "Source-less repeated/suspend/resume handler mutation regression fails current develop and passes a synchronized narrow task-claim/lifecycle fix; automatic and registered delegates remain compatible.",
       "environment": "Isolated clean checkout of then-current develop; affected unit and native fixtures",
       "completion_mode": null,
-      "status": "REVIEW BLOCKED",
-      "evidence": "EXP-197 baseline red on current develop62f64d7b6. Three-file internal ordering repair and target-scoped tests are preserved as review artifacts; applicability and independent source review complete. Informed approval requested after automatic rejection; production remains unchanged.",
+      "status": "CLOSED",
+      "evidence": "EXP-197 signed464af911: baseline repeated mutation red; candidate full Internal453 tests/489 executions pass17.5, including real suspend/resume, automatic/registered/dual/rebind, cancellation, callback/body/lifetime controls. Lint734 source+709 test files passes. Remaining release checks stay separately required.",
       "release_requirements": {
         "S1": {
           "scope": "URLSession exactly-once interception",
-          "status": "REVIEW BLOCKED",
+          "status": "CLOSED",
           "dependencies": [
             "S1:F07"
           ],
           "decisive_test": "Source-less repeated/suspend/resume handler mutation regression fails current develop and passes a synchronized narrow task-claim/lifecycle fix; automatic and registered delegates remain compatible.",
           "environment": "Isolated clean checkout of then-current develop; affected unit and native fixtures",
-          "evidence": "EXP-197 baseline red on current develop62f64d7b6. Three-file internal ordering repair and target-scoped tests are preserved as review artifacts; applicability and independent source review complete. Informed approval requested after automatic rejection; production remains unchanged.",
+          "evidence": "EXP-197 signed464af911: baseline repeated mutation red; candidate full Internal453 tests/489 executions pass17.5, including real suspend/resume, automatic/registered/dual/rebind, cancellation, callback/body/lifetime controls. Lint734 source+709 test files passes. Remaining release checks stay separately required.",
           "required": true
         }
       }
@@ -2598,16 +2598,16 @@
       "decisive_test": "Inventory exact production diff, imports/callers/API/wire and transitive dependencies. Prove deferred scene routing/lifecycle/authority is absent, not merely hidden by API/manifest flags.",
       "environment": "Fresh develop baseline and isolated source candidate",
       "completion_mode": null,
-      "status": "OPEN",
-      "evidence": "",
+      "status": "CLOSED",
+      "evidence": "EXP-197 source audit at signed464af911: exactly3 internal source and2 test files over current develop62f64; all other tracked content identical. Existing call-site inventory, API/wire/privacy exclusions, deferred scene-symbol absence and affected Core/RUM/Trace/platform/performance matrix recorded in owning result. No release claim.",
       "release_requirements": {
         "S1": {
           "scope": "Shipped-source dependency and exclusion audit",
-          "status": "OPEN",
+          "status": "CLOSED",
           "dependencies": [],
           "decisive_test": "Inventory exact production diff, imports/callers/API/wire and transitive dependencies. Prove deferred scene routing/lifecycle/authority is absent, not merely hidden by API/manifest flags. Preserve upstream changes absent from the experimental branch.",
           "environment": "Fresh develop baseline and isolated source candidate",
-          "evidence": "Reference evidence retained; this release candidate is not qualified.",
+          "evidence": "EXP-197 source audit at signed464af911: exactly3 internal source and2 test files over current develop62f64; all other tracked content identical. Existing call-site inventory, API/wire/privacy exclusions, deferred scene-symbol absence and affected Core/RUM/Trace/platform/performance matrix recorded in owning result. No release claim.",
           "required": true
         },
         "S2": {

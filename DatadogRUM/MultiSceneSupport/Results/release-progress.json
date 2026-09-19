@@ -3,10 +3,10 @@
   "candidate_revision": "04201edc7711361279d8487b385bc8b0ca9c63c7",
   "gate_count": 79,
   "counts": {
-    "CLOSED": 48,
+    "CLOSED": 50,
     "ENVIRONMENT BLOCKED": 4,
-    "OPEN": 25,
-    "REVIEW BLOCKED": 2
+    "OPEN": 24,
+    "REVIEW BLOCKED": 1
   },
   "closed": [
     "C01",
@@ -56,7 +56,9 @@
     "D09",
     "D10",
     "D11",
-    "D12"
+    "D12",
+    "E01",
+    "F07"
   ],
   "remaining": [
     {
@@ -325,12 +327,6 @@
       ]
     },
     {
-      "id": "E01",
-      "status": "REVIEW BLOCKED",
-      "owner": "SDK implementer + independent reviewer",
-      "dependencies": []
-    },
-    {
       "id": "E02",
       "status": "OPEN",
       "owner": "SDK implementer + independent reviewer",
@@ -350,12 +346,6 @@
     },
     {
       "id": "E05",
-      "status": "OPEN",
-      "owner": "SDK implementer + independent reviewer",
-      "dependencies": []
-    },
-    {
-      "id": "F07",
       "status": "OPEN",
       "owner": "SDK implementer + independent reviewer",
       "dependencies": []
@@ -386,26 +376,8 @@
       "shipping_rule": "Release each eligible narrow fix independently on then-current develop after its applicable candidate checks and S1:F06. Other general improvements do not block it. First selected candidate E01; E02-E05 remain separate qualification work.",
       "required": {
         "count": 18,
-        "closed": 0,
+        "closed": 6,
         "remaining": [
-          {
-            "id": "S1:C01",
-            "status": "OPEN",
-            "owner": "SDK implementer",
-            "dependencies": []
-          },
-          {
-            "id": "S1:C02",
-            "status": "OPEN",
-            "owner": "SDK implementer",
-            "dependencies": []
-          },
-          {
-            "id": "S1:C03",
-            "status": "OPEN",
-            "owner": "SDK implementer",
-            "dependencies": []
-          },
           {
             "id": "S1:C04",
             "status": "OPEN",
@@ -414,12 +386,6 @@
           },
           {
             "id": "S1:C05",
-            "status": "OPEN",
-            "owner": "SDK implementer",
-            "dependencies": []
-          },
-          {
-            "id": "S1:C06",
             "status": "OPEN",
             "owner": "SDK implementer",
             "dependencies": []
@@ -520,20 +486,6 @@
               "S1:T03",
               "S1:T08"
             ]
-          },
-          {
-            "id": "S1:E01",
-            "status": "REVIEW BLOCKED",
-            "owner": "SDK implementer + independent reviewer",
-            "dependencies": [
-              "S1:F07"
-            ]
-          },
-          {
-            "id": "S1:F07",
-            "status": "OPEN",
-            "owner": "SDK implementer + independent reviewer",
-            "dependencies": []
           }
         ]
       },

@@ -24,10 +24,13 @@ approval. [Stage views](PLAN.md) own readiness.
 
 EXP-197 establishes a separate ordinary-app defect on current develop62f64d7b6:
 repeated URLSession resume invokes request mutation more than once. The failing
-test executed on the newly available iPadOS17.5 simulator. The repair remains a
-review-only proposal requiring informed approval after an automatic approval
-rejection; no production extraction is applied or qualified. The separate S1:C06 baseline matrix passes6/6 ordinary/legacy cases and three
-deployment15 builds. C06 still requires its candidate compatibility matrix. Controlled Datadog app runs are authorized
+test executed on the newly available iPadOS17.5 simulator. The approved isolated
+repair is signed at464af911. Full Internal453 tests/489 executions and the paired
+six-case ordinary/legacy17.5 matrix pass, including deployment15 builds and exact
+ownership/lifecycle checks. S1:E01/F07/C01/C02/C03/C06 close within that boundary;
+affected modules, performance, backend and final release review remain required.
+[The owning result](Results/EXP-197-urlsession-extraction.json) preserves controls
+and failed attempts. Controlled Datadog app runs are authorized
 in the probes RUM application under service `ios-app-rum-release-validation`;
 configuration preparation and authenticated query access do not establish a run.
 
