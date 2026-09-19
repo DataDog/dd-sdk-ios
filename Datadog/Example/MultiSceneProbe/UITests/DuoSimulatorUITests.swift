@@ -183,6 +183,18 @@ final class DuoSimulatorUITests: XCTestCase {
                 }
                 let candidates = app.buttons.matching(NSPredicate(format: "label == %@", selection.label))
                 XCTAssertTrue(candidates.firstMatch.waitForExistence(timeout: 10))
+                if selection.label == "Clear selection",
+                   !candidates.allElementsBoundByIndex.contains(where: { $0.isHittable }) {
+                    // The observed overlay covers the detail; tap its dimmed trailing area to dismiss it.
+                    app.windows.firstMatch.coordinate(withNormalizedOffset: CGVector(dx: 0.9, dy: 0.5)).tap()
+                    let visible = XCTNSPredicateExpectation(
+                        predicate: NSPredicate { _, _ in
+                            candidates.allElementsBoundByIndex.contains(where: { $0.isHittable })
+                        },
+                        object: nil
+                    )
+                    XCTAssertEqual(XCTWaiter.wait(for: [visible], timeout: 10), .completed)
+                }
                 let button = try XCTUnwrap(candidates.allElementsBoundByIndex.first { $0.isHittable })
                 button.tap()
                 XCTAssertTrue(

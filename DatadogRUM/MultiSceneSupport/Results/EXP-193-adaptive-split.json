@@ -68,6 +68,11 @@
       "run_id": "aa1545a0-366b-4974-b442-365e9d6f78b7",
       "status": "INCONCLUSIVE_INPUT",
       "result": "acceptance/exp193-aa1545a0-366b-4974-b442-365e9d6f78b7.json"
+    },
+    {
+      "run_id": "35a10966-15ba-4631-9b06-6d7778998d8e",
+      "status": "FAIL_UI_HIT_TARGET",
+      "result": "acceptance/exp193-35a10966-15ba-4631-9b06-6d7778998d8e.json"
     }
   ],
   "revised_acceptance_defined_before_implementation": {
@@ -129,5 +134,6 @@
     ],
     "boundary": "Qualifies only controlled native buttons and measured simulator pose callbacks, not human gesture or physical hinge parity. No production SDK or semantic oracle change.",
     "validation": "Build changed UI harness and execute only the new ten-phase UI test. Reuse the unchanged six model/catalog checks and nine oracle tests; no repeat resize or bulk tests."
-  }
+  },
+  "pose_input_followup": "Preserve nine completed native phases and the phase10 non-hittable clear failure. Dismiss the observed sidebar overlay with actual native input, require Clear selection hittable, then use a fresh frozen run with unchanged semantic oracle."
 }

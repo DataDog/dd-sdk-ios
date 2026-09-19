@@ -1,0 +1,42 @@
+{
+  "experiment": "EXP-193",
+  "run_id": "35a10966-15ba-4631-9b06-6d7778998d8e",
+  "status": "FAIL_UI_HIT_TARGET",
+  "mode": "pose",
+  "source_revision": "4d8ea4131c47c4aee1443ff75c5adf81d217d8db",
+  "artifact_root": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp193-ui-pose-6tsokuju",
+  "completed_native_phases": 9,
+  "decisive_failure": "Clear selection exists but is not hittable behind the observed sidebar overlay; XCTest unwrap fails before mutation5 or marker10. No full native/backend acceptance.",
+  "evidence": [
+    "detail1-return-display3.png",
+    "ui-summary.json",
+    "runner-export/checkpoints.json",
+    "final-native-after-failure.jsonl",
+    "initial-geometry-preflight.json"
+  ],
+  "ui_tests": {
+    "passed": 0,
+    "failed": 1,
+    "exit": 65
+  },
+  "identity": "All3 app and2 runner binaries, source and protected state match.",
+  "cleanup": {
+    "com.datadoghq.rum-native-multi-scene-probe/app": {
+      "exit": 2,
+      "stderr": "An error was encountered processing the command (domain=NSPOSIXErrorDomain, code=2):\nThe operation couldn\u2019t be completed. No such file or directory\nNo such file or directory\n"
+    },
+    "com.datadoghq.rum-native-multi-scene-probe/data": {
+      "exit": 2,
+      "stderr": "An error was encountered processing the command (domain=NSPOSIXErrorDomain, code=2):\nThe operation couldn\u2019t be completed. No such file or directory\nNo such file or directory\n"
+    },
+    "com.datadoghq.rum-native-multi-scene-probe.uitests.xctrunner/app": {
+      "exit": 2,
+      "stderr": "An error was encountered processing the command (domain=NSPOSIXErrorDomain, code=2):\nThe operation couldn\u2019t be completed. No such file or directory\nNo such file or directory\n"
+    },
+    "com.datadoghq.rum-native-multi-scene-probe.uitests.xctrunner/data": {
+      "exit": 2,
+      "stderr": "An error was encountered processing the command (domain=NSPOSIXErrorDomain, code=2):\nThe operation couldn\u2019t be completed. No such file or directory\nNo such file or directory\n"
+    }
+  },
+  "gates_closed": []
+}
