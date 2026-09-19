@@ -2026,3 +2026,14 @@ Never relabel a modern-built app as the old build. A duplicate-size native windo
 is not evidence of a spatial resize; preserve that distinction when evaluating
 compatibility viewports. An external boundary timeout is input failure, never a
 coverage verdict; preserve it and retry only that unaccepted cell with a fresh ID.
+
+The one-window manifest-true follow-up has exactly eight SDK27 Duo cells. Prepare
+copies with `automatic-coverage/manifest_variant.py`; preserve all Swift/Mach-O
+content and change only the independently verified plist flag. Native runtime
+multi-scene capability and the manifest declaration are separate observations.
+The oracle requires one actual scene and rejects mixed-flag comparison histories.
+`automatic-coverage/report.py` produces durable inventories, pose receipts,
+source/build/installed metadata, hashes, differences and failed-input records.
+The old375x667 compact viewport can qualify a real display transition only with
+fresh native inventory and display evidence; label it unchanged compatibility
+geometry, never resized. Modern duplicate windows alone are rejected.

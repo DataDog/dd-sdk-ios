@@ -63,3 +63,23 @@ precede that receipt. The earlier XCTest Home finalization failure stays preserv
 Regular cells keep their existing XCTest Home path. Frozen archived app/test
 sources and all app/runner binaries are checked independently of later collector
 edits in the working tree.
+
+The separately defined eight-cell manifest-true follow-up uses
+`manifest_variant.py --parent PATH`. It copies the SDK27 fixture products and
+changes only UIApplicationSupportsMultipleScenes in Info.plist; every Swift source
+and Mach-O stays identical. Runs hash the frozen/installed plist before and after
+XCTest, distinguish that declaration from UIApplication's runtime capability,
+and require exactly one actual native scene throughout. Keep its manifest separate
+from the original32 cells; the analyzer rejects mixed declaration histories.
+
+Duo old-app comparisons use the SDK27 collector with the genuine old application
+paths and an independent collector identity. A fresh display transition with a
+measured375x667 compact compatibility viewport is labeled `legacy_viewport_unchanged`
+only for the genuineSDK26.5 arm. It still requires fresh native window inventory,
+unchanged scene and a real display change before input. Duplicate-size windows
+never count as a spatial resize. A missing native input remains unqualified.
+
+`report.py ATTEMPT --device duo --output RESULT.json` generates the durable
+accepted inventories, source/build/installed identities, geometry/pose evidence,
+raw-artifact hashes, comparison classifications and retained input failures.
+It evaluates the current strict oracle without rerunning any accepted native cell.

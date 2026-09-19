@@ -24,6 +24,21 @@ def qualify_home(receipts, backgrounds, run_id):
             <= payload["observed_at"] <= home["timestamp"], "stale or late external Home boundary")
 
 
+def qualify_manifest(run, rows, launch):
+    declared = run.get("declared_multiple_scenes", False)
+    require(type(declared) is bool, "invalid manifest declaration")
+    if "built_app_metadata" in run or declared:
+        built = run.get("built_app_metadata", {})
+        require(set(built) == {"UIKit", "SwiftUI"}, "missing frozen manifest identity")
+        require(all(value.get("declared_multiple_scenes") is declared and value.get("info_sha256") for value in built.values()), "wrong frozen scene manifest")
+        require(run.get("installed_app_metadata") == built and run.get("app_metadata_after_test") == built, "installed manifest changed")
+    require(type(launch.get("multiple_scenes")) is bool, "missing native multiple-scene capability")
+    if not declared:
+        require(launch["multiple_scenes"] is False, "not a declared single-scene app")
+    else:
+        geometry = [row for row in rows if row["kind"] == "geometry"]
+        require(geometry and all(len(row["payload"].get("scenes", [])) == 1 for row in geometry), "manifest-true fixture did not stay one actual scene")
+
 def qualify(run, rows, receipts, summary):
     ident = run["run_id"]
     require(run.get("clean_install") is True and run.get("cleanup") is True, "install/cleanup absent")
@@ -36,7 +51,7 @@ def qualify(run, rows, receipts, summary):
     require(len(launches) == 1, "restored or duplicate launch")
     launch = launches[0]["payload"]
     require(launch["framework"] == run["framework"] and launch["layout"] == run["layout"], "wrong fixture")
-    require(launch["multiple_scenes"] is False, "not a declared single-scene app")
+    qualify_manifest(run, rows, launch)
     require(any(row["kind"] == "geometry" for row in rows), "no native geometry")
     backgrounds = [row for row in rows if row["kind"] == "native_background"]
     require(bool(backgrounds), "missing final action drain boundary")
@@ -140,7 +155,7 @@ def compare(before, after, family, initial_only=False):
 
 
 def analyze(attempt, seen=None):
-    m = json.loads((attempt / "manifest.json").read_text()); result = {"experiment": "EXP-195", "cells": [], "comparisons": [], "boundary": "Local mapper comparison; not backend or physical proof"}
+    m = json.loads((attempt / "manifest.json").read_text()); result = {"experiment": "EXP-195", "cells": [], "comparisons": [], "boundary": "Local mapper comparison; not backend or physical proof", "declared_multiple_scenes": m.get("declared_multiple_scenes", False)}
     seen = set() if seen is None else seen
     require(str(attempt.resolve()) not in seen, "cyclic prior attempts")
     seen.add(str(attempt.resolve()))
@@ -149,6 +164,7 @@ def analyze(attempt, seen=None):
         previous = Path(prior)
         prior_manifest = json.loads((previous / "manifest.json").read_text())
         require(prior_manifest["fixture"] == m["fixture"], "application fixture changed between attempts")
+        require(prior_manifest.get("declared_multiple_scenes", False) is m.get("declared_multiple_scenes", False), "different scene declarations cannot share a comparison")
         require({k: (v["revision"], v["sdk"], v["sdk_sources"]) for k,v in prior_manifest["builds"].items()}
                 == {k: (v["revision"], v["sdk"], v["sdk_sources"]) for k,v in m["builds"].items()}, "SDK source changed between attempts")
         result["cells"].extend(analyze(previous, seen)["cells"])
@@ -164,6 +180,9 @@ def analyze(attempt, seen=None):
             rows = [json.loads(l) for l in (d / "events.jsonl").read_text().splitlines()]
             receipts = json.loads((d / "receipts.json").read_text()); summary = json.loads((d / "test-summary.json").read_text())
             build = m["builds"][run["build"]]
+            require(run.get("declared_multiple_scenes", False) is m.get("declared_multiple_scenes", False), "run used a different scene declaration")
+            if "app_metadata" in build:
+                require(run.get("built_app_metadata") == build["app_metadata"], "run manifest differs from frozen variant")
             require(all(run["installed"][fw] == build["apps"][fw]["identity"] for fw in ["UIKit", "SwiftUI"]), "frozen/installed code mismatch")
             if "installed_runner" in run:
                 require(run["installed_runner"] == m["builds"][run.get("collector_build_key", run["build"])]["runner"]["identity"], "frozen/installed test runner mismatch")

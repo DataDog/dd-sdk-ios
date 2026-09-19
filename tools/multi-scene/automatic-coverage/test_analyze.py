@@ -107,4 +107,25 @@ class ExternalHomeTests(unittest.TestCase):
     def test_observation_after_receipt(self): self.rejects(lambda r,b: r[-1]["payload"].update(observed_at=6))
     def test_missing_wait(self): self.rejects(lambda r,b: r.pop(1))
 
+class ManifestIdentityTests(unittest.TestCase):
+    def fixture(self):
+        metadata = {fw: {"declared_multiple_scenes": True, "info_sha256": fw + "-hash"} for fw in ["UIKit", "SwiftUI"]}
+        run = {"declared_multiple_scenes": True, "built_app_metadata": metadata,
+               "installed_app_metadata": copy.deepcopy(metadata), "app_metadata_after_test": copy.deepcopy(metadata)}
+        rows = [{"kind": "geometry", "payload": {"scenes": [{"id": "one"}]}}]
+        return run, rows, {"multiple_scenes": False}
+    def test_manifest_and_native_capability_are_distinct(self): analyze.qualify_manifest(*self.fixture())
+    def test_native_capability_true_with_one_scene_is_valid(self):
+        run, rows, launch = self.fixture(); launch["multiple_scenes"] = True
+        analyze.qualify_manifest(run, rows, launch)
+    def rejects(self, change):
+        args = self.fixture(); change(*args)
+        with self.assertRaises(ValueError): analyze.qualify_manifest(*args)
+    def test_missing_manifest_inventory(self): self.rejects(lambda r,g,l: r.pop("built_app_metadata"))
+    def test_changed_install_manifest(self): self.rejects(lambda r,g,l: r["installed_app_metadata"]["UIKit"].update(info_sha256="wrong"))
+    def test_manifest_changed_during_test(self): self.rejects(lambda r,g,l: r["app_metadata_after_test"]["SwiftUI"].update(declared_multiple_scenes=False))
+    def test_second_native_scene(self): self.rejects(lambda r,g,l: g[0]["payload"]["scenes"].append({"id":"two"}))
+    def test_no_native_scene(self): self.rejects(lambda r,g,l: g[0]["payload"].update(scenes=[]))
+    def test_missing_capability_observation(self): self.rejects(lambda r,g,l: l.clear())
+
 if __name__ == "__main__": unittest.main()

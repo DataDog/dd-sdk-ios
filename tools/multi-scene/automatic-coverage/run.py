@@ -43,6 +43,12 @@ def call(command, *, env=RUN_ENV, cwd=None, log=None, check=True, timeout=120):
     if check and p.returncode: raise RuntimeError(f"exit {p.returncode}: {command}; log={log}; " + (p.stderr[-2000:] if not log else ""))
     return out
 
+def app_metadata(app):
+    data = (Path(app) / "Info.plist").read_bytes()
+    info = plistlib.loads(data)
+    return {"info_sha256": hashlib.sha256(data).hexdigest(), "build_sdk": info.get("DTSDKName"),
+            "declared_multiple_scenes": info.get("UIApplicationSceneManifest", {}).get("UIApplicationSupportsMultipleScenes", False)}
+
 def prepare():
     attempt = Path(tempfile.mkdtemp(prefix="exp195-automatic-"))
     manifest = {"experiment": "EXP-195", "created_at": time.time(), "head": call(["git", "rev-parse", "HEAD"]),
@@ -147,6 +153,12 @@ def run_cell(attempt, key, device, framework, layout, poses):
     item = {"run_id": run_id, "build": key, "device": device, "udid": destination,
             "framework": framework, "layout": layout, "poses": poses, "directory": str(directory), "state": "STARTED",
             "collector_build_key": collector_key, "runner_bundle": collector["runner"]["identity"]["bundleIdentifier"]}
+    item["declared_multiple_scenes"] = m.get("declared_multiple_scenes", False)
+    item["built_app_metadata"] = {fw: app_metadata(b["apps"][fw]["path"]) for fw in ["UIKit", "SwiftUI"]}
+    assert all(value["declared_multiple_scenes"] is item["declared_multiple_scenes"] for value in item["built_app_metadata"].values()), "wrong frozen scene manifest"
+    if "app_metadata" in b:
+        assert item["built_app_metadata"] == b["app_metadata"], "frozen app metadata drift"
+    item["installed_app_metadata"] = {}
     m["runs"].append(item); save(path, m)
     save(attempt / "active-run.json", item)
     bundles = [b["bundle_prefix"] + "." + fw.lower() for fw in ["UIKit", "SwiftUI"]]
@@ -164,6 +176,8 @@ def run_cell(attempt, key, device, framework, layout, poses):
         installed = call(["xcrun", "simctl", "get_app_container", destination, app["identity"]["bundleIdentifier"], "app"])
         item["installed"][fw] = inventory(installed)
         assert item["installed"][fw] == app["identity"], "installed code differs"
+        item["installed_app_metadata"][fw] = app_metadata(installed)
+        assert item["installed_app_metadata"][fw] == item["built_app_metadata"][fw], "installed app metadata differs"
     test_file = Path(collector["xctestrun"])
     spec = plistlib.loads(test_file.read_bytes())
     target = spec["TestConfigurations"][0]["TestTargets"][0] if "TestConfigurations" in spec else spec["CoverageUITests"]
@@ -211,10 +225,13 @@ def run_cell(attempt, key, device, framework, layout, poses):
     if (directory / "result.xcresult").exists():
         call(["xcrun", "xcresulttool", "get", "test-results", "summary", "--path", str(directory / "result.xcresult")], log=directory / "test-summary.json", check=False)
     item["installed_after_test"] = {}
+    item["app_metadata_after_test"] = {}
     for fw in ["UIKit", "SwiftUI"]:
         installed_app = call(["xcrun", "simctl", "get_app_container", destination, b["apps"][fw]["identity"]["bundleIdentifier"], "app"])
         item["installed_after_test"][fw] = inventory(installed_app)
         assert item["installed_after_test"][fw] == b["apps"][fw]["identity"], "test execution replaced an observed app"
+        item["app_metadata_after_test"][fw] = app_metadata(installed_app)
+        assert item["app_metadata_after_test"][fw] == item["built_app_metadata"][fw], "test execution changed app metadata"
     item["state"] = "COLLECTED" if code == 0 and (directory / "events.jsonl").exists() and (directory / "receipts.json").exists() else "INPUT_OR_FIXTURE_FAILED"
     for name in [*bundles, runner_bundle]:
         call(["xcrun", "simctl", "terminate", destination, name], check=False)
