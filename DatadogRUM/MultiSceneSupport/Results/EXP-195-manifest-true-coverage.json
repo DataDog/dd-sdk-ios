@@ -1,0 +1,1790 @@
+{
+  "boundary": "Local mapper comparison; not backend or physical proof",
+  "cells": [
+    {
+      "action_types": {
+        "swipe": 4,
+        "tap": 21
+      },
+      "app_metadata_after_test": {
+        "SwiftUI": {
+          "build_sdk": "iphonesimulator27.1",
+          "declared_multiple_scenes": true,
+          "info_sha256": "185efad0340546be72821868915370705e78b7fb8e6de08775d3189b4fd33260"
+        },
+        "UIKit": {
+          "build_sdk": "iphonesimulator27.1",
+          "declared_multiple_scenes": true,
+          "info_sha256": "dadaa7ebf7c261ce278be6cba2e17a49541285c235caa6b7aa813317988e3eae"
+        }
+      },
+      "artifact_directory": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp195-manifest-true-el0w6t79/runs/exp195-b1d8b701c6c74791b98c0c3a032de5a2",
+      "artifacts_sha256": {
+        "close-after-displays.json": "a10018cacefade1794a3bc8f027bd214c2d006304c4cd6bdf0d8a6d4706ebbd5",
+        "close-before-displays.json": "c11cda942210c7ffd39d92a99be2059d92d8608c99f87c4230afbb8fdaec5a81",
+        "close-command.json": "8c0b375e75d3fa32e02d5f0012086d71f64163cb8cf0f9614b8133b596d072a1",
+        "events.jsonl": "d3eb89a9f03cb6279de39c7c1aed010ea6c7f4f9b682e7e66848109a5680e15c",
+        "home-command.json": "7573e1481f933ae432e5dc0e8f02603611284e4c15a1939d49005e8c6e32d95a",
+        "open-after-displays.json": "6e0f56fbe110b54cc652b69c9a8c60a58b4e11bec29551bd671bed15d2543006",
+        "open-before-displays.json": "36c2c063782e258d3e339966ffa734cf7f32b8e931438eafbc79abce428cded0",
+        "open-command.json": "abcf204710465e004f32ab116f7f7f5a1423c78feea9c4e685f6191f36e7749a",
+        "receipts.json": "1c77d68aa486c24b27302d3085693247b46d8ecdf3db390fe53bce9386845279",
+        "reopen-after-displays.json": "70ed8ac50ce68cc5fdb410ef38c28a7ca68a4cb1324314570f7a6ea18826f961",
+        "reopen-before-displays.json": "4570664c8e6e059839a8a2828509649b4404aa09437a2fe142c254c0d2e11019",
+        "reopen-command.json": "b80b93ac81cbd010991d2a06bb4240da1585536ef561ae52a36c2213226b71db",
+        "run.json": "b5d28d35a3ce3ddc73aab212b49318769ac7251e0424b59e7a42a351230e5009",
+        "test-summary.json": "1147f043fd221850e27531730347d8364331d94637d52fc9d0a640c75362398f"
+      },
+      "automatic_action_count": 25,
+      "build_sdk": "27.1",
+      "built_app_metadata": {
+        "SwiftUI": {
+          "build_sdk": "iphonesimulator27.1",
+          "declared_multiple_scenes": true,
+          "info_sha256": "185efad0340546be72821868915370705e78b7fb8e6de08775d3189b4fd33260"
+        },
+        "UIKit": {
+          "build_sdk": "iphonesimulator27.1",
+          "declared_multiple_scenes": true,
+          "info_sha256": "dadaa7ebf7c261ce278be6cba2e17a49541285c235caa6b7aa813317988e3eae"
+        }
+      },
+      "cell": [
+        "candidate-27.1",
+        "duo",
+        "UIKit",
+        "stack"
+      ],
+      "clean_install": true,
+      "cleanup": true,
+      "collector_build_key": "candidate-27.1",
+      "collector_sources": {
+        "file_count": 1,
+        "files": {
+          "AutomaticCoverageUITests.swift": "6ed952e7172dce17ae5cc3b31f77b84eda3533fa86f8e41446c53df5182573f3"
+        },
+        "sha256": "d81e24049d830654370d9a55ecaa6476bca946e39567c894e49469c0484816ba"
+      },
+      "coverage": [
+        {
+          "actions": [
+            {
+              "id": "a2e14656-d25b-461b-8220-dd35cd96106f",
+              "name": "UIButton(home.tap)",
+              "owner_index": 1,
+              "owner_name": "UIKitFixture.HomeController",
+              "type": "tap",
+              "view_id": "b85fbe89-19b1-47b2-acd7-555513205138"
+            }
+          ],
+          "phase": "initial.root.tap"
+        },
+        {
+          "actions": [],
+          "phase": "initial.root.toggle"
+        },
+        {
+          "actions": [
+            {
+              "id": "62631221-6715-440f-a3ff-93d23be0799c",
+              "name": "UIScrollView(home.scroll)",
+              "owner_index": 1,
+              "owner_name": "UIKitFixture.HomeController",
+              "type": "swipe",
+              "view_id": "b85fbe89-19b1-47b2-acd7-555513205138"
+            }
+          ],
+          "phase": "initial.root.scroll"
+        },
+        {
+          "actions": [
+            {
+              "id": "77cde233-6ded-4b79-8d00-7514ee6b57bb",
+              "name": "UIButton(home.next)",
+              "owner_index": 1,
+              "owner_name": "UIKitFixture.HomeController",
+              "type": "tap",
+              "view_id": "b85fbe89-19b1-47b2-acd7-555513205138"
+            }
+          ],
+          "phase": "initial.navigate"
+        },
+        {
+          "actions": [
+            {
+              "id": "d940f783-115d-46cc-b002-6177d28388ea",
+              "name": "UIButton(detail.tap)",
+              "owner_index": 2,
+              "owner_name": "UIKitFixture.DetailController",
+              "type": "tap",
+              "view_id": "350ddd44-d289-44c3-87a6-82c9442c205c"
+            }
+          ],
+          "phase": "initial.detail.tap"
+        },
+        {
+          "actions": [],
+          "phase": "initial.detail.toggle"
+        },
+        {
+          "actions": [
+            {
+              "id": "94b9786d-b991-447b-8d60-0a80f3d9d423",
+              "name": "UIScrollView(detail.scroll)",
+              "owner_index": 2,
+              "owner_name": "UIKitFixture.DetailController",
+              "type": "swipe",
+              "view_id": "350ddd44-d289-44c3-87a6-82c9442c205c"
+            }
+          ],
+          "phase": "initial.detail.scroll"
+        },
+        {
+          "actions": [
+            {
+              "id": "9dff817d-548d-4ab4-8e6d-93e9d4fde7b3",
+              "name": "UIButton(detail.sheet)",
+              "owner_index": 2,
+              "owner_name": "UIKitFixture.DetailController",
+              "type": "tap",
+              "view_id": "350ddd44-d289-44c3-87a6-82c9442c205c"
+            }
+          ],
+          "phase": "initial.present"
+        },
+        {
+          "actions": [
+            {
+              "id": "490050b9-f158-4052-ad1f-f1ff541d8269",
+              "name": "UIButton(sheet.tap)",
+              "owner_index": 3,
+              "owner_name": "UIKitFixture.SheetController",
+              "type": "tap",
+              "view_id": "1cd5d4a4-5940-40a5-b719-e2edfb0e8dd3"
+            }
+          ],
+          "phase": "initial.sheet.tap"
+        },
+        {
+          "actions": [
+            {
+              "id": "7159ad36-ffa8-443c-9b8d-b319886f6654",
+              "name": "UIButton(sheet.close)",
+              "owner_index": 3,
+              "owner_name": "UIKitFixture.SheetController",
+              "type": "tap",
+              "view_id": "1cd5d4a4-5940-40a5-b719-e2edfb0e8dd3"
+            }
+          ],
+          "phase": "initial.dismiss"
+        },
+        {
+          "actions": [
+            {
+              "id": "ce307d14-cf04-4af9-a5ce-9af7d88e9734",
+              "name": "UIButton(detail.tap)",
+              "owner_index": 4,
+              "owner_name": "UIKitFixture.DetailController",
+              "type": "tap",
+              "view_id": "9e4060fe-e8f6-4296-b6c0-52ad2eba5281"
+            }
+          ],
+          "phase": "initial.detail.return.tap"
+        },
+        {
+          "actions": [
+            {
+              "id": "5d93dc86-b8e2-42e7-be9f-8abfe57e144a",
+              "name": "UIButton(detail.back)",
+              "owner_index": 4,
+              "owner_name": "UIKitFixture.DetailController",
+              "type": "tap",
+              "view_id": "9e4060fe-e8f6-4296-b6c0-52ad2eba5281"
+            }
+          ],
+          "phase": "initial.back"
+        },
+        {
+          "actions": [
+            {
+              "id": "65ab12aa-39ee-4b80-8109-a43f17f12719",
+              "name": "UIButton(home.tap)",
+              "owner_index": 5,
+              "owner_name": "UIKitFixture.HomeController",
+              "type": "tap",
+              "view_id": "1b3aad1c-2627-4b3a-a71b-9fd708ce3a19"
+            }
+          ],
+          "phase": "initial.root.return.tap"
+        },
+        {
+          "actions": [
+            {
+              "id": "a276f07b-061f-4d94-b0f9-a4c1b876989d",
+              "name": "UIButton(home.tap)",
+              "owner_index": 5,
+              "owner_name": "UIKitFixture.HomeController",
+              "type": "tap",
+              "view_id": "1b3aad1c-2627-4b3a-a71b-9fd708ce3a19"
+            }
+          ],
+          "phase": "inner.root.tap"
+        },
+        {
+          "actions": [],
+          "phase": "inner.root.toggle"
+        },
+        {
+          "actions": [
+            {
+              "id": "4c92e785-6cd8-41e1-a99e-3996cdb56c2c",
+              "name": "UIScrollView(home.scroll)",
+              "owner_index": 5,
+              "owner_name": "UIKitFixture.HomeController",
+              "type": "swipe",
+              "view_id": "1b3aad1c-2627-4b3a-a71b-9fd708ce3a19"
+            }
+          ],
+          "phase": "inner.root.scroll"
+        },
+        {
+          "actions": [
+            {
+              "id": "027e6509-776b-4d4a-a228-91b67cf9588b",
+              "name": "UIButton(home.next)",
+              "owner_index": 5,
+              "owner_name": "UIKitFixture.HomeController",
+              "type": "tap",
+              "view_id": "1b3aad1c-2627-4b3a-a71b-9fd708ce3a19"
+            }
+          ],
+          "phase": "inner.navigate"
+        },
+        {
+          "actions": [
+            {
+              "id": "7ebc609a-d089-465c-9124-aea9256c9d54",
+              "name": "UIButton(detail.tap)",
+              "owner_index": 6,
+              "owner_name": "UIKitFixture.DetailController",
+              "type": "tap",
+              "view_id": "f275efa0-cf5e-4f73-9a0b-8b730d529ce2"
+            }
+          ],
+          "phase": "inner.detail.tap"
+        },
+        {
+          "actions": [],
+          "phase": "inner.detail.toggle"
+        },
+        {
+          "actions": [
+            {
+              "id": "050730b2-a09a-46cf-9648-24ebadf98057",
+              "name": "UIScrollView(detail.scroll)",
+              "owner_index": 6,
+              "owner_name": "UIKitFixture.DetailController",
+              "type": "swipe",
+              "view_id": "f275efa0-cf5e-4f73-9a0b-8b730d529ce2"
+            }
+          ],
+          "phase": "inner.detail.scroll"
+        },
+        {
+          "actions": [
+            {
+              "id": "bbe64080-3abf-4ec7-b11b-1466ccf776f0",
+              "name": "UIButton(detail.sheet)",
+              "owner_index": 6,
+              "owner_name": "UIKitFixture.DetailController",
+              "type": "tap",
+              "view_id": "f275efa0-cf5e-4f73-9a0b-8b730d529ce2"
+            }
+          ],
+          "phase": "inner.present"
+        },
+        {
+          "actions": [
+            {
+              "id": "cf4acd5f-eff8-4f79-9fa7-4f4e85d05f83",
+              "name": "UIButton(sheet.tap)",
+              "owner_index": 7,
+              "owner_name": "UIKitFixture.SheetController",
+              "type": "tap",
+              "view_id": "eaa90acb-4dd4-4990-ac77-a7fb2aaddef5"
+            }
+          ],
+          "phase": "inner.sheet.tap"
+        },
+        {
+          "actions": [
+            {
+              "id": "43ef1f5b-6b6c-4c95-9960-eefbf603898a",
+              "name": "UIButton(sheet.close)",
+              "owner_index": 7,
+              "owner_name": "UIKitFixture.SheetController",
+              "type": "tap",
+              "view_id": "eaa90acb-4dd4-4990-ac77-a7fb2aaddef5"
+            }
+          ],
+          "phase": "inner.dismiss"
+        },
+        {
+          "actions": [
+            {
+              "id": "b571f52e-68c5-41be-8a5a-24abbdf6c46f",
+              "name": "UIButton(detail.tap)",
+              "owner_index": 8,
+              "owner_name": "UIKitFixture.DetailController",
+              "type": "tap",
+              "view_id": "395aedab-0058-44d4-9b26-e075bab21eac"
+            }
+          ],
+          "phase": "inner.detail.return.tap"
+        },
+        {
+          "actions": [
+            {
+              "id": "002c60bf-186b-4a0c-9ca4-beea1a7ca9bd",
+              "name": "UIButton(detail.back)",
+              "owner_index": 8,
+              "owner_name": "UIKitFixture.DetailController",
+              "type": "tap",
+              "view_id": "395aedab-0058-44d4-9b26-e075bab21eac"
+            }
+          ],
+          "phase": "inner.back"
+        },
+        {
+          "actions": [
+            {
+              "id": "9ad573b5-6c61-4927-967a-68cdd1e216c9",
+              "name": "UIButton(home.tap)",
+              "owner_index": 9,
+              "owner_name": "UIKitFixture.HomeController",
+              "type": "tap",
+              "view_id": "6878f1ab-62c8-481a-bb30-3f51c4addcd7"
+            }
+          ],
+          "phase": "inner.root.return.tap"
+        },
+        {
+          "actions": [
+            {
+              "id": "1f09c60f-a541-483a-96c8-206c9c3a9383",
+              "name": "UIButton(home.next)",
+              "owner_index": 9,
+              "owner_name": "UIKitFixture.HomeController",
+              "type": "tap",
+              "view_id": "6878f1ab-62c8-481a-bb30-3f51c4addcd7"
+            }
+          ],
+          "phase": "stable.navigate"
+        },
+        {
+          "actions": [
+            {
+              "id": "1dff000e-5fbc-4202-9274-a6874176996a",
+              "name": "UIButton(detail.tap)",
+              "owner_index": 10,
+              "owner_name": "UIKitFixture.DetailController",
+              "type": "tap",
+              "view_id": "70998b1c-0831-4f40-963e-384d18e0c6c0"
+            }
+          ],
+          "phase": "closed.detail.tap"
+        },
+        {
+          "actions": [
+            {
+              "id": "8ca2f112-f3d2-4bcb-8369-6d5eab6da2d5",
+              "name": "UIButton(detail.tap)",
+              "owner_index": 10,
+              "owner_name": "UIKitFixture.DetailController",
+              "type": "tap",
+              "view_id": "70998b1c-0831-4f40-963e-384d18e0c6c0"
+            }
+          ],
+          "phase": "reopened.detail.tap"
+        }
+      ],
+      "duplicate_action_ids": [],
+      "errors": [],
+      "fixture_sources": {
+        "file_count": 3,
+        "files": {
+          "Observation.swift": "dd0a252e94a70a2b021c2b301ee2353e7439be79b546ca4d7615e28f4d458aba",
+          "SwiftUIApp.swift": "f99ed78c8f77a59698e4a05198bb0a314074bfd063be53e03e99b448d30508eb",
+          "UIKitApp.swift": "4cd33b4038d949f80836a2f448132751da098652d9fb4c12bf16c09333b06bfa"
+        },
+        "sha256": "dc7ee138917fff8e6f20d240273a29bbf35ab236fd99da3bda4790274ee7b418"
+      },
+      "geometry": [
+        {
+          "kind": "geometry",
+          "payload": {
+            "scenes": [
+              {
+                "activation": 1,
+                "id": "5135F4A4-0964-4715-8107-330E6BB38C0D",
+                "orientation": 1,
+                "windows": [
+                  {
+                    "height": 678,
+                    "horizontal_size_class": 1,
+                    "vertical_size_class": 2,
+                    "width": 466
+                  }
+                ]
+              }
+            ]
+          },
+          "run_id": "exp195-b1d8b701c6c74791b98c0c3a032de5a2",
+          "sequence": 5,
+          "timestamp": 1789823544.503243
+        },
+        {
+          "kind": "geometry",
+          "payload": {
+            "scenes": [
+              {
+                "activation": 0,
+                "id": "5135F4A4-0964-4715-8107-330E6BB38C0D",
+                "orientation": 1,
+                "windows": [
+                  {
+                    "height": 678,
+                    "horizontal_size_class": 1,
+                    "vertical_size_class": 2,
+                    "width": 466
+                  }
+                ]
+              }
+            ]
+          },
+          "run_id": "exp195-b1d8b701c6c74791b98c0c3a032de5a2",
+          "sequence": 8,
+          "timestamp": 1789823544.680671
+        },
+        {
+          "kind": "geometry",
+          "payload": {
+            "scenes": [
+              {
+                "activation": 0,
+                "id": "5135F4A4-0964-4715-8107-330E6BB38C0D",
+                "orientation": 4,
+                "windows": [
+                  {
+                    "height": 669,
+                    "horizontal_size_class": 2,
+                    "vertical_size_class": 2,
+                    "width": 951
+                  }
+                ]
+              }
+            ]
+          },
+          "run_id": "exp195-b1d8b701c6c74791b98c0c3a032de5a2",
+          "sequence": 55,
+          "timestamp": 1789823654.940359
+        },
+        {
+          "kind": "geometry",
+          "payload": {
+            "scenes": [
+              {
+                "activation": 0,
+                "id": "5135F4A4-0964-4715-8107-330E6BB38C0D",
+                "orientation": 4,
+                "windows": [
+                  {
+                    "height": 669,
+                    "horizontal_size_class": 2,
+                    "vertical_size_class": 2,
+                    "width": 951
+                  },
+                  {
+                    "height": 669,
+                    "horizontal_size_class": 2,
+                    "vertical_size_class": 2,
+                    "width": 951
+                  }
+                ]
+              }
+            ]
+          },
+          "run_id": "exp195-b1d8b701c6c74791b98c0c3a032de5a2",
+          "sequence": 56,
+          "timestamp": 1789823655.140353
+        },
+        {
+          "kind": "geometry",
+          "payload": {
+            "scenes": [
+              {
+                "activation": 0,
+                "id": "5135F4A4-0964-4715-8107-330E6BB38C0D",
+                "orientation": 1,
+                "windows": [
+                  {
+                    "height": 678,
+                    "horizontal_size_class": 1,
+                    "vertical_size_class": 2,
+                    "width": 466
+                  },
+                  {
+                    "height": 678,
+                    "horizontal_size_class": 1,
+                    "vertical_size_class": 2,
+                    "width": 466
+                  }
+                ]
+              }
+            ]
+          },
+          "run_id": "exp195-b1d8b701c6c74791b98c0c3a032de5a2",
+          "sequence": 113,
+          "timestamp": 1789823791.53843
+        },
+        {
+          "kind": "geometry",
+          "payload": {
+            "scenes": [
+              {
+                "activation": 0,
+                "id": "5135F4A4-0964-4715-8107-330E6BB38C0D",
+                "orientation": 4,
+                "windows": [
+                  {
+                    "height": 669,
+                    "horizontal_size_class": 2,
+                    "vertical_size_class": 2,
+                    "width": 951
+                  },
+                  {
+                    "height": 669,
+                    "horizontal_size_class": 2,
+                    "vertical_size_class": 2,
+                    "width": 951
+                  }
+                ]
+              }
+            ]
+          },
+          "run_id": "exp195-b1d8b701c6c74791b98c0c3a032de5a2",
+          "sequence": 115,
+          "timestamp": 1789823877.936899
+        },
+        {
+          "kind": "geometry",
+          "payload": {
+            "scenes": [
+              {
+                "activation": 1,
+                "id": "5135F4A4-0964-4715-8107-330E6BB38C0D",
+                "orientation": 4,
+                "windows": [
+                  {
+                    "height": 669,
+                    "horizontal_size_class": 2,
+                    "vertical_size_class": 2,
+                    "width": 951
+                  },
+                  {
+                    "height": 669,
+                    "horizontal_size_class": 2,
+                    "vertical_size_class": 2,
+                    "width": 951
+                  }
+                ]
+              }
+            ]
+          },
+          "run_id": "exp195-b1d8b701c6c74791b98c0c3a032de5a2",
+          "sequence": 119,
+          "timestamp": 1789823948.7367659
+        },
+        {
+          "kind": "geometry",
+          "payload": {
+            "scenes": [
+              {
+                "activation": 2,
+                "id": "5135F4A4-0964-4715-8107-330E6BB38C0D",
+                "orientation": 4,
+                "windows": [
+                  {
+                    "height": 669,
+                    "horizontal_size_class": 2,
+                    "vertical_size_class": 2,
+                    "width": 951
+                  },
+                  {
+                    "height": 669,
+                    "horizontal_size_class": 2,
+                    "vertical_size_class": 2,
+                    "width": 951
+                  }
+                ]
+              }
+            ]
+          },
+          "run_id": "exp195-b1d8b701c6c74791b98c0c3a032de5a2",
+          "sequence": 124,
+          "timestamp": 1789823949.410248
+        }
+      ],
+      "initial_views": [
+        {
+          "date": 1789823542249,
+          "id": "87348335-5342-478e-aafc-836024ce24b7",
+          "index": 0,
+          "name": "ApplicationLaunch",
+          "url": "com/datadog/application-launch/view"
+        },
+        {
+          "date": 1789823544503,
+          "id": "b85fbe89-19b1-47b2-acd7-555513205138",
+          "index": 1,
+          "name": "UIKitFixture.HomeController",
+          "url": "UIKitFixture.HomeController"
+        },
+        {
+          "date": 1789823566237,
+          "id": "350ddd44-d289-44c3-87a6-82c9442c205c",
+          "index": 2,
+          "name": "UIKitFixture.DetailController",
+          "url": "UIKitFixture.DetailController"
+        },
+        {
+          "date": 1789823589759,
+          "id": "1cd5d4a4-5940-40a5-b719-e2edfb0e8dd3",
+          "index": 3,
+          "name": "UIKitFixture.SheetController",
+          "url": "UIKitFixture.SheetController"
+        },
+        {
+          "date": 1789823598630,
+          "id": "9e4060fe-e8f6-4296-b6c0-52ad2eba5281",
+          "index": 4,
+          "name": "UIKitFixture.DetailController",
+          "url": "UIKitFixture.DetailController"
+        },
+        {
+          "date": 1789823607337,
+          "id": "1b3aad1c-2627-4b3a-a71b-9fd708ce3a19",
+          "index": 5,
+          "name": "UIKitFixture.HomeController",
+          "url": "UIKitFixture.HomeController"
+        }
+      ],
+      "installed_after_test": {
+        "SwiftUI": {
+          "binaries": {
+            "SwiftUIFixture": "45e6d077f477599a21ecac27b9d98b80dd2ec6d1ca67166772d53a086715722a"
+          },
+          "bundleIdentifier": "com.datadoghq.exp195.candidate.sdk271.swiftui",
+          "executable": "SwiftUIFixture"
+        },
+        "UIKit": {
+          "binaries": {
+            "UIKitFixture": "9faafc49abac57382b499803b6ce105901a85415d8c5105c4733c8ef218f34a6"
+          },
+          "bundleIdentifier": "com.datadoghq.exp195.candidate.sdk271.uikit",
+          "executable": "UIKitFixture"
+        }
+      },
+      "installed_app_metadata": {
+        "SwiftUI": {
+          "build_sdk": "iphonesimulator27.1",
+          "declared_multiple_scenes": true,
+          "info_sha256": "185efad0340546be72821868915370705e78b7fb8e6de08775d3189b4fd33260"
+        },
+        "UIKit": {
+          "build_sdk": "iphonesimulator27.1",
+          "declared_multiple_scenes": true,
+          "info_sha256": "dadaa7ebf7c261ce278be6cba2e17a49541285c235caa6b7aa813317988e3eae"
+        }
+      },
+      "installed_apps": {
+        "SwiftUI": {
+          "binaries": {
+            "SwiftUIFixture": "45e6d077f477599a21ecac27b9d98b80dd2ec6d1ca67166772d53a086715722a"
+          },
+          "bundleIdentifier": "com.datadoghq.exp195.candidate.sdk271.swiftui",
+          "executable": "SwiftUIFixture"
+        },
+        "UIKit": {
+          "binaries": {
+            "UIKitFixture": "9faafc49abac57382b499803b6ce105901a85415d8c5105c4733c8ef218f34a6"
+          },
+          "bundleIdentifier": "com.datadoghq.exp195.candidate.sdk271.uikit",
+          "executable": "UIKitFixture"
+        }
+      },
+      "installed_runner": {
+        "binaries": {
+          "CoverageUITests-Runner": "bd8ddf46543a4e3b5ccd4a4ff295ae2bf1c90d3056fbd245269cf014021246bb",
+          "PlugIns/CoverageUITests.xctest.dSYM/Contents/Resources/DWARF/CoverageUITests": "188153c7f7fb85229347a72ea9d2cd3691427275f1dd95697666d4ccdf8a382d",
+          "PlugIns/CoverageUITests.xctest/CoverageUITests": "8fb440db07b1e8bbce8cc902af0141b465f627cb8a5fdcd030ac1004e20fef96"
+        },
+        "bundleIdentifier": "com.datadoghq.exp195.candidate.sdk271.uitests.xctrunner",
+        "executable": "CoverageUITests-Runner"
+      },
+      "missing_action_phases": [
+        "initial.root.toggle",
+        "initial.detail.toggle",
+        "inner.root.toggle",
+        "inner.detail.toggle"
+      ],
+      "native_appearances": [
+        "home",
+        "detail",
+        "sheet",
+        "home",
+        "detail",
+        "sheet",
+        "home",
+        "detail"
+      ],
+      "native_test": {
+        "devicesAndConfigurations": [
+          {
+            "device": {
+              "architecture": "arm64",
+              "deviceId": "C3B8746E-C786-4309-BEA0-20A63F772E3F",
+              "deviceName": "EXP195 duo 1dda08",
+              "modelName": "iPhone",
+              "osBuildNumber": "24A94401",
+              "osVersion": "27.1",
+              "platform": "iOS Simulator"
+            },
+            "expectedFailures": 0,
+            "failedTests": 0,
+            "passedTests": 1,
+            "skippedTests": 0,
+            "testPlanConfiguration": {
+              "configurationId": "1",
+              "configurationName": "Test Scheme Action"
+            }
+          }
+        ],
+        "environmentDescription": "Coverage \u00b7 Built with macOS 26.6.2",
+        "expectedFailures": 0,
+        "failedTests": 0,
+        "finishTime": 1789823963.616,
+        "passedTests": 1,
+        "result": "Passed",
+        "runtimeWarnings": [],
+        "skippedTests": 0,
+        "startTime": 1789823536.183,
+        "statistics": [],
+        "testFailures": [],
+        "title": "Test - Coverage",
+        "topInsights": [],
+        "totalTestCount": 1
+      },
+      "native_timeline": [
+        {
+          "kind": "native_appear",
+          "payload": {
+            "screen": "home"
+          },
+          "run_id": "exp195-b1d8b701c6c74791b98c0c3a032de5a2",
+          "sequence": 4,
+          "timestamp": 1789823544.503021
+        },
+        {
+          "kind": "native_input",
+          "payload": {
+            "name": "home.tap"
+          },
+          "run_id": "exp195-b1d8b701c6c74791b98c0c3a032de5a2",
+          "sequence": 9,
+          "timestamp": 1789823548.075865
+        },
+        {
+          "kind": "native_input",
+          "payload": {
+            "name": "home.toggle"
+          },
+          "run_id": "exp195-b1d8b701c6c74791b98c0c3a032de5a2",
+          "sequence": 10,
+          "timestamp": 1789823552.99406
+        },
+        {
+          "kind": "native_input",
+          "payload": {
+            "name": "home.next"
+          },
+          "run_id": "exp195-b1d8b701c6c74791b98c0c3a032de5a2",
+          "sequence": 17,
+          "timestamp": 1789823565.6256819
+        },
+        {
+          "kind": "native_appear",
+          "payload": {
+            "screen": "detail"
+          },
+          "run_id": "exp195-b1d8b701c6c74791b98c0c3a032de5a2",
+          "sequence": 18,
+          "timestamp": 1789823566.1720262
+        },
+        {
+          "kind": "native_input",
+          "payload": {
+            "name": "detail.tap"
+          },
+          "run_id": "exp195-b1d8b701c6c74791b98c0c3a032de5a2",
+          "sequence": 23,
+          "timestamp": 1789823571.658979
+        },
+        {
+          "kind": "native_input",
+          "payload": {
+            "name": "detail.toggle"
+          },
+          "run_id": "exp195-b1d8b701c6c74791b98c0c3a032de5a2",
+          "sequence": 24,
+          "timestamp": 1789823576.576977
+        },
+        {
+          "kind": "native_input",
+          "payload": {
+            "name": "detail.sheet"
+          },
+          "run_id": "exp195-b1d8b701c6c74791b98c0c3a032de5a2",
+          "sequence": 31,
+          "timestamp": 1789823589.158694
+        },
+        {
+          "kind": "native_appear",
+          "payload": {
+            "screen": "sheet"
+          },
+          "run_id": "exp195-b1d8b701c6c74791b98c0c3a032de5a2",
+          "sequence": 32,
+          "timestamp": 1789823589.6933641
+        },
+        {
+          "kind": "native_input",
+          "payload": {
+            "name": "sheet.tap"
+          },
+          "run_id": "exp195-b1d8b701c6c74791b98c0c3a032de5a2",
+          "sequence": 37,
+          "timestamp": 1789823594.158609
+        },
+        {
+          "kind": "native_input",
+          "payload": {
+            "name": "sheet.close"
+          },
+          "run_id": "exp195-b1d8b701c6c74791b98c0c3a032de5a2",
+          "sequence": 38,
+          "timestamp": 1789823598.0419211
+        },
+        {
+          "kind": "native_input",
+          "payload": {
+            "name": "detail.tap"
+          },
+          "run_id": "exp195-b1d8b701c6c74791b98c0c3a032de5a2",
+          "sequence": 45,
+          "timestamp": 1789823602.9418159
+        },
+        {
+          "kind": "native_input",
+          "payload": {
+            "name": "detail.back"
+          },
+          "run_id": "exp195-b1d8b701c6c74791b98c0c3a032de5a2",
+          "sequence": 46,
+          "timestamp": 1789823606.775159
+        },
+        {
+          "kind": "native_appear",
+          "payload": {
+            "screen": "home"
+          },
+          "run_id": "exp195-b1d8b701c6c74791b98c0c3a032de5a2",
+          "sequence": 49,
+          "timestamp": 1789823607.271379
+        },
+        {
+          "kind": "native_input",
+          "payload": {
+            "name": "home.tap"
+          },
+          "run_id": "exp195-b1d8b701c6c74791b98c0c3a032de5a2",
+          "sequence": 54,
+          "timestamp": 1789823611.675033
+        },
+        {
+          "kind": "native_input",
+          "payload": {
+            "name": "home.tap"
+          },
+          "run_id": "exp195-b1d8b701c6c74791b98c0c3a032de5a2",
+          "sequence": 57,
+          "timestamp": 1789823664.657796
+        },
+        {
+          "kind": "native_input",
+          "payload": {
+            "name": "home.toggle"
+          },
+          "run_id": "exp195-b1d8b701c6c74791b98c0c3a032de5a2",
+          "sequence": 60,
+          "timestamp": 1789823669.542513
+        },
+        {
+          "kind": "native_input",
+          "payload": {
+            "name": "home.next"
+          },
+          "run_id": "exp195-b1d8b701c6c74791b98c0c3a032de5a2",
+          "sequence": 67,
+          "timestamp": 1789823681.590878
+        },
+        {
+          "kind": "native_appear",
+          "payload": {
+            "screen": "detail"
+          },
+          "run_id": "exp195-b1d8b701c6c74791b98c0c3a032de5a2",
+          "sequence": 68,
+          "timestamp": 1789823682.133566
+        },
+        {
+          "kind": "native_input",
+          "payload": {
+            "name": "detail.tap"
+          },
+          "run_id": "exp195-b1d8b701c6c74791b98c0c3a032de5a2",
+          "sequence": 73,
+          "timestamp": 1789823687.6574888
+        },
+        {
+          "kind": "native_input",
+          "payload": {
+            "name": "detail.toggle"
+          },
+          "run_id": "exp195-b1d8b701c6c74791b98c0c3a032de5a2",
+          "sequence": 74,
+          "timestamp": 1789823692.5755959
+        },
+        {
+          "kind": "native_input",
+          "payload": {
+            "name": "detail.sheet"
+          },
+          "run_id": "exp195-b1d8b701c6c74791b98c0c3a032de5a2",
+          "sequence": 81,
+          "timestamp": 1789823705.123935
+        },
+        {
+          "kind": "native_appear",
+          "payload": {
+            "screen": "sheet"
+          },
+          "run_id": "exp195-b1d8b701c6c74791b98c0c3a032de5a2",
+          "sequence": 82,
+          "timestamp": 1789823705.643518
+        },
+        {
+          "kind": "native_input",
+          "payload": {
+            "name": "sheet.tap"
+          },
+          "run_id": "exp195-b1d8b701c6c74791b98c0c3a032de5a2",
+          "sequence": 87,
+          "timestamp": 1789823710.090569
+        },
+        {
+          "kind": "native_input",
+          "payload": {
+            "name": "sheet.close"
+          },
+          "run_id": "exp195-b1d8b701c6c74791b98c0c3a032de5a2",
+          "sequence": 88,
+          "timestamp": 1789823713.940524
+        },
+        {
+          "kind": "native_input",
+          "payload": {
+            "name": "detail.tap"
+          },
+          "run_id": "exp195-b1d8b701c6c74791b98c0c3a032de5a2",
+          "sequence": 95,
+          "timestamp": 1789823718.873829
+        },
+        {
+          "kind": "native_input",
+          "payload": {
+            "name": "detail.back"
+          },
+          "run_id": "exp195-b1d8b701c6c74791b98c0c3a032de5a2",
+          "sequence": 96,
+          "timestamp": 1789823722.707169
+        },
+        {
+          "kind": "native_appear",
+          "payload": {
+            "screen": "home"
+          },
+          "run_id": "exp195-b1d8b701c6c74791b98c0c3a032de5a2",
+          "sequence": 100,
+          "timestamp": 1789823723.237414
+        },
+        {
+          "kind": "native_input",
+          "payload": {
+            "name": "home.tap"
+          },
+          "run_id": "exp195-b1d8b701c6c74791b98c0c3a032de5a2",
+          "sequence": 104,
+          "timestamp": 1789823727.623693
+        },
+        {
+          "kind": "native_input",
+          "payload": {
+            "name": "home.next"
+          },
+          "run_id": "exp195-b1d8b701c6c74791b98c0c3a032de5a2",
+          "sequence": 105,
+          "timestamp": 1789823731.390286
+        },
+        {
+          "kind": "native_appear",
+          "payload": {
+            "screen": "detail"
+          },
+          "run_id": "exp195-b1d8b701c6c74791b98c0c3a032de5a2",
+          "sequence": 108,
+          "timestamp": 1789823731.9328399
+        },
+        {
+          "kind": "native_input",
+          "payload": {
+            "name": "detail.tap"
+          },
+          "run_id": "exp195-b1d8b701c6c74791b98c0c3a032de5a2",
+          "sequence": 114,
+          "timestamp": 1789823803.489469
+        },
+        {
+          "kind": "native_input",
+          "payload": {
+            "name": "detail.tap"
+          },
+          "run_id": "exp195-b1d8b701c6c74791b98c0c3a032de5a2",
+          "sequence": 116,
+          "timestamp": 1789823893.47171
+        },
+        {
+          "kind": "native_background",
+          "payload": {},
+          "run_id": "exp195-b1d8b701c6c74791b98c0c3a032de5a2",
+          "sequence": 123,
+          "timestamp": 1789823949.213829
+        }
+      ],
+      "pose_receipts": [
+        {
+          "payload": {
+            "frame": "(0.0, 0.0, 466.0, 678.0)"
+          },
+          "phase": "await-open",
+          "run_id": "exp195-b1d8b701c6c74791b98c0c3a032de5a2",
+          "timestamp": 1789823614.232214
+        },
+        {
+          "payload": {
+            "after": {
+              "display": {
+                "active": {
+                  "active": true,
+                  "backlightState": "activeOn",
+                  "bounds": [
+                    [
+                      0,
+                      0
+                    ],
+                    [
+                      2007,
+                      2853
+                    ]
+                  ],
+                  "chromeIdentifier": "com.apple.dt.devicekit.chrome.phone14",
+                  "currentOrientation": "rot90",
+                  "displayId": 3,
+                  "framebufferMaskIdentifier": "BF0DC480-5EE2-4EC1-B02B-C75E94759832",
+                  "name": "LCD-1",
+                  "nativeOrientation": "rot0",
+                  "nativeSize": [
+                    2007,
+                    2853
+                  ],
+                  "physicalSize": [
+                    4.363043308258057,
+                    6.202173709869385
+                  ],
+                  "pointScale": 3,
+                  "primary": false,
+                  "type": {
+                    "integrated": {}
+                  },
+                  "uniqueId": "27A59591-6E45-436F-AFF4-593734A03C81"
+                },
+                "artifact": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp195-manifest-true-el0w6t79/runs/exp195-b1d8b701c6c74791b98c0c3a032de5a2/open-after-displays.json",
+                "observed_at": 1789823661.2820039
+              },
+              "geometry": {
+                "kind": "geometry",
+                "payload": {
+                  "scenes": [
+                    {
+                      "activation": 0,
+                      "id": "5135F4A4-0964-4715-8107-330E6BB38C0D",
+                      "orientation": 4,
+                      "windows": [
+                        {
+                          "height": 669,
+                          "horizontal_size_class": 2,
+                          "vertical_size_class": 2,
+                          "width": 951
+                        },
+                        {
+                          "height": 669,
+                          "horizontal_size_class": 2,
+                          "vertical_size_class": 2,
+                          "width": 951
+                        }
+                      ]
+                    }
+                  ]
+                },
+                "run_id": "exp195-b1d8b701c6c74791b98c0c3a032de5a2",
+                "sequence": 56,
+                "timestamp": 1789823655.140353
+              }
+            },
+            "before": {
+              "display": {
+                "active": {
+                  "active": true,
+                  "backlightState": "activeOn",
+                  "bounds": [
+                    [
+                      0,
+                      0
+                    ],
+                    [
+                      1398,
+                      2034
+                    ]
+                  ],
+                  "chromeIdentifier": "com.apple.dt.devicekit.chrome.phone15",
+                  "currentOrientation": "rot0",
+                  "displayId": 1,
+                  "framebufferMaskIdentifier": "1C896A2B-F0D7-405C-8D0F-66E4B80AD044",
+                  "name": "LCD",
+                  "nativeOrientation": "rot0",
+                  "nativeSize": [
+                    1398,
+                    2034
+                  ],
+                  "physicalSize": [
+                    3.039130449295044,
+                    4.421739101409912
+                  ],
+                  "pointScale": 3,
+                  "primary": true,
+                  "type": {
+                    "integrated": {}
+                  },
+                  "uniqueId": "04F36ECF-6E86-4B5C-A806-E146F63EB2D8"
+                },
+                "artifact": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp195-manifest-true-el0w6t79/runs/exp195-b1d8b701c6c74791b98c0c3a032de5a2/open-before-displays.json",
+                "observed_at": 1789823645.641098
+              },
+              "geometry": {
+                "kind": "geometry",
+                "payload": {
+                  "scenes": [
+                    {
+                      "activation": 0,
+                      "id": "5135F4A4-0964-4715-8107-330E6BB38C0D",
+                      "orientation": 1,
+                      "windows": [
+                        {
+                          "height": 678,
+                          "horizontal_size_class": 1,
+                          "vertical_size_class": 2,
+                          "width": 466
+                        }
+                      ]
+                    }
+                  ]
+                },
+                "run_id": "exp195-b1d8b701c6c74791b98c0c3a032de5a2",
+                "sequence": 8,
+                "timestamp": 1789823544.680671
+              },
+              "requested_at": 1789823614.232214,
+              "run_id": "exp195-b1d8b701c6c74791b98c0c3a032de5a2"
+            },
+            "command_id": "41efadbe-47bc-46a3-9682-578d70116135",
+            "geometry_mode": "resized",
+            "geometry_sequence": 56,
+            "pose": "open",
+            "run_id": "exp195-b1d8b701c6c74791b98c0c3a032de5a2"
+          },
+          "phase": "received-open",
+          "run_id": "exp195-b1d8b701c6c74791b98c0c3a032de5a2",
+          "timestamp": 1789823662.322638
+        },
+        {
+          "payload": {
+            "frame": "(0.0, -5.684341886080802e-14, 951.0, 669.0)"
+          },
+          "phase": "await-close",
+          "run_id": "exp195-b1d8b701c6c74791b98c0c3a032de5a2",
+          "timestamp": 1789823735.0806432
+        },
+        {
+          "payload": {
+            "after": {
+              "display": {
+                "active": {
+                  "active": true,
+                  "backlightState": "activeOn",
+                  "bounds": [
+                    [
+                      0,
+                      0
+                    ],
+                    [
+                      1398,
+                      2034
+                    ]
+                  ],
+                  "chromeIdentifier": "com.apple.dt.devicekit.chrome.phone15",
+                  "currentOrientation": "rot0",
+                  "displayId": 1,
+                  "framebufferMaskIdentifier": "1C896A2B-F0D7-405C-8D0F-66E4B80AD044",
+                  "name": "LCD",
+                  "nativeOrientation": "rot0",
+                  "nativeSize": [
+                    1398,
+                    2034
+                  ],
+                  "physicalSize": [
+                    3.039130449295044,
+                    4.421739101409912
+                  ],
+                  "pointScale": 3,
+                  "primary": true,
+                  "type": {
+                    "integrated": {}
+                  },
+                  "uniqueId": "04F36ECF-6E86-4B5C-A806-E146F63EB2D8"
+                },
+                "artifact": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp195-manifest-true-el0w6t79/runs/exp195-b1d8b701c6c74791b98c0c3a032de5a2/close-after-displays.json",
+                "observed_at": 1789823800.874398
+              },
+              "geometry": {
+                "kind": "geometry",
+                "payload": {
+                  "scenes": [
+                    {
+                      "activation": 0,
+                      "id": "5135F4A4-0964-4715-8107-330E6BB38C0D",
+                      "orientation": 1,
+                      "windows": [
+                        {
+                          "height": 678,
+                          "horizontal_size_class": 1,
+                          "vertical_size_class": 2,
+                          "width": 466
+                        },
+                        {
+                          "height": 678,
+                          "horizontal_size_class": 1,
+                          "vertical_size_class": 2,
+                          "width": 466
+                        }
+                      ]
+                    }
+                  ]
+                },
+                "run_id": "exp195-b1d8b701c6c74791b98c0c3a032de5a2",
+                "sequence": 113,
+                "timestamp": 1789823791.53843
+              }
+            },
+            "before": {
+              "display": {
+                "active": {
+                  "active": true,
+                  "backlightState": "activeOn",
+                  "bounds": [
+                    [
+                      0,
+                      0
+                    ],
+                    [
+                      2007,
+                      2853
+                    ]
+                  ],
+                  "chromeIdentifier": "com.apple.dt.devicekit.chrome.phone14",
+                  "currentOrientation": "rot90",
+                  "displayId": 3,
+                  "framebufferMaskIdentifier": "BF0DC480-5EE2-4EC1-B02B-C75E94759832",
+                  "name": "LCD-1",
+                  "nativeOrientation": "rot0",
+                  "nativeSize": [
+                    2007,
+                    2853
+                  ],
+                  "physicalSize": [
+                    4.363043308258057,
+                    6.202173709869385
+                  ],
+                  "pointScale": 3,
+                  "primary": false,
+                  "type": {
+                    "integrated": {}
+                  },
+                  "uniqueId": "27A59591-6E45-436F-AFF4-593734A03C81"
+                },
+                "artifact": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp195-manifest-true-el0w6t79/runs/exp195-b1d8b701c6c74791b98c0c3a032de5a2/close-before-displays.json",
+                "observed_at": 1789823783.1539881
+              },
+              "geometry": {
+                "kind": "geometry",
+                "payload": {
+                  "scenes": [
+                    {
+                      "activation": 0,
+                      "id": "5135F4A4-0964-4715-8107-330E6BB38C0D",
+                      "orientation": 4,
+                      "windows": [
+                        {
+                          "height": 669,
+                          "horizontal_size_class": 2,
+                          "vertical_size_class": 2,
+                          "width": 951
+                        },
+                        {
+                          "height": 669,
+                          "horizontal_size_class": 2,
+                          "vertical_size_class": 2,
+                          "width": 951
+                        }
+                      ]
+                    }
+                  ]
+                },
+                "run_id": "exp195-b1d8b701c6c74791b98c0c3a032de5a2",
+                "sequence": 56,
+                "timestamp": 1789823655.140353
+              },
+              "requested_at": 1789823735.0806432,
+              "run_id": "exp195-b1d8b701c6c74791b98c0c3a032de5a2"
+            },
+            "command_id": "b2d1f50e-d029-4783-9b40-82c846aa8a7d",
+            "geometry_mode": "resized",
+            "geometry_sequence": 113,
+            "pose": "close",
+            "run_id": "exp195-b1d8b701c6c74791b98c0c3a032de5a2"
+          },
+          "phase": "received-close",
+          "run_id": "exp195-b1d8b701c6c74791b98c0c3a032de5a2",
+          "timestamp": 1789823801.170685
+        },
+        {
+          "payload": {
+            "frame": "(0.0, 0.0, 466.0, 678.0)"
+          },
+          "phase": "await-reopen",
+          "run_id": "exp195-b1d8b701c6c74791b98c0c3a032de5a2",
+          "timestamp": 1789823806.070982
+        },
+        {
+          "payload": {
+            "after": {
+              "display": {
+                "active": {
+                  "active": true,
+                  "backlightState": "activeOn",
+                  "bounds": [
+                    [
+                      0,
+                      0
+                    ],
+                    [
+                      2007,
+                      2853
+                    ]
+                  ],
+                  "chromeIdentifier": "com.apple.dt.devicekit.chrome.phone14",
+                  "currentOrientation": "rot90",
+                  "displayId": 3,
+                  "framebufferMaskIdentifier": "BF0DC480-5EE2-4EC1-B02B-C75E94759832",
+                  "name": "LCD-1",
+                  "nativeOrientation": "rot0",
+                  "nativeSize": [
+                    2007,
+                    2853
+                  ],
+                  "physicalSize": [
+                    4.363043308258057,
+                    6.202173709869385
+                  ],
+                  "pointScale": 3,
+                  "primary": false,
+                  "type": {
+                    "integrated": {}
+                  },
+                  "uniqueId": "27A59591-6E45-436F-AFF4-593734A03C81"
+                },
+                "artifact": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp195-manifest-true-el0w6t79/runs/exp195-b1d8b701c6c74791b98c0c3a032de5a2/reopen-after-displays.json",
+                "observed_at": 1789823890.406611
+              },
+              "geometry": {
+                "kind": "geometry",
+                "payload": {
+                  "scenes": [
+                    {
+                      "activation": 0,
+                      "id": "5135F4A4-0964-4715-8107-330E6BB38C0D",
+                      "orientation": 4,
+                      "windows": [
+                        {
+                          "height": 669,
+                          "horizontal_size_class": 2,
+                          "vertical_size_class": 2,
+                          "width": 951
+                        },
+                        {
+                          "height": 669,
+                          "horizontal_size_class": 2,
+                          "vertical_size_class": 2,
+                          "width": 951
+                        }
+                      ]
+                    }
+                  ]
+                },
+                "run_id": "exp195-b1d8b701c6c74791b98c0c3a032de5a2",
+                "sequence": 115,
+                "timestamp": 1789823877.936899
+              }
+            },
+            "before": {
+              "display": {
+                "active": {
+                  "active": true,
+                  "backlightState": "activeOn",
+                  "bounds": [
+                    [
+                      0,
+                      0
+                    ],
+                    [
+                      1398,
+                      2034
+                    ]
+                  ],
+                  "chromeIdentifier": "com.apple.dt.devicekit.chrome.phone15",
+                  "currentOrientation": "rot0",
+                  "displayId": 1,
+                  "framebufferMaskIdentifier": "1C896A2B-F0D7-405C-8D0F-66E4B80AD044",
+                  "name": "LCD",
+                  "nativeOrientation": "rot0",
+                  "nativeSize": [
+                    1398,
+                    2034
+                  ],
+                  "physicalSize": [
+                    3.039130449295044,
+                    4.421739101409912
+                  ],
+                  "pointScale": 3,
+                  "primary": true,
+                  "type": {
+                    "integrated": {}
+                  },
+                  "uniqueId": "04F36ECF-6E86-4B5C-A806-E146F63EB2D8"
+                },
+                "artifact": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp195-manifest-true-el0w6t79/runs/exp195-b1d8b701c6c74791b98c0c3a032de5a2/reopen-before-displays.json",
+                "observed_at": 1789823870.2900732
+              },
+              "geometry": {
+                "kind": "geometry",
+                "payload": {
+                  "scenes": [
+                    {
+                      "activation": 0,
+                      "id": "5135F4A4-0964-4715-8107-330E6BB38C0D",
+                      "orientation": 1,
+                      "windows": [
+                        {
+                          "height": 678,
+                          "horizontal_size_class": 1,
+                          "vertical_size_class": 2,
+                          "width": 466
+                        },
+                        {
+                          "height": 678,
+                          "horizontal_size_class": 1,
+                          "vertical_size_class": 2,
+                          "width": 466
+                        }
+                      ]
+                    }
+                  ]
+                },
+                "run_id": "exp195-b1d8b701c6c74791b98c0c3a032de5a2",
+                "sequence": 113,
+                "timestamp": 1789823791.53843
+              },
+              "requested_at": 1789823806.070982,
+              "run_id": "exp195-b1d8b701c6c74791b98c0c3a032de5a2"
+            },
+            "command_id": "7b1c8d03-2839-4940-b480-482ad4b7ce46",
+            "geometry_mode": "resized",
+            "geometry_sequence": 115,
+            "pose": "reopen",
+            "run_id": "exp195-b1d8b701c6c74791b98c0c3a032de5a2"
+          },
+          "phase": "received-reopen",
+          "run_id": "exp195-b1d8b701c6c74791b98c0c3a032de5a2",
+          "timestamp": 1789823891.1298041
+        },
+        {
+          "payload": {
+            "frame": "(0.0, -5.684341886080802e-14, 951.0, 669.0)"
+          },
+          "phase": "await-home",
+          "run_id": "exp195-b1d8b701c6c74791b98c0c3a032de5a2",
+          "timestamp": 1789823896.0566921
+        },
+        {
+          "payload": {
+            "command_id": "eba424e7-2e31-4c83-8966-a538c53d1099",
+            "native_background_sequence": 123,
+            "observed_at": 1789823958.5118668,
+            "run_id": "exp195-b1d8b701c6c74791b98c0c3a032de5a2"
+          },
+          "phase": "received-home",
+          "run_id": "exp195-b1d8b701c6c74791b98c0c3a032de5a2",
+          "timestamp": 1789823959.074616
+        }
+      ],
+      "run_id": "exp195-b1d8b701c6c74791b98c0c3a032de5a2",
+      "source_revision": "04201edc7711361279d8487b385bc8b0ca9c63c7",
+      "toolchain": "Xcode 27.1\nBuild version 27A9269",
+      "unassigned_actions": [],
+      "unknown_action_owners": [],
+      "view_count": 11,
+      "view_phase_timeline": [
+        {
+          "index": 0,
+          "name": "ApplicationLaunch",
+          "preceding_input_phase": "launch",
+          "seconds_after_last_background": -406.9648289680481,
+          "timestamp": 1789823542.249,
+          "view_id": "87348335-5342-478e-aafc-836024ce24b7"
+        },
+        {
+          "index": 1,
+          "name": "UIKitFixture.HomeController",
+          "preceding_input_phase": "launch",
+          "seconds_after_last_background": -404.7108290195465,
+          "timestamp": 1789823544.503,
+          "view_id": "b85fbe89-19b1-47b2-acd7-555513205138"
+        },
+        {
+          "index": 2,
+          "name": "UIKitFixture.DetailController",
+          "preceding_input_phase": "initial.navigate.delivered",
+          "seconds_after_last_background": -382.97682905197144,
+          "timestamp": 1789823566.237,
+          "view_id": "350ddd44-d289-44c3-87a6-82c9442c205c"
+        },
+        {
+          "index": 3,
+          "name": "UIKitFixture.SheetController",
+          "preceding_input_phase": "initial.present.delivered",
+          "seconds_after_last_background": -359.45482897758484,
+          "timestamp": 1789823589.759,
+          "view_id": "1cd5d4a4-5940-40a5-b719-e2edfb0e8dd3"
+        },
+        {
+          "index": 4,
+          "name": "UIKitFixture.DetailController",
+          "preceding_input_phase": "initial.dismiss.delivered",
+          "seconds_after_last_background": -350.5838289260864,
+          "timestamp": 1789823598.63,
+          "view_id": "9e4060fe-e8f6-4296-b6c0-52ad2eba5281"
+        },
+        {
+          "index": 5,
+          "name": "UIKitFixture.HomeController",
+          "preceding_input_phase": "initial.back.delivered",
+          "seconds_after_last_background": -341.87682914733887,
+          "timestamp": 1789823607.337,
+          "view_id": "1b3aad1c-2627-4b3a-a71b-9fd708ce3a19"
+        },
+        {
+          "index": 6,
+          "name": "UIKitFixture.DetailController",
+          "preceding_input_phase": "inner.navigate.delivered",
+          "seconds_after_last_background": -267.01482915878296,
+          "timestamp": 1789823682.199,
+          "view_id": "f275efa0-cf5e-4f73-9a0b-8b730d529ce2"
+        },
+        {
+          "index": 7,
+          "name": "UIKitFixture.SheetController",
+          "preceding_input_phase": "inner.present.delivered",
+          "seconds_after_last_background": -243.50482892990112,
+          "timestamp": 1789823705.709,
+          "view_id": "eaa90acb-4dd4-4990-ac77-a7fb2aaddef5"
+        },
+        {
+          "index": 8,
+          "name": "UIKitFixture.DetailController",
+          "preceding_input_phase": "inner.dismiss.delivered",
+          "seconds_after_last_background": -234.68582892417908,
+          "timestamp": 1789823714.528,
+          "view_id": "395aedab-0058-44d4-9b26-e075bab21eac"
+        },
+        {
+          "index": 9,
+          "name": "UIKitFixture.HomeController",
+          "preceding_input_phase": "inner.back.delivered",
+          "seconds_after_last_background": -225.91182899475098,
+          "timestamp": 1789823723.302,
+          "view_id": "6878f1ab-62c8-481a-bb30-3f51c4addcd7"
+        },
+        {
+          "index": 10,
+          "name": "UIKitFixture.DetailController",
+          "preceding_input_phase": "stable.navigate.delivered",
+          "seconds_after_last_background": -217.21582913398743,
+          "timestamp": 1789823731.998,
+          "view_id": "70998b1c-0831-4f40-963e-384d18e0c6c0"
+        }
+      ],
+      "views": [
+        {
+          "date": 1789823542249,
+          "id": "87348335-5342-478e-aafc-836024ce24b7",
+          "index": 0,
+          "name": "ApplicationLaunch",
+          "url": "com/datadog/application-launch/view"
+        },
+        {
+          "date": 1789823544503,
+          "id": "b85fbe89-19b1-47b2-acd7-555513205138",
+          "index": 1,
+          "name": "UIKitFixture.HomeController",
+          "url": "UIKitFixture.HomeController"
+        },
+        {
+          "date": 1789823566237,
+          "id": "350ddd44-d289-44c3-87a6-82c9442c205c",
+          "index": 2,
+          "name": "UIKitFixture.DetailController",
+          "url": "UIKitFixture.DetailController"
+        },
+        {
+          "date": 1789823589759,
+          "id": "1cd5d4a4-5940-40a5-b719-e2edfb0e8dd3",
+          "index": 3,
+          "name": "UIKitFixture.SheetController",
+          "url": "UIKitFixture.SheetController"
+        },
+        {
+          "date": 1789823598630,
+          "id": "9e4060fe-e8f6-4296-b6c0-52ad2eba5281",
+          "index": 4,
+          "name": "UIKitFixture.DetailController",
+          "url": "UIKitFixture.DetailController"
+        },
+        {
+          "date": 1789823607337,
+          "id": "1b3aad1c-2627-4b3a-a71b-9fd708ce3a19",
+          "index": 5,
+          "name": "UIKitFixture.HomeController",
+          "url": "UIKitFixture.HomeController"
+        },
+        {
+          "date": 1789823682199,
+          "id": "f275efa0-cf5e-4f73-9a0b-8b730d529ce2",
+          "index": 6,
+          "name": "UIKitFixture.DetailController",
+          "url": "UIKitFixture.DetailController"
+        },
+        {
+          "date": 1789823705709,
+          "id": "eaa90acb-4dd4-4990-ac77-a7fb2aaddef5",
+          "index": 7,
+          "name": "UIKitFixture.SheetController",
+          "url": "UIKitFixture.SheetController"
+        },
+        {
+          "date": 1789823714528,
+          "id": "395aedab-0058-44d4-9b26-e075bab21eac",
+          "index": 8,
+          "name": "UIKitFixture.DetailController",
+          "url": "UIKitFixture.DetailController"
+        },
+        {
+          "date": 1789823723302,
+          "id": "6878f1ab-62c8-481a-bb30-3f51c4addcd7",
+          "index": 9,
+          "name": "UIKitFixture.HomeController",
+          "url": "UIKitFixture.HomeController"
+        },
+        {
+          "date": 1789823731998,
+          "id": "70998b1c-0831-4f40-963e-384d18e0c6c0",
+          "index": 10,
+          "name": "UIKitFixture.DetailController",
+          "url": "UIKitFixture.DetailController"
+        }
+      ]
+    }
+  ],
+  "comparison_statuses": {},
+  "comparisons": [],
+  "declared_multiple_scenes": true,
+  "device_filter": "duo",
+  "experiment": "EXP-195",
+  "qualified_unique_cells": 1,
+  "retained_unqualified": [
+    {
+      "artifact_directory": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp195-manifest-true-el0w6t79/runs/exp195-175d2b390ff94cbd8e06390d4299eb7a",
+      "artifacts_sha256": {},
+      "attempt": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp195-manifest-true-el0w6t79",
+      "cell": [
+        "baseline-27.1",
+        "duo",
+        "UIKit",
+        "stack"
+      ],
+      "clean_install": true,
+      "cleanup": null,
+      "run_id": "exp195-175d2b390ff94cbd8e06390d4299eb7a",
+      "state": "INCOMPLETE",
+      "test_exit": null
+    }
+  ]
+}

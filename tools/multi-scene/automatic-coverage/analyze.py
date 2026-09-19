@@ -112,7 +112,7 @@ def summarize(run, rows, receipts):
         if kind == "view":
             view = e["view"]; ident = view["id"]
             if ident not in views:
-                views[ident] = {"name": view.get("name"), "url": view.get("url"), "date": e.get("date"), "index": len(views)}
+                views[ident] = {"id": ident, "name": view.get("name"), "url": view.get("url"), "date": e.get("date"), "index": len(views)}
         elif kind == "action": actions.append(e)
         elif kind == "error": errors.append(e)
     require(not any(e["action"]["type"] == "custom" for e in actions), "manual action contaminated automatic comparison")

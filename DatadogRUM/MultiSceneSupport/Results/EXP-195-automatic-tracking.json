@@ -72,6 +72,36 @@
     "scope": "One additional baseline/current SDK27 manifest-false SwiftUI split pair, same frozen applications and real fold flow.",
     "stop_rule": "One pair only before deciding source repair or a documented unresolved limit."
   },
+  "classifications": [
+    {
+      "baseline_extra_views": [
+        {
+          "index": 19,
+          "name": "UIKitFixture.DetailController",
+          "preceding_input_phase": "await-home",
+          "seconds_after_last_background": 0.20978713035583496,
+          "timestamp": 1789823022.002,
+          "view_id": "030a4b1e-412a-41f6-9dc2-4c0ece1a348c"
+        },
+        {
+          "index": 20,
+          "name": "UIKitFixture.SidebarController",
+          "preceding_input_phase": "await-home",
+          "seconds_after_last_background": 0.26578712463378906,
+          "timestamp": 1789823022.058,
+          "view_id": "31197c9e-47f9-4898-99dd-6a325df71a8c"
+        }
+      ],
+      "baseline_run": "exp195-a317ace741d94dbba9bc9496b90ed9a4",
+      "candidate_run": "exp195-85842df9e94340bf8b3b8256b761776a",
+      "evidence": "All19 foreground view occurrences and complete automatic action/owner inventories match. Baseline alone creates Detail and Sidebar occurrences0.210/0.266 seconds after actual native background; candidate creates neither.",
+      "gate": "C07",
+      "id": "SDK27-UIKit-split-background",
+      "remaining_limit": "Both sources still attribute the reopened Detail tap to Sidebar with manifest=false. This is preserved automatic split imprecision, not exact semantic tracking.",
+      "source": "RUMViewsHandler.swift add(view:) isActive guards and applicationDidEnterBackground/sceneDidEnterBackground suspend the stack before later appearance callbacks; SDK04201edc7.",
+      "status": "IMPROVED"
+    }
+  ],
   "collector_followups": [
     {
       "repair": "Use frozen SDK27.1 XCTest collector for old-built Duo apps; retain original SDK26.5 app identity, rewrite only test-plan app paths, check installed app identities again after execution. Not yet executed on old-built Duo.",
@@ -92,6 +122,12 @@
       "reason": "Closed Detail tap took about122 seconds across XCTest delivery/completion. Actual native callback then complete input/background/cleanup passed. Scoped testmanagerd log and app sample retained; sample near recovery mostly idle main run loop. No performance claim.",
       "run_id": "exp195-5dec782ae1044c09b40724766794beab",
       "status": "QUALIFIED_INPUT_WITH_DRIVER_DELAY"
+    },
+    {
+      "artifacts": "exp195-collector-t92yhxza/runs/exp195-6186523000d545d2b0e6fe588c0ae5bc: compatibility-inner.png, compatibility-visibility.json, bounded-interruption.json, legacy-inner-runner.log, run.json",
+      "reason": "Modern standalone collector still does not qualify inner native input. Runner no longer present; actual app/active inner screenshot retained, scoped SIGTERM after >180s without progress, test_exit -15 and cleanup true. Equivalent driver retries stop.",
+      "run_id": "exp195-6186523000d545d2b0e6fe588c0ae5bc",
+      "status": "UNQUALIFIED_INPUT"
     }
   ],
   "defined_before_implementation": true,
@@ -120,6 +156,7 @@
     "defined_before_implementation": true,
     "definition_commit": "d59bea3f3ba160038a2c93e3001bfd5e9133de22",
     "dependency": "SDK27 original Duo collector qualification",
+    "durable_result": "EXP-195-manifest-true-coverage.json",
     "environment": "Xcode27.1 and owned Duo27.1 simulator",
     "gates": [
       "C07",
@@ -129,9 +166,10 @@
     ],
     "matrix": "baseline/current Datadog x UIKit/native SwiftUI stack/split x SDK27.1 Duo only",
     "owner": "SDK implementer",
+    "qualified_unique_cells": 1,
     "reason": "RUMFeature.swift:70 and RUMInstrumentation.swift:109/120/129 gate the changed automatic path on the manifest declaration, not actual scene count. Existing one-window apps may already declare true without adopting this project.",
     "scope_limit": "Proves this SDK source-path comparison on SDK27 only; does not expand the manifest-true old-build compiler matrix or claim physical/concurrent-window acceptance.",
-    "status": "PREPARED",
+    "status": "RUNNING",
     "stop_rule": "No extra UI families or matrices without a gate-specific regression. Existing32 cells remain separate and their accepted results are not repeated.",
     "superseded_preparation": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp195-manifest-true-22e4rnwk"
   },
@@ -194,10 +232,11 @@
   "partial_findings": {
     "Duo_SwiftUI_split_SDK27": "Both native inputs qualify with21 taps/4 swipes and four Toggle omissions. Outer view/action comparison unchanged. Complete view inventories differ15 candidate versus17 baseline, and generic occurrence owners differ around open/close/reopen. Two baseline-only occurrences begin after actual background. Source/native-timeline audit and bounded replay pending; no no-regression verdict yet.",
     "Duo_SwiftUI_stack_SDK27": "Both sources match:17 view occurrences including launch;21 taps/4 swipes;four Toggle omissions. Outer matches regular iPhone. Detail ownership retained through close/reopen, same native scene with466x678 compact outer and951x669 regular inner.",
+    "Duo_UIKit_split_SDK27": "Both cells qualify. Same19 foreground view occurrences,22 taps/4 swipes and exact action/owner inventory. Two baseline-only views begin after native background; classified improved suppression. Both attribute reopened Detail tap to Sidebar: unchanged automatic split limit.",
     "Duo_UIKit_stack_SDK27": "Both sources qualify and match:11 views including launch;21 taps/4 swipes;four switch omissions. Outer matches regular iPhone and Detail ownership survives close/reopen.",
     "boundary": "All16 regular cells, both SDK27 Duo stack pairs, and candidate SwiftUI split qualify. Remaining Duo pairs/follow-up pending.",
     "new_sdk_defect": "Not established.",
-    "old_build_input": "CandidateSDK26.5 SwiftUI stack outer flow passed, but inner native Home was not hittable after actual Open. Native375x667 compact viewport stayed unchanged while a duplicate-size window appeared. Preserved input failure, not a classified RUM regression.",
+    "old_build_input": "Both original and modern-collector probes remain unqualified after actual Open. The genuineSDK26.5 app stays visibly letterboxed375x667 on the inner display. Modern runner stops producing input and is absent from process inventory while the app remains alive; after more than180 seconds without progress only its xcodebuild process group is interrupted and cleanup verifies. Do not classify absent inner events as RUM loss.",
     "regular": "All32 view/action comparisons unchanged across baseline/current Datadog and genuine SDK26.5/27.1 builds. UIKit stack has6 view occurrences, split7; SwiftUI stack/split9, including ApplicationLaunch. Switch/Toggle omissions and generic SwiftUI hosting names are unchanged."
   },
   "preflight": {
@@ -209,11 +248,11 @@
     "xcode_mcp": "rediscovered actual workspace/scheme and27.1 destinations"
   },
   "progress": {
-    "captured_at": 1789822281.190193,
+    "captured_at": 1789823630.514807,
     "comparison_artifact": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp195-collector-t92yhxza/comparison.json",
-    "duo": 6,
+    "duo": 8,
     "durable_duo_result": "EXP-195-duo-automatic-coverage.json",
-    "qualified_unique_cells": 22,
+    "qualified_unique_cells": 24,
     "regular": 16
   },
   "question": "Does an existing single-scene app lose automatic UIKit/SwiftUI view or action coverage when rebuilt with the iOS27 SDK and run on Duo, without adopting semantic tracking or changing navigation?",

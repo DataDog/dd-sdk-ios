@@ -16,18 +16,25 @@ compares unchanged apps and preserves baseline limitations. C01’s early UIKit
 view/custom-marker fixture does not prove automatic taps/scrolls; EXP-193’s
 accepted-state RUMNavigationHost does not prove automatic-only SwiftUI.
 
-All16 regular-iPhone cells qualify; all32 source/compiler comparisons preserve
-view/action inventories and owners. The SDK27 Duo UIKit and SwiftUI stack pairs
-also match, including Detail ownership through close/reopen. Switch/Toggle gaps
-and generic SwiftUI names are unchanged limitations. SwiftUI split qualifies all
-native input and has equal21 taps/4 swipes, but generic view occurrences differ
-(15 current versus17 baseline) around fold/background. Its view/owner difference
-remains under classification; a bounded same-source replay is defined. UIKit split
-needs only a collector correction for Duo's observed floating native Back control.
-The old-built Duo SwiftUI inner-input issue remains a separate driver probe.
-[Regular evidence](Results/EXP-195-regular-automatic-coverage.json) and the
-[generated Duo evidence](Results/EXP-195-duo-automatic-coverage.json) own the exact
-inventories and provenance. No production SDK repair has yet been justified.
+All16 regular-iPhone cells and all eight original SDK27 Duo cells qualify.
+Regular source/compiler comparisons preserve view/action inventories and owners.
+For SDK27 Duo apps declaring multiple scenes false, the present findings are:
+
+| Tracking family | Current finding | Remaining boundary |
+| --- | --- | --- |
+| UIKit views | Stack matches. Split preserves all19 foreground occurrences and suppresses two baseline post-background starts. | Manifest-true one-window and old-build Duo cells remain separate. |
+| UIKit actions | All exercised taps/swipes and exact owners match; switches remain omitted. Both sources can assign a reopened Detail tap to Sidebar in split layout. | Equal detection is not exact split semantics. |
+| SwiftUI views | Stack matches. Split retains generic hosting names; fold-related occurrence timing differs, with a bounded replay defined. | Split classification pending. |
+| SwiftUI actions | Equal taps/swipes and Toggle omissions. Stack owners match; split generic occurrence owners differ with view churn. | Split classification pending. |
+
+The genuineSDK26.5 SwiftUI app remains visibly letterboxed on the inner display,
+but both old/modern collector probes fail to qualify inner input. The modern
+runner disappears while its app stays alive; scoped interruption and cleanup are
+preserved. This is neither an old-app usability verdict nor proof about the
+remaining UIKit cells. [Regular evidence](Results/EXP-195-regular-automatic-coverage.json)
+and [Duo evidence](Results/EXP-195-duo-automatic-coverage.json) own exact inventories,
+provenance, native timing and retained failures. No production SDK repair has yet
+been justified; no broad non-regression verdict is issued.
 
 EXP-195's fixed matrix explicitly declares multiple scenes false. An app with
 one current window and an already-enabled multiple-scene manifest follows a
