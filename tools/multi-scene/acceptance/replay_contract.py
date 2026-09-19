@@ -66,7 +66,7 @@ def validate_local(records, run_id):
         require(c["viewID"] not in inventory or inventory[c["viewID"]] == item, "mutated view identity", "FAIL")
         inventory[c["viewID"]] = item
     require(sorted(v["name"] for v in inventory.values()) ==
-            ["ApplicationLaunch", "ProbeDetailView", "ProbeDetailView", "ProbeHomeView", "ProbeHomeView"],
+            ["ApplicationLaunch", "ProbeDetailView", "ProbeDetailView", "ProbeHomeView", "ProbeHomeView", "ProbeHomeView"],
             "complete native owner inventory", "FAIL")
     sessions = {v["session_id"] for v in inventory.values()}
     require(len(sessions) == 1, "foreign native session", "FAIL")
@@ -88,6 +88,31 @@ def validate_local(records, run_id):
             "disconnect wrong scene", "FAIL")
     require_before(starts[9], disconnect, "disconnect precedes request")
     require_before(disconnect, starts[11], "navigation before OS disconnect")
+    # The serial platform transition backgrounds A, then reveals a fresh Home
+    # before the explicit Detail navigation. Admit only that bounded occurrence.
+    backgrounds = [s for s in signals if s.get("kind") == "scene-lifecycle"
+                   and s.get("semanticContext", {}).get("logicalSceneID") == "scene-A"
+                   and s.get("semanticContext", {}).get("nativeSceneID") == native["scene-A"]
+                   and s.get("activationState") == "background"
+                   and starts[3]["sequence"] < s["sequence"] < starts[10]["sequence"]]
+    require(backgrounds, "returned Home without actual A background", "FAIL")
+    homes = [s for s in views if s.get("semanticContext", {}).get("logicalSceneID") == "scene-A"
+             and s.get("semanticContext", {}).get("screen") == "home"]
+    original = [s for s in homes if s["sequence"] < starts[3]["sequence"]]
+    returned = [s for s in homes if starts[10]["sequence"] < s["sequence"] < starts[11]["sequence"]
+                and s.get("rumContext", {}).get("viewActive") is True]
+    require(original and returned, "missing original/foreground Home", "FAIL")
+    old_id, new_id = original[-1]["rumContext"]["viewID"], returned[0]["rumContext"]["viewID"]
+    require(old_id != new_id and {s["rumContext"]["viewID"] for s in homes} == {old_id, new_id},
+            "returned Home is reused or unexplained", "FAIL")
+    require(any(s["rumContext"]["viewID"] == old_id and s["rumContext"].get("viewActive") is False
+                and starts[3]["sequence"] < s["sequence"] < starts[10]["sequence"] for s in homes),
+            "old Home never stopped before foreground return", "FAIL")
+    active = [s for s in signals if s.get("kind") == "scene-lifecycle"
+              and s.get("semanticContext", {}).get("logicalSceneID") == "scene-A"
+              and s.get("activationState") == "foreground-active"
+              and starts[10]["sequence"] < s["sequence"] < starts[11]["sequence"]]
+    require(active, "missing actual A reactivation before Detail", "FAIL")
     observations, previous = [], {}
     for i, phase in enumerate(PHASES):
         baseline = unique([s for s in signals if s.get("name") == "baseline-" + phase], "baseline " + phase)

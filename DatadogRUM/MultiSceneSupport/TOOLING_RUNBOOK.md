@@ -1913,7 +1913,7 @@ growth observations carry actual core counters, exact representative/scene RUM
 identity and live native scene geometry. Run before opening B, after B creation and
 navigation, and after acknowledged OS disconnect plus A navigation. The native
 UIView stimulus creates recorder input under default privacy; do not inject
-records or use a browser bridge. The oracle requires complete five-view inventory,
+records or use a browser bridge. The serial oracle requires complete six-view inventory,
 zero errors/crashes and clean removal. Physical F05 remains a separate requirement.
 
 
@@ -1922,3 +1922,15 @@ the actual UIWindowScene activation before its counter baseline; a sleep or late
 record cannot repair early admission. Disable the probe's generic lifecycle
 markers for this finite recorder-only workload so undeclared Action/Resource
 noise remains a failing discriminator.
+
+
+For this serial Replay workload, A backgrounds while B is foreground. A's fresh
+Home on reactivation is required only with observed background, old Home stop and
+the actual activation boundary before Detail. Unexplained duplicates still fail.
+Keep the app alive through backend verification; immediate failure cleanup can
+remove buffered events before upload. Native-only proof must remain partial.
+
+Replay acceptance can reuse a prior successful native build with --reuse-frozen-build.
+It compares every native source/build input, toolchain and complete Mach-O inventory,
+then re-reads the existing XCTest result. Oracle-only changes retain separate source
+provenance. Fresh installation/run identity and all native/backend checks still run.

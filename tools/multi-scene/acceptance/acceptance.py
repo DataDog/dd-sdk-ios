@@ -112,6 +112,14 @@ def source_identity(repo):
     return {"sha256": digest(entries), "file_count": len(entries), "files": entries}
 
 
+def validate_reusable_native_sources(previous, current):
+    """Allow oracle-only changes while preserving every native build input."""
+    prefix = "tools/multi-scene/acceptance/"
+    old = {k: v for k, v in previous["files"].items() if not k.startswith(prefix)}
+    new = {k: v for k, v in current["files"].items() if not k.startswith(prefix)}
+    require_identity(old, new, "reused native source inputs")
+
+
 def parse_records(raw):
     """Recover complete probe objects even when another log embeds them midline."""
     decoder = json.JSONDecoder()
@@ -400,10 +408,29 @@ class Runner:
             self.command(["xcrun", "simctl", "bootstatus", self.args.device, "-b"], "boot-ready")
             derived = self.out / "derived"
             results = self.out / "probe.xcresult"
-            self.command(["xcodebuild", "test", "-quiet", "-project", str(PROBE / "RUMNativeMultiSceneProbe.xcodeproj"),
-                          "-scheme", "RUMNativeMultiSceneProbe", "-destination", "platform=iOS Simulator,id=" + self.args.device,
-                          "-derivedDataPath", str(derived), "-resultBundlePath", str(results),
-                          "-enableCodeCoverage", "NO", "CODE_SIGNING_ALLOWED=NO"], "build-tests", timeout=1200)
+            reuse = getattr(self.args, "reuse_frozen_build", None)
+            if reuse:
+                require(self.is_replay, "frozen-build reuse is scoped to Replay acceptance")
+                prior = Path(reuse).resolve()
+                receipt = json.loads((prior / "summary.json").read_text())
+                validate_reusable_native_sources(
+                    json.loads((prior / "source-identity.json").read_text()), frozen)
+                require(receipt.get("xcode") == self.summary["xcode"], "reused build toolchain differs")
+                require(receipt.get("stages", {}).get("frozen_build", {}).get("state") == "PASS",
+                        "reused build/tests did not pass")
+                derived, results = prior / "derived", prior / "probe.xcresult"
+                require_identity(
+                    code_inventory(derived / "Build/Products/Debug-iphonesimulator/RUMNativeMultiSceneProbe.app"),
+                    json.loads((prior / "frozen-code.json").read_text()), "reused complete app code")
+                self.summary["build_reuse"] = dict(
+                    artifact_root=str(prior), native_source_revision=receipt["revision"],
+                    native_source_sha256=receipt["source_fingerprint"],
+                    oracle_revision=self.summary["revision"], native_tests_repeated=False)
+            else:
+                self.command(["xcodebuild", "test", "-quiet", "-project", str(PROBE / "RUMNativeMultiSceneProbe.xcodeproj"),
+                              "-scheme", "RUMNativeMultiSceneProbe", "-destination", "platform=iOS Simulator,id=" + self.args.device,
+                              "-derivedDataPath", str(derived), "-resultBundlePath", str(results),
+                              "-enableCodeCoverage", "NO", "CODE_SIGNING_ALLOWED=NO"], "build-tests", timeout=1200)
             tests = json.loads(self.capture(["xcrun", "xcresulttool", "get", "test-results", "summary", "--path", str(results)]))
             save(self.out / "test-summary.json", tests)
             require(tests.get("failedTests") == 0 and tests.get("passedTests", 0) >= (replay_contract.MINIMUM_TESTS if self.is_replay else vitals_contract.MINIMUM_TESTS if self.is_vitals else process_contract.MINIMUM_TESTS if self.is_process else fatal_contract.MINIMUM_TESTS if self.is_fatal else 184 if self.is_webview else 181 if self.is_log else 178 if self.is_trace else 175 if self.is_flag else 172 if self.is_timing else 170 if self.is_attribute else 168 if self.is_error else 167 if self.is_resource else 166) and
@@ -668,6 +695,7 @@ def main():
     parser.add_argument("--durable-output", help="Directory for unique, sanitized run summaries")
     parser.add_argument("--scenario", default=SCENARIO)
     parser.add_argument("--developer-dir", default="/Applications/Xcode_27.app/Contents/Developer")
+    parser.add_argument("--reuse-frozen-build", help="Replay only: prior successful native build; rejects changed native inputs/code")
     parser.add_argument("--scenario-timeout", type=int, default=120)
     parser.add_argument("--backend-timeout", type=int, default=300)
     args = parser.parse_args()

@@ -15,7 +15,7 @@
     "Before opening B, wait for A Home plus true live Replay context and actual record-count growth. Record live native topology and process representative before and after the stimulus.",
     "Open actual B through the existing scene driver. Require distinct native sessions; preserve observed activation/geometry without assuming simultaneous visibility. Capture B Home and then B Detail record growth after real navigation.",
     "Close actual B, requiring the OS disconnect callback and absence from connectedScenes. Reactivate A, navigate to its Detail, and require fresh native record growth plus exact active RUM ownership.",
-    "Join all recorded ownership to independent mapper views and the complete backend session view inventory; reject stale/run-mismatched rows, unexpected errors or crashes, unknown record owners and backend mismatches.",
+    "Join all recorded ownership to independent mapper views and the complete six-view serial backend inventory. The extra A Home requires actual background, old Home stop, actual reactivation and a fresh occurrence before Detail; unexplained duplicates fail. Reject stale/run-mismatched rows, unexpected errors/crashes and unknown record owners.",
     "Export full evidence and a compact durable summary. Verify app/data absence, process completion and source/protected state; delete only the newly created test simulator after use."
   ],
   "decisive_tests": [
@@ -75,6 +75,34 @@
       "native_tests": 205,
       "observation": "R1 native count0->3 under exact A Home. B scene-ready is foreground-inactive at37 and R2 rejects at42 before any B record claim. Default generic lifecycle Action/Resource also remained enabled outside the declared contract. Both bundle/data cleanup exit2.",
       "correction": "Wait boundedly for actual native foregroundActive before the recording baseline; exclude this controlled scenario from generic marker emission. No synthetic callbacks or relaxed oracle."
+    },
+    {
+      "run_id": "exp194-20260919T064120Z-b68d2f90a649",
+      "status": "ORIGINAL_ORACLE_FAIL; CORRECTED_NATIVE_PASS; BACKEND_INCOMPLETE",
+      "result": "acceptance/exp194-20260919T064120Z-b68d2f90a649.json",
+      "native_tests": 205,
+      "observation": "All four native checkpoints and actual B disconnect complete. Serial A background/foreground introduces a fresh Home, so the original fixed five-view inventory fails. Corrected strict six-view oracle additionally requires actual A background, old Home stop, requested reactivation and distinct returned Home before Detail.",
+      "record_growth": [
+        [
+          0,
+          3
+        ],
+        [
+          3,
+          4
+        ],
+        [
+          3,
+          4
+        ],
+        [
+          0,
+          3
+        ]
+      ],
+      "actual_B_disconnect_sequence": 48,
+      "backend": "Post-cleanup session query has0 views; do not promote complete acceptance. App/data absence is verified.",
+      "corrected_local_evidence": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp194-replay-vmpu3y31/attempt-3/corrected-local-evidence.json"
     }
   ],
   "gates_closed": [],
@@ -83,9 +111,10 @@
     "oracle": "replay_contract.py checks complete manifest/steps, precritical counters, independent exact mapper owners, actual disconnect and complete backend inventory.",
     "automation": "Existing acceptance.py scenario branch with every Mach-O identity, persisted raw native records before validation and verified final app/data absence.",
     "verification": {
-      "python_tests": 3,
-      "negative_controls": 29,
-      "xctest": "205/205 pass on corrected357f56277 build; next fixture admission adjustment needs a fresh build."
+      "python_tests": 4,
+      "negative_controls": 36,
+      "xctest": "205/205 at6e8980bbc. No native source change for the oracle repair; reuse only after exact native-input/all-Mach-O checks.",
+      "python_suite": 275
     }
   },
   "preflight": {
@@ -94,5 +123,5 @@
     "artifact_root": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp194-replay-vmpu3y31",
     "owned_device": "1B0D0EB0-CF23-4CEB-AEF1-2C8462184C03"
   },
-  "next": "Run unchanged four-checkpoint oracle after actual foreground activation and removal of undeclared generic fixture markers."
+  "next": "Fresh clean run with corrected strict serial oracle; reuse verified6e8980bbc native build without repeating205 passing tests. Keep app alive through backend inventory and preserve original failed attempt."
 }

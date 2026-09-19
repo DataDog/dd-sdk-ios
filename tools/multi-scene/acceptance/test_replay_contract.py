@@ -4,10 +4,11 @@ from pathlib import Path
 import unittest
 from acceptance_common import Rejected
 import replay_contract as r
+from acceptance import validate_reusable_native_sources
 
 RUN = "exp194-unit"
 IDS = {n: f"00000000-0000-0000-0000-{i:012d}" for i, n in enumerate(
-    ["session", "launch", "scene-A:home", "scene-B:home", "scene-B:detail-1", "scene-A:detail-1"], 1)}
+    ["session", "launch", "scene-A:home", "scene-B:home", "scene-B:detail-1", "scene-A:detail-1", "scene-A:home-returned"], 1)}
 
 
 def fixture():
@@ -25,8 +26,8 @@ def fixture():
     def context(scene, screen):
         return dict(logicalSceneID=scene, nativeSceneID="native-"+scene, screen=screen, occurrence=1)
 
-    def view(scene, screen):
-        owner = dict(sessionID=IDS["session"], viewID=IDS[scene+":"+screen], viewName=r.NAMES[screen],
+    def view(scene, screen, returned=False):
+        owner = dict(sessionID=IDS["session"], viewID=IDS[scene+":"+screen+("-returned" if returned else "")], viewName=r.NAMES[screen],
                      viewActive=True, sessionHasReplay=True)
         current[scene] = (screen, owner)
         return signal("rum-view-snapshot", evidenceSource="rum-mapper",
@@ -44,6 +45,11 @@ def fixture():
             screen = "detail-1" if "detail-1" in step["signal"] else "home"
             evidence = view(scene, screen)
         elif kind == "open-window":
+            old = copy.deepcopy(current["scene-A"][1])
+            old["viewActive"] = False
+            signal("rum-view-snapshot", evidenceSource="rum-mapper",
+                   semanticContext=context("scene-A", "home"), rumContext=old)
+            signal("scene-lifecycle", semanticContext=context("scene-A", "home"), activationState="background")
             connected["scene-B"] = True
             evidence = signal("scene-ready", semanticContext=context("scene-B", "home"))
         elif kind == "set-swiftui-path":
@@ -53,6 +59,7 @@ def fixture():
             connected.pop(scene)
             evidence = signal("scene-lifecycle", semanticContext=context(scene, "detail-1"), scenePhase="disconnected")
         elif kind == "activate-window":
+            view("scene-A", "home", returned=True)
             evidence = signal("scene-lifecycle", semanticContext=context(scene, "home"), activationState="foreground-active")
         elif kind == "capture-replay-records":
             screen, owner = current[scene]
@@ -74,24 +81,46 @@ def fixture():
 
 
 class ReplayContractTests(unittest.TestCase):
+    def test_reuse_rejects_changed_added_or_removed_native_input(self):
+        before = {"files": {"DatadogRUM/Sources/A.swift": "one", "Package.swift": "two",
+                            "tools/multi-scene/acceptance/replay_contract.py": "old"}}
+        after = copy.deepcopy(before)
+        after["files"]["tools/multi-scene/acceptance/replay_contract.py"] = "new"
+        validate_reusable_native_sources(before, after)
+        for kind in ["changed", "added", "removed"]:
+            candidate = copy.deepcopy(after)
+            if kind == "changed": candidate["files"]["Package.swift"] = "different"
+            if kind == "added": candidate["files"]["DatadogRUM/Sources/B.swift"] = "new"
+            if kind == "removed": candidate["files"].pop("DatadogRUM/Sources/A.swift")
+            with self.subTest(kind=kind), self.assertRaises(Rejected):
+                validate_reusable_native_sources(before, candidate)
+
     def test_complete_native_recording_contract(self):
         actual = r.validate_local(fixture(), RUN)
         self.assertEqual(len(actual["recording_checkpoints"]), 4)
-        self.assertEqual(len(actual["views"]), 5)
+        self.assertEqual(len(actual["views"]), 6)
 
     def test_rejects_false_recording_and_topology_evidence(self):
         for name in ["disabled", "stagnant", "foreign-record", "foreign-session", "wrong-owner",
                      "aliased-scene", "inactive-source", "empty-geometry", "late-baseline",
                      "missing-disconnect", "fake-disconnect", "missing-ack", "stale-manifest",
                      "restored-run", "stale-signal", "changed-scenario", "unexpected-browser",
-                     "wrong-mapper-origin", "extra-view", "late-ack"]:
+                     "wrong-mapper-origin", "extra-view", "late-ack", "no-background", "no-reactivation", "old-home-live", "reused-home"]:
             with self.subTest(name=name):
                 records = fixture()
                 signals = [s["signal"] for s in records if s["type"] == "signal"]
                 after = next(s for s in signals if s.get("name") == r.PHASES[0] and "replay" in s)
                 before = next(s for s in signals if s.get("name") == "baseline-"+r.PHASES[0])
                 disconnect = next(s for s in signals if s.get("scenePhase") == "disconnected")
-                if name == "disabled": after["replay"]["hasReplay"] = False
+                if name == "no-background":
+                    next(s for s in signals if s.get("activationState")=="background")["activationState"]="foreground-inactive"
+                elif name == "no-reactivation":
+                    next(s for s in signals if s["kind"]=="scene-lifecycle" and s.get("activationState")=="foreground-active")["activationState"]="foreground-inactive"
+                elif name == "old-home-live":
+                    next(s for s in signals if s.get("rumContext",{}).get("viewActive") is False)["rumContext"]["viewActive"]=True
+                elif name == "reused-home":
+                    next(s for s in signals if s.get("rumContext",{}).get("viewID")==IDS["scene-A:home-returned"])["rumContext"]["viewID"]=IDS["scene-A:home"]
+                elif name == "disabled": after["replay"]["hasReplay"] = False
                 elif name == "stagnant": after["replay"]["recordsByViewID"] = {}
                 elif name == "foreign-record": after["replay"]["recordsByViewID"]["foreign"] = 1
                 elif name == "foreign-session": after["rumContext"]["sessionID"] = IDS["launch"]
@@ -118,7 +147,7 @@ class ReplayContractTests(unittest.TestCase):
 
     def test_backend_exact_inventory_and_failure_controls(self):
         local = r.validate_local(fixture(), RUN)
-        valid = {"count":5, "rows":[dict(v, run_id=RUN, has_replay=True) for v in local["views"]]}
+        valid = {"count":6, "rows":[dict(v, run_id=RUN, has_replay=True) for v in local["views"]]}
         zero = {"count":0,"rows":[]}
         self.assertEqual(r.validate_backend(local, RUN, valid, zero, zero, 0, 0)["state"], "PASS")
         for key in ["run_id", "session_id", "name", "view_id", "has_replay", "missing", "error", "crash", "resource"]:

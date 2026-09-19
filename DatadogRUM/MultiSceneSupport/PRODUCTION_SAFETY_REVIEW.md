@@ -389,5 +389,7 @@ completed review dispositions and physical residuals remain unchanged.
 
 EXP-194 adds fixture-only native Replay coexistence validation under F05.
 The strict oracle rejects enablement without actual record growth, late ownership
-or topology evidence, and missing OS disconnect. Native execution remains pending;
-production source and completed review dispositions are unchanged.
+or topology evidence, and missing OS disconnect. Four native checkpoints and OS disconnect now pass on iPad27.0, with205 harness
+tests. The serial inventory additionally requires A’s observed background and fresh
+foreground Home; complete backend acceptance remains pending. No SDK defect is
+assigned, and production source/review dispositions remain unchanged.
