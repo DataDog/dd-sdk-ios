@@ -47,7 +47,7 @@ the critical boundary.
 | H08, H09, H15 | Host removal, OS reconnect and restoration | Real detach/disconnect, fresh IDs, stale callbacks/run IDs rejected | Memory-pressure/OS restoration on device |
 | H11, H12, H13 | Recognized interactive back/sheet transitions | Began/cancelled/completed recognizer path; unchanged/fresh owner as appropriate | Human physical gestures |
 | H14 | Open/close/rotate/fold and adaptive split | Measured regular/compact transitions, exact semantic destination owners | Physical hinge and display transitions |
-| F05 | Simulator coexistence if dependencies allow | Crash safety and stated scope only | Required physical Replay coexistence |
+| F05 | EXP-194 passes on regular iPad27.0 | Four native recorder checkpoints, real disconnect, six exact backend views and zero errors/crashes; serial topology | Required physical Replay coexistence; this is not Duo execution |
 
 Current observed results are owned by the
 [first capability record](Results/acceptance/exp192-52086984-e5e3-499a-afc8-cdc3f55c2e2c.json):

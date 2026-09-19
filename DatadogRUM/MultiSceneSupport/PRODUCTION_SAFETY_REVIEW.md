@@ -391,5 +391,7 @@ EXP-194 adds fixture-only native Replay coexistence validation under F05.
 The strict oracle rejects enablement without actual record growth, late ownership
 or topology evidence, and missing OS disconnect. Four native checkpoints and OS disconnect now pass on iPad27.0, with205 harness
 tests. The serial inventory additionally requires A’s observed background and fresh
-foreground Home; complete backend acceptance remains pending. No SDK defect is
-assigned, and production source/review dispositions remain unchanged.
+foreground Home. Fresh backend acceptance now matches all six owners with zero
+stray work/errors/crashes; app/data and owned-simulator cleanup pass. F05 remains
+blocked on the physical multi-window environment. No SDK defect is assigned, and
+production source/review dispositions remain unchanged.

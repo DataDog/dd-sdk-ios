@@ -2,7 +2,7 @@
   "experiment": "EXP-194",
   "gate": "F05",
   "title": "Verify native Replay recording through multi-scene coexistence",
-  "status": "IMPLEMENTED \u2014 VALIDATION PENDING",
+  "status": "PASS \u2014 SIMULATOR SLICE",
   "owner": "SDK implementer",
   "definition_parent_revision": "b6a764c8217bbdbab35605254d99e9387a83ec55",
   "candidate_revision": "04201edc7711361279d8487b385bc8b0ca9c63c7",
@@ -103,6 +103,11 @@
       "actual_B_disconnect_sequence": 48,
       "backend": "Post-cleanup session query has0 views; do not promote complete acceptance. App/data absence is verified.",
       "corrected_local_evidence": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp194-replay-vmpu3y31/attempt-3/corrected-local-evidence.json"
+    },
+    {
+      "run_id": "exp194-20260919T064859Z-f074ff09b520",
+      "status": "PASS_SIMULATOR",
+      "result": "acceptance/exp194-20260919T064859Z-f074ff09b520.json"
     }
   ],
   "gates_closed": [],
@@ -123,5 +128,144 @@
     "artifact_root": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp194-replay-vmpu3y31",
     "owned_device": "1B0D0EB0-CF23-4CEB-AEF1-2C8462184C03"
   },
-  "next": "Fresh clean run with corrected strict serial oracle; reuse verified6e8980bbc native build without repeating205 passing tests. Keep app alive through backend inventory and preserve original failed attempt."
+  "next": "No repeated simulator run is needed. F05 requires the physical multi-window coexistence run; EXP-193 Duo pose acceptance still awaits an executable pose-control path. Preserve the accepted source/build and oracle identities.",
+  "gate_status": "ENVIRONMENT BLOCKED",
+  "accepted_result": {
+    "run_id": "exp194-20260919T064859Z-f074ff09b520",
+    "artifact_root": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp194-replay-vmpu3y31/attempt-4",
+    "capture_source_revision": "6e8980bbc598b4bb80df06610ff613ecd25f9eef",
+    "oracle_revision": "31ac062b348f5ed56f6ccfcf593d88a1887b9c8e",
+    "native_tests": 205,
+    "native_tests_repeated": false,
+    "python_tests": 275,
+    "new_negative_controls": 36,
+    "recording_checkpoints": [
+      {
+        "after": 3,
+        "before": 0,
+        "phase": "replay-a-before-peer",
+        "topology": [
+          {
+            "activationState": "foreground-active",
+            "geometry": {
+              "height": 1376,
+              "width": 1032,
+              "x": 0,
+              "y": 0
+            },
+            "logicalSceneID": "scene-A",
+            "nativeSceneID": "92A57E4D-1BC4-48D1-B95B-85E830E65691"
+          }
+        ],
+        "view_id": "05430fab-37af-42e7-b2ff-905479c95dda"
+      },
+      {
+        "after": 4,
+        "before": 3,
+        "phase": "replay-b-after-open",
+        "topology": [
+          {
+            "activationState": "background",
+            "geometry": {
+              "height": 1376,
+              "width": 1032,
+              "x": 0,
+              "y": 0
+            },
+            "logicalSceneID": "scene-A",
+            "nativeSceneID": "92A57E4D-1BC4-48D1-B95B-85E830E65691"
+          },
+          {
+            "activationState": "foreground-active",
+            "geometry": {
+              "height": 1376,
+              "width": 1032,
+              "x": 0,
+              "y": 0
+            },
+            "logicalSceneID": "scene-B",
+            "nativeSceneID": "681F2A62-A5B0-4320-9FC0-80DDBF7D482A"
+          }
+        ],
+        "view_id": "2a2aa0b6-7f45-4980-833c-a3d71c7aa423"
+      },
+      {
+        "after": 3,
+        "before": 0,
+        "phase": "replay-b-after-navigation",
+        "topology": [
+          {
+            "activationState": "background",
+            "geometry": {
+              "height": 1376,
+              "width": 1032,
+              "x": 0,
+              "y": 0
+            },
+            "logicalSceneID": "scene-A",
+            "nativeSceneID": "92A57E4D-1BC4-48D1-B95B-85E830E65691"
+          },
+          {
+            "activationState": "foreground-active",
+            "geometry": {
+              "height": 1376,
+              "width": 1032,
+              "x": 0,
+              "y": 0
+            },
+            "logicalSceneID": "scene-B",
+            "nativeSceneID": "681F2A62-A5B0-4320-9FC0-80DDBF7D482A"
+          }
+        ],
+        "view_id": "64d09965-56cf-49e4-93b8-9888c1efdc3d"
+      },
+      {
+        "after": 3,
+        "before": 0,
+        "phase": "replay-a-after-teardown",
+        "topology": [
+          {
+            "activationState": "foreground-active",
+            "geometry": {
+              "height": 1376,
+              "width": 1032,
+              "x": 0,
+              "y": 0
+            },
+            "logicalSceneID": "scene-A",
+            "nativeSceneID": "92A57E4D-1BC4-48D1-B95B-85E830E65691"
+          }
+        ],
+        "view_id": "ab0520fb-8ecf-4316-b7a6-c3d31ec7357e"
+      }
+    ],
+    "session_id": "427ad248-e010-4983-9b63-a65138ec5a3e",
+    "backend": {
+      "error_crash_count": 0,
+      "native_recording_checkpoints": 4,
+      "physical_gate_closed": false,
+      "state": "PASS",
+      "view_count": 6
+    },
+    "app_code": {
+      "binaries": {
+        "RUMNativeMultiSceneProbe": "8a2591692c16a697051e8e9354f144565972ec1de16b669ba700485dd9ca9206",
+        "RUMNativeMultiSceneProbe.debug.dylib": "de6bdadf1de36756c2cdc1062178e5f6314ef70f4fbd4281249133836093c0a3",
+        "__preview.dylib": "f107d09b9d3b79f01789a45ef045bf4039904bf5eaa3c1a8c6a9e27de130563b"
+      },
+      "bundleIdentifier": "com.datadoghq.rum-native-multi-scene-probe",
+      "executable": "RUMNativeMultiSceneProbe"
+    },
+    "app_cleanup": {
+      "app": 2,
+      "data": 2
+    },
+    "simulator_cleanup": {
+      "device": "1B0D0EB0-CF23-4CEB-AEF1-2C8462184C03",
+      "created_by_task": true,
+      "deleted": true,
+      "absence_verified": true
+    },
+    "protected_state": "EXACT"
+  }
 }

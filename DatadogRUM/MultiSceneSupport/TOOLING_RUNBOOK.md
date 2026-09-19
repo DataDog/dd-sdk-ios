@@ -1934,3 +1934,10 @@ Replay acceptance can reuse a prior successful native build with --reuse-frozen-
 It compares every native source/build input, toolchain and complete Mach-O inventory,
 then re-reads the existing XCTest result. Oracle-only changes retain separate source
 provenance. Fresh installation/run identity and all native/backend checks still run.
+
+
+EXP-194 now accepts the serial iPad27.0 slice with four native recording boundaries,
+complete six-view backend identity, zero stray work/errors/crashes and full cleanup.
+Reuse those results within their source/oracle boundary. Physical F05 still needs
+an actual multi-window device; ordinary single-window hardware and Duo simulator
+geometry cannot substitute for it.

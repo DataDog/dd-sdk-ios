@@ -1,0 +1,2713 @@
+{
+  "artifacts": {
+    "backend-evidence.json": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp194-replay-vmpu3y31/attempt-4/backend-evidence.json",
+    "backend-exchanges.json": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp194-replay-vmpu3y31/attempt-4/backend-exchanges.json",
+    "boot-ready.log": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp194-replay-vmpu3y31/attempt-4/boot-ready.log",
+    "build-identity.json": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp194-replay-vmpu3y31/attempt-4/build-identity.json",
+    "bundle-absence.log": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp194-replay-vmpu3y31/attempt-4/bundle-absence.log",
+    "console.raw.log": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp194-replay-vmpu3y31/attempt-4/console.raw.log",
+    "container-absence.log": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp194-replay-vmpu3y31/attempt-4/container-absence.log",
+    "frozen-code.json": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp194-replay-vmpu3y31/attempt-4/frozen-code.json",
+    "install.log": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp194-replay-vmpu3y31/attempt-4/install.log",
+    "installed-code.json": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp194-replay-vmpu3y31/attempt-4/installed-code.json",
+    "local-evidence.json": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp194-replay-vmpu3y31/attempt-4/local-evidence.json",
+    "probe.jsonl": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp194-replay-vmpu3y31/attempt-4/probe.jsonl",
+    "replay-absence-after-app.log": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp194-replay-vmpu3y31/attempt-4/replay-absence-after-app.log",
+    "replay-absence-after-data.log": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp194-replay-vmpu3y31/attempt-4/replay-absence-after-data.log",
+    "replay-cleanup.json": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp194-replay-vmpu3y31/attempt-4/replay-cleanup.json",
+    "replay-records.json": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp194-replay-vmpu3y31/attempt-4/replay-records.json",
+    "replay-uninstall-after.log": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp194-replay-vmpu3y31/attempt-4/replay-uninstall-after.log",
+    "source-identity.json": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp194-replay-vmpu3y31/attempt-4/source-identity.json",
+    "summary.json": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp194-replay-vmpu3y31/attempt-4/summary.json",
+    "terminal-screenshot.log": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp194-replay-vmpu3y31/attempt-4/terminal-screenshot.log",
+    "terminal.png": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp194-replay-vmpu3y31/attempt-4/terminal.png",
+    "terminate-after.log": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp194-replay-vmpu3y31/attempt-4/terminate-after.log",
+    "terminate-before.log": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp194-replay-vmpu3y31/attempt-4/terminate-before.log",
+    "test-summary.json": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp194-replay-vmpu3y31/attempt-4/test-summary.json",
+    "uninstall.log": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp194-replay-vmpu3y31/attempt-4/uninstall.log"
+  },
+  "backend_bridge_timings": [
+    {
+      "kind": "auth",
+      "received": true,
+      "seconds": 12.173
+    },
+    {
+      "kind": "replay_views",
+      "received": true,
+      "seconds": 54.512
+    },
+    {
+      "kind": "peer_actions",
+      "received": true,
+      "seconds": 22.656
+    },
+    {
+      "kind": "resources",
+      "received": true,
+      "seconds": 9.578
+    },
+    {
+      "kind": "errors",
+      "received": true,
+      "seconds": 6.548
+    },
+    {
+      "kind": "crashes",
+      "received": true,
+      "seconds": 7.559
+    }
+  ],
+  "build_reuse": {
+    "artifact_root": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp194-replay-vmpu3y31/attempt-3",
+    "native_source_revision": "6e8980bbc598b4bb80df06610ff613ecd25f9eef",
+    "native_source_sha256": "12e0d20f67f68491daffae2e698a245857e194ac7d868ce2aea995a47b5fa0b2",
+    "native_tests_repeated": false,
+    "oracle_revision": "31ac062b348f5ed56f6ccfcf593d88a1887b9c8e"
+  },
+  "commit_signature": {
+    "required_before_push": true,
+    "state": "UNSIGNED"
+  },
+  "device": {
+    "dataPath": "/Users/valentin.pertuisot/Library/Developer/CoreSimulator/Devices/1B0D0EB0-CF23-4CEB-AEF1-2C8462184C03/data",
+    "dataPathSize": 3309461504,
+    "deviceTypeIdentifier": "com.apple.CoreSimulator.SimDeviceType.iPad-Pro-13-inch-M4-8GB",
+    "isAvailable": true,
+    "lastUsedAt": "2026-09-19T06:35:28Z",
+    "logPath": "/Users/valentin.pertuisot/Library/Logs/CoreSimulator/1B0D0EB0-CF23-4CEB-AEF1-2C8462184C03",
+    "logPathSize": 258048,
+    "name": "RUM Replay EXP-194",
+    "runtime": "com.apple.CoreSimulator.SimRuntime.iOS-27-0",
+    "state": "Booted",
+    "udid": "1B0D0EB0-CF23-4CEB-AEF1-2C8462184C03"
+  },
+  "dirty_state": [
+    " M Datadog/Datadog.xcodeproj/project.pbxproj",
+    "A  xcconfigs/Datadog.local.xcconfig"
+  ],
+  "evidence": {
+    "backend-evidence.json": {
+      "actions": {
+        "count": 0,
+        "rows": []
+      },
+      "crashes": {
+        "count": 0,
+        "rows": []
+      },
+      "errors": {
+        "count": 0,
+        "rows": []
+      },
+      "resources": {
+        "count": 0,
+        "rows": []
+      },
+      "views": {
+        "count": 6,
+        "rows": [
+          {
+            "has_replay": true,
+            "name": "ProbeDetailView",
+            "run_id": "exp194-20260919T064859Z-f074ff09b520",
+            "session_id": "427ad248-e010-4983-9b63-a65138ec5a3e",
+            "view_id": "ab0520fb-8ecf-4316-b7a6-c3d31ec7357e"
+          },
+          {
+            "has_replay": true,
+            "name": "ProbeHomeView",
+            "run_id": "exp194-20260919T064859Z-f074ff09b520",
+            "session_id": "427ad248-e010-4983-9b63-a65138ec5a3e",
+            "view_id": "a4c078e1-e9a3-4aae-9e5c-294307070f32"
+          },
+          {
+            "has_replay": true,
+            "name": "ProbeDetailView",
+            "run_id": "exp194-20260919T064859Z-f074ff09b520",
+            "session_id": "427ad248-e010-4983-9b63-a65138ec5a3e",
+            "view_id": "64d09965-56cf-49e4-93b8-9888c1efdc3d"
+          },
+          {
+            "has_replay": true,
+            "name": "ProbeHomeView",
+            "run_id": "exp194-20260919T064859Z-f074ff09b520",
+            "session_id": "427ad248-e010-4983-9b63-a65138ec5a3e",
+            "view_id": "2a2aa0b6-7f45-4980-833c-a3d71c7aa423"
+          },
+          {
+            "has_replay": true,
+            "name": "ProbeHomeView",
+            "run_id": "exp194-20260919T064859Z-f074ff09b520",
+            "session_id": "427ad248-e010-4983-9b63-a65138ec5a3e",
+            "view_id": "05430fab-37af-42e7-b2ff-905479c95dda"
+          },
+          {
+            "has_replay": true,
+            "name": "ApplicationLaunch",
+            "run_id": "exp194-20260919T064859Z-f074ff09b520",
+            "session_id": "427ad248-e010-4983-9b63-a65138ec5a3e",
+            "view_id": "5dcebbcd-7f47-4f3a-8da9-a94cc4925194"
+          }
+        ]
+      }
+    },
+    "backend-exchanges.json": [
+      {
+        "request": {
+          "created_at": "2026-09-19T06:48:59.658605+00:00",
+          "expected_count": 0,
+          "from": "2026-09-19T06:48:59.299623+00:00",
+          "kind": "auth",
+          "query": "@context.probe.run_id:exp194-20260919T064859Z-f074ff09b520-auth",
+          "request_id": "fc57cff9-1161-47d4-abc6-5f8061abcb79",
+          "run_id": "exp194-20260919T064859Z-f074ff09b520",
+          "schema_version": 1,
+          "to": "now"
+        },
+        "response": {
+          "complete": true,
+          "data": {
+            "authenticated": true
+          },
+          "executed_query": "@application.id:43cbc59b-0626-438b-a3d9-c6417a4545a3 @context.probe.run_id:exp194-20260919T064859Z-f074ff09b520-auth",
+          "ok": true,
+          "provider": "datadog-mcp",
+          "query": "@context.probe.run_id:exp194-20260919T064859Z-f074ff09b520-auth",
+          "request_id": "fc57cff9-1161-47d4-abc6-5f8061abcb79",
+          "request_sha256": "5bebc8fc1591c3186e1adeb203cdf8e712873b5bfacb92e520feb948448870d1"
+        }
+      },
+      {
+        "request": {
+          "created_at": "2026-09-19T06:49:18.833618+00:00",
+          "expected_count": 6,
+          "from": "2026-09-19T06:48:59.299623+00:00",
+          "kind": "replay_views",
+          "query": "@session.id:427ad248-e010-4983-9b63-a65138ec5a3e @type:view",
+          "request_id": "777b0fc9-a10b-4543-8fe6-6809a06fb21d",
+          "run_id": "exp194-20260919T064859Z-f074ff09b520",
+          "schema_version": 1,
+          "to": "now"
+        },
+        "response": {
+          "complete": true,
+          "data": {
+            "count": 6,
+            "rows": [
+              {
+                "has_replay": true,
+                "name": "ProbeDetailView",
+                "run_id": "exp194-20260919T064859Z-f074ff09b520",
+                "session_id": "427ad248-e010-4983-9b63-a65138ec5a3e",
+                "view_id": "ab0520fb-8ecf-4316-b7a6-c3d31ec7357e"
+              },
+              {
+                "has_replay": true,
+                "name": "ProbeHomeView",
+                "run_id": "exp194-20260919T064859Z-f074ff09b520",
+                "session_id": "427ad248-e010-4983-9b63-a65138ec5a3e",
+                "view_id": "a4c078e1-e9a3-4aae-9e5c-294307070f32"
+              },
+              {
+                "has_replay": true,
+                "name": "ProbeDetailView",
+                "run_id": "exp194-20260919T064859Z-f074ff09b520",
+                "session_id": "427ad248-e010-4983-9b63-a65138ec5a3e",
+                "view_id": "64d09965-56cf-49e4-93b8-9888c1efdc3d"
+              },
+              {
+                "has_replay": true,
+                "name": "ProbeHomeView",
+                "run_id": "exp194-20260919T064859Z-f074ff09b520",
+                "session_id": "427ad248-e010-4983-9b63-a65138ec5a3e",
+                "view_id": "2a2aa0b6-7f45-4980-833c-a3d71c7aa423"
+              },
+              {
+                "has_replay": true,
+                "name": "ProbeHomeView",
+                "run_id": "exp194-20260919T064859Z-f074ff09b520",
+                "session_id": "427ad248-e010-4983-9b63-a65138ec5a3e",
+                "view_id": "05430fab-37af-42e7-b2ff-905479c95dda"
+              },
+              {
+                "has_replay": true,
+                "name": "ApplicationLaunch",
+                "run_id": "exp194-20260919T064859Z-f074ff09b520",
+                "session_id": "427ad248-e010-4983-9b63-a65138ec5a3e",
+                "view_id": "5dcebbcd-7f47-4f3a-8da9-a94cc4925194"
+              }
+            ]
+          },
+          "executed_query": "@application.id:43cbc59b-0626-438b-a3d9-c6417a4545a3 @session.id:427ad248-e010-4983-9b63-a65138ec5a3e @type:view",
+          "ok": true,
+          "provider": "datadog-mcp",
+          "query": "@session.id:427ad248-e010-4983-9b63-a65138ec5a3e @type:view",
+          "request_id": "777b0fc9-a10b-4543-8fe6-6809a06fb21d",
+          "request_sha256": "6bc24e4f91567fa86bb284ddbc474cd34603f5212bb29a167b4d577960553a45"
+        }
+      },
+      {
+        "request": {
+          "created_at": "2026-09-19T06:50:13.346352+00:00",
+          "expected_count": 0,
+          "from": "2026-09-19T06:48:59.299623+00:00",
+          "kind": "peer_actions",
+          "query": "@session.id:427ad248-e010-4983-9b63-a65138ec5a3e @type:action",
+          "request_id": "53827920-16ad-488d-8e7c-46f7ac694051",
+          "run_id": "exp194-20260919T064859Z-f074ff09b520",
+          "schema_version": 1,
+          "to": "now"
+        },
+        "response": {
+          "complete": true,
+          "data": {
+            "count": 0,
+            "rows": []
+          },
+          "executed_query": "@application.id:43cbc59b-0626-438b-a3d9-c6417a4545a3 @session.id:427ad248-e010-4983-9b63-a65138ec5a3e @type:action",
+          "ok": true,
+          "provider": "datadog-mcp",
+          "query": "@session.id:427ad248-e010-4983-9b63-a65138ec5a3e @type:action",
+          "request_id": "53827920-16ad-488d-8e7c-46f7ac694051",
+          "request_sha256": "979ef769af4ca107bddc775bd4419f9daeba97caf8689011bb33f7f77f2e8705"
+        }
+      },
+      {
+        "request": {
+          "created_at": "2026-09-19T06:50:36.003658+00:00",
+          "expected_count": 0,
+          "from": "2026-09-19T06:48:59.299623+00:00",
+          "kind": "resources",
+          "query": "@session.id:427ad248-e010-4983-9b63-a65138ec5a3e @type:resource",
+          "request_id": "6426f263-f793-436d-bff2-907e935f5e6a",
+          "run_id": "exp194-20260919T064859Z-f074ff09b520",
+          "schema_version": 1,
+          "to": "now"
+        },
+        "response": {
+          "complete": true,
+          "data": {
+            "count": 0,
+            "rows": []
+          },
+          "executed_query": "@application.id:43cbc59b-0626-438b-a3d9-c6417a4545a3 @session.id:427ad248-e010-4983-9b63-a65138ec5a3e @type:resource",
+          "ok": true,
+          "provider": "datadog-mcp",
+          "query": "@session.id:427ad248-e010-4983-9b63-a65138ec5a3e @type:resource",
+          "request_id": "6426f263-f793-436d-bff2-907e935f5e6a",
+          "request_sha256": "bff6a4d121313cdfc0e3e7ced3ad12914a03fd1ba98e0092f5409c529bb9717f"
+        }
+      },
+      {
+        "request": {
+          "created_at": "2026-09-19T06:50:45.582393+00:00",
+          "expected_count": 0,
+          "from": "2026-09-19T06:48:59.299623+00:00",
+          "kind": "errors",
+          "query": "@session.id:427ad248-e010-4983-9b63-a65138ec5a3e @type:error",
+          "request_id": "e5573905-ec56-46aa-855a-0f14c3b064fc",
+          "run_id": "exp194-20260919T064859Z-f074ff09b520",
+          "schema_version": 1,
+          "to": "now"
+        },
+        "response": {
+          "complete": true,
+          "data": {
+            "count": 0,
+            "rows": []
+          },
+          "executed_query": "@application.id:43cbc59b-0626-438b-a3d9-c6417a4545a3 @session.id:427ad248-e010-4983-9b63-a65138ec5a3e @type:error",
+          "ok": true,
+          "provider": "datadog-mcp",
+          "query": "@session.id:427ad248-e010-4983-9b63-a65138ec5a3e @type:error",
+          "request_id": "e5573905-ec56-46aa-855a-0f14c3b064fc",
+          "request_sha256": "b94832bb8c36d61a4072bd32823b318c04735b47359946ea5067ac0f7b7a0589"
+        }
+      },
+      {
+        "request": {
+          "created_at": "2026-09-19T06:50:52.131028+00:00",
+          "expected_count": 0,
+          "from": "2026-09-19T06:48:59.299623+00:00",
+          "kind": "crashes",
+          "query": "@session.id:427ad248-e010-4983-9b63-a65138ec5a3e (@error.is_crash:true OR @view.crash.count:>0)",
+          "request_id": "42a86f73-0838-40f5-965d-d8bf4ee31523",
+          "run_id": "exp194-20260919T064859Z-f074ff09b520",
+          "schema_version": 1,
+          "to": "now"
+        },
+        "response": {
+          "complete": true,
+          "data": {
+            "count": 0,
+            "rows": []
+          },
+          "executed_query": "@application.id:43cbc59b-0626-438b-a3d9-c6417a4545a3 @session.id:427ad248-e010-4983-9b63-a65138ec5a3e (@error.is_crash:true OR @view.crash.count:>0)",
+          "ok": true,
+          "provider": "datadog-mcp",
+          "query": "@session.id:427ad248-e010-4983-9b63-a65138ec5a3e (@error.is_crash:true OR @view.crash.count:>0)",
+          "request_id": "42a86f73-0838-40f5-965d-d8bf4ee31523",
+          "request_sha256": "836f45b9bf549905ec08be05f632027880ff75423d8c6b951cb4eee501eb0917"
+        }
+      }
+    ],
+    "build-identity.json": {
+      "executable_sha256": "8a2591692c16a697051e8e9354f144565972ec1de16b669ba700485dd9ca9206",
+      "source_sha256": "f7bdf2d8550b2ce3cca548e1c3d6c7bbbbd63d38b4ef876ed43342acb2a307f5",
+      "uuid": "UUID: EBEDD461-4F45-36E8-A0B8-8EAB6559B4C8 (arm64) /private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp194-replay-vmpu3y31/attempt-3/derived/Build/Products/Debug-iphonesimulator/RUMNativeMultiSceneProbe.app/RUMNativeMultiSceneProbe"
+    },
+    "frozen-code.json": {
+      "binaries": {
+        "RUMNativeMultiSceneProbe": "8a2591692c16a697051e8e9354f144565972ec1de16b669ba700485dd9ca9206",
+        "RUMNativeMultiSceneProbe.debug.dylib": "de6bdadf1de36756c2cdc1062178e5f6314ef70f4fbd4281249133836093c0a3",
+        "__preview.dylib": "f107d09b9d3b79f01789a45ef045bf4039904bf5eaa3c1a8c6a9e27de130563b"
+      },
+      "bundleIdentifier": "com.datadoghq.rum-native-multi-scene-probe",
+      "executable": "RUMNativeMultiSceneProbe"
+    },
+    "installed-code.json": {
+      "binaries": {
+        "RUMNativeMultiSceneProbe": "8a2591692c16a697051e8e9354f144565972ec1de16b669ba700485dd9ca9206",
+        "RUMNativeMultiSceneProbe.debug.dylib": "de6bdadf1de36756c2cdc1062178e5f6314ef70f4fbd4281249133836093c0a3",
+        "__preview.dylib": "f107d09b9d3b79f01789a45ef045bf4039904bf5eaa3c1a8c6a9e27de130563b"
+      },
+      "bundleIdentifier": "com.datadoghq.rum-native-multi-scene-probe",
+      "executable": "RUMNativeMultiSceneProbe"
+    },
+    "local-evidence.json": {
+      "recording_checkpoints": [
+        {
+          "after": 3,
+          "before": 0,
+          "phase": "replay-a-before-peer",
+          "topology": [
+            {
+              "activationState": "foreground-active",
+              "geometry": {
+                "height": 1376,
+                "width": 1032,
+                "x": 0,
+                "y": 0
+              },
+              "logicalSceneID": "scene-A",
+              "nativeSceneID": "92A57E4D-1BC4-48D1-B95B-85E830E65691"
+            }
+          ],
+          "view_id": "05430fab-37af-42e7-b2ff-905479c95dda"
+        },
+        {
+          "after": 4,
+          "before": 3,
+          "phase": "replay-b-after-open",
+          "topology": [
+            {
+              "activationState": "background",
+              "geometry": {
+                "height": 1376,
+                "width": 1032,
+                "x": 0,
+                "y": 0
+              },
+              "logicalSceneID": "scene-A",
+              "nativeSceneID": "92A57E4D-1BC4-48D1-B95B-85E830E65691"
+            },
+            {
+              "activationState": "foreground-active",
+              "geometry": {
+                "height": 1376,
+                "width": 1032,
+                "x": 0,
+                "y": 0
+              },
+              "logicalSceneID": "scene-B",
+              "nativeSceneID": "681F2A62-A5B0-4320-9FC0-80DDBF7D482A"
+            }
+          ],
+          "view_id": "2a2aa0b6-7f45-4980-833c-a3d71c7aa423"
+        },
+        {
+          "after": 3,
+          "before": 0,
+          "phase": "replay-b-after-navigation",
+          "topology": [
+            {
+              "activationState": "background",
+              "geometry": {
+                "height": 1376,
+                "width": 1032,
+                "x": 0,
+                "y": 0
+              },
+              "logicalSceneID": "scene-A",
+              "nativeSceneID": "92A57E4D-1BC4-48D1-B95B-85E830E65691"
+            },
+            {
+              "activationState": "foreground-active",
+              "geometry": {
+                "height": 1376,
+                "width": 1032,
+                "x": 0,
+                "y": 0
+              },
+              "logicalSceneID": "scene-B",
+              "nativeSceneID": "681F2A62-A5B0-4320-9FC0-80DDBF7D482A"
+            }
+          ],
+          "view_id": "64d09965-56cf-49e4-93b8-9888c1efdc3d"
+        },
+        {
+          "after": 3,
+          "before": 0,
+          "phase": "replay-a-after-teardown",
+          "topology": [
+            {
+              "activationState": "foreground-active",
+              "geometry": {
+                "height": 1376,
+                "width": 1032,
+                "x": 0,
+                "y": 0
+              },
+              "logicalSceneID": "scene-A",
+              "nativeSceneID": "92A57E4D-1BC4-48D1-B95B-85E830E65691"
+            }
+          ],
+          "view_id": "ab0520fb-8ecf-4316-b7a6-c3d31ec7357e"
+        }
+      ],
+      "scope": "Native recorder coexistence; no scene-correct Replay or physical acceptance",
+      "session_id": "427ad248-e010-4983-9b63-a65138ec5a3e",
+      "state": "PASS",
+      "view_ids": [
+        "05430fab-37af-42e7-b2ff-905479c95dda",
+        "2a2aa0b6-7f45-4980-833c-a3d71c7aa423",
+        "5dcebbcd-7f47-4f3a-8da9-a94cc4925194",
+        "64d09965-56cf-49e4-93b8-9888c1efdc3d",
+        "a4c078e1-e9a3-4aae-9e5c-294307070f32",
+        "ab0520fb-8ecf-4316-b7a6-c3d31ec7357e"
+      ],
+      "views": [
+        {
+          "name": "ApplicationLaunch",
+          "session_id": "427ad248-e010-4983-9b63-a65138ec5a3e",
+          "view_id": "5dcebbcd-7f47-4f3a-8da9-a94cc4925194"
+        },
+        {
+          "name": "ProbeHomeView",
+          "session_id": "427ad248-e010-4983-9b63-a65138ec5a3e",
+          "view_id": "05430fab-37af-42e7-b2ff-905479c95dda"
+        },
+        {
+          "name": "ProbeHomeView",
+          "session_id": "427ad248-e010-4983-9b63-a65138ec5a3e",
+          "view_id": "2a2aa0b6-7f45-4980-833c-a3d71c7aa423"
+        },
+        {
+          "name": "ProbeDetailView",
+          "session_id": "427ad248-e010-4983-9b63-a65138ec5a3e",
+          "view_id": "64d09965-56cf-49e4-93b8-9888c1efdc3d"
+        },
+        {
+          "name": "ProbeHomeView",
+          "session_id": "427ad248-e010-4983-9b63-a65138ec5a3e",
+          "view_id": "a4c078e1-e9a3-4aae-9e5c-294307070f32"
+        },
+        {
+          "name": "ProbeDetailView",
+          "session_id": "427ad248-e010-4983-9b63-a65138ec5a3e",
+          "view_id": "ab0520fb-8ecf-4316-b7a6-c3d31ec7357e"
+        }
+      ]
+    },
+    "replay-cleanup.json": {
+      "app": 2,
+      "data": 2
+    },
+    "replay-records.json": [
+      {
+        "manifest": {
+          "resolutionSource": "command-line",
+          "runID": "exp194-20260919T064859Z-f074ff09b520",
+          "runMode": "clean",
+          "scenario": {
+            "completionConditions": [
+              {
+                "expectedCount": 1,
+                "kind": "assertion",
+                "name": "replay-a-before-peer",
+                "scene": "scene-A"
+              },
+              {
+                "expectedCount": 1,
+                "kind": "assertion",
+                "name": "replay-b-after-open",
+                "scene": "scene-B"
+              },
+              {
+                "expectedCount": 1,
+                "kind": "assertion",
+                "name": "replay-b-after-navigation",
+                "scene": "scene-B"
+              },
+              {
+                "expectedCount": 1,
+                "kind": "assertion",
+                "name": "replay-a-after-teardown",
+                "scene": "scene-A"
+              }
+            ],
+            "defaultRunMode": "clean",
+            "expectedSemanticTimeline": [
+              {
+                "expectedCount": 1,
+                "kind": "assertion",
+                "name": "replay-a-before-peer",
+                "scene": "scene-A"
+              },
+              {
+                "expectedCount": 1,
+                "kind": "assertion",
+                "name": "replay-b-after-open",
+                "scene": "scene-B"
+              },
+              {
+                "expectedCount": 1,
+                "kind": "assertion",
+                "name": "replay-b-after-navigation",
+                "scene": "scene-B"
+              },
+              {
+                "expectedCount": 1,
+                "kind": "assertion",
+                "name": "replay-a-after-teardown",
+                "scene": "scene-A"
+              }
+            ],
+            "identifier": "replay.native-recording.navigation-teardown-serial",
+            "initialWindows": [
+              "scene-A",
+              "scene-B"
+            ],
+            "layout": "stack",
+            "requiredCapabilities": [
+              "multiple-scenes"
+            ],
+            "runtimeOptions": {
+              "automaticallyAbortsDetail": false,
+              "automaticallyAdvancesSplitSelection": true,
+              "automaticallyClosesSceneB": false,
+              "automaticallyNavigates": false,
+              "automaticallyOpensSecondWindow": false,
+              "automaticallyPopsUIKitSplitNavigation": true,
+              "automaticallyReplacesDetail": false,
+              "automaticallyReplacesDetailInstance": false,
+              "automaticallyReturnsSplitToDetail": false,
+              "exercisesSwiftUIButtonStructuredTask": false,
+              "exercisesTraceOnlyURLSessionOwnership": false,
+              "exercisesUIEventContextHandoff": false,
+              "exercisesUIKitScrollOwnership": false,
+              "forcesNavigationRouteIdentity": false,
+              "initialSwiftUIPath": [],
+              "manualSwiftUIViewScreensByScene": {},
+              "startsSplitWithoutSelection": false,
+              "swiftUIRouterWritePolicy": "accept",
+              "swiftUIStress": "none"
+            },
+            "steps": [
+              {
+                "kind": "wait-for-scene-ready",
+                "scene": "scene-A"
+              },
+              {
+                "kind": "wait-for-signal",
+                "scene": "scene-A",
+                "signal": "rum-view:home#1"
+              },
+              {
+                "kind": "capture-replay-records",
+                "scene": "scene-A",
+                "value": "replay-a-before-peer"
+              },
+              {
+                "kind": "open-window",
+                "scene": "scene-A",
+                "value": "scene-B"
+              },
+              {
+                "kind": "wait-for-signal",
+                "scene": "scene-B",
+                "signal": "rum-view:home#1"
+              },
+              {
+                "kind": "capture-replay-records",
+                "scene": "scene-B",
+                "value": "replay-b-after-open"
+              },
+              {
+                "kind": "set-swiftui-path",
+                "scene": "scene-B",
+                "value": "detail-1"
+              },
+              {
+                "kind": "wait-for-signal",
+                "scene": "scene-B",
+                "signal": "rum-view:detail-1#1"
+              },
+              {
+                "kind": "capture-replay-records",
+                "scene": "scene-B",
+                "value": "replay-b-after-navigation"
+              },
+              {
+                "kind": "close-window",
+                "scene": "scene-B"
+              },
+              {
+                "kind": "activate-window",
+                "scene": "scene-A"
+              },
+              {
+                "kind": "set-swiftui-path",
+                "scene": "scene-A",
+                "value": "detail-1"
+              },
+              {
+                "kind": "wait-for-signal",
+                "scene": "scene-A",
+                "signal": "rum-view:detail-1#1"
+              },
+              {
+                "kind": "capture-replay-records",
+                "scene": "scene-A",
+                "value": "replay-a-after-teardown"
+              }
+            ],
+            "trackingMode": "manual"
+          },
+          "schemaVersion": 3,
+          "validationErrors": []
+        },
+        "type": "manifest"
+      },
+      {
+        "signal": {
+          "evidenceSource": "rum-mapper",
+          "kind": "rum-session-started",
+          "rumContext": {
+            "sessionDiscarded": false,
+            "sessionID": "427ad248-e010-4983-9b63-a65138ec5a3e"
+          },
+          "runID": "exp194-20260919T064859Z-f074ff09b520",
+          "scenarioID": "replay.native-recording.navigation-teardown-serial",
+          "schemaVersion": 5,
+          "sequence": 1,
+          "timestampMilliseconds": 1789800555484
+        },
+        "type": "signal"
+      },
+      {
+        "signal": {
+          "evidenceSource": "rum-mapper",
+          "kind": "rum-view-snapshot",
+          "rumContext": {
+            "eventDateMilliseconds": 1789800555462,
+            "sessionHasReplay": false,
+            "sessionID": "427ad248-e010-4983-9b63-a65138ec5a3e",
+            "viewActive": true,
+            "viewDocumentVersion": 1,
+            "viewID": "5dcebbcd-7f47-4f3a-8da9-a94cc4925194",
+            "viewName": "ApplicationLaunch",
+            "viewTimeSpentNanoseconds": 21732092,
+            "viewURL": "com/datadog/application-launch/view"
+          },
+          "runID": "exp194-20260919T064859Z-f074ff09b520",
+          "scenarioID": "replay.native-recording.navigation-teardown-serial",
+          "schemaVersion": 5,
+          "sequence": 2,
+          "timestampMilliseconds": 1789800555491
+        },
+        "type": "signal"
+      },
+      {
+        "signal": {
+          "evidenceSource": "rum-mapper",
+          "kind": "rum-view-snapshot",
+          "rumContext": {
+            "eventDateMilliseconds": 1789800555462,
+            "sessionHasReplay": true,
+            "sessionID": "427ad248-e010-4983-9b63-a65138ec5a3e",
+            "viewActive": false,
+            "viewDocumentVersion": 2,
+            "viewID": "5dcebbcd-7f47-4f3a-8da9-a94cc4925194",
+            "viewName": "ApplicationLaunch",
+            "viewTimeSpentNanoseconds": 163102031,
+            "viewURL": "com/datadog/application-launch/view"
+          },
+          "runID": "exp194-20260919T064859Z-f074ff09b520",
+          "scenarioID": "replay.native-recording.navigation-teardown-serial",
+          "schemaVersion": 5,
+          "sequence": 3,
+          "timestampMilliseconds": 1789800555627
+        },
+        "type": "signal"
+      },
+      {
+        "signal": {
+          "evidenceSource": "rum-mapper",
+          "kind": "rum-view-snapshot",
+          "rumContext": {
+            "eventDateMilliseconds": 1789800555625,
+            "sessionHasReplay": true,
+            "sessionID": "427ad248-e010-4983-9b63-a65138ec5a3e",
+            "viewActive": true,
+            "viewDocumentVersion": 1,
+            "viewID": "05430fab-37af-42e7-b2ff-905479c95dda",
+            "viewName": "ProbeHomeView",
+            "viewTimeSpentNanoseconds": 1,
+            "viewURL": "ProbeHomeView/5376864270570407887"
+          },
+          "runID": "exp194-20260919T064859Z-f074ff09b520",
+          "scenarioID": "replay.native-recording.navigation-teardown-serial",
+          "schemaVersion": 5,
+          "semanticContext": {
+            "logicalSceneID": "scene-A",
+            "screen": "home"
+          },
+          "sequence": 4,
+          "timestampMilliseconds": 1789800555628
+        },
+        "type": "signal"
+      },
+      {
+        "signal": {
+          "evidenceSource": "probe",
+          "kind": "destination-appearance-observed",
+          "runID": "exp194-20260919T064859Z-f074ff09b520",
+          "scenarioID": "replay.native-recording.navigation-teardown-serial",
+          "schemaVersion": 5,
+          "semanticContext": {
+            "logicalSceneID": "scene-A",
+            "screen": "home"
+          },
+          "sequence": 5,
+          "timestampMilliseconds": 1789800555632
+        },
+        "type": "signal"
+      },
+      {
+        "signal": {
+          "evidenceSource": "rum-mapper",
+          "kind": "rum-view-snapshot",
+          "rumContext": {
+            "eventDateMilliseconds": 1789800555625,
+            "sessionHasReplay": true,
+            "sessionID": "427ad248-e010-4983-9b63-a65138ec5a3e",
+            "viewActive": true,
+            "viewDocumentVersion": 2,
+            "viewID": "05430fab-37af-42e7-b2ff-905479c95dda",
+            "viewName": "ProbeHomeView",
+            "viewTimeSpentNanoseconds": 39138079,
+            "viewURL": "ProbeHomeView/5376864270570407887"
+          },
+          "runID": "exp194-20260919T064859Z-f074ff09b520",
+          "scenarioID": "replay.native-recording.navigation-teardown-serial",
+          "schemaVersion": 5,
+          "semanticContext": {
+            "logicalSceneID": "scene-A",
+            "screen": "home"
+          },
+          "sequence": 6,
+          "timestampMilliseconds": 1789800555667
+        },
+        "type": "signal"
+      },
+      {
+        "signal": {
+          "activationState": "foreground-inactive",
+          "evidenceSource": "probe",
+          "geometry": {
+            "height": 1376,
+            "width": 1032,
+            "x": 0,
+            "y": 0
+          },
+          "horizontalSizeClass": "regular",
+          "kind": "scene-ready",
+          "navigationPath": [
+            "home"
+          ],
+          "runID": "exp194-20260919T064859Z-f074ff09b520",
+          "scenarioID": "replay.native-recording.navigation-teardown-serial",
+          "sceneDisconnectGeneration": 0,
+          "scenePhase": "ready",
+          "schemaVersion": 5,
+          "semanticContext": {
+            "logicalSceneID": "scene-A",
+            "nativeSceneID": "92A57E4D-1BC4-48D1-B95B-85E830E65691",
+            "screen": "home"
+          },
+          "sequence": 7,
+          "timestampMilliseconds": 1789800555677,
+          "verticalSizeClass": "regular"
+        },
+        "type": "signal"
+      },
+      {
+        "signal": {
+          "evidenceSource": "probe",
+          "kind": "step-started",
+          "runID": "exp194-20260919T064859Z-f074ff09b520",
+          "scenarioID": "replay.native-recording.navigation-teardown-serial",
+          "schemaVersion": 5,
+          "semanticContext": {
+            "logicalSceneID": "scene-A",
+            "nativeSceneID": "92A57E4D-1BC4-48D1-B95B-85E830E65691",
+            "screen": "home"
+          },
+          "sequence": 8,
+          "stepIndex": 0,
+          "stepKind": "wait-for-scene-ready",
+          "timestampMilliseconds": 1789800555678
+        },
+        "type": "signal"
+      },
+      {
+        "signal": {
+          "activationState": "foreground-active",
+          "evidenceSource": "probe",
+          "geometry": {
+            "height": 1376,
+            "width": 1032,
+            "x": 0,
+            "y": 0
+          },
+          "horizontalSizeClass": "regular",
+          "kind": "scene-lifecycle",
+          "navigationPath": [
+            "home"
+          ],
+          "runID": "exp194-20260919T064859Z-f074ff09b520",
+          "scenarioID": "replay.native-recording.navigation-teardown-serial",
+          "sceneDisconnectGeneration": 0,
+          "scenePhase": "ready",
+          "schemaVersion": 5,
+          "semanticContext": {
+            "logicalSceneID": "scene-A",
+            "nativeSceneID": "92A57E4D-1BC4-48D1-B95B-85E830E65691",
+            "screen": "home"
+          },
+          "sequence": 9,
+          "timestampMilliseconds": 1789800555685,
+          "verticalSizeClass": "regular"
+        },
+        "type": "signal"
+      },
+      {
+        "signal": {
+          "acknowledgedSignalSequence": 7,
+          "evidenceSource": "probe",
+          "kind": "step-acknowledged",
+          "runID": "exp194-20260919T064859Z-f074ff09b520",
+          "scenarioID": "replay.native-recording.navigation-teardown-serial",
+          "schemaVersion": 5,
+          "semanticContext": {
+            "logicalSceneID": "scene-A",
+            "nativeSceneID": "92A57E4D-1BC4-48D1-B95B-85E830E65691",
+            "screen": "home"
+          },
+          "sequence": 10,
+          "stepIndex": 0,
+          "stepKind": "wait-for-scene-ready",
+          "timestampMilliseconds": 1789800555694
+        },
+        "type": "signal"
+      },
+      {
+        "signal": {
+          "evidenceSource": "probe",
+          "kind": "step-started",
+          "name": "rum-view:home#1",
+          "runID": "exp194-20260919T064859Z-f074ff09b520",
+          "scenarioID": "replay.native-recording.navigation-teardown-serial",
+          "schemaVersion": 5,
+          "semanticContext": {
+            "logicalSceneID": "scene-A",
+            "nativeSceneID": "92A57E4D-1BC4-48D1-B95B-85E830E65691",
+            "screen": "home"
+          },
+          "sequence": 11,
+          "stepIndex": 1,
+          "stepKind": "wait-for-signal",
+          "timestampMilliseconds": 1789800555694
+        },
+        "type": "signal"
+      },
+      {
+        "signal": {
+          "acknowledgedSignalSequence": 6,
+          "evidenceSource": "probe",
+          "kind": "step-acknowledged",
+          "name": "rum-view:home#1",
+          "runID": "exp194-20260919T064859Z-f074ff09b520",
+          "scenarioID": "replay.native-recording.navigation-teardown-serial",
+          "schemaVersion": 5,
+          "semanticContext": {
+            "logicalSceneID": "scene-A",
+            "nativeSceneID": "92A57E4D-1BC4-48D1-B95B-85E830E65691",
+            "screen": "home"
+          },
+          "sequence": 12,
+          "stepIndex": 1,
+          "stepKind": "wait-for-signal",
+          "timestampMilliseconds": 1789800555695
+        },
+        "type": "signal"
+      },
+      {
+        "signal": {
+          "evidenceSource": "probe",
+          "kind": "step-started",
+          "name": "replay-a-before-peer",
+          "runID": "exp194-20260919T064859Z-f074ff09b520",
+          "scenarioID": "replay.native-recording.navigation-teardown-serial",
+          "schemaVersion": 5,
+          "semanticContext": {
+            "logicalSceneID": "scene-A",
+            "nativeSceneID": "92A57E4D-1BC4-48D1-B95B-85E830E65691",
+            "screen": "home"
+          },
+          "sequence": 13,
+          "stepIndex": 2,
+          "stepKind": "capture-replay-records",
+          "timestampMilliseconds": 1789800555695
+        },
+        "type": "signal"
+      },
+      {
+        "signal": {
+          "evidenceSource": "internal-hook",
+          "kind": "assertion",
+          "name": "baseline-replay-a-before-peer",
+          "replay": {
+            "hasReplay": true,
+            "recordsByViewID": {
+              "5dcebbcd-7f47-4f3a-8da9-a94cc4925194": 3
+            },
+            "scenes": [
+              {
+                "activationState": "foreground-active",
+                "geometry": {
+                  "height": 1376,
+                  "width": 1032,
+                  "x": 0,
+                  "y": 0
+                },
+                "logicalSceneID": "scene-A",
+                "nativeSceneID": "92A57E4D-1BC4-48D1-B95B-85E830E65691"
+              }
+            ]
+          },
+          "result": "PASS",
+          "rumContext": {
+            "sessionHasReplay": true,
+            "sessionID": "427ad248-e010-4983-9b63-a65138ec5a3e",
+            "viewID": "05430fab-37af-42e7-b2ff-905479c95dda",
+            "viewName": "ProbeHomeView"
+          },
+          "runID": "exp194-20260919T064859Z-f074ff09b520",
+          "scenarioID": "replay.native-recording.navigation-teardown-serial",
+          "schemaVersion": 5,
+          "semanticContext": {
+            "logicalSceneID": "scene-A",
+            "nativeSceneID": "92A57E4D-1BC4-48D1-B95B-85E830E65691",
+            "occurrence": 1,
+            "screen": "home"
+          },
+          "sequence": 14,
+          "timestampMilliseconds": 1789800555697
+        },
+        "type": "signal"
+      },
+      {
+        "signal": {
+          "evidenceSource": "internal-hook",
+          "kind": "assertion",
+          "name": "replay-a-before-peer",
+          "replay": {
+            "hasReplay": true,
+            "recordsByViewID": {
+              "05430fab-37af-42e7-b2ff-905479c95dda": 3,
+              "5dcebbcd-7f47-4f3a-8da9-a94cc4925194": 3
+            },
+            "scenes": [
+              {
+                "activationState": "foreground-active",
+                "geometry": {
+                  "height": 1376,
+                  "width": 1032,
+                  "x": 0,
+                  "y": 0
+                },
+                "logicalSceneID": "scene-A",
+                "nativeSceneID": "92A57E4D-1BC4-48D1-B95B-85E830E65691"
+              }
+            ]
+          },
+          "result": "PASS",
+          "rumContext": {
+            "sessionHasReplay": true,
+            "sessionID": "427ad248-e010-4983-9b63-a65138ec5a3e",
+            "viewID": "05430fab-37af-42e7-b2ff-905479c95dda",
+            "viewName": "ProbeHomeView"
+          },
+          "runID": "exp194-20260919T064859Z-f074ff09b520",
+          "scenarioID": "replay.native-recording.navigation-teardown-serial",
+          "schemaVersion": 5,
+          "semanticContext": {
+            "logicalSceneID": "scene-A",
+            "nativeSceneID": "92A57E4D-1BC4-48D1-B95B-85E830E65691",
+            "occurrence": 1,
+            "screen": "home"
+          },
+          "sequence": 15,
+          "timestampMilliseconds": 1789800555784
+        },
+        "type": "signal"
+      },
+      {
+        "signal": {
+          "acknowledgedSignalSequence": 15,
+          "evidenceSource": "probe",
+          "kind": "step-acknowledged",
+          "name": "replay-a-before-peer",
+          "runID": "exp194-20260919T064859Z-f074ff09b520",
+          "scenarioID": "replay.native-recording.navigation-teardown-serial",
+          "schemaVersion": 5,
+          "semanticContext": {
+            "logicalSceneID": "scene-A",
+            "nativeSceneID": "92A57E4D-1BC4-48D1-B95B-85E830E65691",
+            "screen": "home"
+          },
+          "sequence": 16,
+          "stepIndex": 2,
+          "stepKind": "capture-replay-records",
+          "timestampMilliseconds": 1789800555785
+        },
+        "type": "signal"
+      },
+      {
+        "signal": {
+          "evidenceSource": "probe",
+          "kind": "step-started",
+          "name": "scene-B",
+          "runID": "exp194-20260919T064859Z-f074ff09b520",
+          "scenarioID": "replay.native-recording.navigation-teardown-serial",
+          "schemaVersion": 5,
+          "semanticContext": {
+            "logicalSceneID": "scene-A",
+            "nativeSceneID": "92A57E4D-1BC4-48D1-B95B-85E830E65691",
+            "screen": "home"
+          },
+          "sequence": 17,
+          "stepIndex": 3,
+          "stepKind": "open-window",
+          "timestampMilliseconds": 1789800555785
+        },
+        "type": "signal"
+      },
+      {
+        "signal": {
+          "activationState": "foreground-inactive",
+          "evidenceSource": "probe",
+          "geometry": {
+            "height": 1376,
+            "width": 1032,
+            "x": 0,
+            "y": 0
+          },
+          "horizontalSizeClass": "regular",
+          "kind": "scene-lifecycle",
+          "navigationPath": [
+            "home"
+          ],
+          "runID": "exp194-20260919T064859Z-f074ff09b520",
+          "scenarioID": "replay.native-recording.navigation-teardown-serial",
+          "sceneDisconnectGeneration": 0,
+          "scenePhase": "ready",
+          "schemaVersion": 5,
+          "semanticContext": {
+            "logicalSceneID": "scene-A",
+            "nativeSceneID": "92A57E4D-1BC4-48D1-B95B-85E830E65691",
+            "screen": "home"
+          },
+          "sequence": 18,
+          "timestampMilliseconds": 1789800555798,
+          "verticalSizeClass": "regular"
+        },
+        "type": "signal"
+      },
+      {
+        "signal": {
+          "evidenceSource": "rum-mapper",
+          "kind": "rum-view-snapshot",
+          "rumContext": {
+            "eventDateMilliseconds": 1789800555851,
+            "sessionHasReplay": true,
+            "sessionID": "427ad248-e010-4983-9b63-a65138ec5a3e",
+            "viewActive": true,
+            "viewDocumentVersion": 1,
+            "viewID": "2a2aa0b6-7f45-4980-833c-a3d71c7aa423",
+            "viewName": "ProbeHomeView",
+            "viewTimeSpentNanoseconds": 1,
+            "viewURL": "ProbeHomeView/5376864270570407887"
+          },
+          "runID": "exp194-20260919T064859Z-f074ff09b520",
+          "scenarioID": "replay.native-recording.navigation-teardown-serial",
+          "schemaVersion": 5,
+          "semanticContext": {
+            "logicalSceneID": "scene-B",
+            "screen": "home"
+          },
+          "sequence": 19,
+          "timestampMilliseconds": 1789800555854
+        },
+        "type": "signal"
+      },
+      {
+        "signal": {
+          "evidenceSource": "probe",
+          "kind": "destination-appearance-observed",
+          "runID": "exp194-20260919T064859Z-f074ff09b520",
+          "scenarioID": "replay.native-recording.navigation-teardown-serial",
+          "schemaVersion": 5,
+          "semanticContext": {
+            "logicalSceneID": "scene-B",
+            "screen": "home"
+          },
+          "sequence": 20,
+          "timestampMilliseconds": 1789800555855
+        },
+        "type": "signal"
+      },
+      {
+        "signal": {
+          "activationState": "foreground-inactive",
+          "evidenceSource": "probe",
+          "geometry": {
+            "height": 1376,
+            "width": 1032,
+            "x": 0,
+            "y": 0
+          },
+          "horizontalSizeClass": "regular",
+          "kind": "scene-ready",
+          "navigationPath": [
+            "home"
+          ],
+          "runID": "exp194-20260919T064859Z-f074ff09b520",
+          "scenarioID": "replay.native-recording.navigation-teardown-serial",
+          "sceneDisconnectGeneration": 0,
+          "scenePhase": "ready",
+          "schemaVersion": 5,
+          "semanticContext": {
+            "logicalSceneID": "scene-B",
+            "nativeSceneID": "681F2A62-A5B0-4320-9FC0-80DDBF7D482A",
+            "screen": "home"
+          },
+          "sequence": 21,
+          "timestampMilliseconds": 1789800555870,
+          "verticalSizeClass": "regular"
+        },
+        "type": "signal"
+      },
+      {
+        "signal": {
+          "acknowledgedSignalSequence": 21,
+          "evidenceSource": "probe",
+          "kind": "step-acknowledged",
+          "name": "scene-B",
+          "runID": "exp194-20260919T064859Z-f074ff09b520",
+          "scenarioID": "replay.native-recording.navigation-teardown-serial",
+          "schemaVersion": 5,
+          "semanticContext": {
+            "logicalSceneID": "scene-A",
+            "nativeSceneID": "92A57E4D-1BC4-48D1-B95B-85E830E65691",
+            "screen": "home"
+          },
+          "sequence": 22,
+          "stepIndex": 3,
+          "stepKind": "open-window",
+          "timestampMilliseconds": 1789800555878
+        },
+        "type": "signal"
+      },
+      {
+        "signal": {
+          "evidenceSource": "probe",
+          "kind": "step-started",
+          "name": "rum-view:home#1",
+          "runID": "exp194-20260919T064859Z-f074ff09b520",
+          "scenarioID": "replay.native-recording.navigation-teardown-serial",
+          "schemaVersion": 5,
+          "semanticContext": {
+            "logicalSceneID": "scene-B",
+            "nativeSceneID": "681F2A62-A5B0-4320-9FC0-80DDBF7D482A",
+            "screen": "home"
+          },
+          "sequence": 23,
+          "stepIndex": 4,
+          "stepKind": "wait-for-signal",
+          "timestampMilliseconds": 1789800555878
+        },
+        "type": "signal"
+      },
+      {
+        "signal": {
+          "acknowledgedSignalSequence": 19,
+          "evidenceSource": "probe",
+          "kind": "step-acknowledged",
+          "name": "rum-view:home#1",
+          "runID": "exp194-20260919T064859Z-f074ff09b520",
+          "scenarioID": "replay.native-recording.navigation-teardown-serial",
+          "schemaVersion": 5,
+          "semanticContext": {
+            "logicalSceneID": "scene-B",
+            "nativeSceneID": "681F2A62-A5B0-4320-9FC0-80DDBF7D482A",
+            "screen": "home"
+          },
+          "sequence": 24,
+          "stepIndex": 4,
+          "stepKind": "wait-for-signal",
+          "timestampMilliseconds": 1789800555878
+        },
+        "type": "signal"
+      },
+      {
+        "signal": {
+          "evidenceSource": "probe",
+          "kind": "step-started",
+          "name": "replay-b-after-open",
+          "runID": "exp194-20260919T064859Z-f074ff09b520",
+          "scenarioID": "replay.native-recording.navigation-teardown-serial",
+          "schemaVersion": 5,
+          "semanticContext": {
+            "logicalSceneID": "scene-B",
+            "nativeSceneID": "681F2A62-A5B0-4320-9FC0-80DDBF7D482A",
+            "screen": "home"
+          },
+          "sequence": 25,
+          "stepIndex": 5,
+          "stepKind": "capture-replay-records",
+          "timestampMilliseconds": 1789800555878
+        },
+        "type": "signal"
+      },
+      {
+        "signal": {
+          "activationState": "foreground-active",
+          "evidenceSource": "probe",
+          "geometry": {
+            "height": 1376,
+            "width": 1032,
+            "x": 0,
+            "y": 0
+          },
+          "horizontalSizeClass": "regular",
+          "kind": "scene-lifecycle",
+          "navigationPath": [
+            "home"
+          ],
+          "runID": "exp194-20260919T064859Z-f074ff09b520",
+          "scenarioID": "replay.native-recording.navigation-teardown-serial",
+          "sceneDisconnectGeneration": 0,
+          "scenePhase": "ready",
+          "schemaVersion": 5,
+          "semanticContext": {
+            "logicalSceneID": "scene-B",
+            "nativeSceneID": "681F2A62-A5B0-4320-9FC0-80DDBF7D482A",
+            "screen": "home"
+          },
+          "sequence": 26,
+          "timestampMilliseconds": 1789800556636,
+          "verticalSizeClass": "regular"
+        },
+        "type": "signal"
+      },
+      {
+        "signal": {
+          "activationState": "background",
+          "evidenceSource": "probe",
+          "geometry": {
+            "height": 1376,
+            "width": 1032,
+            "x": 0,
+            "y": 0
+          },
+          "horizontalSizeClass": "regular",
+          "kind": "scene-lifecycle",
+          "navigationPath": [
+            "home"
+          ],
+          "runID": "exp194-20260919T064859Z-f074ff09b520",
+          "scenarioID": "replay.native-recording.navigation-teardown-serial",
+          "sceneDisconnectGeneration": 0,
+          "scenePhase": "ready",
+          "schemaVersion": 5,
+          "semanticContext": {
+            "logicalSceneID": "scene-A",
+            "nativeSceneID": "92A57E4D-1BC4-48D1-B95B-85E830E65691",
+            "screen": "home"
+          },
+          "sequence": 27,
+          "timestampMilliseconds": 1789800556642,
+          "verticalSizeClass": "regular"
+        },
+        "type": "signal"
+      },
+      {
+        "signal": {
+          "evidenceSource": "rum-mapper",
+          "kind": "rum-view-snapshot",
+          "rumContext": {
+            "eventDateMilliseconds": 1789800555625,
+            "sessionHasReplay": true,
+            "sessionID": "427ad248-e010-4983-9b63-a65138ec5a3e",
+            "viewActive": false,
+            "viewDocumentVersion": 3,
+            "viewID": "05430fab-37af-42e7-b2ff-905479c95dda",
+            "viewName": "ProbeHomeView",
+            "viewTimeSpentNanoseconds": 1015711069,
+            "viewURL": "ProbeHomeView/5376864270570407887"
+          },
+          "runID": "exp194-20260919T064859Z-f074ff09b520",
+          "scenarioID": "replay.native-recording.navigation-teardown-serial",
+          "schemaVersion": 5,
+          "semanticContext": {
+            "logicalSceneID": "scene-A",
+            "screen": "home"
+          },
+          "sequence": 28,
+          "timestampMilliseconds": 1789800556643
+        },
+        "type": "signal"
+      },
+      {
+        "signal": {
+          "evidenceSource": "internal-hook",
+          "kind": "assertion",
+          "name": "baseline-replay-b-after-open",
+          "replay": {
+            "hasReplay": true,
+            "recordsByViewID": {
+              "05430fab-37af-42e7-b2ff-905479c95dda": 3,
+              "2a2aa0b6-7f45-4980-833c-a3d71c7aa423": 3,
+              "5dcebbcd-7f47-4f3a-8da9-a94cc4925194": 3
+            },
+            "scenes": [
+              {
+                "activationState": "foreground-inactive",
+                "geometry": {
+                  "height": 1376,
+                  "width": 1032,
+                  "x": 0,
+                  "y": 0
+                },
+                "logicalSceneID": "scene-A",
+                "nativeSceneID": "92A57E4D-1BC4-48D1-B95B-85E830E65691"
+              },
+              {
+                "activationState": "foreground-active",
+                "geometry": {
+                  "height": 1376,
+                  "width": 1032,
+                  "x": 0,
+                  "y": 0
+                },
+                "logicalSceneID": "scene-B",
+                "nativeSceneID": "681F2A62-A5B0-4320-9FC0-80DDBF7D482A"
+              }
+            ]
+          },
+          "result": "PASS",
+          "rumContext": {
+            "sessionHasReplay": true,
+            "sessionID": "427ad248-e010-4983-9b63-a65138ec5a3e",
+            "viewID": "2a2aa0b6-7f45-4980-833c-a3d71c7aa423",
+            "viewName": "ProbeHomeView"
+          },
+          "runID": "exp194-20260919T064859Z-f074ff09b520",
+          "scenarioID": "replay.native-recording.navigation-teardown-serial",
+          "schemaVersion": 5,
+          "semanticContext": {
+            "logicalSceneID": "scene-B",
+            "nativeSceneID": "681F2A62-A5B0-4320-9FC0-80DDBF7D482A",
+            "occurrence": 1,
+            "screen": "home"
+          },
+          "sequence": 29,
+          "timestampMilliseconds": 1789800556702
+        },
+        "type": "signal"
+      },
+      {
+        "signal": {
+          "evidenceSource": "internal-hook",
+          "kind": "assertion",
+          "name": "replay-b-after-open",
+          "replay": {
+            "hasReplay": true,
+            "recordsByViewID": {
+              "05430fab-37af-42e7-b2ff-905479c95dda": 3,
+              "2a2aa0b6-7f45-4980-833c-a3d71c7aa423": 4,
+              "5dcebbcd-7f47-4f3a-8da9-a94cc4925194": 3
+            },
+            "scenes": [
+              {
+                "activationState": "background",
+                "geometry": {
+                  "height": 1376,
+                  "width": 1032,
+                  "x": 0,
+                  "y": 0
+                },
+                "logicalSceneID": "scene-A",
+                "nativeSceneID": "92A57E4D-1BC4-48D1-B95B-85E830E65691"
+              },
+              {
+                "activationState": "foreground-active",
+                "geometry": {
+                  "height": 1376,
+                  "width": 1032,
+                  "x": 0,
+                  "y": 0
+                },
+                "logicalSceneID": "scene-B",
+                "nativeSceneID": "681F2A62-A5B0-4320-9FC0-80DDBF7D482A"
+              }
+            ]
+          },
+          "result": "PASS",
+          "rumContext": {
+            "sessionHasReplay": true,
+            "sessionID": "427ad248-e010-4983-9b63-a65138ec5a3e",
+            "viewID": "2a2aa0b6-7f45-4980-833c-a3d71c7aa423",
+            "viewName": "ProbeHomeView"
+          },
+          "runID": "exp194-20260919T064859Z-f074ff09b520",
+          "scenarioID": "replay.native-recording.navigation-teardown-serial",
+          "schemaVersion": 5,
+          "semanticContext": {
+            "logicalSceneID": "scene-B",
+            "nativeSceneID": "681F2A62-A5B0-4320-9FC0-80DDBF7D482A",
+            "occurrence": 1,
+            "screen": "home"
+          },
+          "sequence": 30,
+          "timestampMilliseconds": 1789800556754
+        },
+        "type": "signal"
+      },
+      {
+        "signal": {
+          "acknowledgedSignalSequence": 30,
+          "evidenceSource": "probe",
+          "kind": "step-acknowledged",
+          "name": "replay-b-after-open",
+          "runID": "exp194-20260919T064859Z-f074ff09b520",
+          "scenarioID": "replay.native-recording.navigation-teardown-serial",
+          "schemaVersion": 5,
+          "semanticContext": {
+            "logicalSceneID": "scene-B",
+            "nativeSceneID": "681F2A62-A5B0-4320-9FC0-80DDBF7D482A",
+            "screen": "home"
+          },
+          "sequence": 31,
+          "stepIndex": 5,
+          "stepKind": "capture-replay-records",
+          "timestampMilliseconds": 1789800556754
+        },
+        "type": "signal"
+      },
+      {
+        "signal": {
+          "evidenceSource": "probe",
+          "kind": "step-started",
+          "name": "detail-1",
+          "runID": "exp194-20260919T064859Z-f074ff09b520",
+          "scenarioID": "replay.native-recording.navigation-teardown-serial",
+          "schemaVersion": 5,
+          "semanticContext": {
+            "logicalSceneID": "scene-B",
+            "nativeSceneID": "681F2A62-A5B0-4320-9FC0-80DDBF7D482A",
+            "screen": "home"
+          },
+          "sequence": 32,
+          "stepIndex": 6,
+          "stepKind": "set-swiftui-path",
+          "timestampMilliseconds": 1789800556754
+        },
+        "type": "signal"
+      },
+      {
+        "signal": {
+          "evidenceSource": "probe",
+          "kind": "navigation-path-mutation",
+          "mutation": 1,
+          "navigationPath": [
+            "home",
+            "detail-1"
+          ],
+          "previousNavigationPath": [
+            "home"
+          ],
+          "runID": "exp194-20260919T064859Z-f074ff09b520",
+          "scenarioID": "replay.native-recording.navigation-teardown-serial",
+          "schemaVersion": 5,
+          "semanticContext": {
+            "logicalSceneID": "scene-B",
+            "nativeSceneID": "681F2A62-A5B0-4320-9FC0-80DDBF7D482A",
+            "screen": "detail-1"
+          },
+          "sequence": 33,
+          "timestampMilliseconds": 1789800556754
+        },
+        "type": "signal"
+      },
+      {
+        "signal": {
+          "evidenceSource": "rum-mapper",
+          "kind": "rum-view-snapshot",
+          "rumContext": {
+            "eventDateMilliseconds": 1789800555851,
+            "sessionHasReplay": true,
+            "sessionID": "427ad248-e010-4983-9b63-a65138ec5a3e",
+            "viewActive": false,
+            "viewDocumentVersion": 2,
+            "viewID": "2a2aa0b6-7f45-4980-833c-a3d71c7aa423",
+            "viewName": "ProbeHomeView",
+            "viewTimeSpentNanoseconds": 907544017,
+            "viewURL": "ProbeHomeView/5376864270570407887"
+          },
+          "runID": "exp194-20260919T064859Z-f074ff09b520",
+          "scenarioID": "replay.native-recording.navigation-teardown-serial",
+          "schemaVersion": 5,
+          "semanticContext": {
+            "logicalSceneID": "scene-B",
+            "screen": "home"
+          },
+          "sequence": 34,
+          "timestampMilliseconds": 1789800556761
+        },
+        "type": "signal"
+      },
+      {
+        "signal": {
+          "evidenceSource": "rum-mapper",
+          "kind": "rum-view-snapshot",
+          "rumContext": {
+            "eventDateMilliseconds": 1789800556759,
+            "sessionHasReplay": true,
+            "sessionID": "427ad248-e010-4983-9b63-a65138ec5a3e",
+            "viewActive": true,
+            "viewDocumentVersion": 1,
+            "viewID": "64d09965-56cf-49e4-93b8-9888c1efdc3d",
+            "viewName": "ProbeDetailView",
+            "viewTimeSpentNanoseconds": 1,
+            "viewURL": "ProbeDetailView/-2842050221119871870"
+          },
+          "runID": "exp194-20260919T064859Z-f074ff09b520",
+          "scenarioID": "replay.native-recording.navigation-teardown-serial",
+          "schemaVersion": 5,
+          "semanticContext": {
+            "logicalSceneID": "scene-B",
+            "nativeSceneID": "681F2A62-A5B0-4320-9FC0-80DDBF7D482A",
+            "screen": "detail-1"
+          },
+          "sequence": 35,
+          "timestampMilliseconds": 1789800556762
+        },
+        "type": "signal"
+      },
+      {
+        "signal": {
+          "evidenceSource": "probe",
+          "kind": "destination-materialized",
+          "runID": "exp194-20260919T064859Z-f074ff09b520",
+          "scenarioID": "replay.native-recording.navigation-teardown-serial",
+          "schemaVersion": 5,
+          "semanticContext": {
+            "logicalSceneID": "scene-B",
+            "nativeSceneID": "681F2A62-A5B0-4320-9FC0-80DDBF7D482A",
+            "screen": "detail-1"
+          },
+          "sequence": 36,
+          "timestampMilliseconds": 1789800556764
+        },
+        "type": "signal"
+      },
+      {
+        "signal": {
+          "acknowledgedSignalSequence": 33,
+          "evidenceSource": "probe",
+          "kind": "step-acknowledged",
+          "name": "detail-1",
+          "runID": "exp194-20260919T064859Z-f074ff09b520",
+          "scenarioID": "replay.native-recording.navigation-teardown-serial",
+          "schemaVersion": 5,
+          "semanticContext": {
+            "logicalSceneID": "scene-B",
+            "nativeSceneID": "681F2A62-A5B0-4320-9FC0-80DDBF7D482A",
+            "screen": "detail-1"
+          },
+          "sequence": 37,
+          "stepIndex": 6,
+          "stepKind": "set-swiftui-path",
+          "timestampMilliseconds": 1789800556805
+        },
+        "type": "signal"
+      },
+      {
+        "signal": {
+          "evidenceSource": "probe",
+          "kind": "step-started",
+          "name": "rum-view:detail-1#1",
+          "runID": "exp194-20260919T064859Z-f074ff09b520",
+          "scenarioID": "replay.native-recording.navigation-teardown-serial",
+          "schemaVersion": 5,
+          "semanticContext": {
+            "logicalSceneID": "scene-B",
+            "nativeSceneID": "681F2A62-A5B0-4320-9FC0-80DDBF7D482A",
+            "screen": "detail-1"
+          },
+          "sequence": 38,
+          "stepIndex": 7,
+          "stepKind": "wait-for-signal",
+          "timestampMilliseconds": 1789800556805
+        },
+        "type": "signal"
+      },
+      {
+        "signal": {
+          "acknowledgedSignalSequence": 35,
+          "evidenceSource": "probe",
+          "kind": "step-acknowledged",
+          "name": "rum-view:detail-1#1",
+          "runID": "exp194-20260919T064859Z-f074ff09b520",
+          "scenarioID": "replay.native-recording.navigation-teardown-serial",
+          "schemaVersion": 5,
+          "semanticContext": {
+            "logicalSceneID": "scene-B",
+            "nativeSceneID": "681F2A62-A5B0-4320-9FC0-80DDBF7D482A",
+            "screen": "detail-1"
+          },
+          "sequence": 39,
+          "stepIndex": 7,
+          "stepKind": "wait-for-signal",
+          "timestampMilliseconds": 1789800556806
+        },
+        "type": "signal"
+      },
+      {
+        "signal": {
+          "evidenceSource": "probe",
+          "kind": "step-started",
+          "name": "replay-b-after-navigation",
+          "runID": "exp194-20260919T064859Z-f074ff09b520",
+          "scenarioID": "replay.native-recording.navigation-teardown-serial",
+          "schemaVersion": 5,
+          "semanticContext": {
+            "logicalSceneID": "scene-B",
+            "nativeSceneID": "681F2A62-A5B0-4320-9FC0-80DDBF7D482A",
+            "screen": "detail-1"
+          },
+          "sequence": 40,
+          "stepIndex": 8,
+          "stepKind": "capture-replay-records",
+          "timestampMilliseconds": 1789800556806
+        },
+        "type": "signal"
+      },
+      {
+        "signal": {
+          "evidenceSource": "internal-hook",
+          "kind": "assertion",
+          "name": "baseline-replay-b-after-navigation",
+          "replay": {
+            "hasReplay": true,
+            "recordsByViewID": {
+              "05430fab-37af-42e7-b2ff-905479c95dda": 3,
+              "2a2aa0b6-7f45-4980-833c-a3d71c7aa423": 4,
+              "5dcebbcd-7f47-4f3a-8da9-a94cc4925194": 3
+            },
+            "scenes": [
+              {
+                "activationState": "background",
+                "geometry": {
+                  "height": 1376,
+                  "width": 1032,
+                  "x": 0,
+                  "y": 0
+                },
+                "logicalSceneID": "scene-A",
+                "nativeSceneID": "92A57E4D-1BC4-48D1-B95B-85E830E65691"
+              },
+              {
+                "activationState": "foreground-active",
+                "geometry": {
+                  "height": 1376,
+                  "width": 1032,
+                  "x": 0,
+                  "y": 0
+                },
+                "logicalSceneID": "scene-B",
+                "nativeSceneID": "681F2A62-A5B0-4320-9FC0-80DDBF7D482A"
+              }
+            ]
+          },
+          "result": "PASS",
+          "rumContext": {
+            "sessionHasReplay": true,
+            "sessionID": "427ad248-e010-4983-9b63-a65138ec5a3e",
+            "viewID": "64d09965-56cf-49e4-93b8-9888c1efdc3d",
+            "viewName": "ProbeDetailView"
+          },
+          "runID": "exp194-20260919T064859Z-f074ff09b520",
+          "scenarioID": "replay.native-recording.navigation-teardown-serial",
+          "schemaVersion": 5,
+          "semanticContext": {
+            "logicalSceneID": "scene-B",
+            "nativeSceneID": "681F2A62-A5B0-4320-9FC0-80DDBF7D482A",
+            "occurrence": 1,
+            "screen": "detail-1"
+          },
+          "sequence": 41,
+          "timestampMilliseconds": 1789800556806
+        },
+        "type": "signal"
+      },
+      {
+        "signal": {
+          "evidenceSource": "internal-hook",
+          "kind": "assertion",
+          "name": "replay-b-after-navigation",
+          "replay": {
+            "hasReplay": true,
+            "recordsByViewID": {
+              "05430fab-37af-42e7-b2ff-905479c95dda": 3,
+              "2a2aa0b6-7f45-4980-833c-a3d71c7aa423": 4,
+              "5dcebbcd-7f47-4f3a-8da9-a94cc4925194": 3,
+              "64d09965-56cf-49e4-93b8-9888c1efdc3d": 3
+            },
+            "scenes": [
+              {
+                "activationState": "background",
+                "geometry": {
+                  "height": 1376,
+                  "width": 1032,
+                  "x": 0,
+                  "y": 0
+                },
+                "logicalSceneID": "scene-A",
+                "nativeSceneID": "92A57E4D-1BC4-48D1-B95B-85E830E65691"
+              },
+              {
+                "activationState": "foreground-active",
+                "geometry": {
+                  "height": 1376,
+                  "width": 1032,
+                  "x": 0,
+                  "y": 0
+                },
+                "logicalSceneID": "scene-B",
+                "nativeSceneID": "681F2A62-A5B0-4320-9FC0-80DDBF7D482A"
+              }
+            ]
+          },
+          "result": "PASS",
+          "rumContext": {
+            "sessionHasReplay": true,
+            "sessionID": "427ad248-e010-4983-9b63-a65138ec5a3e",
+            "viewID": "64d09965-56cf-49e4-93b8-9888c1efdc3d",
+            "viewName": "ProbeDetailView"
+          },
+          "runID": "exp194-20260919T064859Z-f074ff09b520",
+          "scenarioID": "replay.native-recording.navigation-teardown-serial",
+          "schemaVersion": 5,
+          "semanticContext": {
+            "logicalSceneID": "scene-B",
+            "nativeSceneID": "681F2A62-A5B0-4320-9FC0-80DDBF7D482A",
+            "occurrence": 1,
+            "screen": "detail-1"
+          },
+          "sequence": 42,
+          "timestampMilliseconds": 1789800556851
+        },
+        "type": "signal"
+      },
+      {
+        "signal": {
+          "acknowledgedSignalSequence": 42,
+          "evidenceSource": "probe",
+          "kind": "step-acknowledged",
+          "name": "replay-b-after-navigation",
+          "runID": "exp194-20260919T064859Z-f074ff09b520",
+          "scenarioID": "replay.native-recording.navigation-teardown-serial",
+          "schemaVersion": 5,
+          "semanticContext": {
+            "logicalSceneID": "scene-B",
+            "nativeSceneID": "681F2A62-A5B0-4320-9FC0-80DDBF7D482A",
+            "screen": "detail-1"
+          },
+          "sequence": 43,
+          "stepIndex": 8,
+          "stepKind": "capture-replay-records",
+          "timestampMilliseconds": 1789800556851
+        },
+        "type": "signal"
+      },
+      {
+        "signal": {
+          "evidenceSource": "probe",
+          "kind": "step-started",
+          "runID": "exp194-20260919T064859Z-f074ff09b520",
+          "scenarioID": "replay.native-recording.navigation-teardown-serial",
+          "schemaVersion": 5,
+          "semanticContext": {
+            "logicalSceneID": "scene-B",
+            "nativeSceneID": "681F2A62-A5B0-4320-9FC0-80DDBF7D482A",
+            "screen": "detail-1"
+          },
+          "sequence": 44,
+          "stepIndex": 9,
+          "stepKind": "close-window",
+          "timestampMilliseconds": 1789800556851
+        },
+        "type": "signal"
+      },
+      {
+        "signal": {
+          "activationState": "foreground-inactive",
+          "evidenceSource": "probe",
+          "geometry": {
+            "height": 1376,
+            "width": 1032,
+            "x": 0,
+            "y": 0
+          },
+          "horizontalSizeClass": "regular",
+          "kind": "scene-lifecycle",
+          "navigationPath": [
+            "detail-1"
+          ],
+          "runID": "exp194-20260919T064859Z-f074ff09b520",
+          "scenarioID": "replay.native-recording.navigation-teardown-serial",
+          "sceneDisconnectGeneration": 0,
+          "scenePhase": "ready",
+          "schemaVersion": 5,
+          "semanticContext": {
+            "logicalSceneID": "scene-B",
+            "nativeSceneID": "681F2A62-A5B0-4320-9FC0-80DDBF7D482A",
+            "screen": "detail-1"
+          },
+          "sequence": 45,
+          "timestampMilliseconds": 1789800556880,
+          "verticalSizeClass": "regular"
+        },
+        "type": "signal"
+      },
+      {
+        "signal": {
+          "evidenceSource": "rum-mapper",
+          "kind": "rum-view-snapshot",
+          "rumContext": {
+            "eventDateMilliseconds": 1789800556759,
+            "sessionHasReplay": true,
+            "sessionID": "427ad248-e010-4983-9b63-a65138ec5a3e",
+            "viewActive": false,
+            "viewDocumentVersion": 2,
+            "viewID": "64d09965-56cf-49e4-93b8-9888c1efdc3d",
+            "viewName": "ProbeDetailView",
+            "viewTimeSpentNanoseconds": 968993068,
+            "viewURL": "ProbeDetailView/-2842050221119871870"
+          },
+          "runID": "exp194-20260919T064859Z-f074ff09b520",
+          "scenarioID": "replay.native-recording.navigation-teardown-serial",
+          "schemaVersion": 5,
+          "semanticContext": {
+            "logicalSceneID": "scene-B",
+            "nativeSceneID": "681F2A62-A5B0-4320-9FC0-80DDBF7D482A",
+            "screen": "detail-1"
+          },
+          "sequence": 46,
+          "timestampMilliseconds": 1789800557731
+        },
+        "type": "signal"
+      },
+      {
+        "signal": {
+          "activationState": "background",
+          "evidenceSource": "probe",
+          "geometry": {
+            "height": 1376,
+            "width": 1032,
+            "x": 0,
+            "y": 0
+          },
+          "horizontalSizeClass": "regular",
+          "kind": "scene-lifecycle",
+          "navigationPath": [
+            "home",
+            "detail-1"
+          ],
+          "runID": "exp194-20260919T064859Z-f074ff09b520",
+          "scenarioID": "replay.native-recording.navigation-teardown-serial",
+          "sceneDisconnectGeneration": 0,
+          "scenePhase": "ready",
+          "schemaVersion": 5,
+          "semanticContext": {
+            "logicalSceneID": "scene-B",
+            "nativeSceneID": "681F2A62-A5B0-4320-9FC0-80DDBF7D482A",
+            "screen": "detail-1"
+          },
+          "sequence": 47,
+          "timestampMilliseconds": 1789800557734,
+          "verticalSizeClass": "regular"
+        },
+        "type": "signal"
+      },
+      {
+        "signal": {
+          "activationState": "background",
+          "evidenceSource": "probe",
+          "geometry": {
+            "height": 1376,
+            "width": 1032,
+            "x": 0,
+            "y": 0
+          },
+          "horizontalSizeClass": "regular",
+          "kind": "scene-lifecycle",
+          "navigationPath": [
+            "home",
+            "detail-1"
+          ],
+          "runID": "exp194-20260919T064859Z-f074ff09b520",
+          "scenarioID": "replay.native-recording.navigation-teardown-serial",
+          "sceneDisconnectGeneration": 1,
+          "scenePhase": "disconnected",
+          "schemaVersion": 5,
+          "semanticContext": {
+            "logicalSceneID": "scene-B",
+            "nativeSceneID": "681F2A62-A5B0-4320-9FC0-80DDBF7D482A",
+            "screen": "detail-1"
+          },
+          "sequence": 48,
+          "timestampMilliseconds": 1789800557744,
+          "verticalSizeClass": "regular"
+        },
+        "type": "signal"
+      },
+      {
+        "signal": {
+          "acknowledgedSignalSequence": 48,
+          "evidenceSource": "probe",
+          "kind": "step-acknowledged",
+          "runID": "exp194-20260919T064859Z-f074ff09b520",
+          "scenarioID": "replay.native-recording.navigation-teardown-serial",
+          "schemaVersion": 5,
+          "semanticContext": {
+            "logicalSceneID": "scene-B",
+            "nativeSceneID": "681F2A62-A5B0-4320-9FC0-80DDBF7D482A",
+            "screen": "detail-1"
+          },
+          "sequence": 49,
+          "stepIndex": 9,
+          "stepKind": "close-window",
+          "timestampMilliseconds": 1789800557748
+        },
+        "type": "signal"
+      },
+      {
+        "signal": {
+          "evidenceSource": "probe",
+          "kind": "step-started",
+          "runID": "exp194-20260919T064859Z-f074ff09b520",
+          "scenarioID": "replay.native-recording.navigation-teardown-serial",
+          "schemaVersion": 5,
+          "semanticContext": {
+            "logicalSceneID": "scene-A",
+            "nativeSceneID": "92A57E4D-1BC4-48D1-B95B-85E830E65691",
+            "screen": "home"
+          },
+          "sequence": 50,
+          "stepIndex": 10,
+          "stepKind": "activate-window",
+          "timestampMilliseconds": 1789800557748
+        },
+        "type": "signal"
+      },
+      {
+        "signal": {
+          "evidenceSource": "rum-mapper",
+          "kind": "rum-view-snapshot",
+          "rumContext": {
+            "eventDateMilliseconds": 1789800557797,
+            "sessionHasReplay": true,
+            "sessionID": "427ad248-e010-4983-9b63-a65138ec5a3e",
+            "viewActive": true,
+            "viewDocumentVersion": 1,
+            "viewID": "a4c078e1-e9a3-4aae-9e5c-294307070f32",
+            "viewName": "ProbeHomeView",
+            "viewTimeSpentNanoseconds": 1,
+            "viewURL": "ProbeHomeView/5376864270570407887"
+          },
+          "runID": "exp194-20260919T064859Z-f074ff09b520",
+          "scenarioID": "replay.native-recording.navigation-teardown-serial",
+          "schemaVersion": 5,
+          "semanticContext": {
+            "logicalSceneID": "scene-A",
+            "screen": "home"
+          },
+          "sequence": 51,
+          "timestampMilliseconds": 1789800557800
+        },
+        "type": "signal"
+      },
+      {
+        "signal": {
+          "activationState": "foreground-inactive",
+          "evidenceSource": "probe",
+          "geometry": {
+            "height": 1376,
+            "width": 1032,
+            "x": 0,
+            "y": 0
+          },
+          "horizontalSizeClass": "regular",
+          "kind": "scene-lifecycle",
+          "navigationPath": [
+            "home"
+          ],
+          "runID": "exp194-20260919T064859Z-f074ff09b520",
+          "scenarioID": "replay.native-recording.navigation-teardown-serial",
+          "sceneDisconnectGeneration": 0,
+          "scenePhase": "ready",
+          "schemaVersion": 5,
+          "semanticContext": {
+            "logicalSceneID": "scene-A",
+            "nativeSceneID": "92A57E4D-1BC4-48D1-B95B-85E830E65691",
+            "screen": "home"
+          },
+          "sequence": 52,
+          "timestampMilliseconds": 1789800557805,
+          "verticalSizeClass": "regular"
+        },
+        "type": "signal"
+      },
+      {
+        "signal": {
+          "activationState": "foreground-active",
+          "evidenceSource": "probe",
+          "geometry": {
+            "height": 1376,
+            "width": 1032,
+            "x": 0,
+            "y": 0
+          },
+          "horizontalSizeClass": "regular",
+          "kind": "scene-lifecycle",
+          "navigationPath": [
+            "home"
+          ],
+          "runID": "exp194-20260919T064859Z-f074ff09b520",
+          "scenarioID": "replay.native-recording.navigation-teardown-serial",
+          "sceneDisconnectGeneration": 0,
+          "scenePhase": "ready",
+          "schemaVersion": 5,
+          "semanticContext": {
+            "logicalSceneID": "scene-A",
+            "nativeSceneID": "92A57E4D-1BC4-48D1-B95B-85E830E65691",
+            "screen": "home"
+          },
+          "sequence": 53,
+          "timestampMilliseconds": 1789800558027,
+          "verticalSizeClass": "regular"
+        },
+        "type": "signal"
+      },
+      {
+        "signal": {
+          "acknowledgedSignalSequence": 53,
+          "evidenceSource": "probe",
+          "kind": "step-acknowledged",
+          "runID": "exp194-20260919T064859Z-f074ff09b520",
+          "scenarioID": "replay.native-recording.navigation-teardown-serial",
+          "schemaVersion": 5,
+          "semanticContext": {
+            "logicalSceneID": "scene-A",
+            "nativeSceneID": "92A57E4D-1BC4-48D1-B95B-85E830E65691",
+            "screen": "home"
+          },
+          "sequence": 54,
+          "stepIndex": 10,
+          "stepKind": "activate-window",
+          "timestampMilliseconds": 1789800558028
+        },
+        "type": "signal"
+      },
+      {
+        "signal": {
+          "evidenceSource": "probe",
+          "kind": "step-started",
+          "name": "detail-1",
+          "runID": "exp194-20260919T064859Z-f074ff09b520",
+          "scenarioID": "replay.native-recording.navigation-teardown-serial",
+          "schemaVersion": 5,
+          "semanticContext": {
+            "logicalSceneID": "scene-A",
+            "nativeSceneID": "92A57E4D-1BC4-48D1-B95B-85E830E65691",
+            "screen": "home"
+          },
+          "sequence": 55,
+          "stepIndex": 11,
+          "stepKind": "set-swiftui-path",
+          "timestampMilliseconds": 1789800558028
+        },
+        "type": "signal"
+      },
+      {
+        "signal": {
+          "evidenceSource": "probe",
+          "kind": "navigation-path-mutation",
+          "mutation": 1,
+          "navigationPath": [
+            "home",
+            "detail-1"
+          ],
+          "previousNavigationPath": [
+            "home"
+          ],
+          "runID": "exp194-20260919T064859Z-f074ff09b520",
+          "scenarioID": "replay.native-recording.navigation-teardown-serial",
+          "schemaVersion": 5,
+          "semanticContext": {
+            "logicalSceneID": "scene-A",
+            "nativeSceneID": "92A57E4D-1BC4-48D1-B95B-85E830E65691",
+            "screen": "detail-1"
+          },
+          "sequence": 56,
+          "timestampMilliseconds": 1789800558028
+        },
+        "type": "signal"
+      },
+      {
+        "signal": {
+          "evidenceSource": "rum-mapper",
+          "kind": "rum-view-snapshot",
+          "rumContext": {
+            "eventDateMilliseconds": 1789800557797,
+            "sessionHasReplay": true,
+            "sessionID": "427ad248-e010-4983-9b63-a65138ec5a3e",
+            "viewActive": false,
+            "viewDocumentVersion": 2,
+            "viewID": "a4c078e1-e9a3-4aae-9e5c-294307070f32",
+            "viewName": "ProbeHomeView",
+            "viewTimeSpentNanoseconds": 231046915,
+            "viewURL": "ProbeHomeView/5376864270570407887"
+          },
+          "runID": "exp194-20260919T064859Z-f074ff09b520",
+          "scenarioID": "replay.native-recording.navigation-teardown-serial",
+          "schemaVersion": 5,
+          "semanticContext": {
+            "logicalSceneID": "scene-A",
+            "screen": "home"
+          },
+          "sequence": 57,
+          "timestampMilliseconds": 1789800558031
+        },
+        "type": "signal"
+      },
+      {
+        "signal": {
+          "evidenceSource": "rum-mapper",
+          "kind": "rum-view-snapshot",
+          "rumContext": {
+            "eventDateMilliseconds": 1789800558028,
+            "sessionHasReplay": true,
+            "sessionID": "427ad248-e010-4983-9b63-a65138ec5a3e",
+            "viewActive": true,
+            "viewDocumentVersion": 1,
+            "viewID": "ab0520fb-8ecf-4316-b7a6-c3d31ec7357e",
+            "viewName": "ProbeDetailView",
+            "viewTimeSpentNanoseconds": 1,
+            "viewURL": "ProbeDetailView/-2842050221119871870"
+          },
+          "runID": "exp194-20260919T064859Z-f074ff09b520",
+          "scenarioID": "replay.native-recording.navigation-teardown-serial",
+          "schemaVersion": 5,
+          "semanticContext": {
+            "logicalSceneID": "scene-A",
+            "nativeSceneID": "92A57E4D-1BC4-48D1-B95B-85E830E65691",
+            "screen": "detail-1"
+          },
+          "sequence": 58,
+          "timestampMilliseconds": 1789800558031
+        },
+        "type": "signal"
+      },
+      {
+        "signal": {
+          "evidenceSource": "probe",
+          "kind": "destination-materialized",
+          "runID": "exp194-20260919T064859Z-f074ff09b520",
+          "scenarioID": "replay.native-recording.navigation-teardown-serial",
+          "schemaVersion": 5,
+          "semanticContext": {
+            "logicalSceneID": "scene-A",
+            "nativeSceneID": "92A57E4D-1BC4-48D1-B95B-85E830E65691",
+            "screen": "detail-1"
+          },
+          "sequence": 59,
+          "timestampMilliseconds": 1789800558032
+        },
+        "type": "signal"
+      },
+      {
+        "signal": {
+          "acknowledgedSignalSequence": 56,
+          "evidenceSource": "probe",
+          "kind": "step-acknowledged",
+          "name": "detail-1",
+          "runID": "exp194-20260919T064859Z-f074ff09b520",
+          "scenarioID": "replay.native-recording.navigation-teardown-serial",
+          "schemaVersion": 5,
+          "semanticContext": {
+            "logicalSceneID": "scene-A",
+            "nativeSceneID": "92A57E4D-1BC4-48D1-B95B-85E830E65691",
+            "screen": "detail-1"
+          },
+          "sequence": 60,
+          "stepIndex": 11,
+          "stepKind": "set-swiftui-path",
+          "timestampMilliseconds": 1789800558046
+        },
+        "type": "signal"
+      },
+      {
+        "signal": {
+          "evidenceSource": "probe",
+          "kind": "step-started",
+          "name": "rum-view:detail-1#1",
+          "runID": "exp194-20260919T064859Z-f074ff09b520",
+          "scenarioID": "replay.native-recording.navigation-teardown-serial",
+          "schemaVersion": 5,
+          "semanticContext": {
+            "logicalSceneID": "scene-A",
+            "nativeSceneID": "92A57E4D-1BC4-48D1-B95B-85E830E65691",
+            "screen": "detail-1"
+          },
+          "sequence": 61,
+          "stepIndex": 12,
+          "stepKind": "wait-for-signal",
+          "timestampMilliseconds": 1789800558046
+        },
+        "type": "signal"
+      },
+      {
+        "signal": {
+          "acknowledgedSignalSequence": 58,
+          "evidenceSource": "probe",
+          "kind": "step-acknowledged",
+          "name": "rum-view:detail-1#1",
+          "runID": "exp194-20260919T064859Z-f074ff09b520",
+          "scenarioID": "replay.native-recording.navigation-teardown-serial",
+          "schemaVersion": 5,
+          "semanticContext": {
+            "logicalSceneID": "scene-A",
+            "nativeSceneID": "92A57E4D-1BC4-48D1-B95B-85E830E65691",
+            "screen": "detail-1"
+          },
+          "sequence": 62,
+          "stepIndex": 12,
+          "stepKind": "wait-for-signal",
+          "timestampMilliseconds": 1789800558047
+        },
+        "type": "signal"
+      },
+      {
+        "signal": {
+          "evidenceSource": "probe",
+          "kind": "step-started",
+          "name": "replay-a-after-teardown",
+          "runID": "exp194-20260919T064859Z-f074ff09b520",
+          "scenarioID": "replay.native-recording.navigation-teardown-serial",
+          "schemaVersion": 5,
+          "semanticContext": {
+            "logicalSceneID": "scene-A",
+            "nativeSceneID": "92A57E4D-1BC4-48D1-B95B-85E830E65691",
+            "screen": "detail-1"
+          },
+          "sequence": 63,
+          "stepIndex": 13,
+          "stepKind": "capture-replay-records",
+          "timestampMilliseconds": 1789800558047
+        },
+        "type": "signal"
+      },
+      {
+        "signal": {
+          "evidenceSource": "internal-hook",
+          "kind": "assertion",
+          "name": "baseline-replay-a-after-teardown",
+          "replay": {
+            "hasReplay": true,
+            "recordsByViewID": {
+              "05430fab-37af-42e7-b2ff-905479c95dda": 3,
+              "2a2aa0b6-7f45-4980-833c-a3d71c7aa423": 4,
+              "5dcebbcd-7f47-4f3a-8da9-a94cc4925194": 3,
+              "64d09965-56cf-49e4-93b8-9888c1efdc3d": 3,
+              "a4c078e1-e9a3-4aae-9e5c-294307070f32": 3
+            },
+            "scenes": [
+              {
+                "activationState": "foreground-active",
+                "geometry": {
+                  "height": 1376,
+                  "width": 1032,
+                  "x": 0,
+                  "y": 0
+                },
+                "logicalSceneID": "scene-A",
+                "nativeSceneID": "92A57E4D-1BC4-48D1-B95B-85E830E65691"
+              }
+            ]
+          },
+          "result": "PASS",
+          "rumContext": {
+            "sessionHasReplay": true,
+            "sessionID": "427ad248-e010-4983-9b63-a65138ec5a3e",
+            "viewID": "ab0520fb-8ecf-4316-b7a6-c3d31ec7357e",
+            "viewName": "ProbeDetailView"
+          },
+          "runID": "exp194-20260919T064859Z-f074ff09b520",
+          "scenarioID": "replay.native-recording.navigation-teardown-serial",
+          "schemaVersion": 5,
+          "semanticContext": {
+            "logicalSceneID": "scene-A",
+            "nativeSceneID": "92A57E4D-1BC4-48D1-B95B-85E830E65691",
+            "occurrence": 1,
+            "screen": "detail-1"
+          },
+          "sequence": 64,
+          "timestampMilliseconds": 1789800558047
+        },
+        "type": "signal"
+      },
+      {
+        "signal": {
+          "evidenceSource": "internal-hook",
+          "kind": "assertion",
+          "name": "replay-a-after-teardown",
+          "replay": {
+            "hasReplay": true,
+            "recordsByViewID": {
+              "05430fab-37af-42e7-b2ff-905479c95dda": 3,
+              "2a2aa0b6-7f45-4980-833c-a3d71c7aa423": 4,
+              "5dcebbcd-7f47-4f3a-8da9-a94cc4925194": 3,
+              "64d09965-56cf-49e4-93b8-9888c1efdc3d": 3,
+              "a4c078e1-e9a3-4aae-9e5c-294307070f32": 3,
+              "ab0520fb-8ecf-4316-b7a6-c3d31ec7357e": 3
+            },
+            "scenes": [
+              {
+                "activationState": "foreground-active",
+                "geometry": {
+                  "height": 1376,
+                  "width": 1032,
+                  "x": 0,
+                  "y": 0
+                },
+                "logicalSceneID": "scene-A",
+                "nativeSceneID": "92A57E4D-1BC4-48D1-B95B-85E830E65691"
+              }
+            ]
+          },
+          "result": "PASS",
+          "rumContext": {
+            "sessionHasReplay": true,
+            "sessionID": "427ad248-e010-4983-9b63-a65138ec5a3e",
+            "viewID": "ab0520fb-8ecf-4316-b7a6-c3d31ec7357e",
+            "viewName": "ProbeDetailView"
+          },
+          "runID": "exp194-20260919T064859Z-f074ff09b520",
+          "scenarioID": "replay.native-recording.navigation-teardown-serial",
+          "schemaVersion": 5,
+          "semanticContext": {
+            "logicalSceneID": "scene-A",
+            "nativeSceneID": "92A57E4D-1BC4-48D1-B95B-85E830E65691",
+            "occurrence": 1,
+            "screen": "detail-1"
+          },
+          "sequence": 65,
+          "timestampMilliseconds": 1789800558136
+        },
+        "type": "signal"
+      },
+      {
+        "signal": {
+          "acknowledgedSignalSequence": 65,
+          "evidenceSource": "probe",
+          "kind": "step-acknowledged",
+          "name": "replay-a-after-teardown",
+          "runID": "exp194-20260919T064859Z-f074ff09b520",
+          "scenarioID": "replay.native-recording.navigation-teardown-serial",
+          "schemaVersion": 5,
+          "semanticContext": {
+            "logicalSceneID": "scene-A",
+            "nativeSceneID": "92A57E4D-1BC4-48D1-B95B-85E830E65691",
+            "screen": "detail-1"
+          },
+          "sequence": 66,
+          "stepIndex": 13,
+          "stepKind": "capture-replay-records",
+          "timestampMilliseconds": 1789800558136
+        },
+        "type": "signal"
+      },
+      {
+        "result": {
+          "issues": [],
+          "matchedExpectationCount": 8,
+          "scenarioID": "replay.native-recording.navigation-teardown-serial",
+          "schemaVersion": 1,
+          "state": "PASS"
+        },
+        "runID": "exp194-20260919T064859Z-f074ff09b520",
+        "type": "semantic-result"
+      }
+    ],
+    "test-summary.json": {
+      "devicesAndConfigurations": [
+        {
+          "device": {
+            "architecture": "arm64",
+            "deviceId": "1B0D0EB0-CF23-4CEB-AEF1-2C8462184C03",
+            "deviceName": "RUM Replay EXP-194",
+            "modelName": "iPad Pro 13-inch (M4)",
+            "osBuildNumber": "24A434",
+            "osVersion": "27.0",
+            "platform": "iOS Simulator"
+          },
+          "expectedFailures": 0,
+          "failedTests": 0,
+          "passedTests": 205,
+          "skippedTests": 0,
+          "testPlanConfiguration": {
+            "configurationId": "1",
+            "configurationName": "Test Scheme Action"
+          }
+        }
+      ],
+      "environmentDescription": "RUMNativeMultiSceneProbe \u00b7 Built with macOS 26.6.2",
+      "expectedFailures": 0,
+      "failedTests": 0,
+      "finishTime": 1789800135.154,
+      "passedTests": 205,
+      "result": "Passed",
+      "runtimeWarnings": [],
+      "skippedTests": 0,
+      "startTime": 1789800111.945,
+      "statistics": [],
+      "testFailures": [],
+      "title": "Test - RUMNativeMultiSceneProbe",
+      "topInsights": [],
+      "totalTestCount": 205
+    }
+  },
+  "experiment": "EXP-194",
+  "failures": [],
+  "finished_at": "2026-09-19T06:51:01.842061+00:00",
+  "gate": "F05",
+  "oracle_contract_sha256": "ee8beca6a95ded0c83ab86a512eb061d4fc5e2b4dc891f7a31a50af4665ae322",
+  "rerun": "Use a fresh output directory and freshly resolved device; do not reuse run IDs or bridge responses.",
+  "revision": "31ac062b348f5ed56f6ccfcf593d88a1887b9c8e",
+  "run_id": "exp194-20260919T064859Z-f074ff09b520",
+  "scenario_id": "replay.native-recording.navigation-teardown-serial",
+  "schema_version": 1,
+  "source_file_count": 719,
+  "source_fingerprint": "f7bdf2d8550b2ce3cca548e1c3d6c7bbbbd63d38b4ef876ed43342acb2a307f5",
+  "stages": {
+    "backend": {
+      "error_crash_count": 0,
+      "native_recording_checkpoints": 4,
+      "physical_gate_closed": false,
+      "state": "PASS",
+      "view_count": 6
+    },
+    "clean_install": {
+      "data_container_absent": true,
+      "installed_binary_sha256": "8a2591692c16a697051e8e9354f144565972ec1de16b669ba700485dd9ca9206",
+      "state": "PASS"
+    },
+    "frozen_build": {
+      "executable_sha256": "8a2591692c16a697051e8e9354f144565972ec1de16b669ba700485dd9ca9206",
+      "source_sha256": "f7bdf2d8550b2ce3cca548e1c3d6c7bbbbd63d38b4ef876ed43342acb2a307f5",
+      "state": "PASS",
+      "test_count": 205,
+      "uuid": "UUID: EBEDD461-4F45-36E8-A0B8-8EAB6559B4C8 (arm64) /private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp194-replay-vmpu3y31/attempt-3/derived/Build/Products/Debug-iphonesimulator/RUMNativeMultiSceneProbe.app/RUMNativeMultiSceneProbe"
+    },
+    "local_semantics": {
+      "recording_checkpoints": [
+        {
+          "after": 3,
+          "before": 0,
+          "phase": "replay-a-before-peer",
+          "topology": [
+            {
+              "activationState": "foreground-active",
+              "geometry": {
+                "height": 1376,
+                "width": 1032,
+                "x": 0,
+                "y": 0
+              },
+              "logicalSceneID": "scene-A",
+              "nativeSceneID": "92A57E4D-1BC4-48D1-B95B-85E830E65691"
+            }
+          ],
+          "view_id": "05430fab-37af-42e7-b2ff-905479c95dda"
+        },
+        {
+          "after": 4,
+          "before": 3,
+          "phase": "replay-b-after-open",
+          "topology": [
+            {
+              "activationState": "background",
+              "geometry": {
+                "height": 1376,
+                "width": 1032,
+                "x": 0,
+                "y": 0
+              },
+              "logicalSceneID": "scene-A",
+              "nativeSceneID": "92A57E4D-1BC4-48D1-B95B-85E830E65691"
+            },
+            {
+              "activationState": "foreground-active",
+              "geometry": {
+                "height": 1376,
+                "width": 1032,
+                "x": 0,
+                "y": 0
+              },
+              "logicalSceneID": "scene-B",
+              "nativeSceneID": "681F2A62-A5B0-4320-9FC0-80DDBF7D482A"
+            }
+          ],
+          "view_id": "2a2aa0b6-7f45-4980-833c-a3d71c7aa423"
+        },
+        {
+          "after": 3,
+          "before": 0,
+          "phase": "replay-b-after-navigation",
+          "topology": [
+            {
+              "activationState": "background",
+              "geometry": {
+                "height": 1376,
+                "width": 1032,
+                "x": 0,
+                "y": 0
+              },
+              "logicalSceneID": "scene-A",
+              "nativeSceneID": "92A57E4D-1BC4-48D1-B95B-85E830E65691"
+            },
+            {
+              "activationState": "foreground-active",
+              "geometry": {
+                "height": 1376,
+                "width": 1032,
+                "x": 0,
+                "y": 0
+              },
+              "logicalSceneID": "scene-B",
+              "nativeSceneID": "681F2A62-A5B0-4320-9FC0-80DDBF7D482A"
+            }
+          ],
+          "view_id": "64d09965-56cf-49e4-93b8-9888c1efdc3d"
+        },
+        {
+          "after": 3,
+          "before": 0,
+          "phase": "replay-a-after-teardown",
+          "topology": [
+            {
+              "activationState": "foreground-active",
+              "geometry": {
+                "height": 1376,
+                "width": 1032,
+                "x": 0,
+                "y": 0
+              },
+              "logicalSceneID": "scene-A",
+              "nativeSceneID": "92A57E4D-1BC4-48D1-B95B-85E830E65691"
+            }
+          ],
+          "view_id": "ab0520fb-8ecf-4316-b7a6-c3d31ec7357e"
+        }
+      ],
+      "scope": "Native recorder coexistence; no scene-correct Replay or physical acceptance",
+      "session_id": "427ad248-e010-4983-9b63-a65138ec5a3e",
+      "state": "PASS",
+      "view_ids": [
+        "05430fab-37af-42e7-b2ff-905479c95dda",
+        "2a2aa0b6-7f45-4980-833c-a3d71c7aa423",
+        "5dcebbcd-7f47-4f3a-8da9-a94cc4925194",
+        "64d09965-56cf-49e4-93b8-9888c1efdc3d",
+        "a4c078e1-e9a3-4aae-9e5c-294307070f32",
+        "ab0520fb-8ecf-4316-b7a6-c3d31ec7357e"
+      ],
+      "views": [
+        {
+          "name": "ApplicationLaunch",
+          "session_id": "427ad248-e010-4983-9b63-a65138ec5a3e",
+          "view_id": "5dcebbcd-7f47-4f3a-8da9-a94cc4925194"
+        },
+        {
+          "name": "ProbeHomeView",
+          "session_id": "427ad248-e010-4983-9b63-a65138ec5a3e",
+          "view_id": "05430fab-37af-42e7-b2ff-905479c95dda"
+        },
+        {
+          "name": "ProbeHomeView",
+          "session_id": "427ad248-e010-4983-9b63-a65138ec5a3e",
+          "view_id": "2a2aa0b6-7f45-4980-833c-a3d71c7aa423"
+        },
+        {
+          "name": "ProbeDetailView",
+          "session_id": "427ad248-e010-4983-9b63-a65138ec5a3e",
+          "view_id": "64d09965-56cf-49e4-93b8-9888c1efdc3d"
+        },
+        {
+          "name": "ProbeHomeView",
+          "session_id": "427ad248-e010-4983-9b63-a65138ec5a3e",
+          "view_id": "a4c078e1-e9a3-4aae-9e5c-294307070f32"
+        },
+        {
+          "name": "ProbeDetailView",
+          "session_id": "427ad248-e010-4983-9b63-a65138ec5a3e",
+          "view_id": "ab0520fb-8ecf-4316-b7a6-c3d31ec7357e"
+        }
+      ]
+    },
+    "preflight": {
+      "authenticated_read": true,
+      "state": "PASS"
+    }
+  },
+  "started_at": "2026-09-19T06:48:59.299623+00:00",
+  "state": "PASS",
+  "xcode": "Xcode 27.1\nBuild version 27A9269"
+}
