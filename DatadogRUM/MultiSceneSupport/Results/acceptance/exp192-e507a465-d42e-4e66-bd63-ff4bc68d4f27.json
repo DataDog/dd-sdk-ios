@@ -1,0 +1,62 @@
+{
+  "experiment": "EXP-192",
+  "cell": "Q5",
+  "run_id": "e507a465-d42e-4e66-bd63-ff4bc68d4f27",
+  "status": "INVALID_FIXTURE_PRECONDITION",
+  "source_revision": "ffa775182ea7b47579428d4d3b6fc0638d174c1b",
+  "artifact_root": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp192-ui-outer-sev1zt1i",
+  "native_outer_geometry": [
+    466,
+    678
+  ],
+  "size_class": "compact",
+  "gesture_issued": false,
+  "cause": "Existing split fixture installs navigation only after Primary appears. Compact launch displays the empty Secondary, so Primary never appears and the native S2 precondition is absent. XCTest stops before gesture admission.",
+  "evidence": [
+    "native.jsonl",
+    "fixture.log",
+    "ui-summary.json",
+    "failure-attachments/manifest.json",
+    "runner-artifacts/checkpoints.json",
+    "preflight-displays.json"
+  ],
+  "installed_code": {
+    "app": {
+      "bundleIdentifier": "com.datadoghq.rum-native-multi-scene-probe",
+      "executable": "RUMNativeMultiSceneProbe",
+      "binaries": {
+        "RUMNativeMultiSceneProbe": "993a3c58bfa456266ec2422a46bade4cf1ff0e3fd7a0abceda5499258b5154d3",
+        "RUMNativeMultiSceneProbe.debug.dylib": "96f2da4e8062e833ef32e4b742c7e2f3326fae870ddda75310f5c993d22a1d3f",
+        "__preview.dylib": "f107d09b9d3b79f01789a45ef045bf4039904bf5eaa3c1a8c6a9e27de130563b"
+      }
+    },
+    "runner": {
+      "bundleIdentifier": "com.datadoghq.rum-native-multi-scene-probe.uitests.xctrunner",
+      "executable": "RUMNativeMultiSceneProbeUITests-Runner",
+      "binaries": {
+        "PlugIns/RUMNativeMultiSceneProbeUITests.xctest/RUMNativeMultiSceneProbeUITests": "63a2cc956c96dba3cc810b124311d2a3e82af364cbe74cb98e3505c2121383b5",
+        "RUMNativeMultiSceneProbeUITests-Runner": "e904dd74bd4149e2428913294595746c29f54e4865d8bda72e1614bbf490a12c"
+      }
+    }
+  },
+  "cleanup": {
+    "com.datadoghq.rum-native-multi-scene-probe/app": {
+      "exit": 2,
+      "stderr": "An error was encountered processing the command (domain=NSPOSIXErrorDomain, code=2):\nThe operation couldn\u2019t be completed. No such file or directory\nNo such file or directory\n"
+    },
+    "com.datadoghq.rum-native-multi-scene-probe/data": {
+      "exit": 2,
+      "stderr": "An error was encountered processing the command (domain=NSPOSIXErrorDomain, code=2):\nThe operation couldn\u2019t be completed. No such file or directory\nNo such file or directory\n"
+    },
+    "com.datadoghq.rum-native-multi-scene-probe.uitests.xctrunner/app": {
+      "exit": 2,
+      "stderr": "An error was encountered processing the command (domain=NSPOSIXErrorDomain, code=2):\nThe operation couldn\u2019t be completed. No such file or directory\nNo such file or directory\n"
+    },
+    "com.datadoghq.rum-native-multi-scene-probe.uitests.xctrunner/data": {
+      "exit": 2,
+      "stderr": "An error was encountered processing the command (domain=NSPOSIXErrorDomain, code=2):\nThe operation couldn\u2019t be completed. No such file or directory\nNo such file or directory\n"
+    }
+  },
+  "planned_fixture_correction": "For native UIKit gesture scenarios only, install navigation after the split container attaches, without requiring hidden Primary appearance. Keep actual S2 readiness and interactive outcome oracle.",
+  "gates_closed": []
+}

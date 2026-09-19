@@ -4464,6 +4464,7 @@ private struct ProbeUIKitSplitNavigationControllerRepresentable: UIViewControlle
         )
         splitViewController.setViewController(primary, for: .primary)
         splitViewController.setViewController(placeholder, for: .secondary)
+        context.coordinator.prepareNativeGestureNavigation()
 
         ProbeRuntime.record(
             "uikit split navigation container created source=\(window.label) "
@@ -4605,6 +4606,16 @@ private struct ProbeUIKitSplitNavigationControllerRepresentable: UIViewControlle
             }
         }
 
+        func prepareNativeGestureNavigation() {
+            guard isNativeGestureScenario, let primary else { return }
+            // In compact width the placeholder can hide Primary before it ever appears.
+            scheduleNavigationInstallation(after: primary)
+        }
+
+        private var isNativeGestureScenario: Bool {
+            ProbeRuntime.resolution.scenario?.identifier.hasPrefix("uikit.split.native-pop-") == true
+        }
+
         private func scheduleNavigationInstallation(
             after primary: ProbeUIKitSplitChildViewController
         ) {
@@ -4618,6 +4629,7 @@ private struct ProbeUIKitSplitNavigationControllerRepresentable: UIViewControlle
                     let splitViewController = self.splitViewController,
                     let primary,
                     primary.viewIfLoaded?.window != nil
+                        || (self.isNativeGestureScenario && splitViewController.viewIfLoaded?.window != nil)
                 else {
                     return
                 }

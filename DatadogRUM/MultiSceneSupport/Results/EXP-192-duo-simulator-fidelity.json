@@ -89,6 +89,11 @@
       "run_id": "dedb89d2-c1e3-4748-b8b6-4efd95595240",
       "status": "PARTIAL_FIXTURE_GAP",
       "result": "acceptance/exp192-dedb89d2-c1e3-4748-b8b6-4efd95595240.json"
+    },
+    {
+      "run_id": "e507a465-d42e-4e66-bd63-ff4bc68d4f27",
+      "status": "INVALID_FIXTURE_PRECONDITION",
+      "result": "acceptance/exp192-e507a465-d42e-4e66-bd63-ff4bc68d4f27.json"
     }
   ],
   "gates_closed": [],
@@ -115,7 +120,7 @@
     ],
     "acceptance": "No stale source/run, no fabricated scene callbacks, no late-only geometry assertion, no unexpected Detail during nil selection, no duplicate or foreign owner at selected boundaries; hardware H14 residual remains."
   },
-  "next": "EXP-193 qualifies H14 with the current accepted-state host; equivalent XCTest inner-display pairing attempts are stopped after two. Q5 outer-display gesture input remains dependency-ready.",
+  "next": "Correct the preserved compact-layout fixture precondition, then execute bounded outer UIKit cancel/finish qualification. No gesture was attempted in e507a465; do not count it as an ignored native gesture.",
   "adaptive_followup": {
     "experiment": "EXP-193",
     "result": "EXP-193-adaptive-split.json",
