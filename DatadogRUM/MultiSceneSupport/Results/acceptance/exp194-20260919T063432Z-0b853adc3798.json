@@ -1,0 +1,90 @@
+{
+  "artifacts": {
+    "backend-exchanges.json": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp194-replay-vmpu3y31/attempt-1/backend-exchanges.json",
+    "boot-ready.log": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp194-replay-vmpu3y31/attempt-1/boot-ready.log",
+    "boot.log": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp194-replay-vmpu3y31/attempt-1/boot.log",
+    "build-tests.log": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp194-replay-vmpu3y31/attempt-1/build-tests.log",
+    "source-identity.json": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp194-replay-vmpu3y31/attempt-1/source-identity.json",
+    "summary.json": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp194-replay-vmpu3y31/attempt-1/summary.json"
+  },
+  "backend_bridge_timings": [
+    {
+      "kind": "auth",
+      "received": true,
+      "seconds": 56.27
+    }
+  ],
+  "commit_signature": {
+    "required_before_push": true,
+    "state": "UNSIGNED"
+  },
+  "device": {
+    "dataPath": "/Users/valentin.pertuisot/Library/Developer/CoreSimulator/Devices/1B0D0EB0-CF23-4CEB-AEF1-2C8462184C03/data",
+    "dataPathSize": 18337792,
+    "deviceTypeIdentifier": "com.apple.CoreSimulator.SimDeviceType.iPad-Pro-13-inch-M4-8GB",
+    "isAvailable": true,
+    "logPath": "/Users/valentin.pertuisot/Library/Logs/CoreSimulator/1B0D0EB0-CF23-4CEB-AEF1-2C8462184C03",
+    "name": "RUM Replay EXP-194",
+    "runtime": "com.apple.CoreSimulator.SimRuntime.iOS-27-0",
+    "state": "Shutdown",
+    "udid": "1B0D0EB0-CF23-4CEB-AEF1-2C8462184C03"
+  },
+  "dirty_state": [
+    " M Datadog/Datadog.xcodeproj/project.pbxproj",
+    " M DatadogRUM/MultiSceneSupport/Experiments/EXP-143-199.md",
+    " M DatadogRUM/MultiSceneSupport/Results/EXP-194-replay-coexistence.json",
+    "A  xcconfigs/Datadog.local.xcconfig"
+  ],
+  "evidence": {
+    "backend-exchanges.json": [
+      {
+        "request": {
+          "created_at": "2026-09-19T06:34:32.382472+00:00",
+          "expected_count": 0,
+          "from": "2026-09-19T06:34:32.086667+00:00",
+          "kind": "auth",
+          "query": "@context.probe.run_id:exp194-20260919T063432Z-0b853adc3798-auth",
+          "request_id": "821284fd-a5e9-48f1-8662-164e65a6a797",
+          "run_id": "exp194-20260919T063432Z-0b853adc3798",
+          "schema_version": 1,
+          "to": "now"
+        },
+        "response": {
+          "complete": true,
+          "data": {
+            "authenticated": true
+          },
+          "executed_query": "@application.id:43cbc59b-0626-438b-a3d9-c6417a4545a3 @context.probe.run_id:exp194-20260919T063432Z-0b853adc3798-auth",
+          "ok": true,
+          "provider": "datadog-mcp",
+          "query": "@context.probe.run_id:exp194-20260919T063432Z-0b853adc3798-auth",
+          "request_id": "821284fd-a5e9-48f1-8662-164e65a6a797",
+          "request_sha256": "cd57af6345cc996f77c7cf08416bf421a38bfc6fb75f0c158b7cd36db5972616"
+        }
+      }
+    ]
+  },
+  "experiment": "EXP-194",
+  "failures": [
+    "build-tests failed; inspect its scoped log"
+  ],
+  "finished_at": "2026-09-19T06:36:28.841261+00:00",
+  "gate": "F05",
+  "oracle_contract_sha256": "ee8beca6a95ded0c83ab86a512eb061d4fc5e2b4dc891f7a31a50af4665ae322",
+  "rerun": "Use a fresh output directory and freshly resolved device; do not reuse run IDs or bridge responses.",
+  "revision": "fc2b25e8c67d9408622d055894e002dab31b4b71",
+  "run_id": "exp194-20260919T063432Z-0b853adc3798",
+  "scenario_id": "replay.native-recording.navigation-teardown-serial",
+  "schema_version": 1,
+  "source_file_count": 719,
+  "source_fingerprint": "b6e4b2fc9e78475ea4f44d212a502e3fe6f987ab814123fb5a7fc08bfb03584b",
+  "stages": {
+    "preflight": {
+      "authenticated_read": true,
+      "state": "PASS"
+    }
+  },
+  "started_at": "2026-09-19T06:34:32.086667+00:00",
+  "state": "INCONCLUSIVE",
+  "xcode": "Xcode 27.1\nBuild version 27A9269"
+}

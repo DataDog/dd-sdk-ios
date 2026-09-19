@@ -116,6 +116,7 @@ internal enum ProbeReplayAcceptance {
               nativeScene.activationState == .foregroundActive,
               let host = window.rootViewController?.view,
               let owner = monitor.rumContextSnapshot(for: .scene(.init(rawValue: handle.nativeSceneID))),
+              let viewID = owner.viewID,
               monitor.rumContextSnapshot(for: .processRepresentative)?.viewID == owner.viewID else {
             throw FixtureError.missing("active native scene and representative")
         }
@@ -160,7 +161,7 @@ internal enum ProbeReplayAcceptance {
         host.layoutIfNeeded()
         defer { stimulus.removeFromSuperview() }
 
-        let baseline = before.1[owner.viewID, default: 0]
+        let baseline = before.1[viewID, default: 0]
         for _ in 0..<250 {
             let observed = await context()
             guard observed.0,
@@ -170,7 +171,7 @@ internal enum ProbeReplayAcceptance {
                   monitor.rumContextSnapshot(for: .processRepresentative)?.viewID == owner.viewID else {
                 throw FixtureError.missing("recording owner or native attachment changed")
             }
-            if observed.1[owner.viewID, default: 0] > baseline {
+            if observed.1[viewID, default: 0] > baseline {
                 let finalTopology = try topology()
                 guard finalTopology.map(\.logicalSceneID) == expectedLabels,
                       finalTopology.map(\.nativeSceneID) == initialTopology.map(\.nativeSceneID) else {

@@ -7,7 +7,7 @@
   "definition_parent_revision": "b6a764c8217bbdbab35605254d99e9387a83ec55",
   "candidate_revision": "04201edc7711361279d8487b385bc8b0ca9c63c7",
   "admission": "Dependency-ready F05 needs executable native-record proof, not only hasReplay or WebView bridge data. This bounded simulator slice prepares the existing physical coexistence gate without expanding Replay scene-correctness scope.",
-  "environment": "Fresh task-owned iPad Pro13-inch(M4) simulator on installed iOS27.1/24A94401 through Xcode27.1. Physical multi-window device still required for F05 closure.",
+  "environment": "Fresh task-owned iPad Pro13-inch(M4) simulator on installed iOS27.0/24A434 through Xcode27.1 SDK27.1. Physical multi-window device still required for F05 closure.",
   "scenario": "replay.native-recording.navigation-teardown-serial",
   "protocol": [
     "Freeze fixture source, build, every app Mach-O, fresh run and exact manifest; clean install with absent bundle/data before launch.",
@@ -61,7 +61,14 @@
   ],
   "stop_rule": "Preserve first failed admission or strict assertion before correction; at most two equivalent environment failures. Do not substitute synthetic disconnect, reset the oracle or infer physical acceptance.",
   "closure_rule": "Accept this simulator slice only with R1-R4 native recording/ownership, complete backend inventory and cleanup. F05 remains open until the same coexistence contract runs on a physical multi-window device.",
-  "attempts": [],
+  "attempts": [
+    {
+      "run_id": "exp194-20260919T063432Z-0b853adc3798",
+      "status": "BUILD_FAILED",
+      "result": "acceptance/exp194-20260919T063432Z-0b853adc3798.json",
+      "reason": "Fixture treated optional RUMCoreContext.viewID as a dictionary key. Add explicit non-nil admission; native tests/scenario did not run."
+    }
+  ],
   "gates_closed": [],
   "implementation": {
     "native": "Existing scene driver plus four asynchronous native-context checkpoints; passive topology, default Replay privacy and ordinary UIView stimulus. No SDK production change.",
@@ -72,5 +79,12 @@
       "negative_controls": 29,
       "xctest": "205 methods declared; native build/tests pending"
     }
-  }
+  },
+  "preflight": {
+    "runtime_correction": "CoreSimulator rejects iPad creation on special27.1 runtime with code403 Incompatible device; its actual supportedDeviceTypes contains only iPhone Duo. Before native execution select installed27.0/24A434, which explicitly supports the chosen iPad.",
+    "python_suite": "274/274 pass with writable temp storage; initial read-only invocation produced16 temp-directory errors, not oracle failures.",
+    "artifact_root": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp194-replay-vmpu3y31",
+    "owned_device": "1B0D0EB0-CF23-4CEB-AEF1-2C8462184C03"
+  },
+  "next": "Rebuild corrected fixture on the verified task iPad27.0, run205 native tests, then execute the unchanged four recording checkpoints."
 }
