@@ -5035,6 +5035,63 @@ private struct ProbeUIKitSplitNavigationControllerRepresentable: UIViewControlle
 
         func navigationController(
             _ navigationController: UINavigationController,
+            willShow viewController: UIViewController,
+            animated: Bool
+        ) {
+            guard
+                ProbeRuntime.resolution.scenario?.identifier.hasPrefix("uikit.split.native-pop-") == true,
+                interactivePopTransition == nil,
+                let coordinator = navigationController.transitionCoordinator,
+                coordinator.isInteractive,
+                let from = coordinator.viewController(forKey: .from) as? ProbeUIKitSplitChildViewController,
+                let to = viewController as? ProbeUIKitSplitChildViewController
+            else { return }
+            let identifier = "native-uikit-" + UUID().uuidString.lowercased()
+            let interval = "native-uikit-pop"
+            ProbeRuntime.eventRecorder.record(ProbeSignal(
+                kind: .intervalBegan,
+                semanticContext: transitionContext(screen: from.semanticRUMScreen),
+                interval: interval,
+                transitionID: identifier
+            ))
+            ProbeRuntime.eventRecorder.record(ProbeSignal(
+                kind: .transitionBegan,
+                semanticContext: transitionContext(screen: from.semanticRUMScreen),
+                interval: interval,
+                transitionID: identifier,
+                interactive: true,
+                reason: "Observed the native UINavigationController interactive coordinator"
+            ))
+            coordinator.animate(alongsideTransition: nil) { [weak self] context in
+                guard let self else { return }
+                let outcome: ProbeTransitionOutcome = context.isCancelled ? .cancel : .finish
+                let screen = context.isCancelled ? from.semanticRUMScreen : to.semanticRUMScreen
+                ProbeRuntime.eventRecorder.record(ProbeSignal(
+                    kind: .transitionResolved,
+                    semanticContext: self.transitionContext(screen: screen),
+                    interval: interval,
+                    transitionID: identifier,
+                    interactive: true,
+                    outcome: outcome,
+                    reason: "Observed native coordinator completion"
+                ))
+                ProbeRuntime.eventRecorder.record(ProbeSignal(
+                    kind: .intervalEnded,
+                    semanticContext: self.transitionContext(screen: screen),
+                    interval: interval,
+                    transitionID: identifier
+                ))
+                ProbeRuntime.emitLifecycleMarker(
+                    window: self.window,
+                    sceneSessionID: self.sceneSessionID,
+                    screen: screen,
+                    phase: "native-pop-" + outcome.rawValue + "-resolved"
+                )
+            }
+        }
+
+        func navigationController(
+            _ navigationController: UINavigationController,
             animationControllerFor operation: UINavigationController.Operation,
             from fromViewController: UIViewController,
             to toViewController: UIViewController

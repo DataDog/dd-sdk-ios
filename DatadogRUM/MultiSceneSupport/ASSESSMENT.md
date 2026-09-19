@@ -78,7 +78,9 @@ resize renders black and cleanup backgrounds the app. The separate pose/guarded
 resize variants pass9 oracle tests. A later preflight catches materialization
 rewriting the accepted empty route; corrected fixture4b3ce9d57 builds and passes6
 focused checks, and native readback confirms `[]`. The Mac relocks before work;
-native/backend acceptance still awaits the pending unlock. No physical/human obligation closes.
+guarded XCTest then completes resize5/5 with16 exact native/backend work events,
+3 views and0 errors.10-phase pose acceptance awaits the pending unlock. No
+physical/human obligation closes.
 
 C06's corrected17.x qualification checks all five stable versions in Apple's
 historical catalog through27.1; all downloads are unavailable, as is17.0 through

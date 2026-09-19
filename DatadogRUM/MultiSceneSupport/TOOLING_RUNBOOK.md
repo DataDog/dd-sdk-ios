@@ -1881,3 +1881,17 @@ exact RUM owner inventory and verified no-crash completion/cleanup. WebView brid
 records alone do not prove the native recorder ran. Keep scene-correct Replay
 outside the approved scope and report serial simulator topology explicitly; final
 F05 acceptance still requires the stated physical multi-window environment.
+
+The guarded XCTest resize prefix can run while desktop interaction is unavailable.
+Its fresh runner Documents/DuoInput/active-run.json identifies a UUID-specific
+control directory. Admit marker1 only after initial geometry, Detail selection
+only after marker1's complete pair, and marker2 only after accepted selection.
+Keep XCTest alive until exact native/backend acceptance is exported; then release
+finish and end only the owned resize process. Source/build/app/runner identities
+and cleanup must agree. This path qualifies native buttons, not inner-display
+system pairing or physical gestures.
+
+Datadog detailed results expose probe attributes under context.probe. Project them
+to the oracle's flat probe.* keys without supplying missing values. A count0 query
+can contain an empty JSON_DATA body; preserve its zero count as an empty inventory.
+Never relax exact event IDs, full view inventory or error checks to repair a parser.

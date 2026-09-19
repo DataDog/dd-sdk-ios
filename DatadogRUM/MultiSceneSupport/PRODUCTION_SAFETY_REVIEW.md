@@ -376,3 +376,9 @@ materialization observer writes `[split-empty]` over accepted `[]`. The bounded
 correction removes that write; the rebuilt fixture passes6 focused checks and
 native empty-route readback before work. Input remains blocked by the relocked
 Mac. No production SDK change, D01–D12 reopening or H14 closure is claimed.
+
+The subsequent guarded XCTest resize run passes native/backend ownership across
+regular/compact/regular geometry and verifies cleanup. Passive native UIKit
+coordinator observation is now added only to gesture-control fixtures to qualify
+actual outer-display input. Both changes remain validation work; production source
+and completed review dispositions are unchanged, and physical residuals remain.

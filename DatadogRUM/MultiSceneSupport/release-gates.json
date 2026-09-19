@@ -602,7 +602,7 @@
       "environment": "Physical iPad/iPhone Duo; human gesture for H11\u2013H13; resize-capable for H14",
       "completion_mode": null,
       "status": "ENVIRONMENT BLOCKED",
-      "evidence": "EXP-192 proves native pose/resize geometry. EXP-193 corrects a materialization helper that rewrote the accepted empty route;4b3ce9d57 builds and6/6 focused checks pass. Fresh native preflight confirms[] before first marker, then Mac relocks. Native/backend5-phase resize and10-phase pose acceptance remain pending. Physical H14 remains required."
+      "evidence": "EXP-193 resize slice passes5 phases,16 exact native/backend work events,complete3-view inventory,0 errors and1/1 guarded XCTest prefix at3c5a267b0; cleanup verified. Detail1 owner survives900x675/400x700/900x675.10-phase pose acceptance awaits unlock. Black virtual display and physical H14 obligation remain."
     },
     {
       "id": "H15",

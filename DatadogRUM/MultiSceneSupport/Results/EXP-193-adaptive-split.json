@@ -30,7 +30,7 @@
     "negative_mutations": 27,
     "native_build": "PASS",
     "new_model_and_catalog_tests": "6/6 PASS",
-    "native_backend_acceptance": "PENDING",
+    "native_backend_acceptance": "Resize5/5 phases,16 exact work,3 views and0 backend errors PASS; pose remains pending.",
     "revised_fixture_build": "PASS"
   },
   "attempts": [
@@ -58,6 +58,11 @@
       "run_id": "fd3718a6-033a-47ff-8397-ab183cab181c",
       "status": "PREFLIGHT_INPUT_BLOCKED",
       "result": "acceptance/exp193-fd3718a6-033a-47ff-8397-ab183cab181c.json"
+    },
+    {
+      "run_id": "fe320ebe-295b-416d-b807-006dcc66298f",
+      "status": "PASS_RESIZE_SLICE",
+      "result": "acceptance/exp193-fe320ebe-295b-416d-b807-006dcc66298f.json"
     }
   ],
   "revised_acceptance_defined_before_implementation": {
@@ -68,12 +73,12 @@
     "boundary": "Resize proves callback-driven semantic ownership under measured geometry; black Resizable display prevents visible-layout/input equivalence claims. End/export acceptance before session cleanup backgrounds the app.",
     "required_backend": "Complete per-run view inventory, exact custom Action/Resource IDs and owners, zero errors. Original physical obligation remains."
   },
-  "resume": "Mac relocked after the materialization correction; new unlock request pending. Both interrupted runs and cleanup are preserved. Reuse current_build without repeat tests; fresh5-phase resize and10-phase pose runs remain before Q5 outer gesture qualification.",
+  "resume": "Resize slice accepted and cleaned. Reuse current_build after identity checks for fresh10-phase pose acceptance when unlock arrives; do not repeat accepted resize. Q5 outer gesture qualification remains independently possible through XCTest after native outer-display readback.",
   "current_build": {
-    "source_revision": "4b3ce9d572d4988d23c347b38423003c99e6efb8",
+    "source_revision": "3c5a267b0075f0fed85650430383eb4baf4d594f",
     "signature": "UNSIGNED_LOCAL_SIGNER_UNAVAILABLE",
-    "artifact_root": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp193-route-build-_pd_um5q",
-    "unit_tests": "6/6 PASS",
+    "artifact_root": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp193-ui-resize-ziw76thy",
+    "native_ui_prefix": "1/1 PASS",
     "source_manifest": "source.json",
     "built_app": "DerivedData/Build/Products/Debug-iphonesimulator/RUMNativeMultiSceneProbe.app",
     "reuse_after_identity_verification": true
@@ -90,5 +95,6 @@
     "control_safety": "Each host-to-runner control file includes the fresh run ID and exact command. No timer-driven navigation or reused readiness signal; timeout is failure.",
     "boundary": "Automated simulator native controls only; no human gesture, visible virtual-resize layout, or physical parity claim.",
     "build_policy": "Freeze new UI-test source/build/runner and app identities. Reuse unchanged passing model/oracle controls; execute the new native UI calibration rather than repeating them."
-  }
+  },
+  "accepted_resize": "acceptance/exp193-fe320ebe-295b-416d-b807-006dcc66298f.json"
 }

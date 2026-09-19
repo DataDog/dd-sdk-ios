@@ -1,0 +1,240 @@
+{
+  "experiment": "EXP-193",
+  "gate": "H14",
+  "status": "PASS_RESIZE_SLICE",
+  "run_id": "fe320ebe-295b-416d-b807-006dcc66298f",
+  "source_revision": "3c5a267b0075f0fed85650430383eb4baf4d594f",
+  "signature": "UNSIGNED_LOCAL_SIGNER_UNAVAILABLE",
+  "production_sdk_revision": "04201edc7711361279d8487b385bc8b0ca9c63c7",
+  "device": "F91CCE46-2704-4E8B-9093-A6A0EF250B1A",
+  "environment": {
+    "xcode": "27.1/27A9269",
+    "sdk": "27.1/24A94403",
+    "runtime": "27.1/24A94401",
+    "platform": "iPhone Duo Simulator"
+  },
+  "artifact_root": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp193-ui-resize-ziw76thy",
+  "native_and_backend": {
+    "state": "PASS",
+    "run_id": "fe320ebe-295b-416d-b807-006dcc66298f",
+    "session_id": "dc784f9f-6486-4e4f-ab3c-54221a2e8624",
+    "native_scene_id": "FF52C5CD-8DD6-436E-B5FB-040E54054A8D",
+    "owners": {
+      "0": "7c8d1588-3f1a-4e27-abd4-63fa18f499e9",
+      "1": "2b25ab0b-3888-4919-9fa5-1948322eb5cc"
+    },
+    "native_view_ids": [
+      "2b25ab0b-3888-4919-9fa5-1948322eb5cc",
+      "3640e2d4-bcd2-4e6b-80e7-4cff3f410978",
+      "7c8d1588-3f1a-4e27-abd4-63fa18f499e9"
+    ],
+    "work": [
+      {
+        "type": "action",
+        "phase": "adaptive-materialized-0",
+        "event_id": "66f3f103-9050-4a1f-b3b3-c97e3a8e81ee",
+        "view_id": "7c8d1588-3f1a-4e27-abd4-63fa18f499e9"
+      },
+      {
+        "type": "resource",
+        "phase": "adaptive-materialized-0",
+        "event_id": "20a481b9-dedb-40f4-b73c-fa36b5e590ea",
+        "view_id": "7c8d1588-3f1a-4e27-abd4-63fa18f499e9"
+      },
+      {
+        "type": "action",
+        "phase": "adaptive-marker-1",
+        "event_id": "b7cecf2e-9e99-4a11-a4ff-442f20c30771",
+        "view_id": "7c8d1588-3f1a-4e27-abd4-63fa18f499e9"
+      },
+      {
+        "type": "resource",
+        "phase": "adaptive-marker-1",
+        "event_id": "9902cd38-df02-400a-833e-343980ac5ab7",
+        "view_id": "7c8d1588-3f1a-4e27-abd4-63fa18f499e9"
+      },
+      {
+        "type": "action",
+        "phase": "adaptive-commit-1",
+        "event_id": "05d4e4fe-f6b1-4547-8d9c-82bfe7040acd",
+        "view_id": "2b25ab0b-3888-4919-9fa5-1948322eb5cc"
+      },
+      {
+        "type": "action",
+        "phase": "adaptive-materialized-1",
+        "event_id": "8ce7dd93-9749-4ae9-a92a-9afc40c8e20a",
+        "view_id": "2b25ab0b-3888-4919-9fa5-1948322eb5cc"
+      },
+      {
+        "type": "resource",
+        "phase": "adaptive-commit-1",
+        "event_id": "a6d59d18-ed4d-47f1-b108-10e96dd3ef85",
+        "view_id": "2b25ab0b-3888-4919-9fa5-1948322eb5cc"
+      },
+      {
+        "type": "resource",
+        "phase": "adaptive-materialized-1",
+        "event_id": "a034df00-e99f-42c3-9508-b5d14a7977f3",
+        "view_id": "2b25ab0b-3888-4919-9fa5-1948322eb5cc"
+      },
+      {
+        "type": "action",
+        "phase": "adaptive-marker-2",
+        "event_id": "a9830329-f2df-433b-8d1c-8926ccde3d80",
+        "view_id": "2b25ab0b-3888-4919-9fa5-1948322eb5cc"
+      },
+      {
+        "type": "resource",
+        "phase": "adaptive-marker-2",
+        "event_id": "44ea53ac-0f9b-4548-b157-0cbfa60b9abe",
+        "view_id": "2b25ab0b-3888-4919-9fa5-1948322eb5cc"
+      },
+      {
+        "type": "action",
+        "phase": "adaptive-resize-1",
+        "event_id": "2ac9937b-334a-4f5c-bd54-f7f210a2399f",
+        "view_id": "2b25ab0b-3888-4919-9fa5-1948322eb5cc"
+      },
+      {
+        "type": "resource",
+        "phase": "adaptive-resize-1",
+        "event_id": "14602873-4a36-400d-8091-145b1caf29e2",
+        "view_id": "2b25ab0b-3888-4919-9fa5-1948322eb5cc"
+      },
+      {
+        "type": "action",
+        "phase": "adaptive-resize-2",
+        "event_id": "1c908025-e4f6-4ca9-9025-d26dc2c7140e",
+        "view_id": "2b25ab0b-3888-4919-9fa5-1948322eb5cc"
+      },
+      {
+        "type": "resource",
+        "phase": "adaptive-resize-2",
+        "event_id": "149f6f98-bbb5-4c43-9878-0a8982fd64eb",
+        "view_id": "2b25ab0b-3888-4919-9fa5-1948322eb5cc"
+      },
+      {
+        "type": "action",
+        "phase": "adaptive-resize-3",
+        "event_id": "e7c0c144-fc97-41f6-b0aa-b90e87282400",
+        "view_id": "2b25ab0b-3888-4919-9fa5-1948322eb5cc"
+      },
+      {
+        "type": "resource",
+        "phase": "adaptive-resize-3",
+        "event_id": "51c495a7-5cbe-4a78-8246-f519c5c085c3",
+        "view_id": "2b25ab0b-3888-4919-9fa5-1948322eb5cc"
+      }
+    ],
+    "phases": 5,
+    "mode": "resize",
+    "backend": {
+      "state": "PASS",
+      "view_count": 3,
+      "work_count": 16
+    }
+  },
+  "phase_boundaries": [
+    {
+      "name": "empty-inner",
+      "request_sequence": 15,
+      "requested_at": "2026-09-19T05:42:14.916913+00:00",
+      "geometry_sequence": 15,
+      "end_sequence": 19
+    },
+    {
+      "name": "detail1",
+      "request_sequence": 19,
+      "requested_at": "2026-09-19T05:42:33.090719+00:00",
+      "geometry_sequence": 15,
+      "end_sequence": 37
+    },
+    {
+      "name": "resize-detail1-regular",
+      "request_sequence": 37,
+      "requested_at": "2026-09-19T05:42:57.541515+00:00",
+      "geometry_sequence": 38,
+      "end_sequence": 43
+    },
+    {
+      "name": "resize-detail1-compact",
+      "request_sequence": 43,
+      "requested_at": "2026-09-19T05:43:39.671170+00:00",
+      "geometry_sequence": 44,
+      "end_sequence": 49
+    },
+    {
+      "name": "resize-detail1-return",
+      "request_sequence": 49,
+      "requested_at": "2026-09-19T05:44:40.609054+00:00",
+      "geometry_sequence": 50,
+      "end_sequence": 55
+    }
+  ],
+  "installed_app": {
+    "bundleIdentifier": "com.datadoghq.rum-native-multi-scene-probe",
+    "executable": "RUMNativeMultiSceneProbe",
+    "binaries": {
+      "RUMNativeMultiSceneProbe": "7d466b281d855150c51d56aaec555c0535399ad835cbf95146d54eab84277d44",
+      "RUMNativeMultiSceneProbe.debug.dylib": "baa1de68239ea427eaa2b3adcf8aece8cc5f2dc3516d97e0777a2b549c07a0bc",
+      "__preview.dylib": "f107d09b9d3b79f01789a45ef045bf4039904bf5eaa3c1a8c6a9e27de130563b"
+    }
+  },
+  "installed_runner": {
+    "bundleIdentifier": "com.datadoghq.rum-native-multi-scene-probe.uitests.xctrunner",
+    "executable": "RUMNativeMultiSceneProbeUITests-Runner",
+    "binaries": {
+      "PlugIns/RUMNativeMultiSceneProbeUITests.xctest/RUMNativeMultiSceneProbeUITests": "c94b9efa986c1e734f8407a9e1c7c288cb88ddc74f9dac8df05d91cdb960f785",
+      "RUMNativeMultiSceneProbeUITests-Runner": "880040a021302880471fbe3d30444a87cee7a6158f29ec8a9e735d17c37e1c55"
+    }
+  },
+  "source_identity": "source.json",
+  "test": {
+    "result": "Passed",
+    "passedTests": 1,
+    "failedTests": 0,
+    "totalTestCount": 1
+  },
+  "backend_queries": [
+    {
+      "kind": "views",
+      "count": 3,
+      "complete": true
+    },
+    {
+      "kind": "custom_work",
+      "count": 16,
+      "complete": true
+    },
+    {
+      "kind": "errors",
+      "count": 0,
+      "complete": true
+    }
+  ],
+  "cleanup": {
+    "com.datadoghq.rum-native-multi-scene-probe/app": {
+      "exit": 2,
+      "stderr": "An error was encountered processing the command (domain=NSPOSIXErrorDomain, code=2):\nThe operation couldn\u2019t be completed. No such file or directory\nNo such file or directory\n"
+    },
+    "com.datadoghq.rum-native-multi-scene-probe/data": {
+      "exit": 2,
+      "stderr": "An error was encountered processing the command (domain=NSPOSIXErrorDomain, code=2):\nThe operation couldn\u2019t be completed. No such file or directory\nNo such file or directory\n"
+    },
+    "com.datadoghq.rum-native-multi-scene-probe.uitests.xctrunner/app": {
+      "exit": 2,
+      "stderr": "An error was encountered processing the command (domain=NSPOSIXErrorDomain, code=2):\nThe operation couldn\u2019t be completed. No such file or directory\nNo such file or directory\n"
+    },
+    "com.datadoghq.rum-native-multi-scene-probe.uitests.xctrunner/data": {
+      "exit": 2,
+      "stderr": "An error was encountered processing the command (domain=NSPOSIXErrorDomain, code=2):\nThe operation couldn\u2019t be completed. No such file or directory\nNo such file or directory\n"
+    }
+  },
+  "resize_exit": 0,
+  "collector_corrections": [
+    "Geometry receipt filter excludes assertion rows that copy geometry.",
+    "First backend projection expected flat context keys; invalid projection preserved. Actual nested context.probe fields are flattened without inventing values; unchanged oracle then passes. Empty JSON_DATA with count0 parsed as an empty inventory."
+  ],
+  "evidence_boundary": "Two accepted owners; Detail1 survives measured900x675 regular ->400x700 compact ->900x675 regular, each live guard precedes dispatch. Complete3-view inventory includes startup view;16 exact custom work events and0 errors. Black virtual resize surface is not visible-layout/input parity. Pose/selection sequence and physical H14 remain required.",
+  "gates_closed": []
+}

@@ -144,6 +144,58 @@ final class DuoSimulatorUITests: XCTestCase {
         try checkpoint("adaptive-acceptance-exported", runID: runID)
     }
 
+    func testOuterUIKitCancelInput() throws {
+        try qualifyOuterUIKitInput(outcome: "cancel", endFraction: 0.18)
+    }
+
+    func testOuterUIKitFinishInput() throws {
+        try qualifyOuterUIKitInput(outcome: "finish", endFraction: 0.85)
+    }
+
+    private func qualifyOuterUIKitInput(outcome: String, endFraction: CGFloat) throws {
+        continueAfterFailure = false
+        let app = XCUIApplication()
+        let runID = UUID().uuidString.lowercased()
+        let directory = artifactDirectory.appendingPathComponent(runID)
+        try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+        let identity = try JSONSerialization.data(withJSONObject: [
+            "runID": runID, "scenario": "uikit.split.native-pop-control", "outcome": outcome,
+            "createdAt": String(Date().timeIntervalSince1970)
+        ], options: [.sortedKeys])
+        try identity.write(to: artifactDirectory.appendingPathComponent("active-run.json"), options: .atomic)
+        app.launchArguments = [
+            "--probe-scenario", "uikit.split.native-pop-control",
+            "--probe-run-id", runID, "--probe-run-mode", "clean"
+        ]
+        app.launchEnvironment["DD_PROBE_CAPTURE_JSONL"] = "1"
+        try checkpoint("outer-" + outcome + "-launch", runID: runID)
+        app.launch()
+        defer {
+            try? checkpoint("outer-terminate", runID: runID)
+            app.terminate()
+            try? checkpoint("outer-terminated", runID: runID)
+        }
+        let detail = app.staticTexts.matching(
+            NSPredicate(format: "label CONTAINS %@", "scene-A: uikit-navigation-secondary-2")
+        ).firstMatch
+        XCTAssertTrue(detail.waitForExistence(timeout: 20))
+        XCTAssertTrue(detail.isHittable)
+        let window = app.windows.firstMatch
+        XCTAssertEqual(window.frame.width, 466, accuracy: 1)
+        XCTAssertEqual(window.frame.height, 678, accuracy: 1)
+        try attachState(app, name: "outer-before-" + runID)
+        try checkpoint("outer-ready", runID: runID)
+        try waitForControl("gesture", runID: runID, directory: directory)
+        let start = window.coordinate(withNormalizedOffset: CGVector(dx: 0.01, dy: 0.55))
+        let end = window.coordinate(withNormalizedOffset: CGVector(dx: endFraction, dy: 0.55))
+        try checkpoint("outer-drag start=\(start.screenPoint) end=\(end.screenPoint)", runID: runID)
+        start.press(forDuration: 0.1, thenDragTo: end, withVelocity: .slow, thenHoldForDuration: 1)
+        try checkpoint("outer-drag-returned", runID: runID)
+        try attachState(app, name: "outer-after-" + runID)
+        // Host export/oracle establishes the outcome; returning from a drag is not acceptance.
+        try waitForControl("finish", runID: runID, directory: directory)
+    }
+
     private func tapAdaptiveMarker(_ app: XCUIApplication) throws {
         let candidates = app.buttons.matching(NSPredicate(format: "label == %@", "Emit adaptive marker"))
         let marker = try XCTUnwrap(candidates.allElementsBoundByIndex.first { $0.isHittable })

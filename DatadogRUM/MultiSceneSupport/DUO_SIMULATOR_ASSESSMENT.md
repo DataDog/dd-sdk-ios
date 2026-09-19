@@ -76,3 +76,13 @@ display capture. Ending the headless resize session backgrounds the scene.
 Separate pose/selection acceptance from callback-driven resize ownership; the
 latter requires live native geometry before dispatch and makes no visible-layout
 or input-parity claim. Both original incomplete attempts remain attributable.
+
+EXP-193 now accepts the guarded resize slice: native5 phases and16 exact custom
+Action/Resource events match the complete3-view backend inventory with0 errors.
+The selected Detail occurrence stays unchanged through900×675 regular,
+400×700 compact and900×675 regular. XCTest delivers the native prefix through
+explicit collector handshakes and passes1/1; app/runner/resize cleanup is verified.
+This is strong evidence for SDK ownership across those measured native geometry
+callbacks. The10-phase pose sequence remains pending and physical hinge behavior
+is still uncalibrated. Q5 proceeds with passive actual UIKit coordinator observation
+and finite outer-display gestures; the original inner-pairing failures remain.

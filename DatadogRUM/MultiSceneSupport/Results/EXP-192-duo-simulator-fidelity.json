@@ -119,8 +119,16 @@
   "adaptive_followup": {
     "experiment": "EXP-193",
     "result": "EXP-193-adaptive-split.json",
-    "current_state": "Fixture4b3ce9d57 fixes materialization route overwrite, builds and6 focused checks pass. Empty route[] observed before first marker; Mac relocks. EXP-193 predefines a bounded XCTest button-prefix handshake for resize while pose controls await unlock.",
+    "current_state": "EXP-193 resize slice passes5 phases,16 exact native/backend work,3-view inventory,0 errors and1/1 guarded XCTest prefix. Both task bundles/data and resize process are cleaned; pose10-phase run still awaits unlock.",
     "observed_limit": "Resizable display remains black despite native geometry; ending headless resize backgrounds the scene. Preserve callback ownership and visible-layout/input claims separately.",
     "physical_obligations_waived": false
+  },
+  "q5_outer_protocol_defined_before_implementation": {
+    "admission": "Complete Q5 input qualification and existing H11-H13 simulator routing; no new release gate. Desktop pose controls remain blocked but task-only reboot may expose the outer display; require actual readback.",
+    "first_slice": "UIKit native edge-pop control with automatic pops disabled, on an observed compact outer display. Two fresh runs cover a short slow drag with held endpoint (cancel candidate) and a long edge drag (completion candidate).",
+    "observer": "Passive UINavigationController transition-coordinator observation, only for native gesture scenarios; require isInteractive and observed completion isCancelled. No percent-driven/programmatic transition substitution.",
+    "oracle": "Before input, native compact geometry and active secondary-2 owner. Genuine began/resolved pair after the command; cancel retains exact secondary-2 ID and creates no secondary-1 occurrence, finish reveals one fresh secondary-1 before callback Action/Resource. Exact backend owners and errors remain decisive.",
+    "automation": "Fresh XCTest run ID, per-command host admission, captured window/touch coordinates and native JSONL; release cleanup only after export. Tool return or XCTest pass alone never proves recognized gesture.",
+    "stop_rule": "At most two equivalent input failures. Record concrete limitations and retain physical/human gates. If recognized input works, continue the remaining SwiftUI/presentation simulator slices under their unchanged semantic contracts."
   }
 }
