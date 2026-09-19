@@ -424,7 +424,9 @@ fixture, wire-step typo and backend timestamp projection failures remain preserv
 H05's early source-less fallback is the approved compatibility behavior; H07's
 backend start precision is explicitly limited to milliseconds. No SDK source or
 original review disposition changes. H01 remains unadmitted without independent
-critical-interval display proof. H04's process-lifetime witness also receives no
+critical-interval display proof. Physical XCTest now exports continuous video;
+its fresh H01 integration and corrected H11 visible-edge input remain unqualified.
+H04's process-lifetime witness also receives no
 actual disconnect; preserve the original failure and exact29-event partial join,
 and stop equivalent retries without assigning an SDK defect. H14 closes with
 actual physical resizing and complete22-event ownership equality. Restore the approved temporary Windowed Apps preference when

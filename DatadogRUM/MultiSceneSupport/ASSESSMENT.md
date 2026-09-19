@@ -146,7 +146,9 @@ source-less representative fallback. H07 start precision is limited to the obser
 MCP millisecond projection; exact native timing and raw backend duration remain.
 No simultaneous-visibility conclusion follows from these serial cases.
 
-H01 proves two visible native scenes but remains unadmitted without recording.
+H01 proves two visible native scenes but remains unadmitted. Physical XCTest now
+exports continuous video; a fresh same-key run must bind that recording across the
+original critical interval before H01 can close. H11 touch input is not yet qualified.
 H04's independent process-lifetime witness also receives no disconnect; the latest
 29-event partial inventory matches. Stop equivalent close retries; the view-local
 observer alone does not explain the missing notification and no SDK defect is established. H14 now closes with measured regular–compact–regular physical resizing, unchanged

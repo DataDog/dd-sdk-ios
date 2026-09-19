@@ -1732,6 +1732,114 @@
         "gate_acceptance": false,
         "scope": "Partial inventory; no interactive input boundary qualified."
       }
+    },
+    {
+      "gate": "H11",
+      "status": "BLOCKED_UI_AUTOMATION_AUTH",
+      "run_id": "exp196-h11-finish-20260919t195219z-c00fdc78e3a7",
+      "artifact_root": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp196-physical-xctest-finish-me9ry08i",
+      "capture_source_revision": "13269c7a66d94333e14045afec9fcceb7b6cb74a",
+      "reason": "XCTest runner PID1572 times out while enabling UI Automation before any test method or gesture. User subsequently completed the OS passcode prompt; this is a changed input prerequisite. Fresh run required.",
+      "test_result": {
+        "exit_code": 65,
+        "source_unchanged": true,
+        "protected_unchanged": true,
+        "finished_ms": 1789847618367
+      },
+      "cleanup": {
+        "state": "PASS",
+        "app_absent": true,
+        "runner_absent": true,
+        "process_absent": true,
+        "protected_unchanged": true,
+        "source_unchanged": true
+      },
+      "artifacts": {
+        "frozen.json": {
+          "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp196-physical-xctest-finish-me9ry08i/frozen.json",
+          "sha256": "569affab030892dc8c55cd4d12e65409a61f47f0e72fac1da5f7fa26511b619d"
+        },
+        "physical.xctestrun": {
+          "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp196-physical-xctest-finish-me9ry08i/physical.xctestrun",
+          "sha256": "116184fca2acfe66af9db005857aad9b74cdcdca972af9918cce9ef8030f4c40"
+        },
+        "test.log": {
+          "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp196-physical-xctest-finish-me9ry08i/test.log",
+          "sha256": "cb989ba28735393e8f198959721799a20732d2418eb5f8b0dcd1bb30143ac824"
+        },
+        "test-result.json": {
+          "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp196-physical-xctest-finish-me9ry08i/test-result.json",
+          "sha256": "e5851d6ebc1e62f63a30b3d40877f018fa649f68d08ebe26c2e93054a323899f"
+        },
+        "cleanup.json": {
+          "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp196-physical-xctest-finish-me9ry08i/cleanup.json",
+          "sha256": "1c9d576f40155d5029e22962833cfa2775cd1f0db51615d318a990d784d0ab8f"
+        }
+      }
+    },
+    {
+      "gate": "H11",
+      "status": "INCONCLUSIVE_INPUT",
+      "run_id": "exp196-h11-finish-20260919t195543z-43d712c7b5a1",
+      "artifact_root": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp196-physical-xctest-finish-jld1i49y",
+      "capture_source_revision": "13269c7a66d94333e14045afec9fcceb7b6cb74a",
+      "reason": "XCTest runs successfully but no native interactive begin/completion after the one touch. The AX navigation frame spans1194 points while the visible primary clips the first320; input began behind that sidebar. Copy-command metadata initially overlapped the checkpoint destination; fixed before releasing any input. Native sequence27 unchanged. No gate acceptance.",
+      "test_result": {
+        "exit_code": 0,
+        "source_unchanged": true,
+        "protected_unchanged": true,
+        "finished_ms": 1789847876909
+      },
+      "cleanup": {
+        "state": "PASS",
+        "app_absent": true,
+        "runner_absent": true,
+        "process_absent": true,
+        "protected_unchanged": true,
+        "source_unchanged": true
+      },
+      "video": {
+        "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp196-physical-xctest-finish-jld1i49y/attachments/F1CDB9C9-77CB-43C1-A78F-6055D0E846E6.mp4",
+        "duration_seconds": 129.66,
+        "frames": 3137,
+        "width": 2388,
+        "height": 1668,
+        "creation_time": "2026-09-19T19:55:46Z"
+      },
+      "artifacts": {
+        "frozen.json": {
+          "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp196-physical-xctest-finish-jld1i49y/frozen.json",
+          "sha256": "8dcabc92445a5614fcc0c67f9def233eafca614caec600dd0e4dfea64a21f259"
+        },
+        "native.jsonl": {
+          "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp196-physical-xctest-finish-jld1i49y/native.jsonl",
+          "sha256": "633f705acd3f3fae3ba56f41f0e27facf92c18c585658b7f9dcb44418a110268"
+        },
+        "before-input.json": {
+          "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp196-physical-xctest-finish-jld1i49y/before-input.json",
+          "sha256": "aee20ce032019dd9ab80bb1498a350c316f06c4ee3ea9d745352e9fd2d2bc039"
+        },
+        "backend-raw.json": {
+          "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp196-physical-xctest-finish-jld1i49y/backend-raw.json",
+          "sha256": "4a8a199ae37b5a0ef987a58878a3ab97552f716104687fa827eec4a59acd9a3d"
+        },
+        "installed-identity.json": {
+          "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp196-physical-xctest-finish-jld1i49y/installed-identity.json",
+          "sha256": "6db6af168a317447dfbfdfb1fd76229758b6f8a153ae05f5767e4ed5c4d14728"
+        },
+        "test-result.json": {
+          "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp196-physical-xctest-finish-jld1i49y/test-result.json",
+          "sha256": "c775b0c7e08c138c1f6750c83f67bc667b528a6fc69a376c549ae6d53d30da04"
+        },
+        "cleanup.json": {
+          "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp196-physical-xctest-finish-jld1i49y/cleanup.json",
+          "sha256": "1c9d576f40155d5029e22962833cfa2775cd1f0db51615d318a990d784d0ab8f"
+        },
+        "attachments/manifest.json": {
+          "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp196-physical-xctest-finish-jld1i49y/attachments/manifest.json",
+          "sha256": "5873e8187f4a902ea9d9f07a5c02a14480794bce7869b791009621ca7c8a53ac"
+        }
+      }
     }
   ],
   "gates_closed": [
@@ -2159,5 +2267,19 @@
       "https://developer.apple.com/videos/play/wwdc2025/344/",
       "Xcode27.1 xcodebuild.xctestrun(5) SystemAttachmentLifetime keepAlways"
     ]
+  },
+  "physical_xctest_geometry_correction": {
+    "defined_at": 1789848034.558624,
+    "before_implementation": true,
+    "reason": "Actual AX/screenshot prove the full navigation frame extends behind the320-point visible primary.",
+    "change": "Intersect the navigation frame with the region to the right of the live visible primary. Require the detail label inside this visible region and unchanged frames immediately before input.",
+    "limit": "One fresh physical touch per outcome using this actual visible edge; stop equivalent gesture retries if genuine callbacks remain absent."
+  },
+  "h01_xctest_recording_definition": {
+    "defined_at": 1789848034.558625,
+    "before_implementation": true,
+    "change": "Add a physical same-key capture method to the existing UI test file. Host-supplied fresh run/revision, clean signed install, original same-key scenario and opt-in topology barrier. Record continuously via XCTest while the host tiles actual windows through Device Hub, binds fresh screenshot/challenge/receipt before mutation, and exports original semantic results plus complete backend.",
+    "decisive_test": "Original22 expectations and17 steps,23 topology observations, unchanged native identities/generations and both real visible windows throughout critical interval. Exported actual video must bind run/device/test identity and span screenshot/admission/final boundary; missing video fails admission evidence. No screenshot-only substitution.",
+    "stop_rule": "Preserve incomplete topology or capture as unqualified; do not reopen the accepted contract or repeat equivalent recorder failures."
   }
 }

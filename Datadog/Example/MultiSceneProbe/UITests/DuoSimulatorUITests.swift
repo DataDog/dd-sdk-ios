@@ -315,20 +315,75 @@ final class DuoSimulatorUITests: XCTestCase {
         let frame = navigation.frame
         XCTAssertGreaterThan(frame.width, 200)
         XCTAssertGreaterThan(frame.height, 200)
-        XCTAssertTrue(frame.contains(detail.frame))
-        try checkpoint("physical-ready navigation=" + frame.debugDescription, runID: runID)
+        let primary = app.otherElements["probe.native.scene-A.uikit-navigation-primary"]
+        let primaryFrame = primary.exists && primary.isHittable ? primary.frame : .null
+        var visibleFrame = frame
+        if !primaryFrame.isNull && primaryFrame.minX <= frame.minX && primaryFrame.maxX < frame.maxX {
+            visibleFrame = CGRect(
+                x: primaryFrame.maxX, y: frame.minY,
+                width: frame.maxX - primaryFrame.maxX, height: frame.height
+            )
+        }
+        XCTAssertGreaterThan(visibleFrame.width, 200)
+        XCTAssertTrue(visibleFrame.contains(detail.frame))
+        try checkpoint(
+            "physical-ready navigation=" + frame.debugDescription + " visible=" + visibleFrame.debugDescription,
+            runID: runID
+        )
         // The host verifies the installed code, exact native scene and mapper owner before releasing input.
         try waitForControl("gesture", runID: runID, directory: directory)
         XCTAssertTrue(detail.isHittable)
         XCTAssertEqual(navigation.frame, frame)
-        let start = navigation.coordinate(withNormalizedOffset: CGVector(dx: 0.005, dy: 0.55))
-        let end = navigation.coordinate(withNormalizedOffset: CGVector(dx: endFraction, dy: 0.55))
+        if !primaryFrame.isNull {
+            XCTAssertTrue(primary.isHittable)
+            XCTAssertEqual(primary.frame, primaryFrame)
+        }
+        let startFraction = (visibleFrame.minX - frame.minX + 2) / frame.width
+        let endFractionInNavigation = (visibleFrame.minX - frame.minX + visibleFrame.width * endFraction) / frame.width
+        let start = navigation.coordinate(withNormalizedOffset: CGVector(dx: startFraction, dy: 0.55))
+        let end = navigation.coordinate(withNormalizedOffset: CGVector(dx: endFractionInNavigation, dy: 0.55))
         try checkpoint("physical-drag start=\(start.screenPoint) end=\(end.screenPoint)", runID: runID)
         start.press(forDuration: 0.1, thenDragTo: end, withVelocity: .slow, thenHoldForDuration: 1)
         try checkpoint("physical-drag-returned", runID: runID)
         try attachState(app, name: "physical-after-" + runID)
         // A returned drag is input evidence only. Actual native callbacks and backend owners decide acceptance.
         try waitForControl("finish", runID: runID, directory: directory)
+    }
+
+    func testPhysicalTopologyCapture() throws {
+        continueAfterFailure = false
+        let environment = ProcessInfo.processInfo.environment
+        let runID = try XCTUnwrap(environment["PHYSICAL_PROBE_RUN_ID"])
+        let revision = try XCTUnwrap(environment["PHYSICAL_PROBE_REVISION"])
+        XCTAssertTrue(runID.hasPrefix("exp196-h01-"))
+        XCTAssertEqual(revision.count, 40)
+        XCTAssertTrue(revision.allSatisfy { $0.isHexDigit })
+        let directory = artifactDirectory.appendingPathComponent(runID)
+        try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+        XCTAssertFalse(FileManager.default.fileExists(atPath: directory.appendingPathComponent("finish.json").path))
+        let app = XCUIApplication()
+        app.launchArguments = [
+            "--probe-scenario", "swiftui.coexistence.same-key-manual-two-scenes",
+            "--probe-run-id", runID, "--probe-run-mode", "clean"
+        ]
+        app.launchEnvironment["DD_PROBE_CAPTURE_JSONL"] = "1"
+        app.launchEnvironment["DD_PROBE_PHYSICAL_TOPOLOGY"] = "1"
+        app.launchEnvironment["MULTISCENE_CODE_IDENTITY_RUN_ID"] = runID
+        app.launchEnvironment["MULTISCENE_CODE_IDENTITY_REVISION"] = revision
+        try checkpoint("physical-topology-launch", runID: runID)
+        app.launch()
+        defer {
+            try? checkpoint("physical-topology-terminate", runID: runID)
+            app.terminate()
+            try? checkpoint("physical-topology-terminated", runID: runID)
+        }
+        XCTAssertTrue(app.wait(for: .runningForeground, timeout: 20))
+        try attachState(app, name: "physical-topology-before-" + runID)
+        try checkpoint("physical-topology-recording", runID: runID)
+        // The host admits topology only after fresh native identity and independent display evidence.
+        try waitForControl("finish", runID: runID, directory: directory)
+        try attachState(app, name: "physical-topology-after-" + runID)
+        try checkpoint("physical-topology-exported", runID: runID)
     }
 
     private func tapAdaptiveMarker(_ app: XCUIApplication) throws {
