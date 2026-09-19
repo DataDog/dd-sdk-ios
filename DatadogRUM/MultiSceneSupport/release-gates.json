@@ -718,7 +718,7 @@
       "environment": "Physical multi-window device",
       "completion_mode": null,
       "status": "OPEN",
-      "evidence": "Preparation identifies existing Replay-enabled WebView fixture and live core-context counters. Configuration/hasReplay alone cannot prove recording. Finite execution must establish native record production before and after two-scene navigation/teardown, exact RUM owners and no crash; physical multi-window environment remains required. TOOLING_RUNBOOK.md documents admission and limits."
+      "evidence": "EXP-194 implements four native record-growth checkpoints across actual scene creation/navigation/disconnect with exact mapper/backend owners, complete code identity and cleanup. Python oracle3/3 with29 rejected mutations; frozen iPad27.1 build/tests and acceptance pending. Physical multi-window evidence remains required."
     },
     {
       "id": "D01",

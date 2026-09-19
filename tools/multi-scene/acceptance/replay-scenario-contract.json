@@ -1,0 +1,155 @@
+{
+  "completionConditions": [
+    {
+      "expectedCount": 1,
+      "kind": "assertion",
+      "name": "replay-a-before-peer",
+      "scene": "scene-A"
+    },
+    {
+      "expectedCount": 1,
+      "kind": "assertion",
+      "name": "replay-b-after-open",
+      "scene": "scene-B"
+    },
+    {
+      "expectedCount": 1,
+      "kind": "assertion",
+      "name": "replay-b-after-navigation",
+      "scene": "scene-B"
+    },
+    {
+      "expectedCount": 1,
+      "kind": "assertion",
+      "name": "replay-a-after-teardown",
+      "scene": "scene-A"
+    }
+  ],
+  "defaultRunMode": "clean",
+  "expectedSemanticTimeline": [
+    {
+      "expectedCount": 1,
+      "kind": "assertion",
+      "name": "replay-a-before-peer",
+      "scene": "scene-A"
+    },
+    {
+      "expectedCount": 1,
+      "kind": "assertion",
+      "name": "replay-b-after-open",
+      "scene": "scene-B"
+    },
+    {
+      "expectedCount": 1,
+      "kind": "assertion",
+      "name": "replay-b-after-navigation",
+      "scene": "scene-B"
+    },
+    {
+      "expectedCount": 1,
+      "kind": "assertion",
+      "name": "replay-a-after-teardown",
+      "scene": "scene-A"
+    }
+  ],
+  "identifier": "replay.native-recording.navigation-teardown-serial",
+  "initialWindows": [
+    "scene-A",
+    "scene-B"
+  ],
+  "layout": "stack",
+  "requiredCapabilities": [
+    "multiple-scenes"
+  ],
+  "runtimeOptions": {
+    "automaticallyAbortsDetail": false,
+    "automaticallyAdvancesSplitSelection": true,
+    "automaticallyClosesSceneB": false,
+    "automaticallyNavigates": false,
+    "automaticallyOpensSecondWindow": false,
+    "automaticallyPopsUIKitSplitNavigation": true,
+    "automaticallyReplacesDetail": false,
+    "automaticallyReplacesDetailInstance": false,
+    "automaticallyReturnsSplitToDetail": false,
+    "exercisesSwiftUIButtonStructuredTask": false,
+    "exercisesTraceOnlyURLSessionOwnership": false,
+    "exercisesUIEventContextHandoff": false,
+    "exercisesUIKitScrollOwnership": false,
+    "forcesNavigationRouteIdentity": false,
+    "initialSwiftUIPath": [],
+    "manualSwiftUIViewScreensByScene": {},
+    "startsSplitWithoutSelection": false,
+    "swiftUIRouterWritePolicy": "accept",
+    "swiftUIStress": "none"
+  },
+  "steps": [
+    {
+      "kind": "wait-for-scene-ready",
+      "scene": "scene-A"
+    },
+    {
+      "kind": "wait-for-signal",
+      "scene": "scene-A",
+      "signal": "rum-view:home#1"
+    },
+    {
+      "kind": "capture-replay-records",
+      "scene": "scene-A",
+      "value": "replay-a-before-peer"
+    },
+    {
+      "kind": "open-window",
+      "scene": "scene-A",
+      "value": "scene-B"
+    },
+    {
+      "kind": "wait-for-signal",
+      "scene": "scene-B",
+      "signal": "rum-view:home#1"
+    },
+    {
+      "kind": "capture-replay-records",
+      "scene": "scene-B",
+      "value": "replay-b-after-open"
+    },
+    {
+      "kind": "set-swiftui-path",
+      "scene": "scene-B",
+      "value": "detail-1"
+    },
+    {
+      "kind": "wait-for-signal",
+      "scene": "scene-B",
+      "signal": "rum-view:detail-1#1"
+    },
+    {
+      "kind": "capture-replay-records",
+      "scene": "scene-B",
+      "value": "replay-b-after-navigation"
+    },
+    {
+      "kind": "close-window",
+      "scene": "scene-B"
+    },
+    {
+      "kind": "activate-window",
+      "scene": "scene-A"
+    },
+    {
+      "kind": "set-swiftui-path",
+      "scene": "scene-A",
+      "value": "detail-1"
+    },
+    {
+      "kind": "wait-for-signal",
+      "scene": "scene-A",
+      "signal": "rum-view:detail-1#1"
+    },
+    {
+      "kind": "capture-replay-records",
+      "scene": "scene-A",
+      "value": "replay-a-after-teardown"
+    }
+  ],
+  "trackingMode": "manual"
+}

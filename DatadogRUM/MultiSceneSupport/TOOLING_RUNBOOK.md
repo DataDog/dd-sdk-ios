@@ -1906,3 +1906,12 @@ with no began/resolved callbacks are inconclusive, even when XCTest passes.
 After the two equivalent Q5 failures, stop retries and preserve the unexecuted
 SwiftUI/presentation prerequisite. Export native and runner artifacts before
 removing both apps and verifying app/data absence.
+
+
+EXP-194 uses the existing acceptance runner's finite Replay scenario. Baseline and
+growth observations carry actual core counters, exact representative/scene RUM
+identity and live native scene geometry. Run before opening B, after B creation and
+navigation, and after acknowledged OS disconnect plus A navigation. The native
+UIView stimulus creates recorder input under default privacy; do not inject
+records or use a browser bridge. The oracle requires complete five-view inventory,
+zero errors/crashes and clean removal. Physical F05 remains a separate requirement.

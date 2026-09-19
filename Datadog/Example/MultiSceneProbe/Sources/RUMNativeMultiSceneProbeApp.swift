@@ -368,6 +368,9 @@ enum ProbeRuntime {
         if scenario?.identifier == ProbeLogContract.scenarioID {
             ProbeLogAcceptance.configure()
         }
+        if scenario?.identifier == ProbeReplayContract.scenarioID {
+            ProbeReplayAcceptance.configure()
+        }
         if scenario?.identifier == ProbeWebViewContract.scenarioID {
             ProbeWebViewAcceptance.configure()
         }

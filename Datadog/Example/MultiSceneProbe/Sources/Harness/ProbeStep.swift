@@ -34,6 +34,7 @@ enum ProbeStepKind: String, Codable, CaseIterable {
     case sampleSharedVitals = "sample-shared-vitals"
     case runProcessSignalBatch = "run-process-signal-batch"
     case runFatalPreparation = "run-fatal-preparation"
+    case captureReplayRecords = "capture-replay-records"
     case runWebViewOwnershipBatch = "run-webview-ownership-batch"
     case runLogOwnershipBatch = "run-log-ownership-batch"
     case runTraceOwnershipBatch = "run-trace-ownership-batch"
@@ -376,4 +377,15 @@ internal enum ProbeProcessContract {
         "process-inventory-verified",
         "process-batch-complete",
     ]
+}
+
+
+enum ProbeReplayContract {
+    static let scenarioID = "replay.native-recording.navigation-teardown-serial"
+    static let phases = [
+        "replay-a-before-peer", "replay-b-after-open",
+        "replay-b-after-navigation", "replay-a-after-teardown",
+    ]
+    static let scenes = ["scene-A", "scene-B", "scene-B", "scene-A"]
+    static let screens = ["home", "home", "detail-1", "detail-1"]
 }

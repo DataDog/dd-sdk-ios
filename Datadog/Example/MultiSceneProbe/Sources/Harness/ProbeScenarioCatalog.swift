@@ -26,6 +26,7 @@ enum ProbeScenarioCatalog {
         ProbeVitalsContract.physicalScenarioID,
         ProbeProcessContract.scenarioID,
         ProbeFatalContract.prepare,
+        ProbeReplayContract.scenarioID,
         ProbeWebViewContract.scenarioID,
         ProbeLogContract.scenarioID,
         "swiftui.stack.abort",
@@ -96,6 +97,7 @@ enum ProbeScenarioCatalog {
         fatalPreparation,
         fatalRecovery,
         fatalConsumed,
+        replayCoexistence,
         webViewCapturedContainer,
         logsCapturedEmission,
         tracesCapturedStart,
@@ -900,6 +902,36 @@ enum ProbeScenarioCatalog {
 
     private static func fatalExpectations(_ names: [String]) -> [ProbeExpectation] {
         names.map { ProbeExpectation(.assertion, name: $0, expectedCount: 1) }
+    }
+
+    private static let replayCoexistence = ProbeScenario(
+        identifier: ProbeReplayContract.scenarioID,
+        trackingMode: .manual,
+        layout: .stack,
+        initialWindows: ["scene-A", "scene-B"],
+        requiredCapabilities: [.multipleScenes],
+        steps: [
+            ProbeStep(.waitForSceneReady, scene: "scene-A"),
+            ProbeStep(.waitForSignal, scene: "scene-A", signal: "rum-view:home#1"),
+            ProbeStep(.captureReplayRecords, scene: "scene-A", value: ProbeReplayContract.phases[0]),
+            ProbeStep(.openWindow, scene: "scene-A", value: "scene-B"),
+            ProbeStep(.waitForSignal, scene: "scene-B", signal: "rum-view:home#1"),
+            ProbeStep(.captureReplayRecords, scene: "scene-B", value: ProbeReplayContract.phases[1]),
+            ProbeStep(.setSwiftUIPath, scene: "scene-B", value: "detail-1"),
+            ProbeStep(.waitForSignal, scene: "scene-B", signal: "rum-view:detail-1#1"),
+            ProbeStep(.captureReplayRecords, scene: "scene-B", value: ProbeReplayContract.phases[2]),
+            ProbeStep(.closeWindow, scene: "scene-B"),
+            ProbeStep(.activateWindow, scene: "scene-A"),
+            ProbeStep(.setSwiftUIPath, scene: "scene-A", value: "detail-1"),
+            ProbeStep(.waitForSignal, scene: "scene-A", signal: "rum-view:detail-1#1"),
+            ProbeStep(.captureReplayRecords, scene: "scene-A", value: ProbeReplayContract.phases[3]),
+        ],
+        completionConditions: replayExpectations,
+        expectedSemanticTimeline: replayExpectations
+    )
+
+    private static let replayExpectations = ProbeReplayContract.phases.enumerated().map { index, phase in
+        ProbeExpectation(.assertion, scene: ProbeReplayContract.scenes[index], name: phase, expectedCount: 1)
     }
 
     private static let webViewCapturedContainer = ProbeScenario(

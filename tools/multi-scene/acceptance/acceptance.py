@@ -16,6 +16,8 @@ import uuid
 
 from acceptance_common import Rejected, require, canonical, digest, require_before, require_identity, unique
 import resource_contract
+import replay_contract
+from installed_code import inventory as code_inventory
 import error_contract
 import attribute_contract
 import timing_contract
@@ -291,6 +293,7 @@ class Runner:
         require(not self.out.exists(), "output directory already exists; use a fresh run")
         self.out.mkdir(parents=True)
         (self.out / "bridge").mkdir()
+        self.is_replay = args.scenario == replay_contract.SCENARIO
         self.is_vitals = args.scenario == vitals_contract.SCENARIO
         self.is_process = args.scenario == process_contract.SCENARIO
         self.is_fatal = args.scenario == fatal_contract.SCENARIO
@@ -302,11 +305,11 @@ class Runner:
         self.is_attribute = args.scenario == attribute_contract.SCENARIO
         self.is_error = args.scenario == error_contract.SCENARIO
         self.is_resource = args.scenario == resource_contract.SCENARIO
-        self.contract_file = vitals_contract.CONTRACT if self.is_vitals else process_contract.CONTRACT if self.is_process else fatal_contract.CONTRACT if self.is_fatal else webview_contract.CONTRACT if self.is_webview else log_contract.CONTRACT if self.is_log else trace_contract.CONTRACT if self.is_trace else flag_contract.CONTRACT if self.is_flag else timing_contract.CONTRACT if self.is_timing else attribute_contract.CONTRACT if self.is_attribute else error_contract.CONTRACT if self.is_error else resource_contract.CONTRACT if self.is_resource else "scenario-contract.json"
-        self.run_id = ("exp186-" if self.is_vitals else "exp185-" if self.is_process else "exp184-" if self.is_fatal else "exp183-" if self.is_webview else "exp182-" if self.is_log else "exp181-" if self.is_trace else "exp180-" if self.is_flag else "exp179-" if self.is_timing else "exp178-" if self.is_attribute else "exp177-" if self.is_error else "exp176-" if self.is_resource else "exp161-") + dt.datetime.now(dt.timezone.utc).strftime("%Y%m%dT%H%M%SZ-") + uuid.uuid4().hex[:12]
+        self.contract_file = replay_contract.CONTRACT if self.is_replay else vitals_contract.CONTRACT if self.is_vitals else process_contract.CONTRACT if self.is_process else fatal_contract.CONTRACT if self.is_fatal else webview_contract.CONTRACT if self.is_webview else log_contract.CONTRACT if self.is_log else trace_contract.CONTRACT if self.is_trace else flag_contract.CONTRACT if self.is_flag else timing_contract.CONTRACT if self.is_timing else attribute_contract.CONTRACT if self.is_attribute else error_contract.CONTRACT if self.is_error else resource_contract.CONTRACT if self.is_resource else "scenario-contract.json"
+        self.run_id = ("exp194-" if self.is_replay else "exp186-" if self.is_vitals else "exp185-" if self.is_process else "exp184-" if self.is_fatal else "exp183-" if self.is_webview else "exp182-" if self.is_log else "exp181-" if self.is_trace else "exp180-" if self.is_flag else "exp179-" if self.is_timing else "exp178-" if self.is_attribute else "exp177-" if self.is_error else "exp176-" if self.is_resource else "exp161-") + dt.datetime.now(dt.timezone.utc).strftime("%Y%m%dT%H%M%SZ-") + uuid.uuid4().hex[:12]
         self.environment = dict(os.environ, DEVELOPER_DIR=args.developer_dir)
-        self.summary = {"schema_version": 1, "gate": "T13" if self.is_vitals else "T12" if self.is_process else "T11" if self.is_fatal else "T10" if self.is_webview else "T09" if self.is_log else "T08" if self.is_trace else "T07" if self.is_flag else "T06" if self.is_timing else "T05" if self.is_attribute else "T04" if self.is_error else "T03" if self.is_resource else "A01",
-                        "experiment": "EXP-186" if self.is_vitals else "EXP-185" if self.is_process else "EXP-184" if self.is_fatal else "EXP-183" if self.is_webview else "EXP-182" if self.is_log else "EXP-181" if self.is_trace else "EXP-180" if self.is_flag else "EXP-179" if self.is_timing else "EXP-178" if self.is_attribute else "EXP-177" if self.is_error else "EXP-176" if self.is_resource else "EXP-161",
+        self.summary = {"schema_version": 1, "gate": "F05" if self.is_replay else "T13" if self.is_vitals else "T12" if self.is_process else "T11" if self.is_fatal else "T10" if self.is_webview else "T09" if self.is_log else "T08" if self.is_trace else "T07" if self.is_flag else "T06" if self.is_timing else "T05" if self.is_attribute else "T04" if self.is_error else "T03" if self.is_resource else "A01",
+                        "experiment": "EXP-194" if self.is_replay else "EXP-186" if self.is_vitals else "EXP-185" if self.is_process else "EXP-184" if self.is_fatal else "EXP-183" if self.is_webview else "EXP-182" if self.is_log else "EXP-181" if self.is_trace else "EXP-180" if self.is_flag else "EXP-179" if self.is_timing else "EXP-178" if self.is_attribute else "EXP-177" if self.is_error else "EXP-176" if self.is_resource else "EXP-161",
                         "run_id": self.run_id, "scenario_id": args.scenario, "started_at": now(),
                         "state": "RUNNING", "stages": {}, "artifacts": {}, "failures": []}
         self.protected = protected_state(self.repo)
@@ -366,7 +369,7 @@ class Runner:
 
     def run(self):
         try:
-            require(self.args.scenario in {SCENARIO, resource_contract.SCENARIO, error_contract.SCENARIO, attribute_contract.SCENARIO, timing_contract.SCENARIO, flag_contract.SCENARIO, trace_contract.SCENARIO, log_contract.SCENARIO, webview_contract.SCENARIO, fatal_contract.SCENARIO, process_contract.SCENARIO, vitals_contract.SCENARIO}, "unsupported scenario: no generic acceptance claim")
+            require(self.args.scenario in {SCENARIO, replay_contract.SCENARIO, resource_contract.SCENARIO, error_contract.SCENARIO, attribute_contract.SCENARIO, timing_contract.SCENARIO, flag_contract.SCENARIO, trace_contract.SCENARIO, log_contract.SCENARIO, webview_contract.SCENARIO, fatal_contract.SCENARIO, process_contract.SCENARIO, vitals_contract.SCENARIO}, "unsupported scenario: no generic acceptance claim")
             require(self.args.device, "explicit simulator UUID is required")
             self.summary["revision"] = self.capture(["git", "rev-parse", "HEAD"]).strip()
             self.summary["dirty_state"] = self.capture(["git", "status", "--porcelain=v1"]).splitlines()
@@ -403,7 +406,7 @@ class Runner:
                           "-enableCodeCoverage", "NO", "CODE_SIGNING_ALLOWED=NO"], "build-tests", timeout=1200)
             tests = json.loads(self.capture(["xcrun", "xcresulttool", "get", "test-results", "summary", "--path", str(results)]))
             save(self.out / "test-summary.json", tests)
-            require(tests.get("failedTests") == 0 and tests.get("passedTests", 0) >= (vitals_contract.MINIMUM_TESTS if self.is_vitals else process_contract.MINIMUM_TESTS if self.is_process else fatal_contract.MINIMUM_TESTS if self.is_fatal else 184 if self.is_webview else 181 if self.is_log else 178 if self.is_trace else 175 if self.is_flag else 172 if self.is_timing else 170 if self.is_attribute else 168 if self.is_error else 167 if self.is_resource else 166) and
+            require(tests.get("failedTests") == 0 and tests.get("passedTests", 0) >= (replay_contract.MINIMUM_TESTS if self.is_replay else vitals_contract.MINIMUM_TESTS if self.is_vitals else process_contract.MINIMUM_TESTS if self.is_process else fatal_contract.MINIMUM_TESTS if self.is_fatal else 184 if self.is_webview else 181 if self.is_log else 178 if self.is_trace else 175 if self.is_flag else 172 if self.is_timing else 170 if self.is_attribute else 168 if self.is_error else 167 if self.is_resource else 166) and
                     tests.get("skippedTests", 0) == 0 and tests.get("totalTestCount") == tests["passedTests"],
                     "incomplete/stale test artifact", "INVALID")
             require_identity(source_identity(self.repo), frozen, "source during build")
@@ -412,6 +415,9 @@ class Runner:
             require(info.get("CFBundleIdentifier") == BUNDLE, "wrong app bundle")
             executable = info["CFBundleExecutable"]
             binary_sha = file_hash(app / executable)
+            if self.is_replay:
+                frozen_code = code_inventory(app)
+                save(self.out / "frozen-code.json", frozen_code)
             build = {"executable_sha256": binary_sha, "source_sha256": frozen["sha256"],
                      "uuid": self.capture(["xcrun", "dwarfdump", "--uuid", str(app / executable)]).strip()}
             save(self.out / "build-identity.json", build)
@@ -423,9 +429,17 @@ class Runner:
             absent_text = (self.out / "container-absence.log").read_text()
             require(absence.returncode != 0 and ("No such file or directory" in absent_text or "not installed" in absent_text),
                     "clean-install absence not proven", "INCONCLUSIVE")
+            if self.is_replay:
+                app_absence = self.command(
+                    ["xcrun", "simctl", "get_app_container", self.args.device, BUNDLE, "app"],
+                    "bundle-absence", check=False)
+                require(app_absence.returncode != 0, "old Replay app bundle remains", "INVALID")
             self.command(["xcrun", "simctl", "install", self.args.device, str(app)], "install")
             installed = Path(self.capture(["xcrun", "simctl", "get_app_container", self.args.device, BUNDLE, "app"]).strip())
             require_identity(file_hash(installed / executable), binary_sha, "installed binary")
+            if self.is_replay:
+                require_identity(code_inventory(installed), frozen_code, "every installed Replay binary")
+                save(self.out / "installed-code.json", code_inventory(installed))
             self.stage("clean_install", {"state": "PASS", "data_container_absent": True,
                                         "installed_binary_sha256": binary_sha})
             if self.is_fatal:
@@ -453,7 +467,9 @@ class Runner:
                     save(self.out / "vitals-records.json", records)
                 if self.is_process:
                     save(self.out / "process-records.json", records)
-                local = (vitals_contract.validate_local if self.is_vitals else process_contract.validate_local if self.is_process else webview_contract.validate_local if self.is_webview else log_contract.validate_local if self.is_log else trace_contract.validate_local if self.is_trace else flag_contract.validate_local if self.is_flag else timing_contract.validate_local if self.is_timing else attribute_contract.validate_local if self.is_attribute else error_contract.validate_local if self.is_error else resource_contract.validate_local if self.is_resource else validate_local)(records, self.run_id)
+                if self.is_replay:
+                    save(self.out / "replay-records.json", records)
+                local = (replay_contract.validate_local if self.is_replay else vitals_contract.validate_local if self.is_vitals else process_contract.validate_local if self.is_process else webview_contract.validate_local if self.is_webview else log_contract.validate_local if self.is_log else trace_contract.validate_local if self.is_trace else flag_contract.validate_local if self.is_flag else timing_contract.validate_local if self.is_timing else attribute_contract.validate_local if self.is_attribute else error_contract.validate_local if self.is_error else resource_contract.validate_local if self.is_resource else validate_local)(records, self.run_id)
             (self.out / "probe.jsonl").write_text("".join(json.dumps(r, sort_keys=True) + "\n" for r in records))
             save(self.out / "local-evidence.json", local)
             require(source_identity(self.repo) == frozen, "source changed during scenario")
@@ -463,7 +479,18 @@ class Runner:
                          "terminal-screenshot")
             # The bridge must paginate and retry intake within its deadline. It returns
             # source fields, never a hand-entered semantic verdict.
-            if self.is_vitals:
+            if self.is_replay:
+                sessions = "@session.id:" + local["session_id"]
+                views = self.exchange("replay_views", sessions + " @type:view", len(local["view_ids"]))
+                actions = self.exchange("peer_actions", sessions + " @type:action", 0)
+                resources = self.exchange("resources", sessions + " @type:resource", 0)
+                errors = self.exchange("errors", sessions + " @type:error", 0)
+                crashes = self.exchange("crashes", sessions + " (@error.is_crash:true OR @view.crash.count:>0)", 0)
+                backend = replay_contract.validate_backend(
+                    local, self.run_id, views, actions, resources, errors["count"], crashes["count"])
+                evidence = dict(views=views, actions=actions, resources=resources, errors=errors, crashes=crashes)
+                require_identity(code_inventory(installed), frozen_code, "Replay code after backend")
+            elif self.is_vitals:
                 sessions = "@session.id:" + local["session_id"]
                 actions = self.exchange("peer_actions", sessions + " @type:action", 0)
                 resources = self.exchange("resources", sessions + " @type:resource", 0)
@@ -595,6 +622,18 @@ class Runner:
                     self.launch_process.wait(timeout=10)
                 except subprocess.TimeoutExpired:
                     self.launch_process.terminate()
+            if self.is_replay and self.launch_process is not None:
+                self.command(["xcrun", "simctl", "uninstall", self.args.device, BUNDLE], "replay-uninstall-after", check=False)
+                cleanup = {}
+                for container in ["app", "data"]:
+                    receipt = self.command(
+                        ["xcrun", "simctl", "get_app_container", self.args.device, BUNDLE, container],
+                        "replay-absence-after-" + container, check=False)
+                    cleanup[container] = receipt.returncode
+                save(self.out / "replay-cleanup.json", cleanup)
+                if any(value == 0 for value in cleanup.values()):
+                    self.summary["state"] = "INVALID"
+                    self.summary["failures"].append("Replay bundle/data cleanup incomplete")
             if protected_state(self.repo) != self.protected:
                 self.summary["state"] = "INVALID"
                 self.summary["failures"].append("protected workspace metadata/index changed")
@@ -611,7 +650,7 @@ class Runner:
                 record["source_file_count"] = locals().get("frozen", {}).get("file_count")
                 record["oracle_contract_sha256"] = file_hash(Path(__file__).with_name(self.contract_file))
                 record["evidence"] = {}
-                for name in ["build-identity.json", "test-summary.json", "local-evidence.json", "backend-evidence.json", "fatal-phases.json", "process-records.json", "vitals-records.json", "backend-exchanges.json"]:
+                for name in ["build-identity.json", "test-summary.json", "local-evidence.json", "backend-evidence.json", "fatal-phases.json", "process-records.json", "vitals-records.json", "backend-exchanges.json", "replay-records.json", "frozen-code.json", "installed-code.json", "replay-cleanup.json"]:
                     artifact = self.out / name
                     if artifact.exists():
                         record["evidence"][name] = json.loads(artifact.read_text())

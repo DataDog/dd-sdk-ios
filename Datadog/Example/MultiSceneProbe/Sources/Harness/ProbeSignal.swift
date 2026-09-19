@@ -100,6 +100,19 @@ internal struct ProbeSourceContext: Codable, Equatable {
     }
 }
 
+internal struct ProbeReplaySceneObservation: Codable, Equatable {
+    let logicalSceneID: String
+    let nativeSceneID: String
+    let activationState: String
+    let geometry: ProbeGeometry
+}
+
+internal struct ProbeReplayObservation: Codable, Equatable {
+    let hasReplay: Bool
+    let recordsByViewID: [String: Int64]
+    let scenes: [ProbeReplaySceneObservation]
+}
+
 /// RUM ownership as observed at the mapper boundary.
 internal struct ProbeRUMContext: Codable, Equatable {
     let eventDateMilliseconds: Int64?
@@ -420,6 +433,7 @@ internal struct ProbeSignal: Codable, Equatable {
     let resource: ProbeResourceSignal?
     let error: ProbeErrorSignal?
     let log: ProbeLogWireIdentity?
+    let replay: ProbeReplayObservation?
     let vitals: ProbeVitalsObservation?
     let processSignal: ProbeProcessObservation?
     let fatal: ProbeFatalObservation?
@@ -467,6 +481,7 @@ internal struct ProbeSignal: Codable, Equatable {
         resource: ProbeResourceSignal? = nil,
         error: ProbeErrorSignal? = nil,
         log: ProbeLogWireIdentity? = nil,
+        replay: ProbeReplayObservation? = nil,
         vitals: ProbeVitalsObservation? = nil,
         processSignal: ProbeProcessObservation? = nil,
         fatal: ProbeFatalObservation? = nil,
@@ -514,6 +529,7 @@ internal struct ProbeSignal: Codable, Equatable {
         self.resource = resource
         self.error = error
         self.log = log
+        self.replay = replay
         self.vitals = vitals
         self.processSignal = processSignal
         self.fatal = fatal
@@ -568,6 +584,7 @@ internal struct ProbeSignal: Codable, Equatable {
             resource: resource,
             error: error,
             log: log,
+            replay: replay,
             vitals: vitals,
             processSignal: processSignal,
             fatal: fatal,

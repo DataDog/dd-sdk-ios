@@ -2946,6 +2946,9 @@ struct ProbeWindowRoot: View {
                 return ProbeProcessAcceptance.start()
             case .runFatalPreparation:
                 return ProbeFatalAcceptance.prepare()
+            case .captureReplayRecords:
+                guard let phase = step.value else { return .rejected(reason: "Replay phase is missing") }
+                return ProbeReplayAcceptance.capture(scene: logicalSceneID, phase: phase)
             case .runWebViewOwnershipBatch:
                 return ProbeWebViewAcceptance.start()
             case .runLogOwnershipBatch:

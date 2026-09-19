@@ -350,3 +350,20 @@ a pure oracle result. Independent device/build/install evidence is still require
 Verify test-app cleanup with fresh process inventory; a disconnected device is
 unverified cleanup. A simulator mechanics pass checks this variant's implementation
 but cannot discharge the representative-device requirement or H01–H16.
+
+
+### EXP-194 native Replay coexistence
+
+Use --scenario replay.native-recording.navigation-teardown-serial with the existing
+acceptance runner and a freshly resolved iOS27 multi-window simulator. Four native
+core-context checkpoints require counter growth before expansion, after B creation
+and navigation, and after actual B disconnect plus A navigation. Each checkpoint
+binds to independent RUM mapper ownership and live UIWindow geometry/activation.
+The scenario contains no browser or injected Replay data.
+
+The runner checks every installed Mach-O, exports native observations before the
+oracle, joins the full session backend inventory, and verifies bundle/data cleanup.
+Replay view bridge rows require view_id, session_id, name, run_id and has_replay.
+Empty action/resource/error/crash queries still require complete query provenance.
+A passed simulator slice does not close physical F05 and makes no scene-correct
+Replay claim.

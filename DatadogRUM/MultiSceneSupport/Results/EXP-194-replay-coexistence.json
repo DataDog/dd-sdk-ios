@@ -1,0 +1,76 @@
+{
+  "experiment": "EXP-194",
+  "gate": "F05",
+  "title": "Verify native Replay recording through multi-scene coexistence",
+  "status": "IMPLEMENTED \u2014 VALIDATION PENDING",
+  "owner": "SDK implementer",
+  "definition_parent_revision": "b6a764c8217bbdbab35605254d99e9387a83ec55",
+  "candidate_revision": "04201edc7711361279d8487b385bc8b0ca9c63c7",
+  "admission": "Dependency-ready F05 needs executable native-record proof, not only hasReplay or WebView bridge data. This bounded simulator slice prepares the existing physical coexistence gate without expanding Replay scene-correctness scope.",
+  "environment": "Fresh task-owned iPad Pro13-inch(M4) simulator on installed iOS27.1/24A94401 through Xcode27.1. Physical multi-window device still required for F05 closure.",
+  "scenario": "replay.native-recording.navigation-teardown-serial",
+  "protocol": [
+    "Freeze fixture source, build, every app Mach-O, fresh run and exact manifest; clean install with absent bundle/data before launch.",
+    "Enable existing native Replay at100 percent with default privacy; no WebView, manual Replay records or fabricated OS callbacks. Add only a small native UIView color stimulus to the existing host.",
+    "Before opening B, wait for A Home plus true live Replay context and actual record-count growth. Record live native topology and process representative before and after the stimulus.",
+    "Open actual B through the existing scene driver. Require distinct native sessions; preserve observed activation/geometry without assuming simultaneous visibility. Capture B Home and then B Detail record growth after real navigation.",
+    "Close actual B, requiring the OS disconnect callback and absence from connectedScenes. Reactivate A, navigate to its Detail, and require fresh native record growth plus exact active RUM ownership.",
+    "Join all recorded ownership to independent mapper views and the complete backend session view inventory; reject stale/run-mismatched rows, unexpected errors or crashes, unknown record owners and backend mismatches.",
+    "Export full evidence and a compact durable summary. Verify app/data absence, process completion and source/protected state; delete only the newly created test simulator after use."
+  ],
+  "decisive_tests": [
+    {
+      "id": "R1",
+      "phase": "replay-a-before-peer",
+      "owner": "scene-A home#1",
+      "native_topology": "A attached; B not yet opened",
+      "recording": "count for observed active representative increases above live before-stimulus baseline"
+    },
+    {
+      "id": "R2",
+      "phase": "replay-b-after-open",
+      "owner": "scene-B home#1",
+      "native_topology": "Distinct A/B connected scene sessions; preserve activation states",
+      "recording": "native recorder count increases"
+    },
+    {
+      "id": "R3",
+      "phase": "replay-b-after-navigation",
+      "owner": "scene-B detail-1#1",
+      "native_topology": "Both actual scene sessions remain connected",
+      "recording": "new B Detail recorder count increases"
+    },
+    {
+      "id": "R4",
+      "phase": "replay-a-after-teardown",
+      "owner": "scene-A detail-1#1",
+      "native_topology": "B actual disconnect precedes A Detail; A alone remains connected",
+      "recording": "new A Detail recorder count increases after teardown"
+    }
+  ],
+  "negative_controls": [
+    "hasReplay with zero/stagnant records",
+    "foreign record view ID or session",
+    "reused run/manifest",
+    "aliased native scene IDs",
+    "late baseline or topology after critical boundary",
+    "missing actual disconnect",
+    "recording from WebView or manual injection",
+    "wrong backend owner or incomplete inventory",
+    "unexpected error/crash"
+  ],
+  "stop_rule": "Preserve first failed admission or strict assertion before correction; at most two equivalent environment failures. Do not substitute synthetic disconnect, reset the oracle or infer physical acceptance.",
+  "closure_rule": "Accept this simulator slice only with R1-R4 native recording/ownership, complete backend inventory and cleanup. F05 remains open until the same coexistence contract runs on a physical multi-window device.",
+  "attempts": [],
+  "gates_closed": [],
+  "implementation": {
+    "native": "Existing scene driver plus four asynchronous native-context checkpoints; passive topology, default Replay privacy and ordinary UIView stimulus. No SDK production change.",
+    "oracle": "replay_contract.py checks complete manifest/steps, precritical counters, independent exact mapper owners, actual disconnect and complete backend inventory.",
+    "automation": "Existing acceptance.py scenario branch with every Mach-O identity, persisted raw native records before validation and verified final app/data absence.",
+    "verification": {
+      "python_tests": 3,
+      "negative_controls": 29,
+      "xctest": "205 methods declared; native build/tests pending"
+    }
+  }
+}

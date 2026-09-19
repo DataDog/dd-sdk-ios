@@ -385,3 +385,9 @@ S2 readiness, but two bounded real drags produce no interactive callbacks. This
 is an input qualification limit, not an SDK regression or gesture pass. Both
 runs export complete evidence and verify app/runner cleanup. Production source,
 completed review dispositions and physical residuals remain unchanged.
+
+
+EXP-194 adds fixture-only native Replay coexistence validation under F05.
+The strict oracle rejects enablement without actual record growth, late ownership
+or topology evidence, and missing OS disconnect. Native execution remains pending;
+production source and completed review dispositions are unchanged.

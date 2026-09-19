@@ -7,6 +7,35 @@
 import XCTest
 
 final class ProbeScenarioRunnerTests: XCTestCase {
+    func testReplayObservationSurvivesEnvelopeAndCodingWithoutInventedLegacyValues() throws {
+        let replay = ProbeReplayObservation(
+            hasReplay: true, recordsByViewID: ["view": 3],
+            scenes: [.init(logicalSceneID: "A", nativeSceneID: "native-A",
+                           activationState: "foreground-active",
+                           geometry: .init(x: 0, y: 0, width: 900, height: 675))]
+        )
+        let signal = ProbeSignal(kind: .assertion, evidenceSource: .internalHook, replay: replay)
+            .enveloped(sequence: 5, timestampMilliseconds: 194, runID: "fresh", scenarioID: ProbeReplayContract.scenarioID)
+        let decoded = try JSONDecoder().decode(ProbeSignal.self, from: JSONEncoder().encode(signal))
+        XCTAssertEqual(decoded.replay, replay)
+        XCTAssertEqual(decoded.runID, "fresh")
+        let legacy = ProbeSignal(kind: .assertion)
+        XCTAssertNil(try JSONDecoder().decode(ProbeSignal.self, from: JSONEncoder().encode(legacy)).replay)
+    }
+
+    func testReplayCheckpointAdmissionPrecedesExpansionAndFollowsRealTeardown() throws {
+        let scenario = try XCTUnwrap(ProbeScenarioCatalog.scenario(identifier: ProbeReplayContract.scenarioID))
+        XCTAssertTrue(ProbeScenarioCatalog.usesObservableDriver(scenario))
+        let samples = scenario.steps.enumerated().filter { $0.element.kind == .captureReplayRecords }
+        XCTAssertEqual(samples.map(\.offset), [2, 5, 8, 13])
+        XCTAssertEqual(samples.compactMap { $0.element.value }, ProbeReplayContract.phases)
+        XCTAssertEqual(scenario.steps[3].kind, .openWindow)
+        XCTAssertEqual(scenario.steps[9].kind, .closeWindow)
+        XCTAssertEqual(scenario.steps[11].kind, .setSwiftUIPath)
+        XCTAssertEqual(scenario.steps.filter { $0.kind == .waitForSceneReady }.compactMap(\.scene), ["scene-A"])
+        XCTAssertEqual(scenario.expectedSemanticTimeline.count + scenario.completionConditions.count, 8)
+    }
+
     func testPresentationSubtreeIntervalsRemainBalancedAcrossReplacement() {
         var intervals = ProbePresentationSubtreeIntervals()
 

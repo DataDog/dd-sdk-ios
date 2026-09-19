@@ -218,3 +218,5 @@ Original detailed shards and frozen records remain unchanged. Superseded index
 prose is preserved in the [documentation checkpoint](Experiments/DOCUMENTATION_CHECKPOINT_EXP-178.md).
 New results update only their owning record/result and this row; current support
 conclusions belong in [ASSESSMENT.md](ASSESSMENT.md).
+
+| <a id="exp-194"></a>EXP-194 | F05 | IMPLEMENTED · validation pending | Four native recorder-growth checkpoints across real scene creation, navigation and disconnect; exact RUM/backend identity. Simulator preparation only; physical coexistence remains required. | [record](Experiments/EXP-143-199.md#exp-194--verify-native-replay-recording-through-multi-scene-coexistence) |

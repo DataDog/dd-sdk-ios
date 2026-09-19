@@ -874,6 +874,23 @@ internal final class ProbeScenarioDriver {
             guard signal.result == .pass else { return .failed(signal.reason ?? "fatal preparation failed") }
             return .acknowledged(signal)
 
+        case .captureReplayRecords:
+            guard let scene = step.scene, let phase = step.value else {
+                return .failed("Replay scene/phase is missing")
+            }
+            if case .rejected(let reason) = executeOnExactScene(step, scene: scene) {
+                return .failed(reason)
+            }
+            guard let signal = await wait(
+                for: .encoded(scene: scene, value: "assertion:" + phase),
+                after: commandSequence,
+                timeoutNanoseconds: stepTimeoutNanoseconds
+            ) else {
+                return .inconclusive("Replay checkpoint did not finish")
+            }
+            guard signal.result == .pass else { return .failed(signal.reason ?? "Replay checkpoint failed") }
+            return .acknowledged(signal)
+
         case .runWebViewOwnershipBatch:
             if case .rejected(let reason) = executeOnExactScene(step, scene: "scene-B") {
                 return .failed(reason)
