@@ -1,0 +1,404 @@
+--- a/DatadogInternal/Sources/NetworkInstrumentation/NetworkInstrumentationFeature.swift
++++ b/DatadogInternal/Sources/NetworkInstrumentation/NetworkInstrumentationFeature.swift
+@@ -65,6 +65,47 @@
+     /// The interceptions **must** be accessed using the `queue`.
+     private var interceptions: [URLSessionTask: URLSessionTaskInterception] = [:]
+ 
++    /// Weak identity keys retain terminal state without retaining completed tasks.
++    private let preparationLock = NSLock()
++    private let preparations = NSMapTable<URLSessionTask, TaskPreparation>(
++        keyOptions: [.weakMemory, .objectPointerPersonality],
++        valueOptions: .strongMemory
++    )
++
++    private final class TaskPreparation {
++        enum Phase { case preparing, ready, terminal }
++        var phase: Phase
++        let trackingMode: TrackingMode
++        var continuations: [URLSessionTaskSwizzler.ResumeContinuation] = []
++        var events: [TaskEvent] = []
++        var bufferedBodySize = 0
++        var discardedBody = false
++        var observedTerminal = false
++
++        init(phase: Phase, trackingMode: TrackingMode = .automatic) {
++            self.phase = phase
++            self.trackingMode = trackingMode
++        }
++    }
++
++    private enum ResumeAction { case prepare, forward, deferred }
++
++    private enum TaskEvent {
++        case metrics(URLSessionTaskMetrics)
++        case data(Data)
++        case discardResponseBody
++        case completion(Error?, Date, CFTimeInterval)
++        case state(Int, Date, CFTimeInterval)
++
++        var isTerminal: Bool {
++            switch self {
++            case .completion: return true
++            case let .state(state, _, _): return state == URLSessionTask.State.completed.rawValue
++            case .metrics, .data, .discardResponseBody: return false
++            }
++        }
++    }
++
+     init(
+         networkContextProvider: NetworkContextProvider,
+         messageReceiver: FeatureMessageReceiver,
+@@ -99,8 +140,9 @@
+ 
+         // Intercept when the task is started
+         try swizzler.swizzle(
+-            interceptResume: { [weak self] task in
++            interceptResume: { [weak self] task, continuation in
+                 guard let self = self else {
++                    continuation()
+                     return
+                 }
+ 
+@@ -108,15 +150,23 @@
+                 // NS_UNAVAILABLE and throw NSGenericException at runtime when accessed
+                 // (e.g. AVAssetDownloadTask, AVAggregateAssetDownloadTask).
+                 guard task.isSupportedForInstrumentation else {
++                    continuation()
++                    return
++                }
++
++                if let action = self.existingResumeAction(for: task, continuation: continuation) {
++                    if case .forward = action { continuation() }
+                     return
+                 }
+ 
+                 guard let currentRequest = task.currentRequest else {
++                    self.forwardUnlessPreparing(task, continuation: continuation)
+                     return
+                 }
+ 
+                 // Skip Datadog's own internal requests to prevent infinite recursion
+                 if self.isDatadogInternalRequest(request: currentRequest) {
++                    self.forwardUnlessPreparing(task, continuation: continuation)
+                     return
+                 }
+ 
+@@ -125,25 +175,39 @@
+                 // in multiple internal URLSessionTask wrapper objects sharing the same taskIdentifier.
+                 // Internal wrappers have `_internalDelegateWrapper` set; the user-facing task does not.
+                 if task.dd.isInternalTask {
++                    self.forwardUnlessPreparing(task, continuation: continuation)
+                     return
+                 }
+                 #endif
+ 
+                 // Determine if this swizzler should intercept this task based on the configuration
+                 guard shouldInterceptTask(task, for: configuration) else {
+-                    return
++                    self.forwardUnlessPreparing(task, continuation: continuation)
++                    return
++                }
++
++                switch self.beginPreparation(
++                    for: task,
++                    continuation: continuation,
++                    trackingMode: trackingMode,
++                    isCompleted: task.state == .completed
++                ) {
++                case .forward:
++                    continuation()
++                    return
++                case .deferred:
++                    return
++                case .prepare:
++                    break
+                 }
+ 
+                 // Only perform interception if this swizzler should handle this task
+                 // This allows the swizzler chain to continue for tasks we don't handle
+-                var injectedTraceContexts = [RequestInstrumentationContext]()
+-
+                 let configuredFirstPartyHosts = FirstPartyHosts(firstPartyHosts: configuration?.firstPartyHostsTracing) ?? .init()
+                 let (request, traceContexts) = self.intercept(request: currentRequest, additionalFirstPartyHosts: configuredFirstPartyHosts)
+                 task.dd.override(currentRequest: request)
+-                injectedTraceContexts = traceContexts
+-
+-                self.intercept(task: task, with: injectedTraceContexts, additionalFirstPartyHosts: configuredFirstPartyHosts, trackingMode: trackingMode)
++                self.intercept(task: task, with: traceContexts, additionalFirstPartyHosts: configuredFirstPartyHosts, trackingMode: trackingMode, fallbackRequest: request)
++                self.finishPreparation(for: task)
+             }
+         )
+ 
+@@ -360,6 +424,111 @@
+         }
+     }
+ 
++    private func existingResumeAction(
++        for task: URLSessionTask,
++        continuation: @escaping URLSessionTaskSwizzler.ResumeContinuation
++    ) -> ResumeAction? {
++        preparationLock.lock()
++        defer { preparationLock.unlock() }
++        guard let preparation = preparations.object(forKey: task) else { return nil }
++        return resumeAction(for: preparation, continuation: continuation)
++    }
++
++    /// Called only while holding `preparationLock`; never invokes customer or native code.
++    private func resumeAction(
++        for preparation: TaskPreparation,
++        continuation: @escaping URLSessionTaskSwizzler.ResumeContinuation
++    ) -> ResumeAction {
++        switch preparation.phase {
++        case .preparing:
++            preparation.continuations.append(continuation)
++            return .deferred
++        case .ready, .terminal:
++            return .forward
++        }
++    }
++
++    private func forwardUnlessPreparing(_ task: URLSessionTask, continuation: @escaping URLSessionTaskSwizzler.ResumeContinuation) {
++        if let action = existingResumeAction(for: task, continuation: continuation), case .deferred = action { return }
++        continuation()
++    }
++
++    private func beginPreparation(
++        for task: URLSessionTask,
++        continuation: @escaping URLSessionTaskSwizzler.ResumeContinuation,
++        trackingMode: TrackingMode,
++        isCompleted: Bool
++    ) -> ResumeAction {
++        preparationLock.lock()
++        defer { preparationLock.unlock() }
++        if let preparation = preparations.object(forKey: task) {
++            return resumeAction(for: preparation, continuation: continuation)
++        }
++        let preparation = TaskPreparation(phase: isCompleted ? .terminal : .preparing, trackingMode: trackingMode)
++        preparations.setObject(preparation, forKey: task)
++        guard !isCompleted else { return .forward }
++        preparation.continuations.append(continuation)
++        return .prepare
++    }
++
++    private func finishPreparation(for task: URLSessionTask) {
++        preparationLock.lock()
++        guard let preparation = preparations.object(forKey: task), preparation.phase == .preparing else {
++            preparationLock.unlock()
++            return
++        }
++        // Start is already enqueued. Keep callback enqueue order inside the coordinator lock.
++        let events = preparation.events
++        events.forEach { enqueue($0, for: task) }
++        let continuations = preparation.continuations
++        preparation.events.removeAll()
++        preparation.continuations.removeAll()
++        preparation.phase = preparation.observedTerminal ? .terminal : .ready
++        preparationLock.unlock()
++        withExtendedLifetime(events) {}
++        continuations.forEach { $0() }
++    }
++
++    private func route(_ event: TaskEvent, for task: URLSessionTask) {
++        preparationLock.lock()
++        defer { preparationLock.unlock() }
++        if let preparation = preparations.object(forKey: task), preparation.phase == .preparing {
++            preparation.observedTerminal = preparation.observedTerminal || event.isTerminal
++            if case let .data(data) = event, preparation.trackingMode == .registeredDelegate {
++                guard !preparation.discardedBody else { return }
++                if data.count > Self.maxBufferedBodySize - preparation.bufferedBodySize {
++                    preparation.discardedBody = true
++                    preparation.events.append(.discardResponseBody)
++                    return
++                }
++                preparation.bufferedBodySize += data.count
++            }
++            preparation.events.append(event)
++            return
++        }
++        if event.isTerminal {
++            // State interception precedes the native setter, so task.state alone is insufficient.
++            preparations.setObject(TaskPreparation(phase: .terminal), forKey: task)
++        }
++        enqueue(event, for: task)
++    }
++
++    /// Enqueues only. Handlers and previous implementations execute outside `preparationLock`.
++    private func enqueue(_ event: TaskEvent, for task: URLSessionTask) {
++        switch event {
++        case let .metrics(metrics): enqueue(task, didFinishCollecting: metrics)
++        case let .data(data): enqueue(task, didReceive: data)
++        case let .completion(error, date, mediaTime): enqueue(task, didCompleteWithError: error, endTime: date, endMediaTime: mediaTime)
++        case let .state(state, date, mediaTime): enqueue(task, didChangeToState: state, endTime: date, endMediaTime: mediaTime)
++        case .discardResponseBody:
++            queue.async { [weak self] in
++                guard let self, let interception = self.interceptions[task] else { return }
++                interception.resetData()
++                self.truncatedInterceptions.insert(task)
++            }
++        }
++    }
++
+     /// Checks if a URLRequest is an SDK internal request that should not be tracked
+     ///
+     /// - Parameter request: The URLRequest to check.
+@@ -430,11 +599,11 @@
+     ///   - injectedTraceContexts: The list of trace contexts injected into the task's request, one or none for each handler.
+     ///   - additionalFirstPartyHosts: Extra hosts to consider in the interception, used in conjunction with hosts defined in each handler.
+     ///   - trackingMode: The tracking mode to use for this interception (automatic or registered delegate).
+-    func intercept(task: URLSessionTask, with instrumentationContexts: [RequestInstrumentationContext], additionalFirstPartyHosts: FirstPartyHosts?, trackingMode: TrackingMode) {
++    func intercept(task: URLSessionTask, with instrumentationContexts: [RequestInstrumentationContext], additionalFirstPartyHosts: FirstPartyHosts?, trackingMode: TrackingMode, fallbackRequest: URLRequest? = nil) {
+         // In response to https://github.com/DataDog/dd-sdk-ios/issues/1638 capture the current request object on the
+         // caller thread and freeze its attributes through `ImmutableRequest`. This is to avoid changing the request
+         // object from multiple threads:
+-        guard let currentRequest = task.currentRequest else {
++        guard let currentRequest = task.currentRequest ?? fallbackRequest else {
+             return
+         }
+         let request = ImmutableRequest(request: currentRequest)
+@@ -510,6 +679,10 @@
+     ///   - task: The task whose metrics have been collected.
+     ///   - metrics: The collected metrics.
+     func task(_ task: URLSessionTask, didFinishCollecting metrics: URLSessionTaskMetrics) {
++        route(.metrics(metrics), for: task)
++    }
++
++    private func enqueue(_ task: URLSessionTask, didFinishCollecting metrics: URLSessionTaskMetrics) {
+         queue.async { [weak self] in
+             guard let self = self, let interception = self.interceptions[task] else {
+                 return
+@@ -535,6 +708,10 @@
+     ///   - task: The task that provided data.
+     ///   - data: A data object containing the transferred data.
+     func task(_ task: URLSessionTask, didReceive data: Data) {
++        route(.data(data), for: task)
++    }
++
++    private func enqueue(_ task: URLSessionTask, didReceive data: Data) {
+         queue.async { [weak self] in
+             guard let self = self, let interception = self.interceptions[task] else {
+                 return
+@@ -576,6 +753,10 @@
+         // duration is guaranteed `>= 0` regardless of wall-clock corrections.
+         let endTime = Date()
+         let endMediaTime = mediaTimeProvider.current
++        route(.completion(error, endTime, endMediaTime), for: task)
++    }
++
++    private func enqueue(_ task: URLSessionTask, didCompleteWithError error: Error?, endTime: Date, endMediaTime: CFTimeInterval) {
+ 
+         queue.async { [weak self] in
+             guard let self = self, let interception = self.interceptions[task] else {
+@@ -642,6 +823,10 @@
+         // duration is guaranteed `>= 0` regardless of wall-clock corrections.
+         let endTime = Date()
+         let endMediaTime = mediaTimeProvider.current
++        route(.state(state, endTime, endMediaTime), for: task)
++    }
++
++    private func enqueue(_ task: URLSessionTask, didChangeToState state: Int, endTime: Date, endMediaTime: CFTimeInterval) {
+ 
+         queue.async { [weak self] in
+             guard let self = self, let interception = self.interceptions[task] else {
+--- a/DatadogInternal/Sources/NetworkInstrumentation/URLSession/NetworkInstrumentationSwizzler.swift
++++ b/DatadogInternal/Sources/NetworkInstrumentation/URLSession/NetworkInstrumentationSwizzler.swift
+@@ -36,7 +36,7 @@
+ 
+     /// Swizzles `URLSessionTask.resume()` method.
+     func swizzle(
+-        interceptResume: @escaping (URLSessionTask) -> Void
++        interceptResume: @escaping (URLSessionTask, @escaping URLSessionTaskSwizzler.ResumeContinuation) -> Void
+     ) throws {
+         try urlSessionTaskSwizzler.swizzle(interceptResume: interceptResume)
+     }
+--- a/DatadogInternal/Sources/NetworkInstrumentation/URLSession/URLSessionTaskSwizzler.swift
++++ b/DatadogInternal/Sources/NetworkInstrumentation/URLSession/URLSessionTaskSwizzler.swift
+@@ -7,6 +7,8 @@
+ import Foundation
+ 
+ internal final class URLSessionTaskSwizzler {
++    typealias ResumeContinuation = () -> Void
++
+     private let lock: NSLocking
+     private var taskResume: TaskResume?
+ 
+@@ -16,7 +18,7 @@
+ 
+     /// Swizzles `URLSessionTask.resume()` method.
+     func swizzle(
+-        interceptResume: @escaping (URLSessionTask) -> Void
++        interceptResume: @escaping (URLSessionTask, @escaping ResumeContinuation) -> Void
+     ) throws {
+         lock.lock()
+         defer { lock.unlock() }
+@@ -59,12 +61,11 @@
+             super.init()
+         }
+ 
+-        func swizzle(intercept: @escaping (URLSessionTask) -> Void) {
++        func swizzle(intercept: @escaping (URLSessionTask, @escaping ResumeContinuation) -> Void) {
+             typealias Signature = @convention(block) (URLSessionTask) -> Void
+             swizzle(method) { previousImplementation -> Signature in
+                 return { task in
+-                    intercept(task)
+-                    previousImplementation(task, Self.selector)
++                    intercept(task) { previousImplementation(task, Self.selector) }
+                 }
+             }
+         }
+--- a/DatadogInternal/Tests/NetworkInstrumentation/URLSessionTaskSwizzlerTests.swift
++++ b/DatadogInternal/Tests/NetworkInstrumentation/URLSessionTaskSwizzlerTests.swift
+@@ -16,8 +16,9 @@
+         let swizzler = URLSessionTaskSwizzler()
+ 
+         try swizzler.swizzle(
+-            interceptResume: { _ in
++            interceptResume: { _, continuation in
+                 expectation.fulfill()
++                continuation()
+             }
+         )
+ 
+@@ -37,4 +38,43 @@
+         // Then
+         wait(for: [expectation], timeout: 5)
+     }
++
++    func testSwizzling_taskResume_defersOnlyTargetAndForwardsEachCall() throws {
++        let server = ServerMock(
++            delivery: .success(response: .mockWith(statusCode: 200), data: .mock(ofSize: 10)),
++            skipIsMainThreadCheck: true
++        )
++        let session = server.getInterceptedURLSession()
++        let target = session.dataTask(with: URL.mockAny())
++        let foreign = session.dataTask(with: URL.mockAny())
++        let forwarded = ReadWriteLock(wrappedValue: 0)
++        let previous = URLSessionTaskSwizzler()
++        try previous.swizzle { task, continuation in
++            if task === target || task === foreign { forwarded.mutate { $0 += 1 } }
++            continuation()
++        }
++        defer { previous.unswizzle() }
++        var continuations: [URLSessionTaskSwizzler.ResumeContinuation] = []
++        let swizzler = URLSessionTaskSwizzler()
++        try swizzler.swizzle { task, continuation in
++            guard task === target else { continuation(); return }
++            continuations.append(continuation)
++        }
++        defer {
++            target.cancel()
++            foreign.cancel()
++            session.invalidateAndCancel()
++            swizzler.unswizzle()
++        }
++        foreign.resume()
++        XCTAssertEqual(forwarded.wrappedValue, 1)
++        target.resume()
++        target.resume()
++        XCTAssertEqual(forwarded.wrappedValue, 1)
++        XCTAssertEqual(continuations.count, 2)
++        continuations.forEach { $0() }
++        continuations.removeAll()
++        XCTAssertEqual(forwarded.wrappedValue, 3)
++    }
++
+ }

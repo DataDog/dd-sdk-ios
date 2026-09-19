@@ -1,0 +1,452 @@
+{
+  "experiment": "EXP-197",
+  "extension": "S1:C06",
+  "scope": "Baseline-only; not S3 closure",
+  "status": "BASELINE_EVIDENCE_ONLY",
+  "baseline_revision": "62f64d7b655bdc83f3036c4ad81090a270f6202b",
+  "candidate_revision": null,
+  "runtime": {
+    "developer_directory": "/Applications/Xcode_27.1.app/Contents/Developer",
+    "runtime_identifier": "com.apple.CoreSimulator.SimRuntime.iOS-17-5",
+    "version": "17.5",
+    "build": "21F79",
+    "device_udid": "EEF49588-982B-492E-92AF-57F900ACEACD",
+    "required_initial_state": "Booted"
+  },
+  "historical_limits": [
+    "iOS15 runtime execution remains untested.",
+    "iOS16 runtime execution remains untested.",
+    "Candidate and paired verdict are deferred until an exact approved frozen SHA exists."
+  ],
+  "boot_state": {
+    "before": "Booted",
+    "after_required": "Booted",
+    "shutdown_or_boot_commands": 0,
+    "after": "Booted"
+  },
+  "matrix": {
+    "expected_baseline_cells": 6,
+    "observed_unique_cells": 6,
+    "all_cells_pass": true
+  },
+  "failures": [],
+  "raw_summary": {
+    "path": "/tmp/exp197-c06-MMLmt1/summary.json",
+    "sha256": "e005467106a2637c38581c569497f8d3b8ffbcc2c55df2dd42c451cb349f6c97"
+  },
+  "source": {
+    "revision": "62f64d7b655bdc83f3036c4ad81090a270f6202b",
+    "sdk_source_fingerprint": {
+      "file_count": 391,
+      "sha256": "3e79aecf1c067ab2400030896770c91420a7acbb265c4f8c9c38eab932f86c92"
+    },
+    "variant_fixture_sha256": {
+      "Scene": "37abb3d2289b6a577ac03befa815510c18979bf565e81d8e73787a49776780de",
+      "Legacy": "37abb3d2289b6a577ac03befa815510c18979bf565e81d8e73787a49776780de",
+      "LegacyLifecycle": "c284c2529e5ac0c0041f2ff975e18cbc8c009591cd47478d4e9db56bc78f7e5d"
+    }
+  },
+  "builds": {
+    "Scene": {
+      "app": "/private/tmp/exp197-c06-MMLmt1/attempt/baseline/derived-scene/Build/Products/Release-iphonesimulator/FixtureScene.app",
+      "binary": "/private/tmp/exp197-c06-MMLmt1/attempt/baseline/derived-scene/Build/Products/Release-iphonesimulator/FixtureScene.app/FixtureScene",
+      "binary_sha256": "ddaac6d88df2b7394e4943633522d3a769e8873f8554732abf401660204c95d2",
+      "fixture_sha256": "37abb3d2289b6a577ac03befa815510c18979bf565e81d8e73787a49776780de",
+      "info": {
+        "CFBundleIdentifier": "com.datadoghq.exp197.c06.baseline.scene",
+        "DTSDKName": "iphonesimulator27.1",
+        "MinimumOSVersion": "15.0"
+      },
+      "mach_o_build": "/private/tmp/exp197-c06-MMLmt1/attempt/baseline/derived-scene/Build/Products/Release-iphonesimulator/FixtureScene.app/FixtureScene:\nLoad command 11\n      cmd LC_BUILD_VERSION\n  cmdsize 32\n platform IOSSIMULATOR\n    minos 15.0\n      sdk 27.1\n   ntools 1\n     tool LD\n  version 27037.1"
+    },
+    "Legacy": {
+      "app": "/private/tmp/exp197-c06-MMLmt1/attempt/baseline/derived-legacy/Build/Products/Release-iphonesimulator/FixtureLegacy.app",
+      "binary": "/private/tmp/exp197-c06-MMLmt1/attempt/baseline/derived-legacy/Build/Products/Release-iphonesimulator/FixtureLegacy.app/FixtureLegacy",
+      "binary_sha256": "85632bbad1e001f2a087034bae4fa82c145452b5e329b0145ee49f4a917a49c2",
+      "fixture_sha256": "37abb3d2289b6a577ac03befa815510c18979bf565e81d8e73787a49776780de",
+      "info": {
+        "CFBundleIdentifier": "com.datadoghq.exp197.c06.baseline.legacy",
+        "DTSDKName": "iphonesimulator26.5",
+        "MinimumOSVersion": "15.0"
+      },
+      "mach_o_build": "/private/tmp/exp197-c06-MMLmt1/attempt/baseline/derived-legacy/Build/Products/Release-iphonesimulator/FixtureLegacy.app/FixtureLegacy:\nLoad command 11\n      cmd LC_BUILD_VERSION\n  cmdsize 32\n platform IOSSIMULATOR\n    minos 15.0\n      sdk 26.5\n   ntools 1\n     tool LD\n  version 1267.0"
+    },
+    "LegacyLifecycle": {
+      "app": "/private/tmp/exp197-c06-MMLmt1/attempt/baseline/derived-legacylifecycle/Build/Products/Release-iphonesimulator/FixtureLegacyLifecycle.app",
+      "binary": "/private/tmp/exp197-c06-MMLmt1/attempt/baseline/derived-legacylifecycle/Build/Products/Release-iphonesimulator/FixtureLegacyLifecycle.app/FixtureLegacyLifecycle",
+      "binary_sha256": "0dfe850fa0361b2f9b4712fc2ab5662ce73ea5bd460c110cba58b810501cf9da",
+      "fixture_sha256": "c284c2529e5ac0c0041f2ff975e18cbc8c009591cd47478d4e9db56bc78f7e5d",
+      "info": {
+        "CFBundleIdentifier": "com.datadoghq.exp197.c06.baseline.lifecycle",
+        "DTSDKName": "iphonesimulator26.5",
+        "MinimumOSVersion": "15.0"
+      },
+      "mach_o_build": "/private/tmp/exp197-c06-MMLmt1/attempt/baseline/derived-legacylifecycle/Build/Products/Release-iphonesimulator/FixtureLegacyLifecycle.app/FixtureLegacyLifecycle:\nLoad command 11\n      cmd LC_BUILD_VERSION\n  cmdsize 32\n platform IOSSIMULATOR\n    minos 15.0\n      sdk 26.5\n   ntools 1\n     tool LD\n  version 1267.0"
+    }
+  },
+  "cells": [
+    {
+      "run_id": "exp197-c06-baseline-2c1cf824745b48919271142e5ae643c7",
+      "variant": "Scene",
+      "mode": "automatic",
+      "os": "17.5",
+      "status": "PASS",
+      "artifact": "/private/tmp/exp197-c06-MMLmt1/cells/exp197-c06-baseline-2c1cf824745b48919271142e5ae643c7",
+      "expected_fixture_sha256": "37abb3d2289b6a577ac03befa815510c18979bf565e81d8e73787a49776780de",
+      "launched_at": "2026-09-19T21:42:13.222475+00:00",
+      "pid": 52948,
+      "finished_at": "2026-09-19T21:42:13.972117+00:00",
+      "process_absent": true,
+      "data_absent": true,
+      "boot_state_after_cell": "Booted",
+      "cleaned": true,
+      "result_identity": {
+        "run_id": "exp197-c06-baseline-2c1cf824745b48919271142e5ae643c7",
+        "mode": "automatic",
+        "os": "17.5",
+        "fixture_version": 1,
+        "has_scene_manifest": true,
+        "scene_count": 1,
+        "failures": []
+      },
+      "event_count": 16,
+      "native_lifecycle": []
+    },
+    {
+      "run_id": "exp197-c06-baseline-48f71e9ca85144438a7b0bfe3db99000",
+      "variant": "Scene",
+      "mode": "manual",
+      "os": "17.5",
+      "status": "PASS",
+      "artifact": "/private/tmp/exp197-c06-MMLmt1/cells/exp197-c06-baseline-48f71e9ca85144438a7b0bfe3db99000",
+      "expected_fixture_sha256": "37abb3d2289b6a577ac03befa815510c18979bf565e81d8e73787a49776780de",
+      "launched_at": "2026-09-19T21:42:16.006969+00:00",
+      "pid": 53080,
+      "finished_at": "2026-09-19T21:42:16.532646+00:00",
+      "process_absent": true,
+      "data_absent": true,
+      "boot_state_after_cell": "Booted",
+      "cleaned": true,
+      "result_identity": {
+        "run_id": "exp197-c06-baseline-48f71e9ca85144438a7b0bfe3db99000",
+        "mode": "manual",
+        "os": "17.5",
+        "fixture_version": 1,
+        "has_scene_manifest": true,
+        "scene_count": 1,
+        "failures": []
+      },
+      "event_count": 16,
+      "native_lifecycle": []
+    },
+    {
+      "run_id": "exp197-c06-baseline-f75982116c054ef093208c7d94dac9ca",
+      "variant": "Legacy",
+      "mode": "automatic",
+      "os": "17.5",
+      "status": "PASS",
+      "artifact": "/private/tmp/exp197-c06-MMLmt1/cells/exp197-c06-baseline-f75982116c054ef093208c7d94dac9ca",
+      "expected_fixture_sha256": "37abb3d2289b6a577ac03befa815510c18979bf565e81d8e73787a49776780de",
+      "launched_at": "2026-09-19T21:42:18.574066+00:00",
+      "pid": 53207,
+      "finished_at": "2026-09-19T21:42:19.280644+00:00",
+      "signature": {
+        "view_names": [
+          "Home",
+          "Detail",
+          "Home"
+        ],
+        "view_ids": [
+          "e7d87c07-5f8d-40e4-9540-acadf81509c5",
+          "bdf5f541-d0ee-44b3-ba77-2fc11742b349",
+          "588880a2-3c0d-4162-b2ca-09bc867fdbc7"
+        ],
+        "stopped": [
+          true,
+          true,
+          false
+        ],
+        "owners": [
+          {
+            "kind": "action",
+            "phase": "Home1",
+            "occurrence": 0
+          },
+          {
+            "kind": "resource",
+            "phase": "https://fixture.invalid/Home1",
+            "occurrence": 0
+          },
+          {
+            "kind": "action",
+            "phase": "Detail1",
+            "occurrence": 1
+          },
+          {
+            "kind": "resource",
+            "phase": "https://fixture.invalid/Detail1",
+            "occurrence": 1
+          },
+          {
+            "kind": "action",
+            "phase": "Home2",
+            "occurrence": 2
+          },
+          {
+            "kind": "resource",
+            "phase": "https://fixture.invalid/Home2",
+            "occurrence": 2
+          }
+        ],
+        "notifications": []
+      },
+      "process_absent": true,
+      "data_absent": true,
+      "boot_state_after_cell": "Booted",
+      "cleaned": true,
+      "result_identity": {
+        "run_id": "exp197-c06-baseline-f75982116c054ef093208c7d94dac9ca",
+        "mode": "automatic",
+        "os": "17.5",
+        "fixture_version": 1,
+        "has_scene_manifest": false,
+        "scene_count": 1,
+        "failures": []
+      },
+      "event_count": 16,
+      "native_lifecycle": []
+    },
+    {
+      "run_id": "exp197-c06-baseline-d6cbc2e4b70d415982a96af148f0cfa9",
+      "variant": "Legacy",
+      "mode": "manual",
+      "os": "17.5",
+      "status": "PASS",
+      "artifact": "/private/tmp/exp197-c06-MMLmt1/cells/exp197-c06-baseline-d6cbc2e4b70d415982a96af148f0cfa9",
+      "expected_fixture_sha256": "37abb3d2289b6a577ac03befa815510c18979bf565e81d8e73787a49776780de",
+      "launched_at": "2026-09-19T21:42:21.292910+00:00",
+      "pid": 53332,
+      "finished_at": "2026-09-19T21:42:21.805972+00:00",
+      "signature": {
+        "view_names": [
+          "Home",
+          "Detail",
+          "Home"
+        ],
+        "view_ids": [
+          "b6ed2b2f-8349-408c-ba3a-1995c07a1fff",
+          "6c6faa57-57a1-4101-9ebf-fd27f2df133a",
+          "9f31c1ce-a87a-4139-a793-76600dcc46fa"
+        ],
+        "stopped": [
+          true,
+          true,
+          false
+        ],
+        "owners": [
+          {
+            "kind": "action",
+            "phase": "Home1",
+            "occurrence": 0
+          },
+          {
+            "kind": "resource",
+            "phase": "https://fixture.invalid/Home1",
+            "occurrence": 0
+          },
+          {
+            "kind": "action",
+            "phase": "Detail1",
+            "occurrence": 1
+          },
+          {
+            "kind": "resource",
+            "phase": "https://fixture.invalid/Detail1",
+            "occurrence": 1
+          },
+          {
+            "kind": "action",
+            "phase": "Home2",
+            "occurrence": 2
+          },
+          {
+            "kind": "resource",
+            "phase": "https://fixture.invalid/Home2",
+            "occurrence": 2
+          }
+        ],
+        "notifications": []
+      },
+      "process_absent": true,
+      "data_absent": true,
+      "boot_state_after_cell": "Booted",
+      "cleaned": true,
+      "result_identity": {
+        "run_id": "exp197-c06-baseline-d6cbc2e4b70d415982a96af148f0cfa9",
+        "mode": "manual",
+        "os": "17.5",
+        "fixture_version": 1,
+        "has_scene_manifest": false,
+        "scene_count": 1,
+        "failures": []
+      },
+      "event_count": 16,
+      "native_lifecycle": []
+    },
+    {
+      "run_id": "exp197-c06-baseline-8dd8d5023a694545a93120f1c0eeda20",
+      "variant": "LegacyLifecycle",
+      "mode": "lifecycle-automatic",
+      "os": "17.5",
+      "status": "PASS",
+      "artifact": "/private/tmp/exp197-c06-MMLmt1/cells/exp197-c06-baseline-8dd8d5023a694545a93120f1c0eeda20",
+      "expected_fixture_sha256": "c284c2529e5ac0c0041f2ff975e18cbc8c009591cd47478d4e9db56bc78f7e5d",
+      "launched_at": "2026-09-19T21:42:23.868694+00:00",
+      "pid": 53461,
+      "readiness_accepted_at": "2026-09-19T21:42:24.470459+00:00",
+      "background_command_started_at": "2026-09-19T21:42:24.470481+00:00",
+      "background_observed_at": "2026-09-19T21:42:26.264057+00:00",
+      "foreground_command_started_at": "2026-09-19T21:42:26.264115+00:00",
+      "foreground_command_finished_at": "2026-09-19T21:42:26.493697+00:00",
+      "finished_at": "2026-09-19T21:42:27.135216+00:00",
+      "signature": {
+        "view_names": [
+          "Home",
+          "Home"
+        ],
+        "view_ids": [
+          "adc4ed5d-a5e5-4a57-9266-3a78c24eea5d",
+          "96276aab-b560-4d28-8614-6478a557fee6"
+        ],
+        "stopped": [
+          true,
+          false
+        ],
+        "owners": [
+          {
+            "kind": "action",
+            "phase": "BeforeBackground",
+            "occurrence": 0
+          },
+          {
+            "kind": "resource",
+            "phase": "https://fixture.invalid/BeforeBackground",
+            "occurrence": 0
+          },
+          {
+            "kind": "action",
+            "phase": "AfterForeground",
+            "occurrence": 1
+          },
+          {
+            "kind": "resource",
+            "phase": "https://fixture.invalid/AfterForeground",
+            "occurrence": 1
+          }
+        ],
+        "notifications": [
+          "UIApplicationDidBecomeActiveNotification",
+          "UIApplicationDidEnterBackgroundNotification",
+          "UIApplicationWillEnterForegroundNotification",
+          "UIApplicationDidBecomeActiveNotification"
+        ]
+      },
+      "process_absent": true,
+      "data_absent": true,
+      "boot_state_after_cell": "Booted",
+      "cleaned": true,
+      "result_identity": {
+        "run_id": "exp197-c06-baseline-8dd8d5023a694545a93120f1c0eeda20",
+        "mode": "lifecycle-automatic",
+        "os": "17.5",
+        "fixture_version": 1,
+        "has_scene_manifest": false,
+        "scene_count": 1,
+        "failures": []
+      },
+      "event_count": 15,
+      "native_lifecycle": [
+        "UIApplicationDidBecomeActiveNotification",
+        "UIApplicationDidEnterBackgroundNotification",
+        "UIApplicationWillEnterForegroundNotification",
+        "UIApplicationDidBecomeActiveNotification"
+      ]
+    },
+    {
+      "run_id": "exp197-c06-baseline-ffa71845c772420485212ea9406bb345",
+      "variant": "LegacyLifecycle",
+      "mode": "lifecycle-manual",
+      "os": "17.5",
+      "status": "PASS",
+      "artifact": "/private/tmp/exp197-c06-MMLmt1/cells/exp197-c06-baseline-ffa71845c772420485212ea9406bb345",
+      "expected_fixture_sha256": "c284c2529e5ac0c0041f2ff975e18cbc8c009591cd47478d4e9db56bc78f7e5d",
+      "launched_at": "2026-09-19T21:42:29.076253+00:00",
+      "pid": 53671,
+      "readiness_accepted_at": "2026-09-19T21:42:29.470249+00:00",
+      "background_command_started_at": "2026-09-19T21:42:29.470268+00:00",
+      "background_observed_at": "2026-09-19T21:42:30.597372+00:00",
+      "foreground_command_started_at": "2026-09-19T21:42:30.597435+00:00",
+      "foreground_command_finished_at": "2026-09-19T21:42:30.788040+00:00",
+      "finished_at": "2026-09-19T21:42:31.437072+00:00",
+      "signature": {
+        "view_names": [
+          "Home"
+        ],
+        "view_ids": [
+          "d4c8652f-c5ce-4aac-8a18-64c93e7949af"
+        ],
+        "stopped": [
+          false
+        ],
+        "owners": [
+          {
+            "kind": "action",
+            "phase": "BeforeBackground",
+            "occurrence": 0
+          },
+          {
+            "kind": "resource",
+            "phase": "https://fixture.invalid/BeforeBackground",
+            "occurrence": 0
+          },
+          {
+            "kind": "action",
+            "phase": "AfterForeground",
+            "occurrence": 0
+          },
+          {
+            "kind": "resource",
+            "phase": "https://fixture.invalid/AfterForeground",
+            "occurrence": 0
+          }
+        ],
+        "notifications": [
+          "UIApplicationDidBecomeActiveNotification",
+          "UIApplicationDidEnterBackgroundNotification",
+          "UIApplicationWillEnterForegroundNotification",
+          "UIApplicationDidBecomeActiveNotification"
+        ]
+      },
+      "process_absent": true,
+      "data_absent": true,
+      "boot_state_after_cell": "Booted",
+      "cleaned": true,
+      "result_identity": {
+        "run_id": "exp197-c06-baseline-ffa71845c772420485212ea9406bb345",
+        "mode": "lifecycle-manual",
+        "os": "17.5",
+        "fixture_version": 1,
+        "has_scene_manifest": false,
+        "scene_count": 1,
+        "failures": []
+      },
+      "event_count": 13,
+      "native_lifecycle": [
+        "UIApplicationDidBecomeActiveNotification",
+        "UIApplicationDidEnterBackgroundNotification",
+        "UIApplicationWillEnterForegroundNotification",
+        "UIApplicationDidBecomeActiveNotification"
+      ]
+    }
+  ]
+}

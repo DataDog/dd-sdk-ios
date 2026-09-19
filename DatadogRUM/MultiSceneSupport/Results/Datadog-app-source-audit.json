@@ -62,8 +62,32 @@
     "application_lookup": "No match including inactive applications in current organization",
     "user_confirmation": "2026-09-19: another organization; answer expected in two days",
     "traffic_claim": null,
-    "controlled_run_authorization": "Use probes RUM application and a distinct service; user confirms these are only sessions we run, not live customer sessions."
+    "controlled_run_authorization": "Use probes RUM application and a distinct service; user confirms these are only sessions we run, not live customer sessions.",
+    "probe_application_id": "43cbc59b-0626-438b-a3d9-c6417a4545a3",
+    "probe_access_verification": "2026-09-19 direct Datadog MCP retrieved sessions for ios-sdk-native-multi-scene-probe with the same application ID as accepted probe receipts."
   },
-  "publication": "No app source changed; no build uploaded/published; preparation only authorized",
-  "secret_policy": "Do not inspect flavored GoogleService-Info, observability Configuration, UI-test credential environment or Gitlab secrets."
+  "publication": "Original app checkout unchanged. Four isolated configuration/documentation paths prepared; no app built, run, uploaded or published.",
+  "secret_policy": "Never inspect protected xcconfig contents or original credential constants. Source review is limited to added configuration logic and non-secret build templates; Xcode may consume the established optional local include without values being read, copied or logged by the workflow.",
+  "validation_preparation": {
+    "worktree": "/Users/valentin.pertuisot/work/datadog-ios-rum-validation",
+    "branch": "valpertui/rum-app-release-validation",
+    "base_revision": "6e33f1c18a52d04b0793e6954f456bdbc1affe2f",
+    "status": "LOCAL SOURCE PREPARED; NOT BUILT OR RUN",
+    "launch_argument": "--rum-release-validation",
+    "service": "ios-app-rum-release-validation",
+    "application_id_source": "Resolved RUM_APPLICATION_ID build setting matched against actual accepted probe receipts; never substitute the original app ID.",
+    "client_token_source": "Matching probe DATADOG_CLIENT_TOKEN build setting; never inherit the original app organization token.",
+    "configuration_boundary": "Normal mode only; explicit US1 validation config; missing/unresolved values skip bootstrap; production defaults preserved.",
+    "remaining": [
+      "Compile the prepared local app changes",
+      "Prepare the established ephemeral Xcode configuration wrapper; validate resolved identity without logging token or protected contents",
+      "Freeze baseline/candidate SDK and app/source/build identities",
+      "Run controlled exact backend comparison; no live customer claim"
+    ],
+    "not_authorized": [
+      "TestFlight upload",
+      "Publication"
+    ],
+    "configuration_provisioning": "Use an ephemeral Xcode configuration wrapper following the existing profiling runner optional-include pattern. Xcode resolves the existing probe settings; never extract/copy the protected file or emit resolved tokens."
+  }
 }

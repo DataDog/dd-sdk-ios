@@ -22,6 +22,15 @@ automatic SwiftUI naming/control limitations are outside new S2 scope. Exact API
 review F01 remains attributable and pending for S3; assessment assumptions are not
 approval. [Stage views](PLAN.md) own readiness.
 
+EXP-197 establishes a separate ordinary-app defect on current develop62f64d7b6:
+repeated URLSession resume invokes request mutation more than once. The failing
+test executed on the newly available iPadOS17.5 simulator. The repair remains a
+review-only proposal requiring informed approval after an automatic approval
+rejection; no production extraction is applied or qualified. The separate S1:C06 baseline matrix passes6/6 ordinary/legacy cases and three
+deployment15 builds. C06 still requires its candidate compatibility matrix. Controlled Datadog app runs are authorized
+in the probes RUM application under service `ios-app-rum-release-validation`;
+configuration preparation and authenticated query access do not establish a run.
+
 ## Immediate compatibility priority
 
 The short-term criterion is no RUM degradation when an existing app rebuilds with

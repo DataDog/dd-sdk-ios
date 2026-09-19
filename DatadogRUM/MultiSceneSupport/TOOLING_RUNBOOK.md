@@ -2136,3 +2136,40 @@ is required for app telemetry. Current organization cannot discover its app ID;
 the user now authorizes controlled runs in the probes RUM application with a distinct
 service. Freeze that isolated configuration, preserve production defaults, and
 claim only the sessions actually run, with no live-customer baseline.
+
+
+### EXP-197 current-develop qualification
+
+The iOS17.5 test host executes with Xcode27.1 while retaining deployment15. The
+upstream workspace needs its existing OpenTelemetry framework and the command-only
+`DD_SDK_COMPILED_FOR_TESTING` define for test helpers. Preserve failed preparation
+attempts separately from the actual repeated-mutation red test. Reuse dependencies
+only after comparing their pinned manifests and inventory; do not copy protected
+configuration. A sandbox signature check can fail because Git needs a temporary
+file: an authorized `git verify-commit` establishes the signature, not the failed
+sandbox status.
+
+A proposed patch must be generated against the actual frozen base and pass
+`git apply --check` in that exact checkout. An intermediate candidate is not the
+base. A read-only applicable patch does not authorize applying a production change
+that automatic approval review rejected; retain that decision and obtain explicit
+informed approval after review. Independent source-neutral compatibility work can
+continue.
+
+For controlled Datadog app telemetry, use the accepted probe application and a
+separate service. Follow the existing profiling runner's ephemeral Xcode include
+pattern to let Xcode resolve probe settings. Never read, copy, hash or log the
+protected local configuration or print resolved tokens. Inspect only safe bundle
+identity and configuration-validity booleans. Normal app launch is required because
+XCTest skips observability bootstrap. Preserve the original app organization
+lookup result and make no live-customer traffic claim.
+
+The bounded EXP-197 S1:C06 adapter now qualifies six current-develop baseline
+cells on17.5. Keep source projection limited to the unused internal benchmark
+branch; apply it once before copying ordinary/legacy variants. `prepare` owns its
+new directory, and XcodeGen runs in that generated directory. Record real
+readiness/background/foreground assertion timestamps and invoke the inherited
+boundary checker. Cleanup must reject command errors, prove the expected absent
+container condition, and preserve the original simulator boot state. The owning
+result keeps the adapter hash and durable summary; do not relabel baseline passes
+as candidate or S3 acceptance.

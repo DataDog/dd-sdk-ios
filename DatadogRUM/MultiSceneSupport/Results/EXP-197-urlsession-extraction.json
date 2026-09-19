@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "experiment": "EXP-197",
-  "status": "DEFINED; NOT EXECUTED",
+  "status": "BASELINE RED; REPAIR DRAFT PENDING APPROVAL REVIEW",
   "defined_at": "2026-09-19T20:54:08Z",
   "gates": [
     "S1:E01",
@@ -11,7 +11,28 @@
   "hypothesis": "Current develop mutates URLSession requests repeatedly when resume is intercepted more than once, although asynchronous lifecycle starts are deduplicated. A task-identity claim before handler mutation can make interception exactly once without new scene dependencies.",
   "baseline": {
     "revision": "62f64d7b655bdc83f3036c4ad81090a270f6202b",
-    "remote_verification": "Authenticated GitHub ref lookup; SSH fetch agent failed; recheck before worktree creation"
+    "remote_verification": "Authenticated GitHub ref lookup; SSH fetch agent failed; recheck before worktree creation",
+    "remote_reverified": "2026-09-19 authenticated GitHub ref lookup confirmed62f64d7b655bdc83f3036c4ad81090a270f6202b before worktree creation",
+    "source_inventory": {
+      "production_revision": "62f64d7b655bdc83f3036c4ad81090a270f6202b",
+      "files": {
+        "DatadogInternal/Sources/NetworkInstrumentation/NetworkInstrumentationFeature.swift": "3e70fa502baa6faa8e4c8bc7c06fd5cc6039998efbc363f5f82bf1b9e80f1ce1",
+        "DatadogInternal/Tests/NetworkInstrumentation/NetworkInstrumentationFeatureTests.swift": "0c7e612fbc4865e0a7f87b43d7972f8627de033332d2193faef90f14dcd589e6"
+      }
+    },
+    "red_summary": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp197-urlsession-b_i306ve/red-summary.json",
+    "failure": "API violation - multiple calls made to XCTestExpectation fulfill for Mutate request once",
+    "runtime_proof": {
+      "os": "17.5",
+      "build": "21F79",
+      "device": "EEF49588-982B-492E-92AF-57F900ACEACD",
+      "executed": 1,
+      "failed": 1,
+      "passed": 0,
+      "C06_closed": false
+    },
+    "red_test_source": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp197-urlsession-b_i306ve/red-test-source.swift",
+    "build_inventory": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp197-urlsession-b_i306ve/red-build-inventory.json"
   },
   "production_boundary": [
     "DatadogInternal/Sources/NetworkInstrumentation/NetworkInstrumentationFeature.swift"
@@ -43,6 +64,170 @@
     "Failed environment is not a correctness verdict; retain build/test diagnostics and exact IDs",
     "New related correctness regression must be bounded and linked to E01; unrelated work remains separate"
   ],
-  "attempts": [],
-  "result": null
+  "attempts": [
+    {
+      "started_at": "2026-09-19T21:00:41.300616+00:00",
+      "command": [
+        "xcodebuild",
+        "test",
+        "-quiet",
+        "-workspace",
+        "Datadog.xcworkspace",
+        "-scheme",
+        "DatadogInternal",
+        "-configuration",
+        "Debug",
+        "-destination",
+        "platform=iOS Simulator,id=EEF49588-982B-492E-92AF-57F900ACEACD",
+        "-derivedDataPath",
+        "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp197-urlsession-b_i306ve/DerivedData",
+        "-resultBundlePath",
+        "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp197-urlsession-b_i306ve/red-repeated-resume.xcresult",
+        "-only-testing:DatadogInternalTests/NetworkInstrumentationFeatureTests/testAutomaticMode_whenTaskIsResumedTwice_itMutatesAndStartsItOnlyOnce",
+        "-parallel-testing-enabled",
+        "NO",
+        "-enableCodeCoverage",
+        "NO",
+        "CODE_SIGNING_ALLOWED=NO",
+        "DD_API_KEY=",
+        "DD_TEST_RUNNER="
+      ],
+      "result_bundle": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp197-urlsession-b_i306ve/red-repeated-resume.xcresult",
+      "log": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp197-urlsession-b_i306ve/red-repeated-resume.log",
+      "exit_code": 65,
+      "finished_at": "2026-09-19T21:00:57.603879+00:00",
+      "classification": "PREPARATION FAILED: existing OpenTelemetry build dependency missing; no test executed"
+    },
+    {
+      "started_at": "2026-09-19T21:02:39.924417+00:00",
+      "command": [
+        "xcodebuild",
+        "test",
+        "-quiet",
+        "-workspace",
+        "Datadog.xcworkspace",
+        "-scheme",
+        "DatadogInternal",
+        "-configuration",
+        "Debug",
+        "-destination",
+        "platform=iOS Simulator,id=EEF49588-982B-492E-92AF-57F900ACEACD",
+        "-derivedDataPath",
+        "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp197-urlsession-b_i306ve/DerivedData",
+        "-resultBundlePath",
+        "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp197-urlsession-b_i306ve/red-repeated-resume-dependencies.xcresult",
+        "-only-testing:DatadogInternalTests/NetworkInstrumentationFeatureTests/testAutomaticMode_whenTaskIsResumedTwice_itMutatesAndStartsItOnlyOnce",
+        "-parallel-testing-enabled",
+        "NO",
+        "-enableCodeCoverage",
+        "NO",
+        "CODE_SIGNING_ALLOWED=NO",
+        "DD_API_KEY=",
+        "DD_TEST_RUNNER="
+      ],
+      "log": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp197-urlsession-b_i306ve/red-repeated-resume-dependencies.log",
+      "exit_code": 65,
+      "finished_at": "2026-09-19T21:03:13.790479+00:00",
+      "classification": "PREPARATION FAILED: upstream WebView test helpers require DD_SDK_COMPILED_FOR_TESTING; no test executed"
+    },
+    {
+      "started_at": "2026-09-19T21:05:37.035225+00:00",
+      "command": [
+        "xcodebuild",
+        "test",
+        "-quiet",
+        "-workspace",
+        "Datadog.xcworkspace",
+        "-scheme",
+        "DatadogInternal",
+        "-configuration",
+        "Debug",
+        "-destination",
+        "platform=iOS Simulator,id=EEF49588-982B-492E-92AF-57F900ACEACD",
+        "-derivedDataPath",
+        "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp197-urlsession-b_i306ve/DerivedData",
+        "-resultBundlePath",
+        "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp197-urlsession-b_i306ve/red-testing-define.xcresult",
+        "-only-testing:DatadogInternalTests/NetworkInstrumentationFeatureTests/testAutomaticMode_whenTaskIsResumedTwice_itMutatesAndStartsItOnlyOnce",
+        "-parallel-testing-enabled",
+        "NO",
+        "-enableCodeCoverage",
+        "NO",
+        "CODE_SIGNING_ALLOWED=NO",
+        "DD_API_KEY=",
+        "DD_TEST_RUNNER=",
+        "OTHER_SWIFT_FLAGS=$(inherited) -D DD_SDK_COMPILED_FOR_TESTING"
+      ],
+      "log": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp197-urlsession-b_i306ve/red-testing-define.log",
+      "preparation": "Baseline WebView test helper declarations require DD_SDK_COMPILED_FOR_TESTING. Add only a command-line testing define; source remains unchanged, no tests excluded.",
+      "exit_code": 65,
+      "finished_at": "2026-09-19T21:06:14.695871+00:00",
+      "classification": "EXPECTED REGRESSION: one test executed on iOS17.5; repeated request-handler mutation overfulfills exact-once expectation"
+    }
+  ],
+  "result": null,
+  "worktree": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/urlsession-exactly-once",
+  "branch": "valpertui/urlsession-exactly-once",
+  "artifact_root": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp197-urlsession-b_i306ve",
+  "preimplementation_review": {
+    "status": "COMPLETE; EXPANDED THREE-FILE DESIGN ADMITTED WITH DISCLOSED FORWARDING LIMIT",
+    "findings": [
+      "Claim-only duplicate resume returns into native previousImplementation before first preparation completes, risking missing headers/start/completion under concurrent or reentrant entry.",
+      "Removing the claim at completion plus task.state is insufficient: completed interception may run before native state setter updates task.state."
+    ],
+    "implementation_admission": "No production edit yet. A minimal safe source-bound expansion must be frozen before implementation."
+  },
+  "scope_amendment_before_implementation": {
+    "reason": "Independent source review proves one-file claim-only repair cannot order native resume or retain cancellation callbacks during preparation. Expand only the existing internal resume forwarding seam, not scene/routing behavior.",
+    "production_files": [
+      "DatadogInternal/Sources/NetworkInstrumentation/NetworkInstrumentationFeature.swift",
+      "DatadogInternal/Sources/NetworkInstrumentation/URLSession/NetworkInstrumentationSwizzler.swift",
+      "DatadogInternal/Sources/NetworkInstrumentation/URLSession/URLSessionTaskSwizzler.swift"
+    ],
+    "test_files": [
+      "DatadogInternal/Tests/NetworkInstrumentation/NetworkInstrumentationFeatureTests.swift",
+      "DatadogInternal/Tests/NetworkInstrumentation/URLSessionTaskSwizzlerTests.swift"
+    ],
+    "design": "Weak identity-keyed task preparation phases; queue each original resume continuation while preparing; freeze request and enqueue start before buffered callback work; publish ready then forward outside lock; terminal weak tombstone prevents reentry after completion. No callbacks/native forwarding under lock.",
+    "observable_limit": "A duplicate arriving during preparation returns before its original implementation executes; concurrent duplicates are forwarded on the preparation owner thread. Preserve each original call, test layered swizzles, and require independent compatibility review; do not claim arbitrary third-party same-stack/thread transparency.",
+    "extra_controls": [
+      "Reentrant and blocked concurrent preparation cannot start native request before headers",
+      "Cancellation/completion during mutation preserves start-before-complete and cleanup",
+      "Completion callback resumes nonterminal-looking task without reinstrumentation",
+      "Registered/dual/rebind forwarding and feature/task release",
+      "Task configuration headers remain present; nil post-override request uses prepared fallback",
+      "Preparation-time automatic bodies above512KB stay complete while registered bodies retain upstream discard policy",
+      "Terminal observation before first claim blocks reinstrumentation despite stale native state",
+      "Buffered callback order and custom Error/Data destruction cannot deadlock a reentrant resume"
+    ]
+  },
+  "production_mutation_approval": {
+    "status": "INFORMED USER APPROVAL PENDING",
+    "action": "Apply the three-file production URLSession continuation/preparation ordering repair",
+    "reason": "This changes production URLSession swizzling and resume ordering, creating substantial crash, request-start, and telemetry risks; the trusted user messages do not authorize this specific code modification.",
+    "required_next": "Ask informed approval once; apply only after explicit answer. No production source has changed.",
+    "production_files_changed": false,
+    "review_artifact": "Results/EXP-197-proposed-repair.patch",
+    "review_artifact_sha256": "5ef37bb787bfbb06630f37ca094eb82cd1cfe2b6fc3e570befb8e7942d8d1664",
+    "feature_test_artifact": "Results/EXP-197-feature-regressions.patch",
+    "review": "Independent reviewer confirmed suitability for implementation/testing after retaining drained event batch through unlock; root applied only that review-artifact adjustment and verified applicability."
+  },
+  "c06_baseline_extension": {
+    "definition": "/private/tmp/exp197-c06-MMLmt1/EXP-197-S1-C06-baseline-definition.json",
+    "definition_sha256": "8d4c10faef9689044a729837b4a12477e663dcac880bc57a2b2b414971211bf4",
+    "adapter": "/tmp/exp197-c06-MMLmt1/run_baseline.py",
+    "adapter_sha256": "c1d4c336de38a13f005af91080de6129388ce4c811c7e68993741bad8da316a8",
+    "status": "BASELINE 6/6 PASS; CANDIDATE PENDING",
+    "scope": "Six baseline-only S1:C06 cells on17.5; no candidate or S3 closure.",
+    "artifacts": "/tmp/exp197-c06-MMLmt1",
+    "durable_summary": "Results/EXP-197-ios17-baseline.json",
+    "all_builds_deployment15": true,
+    "all_cells_cleaned": true,
+    "original_boot_state_preserved": true
+  },
+  "checkpoint_signing": {
+    "status": "UNSIGNED LOCAL FALLBACK AUTHORIZED",
+    "reason": "Signed attempt failed: communication with agent failed; no commit created by that attempt.",
+    "push": "Not authorized; outgoing history must be signed before any future separately authorized push."
+  }
 }

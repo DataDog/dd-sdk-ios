@@ -24,7 +24,7 @@ Keep unrelated upstream changes, including platform-specific behavior.
 
 | Gate | Smallest useful invariant | Source boundary / decisive discriminator |
 | --- | --- | --- |
-| E01 | URLSession request mutation and lifecycle happen once per task | First candidate. Synchronized prepared-task claim before handler mutation, prepared-request fallback and bounded cleanup in NetworkInstrumentationFeature. Repeated and suspend/resume calls, automatic/registered/dual instrumentation, completion cleanup and post-completion resume controls. Count handler mutation separately from lifecycle-start deduplication. |
+| E01 | URLSession request mutation and lifecycle happen once per task | First candidate. Synchronized task preparation plus internal resume continuation forwarding, callback buffering and weak terminal state. Repeated and suspend/resume calls, automatic/registered/dual instrumentation, completion cleanup and post-completion resume controls. Count handler mutation separately from lifecycle-start deduplication. |
 | E02 | Retained old view cannot absorb a later occurrence | Retain H1 with pending Resource, navigate Detail → H2, assert H1 start/stop attributes unchanged, H1 Resource and H2 action isolation, one active restored occurrence. New Home UUIDs alone already work upstream. |
 | E03 | Completion affects only its Resource owner | Reimplement by existing resourceKey; late success/error/metrics cannot increment another view's action/error_tap. Preserve ordinary same-view processing and clock-driven expiration. |
 | E04 | Long-lived native view remains a valid delayed WebView container | A lone active lookup does not reproduce the upstream bug: insert B after long-lived A, then deliver a delayed A browser event. Verify inactive retention window, session release, capacity and newest-first lookup. |
@@ -35,9 +35,14 @@ Historical mixed commits (`bf37a2e99`, `ea787a35a`, `a6cd5df60`, `ff37d7154`,
 UI-event/TaskLocal handoff, command targets, scene buckets, semantic authority,
 cross-window Operations and scene-specific crash/lifecycle routing stay in S3.
 
-The initial dependency audit identifies E01 as one production-file slice. Its
-source-less mutation-count regression is already present in the reference test
-file. Predicted red/green behavior is not execution evidence. E02/E03's existing
+The initial audit proposed a one-file E01 slice. EXP-197 now proves the generic
+mutation-count regression red on current develop and real17.5 execution. Independent
+review rejects a simple claim flag: concurrent/reentrant native resume can outrun
+preparation and early completion can be lost. The bounded three-file internal
+continuation/preparation repair is a draft pending informed approval after automatic
+approval review rejected production ordering changes. Duplicate resumes during
+preparation would be forwarded later on the preparation thread; call counts,
+headers, lifecycle and compatibility require decisive controls before acceptance. E02/E03's existing
 scene-targeted tests require separate generic reproducers. E04's corrected delayed
 container hypothesis and E05's limited writer boundary remain qualification work.
 The audit also found upstream macOS click/errorClick handling absent from the

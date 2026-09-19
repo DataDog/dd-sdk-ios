@@ -5,8 +5,8 @@
   "counts": {
     "CLOSED": 48,
     "ENVIRONMENT BLOCKED": 4,
-    "OPEN": 26,
-    "REVIEW BLOCKED": 1
+    "OPEN": 25,
+    "REVIEW BLOCKED": 2
   },
   "closed": [
     "C01",
@@ -326,7 +326,7 @@
     },
     {
       "id": "E01",
-      "status": "OPEN",
+      "status": "REVIEW BLOCKED",
       "owner": "SDK implementer + independent reviewer",
       "dependencies": []
     },
@@ -523,7 +523,7 @@
           },
           {
             "id": "S1:E01",
-            "status": "OPEN",
+            "status": "REVIEW BLOCKED",
             "owner": "SDK implementer + independent reviewer",
             "dependencies": [
               "S1:F07"

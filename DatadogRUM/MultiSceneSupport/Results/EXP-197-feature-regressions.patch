@@ -1,0 +1,234 @@
+[1;33mdiff --git a/DatadogInternal/Tests/NetworkInstrumentation/NetworkInstrumentationFeatureTests.swift b/DatadogInternal/Tests/NetworkInstrumentation/NetworkInstrumentationFeatureTests.swift[m
+[1;33mindex 464c79f6f..c5a630e3b 100644[m
+[1;33m--- a/DatadogInternal/Tests/NetworkInstrumentation/NetworkInstrumentationFeatureTests.swift[m
+[1;33m+++ b/DatadogInternal/Tests/NetworkInstrumentation/NetworkInstrumentationFeatureTests.swift[m
+[1;35m@@ -689,6 +689,229 @@[m [mclass NetworkInstrumentationFeatureTests: XCTestCase {[m
+         XCTAssertNotNil(interception.endDate, "Should capture approximate end date")[m
+     }[m
+ [m
+[1;32m+[m[1;32m    func testAutomaticMode_whenTaskIsResumedTwice_itMutatesAndStartsItOnlyOnce() throws {[m
+[1;32m+[m[1;32m        let (server, notifyInterceptionDidStart, notifyInterceptionDidComplete) = setupInterceptionTest()[m
+[1;32m+[m
+[1;32m+[m[1;32m        handler.firstPartyHosts = .init(hostsWithTracingHeaderTypes: ["example.com": [.datadog]])[m
+[1;32m+[m[1;32m        try URLSessionInstrumentation.enableOrThrow(with: nil, in: core)[m
+[1;32m+[m[1;32m        let session = server.getInterceptedURLSession(delegate: nil)[m
+[1;32m+[m[1;32m        let requestMutation = expectation(description: "Mutate request once")[m
+[1;32m+[m[1;32m        requestMutation.assertForOverFulfill = true[m
+[1;32m+[m[1;32m        let url = try XCTUnwrap(URL(string: "https://example.com/repeated-resume-\(UUID().uuidString)"))[m
+[1;32m+[m[1;32m        handler.onRequestMutation = { request, _, _ in[m
+[1;32m+[m[1;32m            if request.url == url {[m
+[1;32m+[m[1;32m                requestMutation.fulfill()[m
+[1;32m+[m[1;32m            }[m
+[1;32m+[m[1;32m        }[m
+[1;32m+[m
+[1;32m+[m[1;32m        let task = session.dataTask(with: url)[m
+[1;32m+[m[1;32m        task.resume()[m
+[1;32m+[m[1;32m        task.resume()[m
+[1;32m+[m
+[1;32m+[m[1;32m        wait([m
+[1;32m+[m[1;32m            for: [requestMutation, notifyInterceptionDidStart, notifyInterceptionDidComplete],[m
+[1;32m+[m[1;32m            timeout: 5,[m
+[1;32m+[m[1;32m            enforceOrder: false[m
+[1;32m+[m[1;32m        )[m
+[1;32m+[m[1;32m        _ = server.waitAndReturnRequests(count: 1)[m
+[1;32m+[m
+[1;32m+[m[1;32m        XCTAssertEqual(handler.interceptions.count, 1)[m
+[1;32m+[m[1;32m    }[m
+[1;32m+[m
+[1;32m+[m[1;32m    func testAutomaticMode_whenResumeIsConcurrent_itPreparesBeforeForwardingEitherCall() throws {[m
+[1;32m+[m[1;32m        let (server, started, completed) = setupInterceptionTest()[m
+[1;32m+[m[1;32m        let url = try XCTUnwrap(URL(string: "https://example.com/concurrent-resume"))[m
+[1;32m+[m[1;32m        let forwarded = ReadWriteLock(wrappedValue: 0)[m
+[1;32m+[m[1;32m        let mutations = ReadWriteLock(wrappedValue: 0)[m
+[1;32m+[m[1;32m        let previous = URLSessionTaskSwizzler()[m
+[1;32m+[m[1;32m        try previous.swizzle { task, resume in[m
+[1;32m+[m[1;32m            if task.currentRequest?.url == url {[m
+[1;32m+[m[1;32m                forwarded.mutate { $0 += 1 }[m
+[1;32m+[m[1;32m            }[m
+[1;32m+[m[1;32m            resume()[m
+[1;32m+[m[1;32m        }[m
+[1;32m+[m[1;32m        defer { previous.unswizzle() }[m
+[1;32m+[m[1;32m        handler.firstPartyHosts = .init(hostsWithTracingHeaderTypes: ["example.com": [.datadog]])[m
+[1;32m+[m[1;32m        try URLSessionInstrumentation.enableOrThrow(with: nil, in: core)[m
+[1;32m+[m[1;32m        let session = server.getInterceptedURLSession()[m
+[1;32m+[m[1;32m        defer { session.finishTasksAndInvalidate() }[m
+[1;32m+[m[1;32m        let task = session.dataTask(with: url)[m
+[1;32m+[m[1;32m        let mutationEntered = expectation(description: "First mutation entered")[m
+[1;32m+[m[1;32m        let firstResumeReturned = expectation(description: "First resume returned")[m
+[1;32m+[m[1;32m        let releaseMutation = DispatchSemaphore(value: 0)[m
+[1;32m+[m[1;32m        defer { releaseMutation.signal() }[m
+[1;32m+[m[1;32m        handler.onRequestMutation = { [weak handler = handler] request, _, _ in[m
+[1;32m+[m[1;32m            guard request.url == url else { return }[m
+[1;32m+[m[1;32m            var first = false[m
+[1;32m+[m[1;32m            mutations.mutate { $0 += 1; first = $0 == 1 }[m
+[1;32m+[m[1;32m            guard first else { return }[m
+[1;32m+[m[1;32m            var modified = request[m
+[1;32m+[m[1;32m            modified.setValue("prepared-once", forHTTPHeaderField: "X-Preparation")[m
+[1;32m+[m[1;32m            handler?.modifiedRequest = modified[m
+[1;32m+[m[1;32m            mutationEntered.fulfill()[m
+[1;32m+[m[1;32m            XCTAssertEqual(releaseMutation.wait(timeout: .now() + 5), .success)[m
+[1;32m+[m[1;32m        }[m
+[1;32m+[m
+[1;32m+[m[1;32m        DispatchQueue.global().async {[m
+[1;32m+[m[1;32m            task.resume()[m
+[1;32m+[m[1;32m            firstResumeReturned.fulfill()[m
+[1;32m+[m[1;32m        }[m
+[1;32m+[m[1;32m        wait(for: [mutationEntered], timeout: 5)[m
+[1;32m+[m[1;32m        task.resume()[m
+[1;32m+[m[1;32m        XCTAssertEqual(mutations.wrappedValue, 1)[m
+[1;32m+[m[1;32m        XCTAssertEqual(forwarded.wrappedValue, 0, "Neither native resume may outrun header preparation")[m
+[1;32m+[m[1;32m        XCTAssertEqual(task.state, .suspended)[m
+[1;32m+[m[1;32m        releaseMutation.signal()[m
+[1;32m+[m[1;32m        wait(for: [firstResumeReturned, started, completed], timeout: 5)[m
+[1;32m+[m[1;32m        core.get(feature: NetworkInstrumentationFeature.self)?.flush()[m
+[1;32m+[m
+[1;32m+[m[1;32m        let requests = server.waitAndReturnRequests(count: 1)[m
+[1;32m+[m[1;32m        XCTAssertEqual(requests.first?.value(forHTTPHeaderField: "X-Preparation"), "prepared-once")[m
+[1;32m+[m[1;32m        XCTAssertEqual(forwarded.wrappedValue, 2, "Both previous implementations must eventually run")[m
+[1;32m+[m[1;32m        XCTAssertEqual(mutations.wrappedValue, 1)[m
+[1;32m+[m[1;32m        XCTAssertEqual(handler.interceptions.count, 1)[m
+[1;32m+[m[1;32m        XCTAssertNotNil(handler.interceptions.first?.value.completion)[m
+[1;32m+[m[1;32m    }[m
+[1;32m+[m
+[1;32m+[m[1;32m    func testAutomaticMode_whenMutationResumesTheTask_itDoesNotReenterPreparation() throws {[m
+[1;32m+[m[1;32m        let (server, started, completed) = setupInterceptionTest()[m
+[1;32m+[m[1;32m        let url = try XCTUnwrap(URL(string: "https://example.com/reentrant-resume"))[m
+[1;32m+[m[1;32m        let forwarded = ReadWriteLock(wrappedValue: 0)[m
+[1;32m+[m[1;32m        let mutations = ReadWriteLock(wrappedValue: 0)[m
+[1;32m+[m[1;32m        let previous = URLSessionTaskSwizzler()[m
+[1;32m+[m[1;32m        try previous.swizzle { task, resume in[m
+[1;32m+[m[1;32m            if task.currentRequest?.url == url {[m
+[1;32m+[m[1;32m                forwarded.mutate { $0 += 1 }[m
+[1;32m+[m[1;32m            }[m
+[1;32m+[m[1;32m            resume()[m
+[1;32m+[m[1;32m        }[m
+[1;32m+[m[1;32m        defer { previous.unswizzle() }[m
+[1;32m+[m[1;32m        handler.firstPartyHosts = .init(hostsWithTracingHeaderTypes: ["example.com": [.datadog]])[m
+[1;32m+[m[1;32m        try URLSessionInstrumentation.enableOrThrow(with: nil, in: core)[m
+[1;32m+[m[1;32m        let session = server.getInterceptedURLSession()[m
+[1;32m+[m[1;32m        defer { session.finishTasksAndInvalidate() }[m
+[1;32m+[m[1;32m        let task = session.dataTask(with: url)[m
+[1;32m+[m[1;32m        handler.onRequestMutation = { [weak handler = handler] request, _, _ in[m
+[1;32m+[m[1;32m            guard request.url == url else { return }[m
+[1;32m+[m[1;32m            var first = false[m
+[1;32m+[m[1;32m            mutations.mutate { $0 += 1; first = $0 == 1 }[m
+[1;32m+[m[1;32m            guard first else { return }[m
+[1;32m+[m[1;32m            var modified = request[m
+[1;32m+[m[1;32m            modified.setValue("prepared-before-reentry", forHTTPHeaderField: "X-Preparation")[m
+[1;32m+[m[1;32m            handler?.modifiedRequest = modified[m
+[1;32m+[m[1;32m            task.resume()[m
+[1;32m+[m[1;32m            XCTAssertEqual(forwarded.wrappedValue, 0)[m
+[1;32m+[m[1;32m            XCTAssertEqual(task.state, .suspended)[m
+[1;32m+[m[1;32m        }[m
+[1;32m+[m
+[1;32m+[m[1;32m        task.resume()[m
+[1;32m+[m[1;32m        wait(for: [started, completed], timeout: 5, enforceOrder: true)[m
+[1;32m+[m[1;32m        core.get(feature: NetworkInstrumentationFeature.self)?.flush()[m
+[1;32m+[m[1;32m        let requests = server.waitAndReturnRequests(count: 1)[m
+[1;32m+[m[1;32m        XCTAssertEqual(requests.first?.value(forHTTPHeaderField: "X-Preparation"), "prepared-before-reentry")[m
+[1;32m+[m[1;32m        XCTAssertEqual(mutations.wrappedValue, 1)[m
+[1;32m+[m[1;32m        XCTAssertEqual(forwarded.wrappedValue, 2)[m
+[1;32m+[m[1;32m        XCTAssertEqual(handler.interceptions.count, 1)[m
+[1;32m+[m[1;32m        handler.onRequestMutation = nil[m
+[1;32m+[m[1;32m    }[m
+[1;32m+[m
+[1;32m+[m[1;32m    func testAutomaticMode_whenCancelledDuringMutation_itKeepsEarlyCompletion() throws {[m
+[1;32m+[m[1;32m        let (server, started, completed) = setupInterceptionTest()[m
+[1;32m+[m[1;32m        let feature = try XCTUnwrap(core.get(feature: NetworkInstrumentationFeature.self))[m
+[1;32m+[m[1;32m        let url = try XCTUnwrap(URL(string: "https://example.com/cancel-during-preparation"))[m
+[1;32m+[m[1;32m        handler.firstPartyHosts = .init(hostsWithTracingHeaderTypes: ["example.com": [.datadog]])[m
+[1;32m+[m[1;32m        try URLSessionInstrumentation.enableOrThrow(with: nil, in: core)[m
+[1;32m+[m[1;32m        let session = server.getInterceptedURLSession()[m
+[1;32m+[m[1;32m        defer { session.finishTasksAndInvalidate() }[m
+[1;32m+[m[1;32m        let appCompleted = expectation(description: "Native cancellation completes before preparation")[m
+[1;32m+[m[1;32m        let task = session.dataTask(with: url) { _, _, error in[m
+[1;32m+[m[1;32m            XCTAssertEqual((error as NSError?)?.code, NSURLErrorCancelled)[m
+[1;32m+[m[1;32m            appCompleted.fulfill()[m
+[1;32m+[m[1;32m        }[m
+[1;32m+[m[1;32m        let mutationEntered = expectation(description: "Mutation entered")[m
+[1;32m+[m[1;32m        let resumeReturned = expectation(description: "Resume returned")[m
+[1;32m+[m[1;32m        let releaseMutation = DispatchSemaphore(value: 0)[m
+[1;32m+[m[1;32m        defer { releaseMutation.signal() }[m
+[1;32m+[m[1;32m        handler.onRequestMutation = { request, _, _ in[m
+[1;32m+[m[1;32m            guard request.url == url else { return }[m
+[1;32m+[m[1;32m            mutationEntered.fulfill()[m
+[1;32m+[m[1;32m            XCTAssertEqual(releaseMutation.wait(timeout: .now() + 5), .success)[m
+[1;32m+[m[1;32m        }[m
+[1;32m+[m
+[1;32m+[m[1;32m        DispatchQueue.global().async {[m
+[1;32m+[m[1;32m            task.resume()[m
+[1;32m+[m[1;32m            resumeReturned.fulfill()[m
+[1;32m+[m[1;32m        }[m
+[1;32m+[m[1;32m        wait(for: [mutationEntered], timeout: 5)[m
+[1;32m+[m[1;32m        task.cancel()[m
+[1;32m+[m[1;32m        wait(for: [appCompleted], timeout: 5)[m
+[1;32m+[m[1;32m        feature.flush()[m
+[1;32m+[m[1;32m        XCTAssertTrue(handler.interceptions.isEmpty, "Start cannot escape incomplete request preparation")[m
+[1;32m+[m[1;32m        releaseMutation.signal()[m
+[1;32m+[m[1;32m        wait(for: [started, completed, resumeReturned], timeout: 5)[m
+[1;32m+[m[1;32m        feature.flush()[m
+[1;32m+[m[1;32m        server.waitFor(requestsCompletion: 0, timeout: 0.05)[m
+[1;32m+[m
+[1;32m+[m[1;32m        let interception = try XCTUnwrap(handler.interceptions.first?.value)[m
+[1;32m+[m[1;32m        XCTAssertEqual(handler.interceptions.count, 1)[m
+[1;32m+[m[1;32m        XCTAssertEqual((interception.completion?.error as NSError?)?.code, NSURLErrorCancelled)[m
+[1;32m+[m[1;32m        XCTAssertNotNil(interception.startDate)[m
+[1;32m+[m[1;32m        XCTAssertNotNil(interception.endDate)[m
+[1;32m+[m[1;32m    }[m
+[1;32m+[m
+[1;32m+[m[1;32m    func testAutomaticMode_whenCompletedTaskResumes_itDoesNotInstrumentAgain() throws {[m
+[1;32m+[m[1;32m        let (server, started, completed) = setupInterceptionTest()[m
+[1;32m+[m[1;32m        let feature = try XCTUnwrap(core.get(feature: NetworkInstrumentationFeature.self))[m
+[1;32m+[m[1;32m        let url = try XCTUnwrap(URL(string: "https://example.com/completed-resume"))[m
+[1;32m+[m[1;32m        let mutations = ReadWriteLock(wrappedValue: 0)[m
+[1;32m+[m[1;32m        handler.firstPartyHosts = .init(hostsWithTracingHeaderTypes: ["example.com": [.datadog]])[m
+[1;32m+[m[1;32m        handler.onRequestMutation = { request, _, _ in[m
+[1;32m+[m[1;32m            if request.url == url { mutations.mutate { $0 += 1 } }[m
+[1;32m+[m[1;32m        }[m
+[1;32m+[m[1;32m        try URLSessionInstrumentation.enableOrThrow(with: nil, in: core)[m
+[1;32m+[m[1;32m        let session = server.getInterceptedURLSession()[m
+[1;32m+[m[1;32m        defer { session.finishTasksAndInvalidate() }[m
+[1;32m+[m[1;32m        let task = session.dataTask(with: url)[m
+[1;32m+[m[1;32m        task.resume()[m
+[1;32m+[m[1;32m        wait(for: [started, completed], timeout: 5, enforceOrder: true)[m
+[1;32m+[m[1;32m        feature.flush()[m
+[1;32m+[m[1;32m        _ = server.waitAndReturnRequests(count: 1)[m
+[1;32m+[m
+[1;32m+[m[1;32m        task.resume()[m
+[1;32m+[m[1;32m        feature.flush()[m
+[1;32m+[m[1;32m        XCTAssertEqual(mutations.wrappedValue, 1)[m
+[1;32m+[m[1;32m        XCTAssertEqual(handler.interceptions.count, 1)[m
+[1;32m+[m[1;32m        XCTAssertNotNil(handler.interceptions.first?.value.completion)[m
+[1;32m+[m[1;32m    }[m
+[1;32m+[m
+[1;32m+[m[1;32m    func testRegisteredDelegate_whenResumedTwice_itMutatesOnceAndPreservesMetrics() throws {[m
+[1;32m+[m[1;32m        let (server, started, completed) = setupInterceptionTest()[m
+[1;32m+[m[1;32m        let url = try XCTUnwrap(URL(string: "https://example.com/registered-repeated-resume"))[m
+[1;32m+[m[1;32m        let mutations = ReadWriteLock(wrappedValue: 0)[m
+[1;32m+[m[1;32m        handler.firstPartyHosts = .init(hostsWithTracingHeaderTypes: ["example.com": [.datadog]])[m
+[1;32m+[m[1;32m        handler.onRequestMutation = { request, _, _ in[m
+[1;32m+[m[1;32m            if request.url == url { mutations.mutate { $0 += 1 } }[m
+[1;32m+[m[1;32m        }[m
+[1;32m+[m[1;32m        try URLSessionInstrumentation.enableOrThrow(with: nil, in: core)[m
+[1;32m+[m[1;32m        try URLSessionInstrumentation.enableOrThrow(with: .init(delegateClass: SessionDataDelegateMock.self), in: core)[m
+[1;32m+[m[1;32m        let session = server.getInterceptedURLSession(delegate: SessionDataDelegateMock())[m
+[1;32m+[m[1;32m        defer { session.finishTasksAndInvalidate() }[m
+[1;32m+[m[1;32m        let task = session.dataTask(with: url)[m
+[1;32m+[m
+[1;32m+[m[1;32m        task.resume()[m
+[1;32m+[m[1;32m        task.resume()[m
+[1;32m+[m[1;32m        wait(for: [started, completed], timeout: 5, enforceOrder: true)[m
+[1;32m+[m[1;32m        core.get(feature: NetworkInstrumentationFeature.self)?.flush()[m
+[1;32m+[m[1;32m        _ = server.waitAndReturnRequests(count: 1)[m
+[1;32m+[m
+[1;32m+[m[1;32m        let interception = try XCTUnwrap(handler.interceptions.first?.value)[m
+[1;32m+[m[1;32m        XCTAssertEqual(mutations.wrappedValue, 1)[m
+[1;32m+[m[1;32m        XCTAssertEqual(handler.interceptions.count, 1)[m
+[1;32m+[m[1;32m        XCTAssertEqual(interception.trackingMode, .registeredDelegate)[m
+[1;32m+[m[1;32m        XCTAssertNotNil(interception.metrics)[m
+[1;32m+[m[1;32m        XCTAssertNotNil(interception.completion)[m
+[1;32m+[m[1;32m    }[m
+[1;32m+[m
+     func testAutomaticMode_tracksAsyncAwaitTasks() async throws {[m
+         /// Testing only 16.0 or above because 15.0 has ThreadSanitizer issues with async APIs[m
+         guard #available(iOS 16, tvOS 16, *) else {[m

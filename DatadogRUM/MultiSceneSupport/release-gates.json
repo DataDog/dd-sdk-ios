@@ -229,8 +229,8 @@
           "status": "OPEN",
           "dependencies": [],
           "decisive_test": "Compile/link deployment15, audit availability, launch and run affected suite on actual17.5 when installed. If genuinely unavailable after bounded checks, document the user-approved runtime exception and oldest runnable coverage.",
-          "environment": "Installed available iOS17.5(21F79), booted iPad simulator; candidate test-host execution and deployment15 compile/link remain required.",
-          "evidence": "Fresh runtime/device inventory verifies actual17.5 availability. No matrix cell passed yet. Prior failed acquisitions retained; no runtime exception used.",
+          "environment": "Xcode27.1, actual iPad17.5(21F79); genuine SDK26.5 legacy builds; deployment15 verified on baseline",
+          "evidence": "EXP-197 current-develop62f64d7b6 baseline passes6/6 actual17.5(21F79) Scene/Legacy automatic/manual and legacy lifecycle cells. Three builds verify deployment15; genuine26.5 SDK used for legacy hosts. Cleanup and Booted state preserved. Candidate and15/16 runtime execution remain untested; no C06 closure or exception.",
           "required": true
         },
         "S2": {
@@ -2478,18 +2478,18 @@
       "decisive_test": "Source-less repeated/suspend/resume handler mutation regression fails current develop and passes a synchronized narrow task-claim/lifecycle fix; automatic and registered delegates remain compatible.",
       "environment": "Isolated clean checkout of then-current develop; affected unit and native fixtures",
       "completion_mode": null,
-      "status": "OPEN",
-      "evidence": "",
+      "status": "REVIEW BLOCKED",
+      "evidence": "EXP-197 baseline red on current develop62f64d7b6. Three-file internal ordering repair and target-scoped tests are preserved as review artifacts; applicability and independent source review complete. Informed approval requested after automatic rejection; production remains unchanged.",
       "release_requirements": {
         "S1": {
           "scope": "URLSession exactly-once interception",
-          "status": "OPEN",
+          "status": "REVIEW BLOCKED",
           "dependencies": [
             "S1:F07"
           ],
           "decisive_test": "Source-less repeated/suspend/resume handler mutation regression fails current develop and passes a synchronized narrow task-claim/lifecycle fix; automatic and registered delegates remain compatible.",
           "environment": "Isolated clean checkout of then-current develop; affected unit and native fixtures",
-          "evidence": "Candidate only; mixed experimental commits and scene-targeted tests are not customer-defect proof.",
+          "evidence": "EXP-197 baseline red on current develop62f64d7b6. Three-file internal ordering repair and target-scoped tests are preserved as review artifacts; applicability and independent source review complete. Informed approval requested after automatic rejection; production remains unchanged.",
           "required": true
         }
       }
@@ -2627,7 +2627,7 @@
       "owner": "SDK implementer + app owner",
       "dependencies": [],
       "decisive_test": "Freeze app and SDK source/build identity; compare ordinary journeys and exact telemetry expectations, long sessions, resources and WebView correlation. Include internal TestFlight evaluation after separate distribution authorization.",
-      "environment": "Existing single-scene Datadog app; RUM application4f33b0ca-bd9a-4206-bb4d-0047c4f88895; simulator/physical host",
+      "environment": "Controlled normal-mode Datadog app; probe RUM application43cbc59b-0626-438b-a3d9-c6417a4545a3; service ios-app-rum-release-validation; simulator/physical host",
       "completion_mode": null,
       "status": "OPEN",
       "evidence": "",
@@ -2640,7 +2640,7 @@
             "S1:F07"
           ],
           "decisive_test": "Freeze app and SDK source/build identity; compare ordinary journeys and exact telemetry expectations, long sessions, resources and WebView correlation. Include internal TestFlight evaluation after separate distribution authorization.",
-          "environment": "Existing single-scene Datadog app; RUM application4f33b0ca-bd9a-4206-bb4d-0047c4f88895; simulator/physical host",
+          "environment": "Controlled normal-mode Datadog app; probe RUM application43cbc59b-0626-438b-a3d9-c6417a4545a3; service ios-app-rum-release-validation; simulator/physical host",
           "evidence": "App source audit complete at6e33f1c18. User authorizes controlled normal-mode app sessions in the probes RUM application with a distinct service. Candidate/baseline configuration, builds and exact backend comparison remain; no live-customer baseline claimed. Original app organization lookup failure is preserved but no longer blocks controlled runs.",
           "required": false
         },
@@ -2652,7 +2652,7 @@
             "S2:F07"
           ],
           "decisive_test": "Freeze app and SDK source/build identity; compare ordinary journeys and exact telemetry expectations, long sessions, resources and WebView correlation. Include internal TestFlight evaluation after separate distribution authorization.",
-          "environment": "Existing single-scene Datadog app; RUM application4f33b0ca-bd9a-4206-bb4d-0047c4f88895; simulator/physical host",
+          "environment": "Controlled normal-mode Datadog app; probe RUM application43cbc59b-0626-438b-a3d9-c6417a4545a3; service ios-app-rum-release-validation; simulator/physical host",
           "evidence": "App source audit complete at6e33f1c18. User authorizes controlled normal-mode app sessions in the probes RUM application with a distinct service. Candidate/baseline configuration, builds and exact backend comparison remain; no live-customer baseline claimed. Original app organization lookup failure is preserved but no longer blocks controlled runs.",
           "required": true
         },

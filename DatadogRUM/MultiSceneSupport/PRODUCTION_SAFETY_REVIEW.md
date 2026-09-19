@@ -22,6 +22,15 @@ before deferring S3 behavior; this review is not a generic extraction eligibilit
 certificate. New scene API promotion remains pending. Physical EXP-196 is safely
 checkpointed: Full Screen Apps restored and task apps/keep-awake cleaned up.
 
+EXP-197 now reproduces an independent current-develop request-mutation defect
+under S1:E01; this does not reopen the historical D01–D12 dispositions. A proposed
+three-file internal URLSession ordering repair is under review. Automatic approval
+review rejected applying it for crash, request-start and telemetry risk. No
+production change has been applied; green regression, forwarding/reentrancy,
+cancellation, retention and release checks remain required after informed approval.
+The [owning result](Results/EXP-197-urlsession-extraction.json) retains the red test
+and proposal boundary.
+
 Review closure does not imply overall release readiness. Current release status
 belongs exclusively to [release-gates.json](release-gates.json) and [PLAN](PLAN.md).
 [Triage](REVIEW_TRIAGE.md) records the initial assessment and finding boundaries;
