@@ -225,6 +225,11 @@ work. Verify the resulting commit path list, protected index entries, metadata,
 and project-file hash. Do not change global signing configuration. Before any
 future authorized push, sign any unsigned local checkpoints and verify every
 outgoing commit's signature; no push is authorized for the current task.
+Bound signing attempts using a dedicated process group. On timeout, stop only
+that attempt and its signing children before the authorized unsigned fallback.
+A lock left by an interrupted attempt may be removed only after checking its
+identity, absence of owning processes/handles, unchanged HEAD and protected state;
+never remove an unrelated active lock.
 Git signature verification may need permission to create temporary signature
 files even though it does not modify repository content; never substitute a raw
 signature block for cryptographic verification.

@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "experiment": "EXP-203",
-  "status": "DEFINED BEFORE EXECUTION",
+  "status": "PASS; S1:P04 CLOSED",
   "defined_at": "2026-09-20T02:54:11.213791+00:00",
   "gates": [
     "S1:P04"
@@ -93,6 +93,193 @@
     "exp201": "Reuses the exact EXP-199 qualified Internal result; final925 does not change the five audited files."
   },
   "source_applicability": "No scene authority/RUMCoreContext/TLS restore mechanism exists in the E01 delta. Reference/S2/S3 scene reentrancy contracts stay unchanged. P01 timing, P02 allocation churn and P03 retained-byte/ownership remain independently open with original thresholds.",
-  "attempts": [],
-  "result": null
+  "attempts": [
+    {
+      "stage": "configuration and selected Release tests",
+      "run": {
+        "status": "PROCESS COMPLETE",
+        "started_at": 1789873647.943328,
+        "finished_at": 1789873734.6751611,
+        "returncode": 0,
+        "command": [
+          "xcodebuild",
+          "test",
+          "-workspace",
+          "Datadog.xcworkspace",
+          "-scheme",
+          "DatadogInternal",
+          "-configuration",
+          "Release",
+          "-destination",
+          "platform=iOS Simulator,id=EEF49588-982B-492E-92AF-57F900ACEACD",
+          "-derivedDataPath",
+          "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp203-release-reentrancy-pdag9iek/DerivedData",
+          "-clonedSourcePackagesDirPath",
+          "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp203-release-reentrancy-pdag9iek/SourcePackages",
+          "-disableAutomaticPackageResolution",
+          "-onlyUsePackageVersionsFromResolvedFile",
+          "-skipPackageUpdates",
+          "-resultBundlePath",
+          "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp203-release-reentrancy-pdag9iek/release-reentrancy.xcresult",
+          "-parallel-testing-enabled",
+          "NO",
+          "-enableCodeCoverage",
+          "NO",
+          "-test-timeouts-enabled",
+          "YES",
+          "-default-test-execution-time-allowance",
+          "30",
+          "-maximum-test-execution-time-allowance",
+          "30",
+          "CODE_SIGNING_ALLOWED=NO",
+          "ENABLE_TESTABILITY=YES",
+          "DD_API_KEY=",
+          "DD_TEST_RUNNER=",
+          "OTHER_SWIFT_FLAGS=$(inherited) -D DD_SDK_COMPILED_FOR_TESTING",
+          "-only-testing:DatadogInternalTests/NetworkInstrumentationFeatureTests/testAutomaticMode_whenMutationResumesTheTask_itDoesNotReenterPreparation",
+          "-only-testing:DatadogInternalTests/NetworkInstrumentationFeatureTests/testAutomaticMode_whenResumeIsConcurrent_itPreparesBeforeForwardingEitherCall",
+          "-only-testing:DatadogInternalTests/NetworkInstrumentationFeatureTests/testPreparation_payloadDestructionCanResumeWithoutReinstrumenting"
+        ],
+        "source": {
+          "DatadogInternal/Sources/NetworkInstrumentation/NetworkInstrumentationFeature.swift": "2631ea56885a12d1b3d14b1044dd9a84319a0b382b817afb95b4edd305df5246",
+          "DatadogInternal/Sources/NetworkInstrumentation/URLSession/NetworkInstrumentationSwizzler.swift": "a00edec0d9451c3b78c52f308c2a7f771d0e8b9cfafada79a2848f1b164cfef7",
+          "DatadogInternal/Sources/NetworkInstrumentation/URLSession/URLSessionTaskSwizzler.swift": "96d302999632cc609a98e774106f1e51c4ef9fecfe089287426285aa524e4570",
+          "DatadogInternal/Tests/NetworkInstrumentation/NetworkInstrumentationFeatureTests.swift": "739606eee3cdc28ac110f6167e9455d565ec9ae9a17aff18630bafa9abd59375",
+          "DatadogInternal/Tests/NetworkInstrumentation/URLSessionTaskSwizzlerTests.swift": "0d3586be978915dfa11be06a2938eff836af61296b8ae629fd7e51e225fa5b58",
+          "Datadog/Datadog.xcodeproj/project.pbxproj": "25423f259e5d153cdd151a5763bbb8eced0925a1a3d14c10c2e5e863c6bab23d",
+          "Datadog/Datadog.xcodeproj/xcshareddata/xcschemes/DatadogInternal.xcscheme": "4b203bb30482889860652796b237afd97106f16f23c8e212a3cf6f4b1dd48ffd",
+          "Datadog.xcworkspace/contents.xcworkspacedata": "01a3d289eb64e30cb21fcfc15744d2b8b1864751410568262b17187521ecaf3b",
+          "Datadog.xcworkspace/xcshareddata/swiftpm/Package.resolved": "898d49f7cde3dd462b6cd716f48d7adb1fcfc921ece1b4f4d492926b365c902e",
+          "xcconfigs/Base.xcconfig": "56009745c472a79c0c1e93320f51155bc09835aaff97735411c2626c276a0468",
+          "TestUtilities/Sources/Proxies/ServerMock.swift": "3f3d5d94bc5a452f02430fd1ac0a831c2430c2c6f6d9fbf5f723a192678ea444"
+        },
+        "source_unchanged": true,
+        "test_log_sha256": "2fa2b7ff6e26c78264b38ff67741c01a0891d4d213a46fc47c757d7995d1f7e6"
+      },
+      "selected_settings": [
+        {
+          "target": "DatadogInternal",
+          "settings": {
+            "TARGET_NAME": "DatadogInternal",
+            "CONFIGURATION": "Release",
+            "SDKROOT": "/Applications/Xcode_27.1.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator27.1.sdk",
+            "SDK_NAME": "iphonesimulator27.1",
+            "ARCHS": "arm64 x86_64",
+            "CURRENT_ARCH": "undefined_arch",
+            "SWIFT_VERSION": "5.9",
+            "SWIFT_OPTIMIZATION_LEVEL": "-O",
+            "SWIFT_COMPILATION_MODE": "wholemodule",
+            "ENABLE_TESTABILITY": "YES",
+            "OTHER_SWIFT_FLAGS": " -D DD_SDK_COMPILED_FOR_TESTING",
+            "BUILT_PRODUCTS_DIR": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp203-release-reentrancy-pdag9iek/DerivedData/Build/Products/Release-iphonesimulator",
+            "TARGET_BUILD_DIR": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp203-release-reentrancy-pdag9iek/DerivedData/Build/Products/Release-iphonesimulator",
+            "FULL_PRODUCT_NAME": "DatadogInternal.framework"
+          }
+        }
+      ],
+      "cleanup_path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp203-release-reentrancy-pdag9iek/cleanup.json",
+      "cleanup_sha256": "a0efd0fbf611305267df9cda93fd9d9f5aa4de196043e567522c8fe5765a5195",
+      "cleanup_status": "PASS"
+    }
+  ],
+  "result": {
+    "decided_at": "2026-09-20T03:19:54.931948+00:00",
+    "gate": "S1:P04",
+    "status": "CLOSED",
+    "decisive_evidence": {
+      "status": "SCOPED_OPTIMIZED_REENTRANCY_EVIDENCE_QUALIFIED",
+      "gate_closed_by_audit": false,
+      "source_root": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp203-release-reentrancy-pdag9iek",
+      "audit_created_at": "2026-09-20T03:17:07.597534+00:00",
+      "selected_discovered_cases": 3,
+      "discovery_scope": "Selected xcresult tree only; no full target discovery claim",
+      "executed_cases": 3,
+      "executions": 3,
+      "retries": 0,
+      "repetitions": 0,
+      "failures": 0,
+      "skips": 0,
+      "unexpected_cases": 0,
+      "sdk_crash_observed": false,
+      "compiler_proof": "All six actual builtin-Swift-Compilation jobs for three target modules acrossarm64/x86_64 have -O/-enable-testing/DD_SDK_COMPILED_FOR_TESTING and no -Onone; file lists contain changed sources, selected test source and relevant helpers. Runtime executed arm64 only.",
+      "source_identity": "Five accepted EXP199 production/test hashes match run/current/production1bd/final925.",
+      "product_identity": "Fresh product hashes and Mach-O UUIDs captured; .xctestrun absent and truthfully recorded.",
+      "settings_limit": "showBuildSettings reported DatadogInternal only; actual compiler jobs prove test/TestUtilities settings.",
+      "warning_limits": {
+        "xcresult_runtimeWarnings": [],
+        "build_warning_lines": 142,
+        "unique_warning_message_count": 41,
+        "objc_duplicate_classes": 59,
+        "OpenTelemetry": 43,
+        "KSCrash": 16,
+        "F06_residual": "No direct source intersection with three controls; no general harmlessness or warning-free claim."
+      },
+      "cleanup": "Root-owned cleanup.json is referenced/hashed only; this agent performed no device/protected-state action.",
+      "input_sha256": {
+        "run.json": "86ccd2375b97757d788776a718474f0e97685625d5eb220e0713ea1ece3be616",
+        "commands.json": "af4c3dd799bdf6d293091ea4edf63c531bc313762ce6902965a983fec072b20b",
+        "settings.json": "bca9b297830b6d94c6a6df10d684359afb9684edbaf913127f912bbab1ff9414",
+        "preflight.json": "a36d69e2f6f72ee258946dbdcc9c84c2f36ffd95cda60d278e95fb1ccd0b893f",
+        "run.py": "fb1c65af0cbe4ffe41d1d737544c619a310debc4ec67966d12b910460a9edd2e",
+        "test.log": "2fa2b7ff6e26c78264b38ff67741c01a0891d4d213a46fc47c757d7995d1f7e6",
+        "cleanup.json": "a0efd0fbf611305267df9cda93fd9d9f5aa4de196043e567522c8fe5765a5195"
+      },
+      "reader_note": "Initial sandboxed xcresult read failed because tool could not write temporary cache; read succeeded with permitted temporary-cache/output access. This was an audit-reader issue, not a test result.",
+      "not_claimed": [
+        "P01/P02/P03 budgets",
+        "production-binary performance",
+        "full Internal suite Release execution",
+        "physical-device coverage",
+        "x86_64 test execution",
+        "warning-free environment",
+        ".xctestrun proof",
+        "global safety of duplicate ObjC class selection"
+      ],
+      "actions": "Only source/artifact reads, existing xcresult reader and fresh temporary audit writes; no build/test/device/network/repo mutation/commit."
+    },
+    "audit": {
+      "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp203-evidence-audit-qty8j343/audit.json",
+      "sha256": "f2940befb77c5fda78343b242b0551cb1189c533096891c20f7e6aa708a970bd"
+    },
+    "product_identity": {
+      "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp203-evidence-audit-qty8j343/product-identity.json",
+      "sha256": "3b73d40adb72240640bbe6e425b06cccb62a3fca15ae1b94b947e01a56d56cd0"
+    },
+    "warning_inventory": {
+      "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp203-evidence-audit-qty8j343/warnings.json",
+      "sha256": "e25466e7c1bd059a4432bab236e296406bfb6e41256d42d03e04cf398a669ef7"
+    },
+    "cleanup": "PASS; hostless tests produce no app; no remaining test process; stable17.5 binding/Booted state, candidate and protected paths unchanged;7hour caffeinate preserved",
+    "qualification_limit": "Three optimized controls plus exact reused EXP-199 Debug invariants. No full optimized-suite, physical, numeric-performance or warning-free claim.",
+    "remaining_f06": "Duplicate-class product scope is resolved for these exact59 pairs: the second implementations enter through TestUtilities/DatadogSDKTesting in XCTest, absent from normal production/default-SPM and five accepted clients. Retain142 compiler-warning lines and other accepted runtime diagnostics for final review; remaining release gates are still open.",
+    "f06_duplicate_class_disposition": {
+      "audit": {
+        "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp203-f06-duplicate-scope-y6xjwqec/audit.json",
+        "sha256": "dab9d2b760ffa0e4eb0fb6a6ea52a62e7ad90a09a88265bce8a82259bab557af"
+      },
+      "evidence_manifest": {
+        "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp203-f06-duplicate-scope-y6xjwqec/manifest.json",
+        "sha256": "f3d39428ae803b6c73c412ab830010a766c632e123803b617f5ff200098f3c66"
+      },
+      "status": "OBSERVED_DUPLICATE_PAIRS_ATTRIBUTABLE_TO_XCTEST_DEPENDENCY_GRAPH",
+      "observed_pairs": {
+        "OpenTelemetry": 43,
+        "KSCrash": 16,
+        "shared_second_binary": "DatadogSDKTesting.framework/DatadogSDKTesting"
+      },
+      "production_target_count": 10,
+      "default_spm_product_count": 9,
+      "accepted_platform_build_count": 24,
+      "accepted_public_client_build_count": 5,
+      "disposition": "These exact59 pairs are attributable to the test dependency environment and are not introduced by E01 into normal production/default-SPM products or the five accepted clients. Other Xcode test targets using TestUtilities can share this environment; the observation is not exclusive to the Internal test target.",
+      "remaining_limits": [
+        "No global harmlessness claim for duplicate ObjC runtime class selection.",
+        "Explicitly opted-in development/test consumers and arbitrary independently embedded testing/third-party frameworks are outside the ordinary-client graph examined.",
+        "No unpublished distribution archive or arbitrary customer app was inspected.",
+        "Compiler-warning inventory remains separate and unchanged.",
+        "Client runtime console absence is not inferred from build logs; absence is demonstrated in target/link/load dependency evidence."
+      ]
+    }
+  },
+  "execution_root": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp203-release-reentrancy-pdag9iek"
 }

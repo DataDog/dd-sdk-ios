@@ -44,9 +44,11 @@ configuration preparation and authenticated query access do not establish a run.
 EXP-202 has qualified offline preparation for ordinary Resource/Trace backend
 acceptance. Both placeholder source arms compile, but no native or backend cell
 has run; protected-config use requires a narrow explicit exception. EXP-203
-separately admits three existing Release reentrancy controls. Accepted EXP-199
-Debug invariants are reused by exact source hashes; P04 is functional and does
-not add a numerical or ABBA requirement to the open P01–P03 measurements.
+passes three existing Release reentrancy controls exactly once and closes S1:P04.
+Accepted EXP-199 Debug invariants are reused by exact source hashes. P04 adds no
+numeric or ABBA requirement to P01–P03. The59 duplicate classes come from XCTest
+dependencies excluded by normal shipping/default-package and accepted client
+graphs; compiler/runtime diagnostics remain visible for F06.
 
 ## Immediate compatibility priority
 

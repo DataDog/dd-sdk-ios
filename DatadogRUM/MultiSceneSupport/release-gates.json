@@ -556,13 +556,13 @@
         },
         "S1": {
           "scope": "E01 URLSession task preparation, resume continuation and terminal callback reentrancy",
-          "status": "OPEN",
+          "status": "CLOSED",
           "dependencies": [
             "S1:C01"
           ],
           "decisive_test": "Zero SDK-caused deadlock/crash or cross-task/feature interference under synchronous request-mutation reentry, concurrent first resumes and payload/error destruction reentry. One preparation/interception per eligible task; each intercepted native resume continuation forwards exactly once. Buffered data/metrics/completion remain ordered behind preparation. Completed, unsupported/internal, rebind and foreign-task paths preserve their established forwarding behavior. Terminal cleanup leaves no strong preparation/task/feature ownership.",
           "environment": "Exact candidate on qualified17.5 simulator; accepted EXP-199 Debug invariants plus EXP-203 three existing reentry controls with verified Release/-O and finite waits.",
-          "evidence": "EXP-199 accepted Debug controls reused by five exact source/test hashes at1bd/925. EXP-203 is defined before execution to close only optimized synchronous/concurrent/destructor reentry. P04 has no numeric or ABBA budget; P01\u2013P03 remain unchanged.",
+          "evidence": "EXP-203: exactly3 existing controls/3 executions pass once, no failures/skips/retries, on17.5/21F79. Actual SDK/test/helper compile jobs prove Release -O and testability; five exact source/test hashes match1bd/925 and accepted EXP-199 Debug invariants. Hostless cleanup and protected state pass. No numeric or full-suite claim;142 build warnings/59 dependency duplicate classes remain in F06 diagnostics.",
           "required": true
         },
         "S2": {
@@ -2427,7 +2427,7 @@
           ],
           "decisive_test": "Require applicable release checks, attributable review, exact source/artifact inventory, existing performance/privacy/crash/API thresholds, signed outgoing history before any separately authorized push. Other releases are not prerequisites.",
           "environment": "Exact candidate; one host; no concurrent measurement contamination",
-          "evidence": "Reference evidence retained; this release candidate is not qualified.",
+          "evidence": "EXP-203 closes P04 and resolves the exact59 duplicate-class pairs to XCTest TestUtilities/DatadogSDKTesting dependencies. All10 production target closures, nine default SPM products,24 accepted build logs and five accepted client link/load inventories exclude the second implementation. The142 compiler-warning lines and other accepted runtime diagnostics remain recorded. No arbitrary duplicate-class harmlessness claim; numeric P01-P03 and backend A01/T03/T08 remain open before final review.",
           "required": true
         },
         "S2": {

@@ -27,3 +27,28 @@ host bound. Reuse EXP-197's bounded original defect control; do not introduce a
 new unbounded baseline recursion fixture. Preserve any failed attempt and stop
 for diagnosis before retry. Keep protected files unchanged and do not use local
 credentials. No performance, backend or physical-device claim follows.
+
+The single admitted Release run passes exactly three selected tests and three
+executions, each once, with no failures/skips/retries or unexpected cases.
+Independent audit verifies actual -O/-enable-testing compiler jobs for SDK,
+TestUtilities and tests on both built architectures; only arm64 executes.
+The five source/test hashes match accepted EXP-199,1bd and925. Direct test emits
+no xctestrun; the CLI selection, actual compiler/product identity and xcresult
+bind the proof instead. No repeat is needed to manufacture that artifact.
+
+S1:P04 closes. Hostless cleanup preserves the simulator's Booted state, candidate
+and protected paths, with no remaining test process or installed app product.
+The seven-hour caffeinate assertion stays active.
+
+The run is not warning-free:142 build-warning lines (41 unique messages),59
+duplicate ObjC classes (43 OpenTelemetry,16 KSCrash) and three Xcode SDK-version
+parsing diagnostics are retained. The duplicates pair DatadogSDKTesting with
+OpenTelemetryApi or DatadogCrashReporting. No direct intersection with the three
+controls was found; global harmlessness is not established. The bounded F06 audit
+attributes every second implementation to DatadogSDKTesting through TestUtilities.
+All10 production Xcode closures, nine default SPM products,24 accepted production
+builds and five accepted public-client link/load graphs exclude that test library.
+The explicit development-only TestUtilities export stays outside this ordinary
+client boundary. Exact graph, pair names, link inventories and binary identities
+are retained by the owning result. The142 compiler-warning lines remain separate.
+F06 and P01–P03 remain open; no test or build was repeated for this disposition.

@@ -61,8 +61,13 @@ resume timing/thread behavior is explicitly recorded in EXP-201.
 
 EXP-203 scopes the remaining S1:P04 check to optimized handler/concurrent/destructor
 reentry. Eighteen accepted EXP-199 controls already cover the functional cases in
-Debug with exact final-source equality. The new three-test Release slice is still
-pending; no numeric budget is part of P04. EXP-202's preparation defects are
+Debug with exact final-source equality. The three-test Release slice passes
+exactly once and closes S1:P04; no numeric budget is part of P04. The142 build
+warnings remain recorded. The59 duplicate classes are attributed to the XCTest
+TestUtilities/DatadogSDKTesting graph: all10 production target closures, nine
+default SPM products and five accepted public-client link/load graphs exclude the
+second implementation. This resolves their shipped-product scope, not arbitrary
+duplicate-class safety or all test warnings. F06 remains open. EXP-202's preparation defects are
 harness findings, and its placeholder builds do not supply runtime/backend proof.
 
 Review closure does not imply overall release readiness. Current release status
