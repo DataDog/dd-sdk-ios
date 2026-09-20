@@ -30,9 +30,9 @@ without losing lifecycle, header, body or metrics. Full Internal and affected
 Core/RUM/Trace suites pass on17.5. The candidate's six ordinary/legacy17.5 comparisons pass with the reused develop
 baseline and genuineSDK26.5 legacy builds; earlier464 results remain historical
 evidence. EXP-200 also qualifies custom/NOP behavior on17.5/26.5/27.0 and strict ordinary/legacy26.5 ownership. EXP-201 additionally passes24 complete platform builds, five public-client cells,
-unchanged API baselines and feature-doc verification. Its complete integration
-inventory executes278 tests with one inherited delta-hitch assertion under paired
-diagnosis; F03 stays open. S1:F02 documentation closes on the audited feature docs,
+unchanged API baselines and feature-doc verification. Its original delta-hitch assertion fails in both source arms despite measured
+hitches. The one-file test correction then passes the full278-test inventory with
+zero failures/skips, closing S1:F03. Warning and platform bounds remain in EXP-201. S1:F02 documentation closes on the audited feature docs,
 public clients and E01 changelog, with the duplicate-resume scheduling caveat retained. Numeric heap growth also occurs in SDK-unbound controls
 and remains unattributed. No allocation, latency or numeric-retention pass is claimed.
 [EXP-197](Results/EXP-197-urlsession-extraction.json) owns the original defect and

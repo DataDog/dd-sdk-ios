@@ -99,14 +99,32 @@ audits at5a570517, unchanged API baselines and the five public-client runtime ce
 During preparation, duplicate resume callers may return before their native resume
 continuation executes on the preparing thread. This bounded scheduling change is
 recorded alongside tested early-callback ordering; no performance guarantee is
-claimed. Production source remains1bdc9286; F03 and release acceptance stay open.
+claimed. Production source remains1bdc9286. The later qualified test correction is recorded below; performance/backend and final release acceptance remain separate.
 
 The paired diagnostic reproduces the original assertion failure in both arms:
 full version1 has no frames; version2 contains one measured hitch; stopped
 version3 omits unchanged frames. Independent reconstruction yields a stopped view
 with one hitch in each arm. Six corruptions per arm reject (all frames missing,
 explicit empty final delta, missing full baseline, duplicate version, mixed owner,
-missing stop). Candidate XCTest logs show all four tests complete; its Xcode
-process is still finalizing diagnostics, so no successful runner exit is claimed.
-The owning result retains raw attachment/stdout provenance. A narrow test-only
-correction is now justified, with complete integration qualification still required.
+missing stop). Both arms finish all four tests and exit65 with the original assertion failure.
+The owning result retains raw attachment/stdout provenance. The narrow test-only
+correction follows this paired evidence.
+
+The one-file correction reconstructs a target-owned full baseline plus ordered
+deltas: nil preserves prior state and explicit empty clears it. Existing workload,
+thresholds and sleeps remain unchanged; missing-payload and appended-empty controls
+reject. Its first compile attempt used a session-only helper on a view array and
+executes zero tests; explicit count plus unwrap fixes that fixture mistake. The
+complete corrected integration run passes278/278 with zero failures or skips on
+17.5. Commit925b9326 contains only this test correction, using the authorized
+unsigned fallback after the signing agent times out. All1177 frozen production
+inputs and41 integration inputs remain unchanged; cleanup and protected-state
+checks pass. Nine QoS warnings, the preferred-buildable fallback and600-second
+simulator diagnostic timeout are retained; final xcresult and xcodebuild0 exist.
+These results make no zero-warning, sanitizer or numeric-performance claim.
+
+Independent identifier comparison confirms identical discovered/executed/run
+multisets:278 each, no missing/extra IDs or multiplicity differences. Their common
+SHA256 is2d4f981301c0375fede2f8c3ee4b43d1addf9ca7d7fbe055742faf22aa3462cb.
+S1:F03 closes with the reused M02-M11 evidence; reference/S2/S3 statuses remain
+owned separately by the register. Performance/backend and F06 stay open.

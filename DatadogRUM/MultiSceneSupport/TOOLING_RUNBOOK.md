@@ -2245,3 +2245,13 @@ binary, in addition to exact Swift-package pins. Check these before a diagnostic
 build and hash reused framework inputs for both arms. Aggregate gate fields retain
 reference/S3 evidence; only the relevant release_requirements entry qualifies an
 isolated S1 or S2 candidate.
+
+For native-only Resource/Trace backend fixtures, disabling periodic vitals does
+not disable the first-frame app-launch TTID writer. Freeze its incidental inventory
+and owner before runtime. If no public mapper exposes it, hold before Home until
+an authenticated whole-session query observes the exact fresh ApplicationLaunch
+TTID, then consume an identity-bound one-use host release. Native FBC is not expected.
+Preserve full MCP payload strings and decimal/128-bit identities; backend detail
+timestamps rounded to seconds cannot establish exact nanosecond starts. RUM rows
+use opaque backend IDs distinct from semantic event UUIDs. Account for all pages
+and keep startup query evidence separate from final session/service inventories.

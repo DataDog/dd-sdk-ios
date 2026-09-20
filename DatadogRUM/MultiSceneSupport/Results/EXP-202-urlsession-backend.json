@@ -1,0 +1,518 @@
+{
+  "schema_version": 1,
+  "experiment": "EXP-202",
+  "status": "DEFINED BEFORE IMPLEMENTATION",
+  "defined_at": 1789868896.779567,
+  "gates": [
+    "S1:A01",
+    "S1:T03",
+    "S1:T08"
+  ],
+  "owner": "Harness implementer; root owns host/backend execution",
+  "baseline_revision": "62f64d7b655bdc83f3036c4ad81090a270f6202b",
+  "candidate_revision": "1bdc9286c17d69d73e5e41530e6179c72a723368",
+  "scope": "Four Release acceptance launches on actual17.5: A/B times automatic/registered, twelve fixed rows per launch; no experimental scene API.",
+  "source_audit": {
+    "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/s1-e01-backend-proposal-9yrx00jk/audit.md",
+    "sha256": "421f234e7ed156f3a2646c7913c9904ead0e525b23c053cb265a5fd0ec7fe89a"
+  },
+  "contract": {
+    "status": "ADMITTED AS EXP-202",
+    "experiment_id": "EXP-202",
+    "gates": [
+      "S1:A01",
+      "S1:T03",
+      "S1:T08"
+    ],
+    "arms": {
+      "A": "62f64d7b655bdc83f3036c4ad81090a270f6202b",
+      "B": "1bdc9286c17d69d73e5e41530e6179c72a723368"
+    },
+    "source_semantics_manifest": [
+      {
+        "path": "DatadogRUM/Sources/Instrumentation/Resources/URLSessionRUMResourcesHandler.swift",
+        "baseline_equals_candidate": true,
+        "candidate_sha256": "b57e436a3fd9c9745fc5674d455d21064667a77dfaae4eaa4ddfc4601893da3d"
+      },
+      {
+        "path": "DatadogRUM/Sources/RUMMonitor/Scopes/RUMViewScope.swift",
+        "baseline_equals_candidate": true,
+        "candidate_sha256": "45906e298eee02f38b12d022b5b29e5b4bb1b9e8055f54638e8e4863fd51ed1d"
+      },
+      {
+        "path": "DatadogRUM/Sources/RUMMonitor/Scopes/RUMUserActionScope.swift",
+        "baseline_equals_candidate": true,
+        "candidate_sha256": "b81aeacd4fd4384a2cffff84fc82eacf0a4f8598df9098e0edac08b3124649dc"
+      },
+      {
+        "path": "DatadogRUM/Sources/RUMMonitor/Scopes/RUMResourceScope.swift",
+        "baseline_equals_candidate": true,
+        "candidate_sha256": "37abdd6805bc40d3e4d6724ca502d5f2b678e695a02a90b69dd462bc06837dae"
+      },
+      {
+        "path": "DatadogTrace/Sources/Integrations/TracingURLSessionHandler.swift",
+        "baseline_equals_candidate": true,
+        "candidate_sha256": "be5de427a8eb3bf884b308a2e05aabe0945440ad3261b8fbb963100fe0cdf52c"
+      },
+      {
+        "path": "DatadogTrace/Sources/DatadogTracer.swift",
+        "baseline_equals_candidate": true,
+        "candidate_sha256": "e27c4be078704ec23a3ead2dff7eae487547dbdd5518659a4c409fa0adffb733"
+      },
+      {
+        "path": "DatadogTrace/Sources/Span/SpanEventBuilder.swift",
+        "baseline_equals_candidate": true,
+        "candidate_sha256": "c0767be8017941776b8d2f23cf312c99e2947a384804a8fc78b4ee503438235f"
+      },
+      {
+        "path": "DatadogTrace/Sources/Span/SpanWriteContext.swift",
+        "baseline_equals_candidate": true,
+        "candidate_sha256": "dcb3f71773fabd26e24d074c2d5e2cfdfa6778cc7a5e95aa982924a1a163bd77"
+      },
+      {
+        "path": "DatadogInternal/Sources/NetworkInstrumentation/URLSession/URLSessionTaskInterception.swift",
+        "baseline_equals_candidate": true,
+        "candidate_sha256": "1323fadf83a57e76815669c26f26d5126b8df8a9122eded950d564ae1e64cf2d"
+      }
+    ],
+    "production_delta_paths": [
+      "DatadogInternal/Sources/NetworkInstrumentation/NetworkInstrumentationFeature.swift",
+      "DatadogInternal/Sources/NetworkInstrumentation/URLSession/NetworkInstrumentationSwizzler.swift",
+      "DatadogInternal/Sources/NetworkInstrumentation/URLSession/URLSessionTaskSwizzler.swift"
+    ],
+    "launch_matrix": [
+      {
+        "id": "A-automatic",
+        "arm": "A",
+        "mode": "automatic",
+        "clean_install": true,
+        "new_process": true,
+        "new_run_id": true,
+        "expected_native_tasks": 11,
+        "rows": [
+          "rum-ok",
+          "rum-http404",
+          "rum-http500",
+          "rum-ns-error",
+          "rum-response-and-error",
+          "trace-ok",
+          "trace-http404",
+          "trace-http500",
+          "trace-ns-error",
+          "trace-response-and-error",
+          "trace-manual-drop",
+          "manual-home-resource"
+        ]
+      },
+      {
+        "id": "B-automatic",
+        "arm": "B",
+        "mode": "automatic",
+        "clean_install": true,
+        "new_process": true,
+        "new_run_id": true,
+        "expected_native_tasks": 11,
+        "rows": [
+          "rum-ok",
+          "rum-http404",
+          "rum-http500",
+          "rum-ns-error",
+          "rum-response-and-error",
+          "trace-ok",
+          "trace-http404",
+          "trace-http500",
+          "trace-ns-error",
+          "trace-response-and-error",
+          "trace-manual-drop",
+          "manual-home-resource"
+        ]
+      },
+      {
+        "id": "A-registered",
+        "arm": "A",
+        "mode": "registered",
+        "clean_install": true,
+        "new_process": true,
+        "new_run_id": true,
+        "expected_native_tasks": 11,
+        "rows": [
+          "rum-ok",
+          "rum-http404",
+          "rum-http500",
+          "rum-ns-error",
+          "rum-response-and-error",
+          "trace-ok",
+          "trace-http404",
+          "trace-http500",
+          "trace-ns-error",
+          "trace-response-and-error",
+          "trace-manual-drop",
+          "manual-home-resource"
+        ]
+      },
+      {
+        "id": "B-registered",
+        "arm": "B",
+        "mode": "registered",
+        "clean_install": true,
+        "new_process": true,
+        "new_run_id": true,
+        "expected_native_tasks": 11,
+        "rows": [
+          "rum-ok",
+          "rum-http404",
+          "rum-http500",
+          "rum-ns-error",
+          "rum-response-and-error",
+          "trace-ok",
+          "trace-http404",
+          "trace-http500",
+          "trace-ns-error",
+          "trace-response-and-error",
+          "trace-manual-drop",
+          "manual-home-resource"
+        ]
+      }
+    ],
+    "environment": {
+      "runtime_proposal": "Actual iOS17.5/21F79, Xcode27.1/27A9269; rediscover and bind selected destination UUID before every run.",
+      "claim_limit": "one source-less single-scene runtime; no SDK27/Duo or all-runtime claim",
+      "build_configuration": "Release; identical fixture, build settings and dependency pins for A and B"
+    },
+    "public_configuration": {
+      "enable_order": [
+        "Datadog",
+        "RUM",
+        "Trace",
+        "registered-only URLSessionInstrumentation.enableDurationBreakdown"
+      ],
+      "rum_session_sample_rate": 100,
+      "trace_sample_rate": 100,
+      "first_party_header_types": [
+        "datadog",
+        "tracecontext"
+      ],
+      "trace_injection": "sampled",
+      "rum_host": "rum-e01-probe.invalid",
+      "trace_host": "trace-e01-probe.invalid",
+      "rum_disallow_list": [
+        "https://trace-e01-probe.invalid/*"
+      ],
+      "trace_redacted_status_codes": "default [404]",
+      "views": "manual source-less Home -> Detail, no automatic view/action predicates",
+      "automatic_features_disabled": [
+        "long tasks",
+        "app hangs",
+        "periodic vitals (does not disable TTID)",
+        "slow frames",
+        "memory warnings",
+        "watchdog",
+        "automatic UI actions"
+      ],
+      "consent": "granted",
+      "intake": "real authorized Datadog, never intercepted by fixture URLProtocol",
+      "protocol_scope": "two exact fixture hosts only",
+      "rum_first_party_hosts": [
+        "rum-e01-probe.invalid"
+      ],
+      "trace_first_party_hosts": [
+        "trace-e01-probe.invalid"
+      ],
+      "service": "ios-e01-release-validation-<fresh run_id>"
+    },
+    "rows": [
+      {
+        "id": "rum-ok",
+        "native_task": true,
+        "http_status": 200,
+        "native_error": null,
+        "terminal_precondition": "actual task.response and task.error must match this row; do not infer from URLProtocol send calls",
+        "rum_event": "resource",
+        "rum_owner": "Home",
+        "client_urlsession_span_count": 0,
+        "client_span_error": null,
+        "client_span_rum_view": null,
+        "resume_variant": "one resume",
+        "role": "public start-order sentinel, created last and completed in Home"
+      },
+      {
+        "id": "rum-http404",
+        "native_task": true,
+        "http_status": 404,
+        "native_error": null,
+        "terminal_precondition": "actual task.response and task.error must match this row; do not infer from URLProtocol send calls",
+        "rum_event": "resource",
+        "rum_owner": "Home",
+        "client_urlsession_span_count": 0,
+        "client_span_error": null,
+        "client_span_rum_view": null,
+        "resume_variant": "one resume",
+        "role": "held until Detail"
+      },
+      {
+        "id": "rum-http500",
+        "native_task": true,
+        "http_status": 500,
+        "native_error": null,
+        "terminal_precondition": "actual task.response and task.error must match this row; do not infer from URLProtocol send calls",
+        "rum_event": "resource",
+        "rum_owner": "Home",
+        "client_urlsession_span_count": 0,
+        "client_span_error": null,
+        "client_span_rum_view": null,
+        "resume_variant": "initial + duplicate while held + suspend/observe + resume/observe + completed-task resume",
+        "role": "held until Detail"
+      },
+      {
+        "id": "rum-ns-error",
+        "native_task": true,
+        "http_status": null,
+        "native_error": "NSURLErrorDomain/-1005",
+        "terminal_precondition": "actual task.response and task.error must match this row; do not infer from URLProtocol send calls",
+        "rum_event": "error",
+        "rum_owner": "Home",
+        "client_urlsession_span_count": 0,
+        "client_span_error": null,
+        "client_span_rum_view": null,
+        "resume_variant": "one resume",
+        "role": "held until Detail"
+      },
+      {
+        "id": "rum-response-and-error",
+        "native_task": true,
+        "http_status": 200,
+        "native_error": "NSURLErrorDomain/-1005",
+        "terminal_precondition": "actual task.response and task.error must match this row; do not infer from URLProtocol send calls",
+        "rum_event": "resource",
+        "rum_owner": "Home",
+        "client_urlsession_span_count": 0,
+        "client_span_error": null,
+        "client_span_rum_view": null,
+        "resume_variant": "one resume",
+        "role": "held until Detail"
+      },
+      {
+        "id": "trace-ok",
+        "native_task": true,
+        "http_status": 200,
+        "native_error": null,
+        "terminal_precondition": "actual task.response and task.error must match this row; do not infer from URLProtocol send calls",
+        "rum_event": null,
+        "rum_owner": null,
+        "client_urlsession_span_count": 1,
+        "client_span_error": false,
+        "client_span_rum_view": "Detail",
+        "resume_variant": "initial + duplicate while held + suspend/observe + resume/observe + completed-task resume",
+        "role": "held until Detail"
+      },
+      {
+        "id": "trace-http404",
+        "native_task": true,
+        "http_status": 404,
+        "native_error": null,
+        "terminal_precondition": "actual task.response and task.error must match this row; do not infer from URLProtocol send calls",
+        "rum_event": null,
+        "rum_owner": null,
+        "client_urlsession_span_count": 1,
+        "client_span_error": true,
+        "client_span_rum_view": "Detail",
+        "resume_variant": "one resume",
+        "role": "held until Detail"
+      },
+      {
+        "id": "trace-http500",
+        "native_task": true,
+        "http_status": 500,
+        "native_error": null,
+        "terminal_precondition": "actual task.response and task.error must match this row; do not infer from URLProtocol send calls",
+        "rum_event": null,
+        "rum_owner": null,
+        "client_urlsession_span_count": 1,
+        "client_span_error": false,
+        "client_span_rum_view": "Detail",
+        "resume_variant": "one resume",
+        "role": "held until Detail"
+      },
+      {
+        "id": "trace-ns-error",
+        "native_task": true,
+        "http_status": null,
+        "native_error": "NSURLErrorDomain/-1005",
+        "terminal_precondition": "actual task.response and task.error must match this row; do not infer from URLProtocol send calls",
+        "rum_event": null,
+        "rum_owner": null,
+        "client_urlsession_span_count": 1,
+        "client_span_error": true,
+        "client_span_rum_view": "Detail",
+        "resume_variant": "one resume",
+        "role": "held until Detail"
+      },
+      {
+        "id": "trace-response-and-error",
+        "native_task": true,
+        "http_status": 200,
+        "native_error": "NSURLErrorDomain/-1005",
+        "terminal_precondition": "actual task.response and task.error must match this row; do not infer from URLProtocol send calls",
+        "rum_event": null,
+        "rum_owner": null,
+        "client_urlsession_span_count": 1,
+        "client_span_error": true,
+        "client_span_rum_view": "Detail",
+        "resume_variant": "one resume",
+        "role": "held until Detail"
+      },
+      {
+        "id": "trace-manual-drop",
+        "native_task": true,
+        "http_status": 200,
+        "native_error": null,
+        "rum_event": null,
+        "client_urlsession_span_count": 0,
+        "sampling": "public active parent setTag(SpanTags.manualDrop,true) before first resume; sampled injection; finish parent before Detail; no propagation headers or exported parent/child",
+        "role": "in-run sampling negative"
+      },
+      {
+        "id": "manual-home-resource",
+        "native_task": false,
+        "rum_event": "resource",
+        "rum_owner": "Home",
+        "http_status": 201,
+        "resource_kind": "native",
+        "resource_size": 55,
+        "client_urlsession_span_count": 0,
+        "role": "one public manual Resource starts in Home and stops in Detail with a unique resource key"
+      }
+    ],
+    "expected_candidate_inventory": {
+      "native_task_completions": 11,
+      "native_metrics_callbacks": "exactly one per task after runtime qualification; automatic SDK ignores these metrics",
+      "rum_resources": 5,
+      "rum_errors": 1,
+      "rum_crashes": 0,
+      "rum_actions": 1,
+      "view_ids": 3,
+      "view_names": [
+        "ApplicationLaunch",
+        "Home",
+        "Detail"
+      ],
+      "final_home_resource_count": 5,
+      "final_home_error_count": 1,
+      "final_detail_resource_count": 0,
+      "final_detail_error_count": 0,
+      "detail_action_resource_count": 1,
+      "detail_action_error_count": 0,
+      "client_trace_mapper_spans": 6,
+      "client_trace_mapper_roles": {
+        "urlsession.request": 5,
+        "manual-kept-parent": 1
+      },
+      "dropped_parent_or_child_spans": 0,
+      "rum_owned_client_urlsession_spans": 0,
+      "rum_derived_apm_spans": "backend-generated, separately classify by captured RUM trace/span identity; not part of six client spans; do not invent a global APM count",
+      "incidental_app_launch_vitals": 1
+    },
+    "runtime_negatives": [
+      "trace-manual-drop",
+      "Trace-host RUM disallow: no RUM events",
+      "completed-task resume: no new candidate telemetry or pending Resource; final Detail stopped"
+    ],
+    "offline_negative_groups": [
+      "stale source/contract/binary/run and reused output",
+      "missing/consumed readiness or late call-boundary assertion",
+      "missing/duplicate native completion or event; same count with wrong identity",
+      "Home/Detail owner swap; changed inherited action counts; E05 start-view substitution",
+      "HTTP500 incorrectly error; HTTP404 incorrectly success; NSError Resource; mixed response/error incorrectly Error-only",
+      "mismatched full 128-bit trace/high bits, span/parent or sampling flags; fabricated dropped span",
+      "synthetic/missing metrics accepted as measured; wrong duration/size; fabricated DNS/TLS for absent phases",
+      "backend restored run ID or unexpected row hidden by run filter; stale nonce; incomplete pages/counts",
+      "missing/duplicate/wrong-owner or wrong-family TTID; stale startup identity; consumed or late startup release"
+    ],
+    "dependencies": [
+      "admit experiment and freeze finite contract before implementing/running",
+      "S1:F07 and S1:A01 required before T03/T08 closure",
+      "retain EXP197/EXP199 internal exactly-once and terminal ownership evidence: public backend does not expose interception start counts",
+      "fresh authenticated Datadog RUM + APM search/detail capability and complete pagination",
+      "new public single-scene fixture/contract adapter; existing EXP176/181 multi-scene scenario is not reusable as-is",
+      "native metrics/order and actual response+NSError preconditions qualified before accepting results",
+      "root owns all build/device/network/SDK/git operations"
+    ],
+    "exclusions": [
+      "experimental scene APIs or RUMContextHandoff",
+      "E02 same-key/repeated Home occurrence",
+      "E03 Resource completion action ownership repair",
+      "E04 active-view cache lifetime",
+      "E05 request-time Trace RUM correlation",
+      "new B3/header policy/third-party policy/media-cap coverage",
+      "background, session renewal, multi-core/rebind, async-await/download/upload expansion",
+      "performance or retained-memory acceptance",
+      "backend server-side RUM span-generation implementation claims"
+    ],
+    "execution_or_admission_performed": false,
+    "backend_identity_exception": {
+      "ApplicationLaunch": "Run attribute may be absent only on the exact first mapper-proven initial ApplicationLaunch ID in the fresh session. Any existing stale marker or extra view rejects. Do not overwrite metadata in a mapper.",
+      "TTID": "Only the exact fresh-session ApplicationLaunch-owned vital may lack the run attribute; any stale value rejects."
+    },
+    "incidental_app_launch_vital": {
+      "admitted_before_runtime_at": "2026-09-20T02:04:08.657897+00:00",
+      "reason": "FirstFrameReader installs independently of periodic vitals; native TTID has no public mapper. Inventory and startup barrier must include it instead of dropping an unexpected family.",
+      "expected_count": 1,
+      "type": "vital",
+      "vital_type": "app_launch",
+      "app_launch_metric": "ttid",
+      "name": "time_to_initial_display",
+      "owner": "exact initial mapper-proven ApplicationLaunch view and fresh session",
+      "startup_type": "cold_start",
+      "is_prewarmed": false,
+      "duration_ns": {
+        "minimum_inclusive": 0,
+        "maximum_exclusive": 60000000000
+      },
+      "identity": "Unique vital.id and configured application; initial absent run tag allowed only for exact startup owner; stale existing tag rejects.",
+      "startup_prerequisite": "Fixture publishes initial ApplicationLaunch/session readiness and holds before Home. Host observes genuine TTID in whole-session backend query, then writes a nonce/run/build-bound one-use release control. Log actual control validation/consumption before Home. No delay-based owner guess.",
+      "limits": "Incidental startup inventory only; no broader vital/performance qualification, TTFD or Flutter FBC expectation. No source/API/SDK change.",
+      "source_blobs": {
+        "DatadogRUM/Sources/RUMMonitor/Scopes/RUMAppLaunchManager.swift": "d471d3086d9e5bf76dfbcbf45087b7c033e72e92",
+        "DatadogRUM/Sources/RUMVitals/RenderLoop/FirstFrameReader.swift": "6916c7e3b6dd6209e6334852ef292141ca0cb363"
+      },
+      "source_baseline_equals_candidate": true
+    },
+    "backend_representation": {
+      "rum": "Retain whole backend row including opaque id and attributes.custom; match opaque and semantic IDs independently.",
+      "apm_search": "Preserve exact lexical decimal custom.duration and require integral nanoseconds equal local mapper duration; IDs are exact decimal strings/integers and full trace hex.",
+      "apm_detail": "Preserve complete native spans plus actual metadata and whether is_truncated was present. No true truncation tag/message means complete per observed MCP convention. Select matching span without dropping unexpected detailed spans.",
+      "limits": "get_trace exposes duration_ms and second-rounded start/end strings; do not invent raw nanosecond starts or absent sampling metrics. Local mapper/carrier sampling remains asserted.",
+      "raw_format_samples": "Fresh historical synthetic queries confirm adapter representation only; no new runtime acceptance is inferred."
+    },
+    "native_state_waits": {
+      "running": 13,
+      "suspended": 2,
+      "completed": 11,
+      "rule": "Install every state wait before its own operation, link each actual KVO observation once. No synthesized callback or unconsumed readiness."
+    },
+    "baseline_completed_resume_classification": "Observe final Detail mapper state after the same bounded stop boundary in both arms. B requires inactive; A preserves actual state and every extra event/pending observation, then classifies any source-predicted phantom-active behavior only after runtime evidence. No invented baseline failure or filtering to candidate counts."
+  },
+  "qualification_bound": {
+    "implementation_minutes": 60,
+    "native_prerequisite_launches": 2,
+    "accepted_launches": 4,
+    "meaning": "At most one automatic and one registered unqualified native prerequisite launch before the four frozen accepted cells. Stop a failed lane, record failure, and diagnose before any source/oracle revision. Do not count a local prerequisite as backend acceptance."
+  },
+  "timing_oracle": {
+    "registered": "Exact source conversion from observed genuine taskInterval; keep original interval endpoints. No synthetic callback injection.",
+    "automatic": "Positive event duration no greater than measured first-resume-through-mapper interval plus frozen1ms Date/integer precision allowance. This is a semantic bound, not performance acceptance.",
+    "size": "Source-derived positive decoded metric byte count, otherwise native countOfBytesReceived; body hash is separate."
+  },
+  "authentication_preflight": "Direct Datadog RUM application lookup and APM query succeeded2026-09-20; query capability is not event-ingestion acceptance.",
+  "production_changes_allowed": false,
+  "implementation": {
+    "status": "SOURCE PREPARATION; NO NATIVE EXECUTION",
+    "native_fixture": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp202-urlsession-fixture.E0Uiwo",
+    "oracle": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp202-oracle-zxnbjtvg",
+    "host": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp202-host-runner-qj2jmikp",
+    "first_preparation_disposition": "Before build: fix complete definition hash, restricted environment and runner/project/selected Info revalidation. No native attempt consumed. Existing path-only credential include is the runbook-approved Xcode resolution mechanism; agent never reads/hashes/logs protected contents.",
+    "review": "/tmp/exp202-host-review-qj2jmikp"
+  },
+  "attempts": [],
+  "result": null
+}

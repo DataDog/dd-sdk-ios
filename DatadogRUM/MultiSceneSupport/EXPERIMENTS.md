@@ -232,4 +232,6 @@ conclusions belong in [ASSESSMENT.md](ASSESSMENT.md).
 
 | <a id="exp-200"></a>EXP-200 | C04, C05 | S1:C04/C05 closed |18/18 paired cells pass: strict ordinary/legacy26.5 ownership and custom/NOP17.5/26.5/27.0. Five oracle corruptions reject; clean installs, identities and restored boot states verified. | [record](Experiments/EXP-200-compatibility.md#exp-200--complete-customnop-and-ios265-compatibility) |
 
-| <a id="exp-201"></a>EXP-201 | F02, F03 | S1:F02 closed; M01 diagnosis |24 platform builds, five public clients and exact API/doc verification pass. Full integration278 executes with one delta-hitch assertion under paired event-history diagnosis. F03 remains open. | [record](Experiments/EXP-201-final-compatibility.md#exp-201--qualify-affected-platform-packages-and-existing-clients) |
+| <a id="exp-201"></a>EXP-201 | F02, F03 | S1:F02/F03 closed |24 platform builds, five public clients and exact API/doc verification pass; corrected full integration278/278, no failures/skips or missing identifiers. Paired original oracle failures and runtime-warning limits retained. | [record](Experiments/EXP-201-final-compatibility.md#exp-201--qualify-affected-platform-packages-and-existing-clients) |
+
+| <a id="exp-202"></a>EXP-202 | A01, T03, T08 | DEFINED | Four ordinary Release cells at62f/1bd, automatic/registered, strict native and whole-session Resource/Trace inventory; current-develop ownership/error limits frozen. | [record](Experiments/EXP-202-urlsession-backend.md#exp-202--qualify-ordinary-resource-and-trace-lifecycle-acceptance) |

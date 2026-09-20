@@ -756,7 +756,7 @@
           "dependencies": [],
           "decisive_test": "One frozen run binds preflight, clean install, source/build/install identity, actual input/lifecycle, strict local inventory, whole-session backend and cleanup; reject known stale/readiness/run-ID/late-oracle controls.",
           "environment": "Qualified simulator for frozen candidate; actual toolchain/runtime identity and authenticated Datadog",
-          "evidence": "Reference evidence retained; this release candidate is not qualified.",
+          "evidence": "EXP-202 defined before implementation: four Release baseline/candidate automatic/registered cells on17.5, fixed twelve-row public single-scene contract, native/mapper/backend identity and operational negatives. Current-develop E03/E05 limitations retained; not yet executed. Results/EXP-202-urlsession-backend.json owns the contract.",
           "required": true
         },
         "S2": {
@@ -865,7 +865,7 @@
           ],
           "decisive_test": "Repeated/resumed tasks produce one Resource start and one completion with unchanged baseline ownership/metrics/error behavior; no new foreign action counts.",
           "environment": "Source-less fixtures and relevant native/backend inventory",
-          "evidence": "Required for selected E01 because shared network instrumentation feeds Resource and Trace handlers. Other extraction candidates receive their own affected-family audit.",
+          "evidence": "EXP-202 defined before implementation: four Release baseline/candidate automatic/registered cells on17.5, fixed twelve-row public single-scene contract, native/mapper/backend identity and operational negatives. Current-develop E03/E05 limitations retained; not yet executed. Results/EXP-202-urlsession-backend.json owns the contract.",
           "required": true
         },
         "S2": {
@@ -1021,7 +1021,7 @@
           ],
           "decisive_test": "Repeated/resumed tasks produce one Trace interception/start/completion with unchanged baseline context, sampling and headers; E05 request-time correlation is separately qualified and does not block E01.",
           "environment": "Source-less fixtures and relevant native/backend inventory",
-          "evidence": "Required for selected E01 because shared network instrumentation feeds Resource and Trace handlers. Other extraction candidates receive their own affected-family audit.",
+          "evidence": "EXP-202 defined before implementation: four Release baseline/candidate automatic/registered cells on17.5, fixed twelve-row public single-scene contract, native/mapper/backend identity and operational negatives. Current-develop E03/E05 limitations retained; not yet executed. Results/EXP-202-urlsession-backend.json owns the contract.",
           "required": true
         },
         "S2": {
@@ -1858,14 +1858,14 @@
         },
         "S1": {
           "scope": "Candidate-scoped final compatibility matrix",
-          "status": "OPEN",
+          "status": "CLOSED",
           "dependencies": [
             "S1:F07",
             "S1:C06"
           ],
           "decisive_test": "Freeze affected modules/platforms via F07; run relevant complete suites, deployment builds, existing Swift/Objective-C clients, lint and unchanged API/wire/privacy checks.",
           "environment": "FINAL_COMPATIBILITY.md release applicability matrix",
-          "evidence": "EXP-201 production1bdc9286: M02-M11 pass with24 platform builds, five public clients, exact Swift/Objective-C API equality and audited docs. M01 full integration278 executes277pass/1delta-hitch failure/0skip. Paired62f/1bd histories prove inherited last-delta-only assertion defect; both collected one hitch and12 offline corruptions reject. Original failures retained; test-only correction/full integration qualification pending. F03 stays OPEN.",
+          "evidence": "EXP-201 production1bdc9286, final local925b9326: M01-M11 pass. Reused full Internal/Core/RUM/Trace suites plus corrected full integration278/278, exact discovered/executed identifier multiset, zero failures/skips.24 platform/configuration builds, five public Swift/Objective-C clients, exact API equality, strict changed-file lint and audited feature docs pass. Inherited delta-oracle defect is paired-proven; only one integration test file changed. Original failures, nine QoS warnings and diagnostic timeout retained; no zero-warning/sanitizer/performance claim. Results/EXP-201-final-compatibility.json.",
           "required": true
         },
         "S2": {
@@ -2607,7 +2607,7 @@
           "dependencies": [],
           "decisive_test": "Inventory exact production diff, imports/callers/API/wire and transitive dependencies. Prove deferred scene routing/lifecycle/authority is absent, not merely hidden by API/manifest flags. Preserve upstream changes absent from the experimental branch.",
           "environment": "Fresh develop baseline and isolated source candidate",
-          "evidence": "EXP-199 exact candidate1bdc9286 retains exactly3 internal source+2 test files over develop62f64; all other tracked content identical. Only private NetworkInstrumentationFeature ownership changed since reviewed464; no public API, wire, endpoints, capture/header policy or deferred scene code added. Owning result contains inventory/hashes. Local commit unsigned after agent failure, explicitly user-authorized; no push.",
+          "evidence": "EXP-199 production1bdc9286 retains exactly3 internal production files over develop62f64. Final local925b9326 additionally contains3 test files and6 documentation files (five feature docs and changelog); no other production change. EXP-201 verifies1177 frozen source inputs and unchanged public APIs. No endpoints, capture/header policy, public API or deferred scene code added. Local unsigned fallback is user-authorized; no push.",
           "required": true
         },
         "S2": {

@@ -47,9 +47,12 @@ heap growth without instrumentation remains unattributed. All thresholds stand.
 
 EXP-201 adds independently reviewed platform/public-client coverage and unchanged
 API baselines at1bdc9286. Five documentation-only updates correct inherited Trace
-semantics and verification metadata. The separately added integration suite has
-277passes and one delta-hitch assertion failure under source-paired diagnosis;
-no URLSession regression is inferred before the actual event-history comparison.
+semantics and verification metadata. The separately added integration suite first exposes an inherited delta-hitch
+assertion defect: both source arms record a hitch yet fail the last-delta-only
+assertion. One test-only correction then passes all278 discovered tests exactly
+once, with zero failures/skips. S1:F03 closes within its affected-source matrix.
+Nine QoS warnings and Xcode diagnostic-collection limits remain recorded; no
+zero-warning, sanitizer or numeric-performance claim follows.
 The second EXP-198 fixture draft is rejected before execution for measurement and
 teardown defects; these are fixture findings, not SDK production crashes. Numeric
 performance and full release acceptance remain open. S1:F02 is qualified by the

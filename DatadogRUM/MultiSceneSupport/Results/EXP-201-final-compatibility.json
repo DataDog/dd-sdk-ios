@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "experiment": "EXP-201",
-  "status": "S1:F02 PASS; M02-M11 PASS; M01 inherited oracle defect proven, test correction pending",
+  "status": "S1:F02/F03 PASS",
   "defined_at": "2026-09-20T00:24:05.611441+00:00",
   "gate": "S1:F03",
   "owner": "SDK implementer",
@@ -35,9 +35,10 @@
     }
   ],
   "result": {
-    "compatibility": "M02-M11 PASS; M01 original FAIL, inherited test-oracle defect reproduced in both arms",
+    "compatibility": "M01-M11 PASS within isolated E01 applicability; original failures and warning limits preserved",
     "support_documentation": "S1:F02 PASS",
-    "release_claim": false
+    "release_claim": false,
+    "remaining": "S1:A01/T03/T08 EXP-202 backend workflow, P01-P04 bounded performance/reentrancy qualification and F06 final release review. No release or push approval."
   },
   "platforms": {
     "status": "PASS",
@@ -1837,8 +1838,8 @@
           }
         },
         "candidate": {
-          "artifact": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp201-hitch-complete-k_7pu9mo/candidate-stdout-timeline.json",
-          "sha256": "a733ae4a3f5509e63ceefc1313dd605fe86a11e4e774a611fe21de933905b75d",
+          "artifact": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp201-hitch-complete-k_7pu9mo/candidate-attachments/342A239E-5B5D-48C2-85D3-9142F42D4FE9.txt",
+          "sha256": "e8fd48b9c6cbfd9e034d22f5a79451dd27e1967a1950f7a2542098549e675f0c",
           "original_predicate": false,
           "original_last_delta_count": 0,
           "reconstructed": {
@@ -1898,7 +1899,200 @@
       "scope": "Four tests finish with3pass/1original assertion failure; xcodebuild still finalizing diagnostics, no successful runner-exit claim."
     },
     "classification": "Inherited last-delta-only test oracle defect reproduced in both arms; original failures retained.",
-    "next": "Prepare/review one-file test-only reconstruction with nil/empty controls, then require full integration qualification. Candidate diagnostic tests completed4 with1expected-original failure; xcodebuild remains finalizing diagnostics."
+    "next": "Prepare/review one-file test-only reconstruction with nil/empty controls, then require full integration qualification. Candidate diagnostic tests completed4 with1expected-original failure; xcodebuild remains finalizing diagnostics.",
+    "completed_result": {
+      "experiment": "EXP-201",
+      "status": "DIAGNOSTIC EXECUTED: TIMELINE REVIEW REQUIRED",
+      "definition": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp201-hitch-complete-k_7pu9mo/definition.json",
+      "runs": [
+        {
+          "arm": "baseline",
+          "command": [
+            "xcodebuild",
+            "test",
+            "-quiet",
+            "-workspace",
+            "Datadog.xcworkspace",
+            "-scheme",
+            "DatadogIntegrationTests",
+            "-configuration",
+            "Debug",
+            "-destination",
+            "platform=iOS Simulator,id=EEF49588-982B-492E-92AF-57F900ACEACD",
+            "-derivedDataPath",
+            "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp201-hitch-complete-k_7pu9mo/baseline-derived",
+            "-clonedSourcePackagesDirPath",
+            "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp201-hitch-complete-k_7pu9mo/SourcePackages",
+            "-disableAutomaticPackageResolution",
+            "-resultBundlePath",
+            "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp201-hitch-complete-k_7pu9mo/baseline.xcresult",
+            "-parallel-testing-enabled",
+            "NO",
+            "-enableCodeCoverage",
+            "NO",
+            "CODE_SIGNING_ALLOWED=NO",
+            "DD_API_KEY=",
+            "DD_TEST_RUNNER=",
+            "OTHER_SWIFT_FLAGS=$(inherited) -D DD_SDK_COMPILED_FOR_TESTING",
+            "-only-testing:DatadogIntegrationTests/RUMViewHitchesIntegrationTests",
+            "-only-testing:DatadogIntegrationTests/RUMViewHitchesIntegration_Tests"
+          ],
+          "started_at": 1789867600.5077949,
+          "log": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp201-hitch-complete-k_7pu9mo/baseline.log",
+          "returncode": 65,
+          "finished_at": 1789867659.6688871,
+          "log_sha256": "24482464eec2bc3d490b6afd7222694c2282c51e2c2f554c1df8eefef001d3f6",
+          "summary": {
+            "devicesAndConfigurations": [
+              {
+                "device": {
+                  "architecture": "arm64",
+                  "deviceId": "EEF49588-982B-492E-92AF-57F900ACEACD",
+                  "deviceName": "iPad Pro 11-inch (M4) (16GB)",
+                  "modelName": "iPad Pro 11-inch (M4)",
+                  "osBuildNumber": "21F79",
+                  "osVersion": "17.5",
+                  "platform": "iOS Simulator"
+                },
+                "expectedFailures": 0,
+                "failedTests": 1,
+                "passedTests": 3,
+                "skippedTests": 0,
+                "testPlanConfiguration": {
+                  "configurationId": "1",
+                  "configurationName": "Test Scheme Action"
+                }
+              }
+            ],
+            "environmentDescription": "DatadogIntegrationTests \u00b7 Built with macOS 26.6.2",
+            "expectedFailures": 0,
+            "failedTests": 1,
+            "finishTime": 1789867658.782,
+            "passedTests": 3,
+            "result": "Failed",
+            "runtimeWarnings": [],
+            "skippedTests": 0,
+            "startTime": 1789867607.59,
+            "statistics": [],
+            "testFailures": [
+              {
+                "failureText": "XCTAssertGreaterThan failed: (\"0\") is not greater than (\"0\") - {\"original_last_delta_count\":0,\"original_predicate\":false,\"timeline\":[{\"document_version\":1,\"is_active\":true,\"session_id\":\"9e1b1cb7-18b2-4c35-8e66-ead3a6a66d1b\",\"slow_frames\":[],\"type\":\"view\",\"view_id\":\"92b03051-67b3-4bd8-93a5-4e6f7453543c\"},{\"document_version\":2,\"is_active\":null,\"session_id\":\"9e1b1cb7-18b2-4c35-8e66-ead3a6a66d1b\",\"slow_frames\":[{\"duration\":86235333,\"start\":500000000}],\"type\":\"view_update\",\"view_id\":\"92b03051-67b3-4bd8-93a5-4e6f7453543c\"},{\"document_version\":3,\"is_active\":false,\"session_id\":\"9e1b1cb7-18b2-4c35-8e66-ead3a6a66d1b\",\"slow_frames\":null,\"type\":\"view_update\",\"view_id\":\"92b03051-67b3-4bd8-93a5-4e6f7453543c\"}]}",
+                "targetName": "DatadogIntegrationTests",
+                "testIdentifier": 3,
+                "testIdentifierString": "RUMViewHitchesIntegration_Tests/testViewHitchesCollected_whenFeatureFlagIsEnabled()",
+                "testIdentifierURL": "test://com.apple.xcode/Datadog/DatadogIntegrationTests/RUMViewHitchesIntegration_Tests/testViewHitchesCollected_whenFeatureFlagIsEnabled",
+                "testName": "testViewHitchesCollected_whenFeatureFlagIsEnabled()"
+              }
+            ],
+            "title": "Test - DatadogIntegrationTests",
+            "topInsights": [],
+            "totalTestCount": 4
+          },
+          "attachment_export_returncode": 0,
+          "attachment_export_output": "Skipped export for RUMViewHitchesIntegrationTests/testViewHitchesCollected_whenFeatureFlagIsEnabled(): no matching attachments\n\nSkipped export for RUMViewHitchesIntegrationTests/testViewHitchesNotCollected_whenFeatureFlagIsDisabled(): no matching attachments\n\nExported 2 attachments for: RUMViewHitchesIntegration_Tests/testViewHitchesCollected_whenFeatureFlagIsEnabled():\nFile: FC58FD14-256A-424D-8E31-53231EEE5575.txt, suggested name: \"EXP201-hitch-timeline_0_A59743CB-63B6-4D04-8F0E-550B450C2E92.json\"\nFile: 9F072300-0AE0-41D4-8F34-FEF397B43B7B.txt, suggested name: \"Complete Issue Description.txt\"\n\nSkipped export for RUMViewHitchesIntegration_Tests/testViewHitchesNotCollected_whenFeatureFlagIsDisabled(): no matching attachments\n\nGenerated manifest file with attachment details: /private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp201-hitch-complete-k_7pu9mo/baseline-attachments/manifest.json\n"
+        },
+        {
+          "arm": "candidate",
+          "command": [
+            "xcodebuild",
+            "test",
+            "-quiet",
+            "-workspace",
+            "Datadog.xcworkspace",
+            "-scheme",
+            "DatadogIntegrationTests",
+            "-configuration",
+            "Debug",
+            "-destination",
+            "platform=iOS Simulator,id=EEF49588-982B-492E-92AF-57F900ACEACD",
+            "-derivedDataPath",
+            "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp201-hitch-complete-k_7pu9mo/candidate-derived",
+            "-clonedSourcePackagesDirPath",
+            "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp201-hitch-complete-k_7pu9mo/SourcePackages",
+            "-disableAutomaticPackageResolution",
+            "-resultBundlePath",
+            "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp201-hitch-complete-k_7pu9mo/candidate.xcresult",
+            "-parallel-testing-enabled",
+            "NO",
+            "-enableCodeCoverage",
+            "NO",
+            "CODE_SIGNING_ALLOWED=NO",
+            "DD_API_KEY=",
+            "DD_TEST_RUNNER=",
+            "OTHER_SWIFT_FLAGS=$(inherited) -D DD_SDK_COMPILED_FOR_TESTING",
+            "-only-testing:DatadogIntegrationTests/RUMViewHitchesIntegrationTests",
+            "-only-testing:DatadogIntegrationTests/RUMViewHitchesIntegration_Tests"
+          ],
+          "started_at": 1789867660.332515,
+          "log": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp201-hitch-complete-k_7pu9mo/candidate.log",
+          "returncode": 65,
+          "finished_at": 1789868301.077161,
+          "log_sha256": "fb4b1b4d5d79d6ee9c11e9036381bc175b05461588a325735c73a6549459efc6",
+          "summary": {
+            "devicesAndConfigurations": [
+              {
+                "device": {
+                  "architecture": "arm64",
+                  "deviceId": "EEF49588-982B-492E-92AF-57F900ACEACD",
+                  "deviceName": "iPad Pro 11-inch (M4) (16GB)",
+                  "modelName": "iPad Pro 11-inch (M4)",
+                  "osBuildNumber": "21F79",
+                  "osVersion": "17.5",
+                  "platform": "iOS Simulator"
+                },
+                "expectedFailures": 0,
+                "failedTests": 1,
+                "passedTests": 3,
+                "skippedTests": 0,
+                "testPlanConfiguration": {
+                  "configurationId": "1",
+                  "configurationName": "Test Scheme Action"
+                }
+              }
+            ],
+            "environmentDescription": "DatadogIntegrationTests \u00b7 Built with macOS 26.6.2",
+            "expectedFailures": 0,
+            "failedTests": 1,
+            "finishTime": 1789868300.02,
+            "passedTests": 3,
+            "result": "Failed",
+            "runtimeWarnings": [],
+            "skippedTests": 0,
+            "startTime": 1789867661.458,
+            "statistics": [],
+            "testFailures": [
+              {
+                "failureText": "XCTAssertGreaterThan failed: (\"0\") is not greater than (\"0\") - {\"original_last_delta_count\":0,\"original_predicate\":false,\"timeline\":[{\"document_version\":1,\"is_active\":true,\"session_id\":\"47fa13cc-d1a2-410e-87fb-707bf904439a\",\"slow_frames\":[],\"type\":\"view\",\"view_id\":\"792f9af2-92e7-481b-8dab-6d4a7ce5e170\"},{\"document_version\":2,\"is_active\":null,\"session_id\":\"47fa13cc-d1a2-410e-87fb-707bf904439a\",\"slow_frames\":[{\"duration\":86373292,\"start\":516666667}],\"type\":\"view_update\",\"view_id\":\"792f9af2-92e7-481b-8dab-6d4a7ce5e170\"},{\"document_version\":3,\"is_active\":false,\"session_id\":\"47fa13cc-d1a2-410e-87fb-707bf904439a\",\"slow_frames\":null,\"type\":\"view_update\",\"view_id\":\"792f9af2-92e7-481b-8dab-6d4a7ce5e170\"}]}",
+                "targetName": "DatadogIntegrationTests",
+                "testIdentifier": 3,
+                "testIdentifierString": "RUMViewHitchesIntegration_Tests/testViewHitchesCollected_whenFeatureFlagIsEnabled()",
+                "testIdentifierURL": "test://com.apple.xcode/Datadog/DatadogIntegrationTests/RUMViewHitchesIntegration_Tests/testViewHitchesCollected_whenFeatureFlagIsEnabled",
+                "testName": "testViewHitchesCollected_whenFeatureFlagIsEnabled()"
+              }
+            ],
+            "title": "Test - DatadogIntegrationTests",
+            "topInsights": [],
+            "totalTestCount": 4
+          },
+          "attachment_export_returncode": 0,
+          "attachment_export_output": "Skipped export for RUMViewHitchesIntegrationTests/testViewHitchesCollected_whenFeatureFlagIsEnabled(): no matching attachments\n\nSkipped export for RUMViewHitchesIntegrationTests/testViewHitchesNotCollected_whenFeatureFlagIsDisabled(): no matching attachments\n\nExported 2 attachments for: RUMViewHitchesIntegration_Tests/testViewHitchesCollected_whenFeatureFlagIsEnabled():\nFile: 342A239E-5B5D-48C2-85D3-9142F42D4FE9.txt, suggested name: \"EXP201-hitch-timeline_0_C9D03B57-DA18-4F8D-BEAB-5DBA4FA1A9EA.json\"\nFile: 1EF92C36-AB8E-4153-A7B2-D6BBEA0372AB.txt, suggested name: \"Complete Issue Description.txt\"\n\nSkipped export for RUMViewHitchesIntegration_Tests/testViewHitchesNotCollected_whenFeatureFlagIsDisabled(): no matching attachments\n\nGenerated manifest file with attachment details: /private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp201-hitch-complete-k_7pu9mo/candidate-attachments/manifest.json\n"
+        }
+      ]
+    },
+    "cleanup": {
+      "device": "EEF49588-982B-492E-92AF-57F900ACEACD",
+      "bundle_id": "com.datadogqh.Example",
+      "before": {
+        "returncode": 0,
+        "app_path": "/Users/valentin.pertuisot/Library/Developer/CoreSimulator/Devices/EEF49588-982B-492E-92AF-57F900ACEACD/data/Containers/Bundle/Application/E128A178-AFE4-4A9C-9FC6-EE6FA94E7468/Example.app"
+      },
+      "uninstall_returncode": 0,
+      "container_absent": true,
+      "example_process_absent": true,
+      "boot_state_preserved": "Booted",
+      "dependency_inputs_unchanged": true,
+      "completed_at": 1789868565.321568
+    }
   },
   "independent_platform_client_review": {
     "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp201-independent-review-54vc2294/EXP-201-qualification-audit.md",
@@ -1956,5 +2150,166 @@
       "root_disposition": "Accepted source/support evidence after correction. Reject the suggestion to edit aggregate F02 dependencies: aggregate fields intentionally preserve reference/S3 obligations, while release_requirements.S1 owns candidate readiness."
     },
     "limits": "F03 integration, numeric performance, backend acceptance and F06 release review remain separate. No publication or push."
-  }
+  },
+  "integration_test_correction": {
+    "definition": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp201-integration-corrected-80sis2h4/definition.json",
+    "defined_at": 1789868717.52192,
+    "patch": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp201-hitch-oracle-v2.PpL3fJ/exp201-hitch-oracle-v2.patch",
+    "sha256": "ac19faf5a903de5f7f0506cf0b0a1d354270d61f83b1594629b204d4e03c2f0b",
+    "scope": "Complete original278-test integration inventory after one-file inherited delta-oracle correction, including in-test missing/empty payload controls. Keep original timings/workload. No SDK or API changes.",
+    "status": "PASS; full278-test integration inventory qualified",
+    "attempts": [
+      {
+        "root": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp201-integration-corrected-80sis2h4",
+        "status": "FAIL BEFORE TEST EXECUTION",
+        "failure": "takeSingle convenience is limited to session arrays, not View arrays",
+        "summary_sha256": "fb63f82092698459be05dabd99a96aba053efcab7f9591a429d77a5c1c9f4f12"
+      },
+      {
+        "root": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp201-integration-qualified-yqi493v2",
+        "status": "PASS",
+        "definition_sha256": "e46b742974b2ad8efd54d78ba9b5a1d263be463f3d52209b4cd3ead808769582",
+        "summary_sha256": "cf1e75dd910bd384123bfcb8a52b6a59c644a29f2a4fb9884616e2d767f9de78",
+        "test_summary_sha256": "e61b5ec0d7e42375e5d563217f2317f2d326befefd2916835d71099b1edbde7f",
+        "passed": 278,
+        "failed": 0,
+        "skipped": 0
+      }
+    ],
+    "commit": {
+      "paths": [
+        "Datadog/IntegrationUnitTests/RUM/RUMViewHitchesIntegration_Tests.swift"
+      ],
+      "parent": "c53ed48cf78661f410212170f59ff636d18a05f7",
+      "attempts": [
+        {
+          "kind": "signed",
+          "returncode": -15,
+          "timeout": true
+        },
+        {
+          "kind": "authorized-unsigned-fallback",
+          "returncode": 0,
+          "timeout": false
+        }
+      ],
+      "qualification": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp201-integration-qualified-yqi493v2",
+      "audit": "/tmp/exp201-m01-integration-diagnosis-4hP7w/audit.json",
+      "commit": "925b9326bcb364aab87686bbd665be8da576f674",
+      "signing": "authorized-unsigned-fallback",
+      "committed_paths": [
+        "Datadog/IntegrationUnitTests/RUM/RUMViewHitchesIntegration_Tests.swift"
+      ],
+      "clean": true,
+      "signature_status": "N"
+    },
+    "applied_test_sha256": "d969dcbc570ecfd78f0e2cc6e62c05d0af970fa9bd570da457563a9ec8712247",
+    "final_test_patch_sha256": "562983b1bc38b42553134b801328cecbcf4797e4db5cdd8e1906f24d82f68da4",
+    "cleanup": {
+      "status": "PASS",
+      "steps": [
+        {
+          "step": "terminate",
+          "returncode": 3
+        },
+        {
+          "step": "uninstall",
+          "returncode": 0
+        },
+        {
+          "step": "container_absence",
+          "returncode": 2
+        }
+      ],
+      "bundle": "com.datadogqh.Example",
+      "device": "EEF49588-982B-492E-92AF-57F900ACEACD",
+      "state_preserved": "Booted",
+      "process_absent": true,
+      "protected_state_unchanged": true,
+      "production_source_files_unchanged": 1177,
+      "finished_at": 1789869936.045401,
+      "keep_awake": "User seven-hour PID94221 left running",
+      "artifact": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp201-integration-qualified-yqi493v2/cleanup.json",
+      "sha256": "0d49c0d2cbee806346d10d900a924d98c72ae7b991b277dcdd2f61fc7afcab1d"
+    },
+    "warning_disposition": {
+      "runtime_qos_warnings": 9,
+      "meaning": "QoS inversions remain recorded. Attributed paths are unchanged AppHangsWatchdogThread, DatadogCoreProxy and GeneratingBacktraceTests; one warning lacks source location. Functional test success does not certify zero runtime warnings, performance or sanitizer behavior. Numeric P01-P04 and final F06 remain separate.",
+      "host_warning": "Preferred-buildable host lookup fell back to workspace-wide host; 278 successful actual tests prove launch.",
+      "diagnostic_timeout": "600-second simulator diagnostic collection timeout is preserved; final xcresult and xcodebuild0 are complete. No clean-diagnostics claim."
+    },
+    "independent_inventory_review": {
+      "path": "/tmp/exp201-m01-integration-diagnosis-4hP7w/audit.json",
+      "sha256": "2bfe590aa00898fd3841e021a34eb1ecc169a1d0a38c4b3b399c042659b910d4",
+      "inventory": {
+        "discovered": {
+          "artifact": "test-inventory.json",
+          "recursive_kind_test_entries": 278,
+          "sha256": "fc8e334024550468ef2f859e6217d98a51bbe1a6d33cb4edbdaa48496cdd2c4a",
+          "normalized_identifier_set_sha256": "2d4f981301c0375fede2f8c3ee4b43d1addf9ca7d7fbe055742faf22aa3462cb"
+        },
+        "executed": {
+          "artifact": "DatadogIntegrationTests.xcresult/database.sqlite3",
+          "sqlite_testcases": 278,
+          "sqlite_test_case_runs": 278,
+          "result_counts": {
+            "Success": 278
+          },
+          "duplicate_test_case_identifiers": 0,
+          "duplicate_test_case_run_identifiers": 0,
+          "normalized_identifier_set_sha256": "2d4f981301c0375fede2f8c3ee4b43d1addf9ca7d7fbe055742faf22aa3462cb"
+        },
+        "summary": {
+          "artifact": "test-summary.json",
+          "result": "Passed",
+          "totalTestCount": 278,
+          "passedTests": 278,
+          "failedTests": 0,
+          "skippedTests": 0,
+          "testFailures": 0,
+          "sha256": "e61b5ec0d7e42375e5d563217f2317f2d326befefd2916835d71099b1edbde7f"
+        },
+        "inventory_conclusion": "The normalized discovered identifier multiset equals the executed TestCases identifier multiset (278 entries), with empty missing/extra/multiplicity-difference arrays; the 278 TestCaseRuns also match that set and all are successful.",
+        "normalized_identifier_comparison": {
+          "normalization": "Inventory paths are the enclosing kind=class names joined with \"/\" and the kind=test name; xcresult TestCases.identifier is used verbatim; both lists are sorted lexicographically before comparison.",
+          "discovered_count": 278,
+          "executed_count": 278,
+          "discovered_set_sha256": "2d4f981301c0375fede2f8c3ee4b43d1addf9ca7d7fbe055742faf22aa3462cb",
+          "executed_set_sha256": "2d4f981301c0375fede2f8c3ee4b43d1addf9ca7d7fbe055742faf22aa3462cb",
+          "missing_in_executed": [],
+          "extra_in_executed": [],
+          "multiplicity_differences": [],
+          "sets_equal": true,
+          "executed_testcase_runs_count": 278,
+          "run_set_sha256": "2d4f981301c0375fede2f8c3ee4b43d1addf9ca7d7fbe055742faf22aa3462cb",
+          "testcases_equal_runs": true
+        }
+      },
+      "source_hash_review": {
+        "definition": {
+          "artifact": "definition.json",
+          "source_members": 41,
+          "complete_sources_verified": 1177,
+          "source_members_sha256": "9cccc3a993a55fa76a332589db6dc50e58825eb9cc3b6e79b84efe3b0de0826a",
+          "project_sha256": "25423f259e5d153cdd151a5763bbb8eced0925a1a3d14c10c2e5e863c6bab23d",
+          "test_patch_sha256": "562983b1bc38b42553134b801328cecbcf4797e4db5cdd8e1906f24d82f68da4",
+          "patch_applied_sha256": "d969dcbc570ecfd78f0e2cc6e62c05d0af970fa9bd570da457563a9ec8712247"
+        },
+        "recomputed": {
+          "manifest": "source-members.json",
+          "manifest_sha256": "9cccc3a993a55fa76a332589db6dc50e58825eb9cc3b6e79b84efe3b0de0826a",
+          "files_checked": 41,
+          "sha256_mismatches": 0
+        },
+        "scope": {
+          "source_unchanged": true,
+          "only_expected_test_edit": true,
+          "expected_test_edit": "Datadog/IntegrationUnitTests/RUM/RUMViewHitchesIntegration_Tests.swift",
+          "candidate_worktree_status": "Only the expected test file was dirty at inspection."
+        }
+      }
+    }
+  },
+  "qualification_revision": "925b9326bcb364aab87686bbd665be8da576f674",
+  "qualification_delta_from_production_candidate": "One test-only correction, five feature documents and one changelog line; three production source files remain exactly1bdc9286."
 }
