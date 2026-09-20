@@ -32,6 +32,15 @@ These mixed outcomes do not isolate an SDK, fixture or input cause. Independent
 review stops further equivalent attempts; no candidate launches or gate credit.
 Preserve all raw outcomes and use a concrete new discriminator before expansion.
 
+The [S2 lifetime audit](Results/EXP-211-s2-lifetime.json) qualifies a local weak
+callback-target repair for inherited active DisplayLinker retention. Eight
+unchanged frame/lifetime controls plus the corrected real-core teardown control
+pass on actual17.5. The latter observes pending configuration delivery before
+teardown: the original2s failure included a legitimate five-second message-bus
+owner and does not prove an unbounded core/Monitor leak. E04 cache composition,
+ordinary host/view lifetime and broader P03 remain open. The isolated repair is
+not yet part of the frozen E01-only S2 candidate; no performance claim follows.
+
 Physical Duo hardware is unavailable until after release. S2 may use qualified
 simulator and relevant physical iPhone/iPad evidence, disclosing that uncertainty;
 F09 provides later targeted confirmation, while full F04 remains S3. Unchanged

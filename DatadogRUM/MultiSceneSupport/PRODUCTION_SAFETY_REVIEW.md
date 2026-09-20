@@ -37,6 +37,17 @@ SDK/action/geometry cause and checkpoints the variability. No production repair,
 E01 regression or candidate acceptance is established. All identities, strict
 assertions, outcomes and cleanup are preserved; the skipped control stays unrun.
 
+The [EXP-211 lifetime repair](Results/EXP-211-s2-lifetime.json) fixes inherited
+active CADisplayLink target ownership in isolated local commita4be961d. Eight
+unchanged passing controls and one corrected real-core teardown control qualify
+the weak callback target on actual17.5. All nine weak witnesses release after the
+pending MessageBus configuration delivery is positively observed. The earlier2s
+Monitor-graph retention included that legitimate five-second owner; it is not an
+unbounded core/Monitor leak finding. The invalid fixture-cleanup run is preserved.
+S2:P03 remains open for its broader source-matched obligations; E04 remains bounded
+value-entry expiry/correlation. E01 S1 task gates and the S2 release freeze remain
+unchanged; this repair still needs separately defined composition qualification.
+
 The independent S1 E01 findings are separate from historical D01–D12. Repeated
 request mutation and strong terminal-preparation retention are repaired in
 1bdc9286; [EXP-197](Results/EXP-197-urlsession-extraction.json) and

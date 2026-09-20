@@ -1,0 +1,189 @@
+{
+  "schema_version": 1,
+  "experiment": "EXP-211",
+  "title": "Audit S2 view and Resource lifetime obligations against exact source",
+  "status": "FOCUSED DISPLAY-LINK REPAIR QUALIFIED AND COMMITTED; S2:P03 OPEN",
+  "defined_at": "2026-09-20T17:51:59.156556+00:00",
+  "engineering_checkpoint": "2026-09-20T18:21:59.156556+00:00",
+  "gate": "S2:P03",
+  "owner": "SDK implementer",
+  "independent_reviewer": "Separate lifetime reviewer",
+  "main_parent": "50ac5373f0e374eba3a43463ea8c187c9a919bfe",
+  "baseline_revision": "62f64d7b655bdc83f3036c4ad81090a270f6202b",
+  "candidate_revision": "652ce169773b0be5b6767179eca8ab5f4cf25f8a",
+  "production_revision": "1bdc9286c17d69d73e5e41530e6179c72a723368",
+  "worktree": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/urlsession-exactly-once",
+  "artifact_root": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp211-lifetime-audit-oas27dzl",
+  "hypothesis": "Exact accepted task, view/Resource removal, cache and instrumentation artifacts can be composed only for the invariants they assert. E01 inherits the already reproduced E04 cache-lifetime defect. Identify its precise P03 effect and the smallest remaining proof or source correction without inventing a leak from allocator noise.",
+  "allowed_work": [
+    "Read-only source ownership audit of shipped RUM view, Resource, cache and instrumentation paths",
+    "Verify source identities and exact test outcomes in accepted EXP199/201/202 and relevant EXP207 artifacts",
+    "One independent review of E04 applicability and the finite P03 proof boundary",
+    "Produce ownership map, evidence matrix, gaps and a concrete next admission before implementation or new tests",
+    "D1-D4 scoped amendments and one concrete D4 directory-cleanup correction, recorded before execution; no expanded production repair."
+  ],
+  "production_edits_allowed": true,
+  "new_builds_allowed": 5,
+  "new_native_launches_allowed": 5,
+  "new_test_runs_allowed": 5,
+  "decisive_checks": [
+    "Source and exact executed test identities match selected E01 source; retain composed-run limits",
+    "Differentiate weak deallocation witnesses, collection membership and clean OS teardown; do not promote one into another",
+    "Trace active/pending ownership and weak/unowned back-references through completion, cancellation, stopped view/session and feature release",
+    "Separate cache entry UUID/TTL retention from object retention; preserve delayed attribution and capacity",
+    "Document known failures as inherited or changed by E01; do not silently waive the registered requirement",
+    "Independent review before P03 closure or source expansion"
+  ],
+  "stop_rules": [
+    "No accepted test rerun for audit/stage labeling",
+    "No candidate expansion or repair without a frozen scoped amendment and independent lifetime review",
+    "No EXP210 retry or skipped diagnostic arm",
+    "No source-mismatched historical retention evidence reused as candidate qualification",
+    "No push, merge, release, or implicit caffeinate renewal"
+  ],
+  "gate_credit": [],
+  "limits": [
+    "Composed8+1 focused methods only, not a fresh whole-module or nine-test batch.",
+    "The original2s real-core check included the legitimate pending5s MessageBus owner; it does not establish an unbounded Monitor/core leak.",
+    "Final core teardown is qualified after positively witnessed configuration delivery; early-teardown behavior remains outside this final control.",
+    "No broader P03 gate closure, application memory/CPU/sanitizer, physical Duo, other-platform runtime or release claim."
+  ],
+  "initial_definition_sha256": "aea7160584a35e589a5a99880fd0cbd437b2fa8230f7549baa726997067f60f1",
+  "ownership_map": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp211-lifetime-audit-oas27dzl/ownership-map.md",
+  "accepted_evidence_map": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp211-lifetime-audit-oas27dzl/accepted-evidence-map.json",
+  "D1_definition": {
+    "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp211-lifetime-audit-oas27dzl/D1-definition.json",
+    "sha256": "32816becf07c63fa0877a3ed390c9f5419149a0853a51bb4fd7235b4e4f03211"
+  },
+  "D1_result": {
+    "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp211-lifetime-audit-oas27dzl/D1-pins-correction/red-run.json",
+    "sha256": "fd035deebaa2b6dce385122920a689f48b63c2b44abeb24602967b66c7bc4a49",
+    "tests": 3,
+    "failed": 2,
+    "passed": 1,
+    "runtime_warnings": 0,
+    "preflight_failure_preserved": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp211-lifetime-audit-oas27dzl/D1-preflight-correction.json"
+  },
+  "D2_proposal": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp211-lifetime-audit-oas27dzl/D2-proposal.json",
+  "D2_source_authority_check": {
+    "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp211-lifetime-audit-oas27dzl/D2-source-authority-check.json",
+    "sha256": "0817d4d7e5c68f475800cb0e7dcffda9978fbde3986f1818579fcf6f8efcb5fc",
+    "selected_and_proposed_platform_branches_identical": true,
+    "production_change_applied": true
+  },
+  "D2_definition": {
+    "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp211-lifetime-audit-oas27dzl/D2/definition.json",
+    "sha256": "24583554491ed3653883c5c0d7a02d670a30c5aa154733f194fe89a566f6b64d",
+    "review_sha256": "1b51995073d24e39e6ae2dd29ded2c2dadc23f5ef43c9a13b1c7e0a5ed9c541c",
+    "source_freeze_sha256": "0a3dab7c61d42163680039ee8d161ffc297aaf36e011fb5b7d86acb58a8ff10e",
+    "expected_tests": 9,
+    "whole_P03_closure_allowed": false
+  },
+  "D2_result": {
+    "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp211-lifetime-audit-oas27dzl/D2-root-audit.json",
+    "sha256": "60aa42c2bb42185e874c00d857f100f1e01923c4c650f77c31a67f8d8066abec",
+    "tests": 9,
+    "passed": 8,
+    "failed": 1,
+    "native_qualification": false
+  },
+  "D3_definition": {
+    "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp211-lifetime-audit-oas27dzl/D3/definition.json",
+    "sha256": "db2567e9dbab3d50ff51ccdd128775d3649ac41b6d1274fcc03ddc3a39a3735b",
+    "review_sha256": "408b0a1b3cab106d0cd8d3d445f3a37059fc74a15020e306285f55903712fd53",
+    "source_freeze_sha256": "6879e20b6287c1e6a1ab75ac713623ed94a4d40399d0513f550651560ce37746",
+    "production_edits": 0
+  },
+  "D3_result": {
+    "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp211-lifetime-audit-oas27dzl/D3-root-audit.json",
+    "sha256": "d69c651beeeaeb6a636829bbe271c103ca63235256f82674cf70367247381783",
+    "tests": 1,
+    "assertion_failures": 5,
+    "gate_credit": []
+  },
+  "D4_definition": {
+    "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp211-lifetime-audit-oas27dzl/D4/definition.json",
+    "sha256": "14fcb2f66166bba042aa780b17e52d5cc4564e44b622c4bbf3f9a37e758d82de",
+    "review_sha256": "e7f668ac14951323858b4029840ab27554f2683f307a5fb507574aae0ca868d6",
+    "source_freeze_sha256": "7d10363007e78d9cd9f8e7f0346e6cc30ca0b298ed588cdd83973d8d4d2f69b7",
+    "production_edits": 0
+  },
+  "completed_at": "2026-09-20T18:53:48.968981+00:00",
+  "repair_worktree": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/s2-rum-lifetime",
+  "repair_revision": "a4be961d14c77c9a7787c9bfb55398784022d0f9",
+  "repair_signature": "N",
+  "release_selection": "E01-only S2 freeze remains unchanged; this isolated repair is a prospective composition.",
+  "execution_accounting": {
+    "xcodebuild_test_calls": 5,
+    "prelaunch_pin_failure_calls": 1,
+    "valid_accepted_outcomes": "8 unchanged D2 methods plus1 corrected D4 method; not a new9/9 batch",
+    "invalid_native_runs": [
+      "D4 suite-integrity crash after body assertions; excluded from acceptance"
+    ],
+    "preserved_diagnostics": [
+      "D1 expected native retention red",
+      "D2 real-core target survives original2s boundary",
+      "D3 monitor graph survives original2s boundary"
+    ],
+    "original_D4_crash_restart": "xcodebuild restarted an empty runner after the test-process crash; no repeated selected test or acceptance claim."
+  },
+  "D4_result": {
+    "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp211-lifetime-audit-oas27dzl/D4-cleanup-correction/diagnostic-run.json",
+    "sha256": "6a8421c463305d14850b259fc2853ddd24759d56c372150e02beddc0f2f41453",
+    "passed": 1,
+    "failed": 0,
+    "skipped": 0,
+    "runtime_warnings": 0,
+    "cleanup_correction": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp211-lifetime-audit-oas27dzl/D4-cleanup-correction/correction.json"
+  },
+  "final_root_audit": {
+    "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp211-lifetime-audit-oas27dzl/final-root-audit.json",
+    "sha256": "827f7cd1f8740cbd4b695c8276ffaae931ba923f4aaa893c9e4bf420705e947d"
+  },
+  "final_independent_review": {
+    "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp211-lifetime-audit-oas27dzl/final-independent-review.json",
+    "sha256": "35a2d88fadf90fd6a2b29051d201ec441221ef9280529eb2cc51e11d183d3999",
+    "decision": "QUALIFIED_FOCUSED_WEAK_DISPLAY_TARGET_REPAIR_ONLY"
+  },
+  "local_commit": {
+    "parent": "652ce169773b0be5b6767179eca8ab5f4cf25f8a",
+    "paths": [
+      "DatadogRUM/Sources/RUMVitals/RenderLoop/RenderLoopObserver.swift",
+      "DatadogCore/Tests/Datadog/RUM/RUMVitals/DisplayLinkerTests.swift"
+    ],
+    "message": "Release RUM display-link observers with their owner",
+    "attempts": [
+      {
+        "kind": "signed",
+        "pid": 327,
+        "returncode": -15,
+        "timeout": true,
+        "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "kind": "authorized-unsigned-fallback",
+        "pid": 531,
+        "returncode": 0,
+        "timeout": false,
+        "log_sha256": "c468d5dc1b9924be4b434bce98dc5931aa68deb74c10e0e6e648fec21ed86aa2"
+      }
+    ],
+    "started_at": 1789930167.454548,
+    "commit": "a4be961d14c77c9a7787c9bfb55398784022d0f9",
+    "signature": "N",
+    "committed_paths": [
+      "DatadogCore/Tests/Datadog/RUM/RUMVitals/DisplayLinkerTests.swift",
+      "DatadogRUM/Sources/RUMVitals/RenderLoop/RenderLoopObserver.swift"
+    ],
+    "protected_unchanged": true,
+    "finished_at": 1789930192.597575
+  },
+  "durable_evidence": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp211-displaylink-lifetime-i75_jd_d",
+    "manifest_sha256": "f7e367534355054e81825d51a0184c5d67d80cd8443bc08154188b663b8b564f",
+    "files": 1250,
+    "bytes": 915779057,
+    "all_copies_verified": true,
+    "excluded_only": "DerivedData build intermediates/cache/index; all raw results and Build/Products retained"
+  }
+}

@@ -2325,6 +2325,38 @@ independent work. A matching source inventory or selected object-code section is
 not whole-binary identity. Archive raw controls/products before cleaning owned
 simulators; restored evidence paths do not restore live destination identities.
 
+### Lifetime evidence and native display-link teardown (EXP-211)
+
+Map each lifetime claim to its witness: collection removal, weak object release,
+cache TTL and OS process cleanup are not interchangeable. Real CADisplayLink
+retains its target; a factory mock may have different invalidate semantics.
+Observe nonnil weak witnesses before dropping the intended owner, use bounded
+predicate waits, and put cleanup notifications after the critical assertions.
+A resign-active control distinguishes invalidation from ordinary owner teardown.
+Keep exact failed tests and assertion messages; summary test failures may list
+one representative message while the detailed result records several.
+
+Fresh git worktrees lack ignored package locks. Verify and copy the qualified
+Package.resolved explicitly before source freeze, then validate clean checkout
+revisions and disable automatic resolution/updates. Preserve a prelaunch failure
+as such; it consumes no native test but requires a recorded concrete correction.
+Do not copy local client configuration unless the actual scenario needs it.
+
+A weak teardown witness must account for legitimate pending owners. The existing
+MessageBus configuration task retains its receivers for five seconds; observe
+its actual delivery while the core is alive before measuring final-owner release.
+Keep the original post-teardown wait and assertions. This does not qualify early
+teardown. Observe the actual core/bus as well as a test proxy; proxy release alone
+cannot establish their lifetime. Keep intermediate failures as diagnostic evidence.
+
+Globals compiled into both a test target and TestUtilities are module-local.
+An explicitly constructed core can use a different temporary directory from the
+proxy's cleanup helper. Clean the actual fixture directory after critical
+assertions; a passing test body followed by an integrity crash is an invalid run.
+Compare source with the named git revision, not a neighboring experimental checkout.
+Byte-identical unaffected method bodies and a narrowly proven formatting-only
+source delta can justify composed evidence; never label it a fresh full-suite run.
+
 ### EXP-196 unattended physical iPad execution
 
 Use the connected, authorized physical device and a bounded task-owned `caffeinate -d -i -u -t 14400` assertion; record command/PID/start/deadline, renew if needed and stop only that owned process. Device auto-lock is disabled by the user. Physical scene/gesture acceptance still requires native evidence before critical mutations.
