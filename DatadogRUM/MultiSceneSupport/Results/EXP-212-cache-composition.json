@@ -1,0 +1,191 @@
+{
+  "schema_version": 1,
+  "experiment": "EXP-212",
+  "title": "Qualify E04 cache composition with E01 and display-link lifetime repair",
+  "status": "QUALIFIED_FOCUSED_COMPOSITION",
+  "defined_at": "2026-09-20T19:04:51.999200+00:00",
+  "engineering_checkpoint": "2026-09-20T20:04:51.999200+00:00",
+  "timebox_deadline": "2026-09-20T20:04:51.999200+00:00",
+  "gates": [
+    "S2:P03",
+    "S2:T10",
+    "S2:F07"
+  ],
+  "owner": "Root source integration and sole build/device host",
+  "independent_reviewer": "c06_runtime_plan",
+  "main_parent": "b64ea3ce770c7ea5048779a2895bfc01c9366c5d",
+  "baseline_revision": "a4be961d14c77c9a7787c9bfb55398784022d0f9",
+  "develop_baseline": "62f64d7b655bdc83f3036c4ad81090a270f6202b",
+  "worktree": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/s2-rum-lifetime",
+  "branch": "valpertui/s2-rum-lifetime",
+  "artifact_root": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp212-cache-composition-tn9ygv00",
+  "e04_source_revision": "a3d34069cccbe35cac0fd2bc1fb456e64b1f4c43",
+  "allowed_paths": [
+    "DatadogRUM/Sources/RUMMonitor/Scopes/Utils/ViewCache.swift",
+    "DatadogRUM/Sources/RUMMonitor/Scopes/RUMSessionScope.swift",
+    "DatadogRUM/Tests/RUMMonitor/Scopes/RUMSessionScopeTests.swift",
+    "DatadogRUM/Tests/Integrations/WebViewEventReceiverTests.swift",
+    "Datadog/IntegrationUnitTests/RUM/WebEventIntegrationTests.swift"
+  ],
+  "frozen_copy_hashes": {
+    "DatadogRUM/Sources/RUMMonitor/Scopes/Utils/ViewCache.swift": "142961ec6c5ce10c61595b306e16f98ca34b1047694057bcaaf3d2d977a251ad",
+    "DatadogRUM/Sources/RUMMonitor/Scopes/RUMSessionScope.swift": "e59f10a3b3990c9b2c334e9168738aed2a57563bcd10f6f4cfa931a58051acda",
+    "DatadogRUM/Tests/RUMMonitor/Scopes/RUMSessionScopeTests.swift": "9add92b4ac3af1c3751185c9d39f2fa99245c96fc2409bc8eaea623cdc2b2a66",
+    "DatadogRUM/Tests/Integrations/WebViewEventReceiverTests.swift": "31828eaf854a8b4318fad595f833050339602b522205a2ef06b438ee875f9cf2",
+    "Datadog/IntegrationUnitTests/RUM/WebEventIntegrationTests.swift": "25b31685157d3e6bc2a3b53e302a03663dcea08421eebaceecbb2fcd648703fa"
+  },
+  "hypothesis": "The exact qualified two-file E04 repair composes without changing E01 ownership or the weak display-link repair. Cache release, expiry and native container behavior remain correct, and real-core teardown releases its observed owners after pending configuration delivery.",
+  "evidence_reuse": {
+    "audit": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp212-cache-composition-tn9ygv00/component-evidence-audit.json",
+    "sha256": "36d1a60cf1c820aa94fb375fe66a2162d631cac58d0d65e6ae54301d1f9ce299",
+    "scope": "Exact develop baseline red and component tests; no changed combined-source runtime credit"
+  },
+  "runs": [
+    {
+      "id": "unit",
+      "scheme": "DatadogRUM",
+      "selectors": [
+        "DatadogRUMTests/RUMSessionScopeTests/testGivenLongLivedView_whenNextViewStarts_itRetainsDelayedContainerUntilInactiveTTL",
+        "DatadogRUMTests/RUMSessionScopeTests/testGivenStoppedView_whenRetentionExpires_itReleasesCachedContainer",
+        "DatadogRUMTests/RUMSessionScopeTests/testGivenStoppedSession_whenRetentionExpires_itReleasesCachedContainer",
+        "DatadogRUMTests/RUMSessionScopeTests/testGivenTimedOutSession_whenRetentionExpires_itReleasesCachedContainer",
+        "DatadogRUMTests/RUMSessionScopeTests/testGivenExpiredSession_whenRetentionExpires_itReleasesCachedContainer",
+        "DatadogRUMTests/RUMSessionScopeTests/testGivenReleasedSession_whenRetentionExpires_itReleasesCachedContainer",
+        "DatadogRUMTests/RUMSessionScopeTests/testGivenRestoredSession_whenViewTransfers_itCachesFreshContainer",
+        "DatadogRUMTests/RUMSessionScopeTests/testGivenSessionViewCache_whenCapacityIsExceeded_itPreservesNewestViews",
+        "DatadogRUMTests/WebViewEventReceiverTests/testGivenLongLivedNativeView_whenDelayedWebEventArrivesAfterNavigation_itRetainsOriginalContainer",
+        "DatadogRUMTests/ViewCacheTests/testRequestView_withReplay",
+        "DatadogRUMTests/ViewCacheTests/testRequestView_withoutReplay",
+        "DatadogRUMTests/ViewCacheTests/testPurge_whenExceedingCount",
+        "DatadogRUMTests/ViewCacheTests/testPurge_whenExceedingTTL"
+      ],
+      "expected": 13,
+      "boundary": "Exact EXP207 selectors and unmodified tests; all pass once."
+    },
+    {
+      "id": "native",
+      "scheme": "DatadogIntegrationTests",
+      "selectors": [
+        "DatadogIntegrationTests/WebEventIntegrationTests/testWebEventIntegration",
+        "DatadogIntegrationTests/WebEventIntegrationTests/testWebTelemetryIntegration",
+        "DatadogIntegrationTests/WebEventIntegrationTests/testGivenLongLivedNativeView_whenDelayedWebEventsArrive_itPreservesContainerWindow"
+      ],
+      "expected": 3,
+      "boundary": "Exact EXP207 tests, clean native host installation, strict local ownership and expiry assertions."
+    },
+    {
+      "id": "lifetime",
+      "scheme": "DatadogCore",
+      "selectors": [
+        "DatadogCoreTests/DisplayLinkerTests/testGivenRUMFeature_whenConfigurationDeliveryFinishesAndCoreIsTornDown_itReleasesNativeDisplayTarget"
+      ],
+      "expected": 1,
+      "boundary": "Exact corrected EXP211 D4; observed configuration delivery precedes teardown; all nine weak witnesses release in original2s window."
+    }
+  ],
+  "environment": "Freshly rediscovered Xcode27.1/27A9269; actual booted iPad17.5/21F79; Debug, deployment15 inherited; pinned packages and142 framework inputs unchanged",
+  "execution_limits": {
+    "invocations": 3,
+    "retries": 0,
+    "each_build_and_test_seconds": 900,
+    "each_cleanup_seconds": 90,
+    "parallel_testing": false,
+    "no_competing_host_workloads": true
+  },
+  "stop_rules": [
+    "Identity/dependency/protected mismatch stops before native execution.",
+    "Any failure, skip, crash, missing selector or expired deadline stops the remaining matrix for diagnosis; no silent retries.",
+    "Production copy is restricted to exact five hashes after independent composition review.",
+    "No API, wire, endpoint, generated model, build script, scene routing or additional SDK source change."
+  ],
+  "gate_credit": "Focused E04 composition evidence only. No automatic promotion of selected S2 candidate or whole P03/T10 closure; native real-browser/backend and ordinary view/host lifetime remain separate.",
+  "limits": [
+    "No full-suite rerun merely to relabel accepted evidence.",
+    "No fresh baseline red; its exact source, tests and dependencies are bound in component audit.",
+    "No performance, sanitizer, live WebView callback/backend, physical Duo or other-platform runtime claim."
+  ],
+  "preimplementation_review": {
+    "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp212-cache-composition-tn9ygv00/composition-review.json",
+    "sha256": "44ce4ede7823875e3a6e960827d219e4a31945d4dccae906c710046a405ac135",
+    "decision": "ADMISSIBLE_WITH_FAIL_CLOSED_D4_SOURCE_PREFLIGHT"
+  },
+  "source_freeze": {
+    "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp212-cache-composition-tn9ygv00/source-freeze.json",
+    "sha256": "4405cb2362a3b408419b45d75c3ec9718d50911389346fba8aeb85cd25de3c48"
+  },
+  "runtime_results": {
+    "unit": {
+      "passed": 13,
+      "root_audit": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp212-cache-composition-tn9ygv00/unit/root-audit.json",
+      "sha256": "53c4040840ccba001dc9494e6b6904972987af0a6de2992a5bb004fa0098ed2d"
+    },
+    "native": {
+      "passed": 3,
+      "root_audit": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp212-cache-composition-tn9ygv00/native/root-audit.json",
+      "sha256": "3d7eb4a080070906285269cdfb8ca9a45ef1bbc7011aab85b32e8ce048f54ec1"
+    },
+    "lifetime": {
+      "passed": 1,
+      "root_audit": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp212-cache-composition-tn9ygv00/lifetime/root-audit.json",
+      "sha256": "0e836f4f3d157d6da56d3da137e63ae138df8f7d87bc08e7d140d877806d1114"
+    }
+  },
+  "root_audit": {
+    "path": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp212-cache-composition-tn9ygv00/final-root-audit.json",
+    "sha256": "8508625921c17c779a488da3ac4a6f6ff9f534fb13c46f5b51057a24afe9856c"
+  },
+  "completed_at": "2026-09-20T19:24:32.283166+00:00",
+  "composition_commit": {
+    "parent": "a4be961d14c77c9a7787c9bfb55398784022d0f9",
+    "paths": [
+      "DatadogRUM/Sources/RUMMonitor/Scopes/Utils/ViewCache.swift",
+      "DatadogRUM/Sources/RUMMonitor/Scopes/RUMSessionScope.swift",
+      "DatadogRUM/Tests/RUMMonitor/Scopes/RUMSessionScopeTests.swift",
+      "DatadogRUM/Tests/Integrations/WebViewEventReceiverTests.swift",
+      "Datadog/IntegrationUnitTests/RUM/WebEventIntegrationTests.swift"
+    ],
+    "message": "Preserve inactive WebView containers in the RUM lifetime candidate",
+    "attempts": [
+      {
+        "kind": "signed",
+        "pid": 19411,
+        "returncode": 0,
+        "timeout": false,
+        "log_sha256": "312e810b59e99b627ee6480653a6416c36e571671cbf428874162110a34add79"
+      }
+    ],
+    "started_at": 1789932025.558389,
+    "commit": "c9faed816a1d4828d7d8c4b64acae01119425889",
+    "signature": "G",
+    "committed_paths": [
+      "Datadog/IntegrationUnitTests/RUM/WebEventIntegrationTests.swift",
+      "DatadogRUM/Sources/RUMMonitor/Scopes/RUMSessionScope.swift",
+      "DatadogRUM/Sources/RUMMonitor/Scopes/Utils/ViewCache.swift",
+      "DatadogRUM/Tests/Integrations/WebViewEventReceiverTests.swift",
+      "DatadogRUM/Tests/RUMMonitor/Scopes/RUMSessionScopeTests.swift"
+    ],
+    "protected_unchanged": true,
+    "finished_at": 1789932028.677865
+  },
+  "final_independent_review": {
+    "path": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp212-cache-composition-tn9ygv00/final-independent-review.json",
+    "sha256": "f11f2dead14d903f4c838302ef3a904b19f773ddfb609d02dae421a3e15e9d43",
+    "decision": "FOCUSED_COMPOSITION_PASS"
+  },
+  "lint": {
+    "path": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp212-cache-composition-tn9ygv00/lint.json",
+    "sha256": "1416a36393e09f563be7410c400cfa57c49c4b282e02570e9a575c96546cf3ee",
+    "status": "PASS",
+    "correction": "Original reuse receipt pointed at stale early lint attempts and is explicitly rejected. Fresh strict scoped lint passes both repository configurations. No source or native rerun."
+  },
+  "durable_evidence": {
+    "status": "BYTE_VERIFIED",
+    "destination": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp212-cache-composition-6s1tuwh_",
+    "manifest_sha256": "92711d97b8a92b8b61e375f20a5267765ca3ddc67c07a2a1d38c9ff50b1c66bb",
+    "files": 2970,
+    "bytes": 593538975,
+    "exclusions": "EXP212 DerivedData caches/intermediates/index only; original evidence retained. Reused EXP207 old build products are not recopied.",
+    "created_at": "2026-09-20T19:22:38.815758+00:00"
+  },
+  "next_action": "Define finite ordinary UIKit controller, SwiftUI host and pending-view/resource weak-lifetime qualification on this isolated composed source. Reuse accepted task/cache/core evidence; keep selected S2 freeze and S1 branch separate until source-aware promotion."
+}

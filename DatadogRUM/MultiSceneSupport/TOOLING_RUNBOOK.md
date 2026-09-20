@@ -2357,6 +2357,15 @@ Compare source with the named git revision, not a neighboring experimental check
 Byte-identical unaffected method bodies and a narrowly proven formatting-only
 source delta can justify composed evidence; never label it a fresh full-suite run.
 
+For exact component composition, bind the historical baseline and candidate input
+maps, tests, dependencies and preserved neighboring repairs before copying paths.
+Run only the fixed affected combined-source slice; prior full-suite results retain
+their original identity. A filename such as `final-test-lint.json` is not proof:
+check its exit code, configuration and source hashes. Reject stale receipts and
+run scoped lint when exact reuse cannot be established. Keep native products and
+raw reused regression results in the durable evidence mirror. EXP-212 records
+this composition boundary; a focused pass does not promote the release candidate.
+
 ### EXP-196 unattended physical iPad execution
 
 Use the connected, authorized physical device and a bounded task-owned `caffeinate -d -i -u -t 14400` assertion; record command/PID/start/deadline, renew if needed and stop only that owned process. Device auto-lock is disabled by the user. Physical scene/gesture acceptance still requires native evidence before critical mutations.

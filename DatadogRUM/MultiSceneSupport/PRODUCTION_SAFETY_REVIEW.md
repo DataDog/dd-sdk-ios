@@ -46,7 +46,12 @@ Monitor-graph retention included that legitimate five-second owner; it is not an
 unbounded core/Monitor leak finding. The invalid fixture-cleanup run is preserved.
 S2:P03 remains open for its broader source-matched obligations; E04 remains bounded
 value-entry expiry/correlation. E01 S1 task gates and the S2 release freeze remain
-unchanged; this repair still needs separately defined composition qualification.
+unchanged. [EXP-212](Results/EXP-212-cache-composition.json) now qualifies the exact
+E04 cache composition with E01 and this repair in local commit `c9faed81`. Its 17
+frozen tests pass across three invocations; strict lint, exact input/product
+identities, cleanup and independent review pass. The rejected stale lint-reuse
+receipt is preserved. Ordinary view/host lifetime, whole P03/T10 and selected
+candidate promotion remain open; historical findings are not relabeled.
 
 The independent S1 E01 findings are separate from historical D01–D12. Repeated
 request mutation and strong terminal-preparation retention are repaired in
@@ -96,8 +101,8 @@ repair with eight exact baseline failures, five controls, 910 cases / 946 execut
 and matched native bridge red/green evidence. Exact UUID deactivation, session
 release/restoration, bounded capacity and Replay filtering pass. Review removed
 unnecessary UUID-string conversions from the command path. Lookup now mutates under
-a write lock; numerical performance and candidate-specific release checks remain
-open. This eligibility finding does not replace historical R01–R12 or E01 gates.
+a write lock; candidate-specific release checks remain open. Numeric microbenchmarks
+are optional under the current acceptance scope. This eligibility finding does not replace historical R01–R12 or E01 gates.
 
 The independent E05 review establishes and repairs request-time Trace ownership
 loss on unchanged develop. [EXP-208](Results/EXP-208-trace-ownership.json) qualifies

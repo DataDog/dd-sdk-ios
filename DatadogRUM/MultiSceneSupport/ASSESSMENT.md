@@ -37,9 +37,11 @@ callback-target repair for inherited active DisplayLinker retention. Eight
 unchanged frame/lifetime controls plus the corrected real-core teardown control
 pass on actual17.5. The latter observes pending configuration delivery before
 teardown: the original2s failure included a legitimate five-second message-bus
-owner and does not prove an unbounded core/Monitor leak. E04 cache composition,
-ordinary host/view lifetime and broader P03 remain open. The isolated repair is
-not yet part of the frozen E01-only S2 candidate; no performance claim follows.
+owner and does not prove an unbounded core/Monitor leak. The [E04 composition](Results/EXP-212-cache-composition.json)
+now qualifies exact cache source together with E01 and this repair in local commit
+`c9faed81`: 13 RUM, three native bridge and one real-core control pass once each.
+Ordinary host/view lifetime and broader P03 remain open. This composed qualification
+branch is not yet the frozen E01-only S2 candidate; no performance claim follows.
 
 Physical Duo hardware is unavailable until after release. S2 may use qualified
 simulator and relevant physical iPhone/iPad evidence, disclosing that uncertainty;
