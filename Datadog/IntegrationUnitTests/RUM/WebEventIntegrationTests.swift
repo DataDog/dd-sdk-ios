@@ -290,6 +290,258 @@ class WebEventIntegrationTests: XCTestCase {
         """
         )
     }
+
+    #if os(iOS)
+    func testGivenLongLivedNativeView_whenDelayedWebEventsArrive_itPreservesContainerWindow() throws {
+        // Given
+        let applicationID = "exp207-native-application"
+        let dateProvider = DateProviderMock(now: Date(timeIntervalSince1970: 1_700_000_000))
+
+        RUM.enable(with: .mockWith(applicationID: applicationID) {
+            $0.dateProvider = dateProvider
+        }, in: core)
+        core.set(context: SessionReplayCoreContext.HasReplay(value: true))
+        var hasReplayBeforeViewA: Bool?
+        core.scope(for: RUMFeature.self).context { context in
+            hasReplayBeforeViewA = context.additionalContext(ofType: SessionReplayCoreContext.HasReplay.self)?.value
+        }
+        core.flush()
+        XCTAssertEqual(hasReplayBeforeViewA, true)
+
+        let monitor = RUMMonitor.shared(in: core)
+        let viewAStart = dateProvider.now
+        monitor.startView(key: "native-a", name: "Native A")
+        core.flush()
+        let eventsBeforeViewB = try core.waitAndReturnRUMEventMatchers()
+        let allNativeViewEventsBeforeViewB = eventsBeforeViewB.filterRUMEvents(
+            ofType: RUMViewEvent.self,
+            where: { $0.view.name != nil }
+        )
+        let incidentalNativeViewCount = allNativeViewEventsBeforeViewB.filter {
+            let name: String? = try? $0.attribute(forKeyPath: "view.name")
+            return name != "Native A" && name != "Native B"
+        }.count
+        XCTAssertGreaterThan(incidentalNativeViewCount, 0, "Retain incidental native view inventory separately")
+        let nativeViewEventsBeforeViewB = allNativeViewEventsBeforeViewB.filter {
+            let name: String? = try? $0.attribute(forKeyPath: "view.name")
+            return name == "Native A" || name == "Native B"
+        }
+        XCTAssertEqual(nativeViewEventsBeforeViewB.count, 1, "A must emit one workload view event before B starts")
+        let nativeAStartedEvents = nativeViewEventsBeforeViewB.filter {
+            let name: String? = try? $0.attribute(forKeyPath: "view.name")
+            return name == "Native A"
+        }
+        XCTAssertEqual(nativeAStartedEvents.count, 1)
+        let nativeAStartedEvent: RUMViewEvent = try XCTUnwrap(nativeAStartedEvents.first?.model())
+        XCTAssertEqual(nativeAStartedEvent.view.isActive, true)
+        XCTAssertEqual(nativeAStartedEvent.session.hasReplay, true)
+
+        // A is intentionally older than the legacy three-minute insertion TTL when B starts.
+        let viewBStart = viewAStart.addingTimeInterval(3.minutes + 1)
+        dateProvider.now = viewBStart
+        monitor.startView(key: "native-b", name: "Native B")
+        core.flush()
+        let eventsAfterViewB = try core.waitAndReturnRUMEventMatchers()
+        let allNativeViewEventsAfterViewB = eventsAfterViewB.filterRUMEvents(
+            ofType: RUMViewEvent.self,
+            where: { $0.view.name != nil }
+        )
+        let incidentalNativeViewCountAfterViewB = allNativeViewEventsAfterViewB.filter {
+            let name: String? = try? $0.attribute(forKeyPath: "view.name")
+            return name != "Native A" && name != "Native B"
+        }.count
+        XCTAssertEqual(incidentalNativeViewCountAfterViewB, incidentalNativeViewCount)
+        let nativeViewEventsAfterViewB = allNativeViewEventsAfterViewB.filter {
+            let name: String? = try? $0.attribute(forKeyPath: "view.name")
+            return name == "Native A" || name == "Native B"
+        }
+        XCTAssertEqual(nativeViewEventsAfterViewB.count, 3, "B must add A's terminal update and B's active event")
+        let nativeAEvents = nativeViewEventsAfterViewB.filter {
+            let name: String? = try? $0.attribute(forKeyPath: "view.name")
+            return name == "Native A"
+        }
+        XCTAssertEqual(nativeAEvents.count, 2, "The native inventory must contain A's active and terminal records")
+        let nativeAStoppedEvents = try nativeAEvents.compactMap { matcher -> RUMEventMatcher? in
+            let event: RUMViewEvent = try matcher.model()
+            return event.view.isActive == false ? matcher : nil
+        }
+        XCTAssertEqual(nativeAStoppedEvents.count, 1, "A must have exactly one terminal record")
+        let nativeAIDs = try nativeAEvents.map { (matcher: RUMEventMatcher) -> String in
+            let event: RUMViewEvent = try matcher.model()
+            return event.view.id
+        }
+        XCTAssertEqual(Set(nativeAIDs).count, 1, "A's active and terminal records must share one owner")
+        let nativeAEvent: RUMViewEvent = try XCTUnwrap(nativeAStoppedEvents.first?.model())
+        XCTAssertEqual(nativeAEvent.view.name, "Native A")
+        let nativeViewA = nativeAEvent.view.id
+        let nativeSessionID = nativeAEvent.session.id
+        let nativeApplicationID = nativeAEvent.application.id
+        XCTAssertEqual(nativeApplicationID, applicationID)
+        XCTAssertEqual(nativeAEvent.session.hasReplay, true)
+        let nativeBEventsAfterViewB = nativeViewEventsAfterViewB.filter {
+            let name: String? = try? $0.attribute(forKeyPath: "view.name")
+            return name == "Native B"
+        }
+        XCTAssertEqual(nativeBEventsAfterViewB.count, 1, "The native inventory must contain exactly one B owner record")
+        let nativeBEvent: RUMViewEvent = try XCTUnwrap(nativeBEventsAfterViewB.first?.model())
+        XCTAssertEqual(nativeBEvent.view.isActive, true)
+        XCTAssertEqual(nativeBEvent.application.id, nativeApplicationID)
+        XCTAssertEqual(nativeBEvent.session.id, nativeSessionID)
+        XCTAssertNotEqual(nativeBEvent.view.id, nativeViewA)
+
+        let browserApplicationID = "exp207-browser-application"
+        let browserSessionID = "00000000-0000-0000-0000-000000000010"
+        let browserViewID = "00000000-0000-0000-0000-000000000011"
+        let serverOffsetMilliseconds = 123.dd.toInt64Milliseconds
+        let delayedAEventDate = viewAStart.timeIntervalSince1970.dd.toInt64Milliseconds + 1_000 - serverOffsetMilliseconds
+        let currentBEventDate = viewBStart.timeIntervalSince1970.dd.toInt64Milliseconds + 1_000 - serverOffsetMilliseconds
+
+        // When: A's delayed browser event arrives near the end of the inactive retention window.
+        dateProvider.now = viewBStart.addingTimeInterval(3.minutes - 1)
+        controller.send(body: webViewViewBody(
+            date: delayedAEventDate,
+            applicationID: browserApplicationID,
+            sessionID: browserSessionID,
+            viewID: browserViewID
+        ))
+        controller.flush()
+
+        let delayedAWithinWindow = try consumeBrowserViewEvent(
+            from: core,
+            browserViewID: browserViewID,
+            service: "exp207-browser",
+            expectedCount: 1
+        )
+        assertWebViewEvent(
+            delayedAWithinWindow,
+            applicationID: nativeApplicationID,
+            sessionID: nativeSessionID,
+            browserViewID: browserViewID,
+            eventDate: delayedAEventDate + serverOffsetMilliseconds,
+            containerViewID: nativeViewA
+        )
+
+        // When: the same delayed A event arrives after the inactive retention window.
+        dateProvider.now = viewBStart.addingTimeInterval(3.minutes + 1)
+        controller.send(body: webViewViewBody(
+            date: delayedAEventDate,
+            applicationID: browserApplicationID,
+            sessionID: browserSessionID,
+            viewID: browserViewID
+        ))
+        controller.flush()
+
+        let delayedAAfterWindow = try consumeBrowserViewEvent(
+            from: core,
+            browserViewID: browserViewID,
+            service: "exp207-browser",
+            expectedCount: 2
+        )
+        assertWebViewEvent(
+            delayedAAfterWindow,
+            applicationID: nativeApplicationID,
+            sessionID: nativeSessionID,
+            browserViewID: browserViewID,
+            eventDate: delayedAEventDate + serverOffsetMilliseconds,
+            containerViewID: nil
+        )
+
+        // Then: a current B event still resolves to B while B remains active.
+        controller.send(body: webViewViewBody(
+            date: currentBEventDate,
+            applicationID: browserApplicationID,
+            sessionID: browserSessionID,
+            viewID: browserViewID
+        ))
+        controller.flush()
+
+        let currentBEvent = try consumeBrowserViewEvent(
+            from: core,
+            browserViewID: browserViewID,
+            service: "exp207-browser",
+            expectedCount: 3
+        )
+
+        assertWebViewEvent(
+            currentBEvent,
+            applicationID: nativeApplicationID,
+            sessionID: nativeSessionID,
+            browserViewID: browserViewID,
+            eventDate: currentBEventDate + serverOffsetMilliseconds,
+            containerViewID: nativeBEvent.view.id
+        )
+    }
+
+    private func webViewViewBody(date: Int64, applicationID: String, sessionID: String, viewID: String) -> String {
+        """
+        {
+          "eventType": "view",
+          "event": {
+            "application": { "id": "\(applicationID)" },
+            "date": \(date),
+            "service": "exp207-browser",
+            "session": { "id": "\(sessionID)", "type": "user", "has_replay": true },
+            "type": "view",
+            "view": {
+              "action": { "count": 0 },
+              "error": { "count": 0 },
+              "id": "\(viewID)",
+              "is_active": true,
+              "resource": { "count": 0 }
+            },
+            "_dd": {
+              "document_version": 2,
+              "format_version": 2,
+              "replay_stats": {
+                "records_count": 1,
+                "segments_count": 1,
+                "segments_total_raw_size": 1
+              }
+            }
+          }
+        }
+        """
+    }
+
+    private func assertWebViewEvent(
+        _ matcher: RUMEventMatcher,
+        applicationID: String,
+        sessionID: String,
+        browserViewID: String,
+        eventDate: Int64,
+        containerViewID: String?
+    ) {
+        matcher.jsonMatcher.assertValue(forKeyPath: "type", equals: "view")
+        matcher.jsonMatcher.assertValue(forKeyPath: "application.id", equals: applicationID)
+        matcher.jsonMatcher.assertValue(forKeyPath: "session.id", equals: sessionID)
+        matcher.jsonMatcher.assertValue(forKeyPath: "session.has_replay", equals: true)
+        matcher.jsonMatcher.assertValue(forKeyPath: "view.id", equals: browserViewID)
+        matcher.jsonMatcher.assertValue(forKeyPath: "date", equals: Int(eventDate))
+
+        if let containerViewID {
+            matcher.jsonMatcher.assertValue(forKeyPath: "container.source", equals: "ios")
+            matcher.jsonMatcher.assertValue(forKeyPath: "container.view.id", equals: containerViewID)
+        } else {
+            matcher.jsonMatcher.assertNoValue(forKeyPath: "container")
+        }
+    }
+
+    private func consumeBrowserViewEvent(
+        from core: DatadogCoreProxy,
+        browserViewID: String,
+        service: String,
+        expectedCount: Int
+    ) throws -> RUMEventMatcher {
+        let inventory = try core.waitAndReturnRUMEventMatchers()
+        let candidates = inventory.filter { matcher in
+            let viewID: String? = try? matcher.jsonMatcher.valueOrNil(forKeyPath: "view.id")
+            let eventService: String? = try? matcher.jsonMatcher.valueOrNil(forKeyPath: "service")
+            return viewID == browserViewID && eventService == service
+        }
+        XCTAssertEqual(candidates.count, expectedCount, "Each browser phase must add exactly one matching view event")
+        return try XCTUnwrap(candidates.dropFirst(expectedCount - 1).first)
+    }
+    #endif
 }
 
 #endif

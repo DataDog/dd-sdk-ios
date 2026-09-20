@@ -865,6 +865,419 @@ class RUMSessionScopeTests: XCTestCase {
         XCTAssertEqual(collector.resumeCallCount, 1)
         XCTAssertEqual(collector.pauseCallCount, 0)
     }
+
+    // MARK: - View Cache Lifetime
+
+    func testGivenLongLivedView_whenNextViewStarts_itRetainsDelayedContainerUntilInactiveTTL() throws {
+        let start = Date(timeIntervalSinceReferenceDate: 0)
+        let inactiveTTL: TimeInterval = 10
+        let dateProvider = DateProviderMock(now: start)
+        let viewCache = ViewCache(dateProvider: dateProvider, ttl: inactiveTTL)
+        let sessionContext: DatadogContext = .mockWith(
+            serverTimeOffset: 0,
+            additionalContext: [SessionReplayCoreContext.HasReplay(value: true)]
+        )
+        let scope = makeSessionScope(
+            viewCache: viewCache,
+            startTime: start,
+            context: sessionContext
+        )
+
+        let viewAID = try startView(
+            in: scope,
+            identity: ViewIdentifier("A"),
+            at: start,
+            dateProvider: dateProvider,
+            context: sessionContext
+        )
+        let navigation = start.addingTimeInterval(100)
+        let viewBID = try startView(
+            in: scope,
+            identity: ViewIdentifier("B"),
+            at: navigation,
+            dateProvider: dateProvider,
+            context: sessionContext
+        )
+        viewCache.insert(
+            id: "legacy-inactive",
+            timestamp: milliseconds(start.addingTimeInterval(50)),
+            hasReplay: true
+        )
+
+        dateProvider.now = navigation.addingTimeInterval(inactiveTTL)
+        XCTAssertEqual(viewCache.lastView(before: milliseconds(navigation)), viewAID)
+
+        let afterRetention = navigation.addingTimeInterval(inactiveTTL + 0.01)
+        dateProvider.now = afterRetention
+        XCTAssertNil(viewCache.lastView(before: milliseconds(navigation)))
+        XCTAssertEqual(
+            viewCache.lastView(before: milliseconds(navigation.addingTimeInterval(0.01))),
+            viewBID
+        )
+    }
+
+    func testGivenStoppedView_whenRetentionExpires_itReleasesCachedContainer() throws {
+        let start = Date(timeIntervalSinceReferenceDate: 0)
+        let inactiveTTL: TimeInterval = 10
+        let dateProvider = DateProviderMock(now: start)
+        let viewCache = ViewCache(dateProvider: dateProvider, ttl: inactiveTTL)
+        let sessionContext: DatadogContext = .mockWith(
+            serverTimeOffset: 0,
+            additionalContext: [SessionReplayCoreContext.HasReplay(value: true)]
+        )
+        let scope = makeSessionScope(
+            viewCache: viewCache,
+            startTime: start,
+            context: sessionContext
+        )
+        let viewAID = try startView(
+            in: scope,
+            identity: ViewIdentifier("A"),
+            at: start,
+            dateProvider: dateProvider,
+            context: sessionContext
+        )
+
+        let resourceStart = start.addingTimeInterval(0.5)
+        dateProvider.now = resourceStart
+        _ = scope.process(
+            command: RUMStartResourceCommand.mockWith(
+                resourceKey: "retained-resource",
+                time: resourceStart
+            ),
+            context: sessionContext,
+            writer: writer
+        )
+
+        let stop = start.addingTimeInterval(1)
+        dateProvider.now = stop
+        _ = scope.process(
+            command: RUMStopViewCommand.mockWith(time: stop, identity: ViewIdentifier("A")),
+            context: sessionContext,
+            writer: writer
+        )
+        let laterCleanup = stop.addingTimeInterval(inactiveTTL - 0.01)
+        dateProvider.now = laterCleanup
+        _ = scope.process(
+            command: RUMStopViewCommand.mockWith(
+                time: laterCleanup,
+                identity: ViewIdentifier("A")
+            ),
+            context: sessionContext,
+            writer: writer
+        )
+
+        XCTAssertEqual(viewCache.lastView(before: milliseconds(laterCleanup)), viewAID)
+        let afterRetention = stop.addingTimeInterval(inactiveTTL + 0.01)
+        dateProvider.now = afterRetention
+        XCTAssertNil(viewCache.lastView(before: milliseconds(afterRetention)))
+    }
+
+    func testGivenStoppedSession_whenRetentionExpires_itReleasesCachedContainer() throws {
+        let start = Date(timeIntervalSinceReferenceDate: 0)
+        let inactiveTTL: TimeInterval = 10
+        let dateProvider = DateProviderMock(now: start)
+        let viewCache = ViewCache(dateProvider: dateProvider, ttl: inactiveTTL)
+        let sessionContext: DatadogContext = .mockWith(
+            serverTimeOffset: 0,
+            additionalContext: [SessionReplayCoreContext.HasReplay(value: true)]
+        )
+        let scope = makeSessionScope(
+            viewCache: viewCache,
+            startTime: start,
+            context: sessionContext
+        )
+        let viewAID = try startView(
+            in: scope,
+            identity: ViewIdentifier("A"),
+            at: start,
+            dateProvider: dateProvider,
+            context: sessionContext
+        )
+
+        let stop = start.addingTimeInterval(1)
+        dateProvider.now = stop
+        XCTAssertFalse(
+            scope.process(
+                command: RUMStopSessionCommand.mockWith(time: stop),
+                context: sessionContext,
+                writer: writer
+            )
+        )
+
+        let beforeRetention = stop.addingTimeInterval(inactiveTTL - 0.01)
+        dateProvider.now = beforeRetention
+        XCTAssertEqual(viewCache.lastView(before: milliseconds(beforeRetention)), viewAID)
+        let afterRetention = stop.addingTimeInterval(inactiveTTL + 0.01)
+        dateProvider.now = afterRetention
+        XCTAssertNil(viewCache.lastView(before: milliseconds(afterRetention)))
+    }
+
+    func testGivenTimedOutSession_whenRetentionExpires_itReleasesCachedContainer() throws {
+        let start = Date(timeIntervalSinceReferenceDate: 0)
+        let inactiveTTL: TimeInterval = 10
+        let dateProvider = DateProviderMock(now: start)
+        let viewCache = ViewCache(dateProvider: dateProvider, ttl: inactiveTTL)
+        let sessionContext: DatadogContext = .mockWith(
+            serverTimeOffset: 0,
+            additionalContext: [SessionReplayCoreContext.HasReplay(value: true)]
+        )
+        let scope = makeSessionScope(
+            viewCache: viewCache,
+            startTime: start,
+            context: sessionContext
+        )
+        let viewAID = try startView(
+            in: scope,
+            identity: ViewIdentifier("A"),
+            at: start,
+            dateProvider: dateProvider,
+            context: sessionContext
+        )
+
+        let timeout = start.addingTimeInterval(RUMSessionScope.Constants.sessionTimeoutDuration + 0.001)
+        dateProvider.now = timeout
+        XCTAssertFalse(
+            scope.process(
+                command: RUMCommandMock(time: timeout),
+                context: sessionContext,
+                writer: writer
+            )
+        )
+        XCTAssertEqual(scope.endReason, .timeOut)
+
+        let beforeRetention = timeout.addingTimeInterval(inactiveTTL - 0.01)
+        dateProvider.now = beforeRetention
+        XCTAssertEqual(viewCache.lastView(before: milliseconds(beforeRetention)), viewAID)
+        let afterRetention = timeout.addingTimeInterval(inactiveTTL + 0.01)
+        dateProvider.now = afterRetention
+        XCTAssertNil(viewCache.lastView(before: milliseconds(afterRetention)))
+    }
+
+    func testGivenExpiredSession_whenRetentionExpires_itReleasesCachedContainer() throws {
+        let start = Date(timeIntervalSinceReferenceDate: 0)
+        let inactiveTTL: TimeInterval = 10
+        let dateProvider = DateProviderMock(now: start)
+        let viewCache = ViewCache(dateProvider: dateProvider, ttl: inactiveTTL)
+        let sessionContext: DatadogContext = .mockWith(
+            serverTimeOffset: 0,
+            additionalContext: [SessionReplayCoreContext.HasReplay(value: true)]
+        )
+        let scope = makeSessionScope(
+            viewCache: viewCache,
+            startTime: start,
+            context: sessionContext
+        )
+        let viewAID = try startView(
+            in: scope,
+            identity: ViewIdentifier("A"),
+            at: start,
+            dateProvider: dateProvider,
+            context: sessionContext
+        )
+
+        let expiration = start.addingTimeInterval(RUMSessionScope.Constants.sessionMaxDuration + 0.001)
+        let interactionInterval = RUMSessionScope.Constants.sessionTimeoutDuration - 1
+        var interaction = start
+        while interaction.addingTimeInterval(interactionInterval) < expiration {
+            interaction = interaction.addingTimeInterval(interactionInterval)
+            dateProvider.now = interaction
+            XCTAssertTrue(
+                scope.process(
+                    command: RUMCommandMock(time: interaction, isUserInteraction: true),
+                    context: sessionContext,
+                    writer: writer
+                )
+            )
+        }
+
+        dateProvider.now = expiration
+        XCTAssertFalse(
+            scope.process(
+                command: RUMCommandMock(time: expiration, isUserInteraction: true),
+                context: sessionContext,
+                writer: writer
+            )
+        )
+        XCTAssertEqual(scope.endReason, .maxDuration)
+
+        let beforeRetention = expiration.addingTimeInterval(inactiveTTL - 0.01)
+        dateProvider.now = beforeRetention
+        XCTAssertEqual(viewCache.lastView(before: milliseconds(beforeRetention)), viewAID)
+        let afterRetention = expiration.addingTimeInterval(inactiveTTL + 0.01)
+        dateProvider.now = afterRetention
+        XCTAssertNil(viewCache.lastView(before: milliseconds(afterRetention)))
+    }
+
+    func testGivenReleasedSession_whenRetentionExpires_itReleasesCachedContainer() throws {
+        let start = Date(timeIntervalSinceReferenceDate: 0)
+        let inactiveTTL: TimeInterval = 10
+        let dateProvider = DateProviderMock(now: start)
+        let viewCache = ViewCache(dateProvider: dateProvider, ttl: inactiveTTL)
+        let sessionContext: DatadogContext = .mockWith(
+            serverTimeOffset: 0,
+            additionalContext: [SessionReplayCoreContext.HasReplay(value: true)]
+        )
+        let release = start.addingTimeInterval(1)
+        let viewAID: String
+        weak var releasedScope: RUMSessionScope?
+
+        do {
+            let scope = makeSessionScope(
+                viewCache: viewCache,
+                startTime: start,
+                context: sessionContext
+            )
+            releasedScope = scope
+            viewAID = try startView(
+                in: scope,
+                identity: ViewIdentifier("A"),
+                at: start,
+                dateProvider: dateProvider,
+                context: sessionContext
+            )
+            dateProvider.now = release
+            XCTAssertEqual(viewCache.lastView(before: milliseconds(release)), viewAID)
+        }
+
+        XCTAssertNil(releasedScope)
+        let beforeRetention = release.addingTimeInterval(inactiveTTL - 0.01)
+        dateProvider.now = beforeRetention
+        XCTAssertEqual(viewCache.lastView(before: milliseconds(beforeRetention)), viewAID)
+        let afterRetention = release.addingTimeInterval(inactiveTTL + 0.01)
+        dateProvider.now = afterRetention
+        XCTAssertNil(viewCache.lastView(before: milliseconds(afterRetention)))
+    }
+
+    func testGivenRestoredSession_whenViewTransfers_itCachesFreshContainer() throws {
+        let start = Date(timeIntervalSinceReferenceDate: 0)
+        let dateProvider = DateProviderMock(now: start)
+        let viewCache = ViewCache(dateProvider: dateProvider, ttl: 10)
+        let sessionContext: DatadogContext = .mockWith(
+            serverTimeOffset: 0,
+            additionalContext: [SessionReplayCoreContext.HasReplay(value: true)]
+        )
+        var oldScope: RUMSessionScope? = makeSessionScope(
+            viewCache: viewCache,
+            startTime: start,
+            context: sessionContext
+        )
+        let oldViewID = try startView(
+            in: try XCTUnwrap(oldScope),
+            identity: ViewIdentifier("A"),
+            at: start,
+            dateProvider: dateProvider,
+            context: sessionContext
+        )
+
+        let restoration = start.addingTimeInterval(1)
+        dateProvider.now = restoration
+        let restoredScope = RUMSessionScope(
+            from: try XCTUnwrap(oldScope),
+            startTime: restoration,
+            startPrecondition: .userAppLaunch,
+            context: sessionContext,
+            transferActiveView: true,
+            applicationState: .mockAny()
+        )
+        let restoredViewID = try XCTUnwrap(restoredScope.viewScopes.last).viewUUID.toRUMDataFormat
+
+        weak var releasedOldScope: RUMSessionScope? = oldScope
+        let oldRelease = restoration.addingTimeInterval(0.5)
+        dateProvider.now = oldRelease
+        oldScope = nil
+
+        XCTAssertNil(releasedOldScope)
+        XCTAssertNotEqual(restoredViewID, oldViewID)
+        let afterRetention = oldRelease.addingTimeInterval(10.01)
+        dateProvider.now = afterRetention
+        XCTAssertEqual(viewCache.lastView(before: milliseconds(afterRetention)), restoredViewID)
+    }
+
+    func testGivenSessionViewCache_whenCapacityIsExceeded_itPreservesNewestViews() throws {
+        let start = Date(timeIntervalSinceReferenceDate: 0)
+        let dateProvider = DateProviderMock(now: start)
+        let viewCache = ViewCache(dateProvider: dateProvider, ttl: 100, capacity: 2)
+        let sessionContext: DatadogContext = .mockWith(
+            serverTimeOffset: 0,
+            additionalContext: [SessionReplayCoreContext.HasReplay(value: true)]
+        )
+        let scope = makeSessionScope(
+            viewCache: viewCache,
+            startTime: start,
+            context: sessionContext
+        )
+
+        let viewAID = try startView(
+            in: scope,
+            identity: ViewIdentifier("A"),
+            at: start,
+            dateProvider: dateProvider,
+            context: sessionContext
+        )
+        let viewBStart = start.addingTimeInterval(1)
+        let viewBID = try startView(
+            in: scope,
+            identity: ViewIdentifier("B"),
+            at: viewBStart,
+            dateProvider: dateProvider,
+            context: sessionContext
+        )
+        let viewCStart = start.addingTimeInterval(2)
+        let viewCID = try startView(
+            in: scope,
+            identity: ViewIdentifier("C"),
+            at: viewCStart,
+            dateProvider: dateProvider,
+            context: sessionContext
+        )
+
+        XCTAssertNil(viewCache.lastView(before: milliseconds(viewBStart)))
+        XCTAssertEqual(viewCache.lastView(before: milliseconds(viewCStart)), viewBID)
+        XCTAssertEqual(
+            viewCache.lastView(before: milliseconds(viewCStart.addingTimeInterval(0.001))),
+            viewCID
+        )
+        XCTAssertNotEqual(viewAID, viewBID)
+    }
+
+    private func makeSessionScope(
+        viewCache: ViewCache,
+        startTime: Date,
+        context: DatadogContext
+    ) -> RUMSessionScope {
+        .mockWith(
+            parent: parent,
+            startTime: startTime,
+            context: context,
+            dependencies: .mockWith(samplingRate: 100, viewCache: viewCache)
+        )
+    }
+
+    private func startView(
+        in scope: RUMSessionScope,
+        identity: ViewIdentifier,
+        at time: Date,
+        dateProvider: DateProviderMock,
+        context: DatadogContext
+    ) throws -> String {
+        dateProvider.now = time
+        _ = scope.process(
+            command: RUMStartViewCommand.mockWith(
+                time: time,
+                identity: identity,
+                name: "view",
+                path: "view"
+            ),
+            context: context,
+            writer: writer
+        )
+        return try XCTUnwrap(scope.viewScopes.last).viewUUID.toRUMDataFormat
+    }
+
+    private func milliseconds(_ date: Date) -> Int64 {
+        date.timeIntervalSince1970.dd.toInt64Milliseconds
+    }
 }
 
 // MARK: - Test Helpers
