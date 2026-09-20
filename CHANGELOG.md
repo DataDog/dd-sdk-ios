@@ -3,6 +3,7 @@
 # 3.18.0 / 21-09-2026
 
 - [FIX] Preserve delayed WebView correlation for long-lived active native RUM views.
+- [FIX] Keep automatic URLSession spans linked to the RUM view and session captured when each request starts.
 - [FIX] Resolve the RUM session sampling decision synchronously in `RUM.enable()`, so WebViews instrumented immediately after initialization get a decision consistent with the session. See [#3183][]
 - [FEATURE] Add CPU-time samples alongside wall-time samples by default for application launch and Continuous Profiling. See [#3195][]
 - [IMPROVEMENT] Migrate `DatadogProfiling` to Swift 6. See [#3186][]

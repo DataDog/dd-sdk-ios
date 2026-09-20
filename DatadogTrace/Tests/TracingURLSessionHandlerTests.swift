@@ -86,7 +86,8 @@ class TracingURLSessionHandlerTests: XCTestCase {
         XCTAssertEqual(request.value(forHTTPHeaderField: B3HTTPHeaders.Single.b3Field), "000000000000000a0000000000000064-0000000000000064-1")
         XCTAssertEqual(request.value(forHTTPHeaderField: W3CHTTPHeaders.traceparent), "00-000000000000000a0000000000000064-0000000000000064-01")
         XCTAssertEqual(request.value(forHTTPHeaderField: W3CHTTPHeaders.tracestate), "dd=p:0000000000000064;s:1;t.dm:-1")
-        XCTAssertNil(capturedState)
+        XCTAssertNil((capturedState as? TracingURLSessionHandler.TracingURLSessionHandlerCapturedState)?.activeSpan)
+        XCTAssertFalse((capturedState as? TracingURLSessionHandler.TracingURLSessionHandlerCapturedState)?.hasGraphQLHeaders ?? false)
 
         let injectedTraceContext = try XCTUnwrap(traceContext, "It must return injected trace context")
         XCTAssertEqual(injectedTraceContext.traceID, .init(idHi: 10, idLo: 100))
@@ -149,7 +150,8 @@ class TracingURLSessionHandlerTests: XCTestCase {
         XCTAssertEqual(request.value(forHTTPHeaderField: B3HTTPHeaders.Single.b3Field), "custom")
         XCTAssertEqual(request.value(forHTTPHeaderField: W3CHTTPHeaders.traceparent), "custom")
         XCTAssertEqual(request.value(forHTTPHeaderField: W3CHTTPHeaders.tracestate), "custom")
-        XCTAssertNil(capturedState)
+        XCTAssertNil((capturedState as? TracingURLSessionHandler.TracingURLSessionHandlerCapturedState)?.activeSpan)
+        XCTAssertFalse((capturedState as? TracingURLSessionHandler.TracingURLSessionHandlerCapturedState)?.hasGraphQLHeaders ?? false)
 
         XCTAssertNil(traceContext, "It must return no trace context")
     }
@@ -192,7 +194,8 @@ class TracingURLSessionHandlerTests: XCTestCase {
         XCTAssertNil(request.value(forHTTPHeaderField: B3HTTPHeaders.Multiple.sampledField))
         XCTAssertNil(request.value(forHTTPHeaderField: B3HTTPHeaders.Single.b3Field))
         XCTAssertNil(request.value(forHTTPHeaderField: W3CHTTPHeaders.traceparent))
-        XCTAssertNil(capturedState)
+        XCTAssertNil((capturedState as? TracingURLSessionHandler.TracingURLSessionHandlerCapturedState)?.activeSpan)
+        XCTAssertFalse((capturedState as? TracingURLSessionHandler.TracingURLSessionHandlerCapturedState)?.hasGraphQLHeaders ?? false)
 
         XCTAssertNil(traceContext, "It must return no trace context")
     }
@@ -981,6 +984,487 @@ class TracingURLSessionHandlerTests: XCTestCase {
         let envelope: SpanEventsEnvelope? = core.events().last
         let span = try XCTUnwrap(envelope?.spans.first)
         XCTAssertEqual(span.tags[SpanTags.foregroundDuration], "0")
+    }
+
+    // MARK: - Request-time RUM ownership
+
+    func testGivenRequestTimeRUMContext_whenInjectedInterceptionCompletesAfterContextSwitch_itKeepsBaggageAndAllRUMTags() throws {
+        enableRUMTaggingForRequestTimeOwnershipTest()
+        let rumA = makeRUMContext("A")
+        let rumB = makeRUMContext("B")
+        setCoreContext(rum: rumB)
+
+        let (request, trace, state) = handler.modify(
+            request: makeRequest(),
+            headerTypes: [.datadog],
+            networkContext: NetworkContext(rumContext: rumA)
+        )
+        XCTAssertEqual(
+            request.value(forHTTPHeaderField: W3CHTTPHeaders.baggage),
+            "session.id=\(rumA.sessionID)",
+            "request-time baggage session.id"
+        )
+
+        let interception = makeCompletedInterception()
+        interception.register(trace: try XCTUnwrap(trace))
+        handler.interceptionDidStart(interception: interception, capturedStates: [state].compactMap { $0 })
+        _ = expectSpan()
+        handler.interceptionDidComplete(interception: interception)
+
+        waitForExpectations(timeout: 0.5)
+        assertSpanCount(1)
+        assertRUMTags(try lastSpan(), equalTo: rumA)
+    }
+
+    func testGivenExplicitNilRequestTimeRUMContext_whenInjectedInterceptionCompletesAfterContextSwitch_itKeepsRUMBaggageAndTagsAbsent() throws {
+        enableRUMTaggingForRequestTimeOwnershipTest()
+        setCoreContext(rum: makeRUMContext("B"))
+
+        let (request, trace, state) = handler.modify(
+            request: makeRequest(),
+            headerTypes: [.datadog],
+            networkContext: NetworkContext(rumContext: nil)
+        )
+        XCTAssertNil(request.value(forHTTPHeaderField: W3CHTTPHeaders.baggage), "explicit nil RUM baggage")
+
+        let interception = makeCompletedInterception()
+        interception.register(trace: try XCTUnwrap(trace))
+        handler.interceptionDidStart(interception: interception, capturedStates: [state].compactMap { $0 })
+        _ = expectSpan()
+        handler.interceptionDidComplete(interception: interception)
+
+        waitForExpectations(timeout: 0.5)
+        assertSpanCount(1)
+        assertRUMTags(try lastSpan(), equalTo: nil)
+    }
+
+    func testGivenAbsentNetworkContext_whenInjectedInterceptionCompletesAfterContextSwitch_itUsesModifyTimeReceiverRUM() throws {
+        enableRUMTaggingForRequestTimeOwnershipTest()
+        let rumA = makeRUMContext("A")
+        setCoreContext(rum: rumA)
+
+        let (request, trace, state) = handler.modify(
+            request: makeRequest(),
+            headerTypes: [.datadog],
+            networkContext: nil
+        )
+        XCTAssertEqual(
+            request.value(forHTTPHeaderField: W3CHTTPHeaders.baggage),
+            "session.id=\(rumA.sessionID)",
+            "absent NetworkContext fallback baggage session.id"
+        )
+
+        let interception = makeCompletedInterception()
+        interception.register(trace: try XCTUnwrap(trace))
+        handler.interceptionDidStart(interception: interception, capturedStates: [state].compactMap { $0 })
+        setCoreContext(rum: makeRUMContext("B"))
+        _ = expectSpan()
+        handler.interceptionDidComplete(interception: interception)
+
+        waitForExpectations(timeout: 0.5)
+        assertSpanCount(1)
+        assertRUMTags(try lastSpan(), equalTo: rumA)
+    }
+
+    func testGivenRequestTimeRUMContext_whenUninjectedInterceptionCompletesAfterContextSwitch_itKeepsAllRUMTags() throws {
+        enableRUMTaggingForRequestTimeOwnershipTest()
+        let rumA = makeRUMContext("A")
+        setCoreContext(rum: makeRUMContext("B"))
+
+        let (_, trace, state) = handler.modify(
+            request: makeRequest(withExistingDatadogHeaders: true),
+            headerTypes: [.datadog],
+            networkContext: NetworkContext(rumContext: rumA)
+        )
+        XCTAssertNil(trace)
+
+        let interception = makeCompletedInterception()
+        handler.interceptionDidStart(interception: interception, capturedStates: [state].compactMap { $0 })
+        _ = expectSpan()
+        handler.interceptionDidComplete(interception: interception)
+
+        waitForExpectations(timeout: 0.5)
+        assertSpanCount(1)
+        assertRUMTags(try lastSpan(), equalTo: rumA)
+    }
+
+    func testGivenExplicitNilRequestTimeRUMContext_whenUninjectedInterceptionCompletesAfterContextSwitch_itDoesNotAdoptLaterRUMTags() throws {
+        enableRUMTaggingForRequestTimeOwnershipTest()
+        setCoreContext(rum: makeRUMContext("B"))
+
+        let (_, trace, state) = handler.modify(
+            request: makeRequest(withExistingDatadogHeaders: true),
+            headerTypes: [.datadog],
+            networkContext: NetworkContext(rumContext: nil)
+        )
+        XCTAssertNil(trace)
+
+        let interception = makeCompletedInterception()
+        handler.interceptionDidStart(interception: interception, capturedStates: [state].compactMap { $0 })
+        _ = expectSpan()
+        handler.interceptionDidComplete(interception: interception)
+
+        waitForExpectations(timeout: 0.5)
+        assertSpanCount(1)
+        assertRUMTags(try lastSpan(), equalTo: nil)
+    }
+
+    func testGivenTwoRequestTimeRUMContexts_whenInterceptionsCompleteInReverseOrder_itKeepsEachOwnersTags() throws {
+        enableRUMTaggingForRequestTimeOwnershipTest()
+        let rumA = makeRUMContext("A")
+        let rumB = makeRUMContext("B")
+        setCoreContext(rum: rumB)
+
+        let (_, traceA, stateA) = handler.modify(
+            request: makeRequest(path: "a"),
+            headerTypes: [.datadog],
+            networkContext: NetworkContext(rumContext: rumA)
+        )
+        let (_, traceB, stateB) = handler.modify(
+            request: makeRequest(path: "b"),
+            headerTypes: [.datadog],
+            networkContext: NetworkContext(rumContext: rumB)
+        )
+        let interceptionA = makeCompletedInterception(path: "a")
+        let interceptionB = makeCompletedInterception(path: "b")
+        interceptionA.register(trace: try XCTUnwrap(traceA))
+        interceptionB.register(trace: try XCTUnwrap(traceB))
+        handler.interceptionDidStart(interception: interceptionA, capturedStates: [stateA].compactMap { $0 })
+        handler.interceptionDidStart(interception: interceptionB, capturedStates: [stateB].compactMap { $0 })
+
+        _ = expectSpan()
+        handler.interceptionDidComplete(interception: interceptionB)
+        waitForExpectations(timeout: 0.5)
+        assertSpanCount(1)
+        assertRUMTags(try lastSpan(), equalTo: rumB)
+
+        _ = expectSpan()
+        handler.interceptionDidComplete(interception: interceptionA)
+        waitForExpectations(timeout: 0.5)
+        assertSpanCount(2)
+        assertRUMTags(try lastSpan(), equalTo: rumA)
+    }
+
+    func testGivenRequestTimeRUMContextWithActiveSpan_whenInterceptionCompletesAfterContextSwitch_itPreservesParentAndRUMOwnership() throws {
+        enableRUMTaggingForRequestTimeOwnershipTest()
+        let rumA = makeRUMContext("A")
+        setCoreContext(rum: makeRUMContext("B"))
+        let parent = tracer.startRootSpan(operationName: "parent").setActive()
+
+        let (_, optionalTrace, state) = handler.modify(
+            request: makeRequest(),
+            headerTypes: [.datadog],
+            networkContext: NetworkContext(rumContext: rumA)
+        )
+        let interception = makeCompletedInterception()
+        let trace = try XCTUnwrap(optionalTrace)
+        interception.register(trace: trace)
+        handler.interceptionDidStart(interception: interception, capturedStates: [state].compactMap { $0 })
+        _ = expectSpan()
+        handler.interceptionDidComplete(interception: interception)
+
+        waitForExpectations(timeout: 0.5)
+        assertSpanCount(1)
+        let span = try lastSpan()
+        assertRUMTags(span, equalTo: rumA)
+        XCTAssertEqual(span.parentID, trace.parentSpanID)
+        _ = expectSpan()
+        parent.finish()
+        waitForExpectations(timeout: 0.5)
+        assertSpanCount(2)
+    }
+
+    func testGivenRequestTimeRUMContextWithGraphQLHeaders_whenInterceptionCompletesAfterContextSwitch_itPreservesRUMOwnership() throws {
+        enableRUMTaggingForRequestTimeOwnershipTest()
+        let rumA = makeRUMContext("A")
+        setCoreContext(rum: makeRUMContext("B"))
+        var request = makeRequest()
+        request.setValue("query", forHTTPHeaderField: GraphQLHeaders.operationName)
+
+        let (_, trace, state) = handler.modify(
+            request: request,
+            headerTypes: [.datadog],
+            networkContext: NetworkContext(rumContext: rumA)
+        )
+        XCTAssertTrue(
+            (state as? TracingURLSessionHandler.TracingURLSessionHandlerCapturedState)?.hasGraphQLHeaders ?? false
+        )
+        let interception = makeCompletedInterception()
+        interception.register(trace: try XCTUnwrap(trace))
+        handler.interceptionDidStart(interception: interception, capturedStates: [state].compactMap { $0 })
+        _ = expectSpan()
+        handler.interceptionDidComplete(interception: interception)
+
+        waitForExpectations(timeout: 0.5)
+        assertSpanCount(1)
+        assertRUMTags(try lastSpan(), equalTo: rumA)
+    }
+
+    func testGivenCompletionWithoutCapturedRUMContext_whenInterceptionCompletes_itUsesCurrentWriterContext() throws {
+        enableRUMTaggingForRequestTimeOwnershipTest()
+        let rumB = makeRUMContext("B")
+        setCoreContext(rum: rumB)
+        let interception = makeCompletedInterception()
+        _ = expectSpan()
+        handler.interceptionDidComplete(interception: interception)
+
+        waitForExpectations(timeout: 0.5)
+        assertSpanCount(1)
+        assertRUMTags(try lastSpan(), equalTo: rumB)
+    }
+
+    func testGivenExplicitNilNetworkContext_whenBuildingTraceContext_itPreservesReceiverSamplingFallback() throws {
+        enableRUMTaggingForRequestTimeOwnershipTest()
+        setCoreContext(rum: makeRUMContext("B", sessionSampleRate: 0))
+
+        let (_, trace, _) = handler.modify(
+            request: makeRequest(),
+            headerTypes: [.datadog],
+            networkContext: NetworkContext(rumContext: nil)
+        )
+
+        XCTAssertFalse(try XCTUnwrap(trace).samplingPriority.isKept)
+    }
+
+    func testGivenNoInjectedTrace_whenBuildingSpanContext_itPreservesExistingReceiverSamplingFallback() throws {
+        enableRUMTaggingForRequestTimeOwnershipTest()
+        let rumA = makeRUMContext("A")
+        setCoreContext(rum: makeRUMContext("B", sessionSampleRate: 0))
+        let (_, trace, state) = handler.modify(
+            request: makeRequest(withExistingDatadogHeaders: true),
+            headerTypes: [.datadog],
+            networkContext: NetworkContext(rumContext: rumA)
+        )
+        XCTAssertNil(trace)
+
+        let interception = makeCompletedInterception()
+        handler.interceptionDidStart(interception: interception, capturedStates: [state].compactMap { $0 })
+        let expectation = expectation(description: "Do not send dropped span")
+        expectation.isInverted = true
+        core.onEventWriteContext = { _ in expectation.fulfill() }
+        handler.interceptionDidComplete(interception: interception)
+
+        waitForExpectations(timeout: 0.5)
+        XCTAssertTrue(core.events.isEmpty)
+    }
+
+    func testGivenRequestTimeRUMContext_whenInjectingTraceHeaders_itPreservesParentUserAndAccountHeaders() throws {
+        enableRUMTaggingForRequestTimeOwnershipTest()
+        let rumA = makeRUMContext("A")
+        setCoreContext(
+            rum: rumA,
+            userInfo: UserInfo(id: "user-B"),
+            accountInfo: AccountInfo(id: "account-B")
+        )
+        let parent = tracer.startRootSpan(operationName: "parent").setActive()
+
+        let (request, trace, _) = handler.modify(
+            request: makeRequest(),
+            headerTypes: [.datadog],
+            networkContext: NetworkContext(rumContext: rumA)
+        )
+
+        XCTAssertEqual(try XCTUnwrap(trace).parentSpanID, parent.context.dd.spanID)
+        XCTAssertEqual(
+            request.value(forHTTPHeaderField: W3CHTTPHeaders.baggage),
+            "session.id=\(rumA.sessionID),user.id=user-B,account.id=account-B"
+        )
+        _ = expectSpan()
+        parent.finish()
+        waitForExpectations(timeout: 0.5)
+        assertSpanCount(1)
+    }
+
+    func testGivenCapturedRUMContext_whenEarlyCompletionGuardIsRetriedAfterContextChange_itUsesLegacyContextAndPreservesCancellationErrorSpan() throws {
+        enableRUMTaggingForRequestTimeOwnershipTest()
+        let rumA = makeRUMContext("A")
+        let rumB = makeRUMContext("B")
+        var expectedSpanCount = 0
+
+        // No tracer, missing timing, missing completion, and RUM origin are all recoverable guards.
+        for guardCase in ["tracer", "timing", "completion", "origin"] {
+            setCoreContext(rum: rumA)
+            let (_, trace, state) = handler.modify(
+                request: makeRequest(path: guardCase),
+                headerTypes: [.datadog],
+                networkContext: NetworkContext(rumContext: rumA)
+            )
+            let interception = URLSessionTaskInterception(
+                request: .mockWith(url: URL(string: "https://www.example.com/\(guardCase)")!),
+                isFirstParty: true,
+                trackingMode: .registeredDelegate
+            )
+            if guardCase != "completion" {
+                interception.register(response: .mockResponseWith(statusCode: 200), error: nil)
+            }
+            if guardCase != "timing" {
+                interception.register(metrics: makeMetrics())
+            }
+            interception.register(trace: try XCTUnwrap(trace))
+            if guardCase == "origin" {
+                interception.register(origin: "rum")
+            }
+            handler.interceptionDidStart(interception: interception, capturedStates: [state].compactMap { $0 })
+            if guardCase == "tracer" {
+                handler.tracer = nil
+            }
+            handler.interceptionDidComplete(interception: interception)
+            if guardCase == "tracer" {
+                handler.tracer = tracer
+            }
+            if guardCase == "timing" {
+                interception.register(metrics: makeMetrics())
+            }
+            if guardCase == "completion" {
+                interception.register(response: .mockResponseWith(statusCode: 200), error: nil)
+            }
+            if guardCase == "origin" {
+                interception.register(origin: "trace")
+            }
+            setCoreContext(rum: rumB)
+            _ = expectSpan()
+            handler.interceptionDidComplete(interception: interception)
+            waitForExpectations(timeout: 0.5)
+            expectedSpanCount += 1
+            assertSpanCount(expectedSpanCount)
+            assertRUMTags(try lastSpan(), equalTo: rumB)
+        }
+
+        let (_, _, thirdPartyState) = handler.modify(
+            request: makeRequest(path: "third-party"),
+            headerTypes: [.datadog],
+            networkContext: NetworkContext(rumContext: rumA)
+        )
+        let thirdParty = makeCompletedInterception(path: "third-party", isFirstParty: false)
+        handler.interceptionDidStart(interception: thirdParty, capturedStates: [thirdPartyState].compactMap { $0 })
+        let noSpan = expectation(description: "Third-party interception remains ignored")
+        noSpan.isInverted = true
+        core.onEventWriteContext = { _ in noSpan.fulfill() }
+        handler.interceptionDidComplete(interception: thirdParty)
+        waitForExpectations(timeout: 0.5)
+        assertSpanCount(expectedSpanCount)
+
+        let cancelled = makeCompletedInterception(error: URLError(.cancelled))
+        _ = expectSpan()
+        handler.interceptionDidComplete(interception: cancelled)
+        waitForExpectations(timeout: 0.5)
+        assertSpanCount(expectedSpanCount + 1)
+        XCTAssertTrue(try lastSpan().isError, "cancelled first-party interception emits an error span")
+    }
+
+    private func enableRUMTaggingForRequestTimeOwnershipTest() {
+        guard let receiver = core.messageReceiver as? ContextMessageReceiver else {
+            XCTFail("Expected Trace context receiver")
+            return
+        }
+        tracer = .mockWith(
+            core: core,
+            traceIDGenerator: RelativeTracingUUIDGenerator(startingFrom: .init(idHi: 10, idLo: 100)),
+            spanIDGenerator: RelativeSpanIDGenerator(startingFrom: 100, advancingByCount: 1),
+            spanEventBuilder: .mockWith(bundleWithRUM: true)
+        )
+        handler = TracingURLSessionHandler(
+            tracer: tracer,
+            contextReceiver: receiver,
+            samplingRate: .maxSampleRate,
+            firstPartyHosts: .init(["www.example.com": [.datadog]]),
+            traceContextInjection: .all,
+            telemetry: NOPTelemetry()
+        )
+    }
+
+    private func makeRUMContext(_ identifier: String, sessionSampleRate: SampleRate = .maxSampleRate) -> RUMCoreContext {
+        let sessionID = identifier == "A"
+            ? UUID(uuidString: "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa")!
+            : UUID(uuidString: "bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb")!
+        return .mockWith(
+            applicationID: "application-\(identifier)",
+            sessionID: sessionID,
+            sessionSampleRate: sessionSampleRate,
+            viewID: "view-\(identifier)",
+            userActionID: "action-\(identifier)"
+        )
+    }
+
+    private func setCoreContext(rum: RUMCoreContext?, userInfo: UserInfo? = nil, accountInfo: AccountInfo? = nil) {
+        var context = core.context
+        context.set(additionalContext: rum)
+        if let userInfo {
+            context.userInfo = userInfo
+        }
+        if let accountInfo {
+            context.accountInfo = accountInfo
+        }
+        core.context = context
+    }
+
+    private func makeRequest(path: String = "request", withExistingDatadogHeaders: Bool = false) -> URLRequest {
+        var request = URLRequest(url: URL(string: "https://www.example.com/\(path)")!)
+        guard withExistingDatadogHeaders else {
+            return request
+        }
+        request.setValue("existing", forHTTPHeaderField: TracingHTTPHeaders.traceIDField)
+        request.setValue("existing", forHTTPHeaderField: TracingHTTPHeaders.parentSpanIDField)
+        request.setValue("existing", forHTTPHeaderField: TracingHTTPHeaders.samplingPriorityField)
+        request.setValue("existing", forHTTPHeaderField: TracingHTTPHeaders.tagsField)
+        request.setValue("existing", forHTTPHeaderField: W3CHTTPHeaders.baggage)
+        return request
+    }
+
+    private func makeCompletedInterception(
+        path: String = "request",
+        isFirstParty: Bool = true,
+        error: Error? = nil
+    ) -> URLSessionTaskInterception {
+        let interception = URLSessionTaskInterception(
+            request: .mockWith(url: URL(string: "https://www.example.com/\(path)")!),
+            isFirstParty: isFirstParty,
+            trackingMode: .registeredDelegate
+        )
+        interception.register(response: .mockResponseWith(statusCode: 200), error: error)
+        interception.register(metrics: makeMetrics())
+        return interception
+    }
+
+    private func makeMetrics() -> ResourceMetrics {
+        .mockWith(
+            fetch: .init(
+                start: .mockDecember15th2019At10AMUTC(),
+                end: .mockDecember15th2019At10AMUTC(addingTimeInterval: 1)
+            )
+        )
+    }
+
+    private func expectSpan() -> XCTestExpectation {
+        let expectation = expectation(description: "Send span")
+        core.onEventWriteContext = { _ in expectation.fulfill() }
+        return expectation
+    }
+
+    private func lastSpan() throws -> SpanEvent {
+        let events: [SpanEventsEnvelope] = core.events()
+        return try XCTUnwrap(events.last?.spans.last)
+    }
+
+    private func assertSpanCount(
+        _ expectedCount: Int,
+        file: StaticString = #filePath,
+        line: UInt = #line
+    ) {
+        let events: [SpanEventsEnvelope] = core.events()
+        XCTAssertEqual(events.flatMap(\.spans).count, expectedCount, "serialized urlsession.request span count", file: file, line: line)
+    }
+
+    private func assertRUMTags(
+        _ span: SpanEvent,
+        equalTo rum: RUMCoreContext?,
+        file: StaticString = #filePath,
+        line: UInt = #line
+    ) {
+        XCTAssertEqual(span.tags[SpanTags.rumApplicationID], rum?.applicationID, "RUM tag _dd.application.id", file: file, line: line)
+        XCTAssertEqual(span.tags[SpanTags.rumSessionID], rum?.sessionID, "RUM tag _dd.session.id", file: file, line: line)
+        XCTAssertEqual(span.tags[SpanTags.rumViewID], rum?.viewID, "RUM tag _dd.view.id", file: file, line: line)
+        XCTAssertEqual(span.tags[SpanTags.rumActionID], rum?.userActionID, "RUM tag _dd.action.id", file: file, line: line)
     }
 
     private func assert(capturedState: URLSessionHandlerCapturedState?, has span: OTSpan?) {
