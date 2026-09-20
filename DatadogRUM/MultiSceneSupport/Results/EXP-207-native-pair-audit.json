@@ -1,0 +1,139 @@
+{
+  "experiment": "EXP-207",
+  "reviewed_at": "2026-09-20T07:00:55.161477+00:00",
+  "verdict": "E04 EXTRACTION ELIGIBLE WITHIN FROZEN EXP207 SOURCE/UNIT/NATIVE-WRITER SCOPE; NOT RELEASE OR PERFORMANCE QUALIFICATION",
+  "native_artifact_root": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp207-active-view-cache-moxwo0t7/native",
+  "baseline_revision": "62f64d7b655bdc83f3036c4ad81090a270f6202b",
+  "candidate_execution_base": "62f64d7b655bdc83f3036c4ad81090a270f6202b",
+  "candidate_execution_state": "Uncommitted reviewed two-file diff at runtime, identified by content hashes",
+  "post_run_production_checkpoint": "cc83c8503ff42d8ed2b7e8c5c1bc1419e061727d",
+  "checkpoint_source_hashes_independently_match_executed_sources": true,
+  "candidate_head_observed_at_review": "a3d34069cccbe35cac0fd2bc1fb456e64b1f4c43",
+  "candidate_source_sha256": {
+    "DatadogRUM/Sources/RUMMonitor/Scopes/RUMSessionScope.swift": "e59f10a3b3990c9b2c334e9168738aed2a57563bcd10f6f4cfa931a58051acda",
+    "DatadogRUM/Sources/RUMMonitor/Scopes/Utils/ViewCache.swift": "142961ec6c5ce10c61595b306e16f98ca34b1047694057bcaaf3d2d977a251ad"
+  },
+  "frozen_test_sha256": {
+    "DatadogRUM/Tests/RUMMonitor/Scopes/RUMSessionScopeTests.swift": "9add92b4ac3af1c3751185c9d39f2fa99245c96fc2409bc8eaea623cdc2b2a66",
+    "DatadogRUM/Tests/Integrations/WebViewEventReceiverTests.swift": "31828eaf854a8b4318fad595f833050339602b522205a2ef06b438ee875f9cf2",
+    "Datadog/IntegrationUnitTests/RUM/WebEventIntegrationTests.swift": "25b31685157d3e6bc2a3b53e302a03663dcea08421eebaceecbb2fcd648703fa"
+  },
+  "exact_source_differences": [
+    "DatadogRUM/Sources/RUMMonitor/Scopes/RUMSessionScope.swift",
+    "DatadogRUM/Sources/RUMMonitor/Scopes/Utils/ViewCache.swift"
+  ],
+  "native_pair": {
+    "baseline": {
+      "status": "COMPLETED_FOR_REVIEW",
+      "returncode": 65,
+      "timeout": false,
+      "tests": 3,
+      "executions": 3,
+      "passed": 2,
+      "failed": 1,
+      "skipped": 0,
+      "assertion_failures": 2,
+      "summary_failure_entries": 1,
+      "source_entries_verified_excluding_configs": 1846,
+      "all_xcconfigs_skipped_unread_unhashed": 18,
+      "framework_entries_verified": 142,
+      "product_members_verified": 75,
+      "finished_at": "2026-09-20T06:48:28.277970+00:00",
+      "seconds_before_original_deadline": 1650.0036442279816,
+      "cleanup": "PASS",
+      "stable_binding": "iOS17.5/21F79 EEF49588-982B-492E-92AF-57F900ACEACD Booted",
+      "root_input_receipts_pass": true
+    },
+    "candidate": {
+      "status": "COMPLETED_FOR_REVIEW",
+      "returncode": 0,
+      "timeout": false,
+      "tests": 3,
+      "executions": 3,
+      "passed": 3,
+      "failed": 0,
+      "skipped": 0,
+      "assertion_failures": 0,
+      "summary_failure_entries": 0,
+      "source_entries_verified_excluding_configs": 1846,
+      "all_xcconfigs_skipped_unread_unhashed": 18,
+      "framework_entries_verified": 142,
+      "product_members_verified": 75,
+      "finished_at": "2026-09-20T06:51:35.102548+00:00",
+      "seconds_before_original_deadline": 1463.1790661811829,
+      "cleanup": "PASS",
+      "stable_binding": "iOS17.5/21F79 EEF49588-982B-492E-92AF-57F900ACEACD Booted",
+      "root_input_receipts_pass": true
+    }
+  },
+  "baseline_oracle": "The new delayed-A test fails only with two detailed-tree and console assertions at522/523 for missing container.source and container.view.id. Both existing controls pass. No other window/identity assertions fail.",
+  "candidate_oracle": "All three selectors pass once, covering retained-A inside inactivity window, container omission after expiry and current-B ownership.",
+  "reader_correction": "Root initially equated summary testFailures length with assertion count. Summary has one entry for the failed test; detailed tree and console each preserve both frozen failures. Independent audit uses their exact locations/messages. No test/source/runner/oracle/runtime invocation changed.",
+  "prior_independent_reviews": {
+    "red": {
+      "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp207-independent-red-review-43b3xqa_/audit.json",
+      "sha256": "91d911ed295f2d441eaa7e1df932ee3704153fec84d5f931ae229aebc077ca5c"
+    },
+    "source": {
+      "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp207-production-source-review-swf59vda/audit.json",
+      "sha256": "658a664243a0acf483330adae44d3d6353a7150998d49d7d104b8e8b54ef4a6b"
+    },
+    "unit": {
+      "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp207-independent-unit-review-a2brnair/audit.json",
+      "sha256": "e45c2a9182681249ddb8083f5d7014976dd8e5ee1fba2bd9da053449d722f113"
+    }
+  },
+  "lint": {
+    "tests_returncode": 0,
+    "test_receipt_sha256": "16c96e8fd54f1ab8856f6e4ab82b0e552e73c4b5d3ec48449328cebc8dcbbc3f",
+    "test_log_sha256": "a81436017ea1fcb978deb0f53abe7274ee9e0beae3bffe1a2be4aefb5c076ae3",
+    "production_returncode": 0,
+    "production_log_sha256": "a81436017ea1fcb978deb0f53abe7274ee9e0beae3bffe1a2be4aefb5c076ae3"
+  },
+  "diagnostics": {
+    "each_arm_warning_lines": 251,
+    "each_arm_unique_messages": 46,
+    "same_message_set": true,
+    "each_arm_duplicate_class_lines": 59,
+    "same_class_set": true,
+    "each_arm_structured_runtime_warnings": [],
+    "warnings_in_changed_production_files": 0,
+    "disposition": "Retained diagnostics; no warning-free, sanitizer-clean or global harmlessness claim."
+  },
+  "evidence_sha256": {
+    "definition.json": "ff2614523aa2fd9745a48f35a139f6389a9efc9d0626de3b98a86b3fac404355",
+    "run_native.py": "8907916af2c197372373c151c18f3eabad7ffd13ebe5cc04bb844ef9e2737d59",
+    "prepare_pair.py": "2e7275f3de0eb85193099245e71c2f8394005f2805393713e7abab37502e397e",
+    "source-inputs.json": "420493d925f42c1a1c6a7bf719a63d3fb14e9b92418be579effdba35a3f8d22e",
+    "test-inputs.json": "890e3a367fce80c17f99d54855787f0fd68325f7b004281f1505e64fddd33c8c",
+    "framework-inputs.json": "97155929a78deeb9bb186eb7304d6e0362a414c9df58c5c034f667a4fc58f24a",
+    "pair-start.json": "0329965801d1f6048566056c5050003ccc0d18fdd7f962206f78f8a0558b810b",
+    "baseline-run.json": "0387d2f54fc5e49161edc276e3519a66593c12d501268b34306f023e780917bb",
+    "baseline-summary.json": "3cf4530772db174cfed7b0ceb30e4d73d33c4e78a8dd3889aacaef0752b725bb",
+    "baseline-tests.json": "49b53b625237f1d422299ef283a9194dea1a679a8de013fa3ca4a997040be560",
+    "baseline-oracle-audit.json": "eb82a50d61ad4addc8cb006c3532f555ae114c04eab82f35b40e8b5fecc7a479",
+    "baseline-product-hashes.json": "9a945142c7afc0fff9aa9f425ba45a324fbca1c82ae40186a91812ea421f2a1a",
+    "baseline-build-test.log": "62ae5d9eea1b12eabb23c53364c6ddf8ab979a0cb7b7763e7d29efa3580aa2a9",
+    "baseline-cleanup-absent-command.json": "4b9fe295ae5b0a0c69ae6c390a5acdf5440899a38d0813f7d6e98826a5449c5e",
+    "candidate-run.json": "3bf89f582562cc097f82baeee48dac62bd6c59580d5ea503e3d166fa3e6381aa",
+    "candidate-summary.json": "31c80ad517a1d19ba4a15e8266109e264a0ede3f954ac0ba6f3f46ca3b76cc45",
+    "candidate-tests.json": "528c744c53fdf9d0f7c010ab464b0449e8960dbf2ae32e9c956449271ece7c10",
+    "candidate-oracle-audit.json": "f78d16d81213e32687b4be21796e3b3a77dfca1282ad810e9f0d63cd474792e7",
+    "candidate-product-hashes.json": "58b1f50b82f30ca0c11669037e1d2db418d4da2d0e2a877b3c91b10c4e0ae3e2",
+    "candidate-build-test.log": "42919c4e1565e901a062684aced835b20dbd45579be725c43379eadfa3df3cc2",
+    "candidate-cleanup-absent-command.json": "adb17181fb3afebca9350413f8f973bb691719dc7dead538034e43da6ca72f6a"
+  },
+  "local_evidence_sha256": {
+    "test-inventory.json": "1acf507dfbe6b477380015b457aa8982205fd00943a4f618487be796ee11a280",
+    "diagnostics.json": "35001fdd8e808baeaa6078ba45a4951633a886cb91315b1074195f061649468a",
+    "product-identity.json": "6aa9ac1a30140deeebae5bf72d5d2767f6a2d6e2e5fcd852d777e2d1c6872e73"
+  },
+  "limits": [
+    "Public RUM monitor plus injected WKWebView/controller messages and feature-writer JSON on iOS17.5 simulator, Xcode27.1 Debug. No backend ingestion or real browser callback-timing proof.",
+    "Synthetic A/B clock differs from initial SDKInit clock as frozen; no initial-session timing claim. Sparse browser payload is checked as raw JSON, not full browser-model certification.",
+    "No physical Duo, multi-scene, other-platform, Release-performance, allocation/lifetime-budget or release approval claim.",
+    "Source/product bytes were rehashed after runs; no independent in-process image-hash capture. Fresh command/compile/product/result artifacts provide run binding.",
+    "All xcconfig contents were skipped unread/unhashed. Protected-state and process cleanup claims rely on retained root-controller receipts with checked command outputs and hashes.",
+    "Whole-simulator diagnostic collection stayed disabled as admitted. The original zero-test scaffold build remains preserved in the red audit."
+  ]
+}

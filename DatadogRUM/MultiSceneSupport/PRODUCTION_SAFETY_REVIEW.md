@@ -56,6 +56,16 @@ so it would erase existing same-view telemetry. No repair is implemented; E03
 remains open pending a reviewed ownership-carrying design with lifecycle and
 footprint proof. This does not reopen or replace historical R01–R12.
 
+The independent E04 review establishes and repairs a current-develop cache-lifetime
+defect: a long-lived native view loses delayed WebView correlation when the next
+view starts. [EXP-207](Results/EXP-207-active-view-cache.json) qualifies the two-file
+repair with eight exact baseline failures, five controls, 910 cases / 946 executions
+and matched native bridge red/green evidence. Exact UUID deactivation, session
+release/restoration, bounded capacity and Replay filtering pass. Review removed
+unnecessary UUID-string conversions from the command path. Lookup now mutates under
+a write lock; numerical performance and candidate-specific release checks remain
+open. This eligibility finding does not replace historical R01–R12 or E01 gates.
+
 The unexecuted performance-fixture and backend-preparation defects are harness
 findings, not established SDK defects. Their owning
 [performance](Results/EXP-198-network-performance.json) and

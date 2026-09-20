@@ -27,7 +27,7 @@ Keep unrelated upstream changes, including platform-specific behavior.
 | E01 | URLSession request mutation and lifecycle happen once per task | First candidate. Synchronized task preparation plus internal resume continuation forwarding, callback buffering and weak terminal state. Repeated and suspend/resume calls, automatic/registered/dual instrumentation, completion cleanup and post-completion resume controls. Count handler mutation separately from lifecycle-start deduplication. |
 | E02 | Retained old view cannot absorb a later occurrence | Retain H1 with pending Resource, navigate Detail → H2, assert H1 start/stop attributes unchanged, H1 Resource and H2 action isolation, one active restored occurrence. New Home UUIDs alone already work upstream. |
 | E03 | Completion affects only its Resource owner | Reimplement by existing resourceKey; late success/error/metrics cannot increment another view's action/error_tap. Preserve ordinary same-view processing, response-plus-error action signals and clock-driven expiration. EXP-206 reproduces4 cases; stateless membership is incompatible and no repair is admitted. |
-| E04 | Long-lived native view remains a valid delayed WebView container | A lone active lookup does not reproduce the upstream bug: insert B after long-lived A, then deliver a delayed A browser event. Verify inactive retention window, session release, capacity and newest-first lookup. |
+| E04 | Long-lived native view remains a valid delayed WebView container | EXP-207 qualifies the independent two-file repair: exact develop failures, full RUM coverage and paired native bridge ownership/expiry controls. Session release/restoration, capacity, ordering and Replay pass; candidate release and performance checks remain separate. |
 | E05 | Conditional request-time Trace ownership | Only after generic red evidence and a bounded implementation using existing NetworkContext.rumContext. Reverse completion and explicit nil start retain original context; headers/sampling/user/account behavior remain unchanged. |
 
 Historical mixed commits (`bf37a2e99`, `ea787a35a`, `a6cd5df60`, `ff37d7154`,
@@ -44,9 +44,10 @@ and testing after the automatic review rejection. Signed464af911 passes the full
 Internal suite and paired17.5 ordinary/legacy matrix. E01/F07 and the bounded S1
 compatibility gates close; affected consumers, performance and release checks remain
 required. Duplicate resumes during preparation are forwarded later on the
-preparation thread; no arbitrary same-stack/thread transparency is claimed. E02/E03's existing
-scene-targeted tests require separate generic reproducers. E04's corrected delayed
-container hypothesis and E05's limited writer boundary remain qualification work.
+preparation thread; no arbitrary same-stack/thread transparency is claimed. E02 and E04 now have independent generic eligibility evidence in EXP-205 and
+EXP-207. E03 has exact baseline failures but no compatible admitted repair. E05
+still requires a bounded request-time correlation investigation, covering serialized
+span ownership as well as outgoing baggage.
 The audit also found upstream macOS click/errorClick handling absent from the
 reference branch; never overwrite it with the older tap-only implementation.
 

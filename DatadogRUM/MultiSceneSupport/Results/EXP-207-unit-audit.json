@@ -1,0 +1,97 @@
+{
+  "experiment": "EXP-207",
+  "reviewed_at": "2026-09-20T06:51:44.417284+00:00",
+  "verdict": "FULL DATADOGRUM UNIT QUALIFICATION PASS; PAIRED NATIVE QUALIFICATION STILL PENDING",
+  "artifact_root": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp207-active-view-cache-moxwo0t7/compile-correction",
+  "baseline_revision": "62f64d7b655bdc83f3036c4ad81090a270f6202b",
+  "source_hashes": {
+    "DatadogRUM/Sources/RUMMonitor/Scopes/RUMSessionScope.swift": "e59f10a3b3990c9b2c334e9168738aed2a57563bcd10f6f4cfa931a58051acda",
+    "DatadogRUM/Sources/RUMMonitor/Scopes/Utils/ViewCache.swift": "142961ec6c5ce10c61595b306e16f98ca34b1047694057bcaaf3d2d977a251ad"
+  },
+  "test_hashes": {
+    "Datadog/IntegrationUnitTests/RUM/WebEventIntegrationTests.swift": "25b31685157d3e6bc2a3b53e302a03663dcea08421eebaceecbb2fcd648703fa",
+    "DatadogRUM/Tests/Integrations/WebViewEventReceiverTests.swift": "31828eaf854a8b4318fad595f833050339602b522205a2ef06b438ee875f9cf2",
+    "DatadogRUM/Tests/RUMMonitor/Scopes/RUMSessionScopeTests.swift": "9add92b4ac3af1c3751185c9d39f2fa99245c96fc2409bc8eaea623cdc2b2a66"
+  },
+  "result": {
+    "unique_tests": 910,
+    "executions": 946,
+    "xctest_unique_and_executions": 904,
+    "swift_testing_unique": 6,
+    "swift_testing_executions": 42,
+    "parameterized_tests": 4,
+    "parameterized_argument_executions": 40,
+    "passed": 910,
+    "failed": 0,
+    "skipped": 0,
+    "expected_failures": 0,
+    "duplicate_or_retried_executions": 0,
+    "all_frozen_controls_passed_once": 13,
+    "status": "COMPLETED_FOR_REVIEW",
+    "returncode": 0,
+    "timeout": false,
+    "finished_at": "2026-09-20T06:46:30.427505+00:00",
+    "original_deadline": "2026-09-20T07:15:58.281614+00:00"
+  },
+  "input_integrity": {
+    "source_manifest_entries": 1864,
+    "non_config_entries_rehashed": 1846,
+    "all_xcconfig_entries_skipped_unread_unhashed": 18,
+    "red_to_green_exact_changed_paths": [
+      "DatadogRUM/Sources/RUMMonitor/Scopes/RUMSessionScope.swift",
+      "DatadogRUM/Sources/RUMMonitor/Scopes/Utils/ViewCache.swift"
+    ],
+    "test_oracles_unchanged": true,
+    "framework_records_rehashed": 142,
+    "root_before_after_receipts": {
+      "source_unchanged": true,
+      "dependencies_unchanged": true,
+      "pins_unchanged": true,
+      "frameworks_unchanged": true,
+      "hostless_cleanup_pass": true,
+      "protected_unchanged": true
+    },
+    "stable_device_binding": {
+      "runtime": "com.apple.CoreSimulator.SimRuntime.iOS-17-5",
+      "name": "iPad Pro 11-inch (M4) (16GB)",
+      "udid": "EEF49588-982B-492E-92AF-57F900ACEACD",
+      "state": "Booted",
+      "deviceTypeIdentifier": "com.apple.CoreSimulator.SimDeviceType.iPad-Pro-11-inch-M4-16GB",
+      "isAvailable": true
+    },
+    "no_matching_process_before_after": true
+  },
+  "diagnostics": {
+    "compiler_warning_lines": 239,
+    "unique_messages": 47,
+    "message_set_equal_to_corrected_baseline_build": true,
+    "warnings_in_changed_sdk_files": 0,
+    "duplicate_class_lines": 59,
+    "duplicate_class_names_equal_to_corrected_baseline_runtime": true,
+    "structured_runtime_warnings": [],
+    "disposition": "Warnings retained. No warning-free, sanitizer-clean, or global harmlessness claim. Test-only optional coercion and weak-let warnings are present in the unchanged frozen tests."
+  },
+  "evidence_hashes": {
+    "green-run.json": "602fbb59d2a67c6865941c096f48695b53319dba2560c9176a8eaba5885013e6",
+    "green-summary.json": "5d4cb06bd78be4f92ce6da3bdb82b2ad80bbd2e4f377b5720e33c4143b877d69",
+    "green-tests.json": "a8f74d3804d9033c357cd1d09134d67e6156065e9d95da98917d8e6ccd1d9a05",
+    "green-source-freeze.json": "fe402242e4d91501ebdbb59a3805afc757430c270bcbf144efba7764058fa133",
+    "green-source-inputs.json": "791af26bf5665b02426388217ace80a637a1f7983cc1f44be2ca6d0343e64d7f",
+    "green.log": "7c94b4f3d9d11641fc6dd573bba543dc97edda15db03441ee57868ed59a29552",
+    "green-source-lint.log": "a81436017ea1fcb978deb0f53abe7274ee9e0beae3bffe1a2be4aefb5c076ae3",
+    "definition.json": "953475d30d197c030baaacb4fdf9fe4aeab484b7659b4c4d7ec956af6265df93",
+    "run_unit.py": "6dd0d8c0127e47c58be8110ccc51339b1849f750ba0aa33ea84625a919d8dc7d",
+    "framework-inputs.json": "97155929a78deeb9bb186eb7304d6e0362a414c9df58c5c034f667a4fc58f24a"
+  },
+  "local_evidence_hashes": {
+    "test-inventory.json": "2bf8d5ee63c1da77f21acdc0f4e153a284de5641f6f0eb45c40a3eca2efb8dad",
+    "diagnostics.json": "568bc35e3ed90413e90d6a273927f62008e0e2217ee560543e40fa250c515d18",
+    "product-identity.json": "a8e1b0d32109bb1aa36f70c18457f41b1830c204b9a2537d8a5a3a96ebaa9cfa"
+  },
+  "limits": [
+    "iOS 17.5 simulator Debug target run built using Xcode 27.1; no other platform or optimization claim.",
+    "Whole-simulator diagnostic collection disabled as admitted; console and result diagnostics retained.",
+    "No protected configuration content was read or hashed. Dependency/pin/protected-state before-after checks rely on root receipts.",
+    "This audit does not close native bridge, backend, topology, performance, or release gates."
+  ]
+}

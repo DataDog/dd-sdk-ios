@@ -2550,18 +2550,18 @@
       "decisive_test": "Delayed WebView event from long-lived A after navigation to B preserves A container for inactive retention window; capacity/newest-first and release stay bounded. Must first fail current develop.",
       "environment": "Isolated clean checkout of then-current develop; affected unit and native fixtures",
       "completion_mode": null,
-      "status": "OPEN",
-      "evidence": "",
+      "status": "CLOSED",
+      "evidence": "EXP-207 qualifies independent E04 eligibility on develop62f64: eight exact baseline failures and five preservation passes. Two-file repair cc83c850 passes910 RUM cases/946 executions; identical native bridge slice fails only delayed-A container source/id upstream and passes3/3 at test checkpoint a3d34069. Lifetime, restoration, capacity and Replay controls, input/product/cleanup/deadline evidence and independent reviews pass. Controlled-clock injected bridge/writer JSON only; candidate-specific release/performance qualification remains separate. Results/EXP-207-active-view-cache.json.",
       "release_requirements": {
         "S1": {
           "scope": "Active-view cache lifetime extraction",
-          "status": "CONDITIONAL",
+          "status": "CLOSED",
           "dependencies": [
             "S1:F07"
           ],
           "decisive_test": "Delayed WebView event from long-lived A after navigation to B preserves A container for inactive retention window; capacity/newest-first and release stay bounded. Must first fail current develop.",
           "environment": "Isolated clean checkout of then-current develop; affected unit and native fixtures",
-          "evidence": "Candidate only; mixed experimental commits and scene-targeted tests are not customer-defect proof.",
+          "evidence": "EXP-207 qualifies independent E04 eligibility on develop62f64: eight exact baseline failures and five preservation passes. Two-file repair cc83c850 passes910 RUM cases/946 executions; identical native bridge slice fails only delayed-A container source/id upstream and passes3/3 at test checkpoint a3d34069. Lifetime, restoration, capacity and Replay controls, input/product/cleanup/deadline evidence and independent reviews pass. Controlled-clock injected bridge/writer JSON only; candidate-specific release/performance qualification remains separate. Results/EXP-207-active-view-cache.json.",
           "required": false
         }
       }

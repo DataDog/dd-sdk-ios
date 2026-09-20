@@ -174,6 +174,19 @@ Read actual helper declarations before adapting tests. `takeSingle()` in
 explicit exact-count assertion plus `try XCTUnwrap(array.first)`. Keep full and
 delta event tests aligned, and identify owners by actual view UUIDs.
 
+EXP-207 adds reusable fixture checks. Verify mock factories and access levels against
+actual declarations; use the repository test lint configuration. Complete asynchronous
+feature-context reads before asserting readiness or advancing a fake clock. The core
+interceptor returns cumulative event inventories: separate incidental launch records
+from the exact workload, assert each phase's count, and use raw JSON matching for
+intentionally sparse browser payloads. Do not decode them as complete native models.
+
+XCTest summary failures may contain one entry per failing test. Count assertion
+messages and verify their source locations in the detailed test tree and console.
+Normalize `/var` and `/private/var` paths when checking build bindings, while retaining
+original paths and content hashes. A reader correction does not authorize rerunning
+accepted tests or weakening their assertions.
+
 ## Documentation reading and update workflow
 
 [.continue-here.md](../../.continue-here.md) is the sole restart cursor.

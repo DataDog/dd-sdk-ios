@@ -1,0 +1,311 @@
+{
+  "schema_version": 1,
+  "experiment": "EXP-207",
+  "status": "E04 EXTRACTION ELIGIBILITY QUALIFIED; BROADER RELEASE CHECKS REMAIN",
+  "defined_at": "2026-09-20T06:00:58.281614+00:00",
+  "timebox_deadline": "2026-09-20T07:15:58.281614+00:00",
+  "gates": [
+    "E04"
+  ],
+  "owner": "Root host controller; isolated test/implementation author; independent source/artifact reviewer",
+  "baseline_revision": "62f64d7b655bdc83f3036c4ad81090a270f6202b",
+  "remote_verification": "Authenticated GitHub fetch_commit(develop) freshly returned62f64 before new checkout; baseline signatureE means local verification unavailable, not cryptographic validation.",
+  "worktree": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/active-view-cache-lifetime",
+  "branch": "valpertui/active-view-cache-lifetime",
+  "artifact_root": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp207-active-view-cache-moxwo0t7",
+  "allowed_test_paths": [
+    "DatadogRUM/Tests/RUMMonitor/Scopes/RUMSessionScopeTests.swift",
+    "DatadogRUM/Tests/Integrations/WebViewEventReceiverTests.swift",
+    "Datadog/IntegrationUnitTests/RUM/WebEventIntegrationTests.swift"
+  ],
+  "conditional_source_paths": [
+    "DatadogRUM/Sources/RUMMonitor/Scopes/Utils/ViewCache.swift",
+    "DatadogRUM/Sources/RUMMonitor/Scopes/RUMSessionScope.swift"
+  ],
+  "scope": "Independent source-less E04 only. No E01/E02/E03, scene machinery, public API, wire, generated code, dependencies, build scripts or networking changes.",
+  "definition": {
+    "hypothesis": "Insertion of B purges a long-lived still-relevant nativeA by its start time; delayed A WebView event loses its native container. Lookup-only stale entries and uncached restored active views expose lifecycle boundaries that a compatible repair must cover.",
+    "red_selectors": [
+      "DatadogRUMTests/RUMSessionScopeTests/testGivenLongLivedView_whenNextViewStarts_itRetainsDelayedContainerUntilInactiveTTL",
+      "DatadogRUMTests/RUMSessionScopeTests/testGivenStoppedView_whenRetentionExpires_itReleasesCachedContainer",
+      "DatadogRUMTests/RUMSessionScopeTests/testGivenStoppedSession_whenRetentionExpires_itReleasesCachedContainer",
+      "DatadogRUMTests/RUMSessionScopeTests/testGivenTimedOutSession_whenRetentionExpires_itReleasesCachedContainer",
+      "DatadogRUMTests/RUMSessionScopeTests/testGivenExpiredSession_whenRetentionExpires_itReleasesCachedContainer",
+      "DatadogRUMTests/RUMSessionScopeTests/testGivenReleasedSession_whenRetentionExpires_itReleasesCachedContainer",
+      "DatadogRUMTests/RUMSessionScopeTests/testGivenRestoredSession_whenViewTransfers_itCachesFreshContainer",
+      "DatadogRUMTests/RUMSessionScopeTests/testGivenSessionViewCache_whenCapacityIsExceeded_itPreservesNewestViews",
+      "DatadogRUMTests/WebViewEventReceiverTests/testGivenLongLivedNativeView_whenDelayedWebEventArrivesAfterNavigation_itRetainsOriginalContainer",
+      "DatadogRUMTests/ViewCacheTests/testRequestView_withReplay",
+      "DatadogRUMTests/ViewCacheTests/testRequestView_withoutReplay",
+      "DatadogRUMTests/ViewCacheTests/testPurge_whenExceedingCount",
+      "DatadogRUMTests/ViewCacheTests/testPurge_whenExceedingTTL"
+    ],
+    "expected_red_methods": [
+      "testGivenLongLivedView_whenNextViewStarts_itRetainsDelayedContainerUntilInactiveTTL",
+      "testGivenStoppedView_whenRetentionExpires_itReleasesCachedContainer",
+      "testGivenStoppedSession_whenRetentionExpires_itReleasesCachedContainer",
+      "testGivenTimedOutSession_whenRetentionExpires_itReleasesCachedContainer",
+      "testGivenExpiredSession_whenRetentionExpires_itReleasesCachedContainer",
+      "testGivenReleasedSession_whenRetentionExpires_itReleasesCachedContainer",
+      "testGivenRestoredSession_whenViewTransfers_itCachesFreshContainer",
+      "testGivenLongLivedNativeView_whenDelayedWebEventArrivesAfterNavigation_itRetainsOriginalContainer"
+    ],
+    "preservation_controls": [
+      "testGivenSessionViewCache_whenCapacityIsExceeded_itPreservesNewestViews",
+      "testRequestView_withReplay",
+      "testRequestView_withoutReplay",
+      "testPurge_whenExceedingCount",
+      "testPurge_whenExceedingTTL"
+    ],
+    "red": "Exactly13 baseline tests,8 expected failing lifecycle/container cases and5 passing existing/capacity controls. Exact failure predicates and source freeze before execution. Only unchanged develop source; no new API in baseline tests.",
+    "conditional_fix": "After exactred and independent review only: keep legacy insert default age-from-start; add internal active-entry state and idempotent inactive timestamp; session start/restoration marksactive, navigation/stop/timeout/maxduration/deinit marks exactoldUUIDinactive. Purgeinactive entries on lookup/insert, preserve newest-start ordering, Replay filter and capacity bound. No scene ownership state, scope retention or public/wire changes. Atomicity and initialization/teardown must pass review before implementation.",
+    "green": "Complete DatadogRUM target once with identical nine newtests and existing inventory;0unexpected failures/skips. All lifecycle/window/capacity/replay controls must pass.",
+    "native": "After unit qualification, same new public-monitor+WKWebView/controller bridge test on baseline andcandidate in DatadogIntegrationTests/WebEventIntegrationTests alongside its twoexistingcontrols:3perarm. Baseline must fail delayedAcontainer only; candidate3/3. Assert oldA ID within full inactivity window, omission afterTTL, currentB ownowner, exact browser/native/session identities and timestamps. Freezealltestassertionsbefore eitherarm; this is injected browser-message writerJSON, not backend or real browser callback timing.",
+    "native_new_test": "testGivenLongLivedNativeView_whenDelayedWebEventsArrive_itPreservesContainerWindow",
+    "native_selectors": [
+      "DatadogIntegrationTests/WebEventIntegrationTests/testWebEventIntegration",
+      "DatadogIntegrationTests/WebEventIntegrationTests/testWebTelemetryIntegration",
+      "DatadogIntegrationTests/WebEventIntegrationTests/testGivenLongLivedNativeView_whenDelayedWebEventsArrive_itPreservesContainerWindow"
+    ],
+    "environment": "Xcode27.1/27A9269 and actual iOS17.5/21F79 simulator. Hostless units then Example-hosted bridge integration; no credentials/protectedconfig. Root owns allhostwork; no competingbuilds/tests/profiles.",
+    "inputs": "Fresh derives/results, frozen source/tests/framework142-memberinputs/packagepinsandcheckoutHEADs; disable updates/automaticresolution; main protectedmetadata unchanged. No reusing sessionsoracceptedtestpasses byinference.",
+    "diagnostics": "Use -collect-test-diagnostics never for allarms, retainingconsole/compiler/result diagnostics and originalsanitizer configuration. No clean-sanitizer claim.",
+    "bound": "75minutes absolute fromdefinition, one13-testred, onefullRUMgreen and onethree-testnativeinvocationperarm ifqualified. Eachcallmax1200seconds shortenedtoleavecleanupwithinoriginaldeadline. Stoponbuildfailure,unexpectedoracle,timeoutsorinputdrift. Any precise correction needs separate recordedreview/admission; no retryuntilgreen.",
+    "cleanup": "Verifyhostfixture/processabsence, livebinding andprotectedstate; restoreonlyownedchanges. Original7hcaffeinate expired; do notrenew."
+  },
+  "attempts": [
+    {
+      "attempt": "initial red",
+      "status": "COMPILE FAILURE; ZERO TESTS",
+      "root": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp207-active-view-cache-moxwo0t7",
+      "run_sha256": "6058fb1c1d552ba02e2cae7fd723d4082f3ec789539966f6bd95dcd107b94ede",
+      "summary_sha256": "28a576ad4d4da28ae76cd74a5b1c0c5030a8a47f1eb1fed2430bffd71a0bd2f2",
+      "cause": "Receiver test used nonexistent RUMApplicationScope.mockWith and public rather than testable TestUtilities import for internal command/dependency mocks. No SDK changes.",
+      "test_count": 0,
+      "source_unchanged": true,
+      "protected_unchanged": true,
+      "host_process_cleanup": true
+    },
+    {
+      "attempt": "reviewed two-line fixture correction",
+      "root": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp207-active-view-cache-moxwo0t7/compile-correction",
+      "status": "EXACT BASELINE RED",
+      "audit": {
+        "status": "PASS",
+        "at": "2026-09-20T06:35:05.459606+00:00",
+        "red_run_sha256": "36362162f9897950b571b5cb210961d12c304df858a5483c97f9c82faf283b8a",
+        "test_count": 13,
+        "failed": 8,
+        "passed": 5,
+        "skipped": 0,
+        "failure_count": 8,
+        "exact_source_locations_match": true,
+        "preservation_controls_pass": true,
+        "input_identity_and_cleanup_pass": true,
+        "duration_seconds": 25.641293048858643,
+        "finished_before_deadline": true,
+        "diagnostics": {
+          "warning_lines": 239,
+          "duplicate_class_lines": 59,
+          "structured_runtime_warnings": [],
+          "interpretation": "No clean sanitizer/runtime warning claim; console diagnostics retained."
+        }
+      },
+      "audit_sha256": "912358c1a80ecb3ebc831e323fcb6b0e80729fadec293cf506924a806cd21a97",
+      "correction": {
+        "at": "2026-09-20T06:33:04.810377+00:00",
+        "reviewer": "extraction_dependency_audit",
+        "scope": "Exactly two scaffold replacements in receiver test: testable TestUtilities import; declared RUMApplicationScope init instead of nonexistent mockWith. Same arguments, lifetime, methods, assertions, source boundary and original deadline.",
+        "original_attempt": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp207-active-view-cache-moxwo0t7/red-run.json",
+        "original_run_sha256": "6058fb1c1d552ba02e2cae7fd723d4082f3ec789539966f6bd95dcd107b94ede",
+        "oracle_sha256": "ec6ed00564379b1038dfe5f29f2c4c86b3e821e1310a5ca063c26f1320d37b36",
+        "allowed_extra_invocations": "One corrected baseline; no other retry admitted",
+        "production_implementation": "Still conditional on exact baseline red"
+      }
+    }
+  ],
+  "preimplementation_review": {
+    "recorded_at": "2026-09-20T06:07:05.982626+00:00",
+    "scope": "Clarifications within existing13selectors and2file conditional boundary; no addedscenarios/invocations or changeddeadline.",
+    "constraints": [
+      "Insertion/filter-all/capacity and lookup/purge/selection each use one _views.mutate transaction; capture result locally because mutate returnsVoid; never read wrappedgetter whileholdingitswritelock.",
+      "Native deactivation uses one cache.dateProvider.now sample; defaultlegacy insert starts TTL atoriginaltimestamp. Preserve strict before< andexpiry>ttl. Activeimmunity appliesTTLonly,notcapacity.",
+      "Restoration constructor bypasses startView and needs exactfreshUUIDcacheinsertion; do not callstartView andchangeothercountersemantics.",
+      "Maxdurationcontrol keepsreal isUserInteractioncommands less than15minapart andasserts.maxDuration; KeepSessionAlive isnot interaction.",
+      "Fixed stop/deinit controls proveinactiveexpiryisnotrenewed; restorationcontrol releasesoldsession andprovesfreshUUIDstaysactive.",
+      "Within fixedstop/deinit/navigation selectors, usependingResource/weakwitness andexpiredlegacyentry between active/inactive starttimestamps to discriminate lifetime, idempotence andfilter-all behavior. No addedtestselectors."
+    ]
+  },
+  "source_review": {
+    "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp207-source-design-review-kr8reet8/audit.json",
+    "sha256": "d4c019b58a4962d20076a4aa018ebf7c30bc6976b3813afbd939c5fec38ae5e7",
+    "status": "TWO-FILE DESIGN CONDITIONALLY SOUND; EXACT RED REQUIRED BEFORE IMPLEMENTATION"
+  },
+  "native_source_review": {
+    "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp207-native-final-review-7dg5pwys/audit.json",
+    "sha256": "1a94cafd4873306583d8024a619913d981f1732ba1b16c141ad7c1b115ce45f8",
+    "status": "SOURCE REVIEW PASS ONLY",
+    "test_sha256": "25b31685157d3e6bc2a3b53e302a03663dcea08421eebaceecbb2fcd648703fa"
+  },
+  "independent_red_review": {
+    "path": "Results/EXP-207-baseline-audit.json",
+    "sha256": "91d911ed295f2d441eaa7e1df932ee3704153fec84d5f931ae229aebc077ca5c"
+  },
+  "candidate_source_hashes": {
+    "DatadogRUM/Sources/RUMMonitor/Scopes/RUMSessionScope.swift": "e59f10a3b3990c9b2c334e9168738aed2a57563bcd10f6f4cfa931a58051acda",
+    "DatadogRUM/Sources/RUMMonitor/Scopes/Utils/ViewCache.swift": "142961ec6c5ce10c61595b306e16f98ca34b1047694057bcaaf3d2d977a251ad"
+  },
+  "reviewed_source_limit": "Two internal files, value-only entries and at most30 default cache entries. Lookup now purges under a write lock; numeric performance gates remain required for any selected release candidate. UUID strings are formatted only at actual deactivation.",
+  "production_review": {
+    "path": "Results/EXP-207-source-review.json",
+    "sha256": "658a664243a0acf483330adae44d3d6353a7150998d49d7d104b8e8b54ef4a6b"
+  },
+  "unit_green": {
+    "root": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp207-active-view-cache-moxwo0t7/compile-correction",
+    "run_sha256": "602fbb59d2a67c6865941c096f48695b53319dba2560c9176a8eaba5885013e6",
+    "summary_sha256": "5d4cb06bd78be4f92ce6da3bdb82b2ad80bbd2e4f377b5720e33c4143b877d69",
+    "total_tests": 910,
+    "passed": 910,
+    "failed": 0,
+    "skipped": 0,
+    "duration_seconds": 58.08622074127197,
+    "source_unchanged": true,
+    "dependencies_unchanged": true,
+    "pins_unchanged": true,
+    "frameworks_unchanged": true,
+    "protected_unchanged": true,
+    "cleanup": true,
+    "product_members": 164,
+    "product_sha256": "1d960d5c5dc923004ab7ba3e92a95f70b14b07243062bc16c83b4dae13ac26a6",
+    "executions": 946
+  },
+  "independent_unit_review": {
+    "path": "Results/EXP-207-unit-audit.json",
+    "sha256": "e45c2a9182681249ddb8083f5d7014976dd8e5ee1fba2bd9da053449d722f113"
+  },
+  "native_pair": {
+    "root": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp207-active-view-cache-moxwo0t7/native",
+    "definition_sha256": "ff2614523aa2fd9745a48f35a139f6389a9efc9d0626de3b98a86b3fac404355",
+    "baseline": {
+      "status": "PASS",
+      "at": "2026-09-20T06:50:43.296125+00:00",
+      "baseline_run_sha256": "0387d2f54fc5e49161edc276e3519a66593c12d501268b34306f023e780917bb",
+      "total": 3,
+      "failed_tests": 1,
+      "passed": 2,
+      "skipped": 0,
+      "failure_messages": 2,
+      "exact_missing_container_keys": [
+        "container.source",
+        "container.view.id"
+      ],
+      "exact_failure_lines": [
+        522,
+        523
+      ],
+      "identity_cleanup_deadline_pass": true,
+      "preservation": "Both existing tests and all other delayed-A expiry/current-B, native/browser/app/session/date/Replay assertions passed",
+      "duration_seconds": 37.980695724487305,
+      "audit_reader_correction": "Initial root audit compared summary testFailures length to assertion count and stopped. Summary has one entry for this failing test; detailed test tree and console independently contain exactly2 messages at522/523. No test re-execution or oracle/source change."
+    },
+    "candidate": {
+      "status": "PASS",
+      "at": "2026-09-20T06:52:32.095772+00:00",
+      "candidate_run_sha256": "3bf89f582562cc097f82baeee48dac62bd6c59580d5ea503e3d166fa3e6381aa",
+      "total": 3,
+      "passed": 3,
+      "failed": 0,
+      "skipped": 0,
+      "identical_frozen_tests": true,
+      "identity_cleanup_deadline_pass": true,
+      "finished_at": "2026-09-20T06:51:35.102548+00:00",
+      "deadline_remaining_seconds": 1463.1790661811829,
+      "duration_seconds": 32.32677602767944,
+      "diagnostics": {
+        "warning_lines": 251,
+        "duplicate_class_lines": 59,
+        "structured_runtime_warnings": []
+      },
+      "scope": "Native public monitor + injected WKWebView/controller messages + feature-writer JSON. No backend, real callback timing, performance or physical-Duo qualification."
+    },
+    "limitations": "Injected WKWebView/controller messages and feature-writer JSON. No live browser-callback timing, backend receipt, physical Duo, performance, or initial session launch-clock qualification."
+  },
+  "independent_native_review": {
+    "path": "Results/EXP-207-native-pair-audit.json",
+    "sha256": "f70cbebd94dbeaa531344ecdd02df910387a7540968abeb0c5b714b922b4ee5c"
+  },
+  "production_revision": "cc83c8503ff42d8ed2b7e8c5c1bc1419e061727d",
+  "test_revision": "a3d34069cccbe35cac0fd2bc1fb456e64b1f4c43",
+  "local_commits": [
+    {
+      "parent": "62f64d7b655bdc83f3036c4ad81090a270f6202b",
+      "paths": [
+        "DatadogRUM/Sources/RUMMonitor/Scopes/Utils/ViewCache.swift",
+        "DatadogRUM/Sources/RUMMonitor/Scopes/RUMSessionScope.swift"
+      ],
+      "message": "Retain native WebView containers from view inactivity",
+      "attempts": [
+        {
+          "kind": "signed",
+          "pid": 24663,
+          "returncode": -15,
+          "timeout": true,
+          "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "kind": "authorized-unsigned-fallback",
+          "pid": 24959,
+          "returncode": 0,
+          "timeout": false,
+          "log_sha256": "00696171af36dc4e93ce39960b337148e84d746cb5c571fad0b9d102d8423fa6"
+        }
+      ],
+      "started_at": 1789887364.902462,
+      "commit": "cc83c8503ff42d8ed2b7e8c5c1bc1419e061727d",
+      "signature": "N",
+      "committed_paths": [
+        "DatadogRUM/Sources/RUMMonitor/Scopes/RUMSessionScope.swift",
+        "DatadogRUM/Sources/RUMMonitor/Scopes/Utils/ViewCache.swift"
+      ],
+      "protected_unchanged": true,
+      "finished_at": 1789887390.1017
+    },
+    {
+      "parent": "cc83c8503ff42d8ed2b7e8c5c1bc1419e061727d",
+      "paths": [
+        "DatadogRUM/Tests/RUMMonitor/Scopes/RUMSessionScopeTests.swift",
+        "DatadogRUM/Tests/Integrations/WebViewEventReceiverTests.swift",
+        "Datadog/IntegrationUnitTests/RUM/WebEventIntegrationTests.swift"
+      ],
+      "message": "Cover native WebView cache inactivity and lifecycle boundaries",
+      "attempts": [
+        {
+          "kind": "signed",
+          "pid": 25382,
+          "returncode": 128,
+          "timeout": false,
+          "log_sha256": "b0ff88158883f7cb1c919560c06ba651bf1d53d74804942f4d3b2340b5cc4e95"
+        },
+        {
+          "kind": "authorized-unsigned-fallback",
+          "pid": 26322,
+          "returncode": 0,
+          "timeout": false,
+          "log_sha256": "e7441ed365e366438d5da1031d6e9f0e6fcb7099493ddfd4c19516f2254038e5"
+        }
+      ],
+      "started_at": 1789887415.7048252,
+      "commit": "a3d34069cccbe35cac0fd2bc1fb456e64b1f4c43",
+      "signature": "N",
+      "committed_paths": [
+        "Datadog/IntegrationUnitTests/RUM/WebEventIntegrationTests.swift",
+        "DatadogRUM/Tests/Integrations/WebViewEventReceiverTests.swift",
+        "DatadogRUM/Tests/RUMMonitor/Scopes/RUMSessionScopeTests.swift"
+      ],
+      "protected_unchanged": true,
+      "finished_at": 1789887523.0190568,
+      "helper_note": "Signed attempt explicitly failed: agent refused operation. Original helper did not recognize this exact signing error; authorized fallback applied after inspecting it and verifying unchanged HEAD, hashes, locks and protected state."
+    }
+  ],
+  "release_effect": "Close E04 extraction eligibility only. This independent candidate has not been selected for E01 release or combined with other fixes. Candidate-specific performance, platform/API/documentation, backend and release review remain required before shipping."
+}

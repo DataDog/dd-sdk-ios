@@ -1,0 +1,133 @@
+{
+  "experiment": "EXP-207",
+  "scope": "Corrected baseline evidence audit only; no runtime commands or repository edits",
+  "reviewed_at": "2026-09-20T06:44:17.979285+00:00",
+  "verdict": "EXACT RED QUALIFIED; conditional two-file implementation prerequisite satisfied; no green/native/release claim",
+  "artifact_root": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp207-active-view-cache-moxwo0t7/compile-correction",
+  "baseline_revision": "62f64d7b655bdc83f3036c4ad81090a270f6202b",
+  "runtime": {
+    "run_status": "COMPLETED_FOR_REVIEW",
+    "process_returncode": 65,
+    "timeout": false,
+    "tests": 13,
+    "unique_selectors": 13,
+    "console_executions": 13,
+    "failed": 8,
+    "passed": 5,
+    "skipped": 0,
+    "failure_messages": 8,
+    "runtime_warnings_reported": [],
+    "finished_at": "2026-09-20T06:33:46.891663+00:00",
+    "deadline": "2026-09-20T07:15:58.281614+00:00"
+  },
+  "exact_failures": [
+    {
+      "method": "testGivenLongLivedView_whenNextViewStarts_itRetainsDelayedContainerUntilInactiveTTL",
+      "path": "DatadogRUM/Tests/RUMMonitor/Scopes/RUMSessionScopeTests.swift",
+      "line": 908,
+      "message": "XCTAssertEqual failed: (\"nil\") is not equal to (\"Optional(\"c34e1f89-5c5a-4168-b151-d090d4a10887\")\")"
+    },
+    {
+      "method": "testGivenStoppedView_whenRetentionExpires_itReleasesCachedContainer",
+      "path": "DatadogRUM/Tests/RUMMonitor/Scopes/RUMSessionScopeTests.swift",
+      "line": 973,
+      "message": "XCTAssertNil failed: \"b5741d25-abf4-4f9c-bcac-583d13af6a7a\""
+    },
+    {
+      "method": "testGivenLongLivedNativeView_whenDelayedWebEventArrivesAfterNavigation_itRetainsOriginalContainer",
+      "path": "DatadogRUM/Tests/Integrations/WebViewEventReceiverTests.swift",
+      "line": 987,
+      "message": "XCTUnwrap failed: expected non-nil value of type \"Dictionary<String, Any>\""
+    },
+    {
+      "method": "testGivenStoppedSession_whenRetentionExpires_itReleasesCachedContainer",
+      "path": "DatadogRUM/Tests/RUMMonitor/Scopes/RUMSessionScopeTests.swift",
+      "line": 1013,
+      "message": "XCTAssertNil failed: \"aa88371e-c67a-4d5e-bb80-32d57676af60\""
+    },
+    {
+      "method": "testGivenTimedOutSession_whenRetentionExpires_itReleasesCachedContainer",
+      "path": "DatadogRUM/Tests/RUMMonitor/Scopes/RUMSessionScopeTests.swift",
+      "line": 1054,
+      "message": "XCTAssertNil failed: \"b7d8ff47-d3f4-4526-8444-623a3c0e4330\""
+    },
+    {
+      "method": "testGivenExpiredSession_whenRetentionExpires_itReleasesCachedContainer",
+      "path": "DatadogRUM/Tests/RUMMonitor/Scopes/RUMSessionScopeTests.swift",
+      "line": 1109,
+      "message": "XCTAssertNil failed: \"12303582-71b1-4975-b51f-55e2b16eb47d\""
+    },
+    {
+      "method": "testGivenReleasedSession_whenRetentionExpires_itReleasesCachedContainer",
+      "path": "DatadogRUM/Tests/RUMMonitor/Scopes/RUMSessionScopeTests.swift",
+      "line": 1149,
+      "message": "XCTAssertNil failed: \"b5b5f61e-16c7-49e8-afc8-2fb5d9918b9a\""
+    },
+    {
+      "method": "testGivenRestoredSession_whenViewTransfers_itCachesFreshContainer",
+      "path": "DatadogRUM/Tests/RUMMonitor/Scopes/RUMSessionScopeTests.swift",
+      "line": 1194,
+      "message": "XCTAssertEqual failed: (\"Optional(\"ee62daae-f357-448d-a535-353f5b16527e\")\") is not equal to (\"Optional(\"ae2c2433-9e0f-4095-be86-89f1eca02df4\")\")"
+    }
+  ],
+  "preservation_passes": [
+    "RUMSessionScopeTests/testGivenSessionViewCache_whenCapacityIsExceeded_itPreservesNewestViews()",
+    "ViewCacheTests/testPurge_whenExceedingCount()",
+    "ViewCacheTests/testPurge_whenExceedingTTL()",
+    "ViewCacheTests/testRequestView_withoutReplay()",
+    "ViewCacheTests/testRequestView_withReplay()"
+  ],
+  "source_binding": {
+    "sealed_manifest_entries": 1864,
+    "independently_verified_non_config_entries": 1846,
+    "all_xcconfig_entries_unread_unhashed": 18,
+    "baseline_git_blob_substitutions_for_post_run_authorized_production_edits": [
+      "DatadogRUM/Sources/RUMMonitor/Scopes/RUMSessionScope.swift",
+      "DatadogRUM/Sources/RUMMonitor/Scopes/Utils/ViewCache.swift"
+    ],
+    "current_test_hashes_match_sealed_freeze": {
+      "Datadog/IntegrationUnitTests/RUM/WebEventIntegrationTests.swift": "25b31685157d3e6bc2a3b53e302a03663dcea08421eebaceecbb2fcd648703fa",
+      "DatadogRUM/Tests/Integrations/WebViewEventReceiverTests.swift": "31828eaf854a8b4318fad595f833050339602b522205a2ef06b438ee875f9cf2",
+      "DatadogRUM/Tests/RUMMonitor/Scopes/RUMSessionScopeTests.swift": "9add92b4ac3af1c3751185c9d39f2fa99245c96fc2409bc8eaea623cdc2b2a66"
+    },
+    "framework_entries_rehashed": 142,
+    "root_before_after_receipts": {
+      "source_unchanged": true,
+      "dependencies_unchanged": true,
+      "frameworks_unchanged": true,
+      "pins_unchanged": true,
+      "hostless_cleanup_pass": true,
+      "protected_unchanged": true
+    },
+    "device_binding_unchanged": true,
+    "before_after_matching_processes": []
+  },
+  "first_attempt": {
+    "artifact_root": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp207-active-view-cache-moxwo0t7",
+    "run_sha256": "6058fb1c1d552ba02e2cae7fd723d4082f3ec789539966f6bd95dcd107b94ede",
+    "returncode": 65,
+    "executed_tests": 0,
+    "disposition": "Preserved compile-only scaffold failure, not behavioral red",
+    "correction": "Exactly testable TestUtilities import and direct RUMApplicationScope(dependencies:) construction; reversing only these two substitutions reproduces the first frozen test hash; all other frozen source entries identical",
+    "admitted_at": "2026-09-20T06:33:04.810377+00:00"
+  },
+  "evidence_hashes": {
+    "definition.json": "953475d30d197c030baaacb4fdf9fe4aeab484b7659b4c4d7ec956af6265df93",
+    "run_unit.py": "6dd0d8c0127e47c58be8110ccc51339b1849f750ba0aa33ea84625a919d8dc7d",
+    "red-oracle.json": "ec6ed00564379b1038dfe5f29f2c4c86b3e821e1310a5ca063c26f1320d37b36",
+    "red-source-freeze.json": "c00702e7e09ec934d78f966241a81aa0d2e44b84e1cd020e08abe4267f792249",
+    "red-source-inputs.json": "0e78d7b1e83b39682cdc0fad7ca3e7a13ea5366ddd989242c8e76ad5ea6f78df",
+    "framework-inputs.json": "97155929a78deeb9bb186eb7304d6e0362a414c9df58c5c034f667a4fc58f24a",
+    "red-run.json": "36362162f9897950b571b5cb210961d12c304df858a5483c97f9c82faf283b8a",
+    "red-summary.json": "ea9bd630ee9d47e11d398a81abc6ddd4fcc9bafc3d428d899b075d37fab98ef8",
+    "red-tests.json": "d95b4143d8f9ae95bd5c10373fd703412e7cb685ddbea53969ab994294ffaf2c",
+    "red.log": "bbf2327573c5b661aee5eeabaa2b01102a5c859776e3c4571b3e9b25009f386f"
+  },
+  "limitations": [
+    "Observed simulator iOS 17.5 Debug unit behavior only. Full target green and paired native bridge tests remain pending.",
+    "Protected and dependency/pin before-after invariants rely on retained root controller receipts; no protected config was opened.",
+    "All 18 xcconfig entries were intentionally excluded from this independent file-content rehash.",
+    "Runtime warnings array is empty in the retained summary; this is not a compiler-warning-free or sanitizer-clean claim.",
+    "Whole-simulator diagnostic collection was disabled by admitted host policy; original compile failure remains preserved."
+  ]
+}

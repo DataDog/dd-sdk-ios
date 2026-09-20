@@ -64,6 +64,16 @@ baseline failures and five preservation passes. Its stateless repair is rejected
 because it would erase a valid same-view response-plus-error signal. No E03
 production change or release qualification is claimed.
 
+The independent E04 candidate preserves delayed WebView correlation after a long
+native visit. It retains A for the full inactivity window after navigation to B,
+then expires A while retaining active B. [EXP-207](Results/EXP-207-active-view-cache.json)
+qualifies the two-file repair using exact develop failures, 910 RUM cases / 946
+executions and an identical three-test native bridge comparison. Session lifetime,
+restoration, capacity and Replay controls pass. This is injected-message writer-JSON
+evidence; backend, real browser timing, physical Duo and numerical performance are
+not qualified. Lookup now takes a write lock for expiry. E04's release qualification
+remains separate from the selected E01 candidate.
+
 ## Immediate compatibility priority
 
 The short-term criterion is no RUM degradation when an existing app rebuilds with

@@ -1,0 +1,67 @@
+{
+  "experiment": "EXP-207",
+  "reviewed_at": "2026-09-20T06:46:20.849715+00:00",
+  "verdict": "SCOPED SOURCE PASS FOR FROZEN FULL RUM GREEN AND DEFINED PAIRED NATIVE QUALIFICATION",
+  "baseline_revision": "62f64d7b655bdc83f3036c4ad81090a270f6202b",
+  "worktree": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/active-view-cache-lifetime",
+  "reviewed_production_sha256": {
+    "DatadogRUM/Sources/RUMMonitor/Scopes/RUMSessionScope.swift": "e59f10a3b3990c9b2c334e9168738aed2a57563bcd10f6f4cfa931a58051acda",
+    "DatadogRUM/Sources/RUMMonitor/Scopes/Utils/ViewCache.swift": "142961ec6c5ce10c61595b306e16f98ca34b1047694057bcaaf3d2d977a251ad"
+  },
+  "test_sha256_unchanged_from_corrected_red": {
+    "Datadog/IntegrationUnitTests/RUM/WebEventIntegrationTests.swift": "25b31685157d3e6bc2a3b53e302a03663dcea08421eebaceecbb2fcd648703fa",
+    "DatadogRUM/Tests/Integrations/WebViewEventReceiverTests.swift": "31828eaf854a8b4318fad595f833050339602b522205a2ef06b438ee875f9cf2",
+    "DatadogRUM/Tests/RUMMonitor/Scopes/RUMSessionScopeTests.swift": "9add92b4ac3af1c3751185c9d39f2fa99245c96fc2409bc8eaea623cdc2b2a66"
+  },
+  "prerequisite_red_audit": {
+    "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp207-independent-red-review-43b3xqa_/audit.json",
+    "sha256": "91d911ed295f2d441eaa7e1df932ee3704153fec84d5f931ae229aebc077ca5c"
+  },
+  "reviewed_diff_sha256": "562cb7c774425e79454cbfcabe2981f7f6d82639539a6c43ed04a85fa06a4351",
+  "blocking_findings": [],
+  "claims": [
+    {
+      "topic": "Exact active occurrence transition",
+      "source": "DatadogRUM/Sources/RUMMonitor/Scopes/RUMSessionScope.swift:43",
+      "finding": "didSet compares optional RUMUUID values, formats only the previous changed UUID, and deactivates it before assigning the next active view. Same-UUID propagation does not deactivate or allocate new ID strings. RUMUUID is Equatable over stored UUID (UUIDs/RUMUUID.swift:9)."
+    },
+    {
+      "topic": "Observed session termination and teardown",
+      "source": "DatadogRUM/Sources/RUMMonitor/Scopes/RUMSessionScope.swift:119",
+      "finding": "First nil-to-ended transition deactivates the exact current cache entry. Existing timeseries stop behavior remains. Timeout/max-duration early returns and explicit sampled/unsampled stop pass through endReason. deinit at438 invokes only stored activeView.viewUUID plus strongly held dependencies.viewCache; it never reads unowned parent/context. Repeated deactivation cannot reset inactiveSince."
+    },
+    {
+      "topic": "Initialization and restoration",
+      "source": "DatadogRUM/Sources/RUMMonitor/Scopes/RUMSessionScope.swift:233",
+      "finding": "Transfer constructor creates a fresh RUMViewScope and explicitly inserts its UUID as active, with new startTime and current Replay context. It does not call startView or modify inherited application-view counter behavior. The designated resuming-view initializer already invokes the normal helper. Old-session teardown deactivates the old UUID only, preserving the new cache entry."
+    },
+    {
+      "topic": "Array atomicity and ARC boundary",
+      "source": "DatadogRUM/Sources/RUMMonitor/Scopes/Utils/ViewCache.swift:61",
+      "finding": "Insertion/order/purge/capacity execute in one _views.mutate; deactivation in one transaction; lookup/purge/selection in one transaction. No wrapped-value getter or nested lock occurs inside the write lock. Current time is sampled once outside each transaction. The locked collection contains only value fields (String/Int64/Bool?/Int64?), with no scope, task, closure, scene or owner object retained."
+    },
+    {
+      "topic": "Legacy contract and expiry",
+      "source": "DatadogRUM/Sources/RUMMonitor/Scopes/Utils/ViewCache.swift:53",
+      "finding": "Default isActive=false preserves legacy age-from-start expiry. Native insertion uses nil inactiveSince until observed deactivation. markInactive only changes a matching nil timestamp, so late stop/deinit cannot renew retention. Expiry remains strictly now-inactiveSince > ttl; lookup remains start < requestedTimestamp. Replay nil/true/false selection and equal-start insertion ordering are unchanged."
+    },
+    {
+      "topic": "Capacity and non-prefix expiry",
+      "source": "DatadogRUM/Sources/RUMMonitor/Scopes/Utils/ViewCache.swift:125",
+      "finding": "removeAll filters every expired inactive entry before capacity trimming, because inactivity order can differ from start order. Active entries are immune to TTL only and remain subject to the same newest-start capacity bound. No timer, pending scope or external lifetime state is added."
+    },
+    {
+      "topic": "Source closure and platform boundary",
+      "source": "DatadogRUM/Sources/Integrations/WebViewEventReceiver.swift:101",
+      "finding": "Repository Swift call-site search finds this RUM cache constructed in RUMFeature:215 and carried by RUMScopeDependencies/WebViewEventReceiver; SessionScope is its only production mutator and WebViewEventReceiver its only production lookup caller. Session Replay types with the same basename are different nested types. Exactly the two admitted production files differ from baseline. No generated model, public API, serialization, endpoints, dependency, platform conditional or scene machinery changes."
+    }
+  ],
+  "optimization_disposition": "Root-admitted pre-green optional UUID comparison applied and hashed; no assertion or semantic change.",
+  "limits": [
+    "Source suitability only. Full target green and paired three-selector native bridge results were not yet reviewed here.",
+    "No measured timing, allocation, retention-budget, race-detector or platform-build claim; new lookup write-lock and inactive timestamp footprint remain within separate performance qualification.",
+    "Inherited E02 repeated-occurrence attribute behavior and E03 Resource action ownership are outside this two-file E04 extraction.",
+    "Only source/artifact reads and this fresh temporary report were performed; no tests/builds/devices/network/repository mutations.",
+    "Protected configuration was not read or hashed."
+  ]
+}
