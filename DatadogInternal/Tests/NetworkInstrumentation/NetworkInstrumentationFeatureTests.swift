@@ -1232,6 +1232,132 @@ class NetworkInstrumentationFeatureTests: XCTestCase {
         XCTAssertNil(weakFeature)
     }
 
+    func testAutomaticMode_whenTaskFails_itReleasesTerminalOwnership() throws {
+        try assertTerminalOwnership(mode: .automatic, cancelDuringPreparation: false)
+    }
+
+    func testRegisteredDelegate_whenTaskFails_itReleasesTerminalOwnership() throws {
+        try assertTerminalOwnership(mode: .registeredDelegate, cancelDuringPreparation: false)
+    }
+
+    func testAutomaticMode_whenTaskIsCancelled_itReleasesTerminalOwnership() throws {
+        try assertTerminalOwnership(mode: .automatic, cancelDuringPreparation: true)
+    }
+
+    func testRegisteredDelegate_whenTaskIsCancelled_itReleasesTerminalOwnership() throws {
+        try assertTerminalOwnership(mode: .registeredDelegate, cancelDuringPreparation: true)
+    }
+
+    private func assertTerminalOwnership(
+        mode: TrackingMode,
+        cancelDuringPreparation: Bool,
+        file: StaticString = #filePath,
+        line: UInt = #line
+    ) throws {
+        weak var weakTask: URLSessionTask?
+        weak var weakPreparation: AnyObject?
+        weak var weakInterception: URLSessionTaskInterception?
+        weak var weakFeature = core.get(feature: NetworkInstrumentationFeature.self)
+        weak var weakHandler = handler
+        let expectedCode = cancelDuringPreparation ? NSURLErrorCancelled : NSURLErrorNetworkConnectionLost
+        let started = expectation(description: "Interception starts once")
+        let completed = expectation(description: "Interception completes once")
+        let nativeCompleted = expectation(description: "Native task completes")
+        let invalidated = expectation(description: "Native session invalidates")
+
+        try autoreleasepool {
+            let feature = try XCTUnwrap(weakFeature, file: file, line: line)
+            let server = ServerMock(
+                delivery: .failure(error: NSError(domain: NSURLErrorDomain, code: NSURLErrorNetworkConnectionLost)),
+                skipIsMainThreadCheck: true
+            )
+            scopeHandler(to: server)
+            let url = URL(string: "https://example.com/terminal-ownership")!
+            handler.firstPartyHosts = .init(hostsWithTracingHeaderTypes: ["example.com": [.datadog]])
+            handler.onInterceptionDidStart = { interception in
+                XCTAssertEqual(interception.trackingMode, mode, file: file, line: line)
+                started.fulfill()
+            }
+            handler.onInterceptionDidComplete = { interception in
+                weakInterception = interception
+                XCTAssertEqual((interception.completion?.error as NSError?)?.code, expectedCode, file: file, line: line)
+                XCTAssertEqual(interception.metrics != nil, mode == .registeredDelegate, file: file, line: line)
+                completed.fulfill()
+            }
+            try URLSessionInstrumentation.enableOrThrow(with: nil, in: core)
+            if mode == .registeredDelegate {
+                try URLSessionInstrumentation.enableOrThrow(with: .init(delegateClass: TerminalLifetimeDelegate.self), in: core)
+            }
+            let delegate = TerminalLifetimeDelegate { invalidated.fulfill() }
+            let session = server.getInterceptedURLSession(delegate: delegate)
+            defer { session.invalidateAndCancel() }
+            var task: URLSessionDataTask? = session.dataTask(with: url) { _, _, error in
+                XCTAssertEqual((error as NSError?)?.code, expectedCode, file: file, line: line)
+                nativeCompleted.fulfill()
+            }
+            weakTask = task
+            handler.onRequestMutation = { [weak feature, weak task] request, _, _ in
+                guard request.url == url, let feature, let task else {
+                    return
+                }
+                weakPreparation = try? Self.preparation(for: task, in: feature)
+                XCTAssertNotNil(weakPreparation, "Observe the preparation before terminal cleanup", file: file, line: line)
+                if cancelDuringPreparation { task.cancel() }
+            }
+
+            task?.resume()
+            wait(for: [started, completed, nativeCompleted], timeout: 5)
+            feature.flush()
+            _ = server.waitAndReturnRequests(count: cancelDuringPreparation ? 0 : 1, timeout: cancelDuringPreparation ? 0.05 : 5)
+            XCTAssertEqual(task?.state, .completed, file: file, line: line)
+            XCTAssertNil(weakPreparation, "A live completed task must not retain preparation", file: file, line: line)
+            XCTAssertNil(try Self.preparation(for: XCTUnwrap(task), in: feature), file: file, line: line)
+            XCTAssertEqual(try Self.activeInterceptionCount(in: feature), 0, "Terminal cleanup removes the feature's task owner", file: file, line: line)
+            XCTAssertNotNil(weakInterception, "The recording handler still owns the completed interception", file: file, line: line)
+            XCTAssertEqual(handler.interceptions.count, 1, file: file, line: line)
+
+            // Drop the recording mock's explicit ownership while the SDK feature and task are live.
+            feature.handlers.removeAll()
+            handler = nil
+            XCTAssertNil(weakHandler, file: file, line: line)
+            XCTAssertNil(weakInterception, "The SDK must not keep a completed interception", file: file, line: line)
+            task = nil
+            session.finishTasksAndInvalidate()
+            wait(for: [invalidated], timeout: 5)
+            session.delegateQueue.waitUntilAllOperationsAreFinished()
+            feature.flush()
+        }
+        let taskReleased = XCTNSPredicateExpectation(predicate: NSPredicate { _, _ in weakTask == nil }, object: nil)
+        wait(for: [taskReleased], timeout: 5)
+        XCTAssertNil(weakTask, "Native teardown must release the task", file: file, line: line)
+        XCTAssertNotNil(weakFeature, "The core still owns the feature", file: file, line: line)
+        core = nil
+        XCTAssertNil(weakFeature, "Completed tasks must not keep the feature alive", file: file, line: line)
+    }
+
+    private static func activeInterceptionCount(in feature: NetworkInstrumentationFeature) throws -> Int {
+        let queue = try XCTUnwrap(Mirror(reflecting: feature).children.first { $0.label == "queue" }?.value as? DispatchQueue)
+        return try queue.sync {
+            let entries = try XCTUnwrap(Mirror(reflecting: feature).children.first { $0.label == "interceptions" }?.value as? [URLSessionTask: URLSessionTaskInterception])
+            return entries.count
+        }
+    }
+
+    private final class TerminalLifetimeDelegate: NSObject, URLSessionDataDelegate {
+        private let onInvalidation: () -> Void
+
+        init(onInvalidation: @escaping () -> Void) {
+            self.onInvalidation = onInvalidation
+        }
+
+        func urlSession(_ session: URLSession, dataTask: URLSessionDataTask, didReceive data: Data) { }
+        func urlSession(_ session: URLSession, task: URLSessionTask, didFinishCollecting metrics: URLSessionTaskMetrics) { }
+        func urlSession(_ session: URLSession, task: URLSessionTask, didCompleteWithError error: Error?) { }
+        func urlSession(_ session: URLSession, didBecomeInvalidWithError error: Error?) {
+            onInvalidation()
+        }
+    }
+
     func testPreparation_nilCurrentRequestUsesPreparedFallback() throws {
         let feature = try XCTUnwrap(core.get(feature: NetworkInstrumentationFeature.self))
         let request = URLRequest(url: URL(string: "https://example.com/prepared-fallback")!)
