@@ -74,16 +74,23 @@ evidence; backend, real browser timing, physical Duo and numerical performance a
 not qualified. Lookup now takes a write lock for expiry. E04's release qualification
 remains separate from the selected E01 candidate.
 
-E05 is now a bounded investigation of ordinary automatic Trace requests. Source
-review identifies mutable outgoing baggage and completion-time span correlation;
-[EXP-208](Results/EXP-208-trace-ownership.json) defines the reproducer and narrow
-repair boundary. It has no runtime result yet. Explicit nil ownership, existing
-sampling and completion-time non-RUM context are separate preservation contracts.
+E05 now preserves ordinary automatic Trace request ownership through delayed or
+reverse completion. [EXP-208](Results/EXP-208-trace-ownership.json) qualifies the
+three-file candidate with eight exact unit failures on develop,154/154 full Trace
+tests and a matched native pair: two baseline ownership failures versus3/3 passing
+controls. A request started without RUM retains absent ownership after later RUM
+activation. Sampling, parent propagation, caller headers and non-RUM context controls
+pass. Completion consumes value-only captures before guards; this bounds lifetime
+relative to existing interceptions, without immediate-unbind or measured-footprint
+claims. Broader release, backend and numerical performance remain unqualified.
 
-PR2683's [source/discussion review](Results/PR-2683-header-ownership-review.json)
-raises a separate trace-identity risk when baggage writes are treated as carrier
-ownership. It has no runtime reproduction here. A bounded T08 follow-up is planned;
-E01/E05 continue to preserve existing header policy.
+The first E05 candidate exposed a baggage-only write falsely claiming an SDK
+TraceContext; its one-condition correction preserves emitted headers and passes the
+unchanged existing assertion. Failed attempts remain recorded. Both native arms
+retain the networking QoS warning, with no harmlessness or sanitizer clearance.
+The [PR2683 review](Results/PR-2683-header-ownership-review.json) remains a source
+review of the unmerged proposal. Its merge/fallback policy was not adopted; T08's
+bounded partial/mixed-carrier follow-up remains separate.
 
 ## Immediate compatibility priority
 

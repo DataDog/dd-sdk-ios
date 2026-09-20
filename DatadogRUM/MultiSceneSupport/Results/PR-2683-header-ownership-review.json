@@ -40,5 +40,11 @@
       "Existing W3C baggage merge preserves caller keys and has defined duplicate, metadata, and malformed-value behavior.",
       "Mixed Datadog, B3, and W3C carrier combinations either preserve caller ownership without an SDK TraceContext or use a validated extraction/continuation path."
     ]
+  },
+  "exp208_regression_follow_up": {
+    "result": "EXP-208-trace-ownership.json",
+    "finding": "The first E05 candidate adds legitimate request-time baggage but an inherited any-header flag then returns an SDK TraceContext despite complete caller trace headers. Existing compatibility test fails; the specifically reviewed condition excludes baggage-only writes and passes unchanged full/native controls.",
+    "scope": "This is runtime evidence for the E05 candidate regression, not a runtime qualification of PR2683 or general partial/mixed-carrier and baggage-merge policy.",
+    "qualified_source_commit": "f270c375c74a79b69343de19e78dc2698fd7ee91"
   }
 }

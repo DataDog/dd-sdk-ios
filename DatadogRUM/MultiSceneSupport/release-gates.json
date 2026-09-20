@@ -2614,18 +2614,18 @@
       "decisive_test": "Prove a current-develop source-less defect, then bounded existing NetworkContext.rumContext/fixed write context correction; nil start never adopts later view and sampling/headers/user/account behavior stays unchanged.",
       "environment": "Isolated clean checkout of then-current develop; affected unit and native fixtures",
       "completion_mode": null,
-      "status": "OPEN",
-      "evidence": "EXP-208 defined: Results/EXP-208-trace-ownership.json; independent three-Trace-file design review, no runtime evidence or closure yet.",
+      "status": "CLOSED",
+      "evidence": "EXP-208 qualifies bounded E05 eligibility:8 exact baseline unit failures/34 assertions plus5 controls,154/154 full Trace green, identical native3-test pair with2 baseline failures/6 assertions versus3/3 candidate. Independent reviews, frozen inputs, original deadline and cleanup pass. Productionf270c375 and tests9254adbc preserve qualified bytes; authorized unsigned local fallback after signing timeouts. Header amendment and all failed attempts retained. Broader release/performance checks remain separate.",
       "release_requirements": {
         "S1": {
           "scope": "Conditional request-time Trace correlation",
-          "status": "CONDITIONAL",
+          "status": "CLOSED",
           "dependencies": [
             "S1:F07"
           ],
           "decisive_test": "Prove a current-develop source-less defect, then bounded existing NetworkContext.rumContext/fixed write context correction; nil start never adopts later view and sampling/headers/user/account behavior stays unchanged.",
           "environment": "Isolated clean checkout of then-current develop; affected unit and native fixtures",
-          "evidence": "Candidate only; mixed experimental commits and scene-targeted tests are not customer-defect proof.",
+          "evidence": "EXP-208 qualifies bounded E05 eligibility:8 exact baseline unit failures/34 assertions plus5 controls,154/154 full Trace green, identical native3-test pair with2 baseline failures/6 assertions versus3/3 candidate. Independent reviews, frozen inputs, original deadline and cleanup pass. Productionf270c375 and tests9254adbc preserve qualified bytes; authorized unsigned local fallback after signing timeouts. Header amendment and all failed attempts retained. Broader release/performance checks remain separate.",
           "required": false
         }
       }

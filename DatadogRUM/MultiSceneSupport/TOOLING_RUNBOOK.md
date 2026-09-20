@@ -187,6 +187,12 @@ Normalize `/var` and `/private/var` paths when checking build bindings, while re
 original paths and content hashes. A reader correction does not authorize rerunning
 accepted tests or weakening their assertions.
 
+Gate execution on a successfully written and verified freeze, rather than merely
+a source-review message. Run dependent preparation and execution commands with
+checked exits; preserve a preflight stop even when no build process was created.
+For Trace compatibility, preserve the returned-context assertion as well as header
+bytes: adding only baggage cannot establish ownership of the injected trace carrier.
+
 Before freezing native request fixtures, assert the complete serialized span
 inventory before checking operation names. Require distinct live view/action owners
 before starting held requests. Protocol release markers are not URLSession completion
@@ -2358,3 +2364,14 @@ zero executed tests is not a regression reproduction. Unwrap optional model valu
 before arithmetic; do not replace a missing value with zero or widen timing
 thresholds to repair the test. Record any precise scaffold correction before a
 fresh bounded invocation and retain the original source/result identities.
+
+### EXP-208 qualification checkpoint
+
+The [owning result](Results/EXP-208-trace-ownership.json) binds exact red, full-target
+and native-pair artifacts to the committed source/test hashes. Reuse accepted
+evidence by identity after checkpoint commits; a changed HEAD alone does not
+invalidate unchanged qualified bytes. Preserve all preflight, compile and semantic
+failures. Header-byte preservation and the returned TraceContext ownership must
+both be asserted. Matched baseline/candidate runtime warnings remain diagnostics,
+not automatic clearance. Signing timeout may use the user's authorized local
+unsigned fallback; record it, retain explicit commit paths and never push.

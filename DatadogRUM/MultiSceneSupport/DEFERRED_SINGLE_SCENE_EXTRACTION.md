@@ -45,9 +45,10 @@ Internal suite and paired17.5 ordinary/legacy matrix. E01/F07 and the bounded S1
 compatibility gates close; affected consumers, performance and release checks remain
 required. Duplicate resumes during preparation are forwarded later on the
 preparation thread; no arbitrary same-stack/thread transparency is claimed. E02 and E04 now have independent generic eligibility evidence in EXP-205 and
-EXP-207. E03 has exact baseline failures but no compatible admitted repair. E05
-still requires a bounded request-time correlation investigation, covering serialized
-span ownership as well as outgoing baggage.
+EXP-207. E05 now has independent request-time correlation eligibility in EXP-208,
+covering serialized span ownership and outgoing baggage with preserved compatibility.
+E03 has exact baseline failures but no compatible admitted repair. Each eligible
+extraction still needs its own applicable release qualification.
 The audit also found upstream macOS click/errorClick handling absent from the
 reference branch; never overwrite it with the older tap-only implementation.
 
@@ -102,5 +103,6 @@ This checkpoint authorizes documentation, not a history rewrite or upstream acti
 The [PR2683 review](Results/PR-2683-header-ownership-review.json) records a separate
 T08 follow-up after the E05 checkpoint: distinguish trace-carrier ownership from
 baggage writes, then reproduce the bounded caller-header cases before choosing a
-repair. The proposal remains unmerged and is not an extraction unit. EXP-208 keeps
-existing baggage and trace-header policy.
+repair. The proposal remains unmerged and is not an extraction unit. EXP-208
+separately fixes a proven baggage-only return-context regression while preserving
+emitted header/no-overwrite policy; broader merge/partial-carrier behavior is open.

@@ -245,4 +245,4 @@ conclusions belong in [ASSESSMENT.md](ASSESSMENT.md).
 
 | <a id="exp-207"></a>EXP-207 | E04 | E04 eligibility qualified | Eight exact baseline failures and five controls; two-file repair passes 910 cases/946 executions and identical native bridge 3/3 versus two expected baseline assertions. Broader release checks remain. | [record](Experiments/EXP-207-active-view-cache.md#exp-207--retain-delayed-webview-containers-after-long-native-visits) |
 
-| <a id="exp-208"></a>EXP-208 | E05 | DEFINED | Fixed source-less Trace ownership investigation: 13 unit selectors, three paired native selectors and conditional three-file repair; sampling and non-RUM context preserved. | [record](Experiments/EXP-208-trace-ownership.md#exp-208--preserve-request-ownership-through-trace-completion) |
+| <a id="exp-208"></a>EXP-208 | E05 | PASS | Eight exact unit reds;154/154 full Trace green; native2 ownership reds versus3/3 candidate. Independent acceptance closes bounded E05 eligibility; prior failures preserved. | [record](Experiments/EXP-208-trace-ownership.md#exp-208--preserve-request-ownership-through-trace-completion) |

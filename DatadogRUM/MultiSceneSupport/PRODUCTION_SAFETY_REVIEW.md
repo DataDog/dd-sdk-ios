@@ -66,18 +66,25 @@ unnecessary UUID-string conversions from the command path. Lookup now mutates un
 a write lock; numerical performance and candidate-specific release checks remain
 open. This eligibility finding does not replace historical R01–R12 or E01 gates.
 
-E05 source review permits a conditional three-Trace-file ownership repair, now
-bounded by [EXP-208](Results/EXP-208-trace-ownership.json). Captures are value-only
-and correspond to existing retained interceptions; completion must remove them
-before every guard. This is relative lifetime proof, not immediate unbind cleanup
-or a measured footprint bound. Runtime reproduction remains pending. Sampling,
-user/account behavior and historical R01–R12 findings are unchanged.
+The independent E05 review establishes and repairs request-time Trace ownership
+loss on unchanged develop. [EXP-208](Results/EXP-208-trace-ownership.json) qualifies
+the exact three-file candidate through eight baseline ownership failures,154/154
+full Trace tests and matched native red/green evidence. Captures contain values
+only and are removed before every completion guard. Their lifetime follows the
+existing retained interception; immediate unbind cleanup and numerical footprint
+remain unqualified. Sampling, caller headers and completion-time non-RUM context
+are preserved. This eligibility result does not replace historical R01–R12.
 
-The [PR2683 compatibility review](Results/PR-2683-header-ownership-review.json)
-identifies a separate source-level risk: writing baggage may be mistaken for owning
-the outgoing trace carrier, yielding a local span with different trace IDs. The PR
-is open/unmerged; no runtime reproduction or transplant is approved. T08 records
-a finite follow-up after E05, which preserves current header policy.
+The first candidate passed153/154 and exposed baggage-only writes being mistaken
+for trace-carrier ownership. Its independently reviewed one-condition correction
+passes the unchanged oracle; earlier failed/preflight/compile attempts remain
+preserved. Both native arms record the same networking QoS warning,252 compiler
+warning lines and59 duplicate-class lines, without harmlessness or sanitizer claims.
+
+The [PR2683 review](Results/PR-2683-header-ownership-review.json) remains attributable
+to the open, unmerged proposal. E05's regression supports separating baggage writes
+from trace-context ownership, but does not qualify that PR, general baggage merging
+or partial/mixed-carrier policy. T08 retains the finite follow-up.
 
 The unexecuted performance-fixture and backend-preparation defects are harness
 findings, not established SDK defects. Their owning

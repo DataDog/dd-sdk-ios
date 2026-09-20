@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "experiment": "EXP-208",
-  "status": "FIXTURES IN SOURCE REVIEW; ZERO RUNTIME INVOCATIONS",
+  "status": "PASS; E05 EXTRACTION ELIGIBLE",
   "defined_at": "2026-09-20T07:28:39.858757+00:00",
   "timebox_deadline": "2026-09-20T08:58:39.858757+00:00",
   "gates": [
@@ -78,7 +78,443 @@
     "bound": "90 minutes absolute from definition; one 13-test red, one full Trace green, one three-test native invocation per arm. Each invocation at most 1200 seconds, shortened to reserve cleanup before the deadline; native pair at most 2400 seconds. Stop on compile failure, unexpected oracle, timeout or input drift. Any specific correction requires separately recorded review; no retry-until-green.",
     "cleanup": "Prove test/host process and Example app absence, live device binding and protected metadata unchanged. Original seven-hour caffeinate has expired; no renewal admitted."
   },
-  "attempts": [],
+  "attempts": [
+    {
+      "stage": "initial baseline unit",
+      "classification": "INVALID BUILD; NO SEMANTIC RESULT",
+      "artifact_root": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp208-trace-ownership-cshxotac",
+      "run_sha256": "5db1192ac14e81f086c097deeed6d0576450b83e69257f3ca7269b46934e8a96",
+      "source_freeze_sha256": "514a0ed720ede708e962c4a1029eeac2d0231e506b7bc3c46ff6d239e1b8f35d",
+      "returncode": 65,
+      "timeout": false,
+      "total_tests": 0,
+      "reason": "Invalid redeclaration of local trace at TracingURLSessionHandlerTests.swift:1160.",
+      "source_unchanged": true,
+      "hostless_cleanup_pass": true,
+      "protected_unchanged": true,
+      "independent_review": {
+        "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp208-trace-ownership-cshxotac/independent-red-review.json",
+        "status": "BLOCKED",
+        "sha256": "3d8550eb785393c6671f76153d8a9b11c882b2ed54d14f1970d1891321028ed3"
+      }
+    },
+    {
+      "stage": "corrected baseline unit",
+      "classification": "EXACT DECLARED OWNERSHIP FAILURES",
+      "artifact_root": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp208-trace-ownership-cshxotac/compile-correction",
+      "audit": {
+        "status": "PASS",
+        "at": "2026-09-20T08:20:00.084890+00:00",
+        "stage": "red",
+        "run_sha256": "a4c8fd07e8af37b412e9f526b3ea8bc169f5719523187ee3e7421f8f39184d01",
+        "summary_sha256": "6b5e06ccbc3b821e12e6143bfd04957f25b668466701961242bb276478f48c5e",
+        "tree_sha256": "587012784428d8529f80f77dbc1fcacb3e75a54c86f609f9636049750dd73224",
+        "total_tests": 13,
+        "passed": 5,
+        "failed": 8,
+        "skipped": 0,
+        "failure_assertions": [
+          {
+            "test": "TracingURLSessionHandlerTests/testGivenAbsentNetworkContext_whenInjectedInterceptionCompletesAfterContextSwitch_itUsesModifyTimeReceiverRUM()",
+            "line": 1066,
+            "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/request-time-trace-ownership/DatadogTrace/Tests/TracingURLSessionHandlerTests.swift",
+            "message": "XCTAssertEqual failed: (\"Optional(\"application-B\")\") is not equal to (\"Optional(\"application-A\")\") - RUM tag _dd.application.id"
+          },
+          {
+            "test": "TracingURLSessionHandlerTests/testGivenAbsentNetworkContext_whenInjectedInterceptionCompletesAfterContextSwitch_itUsesModifyTimeReceiverRUM()",
+            "line": 1066,
+            "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/request-time-trace-ownership/DatadogTrace/Tests/TracingURLSessionHandlerTests.swift",
+            "message": "XCTAssertEqual failed: (\"Optional(\"bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb\")\") is not equal to (\"Optional(\"aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa\")\") - RUM tag _dd.session.id"
+          },
+          {
+            "test": "TracingURLSessionHandlerTests/testGivenAbsentNetworkContext_whenInjectedInterceptionCompletesAfterContextSwitch_itUsesModifyTimeReceiverRUM()",
+            "line": 1066,
+            "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/request-time-trace-ownership/DatadogTrace/Tests/TracingURLSessionHandlerTests.swift",
+            "message": "XCTAssertEqual failed: (\"Optional(\"view-B\")\") is not equal to (\"Optional(\"view-A\")\") - RUM tag _dd.view.id"
+          },
+          {
+            "test": "TracingURLSessionHandlerTests/testGivenAbsentNetworkContext_whenInjectedInterceptionCompletesAfterContextSwitch_itUsesModifyTimeReceiverRUM()",
+            "line": 1066,
+            "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/request-time-trace-ownership/DatadogTrace/Tests/TracingURLSessionHandlerTests.swift",
+            "message": "XCTAssertEqual failed: (\"Optional(\"action-B\")\") is not equal to (\"Optional(\"action-A\")\") - RUM tag _dd.action.id"
+          },
+          {
+            "test": "TracingURLSessionHandlerTests/testGivenExplicitNilRequestTimeRUMContext_whenInjectedInterceptionCompletesAfterContextSwitch_itKeepsRUMBaggageAndTagsAbsent()",
+            "line": 1028,
+            "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/request-time-trace-ownership/DatadogTrace/Tests/TracingURLSessionHandlerTests.swift",
+            "message": "XCTAssertNil failed: \"session.id=bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb\" - explicit nil RUM baggage"
+          },
+          {
+            "test": "TracingURLSessionHandlerTests/testGivenExplicitNilRequestTimeRUMContext_whenInjectedInterceptionCompletesAfterContextSwitch_itKeepsRUMBaggageAndTagsAbsent()",
+            "line": 1038,
+            "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/request-time-trace-ownership/DatadogTrace/Tests/TracingURLSessionHandlerTests.swift",
+            "message": "XCTAssertEqual failed: (\"Optional(\"application-B\")\") is not equal to (\"nil\") - RUM tag _dd.application.id"
+          },
+          {
+            "test": "TracingURLSessionHandlerTests/testGivenExplicitNilRequestTimeRUMContext_whenInjectedInterceptionCompletesAfterContextSwitch_itKeepsRUMBaggageAndTagsAbsent()",
+            "line": 1038,
+            "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/request-time-trace-ownership/DatadogTrace/Tests/TracingURLSessionHandlerTests.swift",
+            "message": "XCTAssertEqual failed: (\"Optional(\"bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb\")\") is not equal to (\"nil\") - RUM tag _dd.session.id"
+          },
+          {
+            "test": "TracingURLSessionHandlerTests/testGivenExplicitNilRequestTimeRUMContext_whenInjectedInterceptionCompletesAfterContextSwitch_itKeepsRUMBaggageAndTagsAbsent()",
+            "line": 1038,
+            "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/request-time-trace-ownership/DatadogTrace/Tests/TracingURLSessionHandlerTests.swift",
+            "message": "XCTAssertEqual failed: (\"Optional(\"view-B\")\") is not equal to (\"nil\") - RUM tag _dd.view.id"
+          },
+          {
+            "test": "TracingURLSessionHandlerTests/testGivenExplicitNilRequestTimeRUMContext_whenInjectedInterceptionCompletesAfterContextSwitch_itKeepsRUMBaggageAndTagsAbsent()",
+            "line": 1038,
+            "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/request-time-trace-ownership/DatadogTrace/Tests/TracingURLSessionHandlerTests.swift",
+            "message": "XCTAssertEqual failed: (\"Optional(\"action-B\")\") is not equal to (\"nil\") - RUM tag _dd.action.id"
+          },
+          {
+            "test": "TracingURLSessionHandlerTests/testGivenExplicitNilRequestTimeRUMContext_whenUninjectedInterceptionCompletesAfterContextSwitch_itDoesNotAdoptLaterRUMTags()",
+            "line": 1109,
+            "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/request-time-trace-ownership/DatadogTrace/Tests/TracingURLSessionHandlerTests.swift",
+            "message": "XCTAssertEqual failed: (\"Optional(\"application-B\")\") is not equal to (\"nil\") - RUM tag _dd.application.id"
+          },
+          {
+            "test": "TracingURLSessionHandlerTests/testGivenExplicitNilRequestTimeRUMContext_whenUninjectedInterceptionCompletesAfterContextSwitch_itDoesNotAdoptLaterRUMTags()",
+            "line": 1109,
+            "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/request-time-trace-ownership/DatadogTrace/Tests/TracingURLSessionHandlerTests.swift",
+            "message": "XCTAssertEqual failed: (\"Optional(\"bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb\")\") is not equal to (\"nil\") - RUM tag _dd.session.id"
+          },
+          {
+            "test": "TracingURLSessionHandlerTests/testGivenExplicitNilRequestTimeRUMContext_whenUninjectedInterceptionCompletesAfterContextSwitch_itDoesNotAdoptLaterRUMTags()",
+            "line": 1109,
+            "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/request-time-trace-ownership/DatadogTrace/Tests/TracingURLSessionHandlerTests.swift",
+            "message": "XCTAssertEqual failed: (\"Optional(\"view-B\")\") is not equal to (\"nil\") - RUM tag _dd.view.id"
+          },
+          {
+            "test": "TracingURLSessionHandlerTests/testGivenExplicitNilRequestTimeRUMContext_whenUninjectedInterceptionCompletesAfterContextSwitch_itDoesNotAdoptLaterRUMTags()",
+            "line": 1109,
+            "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/request-time-trace-ownership/DatadogTrace/Tests/TracingURLSessionHandlerTests.swift",
+            "message": "XCTAssertEqual failed: (\"Optional(\"action-B\")\") is not equal to (\"nil\") - RUM tag _dd.action.id"
+          },
+          {
+            "test": "TracingURLSessionHandlerTests/testGivenRequestTimeRUMContext_whenInjectedInterceptionCompletesAfterContextSwitch_itKeepsBaggageAndAllRUMTags()",
+            "line": 1002,
+            "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/request-time-trace-ownership/DatadogTrace/Tests/TracingURLSessionHandlerTests.swift",
+            "message": "XCTAssertEqual failed: (\"Optional(\"session.id=bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb\")\") is not equal to (\"Optional(\"session.id=aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa\")\") - request-time baggage session.id"
+          },
+          {
+            "test": "TracingURLSessionHandlerTests/testGivenRequestTimeRUMContext_whenInjectedInterceptionCompletesAfterContextSwitch_itKeepsBaggageAndAllRUMTags()",
+            "line": 1016,
+            "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/request-time-trace-ownership/DatadogTrace/Tests/TracingURLSessionHandlerTests.swift",
+            "message": "XCTAssertEqual failed: (\"Optional(\"application-B\")\") is not equal to (\"Optional(\"application-A\")\") - RUM tag _dd.application.id"
+          },
+          {
+            "test": "TracingURLSessionHandlerTests/testGivenRequestTimeRUMContext_whenInjectedInterceptionCompletesAfterContextSwitch_itKeepsBaggageAndAllRUMTags()",
+            "line": 1016,
+            "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/request-time-trace-ownership/DatadogTrace/Tests/TracingURLSessionHandlerTests.swift",
+            "message": "XCTAssertEqual failed: (\"Optional(\"bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb\")\") is not equal to (\"Optional(\"aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa\")\") - RUM tag _dd.session.id"
+          },
+          {
+            "test": "TracingURLSessionHandlerTests/testGivenRequestTimeRUMContext_whenInjectedInterceptionCompletesAfterContextSwitch_itKeepsBaggageAndAllRUMTags()",
+            "line": 1016,
+            "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/request-time-trace-ownership/DatadogTrace/Tests/TracingURLSessionHandlerTests.swift",
+            "message": "XCTAssertEqual failed: (\"Optional(\"view-B\")\") is not equal to (\"Optional(\"view-A\")\") - RUM tag _dd.view.id"
+          },
+          {
+            "test": "TracingURLSessionHandlerTests/testGivenRequestTimeRUMContext_whenInjectedInterceptionCompletesAfterContextSwitch_itKeepsBaggageAndAllRUMTags()",
+            "line": 1016,
+            "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/request-time-trace-ownership/DatadogTrace/Tests/TracingURLSessionHandlerTests.swift",
+            "message": "XCTAssertEqual failed: (\"Optional(\"action-B\")\") is not equal to (\"Optional(\"action-A\")\") - RUM tag _dd.action.id"
+          },
+          {
+            "test": "TracingURLSessionHandlerTests/testGivenRequestTimeRUMContext_whenUninjectedInterceptionCompletesAfterContextSwitch_itKeepsAllRUMTags()",
+            "line": 1088,
+            "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/request-time-trace-ownership/DatadogTrace/Tests/TracingURLSessionHandlerTests.swift",
+            "message": "XCTAssertEqual failed: (\"Optional(\"application-B\")\") is not equal to (\"Optional(\"application-A\")\") - RUM tag _dd.application.id"
+          },
+          {
+            "test": "TracingURLSessionHandlerTests/testGivenRequestTimeRUMContext_whenUninjectedInterceptionCompletesAfterContextSwitch_itKeepsAllRUMTags()",
+            "line": 1088,
+            "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/request-time-trace-ownership/DatadogTrace/Tests/TracingURLSessionHandlerTests.swift",
+            "message": "XCTAssertEqual failed: (\"Optional(\"bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb\")\") is not equal to (\"Optional(\"aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa\")\") - RUM tag _dd.session.id"
+          },
+          {
+            "test": "TracingURLSessionHandlerTests/testGivenRequestTimeRUMContext_whenUninjectedInterceptionCompletesAfterContextSwitch_itKeepsAllRUMTags()",
+            "line": 1088,
+            "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/request-time-trace-ownership/DatadogTrace/Tests/TracingURLSessionHandlerTests.swift",
+            "message": "XCTAssertEqual failed: (\"Optional(\"view-B\")\") is not equal to (\"Optional(\"view-A\")\") - RUM tag _dd.view.id"
+          },
+          {
+            "test": "TracingURLSessionHandlerTests/testGivenRequestTimeRUMContext_whenUninjectedInterceptionCompletesAfterContextSwitch_itKeepsAllRUMTags()",
+            "line": 1088,
+            "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/request-time-trace-ownership/DatadogTrace/Tests/TracingURLSessionHandlerTests.swift",
+            "message": "XCTAssertEqual failed: (\"Optional(\"action-B\")\") is not equal to (\"Optional(\"action-A\")\") - RUM tag _dd.action.id"
+          },
+          {
+            "test": "TracingURLSessionHandlerTests/testGivenRequestTimeRUMContextWithActiveSpan_whenInterceptionCompletesAfterContextSwitch_itPreservesParentAndRUMOwnership()",
+            "line": 1169,
+            "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/request-time-trace-ownership/DatadogTrace/Tests/TracingURLSessionHandlerTests.swift",
+            "message": "XCTAssertEqual failed: (\"Optional(\"application-B\")\") is not equal to (\"Optional(\"application-A\")\") - RUM tag _dd.application.id"
+          },
+          {
+            "test": "TracingURLSessionHandlerTests/testGivenRequestTimeRUMContextWithActiveSpan_whenInterceptionCompletesAfterContextSwitch_itPreservesParentAndRUMOwnership()",
+            "line": 1169,
+            "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/request-time-trace-ownership/DatadogTrace/Tests/TracingURLSessionHandlerTests.swift",
+            "message": "XCTAssertEqual failed: (\"Optional(\"bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb\")\") is not equal to (\"Optional(\"aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa\")\") - RUM tag _dd.session.id"
+          },
+          {
+            "test": "TracingURLSessionHandlerTests/testGivenRequestTimeRUMContextWithActiveSpan_whenInterceptionCompletesAfterContextSwitch_itPreservesParentAndRUMOwnership()",
+            "line": 1169,
+            "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/request-time-trace-ownership/DatadogTrace/Tests/TracingURLSessionHandlerTests.swift",
+            "message": "XCTAssertEqual failed: (\"Optional(\"view-B\")\") is not equal to (\"Optional(\"view-A\")\") - RUM tag _dd.view.id"
+          },
+          {
+            "test": "TracingURLSessionHandlerTests/testGivenRequestTimeRUMContextWithActiveSpan_whenInterceptionCompletesAfterContextSwitch_itPreservesParentAndRUMOwnership()",
+            "line": 1169,
+            "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/request-time-trace-ownership/DatadogTrace/Tests/TracingURLSessionHandlerTests.swift",
+            "message": "XCTAssertEqual failed: (\"Optional(\"action-B\")\") is not equal to (\"Optional(\"action-A\")\") - RUM tag _dd.action.id"
+          },
+          {
+            "test": "TracingURLSessionHandlerTests/testGivenRequestTimeRUMContextWithGraphQLHeaders_whenInterceptionCompletesAfterContextSwitch_itPreservesRUMOwnership()",
+            "line": 1200,
+            "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/request-time-trace-ownership/DatadogTrace/Tests/TracingURLSessionHandlerTests.swift",
+            "message": "XCTAssertEqual failed: (\"Optional(\"application-B\")\") is not equal to (\"Optional(\"application-A\")\") - RUM tag _dd.application.id"
+          },
+          {
+            "test": "TracingURLSessionHandlerTests/testGivenRequestTimeRUMContextWithGraphQLHeaders_whenInterceptionCompletesAfterContextSwitch_itPreservesRUMOwnership()",
+            "line": 1200,
+            "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/request-time-trace-ownership/DatadogTrace/Tests/TracingURLSessionHandlerTests.swift",
+            "message": "XCTAssertEqual failed: (\"Optional(\"bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb\")\") is not equal to (\"Optional(\"aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa\")\") - RUM tag _dd.session.id"
+          },
+          {
+            "test": "TracingURLSessionHandlerTests/testGivenRequestTimeRUMContextWithGraphQLHeaders_whenInterceptionCompletesAfterContextSwitch_itPreservesRUMOwnership()",
+            "line": 1200,
+            "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/request-time-trace-ownership/DatadogTrace/Tests/TracingURLSessionHandlerTests.swift",
+            "message": "XCTAssertEqual failed: (\"Optional(\"view-B\")\") is not equal to (\"Optional(\"view-A\")\") - RUM tag _dd.view.id"
+          },
+          {
+            "test": "TracingURLSessionHandlerTests/testGivenRequestTimeRUMContextWithGraphQLHeaders_whenInterceptionCompletesAfterContextSwitch_itPreservesRUMOwnership()",
+            "line": 1200,
+            "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/request-time-trace-ownership/DatadogTrace/Tests/TracingURLSessionHandlerTests.swift",
+            "message": "XCTAssertEqual failed: (\"Optional(\"action-B\")\") is not equal to (\"Optional(\"action-A\")\") - RUM tag _dd.action.id"
+          },
+          {
+            "test": "TracingURLSessionHandlerTests/testGivenTwoRequestTimeRUMContexts_whenInterceptionsCompleteInReverseOrder_itKeepsEachOwnersTags()",
+            "line": 1145,
+            "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/request-time-trace-ownership/DatadogTrace/Tests/TracingURLSessionHandlerTests.swift",
+            "message": "XCTAssertEqual failed: (\"Optional(\"application-B\")\") is not equal to (\"Optional(\"application-A\")\") - RUM tag _dd.application.id"
+          },
+          {
+            "test": "TracingURLSessionHandlerTests/testGivenTwoRequestTimeRUMContexts_whenInterceptionsCompleteInReverseOrder_itKeepsEachOwnersTags()",
+            "line": 1145,
+            "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/request-time-trace-ownership/DatadogTrace/Tests/TracingURLSessionHandlerTests.swift",
+            "message": "XCTAssertEqual failed: (\"Optional(\"bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb\")\") is not equal to (\"Optional(\"aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa\")\") - RUM tag _dd.session.id"
+          },
+          {
+            "test": "TracingURLSessionHandlerTests/testGivenTwoRequestTimeRUMContexts_whenInterceptionsCompleteInReverseOrder_itKeepsEachOwnersTags()",
+            "line": 1145,
+            "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/request-time-trace-ownership/DatadogTrace/Tests/TracingURLSessionHandlerTests.swift",
+            "message": "XCTAssertEqual failed: (\"Optional(\"view-B\")\") is not equal to (\"Optional(\"view-A\")\") - RUM tag _dd.view.id"
+          },
+          {
+            "test": "TracingURLSessionHandlerTests/testGivenTwoRequestTimeRUMContexts_whenInterceptionsCompleteInReverseOrder_itKeepsEachOwnersTags()",
+            "line": 1145,
+            "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/request-time-trace-ownership/DatadogTrace/Tests/TracingURLSessionHandlerTests.swift",
+            "message": "XCTAssertEqual failed: (\"Optional(\"action-B\")\") is not equal to (\"Optional(\"action-A\")\") - RUM tag _dd.action.id"
+          }
+        ],
+        "test_nodes": 13,
+        "selected_controls_present_once": true,
+        "frozen_inputs_and_cleanup_pass": true,
+        "duration_seconds": 26.363776206970215,
+        "diagnostics": {
+          "warning_lines": 218,
+          "duplicate_class_lines": 59,
+          "structured_runtime_warnings": [],
+          "interpretation": "Console diagnostics retained; no sanitizer-clean claim."
+        }
+      },
+      "audit_sha256": "2ffa1d222dbaec963627847500ae5a04f5d5620c7db01fe5faf30285a5281126",
+      "source_freeze_sha256": "cda8fe0c2a2ab5fa4cc96ff6af0fceab8899baba737040558d756a2f7ee470b3",
+      "independent_review": {
+        "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp208-trace-ownership-cshxotac/compile-correction/independent-red-review.json",
+        "status": "PASS",
+        "sha256": "c85fb1641b61e85e3a3232ef85f8fd7f17c2ebf3681de276fd0a78e98102bcad"
+      }
+    },
+    {
+      "stage": "green readiness preflight",
+      "classification": "STOPPED BEFORE BUILD/TEST",
+      "receipt": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp208-trace-ownership-cshxotac/compile-correction/green-review-readiness-stop/receipt.json",
+      "build_test_invocations": 0,
+      "source_or_oracle_changes": false
+    },
+    {
+      "stage": "first candidate full Trace target",
+      "classification": "COMPATIBILITY REGRESSION; NOT QUALIFIED",
+      "artifact_root": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp208-trace-ownership-cshxotac/compile-correction",
+      "run_sha256": "5f7075b3f45285afd6c5c3e406fab0477c76803243c0598816b8c8211b477781",
+      "source_freeze_sha256": "9ccc9383e31103f03e8b55591a1fc628862671f6644929f94aa3816d9637c2dc",
+      "total_tests": 154,
+      "passed": 153,
+      "failed": 1,
+      "skipped": 0,
+      "new_ownership_tests_passed": 13,
+      "failed_existing_test": "TracingURLSessionHandlerTests/testGivenFirstPartyInterception_withSampledTrace_itDoesNotOverwriteTraceHeaders()",
+      "failure_line": 156,
+      "reason": "Request-time RUM supplies new baggage while all caller trace fields are preserved; any-header flag then wrongly returns the SDK-generated TraceContext.",
+      "source_unchanged": true,
+      "hostless_cleanup_pass": true,
+      "protected_unchanged": true,
+      "source_patch": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp208-trace-ownership-cshxotac/compile-correction/first-candidate-source.patch",
+      "source_patch_sha256": "2438ebdbc739fa6c5774235e325df9bb63517a77a670ef8900a469987b092403",
+      "native_invocations": 0,
+      "independent_review": {
+        "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp208-trace-ownership-cshxotac/compile-correction/independent-green-review.json",
+        "status": "BLOCKED",
+        "sha256": "2e9f72d89bd94b63a89afd5d60b298a7c54e1e04679f64dc2dd71386f026a013"
+      }
+    },
+    {
+      "stage": "amended candidate full Trace target",
+      "classification": "FULL TARGET PASS",
+      "artifact_root": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp208-trace-ownership-cshxotac/header-regression",
+      "audit": {
+        "status": "PASS",
+        "at": "2026-09-20T08:47:10.949223+00:00",
+        "stage": "green",
+        "run_sha256": "06dd0164a62ddc874f0e6e036e4866b99315e50ddacab5cce59993cc97629c6a",
+        "summary_sha256": "8ffbec60b3f1973bd4e9776bfdad5637eca2669c7da74aae474d3adba8679ce9",
+        "tree_sha256": "041985d4c776b821fd547ec2ce4394bedb368547bd177cfb519c914c27132e4b",
+        "total_tests": 154,
+        "passed": 154,
+        "failed": 0,
+        "skipped": 0,
+        "failure_assertions": [],
+        "test_nodes": 154,
+        "selected_controls_present_once": true,
+        "frozen_inputs_and_cleanup_pass": true,
+        "duration_seconds": 36.835378885269165,
+        "diagnostics": {
+          "warning_lines": 218,
+          "duplicate_class_lines": 59,
+          "structured_runtime_warnings": [],
+          "interpretation": "Console diagnostics retained; no sanitizer-clean claim."
+        }
+      },
+      "source_review": {
+        "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp208-trace-ownership-cshxotac/header-regression/source-review.json",
+        "sha256": "2abe4df2b77a2e48b4180aa874fc1eb89117f9e1c336df5068f1f1c3954b19ff",
+        "status": "PASS"
+      },
+      "source_freeze_sha256": "379720b84293399f251c5657f9b1953bca0f85de883e9e4a17f585401ba2f197",
+      "independent_review": {
+        "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp208-trace-ownership-cshxotac/header-regression/independent-green-review.json",
+        "sha256": "483618587a1ce0995f41ff132caf7601cd34ae17a7c8d4a3355b69240e2107ad",
+        "status": "PASS"
+      }
+    },
+    {
+      "stage": "native baseline",
+      "classification": "EXACT DECLARED OWNERSHIP FAILURES",
+      "artifact_root": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp208-trace-ownership-cshxotac/header-regression/native",
+      "audit": {
+        "status": "PASS",
+        "at": "2026-09-20T08:50:01.474715+00:00",
+        "arm": "baseline",
+        "total_tests": 3,
+        "failed_tests": 2,
+        "passed": 1,
+        "skipped": 0,
+        "failure_assertions": [
+          {
+            "test": "NetworkInstrumentationIntegrationTests/testAutomaticTraceRequestBeforeRUMDoesNotAdoptLaterOwnership()",
+            "line": 401,
+            "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp208-trace-ownership-cshxotac/header-regression/native/baseline/Datadog/IntegrationUnitTests/Public/NetworkInstrumentationIntegrationTests.swift",
+            "message": "XCTAssertNil failed: \"e05-late-app\" - E05 no-RUM application tag"
+          },
+          {
+            "test": "NetworkInstrumentationIntegrationTests/testAutomaticTraceRequestBeforeRUMDoesNotAdoptLaterOwnership()",
+            "line": 402,
+            "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp208-trace-ownership-cshxotac/header-regression/native/baseline/Datadog/IntegrationUnitTests/Public/NetworkInstrumentationIntegrationTests.swift",
+            "message": "XCTAssertNil failed: \"a32e5f32-e1c2-4e64-b826-1dc2f738ac00\" - E05 no-RUM session tag"
+          },
+          {
+            "test": "NetworkInstrumentationIntegrationTests/testAutomaticTraceRequestBeforeRUMDoesNotAdoptLaterOwnership()",
+            "line": 403,
+            "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp208-trace-ownership-cshxotac/header-regression/native/baseline/Datadog/IntegrationUnitTests/Public/NetworkInstrumentationIntegrationTests.swift",
+            "message": "XCTAssertNil failed: \"9a6ccf06-5de4-4703-8e86-577b30b60a69\" - E05 no-RUM view tag"
+          },
+          {
+            "test": "NetworkInstrumentationIntegrationTests/testAutomaticTraceRequestBeforeRUMDoesNotAdoptLaterOwnership()",
+            "line": 404,
+            "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp208-trace-ownership-cshxotac/header-regression/native/baseline/Datadog/IntegrationUnitTests/Public/NetworkInstrumentationIntegrationTests.swift",
+            "message": "XCTAssertNil failed: \"ce0737d8-5594-443a-b029-3d6d4c1fe7ac\" - E05 no-RUM action tag"
+          },
+          {
+            "test": "NetworkInstrumentationIntegrationTests/testAutomaticTraceRequestTimeRUMOwnershipWithReverseCompletion()",
+            "line": 461,
+            "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp208-trace-ownership-cshxotac/header-regression/native/baseline/Datadog/IntegrationUnitTests/Public/NetworkInstrumentationIntegrationTests.swift",
+            "message": "XCTAssertEqual failed: (\"Optional(\"4aa13e2c-5fea-4be9-8753-3e64eaa982c1\")\") is not equal to (\"Optional(\"15e34a91-0a7b-48c3-8b66-2f316c44b2ae\")\") - E05 request-time view owner"
+          },
+          {
+            "test": "NetworkInstrumentationIntegrationTests/testAutomaticTraceRequestTimeRUMOwnershipWithReverseCompletion()",
+            "line": 466,
+            "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp208-trace-ownership-cshxotac/header-regression/native/baseline/Datadog/IntegrationUnitTests/Public/NetworkInstrumentationIntegrationTests.swift",
+            "message": "XCTAssertEqual failed: (\"Optional(\"c4eb469d-831a-4695-8e69-991b2252dcdb\")\") is not equal to (\"Optional(\"b9f7cccd-5f92-40b2-bf78-7b52ac20b35a\")\") - E05 request-time action owner"
+          }
+        ],
+        "run_sha256": "ab93b89b19faa74b7e4e14b83eecf8209dd8fbf493d64c4b50bfeb7fc493c62d",
+        "summary_sha256": "0db318ae4ecdad060868254e56348125c07644c3a35a3efc71b48838ded89007",
+        "tree_sha256": "05867205df45309f4cc1e97adfa21aed4a549aa8d1a5bb546b081c95c48e9f16",
+        "product_sha256": "99e6c62930bee614baea435400a4b46dd034a79bce2cd0d89589d283f3d3a62c",
+        "product_members": 75,
+        "identity_cleanup_deadline_pass": true,
+        "duration_seconds": 39.883527755737305,
+        "diagnostics": {
+          "warning_lines": 252,
+          "duplicate_class_lines": 59,
+          "structured_runtime_warnings": [
+            {
+              "issueType": "Runtime Warning",
+              "message": "Thread running at User-initiated quality-of-service class waiting on a lower QoS thread running at Default quality-of-service class. Investigate ways to avoid priority inversions"
+            }
+          ],
+          "interpretation": "Retained diagnostics; no sanitizer-clean claim."
+        },
+        "baseline_run_sha256": "ab93b89b19faa74b7e4e14b83eecf8209dd8fbf493d64c4b50bfeb7fc493c62d"
+      }
+    },
+    {
+      "stage": "native candidate",
+      "classification": "ALL THREE NATIVE CONTROLS PASS",
+      "artifact_root": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp208-trace-ownership-cshxotac/header-regression/native",
+      "audit": {
+        "status": "PASS",
+        "at": "2026-09-20T08:51:40.062591+00:00",
+        "arm": "candidate",
+        "total_tests": 3,
+        "failed_tests": 0,
+        "passed": 3,
+        "skipped": 0,
+        "failure_assertions": [],
+        "run_sha256": "01c2a15391e3e201dce89408936065b9c62cd4a9529788a12265f2bb258d3d08",
+        "summary_sha256": "3f867593a5331171947206e95c56a9a8e55f9d7a3fe97b64b8f95f8e1ddf88d2",
+        "tree_sha256": "ef8b33796eb709790ffae6ffe63559e873f42d5e3739ffb2b0d8f27e03ebd024",
+        "product_sha256": "376ecc2497a0985e107b2fb8cfeecfe7359bf5a5c9d0ed562e211b131006c1c4",
+        "product_members": 75,
+        "identity_cleanup_deadline_pass": true,
+        "duration_seconds": 34.422260999679565,
+        "diagnostics": {
+          "warning_lines": 252,
+          "duplicate_class_lines": 59,
+          "structured_runtime_warnings": [
+            {
+              "issueType": "Runtime Warning",
+              "message": "Thread running at User-initiated quality-of-service class waiting on a lower QoS thread running at Default quality-of-service class. Investigate ways to avoid priority inversions"
+            }
+          ],
+          "interpretation": "Retained diagnostics; no sanitizer-clean claim."
+        }
+      }
+    }
+  ],
   "design_review": {
     "path": "Results/EXP-208-design-review.json",
     "sha256": "58f80ef55423fcfc2c35b6eee34281fb3ac03744154aec02a6ffc6afe5de6446"
@@ -100,7 +536,7 @@
       "checkout_clean": true
     }
   },
-  "release_effect": "None until accepted red/green/native evidence. E05 eligibility remains OPEN; selected E01 release gates and reference production remain unchanged.",
+  "release_effect": "E05 extraction eligibility closes on the exact independently reviewed three-file source and identical tests:8 baseline unit failures/34 assertions with5 preservation controls;154/154 full Trace green; native baseline2 failures/6 assertions plus parent pass versus candidate3/3. No selected E01, backend, numeric performance, all-platform or release gate promotion. Both local commits use authorized unsigned fallback after25second signing timeouts; no push.",
   "preflight_review": {
     "at": "2026-09-20T07:46:32.575582+00:00",
     "unit_sha256": "d93562b6fecd9fe7f5819af95eaeae2e59d54cf5a4c4f336113034d64bba9485",
@@ -112,8 +548,269 @@
       "Native held-protocol coordination and cleanup are synchronized; live context readiness must precede release."
     ],
     "production_edits": false,
-    "runtime_invocations": 0,
+    "runtime_invocations": 1,
     "gates_unchanged": true,
-    "strict_review_receipt": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp208-trace-ownership-cshxotac/pre-freeze-review.json"
+    "strict_review_receipt": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp208-trace-ownership-cshxotac/pre-freeze-review.json",
+    "build_test_invocations": 2
+  },
+  "specific_correction": {
+    "admission": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp208-trace-ownership-cshxotac/compile-correction-admission.json",
+    "attempt_root": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp208-trace-ownership-cshxotac/compile-correction",
+    "unit_sha256": "bf05ec8bacc5759e6d8d8509e92a42b3f18275ef427e988526d5cd7b1af314cf",
+    "native_sha256": "47f50ccf4ee00441cd467a16b5eaeb3ef3e3afee4525fe0ae962804941184413",
+    "change": "Only two local identifier references change; same lines, selectors and exact34/6 assertions.",
+    "deadline_unchanged": true,
+    "production_edits": false,
+    "exact_correction_receipt": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp208-trace-ownership-cshxotac/compile-correction/exact-correction-receipt.json",
+    "rejected_unexecuted_preflight": "462268 renamed the earlier uninjected tuple rather than the failing active-parent tuple; rejected in independent review before freeze or execution. Root method-bounded correction inversely reproduces the original d935 file byte-for-byte."
+  },
+  "admission_commit": {
+    "revision": "94a6e94e6e9cb9917e5b4f7077ed2c56d4fe3665",
+    "signature": "G"
+  },
+  "regression_amendment": {
+    "experiment": "EXP-208",
+    "at": "2026-09-20T08:39:35.006575+00:00",
+    "status": "SPECIFIC REGRESSION CORRECTION ADMITTED",
+    "deadline": "2026-09-20T08:58:39.858757+00:00",
+    "failed_run": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp208-trace-ownership-cshxotac/compile-correction/green-run.json",
+    "failed_run_sha256": "5f7075b3f45285afd6c5c3e406fab0477c76803243c0598816b8c8211b477781",
+    "independent_blocked_review_sha256": "2e9f72d89bd94b63a89afd5d60b298a7c54e1e04679f64dc2dd71386f026a013",
+    "amendment_review_sha256": "9932b81cc50f0ca04b770538285152906ed39be65cebbced5669bf9a927ff186",
+    "source_boundary": [
+      "DatadogTrace/Sources/Integrations/TracingURLSessionHandler.swift"
+    ],
+    "change": "Inside existing absent-header branch replace hasSetAnyHeader = true with hasSetAnyHeader = hasSetAnyHeader || field != W3CHTTPHeaders.baggage. Only returned context ownership excludes baggage-only writes.",
+    "preserved": "All emitted headers, writers, no-overwrite policy, sampling, user/account fields, completion fallback and frozen test/oracle bytes. No baggage merging, parsing, partial-carrier policy or PR transplant.",
+    "runtime_bound": "One reviewed full154-test rerun; native3-per-arm only after154/154. Original deadline/stop rules remain; no automatic further retry.",
+    "prior_evidence": "Accepted13-case baseline reused by immutable hashes; all failed/preflight attempts retained at original paths.",
+    "review_required_before_runtime": true,
+    "artifact_root": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp208-trace-ownership-cshxotac/header-regression",
+    "amendment_sha256": "5007721eb5d33e9ae65940060471b1995cb0511fe807694ceff52b0dc14bf043",
+    "source_receipt": {
+      "source_path": "DatadogTrace/Sources/Integrations/TracingURLSessionHandler.swift",
+      "previous_sha256": "fee6d8da8bc333092321f72092318948dfda4d0329dbbba948aee263de825729",
+      "corrected_sha256": "6a76028d4e76459ad2f59f5d1b720ebc712a1e0390e6cb992fc91e39eebd2427",
+      "exact_one_statement_change": true,
+      "tests_changed": false
+    }
+  },
+  "qualification": {
+    "status": "PASS",
+    "gate": "E05",
+    "source_hashes": {
+      "DatadogTrace/Sources/DatadogTracer.swift": "612aa2a6d9ff8d9ac1be55346ed3c93ce32e183c01aedba16a2985568110adac",
+      "DatadogTrace/Sources/Integrations/TracingURLSessionHandler.swift": "6a76028d4e76459ad2f59f5d1b720ebc712a1e0390e6cb992fc91e39eebd2427",
+      "DatadogTrace/Sources/Span/SpanWriteContext.swift": "fb428dab3721675d84c7357f8010d980b4d6d4d28906aedc3a4a0d7273d77fa9"
+    },
+    "test_hashes": {
+      "DatadogTrace/Tests/TracingURLSessionHandlerTests.swift": "bf05ec8bacc5759e6d8d8509e92a42b3f18275ef427e988526d5cd7b1af314cf",
+      "Datadog/IntegrationUnitTests/Public/NetworkInstrumentationIntegrationTests.swift": "47f50ccf4ee00441cd467a16b5eaeb3ef3e3afee4525fe0ae962804941184413"
+    },
+    "independent_pair_review": {
+      "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp208-trace-ownership-cshxotac/header-regression/native/independent-pair-review.json",
+      "sha256": "bf13b24c6ce190dcbf7b7945e634b6dff54f2d189a4b103c87fbb7488a3adc82",
+      "record": {
+        "schema_version": 1,
+        "experiment": "EXP-208",
+        "reviewer": "/root/extraction_dependency_audit",
+        "reviewed_at_utc": "2026-09-20T08:56:13.957142+00:00",
+        "status": "PASS",
+        "extraction_eligibility": {
+          "status": "ELIGIBLE",
+          "scope": "E05 bounded source-less request-time Trace ownership extraction: exact admitted three-file candidate, baseline unit13 red, amended fullTrace154 green, and native three-selector pair on iOS17.5. Eligibility for isolated checkpoint/integration consideration, not release approval or blanket gate promotion.",
+          "candidate_identity": "Uncommitted three-file diff from62f64 identified by exact source hashes; do not infer implementation identity from HEAD alone."
+        },
+        "source_hashes": {
+          "DatadogTrace/Sources/DatadogTracer.swift": "612aa2a6d9ff8d9ac1be55346ed3c93ce32e183c01aedba16a2985568110adac",
+          "DatadogTrace/Sources/Integrations/TracingURLSessionHandler.swift": "6a76028d4e76459ad2f59f5d1b720ebc712a1e0390e6cb992fc91e39eebd2427",
+          "DatadogTrace/Sources/Span/SpanWriteContext.swift": "fb428dab3721675d84c7357f8010d980b4d6d4d28906aedc3a4a0d7273d77fa9"
+        },
+        "test_hashes": {
+          "DatadogTrace/Tests/TracingURLSessionHandlerTests.swift": "bf05ec8bacc5759e6d8d8509e92a42b3f18275ef427e988526d5cd7b1af314cf",
+          "Datadog/IntegrationUnitTests/Public/NetworkInstrumentationIntegrationTests.swift": "47f50ccf4ee00441cd467a16b5eaeb3ef3e3afee4525fe0ae962804941184413"
+        },
+        "arms": {
+          "baseline": {
+            "total_tests": 3,
+            "failed": 2,
+            "passed": 1,
+            "skipped": 0,
+            "failure_assertions": 6,
+            "executed_once_each": true,
+            "parent_control_passed": true,
+            "start": "2026-09-20T08:47:56.873540+00:00",
+            "finish": "2026-09-20T08:48:36.757068+00:00",
+            "duration_seconds": 39.883527755737305,
+            "non_config_source_paths_rehashed": 1846,
+            "product_members_rehashed": 75,
+            "diagnostics": {
+              "compiler_warning_lines": 252,
+              "duplicate_class_lines": 59,
+              "qos_warning": {
+                "issueType": "Runtime Warning",
+                "message": "Thread running at User-initiated quality-of-service class waiting on a lower QoS thread running at Default quality-of-service class. Investigate ways to avoid priority inversions"
+              }
+            },
+            "cleanup": "PASS",
+            "evidence_sha256": {
+              "baseline-run.json": "ab93b89b19faa74b7e4e14b83eecf8209dd8fbf493d64c4b50bfeb7fc493c62d",
+              "baseline-summary.json": "0db318ae4ecdad060868254e56348125c07644c3a35a3efc71b48838ded89007",
+              "baseline-tests.json": "05867205df45309f4cc1e97adfa21aed4a549aa8d1a5bb546b081c95c48e9f16",
+              "baseline-build-test.log": "4c95101299786fd0916c9ec05cba7a0abd3fa2fbd9438078ff59bd8941340e47",
+              "baseline-product-hashes.json": "99e6c62930bee614baea435400a4b46dd034a79bce2cd0d89589d283f3d3a62c",
+              "baseline-oracle-audit.json": "d4e98ba29e9382a412c73593e40f13c8cc907565731c1c25623d25dbb95a7470"
+            }
+          },
+          "candidate": {
+            "total_tests": 3,
+            "failed": 0,
+            "passed": 3,
+            "skipped": 0,
+            "failure_assertions": 0,
+            "executed_once_each": true,
+            "parent_control_passed": true,
+            "start": "2026-09-20T08:50:13.287852+00:00",
+            "finish": "2026-09-20T08:50:47.710113+00:00",
+            "duration_seconds": 34.422260999679565,
+            "non_config_source_paths_rehashed": 1846,
+            "product_members_rehashed": 75,
+            "diagnostics": {
+              "compiler_warning_lines": 252,
+              "duplicate_class_lines": 59,
+              "qos_warning": {
+                "issueType": "Runtime Warning",
+                "message": "Thread running at User-initiated quality-of-service class waiting on a lower QoS thread running at Default quality-of-service class. Investigate ways to avoid priority inversions"
+              }
+            },
+            "cleanup": "PASS",
+            "evidence_sha256": {
+              "candidate-run.json": "01c2a15391e3e201dce89408936065b9c62cd4a9529788a12265f2bb258d3d08",
+              "candidate-summary.json": "3f867593a5331171947206e95c56a9a8e55f9d7a3fe97b64b8f95f8e1ddf88d2",
+              "candidate-tests.json": "ef8b33796eb709790ffae6ffe63559e873f42d5e3739ffb2b0d8f27e03ebd024",
+              "candidate-build-test.log": "23e72248c7df152b49f19e89b0fe252c0940d3544f5ac26196f037db2f6716f2",
+              "candidate-product-hashes.json": "376ecc2497a0985e107b2fb8cfeecfe7359bf5a5c9d0ed562e211b131006c1c4",
+              "candidate-oracle-audit.json": "0fc0ee27edc0269bf5e3a8215ad77c4c44e039d4c46deab02dda3b0e04dae677"
+            }
+          }
+        },
+        "negative_controls": "Baseline has exactly four late-RUM adoption assertions plus the A-request view/action ownership assertions; no other native failure. Candidate clears all six while parent control passes in both arms.",
+        "serialized_semantics": [
+          "Complete writer-serialized client Trace span inventories are asserted: two URLSession spans for reverse completion and one for before-RUM. RUM automatic resources are disabled, so these are not backend-derived RUM spans.",
+          "Actual URLProtocol starts and URLSession completions prove one HTTP200/ok body/no-error receipt per held request; B completes before A.",
+          "A and B RUM owners are obtained from queued core context with nonempty/distinct view/action IDs; candidate serialized RUM tags remain attached to their request-time owner.",
+          "Before-RUM request starts before RUM enable; later RUM owner is proved nonempty before release, yet all four serialized RUM ownership tags remain absent.",
+          "Full128-bit trace and span identities match captured headers; caller header and existing custom baggage remain preserved.",
+          "Request-time user/account baggage and completion-time serialized user/account are separately asserted.",
+          "Unchanged registered-delegate parent control checks exactly root+URLSession spans, exact traceID, parentID, spanID and root metric."
+        ],
+        "prerequisite_sha256": {
+          "accepted_unit_red_review": "c85fb1641b61e85e3a3232ef85f8fd7f17c2ebf3681de276fd0a78e98102bcad",
+          "amended_full_green_review": "483618587a1ce0995f41ff132caf7601cd34ae17a7c8d4a3355b69240e2107ad",
+          "amended_source_review": "2abe4df2b77a2e48b4180aa874fc1eb89117f9e1c336df5068f1f1c3954b19ff",
+          "green_source_freeze": "379720b84293399f251c5657f9b1953bca0f85de883e9e4a17f585401ba2f197",
+          "native_definition": "6a234134c133d63e33ffe7e6864c050ae4dbda7fde1a44cd3735cf9bc3cda00d",
+          "native_source_inputs": "68642354a05a37798234552110af9a87397b52e5949837972d827c1c72824351",
+          "native_test_inputs": "437511eddba3ca14ccfed90a540b4c639044bbe42bc9627d6a368acf48b9a615",
+          "native_oracle": "58be84bd43be6187f4dbaa5f5a9c9626e5ae416e51ffeecad72bbf49febf3b84",
+          "native_runner": "c3031a227537a275a95299d65bc0c344c5b2f3c53c6f448332033ae3873b10f7",
+          "native_audit_runner": "4d02ea9cfed6c590afe9934d8a446fadd089ee05997c2b2ad17cb773298f46a8",
+          "framework_inputs": "97155929a78deeb9bb186eb7304d6e0362a414c9df58c5c034f667a4fc58f24a",
+          "regression_amendment": "5007721eb5d33e9ae65940060471b1995cb0511fe807694ceff52b0dc14bf043"
+        },
+        "original_deadline": "2026-09-20T08:58:39.858757+00:00",
+        "diagnostic_disposition": "Both arms retain252 compiler-warning lines,59 duplicate-class lines and the same structured QoS warning. Baseline occurrence is recorded; no harmlessness, clean-sanitizer or performance claim. Verbose diagnostic archives/sysdiagnoses were disabled symmetrically.",
+        "preserved_attempts": [
+          "Original zero-test compile failure and unexecuted rejected rename retained.",
+          "Previous153/154 green remains BLOCKED at its original hashes; only the separately admitted one-condition amendment is qualified here."
+        ],
+        "limits": [
+          "No registered-mode request-ownership matrix beyond the unchanged parent control; no partial/mixed carrier adoption or baggage merge/parser policy claim.",
+          "No backend ingestion, physical Duo/SDK27 scene topology, multi-scene, Release performance, retention-budget, sanitizer or all-platform qualification.",
+          "All assertions use local writer serialization; there is no separate retained raw span export or backend validation implied.",
+          "No source/test changes, reruns, build/device/network actions, commits or gate promotion by reviewer.",
+          "Protected-state outcomes use retained metadata receipts; no protected config contents were read or rehashed."
+        ]
+      }
+    },
+    "commits": {
+      "production": {
+        "parent": "62f64d7b655bdc83f3036c4ad81090a270f6202b",
+        "paths": [
+          "DatadogTrace/Sources/Integrations/TracingURLSessionHandler.swift",
+          "DatadogTrace/Sources/Span/SpanWriteContext.swift",
+          "DatadogTrace/Sources/DatadogTracer.swift"
+        ],
+        "message": "Preserve request-time RUM ownership in automatic traces",
+        "attempts": [
+          {
+            "kind": "signed",
+            "pid": 23558,
+            "returncode": -15,
+            "timeout": true,
+            "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          },
+          {
+            "kind": "authorized-unsigned-fallback",
+            "pid": 23709,
+            "returncode": 0,
+            "timeout": false,
+            "log_sha256": "5220209394af06739b46d3ddb89fe80a54461de5abe1a45e64462123a07d2653"
+          }
+        ],
+        "started_at": 1789894605.1006012,
+        "commit": "f270c375c74a79b69343de19e78dc2698fd7ee91",
+        "signature": "N",
+        "committed_paths": [
+          "DatadogTrace/Sources/DatadogTracer.swift",
+          "DatadogTrace/Sources/Integrations/TracingURLSessionHandler.swift",
+          "DatadogTrace/Sources/Span/SpanWriteContext.swift"
+        ],
+        "protected_unchanged": true,
+        "finished_at": 1789894630.2437491
+      },
+      "tests": {
+        "parent": "f270c375c74a79b69343de19e78dc2698fd7ee91",
+        "paths": [
+          "DatadogTrace/Tests/TracingURLSessionHandlerTests.swift",
+          "Datadog/IntegrationUnitTests/Public/NetworkInstrumentationIntegrationTests.swift"
+        ],
+        "message": "Cover automatic Trace request ownership and preserved context",
+        "attempts": [
+          {
+            "kind": "signed",
+            "pid": 23954,
+            "returncode": -15,
+            "timeout": true,
+            "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          },
+          {
+            "kind": "authorized-unsigned-fallback",
+            "pid": 24114,
+            "returncode": 0,
+            "timeout": false,
+            "log_sha256": "9f3d0ac02a77b71085f7aaf6be6cdc3c0b2673e4b8af8446bd0065fd2918032d"
+          }
+        ],
+        "started_at": 1789894665.120182,
+        "commit": "9254adbcbf5a1809219ec30f6cc07df4f3af4518",
+        "signature": "N",
+        "committed_paths": [
+          "Datadog/IntegrationUnitTests/Public/NetworkInstrumentationIntegrationTests.swift",
+          "DatadogTrace/Tests/TracingURLSessionHandlerTests.swift"
+        ],
+        "protected_unchanged": true,
+        "finished_at": 1789894690.2707589
+      }
+    },
+    "worktree_clean_after_commits": true,
+    "committed_bytes_match_qualified_sources": true,
+    "limitations": [
+      "No registered-mode request-ownership matrix beyond the unchanged parent control; no partial/mixed carrier adoption or baggage merge/parser policy claim.",
+      "No backend ingestion, physical Duo/SDK27 scene topology, multi-scene, Release performance, retention-budget, sanitizer or all-platform qualification.",
+      "All assertions use local writer serialization; there is no separate retained raw span export or backend validation implied.",
+      "No source/test changes, reruns, build/device/network actions, commits or gate promotion by reviewer.",
+      "Protected-state outcomes use retained metadata receipts; no protected config contents were read or rehashed."
+    ]
   }
 }
