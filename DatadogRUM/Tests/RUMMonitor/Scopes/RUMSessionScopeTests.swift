@@ -866,6 +866,92 @@ class RUMSessionScopeTests: XCTestCase {
         XCTAssertEqual(collector.pauseCallCount, 0)
     }
 
+    // MARK: - View and Resource Ownership
+
+    func testGivenStoppedViewWithPendingResource_whenResourceSucceeds_itReleasesOnlyCompletedOwners() throws {
+        try assertPendingResourceOwnership(fails: false)
+    }
+
+    func testGivenStoppedViewWithPendingResource_whenResourceFails_itReleasesOnlyCompletedOwners() throws {
+        try assertPendingResourceOwnership(fails: true)
+    }
+
+    private func assertPendingResourceOwnership(fails: Bool) throws {
+        let start = Date(timeIntervalSinceReferenceDate: 0)
+        let dateProvider = DateProviderMock(now: start)
+        let cache = ViewCache(dateProvider: dateProvider, ttl: 60)
+        let sessionContext = DatadogContext.mockWith(serverTimeOffset: 0)
+        let scope = makeSessionScope(viewCache: cache, startTime: start, context: sessionContext)
+        let eventWriter = FileWriterMock()
+
+        for cycle in 0..<3 {
+            let time = start.addingTimeInterval(TimeInterval(cycle * 10))
+            let oldIdentity = ViewIdentifier("old-\(cycle)")
+            let peerIdentity = ViewIdentifier("peer-\(cycle)")
+            let key = "pending-\(cycle)"
+            let oldID = try startView(in: scope, identity: oldIdentity, at: time, dateProvider: dateProvider, context: sessionContext)
+            _ = scope.process(
+                command: RUMStartResourceCommand.mockWith(resourceKey: key, time: time.addingTimeInterval(1)),
+                context: sessionContext,
+                writer: eventWriter
+            )
+            weak var oldView = scope.viewScopes.first(where: { $0.viewUUID.toRUMDataFormat == oldID })
+            weak var resource = oldView?.resourceScopes[key]
+            XCTAssertNotNil(oldView)
+            XCTAssertNotNil(resource)
+
+            let peerTime = time.addingTimeInterval(2)
+            let peerID = try startView(in: scope, identity: peerIdentity, at: peerTime, dateProvider: dateProvider, context: sessionContext)
+            weak var peer = scope.viewScopes.first(where: { $0.viewUUID.toRUMDataFormat == peerID })
+            XCTAssertNotNil(peer)
+            XCTAssertEqual(oldView?.isActiveView, false)
+            XCTAssertNotNil(resource, "Pending work must retain its stopped RUM view")
+            XCTAssertEqual(scope.viewScopes.count, 2)
+
+            dateProvider.now = time.addingTimeInterval(3)
+            if fails {
+                _ = scope.process(
+                    command: RUMStopResourceWithErrorCommand.mockWithErrorMessage(
+                        resourceKey: key,
+                        time: dateProvider.now,
+                        message: "pending ownership failure"
+                    ),
+                    context: sessionContext,
+                    writer: eventWriter
+                )
+                let events = eventWriter.events(ofType: RUMErrorEvent.self)
+                XCTAssertEqual(events.count, cycle + 1)
+                XCTAssertEqual(events.last?.view.id, oldID)
+            } else {
+                _ = scope.process(
+                    command: RUMStopResourceCommand.mockWith(resourceKey: key, time: dateProvider.now),
+                    context: sessionContext,
+                    writer: eventWriter
+                )
+                let events = eventWriter.events(ofType: RUMResourceEvent.self)
+                XCTAssertEqual(events.count, cycle + 1)
+                XCTAssertEqual(events.last?.view.id, oldID)
+            }
+
+            XCTAssertNil(resource, "Completion must release the exact Resource scope")
+            XCTAssertNil(oldView, "A completed stopped view must release while the session stays alive")
+            XCTAssertNotNil(peer)
+            XCTAssertEqual(peer?.viewUUID.toRUMDataFormat, peerID)
+            XCTAssertEqual(peer?.isActiveView, true)
+            XCTAssertEqual(scope.viewScopes.count, 1)
+            XCTAssertEqual(scope.viewScopes.last(where: { $0.isActiveView })?.viewUUID.toRUMDataFormat, peerID)
+            XCTAssertEqual(cache.lastView(before: milliseconds(peerTime)), oldID, "Cached values must not retain the old scope")
+
+            _ = scope.process(
+                command: RUMStopViewCommand.mockWith(time: dateProvider.now, identity: peerIdentity),
+                context: sessionContext,
+                writer: eventWriter
+            )
+            XCTAssertNil(peer)
+            XCTAssertTrue(scope.viewScopes.isEmpty)
+        }
+    }
+
     // MARK: - View Cache Lifetime
 
     func testGivenLongLivedView_whenNextViewStarts_itRetainsDelayedContainerUntilInactiveTTL() throws {
