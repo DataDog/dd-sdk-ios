@@ -1,0 +1,98 @@
+{
+  "baseline": "62f64d7b655bdc83f3036c4ad81090a270f6202b",
+  "classification": "CURRENT TWO-FILE STATELESS REPAIR BLOCKED; REPRODUCTION/PRESERVATION ONLY",
+  "current_production_unchanged": {
+    "RUMUserActionScope.swift": "b81aeacd4fd4384a2cffff84fc82eacf0a4f8598df9098e0edac08b3124649dc",
+    "RUMViewScope.swift": "45906e298eee02f38b12d022b5b29e5b4bb1b9e8055f54638e8e4863fd51ed1d"
+  },
+  "definition_snapshot_sha256": "7b1bf2a4d1a2d7876348bd28318f06e483be830abe314c9ab52692ff79d6e26e",
+  "execution_claim": "No test/build/device/network execution or production change by this reviewer. Baseline runtime is owned by root and is not inferred from source. No gate closure or additional design admission.",
+  "expected_red_methods": [
+    "testGivenRetainedResource_whenItSucceeds_itDoesNotCountInAnotherViewsAction",
+    "testGivenRetainedResource_whenItFails_itDoesNotFrustrateAnotherViewsAction",
+    "testGivenStoppedSessionResource_whenItSucceeds_itDoesNotCountInNewSessionAction",
+    "testGivenStoppedSessionResource_whenItFails_itDoesNotFrustrateNewSessionAction"
+  ],
+  "experiment": "EXP-206",
+  "frozen_tests": 9,
+  "later_designs": [
+    {
+      "decisive_additional_tests_for_later_admission": [
+        "Run all frozen nine unchanged; never replace the ninth assertions or fabricate ownership metadata in it.",
+        "Drive the actual handler with nonnil HTTPURLResponse+NSError, both in its original view and after Home-to-Detail/stopped-session transitions. Preserve one Resource/zero separate Resource error for same-view completion and exact action counters/frustration; reject foreign action mutation.",
+        "Interleave explicit action stop/new action between native success and error in the same view, and interleave a new view/session in the paired foreign case. The token must follow view/session ownership, not pin the original action or adopt the new owner.",
+        "Start a Resource before the current action, then complete it during the action; preserve existing same-view counters. Exercise dropped event mappers and pending-resource expiry without changing existing count timing.",
+        "Exercise unknown/repeated keys and reuse after completion, including the same key in different SDK cores; assert no cross-core token or action-ledger attribution. Any ambiguous legacy behavior needs an explicit contract decision, not a heuristic.",
+        "Delay/drain completion work, end/expire/drop the action and deinitialize the SDK; weak-token/scope/task controls must prove token/key cleanup. Measure full-lifetime allocation churn and retained bytes before any footprint claim."
+      ],
+      "lifetime_and_cost": [
+        "One token allocation per native completion series, released after its last queued command releases it; O(1) IDs and no owner-object retain chain. If queued work is delayed, token lifetime follows that existing queue lifetime.",
+        "Resolving once requires scanning retained views and dictionary lookup per view: O(number of retained views), unless a separately reviewed existing index can be used. Do not label this zero-overhead.",
+        "A per-action key set retains key strings/buckets until action teardown. Seeding costs O(pending resources); membership/insertion has expected O(1) cost with allocation/rehash churn and O(number of keys) teardown.",
+        "The action ledger is lifetime-scoped, not proven size- or time-bounded. Existing pending resources can prevent timeout even past the nominal10seconds; no silent cap/eviction may discard a required error signal. Memory and allocation budgets require later measurement."
+      ],
+      "mechanism": [
+        "URLSessionRUMResourcesHandler creates one internal token for the existing completion command series. Metrics/success/error retain that same token; keep the original command order, timestamps, attributes and separate publisher calls.",
+        "RUMApplicationScope resolves the token once, on the RUM processing queue, before any retained session/view consumes the first child command. Store only value IDs identifying the originating session/view (and optionally Resource UUID for audit identity); represent unresolved, owned and unowned distinctly. Never retain a scope, SDK core, task or handler.",
+        "RUMViewScope uses the resolved owner for native-series action mutation even after Resource removal. Every action still evaluates expiration first. A resolved-unowned token must not later adopt a new view with a coincident key. Actual Resource emission/removal and session expiry remain separate existing paths.",
+        "For unchanged unannotated commands such as the frozen ninth sequence, the live action records keys known to belong to its view. Seed from currently pending Resource keys when the action begins; add accepted starts/owned completions before Resource removal; retain those keys until that action ends. This admits the same-action success+error tail but rejects a foreign key never owned by that action/view.",
+        "No owner token/key history enters attributes, events, disk, logs or public APIs. No scene routing or global owner map is introduced."
+      ],
+      "name": "Completion-scoped owner token with action-lifetime legacy ownership ledger",
+      "production_file_boundaries": {
+        "DatadogRUM/Sources/Instrumentation/Resources/URLSessionRUMResourcesHandler.swift": "Attach one token to its original completion commands without collapsing or reordering them.",
+        "DatadogRUM/Sources/RUMMonitor/RUMCommand.swift": "Internal token/value owner definitions plus optional token storage/defaults on metrics/success/error commands. Preserve old construction call sites and protocol witness.",
+        "DatadogRUM/Sources/RUMMonitor/Scopes/RUMApplicationScope.swift": "Resolve token against current retained session/view Resource dictionaries before broadcast, only once per series.",
+        "DatadogRUM/Sources/RUMMonitor/Scopes/RUMUserActionScope.swift": "Action-lifetime key ledger and expiry-before-mutation overload; no new global state.",
+        "DatadogRUM/Sources/RUMMonitor/Scopes/RUMViewScope.swift": "Seed/maintain legacy action membership, select native-token or local-ledger relevance inside existing-action branch, retain current Resource and view lifetimes."
+      },
+      "reason_for_combination": "A native token alone cannot preserve the frozen ninth test when its existing command sequence has no token. An action-lifetime ledger alone loses ownership if the action ends or changes between native success and error. Combining them preserves the frozen same-action sequence and carries actual native ownership across action transitions without global tombstones.",
+      "smaller_alternative_not_promoted": "A ledger in only the two original source files is attractive for the frozen nine but fails native action-transition preservation once the old action is discarded. It is not presented as a second compatible design.",
+      "status": "NOT ADMITTED, NOT IMPLEMENTED; ONE CONCRETE LATER DESIGN CANDIDATE, NOT A COMPATIBILITY OR PERFORMANCE CLAIM",
+      "unchanged_boundaries_to_verify": [
+        "RUMScope protocol and helper semantics",
+        "RUMSessionScope timeout/restoration",
+        "Monitor per-command global attributes/time transformation",
+        "RUMResourceScope event emission/removal",
+        "DatadogInternal networking source",
+        "public API, serialized schema, endpoint and generated models"
+      ],
+      "unresolved_compatibility_risks": [
+        "Unannotated/manual success then action-transition then error is not recoverable from an action-local ledger after teardown. This historical unknown-terminal behavior must be explicitly classified in the later contract; native tokens do not justify silently changing a manual/cross-platform case.",
+        "Action-lifetime historical keys can be ambiguous after legal key reuse. The public uniqueness rule applies to currently tracked Resources, not arbitrary completed history; investigate generation semantics before approving the ledger fallback.",
+        "Token resolution must account for source-matched session expiration/order without reviving expired Resource delivery or mapping absent owners to an active view.",
+        "A token shared across asynchronously queued commands needs confinement proof: producer publishes immutable references, only the RUM queue resolves owner. No unsynchronized access or public attribute workaround.",
+        "No compatibility-preserving implementation is yet established for every listed risk. A later admission may reject this design; current EXP206 remains reproduction/preservation only."
+      ]
+    }
+  ],
+  "original_deadline": "2026-09-20T06:24:03.630360+00:00",
+  "preservation_controls": [
+    "testGivenForeignResourceCompletion_whenActionExpires_itPreservesClockDrivenExpiration",
+    "testGivenForeignResourceMetrics_whenActionExpires_itPreservesClockDrivenExpiration",
+    "testGivenSameViewResource_whenItSucceeds_itCountsInCurrentAction",
+    "testGivenSameViewResource_whenItFails_itCountsAndFrustratesCurrentAction",
+    "testGivenSameViewResponseAndError_whenResourceCompletes_itPreservesActionErrorSignal"
+  ],
+  "proof": {
+    "conclusion": "The distinguishing former owner has been discarded. A pure predicate over current map membership/counts/status/time cannot acceptA and rejectB. Native ownership metadata or bounded history is required.",
+    "indistinguishable_histories": {
+      "A_preserve": "H2 action completed its own Resource K, then receives the accompanying K error. Its dictionary is empty and its successful-resource count is1. Preserve action.error1 and platform error frustration.",
+      "B_reject": "H2 action completed unrelated J; earlier H1 completed K and its scope is gone. H2 then receives the identical late K error. H2 dictionary, action count/times and remaining scope state can equal historyA. Reject H2 mutation."
+    },
+    "premises": [
+      "ResourceCompletion can carry both response and error.",
+      "The handler issues success then error for such a completion.",
+      "Success removes the Resource entry before the second command is processed.",
+      "The only Resource identity on the later command is resourceKey; the action has counts/times but no per-resource history."
+    ],
+    "rejected_shortcuts": [
+      "Strict dictionary membership drops the valid second terminal inA.",
+      "Allowing unknown errors, or using positive resource count/status/time as a fallback, also acceptsB.",
+      "Keeping a completed Resource or sentinel in the existing dictionary adds logical state/retention and changes lifetime despite not adding a property."
+    ],
+    "structural_preservation": "A mutation-relevance overload must keep the three-argument RUMScope witness, test expiration first, and preserve process ? sameScope : nil. Start commands must remain accepted before dictionary insertion. Perform type/owner work only when an action exists."
+  },
+  "reviewed_at_utc": "2026-09-20T05:49:24.784569+00:00",
+  "source_evidence_sha256": "d4d179fde06d8c50a632f86a465136264a8817490cdfc1c1050c26e23cb97fcd"
+}

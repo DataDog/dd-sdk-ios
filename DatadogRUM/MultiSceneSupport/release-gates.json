@@ -2523,11 +2523,11 @@
       "deliverable": "Resource completion ownership extraction",
       "owner": "SDK implementer + independent reviewer",
       "dependencies": [],
-      "decisive_test": "Source-less late success/error/metrics belong only to resourceKey owner after sequential navigation/session change; new view action/error_tap counts remain unchanged. Must first fail current develop.",
+      "decisive_test": "Source-less late success/error/metrics belong only to resourceKey owner after sequential navigation/session change; new view action/error_tap counts remain unchanged. Must first fail current develop. Preserve same-view response-plus-error counts/frustration and clock-driven expiration; qualify ownership across completion/action changes.",
       "environment": "Isolated clean checkout of then-current develop; affected unit and native fixtures",
       "completion_mode": null,
       "status": "OPEN",
-      "evidence": "",
+      "evidence": "EXP-206: current-develop9-test baseline has4 expected ownership failures and5 preservation passes. Stateless repair rejected because it loses the valid response-plus-error action signal. No production candidate; E03 remains open.",
       "release_requirements": {
         "S1": {
           "scope": "Resource completion ownership extraction",
@@ -2535,9 +2535,9 @@
           "dependencies": [
             "S1:F07"
           ],
-          "decisive_test": "Source-less late success/error/metrics belong only to resourceKey owner after sequential navigation/session change; new view action/error_tap counts remain unchanged. Must first fail current develop.",
+          "decisive_test": "Source-less late success/error/metrics belong only to resourceKey owner after sequential navigation/session change; new view action/error_tap counts remain unchanged. Must first fail current develop. Preserve same-view response-plus-error counts/frustration and clock-driven expiration; qualify ownership across completion/action changes.",
           "environment": "Isolated clean checkout of then-current develop; affected unit and native fixtures",
-          "evidence": "Candidate only; mixed experimental commits and scene-targeted tests are not customer-defect proof.",
+          "evidence": "EXP-206: current-develop9-test baseline has4 expected ownership failures and5 preservation passes. Stateless repair rejected because it loses the valid response-plus-error action signal. No production candidate; E03 remains open.",
           "required": false
         }
       }

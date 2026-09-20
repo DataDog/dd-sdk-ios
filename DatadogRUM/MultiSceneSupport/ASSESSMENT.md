@@ -56,6 +56,14 @@ RUM suite and paired public-monitor full/delta writer-JSON tests. Its own releas
 qualification remains open; these results neither certify backend delivery nor
 change E01's selected-candidate gates.
 
+The separate E03 investigation reproduces an existing-customer action attribution
+defect on current develop: late Resource success/error changes a newer view or
+session's live action counters and error_tap, despite correct Resource/error parent
+IDs. [EXP-206](Results/EXP-206-resource-action-ownership.json) has four exact
+baseline failures and five preservation passes. Its stateless repair is rejected
+because it would erase a valid same-view response-plus-error signal. No E03
+production change or release qualification is claimed.
+
 ## Immediate compatibility priority
 
 The short-term criterion is no RUM degradation when an existing app rebuilds with

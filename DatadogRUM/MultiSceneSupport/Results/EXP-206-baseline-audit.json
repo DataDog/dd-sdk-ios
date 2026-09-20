@@ -1,0 +1,108 @@
+{
+  "artifact_scope": "compile-correction corrected baseline attempt only; the prior compile-zero-tests attempt is preserved and excluded from reproduction counts",
+  "evidence": {
+    "admission_change": "Exactly2 operand unwrappings in RUMSessionScopeTests.swift; all9tests and assertions otherwise unchanged; production unchanged.",
+    "artifact_root": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp206-resource-action-ezrw7_ei/compile-correction",
+    "assertion_message_count": 6,
+    "baseline_revision": "62f64d7b655bdc83f3036c4ad81090a270f6202b",
+    "completed_before_original_deadline": true,
+    "deadline": "2026-09-20T06:24:03.630360+00:00",
+    "deadline_margin_seconds": 2209.787118,
+    "declared_count": 9,
+    "definition_hash_matches_run_and_freeze": true,
+    "definition_sha256": "45cc04e918c3be223fcde58923de68c4a4da07dcb4c62f8212e3c7e458fa5563",
+    "dependencies_unchanged": true,
+    "duration_seconds": 26.7583,
+    "expected_red_exact": true,
+    "expected_tests_frozen": 9,
+    "failed": 4,
+    "failure_lines": [
+      {
+        "assertions": [
+          {
+            "line": 886,
+            "message": "XCTAssertEqual failed: (\"1\") is not equal to (\"0\")",
+            "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/resource-completion-ownership/DatadogRUM/Tests/RUMMonitor/Scopes/RUMApplicationScopeTests.swift"
+          },
+          {
+            "line": 887,
+            "message": "XCTAssertNil failed: \"Frustration(type: [DatadogInternal.RUMActionEvent.Action.Frustration.FrustrationType.errorTap])\"",
+            "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/resource-completion-ownership/DatadogRUM/Tests/RUMMonitor/Scopes/RUMApplicationScopeTests.swift"
+          }
+        ],
+        "selector": "DatadogRUMTests/RUMApplicationScopeTests/testGivenStoppedSessionResource_whenItFails_itDoesNotFrustrateNewSessionAction()"
+      },
+      {
+        "assertions": [
+          {
+            "line": 813,
+            "message": "XCTAssertEqual failed: (\"1\") is not equal to (\"0\")",
+            "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/resource-completion-ownership/DatadogRUM/Tests/RUMMonitor/Scopes/RUMApplicationScopeTests.swift"
+          }
+        ],
+        "selector": "DatadogRUMTests/RUMApplicationScopeTests/testGivenStoppedSessionResource_whenItSucceeds_itDoesNotCountInNewSessionAction()"
+      },
+      {
+        "assertions": [
+          {
+            "line": 999,
+            "message": "XCTAssertEqual failed: (\"1\") is not equal to (\"0\")",
+            "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/resource-completion-ownership/DatadogRUM/Tests/RUMMonitor/Scopes/RUMSessionScopeTests.swift"
+          },
+          {
+            "line": 1000,
+            "message": "XCTAssertNil failed: \"Frustration(type: [DatadogInternal.RUMActionEvent.Action.Frustration.FrustrationType.errorTap])\"",
+            "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/resource-completion-ownership/DatadogRUM/Tests/RUMMonitor/Scopes/RUMSessionScopeTests.swift"
+          }
+        ],
+        "selector": "DatadogRUMTests/RUMSessionScopeTests/testGivenRetainedResource_whenItFails_itDoesNotFrustrateAnotherViewsAction()"
+      },
+      {
+        "assertions": [
+          {
+            "line": 932,
+            "message": "XCTAssertEqual failed: (\"1\") is not equal to (\"0\")",
+            "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/resource-completion-ownership/DatadogRUM/Tests/RUMMonitor/Scopes/RUMSessionScopeTests.swift"
+          }
+        ],
+        "selector": "DatadogRUMTests/RUMSessionScopeTests/testGivenRetainedResource_whenItSucceeds_itDoesNotCountInAnotherViewsAction()"
+      }
+    ],
+    "finished_at": "2026-09-20T05:47:13.843242+00:00",
+    "frameworks_unchanged": true,
+    "frozen_test_hashes": {
+      "DatadogRUM/Tests/RUMMonitor/Scopes/RUMApplicationScopeTests.swift": "f5ce5918c7eb981dc9b5c1cfbc3ceb8e2802f6e655bd2dfb2485acceff88b4e0",
+      "DatadogRUM/Tests/RUMMonitor/Scopes/RUMSessionScopeTests.swift": "588022d841425ddbd2b9c4bc99cb485864e56413758703f823e4d8a73e7b0421"
+    },
+    "hostless_cleanup_pass": true,
+    "missing_expected_failures": [],
+    "ninth_control_passed": true,
+    "passed": 5,
+    "pins_unchanged": true,
+    "preservation_controls_passed": true,
+    "processes_after": [],
+    "processes_before": [],
+    "protected_unchanged_recorded": true,
+    "run_source_unchanged": true,
+    "runtime_warnings": [],
+    "sdk_unchanged_recorded": true,
+    "selected_matches_declared": true,
+    "skipped": 0,
+    "source_freeze_at": "2026-09-20T05:46:29.288973+00:00",
+    "source_inputs_match_freeze_paths": true,
+    "started_at": "2026-09-20T05:46:47.084942+00:00",
+    "summary_total_count": 9,
+    "timeout": false,
+    "tree_count": 9,
+    "unexpected_failures": []
+  },
+  "experiment": "EXP-206",
+  "limitations": [
+    "The xcodebuild return code is 65 because the four declared red tests failed; this is expected for a baseline reproduction.",
+    "This audit does not count the preserved prior compile failure that executed zero tests.",
+    "protected_unchanged is recorded by the host artifact; root retains the separate protected-receipt verification.",
+    "This validates reproduction only and does not approve a production repair or a green arm."
+  ],
+  "schema_version": 1,
+  "verdict": "PASS_REPRODUCED_BASELINE"
+}

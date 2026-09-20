@@ -1,0 +1,154 @@
+{
+  "schema_version": 1,
+  "experiment": "EXP-206",
+  "status": "REPRODUCED; CURRENT REPAIR BOUNDARY BLOCKED; E03 OPEN",
+  "defined_at": "2026-09-20T05:24:03.630360+00:00",
+  "timebox_deadline": "2026-09-20T06:24:03.630360+00:00",
+  "gates": [
+    "E03"
+  ],
+  "owner": "Root host controller; isolated test author; independent source/artifact reviewer",
+  "baseline_revision": "62f64d7b655bdc83f3036c4ad81090a270f6202b",
+  "remote_verification": "Authenticated GitHub fetch_commit(develop) freshly returned62f64d7b655bdc83f3036c4ad81090a270f6202b before this definition. Preserve newer upstream macOS behavior; local develop is not authoritative.",
+  "worktree": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/resource-completion-ownership",
+  "branch": "valpertui/resource-completion-ownership",
+  "artifact_root": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp206-resource-action-ezrw7_ei",
+  "scope": "Independent ordinary source-less Resource completion/live-action eligibility. No E01/E02 or scene code transplant.",
+  "hypothesis": "RUMViewScope forwards completion commands to every live action before exact resourceKey lookup. A late H1 completion can increment H2 action Resource/error counts or add error_tap even though the Resource event retains its proper parent.",
+  "source_audit": {
+    "path": "/tmp/exp205-e03-resource-routing-audit.cdw1hgvt/AUDIT.md",
+    "sha256": "bf776668c42094875fe86365dad712ce4c3eb1007e20317ccf2b6e99c5631aab",
+    "root_refinement": "possibleExpirationTime uses actionStartTime, not lastActivityTime. Do not claim metrics delay an action. Foreign metrics/completion must still drive existing clock expiry; those are preservation controls."
+  },
+  "allowed_test_paths": [
+    "DatadogRUM/Tests/RUMMonitor/Scopes/RUMSessionScopeTests.swift",
+    "DatadogRUM/Tests/RUMMonitor/Scopes/RUMApplicationScopeTests.swift"
+  ],
+  "conditional_source_paths": [
+    "DatadogRUM/Sources/RUMMonitor/Scopes/RUMViewScope.swift",
+    "DatadogRUM/Sources/RUMMonitor/Scopes/RUMUserActionScope.swift"
+  ],
+  "definition": {
+    "red_selectors": [
+      "DatadogRUMTests/RUMSessionScopeTests/testGivenRetainedResource_whenItSucceeds_itDoesNotCountInAnotherViewsAction",
+      "DatadogRUMTests/RUMSessionScopeTests/testGivenRetainedResource_whenItFails_itDoesNotFrustrateAnotherViewsAction",
+      "DatadogRUMTests/RUMSessionScopeTests/testGivenForeignResourceCompletion_whenActionExpires_itPreservesClockDrivenExpiration",
+      "DatadogRUMTests/RUMSessionScopeTests/testGivenForeignResourceMetrics_whenActionExpires_itPreservesClockDrivenExpiration",
+      "DatadogRUMTests/RUMSessionScopeTests/testGivenSameViewResource_whenItSucceeds_itCountsInCurrentAction",
+      "DatadogRUMTests/RUMSessionScopeTests/testGivenSameViewResource_whenItFails_itCountsAndFrustratesCurrentAction",
+      "DatadogRUMTests/RUMApplicationScopeTests/testGivenStoppedSessionResource_whenItSucceeds_itDoesNotCountInNewSessionAction",
+      "DatadogRUMTests/RUMApplicationScopeTests/testGivenStoppedSessionResource_whenItFails_itDoesNotFrustrateNewSessionAction",
+      "DatadogRUMTests/RUMSessionScopeTests/testGivenSameViewResponseAndError_whenResourceCompletes_itPreservesActionErrorSignal"
+    ],
+    "expected_red_methods": [
+      "testGivenRetainedResource_whenItSucceeds_itDoesNotCountInAnotherViewsAction",
+      "testGivenRetainedResource_whenItFails_itDoesNotFrustrateAnotherViewsAction",
+      "testGivenStoppedSessionResource_whenItSucceeds_itDoesNotCountInNewSessionAction",
+      "testGivenStoppedSessionResource_whenItFails_itDoesNotFrustrateNewSessionAction"
+    ],
+    "preservation_controls": [
+      "testGivenForeignResourceCompletion_whenActionExpires_itPreservesClockDrivenExpiration",
+      "testGivenForeignResourceMetrics_whenActionExpires_itPreservesClockDrivenExpiration",
+      "testGivenSameViewResource_whenItSucceeds_itCountsInCurrentAction",
+      "testGivenSameViewResource_whenItFails_itCountsAndFrustratesCurrentAction",
+      "testGivenSameViewResponseAndError_whenResourceCompletes_itPreservesActionErrorSignal"
+    ],
+    "oracle": "Keep H2 continuous tap/click action alive through old H1 metrics then late success/error. Require exact old Resource/error view and session UUIDs, supplied metrics, H2 action Resource/error counts zero and no errorTap/errorClick. Explicit stopped-session variants must isolate new-session action counts. Matching same-view success/error positive counts and platform-specific frustration remain unchanged. Foreign success or metrics after the discrete action100ms boundary must still expire it at the original deadline. Preserve existing session expiration behavior; no new expired-session delivery contract.",
+    "red": "Exactly9 new tests on unchanged develop; only four foreign success/error action-counter/frustration cases may fail. Resource parent IDs/metrics and five preservation cases must pass. Freeze all assertions and source identities before execution.",
+    "conditional_fix": "Only after decisive red and independent review, restrict completion/metrics action mutation by the existing resourceKey owner while preserving clock-driven action expiration. No view/session lifetime, public API, wire, dependency, generated model, threading or network change.",
+    "green": "Run complete affected DatadogRUM target once including9 new tests and unchanged session timeout/restoration/Resource/UserAction controls. Exact inventory, no unexpected failures/skips, frozen sources/dependencies and cleanup required. Native public-monitor and full candidate release qualification remain separately required.",
+    "bound": "60minutes total, one9-test baseline invocation and one conditional full-RUM green invocation, each max1200seconds within the absolute deadline. Stop on preflight/build/unexpected oracle/timeout/input drift. No retry-until-green; any new concrete issue requires a separate recorded decision.",
+    "environment": "Xcode27.1/27A9269; actual iOS17.5/21F79 arm64 simulator, hostless unit target, no credentials. Rediscover binding before execution; retain sanitizer configuration.",
+    "inputs": "Freeze exact source/test/framework/pin/dependency identities. Copy only already-qualified OpenTelemetryApi142-member input and pinned Package.resolved; disable updates and automatic resolution changes. Fresh build/results.",
+    "diagnostics": "Use documented -collect-test-diagnostics never in both arms for expected-red comparisons; retain assertions, compiler/console/runtime warnings and complete xcresults. Omitted verbose archives preclude clean diagnostic/sanitizer claims.",
+    "cleanup": "No host app fixture; verify simulator binding, owned process absence and protected metadata unchanged. Preserve the original seven-hour caffeinate until its scheduled expiration; do not renew it."
+  },
+  "attempts": [
+    {
+      "root": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp206-resource-action-ezrw7_ei",
+      "result": "COMPILE FAILURE",
+      "executed_tests": 0,
+      "returncode": 65,
+      "run_sha256": "589289fb1b99c3580a8552aeb76cb5215846126d4904f7fe183eb782ef601636",
+      "summary_sha256": "e2c09ec7031cc8af57579283ba26ee68e3c5ce8fcfc89e3dd0efdff2c1ec54ef",
+      "source_and_cleanup_pass": true
+    },
+    {
+      "root": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp206-resource-action-ezrw7_ei/compile-correction",
+      "result": "EXPECTED BASELINE REGRESSION",
+      "tests": 9,
+      "passed": 5,
+      "failed": 4,
+      "assertion_failures": 6,
+      "skipped": 0,
+      "run_sha256": "ff12c8686ab9af6fc16b5bfa281c4a6af06a9029e39eb86996535925d848df62",
+      "summary_sha256": "b80680e38adc78130e45e6fb18790979257cb054219ecf50cfc5ad507504b2b7",
+      "tree_sha256": "62733735553025d7c36495093c121f275b69e5a2003ae769829f7d704a96ad00",
+      "source_and_cleanup_pass": true,
+      "finished_at": "2026-09-20T05:47:13.843242+00:00"
+    }
+  ],
+  "compatibility_amendment": {
+    "defined_at": "2026-09-20T05:35:20.525232+00:00",
+    "reason": "Independent source review found that automatic URLSession completion may retain both HTTPURLResponse and NSError. Handler emits metrics, success, then error; success removes the dictionary entry. The proposed strict membership guard would drop the existing same-view action error/frustration signal.",
+    "source": "DatadogRUM/Sources/Instrumentation/Resources/URLSessionRUMResourcesHandler.swift:201-239; RUMResourceScope.process success branch; RUMViewScope resource cleanup before next command.",
+    "additional_test": "DatadogRUMTests/RUMSessionScopeTests/testGivenSameViewResponseAndError_whenResourceCompletes_itPreservesActionErrorSignal",
+    "oracle": "Same view/live action, one Resource, metrics then HTTP200 success then NSError-like resource error, then action stop. Baseline must retain exactly1 Resource, zero separate Resource-error events, action.resource.count1, action.error.count1 and platform-specific error frustration, all exact same-view/session ownership. This preservation control must remain green for any eventual repair.",
+    "scope": "Add exactly one test before first invocation; original eight tests and four expected red methods unchanged. Nine baseline tests, five preservation controls. Original60minute deadline unchanged. No production or API/wire/handler change admitted.",
+    "repair_rule": "Strict dictionary membership alone is NOT approved. Baseline proof may end REPRODUCED / REPAIR BLOCKED if no solution within reviewed bounds preserves the dual-terminal signal. Additional state or routing/handler semantics requires a separately reviewed concrete proposal; do not silently relax this test."
+  },
+  "correction_admission": {
+    "defined_at": "2026-09-20T05:46:05.279656+00:00",
+    "reason": "First baseline invocation compiled0tests; exactly2 new timing assertions subtract optional Int64 loadingTime. Unwrap both with throwing XCTUnwrap; preserve existing expected100ms and1ns tolerance.",
+    "change": "Exactly2 operand unwrappings in RUMSessionScopeTests.swift; all9tests and assertions otherwise unchanged; production unchanged.",
+    "attempt_bound": "One corrected9-test invocation in a fresh build/result directory. Same original06:24:03.630360Z deadline and existing per-call cap; no production green arm admitted because ownership repair is blocked.",
+    "stop_rule": "Stop on any build, timeout, input drift or unexpected oracle; no further retry without a new concrete decision.",
+    "prior_attempt": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp206-resource-action-ezrw7_ei/red-run.json",
+    "prior_result": "COMPILE FAILURE;0tests executed; complete xcresult/cleanup/inputs preserved"
+  },
+  "corrected_artifact_root": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp206-resource-action-ezrw7_ei/compile-correction",
+  "conclusion": {
+    "defect": "On unchanged develop, foreign late success increments the new action Resource count; foreign late error increments its error count and error_tap after navigation or explicit session stop. Original Resource/error parent UUIDs remain correct.",
+    "preservation": "All5 preservation controls pass, including same-view metrics/success/error retaining1 Resource,0 standalone error events and action Resource/error counts1/1 with error_tap. Clock-driven expiry remains100ms.",
+    "repair": "No production edit or green invocation. Current dictionary/counters cannot distinguish a removed own Resource from a removed foreign one; the stateless predicate is rejected. A larger ownership-carrying design requires review before admission.",
+    "gate": "E03 stays OPEN/CONDITIONAL; no E01 or release gate promotion.",
+    "reproduction_patch": "Results/EXP-206-baseline-reproduction.patch",
+    "reproduction_patch_sha256": "86ca8f711e1abb0d8f0eeb53d2a757ca96cc21a6a606794f5d13005a5bfca435",
+    "test_hashes": {
+      "DatadogRUM/Tests/RUMMonitor/Scopes/RUMApplicationScopeTests.swift": "f5ce5918c7eb981dc9b5c1cfbc3ceb8e2802f6e655bd2dfb2485acceff88b4e0",
+      "DatadogRUM/Tests/RUMMonitor/Scopes/RUMSessionScopeTests.swift": "588022d841425ddbd2b9c4bc99cb485864e56413758703f823e4d8a73e7b0421"
+    },
+    "source_entries": 1864,
+    "product_evidence": {
+      "checked_at": "2026-09-20T05:48:42.827041+00:00",
+      "products": 164,
+      "product_manifest_sha256": "71d6424076d13bf0a130ec556f134b582b0291f7cfd58ff74060b67222bdd593",
+      "production_unchanged": true,
+      "protected_unchanged": true,
+      "runtime_warnings_in_result": [],
+      "literal_console_warning_lines": 227,
+      "duplicate_class_lines": 59,
+      "verbose_test_diagnostics_omitted": true,
+      "clean_warning_or_sanitizer_claim": false,
+      "finished_at": "2026-09-20T05:47:13.843242+00:00"
+    },
+    "independent_baseline_audit": {
+      "path": "Results/EXP-206-baseline-audit.json",
+      "sha256": "3e0617d7b66a13d166585fb13d016948e62efc8a0852f98ee68a48872366a241"
+    },
+    "independent_design_review": {
+      "path": "Results/EXP-206-ownership-design-review.json",
+      "sha256": "70d97e5375db62c51cc7e8021dc3f0f12e0045f1c4ebd989e89babbae39db171"
+    },
+    "production_unchanged": true,
+    "worktree_status": "Baseline HEAD62f64; only the two intentional reproducer test files are dirty. Durable patch retained; no source repair or ship-ready candidate."
+  },
+  "keep_awake": {
+    "checked_at": "2026-09-20T05:40:47.704396+00:00",
+    "original_pid": 94221,
+    "original_expiry": "2026-09-20T07:32:17.062999+02:00",
+    "process_absent": true,
+    "renewed": false,
+    "signaled": false
+  }
+}

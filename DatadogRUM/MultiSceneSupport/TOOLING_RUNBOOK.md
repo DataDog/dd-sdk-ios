@@ -2324,3 +2324,10 @@ Preserve full MCP payload strings and decimal/128-bit identities; backend detail
 timestamps rounded to seconds cannot establish exact nanosecond starts. RUM rows
 use opaque backend IDs distinct from semantic event UUIDs. Account for all pages
 and keep startup query evidence separate from final session/service inventories.
+
+For expected-red unit baselines, verify the exact test tree and assertion locations:
+four failed test cases can contain six assertion failures. A compile failure with
+zero executed tests is not a regression reproduction. Unwrap optional model values
+before arithmetic; do not replace a missing value with zero or widen timing
+thresholds to repair the test. Record any precise scaffold correction before a
+fresh bounded invocation and retain the original source/result identities.

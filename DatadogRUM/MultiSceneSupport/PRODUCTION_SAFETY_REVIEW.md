@@ -47,6 +47,15 @@ Native test finalization required a documented verbose-diagnostics correction;
 failed attempts, console warnings and omitted-archive limits remain explicit.
 The original R01–R12 findings and E01 release obligations are unchanged.
 
+The independent E03 investigation now establishes a current-develop SDK defect:
+late Resource completions mutate another live action's counters and error_tap.
+[EXP-206](Results/EXP-206-resource-action-ownership.json) preserves four exact
+failing cases and five passing compatibility controls. The proposed stateless
+membership repair is rejected: success removes the key before a legitimate error,
+so it would erase existing same-view telemetry. No repair is implemented; E03
+remains open pending a reviewed ownership-carrying design with lifecycle and
+footprint proof. This does not reopen or replace historical R01–R12.
+
 The unexecuted performance-fixture and backend-preparation defects are harness
 findings, not established SDK defects. Their owning
 [performance](Results/EXP-198-network-performance.json) and
