@@ -392,6 +392,18 @@ Lifecycle evidence also has distinct scopes:
 Record the narrowest applicable claim. A simulator failure before the decisive
 step is `INCONCLUSIVE`, even when focused tests cover the same internal code.
 
+## Reuse evidence across release stages
+
+An unchanged candidate may reuse an accepted finite invariant after an exact source
+and dependency audit, as in [EXP-209](Results/EXP-209-s2-source-audit.json). Enumerate
+the full tracked delta and every source blob; distinguish SDK module files from
+auxiliary test/tool sources. A symbol search alone does not establish exclusion.
+Keep each original runtime, build, oracle, diagnostic and cleanup identity. If a
+later head adds tests only, describe the earlier complete matrix plus the separately
+qualified tests as composed evidence, never a new full rerun. Reuse must match the
+whole gate: task lifetime cannot stand in for view/cache lifetime, and a completed
+backend workflow is not automatically a portable CI or Duo acceptance runner.
+
 ## Restart verification without rerunning accepted experiments
 
 Read `AGENTS.md` and `.continue-here.md` first and follow the latter's ordered

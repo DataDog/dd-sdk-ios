@@ -1,0 +1,509 @@
+{
+  "experiment": "EXP-209",
+  "title": "Freeze the smallest S2 candidate and audit source exclusions",
+  "status": "QUALIFIED SOURCE EXCLUSION AND NARROW EVIDENCE REUSE",
+  "defined_at": "2026-09-20T16:23:35.568748+00:00",
+  "engineering_deadline": "2026-09-20T17:03:35.568748+00:00",
+  "owner": "root",
+  "independent_reviewer": "/root/c06_runtime_plan",
+  "gates": [
+    "S2:F07",
+    "S2:P01"
+  ],
+  "candidate_selection": {
+    "name": "E01 only",
+    "baseline": "62f64d7b655bdc83f3036c4ad81090a270f6202b",
+    "production_revision": "1bdc9286c17d69d73e5e41530e6179c72a723368",
+    "qualification_head": "652ce169773b0be5b6767179eca8ab5f4cf25f8a",
+    "worktree": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/urlsession-exactly-once",
+    "reason": "Existing narrow reliability repair is the smallest qualified develop-based production delta. E02/E04/E05 remain separate; E03 unresolved. Admit another slice only for a specific remaining S2 invariant or regression, with a new source freeze.",
+    "shipping_limit": "No delivery authorized; separate upstream hitch fix, source-verified rebase and signed outgoing history remain F06 requirements."
+  },
+  "hypothesis": "The selected candidate contains only the three-file internal URLSession repair on current develop. It excludes deferred semantic SwiftUI, scene routing/lifecycle/authority, scene target APIs and related caches by complete source comparison and transitive caller inspection; current develop platform changes remain intact.",
+  "allowed_work": [
+    "Read and hash committed source, caller/import/API/wire/project inventories and accepted evidence",
+    "Write source/reuse audit and documentation; no SDK, test, harness or dependency changes"
+  ],
+  "budgets": {
+    "new_builds": 0,
+    "native_launches": 0,
+    "sdk_edits": 0,
+    "test_reruns": 0,
+    "engineering_minutes": 40
+  },
+  "decisive_checks": [
+    "Exact baseline ancestry and 12 tracked delta paths: 3 production, 3 tests, 6 documentation",
+    "All shipping Sources blobs outside the three production files equal develop; candidate shipping Sources equal qualified 1bdc9286",
+    "Enumerate every changed symbol plus upstream/downstream callers and lifecycle ownership; reject deferred transitive dependency",
+    "Public API, generated models, encoders, transport policy, persisted schema, dependency/project/availability changes absent",
+    "Map each reusable S1 result to exact source, environment and narrow S2 invariant; no runtime/OS upgrade claim from source identity",
+    "Record 88 historical-baseline to develop source entries and keep all unexecuted current-candidate Duo and old-build cells open"
+  ],
+  "stop_rules": [
+    "Unexpected source/dependency/API/wire change blocks F07; preserve evidence and admit a specific follow-up before editing",
+    "Source exclusion can qualify P01 non-applicability only; no numeric performance verdict",
+    "Historical EXP195 source-mismatched passes do not certify the current candidate",
+    "Do not close active-work fold/backend or actual native input gates from unchanged source alone",
+    "Engineering deadline prompts a scope decision; no new run or recurring automatic retry is authorized by this experiment"
+  ],
+  "preflight": {
+    "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/s2-source-preflight-dze_1ru5/preflight.json",
+    "at": "2026-09-20T16:15:21.900166+00:00",
+    "remote_develop": "62f64d7b655bdc83f3036c4ad81090a270f6202b",
+    "local_develop_stale": "92f021ba7e4a866f84a52da93ed8b63f3dc75882",
+    "use": "Read-only GitHub ref verification; use exact remote hash, leave local branch unchanged"
+  },
+  "review_status": "PASS_WITH_SCOPE_CORRECTIONS",
+  "gates_closed": [
+    "S2:C01",
+    "S2:C02",
+    "S2:C03",
+    "S2:C04",
+    "S2:C05",
+    "S2:C06",
+    "S2:P04",
+    "S2:F02",
+    "S2:F03",
+    "S2:A01",
+    "S2:F07",
+    "S2:P01"
+  ],
+  "new_builds": 0,
+  "new_native_launches": 0,
+  "completed_at": "2026-09-20T16:37:43.731516+00:00",
+  "initial_definition_sha256": "366a078b8dde45869c8f2c8a13b76b70b4ab23e743cb2576218831a677e3ef8c",
+  "source_inventory": {
+    "experiment": "EXP-209",
+    "at": "2026-09-20T16:25:07.033373+00:00",
+    "baseline": "62f64d7b655bdc83f3036c4ad81090a270f6202b",
+    "candidate_head": "652ce169773b0be5b6767179eca8ab5f4cf25f8a",
+    "production_revision": "1bdc9286c17d69d73e5e41530e6179c72a723368",
+    "candidate_clean": true,
+    "base_is_ancestor": true,
+    "changed_source_paths": [
+      "DatadogInternal/Sources/NetworkInstrumentation/NetworkInstrumentationFeature.swift",
+      "DatadogInternal/Sources/NetworkInstrumentation/URLSession/NetworkInstrumentationSwizzler.swift",
+      "DatadogInternal/Sources/NetworkInstrumentation/URLSession/URLSessionTaskSwizzler.swift"
+    ],
+    "all_tracked_changes": [
+      {
+        "path": "CHANGELOG.md",
+        "baseline_sha256": "4b72848cbc5ac7b1905644783eac662377b8d044ff123865b16ea93024b9c1af",
+        "candidate_sha256": "ceba3974d910c95add9d6ec1479d0f8f52e590da27bedb504be44d053647463d"
+      },
+      {
+        "path": "Datadog/IntegrationUnitTests/RUM/RUMViewHitchesIntegration_Tests.swift",
+        "baseline_sha256": "f172b87e4f8dd2e33ce932d3aeeef0d9bea4d42fd9964a718f143890946eadb3",
+        "candidate_sha256": "d969dcbc570ecfd78f0e2cc6e62c05d0af970fa9bd570da457563a9ec8712247"
+      },
+      {
+        "path": "DatadogInternal/Sources/NetworkInstrumentation/NetworkInstrumentationFeature.swift",
+        "baseline_sha256": "3e70fa502baa6faa8e4c8bc7c06fd5cc6039998efbc363f5f82bf1b9e80f1ce1",
+        "candidate_sha256": "2631ea56885a12d1b3d14b1044dd9a84319a0b382b817afb95b4edd305df5246"
+      },
+      {
+        "path": "DatadogInternal/Sources/NetworkInstrumentation/URLSession/NetworkInstrumentationSwizzler.swift",
+        "baseline_sha256": "9157bdfa21f7f567398f61256708ac577a4654d98746159feb723878416c5ce8",
+        "candidate_sha256": "a00edec0d9451c3b78c52f308c2a7f771d0e8b9cfafada79a2848f1b164cfef7"
+      },
+      {
+        "path": "DatadogInternal/Sources/NetworkInstrumentation/URLSession/URLSessionTaskSwizzler.swift",
+        "baseline_sha256": "fe48cb6bb4b3a30eb486072f4d9c3da17ccad42d233f384044c915859d0b3c5b",
+        "candidate_sha256": "96d302999632cc609a98e774106f1e51c4ef9fecfe089287426285aa524e4570"
+      },
+      {
+        "path": "DatadogInternal/Tests/NetworkInstrumentation/NetworkInstrumentationFeatureTests.swift",
+        "baseline_sha256": "e068568338ae3266c2059aa6a3b3853b7abc83cdb5da2a5bbfd56aa02a347656",
+        "candidate_sha256": "235c957d68ebe84de71f251373723e76b474da21d15fe3c8a65cc38a202a62d5"
+      },
+      {
+        "path": "DatadogInternal/Tests/NetworkInstrumentation/URLSessionTaskSwizzlerTests.swift",
+        "baseline_sha256": "474d6904badc72c38e0fc932e3295ca8bec912e381ae8a135d1d4f16bbec0c57",
+        "candidate_sha256": "0d3586be978915dfa11be06a2938eff836af61296b8ae629fd7e51e225fa5b58"
+      },
+      {
+        "path": "DatadogLogs/LOGS_FEATURE.md",
+        "baseline_sha256": "7734f0bda5eec35a411c9c17a04a5c1f6c22294ac4f918b76a697e36e1cf858b",
+        "candidate_sha256": "1542faaf5fc52c139ac8c36173b22c87a065177e40a753ce9896276b3ad12386"
+      },
+      {
+        "path": "DatadogProfiling/PROFILING_FEATURE.md",
+        "baseline_sha256": "f12159cef1ac084ed813a76fab590ea82f95ef2b14d2148501d359cacdc5c477",
+        "candidate_sha256": "6e8faf2abe8c3c47160ab4db1ac5cb2bd68a995af18460ac7f156326afecd4cf"
+      },
+      {
+        "path": "DatadogRUM/RUM_FEATURE.md",
+        "baseline_sha256": "b5570fc105764765fd60362d704a9afcfd16e6b0f942ee52b2b53feaa756c99e",
+        "candidate_sha256": "a36bbffd1df5e40f8363edfdd5395bdb1319cdca45c481214d69836936cfab01"
+      },
+      {
+        "path": "DatadogSessionReplay/SESSION_REPLAY_FEATURE.md",
+        "baseline_sha256": "2ed4968d496e631c0d662f2de9494943f6d270a181cb65cdba036fea12ac698c",
+        "candidate_sha256": "a2f28df2b87fa47674f75b8166a33a591b018a9d756a05992466c22b190580cb"
+      },
+      {
+        "path": "DatadogTrace/TRACE_FEATURE.md",
+        "baseline_sha256": "2ed9ab2199ec38dfe8992c2f2c2d18cc9a3ede299e98279b4158c3d38ab012f4",
+        "candidate_sha256": "4d48ca4136e46b094a991c2cfd8ee2c9f272ee4473ad6e9c01859b143ba65da3"
+      }
+    ],
+    "source_manifest_sha256": "22fba973c62dfeb2816f38440966c5b12f253c1ce8af1340f57efb542a312aa1",
+    "production_equals_qualified_revision": true,
+    "excluded_symbols": [
+      "RUMContextHandoff",
+      "RUMSceneIdentifier",
+      "RUMViewTarget",
+      "RUMSceneTarget",
+      "RUMNavigationHost",
+      "RUMNavigationStack",
+      "datadogSemantic",
+      "RUMNavigationTransitionSource"
+    ],
+    "input_sha256": {
+      "symbol-usages.json": "f803e4541271d0c8f0d705497c777a23faeda53c449c713302f00f8fe5c515d9",
+      "tracked-delta.json": "2d58152160813858e2b7e35dfbbbcff5a1542966149760f2e89f30b9e362853b",
+      "source-inventory.json": "22fba973c62dfeb2816f38440966c5b12f253c1ce8af1340f57efb542a312aa1",
+      "exclusions.json": "13b797706d00a18b85326e07ed9c6dfa714b9eaec19d2a490fc3417e0d4afb8a",
+      "production.patch": "a422ca6c95401cc569e13cde58616c78b7f0c3b3f510a6eabbb3ef782ed8a466"
+    },
+    "gates_closed": [],
+    "interpretation": "Source inventory only; root and independent caller/evidence review pending. Complete tracked-delta check prevents unlisted build/API/config changes. Unchanged source is not native OS-upgrade proof.",
+    "all_sources_path_counts": {
+      "baseline": 865,
+      "candidate": 865,
+      "byte_identical_outside_delta": 862
+    },
+    "module_source_counts": {
+      "BenchmarkTests": 4,
+      "DatadogCore": 79,
+      "DatadogCrashReporting": 14,
+      "DatadogFlags": 32,
+      "DatadogInternal": 160,
+      "DatadogLogs": 18,
+      "DatadogProfiling": 17,
+      "DatadogRUM": 144,
+      "DatadogSessionReplay": 185,
+      "DatadogTrace": 54,
+      "DatadogWebViewTracking": 6,
+      "TestUtilities": 100,
+      "tools": 52
+    },
+    "sdk_module_source_counts": {
+      "candidate": 709,
+      "baseline": 709,
+      "byte_identical_outside_delta": 706
+    },
+    "count_label_correction": "Original inventory also covers TestUtilities, benchmark and tools Sources paths. Corrected label only; tree data, actual three-file production delta and all blob identities unchanged."
+  },
+  "independent_review": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp209-s2-source-audit-iwrs_exv/independent-review.json",
+    "sha256": "8b7cb2562ab81d60a1ebdb5f324b9b3722bed8f708ffff978e4577be3100d8be",
+    "superseded_sha256": "35dec40188a4749c6d01e1543967911705079e880844aabe19d3bae109ac8723",
+    "correction": "Metadata only: populate exact production paths and true equality from complete tracked delta. Original contradictory diagnostic preserved."
+  },
+  "durable_evidence": {
+    "directory": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp209-s2-source-audit-iwrs_exv",
+    "files": 13,
+    "manifest_sha256": "dcdad16d4f85e6c70a01c376103dfc404b4d5085623d3c4f48e0ab2ae75eb486",
+    "byte_verified": true
+  },
+  "disposition": {
+    "status": "ACCEPTED AFTER INDEPENDENT SCOPE AND METADATA CORRECTIONS",
+    "accepted_reuse": [
+      {
+        "gate": "S2:C01",
+        "source_gate": "S1:C01",
+        "accepted_evidence": "EXP-199 frozen1bdc9286 against reused current-develop62f64:6/6 actual17.5 cells match exact normalized view/action/resource owners and genuine legacy lifecycle. SDK27.1 Scene plus genuineSDK26.5 Legacy/LegacyLifecycle, deployment15, source/binary identities and cleanup pass. Results/EXP-199-ios17-paired.json retains previous464 evidence by reference. No15/16runtime, actual26.5runtime or S2/S3 claim.",
+        "environment": "Xcode27.1 and genuine legacy-build Xcode26.6/SDK26.5; actual iPad17.5(21F79); deployment15",
+        "records": [
+          {
+            "path": "Results/EXP-199-ios17-paired.json",
+            "sha256": "d628d83e65e8c40636fc4e63f838f325b16dc57e79e79d8b0b56ed7d9afaa599"
+          },
+          {
+            "path": "Results/EXP-200-compatibility.json",
+            "sha256": "71d9efb6b90a77a26abaf1671506986d1c89a55da64144be8fe57ff15db410c4"
+          }
+        ],
+        "reuse_reason": "Same committed production source and same finite invariant; no new runtime execution or expanded environment claim. Test/documentation-only head652ce169 is explicitly bound by EXP209 source inventory.",
+        "limits": "No old-build/new-build Duo, active-work fold, physical Duo, or new performance qualification inferred. EXP204 warning remains inherited with incomplete stack and unknown root cause."
+      },
+      {
+        "gate": "S2:C02",
+        "source_gate": "S1:C02",
+        "accepted_evidence": "EXP-199 frozen1bdc9286 against reused current-develop62f64:6/6 actual17.5 cells match exact normalized view/action/resource owners and genuine legacy lifecycle. SDK27.1 Scene plus genuineSDK26.5 Legacy/LegacyLifecycle, deployment15, source/binary identities and cleanup pass. Results/EXP-199-ios17-paired.json retains previous464 evidence by reference. No15/16runtime, actual26.5runtime or S2/S3 claim.",
+        "environment": "Xcode27.1 and genuine legacy-build Xcode26.6/SDK26.5; actual iPad17.5(21F79); deployment15",
+        "records": [
+          {
+            "path": "Results/EXP-199-ios17-paired.json",
+            "sha256": "d628d83e65e8c40636fc4e63f838f325b16dc57e79e79d8b0b56ed7d9afaa599"
+          },
+          {
+            "path": "Results/EXP-200-compatibility.json",
+            "sha256": "71d9efb6b90a77a26abaf1671506986d1c89a55da64144be8fe57ff15db410c4"
+          }
+        ],
+        "reuse_reason": "Same committed production source and same finite invariant; no new runtime execution or expanded environment claim. Test/documentation-only head652ce169 is explicitly bound by EXP209 source inventory.",
+        "limits": "No old-build/new-build Duo, active-work fold, physical Duo, or new performance qualification inferred. EXP204 warning remains inherited with incomplete stack and unknown root cause."
+      },
+      {
+        "gate": "S2:C03",
+        "source_gate": "S1:C03",
+        "accepted_evidence": "EXP-199 frozen1bdc9286 against reused current-develop62f64:6/6 actual17.5 cells match exact normalized view/action/resource owners and genuine legacy lifecycle. SDK27.1 Scene plus genuineSDK26.5 Legacy/LegacyLifecycle, deployment15, source/binary identities and cleanup pass. Results/EXP-199-ios17-paired.json retains previous464 evidence by reference. No15/16runtime, actual26.5runtime or S2/S3 claim.",
+        "environment": "Xcode27.1 and genuine legacy-build Xcode26.6/SDK26.5; actual iPad17.5(21F79); deployment15",
+        "records": [
+          {
+            "path": "Results/EXP-199-ios17-paired.json",
+            "sha256": "d628d83e65e8c40636fc4e63f838f325b16dc57e79e79d8b0b56ed7d9afaa599"
+          },
+          {
+            "path": "Results/EXP-200-compatibility.json",
+            "sha256": "71d9efb6b90a77a26abaf1671506986d1c89a55da64144be8fe57ff15db410c4"
+          }
+        ],
+        "reuse_reason": "Same committed production source and same finite invariant; no new runtime execution or expanded environment claim. Test/documentation-only head652ce169 is explicitly bound by EXP209 source inventory.",
+        "limits": "No old-build/new-build Duo, active-work fold, physical Duo, or new performance qualification inferred. EXP204 warning remains inherited with incomplete stack and unknown root cause."
+      },
+      {
+        "gate": "S2:C04",
+        "source_gate": "S1:C04",
+        "accepted_evidence": "EXP-200 exact1bdc9286 versus62f64:18/18 cells. Six custom/NOP cells prove exact forwarding, one nil callback and no events between live observer controls;12 ordinary/legacy26.5 cells match accepted normalized owners/lifecycle. Frozen executable/source identities, clean installs, cleanup and original boot-state restoration pass. Results/EXP-200-compatibility.json. No S2/S3/performance claim.",
+        "environment": "Xcode27.1 runtime control; genuineSDK26.5 custom/legacy Release builds plusSDK27.1 Scene; actual17.5(21F79),26.5(23F77),27.0(24A434); deployment15",
+        "records": [
+          {
+            "path": "Results/EXP-200-compatibility.json",
+            "sha256": "71d9efb6b90a77a26abaf1671506986d1c89a55da64144be8fe57ff15db410c4"
+          }
+        ],
+        "reuse_reason": "Same committed production source and same finite invariant; no new runtime execution or expanded environment claim. Test/documentation-only head652ce169 is explicitly bound by EXP209 source inventory.",
+        "limits": "No old-build/new-build Duo, active-work fold, physical Duo, or new performance qualification inferred. EXP204 warning remains inherited with incomplete stack and unknown root cause."
+      },
+      {
+        "gate": "S2:C05",
+        "source_gate": "S1:C05",
+        "accepted_evidence": "EXP-200 exact1bdc9286 versus62f64:18/18 cells. Six custom/NOP cells prove exact forwarding, one nil callback and no events between live observer controls;12 ordinary/legacy26.5 cells match accepted normalized owners/lifecycle. Frozen executable/source identities, clean installs, cleanup and original boot-state restoration pass. Results/EXP-200-compatibility.json. No S2/S3/performance claim.",
+        "environment": "Xcode27.1 runtime control; genuineSDK26.5 custom/legacy Release builds plusSDK27.1 Scene; actual17.5(21F79),26.5(23F77),27.0(24A434); deployment15",
+        "records": [
+          {
+            "path": "Results/EXP-200-compatibility.json",
+            "sha256": "71d9efb6b90a77a26abaf1671506986d1c89a55da64144be8fe57ff15db410c4"
+          }
+        ],
+        "reuse_reason": "Same committed production source and same finite invariant; no new runtime execution or expanded environment claim. Test/documentation-only head652ce169 is explicitly bound by EXP209 source inventory.",
+        "limits": "No old-build/new-build Duo, active-work fold, physical Duo, or new performance qualification inferred. EXP204 warning remains inherited with incomplete stack and unknown root cause."
+      },
+      {
+        "gate": "S2:C06",
+        "source_gate": "S1:C06",
+        "accepted_evidence": "EXP-199 frozen1bdc9286 against reused current-develop62f64:6/6 actual17.5 cells match exact normalized view/action/resource owners and genuine legacy lifecycle. SDK27.1 Scene plus genuineSDK26.5 Legacy/LegacyLifecycle, deployment15, source/binary identities and cleanup pass. Results/EXP-199-ios17-paired.json retains previous464 evidence by reference. No15/16runtime, actual26.5runtime or S2/S3 claim.",
+        "environment": "Xcode27.1 and genuine legacy-build Xcode26.6/SDK26.5; actual iPad17.5(21F79); deployment15",
+        "records": [
+          {
+            "path": "Results/EXP-199-ios17-paired.json",
+            "sha256": "d628d83e65e8c40636fc4e63f838f325b16dc57e79e79d8b0b56ed7d9afaa599"
+          }
+        ],
+        "reuse_reason": "Same committed production source and same finite invariant; no new runtime execution or expanded environment claim. Test/documentation-only head652ce169 is explicitly bound by EXP209 source inventory.",
+        "limits": "No old-build/new-build Duo, active-work fold, physical Duo, or new performance qualification inferred. EXP204 warning remains inherited with incomplete stack and unknown root cause."
+      },
+      {
+        "gate": "S2:P04",
+        "source_gate": "S1:P04",
+        "accepted_evidence": "EXP-203: exactly3 existing controls/3 executions pass once, no failures/skips/retries, on17.5/21F79. Actual SDK/test/helper compile jobs prove Release -O and testability; five exact source/test hashes match1bd/925 and accepted EXP-199 Debug invariants. Hostless cleanup and protected state pass. No numeric or full-suite claim;142 build warnings/59 dependency duplicate classes remain in F06 diagnostics.",
+        "environment": "Exact candidate on qualified17.5 simulator; accepted EXP-199 Debug invariants plus EXP-203 three existing reentry controls with verified Release/-O and finite waits.",
+        "records": [
+          {
+            "path": "Results/EXP-203-optimized-reentrancy.json",
+            "sha256": "d74a69a3b73fce637a64ddae31d09f35d4c8398b8f74419e351ef9502f052da9"
+          },
+          {
+            "path": "Results/EXP-199-terminal-task-ownership.json",
+            "sha256": "6531292e9241262474ae0d099d91239955ec33aa86f4a3e02da56063942634f6"
+          }
+        ],
+        "reuse_reason": "Same committed production source and same finite invariant; no new runtime execution or expanded environment claim. Test/documentation-only head652ce169 is explicitly bound by EXP209 source inventory.",
+        "limits": "No old-build/new-build Duo, active-work fold, physical Duo, or new performance qualification inferred. EXP204 warning remains inherited with incomplete stack and unknown root cause."
+      },
+      {
+        "gate": "S2:F02",
+        "source_gate": "S1:F02",
+        "accepted_evidence": "EXP-201 support review at production1bdc9286: E01 changelog committed c53ed48c, five audited feature docs at5a570517, five public Swift/Objective-C clients compile/run and unchanged nine-module API baselines. Existing setup/wire/privacy/minimums preserved; duplicate-resume timing/thread caveat recorded. No deferred scene API. Results/EXP-201-final-compatibility.json owns evidence; performance/backend/F03/F06 remain separate.",
+        "environment": "Source and compiling examples for affected modules",
+        "records": [
+          {
+            "path": "Results/EXP-201-final-compatibility.json",
+            "sha256": "27038954988b44471a9b453444045f29b03dac471933c81a9abe381e3b281216"
+          }
+        ],
+        "reuse_reason": "Same committed production source and same finite invariant; no new runtime execution or expanded environment claim. Test/documentation-only head652ce169 is explicitly bound by EXP209 source inventory.",
+        "limits": "No old-build/new-build Duo, active-work fold, physical Duo, or new performance qualification inferred. EXP204 warning remains inherited with incomplete stack and unknown root cause."
+      },
+      {
+        "gate": "S2:F03",
+        "source_gate": "S1:F03",
+        "accepted_evidence": "EXP-201 production1bdc9286, final local925b9326: M01-M11 pass. Reused full Internal/Core/RUM/Trace suites plus corrected full integration278/278, exact discovered/executed identifier multiset, zero failures/skips.24 platform/configuration builds, five public Swift/Objective-C clients, exact API equality, strict changed-file lint and audited feature docs pass. Inherited delta-oracle defect is paired-proven; only one integration test file changed. Original failures, nine QoS warnings and diagnostic timeout retained; no zero-warning/sanitizer/performance claim. Results/EXP-201-final-compatibility.json.",
+        "environment": "FINAL_COMPATIBILITY.md release applicability matrix",
+        "records": [
+          {
+            "path": "Results/EXP-201-final-compatibility.json",
+            "sha256": "27038954988b44471a9b453444045f29b03dac471933c81a9abe381e3b281216"
+          },
+          {
+            "path": "Results/EXP-199-terminal-task-ownership.json",
+            "sha256": "6531292e9241262474ae0d099d91239955ec33aa86f4a3e02da56063942634f6"
+          }
+        ],
+        "reuse_reason": "Same committed production source and same finite invariant; no new runtime execution or expanded environment claim. Test/documentation-only head652ce169 is explicitly bound by EXP209 source inventory.",
+        "limits": "No old-build/new-build Duo, active-work fold, physical Duo, or new performance qualification inferred. EXP204 warning remains inherited with incomplete stack and unknown root cause."
+      },
+      {
+        "gate": "S2:A01",
+        "source_gate": "S1:A01",
+        "accepted_evidence": "EXP-202 independently qualifies four frozen arm/mode cells: candidate automatic/registered PASS; develop modes retain the predefined terminal-view observation. Each has exact12 RUM/10 session-span/10 service-span inventories, complete traces, exact owners/values,64 native receipts and verified cleanup within fixed deadlines. Registered rounding correction preserves exact equality; original automatic identities and all stopped runs retained. Durable1260-file local bundle and compact Results/EXP-202-backend-qualification.json. E03/E05 inherited limits remain separate.",
+        "environment": "Qualified simulator for frozen candidate; actual toolchain/runtime identity and authenticated Datadog",
+        "records": [
+          {
+            "path": "Results/EXP-202-backend-qualification.json",
+            "sha256": "b329a1208cebbe339112c68f054323e6983c63fd303d30c2643337747d7592a7"
+          }
+        ],
+        "reuse_reason": "Same committed production source and same finite invariant; no new runtime execution or expanded environment claim. Test/documentation-only head652ce169 is explicitly bound by EXP209 source inventory.",
+        "limits": "No old-build/new-build Duo, active-work fold, physical Duo, or new performance qualification inferred. EXP204 warning remains inherited with incomplete stack and unknown root cause."
+      }
+    ],
+    "rejected_reuse": [
+      {
+        "gate": "S2:P03",
+        "source_gate": "S1:P03",
+        "accepted_evidence": "EXP-199: production1bdc9286 unchanged. Accepted native automatic/registered success and red/green weak-terminal repair evidence, full Internal455/491 executions, plus reviewed failure/cancellation follow-up8/8 on actual17.5 with zero failures/skips/runtime warnings. Four new cases require exact terminal error/metrics, observed nonnil then released preparation/interception/task/handler/feature; four existing buffering/payload/repeated-resume controls remain green. Test-only commit652ce1697, local unsigned fallback after signing timeout. Source/pins/device/protected identities and process cleanup pass. No allocator or full-release claim. Results/EXP-199-terminal-task-ownership.json",
+        "environment": "Focused deterministic lifetime regressions and representative native automatic/registered URLSession cycles",
+        "records": [
+          {
+            "path": "Results/EXP-199-terminal-task-ownership.json",
+            "sha256": "6531292e9241262474ae0d099d91239955ec33aa86f4a3e02da56063942634f6"
+          }
+        ],
+        "reuse_reason": "Same committed production source and same finite invariant; no new runtime execution or expanded environment claim. Test/documentation-only head652ce169 is explicitly bound by EXP209 source inventory.",
+        "limits": "No old-build/new-build Duo, active-work fold, physical Duo, or new performance qualification inferred. EXP204 warning remains inherited with incomplete stack and unknown root cause."
+      }
+    ],
+    "rejection_reason": "S1 task/preparation/interception lifetime is a valid subset, but does not satisfy broader S2 view/resource/cache/scene lifetime requirements. P03 remains OPEN.",
+    "additional_source_qualifications": {
+      "S2:F07": "All865 /Sources/ entries inventoried, including709 top-level Datadog module entries. Exactly3changed internal network files plus complete12path tracked delta; imports/callers/API/wire/storage/dependency review pending.",
+      "S2:P01": "User-limited semantic SwiftUI/multi-scene application-performance requirement is non-applicable because both families are absent; no measured performance claim."
+    },
+    "remaining": [
+      {
+        "gate": "S2:P03",
+        "status": "OPEN",
+        "reason": "Broader view/resource/cache/scene lifetime evidence required; E01 task lifetime remains qualified subset."
+      },
+      {
+        "gate": "S2:C07",
+        "status": "OPEN",
+        "decisive_test": "Keep both comparisons separate: old-build vs SDK27 rebuild, and current-vs-baseline RUM SDK on rebuilt apps. Complete eight unresolved old-build Duo cells through prepared human input; rerun only affected candidate cells after F07. No changed automatic detection/owner regression.",
+        "reason": "Requires current-candidate native/OS/input/app or final-delivery evidence beyond this source-only audit."
+      },
+      {
+        "gate": "S2:C08",
+        "status": "OPEN",
+        "decisive_test": "Keep both comparisons separate: old-build vs SDK27 rebuild, and current-vs-baseline RUM SDK on rebuilt apps. Complete eight unresolved old-build Duo cells through prepared human input; rerun only affected candidate cells after F07. No changed automatic detection/owner regression.",
+        "reason": "Requires current-candidate native/OS/input/app or final-delivery evidence beyond this source-only audit."
+      },
+      {
+        "gate": "S2:C09",
+        "status": "OPEN",
+        "decisive_test": "Keep both comparisons separate: old-build vs SDK27 rebuild, and current-vs-baseline RUM SDK on rebuilt apps. Complete eight unresolved old-build Duo cells through prepared human input; rerun only affected candidate cells after F07. No changed automatic detection/owner regression.",
+        "reason": "Requires current-candidate native/OS/input/app or final-delivery evidence beyond this source-only audit."
+      },
+      {
+        "gate": "S2:C10",
+        "status": "OPEN",
+        "decisive_test": "Keep both comparisons separate: old-build vs SDK27 rebuild, and current-vs-baseline RUM SDK on rebuilt apps. Complete eight unresolved old-build Duo cells through prepared human input; rerun only affected candidate cells after F07. No changed automatic detection/owner regression.",
+        "reason": "Requires current-candidate native/OS/input/app or final-delivery evidence beyond this source-only audit."
+      },
+      {
+        "gate": "S2:H11",
+        "status": "OPEN",
+        "decisive_test": "Recognized cancellation preserves outgoing owner; completion produces fresh return owner; baseline/candidate agree. Exclude unchanged paths only through F07 source evidence; full multi-scene combinations remain S3.",
+        "reason": "Requires current-candidate native/OS/input/app or final-delivery evidence beyond this source-only audit."
+      },
+      {
+        "gate": "S2:H12",
+        "status": "OPEN",
+        "decisive_test": "Recognized native cancellation/completion preserves documented automatic/manual coverage and exact changed-path ownership. Exclude unchanged paths only through F07 source evidence; full multi-scene combinations remain S3.",
+        "reason": "Requires current-candidate native/OS/input/app or final-delivery evidence beyond this source-only audit."
+      },
+      {
+        "gate": "S2:H13",
+        "status": "OPEN",
+        "decisive_test": "Actual cancel/dismiss callbacks preserve outgoing/fresh return ownership and callback work; no synthetic completion. Exclude unchanged paths only through F07 source evidence; full multi-scene combinations remain S3.",
+        "reason": "Requires current-candidate native/OS/input/app or final-delivery evidence beyond this source-only audit."
+      },
+      {
+        "gate": "S2:H14",
+        "status": "OPEN",
+        "decisive_test": "Measured geometry/selection/path and relevant automatic/manual owner behavior match baseline through resize/fold. Exclude unchanged paths only through F07 source evidence; full multi-scene combinations remain S3.",
+        "reason": "Requires current-candidate native/OS/input/app or final-delivery evidence beyond this source-only audit."
+      },
+      {
+        "gate": "S2:H16",
+        "status": "OPEN",
+        "decisive_test": "Existing automatic/manual UIHostingController integration matches baseline on changed shipped paths, without adopting semantic scene APIs. Exclude unchanged paths only through F07 source evidence; full multi-scene combinations remain S3.",
+        "reason": "Requires current-candidate native/OS/input/app or final-delivery evidence beyond this source-only audit."
+      },
+      {
+        "gate": "S2:T03",
+        "status": "OPEN",
+        "decisive_test": "Complete delayed work across navigation/session/fold; success/error/metrics keep exact owner and no foreign action/error counts.",
+        "reason": "Requires current-candidate native/OS/input/app or final-delivery evidence beyond this source-only audit."
+      },
+      {
+        "gate": "S2:T08",
+        "status": "OPEN",
+        "decisive_test": "Existing start correlation survives completion after navigation/fold, with unchanged sampling/header behavior.",
+        "reason": "Requires current-candidate native/OS/input/app or final-delivery evidence beyond this source-only audit."
+      },
+      {
+        "gate": "S2:T10",
+        "status": "OPEN",
+        "decisive_test": "Long-lived native/WebView association and delayed web events survive navigation/fold then detach without stale ownership.",
+        "reason": "Requires current-candidate native/OS/input/app or final-delivery evidence beyond this source-only audit."
+      },
+      {
+        "gate": "S2:F08",
+        "status": "OPEN",
+        "decisive_test": "Freeze app and SDK source/build identity; compare ordinary journeys and exact telemetry expectations, long sessions, resources and WebView correlation. Include internal TestFlight evaluation after separate distribution authorization.",
+        "reason": "Requires current-candidate native/OS/input/app or final-delivery evidence beyond this source-only audit."
+      },
+      {
+        "gate": "S2:A02",
+        "status": "OPEN",
+        "decisive_test": "Freeze ordered scenarios, automated reset/capture/assertions and source/input/topology proof before requesting one session. Preserve failed automation; no weaker oracle. Include eight unresolved old-build Duo cells and changed ordinary gestures/dismissal/resize/hosting; candidate app journeys and adversarial active-work folds. Freeze finite inventory before execution.",
+        "reason": "Requires current-candidate native/OS/input/app or final-delivery evidence beyond this source-only audit."
+      },
+      {
+        "gate": "S2:F06",
+        "status": "OPEN",
+        "decisive_test": "Require applicable correctness, View/Action information, Resource attribution, object-lifetime/reentrancy, privacy, crash/API and exact source/artifact checks plus attributable review. Included new semantic SwiftUI/multi-scene changes require the bounded P01 application comparison for frame rate, hitches/hangs, CPU and memory; source exclusion can qualify non-applicability. No detailed network or per-dispatch microbenchmark prerequisite. Signed outgoing history is required before any separately authorized push.",
+        "reason": "Requires current-candidate native/OS/input/app or final-delivery evidence beyond this source-only audit."
+      }
+    ],
+    "F03_composition": "EXP201 matrix at925b9326 plus separately qualified8/8 terminal tests at652ce169. No one current-head full-matrix invocation claimed.",
+    "A01_scope": "Exact completed EXP202 automation and frozen evidence; not portableCI, newDuo or app-journey qualification.",
+    "known_inherited_defects": {
+      "E02": "Separate same-key retained-view attribute repair is not included.",
+      "E03": "Foreign-action counters on delayed Resource completion are reproduced on develop and remain in E01; no T03 full ownership closure.",
+      "E04": "Long-lived native/WebView cache repair is not included; no T10 closure.",
+      "E05": "Completion-time automatic Trace RUM context remains inherited; separate request-time repair not included, no T08 start-ownership closure."
+    }
+  },
+  "limits": [
+    "No build or native launch and no accepted test rerun. No current-candidate Duo or iOS15/16 runtime claim.",
+    "P03 remains open: E01 task/interception lifetime does not establish broader view/resource/cache/scene lifetime.",
+    "F03 is composed: EXP201 at925b9326 plus qualified8/8 terminal tests at652ce169, not a current-head full rerun.",
+    "A01 qualifies the exact completed workflow; not portable CI or Duo/app journey automation.",
+    "E02/E03/E04/E05 boundaries, inherited QoS warning and incomplete-stack/root-cause limits remain.",
+    "Source exclusion makes semantic SwiftUI/multi-scene application-performance requirement non-applicable; no numeric performance pass."
+  ]
+}

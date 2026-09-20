@@ -22,6 +22,14 @@ before deferring S3 behavior; this review is not a generic extraction eligibilit
 certificate. New scene API promotion remains pending. Physical EXP-196 is safely
 checkpointed: Full Screen Apps restored and task apps/keep-awake cleaned up.
 
+The [S2 source review](Results/EXP-209-s2-source-audit.json) now freezes E01 only on
+current develop. It confirms 3 production files, absence of deferred scene/semantic
+behavior and source-matched reuse of the accepted narrow compatibility evidence.
+The review rejects using task lifetime alone to close broader S2 view/cache
+lifetime. F03 remains composed evidence and A01 a bounded completed workflow.
+Duo/native/app gates, inherited extraction defects and final delivery remain open;
+this source decision is neither a runtime pass nor a new performance result.
+
 The independent S1 E01 findings are separate from historical D01–D12. Repeated
 request mutation and strong terminal-preparation retention are repaired in
 1bdc9286; [EXP-197](Results/EXP-197-urlsession-extraction.json) and

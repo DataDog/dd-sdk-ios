@@ -15,6 +15,15 @@ remain valid within their original source/environment limits; they do not certif
 a newly extracted candidate. F07 must prove deferred behavior absent from each
 S1/S2 shipped artifact, then F03/F06 qualify that exact candidate.
 
+S2 now selects the same narrow E01 source on verified develop `62f64d7b`, with
+production `1bdc9286` qualified through `652ce169`. The independent
+[source audit](Results/EXP-209-s2-source-audit.json) proves deferred scene and
+semantic SwiftUI code absent and supports narrow ordinary-app, reentrancy,
+documentation, composed-build and workflow evidence reuse. This makes the scoped
+application-performance comparison non-applicable, without a numerical claim.
+Broader view/cache lifetime, current-candidate Duo, active-work and app journeys
+remain open. Historical EXP-195 source differs and cannot certify this candidate.
+
 Physical Duo hardware is unavailable until after release. S2 may use qualified
 simulator and relevant physical iPhone/iPad evidence, disclosing that uncertainty;
 F09 provides later targeted confirmation, while full F04 remains S3. Unchanged

@@ -35,11 +35,11 @@
         },
         "S2": {
           "scope": "Candidate compatibility: Early ordinary UIKit single-scene automatic-view app",
-          "status": "OPEN",
+          "status": "CLOSED",
           "dependencies": [],
           "decisive_test": "Unchanged Home \u2192 Detail \u2192 fresh Home owner/name/count chain, no duplicate views/actions; exact affected shipped code, no new integration.",
-          "environment": "Qualified simulator for frozen candidate; actual toolchain/runtime identity",
-          "evidence": "Reference evidence retained; this release candidate is not qualified.",
+          "environment": "Xcode27.1 and genuine legacy-build Xcode26.6/SDK26.5; actual iPad17.5(21F79); deployment15",
+          "evidence": "EXP-209 independent source/evidence review: exact E01 production1bdc9286 at qualification head652ce169 on develop62f64. Reuse accepted Results/EXP-199-ios17-paired.json, Results/EXP-200-compatibility.json for this unchanged finite invariant. No new native run or expanded runtime/Duo claim. EXP-199 frozen1bdc9286 against reused current-develop62f64:6/6 actual17.5 cells match exact normalized view/action/resource owners and genuine legacy lifecycle. SDK27.1 Scene plus genuineSDK26.5 Legacy/LegacyLifecycle, deployment15, source/binary identities and cleanup pass. Results/EXP-199-ios17-paired.json retains previous464 evidence by reference. No15/16runtime, actual26.5runtime or S2/S3 claim.",
           "required": true
         }
       }
@@ -75,11 +75,11 @@
         },
         "S2": {
           "scope": "Candidate compatibility: Ordinary single-scene manual app",
-          "status": "OPEN",
+          "status": "CLOSED",
           "dependencies": [],
           "decisive_test": "Exact manual start/stop and marker owners match the pinned baseline; exact affected shipped code, no new integration.",
-          "environment": "Qualified simulator for frozen candidate; actual toolchain/runtime identity",
-          "evidence": "Reference evidence retained; this release candidate is not qualified.",
+          "environment": "Xcode27.1 and genuine legacy-build Xcode26.6/SDK26.5; actual iPad17.5(21F79); deployment15",
+          "evidence": "EXP-209 independent source/evidence review: exact E01 production1bdc9286 at qualification head652ce169 on develop62f64. Reuse accepted Results/EXP-199-ios17-paired.json, Results/EXP-200-compatibility.json for this unchanged finite invariant. No new native run or expanded runtime/Duo claim. EXP-199 frozen1bdc9286 against reused current-develop62f64:6/6 actual17.5 cells match exact normalized view/action/resource owners and genuine legacy lifecycle. SDK27.1 Scene plus genuineSDK26.5 Legacy/LegacyLifecycle, deployment15, source/binary identities and cleanup pass. Results/EXP-199-ios17-paired.json retains previous464 evidence by reference. No15/16runtime, actual26.5runtime or S2/S3 claim.",
           "required": true
         }
       }
@@ -115,11 +115,11 @@
         },
         "S2": {
           "scope": "Candidate compatibility: Legacy UIApplication lifecycle app",
-          "status": "OPEN",
+          "status": "CLOSED",
           "dependencies": [],
           "decisive_test": "No scene manifest; automatic and manual chains match baseline without a scene registry dependency; exact affected shipped code, no new integration.",
-          "environment": "Qualified simulator for frozen candidate; actual toolchain/runtime identity",
-          "evidence": "Reference evidence retained; this release candidate is not qualified.",
+          "environment": "Xcode27.1 and genuine legacy-build Xcode26.6/SDK26.5; actual iPad17.5(21F79); deployment15",
+          "evidence": "EXP-209 independent source/evidence review: exact E01 production1bdc9286 at qualification head652ce169 on develop62f64. Reuse accepted Results/EXP-199-ios17-paired.json, Results/EXP-200-compatibility.json for this unchanged finite invariant. No new native run or expanded runtime/Duo claim. EXP-199 frozen1bdc9286 against reused current-develop62f64:6/6 actual17.5 cells match exact normalized view/action/resource owners and genuine legacy lifecycle. SDK27.1 Scene plus genuineSDK26.5 Legacy/LegacyLifecycle, deployment15, source/binary identities and cleanup pass. Results/EXP-199-ios17-paired.json retains previous464 evidence by reference. No15/16runtime, actual26.5runtime or S2/S3 claim.",
           "required": true
         }
       }
@@ -155,11 +155,11 @@
         },
         "S2": {
           "scope": "Candidate compatibility: Custom and NOP monitor compatibility",
-          "status": "OPEN",
+          "status": "CLOSED",
           "dependencies": [],
           "decisive_test": "Legacy-only conformer receives exactly one call; NOP emits nothing and never crashes; exact affected shipped code, no new integration.",
-          "environment": "Qualified simulator for frozen candidate; actual toolchain/runtime identity",
-          "evidence": "Reference evidence retained; this release candidate is not qualified.",
+          "environment": "Xcode27.1 runtime control; genuineSDK26.5 custom/legacy Release builds plusSDK27.1 Scene; actual17.5(21F79),26.5(23F77),27.0(24A434); deployment15",
+          "evidence": "EXP-209 independent source/evidence review: exact E01 production1bdc9286 at qualification head652ce169 on develop62f64. Reuse accepted Results/EXP-200-compatibility.json for this unchanged finite invariant. No new native run or expanded runtime/Duo claim. EXP-200 exact1bdc9286 versus62f64:18/18 cells. Six custom/NOP cells prove exact forwarding, one nil callback and no events between live observer controls;12 ordinary/legacy26.5 cells match accepted normalized owners/lifecycle. Frozen executable/source identities, clean installs, cleanup and original boot-state restoration pass. Results/EXP-200-compatibility.json. No S2/S3/performance claim.",
           "required": true
         }
       }
@@ -195,11 +195,11 @@
         },
         "S2": {
           "scope": "Candidate compatibility: Older supported runtime sample",
-          "status": "OPEN",
+          "status": "CLOSED",
           "dependencies": [],
           "decisive_test": "Repeat C01\u2013C04 on iOS 26.5 with no new experimental availability requirement; exact affected shipped code, no new integration.",
-          "environment": "Qualified simulator for frozen candidate; actual toolchain/runtime identity",
-          "evidence": "Reference evidence retained; this release candidate is not qualified.",
+          "environment": "Xcode27.1 runtime control; genuineSDK26.5 custom/legacy Release builds plusSDK27.1 Scene; actual17.5(21F79),26.5(23F77),27.0(24A434); deployment15",
+          "evidence": "EXP-209 independent source/evidence review: exact E01 production1bdc9286 at qualification head652ce169 on develop62f64. Reuse accepted Results/EXP-200-compatibility.json for this unchanged finite invariant. No new native run or expanded runtime/Duo claim. EXP-200 exact1bdc9286 versus62f64:18/18 cells. Six custom/NOP cells prove exact forwarding, one nil callback and no events between live observer controls;12 ordinary/legacy26.5 cells match accepted normalized owners/lifecycle. Frozen executable/source identities, clean installs, cleanup and original boot-state restoration pass. Results/EXP-200-compatibility.json. No S2/S3/performance claim.",
           "required": true
         }
       }
@@ -235,11 +235,11 @@
         },
         "S2": {
           "scope": "Deployment15 and oldest runnable runtime compatibility",
-          "status": "OPEN",
+          "status": "CLOSED",
           "dependencies": [],
           "decisive_test": "Compile/link deployment15, audit availability, launch and run affected suite on actual17.5 when installed. If genuinely unavailable after bounded checks, document the user-approved runtime exception and oldest runnable coverage.",
-          "environment": "Installed available iOS17.5(21F79), booted iPad simulator; candidate test-host execution and deployment15 compile/link remain required.",
-          "evidence": "Fresh runtime/device inventory verifies actual17.5 availability. No matrix cell passed yet. Prior failed acquisitions retained; no runtime exception used.",
+          "environment": "Xcode27.1 and genuine legacy-build Xcode26.6/SDK26.5; actual iPad17.5(21F79); deployment15",
+          "evidence": "EXP-209 independent source/evidence review: exact E01 production1bdc9286 at qualification head652ce169 on develop62f64. Reuse accepted Results/EXP-199-ios17-paired.json for this unchanged finite invariant. No new native run or expanded runtime/Duo claim. EXP-199 frozen1bdc9286 against reused current-develop62f64:6/6 actual17.5 cells match exact normalized view/action/resource owners and genuine legacy lifecycle. SDK27.1 Scene plus genuineSDK26.5 Legacy/LegacyLifecycle, deployment15, source/binary identities and cleanup pass. Results/EXP-199-ios17-paired.json retains previous464 evidence by reference. No15/16runtime, actual26.5runtime or S2/S3 claim.",
           "required": true
         }
       }
@@ -417,13 +417,13 @@
         },
         "S2": {
           "scope": "Representative application impact of semantic SwiftUI and multi-scene changes",
-          "status": "OPEN",
+          "status": "CLOSED",
           "dependencies": [
             "S2:C01"
           ],
           "decisive_test": "One bounded source/build-matched before/after application comparison for included new semantic SwiftUI or multi-scene behavior checks frame rate, hitches/hangs, CPU usage and sustained memory usage on representative ordinary journeys. Define the finite workload and visible-regression criteria before collection. If the shipped-source audit excludes both change families, qualify that exclusion instead of inventing a network benchmark. Expected low risk is not a measured pass.",
-          "environment": "Representative physical device such as iPhone15, Release baseline/candidate builds and relevant app journeys; qualified Duo simulator supports topology/correctness separately",
-          "evidence": "User acceptance-scope correction2026-09-20: only new SwiftUI semantic tracking and multi-scene changes require representative application-level performance comparison. Detailed network microbenchmarks and a replacement standalone network campaign are not release blockers; investigate networking performance only on concrete customer-visible evidence. Correctness, attribution and object lifetime remain required. NETWORK_BENCHMARK_FOLLOWUP.md Earlier evidence retained as historical diagnostics, not this application-impact qualification: Reference evidence retained; this release candidate is not qualified.",
+          "environment": "Source exclusion under user-approved performance scope; no new runtime measurement",
+          "evidence": "EXP-209 independently qualifies non-applicability: selected E01-only candidate includes no new semantic SwiftUI or multi-scene code. No numerical performance result, network benchmark prerequisite or general performance guarantee. View/Action/Resource/lifetime gates remain independent.",
           "required": true
         }
       }
@@ -525,7 +525,7 @@
           ],
           "decisive_test": "Source-matched lifecycle and teardown checks leave no extra strong owner, retain cycle or unbounded registry after completion, cancellation, view/scene removal and feature release. Legitimate active ownership is allowed. Preserve attribution and peer state. Allocator byte deltas and churn alone do not fail this correctness gate; sustained application memory impact belongs to P01.",
           "environment": "Focused deterministic lifetime regressions plus representative native lifecycle/teardown checks for the actual shipped source",
-          "evidence": "Reference evidence retained; this release candidate is not qualified. User acceptance-scope correction2026-09-20: only new SwiftUI semantic tracking and multi-scene changes require representative application-level performance comparison. Detailed network microbenchmarks and a replacement standalone network campaign are not release blockers; investigate networking performance only on concrete customer-visible evidence. Correctness, attribution and object lifetime remain required. NETWORK_BENCHMARK_FOLLOWUP.md",
+          "evidence": "EXP-209 rejects direct S1:P03 reuse: accepted E01 success/error/cancellation and feature-release witnesses cover task/preparation/interception lifetime only. Broader view/resource/cache/scene lifetime remains OPEN for the actual selected source. No allocator microbenchmark required.",
           "required": true
         }
       }
@@ -567,13 +567,13 @@
         },
         "S2": {
           "scope": "Candidate reentrancy and callback ownership safety",
-          "status": "OPEN",
+          "status": "CLOSED",
           "dependencies": [
             "S2:C01"
           ],
           "decisive_test": "Focused actual-source controls preserve exactly-once forwarding, nested context restoration and correct callback owners without SDK-caused deadlock/crash, cross-task/core interference or retained context after teardown. Reuse byte-identical accepted controls where applicable; no numeric performance prerequisite.",
-          "environment": "Exact selected candidate; deterministic tests and relevant native callback boundaries",
-          "evidence": "Reference evidence retained; this release candidate is not qualified.",
+          "environment": "Exact candidate on qualified17.5 simulator; accepted EXP-199 Debug invariants plus EXP-203 three existing reentry controls with verified Release/-O and finite waits.",
+          "evidence": "EXP-209 independent source/evidence review: exact E01 production1bdc9286 at qualification head652ce169 on develop62f64. Reuse accepted Results/EXP-203-optimized-reentrancy.json, Results/EXP-199-terminal-task-ownership.json for this unchanged finite invariant. No new native run or expanded runtime/Duo claim. EXP-203: exactly3 existing controls/3 executions pass once, no failures/skips/retries, on17.5/21F79. Actual SDK/test/helper compile jobs prove Release -O and testability; five exact source/test hashes match1bd/925 and accepted EXP-199 Debug invariants. Hostless cleanup and protected state pass. No numeric or full-suite claim;142 build warnings/59 dependency duplicate classes remain in F06 diagnostics. Scoped to E01 changed URLSession preparation/resume/callback path; deferred scene/cache/Trace ownership not certified.",
           "required": true
         }
       }
@@ -761,11 +761,11 @@
         },
         "S2": {
           "scope": "Reusable candidate acceptance automation",
-          "status": "OPEN",
+          "status": "CLOSED",
           "dependencies": [],
           "decisive_test": "One frozen run binds preflight, clean install, source/build/install identity, actual input/lifecycle, strict local inventory, whole-session backend and cleanup; reject known stale/readiness/run-ID/late-oracle controls.",
           "environment": "Qualified simulator for frozen candidate; actual toolchain/runtime identity and authenticated Datadog",
-          "evidence": "Reference evidence retained; this release candidate is not qualified.",
+          "evidence": "EXP-209 independent source/evidence review: exact E01 production1bdc9286 at qualification head652ce169 on develop62f64. Reuse accepted Results/EXP-202-backend-qualification.json for this unchanged finite invariant. No new native run or expanded runtime/Duo claim. EXP-202 independently qualifies four frozen arm/mode cells: candidate automatic/registered PASS; develop modes retain the predefined terminal-view observation. Each has exact12 RUM/10 session-span/10 service-span inventories, complete traces, exact owners/values,64 native receipts and verified cleanup within fixed deadlines. Registered rounding correction preserves exact equality; original automatic identities and all stopped runs retained. Durable1260-file local bundle and compact Results/EXP-202-backend-qualification.json. E03/E05 inherited limits remain separate. Exact completed workflow evidence only, not a portable CI runner or Duo/app-journey qualification.",
           "required": true
         }
       }
@@ -1821,13 +1821,13 @@
         },
         "S2": {
           "scope": "Documentation for the actual shipped changes",
-          "status": "OPEN",
+          "status": "CLOSED",
           "dependencies": [
             "S2:F07"
           ],
           "decisive_test": "Review changelog/support limitations and affected feature docs against exact source; preserve existing API and customer setup. Publish no unrelated experimental scene API.",
           "environment": "Source and compiling examples for affected modules",
-          "evidence": "Reference evidence retained; this release candidate is not qualified.",
+          "evidence": "EXP-209 independent source/evidence review: exact E01 production1bdc9286 at qualification head652ce169 on develop62f64. Reuse accepted Results/EXP-201-final-compatibility.json for this unchanged finite invariant. No new native run or expanded runtime/Duo claim. EXP-201 support review at production1bdc9286: E01 changelog committed c53ed48c, five audited feature docs at5a570517, five public Swift/Objective-C clients compile/run and unchanged nine-module API baselines. Existing setup/wire/privacy/minimums preserved; duplicate-resume timing/thread caveat recorded. No deferred scene API. Results/EXP-201-final-compatibility.json owns evidence; performance/backend/F03/F06 remain separate.",
           "required": true
         }
       }
@@ -1880,14 +1880,14 @@
         },
         "S2": {
           "scope": "Candidate-scoped final compatibility matrix",
-          "status": "OPEN",
+          "status": "CLOSED",
           "dependencies": [
             "S2:F07",
             "S2:C06"
           ],
           "decisive_test": "Freeze affected modules/platforms via F07; run relevant complete suites, deployment builds, existing Swift/Objective-C clients, lint and unchanged API/wire/privacy checks.",
           "environment": "FINAL_COMPATIBILITY.md release applicability matrix",
-          "evidence": "Reference evidence retained; this release candidate is not qualified.",
+          "evidence": "EXP-209 independent source/evidence review: exact E01 production1bdc9286 at qualification head652ce169 on develop62f64. Reuse accepted Results/EXP-201-final-compatibility.json, Results/EXP-199-terminal-task-ownership.json for this unchanged finite invariant. No new native run or expanded runtime/Duo claim. EXP-201 production1bdc9286, final local925b9326: M01-M11 pass. Reused full Internal/Core/RUM/Trace suites plus corrected full integration278/278, exact discovered/executed identifier multiset, zero failures/skips.24 platform/configuration builds, five public Swift/Objective-C clients, exact API equality, strict changed-file lint and audited feature docs pass. Inherited delta-oracle defect is paired-proven; only one integration test file changed. Original failures, nine QoS warnings and diagnostic timeout retained; no zero-warning/sanitizer/performance claim. Results/EXP-201-final-compatibility.json. Composed evidence: EXP201 matrix at925b9326 plus separate8/8 terminal follow-up at652ce169; no one-head full rerun. Inherited diagnostic limits remain.",
           "required": true
         }
       }
@@ -2650,11 +2650,11 @@
         },
         "S2": {
           "scope": "Shipped-source dependency and exclusion audit",
-          "status": "OPEN",
+          "status": "CLOSED",
           "dependencies": [],
           "decisive_test": "Inventory exact production diff, imports/callers/API/wire and transitive dependencies. Prove deferred scene routing/lifecycle/authority is absent, not merely hidden by API/manifest flags. Preserve upstream changes absent from the experimental branch.",
-          "environment": "Fresh develop baseline and isolated source candidate",
-          "evidence": "Reference evidence retained; this release candidate is not qualified.",
+          "environment": "Exact develop62f64 and clean isolated E01 head652ce169, production1bdc9286; source-only independent review",
+          "evidence": "EXP-209:709 Datadog module Sources plus156 auxiliary Sources entries inventoried; exactly3 internal network production files and12 tracked delta paths. Candidate production equals qualified1bdc9286; all other source/project/API/wire/model/storage/dependency paths unchanged from develop62f64. Deferred semantic SwiftUI and scene routing/lifecycle/authority absent. Upstream platform changes retained. Results/EXP-209-s2-source-audit.json; no native/Duo qualification inferred.",
           "required": true
         }
       }
@@ -2781,8 +2781,26 @@
       "id": "S2",
       "name": "Single-scene iPhone Duo readiness",
       "deadline": "2026-10-16",
-      "shipping_rule": "No worse RUM after SDK27 rebuild without major application changes. Use a clean develop-based artifact plus only required S1/compatibility slices, qualified Duo simulator and relevant physical evidence. S2:F06 excludes unrelated scene APIs and full physical-Duo acceptance.",
-      "hardware_uncertainty": "No physical Duo validated. Targeted F09 follows when hardware is available; it is not pre-release readiness proof."
+      "shipping_rule": "No worse RUM after SDK27 rebuild without major application changes. Selected E01-only source1bdc9286 on develop62f64, qualified through652ce169; EXP-209 proves deferred-source exclusion and narrow evidence reuse. Qualify remaining Duo/app/lifetime gates and S2:F06 before delivery; no new scene API or physical-Duo prerequisite.",
+      "hardware_uncertainty": "No physical Duo validated. Targeted F09 follows when hardware is available; it is not pre-release readiness proof.",
+      "selected_candidate": "E01 only",
+      "candidate_freeze": {
+        "baseline": "62f64d7b655bdc83f3036c4ad81090a270f6202b",
+        "production_revision": "1bdc9286c17d69d73e5e41530e6179c72a723368",
+        "qualification_head": "652ce169773b0be5b6767179eca8ab5f4cf25f8a",
+        "audit": "Results/EXP-209-s2-source-audit.json",
+        "dependencies": [
+          "E01"
+        ],
+        "excluded": [
+          "E02",
+          "E03",
+          "E04",
+          "E05",
+          "deferred semantic SwiftUI and multi-scene implementation"
+        ],
+        "status": "SOURCE FROZEN; NATIVE DUO AND FINAL RELEASE GATES OPEN"
+      }
     },
     {
       "id": "S3",
