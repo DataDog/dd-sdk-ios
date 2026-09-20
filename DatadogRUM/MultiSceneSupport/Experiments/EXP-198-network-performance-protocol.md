@@ -170,3 +170,20 @@ wrappers instead of native start/invalidation receipts. Root preserves the
 fixture, partial host and incomplete evaluator hashes in the owning result.
 No numeric sample, test failure or SDK regression follows; no fourth correction
 pass is admitted. Keep the original budgets and continue independent release work.
+
+## Fourth fixture contract correction admission
+
+Defined2026-09-20T09:19:42.096529+00:00 before implementation; source phase ends
+2026-09-20T10:49:42.096529+00:00. The owning result binds the exact
+independently approved schema-v5 contract, prior attempts and helper owners. One
+fresh correction aligns native receipts, phase denominators, arm-specific state
+inspection, isolated completed-task control, non-vacuous release and validator
+identity/teardown. All-thread calibration precedes every allocation row; timing
+remains uninstrumented. Preserve every row,32launches and original numeric budgets.
+
+Final source/oracle review and offline negative controls precede one build per arm
+and four17.5 qualification cells, bounded30minutes from the first build. Only those
+passes permit the fixed32-cell matrix, with an enforced10800second overall bound.
+Qualification grants no numeric credit. Any failure ends this attempt; preserve
+all inputs and output instead of retrying until green. Accepted P04 is reused by
+its exact existing schema and hash. No SDK or protected configuration edit is admitted.

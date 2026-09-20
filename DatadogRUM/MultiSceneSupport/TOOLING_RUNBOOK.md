@@ -2288,6 +2288,16 @@ collector observes only its installation thread; asynchronous coverage needs
 independent all-thread calibration before measurement can qualify. Keep timing
 and allocation processes separate and hold competing host workloads during ABBA.
 
+The admitted fourth correction uses one schema-v5 contract across native fixture,
+host and evaluator. Freeze source/helpers before either build; freeze a separate
+execution manifest afterward with actual binary hashes. Preserve native result
+bytes before parsing even failed results, and keep capture status separate from
+semantic verdicts. Qualification must validate only its own controls; timing must
+never install the allocation observer. Enforce the absolute qualification and
+matrix deadlines, including cleanup, and reserve each launch once. The owning
+result records the finite correction admission and acceptance review; offline
+negative-control passes never count as native or numeric evidence.
+
 For task-retention probes, include the warm native request in explicit weak and
 autorelease boundaries. Reuse fixed weak slots after per-cycle release, store
 scalar snapshots in preallocated capacity and serialize results afterward. Numeric

@@ -90,7 +90,10 @@ The unexecuted performance-fixture and backend-preparation defects are harness
 findings, not established SDK defects. Their owning
 [performance](Results/EXP-198-network-performance.json) and
 [backend](Results/EXP-202-urlsession-backend.json) records retain every attempt and
-open gate. Historical S1 narrative is preserved in the
+open gate. The fourth performance correction has an independently reviewed
+schema-v5 design and finite admission; implementation review and native controls
+must still pass before numeric measurements. This is tooling progress only.
+Historical S1 narrative is preserved in the
 [documentation checkpoint](Results/EXP-204-documentation-consolidation.json).
 
 

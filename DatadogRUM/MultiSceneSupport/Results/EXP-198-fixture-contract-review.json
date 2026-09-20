@@ -1,0 +1,230 @@
+{
+  "schema_version": 1,
+  "status": "PRESERVED THIRD IMPLEMENTATION BLOCKED; FOURTH DESIGN REVIEW PASS; IMPLEMENTATION REVIEW PENDING",
+  "scope": "Preserved third fixture/host/evaluator interface defects and subsequent independently reviewed schema-v5 correction design. The fourth attempt is admitted but has no accepted native or numeric evidence.",
+  "source_evidence": {
+    "fixture": {
+      "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp198-third-fixture.EyAMKh/URLSessionE01Fixture.swift",
+      "sha256": "33a104c71d827c056aa9a4f85954b5de2c9d0ae3ac2163b518f8e771708dcdec"
+    },
+    "host": {
+      "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp198-third-host-z3pzjtqd/host.py",
+      "sha256": "4110d4a8b1ee5975a507efa3503d8a54f59b144d1e1911647c906bd8f57722b0"
+    },
+    "evaluator": {
+      "path": "/tmp/exp198-third-evaluator.HV0Kqk/evaluate_exp198.py",
+      "sha256": "bd52ec9365579fcd1193d8619fae5d88062efad876e5440174d86e1cfd5429a4"
+    },
+    "admission": {
+      "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp198-third-admission-kng0b_pg/admission.json",
+      "sha256": "08b7e10ec4c22bf50085a2e6bdbde55b1fdd96a069e6c1d493b5cd2be86c4d8b"
+    },
+    "protocol": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios/DatadogRUM/MultiSceneSupport/Experiments/EXP-198-network-performance-protocol.md",
+      "sha256": "5515b78ef44782ec5931dabc926a356ad5118daf17189353f48b093d421b9179"
+    },
+    "prior_amendment": {
+      "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp198-third-repair-amendment-20260920.json",
+      "sha256": "9acc8a2847ba71af4f49e8cfcd787d424c5e43192765580ec87f40dfeb593436"
+    }
+  },
+  "reachable_flow": {
+    "qualification": [
+      "host.cell accepts only iOS 17.5 plus mode=qualify (host.py:135-143), launches the four A/B x automatic/registered slots, and then imports evaluator.validate_cell(summary, local, plan) (host.py:204-210).",
+      "The later three-argument evaluator.validate_cell at evaluate_exp198.py:432-440 is the callable host resolves. _validate_host_cell at :415-430 rejects native status before validating the cell; then its qualify branch still calls calibration, retention, controls and teardown at :423-424.",
+      "The fixture qualify path runs preparationOwnership, coordinatorPayloadContinuationControl, budgetNegativeControls and featureAndTaskHoldControls only (URLSessionE01Fixture.swift:776-777), then writes FIXTURE_QUALIFICATION_CONTROLS_ONLY (URLSessionE01Fixture.swift:785-792). It never emits calibration, retention or the evaluator-shaped controls/teardown objects. Therefore no qualification cell can reach CELL_VALID."
+    ],
+    "measurement": [
+      "host.cell accepts only e01-timing or e01-alloc-retention for purpose=measurement and enforces the frozen 32-cell order (host.py:135-151).",
+      "The fixture timing path emits entry_rows with resume_timing and timing (URLSessionE01Fixture.swift:577-582); allocation emits allocation_rows with rows plus three extra diagnostics (URLSessionE01Fixture.swift:584-591).",
+      "The evaluator's reachable host API requires native.rows, calibration, retention, controls and teardown for every measurement (evaluate_exp198.py:425-426). The fixture never emits native.rows, and the other required groups either have incompatible shapes or are absent. No measurement cell can reach CELL_VALID."
+    ],
+    "full32_cli": [
+      "The standalone CLI calls _evaluate_matrix_cells at evaluate_exp198.py:474-481. That function calls validate_cell with five arguments at :349-356.",
+      "A second def validate_cell(summary, native, plan=None) at :432 overwrites the first five-argument def at :331. Python resolves the later global at CLI execution, so the five-argument call raises TypeError; main catches only EvidenceError and ThresholdError (:477-482), leaving the CLI with an uncaught arity traceback rather than a fail-closed verdict.",
+      "The host-facing evaluate_matrix API at :442-466 uses the later three-argument validator and therefore avoids the arity error, but still fails on the schema mismatches above before numeric quartet comparison."
+    ]
+  },
+  "emitted_group_consumption": [
+    {
+      "fixture_group": "rows",
+      "fixture_location": "URLSessionE01Fixture.swift:569-591",
+      "actual": "unbound_first_resume is nested under result.unbound_first_resume.row; measured rows are under result.entry_rows or result.allocation_rows.rows",
+      "consumer": "evaluate_exp198.py:203-222 validate_rows and :307-312 extract_rows expect native.rows dict with seven named rows",
+      "disposition": "BLOCKER: no native.rows is emitted; all timing/allocation cells fail before thresholds."
+    },
+    {
+      "fixture_group": "calibration",
+      "fixture_location": "URLSessionE01Fixture.swift:197-207 and :779-783",
+      "actual": "emitted only in e01-alloc-retention; caller/feature_queue/worker/concurrent contain raw counts and top-level *_pass booleans",
+      "consumer": "evaluate_exp198.py:224-234 requires calibration in every validated cell, nested c[k].pass booleans and calibration.sentinel",
+      "disposition": "BLOCKER: absent for qualify/timing; allocation shape lacks nested pass and sentinel."
+    },
+    {
+      "fixture_group": "retention",
+      "fixture_location": "URLSessionE01Fixture.swift:632-657 and :779-783",
+      "actual": "allocation-only retention has verified_cycles/inventories/numeric_budget_pass/records_empty but no fresh_cohort inside retention and no budget_negatives; fresh_retention_cohort is a separate top-level flag",
+      "consumer": "evaluate_exp198.py:236-250 requires retention.fresh_cohort, retention.budget_negatives and exact inventory fields",
+      "disposition": "BLOCKER: qualify/timing absent; allocation fails required fields."
+    },
+    {
+      "fixture_group": "controls",
+      "fixture_location": "URLSessionE01Fixture.swift:686-697, :728-749, :751-760, :762-763",
+      "actual": "emits ownership_negative_control, coordinator_payload_continuation_control, evaluator_negative_controls and ownership_negative_controls as separate top-level groups",
+      "consumer": "evaluate_exp198.py:252-263 requires one native.controls object with task_hold, feature_hold and payload_continuation",
+      "disposition": "BLOCKER: evaluator cannot consume any of the emitted control groups."
+    },
+    {
+      "fixture_group": "teardown",
+      "fixture_location": "URLSessionE01Fixture.swift:721-726 and :785-790",
+      "actual": "emits teardown_restoration.before/after/equal and post_teardown_native_receipt separately",
+      "consumer": "evaluate_exp198.py:265-271 requires native.teardown.class/selector/imp_before/imp_after/equal/native_receipt",
+      "disposition": "BLOCKER: no evaluator-shaped teardown object or nested receipt is emitted."
+    },
+    {
+      "fixture_group": "status",
+      "fixture_location": "URLSessionE01Fixture.swift:769-792",
+      "actual": "qualify writes FIXTURE_QUALIFICATION_CONTROLS_ONLY; measurement writes RAW_MEASUREMENTS_ONLY; exceptions write INCONCLUSIVE",
+      "consumer": "host.py:177-181 records local result; evaluator.py:336 and :421 allow only RAW_MEASUREMENTS_ONLY or LOCAL_COMPLETE",
+      "disposition": "BLOCKER: every qualification result is rejected before its controls are examined; INCONCLUSIVE remains correctly fail-closed."
+    },
+    {
+      "fixture_group": "native_roundtrip/warm_task_released/final_release/post_teardown_native_receipt/terminal_preparation_ownership/ownership_negative_control",
+      "fixture_location": "URLSessionE01Fixture.swift:186-194, :659-710, :721-726",
+      "actual": "diagnostic or control groups are emitted",
+      "consumer": "host only persists local.json; evaluator has no path consuming these groups",
+      "disposition": "Not acceptance evidence until mapped into the frozen evaluator contract."
+    },
+    {
+      "fixture_group": "p04_frozen_sha256",
+      "fixture_location": "URLSessionE01Fixture.swift:769",
+      "actual": "native result repeats a P04 SHA",
+      "consumer": "host evaluator checks plan.reused_evidence.p04_evidence.sha256 against P04_SHA at evaluate_exp198.py:427-428; it does not use this native field",
+      "disposition": "Extra and harmless, but cannot substitute for the plan evidence."
+    }
+  ],
+  "concrete_blockers": [
+    {
+      "id": "B4-01",
+      "severity": "fatal",
+      "evidence": "evaluate_exp198.py:331-343 and :432-430",
+      "finding": "The five-argument matrix validator is shadowed by the later three-argument host validator. The standalone full32 CLI therefore calls the wrong arity and raises TypeError.",
+      "minimal_correction": "Rename the validators or make one explicit adapter; route CLI and host through distinct signatures, then add a negative control proving a five-argument call cannot silently bind the host API."
+    },
+    {
+      "id": "B4-02",
+      "severity": "fatal",
+      "evidence": "URLSessionE01Fixture.swift:577-591; evaluate_exp198.py:203-222",
+      "finding": "Fixture emits entry_rows/allocation_rows, while evaluator requires native.rows with unbound_first_resume, first_resume, second_resume_ready, data, metrics, completion and state.",
+      "minimal_correction": "Define one frozen native.rows envelope that preserves all raw timing/allocation diagnostics separately; map each applicable row to the exact evaluator names without dropping receipts or treating diagnostics as acceptance rows."
+    },
+    {
+      "id": "B4-03",
+      "severity": "fatal",
+      "evidence": "URLSessionE01Fixture.swift:197-207; evaluate_exp198.py:224-234",
+      "finding": "Allocation calibration shape is incompatible: fixture stores raw count dictionaries and top-level caller_pass flags; evaluator requires nested pass booleans and a sentinel object. Qualification and timing do not emit calibration at all.",
+      "minimal_correction": "Either emit the exact calibration contract in every path where the evaluator calls it, or make qualification/timing validators omit allocation-only calibration and keep allocation validation exact."
+    },
+    {
+      "id": "B4-04",
+      "severity": "fatal",
+      "evidence": "URLSessionE01Fixture.swift:632-657, :783; evaluate_exp198.py:236-250",
+      "finding": "Retention is allocation-only; fresh_cohort is top-level, and budget negatives are emitted as evaluator_negative_controls. The evaluator requires both fields inside retention.",
+      "minimal_correction": "Move/duplicate only the truthful fields into retention.budget_negatives and retention.fresh_cohort, preserving the three 20/120/220 inventories and absolute 65536/16384 thresholds; do not claim retention for timing/qualification."
+    },
+    {
+      "id": "B4-05",
+      "severity": "fatal",
+      "evidence": "URLSessionE01Fixture.swift:686-760; evaluate_exp198.py:252-263",
+      "finding": "Four distinct fixture control groups are not assembled under native.controls.task_hold, feature_hold and payload_continuation.",
+      "minimal_correction": "Emit one exact controls envelope per cell; preserve A unsupported_on_A and B candidate-only payload semantics. Keep negative controls separate from numeric credit but expose them through the required paths."
+    },
+    {
+      "id": "B4-06",
+      "severity": "fatal",
+      "evidence": "URLSessionE01Fixture.swift:785-790; evaluate_exp198.py:265-271",
+      "finding": "Fixture teardown_restoration/post_teardown_native_receipt do not satisfy native.teardown. The evaluator also has a reversed equality condition: it requires equal=true while rejecting imp_before == imp_after. The fixture correctly captures equal IMPs at :787-789.",
+      "minimal_correction": "Assemble native.teardown with the required class/selector/IMP/receipt fields and fix the predicate to require restored equality. If proof that an IMP changed during binding is required, add a separate bound-IMP observation; do not use inequality between before and after as restoration proof."
+    },
+    {
+      "id": "B4-07",
+      "severity": "fatal",
+      "evidence": "host.py:135-151; URLSessionE01Fixture.swift:776-792; evaluate_exp198.py:421-426",
+      "finding": "Qualification is intentionally nonnumeric in host comments, but the reachable evaluator still calls calibration and retention and accepts only raw/local measurement status. The four qualification slots cannot qualify.",
+      "minimal_correction": "Add a qualification-specific schema validator that checks only the four frozen controls, native receipts, teardown and status, while measurement validation retains rows/calibration/retention. Do not grant qualification numeric credit."
+    },
+    {
+      "id": "B4-08",
+      "severity": "high",
+      "evidence": "URLSessionE01Fixture.swift:299-317 and :506-523",
+      "finding": "secondResume rows call startTracked and then markManualResume, and both enter the same outstanding counter; finishTracked leaves once. observedLifecycle at :170-180 demands balance. This can fail before producing a valid second-resume row and conflates native lifecycle with the second production resume.",
+      "minimal_correction": "Represent the held native task and the repeated production resume as separate receipts; enter/leave the native outstanding counter exactly once per real native task and record the second interception independently."
+    },
+    {
+      "id": "B4-09",
+      "severity": "high",
+      "evidence": "URLSessionE01Fixture.swift:21-28, :30-58, :78-114, :170-180, :297, :338",
+      "finding": "The fixture's LifecycleTally is unused and observedLifecycle emits expected_measurement_operations, native_* and receiver_delta, while evaluator RECEIPT requires exact operations/mutations/starts/completions/protocol_starts/protocol_completions/invalidations/data_bytes/metrics. Wrapper counts are not real protocol callback receipts.",
+      "minimal_correction": "Instrument LocalProtocol start/finish, delegate/automatic completion, invalidation, body and metrics callbacks independently; emit exact row receipts and retain controlled feature callback deltas separately. No wrapper-only substitution."
+    },
+    {
+      "id": "B4-10",
+      "severity": "high",
+      "evidence": "URLSessionE01Fixture.swift:751-760",
+      "finding": "withExtendedLifetime closures call throwing demand without try. This is a Swift compile blocker in the preserved fixture qualification path.",
+      "minimal_correction": "Use try at both throwing closure call sites and retain the existing fail-closed demand behavior."
+    }
+  ],
+  "preserved_matrix_and_thresholds": {
+    "qualification_slots": 4,
+    "measurement_cells": 32,
+    "matrix": "two runtimes x automatic/registered x timing/allocation x A/B/B/A",
+    "rows": [
+      "unbound_first_resume",
+      "first_resume",
+      "second_resume_ready",
+      "data",
+      "metrics",
+      "completion",
+      "state"
+    ],
+    "timing": "median max 10% or 500ns; p95 max 20% or 1000ns; compare A/A and each B against pooled A at each row/boundary",
+    "allocation": "max 5% or 1 successful operation and 5% or 64 requested bytes; no shared-heap subtraction",
+    "retention": "fresh 220-cycle cohort; 20/120/220 inventories; absolute 65536 and 16384 byte budgets; negatives 65537 and 16385",
+    "completed_resume": "arm A remains an expected labeled baseline negative; arm B requires zero post-completion SDK mutation/start/completion while both arms retain independent native receipts",
+    "preservation_rule": "Corrections must make the emitted contract truthful and executable without dropping rows, receipts, controls, thresholds, or the full32 launch matrix. No synthetic PASS or inferred runtime result is admitted."
+  },
+  "decision": "Do not admit or execute the preserved third fixture. The finite blockers above are source/schema contract failures, not runtime observations. A future admission needs a new frozen helper/fixture/evaluator snapshot plus offline negative controls for each corrected path before any device launch.",
+  "original_audit": {
+    "path": "/tmp/exp198-third-end-to-end-schema-audit-20260920.json",
+    "sha256": "f9ff4bab4c1842bbd6e933ffb71ab58201e201a66a345c879891b3e68383b74b"
+  },
+  "root_follow_up": {
+    "discovered_at": "2026-09-20T09:06:19.696575+00:00",
+    "frozen_fixture_source": "33a104c71d827c056aa9a4f85954b5de2c9d0ae3ac2163b518f8e771708dcdec",
+    "additional_checks": [
+      "Timing receipt reset precedes1000 warmup plus separate7000 caller-return and7000 through-flush loops; phases must be observed separately instead of asserting7000 for the total. Allocation similarly includes1000 warmup plus7000 measured operations.",
+      "Retention inventory unconditionally requires candidate preparationLock/preparations; baseline A must expose its actual owning collections with coordinator fields explicitly inapplicable.",
+      "Full-task-cycle allocation thresholds are mandatory in the protocol but absent from the old seven-row numeric comparator; preserve full task denominator and evaluate it separately.",
+      "Raw native identity and fixture output must match the host contract directly; no synthetic host-added successful control evidence."
+    ],
+    "implementation_admitted": false,
+    "native_execution_admitted": false
+  },
+  "fourth_design_review": {
+    "design": {
+      "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp198-fourth-preparation-emxzcfo2/contract.json",
+      "sha256": "90bda25a94a268957204c8b15db7c00692c91f639b60d004506c266f0100a5d7"
+    },
+    "review": {
+      "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp198-fourth-preparation-emxzcfo2/design-review.json",
+      "sha256": "cf0fcccd02f2eeb7b4ea158ad647113bc537b2e5e2d7f73ed7784f88cb8a7ff9"
+    },
+    "admission": {
+      "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp198-fourth-preparation-emxzcfo2/admission.json",
+      "sha256": "73df34a2ba58f2a9e62279fb106e8c47a532769c1b8a234a233f56ebadc3a1bc"
+    },
+    "status": "DESIGN PASS; SOURCE ACCEPTANCE PENDING",
+    "remaining": "Implement shared concrete shape, independently review final fixture/host/evaluator and negative controls before native qualification."
+  }
+}
