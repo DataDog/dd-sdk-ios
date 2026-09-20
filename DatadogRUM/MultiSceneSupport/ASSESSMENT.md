@@ -22,7 +22,7 @@ match the qualified trees exactly, with ticketing, missing repository-wide check
 CI/review and authorized publication still pending. Only H00 → E01 is an established
 merge dependency. [EXP-214](Results/EXP-214-resource-action-design.json) makes E03
 ownership-design admission the next repair checkpoint before more S2 expansion.
-DL01 is an ordinary iOS17.5 lifetime fix and will have its own independent extraction.
+[DL01/E02/E04/E05 local packets](Results/S1-independent-packets.json) now have signed independent delivery histories and unchanged qualified source/test contents. DL01 additionally passes its standalone Core suite (819 passes, four predefined OS skips) and RUM suite (901 cases / 937 executions, no skips). Missing platform/full-repository checks, candidate-specific ownership gaps, ticketing, CI and human review remain explicit. No S1 delivery or broader P03 closure is claimed.
 
 S2 now selects the same narrow E01 source on verified develop `62f64d7b`, with
 production `1bdc9286` qualified through `652ce169`. The independent

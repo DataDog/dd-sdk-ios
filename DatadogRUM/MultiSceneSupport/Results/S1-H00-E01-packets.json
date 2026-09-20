@@ -157,6 +157,7 @@
         "Missing repository-wide iOS schemes: DatadogSessionReplay, DatadogLogs, DatadogCrashReporting, DatadogWebViewTracking, DatadogFlags, DatadogProfiling; affected-suite F03 evidence remains accepted within its prior scope",
         "Current required CI and candidate F06 human review",
         "H00 verified upstream merge then content-equivalent rebase/retarget and affected revalidation only",
+        "Refresh all five feature-document verification SHAs against the reachable final ticketed delivery history; original1bdc9286 is not an ancestor of the reconstructed stack. Metadata-only update does not invalidate runtime evidence.",
         "Separately authorized publication/merge"
       ]
     }

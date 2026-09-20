@@ -350,6 +350,17 @@ and verified merge separate. Affected-suite F03 evidence is not a `make test-ios
 result. Use one explicit missing/invalidated-check inventory per candidate, and carry
 forward original skips, warnings and source limits. No packet authorizes a push.
 
+The [independent packets](Results/S1-independent-packets.json) preserve source/test
+identity while adding their own changelog/docs and signed history. Reconstructed
+feature-document verification SHAs must resolve in the final outgoing ancestry;
+refresh metadata after ticketed rewrites rather than carrying an unreachable
+source pointer. Require both xcresult summary and test-tree reader commands to
+succeed, persist their receipts immediately, and reject missing/failed readers
+even if SQLite is parseable. DL01's pre-run review caught and closed that gap with
+six negative controls before execution. Keep machine-readable Xcode discovery
+stdout separate from stderr diagnostics; its initial mixed-stream attempt stopped
+before any platform build and remains preserved.
+
 ## Documentation reading and update workflow
 
 [.continue-here.md](../../.continue-here.md) is the sole restart cursor.

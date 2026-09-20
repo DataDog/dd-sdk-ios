@@ -1,0 +1,1011 @@
+{
+  "schema_version": 1,
+  "kind": "local_review_packets_not_publication",
+  "prepared_at": "2026-09-20T21:36:00.110051+00:00",
+  "main_checkpoint": "2f8dd2028d7f3edd33e62adcb2c03f340cd3cb2f",
+  "develop_verification": {
+    "sha": "62f64d7b655bdc83f3036c4ad81090a270f6202b",
+    "via": "Authenticated GitHub connector fetch_commit(develop)",
+    "verified_at": "2026-09-20T21:22:30Z"
+  },
+  "protected_paths_unchanged": true,
+  "original_source_worktrees_unchanged": true,
+  "new_experiment_numbers": [],
+  "gate_closures": [],
+  "packets": [
+    {
+      "id": "DL01",
+      "state": "LOCAL_SIGNED_PACKET_QUALIFICATION_PENDING",
+      "prepared_at": "2026-09-20T21:36:00.110051+00:00",
+      "ticket": null,
+      "named_reviewer": null,
+      "review_owners": [
+        "@DataDog/rum-mobile",
+        "@DataDog/rum-mobile-ios"
+      ],
+      "artifact_root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/deliveries/dl01-20260920-7n7z3qln",
+      "checkout": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/deliveries/dl01-20260920-7n7z3qln/worktree",
+      "detached_until_real_ticket": true,
+      "baseline_commit": "62f64d7b655bdc83f3036c4ad81090a270f6202b",
+      "delivery_head": "342194900a5310a48f6828c01736ecc812fa1421",
+      "qualified_source": "a4be961d14c77c9a7787c9bfb55398784022d0f9",
+      "exact_owned_source_test_contents_equal": true,
+      "production_paths_and_sha256": {
+        "DatadogRUM/Sources/RUMVitals/RenderLoop/RenderLoopObserver.swift": "7e62ab97369bd16e40c7ad6337127a31e95584ef1a196e9873e3302e8862dd06"
+      },
+      "test_paths_and_sha256": {
+        "DatadogCore/Tests/Datadog/RUM/RUMVitals/DisplayLinkerTests.swift": "55348a76d5ec3d582ea2380ff8990e67f3101f58a3630176c17a92915162a2c5"
+      },
+      "documentation_paths_and_sha256": {
+        "CHANGELOG.md": "4a597baca158e9d8aed62a108121fff21dd5357a3a47847acacb1fffc5396868",
+        "DatadogRUM/RUM_FEATURE.md": "c460ff591b77985e87be40e1dcde5604eead9ab572516425ee0c955b80033e87"
+      },
+      "diff_paths": [
+        "CHANGELOG.md",
+        "DatadogCore/Tests/Datadog/RUM/RUMVitals/DisplayLinkerTests.swift",
+        "DatadogRUM/RUM_FEATURE.md",
+        "DatadogRUM/Sources/RUMVitals/RenderLoop/RenderLoopObserver.swift"
+      ],
+      "signatures": [
+        "342194900a5310a48f6828c01736ecc812fa1421 G"
+      ],
+      "body": "Delivery/DL01-pr.md",
+      "body_sha256": "c42643aaa868f5fa2abbbe01abeecfc30cd95566ef42fc2a3d41fa17e05c6af1",
+      "evidence": [
+        {
+          "kind": "current_affected_suites",
+          "root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/deliveries/dl01-20260920-7n7z3qln/qualification",
+          "summary_sha256": "9b0c0dd3ab6f4c5573f133195e0ce02e11c8028e43796d33f93a793f67de5bbc"
+        }
+      ],
+      "dependency_pins_and_build_identity": "Owned by the linked qualified/current receipts; no new runtime identities are inferred for source-only rebinding.",
+      "remaining_iOS_inventory": [
+        {
+          "scheme": "DatadogCore",
+          "status": "PASS_CURRENT_819_PLUS_4_FROZEN_SKIPS",
+          "owner": "SDK implementer / CI",
+          "environment": "Supported available iOS simulator; frozen candidate and complete test inventory",
+          "decisive_test": "All discovered cases and parameterized runs pass; only predefined OS skips; source and cleanup stable"
+        },
+        {
+          "scheme": "DatadogInternal",
+          "status": "MISSING_FULL_SUITE",
+          "owner": "SDK implementer / CI",
+          "environment": "Supported available iOS simulator; frozen candidate and complete test inventory",
+          "decisive_test": "All discovered cases and parameterized runs pass; only predefined OS skips; source and cleanup stable"
+        },
+        {
+          "scheme": "DatadogRUM",
+          "status": "PASS_CURRENT_901_CASES_937_RUNS",
+          "owner": "SDK implementer / CI",
+          "environment": "Supported available iOS simulator; frozen candidate and complete test inventory",
+          "decisive_test": "All discovered cases and parameterized runs pass; only predefined OS skips; source and cleanup stable"
+        },
+        {
+          "scheme": "DatadogSessionReplay",
+          "status": "MISSING_FULL_SUITE",
+          "owner": "SDK implementer / CI",
+          "environment": "Supported available iOS simulator; frozen candidate and complete test inventory",
+          "decisive_test": "All discovered cases and parameterized runs pass; only predefined OS skips; source and cleanup stable"
+        },
+        {
+          "scheme": "DatadogLogs",
+          "status": "MISSING_FULL_SUITE",
+          "owner": "SDK implementer / CI",
+          "environment": "Supported available iOS simulator; frozen candidate and complete test inventory",
+          "decisive_test": "All discovered cases and parameterized runs pass; only predefined OS skips; source and cleanup stable"
+        },
+        {
+          "scheme": "DatadogTrace",
+          "status": "MISSING_FULL_SUITE",
+          "owner": "SDK implementer / CI",
+          "environment": "Supported available iOS simulator; frozen candidate and complete test inventory",
+          "decisive_test": "All discovered cases and parameterized runs pass; only predefined OS skips; source and cleanup stable"
+        },
+        {
+          "scheme": "DatadogCrashReporting",
+          "status": "MISSING_FULL_SUITE",
+          "owner": "SDK implementer / CI",
+          "environment": "Supported available iOS simulator; frozen candidate and complete test inventory",
+          "decisive_test": "All discovered cases and parameterized runs pass; only predefined OS skips; source and cleanup stable"
+        },
+        {
+          "scheme": "DatadogWebViewTracking",
+          "status": "MISSING_FULL_SUITE",
+          "owner": "SDK implementer / CI",
+          "environment": "Supported available iOS simulator; frozen candidate and complete test inventory",
+          "decisive_test": "All discovered cases and parameterized runs pass; only predefined OS skips; source and cleanup stable"
+        },
+        {
+          "scheme": "DatadogFlags",
+          "status": "MISSING_FULL_SUITE",
+          "owner": "SDK implementer / CI",
+          "environment": "Supported available iOS simulator; frozen candidate and complete test inventory",
+          "decisive_test": "All discovered cases and parameterized runs pass; only predefined OS skips; source and cleanup stable"
+        },
+        {
+          "scheme": "DatadogProfiling",
+          "status": "MISSING_FULL_SUITE",
+          "owner": "SDK implementer / CI",
+          "environment": "Supported available iOS simulator; frozen candidate and complete test inventory",
+          "decisive_test": "All discovered cases and parameterized runs pass; only predefined OS skips; source and cleanup stable"
+        },
+        {
+          "scheme": "DatadogIntegrationTests",
+          "status": "MISSING_FULL_SUITE",
+          "owner": "SDK implementer / CI",
+          "environment": "Supported available iOS simulator; frozen candidate and complete test inventory",
+          "decisive_test": "All discovered cases and parameterized runs pass; only predefined OS skips; source and cleanup stable"
+        }
+      ],
+      "remaining_platform_inventory": [
+        {
+          "platform": "iOS",
+          "configuration": "Debug",
+          "status": "MISSING_AFFECTED_BUILD",
+          "owner": "SDK implementer / CI",
+          "environment": "Current supported Xcode; declared package minima",
+          "decisive_test": "Complete affected production SwiftFileLists and emitted modules; zero build exit"
+        },
+        {
+          "platform": "iOS",
+          "configuration": "Release",
+          "status": "MISSING_AFFECTED_BUILD",
+          "owner": "SDK implementer / CI",
+          "environment": "Current supported Xcode; declared package minima",
+          "decisive_test": "Complete affected production SwiftFileLists and emitted modules; zero build exit"
+        },
+        {
+          "platform": "tvOS",
+          "configuration": "Debug",
+          "status": "MISSING_AFFECTED_BUILD",
+          "owner": "SDK implementer / CI",
+          "environment": "Current supported Xcode; declared package minima",
+          "decisive_test": "Complete affected production SwiftFileLists and emitted modules; zero build exit"
+        },
+        {
+          "platform": "tvOS",
+          "configuration": "Release",
+          "status": "MISSING_AFFECTED_BUILD",
+          "owner": "SDK implementer / CI",
+          "environment": "Current supported Xcode; declared package minima",
+          "decisive_test": "Complete affected production SwiftFileLists and emitted modules; zero build exit"
+        },
+        {
+          "platform": "watchOS",
+          "configuration": "Debug",
+          "status": "MISSING_AFFECTED_BUILD",
+          "owner": "SDK implementer / CI",
+          "environment": "Current supported Xcode; declared package minima",
+          "decisive_test": "Complete affected production SwiftFileLists and emitted modules; zero build exit"
+        },
+        {
+          "platform": "watchOS",
+          "configuration": "Release",
+          "status": "MISSING_AFFECTED_BUILD",
+          "owner": "SDK implementer / CI",
+          "environment": "Current supported Xcode; declared package minima",
+          "decisive_test": "Complete affected production SwiftFileLists and emitted modules; zero build exit"
+        },
+        {
+          "platform": "visionOS",
+          "configuration": "Debug",
+          "status": "MISSING_AFFECTED_BUILD",
+          "owner": "SDK implementer / CI",
+          "environment": "Current supported Xcode; declared package minima",
+          "decisive_test": "Complete affected production SwiftFileLists and emitted modules; zero build exit"
+        },
+        {
+          "platform": "visionOS",
+          "configuration": "Release",
+          "status": "MISSING_AFFECTED_BUILD",
+          "owner": "SDK implementer / CI",
+          "environment": "Current supported Xcode; declared package minima",
+          "decisive_test": "Complete affected production SwiftFileLists and emitted modules; zero build exit"
+        },
+        {
+          "platform": "Mac Catalyst",
+          "configuration": "Debug",
+          "status": "MISSING_AFFECTED_BUILD",
+          "owner": "SDK implementer / CI",
+          "environment": "Current supported Xcode; declared package minima",
+          "decisive_test": "Complete affected production SwiftFileLists and emitted modules; zero build exit"
+        },
+        {
+          "platform": "Mac Catalyst",
+          "configuration": "Release",
+          "status": "MISSING_AFFECTED_BUILD",
+          "owner": "SDK implementer / CI",
+          "environment": "Current supported Xcode; declared package minima",
+          "decisive_test": "Complete affected production SwiftFileLists and emitted modules; zero build exit"
+        },
+        {
+          "platform": "macOS",
+          "configuration": "Debug",
+          "status": "MISSING_AFFECTED_BUILD",
+          "owner": "SDK implementer / CI",
+          "environment": "Current supported Xcode; declared package minima",
+          "decisive_test": "Complete affected production SwiftFileLists and emitted modules; zero build exit"
+        },
+        {
+          "platform": "macOS",
+          "configuration": "Release",
+          "status": "MISSING_AFFECTED_BUILD",
+          "owner": "SDK implementer / CI",
+          "environment": "Current supported Xcode; declared package minima",
+          "decisive_test": "Complete affected production SwiftFileLists and emitted modules; zero build exit"
+        }
+      ],
+      "new_runtime_admission": "No further runtime admitted by this packet; freeze per-lane source, selectors and actual deadlines first.",
+      "public_API": "Source-identical public declarations and bridge/header/build inputs; only internal implementations differ. Verify affected compilation before delivery.",
+      "CI": "NOT_RUN_ON_UNPUBLISHED_DELIVERY_HEAD",
+      "human_review": "PENDING",
+      "publication_authorization": false,
+      "merge_authorization": false,
+      "upstream_merge_sha": null,
+      "limits": [
+        "Eight accepted D2 tests plus one corrected D4 witness are focused evidence, not global lifetime clearance",
+        "Two-second witness originally included a legitimate five-second queued owner",
+        "No claim of continuous memory growth in an initialize-once app",
+        "Leave active S2 composed worktree unchanged"
+      ],
+      "rollback": "Revert the weak display-link target change and its tests/docs independently.",
+      "feature_docs": "AFFECTED_RUM_PASS_GLOBAL_TRACE_DRIFT_INHERITED_FROM_DEVELOP"
+    },
+    {
+      "id": "E02",
+      "state": "LOCAL_SIGNED_PACKET_QUALIFICATION_PENDING",
+      "prepared_at": "2026-09-20T21:36:00.110051+00:00",
+      "ticket": null,
+      "named_reviewer": null,
+      "review_owners": [
+        "@DataDog/rum-mobile",
+        "@DataDog/rum-mobile-ios"
+      ],
+      "artifact_root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/deliveries/e02-20260920-jw2fh35s",
+      "checkout": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/deliveries/e02-20260920-jw2fh35s/worktree",
+      "detached_until_real_ticket": true,
+      "baseline_commit": "62f64d7b655bdc83f3036c4ad81090a270f6202b",
+      "delivery_head": "1759abb9725b9d34682d44739966fb7736835e94",
+      "qualified_source": "96d064c4fa083a7a74c709eb4a626fc17017db01",
+      "exact_owned_source_test_contents_equal": true,
+      "production_paths_and_sha256": {
+        "DatadogRUM/Sources/RUMMonitor/Scopes/RUMViewScope.swift": "e06c6ca0fd3b679c94e1ff602126dd14032efd09824f39bb7864dbcf27c0e6bb"
+      },
+      "test_paths_and_sha256": {
+        "DatadogRUM/Tests/RUMMonitor/Scopes/RUMApplicationScopeTests.swift": "007a6346b934967670950cc6d8131546b3246fc21f37595915df84cb613aeb9a",
+        "DatadogRUM/Tests/RUMMonitor/Scopes/RUMSessionScopeTests.swift": "f66d4c720d4110f8b219e3f48e5607ae3c9586526691ca000aec5c44a69c0353",
+        "Datadog/IntegrationUnitTests/RUM/RUMAttributesIntegrationTests.swift": "d3a0c57b8f4e4b581758846707bbd4277af06c1b7a57e4799225f87232eb098a",
+        "Datadog/IntegrationUnitTests/RUM/RUMAttributesIntegration_Tests.swift": "337028cb121b4be4085d0052160c6aa281ee63f12b6c2ca22416e9465ee85c8c"
+      },
+      "documentation_paths_and_sha256": {
+        "CHANGELOG.md": "331146bcf2cdc05932cdc7d5e25231acf3dc20dad19c9697bed8d2fd7c5bdebf",
+        "DatadogRUM/RUM_FEATURE.md": "97618847686d11b01c6d068fcf36ed53a71725a809b086431990215c97e7cc6f"
+      },
+      "diff_paths": [
+        "CHANGELOG.md",
+        "Datadog/IntegrationUnitTests/RUM/RUMAttributesIntegrationTests.swift",
+        "Datadog/IntegrationUnitTests/RUM/RUMAttributesIntegration_Tests.swift",
+        "DatadogRUM/RUM_FEATURE.md",
+        "DatadogRUM/Sources/RUMMonitor/Scopes/RUMViewScope.swift",
+        "DatadogRUM/Tests/RUMMonitor/Scopes/RUMApplicationScopeTests.swift",
+        "DatadogRUM/Tests/RUMMonitor/Scopes/RUMSessionScopeTests.swift"
+      ],
+      "signatures": [
+        "1759abb9725b9d34682d44739966fb7736835e94 G"
+      ],
+      "body": "Delivery/E02-pr.md",
+      "body_sha256": "67389e583eae0ab01ed95f32b58653fd9c48b17ff091c24901e3f859201d471c",
+      "evidence": [
+        {
+          "kind": "qualified_source_rebinding",
+          "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/deliveries/e02-20260920-jw2fh35s/source-rebinding.json",
+          "sha256": "6d07bc0c2b95ee71e390c4da0b9128797fecef839f9cb9ac3bbeffbe0b1176fd",
+          "experiments": [
+            "DatadogRUM/MultiSceneSupport/Experiments/EXP-205-view-occurrence-isolation.md",
+            "DatadogRUM/MultiSceneSupport/Results/EXP-205-view-occurrence-isolation.json"
+          ]
+        }
+      ],
+      "dependency_pins_and_build_identity": "Owned by the linked qualified/current receipts; no new runtime identities are inferred for source-only rebinding.",
+      "remaining_iOS_inventory": [
+        {
+          "scheme": "DatadogCore",
+          "status": "MISSING_FULL_SUITE",
+          "owner": "SDK implementer / CI",
+          "environment": "Supported available iOS simulator; frozen candidate and complete test inventory",
+          "decisive_test": "All discovered cases and parameterized runs pass; only predefined OS skips; source and cleanup stable"
+        },
+        {
+          "scheme": "DatadogInternal",
+          "status": "MISSING_FULL_SUITE",
+          "owner": "SDK implementer / CI",
+          "environment": "Supported available iOS simulator; frozen candidate and complete test inventory",
+          "decisive_test": "All discovered cases and parameterized runs pass; only predefined OS skips; source and cleanup stable"
+        },
+        {
+          "scheme": "DatadogRUM",
+          "status": "REUSE_EXACT_903_CASES_939_RUNS",
+          "owner": "SDK implementer / CI",
+          "environment": "Supported available iOS simulator; frozen candidate and complete test inventory",
+          "decisive_test": "All discovered cases and parameterized runs pass; only predefined OS skips; source and cleanup stable"
+        },
+        {
+          "scheme": "DatadogSessionReplay",
+          "status": "MISSING_FULL_SUITE",
+          "owner": "SDK implementer / CI",
+          "environment": "Supported available iOS simulator; frozen candidate and complete test inventory",
+          "decisive_test": "All discovered cases and parameterized runs pass; only predefined OS skips; source and cleanup stable"
+        },
+        {
+          "scheme": "DatadogLogs",
+          "status": "MISSING_FULL_SUITE",
+          "owner": "SDK implementer / CI",
+          "environment": "Supported available iOS simulator; frozen candidate and complete test inventory",
+          "decisive_test": "All discovered cases and parameterized runs pass; only predefined OS skips; source and cleanup stable"
+        },
+        {
+          "scheme": "DatadogTrace",
+          "status": "MISSING_FULL_SUITE",
+          "owner": "SDK implementer / CI",
+          "environment": "Supported available iOS simulator; frozen candidate and complete test inventory",
+          "decisive_test": "All discovered cases and parameterized runs pass; only predefined OS skips; source and cleanup stable"
+        },
+        {
+          "scheme": "DatadogCrashReporting",
+          "status": "MISSING_FULL_SUITE",
+          "owner": "SDK implementer / CI",
+          "environment": "Supported available iOS simulator; frozen candidate and complete test inventory",
+          "decisive_test": "All discovered cases and parameterized runs pass; only predefined OS skips; source and cleanup stable"
+        },
+        {
+          "scheme": "DatadogWebViewTracking",
+          "status": "MISSING_FULL_SUITE",
+          "owner": "SDK implementer / CI",
+          "environment": "Supported available iOS simulator; frozen candidate and complete test inventory",
+          "decisive_test": "All discovered cases and parameterized runs pass; only predefined OS skips; source and cleanup stable"
+        },
+        {
+          "scheme": "DatadogFlags",
+          "status": "MISSING_FULL_SUITE",
+          "owner": "SDK implementer / CI",
+          "environment": "Supported available iOS simulator; frozen candidate and complete test inventory",
+          "decisive_test": "All discovered cases and parameterized runs pass; only predefined OS skips; source and cleanup stable"
+        },
+        {
+          "scheme": "DatadogProfiling",
+          "status": "MISSING_FULL_SUITE",
+          "owner": "SDK implementer / CI",
+          "environment": "Supported available iOS simulator; frozen candidate and complete test inventory",
+          "decisive_test": "All discovered cases and parameterized runs pass; only predefined OS skips; source and cleanup stable"
+        },
+        {
+          "scheme": "DatadogIntegrationTests",
+          "status": "MISSING_FULL_SUITE",
+          "owner": "SDK implementer / CI",
+          "environment": "Supported available iOS simulator; frozen candidate and complete test inventory",
+          "decisive_test": "All discovered cases and parameterized runs pass; only predefined OS skips; source and cleanup stable"
+        }
+      ],
+      "remaining_platform_inventory": [
+        {
+          "platform": "iOS",
+          "configuration": "Debug",
+          "status": "MISSING_AFFECTED_BUILD",
+          "owner": "SDK implementer / CI",
+          "environment": "Current supported Xcode; declared package minima",
+          "decisive_test": "Complete affected production SwiftFileLists and emitted modules; zero build exit"
+        },
+        {
+          "platform": "iOS",
+          "configuration": "Release",
+          "status": "MISSING_AFFECTED_BUILD",
+          "owner": "SDK implementer / CI",
+          "environment": "Current supported Xcode; declared package minima",
+          "decisive_test": "Complete affected production SwiftFileLists and emitted modules; zero build exit"
+        },
+        {
+          "platform": "tvOS",
+          "configuration": "Debug",
+          "status": "MISSING_AFFECTED_BUILD",
+          "owner": "SDK implementer / CI",
+          "environment": "Current supported Xcode; declared package minima",
+          "decisive_test": "Complete affected production SwiftFileLists and emitted modules; zero build exit"
+        },
+        {
+          "platform": "tvOS",
+          "configuration": "Release",
+          "status": "MISSING_AFFECTED_BUILD",
+          "owner": "SDK implementer / CI",
+          "environment": "Current supported Xcode; declared package minima",
+          "decisive_test": "Complete affected production SwiftFileLists and emitted modules; zero build exit"
+        },
+        {
+          "platform": "watchOS",
+          "configuration": "Debug",
+          "status": "MISSING_AFFECTED_BUILD",
+          "owner": "SDK implementer / CI",
+          "environment": "Current supported Xcode; declared package minima",
+          "decisive_test": "Complete affected production SwiftFileLists and emitted modules; zero build exit"
+        },
+        {
+          "platform": "watchOS",
+          "configuration": "Release",
+          "status": "MISSING_AFFECTED_BUILD",
+          "owner": "SDK implementer / CI",
+          "environment": "Current supported Xcode; declared package minima",
+          "decisive_test": "Complete affected production SwiftFileLists and emitted modules; zero build exit"
+        },
+        {
+          "platform": "visionOS",
+          "configuration": "Debug",
+          "status": "MISSING_AFFECTED_BUILD",
+          "owner": "SDK implementer / CI",
+          "environment": "Current supported Xcode; declared package minima",
+          "decisive_test": "Complete affected production SwiftFileLists and emitted modules; zero build exit"
+        },
+        {
+          "platform": "visionOS",
+          "configuration": "Release",
+          "status": "MISSING_AFFECTED_BUILD",
+          "owner": "SDK implementer / CI",
+          "environment": "Current supported Xcode; declared package minima",
+          "decisive_test": "Complete affected production SwiftFileLists and emitted modules; zero build exit"
+        },
+        {
+          "platform": "Mac Catalyst",
+          "configuration": "Debug",
+          "status": "MISSING_AFFECTED_BUILD",
+          "owner": "SDK implementer / CI",
+          "environment": "Current supported Xcode; declared package minima",
+          "decisive_test": "Complete affected production SwiftFileLists and emitted modules; zero build exit"
+        },
+        {
+          "platform": "Mac Catalyst",
+          "configuration": "Release",
+          "status": "MISSING_AFFECTED_BUILD",
+          "owner": "SDK implementer / CI",
+          "environment": "Current supported Xcode; declared package minima",
+          "decisive_test": "Complete affected production SwiftFileLists and emitted modules; zero build exit"
+        },
+        {
+          "platform": "macOS",
+          "configuration": "Debug",
+          "status": "MISSING_AFFECTED_BUILD",
+          "owner": "SDK implementer / CI",
+          "environment": "Current supported Xcode; declared package minima",
+          "decisive_test": "Complete affected production SwiftFileLists and emitted modules; zero build exit"
+        },
+        {
+          "platform": "macOS",
+          "configuration": "Release",
+          "status": "MISSING_AFFECTED_BUILD",
+          "owner": "SDK implementer / CI",
+          "environment": "Current supported Xcode; declared package minima",
+          "decisive_test": "Complete affected production SwiftFileLists and emitted modules; zero build exit"
+        }
+      ],
+      "new_runtime_admission": "No further runtime admitted by this packet; freeze per-lane source, selectors and actual deadlines first.",
+      "public_API": "Source-identical public declarations and bridge/header/build inputs; only internal implementations differ. Verify affected compilation before delivery.",
+      "CI": "NOT_RUN_ON_UNPUBLISHED_DELIVERY_HEAD",
+      "human_review": "PENDING",
+      "publication_authorization": false,
+      "merge_authorization": false,
+      "upstream_merge_sha": null,
+      "limits": [
+        "Source-less sequential navigation evidence; not a multi-scene router",
+        "No backend or real navigation callback claim from writer serialization alone"
+      ],
+      "rollback": "Revert only E02 predicates and its tests/docs; retain unrelated shared-file tests.",
+      "feature_docs": "AFFECTED_RUM_PASS_GLOBAL_TRACE_DRIFT_INHERITED_FROM_DEVELOP"
+    },
+    {
+      "id": "E04",
+      "state": "LOCAL_SIGNED_PACKET_QUALIFICATION_PENDING",
+      "prepared_at": "2026-09-20T21:36:00.110051+00:00",
+      "ticket": null,
+      "named_reviewer": null,
+      "review_owners": [
+        "@DataDog/rum-mobile",
+        "@DataDog/rum-mobile-ios"
+      ],
+      "artifact_root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/deliveries/e04-20260920-9o3thfw6",
+      "checkout": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/deliveries/e04-20260920-9o3thfw6/worktree",
+      "detached_until_real_ticket": true,
+      "baseline_commit": "62f64d7b655bdc83f3036c4ad81090a270f6202b",
+      "delivery_head": "c5f3955ab8fc1539fd1b60e15b71dbd674b26067",
+      "qualified_source": "a3d34069cccbe35cac0fd2bc1fb456e64b1f4c43",
+      "exact_owned_source_test_contents_equal": true,
+      "production_paths_and_sha256": {
+        "DatadogRUM/Sources/RUMMonitor/Scopes/RUMSessionScope.swift": "e59f10a3b3990c9b2c334e9168738aed2a57563bcd10f6f4cfa931a58051acda",
+        "DatadogRUM/Sources/RUMMonitor/Scopes/Utils/ViewCache.swift": "142961ec6c5ce10c61595b306e16f98ca34b1047694057bcaaf3d2d977a251ad"
+      },
+      "test_paths_and_sha256": {
+        "DatadogRUM/Tests/RUMMonitor/Scopes/RUMSessionScopeTests.swift": "9add92b4ac3af1c3751185c9d39f2fa99245c96fc2409bc8eaea623cdc2b2a66",
+        "DatadogRUM/Tests/Integrations/WebViewEventReceiverTests.swift": "31828eaf854a8b4318fad595f833050339602b522205a2ef06b438ee875f9cf2",
+        "Datadog/IntegrationUnitTests/RUM/WebEventIntegrationTests.swift": "25b31685157d3e6bc2a3b53e302a03663dcea08421eebaceecbb2fcd648703fa"
+      },
+      "documentation_paths_and_sha256": {
+        "CHANGELOG.md": "f20f47e36970fe07a185105768e8737bb5298f75a793892da99c6e14d5f93774",
+        "DatadogRUM/RUM_FEATURE.md": "d94c178d1920903b1b08da15ff63640afe21f8187ac89ee4541aa1e2014160e4"
+      },
+      "diff_paths": [
+        "CHANGELOG.md",
+        "Datadog/IntegrationUnitTests/RUM/WebEventIntegrationTests.swift",
+        "DatadogRUM/RUM_FEATURE.md",
+        "DatadogRUM/Sources/RUMMonitor/Scopes/RUMSessionScope.swift",
+        "DatadogRUM/Sources/RUMMonitor/Scopes/Utils/ViewCache.swift",
+        "DatadogRUM/Tests/Integrations/WebViewEventReceiverTests.swift",
+        "DatadogRUM/Tests/RUMMonitor/Scopes/RUMSessionScopeTests.swift"
+      ],
+      "signatures": [
+        "c5f3955ab8fc1539fd1b60e15b71dbd674b26067 G"
+      ],
+      "body": "Delivery/E04-pr.md",
+      "body_sha256": "72594e837cf5b5013282e05e136f9355795e40ef259e667d7435f71616a209b7",
+      "evidence": [
+        {
+          "kind": "qualified_source_rebinding",
+          "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/deliveries/e04-20260920-9o3thfw6/source-rebinding.json",
+          "sha256": "b666010ec8ba28de9af5ef3af894b11bb59abee77bb1129b4cc61b0eddac9fbe",
+          "experiments": [
+            "DatadogRUM/MultiSceneSupport/Experiments/EXP-207-active-view-cache.md",
+            "DatadogRUM/MultiSceneSupport/Results/EXP-207-active-view-cache.json",
+            "DatadogRUM/MultiSceneSupport/Experiments/EXP-212-cache-composition.md"
+          ]
+        }
+      ],
+      "dependency_pins_and_build_identity": "Owned by the linked qualified/current receipts; no new runtime identities are inferred for source-only rebinding.",
+      "remaining_iOS_inventory": [
+        {
+          "scheme": "DatadogCore",
+          "status": "MISSING_FULL_SUITE",
+          "owner": "SDK implementer / CI",
+          "environment": "Supported available iOS simulator; frozen candidate and complete test inventory",
+          "decisive_test": "All discovered cases and parameterized runs pass; only predefined OS skips; source and cleanup stable"
+        },
+        {
+          "scheme": "DatadogInternal",
+          "status": "MISSING_FULL_SUITE",
+          "owner": "SDK implementer / CI",
+          "environment": "Supported available iOS simulator; frozen candidate and complete test inventory",
+          "decisive_test": "All discovered cases and parameterized runs pass; only predefined OS skips; source and cleanup stable"
+        },
+        {
+          "scheme": "DatadogRUM",
+          "status": "REUSE_EXACT_910_CASES_946_RUNS",
+          "owner": "SDK implementer / CI",
+          "environment": "Supported available iOS simulator; frozen candidate and complete test inventory",
+          "decisive_test": "All discovered cases and parameterized runs pass; only predefined OS skips; source and cleanup stable"
+        },
+        {
+          "scheme": "DatadogSessionReplay",
+          "status": "MISSING_FULL_SUITE",
+          "owner": "SDK implementer / CI",
+          "environment": "Supported available iOS simulator; frozen candidate and complete test inventory",
+          "decisive_test": "All discovered cases and parameterized runs pass; only predefined OS skips; source and cleanup stable"
+        },
+        {
+          "scheme": "DatadogLogs",
+          "status": "MISSING_FULL_SUITE",
+          "owner": "SDK implementer / CI",
+          "environment": "Supported available iOS simulator; frozen candidate and complete test inventory",
+          "decisive_test": "All discovered cases and parameterized runs pass; only predefined OS skips; source and cleanup stable"
+        },
+        {
+          "scheme": "DatadogTrace",
+          "status": "MISSING_FULL_SUITE",
+          "owner": "SDK implementer / CI",
+          "environment": "Supported available iOS simulator; frozen candidate and complete test inventory",
+          "decisive_test": "All discovered cases and parameterized runs pass; only predefined OS skips; source and cleanup stable"
+        },
+        {
+          "scheme": "DatadogCrashReporting",
+          "status": "MISSING_FULL_SUITE",
+          "owner": "SDK implementer / CI",
+          "environment": "Supported available iOS simulator; frozen candidate and complete test inventory",
+          "decisive_test": "All discovered cases and parameterized runs pass; only predefined OS skips; source and cleanup stable"
+        },
+        {
+          "scheme": "DatadogWebViewTracking",
+          "status": "MISSING_FULL_SUITE",
+          "owner": "SDK implementer / CI",
+          "environment": "Supported available iOS simulator; frozen candidate and complete test inventory",
+          "decisive_test": "All discovered cases and parameterized runs pass; only predefined OS skips; source and cleanup stable"
+        },
+        {
+          "scheme": "DatadogFlags",
+          "status": "MISSING_FULL_SUITE",
+          "owner": "SDK implementer / CI",
+          "environment": "Supported available iOS simulator; frozen candidate and complete test inventory",
+          "decisive_test": "All discovered cases and parameterized runs pass; only predefined OS skips; source and cleanup stable"
+        },
+        {
+          "scheme": "DatadogProfiling",
+          "status": "MISSING_FULL_SUITE",
+          "owner": "SDK implementer / CI",
+          "environment": "Supported available iOS simulator; frozen candidate and complete test inventory",
+          "decisive_test": "All discovered cases and parameterized runs pass; only predefined OS skips; source and cleanup stable"
+        },
+        {
+          "scheme": "DatadogIntegrationTests",
+          "status": "MISSING_FULL_SUITE",
+          "owner": "SDK implementer / CI",
+          "environment": "Supported available iOS simulator; frozen candidate and complete test inventory",
+          "decisive_test": "All discovered cases and parameterized runs pass; only predefined OS skips; source and cleanup stable"
+        }
+      ],
+      "remaining_platform_inventory": [
+        {
+          "platform": "iOS",
+          "configuration": "Debug",
+          "status": "MISSING_AFFECTED_BUILD",
+          "owner": "SDK implementer / CI",
+          "environment": "Current supported Xcode; declared package minima",
+          "decisive_test": "Complete affected production SwiftFileLists and emitted modules; zero build exit"
+        },
+        {
+          "platform": "iOS",
+          "configuration": "Release",
+          "status": "MISSING_AFFECTED_BUILD",
+          "owner": "SDK implementer / CI",
+          "environment": "Current supported Xcode; declared package minima",
+          "decisive_test": "Complete affected production SwiftFileLists and emitted modules; zero build exit"
+        },
+        {
+          "platform": "tvOS",
+          "configuration": "Debug",
+          "status": "MISSING_AFFECTED_BUILD",
+          "owner": "SDK implementer / CI",
+          "environment": "Current supported Xcode; declared package minima",
+          "decisive_test": "Complete affected production SwiftFileLists and emitted modules; zero build exit"
+        },
+        {
+          "platform": "tvOS",
+          "configuration": "Release",
+          "status": "MISSING_AFFECTED_BUILD",
+          "owner": "SDK implementer / CI",
+          "environment": "Current supported Xcode; declared package minima",
+          "decisive_test": "Complete affected production SwiftFileLists and emitted modules; zero build exit"
+        },
+        {
+          "platform": "watchOS",
+          "configuration": "Debug",
+          "status": "MISSING_AFFECTED_BUILD",
+          "owner": "SDK implementer / CI",
+          "environment": "Current supported Xcode; declared package minima",
+          "decisive_test": "Complete affected production SwiftFileLists and emitted modules; zero build exit"
+        },
+        {
+          "platform": "watchOS",
+          "configuration": "Release",
+          "status": "MISSING_AFFECTED_BUILD",
+          "owner": "SDK implementer / CI",
+          "environment": "Current supported Xcode; declared package minima",
+          "decisive_test": "Complete affected production SwiftFileLists and emitted modules; zero build exit"
+        },
+        {
+          "platform": "visionOS",
+          "configuration": "Debug",
+          "status": "MISSING_AFFECTED_BUILD",
+          "owner": "SDK implementer / CI",
+          "environment": "Current supported Xcode; declared package minima",
+          "decisive_test": "Complete affected production SwiftFileLists and emitted modules; zero build exit"
+        },
+        {
+          "platform": "visionOS",
+          "configuration": "Release",
+          "status": "MISSING_AFFECTED_BUILD",
+          "owner": "SDK implementer / CI",
+          "environment": "Current supported Xcode; declared package minima",
+          "decisive_test": "Complete affected production SwiftFileLists and emitted modules; zero build exit"
+        },
+        {
+          "platform": "Mac Catalyst",
+          "configuration": "Debug",
+          "status": "MISSING_AFFECTED_BUILD",
+          "owner": "SDK implementer / CI",
+          "environment": "Current supported Xcode; declared package minima",
+          "decisive_test": "Complete affected production SwiftFileLists and emitted modules; zero build exit"
+        },
+        {
+          "platform": "Mac Catalyst",
+          "configuration": "Release",
+          "status": "MISSING_AFFECTED_BUILD",
+          "owner": "SDK implementer / CI",
+          "environment": "Current supported Xcode; declared package minima",
+          "decisive_test": "Complete affected production SwiftFileLists and emitted modules; zero build exit"
+        },
+        {
+          "platform": "macOS",
+          "configuration": "Debug",
+          "status": "MISSING_AFFECTED_BUILD",
+          "owner": "SDK implementer / CI",
+          "environment": "Current supported Xcode; declared package minima",
+          "decisive_test": "Complete affected production SwiftFileLists and emitted modules; zero build exit"
+        },
+        {
+          "platform": "macOS",
+          "configuration": "Release",
+          "status": "MISSING_AFFECTED_BUILD",
+          "owner": "SDK implementer / CI",
+          "environment": "Current supported Xcode; declared package minima",
+          "decisive_test": "Complete affected production SwiftFileLists and emitted modules; zero build exit"
+        }
+      ],
+      "new_runtime_admission": "No further runtime admitted by this packet; freeze per-lane source, selectors and actual deadlines first.",
+      "public_API": "Source-identical public declarations and bridge/header/build inputs; only internal implementations differ. Verify affected compilation before delivery.",
+      "CI": "NOT_RUN_ON_UNPUBLISHED_DELIVERY_HEAD",
+      "human_review": "PENDING",
+      "publication_authorization": false,
+      "merge_authorization": false,
+      "upstream_merge_sha": null,
+      "limits": [
+        "Native injected messages and writer JSON do not prove actual browser callback or backend ingestion",
+        "EXP-212 composition does not replace independent E04 release qualification",
+        "No new mandatory numeric microbenchmark campaign"
+      ],
+      "rollback": "Revert E04 cache/session behavior and tests/docs without losing E02/E03 shared-file assertions.",
+      "feature_docs": "AFFECTED_RUM_PASS_GLOBAL_TRACE_DRIFT_INHERITED_FROM_DEVELOP",
+      "additional_finite_admission_required": [
+        "Independent cache/session teardown and restoration lifetime; map exact reusable EXP207/EXP212 controls before choosing any missing runtime"
+      ]
+    },
+    {
+      "id": "E05",
+      "state": "LOCAL_SIGNED_PACKET_QUALIFICATION_PENDING",
+      "prepared_at": "2026-09-20T21:36:00.110051+00:00",
+      "ticket": null,
+      "named_reviewer": null,
+      "review_owners": [
+        "@DataDog/rum-mobile",
+        "@DataDog/rum-mobile-ios"
+      ],
+      "artifact_root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/deliveries/e05-20260920-rtzz6gpd",
+      "checkout": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/deliveries/e05-20260920-rtzz6gpd/worktree",
+      "detached_until_real_ticket": true,
+      "baseline_commit": "62f64d7b655bdc83f3036c4ad81090a270f6202b",
+      "delivery_head": "9899a67a2f59e0423a00c9765ddc77c272741740",
+      "qualified_source": "9254adbcbf5a1809219ec30f6cc07df4f3af4518",
+      "exact_owned_source_test_contents_equal": true,
+      "production_paths_and_sha256": {
+        "DatadogTrace/Sources/DatadogTracer.swift": "612aa2a6d9ff8d9ac1be55346ed3c93ce32e183c01aedba16a2985568110adac",
+        "DatadogTrace/Sources/Integrations/TracingURLSessionHandler.swift": "6a76028d4e76459ad2f59f5d1b720ebc712a1e0390e6cb992fc91e39eebd2427",
+        "DatadogTrace/Sources/Span/SpanWriteContext.swift": "fb428dab3721675d84c7357f8010d980b4d6d4d28906aedc3a4a0d7273d77fa9"
+      },
+      "test_paths_and_sha256": {
+        "DatadogTrace/Tests/TracingURLSessionHandlerTests.swift": "bf05ec8bacc5759e6d8d8509e92a42b3f18275ef427e988526d5cd7b1af314cf",
+        "Datadog/IntegrationUnitTests/Public/NetworkInstrumentationIntegrationTests.swift": "47f50ccf4ee00441cd467a16b5eaeb3ef3e3afee4525fe0ae962804941184413"
+      },
+      "documentation_paths_and_sha256": {
+        "CHANGELOG.md": "798cc9ffedce67a01afbf98c9c2fb484bfec53a954334cab506e50d965896c12",
+        "DatadogTrace/TRACE_FEATURE.md": "d05edc94f1c79cb12efaaa4f760a80ad6cf67621172f90d932775ad8427305fa",
+        "DatadogRUM/RUM_FEATURE.md": "7b301c15c9ad629bbb2b7c44b4c180008aa55b611ed41afd57734f7fdaec4988"
+      },
+      "diff_paths": [
+        "CHANGELOG.md",
+        "Datadog/IntegrationUnitTests/Public/NetworkInstrumentationIntegrationTests.swift",
+        "DatadogRUM/RUM_FEATURE.md",
+        "DatadogTrace/Sources/DatadogTracer.swift",
+        "DatadogTrace/Sources/Integrations/TracingURLSessionHandler.swift",
+        "DatadogTrace/Sources/Span/SpanWriteContext.swift",
+        "DatadogTrace/TRACE_FEATURE.md",
+        "DatadogTrace/Tests/TracingURLSessionHandlerTests.swift"
+      ],
+      "signatures": [
+        "9899a67a2f59e0423a00c9765ddc77c272741740 G",
+        "9175dd7af56ddd6cc9bf66e835e4ef519f2d124c G"
+      ],
+      "body": "Delivery/E05-pr.md",
+      "body_sha256": "f20dd22f253f89d1019b9b97b124053c35f3974efc860943827808261fe376f0",
+      "evidence": [
+        {
+          "kind": "qualified_source_rebinding",
+          "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/deliveries/e05-20260920-rtzz6gpd/source-rebinding.json",
+          "sha256": "7db96868a045529ce6232256ae93146b3b3493cdb1658679b54911570ea6fa46",
+          "experiments": [
+            "DatadogRUM/MultiSceneSupport/Experiments/EXP-208-trace-ownership.md",
+            "DatadogRUM/MultiSceneSupport/Results/EXP-208-trace-ownership.json"
+          ]
+        }
+      ],
+      "dependency_pins_and_build_identity": "Owned by the linked qualified/current receipts; no new runtime identities are inferred for source-only rebinding.",
+      "remaining_iOS_inventory": [
+        {
+          "scheme": "DatadogCore",
+          "status": "MISSING_FULL_SUITE",
+          "owner": "SDK implementer / CI",
+          "environment": "Supported available iOS simulator; frozen candidate and complete test inventory",
+          "decisive_test": "All discovered cases and parameterized runs pass; only predefined OS skips; source and cleanup stable"
+        },
+        {
+          "scheme": "DatadogInternal",
+          "status": "MISSING_FULL_SUITE",
+          "owner": "SDK implementer / CI",
+          "environment": "Supported available iOS simulator; frozen candidate and complete test inventory",
+          "decisive_test": "All discovered cases and parameterized runs pass; only predefined OS skips; source and cleanup stable"
+        },
+        {
+          "scheme": "DatadogRUM",
+          "status": "MISSING_FULL_SUITE",
+          "owner": "SDK implementer / CI",
+          "environment": "Supported available iOS simulator; frozen candidate and complete test inventory",
+          "decisive_test": "All discovered cases and parameterized runs pass; only predefined OS skips; source and cleanup stable"
+        },
+        {
+          "scheme": "DatadogSessionReplay",
+          "status": "MISSING_FULL_SUITE",
+          "owner": "SDK implementer / CI",
+          "environment": "Supported available iOS simulator; frozen candidate and complete test inventory",
+          "decisive_test": "All discovered cases and parameterized runs pass; only predefined OS skips; source and cleanup stable"
+        },
+        {
+          "scheme": "DatadogLogs",
+          "status": "MISSING_FULL_SUITE",
+          "owner": "SDK implementer / CI",
+          "environment": "Supported available iOS simulator; frozen candidate and complete test inventory",
+          "decisive_test": "All discovered cases and parameterized runs pass; only predefined OS skips; source and cleanup stable"
+        },
+        {
+          "scheme": "DatadogTrace",
+          "status": "REUSE_EXACT_154_PASS",
+          "owner": "SDK implementer / CI",
+          "environment": "Supported available iOS simulator; frozen candidate and complete test inventory",
+          "decisive_test": "All discovered cases and parameterized runs pass; only predefined OS skips; source and cleanup stable"
+        },
+        {
+          "scheme": "DatadogCrashReporting",
+          "status": "MISSING_FULL_SUITE",
+          "owner": "SDK implementer / CI",
+          "environment": "Supported available iOS simulator; frozen candidate and complete test inventory",
+          "decisive_test": "All discovered cases and parameterized runs pass; only predefined OS skips; source and cleanup stable"
+        },
+        {
+          "scheme": "DatadogWebViewTracking",
+          "status": "MISSING_FULL_SUITE",
+          "owner": "SDK implementer / CI",
+          "environment": "Supported available iOS simulator; frozen candidate and complete test inventory",
+          "decisive_test": "All discovered cases and parameterized runs pass; only predefined OS skips; source and cleanup stable"
+        },
+        {
+          "scheme": "DatadogFlags",
+          "status": "MISSING_FULL_SUITE",
+          "owner": "SDK implementer / CI",
+          "environment": "Supported available iOS simulator; frozen candidate and complete test inventory",
+          "decisive_test": "All discovered cases and parameterized runs pass; only predefined OS skips; source and cleanup stable"
+        },
+        {
+          "scheme": "DatadogProfiling",
+          "status": "MISSING_FULL_SUITE",
+          "owner": "SDK implementer / CI",
+          "environment": "Supported available iOS simulator; frozen candidate and complete test inventory",
+          "decisive_test": "All discovered cases and parameterized runs pass; only predefined OS skips; source and cleanup stable"
+        },
+        {
+          "scheme": "DatadogIntegrationTests",
+          "status": "MISSING_FULL_SUITE",
+          "owner": "SDK implementer / CI",
+          "environment": "Supported available iOS simulator; frozen candidate and complete test inventory",
+          "decisive_test": "All discovered cases and parameterized runs pass; only predefined OS skips; source and cleanup stable"
+        }
+      ],
+      "remaining_platform_inventory": [
+        {
+          "platform": "iOS",
+          "configuration": "Debug",
+          "status": "MISSING_AFFECTED_BUILD",
+          "owner": "SDK implementer / CI",
+          "environment": "Current supported Xcode; declared package minima",
+          "decisive_test": "Complete affected production SwiftFileLists and emitted modules; zero build exit"
+        },
+        {
+          "platform": "iOS",
+          "configuration": "Release",
+          "status": "MISSING_AFFECTED_BUILD",
+          "owner": "SDK implementer / CI",
+          "environment": "Current supported Xcode; declared package minima",
+          "decisive_test": "Complete affected production SwiftFileLists and emitted modules; zero build exit"
+        },
+        {
+          "platform": "tvOS",
+          "configuration": "Debug",
+          "status": "MISSING_AFFECTED_BUILD",
+          "owner": "SDK implementer / CI",
+          "environment": "Current supported Xcode; declared package minima",
+          "decisive_test": "Complete affected production SwiftFileLists and emitted modules; zero build exit"
+        },
+        {
+          "platform": "tvOS",
+          "configuration": "Release",
+          "status": "MISSING_AFFECTED_BUILD",
+          "owner": "SDK implementer / CI",
+          "environment": "Current supported Xcode; declared package minima",
+          "decisive_test": "Complete affected production SwiftFileLists and emitted modules; zero build exit"
+        },
+        {
+          "platform": "watchOS",
+          "configuration": "Debug",
+          "status": "MISSING_AFFECTED_BUILD",
+          "owner": "SDK implementer / CI",
+          "environment": "Current supported Xcode; declared package minima",
+          "decisive_test": "Complete affected production SwiftFileLists and emitted modules; zero build exit"
+        },
+        {
+          "platform": "watchOS",
+          "configuration": "Release",
+          "status": "MISSING_AFFECTED_BUILD",
+          "owner": "SDK implementer / CI",
+          "environment": "Current supported Xcode; declared package minima",
+          "decisive_test": "Complete affected production SwiftFileLists and emitted modules; zero build exit"
+        },
+        {
+          "platform": "visionOS",
+          "configuration": "Debug",
+          "status": "MISSING_AFFECTED_BUILD",
+          "owner": "SDK implementer / CI",
+          "environment": "Current supported Xcode; declared package minima",
+          "decisive_test": "Complete affected production SwiftFileLists and emitted modules; zero build exit"
+        },
+        {
+          "platform": "visionOS",
+          "configuration": "Release",
+          "status": "MISSING_AFFECTED_BUILD",
+          "owner": "SDK implementer / CI",
+          "environment": "Current supported Xcode; declared package minima",
+          "decisive_test": "Complete affected production SwiftFileLists and emitted modules; zero build exit"
+        },
+        {
+          "platform": "Mac Catalyst",
+          "configuration": "Debug",
+          "status": "MISSING_AFFECTED_BUILD",
+          "owner": "SDK implementer / CI",
+          "environment": "Current supported Xcode; declared package minima",
+          "decisive_test": "Complete affected production SwiftFileLists and emitted modules; zero build exit"
+        },
+        {
+          "platform": "Mac Catalyst",
+          "configuration": "Release",
+          "status": "MISSING_AFFECTED_BUILD",
+          "owner": "SDK implementer / CI",
+          "environment": "Current supported Xcode; declared package minima",
+          "decisive_test": "Complete affected production SwiftFileLists and emitted modules; zero build exit"
+        },
+        {
+          "platform": "macOS",
+          "configuration": "Debug",
+          "status": "MISSING_AFFECTED_BUILD",
+          "owner": "SDK implementer / CI",
+          "environment": "Current supported Xcode; declared package minima",
+          "decisive_test": "Complete affected production SwiftFileLists and emitted modules; zero build exit"
+        },
+        {
+          "platform": "macOS",
+          "configuration": "Release",
+          "status": "MISSING_AFFECTED_BUILD",
+          "owner": "SDK implementer / CI",
+          "environment": "Current supported Xcode; declared package minima",
+          "decisive_test": "Complete affected production SwiftFileLists and emitted modules; zero build exit"
+        }
+      ],
+      "new_runtime_admission": "No further runtime admitted by this packet; freeze per-lane source, selectors and actual deadlines first.",
+      "public_API": "Source-identical public declarations and bridge/header/build inputs; only internal implementations differ. Verify affected compilation before delivery.",
+      "CI": "NOT_RUN_ON_UNPUBLISHED_DELIVERY_HEAD",
+      "human_review": "PENDING",
+      "publication_authorization": false,
+      "merge_authorization": false,
+      "upstream_merge_sha": null,
+      "limits": [
+        "Do not expand into PR2683 partial-carrier/header-merge policy",
+        "Native qualification used automatic Trace with automatic RUM Resources disabled",
+        "Immediate unbind cleanup and registered-mode/backend ownership matrix are not implied by current eligibility evidence"
+      ],
+      "rollback": "Revert E05 ownership capture/write behavior and its tests/docs without reverting E01 networking.",
+      "feature_docs": "PASS_ALL_FIVE_DOCUMENTS_AND_REGISTRY",
+      "additional_finite_admission_required": [
+        "Registered-mode ownership and explicit-nil preservation",
+        "Success/error/cancellation and each completion-guard capture cleanup; handler release/unbind scope",
+        "Exact native/backend request-time owner comparison with full session/service inventory"
+      ]
+    }
+  ]
+}

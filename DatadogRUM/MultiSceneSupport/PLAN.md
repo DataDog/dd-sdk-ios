@@ -49,7 +49,10 @@ sequence: independently land the qualified hitch assertion correction, then reba
 only after its verified upstream merge and compare source/test identities. Keep
 the current checkpoint intact. The separate [PR2683 review](Results/PR-2683-header-ownership-review.json)
 is a bounded T08 follow-up after E05; it does not change EXP-208 header policy or
-close a runtime gate.
+close a runtime gate. [Independent S1 packets](Results/S1-independent-packets.json)
+now bind DL01/E02/E04/E05 to signed delivery histories and finite missing-check
+inventories. Packet preparation and individual check passes do not change the
+selected E01 gate count or imply publication.
 
 One controller owns this host's builds/devices. Keep performance measurements
 separate from builds and other workloads. Desktop lock or backend access blocks

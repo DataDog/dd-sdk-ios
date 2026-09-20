@@ -272,7 +272,7 @@
       "gate_reference": "S1:E02; separate candidate freeze required",
       "title": "Keep attributes isolated between repeated view occurrences",
       "branch_slug": "view-occurrence-ownership",
-      "state": "eligibility_qualified_release_checks_pending",
+      "state": "local_signed_packet_qualification_pending",
       "source_worktree": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/view-occurrence-ownership",
       "source_branch": "valpertui/view-occurrence-ownership",
       "source_head": "96d064c4fa083a7a74c709eb4a626fc17017db01",
@@ -301,16 +301,33 @@
       "decisive_test": "Pending H1 Resource retains its original view; Detail to H2 navigation cannot change H1 start/stop attributes, H2 action stays on H2, and restoration retains only one active occurrence. Assert serialized full/delta output.",
       "environment": "Accepted full RUM and native public-monitor fixture on recorded runtime; freeze missing affected compatibility/platform/API/CI cells on delivery source.",
       "remaining_gates": [
-        "Fresh develop extraction and exact two-predicate source review",
-        "Freeze finite applicable release inventory and fill missing checks",
-        "Customer changelog and affected documentation",
-        "Current CI, signed history, human review and authorized delivery"
+        "Complete the packet-specific finite missing iOS and platform inventory; preserve qualified evidence and limits",
+        "Complete any explicitly listed ownership/lifetime/backend admission and checks",
+        "Real ticket, reachable verification metadata, current CI and human review",
+        "Separately authorized publication/merge and verified upstream source"
       ],
       "limits": [
         "Source-less sequential navigation evidence; not a multi-scene router",
         "No backend or real navigation callback claim from writer serialization alone"
       ],
-      "rollback": "Revert only E02 predicates and its tests/docs; retain unrelated shared-file tests."
+      "rollback": "Revert only E02 predicates and its tests/docs; retain unrelated shared-file tests.",
+      "delivery_head": "1759abb9725b9d34682d44739966fb7736835e94",
+      "delivery_checkout": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/deliveries/e02-20260920-jw2fh35s/worktree",
+      "packet": "Results/S1-independent-packets.json",
+      "body": "Delivery/E02-pr.md",
+      "existing_source_tests_identical": true,
+      "remaining_iOS_schemes": [
+        "DatadogCore",
+        "DatadogInternal",
+        "DatadogSessionReplay",
+        "DatadogLogs",
+        "DatadogTrace",
+        "DatadogCrashReporting",
+        "DatadogWebViewTracking",
+        "DatadogFlags",
+        "DatadogProfiling",
+        "DatadogIntegrationTests"
+      ]
     },
     {
       "owner": "Main execution session / SDK implementer",
@@ -389,7 +406,7 @@
       "gate_reference": "S1:E04; separate candidate freeze required",
       "title": "Retain delayed WebView correlation after native view inactivity",
       "branch_slug": "active-view-cache-lifetime",
-      "state": "eligibility_qualified_release_checks_pending",
+      "state": "local_signed_packet_qualification_pending",
       "source_worktree": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/active-view-cache-lifetime",
       "source_branch": "valpertui/active-view-cache-lifetime",
       "source_head": "a3d34069cccbe35cac0fd2bc1fb456e64b1f4c43",
@@ -419,17 +436,34 @@
       "decisive_test": "Long-lived active native view remains the delayed WebView container; inactivity starts its TTL exactly once. Preserve session stop/timeout/restoration, capacity 30, ordering, Replay and out-of-window rejection.",
       "environment": "Accepted full RUM and injected native WebView bridge serialization pair; missing applicable release/CI checks on independent delivery branch.",
       "remaining_gates": [
-        "Fresh independent extraction and exact cache/session source review",
-        "Complete finite affected compatibility and lifecycle qualification inventory",
-        "Customer changelog/documentation plus current CI/signatures/review",
-        "Authorized independent delivery"
+        "Complete the packet-specific finite missing iOS and platform inventory; preserve qualified evidence and limits",
+        "Complete any explicitly listed ownership/lifetime/backend admission and checks",
+        "Real ticket, reachable verification metadata, current CI and human review",
+        "Separately authorized publication/merge and verified upstream source"
       ],
       "limits": [
         "Native injected messages and writer JSON do not prove actual browser callback or backend ingestion",
         "EXP-212 composition does not replace independent E04 release qualification",
         "No new mandatory numeric microbenchmark campaign"
       ],
-      "rollback": "Revert E04 cache/session behavior and tests/docs without losing E02/E03 shared-file assertions."
+      "rollback": "Revert E04 cache/session behavior and tests/docs without losing E02/E03 shared-file assertions.",
+      "delivery_head": "c5f3955ab8fc1539fd1b60e15b71dbd674b26067",
+      "delivery_checkout": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/deliveries/e04-20260920-9o3thfw6/worktree",
+      "packet": "Results/S1-independent-packets.json",
+      "body": "Delivery/E04-pr.md",
+      "existing_source_tests_identical": true,
+      "remaining_iOS_schemes": [
+        "DatadogCore",
+        "DatadogInternal",
+        "DatadogSessionReplay",
+        "DatadogLogs",
+        "DatadogTrace",
+        "DatadogCrashReporting",
+        "DatadogWebViewTracking",
+        "DatadogFlags",
+        "DatadogProfiling",
+        "DatadogIntegrationTests"
+      ]
     },
     {
       "owner": "Main execution session / SDK implementer",
@@ -446,7 +480,7 @@
       "gate_reference": "S1:E05; separate candidate freeze required",
       "title": "Preserve request-time RUM ownership in automatic traces",
       "branch_slug": "request-time-trace-ownership",
-      "state": "eligibility_qualified_release_checks_pending",
+      "state": "local_signed_packet_qualification_pending",
       "source_worktree": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/request-time-trace-ownership",
       "source_branch": "valpertui/request-time-trace-ownership",
       "source_head": "9254adbcbf5a1809219ec30f6cc07df4f3af4518",
@@ -476,17 +510,34 @@
       "decisive_test": "Reverse completion preserves each request's start-time RUM owner in outgoing baggage and serialized span. Explicit nil never adopts a later view. Preserve parent sampling, user/account context, caller headers and legacy missing-network-context fallback.",
       "environment": "Accepted full Trace and native public networking integration pair; audit/fill applicable registered mode, terminal cleanup, backend and platform/CI cells before release claims.",
       "remaining_gates": [
-        "Fresh independent extraction and exact existing NetworkContext dependency review",
-        "Freeze and fill missing applicable registration/cancellation/guard-cleanup/header/backend release checks; record source-proven non-applicability explicitly",
-        "Customer changelog and affected feature documents",
-        "Current CI, signed history, human review and authorized delivery"
+        "Complete the packet-specific finite missing iOS and platform inventory; preserve qualified evidence and limits",
+        "Complete any explicitly listed ownership/lifetime/backend admission and checks",
+        "Real ticket, reachable verification metadata, current CI and human review",
+        "Separately authorized publication/merge and verified upstream source"
       ],
       "limits": [
         "Do not expand into PR2683 partial-carrier/header-merge policy",
         "Native qualification used automatic Trace with automatic RUM Resources disabled",
         "Immediate unbind cleanup and registered-mode/backend ownership matrix are not implied by current eligibility evidence"
       ],
-      "rollback": "Revert E05 ownership capture/write behavior and its tests/docs without reverting E01 networking."
+      "rollback": "Revert E05 ownership capture/write behavior and its tests/docs without reverting E01 networking.",
+      "delivery_head": "9899a67a2f59e0423a00c9765ddc77c272741740",
+      "delivery_checkout": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/deliveries/e05-20260920-rtzz6gpd/worktree",
+      "packet": "Results/S1-independent-packets.json",
+      "body": "Delivery/E05-pr.md",
+      "existing_source_tests_identical": true,
+      "remaining_iOS_schemes": [
+        "DatadogCore",
+        "DatadogInternal",
+        "DatadogRUM",
+        "DatadogSessionReplay",
+        "DatadogLogs",
+        "DatadogCrashReporting",
+        "DatadogWebViewTracking",
+        "DatadogFlags",
+        "DatadogProfiling",
+        "DatadogIntegrationTests"
+      ]
     },
     {
       "owner": "Main execution session / SDK implementer",
@@ -503,7 +554,7 @@
       "gate_reference": "General S1 reliability extraction from EXP-211; local delivery ID, not a new release gate",
       "title": "Release RUM display-link observers with their owner",
       "branch_slug": "rum-display-link-lifetime",
-      "state": "focused_repair_qualified_independent_extraction_pending",
+      "state": "local_signed_packet_qualification_pending",
       "source_worktree": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/s2-rum-lifetime",
       "source_branch": "valpertui/s2-rum-lifetime",
       "source_head_observed": "ef9d9732d4440038d5ce9278e86943fed3f9e931",
@@ -533,10 +584,10 @@
       "decisive_test": "Real CADisplayLink cannot retain its observer through its target; weak callback forwarding releases correctly and preserves frame delivery. SDK release witness is evaluated after actual pending MessageBus work has drained.",
       "environment": "Recorded ordinary iPad iOS17.5 evidence; independent develop-based Core/RUM tests and relevant conditional-platform compile checks. No Duo hardware dependency.",
       "remaining_gates": [
-        "Create separate delivery checkout from freshly verified develop; extract exactly two files from selected commit, never the combined branch",
-        "Audit/test independence from E01 and E04; preserve AppKit/NOP/conditional source",
-        "Map focused release/frame tests and fill only invalidated or missing checks",
-        "Customer changelog/documentation, current CI/signatures/review and authorized delivery"
+        "Complete the packet-specific finite missing iOS and platform inventory; preserve qualified evidence and limits",
+        "Complete any explicitly listed ownership/lifetime/backend admission and checks",
+        "Real ticket, reachable verification metadata, current CI and human review",
+        "Separately authorized publication/merge and verified upstream source"
       ],
       "limits": [
         "Eight accepted D2 tests plus one corrected D4 witness are focused evidence, not global lifetime clearance",
@@ -544,15 +595,32 @@
         "No claim of continuous memory growth in an initialize-once app",
         "Leave active S2 composed worktree unchanged"
       ],
-      "rollback": "Revert the weak display-link target change and its tests/docs independently."
+      "rollback": "Revert the weak display-link target change and its tests/docs independently.",
+      "delivery_head": "342194900a5310a48f6828c01736ecc812fa1421",
+      "delivery_checkout": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/deliveries/dl01-20260920-7n7z3qln/worktree",
+      "packet": "Results/S1-independent-packets.json",
+      "body": "Delivery/DL01-pr.md",
+      "existing_source_tests_identical": true,
+      "remaining_iOS_schemes": [
+        "DatadogInternal",
+        "DatadogSessionReplay",
+        "DatadogLogs",
+        "DatadogTrace",
+        "DatadogCrashReporting",
+        "DatadogWebViewTracking",
+        "DatadogFlags",
+        "DatadogProfiling",
+        "DatadogIntegrationTests"
+      ]
     }
   ],
   "checkpoint": {
-    "at": "2026-09-20T20:53:18.654983+00:00",
+    "at": "2026-09-20T21:36:00.110051+00:00",
     "main_source_checkpoint": "430075a1e11ef66ffdd6a989bef2d2dc156d52c6",
     "develop_verified": "62f64d7b655bdc83f3036c4ad81090a270f6202b",
     "EXP213": "complete; signed unit-onlyef9d9732; SDK-on native P03 remains open",
     "local_packets": "Results/S1-H00-E01-packets.json",
-    "next_repair": "EXP-214 / E03-A design admission before S2 expansion"
+    "next_repair": "EXP-214 / E03-A design admission before S2 expansion",
+    "independent_local_packets": "Results/S1-independent-packets.json"
   }
 }

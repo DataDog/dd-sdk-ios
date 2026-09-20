@@ -46,3 +46,5 @@ The independent final review qualifies the focused repair only. No broad P03,
 unbounded Monitor/core leak, early-teardown, sanitizer, numeric memory/CPU,
 other-platform runtime, physical Duo or full-release claim follows. The S2
 release freeze remains E01-only pending a separate composition/source audit.
+
+The independent [DL01 delivery packet](../Results/S1-independent-packets.json) later extracts these exact two files onto verified develop62f64. Signed delivery34219490 passes the full standalone Core suite (819 passes plus four predefined OS skips) and RUM suite (901 cases / 937 executions, zero skips). It confirms the nine frame/lifetime controls together within the Core suite and preserves their original owner boundary. This is delivery qualification, not a new experiment or broader P03 closure; platform/full-iOS/CI/human-review checks remain.

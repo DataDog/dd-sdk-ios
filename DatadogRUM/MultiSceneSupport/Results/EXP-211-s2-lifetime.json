@@ -185,5 +185,24 @@
     "bytes": 915779057,
     "all_copies_verified": true,
     "excluded_only": "DerivedData build intermediates/cache/index; all raw results and Build/Products retained"
+  },
+  "independent_delivery_followup": {
+    "recorded_at": "2026-09-20T21:43:16.729223+00:00",
+    "packet": "Results/S1-independent-packets.json",
+    "delivery_commit": "342194900a5310a48f6828c01736ecc812fa1421",
+    "source_test_hashes_match_original": true,
+    "standalone_suites": {
+      "Core": {
+        "passed": 819,
+        "skipped": 4,
+        "unexpected_skips": 0
+      },
+      "RUM": {
+        "cases": 901,
+        "executions": 937,
+        "skipped": 0
+      }
+    },
+    "claim": "Exact independent delivery qualification; original experiment outcomes remain unchanged. No whole-P03 or complete release claim."
   }
 }

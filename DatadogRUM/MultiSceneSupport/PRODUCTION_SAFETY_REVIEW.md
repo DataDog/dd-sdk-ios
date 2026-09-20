@@ -70,8 +70,7 @@ the qualified sources; this adds no runtime or release-gate pass. E03 is explici
 prioritized in [EXP-214](Results/EXP-214-resource-action-design.json) before further
 S2 expansion. Its admission review must resolve existing manual current-key behavior
 and post-completion error tails without silently weakening the frozen controls or
-introducing unbounded history. DL01 will be extracted independently from the exact
-two-file repair; the combined S2 branch is not its PR.
+introducing unbounded history. [DL01/E02/E04/E05 packets](Results/S1-independent-packets.json) now preserve the exact qualified production/test contents in separate signed delivery histories. DL01 passes standalone Core819+4 frozen skips and RUM901/937 with strict inventories and cleanup. This closes those packet checks only. The pre-run result-reader oracle rejection and its independently verified correction are retained; inherited Trace-document drift remains explicit for DL01/E02/E04. E05's affected documents pass with a reachable source SHA. Remaining release and ownership checks stay open.
 
 The independent S1 E01 findings are separate from historical D01–D12. Repeated
 request mutation and strong terminal-preparation retention are repaired in
