@@ -22,15 +22,18 @@ automatic SwiftUI naming/control limitations are outside new S2 scope. Exact API
 review F01 remains attributable and pending for S3; assessment assumptions are not
 approval. [Stage views](PLAN.md) own readiness.
 
-EXP-197 establishes a separate ordinary-app defect on current develop62f64d7b6:
-repeated URLSession resume invokes request mutation more than once. The failing
-test executed on the newly available iPadOS17.5 simulator. The approved isolated
-repair is signed at464af911. Full Internal453 tests/489 executions and the paired
-six-case ordinary/legacy17.5 matrix pass, including deployment15 builds and exact
-ownership/lifecycle checks. S1:E01/F07/C01/C02/C03/C06 close within that boundary;
-affected modules, performance, backend and final release review remain required.
-[The owning result](Results/EXP-197-urlsession-extraction.json) preserves controls
-and failed attempts. Controlled Datadog app runs are authorized
+Ordinary repeated URLSession resume can invoke request mutation more than once
+on current develop62f64. The isolated E01 candidate1bdc9286 preserves exactly-once
+preparation and removes completed preparation records using weak task identity.
+Deterministic tests and paired real native automatic/registered tasks prove cleanup
+without losing lifecycle, header, body or metrics. Full Internal and affected
+Core/RUM/Trace suites pass on17.5. The candidate's six ordinary/legacy17.5 comparisons pass with the reused develop
+baseline and genuineSDK26.5 legacy builds; earlier464 results remain historical
+evidence. C04 custom/NOP and actual26.5 runtime checks remain separate. Numeric heap growth also occurs in SDK-unbound controls and
+remains unattributed. No allocation, latency or numeric-retention pass is claimed.
+[EXP-197](Results/EXP-197-urlsession-extraction.json) owns the original defect and
+[EXP-199](Results/EXP-199-terminal-task-ownership.json) owns the cleanup repair,
+failed attempts, exact source and evidence boundaries. Controlled Datadog app runs are authorized
 in the probes RUM application under service `ios-app-rum-release-validation`;
 configuration preparation and authenticated query access do not establish a run.
 

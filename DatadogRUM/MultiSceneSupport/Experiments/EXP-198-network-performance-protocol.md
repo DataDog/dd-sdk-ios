@@ -1,10 +1,10 @@
 # S1:E01 URLSession performance and retention qualification
 
-Status: EXP-198 protocol admitted before fixture implementation or measurement. Prepared 2026-09-20. This qualifies the isolated E01 preparation/resume/callback change, not the deferred scene-routing implementation or a release.
+Status: EXP-198 protocol admitted before fixture implementation or measurement; candidate/ownership amendment after EXP-199, before any accepted ABBA. Prepared 2026-09-20. This qualifies the isolated E01 preparation/resume/callback change, not the deferred scene-routing implementation or a release.
 
 ## Frozen comparison and thresholds
 
-A is develop `62f64d7b655bdc83f3036c4ad81090a270f6202b`. B is signed commit `464af9110daeb9211040e202b42d5ce446e06153`, the exact baseline plus the approved three-file E01 delta. The appended identity inventory hashes only those three production files. Before building, freeze the complete allowed source archive and verify that no additional production differences enter B. Use one identical fixture in both arms; do not copy the historical candidate's scene-routing fixture or change the historical BASELINES.md.
+A is develop `62f64d7b655bdc83f3036c4ad81090a270f6202b`. B is frozen local commit `1bdc9286c17d69d73e5e41530e6179c72a723368`, the exact baseline plus the approved three-file E01 delta and its EXP-199 terminal-ownership repair. The commit is unsigned under the user-authorized fallback after signing-agent communication failed; no push is authorized. The appended identity inventory hashes only those three production files. Before building, freeze the complete allowed source archive and verify that no additional production differences enter B. Use one identical fixture in both arms; do not copy the historical candidate's scene-routing fixture or change the historical BASELINES.md.
 
 Preserve BASELINES.md:35–59 budgets, applied independently to each admitted URLSession dispatch row:
 - Median increase <= max(10% of A median, 500 ns/dispatch); p95 increase <= max(20% of A p95, 1,000 ns/dispatch).
@@ -35,11 +35,11 @@ Measure separate rows, never an averaged mixture:
 3. A second resume while the same task is ready and transport remains held: exercises existingResumeAction/ready forwarding. Record baseline repeated mutation as the known old behavior; do not treat its extra work as a credit against row 2.
 4. Data, metrics, completion, and state callback dispatch as individually named rows. Use real already-resumed tasks with native transport held, enter the existing feature.task(...) methods that the production callback swizzles invoke, and drain afterward. No mocked reimplementation of route/enqueue. A fresh intercepted task is used for each destructive completion/completed-state sample. Registered rows supply the required companion metrics/completion outside the timed range. Label these controlled callback-entry microbenchmarks, not real network latency.
 
-For rows 2–4 record caller entry-to-return and, in a separate loop, dispatch-through-feature.flush() latency; keep the caller on a non-feature-queue thread. Apply the unchanged ordinary dispatch budget to both named timing boundaries. Callback source is held/quiescent before flush, so the queue barrier closes the operation. Native URLProtocol end-to-end latency/throughput is diagnostic only and cannot replace those SDK dispatch rows.
+For rows 2–4 record caller entry-to-return and, in a separate loop, entry through an immediate feature.flush(); keep the caller on a non-feature-queue thread. Apply the unchanged ordinary dispatch budget to both named timing boundaries. For callback-entry rows, native transport is already held/quiescent, so the queue barrier closes the controlled SDK operation. For first resume, explicitly label the second boundary "resume through immediate feature flush (already-enqueued SDK work)": native running-state interception may enqueue afterward. Await held startup plus a final flush outside that timer; never describe the prefix as fully settled or SDK-only total latency. Native startup/end-to-end latency may be recorded separately as diagnostic evidence only. For process-wide first-resume allocation windows, await held startup before the final flush and epoch close, and label the scope as including native startup allocations. This retains all rows, thresholds and sample counts while making the timing and allocation boundaries explicit before accepted samples.
 
 Before accepted samples, execute a small untimed native round trip in each tracking mode, including actual swizzled completion/delegate/state callbacks. Require exactly one prepared header at URLProtocol, one start and completion per ordinary task, correct body length, and registered metrics present. Record stage counters and task identity. This attests real transport/callback reachability in addition to the controlled callback rows.
 
-Preparation-only branches get bounded, untimed qualification controls using the existing E01 test patterns: synchronous repeated resume from modify; cancellation/early callback during preparation; registered >512 KiB discard; automatic full body preservation; completed-task resume; and all-unhandled forwarding. These are not new performance claims or a reopening of the already-frozen correctness suite. A fixture-only probe can reflect preparing/ready/terminal phases outside timing. Never use an instrumentation hook to replace the code being measured.
+Preparation-only branches get bounded, untimed qualification controls using the existing E01 test patterns: synchronous repeated resume from modify; cancellation/early callback during preparation; registered >512 KiB discard; automatic full body preservation; completed-task resume; and all-unhandled forwarding. These are not new performance claims or a reopening of the already-frozen correctness suite. A fixture-only probe can reflect preparing/ready records and weak terminal identity outside timing. Never use an instrumentation hook to replace the code being measured.
 
 ## Allocation churn and asynchronous coverage
 
@@ -64,14 +64,14 @@ If the atomic all-thread observer cannot be safely calibrated, retain the caller
 
 Use one long-lived feature per tracking mode and exactly 220 task lifetimes. Each cycle makes a real task, performs resume/preparation plus terminal callback handling, invalidates its ephemeral session, waits for the delegate invalidation receipt, drains the feature from outside its queue, exits the autoreleasepool, and drops fixture references. The receiver records scalar receipts only. Reuse fixed-capacity weak slots/counters; no observation array may grow with the cycle count.
 
-At each cycle, preserve a temporary strong task through completion and verify the candidate terminal entry remains available with empty continuations/events; repeated completed-task resume must not mutate/start again. Then release the task/session. This intentionally repeats the known baseline bug in a separately labeled discriminator; do not fold its baseline orphan allocations into ordinary performance samples. For the numeric 220-lifetime series use the ordinary one-resume lifecycle in BOTH arms, with identical terminal callback inputs.
+At each cycle, preserve a temporary strong task through completion and verify the candidate retains only weak terminal identity and no preparation value or buffered continuations/events; repeated completed-task resume must not mutate/start again. Then release the task/session. This intentionally repeats the known baseline bug in a separately labeled discriminator; do not fold its baseline orphan allocations into ordinary performance samples. For the numeric 220-lifetime series use the ordinary one-resume lifecycle in BOTH arms, with identical terminal callback inputs.
 
 At boundaries after 20, 120 and 220 cycles:
 - Collect malloc_zone_statistics live bytes only after callback receipts, queue drains and autorelease pools. Read numeric heap values before allocating snapshots/JSON.
 - Check weak tasks and weak interceptions: zero. Ensure fixture delegates/completion closures hold no task/feature.
-- Inspect all directly task-owning feature collections, including interceptions and truncatedInterceptions; candidate additionally has preparations. Discover unexpected additional owning collections instead of relying only on a whitelist.
+- Inspect all directly task-owning feature collections, including interceptions and truncatedInterceptions; candidate additionally has preparations and the weak terminalTasks identity set. Discover unexpected additional owning collections instead of relying only on a whitelist.
 - For preparations record raw NSMapTable count before enumeration, live weak keys, remaining values, and phase/continuation/event counts. Observation must not remove/clear entries. Weak-key disappearance alone is insufficient if terminal values/payloads remain. Capacity/allocator storage is reported separately in live bytes, not treated as a live task.
-- Require no remaining task entries or buffered payload/continuation records after released-task teardown. Preserve raw versus enumerated results so a lazy weak-table sweep is visible rather than a hidden cleanup step.
+- Require no remaining live task members or preparation/payload/continuation records after released-task teardown. Dead weak slots/capacity may remain and are not a live-task count; they remain visible in numeric heap measurements. Preserve raw versus enumerated results so a lazy weak-table sweep is visible rather than a hidden cleanup step.
 - Require candidate first-100 and second-100 absolute retained-byte deltas within 65,536 and 16,384. Also show A's identical deltas and B-minus-A diagnostically. A's growth does not relax B's fixed limits.
 
 After the 220-lifetime series, release the feature/provider/handler and any reflection temporaries outside an autoreleasepool and after the final drain. Require weak feature/provider/handler release. Verify SDK swizzling restored by exact previous-IMP identity or the existing independently qualified forwarding oracle. A fresh unrelated task must still execute its native path once. No fixture-owned collection may keep the feature alive.
@@ -118,14 +118,18 @@ Accepted numeric evidence requires completed source/binary identities, complete 
 
 No source in this E01 delta adds scene handoff. Therefore the 5/10 microsecond enabled-scene-handoff budget and scene/controller/SwiftUI registry work are NOT APPLICABLE to S1:E01, with that source exclusion recorded. The task/feature lifetime analogue and ordinary dispatch/allocation budgets do apply. Historical deferred-scene gates retain their own statuses. Ordinary UIKit/SwiftUI, oldest-runtime compatibility, physical Duo and release evidence stay with their separately owned work.
 
-Unresolved environment facts: fixture/evaluator/counter extension does not yet exist; the all-thread observer has not been calibrated; xctrace Allocations export is unqualified; runtime/toolchain/device identities must be supplied by root's current verified inventory. No build/profile/device probe was performed here. None of these gaps may be converted to a qualification PASS.
+Current qualification boundary: the all-thread counter passes caller, actual feature-queue, worker and concurrent sentinels on17.5. The remaining row fixture is being reviewed and has no accepted measurements. The initial retention fixture exposed a real terminal-record defect repaired by EXP-199, plus independent unbound/zero-body heap growth that remains unattributed. Numeric budgets stand; no ABBA or allocation/latency pass is claimed. Runtime/toolchain/device identities must come from fresh preflight.
 
 ## Inspected production source identities
 
 ```json
 {
-  "DatadogInternal/Sources/NetworkInstrumentation/NetworkInstrumentationFeature.swift": "399e7b06489d38dbac0d2d121a2d12ba31ad7a161f1ef73b29763a12c8472e6b",
+  "DatadogInternal/Sources/NetworkInstrumentation/NetworkInstrumentationFeature.swift": "2631ea56885a12d1b3d14b1044dd9a84319a0b382b817afb95b4edd305df5246",
   "DatadogInternal/Sources/NetworkInstrumentation/URLSession/NetworkInstrumentationSwizzler.swift": "a00edec0d9451c3b78c52f308c2a7f771d0e8b9cfafada79a2848f1b164cfef7",
   "DatadogInternal/Sources/NetworkInstrumentation/URLSession/URLSessionTaskSwizzler.swift": "96d302999632cc609a98e774106f1e51c4ef9fecfe089287426285aa524e4570"
 }
 ```
+
+## Candidate and ownership amendment
+
+The original464af911 protocol remains in Git at `cfecc08d45fb0aa36a548ed81d1461527b4f6e14` for this same path (SHA256 `d94d439cf3ebca860236d0974097e2483b41b2b9e0f5b526e5b1f0747dbe0a3b`). EXP-199 demonstrates and repairs a strong terminal-value retention defect. This amendment changes only B and the terminal-record oracle to match that repair. Keep every timing/allocation row, boundary, sample count, ABBA order, absolute memory threshold, negative control and failed diagnostic. No accepted numeric measurement predates this amendment.

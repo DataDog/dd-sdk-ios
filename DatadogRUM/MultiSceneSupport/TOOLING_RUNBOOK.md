@@ -2185,3 +2185,26 @@ URLSession workload uses the unchanged performance budgets. The old allocation
 collector observes only its installation thread; asynchronous coverage needs
 independent all-thread calibration before measurement can qualify. Keep timing
 and allocation processes separate and hold competing host workloads during ABBA.
+
+For task-retention probes, include the warm native request in explicit weak and
+autorelease boundaries. Reuse fixed weak slots after per-cycle release, store
+scalar snapshots in preallocated capacity and serialize results afterward. Numeric
+growth in an SDK-unbound control is not attributable to instrumentation; zero-body
+and session-lifetime diagnostics narrow it without subtracting a new baseline.
+Raw NSMapTable count is insufficient to distinguish bookkeeping from a retained
+object: capture the final terminal value under its actual coordinator lock, drop
+the native task, and inspect only a weak witness before count/enumeration/insertion.
+Terminal callbacks can replace values, so an earlier preparation gives false nil.
+Keep this reflective ownership diagnostic outside numeric performance samples.
+
+For repaired terminal ownership, check that a live completed task retains only its
+weak identity and no strong preparation value, then release the task and require
+zero live weak members. Raw weak-table capacity need not become zero. Compare the
+same native fixture against the pre-repair candidate; EXP-199 owns that red/green
+evidence. Keep reflection outside timed/allocation samples.
+
+Native URLSession state transitions may complete after resume/suspend returns.
+Establish each state expectation immediately before its own operation, then require
+the exact transition within a bounded wait. Never pre-create the second running
+expectation, retry the operation, or accept a completed/canceling substitute.
+Retain the independent lifecycle/header/cancellation assertions.

@@ -30,7 +30,7 @@
           "dependencies": [],
           "decisive_test": "Unchanged Home \u2192 Detail \u2192 fresh Home owner/name/count chain, no duplicate views/actions; exact affected shipped code, no new integration.",
           "environment": "Xcode27.1 and genuine legacy-build Xcode26.6/SDK26.5; actual iPad17.5(21F79); deployment15",
-          "evidence": "EXP-197 signed464af911 against current-develop62f64:6/6 candidate and reused6/6 baseline actual17.5(21F79) cells match exact view/action/resource ownership and genuine legacy lifecycle boundaries. Three deployment15 builds per arm; legacy SDK26.5. Frozen source/fixture/installed identities and cleanup pass. Results/EXP-197-ios17-paired.json. No15/16 runtime or S2/S3 claim.",
+          "evidence": "EXP-199 frozen1bdc9286 against reused current-develop62f64:6/6 actual17.5 cells match exact normalized view/action/resource owners and genuine legacy lifecycle. SDK27.1 Scene plus genuineSDK26.5 Legacy/LegacyLifecycle, deployment15, source/binary identities and cleanup pass. Results/EXP-199-ios17-paired.json retains previous464 evidence by reference. No15/16runtime, actual26.5runtime or S2/S3 claim.",
           "required": true
         },
         "S2": {
@@ -70,7 +70,7 @@
           "dependencies": [],
           "decisive_test": "Exact manual start/stop and marker owners match the pinned baseline; exact affected shipped code, no new integration.",
           "environment": "Xcode27.1 and genuine legacy-build Xcode26.6/SDK26.5; actual iPad17.5(21F79); deployment15",
-          "evidence": "EXP-197 signed464af911 against current-develop62f64:6/6 candidate and reused6/6 baseline actual17.5(21F79) cells match exact view/action/resource ownership and genuine legacy lifecycle boundaries. Three deployment15 builds per arm; legacy SDK26.5. Frozen source/fixture/installed identities and cleanup pass. Results/EXP-197-ios17-paired.json. No15/16 runtime or S2/S3 claim.",
+          "evidence": "EXP-199 frozen1bdc9286 against reused current-develop62f64:6/6 actual17.5 cells match exact normalized view/action/resource owners and genuine legacy lifecycle. SDK27.1 Scene plus genuineSDK26.5 Legacy/LegacyLifecycle, deployment15, source/binary identities and cleanup pass. Results/EXP-199-ios17-paired.json retains previous464 evidence by reference. No15/16runtime, actual26.5runtime or S2/S3 claim.",
           "required": true
         },
         "S2": {
@@ -110,7 +110,7 @@
           "dependencies": [],
           "decisive_test": "No scene manifest; automatic and manual chains match baseline without a scene registry dependency; exact affected shipped code, no new integration.",
           "environment": "Xcode27.1 and genuine legacy-build Xcode26.6/SDK26.5; actual iPad17.5(21F79); deployment15",
-          "evidence": "EXP-197 signed464af911 against current-develop62f64:6/6 candidate and reused6/6 baseline actual17.5(21F79) cells match exact view/action/resource ownership and genuine legacy lifecycle boundaries. Three deployment15 builds per arm; legacy SDK26.5. Frozen source/fixture/installed identities and cleanup pass. Results/EXP-197-ios17-paired.json. No15/16 runtime or S2/S3 claim.",
+          "evidence": "EXP-199 frozen1bdc9286 against reused current-develop62f64:6/6 actual17.5 cells match exact normalized view/action/resource owners and genuine legacy lifecycle. SDK27.1 Scene plus genuineSDK26.5 Legacy/LegacyLifecycle, deployment15, source/binary identities and cleanup pass. Results/EXP-199-ios17-paired.json retains previous464 evidence by reference. No15/16runtime, actual26.5runtime or S2/S3 claim.",
           "required": true
         },
         "S2": {
@@ -230,7 +230,7 @@
           "dependencies": [],
           "decisive_test": "Compile/link deployment15, audit availability, launch and run affected suite on actual17.5 when installed. If genuinely unavailable after bounded checks, document the user-approved runtime exception and oldest runnable coverage.",
           "environment": "Xcode27.1 and genuine legacy-build Xcode26.6/SDK26.5; actual iPad17.5(21F79); deployment15",
-          "evidence": "EXP-197 signed464af911 against current-develop62f64:6/6 candidate and reused6/6 baseline actual17.5(21F79) cells match exact view/action/resource ownership and genuine legacy lifecycle boundaries. Three deployment15 builds per arm; legacy SDK26.5. Frozen source/fixture/installed identities and cleanup pass. Results/EXP-197-ios17-paired.json. No15/16 runtime or S2/S3 claim.",
+          "evidence": "EXP-199 frozen1bdc9286 against reused current-develop62f64:6/6 actual17.5 cells match exact normalized view/action/resource owners and genuine legacy lifecycle. SDK27.1 Scene plus genuineSDK26.5 Legacy/LegacyLifecycle, deployment15, source/binary identities and cleanup pass. Results/EXP-199-ios17-paired.json retains previous464 evidence by reference. No15/16runtime, actual26.5runtime or S2/S3 claim.",
           "required": true
         },
         "S2": {
@@ -514,7 +514,7 @@
           ],
           "decisive_test": "Paired current-develop baseline and exact candidate meet existing BASELINES.md thresholds; audit newly retained state and teardown. No threshold increase.",
           "environment": "One host, isolated measurements; relevant physical sample and qualified simulator",
-          "evidence": "Reference evidence retained; this release candidate is not qualified.",
+          "evidence": "EXP-199 repairs observed terminal ownership at1bdc9286:2 red/green controls,455 Internal tests and4 source-paired native auto/registered cells; no retained preparation after task death, no live terminal task members. Numeric P03 remains open: shared unbound/zero-body growth is unattributed and absolute budgets unchanged. No accepted ABBA.",
           "required": true
         },
         "S2": {
@@ -2489,7 +2489,7 @@
           ],
           "decisive_test": "Source-less repeated/suspend/resume handler mutation regression fails current develop and passes a synchronized narrow task-claim/lifecycle fix; automatic and registered delegates remain compatible.",
           "environment": "Isolated clean checkout of then-current develop; affected unit and native fixtures",
-          "evidence": "EXP-197 signed464af911: baseline repeated mutation red; candidate full Internal453 tests/489 executions pass17.5, including real suspend/resume, automatic/registered/dual/rebind, cancellation, callback/body/lifetime controls. Lint734 source+709 test files passes. Remaining release checks stay separately required.",
+          "evidence": "EXP-197 baseline red retained. EXP-199 candidate1bdc9286 full Internal455 tests/491 executions passes, plus5 native suspend/resume boundary repetitions. Exactly-once automatic/registered/dual/rebind, early callbacks and payload destruction controls pass. Paired native automatic/registered ownership and affected Core/RUM/Trace suites pass. P03/performance and remaining release gates stay open.",
           "required": true
         }
       }
@@ -2607,7 +2607,7 @@
           "dependencies": [],
           "decisive_test": "Inventory exact production diff, imports/callers/API/wire and transitive dependencies. Prove deferred scene routing/lifecycle/authority is absent, not merely hidden by API/manifest flags. Preserve upstream changes absent from the experimental branch.",
           "environment": "Fresh develop baseline and isolated source candidate",
-          "evidence": "EXP-197 source audit at signed464af911: exactly3 internal source and2 test files over current develop62f64; all other tracked content identical. Existing call-site inventory, API/wire/privacy exclusions, deferred scene-symbol absence and affected Core/RUM/Trace/platform/performance matrix recorded in owning result. No release claim.",
+          "evidence": "EXP-199 exact candidate1bdc9286 retains exactly3 internal source+2 test files over develop62f64; all other tracked content identical. Only private NetworkInstrumentationFeature ownership changed since reviewed464; no public API, wire, endpoints, capture/header policy or deferred scene code added. Owning result contains inventory/hashes. Local commit unsigned after agent failure, explicitly user-authorized; no push.",
           "required": true
         },
         "S2": {

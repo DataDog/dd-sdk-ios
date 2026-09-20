@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "experiment": "EXP-198",
-  "status": "DEFINED BEFORE IMPLEMENTATION; FIXTURE AND COUNTER QUALIFICATION NEXT",
+  "status": "EXP-199 OWNERSHIP FIX QUALIFIED; ROW FIXTURE UNDER REVIEW; NO ACCEPTED ABBA",
   "defined_at": "2026-09-19T22:38:13.806518+00:00",
   "gates": [
     "S1:P01",
@@ -15,9 +15,9 @@
     "S1:F07"
   ],
   "baseline_revision": "62f64d7b655bdc83f3036c4ad81090a270f6202b",
-  "candidate_revision": "464af9110daeb9211040e202b42d5ce446e06153",
+  "candidate_revision": "1bdc9286c17d69d73e5e41530e6179c72a723368",
   "protocol": "Experiments/EXP-198-network-performance-protocol.md",
-  "protocol_sha256": "d94d439cf3ebca860236d0974097e2483b41b2b9e0f5b526e5b1f0747dbe0a3b",
+  "protocol_sha256": "1a695fab81cd8fe0f5bc24e0c789deef338074f149da1c917bfc78161545b2e2",
   "admission": "Close the four existing S1 performance/retention/reentrancy gates for the changed real URLSession path; no new product scope or telemetry family.",
   "source_policy": "Fixture-only adaptation outside SDK product; no production mutation admitted by this experiment. Exact same fixture and generated source projection in both arms.",
   "decisive_tests": [
@@ -52,6 +52,285 @@
     "Preserve every failed preparation or measurement; a corrected fixture requires a newly frozen attempt",
     "No measurements while other build/test/profile work is active"
   ],
-  "attempts": [],
-  "result": null
+  "attempts": [
+    {
+      "experiment": "EXP-198",
+      "phase": "FIXTURE QUALIFICATION ONLY",
+      "created_at": "2026-09-19T22:54:17.768624+00:00",
+      "baseline": "62f64d7b655bdc83f3036c4ad81090a270f6202b",
+      "candidate": "464af9110daeb9211040e202b42d5ce446e06153",
+      "root": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp198-fixture-qualification-dt_opn15",
+      "attempts": [],
+      "limitations": [
+        "No timing/allocation ABBA implemented yet",
+        "Calibration and native lifetime qualification precede measurement",
+        "No SDK source changes"
+      ],
+      "status": "CALIBRATION AND TRANSPORT PASS; RETENTION MEASUREMENT INVALID",
+      "observed": {
+        "candidate_growth": [
+          103248,
+          92880
+        ],
+        "baseline_growth": [
+          98656,
+          99376
+        ],
+        "candidate_final_weak_objects": 0,
+        "baseline_final_weak_objects": 0,
+        "candidate_live_key_at_snapshots": 1
+      },
+      "reason": "Initial warm native task lacks explicit autorelease boundary and weak witness; persistent object snapshots and out-of-pool flushes contaminate subsequent absolute heap observations. No accepted performance verdict. Original local QUALIFIED label means fixture ran only.",
+      "raw_runs": [
+        "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp198-fixture-qualification-dt_opn15/runs/exp198-qualification-3d09444bc50f43bbaf97d5efa307aef1",
+        "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp198-fixture-qualification-dt_opn15/runs/exp198-qualification-d82887fa9ef44b88889da26d6af835bd"
+      ]
+    },
+    {
+      "artifact_root": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp198-settled-lifetime-qixle33f",
+      "status": "CALIBRATION/OWNERSHIP PASS; ABSOLUTE HEAP BUDGET STILL UNQUALIFIED",
+      "defined_at": "2026-09-19T23:01:34.996547+00:00",
+      "changes": [
+        "Explicit autorelease/weak ownership for warm roundtrip",
+        "Bounded natural task-release wait before snapshots; no collection mutation",
+        "Per-cycle and post-cycle flushes inside autorelease pools",
+        "Fixed-size scalar snapshots allocated before20+100+100; JSON/reflection descriptions after numeric series",
+        "SDK-unbound lifecycle control if both arms still show shared growth; no accepted budget subtraction",
+        "Reuse one task/interception weak-slot pair after per-cycle zero checks; fixed weak-reference observation capacity"
+      ],
+      "thresholds_changed": false,
+      "preparation_notes": [
+        "Metadata append initially missed Python json import; files were written and build launched. Metadata append corrected before runtime qualification."
+      ],
+      "runtime_notes": [
+        "Corrected candidate calibration/transport/220 weak cycles pass, but numeric growth96128/96448 still exceeds budgets; no ABBA accepted.",
+        "First unbound control stopped in preflight before install/launch with an unlabeled assertion; cleanup passes. Retain original runner and add explicit device/build-busy receipt before one new attempt."
+      ],
+      "runner_versions": {
+        "run_qualification-v1.py": "6988dfc351e109d5cdca1a3808a123bd39bcc82e1aa085183b00611f973fc5c4",
+        "run_qualification.py": "06e3fe43ebe6e6d70fca9cd490c13bdf52526ee6f4d11640fc9e07730571e3f3"
+      },
+      "unbound_control": {
+        "artifact": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp198-settled-lifetime-qixle33f/runs/exp198-qualification-597d0258922f4520a905d798c5beb292",
+        "sdk_callbacks": 0,
+        "growth_bytes": [
+          85264,
+          78304
+        ],
+        "inference": "Instrumentation is unnecessary for most observed growth; no accepted subtraction or gate pass."
+      }
+    },
+    {
+      "artifact_root": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp198-retention-controls-_0l5j0e3",
+      "defined_at": "2026-09-19T23:11:56.052583+00:00",
+      "status": "TERMINAL OBJECT RETENTION CONFIRMED; NUMERIC ATTRIBUTION UNRESOLVED",
+      "scope": [
+        "One identical unbound220-lifetime control with zero-byte response",
+        "Separate candidate terminal preparation weak witness captured under preparationLock after native completion/invalidation and final flush; no map count/enumeration/insertion between task release and weak witness observation",
+        "If zero-body growth remains, one reused-session diagnostic may isolate session setup; accepted numeric samples remain separate"
+      ],
+      "thresholds_changed": false,
+      "production_changes": false,
+      "runs": [
+        {
+          "artifact": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp198-retention-controls-_0l5j0e3/runs/exp198-qualification-730100955bd042839e2354548b711468",
+          "sha256": "e5b420d1f8cf50d825bdd147a94aec57a61e75229dd8065b6467b96206936211",
+          "result": {
+            "calibration": {
+              "caller": {
+                "caller_bytes": 165,
+                "caller_operations": 3,
+                "other_bytes": 0,
+                "other_operations": 0,
+                "process_bytes": 165,
+                "process_operations": 3
+              },
+              "caller_only_negative_rejected": true,
+              "caller_pass": true,
+              "concurrent": {
+                "caller_bytes": 0,
+                "caller_operations": 0,
+                "other_bytes": 66000,
+                "other_operations": 1200,
+                "process_bytes": 66000,
+                "process_operations": 1200
+              },
+              "concurrent_pass": true,
+              "feature_queue": {
+                "caller_bytes": 0,
+                "caller_operations": 0,
+                "other_bytes": 165,
+                "other_operations": 3,
+                "process_bytes": 165,
+                "process_operations": 3
+              },
+              "feature_queue_pass": true,
+              "lock_free": true,
+              "worker": {
+                "caller_bytes": 0,
+                "caller_operations": 0,
+                "other_bytes": 165,
+                "other_operations": 3,
+                "process_bytes": 165,
+                "process_operations": 3
+              },
+              "worker_pass": true
+            },
+            "final_release": {
+              "feature": true,
+              "handler": true,
+              "provider": true,
+              "terminal_preparation": true
+            },
+            "mode": "qualify",
+            "native_roundtrip": {
+              "completions": 0,
+              "mutations": 0,
+              "native_body_bytes": 0,
+              "native_completions": 1,
+              "native_metrics": 0,
+              "prepared_header": "missing",
+              "sdk_body_bytes": 0,
+              "sdk_metrics": 0,
+              "starts": 0
+            },
+            "os": "17.5",
+            "response_body_bytes": 0,
+            "retention": {
+              "first_100_growth": 52896,
+              "heap_bytes": [
+                2477904,
+                2530800,
+                2577136
+              ],
+              "inventories": [
+                {
+                  "continuations": 0,
+                  "events": 0,
+                  "interceptions": 0,
+                  "preparations_live_keys": 0,
+                  "preparations_raw_count": 0,
+                  "preparations_values": 0,
+                  "remaining_key_sequence": 0,
+                  "truncatedInterceptions": 0
+                },
+                {
+                  "continuations": 0,
+                  "events": 0,
+                  "interceptions": 0,
+                  "preparations_live_keys": 0,
+                  "preparations_raw_count": 0,
+                  "preparations_values": 0,
+                  "remaining_key_sequence": 0,
+                  "truncatedInterceptions": 0
+                },
+                {
+                  "continuations": 0,
+                  "events": 0,
+                  "interceptions": 0,
+                  "preparations_live_keys": 0,
+                  "preparations_raw_count": 0,
+                  "preparations_values": 0,
+                  "remaining_key_sequence": 0,
+                  "truncatedInterceptions": 0
+                }
+              ],
+              "numeric_budget_pass": false,
+              "records_empty": true,
+              "remaining_interceptions": 0,
+              "remaining_tasks": 0,
+              "second_100_growth": 46336,
+              "verified_cycles": 220
+            },
+            "run_id": "exp198-qualification-730100955bd042839e2354548b711468",
+            "schema_version": 3,
+            "scope": "Fixture qualification only; no accepted ABBA measurement",
+            "sdk_unbound": true,
+            "status": "FIXTURE_QUALIFIED_NO_ABBA_VERDICT",
+            "tracking": "automatic",
+            "warm_task_released": true
+          },
+          "cleanup": {
+            "process_absent": true,
+            "data_absent": true,
+            "boot_state_preserved": true
+          }
+        },
+        {
+          "artifact": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp198-retention-controls-_0l5j0e3/runs/exp198-qualification-a8f7f6cd8c8a47bc982bf1fd63927c15",
+          "sha256": "a3ba27ea66a01e1c615c07463cf145649f845b2ab9cc5e972d8542305f07a87f",
+          "result": {
+            "final_release": {
+              "feature": true,
+              "handler": true,
+              "provider": true,
+              "terminal_preparation": true
+            },
+            "mode": "ownership",
+            "native_roundtrip": {
+              "completions": 1,
+              "mutations": 1,
+              "native_body_bytes": 1024,
+              "native_completions": 1,
+              "native_metrics": 0,
+              "prepared_header": "1",
+              "sdk_body_bytes": 1024,
+              "sdk_metrics": 0,
+              "starts": 1
+            },
+            "os": "17.5",
+            "response_body_bytes": 1024,
+            "run_id": "exp198-qualification-a8f7f6cd8c8a47bc982bf1fd63927c15",
+            "schema_version": 3,
+            "scope": "Fixture qualification only; no accepted ABBA measurement",
+            "sdk_unbound": false,
+            "status": "FIXTURE_QUALIFIED_NO_ABBA_VERDICT",
+            "terminal_preparation_ownership": {
+              "captured_final_terminal": true,
+              "payloads_empty": true,
+              "preparation_alive_after_task_release_before_map_observation": true,
+              "task_released": true
+            },
+            "tracking": "automatic",
+            "warm_task_released": true
+          },
+          "cleanup": {
+            "process_absent": true,
+            "data_absent": true,
+            "boot_state_preserved": true
+          }
+        }
+      ]
+    }
+  ],
+  "result": {
+    "accepted_abba_launches": 0,
+    "all_thread_calibration": "PASS on actual17.5 caller, feature queue, background worker and concurrent epochs",
+    "terminal_ownership": "REPAIRED by EXP-199 at1bdc9286; original464 failure preserved in attempts and Results/EXP-199-terminal-task-ownership.json. Paired native automatic/registered controls pass; numeric heap budgets remain unqualified.",
+    "heap_budget": "UNQUALIFIED: bound, unbound and zero-body controls all exceed second100 absolute budget; no baseline subtraction or widened limit",
+    "next": "Preserve the bounded row-fixture review as incomplete qualification, continue missing C04/C05 and F03 gates, and admit accepted performance windows only after all row/control prerequisites pass. Shared fixture/Foundation heap growth remains unattributed."
+  },
+  "protocol_revisions": [
+    {
+      "recorded_at": "2026-09-19T23:50:54.692940+00:00",
+      "prior_git_revision": "cfecc08d45fb0aa36a548ed81d1461527b4f6e14",
+      "prior_protocol_sha256": "d94d439cf3ebca860236d0974097e2483b41b2b9e0f5b526e5b1f0747dbe0a3b",
+      "prior_candidate": "464af9110daeb9211040e202b42d5ce446e06153",
+      "new_candidate": "1bdc9286c17d69d73e5e41530e6179c72a723368",
+      "reason": "EXP-199 ownership repair; no budget, row, boundary or sample-count change; zero accepted measurements."
+    },
+    {
+      "recorded_at": "2026-09-20T00:00:15.675341+00:00",
+      "reason": "Independent fixture review proved running-state callbacks enqueue asynchronously after resume. Clarify immediate-flush timing scope; require held-start settlement before process allocation epoch close. All rows, counts and budgets unchanged; no accepted samples.",
+      "prior_protocol_sha256": "d2d9f0e63be24cfa9a29bc1f3867165c8cb062efa8b72ecd6f4a75081a972120"
+    }
+  ],
+  "row_fixture_checkpoint": {
+    "status": "ONE BOUNDED CORRECTION PASS COMPLETE; INDEPENDENT REVIEW PENDING; UNBUILT",
+    "root": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp198-entry-rows.GPJ1XG",
+    "swift_sha256": "edc73f14f0eff242c48c82b30ed158590bca80d106cd130ff1e7504894fb7da9",
+    "readme_sha256": "70ea93ad1bab559f65bf19fdf2e200d35cc78b38e7f3fef8d3d90cc33e433c60",
+    "previous_snapshot": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp198-entry-rows.GPJ1XG-review-993fb69",
+    "measurement_claim": "None; no accepted ABBA or numeric pass. First qualification timebox exhausted while ownership regression was investigated; no automatic equivalent rerun."
+  }
 }

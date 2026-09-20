@@ -1,0 +1,2044 @@
+{
+  "schema_version": 1,
+  "experiment": "EXP-199",
+  "status": "BOUNDED TERMINAL OWNERSHIP FIX QUALIFIED; RELEASE QUALIFICATION CONTINUES",
+  "defined_at": "2026-09-19T23:19:34.448854+00:00",
+  "gates": [
+    "S1:P03",
+    "S1:E01",
+    "S1:F07"
+  ],
+  "owner": "SDK implementer with independent concurrency/ownership review; root sole build/device controller",
+  "admission": "Closes the existing zero-task-owned-record requirement after EXP-198 proves a regression in the E01 candidate. No new telemetry family or product feature.",
+  "baseline_revision": "464af9110daeb9211040e202b42d5ce446e06153",
+  "upstream_base": "62f64d7b655bdc83f3036c4ad81090a270f6202b",
+  "reproducer": {
+    "artifact": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp198-retention-controls-_0l5j0e3/runs/exp198-qualification-a8f7f6cd8c8a47bc982bf1fd63927c15",
+    "sha256": "a3ba27ea66a01e1c615c07463cf145649f845b2ab9cc5e972d8542305f07a87f",
+    "result": {
+      "final_release": {
+        "feature": true,
+        "handler": true,
+        "provider": true,
+        "terminal_preparation": true
+      },
+      "mode": "ownership",
+      "native_roundtrip": {
+        "completions": 1,
+        "mutations": 1,
+        "native_body_bytes": 1024,
+        "native_completions": 1,
+        "native_metrics": 0,
+        "prepared_header": "1",
+        "sdk_body_bytes": 1024,
+        "sdk_metrics": 0,
+        "starts": 1
+      },
+      "os": "17.5",
+      "response_body_bytes": 1024,
+      "run_id": "exp198-qualification-a8f7f6cd8c8a47bc982bf1fd63927c15",
+      "schema_version": 3,
+      "scope": "Fixture qualification only; no accepted ABBA measurement",
+      "sdk_unbound": false,
+      "status": "FIXTURE_QUALIFIED_NO_ABBA_VERDICT",
+      "terminal_preparation_ownership": {
+        "captured_final_terminal": true,
+        "payloads_empty": true,
+        "preparation_alive_after_task_release_before_map_observation": true,
+        "task_released": true
+      },
+      "tracking": "automatic",
+      "warm_task_released": true
+    },
+    "cleanup": {
+      "process_absent": true,
+      "data_absent": true,
+      "boot_state_preserved": true
+    }
+  },
+  "hypothesis": "Remove strong terminal TaskPreparation values explicitly; retain only weak native task identity per feature so duplicate/early-completion resumes still forward once per original call without re-preparation.",
+  "production_boundary": [
+    "DatadogInternal/Sources/NetworkInstrumentation/NetworkInstrumentationFeature.swift"
+  ],
+  "test_boundary": [
+    "DatadogInternal/Tests/NetworkInstrumentation/NetworkInstrumentationFeatureTests.swift"
+  ],
+  "excluded": [
+    "No public API, wire format, endpoint, headers policy, scene routing or unrelated body capture change",
+    "No accepted performance claim or threshold change from this correctness experiment",
+    "No push, merge or release"
+  ],
+  "proposed_design": "Per-feature NSHashTable<URLSessionTask> with weakMemory/objectPointerPersonality under the existing preparationLock. Preparations contain preparing/ready only. Terminal callbacks atomically add weak identity and remove the preparation; preparing callbacks buffer until finish publishes terminal. Retain removed records/events/continuations locally until after unlock. No associated-object publication or new swizzle.",
+  "decisive_tests": [
+    "Regression fails464af911: completed native task leaves an owned terminal preparation object; corrected candidate leaves no terminal preparation in feature while the live completed task still cannot reprepare",
+    "Earliest completion before native state change, registered/automatic/dual/rebind, multiple-core terminal identity isolation and real repeated/suspend/resume remain exactlyonce",
+    "Payload/continuation/removed-record ARC releases stay outside coordinator lock",
+    "Native final-record weak witness and task/feature/preparation release pass on exact candidate; preserve full Internal and affected consumer compatibility checks"
+  ],
+  "environment": "Isolated E01 worktree, Xcode27.1, actual17.5 simulator; all affected Foundation platform/client and performance checks remain separately required",
+  "timebox": "Bounded design/reproducer/repair qualification; stop equivalent unchanged failures after2, preserve every attempt and continue independent release tasks.",
+  "attempts": [
+    {
+      "phase": "red regression",
+      "artifact_root": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp199-terminal-ownership-qfeklzn8",
+      "head": "464af9110daeb9211040e202b42d5ce446e06153",
+      "source_hashes": {
+        "DatadogInternal/Sources/NetworkInstrumentation/NetworkInstrumentationFeature.swift": "399e7b06489d38dbac0d2d121a2d12ba31ad7a161f1ef73b29763a12c8472e6b",
+        "DatadogInternal/Sources/NetworkInstrumentation/URLSession/NetworkInstrumentationSwizzler.swift": "a00edec0d9451c3b78c52f308c2a7f771d0e8b9cfafada79a2848f1b164cfef7",
+        "DatadogInternal/Sources/NetworkInstrumentation/URLSession/URLSessionTaskSwizzler.swift": "96d302999632cc609a98e774106f1e51c4ef9fecfe089287426285aa524e4570",
+        "DatadogInternal/Tests/NetworkInstrumentation/NetworkInstrumentationFeatureTests.swift": "e3ecf57beeff66e4164aa553549733e98494379a52fe45499e81600895386a44",
+        "DatadogInternal/Tests/NetworkInstrumentation/URLSessionTaskSwizzlerTests.swift": "0d3586be978915dfa11be06a2938eff836af61296b8ae629fd7e51e225fa5b58"
+      },
+      "test_result": {
+        "devicesAndConfigurations": [
+          {
+            "device": {
+              "architecture": "arm64",
+              "deviceId": "EEF49588-982B-492E-92AF-57F900ACEACD",
+              "deviceName": "iPad Pro 11-inch (M4) (16GB)",
+              "modelName": "iPad Pro 11-inch (M4)",
+              "osBuildNumber": "21F79",
+              "osVersion": "17.5",
+              "platform": "iOS Simulator"
+            },
+            "expectedFailures": 0,
+            "failedTests": 2,
+            "passedTests": 0,
+            "skippedTests": 0,
+            "testPlanConfiguration": {
+              "configurationId": "1",
+              "configurationName": "Test Scheme Action"
+            }
+          }
+        ],
+        "environmentDescription": "DatadogInternal \u00b7 Built with macOS 26.6.2",
+        "expectedFailures": 0,
+        "failedTests": 2,
+        "finishTime": 1789860477.355,
+        "passedTests": 0,
+        "result": "Failed",
+        "runtimeWarnings": [],
+        "skippedTests": 0,
+        "startTime": 1789860438.173,
+        "statistics": [],
+        "testFailures": [
+          {
+            "failureText": "XCTAssertNil failed: \"DatadogInternal.NetworkInstrumentationFeature.(unknown context at $1211ec160).TaskPreparation\" - Early completion must release the preparation while the task remains alive",
+            "targetName": "DatadogInternalTests",
+            "testIdentifier": 1,
+            "testIdentifierString": "NetworkInstrumentationFeatureTests/testPreparation_earlyCompletionFollowsBufferedDataAndMetrics()",
+            "testIdentifierURL": "test://com.apple.xcode/Datadog/DatadogInternalTests/NetworkInstrumentationFeatureTests/testPreparation_earlyCompletionFollowsBufferedDataAndMetrics",
+            "testName": "testPreparation_earlyCompletionFollowsBufferedDataAndMetrics()"
+          },
+          {
+            "failureText": "XCTAssertNil failed: \"DatadogInternal.NetworkInstrumentationFeature.(unknown context at $1211ec160).TaskPreparation\" - Terminal identity must not retain a preparation",
+            "targetName": "DatadogInternalTests",
+            "testIdentifier": 2,
+            "testIdentifierString": "NetworkInstrumentationFeatureTests/testPreparation_terminalCallbackRemovesPreparationBeforeNativeStateChanges()",
+            "testIdentifierURL": "test://com.apple.xcode/Datadog/DatadogInternalTests/NetworkInstrumentationFeatureTests/testPreparation_terminalCallbackRemovesPreparationBeforeNativeStateChanges",
+            "testName": "testPreparation_terminalCallbackRemovesPreparationBeforeNativeStateChanges()"
+          }
+        ],
+        "title": "Test - DatadogInternal",
+        "topInsights": [
+          {
+            "category": "Common Failures",
+            "impact": "100% of failures",
+            "text": "2 runs of 2 tests failed with XCTAssertNil failed: \"DatadogInternal.NetworkInstrumentationFeature.(unknown context at $1211ec160).TaskPreparation\""
+          }
+        ],
+        "totalTestCount": 2
+      },
+      "exit_code": 65,
+      "production_modified": false
+    },
+    {
+      "phase": "focused-green",
+      "artifact_root": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp199-terminal-ownership-qfeklzn8",
+      "run_manifest": "focused-green-run.json",
+      "source_hashes": {
+        "DatadogInternal/Sources/NetworkInstrumentation/NetworkInstrumentationFeature.swift": "2631ea56885a12d1b3d14b1044dd9a84319a0b382b817afb95b4edd305df5246",
+        "DatadogInternal/Sources/NetworkInstrumentation/URLSession/NetworkInstrumentationSwizzler.swift": "a00edec0d9451c3b78c52f308c2a7f771d0e8b9cfafada79a2848f1b164cfef7",
+        "DatadogInternal/Sources/NetworkInstrumentation/URLSession/URLSessionTaskSwizzler.swift": "96d302999632cc609a98e774106f1e51c4ef9fecfe089287426285aa524e4570",
+        "DatadogInternal/Tests/NetworkInstrumentation/NetworkInstrumentationFeatureTests.swift": "77297b9398ab99d088a4d657712d40932089559523802bdeeda5c0cc057d85ce",
+        "DatadogInternal/Tests/NetworkInstrumentation/URLSessionTaskSwizzlerTests.swift": "0d3586be978915dfa11be06a2938eff836af61296b8ae629fd7e51e225fa5b58"
+      },
+      "summary": {
+        "devicesAndConfigurations": [
+          {
+            "device": {
+              "architecture": "arm64",
+              "deviceId": "EEF49588-982B-492E-92AF-57F900ACEACD",
+              "deviceName": "iPad Pro 11-inch (M4) (16GB)",
+              "modelName": "iPad Pro 11-inch (M4)",
+              "osBuildNumber": "21F79",
+              "osVersion": "17.5",
+              "platform": "iOS Simulator"
+            },
+            "expectedFailures": 0,
+            "failedTests": 0,
+            "passedTests": 89,
+            "skippedTests": 0,
+            "testPlanConfiguration": {
+              "configurationId": "1",
+              "configurationName": "Test Scheme Action"
+            }
+          }
+        ],
+        "environmentDescription": "DatadogInternal \u00b7 Built with macOS 26.6.2",
+        "expectedFailures": 0,
+        "failedTests": 0,
+        "finishTime": 1789860650.797,
+        "passedTests": 89,
+        "result": "Passed",
+        "runtimeWarnings": [],
+        "skippedTests": 0,
+        "startTime": 1789860639.538,
+        "statistics": [],
+        "testFailures": [],
+        "title": "Test - DatadogInternal",
+        "topInsights": [],
+        "totalTestCount": 89
+      },
+      "exit_code": 0
+    },
+    {
+      "phase": "internal",
+      "artifact_root": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp199-terminal-ownership-qfeklzn8",
+      "run_manifest": "internal-run.json",
+      "source_hashes": {
+        "DatadogInternal/Sources/NetworkInstrumentation/NetworkInstrumentationFeature.swift": "2631ea56885a12d1b3d14b1044dd9a84319a0b382b817afb95b4edd305df5246",
+        "DatadogInternal/Sources/NetworkInstrumentation/URLSession/NetworkInstrumentationSwizzler.swift": "a00edec0d9451c3b78c52f308c2a7f771d0e8b9cfafada79a2848f1b164cfef7",
+        "DatadogInternal/Sources/NetworkInstrumentation/URLSession/URLSessionTaskSwizzler.swift": "96d302999632cc609a98e774106f1e51c4ef9fecfe089287426285aa524e4570",
+        "DatadogInternal/Tests/NetworkInstrumentation/NetworkInstrumentationFeatureTests.swift": "77297b9398ab99d088a4d657712d40932089559523802bdeeda5c0cc057d85ce",
+        "DatadogInternal/Tests/NetworkInstrumentation/URLSessionTaskSwizzlerTests.swift": "0d3586be978915dfa11be06a2938eff836af61296b8ae629fd7e51e225fa5b58"
+      },
+      "summary": {
+        "devicesAndConfigurations": [
+          {
+            "device": {
+              "architecture": "arm64",
+              "deviceId": "EEF49588-982B-492E-92AF-57F900ACEACD",
+              "deviceName": "iPad Pro 11-inch (M4) (16GB)",
+              "modelName": "iPad Pro 11-inch (M4)",
+              "osBuildNumber": "21F79",
+              "osVersion": "17.5",
+              "platform": "iOS Simulator"
+            },
+            "expectedFailures": 0,
+            "failedTests": 0,
+            "passedTests": 491,
+            "skippedTests": 0,
+            "testPlanConfiguration": {
+              "configurationId": "1",
+              "configurationName": "Test Scheme Action"
+            }
+          }
+        ],
+        "environmentDescription": "DatadogInternal \u00b7 Built with macOS 26.6.2",
+        "expectedFailures": 0,
+        "failedTests": 0,
+        "finishTime": 1789860734.389,
+        "passedTests": 455,
+        "result": "Passed",
+        "runtimeWarnings": [],
+        "skippedTests": 0,
+        "startTime": 1789860716.152,
+        "statistics": [
+          {
+            "subtitle": "40 test runs",
+            "title": "4 tests ran with dynamic parameters"
+          }
+        ],
+        "testFailures": [],
+        "title": "Test - DatadogInternal",
+        "topInsights": [
+          {
+            "category": "Longest Test Runs",
+            "impact": "71% of duration",
+            "text": "3 longest test runs with outlier durations exceeding 1.00s (three standard deviations)"
+          }
+        ],
+        "totalTestCount": 455
+      },
+      "exit_code": 0
+    },
+    {
+      "phase": "final-internal",
+      "artifact_root": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp199-terminal-ownership-qfeklzn8",
+      "run_manifest": "final-internal-run.json",
+      "source_hashes": {
+        "DatadogInternal/Sources/NetworkInstrumentation/NetworkInstrumentationFeature.swift": "2631ea56885a12d1b3d14b1044dd9a84319a0b382b817afb95b4edd305df5246",
+        "DatadogInternal/Sources/NetworkInstrumentation/URLSession/NetworkInstrumentationSwizzler.swift": "a00edec0d9451c3b78c52f308c2a7f771d0e8b9cfafada79a2848f1b164cfef7",
+        "DatadogInternal/Sources/NetworkInstrumentation/URLSession/URLSessionTaskSwizzler.swift": "96d302999632cc609a98e774106f1e51c4ef9fecfe089287426285aa524e4570",
+        "DatadogInternal/Tests/NetworkInstrumentation/NetworkInstrumentationFeatureTests.swift": "cc418c8f1e9860561ec773a87d3e8811ad20379ba0a06d9ff7ef188be0f93ad6",
+        "DatadogInternal/Tests/NetworkInstrumentation/URLSessionTaskSwizzlerTests.swift": "0d3586be978915dfa11be06a2938eff836af61296b8ae629fd7e51e225fa5b58"
+      },
+      "summary": {
+        "devicesAndConfigurations": [
+          {
+            "device": {
+              "architecture": "arm64",
+              "deviceId": "EEF49588-982B-492E-92AF-57F900ACEACD",
+              "deviceName": "iPad Pro 11-inch (M4) (16GB)",
+              "modelName": "iPad Pro 11-inch (M4)",
+              "osBuildNumber": "21F79",
+              "osVersion": "17.5",
+              "platform": "iOS Simulator"
+            },
+            "expectedFailures": 0,
+            "failedTests": 1,
+            "passedTests": 490,
+            "skippedTests": 0,
+            "testPlanConfiguration": {
+              "configurationId": "1",
+              "configurationName": "Test Scheme Action"
+            }
+          }
+        ],
+        "environmentDescription": "DatadogInternal \u00b7 Built with macOS 26.6.2",
+        "expectedFailures": 0,
+        "failedTests": 1,
+        "finishTime": 1789860871.645,
+        "passedTests": 454,
+        "result": "Failed",
+        "runtimeWarnings": [],
+        "skippedTests": 0,
+        "startTime": 1789860837.217,
+        "statistics": [
+          {
+            "subtitle": "40 test runs",
+            "title": "4 tests ran with dynamic parameters"
+          }
+        ],
+        "testFailures": [
+          {
+            "failureText": "XCTAssertEqual failed: (\"NSURLSessionTaskState(rawValue: 1)\") is not equal to (\"NSURLSessionTaskState(rawValue: 0)\")",
+            "targetName": "DatadogInternalTests",
+            "testIdentifier": 229,
+            "testIdentifierString": "NetworkInstrumentationFeatureTests/testAutomaticMode_whenTaskSuspendsAndResumes_itKeepsOnePreparedLifecycle()",
+            "testIdentifierURL": "test://com.apple.xcode/Datadog/DatadogInternalTests/NetworkInstrumentationFeatureTests/testAutomaticMode_whenTaskSuspendsAndResumes_itKeepsOnePreparedLifecycle",
+            "testName": "testAutomaticMode_whenTaskSuspendsAndResumes_itKeepsOnePreparedLifecycle()"
+          }
+        ],
+        "title": "Test - DatadogInternal",
+        "topInsights": [
+          {
+            "category": "Longest Test Runs",
+            "impact": "73% of duration",
+            "text": "3 longest test runs with outlier durations exceeding 1.00s (three standard deviations)"
+          }
+        ],
+        "totalTestCount": 455
+      },
+      "exit_code": 65
+    },
+    {
+      "phase": "review-counter-lint",
+      "artifact": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp199-terminal-ownership-qfeklzn8/review-counter-lint-failed.json",
+      "exit_code": 2,
+      "cause": "Three inline test guards; corrected to repository multiline style. No build/test launched."
+    },
+    {
+      "phase": "native-boundary",
+      "manifest": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp199-terminal-ownership-qfeklzn8/native-boundary-run.json",
+      "source_hashes": {
+        "DatadogInternal/Sources/NetworkInstrumentation/NetworkInstrumentationFeature.swift": "2631ea56885a12d1b3d14b1044dd9a84319a0b382b817afb95b4edd305df5246",
+        "DatadogInternal/Sources/NetworkInstrumentation/URLSession/NetworkInstrumentationSwizzler.swift": "a00edec0d9451c3b78c52f308c2a7f771d0e8b9cfafada79a2848f1b164cfef7",
+        "DatadogInternal/Sources/NetworkInstrumentation/URLSession/URLSessionTaskSwizzler.swift": "96d302999632cc609a98e774106f1e51c4ef9fecfe089287426285aa524e4570",
+        "DatadogInternal/Tests/NetworkInstrumentation/NetworkInstrumentationFeatureTests.swift": "739606eee3cdc28ac110f6167e9455d565ec9ae9a17aff18630bafa9abd59375",
+        "DatadogInternal/Tests/NetworkInstrumentation/URLSessionTaskSwizzlerTests.swift": "0d3586be978915dfa11be06a2938eff836af61296b8ae629fd7e51e225fa5b58"
+      },
+      "summary": {
+        "devicesAndConfigurations": [
+          {
+            "device": {
+              "architecture": "arm64",
+              "deviceId": "EEF49588-982B-492E-92AF-57F900ACEACD",
+              "deviceName": "iPad Pro 11-inch (M4) (16GB)",
+              "modelName": "iPad Pro 11-inch (M4)",
+              "osBuildNumber": "21F79",
+              "osVersion": "17.5",
+              "platform": "iOS Simulator"
+            },
+            "expectedFailures": 0,
+            "failedTests": 0,
+            "passedTests": 5,
+            "skippedTests": 0,
+            "testPlanConfiguration": {
+              "configurationId": "1",
+              "configurationName": "Test Scheme Action"
+            }
+          }
+        ],
+        "environmentDescription": "DatadogInternal \u00b7 Built with macOS 26.6.2",
+        "expectedFailures": 0,
+        "failedTests": 0,
+        "finishTime": 1789861198.267,
+        "passedTests": 1,
+        "result": "Passed",
+        "runtimeWarnings": [],
+        "skippedTests": 0,
+        "startTime": 1789861176.344,
+        "statistics": [
+          {
+            "subtitle": "5 test runs",
+            "title": "1 configuration ran with test repetitions"
+          }
+        ],
+        "testFailures": [],
+        "title": "Test - DatadogInternal",
+        "topInsights": [],
+        "totalTestCount": 1
+      },
+      "exit_code": 0
+    },
+    {
+      "phase": "qualified-internal",
+      "manifest": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp199-terminal-ownership-qfeklzn8/qualified-internal-run.json",
+      "source_hashes": {
+        "DatadogInternal/Sources/NetworkInstrumentation/NetworkInstrumentationFeature.swift": "2631ea56885a12d1b3d14b1044dd9a84319a0b382b817afb95b4edd305df5246",
+        "DatadogInternal/Sources/NetworkInstrumentation/URLSession/NetworkInstrumentationSwizzler.swift": "a00edec0d9451c3b78c52f308c2a7f771d0e8b9cfafada79a2848f1b164cfef7",
+        "DatadogInternal/Sources/NetworkInstrumentation/URLSession/URLSessionTaskSwizzler.swift": "96d302999632cc609a98e774106f1e51c4ef9fecfe089287426285aa524e4570",
+        "DatadogInternal/Tests/NetworkInstrumentation/NetworkInstrumentationFeatureTests.swift": "739606eee3cdc28ac110f6167e9455d565ec9ae9a17aff18630bafa9abd59375",
+        "DatadogInternal/Tests/NetworkInstrumentation/URLSessionTaskSwizzlerTests.swift": "0d3586be978915dfa11be06a2938eff836af61296b8ae629fd7e51e225fa5b58"
+      },
+      "summary": {
+        "devicesAndConfigurations": [
+          {
+            "device": {
+              "architecture": "arm64",
+              "deviceId": "EEF49588-982B-492E-92AF-57F900ACEACD",
+              "deviceName": "iPad Pro 11-inch (M4) (16GB)",
+              "modelName": "iPad Pro 11-inch (M4)",
+              "osBuildNumber": "21F79",
+              "osVersion": "17.5",
+              "platform": "iOS Simulator"
+            },
+            "expectedFailures": 0,
+            "failedTests": 0,
+            "passedTests": 491,
+            "skippedTests": 0,
+            "testPlanConfiguration": {
+              "configurationId": "1",
+              "configurationName": "Test Scheme Action"
+            }
+          }
+        ],
+        "environmentDescription": "DatadogInternal \u00b7 Built with macOS 26.6.2",
+        "expectedFailures": 0,
+        "failedTests": 0,
+        "finishTime": 1789861221.407,
+        "passedTests": 455,
+        "result": "Passed",
+        "runtimeWarnings": [],
+        "skippedTests": 0,
+        "startTime": 1789861199.762,
+        "statistics": [
+          {
+            "subtitle": "40 test runs",
+            "title": "4 tests ran with dynamic parameters"
+          }
+        ],
+        "testFailures": [],
+        "title": "Test - DatadogInternal",
+        "topInsights": [
+          {
+            "category": "Longest Test Runs",
+            "impact": "71% of duration",
+            "text": "3 longest test runs with outlier durations exceeding 1.10s (three standard deviations)"
+          }
+        ],
+        "totalTestCount": 455
+      },
+      "exit_code": 0
+    }
+  ],
+  "candidate_revision": "1bdc9286c17d69d73e5e41530e6179c72a723368",
+  "result": {
+    "ownership": "PASS on unchanged-source red/green and four native cells",
+    "functional": "Internal455 tests/491 executions plus5 native state repetitions; Core815+4OS-skips, RUM901/937executions, Trace141, zero failures/runtime warnings",
+    "remaining": "Candidate ordinary/legacy requalification running; numeric P03, allocation/latency, backend and final platform/client release checks remain open.",
+    "signature": "Local candidate1bdc9286 unsigned after failed agent communication, explicitly user-authorized. No push."
+  },
+  "design_review": {
+    "reviewer": "Independent concurrency and ownership reviewer",
+    "decision": "Choose weak terminal identity set as smaller implementation. Associated-token proposal rejected before implementation because first objc_setAssociatedObject can reenter and would require two-phase publication.",
+    "limits": "Weak collection dead slots/capacity can remain indefinitely. Require zero retained TaskPreparation objects and zero live task members, not zero raw slots or numeric heap pass.",
+    "source": "Installed Foundation NSHashTable headers plus existing coordinator source at464af911.",
+    "required_controls": [
+      "terminal callback while native state still suspended",
+      "early completion during preparation",
+      "feature/core identity isolation",
+      "payload and record release outside lock",
+      "native task lifetime and unchanged performance thresholds"
+    ]
+  },
+  "review": {
+    "production": "Scoped independent pass: no synchronization, ARC or ordering finding.",
+    "test_correction": "Scope three request-mutation counters to their URL; applied.",
+    "pending": "Existing suspend/resume test transient state assertion failed once after full455-pass at same production hashes. Review boundary synchronization before further qualification. No production regression conclusion."
+  },
+  "commit": {
+    "candidate_revision": "1bdc9286c17d69d73e5e41530e6179c72a723368",
+    "signature_verified": false,
+    "signature_status": "Unsigned local fallback explicitly user-authorized after signing agent failed communication. Must be signed/verified before separately authorized push.",
+    "signing_attempt_exit": 128,
+    "paths": [
+      "DatadogInternal/Sources/NetworkInstrumentation/NetworkInstrumentationFeature.swift",
+      "DatadogInternal/Tests/NetworkInstrumentation/NetworkInstrumentationFeatureTests.swift"
+    ],
+    "source_hashes": {
+      "DatadogInternal/Sources/NetworkInstrumentation/NetworkInstrumentationFeature.swift": "2631ea56885a12d1b3d14b1044dd9a84319a0b382b817afb95b4edd305df5246",
+      "DatadogInternal/Sources/NetworkInstrumentation/URLSession/NetworkInstrumentationSwizzler.swift": "a00edec0d9451c3b78c52f308c2a7f771d0e8b9cfafada79a2848f1b164cfef7",
+      "DatadogInternal/Sources/NetworkInstrumentation/URLSession/URLSessionTaskSwizzler.swift": "96d302999632cc609a98e774106f1e51c4ef9fecfe089287426285aa524e4570",
+      "DatadogInternal/Tests/NetworkInstrumentation/NetworkInstrumentationFeatureTests.swift": "739606eee3cdc28ac110f6167e9455d565ec9ae9a17aff18630bafa9abd59375",
+      "DatadogInternal/Tests/NetworkInstrumentation/URLSessionTaskSwizzlerTests.swift": "0d3586be978915dfa11be06a2938eff836af61296b8ae629fd7e51e225fa5b58"
+    },
+    "working_tree_clean": true
+  },
+  "native_state_boundary": {
+    "failed_attempt": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp199-terminal-ownership-qfeklzn8/final-internal-run.json",
+    "failure": "Native task still suspended immediately after second resume at prior line754;454/455 tests, other lifecycle assertions passed.",
+    "repair": "Test-only sequential state predicates created before each resume/suspend. Each native transition must reach the exact required state within5s; no operation retry, completed-state substitution or removed cancellation/ownership assertions.",
+    "review": "Independent reviewer confirms dropped second resume still times out.",
+    "qualification": "Five repeated native transition tests plus455 tests/491 executions pass; no runtime warnings or skips."
+  },
+  "source_exclusion_audit": {
+    "base": "62f64d7b655bdc83f3036c4ad81090a270f6202b",
+    "candidate": "1bdc9286c17d69d73e5e41530e6179c72a723368",
+    "changed_paths": [
+      "DatadogInternal/Sources/NetworkInstrumentation/NetworkInstrumentationFeature.swift",
+      "DatadogInternal/Sources/NetworkInstrumentation/URLSession/NetworkInstrumentationSwizzler.swift",
+      "DatadogInternal/Sources/NetworkInstrumentation/URLSession/URLSessionTaskSwizzler.swift",
+      "DatadogInternal/Tests/NetworkInstrumentation/NetworkInstrumentationFeatureTests.swift",
+      "DatadogInternal/Tests/NetworkInstrumentation/URLSessionTaskSwizzlerTests.swift"
+    ],
+    "all_other_tracked_content_identical": true,
+    "production_delta_to_previous": [
+      "DatadogInternal/Sources/NetworkInstrumentation/NetworkInstrumentationFeature.swift"
+    ],
+    "source_hashes": {
+      "DatadogInternal/Sources/NetworkInstrumentation/NetworkInstrumentationFeature.swift": "2631ea56885a12d1b3d14b1044dd9a84319a0b382b817afb95b4edd305df5246",
+      "DatadogInternal/Sources/NetworkInstrumentation/URLSession/NetworkInstrumentationSwizzler.swift": "a00edec0d9451c3b78c52f308c2a7f771d0e8b9cfafada79a2848f1b164cfef7",
+      "DatadogInternal/Sources/NetworkInstrumentation/URLSession/URLSessionTaskSwizzler.swift": "96d302999632cc609a98e774106f1e51c4ef9fecfe089287426285aa524e4570",
+      "DatadogInternal/Tests/NetworkInstrumentation/NetworkInstrumentationFeatureTests.swift": "739606eee3cdc28ac110f6167e9455d565ec9ae9a17aff18630bafa9abd59375",
+      "DatadogInternal/Tests/NetworkInstrumentation/URLSessionTaskSwizzlerTests.swift": "0d3586be978915dfa11be06a2938eff836af61296b8ae629fd7e51e225fa5b58"
+    },
+    "public_api_wire_endpoints_scene_routing_changed": false,
+    "qualification": "Private ownership collection change only; original E01 swizzler files identical464. All production source remains the same three-file approved extraction over current-develop62f."
+  },
+  "native_ownership": {
+    "artifact_root": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp199-native-ownership-qe3isrcc",
+    "qualification_manifest_sha256": "bd96223e15219892f6c2fdbb7af83ef1314e218951e87599dbaa8b1a43e41b5a",
+    "builds": {
+      "experiment": "EXP-199",
+      "scope": "Native ownership comparison only",
+      "baseline": "464af9110daeb9211040e202b42d5ce446e06153",
+      "candidate": "1bdc9286c17d69d73e5e41530e6179c72a723368",
+      "fixture_sha256": {
+        "App.swift": "cb985febca38140dea8fff45db4be92e0f86cfbcc1b3e3065812dbea8ba99e03",
+        "E01AllocationCounter.c": "d99d6eb3c656a118a6fbe0766ea7a8e864d8cda23f42f522a7aebab40b37113c",
+        "E01AllocationCounter.h": "dee7f0b145d08a6eed701b680ac8b9fac92953e7a72f96b84b25a98ecb46b14d",
+        "E01Calibration.c": "ecd05010d1fcdefd97994e83d2a079253f269d87f4b7a3bb4c0a09fdc88dd565",
+        "E01Calibration.h": "5c4ae14d993006c604d53ae714230cbd4604c5169749a584c258f4d005ffe392",
+        "URLSessionE01Fixture.swift": "91c45afcc05040ae8666bb8842f332ff5aa8b19c7b51a6beb16de9837b48c743"
+      },
+      "source_inventory": {
+        "baseline": {
+          "DatadogInternal/Sources/Attributes/AttributeEncoding.swift": "f3e0437e08287076de20cea996512ad2e7c9bbb75e659e8261415f5ac0a52f3f",
+          "DatadogInternal/Sources/Attributes/AttributeEncodingRecovery.swift": "7555da6005cd3894e84a131c1b1a525321ad53050a99bb0e6550a5ccfcefa995",
+          "DatadogInternal/Sources/Attributes/Attributes.swift": "0f6674abdbfa5194459c5a2a749691dd97182550d2457aa822c51d4f3842b90a",
+          "DatadogInternal/Sources/Attributes/AttributesSanitizer.swift": "a669225f2dc7b97ff18f6c156b855b43b609496f809dd70ff8e58747dafe8bea",
+          "DatadogInternal/Sources/BacktraceReporting/BacktraceReporter.swift": "33ac9c57e504d62d2d8f9fd2afab3b382076763f20ce02303ed0acad78cdbf14",
+          "DatadogInternal/Sources/BacktraceReporting/BacktraceReportingFeature.swift": "daef44a9b36ce84b91fb248aa2d40d04b7ca122636c20166713240a6c487e608",
+          "DatadogInternal/Sources/Benchmarks/BenchmarkProfiler.swift": "1b4efe09531609d4b68a8844279eac3daa773c2a48d13f1bd2014589b888bd76",
+          "DatadogInternal/Sources/Codable/AnyCodable.swift": "ea29e6e5937206bf17ff840b9ebcc7eb5c6dd9e80e64aa8d44732f947ce63871",
+          "DatadogInternal/Sources/Codable/AnyDecodable.swift": "7e9c4b622ee51a3efe035c00da6e292abacc0947f161193c27f89e586dcd071e",
+          "DatadogInternal/Sources/Codable/AnyEncodable.swift": "8e46f2f10c37336348512dec1b0b72961eca9a7ea2719c468266c756dacff2f9",
+          "DatadogInternal/Sources/Codable/DynamicCodingKey.swift": "b6e94da274c8b5adc756ce3e3f73011e0b8b5917e1641e1ad6e341df71bfccd1",
+          "DatadogInternal/Sources/Concurrency/CompletionHandler.swift": "e16d2855ec34f2a5ba62ea5e4a58c18274f3796b67824b7a8da613feb0d3a2bf",
+          "DatadogInternal/Sources/Concurrency/Flushable.swift": "41332f37c2c7e27358a2c464dcc06454d950e8a5e0a80d6ca743040594a90208",
+          "DatadogInternal/Sources/Concurrency/ReadWriteLock.swift": "ea24b7c5107ca5575fefceed591ed202a678eb1b0196ff80ab5301ea90142da3",
+          "DatadogInternal/Sources/Concurrency/Threading.swift": "1623102d3362a0017e5830ea023e3c8a2d9b99127db91d82aa12f4043df1fd7c",
+          "DatadogInternal/Sources/Context/AccountInfo.swift": "0095839e2a623d61df1f8a31717368da5d5c0f18f1725ec2c4fdde07080fd7b4",
+          "DatadogInternal/Sources/Context/AppState.swift": "cc1772d11ac99c19b2c80db188cddf2590c291dcee8251464603d2fa8f5cd255",
+          "DatadogInternal/Sources/Context/ApplicationNotifications.swift": "f17107e1a222906553f4d47783723e042963653d464be8fed567ad0be479eed8",
+          "DatadogInternal/Sources/Context/BatteryStatus.swift": "2561d82540f921da1b9f9229fd3a1b0357d2bd921e9b29a87a276c07eea3ef10",
+          "DatadogInternal/Sources/Context/BrightnessLevel.swift": "e6ad30d1ac6d8adba7501418ad616456d709afaa43c352b52fe09acd5b05f223",
+          "DatadogInternal/Sources/Context/BundleType.swift": "b31d223fb1d4dda17767b8a4c1efc37026e78ff0febf3614ac8462b4c319bda7",
+          "DatadogInternal/Sources/Context/CarrierInfo.swift": "bed7a82642d7961aaa676b515f7b45eb622bee01e5732a577a7cc1cf7cea3e2a",
+          "DatadogInternal/Sources/Context/DDTag.swift": "3519d7490a599e15382ed7b83852a553fff4b7e64c168817d13fdc1ae19a7049",
+          "DatadogInternal/Sources/Context/DatadogContext.swift": "f5dd4eb97962f28347e5e12e697b12421819719c8088b48925defdcde134e99c",
+          "DatadogInternal/Sources/Context/DatadogSite.swift": "b3f9f08941d77ddda9eb06cd88f5d1ea189aa801200dca67c5c731465677411f",
+          "DatadogInternal/Sources/Context/DateProvider.swift": "cfaa7204d249691644394adeb9504b85ea43956b8eb05ddf0b66e6cd683c8aa5",
+          "DatadogInternal/Sources/Context/DeviceInfo.swift": "877355737cb793e4e022302f597e4a468010d703274b864882be9beb93177ae2",
+          "DatadogInternal/Sources/Context/LaunchInfo.swift": "aae7ea01542462dcaec97e9278f9f3d8cd6edcaa09212da6370d6269d993651c",
+          "DatadogInternal/Sources/Context/LocaleInfo.swift": "95981a231a2764ba5bf052a0647c1d1910dcfbf6e0fad29d4b02475ddf503de1",
+          "DatadogInternal/Sources/Context/MediaTimeProvider.swift": "21be390994263a8136bede922ef136f1bcc2c15862df9be56bd6beb6159ac64e",
+          "DatadogInternal/Sources/Context/NetworkConnectionInfo.swift": "e7b349eeb668b28c459815b313554a8558684d86161267528d89f1cc19fdd0c4",
+          "DatadogInternal/Sources/Context/OperatingSystem+Utils.swift": "425ee68154a76cfe9d263d96f1454d0011c0d7d3d6501e7dbdce2a473ee54157",
+          "DatadogInternal/Sources/Context/Sysctl.swift": "fae445e31d3c3222de40fab89983877b7275a72740b5803bb37eadb189060a8d",
+          "DatadogInternal/Sources/Context/TrackingConsent.swift": "340de1989d80137ec8f0f9c6766393ecc3a7ff9fe895408ee3d7638e2a2e5033",
+          "DatadogInternal/Sources/Context/UserInfo.swift": "83217e9d95624535e9ee1c6cc429068735b5a3ade5834fc490425189bc4a3b42",
+          "DatadogInternal/Sources/Context/WorkspaceNotifications.swift": "05292f0e23e0bd53bd11f8cd778ea0c9e1822b28047d42875d7e47217978d17f",
+          "DatadogInternal/Sources/CoreRegistry.swift": "dff96f38ba6a7ba8ea4df9583d452a26a896ef4a994f1f9d25e2d64237296526",
+          "DatadogInternal/Sources/DD.swift": "825f7ff56ad3cac3f5fdad2a4d4b3dd04f4ed4a40dd73451d987e0e40b700c4c",
+          "DatadogInternal/Sources/DDPlatformTypes.swift": "2431054e4518612cd40d19dc851b6ad5078f8ddfecc683ce9ccb7d4ab23b9778",
+          "DatadogInternal/Sources/DataStore/DataStore.swift": "391663764541670b2a38d2b61c9d48c25f411ad8c5cbc1e3f06ea7718374ddcd",
+          "DatadogInternal/Sources/DatadogCoreProtocol.swift": "8a5326006a650ca96e3086e5429f08424f6945c39be18b50d7e6dda8aac1f3a4",
+          "DatadogInternal/Sources/DatadogFeature.swift": "90bf4904dbbb663578380b208289663630d3603a71edf0ff03c3f93a7ffd6118",
+          "DatadogInternal/Sources/Extensions/Attributes+Equatable.swift": "25c51b71e8748b72c46207b87fd6339d4bc3c075dd6a8206cb1f63ef03626d08",
+          "DatadogInternal/Sources/Extensions/Data+Crypto.swift": "f2bb9beb2544b713d1daa61bf987efc6150e8a04641c2954b506405ba0ebc905",
+          "DatadogInternal/Sources/Extensions/DatadogExtended.swift": "9b94a5be54b6f41329aa710fd18ed16bb88fc374c63c8e0954b945d5d1f7017b",
+          "DatadogInternal/Sources/Extensions/FixedWidthInteger+Convenience.swift": "838a084f647bf5cd8b14c45956e6f570dc2783b781c8170059b876f0385905c8",
+          "DatadogInternal/Sources/Extensions/Foundation+Datadog.swift": "32f51dc9e13e05fdcad0a04f1395e426eb9f8fd2784e5589d3c6229be0854936",
+          "DatadogInternal/Sources/Extensions/InternalExtended.swift": "39fa3d2c03555a5e75bc4daffd8c17547d2ca7394307463b64a2eb8e9a42d905",
+          "DatadogInternal/Sources/Extensions/TimeInterval+Convenience.swift": "079231b7208aea31040fc39014caf60998024c9020f067fffa51671efd17a6d1",
+          "DatadogInternal/Sources/Feature.swift": "a0612254ea7583460b64649fea1201a429f611638f904965c9b3af3175d02fdf",
+          "DatadogInternal/Sources/Heatmaps/DatadogCoreProtocol+Heatmaps.swift": "8106a8b934ebeed0e48d2159f597406e78d09861f16e0d55cf6ced813900f74a",
+          "DatadogInternal/Sources/Heatmaps/HeatmapAttributes.swift": "0c0dac1b247ab5aba68b891ef2c3eb35235b5c063834dd886d66dceb96c44e4a",
+          "DatadogInternal/Sources/Heatmaps/HeatmapIdentifier.swift": "1a8c15be92c5e8904ed2cdab4f749e6e9cfc4cc5b607f83ff605b3126a1f4bbc",
+          "DatadogInternal/Sources/Heatmaps/HeatmapIdentifierRegistry.swift": "4934b64265f84f32e9c6cdc782e65e98ae71e06b121388d6134cba54e917687a",
+          "DatadogInternal/Sources/Heatmaps/HeatmapIdentifierRegistryFeature.swift": "52dc3176a84fd79cb02c69cb0f24b8e5d2eeb43cbf71301a6d488ffd1b5442b8",
+          "DatadogInternal/Sources/MessageBus/FeatureMessage.swift": "7777a3231681210c0e90211f7808c2e7ebc575666c9d4ee9e68344f503e73898",
+          "DatadogInternal/Sources/MessageBus/FeatureMessageReceiver.swift": "af4276d45116085256b03c2ed61b4b02cb2548d0a5b869de03f2be2d06f1c8b9",
+          "DatadogInternal/Sources/Models/CrashReporting/BacktraceReport.swift": "234238cfb13892a067ba8bd253638beed20f4d2bee286de13b9d4c50b37e2961",
+          "DatadogInternal/Sources/Models/CrashReporting/BinaryImage.swift": "a56a13421253a8840dd4baa515443a6d307ff9cf3d359653c9062e0c4424bf86",
+          "DatadogInternal/Sources/Models/CrashReporting/Crash.swift": "37fd69792e13d8352641d5f30a8754040509e167d99acdf9e5207f11a84c1d57",
+          "DatadogInternal/Sources/Models/CrashReporting/CrashContext.swift": "1fd397466d4593dc79e59c3fad54c4a4bd97a96e62298a964552f8d9c4a5fbdf",
+          "DatadogInternal/Sources/Models/CrashReporting/CrashReportingConfiguration.swift": "b055e4759595378e98d666ee7b774905f9b70d40e8c1ecb9f5b36b4d48e6dd3c",
+          "DatadogInternal/Sources/Models/CrashReporting/DDCrashReport.swift": "a97054b9466e5bcaf219c2efbfd3542206e89bd0bbdd5080b3b143a0b927fa5e",
+          "DatadogInternal/Sources/Models/CrashReporting/DDThread.swift": "ea6d7146b6004895763634900d0645c3bc3bbc8ea66ef62c146500d9d59780b6",
+          "DatadogInternal/Sources/Models/CrashReporting/LaunchReport.swift": "ba3d4135910b02db2875cfc4686ff1f0688e34939ea06261e422ab008858116c",
+          "DatadogInternal/Sources/Models/Logs/LogEventAttributes.swift": "eb8a1a23fe5e48de8644586bf54514fa050b0734611bf9f9b777d0d67e95b0b4",
+          "DatadogInternal/Sources/Models/Logs/LogMessage.swift": "ca4dd7ca3400173171e372bd91a662482add58b5a07456a7faa069346f1bf5c4",
+          "DatadogInternal/Sources/Models/Profiling/ProfilingContext.swift": "131c985a92de0cdf5329cfb396d949a277bd4ad0c6aec3e0c13c0a46905a16fd",
+          "DatadogInternal/Sources/Models/Profiling/ProfilingOptions.swift": "f6866b61a69568e7727b3b49920471a0b83dfadd7841a7154156059bb8f4cac1",
+          "DatadogInternal/Sources/Models/RC/RCDataModels.swift": "6671d37bb830c9f1759ebf5ab31f338fce9418a86e7f795ca6bf5a195f75d5a1",
+          "DatadogInternal/Sources/Models/RUM/AppHangMessage.swift": "24b1d535e9899721be4f623a07f366ecf25afc210f70efa0245f62f5929b43a6",
+          "DatadogInternal/Sources/Models/RUM/DurationEvent.swift": "fcff61155121fb48ad7b73b9ec760442dc2712586a6217609bca00f5fe677b1e",
+          "DatadogInternal/Sources/Models/RUM/LongTaskMessage.swift": "c4ca9601c0d47a8c6d282ea543daeb6253a9288280db7da79052882fc651df24",
+          "DatadogInternal/Sources/Models/RUM/OperationMessage.swift": "0f4f2bfbd00570f0a009d7858464191106a8dc74b45ec9c33eae999d93926c87",
+          "DatadogInternal/Sources/Models/RUM/OperationOptions.swift": "e8e0a5e5903468ed666f36b0380b650964e08b381ea5afd18b1257e72cddab78",
+          "DatadogInternal/Sources/Models/RUM/RUMCoreContext.swift": "cd155d102e82286d9374d17f05944ed22d1b11e488a12f1eb4030f1f7969e443",
+          "DatadogInternal/Sources/Models/RUM/RUMDataModels.swift": "45a6b0e4b539569ae7490743e4d8a191c6f7e58be58a92196372507f4f3fff7d",
+          "DatadogInternal/Sources/Models/RUM/RUMPayloadMessages.swift": "4880f0f56890ffb6e6d65c733935913428c96fedc503fcf9eda68d74e1878a91",
+          "DatadogInternal/Sources/Models/RUM/RUMSessionSamplerProvider.swift": "41a9838847bf4e360159d1c94c52f9cc5ada3bb1478d43323fcffecaabb84463",
+          "DatadogInternal/Sources/Models/RUM/RUMWebViewContext.swift": "3b41d830bb5dfc980082691ae263f9a356e1b5f9b4ef5103a035a1a14994cebe",
+          "DatadogInternal/Sources/Models/RUM/TTIDMessage.swift": "4ac9354e80df1f9a37a18bc801fb9f94e2cb7ee4874747b1b924f832d37fd7ca",
+          "DatadogInternal/Sources/Models/RUM/Vital.swift": "b01af1309a752bdb701ce3e0265a052b68abafe84a783b3e9154242f538d1b68",
+          "DatadogInternal/Sources/Models/SessionReplay/EmbeddedContentMessage.swift": "2891c84b6f8080a74f56c111c056a0a6f590db3f4e6c9598da4119ff43371577",
+          "DatadogInternal/Sources/Models/SessionReplay/SessionReplayConfiguration.swift": "3763140fcf8a43e4b150c967ac14e960dae353108fc2c09a1c18e677fb9d6b6c",
+          "DatadogInternal/Sources/Models/SessionReplay/SessionReplayCoreContext.swift": "91d48abdd1397975593e5cee80789feae0b8b786df0b4126a9abd2558ea40f36",
+          "DatadogInternal/Sources/Models/SessionReplay/UIView+SessionReplaySlotID.swift": "8a68d5be43ffb93a64689a0d9c2b7538d1747ca918cee58fdccae1edf3da880c",
+          "DatadogInternal/Sources/Models/Trace/ActiveSpanProvider.swift": "105c1f85840d4b377ea1dccf95c07896a891fc2c8d733dea4ab227c61fd271ec",
+          "DatadogInternal/Sources/Models/Trace/SamplingMechanismType.swift": "4faefafec4eb20833549056cfa7a66b7e64f09fa9d24a896c0d535151cb1c6c7",
+          "DatadogInternal/Sources/Models/Trace/SamplingPriority.swift": "307fad124e435fe9278e685bc239e4c47bf1346a0f3da329d52ef8d45c7f1777",
+          "DatadogInternal/Sources/Models/Trace/SpanContext.swift": "eabb4ee8855ff756e4d1643e1a1d1a991fcd2ef279591c9905d56955adfe84cd",
+          "DatadogInternal/Sources/Models/Trace/SpanID.swift": "b70bd043d72508c4324e6063fe6a0a66adaa286071ec61239ff992a509b810d4",
+          "DatadogInternal/Sources/Models/Trace/TraceCoreContext.swift": "4da5d5eb1fc3eccce96d665c5f1d1ae78677f24462bf39986e54fd1c38937c89",
+          "DatadogInternal/Sources/Models/Trace/TraceID.swift": "d9b72488e15d09f086233c0753648fbbe771e8fbedff6c0d4342389c11a6a104",
+          "DatadogInternal/Sources/Models/WebViewTracking/WebViewMessage.swift": "fd1e5d0356b2d6d1e549a4f2f91e6715ae160ad54623ba98258408ba34f832ea",
+          "DatadogInternal/Sources/NetworkInstrumentation/B3/B3HTTPHeaders.swift": "d16528aa1293801e4b934834c2534a1f580a2aa4a277f9d9ae92f894ca9c93df",
+          "DatadogInternal/Sources/NetworkInstrumentation/B3/B3HTTPHeadersReader.swift": "d6500dcc7cec6ba3141ddda6580bdcdb2e703ddcb9039e2564f3f6f4f9eb01f1",
+          "DatadogInternal/Sources/NetworkInstrumentation/B3/B3HTTPHeadersWriter.swift": "548e399ea5c6666188d60d5e223ec14d66195bc0ca52c396caa85de1a58bbad8",
+          "DatadogInternal/Sources/NetworkInstrumentation/Datadog/HTTPHeadersReader.swift": "0f8afb63e198abf30490c2e205c849c8fab430f5138b539768098684c15a065c",
+          "DatadogInternal/Sources/NetworkInstrumentation/Datadog/HTTPHeadersWriter.swift": "3d036f1fdb0ca060fa4f697f8b352471e64f29819fa4624f94ee8e5dd0481fbe",
+          "DatadogInternal/Sources/NetworkInstrumentation/Datadog/TracingHTTPHeaders.swift": "c96bd675d9868cafccefc82f2fe35f39e5f27618a3851091f554055b4263af9c",
+          "DatadogInternal/Sources/NetworkInstrumentation/DatadogURLSessionHandler.swift": "850497e78477a60cb82d9bcfcbaf8f1ed84a17667b7fd0ef4cbcb075f4e89c49",
+          "DatadogInternal/Sources/NetworkInstrumentation/DistributedTracingSampleRateProvider.swift": "f0c356a5932a8af073528c107528ee7c7a0fa814eae1cd02164b2228f0a0121c",
+          "DatadogInternal/Sources/NetworkInstrumentation/FirstPartyHosts.swift": "5d65ceb456501bf7890048fac40c97cda38aa857594bf5c4677e4a44b651459a",
+          "DatadogInternal/Sources/NetworkInstrumentation/GraphQLRequestAttributes.swift": "2bbed9704f42551201461ccc529debd06a9cdfe82b69af08b6e51774b092be35",
+          "DatadogInternal/Sources/NetworkInstrumentation/HostsSanitizer.swift": "83bdae67f6155a18c8de1b35266eea391c532f192c72eb160a54ddbd7ca7c08b",
+          "DatadogInternal/Sources/NetworkInstrumentation/NetworkContext.swift": "a6379d864e6cb72901dcf5ae45087b80fe1c0fd9ba4a1fe15b8b6b1f2ea90041",
+          "DatadogInternal/Sources/NetworkInstrumentation/NetworkContextProvider.swift": "4af6d4afcf5c2b13491bc8d18a425b600d75c86605d9b7de8815252f079ee422",
+          "DatadogInternal/Sources/NetworkInstrumentation/NetworkInstrumentationFeature.swift": "399e7b06489d38dbac0d2d121a2d12ba31ad7a161f1ef73b29763a12c8472e6b",
+          "DatadogInternal/Sources/NetworkInstrumentation/TraceContext.swift": "1300a5741a60a8e8ae8a72d5d35249e005e80268f900c84ce8c04fe433906a9c",
+          "DatadogInternal/Sources/NetworkInstrumentation/TraceContextInjection.swift": "7b3b29c8a7038d1a3cb69bebd0c43e1f9e21d19184d155ea67676106e97c4930",
+          "DatadogInternal/Sources/NetworkInstrumentation/TracePropagationHeadersReader.swift": "a4dcb3602a51729012674afa8bbd2f13f9366d3cc7d985347970f00f9a732873",
+          "DatadogInternal/Sources/NetworkInstrumentation/TracePropagationHeadersWriter.swift": "1b209c0311833a9b9b349d6b656047825c2523908e2423bdda85b46df936a1f8",
+          "DatadogInternal/Sources/NetworkInstrumentation/TracingHeaderType+objc.swift": "faf957e3df9e4dad4b2a15de15334ca37608fde069ae0633aa78e851ebb27633",
+          "DatadogInternal/Sources/NetworkInstrumentation/TracingHeaderType.swift": "6b9b95d22aadabc4199fe06fb648d9a602ab68c8836810145bce77d3ba1ce2b6",
+          "DatadogInternal/Sources/NetworkInstrumentation/URLSession/ImmutableRequest.swift": "07f341e5a9689626b393286536e42950ba934f7872ab9b8aac9c053d2d02f301",
+          "DatadogInternal/Sources/NetworkInstrumentation/URLSession/NetworkInstrumentationSwizzler.swift": "a00edec0d9451c3b78c52f308c2a7f771d0e8b9cfafada79a2848f1b164cfef7",
+          "DatadogInternal/Sources/NetworkInstrumentation/URLSession/URLSessionDataDelegateSwizzler.swift": "571a308e0a1a1fa524ed9b1e9aa8033de960f5e0b2d2f6b3605668a0afc6b8f1",
+          "DatadogInternal/Sources/NetworkInstrumentation/URLSession/URLSessionInstrumentation.swift": "9b1862958baea7c43e7ba8b96e892cf1dfdd0f8d683c82e67dfd3b4c37c8d062",
+          "DatadogInternal/Sources/NetworkInstrumentation/URLSession/URLSessionSwizzler.swift": "e2519d37fb8735f9365f1217774df5ba50ed34bce9abab9b890e05c03fa72d17",
+          "DatadogInternal/Sources/NetworkInstrumentation/URLSession/URLSessionTask+Tracking.swift": "5364632096ef4e7e57b17f4bd5632ba5fbdc4debc10b6e5528bdc809f07c2ee3",
+          "DatadogInternal/Sources/NetworkInstrumentation/URLSession/URLSessionTaskDelegateSwizzler.swift": "607a9ed9e92c54b7afa86a5da091260e2d1e15306c762fa87f9e30ab0d7a855a",
+          "DatadogInternal/Sources/NetworkInstrumentation/URLSession/URLSessionTaskInterception.swift": "1323fadf83a57e76815669c26f26d5126b8df8a9122eded950d564ae1e64cf2d",
+          "DatadogInternal/Sources/NetworkInstrumentation/URLSession/URLSessionTaskStateSwizzler.swift": "95b3be9e2bb2a777d47803667862c1696ec1aec37e0e553ec3c1c39c8a144a2d",
+          "DatadogInternal/Sources/NetworkInstrumentation/URLSession/URLSessionTaskSwizzler.swift": "96d302999632cc609a98e774106f1e51c4ef9fecfe089287426285aa524e4570",
+          "DatadogInternal/Sources/NetworkInstrumentation/W3C/W3CHTTPHeaders.swift": "9c2e328d6f1c32c2107dd66d9d0045bb82becaf9a9c1c88f21a7c46ec4df1d26",
+          "DatadogInternal/Sources/NetworkInstrumentation/W3C/W3CHTTPHeadersReader.swift": "8ae3734f079dfe3b3c691b0df6ef299300956ac02a81c563b2668ac1d23e4c69",
+          "DatadogInternal/Sources/NetworkInstrumentation/W3C/W3CHTTPHeadersWriter.swift": "cce9e8aae7db366e1ab7387b9b60caab85a1b5440596593e014911e63a281412",
+          "DatadogInternal/Sources/NotificationCenterProvider.swift": "1d833d17e616facb9b1433764a5280f9fb7e2160edb43685c104c7eba96d5c1e",
+          "DatadogInternal/Sources/SDKMetrics/MethodCalledMetric.swift": "142661fcd12f0e94776884b1e8ada8aefd1b73fc0950b7000d55d2bb8eedda5d",
+          "DatadogInternal/Sources/SDKMetrics/SDKMetricFields.swift": "da8919cceb866235de89b8c5247e7587e0e38de61c9872c66f5ea85c369b9214",
+          "DatadogInternal/Sources/SDKMetrics/UploadQualityMetric.swift": "069a56d774648abc3232331ccc6a7605813ebbf27e191bc37c1c1c1bfae7d14e",
+          "DatadogInternal/Sources/Storage/PerformancePresetOverride.swift": "900d1cd264cf8c89c8d89173d46325ae4f0b43ba231656783ec08142691b6c81",
+          "DatadogInternal/Sources/Storage/Writer.swift": "770b466a4e38f56d33b0217017fa418e0fac2cf90627663ac806be160f6e04a4",
+          "DatadogInternal/Sources/Storage.swift": "51060db5284989daec1692155624bfeb5403f936cb00d88274ef176d2d6d524b",
+          "DatadogInternal/Sources/Swizzling/MethodSwizzler.swift": "ee6402765b2c962f1c0a3f7fb3489733958dd305ac3988649f8ac5a3c67e7a24",
+          "DatadogInternal/Sources/Telemetry/CoreLogger.swift": "2d6b163255733e2d798b5e9ac7cd8d62b77acd1637dd5e16bd7a8abd372d580e",
+          "DatadogInternal/Sources/Telemetry/CoreLoggerLevel+objc.swift": "9760c174ed91f0632c28c5b3a12231a53589aa5ccad293ac1f8dff90c5afa286",
+          "DatadogInternal/Sources/Telemetry/InternalLogger+objc.swift": "addd541ea9c9a342e856267a9b57d99a7e71644365989df2eac4bf8e2afc2f36",
+          "DatadogInternal/Sources/Telemetry/InternalLogger.swift": "b01b76da7603d59d152d0201f3ffdd912308f021f62382d77b92736ede3af4bf",
+          "DatadogInternal/Sources/Telemetry/Telemetry.swift": "c056483b108364c9b415a9463853cfda56a9eb1d875b3f9abf1084ea3c9837b0",
+          "DatadogInternal/Sources/Telemetry/TelemetrySanitizableError.swift": "9e42c83559a584751134c08036c9fb5c914dd225dc9a759e0fa62cfa833081ec",
+          "DatadogInternal/Sources/Upload/DataCompression.swift": "7144b74125420a6a98fc08fadc8fd2139aab6a4d61cea4e4e1663e2fc9f05929",
+          "DatadogInternal/Sources/Upload/DataFormat.swift": "7fac383d4622bff94cf99f1b3ebaf3c0fa4fc95c63dd172968fbc2b200028202",
+          "DatadogInternal/Sources/Upload/DefaultJSONEncoder.swift": "1cfd2adb0e53a6cbcc0965147a6bc8090f85204191922d83b179f1d909b3ea8d",
+          "DatadogInternal/Sources/Upload/Event.swift": "181c5d1697d22b03e22bc2fa21935832849c52d9de9ba6ab370b6b59d621a932",
+          "DatadogInternal/Sources/Upload/FeatureRequestBuilder.swift": "de01c6cdef5540e480f173b334b40518ac670d858dfbd18291f6eb04edf32b5b",
+          "DatadogInternal/Sources/Upload/MultipartFormData.swift": "51dca7ec54739d169ef16fdea270782a0d66a6532f1e7c422aa561887e5c4770",
+          "DatadogInternal/Sources/Upload/URLRequestBuilder.swift": "e9c6da30b2a19c934eed1450471105b762292d2e02fb7b83e381721026b1887b",
+          "DatadogInternal/Sources/Upload/UploadPerformancePreset.swift": "4c39e14997b1e5f8b5993262be29ece57dbebdaaad1c3416e7fad08a86b298cb",
+          "DatadogInternal/Sources/Utils/Assert.swift": "14b3ad4a1a24ed806f4a1b0979f4da56581b5789be44ee70f85ac677772cd125",
+          "DatadogInternal/Sources/Utils/CustomDump.swift": "03e8ebb9043ad7ade9f8b2ec6983bca3f8078664d0c42c1392e830b7cbac3a04",
+          "DatadogInternal/Sources/Utils/DDError.swift": "d1e7b63fdb98e7bb1c6e42749155b4a571c49e1feef4dc6760e3148a71134e38",
+          "DatadogInternal/Sources/Utils/DateFormatting.swift": "b4ecf4da78ee6000124b1d764fa1620f93e7ab917b7e087776fb10b0ebdada1a",
+          "DatadogInternal/Sources/Utils/DeterministicSampler.swift": "0f02da5a8218f8240b87904ea1eeed81d32dde1e9bf9cba2c4ee32e66ef6579d",
+          "DatadogInternal/Sources/Utils/ReflectionMirror.swift": "244b93799be4f1aa54520ee072f57d4cd5f5ca1c72006c29623c9ea420efbe9b",
+          "DatadogInternal/Sources/Utils/Reflector.swift": "47b5c701cb67f57282d353970427aea38c210283c4ef6ccbaa50bf1c7c0a5842",
+          "DatadogInternal/Sources/Utils/Sampler.swift": "7c1707135e17f8c4495673b1b82b7417a16cc1d611f29e5504d73086a7e03015",
+          "DatadogInternal/Sources/Utils/SwiftExtensions.swift": "27756f334c1711a4e084da3ba3e866f972dc63f671598596f471bd7d6e9ea6bf",
+          "DatadogInternal/Sources/Utils/UIKitExtensions.swift": "00d6160218db3859f353b8e389e38a711b84e7912c2a16d8ef9dc6b756d4ce2f",
+          "DatadogInternal/Sources/Utils/WatchKitExtensions.swift": "dab960f375d3105a4e073fc25301fe5c29ca225245ed14b6047f06021e484364"
+        },
+        "candidate": {
+          "DatadogInternal/Sources/Attributes/AttributeEncoding.swift": "f3e0437e08287076de20cea996512ad2e7c9bbb75e659e8261415f5ac0a52f3f",
+          "DatadogInternal/Sources/Attributes/AttributeEncodingRecovery.swift": "7555da6005cd3894e84a131c1b1a525321ad53050a99bb0e6550a5ccfcefa995",
+          "DatadogInternal/Sources/Attributes/Attributes.swift": "0f6674abdbfa5194459c5a2a749691dd97182550d2457aa822c51d4f3842b90a",
+          "DatadogInternal/Sources/Attributes/AttributesSanitizer.swift": "a669225f2dc7b97ff18f6c156b855b43b609496f809dd70ff8e58747dafe8bea",
+          "DatadogInternal/Sources/BacktraceReporting/BacktraceReporter.swift": "33ac9c57e504d62d2d8f9fd2afab3b382076763f20ce02303ed0acad78cdbf14",
+          "DatadogInternal/Sources/BacktraceReporting/BacktraceReportingFeature.swift": "daef44a9b36ce84b91fb248aa2d40d04b7ca122636c20166713240a6c487e608",
+          "DatadogInternal/Sources/Benchmarks/BenchmarkProfiler.swift": "1b4efe09531609d4b68a8844279eac3daa773c2a48d13f1bd2014589b888bd76",
+          "DatadogInternal/Sources/Codable/AnyCodable.swift": "ea29e6e5937206bf17ff840b9ebcc7eb5c6dd9e80e64aa8d44732f947ce63871",
+          "DatadogInternal/Sources/Codable/AnyDecodable.swift": "7e9c4b622ee51a3efe035c00da6e292abacc0947f161193c27f89e586dcd071e",
+          "DatadogInternal/Sources/Codable/AnyEncodable.swift": "8e46f2f10c37336348512dec1b0b72961eca9a7ea2719c468266c756dacff2f9",
+          "DatadogInternal/Sources/Codable/DynamicCodingKey.swift": "b6e94da274c8b5adc756ce3e3f73011e0b8b5917e1641e1ad6e341df71bfccd1",
+          "DatadogInternal/Sources/Concurrency/CompletionHandler.swift": "e16d2855ec34f2a5ba62ea5e4a58c18274f3796b67824b7a8da613feb0d3a2bf",
+          "DatadogInternal/Sources/Concurrency/Flushable.swift": "41332f37c2c7e27358a2c464dcc06454d950e8a5e0a80d6ca743040594a90208",
+          "DatadogInternal/Sources/Concurrency/ReadWriteLock.swift": "ea24b7c5107ca5575fefceed591ed202a678eb1b0196ff80ab5301ea90142da3",
+          "DatadogInternal/Sources/Concurrency/Threading.swift": "1623102d3362a0017e5830ea023e3c8a2d9b99127db91d82aa12f4043df1fd7c",
+          "DatadogInternal/Sources/Context/AccountInfo.swift": "0095839e2a623d61df1f8a31717368da5d5c0f18f1725ec2c4fdde07080fd7b4",
+          "DatadogInternal/Sources/Context/AppState.swift": "cc1772d11ac99c19b2c80db188cddf2590c291dcee8251464603d2fa8f5cd255",
+          "DatadogInternal/Sources/Context/ApplicationNotifications.swift": "f17107e1a222906553f4d47783723e042963653d464be8fed567ad0be479eed8",
+          "DatadogInternal/Sources/Context/BatteryStatus.swift": "2561d82540f921da1b9f9229fd3a1b0357d2bd921e9b29a87a276c07eea3ef10",
+          "DatadogInternal/Sources/Context/BrightnessLevel.swift": "e6ad30d1ac6d8adba7501418ad616456d709afaa43c352b52fe09acd5b05f223",
+          "DatadogInternal/Sources/Context/BundleType.swift": "b31d223fb1d4dda17767b8a4c1efc37026e78ff0febf3614ac8462b4c319bda7",
+          "DatadogInternal/Sources/Context/CarrierInfo.swift": "bed7a82642d7961aaa676b515f7b45eb622bee01e5732a577a7cc1cf7cea3e2a",
+          "DatadogInternal/Sources/Context/DDTag.swift": "3519d7490a599e15382ed7b83852a553fff4b7e64c168817d13fdc1ae19a7049",
+          "DatadogInternal/Sources/Context/DatadogContext.swift": "f5dd4eb97962f28347e5e12e697b12421819719c8088b48925defdcde134e99c",
+          "DatadogInternal/Sources/Context/DatadogSite.swift": "b3f9f08941d77ddda9eb06cd88f5d1ea189aa801200dca67c5c731465677411f",
+          "DatadogInternal/Sources/Context/DateProvider.swift": "cfaa7204d249691644394adeb9504b85ea43956b8eb05ddf0b66e6cd683c8aa5",
+          "DatadogInternal/Sources/Context/DeviceInfo.swift": "877355737cb793e4e022302f597e4a468010d703274b864882be9beb93177ae2",
+          "DatadogInternal/Sources/Context/LaunchInfo.swift": "aae7ea01542462dcaec97e9278f9f3d8cd6edcaa09212da6370d6269d993651c",
+          "DatadogInternal/Sources/Context/LocaleInfo.swift": "95981a231a2764ba5bf052a0647c1d1910dcfbf6e0fad29d4b02475ddf503de1",
+          "DatadogInternal/Sources/Context/MediaTimeProvider.swift": "21be390994263a8136bede922ef136f1bcc2c15862df9be56bd6beb6159ac64e",
+          "DatadogInternal/Sources/Context/NetworkConnectionInfo.swift": "e7b349eeb668b28c459815b313554a8558684d86161267528d89f1cc19fdd0c4",
+          "DatadogInternal/Sources/Context/OperatingSystem+Utils.swift": "425ee68154a76cfe9d263d96f1454d0011c0d7d3d6501e7dbdce2a473ee54157",
+          "DatadogInternal/Sources/Context/Sysctl.swift": "fae445e31d3c3222de40fab89983877b7275a72740b5803bb37eadb189060a8d",
+          "DatadogInternal/Sources/Context/TrackingConsent.swift": "340de1989d80137ec8f0f9c6766393ecc3a7ff9fe895408ee3d7638e2a2e5033",
+          "DatadogInternal/Sources/Context/UserInfo.swift": "83217e9d95624535e9ee1c6cc429068735b5a3ade5834fc490425189bc4a3b42",
+          "DatadogInternal/Sources/Context/WorkspaceNotifications.swift": "05292f0e23e0bd53bd11f8cd778ea0c9e1822b28047d42875d7e47217978d17f",
+          "DatadogInternal/Sources/CoreRegistry.swift": "dff96f38ba6a7ba8ea4df9583d452a26a896ef4a994f1f9d25e2d64237296526",
+          "DatadogInternal/Sources/DD.swift": "825f7ff56ad3cac3f5fdad2a4d4b3dd04f4ed4a40dd73451d987e0e40b700c4c",
+          "DatadogInternal/Sources/DDPlatformTypes.swift": "2431054e4518612cd40d19dc851b6ad5078f8ddfecc683ce9ccb7d4ab23b9778",
+          "DatadogInternal/Sources/DataStore/DataStore.swift": "391663764541670b2a38d2b61c9d48c25f411ad8c5cbc1e3f06ea7718374ddcd",
+          "DatadogInternal/Sources/DatadogCoreProtocol.swift": "8a5326006a650ca96e3086e5429f08424f6945c39be18b50d7e6dda8aac1f3a4",
+          "DatadogInternal/Sources/DatadogFeature.swift": "90bf4904dbbb663578380b208289663630d3603a71edf0ff03c3f93a7ffd6118",
+          "DatadogInternal/Sources/Extensions/Attributes+Equatable.swift": "25c51b71e8748b72c46207b87fd6339d4bc3c075dd6a8206cb1f63ef03626d08",
+          "DatadogInternal/Sources/Extensions/Data+Crypto.swift": "f2bb9beb2544b713d1daa61bf987efc6150e8a04641c2954b506405ba0ebc905",
+          "DatadogInternal/Sources/Extensions/DatadogExtended.swift": "9b94a5be54b6f41329aa710fd18ed16bb88fc374c63c8e0954b945d5d1f7017b",
+          "DatadogInternal/Sources/Extensions/FixedWidthInteger+Convenience.swift": "838a084f647bf5cd8b14c45956e6f570dc2783b781c8170059b876f0385905c8",
+          "DatadogInternal/Sources/Extensions/Foundation+Datadog.swift": "32f51dc9e13e05fdcad0a04f1395e426eb9f8fd2784e5589d3c6229be0854936",
+          "DatadogInternal/Sources/Extensions/InternalExtended.swift": "39fa3d2c03555a5e75bc4daffd8c17547d2ca7394307463b64a2eb8e9a42d905",
+          "DatadogInternal/Sources/Extensions/TimeInterval+Convenience.swift": "079231b7208aea31040fc39014caf60998024c9020f067fffa51671efd17a6d1",
+          "DatadogInternal/Sources/Feature.swift": "a0612254ea7583460b64649fea1201a429f611638f904965c9b3af3175d02fdf",
+          "DatadogInternal/Sources/Heatmaps/DatadogCoreProtocol+Heatmaps.swift": "8106a8b934ebeed0e48d2159f597406e78d09861f16e0d55cf6ced813900f74a",
+          "DatadogInternal/Sources/Heatmaps/HeatmapAttributes.swift": "0c0dac1b247ab5aba68b891ef2c3eb35235b5c063834dd886d66dceb96c44e4a",
+          "DatadogInternal/Sources/Heatmaps/HeatmapIdentifier.swift": "1a8c15be92c5e8904ed2cdab4f749e6e9cfc4cc5b607f83ff605b3126a1f4bbc",
+          "DatadogInternal/Sources/Heatmaps/HeatmapIdentifierRegistry.swift": "4934b64265f84f32e9c6cdc782e65e98ae71e06b121388d6134cba54e917687a",
+          "DatadogInternal/Sources/Heatmaps/HeatmapIdentifierRegistryFeature.swift": "52dc3176a84fd79cb02c69cb0f24b8e5d2eeb43cbf71301a6d488ffd1b5442b8",
+          "DatadogInternal/Sources/MessageBus/FeatureMessage.swift": "7777a3231681210c0e90211f7808c2e7ebc575666c9d4ee9e68344f503e73898",
+          "DatadogInternal/Sources/MessageBus/FeatureMessageReceiver.swift": "af4276d45116085256b03c2ed61b4b02cb2548d0a5b869de03f2be2d06f1c8b9",
+          "DatadogInternal/Sources/Models/CrashReporting/BacktraceReport.swift": "234238cfb13892a067ba8bd253638beed20f4d2bee286de13b9d4c50b37e2961",
+          "DatadogInternal/Sources/Models/CrashReporting/BinaryImage.swift": "a56a13421253a8840dd4baa515443a6d307ff9cf3d359653c9062e0c4424bf86",
+          "DatadogInternal/Sources/Models/CrashReporting/Crash.swift": "37fd69792e13d8352641d5f30a8754040509e167d99acdf9e5207f11a84c1d57",
+          "DatadogInternal/Sources/Models/CrashReporting/CrashContext.swift": "1fd397466d4593dc79e59c3fad54c4a4bd97a96e62298a964552f8d9c4a5fbdf",
+          "DatadogInternal/Sources/Models/CrashReporting/CrashReportingConfiguration.swift": "b055e4759595378e98d666ee7b774905f9b70d40e8c1ecb9f5b36b4d48e6dd3c",
+          "DatadogInternal/Sources/Models/CrashReporting/DDCrashReport.swift": "a97054b9466e5bcaf219c2efbfd3542206e89bd0bbdd5080b3b143a0b927fa5e",
+          "DatadogInternal/Sources/Models/CrashReporting/DDThread.swift": "ea6d7146b6004895763634900d0645c3bc3bbc8ea66ef62c146500d9d59780b6",
+          "DatadogInternal/Sources/Models/CrashReporting/LaunchReport.swift": "ba3d4135910b02db2875cfc4686ff1f0688e34939ea06261e422ab008858116c",
+          "DatadogInternal/Sources/Models/Logs/LogEventAttributes.swift": "eb8a1a23fe5e48de8644586bf54514fa050b0734611bf9f9b777d0d67e95b0b4",
+          "DatadogInternal/Sources/Models/Logs/LogMessage.swift": "ca4dd7ca3400173171e372bd91a662482add58b5a07456a7faa069346f1bf5c4",
+          "DatadogInternal/Sources/Models/Profiling/ProfilingContext.swift": "131c985a92de0cdf5329cfb396d949a277bd4ad0c6aec3e0c13c0a46905a16fd",
+          "DatadogInternal/Sources/Models/Profiling/ProfilingOptions.swift": "f6866b61a69568e7727b3b49920471a0b83dfadd7841a7154156059bb8f4cac1",
+          "DatadogInternal/Sources/Models/RC/RCDataModels.swift": "6671d37bb830c9f1759ebf5ab31f338fce9418a86e7f795ca6bf5a195f75d5a1",
+          "DatadogInternal/Sources/Models/RUM/AppHangMessage.swift": "24b1d535e9899721be4f623a07f366ecf25afc210f70efa0245f62f5929b43a6",
+          "DatadogInternal/Sources/Models/RUM/DurationEvent.swift": "fcff61155121fb48ad7b73b9ec760442dc2712586a6217609bca00f5fe677b1e",
+          "DatadogInternal/Sources/Models/RUM/LongTaskMessage.swift": "c4ca9601c0d47a8c6d282ea543daeb6253a9288280db7da79052882fc651df24",
+          "DatadogInternal/Sources/Models/RUM/OperationMessage.swift": "0f4f2bfbd00570f0a009d7858464191106a8dc74b45ec9c33eae999d93926c87",
+          "DatadogInternal/Sources/Models/RUM/OperationOptions.swift": "e8e0a5e5903468ed666f36b0380b650964e08b381ea5afd18b1257e72cddab78",
+          "DatadogInternal/Sources/Models/RUM/RUMCoreContext.swift": "cd155d102e82286d9374d17f05944ed22d1b11e488a12f1eb4030f1f7969e443",
+          "DatadogInternal/Sources/Models/RUM/RUMDataModels.swift": "45a6b0e4b539569ae7490743e4d8a191c6f7e58be58a92196372507f4f3fff7d",
+          "DatadogInternal/Sources/Models/RUM/RUMPayloadMessages.swift": "4880f0f56890ffb6e6d65c733935913428c96fedc503fcf9eda68d74e1878a91",
+          "DatadogInternal/Sources/Models/RUM/RUMSessionSamplerProvider.swift": "41a9838847bf4e360159d1c94c52f9cc5ada3bb1478d43323fcffecaabb84463",
+          "DatadogInternal/Sources/Models/RUM/RUMWebViewContext.swift": "3b41d830bb5dfc980082691ae263f9a356e1b5f9b4ef5103a035a1a14994cebe",
+          "DatadogInternal/Sources/Models/RUM/TTIDMessage.swift": "4ac9354e80df1f9a37a18bc801fb9f94e2cb7ee4874747b1b924f832d37fd7ca",
+          "DatadogInternal/Sources/Models/RUM/Vital.swift": "b01af1309a752bdb701ce3e0265a052b68abafe84a783b3e9154242f538d1b68",
+          "DatadogInternal/Sources/Models/SessionReplay/EmbeddedContentMessage.swift": "2891c84b6f8080a74f56c111c056a0a6f590db3f4e6c9598da4119ff43371577",
+          "DatadogInternal/Sources/Models/SessionReplay/SessionReplayConfiguration.swift": "3763140fcf8a43e4b150c967ac14e960dae353108fc2c09a1c18e677fb9d6b6c",
+          "DatadogInternal/Sources/Models/SessionReplay/SessionReplayCoreContext.swift": "91d48abdd1397975593e5cee80789feae0b8b786df0b4126a9abd2558ea40f36",
+          "DatadogInternal/Sources/Models/SessionReplay/UIView+SessionReplaySlotID.swift": "8a68d5be43ffb93a64689a0d9c2b7538d1747ca918cee58fdccae1edf3da880c",
+          "DatadogInternal/Sources/Models/Trace/ActiveSpanProvider.swift": "105c1f85840d4b377ea1dccf95c07896a891fc2c8d733dea4ab227c61fd271ec",
+          "DatadogInternal/Sources/Models/Trace/SamplingMechanismType.swift": "4faefafec4eb20833549056cfa7a66b7e64f09fa9d24a896c0d535151cb1c6c7",
+          "DatadogInternal/Sources/Models/Trace/SamplingPriority.swift": "307fad124e435fe9278e685bc239e4c47bf1346a0f3da329d52ef8d45c7f1777",
+          "DatadogInternal/Sources/Models/Trace/SpanContext.swift": "eabb4ee8855ff756e4d1643e1a1d1a991fcd2ef279591c9905d56955adfe84cd",
+          "DatadogInternal/Sources/Models/Trace/SpanID.swift": "b70bd043d72508c4324e6063fe6a0a66adaa286071ec61239ff992a509b810d4",
+          "DatadogInternal/Sources/Models/Trace/TraceCoreContext.swift": "4da5d5eb1fc3eccce96d665c5f1d1ae78677f24462bf39986e54fd1c38937c89",
+          "DatadogInternal/Sources/Models/Trace/TraceID.swift": "d9b72488e15d09f086233c0753648fbbe771e8fbedff6c0d4342389c11a6a104",
+          "DatadogInternal/Sources/Models/WebViewTracking/WebViewMessage.swift": "fd1e5d0356b2d6d1e549a4f2f91e6715ae160ad54623ba98258408ba34f832ea",
+          "DatadogInternal/Sources/NetworkInstrumentation/B3/B3HTTPHeaders.swift": "d16528aa1293801e4b934834c2534a1f580a2aa4a277f9d9ae92f894ca9c93df",
+          "DatadogInternal/Sources/NetworkInstrumentation/B3/B3HTTPHeadersReader.swift": "d6500dcc7cec6ba3141ddda6580bdcdb2e703ddcb9039e2564f3f6f4f9eb01f1",
+          "DatadogInternal/Sources/NetworkInstrumentation/B3/B3HTTPHeadersWriter.swift": "548e399ea5c6666188d60d5e223ec14d66195bc0ca52c396caa85de1a58bbad8",
+          "DatadogInternal/Sources/NetworkInstrumentation/Datadog/HTTPHeadersReader.swift": "0f8afb63e198abf30490c2e205c849c8fab430f5138b539768098684c15a065c",
+          "DatadogInternal/Sources/NetworkInstrumentation/Datadog/HTTPHeadersWriter.swift": "3d036f1fdb0ca060fa4f697f8b352471e64f29819fa4624f94ee8e5dd0481fbe",
+          "DatadogInternal/Sources/NetworkInstrumentation/Datadog/TracingHTTPHeaders.swift": "c96bd675d9868cafccefc82f2fe35f39e5f27618a3851091f554055b4263af9c",
+          "DatadogInternal/Sources/NetworkInstrumentation/DatadogURLSessionHandler.swift": "850497e78477a60cb82d9bcfcbaf8f1ed84a17667b7fd0ef4cbcb075f4e89c49",
+          "DatadogInternal/Sources/NetworkInstrumentation/DistributedTracingSampleRateProvider.swift": "f0c356a5932a8af073528c107528ee7c7a0fa814eae1cd02164b2228f0a0121c",
+          "DatadogInternal/Sources/NetworkInstrumentation/FirstPartyHosts.swift": "5d65ceb456501bf7890048fac40c97cda38aa857594bf5c4677e4a44b651459a",
+          "DatadogInternal/Sources/NetworkInstrumentation/GraphQLRequestAttributes.swift": "2bbed9704f42551201461ccc529debd06a9cdfe82b69af08b6e51774b092be35",
+          "DatadogInternal/Sources/NetworkInstrumentation/HostsSanitizer.swift": "83bdae67f6155a18c8de1b35266eea391c532f192c72eb160a54ddbd7ca7c08b",
+          "DatadogInternal/Sources/NetworkInstrumentation/NetworkContext.swift": "a6379d864e6cb72901dcf5ae45087b80fe1c0fd9ba4a1fe15b8b6b1f2ea90041",
+          "DatadogInternal/Sources/NetworkInstrumentation/NetworkContextProvider.swift": "4af6d4afcf5c2b13491bc8d18a425b600d75c86605d9b7de8815252f079ee422",
+          "DatadogInternal/Sources/NetworkInstrumentation/NetworkInstrumentationFeature.swift": "2631ea56885a12d1b3d14b1044dd9a84319a0b382b817afb95b4edd305df5246",
+          "DatadogInternal/Sources/NetworkInstrumentation/TraceContext.swift": "1300a5741a60a8e8ae8a72d5d35249e005e80268f900c84ce8c04fe433906a9c",
+          "DatadogInternal/Sources/NetworkInstrumentation/TraceContextInjection.swift": "7b3b29c8a7038d1a3cb69bebd0c43e1f9e21d19184d155ea67676106e97c4930",
+          "DatadogInternal/Sources/NetworkInstrumentation/TracePropagationHeadersReader.swift": "a4dcb3602a51729012674afa8bbd2f13f9366d3cc7d985347970f00f9a732873",
+          "DatadogInternal/Sources/NetworkInstrumentation/TracePropagationHeadersWriter.swift": "1b209c0311833a9b9b349d6b656047825c2523908e2423bdda85b46df936a1f8",
+          "DatadogInternal/Sources/NetworkInstrumentation/TracingHeaderType+objc.swift": "faf957e3df9e4dad4b2a15de15334ca37608fde069ae0633aa78e851ebb27633",
+          "DatadogInternal/Sources/NetworkInstrumentation/TracingHeaderType.swift": "6b9b95d22aadabc4199fe06fb648d9a602ab68c8836810145bce77d3ba1ce2b6",
+          "DatadogInternal/Sources/NetworkInstrumentation/URLSession/ImmutableRequest.swift": "07f341e5a9689626b393286536e42950ba934f7872ab9b8aac9c053d2d02f301",
+          "DatadogInternal/Sources/NetworkInstrumentation/URLSession/NetworkInstrumentationSwizzler.swift": "a00edec0d9451c3b78c52f308c2a7f771d0e8b9cfafada79a2848f1b164cfef7",
+          "DatadogInternal/Sources/NetworkInstrumentation/URLSession/URLSessionDataDelegateSwizzler.swift": "571a308e0a1a1fa524ed9b1e9aa8033de960f5e0b2d2f6b3605668a0afc6b8f1",
+          "DatadogInternal/Sources/NetworkInstrumentation/URLSession/URLSessionInstrumentation.swift": "9b1862958baea7c43e7ba8b96e892cf1dfdd0f8d683c82e67dfd3b4c37c8d062",
+          "DatadogInternal/Sources/NetworkInstrumentation/URLSession/URLSessionSwizzler.swift": "e2519d37fb8735f9365f1217774df5ba50ed34bce9abab9b890e05c03fa72d17",
+          "DatadogInternal/Sources/NetworkInstrumentation/URLSession/URLSessionTask+Tracking.swift": "5364632096ef4e7e57b17f4bd5632ba5fbdc4debc10b6e5528bdc809f07c2ee3",
+          "DatadogInternal/Sources/NetworkInstrumentation/URLSession/URLSessionTaskDelegateSwizzler.swift": "607a9ed9e92c54b7afa86a5da091260e2d1e15306c762fa87f9e30ab0d7a855a",
+          "DatadogInternal/Sources/NetworkInstrumentation/URLSession/URLSessionTaskInterception.swift": "1323fadf83a57e76815669c26f26d5126b8df8a9122eded950d564ae1e64cf2d",
+          "DatadogInternal/Sources/NetworkInstrumentation/URLSession/URLSessionTaskStateSwizzler.swift": "95b3be9e2bb2a777d47803667862c1696ec1aec37e0e553ec3c1c39c8a144a2d",
+          "DatadogInternal/Sources/NetworkInstrumentation/URLSession/URLSessionTaskSwizzler.swift": "96d302999632cc609a98e774106f1e51c4ef9fecfe089287426285aa524e4570",
+          "DatadogInternal/Sources/NetworkInstrumentation/W3C/W3CHTTPHeaders.swift": "9c2e328d6f1c32c2107dd66d9d0045bb82becaf9a9c1c88f21a7c46ec4df1d26",
+          "DatadogInternal/Sources/NetworkInstrumentation/W3C/W3CHTTPHeadersReader.swift": "8ae3734f079dfe3b3c691b0df6ef299300956ac02a81c563b2668ac1d23e4c69",
+          "DatadogInternal/Sources/NetworkInstrumentation/W3C/W3CHTTPHeadersWriter.swift": "cce9e8aae7db366e1ab7387b9b60caab85a1b5440596593e014911e63a281412",
+          "DatadogInternal/Sources/NotificationCenterProvider.swift": "1d833d17e616facb9b1433764a5280f9fb7e2160edb43685c104c7eba96d5c1e",
+          "DatadogInternal/Sources/SDKMetrics/MethodCalledMetric.swift": "142661fcd12f0e94776884b1e8ada8aefd1b73fc0950b7000d55d2bb8eedda5d",
+          "DatadogInternal/Sources/SDKMetrics/SDKMetricFields.swift": "da8919cceb866235de89b8c5247e7587e0e38de61c9872c66f5ea85c369b9214",
+          "DatadogInternal/Sources/SDKMetrics/UploadQualityMetric.swift": "069a56d774648abc3232331ccc6a7605813ebbf27e191bc37c1c1c1bfae7d14e",
+          "DatadogInternal/Sources/Storage/PerformancePresetOverride.swift": "900d1cd264cf8c89c8d89173d46325ae4f0b43ba231656783ec08142691b6c81",
+          "DatadogInternal/Sources/Storage/Writer.swift": "770b466a4e38f56d33b0217017fa418e0fac2cf90627663ac806be160f6e04a4",
+          "DatadogInternal/Sources/Storage.swift": "51060db5284989daec1692155624bfeb5403f936cb00d88274ef176d2d6d524b",
+          "DatadogInternal/Sources/Swizzling/MethodSwizzler.swift": "ee6402765b2c962f1c0a3f7fb3489733958dd305ac3988649f8ac5a3c67e7a24",
+          "DatadogInternal/Sources/Telemetry/CoreLogger.swift": "2d6b163255733e2d798b5e9ac7cd8d62b77acd1637dd5e16bd7a8abd372d580e",
+          "DatadogInternal/Sources/Telemetry/CoreLoggerLevel+objc.swift": "9760c174ed91f0632c28c5b3a12231a53589aa5ccad293ac1f8dff90c5afa286",
+          "DatadogInternal/Sources/Telemetry/InternalLogger+objc.swift": "addd541ea9c9a342e856267a9b57d99a7e71644365989df2eac4bf8e2afc2f36",
+          "DatadogInternal/Sources/Telemetry/InternalLogger.swift": "b01b76da7603d59d152d0201f3ffdd912308f021f62382d77b92736ede3af4bf",
+          "DatadogInternal/Sources/Telemetry/Telemetry.swift": "c056483b108364c9b415a9463853cfda56a9eb1d875b3f9abf1084ea3c9837b0",
+          "DatadogInternal/Sources/Telemetry/TelemetrySanitizableError.swift": "9e42c83559a584751134c08036c9fb5c914dd225dc9a759e0fa62cfa833081ec",
+          "DatadogInternal/Sources/Upload/DataCompression.swift": "7144b74125420a6a98fc08fadc8fd2139aab6a4d61cea4e4e1663e2fc9f05929",
+          "DatadogInternal/Sources/Upload/DataFormat.swift": "7fac383d4622bff94cf99f1b3ebaf3c0fa4fc95c63dd172968fbc2b200028202",
+          "DatadogInternal/Sources/Upload/DefaultJSONEncoder.swift": "1cfd2adb0e53a6cbcc0965147a6bc8090f85204191922d83b179f1d909b3ea8d",
+          "DatadogInternal/Sources/Upload/Event.swift": "181c5d1697d22b03e22bc2fa21935832849c52d9de9ba6ab370b6b59d621a932",
+          "DatadogInternal/Sources/Upload/FeatureRequestBuilder.swift": "de01c6cdef5540e480f173b334b40518ac670d858dfbd18291f6eb04edf32b5b",
+          "DatadogInternal/Sources/Upload/MultipartFormData.swift": "51dca7ec54739d169ef16fdea270782a0d66a6532f1e7c422aa561887e5c4770",
+          "DatadogInternal/Sources/Upload/URLRequestBuilder.swift": "e9c6da30b2a19c934eed1450471105b762292d2e02fb7b83e381721026b1887b",
+          "DatadogInternal/Sources/Upload/UploadPerformancePreset.swift": "4c39e14997b1e5f8b5993262be29ece57dbebdaaad1c3416e7fad08a86b298cb",
+          "DatadogInternal/Sources/Utils/Assert.swift": "14b3ad4a1a24ed806f4a1b0979f4da56581b5789be44ee70f85ac677772cd125",
+          "DatadogInternal/Sources/Utils/CustomDump.swift": "03e8ebb9043ad7ade9f8b2ec6983bca3f8078664d0c42c1392e830b7cbac3a04",
+          "DatadogInternal/Sources/Utils/DDError.swift": "d1e7b63fdb98e7bb1c6e42749155b4a571c49e1feef4dc6760e3148a71134e38",
+          "DatadogInternal/Sources/Utils/DateFormatting.swift": "b4ecf4da78ee6000124b1d764fa1620f93e7ab917b7e087776fb10b0ebdada1a",
+          "DatadogInternal/Sources/Utils/DeterministicSampler.swift": "0f02da5a8218f8240b87904ea1eeed81d32dde1e9bf9cba2c4ee32e66ef6579d",
+          "DatadogInternal/Sources/Utils/ReflectionMirror.swift": "244b93799be4f1aa54520ee072f57d4cd5f5ca1c72006c29623c9ea420efbe9b",
+          "DatadogInternal/Sources/Utils/Reflector.swift": "47b5c701cb67f57282d353970427aea38c210283c4ef6ccbaa50bf1c7c0a5842",
+          "DatadogInternal/Sources/Utils/Sampler.swift": "7c1707135e17f8c4495673b1b82b7417a16cc1d611f29e5504d73086a7e03015",
+          "DatadogInternal/Sources/Utils/SwiftExtensions.swift": "27756f334c1711a4e084da3ba3e866f972dc63f671598596f471bd7d6e9ea6bf",
+          "DatadogInternal/Sources/Utils/UIKitExtensions.swift": "00d6160218db3859f353b8e389e38a711b84e7912c2a16d8ef9dc6b756d4ce2f",
+          "DatadogInternal/Sources/Utils/WatchKitExtensions.swift": "dab960f375d3105a4e073fc25301fe5c29ca225245ed14b6047f06021e484364"
+        }
+      },
+      "attempts": [
+        {
+          "stage": "build",
+          "arm": "baseline",
+          "command": [
+            "xcodebuild",
+            "build",
+            "-quiet",
+            "-project",
+            "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp199-native-ownership-qe3isrcc/baseline/E01.xcodeproj",
+            "-scheme",
+            "E01",
+            "-configuration",
+            "Release",
+            "-destination",
+            "generic/platform=iOS Simulator",
+            "-derivedDataPath",
+            "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp199-native-ownership-qe3isrcc/baseline/derived",
+            "CODE_SIGNING_ALLOWED=NO",
+            "ARCHS=arm64",
+            "ONLY_ACTIVE_ARCH=YES"
+          ],
+          "started_at": "2026-09-19T23:43:22.993229+00:00",
+          "exit_code": 0,
+          "finished_at": "2026-09-19T23:43:59.142030+00:00"
+        },
+        {
+          "stage": "build",
+          "arm": "candidate",
+          "command": [
+            "xcodebuild",
+            "build",
+            "-quiet",
+            "-project",
+            "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp199-native-ownership-qe3isrcc/candidate/E01.xcodeproj",
+            "-scheme",
+            "E01",
+            "-configuration",
+            "Release",
+            "-destination",
+            "generic/platform=iOS Simulator",
+            "-derivedDataPath",
+            "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp199-native-ownership-qe3isrcc/candidate/derived",
+            "CODE_SIGNING_ALLOWED=NO",
+            "ARCHS=arm64",
+            "ONLY_ACTIVE_ARCH=YES"
+          ],
+          "started_at": "2026-09-19T23:43:59.377177+00:00",
+          "exit_code": 0,
+          "finished_at": "2026-09-19T23:44:34.462034+00:00"
+        }
+      ],
+      "xcode": "Xcode 27.1\nBuild version 27A9269\n",
+      "runtime_inventory": {
+        "devices": {
+          "com.apple.CoreSimulator.SimRuntime.xrOS-26-5": [
+            {
+              "dataPath": "/Users/valentin.pertuisot/Library/Developer/CoreSimulator/Devices/077AFEE9-D023-430B-834B-407EE21B74C7/data",
+              "dataPathSize": 4096,
+              "logPath": "/Users/valentin.pertuisot/Library/Logs/CoreSimulator/077AFEE9-D023-430B-834B-407EE21B74C7",
+              "udid": "077AFEE9-D023-430B-834B-407EE21B74C7",
+              "isAvailable": true,
+              "deviceTypeIdentifier": "com.apple.CoreSimulator.SimDeviceType.Apple-Vision-Pro-4K",
+              "state": "Shutdown",
+              "name": "Apple Vision Pro"
+            }
+          ],
+          "com.apple.CoreSimulator.SimRuntime.iOS-27-0": [
+            {
+              "dataPath": "/Users/valentin.pertuisot/Library/Developer/CoreSimulator/Devices/59A8E789-932A-48D0-9281-0F49DEB8E96D/data",
+              "dataPathSize": 5548478464,
+              "logPath": "/Users/valentin.pertuisot/Library/Logs/CoreSimulator/59A8E789-932A-48D0-9281-0F49DEB8E96D",
+              "udid": "59A8E789-932A-48D0-9281-0F49DEB8E96D",
+              "lastUsedAt": "2026-09-19T23:03:51Z",
+              "isAvailable": true,
+              "logPathSize": 536576,
+              "deviceTypeIdentifier": "com.apple.CoreSimulator.SimDeviceType.iPhone-18-Pro",
+              "state": "Booted",
+              "name": "iPhone 18 Pro"
+            },
+            {
+              "dataPath": "/Users/valentin.pertuisot/Library/Developer/CoreSimulator/Devices/7A9C345A-0ABC-4B89-8C2C-898AA744D454/data",
+              "dataPathSize": 18337792,
+              "logPath": "/Users/valentin.pertuisot/Library/Logs/CoreSimulator/7A9C345A-0ABC-4B89-8C2C-898AA744D454",
+              "udid": "7A9C345A-0ABC-4B89-8C2C-898AA744D454",
+              "isAvailable": true,
+              "deviceTypeIdentifier": "com.apple.CoreSimulator.SimDeviceType.iPhone-18-Pro-Max",
+              "state": "Shutdown",
+              "name": "iPhone 18 Pro Max"
+            },
+            {
+              "dataPath": "/Users/valentin.pertuisot/Library/Developer/CoreSimulator/Devices/BE03D65C-84F6-4FE0-95DA-A8F8D81A5D21/data",
+              "dataPathSize": 5592645632,
+              "logPath": "/Users/valentin.pertuisot/Library/Logs/CoreSimulator/BE03D65C-84F6-4FE0-95DA-A8F8D81A5D21",
+              "udid": "BE03D65C-84F6-4FE0-95DA-A8F8D81A5D21",
+              "lastUsedAt": "2026-09-12T09:48:55Z",
+              "isAvailable": true,
+              "logPathSize": 548864,
+              "deviceTypeIdentifier": "com.apple.CoreSimulator.SimDeviceType.iPhone-17-Pro",
+              "state": "Shutdown",
+              "name": "iPhone 17 Pro"
+            },
+            {
+              "dataPath": "/Users/valentin.pertuisot/Library/Developer/CoreSimulator/Devices/C42D5C49-0C60-4499-951E-FDBE86E64F54/data",
+              "dataPathSize": 18337792,
+              "logPath": "/Users/valentin.pertuisot/Library/Logs/CoreSimulator/C42D5C49-0C60-4499-951E-FDBE86E64F54",
+              "udid": "C42D5C49-0C60-4499-951E-FDBE86E64F54",
+              "isAvailable": true,
+              "deviceTypeIdentifier": "com.apple.CoreSimulator.SimDeviceType.iPhone-17-Pro-Max",
+              "state": "Shutdown",
+              "name": "iPhone 17 Pro Max"
+            },
+            {
+              "dataPath": "/Users/valentin.pertuisot/Library/Developer/CoreSimulator/Devices/5E424825-120B-43F7-A505-888FC4DD9384/data",
+              "dataPathSize": 18337792,
+              "logPath": "/Users/valentin.pertuisot/Library/Logs/CoreSimulator/5E424825-120B-43F7-A505-888FC4DD9384",
+              "udid": "5E424825-120B-43F7-A505-888FC4DD9384",
+              "isAvailable": true,
+              "deviceTypeIdentifier": "com.apple.CoreSimulator.SimDeviceType.iPhone-17e",
+              "state": "Shutdown",
+              "name": "iPhone 17e"
+            },
+            {
+              "dataPath": "/Users/valentin.pertuisot/Library/Developer/CoreSimulator/Devices/305E1C84-E1C7-40A7-AB19-9D45078E7CA8/data",
+              "dataPathSize": 18337792,
+              "logPath": "/Users/valentin.pertuisot/Library/Logs/CoreSimulator/305E1C84-E1C7-40A7-AB19-9D45078E7CA8",
+              "udid": "305E1C84-E1C7-40A7-AB19-9D45078E7CA8",
+              "isAvailable": true,
+              "deviceTypeIdentifier": "com.apple.CoreSimulator.SimDeviceType.iPhone-Air",
+              "state": "Shutdown",
+              "name": "iPhone Air"
+            },
+            {
+              "dataPath": "/Users/valentin.pertuisot/Library/Developer/CoreSimulator/Devices/B85C64AB-E854-4280-BCEF-A5AAA5AB187C/data",
+              "dataPathSize": 2673102848,
+              "logPath": "/Users/valentin.pertuisot/Library/Logs/CoreSimulator/B85C64AB-E854-4280-BCEF-A5AAA5AB187C",
+              "udid": "B85C64AB-E854-4280-BCEF-A5AAA5AB187C",
+              "lastUsedAt": "2026-09-18T20:34:35Z",
+              "isAvailable": true,
+              "logPathSize": 438272,
+              "deviceTypeIdentifier": "com.apple.CoreSimulator.SimDeviceType.iPhone-17",
+              "state": "Shutdown",
+              "name": "iPhone 17"
+            },
+            {
+              "dataPath": "/Users/valentin.pertuisot/Library/Developer/CoreSimulator/Devices/D8DA372C-56E5-4B19-9208-0576CA3614F8/data",
+              "dataPathSize": 4535603200,
+              "logPath": "/Users/valentin.pertuisot/Library/Logs/CoreSimulator/D8DA372C-56E5-4B19-9208-0576CA3614F8",
+              "udid": "D8DA372C-56E5-4B19-9208-0576CA3614F8",
+              "lastUsedAt": "2026-09-18T09:29:32Z",
+              "isAvailable": true,
+              "logPathSize": 561152,
+              "deviceTypeIdentifier": "com.apple.CoreSimulator.SimDeviceType.iPad-Pro-13-inch-M5-16GB",
+              "state": "Shutdown",
+              "name": "iPad Pro 13-inch (M5) (16GB)"
+            },
+            {
+              "dataPath": "/Users/valentin.pertuisot/Library/Developer/CoreSimulator/Devices/B4E4F039-CA5D-4D04-A904-1D71099BE651/data",
+              "dataPathSize": 4968628224,
+              "logPath": "/Users/valentin.pertuisot/Library/Logs/CoreSimulator/B4E4F039-CA5D-4D04-A904-1D71099BE651",
+              "udid": "B4E4F039-CA5D-4D04-A904-1D71099BE651",
+              "lastUsedAt": "2026-09-14T10:55:58Z",
+              "isAvailable": true,
+              "logPathSize": 503808,
+              "deviceTypeIdentifier": "com.apple.CoreSimulator.SimDeviceType.iPad-Pro-13-inch-M5-12GB",
+              "state": "Shutdown",
+              "name": "iPad Pro 13-inch (M5)"
+            },
+            {
+              "dataPath": "/Users/valentin.pertuisot/Library/Developer/CoreSimulator/Devices/606B6C10-BFF3-4518-9CD9-3BBE047D44A5/data",
+              "dataPathSize": 18337792,
+              "logPath": "/Users/valentin.pertuisot/Library/Logs/CoreSimulator/606B6C10-BFF3-4518-9CD9-3BBE047D44A5",
+              "udid": "606B6C10-BFF3-4518-9CD9-3BBE047D44A5",
+              "isAvailable": true,
+              "deviceTypeIdentifier": "com.apple.CoreSimulator.SimDeviceType.iPad-Pro-11-inch-M5-12GB",
+              "state": "Shutdown",
+              "name": "iPad Pro 11-inch (M5)"
+            },
+            {
+              "dataPath": "/Users/valentin.pertuisot/Library/Developer/CoreSimulator/Devices/92C9918B-FEC6-4440-9D6D-8E09475950BB/data",
+              "dataPathSize": 3081170944,
+              "logPath": "/Users/valentin.pertuisot/Library/Logs/CoreSimulator/92C9918B-FEC6-4440-9D6D-8E09475950BB",
+              "udid": "92C9918B-FEC6-4440-9D6D-8E09475950BB",
+              "lastUsedAt": "2026-09-16T22:19:15Z",
+              "isAvailable": true,
+              "logPathSize": 520192,
+              "deviceTypeIdentifier": "com.apple.CoreSimulator.SimDeviceType.iPad-mini-A17-Pro",
+              "state": "Shutdown",
+              "name": "iPad mini (A17 Pro)"
+            },
+            {
+              "dataPath": "/Users/valentin.pertuisot/Library/Developer/CoreSimulator/Devices/A9677059-8CB9-4A39-AD8A-2DF61FB2447A/data",
+              "dataPathSize": 3323232256,
+              "logPath": "/Users/valentin.pertuisot/Library/Logs/CoreSimulator/A9677059-8CB9-4A39-AD8A-2DF61FB2447A",
+              "udid": "A9677059-8CB9-4A39-AD8A-2DF61FB2447A",
+              "lastUsedAt": "2026-09-16T12:37:09Z",
+              "isAvailable": true,
+              "logPathSize": 258048,
+              "deviceTypeIdentifier": "com.apple.CoreSimulator.SimDeviceType.iPad-Air-13-inch-M4",
+              "state": "Shutdown",
+              "name": "iPad Air 13-inch (M4)"
+            },
+            {
+              "dataPath": "/Users/valentin.pertuisot/Library/Developer/CoreSimulator/Devices/FF628CB6-1DBD-4073-9E0D-E77106337980/data",
+              "dataPathSize": 3269685248,
+              "logPath": "/Users/valentin.pertuisot/Library/Logs/CoreSimulator/FF628CB6-1DBD-4073-9E0D-E77106337980",
+              "udid": "FF628CB6-1DBD-4073-9E0D-E77106337980",
+              "lastUsedAt": "2026-09-16T12:28:06Z",
+              "isAvailable": true,
+              "logPathSize": 397312,
+              "deviceTypeIdentifier": "com.apple.CoreSimulator.SimDeviceType.iPad-Air-11-inch-M4",
+              "state": "Shutdown",
+              "name": "iPad Air 11-inch (M4)"
+            },
+            {
+              "dataPath": "/Users/valentin.pertuisot/Library/Developer/CoreSimulator/Devices/027EB49C-CBEF-4F4B-A942-B087DB9BEC8C/data",
+              "dataPathSize": 18337792,
+              "logPath": "/Users/valentin.pertuisot/Library/Logs/CoreSimulator/027EB49C-CBEF-4F4B-A942-B087DB9BEC8C",
+              "udid": "027EB49C-CBEF-4F4B-A942-B087DB9BEC8C",
+              "isAvailable": true,
+              "deviceTypeIdentifier": "com.apple.CoreSimulator.SimDeviceType.iPad-A16",
+              "state": "Shutdown",
+              "name": "iPad (A16)"
+            }
+          ],
+          "com.apple.CoreSimulator.SimRuntime.tvOS-26-5": [
+            {
+              "dataPath": "/Users/valentin.pertuisot/Library/Developer/CoreSimulator/Devices/FCB7C5B3-A595-414F-B89B-C00458768A23/data",
+              "dataPathSize": 4096,
+              "logPath": "/Users/valentin.pertuisot/Library/Logs/CoreSimulator/FCB7C5B3-A595-414F-B89B-C00458768A23",
+              "udid": "FCB7C5B3-A595-414F-B89B-C00458768A23",
+              "isAvailable": true,
+              "deviceTypeIdentifier": "com.apple.CoreSimulator.SimDeviceType.Apple-TV-4K-3rd-generation-4K",
+              "state": "Shutdown",
+              "name": "Apple TV 4K (3rd generation)"
+            },
+            {
+              "dataPath": "/Users/valentin.pertuisot/Library/Developer/CoreSimulator/Devices/6195FCD1-FBD6-4ADE-BA45-03C694A82AF6/data",
+              "dataPathSize": 4096,
+              "logPath": "/Users/valentin.pertuisot/Library/Logs/CoreSimulator/6195FCD1-FBD6-4ADE-BA45-03C694A82AF6",
+              "udid": "6195FCD1-FBD6-4ADE-BA45-03C694A82AF6",
+              "isAvailable": true,
+              "deviceTypeIdentifier": "com.apple.CoreSimulator.SimDeviceType.Apple-TV-4K-3rd-generation-1080p",
+              "state": "Shutdown",
+              "name": "Apple TV 4K (3rd generation) (at 1080p)"
+            },
+            {
+              "dataPath": "/Users/valentin.pertuisot/Library/Developer/CoreSimulator/Devices/C86C8EFE-1368-42C4-9069-CFB535D62742/data",
+              "dataPathSize": 4096,
+              "logPath": "/Users/valentin.pertuisot/Library/Logs/CoreSimulator/C86C8EFE-1368-42C4-9069-CFB535D62742",
+              "udid": "C86C8EFE-1368-42C4-9069-CFB535D62742",
+              "isAvailable": true,
+              "deviceTypeIdentifier": "com.apple.CoreSimulator.SimDeviceType.Apple-TV-1080p",
+              "state": "Shutdown",
+              "name": "Apple TV"
+            }
+          ],
+          "com.apple.CoreSimulator.SimRuntime.iOS-27-2": [
+            {
+              "dataPath": "/Users/valentin.pertuisot/Library/Developer/CoreSimulator/Devices/F3F30399-15BA-47FC-821D-997E3AF325D5/data",
+              "dataPathSize": 2022543360,
+              "logPath": "/Users/valentin.pertuisot/Library/Logs/CoreSimulator/F3F30399-15BA-47FC-821D-997E3AF325D5",
+              "udid": "F3F30399-15BA-47FC-821D-997E3AF325D5",
+              "lastUsedAt": "2026-09-18T19:58:25Z",
+              "isAvailable": true,
+              "logPathSize": 237568,
+              "deviceTypeIdentifier": "com.apple.CoreSimulator.SimDeviceType.iPhone-18-Pro",
+              "state": "Shutdown",
+              "name": "iPhone 18 Pro"
+            },
+            {
+              "dataPath": "/Users/valentin.pertuisot/Library/Developer/CoreSimulator/Devices/EA2B77B3-C80D-4B71-ABBB-ACD018F40727/data",
+              "dataPathSize": 18337792,
+              "logPath": "/Users/valentin.pertuisot/Library/Logs/CoreSimulator/EA2B77B3-C80D-4B71-ABBB-ACD018F40727",
+              "udid": "EA2B77B3-C80D-4B71-ABBB-ACD018F40727",
+              "isAvailable": true,
+              "deviceTypeIdentifier": "com.apple.CoreSimulator.SimDeviceType.iPhone-18-Pro-Max",
+              "state": "Shutdown",
+              "name": "iPhone 18 Pro Max"
+            },
+            {
+              "dataPath": "/Users/valentin.pertuisot/Library/Developer/CoreSimulator/Devices/ED0493AE-F75B-4371-9833-8BD1D62C4440/data",
+              "dataPathSize": 18337792,
+              "logPath": "/Users/valentin.pertuisot/Library/Logs/CoreSimulator/ED0493AE-F75B-4371-9833-8BD1D62C4440",
+              "udid": "ED0493AE-F75B-4371-9833-8BD1D62C4440",
+              "isAvailable": true,
+              "deviceTypeIdentifier": "com.apple.CoreSimulator.SimDeviceType.iPhone-17e",
+              "state": "Shutdown",
+              "name": "iPhone 17e"
+            },
+            {
+              "dataPath": "/Users/valentin.pertuisot/Library/Developer/CoreSimulator/Devices/FA9532DF-ED90-4D0C-BA02-9FA23F1ABAD8/data",
+              "dataPathSize": 18337792,
+              "logPath": "/Users/valentin.pertuisot/Library/Logs/CoreSimulator/FA9532DF-ED90-4D0C-BA02-9FA23F1ABAD8",
+              "udid": "FA9532DF-ED90-4D0C-BA02-9FA23F1ABAD8",
+              "isAvailable": true,
+              "deviceTypeIdentifier": "com.apple.CoreSimulator.SimDeviceType.iPhone-Air",
+              "state": "Shutdown",
+              "name": "iPhone Air"
+            },
+            {
+              "dataPath": "/Users/valentin.pertuisot/Library/Developer/CoreSimulator/Devices/748D8472-CEDA-41D5-A13A-C1C122BB2F38/data",
+              "dataPathSize": 18337792,
+              "logPath": "/Users/valentin.pertuisot/Library/Logs/CoreSimulator/748D8472-CEDA-41D5-A13A-C1C122BB2F38",
+              "udid": "748D8472-CEDA-41D5-A13A-C1C122BB2F38",
+              "isAvailable": true,
+              "deviceTypeIdentifier": "com.apple.CoreSimulator.SimDeviceType.iPhone-17",
+              "state": "Shutdown",
+              "name": "iPhone 17"
+            },
+            {
+              "dataPath": "/Users/valentin.pertuisot/Library/Developer/CoreSimulator/Devices/30C7126D-BCBF-4AD7-B3CE-8E6E482AAA36/data",
+              "dataPathSize": 18337792,
+              "logPath": "/Users/valentin.pertuisot/Library/Logs/CoreSimulator/30C7126D-BCBF-4AD7-B3CE-8E6E482AAA36",
+              "udid": "30C7126D-BCBF-4AD7-B3CE-8E6E482AAA36",
+              "isAvailable": true,
+              "deviceTypeIdentifier": "com.apple.CoreSimulator.SimDeviceType.iPad-Pro-13-inch-M5-12GB",
+              "state": "Shutdown",
+              "name": "iPad Pro 13-inch (M5)"
+            },
+            {
+              "dataPath": "/Users/valentin.pertuisot/Library/Developer/CoreSimulator/Devices/470AEEBC-EAE1-4D8F-9023-3D7E300D9B4B/data",
+              "dataPathSize": 18337792,
+              "logPath": "/Users/valentin.pertuisot/Library/Logs/CoreSimulator/470AEEBC-EAE1-4D8F-9023-3D7E300D9B4B",
+              "udid": "470AEEBC-EAE1-4D8F-9023-3D7E300D9B4B",
+              "isAvailable": true,
+              "deviceTypeIdentifier": "com.apple.CoreSimulator.SimDeviceType.iPad-Pro-11-inch-M5-12GB",
+              "state": "Shutdown",
+              "name": "iPad Pro 11-inch (M5)"
+            },
+            {
+              "dataPath": "/Users/valentin.pertuisot/Library/Developer/CoreSimulator/Devices/68B70384-28FA-4231-889B-C1B60077E0C4/data",
+              "dataPathSize": 18337792,
+              "logPath": "/Users/valentin.pertuisot/Library/Logs/CoreSimulator/68B70384-28FA-4231-889B-C1B60077E0C4",
+              "udid": "68B70384-28FA-4231-889B-C1B60077E0C4",
+              "isAvailable": true,
+              "deviceTypeIdentifier": "com.apple.CoreSimulator.SimDeviceType.iPad-mini-A17-Pro",
+              "state": "Shutdown",
+              "name": "iPad mini (A17 Pro)"
+            },
+            {
+              "dataPath": "/Users/valentin.pertuisot/Library/Developer/CoreSimulator/Devices/E0CEEFDA-2C4C-482F-A71B-FB9BD8F0D862/data",
+              "dataPathSize": 18337792,
+              "logPath": "/Users/valentin.pertuisot/Library/Logs/CoreSimulator/E0CEEFDA-2C4C-482F-A71B-FB9BD8F0D862",
+              "udid": "E0CEEFDA-2C4C-482F-A71B-FB9BD8F0D862",
+              "isAvailable": true,
+              "deviceTypeIdentifier": "com.apple.CoreSimulator.SimDeviceType.iPad-Air-13-inch-M4",
+              "state": "Shutdown",
+              "name": "iPad Air 13-inch (M4)"
+            },
+            {
+              "dataPath": "/Users/valentin.pertuisot/Library/Developer/CoreSimulator/Devices/3ED69C45-B96B-465A-B3C9-36817997317D/data",
+              "dataPathSize": 18337792,
+              "logPath": "/Users/valentin.pertuisot/Library/Logs/CoreSimulator/3ED69C45-B96B-465A-B3C9-36817997317D",
+              "udid": "3ED69C45-B96B-465A-B3C9-36817997317D",
+              "isAvailable": true,
+              "deviceTypeIdentifier": "com.apple.CoreSimulator.SimDeviceType.iPad-Air-11-inch-M4",
+              "state": "Shutdown",
+              "name": "iPad Air 11-inch (M4)"
+            },
+            {
+              "dataPath": "/Users/valentin.pertuisot/Library/Developer/CoreSimulator/Devices/45048C51-54BC-418C-AA0B-A4344F718A2F/data",
+              "dataPathSize": 18337792,
+              "logPath": "/Users/valentin.pertuisot/Library/Logs/CoreSimulator/45048C51-54BC-418C-AA0B-A4344F718A2F",
+              "udid": "45048C51-54BC-418C-AA0B-A4344F718A2F",
+              "isAvailable": true,
+              "deviceTypeIdentifier": "com.apple.CoreSimulator.SimDeviceType.iPad-A16",
+              "state": "Shutdown",
+              "name": "iPad (A16)"
+            }
+          ],
+          "com.apple.CoreSimulator.SimRuntime.xrOS-27-0": [
+            {
+              "dataPath": "/Users/valentin.pertuisot/Library/Developer/CoreSimulator/Devices/EE1E52AA-70EA-4E62-B36D-50300616C447/data",
+              "dataPathSize": 4096,
+              "logPath": "/Users/valentin.pertuisot/Library/Logs/CoreSimulator/EE1E52AA-70EA-4E62-B36D-50300616C447",
+              "udid": "EE1E52AA-70EA-4E62-B36D-50300616C447",
+              "isAvailable": true,
+              "deviceTypeIdentifier": "com.apple.CoreSimulator.SimDeviceType.Apple-Vision-Pro-4K",
+              "state": "Shutdown",
+              "name": "Apple Vision Pro"
+            }
+          ],
+          "com.apple.CoreSimulator.SimRuntime.iOS-26-5": [
+            {
+              "dataPath": "/Users/valentin.pertuisot/Library/Developer/CoreSimulator/Devices/551660C0-C850-4140-A994-320FE2ADEBE8/data",
+              "dataPathSize": 3464806400,
+              "logPath": "/Users/valentin.pertuisot/Library/Logs/CoreSimulator/551660C0-C850-4140-A994-320FE2ADEBE8",
+              "udid": "551660C0-C850-4140-A994-320FE2ADEBE8",
+              "lastUsedAt": "2026-09-18T06:59:25Z",
+              "isAvailable": true,
+              "logPathSize": 409600,
+              "deviceTypeIdentifier": "com.apple.CoreSimulator.SimDeviceType.iPhone-17-Pro",
+              "state": "Shutdown",
+              "name": "iPhone 17 Pro"
+            },
+            {
+              "dataPath": "/Users/valentin.pertuisot/Library/Developer/CoreSimulator/Devices/49FD4DB0-7F86-4760-8EB4-C27D0B10C04C/data",
+              "dataPathSize": 18337792,
+              "logPath": "/Users/valentin.pertuisot/Library/Logs/CoreSimulator/49FD4DB0-7F86-4760-8EB4-C27D0B10C04C",
+              "udid": "49FD4DB0-7F86-4760-8EB4-C27D0B10C04C",
+              "isAvailable": true,
+              "deviceTypeIdentifier": "com.apple.CoreSimulator.SimDeviceType.iPhone-17-Pro-Max",
+              "state": "Shutdown",
+              "name": "iPhone 17 Pro Max"
+            },
+            {
+              "dataPath": "/Users/valentin.pertuisot/Library/Developer/CoreSimulator/Devices/2E008599-84D4-4622-98EC-8D9E83F0DACC/data",
+              "dataPathSize": 18337792,
+              "logPath": "/Users/valentin.pertuisot/Library/Logs/CoreSimulator/2E008599-84D4-4622-98EC-8D9E83F0DACC",
+              "udid": "2E008599-84D4-4622-98EC-8D9E83F0DACC",
+              "isAvailable": true,
+              "deviceTypeIdentifier": "com.apple.CoreSimulator.SimDeviceType.iPhone-17e",
+              "state": "Shutdown",
+              "name": "iPhone 17e"
+            },
+            {
+              "dataPath": "/Users/valentin.pertuisot/Library/Developer/CoreSimulator/Devices/91EBC7DD-6368-4AA5-828C-C6545A00A9D8/data",
+              "dataPathSize": 18337792,
+              "logPath": "/Users/valentin.pertuisot/Library/Logs/CoreSimulator/91EBC7DD-6368-4AA5-828C-C6545A00A9D8",
+              "udid": "91EBC7DD-6368-4AA5-828C-C6545A00A9D8",
+              "isAvailable": true,
+              "deviceTypeIdentifier": "com.apple.CoreSimulator.SimDeviceType.iPhone-Air",
+              "state": "Shutdown",
+              "name": "iPhone Air"
+            },
+            {
+              "dataPath": "/Users/valentin.pertuisot/Library/Developer/CoreSimulator/Devices/65A76904-154E-4C79-9DFD-A57B526C85E6/data",
+              "dataPathSize": 3994738688,
+              "logPath": "/Users/valentin.pertuisot/Library/Logs/CoreSimulator/65A76904-154E-4C79-9DFD-A57B526C85E6",
+              "udid": "65A76904-154E-4C79-9DFD-A57B526C85E6",
+              "lastUsedAt": "2026-09-18T20:36:34Z",
+              "isAvailable": true,
+              "logPathSize": 421888,
+              "deviceTypeIdentifier": "com.apple.CoreSimulator.SimDeviceType.iPhone-17",
+              "state": "Shutdown",
+              "name": "iPhone 17"
+            },
+            {
+              "dataPath": "/Users/valentin.pertuisot/Library/Developer/CoreSimulator/Devices/455250E1-055D-496E-8805-A1A5C2FD2938/data",
+              "dataPathSize": 3651133440,
+              "logPath": "/Users/valentin.pertuisot/Library/Logs/CoreSimulator/455250E1-055D-496E-8805-A1A5C2FD2938",
+              "udid": "455250E1-055D-496E-8805-A1A5C2FD2938",
+              "lastUsedAt": "2026-09-12T13:18:32Z",
+              "isAvailable": true,
+              "logPathSize": 454656,
+              "deviceTypeIdentifier": "com.apple.CoreSimulator.SimDeviceType.iPad-Pro-13-inch-M5-12GB",
+              "state": "Shutdown",
+              "name": "iPad Pro 13-inch (M5)"
+            },
+            {
+              "dataPath": "/Users/valentin.pertuisot/Library/Developer/CoreSimulator/Devices/764F88B3-8987-481F-8F83-6953FDF79B77/data",
+              "dataPathSize": 18337792,
+              "logPath": "/Users/valentin.pertuisot/Library/Logs/CoreSimulator/764F88B3-8987-481F-8F83-6953FDF79B77",
+              "udid": "764F88B3-8987-481F-8F83-6953FDF79B77",
+              "isAvailable": true,
+              "deviceTypeIdentifier": "com.apple.CoreSimulator.SimDeviceType.iPad-Pro-11-inch-M5-12GB",
+              "state": "Shutdown",
+              "name": "iPad Pro 11-inch (M5)"
+            },
+            {
+              "dataPath": "/Users/valentin.pertuisot/Library/Developer/CoreSimulator/Devices/CF376883-06C7-4924-BA07-5398742688CE/data",
+              "dataPathSize": 18337792,
+              "logPath": "/Users/valentin.pertuisot/Library/Logs/CoreSimulator/CF376883-06C7-4924-BA07-5398742688CE",
+              "udid": "CF376883-06C7-4924-BA07-5398742688CE",
+              "isAvailable": true,
+              "deviceTypeIdentifier": "com.apple.CoreSimulator.SimDeviceType.iPad-mini-A17-Pro",
+              "state": "Shutdown",
+              "name": "iPad mini (A17 Pro)"
+            },
+            {
+              "dataPath": "/Users/valentin.pertuisot/Library/Developer/CoreSimulator/Devices/7243EA80-3414-4576-98A6-83B1A111864D/data",
+              "dataPathSize": 18337792,
+              "logPath": "/Users/valentin.pertuisot/Library/Logs/CoreSimulator/7243EA80-3414-4576-98A6-83B1A111864D",
+              "udid": "7243EA80-3414-4576-98A6-83B1A111864D",
+              "isAvailable": true,
+              "deviceTypeIdentifier": "com.apple.CoreSimulator.SimDeviceType.iPad-Air-13-inch-M4",
+              "state": "Shutdown",
+              "name": "iPad Air 13-inch (M4)"
+            },
+            {
+              "dataPath": "/Users/valentin.pertuisot/Library/Developer/CoreSimulator/Devices/D7D12D5C-7CC9-44D0-A498-CAB971FDAE55/data",
+              "dataPathSize": 18337792,
+              "logPath": "/Users/valentin.pertuisot/Library/Logs/CoreSimulator/D7D12D5C-7CC9-44D0-A498-CAB971FDAE55",
+              "udid": "D7D12D5C-7CC9-44D0-A498-CAB971FDAE55",
+              "isAvailable": true,
+              "deviceTypeIdentifier": "com.apple.CoreSimulator.SimDeviceType.iPad-Air-11-inch-M4",
+              "state": "Shutdown",
+              "name": "iPad Air 11-inch (M4)"
+            },
+            {
+              "dataPath": "/Users/valentin.pertuisot/Library/Developer/CoreSimulator/Devices/EA06B110-BCC7-453C-993B-465C014E254A/data",
+              "dataPathSize": 18337792,
+              "logPath": "/Users/valentin.pertuisot/Library/Logs/CoreSimulator/EA06B110-BCC7-453C-993B-465C014E254A",
+              "udid": "EA06B110-BCC7-453C-993B-465C014E254A",
+              "isAvailable": true,
+              "deviceTypeIdentifier": "com.apple.CoreSimulator.SimDeviceType.iPad-A16",
+              "state": "Shutdown",
+              "name": "iPad (A16)"
+            }
+          ],
+          "com.apple.CoreSimulator.SimRuntime.tvOS-27-0": [
+            {
+              "dataPath": "/Users/valentin.pertuisot/Library/Developer/CoreSimulator/Devices/1E674146-49D7-415A-85D9-4B1102CD33A2/data",
+              "dataPathSize": 4096,
+              "logPath": "/Users/valentin.pertuisot/Library/Logs/CoreSimulator/1E674146-49D7-415A-85D9-4B1102CD33A2",
+              "udid": "1E674146-49D7-415A-85D9-4B1102CD33A2",
+              "isAvailable": true,
+              "deviceTypeIdentifier": "com.apple.CoreSimulator.SimDeviceType.Apple-TV-4K-3rd-generation-4K",
+              "state": "Shutdown",
+              "name": "Apple TV 4K (3rd generation)"
+            },
+            {
+              "dataPath": "/Users/valentin.pertuisot/Library/Developer/CoreSimulator/Devices/8A682CD0-4B00-4630-BEAF-8F4610000900/data",
+              "dataPathSize": 4096,
+              "logPath": "/Users/valentin.pertuisot/Library/Logs/CoreSimulator/8A682CD0-4B00-4630-BEAF-8F4610000900",
+              "udid": "8A682CD0-4B00-4630-BEAF-8F4610000900",
+              "isAvailable": true,
+              "deviceTypeIdentifier": "com.apple.CoreSimulator.SimDeviceType.Apple-TV-4K-3rd-generation-1080p",
+              "state": "Shutdown",
+              "name": "Apple TV 4K (3rd generation) (at 1080p)"
+            }
+          ],
+          "com.apple.CoreSimulator.SimRuntime.iOS-17-5": [
+            {
+              "dataPath": "/Users/valentin.pertuisot/Library/Developer/CoreSimulator/Devices/ECF31F29-7A9A-4B41-8F15-650C5424C816/data",
+              "dataPathSize": 18337792,
+              "logPath": "/Users/valentin.pertuisot/Library/Logs/CoreSimulator/ECF31F29-7A9A-4B41-8F15-650C5424C816",
+              "udid": "ECF31F29-7A9A-4B41-8F15-650C5424C816",
+              "isAvailable": true,
+              "deviceTypeIdentifier": "com.apple.CoreSimulator.SimDeviceType.iPhone-15-Pro",
+              "state": "Shutdown",
+              "name": "iPhone 15 Pro"
+            },
+            {
+              "dataPath": "/Users/valentin.pertuisot/Library/Developer/CoreSimulator/Devices/0B551C66-2819-4128-974B-E473DDE5ECB8/data",
+              "dataPathSize": 18337792,
+              "logPath": "/Users/valentin.pertuisot/Library/Logs/CoreSimulator/0B551C66-2819-4128-974B-E473DDE5ECB8",
+              "udid": "0B551C66-2819-4128-974B-E473DDE5ECB8",
+              "isAvailable": true,
+              "deviceTypeIdentifier": "com.apple.CoreSimulator.SimDeviceType.iPhone-15-Pro-Max",
+              "state": "Shutdown",
+              "name": "iPhone 15 Pro Max"
+            },
+            {
+              "dataPath": "/Users/valentin.pertuisot/Library/Developer/CoreSimulator/Devices/ECEBAB47-BBF8-4BA0-BF5C-A93DF4C2D588/data",
+              "dataPathSize": 18337792,
+              "logPath": "/Users/valentin.pertuisot/Library/Logs/CoreSimulator/ECEBAB47-BBF8-4BA0-BF5C-A93DF4C2D588",
+              "udid": "ECEBAB47-BBF8-4BA0-BF5C-A93DF4C2D588",
+              "isAvailable": true,
+              "deviceTypeIdentifier": "com.apple.CoreSimulator.SimDeviceType.iPhone-15",
+              "state": "Shutdown",
+              "name": "iPhone 15"
+            },
+            {
+              "dataPath": "/Users/valentin.pertuisot/Library/Developer/CoreSimulator/Devices/6EE98E1C-B237-4313-A908-47C72F3DC6C9/data",
+              "dataPathSize": 18337792,
+              "logPath": "/Users/valentin.pertuisot/Library/Logs/CoreSimulator/6EE98E1C-B237-4313-A908-47C72F3DC6C9",
+              "udid": "6EE98E1C-B237-4313-A908-47C72F3DC6C9",
+              "isAvailable": true,
+              "deviceTypeIdentifier": "com.apple.CoreSimulator.SimDeviceType.iPhone-15-Plus",
+              "state": "Shutdown",
+              "name": "iPhone 15 Plus"
+            },
+            {
+              "dataPath": "/Users/valentin.pertuisot/Library/Developer/CoreSimulator/Devices/9F23E214-3C9D-463B-B594-8214F7F87645/data",
+              "dataPathSize": 18337792,
+              "logPath": "/Users/valentin.pertuisot/Library/Logs/CoreSimulator/9F23E214-3C9D-463B-B594-8214F7F87645",
+              "udid": "9F23E214-3C9D-463B-B594-8214F7F87645",
+              "isAvailable": true,
+              "deviceTypeIdentifier": "com.apple.CoreSimulator.SimDeviceType.iPhone-SE-3rd-generation",
+              "state": "Shutdown",
+              "name": "iPhone SE (3rd generation)"
+            },
+            {
+              "dataPath": "/Users/valentin.pertuisot/Library/Developer/CoreSimulator/Devices/EEF49588-982B-492E-92AF-57F900ACEACD/data",
+              "dataPathSize": 1193873408,
+              "logPath": "/Users/valentin.pertuisot/Library/Logs/CoreSimulator/EEF49588-982B-492E-92AF-57F900ACEACD",
+              "udid": "EEF49588-982B-492E-92AF-57F900ACEACD",
+              "lastUsedAt": "2026-09-19T20:41:14Z",
+              "isAvailable": true,
+              "logPathSize": 466944,
+              "deviceTypeIdentifier": "com.apple.CoreSimulator.SimDeviceType.iPad-Pro-11-inch-M4-16GB",
+              "state": "Booted",
+              "name": "iPad Pro 11-inch (M4) (16GB)"
+            },
+            {
+              "dataPath": "/Users/valentin.pertuisot/Library/Developer/CoreSimulator/Devices/14F9B102-1A1A-48F8-AE3F-2CD53C683C83/data",
+              "dataPathSize": 18337792,
+              "logPath": "/Users/valentin.pertuisot/Library/Logs/CoreSimulator/14F9B102-1A1A-48F8-AE3F-2CD53C683C83",
+              "udid": "14F9B102-1A1A-48F8-AE3F-2CD53C683C83",
+              "isAvailable": true,
+              "deviceTypeIdentifier": "com.apple.CoreSimulator.SimDeviceType.iPad-Pro-11-inch-M4-8GB",
+              "state": "Shutdown",
+              "name": "iPad Pro 11-inch (M4)"
+            },
+            {
+              "dataPath": "/Users/valentin.pertuisot/Library/Developer/CoreSimulator/Devices/122646B0-D673-4022-AC90-9D824C86E639/data",
+              "dataPathSize": 18337792,
+              "logPath": "/Users/valentin.pertuisot/Library/Logs/CoreSimulator/122646B0-D673-4022-AC90-9D824C86E639",
+              "udid": "122646B0-D673-4022-AC90-9D824C86E639",
+              "isAvailable": true,
+              "deviceTypeIdentifier": "com.apple.CoreSimulator.SimDeviceType.iPad-Pro-13-inch-M4-8GB",
+              "state": "Shutdown",
+              "name": "iPad Pro 13-inch (M4)"
+            },
+            {
+              "dataPath": "/Users/valentin.pertuisot/Library/Developer/CoreSimulator/Devices/E4A3FD5B-0582-48EA-A129-D4692A1D0CBB/data",
+              "dataPathSize": 18337792,
+              "logPath": "/Users/valentin.pertuisot/Library/Logs/CoreSimulator/E4A3FD5B-0582-48EA-A129-D4692A1D0CBB",
+              "udid": "E4A3FD5B-0582-48EA-A129-D4692A1D0CBB",
+              "isAvailable": true,
+              "deviceTypeIdentifier": "com.apple.CoreSimulator.SimDeviceType.iPad-Air-11-inch-M2",
+              "state": "Shutdown",
+              "name": "iPad Air 11-inch (M2)"
+            },
+            {
+              "dataPath": "/Users/valentin.pertuisot/Library/Developer/CoreSimulator/Devices/0F98B767-FB87-48B3-A267-503D76AAA2AC/data",
+              "dataPathSize": 18337792,
+              "logPath": "/Users/valentin.pertuisot/Library/Logs/CoreSimulator/0F98B767-FB87-48B3-A267-503D76AAA2AC",
+              "udid": "0F98B767-FB87-48B3-A267-503D76AAA2AC",
+              "isAvailable": true,
+              "deviceTypeIdentifier": "com.apple.CoreSimulator.SimDeviceType.iPad-Air-13-inch-M2",
+              "state": "Shutdown",
+              "name": "iPad Air 13-inch (M2)"
+            },
+            {
+              "dataPath": "/Users/valentin.pertuisot/Library/Developer/CoreSimulator/Devices/1E85B69D-3D22-45B4-B17B-09B9F621C020/data",
+              "dataPathSize": 18337792,
+              "logPath": "/Users/valentin.pertuisot/Library/Logs/CoreSimulator/1E85B69D-3D22-45B4-B17B-09B9F621C020",
+              "udid": "1E85B69D-3D22-45B4-B17B-09B9F621C020",
+              "isAvailable": true,
+              "deviceTypeIdentifier": "com.apple.CoreSimulator.SimDeviceType.iPad-10th-generation",
+              "state": "Shutdown",
+              "name": "iPad (10th generation)"
+            },
+            {
+              "dataPath": "/Users/valentin.pertuisot/Library/Developer/CoreSimulator/Devices/EA371D93-8A75-4BA6-9829-35DC201F5856/data",
+              "dataPathSize": 18337792,
+              "logPath": "/Users/valentin.pertuisot/Library/Logs/CoreSimulator/EA371D93-8A75-4BA6-9829-35DC201F5856",
+              "udid": "EA371D93-8A75-4BA6-9829-35DC201F5856",
+              "isAvailable": true,
+              "deviceTypeIdentifier": "com.apple.CoreSimulator.SimDeviceType.iPad-mini-6th-generation",
+              "state": "Shutdown",
+              "name": "iPad mini (6th generation)"
+            }
+          ],
+          "com.apple.CoreSimulator.SimRuntime.iOS-27-1": [
+            {
+              "dataPath": "/Users/valentin.pertuisot/Library/Developer/CoreSimulator/Devices/F91CCE46-2704-4E8B-9093-A6A0EF250B1A/data",
+              "dataPathSize": 5011206144,
+              "logPath": "/Users/valentin.pertuisot/Library/Logs/CoreSimulator/F91CCE46-2704-4E8B-9093-A6A0EF250B1A",
+              "udid": "F91CCE46-2704-4E8B-9093-A6A0EF250B1A",
+              "lastUsedAt": "2026-09-19T08:03:11Z",
+              "isAvailable": true,
+              "logPathSize": 618496,
+              "deviceTypeIdentifier": "com.apple.CoreSimulator.SimDeviceType.iPhone-Duo",
+              "state": "Shutdown",
+              "name": "iPhone Duo"
+            },
+            {
+              "dataPath": "/Users/valentin.pertuisot/Library/Developer/CoreSimulator/Devices/9A00C776-2D63-420A-830F-44CE1B5E3F2E/data",
+              "dataPathSize": 3441209344,
+              "logPath": "/Users/valentin.pertuisot/Library/Logs/CoreSimulator/9A00C776-2D63-420A-830F-44CE1B5E3F2E",
+              "udid": "9A00C776-2D63-420A-830F-44CE1B5E3F2E",
+              "lastUsedAt": "2026-09-18T20:52:25Z",
+              "isAvailable": true,
+              "logPathSize": 143360,
+              "deviceTypeIdentifier": "com.apple.CoreSimulator.SimDeviceType.iPhone-Duo",
+              "state": "Booted",
+              "name": "iPhone Duo"
+            }
+          ]
+        }
+      },
+      "signature_verified": false,
+      "signature_status": "Unsigned local fallback explicitly user-authorized after signing agent failed communication. Must be signed/verified before separately authorized push.",
+      "source_delta": [
+        "DatadogInternal/Sources/NetworkInstrumentation/NetworkInstrumentationFeature.swift"
+      ]
+    },
+    "rows": [
+      {
+        "run_id": "exp199-native-048dd36b35d74326bfdc9ac76e91dd96",
+        "arm": "candidate",
+        "tracking": "registered",
+        "binary_sha256": "f526a0288ceb9ddb3b5ca926e1baa436ba5cc3fa50fb030226d8692d428ef6f5",
+        "installed_sha256": "f526a0288ceb9ddb3b5ca926e1baa436ba5cc3fa50fb030226d8692d428ef6f5",
+        "runner_sha256": "70b152aee9e6cbb187e017a6f2a205b01b333ad2087bddc176435d991a9f4ee3",
+        "started_at": "2026-09-19T23:46:22.125512+00:00",
+        "finished_at": "2026-09-19T23:46:25.775976+00:00",
+        "status": "PASS",
+        "expected_ownership_pass": true,
+        "result": {
+          "final_release": {
+            "feature": true,
+            "handler": true,
+            "provider": true,
+            "terminal_preparation": true
+          },
+          "mode": "ownership",
+          "native_roundtrip": {
+            "completions": 1,
+            "mutations": 1,
+            "native_body_bytes": 1024,
+            "native_completions": 1,
+            "native_metrics": 1,
+            "prepared_header": "1",
+            "sdk_body_bytes": 1024,
+            "sdk_metrics": 1,
+            "starts": 1
+          },
+          "os": "17.5",
+          "response_body_bytes": 1024,
+          "run_id": "exp199-native-048dd36b35d74326bfdc9ac76e91dd96",
+          "schema_version": 4,
+          "scope": "EXP-199 native ownership comparison; no numeric performance verdict",
+          "sdk_unbound": false,
+          "status": "FIXTURE_QUALIFIED_NO_ABBA_VERDICT",
+          "terminal_preparation_ownership": {
+            "captured_final_terminal": false,
+            "captured_initial_preparation": true,
+            "initial_preparation_released": true,
+            "live_terminal_identities_after_task_release": 0,
+            "ownership_pass": true,
+            "preparation_alive_after_task_release_before_map_observation": false,
+            "repeat_completed_resume_preserved": true,
+            "task_released": true,
+            "weak_terminal_identity_while_task_alive": true
+          },
+          "tracking": "registered",
+          "warm_task_released": true
+        },
+        "process_absent": true,
+        "data_absent": true,
+        "boot_state_preserved": true,
+        "artifact": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp199-native-ownership-qe3isrcc/runs/exp199-native-048dd36b35d74326bfdc9ac76e91dd96",
+        "manifest_sha256": "27653da6e0b896475042166d2715fc0587f85e7c1e751a09c9305cfa260a7ebe"
+      },
+      {
+        "run_id": "exp199-native-5f6f3abd6c3449deb4a01c96ed267788",
+        "arm": "baseline",
+        "tracking": "registered",
+        "binary_sha256": "be91f3431d781145116e4b98b8127c2c75b5538b91bac861ccf308e5022da4d3",
+        "installed_sha256": "be91f3431d781145116e4b98b8127c2c75b5538b91bac861ccf308e5022da4d3",
+        "runner_sha256": "70b152aee9e6cbb187e017a6f2a205b01b333ad2087bddc176435d991a9f4ee3",
+        "started_at": "2026-09-19T23:46:18.396561+00:00",
+        "finished_at": "2026-09-19T23:46:22.069577+00:00",
+        "status": "PASS",
+        "expected_ownership_pass": false,
+        "result": {
+          "final_release": {
+            "feature": true,
+            "handler": true,
+            "provider": true,
+            "terminal_preparation": true
+          },
+          "mode": "ownership",
+          "native_roundtrip": {
+            "completions": 1,
+            "mutations": 1,
+            "native_body_bytes": 1024,
+            "native_completions": 1,
+            "native_metrics": 1,
+            "prepared_header": "1",
+            "sdk_body_bytes": 1024,
+            "sdk_metrics": 1,
+            "starts": 1
+          },
+          "os": "17.5",
+          "response_body_bytes": 1024,
+          "run_id": "exp199-native-5f6f3abd6c3449deb4a01c96ed267788",
+          "schema_version": 4,
+          "scope": "EXP-199 native ownership comparison; no numeric performance verdict",
+          "sdk_unbound": false,
+          "status": "FIXTURE_QUALIFIED_NO_ABBA_VERDICT",
+          "terminal_preparation_ownership": {
+            "captured_final_terminal": true,
+            "captured_initial_preparation": true,
+            "initial_preparation_released": true,
+            "live_terminal_identities_after_task_release": 0,
+            "ownership_pass": false,
+            "preparation_alive_after_task_release_before_map_observation": true,
+            "repeat_completed_resume_preserved": true,
+            "task_released": true,
+            "weak_terminal_identity_while_task_alive": false
+          },
+          "tracking": "registered",
+          "warm_task_released": true
+        },
+        "process_absent": true,
+        "data_absent": true,
+        "boot_state_preserved": true,
+        "artifact": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp199-native-ownership-qe3isrcc/runs/exp199-native-5f6f3abd6c3449deb4a01c96ed267788",
+        "manifest_sha256": "a7a09aa7aad609843bfaf637cd4ebf2a63087b6846a8b20f0a34c5479108e81e"
+      },
+      {
+        "run_id": "exp199-native-85474eab47934efb89be1d7913a3004d",
+        "arm": "baseline",
+        "tracking": "automatic",
+        "binary_sha256": "be91f3431d781145116e4b98b8127c2c75b5538b91bac861ccf308e5022da4d3",
+        "installed_sha256": "be91f3431d781145116e4b98b8127c2c75b5538b91bac861ccf308e5022da4d3",
+        "runner_sha256": "70b152aee9e6cbb187e017a6f2a205b01b333ad2087bddc176435d991a9f4ee3",
+        "started_at": "2026-09-19T23:46:10.210311+00:00",
+        "finished_at": "2026-09-19T23:46:14.364273+00:00",
+        "status": "PASS",
+        "expected_ownership_pass": false,
+        "result": {
+          "final_release": {
+            "feature": true,
+            "handler": true,
+            "provider": true,
+            "terminal_preparation": true
+          },
+          "mode": "ownership",
+          "native_roundtrip": {
+            "completions": 1,
+            "mutations": 1,
+            "native_body_bytes": 1024,
+            "native_completions": 1,
+            "native_metrics": 0,
+            "prepared_header": "1",
+            "sdk_body_bytes": 1024,
+            "sdk_metrics": 0,
+            "starts": 1
+          },
+          "os": "17.5",
+          "response_body_bytes": 1024,
+          "run_id": "exp199-native-85474eab47934efb89be1d7913a3004d",
+          "schema_version": 4,
+          "scope": "EXP-199 native ownership comparison; no numeric performance verdict",
+          "sdk_unbound": false,
+          "status": "FIXTURE_QUALIFIED_NO_ABBA_VERDICT",
+          "terminal_preparation_ownership": {
+            "captured_final_terminal": true,
+            "captured_initial_preparation": true,
+            "initial_preparation_released": true,
+            "live_terminal_identities_after_task_release": 0,
+            "ownership_pass": false,
+            "preparation_alive_after_task_release_before_map_observation": true,
+            "repeat_completed_resume_preserved": true,
+            "task_released": true,
+            "weak_terminal_identity_while_task_alive": false
+          },
+          "tracking": "automatic",
+          "warm_task_released": true
+        },
+        "process_absent": true,
+        "data_absent": true,
+        "boot_state_preserved": true,
+        "artifact": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp199-native-ownership-qe3isrcc/runs/exp199-native-85474eab47934efb89be1d7913a3004d",
+        "manifest_sha256": "3296b2cdbad5b30195e7cccd45de4c0cbe08305583882f5a80ddee08502ead5e"
+      },
+      {
+        "run_id": "exp199-native-c04baada1a6040a593c2f95e3320c126",
+        "arm": "candidate",
+        "tracking": "automatic",
+        "binary_sha256": "f526a0288ceb9ddb3b5ca926e1baa436ba5cc3fa50fb030226d8692d428ef6f5",
+        "installed_sha256": "f526a0288ceb9ddb3b5ca926e1baa436ba5cc3fa50fb030226d8692d428ef6f5",
+        "runner_sha256": "70b152aee9e6cbb187e017a6f2a205b01b333ad2087bddc176435d991a9f4ee3",
+        "started_at": "2026-09-19T23:46:14.417530+00:00",
+        "finished_at": "2026-09-19T23:46:18.340340+00:00",
+        "status": "PASS",
+        "expected_ownership_pass": true,
+        "result": {
+          "final_release": {
+            "feature": true,
+            "handler": true,
+            "provider": true,
+            "terminal_preparation": true
+          },
+          "mode": "ownership",
+          "native_roundtrip": {
+            "completions": 1,
+            "mutations": 1,
+            "native_body_bytes": 1024,
+            "native_completions": 1,
+            "native_metrics": 0,
+            "prepared_header": "1",
+            "sdk_body_bytes": 1024,
+            "sdk_metrics": 0,
+            "starts": 1
+          },
+          "os": "17.5",
+          "response_body_bytes": 1024,
+          "run_id": "exp199-native-c04baada1a6040a593c2f95e3320c126",
+          "schema_version": 4,
+          "scope": "EXP-199 native ownership comparison; no numeric performance verdict",
+          "sdk_unbound": false,
+          "status": "FIXTURE_QUALIFIED_NO_ABBA_VERDICT",
+          "terminal_preparation_ownership": {
+            "captured_final_terminal": false,
+            "captured_initial_preparation": true,
+            "initial_preparation_released": true,
+            "live_terminal_identities_after_task_release": 0,
+            "ownership_pass": true,
+            "preparation_alive_after_task_release_before_map_observation": false,
+            "repeat_completed_resume_preserved": true,
+            "task_released": true,
+            "weak_terminal_identity_while_task_alive": true
+          },
+          "tracking": "automatic",
+          "warm_task_released": true
+        },
+        "process_absent": true,
+        "data_absent": true,
+        "boot_state_preserved": true,
+        "artifact": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp199-native-ownership-qe3isrcc/runs/exp199-native-c04baada1a6040a593c2f95e3320c126",
+        "manifest_sha256": "997f9c2f892e4c41c0bf54bc080fad81245efde8be995ca5a505835d0ba6e758"
+      }
+    ],
+    "preparation_failure": {
+      "phase": "runner parse",
+      "exit_code": 1,
+      "cause": "IndentationError in newly adapted result oracle; no commands, installs or launches executed.",
+      "repair": "Corrected indentation before any run; retained original runner copy."
+    },
+    "verdict": "Previous candidate fails ownership in both modes; repaired candidate passes both. All native lifecycle/header/body/metrics and final weak-release controls pass; all fixture processes/data removed and original Booted state preserved."
+  },
+  "affected_suites": {
+    "artifact": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp199-affected-modules-kusgpke_/summary.json",
+    "sha256": "b271d5f97a6bbaf01f511535e10c7c99eef00674075db87c127ee5a1644ebbe5",
+    "result": {
+      "experiment": "EXP-199",
+      "candidate": "1bdc9286c17d69d73e5e41530e6179c72a723368",
+      "scope": "Affected Core/RUM/Trace full unit targets, actual17.5; no backend/performance claim",
+      "runs": [
+        {
+          "module": "DatadogCore",
+          "command": [
+            "xcodebuild",
+            "test",
+            "-quiet",
+            "-workspace",
+            "Datadog.xcworkspace",
+            "-scheme",
+            "DatadogCore",
+            "-configuration",
+            "Debug",
+            "-destination",
+            "platform=iOS Simulator,id=EEF49588-982B-492E-92AF-57F900ACEACD",
+            "-derivedDataPath",
+            "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp199-terminal-ownership-qfeklzn8/DerivedData",
+            "-resultBundlePath",
+            "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp199-affected-modules-kusgpke_/DatadogCore.xcresult",
+            "-parallel-testing-enabled",
+            "NO",
+            "-enableCodeCoverage",
+            "NO",
+            "CODE_SIGNING_ALLOWED=NO",
+            "DD_API_KEY=",
+            "DD_TEST_RUNNER=",
+            "OTHER_SWIFT_FLAGS=$(inherited) -D DD_SDK_COMPILED_FOR_TESTING",
+            "-only-testing:DatadogCoreTests"
+          ],
+          "started_at": "2026-09-19T23:48:29.583818+00:00",
+          "pid": 41012,
+          "exit_code": 0,
+          "finished_at": "2026-09-19T23:49:24.766234+00:00",
+          "summary": {
+            "devicesAndConfigurations": [
+              {
+                "device": {
+                  "architecture": "arm64",
+                  "deviceId": "EEF49588-982B-492E-92AF-57F900ACEACD",
+                  "deviceName": "iPad Pro 11-inch (M4) (16GB)",
+                  "modelName": "iPad Pro 11-inch (M4)",
+                  "osBuildNumber": "21F79",
+                  "osVersion": "17.5",
+                  "platform": "iOS Simulator"
+                },
+                "expectedFailures": 0,
+                "failedTests": 0,
+                "passedTests": 815,
+                "skippedTests": 4,
+                "testPlanConfiguration": {
+                  "configurationId": "1",
+                  "configurationName": "Test Scheme Action"
+                }
+              }
+            ],
+            "environmentDescription": "DatadogCore \u00b7 Built with macOS 26.6.2",
+            "expectedFailures": 0,
+            "failedTests": 0,
+            "finishTime": 1789861764.52,
+            "passedTests": 815,
+            "result": "Passed",
+            "runtimeWarnings": [],
+            "skippedTests": 4,
+            "startTime": 1789861712.703,
+            "statistics": [],
+            "testFailures": [],
+            "title": "Test - DatadogCore",
+            "topInsights": [
+              {
+                "category": "Longest Test Runs",
+                "impact": "58% of duration",
+                "text": "7 longest test runs with outlier durations exceeding 0.85s (three standard deviations)"
+              }
+            ],
+            "totalTestCount": 819
+          }
+        },
+        {
+          "module": "DatadogRUM",
+          "command": [
+            "xcodebuild",
+            "test",
+            "-quiet",
+            "-workspace",
+            "Datadog.xcworkspace",
+            "-scheme",
+            "DatadogRUM",
+            "-configuration",
+            "Debug",
+            "-destination",
+            "platform=iOS Simulator,id=EEF49588-982B-492E-92AF-57F900ACEACD",
+            "-derivedDataPath",
+            "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp199-terminal-ownership-qfeklzn8/DerivedData",
+            "-resultBundlePath",
+            "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp199-affected-modules-kusgpke_/DatadogRUM.xcresult",
+            "-parallel-testing-enabled",
+            "NO",
+            "-enableCodeCoverage",
+            "NO",
+            "CODE_SIGNING_ALLOWED=NO",
+            "DD_API_KEY=",
+            "DD_TEST_RUNNER=",
+            "OTHER_SWIFT_FLAGS=$(inherited) -D DD_SDK_COMPILED_FOR_TESTING",
+            "-only-testing:DatadogRUMTests"
+          ],
+          "started_at": "2026-09-19T23:49:25.297666+00:00",
+          "pid": 42189,
+          "exit_code": 0,
+          "finished_at": "2026-09-19T23:50:04.832433+00:00",
+          "summary": {
+            "devicesAndConfigurations": [
+              {
+                "device": {
+                  "architecture": "arm64",
+                  "deviceId": "EEF49588-982B-492E-92AF-57F900ACEACD",
+                  "deviceName": "iPad Pro 11-inch (M4) (16GB)",
+                  "modelName": "iPad Pro 11-inch (M4)",
+                  "osBuildNumber": "21F79",
+                  "osVersion": "17.5",
+                  "platform": "iOS Simulator"
+                },
+                "expectedFailures": 0,
+                "failedTests": 0,
+                "passedTests": 937,
+                "skippedTests": 0,
+                "testPlanConfiguration": {
+                  "configurationId": "1",
+                  "configurationName": "Test Scheme Action"
+                }
+              }
+            ],
+            "environmentDescription": "DatadogRUM \u00b7 Built with macOS 26.6.2",
+            "expectedFailures": 0,
+            "failedTests": 0,
+            "finishTime": 1789861804.701,
+            "passedTests": 901,
+            "result": "Passed",
+            "runtimeWarnings": [],
+            "skippedTests": 0,
+            "startTime": 1789861766.376,
+            "statistics": [
+              {
+                "subtitle": "40 test runs",
+                "title": "4 tests ran with dynamic parameters"
+              }
+            ],
+            "testFailures": [],
+            "title": "Test - DatadogRUM",
+            "topInsights": [
+              {
+                "category": "Longest Test Runs",
+                "impact": "85% of duration",
+                "text": "38 longest test runs with outlier durations exceeding 0.40s (three standard deviations)"
+              }
+            ],
+            "totalTestCount": 901
+          }
+        },
+        {
+          "module": "DatadogTrace",
+          "command": [
+            "xcodebuild",
+            "test",
+            "-quiet",
+            "-workspace",
+            "Datadog.xcworkspace",
+            "-scheme",
+            "DatadogTrace",
+            "-configuration",
+            "Debug",
+            "-destination",
+            "platform=iOS Simulator,id=EEF49588-982B-492E-92AF-57F900ACEACD",
+            "-derivedDataPath",
+            "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp199-terminal-ownership-qfeklzn8/DerivedData",
+            "-resultBundlePath",
+            "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp199-affected-modules-kusgpke_/DatadogTrace.xcresult",
+            "-parallel-testing-enabled",
+            "NO",
+            "-enableCodeCoverage",
+            "NO",
+            "CODE_SIGNING_ALLOWED=NO",
+            "DD_API_KEY=",
+            "DD_TEST_RUNNER=",
+            "OTHER_SWIFT_FLAGS=$(inherited) -D DD_SDK_COMPILED_FOR_TESTING",
+            "-only-testing:DatadogTraceTests"
+          ],
+          "started_at": "2026-09-19T23:50:05.390793+00:00",
+          "pid": 42843,
+          "exit_code": 0,
+          "finished_at": "2026-09-19T23:50:16.649713+00:00",
+          "summary": {
+            "devicesAndConfigurations": [
+              {
+                "device": {
+                  "architecture": "arm64",
+                  "deviceId": "EEF49588-982B-492E-92AF-57F900ACEACD",
+                  "deviceName": "iPad Pro 11-inch (M4) (16GB)",
+                  "modelName": "iPad Pro 11-inch (M4)",
+                  "osBuildNumber": "21F79",
+                  "osVersion": "17.5",
+                  "platform": "iOS Simulator"
+                },
+                "expectedFailures": 0,
+                "failedTests": 0,
+                "passedTests": 141,
+                "skippedTests": 0,
+                "testPlanConfiguration": {
+                  "configurationId": "1",
+                  "configurationName": "Test Scheme Action"
+                }
+              }
+            ],
+            "environmentDescription": "DatadogTrace \u00b7 Built with macOS 26.6.2",
+            "expectedFailures": 0,
+            "failedTests": 0,
+            "finishTime": 1789861816.555,
+            "passedTests": 141,
+            "result": "Passed",
+            "runtimeWarnings": [],
+            "skippedTests": 0,
+            "startTime": 1789861806.443,
+            "statistics": [],
+            "testFailures": [],
+            "title": "Test - DatadogTrace",
+            "topInsights": [
+              {
+                "category": "Longest Test Runs",
+                "impact": "95% of duration",
+                "text": "8 longest test runs with outlier durations exceeding 0.39s (three standard deviations)"
+              }
+            ],
+            "totalTestCount": 141
+          }
+        }
+      ],
+      "finished_at": "2026-09-19T23:50:17.014227+00:00"
+    }
+  },
+  "ordinary_legacy_compatibility": {
+    "status": "PASS",
+    "owning_result": "Results/EXP-199-ios17-paired.json",
+    "candidate_revision": "1bdc9286c17d69d73e5e41530e6179c72a723368",
+    "paired_cells": 6,
+    "baseline_reused": true
+  }
+}

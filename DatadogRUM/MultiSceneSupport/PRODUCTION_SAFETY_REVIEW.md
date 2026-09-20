@@ -34,6 +34,17 @@ final release checks remain required.
 The [owning result](Results/EXP-197-urlsession-extraction.json) retains the red test,
 approval, failed test preparation and exact candidate test artifacts.
 
+The separate S1 terminal-preparation retention finding is repaired in local1bdc9286.
+[EXP-199](Results/EXP-199-terminal-task-ownership.json) proves two failing controls
+on464af911, full455-test Internal qualification and paired native automatic/
+registered cleanup. A per-feature weak terminal identity set replaces strong
+terminal preparation values; insertion/removal stays atomic and ARC release stays
+outside the coordinator lock. Independent source review found no production
+correctness issue. The larger associated-marker proposal was rejected before
+implementation because first installation can reenter runtime hooks. This repair
+closes the owned-record defect only: P03 numeric retention remains open, and shared
+heap growth without instrumentation remains unattributed. All thresholds stand.
+
 Review closure does not imply overall release readiness. Current release status
 belongs exclusively to [release-gates.json](release-gates.json) and [PLAN](PLAN.md).
 [Triage](REVIEW_TRIAGE.md) records the initial assessment and finding boundaries;
