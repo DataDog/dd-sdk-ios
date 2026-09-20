@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "experiment": "EXP-202",
-  "status": "FIRST NATIVE PREREQUISITE INVALID; HOST EVIDENCE CORRECTION UNDER REVIEW",
+  "status": "CORRECTIVE PREREQUISITE STOPPED: BACKEND DEADLINE AND SERVER SESSION INVENTORY GAP",
   "defined_at": 1789868896.779567,
   "gates": [
     "S1:A01",
@@ -715,7 +715,7 @@
     }
   ],
   "result": null,
-  "native_prerequisite_launches_consumed": 1,
+  "native_prerequisite_launches_consumed": 2,
   "acceptance_launches_consumed": 0,
   "unapplied_credential_proposal_review": {
     "status": "EXACT REVIEWED PATCH APPLIED AFTER EXPLICIT USER AUTHORIZATION; ORIGINAL HELPERS PRESERVED",
@@ -845,13 +845,104 @@
       "evidence_limit": "The terminal FAIL was detected before startup readiness but its native receipt was not retained before uninstall. Exact window count/application state are unavailable. Source-consistent topology failure is not a proven runtime value.",
       "connector_failure": "Final summary JSON was truncated by the tool output cap after cleanup, causing a separate parsing error. Full on-disk summary remains intact.",
       "disposition": "Stop automatic lane; preserve consumed launch. No native/backend acceptance or SDK regression conclusion."
+    },
+    {
+      "purpose": "prerequisite",
+      "arm": "B",
+      "mode": "registered",
+      "state": "INVALID",
+      "run_id": "4d2dda70-cfd9-4b26-9c1d-8e3121339215",
+      "summary_path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp202-failure-evidence-correction-vgqdbyu1/prerequisite-B-registered/summary.json",
+      "summary_sha256": "34fb931c214cfb323d247de91fc5e2ab3d7adcb00ab5dc07063b9fe410250b6a",
+      "native_launches": 1,
+      "failure": "native prerequisite failed before requested boundary: single active UIWindow prerequisite failed",
+      "backend_state": "NOT_RUN",
+      "cleanup": {
+        "container_absent": true,
+        "process_absent": true,
+        "binding_restored": true,
+        "protected_unchanged": true,
+        "helpers_unchanged": true,
+        "errors": []
+      },
+      "retained_native_receipts": [
+        {
+          "path": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp202-failure-evidence-correction-vgqdbyu1/prerequisite-B-registered/native-evidence/exp202-4d2dda70-cfd9-4b26-9c1d-8e3121339215-final.8c00763477787ad647df4b2d13e717897f5d0e63a2b970c73ba420e44cbfeaf2.json",
+          "sha256": "8c00763477787ad647df4b2d13e717897f5d0e63a2b970c73ba420e44cbfeaf2",
+          "records": [
+            {
+              "monotonic_ns": 829459156685208,
+              "rows": [
+                "rum-ok",
+                "rum-http404",
+                "rum-http500",
+                "rum-ns-error",
+                "rum-response-and-error",
+                "trace-ok",
+                "trace-http404",
+                "trace-http500",
+                "trace-ns-error",
+                "trace-response-and-error",
+                "trace-manual-drop",
+                "manual-home-resource"
+              ],
+              "app_state": "inactive",
+              "sequence": 1,
+              "kind": "manifest",
+              "window_count": 1
+            },
+            {
+              "window_count": 1,
+              "kind": "terminal",
+              "status": "FAIL",
+              "sequence": 2,
+              "monotonic_ns": 829459159509875,
+              "reason": "single active UIWindow prerequisite failed",
+              "pending_loaders": 0
+            }
+          ]
+        },
+        {
+          "path": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp202-failure-evidence-correction-vgqdbyu1/prerequisite-B-registered/native-evidence/exp202-4d2dda70-cfd9-4b26-9c1d-8e3121339215-start.29e247a0cfac819cb778afdbef0585de4660ce30374590cea648e6b61a05e4b6.json",
+          "sha256": "29e247a0cfac819cb778afdbef0585de4660ce30374590cea648e6b61a05e4b6",
+          "records": [
+            {
+              "monotonic_ns": 829459156685208,
+              "kind": "manifest",
+              "app_state": "inactive",
+              "sequence": 1,
+              "window_count": 1,
+              "rows": [
+                "rum-ok",
+                "rum-http404",
+                "rum-http500",
+                "rum-ns-error",
+                "rum-response-and-error",
+                "trace-ok",
+                "trace-http404",
+                "trace-http500",
+                "trace-ns-error",
+                "trace-response-and-error",
+                "trace-manual-drop",
+                "manual-home-resource"
+              ]
+            }
+          ]
+        }
+      ],
+      "observed_topology": {
+        "window_count": 1,
+        "app_state": "inactive"
+      },
+      "source_stage": "configureAndStart topology guard, before configureSDK",
+      "disposition": "Original two-prerequisite budget exhausted. Fixture lifecycle defect confirmed; no SDK or backend acceptance claim."
     }
   ],
   "failure_evidence_correction": {
     "definition_path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp202-failure-evidence-correction-vgqdbyu1/definition.json",
     "definition_sha256": "97e1101b3b35ef6c7715b0af95d04a6b2ef1d0d1f2a6b9320dd671a4b99c19f4",
     "root": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp202-failure-evidence-correction-vgqdbyu1",
-    "status": "SOURCE REVIEW PASS; BUILD-REUSE REVIEW PENDING",
+    "status": "SOURCE AND REUSE REVIEW PASS; ACTUAL FAILURE EVIDENCE RETAINED",
     "controls_path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp202-failure-evidence-correction-vgqdbyu1/host-tests.json",
     "controls_sha256": "749acd6f48f9983d318a4c7d427db246453e97659591bb4d29ab134ff64c49ef",
     "native_permission": "None under this correction definition; remaining original registered prerequisite can proceed only after reviewed exact helpers/build reuse and an explicit evidence-based execution disposition. No automatic-repeat or budget reset.",
@@ -876,6 +967,189 @@
       "sha256": "53fee5c2f048c5a5cc6bac97095f6c7d9d828f80cb624f65824bab9da86159eb",
       "status": "PENDING REVIEW"
     },
-    "helper_manifest_sha256": "f4978dad02fd879334aa1d12a0fe158008dc19b5640bbc670b388b795d5a5796"
+    "helper_manifest_sha256": "f4978dad02fd879334aa1d12a0fe158008dc19b5640bbc670b388b795d5a5796",
+    "reviews": {
+      "source-review.json": {
+        "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp202-failure-evidence-correction-vgqdbyu1/source-review.json",
+        "sha256": "b70b0b18991fa54762a5818bd79a29c1b666d3365094e9fa7f6da43e1f12efa6",
+        "status": "PASS"
+      },
+      "reuse-review.json": {
+        "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp202-failure-evidence-correction-vgqdbyu1/reuse-review.json",
+        "sha256": "97f40b2a050c99ac66058b9ae2546f495b7d6274cc38c4190ec731c91a5cc486",
+        "status": "PASS"
+      }
+    },
+    "native_disposition": {
+      "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp202-failure-evidence-correction-vgqdbyu1/native-disposition.json",
+      "sha256": "1a1365a1db2349ff9aec2b245b405624016ae8c658a6de5997652bea493309d0"
+    },
+    "native_outcome": {
+      "native_evidence_count": 2,
+      "full_summary_bytes": 22011,
+      "compact_transport_succeeded": true,
+      "cleanup_pass": true,
+      "full_identity_verified": true
+    }
+  },
+  "startup_activation_correction": {
+    "root": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp202-activation-correction-p8dz77k2",
+    "definition_path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp202-activation-correction-p8dz77k2/definition.json",
+    "definition_sha256": "67ca25222055d52edcaa1bdef15c7b16a8ce72def4a186f6888f56a10708b97d",
+    "status": "STOPPED ON FIRST CORRECTIVE PREREQUISITE; ACTIVATION FIX OBSERVED",
+    "original_prerequisite_launches_consumed": 2,
+    "additional_corrective_prerequisites_admitted": 2,
+    "additional_corrective_prerequisites_consumed": 1,
+    "source_scope": "FixtureSceneDelegate.swift only; wait for observed active application and exact active scene, keep single-window guard and original SDK/semantic oracle.",
+    "source_review_deadline": "2026-09-20T11:52:18.815457+00:00",
+    "source_review": {
+      "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp202-activation-correction-p8dz77k2/source-review.json",
+      "sha256": "a7df23b01af3699bafb02dd1f4852db8412afed5ae4939fa9cde8719e8109315"
+    },
+    "execution_definition": {
+      "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp202-activation-correction-p8dz77k2/execution-definition.json",
+      "sha256": "ed551d408e5bd67d938e133441914cdd85b19bdb2a4d3a86a68e205f60002a01",
+      "deadline": "2026-09-20T12:14:00.345510+00:00"
+    },
+    "matrix_root": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp202-activation-correction-p8dz77k2/matrix",
+    "fixture_sha256": "646ef70eb14d9416fd5c10fa0f4e26c04dca96a59f50ef84cd31f967c9354ab2",
+    "helper_manifest_sha256": "decd3006ef6f9f51169b937d4b743c25d3976d82d78d64d0694d34803a83589a",
+    "credential_guard_sha256": "8514e3dd7e572c680076bc202f5050d907a49da0e1bf31a4f9b10f8c0cde4ec6",
+    "source_file_counts": {
+      "A": 1153,
+      "B": 1153
+    },
+    "builds": {
+      "A": {
+        "status": "PASS",
+        "build_sha256": "596296af915b3aad50b6229b1f8a16f0b173ac27f1f66c218dd67aff537a5c0d",
+        "build_result_sha256": "f3f5822e9a55c40a41ee6dd95c0f4009b041fa4db037c5849b0e282054833983",
+        "configuration": "Release",
+        "client_token_resolved": true
+      },
+      "B": {
+        "status": "PASS",
+        "build_sha256": "75823601428bdedff7a451914b9af3ba835467b2e52851e891552084c9cb1801",
+        "build_result_sha256": "709272bd86a7518c6b91b5b114d1651d08d87823b144c00fab23c2fba7304f36",
+        "configuration": "Release",
+        "client_token_resolved": true
+      }
+    },
+    "remaining_corrective_registered": "NOT_RUN; PHASE STOPPED",
+    "qualification": "No native network or backend acceptance"
+  },
+  "corrective_native_attempts": [
+    {
+      "purpose": "corrective prerequisite",
+      "arm": "B",
+      "mode": "automatic",
+      "state": "INVALID",
+      "run_id": "2ddcc1c0-de59-40cd-83a8-907f2e196516",
+      "summary_path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp202-activation-correction-p8dz77k2/corrective-prerequisite-B-automatic/summary.json",
+      "summary_sha256": "cbe5af7772612765bde1ebbef87957b19d033c4e5be530718b14ba138e2a9c00",
+      "native_launches": 1,
+      "failure": "bounded artifact deadline: 1e2bce11-64cd-4f5e-8d70-4180e5519dda.response.json",
+      "observed_topology": {
+        "window_count": 1,
+        "app_state": "active"
+      },
+      "session_id": "21f3e337-6a6f-4579-9a18-e2335a569d75",
+      "startup_view_id": "13bfc094-1bc2-4eb9-ab52-491da94541af",
+      "startup_boundary_released": false,
+      "network_scenario_ran": false,
+      "cleanup": {
+        "container_absent": true,
+        "process_absent": true,
+        "binding_restored": true,
+        "protected_unchanged": true,
+        "helpers_unchanged": true,
+        "errors": []
+      },
+      "native_evidence": {
+        "records": [
+          {
+            "source_name": "exp202-2ddcc1c0-de59-40cd-83a8-907f2e196516-startup-ready.json",
+            "path": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp202-activation-correction-p8dz77k2/corrective-prerequisite-B-automatic/native-evidence/exp202-2ddcc1c0-de59-40cd-83a8-907f2e196516-startup-ready.0e166c08b3c432db95762313441475ddf64d52b5020b429f457dc03ec90b40be.json",
+            "sha256": "0e166c08b3c432db95762313441475ddf64d52b5020b429f457dc03ec90b40be",
+            "bytes": 3037,
+            "observed_at": 1789904726.3997061
+          },
+          {
+            "source_name": "exp202-2ddcc1c0-de59-40cd-83a8-907f2e196516-final.json",
+            "path": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp202-activation-correction-p8dz77k2/corrective-prerequisite-B-automatic/native-evidence/exp202-2ddcc1c0-de59-40cd-83a8-907f2e196516-final.5f07e9c619c6b716929f0be30cb9f56936bb1b5edca328c8ff2caf0bd9f0ca37.json",
+            "sha256": "5f07e9c619c6b716929f0be30cb9f56936bb1b5edca328c8ff2caf0bd9f0ca37",
+            "bytes": 3174,
+            "observed_at": 1789904851.6021461
+          },
+          {
+            "source_name": "exp202-2ddcc1c0-de59-40cd-83a8-907f2e196516-start.json",
+            "path": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp202-activation-correction-p8dz77k2/corrective-prerequisite-B-automatic/native-evidence/exp202-2ddcc1c0-de59-40cd-83a8-907f2e196516-start.3c6c2454fcec20b1694a3ca7e5b1e1206ebfc7664f5efa27b64f0cf8f41c1929.json",
+            "sha256": "3c6c2454fcec20b1694a3ca7e5b1e1206ebfc7664f5efa27b64f0cf8f41c1929",
+            "bytes": 882,
+            "observed_at": 1789904851.602589
+          }
+        ],
+        "errors": [],
+        "state": "RETAINED"
+      },
+      "backend_observation": {
+        "aggregate_counts": [
+          0,
+          1,
+          3
+        ],
+        "types": [
+          "session",
+          "view",
+          "vital"
+        ],
+        "session_type_origin": "reducer",
+        "view_type_origin": "reducer",
+        "view_and_ttid_owner_match_startup": true,
+        "inventory_finished_after_bound": true,
+        "limits": "Actual ingestion and retained late records prove configuration access and expose a backend-session inventory gap. They do not establish timely release or native/backend acceptance."
+      },
+      "disposition": "Stop correction phase on first failed prerequisite. Registered corrective cell not launched. No retrospective pass or equivalent automatic retry."
+    }
+  ],
+  "backend_inventory_followup": {
+    "status": "SOURCE INTEGRATED;44 FOCUSED CONTROLS PASS; REVIEW BINDING RESOLUTION IN PROGRESS",
+    "findings": [
+      "Whole-session search includes a type=session/origin=reducer row in addition to ApplicationLaunch view and TTID. The view also has origin=reducer, so origin-only filtering would be wrong.",
+      "Existing startup oracle expects only client view/vital and needs explicit validation/classification of the server-session row without hiding raw inventory or relaxing client counts.",
+      "Aggregate polling plus tool transport/projection exceeded the115second collection bound; preserve timing and review reducing redundant shell round trips before any bounded new run."
+    ],
+    "native_launches_total": 3,
+    "acceptance_launches": 0,
+    "proposal": {
+      "path": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp202-backend-interpretation-proposal-33xro62v/proposal.json",
+      "sha256": "a899094e63e6193e25cef697efbb024affc6905af696d7454718127241af7730"
+    },
+    "definition": {
+      "path": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp202-backend-interpretation-x3aezn9l/definition.json",
+      "sha256": "77a7279f0ef9066bcbe447059c0f0896cd2792c534b90401e7cc25288bfca5fe"
+    },
+    "owner": "root end-to-end",
+    "implementation_receipt": {
+      "path": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp202-backend-interpretation-x3aezn9l/implementation-receipt.json",
+      "sha256": "53211970bcf9d74d136ab559420ec654981a550dd0f2169efd74ff4e6cec567e"
+    },
+    "offline_results": {
+      "path": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp202-backend-interpretation-x3aezn9l/offline-results.json",
+      "sha256": "b5f7b9891489dc11c403b9e7d129e3aeaa003e74e9a4d5500bc121834f05d0fd",
+      "python_methods": 36,
+      "connector_projection_cases": 3,
+      "transport_cases": 5
+    },
+    "source_review": {
+      "path": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp202-backend-interpretation-x3aezn9l/source-review.json",
+      "sha256": "e55bdc53d907cf9ab9fc81810b4e5a0e7212d118c3c557a4627d4b08dd43beee",
+      "status": "BLOCK on missing generated binding; root reuse integration has supplied it, exact resolution pending"
+    },
+    "reuse_provenance": {
+      "path": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp202-backend-interpretation-x3aezn9l/reuse-provenance.json",
+      "sha256": "aa133d10e98600e3d9d0e6b230207e01c86d64b457a56ee5ce3c9ef99cd5578d"
+    },
+    "next_action": "One isolated candidate automatic full transport/ownership smoke, separately diagnostic before fixed release matrix. No additional build needed."
   }
 }

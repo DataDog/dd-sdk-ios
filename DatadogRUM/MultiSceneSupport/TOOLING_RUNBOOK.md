@@ -70,6 +70,23 @@ calibrate allocation counters before using their numbers. Do not treat a posted
 scene notification as real OS teardown or a weak controller check as mounted
 SwiftUI host lifetime proof. Predeclared thresholds cannot be raised after results.
 
+## Execution ownership and checkpointing
+
+One owner carries a tightly coupled experiment through fixture, runner, evaluator
+and integration. Root owns EXP-198/202 integration and execution. Reuse completed
+work; use one independent reviewer for consequential SDK concurrency/lifetime and
+new measurement/oracle decisions. Routine host or bookkeeping fixes use a concise
+changed-input record, without another serial design/admission chain. Parallel work
+must be independently useful to the release and must not compete for the host.
+
+Prove a small real end-to-end path before expanding a new harness. EXP-202's next
+smoke run must establish startup/backend format and complete transport/ownership;
+it remains diagnostic until the fixed acceptance matrix passes. Engineering
+timeboxes prompt scope decisions and do not expire unchanged reviewed artifacts.
+Actual build/run/cleanup budgets remain fixed and enforced. Preserve failed runs,
+update each fact at its existing owner, and batch derived documents at checkpoints.
+Report required candidate gates, qualified SDK defects, blocker age and next action.
+
 ## Isolated URLSession backend acceptance
 
 EXP-202 owns the ordinary E01 Resource/Trace fixture and strict oracle. Freeze
@@ -77,6 +94,10 @@ all helper/oracle hashes as well as the complete source-member dictionary and
 source archive; check the exact archived file set before and after execution.
 An observed helper hash alone is insufficient: require the approved manifest
 fingerprint before native actions and every backend projection/assembly.
+
+A server-generated session row is additional to the client inventory. Validate
+its type, reducer marker and exact owner separately; reducer-origin views still
+need every client check. Late data cannot satisfy an earlier release boundary.
 
 Retain raw MCP payloads and exact decimal/128-bit identities. Reject explicit
 truncation or truncation messages for aggregate, search and trace detail results,
@@ -112,6 +133,13 @@ on disk and return a bounded projection with artifact path/hash/byte count; incr
 a tool output cap is not a durable transport fix. EXP-202's first native attempt
 exposed both gaps and receives no acceptance credit.
 
+In EXP-202 on actual17.5, sceneDidBecomeActive arrived with one UIWindow while
+UIApplication.applicationState was still inactive. Treat the callback as a signal
+to check readiness, not proof of application-wide active state. The fixture must
+observe public application activation and the intended active scene before its
+unchanged topology guard and SDK setup. Preserve this native observation separately
+from source hypotheses or behavior claimed on other runtimes.
+
 S1:P04 is a functional reentrancy gate, separate from numeric P01–P03. EXP-203
 reuses accepted Debug controls and qualifies only three existing selectors in
 Release. Require actual -O compiler jobs and ENABLE_TESTABILITY=YES; exact test
@@ -130,8 +158,10 @@ A mixed handoff of edited validator code and an older passing receipt receives n
 qualified credit. Numeric controls must independently exceed median,p95,operation
 and byte limits; a joint overrun can mask a missing companion comparison. EXP-198's
 final25-control receipt and independent review preserve these discriminators.
-Source/offline review PASS does not override a preparation deadline: its fourth
-host attempt rejected before building when the fixed source window had expired.
+The fourth host attempt truthfully stopped at its then-enforced preparation
+deadline. Under the revised workflow, reuse byte-identical reviewed source and
+controls through a concise execution record; engineering time alone does not
+invalidate them. Build, runtime and cleanup deadlines still fail closed.
 
 ## Full-target platform compatibility checks
 

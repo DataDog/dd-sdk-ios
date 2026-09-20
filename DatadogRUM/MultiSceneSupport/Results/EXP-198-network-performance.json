@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "experiment": "EXP-198",
-  "status": "FOURTH ATTEMPT STOPPED BEFORE SOURCE PLAN: DEADLINE; FINAL SOURCE REVIEW PASS",
+  "status": "FOUR NATIVE QUALIFICATIONS PASS; FIRST TIMING CELL STOPPED ON BASELINE START-COUNT ORACLE",
   "defined_at": "2026-09-19T22:38:13.806518+00:00",
   "gates": [
     "S1:P01",
@@ -598,5 +598,126 @@
       "output_directory_empty": true,
       "root": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp198-fourth-execution-wtc6jyqy/matrix"
     }
+  },
+  "execution_only_planning": {
+    "status": "VIABLE PROPOSAL; NOT AN EXECUTION ADMISSION",
+    "source": "Existing c06_runtime_plan independent read-only assessment of current result, protocol and fourth final source review.",
+    "reason": "The final reviewed source/control artifacts exist, while the fourth host preparation stopped before all source-plan/build/native actions at its fixed deadline. A separately frozen execution-only phase can assess existing numeric gates without repeating accepted source/offline work.",
+    "prerequisites": [
+      "Revalidate all frozen fourth source/control/contract and accepted P04 hashes byte-for-byte.",
+      "Record a specific one-shot execution-only admission before preparing a fresh root; preserve all four stopped attempts.",
+      "At most two clean Release builds and the four frozen actual17.5 A/B automatic/registered qualification cells; stop on any failed prerequisite."
+    ],
+    "numeric_scope": "Only after all four qualify, unchanged32-cell matrix over two runtimes, modes and fixed A/B/B/A quartets. Preserve every row/sample and independent timing/allocation/20+100+100 retention absolute thresholds; no subtraction, pooling, threshold changes or automatic retries.",
+    "execution_performed": false
+  },
+  "execution_only_phase": {
+    "admission": {
+      "path": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp198-execution-only-b3l889jm/admission.json",
+      "sha256": "9d17a15620358b55c71cef898c2b31304c9f775c5e37283d41e13b3b632a0b80"
+    },
+    "review": {
+      "path": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp198-execution-only-b3l889jm/execution-admission-review.json",
+      "sha256": "cb803fceb4cb60f958758b18edac68ffcef526f8cebc334faa14e822a7110a13"
+    },
+    "source_review": {
+      "path": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp198-fourth-preparation-emxzcfo2/final-source-review.json",
+      "sha256": "5f0bac3b3e474586a953cee7fba1d559bc2e0c0c9bd38d8c0d879ec24f98837a"
+    },
+    "status": "STOPPED",
+    "original_fourth_stop_preserved": true,
+    "builds": 1,
+    "qualification_native_launches": 0,
+    "measurement_launches": 0,
+    "root": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp198-execution-only-b3l889jm",
+    "matrix": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp198-execution-only-b3l889jm/matrix",
+    "source_plan_sha256": "d303fa121592c229f76559e3a69ec13f53fe384f5692432a7b62f73b3c750e30",
+    "preparation": {
+      "status": "PASS",
+      "receipt": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp198-execution-only-b3l889jm/prepare-result.json"
+    },
+    "build_results": {
+      "A": "FAIL BEFORE COMPILATION: Missing package product DatadogInternal",
+      "B": "NOT RUN"
+    },
+    "run_summary": {
+      "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp198-execution-only-b3l889jm/matrix/run-summary.json",
+      "sha256": "fc423214bd9886b92bcb5430221c1cad05d945ef8a829c7cecc549995f9cba84"
+    },
+    "failure": "build failed; see retained log",
+    "decisive_diagnostic": "E01.xcodeproj: Missing package product DatadogInternal",
+    "final_frozen_inputs": "PASS",
+    "source_correction": "Read-only smallest generated-project dependency review requested; no new build/native admission."
+  },
+  "generated_product_correction": {
+    "root": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp198-product-correction-iuv951vh",
+    "change_record": {
+      "path": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp198-product-correction-iuv951vh/change-record.json",
+      "sha256": "555f5f5be4242693819e0149c8d414484cc977923650bacff6bf18256724c2c5"
+    },
+    "source_reuse": {
+      "path": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp198-product-correction-iuv951vh/source-reuse.json",
+      "sha256": "b7f5a4e7cf25534bf8372a46019fd70097fa75d8f52512e94ddb61187152d9a8"
+    },
+    "admission": {
+      "path": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp198-product-correction-iuv951vh/admission.json",
+      "sha256": "c03f4b85eecb59b7a6817b5a575c8c2f07e5ba9ce7a44c3dcc435f26a55c0178"
+    },
+    "host_controls": 31,
+    "evaluator_controls_reused": 25,
+    "status": "STOPPED: FIXTURE COMPILE WHITESPACE",
+    "owner": "root end-to-end",
+    "source_plan_sha256": "aa4e50879683157fa17b10e4b4a4b1bec856195f9c9cab45d2f2f901f2928cd7",
+    "builds": 1,
+    "qualification_native_launches": 0,
+    "measurement_launches": 0,
+    "run_summary": {
+      "path": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp198-product-correction-iuv951vh/matrix/run-summary.json",
+      "sha256": "1d7e0fc70d5a2cc62ee05d6531a211f5fb48b7b4b2a771279b7258397ddcf747"
+    }
+  },
+  "integration_corrections": [
+    {
+      "root": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp198-compile-correction-6r3t7pdn",
+      "change_record": {
+        "path": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp198-compile-correction-6r3t7pdn/change-record.json",
+        "sha256": "e7c2c60ebf89ccfa2bf6ec1823f59b0f85e2e0eefc8cf652735f5da3bd853f0f"
+      },
+      "status": "STOPPED: THROWING AUTORELEASEPOOL CALL MISSING TRY",
+      "source_plan_sha256": "b35cea061fb791c02da9279476b39592187fb232407caf61bbac99f93bb600b5",
+      "host_root": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp198-product-correction-iuv951vh",
+      "runtime_result": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp198-compile-correction-6r3t7pdn/matrix/run-summary.json",
+      "run_summary": {
+        "path": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp198-compile-correction-6r3t7pdn/matrix/run-summary.json",
+        "sha256": "c9965f630ba96c2c3094c04e57fdc50ee9bc9387d5a8de81ed3b913e27a00970"
+      },
+      "builds": 1,
+      "native_launches": 0
+    },
+    {
+      "root": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp198-typecheck-correction-ka9cg6bl",
+      "change_record": {
+        "path": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp198-typecheck-correction-ka9cg6bl/change-record.json",
+        "sha256": "221c745743be6a9a1314332bc33aa6ec07bbcbb0ddfd084247815af374e9e0f8"
+      },
+      "status": "STOPPED: ORACLE COUPLED BASELINE MUTATIONS AND STARTS",
+      "source_plan_sha256": "43955cece04ee3ed95db3d02029500d00f07d427ed33c0decfda755cbc91b8a4",
+      "plan_sha256": "aec5a918c9b1ee3df3d3062ce2eb462fc261d710eda356a4f0ef2d9a29ce57e4",
+      "run_summary": {
+        "path": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp198-typecheck-correction-ka9cg6bl/matrix/run-summary.json",
+        "sha256": "58a51f3f5cd3c2d443e49885040fa138eb51ebb8d1fce28f3c438df56d314887"
+      },
+      "release_builds_pass": 2,
+      "qualification_cells_pass": 4,
+      "measurement_launches": 1,
+      "numeric_acceptance": false,
+      "cleanup": "PASS",
+      "final_frozen_inputs": "PASS"
+    }
+  ],
+  "current_blocker": {
+    "observed_at": 1789907118.6806452,
+    "finding": "Evaluator incorrectly requires2x SDK start callbacks for baseline held second resume; actual complete native receipts show2x mutation with1x start and1x native lifecycle. Exact source review and negative controls required before fresh measurement.",
+    "next_action": "Split baseline mutation/start expectations; reuse unchanged qualified binaries/4native prerequisites, preserve stopped timing run as diagnostic only."
   }
 }

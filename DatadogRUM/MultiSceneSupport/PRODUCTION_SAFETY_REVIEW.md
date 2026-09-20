@@ -90,17 +90,21 @@ The performance-fixture and backend evidence-retention defects are harness
 findings, not established SDK defects. Their owning
 [performance](Results/EXP-198-network-performance.json) and
 [backend](Results/EXP-202-urlsession-backend.json) records retain every attempt and
-open gate. The fourth performance correction now has final source review PASS
-and coherent28/25 host/oracle controls, but host preparation missed its unchanged
-deadline before any build/native work. No numeric or release clearance follows.
+open gate. After preserved preparation/compile stops, both performance Release
+builds and all four native qualifications pass. The first timing cell stops on an
+oracle that incorrectly couples duplicate baseline mutations and SDK start counts.
+Source-backed correction remains pending; no numeric or release clearance follows.
 EXP-202's reviewed credential mapping correction qualifies both Release builds.
-The first automatic native prerequisite failed before startup readiness, with
-verified cleanup. Its host lost the terminal receipt before uninstall and truncated
-the full summary during connector transport. Exact topology state is unavailable.
-A bounded host-only repair retains native bytes before parsing/cleanup and returns
-a compact summary. Thirteen offline controls and independent source review pass;
-unchanged-build reuse review remains pending.
-The consumed launch stays recorded; native/backend acceptance remains open.
+Both original native prerequisites failed before startup readiness, with verified
+cleanup. The host repair passes13 offline controls and independent source/reuse
+reviews, and the second native run preserves its actual failure and22KB summary.
+That receipt proves one window with an inactive application inside
+sceneDidBecomeActive, before SDK initialization. The one-file fixture lifecycle
+correction passes source review and both builds, then reaches active-app startup
+readiness and actual ingestion. Its corrective launch stops on the backend deadline
+before release; retained late rows expose a server-session classification gap in
+the oracle. All three failed launches remain recorded; no SDK defect or native
+network/backend acceptance is established.
 Historical S1 narrative is preserved in the
 [documentation checkpoint](Results/EXP-204-documentation-consolidation.json).
 

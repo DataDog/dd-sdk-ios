@@ -133,3 +133,46 @@ inputs remain preserved. Ten native-evidence test methods (including three stale
 identity variants), three connector cases and final source review pass. Fresh
 unchanged-build reuse provenance is prepared for separate review; no additional
 native launch has occurred.
+
+Source and unchanged-build reuse reviews passed. The one remaining original
+registered prerequisite used the same compiled B app and retained two identity-bound
+native receipts. It failed with window_count1 and app_state inactive inside
+sceneDidBecomeActive, before SDK initialization. Full22KB summary transport and
+cleanup passed. Both original prerequisite launches are now consumed; neither is
+backend acceptance. This proves a fixture lifecycle ordering defect, not an SDK
+regression.
+
+The owning result defines a20minute one-file fixture correction before edits:
+observe public application activation and the exact active scene, then start once
+without weakening the existing topology guard. After independent review, one
+35minute preparation/build phase permits one new Release build per arm and two
+explicit corrective prerequisites (B-automatic then B-registered). Prior failures
+and their consumed budget remain visible. Stop on failure; the four unchanged
+acceptance cells require both corrected prerequisites to qualify and a separately
+recorded exact-source execution disposition.
+
+The activation correction passed source review and both Release builds. Its first
+corrective B-automatic launch reached one-window/active-app ApplicationLaunch
+readiness, but startup collection exceeded115seconds and the host waited125seconds
+without receiving release evidence. The fixture never entered Home or its network
+scenario. Cleanup and all identity/preservation checks passed; the second corrective
+registered launch was not used because the phase stopped.
+
+Raw aggregate counts progressed0,1,3. The retained page finished after the bound
+and contains the exact client startup view and TTID plus one backend type=session
+row. Both that row and the view have origin=reducer, so filtering by origin would
+incorrectly remove the required view. A read-only follow-up reviews explicit server-
+session classification and fewer transport/projection round trips, preserving the
+whole query, raw counts, exact client obligations and original failures. Ingestion
+is proven; timely startup release or network/backend acceptance is not. No source
+or native follow-up is admitted by these late observations.
+
+A separately defined host-only correction now implements the reviewed backend
+interpretation: preserve the raw server-session row, validate its exact identity
+and initial view separately, and retain the original2 startup/11 final client rows.
+The raw totals become3/12 without filtering reducer-origin views. Combined raw
+persistence, decoding and publication must preserve115/125/120second connector,
+host and native bounds. The original embedded contract and accepted binaries stay
+unchanged; a separate host amendment must be hash-bound before any new execution.
+The owning result records the45minute source/review limit and decisive negative
+controls. This phase admits no build, backend query or native launch.
