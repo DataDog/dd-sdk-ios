@@ -1,0 +1,96 @@
+{
+  "status": "QUALIFIED EVIDENCE REUSE; ZERO NEW QUALIFICATION LAUNCHES",
+  "root": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp198-typecheck-correction-ka9cg6bl/matrix",
+  "host": {
+    "path": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp198-product-correction-iuv951vh/host.py",
+    "sha256": "2ef204c3c9fae4d91d6240b27aee464efec4c85a29b95cc7504c23d9ccc003c2"
+  },
+  "plan_sha256": "aec5a918c9b1ee3df3d3062ce2eb462fc261d710eda356a4f0ef2d9a29ce57e4",
+  "records": [
+    {
+      "path": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp198-typecheck-correction-ka9cg6bl/matrix/source-plan.json",
+      "sha256": "43955cece04ee3ed95db3d02029500d00f07d427ed33c0decfda755cbc91b8a4"
+    },
+    {
+      "path": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp198-typecheck-correction-ka9cg6bl/matrix/plan.json",
+      "sha256": "aec5a918c9b1ee3df3d3062ce2eb462fc261d710eda356a4f0ef2d9a29ce57e4"
+    },
+    {
+      "path": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp198-typecheck-correction-ka9cg6bl/matrix/qualification-complete.json",
+      "sha256": "4e73699cd6f42ba84927b119667b71f11e0dbedbe743508072d74cf8525063e1"
+    },
+    {
+      "path": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp198-typecheck-correction-ka9cg6bl/matrix/A/build-result.json",
+      "sha256": "fa7736e32bab3b3dfb33c8054606dcabcd1fbb587e9d77035ac49d30038cef96"
+    },
+    {
+      "path": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp198-typecheck-correction-ka9cg6bl/matrix/B/build-result.json",
+      "sha256": "a935b4ea17b3abf0e787962d21ff2e834d47a345b845868f9cc1f2f9446493cf"
+    },
+    {
+      "path": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp198-typecheck-correction-ka9cg6bl/matrix/slots/qualification-0.json",
+      "sha256": "2a30f857cf1224cc9c744d95806f0649e7fa5c5ad9524536f40101bf1288dd2e"
+    },
+    {
+      "path": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp198-typecheck-correction-ka9cg6bl/matrix/runs/qualification-0/summary.json",
+      "sha256": "4e22406ef8a8b8aa356758fef053ed166c25fec2b9e708a2a10890dc9b43ea47"
+    },
+    {
+      "path": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp198-typecheck-correction-ka9cg6bl/matrix/runs/qualification-0/local.json",
+      "sha256": "e7ea1d0f9d73cb7c3b3135d6ab6f74f1ebb2494ab6b8be983841cdb9d6bfb28c"
+    },
+    {
+      "path": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp198-typecheck-correction-ka9cg6bl/matrix/runs/qualification-0/oracle-result.json",
+      "sha256": "ecbdd2dac6953ed7c30a677cd874f09a0475ed9fd835e3f587ab257803a9c348"
+    },
+    {
+      "path": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp198-typecheck-correction-ka9cg6bl/matrix/slots/qualification-1.json",
+      "sha256": "facb7e27a228602192cb8496201378db2fde94373556a5b6c6dbeed5cf645c6b"
+    },
+    {
+      "path": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp198-typecheck-correction-ka9cg6bl/matrix/runs/qualification-1/summary.json",
+      "sha256": "5d70cf4b868d5101697bc05b18b9fe149883df4227bd3f9ff367bfe5f26d1fc0"
+    },
+    {
+      "path": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp198-typecheck-correction-ka9cg6bl/matrix/runs/qualification-1/local.json",
+      "sha256": "33cf3ad0e17c6db40c16c6c8734031c72245c8022cf5e60f9949db2e9ee8fda2"
+    },
+    {
+      "path": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp198-typecheck-correction-ka9cg6bl/matrix/runs/qualification-1/oracle-result.json",
+      "sha256": "37c0faf2f0ccb3acb8623feb4bc42806d2ec3eb0e42b152837f4cbf366173bfd"
+    },
+    {
+      "path": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp198-typecheck-correction-ka9cg6bl/matrix/slots/qualification-2.json",
+      "sha256": "a323308bf053e528043887482400398b3bdd60cc8d5aa4c923e2b371369e0a37"
+    },
+    {
+      "path": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp198-typecheck-correction-ka9cg6bl/matrix/runs/qualification-2/summary.json",
+      "sha256": "bf1e082f956eaae026696c166e8a0027864eea770363499f5f8a046932b1f1ba"
+    },
+    {
+      "path": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp198-typecheck-correction-ka9cg6bl/matrix/runs/qualification-2/local.json",
+      "sha256": "6b6a70ff7c09277d4f41d552e589e71b1ae8a32955940ed3eabeaf6de9ef8da0"
+    },
+    {
+      "path": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp198-typecheck-correction-ka9cg6bl/matrix/runs/qualification-2/oracle-result.json",
+      "sha256": "b92b2607a9c408ccbee3a8392a979ae19d9e84f1b34e02e3c842dc941310ae77"
+    },
+    {
+      "path": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp198-typecheck-correction-ka9cg6bl/matrix/slots/qualification-3.json",
+      "sha256": "f528e9876db76a028b89ac191142460f58ddc6af9fac93ddf823747aac0fe58b"
+    },
+    {
+      "path": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp198-typecheck-correction-ka9cg6bl/matrix/runs/qualification-3/summary.json",
+      "sha256": "9fda5153510a552f1f23b4f28e831eb6ac9133148a83160d73de6d4e18e56dd1"
+    },
+    {
+      "path": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp198-typecheck-correction-ka9cg6bl/matrix/runs/qualification-3/local.json",
+      "sha256": "feea8ab334189cf0ab41164af0b145cbcfae90392980d5d49d7815437a3d59f8"
+    },
+    {
+      "path": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp198-typecheck-correction-ka9cg6bl/matrix/runs/qualification-3/oracle-result.json",
+      "sha256": "6c1c6b323736c4f043cc9583cb35e060709d435d68e6a35afd3bb1e482919145"
+    }
+  ],
+  "semantics": "Original raw bytes and original plan/run identifiers are retained. Corrected evaluator independently validates all four qualification cells. The previous invalid timing cell remains diagnostic only."
+}

@@ -1,0 +1,38 @@
+{
+  "status": "READY FOR FRESH32 MEASUREMENT CELLS",
+  "source_plan": {
+    "path": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp198-qualified-reuse-ikvu_ort/matrix/source-plan.json",
+    "sha256": "0432077812b600f97adc152aeb82c34cca3ed2d447219d74b98806f03801edb8"
+  },
+  "plan": {
+    "path": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp198-qualified-reuse-ikvu_ort/matrix/plan.json",
+    "sha256": "465c71a8e804c2c18b907d4de0090f6687b8bb5fb308d24df61dfdd3d4140820"
+  },
+  "host": {
+    "path": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp198-qualified-reuse-ikvu_ort/host.py",
+    "sha256": "a7c286cd5ed1ea28f5936fe7d37397a5ce936f1cf0b640fc6d0f59cfd8d5a771"
+  },
+  "host_tests": {
+    "path": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp198-qualified-reuse-ikvu_ort/host-tests.json",
+    "sha256": "ca0b9d8a3779603e94ebc632804ffddcfb4396f38b420a167b886a0b6485fe0d"
+  },
+  "evaluator": {
+    "path": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp198-start-count-oracle-jzpi1dql/evaluate_exp198.py",
+    "sha256": "d685f844fb9110ed04f5b16b459a88289181889d022bf3dd38bbd6b42c4e3a9f"
+  },
+  "evaluator_tests": {
+    "path": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp198-start-count-oracle-jzpi1dql/tests.json",
+    "sha256": "b223dfae696c12e34297ae62a54a5c889681acbb1e88f8de1719be8efc7f471f"
+  },
+  "reused_qualification_outputs": [
+    "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp198-typecheck-correction-ka9cg6bl/matrix/runs/qualification-0",
+    "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp198-typecheck-correction-ka9cg6bl/matrix/runs/qualification-1",
+    "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp198-typecheck-correction-ka9cg6bl/matrix/runs/qualification-2",
+    "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp198-typecheck-correction-ka9cg6bl/matrix/runs/qualification-3"
+  ],
+  "new_builds": 0,
+  "new_qualification_launches": 0,
+  "protected_unchanged": true,
+  "toolchain_and_runtime_bindings": "PASS",
+  "qualified_at": 1789908397.5913339
+}

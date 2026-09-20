@@ -1,0 +1,145 @@
+{
+  "completed_task_control" : {
+    "classification" : "EXPECTED_BASELINE_NEGATIVE",
+    "completed_before_repeat" : true,
+    "dedicated_feature_release" : {
+      "feature_alive_before_release" : true,
+      "feature_released" : true,
+      "handler_alive_before_release" : true,
+      "handler_released" : true,
+      "provider_alive_before_release" : true,
+      "provider_released" : true,
+      "terminal_preparation_released" : true
+    },
+    "isolated_feature" : true,
+    "native_receipts_after" : {
+      "errors" : 0,
+      "invalidations" : 1,
+      "native_completions" : 1,
+      "protocol_completions" : 1,
+      "protocol_starts" : 1
+    },
+    "native_receipts_before" : {
+      "errors" : 0,
+      "invalidations" : 1,
+      "native_completions" : 1,
+      "protocol_completions" : 1,
+      "protocol_starts" : 1
+    },
+    "numeric_credit" : false,
+    "post_completion_receiver_delta" : {
+      "completions" : 0,
+      "mutations" : 1,
+      "starts" : 1
+    },
+    "pre_completion_receiver_delta" : {
+      "completions" : 1,
+      "mutations" : 1,
+      "starts" : 1
+    },
+    "repeat_resume_attempted" : true,
+    "task_released" : true
+  },
+  "final_release" : {
+    "feature_alive_before_release" : true,
+    "feature_released" : true,
+    "handler_alive_before_release" : true,
+    "handler_released" : true,
+    "provider_alive_before_release" : true,
+    "provider_released" : true,
+    "terminal_preparation_released" : true
+  },
+  "identity" : {
+    "arm" : "A",
+    "build_sha256" : "4c8131c2830c025d5e0d691a95f7e27c4b20c617de4346769c1f47cb1bb19c75",
+    "contract_sha256" : "90bda25a94a268957204c8b15db7c00692c91f639b60d004506c266f0100a5d7",
+    "fixture_sha256" : "7190bb8977ca5dede8cc0f0db2fa244c95c934309e90e5b8b8a29b7bc4cbdf88",
+    "mode" : "qualify",
+    "nonce" : "51e4c7cc-c262-4ea7-bdbe-74bf7d7dffea",
+    "os" : "17.5",
+    "run_id" : "cfc32662-0737-4c63-ad49-7a7511f3197a",
+    "source_revision" : "62f64d7b655bdc83f3036c4ad81090a270f6202b",
+    "source_sha256" : "caf82dad4f36ff2a81c535bdfdcbef510b2463cd1c616f13b756cd9c59a53087",
+    "tracking" : "automatic"
+  },
+  "mode_data" : {
+    "qualification" : {
+      "controls" : {
+        "feature_hold" : {
+          "held" : true,
+          "released" : true
+        },
+        "payload_continuation" : {
+          "applicability" : "unsupported_on_A"
+        },
+        "task_hold" : {
+          "held" : true,
+          "released" : true
+        }
+      },
+      "evaluator_negative_controls" : {
+        "caller_only_counter_negative" : "reused_calibrated_counter_control",
+        "expected" : "evaluator_rejects",
+        "first_100_growth" : 65537,
+        "second_100_growth" : 16385
+      },
+      "terminal_preparation_ownership" : {
+        "captured_final_terminal_legacy" : false,
+        "legacy_payloads_empty" : false,
+        "legacy_preparation_alive_after_task_release" : false,
+        "legacy_terminal_phase" : false,
+        "preparation_map_available" : false,
+        "task_released" : true,
+        "weak_terminal_tasks_available" : false
+      }
+    }
+  },
+  "native_roundtrip" : {
+    "metrics_applicability" : "automatic_inapplicable",
+    "native_body_bytes" : 1024,
+    "native_completions" : 1,
+    "native_errors" : 0,
+    "prepared_header" : "1",
+    "receipts" : {
+      "completions" : 1,
+      "data_bytes" : 1024,
+      "errors" : 0,
+      "invalidations" : 1,
+      "metrics" : 0,
+      "mutations" : 1,
+      "native_completions" : 1,
+      "native_task_lifecycles" : 1,
+      "operations" : 1,
+      "outstanding_enters" : 1,
+      "outstanding_leaves" : 1,
+      "outstanding_max" : 1,
+      "protocol_completions" : 1,
+      "protocol_starts" : 1,
+      "resume_calls" : 1,
+      "starts" : 1
+    },
+    "receiver_body_bytes" : 1024,
+    "receiver_delta" : {
+      "body_bytes" : 1024,
+      "completions" : 1,
+      "metrics" : 0,
+      "mutations" : 1,
+      "starts" : 1
+    },
+    "task_identity" : "\/task-2"
+  },
+  "schema_version" : 5,
+  "status" : "LOCAL_COMPLETE",
+  "teardown" : {
+    "class" : "__NSCFLocalDataTask",
+    "equal" : true,
+    "imp_after" : "0x1845379ec",
+    "imp_before" : "0x1845379ec",
+    "native_receipt" : {
+      "native_body_bytes" : 1024,
+      "native_completions" : 1,
+      "native_invalidation" : 1
+    },
+    "selector" : "resume"
+  }
+}

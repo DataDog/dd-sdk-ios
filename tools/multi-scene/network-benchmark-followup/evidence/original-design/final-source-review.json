@@ -1,0 +1,57 @@
+{
+  "schema_version": 1,
+  "experiment": "EXP-198",
+  "status": "PASS",
+  "scope": "INDEPENDENT_SOURCE_AND_OFFLINE_MECHANICS_REVIEW_ONLY; suitable for bounded host preparation and qualification, not runtime acceptance",
+  "reviewed_at": "2026-09-20T10:49:14.769499+00:00",
+  "inputs": {
+    "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp198-fourth-preparation-emxzcfo2/host.py": "d640c3274ce638e1e411dd95c243367add9086d392f77a554935e0a4e234506c",
+    "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp198-fourth-preparation-emxzcfo2/test_host.py": "0b376cdd98c179d7fbb4ce2c757a6b0346d365b8a97683b6b7fa627bf575b7a1",
+    "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp198-fourth-preparation-emxzcfo2/evaluate_exp198.py": "6623d1ee3be062848200c5e4674627b410a04f5edb5537c4bf067f0e3ef1e157",
+    "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp198-fourth-preparation-emxzcfo2/test_evaluate_exp198.py": "3c27e18673fea66293c131f27742f098e0629f6b474c05491c4fae85138ebc25",
+    "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp198-fourth-preparation-emxzcfo2/fixture/App.swift": "cb985febca38140dea8fff45db4be92e0f86cfbcc1b3e3065812dbea8ba99e03",
+    "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp198-fourth-preparation-emxzcfo2/fixture/URLSessionE01Fixture.swift": "edae6074329d1a322adf1f20f78e2d7c499007f11e5466efb04d7b1cf50caf44",
+    "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp198-fourth-preparation-emxzcfo2/fixture/E01AllocationCounter.c": "d99d6eb3c656a118a6fbe0766ea7a8e864d8cda23f42f522a7aebab40b37113c",
+    "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp198-fourth-preparation-emxzcfo2/fixture/E01AllocationCounter.h": "dee7f0b145d08a6eed701b680ac8b9fac92953e7a72f96b84b25a98ecb46b14d",
+    "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp198-fourth-preparation-emxzcfo2/fixture/E01Calibration.c": "ecd05010d1fcdefd97994e83d2a079253f269d87f4b7a3bb4c0a09fdc88dd565",
+    "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp198-fourth-preparation-emxzcfo2/fixture/E01Calibration.h": "5c4ae14d993006c604d53ae714230cbd4604c5169749a584c258f4d005ffe392",
+    "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp198-fourth-preparation-emxzcfo2/native-shape.json": "e75859a0ed9037b3c73cdc37072fa52e445e98758fdeab04d695a52f83a2a32e",
+    "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp198-fourth-preparation-emxzcfo2/host-tests.json": "32136c10a42b61009e69d3f7133ceff626b735a1f08b5ff6d69cf9ce0303beb3",
+    "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp198-fourth-preparation-emxzcfo2/evaluator-tests.json": "c74517f95ca1dfddf05ae98a1c5c33a52b7b1e3bc1c5b750cb19b8a398dab29b"
+  },
+  "findings": [],
+  "reviewed_invariants": [
+    "Final source, native shape, evaluator and host field contracts agree; all twelve initial fixture findings and subsequent concrete correction findings resolved in frozen inputs.",
+    "Actual bound/unbound paths, held-native readiness and quietness, cumulative/native/SDK receipts, phase snapshots, seven dispatch rows, full-task allocation denominator and 32-launch ABBA inventory preserved.",
+    "Timing excludes logger/calibration; allocation calibration precedes unbound measurement and covers caller, feature queue, worker and concurrent process counts; allocation counts are distinguished from retained heap bytes.",
+    "Fresh 220-task retention cohort requires live interception witnesses and exact mutations/starts/completions 220 each; weak settlement precedes snapshots; signed heap deltas and B absolute budgets remain unchanged.",
+    "Baseline/candidate owning-collection applicability is explicit; completed-task control uses isolated postnumeric feature; live release witnesses, concrete task class IMP restoration and postteardown native forwarding are required.",
+    "Host preserves raw bytes, binds source/binary/installed identity and prior verdicts, enforces finite slots and absolute deadlines after evaluation, and records observed cleanup without invented absence.",
+    "Accepted P04 evidence is reused without baseline hazardous reentry or numeric waiver; qualification and measurement phases remain separate.",
+    "Final 25-test evaluator receipt binds actual unchanged before/after source hashes; valid 32-cell controls independently reject median-only, p95-only, allocation-operation-only and allocation-byte-only excess; complete batch receipt checks retained.",
+    "Host 28-test receipt hashes match actual source; both offline suites are source-reviewed receipts, not executions performed by this reviewer."
+  ],
+  "offline_receipts": {
+    "host": {
+      "tests": 28,
+      "sha256": "32136c10a42b61009e69d3f7133ceff626b735a1f08b5ff6d69cf9ce0303beb3"
+    },
+    "evaluator": {
+      "tests": 25,
+      "sha256": "c74517f95ca1dfddf05ae98a1c5c33a52b7b1e3bc1c5b750cb19b8a398dab29b",
+      "before_after_hashes_verified": true
+    }
+  },
+  "prior_evidence_disposition": "Preserved incoherent 22-control snapshot receives no qualified test credit. Earlier blocked reviews and snapshots are retained; this review binds only the listed final inputs.",
+  "limits": [
+    "No compilation, native execution, ABBA measurements, numeric budget acceptance, sanitizer proof or release gate closure is established by this review.",
+    "All four qualification cells and subsequent accepted measurements still require actual host/runtime evidence and existing stop rules.",
+    "No SDK, fixture, evaluator, test, device or repository changes were made by this review."
+  ],
+  "prerequisites": {
+    "admission.json": "73df34a2ba58f2a9e62279fb106e8c47a532769c1b8a234a233f56ebadc3a1bc",
+    "contract.json": "90bda25a94a268957204c8b15db7c00692c91f639b60d004506c266f0100a5d7",
+    "design-review.json": "cf0fcccd02f2eeb7b4ea158ad647113bc537b2e5e2d7f73ed7784f88cb8a7ff9",
+    "fixture-implementation-receipt.json": "4db64bd83f516a1b4cb8ca6f11671c41618c59059a2a738a04fab416c772b67b"
+  }
+}

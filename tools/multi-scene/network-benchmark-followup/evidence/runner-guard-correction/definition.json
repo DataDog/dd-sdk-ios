@@ -1,0 +1,12 @@
+{
+  "defined_at": 1789909465.720721,
+  "status": "HOST GUARD CORRECTION; NATIVE CONTINUATION DECISION PENDING INDEPENDENT REVIEW",
+  "scope": "Fix false classification of macOS BackgroundShortcutRunner as XCTest. Preserve actual xctest, XCTRunner, *-Runner, known SDK test/fixture/build/profile detection and all workload/threshold/deadline checks.",
+  "original_root": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp198-qualified-reuse-ikvu_ort",
+  "original_valid_measurement_cells": 22,
+  "failed_slot": 22,
+  "failed_slot_native_launches": 0,
+  "source_and_binary_changes": false,
+  "native_action_admission": false,
+  "next": "After focused controls, record independent decision about retaining22 valid cells under original3hour matrix deadline versus fresh complete matrix; no native action before that decision."
+}

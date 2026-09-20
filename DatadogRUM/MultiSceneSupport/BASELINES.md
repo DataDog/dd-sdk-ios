@@ -1,5 +1,29 @@
 # Early compatibility and performance baseline
 
+## Current release scope
+
+The user revised performance acceptance on2026-09-20. Required benchmarking is a
+bounded representative application before/after comparison for new SwiftUI semantic
+tracking and multi-scene changes, covering frame rate, hitches/hangs, CPU and memory.
+Freeze the actual source/build, device, finite journeys and visible-regression
+criteria before measurement; an expected low risk is not a pass. If the shipped
+candidate excludes both change families, F07 must prove that exclusion.
+
+Preserving View/Action information and Resource-to-view attribution, preventing
+crashes/deadlocks, and releasing objects at the required lifecycle boundary remain
+correctness requirements. Network per-task processing, allocation counts or bytes
+do not independently block a correctness fix. No mandatory standalone network
+performance campaign replaces EXP-198; investigate a concrete visible problem if
+one is found. [The optional harness](NETWORK_BENCHMARK_FOLLOWUP.md) preserves that
+work. The register's S1/S2/S3 requirements own current acceptance.
+
+## Historical EXP-160 protocol and evidence
+
+The frozen protocol and thresholds below retain their original experimental
+meaning. They are not the current mandatory benchmarking policy and no old result
+is relabeled. Current configuration use is authorized subject to preserving the
+user file/index and excluding client values from public commits.
+
 Protocol fixed before EXP-160 implementation or measurement on 2026-09-17.
 Gates: C01–C06 and P01–P04. These early measurements precede further telemetry
 API expansion; repeat at release freeze and after a relevant architectural change.

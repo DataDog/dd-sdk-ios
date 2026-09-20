@@ -1,0 +1,13 @@
+{
+  "experiment": "EXP-198",
+  "owner": "root",
+  "change": "Propagate the existing throwing inventory() through its inner autoreleasepool with try, as required by the compiler; no handling/measurement boundary change.",
+  "previous_run": {
+    "path": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp198-compile-correction-6r3t7pdn/matrix/run-summary.json",
+    "sha256": "c9965f630ba96c2c3094c04e57fdc50ee9bc9387d5a8de81ed3b913e27a00970"
+  },
+  "previous_build_log_sha256": "05274cf430674214dfb49e1d07ad68761f9ed263db5827ff3c28f752e98fc166",
+  "fixture_before": "6522dae1a892ee9de5feb822cc2aeaf03c2838d9591bd9acc6fed68517e002a7",
+  "fixture_after": "d4e13fb44497015653649827324e403283414f8aa474421e799819baf9af4ed5",
+  "runtime_bounds": "Same one build perarm,4qualification and conditional32measurement limits; preceding compile failure preserved."
+}

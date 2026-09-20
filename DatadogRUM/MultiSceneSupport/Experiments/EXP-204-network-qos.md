@@ -34,3 +34,12 @@ experiment remains **INCONCLUSIVE**: the warning can occur without E01, but this
 does not compare candidate behavior or clear sanitizer/performance safety. No
 retry or rebuild is admitted. Source/products remain unchanged; all three cleanup
 checkpoints and protected-state checks pass. Independent final audit agrees.
+
+A separately defined follow-up is now prepared after EXP-205 established a host
+finalization correction: add `-collect-test-diagnostics never` in both arms. Reuse
+only byte-identical source/test products, retain console/runtime warnings and the
+unchanged selector/assertions/sanitizer settings, and require finalized inventories.
+No build or execution has occurred. The new pair permits two invocations, at most
+600seconds each and1200seconds overall with result/cleanup reserve; stop on first
+failure. Verbose diagnostic archives are omitted. The original timeout remains
+inconclusive, and this preparation supplies no warning or release clearance.

@@ -1,0 +1,22 @@
+{
+  "status": "PASS FOR SEPARATELY ADMITTED EXECUTION-ONLY CONTINUATION",
+  "reviewer": "independent measurement reviewer",
+  "received_at": 1789910045.145791,
+  "decision": "Retain original valid slots00-21 and execute exactly22-31 in fresh output paths. Failed slot22 had no native launch or bundle mutation and remains failed. No full32 restart needed.",
+  "conditions": [
+    "Bind original source/plan/raw evidence; never rewrite original summaries or plan IDs.",
+    "Same source, binary, fixture, contract and evaluator; no rebuild or qualification rerun.",
+    "Original matrix window1789908432.706615 to1789919232.706615; no extension.",
+    "No intervening native workload; preserve effective ABBA order and unique new run for replacement slot22.",
+    "Explicit merger validates original cells under original plan and fresh cells under continuation plan; all32 required for verdict.",
+    "Original stopped attempt remains STOPPED; this is explicit new admission, no automatic equivalent retry."
+  ],
+  "guard": {
+    "path": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp198-runner-guard-correction-q90uri6t/host.py",
+    "sha256": "dfa5887875cf354f7447c2911ce56ea18879832489ebb47f80dc589b43c34b65"
+  },
+  "controls": {
+    "path": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp198-runner-guard-correction-q90uri6t/host-tests.json",
+    "sha256": "a5774c289779b898637bcb02cb070e951dcbdb4d4c3ffdd3c3d6a560d938ae2b"
+  }
+}

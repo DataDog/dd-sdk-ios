@@ -27,7 +27,7 @@ Keep unrelated upstream changes, including platform-specific behavior.
 | E01 | URLSession request mutation and lifecycle happen once per task | First candidate. Synchronized task preparation plus internal resume continuation forwarding, callback buffering and weak terminal state. Repeated and suspend/resume calls, automatic/registered/dual instrumentation, completion cleanup and post-completion resume controls. Count handler mutation separately from lifecycle-start deduplication. |
 | E02 | Retained old view cannot absorb a later occurrence | Retain H1 with pending Resource, navigate Detail → H2, assert H1 start/stop attributes unchanged, H1 Resource and H2 action isolation, one active restored occurrence. New Home UUIDs alone already work upstream. |
 | E03 | Completion affects only its Resource owner | Reimplement by existing resourceKey; late success/error/metrics cannot increment another view's action/error_tap. Preserve ordinary same-view processing, response-plus-error action signals and clock-driven expiration. EXP-206 reproduces4 cases; stateless membership is incompatible and no repair is admitted. |
-| E04 | Long-lived native view remains a valid delayed WebView container | EXP-207 qualifies the independent two-file repair: exact develop failures, full RUM coverage and paired native bridge ownership/expiry controls. Session release/restoration, capacity, ordering and Replay pass; candidate release and performance checks remain separate. |
+| E04 | Long-lived native view remains a valid delayed WebView container | EXP-207 qualifies the independent two-file repair: exact develop failures, full RUM coverage and paired native bridge ownership/expiry controls. Session release/restoration, capacity, ordering and Replay pass; candidate release/lifetime checks remain separate; numerical microbenchmarks are optional. |
 | E05 | Conditional request-time Trace ownership | Only after generic red evidence and a bounded implementation using existing NetworkContext.rumContext. Reverse completion and explicit nil start retain original context; headers/sampling/user/account behavior remain unchanged. |
 
 Historical mixed commits (`bf37a2e99`, `ea787a35a`, `a6cd5df60`, `ff37d7154`,
@@ -42,7 +42,7 @@ preparation and early completion can be lost. The bounded three-file internal
 continuation/preparation repair was explicitly approved for local implementation
 and testing after the automatic review rejection. Signed464af911 passes the full
 Internal suite and paired17.5 ordinary/legacy matrix. E01/F07 and the bounded S1
-compatibility gates close; affected consumers, performance and release checks remain
+compatibility gates close; affected consumers, object lifetime and release checks remain
 required. Duplicate resumes during preparation are forwarded later on the
 preparation thread; no arbitrary same-stack/thread transparency is claimed. E02 and E04 now have independent generic eligibility evidence in EXP-205 and
 EXP-207. E05 now has independent request-time correlation eligibility in EXP-208,
@@ -65,7 +65,7 @@ SDK27 compatibility slices. It depends only on the S1 fixes it needs.
 Run the reproducer red on the frozen baseline, apply the smallest fix, then green
 plus relevant automatic/delegate, module and ordinary native controls. Freeze the
 candidate's F03 platform/Swift/Objective-C/build/API/lint inventory; preserve crash
-safety, privacy/wire compatibility, ownership and original performance/retention
+safety, privacy/wire compatibility, ownership and applicable application-impact/object-lifetime
 thresholds. Do not run device measurements concurrently with builds or tests.
 Compatibility checks follow the shipped modules; unrelated new scene APIs do not
 block S1/S2. S1:C06 passes deployment15 and actual17.5(21F79) candidate coverage;

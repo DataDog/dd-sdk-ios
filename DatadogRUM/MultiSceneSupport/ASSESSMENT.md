@@ -37,20 +37,26 @@ surface, feature documentation and full integration coverage qualify S1:F02/F03.
 [final matrix](Results/EXP-201-final-compatibility.json) retain exact inventories,
 the corrected inherited hitch assertion and diagnostic limits.
 
-E01 is not release-ready: numeric P01–P03, backend A01/T03/T08 and final F06 remain
-open. [Performance qualification](Results/EXP-198-network-performance.json) has no
-accepted numeric result. Both Release builds and four native prerequisites now
-pass; the first timing cell exposed an incorrect baseline SDK-start expectation
-in the evaluator. Its source-backed correction is pending; budgets are unchanged.
+E01 is not release-ready: the focused object-lifetime audit, backend A01/T03/T08
+and final F06 remain open. The user removed detailed network performance and any
+replacement standalone network campaign from release prerequisites. The
+[optional benchmark](NETWORK_BENCHMARK_FOLLOWUP.md) preserves22 valid cells, its
+prelaunch host failure and unfinished continuation without a numeric verdict.
+Required performance work for S2/S3 concerns application-visible frame rate,
+hitches/hangs, CPU and memory impact of included semantic SwiftUI/multi-scene
+changes; source exclusion can qualify non-applicability. Correctness and ownership
+requirements remain unchanged.
 [Backend preparation](Results/EXP-202-urlsession-backend.json) has two qualified
 credential-backed Release builds. Both original native prerequisites failed
 before startup readiness. After the reviewed host evidence repair, the registered
 receipt proves one window with an inactive UIApplication in sceneDidBecomeActive,
 before SDK initialization. Cleanup passes. The reviewed one-file activation correction reaches active-app
 startup readiness and actual Datadog ingestion, but its corrective run times out
-before release. A backend-generated session record also needs explicit oracle
-classification. All three failed launches remain separate; no network scenario
-or backend acceptance is inferred. Test-only duplicate classes
+before release. The server-session classification correction passes44 focused
+controls and source review. Its diagnostic smoke then stops on a215second MCP
+request, beyond the fixed115second bound; cleanup passes. Subsequent count/search
+queries take0.3seconds, but cannot rescue the earlier boundary. All four stopped
+launches remain separate; no network scenario or backend acceptance is inferred. Test-only duplicate classes
 are excluded from inspected shipping graphs; the networking QoS warning occurs
 without E01, but its [paired diagnostic](Results/EXP-204-network-qos.json) timed out
 and supplies no candidate-equivalence, harmlessness or sanitizer/performance claim.

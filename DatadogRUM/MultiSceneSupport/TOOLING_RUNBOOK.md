@@ -87,6 +87,15 @@ Actual build/run/cleanup budgets remain fixed and enforced. Preserve failed runs
 update each fact at its existing owner, and batch derived documents at checkpoints.
 Report required candidate gates, qualified SDK defects, blocker age and next action.
 
+The user scope correction on2026-09-20 defers EXP-198 and any replacement mandatory
+network performance campaign. The optional source/evidence archive is preserved
+in [NETWORK_BENCHMARK_FOLLOWUP.md](NETWORK_BENCHMARK_FOLLOWUP.md). Continue network
+correctness, Resource/Trace ownership and object lifetime. Required benchmarking
+covers application-visible frame rate, hitches/hangs, CPU and memory impact of
+included new semantic SwiftUI/multi-scene changes only; freeze one representative
+before/after workload and criteria before collecting it. Historical numeric limits
+remain unchanged in old evidence but are not current release blockers.
+
 ## Isolated URLSession backend acceptance
 
 EXP-202 owns the ordinary E01 Resource/Trace fixture and strict oracle. Freeze
@@ -104,7 +113,10 @@ truncation or truncation messages for aggregate, search and trace detail results
 even when the returned count matches. Absence of the optional trace-detail flag
 remains distinguishable from a returned false. Apply one115second collection
 bound across polling, pages and details. Lower-bound ingestion counts never
-replace the mandatory strict missing/extra/duplicate/owner oracle.
+replace the mandatory strict missing/extra/duplicate/owner oracle. A single MCP
+call can itself exceed the boundary: retain its late bytes and timing, allow native
+cleanup to finish, and diagnose transport outside a live run. A later fast query
+does not retroactively satisfy release readiness or justify an automatic retry.
 
 Cleanup runs after attempted boot/install, including failures before successful
 installation. Preserve command returns/exceptions and verify container/process
@@ -157,11 +169,22 @@ A test receipt must bind exact source hashes before and after its actual run.
 A mixed handoff of edited validator code and an older passing receipt receives no
 qualified credit. Numeric controls must independently exceed median,p95,operation
 and byte limits; a joint overrun can mask a missing companion comparison. EXP-198's
-final25-control receipt and independent review preserve these discriminators.
+initial25-control receipt and independent review preserve these discriminators.
+The source-backed baseline second-resume correction adds four controls: duplicate
+mutation is expected, duplicate SDK start is rejected. Reuse unchanged binaries and
+qualified native prerequisites through their original plan/run identities and raw
+bytes, with explicit provenance and revalidation. Never relabel a prior stopped
+measurement or copy qualification summaries into a new plan.
 The fourth host attempt truthfully stopped at its then-enforced preparation
 deadline. Under the revised workflow, reuse byte-identical reviewed source and
 controls through a concise execution record; engineering time alone does not
 invalidate them. Build, runtime and cleanup deadlines still fail closed.
+
+Process guards must recognize actual XCTest runners and known SDK fixtures. A broad
+`Runner` suffix also matches macOS `BackgroundShortcutRunner`, causing a prelaunch
+false positive. Retain checks for xctest/XCTRunner, `-Runner` test apps, test bundles,
+known Example hosts and competing builds/profiles. A guard correction cannot
+retroactively make the stopped slot valid or reset an existing matrix deadline.
 
 ## Full-target platform compatibility checks
 

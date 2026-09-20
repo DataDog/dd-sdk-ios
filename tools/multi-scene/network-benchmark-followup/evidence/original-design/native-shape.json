@@ -1,0 +1,95 @@
+{
+  "schema_version": 5,
+  "document_status": "FROZEN_IMPLEMENTATION_SHAPE_PROPOSAL_NOT_EXECUTED",
+  "top_level": {
+    "required": ["schema_version", "status", "identity", "native_roundtrip", "completed_task_control", "teardown", "final_release", "mode_data"],
+    "types": {
+      "schema_version": "integer=5",
+      "status": "string enum LOCAL_COMPLETE|INCONCLUSIVE",
+      "identity": "object defined below",
+      "native_roundtrip": "object defined below",
+      "completed_task_control": "object defined below",
+      "teardown": "object defined below",
+      "final_release": "object defined below",
+      "mode_data": "object: exactly one qualification|timing|allocation key, selected by identity.mode; allocation contains calibration and retention"
+    },
+    "forbidden": ["synthetic_pass", "fixture_specific_status", "missing_field_as_zero", "numeric_verdict", "host_rewritten_rows"]
+  },
+  "identity": {
+    "required": {
+      "run_id": "canonical UUID string, fresh per launch",
+      "nonce": "canonical UUID string, fresh and distinct from run_id",
+      "arm": "string enum A|B",
+      "tracking": "string enum automatic|registered",
+      "mode": "string enum qualify|e01-timing|e01-alloc-retention",
+      "os": "string exact runtime version",
+      "source_revision": "40-char SHA string",
+      "source_sha256": "64-char SHA string",
+      "fixture_sha256": "64-char SHA string",
+      "build_sha256": "64-char SHA string",
+      "contract_sha256": "64-char SHA string"
+    },
+    "identity_rule": "Host summary and frozen plan must equal every native identity field; stale result, stale binary, wrong arm/tracking/mode/source/fixture/build/contract/os is INCONCLUSIVE."
+  },
+  "receipt": {
+    "fields": ["operations", "native_task_lifecycles", "resume_calls", "mutations", "starts", "completions", "native_completions", "protocol_starts", "protocol_completions", "invalidations", "errors", "data_bytes", "metrics", "outstanding_enters", "outstanding_leaves", "outstanding_max"],
+    "type": "nonnegative integer, observed callback/phase counter",
+    "rule": "completions is the receiver completion delta; native_completions is the URLSession delegate/completion callback receipt; protocol/invalidation/errors are callback-derived. Expected loop counts are separate fields and never replace callback receipts"
+  },
+  "native_roundtrip": {
+    "required": {
+      "task_identity": "nonempty opaque local task identity",
+      "prepared_header": "string|null",
+      "receipts": "receipt object",
+      "native_completions": "integer callback receipt",
+      "native_errors": "integer callback error receipt",
+      "native_body_bytes": "integer",
+      "receiver_body_bytes": "integer",
+      "receiver_delta": "object {mutations,starts,completions,body_bytes,metrics: integer}",
+      "metrics_applicability": "string enum automatic_inapplicable|registered_observed"
+    },
+    "expected": {"receipts.operations": 1, "receipts.protocol_starts": 1, "receipts.protocol_completions": 1, "receipts.completions": 1, "native_completions": 1, "native_errors": 0, "receipts.invalidations": 1, "native_body_bytes": 1024, "automatic_metrics_applicability": "automatic_inapplicable", "registered_metrics": 1}
+  },
+  "completed_task_control": {
+    "required": {"isolated_feature": "true", "completed_before_repeat": "true", "repeat_resume_attempted": "true", "native_receipts_before": "object {protocol_starts,protocol_completions,native_completions,invalidations,errors: integer}", "native_receipts_after": "object {protocol_starts,protocol_completions,native_completions,invalidations,errors: integer}", "post_completion_receiver_delta": "object {mutations,starts,completions: integer}", "classification": "string enum EXPECTED_BASELINE_NEGATIVE|CANDIDATE_PASS", "numeric_credit": "false"},
+    "A_expected": {"classification": "EXPECTED_BASELINE_NEGATIVE", "post_completion_receiver_delta": {"mutations": 1, "starts": 1, "completions": 0}},
+    "B_expected": {"classification": "CANDIDATE_PASS", "post_completion_receiver_delta": {"mutations": 0, "starts": 0, "completions": 0}},
+    "isolation_rule": "Run after all timing/allocation/retention epochs on a dedicated feature, then invalidate/drop task and release the feature before final teardown. Baseline orphan never enters numeric cohorts."
+  },
+  "teardown": {
+    "required": {"class": "nonempty concrete URLSessionTask subclass name", "selector": "resume", "imp_before": "nonzero pointer string", "imp_after": "nonzero pointer string", "equal": "true", "native_receipt": "object {native_completions,native_body_bytes,native_invalidation: integer}"},
+    "rule": "Concrete class and equal nonzero IMPs before/after; retire each probe task/session with actual invalidation and weak settlement. Do not require literal class URLSessionTask or unequal before/after IMPs."
+  },
+  "final_release": {
+    "required": ["feature_alive_before_release", "provider_alive_before_release", "handler_alive_before_release", "feature_released", "provider_released", "handler_released"],
+    "types": "boolean observed from weak witnesses",
+    "rule": "Capture all weak witnesses while strong references are nonnil, perform intended release, then require nil. Deliberate hold controls are separate and cannot make this vacuous."
+  },
+  "qualification": {
+    "numeric_credit": false,
+    "required": {"controls": "object containing task_hold, feature_hold and payload_continuation", "task_hold": "{held,released:boolean}", "feature_hold": "{held,released:boolean}", "payload_continuation": "{applicability,nonzero_while_blocked?,zero_after_drain?}"},
+    "payload_rules": {"A": {"applicability": "unsupported_on_A"}, "B": {"applicability": "candidate_B", "nonzero_while_blocked": true, "zero_after_drain": true}},
+    "scope": "four iOS 17.5 cells A/B x automatic/registered; no rows, allocation calibration, retention or P01/P02/P03 credit"
+  },
+  "timing": {
+    "required_rows": ["unbound_first_resume", "first_resume", "second_resume_ready", "data", "metrics", "completion", "state"],
+    "workload": {"discarded_warmup_operations": 1000, "measured_batches": 7, "operations_per_batch": 1000, "measured_operations": 7000, "individual_samples": 2000, "outstanding_limit": 64},
+    "phase_fields": {"warmup": "{expected_operations:1000, receipts:receipt}", "caller_return": "{expected_operations:7000, receipts:receipt, batch_ns:[7], samples_ns:[2000]}", "through_flush": "{expected_operations:7000, receipts:receipt, batch_ns:[7], samples_ns:[2000]}"},
+    "boundary_labels": {"caller_return": "caller entry to return", "through_flush": "entry through immediate feature.flush()", "first_resume_through_flush": "resume through immediate feature flush (already-enqueued SDK work); not fully settled"},
+    "automatic_metrics": {"applicability": "registered_delegate_only", "forbidden": "timing receipts/samples"},
+    "receipt_rule": "Second resume has native_task_lifecycles=7000, resume_calls=14000, outstanding_enters=7000 and outstanding_leaves=7000; all other applicable phases retain separate callback receipts. The unbound row identifier is exactly unbound_first_resume."
+  },
+  "allocation_retention": {
+    "calibration_order": "calibrate caller/feature queue/worker/concurrent observer before any allocation row including unbound; timing/qualification never install logger; emit mode_data.allocation.calibration.completed=true, calibration_before_unbound=true and a nested passes object",
+    "required_rows": ["unbound_first_resume", "first_resume", "second_resume_ready", "data", "metrics", "completion", "state", "full_task_cycle"],
+    "workload": {"discarded_warmup_operations": 1000, "measured_batches": 7, "operations_per_batch": 1000, "measured_operations": 7000, "window_count_per_batch": 16, "window_denominator_cap": 64},
+    "counter_fields": ["process_operations", "process_bytes", "caller_operations", "caller_bytes", "other_operations", "other_bytes"],
+    "full_task_cycle": {"denominator": "successful_tasks", "operations": 7000, "scope": "first resume through native completion/invalidation/final feature flush", "budget_applies": true},
+    "diagnostics": {"full_lifetime_churn": "raw only, includes construction/pool exit/weak settlement and is retained at mode_data.allocation.full_lifetime_churn", "idle_control": "raw only and retained at mode_data.allocation.idle_control"},
+    "retention": {"cycles": 220, "boundaries": [20,120,220], "inventory_boundary_field": "boundary", "required_cohort_fields": {"receiver_delta": {"mutations": 220, "starts": 220, "completions": 220}, "interception_liveness_verified_cycles": 220}, "reflection_shapes": {"interceptions": "Dictionary", "truncatedInterceptions": "Set", "preparations": "NSMapTable", "events": "Collection", "continuations": "Collection", "terminalTasks": "NSHashTable"}, "fresh_cohort": true, "common": "A inventories contain interceptions/truncatedInterceptions plus task_weak_members/interception_weak_members", "candidate_only": "B inventories contain nested preparations {raw_count_before_enumeration,live_weak_keys,remaining_values,phase_payloads,events,continuations} and weak_terminal_tasks {raw_count_before_enumeration,live_members}", "A_coordinator": "unsupported_on_A; cannot fail A retention", "budgets": {"first_100_growth": 65536, "next_100_growth": 16384}},
+    "epoch_rule": "No beforeReceipts dictionary/map growth or expected-loop bookkeeping inside measured epochs; preallocated scalar callback receipts only. Allocation row receipts are one aggregated receipt object over allocation_batch_0 through allocation_batch_6, while every batch retains its own receipt object."
+  },
+  "matrix_and_verdict_boundary": {"qualification_cells": 4, "measurement_cells": 32, "order": "A/B/B/A per runtime/tracking/mode", "numeric_after": "all 32 cells valid and all seven applicable rows/receipts present", "host_preserves": "local.json byte-for-byte; evaluator verdict is separate"},
+  "offline_negative_controls": ["identity/run/nonce/stale result", "source/fixture/build/contract mismatch", "duplicate/missing/extra cell", "missing native callback receipt", "second-resume double outstanding enter", "equal IMP restoration accepted; unequal before/after rejected", "missing final release witness", "matrix/cell timeout", "wrong 1000/7000/7000/7000 denominators", "threshold overrun", "full_task_cycle-only overrun", "automatic metrics incorrectly measured", "A coordinator incorrectly required", "baseline completed-resume mutation treated as candidate failure"],
+  "source_mapping": {"fixture": ["URLSessionE01Fixture.swift:118-185 result/state/receipt helpers", "URLSessionE01Fixture.swift:186-247 common roundtrip/calibration", "URLSessionE01Fixture.swift:249-591 timing/allocation rows", "URLSessionE01Fixture.swift:632-710 retention/controls", "URLSessionE01Fixture.swift:712-794 teardown/run"], "app": ["App.swift:15 dispatches E01Fixture.run only"], "evaluator_boundary": "Evaluator consumes this shape without rewriting native raw output."}
+}

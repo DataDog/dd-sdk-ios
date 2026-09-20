@@ -1,0 +1,11 @@
+{
+  "scope": "Reuse unchanged qualified builds and four accepted native prerequisites with explicit provenance; run only fresh32 measurement cells. No SDK, fixture, workload or threshold change.",
+  "owner": "root",
+  "original_host": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp198-product-correction-iuv951vh/host.py",
+  "original_matrix": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp198-typecheck-correction-ka9cg6bl/matrix",
+  "evaluator_root": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp198-start-count-oracle-jzpi1dql",
+  "prior_stopped_measurement": "diagnostic only; not reused for numeric credit",
+  "runtime_bound_seconds": 10800,
+  "cell_bound_seconds": 900,
+  "cleanup_reserve_seconds": 90
+}

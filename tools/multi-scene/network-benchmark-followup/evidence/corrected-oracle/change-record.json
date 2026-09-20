@@ -1,0 +1,20 @@
+{
+  "experiment": "EXP-198",
+  "scope": "Prospective baseline SDK start-count oracle correction; no numeric thresholds/workload/fixture/SDK changes. Old stopped measurement remains diagnostic.",
+  "changed_files": {
+    "evaluate_exp198.py": {
+      "before": "6623d1ee3be062848200c5e4674627b410a04f5edb5537c4bf067f0e3ef1e157",
+      "after": "d685f844fb9110ed04f5b16b459a88289181889d022bf3dd38bbd6b42c4e3a9f"
+    },
+    "test_evaluate_exp198.py": {
+      "before": "3c27e18673fea66293c131f27742f098e0629f6b474c05491c4fae85138ebc25",
+      "after": "7e9a7be2bbe65116927cd3af66e774857104663df0058e6c793742b9891f00d7"
+    }
+  },
+  "observed_raw": {
+    "path": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp198-typecheck-correction-ka9cg6bl/matrix/runs/measurement-00/local.json",
+    "sha256": "1c89bbcc3475ce6e7678556511ad3edffa704ceeadf7512e1e6be0fa34ed92ad"
+  },
+  "rule": "For held second resume baseline A, mutations2x but SDK starts1x. Candidate remains1x each. All native counts/receipts and separate receiver checks remain exact.",
+  "required_review": "Focused source-based independent decision; no runtime before resolution."
+}

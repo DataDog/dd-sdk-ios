@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "experiment": "EXP-202",
-  "status": "CORRECTIVE PREREQUISITE STOPPED: BACKEND DEADLINE AND SERVER SESSION INVENTORY GAP",
+  "status": "DIAGNOSTIC SMOKE STOPPED: MCP REQUEST EXCEEDED FIXED BACKEND BOUND",
   "defined_at": 1789868896.779567,
   "gates": [
     "S1:A01",
@@ -715,7 +715,7 @@
     }
   ],
   "result": null,
-  "native_prerequisite_launches_consumed": 2,
+  "native_prerequisite_launches_consumed": 4,
   "acceptance_launches_consumed": 0,
   "unapplied_credential_proposal_review": {
     "status": "EXACT REVIEWED PATCH APPLIED AFTER EXPLICIT USER AUTHORIZATION; ORIGINAL HELPERS PRESERVED",
@@ -1110,16 +1110,48 @@
         "limits": "Actual ingestion and retained late records prove configuration access and expose a backend-session inventory gap. They do not establish timely release or native/backend acceptance."
       },
       "disposition": "Stop correction phase on first failed prerequisite. Registered corrective cell not launched. No retrospective pass or equivalent automatic retry."
+    },
+    {
+      "status": "SMOKE_STOPPED; ZERO RELEASE ACCEPTANCE CREDIT",
+      "scope": "one B automatic diagnostic complete-path prerequisite",
+      "summary": {
+        "path": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp202-backend-interpretation-x3aezn9l/smoke-B-automatic/summary.json",
+        "sha256": "d94d3e401157b64b24dd02b754d8481483cb49e1efa600f3d0e6adccc3dc4c7f"
+      },
+      "native_launches": 1,
+      "network_acceptance_cells": 0,
+      "failure": "bounded artifact deadline: 37cf98fd-e3dc-4e85-934c-1a2801b244bf.response.json",
+      "cleanup": {
+        "container_absent": true,
+        "process_absent": true,
+        "binding_restored": true,
+        "protected_unchanged": true,
+        "helpers_unchanged": true
+      },
+      "timing": [
+        {
+          "kind": "aggregate",
+          "mcp_duration_ms": 601,
+          "state": "DECODED"
+        },
+        {
+          "kind": "aggregate",
+          "mcp_duration_ms": 215430,
+          "state": "FAILED"
+        }
+      ],
+      "finding": "The second count request took215430ms, beyond115000ms. Its late raw response reports3 startup rows. No boundary release, Home transition or network acceptance happened; late evidence is diagnostic only.",
+      "next_action": "Diagnose Datadog MCP query latency without another native launch; continue independent EXP-198 measurement."
     }
   ],
   "backend_inventory_followup": {
-    "status": "SOURCE INTEGRATED;44 FOCUSED CONTROLS PASS; REVIEW BINDING RESOLUTION IN PROGRESS",
+    "status": "HOST CONTROLS PASS; DIAGNOSTIC SMOKE STOPPED ON MCP LATENCY",
     "findings": [
       "Whole-session search includes a type=session/origin=reducer row in addition to ApplicationLaunch view and TTID. The view also has origin=reducer, so origin-only filtering would be wrong.",
       "Existing startup oracle expects only client view/vital and needs explicit validation/classification of the server-session row without hiding raw inventory or relaxing client counts.",
       "Aggregate polling plus tool transport/projection exceeded the115second collection bound; preserve timing and review reducing redundant shell round trips before any bounded new run."
     ],
-    "native_launches_total": 3,
+    "native_launches_total": 4,
     "acceptance_launches": 0,
     "proposal": {
       "path": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp202-backend-interpretation-proposal-33xro62v/proposal.json",
@@ -1143,13 +1175,33 @@
     },
     "source_review": {
       "path": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp202-backend-interpretation-x3aezn9l/source-review.json",
-      "sha256": "e55bdc53d907cf9ab9fc81810b4e5a0e7212d118c3c557a4627d4b08dd43beee",
-      "status": "BLOCK on missing generated binding; root reuse integration has supplied it, exact resolution pending"
+      "sha256": "7bb12caa5878088d8952388743bd02d603eaa9d1f0a0f3a8b46045ee34e25027"
     },
     "reuse_provenance": {
       "path": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp202-backend-interpretation-x3aezn9l/reuse-provenance.json",
       "sha256": "aa133d10e98600e3d9d0e6b230207e01c86d64b457a56ee5ce3c9ef99cd5578d"
     },
-    "next_action": "One isolated candidate automatic full transport/ownership smoke, separately diagnostic before fixed release matrix. No additional build needed."
+    "next_action": "One predefined environmental-recovery diagnostic smoke after EXP198 host work finishes, unchanged helpers and fixed115/125/120second limits. No automatic retry or gate credit.",
+    "review_metadata_resolution": {
+      "path": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp202-backend-interpretation-x3aezn9l/review-metadata-resolution.json",
+      "sha256": "46aa148f38eca5f384871adfe09c15ca349b2106480236eab09ce36fe8aec81b"
+    },
+    "smoke_definition": {
+      "path": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp202-backend-interpretation-x3aezn9l/smoke-definition.json",
+      "sha256": "0310152fdec64f135f249e95a09408f0da55f350155b017b151bbe4f894ca450"
+    },
+    "smoke_outcome": {
+      "path": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp202-backend-interpretation-x3aezn9l/smoke-outcome.json",
+      "sha256": "ba8d8e8b150604c46d5a248aec4b6057c8c759b3fa00198a3675dcd0a6554830"
+    },
+    "recovery_smoke_definition": {
+      "path": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp202-backend-interpretation-x3aezn9l/recovery-smoke-definition.json",
+      "sha256": "ab4f9a6593041eecc13024d6505f53861b1e9d72f2958016a174a8f8da43c36c"
+    },
+    "actual_row_classification_diagnostic": {
+      "path": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp202-backend-interpretation-x3aezn9l/post-smoke-inventory-diagnostic.json",
+      "sha256": "758db366179e74dc69afd4018ee89fdab83f2e1810ae37f1b2c8ba7a1b434e58",
+      "status": "PASS on actual3-row inventory; diagnostic only, after missed native release boundary"
+    }
   }
 }

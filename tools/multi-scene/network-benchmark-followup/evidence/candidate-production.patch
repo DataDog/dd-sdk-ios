@@ -1,0 +1,374 @@
+[1;33mdiff --git a/DatadogInternal/Sources/NetworkInstrumentation/NetworkInstrumentationFeature.swift b/DatadogInternal/Sources/NetworkInstrumentation/NetworkInstrumentationFeature.swift[m
+[1;33mindex 792feb927..4451ef90e 100644[m
+[1;33m--- a/DatadogInternal/Sources/NetworkInstrumentation/NetworkInstrumentationFeature.swift[m
+[1;33m+++ b/DatadogInternal/Sources/NetworkInstrumentation/NetworkInstrumentationFeature.swift[m
+[1;35m@@ -65,6 +65,48 @@[m [minternal final class NetworkInstrumentationFeature: DatadogFeature {[m
+     /// The interceptions **must** be accessed using the `queue`.[m
+     private var interceptions: [URLSessionTask: URLSessionTaskInterception] = [:][m
+ [m
+[1;32m+[m[1;32m    /// Coordinates active preparations and weak terminal identities without retaining tasks.[m
+[1;32m+[m[1;32m    private let preparationLock = NSLock()[m
+[1;32m+[m[1;32m    private let preparations = NSMapTable<URLSessionTask, TaskPreparation>([m
+[1;32m+[m[1;32m        keyOptions: [.weakMemory, .objectPointerPersonality],[m
+[1;32m+[m[1;32m        valueOptions: .strongMemory[m
+[1;32m+[m[1;32m    )[m
+[1;32m+[m[1;32m    private let terminalTasks = NSHashTable<URLSessionTask>(options: [.weakMemory, .objectPointerPersonality])[m
+[1;32m+[m
+[1;32m+[m[1;32m    private final class TaskPreparation {[m
+[1;32m+[m[1;32m        enum Phase { case preparing, ready }[m
+[1;32m+[m[1;32m        var phase: Phase[m
+[1;32m+[m[1;32m        let trackingMode: TrackingMode[m
+[1;32m+[m[1;32m        var continuations: [URLSessionTaskSwizzler.ResumeContinuation] = [][m
+[1;32m+[m[1;32m        var events: [TaskEvent] = [][m
+[1;32m+[m[1;32m        var bufferedBodySize = 0[m
+[1;32m+[m[1;32m        var discardedBody = false[m
+[1;32m+[m[1;32m        var observedTerminal = false[m
+[1;32m+[m
+[1;32m+[m[1;32m        init(phase: Phase, trackingMode: TrackingMode = .automatic) {[m
+[1;32m+[m[1;32m            self.phase = phase[m
+[1;32m+[m[1;32m            self.trackingMode = trackingMode[m
+[1;32m+[m[1;32m        }[m
+[1;32m+[m[1;32m    }[m
+[1;32m+[m
+[1;32m+[m[1;32m    private enum ResumeAction { case prepare, forward, deferred }[m
+[1;32m+[m
+[1;32m+[m[1;32m    private enum TaskEvent {[m
+[1;32m+[m[1;32m        case metrics(URLSessionTaskMetrics)[m
+[1;32m+[m[1;32m        case data(Data)[m
+[1;32m+[m[1;32m        case discardResponseBody[m
+[1;32m+[m[1;32m        case completion(Error?, Date, CFTimeInterval)[m
+[1;32m+[m[1;32m        case state(Int, Date, CFTimeInterval)[m
+[1;32m+[m
+[1;32m+[m[1;32m        var isTerminal: Bool {[m
+[1;32m+[m[1;32m            switch self {[m
+[1;32m+[m[1;32m            case .completion: return true[m
+[1;32m+[m[1;32m            case let .state(state, _, _): return state == URLSessionTask.State.completed.rawValue[m
+[1;32m+[m[1;32m            case .metrics, .data, .discardResponseBody: return false[m
+[1;32m+[m[1;32m            }[m
+[1;32m+[m[1;32m        }[m
+[1;32m+[m[1;32m    }[m
+[1;32m+[m
+     init([m
+         networkContextProvider: NetworkContextProvider,[m
+         messageReceiver: FeatureMessageReceiver,[m
+[1;35m@@ -99,8 +141,9 @@[m [minternal final class NetworkInstrumentationFeature: DatadogFeature {[m
+ [m
+         // Intercept when the task is started[m
+         try swizzler.swizzle([m
+[1;31m-            interceptResume: { [weak self] task in[m
+[1;32m+[m[1;32m            interceptResume: { [weak self] task, continuation in[m
+                 guard let self = self else {[m
+[1;32m+[m[1;32m                    continuation()[m
+                     return[m
+                 }[m
+ [m
+[1;35m@@ -108,15 +151,23 @@[m [minternal final class NetworkInstrumentationFeature: DatadogFeature {[m
+                 // NS_UNAVAILABLE and throw NSGenericException at runtime when accessed[m
+                 // (e.g. AVAssetDownloadTask, AVAggregateAssetDownloadTask).[m
+                 guard task.isSupportedForInstrumentation else {[m
+[1;32m+[m[1;32m                    continuation()[m
+[1;32m+[m[1;32m                    return[m
+[1;32m+[m[1;32m                }[m
+[1;32m+[m
+[1;32m+[m[1;32m                if let action = self.existingResumeAction(for: task, continuation: continuation) {[m
+[1;32m+[m[1;32m                    if case .forward = action { continuation() }[m
+                     return[m
+                 }[m
+ [m
+                 guard let currentRequest = task.currentRequest else {[m
+[1;32m+[m[1;32m                    self.forwardUnlessPreparing(task, continuation: continuation)[m
+                     return[m
+                 }[m
+ [m
+                 // Skip Datadog's own internal requests to prevent infinite recursion[m
+                 if self.isDatadogInternalRequest(request: currentRequest) {[m
+[1;32m+[m[1;32m                    self.forwardUnlessPreparing(task, continuation: continuation)[m
+                     return[m
+                 }[m
+ [m
+[1;35m@@ -125,25 +176,39 @@[m [minternal final class NetworkInstrumentationFeature: DatadogFeature {[m
+                 // in multiple internal URLSessionTask wrapper objects sharing the same taskIdentifier.[m
+                 // Internal wrappers have `_internalDelegateWrapper` set; the user-facing task does not.[m
+                 if task.dd.isInternalTask {[m
+[1;32m+[m[1;32m                    self.forwardUnlessPreparing(task, continuation: continuation)[m
+                     return[m
+                 }[m
+                 #endif[m
+ [m
+                 // Determine if this swizzler should intercept this task based on the configuration[m
+                 guard shouldInterceptTask(task, for: configuration) else {[m
+[1;32m+[m[1;32m                    self.forwardUnlessPreparing(task, continuation: continuation)[m
+                     return[m
+                 }[m
+ [m
+[1;32m+[m[1;32m                switch self.beginPreparation([m
+[1;32m+[m[1;32m                    for: task,[m
+[1;32m+[m[1;32m                    continuation: continuation,[m
+[1;32m+[m[1;32m                    trackingMode: trackingMode,[m
+[1;32m+[m[1;32m                    isCompleted: task.state == .completed[m
+[1;32m+[m[1;32m                ) {[m
+[1;32m+[m[1;32m                case .forward:[m
+[1;32m+[m[1;32m                    continuation()[m
+[1;32m+[m[1;32m                    return[m
+[1;32m+[m[1;32m                case .deferred:[m
+[1;32m+[m[1;32m                    return[m
+[1;32m+[m[1;32m                case .prepare:[m
+[1;32m+[m[1;32m                    break[m
+[1;32m+[m[1;32m                }[m
+[1;32m+[m
+                 // Only perform interception if this swizzler should handle this task[m
+                 // This allows the swizzler chain to continue for tasks we don't handle[m
+[1;31m-                var injectedTraceContexts = [RequestInstrumentationContext]()[m
+[1;31m-[m
+                 let configuredFirstPartyHosts = FirstPartyHosts(firstPartyHosts: configuration?.firstPartyHostsTracing) ?? .init()[m
+                 let (request, traceContexts) = self.intercept(request: currentRequest, additionalFirstPartyHosts: configuredFirstPartyHosts)[m
+                 task.dd.override(currentRequest: request)[m
+[1;31m-                injectedTraceContexts = traceContexts[m
+[1;31m-[m
+[1;31m-                self.intercept(task: task, with: injectedTraceContexts, additionalFirstPartyHosts: configuredFirstPartyHosts, trackingMode: trackingMode)[m
+[1;32m+[m[1;32m                self.intercept(task: task, with: traceContexts, additionalFirstPartyHosts: configuredFirstPartyHosts, trackingMode: trackingMode, fallbackRequest: request)[m
+[1;32m+[m[1;32m                self.finishPreparation(for: task)[m
+             }[m
+         )[m
+ [m
+[1;35m@@ -360,6 +425,132 @@[m [mextension NetworkInstrumentationFeature {[m
+         }[m
+     }[m
+ [m
+[1;32m+[m[1;32m    private func existingResumeAction([m
+[1;32m+[m[1;32m        for task: URLSessionTask,[m
+[1;32m+[m[1;32m        continuation: @escaping URLSessionTaskSwizzler.ResumeContinuation[m
+[1;32m+[m[1;32m    ) -> ResumeAction? {[m
+[1;32m+[m[1;32m        preparationLock.lock()[m
+[1;32m+[m[1;32m        defer { preparationLock.unlock() }[m
+[1;32m+[m[1;32m        if let preparation = preparations.object(forKey: task) {[m
+[1;32m+[m[1;32m            return resumeAction(for: preparation, continuation: continuation)[m
+[1;32m+[m[1;32m        }[m
+[1;32m+[m[1;32m        return terminalTasks.contains(task) ? .forward : nil[m
+[1;32m+[m[1;32m    }[m
+[1;32m+[m
+[1;32m+[m[1;32m    /// Called only while holding `preparationLock`; never invokes customer or native code.[m
+[1;32m+[m[1;32m    private func resumeAction([m
+[1;32m+[m[1;32m        for preparation: TaskPreparation,[m
+[1;32m+[m[1;32m        continuation: @escaping URLSessionTaskSwizzler.ResumeContinuation[m
+[1;32m+[m[1;32m    ) -> ResumeAction {[m
+[1;32m+[m[1;32m        switch preparation.phase {[m
+[1;32m+[m[1;32m        case .preparing:[m
+[1;32m+[m[1;32m            preparation.continuations.append(continuation)[m
+[1;32m+[m[1;32m            return .deferred[m
+[1;32m+[m[1;32m        case .ready:[m
+[1;32m+[m[1;32m            return .forward[m
+[1;32m+[m[1;32m        }[m
+[1;32m+[m[1;32m    }[m
+[1;32m+[m
+[1;32m+[m[1;32m    private func forwardUnlessPreparing(_ task: URLSessionTask, continuation: @escaping URLSessionTaskSwizzler.ResumeContinuation) {[m
+[1;32m+[m[1;32m        if let action = existingResumeAction(for: task, continuation: continuation), case .deferred = action {[m
+[1;32m+[m[1;32m            return[m
+[1;32m+[m[1;32m        }[m
+[1;32m+[m[1;32m        continuation()[m
+[1;32m+[m[1;32m    }[m
+[1;32m+[m
+[1;32m+[m[1;32m    private func beginPreparation([m
+[1;32m+[m[1;32m        for task: URLSessionTask,[m
+[1;32m+[m[1;32m        continuation: @escaping URLSessionTaskSwizzler.ResumeContinuation,[m
+[1;32m+[m[1;32m        trackingMode: TrackingMode,[m
+[1;32m+[m[1;32m        isCompleted: Bool[m
+[1;32m+[m[1;32m    ) -> ResumeAction {[m
+[1;32m+[m[1;32m        preparationLock.lock()[m
+[1;32m+[m[1;32m        defer { preparationLock.unlock() }[m
+[1;32m+[m[1;32m        if let preparation = preparations.object(forKey: task) {[m
+[1;32m+[m[1;32m            return resumeAction(for: preparation, continuation: continuation)[m
+[1;32m+[m[1;32m        }[m
+[1;32m+[m[1;32m        if terminalTasks.contains(task) || isCompleted {[m
+[1;32m+[m[1;32m            terminalTasks.add(task)[m
+[1;32m+[m[1;32m            return .forward[m
+[1;32m+[m[1;32m        }[m
+[1;32m+[m[1;32m        let preparation = TaskPreparation(phase: .preparing, trackingMode: trackingMode)[m
+[1;32m+[m[1;32m        preparations.setObject(preparation, forKey: task)[m
+[1;32m+[m[1;32m        preparation.continuations.append(continuation)[m
+[1;32m+[m[1;32m        return .prepare[m
+[1;32m+[m[1;32m    }[m
+[1;32m+[m
+[1;32m+[m[1;32m    private func finishPreparation(for task: URLSessionTask) {[m
+[1;32m+[m[1;32m        preparationLock.lock()[m
+[1;32m+[m[1;32m        guard let preparation = preparations.object(forKey: task), preparation.phase == .preparing else {[m
+[1;32m+[m[1;32m            preparationLock.unlock()[m
+[1;32m+[m[1;32m            return[m
+[1;32m+[m[1;32m        }[m
+[1;32m+[m[1;32m        // Start is already enqueued. Keep callback enqueue order inside the coordinator lock.[m
+[1;32m+[m[1;32m        let events = preparation.events[m
+[1;32m+[m[1;32m        events.forEach { enqueue($0, for: task) }[m
+[1;32m+[m[1;32m        let continuations = preparation.continuations[m
+[1;32m+[m[1;32m        preparation.events.removeAll()[m
+[1;32m+[m[1;32m        preparation.continuations.removeAll()[m
+[1;32m+[m[1;32m        if preparation.observedTerminal {[m
+[1;32m+[m[1;32m            terminalTasks.add(task)[m
+[1;32m+[m[1;32m            preparations.removeObject(forKey: task)[m
+[1;32m+[m[1;32m        } else {[m
+[1;32m+[m[1;32m            preparation.phase = .ready[m
+[1;32m+[m[1;32m        }[m
+[1;32m+[m[1;32m        preparationLock.unlock()[m
+[1;32m+[m[1;32m        withExtendedLifetime((preparation, events)) {}[m
+[1;32m+[m[1;32m        continuations.forEach { $0() }[m
+[1;32m+[m[1;32m    }[m
+[1;32m+[m
+[1;32m+[m[1;32m    private func route(_ event: TaskEvent, for task: URLSessionTask) {[m
+[1;32m+[m[1;32m        preparationLock.lock()[m
+[1;32m+[m[1;32m        let preparation = preparations.object(forKey: task)[m
+[1;32m+[m[1;32m        defer {[m
+[1;32m+[m[1;32m            preparationLock.unlock()[m
+[1;32m+[m[1;32m            withExtendedLifetime(preparation) {}[m
+[1;32m+[m[1;32m        }[m
+[1;32m+[m[1;32m        if let preparation, preparation.phase == .preparing {[m
+[1;32m+[m[1;32m            preparation.observedTerminal = preparation.observedTerminal || event.isTerminal[m
+[1;32m+[m[1;32m            if case let .data(data) = event, preparation.trackingMode == .registeredDelegate {[m
+[1;32m+[m[1;32m                guard !preparation.discardedBody else {[m
+[1;32m+[m[1;32m                    return[m
+[1;32m+[m[1;32m                }[m
+[1;32m+[m[1;32m                if data.count > Self.maxBufferedBodySize - preparation.bufferedBodySize {[m
+[1;32m+[m[1;32m                    preparation.discardedBody = true[m
+[1;32m+[m[1;32m                    preparation.events.append(.discardResponseBody)[m
+[1;32m+[m[1;32m                    return[m
+[1;32m+[m[1;32m                }[m
+[1;32m+[m[1;32m                preparation.bufferedBodySize += data.count[m
+[1;32m+[m[1;32m            }[m
+[1;32m+[m[1;32m            preparation.events.append(event)[m
+[1;32m+[m[1;32m            return[m
+[1;32m+[m[1;32m        }[m
+[1;32m+[m[1;32m        if event.isTerminal {[m
+[1;32m+[m[1;32m            // State interception precedes the native setter, so task.state alone is insufficient.[m
+[1;32m+[m[1;32m            terminalTasks.add(task)[m
+[1;32m+[m[1;32m            preparations.removeObject(forKey: task)[m
+[1;32m+[m[1;32m        }[m
+[1;32m+[m[1;32m        enqueue(event, for: task)[m
+[1;32m+[m[1;32m    }[m
+[1;32m+[m
+[1;32m+[m[1;32m    /// Enqueues only. Handlers and previous implementations execute outside `preparationLock`.[m
+[1;32m+[m[1;32m    private func enqueue(_ event: TaskEvent, for task: URLSessionTask) {[m
+[1;32m+[m[1;32m        switch event {[m
+[1;32m+[m[1;32m        case let .metrics(metrics): enqueue(task, didFinishCollecting: metrics)[m
+[1;32m+[m[1;32m        case let .data(data): enqueue(task, didReceive: data)[m
+[1;32m+[m[1;32m        case let .completion(error, date, mediaTime): enqueue(task, didCompleteWithError: error, endTime: date, endMediaTime: mediaTime)[m
+[1;32m+[m[1;32m        case let .state(state, date, mediaTime): enqueue(task, didChangeToState: state, endTime: date, endMediaTime: mediaTime)[m
+[1;32m+[m[1;32m        case .discardResponseBody:[m
+[1;32m+[m[1;32m            queue.async { [weak self] in[m
+[1;32m+[m[1;32m                guard let self, let interception = self.interceptions[task] else {[m
+[1;32m+[m[1;32m                    return[m
+[1;32m+[m[1;32m                }[m
+[1;32m+[m[1;32m                interception.resetData()[m
+[1;32m+[m[1;32m                self.truncatedInterceptions.insert(task)[m
+[1;32m+[m[1;32m            }[m
+[1;32m+[m[1;32m        }[m
+[1;32m+[m[1;32m    }[m
+[1;32m+[m
+     /// Checks if a URLRequest is an SDK internal request that should not be tracked[m
+     ///[m
+     /// - Parameter request: The URLRequest to check.[m
+[1;35m@@ -430,11 +621,11 @@[m [mextension NetworkInstrumentationFeature {[m
+     ///   - injectedTraceContexts: The list of trace contexts injected into the task's request, one or none for each handler.[m
+     ///   - additionalFirstPartyHosts: Extra hosts to consider in the interception, used in conjunction with hosts defined in each handler.[m
+     ///   - trackingMode: The tracking mode to use for this interception (automatic or registered delegate).[m
+[1;31m-    func intercept(task: URLSessionTask, with instrumentationContexts: [RequestInstrumentationContext], additionalFirstPartyHosts: FirstPartyHosts?, trackingMode: TrackingMode) {[m
+[1;32m+[m[1;32m    func intercept(task: URLSessionTask, with instrumentationContexts: [RequestInstrumentationContext], additionalFirstPartyHosts: FirstPartyHosts?, trackingMode: TrackingMode, fallbackRequest: URLRequest? = nil) {[m
+         // In response to https://github.com/DataDog/dd-sdk-ios/issues/1638 capture the current request object on the[m
+         // caller thread and freeze its attributes through `ImmutableRequest`. This is to avoid changing the request[m
+         // object from multiple threads:[m
+[1;31m-        guard let currentRequest = task.currentRequest else {[m
+[1;32m+[m[1;32m        guard let currentRequest = task.currentRequest ?? fallbackRequest else {[m
+             return[m
+         }[m
+         let request = ImmutableRequest(request: currentRequest)[m
+[1;35m@@ -510,6 +701,10 @@[m [mextension NetworkInstrumentationFeature {[m
+     ///   - task: The task whose metrics have been collected.[m
+     ///   - metrics: The collected metrics.[m
+     func task(_ task: URLSessionTask, didFinishCollecting metrics: URLSessionTaskMetrics) {[m
+[1;32m+[m[1;32m        route(.metrics(metrics), for: task)[m
+[1;32m+[m[1;32m    }[m
+[1;32m+[m
+[1;32m+[m[1;32m    private func enqueue(_ task: URLSessionTask, didFinishCollecting metrics: URLSessionTaskMetrics) {[m
+         queue.async { [weak self] in[m
+             guard let self = self, let interception = self.interceptions[task] else {[m
+                 return[m
+[1;35m@@ -535,6 +730,10 @@[m [mextension NetworkInstrumentationFeature {[m
+     ///   - task: The task that provided data.[m
+     ///   - data: A data object containing the transferred data.[m
+     func task(_ task: URLSessionTask, didReceive data: Data) {[m
+[1;32m+[m[1;32m        route(.data(data), for: task)[m
+[1;32m+[m[1;32m    }[m
+[1;32m+[m
+[1;32m+[m[1;32m    private func enqueue(_ task: URLSessionTask, didReceive data: Data) {[m
+         queue.async { [weak self] in[m
+             guard let self = self, let interception = self.interceptions[task] else {[m
+                 return[m
+[1;35m@@ -576,7 +775,10 @@[m [mextension NetworkInstrumentationFeature {[m
+         // duration is guaranteed `>= 0` regardless of wall-clock corrections.[m
+         let endTime = Date()[m
+         let endMediaTime = mediaTimeProvider.current[m
+[1;32m+[m[1;32m        route(.completion(error, endTime, endMediaTime), for: task)[m
+[1;32m+[m[1;32m    }[m
+ [m
+[1;32m+[m[1;32m    private func enqueue(_ task: URLSessionTask, didCompleteWithError error: Error?, endTime: Date, endMediaTime: CFTimeInterval) {[m
+         queue.async { [weak self] in[m
+             guard let self = self, let interception = self.interceptions[task] else {[m
+                 return[m
+[1;35m@@ -642,7 +844,10 @@[m [mextension NetworkInstrumentationFeature {[m
+         // duration is guaranteed `>= 0` regardless of wall-clock corrections.[m
+         let endTime = Date()[m
+         let endMediaTime = mediaTimeProvider.current[m
+[1;32m+[m[1;32m        route(.state(state, endTime, endMediaTime), for: task)[m
+[1;32m+[m[1;32m    }[m
+ [m
+[1;32m+[m[1;32m    private func enqueue(_ task: URLSessionTask, didChangeToState state: Int, endTime: Date, endMediaTime: CFTimeInterval) {[m
+         queue.async { [weak self] in[m
+             guard let self = self, let interception = self.interceptions[task] else {[m
+                 return[m
+[1;33mdiff --git a/DatadogInternal/Sources/NetworkInstrumentation/URLSession/NetworkInstrumentationSwizzler.swift b/DatadogInternal/Sources/NetworkInstrumentation/URLSession/NetworkInstrumentationSwizzler.swift[m
+[1;33mindex 7a76aefd4..424e7bd69 100644[m
+[1;33m--- a/DatadogInternal/Sources/NetworkInstrumentation/URLSession/NetworkInstrumentationSwizzler.swift[m
+[1;33m+++ b/DatadogInternal/Sources/NetworkInstrumentation/URLSession/NetworkInstrumentationSwizzler.swift[m
+[1;35m@@ -36,7 +36,7 @@[m [minternal final class NetworkInstrumentationSwizzler {[m
+ [m
+     /// Swizzles `URLSessionTask.resume()` method.[m
+     func swizzle([m
+[1;31m-        interceptResume: @escaping (URLSessionTask) -> Void[m
+[1;32m+[m[1;32m        interceptResume: @escaping (URLSessionTask, @escaping URLSessionTaskSwizzler.ResumeContinuation) -> Void[m
+     ) throws {[m
+         try urlSessionTaskSwizzler.swizzle(interceptResume: interceptResume)[m
+     }[m
+[1;33mdiff --git a/DatadogInternal/Sources/NetworkInstrumentation/URLSession/URLSessionTaskSwizzler.swift b/DatadogInternal/Sources/NetworkInstrumentation/URLSession/URLSessionTaskSwizzler.swift[m
+[1;33mindex 2e84507fa..4b3f95d4b 100644[m
+[1;33m--- a/DatadogInternal/Sources/NetworkInstrumentation/URLSession/URLSessionTaskSwizzler.swift[m
+[1;33m+++ b/DatadogInternal/Sources/NetworkInstrumentation/URLSession/URLSessionTaskSwizzler.swift[m
+[1;35m@@ -7,6 +7,8 @@[m
+ import Foundation[m
+ [m
+ internal final class URLSessionTaskSwizzler {[m
+[1;32m+[m[1;32m    typealias ResumeContinuation = () -> Void[m
+[1;32m+[m
+     private let lock: NSLocking[m
+     private var taskResume: TaskResume?[m
+ [m
+[1;35m@@ -16,7 +18,7 @@[m [minternal final class URLSessionTaskSwizzler {[m
+ [m
+     /// Swizzles `URLSessionTask.resume()` method.[m
+     func swizzle([m
+[1;31m-        interceptResume: @escaping (URLSessionTask) -> Void[m
+[1;32m+[m[1;32m        interceptResume: @escaping (URLSessionTask, @escaping ResumeContinuation) -> Void[m
+     ) throws {[m
+         lock.lock()[m
+         defer { lock.unlock() }[m
+[1;35m@@ -59,12 +61,11 @@[m [minternal final class URLSessionTaskSwizzler {[m
+             super.init()[m
+         }[m
+ [m
+[1;31m-        func swizzle(intercept: @escaping (URLSessionTask) -> Void) {[m
+[1;32m+[m[1;32m        func swizzle(intercept: @escaping (URLSessionTask, @escaping ResumeContinuation) -> Void) {[m
+             typealias Signature = @convention(block) (URLSessionTask) -> Void[m
+             swizzle(method) { previousImplementation -> Signature in[m
+                 return { task in[m
+[1;31m-                    intercept(task)[m
+[1;31m-                    previousImplementation(task, Self.selector)[m
+[1;32m+[m[1;32m                    intercept(task) { previousImplementation(task, Self.selector) }[m
+                 }[m
+             }[m
+         }[m

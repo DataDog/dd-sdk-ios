@@ -1,0 +1,53 @@
+{
+  "status": "ADMITTED BEFORE IMPLEMENTATION",
+  "defined_at": 1789910045.1464489,
+  "scope": "Execution-only continuation of fixed EXP198 matrix after prelaunch system-runner false positive",
+  "review": {
+    "path": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp198-measurement-continuation-c9puld2s/independent-decision.json",
+    "sha256": "f87e8a14297980bbba979f89c371f96840fdf10476759d42d200884f61082ef7"
+  },
+  "original_root": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp198-qualified-reuse-ikvu_ort/matrix",
+  "retained_indices": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12,
+    13,
+    14,
+    15,
+    16,
+    17,
+    18,
+    19,
+    20,
+    21
+  ],
+  "new_native_indices": [
+    22,
+    23,
+    24,
+    25,
+    26,
+    27,
+    28,
+    29,
+    30,
+    31
+  ],
+  "new_native_launch_limit": 10,
+  "new_builds": 0,
+  "new_qualification_launches": 0,
+  "window_started_at": 1789908432.706615,
+  "window_deadline": 1789919232.706615,
+  "stop_rule": "Stop on first failure, drift, competing actual native workload or original absolute deadline; no automatic retry; failed original slot22 never accepted.",
+  "owner": "root"
+}

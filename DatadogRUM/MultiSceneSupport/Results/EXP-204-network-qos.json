@@ -209,5 +209,24 @@
     "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp204-qos-independent-1dya3cd0/audit-final.json",
     "sha256": "9dc92c84f6314744290c993e5c444edab89ff3ffd3a1ccf2774d6523ef81419a",
     "verdict": "Keep INCONCLUSIVE; baseline occurrence established; no candidate execution or gate promotion."
+  },
+  "finalization_followup": {
+    "status": "PREPARED; ZERO EXECUTIONS; QUEUED AFTER CURRENT HOST WORK",
+    "root": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp204-finalization-followup-njik3qql",
+    "definition": {
+      "path": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp204-finalization-followup-njik3qql/definition.json",
+      "sha256": "aaf25541e9fba5aee8ec785005febe933fca17ee02c2aea9f63bcdf8ef6d3533"
+    },
+    "runner": {
+      "path": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp204-finalization-followup-njik3qql/run.py",
+      "sha256": "23dc60f0620b66049de0dc87c27309375e9e0c0e81e2a0f5a7574067a3bb63a5"
+    },
+    "preparation": {
+      "path": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp204-finalization-followup-njik3qql/preparation.json",
+      "sha256": "3484f29ecd21998b711fdd2dac1b8221a98df38bc369e44e8d672325622d082c"
+    },
+    "scope": "Apply EXP205 proven -collect-test-diagnostics never host correction to unchanged existing-binary pair. No rebuild, SDK/test/sanitizer change or automatic retry.",
+    "limits": "Two invocations,600seconds each maximum,1200seconds total including result/cleanup reserve; stop on first failure.",
+    "evidence_limit": "Verbose diagnostic archives omitted; no full sanitizer, numeric performance or harmlessness claim."
   }
 }

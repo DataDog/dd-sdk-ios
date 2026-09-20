@@ -1,0 +1,50 @@
+{
+  "experiment": "EXP-198",
+  "design": {
+    "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp198-fourth-preparation-emxzcfo2/contract.json",
+    "sha256": "90bda25a94a268957204c8b15db7c00692c91f639b60d004506c266f0100a5d7"
+  },
+  "design_review": {
+    "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp198-fourth-preparation-emxzcfo2/design-review.json",
+    "sha256": "cf0fcccd02f2eeb7b4ea158ad647113bc537b2e5e2d7f73ed7784f88cb8a7ff9"
+  },
+  "p04_evidence": {
+    "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp198-fourth-preparation-emxzcfo2/accepted-p04.json",
+    "sha256": "a4079a372feb4a81e9863e4bf93d4b3c01aaf6e325eccb4e11633501c911385c"
+  },
+  "qualification_bound": {
+    "minutes_from_first_build": 30,
+    "max_builds_per_arm": 1,
+    "native_cells": 4,
+    "runtime": "17.5",
+    "mode": "qualify",
+    "numeric_credit": false
+  },
+  "measurement_bound": {
+    "native_cells": 32,
+    "matrix_timeout_seconds": 10800,
+    "cell_timeout_seconds": 900,
+    "runtimes": [
+      "17.5/21F79",
+      "27.0/24A434"
+    ],
+    "order": "A/B/B/A per runtime,tracking,instrument mode",
+    "requires": "Exact source/build review, all offline negative controls and all four qualification cells PASS before first measurement. No competing build/test/profile workload."
+  },
+  "stop_rule": "End attempt on unresolved final source/oracle defect, source deadline, build/native failure, stale input, unexpected observation, cleanup failure or runtime deadline. Preserve every artifact; no automatic equivalent retry or threshold relaxation.",
+  "preserved": "All7 dispatch rows, separate full_task_cycle allocation budget, raw diagnostics,20/100/100 absolute retention budgets,32launches and exact acceptedP04; no heap subtraction.",
+  "status": "ADMITTED BEFORE IMPLEMENTATION",
+  "phase": "FIXTURE_COMPILER_REQUIRED_TRY",
+  "status_semantics": "Legacy parser token; root-owned correction and execution under user-approved simplified workflow.",
+  "defined_at": "2026-09-20T12:22:41.469569+00:00",
+  "source_deadline": "2026-09-20T12:37:41.469569+00:00",
+  "source_deadline_semantics": "Concrete host preparation budget; original expired source-engineering phase remains preserved; unchanged reviewed evidence is reused.",
+  "change_record": {
+    "path": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp198-product-correction-iuv951vh/change-record.json",
+    "sha256": "555f5f5be4242693819e0149c8d414484cc977923650bacff6bf18256724c2c5"
+  },
+  "source_reuse": {
+    "path": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp198-typecheck-correction-ka9cg6bl/source-reuse.json",
+    "sha256": "27939e5447111922576de677dd0d2d4cdd524f94e256a20e3469a7cb3754f0a1"
+  }
+}

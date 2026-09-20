@@ -1,0 +1,10 @@
+{
+  "status": "PASS",
+  "scope": "OFFLINE HOST MECHANICS ONLY; zero native launches/builds/measurements",
+  "tests": 41,
+  "failures": 0,
+  "errors": 0,
+  "host_sha256": "dfa5887875cf354f7447c2911ce56ea18879832489ebb47f80dc589b43c34b65",
+  "test_sha256": "faa9264c85a41b30a565a2d3e58e55526a7284337a35ba23b9b21618434aeda9",
+  "finished_at": 1789909530.889923
+}

@@ -27,7 +27,8 @@ request mutation and strong terminal-preparation retention are repaired in
 1bdc9286; [EXP-197](Results/EXP-197-urlsession-extraction.json) and
 [EXP-199](Results/EXP-199-terminal-task-ownership.json) preserve the approval, red
 controls, repair review and exact qualification. The rejected associated-marker
-approach remains recorded. Numeric retention remains open.
+approach remains recorded. Focused task/feature lifetime coverage remains to be audited; numeric allocator
+budgets no longer block E01 under the user scope correction.
 
 S1 platform/API/docs and full integration checks are qualified by
 [EXP-201](Results/EXP-201-final-compatibility.json); its inherited delta-hitch
@@ -90,10 +91,14 @@ The performance-fixture and backend evidence-retention defects are harness
 findings, not established SDK defects. Their owning
 [performance](Results/EXP-198-network-performance.json) and
 [backend](Results/EXP-202-urlsession-backend.json) records retain every attempt and
-open gate. After preserved preparation/compile stops, both performance Release
-builds and all four native qualifications pass. The first timing cell stops on an
-oracle that incorrectly couples duplicate baseline mutations and SDK start counts.
-Source-backed correction remains pending; no numeric or release clearance follows.
+open gate. The network matrix stops after22 valid cells on a system-runner false positive
+before the next app launch. The corrected guard passes41 controls, but the user
+now defers detailed network benchmarking and any replacement standalone campaign.
+[The optional archive](NETWORK_BENCHMARK_FOLLOWUP.md) preserves all evidence and
+unfinished continuation; no numeric verdict or new performance defect is inferred.
+Object lifetime, correctness and attribution remain required. Only included new
+semantic SwiftUI/multi-scene behavior requires representative application-level
+frame rate, hitches/hangs, CPU and memory comparison under the revised release scope.
 EXP-202's reviewed credential mapping correction qualifies both Release builds.
 Both original native prerequisites failed before startup readiness, with verified
 cleanup. The host repair passes13 offline controls and independent source/reuse
@@ -103,8 +108,10 @@ sceneDidBecomeActive, before SDK initialization. The one-file fixture lifecycle
 correction passes source review and both builds, then reaches active-app startup
 readiness and actual ingestion. Its corrective launch stops on the backend deadline
 before release; retained late rows expose a server-session classification gap in
-the oracle. All three failed launches remain recorded; no SDK defect or native
-network/backend acceptance is established.
+the oracle. The correction passes44 focused controls and source review; the next
+diagnostic smoke stops on a215second MCP count request. Cleanup passes; fast
+post-run queries cannot satisfy the missed boundary. All four stopped launches
+remain recorded; no SDK defect or native network/backend acceptance is established.
 Historical S1 narrative is preserved in the
 [documentation checkpoint](Results/EXP-204-documentation-consolidation.json).
 

@@ -1,0 +1,70 @@
+{
+  "name": "E01",
+  "packages": {
+    "SDK": {
+      "path": "../sdk"
+    }
+  },
+  "targets": {
+    "E01Fixture": {
+      "type": "application",
+      "platform": "iOS",
+      "deploymentTarget": "15.0",
+      "sources": [
+        {
+          "path": "App.swift"
+        },
+        {
+          "path": "URLSessionE01Fixture.swift"
+        },
+        {
+          "path": "E01AllocationCounter.c"
+        },
+        {
+          "path": "E01AllocationCounter.h"
+        },
+        {
+          "path": "E01Calibration.c"
+        },
+        {
+          "path": "E01Calibration.h"
+        }
+      ],
+      "settings": {
+        "base": {
+          "PRODUCT_BUNDLE_IDENTIFIER": "com.datadoghq.exp198.performance",
+          "SWIFT_VERSION": "5.0",
+          "IPHONEOS_DEPLOYMENT_TARGET": "15.0",
+          "INFOPLIST_FILE": "Info.plist",
+          "GENERATE_INFOPLIST_FILE": "NO",
+          "SWIFT_OBJC_BRIDGING_HEADER": "E01Calibration.h",
+          "CODE_SIGNING_ALLOWED": "NO",
+          "ENABLE_TESTABILITY": "YES",
+          "SWIFT_STRICT_CONCURRENCY": "minimal",
+          "SWIFT_DEFAULT_ACTOR_ISOLATION": "nonisolated",
+          "SWIFT_OPTIMIZATION_LEVEL": "-O",
+          "TARGETED_DEVICE_FAMILY": "1,2",
+          "CLANG_ENABLE_MODULES": "YES"
+        }
+      },
+      "dependencies": [
+        {
+          "package": "SDK",
+          "product": "DatadogInternal"
+        }
+      ]
+    }
+  },
+  "schemes": {
+    "E01": {
+      "build": {
+        "targets": {
+          "E01Fixture": "all"
+        }
+      },
+      "run": {
+        "config": "Release"
+      }
+    }
+  }
+}

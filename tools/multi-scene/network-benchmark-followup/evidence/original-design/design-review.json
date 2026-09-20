@@ -1,0 +1,53 @@
+{
+  "schema_version": 1,
+  "status": "PASS",
+  "scope": "Independent bounded design review only; suitable for a separately recorded finite fixture/host/evaluator correction admission. This does not authorize execution, qualify the preserved third implementation, or close P01/P02/P03.",
+  "reviewed_at_utc": "2026-09-20T09:17:55.182903+00:00",
+  "contract": {
+    "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp198-v5-reviewed-design-qob12ptz/contract.json",
+    "sha256": "90bda25a94a268957204c8b15db7c00692c91f639b60d004506c266f0100a5d7"
+  },
+  "preserved_supplemental_review": {
+    "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp198-measurement-retention-design-c8wf7f9s/review.json",
+    "sha256": "d2e9c36f331cfb0bad4ffe029a565735d92e943a1a3dc60ed38a1f2eb7d42d59"
+  },
+  "reused_evidence": {
+    "P04": {
+      "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp198-third-admission-kng0b_pg/accepted-p04.json",
+      "sha256": "a4079a372feb4a81e9863e4bf93d4b3c01aaf6e325eccb4e11633501c911385c",
+      "identity_verified": true
+    },
+    "EXP199": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios/DatadogRUM/MultiSceneSupport/Results/EXP-199-terminal-task-ownership.json",
+      "sha256": "1858898bc888601d932f4279aa96ca87b3bc8f8e3abc908e30dcce77dc0f4c44",
+      "identity_verified": true
+    }
+  },
+  "remaining_concrete_design_blockers": [],
+  "reviewed_invariants": [
+    "A and B source-hashed reflection models match exact Git blobs: A has strong interceptions/truncated only; B additionally has weak-key preparations and weak terminal identities. Missing B state and unexpected shape fail closed.",
+    "Warm-up/caller/through-flush/allocation phase receipts have distinct1000/7000/7000/7000 denominators. Each ready second-resume sample has one native lifecycle and two resume calls, with one outstanding enter/leave pair.",
+    "Actual callbacks supply receipt counts; cumulative byte scalars differ from last-body assertions. All counters synchronize; beforeReceipts dictionary is removed from epochs.",
+    "Timing remains logger-free; allocation calibration precedes even the unbound row. Callback setup and companion metrics remain outside accepted callback windows.",
+    "Full-task allocation retains first-resume through completion/invalidation/final-flush boundary; full-lifetime diagnostic includes constructors, pool exit and weak settlement. Helper task teardown finishes before numeric windows.",
+    "Numeric retention uses a separate fresh ordinary220-cycle feature, fixed observer storage, per-task weak settlement and heap reads before snapshot construction; raw weak-slot counts are visible and never cleared to pass.",
+    "Completed-resume discriminator uses a separate nonnumeric feature after numeric work, with exact A1/1/0 versus B0/0/0 SDK deltas and native exactly-once receipts. Known baseline orphan never enters the measurement cohort.",
+    "Feature/provider/handler weak witnesses are captured alive before actual release. Teardown binds identical observed concrete task classes, nonzero equal resume IMPs and fresh actual native forwarding.",
+    "Accepted EXP203/P04 and EXP199 identities are reused truthfully, without new baseline reentry/body qualification or implied optimized numeric coverage.",
+    "Seven named rows, automatic metrics explicit inapplicability, four qualification slots,32 measurement launches, ABBA order, both timing boundaries, full-task allocation gate and all original absolute budgets are preserved."
+  ],
+  "implementation_verification_obligations": [
+    "This is a requirements contract. Fresh source/helper snapshots must implement and cross-check it before any separately authorized build; all existing B4-01 through B4-10 implementation blockers remain blocked in the preserved third snapshot.",
+    "Decode the actual accepted-p04.json structure: result.decisive_evidence.executions/executed_cases/selected_discovered_cases; definition.selectors; reused_evidence.source_hashes and attempts[0].run.source. Do not retain the old evaluator assumptions of top-level executions, selected_controls or production_source_hashes. Hash-bound input identity remains unchanged.",
+    "Implement observed running/held readiness followed by feature drain outside held callback/ready-row windows as required by the referenced protocol. Keep first-resume caller/prefix timing distinct from native startup; any unexpected native callback overlap invalidates a controlled window.",
+    "All three retention snapshots must carry explicit preparation values/phases/events/continuations and terminal raw/live counts for B. A coordinator remains explicitly unsupported.",
+    "Require all expected ordinary tasks to complete; no failed-task denominator reduction, invented native counts, or fabricated release/control booleans. All offline identity/count/threshold/readiness/ownership negatives must reject before a real qualification slot.",
+    "Retain original failure-vs-insufficient-evidence distinction. Valid measured threshold excess is failure; incomplete evidence is inconclusive. No raw result rewrite or missing-cell filtering."
+  ],
+  "limits": [
+    "No source, test, project, protected configuration, device or prior artifact mutation was performed.",
+    "No build, execution, measurement, backend, scene, physical-device, sanitizer or release claim.",
+    "Process allocations include native and fixture work; other-thread buckets are not SDK-queue attribution. Fresh feature is not fresh Foundation process state.",
+    "Design PASS alone is not a fourth admission; parent owns explicit admission and finite execution control."
+  ]
+}

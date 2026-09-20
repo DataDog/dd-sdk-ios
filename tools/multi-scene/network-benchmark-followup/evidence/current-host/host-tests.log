@@ -1,0 +1,51 @@
+test_absolute_deadline_cannot_be_nominal_only (__main__.HostControls.test_absolute_deadline_cannot_be_nominal_only) ... ok
+test_build_manifest_binds_actual_hash (__main__.HostControls.test_build_manifest_binds_actual_hash) ... ok
+test_changed_built_app_blocks_execution_freeze (__main__.HostControls.test_changed_built_app_blocks_execution_freeze) ... ok
+test_cleanup_failure_blocks_evaluation (__main__.HostControls.test_cleanup_failure_blocks_evaluation) ... {"state": "INCONCLUSIVE", "verdict": null, "output": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp198-host-offline-hc6femm5/runs/qualification-0", "native_launches": 1, "failure": null, "cleanup": false}
+ok
+test_derived_build_reuse_keeps_original_status_time_and_binary (__main__.HostControls.test_derived_build_reuse_keeps_original_status_time_and_binary) ... ok
+test_duplicate_slot_is_not_reused (__main__.HostControls.test_duplicate_slot_is_not_reused) ... ok
+test_exact_matrix_cells_have_stable_unique_bindings (__main__.HostControls.test_exact_matrix_cells_have_stable_unique_bindings) ... ok
+test_existing_destination_not_overwritten (__main__.HostControls.test_existing_destination_not_overwritten) ... ok
+test_future_timestamp_rejected (__main__.HostControls.test_future_timestamp_rejected) ... ok
+test_late_matrix_stops_before_reserving_launch (__main__.HostControls.test_late_matrix_stops_before_reserving_launch) ... ok
+test_malformed_raw_is_retained (__main__.HostControls.test_malformed_raw_is_retained) ... ok
+test_matrix_verdict_after_absolute_bound_cannot_pass_run (__main__.HostControls.test_matrix_verdict_after_absolute_bound_cannot_pass_run) ... {"status": "STOPPED", "started_at": 1789908337.655442, "native_cells_completed": 36, "plan_sha256": "plan", "failure": "matrix absolute deadline exceeded before terminal verification", "final_frozen_inputs": "PASS", "finished_at": 1789919138.66498}
+ok
+test_measurement_cannot_run_without_qualification (__main__.HostControls.test_measurement_cannot_run_without_qualification) ... ok
+test_measurement_only_stops_without_rebuilding_or_requalifying (__main__.HostControls.test_measurement_only_stops_without_rebuilding_or_requalifying) ... {"status": "STOPPED", "started_at": 1789908337.666833, "native_cells_completed": 0, "new_builds": 0, "new_qualification_launches": 0, "reused_qualification_cells": 4, "plan_sha256": "new", "failure": "measurement failed; attempt stopped", "final_frozen_inputs": "PASS", "finished_at": 1789908337.667249}
+ok
+test_measurement_reuse_does_not_bypass_own_slot (__main__.HostControls.test_measurement_reuse_does_not_bypass_own_slot) ... ok
+test_missing_internal_product_rejects_before_build (__main__.HostControls.test_missing_internal_product_rejects_before_build) ... ok
+test_native_failure_is_not_promoted (__main__.HostControls.test_native_failure_is_not_promoted) ... ok
+test_native_failure_retained_and_cleaned_up (__main__.HostControls.test_native_failure_retained_and_cleaned_up) ... {"state": "INCONCLUSIVE", "verdict": null, "output": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp198-host-offline-phmi8zjb/runs/qualification-0", "native_launches": 1, "failure": "native result incomplete", "cleanup": true}
+ok
+test_one_failed_measurement_stops_remaining_launches (__main__.HostControls.test_one_failed_measurement_stops_remaining_launches) ... {"status": "STOPPED", "started_at": 1789908337.6741529, "native_cells_completed": 4, "plan_sha256": "plan", "failure": "measurement failed; attempt stopped", "final_frozen_inputs": "PASS", "finished_at": 1789908337.675544}
+ok
+test_overlay_changes_only_one_product_line (__main__.HostControls.test_overlay_changes_only_one_product_line) ... ok
+test_preinstall_uninstall_failure_does_not_invent_absence (__main__.HostControls.test_preinstall_uninstall_failure_does_not_invent_absence) ... {"state": "INCONCLUSIVE", "verdict": null, "output": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp198-host-offline-im5y1s14/runs/qualification-0", "native_launches": 0, "failure": "offline uninstall-before failure", "cleanup": false}
+ok
+test_prior_changed_native_rejected (__main__.HostControls.test_prior_changed_native_rejected) ... ok
+test_prior_saved_pass_must_revalidate (__main__.HostControls.test_prior_saved_pass_must_revalidate) ... ok
+test_prior_saved_pass_revalidates_successfully (__main__.HostControls.test_prior_saved_pass_revalidates_successfully) ... ok
+test_prior_summary_wrong_plan_rejected (__main__.HostControls.test_prior_summary_wrong_plan_rejected) ... ok
+test_prior_valid_binds_saved_verdict (__main__.HostControls.test_prior_valid_binds_saved_verdict) ... ok
+test_prior_valid_binds_slot_plan_purpose_index_output (__main__.HostControls.test_prior_valid_binds_slot_plan_purpose_index_output) ... ok
+test_qualification_reuse_proof_hash_and_record_bytes_fail_closed (__main__.HostControls.test_qualification_reuse_proof_hash_and_record_bytes_fail_closed) ... ok
+test_raw_bytes_preserved (__main__.HostControls.test_raw_bytes_preserved) ... ok
+test_reuse_compares_semantics_and_both_arm_identities (__main__.HostControls.test_reuse_compares_semantics_and_both_arm_identities) ... ok
+test_reused_qualification_routes_without_rewriting_prior_slot (__main__.HostControls.test_reused_qualification_routes_without_rewriting_prior_slot) ... ok
+test_semantic_rejection_does_not_rewrite_capture_state (__main__.HostControls.test_semantic_rejection_does_not_rewrite_capture_state) ... {"state": "LOCAL_COMPLETE", "verdict": "INCONCLUSIVE", "output": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp198-host-offline-txrevqwf/runs/qualification-0", "native_launches": 1, "failure": null, "cleanup": true}
+ok
+test_stale_timestamp_rejected_but_raw_retained (__main__.HostControls.test_stale_timestamp_rejected_but_raw_retained) ... ok
+test_success_preserves_native_status_and_capture_state (__main__.HostControls.test_success_preserves_native_status_and_capture_state) ... {"state": "LOCAL_COMPLETE", "verdict": "CELL_VALID", "output": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp198-host-offline-dajc5aua/runs/qualification-0", "native_launches": 1, "failure": null, "cleanup": true}
+ok
+test_verdict_after_deadline_is_not_accepted (__main__.HostControls.test_verdict_after_deadline_is_not_accepted) ... {"state": "INCONCLUSIVE", "verdict": "CELL_VALID", "output": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp198-host-offline-pv4fkn6x/runs/qualification-0", "native_launches": 1, "failure": "absolute deadline exceeded during evaluation/final verification", "cleanup": true}
+ok
+test_wrong_identity_rejected_but_raw_retained (__main__.HostControls.test_wrong_identity_rejected_but_raw_retained) ... ok
+test_wrong_or_duplicate_internal_product_rejects (__main__.HostControls.test_wrong_or_duplicate_internal_product_rejects) ... ok
+
+----------------------------------------------------------------------
+Ran 37 tests in 0.078s
+
+OK

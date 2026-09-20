@@ -360,25 +360,9 @@
       "deadline": null,
       "shipping_rule": "Release each eligible narrow fix independently on then-current develop after its applicable candidate checks and S1:F06. Other general improvements do not block it. First selected candidate E01; E02-E05 remain separate qualification work.",
       "required": {
-        "count": 18,
+        "count": 16,
         "closed": 11,
         "remaining": [
-          {
-            "id": "S1:P01",
-            "status": "OPEN",
-            "owner": "SDK implementer",
-            "dependencies": [
-              "S1:C01"
-            ]
-          },
-          {
-            "id": "S1:P02",
-            "status": "OPEN",
-            "owner": "SDK implementer",
-            "dependencies": [
-              "S1:C01"
-            ]
-          },
           {
             "id": "S1:P03",
             "status": "OPEN",
@@ -422,8 +406,6 @@
               "S1:C04",
               "S1:C05",
               "S1:C06",
-              "S1:P01",
-              "S1:P02",
               "S1:P03",
               "S1:P04",
               "S1:A01",
@@ -438,6 +420,22 @@
         ]
       },
       "optional_follow_ups": [
+        {
+          "id": "S1:P01",
+          "status": "OPEN",
+          "owner": "SDK implementer",
+          "dependencies": [
+            "S1:C01"
+          ]
+        },
+        {
+          "id": "S1:P02",
+          "status": "OPEN",
+          "owner": "SDK implementer",
+          "dependencies": [
+            "S1:C01"
+          ]
+        },
         {
           "id": "S1:T10",
           "status": "OPEN",
@@ -471,7 +469,7 @@
       "deadline": "2026-10-16",
       "shipping_rule": "No worse RUM after SDK27 rebuild without major application changes. Use a clean develop-based artifact plus only required S1/compatibility slices, qualified Duo simulator and relevant physical evidence. S2:F06 excludes unrelated scene APIs and full physical-Duo acceptance.",
       "required": {
-        "count": 29,
+        "count": 28,
         "closed": 0,
         "remaining": [
           {
@@ -548,14 +546,6 @@
           },
           {
             "id": "S2:P01",
-            "status": "OPEN",
-            "owner": "SDK implementer",
-            "dependencies": [
-              "S2:C01"
-            ]
-          },
-          {
-            "id": "S2:P02",
             "status": "OPEN",
             "owner": "SDK implementer",
             "dependencies": [
@@ -685,7 +675,6 @@
               "S2:C05",
               "S2:C06",
               "S2:P01",
-              "S2:P02",
               "S2:P03",
               "S2:P04",
               "S2:A01",
@@ -736,6 +725,14 @@
       },
       "optional_follow_ups": [
         {
+          "id": "S2:P02",
+          "status": "OPEN",
+          "owner": "SDK implementer",
+          "dependencies": [
+            "S2:C01"
+          ]
+        },
+        {
           "id": "S2:F09",
           "status": "ENVIRONMENT BLOCKED",
           "owner": "SDK implementer + device operator",
@@ -750,8 +747,8 @@
       "deadline": null,
       "shipping_rule": "Complete exact scene APIs, full ownership/lifecycle/client/docs matrix, physical Duo F04 and S3:F06 after hardware release. Preserve all prior evidence boundaries.",
       "required": {
-        "count": 71,
-        "closed": 48,
+        "count": 70,
+        "closed": 46,
         "remaining": [
           {
             "id": "S3:C06",
@@ -782,6 +779,14 @@
             "status": "ENVIRONMENT BLOCKED",
             "owner": "SDK implementer",
             "dependencies": []
+          },
+          {
+            "id": "S3:P01",
+            "status": "OPEN",
+            "owner": "SDK implementer",
+            "dependencies": [
+              "S3:C01"
+            ]
           },
           {
             "id": "S3:H02",
@@ -954,7 +959,6 @@
               "S3:C05",
               "S3:C06",
               "S3:P01",
-              "S3:P02",
               "S3:P03",
               "S3:P04",
               "S3:R01",

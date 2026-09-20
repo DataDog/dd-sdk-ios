@@ -1,0 +1,635 @@
+{
+  "schema_version": 5,
+  "status": "ROOT_REFINED_PROPOSAL_PENDING_INDEPENDENT_REVIEW",
+  "purpose": "One native result contract for EXP-198 E01 qualification and measurement. The host preserves local.json byte-for-byte; the evaluator computes verdicts from observed fields and never rewrites raw native evidence.",
+  "frozen_inputs": {
+    "protocol_path": "/Users/valentin.pertuisot/work/dd-sdk-ios/DatadogRUM/MultiSceneSupport/Experiments/EXP-198-network-performance-protocol.md",
+    "protocol_sha256": "5515b78ef44782ec5931dabc926a356ad5118daf17189353f48b093d421b9179",
+    "fixture_audit_path": "/tmp/exp198-third-end-to-end-schema-audit-20260920.json",
+    "fixture_audit_sha256": "f9ff4bab4c1842bbd6e933ffb71ab58201e201a66a345c879891b3e68383b74b",
+    "fixture_sha256": "33a104c71d827c056aa9a4f85954b5de2c9d0ae3ac2163b518f8e771708dcdec",
+    "host_sha256": "4110d4a8b1ee5975a507efa3503d8a54f59b144d1e1911647c906bd8f57722b0",
+    "evaluator_sha256": "bd52ec9365579fcd1193d8619fae5d88062efad876e5440174d86e1cfd5429a4",
+    "baseline_revision": "62f64d7b655bdc83f3036c4ad81090a270f6202b",
+    "candidate_revision": "1bdc9286c17d69d73e5e41530e6179c72a723368",
+    "p04_sha256": "a4079a372feb4a81e9863e4bf93d4b3c01aaf6e325eccb4e11633501c911385c"
+  },
+  "identity": {
+    "required_exact_fields": [
+      "run_id",
+      "nonce",
+      "arm",
+      "tracking",
+      "mode",
+      "os",
+      "source_revision",
+      "source_sha256",
+      "fixture_sha256",
+      "build_sha256",
+      "contract_sha256"
+    ],
+    "run_id": "canonical UUID, fresh per launch",
+    "nonce": "canonical UUID, fresh per launch and different from run_id",
+    "arm": [
+      "A",
+      "B"
+    ],
+    "tracking": [
+      "automatic",
+      "registered"
+    ],
+    "mode": [
+      "qualify",
+      "e01-timing",
+      "e01-alloc-retention"
+    ],
+    "identity_rule": "Every native field must equal the host summary and frozen plan. A stale result, stale binary, wrong arm/tracking/mode, source, fixture, build, contract or OS is INCONCLUSIVE; no status field can override identity."
+  },
+  "common": {
+    "status": {
+      "success": "LOCAL_COMPLETE",
+      "failure": "INCONCLUSIVE",
+      "rule": "LOCAL_COMPLETE is written only after all applicable common and mode-specific observations finish; the evaluator does not accept fixture-specific or synthetic PASS statuses."
+    },
+    "native_roundtrip": {
+      "scope": "untimed real URLSession task in each tracking mode before accepted rows",
+      "required_observations": [
+        "task_identity",
+        "prepared_header",
+        "protocol_starts",
+        "protocol_completions",
+        "native_completions",
+        "invalidations",
+        "native_body_bytes",
+        "receiver_body_bytes",
+        "receiver_mutations",
+        "receiver_starts",
+        "receiver_completions",
+        "receiver_metrics"
+      ],
+      "expected": {
+        "operations": 1,
+        "protocol_starts": 1,
+        "protocol_completions": 1,
+        "native_completions": 1,
+        "invalidations": 1,
+        "native_body_bytes": 1024,
+        "automatic_receiver_metrics": "inapplicable",
+        "registered_receiver_metrics": 1
+      },
+      "rule": "Counters come from URLProtocol/delegate/completion/invalidation callbacks and scalar receiver receipts; wrapper call counts are not substitutes."
+    },
+    "completed_task_control": {
+      "scope": "Untimed isolated feature, outside every numeric sample and retention cohort. Qualification can run it in its nonnumeric final feature phase; measurement modes run it only AFTER all numeric work on a newly created feature and release that feature before final native restoration.",
+      "required_observations": [
+        "completed_before_repeat",
+        "repeat_resume_attempted",
+        "native_receipts_before_and_after",
+        "post_completion_receiver_delta",
+        "classification"
+      ],
+      "native_receipts": {
+        "protocol_starts": 1,
+        "protocol_completions": 1,
+        "native_completions": 1,
+        "invalidations": 1,
+        "errors": 0
+      },
+      "arm_rules": {
+        "A": {
+          "classification": "EXPECTED_BASELINE_NEGATIVE",
+          "post_completion_receiver_delta": {
+            "mutations": 1,
+            "starts": 1,
+            "completions": 0
+          },
+          "numeric_credit": false
+        },
+        "B": {
+          "classification": "CANDIDATE_PASS",
+          "post_completion_receiver_delta": {
+            "mutations": 0,
+            "starts": 0,
+            "completions": 0
+          },
+          "numeric_credit": false
+        }
+      },
+      "rule": "A's expected old behavior is retained as a labeled correctness discriminator. B's zero predicate is required. Native receipts remain exactly once in both arms and are never inferred from receiver deltas.",
+      "contamination_rule": "A repeat creates one orphan interception by the known baseline defect. Record it; never carry that feature/task into measurement or retention. Invalidate the session, drop the task and release the dedicated feature with non-vacuous weak witnesses. No simultaneous globally bound features."
+    },
+    "teardown": {
+      "required_fields": [
+        "class",
+        "selector",
+        "imp_before",
+        "imp_after",
+        "equal",
+        "native_receipt"
+      ],
+      "expected": {
+        "selector": "resume",
+        "equal": true,
+        "imp_before_equals_imp_after": true,
+        "native_receipt": {
+          "native_completions": 1,
+          "native_body_bytes": 1024,
+          "native_invalidation": 1
+        },
+        "same_concrete_task_class_before_after": true
+      },
+      "rule": "Use the actual concrete URLSessionTask subclass observed before bind and after all releases, with matching nonempty class and selector resume. Require equal nonzero IMPs, not literal class URLSessionTask. Retire every IMP-probe task/session with actual invalidation, autorelease-pool exit and weak settlement before any measurement; preserve the post-release native forwarding receipt."
+    },
+    "final_release": {
+      "required_observations": [
+        "feature_alive_before_release",
+        "provider_alive_before_release",
+        "handler_alive_before_release",
+        "feature_released",
+        "provider_released",
+        "handler_released"
+      ],
+      "rule": "Capture weak witnesses while all three strong references are nonnil, then perform exactly the intended final release and prove they become nil. Separate deliberate feature-hold negative must not destroy these references before witness creation."
+    },
+    "receiver_receipts": {
+      "synchronization": "All mutation/start/completion/body/metric updates and snapshots share synchronization appropriate to their real callback threads. Snapshots used outside counted intervals.",
+      "body_bytes": "Keep a monotonically cumulative body-byte scalar for phase deltas and a separate last-completed-body scalar for single-task assertions. Never subtract last-value fields as cumulative receipts.",
+      "observation_storage": "Remove unused beforeReceipts dictionary. Perform non-callback outstanding setup and phase bookkeeping outside measured timers/epochs; required callback receipts use preallocated scalar storage and introduce no growing map."
+    },
+    "untimed_helper_cleanup": "IMP-probe and metrics-seed helpers must retire their real task/session with invalidation receipt, autorelease-pool exit and weak settlement before measured work. Retain the metrics value only; no task/session reference. Deferred helper teardown must not overlap a counted epoch."
+  },
+  "qualification": {
+    "numeric_credit": "NONE",
+    "slots": "exactly four iOS 17.5 cells: A/B x automatic/registered",
+    "required_controls": [
+      "native_roundtrip",
+      "completed_task_resume_in_isolated_nonnumeric_feature",
+      "task_hold_and_release",
+      "nonvacuous_feature_provider_handler_release",
+      "candidate_only_actual_payload_continuation_hold_and_drain",
+      "concrete_task_IMP_restoration_and_post_release_native_forwarding"
+    ],
+    "controls_shape": {
+      "task_hold": {
+        "held": "observed bool",
+        "released": "observed bool"
+      },
+      "feature_hold": {
+        "held": "observed bool",
+        "released": "observed bool"
+      },
+      "payload_continuation": {
+        "applicability": [
+          "unsupported_on_A",
+          "candidate_B"
+        ],
+        "nonzero_while_blocked": "B only",
+        "zero_after_drain": "B only"
+      }
+    },
+    "required_common": [
+      "identity",
+      "native_roundtrip",
+      "completed_task_control",
+      "teardown"
+    ],
+    "forbidden_numeric_claims": [
+      "timing",
+      "allocation",
+      "retention",
+      "ABBA verdict",
+      "P01",
+      "P02",
+      "P03"
+    ],
+    "evaluator_rule": "Qualification validates only controls, receipts, cleanup and identity. It must not call timing calibration, allocation retention or numeric row validators.",
+    "reused_correctness": {
+      "P04": {
+        "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp198-third-admission-kng0b_pg/accepted-p04.json",
+        "sha256": "a4079a372feb4a81e9863e4bf93d4b3c01aaf6e325eccb4e11633501c911385c",
+        "rule": "Reuse exact accepted EXP203 optimized controls and their bound EXP199 Debug invariants. Do not rerun synchronous/reentrant baseline hazards or count a reference as newly executed qualification."
+      },
+      "EXP199": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios/DatadogRUM/MultiSceneSupport/Results/EXP-199-terminal-task-ownership.json",
+        "sha256": "1858898bc888601d932f4279aa96ca87b3bc8f8e3abc908e30dcce77dc0f4c44",
+        "rule": "455 Internal cases/491 executions and native ownership are historical exact-source qualification, not new fixture observations. Sampling/body/unhandled compatibility stays owned by accepted evidence; no implied new optimized coverage."
+      }
+    }
+  },
+  "rows": {
+    "names_in_order": [
+      "unbound_first_resume",
+      "first_resume",
+      "second_resume_ready",
+      "data",
+      "metrics",
+      "completion",
+      "state"
+    ],
+    "common_row_fields": [
+      "row",
+      "instrumentation",
+      "resume_ordinal",
+      "transport",
+      "workload",
+      "lifecycle_receipts",
+      "raw_samples_or_applicability"
+    ],
+    "workload": {
+      "discarded_warmup_operations": 1000,
+      "measured_batches": 7,
+      "operations_per_batch": 1000,
+      "measured_operations": 7000,
+      "individual_timing_samples": 2000,
+      "outstanding_native_limit": 64
+    },
+    "receipt_denominators": {
+      "warmup": {
+        "operations": 1000,
+        "native_task_lifecycles": 1000
+      },
+      "caller_return": {
+        "operations": 7000,
+        "native_task_lifecycles": 7000
+      },
+      "through_immediate_feature_flush": {
+        "operations": 7000,
+        "native_task_lifecycles": 7000
+      },
+      "allocation_measured": {
+        "operations": 7000,
+        "native_task_lifecycles": 7000
+      },
+      "second_resume": {
+        "native_task_lifecycles": 7000,
+        "resume_calls": 14000,
+        "outstanding_enters": 7000,
+        "outstanding_leaves": 7000
+      }
+    },
+    "lifecycle_receipts": [
+      "operations",
+      "native_task_lifecycles",
+      "resume_calls",
+      "mutations",
+      "starts",
+      "completions",
+      "protocol_starts",
+      "protocol_completions",
+      "invalidations",
+      "data_bytes",
+      "metrics",
+      "outstanding_enters",
+      "outstanding_leaves",
+      "outstanding_max"
+    ],
+    "row_rules": {
+      "unbound_first_resume": "sdk_unbound; no production receiver mutation; native transport receipts remain real",
+      "first_resume": "instrumented; caller-return and through-flush boundaries; through-flush label is resume through immediate feature flush (already-enqueued SDK work), not fully settled",
+      "second_resume_ready": "one real task lifecycle with two resume calls; outstanding enters once per task; A duplicate post-completion behavior remains a separate control",
+      "data": "held native task plus real feature.task(didReceive:) callback; native body and receiver body are separate",
+      "metrics": "automatic must emit applicability=registered_delegate_only and no task/lifecycle samples; registered emits real metrics receipt and callback entry",
+      "completion": "held native task plus real feature.task(didCompleteWithError:) callback",
+      "state": "held native task plus real feature.task(didChangeToState:) callback"
+    },
+    "timing_boundaries": {
+      "caller_return": {
+        "label": "caller entry to return",
+        "operations": 7000,
+        "batches": 7,
+        "raw_samples": 2000
+      },
+      "through_flush": {
+        "label": "entry through immediate feature.flush()",
+        "operations": 7000,
+        "batches": 7,
+        "raw_samples": 2000
+      },
+      "ordinary_budget": {
+        "median": "max(10% of A, 500 ns/dispatch)",
+        "p95": "max(20% of A, 1000 ns/dispatch)"
+      }
+    },
+    "raw_preservation": "Retain every individual sample and batch mean before JSON/result allocation; evaluator rejects missing, duplicate, short or extra samples."
+  },
+  "allocation": {
+    "applicability": "e01-alloc-retention only; timing and qualification never install the allocation logger",
+    "row_set": [
+      "unbound_first_resume",
+      "first_resume",
+      "second_resume_ready",
+      "data",
+      "metrics",
+      "completion",
+      "state",
+      "full_task_cycle"
+    ],
+    "workload": {
+      "discarded_warmup_operations": 1000,
+      "measured_batches": 7,
+      "operations_per_batch": 1000,
+      "measured_operations": 7000,
+      "window_count_per_batch": 16,
+      "window_denominator_cap": 64
+    },
+    "counters": [
+      "process_operations",
+      "process_bytes",
+      "caller_operations",
+      "caller_bytes",
+      "other_operations",
+      "other_bytes"
+    ],
+    "counter_rule": "Other-thread equals process minus caller; do not sum caller into process. Store raw counters before JSON allocation and retain caller/feature-queue/worker/concurrent calibration observations.",
+    "epoch_bookkeeping": "No beforeReceipts dictionary insertion/removal, dynamic map growth or expected-loop bookkeeping occurs inside a counted epoch. Use preallocated scalar receipt storage and record callback receipts separately from expected loop counts.",
+    "full_task_cycle": {
+      "denominator": "successful_tasks",
+      "value": 7000,
+      "scope": "Keep admitted window: first resume through observed native completion/delegate invalidation and final feature flush. Construction is outside; do not silently extend this distinct budget row to full-lifetime settlement.",
+      "budget_applies": true,
+      "comparison": "A/A and each B row independently; evaluator must apply the allocation operation and requested-byte budgets here, not only to the seven dispatcher rows"
+    },
+    "diagnostics": {
+      "full_lifetime_churn": {
+        "budget_applies": false,
+        "retain_raw": true,
+        "scope": "Task/session construction through actual completion/invalidation, final feature flush, autorelease-pool exit, dropped strong task references and weak-task settlement. Close this diagnostic epoch only after that boundary. No numeric budget credit."
+      },
+      "idle_control": {
+        "budget_applies": false,
+        "retain_raw": true
+      }
+    },
+    "budgets": {
+      "operations": "candidate excess <= max(5% of A, 1 successful heap allocation/dispatch)",
+      "bytes": "candidate excess <= max(5% of A, 64 requested bytes/dispatch)",
+      "denominator_rule": "per row; full_task_cycle uses successful tasks and never callback count"
+    },
+    "automatic_metrics": "applicability=registered_delegate_only; no allocation row or numeric credit in automatic mode",
+    "calibration_order": "On allocation processes only, calibrate caller/actual feature queue/worker/concurrent observer before ANY counted row, including unbound_first_resume. Construct but do not bind the feature for feature-queue calibration. Uninstall calibration observer before row-specific installation. Timing and qualification never install it."
+  },
+  "retention": {
+    "applicability": "e01-alloc-retention only",
+    "fresh_cohort": true,
+    "cycles": 220,
+    "boundaries": [
+      20,
+      120,
+      220
+    ],
+    "heap_observation": "live heap bytes after callback receipts, queue drains and autorelease pools, before snapshot/JSON allocation",
+    "common_inventory": {
+      "interceptions": {
+        "strong_task_owning_count": 0
+      },
+      "truncatedInterceptions": {
+        "strong_task_owning_count": 0
+      },
+      "task_weak_members": 0,
+      "interception_weak_members": 0
+    },
+    "candidate_inventory": {
+      "applicability": "B only",
+      "preparations": {
+        "raw_count_before_enumeration": "observed",
+        "live_weak_keys": 0,
+        "remaining_values": 0,
+        "phase_payloads": 0,
+        "events": 0,
+        "continuations": 0
+      },
+      "weak_terminal_tasks": {
+        "raw_count_before_enumeration": "observed",
+        "live_members": 0
+      },
+      "capacity_rule": "Retain raw dead weak slots/capacity as diagnostics; never clear collections to make ownership pass."
+    },
+    "baseline_rule": "A is checked for existing interceptions/truncatedInterceptions and common released-task invariants only; candidate-only preparations/weak-terminal collections are not required on A.",
+    "coordinator_rule": "A coordinator payload/continuation control is applicability=unsupported_on_A and cannot fail A retention; B must show nonzero while blocked and zero after drain.",
+    "budgets": {
+      "first_100_growth": 65536,
+      "next_100_growth": 16384
+    },
+    "negative_controls": {
+      "first_100_growth": 65537,
+      "second_100_growth": 16385,
+      "expected": "evaluator rejects"
+    },
+    "numeric_credit": "retention deltas and zero live ownership are evaluated separately from completed_task_control; A growth never relaxes B absolute limits",
+    "frozen_arm_models": {
+      "A": {
+        "revision": "62f64d7b655bdc83f3036c4ad81090a270f6202b",
+        "path": "DatadogInternal/Sources/NetworkInstrumentation/NetworkInstrumentationFeature.swift",
+        "sha256": "3e70fa502baa6faa8e4c8bc7c06fd5cc6039998efbc363f5f82bf1b9e80f1ce1",
+        "strong_task_owning_collections": [
+          "interceptions",
+          "truncatedInterceptions"
+        ],
+        "additional_collections": [],
+        "required_model": "Fail closed on unexpected owning collection or shape; do not require B-only fields on A."
+      },
+      "B": {
+        "revision": "1bdc9286c17d69d73e5e41530e6179c72a723368",
+        "path": "DatadogInternal/Sources/NetworkInstrumentation/NetworkInstrumentationFeature.swift",
+        "sha256": "2631ea56885a12d1b3d14b1044dd9a84319a0b382b817afb95b4edd305df5246",
+        "strong_task_owning_collections": [
+          "interceptions",
+          "truncatedInterceptions"
+        ],
+        "additional_collections": [
+          "preparations",
+          "terminalTasks"
+        ],
+        "required_model": "Fail closed on unexpected owning collection or shape; do not require B-only fields on A."
+      }
+    }
+  },
+  "matrix": {
+    "qualification": 4,
+    "measurement": 32,
+    "shape": "two frozen runtimes x automatic/registered x timing/allocation x A/B/B/A",
+    "identity": "all 32 unique cell IDs, exact discovered/executed set equality, no duplicate, missing or extra cell; all rows present in every applicable process",
+    "numeric_rule": "No numeric comparison until all 32 cells are CELL_VALID and all required rows/receipts pass. Compare each row independently: A/A plus each B against pooled A; never subtract shared heap or omit an unfavorable sample."
+  },
+  "host_boundary": {
+    "summary_identity": "Host summary repeats native identity and frozen runtime/device/build/plan fields; local.json is copied byte-for-byte from result.json.",
+    "host_may_validate": [
+      "fresh run/result timestamp",
+      "clean install and binary identity",
+      "runtime/device binding",
+      "source/fixture/build/contract hashes",
+      "cleanup and simulator restoration",
+      "duplicate/missing cell reservation",
+      "time bounds"
+    ],
+    "time_bounds": {
+      "cell": "frozen per-cell bound",
+      "matrix": "the frozen plan's matrix_timeout_seconds (currently 10800) must be checked against actual matrix start/finish elapsed time; recording the value without enforcing it is insufficient"
+    },
+    "host_must_not": [
+      "rewrite native rows",
+      "invent lifecycle receipts",
+      "convert absent fields to zero",
+      "turn qualification into numeric credit",
+      "replace native raw status with PASS"
+    ],
+    "late_failure_rule": "Any timeout, stale result, missing callback, cleanup failure, binding drift, protected/source/helper drift or stale binary makes the cell INCONCLUSIVE and preserves all artifacts."
+  },
+  "offline_negative_controls": [
+    {
+      "id": "identity-run",
+      "mutation": "replace run_id, nonce or result timestamp with a prior launch",
+      "expected": "INCONCLUSIVE"
+    },
+    {
+      "id": "identity-source-binary",
+      "mutation": "change arm, source revision/hash, fixture/build/contract fingerprint or installed binary",
+      "expected": "INCONCLUSIVE"
+    },
+    {
+      "id": "restored-run",
+      "mutation": "reuse a prior local.json after a fresh launch or report result before launch",
+      "expected": "INCONCLUSIVE"
+    },
+    {
+      "id": "duplicate-cell",
+      "mutation": "duplicate one cell ID or omit/add one of 32",
+      "expected": "INCONCLUSIVE; numeric not run"
+    },
+    {
+      "id": "missing-callback",
+      "mutation": "drop one protocol start, completion, invalidation, data, metric or receiver receipt",
+      "expected": "INCONCLUSIVE"
+    },
+    {
+      "id": "second-resume-balance",
+      "mutation": "enter outstanding twice for one real task or leave once",
+      "expected": "INCONCLUSIVE"
+    },
+    {
+      "id": "equal-imp",
+      "mutation": "supply equal restored before/after IMPs",
+      "expected": "accepted when equal=true; unequal-before/after is not restoration proof"
+    },
+    {
+      "id": "stale-teardown",
+      "mutation": "use prior teardown native receipt or missing post-release forwarding",
+      "expected": "INCONCLUSIVE"
+    },
+    {
+      "id": "timebox",
+      "mutation": "missing result, timeout, or late result from before launch",
+      "expected": "INCONCLUSIVE"
+    },
+    {
+      "id": "timing-counts",
+      "mutation": "warmup 999, measured 7001, wrong batch/sample count, or omit raw sample",
+      "expected": "INCONCLUSIVE"
+    },
+    {
+      "id": "allocation-counts",
+      "mutation": "allocation denominator 8000/15000, missing full_task_cycle, or shared-heap subtraction",
+      "expected": "INCONCLUSIVE"
+    },
+    {
+      "id": "matrix-timebox",
+      "mutation": "set actual matrix elapsed time above the frozen matrix_timeout_seconds while retaining a recorded nominal value",
+      "expected": "INCONCLUSIVE"
+    },
+    {
+      "id": "full-task-budget",
+      "mutation": "make full_task_cycle exceed either allocation budget while seven dispatcher rows remain within budget",
+      "expected": "FAIL or INCONCLUSIVE; numeric PASS is forbidden"
+    },
+    {
+      "id": "thresholds",
+      "mutation": "exceed timing, allocation, 65536 or 16384 bound; or accept 65537/16385 negative",
+      "expected": "FAIL or INCONCLUSIVE; no PASS"
+    },
+    {
+      "id": "automatic-metrics",
+      "mutation": "emit an automatic metrics lifecycle row instead of registered_delegate_only applicability",
+      "expected": "INCONCLUSIVE"
+    },
+    {
+      "id": "unsupported-a",
+      "mutation": "require candidate-only coordinator payload fields on A retention",
+      "expected": "control is unsupported_on_A and A remains eligible"
+    },
+    {
+      "id": "baseline-completed-resume",
+      "mutation": "treat A's expected post-completion mutation as candidate failure or numeric subtraction",
+      "expected": "reject classification; preserve labeled baseline negative"
+    },
+    {
+      "id": "exact-baseline-repeat",
+      "mutation": "A repeat has 0 or2 mutations,0 or2 newstarts,or any newcompletion",
+      "expected": "INCONCLUSIVE; expected negative requires exact1/1/0"
+    },
+    {
+      "id": "control-contamination",
+      "mutation": "completed-resume control shares measurement/retention feature or executes before its numeric cohort",
+      "expected": "INCONCLUSIVE"
+    },
+    {
+      "id": "nonvacuous-release",
+      "mutation": "weak witness created only after strong feature/provider/handler references are nil",
+      "expected": "INCONCLUSIVE"
+    },
+    {
+      "id": "last-value-byte-counter",
+      "mutation": "phase bytes derive from final-task body field rather than cumulative native/receiver counters",
+      "expected": "INCONCLUSIVE"
+    },
+    {
+      "id": "unbound-before-calibration",
+      "mutation": "allocation row precedes successful all-thread calibration",
+      "expected": "INCONCLUSIVE"
+    },
+    {
+      "id": "helper-overlap",
+      "mutation": "probe/seed task lacks invalidation or weak settlement before measuredphase",
+      "expected": "INCONCLUSIVE"
+    },
+    {
+      "id": "baseline-field-model",
+      "mutation": "require B preparations on A or omit a frozen source owning collection",
+      "expected": "INCONCLUSIVE"
+    },
+    {
+      "id": "weak-table-raw",
+      "mutation": "omit before-enumeration raw terminal/preparation counts or clear entries during inspection",
+      "expected": "INCONCLUSIVE"
+    }
+  ],
+  "implementation_map": {
+    "fixture": [
+      "Replace result assembly in URLSessionE01Fixture.swift:765-794 with schema v5 common identity and mode-specific groups.",
+      "Instrument LocalProtocol and delegate/automatic callbacks at the source callback boundaries; do not derive protocol receipts from wrapper counters.",
+      "Split each row's discarded 1000 warmup, caller-return 7000, through-flush 7000 and allocation 7000 receipts; keep raw samples/batches.",
+      "Fix second-resume outstanding accounting at the workload helper so one real native task has one enter/leave pair.",
+      "Assemble native.controls and native.teardown; use restored IMP equality.",
+      "Add try to both throwing withExtendedLifetime calls at the existing qualification sites."
+    ],
+    "host": [
+      "Keep the existing 4 qualification plus 32 measurement reservation and cleanup behavior.",
+      "Pass through local.json unchanged and compare native identity exactly against summary/plan.",
+      "Use separate qualification and measurement dispatch in the evaluator; do not require calibration/retention for qualify.",
+      "Reject stale/duplicate/timebox/cleanup failures before evaluator status."
+    ],
+    "evaluator": [
+      "Delete the shadowed validate_cell ambiguity: expose validate_qualification_cell and validate_measurement_cell, with one public adapter.",
+      "Validate exact v5 fields and row/sample sets before any threshold arithmetic.",
+      "Evaluate qualification controls without numeric credit; evaluate timing and allocation only in their applicable modes.",
+      "Apply common retention inventories by arm applicability and treat unsupported A coordinator as explicit applicability.",
+      "Run the full32 set comparison before quartet arithmetic and preserve all failed cell artifacts."
+    ]
+  },
+  "decision": "This is an implementation contract only. It preserves the admitted EXP-198 protocol, 4 qualification slots, 32 launches, seven named rows, full-task/retention diagnostics, ABBA order and every numeric threshold. It is not an admission, build instruction, runtime result or PASS. Independent source review is required before any fresh fixture is frozen.",
+  "parent_proposal": {
+    "path": "/tmp/exp198-v5-contract-20260920/contract.json",
+    "sha256": "859f5721a8e259b547d53447f35127f24e2c3b83ae3973407fd989157c82f464"
+  },
+  "refined_at": "2026-09-20T09:15:03.154609+00:00",
+  "design_review_required": true
+}

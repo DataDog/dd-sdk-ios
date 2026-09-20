@@ -394,36 +394,36 @@
       "evidence": "EXP-160; BASELINES.md and Results/EXP-160-baseline.json. Bounded workload passes on27/26.5; see recorded limitations. EXP-166 revalidates the same frozen dispatch/reentrancy budgets after D04.",
       "release_requirements": {
         "S3": {
-          "scope": "Event-dispatch overhead",
-          "status": "CLOSED",
+          "scope": "Representative application impact of semantic SwiftUI and multi-scene changes",
+          "status": "OPEN",
           "dependencies": [
             "S3:C01"
           ],
-          "decisive_test": "Release ABBA comparison passes predeclared median/p95 thresholds in BASELINES.md",
-          "environment": "Same simulator/toolchain, Release build; focused internal lifecycle tests",
-          "evidence": "EXP-160; BASELINES.md and Results/EXP-160-baseline.json. Bounded workload passes on27/26.5; see recorded limitations. EXP-166 revalidates the same frozen dispatch/reentrancy budgets after D04.",
+          "decisive_test": "One bounded source/build-matched before/after application comparison for included new semantic SwiftUI or multi-scene behavior checks frame rate, hitches/hangs, CPU usage and sustained memory usage on representative ordinary journeys. Define the finite workload and visible-regression criteria before collection. If the shipped-source audit excludes both change families, qualify that exclusion instead of inventing a network benchmark. Expected low risk is not a measured pass.",
+          "environment": "Representative physical device such as iPhone15, Release baseline/candidate builds and relevant app journeys; qualified Duo simulator supports topology/correctness separately",
+          "evidence": "User acceptance-scope correction2026-09-20: only new SwiftUI semantic tracking and multi-scene changes require representative application-level performance comparison. Detailed network microbenchmarks and a replacement standalone network campaign are not release blockers; investigate networking performance only on concrete customer-visible evidence. Correctness, attribution and object lifetime remain required. NETWORK_BENCHMARK_FOLLOWUP.md Earlier evidence retained as historical diagnostics, not this application-impact qualification: EXP-160; BASELINES.md and Results/EXP-160-baseline.json. Bounded workload passes on27/26.5; see recorded limitations. EXP-166 revalidates the same frozen dispatch/reentrancy budgets after D04.",
           "required": true
         },
         "S1": {
-          "scope": "Candidate event dispatch overhead",
+          "scope": "Optional network performance diagnosis on concrete customer-visible evidence",
           "status": "OPEN",
           "dependencies": [
             "S1:C01"
           ],
-          "decisive_test": "Paired current-develop baseline and exact candidate meet existing BASELINES.md thresholds; audit newly retained state and teardown. No threshold increase.",
-          "environment": "One host, isolated measurements; relevant physical sample and qualified simulator",
-          "evidence": "Reference evidence retained; this release candidate is not qualified.",
-          "required": true
+          "decisive_test": "Investigate only a reproduced customer-visible responsiveness, request-progress, CPU or memory problem attributable to network interception. Per-task processing/allocation increases alone do not fail E01. No mandatory standalone network performance campaign.",
+          "environment": "Relevant ordinary customer workload on a representative device if a concrete problem is found",
+          "evidence": "User acceptance-scope correction2026-09-20: only new SwiftUI semantic tracking and multi-scene changes require representative application-level performance comparison. Detailed network microbenchmarks and a replacement standalone network campaign are not release blockers; investigate networking performance only on concrete customer-visible evidence. Correctness, attribution and object lifetime remain required. NETWORK_BENCHMARK_FOLLOWUP.md",
+          "required": false
         },
         "S2": {
-          "scope": "Candidate event dispatch overhead",
+          "scope": "Representative application impact of semantic SwiftUI and multi-scene changes",
           "status": "OPEN",
           "dependencies": [
             "S2:C01"
           ],
-          "decisive_test": "Paired current-develop baseline and exact candidate meet existing BASELINES.md thresholds; audit newly retained state and teardown. No threshold increase.",
-          "environment": "One host, isolated measurements; relevant physical sample and qualified simulator",
-          "evidence": "Reference evidence retained; this release candidate is not qualified.",
+          "decisive_test": "One bounded source/build-matched before/after application comparison for included new semantic SwiftUI or multi-scene behavior checks frame rate, hitches/hangs, CPU usage and sustained memory usage on representative ordinary journeys. Define the finite workload and visible-regression criteria before collection. If the shipped-source audit excludes both change families, qualify that exclusion instead of inventing a network benchmark. Expected low risk is not a measured pass.",
+          "environment": "Representative physical device such as iPhone15, Release baseline/candidate builds and relevant app journeys; qualified Duo simulator supports topology/correctness separately",
+          "evidence": "User acceptance-scope correction2026-09-20: only new SwiftUI semantic tracking and multi-scene changes require representative application-level performance comparison. Detailed network microbenchmarks and a replacement standalone network campaign are not release blockers; investigate networking performance only on concrete customer-visible evidence. Correctness, attribution and object lifetime remain required. NETWORK_BENCHMARK_FOLLOWUP.md Earlier evidence retained as historical diagnostics, not this application-impact qualification: Reference evidence retained; this release candidate is not qualified.",
           "required": true
         }
       }
@@ -443,38 +443,38 @@
       "evidence": "EXP-166; full Release ABBA on27/26.5: ordinary0 allocations/0 bytes; enabled1 allocation/64 bytes per event. Original thresholds unchanged; source/fixture/binary identities verified. Results/EXP-166-handoff-performance.json.",
       "release_requirements": {
         "S3": {
-          "scope": "Allocation cost",
+          "scope": "Optional allocation/microbenchmark infrastructure follow-up",
           "status": "CLOSED",
           "dependencies": [
             "S3:C01",
             "S3:D04"
           ],
-          "decisive_test": "Measured allocation count and bytes per fixed workload pass baseline deltas; net heap is not allocation churn",
-          "environment": "Same simulator/toolchain, Release build; focused internal lifecycle tests",
-          "evidence": "EXP-166; full Release ABBA on27/26.5: ordinary0 allocations/0 bytes; enabled1 allocation/64 bytes per event. Original thresholds unchanged; source/fixture/binary identities verified. Results/EXP-166-handoff-performance.json.",
-          "required": true
+          "decisive_test": "Preserve existing microbenchmark results and harness for optional test-infrastructure integration. Per-dispatch or per-task allocation counts, bytes and nanoseconds are not release acceptance thresholds.",
+          "environment": "Optional dedicated measurement host after a separate infrastructure decision",
+          "evidence": "User acceptance-scope correction2026-09-20: only new SwiftUI semantic tracking and multi-scene changes require representative application-level performance comparison. Detailed network microbenchmarks and a replacement standalone network campaign are not release blockers; investigate networking performance only on concrete customer-visible evidence. Correctness, attribution and object lifetime remain required. NETWORK_BENCHMARK_FOLLOWUP.md Historical numeric evidence retains its original meaning: EXP-166; full Release ABBA on27/26.5: ordinary0 allocations/0 bytes; enabled1 allocation/64 bytes per event. Original thresholds unchanged; source/fixture/binary identities verified. Results/EXP-166-handoff-performance.json.",
+          "required": false
         },
         "S1": {
-          "scope": "Candidate allocations",
+          "scope": "Optional network benchmark integration into SDK testing infrastructure",
           "status": "OPEN",
           "dependencies": [
             "S1:C01"
           ],
-          "decisive_test": "Paired current-develop baseline and exact candidate meet existing BASELINES.md thresholds; audit newly retained state and teardown. No threshold increase.",
-          "environment": "One host, isolated measurements; relevant physical sample and qualified simulator",
-          "evidence": "Reference evidence retained; this release candidate is not qualified.",
-          "required": true
+          "decisive_test": "When scheduled separately, package the preserved EXP-198 runner, fixture and controls into maintainable infrastructure, qualify repeatability and reporting, and adopt any numeric CI thresholds through a separate decision.",
+          "environment": "Dedicated idle test host; supported Xcode/simulator and representative physical device where useful",
+          "evidence": "Deferred at user request2026-09-20; sources and qualified evidence preserved in NETWORK_BENCHMARK_FOLLOWUP.md; tools/multi-scene/network-benchmark-followup/README.md",
+          "required": false
         },
         "S2": {
-          "scope": "Candidate allocations",
+          "scope": "Optional allocation/microbenchmark infrastructure follow-up",
           "status": "OPEN",
           "dependencies": [
             "S2:C01"
           ],
-          "decisive_test": "Paired current-develop baseline and exact candidate meet existing BASELINES.md thresholds; audit newly retained state and teardown. No threshold increase.",
-          "environment": "One host, isolated measurements; relevant physical sample and qualified simulator",
-          "evidence": "Reference evidence retained; this release candidate is not qualified.",
-          "required": true
+          "decisive_test": "Preserve existing microbenchmark results and harness for optional test-infrastructure integration. Per-dispatch or per-task allocation counts, bytes and nanoseconds are not release acceptance thresholds.",
+          "environment": "Optional dedicated measurement host after a separate infrastructure decision",
+          "evidence": "User acceptance-scope correction2026-09-20: only new SwiftUI semantic tracking and multi-scene changes require representative application-level performance comparison. Detailed network microbenchmarks and a replacement standalone network campaign are not release blockers; investigate networking performance only on concrete customer-visible evidence. Correctness, attribution and object lifetime remain required. NETWORK_BENCHMARK_FOLLOWUP.md Historical numeric evidence retains its original meaning: Reference evidence retained; this release candidate is not qualified.",
+          "required": false
         }
       }
     },
@@ -494,38 +494,38 @@
       "evidence": "EXP-172, signed 4653e0a72: three failing controls;326 affected tests; Release ABBA on27/26.5 has zero retired registry entries/weak controller survivors, first100 heap delta512-832 bytes and second100 delta512-1152 bytes within frozen65536/16384 limits. All four controls retain220 entries per history registry. Eight ordinary automatic/manual runs and watchOS Release compile pass. Results/EXP-172-scene-retention.json; mounted host release prerequisites EXP-168/171 retained. Physical H08/H09 remain separate.",
       "release_requirements": {
         "S3": {
-          "scope": "Retained scene state",
+          "scope": "Object lifetime and ownership safety of shipped view/resource/cache/scene state",
           "status": "CLOSED",
           "dependencies": [
             "S3:C01",
             "S3:D03",
             "S3:D08"
           ],
-          "decisive_test": "Repeated create/disconnect/release leaves no SDK-owned scene/controller/host and no growing registry",
-          "environment": "Same simulator/toolchain, Release build; focused internal lifecycle tests",
-          "evidence": "EXP-172, signed 4653e0a72: three failing controls;326 affected tests; Release ABBA on27/26.5 has zero retired registry entries/weak controller survivors, first100 heap delta512-832 bytes and second100 delta512-1152 bytes within frozen65536/16384 limits. All four controls retain220 entries per history registry. Eight ordinary automatic/manual runs and watchOS Release compile pass. Results/EXP-172-scene-retention.json; mounted host release prerequisites EXP-168/171 retained. Physical H08/H09 remain separate.",
+          "decisive_test": "Source-matched lifecycle and teardown checks leave no extra strong owner, retain cycle or unbounded registry after completion, cancellation, view/scene removal and feature release. Legitimate active ownership is allowed. Preserve attribution and peer state. Allocator byte deltas and churn alone do not fail this correctness gate; sustained application memory impact belongs to P01.",
+          "environment": "Focused deterministic lifetime regressions plus representative native lifecycle/teardown checks for the actual shipped source",
+          "evidence": "EXP-172, signed 4653e0a72: three failing controls;326 affected tests; Release ABBA on27/26.5 has zero retired registry entries/weak controller survivors, first100 heap delta512-832 bytes and second100 delta512-1152 bytes within frozen65536/16384 limits. All four controls retain220 entries per history registry. Eight ordinary automatic/manual runs and watchOS Release compile pass. Results/EXP-172-scene-retention.json; mounted host release prerequisites EXP-168/171 retained. Physical H08/H09 remain separate. User acceptance-scope correction2026-09-20: only new SwiftUI semantic tracking and multi-scene changes require representative application-level performance comparison. Detailed network microbenchmarks and a replacement standalone network campaign are not release blockers; investigate networking performance only on concrete customer-visible evidence. Correctness, attribution and object lifetime remain required. NETWORK_BENCHMARK_FOLLOWUP.md",
           "required": true
         },
         "S1": {
-          "scope": "Candidate view/resource/cache retention",
+          "scope": "E01 task and feature lifetime safety",
           "status": "OPEN",
           "dependencies": [
             "S1:C01"
           ],
-          "decisive_test": "Paired current-develop baseline and exact candidate meet existing BASELINES.md thresholds; audit newly retained state and teardown. No threshold increase.",
-          "environment": "One host, isolated measurements; relevant physical sample and qualified simulator",
-          "evidence": "EXP-199 repairs observed terminal ownership at1bdc9286:2 red/green controls,455 Internal tests and4 source-paired native auto/registered cells; no retained preparation after task death, no live terminal task members. Numeric P03 remains open: shared unbound/zero-body growth is unattributed and absolute budgets unchanged. No accepted ABBA.",
+          "decisive_test": "Success, failure and cancellation release task-owned preparation, buffered callbacks/payloads and interceptions at the required teardown boundary. Repeated completed task lifetimes and feature release leave no extra strong owners, leaks or retain cycles. Allocation churn and allocator byte deltas alone do not fail the release.",
+          "environment": "Focused deterministic lifetime regressions and representative native automatic/registered URLSession cycles",
+          "evidence": "EXP-199 repairs the concrete terminal-ownership defect at1bdc9286 with red/green weak-owner controls, full Internal coverage and source-paired native automatic/registered checks. Audit success/error/cancellation/feature-release coverage against the narrowed object-lifetime requirement before closing it; do not require EXP198 allocator budgets. User acceptance-scope correction2026-09-20: only new SwiftUI semantic tracking and multi-scene changes require representative application-level performance comparison. Detailed network microbenchmarks and a replacement standalone network campaign are not release blockers; investigate networking performance only on concrete customer-visible evidence. Correctness, attribution and object lifetime remain required. NETWORK_BENCHMARK_FOLLOWUP.md",
           "required": true
         },
         "S2": {
-          "scope": "Candidate view/resource/cache retention",
+          "scope": "Object lifetime and ownership safety of shipped view/resource/cache/scene state",
           "status": "OPEN",
           "dependencies": [
             "S2:C01"
           ],
-          "decisive_test": "Paired current-develop baseline and exact candidate meet existing BASELINES.md thresholds; audit newly retained state and teardown. No threshold increase.",
-          "environment": "One host, isolated measurements; relevant physical sample and qualified simulator",
-          "evidence": "Reference evidence retained; this release candidate is not qualified.",
+          "decisive_test": "Source-matched lifecycle and teardown checks leave no extra strong owner, retain cycle or unbounded registry after completion, cancellation, view/scene removal and feature release. Legitimate active ownership is allowed. Preserve attribution and peer state. Allocator byte deltas and churn alone do not fail this correctness gate; sustained application memory impact belongs to P01.",
+          "environment": "Focused deterministic lifetime regressions plus representative native lifecycle/teardown checks for the actual shipped source",
+          "evidence": "Reference evidence retained; this release candidate is not qualified. User acceptance-scope correction2026-09-20: only new SwiftUI semantic tracking and multi-scene changes require representative application-level performance comparison. Detailed network microbenchmarks and a replacement standalone network campaign are not release blockers; investigate networking performance only on concrete customer-visible evidence. Correctness, attribution and object lifetime remain required. NETWORK_BENCHMARK_FOLLOWUP.md",
           "required": true
         }
       }
@@ -566,13 +566,13 @@
           "required": true
         },
         "S2": {
-          "scope": "Candidate reentrancy",
+          "scope": "Candidate reentrancy and callback ownership safety",
           "status": "OPEN",
           "dependencies": [
             "S2:C01"
           ],
-          "decisive_test": "Paired current-develop baseline and exact candidate meet existing BASELINES.md thresholds; audit newly retained state and teardown. No threshold increase.",
-          "environment": "One host, isolated measurements; relevant physical sample and qualified simulator",
+          "decisive_test": "Focused actual-source controls preserve exactly-once forwarding, nested context restoration and correct callback owners without SDK-caused deadlock/crash, cross-task/core interference or retained context after teardown. Reuse byte-identical accepted controls where applicable; no numeric performance prerequisite.",
+          "environment": "Exact selected candidate; deterministic tests and relevant native callback boundaries",
           "evidence": "Reference evidence retained; this release candidate is not qualified.",
           "required": true
         }
@@ -2344,7 +2344,6 @@
             "S3:C05",
             "S3:C06",
             "S3:P01",
-            "S3:P02",
             "S3:P03",
             "S3:P04",
             "S3:R01",
@@ -2408,9 +2407,9 @@
             "S3:C10",
             "S3:A02"
           ],
-          "decisive_test": "Every required gate closed on reviewed source; performance thresholds hold; no unresolved correctness/release-review finding",
+          "decisive_test": "Require applicable correctness, View/Action information, Resource attribution, object-lifetime/reentrancy, privacy, crash/API and exact source/artifact checks plus attributable review. Included new semantic SwiftUI/multi-scene changes require the bounded P01 application comparison for frame rate, hitches/hangs, CPU and memory; source exclusion can qualify non-applicability. No detailed network or per-dispatch microbenchmark prerequisite. Signed outgoing history is required before any separately authorized push.",
           "environment": "Review + CI",
-          "evidence": "Pending; unchanged reference obligation.",
+          "evidence": "Pending; unchanged reference obligation. Latest scope supersedes earlier numeric/practical-network benchmarking prerequisites: User acceptance-scope correction2026-09-20: only new SwiftUI semantic tracking and multi-scene changes require representative application-level performance comparison. Detailed network microbenchmarks and a replacement standalone network campaign are not release blockers; investigate networking performance only on concrete customer-visible evidence. Correctness, attribution and object lifetime remain required. NETWORK_BENCHMARK_FOLLOWUP.md",
           "required": true
         },
         "S1": {
@@ -2423,8 +2422,6 @@
             "S1:C04",
             "S1:C05",
             "S1:C06",
-            "S1:P01",
-            "S1:P02",
             "S1:P03",
             "S1:P04",
             "S1:A01",
@@ -2435,9 +2432,9 @@
             "S1:T03",
             "S1:T08"
           ],
-          "decisive_test": "Require applicable release checks, attributable review, exact source/artifact inventory, existing performance/privacy/crash/API thresholds, signed outgoing history before any separately authorized push. Other releases are not prerequisites. Before E01 delivery, separately land its hitch assertion fix, then rebase only after the verified upstream merge and confirm qualified source/test identities; see E01 pre_delivery_sequence.",
+          "decisive_test": "Require applicable correctness, View/Action information, Resource attribution, object-lifetime/reentrancy, privacy, crash, API and exact source/artifact checks plus attributable review. Detailed network benchmarks and a replacement standalone network performance campaign are not prerequisites; investigate concrete visible regressions if found. Signed outgoing history is required before any separately authorized push. Separately land the qualified hitch assertion fix, then rebase only after verified upstream merge and confirm source/test identities.",
           "environment": "Exact candidate; one host; no concurrent measurement contamination",
-          "evidence": "EXP-203 qualifies P04 and scopes59 duplicate classes to XCTest dependencies absent from normal production/default-package and accepted-client graphs. All142 compiler-warning lines remain:39/41 message texts predate E01, every production site unchanged, four new test-only lines. Eight QoS warnings have unchanged source sites; EXP-204 reproduces the networking warning in baseline console, then times out600s before result finalization. Candidate not run; no equivalence, harmlessness, sanitizer or performance clearance. Numeric P01-P03 and backend A01/T03/T08 remain open. All three performance fixture attempts ended without accepted measurements.",
+          "evidence": "Compatibility/platform/API/docs and optimized P04 reentrancy qualify exact candidate1bdc9286. Remaining E01 requirements: focused P03 lifetime coverage, backend A01/T03/T08 and F06 review. EXP204 preserves baseline QoS recurrence and a finalization timeout; one host-corrected diagnostic pair is prepared, no harmlessness claim. User2026-09-20 explicitly defers detailed/standalone network benchmarking; optional harness and original outcomes remain in NETWORK_BENCHMARK_FOLLOWUP.md.",
           "required": true
         },
         "S2": {
@@ -2451,7 +2448,6 @@
             "S2:C05",
             "S2:C06",
             "S2:P01",
-            "S2:P02",
             "S2:P03",
             "S2:P04",
             "S2:A01",
@@ -2473,9 +2469,9 @@
             "S2:F08",
             "S2:A02"
           ],
-          "decisive_test": "Require applicable release checks, attributable review, exact source/artifact inventory, existing performance/privacy/crash/API thresholds, signed outgoing history before any separately authorized push. Other releases are not prerequisites.",
+          "decisive_test": "Require applicable correctness, View/Action information, Resource attribution, object-lifetime/reentrancy, privacy, crash/API and exact source/artifact checks plus attributable review. Included new semantic SwiftUI/multi-scene changes require the bounded P01 application comparison for frame rate, hitches/hangs, CPU and memory; source exclusion can qualify non-applicability. No detailed network or per-dispatch microbenchmark prerequisite. Signed outgoing history is required before any separately authorized push.",
           "environment": "Exact candidate; one host; no concurrent measurement contamination",
-          "evidence": "Reference evidence retained; this release candidate is not qualified.",
+          "evidence": "Reference evidence retained; this release candidate is not qualified. Latest scope supersedes earlier numeric/practical-network benchmarking prerequisites: User acceptance-scope correction2026-09-20: only new SwiftUI semantic tracking and multi-scene changes require representative application-level performance comparison. Detailed network microbenchmarks and a replacement standalone network campaign are not release blockers; investigate networking performance only on concrete customer-visible evidence. Correctness, attribution and object lifetime remain required. NETWORK_BENCHMARK_FOLLOWUP.md",
           "required": true
         }
       }
@@ -2876,6 +2872,22 @@
     "gap_discovery": "One timeboxed falsifiable investigation per admitted customer-visible invariant, tied to an existing release requirement. Freeze hypothesis, discriminating oracle, timebox and stop rule; return reproducer, evidence or specific unresolved hypothesis. No indefinite scope growth.",
     "datadog_app_access": "2026-09-19 user authorizes probe RUM application plus distinct service for controlled app runs; no live customer baseline. Original app organization access remains separate and is not needed for this lane.",
     "engineering_timeboxes": "Engineering timeboxes trigger scope/reprioritization decisions; they do not expire unchanged reviewed artifacts. Preserve earlier stopped attempts, use a concise changed-input/execution record, and retain every predeclared actual build/run/cleanup budget. No retrospective acceptance or silent runtime extension.",
-    "acceptance_sequence": "Prove the smallest real end-to-end path before full harness expansion. EXP-202 next establishes actual startup/backend format and one narrow complete transport/ownership path, separately labeled diagnostic; only the fixed required matrix can close release gates."
+    "acceptance_sequence": "Prove the smallest real end-to-end path before full harness expansion. EXP-202 next establishes actual startup/backend format and one narrow complete transport/ownership path, separately labeled diagnostic; only the fixed required matrix can close release gates.",
+    "network_performance_scope": {
+      "date": "2026-09-20",
+      "source": "User clarification and explicit request to preserve network benchmarking as a follow-up in the side conversation.",
+      "decision": "Network correctness and no extra post-task object retention come first. Additional bytes, allocations or processing per task are acceptable without visible impact on an iPhone15-class device. Detailed EXP-198 microbenchmark qualification is optional infrastructure follow-up, not an E01 release blocker. View/Action information and Resource-to-view attribution remain the RUM compatibility contract.",
+      "follow_up": "NETWORK_BENCHMARK_FOLLOWUP.md; tools/multi-scene/network-benchmark-followup/README.md",
+      "existing_experiments": "Preserve original thresholds, results and active-run cleanup; do not retroactively relabel any result."
+    },
+    "performance_acceptance": {
+      "source": "Explicit user instruction relayed from side task01a0beda-15c6-7c71-91c4-aaa9ccd68245 on2026-09-20",
+      "rule": "User acceptance-scope correction2026-09-20: only new SwiftUI semantic tracking and multi-scene changes require representative application-level performance comparison. Detailed network microbenchmarks and a replacement standalone network campaign are not release blockers; investigate networking performance only on concrete customer-visible evidence. Correctness, attribution and object lifetime remain required. NETWORK_BENCHMARK_FOLLOWUP.md",
+      "rum_no_degradation": "Preserve View and Action information and Resource-to-view attribution.",
+      "network_fix": "Prioritize correctness and no extra post-task retention, leaks or retain cycles. Per-task processing/allocation increases are acceptable without visible impact on a standard device; no replacement mandatory networking campaign.",
+      "required_benchmark": "Bounded representative application before/after for new SwiftUI semantic tracking and multi-scene changes: frame rate, hitches/hangs, CPU and memory.",
+      "expected_risk": "User expects regression to be unlikely; this expectation is not measured evidence.",
+      "saved_work": "NETWORK_BENCHMARK_FOLLOWUP.md and tools/multi-scene/network-benchmark-followup/ preserve optional harness and original results."
+    }
   }
 }

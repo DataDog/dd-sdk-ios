@@ -1,0 +1,34 @@
+{
+  "experiment": "EXP-198",
+  "status": "PASS",
+  "scope": "Exact reviewed oracle/measurement design and31host controls reused; root verified compiler-required try propagation in unchanged inventory boundary.",
+  "independent_review_reused": {
+    "path": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp198-fourth-preparation-emxzcfo2/final-source-review.json",
+    "sha256": "5f0bac3b3e474586a953cee7fba1d559bc2e0c0c9bd38d8c0d879ec24f98837a"
+  },
+  "routine_change": {
+    "path": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp198-product-correction-iuv951vh/change-record.json",
+    "sha256": "555f5f5be4242693819e0149c8d414484cc977923650bacff6bf18256724c2c5"
+  },
+  "inputs": {
+    "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp198-fourth-preparation-emxzcfo2/evaluate_exp198.py": "6623d1ee3be062848200c5e4674627b410a04f5edb5537c4bf067f0e3ef1e157",
+    "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp198-fourth-preparation-emxzcfo2/test_evaluate_exp198.py": "3c27e18673fea66293c131f27742f098e0629f6b474c05491c4fae85138ebc25",
+    "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp198-fourth-preparation-emxzcfo2/native-shape.json": "e75859a0ed9037b3c73cdc37072fa52e445e98758fdeab04d695a52f83a2a32e",
+    "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp198-fourth-preparation-emxzcfo2/evaluator-tests.json": "c74517f95ca1dfddf05ae98a1c5c33a52b7b1e3bc1c5b750cb19b8a398dab29b",
+    "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp198-product-correction-iuv951vh/host.py": "2ef204c3c9fae4d91d6240b27aee464efec4c85a29b95cc7504c23d9ccc003c2",
+    "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp198-product-correction-iuv951vh/test_host.py": "dd6e30b86b0b4af0904c2eceb7432bc98d0b48a2892f43ab9b520a66343ce4f0",
+    "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp198-product-correction-iuv951vh/host-tests.json": "2ba4945ac44055fd67969b18b89e6c9d3d4281d6c3195fe1ac46e190f463b448",
+    "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp198-typecheck-correction-ka9cg6bl/fixture/App.swift": "cb985febca38140dea8fff45db4be92e0f86cfbcc1b3e3065812dbea8ba99e03",
+    "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp198-typecheck-correction-ka9cg6bl/fixture/URLSessionE01Fixture.swift": "d4e13fb44497015653649827324e403283414f8aa474421e799819baf9af4ed5",
+    "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp198-typecheck-correction-ka9cg6bl/fixture/E01AllocationCounter.c": "d99d6eb3c656a118a6fbe0766ea7a8e864d8cda23f42f522a7aebab40b37113c",
+    "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp198-typecheck-correction-ka9cg6bl/fixture/E01AllocationCounter.h": "dee7f0b145d08a6eed701b680ac8b9fac92953e7a72f96b84b25a98ecb46b14d",
+    "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp198-typecheck-correction-ka9cg6bl/fixture/E01Calibration.c": "ecd05010d1fcdefd97994e83d2a079253f269d87f4b7a3bb4c0a09fdc88dd565",
+    "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp198-typecheck-correction-ka9cg6bl/fixture/E01Calibration.h": "5c4ae14d993006c604d53ae714230cbd4604c5169749a584c258f4d005ffe392"
+  },
+  "unchanged": "SDK implementation, fixture, evaluator25 controls, contract, native shape, P04, matrix and numeric thresholds",
+  "checked_at": "2026-09-20T12:15:56.811101+00:00",
+  "compile_correction": {
+    "path": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp198-typecheck-correction-ka9cg6bl/change-record.json",
+    "sha256": "221c745743be6a9a1314332bc33aa6ec07bbcbb0ddfd084247815af374e9e0f8"
+  }
+}

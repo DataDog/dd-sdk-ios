@@ -1,0 +1,9 @@
+{
+  "status": "STOPPED",
+  "started_at": 1789907005.404619,
+  "native_cells_completed": 4,
+  "plan_sha256": "aec5a918c9b1ee3df3d3062ce2eb462fc261d710eda356a4f0ef2d9a29ce57e4",
+  "failure": "measurement failed; attempt stopped",
+  "final_frozen_inputs": "PASS",
+  "finished_at": 1789907118.6806452
+}

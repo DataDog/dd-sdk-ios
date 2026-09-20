@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "experiment": "EXP-198",
-  "status": "FOUR NATIVE QUALIFICATIONS PASS; FIRST TIMING CELL STOPPED ON BASELINE START-COUNT ORACLE",
+  "status": "DEFERRED BY USER; OPTIONAL NETWORK INFRASTRUCTURE; NO COMPLETE NUMERIC VERDICT",
   "defined_at": "2026-09-19T22:38:13.806518+00:00",
   "gates": [
     "S1:P01",
@@ -308,7 +308,7 @@
     "all_thread_calibration": "PASS on actual17.5 caller, feature queue, background worker and concurrent epochs",
     "terminal_ownership": "REPAIRED by EXP-199 at1bdc9286; original464 failure preserved in attempts and Results/EXP-199-terminal-task-ownership.json. Paired native automatic/registered controls pass; numeric heap budgets remain unqualified.",
     "heap_budget": "UNQUALIFIED: bound, unbound and zero-body controls all exceed second100 absolute budget; no baseline subtraction or widened limit",
-    "next": "Implement the independently reviewed schema-v5 correction in the fresh fourth root, freeze final helper/fixture inputs and pass offline negative controls plus independent source review. Then one build per arm and four17.5 qualification cells within30minutes; only afterward the unchanged32-cell measurement matrix. No runtime is implied by admission."
+    "next": "Preserve optional harness; do not continue detailed network benchmarking or replace it with another mandatory network campaign."
   },
   "protocol_revisions": [
     {
@@ -716,8 +716,112 @@
     }
   ],
   "current_blocker": {
-    "observed_at": 1789907118.6806452,
-    "finding": "Evaluator incorrectly requires2x SDK start callbacks for baseline held second resume; actual complete native receipts show2x mutation with1x start and1x native lifecycle. Exact source review and negative controls required before fresh measurement.",
-    "next_action": "Split baseline mutation/start expectations; reuse unchanged qualified binaries/4native prerequisites, preserve stopped timing run as diagnostic only."
+    "observed_at": 1789910508.025984,
+    "finding": "No longer a release blocker under explicit user acceptance-scope correction.22 raw cells valid, failed prelaunch slot retained, no full matrix verdict.",
+    "next_action": "Preserve optional harness; do not continue detailed network benchmarking or replace it with another mandatory network campaign."
+  },
+  "start_count_oracle_correction": {
+    "status": "29 CONTROLS PASS; SOURCE-BACKED INDEPENDENT REVIEW ACCEPTED",
+    "change_record": {
+      "path": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp198-start-count-oracle-jzpi1dql/change-record.json",
+      "sha256": "ddee3b1b09a6d6138ba1ee898c9510e15960aa96b6dd709ae3f1dd4f034d80d3"
+    },
+    "evaluator": {
+      "path": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp198-start-count-oracle-jzpi1dql/evaluate_exp198.py",
+      "sha256": "d685f844fb9110ed04f5b16b459a88289181889d022bf3dd38bbd6b42c4e3a9f"
+    },
+    "controls": {
+      "path": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp198-start-count-oracle-jzpi1dql/tests.json",
+      "sha256": "b223dfae696c12e34297ae62a54a5c889681acbb1e88f8de1719be8efc7f471f"
+    },
+    "decision": "For baseline held second resume, mutation occurs2x while SDK start remains1x; candidate mutation/start remain1x. Completed-task negative unchanged. Prior stopped timing cell diagnostic only."
+  },
+  "qualified_evidence_execution": {
+    "status": "STOPPED;22 VALID CELLS; NEXT SLOT HAD ZERO NATIVE LAUNCHES",
+    "root": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp198-qualified-reuse-ikvu_ort",
+    "definition": {
+      "path": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp198-qualified-reuse-ikvu_ort/integration-definition.json",
+      "sha256": "c748940d08218dfdc76b6debfdaa1b9143fd28fd6e74d82efc3d9d3d76ade11a"
+    },
+    "preflight": {
+      "path": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp198-qualified-reuse-ikvu_ort/preflight.json",
+      "sha256": "17d3af6f9ff5a0f9b87c1ad7d667cc6a335e255ff95b11e24bc26fc69f5de4fa"
+    },
+    "reuse_proof": {
+      "path": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp198-qualified-reuse-ikvu_ort/qualification-reuse.json",
+      "sha256": "c1b880200c9b9de73188b0cff6fabc1c31b9e4aa1458346d4893126f506c7393"
+    },
+    "host": {
+      "path": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp198-qualified-reuse-ikvu_ort/host.py",
+      "sha256": "a7c286cd5ed1ea28f5936fe7d37397a5ce936f1cf0b640fc6d0f59cfd8d5a771"
+    },
+    "host_controls": {
+      "path": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp198-qualified-reuse-ikvu_ort/host-tests.json",
+      "sha256": "ca0b9d8a3779603e94ebc632804ffddcfb4396f38b420a167b886a0b6485fe0d"
+    },
+    "source_plan": {
+      "path": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp198-qualified-reuse-ikvu_ort/matrix/source-plan.json",
+      "sha256": "0432077812b600f97adc152aeb82c34cca3ed2d447219d74b98806f03801edb8"
+    },
+    "plan": {
+      "path": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp198-qualified-reuse-ikvu_ort/matrix/plan.json",
+      "sha256": "465c71a8e804c2c18b907d4de0090f6687b8bb5fb308d24df61dfdd3d4140820"
+    },
+    "new_builds": 0,
+    "new_qualification_launches": 0,
+    "measurement_launch_limit": 32,
+    "runtime_bound_seconds": 10800,
+    "cell_bound_seconds": 900,
+    "cleanup_reserve_seconds": 90,
+    "run_summary": {
+      "path": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp198-qualified-reuse-ikvu_ort/matrix/run-summary.json",
+      "sha256": "5427561483664f3ae93229598d896313411af1b26a9c1b0c4f6ecb45acb281da"
+    },
+    "failed_cell": {
+      "path": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp198-qualified-reuse-ikvu_ort/matrix/runs/measurement-22/summary.json",
+      "sha256": "52ca8a70f60daaafee2740791b9a246e769a81b545d41cc96567a4cff10940ec"
+    },
+    "valid_measurement_cells": 22,
+    "native_measurement_launches": 22,
+    "numeric_matrix_acceptance": false
+  },
+  "runner_guard_correction": {
+    "status": "41 CONTROLS PASS; OPTIONAL WORK DEFERRED",
+    "definition": {
+      "path": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp198-runner-guard-correction-q90uri6t/definition.json",
+      "sha256": "75017523ba9fe13639c99f3f5dd10d2c524d6062fbf0aaeae6cf13d5b2ce180f"
+    },
+    "host": {
+      "path": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp198-runner-guard-correction-q90uri6t/host.py",
+      "sha256": "dfa5887875cf354f7447c2911ce56ea18879832489ebb47f80dc589b43c34b65"
+    },
+    "controls": {
+      "path": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp198-runner-guard-correction-q90uri6t/host-tests.json",
+      "sha256": "a5774c289779b898637bcb02cb070e951dcbdb4d4c3ffdd3c3d6a560d938ae2b"
+    },
+    "finding": "The broad Runner suffix classified macOS BackgroundShortcutRunner as XCTest. Slot22 stopped before inventory or bundle mutation with native_launches0; this is a host guard false positive, not an SDK failure.",
+    "scope": "Keep real xctest/XCTRunner/*-Runner, test-bundle/Example hosts, SDK fixtures and build/profile workload guards. No source, binary, workload, threshold or runtime-limit change.",
+    "original_matrix_deadline": 1789919232.706615,
+    "native_work_since_stop": 0,
+    "independent_continuation_decision": {
+      "path": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp198-measurement-continuation-c9puld2s/independent-decision.json",
+      "sha256": "f87e8a14297980bbba979f89c371f96840fdf10476759d42d200884f61082ef7"
+    }
+  },
+  "user_scope_disposition": {
+    "date": "2026-09-20",
+    "scope": "Required performance comparisons concern application-visible impact of new semantic SwiftUI and multi-scene changes only; correctness, attribution and object lifetime remain separate.",
+    "optional_archive": "tools/multi-scene/network-benchmark-followup/manifest.json",
+    "archive_manifest": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios/tools/multi-scene/network-benchmark-followup/manifest.json",
+      "sha256": "dc9d190e952fb3e42a93c85a3cb432be7a3d8ccf098ec49d65c7e9349356badb"
+    },
+    "preserved_files": 71,
+    "compressed_raw_records": 92,
+    "valid_measurement_cells": 22,
+    "complete_numeric_verdict": false,
+    "guard_controls": 41,
+    "continuation": "Independent decision approved retention, implementation authored; added controls and native continuation UNEXECUTED and deferred.",
+    "no_new_gate_pass": true
   }
 }

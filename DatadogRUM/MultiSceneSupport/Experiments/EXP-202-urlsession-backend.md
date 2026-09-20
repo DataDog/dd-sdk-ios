@@ -176,3 +176,12 @@ host and native bounds. The original embedded contract and accepted binaries sta
 unchanged; a separate host amendment must be hash-bound before any new execution.
 The owning result records the45minute source/review limit and decisive negative
 controls. This phase admits no build, backend query or native launch.
+
+The integrated correction passes44 controls and source review. Explicit plan/helper
+binding verifies the separate amendment while preserving the original embedded
+contract and binaries. One separately defined full-path diagnostic smoke reaches
+active startup, then stops because its second MCP count request takes215seconds.
+The late payload contains3 startup rows; native cleanup passes, Home/network never
+run, and no release credit follows. Count/search diagnostics afterward return in
+0.3seconds. The four stopped prerequisite/smoke launches remain consumed; any new
+transport smoke needs a fresh recorded disposition under the unchanged limits.
