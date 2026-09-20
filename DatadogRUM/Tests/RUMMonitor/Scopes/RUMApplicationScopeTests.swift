@@ -144,6 +144,8 @@ class RUMApplicationScopeTests: XCTestCase {
         let transferredViewScope = try XCTUnwrap(nextSession.viewScopes.first)
         XCTAssertNotEqual(initialViewScope.viewUUID, transferredViewScope.viewUUID, "Transferred view scope must have different view id")
         XCTAssertTrue(transferredViewScope.identity == ViewIdentifier(view), "Transferred view scope must track the same view")
+        XCTAssertTrue(transferredViewScope.isActiveView)
+        XCTAssertEqual(nextSession.viewScopes.filter(\.isActiveView).count, 1)
         XCTAssertFalse(nextSession.isInitialSession, "Any next session in the application must be marked as 'not initial'")
     }
     #endif
