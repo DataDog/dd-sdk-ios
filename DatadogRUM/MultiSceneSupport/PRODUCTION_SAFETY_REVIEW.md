@@ -38,6 +38,15 @@ identified. [EXP-204](Results/EXP-204-network-qos.json) establishes baseline con
 recurrence of the networking QoS warning; timeout prevents a completed pair, so
 no candidate equivalence, harmlessness or sanitizer/performance clearance follows.
 
+The separate E02 review confirms an existing-customer attribute-isolation defect:
+an inactive view retained by a Resource accepts a later same-key start/stop.
+[EXP-205](Results/EXP-205-view-occurrence-isolation.json) qualifies two active-view
+predicates using independent baseline failures, the full RUM unit suite and
+paired public-monitor writer-JSON tests. This closes extraction eligibility only.
+Native test finalization required a documented verbose-diagnostics correction;
+failed attempts, console warnings and omitted-archive limits remain explicit.
+The original R01–R12 findings and E01 release obligations are unchanged.
+
 The unexecuted performance-fixture and backend-preparation defects are harness
 findings, not established SDK defects. Their owning
 [performance](Results/EXP-198-network-performance.json) and

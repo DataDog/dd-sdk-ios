@@ -48,6 +48,14 @@ and supplies no candidate-equivalence, harmlessness or sanitizer/performance cla
 Controlled Datadog app evaluation is authorized; configuration preparation and
 query access alone do not establish a run.
 
+The independent E02 candidate prevents a retained old view from absorbing a later
+same-key occurrence's start or stop attributes. The narrow repair preserves
+Resource/action owners and one active restored occurrence. [EXP-205](Results/EXP-205-view-occurrence-isolation.json)
+qualifies eligibility with failing current-develop controls, the complete affected
+RUM suite and paired public-monitor full/delta writer-JSON tests. Its own release
+qualification remains open; these results neither certify backend delivery nor
+change E01's selected-candidate gates.
+
 ## Immediate compatibility priority
 
 The short-term criterion is no RUM degradation when an existing app rebuilds with

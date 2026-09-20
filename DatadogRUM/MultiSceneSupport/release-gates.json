@@ -2502,18 +2502,18 @@
       "decisive_test": "Retained H1 cannot absorb H2 start/stop attributes; old Resource remains H1, new action H2; restoration leaves one active occurrence. Must first fail current develop.",
       "environment": "Isolated clean checkout of then-current develop; affected unit and native fixtures",
       "completion_mode": null,
-      "status": "OPEN",
-      "evidence": "",
+      "status": "CLOSED",
+      "evidence": "EXP-205: source-less start/stop regressions fail freshly verified develop62f64. Two active-view predicates at3ce541b3 pass903 RUM tests/939 executions; identical public-monitor full/delta writer-JSON tests fail only H1 attributes upstream and pass2/2 on candidate96d064c4. Exact Resource/action UUIDs and restored active-count assertions pass. Source/product/dependency/deadline/cleanup proof and independent review retained. Eligibility only; candidate-specific release qualification remains separate. Results/EXP-205-view-occurrence-isolation.json.",
       "release_requirements": {
         "S1": {
           "scope": "Repeated view occurrence isolation",
-          "status": "CONDITIONAL",
+          "status": "CLOSED",
           "dependencies": [
             "S1:F07"
           ],
           "decisive_test": "Retained H1 cannot absorb H2 start/stop attributes; old Resource remains H1, new action H2; restoration leaves one active occurrence. Must first fail current develop.",
           "environment": "Isolated clean checkout of then-current develop; affected unit and native fixtures",
-          "evidence": "Candidate only; mixed experimental commits and scene-targeted tests are not customer-defect proof.",
+          "evidence": "EXP-205: source-less start/stop regressions fail freshly verified develop62f64. Two active-view predicates at3ce541b3 pass903 RUM tests/939 executions; identical public-monitor full/delta writer-JSON tests fail only H1 attributes upstream and pass2/2 on candidate96d064c4. Exact Resource/action UUIDs and restored active-count assertions pass. Source/product/dependency/deadline/cleanup proof and independent review retained. Eligibility only; candidate-specific release qualification remains separate. Results/EXP-205-view-occurrence-isolation.json.",
           "required": false
         }
       }

@@ -1,0 +1,461 @@
+{
+  "schema_version": 1,
+  "experiment": "EXP-205",
+  "status": "PASS; E02 ELIGIBILITY QUALIFIED",
+  "defined_at": "2026-09-20T04:21:56.017344+00:00",
+  "timebox_deadline": "2026-09-20T05:21:56.017344+00:00",
+  "gates": [
+    "E02"
+  ],
+  "release_scope": "Independent source-less E02 eligibility and narrow repair, including public-monitor feature-writer JSON in the native XCTest host. E01 qualification and full E02 release acceptance remain separate.",
+  "owner": "Root host controller and release reviewer; isolated test preparation",
+  "baseline_revision": "62f64d7b655bdc83f3036c4ad81090a270f6202b",
+  "remote_verification": "Authenticated GitHub fetch_commit(develop) returned62f64 immediately before definition; local develop is not the source of truth.",
+  "worktree": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/view-occurrence-ownership",
+  "branch": "valpertui/view-occurrence-ownership",
+  "artifact_root": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp205-test-scaffold-cygf9aq_",
+  "hypothesis": "An inactive Home occurrence retained by a pending Resource wrongly accepts later same-key start and stop attributes. Limit those commands to active occurrences without changing Resource lifetime or ownership.",
+  "allowed_source_paths": [
+    "DatadogRUM/Sources/RUMMonitor/Scopes/RUMViewScope.swift",
+    "DatadogRUM/Tests/RUMMonitor/Scopes/RUMSessionScopeTests.swift",
+    "DatadogRUM/Tests/RUMMonitor/Scopes/RUMApplicationScopeTests.swift"
+  ],
+  "baseline_sha256": {
+    "DatadogRUM/Sources/RUMMonitor/Scopes/RUMViewScope.swift": "45906e298eee02f38b12d022b5b29e5b4bb1b9e8055f54638e8e4863fd51ed1d",
+    "DatadogRUM/Tests/RUMMonitor/Scopes/RUMSessionScopeTests.swift": "6fd4c5286192982e6724a8d3a612568f0c0dfb2d9aadef1d0003b73284392f77",
+    "DatadogRUM/Tests/RUMMonitor/Scopes/RUMApplicationScopeTests.swift": "e8b5c862b23f73b8f853243f1ec888bc6230cddbf1950cdd6542c8058065298d"
+  },
+  "test_proposal": {
+    "path": "/tmp/exp202-e02-audit-amended.QUQ21I/E02-single-scene-tests-amended.patch",
+    "sha256": "f1bd29adbfaaba016943d5eee4d2b112cc792367439e580cc6d29afab0679176",
+    "status": "Reviewed unapplied; distinct start and stop discriminators, with H1 asserted unchanged before the latter stop."
+  },
+  "definition": {
+    "environment": "Xcode27.1/27A9269; actual17.5/21F79 arm64 simulator; source-less unit commands and no credentials. Rediscover binding at execution.",
+    "red": "Apply two tests only plus two explicit active-count assertions in the existing session-restoration test; run exactly the two new selectors once on unchanged production develop. Both must fail only the intended H1 attribute checks; preserve all failures and diagnostics.",
+    "red_selectors": [
+      "DatadogRUMTests/RUMSessionScopeTests/testGivenSingleSceneH1HasPendingResource_whenNavigatingThroughDetailToH2_itKeepsOccurrencesIsolated",
+      "DatadogRUMTests/RUMSessionScopeTests/testGivenInactiveH1AndActiveH2_whenH2Stops_itDoesNotMutateH1"
+    ],
+    "conditional_fix": "Only after decisive red: add isActiveView to existing same-identity start and stop predicates in RUMViewScope; no new state/API/wire key, scene router, thread or network behavior.",
+    "green": "Run the full affected DatadogRUM unit target once on the corrected source, including both new tests, existing active-stop enrichment, stopped-view immutability, pending Resource teardown, timeout/max duration and explicit one-active-restored-view assertions. Require exact result inventory and zero unexpected failures/skips.",
+    "bound": "60minutes total; two build/test invocations (red pair, full affected green), max1200seconds each. Stop on preflight, build, unexpected red, diagnostic timeout, unexpected green failure or source drift; no retry-until-green. A new concrete issue requires a separately recorded decision.",
+    "dependency_policy": "Freeze existing accepted Package.resolved and local package revisions; disable automatic package updates/resolution changes. Fresh DerivedData. CLI selects the isolated target because live Xcode scheme Example has zero tests. Full-suite command preserves repository test semantics with explicit frozen dependencies/results.",
+    "cleanup": "Hostless unit target: preserve simulator binding; verify no test process remains and both protected main paths unchanged; do not stop the seven-hour assertion.",
+    "completion_boundary": "A red/green source proof admits this narrow E02 candidate only. Separate native/public-monitor and candidate release qualification still required before E02/F06 promotion.",
+    "source_exclusions": [
+      "All scene ownership/target/semantic navigation code",
+      "E01 URLSession repair",
+      "Unrelated current-develop macOS handling",
+      "Generated models, APIs, dependencies and build scripts"
+    ]
+  },
+  "runs": [],
+  "attempts": [
+    {
+      "root": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp205-view-occurrence-gu5kp_n5",
+      "classification": "BUILD INPUT FAILURE; NOT A REGRESSION RESULT",
+      "native_tests": 0,
+      "summary": {
+        "devicesAndConfigurations": [],
+        "environmentDescription": "DatadogRUM \u00b7 Built with macOS 26.6.2",
+        "expectedFailures": 0,
+        "failedTests": 0,
+        "finishTime": 1789878313.247,
+        "passedTests": 0,
+        "result": "unknown",
+        "runtimeWarnings": [],
+        "skippedTests": 0,
+        "startTime": 1789878311.844,
+        "statistics": [],
+        "testFailures": [],
+        "title": "Test - DatadogRUM",
+        "topInsights": [],
+        "totalTestCount": 0
+      },
+      "run_receipt_sha256": "b2e902dc0f50c49f5f086aa73419c023ef6f622ff7a8ca642769ffa9d3a2c3b6",
+      "log_sha256": "dccec66a0d464f7bdf8b2ec0f1ea9b61f75e169dc19f5dd01f75da5c93f70194",
+      "cleanup": "PASS; source/pins/dependencies/protected paths unchanged"
+    },
+    {
+      "root": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp205-framework-input-dpu7o1c_",
+      "classification": "TEST SCAFFOLD COMPILATION FAILURE; ZERO NATIVE TESTS",
+      "native_tests": 0,
+      "errors": [
+        "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/view-occurrence-ownership/DatadogRUM/Tests/RUMMonitor/Scopes/RUMSessionScopeTests.swift:185:17: error: argument 'attributes' must precede argument 'identity'",
+        "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/view-occurrence-ownership/DatadogRUM/Tests/RUMMonitor/Scopes/RUMSessionScopeTests.swift:190:45: error: 'activeView' is inaccessible due to 'private' protection level",
+        "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/view-occurrence-ownership/DatadogRUM/Tests/RUMMonitor/Scopes/RUMSessionScopeTests.swift:208:48: error: 'activeView' is inaccessible due to 'private' protection level",
+        "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/view-occurrence-ownership/DatadogRUM/Tests/RUMMonitor/Scopes/RUMSessionScopeTests.swift:215:17: error: argument 'attributes' must precede argument 'identity'",
+        "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/view-occurrence-ownership/DatadogRUM/Tests/RUMMonitor/Scopes/RUMSessionScopeTests.swift:220:48: error: 'activeView' is inaccessible due to 'private' protection level",
+        "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/view-occurrence-ownership/DatadogRUM/Tests/RUMMonitor/Scopes/RUMSessionScopeTests.swift:246:29: error: 'activeView' is inaccessible due to 'private' protection level",
+        "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/view-occurrence-ownership/DatadogRUM/Tests/RUMMonitor/Scopes/RUMSessionScopeTests.swift:260:17: error: argument 'attributes' must precede argument 'identity'",
+        "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/view-occurrence-ownership/DatadogRUM/Tests/RUMMonitor/Scopes/RUMSessionScopeTests.swift:265:45: error: 'activeView' is inaccessible due to 'private' protection level",
+        "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/view-occurrence-ownership/DatadogRUM/Tests/RUMMonitor/Scopes/RUMSessionScopeTests.swift:286:17: error: argument 'attributes' must precede argument 'identity'",
+        "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/view-occurrence-ownership/DatadogRUM/Tests/RUMMonitor/Scopes/RUMSessionScopeTests.swift:291:46: error: 'activeView' is inaccessible due to 'private' protection level"
+      ],
+      "run_receipt_sha256": "4afb19c0aa17d1ac5b6b8fbc5e6a11d07ffbfa544878d20c34d8e25d68d48798",
+      "log_sha256": "a47c466310e4b6b312f319071ccb6a04969b641938ba75fb4b18eb704dcaa1b4",
+      "cleanup": "PASS; source/pins/dependencies/framework/protected state unchanged"
+    },
+    {
+      "root": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp205-public-monitor-ia04cqu4",
+      "classification": "PUBLIC TEST SCAFFOLD COMPILATION FAILURE; ZERO NATIVE TESTS",
+      "native_tests": 0,
+      "errors": [
+        "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp205-public-monitor-ia04cqu4/baseline/Datadog/IntegrationUnitTests/RUM/RUMAttributesIntegration_Tests.swift:538:44: error: referencing instance method 'takeSingle()' on 'Array' requires the types 'RUMActionEvent' and 'RUMSessionMatcher' be equivalent",
+        "     |                                            `- error: referencing instance method 'takeSingle()' on 'Array' requires the types 'RUMActionEvent' and 'RUMSessionMatcher' be equivalent",
+        "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp205-public-monitor-ia04cqu4/baseline/Datadog/IntegrationUnitTests/RUM/RUMAttributesIntegrationTests.swift:526:44: error: referencing instance method 'takeSingle()' on 'Array' requires the types 'RUMActionEvent' and 'RUMSessionMatcher' be equivalent",
+        "     |                                            `- error: referencing instance method 'takeSingle()' on 'Array' requires the types 'RUMActionEvent' and 'RUMSessionMatcher' be equivalent",
+        "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp205-public-monitor-ia04cqu4/baseline/Datadog/IntegrationUnitTests/RUM/RUMAttributesIntegrationTests.swift:532:48: error: referencing instance method 'takeSingle()' on 'Array' requires the types 'RUMResourceEvent' and 'RUMSessionMatcher' be equivalent",
+        "     |                                                `- error: referencing instance method 'takeSingle()' on 'Array' requires the types 'RUMResourceEvent' and 'RUMSessionMatcher' be equivalent"
+      ],
+      "run_sha256": "bbc31172d2bab015242716fd84d55e0cd27f205ab1ed7c3811d7ea97953f81e2",
+      "summary_sha256": "d06b5aaf86951c786c3923a7df83ab31120b5d02758bacd50867b85b495c4d08",
+      "log_sha256": "cc07b39062a4ee3185121cb581f60e2fa223b8bf402503ebd0e488aead59301b",
+      "cleanup": "PASS; source/pins/dependencies/framework/protected state unchanged; candidate not executed"
+    },
+    {
+      "root": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp205-public-cardinality-g_ndjsjh",
+      "classification": "POST-TEST RESULT FINALIZATION TIMEOUT; NO ACCEPTED NATIVE INVENTORY",
+      "console_tests": 2,
+      "console_expected_failures": 2,
+      "accepted_tests": 0,
+      "candidate_executed": false,
+      "run_sha256": "077b248e64b16c7b737159ef56c002b979fe0c89d5f95d0593ef30e5d7bdba79",
+      "log_sha256": "48bd4fe8cade056b6d29205246b027dd43cf67f9588d06811a1411b63c10673c",
+      "reader_returncodes": {
+        "summary": 64,
+        "tests": 64
+      },
+      "cleanup": "PASS; fixture/binding/inputs/protected state; separately verified owned diagnostic collector absent",
+      "collector_cleanup_sha256": "fa6e825990e8693a495cbcb88abc34e6df4b0d28e3d0afb54f2e907fc4aa897b",
+      "diagnosis_sha256": "cca47b30fd046f81d9d92964791689f4c8bddc2be85101581f1580668bb72f50"
+    }
+  ],
+  "framework_correction": {
+    "defined_at": "2026-09-20T04:27:32.813891+00:00",
+    "reason": "Initial isolated build has no Carthage/Build/OpenTelemetryApi.xcframework. Actual result inventory is empty; no regression test executed.",
+    "previous_root": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp205-view-occurrence-gu5kp_n5",
+    "previous_run_sha256": "b2e902dc0f50c49f5f086aa73419c023ef6f622ff7a8ca642769ffa9d3a2c3b6",
+    "previous_log_sha256": "dccec66a0d464f7bdf8b2ec0f1ea9b61f75e169dc19f5dd01f75da5c93f70194",
+    "repair": "Copy only the existing accepted OpenTelemetryApi prebuilt dependency and version receipt into the isolated checkout; freeze all framework members. No dependency update/download, SDK/test/assertion/source change, or protected configuration access.",
+    "source_framework_root": "/Users/valentin.pertuisot/work/dd-sdk-ios/Carthage/Build",
+    "framework_member_count": 142,
+    "framework_manifest_sha256": "8f725c36783fdf5b148d6e12ad0704f1ebab4eb8dd7b2b26a01c0acb3da96e65",
+    "retry_bound": "One corrected baseline build/test and one green build/test remain; no native execution has yet occurred. Original60minute deadline unchanged. Stop on any further environment/build issue or unexpected red; no automatic second correction."
+  },
+  "test_scaffold_correction": {
+    "defined_at": "2026-09-20T04:30:52.314646+00:00",
+    "previous_root": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp205-framework-input-dpu7o1c_",
+    "classification": "TEST SCAFFOLD COMPILATION FAILURE; ZERO NATIVE TESTS",
+    "errors": [
+      "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/view-occurrence-ownership/DatadogRUM/Tests/RUMMonitor/Scopes/RUMSessionScopeTests.swift:185:17: error: argument 'attributes' must precede argument 'identity'",
+      "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/view-occurrence-ownership/DatadogRUM/Tests/RUMMonitor/Scopes/RUMSessionScopeTests.swift:190:45: error: 'activeView' is inaccessible due to 'private' protection level",
+      "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/view-occurrence-ownership/DatadogRUM/Tests/RUMMonitor/Scopes/RUMSessionScopeTests.swift:208:48: error: 'activeView' is inaccessible due to 'private' protection level",
+      "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/view-occurrence-ownership/DatadogRUM/Tests/RUMMonitor/Scopes/RUMSessionScopeTests.swift:215:17: error: argument 'attributes' must precede argument 'identity'",
+      "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/view-occurrence-ownership/DatadogRUM/Tests/RUMMonitor/Scopes/RUMSessionScopeTests.swift:220:48: error: 'activeView' is inaccessible due to 'private' protection level",
+      "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/view-occurrence-ownership/DatadogRUM/Tests/RUMMonitor/Scopes/RUMSessionScopeTests.swift:246:29: error: 'activeView' is inaccessible due to 'private' protection level",
+      "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/view-occurrence-ownership/DatadogRUM/Tests/RUMMonitor/Scopes/RUMSessionScopeTests.swift:260:17: error: argument 'attributes' must precede argument 'identity'",
+      "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/view-occurrence-ownership/DatadogRUM/Tests/RUMMonitor/Scopes/RUMSessionScopeTests.swift:265:45: error: 'activeView' is inaccessible due to 'private' protection level",
+      "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/view-occurrence-ownership/DatadogRUM/Tests/RUMMonitor/Scopes/RUMSessionScopeTests.swift:286:17: error: argument 'attributes' must precede argument 'identity'",
+      "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/view-occurrence-ownership/DatadogRUM/Tests/RUMMonitor/Scopes/RUMSessionScopeTests.swift:291:46: error: 'activeView' is inaccessible due to 'private' protection level"
+    ],
+    "decision": "Previous attempt stops. Root checked actual RUMStartViewCommand.mockWith declaration and private activeView access. Admit only argument-order correction and querying the existing internal viewScopes collection for the active view. Assertions, expectations, scenarios, production source and original deadline remain unchanged.",
+    "bound": "One further source-verified baseline build/test, then conditional green only after exact intended red. Any additional compile/oracle issue ends this amendment; no unrecorded retry.",
+    "framework_members_unchanged": true
+  },
+  "source_review": {
+    "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp205-source-review-klzp0n36/audit.json",
+    "sha256": "638753b9548588a39cb3ad89dbc1f7cce8f569de22a244832c3f6af3585cb302",
+    "verdict": "Scoped source pass for exact two guards, conditional on decisive baseline red; no concrete blocker.",
+    "limits": [
+      "Wire view.is_active can stay true while pending Resources retain an inactive occurrence; internal isActiveView owns occurrence assertions.",
+      "Active duplicate-start attribute semantics and unrelated Resource/action redesign remain unchanged."
+    ]
+  },
+  "red_proof": {
+    "status": "EXPECTED FAILURES CONFIRMED",
+    "root": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp205-test-scaffold-cygf9aq_",
+    "tests": 2,
+    "executions": 2,
+    "failures": {
+      "testGivenInactiveH1AndActiveH2_whenH2Stops_itDoesNotMutateH1()": "XCTAssertEqual failed: (\"Optional(\"late-stop\")\") is not equal to (\"Optional(\"home-1\")\")",
+      "testGivenSingleSceneH1HasPendingResource_whenNavigatingThroughDetailToH2_itKeepsOccurrencesIsolated()": "XCTAssertEqual failed: (\"Optional(\"home-2\")\") is not equal to (\"Optional(\"home-1\")\")"
+    },
+    "unexpected_failure_count": 0,
+    "production_matches_baseline": true,
+    "run_receipt_sha256": "9abbe9c80ec7c3d0286f5aa22a43a39f45eae0ef7091550a1e98df4ace5a49c0",
+    "summary_sha256": "bad1fa98b2cf07f5c4d5b3400aa97278f7b71c4f538f390be69129eb6a2ebf7e",
+    "test_inventory_sha256": "ad03a78f45c1c922f4c479a798011a0fe45940c737a2d4c23e1c9df4ba748783",
+    "product_hashes_sha256": "b0cf6ec6dee08bc344917a4e9c2e3218c58d7594cdd747e7124d7de6c21b233d",
+    "cleanup": "PASS; source, packages, framework, simulator binding and protected paths unchanged"
+  },
+  "unit_result": {
+    "status": "PASS",
+    "candidate_revision": "3ce541b325217188c181458d223ff2a3f1f78d49",
+    "tests": 903,
+    "executions": 939,
+    "failures": 0,
+    "skips": 0,
+    "new_regressions": 2,
+    "unchanged_test_source": true,
+    "production_diff": "Only two active-view predicates in RUMViewScope.swift across1864 captured source entries.",
+    "root": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp205-test-scaffold-cygf9aq_",
+    "summary_sha256": "68f781afd30bed1f789fec18bb1d96f65af73e9ca113a2989959e291bf3ed348",
+    "inventory_sha256": "001ed31ecff3db1bf1554dbc666f7de9450fc8bfe8b5a24469c58340327b1ecd",
+    "run_sha256": "d87a2834e5347fedfc5127340a42f8b677266851101d11b5b930105fa784a446",
+    "inventory_audit_sha256": "a1fb09c8423117db11f5a78389fafc21776c106374594b7bc238b105aaa7482c",
+    "independent_review": {
+      "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp205-source-review-klzp0n36/audit-red-green.json",
+      "sha256": "eb9530a9514a0ee99464b6636aafe28a34a7ff94900e07b2bdee9deff7610507"
+    },
+    "lint": "Both changed-file source/test rules pass; only existing operator_whitespace rule-renaming deprecation warning.",
+    "cleanup": "PASS; exact source/dependency/framework/pin and protected state stable."
+  },
+  "code_commit": {
+    "parent": "62f64d7b655bdc83f3036c4ad81090a270f6202b",
+    "commit": "3ce541b325217188c181458d223ff2a3f1f78d49",
+    "paths": [
+      "DatadogRUM/Sources/RUMMonitor/Scopes/RUMViewScope.swift",
+      "DatadogRUM/Tests/RUMMonitor/Scopes/RUMApplicationScopeTests.swift",
+      "DatadogRUM/Tests/RUMMonitor/Scopes/RUMSessionScopeTests.swift"
+    ],
+    "signed_attempt_returncode": -15,
+    "signing_timeout": true,
+    "authorized_unsigned_fallback": true,
+    "signature": "N",
+    "protected_unchanged": true
+  },
+  "native_phase": {
+    "defined_at": "2026-09-20T04:42:31.691370+00:00",
+    "gate": "E02",
+    "scope": "Finish the existing E02 public-monitor/native serialization boundary within EXP205, not another experiment or product scope.",
+    "baseline": "62f64d7b655bdc83f3036c4ad81090a270f6202b",
+    "candidate": "3ce541b325217188c181458d223ff2a3f1f78d49",
+    "test_proposal_sha256": "8820419ad3e2fa1a2241aa2370ee2fad0ca31cf6c2bc602fd57e2f9c44e83782",
+    "test_paths": [
+      "Datadog/IntegrationUnitTests/RUM/RUMAttributesIntegrationTests.swift",
+      "Datadog/IntegrationUnitTests/RUM/RUMAttributesIntegration_Tests.swift"
+    ],
+    "selectors": [
+      "DatadogIntegrationTests/RUMAttributesIntegrationTests/testSameKeyViewOccurrences_areIsolatedInSerializedEvents",
+      "DatadogIntegrationTests/RUMAttributesIntegration_Tests/testSameKeyViewOccurrences_areIsolatedInSerializedEvents"
+    ],
+    "environment": "Xcode27.1/27A9269, real17.5/21F79 simulator binding; Example XCTest host, DatadogCoreProxy public RUMMonitor pipeline, no credentials/backend traffic.",
+    "implementation": "Apply the reviewed scenario to both existing mirrored attribute test classes, covering full-view and view-update formats. Use throwing takeSingle for action/resource cardinality instead of count-then-index to preserve useful failures.",
+    "oracle": "One ApplicationLaunch and exactly H1/Detail/H2,3 distinct user view IDs, every non-nil H1 occurrence value stays home-1 across full/delta events, H2 final stop attributes and terminal state, exactly1 H2 custom action and1 H1 Resource with exact view UUIDs. Baseline must fail only H1 attribute-set isolation in both formats; candidate must pass both unchanged tests. Internal occurrence restoration already proven by unit suite.",
+    "bound": "Two native build/test invocations, baseline then candidate, each at most600seconds and total25minutes; original EXP205 deadline2026-09-20T05:21:56.017344+00:00 remains absolute. Stop on input/build/oracle/timeout failure; no retry or new production edit.",
+    "source_policy": "Fresh detached baseline62f plus identical candidate test files; sole production difference is the two RUMViewScope predicates. Freeze test/source/framework/pins/build identities. Existing TestUtilities/SDKTesting diagnostics remain enabled and recorded.",
+    "cleanup": "Require fixture absent before each arm, terminate/uninstall only this Example app after run; verify process/container absence, original17.5 binding and protected files. Preserve caffeinate timer.",
+    "root": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp205-public-monitor-ia04cqu4",
+    "status": "STOPPED AT TEST COMPILATION; ZERO TESTS"
+  },
+  "native_scaffold_correction": {
+    "defined_at": "2026-09-20T04:53:41.768361+00:00",
+    "gate": "E02",
+    "scope": "Finish the existing E02 public-monitor/native serialization boundary within EXP205, not another experiment or product scope.",
+    "baseline": "62f64d7b655bdc83f3036c4ad81090a270f6202b",
+    "candidate": "3ce541b325217188c181458d223ff2a3f1f78d49",
+    "test_proposal_sha256": "8820419ad3e2fa1a2241aa2370ee2fad0ca31cf6c2bc602fd57e2f9c44e83782",
+    "test_paths": [
+      "Datadog/IntegrationUnitTests/RUM/RUMAttributesIntegrationTests.swift",
+      "Datadog/IntegrationUnitTests/RUM/RUMAttributesIntegration_Tests.swift"
+    ],
+    "selectors": [
+      "DatadogIntegrationTests/RUMAttributesIntegrationTests/testSameKeyViewOccurrences_areIsolatedInSerializedEvents",
+      "DatadogIntegrationTests/RUMAttributesIntegration_Tests/testSameKeyViewOccurrences_areIsolatedInSerializedEvents"
+    ],
+    "environment": "Xcode27.1/27A9269, real17.5/21F79 simulator binding; Example XCTest host, DatadogCoreProxy public RUMMonitor pipeline, no credentials/backend traffic.",
+    "implementation": "In both existing test classes, retain count==1 assertions and use throwing XCTUnwrap(array.first) for action/resource events. Session takeSingle stays unchanged. All semantic assertions remain fixed.",
+    "oracle": "One ApplicationLaunch and exactly H1/Detail/H2,3 distinct user view IDs, every non-nil H1 occurrence value stays home-1 across full/delta events, H2 final stop attributes and terminal state, exactly1 H2 custom action and1 H1 Resource with exact view UUIDs. Baseline must fail only H1 attribute-set isolation in both formats; candidate must pass both unchanged tests. Internal occurrence restoration already proven by unit suite.",
+    "bound": "One corrected baseline invocation and one conditional candidate invocation,600seconds each,within the ORIGINAL native25minute window from first_native_attempt_started_at and overall05:21:56Z deadline. Any further build/oracle/timeout issue stops this phase; no automatic retry.",
+    "source_policy": "Fresh detached baseline62f plus identical candidate test files; sole production difference is the two RUMViewScope predicates. Freeze test/source/framework/pins/build identities. Existing TestUtilities/SDKTesting diagnostics remain enabled and recorded.",
+    "cleanup": "Require fixture absent before each arm, terminate/uninstall only this Example app after run; verify process/container absence, original17.5 binding and protected files. Preserve caffeinate timer.",
+    "previous_attempt": {
+      "root": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp205-public-monitor-ia04cqu4",
+      "classification": "PUBLIC TEST SCAFFOLD COMPILATION FAILURE; ZERO NATIVE TESTS",
+      "native_tests": 0,
+      "errors": [
+        "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp205-public-monitor-ia04cqu4/baseline/Datadog/IntegrationUnitTests/RUM/RUMAttributesIntegration_Tests.swift:538:44: error: referencing instance method 'takeSingle()' on 'Array' requires the types 'RUMActionEvent' and 'RUMSessionMatcher' be equivalent",
+        "     |                                            `- error: referencing instance method 'takeSingle()' on 'Array' requires the types 'RUMActionEvent' and 'RUMSessionMatcher' be equivalent",
+        "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp205-public-monitor-ia04cqu4/baseline/Datadog/IntegrationUnitTests/RUM/RUMAttributesIntegrationTests.swift:526:44: error: referencing instance method 'takeSingle()' on 'Array' requires the types 'RUMActionEvent' and 'RUMSessionMatcher' be equivalent",
+        "     |                                            `- error: referencing instance method 'takeSingle()' on 'Array' requires the types 'RUMActionEvent' and 'RUMSessionMatcher' be equivalent",
+        "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp205-public-monitor-ia04cqu4/baseline/Datadog/IntegrationUnitTests/RUM/RUMAttributesIntegrationTests.swift:532:48: error: referencing instance method 'takeSingle()' on 'Array' requires the types 'RUMResourceEvent' and 'RUMSessionMatcher' be equivalent",
+        "     |                                                `- error: referencing instance method 'takeSingle()' on 'Array' requires the types 'RUMResourceEvent' and 'RUMSessionMatcher' be equivalent"
+      ],
+      "run_sha256": "bbc31172d2bab015242716fd84d55e0cd27f205ab1ed7c3811d7ea97953f81e2",
+      "summary_sha256": "d06b5aaf86951c786c3923a7df83ab31120b5d02758bacd50867b85b495c4d08",
+      "log_sha256": "cc07b39062a4ee3185121cb581f60e2fa223b8bf402503ebd0e488aead59301b",
+      "cleanup": "PASS; source/pins/dependencies/framework/protected state unchanged; candidate not executed"
+    },
+    "scaffold_correction": "Root and independent reviewer checked takeSingle declaration at TestUtilities/Sources/Matchers/RUMSessionMatcher.swift:532-543; it is constrained to RUMSessionMatcher. Four event-array calls are corrected without changing SDK source, scenarios or expectations.",
+    "first_native_attempt_started_at": 1789879844.76605,
+    "root": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp205-public-cardinality-g_ndjsjh",
+    "status": "STOPPED AT RESULT FINALIZATION TIMEOUT"
+  },
+  "native_finalization_correction": {
+    "defined_at": "2026-09-20T05:05:34.384957+00:00",
+    "gate": "E02",
+    "scope": "Finish the existing E02 public-monitor/native serialization boundary within EXP205, not another experiment or product scope.",
+    "baseline": "62f64d7b655bdc83f3036c4ad81090a270f6202b",
+    "candidate": "3ce541b325217188c181458d223ff2a3f1f78d49",
+    "test_proposal_sha256": "8820419ad3e2fa1a2241aa2370ee2fad0ca31cf6c2bc602fd57e2f9c44e83782",
+    "test_paths": [
+      "Datadog/IntegrationUnitTests/RUM/RUMAttributesIntegrationTests.swift",
+      "Datadog/IntegrationUnitTests/RUM/RUMAttributesIntegration_Tests.swift"
+    ],
+    "selectors": [
+      "DatadogIntegrationTests/RUMAttributesIntegrationTests/testSameKeyViewOccurrences_areIsolatedInSerializedEvents",
+      "DatadogIntegrationTests/RUMAttributesIntegration_Tests/testSameKeyViewOccurrences_areIsolatedInSerializedEvents"
+    ],
+    "environment": "Xcode27.1/27A9269, real17.5/21F79 simulator binding; Example XCTest host, DatadogCoreProxy public RUMMonitor pipeline, no credentials/backend traffic.",
+    "implementation": "In both existing test classes, retain count==1 assertions and use throwing XCTUnwrap(array.first) for action/resource events. Session takeSingle stays unchanged. All semantic assertions remain fixed.",
+    "oracle": "One ApplicationLaunch and exactly H1/Detail/H2,3 distinct user view IDs, every non-nil H1 occurrence value stays home-1 across full/delta events, H2 final stop attributes and terminal state, exactly1 H2 custom action and1 H1 Resource with exact view UUIDs. Baseline must fail only H1 attribute-set isolation in both formats; candidate must pass both unchanged tests. Internal occurrence restoration already proven by unit suite.",
+    "bound": "Exactly one corrected baseline and one conditional candidate, each capped600seconds and dynamically shortened to reserve90seconds for result capture/cleanup within original native cutoff05:15:44.766050Z. Absolute EXP205 cutoff05:21:56.017344Z also retained. No further correction/retry.",
+    "source_policy": "Fresh detached baseline62f plus identical candidate test files; sole production difference is the two RUMViewScope predicates. Freeze test/source/framework/pins/build identities. Existing TestUtilities/SDKTesting diagnostics remain enabled and recorded. Baseline reuses the identical untouched detached source checkout through an explicit symlink; both arms build into new empty DerivedData and result paths.",
+    "cleanup": "Require fixture absent before each arm, terminate/uninstall only this Example app after run; verify process/container absence, original17.5 binding and protected files. Preserve caffeinate timer.",
+    "previous_attempt": {
+      "root": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp205-public-cardinality-g_ndjsjh",
+      "classification": "POST-TEST RESULT FINALIZATION TIMEOUT; NO ACCEPTED NATIVE INVENTORY",
+      "console_tests": 2,
+      "console_expected_failures": 2,
+      "accepted_tests": 0,
+      "candidate_executed": false,
+      "run_sha256": "077b248e64b16c7b737159ef56c002b979fe0c89d5f95d0593ef30e5d7bdba79",
+      "log_sha256": "48bd4fe8cade056b6d29205246b027dd43cf67f9588d06811a1411b63c10673c",
+      "reader_returncodes": {
+        "summary": 64,
+        "tests": 64
+      },
+      "cleanup": "PASS; fixture/binding/inputs/protected state; separately verified owned diagnostic collector absent",
+      "collector_cleanup_sha256": "fa6e825990e8693a495cbcb88abc34e6df4b0d28e3d0afb54f2e907fc4aa897b",
+      "diagnosis_sha256": "cca47b30fd046f81d9d92964791689f4c8bddc2be85101581f1580668bb72f50"
+    },
+    "scaffold_correction": "Root and independent reviewer checked takeSingle declaration at TestUtilities/Sources/Matchers/RUMSessionMatcher.swift:532-543; it is constrained to RUMSessionMatcher. Four event-array calls are corrected without changing SDK source, scenarios or expectations.",
+    "first_native_attempt_started_at": 1789879844.76605,
+    "host_correction": "Use documented -collect-test-diagnostics never in both arms. Omit verbose long-running diagnostics including sysdiagnoses/log archives; retain all assertion, console, runtime-warning, sanitizer and xcresult checks. No SDK/test/source/sanitizer change.",
+    "evidence_limit": "Verbose diagnostic archives are omitted. No warning-free, full sanitizer, numeric performance, backend or native navigation topology qualification.",
+    "root": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp205-finalization-correction-rlnlr0m5",
+    "status": "PASS; COMPLETE PAIRED INVENTORIES BEFORE ORIGINAL DEADLINE"
+  },
+  "native_result": {
+    "status": "PASS",
+    "root": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp205-finalization-correction-rlnlr0m5",
+    "baseline_revision": "62f64d7b655bdc83f3036c4ad81090a270f6202b",
+    "candidate_production_revision": "3ce541b325217188c181458d223ff2a3f1f78d49",
+    "qualification_revision": "96d064c4fa083a7a74c709eb4a626fc17017db01",
+    "tests_per_arm": 2,
+    "baseline_expected_failures": 2,
+    "candidate_passes": 2,
+    "unexpected_failures": 0,
+    "skips": 0,
+    "source_comparison": "One production difference across1864 frozen source inputs: two active-view predicates. Public/unit tests identical across arms.",
+    "test_hashes": {
+      "Datadog/IntegrationUnitTests/RUM/RUMAttributesIntegrationTests.swift": "d3a0c57b8f4e4b581758846707bbd4277af06c1b7a57e4799225f87232eb098a",
+      "Datadog/IntegrationUnitTests/RUM/RUMAttributesIntegration_Tests.swift": "337028cb121b4be4085d0052160c6aa281ee63f12b6c2ca22416e9465ee85c8c"
+    },
+    "receipts": {
+      "baseline": {
+        "status": "PASS",
+        "arm": "baseline",
+        "baseline_run_sha256": "0dfec85058ec025386716d99b22a42fd38c6e78171ec2d05cf5c68d8b72345d6",
+        "run_sha256": "0dfec85058ec025386716d99b22a42fd38c6e78171ec2d05cf5c68d8b72345d6",
+        "summary_sha256": "f632a750d35aec17ba16f116e54c2d35112c6c0cebb3e950a86bb957bade3d4b",
+        "inventory_sha256": "5cefb241fe3ee098512254b76bd4e868ee0a2b5196a66a3b670efb26fcf5d208",
+        "product_manifest_sha256": "9b2db90e21f021314e137968d6783c12f3597ac393e85cf131027e2a59323c88",
+        "test_identifiers": [
+          "RUMAttributesIntegrationTests/testSameKeyViewOccurrences_areIsolatedInSerializedEvents()",
+          "RUMAttributesIntegration_Tests/testSameKeyViewOccurrences_areIsolatedInSerializedEvents()"
+        ],
+        "tests": 2,
+        "failures": [
+          {
+            "failureText": "XCTAssertEqual failed: (\"[\"home-2-stop\", \"home-2\", \"home-1\"]\") is not equal to (\"[\"home-1\"]\")",
+            "targetName": "DatadogIntegrationTests",
+            "testIdentifier": 1,
+            "testIdentifierString": "RUMAttributesIntegrationTests/testSameKeyViewOccurrences_areIsolatedInSerializedEvents()",
+            "testIdentifierURL": "test://com.apple.xcode/Datadog/DatadogIntegrationTests/RUMAttributesIntegrationTests/testSameKeyViewOccurrences_areIsolatedInSerializedEvents",
+            "testName": "testSameKeyViewOccurrences_areIsolatedInSerializedEvents()"
+          },
+          {
+            "failureText": "XCTAssertEqual failed: (\"[\"home-2-stop\", \"home-1\", \"home-2\"]\") is not equal to (\"[\"home-1\"]\")",
+            "targetName": "DatadogIntegrationTests",
+            "testIdentifier": 2,
+            "testIdentifierString": "RUMAttributesIntegration_Tests/testSameKeyViewOccurrences_areIsolatedInSerializedEvents()",
+            "testIdentifierURL": "test://com.apple.xcode/Datadog/DatadogIntegrationTests/RUMAttributesIntegration_Tests/testSameKeyViewOccurrences_areIsolatedInSerializedEvents",
+            "testName": "testSameKeyViewOccurrences_areIsolatedInSerializedEvents()"
+          }
+        ],
+        "runtime_warnings": [],
+        "finished_at": 1789880788.263465,
+        "deadline": 1789881344.76605,
+        "scope": "Exact public-monitor feature-writer JSON oracle and native XCTest host. No backend/native-navigation topology, verbose archive, full sanitizer or performance qualification."
+      },
+      "candidate": {
+        "status": "PASS",
+        "arm": "candidate",
+        "baseline_run_sha256": "0dfec85058ec025386716d99b22a42fd38c6e78171ec2d05cf5c68d8b72345d6",
+        "run_sha256": "0d8986bdf8c8d787777a8bac1bb10b87840a58dc648be7f52a41b33bbb20a44e",
+        "summary_sha256": "60449f2d4118e7db57b4f05656c1e084b9bc7571af5cf0cb1b668038927baecf",
+        "inventory_sha256": "98066307659330bb811cce6608700f9d065a1dc5802139bc92e7539b61693691",
+        "product_manifest_sha256": "7b86c305b3b2d11208156d0545b66df60f8409f15cf6d668c8e979dd15762234",
+        "test_identifiers": [
+          "RUMAttributesIntegrationTests/testSameKeyViewOccurrences_areIsolatedInSerializedEvents()",
+          "RUMAttributesIntegration_Tests/testSameKeyViewOccurrences_areIsolatedInSerializedEvents()"
+        ],
+        "tests": 2,
+        "failures": [],
+        "runtime_warnings": [],
+        "finished_at": 1789880954.1933372,
+        "deadline": 1789881344.76605,
+        "scope": "Exact public-monitor feature-writer JSON oracle and native XCTest host. No backend/native-navigation topology, verbose archive, full sanitizer or performance qualification."
+      }
+    },
+    "limits": [
+      "Feature-writer objects are re-encoded by DatadogCoreProxy; this does not certify stored upload bytes/backend events.",
+      "The actual XCTest host runs on17.5/21F79; no native navigation or concurrent-window topology claim.",
+      "Verbose diagnostic archives omitted by documented Xcode option. Both consoles retain251 literal warning lines and59 duplicate-class messages; empty structured runtimeWarnings is not a clean-diagnostics claim.",
+      "E02 candidate-specific compatibility/platform/API/performance/backend/final release checks remain separate; no E01 evidence is promoted."
+    ],
+    "cleanup": "PASS in both arms: fixture/process absent, exact simulator binding, source/pins/framework/package/protected state preserved; original caffeinate left running.",
+    "independent_review": {
+      "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp205-public-independent-is4jd3w2/audit-final.json",
+      "sha256": "f2bb3c0bdd1c78f7cee4d03417addc0ccc8459971205284a3eb65c3299b056ed",
+      "verdict": "Eligible for scoped E02 extraction checkpoint;1864 source entries and75 product members per arm verified. No broader release qualification."
+    }
+  },
+  "qualification_commit": {
+    "parent": "3ce541b325217188c181458d223ff2a3f1f78d49",
+    "paths": [
+      "Datadog/IntegrationUnitTests/RUM/RUMAttributesIntegrationTests.swift",
+      "Datadog/IntegrationUnitTests/RUM/RUMAttributesIntegration_Tests.swift"
+    ],
+    "message": "Verify repeated view ownership through public monitor serialization",
+    "attempts": [
+      {
+        "kind": "signed",
+        "pid": 53249,
+        "returncode": -15,
+        "timeout": true,
+        "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "kind": "authorized-unsigned-fallback",
+        "pid": 53325,
+        "returncode": 0,
+        "timeout": false,
+        "log_sha256": "602864998b42ef16586990577ca242de320dbb0429a9659a72ef9d4440c4d34f"
+      }
+    ],
+    "started_at": 1789881165.0602272,
+    "commit": "96d064c4fa083a7a74c709eb4a626fc17017db01",
+    "signature": "N",
+    "committed_paths": [
+      "Datadog/IntegrationUnitTests/RUM/RUMAttributesIntegrationTests.swift",
+      "Datadog/IntegrationUnitTests/RUM/RUMAttributesIntegration_Tests.swift"
+    ],
+    "protected_unchanged": true,
+    "finished_at": 1789881190.190179
+  },
+  "finished_native_at": "2026-09-20T05:09:14.193337+00:00"
+}

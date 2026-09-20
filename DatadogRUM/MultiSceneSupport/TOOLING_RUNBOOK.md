@@ -152,6 +152,28 @@ control's diagnostic headers separately from candidate assertions. A context-
 queue callback supplies the observation barrier. A logical peer discriminates
 routing without claiming a second native window or physical concurrency.
 
+## Bounded native XCTest result collection
+
+[EXP-205](Results/EXP-205-view-occurrence-isolation.json) distinguishes completed
+test console output from a finalized, readable xcresult. Xcode's failure collector
+can start `simctl diagnose --timeout=600` after the host exits; a whole-run cap of
+600 seconds then expires before result finalization. A passive owned-process
+sample can identify this wait without changing the run.
+
+For a separately admitted expected-failure comparison, the documented
+`-collect-test-diagnostics never` option may be applied symmetrically to both arms.
+It omits verbose diagnostics, including sysdiagnoses and log archives; preserve
+sanitizer configuration, assertions, console/runtime warnings, exact result
+inventories and original deadlines. Record the omitted archives as a limitation.
+Do not accept console-only results, silently extend deadlines or discard prior
+attempts. A diagnostic child may have its own process group: verify its exact
+identity and experiment output path before cleanup, then prove it has exited.
+
+Read actual helper declarations before adapting tests. `takeSingle()` in
+`RUMSessionMatcher.swift` is constrained to session arrays; event arrays use an
+explicit exact-count assertion plus `try XCTUnwrap(array.first)`. Keep full and
+delta event tests aligned, and identify owners by actual view UUIDs.
+
 ## Documentation reading and update workflow
 
 [.continue-here.md](../../.continue-here.md) is the sole restart cursor.
