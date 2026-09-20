@@ -37,10 +37,12 @@ surface, feature documentation and full integration coverage qualify S1:F02/F03.
 [final matrix](Results/EXP-201-final-compatibility.json) retain exact inventories,
 the corrected inherited hitch assertion and diagnostic limits.
 
-E01 has12 of16 required gates qualified. The focused object-lifetime audit closes
+E01 has15 of16 required gates qualified. The focused object-lifetime audit closes
 S1:P03: native success/error/cancellation and feature teardown release their weak
 witnesses in automatic and registered modes; the8-test follow-up passes with no
-runtime warnings. Backend A01/T03/T08 and final F06 remain open. The user removed detailed network performance and any
+runtime warnings. Backend A01/T03/T08 now close after the independent four-cell
+audit. F06 retains separate upstream hitch delivery and verified-source rebase,
+with signed outgoing history required before any authorized push. The user removed detailed network performance and any
 replacement standalone network campaign from release prerequisites. The
 [optional benchmark](NETWORK_BENCHMARK_FOLLOWUP.md) preserves22 valid cells, its
 prelaunch host failure and unfinished continuation without a numeric verdict.
@@ -48,16 +50,15 @@ Required performance work for S2/S3 concerns application-visible frame rate,
 hitches/hangs, CPU and memory impact of included semantic SwiftUI/multi-scene
 changes; source exclusion can qualify non-applicability. Correctness and ownership
 requirements remain unchanged.
-[Backend acceptance](Results/EXP-202-urlsession-backend.json) uses two frozen
-credential-backed Release builds. Seven diagnostic launches and the first acceptance
-cell stopped and retain zero credit. Native/local and12 RUM rows were complete;
-APM collection or host publication exceeded the earlier bounds. Later diagnostics
-account for all six client and four Resource-derived span identities without
-rescuing those runs. Reviewed host corrections preserve exact owners and values,
-positive backend view versions and full trace membership.62 Python/13 JavaScript
-controls pass. A fresh four-cell acceptance is running under a predeclared600second
-final APM collection window,610seconds at the host; startup/RUM115/125 and native120
-remain unchanged. No SDK defect or backend acceptance follows from preparation.
+[Backend acceptance](Results/EXP-202-backend-qualification.json) qualifies both
+candidate modes and preserves the predefined baseline terminal-view observations.
+Each of the four cells has12 RUM rows,10 spans in each independent session/service
+query, exact ownership/value checks,64 native receipts and complete cleanup. The
+registered oracle rounding defect was corrected with exact ±1ns controls before
+fresh execution; accepted automatic artifacts retain their original identities.
+All collection bounds and earlier failed outcomes remain unchanged. Exact synthetic
+evidence and helpers are preserved outside temporary storage with byte hashes.
+This closes the E01 backend gates, not broader multi-scene or performance acceptance.
 
 Test-only duplicate classes are excluded from inspected shipping graphs. The
 [QoS comparison](Results/EXP-204-network-qos.json) now finalizes both unchanged

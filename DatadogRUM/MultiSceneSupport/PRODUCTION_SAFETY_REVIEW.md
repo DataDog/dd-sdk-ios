@@ -105,19 +105,17 @@ unfinished continuation; no numeric verdict or new performance defect is inferre
 Object lifetime, correctness and attribution remain required. Only included new
 semantic SwiftUI/multi-scene behavior requires representative application-level
 frame rate, hitches/hangs, CPU and memory comparison under the revised release scope.
-EXP-202's credential, activation, receipt preservation and server-session fixes
-qualify the existing Release builds and startup handling within their recorded
-limits. Seven diagnostics and the first acceptance cell stopped; all remain
-invalid. The latter collected12 RUM rows and passed local assertions, but final
-APM ingestion/helper dispatch missed its boundary. Later queries find all10 expected
-span identities; that is diagnostic only. Host-only controls preserve exact Resource
-and client-span ownership, positive backend view versions and complete trace detail.
-The batch adapter retains successful replies even if a sibling fails and publishes
-only before its phase deadline.62 Python/13 JavaScript checks and independent review
-pass. A new definition allows600/610seconds for final APM collection/host wait only;
-startup/RUM115/125 and native120 remain unchanged. The four-cell matrix is running,
-with no gate credit until full semantic and cleanup evidence passes. These findings
-do not establish a new SDK defect or networking performance result.
+EXP-202's registered metric mismatch was a host oracle defect: Python truncated
+where unchanged SDK source rounds nearest with ties away from zero. The reviewed
+correction retains exact equality and ±1ns negative controls;70 Python controls
+and13 reused JavaScript cases qualify it. Two fresh registered cells now complete
+the four-cell matrix with the original automatic artifacts. Both candidate modes
+pass; both develop modes retain their predefined terminal-view observations.
+Independent audit confirms exact12/10/10 backend inventories, complete ownership,
+64 native receipts per cell and all cleanup/deadline checks. The [durable summary](Results/EXP-202-backend-qualification.json)
+closes S1:A01/T03/T08. All prior failures remain invalid. F06 retains separate
+upstream hitch delivery/rebase and inherited EXP204 warning limits; no performance,
+physical-Duo or full release claim follows.
 Historical S1 narrative is preserved in the
 [documentation checkpoint](Results/EXP-204-documentation-consolidation.json).
 

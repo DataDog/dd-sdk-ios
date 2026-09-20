@@ -752,11 +752,11 @@
         },
         "S1": {
           "scope": "Reusable candidate acceptance automation",
-          "status": "OPEN",
+          "status": "CLOSED",
           "dependencies": [],
           "decisive_test": "One frozen run binds preflight, clean install, source/build/install identity, actual input/lifecycle, strict local inventory, whole-session backend and cleanup; reject known stale/readiness/run-ID/late-oracle controls.",
           "environment": "Qualified simulator for frozen candidate; actual toolchain/runtime identity and authenticated Datadog",
-          "evidence": "EXP-202: two frozen Release builds; seven stopped diagnostics and one failed earlier acceptance retained with zero credit. Reviewed62 Python/13 JavaScript host controls. Fresh four-cell actual17.5 matrix is running with fixed final APM600/610s and unchanged startup/native bounds. Current-develop E03/E05 limits retained. Results/EXP-202-urlsession-backend.json owns exact source/run evidence.",
+          "evidence": "EXP-202 independently qualifies four frozen arm/mode cells: candidate automatic/registered PASS; develop modes retain the predefined terminal-view observation. Each has exact12 RUM/10 session-span/10 service-span inventories, complete traces, exact owners/values,64 native receipts and verified cleanup within fixed deadlines. Registered rounding correction preserves exact equality; original automatic identities and all stopped runs retained. Durable1260-file local bundle and compact Results/EXP-202-backend-qualification.json. E03/E05 inherited limits remain separate.",
           "required": true
         },
         "S2": {
@@ -858,14 +858,14 @@
         },
         "S1": {
           "scope": "E01 affected Resource lifecycle",
-          "status": "OPEN",
+          "status": "CLOSED",
           "dependencies": [
             "S1:A01",
             "S1:F07"
           ],
           "decisive_test": "Repeated/resumed tasks produce one Resource start and one completion with unchanged baseline ownership/metrics/error behavior; no new foreign action counts.",
           "environment": "Source-less fixtures and relevant native/backend inventory",
-          "evidence": "EXP-202: two frozen Release builds; seven stopped diagnostics and one failed earlier acceptance retained with zero credit. Reviewed62 Python/13 JavaScript host controls. Fresh four-cell actual17.5 matrix is running with fixed final APM600/610s and unchanged startup/native bounds. Current-develop E03/E05 limits retained. Results/EXP-202-urlsession-backend.json owns exact source/run evidence.",
+          "evidence": "EXP-202 independently qualifies four frozen arm/mode cells: candidate automatic/registered PASS; develop modes retain the predefined terminal-view observation. Each has exact12 RUM/10 session-span/10 service-span inventories, complete traces, exact owners/values,64 native receipts and verified cleanup within fixed deadlines. Registered rounding correction preserves exact equality; original automatic identities and all stopped runs retained. Durable1260-file local bundle and compact Results/EXP-202-backend-qualification.json. E03/E05 inherited limits remain separate.",
           "required": true
         },
         "S2": {
@@ -1014,14 +1014,14 @@
         },
         "S1": {
           "scope": "E01 affected Trace lifecycle and header compatibility",
-          "status": "OPEN",
+          "status": "CLOSED",
           "dependencies": [
             "S1:A01",
             "S1:F07"
           ],
           "decisive_test": "Repeated/resumed tasks produce one Trace interception/start/completion with unchanged baseline context, sampling and headers; E05 request-time correlation is separately qualified and does not block E01.",
           "environment": "Source-less fixtures and relevant native/backend inventory",
-          "evidence": "EXP-202: two frozen Release builds; seven stopped diagnostics and one failed earlier acceptance retained with zero credit. Reviewed62 Python/13 JavaScript host controls. Fresh four-cell actual17.5 matrix is running with fixed final APM600/610s and unchanged startup/native bounds. Current-develop E03/E05 limits retained. Results/EXP-202-urlsession-backend.json owns exact source/run evidence.",
+          "evidence": "EXP-202 independently qualifies four frozen arm/mode cells: candidate automatic/registered PASS; develop modes retain the predefined terminal-view observation. Each has exact12 RUM/10 session-span/10 service-span inventories, complete traces, exact owners/values,64 native receipts and verified cleanup within fixed deadlines. Registered rounding correction preserves exact equality; original automatic identities and all stopped runs retained. Durable1260-file local bundle and compact Results/EXP-202-backend-qualification.json. E03/E05 inherited limits remain separate.",
           "required": true
         },
         "S2": {
@@ -2434,7 +2434,7 @@
           ],
           "decisive_test": "Require applicable correctness, View/Action information, Resource attribution, object-lifetime/reentrancy, privacy, crash, API and exact source/artifact checks plus attributable review. Detailed network benchmarks and a replacement standalone network performance campaign are not prerequisites; investigate concrete visible regressions if found. Signed outgoing history is required before any separately authorized push. Separately land the qualified hitch assertion fix, then rebase only after verified upstream merge and confirm source/test identities.",
           "environment": "Exact candidate; one host; no concurrent measurement contamination",
-          "evidence": "Candidate1bdc9286 has qualified compatibility/platform/API/docs, optimized P04 and object-lifetime P03. Remaining required gates: backend A01/T03/T08 and F06 review. EXP204 finalizes unchanged baseline/candidate1/1 each with the same QoS warning and15 shown frames; inherited recurrence is established, not root cause, harmlessness or sanitizer/performance clearance. Initial timeout retained. Detailed/standalone network benchmarking remains deferred under the user scope correction; NETWORK_BENCHMARK_FOLLOWUP.md preserves original outcomes. Final local source packet confirms clean652ce169, exactly3 production/3 test/6 documentation files and production equality with1bdc9286. Independent final review is underway; exact hitch test is prepared separately asd98f3540, upstream delivery/rebase pending.",
+          "evidence": "Candidate production1bdc9286/current local652ce169 has all15 prerequisite gates qualified, including EXP202 four-cell independent backend audit. Final source review finds no new scoped blocker. F06 remains open for separately delivering hitch correctiond98f3540 upstream, verified-source rebase and signed outgoing history before any authorized push. EXP204 reproduces the same inherited QoS warning/15 shown frames in both arms; retain incomplete-stack/root-cause limits, not harmlessness or performance clearance. Detailed/standalone network benchmarking remains deferred; NETWORK_BENCHMARK_FOLLOWUP.md preserves original outcomes.",
           "required": true
         },
         "S2": {

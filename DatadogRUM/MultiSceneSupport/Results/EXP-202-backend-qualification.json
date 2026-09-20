@@ -1,0 +1,363 @@
+{
+  "schema_version": 1,
+  "experiment": "EXP-202",
+  "status": "QUALIFIED; S1:A01/T03/T08",
+  "qualified_at": 1789920755.639931,
+  "baseline_revision": "62f64d7b655bdc83f3036c4ad81090a270f6202b",
+  "candidate_production_revision": "1bdc9286c17d69d73e5e41530e6179c72a723368",
+  "candidate_current_head": "652ce169773b0be5b6767179eca8ab5f4cf25f8a",
+  "candidate_head_production_matches": true,
+  "environment": {
+    "xcode": "27.1 / 27A9269",
+    "runtime": "iOS17.5 / 21F79",
+    "device_kind": "iPad simulator"
+  },
+  "qualified_gates": [
+    "S1:A01",
+    "S1:T03",
+    "S1:T08"
+  ],
+  "counts": {
+    "unique_cells": 4,
+    "candidate_passes": 2,
+    "baseline_observations": 2,
+    "acceptance_launches_consumed": 6,
+    "invalid_acceptance_launches": 2,
+    "earlier_diagnostic_launches": 7,
+    "native_receipts_per_cell": 64
+  },
+  "cells": [
+    {
+      "cell": "B-automatic",
+      "state": "PASS",
+      "run_id": "a4395bff-3ee9-4649-8abc-8f712585e80f",
+      "session_id": "3141ca68-df78-4c7f-b587-94f9d7d52957",
+      "summary": {
+        "path": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp202-final-ingestion-window-laea1pzn/acceptance-B-automatic/summary.json",
+        "sha256": "0bfab4e1468a474d7e4bf8847b5f4b5f1486e90d8b3610a6b767c9c72513d7a6"
+      },
+      "oracle": {
+        "path": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp202-final-ingestion-window-laea1pzn/acceptance-B-automatic/oracle-result.json",
+        "sha256": "1ec572ca87692bb09de6e73cf6014890101a1c78fef6d77114becd5f8700c919"
+      },
+      "native": {
+        "path": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp202-final-ingestion-window-laea1pzn/acceptance-B-automatic/local.json",
+        "sha256": "8f7a5e0d5f38eb824f3e9c705ffb26a2f3d2fd0f15649f4f4ac0b0f14a5544e1"
+      },
+      "backend": {
+        "path": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp202-final-ingestion-window-laea1pzn/acceptance-B-automatic/backend.json",
+        "sha256": "0c86970c3a330b883b589d6c28ce95294f64f48725c969b95d68021116bb1580"
+      },
+      "expected": {
+        "path": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp202-final-ingestion-window-laea1pzn/acceptance-B-automatic/expected.json",
+        "sha256": "920e80144319076d1cf6637ed03fb5aa9de03244828f02b6b5a3015754937428"
+      },
+      "native_receipts": 64,
+      "cleanup": "PASS",
+      "inventory": {
+        "native_tasks": 11,
+        "resources": 5,
+        "errors": 1,
+        "actions": 1,
+        "unique_views": 3,
+        "client_spans": 6
+      },
+      "timings": [
+        {
+          "kind": "rum-startup",
+          "publication_seconds": 46.636,
+          "budget_seconds": 115.0,
+          "raw_inventory": 3
+        },
+        {
+          "kind": "rum-session",
+          "publication_seconds": 46.837,
+          "budget_seconds": 115.0,
+          "raw_inventory": 12
+        },
+        {
+          "kind": "span-session",
+          "publication_seconds": 241.429,
+          "budget_seconds": 600.0,
+          "raw_inventory": 10
+        },
+        {
+          "kind": "span-service",
+          "publication_seconds": 20.485,
+          "budget_seconds": 600.0,
+          "raw_inventory": 10
+        }
+      ],
+      "baseline_observation": false,
+      "reused_original_identity": true
+    },
+    {
+      "cell": "A-automatic",
+      "state": "BASELINE_E01_OBSERVATION",
+      "run_id": "40f14cd8-34d7-4064-856f-d5782be75a63",
+      "session_id": "38de7670-90fc-4b6a-9342-9d002eec302c",
+      "summary": {
+        "path": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp202-final-ingestion-window-laea1pzn/acceptance-A-automatic/summary.json",
+        "sha256": "de7dce35502213a4ac89eea03ddabdd31f4705a0a897126e923da6282927f988"
+      },
+      "oracle": {
+        "path": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp202-final-ingestion-window-laea1pzn/acceptance-A-automatic/oracle-result.json",
+        "sha256": "81b63df5d7e5d612a03899d439889247c2c425e3ab29f06c4d3d5ed86f6c9492"
+      },
+      "native": {
+        "path": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp202-final-ingestion-window-laea1pzn/acceptance-A-automatic/local.json",
+        "sha256": "8284bbcc9998aca1d18e9edaa05e01f2cdeffc2e4ca17ea0667c47681b58c9d4"
+      },
+      "backend": {
+        "path": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp202-final-ingestion-window-laea1pzn/acceptance-A-automatic/backend.json",
+        "sha256": "c69eba963a68bb2e1235b5c706969a89ffd99847d09271ac48bb87c47c1c12ac"
+      },
+      "expected": {
+        "path": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp202-final-ingestion-window-laea1pzn/acceptance-A-automatic/expected.json",
+        "sha256": "0f880915de0771f58941139368113cd76cd2c3e19dd12e176bb5d9dab812f834"
+      },
+      "native_receipts": 64,
+      "cleanup": "PASS",
+      "inventory": {
+        "native_tasks": 11,
+        "resources": 5,
+        "errors": 1,
+        "actions": 1,
+        "unique_views": 3,
+        "client_spans": 6
+      },
+      "timings": [
+        {
+          "kind": "rum-startup",
+          "publication_seconds": 60.657,
+          "budget_seconds": 115.0,
+          "raw_inventory": 3
+        },
+        {
+          "kind": "rum-session",
+          "publication_seconds": 38.422,
+          "budget_seconds": 115.0,
+          "raw_inventory": 12
+        },
+        {
+          "kind": "span-session",
+          "publication_seconds": 281.112,
+          "budget_seconds": 600.0,
+          "raw_inventory": 10
+        },
+        {
+          "kind": "span-service",
+          "publication_seconds": 25.189,
+          "budget_seconds": 600.0,
+          "raw_inventory": 10
+        }
+      ],
+      "baseline_observation": true,
+      "reused_original_identity": true
+    },
+    {
+      "cell": "B-registered",
+      "state": "PASS",
+      "run_id": "528d2742-da54-40e8-863d-165907679919",
+      "session_id": "16330f07-2027-454a-b4d4-b45943ab2c95",
+      "summary": {
+        "path": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp202-metric-rounding-correction-0jon2oh1/acceptance-B-registered/summary.json",
+        "sha256": "835412fc3198bd73fcf5e06f5b57d1942eb35315bcb71bd4221591cbba3e80ec"
+      },
+      "oracle": {
+        "path": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp202-metric-rounding-correction-0jon2oh1/acceptance-B-registered/oracle-result.json",
+        "sha256": "13e320cc6d0250c22492937bf9331f672a943ac5801a942c8fab321b38e330fb"
+      },
+      "native": {
+        "path": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp202-metric-rounding-correction-0jon2oh1/acceptance-B-registered/local.json",
+        "sha256": "378907b0b05a150b1c32342c2825851bfed1547cb746aa13baeea2a95826a513"
+      },
+      "backend": {
+        "path": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp202-metric-rounding-correction-0jon2oh1/acceptance-B-registered/backend.json",
+        "sha256": "4322f967f8aa6f1aa71baef35dfecdcf2c78703c48734cb8cb6f7bae7bd06d63"
+      },
+      "expected": {
+        "path": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp202-metric-rounding-correction-0jon2oh1/acceptance-B-registered/expected.json",
+        "sha256": "a8a164a8a941fee826ce36f56327de1ebb60e3cf31a1049b79294bd52c502011"
+      },
+      "native_receipts": 64,
+      "cleanup": "PASS",
+      "inventory": {
+        "native_tasks": 11,
+        "resources": 5,
+        "errors": 1,
+        "actions": 1,
+        "unique_views": 3,
+        "client_spans": 6
+      },
+      "timings": [
+        {
+          "kind": "rum-startup",
+          "publication_seconds": 54.664,
+          "budget_seconds": 115.0,
+          "raw_inventory": 3
+        },
+        {
+          "kind": "rum-session",
+          "publication_seconds": 72.873,
+          "budget_seconds": 115.0,
+          "raw_inventory": 12
+        },
+        {
+          "kind": "span-session",
+          "publication_seconds": 186.957,
+          "budget_seconds": 600.0,
+          "raw_inventory": 10
+        },
+        {
+          "kind": "span-service",
+          "publication_seconds": 53.739,
+          "budget_seconds": 600.0,
+          "raw_inventory": 10
+        }
+      ],
+      "baseline_observation": false,
+      "reused_original_identity": false
+    },
+    {
+      "cell": "A-registered",
+      "state": "BASELINE_E01_OBSERVATION",
+      "run_id": "8f23ea42-3ad5-4883-8b6e-1245c9d1725f",
+      "session_id": "d7dd5d39-7dec-41ab-92ca-b075ea76f3d0",
+      "summary": {
+        "path": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp202-metric-rounding-correction-0jon2oh1/acceptance-A-registered/summary.json",
+        "sha256": "bbcb832dd5924ec783e574ccff2d410c507be5ca3be3033b38489b461a7ff596"
+      },
+      "oracle": {
+        "path": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp202-metric-rounding-correction-0jon2oh1/acceptance-A-registered/oracle-result.json",
+        "sha256": "7e689fdf08f5dd9422e2bdc25b5a6ea7a36ab32f68aa97343692e9854b96cacc"
+      },
+      "native": {
+        "path": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp202-metric-rounding-correction-0jon2oh1/acceptance-A-registered/local.json",
+        "sha256": "0b1a2f48f4e007809a0a4b9edb84f956e6f7ddb4f2a69ebabbd905a4e59c0c0e"
+      },
+      "backend": {
+        "path": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp202-metric-rounding-correction-0jon2oh1/acceptance-A-registered/backend.json",
+        "sha256": "71bf2b064c9a402ac158c0f234da5bd3a7e876a6b9f948ab5cc41f0d76900f0a"
+      },
+      "expected": {
+        "path": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp202-metric-rounding-correction-0jon2oh1/acceptance-A-registered/expected.json",
+        "sha256": "e02961b4824dc0e31a365ae1dee9d54fd485bb61d0dbd65c8b4d79e3317e89a4"
+      },
+      "native_receipts": 64,
+      "cleanup": "PASS",
+      "inventory": {
+        "native_tasks": 11,
+        "resources": 5,
+        "errors": 1,
+        "actions": 1,
+        "unique_views": 3,
+        "client_spans": 6
+      },
+      "timings": [
+        {
+          "kind": "rum-startup",
+          "publication_seconds": 60.572,
+          "budget_seconds": 115.0,
+          "raw_inventory": 3
+        },
+        {
+          "kind": "rum-session",
+          "publication_seconds": 52.866,
+          "budget_seconds": 115.0,
+          "raw_inventory": 12
+        },
+        {
+          "kind": "span-session",
+          "publication_seconds": 219.085,
+          "budget_seconds": 600.0,
+          "raw_inventory": 10
+        },
+        {
+          "kind": "span-service",
+          "publication_seconds": 42.307,
+          "budget_seconds": 600.0,
+          "raw_inventory": 10
+        }
+      ],
+      "baseline_observation": true,
+      "reused_original_identity": false
+    }
+  ],
+  "roots": {
+    "automatic": {
+      "root": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp202-final-ingestion-window-laea1pzn",
+      "definition": {
+        "path": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp202-final-ingestion-window-laea1pzn/acceptance-definition.json",
+        "sha256": "bd9a1a71eb580ec35cffc05e1c3d6772d680680b22703146a4ea963656ce70f5"
+      },
+      "helpers": {
+        "path": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp202-final-ingestion-window-laea1pzn/matrix/helper-manifest.json",
+        "sha256": "49d45531d7a075c2ab63e2283428839587910e2aeb84aae6f1023223a48506dd"
+      },
+      "oracle": {
+        "path": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp202-final-ingestion-window-laea1pzn/host/exp202_oracle.py",
+        "sha256": "75b6a49c7dbc356863b2a0529c44537ddfc17886d8a8ff5e64916bd09c17ec8d"
+      }
+    },
+    "registered": {
+      "root": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp202-metric-rounding-correction-0jon2oh1",
+      "definition": {
+        "path": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp202-metric-rounding-correction-0jon2oh1/acceptance-definition.json",
+        "sha256": "841ba7a966fe20e3b644a128aa21194d7ce66ec123014938aae0dfce4931531f"
+      },
+      "helpers": {
+        "path": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp202-metric-rounding-correction-0jon2oh1/matrix/helper-manifest.json",
+        "sha256": "f3c270ac2a9e62e6b690e6145d826c1f967b06013da0ada5161ede170c0e2035"
+      },
+      "oracle": {
+        "path": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp202-metric-rounding-correction-0jon2oh1/host/exp202_oracle.py",
+        "sha256": "109086b5f377f85296e64dcb20b6ca04e9c7b4a312a8d1e4e303536013cc4ad1"
+      }
+    }
+  },
+  "independent_audit": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp202-qualified-ki2ipwzb/backend-artifact-audit.json",
+    "sha256": "20092daa0583a4f547c464f768386bb08221c5bf134b47103ec7e7c770b83b5c"
+  },
+  "independent_review": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp202-qualified-ki2ipwzb/backend-review.json",
+    "sha256": "e90db28425f63d9828dda2a1a90d64e6974399520df70f655e58240bf8368474"
+  },
+  "review_disposition": {
+    "S1:A01": "QUALIFIED_BY_EXP202_EVIDENCE",
+    "S1:T03": "QUALIFIED_BY_EXP202_EVIDENCE",
+    "S1:T08": "QUALIFIED_BY_EXP202_EVIDENCE",
+    "qualification_boundary": "This review supplies the completed four-cell evidence; release-gates.json status/evidence updates remain a root-owned documentation action. No performance or standalone network benchmark claim is made."
+  },
+  "durable_local_evidence": {
+    "root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp202-qualified-ki2ipwzb",
+    "archive": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp202-qualified-ki2ipwzb/evidence.tar.gz",
+      "sha256": "fc1c8a644260d213242734bf075c364646efa43e27d49ca9219cdfe7d372da08"
+    },
+    "manifest": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp202-qualified-ki2ipwzb/manifest.json",
+      "sha256": "96e6bafec418c971451753d4e53d4f53a736be5a6c63276f20c3f4564a7b5cc8"
+    },
+    "file_count": 1260,
+    "verification": "PASS; every archived byte count and SHA256 matched original",
+    "public_commit_boundary": "Compact synthetic summary only; raw evidence/helpers remain in the local sibling evidence directory. No local xcconfig or compiled app is archived."
+  },
+  "interpretation": [
+    "Both candidate modes PASS. Both develop modes retain the predefined terminal-view BASELINE_E01_OBSERVATION, not a generic pass or an independent causal proof.",
+    "Every cell has3 startup RUM rows,12 final RUM rows,10 spans in independent session and service searches,4 RUM-derived spans and6 client spans, with full trace/parent and owner/value checks.",
+    "Registered metrics now use source-exact rounding with no tolerance; original rejected cell remains invalid. Two automatic cells are reused only under their original helper/oracle/amendment identities.",
+    "All startup/RUM115-second and final-span600-second publications satisfy their recorded bounds; no run was extended retrospectively.",
+    "Inherited E03 Resource-to-action count1/0 and E05 completion-time URLSession Trace correlation stay explicit. Their repairs remain separate.",
+    "No SDK performance, simultaneous-scene, physical-Duo or general release claim."
+  ],
+  "F06": {
+    "status": "OPEN",
+    "remaining": [
+      "Deliver the exact hitch correction upstream, then rebase and reverify the source packet.",
+      "Use signed outgoing history before any separately authorized push.",
+      "Retain inherited EXP204 QoS warning and incomplete-stack/root-cause limits; do not turn them into a performance or crash-free claim."
+    ]
+  }
+}

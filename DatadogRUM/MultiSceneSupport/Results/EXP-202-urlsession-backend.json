@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "experiment": "EXP-202",
-  "status": "FRESH FOUR-CELL ACCEPTANCE RUNNING",
+  "status": "QUALIFIED; S1:A01/T03/T08",
   "defined_at": 1789868896.779567,
   "gates": [
     "S1:A01",
@@ -714,9 +714,26 @@
       "native_launches": 0
     }
   ],
-  "result": null,
+  "result": {
+    "status": "QUALIFIED",
+    "summary": "EXP-202-backend-qualification.json",
+    "summary_sha256": "b329a1208cebbe339112c68f054323e6983c63fd303d30c2643337747d7592a7",
+    "gates": [
+      "S1:A01",
+      "S1:T03",
+      "S1:T08"
+    ],
+    "qualified_cells": 4,
+    "candidate_passes": 2,
+    "baseline_observations": 2,
+    "independent_review": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp202-qualified-ki2ipwzb/backend-review.json",
+      "sha256": "e90db28425f63d9828dda2a1a90d64e6974399520df70f655e58240bf8368474"
+    },
+    "F06": "OPEN; separate upstream hitch delivery/verified rebase and signed outgoing history remain"
+  },
   "native_prerequisite_launches_consumed": 4,
-  "acceptance_launches_consumed": 3,
+  "acceptance_launches_consumed": 6,
   "unapplied_credential_proposal_review": {
     "status": "EXACT REVIEWED PATCH APPLIED AFTER EXPLICIT USER AUTHORIZATION; ORIGINAL HELPERS PRESERVED",
     "patch": {
@@ -1305,7 +1322,7 @@
     }
   },
   "acceptance_matrix": {
-    "status": "RUNNING; CONSULT PROGRESS PATH",
+    "status": "STOPPED ON B-REGISTERED METRIC ORACLE; A-REGISTERED NOT RUN",
     "definition": {
       "path": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp202-final-ingestion-window-laea1pzn/acceptance-definition.json",
       "sha256": "bd9a1a71eb580ec35cffc05e1c3d6772d680680b22703146a4ea963656ce70f5"
@@ -1350,11 +1367,95 @@
             "bytes": 55430
           }
         }
+      },
+      {
+        "cell": "A-automatic",
+        "exit_code": 0,
+        "summary": {
+          "experiment": "EXP-202",
+          "purpose": "acceptance",
+          "state": "BASELINE_E01_OBSERVATION",
+          "identity": {
+            "run_id": "40f14cd8-34d7-4064-856f-d5782be75a63",
+            "nonce": "fc47cb43-13db-476d-a874-ede2b2ffd6d5",
+            "arm": "A",
+            "mode": "automatic",
+            "source_revision": "62f64d7b655bdc83f3036c4ad81090a270f6202b",
+            "source_sha256": "fce60b5d4f4e539ef3c114d2472a652383b708e0e3a08caebe92ae9ac9f3c4a7",
+            "fixture_sha256": "646ef70eb14d9416fd5c10fa0f4e26c04dca96a59f50ef84cd31f967c9354ab2",
+            "contract_sha256": "6fc19e140a568ac9f6edb70b18f491aac00a70549a837c654901f3ae1193ab22",
+            "build_sha256": "596296af915b3aad50b6229b1f8a16f0b173ac27f1f66c218dd67aff537a5c0d"
+          },
+          "native_launches": 1,
+          "backend_state": "COLLECTED; CLEANUP AND STRICT EVALUATION PENDING",
+          "started_at": 1789917279.4625401,
+          "finished_at": 1789917718.876162,
+          "failure": "",
+          "original_failure": "",
+          "cleanup": {
+            "container_absent": true,
+            "process_absent": true,
+            "binding_restored": true,
+            "protected_unchanged": true,
+            "helpers_unchanged": true
+          },
+          "cleanup_error_count": 0,
+          "native_evidence_count": 64,
+          "summary_artifact": {
+            "path": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp202-final-ingestion-window-laea1pzn/acceptance-A-automatic/summary.json",
+            "sha256": "de7dce35502213a4ac89eea03ddabdd31f4705a0a897126e923da6282927f988",
+            "bytes": 55496
+          }
+        }
+      },
+      {
+        "cell": "B-registered",
+        "exit_code": 1,
+        "summary": {
+          "experiment": "EXP-202",
+          "purpose": "acceptance",
+          "state": "INVALID",
+          "identity": {
+            "run_id": "5b0daf63-480f-47dd-837e-0e9f663323cd",
+            "nonce": "2d5e724d-ed30-4ba6-bf47-bf31bca77c07",
+            "arm": "B",
+            "mode": "registered",
+            "source_revision": "1bdc9286c17d69d73e5e41530e6179c72a723368",
+            "source_sha256": "28fbc772079f314239b23e7a2d48c27826708dc2002b5f0eb7803c6ddeb82e83",
+            "fixture_sha256": "646ef70eb14d9416fd5c10fa0f4e26c04dca96a59f50ef84cd31f967c9354ab2",
+            "contract_sha256": "6fc19e140a568ac9f6edb70b18f491aac00a70549a837c654901f3ae1193ab22",
+            "build_sha256": "75823601428bdedff7a451914b9af3ba835467b2e52851e891552084c9cb1801"
+          },
+          "native_launches": 1,
+          "backend_state": "NOT_RUN",
+          "started_at": 1789917756.233459,
+          "finished_at": 1789917810.9029078,
+          "failure": "RUM duration/phases do not match native metric conversion",
+          "original_failure": "",
+          "cleanup": {
+            "container_absent": true,
+            "process_absent": true,
+            "binding_restored": true,
+            "protected_unchanged": true,
+            "helpers_unchanged": true
+          },
+          "cleanup_error_count": 0,
+          "native_evidence_count": 64,
+          "summary_artifact": {
+            "path": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp202-final-ingestion-window-laea1pzn/acceptance-B-registered/summary.json",
+            "sha256": "5db7f72fd61d5e0db44189ef96ea754779b4899586d56914c6be0020f03f6fb4",
+            "bytes": 55576
+          }
+        }
       }
     ],
-    "native_launches": 2,
+    "native_launches": 3,
     "progress_path": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp202-final-ingestion-window-laea1pzn/acceptance-progress.json",
-    "passed_cells": 1
+    "passed_cells": 2,
+    "progress": {
+      "path": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp202-final-ingestion-window-laea1pzn/acceptance-progress.json",
+      "sha256": "0a8a71a31c6c32de9b48dadf41d1b7dcb7327a559ef8f2b2d24a499f3d197065"
+    }
   },
   "final_ingestion_window": {
     "status": "REVIEW AND62/13 CONTROLS PASS",
@@ -1405,5 +1506,130 @@
       },
       "passed_cells": 0
     }
-  ]
+  ],
+  "metric_rounding_correction": {
+    "status": "REVIEWED; TWO FRESH REGISTERED CELLS QUALIFIED",
+    "artifact_root": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp202-metric-rounding-correction-0jon2oh1",
+    "definition": {
+      "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp202-metric-rounding-correction-0jon2oh1/definition.json",
+      "sha256": "a92f6a990ccdc6dcdc2f6abd0ad33a7d1356789570a705db45ac7cfd86e6b73f"
+    },
+    "new_native_launches": 0,
+    "controls": {
+      "path": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp202-metric-rounding-correction-0jon2oh1/offline-results-final.json",
+      "sha256": "4dcb5b0ff0b56c6c83502d4c892e270c58b0af77cd8666a45d9acc47cd90eb0f"
+    },
+    "helpers": {
+      "path": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp202-metric-rounding-correction-0jon2oh1/matrix/helper-manifest.json",
+      "sha256": "f3c270ac2a9e62e6b690e6145d826c1f967b06013da0ada5161ede170c0e2035"
+    },
+    "plan": {
+      "path": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp202-metric-rounding-correction-0jon2oh1/matrix/plan.json",
+      "sha256": "a6e9e3f66c4294b964bb029992abc410aeffab2081def19da66da7f931cee002"
+    },
+    "amendment": {
+      "path": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp202-metric-rounding-correction-0jon2oh1/backend-interpretation.json",
+      "sha256": "10234860909d207e2e4f4c55bf844bd1eeb5223527c23b8e49c30d2b4f52a03e"
+    },
+    "review": {
+      "path": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp202-metric-rounding-correction-0jon2oh1/review.json",
+      "sha256": "024dae4aa2a4e4753a152fcb726c44950dcf996ae689ae2147880ca3a0a323c9"
+    }
+  },
+  "registered_continuation": {
+    "status": "TWO CELLS QUALIFIED; FOUR-CELL AUDIT AND INDEPENDENT REVIEW PASS",
+    "definition": {
+      "path": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp202-metric-rounding-correction-0jon2oh1/acceptance-definition.json",
+      "sha256": "841ba7a966fe20e3b644a128aa21194d7ce66ec123014938aae0dfce4931531f"
+    },
+    "progress_path": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp202-metric-rounding-correction-0jon2oh1/acceptance-progress.json",
+    "reused_automatic_cells": 2,
+    "new_native_launches": 2,
+    "cells": [
+      {
+        "cell": "B-registered",
+        "exit_code": 0,
+        "summary": {
+          "experiment": "EXP-202",
+          "purpose": "acceptance",
+          "state": "PASS",
+          "identity": {
+            "run_id": "528d2742-da54-40e8-863d-165907679919",
+            "nonce": "0995e8c8-f88e-4c72-b9aa-c366e1e5ee71",
+            "arm": "B",
+            "mode": "registered",
+            "source_revision": "1bdc9286c17d69d73e5e41530e6179c72a723368",
+            "source_sha256": "28fbc772079f314239b23e7a2d48c27826708dc2002b5f0eb7803c6ddeb82e83",
+            "fixture_sha256": "646ef70eb14d9416fd5c10fa0f4e26c04dca96a59f50ef84cd31f967c9354ab2",
+            "contract_sha256": "6fc19e140a568ac9f6edb70b18f491aac00a70549a837c654901f3ae1193ab22",
+            "build_sha256": "75823601428bdedff7a451914b9af3ba835467b2e52851e891552084c9cb1801"
+          },
+          "native_launches": 1,
+          "backend_state": "PASS",
+          "started_at": 1789919470.021704,
+          "finished_at": 1789919872.1857011,
+          "failure": "",
+          "original_failure": "",
+          "cleanup": {
+            "container_absent": true,
+            "process_absent": true,
+            "binding_restored": true,
+            "protected_unchanged": true,
+            "helpers_unchanged": true
+          },
+          "cleanup_error_count": 0,
+          "native_evidence_count": 64,
+          "summary_artifact": {
+            "path": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp202-metric-rounding-correction-0jon2oh1/acceptance-B-registered/summary.json",
+            "sha256": "835412fc3198bd73fcf5e06f5b57d1942eb35315bcb71bd4221591cbba3e80ec",
+            "bytes": 55756
+          }
+        }
+      },
+      {
+        "cell": "A-registered",
+        "exit_code": 0,
+        "summary": {
+          "experiment": "EXP-202",
+          "purpose": "acceptance",
+          "state": "BASELINE_E01_OBSERVATION",
+          "identity": {
+            "run_id": "8f23ea42-3ad5-4883-8b6e-1245c9d1725f",
+            "nonce": "38f118ae-1f3c-4bf2-940d-79953691aacd",
+            "arm": "A",
+            "mode": "registered",
+            "source_revision": "62f64d7b655bdc83f3036c4ad81090a270f6202b",
+            "source_sha256": "fce60b5d4f4e539ef3c114d2472a652383b708e0e3a08caebe92ae9ac9f3c4a7",
+            "fixture_sha256": "646ef70eb14d9416fd5c10fa0f4e26c04dca96a59f50ef84cd31f967c9354ab2",
+            "contract_sha256": "6fc19e140a568ac9f6edb70b18f491aac00a70549a837c654901f3ae1193ab22",
+            "build_sha256": "596296af915b3aad50b6229b1f8a16f0b173ac27f1f66c218dd67aff537a5c0d"
+          },
+          "native_launches": 1,
+          "backend_state": "COLLECTED; CLEANUP AND STRICT EVALUATION PENDING",
+          "started_at": 1789919899.9311,
+          "finished_at": 1789920308.3440661,
+          "failure": "",
+          "original_failure": "",
+          "cleanup": {
+            "container_absent": true,
+            "process_absent": true,
+            "binding_restored": true,
+            "protected_unchanged": true,
+            "helpers_unchanged": true
+          },
+          "cleanup_error_count": 0,
+          "native_evidence_count": 64,
+          "summary_artifact": {
+            "path": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp202-metric-rounding-correction-0jon2oh1/acceptance-A-registered/summary.json",
+            "sha256": "bbcb832dd5924ec783e574ccff2d410c507be5ca3be3033b38489b461a7ff596",
+            "bytes": 55818
+          }
+        }
+      }
+    ],
+    "progress": {
+      "path": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp202-metric-rounding-correction-0jon2oh1/acceptance-progress.json",
+      "sha256": "767f23368e27afc1cfc47d28fc68d1e9a9880903e9ecca835fb0548eba09928d"
+    }
+  }
 }

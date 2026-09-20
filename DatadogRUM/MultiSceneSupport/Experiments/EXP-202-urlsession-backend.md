@@ -240,3 +240,46 @@ archives and existing binaries pass reuse preflight. A fresh four-cell matrix is
 frozen before execution: B-automatic, A-automatic, B-registered, A-registered. First B
 also qualifies the complete path. Stop on any failure; independent artifact/source
 comparison follows all four cells before any gate closes.
+
+The automatic pair completed under that frozen definition: B passes and A records
+the predefined terminal-view observation. Both have strict12-row RUM and10-span
+session/service inventories, nine complete traces per search, exact owners/values,
+64 retained native receipts and all cleanup checks. The third B-registered cell
+stops in local evaluation: three Resource durations exceed the oracle by exactly1ns.
+All native evidence survives; A-registered was not launched.
+
+Source review finds the oracle incorrectly described SDK conversion as truncation.
+`SwiftExtensions.swift` applies nearest/ties-away rounding before integer conversion;
+RUM durations/phase offsets and Trace duration use that path in both frozen arms.
+A separately defined host-only correction reproduces it from the native IEEE bits,
+with exact equality and an explicit representable fixture range. The original
+registered failure stays invalid and lacks final backend evidence.70 Python methods
+pass, including ±1ns corruptions for all four native Resources and five client Trace
+durations, halfway/phase/range controls and unchanged automatic outputs.13 existing
+JavaScript cases are reused. An initial test-selector failure included the manual
+Resource sharing the same host; its69/70 result is retained, and only that selector
+changed before the70/70 run. After review, freeze reuse of the two automatic cells
+under original helper identities and define exactly two fresh registered cells;
+do not repeat accepted automatic launches or claim a four-cell gate before audit.
+
+
+The scoped rounding review and unchanged-build preflight passed. Exactly two fresh
+registered cells were defined and executed: B passes; A records the same predefined
+terminal-view observation as its automatic counterpart. Independent mixed-root audit
+reevaluates every cell under its original helper/oracle/amendment identity. Each has
+11 native URLSession tasks,5 Resources,1 error,1 action,3 unique views,6 client spans,
+12 final RUM rows and10 spans in both independent backend inventories. Every phase
+publishes within its fixed deadline; all64 native receipts per cell and cleanup
+postconditions pass. The earlier host preflight path mismatch was rejected before
+any native launch; loading each root's own host module corrected only that wrapper.
+
+[The compact qualification report](../Results/EXP-202-backend-qualification.json)
+records all four run/session identities, source/build hashes, exact durations of
+backend collection, independent review and durable local evidence. Its1260-file
+archive is byte-verified outside temporary storage; no compiled apps or local
+xcconfig are included. The original seven diagnostic stops and two failed acceptance
+launches remain invalid. Six acceptance launches yielded four qualified cells;
+accepted automatic tests were not repeated. S1:A01/T03/T08 close. S1:F06 remains
+open for the separately prepared hitch correction's upstream delivery and verified
+rebase, signed outgoing history before any authorized push, and preservation of
+EXP204's inherited warning limits. No SDK implementation changed in this phase.

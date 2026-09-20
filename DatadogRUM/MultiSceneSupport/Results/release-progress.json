@@ -361,32 +361,8 @@
       "shipping_rule": "Release each eligible narrow fix independently on then-current develop after its applicable candidate checks and S1:F06. Other general improvements do not block it. First selected candidate E01; E02-E05 remain separate qualification work.",
       "required": {
         "count": 16,
-        "closed": 12,
+        "closed": 15,
         "remaining": [
-          {
-            "id": "S1:A01",
-            "status": "OPEN",
-            "owner": "Harness implementer",
-            "dependencies": []
-          },
-          {
-            "id": "S1:T03",
-            "status": "OPEN",
-            "owner": "SDK implementer",
-            "dependencies": [
-              "S1:A01",
-              "S1:F07"
-            ]
-          },
-          {
-            "id": "S1:T08",
-            "status": "OPEN",
-            "owner": "SDK implementer",
-            "dependencies": [
-              "S1:A01",
-              "S1:F07"
-            ]
-          },
           {
             "id": "S1:F06",
             "status": "OPEN",

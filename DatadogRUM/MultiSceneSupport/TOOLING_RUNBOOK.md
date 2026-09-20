@@ -138,6 +138,24 @@ URL, parent, duration, method and status all match. Require the complete derived
 Resource key set; do not count an NSError row as a Resource span. The SDK network
 error category is `Network`, while its source is `network`.
 
+For registered duration checks, reconstruct native Date values from their exact
+IEEE Double bit patterns. Match the SDK's subtraction/multiplication then nearest
+integer rounding with ties away from zero, including phase offsets; Python int()
+truncation and Python round() tie behavior differ. Keep exact equality and ±1ns
+negative controls. Reject nonfinite/reversed/out-of-range fixture evidence explicitly
+instead of accepting a tolerance. A corrected diagnostic cannot replace missing
+backend acceptance; unchanged automatic artifacts may be reused only with their
+original hashes and reviewed source-level independence.
+
+When reusing accepted cells across a host-only correction, audit each with its own
+original definition, helper manifest, oracle and amendment. Bind new definition
+and progress hashes, exact ordered cell inventory and summary hashes; require the
+terminal completion state before auditing. Preserve baseline observation labels.
+Keep byte-verified synthetic receipts and helpers outside temporary storage, with a
+compact committed report linking archive/manifest/review hashes. An evidence archive
+retains historical paths; future execution still needs fresh environment discovery,
+configuration and run identities. Do not present an archive as a portable CI runner.
+
 Cleanup runs after attempted boot/install, including failures before successful
 installation. Preserve command returns/exceptions and verify container/process
 absence plus exact stable runtime/device binding. Retain raw inventories; only
