@@ -1,7 +1,7 @@
 ---
-last_updated: 2026-09-08
+last_updated: 2026-09-20
 sdk_version: 3.17.0
-verified_against_commit: ac1c0a102
+verified_against_commit: 1bdc9286c
 tracked_files:
   - DatadogTrace/Sources/Trace.swift
   - DatadogTrace/Sources/TraceConfiguration.swift
@@ -239,7 +239,7 @@ Set `urlSessionTracking` to connect Trace to the shared automatic `URLSession` n
 - **Injection strategy**: `traceControlInjection` — `.sampled` (default) only injects context on sampled first-party requests; `.all` injects context, including drop decisions, on every matching first-party request.
 - **Status-code redaction**: `redactedStatusCodes` (default `[404]`) replaces the `resource.name` tag with the status code string for matching responses. Pass an empty set to disable.
 - **Duration breakdown**: For DNS / SSL / TTFB timing, also call `URLSessionInstrumentation.enableDurationBreakdown(with: .init(delegateClass: YourURLSessionDelegate.self))` after `Trace.enable()`.
-- **Duration sanitation**: automatic URLSession spans clamp their finish time so it is never earlier than their start time before computing foreground/background tags or finishing the span.
+- **Duration sanitation**: automatic URLSession spans clamp their finish time so it is never earlier than their start time. The `foregroundDuration` tag is computed from time the application was not suspended (`applicationNotSuspendedDuration`); this is generally the same as foreground time on iOS, while on macOS it excludes periods when the Mac is sleeping. macOS spans set `isBackground` to `false` because background applications continue running.
 
 > Note: Automatic `URLSession` network instrumentation involves swizzling `URLSession` and `URLSessionTask` methods.
 
@@ -312,4 +312,4 @@ Returned when `Datadog.initialize()` was not called or `Trace.enable()` was not 
 - The default tracer's `sampleRate` decides which spans are kept; manual `keepTrace()` / `dropTrace()` overrides that decision for the whole trace, and should be called on the root span right after creation so that propagation carries the correct sampling priority.
 - For the OpenTelemetry tracer provider, `instrumentationName`, `instrumentationVersion`, `schemaUrl` and `attributes` parameters are accepted for API compatibility but ignored — configure tags via `Trace.Configuration.tags`.
 - Automatic `URLSession` network instrumentation relies on swizzling; if your app already swizzles `URLSession` itself, validate behavior in integration tests.
-- Automatic URLSession spans sanitize inconsistent task timing by using `max(startTime, endTime)` for finish time, foreground duration ranges, and background-state lookup.
+- Automatic URLSession spans sanitize inconsistent task timing with `max(startTime, endTime)` for finish time and duration range construction. Their `foregroundDuration` tag measures application-not-suspended time; on macOS `isBackground` is always `false`, while iOS/tvOS/watchOS/visionOS use the application state at the span boundaries.
