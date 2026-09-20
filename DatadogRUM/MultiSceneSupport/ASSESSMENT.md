@@ -41,7 +41,8 @@ E01 is not release-ready: numeric P01–P03, backend A01/T03/T08 and final F06 r
 open. [Performance qualification](Results/EXP-198-network-performance.json) has no
 accepted numeric result; absolute budgets remain unchanged.
 [Backend preparation](Results/EXP-202-urlsession-backend.json) has no native run
-and awaits the requested protected-config exception. Test-only duplicate classes
+and now has explicit user approval to use the local config. Credential-backed
+execution is queued after the performance window. Test-only duplicate classes
 are excluded from inspected shipping graphs; the networking QoS warning occurs
 without E01, but its [paired diagnostic](Results/EXP-204-network-qos.json) timed out
 and supplies no candidate-equivalence, harmlessness or sanitizer/performance claim.

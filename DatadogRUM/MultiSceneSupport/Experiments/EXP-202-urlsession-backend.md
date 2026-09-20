@@ -82,9 +82,10 @@ synthetic oracle controls and focused host failure controls pass. Final review
 finds no remaining blocker in that bounded host scope. Compiler warnings remain
 in the build logs; compilation is not native lifecycle or upload qualification.
 
-No native launch has occurred. The concrete credential-build patch is unapplied:
-Xcode would read the protected local config, so the historical include pattern
-cannot override the user's prohibition. Ask for that narrow exception after
-preparation; preserve the file and never expose resolved token values. The final
-host-only corrections require a new complete freeze before an authorized build.
+No native launch has occurred. On September20, the user explicitly authorized
+Datadog.local.xcconfig use for EXP-202 and other needed work. That supersedes the
+previous prohibition; the earlier automatic-review rejection remains historical
+evidence. Apply the reviewed credential-build patch after the performance window,
+freeze the complete helper/source identities anew and verify current backend
+access. Preserve the file and its index; never expose resolved token values.
 Real metrics/mixed-response prerequisites and all four backend cells remain open.

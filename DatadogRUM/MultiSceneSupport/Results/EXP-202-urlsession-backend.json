@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "experiment": "EXP-202",
-  "status": "OFFLINE PREPARATION QUALIFIED; CREDENTIAL BUILD BLOCKED",
+  "status": "OFFLINE PREPARATION QUALIFIED; CONFIG USE AUTHORIZED; NATIVE EXECUTION PENDING",
   "defined_at": 1789868896.779567,
   "gates": [
     "S1:A01",
@@ -681,7 +681,7 @@
       "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp202-host-runner-qj2jmikp/credential-build-proposal.patch",
       "sha256": "fbd5346890ffc9b0de209f7481d456b1775e94ed39d5ccecea8047263de19196"
     },
-    "credential_proposal_status": "UNAPPLIED; narrow user authorization question submitted asynchronously; no reply yet"
+    "credential_proposal_status": "USER AUTHORIZED; REVIEWED PATCH STILL UNAPPLIED; QUEUED AFTER PERFORMANCE WINDOW"
   },
   "attempts": [
     {
@@ -718,7 +718,7 @@
   "native_prerequisite_launches_consumed": 0,
   "acceptance_launches_consumed": 0,
   "unapplied_credential_proposal_review": {
-    "status": "CORRECTED OFFLINE; USER APPROVAL STILL PENDING; NOT APPLIED",
+    "status": "CORRECTED OFFLINE; USER AUTHORIZED; NOT YET APPLIED",
     "patch": {
       "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp202-host-runner-qj2jmikp/credential-build-proposal.patch",
       "sha256": "89c90cc6aea5a8bb6b4d7c215c61999799507cf1cd683e5cd558300f5e7f021c"
@@ -728,5 +728,14 @@
       "sha256": "a07ed0302193fe9a5aa0b8e2aaa890b7506c2961b2879fb9028e4a6a53067b83"
     },
     "corrections": "Strict nonsecret receipt; frozen externally supplied credential guard and explicit receipt revalidated at build entry. Seven offline controls pass. Default remains placeholder; no protected read/build/native launch."
+  },
+  "credential_use_authorization": {
+    "recorded_at": "2026-09-20T10:20:09.243921+00:00",
+    "source": "Explicit user message in current task",
+    "quote": "Btw you have approval for using `Datadog.local.xcconfig` for EXP-202 or other usages",
+    "scope": "Use local config for EXP-202 and other needed project work; preserve user-owned file and index. No secret logging, staging or committing.",
+    "supersedes": "Previous prohibition on direct or indirect config use/read; the earlier automatic-review rejection remains historical.",
+    "next_action": "After the EXP-198 performance window, apply the exact reviewed credential proposal, freeze helpers/source anew, verify live Datadog query access and execute the admitted native prerequisites/backend cells.",
+    "credit": "Authorization only; zero new native or backend acceptance."
   }
 }
