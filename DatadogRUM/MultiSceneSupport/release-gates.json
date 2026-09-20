@@ -508,13 +508,13 @@
         },
         "S1": {
           "scope": "E01 task and feature lifetime safety",
-          "status": "OPEN",
+          "status": "CLOSED",
           "dependencies": [
             "S1:C01"
           ],
           "decisive_test": "Success, failure and cancellation release task-owned preparation, buffered callbacks/payloads and interceptions at the required teardown boundary. Repeated completed task lifetimes and feature release leave no extra strong owners, leaks or retain cycles. Allocation churn and allocator byte deltas alone do not fail the release.",
           "environment": "Focused deterministic lifetime regressions and representative native automatic/registered URLSession cycles",
-          "evidence": "EXP-199 repairs the concrete terminal-ownership defect at1bdc9286 with red/green weak-owner controls, full Internal coverage and source-paired native automatic/registered checks. Audit success/error/cancellation/feature-release coverage against the narrowed object-lifetime requirement before closing it; do not require EXP198 allocator budgets. User acceptance-scope correction2026-09-20: only new SwiftUI semantic tracking and multi-scene changes require representative application-level performance comparison. Detailed network microbenchmarks and a replacement standalone network campaign are not release blockers; investigate networking performance only on concrete customer-visible evidence. Correctness, attribution and object lifetime remain required. NETWORK_BENCHMARK_FOLLOWUP.md",
+          "evidence": "EXP-199: production1bdc9286 unchanged. Accepted native automatic/registered success and red/green weak-terminal repair evidence, full Internal455/491 executions, plus reviewed failure/cancellation follow-up8/8 on actual17.5 with zero failures/skips/runtime warnings. Four new cases require exact terminal error/metrics, observed nonnil then released preparation/interception/task/handler/feature; four existing buffering/payload/repeated-resume controls remain green. Test-only commit652ce1697, local unsigned fallback after signing timeout. Source/pins/device/protected identities and process cleanup pass. No allocator or full-release claim. Results/EXP-199-terminal-task-ownership.json",
           "required": true
         },
         "S2": {
@@ -2434,7 +2434,7 @@
           ],
           "decisive_test": "Require applicable correctness, View/Action information, Resource attribution, object-lifetime/reentrancy, privacy, crash, API and exact source/artifact checks plus attributable review. Detailed network benchmarks and a replacement standalone network performance campaign are not prerequisites; investigate concrete visible regressions if found. Signed outgoing history is required before any separately authorized push. Separately land the qualified hitch assertion fix, then rebase only after verified upstream merge and confirm source/test identities.",
           "environment": "Exact candidate; one host; no concurrent measurement contamination",
-          "evidence": "Compatibility/platform/API/docs and optimized P04 reentrancy qualify exact candidate1bdc9286. Remaining E01 requirements: focused P03 lifetime coverage, backend A01/T03/T08 and F06 review. EXP204 preserves baseline QoS recurrence and a finalization timeout; one host-corrected diagnostic pair is prepared, no harmlessness claim. User2026-09-20 explicitly defers detailed/standalone network benchmarking; optional harness and original outcomes remain in NETWORK_BENCHMARK_FOLLOWUP.md.",
+          "evidence": "Candidate1bdc9286 has qualified compatibility/platform/API/docs, optimized P04 and object-lifetime P03. Remaining required gates: backend A01/T03/T08 and F06 review. EXP204 finalizes unchanged baseline/candidate1/1 each with the same QoS warning and15 shown frames; inherited recurrence is established, not root cause, harmlessness or sanitizer/performance clearance. Initial timeout retained. Detailed/standalone network benchmarking remains deferred under the user scope correction; NETWORK_BENCHMARK_FOLLOWUP.md preserves original outcomes.",
           "required": true
         },
         "S2": {

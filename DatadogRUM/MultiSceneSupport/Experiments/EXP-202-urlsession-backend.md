@@ -185,3 +185,35 @@ The late payload contains3 startup rows; native cleanup passes, Home/network nev
 run, and no release credit follows. Count/search diagnostics afterward return in
 0.3seconds. The four stopped prerequisite/smoke launches remain consumed; any new
 transport smoke needs a fresh recorded disposition under the unchanged limits.
+
+The separately defined recovery smoke reaches all native/local events, then stops
+on an oracle case mismatch: the SDK emits error category `Network`. Correcting
+that one comparison makes the captured local inventory pass; its stopped run has
+no final backend acceptance. The next defined smoke uses the reviewed correction,
+passes local assertions and collects12 final RUM rows, then stops when final APM
+count remains5 through its frozen polling boundary. Cleanup passes in both cases.
+These fifth and sixth launches remain diagnostic and consumed.
+
+Later queries return the same10 span identities through independent session and
+service searches, with complete detail for nine traces. All six client exports
+match the fixed identity/owner/value projection; the existing resource-name
+normalization exception remains unchanged. The four Resource-derived spans carry exact Resource keys and
+owners but lack the client mapper probe attribute. Final RUM values and ownership
+match; backend view document versions differ from local versions. The new host-only
+amendment keeps positive-integer versions and reports both, preserves exact terminal
+values, and requires absent-or-current probe attributes only for exact derived
+Resource matches. The NSError row is not a Resource span. Missing/extra rows,
+foreign owners, client run tags and full trace membership stay decisive.
+
+The correction was defined before implementation. It preserves115second startup/
+RUM collection,125second host and120second native boundaries. Only final APM
+collection after local assertions receives a new300second bound,310seconds at the
+host, including polling/pages/details. Old late evidence remains invalid. Both
+native binaries and the embedded contract remain unchanged; a separate amendment
+and helper manifest bind the host changes. Actual-payload and transport controls
+pass56 Python methods and12 JavaScript cases. One test-double command-recognition
+failure was corrected and retained; no host behavior changed for it. Independent
+source review passes, with four request/ingest mismatch controls added as hardening.
+One complete-path smoke was separately defined and is running with the unchanged
+binaries. Only its complete success admits the fixed four-cell acceptance matrix.
+No gate closes at this checkpoint.

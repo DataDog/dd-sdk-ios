@@ -35,11 +35,16 @@ does not compare candidate behavior or clear sanitizer/performance safety. No
 retry or rebuild is admitted. Source/products remain unchanged; all three cleanup
 checkpoints and protected-state checks pass. Independent final audit agrees.
 
-A separately defined follow-up is now prepared after EXP-205 established a host
-finalization correction: add `-collect-test-diagnostics never` in both arms. Reuse
-only byte-identical source/test products, retain console/runtime warnings and the
-unchanged selector/assertions/sanitizer settings, and require finalized inventories.
-No build or execution has occurred. The new pair permits two invocations, at most
-600seconds each and1200seconds overall with result/cleanup reserve; stop on first
-failure. Verbose diagnostic archives are omitted. The original timeout remains
-inconclusive, and this preparation supplies no warning or release clearance.
+A separately defined follow-up applies EXP-205's proven host correction,
+`-collect-test-diagnostics never`, to both unchanged arms. Source/test products,
+selector, assertions and sanitizer configuration are byte-identical. Both
+invocations now finalize: one test/one execution per arm passes, and all four
+result readers succeed. The pair takes17.46seconds; all five cleanup checkpoints
+and protected/source/product checks pass. Verbose diagnostic archives are omitted.
+
+Both arms reproduce the QoS warning with identical15 shown stack frames: TSan
+dispatch wrappers, CFNetwork, libdispatch and pthread. No shown frame belongs to
+the SDK, but the displayed stack is incomplete. This resolves the paired diagnostic
+as inherited recurrence; it establishes neither root cause nor harmlessness,
+sanitizer safety or numerical performance. The original600second timeout remains
+inconclusive as an attempt. Final S1:F06 still requires its other gates and review.

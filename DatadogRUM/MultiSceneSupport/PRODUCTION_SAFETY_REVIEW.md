@@ -27,17 +27,23 @@ request mutation and strong terminal-preparation retention are repaired in
 1bdc9286; [EXP-197](Results/EXP-197-urlsession-extraction.json) and
 [EXP-199](Results/EXP-199-terminal-task-ownership.json) preserve the approval, red
 controls, repair review and exact qualification. The rejected associated-marker
-approach remains recorded. Focused task/feature lifetime coverage remains to be audited; numeric allocator
-budgets no longer block E01 under the user scope correction.
+approach remains recorded. S1:P03 now closes using accepted success/reentry evidence
+and a reviewed8/8 native error/cancellation follow-up. Preparation, interception,
+task, handler and feature release pass in both modes, with no runtime warnings.
+Test-only commit652ce169 leaves production unchanged; numeric allocator budgets
+remain outside release prerequisites under the user scope correction.
 
 S1 platform/API/docs and full integration checks are qualified by
 [EXP-201](Results/EXP-201-final-compatibility.json); its inherited delta-hitch
 assertion correction changes only a test. [EXP-203](Results/EXP-203-optimized-reentrancy.json)
 qualifies optimized reentry and scopes duplicate classes to the test dependency
 graph. Compiler warnings remain visible, with no new production warning site
-identified. [EXP-204](Results/EXP-204-network-qos.json) establishes baseline console
-recurrence of the networking QoS warning; timeout prevents a completed pair, so
-no candidate equivalence, harmlessness or sanitizer/performance clearance follows.
+identified. [EXP-204](Results/EXP-204-network-qos.json) now has a finalized unchanged-
+binary pair after the documented diagnostic-archive flag correction. Each arm
+passes one test and repeats the warning with the same15 shown frames, none an SDK
+frame. The stack remains incomplete: inherited recurrence is established, but
+root cause, harmlessness and sanitizer/performance clearance are not. The initial
+600second finalization timeout remains recorded.
 
 The separate E02 review confirms an existing-customer attribute-isolation defect:
 an inactive view retained by a Resource accepts a later same-key start/stop.
@@ -99,19 +105,17 @@ unfinished continuation; no numeric verdict or new performance defect is inferre
 Object lifetime, correctness and attribution remain required. Only included new
 semantic SwiftUI/multi-scene behavior requires representative application-level
 frame rate, hitches/hangs, CPU and memory comparison under the revised release scope.
-EXP-202's reviewed credential mapping correction qualifies both Release builds.
-Both original native prerequisites failed before startup readiness, with verified
-cleanup. The host repair passes13 offline controls and independent source/reuse
-reviews, and the second native run preserves its actual failure and22KB summary.
-That receipt proves one window with an inactive application inside
-sceneDidBecomeActive, before SDK initialization. The one-file fixture lifecycle
-correction passes source review and both builds, then reaches active-app startup
-readiness and actual ingestion. Its corrective launch stops on the backend deadline
-before release; retained late rows expose a server-session classification gap in
-the oracle. The correction passes44 focused controls and source review; the next
-diagnostic smoke stops on a215second MCP count request. Cleanup passes; fast
-post-run queries cannot satisfy the missed boundary. All four stopped launches
-remain recorded; no SDK defect or native network/backend acceptance is established.
+EXP-202's credential, activation, receipt preservation and server-session fixes
+qualify the two existing Release builds and startup handling within their recorded
+limits. Six stopped diagnostics remain consumed. The latest run reaches complete
+native/local semantics and12 final RUM rows, then stops at the original APM bound.
+Later exact queries account for six client and four RUM-derived spans. The oracle
+must preserve positive backend version validation without equating backend and
+local view counters, and derive server-span ownership from exact Resource keys
+rather than requiring a client mapper attribute. These host-only corrections and
+separate post-local-assertion APM bounds pass56 Python/12 connector controls and
+pass independent review after request/ingest phase binding was added. Past failed boundaries receive no acceptance credit;
+no SDK defect has been established by these format/transport findings.
 Historical S1 narrative is preserved in the
 [documentation checkpoint](Results/EXP-204-documentation-consolidation.json).
 

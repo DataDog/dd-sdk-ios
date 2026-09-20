@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "experiment": "EXP-204",
-  "status": "INCONCLUSIVE \u2014 baseline warning observed; paired result unavailable",
+  "status": "BOUNDED PAIRED DIAGNOSTIC COMPLETE; INHERITED WARNING RETAINED",
   "defined_at": "2026-09-20T03:51:05.811554+00:00",
   "gates": [
     "S1:F06"
@@ -211,7 +211,7 @@
     "verdict": "Keep INCONCLUSIVE; baseline occurrence established; no candidate execution or gate promotion."
   },
   "finalization_followup": {
-    "status": "PREPARED; ZERO EXECUTIONS; QUEUED AFTER CURRENT HOST WORK",
+    "status": "PAIRED OCCURRENCE ESTABLISHED; NOT SAFETY CLEARANCE",
     "root": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp204-finalization-followup-njik3qql",
     "definition": {
       "path": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp204-finalization-followup-njik3qql/definition.json",
@@ -227,6 +227,57 @@
     },
     "scope": "Apply EXP205 proven -collect-test-diagnostics never host correction to unchanged existing-binary pair. No rebuild, SDK/test/sanitizer change or automatic retry.",
     "limits": "Two invocations,600seconds each maximum,1200seconds total including result/cleanup reserve; stop on first failure.",
-    "evidence_limit": "Verbose diagnostic archives omitted; no full sanitizer, numeric performance or harmlessness claim."
+    "evidence_limit": "Verbose diagnostic archives omitted; no full sanitizer, numeric performance or harmlessness claim.",
+    "outcome": {
+      "path": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp204-finalization-followup-njik3qql/outcome.json",
+      "sha256": "658a22044def7660c3668ae9cc8be844276bba370f164f8c08f747a286d9f9f6"
+    },
+    "runs": {
+      "baseline": {
+        "tests": 1,
+        "executions": 1,
+        "passed": 1,
+        "failures": 0,
+        "skips": 0,
+        "runtime_warnings": [
+          {
+            "issueType": "Runtime Warning",
+            "message": "Thread running at User-initiated quality-of-service class waiting on a lower QoS thread running at Default quality-of-service class. Investigate ways to avoid priority inversions"
+          }
+        ],
+        "duration_seconds": 0.039929986000061035,
+        "log_sha256": "5aca1715754757e5e7e23aa51dab0645ba511e2e8d2148ff5963dda9a5279e8f",
+        "summary_sha256": "1bdec6fa4dea2dac201ad296d0f8a826243a7053927c22de7e4efc82a3b21462",
+        "details_sha256": "b14ad7fc6b18e1f81b886dc1a99aa2e818f43d300aaa334a67dc1e558c419084",
+        "activities_sha256": "70f09db463e184028caf0ac705b2398557a2de6cbab705945bad04c4971e09f4",
+        "source_unchanged": true,
+        "products_unchanged": true
+      },
+      "candidate": {
+        "tests": 1,
+        "executions": 1,
+        "passed": 1,
+        "failures": 0,
+        "skips": 0,
+        "runtime_warnings": [
+          {
+            "issueType": "Runtime Warning",
+            "message": "Thread running at User-initiated quality-of-service class waiting on a lower QoS thread running at Default quality-of-service class. Investigate ways to avoid priority inversions"
+          }
+        ],
+        "duration_seconds": 0.04214906692504883,
+        "log_sha256": "ae30df459cadfc99c7349d6c522b2587e79dc63b49f7c32df7f91457e5579dc7",
+        "summary_sha256": "56efa67f1f546c4fb8b687704e020ef64946688c352dab175c518a4fe86eb661",
+        "details_sha256": "4608db2265dbcb90bb5f426716395c891751afda655a5c0f0498af2b8985900f",
+        "activities_sha256": "36106ff4526396a0a1c054464268eb96882641c100f4a70a4133a068f4170543",
+        "source_unchanged": true,
+        "products_unchanged": true
+      }
+    },
+    "reported_frames_equal": true,
+    "frame_count": 15,
+    "classification": "The same warning and shown stack occur in unchanged baseline and E01. No E01-specific differential is observed in this bounded selector. The reported stack is incomplete and has no shown SDK frame. This does not prove harmlessness, absence of other regressions, sanitizer cleanliness or performance equivalence.",
+    "cleanup": "Five checkpoints PASS; original device/protected state and exact source/products retained.",
+    "next_action": "Retain the inherited warning and evidence limits in S1:F06 review. No extra diagnostic campaign is admitted absent concrete differential evidence."
   }
 }

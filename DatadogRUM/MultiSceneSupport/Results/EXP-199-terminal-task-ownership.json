@@ -458,7 +458,7 @@
   "result": {
     "ownership": "PASS on unchanged-source red/green and four native cells",
     "functional": "Internal455 tests/491 executions plus5 native state repetitions; Core815+4OS-skips, RUM901/937executions, Trace141, zero failures/runtime warnings",
-    "remaining": "Ordinary/legacy17.5 requalification and EXP-200 compatibility pass. EXP-201 platform/public-client/API/doc checks pass, with integration diagnosis still open. Numeric performance/retention, backend acceptance and final release review remain open.",
+    "remaining": "Backend A01/T03/T08 and final S1:F06 remain. Focused object-lifetime P03 is qualified; detailed network benchmarking is optional under the user scope correction.",
     "signature": "Local candidate1bdc9286 unsigned after failed agent communication, explicitly user-authorized. No push."
   },
   "design_review": {
@@ -2041,5 +2041,41 @@
     "candidate_revision": "1bdc9286c17d69d73e5e41530e6179c72a723368",
     "paired_cells": 6,
     "baseline_reused": true
+  },
+  "terminal_outcome_followup": {
+    "status": "PASS; S1:P03 QUALIFIED",
+    "definition": {
+      "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp199-terminal-outcome-followup-f3uthk10/definition.json",
+      "sha256": "ea9b867d41e77fb3b507d2ecfd7ff347cc98781f84478fc9b5a9116e7f213abf"
+    },
+    "gate": "S1:P03",
+    "gap": "Existing native error/cancellation tests check delivery, and success/native terminal tests check ownership. Add combined native error/cancellation final ownership assertions only.",
+    "scope": "Four native failure/cancellation lifetime tests; production unchanged.",
+    "next_action": "Backend A01/T03/T08 and final S1:F06 remain.",
+    "review": {
+      "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp199-terminal-outcome-followup-f3uthk10/review.json",
+      "sha256": "4ae1877a006f219af5e913285d65ae2088d100b8c2e22913d1850e1c640b343e"
+    },
+    "result": {
+      "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp199-terminal-outcome-followup-f3uthk10/summary.json",
+      "sha256": "846c789f87ce51f54cd5bf73f3d4e20f7b1a06407de26fe10ea1120d9ad97be1"
+    },
+    "tests": 8,
+    "executions": 8,
+    "failures": 0,
+    "skips": 0,
+    "runtime_warnings": 0,
+    "source_unchanged": true,
+    "protected_unchanged": true,
+    "test_source_sha256": "235c957d68ebe84de71f251373723e76b474da21d15fe3c8a65cc38a202a62d5",
+    "test_commit": "652ce169773b0be5b6767179eca8ab5f4cf25f8a",
+    "signature": "N",
+    "production_unchanged": true,
+    "closure_basis": {
+      "success": "Accepted EXP-199 paired native automatic/registered weak task/preparation/feature release and Internal455 tests.",
+      "failure_cancellation": "New four native selectors cover both modes, exact errors/metrics, zero cancelled transport, preparation/interception/task/handler/feature release. Four existing payload/early-completion/completed-resume/weak-terminal controls pass alongside them.",
+      "payload_continuation": "Accepted preparation buffering and payload/error destruction reentry plus optimized EXP-203 controls.",
+      "limits": "Focused object-lifetime correctness only; no new numeric budget or complete release claim."
+    }
   }
 }

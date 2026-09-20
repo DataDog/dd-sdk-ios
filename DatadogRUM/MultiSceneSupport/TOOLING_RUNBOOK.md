@@ -111,12 +111,25 @@ need every client check. Late data cannot satisfy an earlier release boundary.
 Retain raw MCP payloads and exact decimal/128-bit identities. Reject explicit
 truncation or truncation messages for aggregate, search and trace detail results,
 even when the returned count matches. Absence of the optional trace-detail flag
-remains distinguishable from a returned false. Apply one115second collection
-bound across polling, pages and details. Lower-bound ingestion counts never
+remains distinguishable from a returned false. Startup and final RUM collection
+retain115seconds and125second host waits; native readiness remains120seconds.
+The separately defined final-span phase runs only after local assertions and allows
+300seconds for polling/pages/details,310seconds at the host. Each response binds
+its phase and own deadline; late raw bytes survive without successful publication.
+The span lower bound is10: six client exports and four traced Resource-derived
+spans. Lower-bound ingestion counts never
 replace the mandatory strict missing/extra/duplicate/owner oracle. A single MCP
 call can itself exceed the boundary: retain its late bytes and timing, allow native
 cleanup to finish, and diagnose transport outside a live run. A later fast query
 does not retroactively satisfy release readiness or justify an automatic retry.
+
+Backend view document versions remain positive exact integers but may differ from
+local mapper versions; report both and compare every other projected terminal field.
+Client spans require the current mapper run tag. RUM-derived spans may lack it only
+when origin, exact Resource trace/span key, unique service, application/session/view,
+URL, parent, duration, method and status all match. Require the complete derived
+Resource key set; do not count an NSError row as a Resource span. The SDK network
+error category is `Network`, while its source is `network`.
 
 Cleanup runs after attempted boot/install, including failures before successful
 installation. Preserve command returns/exceptions and verify container/process
@@ -164,6 +177,17 @@ replace a finalized result inventory. If Xcode exceeds the declared bound after
 the test returns, retain any observed warning separately, record the reader
 failure, clean up, and stop before the next arm. EXP-204 demonstrates this limit;
 no automatic retry, hidden rebuild or diagnostic suppression is permitted.
+A separately defined `-collect-test-diagnostics never` pair may reuse unchanged
+products after source/configuration checks. Preserve console/runtime warnings and
+finalized test inventories; omitted verbose archives do not clear the warnings.
+EXP-204 finalizes both arms with identical displayed stacks after this correction.
+
+For native terminal lifetime checks, first witness a live preparation/interception,
+then require release after delivery and removal of test-owned handlers. Inspect
+interceptions on their owning queue, invalidate/drain the session and leave the
+autorelease scope before requiring weak task release. Cancellation during mutation
+must preserve its error and admit no transport; feature teardown must release its
+own witnesses. EXP-199 adds only the missing failure/cancellation combinations.
 
 A test receipt must bind exact source hashes before and after its actual run.
 A mixed handoff of edited validator code and an older passing receipt receives no

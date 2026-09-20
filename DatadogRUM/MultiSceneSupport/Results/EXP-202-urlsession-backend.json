@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "experiment": "EXP-202",
-  "status": "DIAGNOSTIC SMOKE STOPPED: MCP REQUEST EXCEEDED FIXED BACKEND BOUND",
+  "status": "FINAL-SEMANTICS REVIEW AND56/12 CONTROLS PASS; ONE SMOKE DEFINED",
   "defined_at": 1789868896.779567,
   "gates": [
     "S1:A01",
@@ -1151,7 +1151,7 @@
       "Existing startup oracle expects only client view/vital and needs explicit validation/classification of the server-session row without hiding raw inventory or relaxing client counts.",
       "Aggregate polling plus tool transport/projection exceeded the115second collection bound; preserve timing and review reducing redundant shell round trips before any bounded new run."
     ],
-    "native_launches_total": 4,
+    "native_launches_total": 6,
     "acceptance_launches": 0,
     "proposal": {
       "path": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp202-backend-interpretation-proposal-33xro62v/proposal.json",
@@ -1181,7 +1181,7 @@
       "path": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp202-backend-interpretation-x3aezn9l/reuse-provenance.json",
       "sha256": "aa133d10e98600e3d9d0e6b230207e01c86d64b457a56ee5ce3c9ef99cd5578d"
     },
-    "next_action": "One predefined environmental-recovery diagnostic smoke after EXP198 host work finishes, unchanged helpers and fixed115/125/120second limits. No automatic retry or gate credit.",
+    "next_action": "Qualify phase-specific final backend interpretation against captured data and negative controls; exact startup limits remain. No new native run until review.",
     "review_metadata_resolution": {
       "path": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp202-backend-interpretation-x3aezn9l/review-metadata-resolution.json",
       "sha256": "46aa148f38eca5f384871adfe09c15ca349b2106480236eab09ce36fe8aec81b"
@@ -1202,6 +1202,63 @@
       "path": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp202-backend-interpretation-x3aezn9l/post-smoke-inventory-diagnostic.json",
       "sha256": "758db366179e74dc69afd4018ee89fdab83f2e1810ae37f1b2c8ba7a1b434e58",
       "status": "PASS on actual3-row inventory; diagnostic only, after missed native release boundary"
+    },
+    "recovery_smoke_outcome": {
+      "path": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp202-backend-interpretation-x3aezn9l/recovery-smoke-outcome.json",
+      "sha256": "d9620a1da6097abfa2a58a38af67f8267a8e2590ff49d862273c9ebdca3f70a9"
     }
-  }
+  },
+  "error_category_correction": {
+    "root": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp202-error-category-correction-nc_rjr7l",
+    "definition_sha256": "3de770829d45c5c3c6f05c95068369b2d9e23fc73555dd3b249d20159c722996",
+    "offline_controls": {
+      "python_tests": 40,
+      "unchanged_connector_cases_reused": 8,
+      "result_sha256": "75ddad30be651ee4b407f4126c19f94aa55d3fc4cbc398f968bd3bbc28ee3b50"
+    },
+    "smoke": {
+      "path": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp202-error-category-correction-nc_rjr7l/smoke-B-automatic/summary.json",
+      "sha256": "8ff06d667df49073ad488bbe0986307394e3492c3445741ea2c42781c2c9aac0",
+      "status": "STOPPED: final APM count5 before bound; startup/local/RUM collection complete, all cleanup pass"
+    },
+    "native_launches": 1,
+    "acceptance_launches": 0
+  },
+  "final_semantics_correction": {
+    "status": "REVIEW AND56 PYTHON/12 JAVASCRIPT CASES PASS; ONE DIAGNOSTIC DEFINED",
+    "definition": {
+      "path": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp202-final-semantics-correction-2m5i1h4v/definition.json",
+      "sha256": "601598178127fa6d88240e3e0157f2da52e08386442b2a6f7caf1bc929f1b7fd"
+    },
+    "diagnostic": {
+      "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp202-missing-span-diagnostic-qs5bxz14/ownership-diagnostic.json",
+      "sha256": "8654c80847ded016d9d5fea923bae2426ae32ab1c73ecdc9f1fcbd721791eb91"
+    },
+    "native_launches": 0,
+    "offline_controls": {
+      "path": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp202-final-semantics-correction-2m5i1h4v/offline-results.json",
+      "sha256": "4324c88101eef5fdfb8d5d17574aba31b140059578b4155c3fa9a53dc6bdb01c"
+    },
+    "reuse_preflight": {
+      "path": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp202-final-semantics-correction-2m5i1h4v/reuse-preflight.json",
+      "sha256": "ca8a0e3341d091e4836f3c4644e96e5cd2acedfc6b21666b2bf74b8450f515ef"
+    },
+    "helper_manifest": {
+      "path": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp202-final-semantics-correction-2m5i1h4v/matrix/helper-manifest.json",
+      "sha256": "eed4f844326ded5c409fb817e845ea3ede42bb30aedbc76277787affa13415cd"
+    },
+    "plan": {
+      "path": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp202-final-semantics-correction-2m5i1h4v/matrix/plan.json",
+      "sha256": "1de7f29b4f60d305ca28b89b79550f655e8ece711d300342af6d397c60872f58"
+    },
+    "review": {
+      "path": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp202-final-semantics-correction-2m5i1h4v/review.json",
+      "sha256": "008c9f70c208875fef1c1db9a5e3a5a229f2a022a17acd731e032564adc535f0"
+    },
+    "smoke_definition": {
+      "path": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp202-final-semantics-correction-2m5i1h4v/smoke-definition.json",
+      "sha256": "309d62374c294aac9d2eeaf36de8f683d80a247c90525555d0777a40741062d5"
+    }
+  },
+  "stopped_native_launches_before_final_semantics_correction": 6
 }

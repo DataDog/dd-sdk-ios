@@ -37,8 +37,10 @@ surface, feature documentation and full integration coverage qualify S1:F02/F03.
 [final matrix](Results/EXP-201-final-compatibility.json) retain exact inventories,
 the corrected inherited hitch assertion and diagnostic limits.
 
-E01 is not release-ready: the focused object-lifetime audit, backend A01/T03/T08
-and final F06 remain open. The user removed detailed network performance and any
+E01 has12 of16 required gates qualified. The focused object-lifetime audit closes
+S1:P03: native success/error/cancellation and feature teardown release their weak
+witnesses in automatic and registered modes; the8-test follow-up passes with no
+runtime warnings. Backend A01/T03/T08 and final F06 remain open. The user removed detailed network performance and any
 replacement standalone network campaign from release prerequisites. The
 [optional benchmark](NETWORK_BENCHMARK_FOLLOWUP.md) preserves22 valid cells, its
 prelaunch host failure and unfinished continuation without a numeric verdict.
@@ -47,19 +49,23 @@ hitches/hangs, CPU and memory impact of included semantic SwiftUI/multi-scene
 changes; source exclusion can qualify non-applicability. Correctness and ownership
 requirements remain unchanged.
 [Backend preparation](Results/EXP-202-urlsession-backend.json) has two qualified
-credential-backed Release builds. Both original native prerequisites failed
-before startup readiness. After the reviewed host evidence repair, the registered
-receipt proves one window with an inactive UIApplication in sceneDidBecomeActive,
-before SDK initialization. Cleanup passes. The reviewed one-file activation correction reaches active-app
-startup readiness and actual Datadog ingestion, but its corrective run times out
-before release. The server-session classification correction passes44 focused
-controls and source review. Its diagnostic smoke then stops on a215second MCP
-request, beyond the fixed115second bound; cleanup passes. Subsequent count/search
-queries take0.3seconds, but cannot rescue the earlier boundary. All four stopped
-launches remain separate; no network scenario or backend acceptance is inferred. Test-only duplicate classes
-are excluded from inspected shipping graphs; the networking QoS warning occurs
-without E01, but its [paired diagnostic](Results/EXP-204-network-qos.json) timed out
-and supplies no candidate-equivalence, harmlessness or sanitizer/performance claim.
+credential-backed Release builds and six stopped diagnostic launches, all retained.
+The latest run passes native/local assertions and collects12 final RUM rows, then
+stops at its original final-APM ingestion bound. Later diagnostic queries find all
+six client spans and four RUM-derived spans with exact owners and values; they do
+not rescue the stopped run. Actual payloads expose host assumptions about the
+`Network` category, backend view document versions and absent derived-span probe
+attributes. A host-only correction passes56 Python methods and12 connector cases;
+independent review passes with phase-provenance hardening. One defined complete-path
+diagnostic smoke is running. No SDK defect or backend
+acceptance is inferred from these diagnostics.
+
+Test-only duplicate classes are excluded from inspected shipping graphs. The
+[QoS comparison](Results/EXP-204-network-qos.json) now finalizes both unchanged
+arms: one test each passes and reproduces the same warning and15 shown frames.
+The displayed TSan/CFNetwork/libdispatch/pthread stack has no SDK frame and remains
+incomplete. This establishes recurrence without E01, not harmlessness, root cause
+or sanitizer/performance clearance. The original600second timeout is retained.
 Controlled Datadog app evaluation is authorized; configuration preparation and
 query access alone do not establish a run.
 
