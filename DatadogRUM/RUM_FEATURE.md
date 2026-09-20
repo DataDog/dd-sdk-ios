@@ -1,7 +1,7 @@
 ---
-last_updated: 2026-09-08
+last_updated: 2026-09-20
 sdk_version: 3.17.0
-verified_against_commit: ac1c0a102
+verified_against_commit: 62f64d7b6
 tracked_files:
   - DatadogRUM/Sources/RUM.swift
   - DatadogRUM/Sources/RUMConfiguration.swift
@@ -336,6 +336,7 @@ When `Datadog.Configuration.remoteConfiguration` is set, Core fetches and caches
   - `WebViewTracking.enable(webView:hosts:)` called on the native side
   - Web page instrumented with Datadog Browser SDK
   - See `DatadogWebViewTracking/Sources/WebViewTracking.swift`
+  - Native-view correlation retains the active view and starts its existing expiry window when the view becomes inactive. The cache remains bounded.
 
 ## Additional Context
 
