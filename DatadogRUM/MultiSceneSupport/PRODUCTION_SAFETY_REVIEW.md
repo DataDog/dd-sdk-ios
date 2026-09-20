@@ -61,8 +61,17 @@ with the same2s limit and actual disappearance. The fixture boundary is material
 no SDK retaining path or SDK-on lifetime pass is established. The restoration
 cache remains a separate view owner. Signed unit commit `ef9d9732` and durable
 artifacts preserve every failure, correction and diagnostic. Use async observation
-and a source-aware restoration-owner oracle next; no production repair or P03
+and a source-aware restoration-owner oracle when the S2 lane resumes; no production repair or P03
 closure is inferred.
+
+The [S1 delivery plan](S1_DELIVERY_PLAN.md) separates repair qualification from
+publication and merge. H00/E01 now have signed local delivery trees identical to
+the qualified sources; this adds no runtime or release-gate pass. E03 is explicitly
+prioritized in [EXP-214](Results/EXP-214-resource-action-design.json) before further
+S2 expansion. Its admission review must resolve existing manual current-key behavior
+and post-completion error tails without silently weakening the frozen controls or
+introducing unbounded history. DL01 will be extracted independently from the exact
+two-file repair; the combined S2 branch is not its PR.
 
 The independent S1 E01 findings are separate from historical D01–D12. Repeated
 request mutation and strong terminal-preparation retention are repaired in

@@ -1,0 +1,65 @@
+{
+  "schema_version": 1,
+  "experiment": "EXP-214",
+  "defined_at": "2026-09-20T20:53:18.654983+00:00",
+  "status": "AWAITING_EXPLICIT_MANUAL_COMPLETION_CONTRACT_CHOICE",
+  "gate": "S1:E03",
+  "delivery_steps": [
+    "E03-A",
+    "E03-B"
+  ],
+  "owner": "SDK implementer with one independent source/design reviewer",
+  "baseline": "62f64d7b655bdc83f3036c4ad81090a270f6202b",
+  "source_worktree": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/resource-completion-ownership",
+  "artifact_root": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp214-e03-admission-025grt82",
+  "trigger": "User prioritizes a compatible E03 repair checkpoint before further S2/S3 expansion; EXP213 is safely committed.",
+  "hypothesis": "An internal ownership mechanism can prevent foreign action mutation while preserving supported same-view completion semantics without public handles, wire changes or unbounded completed-key retention.",
+  "production_edit_allowlist": [],
+  "runtime_admission": null,
+  "frozen_exp206_tests": [
+    "testGivenRetainedResource_whenItSucceeds_itDoesNotCountInAnotherViewsAction",
+    "testGivenRetainedResource_whenItFails_itDoesNotFrustrateAnotherViewsAction",
+    "testGivenStoppedSessionResource_whenItSucceeds_itDoesNotCountInNewSessionAction",
+    "testGivenStoppedSessionResource_whenItFails_itDoesNotFrustrateNewSessionAction",
+    "testGivenForeignResourceCompletion_whenActionExpires_itPreservesClockDrivenExpiration",
+    "testGivenForeignResourceMetrics_whenActionExpires_itPreservesClockDrivenExpiration",
+    "testGivenSameViewResource_whenItSucceeds_itCountsInCurrentAction",
+    "testGivenSameViewResource_whenItFails_itCountsAndFrustratesCurrentAction",
+    "testGivenSameViewResponseAndError_whenResourceCompletes_itPreservesActionErrorSignal"
+  ],
+  "frozen_count": 9,
+  "reproducer_patch_sha256": "86ca8f711e1abb0d8f0eeb53d2a757ca96cc21a6a606794f5d13005a5bfca435",
+  "preserved_oracles": {
+    "same_view_response_error": "one Resource, zero standalone Resource error, action resource/error1/1 and platform error frustration",
+    "discrete_expiry_seconds": 0.1,
+    "tests_must_remain_unchanged": true
+  },
+  "decisive_admission": [
+    "Separate existing current-key manual semantics from unsupported generation inference; no new public handle assumed.",
+    "Resolve same-view success/error across action transitions, interleaved completions, legal key reuse and unknown/repeated terminals explicitly.",
+    "Resolve ownership on the per-core RUM queue; preserve Resource/session emission and expiration before action mutation.",
+    "Prove bounded retained state and no owner/task/core retain chain.",
+    "Freeze exact implementation paths and new actual-handler/manual/generation/lifetime selectors and counts before implementation/runtime."
+  ],
+  "engineering_checkpoint": "2026-09-20T21:53:18.654983+00:00",
+  "stop_rule": "One explicit admission or exact unresolved contract decision at the checkpoint. No silent smaller repair, arbitrary history TTL, frozen-test weakening or S2 substitution. Continue independent S1 preparation if maintainer input is required.",
+  "preliminary_review": {
+    "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp214-e03-admission-025grt82/preliminary-independent-review.json",
+    "sha256": "8bdb9d21eaa63cd6a5baa32652ae372c01e97ecaf4eaba2829da7982bad0c473",
+    "status": "Prior source review input; timestamp and current-key compatibility analysis under correction. Not design admission."
+  },
+  "new_builds_or_tests": 0,
+  "gate_closures": [],
+  "attempts": [],
+  "corrected_review": {
+    "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp214-e03-admission-025grt82/corrected-independent-review.json",
+    "sha256": "af95751f0380023e70f762dbc5af59074d80b92cb4552a2153f7084d838278d7",
+    "decision": "Current-key reuse compatible; post-success unannotated error-tail preservation remains unresolved."
+  },
+  "proposed_contract": "E03_COMPLETION_CONTRACT.md",
+  "decision_requested": {
+    "recommendation": "Automatic owner tokens preserve paired telemetry; manual terminal addresses only currently tracked Resource. Explicitly amend ninth candidate discriminator while preserving original evidence.",
+    "alternative": "Preserve historical unannotated tails; requires another admitted bounded identity/lifetime design, no heuristic ledger."
+  },
+  "last_updated_at": "2026-09-20T20:55:08.250102+00:00"
+}

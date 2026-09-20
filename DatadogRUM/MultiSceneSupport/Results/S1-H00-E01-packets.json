@@ -1,0 +1,166 @@
+{
+  "schema_version": 1,
+  "kind": "local_review_packets_not_publication",
+  "prepared_at": "2026-09-20T20:50:42.060825+00:00",
+  "main_checkpoint": "430075a1e11ef66ffdd6a989bef2d2dc156d52c6",
+  "develop_verification": {
+    "via": "authenticated GitHub connector fetch_commit(develop)",
+    "sha": "62f64d7b655bdc83f3036c4ad81090a270f6202b",
+    "url": "https://github.com/DataDog/dd-sdk-ios/commit/62f64d7b655bdc83f3036c4ad81090a270f6202b"
+  },
+  "artifact_root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/deliveries/s1-initial-20260920-qqyq49od",
+  "protected_paths_unchanged": true,
+  "source_worktrees_unchanged": true,
+  "new_runtime_tests": 0,
+  "gate_closures": [],
+  "packets": [
+    {
+      "id": "H00",
+      "state": "LOCAL_REVIEW_PACKET_PREPARED_METADATA_AND_CHECKS_PENDING",
+      "title_without_required_ticket": "Reconstruct view hitch state in delta-event assertions",
+      "ticket": null,
+      "review_owners_verified_from_CODEOWNERS": [
+        "@DataDog/rum-mobile",
+        "@DataDog/rum-mobile-ios"
+      ],
+      "named_reviewer": null,
+      "body": "Delivery/H00-pr.md",
+      "body_sha256": "2221613c3f32f96cd11eea4171f4444dd684184952028dbc31b413f135cdcc22",
+      "checkout": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/deliveries/s1-initial-20260920-qqyq49od/H00",
+      "detached_until_real_ticket": true,
+      "baseline_commit": "62f64d7b655bdc83f3036c4ad81090a270f6202b",
+      "develop_verified": "62f64d7b655bdc83f3036c4ad81090a270f6202b",
+      "delivery_head": "8d7e429b0242c5b384417862e2418e2dbdffe500",
+      "source_head": "d98f3540a5cf445844c2547378e05cffd2212dbd",
+      "source_tree": "f9e5c7ed96fd2a656eb9b9c74d6b90b466df0ced",
+      "delivery_tree": "f9e5c7ed96fd2a656eb9b9c74d6b90b466df0ced",
+      "exact_tree_equal": true,
+      "production_paths_and_sha256": {},
+      "test_paths_and_sha256": {
+        "Datadog/IntegrationUnitTests/RUM/RUMViewHitchesIntegration_Tests.swift": "d969dcbc570ecfd78f0e2cc6e62c05d0af970fa9bd570da457563a9ec8712247"
+      },
+      "documentation_paths_and_sha256": {},
+      "diff_paths": [
+        "Datadog/IntegrationUnitTests/RUM/RUMViewHitchesIntegration_Tests.swift"
+      ],
+      "patch": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/deliveries/s1-initial-20260920-qqyq49od/H00.patch",
+      "patch_sha256": "27c262b08e9229df953ae36f337bb78b9fe7465616f3d80ff1e4f52e0a200b48",
+      "outgoing_commits": [
+        {
+          "sha": "8d7e429b0242c5b384417862e2418e2dbdffe500",
+          "message": "Reconstruct view hitch state in delta-event assertions",
+          "signature": "G",
+          "real_ticket_pending": true
+        }
+      ],
+      "signature_receipt": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/deliveries/s1-initial-20260920-qqyq49od/H00-commit/commit.json",
+      "evidence_reuse": "Exact complete tracked tree equality; no test was rerun for metadata/signature changes. Original environment/configuration/diagnostic limits still apply.",
+      "evidence_owners": [
+        "DatadogRUM/MultiSceneSupport/Experiments/EXP-201-final-compatibility.md"
+      ],
+      "ci_checks": "NOT_RUN_ON_UNPUBLISHED_DELIVERY_HEAD",
+      "human_review": "PENDING",
+      "publication_authorization": false,
+      "merge_authorization": false,
+      "upstream_merge_sha": null,
+      "rollback": "Revert only the assertion correction if required; preserve the original failing evidence.",
+      "dependency": null,
+      "remaining_checks": [
+        "Real ticket for commit/title and delivery branch",
+        "Standalone H00 affected integration and required repository lint/iOS CI; qualified candidate test bytes are reused, not claimed as a new baseline run",
+        "Human review",
+        "Separately authorized publication/merge and verified upstream tree"
+      ]
+    },
+    {
+      "id": "E01",
+      "state": "LOCAL_REVIEW_PACKET_PREPARED_METADATA_AND_CHECKS_PENDING",
+      "title_without_required_ticket": "Prepare URLSession instrumentation once per task",
+      "ticket": null,
+      "review_owners_verified_from_CODEOWNERS": [
+        "@DataDog/rum-mobile",
+        "@DataDog/rum-mobile-ios"
+      ],
+      "named_reviewer": null,
+      "body": "Delivery/E01-pr.md",
+      "body_sha256": "9d39b75b62fcd2d6d74ec24e584f552289d6462102e9fc79a9f3b5a6d4779e30",
+      "checkout": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/deliveries/s1-initial-20260920-qqyq49od/E01",
+      "detached_until_real_ticket": true,
+      "baseline_commit": "8d7e429b0242c5b384417862e2418e2dbdffe500",
+      "develop_verified": "62f64d7b655bdc83f3036c4ad81090a270f6202b",
+      "delivery_head": "7915e1be91407663ba8a374d0c36f4b804280fd7",
+      "source_head": "652ce169773b0be5b6767179eca8ab5f4cf25f8a",
+      "source_tree": "5836f7e0af6ecaab02ae460b870b20877e154e6c",
+      "delivery_tree": "5836f7e0af6ecaab02ae460b870b20877e154e6c",
+      "exact_tree_equal": true,
+      "production_paths_and_sha256": {
+        "DatadogInternal/Sources/NetworkInstrumentation/NetworkInstrumentationFeature.swift": "2631ea56885a12d1b3d14b1044dd9a84319a0b382b817afb95b4edd305df5246",
+        "DatadogInternal/Sources/NetworkInstrumentation/URLSession/NetworkInstrumentationSwizzler.swift": "a00edec0d9451c3b78c52f308c2a7f771d0e8b9cfafada79a2848f1b164cfef7",
+        "DatadogInternal/Sources/NetworkInstrumentation/URLSession/URLSessionTaskSwizzler.swift": "96d302999632cc609a98e774106f1e51c4ef9fecfe089287426285aa524e4570"
+      },
+      "test_paths_and_sha256": {
+        "DatadogInternal/Tests/NetworkInstrumentation/NetworkInstrumentationFeatureTests.swift": "235c957d68ebe84de71f251373723e76b474da21d15fe3c8a65cc38a202a62d5",
+        "DatadogInternal/Tests/NetworkInstrumentation/URLSessionTaskSwizzlerTests.swift": "0d3586be978915dfa11be06a2938eff836af61296b8ae629fd7e51e225fa5b58"
+      },
+      "documentation_paths_and_sha256": {
+        "CHANGELOG.md": "ceba3974d910c95add9d6ec1479d0f8f52e590da27bedb504be44d053647463d",
+        "DatadogLogs/LOGS_FEATURE.md": "1542faaf5fc52c139ac8c36173b22c87a065177e40a753ce9896276b3ad12386",
+        "DatadogProfiling/PROFILING_FEATURE.md": "6e8faf2abe8c3c47160ab4db1ac5cb2bd68a995af18460ac7f156326afecd4cf",
+        "DatadogRUM/RUM_FEATURE.md": "a36bbffd1df5e40f8363edfdd5395bdb1319cdca45c481214d69836936cfab01",
+        "DatadogSessionReplay/SESSION_REPLAY_FEATURE.md": "a2f28df2b87fa47674f75b8166a33a591b018a9d756a05992466c22b190580cb",
+        "DatadogTrace/TRACE_FEATURE.md": "4d48ca4136e46b094a991c2cfd8ee2c9f272ee4473ad6e9c01859b143ba65da3"
+      },
+      "diff_paths": [
+        "CHANGELOG.md",
+        "DatadogInternal/Sources/NetworkInstrumentation/NetworkInstrumentationFeature.swift",
+        "DatadogInternal/Sources/NetworkInstrumentation/URLSession/NetworkInstrumentationSwizzler.swift",
+        "DatadogInternal/Sources/NetworkInstrumentation/URLSession/URLSessionTaskSwizzler.swift",
+        "DatadogInternal/Tests/NetworkInstrumentation/NetworkInstrumentationFeatureTests.swift",
+        "DatadogInternal/Tests/NetworkInstrumentation/URLSessionTaskSwizzlerTests.swift",
+        "DatadogLogs/LOGS_FEATURE.md",
+        "DatadogProfiling/PROFILING_FEATURE.md",
+        "DatadogRUM/RUM_FEATURE.md",
+        "DatadogSessionReplay/SESSION_REPLAY_FEATURE.md",
+        "DatadogTrace/TRACE_FEATURE.md"
+      ],
+      "patch": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/deliveries/s1-initial-20260920-qqyq49od/E01.patch",
+      "patch_sha256": "2642a9d5d09f25b7e545ad957699c88caecb8e96e75fa8a4cb2dc14a1bdce2b3",
+      "outgoing_commits": [
+        {
+          "sha": "7915e1be91407663ba8a374d0c36f4b804280fd7",
+          "message": "Prepare URLSession instrumentation once per task",
+          "signature": "G",
+          "real_ticket_pending": true
+        }
+      ],
+      "signature_receipt": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/deliveries/s1-initial-20260920-qqyq49od/E01-commit/commit.json",
+      "evidence_reuse": "Exact complete tracked tree equality; no test was rerun for metadata/signature changes. Original environment/configuration/diagnostic limits still apply.",
+      "evidence_owners": [
+        "DatadogRUM/MultiSceneSupport/Experiments/EXP-201-final-compatibility.md",
+        "DatadogRUM/MultiSceneSupport/Experiments/EXP-202-urlsession-backend.md",
+        "DatadogRUM/MultiSceneSupport/FINAL_COMPATIBILITY.md"
+      ],
+      "ci_checks": "NOT_RUN_ON_UNPUBLISHED_DELIVERY_HEAD",
+      "human_review": "PENDING",
+      "publication_authorization": false,
+      "merge_authorization": false,
+      "upstream_merge_sha": null,
+      "rollback": "Revert E01 production/test/doc commits together while retaining H00; refresh affected feature-document verification.",
+      "dependency": {
+        "id": "H00",
+        "head": "8d7e429b0242c5b384417862e2418e2dbdffe500",
+        "merge_required_before_final_delivery": true,
+        "duplicate_hitch_commit_excluded": "925b9326bcb364aab87686bbd665be8da576f674"
+      },
+      "remaining_checks": [
+        "Real ticket for commit/title and delivery branch",
+        "Missing repository-wide iOS schemes: DatadogSessionReplay, DatadogLogs, DatadogCrashReporting, DatadogWebViewTracking, DatadogFlags, DatadogProfiling; affected-suite F03 evidence remains accepted within its prior scope",
+        "Current required CI and candidate F06 human review",
+        "H00 verified upstream merge then content-equivalent rebase/retarget and affected revalidation only",
+        "Separately authorized publication/merge"
+      ]
+    }
+  ],
+  "next_repair": "E03 ownership contract/design admission before another S2/S3 expansion experiment",
+  "DL01_extraction_boundary": "Immutable a4be961d, exactly RenderLoopObserver.swift and DisplayLinkerTests.swift plus own changelog/feature docs; combined S2 branch is not the PR."
+}

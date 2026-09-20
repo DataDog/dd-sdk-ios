@@ -2565,17 +2565,17 @@
       "environment": "Isolated clean checkout of then-current develop; affected unit and native fixtures",
       "completion_mode": null,
       "status": "OPEN",
-      "evidence": "EXP-206: current-develop9-test baseline has4 expected ownership failures and5 preservation passes. Stateless repair rejected because it loses the valid response-plus-error action signal. No production candidate; E03 remains open.",
+      "evidence": "EXP-206: current-develop9-test baseline has4 expected ownership failures and5 preservation passes. Stateless repair rejected because it loses the valid response-plus-error action signal. No production candidate; E03 remains open. EXP214 now owns finite design admission before S2/S3 expansion; manual/current-key and historical paired-error semantics require an explicit reviewed contract.",
       "release_requirements": {
         "S1": {
           "scope": "Resource completion ownership extraction",
-          "status": "CONDITIONAL",
+          "status": "OPEN",
           "dependencies": [
             "S1:F07"
           ],
           "decisive_test": "Source-less late success/error/metrics belong only to resourceKey owner after sequential navigation/session change; new view action/error_tap counts remain unchanged. Must first fail current develop. Preserve same-view response-plus-error counts/frustration and clock-driven expiration; qualify ownership across completion/action changes.",
           "environment": "Isolated clean checkout of then-current develop; affected unit and native fixtures",
-          "evidence": "EXP-206: current-develop9-test baseline has4 expected ownership failures and5 preservation passes. Stateless repair rejected because it loses the valid response-plus-error action signal. No production candidate; E03 remains open.",
+          "evidence": "EXP-206: current-develop9-test baseline has4 expected ownership failures and5 preservation passes. Stateless repair rejected because it loses the valid response-plus-error action signal. No production candidate; E03 remains open. EXP214 now owns finite design admission before S2/S3 expansion; manual/current-key and historical paired-error semantics require an explicit reviewed contract.",
           "required": false
         }
       }
@@ -2774,8 +2774,9 @@
       "id": "S1",
       "name": "Independent reliability fixes",
       "deadline": null,
-      "shipping_rule": "Release each eligible narrow fix independently on then-current develop after its applicable candidate checks and S1:F06. Other general improvements do not block it. First selected candidate E01; E02-E05 remain separate qualification work.",
-      "selected_candidate": "E01"
+      "shipping_rule": "Release each narrow fix independently after its candidate checks and F06. Required-gate counts here describe selected E01 only; the seven-unit [S1 delivery queue](S1_DELIVERY_PLAN.md) separately tracks H00, E01-E05 and DL01. E03 design/repair checkpoint precedes further S2/S3 expansion; other qualified packets proceed independently.",
+      "selected_candidate": "E01",
+      "delivery_queue": "Results/S1-delivery-queue.json"
     },
     {
       "id": "S2",
@@ -2922,6 +2923,20 @@
       "required_benchmark": "Bounded representative application before/after for new SwiftUI semantic tracking and multi-scene changes: frame rate, hitches/hangs, CPU and memory.",
       "expected_risk": "User expects regression to be unlikely; this expectation is not measured evidence.",
       "saved_work": "NETWORK_BENCHMARK_FOLLOWUP.md and tools/multi-scene/network-benchmark-followup/ preserve optional harness and original results."
+    },
+    "s1_delivery": {
+      "date": "2026-09-20",
+      "source": "User-directed side-task delivery instructions incorporated after EXP213 checkpoint.",
+      "queue": "Results/S1-delivery-queue.json",
+      "hard_merge_edges": [
+        [
+          "H00",
+          "E01"
+        ]
+      ],
+      "next_repair": "EXP214:E03-A/B before another S2/S3 expansion",
+      "publication_authorized": false,
+      "merge_authorized": false
     }
   }
 }

@@ -15,6 +15,15 @@ remain valid within their original source/environment limits; they do not certif
 a newly extracted candidate. F07 must prove deferred behavior absent from each
 S1/S2 shipped artifact, then F03/F06 qualify that exact candidate.
 
+The [S1 delivery queue](S1_DELIVERY_PLAN.md) now separates seven PR units:
+H00, E01–E05 and DL01. E01's 15/16 score describes its own qualification, not
+completion of S1. Signed [H00/E01 local packets](Results/S1-H00-E01-packets.json)
+match the qualified trees exactly, with ticketing, missing repository-wide checks,
+CI/review and authorized publication still pending. Only H00 → E01 is an established
+merge dependency. [EXP-214](Results/EXP-214-resource-action-design.json) makes E03
+ownership-design admission the next repair checkpoint before more S2 expansion.
+DL01 is an ordinary iOS17.5 lifetime fix and will have its own independent extraction.
+
 S2 now selects the same narrow E01 source on verified develop `62f64d7b`, with
 production `1bdc9286` qualified through `652ce169`. The independent
 [source audit](Results/EXP-209-s2-source-audit.json) proves deferred scene and

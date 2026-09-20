@@ -358,7 +358,7 @@
     "S1": {
       "name": "Independent reliability fixes",
       "deadline": null,
-      "shipping_rule": "Release each eligible narrow fix independently on then-current develop after its applicable candidate checks and S1:F06. Other general improvements do not block it. First selected candidate E01; E02-E05 remain separate qualification work.",
+      "shipping_rule": "Release each narrow fix independently after its candidate checks and F06. Required-gate counts here describe selected E01 only; the seven-unit [S1 delivery queue](S1_DELIVERY_PLAN.md) separately tracks H00, E01-E05 and DL01. E03 design/repair checkpoint precedes further S2/S3 expansion; other qualified packets proceed independently.",
       "required": {
         "count": 16,
         "closed": 15,
@@ -415,7 +415,7 @@
         },
         {
           "id": "S1:E03",
-          "status": "CONDITIONAL",
+          "status": "OPEN",
           "owner": "SDK implementer + independent reviewer",
           "dependencies": [
             "S1:F07"

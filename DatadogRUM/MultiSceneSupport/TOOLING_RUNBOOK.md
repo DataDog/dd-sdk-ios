@@ -330,6 +330,26 @@ an unavailable NetworkContext and a completion with no captured entry; none is
 permission to change sampling. [EXP-208](Results/EXP-208-trace-ownership.json)
 records the bounded control inventory.
 
+## Independent S1 delivery packets
+
+The [delivery queue](Results/S1-delivery-queue.json) owns per-PR state, while the
+register retains candidate qualification. At a safe checkpoint, create separate
+delivery checkouts from freshly verified develop or the established H00 stack.
+Copy only the recorded immutable paths and verify the complete resulting Git tree
+against the qualified source. This permits metadata/signature reconstitution without
+rerunning accepted tests. [H00/E01](Results/S1-H00-E01-packets.json) demonstrates that
+check and excludes the equivalent hitch commit from E01's review delta.
+
+Preserve leading whitespace when parsing `git status --porcelain`; trimming it
+changes status/path columns. The first packet preflight stopped before creating a
+worktree when this check rejected the unchanged E03 reproducer paths. The corrected
+parser and invalid preparation record remain in the packet artifact directory.
+
+Keep real-ticket metadata, full repository iOS/CI coverage, human review, publication
+and verified merge separate. Affected-suite F03 evidence is not a `make test-ios-all`
+result. Use one explicit missing/invalidated-check inventory per candidate, and carry
+forward original skips, warnings and source limits. No packet authorizes a push.
+
 ## Documentation reading and update workflow
 
 [.continue-here.md](../../.continue-here.md) is the sole restart cursor.

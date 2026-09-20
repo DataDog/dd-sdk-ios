@@ -1,0 +1,558 @@
+{
+  "schema_version": 1,
+  "kind": "active_local_delivery_queue",
+  "created_on": "2026-09-20",
+  "release_stream": "S1",
+  "authority": "S1_DELIVERY_PLAN.md owns user-approved delivery order; release-gates.json remains qualification authority. Delivery state is separate from gate closure.",
+  "repository": "/Users/valentin.pertuisot/work/dd-sdk-ios",
+  "snapshot": {
+    "main_head": "1d968d9b7787a10457afcfc8871d6d12a4c80fce",
+    "qualified_develop_base": "62f64d7b655bdc83f3036c4ad81090a270f6202b",
+    "develop_must_be_reverified": true,
+    "main_experiment_at_capture": "EXP-213; active and independently changing"
+  },
+  "policy": {
+    "preserve_existing_worktrees": true,
+    "preserve_paths": [
+      "Datadog/Datadog.xcodeproj/project.pbxproj",
+      "xcconfigs/Datadog.local.xcconfig"
+    ],
+    "explicit_path_commits_only": true,
+    "sign_when_available": true,
+    "unsigned_local_commits_only_if_signing_unavailable": true,
+    "all_outgoing_commits_signed_before_push": true,
+    "push_requires_separate_authorization": true,
+    "draft_pr_creation_requires_separate_authorization": true,
+    "merge_requires_separate_authorization": true,
+    "no_remote_actions_authorized_by_this_plan": true,
+    "no_new_s2_s3_expansion_before_e03_design_checkpoint": true,
+    "no_blanket_cherry_pick": true,
+    "preserve_production_reference": "04201edc7711361279d8487b385bc8b0ca9c63c7",
+    "forbid_product_pr_paths": [
+      "DatadogRUM/MultiSceneSupport/",
+      "xcconfigs/Datadog.local.xcconfig",
+      "Datadog/Datadog.xcodeproj/project.pbxproj"
+    ],
+    "branch_convention": "valpertui/<real-JIRA-ticket>/<delivery-slug>; resolve real ticket before publishing; never invent one",
+    "ci_required": true,
+    "human_review_required": true,
+    "codeowners_must_be_rechecked": true,
+    "performance": "Preserve current acceptance scope. No new mandatory standalone networking, per-dispatch or allocation benchmark campaign. Included new semantic SwiftUI/multi-scene code requires its existing application-impact gate; expected absent from these PRs. Investigate concrete regressions.",
+    "evidence_reuse": "Bind accepted results to exact source/test/dependency/toolchain/configuration/runtime identities. Rerun missing or invalidated checks only; metadata-only re-signing is not a reason to rerun tests."
+  },
+  "scheduling": {
+    "checkpoint": "Finish or safely checkpoint the current bounded experiment; preserve its failures and exact source identities. Do not interrupt or modify its worktree from this side conversation.",
+    "first_local_packets": [
+      "H00",
+      "E01"
+    ],
+    "next_repair": "E03",
+    "independent_packet_priority": [
+      "DL01",
+      "E02",
+      "E04",
+      "E05"
+    ],
+    "first_publication_wave": [
+      "H00",
+      "E01"
+    ],
+    "later_publication_wave": "Publish each ready independent packet when authorized; do not wait for E03, S2 or S3.",
+    "default_landing_order": [
+      "H00",
+      "E01",
+      "DL01",
+      "E02",
+      "E04",
+      "E05"
+    ],
+    "e03_landing": "Insert as soon as its own compatible repair, qualification and review are complete; it is not forced to be last.",
+    "hard_merge_edges": [
+      [
+        "H00",
+        "E01"
+      ]
+    ],
+    "no_implied_production_dependencies_between": [
+      "E01",
+      "E02",
+      "E03",
+      "E04",
+      "E05",
+      "DL01"
+    ]
+  },
+  "evidence_manifest_required_fields": [
+    "baseline_commit",
+    "delivery_head",
+    "production_paths_and_sha256",
+    "test_paths_and_sha256",
+    "dependency_pins",
+    "toolchain_build",
+    "runtime_build",
+    "build_configuration",
+    "test_inventory",
+    "expected_failures",
+    "actual_pass_fail_skip_counts",
+    "durable_result_path",
+    "source_review",
+    "signature_verification",
+    "ci_checks",
+    "human_review",
+    "upstream_merge_sha"
+  ],
+  "items": [
+    {
+      "owner": "Main execution session / SDK implementer",
+      "review_owner": [
+        "@DataDog/rum-mobile",
+        "@DataDog/rum-mobile-ios"
+      ],
+      "issue": null,
+      "publication_authorization": false,
+      "merge_authorization": false,
+      "pr_url": null,
+      "merge_commit": null,
+      "id": "H00",
+      "gate_reference": "S1:F06 prerequisite; local delivery ID, not an additional release gate",
+      "title": "Reconstruct view hitch state in delta-event assertions",
+      "branch_slug": "rum-view-hitch-assertions",
+      "state": "local_review_packet_prepared_metadata_and_checks_pending",
+      "source_worktree": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/view-hitch-assertions",
+      "source_branch": "valpertui/rum-view-hitch-assertions",
+      "source_head": "d98f3540a5cf445844c2547378e05cffd2212dbd",
+      "selected_commits": [
+        "d98f3540a5cf445844c2547378e05cffd2212dbd"
+      ],
+      "target": "develop",
+      "hard_merge_dependencies": [],
+      "allowed_existing_paths": [
+        "Datadog/IntegrationUnitTests/RUM/RUMViewHitchesIntegration_Tests.swift"
+      ],
+      "allowed_ancillary_paths": [],
+      "evidence": [
+        "DatadogRUM/MultiSceneSupport/Experiments/EXP-201-final-compatibility.md"
+      ],
+      "decisive_test": "Reconstruct full plus delta documents in documentVersion order; absent delta fields preserve prior state and explicit empty fields clear it. Accepted paired baseline/candidate assertions remain unchanged.",
+      "environment": "Affected native integration fixture and repository CI, exact current test source; no production or device-specific qualification.",
+      "remaining_gates": [
+        "Real ticket and current develop identity",
+        "Exact one-file test-only diff and evidence mapping",
+        "Required lint/CI and human review",
+        "Signed outgoing history and authorized delivery",
+        "Verify actual upstream merge before E01 final retarget/rebase"
+      ],
+      "rollback": "Revert only the assertion correction if required; preserve the original failing evidence.",
+      "delivery": {
+        "checkout": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/deliveries/s1-initial-20260920-qqyq49od/H00",
+        "delivery_head": "8d7e429b0242c5b384417862e2418e2dbdffe500",
+        "baseline_commit": "62f64d7b655bdc83f3036c4ad81090a270f6202b",
+        "body": "Delivery/H00-pr.md",
+        "exact_tree_equal": true,
+        "outgoing_commits": [
+          {
+            "sha": "8d7e429b0242c5b384417862e2418e2dbdffe500",
+            "message": "Reconstruct view hitch state in delta-event assertions",
+            "signature": "G",
+            "real_ticket_pending": true
+          }
+        ],
+        "remaining_checks": [
+          "Real ticket for commit/title and delivery branch",
+          "Standalone H00 affected integration and required repository lint/iOS CI; qualified candidate test bytes are reused, not claimed as a new baseline run",
+          "Human review",
+          "Separately authorized publication/merge and verified upstream tree"
+        ]
+      },
+      "packet": "Results/S1-H00-E01-packets.json"
+    },
+    {
+      "owner": "Main execution session / SDK implementer",
+      "review_owner": [
+        "@DataDog/rum-mobile",
+        "@DataDog/rum-mobile-ios"
+      ],
+      "issue": null,
+      "publication_authorization": false,
+      "merge_authorization": false,
+      "pr_url": null,
+      "merge_commit": null,
+      "id": "E01",
+      "gate_reference": "S1:E01 and E01-specific S1:F06",
+      "title": "Prepare URLSession instrumentation once per task",
+      "branch_slug": "urlsession-exactly-once",
+      "state": "local_review_packet_prepared_metadata_and_checks_pending",
+      "source_worktree": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/urlsession-exactly-once",
+      "source_branch": "valpertui/urlsession-exactly-once",
+      "source_head": "652ce169773b0be5b6767179eca8ab5f4cf25f8a",
+      "production_revision": "1bdc9286c17d69d73e5e41530e6179c72a723368",
+      "selected_commits": [
+        "464af9110daeb9211040e202b42d5ce446e06153",
+        "1bdc9286c17d69d73e5e41530e6179c72a723368",
+        "5a570517404ba53f2f05adc8f7d55bf05361f437",
+        "c53ed48cf78661f410212170f59ff636d18a05f7",
+        "652ce169773b0be5b6767179eca8ab5f4cf25f8a"
+      ],
+      "excluded_duplicate_commit": "925b9326bcb364aab87686bbd665be8da576f674",
+      "target": "H00 delivery branch while stacked for review; develop after H00 upstream merge",
+      "hard_merge_dependencies": [
+        "H00"
+      ],
+      "allowed_existing_paths": [
+        "CHANGELOG.md",
+        "DatadogInternal/Sources/NetworkInstrumentation/NetworkInstrumentationFeature.swift",
+        "DatadogInternal/Sources/NetworkInstrumentation/URLSession/NetworkInstrumentationSwizzler.swift",
+        "DatadogInternal/Sources/NetworkInstrumentation/URLSession/URLSessionTaskSwizzler.swift",
+        "DatadogInternal/Tests/NetworkInstrumentation/NetworkInstrumentationFeatureTests.swift",
+        "DatadogInternal/Tests/NetworkInstrumentation/URLSessionTaskSwizzlerTests.swift",
+        "DatadogLogs/LOGS_FEATURE.md",
+        "DatadogProfiling/PROFILING_FEATURE.md",
+        "DatadogRUM/RUM_FEATURE.md",
+        "DatadogSessionReplay/SESSION_REPLAY_FEATURE.md",
+        "DatadogTrace/TRACE_FEATURE.md"
+      ],
+      "allowed_ancillary_paths": [],
+      "evidence": [
+        "DatadogRUM/MultiSceneSupport/Experiments/EXP-201-final-compatibility.md",
+        "DatadogRUM/MultiSceneSupport/Experiments/EXP-202-urlsession-backend.md",
+        "DatadogRUM/MultiSceneSupport/FINAL_COMPATIBILITY.md"
+      ],
+      "decisive_test": "Exactly one request mutation/start through repeated, concurrent, reentrant and suspend/resume operations; early callbacks and terminal cleanup preserved. Automatic/registered backend owners and failure/cancellation weak controls match accepted results.",
+      "environment": "Accepted affected Internal/Core/RUM/Trace and integration suites; ordinary and legacy native runtimes, custom/NOP matrix, platform/client/API checks already recorded. Fresh CI and only invalidated local checks after rebase.",
+      "remaining_gates": [
+        "Prepare ticketed PR packet and source-matched evidence map",
+        "Land H00 and verify its actual upstream tree",
+        "Rebase/retarget E01 without duplicate hitch commit; revalidate only affected identities/checks",
+        "Finish candidate-scoped F06 review, current CI and signatures",
+        "Authorized publication and merge"
+      ],
+      "limits": [
+        "15/16 describes E01 only, not the entire S1 stream",
+        "Deferred duplicate resumes can execute on the preparation thread; no arbitrary same-stack/thread guarantee",
+        "Inherited QoS warning is retained, not declared harmless",
+        "No physical Duo or standalone networking benchmark prerequisite"
+      ],
+      "rollback": "Revert E01 production/test/doc commits together while retaining H00; refresh affected feature-document verification.",
+      "delivery": {
+        "checkout": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/deliveries/s1-initial-20260920-qqyq49od/E01",
+        "delivery_head": "7915e1be91407663ba8a374d0c36f4b804280fd7",
+        "baseline_commit": "8d7e429b0242c5b384417862e2418e2dbdffe500",
+        "body": "Delivery/E01-pr.md",
+        "exact_tree_equal": true,
+        "outgoing_commits": [
+          {
+            "sha": "7915e1be91407663ba8a374d0c36f4b804280fd7",
+            "message": "Prepare URLSession instrumentation once per task",
+            "signature": "G",
+            "real_ticket_pending": true
+          }
+        ],
+        "remaining_checks": [
+          "Real ticket for commit/title and delivery branch",
+          "Missing repository-wide iOS schemes: DatadogSessionReplay, DatadogLogs, DatadogCrashReporting, DatadogWebViewTracking, DatadogFlags, DatadogProfiling; affected-suite F03 evidence remains accepted within its prior scope",
+          "Current required CI and candidate F06 human review",
+          "H00 verified upstream merge then content-equivalent rebase/retarget and affected revalidation only",
+          "Separately authorized publication/merge"
+        ]
+      },
+      "packet": "Results/S1-H00-E01-packets.json"
+    },
+    {
+      "owner": "Main execution session / SDK implementer",
+      "review_owner": [
+        "@DataDog/rum-mobile",
+        "@DataDog/rum-mobile-ios"
+      ],
+      "issue": null,
+      "publication_authorization": false,
+      "merge_authorization": false,
+      "pr_url": null,
+      "merge_commit": null,
+      "id": "E02",
+      "gate_reference": "S1:E02; separate candidate freeze required",
+      "title": "Keep attributes isolated between repeated view occurrences",
+      "branch_slug": "view-occurrence-ownership",
+      "state": "eligibility_qualified_release_checks_pending",
+      "source_worktree": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/view-occurrence-ownership",
+      "source_branch": "valpertui/view-occurrence-ownership",
+      "source_head": "96d064c4fa083a7a74c709eb4a626fc17017db01",
+      "production_revision": "3ce541b325217188c181458d223ff2a3f1f78d49",
+      "selected_commits": [
+        "3ce541b325217188c181458d223ff2a3f1f78d49",
+        "96d064c4fa083a7a74c709eb4a626fc17017db01"
+      ],
+      "target": "develop",
+      "hard_merge_dependencies": [],
+      "allowed_existing_paths": [
+        "DatadogRUM/Sources/RUMMonitor/Scopes/RUMViewScope.swift",
+        "DatadogRUM/Tests/RUMMonitor/Scopes/RUMApplicationScopeTests.swift",
+        "DatadogRUM/Tests/RUMMonitor/Scopes/RUMSessionScopeTests.swift",
+        "Datadog/IntegrationUnitTests/RUM/RUMAttributesIntegrationTests.swift",
+        "Datadog/IntegrationUnitTests/RUM/RUMAttributesIntegration_Tests.swift"
+      ],
+      "allowed_ancillary_paths": [
+        "CHANGELOG.md",
+        "DatadogRUM/RUM_FEATURE.md"
+      ],
+      "evidence": [
+        "DatadogRUM/MultiSceneSupport/Experiments/EXP-205-view-occurrence-isolation.md",
+        "DatadogRUM/MultiSceneSupport/Results/EXP-205-view-occurrence-isolation.json"
+      ],
+      "decisive_test": "Pending H1 Resource retains its original view; Detail to H2 navigation cannot change H1 start/stop attributes, H2 action stays on H2, and restoration retains only one active occurrence. Assert serialized full/delta output.",
+      "environment": "Accepted full RUM and native public-monitor fixture on recorded runtime; freeze missing affected compatibility/platform/API/CI cells on delivery source.",
+      "remaining_gates": [
+        "Fresh develop extraction and exact two-predicate source review",
+        "Freeze finite applicable release inventory and fill missing checks",
+        "Customer changelog and affected documentation",
+        "Current CI, signed history, human review and authorized delivery"
+      ],
+      "limits": [
+        "Source-less sequential navigation evidence; not a multi-scene router",
+        "No backend or real navigation callback claim from writer serialization alone"
+      ],
+      "rollback": "Revert only E02 predicates and its tests/docs; retain unrelated shared-file tests."
+    },
+    {
+      "owner": "Main execution session / SDK implementer",
+      "review_owner": [
+        "@DataDog/rum-mobile",
+        "@DataDog/rum-mobile-ios"
+      ],
+      "issue": null,
+      "publication_authorization": false,
+      "merge_authorization": false,
+      "pr_url": null,
+      "merge_commit": null,
+      "id": "E03",
+      "gate_reference": "S1:E03; repair not yet admitted",
+      "title": "Keep Resource completion counters on their owning view",
+      "title_provisional": true,
+      "branch_slug": "resource-completion-ownership",
+      "state": "EXP214_manual_completion_contract_choice_pending",
+      "source_worktree": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/resource-completion-ownership",
+      "source_branch": "valpertui/resource-completion-ownership",
+      "source_head": "62f64d7b655bdc83f3036c4ad81090a270f6202b",
+      "production_revision": null,
+      "selected_commits": [],
+      "target": "develop unless the admitted design proves a specific dependency",
+      "hard_merge_dependencies": [],
+      "allowed_existing_paths": [
+        "DatadogRUM/Tests/RUMMonitor/Scopes/RUMApplicationScopeTests.swift",
+        "DatadogRUM/Tests/RUMMonitor/Scopes/RUMSessionScopeTests.swift"
+      ],
+      "allowed_production_paths_before_design_admission": [],
+      "allowed_ancillary_paths": [
+        "CHANGELOG.md",
+        "DatadogRUM/RUM_FEATURE.md"
+      ],
+      "reproducer_patch": "DatadogRUM/MultiSceneSupport/Results/EXP-206-baseline-reproduction.patch",
+      "reproducer_patch_sha256": "86ca8f711e1abb0d8f0eeb53d2a757ca96cc21a6a606794f5d13005a5bfca435",
+      "evidence": [
+        "DatadogRUM/MultiSceneSupport/Experiments/EXP-206-resource-action-ownership.md",
+        "DatadogRUM/MultiSceneSupport/Results/EXP-206-resource-action-ownership.json",
+        "DatadogRUM/MultiSceneSupport/Results/EXP-206-ownership-design-review.json",
+        "DatadogRUM/MultiSceneSupport/Results/EXP-214-resource-action-design.json"
+      ],
+      "decisive_test": "All nine frozen tests unchanged: four foreign view/session ownership failures become green and five same-view/expiry controls remain green, including response plus error with one Resource, no standalone Resource error, action counts 1/1 and error_tap. Add actual-handler action-transition, manual-command, key-generation and lifetime discriminators before implementation.",
+      "environment": "Bounded source/design review first, then affected RUM unit and native public-monitor/actual-handler tests on available supported runtime; candidate compatibility/CI after a compatible repair exists.",
+      "remaining_gates": [
+        "E03-A: Resolve manual/native ownership, action transitions, generation/key reuse and queue confinement; admit or explicitly reject one bounded design",
+        "E03-B: Freeze exact source/test paths and decisive tests before implementing; preserve all nine original assertions",
+        "E03-C: Implement and prove same-view preservation plus foreign-owner isolation, terminal cleanup and key reuse",
+        "E03-D: Complete affected release inventory, documentation, CI, signed history and human review",
+        "Prepare and publish implementation PR only with honest repair/qualification status and separate authorization"
+      ],
+      "candidate_design": "Existing completion-scoped value token plus action-lifetime legacy ledger is a review input only, not an approved solution.",
+      "limits": [
+        "Current worktree has only two intentional dirty reproducer tests; preserve them",
+        "Simple current-resource-key membership is incompatible after success removes the key",
+        "Resource/error UUIDs already remain correct; the known defect is foreign action counters/frustration",
+        "Do not bind completion to an obsolete action: preserve valid current action behavior within the owning view",
+        "No E03 implementation PR is ready now"
+      ],
+      "rollback": "Define with admitted repair; no production change currently exists to revert.",
+      "contract_proposal": "E03_COMPLETION_CONTRACT.md",
+      "next_action": "Await explicit ninth-control amendment choice while preparing independent DL01/E02/E04/E05 packets; then freeze exact implementation paths and tests."
+    },
+    {
+      "owner": "Main execution session / SDK implementer",
+      "review_owner": [
+        "@DataDog/rum-mobile",
+        "@DataDog/rum-mobile-ios"
+      ],
+      "issue": null,
+      "publication_authorization": false,
+      "merge_authorization": false,
+      "pr_url": null,
+      "merge_commit": null,
+      "id": "E04",
+      "gate_reference": "S1:E04; separate candidate freeze required",
+      "title": "Retain delayed WebView correlation after native view inactivity",
+      "branch_slug": "active-view-cache-lifetime",
+      "state": "eligibility_qualified_release_checks_pending",
+      "source_worktree": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/active-view-cache-lifetime",
+      "source_branch": "valpertui/active-view-cache-lifetime",
+      "source_head": "a3d34069cccbe35cac0fd2bc1fb456e64b1f4c43",
+      "production_revision": "cc83c8503ff42d8ed2b7e8c5c1bc1419e061727d",
+      "selected_commits": [
+        "cc83c8503ff42d8ed2b7e8c5c1bc1419e061727d",
+        "a3d34069cccbe35cac0fd2bc1fb456e64b1f4c43"
+      ],
+      "target": "develop",
+      "hard_merge_dependencies": [],
+      "allowed_existing_paths": [
+        "DatadogRUM/Sources/RUMMonitor/Scopes/RUMSessionScope.swift",
+        "DatadogRUM/Sources/RUMMonitor/Scopes/Utils/ViewCache.swift",
+        "DatadogRUM/Tests/RUMMonitor/Scopes/RUMSessionScopeTests.swift",
+        "DatadogRUM/Tests/Integrations/WebViewEventReceiverTests.swift",
+        "Datadog/IntegrationUnitTests/RUM/WebEventIntegrationTests.swift"
+      ],
+      "allowed_ancillary_paths": [
+        "CHANGELOG.md",
+        "DatadogRUM/RUM_FEATURE.md"
+      ],
+      "evidence": [
+        "DatadogRUM/MultiSceneSupport/Experiments/EXP-207-active-view-cache.md",
+        "DatadogRUM/MultiSceneSupport/Results/EXP-207-active-view-cache.json",
+        "DatadogRUM/MultiSceneSupport/Experiments/EXP-212-cache-composition.md"
+      ],
+      "decisive_test": "Long-lived active native view remains the delayed WebView container; inactivity starts its TTL exactly once. Preserve session stop/timeout/restoration, capacity 30, ordering, Replay and out-of-window rejection.",
+      "environment": "Accepted full RUM and injected native WebView bridge serialization pair; missing applicable release/CI checks on independent delivery branch.",
+      "remaining_gates": [
+        "Fresh independent extraction and exact cache/session source review",
+        "Complete finite affected compatibility and lifecycle qualification inventory",
+        "Customer changelog/documentation plus current CI/signatures/review",
+        "Authorized independent delivery"
+      ],
+      "limits": [
+        "Native injected messages and writer JSON do not prove actual browser callback or backend ingestion",
+        "EXP-212 composition does not replace independent E04 release qualification",
+        "No new mandatory numeric microbenchmark campaign"
+      ],
+      "rollback": "Revert E04 cache/session behavior and tests/docs without losing E02/E03 shared-file assertions."
+    },
+    {
+      "owner": "Main execution session / SDK implementer",
+      "review_owner": [
+        "@DataDog/rum-mobile",
+        "@DataDog/rum-mobile-ios"
+      ],
+      "issue": null,
+      "publication_authorization": false,
+      "merge_authorization": false,
+      "pr_url": null,
+      "merge_commit": null,
+      "id": "E05",
+      "gate_reference": "S1:E05; separate candidate freeze required",
+      "title": "Preserve request-time RUM ownership in automatic traces",
+      "branch_slug": "request-time-trace-ownership",
+      "state": "eligibility_qualified_release_checks_pending",
+      "source_worktree": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/request-time-trace-ownership",
+      "source_branch": "valpertui/request-time-trace-ownership",
+      "source_head": "9254adbcbf5a1809219ec30f6cc07df4f3af4518",
+      "production_revision": "f270c375c74a79b69343de19e78dc2698fd7ee91",
+      "selected_commits": [
+        "f270c375c74a79b69343de19e78dc2698fd7ee91",
+        "9254adbcbf5a1809219ec30f6cc07df4f3af4518"
+      ],
+      "target": "develop",
+      "hard_merge_dependencies": [],
+      "allowed_existing_paths": [
+        "DatadogTrace/Sources/DatadogTracer.swift",
+        "DatadogTrace/Sources/Integrations/TracingURLSessionHandler.swift",
+        "DatadogTrace/Sources/Span/SpanWriteContext.swift",
+        "DatadogTrace/Tests/TracingURLSessionHandlerTests.swift",
+        "Datadog/IntegrationUnitTests/Public/NetworkInstrumentationIntegrationTests.swift"
+      ],
+      "allowed_ancillary_paths": [
+        "CHANGELOG.md",
+        "DatadogTrace/TRACE_FEATURE.md",
+        "DatadogRUM/RUM_FEATURE.md"
+      ],
+      "evidence": [
+        "DatadogRUM/MultiSceneSupport/Experiments/EXP-208-trace-ownership.md",
+        "DatadogRUM/MultiSceneSupport/Results/EXP-208-trace-ownership.json"
+      ],
+      "decisive_test": "Reverse completion preserves each request's start-time RUM owner in outgoing baggage and serialized span. Explicit nil never adopts a later view. Preserve parent sampling, user/account context, caller headers and legacy missing-network-context fallback.",
+      "environment": "Accepted full Trace and native public networking integration pair; audit/fill applicable registered mode, terminal cleanup, backend and platform/CI cells before release claims.",
+      "remaining_gates": [
+        "Fresh independent extraction and exact existing NetworkContext dependency review",
+        "Freeze and fill missing applicable registration/cancellation/guard-cleanup/header/backend release checks; record source-proven non-applicability explicitly",
+        "Customer changelog and affected feature documents",
+        "Current CI, signed history, human review and authorized delivery"
+      ],
+      "limits": [
+        "Do not expand into PR2683 partial-carrier/header-merge policy",
+        "Native qualification used automatic Trace with automatic RUM Resources disabled",
+        "Immediate unbind cleanup and registered-mode/backend ownership matrix are not implied by current eligibility evidence"
+      ],
+      "rollback": "Revert E05 ownership capture/write behavior and its tests/docs without reverting E01 networking."
+    },
+    {
+      "owner": "Main execution session / SDK implementer",
+      "review_owner": [
+        "@DataDog/rum-mobile",
+        "@DataDog/rum-mobile-ios"
+      ],
+      "issue": null,
+      "publication_authorization": false,
+      "merge_authorization": false,
+      "pr_url": null,
+      "merge_commit": null,
+      "id": "DL01",
+      "gate_reference": "General S1 reliability extraction from EXP-211; local delivery ID, not a new release gate",
+      "title": "Release RUM display-link observers with their owner",
+      "branch_slug": "rum-display-link-lifetime",
+      "state": "focused_repair_qualified_independent_extraction_pending",
+      "source_worktree": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/s2-rum-lifetime",
+      "source_branch": "valpertui/s2-rum-lifetime",
+      "source_head_observed": "ef9d9732d4440038d5ce9278e86943fed3f9e931",
+      "source_head_is_live": true,
+      "production_revision": "a4be961d14c77c9a7787c9bfb55398784022d0f9",
+      "selected_commits": [
+        "a4be961d14c77c9a7787c9bfb55398784022d0f9"
+      ],
+      "target": "develop",
+      "hard_merge_dependencies": [],
+      "allowed_existing_paths": [
+        "DatadogRUM/Sources/RUMVitals/RenderLoop/RenderLoopObserver.swift",
+        "DatadogCore/Tests/Datadog/RUM/RUMVitals/DisplayLinkerTests.swift"
+      ],
+      "expected_selected_file_sha256": {
+        "DatadogRUM/Sources/RUMVitals/RenderLoop/RenderLoopObserver.swift": "7e62ab97369bd16e40c7ad6337127a31e95584ef1a196e9873e3302e8862dd06",
+        "DatadogCore/Tests/Datadog/RUM/RUMVitals/DisplayLinkerTests.swift": "55348a76d5ec3d582ea2380ff8990e67f3101f58a3630176c17a92915162a2c5"
+      },
+      "allowed_ancillary_paths": [
+        "CHANGELOG.md",
+        "DatadogRUM/RUM_FEATURE.md"
+      ],
+      "evidence": [
+        "DatadogRUM/MultiSceneSupport/Experiments/EXP-211-s2-lifetime.md",
+        "DatadogRUM/MultiSceneSupport/Results/EXP-211-s2-lifetime.json"
+      ],
+      "decisive_test": "Real CADisplayLink cannot retain its observer through its target; weak callback forwarding releases correctly and preserves frame delivery. SDK release witness is evaluated after actual pending MessageBus work has drained.",
+      "environment": "Recorded ordinary iPad iOS17.5 evidence; independent develop-based Core/RUM tests and relevant conditional-platform compile checks. No Duo hardware dependency.",
+      "remaining_gates": [
+        "Create separate delivery checkout from freshly verified develop; extract exactly two files from selected commit, never the combined branch",
+        "Audit/test independence from E01 and E04; preserve AppKit/NOP/conditional source",
+        "Map focused release/frame tests and fill only invalidated or missing checks",
+        "Customer changelog/documentation, current CI/signatures/review and authorized delivery"
+      ],
+      "limits": [
+        "Eight accepted D2 tests plus one corrected D4 witness are focused evidence, not global lifetime clearance",
+        "Two-second witness originally included a legitimate five-second queued owner",
+        "No claim of continuous memory growth in an initialize-once app",
+        "Leave active S2 composed worktree unchanged"
+      ],
+      "rollback": "Revert the weak display-link target change and its tests/docs independently."
+    }
+  ],
+  "checkpoint": {
+    "at": "2026-09-20T20:53:18.654983+00:00",
+    "main_source_checkpoint": "430075a1e11ef66ffdd6a989bef2d2dc156d52c6",
+    "develop_verified": "62f64d7b655bdc83f3036c4ad81090a270f6202b",
+    "EXP213": "complete; signed unit-onlyef9d9732; SDK-on native P03 remains open",
+    "local_packets": "Results/S1-H00-E01-packets.json",
+    "next_repair": "EXP-214 / E03-A design admission before S2 expansion"
+  }
+}
