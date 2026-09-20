@@ -2427,7 +2427,7 @@
           ],
           "decisive_test": "Require applicable release checks, attributable review, exact source/artifact inventory, existing performance/privacy/crash/API thresholds, signed outgoing history before any separately authorized push. Other releases are not prerequisites.",
           "environment": "Exact candidate; one host; no concurrent measurement contamination",
-          "evidence": "EXP-203 closes P04 and resolves the exact59 duplicate-class pairs to XCTest TestUtilities/DatadogSDKTesting dependencies. All10 production target closures, nine default SPM products,24 accepted build logs and five accepted client link/load inventories exclude the second implementation. The142 compiler-warning lines and other accepted runtime diagnostics remain recorded. No arbitrary duplicate-class harmlessness claim; numeric P01-P03 and backend A01/T03/T08 remain open before final review.",
+          "evidence": "EXP-203 qualifies P04 and scopes59 duplicate classes to XCTest dependencies absent from normal production/default-package and accepted-client graphs. All142 compiler-warning lines remain:39/41 message texts predate E01, every production site unchanged, four new test-only lines. Eight QoS warnings have unchanged source sites; EXP-204 reproduces the networking warning in baseline console, then times out600s before result finalization. Candidate not run; no equivalence, harmlessness, sanitizer or performance clearance. Numeric P01-P03 and backend A01/T03/T08 remain open. All three performance fixture attempts ended without accepted measurements.",
           "required": true
         },
         "S2": {

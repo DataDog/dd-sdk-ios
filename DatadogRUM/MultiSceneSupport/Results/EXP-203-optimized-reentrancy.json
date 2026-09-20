@@ -279,7 +279,28 @@
         "Compiler-warning inventory remains separate and unchanged.",
         "Client runtime console absence is not inferred from build logs; absence is demonstrated in target/link/load dependency evidence."
       ]
+    },
+    "f06_warning_classification": {
+      "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp203-f06-warning-classification-dnppv2ne/audit.json",
+      "sha256": "4c3f76f0dec7341d1078a942982cb53293861f8c19045b864497b99ae2e75593",
+      "compiler_warnings": {
+        "lines": 142,
+        "message_texts": 41,
+        "message_texts_in_existing_baseline_log": 39,
+        "new_test_only_warning_lines": 4,
+        "candidate_introduced_production_warning_site_identified": false
+      },
+      "qos": {
+        "retained": 9,
+        "located_unchanged_watchdog_flush": 6,
+        "located_unchanged_test_waits": 2,
+        "unlocated_network_test": 1,
+        "unresolved_selector": "HeadBasedSamplingTests.testSendingDroppedDistributedTraceWithNoParent_throughURLSessionInstrumentationAPI()",
+        "scope": "Recurs in candidate evidence; no comparable baseline execution. Neither inherited nor candidate-caused yet established."
+      },
+      "gate_promotion": false
     }
   },
-  "execution_root": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp203-release-reentrancy-pdag9iek"
+  "execution_root": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp203-release-reentrancy-pdag9iek",
+  "follow_up_network_qos": "EXP-204 owning result preserves baseline console recurrence and600s result-finalization timeout. No accepted paired result; candidate not executed. Original warning audit above is its pre-experiment snapshot."
 }

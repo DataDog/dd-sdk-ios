@@ -17,7 +17,7 @@
   "baseline_revision": "62f64d7b655bdc83f3036c4ad81090a270f6202b",
   "candidate_revision": "1bdc9286c17d69d73e5e41530e6179c72a723368",
   "protocol": "Experiments/EXP-198-network-performance-protocol.md",
-  "protocol_sha256": "1a695fab81cd8fe0f5bc24e0c789deef338074f149da1c917bfc78161545b2e2",
+  "protocol_sha256": "5515b78ef44782ec5931dabc926a356ad5118daf17189353f48b093d421b9179",
   "admission": "Close the four existing S1 performance/retention/reentrancy gates for the changed real URLSession path; no new product scope or telemetry family.",
   "source_policy": "Fixture-only adaptation outside SDK product; no production mutation admitted by this experiment. Exact same fixture and generated source projection in both arms.",
   "decisive_tests": [
@@ -308,7 +308,7 @@
     "all_thread_calibration": "PASS on actual17.5 caller, feature queue, background worker and concurrent epochs",
     "terminal_ownership": "REPAIRED by EXP-199 at1bdc9286; original464 failure preserved in attempts and Results/EXP-199-terminal-task-ownership.json. Paired native automatic/registered controls pass; numeric heap budgets remain unqualified.",
     "heap_budget": "UNQUALIFIED: bound, unbound and zero-body controls all exceed second100 absolute budget; no baseline subtraction or widened limit",
-    "next": "Preserve the bounded row-fixture review as incomplete qualification, continue missing C04/C05 and F03 gates, and admit accepted performance windows only after all row/control prerequisites pass. Shared fixture/Foundation heap growth remains unattributed."
+    "next": "Third fixture correction stopped before compilation/native execution on concrete observation/discriminator gaps. No fourth pass admitted. Continue independent F06 networking-QoS diagnostic and other finite release work while EXP-202 credential permission is pending. Numeric P01-P03 remain open; P04 accepted via EXP-203."
   },
   "protocol_revisions": [
     {
@@ -374,5 +374,72 @@
       "sha256": "a4b97de6ece3ab6f0df3a45dc5ee09a76a2be64bdcdc1705ffb283deb76118fc",
       "verdict": "REJECTED BEFORE EXECUTION"
     }
+  },
+  "third_fixture_qualification_timebox": {
+    "defined_at": "2026-09-20T03:36:57.903809+00:00",
+    "deadline": "2026-09-20T04:21:57.903809+00:00",
+    "correction_minutes": 45,
+    "scope": "One fresh temporary fixture and host/evaluator correction plus independent source review; no SDK source changes. Source-review gap or timebox expiration stops this attempt before native execution.",
+    "status": "ENDED: FROZEN SOURCE STILL HAS ADMISSION GAPS; NOT BUILT OR EXECUTED",
+    "design": {
+      "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp198-third-admission-kng0b_pg/design.md",
+      "sha256": "f5d25471a4175e2ac7712e0c104dfb120f3c4f5ff0ab66293442dd08de2d8548"
+    },
+    "p04_evidence": {
+      "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp198-third-admission-kng0b_pg/accepted-p04.json",
+      "sha256": "a4079a372feb4a81e9863e4bf93d4b3c01aaf6e325eccb4e11633501c911385c",
+      "audit": {
+        "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp203-evidence-audit-qty8j343/audit.json",
+        "sha256": "f2940befb77c5fda78343b242b0551cb1189c533096891c20f7e6aa708a970bd"
+      },
+      "selected_controls": [
+        "DatadogInternalTests/NetworkInstrumentationFeatureTests/testAutomaticMode_whenMutationResumesTheTask_itDoesNotReenterPreparation",
+        "DatadogInternalTests/NetworkInstrumentationFeatureTests/testAutomaticMode_whenResumeIsConcurrent_itPreparesBeforeForwardingEitherCall",
+        "DatadogInternalTests/NetworkInstrumentationFeatureTests/testPreparation_payloadDestructionCanResumeWithoutReinstrumenting"
+      ],
+      "executions": 3,
+      "production_source_hashes": {
+        "DatadogInternal/Sources/NetworkInstrumentation/NetworkInstrumentationFeature.swift": "2631ea56885a12d1b3d14b1044dd9a84319a0b382b817afb95b4edd305df5246",
+        "DatadogInternal/Sources/NetworkInstrumentation/URLSession/NetworkInstrumentationSwizzler.swift": "a00edec0d9451c3b78c52f308c2a7f771d0e8b9cfafada79a2848f1b164cfef7",
+        "DatadogInternal/Sources/NetworkInstrumentation/URLSession/URLSessionTaskSwizzler.swift": "96d302999632cc609a98e774106f1e51c4ef9fecfe089287426285aa524e4570"
+      }
+    },
+    "owners": {
+      "fixture": "isolated implementation worker",
+      "host_and_decision": "root",
+      "evaluator_and_reviews": "independent bounded reviewers"
+    },
+    "qualification_bound": "Only after source review: at most one compile per A/B plus at most four separately labelled native qualification cells A/B x automatic/registered on17.5, bounded30minutes. Qualification runs no accepted samples and cannot close numeric gates. Stop on failure; retain all artifacts.",
+    "measurement_bound": "Only after qualified source/build/native controls: exactly32 fresh launches as frozen, one ABBA quartet per runtime/tracking/instrument cell. Predeclare finite host timeout before execution. No other build/test/profile workload. No altered rows, samples, thresholds or subtraction.",
+    "required_corrections": [
+      "Full measured unbound-first-resume row before binding in every existing process; numeric firstA/finalA comparison under unchanged budgets",
+      "Counter-active discarded1000-operation warmups; actual lifecycle receipts and observed outstanding maximum<=64",
+      "Fresh independent220-task feature cohort, fail-closed owning-state reflection, actual task/feature/payload/continuation sensitivity controls",
+      "Exact same native class resume IMP before binding and after final release, plus separate native lifecycle receipt; never flush nil feature",
+      "Keep candidate-only coordinator control explicitly unsupported on A; freeze accepted prior correctness evidence instead of broad reruns"
+    ],
+    "thresholds_changed": false,
+    "measurement_rows_changed": false,
+    "accepted_launches_changed": false,
+    "ended_at": "2026-09-20T03:48:38.682105+00:00",
+    "output_fixture": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp198-third-fixture.EyAMKh",
+    "swift_sha256": "33a104c71d827c056aa9a4f85954b5de2c9d0ae3ac2163b518f8e771708dcdec",
+    "host_draft": {
+      "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp198-third-host-z3pzjtqd/host.py",
+      "sha256": "4110d4a8b1ee5975a507efa3503d8a54f59b144d1e1911647c906bd8f57722b0"
+    },
+    "evaluator_draft": {
+      "path": "/tmp/exp198-third-evaluator.HV0Kqk/evaluate_exp198.py",
+      "sha256": "bd52ec9365579fcd1193d8619fae5d88062efad876e5440174d86e1cfd5429a4",
+      "status": "INCOMPLETE; SYNTAX ONLY; NO OFFLINE CONTROLS OR QUALIFICATION"
+    },
+    "blockers": [
+      "Frozen worker output explicitly omits the required completed-task repeated-resume discriminator.",
+      "Row native_resume_observed/native_completion_observed count fixture wrappers, not native protocol/completion/invalidation callback receipts. Channel lacks counted start/invalidation receipts; unused LifecycleTally derives rather than observes them.",
+      "Native source has not type-checked: throwing withExtendedLifetime calls lack try at the call boundary. No build is admitted after the decisive remaining gaps."
+    ],
+    "native_launches": 0,
+    "accepted_abba_launches": 0,
+    "disposition": "End at the declared source-gap stop rule; no post-freeze patch/retry. Preserve all three attempts and unchanged SDK/thresholds. Continue independent existing release work; no fourth fixture pass is admitted."
   }
 }

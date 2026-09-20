@@ -1,0 +1,213 @@
+{
+  "schema_version": 1,
+  "experiment": "EXP-204",
+  "status": "INCONCLUSIVE \u2014 baseline warning observed; paired result unavailable",
+  "defined_at": "2026-09-20T03:51:05.811554+00:00",
+  "gates": [
+    "S1:F06"
+  ],
+  "owner": "Root host controller; independent artifact review",
+  "baseline_revision": "62f64d7b655bdc83f3036c4ad81090a270f6202b",
+  "candidate_revision": "1bdc9286c17d69d73e5e41530e6179c72a723368",
+  "hypothesis": "The retained locationless networking QoS warning may also occur in unchanged current-develop single-resume handling; no stack currently proves E01-specific causality.",
+  "selector": "DatadogIntegrationTests/HeadBasedSamplingTests/testSendingDroppedDistributedTraceWithNoParent_throughURLSessionInstrumentationAPI",
+  "audit": {
+    "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp201-network-qos-diagnostic-g0hvj3ar/audit.json",
+    "sha256": "2258b9d145ad8bd32539dc6b7a39b350a063a448a109858dd2d6031c7d92f7f9"
+  },
+  "artifact_root": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp204-product-root-correction-qd2g7vxq",
+  "environment": "Xcode27.1/27A9269, actual17.5/21F79 arm64 simulator; preserve normal existing diagnostics, unchanged test and helpers.",
+  "definition": {
+    "runs": "One source-matched baseline62f64 then candidate1bd existing-binary single-selector execution, no retry. This investigates the concrete F06 warning rather than repeating accepted compatibility evidence.",
+    "build_policy": "Use scheme-based test-without-building with retained EXP201 products only after source/product/pin/runtime verification. No .xctestrun exists. If reuse unavailable, retain NOT_EXECUTED and stop; no implicit rebuild/dependency refresh.",
+    "oracle": [
+      "Require exact1 selected test/1 execution per arm, record pass/fail/skip/retry and every runtime warning. Capture per-test activity/details and available diagnostic stack without suppressing warnings.",
+      "Baseline occurrence establishes inheritance of the warning occurrence, not harmlessness. Candidate-only recurrence remains a differential signal requiring the stack.",
+      "No warning in either single execution means this finite control did not reproduce the suite-dependent/scheduling-sensitive warning; it does not prove the warning fixed, harmless, or absent globally.",
+      "No repeat-until-clean, no new assertions/workload changes, no numerical performance or sanitizer claim."
+    ],
+    "source_changes_allowed": false,
+    "credentials_allowed": false,
+    "bound": "20minutes total, each invocation at most600seconds; stop on artifact reuse/preflight failure or test failure before diagnosis. Two native test executions maximum.",
+    "cleanup": "Terminate/uninstall exact Example fixture, verify process/container absence and original simulator state; preserve protected files and the user seven-hour assertion."
+  },
+  "reuse_inputs": [
+    {
+      "arm": "baseline",
+      "cwd": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp201-hitch-complete-k_7pu9mo/baseline",
+      "head": "62f64d7b655bdc83f3036c4ad81090a270f6202b",
+      "sources_sha256": {
+        "Datadog/IntegrationUnitTests/Trace/HeadBasedSamplingTests.swift": "e65b402c0e4cc8b1ae9e52bd55f02736a590d15752fd27e0b7809393361b4ad1",
+        "TestUtilities/Sources/Helpers/XCTestCase.swift": "0f035d45f9479413a7c6f5e60e43a85dbadd407011355a7ece13cb0eea3e08ad",
+        "TestUtilities/Sources/Proxies/ServerMock.swift": "3f3d5d94bc5a452f02430fd1ac0a831c2430c2c6f6d9fbf5f723a192678ea444"
+      },
+      "test_binary": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp201-hitch-complete-k_7pu9mo/baseline-derived/Build/Products/Debug-iphonesimulator/Example.app/PlugIns/DatadogIntegrationTests.xctest/DatadogIntegrationTests",
+      "test_binary_sha256": "afe78e2c02cd86cb79d6c5314837bfe14eb9bcbe6e19c6c9c99930343b00acf9",
+      "selected_symbol_present": true,
+      "xctestrun_count": 0,
+      "protected_local_xcconfig_present_metadata_only": false,
+      "proposed_argv_not_executed": [
+        "/Applications/Xcode_27.1.app/Contents/Developer/usr/bin/xcodebuild",
+        "test-without-building",
+        "-workspace",
+        "Datadog.xcworkspace",
+        "-scheme",
+        "DatadogIntegrationTests",
+        "-configuration",
+        "Debug",
+        "-destination",
+        "platform=iOS Simulator,id=EEF49588-982B-492E-92AF-57F900ACEACD",
+        "-derivedDataPath",
+        "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp201-hitch-complete-k_7pu9mo/baseline-derived",
+        "-clonedSourcePackagesDirPath",
+        "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp201-hitch-complete-k_7pu9mo/SourcePackages",
+        "-disableAutomaticPackageResolution",
+        "-resultBundlePath",
+        "<fresh-admitted-output>/baseline.xcresult",
+        "-parallel-testing-enabled",
+        "NO",
+        "-enableCodeCoverage",
+        "NO",
+        "CODE_SIGNING_ALLOWED=NO",
+        "DD_API_KEY=",
+        "DD_TEST_RUNNER=",
+        "OTHER_SWIFT_FLAGS=$(inherited) -D DD_SDK_COMPILED_FOR_TESTING",
+        "-only-testing:DatadogIntegrationTests/HeadBasedSamplingTests/testSendingDroppedDistributedTraceWithNoParent_throughURLSessionInstrumentationAPI"
+      ]
+    },
+    {
+      "arm": "candidate",
+      "cwd": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp201-hitch-complete-k_7pu9mo/candidate",
+      "head": "1bdc9286c17d69d73e5e41530e6179c72a723368",
+      "sources_sha256": {
+        "Datadog/IntegrationUnitTests/Trace/HeadBasedSamplingTests.swift": "e65b402c0e4cc8b1ae9e52bd55f02736a590d15752fd27e0b7809393361b4ad1",
+        "TestUtilities/Sources/Helpers/XCTestCase.swift": "0f035d45f9479413a7c6f5e60e43a85dbadd407011355a7ece13cb0eea3e08ad",
+        "TestUtilities/Sources/Proxies/ServerMock.swift": "3f3d5d94bc5a452f02430fd1ac0a831c2430c2c6f6d9fbf5f723a192678ea444"
+      },
+      "test_binary": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp201-hitch-complete-k_7pu9mo/candidate-derived/Build/Products/Debug-iphonesimulator/Example.app/PlugIns/DatadogIntegrationTests.xctest/DatadogIntegrationTests",
+      "test_binary_sha256": "17588a582de4d2987969b16bd23fe539cf1d48d796c6574b1712d51fd97540f7",
+      "selected_symbol_present": true,
+      "xctestrun_count": 0,
+      "protected_local_xcconfig_present_metadata_only": false,
+      "proposed_argv_not_executed": [
+        "/Applications/Xcode_27.1.app/Contents/Developer/usr/bin/xcodebuild",
+        "test-without-building",
+        "-workspace",
+        "Datadog.xcworkspace",
+        "-scheme",
+        "DatadogIntegrationTests",
+        "-configuration",
+        "Debug",
+        "-destination",
+        "platform=iOS Simulator,id=EEF49588-982B-492E-92AF-57F900ACEACD",
+        "-derivedDataPath",
+        "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp201-hitch-complete-k_7pu9mo/candidate-derived",
+        "-clonedSourcePackagesDirPath",
+        "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp201-hitch-complete-k_7pu9mo/SourcePackages",
+        "-disableAutomaticPackageResolution",
+        "-resultBundlePath",
+        "<fresh-admitted-output>/candidate.xcresult",
+        "-parallel-testing-enabled",
+        "NO",
+        "-enableCodeCoverage",
+        "NO",
+        "CODE_SIGNING_ALLOWED=NO",
+        "DD_API_KEY=",
+        "DD_TEST_RUNNER=",
+        "OTHER_SWIFT_FLAGS=$(inherited) -D DD_SDK_COMPILED_FOR_TESTING",
+        "-only-testing:DatadogIntegrationTests/HeadBasedSamplingTests/testSendingDroppedDistributedTraceWithNoParent_throughURLSessionInstrumentationAPI"
+      ]
+    }
+  ],
+  "result": {
+    "executions": 1,
+    "accepted_arm_results": 0,
+    "candidate_executions": 0,
+    "baseline_console": {
+      "selected_test_pass_lines": 1,
+      "reported_tests": 1,
+      "reported_failures": 0,
+      "qos_warning_occurrences": 1,
+      "duration_seconds": 0.041,
+      "warning": "User-initiated thread waits on Default QoS thread",
+      "stack_scope": "15 shown frames in TSan dispatch wrappers, CFNetwork, libdispatch and pthread; incomplete frame numbering, no shown SDK frame. No private CFNetwork function or missing asynchronous caller is inferred."
+    },
+    "host": {
+      "returncode": -15,
+      "timeout_seconds": 600,
+      "xcresult_readers_returncode": 64,
+      "xcresult_limitation": "Info.plist absent; no readable final inventory, details or activities",
+      "failure": "existing binary reuse or selected test did not pass exactly once",
+      "candidate": "NOT_EXECUTED after baseline host timeout"
+    },
+    "classification": "Baseline console proves this warning can occur without E01 in this environment. Paired experiment remains inconclusive; no candidate equivalence, harmlessness, sanitizer or performance clearance. No retry admitted.",
+    "source_unchanged": true,
+    "product_unchanged": true,
+    "cleanup": "All three checkpoints PASS: Example process/container absent, original simulator binding and protected paths preserved; user seven-hour assertion left active."
+  },
+  "preflight_attempts": [
+    {
+      "root": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp204-network-qos-bjy6bcnd",
+      "status": "NOT_EXECUTED",
+      "failure": "wrong host root",
+      "native_test_executions": 0,
+      "cleanup": "PASS",
+      "runner_sha256": "e4f65736859d518616ef5410be869fcf53e3a6bba26061b40c19d23105279ba6"
+    }
+  ],
+  "corrected_preflight": {
+    "defined_at": "2026-09-20T03:55:18.499932+00:00",
+    "previous_root": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp204-network-qos-bjy6bcnd",
+    "previous_summary_sha256": "79ed9d68ef6aed67a054b9cfa3f6be7533530558a51d0e31c26c8d981a4051fc",
+    "previous_runner_sha256": "e4f65736859d518616ef5410be869fcf53e3a6bba26061b40c19d23105279ba6",
+    "reason": "Product path helper chose the enclosing Products directory instead of Example.app. Zero test invocations; cleanup/protected state pass. Correct path selection only; no source/build/test/oracle changes.",
+    "remaining_native_executions": 2
+  },
+  "artifacts": {
+    "definition.json": {
+      "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp204-product-root-correction-qd2g7vxq/definition.json",
+      "sha256": "80d1414d729285733dd96de8479a759480f63067d466d743e4ffb7fd9725cdb1"
+    },
+    "run.py": {
+      "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp204-product-root-correction-qd2g7vxq/run.py",
+      "sha256": "905623d613fdc7870da2ac93b5bfcf0ce4c54c00dab1dd7d14f4cbd713ed2307"
+    },
+    "summary.json": {
+      "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp204-product-root-correction-qd2g7vxq/summary.json",
+      "sha256": "e3deb9f8beba55825cd1816bc4fccf1353ac86a2c4292c84dadb95d38f90a0c2"
+    },
+    "source-inputs.json": {
+      "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp204-product-root-correction-qd2g7vxq/source-inputs.json",
+      "sha256": "ea48ca71a56264abf7659f20e65e8b77415b182e3f6386d13aa33fcc91a9337a"
+    },
+    "product-inputs.json": {
+      "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp204-product-root-correction-qd2g7vxq/product-inputs.json",
+      "sha256": "67de0abac4df151ef8cbd14030448fe1446b55862ad320fd3c4f2d8a694b1aeb"
+    },
+    "baseline.log": {
+      "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp204-product-root-correction-qd2g7vxq/baseline.log",
+      "sha256": "099d3ac974cc08eef796d8a8e0d4a86435f1206daad90cfdee33701402492e14"
+    },
+    "baseline-summary.log": {
+      "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp204-product-root-correction-qd2g7vxq/baseline-summary.log",
+      "sha256": "1f79ac4d91b9ea3b1f9a97284ebc5e27c3aae421689ddb95177e24dce5caa18e"
+    },
+    "baseline-tests.log": {
+      "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp204-product-root-correction-qd2g7vxq/baseline-tests.log",
+      "sha256": "1f79ac4d91b9ea3b1f9a97284ebc5e27c3aae421689ddb95177e24dce5caa18e"
+    },
+    "baseline-test-details.log": {
+      "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp204-product-root-correction-qd2g7vxq/baseline-test-details.log",
+      "sha256": "1f79ac4d91b9ea3b1f9a97284ebc5e27c3aae421689ddb95177e24dce5caa18e"
+    },
+    "baseline-activities.log": {
+      "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp204-product-root-correction-qd2g7vxq/baseline-activities.log",
+      "sha256": "1f79ac4d91b9ea3b1f9a97284ebc5e27c3aae421689ddb95177e24dce5caa18e"
+    }
+  },
+  "independent_review": {
+    "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp204-qos-independent-1dya3cd0/audit-final.json",
+    "sha256": "9dc92c84f6314744290c993e5c444edab89ff3ffd3a1ccf2774d6523ef81419a",
+    "verdict": "Keep INCONCLUSIVE; baseline occurrence established; no candidate execution or gate promotion."
+  }
+}

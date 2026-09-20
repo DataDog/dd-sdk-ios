@@ -104,6 +104,14 @@ reuses accepted Debug controls and qualifies only three existing selectors in
 Release. Require actual -O compiler jobs and ENABLE_TESTABILITY=YES; exact test
 identities matter, and a Debug result is not an optimized result.
 
+When reusing an existing test binary for a bounded diagnostic, select its host
+by the actual `.app` ancestor, verify complete source/product fingerprints, and
+retain the exact existing diagnostic configuration. A console test PASS cannot
+replace a finalized result inventory. If Xcode exceeds the declared bound after
+the test returns, retain any observed warning separately, record the reader
+failure, clean up, and stop before the next arm. EXP-204 demonstrates this limit;
+no automatic retry, hidden rebuild or diagnostic suppression is permitted.
+
 ## Full-target platform compatibility checks
 
 [F03's finite matrix](FINAL_COMPATIBILITY.md) names the final module, client and

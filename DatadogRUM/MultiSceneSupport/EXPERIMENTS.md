@@ -236,3 +236,5 @@ conclusions belong in [ASSESSMENT.md](ASSESSMENT.md).
 
 | <a id="exp-202"></a>EXP-202 | A01, T03, T08 | Offline preparation qualified · credentials blocked | Both placeholder Release arms compile;57 synthetic oracle controls and host failure checks pass. No native launch; credential-build approval and actual backend acceptance remain open. | [record](Experiments/EXP-202-urlsession-backend.md#exp-202--qualify-ordinary-resource-and-trace-lifecycle-acceptance) |
 | <a id="exp-203"></a>EXP-203 | P04 | S1:P04 closed |3 optimized controls/3 executions pass; exact compiler/source/product and cleanup proof. Debug invariants reused; numeric gates unchanged, dependency diagnostics retained for F06. | [record](Experiments/EXP-203-optimized-reentrancy.md#exp-203--qualify-the-release-configuration-for-s1p04) |
+
+| <a id="exp-204"></a>EXP-204 | F06 | Inconclusive · baseline warning observed | Baseline console passes1 test and reproduces QoS warning;600s host timeout prevents final inventory, candidate never runs. Cleanup passes; no retry or clearance. | [record](Experiments/EXP-204-network-qos.md#exp-204--classify-the-retained-networking-priority-inversion-warning) |

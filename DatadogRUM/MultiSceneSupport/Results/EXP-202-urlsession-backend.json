@@ -716,5 +716,17 @@
   ],
   "result": null,
   "native_prerequisite_launches_consumed": 0,
-  "acceptance_launches_consumed": 0
+  "acceptance_launches_consumed": 0,
+  "unapplied_credential_proposal_review": {
+    "status": "CORRECTED OFFLINE; USER APPROVAL STILL PENDING; NOT APPLIED",
+    "patch": {
+      "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp202-host-runner-qj2jmikp/credential-build-proposal.patch",
+      "sha256": "89c90cc6aea5a8bb6b4d7c215c61999799507cf1cd683e5cd558300f5e7f021c"
+    },
+    "audit": {
+      "path": "/tmp/exp202-credential-proposal-review-qj2jmikp-v2/audit.json",
+      "sha256": "a07ed0302193fe9a5aa0b8e2aaa890b7506c2961b2879fb9028e4a6a53067b83"
+    },
+    "corrections": "Strict nonsecret receipt; frozen externally supplied credential guard and explicit receipt revalidated at build entry. Seven offline controls pass. Default remains placeholder; no protected read/build/native launch."
+  }
 }

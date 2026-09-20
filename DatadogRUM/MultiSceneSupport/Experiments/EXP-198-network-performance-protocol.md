@@ -144,3 +144,29 @@ Preparation may run alongside EXP-201 source/documentation work, but accepted
 measurements wait for completed host workloads. Thresholds, rows, sample counts,
 ABBA order and candidate identities remain unchanged. The owning result records
 the exact input, required corrections and subsequent output hashes.
+
+## Third fixture correction admission
+
+Defined 2026-09-20T03:36:57.903809+00:00 before implementation; ends
+2026-09-20T04:21:57.903809+00:00 (45minutes). The reviewed v2 design and frozen
+accepted EXP-203 evidence are retained by the owning result. One fresh-copy
+fixture/host/evaluator correction and independent review may close the rejected
+draft's five concrete gaps. Preserve full measured unbound rows in every existing
+launch, numeric first-A/final-A controls, counter-active warm-ups, observed
+receipts/maximum, a separate fresh220-task cohort, genuine ownership negatives
+and exact before-bind/after-release native resume IMP equality. Keep A's missing
+coordinator explicitly unsupported. Prior drafts remain rejected and unchanged.
+
+A source-review gap or expiration ends this attempt. After review passes, allow
+at most one build per arm and four separately labelled17.5 qualification cells
+(A/B × automatic/registered), bounded30minutes, before accepted measurements.
+Qualification supplies no numeric samples or gate closure. Root owns execution;
+all32 accepted launches, rows, sample counts and original thresholds remain fixed.
+P04 now reuses accepted EXP-203 and is no longer a missing numeric prerequisite.
+
+The third source pass ended before compilation/native execution. Its frozen
+output explicitly omits completed-task re-resume qualification and counts fixture
+wrappers instead of native start/invalidation receipts. Root preserves the
+fixture, partial host and incomplete evaluator hashes in the owning result.
+No numeric sample, test failure or SDK regression follows; no fourth correction
+pass is admitted. Keep the original budgets and continue independent release work.

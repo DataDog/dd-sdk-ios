@@ -69,6 +69,16 @@ default SPM products and five accepted public-client link/load graphs exclude th
 second implementation. This resolves their shipped-product scope, not arbitrary
 duplicate-class safety or all test warnings. F06 remains open. EXP-202's preparation defects are
 harness findings, and its placeholder builds do not supply runtime/backend proof.
+The follow-up warning audit preserves142 lines/41 messages;39 messages already
+occur in the accepted baseline build, and all production warning sites are
+unchanged. Four added lines are test-only. Eight of nine retained QoS warnings
+have unchanged watchdog/test-wait locations. [EXP-204](Results/EXP-204-network-qos.json)
+reproduces the remaining networking warning without E01 in baseline console.
+Xcode then times out before result finalization; candidate never runs. The paired
+check stays inconclusive, with no harmlessness or sanitizer/performance clearance.
+F06 retains the diagnostic and its evidence boundary. EXP-198's third fixture pass stops before execution on observation
+and completed-task-control gaps; those are harness defects, not SDK findings.
+
 
 Review closure does not imply overall release readiness. Current release status
 belongs exclusively to [release-gates.json](release-gates.json) and [PLAN](PLAN.md).
