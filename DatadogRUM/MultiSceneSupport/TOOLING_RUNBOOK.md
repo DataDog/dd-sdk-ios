@@ -369,6 +369,27 @@ sequence and both100ms expiry controls. An automatic-only filter cannot claim
 the unannotated foreign-owner regressions fixed. No empty-byte heuristic,
 synthetic-only native claim or undocumented manual contract amendment is allowed.
 
+Before holding an HTTP body, prove Foundation has actually delivered response and
+initial data while completion is still absent. EXP214's SDK-off controls required
+nosniff and one initial byte for that fixture. A zero-byte failure instead fences
+server header write and verifies response plus error at EOF. Record bytes before
+and after release; mutate state before fulfilling readiness. Confine test/server/
+delegate state to a verified queue. Preserve invalid aggregate runs and reuse only
+individually audited cases whose exercised behavior is unchanged. Account for the
+specific sampled SDK debug telemetry separately from public event counts; reject
+unexpected telemetry rather than accepting arbitrary extra event families.
+
+An inherited telemetry exception requires baseline/current source attribution,
+independent review, exact case/message/status/identity and bounded multiplicity.
+Keep the rejected audit and raw records, write a separately named classified
+audit, and test wrong-case/message/identity/duplicate mutations. Do not suppress
+SDK telemetry or infer complete session-metadata correctness. EXP214 applies this
+to an existing stopped-session precondition diagnostic without rerunning XCTest.
+Inspect the actual expiration calculation before treating a private timestamp
+write as an action-duration defect. In EXP214, deadlines use actionStartTime;
+lastActivityTime has no reader and metrics do not change counters. Reuse the
+qualified expiry control instead of adding an unsupported repair or run.
+
 ## Documentation reading and update workflow
 
 [.continue-here.md](../../.continue-here.md) is the sole restart cursor.

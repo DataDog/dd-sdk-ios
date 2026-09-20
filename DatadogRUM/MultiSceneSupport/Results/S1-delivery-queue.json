@@ -343,16 +343,19 @@
       "pr_url": null,
       "merge_commit": null,
       "id": "E03",
-      "gate_reference": "S1:E03; repair not yet admitted",
+      "gate_reference": "S1:E03; compatible six-file repair admitted",
       "title": "Keep Resource completion counters on their owning view",
       "title_provisional": true,
       "branch_slug": "resource-completion-ownership",
-      "state": "EXP214_approved_native_error_outcome_design_review",
+      "state": "signed_local_repair_qualified_release_checks_pending",
       "source_worktree": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/resource-completion-ownership",
       "source_branch": "valpertui/resource-completion-ownership",
       "source_head": "62f64d7b655bdc83f3036c4ad81090a270f6202b",
-      "production_revision": null,
-      "selected_commits": [],
+      "production_revision": "562cf74dde410767caf95561e68f2f021feb471c",
+      "selected_commits": [
+        "562cf74dde410767caf95561e68f2f021feb471c",
+        "385583bf42dafd51e148967ea500c2e9bae61646"
+      ],
       "target": "develop unless the admitted design proves a specific dependency",
       "hard_merge_dependencies": [],
       "allowed_existing_paths": [
@@ -375,24 +378,55 @@
       "decisive_test": "Keep four original foreign ownership reds and four ordinary/100ms expiry controls. Preserve all nine historical bodies/baseline; supersede ninth automatic role explicitly. Actual-handler/native failed-body transfer produces one owning network Error, zero completed Resources, controlled action0/1 with received status; successful/HEAD/204 and manual compatibility remain unchanged.",
       "environment": "Bounded source/design review first, then affected RUM unit and native public-monitor/actual-handler tests on available supported runtime; candidate compatibility/CI after a compatible repair exists.",
       "remaining_gates": [
-        "E03-A: Resolve manual/native ownership, action transitions, generation/key reuse and queue confinement; admit or explicitly reject one bounded design",
-        "E03-B: Freeze exact source/test paths and new automatic error-first acceptance; preserve nine historical bodies and both100ms expiry limits.",
-        "E03-C: Implement and prove same-view preservation plus foreign-owner isolation, terminal cleanup and key reuse",
-        "E03-D: Complete affected release inventory, documentation, CI, signed history and human review",
-        "Prepare and publish implementation PR only with honest repair/qualification status and separate authorization"
+        "E03-D: ten remaining iOS schemes and twelve affected-platform Debug/Release cells on final candidate source",
+        "E03-D: inherited global Trace-document drift, real ticket, required CI and human review",
+        "Separately authorized publication/merge with signed outgoing history and verified upstream content"
       ],
-      "candidate_design": "Reassess single native error terminal plus bounded per-dispatch tracked-owner resolution. No token/history requirement solely for retired automatic dual terminal; implementation not yet admitted.",
+      "candidate_design": "Single automatic error terminal plus per-dispatch known-owner IDs; action filtering follows expiry and preserves matching Resource/TNS settlement and unknown manual compatibility.",
       "limits": [
-        "Current worktree has only two intentional dirty reproducer tests; preserve them",
-        "Simple current-resource-key membership is incompatible after success removes the key",
-        "Resource/error UUIDs already remain correct; the known defect is foreign action counters/frustration",
-        "Do not bind completion to an obsolete action: preserve valid current action behavior within the owning view",
-        "No E03 implementation PR is ready now"
+        "Original two-file dirty reproducer is unchanged; the signed repair lives in a separate checkout",
+        "Within the owning view, valid completion updates the current eligible action",
+        "Inherited stopped-session precondition diagnostic remains; no telemetry-free or full session-metadata claim",
+        "No backend ingestion, customer prevalence, full-platform or delivery-readiness claim"
       ],
-      "rollback": "Define with admitted repair; no production change currently exists to revert.",
+      "rollback": "Revert the standalone Resource repair and its documentation independently; it has no hard merge dependency.",
       "contract_proposal": "E03_COMPLETION_CONTRACT.md",
-      "next_action": "Finish bounded source/manual-compatibility review under approved native outcome; freeze exact paths, selectors, expected results and runtime budgets before implementation.",
-      "product_decision": "E03_RESOURCE_COMPLETION_DECISION.md"
+      "next_action": "Complete the final-source ten remaining iOS schemes and twelve affected-platform cells, then exact delivery metadata/CI/human review.",
+      "product_decision": "E03_RESOURCE_COMPLETION_DECISION.md",
+      "implementation_worktree": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/exp214-repair-_6vxqe6i/worktree",
+      "allowed_production_paths_after_design_admission": [
+        "DatadogRUM/Sources/RUMMonitor/RUMCommand.swift",
+        "DatadogRUM/Sources/RUMMonitor/Scopes/RUMApplicationScope.swift",
+        "DatadogRUM/Sources/RUMMonitor/Scopes/RUMSessionScope.swift",
+        "DatadogRUM/Sources/RUMMonitor/Scopes/RUMViewScope.swift",
+        "DatadogRUM/Sources/RUMMonitor/Scopes/RUMUserActionScope.swift",
+        "DatadogRUM/Sources/Instrumentation/Resources/URLSessionRUMResourcesHandler.swift"
+      ],
+      "completed_steps": [
+        "E03-A: compatible six-file design reviewed; metadata distinction explicit",
+        "E03-B: original9 bodies preserved;15unit and9native baseline cases qualified with invalid attempts retained",
+        "E03-C: signed compatible repair, full RUM925/961 and9 native XCTest passes with classified inherited diagnostic; source review confirms metrics preserve fixed expiry and action counters"
+      ],
+      "delivery_head": "385583bf42dafd51e148967ea500c2e9bae61646",
+      "delivery_checkout": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/exp214-repair-_6vxqe6i/worktree",
+      "packet": "Results/S1-E03-packet.json",
+      "body": "Delivery/E03-pr.md",
+      "allowed_additional_test_paths": [
+        "DatadogRUM/Tests/Instrumentation/Resources/URLSessionRUMResourcesHandlerTests.swift",
+        "Datadog/IntegrationUnitTests/Public/NetworkInstrumentationIntegrationTests.swift"
+      ],
+      "remaining_iOS_schemes": [
+        "DatadogInternal",
+        "DatadogCore",
+        "DatadogSessionReplay",
+        "DatadogLogs",
+        "DatadogTrace",
+        "DatadogCrashReporting",
+        "DatadogWebViewTracking",
+        "DatadogFlags",
+        "DatadogProfiling",
+        "DatadogIntegrationTests"
+      ]
     },
     {
       "owner": "Main execution session / SDK implementer",
@@ -625,6 +659,7 @@
     "local_packets": "Results/S1-H00-E01-packets.json",
     "next_repair": "EXP-214 / E03-A design admission before S2 expansion",
     "independent_local_packets": "Results/S1-independent-packets.json",
-    "E03_product_amendment": "2026-09-20T21:53:03.431125+00:00"
+    "E03_product_amendment": "2026-09-20T21:53:03.431125+00:00",
+    "E03": "2026-09-20T23:37:41.791752+00:00"
   }
 }

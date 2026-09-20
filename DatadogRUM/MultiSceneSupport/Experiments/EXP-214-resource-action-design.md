@@ -2,14 +2,50 @@
 
 ## EXP-214 — Admit the E03 repair with the approved transfer outcome
 
-Defined before implementation or new runtime work after the EXP-213 checkpoint. The [owning result](../Results/EXP-214-resource-action-design.json) retains the original source, nine EXP-206 selectors, reviews and engineering checkpoint. E03 remains open and no implementation/runtime is admitted.
+The [owning result](../Results/EXP-214-resource-action-design.json) records the
+approved [Resource-completion contract](../E03_RESOURCE_COMPLETION_DECISION.md),
+reviews, exact source/test manifests, every attempt and fixed runtime budgets.
+All nine EXP206 bodies and both100ms expiry controls remain unchanged. Its ninth
+manual sequence is preserved; it does not establish historical automatic intent.
 
-The original known defect mutates another view/session's action counts and frustration. The ninth control also exposed a response-first path: success removes the Resource scope before its paired error can produce an Error event. Its original one-Resource/no-Error/1:1 action result remains historical evidence.
+The baseline qualifies15 new unit cases: five intended failures and ten controls.
+Nine native cases are qualified individually across preserved fixture corrections:
+four actual failed-transfer witnesses and five controls. Failed bodies produce a
+completed Resource and no Error on unchanged develop, with incorrect1/1 action
+counts, including a foreign view/session action. Callback and writer-JSON evidence
+establish exact received status, bytes, completion cardinality and ownership.
+No customer prevalence or backend ingestion is inferred.
 
-The subsequent [user decision](../E03_RESOURCE_COMPLETION_DECISION.md) changes the automatic contract. A failed required-body transfer, even with received HTTP headers or partial bytes, must produce one network Error and no completed Resource. Retain received status through existing Error resource fields. In the controlled live-action case, resource/error counts are 0/1 and existing error frustration applies. Successful nonempty bodies and legitimate empty HEAD/204 responses remain Resources; ordinary HTTP-status, cancellation, mapping and expiry rules remain.
+The initial headers-only fixture was invalid. SDK-off transport discriminators
+showed that nosniff plus one initial byte provides a pending native response
+boundary. Partial-body transitions now require response200, first byte and zero
+completions before release; missing-body requires headers written by the server
+then response200/error at EOF with zero bytes. Configuration/prefix compile and
+fixture mistakes, discovery filtering and a sampled-debug-telemetry oracle
+correction remain in their original artifacts. Only invalid cells were rerun.
+Nineteen prior oracle negatives and six amendment controls preserve the strict
+callback, ownership and cardinality discriminators.
 
-The [active contract](../E03_COMPLETION_CONTRACT.md) therefore reassesses a single error terminal and bounded ownership resolution. A token/ledger solely for the old automatic dual-terminal signal is no longer required. The independent reviewer is checking the smallest source-compatible design, including manual current-key and repeated-stop behavior; the automatic decision does not approve unrelated manual changes.
+Independent review accepts the six-file repair: choose one automatic error
+terminal, snapshot known Resource owners before broadcast, filter foreign action
+mutation after expiry, and preserve all matching Resource/TNS settlement. Unknown
+manual/repeated-stop/current-key behavior remains unchanged. Internal nil means
+unresolved; an empty owner array plus origin distinguishes automatic unowned from
+manual fallback. There is no retained owner history, new API or wire format.
 
-All nine original test bodies and the red baseline remain preserved. The ninth no longer defines automatic failed-transfer acceptance, and may remain an unchanged manual compatibility witness. Keep the other eight controls and both100ms expiry boundaries. Before edits, freeze exact paths/selectors for actual-handler and native headers-then-body-failure controls, successful and legitimate empty responses, action/view/session transitions, mappers, manual reuse and cleanup. No synthetic test establishes production prevalence.
+The standalone repair is signed at562cf74dd; its own documentation is signed at385583bf4.
+All925 RUM cases /961 executions and nine native XCTest cases pass. Source/build
+identity, exact inventories, both readers, lint and cleanup pass. The native
+attachment audit retains its original rejection, then explicitly classifies two
+source-proven inherited session-precondition records in the stopped-session case.
+Seventeen new telemetry mutation negatives and four sampled positives qualify
+that narrow exception without an XCTest rerun. This is Resource/Error/Action
+contract evidence, with no telemetry-free or complete session-metadata claim.
 
-The original design checkpoint records the changed product premise and pending source admission, without extending any runtime allowance. Continue independent S1 delivery checks while design review completes. The separately documented failed-Resource visibility enhancement is deferred and does not block E03.
+The metrics review finds no additional defect. Expiry is anchored to actionStartTime,
+metrics do not change action counters, and lastActivityTime has no reader. The
+unchanged100ms preservation control passed in the full repaired suite; no extra
+source slice or runtime is needed. Its command offset is1ms after the deadline,
+while1ns is the assertion tolerance. Do not claim metrics are filtered before
+peer scopes. The signed repair now proceeds to missing candidate compatibility
+checks. Other S1 packets remain independent; delivery review stays open.

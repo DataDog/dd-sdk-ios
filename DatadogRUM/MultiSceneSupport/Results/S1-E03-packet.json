@@ -1,0 +1,146 @@
+{
+  "schema_version": 1,
+  "unit": "E03",
+  "created_at": "2026-09-20T23:33:03.405813+00:00",
+  "status": "signed_local_repair_qualified_release_checks_pending",
+  "baseline": "62f64d7b655bdc83f3036c4ad81090a270f6202b",
+  "worktree": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/exp214-repair-_6vxqe6i/worktree",
+  "production_commit": {
+    "parent": "62f64d7b655bdc83f3036c4ad81090a270f6202b",
+    "paths": [
+      "DatadogRUM/Sources/RUMMonitor/RUMCommand.swift",
+      "DatadogRUM/Sources/Instrumentation/Resources/URLSessionRUMResourcesHandler.swift",
+      "DatadogRUM/Sources/RUMMonitor/Scopes/RUMApplicationScope.swift",
+      "DatadogRUM/Sources/RUMMonitor/Scopes/RUMSessionScope.swift",
+      "DatadogRUM/Sources/RUMMonitor/Scopes/RUMViewScope.swift",
+      "DatadogRUM/Sources/RUMMonitor/Scopes/RUMUserActionScope.swift",
+      "DatadogRUM/Tests/RUMMonitor/Scopes/RUMApplicationScopeTests.swift",
+      "DatadogRUM/Tests/RUMMonitor/Scopes/RUMSessionScopeTests.swift",
+      "DatadogRUM/Tests/Instrumentation/Resources/URLSessionRUMResourcesHandlerTests.swift",
+      "Datadog/IntegrationUnitTests/Public/NetworkInstrumentationIntegrationTests.swift"
+    ],
+    "message": "Preserve Resource completion ownership and failed-transfer errors",
+    "attempts": [
+      {
+        "kind": "signed",
+        "pid": 86873,
+        "returncode": 0,
+        "timeout": false,
+        "log_sha256": "84fd0408ff15b1990d8fae2a8aea7a210d35e47b20a965190077a3897aaa195f"
+      }
+    ],
+    "started_at": 1789946683.128408,
+    "commit": "562cf74dde410767caf95561e68f2f021feb471c",
+    "signature": "G",
+    "committed_paths": [
+      "Datadog/IntegrationUnitTests/Public/NetworkInstrumentationIntegrationTests.swift",
+      "DatadogRUM/Sources/Instrumentation/Resources/URLSessionRUMResourcesHandler.swift",
+      "DatadogRUM/Sources/RUMMonitor/RUMCommand.swift",
+      "DatadogRUM/Sources/RUMMonitor/Scopes/RUMApplicationScope.swift",
+      "DatadogRUM/Sources/RUMMonitor/Scopes/RUMSessionScope.swift",
+      "DatadogRUM/Sources/RUMMonitor/Scopes/RUMUserActionScope.swift",
+      "DatadogRUM/Sources/RUMMonitor/Scopes/RUMViewScope.swift",
+      "DatadogRUM/Tests/Instrumentation/Resources/URLSessionRUMResourcesHandlerTests.swift",
+      "DatadogRUM/Tests/RUMMonitor/Scopes/RUMApplicationScopeTests.swift",
+      "DatadogRUM/Tests/RUMMonitor/Scopes/RUMSessionScopeTests.swift"
+    ],
+    "protected_unchanged": true,
+    "finished_at": 1789946683.5639281
+  },
+  "documentation_commit": {
+    "parent": "562cf74dde410767caf95561e68f2f021feb471c",
+    "paths": [
+      "CHANGELOG.md",
+      "DatadogRUM/RUM_FEATURE.md"
+    ],
+    "message": "Document failed-transfer errors and Resource action ownership",
+    "attempts": [
+      {
+        "kind": "signed",
+        "pid": 88640,
+        "returncode": 0,
+        "timeout": false,
+        "log_sha256": "38b7f4ca1af8dc6a2877ecbcfd723be0595d6c1f2ba8b2d344ed48a83774c38a"
+      }
+    ],
+    "started_at": 1789946911.1491609,
+    "commit": "385583bf42dafd51e148967ea500c2e9bae61646",
+    "signature": "G",
+    "committed_paths": [
+      "CHANGELOG.md",
+      "DatadogRUM/RUM_FEATURE.md"
+    ],
+    "protected_unchanged": true,
+    "finished_at": 1789946911.595692
+  },
+  "qualification": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/exp214-repair-_6vxqe6i/repair-qualification/qualification.json",
+    "sha256": "436761a408cb32bb5a68d5f39a63336bf0a096bd214457892f8884640306a969",
+    "status": "QUALIFIED_RESOURCE_OWNER_CONTRACT_WITH_INHERITED_SESSION_DIAGNOSTIC",
+    "unit_cases": 925,
+    "unit_executions": 961,
+    "unit_passed": 961,
+    "native_cases": 9,
+    "native_xctest_passed": 9,
+    "native_owner_contract": "QUALIFIED_WITH_INHERITED_SESSION_DIAGNOSTIC",
+    "source_inputs_unchanged": 1864,
+    "cleanup": "PASS",
+    "complete_release_qualification": false
+  },
+  "documentation": {
+    "commit": "385583bf42dafd51e148967ea500c2e9bae61646",
+    "signature": "G",
+    "verification": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/exp214-repair-_6vxqe6i/documentation-commit/verification.json",
+    "affected_RUM_and_registry": "PASS",
+    "global_check": "FAIL_INHERITED_TRACE_DOCUMENT_DRIFT",
+    "verification_parent": "562cf74dde410767caf95561e68f2f021feb471c"
+  },
+  "diff_paths": [
+    "DatadogRUM/Sources/RUMMonitor/RUMCommand.swift",
+    "DatadogRUM/Sources/Instrumentation/Resources/URLSessionRUMResourcesHandler.swift",
+    "DatadogRUM/Sources/RUMMonitor/Scopes/RUMApplicationScope.swift",
+    "DatadogRUM/Sources/RUMMonitor/Scopes/RUMSessionScope.swift",
+    "DatadogRUM/Sources/RUMMonitor/Scopes/RUMViewScope.swift",
+    "DatadogRUM/Sources/RUMMonitor/Scopes/RUMUserActionScope.swift",
+    "DatadogRUM/Tests/RUMMonitor/Scopes/RUMApplicationScopeTests.swift",
+    "DatadogRUM/Tests/RUMMonitor/Scopes/RUMSessionScopeTests.swift",
+    "DatadogRUM/Tests/Instrumentation/Resources/URLSessionRUMResourcesHandlerTests.swift",
+    "Datadog/IntegrationUnitTests/Public/NetworkInstrumentationIntegrationTests.swift",
+    "CHANGELOG.md",
+    "DatadogRUM/RUM_FEATURE.md"
+  ],
+  "hard_merge_dependencies": [],
+  "remaining_gates": [
+    "E03-D: ten remaining iOS schemes and twelve affected-platform Debug/Release cells on final candidate source",
+    "E03-D: inherited global Trace-document drift, real ticket, required CI and human review",
+    "Separately authorized publication/merge with signed outgoing history and verified upstream content"
+  ],
+  "remaining_iOS_schemes": [
+    "DatadogInternal",
+    "DatadogCore",
+    "DatadogSessionReplay",
+    "DatadogLogs",
+    "DatadogTrace",
+    "DatadogCrashReporting",
+    "DatadogWebViewTracking",
+    "DatadogFlags",
+    "DatadogProfiling",
+    "DatadogIntegrationTests"
+  ],
+  "remaining_platform_cells": 12,
+  "limits": [
+    "Original two-file dirty reproducer is unchanged; the signed repair lives in a separate checkout",
+    "Within the owning view, valid completion updates the current eligible action",
+    "Inherited stopped-session precondition diagnostic remains; no telemetry-free or full session-metadata claim",
+    "No backend ingestion, customer prevalence, full-platform or delivery-readiness claim"
+  ],
+  "owning_experiment": "EXP-214",
+  "publication_authorized": false,
+  "merge_authorized": false,
+  "metrics_preservation": {
+    "status": "EXISTING_METRICS_PRESERVATION_QUALIFIED_NO_NEW_DEFECT",
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/exp214-repair-_6vxqe6i/metrics-preservation-disposition.json",
+    "sha256": "da8251a18e719541fd6cddae2483c8701ef52b460badf64928d01870e0fe4445",
+    "new_source_or_runtime": false
+  }
+}

@@ -20,8 +20,7 @@ H00, E01–E05 and DL01. E01's 15/16 score describes its own qualification, not
 completion of S1. Signed [H00/E01 local packets](Results/S1-H00-E01-packets.json)
 preserve qualified production/test/build inputs; E01 now also has reachable feature-doc metadata. Ticketing, missing repository-wide checks,
 CI/review and authorized publication are still pending. Only H00 → E01 is an established
-merge dependency. [EXP-214](Results/EXP-214-resource-action-design.json) makes E03
-ownership-design admission the next repair checkpoint before more S2 expansion.
+merge dependency. [EXP-214](Results/EXP-214-resource-action-design.json) records E03's signed repair and qualified owner contract before more S2 expansion.
 [DL01/E02/E04/E05 local packets](Results/S1-independent-packets.json) now have signed independent delivery histories and unchanged qualified source/test contents. DL01 additionally passes its standalone Core suite (819 passes, four predefined OS skips) and RUM suite (901 cases / 937 executions, no skips). DL01 also passes all twelve affected-platform builds. Missing full-repository checks, other candidates' platform checks, candidate-specific ownership gaps, ticketing, CI and human review remain explicit. No S1 delivery or broader P03 closure is claimed.
 
 S2 now selects the same narrow E01 source on verified develop `62f64d7b`, with
@@ -123,9 +122,8 @@ The separate E03 investigation reproduces an existing-customer action attributio
 defect on current develop: late Resource success/error changes a newer view or
 session's live action counters and error_tap, despite correct Resource/error parent
 IDs. [EXP-206](Results/EXP-206-resource-action-ownership.json) has four exact
-baseline failures and five preservation passes. Its stateless repair is rejected
-because it would erase a valid same-view response-plus-error signal. No E03
-production change or release qualification is claimed.
+baseline failures and five preservation passes. Its earlier stateless repair was rejected under the retired automatic dual-terminal
+premise. EXP214 now qualifies signed repair562cf74dd through full RUM925/961 and nine native XCTest passes with exact owner/count evidence. The inherited stopped-session precondition diagnostic remains explicitly classified, and source review confirms metrics preserve fixed action expiry and counters. Full candidate compatibility and release review remain open.
 
 The independent E04 candidate preserves delayed WebView correlation after a long
 native visit. It retains A for the full inactivity window after navigation to B,
@@ -317,5 +315,3 @@ The Datadog app uses manual SwiftUI views, allowlisted automatic UIKit and nativ
 WebView tracking in one scene. Existing XCTest paths skip RUM bootstrap, so F08
 requires normal-mode app journeys alongside separate automatic fixtures; see
 [the source audit](Results/Datadog-app-source-audit.json).
-
-The [approved E03 completion decision](E03_RESOURCE_COMPLETION_DECISION.md) now requires a failed body transfer to emit an owning network Error rather than a completed Resource, retaining received HTTP status. This deliberately retires the old automatic1/1 premise while preserving its historical evidence. EXP214 has a reviewed automatic error-terminal candidate; its remaining admission check must also close the unchanged unannotated foreign-owner controls; no implementation, native failure reproduction or customer-prevalence conclusion is claimed. Unrelated manual repeated-stop semantics remain outside that approval. The additional failed-Resource representation is a documented deferred follow-up.

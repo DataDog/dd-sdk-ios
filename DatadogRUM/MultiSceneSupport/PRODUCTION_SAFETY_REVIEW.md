@@ -111,9 +111,7 @@ late Resource completions mutate another live action's counters and error_tap.
 failing cases and five passing compatibility controls. The original stateless
 proposal was rejected under the previous dual-terminal acceptance premise. The
 user has since approved a single Error for a failed body transfer; its original
-baseline and manual witness remain intact. No repair is implemented; E03 remains
-open pending known-owner routing that also closes the unchanged foreign-owner
-controls, with lifecycle and manual-compatibility proof. This does not reopen or replace historical R01–R12.
+baseline and manual witness remain intact. EXP214 qualifies the signed terminal repair562cf74dd with full RUM925/961 and nine native XCTest passes. Exact callback/serialized ownership passes under a narrow inherited-diagnostic classification; the original rejection remains intact. A source-proven pre-existing stopped-session precondition warning and nil metadata are not repaired or suppressed. Independent metrics review confirms fixed action-start-based expiry, unchanged action counters and a write-only activity timestamp. The original100ms control remains valid; no extra defect or runtime is inferred. Compatibility, CI and human review remain open. This does not reopen or replace historical R01–R12.
 
 The independent E04 review establishes and repairs a current-develop cache-lifetime
 defect: a long-lived native view loses delayed WebView correlation when the next
@@ -589,5 +587,3 @@ actual disconnect; preserve the original failure and exact29-event partial join,
 and stop equivalent retries without assigning an SDK defect. H14 closes with
 actual physical resizing and complete22-event ownership equality. Restore the approved temporary Windowed Apps preference when
 the suite completes. Physical Duo and final review gates remain separate.
-
-The [approved E03 completion decision](E03_RESOURCE_COMPLETION_DECISION.md) now requires a failed body transfer to emit an owning network Error rather than a completed Resource, retaining received HTTP status. This deliberately retires the old automatic1/1 premise while preserving its historical evidence. EXP214 has a reviewed automatic error-terminal candidate; its remaining admission check must also close the unchanged unannotated foreign-owner controls; no implementation, native failure reproduction or customer-prevalence conclusion is claimed. Unrelated manual repeated-stop semantics remain outside that approval. The additional failed-Resource representation is a documented deferred follow-up.

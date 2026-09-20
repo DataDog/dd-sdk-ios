@@ -123,8 +123,8 @@
         "DatadogSessionReplay/SESSION_REPLAY_FEATURE.md",
         "DatadogTrace/TRACE_FEATURE.md"
       ],
-      "patch": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/deliveries/s1-initial-20260920-qqyq49od/E01-reachable-docs/E01-current.patch",
-      "patch_sha256": "0d60209e1c3074eb1462ede8065479d826134446c16b991408cb6a4edd64a266",
+      "patch": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/deliveries/s1-initial-20260920-qqyq49od/E01-reachable-docs/E01-current-plain.patch",
+      "patch_sha256": "9ccb1e8d9c99d88f8e759d16975dfcd70304d1e1d0acdf7122032e6dc07e1729",
       "outgoing_commits": [
         {
           "sha": "7915e1be91407663ba8a374d0c36f4b804280fd7",
@@ -178,7 +178,12 @@
       },
       "initial_patch": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/deliveries/s1-initial-20260920-qqyq49od/E01.patch",
       "initial_patch_sha256": "2642a9d5d09f25b7e545ad957699c88caecb8e96e75fa8a4cb2dc14a1bdce2b3",
-      "documentation_signature_receipt": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/deliveries/s1-initial-20260920-qqyq49od/E01-reachable-docs/commit/commit.json"
+      "documentation_signature_receipt": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/deliveries/s1-initial-20260920-qqyq49od/E01-reachable-docs/commit/commit.json",
+      "invalid_colored_patch": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/deliveries/s1-initial-20260920-qqyq49od/E01-reachable-docs/E01-current.patch",
+        "sha256": "0d60209e1c3074eb1462ede8065479d826134446c16b991408cb6a4edd64a266",
+        "reason": "ANSI color output; source unchanged; superseded by explicit color.ui=false capture"
+      }
     }
   ],
   "next_repair": "E03 ownership contract/design admission before another S2/S3 expansion experiment",

@@ -2,7 +2,7 @@
   "schema_version": 1,
   "experiment": "EXP-214",
   "defined_at": "2026-09-20T20:53:18.654983+00:00",
-  "status": "USER_AUTOMATIC_OUTCOME_APPROVED_DESIGN_REASSESSMENT",
+  "status": "REPAIR_SIGNED_OWNERSHIP_ELIGIBILITY_QUALIFIED_RELEASE_CHECKS_PENDING",
   "gate": "S1:E03",
   "delivery_steps": [
     "E03-A",
@@ -14,8 +14,19 @@
   "artifact_root": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp214-e03-admission-025grt82",
   "trigger": "User prioritizes a compatible E03 repair checkpoint before further S2/S3 expansion; EXP213 is safely committed.",
   "hypothesis": "A single native error terminal for failed transfers, plus bounded per-dispatch ownership resolution, can prevent foreign action mutation while retaining valid successes, empty responses and unchanged manual compatibility.",
-  "production_edit_allowlist": [],
-  "runtime_admission": null,
+  "production_edit_allowlist": [
+    "DatadogRUM/Sources/RUMMonitor/RUMCommand.swift",
+    "DatadogRUM/Sources/RUMMonitor/Scopes/RUMApplicationScope.swift",
+    "DatadogRUM/Sources/RUMMonitor/Scopes/RUMSessionScope.swift",
+    "DatadogRUM/Sources/RUMMonitor/Scopes/RUMViewScope.swift",
+    "DatadogRUM/Sources/RUMMonitor/Scopes/RUMUserActionScope.swift",
+    "DatadogRUM/Sources/Instrumentation/Resources/URLSessionRUMResourcesHandler.swift"
+  ],
+  "runtime_admission": {
+    "phase": "repaired candidate full RUM and9 native checks",
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/exp214-repair-_6vxqe6i/repair-qualification/definition.json",
+    "native_credit_requires": "Independent callback/serialized audit, exact inventory and cleanup. Full release compatibility and backend remain separate."
+  },
   "frozen_exp206_tests": [
     "testGivenRetainedResource_whenItSucceeds_itDoesNotCountInAnotherViewsAction",
     "testGivenRetainedResource_whenItFails_itDoesNotFrustrateAnotherViewsAction",
@@ -51,9 +62,90 @@
     "sha256": "8bdb9d21eaa63cd6a5baa32652ae372c01e97ecaf4eaba2829da7982bad0c473",
     "status": "Prior source review input; timestamp and current-key compatibility analysis under correction. Not design admission."
   },
-  "new_builds_or_tests": 0,
   "gate_closures": [],
-  "attempts": [],
+  "attempts": [
+    {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/exp214-repair-_6vxqe6i/baseline/unit",
+      "status": "STOPPED",
+      "audit": "FAIL",
+      "conclusion": "Fixture compile stop before tests",
+      "cleanup": "PASS",
+      "source_unchanged": null,
+      "deadline_preserved": true
+    },
+    {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/exp214-repair-_6vxqe6i/baseline-compile-correction/unit",
+      "status": "STOPPED",
+      "audit": "FAIL",
+      "conclusion": "Selected enumeration parser stop before tests",
+      "cleanup": "PASS",
+      "source_unchanged": null,
+      "deadline_preserved": true
+    },
+    {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/exp214-repair-_6vxqe6i/baseline-selected-discovery/unit",
+      "status": "COMPLETED_FOR_REVIEW",
+      "audit": "PASS",
+      "conclusion": "15 cases:10 controls and5 intended failures, qualified",
+      "cleanup": "PASS",
+      "source_unchanged": true,
+      "deadline_preserved": true
+    },
+    {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/exp214-repair-_6vxqe6i/baseline-selected-discovery/native",
+      "status": "STOPPED",
+      "audit": "FAIL",
+      "conclusion": "Fixture configuration type compile stop before tests",
+      "cleanup": "PASS",
+      "source_unchanged": null,
+      "deadline_preserved": true
+    },
+    {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/exp214-repair-_6vxqe6i/baseline-native-configuration/native",
+      "status": "COMPLETED_FOR_REVIEW",
+      "audit": "FAIL",
+      "conclusion": "Headers-only hold invalid on6cases;3 zero-body/no-response cases retained",
+      "cleanup": "PASS",
+      "source_unchanged": true,
+      "deadline_preserved": true
+    },
+    {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/exp214-repair-_6vxqe6i/baseline-native-primed/native",
+      "status": "COMPLETED_FOR_REVIEW",
+      "audit": "FAIL",
+      "conclusion": "Four native defects verified; two success-prefix fixture failures keep aggregate invalid",
+      "cleanup": "PASS",
+      "source_unchanged": true,
+      "deadline_preserved": true
+    },
+    {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/exp214-repair-_6vxqe6i/baseline-native-success-prefix/native",
+      "status": "COMPLETED_FOR_REVIEW",
+      "audit": "PASS",
+      "conclusion": "Two successes pass; initial telemetry-oracle rejection corrected without XCTest rerun",
+      "cleanup": "PASS",
+      "source_unchanged": true,
+      "deadline_preserved": true
+    },
+    {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/exp214-repair-_6vxqe6i/repair-qualification/unit",
+      "status": "COMPLETED_FOR_REVIEW",
+      "audit": "PASS",
+      "conclusion": "925 cases/961 executions pass",
+      "cleanup": "PASS",
+      "source_unchanged": true,
+      "deadline_preserved": true
+    },
+    {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/exp214-repair-_6vxqe6i/repair-qualification/native",
+      "status": "COMPLETED_FOR_REVIEW",
+      "audit": "OWNER_CONTRACT_QUALIFIED_WITH_INHERITED_DIAGNOSTIC",
+      "conclusion": "9 XCTest cases pass; initial telemetry audit FAIL preserved, exact v4 classification qualifies public owner contract",
+      "cleanup": "PASS",
+      "source_unchanged": true,
+      "deadline_preserved": true
+    }
+  ],
   "corrected_review": {
     "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp214-e03-admission-025grt82/corrected-independent-review.json",
     "sha256": "af95751f0380023e70f762dbc5af59074d80b92cb4552a2153f7084d838278d7",
@@ -65,7 +157,7 @@
     "manual_scope": "Original broad question is superseded for automatic outcome; unrelated manual compatibility changes remain unapproved. First seek a source-compatible repair.",
     "product_decision": "E03_RESOURCE_COMPLETION_DECISION.md"
   },
-  "last_updated_at": "2026-09-20T22:00:24.935664+00:00",
+  "last_updated_at": "2026-09-20T23:37:41.791752+00:00",
   "product_amendment": {
     "recorded_at": "2026-09-20T21:53:03.431125+00:00",
     "decision_file": "E03_RESOURCE_COMPLETION_DECISION.md",
@@ -81,5 +173,122 @@
     "sha256": "e7393f7c209c6a89bcde2e0e08644dca060f8919d1fece3d05ad0187935f242d",
     "status": "AUTOMATIC_TERMINAL_CANDIDATE_REVIEWED_OWNER_REFINEMENT_PENDING",
     "root_finding": "Automatic-only filtering leaves unchanged unannotated EXP206 foreign-owner controls unresolved; existing reviewer checking dispatch-scoped known-owner resolution and manual fallback."
+  },
+  "historical_coverage_review": {
+    "requested_by": "user through side-conversation handoff",
+    "baseline": "62f64d7b655bdc83f3036c4ad81090a270f6202b",
+    "original_handler_commit": "b6a1c4489c6ad738be183760ff35db98a6184288",
+    "original_handler_verified_locally": true,
+    "conclusion": "Error-with-status support is explicit; intentional native dual-terminal contract is not established. Old ServerMock cannot model response plus later transfer failure. EXP206 ninth is later characterization, not historical product intent.",
+    "customer_prevalence": "NOT_ESTABLISHED"
+  },
+  "test_fixture_admission": {
+    "definition": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/exp214-repair-_6vxqe6i/definition.json",
+    "status": "BASELINE_QUALIFIED_REPAIR_ADMITTED",
+    "counts": {
+      "original_unchanged": 9,
+      "new_handler": 7,
+      "new_scope": 8,
+      "native": 9,
+      "baseline_unit": 15
+    },
+    "production_edits": true,
+    "runtime_admitted": true,
+    "collision_cleanup_amendment": "Preserve existing matching-resource settlement for every known owner; filter foreign actions. Suppression must not strand Resource/TNS. Newly drafted test amended before runtime; original9 unchanged.",
+    "source_freeze": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/exp214-repair-_6vxqe6i/repair-qualification/source-freeze.json",
+    "original_body_identity": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/exp214-repair-_6vxqe6i/original-nine-body-identity.json",
+    "runtime_definition": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/exp214-repair-_6vxqe6i/repair-qualification/definition.json"
+  },
+  "corrected_final_design_review": {
+    "path": "/tmp/exp214-e03-owner-resolution-final-20260921/review-corrected.json",
+    "sha256": "367c74259174fe828767bdf72c8c194c1084cbbb2092d1d534681045fe972d4d",
+    "disposition": "Known owners settle through existing Resource/TNS; nonowner action filtering follows expiry; manual unknown behavior unchanged. Prior wrong source locators retained and corrected."
+  },
+  "baseline_qualification": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/exp214-repair-_6vxqe6i/baseline-qualification.json",
+    "sha256": "eb008d879c43b75a19d5ef147d513d61ee68a64e700d968712848f3b8079f733",
+    "unit_cases": 15,
+    "unit_expected_failures": 5,
+    "native_unique_cases": 9,
+    "native_expected_failures": 4,
+    "native_passing_controls": 5,
+    "method": "Exact-case composite with preserved invalid aggregate attempts;3 accepted native controls reused,4 valid failure witnesses,2 corrected successes."
+  },
+  "six_file_review": {
+    "path": "/tmp/exp214-production-patch-review-20260921/review.json",
+    "sha256": "fb96ca74fd24f9d8261c6a7306319054de7514feb8550577fb5369285c0d2863",
+    "disposition": "SOURCE_PASS_WITH_ONE_METADATA_NOTE",
+    "metadata_resolution": "nil unresolved;[] resolved-unowned; isAutomatic distinguishes suppression from preserved manual fallback."
+  },
+  "production_proposal": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/exp214-repair-_6vxqe6i/production-proposal.patch",
+    "sha256": "3a18201509d642d338a87d450ac88da36d891dded5a31d0771bbddcb30a6535a",
+    "applied_in": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/exp214-repair-_6vxqe6i/worktree",
+    "committed": true,
+    "production_commit": "562cf74dde410767caf95561e68f2f021feb471c",
+    "signature": "G",
+    "documentation_commit": "385583bf42dafd51e148967ea500c2e9bae61646"
+  },
+  "native_audit": {
+    "policy": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/exp214-repair-_6vxqe6i/native-attachment-policy-v4.json",
+    "oracle": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/exp214-repair-_6vxqe6i/audit-native.py",
+    "oracle_sha256": "5eaf3ae40dae23940637b677ddd7310e1b57d033ff98412ebd35576f322e3057",
+    "negative_controls": {
+      "prior": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/exp214-repair-_6vxqe6i/native-audit-negative-controls.json",
+      "count": 19,
+      "amendment": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/exp214-repair-_6vxqe6i/native-audit-telemetry-correction.json",
+      "additional_count": 6,
+      "inherited_diagnostic": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/exp214-repair-_6vxqe6i/native-audit-inherited-diagnostic-controls.json",
+      "inherited_diagnostic_negative_count": 17,
+      "inherited_diagnostic_positive_count": 4
+    },
+    "limits": "Exact Resource/Error/Action and callback contract only; inherited stopped-session precondition diagnostic remains. No telemetry-free, complete session metadata, backend ingestion or prevalence claim.",
+    "classified_candidate_audit": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/exp214-repair-_6vxqe6i/repair-qualification/native/attachment-audit-classified.json",
+    "preserved_candidate_rejection": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/exp214-repair-_6vxqe6i/repair-qualification/native/attachment-audit.json"
+  },
+  "whole_codebase_usage_audit": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/exp214-repair-_6vxqe6i/completion-usages.json",
+    "files": 19,
+    "matching_lines": 200
+  },
+  "engineering_checkpoint_disposition": "Original23:07 checkpoint reached with qualified baseline and six-file repair admission at23:03; new candidate runtime is separately bounded to00:03:28UTC, no baseline budget extension.",
+  "qualification": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/exp214-repair-_6vxqe6i/repair-qualification/qualification.json",
+    "sha256": "436761a408cb32bb5a68d5f39a63336bf0a096bd214457892f8884640306a969",
+    "status": "QUALIFIED_RESOURCE_OWNER_CONTRACT_WITH_INHERITED_SESSION_DIAGNOSTIC",
+    "unit_cases": 925,
+    "unit_executions": 961,
+    "unit_passed": 961,
+    "native_cases": 9,
+    "native_xctest_passed": 9,
+    "native_owner_contract": "QUALIFIED_WITH_INHERITED_SESSION_DIAGNOSTIC",
+    "source_inputs_unchanged": 1864,
+    "cleanup": "PASS",
+    "complete_release_qualification": false
+  },
+  "documentation": {
+    "commit": "385583bf42dafd51e148967ea500c2e9bae61646",
+    "signature": "G",
+    "verification": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/exp214-repair-_6vxqe6i/documentation-commit/verification.json",
+    "affected_RUM_and_registry": "PASS",
+    "global_check": "FAIL_INHERITED_TRACE_DOCUMENT_DRIFT",
+    "verification_parent": "562cf74dde410767caf95561e68f2f021feb471c"
+  },
+  "inherited_session_diagnostic": {
+    "finding": "Pending Resource retains stopped session before next startView; unchanged startNewSession sees nil lastSessionEndReason and emits unknown-precondition diagnostic. Source-proven before owner-resolution insertion.",
+    "source_proof": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/exp214-repair-_6vxqe6i/inherited-session-precondition-source.json",
+    "independent_review": "/tmp/exp214-session-precondition-telemetry-review-20260921/review-corrected-v2.json",
+    "review_sha256": "9bd6a3e1b04596130dc135ac40721a935b3e6761ad988f1e8782c9aa25cc2e00",
+    "disposition": "Classified inherited limitation, not suppressed or repaired. Review with the next session-lifecycle change; no additional S1 delivery unit admitted.",
+    "preserved_failed_review_metadata": [
+      "/tmp/exp214-session-precondition-telemetry-review-20260921/review.json",
+      "/tmp/exp214-session-precondition-telemetry-review-20260921/review-corrected.json"
+    ]
+  },
+  "metrics_activity_review": {
+    "status": "EXISTING_METRICS_PRESERVATION_QUALIFIED_NO_NEW_DEFECT",
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/exp214-repair-_6vxqe6i/metrics-preservation-disposition.json",
+    "sha256": "da8251a18e719541fd6cddae2483c8701ef52b460badf64928d01870e0fe4445",
+    "new_source_or_runtime": false
   }
 }

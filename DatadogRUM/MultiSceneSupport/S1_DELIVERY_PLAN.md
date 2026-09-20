@@ -10,7 +10,7 @@ This document prepares delivery; it does not perform or authorize a push, remote
 
 [Structured queue](Results/S1-delivery-queue.json) contains exact source commits, paths, evidence, owners and remaining gates. It is input for the main session, not an installed automation. [release-gates.json](release-gates.json) remains the release qualification authority. Neither new artifact closes a gate.
 
-Current checkpoint: main `430075a1`, clean S2 qualification `ef9d9732`; remote develop `62f64d7b` was freshly verified through authenticated GitHub access. The [H00/E01 packets](Results/S1-H00-E01-packets.json) have signed local delivery commits. H00 and the initial E01 commit match their qualified trees; E01 then changes only five verification fields to a reachable parent, with all feature docs passing. Ticket metadata, missing repository-wide checks, CI/review and publication remain pending. [EXP-214](Experiments/EXP-214-resource-action-design.md) now owns E03 design admission. [DL01/E02/E04/E05 packets](Results/S1-independent-packets.json) now have independent signed delivery commits. DL01's standalone Core/RUM suites and twelve affected-platform build cells pass; each packet enumerates remaining iOS/platform checks and candidate-specific gaps. No publication or merge has occurred. DL01 was extracted from its immutable two-file source, not the combined S2 HEAD.
+The packet baseline is authenticated develop `62f64d7b`; clean S2 qualification `ef9d9732` remains separate. The [H00/E01 packets](Results/S1-H00-E01-packets.json) have signed local delivery commits. H00 and the initial E01 commit match their qualified trees; E01 then changes only five verification fields to a reachable parent, with all feature docs passing. Ticket metadata, missing repository-wide checks, CI/review and publication remain pending. [EXP-214](Experiments/EXP-214-resource-action-design.md) now owns the signed E03 terminal repair, its qualified owner contract and remaining compatibility checks. [DL01/E02/E04/E05 packets](Results/S1-independent-packets.json) now have independent signed delivery commits. DL01's standalone Core/RUM suites and twelve affected-platform build cells pass; each packet enumerates remaining iOS/platform checks and candidate-specific gaps. No publication or merge has occurred. DL01 was extracted from its immutable two-file source, not the combined S2 HEAD.
 
 ## Review units and dependency order
 
@@ -24,7 +24,7 @@ Every row is a separate PR. H00 and DL01 are local delivery identifiers, not new
 | E02 | Isolate attributes between repeated view occurrences | Generic regression and native serialization qualified; release checks remain | develop |
 | E04 | Retain delayed WebView correlation through native-view inactivity | Generic regression, full RUM and native bridge pair qualified; release checks remain | develop |
 | E05 | Preserve request-time RUM ownership in automatic traces | Generic regression, full Trace and native header/span pair qualified; release checks remain | develop |
-| E03 | Keep late Resource completions from changing another view's action | Four baseline failures and five preservation controls; no compatible repair admitted | develop by default; decide any real dependency during design |
+| E03 | Keep late Resource completions from changing another view's action | Signed compatible repair and owner contract qualified; candidate release checks remain | develop; no hard merge dependency |
 
 Only H00 → E01 is a hard merge edge. Shared test files and changelog conflicts are not architecture dependencies. E03 may merge whenever ready; the table does not force it to land last.
 
@@ -123,7 +123,7 @@ The queue is the executable path/commit inventory. Paths below describe the revi
 ### E03 — Resource action ownership
 
 - Existing worktree is still at develop `62f64d7b` with only two dirty reproducer test files. Preserve it and the durable [baseline patch](Results/EXP-206-baseline-reproduction.patch).
-- No production extraction commit exists. Execute E03-A through D above; define an exact production allowlist only after design admission.
+- E03-A/B are complete. The [local packet](Results/S1-E03-packet.json) has signed repair562cf74dd and documentation385583bf4 after full RUM925/961 and nine native XCTest passes. The exact owner contract qualifies with an inherited stopped-session diagnostic retained. E03-C is complete with source-reviewed metric/expiry preservation; E03-D retains final-source compatibility, global Trace-document drift, real ticket, CI and human review.
 - Proposed PR title remains provisional until the implemented contract is reviewed. The fix must preserve current action semantics within the Resource's owning view, not blindly attach every callback to the action that existed at Resource start.
 
 ## Repeatable execution procedure
