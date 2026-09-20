@@ -1,0 +1,44 @@
+{
+  "schema_version": 1,
+  "kind": "read-only-pr-compatibility-review",
+  "reviewed_pr": {
+    "url": "https://github.com/DataDog/dd-sdk-ios/pull/2683",
+    "number": 2683,
+    "state": "open",
+    "merged": false,
+    "base_sha": "3357fff6276b34bbf9f097a714655cf639413be5",
+    "head_sha": "86d019d42b304fec9f17b8060520650a5dd26628"
+  },
+  "finding": {
+    "summary": "The proposal treats a baggage-only write as evidence that the SDK owns propagation, returning an SDK TraceContext while preserving caller-owned trace headers. Completion can then use a trace ID different from the outgoing request.",
+    "evidence_status": "source_and_PR_discussion_only; runtime behavior was not exercised",
+    "review_comment": "https://github.com/DataDog/dd-sdk-ios/pull/2683#discussion_r2776079961",
+    "author_acknowledgement": "https://github.com/DataDog/dd-sdk-ios/pull/2683#discussion_r2776123498",
+    "baseline_handler": "https://github.com/DataDog/dd-sdk-ios/blob/62f64d7b655bdc83f3036c4ad81090a270f6202b/DatadogTrace/Sources/Integrations/TracingURLSessionHandler.swift#L72-L166",
+    "baseline_datadog_writer": "https://github.com/DataDog/dd-sdk-ios/blob/62f64d7b655bdc83f3036c4ad81090a270f6202b/DatadogInternal/Sources/NetworkInstrumentation/Datadog/HTTPHeadersWriter.swift#L72-L96",
+    "baseline_w3c_writer": "https://github.com/DataDog/dd-sdk-ios/blob/62f64d7b655bdc83f3036c4ad81090a270f6202b/DatadogInternal/Sources/NetworkInstrumentation/W3C/W3CHTTPHeadersWriter.swift#L100-L124"
+  },
+  "inspected_source_sha256": {
+    "DatadogTrace/Sources/Integrations/TracingURLSessionHandler.swift@62f64": "be5de427a8eb3bf884b308a2e05aabe0945440ad3261b8fbb963100fe0cdf52c",
+    "DatadogInternal/Sources/NetworkInstrumentation/Datadog/HTTPHeadersWriter.swift@62f64": "3d036f1fdb0ca060fa4f697f8b352471e64f29819fa4624f94ee8e5dd0481fbe",
+    "DatadogInternal/Sources/NetworkInstrumentation/W3C/W3CHTTPHeadersWriter.swift@62f64": "cce9e8aae7db366e1ab7387b9b60caab85a1b5440596593e014911e63a281412"
+  },
+  "e05_compatibility": {
+    "decision": "out_of_scope",
+    "reason": "PR 2683 changes baggage wire policy and propagation-context ownership. Its NetworkContext fallback also conflates a present rumContext:nil with an absent NetworkContext and changes user/account sourcing. E05 preserves existing header, sampling, user, and account behavior."
+  },
+  "compatibility_questions": [
+    "Should any SDK span be created when a caller already owns a partial or complete trace carrier?",
+    "If baggage is merged, how are duplicate keys, member properties, ordering, and malformed values preserved?",
+    "Can a present NetworkContext with rumContext:nil remain authoritative while an absent NetworkContext falls back to the receiver?"
+  ],
+  "separate_follow_up_gate": {
+    "scope": "TracingURLSessionHandler propagation ownership and baggage policy",
+    "required_decision": "Separate a trace-propagation ownership outcome from any baggage merge/add outcome. A baggage-only change must not return/register an SDK-owned TraceContext.",
+    "required_controls": [
+      "Partial caller trace carrier plus SDK baggage write never produces a mismatched local span trace ID.",
+      "Existing W3C baggage merge preserves caller keys and has defined duplicate, metadata, and malformed-value behavior.",
+      "Mixed Datadog, B3, and W3C carrier combinations either preserve caller ownership without an SDK TraceContext or use a validated extraction/continuation path."
+    ]
+  }
+}

@@ -6,7 +6,7 @@ workflows used by the project. Product behavior and support conclusions belong i
 `ASSESSMENT.md`; `EXPERIMENTS.md` indexes evidence; exact new experiment and
 session identifiers belong in the active numbered shard under `Experiments/`.
 
-Last updated: 2026-09-18
+Last updated: 2026-09-20
 
 ## Purpose
 
@@ -186,6 +186,20 @@ messages and verify their source locations in the detailed test tree and console
 Normalize `/var` and `/private/var` paths when checking build bindings, while retaining
 original paths and content hashes. A reader correction does not authorize rerunning
 accepted tests or weakening their assertions.
+
+Before freezing native request fixtures, assert the complete serialized span
+inventory before checking operation names. Require distinct live view/action owners
+before starting held requests. Protocol release markers are not URLSession completion
+receipts: capture the real callback body/status/error and exact callback count. Fence
+cleanup against late protocol starts and release pending protocol ownership.
+
+For request-time Trace ownership, enable Trace URLSession tracking while leaving
+RUM resource auto-tracking disabled. RUM-origin requests suppress the local Trace
+span and cannot exercise its completion writer. Inspect actual outgoing headers
+and serialized span ownership separately. Distinguish a present nil RUM value,
+an unavailable NetworkContext and a completion with no captured entry; none is
+permission to change sampling. [EXP-208](Results/EXP-208-trace-ownership.json)
+records the bounded control inventory.
 
 ## Documentation reading and update workflow
 

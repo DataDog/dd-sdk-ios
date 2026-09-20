@@ -1036,6 +1036,16 @@
           "evidence": "Reference evidence retained; this release candidate is not qualified.",
           "required": true
         }
+      },
+      "separate_header_policy_review": {
+        "status": "SOURCE REVIEW COMPLETE; RUNTIME FOLLOW-UP NOT ADMITTED",
+        "owner": "Trace SDK implementer + independent reviewer",
+        "dependency": "Complete the current E05 experiment checkpoint; define a separate bounded regression investigation before implementation.",
+        "evidence": "Results/PR-2683-header-ownership-review.json; PR2683 is open/unmerged. Source and discussion establish a propagation-ownership risk, not a runtime reproduction or approved repair.",
+        "scope": "Separate ownership of outgoing trace carriers from writing or merging baggage. No PR transplant and no expansion of EXP-208.",
+        "decisive_test": "Freeze eight carrier cells: complete Datadog, complete W3C, partial W3C and mixed carriers, each with absent/existing baggage. A baggage-only write must not claim an SDK TraceContext. Every created local span must agree with validated outgoing trace identity. Preserve caller keys and explicitly decide duplicate/member-property/malformed-value behavior before any merge policy change.",
+        "environment": "Fresh develop, deterministic Trace/header tests and serialized native URLSession control on a qualified simulator; no backend or hardware claim.",
+        "release_effect": "Separate T08 compatibility follow-up. Existing E01 and E05 preserve header policy; this source review changes neither eligibility nor required-gate counts."
       }
     },
     {
@@ -2425,7 +2435,7 @@
             "S1:T03",
             "S1:T08"
           ],
-          "decisive_test": "Require applicable release checks, attributable review, exact source/artifact inventory, existing performance/privacy/crash/API thresholds, signed outgoing history before any separately authorized push. Other releases are not prerequisites.",
+          "decisive_test": "Require applicable release checks, attributable review, exact source/artifact inventory, existing performance/privacy/crash/API thresholds, signed outgoing history before any separately authorized push. Other releases are not prerequisites. Before E01 delivery, separately land its hitch assertion fix, then rebase only after the verified upstream merge and confirm qualified source/test identities; see E01 pre_delivery_sequence.",
           "environment": "Exact candidate; one host; no concurrent measurement contamination",
           "evidence": "EXP-203 qualifies P04 and scopes59 duplicate classes to XCTest dependencies absent from normal production/default-package and accepted-client graphs. All142 compiler-warning lines remain:39/41 message texts predate E01, every production site unchanged, four new test-only lines. Eight QoS warnings have unchanged source sites; EXP-204 reproduces the networking warning in baseline console, then times out600s before result finalization. Candidate not run; no equivalence, harmlessness, sanitizer or performance clearance. Numeric P01-P03 and backend A01/T03/T08 remain open. All three performance fixture attempts ended without accepted measurements.",
           "required": true
@@ -2492,6 +2502,36 @@
           "evidence": "EXP-197 baseline red retained. EXP-199 candidate1bdc9286 full Internal455 tests/491 executions passes, plus5 native suspend/resume boundary repetitions. Exactly-once automatic/registered/dual/rebind, early callbacks and payload destruction controls pass. Paired native automatic/registered ownership and affected Core/RUM/Trace suites pass. P03/performance and remaining release gates stay open.",
           "required": true
         }
+      },
+      "pre_delivery_sequence": {
+        "source": "User-approved delivery plan relayed from task 01a0bdc1-02b0-77d0-acbe-9d4eacfac321 on 2026-09-20.",
+        "current_checkpoint": "Keep 925b9326bcb364aab87686bbd665be8da576f674 in place; its independent one-file hitch assertion correction is part of EXP-201 278/278 qualification. No current history rewrite.",
+        "owner": "SDK implementer; maintainers own upstream review/merge",
+        "steps": [
+          {
+            "id": "extract-test-fix",
+            "dependency": "Separate delivery preparation",
+            "deliverable": "Extract the exact one-file test correction from 925b9326 into its own branch for independent review and delivery.",
+            "decisive_test": "Test-only diff matches the qualified correction; no URLSession production source included.",
+            "environment": "Local Git/source review; no push authorized."
+          },
+          {
+            "id": "land-test-fix",
+            "dependency": "extract-test-fix and separate push/merge authorization",
+            "deliverable": "Land the test correction in develop separately from the URLSession repair.",
+            "decisive_test": "Verified upstream merge commit contains the reviewed test fix.",
+            "environment": "Authenticated upstream review/merge after authorization."
+          },
+          {
+            "id": "rebase-urlsession",
+            "dependency": "Actual verified upstream test-fix merge",
+            "deliverable": "Rebase the URLSession branch onto updated develop; keep the assertion fix through the new base and remove its separate commit from the URLSession PR diff.",
+            "decisive_test": "Production/test source identities match the qualified candidate, or changed identities receive explicitly scoped requalification; no duplicate test-fix commit in the PR diff.",
+            "environment": "Isolated local checkout; preserve the current qualification checkpoint before any later rewrite."
+          }
+        ],
+        "qualification": "Accepted EXP-201 evidence remains bound to its exact source/test identities. A future rebase requires identity comparison before reusing evidence.",
+        "authorization": "Planning only at this checkpoint; no branch rewrite, push, merge or publication."
       }
     },
     {
@@ -2575,7 +2615,7 @@
       "environment": "Isolated clean checkout of then-current develop; affected unit and native fixtures",
       "completion_mode": null,
       "status": "OPEN",
-      "evidence": "",
+      "evidence": "EXP-208 defined: Results/EXP-208-trace-ownership.json; independent three-Trace-file design review, no runtime evidence or closure yet.",
       "release_requirements": {
         "S1": {
           "scope": "Conditional request-time Trace correlation",

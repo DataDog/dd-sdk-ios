@@ -1,0 +1,215 @@
+{
+  "schema_version": 1,
+  "experiment": "EXP-208",
+  "reviewer": "/root/extraction_dependency_audit",
+  "review_type": "independent read-only source design review",
+  "created_at_utc": "2026-09-20T07:23:52.148566+00:00",
+  "baseline_commit": "62f64d7b655bdc83f3036c4ad81090a270f6202b",
+  "verdict": "CONDITIONAL_THREE_TRACE_FILE_DESIGN_PASS",
+  "qualification_claim": false,
+  "execution": "No SDK/test edits, builds, tests, device or network actions. Only this requested temporary review artifact was written.",
+  "allowed_production_boundary": [
+    "DatadogTrace/Sources/Integrations/TracingURLSessionHandler.swift",
+    "DatadogTrace/Sources/Span/SpanWriteContext.swift",
+    "DatadogTrace/Sources/DatadogTracer.swift"
+  ],
+  "ownership_contract": [
+    "During modify, resolve one request-time RUM ownership value. If NetworkContext is present, its rumContext is authoritative, including nil. If NetworkContext is entirely absent, preserve the ABI fallback to a request-time snapshot of the Trace receiver.",
+    "Do not replace an absent NetworkContext with an empty object in NetworkInstrumentationFeature: the provider starts nil and its first context delivery is asynchronous. That substitution changes input seen by custom handlers and removes the unavailable-context fallback.",
+    "Return captured state even when resolved RUM ownership is nil, retaining existing active-parent and GraphQL fields. The per-interception wrapper distinguishes a present nil ownership value from absence of a captured entry.",
+    "At completion, remove the wrapper under its lock before every guard or sampling return. A present wrapper supplies a writer override that sets or removes only RUM additional context. An absent wrapper uses the existing default writer.",
+    "Keep completion-time non-RUM context, consent, user/account values, error/status/timing behavior and default manual-span writer semantics. Do not introduce a fallback from captured nil to a later RUM owner."
+  ],
+  "sampling_contract_corrected": {
+    "requirement": "Sampling is unchanged from current develop; captured ownership is not a new sampling input.",
+    "unchanged_helper": "makeElementsForNewSpanContext retains networkContext?.rumContext ?? contextReceiver.context.rumContext and the complete existing parent/sample-rate/decision logic.",
+    "unchanged_modify_call": "The existing modify call still passes the optional NetworkContext to that helper.",
+    "unchanged_completion_call": "The no-injected-trace completion path retains its existing outer Sampler and helper call without NetworkContext, hence its existing receiver-based fallback. This applies whether a capture wrapper exists or not.",
+    "intentional_distinction": "A present NetworkContext with nil RUM prevents ownership/baggage adoption but still retains the existing receiver fallback for sampling. Do not conflate the two contracts.",
+    "withdrawn_proposal": "The reviewer earlier proposed captured ownership as a sampling input and a non-RUM-sampling red for present nil. Both are withdrawn. That case becomes a baseline-preservation control; the previous eight-red count must not be carried forward mechanically."
+  },
+  "lifetime_proof": {
+    "scope": "Reachable production paths with the existing internal Trace handler registration and the proposed insertion/removal shape. Direct fabricated callback use in tests is not proof of production ownership.",
+    "invariant": "For each registered Trace handler, every key in its capture map belongs to an interception still retained in its owning NetworkInstrumentationFeature. The map has at most one value per outstanding interception UUID.",
+    "steps": [
+      "The feature strongly owns both its handler array and its task-to-interception dictionary.",
+      "intercept(task:) obtains the existing interception or constructs one, then stores it in the feature dictionary before invoking first-only interceptionDidStart. Only this callback inserts a capture. Repeated resume/rebind reuses the existing interception and does not issue another start while it is retained.",
+      "The only production per-task dictionary deletion is finish(). It synchronously calls interceptionDidComplete on every current handler before deleting the interception. The proposed handler removes its entry before any first-party/origin/tracer/timing/completion/sampling guard, so owner removal cannot strand an entry.",
+      "Handler registration only appends. No production path removes a Trace handler independently while retaining its capture map. A later appended handler has no capture for already-started interceptions; existing handlers still receive their completion.",
+      "Unbind and delegate rebind remove/replace swizzlers and delegate-class registrations only. Neither removes an interception or its handler. A registered task that loses its metrics callback can remain incomplete, but its original task and interception remain strongly retained alongside the value-only capture.",
+      "Core stop releases registered features. The feature owns the handler and interception collections, and swizzler/queued callbacks reference the feature weakly (with normal temporary strong references while executing). Thus destruction releases both ownership structures; there is no new reverse reference from the value-only map to the feature, task or interception.",
+      "ReadWriteLock is a reference-type property wrapper, so temporary copies of the value-type Trace handler share the same map; they do not create independent populated maps."
+    ],
+    "bind_unbind_orphan_path_found": false,
+    "additional_lifecycle_hook_required_for_this_relative_bound": false,
+    "limits": [
+      "This proves a relative live-owner bound, not a fixed maximum number of concurrent requests or a fixed byte/capacity limit.",
+      "It does not prove immediate release on unbind. The baseline already retains registered interceptions missing metrics until completion or feature destruction.",
+      "Swift dictionary capacity may reflect the historical concurrent high-water mark after entries drain; no measured allocation/retained-byte/performance claim is made.",
+      "A removed RUM value may be carried into the span writer for normal event serialization. The no-orphan claim concerns the per-interception map, not the necessary event-writing value lifetime.",
+      "The proof is conditional on preserving first-only insertion, remove-before-guards completion, and the unchanged instrumentation removal paths. Runtime cleanup controls remain to be admitted/executed."
+    ]
+  },
+  "source_anchors": [
+    {
+      "path": "DatadogTrace/Sources/Integrations/TracingURLSessionHandler.swift",
+      "baseline_lines": "72-89",
+      "fact": "Existing modify sampling call and late receiver-based RUM session baggage; user/account fields are separate existing inputs."
+    },
+    {
+      "path": "DatadogTrace/Sources/Integrations/TracingURLSessionHandler.swift",
+      "baseline_lines": "154-196",
+      "fact": "Existing optional captured-state shape and asynchronous start consumer; retain active-parent and GraphQL behavior."
+    },
+    {
+      "path": "DatadogTrace/Sources/Integrations/TracingURLSessionHandler.swift",
+      "baseline_lines": "200-209; 237-279",
+      "fact": "All completion guards, injected-trace branch and legacy no-injected fallback that must remain semantically intact."
+    },
+    {
+      "path": "DatadogTrace/Sources/Integrations/TracingURLSessionHandler.swift",
+      "baseline_lines": "353-395",
+      "fact": "Existing sampling helper and nil-coalescing RUM fallback must remain unchanged."
+    },
+    {
+      "path": "DatadogTrace/Sources/DatadogTracer.swift",
+      "baseline_lines": "146-165",
+      "fact": "Existing internal span constructor instantiates the default LazySpanWriteContext."
+    },
+    {
+      "path": "DatadogInternal/Sources/NetworkInstrumentation/NetworkContextProvider.swift",
+      "baseline_lines": "18-19; 42-47",
+      "fact": "Provider begins with absent NetworkContext; message receipt publishes a present context whose RUM value may be nil."
+    },
+    {
+      "path": "DatadogCore/Sources/Core/DatadogCore.swift",
+      "baseline_lines": "281-284",
+      "fact": "Initial provider message delivery is asynchronous."
+    },
+    {
+      "path": "DatadogInternal/Sources/NetworkInstrumentation/NetworkInstrumentationFeature.swift",
+      "baseline_lines": "48-66",
+      "fact": "Feature strongly owns handlers and task/interception dictionary."
+    },
+    {
+      "path": "DatadogInternal/Sources/NetworkInstrumentation/NetworkInstrumentationFeature.swift",
+      "baseline_lines": "241-244; 293-305",
+      "fact": "Unbind/rebind affect swizzlers and delegate classes, not existing task/interception or handler ownership."
+    },
+    {
+      "path": "DatadogInternal/Sources/NetworkInstrumentation/NetworkInstrumentationFeature.swift",
+      "baseline_lines": "401-418; 433-503",
+      "fact": "Captured state reaches queued interception setup; the feature stores/reuses the interception before first-only start notification."
+    },
+    {
+      "path": "DatadogInternal/Sources/NetworkInstrumentation/NetworkInstrumentationFeature.swift",
+      "baseline_lines": "512-529; 573-600; 639-677",
+      "fact": "Metrics, completion and state callbacks funnel completed interceptions into finish."
+    },
+    {
+      "path": "DatadogInternal/Sources/NetworkInstrumentation/NetworkInstrumentationFeature.swift",
+      "baseline_lines": "615-632",
+      "fact": "Every handler completion is invoked before the sole per-task interception deletion."
+    },
+    {
+      "path": "DatadogInternal/Sources/NetworkInstrumentation/URLSession/URLSessionTaskInterception.swift",
+      "baseline_lines": "20-29; 101-106; 184-200",
+      "fact": "Stable UUID identity and automatic/registered completion criteria; registered mode requires metrics plus completion."
+    },
+    {
+      "path": "DatadogInternal/Sources/NetworkInstrumentation/DatadogURLSessionHandler.swift",
+      "baseline_lines": "37-52",
+      "fact": "Existing captured-state handoff ABI and append-only handler registration."
+    },
+    {
+      "path": "DatadogTrace/Sources/Trace.swift",
+      "baseline_lines": "70-85",
+      "fact": "Production constructs the internal Trace handler locally and registers it into the network feature."
+    },
+    {
+      "path": "DatadogInternal/Sources/Concurrency/ReadWriteLock.swift",
+      "baseline_lines": "12-18; 31-35; 50-58",
+      "fact": "Reference-type synchronized state is shared by handler copies and released on destruction."
+    },
+    {
+      "path": "DatadogCore/Sources/Core/DatadogCore.swift",
+      "baseline_lines": "333-339; 396-397",
+      "fact": "Core feature ownership and stop release."
+    },
+    {
+      "path": "DatadogCore/Sources/Datadog.swift",
+      "baseline_lines": "193-202",
+      "fact": "Public stopInstance unregisters the core and invokes stop."
+    }
+  ],
+  "source_exclusions": [
+    "No NetworkInstrumentationFeature or public NetworkContext/protocol change.",
+    "No sampling helper, sampling-rate, sampling-decision, parent-span or trace-header preservation policy change.",
+    "No RUMContextHandoff, scene/source routing, representative-context policy, action merging, pending/excluded user-action state or handoff writer factory.",
+    "No new lifetime hook, task-associated state, global tombstone, task/scope retention or other E01/E02/E03/E04 source extraction.",
+    "No public API, event format, generated model, dependency, build-script or protected configuration change."
+  ],
+  "admission_notes": [
+    "Freeze corrected semantic tests and actual predicted-red inventory before execution; do not count the withdrawn sampling-change oracle as a red.",
+    "Pre-admit only necessary private captured-state assertion maintenance in existing handler tests; preserve their public header/parent/GraphQL checks.",
+    "Red tests must compile against baseline APIs and must not require the future private capture-map shape or new writer initializer.",
+    "No extraction eligibility or release gate is closed by this source-only artifact."
+  ],
+  "baseline_source_manifest": [
+    {
+      "path": "DatadogTrace/Sources/Integrations/TracingURLSessionHandler.swift",
+      "commit": "62f64d7b655bdc83f3036c4ad81090a270f6202b",
+      "sha256": "be5de427a8eb3bf884b308a2e05aabe0945440ad3261b8fbb963100fe0cdf52c"
+    },
+    {
+      "path": "DatadogTrace/Sources/Span/SpanWriteContext.swift",
+      "commit": "62f64d7b655bdc83f3036c4ad81090a270f6202b",
+      "sha256": "dcb3f71773fabd26e24d074c2d5e2cfdfa6778cc7a5e95aa982924a1a163bd77"
+    },
+    {
+      "path": "DatadogTrace/Sources/DatadogTracer.swift",
+      "commit": "62f64d7b655bdc83f3036c4ad81090a270f6202b",
+      "sha256": "e27c4be078704ec23a3ead2dff7eae487547dbdd5518659a4c409fa0adffb733"
+    },
+    {
+      "path": "DatadogTrace/Sources/Trace.swift",
+      "commit": "62f64d7b655bdc83f3036c4ad81090a270f6202b",
+      "sha256": "899fb2c3699d4ba916273de1c429dcc77bf64c618531408fc0f7e091074eab75"
+    },
+    {
+      "path": "DatadogInternal/Sources/NetworkInstrumentation/NetworkInstrumentationFeature.swift",
+      "commit": "62f64d7b655bdc83f3036c4ad81090a270f6202b",
+      "sha256": "3e70fa502baa6faa8e4c8bc7c06fd5cc6039998efbc363f5f82bf1b9e80f1ce1"
+    },
+    {
+      "path": "DatadogInternal/Sources/NetworkInstrumentation/NetworkContextProvider.swift",
+      "commit": "62f64d7b655bdc83f3036c4ad81090a270f6202b",
+      "sha256": "4af6d4afcf5c2b13491bc8d18a425b600d75c86605d9b7de8815252f079ee422"
+    },
+    {
+      "path": "DatadogInternal/Sources/NetworkInstrumentation/DatadogURLSessionHandler.swift",
+      "commit": "62f64d7b655bdc83f3036c4ad81090a270f6202b",
+      "sha256": "850497e78477a60cb82d9bcfcbaf8f1ed84a17667b7fd0ef4cbcb075f4e89c49"
+    },
+    {
+      "path": "DatadogInternal/Sources/NetworkInstrumentation/URLSession/URLSessionTaskInterception.swift",
+      "commit": "62f64d7b655bdc83f3036c4ad81090a270f6202b",
+      "sha256": "1323fadf83a57e76815669c26f26d5126b8df8a9122eded950d564ae1e64cf2d"
+    },
+    {
+      "path": "DatadogInternal/Sources/Concurrency/ReadWriteLock.swift",
+      "commit": "62f64d7b655bdc83f3036c4ad81090a270f6202b",
+      "sha256": "ea24b7c5107ca5575fefceed591ed202a678eb1b0196ff80ab5301ea90142da3"
+    },
+    {
+      "path": "DatadogCore/Sources/Core/DatadogCore.swift",
+      "commit": "62f64d7b655bdc83f3036c4ad81090a270f6202b",
+      "sha256": "3f75331b66c9540ef928063945983aaea25ae74c28a09c76ea44f1194cf9c643"
+    },
+    {
+      "path": "DatadogCore/Sources/Datadog.swift",
+      "commit": "62f64d7b655bdc83f3036c4ad81090a270f6202b",
+      "sha256": "fdc122112101d5afc1ef49f6a1bb2148194bbf0aa1e6c564ad2f38627c09cd39"
+    }
+  ]
+}

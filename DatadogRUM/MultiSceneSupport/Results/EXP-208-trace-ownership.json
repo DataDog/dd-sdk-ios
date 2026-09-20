@@ -1,0 +1,119 @@
+{
+  "schema_version": 1,
+  "experiment": "EXP-208",
+  "status": "FIXTURES IN SOURCE REVIEW; ZERO RUNTIME INVOCATIONS",
+  "defined_at": "2026-09-20T07:28:39.858757+00:00",
+  "timebox_deadline": "2026-09-20T08:58:39.858757+00:00",
+  "gates": [
+    "E05"
+  ],
+  "owner": "Root host controller; isolated test/implementation author; independent source and artifact reviewer",
+  "baseline_revision": "62f64d7b655bdc83f3036c4ad81090a270f6202b",
+  "remote_verification": "Authenticated GitHub fetch_commit(develop) freshly returned this revision before the clean checkout. Signature E is unavailable local verification, not verified signing.",
+  "worktree": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/request-time-trace-ownership",
+  "branch": "valpertui/request-time-trace-ownership",
+  "artifact_root": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp208-trace-ownership-cshxotac",
+  "allowed_test_paths": [
+    "DatadogTrace/Tests/TracingURLSessionHandlerTests.swift",
+    "Datadog/IntegrationUnitTests/Public/NetworkInstrumentationIntegrationTests.swift"
+  ],
+  "conditional_source_paths": [
+    "DatadogTrace/Sources/Integrations/TracingURLSessionHandler.swift",
+    "DatadogTrace/Sources/Span/SpanWriteContext.swift",
+    "DatadogTrace/Sources/DatadogTracer.swift"
+  ],
+  "scope": "Independent source-less E05 ownership only. No other extraction, scene machinery, NetworkInstrumentation change, public API, wire format, dependency, build script or protected configuration change.",
+  "definition": {
+    "hypothesis": "Outgoing RUM session baggage reads the mutable Trace receiver instead of the supplied request-time NetworkContext, while completion-created URLSession spans capture later RUM application/session/view/action IDs. Source-less requests may be attributed to the wrong owner or adopt RUM after starting without it.",
+    "expected_red_test_count": 13,
+    "red_selectors": [
+      "DatadogTraceTests/TracingURLSessionHandlerTests/testGivenRequestTimeRUMContext_whenInjectedInterceptionCompletesAfterContextSwitch_itKeepsBaggageAndAllRUMTags",
+      "DatadogTraceTests/TracingURLSessionHandlerTests/testGivenExplicitNilRequestTimeRUMContext_whenInjectedInterceptionCompletesAfterContextSwitch_itKeepsRUMBaggageAndTagsAbsent",
+      "DatadogTraceTests/TracingURLSessionHandlerTests/testGivenAbsentNetworkContext_whenInjectedInterceptionCompletesAfterContextSwitch_itUsesModifyTimeReceiverRUM",
+      "DatadogTraceTests/TracingURLSessionHandlerTests/testGivenRequestTimeRUMContext_whenUninjectedInterceptionCompletesAfterContextSwitch_itKeepsAllRUMTags",
+      "DatadogTraceTests/TracingURLSessionHandlerTests/testGivenExplicitNilRequestTimeRUMContext_whenUninjectedInterceptionCompletesAfterContextSwitch_itDoesNotAdoptLaterRUMTags",
+      "DatadogTraceTests/TracingURLSessionHandlerTests/testGivenTwoRequestTimeRUMContexts_whenInterceptionsCompleteInReverseOrder_itKeepsEachOwnersTags",
+      "DatadogTraceTests/TracingURLSessionHandlerTests/testGivenRequestTimeRUMContextWithActiveSpan_whenInterceptionCompletesAfterContextSwitch_itPreservesParentAndRUMOwnership",
+      "DatadogTraceTests/TracingURLSessionHandlerTests/testGivenRequestTimeRUMContextWithGraphQLHeaders_whenInterceptionCompletesAfterContextSwitch_itPreservesRUMOwnership",
+      "DatadogTraceTests/TracingURLSessionHandlerTests/testGivenCompletionWithoutCapturedRUMContext_whenInterceptionCompletes_itUsesCurrentWriterContext",
+      "DatadogTraceTests/TracingURLSessionHandlerTests/testGivenExplicitNilNetworkContext_whenBuildingTraceContext_itPreservesReceiverSamplingFallback",
+      "DatadogTraceTests/TracingURLSessionHandlerTests/testGivenNoInjectedTrace_whenBuildingSpanContext_itPreservesExistingReceiverSamplingFallback",
+      "DatadogTraceTests/TracingURLSessionHandlerTests/testGivenRequestTimeRUMContext_whenInjectingTraceHeaders_itPreservesParentUserAndAccountHeaders",
+      "DatadogTraceTests/TracingURLSessionHandlerTests/testGivenCapturedRUMContext_whenEarlyCompletionGuardIsRetriedAfterContextChange_itUsesLegacyContextAndPreservesCancellationErrorSpan"
+    ],
+    "expected_red_methods": [
+      "testGivenRequestTimeRUMContext_whenInjectedInterceptionCompletesAfterContextSwitch_itKeepsBaggageAndAllRUMTags",
+      "testGivenExplicitNilRequestTimeRUMContext_whenInjectedInterceptionCompletesAfterContextSwitch_itKeepsRUMBaggageAndTagsAbsent",
+      "testGivenAbsentNetworkContext_whenInjectedInterceptionCompletesAfterContextSwitch_itUsesModifyTimeReceiverRUM",
+      "testGivenRequestTimeRUMContext_whenUninjectedInterceptionCompletesAfterContextSwitch_itKeepsAllRUMTags",
+      "testGivenExplicitNilRequestTimeRUMContext_whenUninjectedInterceptionCompletesAfterContextSwitch_itDoesNotAdoptLaterRUMTags",
+      "testGivenTwoRequestTimeRUMContexts_whenInterceptionsCompleteInReverseOrder_itKeepsEachOwnersTags",
+      "testGivenRequestTimeRUMContextWithActiveSpan_whenInterceptionCompletesAfterContextSwitch_itPreservesParentAndRUMOwnership",
+      "testGivenRequestTimeRUMContextWithGraphQLHeaders_whenInterceptionCompletesAfterContextSwitch_itPreservesRUMOwnership"
+    ],
+    "preservation_controls": [
+      "testGivenCompletionWithoutCapturedRUMContext_whenInterceptionCompletes_itUsesCurrentWriterContext",
+      "testGivenExplicitNilNetworkContext_whenBuildingTraceContext_itPreservesReceiverSamplingFallback",
+      "testGivenNoInjectedTrace_whenBuildingSpanContext_itPreservesExistingReceiverSamplingFallback",
+      "testGivenRequestTimeRUMContext_whenInjectingTraceHeaders_itPreservesParentUserAndAccountHeaders",
+      "testGivenCapturedRUMContext_whenEarlyCompletionGuardIsRetriedAfterContextChange_itUsesLegacyContextAndPreservesCancellationErrorSpan"
+    ],
+    "red": "Exactly 13 new unit tests: eight predicted ownership failures and five preservation passes. Freeze exact assertion predicates, sources and all test files before execution. Baseline APIs only; pass optional captured states without requiring a new private shape.",
+    "private_test_maintenance": "In three existing handler tests only, replace capturedState == nil with optional activeSpan == nil and hasGraphQLHeaders == false checks. Preserve every existing header, parent, trace and sampling assertion. Freeze these replacements before baseline.",
+    "ownership_contract": "Present NetworkContext owns its optional RUM value, including authoritative nil. Absent NetworkContext preserves request-time Trace receiver fallback, captured once. At completion, absence of a map entry preserves legacy writer behavior; a present wrapper containing nil removes later RUM context.",
+    "compatibility_contract": "Keep makeElementsForNewSpanContext and both existing sampling call paths unchanged, including networkContext?.rumContext ?? receiver fallback. Keep existing userId/accountId expressions and header overwrite policy. Only RUM additional context changes; serialized non-RUM context stays completion-time. Preserve manual spans, consent, parent/GraphQL behavior and cancellation error spans.",
+    "conditional_fix": "Only after exact baseline red and independent review: add optional RUM value to existing captured state, always return it; use a value-only wrapper keyed by interception UUID and one atomic removal before all completion guards. Internal writer override replaces/removes only RUM additional context in both span branches. Internal startSpan writer parameter defaults to the unchanged manual-span writer.",
+    "lifetime": "One captured entry per existing retained interception; production start is first-only and finish calls every handler before removing its interception. No task/interception/scope reference in the new map. Recoverable guard table (tracer, timing, completion, origin) retries same interception under B and must see legacy B, proving prior capture was consumed. Immutable third-party guard has no-output plus source-order proof. No immediate-unbind, hard capacity or measured footprint claim; existing missing-metrics retention and dictionary high-water capacity remain limitations.",
+    "green": "Complete DatadogTrace target once, identical frozen tests, zero unexpected failures or skips; retain compiler/runtime diagnostics. Existing writer context/consent and manual span tests are included in that target.",
+    "native_selectors": [
+      "DatadogIntegrationTests/NetworkInstrumentationIntegrationTests/testAutomaticTraceRequestTimeRUMOwnershipWithReverseCompletion",
+      "DatadogIntegrationTests/NetworkInstrumentationIntegrationTests/testAutomaticTraceRequestBeforeRUMDoesNotAdoptLaterOwnership",
+      "DatadogIntegrationTests/NetworkInstrumentationIntegrationTests/testParentSpanPropagation"
+    ],
+    "native": "Three identical native tests per arm: two new automatic Trace-only URLSession tests plus unchanged testParentSpanPropagation. Trace URLSession tracking is enabled; RUM manual views/actions have urlSessionTracking nil, so serialized urlsession.request SpanEvents are exercised rather than backend-created RUM-resource spans. Held A/B requests complete B then A; a request started before RUM activation cannot adopt later RUM IDs. Assert actual captured outgoing headers, caller headers, exact serialized span counts/owners/trace IDs and completion-time non-RUM context. The existing parent control passes on both arms. No backend claim.",
+    "native_expected": "Baseline exactly two failing ownership tests and one passing existing parent control; candidate three pass. Freeze exact failure locations after source review and before either native invocation. Custom URLProtocol must provide real start/hold/release/completion receipts and finite waits, never invent metrics.",
+    "environment": "Xcode 27.1/27A9269; booted iPad iOS17.5/21F79 simulator. Hostless units then Example-hosted native integration. Main MCP active Example has no tests; use explicit isolated CLI schemes and preserve IDE state. No credentials.",
+    "inputs": "Fresh derived/results directories, frozen tracked sources and tests, verified package pins/checkouts and 142 framework records. Disable package updates/automatic resolution. Preserve both main protected paths by metadata/hash policy. Root alone controls builds/devices.",
+    "diagnostics": "Symmetric -collect-test-diagnostics never preserves assertions, console/results and sanitizer configuration while omitting verbose archives/sysdiagnoses. No clean-sanitizer claim.",
+    "bound": "90 minutes absolute from definition; one 13-test red, one full Trace green, one three-test native invocation per arm. Each invocation at most 1200 seconds, shortened to reserve cleanup before the deadline; native pair at most 2400 seconds. Stop on compile failure, unexpected oracle, timeout or input drift. Any specific correction requires separately recorded review; no retry-until-green.",
+    "cleanup": "Prove test/host process and Example app absence, live device binding and protected metadata unchanged. Original seven-hour caffeinate has expired; no renewal admitted."
+  },
+  "attempts": [],
+  "design_review": {
+    "path": "Results/EXP-208-design-review.json",
+    "sha256": "58f80ef55423fcfc2c35b6eee34281fb3ac03744154aec02a6ffc6afe5de6446"
+  },
+  "environment_preparation": {
+    "initial_environment": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp208-trace-ownership-cshxotac/initial-environment.json",
+    "dependencies": {
+      "at": "2026-09-20T07:19:16.350301+00:00",
+      "status": "DEPENDENCY INPUTS PREPARED; NO TEST OR PRODUCTION EDITS",
+      "earlier_preparation_stop": "Untracked Package.resolved absent in fresh checkout. Framework copy completed; no build/test. Copied exact separately verified existing pins afterward.",
+      "framework_records": 142,
+      "dependencies": {
+        "KSCrash": "95a8895d75f3c22aa9ad9f2a15d2fbd97b0a55e2",
+        "dd-sdk-swift-testing": "08a6dd596859ee14c20ee9cd245741aab0c54504"
+      },
+      "pins_sha256": "898d49f7cde3dd462b6cd716f48d7adb1fcfc921ece1b4f4d492926b365c902e",
+      "source_packages": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp201-hitch-complete-k_7pu9mo/SourcePackages",
+      "protected_unchanged": true,
+      "checkout_clean": true
+    }
+  },
+  "release_effect": "None until accepted red/green/native evidence. E05 eligibility remains OPEN; selected E01 release gates and reference production remain unchanged.",
+  "preflight_review": {
+    "at": "2026-09-20T07:46:32.575582+00:00",
+    "unit_sha256": "d93562b6fecd9fe7f5819af95eaeae2e59d54cf5a4c4f336113034d64bba9485",
+    "corrections_before_freeze": [
+      "RUM span bundling is confined to thirteen new tests; original shared setup remains unchanged.",
+      "Separate parent-write expectations and exact cumulative counts avoid expectation overfulfillment.",
+      "GraphQL captured-state flag gets a direct baseline-compatible preservation assertion.",
+      "Native caller baggage and SDK-injected baggage must use separate requests because existing header policy preserves supplied baggage wholesale.",
+      "Native held-protocol coordination and cleanup are synchronized; live context readiness must precede release."
+    ],
+    "production_edits": false,
+    "runtime_invocations": 0,
+    "gates_unchanged": true,
+    "strict_review_receipt": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp208-trace-ownership-cshxotac/pre-freeze-review.json"
+  }
+}

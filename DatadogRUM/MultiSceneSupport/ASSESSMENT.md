@@ -74,6 +74,17 @@ evidence; backend, real browser timing, physical Duo and numerical performance a
 not qualified. Lookup now takes a write lock for expiry. E04's release qualification
 remains separate from the selected E01 candidate.
 
+E05 is now a bounded investigation of ordinary automatic Trace requests. Source
+review identifies mutable outgoing baggage and completion-time span correlation;
+[EXP-208](Results/EXP-208-trace-ownership.json) defines the reproducer and narrow
+repair boundary. It has no runtime result yet. Explicit nil ownership, existing
+sampling and completion-time non-RUM context are separate preservation contracts.
+
+PR2683's [source/discussion review](Results/PR-2683-header-ownership-review.json)
+raises a separate trace-identity risk when baggage writes are treated as carrier
+ownership. It has no runtime reproduction here. A bounded T08 follow-up is planned;
+E01/E05 continue to preserve existing header policy.
+
 ## Immediate compatibility priority
 
 The short-term criterion is no RUM degradation when an existing app rebuilds with

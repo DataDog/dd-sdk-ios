@@ -244,3 +244,5 @@ conclusions belong in [ASSESSMENT.md](ASSESSMENT.md).
 | <a id="exp-206"></a>EXP-206 | E03 | Reproduced · repair boundary blocked | Four exact foreign-action failures, five preservation passes; stateless membership loses valid response-plus-error telemetry. No production repair or gate closure; original compile failure retained. | [record](Experiments/EXP-206-resource-action-ownership.md#exp-206--discriminate-foreign-resource-action-counters) |
 
 | <a id="exp-207"></a>EXP-207 | E04 | E04 eligibility qualified | Eight exact baseline failures and five controls; two-file repair passes 910 cases/946 executions and identical native bridge 3/3 versus two expected baseline assertions. Broader release checks remain. | [record](Experiments/EXP-207-active-view-cache.md#exp-207--retain-delayed-webview-containers-after-long-native-visits) |
+
+| <a id="exp-208"></a>EXP-208 | E05 | DEFINED | Fixed source-less Trace ownership investigation: 13 unit selectors, three paired native selectors and conditional three-file repair; sampling and non-RUM context preserved. | [record](Experiments/EXP-208-trace-ownership.md#exp-208--preserve-request-ownership-through-trace-completion) |

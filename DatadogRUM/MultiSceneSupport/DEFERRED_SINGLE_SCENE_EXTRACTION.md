@@ -90,3 +90,17 @@ applicable S1:F06 review. Report independent readiness; E02-E05 and all S3 gates
 not delay a ready E01 patch. Reconstruct or rebase the multi-scene stack only when
 its dependency audit calls for it, preserving the original branch and comparing
 production source against the delivered base.
+
+E01 has a specific pre-delivery dependency in the register's
+`pre_delivery_sequence`. Keep the qualified hitch assertion commit `925b9326` in
+place now. Extract that one-file test correction for independent review and land it
+in develop separately. Only after the upstream merge, rebase the URLSession branch
+so the fix is inherited from develop and its separate commit leaves the URLSession
+PR diff. Compare production and test identities before reusing EXP-201 evidence.
+This checkpoint authorizes documentation, not a history rewrite or upstream action.
+
+The [PR2683 review](Results/PR-2683-header-ownership-review.json) records a separate
+T08 follow-up after the E05 checkpoint: distinguish trace-carrier ownership from
+baggage writes, then reproduce the bounded caller-header cases before choosing a
+repair. The proposal remains unmerged and is not an extraction unit. EXP-208 keeps
+existing baggage and trace-header policy.
