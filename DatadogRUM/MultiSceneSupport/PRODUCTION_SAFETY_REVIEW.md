@@ -22,62 +22,28 @@ before deferring S3 behavior; this review is not a generic extraction eligibilit
 certificate. New scene API promotion remains pending. Physical EXP-196 is safely
 checkpointed: Full Screen Apps restored and task apps/keep-awake cleaned up.
 
-EXP-197 now reproduces an independent current-develop request-mutation defect
-under S1:E01; this does not reopen the historical D01–D12 dispositions. The user approved the reviewed
-three-file internal URLSession ordering repair for local testing after the automatic
-review rejection. Signed464af911 passes full Internal453 tests/489 executions,
-including early callback/body ordering, deallocator reentry, weak release, native
-suspend/resume and forwarding controls. Paired17.5 ordinary/legacy coverage also
-passes. These close bounded E01/F07 and S1 compatibility requirements. Task-state
-retention/performance is admitted as EXP-198; affected Resource/Trace/backend and
-final release checks remain required.
-The [owning result](Results/EXP-197-urlsession-extraction.json) retains the red test,
-approval, failed test preparation and exact candidate test artifacts.
+The independent S1 E01 findings are separate from historical D01–D12. Repeated
+request mutation and strong terminal-preparation retention are repaired in
+1bdc9286; [EXP-197](Results/EXP-197-urlsession-extraction.json) and
+[EXP-199](Results/EXP-199-terminal-task-ownership.json) preserve the approval, red
+controls, repair review and exact qualification. The rejected associated-marker
+approach remains recorded. Numeric retention remains open.
 
-The separate S1 terminal-preparation retention finding is repaired in local1bdc9286.
-[EXP-199](Results/EXP-199-terminal-task-ownership.json) proves two failing controls
-on464af911, full455-test Internal qualification and paired native automatic/
-registered cleanup. A per-feature weak terminal identity set replaces strong
-terminal preparation values; insertion/removal stays atomic and ARC release stays
-outside the coordinator lock. Independent source review found no production
-correctness issue. The larger associated-marker proposal was rejected before
-implementation because first installation can reenter runtime hooks. This repair
-closes the owned-record defect only: P03 numeric retention remains open, and shared
-heap growth without instrumentation remains unattributed. All thresholds stand.
+S1 platform/API/docs and full integration checks are qualified by
+[EXP-201](Results/EXP-201-final-compatibility.json); its inherited delta-hitch
+assertion correction changes only a test. [EXP-203](Results/EXP-203-optimized-reentrancy.json)
+qualifies optimized reentry and scopes duplicate classes to the test dependency
+graph. Compiler warnings remain visible, with no new production warning site
+identified. [EXP-204](Results/EXP-204-network-qos.json) establishes baseline console
+recurrence of the networking QoS warning; timeout prevents a completed pair, so
+no candidate equivalence, harmlessness or sanitizer/performance clearance follows.
 
-EXP-201 adds independently reviewed platform/public-client coverage and unchanged
-API baselines at1bdc9286. Five documentation-only updates correct inherited Trace
-semantics and verification metadata. The separately added integration suite first exposes an inherited delta-hitch
-assertion defect: both source arms record a hitch yet fail the last-delta-only
-assertion. One test-only correction then passes all278 discovered tests exactly
-once, with zero failures/skips. S1:F03 closes within its affected-source matrix.
-Nine QoS warnings and Xcode diagnostic-collection limits remain recorded; no
-zero-warning, sanitizer or numeric-performance claim follows.
-The second EXP-198 fixture draft is rejected before execution for measurement and
-teardown defects; these are fixture findings, not SDK production crashes. Numeric
-performance and full release acceptance remain open. S1:F02 is qualified by the
-source-matched changelog/support review and compiled public clients; deferred
-resume timing/thread behavior is explicitly recorded in EXP-201.
-
-EXP-203 scopes the remaining S1:P04 check to optimized handler/concurrent/destructor
-reentry. Eighteen accepted EXP-199 controls already cover the functional cases in
-Debug with exact final-source equality. The three-test Release slice passes
-exactly once and closes S1:P04; no numeric budget is part of P04. The142 build
-warnings remain recorded. The59 duplicate classes are attributed to the XCTest
-TestUtilities/DatadogSDKTesting graph: all10 production target closures, nine
-default SPM products and five accepted public-client link/load graphs exclude the
-second implementation. This resolves their shipped-product scope, not arbitrary
-duplicate-class safety or all test warnings. F06 remains open. EXP-202's preparation defects are
-harness findings, and its placeholder builds do not supply runtime/backend proof.
-The follow-up warning audit preserves142 lines/41 messages;39 messages already
-occur in the accepted baseline build, and all production warning sites are
-unchanged. Four added lines are test-only. Eight of nine retained QoS warnings
-have unchanged watchdog/test-wait locations. [EXP-204](Results/EXP-204-network-qos.json)
-reproduces the remaining networking warning without E01 in baseline console.
-Xcode then times out before result finalization; candidate never runs. The paired
-check stays inconclusive, with no harmlessness or sanitizer/performance clearance.
-F06 retains the diagnostic and its evidence boundary. EXP-198's third fixture pass stops before execution on observation
-and completed-task-control gaps; those are harness defects, not SDK findings.
+The unexecuted performance-fixture and backend-preparation defects are harness
+findings, not established SDK defects. Their owning
+[performance](Results/EXP-198-network-performance.json) and
+[backend](Results/EXP-202-urlsession-backend.json) records retain every attempt and
+open gate. Historical S1 narrative is preserved in the
+[documentation checkpoint](Results/EXP-204-documentation-consolidation.json).
 
 
 Review closure does not imply overall release readiness. Current release status

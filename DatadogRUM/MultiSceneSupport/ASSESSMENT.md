@@ -22,33 +22,31 @@ automatic SwiftUI naming/control limitations are outside new S2 scope. Exact API
 review F01 remains attributable and pending for S3; assessment assumptions are not
 approval. [Stage views](PLAN.md) own readiness.
 
-Ordinary repeated URLSession resume can invoke request mutation more than once
-on current develop62f64. The isolated E01 candidate1bdc9286 preserves exactly-once
-preparation and removes completed preparation records using weak task identity.
-Deterministic tests and paired real native automatic/registered tasks prove cleanup
-without losing lifecycle, header, body or metrics. Full Internal and affected
-Core/RUM/Trace suites pass on17.5. The candidate's six ordinary/legacy17.5 comparisons pass with the reused develop
-baseline and genuineSDK26.5 legacy builds; earlier464 results remain historical
-evidence. EXP-200 also qualifies custom/NOP behavior on17.5/26.5/27.0 and strict ordinary/legacy26.5 ownership. EXP-201 additionally passes24 complete platform builds, five public-client cells,
-unchanged API baselines and feature-doc verification. Its original delta-hitch assertion fails in both source arms despite measured
-hitches. The one-file test correction then passes the full278-test inventory with
-zero failures/skips, closing S1:F03. Warning and platform bounds remain in EXP-201. S1:F02 documentation closes on the audited feature docs,
-public clients and E01 changelog, with the duplicate-resume scheduling caveat retained. Numeric heap growth also occurs in SDK-unbound controls
-and remains unattributed. No allocation, latency or numeric-retention pass is claimed.
-[EXP-197](Results/EXP-197-urlsession-extraction.json) owns the original defect and
-[EXP-199](Results/EXP-199-terminal-task-ownership.json) owns the cleanup repair,
-failed attempts, exact source and evidence boundaries. Controlled Datadog app runs are authorized
-in the probes RUM application under service `ios-app-rum-release-validation`;
-configuration preparation and authenticated query access do not establish a run.
+The isolated E01 candidate1bdc9286 fixes repeated URLSession request mutation and
+strong terminal-preparation retention. Its deterministic and native automatic/
+registered controls preserve header, body, metrics and cleanup semantics. Debug
+and optimized reentrancy checks pass. Concurrent duplicate resumes may forward
+later on the preparation thread; arbitrary original-thread timing is not promised.
+[Repair/ownership evidence](Results/EXP-199-terminal-task-ownership.json) and
+[optimized controls](Results/EXP-203-optimized-reentrancy.json) define that scope.
 
-EXP-202 has qualified offline preparation for ordinary Resource/Trace backend
-acceptance. Both placeholder source arms compile, but no native or backend cell
-has run; protected-config use requires a narrow explicit exception. EXP-203
-passes three existing Release reentrancy controls exactly once and closes S1:P04.
-Accepted EXP-199 Debug invariants are reused by exact source hashes. P04 adds no
-numeric or ABBA requirement to P01–P03. The59 duplicate classes come from XCTest
-dependencies excluded by normal shipping/default-package and accepted client
-graphs; compiler/runtime diagnostics remain visible for F06.
+Ordinary/legacy17.5 and26.5 compatibility and custom/NOP17.5/26.5/27.0 comparisons
+pass on the candidate. Platform builds, compiled public clients, unchanged API
+surface, feature documentation and full integration coverage qualify S1:F02/F03.
+[Compatibility](Results/EXP-200-compatibility.json) and
+[final matrix](Results/EXP-201-final-compatibility.json) retain exact inventories,
+the corrected inherited hitch assertion and diagnostic limits.
+
+E01 is not release-ready: numeric P01–P03, backend A01/T03/T08 and final F06 remain
+open. [Performance qualification](Results/EXP-198-network-performance.json) has no
+accepted numeric result; absolute budgets remain unchanged.
+[Backend preparation](Results/EXP-202-urlsession-backend.json) has no native run
+and awaits the requested protected-config exception. Test-only duplicate classes
+are excluded from inspected shipping graphs; the networking QoS warning occurs
+without E01, but its [paired diagnostic](Results/EXP-204-network-qos.json) timed out
+and supplies no candidate-equivalence, harmlessness or sanitizer/performance claim.
+Controlled Datadog app evaluation is authorized; configuration preparation and
+query access alone do not establish a run.
 
 ## Immediate compatibility priority
 
