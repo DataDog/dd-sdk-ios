@@ -229,3 +229,7 @@ conclusions belong in [ASSESSMENT.md](ASSESSMENT.md).
 | <a id="exp-198"></a>EXP-198 | P01, P02, P03, P04 | P03 regression found · no ABBA | All-thread calibration passes; final terminal preparation outlives its native task. Shared unbound/zero-body heap growth remains unattributed. EXP-199 owns the narrow repair; budgets unchanged. | [record](Experiments/EXP-143-199.md#exp-198--qualify-urlsession-performance-and-retention) |
 
 | <a id="exp-199"></a>EXP-199 | P03, E01, F07 | Ownership fix qualified | Two deterministic red controls; repaired1bdc9286 passes455 Internal tests and source-paired real native automatic/registered ownership. Numeric performance and release checks remain separate. | [record](Experiments/EXP-143-199.md#exp-199--release-terminal-task-records-with-native-task-lifetime) |
+
+| <a id="exp-200"></a>EXP-200 | C04, C05 | S1:C04/C05 closed |18/18 paired cells pass: strict ordinary/legacy26.5 ownership and custom/NOP17.5/26.5/27.0. Five oracle corruptions reject; clean installs, identities and restored boot states verified. | [record](Experiments/EXP-200-compatibility.md#exp-200--complete-customnop-and-ios265-compatibility) |
+
+| <a id="exp-201"></a>EXP-201 | F03 | DEFINED | Exact1bdc9286 affected platform packages, existing Swift/Objective-C clients and unchanged API/doc verification. Current-develop minimums/macOS inventory supersede the stale reference recipe for S1 only. | [record](Experiments/EXP-201-final-compatibility.md#exp-201--qualify-affected-platform-packages-and-existing-clients) |

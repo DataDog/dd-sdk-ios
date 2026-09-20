@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "experiment": "EXP-198",
-  "status": "EXP-199 OWNERSHIP FIX QUALIFIED; ROW FIXTURE UNDER REVIEW; NO ACCEPTED ABBA",
+  "status": "OWNERSHIP REPAIRED; FIRST FIXTURE TIMEBOX CLOSED WITH REVIEW BLOCKERS; NO ACCEPTED ABBA",
   "defined_at": "2026-09-19T22:38:13.806518+00:00",
   "gates": [
     "S1:P01",
@@ -326,11 +326,22 @@
     }
   ],
   "row_fixture_checkpoint": {
-    "status": "ONE BOUNDED CORRECTION PASS COMPLETE; INDEPENDENT REVIEW PENDING; UNBUILT",
+    "status": "FINAL CORRECTED DRAFT REVIEWED; UNBUILT; NOT QUALIFIED",
     "root": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp198-entry-rows.GPJ1XG",
     "swift_sha256": "edc73f14f0eff242c48c82b30ed158590bca80d106cd130ff1e7504894fb7da9",
     "readme_sha256": "70ea93ad1bab559f65bf19fdf2e200d35cc78b38e7f3fef8d3d90cc33e433c60",
     "previous_snapshot": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp198-entry-rows.GPJ1XG-review-993fb69",
-    "measurement_claim": "None; no accepted ABBA or numeric pass. First qualification timebox exhausted while ownership regression was investigated; no automatic equivalent rerun."
+    "measurement_claim": "None; no accepted ABBA or numeric pass. First qualification timebox exhausted while ownership regression was investigated; no automatic equivalent rerun.",
+    "review": {
+      "source_sha256": "edc73f14f0eff242c48c82b30ed158590bca80d106cd130ff1e7504894fb7da9",
+      "blockers": [
+        "Swift368 operator spacing needs correction before compilation",
+        "Registered completion/state allocation companion metrics execute inside epoch and must move before it",
+        "terminalRaw==0 falsely rejects permitted dead weak slots; require zero live members/owned preparation or payload records",
+        "One overwritten weak slot observes only final member of each64-task window; warm-up resume allocation also needs pool/settlement",
+        "Full-lifetime churn including construction and ownership-negative/post-teardown forwarding controls remain absent; declared SDK-unbound companion still needs execution"
+      ],
+      "disposition": "Preserve snapshot and omissions. No further correction loop during this timebox; continue C04/C05 and F03. After syntax correction only a limited unqualified smoke would be admissible."
+    }
   }
 }

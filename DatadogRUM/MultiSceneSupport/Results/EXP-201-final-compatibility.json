@@ -1,0 +1,38 @@
+{
+  "schema_version": 1,
+  "experiment": "EXP-201",
+  "status": "DEFINED BEFORE EXECUTION",
+  "defined_at": "2026-09-20T00:24:05.611441+00:00",
+  "gate": "S1:F03",
+  "owner": "SDK implementer",
+  "baseline_revision": "62f64d7b655bdc83f3036c4ad81090a270f6202b",
+  "candidate_revision": "1bdc9286c17d69d73e5e41530e6179c72a723368",
+  "minimums": {
+    "iOS": "15.0",
+    "tvOS": "15.0",
+    "macOS": "12.0",
+    "watchOS": "9.0",
+    "visionOS": "1.0"
+  },
+  "macOS_products": [
+    "DatadogCore",
+    "DatadogLogs",
+    "DatadogTrace",
+    "DatadogRUM",
+    "DatadogCrashReporting",
+    "DatadogWebViewTracking",
+    "DatadogFlags"
+  ],
+  "accepted_reuse": "Results/EXP-199-terminal-task-ownership.json: Internal455/491, Core815+4OSskips, RUM901/937, Trace141 and strict lint",
+  "production_changes_allowed": false,
+  "attempts": [
+    {
+      "artifact_root": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp201-final-compatibility-g06p0stz",
+      "source_manifest": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp201-final-compatibility-g06p0stz/source-manifest.json",
+      "source_manifest_sha256": "d2759ed7288db99c809b0893719842e9f95485d3d33050883c51542c5a2f5350",
+      "status": "SOURCE FROZEN; NO NEW BUILD YET",
+      "files": 1177
+    }
+  ],
+  "result": null
+}

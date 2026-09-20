@@ -2208,3 +2208,9 @@ Establish each state expectation immediately before its own operation, then requ
 the exact transition within a bounded wait. Never pre-create the second running
 expectation, retry the operation, or accept a completed/canceling substitute.
 Retain the independent lifecycle/header/cancellation assertions.
+
+For registered terminal callback allocation rows, supply and drain companion metrics
+before opening the measured epoch. Use one weak settlement witness per task in a
+bounded window, including warm-up; overwriting a single witness proves only the
+last task released. Weak-table raw slot counts remain diagnostic, while live
+members and owned preparation/payload records must reach zero.

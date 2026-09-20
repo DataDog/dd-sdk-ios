@@ -17,7 +17,11 @@ identity. A compiler fix or API change requires a new candidate and revalidation
 of affected cells; do not mix results from different source candidates into one
 passing matrix.
 
-The current package minimums are iOS15, tvOS15, macOS12.6, watchOS9 and visionOS1.
+The reference-branch package minimums are iOS15, tvOS15, macOS12.6, watchOS9 and visionOS1.
+The S1 current-develop candidate instead declares macOS12.0 and supports seven
+macOS products, including RUM and Flags. Its frozen applicability and execution
+are owned by [EXP-201](Experiments/EXP-201-final-compatibility.md); preserve the
+candidate manifest and Makefile rather than imposing this older reference recipe.
 These are compile deployment settings, not evidence of execution on each minimum.
 Per the user correction on 2026-09-18, C06 requires deployment15 compilation
 and the oldest available debuggable17.x runtime sample. iOS15/16 execution is

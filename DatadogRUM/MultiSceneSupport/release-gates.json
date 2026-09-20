@@ -146,11 +146,11 @@
         },
         "S1": {
           "scope": "Candidate compatibility: Custom and NOP monitor compatibility",
-          "status": "OPEN",
+          "status": "CLOSED",
           "dependencies": [],
           "decisive_test": "Legacy-only conformer receives exactly one call; NOP emits nothing and never crashes; exact affected shipped code, no new integration.",
-          "environment": "Qualified simulator for frozen candidate; actual toolchain/runtime identity",
-          "evidence": "Reference evidence retained; this release candidate is not qualified.",
+          "environment": "Xcode27.1 runtime control; genuineSDK26.5 custom/legacy Release builds plusSDK27.1 Scene; actual17.5(21F79),26.5(23F77),27.0(24A434); deployment15",
+          "evidence": "EXP-200 exact1bdc9286 versus62f64:18/18 cells. Six custom/NOP cells prove exact forwarding, one nil callback and no events between live observer controls;12 ordinary/legacy26.5 cells match accepted normalized owners/lifecycle. Frozen executable/source identities, clean installs, cleanup and original boot-state restoration pass. Results/EXP-200-compatibility.json. No S2/S3/performance claim.",
           "required": true
         },
         "S2": {
@@ -186,11 +186,11 @@
         },
         "S1": {
           "scope": "Candidate compatibility: Older supported runtime sample",
-          "status": "OPEN",
+          "status": "CLOSED",
           "dependencies": [],
           "decisive_test": "Repeat C01\u2013C04 on iOS 26.5 with no new experimental availability requirement; exact affected shipped code, no new integration.",
-          "environment": "Qualified simulator for frozen candidate; actual toolchain/runtime identity",
-          "evidence": "Reference evidence retained; this release candidate is not qualified.",
+          "environment": "Xcode27.1 runtime control; genuineSDK26.5 custom/legacy Release builds plusSDK27.1 Scene; actual17.5(21F79),26.5(23F77),27.0(24A434); deployment15",
+          "evidence": "EXP-200 exact1bdc9286 versus62f64:18/18 cells. Six custom/NOP cells prove exact forwarding, one nil callback and no events between live observer controls;12 ordinary/legacy26.5 cells match accepted normalized owners/lifecycle. Frozen executable/source identities, clean installs, cleanup and original boot-state restoration pass. Results/EXP-200-compatibility.json. No S2/S3/performance claim.",
           "required": true
         },
         "S2": {

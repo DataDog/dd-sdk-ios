@@ -29,7 +29,7 @@ Deterministic tests and paired real native automatic/registered tasks prove clea
 without losing lifecycle, header, body or metrics. Full Internal and affected
 Core/RUM/Trace suites pass on17.5. The candidate's six ordinary/legacy17.5 comparisons pass with the reused develop
 baseline and genuineSDK26.5 legacy builds; earlier464 results remain historical
-evidence. C04 custom/NOP and actual26.5 runtime checks remain separate. Numeric heap growth also occurs in SDK-unbound controls and
+evidence. EXP-200 also qualifies custom/NOP behavior on17.5/26.5/27.0 and strict ordinary/legacy26.5 ownership. Numeric heap growth also occurs in SDK-unbound controls and
 remains unattributed. No allocation, latency or numeric-retention pass is claimed.
 [EXP-197](Results/EXP-197-urlsession-extraction.json) owns the original defect and
 [EXP-199](Results/EXP-199-terminal-task-ownership.json) owns the cleanup repair,
