@@ -40,8 +40,13 @@ teardown: the original2s failure included a legitimate five-second message-bus
 owner and does not prove an unbounded core/Monitor leak. The [E04 composition](Results/EXP-212-cache-composition.json)
 now qualifies exact cache source together with E01 and this repair in local commit
 `c9faed81`: 13 RUM, three native bridge and one real-core control pass once each.
-Ordinary host/view lifetime and broader P03 remain open. This composed qualification
-branch is not yet the frozen E01-only S2 candidate; no performance claim follows.
+The [ordinary lifetime probe](Results/EXP-213-view-host-lifetime.json) passes the
+success/error unit ownership boundaries, committed in signed `ef9d9732`. Its native
+failures remain preserved: SDK-off synchronous observation also retains all hosts,
+while async observation releases all four after real disappearance within the
+same2s. This qualifies the fixture boundary only. The separate restoration owner
+must be accounted for in the next SDK-on slice; broader P03 stays open. This
+composition is not yet the frozen E01-only S2 candidate; no performance claim follows.
 
 Physical Duo hardware is unavailable until after release. S2 may use qualified
 simulator and relevant physical iPhone/iPad evidence, disclosing that uncertainty;

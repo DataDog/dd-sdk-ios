@@ -2366,6 +2366,17 @@ run scoped lint when exact reuse cannot be established. Keep native products and
 raw reused regression results in the durable evidence mirror. EXP-212 records
 this composition boundary; a focused pass does not promote the release candidate.
 
+For native host lifetime, witness real appearance and disappearance before weak
+ownership checks. A synchronous XCTest wait can differ materially from an async
+MainActor observation even when both callbacks occur. EXP-213 preserves four
+SDK-off retained-host controls and four async releases under the same2s boundary;
+qualify the fixture first, and keep diagnostic execution separate from SDK-on
+acceptance. An application's deliberate last-view restoration owner is distinct
+from native host retention: advance or witness that owner before requiring the
+old RUM scope to deallocate. Never clear SDK state before the critical assertion.
+A compound wait failure cannot identify which conjunct failed; inspect the
+separate assertions. Count test executions and per-test cycles separately.
+
 ### EXP-196 unattended physical iPad execution
 
 Use the connected, authorized physical device and a bounded task-owned `caffeinate -d -i -u -t 14400` assertion; record command/PID/start/deadline, renew if needed and stop only that owned process. Device auto-lock is disabled by the user. Physical scene/gesture acceptance still requires native evidence before critical mutations.

@@ -1,0 +1,180 @@
+{
+  "schema_version": 1,
+  "experiment": "EXP-213",
+  "title": "Qualify remaining ordinary view and host ownership",
+  "status": "CHECKPOINT_UNIT_QUALIFIED_NATIVE_FIXTURE_DIAGNOSED",
+  "defined_at": "2026-09-20T19:29:33.837749+00:00",
+  "engineering_checkpoint": "2026-09-20T20:29:33.837749+00:00",
+  "timebox_deadline": "2026-09-20T20:29:33.837749+00:00",
+  "gates": [
+    "S2:P03"
+  ],
+  "owner": "Root implementation and sole build/device host",
+  "independent_reviewer": "c06_runtime_plan",
+  "main_parent": "1d968d9b7787a10457afcfc8871d6d12a4c80fce",
+  "baseline_revision": "c9faed816a1d4828d7d8c4b64acae01119425889",
+  "worktree": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/s2-rum-lifetime",
+  "branch": "valpertui/s2-rum-lifetime",
+  "artifact_root": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp213-view-host-lifetime-1vghr37g",
+  "allowed_test_paths": [
+    "DatadogRUM/Tests/RUMMonitor/Scopes/RUMSessionScopeTests.swift",
+    "Datadog/IntegrationUnitTests/RUM/RUMSessionTrackingTests.swift"
+  ],
+  "allowed_production_paths": [],
+  "hypothesis": "On the exact E01+E04+weak-display-target composition, native UIKit/SwiftUI hosts are not owned by the SDK after removal, while stopped RUM views and Resources remain alive only until their legitimate pending work completes. Repeated terminal lifetimes preserve the still-active peer and event ownership.",
+  "required_precritical_evidence": [
+    "Every weak witness is observed nonnil after real creation.",
+    "Native hosting uses a test-owned UIWindow and actual automatic UIKit/SwiftUI appearance, or the existing manual SwiftUI modifier; require a positive tracked active owner before removal.",
+    "A stopped RUM view and Resource stay nonnil until completion, even after its native controller/host and SwiftUI content witness release.",
+    "No fixture/core teardown, notification cleanup, or changed source is allowed before critical weak-release assertions."
+  ],
+  "runs": [
+    {
+      "id": "unit",
+      "scheme": "DatadogRUM",
+      "selectors": [
+        "DatadogRUMTests/RUMSessionScopeTests/testGivenStoppedViewWithPendingResource_whenResourceSucceeds_itReleasesOnlyCompletedOwners",
+        "DatadogRUMTests/RUMSessionScopeTests/testGivenStoppedViewWithPendingResource_whenResourceFails_itReleasesOnlyCompletedOwners"
+      ],
+      "expected": 2,
+      "cycles_each": 3,
+      "oracle": "Observe old view/resource alive after navigation to B; complete success or error; require exact old Resource/error view ID, weak old view/resource nil and unchanged live B UUID/owner. No E03 foreign-action claim."
+    },
+    {
+      "id": "native",
+      "scheme": "DatadogIntegrationTests",
+      "selectors": [
+        "DatadogIntegrationTests/RUMViewLifetimeIntegrationTests/testAutomaticUIKitControllerReleasesWhileResourceOwnerRemains",
+        "DatadogIntegrationTests/RUMViewLifetimeIntegrationTests/testAutomaticSwiftUIHostReleasesWhileResourceOwnerRemains",
+        "DatadogIntegrationTests/RUMViewLifetimeIntegrationTests/testManualSwiftUIHostReleasesWhileResourceOwnerRemains"
+      ],
+      "expected": 3,
+      "cycles_each": 2,
+      "oracle": "Track actual native appearance, start a manual Resource, remove test-owned window root, release host/content within2s while SDK and Resource remain alive, then complete Resource and require exact original event owner plus view/resource weak release within2s. Preserve original app window; cleanup after assertions."
+    }
+  ],
+  "environment": "Fresh current Xcode27.1/27A9269 and actual booted iPad17.5/21F79; inherited deployment15; Debug; exact packages/frameworks from EXP212 reverified. Native UI lifecycle is driven by XCTest code, no Device Hub gestures or unlock required.",
+  "execution_limits": {
+    "invocations": 2,
+    "retries": 0,
+    "each_build_and_test_seconds": 900,
+    "each_cleanup_seconds": 90,
+    "post_owner_drop_seconds": 2,
+    "native_appearance_seconds": 5,
+    "configuration_cleanup_seconds": 7,
+    "parallel_testing": false
+  },
+  "stop_rules": [
+    "Freeze actual tests/source and independent oracle review before native execution.",
+    "Any missing positive witness, assertion failure, skip, compile failure, crash, stale input or deadline stops remaining acceptance; no retry or timeout widening.",
+    "No production SDK repair is preapproved by this definition; a demonstrated defect requires its own bounded reviewed disposition.",
+    "Never mask an owner by teardown before the critical assertion or infer weak release from collection counts."
+  ],
+  "evidence_reuse": [
+    "EXP199 exact E01 success/error/cancellation/task lifetime; not rerun.",
+    "EXP211/212 exact display-link/core and E04 cache ownership; not rerun.",
+    "Existing full module results stay bound to original source; new selectors fill only missing weak-witness claims."
+  ],
+  "completion": "A source-matched P03 qualification packet for the composed candidate, including exclusions of deferred scene registries and explicit limits. Selected S2 candidate and dependent-gate promotion require a source-aware decision; no old pass is silently copied to changed source.",
+  "limits": [
+    "Not a heap/allocation benchmark, early-core-teardown qualification or runtime claim beyond17.5.",
+    "No backend/live WebView callback, complete automatic naming/action coverage or physical Duo claim."
+  ],
+  "updated_at": "2026-09-20T20:09:47.274259+00:00",
+  "original_definition_sha256": "ce91b808bf1b191f291c33a767537c8d0d7fb3a4a568ec92e5fec3e37ee44222",
+  "accepted_unit": {
+    "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp213-view-host-lifetime-1vghr37g/unit/root-audit.json",
+    "sha256": "c079aea0945b7620a51b7b969046f9fed32cc33442a341cc2f71c8b19913414b",
+    "passed": 2,
+    "cycles_each": 3
+  },
+  "original_native": {
+    "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp213-view-host-lifetime-1vghr37g/native/root-audit.json",
+    "sha256": "4f862868e6d26b011595cd57b7e4cfdec86718a8daba1940bd15947151491959",
+    "status": "INVALID_FIXTURE_COMPILE",
+    "test_count": 0
+  },
+  "corrected_native": {
+    "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp213-view-host-lifetime-1vghr37g/compile-correction/native/root-audit.json",
+    "sha256": "6c16e56dd0503760897a74e2224b03429d6840a91097bc21d6cbc17fa3aa47fb",
+    "status": "FAIL_NATIVE_RETENTION_CAUSE_UNRESOLVED",
+    "failed": 3,
+    "assertion_failures": 30,
+    "resource_owner_checks": "No failures; host/content and final view-release checks fail."
+  },
+  "next_action": "Define exactly three SDK-on native lifecycle tests using the qualified async wait, positive appearance/disappearance and pending Resource ownership. Introduce a live peer or explicit restoration-owner witness before requiring the old RUM scope to release; retain original Resource owner and peer state. Reuse accepted unit/task/cache/core evidence. No production repair is admitted without a new attributable defect.",
+  "diagnostic_definition": {
+    "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp213-view-host-lifetime-1vghr37g/host-control/definition.json",
+    "sha256": "53a9114861c306636337a1bc17763c8dbd440e3c431db6c05fc0e10ca0205b07",
+    "status": "EXECUTED_DIAGNOSTIC_ONLY"
+  },
+  "completed_at": "2026-09-20T20:30:30.360606+00:00",
+  "test_commit": {
+    "parent": "c9faed816a1d4828d7d8c4b64acae01119425889",
+    "paths": [
+      "DatadogRUM/Tests/RUMMonitor/Scopes/RUMSessionScopeTests.swift"
+    ],
+    "message": "Test stopped-view resource ownership lifetimes",
+    "attempts": [
+      {
+        "kind": "signed",
+        "pid": 57772,
+        "returncode": 0,
+        "timeout": false,
+        "log_sha256": "f307f996190a174c10e41ea4115396b60884aed8d620c891b8ff56b29005391a"
+      }
+    ],
+    "started_at": 1789935848.881688,
+    "commit": "ef9d9732d4440038d5ce9278e86943fed3f9e931",
+    "signature": "G",
+    "committed_paths": [
+      "DatadogRUM/Tests/RUMMonitor/Scopes/RUMSessionScopeTests.swift"
+    ],
+    "protected_unchanged": true,
+    "finished_at": 1789935851.622923
+  },
+  "root_audit": {
+    "path": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp213-view-host-lifetime-1vghr37g/final-root-audit.json",
+    "sha256": "c7a5ab59b6ab8e07ad7e869de6cb6e0abdab849e827f4bf1136d7e1884da665e"
+  },
+  "final_independent_review": {
+    "path": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp213-view-host-lifetime-1vghr37g/final-independent-review.json",
+    "sha256": "bab60769220f4933b41867cfafd7824d62c549fc092e57c28c433dd3315bc13d",
+    "decision": "CHECKPOINT_UNIT_TESTS_ONLY",
+    "preserved_original": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp213-view-host-lifetime-1vghr37g/final-independent-review-original.json"
+  },
+  "synchronous_sdk_off": {
+    "path": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp213-view-host-lifetime-1vghr37g/host-control/diagnostic-result.json",
+    "sha256": "c812bfeeea0fa40449d01288e1e89dc75e0d9e214b7e411954e14bcbc861085a",
+    "observation": "All four hosts/content retained despite actual appearance/disappearance, with SDK and RUM absent."
+  },
+  "asynchronous_sdk_off": {
+    "path": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp213-view-host-lifetime-1vghr37g/async-host-control/diagnostic-result.json",
+    "sha256": "0ff71c3ba276ff19d0639e5785b6397a67e22391ca00e58723bf4d651749d8b4",
+    "observation": "All four hosts/content release after actual disappearance within unchanged2s; this qualifies the fixture boundary only."
+  },
+  "durable_evidence": {
+    "status": "BYTE_VERIFIED",
+    "destination": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp213-view-host-lifetime-lyl2jbw4",
+    "manifest_sha256": "7750332ee389e66589ee232d26a17a1fd95ef279bfc2a24ae766cbe729a615c5",
+    "files": 1511,
+    "bytes": 1078830919,
+    "exclusions": "DerivedData caches/intermediates/index only; original evidence retained. No reused prior experiment is recopied.",
+    "created_at": "2026-09-20T20:28:25.327427+00:00"
+  },
+  "native_fixture_disposition": {
+    "at": "2026-09-20T20:23:44.143794+00:00",
+    "status": "NATIVE_DIAGNOSTICS_PRESERVED_OUTSIDE_COMMITTED_TESTS",
+    "saved_native_source_sha256": "d1280e61fa754bc7210329e27dde25fc3001b1c5f071a3192a7f2057a76bc74d",
+    "saved_complete_patch_sha256": "1f336559e38b34385de12bd71adf6ec55b139cff8b2e8f3feef49a1d1a5c2ffa",
+    "restored_native_parent_sha256": "979764fe03c4870f3d7073e0f9670e0c71dc68f9ce16ae492dcdad20a0800cf9",
+    "unit_sha256": "36d7bbde79fa40d0d4dcbae97da05aa0f3f5aa659f6a93a64c6fd354d9ed4a11",
+    "remaining_task_paths": [
+      "DatadogRUM/Tests/RUMMonitor/Scopes/RUMSessionScopeTests.swift"
+    ],
+    "reason": "Only two accepted unit checks are committed. Failed and diagnostic native scaffolds remain exact frozen artifacts; no failure is hidden or relabeled."
+  },
+  "build_test_invocations": 5,
+  "runtime_invocations": 4,
+  "gate_changes": 0
+}

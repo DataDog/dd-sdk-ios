@@ -53,6 +53,17 @@ identities, cleanup and independent review pass. The rejected stale lint-reuse
 receipt is preserved. Ordinary view/host lifetime, whole P03/T10 and selected
 candidate promotion remain open; historical findings are not relabeled.
 
+[EXP-213](Results/EXP-213-view-host-lifetime.json) adds passing stopped-view/Resource
+success and failure lifetime controls, but the native host fixture retains its
+controllers/content and last RUM view. SDK-off controls reproduce host retention
+under synchronous observation and release all four hosts under async observation,
+with the same2s limit and actual disappearance. The fixture boundary is material;
+no SDK retaining path or SDK-on lifetime pass is established. The restoration
+cache remains a separate view owner. Signed unit commit `ef9d9732` and durable
+artifacts preserve every failure, correction and diagnostic. Use async observation
+and a source-aware restoration-owner oracle next; no production repair or P03
+closure is inferred.
+
 The independent S1 E01 findings are separate from historical D01–D12. Repeated
 request mutation and strong terminal-preparation retention are repaired in
 1bdc9286; [EXP-197](Results/EXP-197-urlsession-extraction.json) and
