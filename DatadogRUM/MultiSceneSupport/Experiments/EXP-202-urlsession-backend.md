@@ -214,6 +214,29 @@ and helper manifest bind the host changes. Actual-payload and transport controls
 pass56 Python methods and12 JavaScript cases. One test-double command-recognition
 failure was corrected and retained; no host behavior changed for it. Independent
 source review passes, with four request/ingest mismatch controls added as hardening.
-One complete-path smoke was separately defined and is running with the unchanged
-binaries. Only its complete success admits the fixed four-cell acceptance matrix.
-No gate closes at this checkpoint.
+The seventh diagnostic smoke retrieved all10 spans and nine trace replies by
+270.641seconds, but nine sequential persistence helpers finished at332.911seconds.
+Five failed after the300second deadline. All raw replies survive; the run remains
+invalid. A separately defined batch adapter retains/decode replies and assembles
+once, preserving fulfilled replies even when another request fails. Its62 Python/
+13 JavaScript controls and independent review pass, with unchanged semantic rules.
+
+The first defined acceptance cell also served as complete-path qualification,
+avoiding a redundant fifth smoke. It passed native/local and collected12 RUM rows,
+but APM count remained8 at260.174seconds; the next helper started at330.246seconds.
+The matrix stopped immediately, leaving its other three cells unrun. Later service
+count/search returns exactly10 expected span identities in654/671ms, with no extras.
+This is an identity-only diagnostic, not acceptance or an SDK performance finding.
+
+The next correction was defined before implementation: final APM collection gets
+one fixed600second window,610seconds at the host, including all polling, pages,
+details, persistence and publication. Startup/RUM115/125 and native120 remain fixed.
+Two exact-source stopped runs show eventual complete inventory and helper dispatch
+delays up to70seconds; the operational window changes no ownership/value expectation.
+The old seven diagnostics and failed acceptance retain their original outcomes.
+All62 Python/13 JavaScript controls pass and independent review confirms phase/hash
+binding, late-evidence rejection and unchanged native/SDK sources. The two1153-file
+archives and existing binaries pass reuse preflight. A fresh four-cell matrix is
+frozen before execution: B-automatic, A-automatic, B-registered, A-registered. First B
+also qualifies the complete path. Stop on any failure; independent artifact/source
+comparison follows all four cells before any gate closes.

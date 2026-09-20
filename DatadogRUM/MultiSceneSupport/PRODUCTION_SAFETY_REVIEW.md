@@ -106,16 +106,18 @@ Object lifetime, correctness and attribution remain required. Only included new
 semantic SwiftUI/multi-scene behavior requires representative application-level
 frame rate, hitches/hangs, CPU and memory comparison under the revised release scope.
 EXP-202's credential, activation, receipt preservation and server-session fixes
-qualify the two existing Release builds and startup handling within their recorded
-limits. Six stopped diagnostics remain consumed. The latest run reaches complete
-native/local semantics and12 final RUM rows, then stops at the original APM bound.
-Later exact queries account for six client and four RUM-derived spans. The oracle
-must preserve positive backend version validation without equating backend and
-local view counters, and derive server-span ownership from exact Resource keys
-rather than requiring a client mapper attribute. These host-only corrections and
-separate post-local-assertion APM bounds pass56 Python/12 connector controls and
-pass independent review after request/ingest phase binding was added. Past failed boundaries receive no acceptance credit;
-no SDK defect has been established by these format/transport findings.
+qualify the existing Release builds and startup handling within their recorded
+limits. Seven diagnostics and the first acceptance cell stopped; all remain
+invalid. The latter collected12 RUM rows and passed local assertions, but final
+APM ingestion/helper dispatch missed its boundary. Later queries find all10 expected
+span identities; that is diagnostic only. Host-only controls preserve exact Resource
+and client-span ownership, positive backend view versions and complete trace detail.
+The batch adapter retains successful replies even if a sibling fails and publishes
+only before its phase deadline.62 Python/13 JavaScript checks and independent review
+pass. A new definition allows600/610seconds for final APM collection/host wait only;
+startup/RUM115/125 and native120 remain unchanged. The four-cell matrix is running,
+with no gate credit until full semantic and cleanup evidence passes. These findings
+do not establish a new SDK defect or networking performance result.
 Historical S1 narrative is preserved in the
 [documentation checkpoint](Results/EXP-204-documentation-consolidation.json).
 

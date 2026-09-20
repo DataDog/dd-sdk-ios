@@ -756,7 +756,7 @@
           "dependencies": [],
           "decisive_test": "One frozen run binds preflight, clean install, source/build/install identity, actual input/lifecycle, strict local inventory, whole-session backend and cleanup; reject known stale/readiness/run-ID/late-oracle controls.",
           "environment": "Qualified simulator for frozen candidate; actual toolchain/runtime identity and authenticated Datadog",
-          "evidence": "EXP-202 defined before implementation: four Release baseline/candidate automatic/registered cells on17.5, fixed twelve-row public single-scene contract, native/mapper/backend identity and operational negatives. Current-develop E03/E05 limitations retained; not yet executed. Results/EXP-202-urlsession-backend.json owns the contract.",
+          "evidence": "EXP-202: two frozen Release builds; seven stopped diagnostics and one failed earlier acceptance retained with zero credit. Reviewed62 Python/13 JavaScript host controls. Fresh four-cell actual17.5 matrix is running with fixed final APM600/610s and unchanged startup/native bounds. Current-develop E03/E05 limits retained. Results/EXP-202-urlsession-backend.json owns exact source/run evidence.",
           "required": true
         },
         "S2": {
@@ -865,7 +865,7 @@
           ],
           "decisive_test": "Repeated/resumed tasks produce one Resource start and one completion with unchanged baseline ownership/metrics/error behavior; no new foreign action counts.",
           "environment": "Source-less fixtures and relevant native/backend inventory",
-          "evidence": "EXP-202 defined before implementation: four Release baseline/candidate automatic/registered cells on17.5, fixed twelve-row public single-scene contract, native/mapper/backend identity and operational negatives. Current-develop E03/E05 limitations retained; not yet executed. Results/EXP-202-urlsession-backend.json owns the contract.",
+          "evidence": "EXP-202: two frozen Release builds; seven stopped diagnostics and one failed earlier acceptance retained with zero credit. Reviewed62 Python/13 JavaScript host controls. Fresh four-cell actual17.5 matrix is running with fixed final APM600/610s and unchanged startup/native bounds. Current-develop E03/E05 limits retained. Results/EXP-202-urlsession-backend.json owns exact source/run evidence.",
           "required": true
         },
         "S2": {
@@ -1021,7 +1021,7 @@
           ],
           "decisive_test": "Repeated/resumed tasks produce one Trace interception/start/completion with unchanged baseline context, sampling and headers; E05 request-time correlation is separately qualified and does not block E01.",
           "environment": "Source-less fixtures and relevant native/backend inventory",
-          "evidence": "EXP-202 defined before implementation: four Release baseline/candidate automatic/registered cells on17.5, fixed twelve-row public single-scene contract, native/mapper/backend identity and operational negatives. Current-develop E03/E05 limitations retained; not yet executed. Results/EXP-202-urlsession-backend.json owns the contract.",
+          "evidence": "EXP-202: two frozen Release builds; seven stopped diagnostics and one failed earlier acceptance retained with zero credit. Reviewed62 Python/13 JavaScript host controls. Fresh four-cell actual17.5 matrix is running with fixed final APM600/610s and unchanged startup/native bounds. Current-develop E03/E05 limits retained. Results/EXP-202-urlsession-backend.json owns exact source/run evidence.",
           "required": true
         },
         "S2": {
@@ -2434,7 +2434,7 @@
           ],
           "decisive_test": "Require applicable correctness, View/Action information, Resource attribution, object-lifetime/reentrancy, privacy, crash, API and exact source/artifact checks plus attributable review. Detailed network benchmarks and a replacement standalone network performance campaign are not prerequisites; investigate concrete visible regressions if found. Signed outgoing history is required before any separately authorized push. Separately land the qualified hitch assertion fix, then rebase only after verified upstream merge and confirm source/test identities.",
           "environment": "Exact candidate; one host; no concurrent measurement contamination",
-          "evidence": "Candidate1bdc9286 has qualified compatibility/platform/API/docs, optimized P04 and object-lifetime P03. Remaining required gates: backend A01/T03/T08 and F06 review. EXP204 finalizes unchanged baseline/candidate1/1 each with the same QoS warning and15 shown frames; inherited recurrence is established, not root cause, harmlessness or sanitizer/performance clearance. Initial timeout retained. Detailed/standalone network benchmarking remains deferred under the user scope correction; NETWORK_BENCHMARK_FOLLOWUP.md preserves original outcomes.",
+          "evidence": "Candidate1bdc9286 has qualified compatibility/platform/API/docs, optimized P04 and object-lifetime P03. Remaining required gates: backend A01/T03/T08 and F06 review. EXP204 finalizes unchanged baseline/candidate1/1 each with the same QoS warning and15 shown frames; inherited recurrence is established, not root cause, harmlessness or sanitizer/performance clearance. Initial timeout retained. Detailed/standalone network benchmarking remains deferred under the user scope correction; NETWORK_BENCHMARK_FOLLOWUP.md preserves original outcomes. Final local source packet confirms clean652ce169, exactly3 production/3 test/6 documentation files and production equality with1bdc9286. Independent final review is underway; exact hitch test is prepared separately asd98f3540, upstream delivery/rebase pending.",
           "required": true
         },
         "S2": {
@@ -2501,7 +2501,7 @@
       },
       "pre_delivery_sequence": {
         "source": "User-approved delivery plan relayed from task 01a0bdc1-02b0-77d0-acbe-9d4eacfac321 on 2026-09-20.",
-        "current_checkpoint": "Keep 925b9326bcb364aab87686bbd665be8da576f674 in place; its independent one-file hitch assertion correction is part of EXP-201 278/278 qualification. No current history rewrite.",
+        "current_checkpoint": "Exact one-file correction is committed locally as d98f3540 on valpertui/rum-view-hitch-assertions, based on verified develop62f64. Original qualified E01 history and925b9326 remain intact.",
         "owner": "SDK implementer; maintainers own upstream review/merge",
         "steps": [
           {
@@ -2509,7 +2509,9 @@
             "dependency": "Separate delivery preparation",
             "deliverable": "Extract the exact one-file test correction from 925b9326 into its own branch for independent review and delivery.",
             "decisive_test": "Test-only diff matches the qualified correction; no URLSession production source included.",
-            "environment": "Local Git/source review; no push authorized."
+            "environment": "Local Git/source review; no push authorized.",
+            "status": "LOCAL PREPARATION COMPLETE",
+            "evidence": "Results/EXP-201-final-compatibility.json#integration_test_correction.separate_delivery"
           },
           {
             "id": "land-test-fix",
@@ -2527,7 +2529,7 @@
           }
         ],
         "qualification": "Accepted EXP-201 evidence remains bound to its exact source/test identities. A future rebase requires identity comparison before reusing evidence.",
-        "authorization": "Planning only at this checkpoint; no branch rewrite, push, merge or publication."
+        "authorization": "Local extraction preparation completed under ongoing plan execution; upstream push/merge/publication and dependent history rewrite remain unauthorized."
       }
     },
     {
@@ -2643,7 +2645,7 @@
           "dependencies": [],
           "decisive_test": "Inventory exact production diff, imports/callers/API/wire and transitive dependencies. Prove deferred scene routing/lifecycle/authority is absent, not merely hidden by API/manifest flags. Preserve upstream changes absent from the experimental branch.",
           "environment": "Fresh develop baseline and isolated source candidate",
-          "evidence": "EXP-199 production1bdc9286 retains exactly3 internal production files over develop62f64. Final local925b9326 additionally contains3 test files and6 documentation files (five feature docs and changelog); no other production change. EXP-201 verifies1177 frozen source inputs and unchanged public APIs. No endpoints, capture/header policy, public API or deferred scene code added. Local unsigned fallback is user-authorized; no push.",
+          "evidence": "EXP-199 production1bdc9286 retains exactly3 internal production files over develop62f64. Current local652ce169 additionally contains3 test files and6 documentation files (five feature docs and changelog); no other production change. Final source packet confirms production bytes match1bdc9286; EXP-201 verifies frozen source inputs and unchanged public APIs. No endpoints, capture/header policy, public API or deferred scene code added. Exact hitch test extracted locally asd98f3540; original history intact. No push.",
           "required": true
         },
         "S2": {

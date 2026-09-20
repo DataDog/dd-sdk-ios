@@ -128,3 +128,11 @@ multisets:278 each, no missing/extra IDs or multiplicity differences. Their comm
 SHA256 is2d4f981301c0375fede2f8c3ee4b43d1addf9ca7d7fbe055742faf22aa3462cb.
 S1:F03 closes with the reused M02-M11 evidence; reference/S2/S3 statuses remain
 owned separately by the register. Performance/backend and F06 stay open.
+
+The exact hitch-assertion test is now extracted locally as `d98f3540` on
+`valpertui/rum-view-hitch-assertions`, based on develop62f64 verified through the
+public upstream ref. Only the qualified test file changes; its SHA remains
+`d969dcbc570ecfd78f0e2cc6e62c05d0af970fa9bd570da457563a9ec8712247`.
+The original URLSession history is intact, accepted tests were not rerun, and no
+upstream action occurred. Signing timed out; the authorized local unsigned fallback
+succeeded. Separate upstream delivery and the dependent rebase remain pending.

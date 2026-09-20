@@ -2308,6 +2308,29 @@
           "candidate_worktree_status": "Only the expected test file was dirty at inspection."
         }
       }
+    },
+    "separate_delivery": {
+      "status": "EXACT TEST-ONLY LOCAL BRANCH PREPARED; UPSTREAM NOT AUTHORIZED",
+      "branch": "valpertui/rum-view-hitch-assertions",
+      "worktree": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/view-hitch-assertions",
+      "commit": "d98f3540a5cf445844c2547378e05cffd2212dbd",
+      "base": "62f64d7b655bdc83f3036c4ad81090a270f6202b",
+      "preparation": {
+        "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp201-hitch-separate-delivery-x5zoaf2d/preparation.json",
+        "sha256": "b46b056958a404108a627474adc7c537dd4fdab5f0dd9cdee424fa074091e834"
+      },
+      "commit_receipt": {
+        "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp201-hitch-separate-delivery-x5zoaf2d/commit.json",
+        "sha256": "01db60dc71b34fd15ecf5f23aa84dde531b209b781ca4df3945d2eb9d6613640"
+      },
+      "upstream_read": {
+        "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/e01-public-upstream-check-e4g73fzx/receipt.json",
+        "sha256": "7d7e3496827289c6be271bbfe95a460a592ec4c4bb4c9b0613eee32d56f3a7dd"
+      },
+      "test_sha256": "d969dcbc570ecfd78f0e2cc6e62c05d0af970fa9bd570da457563a9ec8712247",
+      "production_changes": 0,
+      "new_test_runs": 0,
+      "qualification_limit": "Reuses exact test-source qualification; no new runtime or post-rebase claim. Original E01 history intact. Signing timed out after25s; authorized local unsigned fallback used. No push/merge."
     }
   },
   "qualification_revision": "925b9326bcb364aab87686bbd665be8da576f674",

@@ -48,17 +48,16 @@ Required performance work for S2/S3 concerns application-visible frame rate,
 hitches/hangs, CPU and memory impact of included semantic SwiftUI/multi-scene
 changes; source exclusion can qualify non-applicability. Correctness and ownership
 requirements remain unchanged.
-[Backend preparation](Results/EXP-202-urlsession-backend.json) has two qualified
-credential-backed Release builds and six stopped diagnostic launches, all retained.
-The latest run passes native/local assertions and collects12 final RUM rows, then
-stops at its original final-APM ingestion bound. Later diagnostic queries find all
-six client spans and four RUM-derived spans with exact owners and values; they do
-not rescue the stopped run. Actual payloads expose host assumptions about the
-`Network` category, backend view document versions and absent derived-span probe
-attributes. A host-only correction passes56 Python methods and12 connector cases;
-independent review passes with phase-provenance hardening. One defined complete-path
-diagnostic smoke is running. No SDK defect or backend
-acceptance is inferred from these diagnostics.
+[Backend acceptance](Results/EXP-202-urlsession-backend.json) uses two frozen
+credential-backed Release builds. Seven diagnostic launches and the first acceptance
+cell stopped and retain zero credit. Native/local and12 RUM rows were complete;
+APM collection or host publication exceeded the earlier bounds. Later diagnostics
+account for all six client and four Resource-derived span identities without
+rescuing those runs. Reviewed host corrections preserve exact owners and values,
+positive backend view versions and full trace membership.62 Python/13 JavaScript
+controls pass. A fresh four-cell acceptance is running under a predeclared600second
+final APM collection window,610seconds at the host; startup/RUM115/125 and native120
+remain unchanged. No SDK defect or backend acceptance follows from preparation.
 
 Test-only duplicate classes are excluded from inspected shipping graphs. The
 [QoS comparison](Results/EXP-204-network-qos.json) now finalizes both unchanged

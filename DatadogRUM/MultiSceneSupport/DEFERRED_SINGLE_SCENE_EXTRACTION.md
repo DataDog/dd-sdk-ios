@@ -81,8 +81,9 @@ owns the prepared session and internal TestFlight step; no upload is authorized.
 
 Keep each candidate independent and reviewable. Use repository branch conventions,
 explicit path-limited commits, signing when available and the authorized unsigned
-local fallback otherwise. Never read/log/hash/stage the protected local xcconfig,
-never use commit -a, and never push/merge/publish without separate authorization.
+local fallback otherwise. The user authorizes local xcconfig use; preserve its
+bytes/index and exclude resolved values from public commits and unnecessary logs.
+Never stage it, use commit -a, or push/merge/publish without separate authorization.
 Do not invent ticket numbers. Local qualification can use descriptive chore branches;
 resolve normal issue/review metadata before delivery.
 
@@ -94,11 +95,13 @@ production source against the delivered base.
 
 E01 has a specific pre-delivery dependency in the register's
 `pre_delivery_sequence`. Keep the qualified hitch assertion commit `925b9326` in
-place now. Extract that one-file test correction for independent review and land it
-in develop separately. Only after the upstream merge, rebase the URLSession branch
+place now. Its exact one-file correction is prepared separately as local commit
+`d98f3540` on `valpertui/rum-view-hitch-assertions`, based on verified develop62f64.
+The test hash matches accepted EXP-201 evidence; no runtime rerun was needed.
+Upstream review and merge need separate authorization. Only after that merge, rebase the URLSession branch
 so the fix is inherited from develop and its separate commit leaves the URLSession
 PR diff. Compare production and test identities before reusing EXP-201 evidence.
-This checkpoint authorizes documentation, not a history rewrite or upstream action.
+The original qualified URLSession history is intact; no upstream action occurred.
 
 The [PR2683 review](Results/PR-2683-header-ownership-review.json) records a separate
 T08 follow-up after the E05 checkpoint: distinguish trace-carrier ownership from

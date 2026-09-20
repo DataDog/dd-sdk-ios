@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "experiment": "EXP-202",
-  "status": "FINAL-SEMANTICS REVIEW AND56/12 CONTROLS PASS; ONE SMOKE DEFINED",
+  "status": "FRESH FOUR-CELL ACCEPTANCE RUNNING",
   "defined_at": 1789868896.779567,
   "gates": [
     "S1:A01",
@@ -716,7 +716,7 @@
   ],
   "result": null,
   "native_prerequisite_launches_consumed": 4,
-  "acceptance_launches_consumed": 0,
+  "acceptance_launches_consumed": 3,
   "unapplied_credential_proposal_review": {
     "status": "EXACT REVIEWED PATCH APPLIED AFTER EXPLICIT USER AUTHORIZATION; ORIGINAL HELPERS PRESERVED",
     "patch": {
@@ -1225,16 +1225,30 @@
     "acceptance_launches": 0
   },
   "final_semantics_correction": {
-    "status": "REVIEW AND56 PYTHON/12 JAVASCRIPT CASES PASS; ONE DIAGNOSTIC DEFINED",
+    "status": "REVIEW/CONTROLS PASS; SMOKE INVALID AFTER DETAIL-PUBLICATION DEADLINE",
     "definition": {
       "path": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp202-final-semantics-correction-2m5i1h4v/definition.json",
       "sha256": "601598178127fa6d88240e3e0157f2da52e08386442b2a6f7caf1bc929f1b7fd"
     },
     "diagnostic": {
-      "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp202-missing-span-diagnostic-qs5bxz14/ownership-diagnostic.json",
-      "sha256": "8654c80847ded016d9d5fea923bae2426ae32ab1c73ecdc9f1fcbd721791eb91"
+      "status": "DIAGNOSTIC; ORIGINAL RUN INVALID",
+      "run": {
+        "path": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp202-final-semantics-correction-2m5i1h4v/smoke-B-automatic/summary.json",
+        "sha256": "b529423b7d45236a12f21640fd895d006f67cf7ac6a6b34db7a9e57a7597d989"
+      },
+      "bound_seconds": 300,
+      "aggregate_ten_finished_seconds": 252.99,
+      "span_search_finished_seconds": 259.82,
+      "all_nine_trace_MCP_finished_seconds": 270.64,
+      "last_detail_helper_finished_seconds": 332.912,
+      "detail_helper_states": {
+        "DECODED": 4,
+        "FAILED": 5
+      },
+      "raw_detail_bytes": 18892,
+      "conclusion": "All detail replies arrived by270.641s. Nine sequential shell/helper round trips persisted them through332.911s; five failed after the unchanged300s deadline. Batch detail persistence/decode/final assembly in one bounded invocation; do not widen limits or rescue the run."
     },
-    "native_launches": 0,
+    "native_launches": 1,
     "offline_controls": {
       "path": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp202-final-semantics-correction-2m5i1h4v/offline-results.json",
       "sha256": "4324c88101eef5fdfb8d5d17574aba31b140059578b4155c3fa9a53dc6bdb01c"
@@ -1258,7 +1272,138 @@
     "smoke_definition": {
       "path": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp202-final-semantics-correction-2m5i1h4v/smoke-definition.json",
       "sha256": "309d62374c294aac9d2eeaf36de8f683d80a247c90525555d0777a40741062d5"
+    },
+    "smoke": {
+      "path": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp202-final-semantics-correction-2m5i1h4v/smoke-B-automatic/summary.json",
+      "sha256": "b529423b7d45236a12f21640fd895d006f67cf7ac6a6b34db7a9e57a7597d989"
     }
   },
-  "stopped_native_launches_before_final_semantics_correction": 6
+  "stopped_native_launches_before_final_semantics_correction": 6,
+  "detail_batch_correction": {
+    "status": "REVIEW AND62/13 CONTROLS PASS",
+    "definition": {
+      "path": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp202-detail-batch-correction-9_ie0q21/definition.json",
+      "sha256": "c9107940439615c9fcac7f43db63ff50e35fcfd322522ef1a2c20d5c0335b768"
+    },
+    "artifact_root": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp202-detail-batch-correction-9_ie0q21",
+    "native_launches": 0,
+    "controls": {
+      "path": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp202-detail-batch-correction-9_ie0q21/offline-results.json",
+      "sha256": "0b9b1ad37c351106d64bee8666e88542c3f4c9ce2ca89d9a53f37c368d4f23b7"
+    },
+    "helpers": {
+      "path": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp202-detail-batch-correction-9_ie0q21/matrix/helper-manifest.json",
+      "sha256": "b9ecf3e0ae7f820d7156f981cf560171464ed1abfd4e35d662e3042deac37c28"
+    },
+    "plan": {
+      "path": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp202-detail-batch-correction-9_ie0q21/matrix/plan.json",
+      "sha256": "ab13fa8916f6cd43076af2375f820ac7688d350a02033fd4d80e6ea94822e806"
+    },
+    "review": {
+      "path": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp202-detail-batch-correction-9_ie0q21/review.json",
+      "sha256": "5095e839ea0d93de147c8f810588ee58e003036f4a40424664fe43c1a188cdff"
+    }
+  },
+  "acceptance_matrix": {
+    "status": "RUNNING; CONSULT PROGRESS PATH",
+    "definition": {
+      "path": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp202-final-ingestion-window-laea1pzn/acceptance-definition.json",
+      "sha256": "bd9a1a71eb580ec35cffc05e1c3d6772d680680b22703146a4ea963656ce70f5"
+    },
+    "cells": [
+      {
+        "cell": "B-automatic",
+        "exit_code": 0,
+        "summary": {
+          "experiment": "EXP-202",
+          "purpose": "acceptance",
+          "state": "PASS",
+          "identity": {
+            "run_id": "a4395bff-3ee9-4649-8abc-8f712585e80f",
+            "nonce": "9fd122e1-5c6a-427e-a9bc-094c5cdfda8b",
+            "arm": "B",
+            "mode": "automatic",
+            "source_revision": "1bdc9286c17d69d73e5e41530e6179c72a723368",
+            "source_sha256": "28fbc772079f314239b23e7a2d48c27826708dc2002b5f0eb7803c6ddeb82e83",
+            "fixture_sha256": "646ef70eb14d9416fd5c10fa0f4e26c04dca96a59f50ef84cd31f967c9354ab2",
+            "contract_sha256": "6fc19e140a568ac9f6edb70b18f491aac00a70549a837c654901f3ae1193ab22",
+            "build_sha256": "75823601428bdedff7a451914b9af3ba835467b2e52851e891552084c9cb1801"
+          },
+          "native_launches": 1,
+          "backend_state": "PASS",
+          "started_at": 1789916857.715358,
+          "finished_at": 1789917247.672469,
+          "failure": "",
+          "original_failure": "",
+          "cleanup": {
+            "container_absent": true,
+            "process_absent": true,
+            "binding_restored": true,
+            "protected_unchanged": true,
+            "helpers_unchanged": true
+          },
+          "cleanup_error_count": 0,
+          "native_evidence_count": 64,
+          "summary_artifact": {
+            "path": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp202-final-ingestion-window-laea1pzn/acceptance-B-automatic/summary.json",
+            "sha256": "0bfab4e1468a474d7e4bf8847b5f4b5f1486e90d8b3610a6b767c9c72513d7a6",
+            "bytes": 55430
+          }
+        }
+      }
+    ],
+    "native_launches": 2,
+    "progress_path": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp202-final-ingestion-window-laea1pzn/acceptance-progress.json",
+    "passed_cells": 1
+  },
+  "final_ingestion_window": {
+    "status": "REVIEW AND62/13 CONTROLS PASS",
+    "definition": {
+      "path": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp202-final-ingestion-window-laea1pzn/definition.json",
+      "sha256": "1750a4edcf399ef232bfb242115685ec5c2dddfedf6479365b37960e13eef087"
+    },
+    "artifact_root": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp202-final-ingestion-window-laea1pzn",
+    "native_launches": 0,
+    "controls": {
+      "path": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp202-final-ingestion-window-laea1pzn/offline-results.json",
+      "sha256": "9aa92b52734b7822e18fd9f297c9e07603e0600d2d48b0544f593fb2f5c6fcec"
+    },
+    "helpers": {
+      "path": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp202-final-ingestion-window-laea1pzn/matrix/helper-manifest.json",
+      "sha256": "49d45531d7a075c2ab63e2283428839587910e2aeb84aae6f1023223a48506dd"
+    },
+    "plan": {
+      "path": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp202-final-ingestion-window-laea1pzn/matrix/plan.json",
+      "sha256": "82c3c7c000f184dfd215976421f637d1839eedba233211ce780a76817e58126f"
+    },
+    "amendment": {
+      "path": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp202-final-ingestion-window-laea1pzn/backend-interpretation.json",
+      "sha256": "f88efd003d3e8f2d075016c197e5a20b8ce04f50b84c0bfddd46e812dec0ecd2"
+    },
+    "review": {
+      "path": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp202-final-ingestion-window-laea1pzn/review.json",
+      "sha256": "317c54791cfb98f01346d7749127cd27f2ffda9e9d95098c89871d55c0386510"
+    },
+    "reuse_preflight": {
+      "path": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp202-final-ingestion-window-laea1pzn/reuse-preflight.json",
+      "sha256": "565ecc3936c130c5a104b1d120dcd46784c1114ec268be6594144e36d69df6a4"
+    }
+  },
+  "stopped_acceptance_matrices": [
+    {
+      "status": "STOPPED; FIRST B-AUTOMATIC INVALID; OTHER THREE NOT RUN",
+      "definition": {
+        "path": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp202-detail-batch-correction-9_ie0q21/acceptance-definition.json",
+        "sha256": "72315c464f3fa7cc734852b7f08db6d8bcd4ccca2dbc7d35e2d0ad111e7824e3"
+      },
+      "cells": [],
+      "native_launches": 1,
+      "progress_path": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp202-detail-batch-correction-9_ie0q21/acceptance-progress.json",
+      "progress": {
+        "path": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp202-detail-batch-correction-9_ie0q21/acceptance-progress.json",
+        "sha256": "50dacc3fff291511ad23971c13ed79802b3fea2f1fcb5996c30d834e14486756"
+      },
+      "passed_cells": 0
+    }
+  ]
 }

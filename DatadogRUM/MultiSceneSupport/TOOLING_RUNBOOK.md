@@ -79,9 +79,9 @@ new measurement/oracle decisions. Routine host or bookkeeping fixes use a concis
 changed-input record, without another serial design/admission chain. Parallel work
 must be independently useful to the release and must not compete for the host.
 
-Prove a small real end-to-end path before expanding a new harness. EXP-202's next
-smoke run must establish startup/backend format and complete transport/ownership;
-it remains diagnostic until the fixed acceptance matrix passes. Engineering
+Prove a small real end-to-end path before expanding a new harness. EXP-202 defines
+its first B-automatic acceptance cell as that qualification before execution; reuse
+its exact evidence within the four-cell matrix, without an identical fifth smoke. Engineering
 timeboxes prompt scope decisions and do not expire unchanged reviewed artifacts.
 Actual build/run/cleanup budgets remain fixed and enforced. Preserve failed runs,
 update each fact at its existing owner, and batch derived documents at checkpoints.
@@ -114,7 +114,8 @@ even when the returned count matches. Absence of the optional trace-detail flag
 remains distinguishable from a returned false. Startup and final RUM collection
 retain115seconds and125second host waits; native readiness remains120seconds.
 The separately defined final-span phase runs only after local assertions and allows
-300seconds for polling/pages/details,310seconds at the host. Each response binds
+600seconds for polling/pages/details,610seconds at the host, under the reviewed
+final-ingestion-window definition. Older300/310second failures remain invalid. Each response binds
 its phase and own deadline; late raw bytes survive without successful publication.
 The span lower bound is10: six client exports and four traced Resource-derived
 spans. Lower-bound ingestion counts never
@@ -122,6 +123,12 @@ replace the mandatory strict missing/extra/duplicate/owner oracle. A single MCP
 call can itself exceed the boundary: retain its late bytes and timing, allow native
 cleanup to finish, and diagnose transport outside a live run. A later fast query
 does not retroactively satisfy release readiness or justify an automatic retry.
+
+Fetch trace details concurrently and retain all fulfilled replies in one helper
+invocation. A failed sibling still leaves its successful siblings' raw evidence,
+but prevents publication. Include persistence, decode, manifest verification and
+assembly in the phase deadline; MCP completion alone is insufficient. A recorded
+helper dispatch delay is host evidence, not SDK latency. Never extend a live run.
 
 Backend view document versions remain positive exact integers but may differ from
 local mapper versions; report both and compare every other projected terminal field.
