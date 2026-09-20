@@ -59,6 +59,12 @@ performance and full release acceptance remain open. S1:F02 is qualified by the
 source-matched changelog/support review and compiled public clients; deferred
 resume timing/thread behavior is explicitly recorded in EXP-201.
 
+EXP-203 scopes the remaining S1:P04 check to optimized handler/concurrent/destructor
+reentry. Eighteen accepted EXP-199 controls already cover the functional cases in
+Debug with exact final-source equality. The new three-test Release slice is still
+pending; no numeric budget is part of P04. EXP-202's preparation defects are
+harness findings, and its placeholder builds do not supply runtime/backend proof.
+
 Review closure does not imply overall release readiness. Current release status
 belongs exclusively to [release-gates.json](release-gates.json) and [PLAN](PLAN.md).
 [Triage](REVIEW_TRIAGE.md) records the initial assessment and finding boundaries;

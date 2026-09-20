@@ -70,6 +70,40 @@ calibrate allocation counters before using their numbers. Do not treat a posted
 scene notification as real OS teardown or a weak controller check as mounted
 SwiftUI host lifetime proof. Predeclared thresholds cannot be raised after results.
 
+## Isolated URLSession backend acceptance
+
+EXP-202 owns the ordinary E01 Resource/Trace fixture and strict oracle. Freeze
+all helper/oracle hashes as well as the complete source-member dictionary and
+source archive; check the exact archived file set before and after execution.
+An observed helper hash alone is insufficient: require the approved manifest
+fingerprint before native actions and every backend projection/assembly.
+
+Retain raw MCP payloads and exact decimal/128-bit identities. Reject explicit
+truncation or truncation messages for aggregate, search and trace detail results,
+even when the returned count matches. Absence of the optional trace-detail flag
+remains distinguishable from a returned false. Apply one115second collection
+bound across polling, pages and details. Lower-bound ingestion counts never
+replace the mandatory strict missing/extra/duplicate/owner oracle.
+
+Cleanup runs after attempted boot/install, including failures before successful
+installation. Preserve command returns/exceptions and verify container/process
+absence plus exact stable runtime/device binding. Retain raw inventories; only
+observed usage/size telemetry may change (lastBootedAt/lastUsedAt/dataPathSize/
+logPathSize and runtime lastUsage), not device type, paths, availability or state.
+
+Historical Xcode include examples below do not authorize reading the protected
+Datadog.local.xcconfig. EXP-202 automatic approval review rejected that indirect
+read. Finish placeholder-only compilation and review first, then obtain an
+explicit exception for Xcode credential resolution before the reviewed patch is
+applied. Never extract credentials from earlier builds to bypass the restriction.
+A placeholder build must fail before any native action. No secret may enter an
+argument, summary, source fingerprint or displayed log.
+
+S1:P04 is a functional reentrancy gate, separate from numeric P01–P03. EXP-203
+reuses accepted Debug controls and qualifies only three existing selectors in
+Release. Require actual -O compiler jobs and ENABLE_TESTABILITY=YES; exact test
+identities matter, and a Debug result is not an optimized result.
+
 ## Full-target platform compatibility checks
 
 [F03's finite matrix](FINAL_COMPATIBILITY.md) names the final module, client and

@@ -71,3 +71,20 @@ truncation metadata. Preserve actual representation and reject truncation withou
 inventing nanosecond detail starts or missing sampling fields. Arm A final Detail
 state is observed across the same bounded stop boundary as B, then classified;
 B must stop. No baseline phantom-active result exists before runtime.
+
+The original60minute preparation ended without a runnable fixture. Its preserved
+failures include a changing copied source, a public-client type alias compile
+error, and an automatic approval rejection of the protected-config include.
+A separately bounded20minute correction fixes the public dictionary spelling and
+host cleanup, runtime binding, source/helper integrity and backend truncation.
+Both frozen source arms compile Release with a fixed nonsecret placeholder;57
+synthetic oracle controls and focused host failure controls pass. Final review
+finds no remaining blocker in that bounded host scope. Compiler warnings remain
+in the build logs; compilation is not native lifecycle or upload qualification.
+
+No native launch has occurred. The concrete credential-build patch is unapplied:
+Xcode would read the protected local config, so the historical include pattern
+cannot override the user's prohibition. Ask for that narrow exception after
+preparation; preserve the file and never expose resolved token values. The final
+host-only corrections require a new complete freeze before an authorized build.
+Real metrics/mixed-response prerequisites and all four backend cells remain open.

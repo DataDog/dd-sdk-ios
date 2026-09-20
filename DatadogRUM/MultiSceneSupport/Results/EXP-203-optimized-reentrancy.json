@@ -1,0 +1,98 @@
+{
+  "schema_version": 1,
+  "experiment": "EXP-203",
+  "status": "DEFINED BEFORE EXECUTION",
+  "defined_at": "2026-09-20T02:54:11.213791+00:00",
+  "gates": [
+    "S1:P04"
+  ],
+  "owner": "SDK implementer; root owns execution",
+  "baseline_revision": "62f64d7b655bdc83f3036c4ad81090a270f6202b",
+  "candidate_revision": "1bdc9286c17d69d73e5e41530e6179c72a723368",
+  "checkout_revision": "925b9326bcb364aab87686bbd665be8da576f674",
+  "audit": {
+    "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/s1-p04-reentrancy-evidence-se24xejd/audit.json",
+    "sha256": "c736afac3f6b984f607210bd47661c61b6a6c0ce0d28e865a5ce602a6883452c"
+  },
+  "definition": {
+    "purpose": "Close the optimized code-generation and ARC reentrancy boundary for E01 using three existing tests; preserve accepted Debug functional evidence.",
+    "selectors": [
+      "DatadogInternalTests/NetworkInstrumentationFeatureTests/testAutomaticMode_whenMutationResumesTheTask_itDoesNotReenterPreparation",
+      "DatadogInternalTests/NetworkInstrumentationFeatureTests/testAutomaticMode_whenResumeIsConcurrent_itPreparesBeforeForwardingEitherCall",
+      "DatadogInternalTests/NetworkInstrumentationFeatureTests/testPreparation_payloadDestructionCanResumeWithoutReinstrumenting"
+    ],
+    "environment": "Xcode27.1/27A9269; actual iOS17.5/21F79 arm64 simulator; Release with verified -O, testing enabled and existing finite XCTest waits.",
+    "acceptance": "Exactly three requested tests discovered and executed once, all pass with zero failures/skips/missing/extras; unchanged production/test source identities; no SDK-caused crash/deadlock; cleanup and protected checkout unchanged.",
+    "preflight": "Rediscover MCP workspace and available simulator, verify source hashes/HEAD/signature and no competing host build; no credentials or Datadog upload required.",
+    "optimization": "Verify actual DatadogInternal and selected test compile commands use -O plus -enable-testing or equivalent generated artifacts. Never substitute a Debug pass.",
+    "bound": "One build/test attempt for the three fixed selectors,1800second process limit. A setup failure or assertion failure stops execution and requires recorded diagnosis before retry.",
+    "production_changes_allowed": false,
+    "test_changes_allowed": false,
+    "threshold_changes_allowed": false
+  },
+  "reused_evidence": {
+    "manifest": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp199-terminal-ownership-qfeklzn8/qualified-internal-run.json",
+    "summary": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp199-terminal-ownership-qfeklzn8/qualified-internal-summary.json",
+    "xcresult": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp199-terminal-ownership-qfeklzn8/qualified-internal.xcresult",
+    "manifest_head": "464af9110daeb9211040e202b42d5ce446e06153",
+    "manifest_head_explanation": "Accepted run was made before the EXP-199 commit with recorded changed-file hashes; those hashes, not the HEAD label alone, bind it to committed1bd and final925.",
+    "configuration": "Debug",
+    "test_count": 455,
+    "executions": 491,
+    "failures": 0,
+    "skips": 0,
+    "warnings": [],
+    "selected_exact_passes": 18,
+    "source_hashes": {
+      "DatadogInternal/Sources/NetworkInstrumentation/NetworkInstrumentationFeature.swift": {
+        "qualified_run_sha256": "2631ea56885a12d1b3d14b1044dd9a84319a0b382b817afb95b4edd305df5246",
+        "revision_sha256": {
+          "production": "2631ea56885a12d1b3d14b1044dd9a84319a0b382b817afb95b4edd305df5246",
+          "final": "2631ea56885a12d1b3d14b1044dd9a84319a0b382b817afb95b4edd305df5246"
+        },
+        "byte_equal": true
+      },
+      "DatadogInternal/Sources/NetworkInstrumentation/URLSession/NetworkInstrumentationSwizzler.swift": {
+        "qualified_run_sha256": "a00edec0d9451c3b78c52f308c2a7f771d0e8b9cfafada79a2848f1b164cfef7",
+        "revision_sha256": {
+          "production": "a00edec0d9451c3b78c52f308c2a7f771d0e8b9cfafada79a2848f1b164cfef7",
+          "final": "a00edec0d9451c3b78c52f308c2a7f771d0e8b9cfafada79a2848f1b164cfef7"
+        },
+        "byte_equal": true
+      },
+      "DatadogInternal/Sources/NetworkInstrumentation/URLSession/URLSessionTaskSwizzler.swift": {
+        "qualified_run_sha256": "96d302999632cc609a98e774106f1e51c4ef9fecfe089287426285aa524e4570",
+        "revision_sha256": {
+          "production": "96d302999632cc609a98e774106f1e51c4ef9fecfe089287426285aa524e4570",
+          "final": "96d302999632cc609a98e774106f1e51c4ef9fecfe089287426285aa524e4570"
+        },
+        "byte_equal": true
+      },
+      "DatadogInternal/Tests/NetworkInstrumentation/NetworkInstrumentationFeatureTests.swift": {
+        "qualified_run_sha256": "739606eee3cdc28ac110f6167e9455d565ec9ae9a17aff18630bafa9abd59375",
+        "revision_sha256": {
+          "production": "739606eee3cdc28ac110f6167e9455d565ec9ae9a17aff18630bafa9abd59375",
+          "final": "739606eee3cdc28ac110f6167e9455d565ec9ae9a17aff18630bafa9abd59375"
+        },
+        "byte_equal": true
+      },
+      "DatadogInternal/Tests/NetworkInstrumentation/URLSessionTaskSwizzlerTests.swift": {
+        "qualified_run_sha256": "0d3586be978915dfa11be06a2938eff836af61296b8ae629fd7e51e225fa5b58",
+        "revision_sha256": {
+          "production": "0d3586be978915dfa11be06a2938eff836af61296b8ae629fd7e51e225fa5b58",
+          "final": "0d3586be978915dfa11be06a2938eff836af61296b8ae629fd7e51e225fa5b58"
+        },
+        "byte_equal": true
+      }
+    }
+  },
+  "limits": {
+    "exp197": "Historical original defect and coordinator proof; superseded by EXP-199 for final ownership implementation.",
+    "exp199_native_release": "Four rows contrast old E01 464af911 against candidate1bd in automatic/registered modes; baseline is not develop62f64. Candidate releases terminal preparations/tasks/features and preserves one completed native lifecycle. This does not prove optimized synchronous reentry or numeric P01-P03 budgets.",
+    "failed_attempt_preserved": "Earlier EXP-199 final-internal result was454/455 due immediate native-state assertion; qualified-internal455/491 is the accepted post-correction result. Five focused state-boundary repetitions also passed.",
+    "exp201": "Reuses the exact EXP-199 qualified Internal result; final925 does not change the five audited files."
+  },
+  "source_applicability": "No scene authority/RUMCoreContext/TLS restore mechanism exists in the E01 delta. Reference/S2/S3 scene reentrancy contracts stay unchanged. P01 timing, P02 allocation churn and P03 retained-byte/ownership remain independently open with original thresholds.",
+  "attempts": [],
+  "result": null
+}

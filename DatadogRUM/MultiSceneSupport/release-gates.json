@@ -555,14 +555,14 @@
           "required": true
         },
         "S1": {
-          "scope": "Candidate reentrancy",
+          "scope": "E01 URLSession task preparation, resume continuation and terminal callback reentrancy",
           "status": "OPEN",
           "dependencies": [
             "S1:C01"
           ],
-          "decisive_test": "Paired current-develop baseline and exact candidate meet existing BASELINES.md thresholds; audit newly retained state and teardown. No threshold increase.",
-          "environment": "One host, isolated measurements; relevant physical sample and qualified simulator",
-          "evidence": "Reference evidence retained; this release candidate is not qualified.",
+          "decisive_test": "Zero SDK-caused deadlock/crash or cross-task/feature interference under synchronous request-mutation reentry, concurrent first resumes and payload/error destruction reentry. One preparation/interception per eligible task; each intercepted native resume continuation forwards exactly once. Buffered data/metrics/completion remain ordered behind preparation. Completed, unsupported/internal, rebind and foreign-task paths preserve their established forwarding behavior. Terminal cleanup leaves no strong preparation/task/feature ownership.",
+          "environment": "Exact candidate on qualified17.5 simulator; accepted EXP-199 Debug invariants plus EXP-203 three existing reentry controls with verified Release/-O and finite waits.",
+          "evidence": "EXP-199 accepted Debug controls reused by five exact source/test hashes at1bd/925. EXP-203 is defined before execution to close only optimized synchronous/concurrent/destructor reentry. P04 has no numeric or ABBA budget; P01\u2013P03 remain unchanged.",
           "required": true
         },
         "S2": {

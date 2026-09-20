@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "experiment": "EXP-202",
-  "status": "DEFINED BEFORE IMPLEMENTATION",
+  "status": "OFFLINE PREPARATION QUALIFIED; CREDENTIAL BUILD BLOCKED",
   "defined_at": 1789868896.779567,
   "gates": [
     "S1:A01",
@@ -506,13 +506,215 @@
   "authentication_preflight": "Direct Datadog RUM application lookup and APM query succeeded2026-09-20; query capability is not event-ingestion acceptance.",
   "production_changes_allowed": false,
   "implementation": {
-    "status": "SOURCE PREPARATION; NO NATIVE EXECUTION",
+    "status": "Both source arms compile Release with fixed placeholder; no native execution or backend acceptance",
     "native_fixture": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp202-urlsession-fixture.E0Uiwo",
     "oracle": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp202-oracle-zxnbjtvg",
     "host": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp202-host-runner-qj2jmikp",
-    "first_preparation_disposition": "Before build: fix complete definition hash, restricted environment and runner/project/selected Info revalidation. No native attempt consumed. Existing path-only credential include is the runbook-approved Xcode resolution mechanism; agent never reads/hashes/logs protected contents.",
-    "review": "/tmp/exp202-host-review-qj2jmikp"
+    "first_preparation_disposition": "Before build: complete definition hash, restricted environment and runner/project/selected Info revalidation required. Earlier credential-include interpretation was rejected by automatic review and is superseded by credential_disposition.",
+    "review": "/tmp/exp202-host-review-qj2jmikp",
+    "credential_disposition": "Earlier runbook pattern does not override explicit protected-file prohibition. Automatic review rejection retained; no protected contents consumed by this experiment.",
+    "correction_pass": {
+      "started_at": "2026-09-20T02:49:54.308489+00:00",
+      "deadline": "2026-09-20T03:09:54.308489+00:00",
+      "minutes": 20,
+      "scope": [
+        "public fixture type compile error",
+        "four host review blockers and backend deadline",
+        "offline negative controls and compile-only A/B"
+      ],
+      "native_execution_allowed": false,
+      "review": "/tmp/exp202-host-review-qj2jmikp-v2/audit.json",
+      "finished_at": "2026-09-20T03:01:45.770923+00:00",
+      "status": "Completed within20minute bound: both compile-only arms pass and final host review has no remaining scoped blocker"
+    },
+    "fixture_sources": {
+      "AppDelegate.swift": "507b6e3267a210c2fcb5f541d1065c59f71910130583e3466e9f0cae3d959fc3",
+      "FixtureConfiguration.swift": "5f4cd67fe34017600ba315aa08e51d9ec903a03bf5b123b759dcc996fc125908",
+      "FixtureEvidence.swift": "31f866c9cc50b863ec8a01e687ca848f4dbccae12f8d084fb579c6354c1a79ac",
+      "FixtureScenario.swift": "cc2faae9fd9ecbaf25d473693077c31c00c63a00c006b46b9696db8804434e6c",
+      "FixtureSceneDelegate.swift": "f79b9a65afecf345a7c76fd9d982ad13db252e91b58d493fd71372d3d4ddfcb3",
+      "FixtureSessionDelegate.swift": "8c68669829172fff41b683e1d2d34304a39016ec3eac789606d2cc0bb1543949",
+      "FixtureStartupGate.swift": "b516cde77b13f9849ef3f50ab9728ccd06ba2adbd54f36ea15dd1bf862c4ba2f",
+      "FixtureURLProtocol.swift": "a69552fb25dff250c37918194bad1a0a2bef568d8a939f2a497133c888c26696"
+    },
+    "oracle_file": {
+      "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp202-oracle-zxnbjtvg/exp202_oracle.py",
+      "sha256": "29e89266314021bdcb66eb29511dc0a7f2fd302348c589c73edbe569bc0507eb"
+    },
+    "offline_oracle": {
+      "cases": 57,
+      "status": "PASS synthetic controls only",
+      "evidence": {
+        "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp202-oracle-zxnbjtvg/offline-results.json",
+        "sha256": "cefec4101e1803c647483fe2223764ce1248fb8209f7c474fc98de270fd75ce8"
+      }
+    },
+    "final_host_review": {
+      "path": "/tmp/exp202-host-review-qj2jmikp-v4/audit.json",
+      "sha256": "14af7f17d9a0c14361bbbf35314ec637846d0b76f46caf608174630c345e3ebc"
+    },
+    "retained_host_reviews": [
+      {
+        "path": "/tmp/exp202-host-review-qj2jmikp-v2/audit.json",
+        "sha256": "c76dbe43f5cd6b5d6c4ae6add9a8e9d8e149fa8302fc7d4eb96b682ebcd88b85"
+      },
+      {
+        "path": "/tmp/exp202-host-review-qj2jmikp-v3/audit.json",
+        "sha256": "d3f994a8a3904e95faedf53350c97ba7b3d15eb9c31c66df78f86945df97b59e"
+      }
+    ],
+    "final_helpers": {
+      "host.py": "4ecb412fc8c9f69374899328a4c60c44750e057d79d580abf4dbe437d8274f94",
+      "cell.py": "87b1439eedb6d3451c579bc8170c6b553995d8e5f5867bf58be4462d45d2ee97",
+      "connector.js": "b1c50c914a20bd6ccb5194e2012b80db652722bf9aefa6ab8fe058a20e6ec249",
+      "backend_adapter.py": "4c3e85a238e03fed692d9e4aa24f78b825ea0b89dc2f4092aca8055c1b6910e8",
+      "yaml_exact.rb": "4b986552d1aebe1a84f8a10bd49d505de4c58b8222afc3ffc1988e635e103d87"
+    },
+    "compile_only_builds": {
+      "A": {
+        "status": "PASS",
+        "arm": "A",
+        "xcode": "Xcode 27.1\nBuild version 27A9269",
+        "app": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp202-host-runner-qj2jmikp/matrix-corrected-offline-v2/A/DerivedData/Build/Products/Release-iphonesimulator/EXP202.app",
+        "executable": "EXP202",
+        "build_sha256": "e1847f81be4477208250ff6be61e2c4a48644a64872dec19ff422405b32edd19",
+        "selected_info": {
+          "EXP202BuildFingerprint": "e1847f81be4477208250ff6be61e2c4a48644a64872dec19ff422405b32edd19",
+          "EXP202ContractFingerprint": "2787e6abdde6612be43ec9a5a4272181bb3c032fbd395ce8d30d32515a3870c4",
+          "EXP202FixtureFingerprint": "80e1c2168118a4ccb57e7bf45cc5ca88f7bc7ae94b0fbbcaef06decfce6a4a52",
+          "EXP202RUMApplicationID": "43cbc59b-0626-438b-a3d9-c6417a4545a3",
+          "EXP202ServiceBase": "ios-e01-release-validation",
+          "EXP202SourceFingerprint": "fce60b5d4f4e539ef3c114d2472a652383b708e0e3a08caebe92ae9ac9f3c4a7"
+        },
+        "client_token_resolved": false,
+        "compile_only": true,
+        "native_execution_allowed": false,
+        "pins": [
+          {
+            "identity": "kscrash",
+            "kind": "remoteSourceControl",
+            "location": "https://github.com/kstenerud/KSCrash.git",
+            "state": {
+              "revision": "3f77f379c2db001e0c261c2a51b7e2b115d31f91",
+              "version": "2.6.0"
+            }
+          },
+          {
+            "identity": "opentelemetry-swift-core",
+            "kind": "remoteSourceControl",
+            "location": "https://github.com/open-telemetry/opentelemetry-swift-core",
+            "state": {
+              "revision": "06f8a460a66f813758d22f09025d85df45450a63",
+              "version": "2.5.1"
+            }
+          },
+          {
+            "identity": "swift-atomics",
+            "kind": "remoteSourceControl",
+            "location": "https://github.com/apple/swift-atomics.git",
+            "state": {
+              "revision": "0442cb5a3f98ab802acb777929fdb446bda11a34",
+              "version": "1.3.1"
+            }
+          }
+        ],
+        "dwarf_uuid": "UUID: B0239C3A-E324-3DD0-B892-719FDA469445 (x86_64) /private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp202-host-runner-qj2jmikp/matrix-corrected-offline-v2/A/DerivedData/Build/Products/Release-iphonesimulator/EXP202.app/EXP202\nUUID: 364808AF-D445-3C7D-8641-42BD78BE8E6B (arm64) /private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp202-host-runner-qj2jmikp/matrix-corrected-offline-v2/A/DerivedData/Build/Products/Release-iphonesimulator/EXP202.app/EXP202",
+        "configuration": "Release",
+        "sdk_sources_unchanged": true,
+        "finished_at": 1789872839.689595
+      },
+      "B": {
+        "status": "PASS",
+        "arm": "B",
+        "xcode": "Xcode 27.1\nBuild version 27A9269",
+        "app": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp202-host-runner-qj2jmikp/matrix-corrected-offline-v2/B/DerivedData/Build/Products/Release-iphonesimulator/EXP202.app",
+        "executable": "EXP202",
+        "build_sha256": "993bbe8fc56a3d84954c89418615792c04805db4b7aebd6a7213029c7f7a2e91",
+        "selected_info": {
+          "EXP202BuildFingerprint": "993bbe8fc56a3d84954c89418615792c04805db4b7aebd6a7213029c7f7a2e91",
+          "EXP202ContractFingerprint": "2787e6abdde6612be43ec9a5a4272181bb3c032fbd395ce8d30d32515a3870c4",
+          "EXP202FixtureFingerprint": "80e1c2168118a4ccb57e7bf45cc5ca88f7bc7ae94b0fbbcaef06decfce6a4a52",
+          "EXP202RUMApplicationID": "43cbc59b-0626-438b-a3d9-c6417a4545a3",
+          "EXP202ServiceBase": "ios-e01-release-validation",
+          "EXP202SourceFingerprint": "28fbc772079f314239b23e7a2d48c27826708dc2002b5f0eb7803c6ddeb82e83"
+        },
+        "client_token_resolved": false,
+        "compile_only": true,
+        "native_execution_allowed": false,
+        "pins": [
+          {
+            "identity": "kscrash",
+            "kind": "remoteSourceControl",
+            "location": "https://github.com/kstenerud/KSCrash.git",
+            "state": {
+              "revision": "3f77f379c2db001e0c261c2a51b7e2b115d31f91",
+              "version": "2.6.0"
+            }
+          },
+          {
+            "identity": "opentelemetry-swift-core",
+            "kind": "remoteSourceControl",
+            "location": "https://github.com/open-telemetry/opentelemetry-swift-core",
+            "state": {
+              "revision": "06f8a460a66f813758d22f09025d85df45450a63",
+              "version": "2.5.1"
+            }
+          },
+          {
+            "identity": "swift-atomics",
+            "kind": "remoteSourceControl",
+            "location": "https://github.com/apple/swift-atomics.git",
+            "state": {
+              "revision": "0442cb5a3f98ab802acb777929fdb446bda11a34",
+              "version": "1.3.1"
+            }
+          }
+        ],
+        "dwarf_uuid": "UUID: 15B68B22-1E5F-3797-9774-66F5C8D2528A (x86_64) /private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp202-host-runner-qj2jmikp/matrix-corrected-offline-v2/B/DerivedData/Build/Products/Release-iphonesimulator/EXP202.app/EXP202\nUUID: 6E8D3C7A-5D4A-3E15-B889-BD5B3C6FE396 (arm64) /private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp202-host-runner-qj2jmikp/matrix-corrected-offline-v2/B/DerivedData/Build/Products/Release-iphonesimulator/EXP202.app/EXP202",
+        "configuration": "Release",
+        "sdk_sources_unchanged": true,
+        "finished_at": 1789872744.554959
+      }
+    },
+    "compile_limit": "Placeholder builds establish compilation only. Swift concurrency/compiler-wrapper warnings retained in original logs. Final host-only fixes postdate these builds; new full helper/source/contract freeze required before any authorized credential build.",
+    "credential_build_proposal": {
+      "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp202-host-runner-qj2jmikp/credential-build-proposal.patch",
+      "sha256": "fbd5346890ffc9b0de209f7481d456b1775e94ed39d5ccecea8047263de19196"
+    },
+    "credential_proposal_status": "UNAPPLIED; narrow user authorization question submitted asynchronously; no reply yet"
   },
-  "attempts": [],
-  "result": null
+  "attempts": [
+    {
+      "at": "2026-09-20T02:29:08.177326+00:00",
+      "stage": "credential-backed build authorization",
+      "status": "AUTO-REVIEW REJECTED BEFORE EXECUTION",
+      "reason": "Xcode would indirectly read protected Datadog.local.xcconfig through generated include, conflicting with explicit user prohibition.",
+      "disposition": "No retry or indirect bypass. Compile-only fresh fixture uses fixed nonsecret placeholder and no include. Finish independently reviewable fixture/oracle before asking narrowly scoped authorization for credential-backed build.",
+      "native_launches": 0
+    },
+    {
+      "stage": "compile-only preflight",
+      "status": "INVALID BEFORE BUILD",
+      "root": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp202-host-runner-qj2jmikp/matrix-compile-only",
+      "reason": "FixtureScenario changed during copied source preparation; identity guard rejected",
+      "native_launches": 0
+    },
+    {
+      "stage": "compile-only candidate B",
+      "status": "COMPILE FAILED",
+      "root": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp202-host-runner-qj2jmikp/matrix-compile-final",
+      "reason": "Public fixture helper references unavailable AttributeKey alias; replace with equivalent [String: Encodable]",
+      "native_launches": 0
+    },
+    {
+      "stage": "corrected compile-only preflight",
+      "status": "INVALID BEFORE BUILD",
+      "root": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp202-host-runner-qj2jmikp/matrix-corrected-offline",
+      "reason": "Isolated candidate --repo does not contain protected config metadata; corrected to main shared Git checkout, with no protected content read",
+      "native_launches": 0
+    }
+  ],
+  "result": null,
+  "native_prerequisite_launches_consumed": 0,
+  "acceptance_launches_consumed": 0
 }

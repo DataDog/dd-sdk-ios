@@ -41,6 +41,13 @@ failed attempts, exact source and evidence boundaries. Controlled Datadog app ru
 in the probes RUM application under service `ios-app-rum-release-validation`;
 configuration preparation and authenticated query access do not establish a run.
 
+EXP-202 has qualified offline preparation for ordinary Resource/Trace backend
+acceptance. Both placeholder source arms compile, but no native or backend cell
+has run; protected-config use requires a narrow explicit exception. EXP-203
+separately admits three existing Release reentrancy controls. Accepted EXP-199
+Debug invariants are reused by exact source hashes; P04 is functional and does
+not add a numerical or ABBA requirement to the open P01–P03 measurements.
+
 ## Immediate compatibility priority
 
 The short-term criterion is no RUM degradation when an existing app rebuilds with
