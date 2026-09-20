@@ -97,10 +97,20 @@ prohibition and resolves the recorded automatic-review rejection. Placeholder
 compilation and offline review are already complete. Apply the reviewed credential
 patch and freeze the complete helper/source identity before the authorized build;
 verify current Datadog query access before execution. Preserve the config and its
-index entry exactly. A placeholder build must fail before any native action. No
-secret may enter an argument, summary, source fingerprint or displayed log. The
+index entry exactly. A placeholder build must fail before any native action.
+The user clarified that client tokens and RUM application IDs are shipped client
+configuration: use is approved; exclude values from public commits to avoid
+unwanted ingestion into internal organizations. Avoid unnecessary value logging. The
 [owning result](Results/EXP-202-urlsession-backend.json) retains the authorization
 and earlier rejected attempt; no repeated permission question is needed.
+
+Preserve observed native receipt bytes before JSON parsing or terminal-failure
+handling, and retain remaining current-run snapshots before uninstall. Cleanup
+must still execute if capture fails; keep both the primary failure and capture
+errors. Ignore other-run receipts and reject symlinks. Keep full runtime inventories
+on disk and return a bounded projection with artifact path/hash/byte count; increasing
+a tool output cap is not a durable transport fix. EXP-202's first native attempt
+exposed both gaps and receives no acceptance credit.
 
 S1:P04 is a functional reentrancy gate, separate from numeric P01–P03. EXP-203
 reuses accepted Debug controls and qualifies only three existing selectors in
@@ -114,6 +124,14 @@ replace a finalized result inventory. If Xcode exceeds the declared bound after
 the test returns, retain any observed warning separately, record the reader
 failure, clean up, and stop before the next arm. EXP-204 demonstrates this limit;
 no automatic retry, hidden rebuild or diagnostic suppression is permitted.
+
+A test receipt must bind exact source hashes before and after its actual run.
+A mixed handoff of edited validator code and an older passing receipt receives no
+qualified credit. Numeric controls must independently exceed median,p95,operation
+and byte limits; a joint overrun can mask a missing companion comparison. EXP-198's
+final25-control receipt and independent review preserve these discriminators.
+Source/offline review PASS does not override a preparation deadline: its fourth
+host attempt rejected before building when the fixed source window had expired.
 
 ## Full-target platform compatibility checks
 

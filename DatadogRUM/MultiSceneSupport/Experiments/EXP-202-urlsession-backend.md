@@ -82,10 +82,54 @@ synthetic oracle controls and focused host failure controls pass. Final review
 finds no remaining blocker in that bounded host scope. Compiler warnings remain
 in the build logs; compilation is not native lifecycle or upload qualification.
 
-No native launch has occurred. On September20, the user explicitly authorized
+At the authorization checkpoint, no native launch had occurred. On September20, the user explicitly authorized
 Datadog.local.xcconfig use for EXP-202 and other needed work. That supersedes the
 previous prohibition; the earlier automatic-review rejection remains historical
 evidence. Apply the reviewed credential-build patch after the performance window,
 freeze the complete helper/source identities anew and verify current backend
 access. Preserve the file and its index; never expose resolved token values.
 Real metrics/mixed-response prerequisites and all four backend cells remain open.
+
+After the EXP-198 attempt stopped, the exact reviewed credential patch was applied
+in a fresh helper directory. Both1153-file source inventories, helper manifest and
+explicit credential guard are frozen; baseline Release compilation has started.
+Original placeholder helpers/builds and reviews remain unchanged. Query access to
+the probe RUM application and APM is verified, without ingestion or native credit.
+The owning result records the new execution location and fingerprints.
+
+The first authorized A build compiled successfully, then the credential guard
+rejected an empty resolved value before launch. Inspection of assignment names
+only established that the local file already defines DATADOG_CLIENT_TOKEN; the
+generated CLIENT_TOKEN alias overwrote it. The owning result admits one narrow
+correction: retain the authorized include and remove that alias. A fresh helper
+copy and independent review precede one corrected prepare/build pass (one per arm).
+SDK/fixture/oracle sources and all native limits remain unchanged; no native launch
+was consumed, and no value was logged. The failed build remains preserved.
+
+The one-line correction passed independent source review. Both frozen Release
+arms now compile and resolve client configuration. The first B-automatic native
+prerequisite then failed before startup readiness and used one of the two admitted
+prerequisite launches. Cleanup, source/helper identity and protected-state checks
+pass. The host observed a terminal FAIL but uninstalled its receipt before copying
+it; exact window count/application state are therefore unavailable. The source
+routes an immediate startup failure through the topology guard, which supports a
+diagnostic hypothesis but cannot reconstruct missing runtime values. No backend
+query or accepted cell ran. A separate connector output cap truncated the complete
+on-disk summary after cleanup.
+
+The owning result defines a30minute host-only evidence correction before edits:
+copy native bytes before parsing/failure and before cleanup; return a bounded
+summary projection with full artifact path/hash. Nine native-evidence and three
+connector transport controls pass, including a150399-byte summary and cleanup
+after injected capture failure. Independent review and exact unchanged-build reuse
+must precede any remaining native diagnosis. Preserve the consumed automatic
+launch; no automatic repeat, semantic relaxation or launch-budget reset is admitted.
+
+Independent review caught an additional stale-identity gap before another run:
+a current filename could contain an old run/nonce/build and misattribute its
+terminal diagnosis. The correction now preserves bytes, then verifies the complete
+identity before interpreting readiness or failure. The initial blocked review and
+inputs remain preserved. Ten native-evidence test methods (including three stale
+identity variants), three connector cases and final source review pass. Fresh
+unchanged-build reuse provenance is prepared for separate review; no additional
+native launch has occurred.

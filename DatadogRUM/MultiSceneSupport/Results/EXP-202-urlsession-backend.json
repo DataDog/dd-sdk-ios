@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "experiment": "EXP-202",
-  "status": "OFFLINE PREPARATION QUALIFIED; CONFIG USE AUTHORIZED; NATIVE EXECUTION PENDING",
+  "status": "FIRST NATIVE PREREQUISITE INVALID; HOST EVIDENCE CORRECTION UNDER REVIEW",
   "defined_at": 1789868896.779567,
   "gates": [
     "S1:A01",
@@ -681,7 +681,7 @@
       "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp202-host-runner-qj2jmikp/credential-build-proposal.patch",
       "sha256": "fbd5346890ffc9b0de209f7481d456b1775e94ed39d5ccecea8047263de19196"
     },
-    "credential_proposal_status": "USER AUTHORIZED; REVIEWED PATCH STILL UNAPPLIED; QUEUED AFTER PERFORMANCE WINDOW"
+    "credential_proposal_status": "EXACT REVIEWED PATCH APPLIED TO FRESH HELPERS; SOURCES/GUARDS FROZEN"
   },
   "attempts": [
     {
@@ -715,10 +715,10 @@
     }
   ],
   "result": null,
-  "native_prerequisite_launches_consumed": 0,
+  "native_prerequisite_launches_consumed": 1,
   "acceptance_launches_consumed": 0,
   "unapplied_credential_proposal_review": {
-    "status": "CORRECTED OFFLINE; USER AUTHORIZED; NOT YET APPLIED",
+    "status": "EXACT REVIEWED PATCH APPLIED AFTER EXPLICIT USER AUTHORIZATION; ORIGINAL HELPERS PRESERVED",
     "patch": {
       "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp202-host-runner-qj2jmikp/credential-build-proposal.patch",
       "sha256": "89c90cc6aea5a8bb6b4d7c215c61999799507cf1cd683e5cd558300f5e7f021c"
@@ -736,6 +736,146 @@
     "scope": "Use local config for EXP-202 and other needed project work; preserve user-owned file and index. No secret logging, staging or committing.",
     "supersedes": "Previous prohibition on direct or indirect config use/read; the earlier automatic-review rejection remains historical.",
     "next_action": "After the EXP-198 performance window, apply the exact reviewed credential proposal, freeze helpers/source anew, verify live Datadog query access and execute the admitted native prerequisites/backend cells.",
-    "credit": "Authorization only; zero new native or backend acceptance."
+    "credit": "Authorization only; zero new native or backend acceptance.",
+    "classification_clarification": {
+      "at": "2026-09-20T11:20:50.126417+00:00",
+      "user_instruction": "Client token and RUM application ID are visible in shipped apps; use for validation is approved. Exclude them from public repository commits to avoid unwanted ingestion into internal organizations.",
+      "preservation": "Keep both user-owned file/index states unchanged; avoid unnecessary value logging."
+    }
+  },
+  "authorized_execution": {
+    "root": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp202-authorized-execution-ionwp2qa",
+    "prepared_at": "2026-09-20T10:51:45.887379+00:00",
+    "preparation_receipt": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp202-authorized-execution-ionwp2qa/preparation.json",
+    "prepared_plan_sha256": "f95181ddabcb072949214ab32deabc4bf395042513733b4a04b93b37a1c3129a",
+    "credential_guard_sha256": "18068e569ea6cdf778a8279d306fd9995c879ff3fdd63e5d1a1ade0a3c9f2073",
+    "helper_manifest_sha256": "ee0bd5b1048c885f7eb8b2fcb07cb2e2946f782346e3e68a2e696acd2837b9e3",
+    "source_counts": {
+      "A": 1153,
+      "B": 1153
+    },
+    "builds": {
+      "A": "COMPILE_PASS; CREDENTIAL_RESOLUTION_FAILED",
+      "B": "NOT_STARTED"
+    },
+    "native_prerequisite_launches": 0,
+    "acceptance_launches": 0,
+    "authentication_receipt": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp202-authorized-auth-_nc6oc73/authentication.json",
+    "authorization_checkpoint": {
+      "commit": "d83a8f0774193b6e183fa340674551930f52174c",
+      "signature": "G",
+      "receipt": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp202-authorization-checkpoint-8v40ookb/commit.json"
+    },
+    "limits": "Credentials resolved only by reviewed Xcode build path; no credential values included in source identity, command arguments or displayed logs. No native/backend qualification yet.",
+    "failure": {
+      "xcodebuild_returncode": 0,
+      "credential_validation": "failed before native launch",
+      "built_token_nonempty": false,
+      "config_assignment_names": [
+        "RUM_APPLICATION_ID",
+        "DATADOG_CLIENT_TOKEN"
+      ],
+      "reason": "Generated DATADOG_CLIENT_TOKEN=$(CLIENT_TOKEN) overwrote the configured variable with an absent alias."
+    }
+  },
+  "credential_mapping_correction": {
+    "experiment": "EXP-202",
+    "defined_at": "2026-09-20T10:58:55.848536+00:00",
+    "status": "REVIEW PASS; BOTH CREDENTIAL-BACKED RELEASE BUILDS PASS",
+    "baseline_helper_root": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp202-authorized-execution-ionwp2qa/host",
+    "candidate_helper_root": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp202-config-mapping-correction-ced0vt1g/host",
+    "previous_attempt": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp202-authorized-execution-ionwp2qa/matrix",
+    "observed_failure": {
+      "xcodebuild_returncode": 0,
+      "credential_validation": "failed before native launch",
+      "built_token_nonempty": false,
+      "config_assignment_names": [
+        "RUM_APPLICATION_ID",
+        "DATADOG_CLIENT_TOKEN"
+      ],
+      "reason": "Generated DATADOG_CLIENT_TOKEN=$(CLIENT_TOKEN) overwrote the configured variable with an absent alias."
+    },
+    "correction": "Retain only the authorized include; consume existing DATADOG_CLIENT_TOKEN without overwriting it. Do not read or report values.",
+    "scope": "One corrected prepare/build pass, at most one build per arm; unchanged SDK/fixture/oracle/native matrix/57 accepted controls. Stop on failure and preserve evidence. No equivalent automatic retry.",
+    "host_before_sha256": "82545c821491c4de1975088f18906c4e870a2712568b468a30b88af5f3a3795f",
+    "host_after_sha256": "0cfff5f202d09e9bf536b1e5464e451daa72d9d7b76171eba6862fd6916acbad",
+    "native_launches": 0,
+    "root": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp202-config-mapping-correction-ced0vt1g",
+    "review": {
+      "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp202-config-mapping-correction-ced0vt1g/review.json",
+      "sha256": "fcf9e0b5b162da66358b74f03a86a1b5dfb6f8c77563877143c7ef8b7029d9c5"
+    },
+    "builds": {
+      "A": {
+        "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp202-config-mapping-correction-ced0vt1g/matrix/A/build-result.json",
+        "sha256": "ee2f67ca5cb66851da9bbb0541223ef7d133973c2f39929d56f27ca88544c39a",
+        "build_sha256": "acff23bcb802abae258e26e214209e634b3693f8b3bfaa7c74ad157b0a360f7f",
+        "status": "PASS",
+        "client_token_resolved": true
+      },
+      "B": {
+        "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp202-config-mapping-correction-ced0vt1g/matrix/B/build-result.json",
+        "sha256": "a25318be4fe6fd1816b58f3fbe8cac8ad6733cb7f1aa4eeb948c7e6bd19c6129",
+        "build_sha256": "e252a5d941a0e19f5ba2239edf66096560c2e1859be1639912a0836cd280c775",
+        "status": "PASS",
+        "client_token_resolved": true
+      }
+    }
+  },
+  "native_attempts": [
+    {
+      "purpose": "prerequisite",
+      "arm": "B",
+      "mode": "automatic",
+      "state": "INVALID",
+      "run_id": "633d793d-a7c1-460f-9c2f-368a20432ab5",
+      "summary_path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp202-config-mapping-correction-ced0vt1g/prerequisite-B-automatic/summary.json",
+      "summary_sha256": "33720d0e3e1ea548b43c7cac9b1db0a026e861a83a3c90a0e288243eabe0d81e",
+      "native_launches": 1,
+      "failure": "native prerequisite failed before requested boundary",
+      "backend_state": "NOT_RUN",
+      "cleanup": {
+        "container_absent": true,
+        "process_absent": true,
+        "binding_restored": true,
+        "protected_unchanged": true,
+        "helpers_unchanged": true,
+        "errors": []
+      },
+      "evidence_limit": "The terminal FAIL was detected before startup readiness but its native receipt was not retained before uninstall. Exact window count/application state are unavailable. Source-consistent topology failure is not a proven runtime value.",
+      "connector_failure": "Final summary JSON was truncated by the tool output cap after cleanup, causing a separate parsing error. Full on-disk summary remains intact.",
+      "disposition": "Stop automatic lane; preserve consumed launch. No native/backend acceptance or SDK regression conclusion."
+    }
+  ],
+  "failure_evidence_correction": {
+    "definition_path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp202-failure-evidence-correction-vgqdbyu1/definition.json",
+    "definition_sha256": "97e1101b3b35ef6c7715b0af95d04a6b2ef1d0d1f2a6b9320dd671a4b99c19f4",
+    "root": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp202-failure-evidence-correction-vgqdbyu1",
+    "status": "SOURCE REVIEW PASS; BUILD-REUSE REVIEW PENDING",
+    "controls_path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp202-failure-evidence-correction-vgqdbyu1/host-tests.json",
+    "controls_sha256": "749acd6f48f9983d318a4c7d427db246453e97659591bb4d29ab134ff64c49ef",
+    "native_permission": "None under this correction definition; remaining original registered prerequisite can proceed only after reviewed exact helpers/build reuse and an explicit evidence-based execution disposition. No automatic-repeat or budget reset.",
+    "controls": {
+      "native_evidence_test_methods": 10,
+      "stale_identity_variants": 3,
+      "connector_cases": 3
+    },
+    "source_review": {
+      "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp202-failure-evidence-correction-vgqdbyu1/source-review.json",
+      "sha256": "b70b0b18991fa54762a5818bd79a29c1b666d3365094e9fa7f6da43e1f12efa6",
+      "status": "PASS"
+    },
+    "initial_review": {
+      "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp202-failure-evidence-correction-vgqdbyu1/source-review-initial.json",
+      "sha256": "04e15ee0b96b0cf25c68fe610b0f750085b649acc9d116e82ac006398bc45f30",
+      "status": "BLOCKED then corrected",
+      "finding": "Exact embedded identity must be checked before attributing early terminal failure."
+    },
+    "reuse_provenance": {
+      "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp202-failure-evidence-correction-vgqdbyu1/reuse-provenance.json",
+      "sha256": "53fee5c2f048c5a5cc6bac97095f6c7d9d828f80cb624f65824bab9da86159eb",
+      "status": "PENDING REVIEW"
+    },
+    "helper_manifest_sha256": "f4978dad02fd879334aa1d12a0fe158008dc19b5640bbc670b388b795d5a5796"
   }
 }

@@ -40,9 +40,11 @@ the corrected inherited hitch assertion and diagnostic limits.
 E01 is not release-ready: numeric P01–P03, backend A01/T03/T08 and final F06 remain
 open. [Performance qualification](Results/EXP-198-network-performance.json) has no
 accepted numeric result; absolute budgets remain unchanged.
-[Backend preparation](Results/EXP-202-urlsession-backend.json) has no native run
-and now has explicit user approval to use the local config. Credential-backed
-execution is queued after the performance window. Test-only duplicate classes
+[Backend preparation](Results/EXP-202-urlsession-backend.json) has two qualified
+credential-backed Release builds. Its first automatic native prerequisite failed
+before startup readiness. Cleanup passed, but the terminal receipt was not retained;
+exact topology state is unavailable. A bounded host evidence correction passes independent source review and13
+offline controls; unchanged-build reuse still awaits review. No backend acceptance is inferred. Test-only duplicate classes
 are excluded from inspected shipping graphs; the networking QoS warning occurs
 without E01, but its [paired diagnostic](Results/EXP-204-network-qos.json) timed out
 and supplies no candidate-equivalence, harmlessness or sanitizer/performance claim.

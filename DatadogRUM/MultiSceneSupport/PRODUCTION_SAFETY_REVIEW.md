@@ -86,13 +86,21 @@ to the open, unmerged proposal. E05's regression supports separating baggage wri
 from trace-context ownership, but does not qualify that PR, general baggage merging
 or partial/mixed-carrier policy. T08 retains the finite follow-up.
 
-The unexecuted performance-fixture and backend-preparation defects are harness
+The performance-fixture and backend evidence-retention defects are harness
 findings, not established SDK defects. Their owning
 [performance](Results/EXP-198-network-performance.json) and
 [backend](Results/EXP-202-urlsession-backend.json) records retain every attempt and
-open gate. The fourth performance correction has an independently reviewed
-schema-v5 design and finite admission; implementation review and native controls
-must still pass before numeric measurements. This is tooling progress only.
+open gate. The fourth performance correction now has final source review PASS
+and coherent28/25 host/oracle controls, but host preparation missed its unchanged
+deadline before any build/native work. No numeric or release clearance follows.
+EXP-202's reviewed credential mapping correction qualifies both Release builds.
+The first automatic native prerequisite failed before startup readiness, with
+verified cleanup. Its host lost the terminal receipt before uninstall and truncated
+the full summary during connector transport. Exact topology state is unavailable.
+A bounded host-only repair retains native bytes before parsing/cleanup and returns
+a compact summary. Thirteen offline controls and independent source review pass;
+unchanged-build reuse review remains pending.
+The consumed launch stays recorded; native/backend acceptance remains open.
 Historical S1 narrative is preserved in the
 [documentation checkpoint](Results/EXP-204-documentation-consolidation.json).
 

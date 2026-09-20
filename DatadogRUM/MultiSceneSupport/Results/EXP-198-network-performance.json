@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "experiment": "EXP-198",
-  "status": "FOURTH FIXTURE CONTRACT CORRECTION ADMITTED; NO NEW RUNTIME",
+  "status": "FOURTH ATTEMPT STOPPED BEFORE SOURCE PLAN: DEADLINE; FINAL SOURCE REVIEW PASS",
   "defined_at": "2026-09-19T22:38:13.806518+00:00",
   "gates": [
     "S1:P01",
@@ -513,26 +513,90 @@
     "native_launches": 0,
     "accepted_abba_launches": 0,
     "implementation_progress": {
-      "updated_at": "2026-09-20T09:39:37.423114+00:00",
-      "host_offline_controls": {
-        "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp198-fourth-preparation-emxzcfo2/host-tests.json",
-        "sha256": "4ba6c20428276fe225806bb628b973eaa00bfda1b08a8373927a53359cd2a3b0"
+      "updated_at": "2026-09-20T10:50:48.763555+00:00",
+      "host_handoff": {
+        "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp198-fourth-preparation-emxzcfo2/host-implementation.json",
+        "sha256": "19f696215673f1ad0f270a5abd678a85bfd1e410f815ceb5814d7e6917695cff"
       },
-      "host_offline_status": "25/25 PASS; validator mechanics only",
-      "final_source_review": "PENDING",
+      "host_offline_status": "28/28 PASS; host mechanics only",
+      "initial_fixture_handoff": {
+        "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp198-fourth-preparation-emxzcfo2/fixture-review-input-01/snapshot.json",
+        "sha256": "c8bbf646c1c2602c82d4e19877849d1541931a42fd2f5df4fd19874f3fe09549"
+      },
+      "source_review": "Final independent source/oracle review PASS, host28 and coherent evaluator25 offline controls. Host prepare then rejected the unchanged deadline before any archive/build/native work; no numeric credit or automatic retry.",
       "native_launches": 0,
       "accepted_abba_launches": 0,
-      "host_incremental_reviews": [
-        {
-          "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp198-fourth-preparation-emxzcfo2/host-incremental-review.json",
-          "sha256": "1f43ebcf81c06025b3e6891eb02770c0321b2cb1d5848d57eed3931fc97132df"
-        },
-        {
-          "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp198-fourth-preparation-emxzcfo2/host-correction-review.json",
-          "sha256": "8521f13b1f542d9a762288ab3ba43c45049dc481d7194c41006a573684d8e1c6"
-        }
+      "initial_fixture_review": {
+        "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp198-fourth-preparation-emxzcfo2/fixture-initial-review.json",
+        "sha256": "19f5091c92340f6af7f5e4799f21a53bae17e4717d80c07e0ddd4e5588350fac",
+        "status": "BLOCKED",
+        "findings": 12,
+        "scope": "First fourth-attempt source handoff only; no runtime.",
+        "correction_target": "2026-09-20T10:25:00Z",
+        "hard_source_deadline": "2026-09-20T10:49:42.096529Z"
+      },
+      "second_fixture_review": {
+        "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp198-fourth-preparation-emxzcfo2/fixture-correction-review-02.json",
+        "sha256": "e50c1ac5f916455f8f35c5abaa96cb940effe16e3b1e5f190b2b6c09d142ce30",
+        "status": "BLOCKED",
+        "resolved_original_findings": 8,
+        "remaining_original_findings": [
+          "F07 held readiness and callback quietness",
+          "F09 exact retained collection model",
+          "F10 fixture/evaluator shape agreement",
+          "F12 incremental partial-row preservation"
+        ],
+        "snapshot": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp198-fourth-preparation-emxzcfo2/fixture-review-input-02/snapshot.json",
+        "source_deadline_unchanged": true
+      },
+      "final_source_review": {
+        "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp198-fourth-preparation-emxzcfo2/final-source-review.json",
+        "sha256": "5f0bac3b3e474586a953cee7fba1d559bc2e0c0c9bd38d8c0d879ec24f98837a",
+        "status": "PASS",
+        "reviewed_at": "2026-09-20T10:49:14.769499+00:00"
+      },
+      "final_evaluator_receipt": {
+        "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp198-fourth-preparation-emxzcfo2/evaluator-tests.json",
+        "sha256": "c74517f95ca1dfddf05ae98a1c5c33a52b7b1e3bc1c5b750cb19b8a398dab29b",
+        "status": "PASS_OFFLINE_ONLY",
+        "tests": 25
+      },
+      "source_snapshots": [
+        "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp198-fourth-preparation-emxzcfo2/fixture-review-input-01",
+        "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp198-fourth-preparation-emxzcfo2/fixture-review-input-02",
+        "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp198-fourth-preparation-emxzcfo2/fixture-review-input-03",
+        "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp198-fourth-preparation-emxzcfo2/fixture-review-input-04",
+        "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp198-fourth-preparation-emxzcfo2/fixture-review-final-input",
+        "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp198-fourth-preparation-emxzcfo2/evaluator-review-input-22-controls"
       ],
-      "host_review_limit": "Three host defects corrected; nested native identity alignment followed the correction review and remains subject to final cross-file review."
+      "incoherent_handoff": "Preserved22-control handoff is unqualified; only final coherent25-control receipt receives offline credit."
+    },
+    "documentation_checkpoint": {
+      "commit": "5f8f8c4a31981926ab35d6b8097ad8dbe8ec2db4",
+      "signature": "N",
+      "reason": "Signed attempt timed out after25seconds; user-authorized unsigned local fallback. No push.",
+      "receipt": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp198-contract-checkpoint-whjxjv4u/commit.json"
+    },
+    "disposition": {
+      "status": "STOPPED_BEFORE_SOURCE_PLAN",
+      "reason": "Host prepare rejected source correction deadline before project/archive/build/native work. No equivalent automatic retry.",
+      "failure": "source correction deadline passed",
+      "recorded_at": "2026-09-20T10:50:48.763555+00:00",
+      "prepare_started_at": "2026-09-20T10:49:52.694282+00:00",
+      "source_deadline": "2026-09-20T10:49:42.096529+00:00",
+      "source_review": {
+        "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp198-fourth-preparation-emxzcfo2/final-source-review.json",
+        "sha256": "5f0bac3b3e474586a953cee7fba1d559bc2e0c0c9bd38d8c0d879ec24f98837a",
+        "status": "PASS",
+        "reviewed_at": "2026-09-20T10:49:14.769499+00:00"
+      },
+      "host_controls": 28,
+      "evaluator_controls": 25,
+      "builds": 0,
+      "native_launches": 0,
+      "accepted_abba_launches": 0,
+      "output_directory_empty": true,
+      "root": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp198-fourth-execution-wtc6jyqy/matrix"
     }
   }
 }
