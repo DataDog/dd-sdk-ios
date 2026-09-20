@@ -12,8 +12,8 @@ import TestUtilities
 @testable import DatadogInternal
 
 /// Mirrors `RUMViewHitchesIntegrationTests` with `featureFlags[.viewUpdates] = true`.
-/// With the flag the stop-view write produces a `RUMViewUpdateEvent` (delta); all assertions
-/// are adapted to read from `viewUpdateEvents.last` instead of `viewEvents.last`.
+/// With the flag the stop-view write produces a `RUMViewUpdateEvent` (delta). Assertions fold
+/// the target view's full baseline and ordered deltas, because omitted delta fields are unchanged.
 final class RUMViewHitchesIntegration_Tests: XCTestCase {
     private var core: DatadogCoreProxy! // swiftlint:disable:this implicitly_unwrapped_optional
 
@@ -46,9 +46,14 @@ final class RUMViewHitchesIntegration_Tests: XCTestCase {
             .groupMatchersBySessions(try core.waitAndReturnRUMEventMatchers())
             .takeSingle()
 
-        let customView = try XCTUnwrap(session.views.first(where: { $0.name == viewName }))
-        let stopViewEvent = try XCTUnwrap(customView.viewUpdateEvents.last) // stopView event (delta)
-        XCTAssertNil(stopViewEvent.view.slowFrames)
+        let customViews = session.views.filter { $0.name == viewName }
+        XCTAssertEqual(customViews.count, 1)
+        let customView = try XCTUnwrap(customViews.first)
+        let documents = hitchDocuments(for: customView)
+
+        let reconstructed = try XCTUnwrap(reconstructHitches(from: documents))
+        XCTAssertFalse(reconstructed.isActive)
+        XCTAssertEqual(reconstructed.slowFramesCount, 0)
     }
 
     func testViewHitchesCollected_whenFeatureFlagIsEnabled() throws {
@@ -85,9 +90,118 @@ final class RUMViewHitchesIntegration_Tests: XCTestCase {
             .groupMatchersBySessions(try core.waitAndReturnRUMEventMatchers())
             .takeSingle()
 
-        let customView = try XCTUnwrap(session.views.first(where: { $0.name == viewName }))
-        let stopViewEvent = try XCTUnwrap(customView.viewUpdateEvents.last) // stopView event (delta)
+        let customViews = session.views.filter { $0.name == viewName }
+        XCTAssertEqual(customViews.count, 1)
+        let customView = try XCTUnwrap(customViews.first)
+        let documents = hitchDocuments(for: customView)
 
-        XCTAssertGreaterThan(stopViewEvent.view.slowFrames?.count ?? 0, 0)
+        let reconstructed = try XCTUnwrap(reconstructHitches(from: documents))
+        XCTAssertFalse(reconstructed.isActive)
+        XCTAssertGreaterThan(reconstructed.slowFramesCount, 0)
+
+        // Oracle mutation controls: no payload cannot invent a hitch, and an appended explicit
+        // empty final delta clears an earlier hitch instead of preserving it.
+        let missingPayloads = documents.map { document in
+            var document = document
+            document.slowFramesCount = nil
+            return document
+        }
+        XCTAssertFalse(hasStoppedHitches(in: missingPayloads))
+
+        let finalVersion = try XCTUnwrap(documents.map(\.documentVersion).max())
+        let finalDocument = try XCTUnwrap(documents.first { $0.documentVersion == finalVersion })
+        let explicitEmptyFinalDelta = documents + [
+            HitchDocument(
+                kind: .delta,
+                sessionID: finalDocument.sessionID,
+                viewID: finalDocument.viewID,
+                documentVersion: finalVersion + 1,
+                isActive: false,
+                slowFramesCount: 0
+            )
+        ]
+        XCTAssertFalse(hasStoppedHitches(in: explicitEmptyFinalDelta))
+    }
+
+    private struct HitchDocument {
+        enum Kind: Equatable {
+            case full
+            case delta
+        }
+
+        let kind: Kind
+        let sessionID: String
+        let viewID: String
+        let documentVersion: Int64
+        let isActive: Bool?
+        var slowFramesCount: Int?
+    }
+
+    private struct ReconstructedHitches {
+        let isActive: Bool
+        let slowFramesCount: Int
+    }
+
+    private func hitchDocuments(for view: RUMSessionMatcher.View) -> [HitchDocument] {
+        view.viewEvents.map {
+            HitchDocument(
+                kind: .full,
+                sessionID: $0.session.id,
+                viewID: $0.view.id,
+                documentVersion: $0.dd.documentVersion,
+                isActive: $0.view.isActive,
+                slowFramesCount: $0.view.slowFrames?.count
+            )
+        } + view.viewUpdateEvents.map {
+            HitchDocument(
+                kind: .delta,
+                sessionID: $0.session.id,
+                viewID: $0.view.id,
+                documentVersion: $0.dd.documentVersion,
+                isActive: $0.view.isActive,
+                slowFramesCount: $0.view.slowFrames?.count
+            )
+        }
+    }
+
+    private func reconstructHitches(from documents: [HitchDocument]) -> ReconstructedHitches? {
+        let ordered = documents.sorted { $0.documentVersion < $1.documentVersion }
+        guard
+            let initial = ordered.first,
+            initial.kind == .full,
+            initial.documentVersion == 1,
+            !initial.sessionID.isEmpty,
+            !initial.viewID.isEmpty,
+            let initialIsActive = initial.isActive,
+            ordered.dropFirst().allSatisfy({ $0.kind == .delta }),
+            ordered.last?.kind == .delta,
+            Set(ordered.map(\.sessionID)).count == 1,
+            Set(ordered.map(\.viewID)).count == 1,
+            zip(ordered, ordered.dropFirst()).allSatisfy({ $0.documentVersion < $1.documentVersion })
+        else {
+            return nil
+        }
+
+        var isActive = initialIsActive
+        var slowFramesCount = initial.slowFramesCount
+
+        for delta in ordered.dropFirst() {
+            if let deltaIsActive = delta.isActive {
+                isActive = deltaIsActive
+            }
+            if let deltaSlowFramesCount = delta.slowFramesCount {
+                slowFramesCount = deltaSlowFramesCount
+            }
+        }
+
+        return ReconstructedHitches(isActive: isActive, slowFramesCount: slowFramesCount ?? 0)
+    }
+
+    private func hasStoppedHitches(in documents: [HitchDocument]) -> Bool {
+        guard let reconstructed = reconstructHitches(from: documents) else {
+            return false
+        }
+
+        return !reconstructed.isActive && reconstructed.slowFramesCount > 0
     }
 }
