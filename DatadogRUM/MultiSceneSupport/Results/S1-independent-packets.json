@@ -50,12 +50,21 @@
         "342194900a5310a48f6828c01736ecc812fa1421 G"
       ],
       "body": "Delivery/DL01-pr.md",
-      "body_sha256": "c42643aaa868f5fa2abbbe01abeecfc30cd95566ef42fc2a3d41fa17e05c6af1",
+      "body_sha256": "fdd17fd437d5d115213559cb4498e7663b1cc43de0da43f1cd767412954214b8",
       "evidence": [
         {
           "kind": "current_affected_suites",
           "root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/deliveries/dl01-20260920-7n7z3qln/qualification",
           "summary_sha256": "9b0c0dd3ab6f4c5573f133195e0ce02e11c8028e43796d33f93a793f67de5bbc"
+        },
+        {
+          "kind": "current_affected_platform_builds",
+          "root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/deliveries/dl01-20260920-7n7z3qln/platforms-separated-streams",
+          "summary_sha256": "367653c1fd3a944509bced3c4462bfc238b12398bc6e6b4d66b6df50d78d5ff1",
+          "post_run_products_sha256": "59b2e706b9de64c29a58ce56cdbc32ee3bdd870c66cade5c0f535ad51e384387",
+          "cells": 12,
+          "scope": "Compilation only; full Datadog-Package on iOS/tvOS/watchOS/visionOS/Catalyst and RUM/Internal on macOS, each Debug/Release",
+          "preserved_invalid_attempt": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/deliveries/dl01-20260920-7n7z3qln/platforms"
         }
       ],
       "dependency_pins_and_build_identity": "Owned by the linked qualified/current receipts; no new runtime identities are inferred for source-only rebinding.",
@@ -142,98 +151,110 @@
         {
           "platform": "iOS",
           "configuration": "Debug",
-          "status": "MISSING_AFFECTED_BUILD",
+          "status": "PASS_CURRENT_COMPILATION",
           "owner": "SDK implementer / CI",
           "environment": "Current supported Xcode; declared package minima",
-          "decisive_test": "Complete affected production SwiftFileLists and emitted modules; zero build exit"
+          "decisive_test": "Complete affected production SwiftFileLists and emitted modules; zero build exit",
+          "evidence_root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/deliveries/dl01-20260920-7n7z3qln/platforms-separated-streams"
         },
         {
           "platform": "iOS",
           "configuration": "Release",
-          "status": "MISSING_AFFECTED_BUILD",
+          "status": "PASS_CURRENT_COMPILATION",
           "owner": "SDK implementer / CI",
           "environment": "Current supported Xcode; declared package minima",
-          "decisive_test": "Complete affected production SwiftFileLists and emitted modules; zero build exit"
+          "decisive_test": "Complete affected production SwiftFileLists and emitted modules; zero build exit",
+          "evidence_root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/deliveries/dl01-20260920-7n7z3qln/platforms-separated-streams"
         },
         {
           "platform": "tvOS",
           "configuration": "Debug",
-          "status": "MISSING_AFFECTED_BUILD",
+          "status": "PASS_CURRENT_COMPILATION",
           "owner": "SDK implementer / CI",
           "environment": "Current supported Xcode; declared package minima",
-          "decisive_test": "Complete affected production SwiftFileLists and emitted modules; zero build exit"
+          "decisive_test": "Complete affected production SwiftFileLists and emitted modules; zero build exit",
+          "evidence_root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/deliveries/dl01-20260920-7n7z3qln/platforms-separated-streams"
         },
         {
           "platform": "tvOS",
           "configuration": "Release",
-          "status": "MISSING_AFFECTED_BUILD",
+          "status": "PASS_CURRENT_COMPILATION",
           "owner": "SDK implementer / CI",
           "environment": "Current supported Xcode; declared package minima",
-          "decisive_test": "Complete affected production SwiftFileLists and emitted modules; zero build exit"
+          "decisive_test": "Complete affected production SwiftFileLists and emitted modules; zero build exit",
+          "evidence_root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/deliveries/dl01-20260920-7n7z3qln/platforms-separated-streams"
         },
         {
           "platform": "watchOS",
           "configuration": "Debug",
-          "status": "MISSING_AFFECTED_BUILD",
+          "status": "PASS_CURRENT_COMPILATION",
           "owner": "SDK implementer / CI",
           "environment": "Current supported Xcode; declared package minima",
-          "decisive_test": "Complete affected production SwiftFileLists and emitted modules; zero build exit"
+          "decisive_test": "Complete affected production SwiftFileLists and emitted modules; zero build exit",
+          "evidence_root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/deliveries/dl01-20260920-7n7z3qln/platforms-separated-streams"
         },
         {
           "platform": "watchOS",
           "configuration": "Release",
-          "status": "MISSING_AFFECTED_BUILD",
+          "status": "PASS_CURRENT_COMPILATION",
           "owner": "SDK implementer / CI",
           "environment": "Current supported Xcode; declared package minima",
-          "decisive_test": "Complete affected production SwiftFileLists and emitted modules; zero build exit"
+          "decisive_test": "Complete affected production SwiftFileLists and emitted modules; zero build exit",
+          "evidence_root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/deliveries/dl01-20260920-7n7z3qln/platforms-separated-streams"
         },
         {
           "platform": "visionOS",
           "configuration": "Debug",
-          "status": "MISSING_AFFECTED_BUILD",
+          "status": "PASS_CURRENT_COMPILATION",
           "owner": "SDK implementer / CI",
           "environment": "Current supported Xcode; declared package minima",
-          "decisive_test": "Complete affected production SwiftFileLists and emitted modules; zero build exit"
+          "decisive_test": "Complete affected production SwiftFileLists and emitted modules; zero build exit",
+          "evidence_root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/deliveries/dl01-20260920-7n7z3qln/platforms-separated-streams"
         },
         {
           "platform": "visionOS",
           "configuration": "Release",
-          "status": "MISSING_AFFECTED_BUILD",
+          "status": "PASS_CURRENT_COMPILATION",
           "owner": "SDK implementer / CI",
           "environment": "Current supported Xcode; declared package minima",
-          "decisive_test": "Complete affected production SwiftFileLists and emitted modules; zero build exit"
+          "decisive_test": "Complete affected production SwiftFileLists and emitted modules; zero build exit",
+          "evidence_root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/deliveries/dl01-20260920-7n7z3qln/platforms-separated-streams"
         },
         {
           "platform": "Mac Catalyst",
           "configuration": "Debug",
-          "status": "MISSING_AFFECTED_BUILD",
+          "status": "PASS_CURRENT_COMPILATION",
           "owner": "SDK implementer / CI",
           "environment": "Current supported Xcode; declared package minima",
-          "decisive_test": "Complete affected production SwiftFileLists and emitted modules; zero build exit"
+          "decisive_test": "Complete affected production SwiftFileLists and emitted modules; zero build exit",
+          "evidence_root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/deliveries/dl01-20260920-7n7z3qln/platforms-separated-streams"
         },
         {
           "platform": "Mac Catalyst",
           "configuration": "Release",
-          "status": "MISSING_AFFECTED_BUILD",
+          "status": "PASS_CURRENT_COMPILATION",
           "owner": "SDK implementer / CI",
           "environment": "Current supported Xcode; declared package minima",
-          "decisive_test": "Complete affected production SwiftFileLists and emitted modules; zero build exit"
+          "decisive_test": "Complete affected production SwiftFileLists and emitted modules; zero build exit",
+          "evidence_root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/deliveries/dl01-20260920-7n7z3qln/platforms-separated-streams"
         },
         {
           "platform": "macOS",
           "configuration": "Debug",
-          "status": "MISSING_AFFECTED_BUILD",
+          "status": "PASS_CURRENT_COMPILATION",
           "owner": "SDK implementer / CI",
           "environment": "Current supported Xcode; declared package minima",
-          "decisive_test": "Complete affected production SwiftFileLists and emitted modules; zero build exit"
+          "decisive_test": "Complete affected production SwiftFileLists and emitted modules; zero build exit",
+          "evidence_root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/deliveries/dl01-20260920-7n7z3qln/platforms-separated-streams"
         },
         {
           "platform": "macOS",
           "configuration": "Release",
-          "status": "MISSING_AFFECTED_BUILD",
+          "status": "PASS_CURRENT_COMPILATION",
           "owner": "SDK implementer / CI",
           "environment": "Current supported Xcode; declared package minima",
-          "decisive_test": "Complete affected production SwiftFileLists and emitted modules; zero build exit"
+          "decisive_test": "Complete affected production SwiftFileLists and emitted modules; zero build exit",
+          "evidence_root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/deliveries/dl01-20260920-7n7z3qln/platforms-separated-streams"
         }
       ],
       "new_runtime_admission": "No further runtime admitted by this packet; freeze per-lane source, selectors and actual deadlines first.",
@@ -250,7 +271,8 @@
         "Leave active S2 composed worktree unchanged"
       ],
       "rollback": "Revert the weak display-link target change and its tests/docs independently.",
-      "feature_docs": "AFFECTED_RUM_PASS_GLOBAL_TRACE_DRIFT_INHERITED_FROM_DEVELOP"
+      "feature_docs": "AFFECTED_RUM_PASS_GLOBAL_TRACE_DRIFT_INHERITED_FROM_DEVELOP",
+      "platform_runtime": "NOT_INFERRED_FROM_COMPILATION"
     },
     {
       "id": "E02",
@@ -1007,5 +1029,6 @@
         "Exact native/backend request-time owner comparison with full session/service inventory"
       ]
     }
-  ]
+  ],
+  "updated_at": "2026-09-20T22:01:00.230637+00:00"
 }

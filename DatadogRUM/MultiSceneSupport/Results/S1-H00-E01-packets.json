@@ -88,11 +88,11 @@
       "detached_until_real_ticket": true,
       "baseline_commit": "8d7e429b0242c5b384417862e2418e2dbdffe500",
       "develop_verified": "62f64d7b655bdc83f3036c4ad81090a270f6202b",
-      "delivery_head": "7915e1be91407663ba8a374d0c36f4b804280fd7",
+      "delivery_head": "ab71c3a6fb77307081f58b67d86d096d0340ce5f",
       "source_head": "652ce169773b0be5b6767179eca8ab5f4cf25f8a",
       "source_tree": "5836f7e0af6ecaab02ae460b870b20877e154e6c",
-      "delivery_tree": "5836f7e0af6ecaab02ae460b870b20877e154e6c",
-      "exact_tree_equal": true,
+      "delivery_tree": "214a5260f21d6382f8fcc74a8497daf234a9dde4",
+      "exact_tree_equal": false,
       "production_paths_and_sha256": {
         "DatadogInternal/Sources/NetworkInstrumentation/NetworkInstrumentationFeature.swift": "2631ea56885a12d1b3d14b1044dd9a84319a0b382b817afb95b4edd305df5246",
         "DatadogInternal/Sources/NetworkInstrumentation/URLSession/NetworkInstrumentationSwizzler.swift": "a00edec0d9451c3b78c52f308c2a7f771d0e8b9cfafada79a2848f1b164cfef7",
@@ -104,11 +104,11 @@
       },
       "documentation_paths_and_sha256": {
         "CHANGELOG.md": "ceba3974d910c95add9d6ec1479d0f8f52e590da27bedb504be44d053647463d",
-        "DatadogLogs/LOGS_FEATURE.md": "1542faaf5fc52c139ac8c36173b22c87a065177e40a753ce9896276b3ad12386",
-        "DatadogProfiling/PROFILING_FEATURE.md": "6e8faf2abe8c3c47160ab4db1ac5cb2bd68a995af18460ac7f156326afecd4cf",
-        "DatadogRUM/RUM_FEATURE.md": "a36bbffd1df5e40f8363edfdd5395bdb1319cdca45c481214d69836936cfab01",
-        "DatadogSessionReplay/SESSION_REPLAY_FEATURE.md": "a2f28df2b87fa47674f75b8166a33a591b018a9d756a05992466c22b190580cb",
-        "DatadogTrace/TRACE_FEATURE.md": "4d48ca4136e46b094a991c2cfd8ee2c9f272ee4473ad6e9c01859b143ba65da3"
+        "DatadogLogs/LOGS_FEATURE.md": "21df0fa844abfbd6a1514128ca064f23e91fc07a6af0feb26b02d1eeeb092c18",
+        "DatadogProfiling/PROFILING_FEATURE.md": "370e9c5371a4bbd4ec80edd7b5c8c8964062bf67d80a49d11cab5f2cc364c808",
+        "DatadogRUM/RUM_FEATURE.md": "1e0f79f2ffea249ca2465fca15dbe72d35e5e7b82b8c68de52f6c1f5319190f6",
+        "DatadogSessionReplay/SESSION_REPLAY_FEATURE.md": "14df82ace73f36f7a0e87ae4c4d8c921d4848647a9222e7e0cb2dcddb746f60d",
+        "DatadogTrace/TRACE_FEATURE.md": "f36e002323a1a5c0b2d4d78b2a8962ac0faecfbc8e868a5444817733e693554e"
       },
       "diff_paths": [
         "CHANGELOG.md",
@@ -123,18 +123,24 @@
         "DatadogSessionReplay/SESSION_REPLAY_FEATURE.md",
         "DatadogTrace/TRACE_FEATURE.md"
       ],
-      "patch": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/deliveries/s1-initial-20260920-qqyq49od/E01.patch",
-      "patch_sha256": "2642a9d5d09f25b7e545ad957699c88caecb8e96e75fa8a4cb2dc14a1bdce2b3",
+      "patch": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/deliveries/s1-initial-20260920-qqyq49od/E01-reachable-docs/E01-current.patch",
+      "patch_sha256": "0d60209e1c3074eb1462ede8065479d826134446c16b991408cb6a4edd64a266",
       "outgoing_commits": [
         {
           "sha": "7915e1be91407663ba8a374d0c36f4b804280fd7",
           "message": "Prepare URLSession instrumentation once per task",
           "signature": "G",
           "real_ticket_pending": true
+        },
+        {
+          "sha": "ab71c3a6fb77307081f58b67d86d096d0340ce5f",
+          "message": "Bind feature documentation to reachable delivery source",
+          "signature": "G",
+          "real_ticket_pending": true
         }
       ],
       "signature_receipt": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/deliveries/s1-initial-20260920-qqyq49od/E01-commit/commit.json",
-      "evidence_reuse": "Exact complete tracked tree equality; no test was rerun for metadata/signature changes. Original environment/configuration/diagnostic limits still apply.",
+      "evidence_reuse": "Original complete tree equality preserved at7915e1be; ab71c3a6 changes only five verified_against_commit fields to its reachable parent. Production/tests/build inputs and all doc bodies remain unchanged; no tests rerun.",
       "evidence_owners": [
         "DatadogRUM/MultiSceneSupport/Experiments/EXP-201-final-compatibility.md",
         "DatadogRUM/MultiSceneSupport/Experiments/EXP-202-urlsession-backend.md",
@@ -157,11 +163,25 @@
         "Missing repository-wide iOS schemes: DatadogSessionReplay, DatadogLogs, DatadogCrashReporting, DatadogWebViewTracking, DatadogFlags, DatadogProfiling; affected-suite F03 evidence remains accepted within its prior scope",
         "Current required CI and candidate F06 human review",
         "H00 verified upstream merge then content-equivalent rebase/retarget and affected revalidation only",
-        "Refresh all five feature-document verification SHAs against the reachable final ticketed delivery history; original1bdc9286 is not an ancestor of the reconstructed stack. Metadata-only update does not invalidate runtime evidence.",
+        "Local references repaired and all five docs pass; refresh again if the final real-ticket delivery history is rewritten. Metadata-only changes do not invalidate runtime evidence.",
         "Separately authorized publication/merge"
-      ]
+      ],
+      "initial_delivery_head": "7915e1be91407663ba8a374d0c36f4b804280fd7",
+      "initial_delivery_tree": "5836f7e0af6ecaab02ae460b870b20877e154e6c",
+      "initial_exact_tree_equal": true,
+      "production_tests_build_inputs_equal": true,
+      "feature_document_reachability": {
+        "status": "PASS_LOCAL",
+        "verified_commit": "7915e1be91407663ba8a374d0c36f4b804280fd7",
+        "receipt": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/deliveries/s1-initial-20260920-qqyq49od/E01-reachable-docs/validation.json",
+        "future_rewrite": "Reverify metadata after final real-ticket history rewrite; no SDK rerun for metadata alone."
+      },
+      "initial_patch": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/deliveries/s1-initial-20260920-qqyq49od/E01.patch",
+      "initial_patch_sha256": "2642a9d5d09f25b7e545ad957699c88caecb8e96e75fa8a4cb2dc14a1bdce2b3",
+      "documentation_signature_receipt": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/deliveries/s1-initial-20260920-qqyq49od/E01-reachable-docs/commit/commit.json"
     }
   ],
   "next_repair": "E03 ownership contract/design admission before another S2/S3 expansion experiment",
-  "DL01_extraction_boundary": "Immutable a4be961d, exactly RenderLoopObserver.swift and DisplayLinkerTests.swift plus own changelog/feature docs; combined S2 branch is not the PR."
+  "DL01_extraction_boundary": "Immutable a4be961d, exactly RenderLoopObserver.swift and DisplayLinkerTests.swift plus own changelog/feature docs; combined S2 branch is not the PR.",
+  "updated_at": "2026-09-20T22:00:24.935664+00:00"
 }

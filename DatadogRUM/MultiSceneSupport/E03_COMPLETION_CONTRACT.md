@@ -1,48 +1,32 @@
-# E03 completion contract decision
+# E03 completion contract
 
-This is a proposal, not an admitted production change. [EXP-214](Results/EXP-214-resource-action-design.json)
-owns admission; [EXP-206](Experiments/EXP-206-resource-action-ownership.md) preserves all nine original tests and the red baseline.
+The [user's Resource-completion decision](E03_RESOURCE_COMPLETION_DECISION.md) approves the automatic outcome below. Implementation is not yet admitted. [EXP-214](Results/EXP-214-resource-action-design.json) owns design and test admission; [EXP-206](Experiments/EXP-206-resource-action-ownership.md) preserves all nine original test bodies and their baseline evidence.
 
-## Recommended boundary
+## Approved automatic outcome
 
-| Sequence | Proposed result |
+| Native completion | Required outcome |
 | --- | --- |
-| Automatic URLSession response plus error | Keep one Resource event, no standalone Resource-error event, and the owning view's current action resource/error counts 1/1 with error_tap. Carry an internal completion owner across the separate commands. |
-| Automatic completion after view/session navigation | Preserve original Resource ownership; never increment the newer view/session's action. |
-| Automatic success, same-view action replacement, then paired error | The replacement action in that same owning view receives the error according to its existing expiry rules; do not bind to the action from request start. |
-| Manual start and one success/error stop | Look up the currently tracked Resource by key and update only its owning view's current action. Existing Resource emission, mapping and expiry remain. |
-| Manual key reused after completion | A later terminal call addresses the currently tracked Resource under that key. The API has no handle for an older completed generation; do not invent that guarantee. |
-| Manual success followed by a second error stop with no tracked Resource | Advance time/expiry, but do not mutate action counters or frustration. The historical action-only error increment is intentionally removed. A manual caller can report an error and response together using the existing single stopResourceWithError call. |
-| Unknown/repeated terminal or metrics key | Advance expiry without changing unrelated action activity, counters or ownership. |
+| HTTP headers plus transport error before required body completes, including partial-body failure | One owning network Error, zero completed Resources; retain received status through existing error.resource fields. In the controlled active-action fixture, resource/error counts are 0/1 and existing error frustration applies. |
+| Transport error without HTTP response | Preserve the existing network Error path without an invented response status. |
+| Complete nonempty body, no transport error | Preserve the completed Resource path. |
+| Legitimate empty body, including HEAD/204, no transport error | Preserve the completed Resource path; size zero is not an error discriminator. |
+| Complete HTTP 4xx/5xx response, no transport error | Preserve existing HTTP-status behavior. |
+| Completion after navigation or session change | The Resource/Error retains its captured owning view/session and cannot mutate another live action. Expiry and mapper rules still apply. |
 
-This preserves supported automatic paired telemetry without retaining an ever-growing
-history of completed manual keys. No public API, schema, endpoint, dependency or
-scene-routing change is proposed. The internal token contains value IDs only and
-is released with the queued completion commands; no global map or scope/task/core
-reference is proposed.
+The smallest design candidate chooses the error terminal before a success terminal and resolves tracked ownership before action mutation. It must preserve metrics, attributes, header handling, mappers, current-action timing and clock-driven expiration. No completion token or historical-key ledger is required solely to preserve the retired automatic dual-terminal behavior.
 
-## Exact approval needed
+## Manual compatibility boundary
 
-The original ninth EXP-206 control sends an unannotated success and error directly
-to the session scope. It represents the old automatic two-command sequence, but
-also requires the same signal from a repeated manual stop after Resource removal.
-Under the recommended boundary its unchanged assertion would fail. Therefore:
+The new decision does not authorize changing unrelated manual repeated-stop, unknown-key or key-reuse behavior. Existing keys identify the currently tracked Resource; the API does not identify an older completed generation. Review whether command-scoped tracked-owner resolution can isolate known completions while retaining the current no-tracked-owner behavior. The independent automatic-marker proposal still needs to close the original unannotated foreign-owner controls. Resolve known ownership for both origins; preserve unknown manual behavior and suppress unknown automatic terminal action mutation. Do not admit this refinement until its per-core queue, action transitions, expiry and cleanup have been reviewed.
 
-- Preserve its original source, baseline pass and interpretation permanently.
-- Replace its candidate-acceptance role with an actual URLSession-handler response-plus-error test carrying the internal owner and asserting the same one Resource, zero Resource errors, 1/1 action counts and error_tap.
-- Add an explicit public-manual repeated-stop control requiring no post-completion action mutation, plus current-key reuse and same-view action-transition controls.
-- Keep the other eight original tests and both 100 ms expiry limits unchanged.
+The earlier asynchronous question combined this manual change with an obsolete automatic 1/1 premise. That automatic premise is now superseded. Do not treat the new product decision as approval to ignore every repeated manual stop. If the repair can preserve manual behavior, no such change is needed; otherwise present the precise remaining decision separately.
 
-That is a deliberate compatibility/test-contract amendment requiring the user's
-choice; it is not currently authorized by the original keep-all-nine requirement.
-No test is edited or weakened before that decision. Exact added selectors and
-production paths must still be frozen and independently reviewed before edits.
+## Test amendment and admission
 
-## Alternative
+- Preserve all nine original EXP-206 bodies, the original patch and baseline results. The ninth records historical unannotated success-then-error behavior; it no longer defines the desired automatic failed-transfer outcome. It may remain a manual-compatibility witness if that exact behavior is preserved.
+- Keep the four foreign view/session regressions and four ordinary/expiry controls; both expiry limits remain 100 ms.
+- Freeze actual-handler controls for response-plus-error, no-response error, complete response and legitimate empty response. The failed-transfer fixture requires one Error, zero Resources, action counts 0/1, exact owner and received status.
+- Freeze a bounded native URLSession headers-then-body-failure reproduction, successful body and legitimate empty-body controls. Require callback evidence and serialized telemetry; no prevalence inference from a synthetic fixture.
+- Cover same-view action replacement, manual/current-key reuse, mapper/drop behavior, separate cores and cleanup without unbounded owner history. Exact selectors, production/test paths and runtime budgets must be admitted before edits.
 
-Preserve historical unannotated post-success errors across arbitrary action changes
-and interleaved keys. This needs a separate reviewed completion-lifetime contract
-or identity handle; a one-entry cache, arbitrary TTL, or per-action key ledger has
-not been shown compatible. Storing all completed keys until a view ends introduces
-unbounded growth in a long-lived view and is not an admitted shortcut. E03 remains
-open until that alternative has a compatible design; other S1 packets continue.
+[E03-FOLLOWUP-FAILED-RESOURCE-VISIBILITY](E03_RESOURCE_COMPLETION_DECISION.md#deferred-follow-up-failed-resource-visibility-alongside-its-error) records the later product enhancement. It does not add a Resource event, schema/API change or S1 blocker now.

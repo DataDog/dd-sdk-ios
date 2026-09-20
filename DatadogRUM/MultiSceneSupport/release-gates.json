@@ -2561,11 +2561,11 @@
       "deliverable": "Resource completion ownership extraction",
       "owner": "SDK implementer + independent reviewer",
       "dependencies": [],
-      "decisive_test": "Source-less late success/error/metrics belong only to resourceKey owner after sequential navigation/session change; new view action/error_tap counts remain unchanged. Must first fail current develop. Preserve same-view response-plus-error counts/frustration and clock-driven expiration; qualify ownership across completion/action changes.",
+      "decisive_test": "Tracked late success/error/metrics cannot mutate a foreign view/session action. Native failed-body transfer, including response plus error, emits Error1/Resource0 with received status and controlled action0/1. Preserve successful/HEAD/204 behavior, both100ms expiry controls and unrelated manual compatibility. Original ninth automatic acceptance role is explicitly superseded; historical evidence stays intact.",
       "environment": "Isolated clean checkout of then-current develop; affected unit and native fixtures",
       "completion_mode": null,
       "status": "OPEN",
-      "evidence": "EXP-206: current-develop9-test baseline has4 expected ownership failures and5 preservation passes. Stateless repair rejected because it loses the valid response-plus-error action signal. No production candidate; E03 remains open. EXP214 now owns finite design admission before S2/S3 expansion; manual/current-key and historical paired-error semantics require an explicit reviewed contract.",
+      "evidence": "EXP206 preserves four ownership failures and five historical controls. User decision E03_RESOURCE_COMPLETION_DECISION.md supersedes automatic response-first1/1 behavior for failed transfers; EXP214 reassesses a single terminal-error design and bounded ownership resolution. No implementation/runtime admitted; original patch/nine bodies remain unchanged. Failed Resource visibility alongside Error is deferred, not an S1 gate.",
       "release_requirements": {
         "S1": {
           "scope": "Resource completion ownership extraction",
@@ -2573,9 +2573,9 @@
           "dependencies": [
             "S1:F07"
           ],
-          "decisive_test": "Source-less late success/error/metrics belong only to resourceKey owner after sequential navigation/session change; new view action/error_tap counts remain unchanged. Must first fail current develop. Preserve same-view response-plus-error counts/frustration and clock-driven expiration; qualify ownership across completion/action changes.",
+          "decisive_test": "Tracked late success/error/metrics cannot mutate a foreign view/session action. Native failed-body transfer, including response plus error, emits Error1/Resource0 with received status and controlled action0/1. Preserve successful/HEAD/204 behavior, both100ms expiry controls and unrelated manual compatibility. Original ninth automatic acceptance role is explicitly superseded; historical evidence stays intact.",
           "environment": "Isolated clean checkout of then-current develop; affected unit and native fixtures",
-          "evidence": "EXP-206: current-develop9-test baseline has4 expected ownership failures and5 preservation passes. Stateless repair rejected because it loses the valid response-plus-error action signal. No production candidate; E03 remains open. EXP214 now owns finite design admission before S2/S3 expansion; manual/current-key and historical paired-error semantics require an explicit reviewed contract.",
+          "evidence": "EXP206 preserves four ownership failures and five historical controls. User decision E03_RESOURCE_COMPLETION_DECISION.md supersedes automatic response-first1/1 behavior for failed transfers; EXP214 reassesses a single terminal-error design and bounded ownership resolution. No implementation/runtime admitted; original patch/nine bodies remain unchanged. Failed Resource visibility alongside Error is deferred, not an S1 gate.",
           "required": false
         }
       }

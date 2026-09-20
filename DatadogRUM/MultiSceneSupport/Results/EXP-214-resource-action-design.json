@@ -2,7 +2,7 @@
   "schema_version": 1,
   "experiment": "EXP-214",
   "defined_at": "2026-09-20T20:53:18.654983+00:00",
-  "status": "AWAITING_EXPLICIT_MANUAL_COMPLETION_CONTRACT_CHOICE",
+  "status": "USER_AUTOMATIC_OUTCOME_APPROVED_DESIGN_REASSESSMENT",
   "gate": "S1:E03",
   "delivery_steps": [
     "E03-A",
@@ -13,7 +13,7 @@
   "source_worktree": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/resource-completion-ownership",
   "artifact_root": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp214-e03-admission-025grt82",
   "trigger": "User prioritizes a compatible E03 repair checkpoint before further S2/S3 expansion; EXP213 is safely committed.",
-  "hypothesis": "An internal ownership mechanism can prevent foreign action mutation while preserving supported same-view completion semantics without public handles, wire changes or unbounded completed-key retention.",
+  "hypothesis": "A single native error terminal for failed transfers, plus bounded per-dispatch ownership resolution, can prevent foreign action mutation while retaining valid successes, empty responses and unchanged manual compatibility.",
   "production_edit_allowlist": [],
   "runtime_admission": null,
   "frozen_exp206_tests": [
@@ -30,16 +30,19 @@
   "frozen_count": 9,
   "reproducer_patch_sha256": "86ca8f711e1abb0d8f0eeb53d2a757ca96cc21a6a606794f5d13005a5bfca435",
   "preserved_oracles": {
-    "same_view_response_error": "one Resource, zero standalone Resource error, action resource/error1/1 and platform error frustration",
+    "historical_ninth": "Original body and one Resource/zero Error/action1/1 baseline preserved; superseded only as the automatic failed-transfer acceptance requirement.",
+    "automatic_failed_transfer": "One owning network Error, zero completed Resources, existing received HTTP status; controlled live-action resource/error0/1 and existing error frustration.",
     "discrete_expiry_seconds": 0.1,
-    "tests_must_remain_unchanged": true
+    "all_original_test_bodies_preserved": true,
+    "other_eight_candidate_oracles_unchanged": true
   },
   "decisive_admission": [
-    "Separate existing current-key manual semantics from unsupported generation inference; no new public handle assumed.",
-    "Resolve same-view success/error across action transitions, interleaved completions, legal key reuse and unknown/repeated terminals explicitly.",
-    "Resolve ownership on the per-core RUM queue; preserve Resource/session emission and expiration before action mutation.",
-    "Prove bounded retained state and no owner/task/core retain chain.",
-    "Freeze exact implementation paths and new actual-handler/manual/generation/lifetime selectors and counts before implementation/runtime."
+    "Choose error before successful Resource for failed required-body transfer; do not infer failure from empty size, response presence or HTTP status alone.",
+    "Preserve complete and legitimate empty-body responses, no-response errors, cancellation/mapping/expiry and existing HTTP-status policy.",
+    "Resolve tracked Resource ownership before action mutation on the per-core RUM queue; retain current-action rather than start-action semantics.",
+    "Preserve unrelated manual repeated-stop/unknown-key/current-key compatibility or isolate an explicit unresolved decision; no implicit approval from automatic product direction.",
+    "Freeze exact production/test paths and actual-handler/native headers-then-body-failure, successful-body, HEAD/204, ownership, 100ms expiry and lifecycle controls before implementation/runtime.",
+    "No historical-key ledger solely to preserve the now-retired automatic dual-terminal behavior; prove bounded state and cleanup."
   ],
   "engineering_checkpoint": "2026-09-20T21:53:18.654983+00:00",
   "stop_rule": "One explicit admission or exact unresolved contract decision at the checkpoint. No silent smaller repair, arbitrary history TTL, frozen-test weakening or S2 substitution. Continue independent S1 preparation if maintainer input is required.",
@@ -58,8 +61,25 @@
   },
   "proposed_contract": "E03_COMPLETION_CONTRACT.md",
   "decision_requested": {
-    "recommendation": "Automatic owner tokens preserve paired telemetry; manual terminal addresses only currently tracked Resource. Explicitly amend ninth candidate discriminator while preserving original evidence.",
-    "alternative": "Preserve historical unannotated tails; requires another admitted bounded identity/lifetime design, no heuristic ledger."
+    "automatic_outcome": "APPROVED by new user decision; old automatic1/1 premise retired",
+    "manual_scope": "Original broad question is superseded for automatic outcome; unrelated manual compatibility changes remain unapproved. First seek a source-compatible repair.",
+    "product_decision": "E03_RESOURCE_COMPLETION_DECISION.md"
   },
-  "last_updated_at": "2026-09-20T20:55:08.250102+00:00"
+  "last_updated_at": "2026-09-20T22:00:24.935664+00:00",
+  "product_amendment": {
+    "recorded_at": "2026-09-20T21:53:03.431125+00:00",
+    "decision_file": "E03_RESOURCE_COMPLETION_DECISION.md",
+    "decision_sha256": "0265e7617decdae72dcbd9261523cfb0addf1fae5ba28fff4ca46ead3cf96b20",
+    "prior_active_proposal_checkpoint": "e2da3c7f9cf7d672f4491347e452ebfac5c94162",
+    "prior_documents_preserved_at": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp214-e03-admission-025grt82",
+    "historical_exp206_patch_unchanged": true,
+    "review_task": "One existing independent reviewer reassesses smallest compatible design; root reconciles documentation and preserves the admitted independent platform lane.",
+    "engineering_checkpoint_disposition": "New user premise recorded before original21:53 checkpoint; prior automatic-token/manual-amendment proposal is not admitted. No SDK/test edits or runtime budget extension."
+  },
+  "independent_product_reassessment": {
+    "path": "/tmp/exp214-e03-decision-reassessment-20260920/reassessment.json",
+    "sha256": "e7393f7c209c6a89bcde2e0e08644dca060f8919d1fece3d05ad0187935f242d",
+    "status": "AUTOMATIC_TERMINAL_CANDIDATE_REVIEWED_OWNER_REFINEMENT_PENDING",
+    "root_finding": "Automatic-only filtering leaves unchanged unannotated EXP206 foreign-owner controls unresolved; existing reviewer checking dispatch-scoped known-owner resolution and manual fallback."
+  }
 }

@@ -359,7 +359,15 @@ succeed, persist their receipts immediately, and reject missing/failed readers
 even if SQLite is parseable. DL01's pre-run review caught and closed that gap with
 six negative controls before execution. Keep machine-readable Xcode discovery
 stdout separate from stderr diagnostics; its initial mixed-stream attempt stopped
-before any platform build and remains preserved.
+before any platform build and remains preserved. DL01's corrected twelve build cells now pass; compilation is distinct from native platform runtime. Persist source lists, emitted modules and product hashes at completion.
+
+For E03, the [approved completion decision](E03_RESOURCE_COMPLETION_DECISION.md)
+defines failed required-body transfers as Error1/Resource0, retaining received
+status. Freeze callback and serialized-event controls before implementation.
+Preserve all original EXP206 bodies, including its historical manual ninth
+sequence and both100ms expiry controls. An automatic-only filter cannot claim
+the unannotated foreign-owner regressions fixed. No empty-byte heuristic,
+synthetic-only native claim or undocumented manual contract amendment is allowed.
 
 ## Documentation reading and update workflow
 

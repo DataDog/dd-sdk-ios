@@ -255,7 +255,9 @@
           "Separately authorized publication/merge"
         ]
       },
-      "packet": "Results/S1-H00-E01-packets.json"
+      "packet": "Results/S1-H00-E01-packets.json",
+      "delivery_head": "ab71c3a6fb77307081f58b67d86d096d0340ce5f",
+      "feature_document_reachability": "PASS_LOCAL_AB71C3A6; refresh after final ticket rewrite"
     },
     {
       "owner": "Main execution session / SDK implementer",
@@ -345,7 +347,7 @@
       "title": "Keep Resource completion counters on their owning view",
       "title_provisional": true,
       "branch_slug": "resource-completion-ownership",
-      "state": "EXP214_manual_completion_contract_choice_pending",
+      "state": "EXP214_approved_native_error_outcome_design_review",
       "source_worktree": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/resource-completion-ownership",
       "source_branch": "valpertui/resource-completion-ownership",
       "source_head": "62f64d7b655bdc83f3036c4ad81090a270f6202b",
@@ -370,16 +372,16 @@
         "DatadogRUM/MultiSceneSupport/Results/EXP-206-ownership-design-review.json",
         "DatadogRUM/MultiSceneSupport/Results/EXP-214-resource-action-design.json"
       ],
-      "decisive_test": "All nine frozen tests unchanged: four foreign view/session ownership failures become green and five same-view/expiry controls remain green, including response plus error with one Resource, no standalone Resource error, action counts 1/1 and error_tap. Add actual-handler action-transition, manual-command, key-generation and lifetime discriminators before implementation.",
+      "decisive_test": "Keep four original foreign ownership reds and four ordinary/100ms expiry controls. Preserve all nine historical bodies/baseline; supersede ninth automatic role explicitly. Actual-handler/native failed-body transfer produces one owning network Error, zero completed Resources, controlled action0/1 with received status; successful/HEAD/204 and manual compatibility remain unchanged.",
       "environment": "Bounded source/design review first, then affected RUM unit and native public-monitor/actual-handler tests on available supported runtime; candidate compatibility/CI after a compatible repair exists.",
       "remaining_gates": [
         "E03-A: Resolve manual/native ownership, action transitions, generation/key reuse and queue confinement; admit or explicitly reject one bounded design",
-        "E03-B: Freeze exact source/test paths and decisive tests before implementing; preserve all nine original assertions",
+        "E03-B: Freeze exact source/test paths and new automatic error-first acceptance; preserve nine historical bodies and both100ms expiry limits.",
         "E03-C: Implement and prove same-view preservation plus foreign-owner isolation, terminal cleanup and key reuse",
         "E03-D: Complete affected release inventory, documentation, CI, signed history and human review",
         "Prepare and publish implementation PR only with honest repair/qualification status and separate authorization"
       ],
-      "candidate_design": "Existing completion-scoped value token plus action-lifetime legacy ledger is a review input only, not an approved solution.",
+      "candidate_design": "Reassess single native error terminal plus bounded per-dispatch tracked-owner resolution. No token/history requirement solely for retired automatic dual terminal; implementation not yet admitted.",
       "limits": [
         "Current worktree has only two intentional dirty reproducer tests; preserve them",
         "Simple current-resource-key membership is incompatible after success removes the key",
@@ -389,7 +391,8 @@
       ],
       "rollback": "Define with admitted repair; no production change currently exists to revert.",
       "contract_proposal": "E03_COMPLETION_CONTRACT.md",
-      "next_action": "Await explicit ninth-control amendment choice while preparing independent DL01/E02/E04/E05 packets; then freeze exact implementation paths and tests."
+      "next_action": "Finish bounded source/manual-compatibility review under approved native outcome; freeze exact paths, selectors, expected results and runtime budgets before implementation.",
+      "product_decision": "E03_RESOURCE_COMPLETION_DECISION.md"
     },
     {
       "owner": "Main execution session / SDK implementer",
@@ -621,6 +624,7 @@
     "EXP213": "complete; signed unit-onlyef9d9732; SDK-on native P03 remains open",
     "local_packets": "Results/S1-H00-E01-packets.json",
     "next_repair": "EXP-214 / E03-A design admission before S2 expansion",
-    "independent_local_packets": "Results/S1-independent-packets.json"
+    "independent_local_packets": "Results/S1-independent-packets.json",
+    "E03_product_amendment": "2026-09-20T21:53:03.431125+00:00"
   }
 }

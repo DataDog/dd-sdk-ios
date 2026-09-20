@@ -65,12 +65,13 @@ and a source-aware restoration-owner oracle when the S2 lane resumes; no product
 closure is inferred.
 
 The [S1 delivery plan](S1_DELIVERY_PLAN.md) separates repair qualification from
-publication and merge. H00/E01 now have signed local delivery trees identical to
-the qualified sources; this adds no runtime or release-gate pass. E03 is explicitly
+publication and merge. H00 and initial E01 have signed local delivery trees identical to
+the qualified sources; E01 then repairs five reachable verification fields without
+changing production/tests/build inputs. This adds no runtime or release-gate pass. E03 is explicitly
 prioritized in [EXP-214](Results/EXP-214-resource-action-design.json) before further
-S2 expansion. Its admission review must resolve existing manual current-key behavior
-and post-completion error tails without silently weakening the frozen controls or
-introducing unbounded history. [DL01/E02/E04/E05 packets](Results/S1-independent-packets.json) now preserve the exact qualified production/test contents in separate signed delivery histories. DL01 passes standalone Core819+4 frozen skips and RUM901/937 with strict inventories and cleanup. This closes those packet checks only. The pre-run result-reader oracle rejection and its independently verified correction are retained; inherited Trace-document drift remains explicit for DL01/E02/E04. E05's affected documents pass with a reachable source SHA. Remaining release and ownership checks stay open.
+S2 expansion. The approved failed-body outcome is now Error1/Resource0 with received status.
+Admission must also preserve the original unannotated foreign-owner and manual
+compatibility controls without introducing unbounded history. [DL01/E02/E04/E05 packets](Results/S1-independent-packets.json) now preserve the exact qualified production/test contents in separate signed delivery histories. DL01 passes standalone Core819+4 frozen skips, RUM901/937 and twelve affected-platform builds with strict inventories and cleanup. This closes those packet checks only. The pre-run result-reader oracle rejection and its independently verified correction are retained; inherited Trace-document drift remains explicit for DL01/E02/E04. E05's affected documents pass with a reachable source SHA. Remaining release and ownership checks stay open.
 
 The independent S1 E01 findings are separate from historical D01–D12. Repeated
 request mutation and strong terminal-preparation retention are repaired in
@@ -107,11 +108,12 @@ The original R01–R12 findings and E01 release obligations are unchanged.
 The independent E03 investigation now establishes a current-develop SDK defect:
 late Resource completions mutate another live action's counters and error_tap.
 [EXP-206](Results/EXP-206-resource-action-ownership.json) preserves four exact
-failing cases and five passing compatibility controls. The proposed stateless
-membership repair is rejected: success removes the key before a legitimate error,
-so it would erase existing same-view telemetry. No repair is implemented; E03
-remains open pending a reviewed ownership-carrying design with lifecycle and
-footprint proof. This does not reopen or replace historical R01–R12.
+failing cases and five passing compatibility controls. The original stateless
+proposal was rejected under the previous dual-terminal acceptance premise. The
+user has since approved a single Error for a failed body transfer; its original
+baseline and manual witness remain intact. No repair is implemented; E03 remains
+open pending known-owner routing that also closes the unchanged foreign-owner
+controls, with lifecycle and manual-compatibility proof. This does not reopen or replace historical R01–R12.
 
 The independent E04 review establishes and repairs a current-develop cache-lifetime
 defect: a long-lived native view loses delayed WebView correlation when the next
@@ -587,3 +589,5 @@ actual disconnect; preserve the original failure and exact29-event partial join,
 and stop equivalent retries without assigning an SDK defect. H14 closes with
 actual physical resizing and complete22-event ownership equality. Restore the approved temporary Windowed Apps preference when
 the suite completes. Physical Duo and final review gates remain separate.
+
+The [approved E03 completion decision](E03_RESOURCE_COMPLETION_DECISION.md) now requires a failed body transfer to emit an owning network Error rather than a completed Resource, retaining received HTTP status. This deliberately retires the old automatic1/1 premise while preserving its historical evidence. EXP214 has a reviewed automatic error-terminal candidate; its remaining admission check must also close the unchanged unannotated foreign-owner controls; no implementation, native failure reproduction or customer-prevalence conclusion is claimed. Unrelated manual repeated-stop semantics remain outside that approval. The additional failed-Resource representation is a documented deferred follow-up.

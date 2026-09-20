@@ -6,7 +6,7 @@ Releasing a RUM owner can leave its display-link observer and frame readers reta
 
 Keep frame forwarding, reader registration, invalidation and existing platform branches. The repair changes one internal RUM file and its Core tests. It preserves the public API and event formats.
 
-Validation: standalone iOS 17.5 Core suite: 819 passed, four specified OS skips; RUM suite: 901 cases / 937 executions passed, no skips. Strict discovery, source/dependency identity and cleanup passed. The nine focused frame/lifetime controls include teardown after observed configuration delivery. This does not qualify early teardown or broader view/host lifetime. Repository lint passed; remaining iOS/platform checks and inherited Trace-document drift are recorded in the packet.
+Validation: standalone iOS 17.5 Core suite: 819 passed, four specified OS skips; RUM suite: 901 cases / 937 executions passed, no skips. Strict discovery, source/dependency identity and cleanup passed. The nine focused frame/lifetime controls include teardown after observed configuration delivery. This does not qualify early teardown or broader view/host lifetime. All twelve affected-platform Debug/Release build cells passed with complete production-source inventories and emitted modules; this is compilation evidence. Repository lint passed; remaining repository-wide iOS checks and inherited Trace-document drift are recorded in the packet.
 
 ### Review checklist
 

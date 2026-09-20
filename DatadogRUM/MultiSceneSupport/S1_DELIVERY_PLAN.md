@@ -10,7 +10,7 @@ This document prepares delivery; it does not perform or authorize a push, remote
 
 [Structured queue](Results/S1-delivery-queue.json) contains exact source commits, paths, evidence, owners and remaining gates. It is input for the main session, not an installed automation. [release-gates.json](release-gates.json) remains the release qualification authority. Neither new artifact closes a gate.
 
-Current checkpoint: main `430075a1`, clean S2 qualification `ef9d9732`; remote develop `62f64d7b` was freshly verified through authenticated GitHub access. The [H00/E01 packets](Results/S1-H00-E01-packets.json) have signed local delivery commits and exact qualified-tree equality. Ticket metadata, missing repository-wide checks, CI/review and publication remain pending. [EXP-214](Experiments/EXP-214-resource-action-design.md) now owns E03 design admission. [DL01/E02/E04/E05 packets](Results/S1-independent-packets.json) now have independent signed delivery commits. DL01's standalone Core/RUM suites pass; each packet enumerates remaining iOS/platform checks and candidate-specific gaps. No publication or merge has occurred. DL01 was extracted from its immutable two-file source, not the combined S2 HEAD.
+Current checkpoint: main `430075a1`, clean S2 qualification `ef9d9732`; remote develop `62f64d7b` was freshly verified through authenticated GitHub access. The [H00/E01 packets](Results/S1-H00-E01-packets.json) have signed local delivery commits. H00 and the initial E01 commit match their qualified trees; E01 then changes only five verification fields to a reachable parent, with all feature docs passing. Ticket metadata, missing repository-wide checks, CI/review and publication remain pending. [EXP-214](Experiments/EXP-214-resource-action-design.md) now owns E03 design admission. [DL01/E02/E04/E05 packets](Results/S1-independent-packets.json) now have independent signed delivery commits. DL01's standalone Core/RUM suites and twelve affected-platform build cells pass; each packet enumerates remaining iOS/platform checks and candidate-specific gaps. No publication or merge has occurred. DL01 was extracted from its immutable two-file source, not the combined S2 HEAD.
 
 ## Review units and dependency order
 
@@ -20,7 +20,7 @@ Every row is a separate PR. H00 and DL01 are local delivery identifiers, not new
 | --- | --- | --- | --- |
 | H00 | Correct full/delta view-hitch assertions | Qualified test-only correction | develop; no dependency |
 | E01 | Prepare URLSession instrumentation once per task | Its 15 prerequisite gates qualified; F06 still open | May stack on H00 for review; H00 must merge before E01 final delivery |
-| DL01 | Release display-link observers with their owner | Focused repair qualified on ordinary iOS17.5; separate extraction needed | develop; no E01/E04 dependency established |
+| DL01 | Release display-link observers with their owner | Separate signed extraction, full Core/RUM and twelve platform builds pass; remaining repository checks | develop; no E01/E04 dependency established |
 | E02 | Isolate attributes between repeated view occurrences | Generic regression and native serialization qualified; release checks remain | develop |
 | E04 | Retain delayed WebView correlation through native-view inactivity | Generic regression, full RUM and native bridge pair qualified; release checks remain | develop |
 | E05 | Preserve request-time RUM ownership in automatic traces | Generic regression, full Trace and native header/span pair qualified; release checks remain | develop |
@@ -41,18 +41,18 @@ There is no requirement to wait for physical Duo hardware, new scene APIs, or th
 
 [EXP-206](Experiments/EXP-206-resource-action-ownership.md) reproduced late Resource success/error changing a different view's live action counts and `error_tap`. Resource/error view and session UUIDs themselves remained correct.
 
-The rejected stateless predicate cannot distinguish two cases after success removes the Resource key: a valid following error for the same view, and a foreign Resource's late error. Rejecting every unknown key drops a valid response-plus-error signal; accepting it preserves the ownership bug. An action-only ledger also loses history when the action changes and can confuse legal key reuse. Rejecting that proposal was justified. The documented instruction to continue independent candidates explains why S2 could proceed; it was scheduling permission, not proof that E03 was fixed or unimportant.
+The earlier stateless proposal was rejected under the then-required automatic success/error pair: success removed the key before the following error. That automatic premise is superseded by the approved failed-transfer Error outcome. Its historical evidence and manual compatibility witness remain unchanged. Admission now requires tracked ownership before action mutation, including the original unannotated foreign-owner controls, while preserving unknown/repeated manual behavior. An automatic-only filter does not close those controls. No token or completed-key history is required solely for the retired automatic pair.
 
 E03 is now an explicit, finite repair path:
 
 | Step | Deliverable / owner | Decisive exit | Environment / dependency |
 | --- | --- | --- | --- |
 | E03-A | Main implementer proposes one internal ownership design; maintainer reviews it | Contract table resolves native and manual command sequences, action transitions, key reuse/generations, cross-core isolation, session expiry, queue confinement and cleanup. No silent behavior change or assumed-compatible ledger. | Source/design review; preserve original red proof |
-| E03-B | Main implementer freezes source paths and regression inventory | Original nine tests remain unchanged; added native-handler and lifetime discriminators are defined before implementation. Reviewer accepts the bounded design or records the exact unresolved contract decision. | Isolated develop checkout; depends on A |
-| E03-C | Main implementer implements the admitted repair | Four ownership reds become green; all five preservation controls stay green; actual-handler, manual/generation and weak-lifetime controls pass. | Affected RUM unit/native fixtures on supported available runtime; depends on B |
+| E03-B | Main implementer freezes source paths and regression inventory | Original nine bodies/evidence remain intact; the ninth's automatic acceptance role is explicitly superseded by the user decision. Freeze actual-handler/native failed-body, successful/empty-response and lifetime discriminators before implementation. Reviewer accepts the bounded design or records the exact unresolved contract decision. | Isolated develop checkout; depends on A |
+| E03-C | Main implementer implements the admitted repair | Four ownership reds become green; four ordinary/expiry controls remain green. Automatic failed transfer yields Error1/Resource0/action0:1; unchanged historical manual behavior and admitted native/lifetime controls pass. | Affected RUM unit/native fixtures on supported available runtime; depends on B |
 | E03-D | Main implementer prepares PR; maintainers qualify/review | Candidate compatibility, docs, required CI, signed outgoing history and human review complete; independent PR is ready to land. | Exact delivery source; depends on C |
 
-The [existing token/ledger proposal](Results/EXP-206-ownership-design-review.json) is review input, not an approved implementation. If design admission fails, state the exact missing contract and next decision at that checkpoint, then continue other S1 delivery work. Do not silently substitute another S2 expansion task for resolving it.
+The [existing token/ledger proposal](Results/EXP-206-ownership-design-review.json) remains historical review input, not an approved implementation. The user has since approved error-first failed-transfer semantics; a token/ledger solely for the retired automatic dual terminal is no longer required. If design admission fails, state the exact missing contract and next decision at that checkpoint, then continue other S1 delivery work. Do not silently substitute another S2 expansion task for resolving it.
 
 Freeze these additional discriminator families, with exact method names and expected counts, before C:
 
@@ -63,7 +63,7 @@ Freeze these additional discriminator families, with exact method names and expe
 - Unknown/repeated keys, legal key reuse and separate SDK cores; no global tombstone or guessed generation.
 - Delayed queue work, action/session expiry and SDK deinitialization; no new retained owner chain or unbounded historical-key lifetime.
 
-The frozen same-view control requires one Resource, zero standalone Resource-error events, action resource/error counts of 1/1 and `error_tap`. The two expiry controls retain their original 100 ms deadline. Do not weaken them or add artificial ownership metadata solely to make the old control pass. A new experiment is justified here because it closes E03 or investigates a regression, not because a new number is needed.
+The [approved Resource-completion decision](E03_RESOURCE_COMPLETION_DECISION.md) supersedes the ninth control only as automatic failed-transfer acceptance: require one owning network Error, zero completed Resources and controlled active-action resource/error counts0/1, preserving received status. Keep the original ninth body/baseline as historical manual-sequence evidence and the other eight controls, including both100ms expiry boundaries. Successful bodies and legitimate empty HEAD/204 responses remain Resources. The earlier manual-compatibility question is separate; the user has not approved unrelated repeated-stop/key-reuse changes. Define exact actual-handler/native controls before implementation.
 
 ## Exact extraction and PR content
 
@@ -92,7 +92,7 @@ The queue is the executable path/commit inventory. Paths below describe the revi
 - Only `DatadogRUM/Sources/RUMVitals/RenderLoop/RenderLoopObserver.swift` and `DatadogCore/Tests/Datadog/RUM/RUMVitals/DisplayLinkerTests.swift`, plus its own changelog/affected feature document.
 - Private weak callback target breaks the real CADisplayLink target cycle. Preserve frame forwarding, invalidation and existing AppKit/NOP/conditional branches.
 - [EXP-211](Experiments/EXP-211-s2-lifetime.md) supplies eight accepted D2 tests and one corrected D4 release witness after actual pending MessageBus work drains. It reproduced on ordinary iPad iOS17.5; Duo is not required.
-- Prove the two-file extraction's independence from E01/E04 and run missing or invalidated Core/RUM/conditional-platform checks. Do not import the combined S2 branch or later host-lifetime experiment.
+- The two-file extraction is independent of E01/E04. Standalone Core/RUM and twelve platform build cells pass; remaining repository-wide iOS checks stay explicit in the packet. Do not import the combined S2 branch or later host-lifetime experiment.
 - This establishes focused observer release, not global lifetime clearance or continuous growth in an initialize-once app.
 
 ### E02 — repeated view occurrence
