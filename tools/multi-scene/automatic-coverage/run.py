@@ -8,6 +8,7 @@ import json
 import os
 from pathlib import Path
 import plistlib
+import re
 import shutil
 import subprocess
 import sys
@@ -49,18 +50,114 @@ def app_metadata(app):
     return {"info_sha256": hashlib.sha256(data).hexdigest(), "build_sdk": info.get("DTSDKName"),
             "declared_multiple_scenes": info.get("UIApplicationSceneManifest", {}).get("UIApplicationSupportsMultipleScenes", False)}
 
-def prepare():
-    attempt = Path(tempfile.mkdtemp(prefix="exp195-automatic-"))
-    manifest = {"experiment": "EXP-195", "created_at": time.time(), "head": call(["git", "rev-parse", "HEAD"]),
-                "protected": protected_state(REPO), "definition": json.loads(DEFINITION.read_text()),
+def namespace(experiment):
+    if not isinstance(experiment, str) or not re.fullmatch(r"EXP-[0-9]{3}", experiment):
+        raise ValueError("explicit experiment identity required")
+    return experiment.replace("-", "").lower()
+
+
+def configuration(definition_path=None):
+    definition = json.loads(Path(definition_path or DEFINITION).read_text())
+    experiment = definition["experiment"]
+    namespace(experiment)
+    revisions = definition.get("source_revisions", REVISIONS if experiment == "EXP-195" else {})
+    if set(revisions) != {"baseline", "candidate"}:
+        raise ValueError("exact baseline/candidate revisions required")
+    if any(not isinstance(r, str) or not re.fullmatch(r"[0-9a-f]{40}", r) for r in revisions.values()):
+        raise ValueError("source revisions must be complete commit hashes")
+    if experiment == "EXP-195" and revisions != REVISIONS:
+        raise ValueError("historical experiment cannot use new source revisions")
+    if revisions["baseline"] == revisions["candidate"]:
+        raise ValueError("source comparison requires distinct revisions")
+    for revision in revisions.values():
+        if call(["git", "cat-file", "-t", revision], cwd=REPO) != "commit":
+            raise ValueError("source revision is not a commit")
+    if experiment != "EXP-195":
+        if definition.get("defined_before_implementation") is not True:
+            raise ValueError("experiment must be defined before implementation")
+        if call(["git", "merge-base", *revisions.values()], cwd=REPO) != revisions["baseline"]:
+            raise ValueError("candidate must descend from frozen develop")
+    return experiment, revisions, definition
+
+
+def helper_fingerprint():
+    paths = sorted(set(HERE.glob("*.py")) | set((HERE.parent / "acceptance").glob("*.py"))
+                   | {HERE.parent / "baselines/run.py"})
+    return {str(p.relative_to(REPO)): hashlib.sha256(p.read_bytes()).hexdigest() for p in paths}
+
+
+def validate_frozen_inputs(attempt, manifest):
+    definition_bytes = (attempt / "definition.json").read_bytes()
+    frozen_definition = json.loads(definition_bytes)
+    if manifest.get("experiment", "EXP-195") == "EXP-195":
+        if frozen_definition.get("experiment") != "EXP-195" or manifest.get("definition", {}).get("experiment") != "EXP-195":
+            raise ValueError("historical experiment identity restored over another definition")
+        return  # Historical definitions retain their original acceptance contract.
+    namespace(manifest["experiment"])
+    if hashlib.sha256(definition_bytes).hexdigest() != manifest.get("definition_sha256"):
+        raise ValueError("frozen definition changed")
+    if json.loads(definition_bytes) != manifest["definition"]:
+        raise ValueError("manifest definition differs from frozen definition")
+    if manifest["definition"].get("experiment") != manifest["experiment"]:
+        raise ValueError("experiment identity differs from definition")
+    if helper_fingerprint() != manifest.get("host_helpers"):
+        raise ValueError("host helper source changed")
+    if baseline.fingerprint(HERE / "Fixture") != manifest["fixture"] or baseline.fingerprint(HERE / "UITests") != manifest["ui_tests"]:
+        raise ValueError("application or collector source changed")
+    revisions = manifest["definition"]["source_revisions"]
+    for key, build in manifest["builds"].items():
+        if build["revision"] != revisions[build["arm"]] or key != build["arm"] + "-" + build["sdk"]:
+            raise ValueError("build source differs from frozen definition")
+        directory = Path(build["directory"])
+        sdk_root = directory / "sdk"
+        actual_names = {str(p.relative_to(sdk_root)) for prefix in baseline.PATHS
+                        for p in (sdk_root / prefix).rglob("*") if p.is_file()}
+        if actual_names != set(build["sdk_sources"]["files"]):
+            raise ValueError("frozen SDK file inventory changed")
+        for name, expected in build["sdk_sources"]["files"].items():
+            if baseline.digest(directory / "sdk" / name) != expected:
+                raise ValueError("frozen SDK source changed: " + name)
+        if baseline.digest(directory / "sdk/Package.swift") != build["package_sha256"]:
+            raise ValueError("frozen package changed")
+
+
+def validate_cell(manifest, key, device, framework, layout, poses):
+    if manifest.get("experiment", "EXP-195") == "EXP-195":
+        if manifest.get("definition", {}).get("experiment", "EXP-195") != "EXP-195":
+            raise ValueError("experiment identity differs from definition")
+        return
+    if (device == "duo") != poses:
+        raise ValueError("Duo cells require all real pose boundaries")
+    declared = manifest.get("declared_multiple_scenes", False)
+    cells = manifest["definition"]["matrix"]["inventory"]
+    matching = [c for c in cells if (c["build"], c["device"], c["framework"], c["layout"], c["multiple_scenes"])
+                == (key, device, framework, layout, declared)]
+    if len(matching) != 1:
+        raise ValueError("cell is outside the fixed matrix")
+    if matching[0]["input"] != "EXISTING XCTEST + ACTUAL DEVICE HUB POSES":
+        raise ValueError("old-build Duo cell requires prepared human input; failed XCTest path is blocked")
+    identity = (key, device, framework, layout)
+    if any((r.get("build"), r.get("device"), r.get("framework"), r.get("layout")) == identity
+           for r in manifest["runs"] + manifest["failures"]):
+        raise ValueError("cell already attempted; no implicit retry")
+
+
+def prepare(definition_path=None):
+    experiment, revisions, definition = configuration(definition_path)
+    prefix_name = namespace(experiment)
+    attempt = Path(tempfile.mkdtemp(prefix=prefix_name + "-automatic-"))
+    manifest = {"experiment": experiment, "created_at": time.time(), "head": call(["git", "rev-parse", "HEAD"]),
+                "protected": protected_state(REPO), "definition": definition,
                 "fixture": baseline.fingerprint(HERE / "Fixture"), "ui_tests": baseline.fingerprint(HERE / "UITests"),
                 "builds": {}, "runs": [], "failures": [], "devices": {}}
     save(attempt / "definition.json", manifest["definition"])
+    manifest["definition_sha256"] = hashlib.sha256((attempt / "definition.json").read_bytes()).hexdigest()
+    manifest["host_helpers"] = helper_fingerprint()
     for sdk, developer in DEVELOPERS.items():
         env = dict(os.environ, DEVELOPER_DIR=developer)
         version = call(["xcrun", "--sdk", "iphonesimulator", "--show-sdk-version"], env=env)
         if version != sdk: raise RuntimeError(f"expected SDK{sdk}, got {version}")
-        for arm, revision in REVISIONS.items():
+        for arm, revision in revisions.items():
             key = arm + "-" + sdk
             root = attempt / key; sdk_root = root / "sdk"; sdk_root.mkdir(parents=True)
             archive = subprocess.check_output(["git", "archive", revision, "--", *baseline.PATHS], cwd=REPO)
@@ -69,11 +166,11 @@ def prepare():
             (sdk_root / "Package.swift").write_text(baseline.package())
             shutil.copytree(HERE / "Fixture", root / "Sources")
             shutil.copytree(HERE / "UITests", root / "UITests")
-            prefix = "com.datadoghq.exp195." + arm + ".sdk" + sdk.replace(".", "")
+            prefix = "com.datadoghq." + prefix_name + "." + arm + ".sdk" + sdk.replace(".", "")
             targets = {}
             for framework in ["UIKit", "SwiftUI"]:
                 target = framework + "Fixture"
-                info = {"CFBundleName": target, "CFBundleDisplayName": "EXP195 " + framework,
+                info = {"CFBundleName": target, "CFBundleDisplayName": prefix_name.upper() + " " + framework,
                     "CFBundleIdentifier": "$(PRODUCT_BUNDLE_IDENTIFIER)", "CFBundleVersion": "1", "CFBundleShortVersionString": "1.0",
                     "CFBundleExecutable": "$(EXECUTABLE_NAME)", "CFBundlePackageType": "APPL", "UILaunchScreen": {},
                     "LSRequiresIPhoneOS": True, "FixtureFramework": framework,
@@ -97,12 +194,16 @@ def prepare():
             save(root / "project.json", project)
             call(["xcodegen", "generate", "--spec", "project.json"], cwd=root, log=root / "generate.log")
             manifest["builds"][key] = {"sdk": sdk, "arm": arm, "revision": revision, "directory": str(root), "bundle_prefix": prefix,
-                "toolchain": call(["xcodebuild", "-version"], env=env), "sdk_sources": sources, "state": "PREPARED"}
+                "toolchain": call(["xcodebuild", "-version"], env=env), "sdk_sources": sources,
+                "package_sha256": baseline.digest(sdk_root / "Package.swift"), "state": "PREPARED"}
     save(attempt / "manifest.json", manifest)
     print(str(attempt), flush=True)
 
 def build(attempt, key):
     path = attempt / "manifest.json"; m = json.loads(path.read_text()); b = m["builds"][key]; root = Path(b["directory"])
+    validate_frozen_inputs(attempt, m)
+    if m.get("experiment") != "EXP-195" and b["state"] != "PREPARED":
+        raise ValueError("build already attempted; no implicit retry")
     env = dict(os.environ, DEVELOPER_DIR=DEVELOPERS[b["sdk"]])
     command = ["xcodebuild", "build-for-testing", "-project", str(root / "AutomaticCoverage.xcodeproj"), "-scheme", "Coverage",
         "-configuration", "Release", "-destination", "generic/platform=iOS Simulator", "-derivedDataPath", str(root / "derived"),
@@ -127,8 +228,11 @@ def build(attempt, key):
 
 def devices(attempt):
     path = attempt / "manifest.json"; m = json.loads(path.read_text())
+    validate_frozen_inputs(attempt, m)
+    if m.get("experiment") != "EXP-195" and m["devices"]:
+        raise ValueError("task-owned devices already created")
     for label, device_type, runtime in [("regular", "iPhone-17", "iOS-27-0"), ("duo", "iPhone-Duo", "iOS-27-1")]:
-        identifier = call(["xcrun", "simctl", "create", "EXP195 " + label + " " + uuid.uuid4().hex[:6],
+        identifier = call(["xcrun", "simctl", "create", namespace(m.get("experiment", "EXP-195")).upper() + " " + label + " " + uuid.uuid4().hex[:6],
             "com.apple.CoreSimulator.SimDeviceType." + device_type, "com.apple.CoreSimulator.SimRuntime." + runtime])
         m["devices"][label] = {"udid": identifier, "owned": True, "runtime": runtime}; save(path, m)
     print(json.dumps(m["devices"]), flush=True)
@@ -138,6 +242,8 @@ def read_rows(path):
 
 def run_cell(attempt, key, device, framework, layout, poses):
     path = attempt / "manifest.json"; m = json.loads(path.read_text()); b = m["builds"][key]
+    validate_frozen_inputs(attempt, m)
+    validate_cell(m, key, device, framework, layout, poses)
     assert b["state"] == "BUILT"
     collector_key = b["arm"] + "-27.1" if device == "duo" else key
     collector = m["builds"][collector_key]
@@ -147,7 +253,7 @@ def run_cell(attempt, key, device, framework, layout, poses):
     destination = m["devices"][device]["udid"]
     call(["xcrun", "simctl", "boot", destination], check=False)
     call(["xcrun", "simctl", "bootstatus", destination, "-b"], timeout=120)
-    run_id = "exp195-" + uuid.uuid4().hex
+    run_id = namespace(m.get("experiment", "EXP-195")) + "-" + uuid.uuid4().hex
     directory = attempt / "runs" / run_id; directory.mkdir(parents=True)
     item = {"run_id": run_id, "build": key, "device": device, "udid": destination,
             "framework": framework, "layout": layout, "poses": poses, "directory": str(directory), "state": "STARTED",
@@ -244,13 +350,16 @@ def run_cell(attempt, key, device, framework, layout, poses):
 
 def main():
     p = argparse.ArgumentParser(); p.add_argument("stage", choices=["prepare", "build", "devices", "run"])
-    p.add_argument("--attempt", type=Path);p.add_argument("--build");p.add_argument("--device", choices=["regular", "duo"])
+    p.add_argument("--definition", type=Path); p.add_argument("--attempt", type=Path);p.add_argument("--build");p.add_argument("--device", choices=["regular", "duo"])
     p.add_argument("--framework", choices=["UIKit", "SwiftUI"]);p.add_argument("--layout", choices=["stack", "split"]);p.add_argument("--poses", action="store_true")
     a = p.parse_args()
-    if a.stage == "prepare": prepare()
+    if a.stage == "prepare": prepare(a.definition)
     elif a.stage == "build": build(a.attempt, a.build)
     elif a.stage == "devices": devices(a.attempt)
     else:
+        current = json.loads((a.attempt / "manifest.json").read_text())
+        validate_frozen_inputs(a.attempt, current)
+        validate_cell(current, a.build, a.device, a.framework, a.layout, a.poses)
         try:
             run_cell(a.attempt, a.build, a.device, a.framework, a.layout, a.poses)
         except Exception as error:

@@ -19,8 +19,9 @@ The sole restart cursor is [.continue-here.md](../../.continue-here.md).
 2. **S2: single-scene Duo readiness by October 16, 2026.** Start from develop plus
    only needed admitted fixes. Close C07–C10's eight missing old-build Duo cells
    through a prepared human-assisted session, then qualify the release candidate's
-   full source/build comparison. Preserve automatic UIKit/SwiftUI limitations when
-   unchanged. H11–H14/H16 cover ordinary changed behavior here; full scene
+   full source/build comparison. Resolve the current baseline native-switch
+   failure under automatic tracking before expanding that comparison. Preserve
+   automatic UIKit/SwiftUI limitations when unchanged. H11–H14/H16 cover ordinary changed behavior here; full scene
    combinations stay S3. Source-level exclusions, deployment15/oldest-runtime17.5,
    ordinary compatibility, applicable application-impact checks, Datadog app evaluation
    and S2:F06 remain.

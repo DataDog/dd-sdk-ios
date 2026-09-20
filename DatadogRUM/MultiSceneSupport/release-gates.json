@@ -273,7 +273,7 @@
           ],
           "decisive_test": "Keep both comparisons separate: old-build vs SDK27 rebuild, and current-vs-baseline RUM SDK on rebuilt apps. Complete eight unresolved old-build Duo cells through prepared human input; rerun only affected candidate cells after F07. No changed automatic detection/owner regression.",
           "environment": "Xcode27.1 Duo simulator with preflighted frozen builds and one human session",
-          "evidence": "EXP-195 accepted SDK27 reference cells remain intact. Eight old-build cells are unresolved; human-assisted input is newly available but not yet qualified.",
+          "evidence": "EXP-210 freezes40 current-source comparison cells and qualifies host guards/builds, but no acceptance cell. Original SDK-on XCTest and same-binary Device Hub switch inputs fail; SDK-disabled and later SDK/action-enabled diagnostic journeys pass. Independent review checkpoints unresolved input variability, establishes no SDK/geometry cause and forbids skipped-arm/implicit retries. No candidate launched or gate closed. Resolve a concrete new discriminator before native comparison expansion; continue independent obligations. Historical EXP-195 source and8 unresolved old-build Duo cells remain separate. Results/EXP-210-s2-automatic-coverage.json owns durable evidence.",
           "required": true
         }
       }
@@ -307,7 +307,7 @@
           ],
           "decisive_test": "Keep both comparisons separate: old-build vs SDK27 rebuild, and current-vs-baseline RUM SDK on rebuilt apps. Complete eight unresolved old-build Duo cells through prepared human input; rerun only affected candidate cells after F07. No changed automatic detection/owner regression.",
           "environment": "Xcode27.1 Duo simulator with preflighted frozen builds and one human session",
-          "evidence": "EXP-195 accepted SDK27 reference cells remain intact. Eight old-build cells are unresolved; human-assisted input is newly available but not yet qualified.",
+          "evidence": "EXP-210 freezes40 current-source comparison cells and qualifies host guards/builds, but no acceptance cell. Original SDK-on XCTest and same-binary Device Hub switch inputs fail; SDK-disabled and later SDK/action-enabled diagnostic journeys pass. Independent review checkpoints unresolved input variability, establishes no SDK/geometry cause and forbids skipped-arm/implicit retries. No candidate launched or gate closed. Resolve a concrete new discriminator before native comparison expansion; continue independent obligations. Historical EXP-195 source and8 unresolved old-build Duo cells remain separate. Results/EXP-210-s2-automatic-coverage.json owns durable evidence.",
           "required": true
         }
       }
@@ -341,7 +341,7 @@
           ],
           "decisive_test": "Keep both comparisons separate: old-build vs SDK27 rebuild, and current-vs-baseline RUM SDK on rebuilt apps. Complete eight unresolved old-build Duo cells through prepared human input; rerun only affected candidate cells after F07. No changed automatic detection/owner regression.",
           "environment": "Xcode27.1 Duo simulator with preflighted frozen builds and one human session",
-          "evidence": "EXP-195 accepted SDK27 reference cells remain intact. Eight old-build cells are unresolved; human-assisted input is newly available but not yet qualified.",
+          "evidence": "EXP-210 freezes40 current-source comparison cells and qualifies host guards/builds, but no acceptance cell. Original SDK-on XCTest and same-binary Device Hub switch inputs fail; SDK-disabled and later SDK/action-enabled diagnostic journeys pass. Independent review checkpoints unresolved input variability, establishes no SDK/geometry cause and forbids skipped-arm/implicit retries. No candidate launched or gate closed. Resolve a concrete new discriminator before native comparison expansion; continue independent obligations. Historical EXP-195 source and8 unresolved old-build Duo cells remain separate. Results/EXP-210-s2-automatic-coverage.json owns durable evidence.",
           "required": true
         }
       }
@@ -375,7 +375,7 @@
           ],
           "decisive_test": "Keep both comparisons separate: old-build vs SDK27 rebuild, and current-vs-baseline RUM SDK on rebuilt apps. Complete eight unresolved old-build Duo cells through prepared human input; rerun only affected candidate cells after F07. No changed automatic detection/owner regression.",
           "environment": "Xcode27.1 Duo simulator with preflighted frozen builds and one human session",
-          "evidence": "EXP-195 accepted SDK27 reference cells remain intact. Eight old-build cells are unresolved; human-assisted input is newly available but not yet qualified.",
+          "evidence": "EXP-210 freezes40 current-source comparison cells and qualifies host guards/builds, but no acceptance cell. Original SDK-on XCTest and same-binary Device Hub switch inputs fail; SDK-disabled and later SDK/action-enabled diagnostic journeys pass. Independent review checkpoints unresolved input variability, establishes no SDK/geometry cause and forbids skipped-arm/implicit retries. No candidate launched or gate closed. Resolve a concrete new discriminator before native comparison expansion; continue independent obligations. Historical EXP-195 source and8 unresolved old-build Duo cells remain separate. Results/EXP-210-s2-automatic-coverage.json owns durable evidence.",
           "required": true
         }
       }

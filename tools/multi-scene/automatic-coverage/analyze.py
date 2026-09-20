@@ -5,6 +5,7 @@ from collections import Counter
 import json
 from pathlib import Path
 from pose import transition_valid
+from run import validate_frozen_inputs
 
 
 def require(value, message):
@@ -155,7 +156,9 @@ def compare(before, after, family, initial_only=False):
 
 
 def analyze(attempt, seen=None):
-    m = json.loads((attempt / "manifest.json").read_text()); result = {"experiment": "EXP-195", "cells": [], "comparisons": [], "boundary": "Local mapper comparison; not backend or physical proof", "declared_multiple_scenes": m.get("declared_multiple_scenes", False)}
+    m = json.loads((attempt / "manifest.json").read_text())
+    validate_frozen_inputs(attempt, m)
+    result = {"experiment": m.get("experiment", "EXP-195"), "cells": [], "comparisons": [], "boundary": "Local mapper comparison; not backend or physical proof", "declared_multiple_scenes": m.get("declared_multiple_scenes", False)}
     seen = set() if seen is None else seen
     require(str(attempt.resolve()) not in seen, "cyclic prior attempts")
     seen.add(str(attempt.resolve()))

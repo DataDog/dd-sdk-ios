@@ -91,3 +91,19 @@ referenced by the owning result. It is not a supported collector. Preserve the
 34 qualified runs across the original matrix, manifest follow-up and replay;
 resume only the eight missing original cells after a material input-environment
 change. The EXP195-owned simulators were deleted after evidence collection.
+
+A newly defined comparison can call `run.py prepare --definition DEFINITION.json`.
+The definition must name its experiment, two complete commit hashes and a finite
+matrix. EXP-210 freezes current develop versus E01; EXP-195 defaults and accepted
+artifacts remain unchanged. Preparation archives committed sources and hashes the
+frozen definition, host helpers, Swift fixtures and generated package. Build,
+run and analysis reject identity drift. Native run IDs and bundle names use the
+new experiment while the unchanged Swift collector keeps its original environment
+variable names.
+
+A custom definition rejects unlisted, already attempted and old-build Duo XCTest
+cells before touching a device. The latter require the separately prepared human
+collector; a failed input path is never retried to obtain a pass. Manifest-true
+variants inherit their own frozen definition and change only the declaration.
+These host controls do not alter the native-input or semantic ownership oracle,
+and local mapper comparisons do not prove backend or active-work fold coverage.

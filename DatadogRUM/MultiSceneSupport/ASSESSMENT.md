@@ -24,6 +24,14 @@ application-performance comparison non-applicable, without a numerical claim.
 Broader view/cache lifetime, current-candidate Duo, active-work and app journeys
 remain open. Historical EXP-195 source differs and cannot certify this candidate.
 
+The [current-source comparison](Results/EXP-210-s2-automatic-coverage.json) is
+checkpointed with unresolved native-input variability. The original SDK-on UIKit
+switch fails through XCTest and direct Device Hub input; both the SDK-disabled
+control and a later SDK/action-enabled control pass the unchanged native journey.
+These mixed outcomes do not isolate an SDK, fixture or input cause. Independent
+review stops further equivalent attempts; no candidate launches or gate credit.
+Preserve all raw outcomes and use a concrete new discriminator before expansion.
+
 Physical Duo hardware is unavailable until after release. S2 may use qualified
 simulator and relevant physical iPhone/iPad evidence, disclosing that uncertainty;
 F09 provides later targeted confirmation, while full F04 remains S3. Unchanged

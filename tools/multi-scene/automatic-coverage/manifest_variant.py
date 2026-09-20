@@ -8,17 +8,18 @@ import plistlib
 import shutil
 import tempfile
 import time
-from run import DEFINITION, REPO, app_metadata, baseline, call, inventory, protected_state, save
+from run import DEFINITION, REPO, app_metadata, baseline, call, inventory, protected_state, save, namespace, validate_frozen_inputs
 
 
 def prepare_variant(parent):
     original = json.loads((parent / 'manifest.json').read_text())
-    definition = json.loads(DEFINITION.read_text())
+    validate_frozen_inputs(parent, original)
+    definition = json.loads(DEFINITION.read_text()) if original.get('experiment', 'EXP-195') == 'EXP-195' else original['definition']
     assert definition['manifest_true_followup']['defined_before_implementation'] is True
     assert definition['manifest_true_followup']['cells'] == 8
     assert original.get('declared_multiple_scenes', False) is False
     assert protected_state(REPO) == original['protected']
-    attempt = Path(tempfile.mkdtemp(prefix='exp195-manifest-true-'))
+    attempt = Path(tempfile.mkdtemp(prefix=namespace(original.get('experiment', 'EXP-195')) + '-manifest-true-'))
     manifest = copy.deepcopy(original)
     manifest.update(created_at=time.time(), head=call(['git', 'rev-parse', 'HEAD']), definition=definition,
                     runs=[], failures=[], declared_multiple_scenes=True, parent_build_attempt=str(parent))

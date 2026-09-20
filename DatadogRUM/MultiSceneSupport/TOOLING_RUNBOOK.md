@@ -2302,6 +2302,29 @@ identity and cleanup. Keep an unqualified collector prototype as an experiment
 artifact instead of adding it to the supported acceptance path. A successful input
 in one control never establishes that the remaining controls or scrolls are usable.
 
+### Current-source automatic comparison (EXP-210)
+
+Custom automatic-coverage runs require an explicit pre-edit definition with full
+baseline/candidate revisions, frozen helpers and fixture sources, and one finite
+cell inventory. A restored historical experiment label, added SDK source file,
+changed definition, repeated cell or blocked old-build Duo input is rejected
+before device mutation. SDK source exclusion does not establish automatic coverage.
+
+The first current-develop regular UIKit switch failure retains synthesized event,
+native JSONL, installed identities and video. The AX element spans372points, but
+XCTest selected a point inside the visible switch; do not infer a center miss from
+AX bounds alone. Check exported video duration against the event time: this capture
+does not cover the later failed switch interval. A successful preceding button
+and absent switch callback do not establish an SDK regression. Define any new input
+diagnostic before execution, preserve the failed cell and keep diagnostic/native
+input success distinct from semantic acceptance.
+A passing SDK-disabled control alone is not SDK-causality proof: EXP-210
+later also passes with SDK/actions enabled. When the planned red arm passes, stop
+the differential pair before its disabled arm, retain mixed outcomes and move to
+independent work. A matching source inventory or selected object-code section is
+not whole-binary identity. Archive raw controls/products before cleaning owned
+simulators; restored evidence paths do not restore live destination identities.
+
 ### EXP-196 unattended physical iPad execution
 
 Use the connected, authorized physical device and a bounded task-owned `caffeinate -d -i -u -t 14400` assertion; record command/PID/start/deadline, renew if needed and stop only that owned process. Device auto-lock is disabled by the user. Physical scene/gesture acceptance still requires native evidence before critical mutations.

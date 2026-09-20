@@ -30,6 +30,13 @@ lifetime. F03 remains composed evidence and A01 a bounded completed workflow.
 Duo/native/app gates, inherited extraction defects and final delivery remain open;
 this source decision is neither a runtime pass nor a new performance result.
 
+The [EXP-210 diagnosis](Results/EXP-210-s2-automatic-coverage.json) retains an open
+native-input observation: two original SDK-on switch inputs fail, while SDK-off
+and later SDK/action-on control journeys pass. Independent review finds no isolated
+SDK/action/geometry cause and checkpoints the variability. No production repair,
+E01 regression or candidate acceptance is established. All identities, strict
+assertions, outcomes and cleanup are preserved; the skipped control stays unrun.
+
 The independent S1 E01 findings are separate from historical D01–D12. Repeated
 request mutation and strong terminal-preparation retention are repaired in
 1bdc9286; [EXP-197](Results/EXP-197-urlsession-extraction.json) and

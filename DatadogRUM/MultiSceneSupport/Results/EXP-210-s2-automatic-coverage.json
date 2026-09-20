@@ -1,0 +1,582 @@
+{
+  "schema_version": 1,
+  "experiment": "EXP-210",
+  "title": "Qualify the frozen E01 S2 automatic UIKit and SwiftUI coverage",
+  "status": "CHECKPOINTED: UNRESOLVED NATIVE-INPUT VARIABILITY; NO GATE CREDIT",
+  "defined_at": "2026-09-20T16:41:07.286869+00:00",
+  "defined_before_implementation": true,
+  "owner": "root",
+  "gates": [
+    "S2:C07",
+    "S2:C08",
+    "S2:C09",
+    "S2:C10",
+    "S2:A02"
+  ],
+  "source_revisions": {
+    "baseline": "62f64d7b655bdc83f3036c4ad81090a270f6202b",
+    "candidate": "652ce169773b0be5b6767179eca8ab5f4cf25f8a"
+  },
+  "production_revision": "1bdc9286c17d69d73e5e41530e6179c72a723368",
+  "source_audit": "Results/EXP-209-s2-source-audit.json",
+  "hypothesis": "For ordinary automatic UIKit/SwiftUI stack and split apps, E01 introduces no new detection/name/count/owner loss relative to current develop on regular iPhone27 and Duo27.1, with genuine pre27/27SDK builds compared separately. Pre-existing omissions remain classified, not repaired or fabricated as exact semantics.",
+  "unchanged_application_contract": "Reuse the complete existing automatic-coverage Swift fixtures and XCTest sources byte-for-byte. No manual view/action integration, semantic/scene API, URLSession active-work configuration or production SDK edit. Record native input effects, per-input RUM ownership and real fold/display geometry before releasing each boundary.",
+  "matrix": {
+    "cells": 40,
+    "original_declaration_cells": 32,
+    "sdk_arms": [
+      "baseline",
+      "candidate"
+    ],
+    "build_sdks": [
+      "26.5",
+      "27.1"
+    ],
+    "devices": [
+      "regular iPhone27.0",
+      "Duo27.1"
+    ],
+    "families": [
+      "UIKit stack",
+      "UIKit split",
+      "SwiftUI stack",
+      "SwiftUI split"
+    ],
+    "inventory": [
+      {
+        "build": "baseline-26.5",
+        "device": "regular",
+        "framework": "UIKit",
+        "layout": "stack",
+        "multiple_scenes": false,
+        "input": "EXISTING XCTEST + ACTUAL DEVICE HUB POSES"
+      },
+      {
+        "build": "baseline-26.5",
+        "device": "regular",
+        "framework": "UIKit",
+        "layout": "split",
+        "multiple_scenes": false,
+        "input": "EXISTING XCTEST + ACTUAL DEVICE HUB POSES"
+      },
+      {
+        "build": "baseline-26.5",
+        "device": "regular",
+        "framework": "SwiftUI",
+        "layout": "stack",
+        "multiple_scenes": false,
+        "input": "EXISTING XCTEST + ACTUAL DEVICE HUB POSES"
+      },
+      {
+        "build": "baseline-26.5",
+        "device": "regular",
+        "framework": "SwiftUI",
+        "layout": "split",
+        "multiple_scenes": false,
+        "input": "EXISTING XCTEST + ACTUAL DEVICE HUB POSES"
+      },
+      {
+        "build": "baseline-26.5",
+        "device": "duo",
+        "framework": "UIKit",
+        "layout": "stack",
+        "multiple_scenes": false,
+        "input": "PREPARED HUMAN COLLECTOR REQUIRED"
+      },
+      {
+        "build": "baseline-26.5",
+        "device": "duo",
+        "framework": "UIKit",
+        "layout": "split",
+        "multiple_scenes": false,
+        "input": "PREPARED HUMAN COLLECTOR REQUIRED"
+      },
+      {
+        "build": "baseline-26.5",
+        "device": "duo",
+        "framework": "SwiftUI",
+        "layout": "stack",
+        "multiple_scenes": false,
+        "input": "PREPARED HUMAN COLLECTOR REQUIRED"
+      },
+      {
+        "build": "baseline-26.5",
+        "device": "duo",
+        "framework": "SwiftUI",
+        "layout": "split",
+        "multiple_scenes": false,
+        "input": "PREPARED HUMAN COLLECTOR REQUIRED"
+      },
+      {
+        "build": "candidate-26.5",
+        "device": "regular",
+        "framework": "UIKit",
+        "layout": "stack",
+        "multiple_scenes": false,
+        "input": "EXISTING XCTEST + ACTUAL DEVICE HUB POSES"
+      },
+      {
+        "build": "candidate-26.5",
+        "device": "regular",
+        "framework": "UIKit",
+        "layout": "split",
+        "multiple_scenes": false,
+        "input": "EXISTING XCTEST + ACTUAL DEVICE HUB POSES"
+      },
+      {
+        "build": "candidate-26.5",
+        "device": "regular",
+        "framework": "SwiftUI",
+        "layout": "stack",
+        "multiple_scenes": false,
+        "input": "EXISTING XCTEST + ACTUAL DEVICE HUB POSES"
+      },
+      {
+        "build": "candidate-26.5",
+        "device": "regular",
+        "framework": "SwiftUI",
+        "layout": "split",
+        "multiple_scenes": false,
+        "input": "EXISTING XCTEST + ACTUAL DEVICE HUB POSES"
+      },
+      {
+        "build": "candidate-26.5",
+        "device": "duo",
+        "framework": "UIKit",
+        "layout": "stack",
+        "multiple_scenes": false,
+        "input": "PREPARED HUMAN COLLECTOR REQUIRED"
+      },
+      {
+        "build": "candidate-26.5",
+        "device": "duo",
+        "framework": "UIKit",
+        "layout": "split",
+        "multiple_scenes": false,
+        "input": "PREPARED HUMAN COLLECTOR REQUIRED"
+      },
+      {
+        "build": "candidate-26.5",
+        "device": "duo",
+        "framework": "SwiftUI",
+        "layout": "stack",
+        "multiple_scenes": false,
+        "input": "PREPARED HUMAN COLLECTOR REQUIRED"
+      },
+      {
+        "build": "candidate-26.5",
+        "device": "duo",
+        "framework": "SwiftUI",
+        "layout": "split",
+        "multiple_scenes": false,
+        "input": "PREPARED HUMAN COLLECTOR REQUIRED"
+      },
+      {
+        "build": "baseline-27.1",
+        "device": "regular",
+        "framework": "UIKit",
+        "layout": "stack",
+        "multiple_scenes": false,
+        "input": "EXISTING XCTEST + ACTUAL DEVICE HUB POSES"
+      },
+      {
+        "build": "baseline-27.1",
+        "device": "regular",
+        "framework": "UIKit",
+        "layout": "split",
+        "multiple_scenes": false,
+        "input": "EXISTING XCTEST + ACTUAL DEVICE HUB POSES"
+      },
+      {
+        "build": "baseline-27.1",
+        "device": "regular",
+        "framework": "SwiftUI",
+        "layout": "stack",
+        "multiple_scenes": false,
+        "input": "EXISTING XCTEST + ACTUAL DEVICE HUB POSES"
+      },
+      {
+        "build": "baseline-27.1",
+        "device": "regular",
+        "framework": "SwiftUI",
+        "layout": "split",
+        "multiple_scenes": false,
+        "input": "EXISTING XCTEST + ACTUAL DEVICE HUB POSES"
+      },
+      {
+        "build": "baseline-27.1",
+        "device": "duo",
+        "framework": "UIKit",
+        "layout": "stack",
+        "multiple_scenes": false,
+        "input": "EXISTING XCTEST + ACTUAL DEVICE HUB POSES"
+      },
+      {
+        "build": "baseline-27.1",
+        "device": "duo",
+        "framework": "UIKit",
+        "layout": "split",
+        "multiple_scenes": false,
+        "input": "EXISTING XCTEST + ACTUAL DEVICE HUB POSES"
+      },
+      {
+        "build": "baseline-27.1",
+        "device": "duo",
+        "framework": "SwiftUI",
+        "layout": "stack",
+        "multiple_scenes": false,
+        "input": "EXISTING XCTEST + ACTUAL DEVICE HUB POSES"
+      },
+      {
+        "build": "baseline-27.1",
+        "device": "duo",
+        "framework": "SwiftUI",
+        "layout": "split",
+        "multiple_scenes": false,
+        "input": "EXISTING XCTEST + ACTUAL DEVICE HUB POSES"
+      },
+      {
+        "build": "candidate-27.1",
+        "device": "regular",
+        "framework": "UIKit",
+        "layout": "stack",
+        "multiple_scenes": false,
+        "input": "EXISTING XCTEST + ACTUAL DEVICE HUB POSES"
+      },
+      {
+        "build": "candidate-27.1",
+        "device": "regular",
+        "framework": "UIKit",
+        "layout": "split",
+        "multiple_scenes": false,
+        "input": "EXISTING XCTEST + ACTUAL DEVICE HUB POSES"
+      },
+      {
+        "build": "candidate-27.1",
+        "device": "regular",
+        "framework": "SwiftUI",
+        "layout": "stack",
+        "multiple_scenes": false,
+        "input": "EXISTING XCTEST + ACTUAL DEVICE HUB POSES"
+      },
+      {
+        "build": "candidate-27.1",
+        "device": "regular",
+        "framework": "SwiftUI",
+        "layout": "split",
+        "multiple_scenes": false,
+        "input": "EXISTING XCTEST + ACTUAL DEVICE HUB POSES"
+      },
+      {
+        "build": "candidate-27.1",
+        "device": "duo",
+        "framework": "UIKit",
+        "layout": "stack",
+        "multiple_scenes": false,
+        "input": "EXISTING XCTEST + ACTUAL DEVICE HUB POSES"
+      },
+      {
+        "build": "candidate-27.1",
+        "device": "duo",
+        "framework": "UIKit",
+        "layout": "split",
+        "multiple_scenes": false,
+        "input": "EXISTING XCTEST + ACTUAL DEVICE HUB POSES"
+      },
+      {
+        "build": "candidate-27.1",
+        "device": "duo",
+        "framework": "SwiftUI",
+        "layout": "stack",
+        "multiple_scenes": false,
+        "input": "EXISTING XCTEST + ACTUAL DEVICE HUB POSES"
+      },
+      {
+        "build": "candidate-27.1",
+        "device": "duo",
+        "framework": "SwiftUI",
+        "layout": "split",
+        "multiple_scenes": false,
+        "input": "EXISTING XCTEST + ACTUAL DEVICE HUB POSES"
+      },
+      {
+        "build": "baseline-27.1",
+        "device": "duo",
+        "framework": "UIKit",
+        "layout": "stack",
+        "multiple_scenes": true,
+        "actual_scenes": 1,
+        "input": "EXISTING XCTEST + ACTUAL DEVICE HUB POSES"
+      },
+      {
+        "build": "baseline-27.1",
+        "device": "duo",
+        "framework": "UIKit",
+        "layout": "split",
+        "multiple_scenes": true,
+        "actual_scenes": 1,
+        "input": "EXISTING XCTEST + ACTUAL DEVICE HUB POSES"
+      },
+      {
+        "build": "baseline-27.1",
+        "device": "duo",
+        "framework": "SwiftUI",
+        "layout": "stack",
+        "multiple_scenes": true,
+        "actual_scenes": 1,
+        "input": "EXISTING XCTEST + ACTUAL DEVICE HUB POSES"
+      },
+      {
+        "build": "baseline-27.1",
+        "device": "duo",
+        "framework": "SwiftUI",
+        "layout": "split",
+        "multiple_scenes": true,
+        "actual_scenes": 1,
+        "input": "EXISTING XCTEST + ACTUAL DEVICE HUB POSES"
+      },
+      {
+        "build": "candidate-27.1",
+        "device": "duo",
+        "framework": "UIKit",
+        "layout": "stack",
+        "multiple_scenes": true,
+        "actual_scenes": 1,
+        "input": "EXISTING XCTEST + ACTUAL DEVICE HUB POSES"
+      },
+      {
+        "build": "candidate-27.1",
+        "device": "duo",
+        "framework": "UIKit",
+        "layout": "split",
+        "multiple_scenes": true,
+        "actual_scenes": 1,
+        "input": "EXISTING XCTEST + ACTUAL DEVICE HUB POSES"
+      },
+      {
+        "build": "candidate-27.1",
+        "device": "duo",
+        "framework": "SwiftUI",
+        "layout": "stack",
+        "multiple_scenes": true,
+        "actual_scenes": 1,
+        "input": "EXISTING XCTEST + ACTUAL DEVICE HUB POSES"
+      },
+      {
+        "build": "candidate-27.1",
+        "device": "duo",
+        "framework": "SwiftUI",
+        "layout": "split",
+        "multiple_scenes": true,
+        "actual_scenes": 1,
+        "input": "EXISTING XCTEST + ACTUAL DEVICE HUB POSES"
+      }
+    ]
+  },
+  "manifest_true_followup": {
+    "defined_before_implementation": true,
+    "cells": 8,
+    "scope": "SDK27.1 Duo, both source arms and all four families; change only UIApplicationSupportsMultipleScenes in copied Info.plist and prove one actual scene. Keep code bytes unchanged.",
+    "run_after": "Original-declaration SDK27 cells qualified"
+  },
+  "host_adaptation": {
+    "allowed_paths": [
+      "tools/multi-scene/automatic-coverage/run.py",
+      "tools/multi-scene/automatic-coverage/analyze.py",
+      "tools/multi-scene/automatic-coverage/manifest_variant.py",
+      "tools/multi-scene/automatic-coverage/test_run.py",
+      "tools/multi-scene/automatic-coverage/README.md"
+    ],
+    "scope": "Add explicit experiment/definition/source identity and finite matrix/blocked-input checks; preserve EXP195 defaults and its frozen artifacts. Analyzer change limited to experiment label/binding, not semantic acceptance. Retain original fixture, pose receipts, compare/qualify predicates and controls.",
+    "negative_controls": [
+      "Reject symbolic/noncommit/identical or definition-mismatched revision inputs before workspace creation",
+      "Reject changed definition/source identity or helper/fixture bytes before execution",
+      "Reject cell outside the fixed matrix and second run for an already attempted cell",
+      "Reject genuineSDK26.5 Duo execution with the known failed XCTest input path",
+      "Keep original stale-run, missing-native-effect, wrong-owner, duplicate-action, late-boundary and pose controls"
+    ]
+  },
+  "environment": {
+    "builds": [
+      "Xcode26.6/17F113 genuine SDK26.5",
+      "Xcode27.1/27A9269 genuine SDK27.1"
+    ],
+    "runtime_control": "Xcode27.1; rediscovered regular iPhone27.0/24A434 and Duo27.1/24A94401",
+    "fixture_deployment": "iOS16 for NavigationStack/SplitView; SDKdeployment15 qualification retained separately",
+    "backend": "Local pass-through mapper only; no Datadog ingestion, active-work or live-customer claim"
+  },
+  "budgets": {
+    "builds": 4,
+    "build_seconds_each": 900,
+    "initial_native_attempts": 32,
+    "pending_human_cells": 8,
+    "regular_cell_seconds": 220,
+    "duo_cell_seconds": 950,
+    "native_readiness_seconds": 15,
+    "duo_pose_seconds_each": 180,
+    "termination_grace_seconds": 20,
+    "cleanup_command_seconds_each": 120,
+    "engineering_checkpoint_minutes": 90
+  },
+  "execution_order": [
+    "Freeze host changes and controls before build",
+    "Build baseline27.1 and candidate27.1, then qualify regular UIKit-stack baseline/candidate as first end-to-end pair before matrix expansion",
+    "Run remaining SDK27 regular and Duo original-declaration source pairs, then8 manifest-true Duo cells",
+    "Build genuineSDK26.5 arms and run regular cells",
+    "Keep8 current old-build Duo cells pending a separately defined human collector and complete prepared session; no failed XCTest retry"
+  ],
+  "stop_rules": [
+    "A missing source/build/install/native boundary, duplicate run identity, timeout or assertion failure leaves the cell unqualified and stops that path; record diagnosis before any separately admitted correction",
+    "Any difference in automatic view/action detection/name/count/owner requires classification before gate closure; no arbitrary tolerance or silent aggregate-only oracle",
+    "No retries merely to obtain a pass; preserve all failed/incomplete artifacts and original deadlines",
+    "No new input mechanism or weakened predicate in this admission; changed human collector needs a defined amendment and independent oracle review",
+    "Engineering checkpoint prompts scope decision; no implicit keep-awake renewal after18:09:06UTC",
+    "Historical EXP195 source-mismatched cells remain untouched; its8 original unresolved cells stay documented; no claim that this matrix retroactively completes them"
+  ],
+  "limits": [
+    "Source-only EXP209 does not establish Duo behavior.",
+    "P03,H11-H14/H16,T03/T08/T10,F08,A02andF06 require their own complete invariants; this automatic fixture does not qualify them.",
+    "No physicalDuo/performance/fullmulti-scene/semanticAPI/backend acceptance."
+  ],
+  "attempts": [
+    {
+      "directory": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp210-automatic-kxbfjmha",
+      "state": "SDK27 builds ready; first baseline regular UIKit-stack INPUT_OR_FIXTURE_FAILED; cleanup PASS",
+      "source_arms": {
+        "baseline-26.5": {
+          "revision": "62f64d7b655bdc83f3036c4ad81090a270f6202b",
+          "toolchain": "Xcode 26.6\nBuild version 17F113",
+          "sdk_source_sha256": "3e79aecf1c067ab2400030896770c91420a7acbb265c4f8c9c38eab932f86c92",
+          "package_sha256": "087c70faa52a276a5143b72e7a34ffcee770ed5e66acd6cfc1287b497a7333fa"
+        },
+        "baseline-27.1": {
+          "revision": "62f64d7b655bdc83f3036c4ad81090a270f6202b",
+          "toolchain": "Xcode 27.1\nBuild version 27A9269",
+          "sdk_source_sha256": "3e79aecf1c067ab2400030896770c91420a7acbb265c4f8c9c38eab932f86c92",
+          "package_sha256": "087c70faa52a276a5143b72e7a34ffcee770ed5e66acd6cfc1287b497a7333fa"
+        },
+        "candidate-26.5": {
+          "revision": "652ce169773b0be5b6767179eca8ab5f4cf25f8a",
+          "toolchain": "Xcode 26.6\nBuild version 17F113",
+          "sdk_source_sha256": "809206f778621a08978896c1666edc78f2b60754e35f3c70658fc0453ff47c80",
+          "package_sha256": "087c70faa52a276a5143b72e7a34ffcee770ed5e66acd6cfc1287b497a7333fa"
+        },
+        "candidate-27.1": {
+          "revision": "652ce169773b0be5b6767179eca8ab5f4cf25f8a",
+          "toolchain": "Xcode 27.1\nBuild version 27A9269",
+          "sdk_source_sha256": "809206f778621a08978896c1666edc78f2b60754e35f3c70658fc0453ff47c80",
+          "package_sha256": "087c70faa52a276a5143b72e7a34ffcee770ed5e66acd6cfc1287b497a7333fa"
+        }
+      },
+      "native_launches": 1,
+      "devices": {
+        "duo": {
+          "owned": true,
+          "runtime": "iOS-27-1",
+          "udid": "E9DA540A-E288-4A70-9B5B-5F0D3F64BFB4"
+        },
+        "regular": {
+          "owned": true,
+          "runtime": "iOS-27-0",
+          "udid": "57624E40-00ED-4445-AFAB-867D220B8B98"
+        }
+      },
+      "failed_run": {
+        "run_id": "exp210-0b00537694aa4b55995e562aa2832a38",
+        "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp210-automatic-kxbfjmha/runs/exp210-0b00537694aa4b55995e562aa2832a38",
+        "test_exit": 65,
+        "tests_passed": 0,
+        "tests_failed": 1,
+        "failure": "home.toggle XCTest value-change wait timed out; no matching native toggle callback",
+        "cleanup": true,
+        "candidate_launched": false,
+        "disposition": "Unqualified input cell. No retry admitted. Inspect retained native/XCTest/video evidence before a separately defined amendment."
+      }
+    }
+  ],
+  "gates_closed": [],
+  "initial_definition_sha256": "4bf80e5514beda016429bdb475dc16676708f1d8385ac2a19a342e05cbd4ae60",
+  "host_preflight": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp210-preflight-5xjjt3mg/preflight.json",
+  "host_controls": {
+    "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp210-automatic-kxbfjmha/host-controls.json",
+    "sha256": "212474f4b8c7485c09f3a65843c9db026d4ea362fa7969207885e40cf97649f9",
+    "tests": 87,
+    "result": "PASS"
+  },
+  "execution_root": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp210-automatic-kxbfjmha",
+  "frozen_definition_sha256": "0d19cd31b52d7121b312f79dcaf817daa4926855e61f5e4bad52fc254376257b",
+  "host_review": {
+    "status": "PASS",
+    "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp210-automatic-kxbfjmha/host-review.json",
+    "sha256": "1e9f9c0b02d0ed0ef1331f53bddfdedef3fdd47d50f397fd6f5e179f6047fc10",
+    "acceptance": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp210-automatic-kxbfjmha/host-review-acceptance.json"
+  },
+  "updated_at": "2026-09-20T17:42:45.182777+00:00",
+  "input_diagnostic_definition": {
+    "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp210-automatic-kxbfjmha/D1-input-diagnostic-definition.json",
+    "sha256": "e5c9a6f5743a120680de3e692837cbfff400fdfb2277dac8bed61b53dc8156a0",
+    "state": "EXECUTED; SWITCH EFFECT FAILED"
+  },
+  "diagnostics": [
+    {
+      "id": "D1",
+      "result": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp210-automatic-kxbfjmha/exp210-d1-dcd2bebc7a3442d8946ad7f1aa4a12c1/result.json",
+      "run_id": "exp210-d1-dcd2bebc7a3442d8946ad7f1aa4a12c1",
+      "state": "DIAGNOSTIC_FAILED",
+      "cleanup": "PASS",
+      "finding": "Same baseline app/code/plist through Device Hub produces native button effect but no switch effect within15s. AX value0 and receipt1 after one visible track click. Not specific to XCTest; SDK/fixture/runtime cause still unresolved.",
+      "screenshot_limit": "Saved after-switch observation screenshot was captured after cleanup; only the immediate CUA AX/screenshot covers the observed off state. Do not use the later saved screenshot as in-app switch evidence."
+    }
+  ],
+  "sdk_disabled_control": {
+    "definition": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp210-automatic-kxbfjmha/D2-sdk-disabled-definition.json",
+    "definition_sha256": "d12a5fdc994bc86ce2487d57e8edb0fc6f5239b3f7be92d61708848ed2db0def",
+    "directory": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp210-automatic-kxbfjmha/D2-sdk-disabled",
+    "source_validation": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp210-automatic-kxbfjmha/D2-sdk-disabled/source-validation.json",
+    "review": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp210-automatic-kxbfjmha/D2-sdk-disabled/review.json",
+    "state": "PASS AS DIAGNOSTIC",
+    "result": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp210-automatic-kxbfjmha/D2-sdk-disabled/exp210-d2-edd2bca5c89e470084936425f9d8650d/result.json",
+    "native_tests_passed": 1,
+    "rum_rows": 0,
+    "native_switch_callbacks": 2,
+    "cleanup": true
+  },
+  "action_differential_control": {
+    "definition": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp210-automatic-kxbfjmha/D3-action-differential-definition.json",
+    "definition_sha256": "bec4b14f5aa453a379e754d5d624fefa8078130ce2009d56735678b3ac22c3fe",
+    "directory": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp210-automatic-kxbfjmha/D3-action-differential",
+    "state": "INCONCLUSIVE; ENABLED PASSED; DISABLED SKIPPED BY STOP RULE",
+    "result": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp210-automatic-kxbfjmha/D3-action-differential/exp210-d3-enabled-2aa377d4e1434f099a8e3177fef94f5d/result.json",
+    "native_tests_passed": 1,
+    "view_rows": 19,
+    "automatic_action_rows": 11,
+    "cleanup": true
+  },
+  "disposition": {
+    "decision": "Preserve mixed SDK-on outcomes; no SDK, action-instrumentation, fixture-geometry or XCTest-exclusive cause established. No repair or failed-cell retry admitted. Continue independent S2:P03/acceptance preparation.",
+    "acceptance_native_attempts": 1,
+    "qualified_acceptance_cells": 0,
+    "diagnostic_launches": 3,
+    "diagnostic_native_passes": 2,
+    "candidate_launches": 0,
+    "d3_disabled_launched": false,
+    "independent_review": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp210-automatic-kxbfjmha/causality-review.json",
+    "review_sha256": "3c315191e2db1e5372ad5bc26ea439b988e1f0a7ac1b0167e8944ebe11d9fb80",
+    "all_app_cleanup_passed": true,
+    "task_owned_devices_deleted": true,
+    "gates_closed": []
+  },
+  "durable_evidence": {
+    "bytes": 662288897,
+    "causality_review_sha256": "3c315191e2db1e5372ad5bc26ea439b988e1f0a7ac1b0167e8944ebe11d9fb80",
+    "directory": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp210-input-checkpoint-sfs42_ix",
+    "file_count": 3020,
+    "manifest_sha256": "153f2bd34d4d89ec3ce613709bbc03cb5d293dc03f38a50dfd163efb6fee5eb0",
+    "task_devices_cleaned": true,
+    "verified": true
+  },
+  "object_comparison": {
+    "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp210-automatic-kxbfjmha/D3-sdk-object-comparison.json",
+    "scope": "388 common SDK objects; full files differ. Five selected __TEXT.__text sections match, including event and scroll instrumentation/proxy. This is not whole-binary identity or causal proof."
+  }
+}
