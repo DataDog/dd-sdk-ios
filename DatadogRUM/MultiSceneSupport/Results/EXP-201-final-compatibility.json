@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "experiment": "EXP-201",
-  "status": "DEFINED BEFORE EXECUTION",
+  "status": "S1:F02 PASS; M02-M11 PASS; M01 inherited oracle defect proven, test correction pending",
   "defined_at": "2026-09-20T00:24:05.611441+00:00",
   "gate": "S1:F03",
   "owner": "SDK implementer",
@@ -30,9 +30,1931 @@
       "artifact_root": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp201-final-compatibility-g06p0stz",
       "source_manifest": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp201-final-compatibility-g06p0stz/source-manifest.json",
       "source_manifest_sha256": "d2759ed7288db99c809b0893719842e9f95485d3d33050883c51542c5a2f5350",
-      "status": "SOURCE FROZEN; NO NEW BUILD YET",
+      "status": "M02-M09 PASS",
       "files": 1177
     }
   ],
-  "result": null
+  "result": {
+    "compatibility": "M02-M11 PASS; M01 original FAIL, inherited test-oracle defect reproduced in both arms",
+    "support_documentation": "S1:F02 PASS",
+    "release_claim": false
+  },
+  "platforms": {
+    "status": "PASS",
+    "summary": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp201-final-compatibility-g06p0stz/platform-summary.json",
+    "sha256": "ced2fa5e7e1dbaf84159f13eed157773c5928f6529a4b1b98f8c3eeb19111bf2",
+    "cells": [
+      {
+        "cell": "M04",
+        "platform": "ios",
+        "scheme": "Datadog-Package",
+        "configuration": "Debug",
+        "returncode": 0,
+        "status": "PASS",
+        "source_unchanged": true,
+        "log": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp201-final-compatibility-g06p0stz/logs/M04-ios-Datadog-Package-Debug.log",
+        "log_sha256": "9220e5d3b5c480fc6d763fd519f9de0a96929c1a3d5b8c5ff0fc3ea4145954a0",
+        "modules": {
+          "DatadogCore": {
+            "expected_swift_sources": 79,
+            "observed_source_count": 79,
+            "missing": [],
+            "emitted_module_count": 2
+          },
+          "DatadogInternal": {
+            "expected_swift_sources": 160,
+            "observed_source_count": 160,
+            "missing": [],
+            "emitted_module_count": 2
+          },
+          "DatadogLogs": {
+            "expected_swift_sources": 18,
+            "observed_source_count": 18,
+            "missing": [],
+            "emitted_module_count": 2
+          },
+          "DatadogTrace": {
+            "expected_swift_sources": 54,
+            "observed_source_count": 54,
+            "missing": [],
+            "emitted_module_count": 2
+          },
+          "DatadogRUM": {
+            "expected_swift_sources": 144,
+            "observed_source_count": 144,
+            "missing": [],
+            "emitted_module_count": 2
+          },
+          "DatadogCrashReporting": {
+            "expected_swift_sources": 14,
+            "observed_source_count": 14,
+            "missing": [],
+            "emitted_module_count": 2
+          },
+          "DatadogWebViewTracking": {
+            "expected_swift_sources": 6,
+            "observed_source_count": 6,
+            "missing": [],
+            "emitted_module_count": 2
+          },
+          "DatadogSessionReplay": {
+            "expected_swift_sources": 159,
+            "observed_source_count": 159,
+            "missing": [],
+            "emitted_module_count": 2
+          },
+          "DatadogProfiling": {
+            "expected_swift_sources": 17,
+            "observed_source_count": 17,
+            "missing": [],
+            "emitted_module_count": 2
+          },
+          "DatadogFlags": {
+            "expected_swift_sources": 32,
+            "observed_source_count": 32,
+            "missing": [],
+            "emitted_module_count": 2
+          }
+        }
+      },
+      {
+        "cell": "M04",
+        "platform": "ios",
+        "scheme": "Datadog-Package",
+        "configuration": "Release",
+        "returncode": 0,
+        "status": "PASS",
+        "source_unchanged": true,
+        "log": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp201-final-compatibility-g06p0stz/logs/M04-ios-Datadog-Package-Release.log",
+        "log_sha256": "e616fbae6a1fb5af32750f4b3152724e96c5cc2bc1d09cac8007e153c9c2709e",
+        "modules": {
+          "DatadogCore": {
+            "expected_swift_sources": 79,
+            "observed_source_count": 79,
+            "missing": [],
+            "emitted_module_count": 2
+          },
+          "DatadogInternal": {
+            "expected_swift_sources": 160,
+            "observed_source_count": 160,
+            "missing": [],
+            "emitted_module_count": 2
+          },
+          "DatadogLogs": {
+            "expected_swift_sources": 18,
+            "observed_source_count": 18,
+            "missing": [],
+            "emitted_module_count": 2
+          },
+          "DatadogTrace": {
+            "expected_swift_sources": 54,
+            "observed_source_count": 54,
+            "missing": [],
+            "emitted_module_count": 2
+          },
+          "DatadogRUM": {
+            "expected_swift_sources": 144,
+            "observed_source_count": 144,
+            "missing": [],
+            "emitted_module_count": 2
+          },
+          "DatadogCrashReporting": {
+            "expected_swift_sources": 14,
+            "observed_source_count": 14,
+            "missing": [],
+            "emitted_module_count": 2
+          },
+          "DatadogWebViewTracking": {
+            "expected_swift_sources": 6,
+            "observed_source_count": 6,
+            "missing": [],
+            "emitted_module_count": 2
+          },
+          "DatadogSessionReplay": {
+            "expected_swift_sources": 159,
+            "observed_source_count": 159,
+            "missing": [],
+            "emitted_module_count": 2
+          },
+          "DatadogProfiling": {
+            "expected_swift_sources": 17,
+            "observed_source_count": 17,
+            "missing": [],
+            "emitted_module_count": 2
+          },
+          "DatadogFlags": {
+            "expected_swift_sources": 32,
+            "observed_source_count": 32,
+            "missing": [],
+            "emitted_module_count": 2
+          }
+        }
+      },
+      {
+        "cell": "M05",
+        "platform": "tvos",
+        "scheme": "Datadog-Package",
+        "configuration": "Debug",
+        "returncode": 0,
+        "status": "PASS",
+        "source_unchanged": true,
+        "log": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp201-final-compatibility-g06p0stz/logs/M05-tvos-Datadog-Package-Debug.log",
+        "log_sha256": "0b2360b83937df3b2f225a6c308e44b9801af96b3c04b859d6959a433f2ff0a8",
+        "modules": {
+          "DatadogCore": {
+            "expected_swift_sources": 79,
+            "observed_source_count": 79,
+            "missing": [],
+            "emitted_module_count": 2
+          },
+          "DatadogInternal": {
+            "expected_swift_sources": 160,
+            "observed_source_count": 160,
+            "missing": [],
+            "emitted_module_count": 2
+          },
+          "DatadogLogs": {
+            "expected_swift_sources": 18,
+            "observed_source_count": 18,
+            "missing": [],
+            "emitted_module_count": 2
+          },
+          "DatadogTrace": {
+            "expected_swift_sources": 54,
+            "observed_source_count": 54,
+            "missing": [],
+            "emitted_module_count": 2
+          },
+          "DatadogRUM": {
+            "expected_swift_sources": 144,
+            "observed_source_count": 144,
+            "missing": [],
+            "emitted_module_count": 2
+          },
+          "DatadogCrashReporting": {
+            "expected_swift_sources": 14,
+            "observed_source_count": 14,
+            "missing": [],
+            "emitted_module_count": 2
+          },
+          "DatadogWebViewTracking": {
+            "expected_swift_sources": 6,
+            "observed_source_count": 6,
+            "missing": [],
+            "emitted_module_count": 2
+          },
+          "DatadogSessionReplay": {
+            "expected_swift_sources": 159,
+            "observed_source_count": 159,
+            "missing": [],
+            "emitted_module_count": 2
+          },
+          "DatadogProfiling": {
+            "expected_swift_sources": 17,
+            "observed_source_count": 17,
+            "missing": [],
+            "emitted_module_count": 2
+          },
+          "DatadogFlags": {
+            "expected_swift_sources": 32,
+            "observed_source_count": 32,
+            "missing": [],
+            "emitted_module_count": 2
+          }
+        }
+      },
+      {
+        "cell": "M05",
+        "platform": "tvos",
+        "scheme": "Datadog-Package",
+        "configuration": "Release",
+        "returncode": 0,
+        "status": "PASS",
+        "source_unchanged": true,
+        "log": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp201-final-compatibility-g06p0stz/logs/M05-tvos-Datadog-Package-Release.log",
+        "log_sha256": "a390c0c17779c2be08fa48f1e0ce4a8271c8e481e0c92d0d556795b9dec24dc8",
+        "modules": {
+          "DatadogCore": {
+            "expected_swift_sources": 79,
+            "observed_source_count": 79,
+            "missing": [],
+            "emitted_module_count": 2
+          },
+          "DatadogInternal": {
+            "expected_swift_sources": 160,
+            "observed_source_count": 160,
+            "missing": [],
+            "emitted_module_count": 2
+          },
+          "DatadogLogs": {
+            "expected_swift_sources": 18,
+            "observed_source_count": 18,
+            "missing": [],
+            "emitted_module_count": 2
+          },
+          "DatadogTrace": {
+            "expected_swift_sources": 54,
+            "observed_source_count": 54,
+            "missing": [],
+            "emitted_module_count": 2
+          },
+          "DatadogRUM": {
+            "expected_swift_sources": 144,
+            "observed_source_count": 144,
+            "missing": [],
+            "emitted_module_count": 2
+          },
+          "DatadogCrashReporting": {
+            "expected_swift_sources": 14,
+            "observed_source_count": 14,
+            "missing": [],
+            "emitted_module_count": 2
+          },
+          "DatadogWebViewTracking": {
+            "expected_swift_sources": 6,
+            "observed_source_count": 6,
+            "missing": [],
+            "emitted_module_count": 2
+          },
+          "DatadogSessionReplay": {
+            "expected_swift_sources": 159,
+            "observed_source_count": 159,
+            "missing": [],
+            "emitted_module_count": 2
+          },
+          "DatadogProfiling": {
+            "expected_swift_sources": 17,
+            "observed_source_count": 17,
+            "missing": [],
+            "emitted_module_count": 2
+          },
+          "DatadogFlags": {
+            "expected_swift_sources": 32,
+            "observed_source_count": 32,
+            "missing": [],
+            "emitted_module_count": 2
+          }
+        }
+      },
+      {
+        "cell": "M06",
+        "platform": "watchos",
+        "scheme": "Datadog-Package",
+        "configuration": "Debug",
+        "returncode": 0,
+        "status": "PASS",
+        "source_unchanged": true,
+        "log": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp201-final-compatibility-g06p0stz/logs/M06-watchos-Datadog-Package-Debug.log",
+        "log_sha256": "66d48a5d60632023279201fd16f88ad2734c1b7b6544bf6ff8e0e11fc71a8396",
+        "modules": {
+          "DatadogCore": {
+            "expected_swift_sources": 79,
+            "observed_source_count": 79,
+            "missing": [],
+            "emitted_module_count": 3
+          },
+          "DatadogInternal": {
+            "expected_swift_sources": 160,
+            "observed_source_count": 160,
+            "missing": [],
+            "emitted_module_count": 3
+          },
+          "DatadogLogs": {
+            "expected_swift_sources": 18,
+            "observed_source_count": 18,
+            "missing": [],
+            "emitted_module_count": 3
+          },
+          "DatadogTrace": {
+            "expected_swift_sources": 54,
+            "observed_source_count": 54,
+            "missing": [],
+            "emitted_module_count": 3
+          },
+          "DatadogRUM": {
+            "expected_swift_sources": 144,
+            "observed_source_count": 144,
+            "missing": [],
+            "emitted_module_count": 3
+          },
+          "DatadogCrashReporting": {
+            "expected_swift_sources": 14,
+            "observed_source_count": 14,
+            "missing": [],
+            "emitted_module_count": 3
+          },
+          "DatadogWebViewTracking": {
+            "expected_swift_sources": 6,
+            "observed_source_count": 6,
+            "missing": [],
+            "emitted_module_count": 3
+          },
+          "DatadogSessionReplay": {
+            "expected_swift_sources": 159,
+            "observed_source_count": 159,
+            "missing": [],
+            "emitted_module_count": 3
+          },
+          "DatadogProfiling": {
+            "expected_swift_sources": 17,
+            "observed_source_count": 17,
+            "missing": [],
+            "emitted_module_count": 3
+          },
+          "DatadogFlags": {
+            "expected_swift_sources": 32,
+            "observed_source_count": 32,
+            "missing": [],
+            "emitted_module_count": 3
+          }
+        }
+      },
+      {
+        "cell": "M06",
+        "platform": "watchos",
+        "scheme": "Datadog-Package",
+        "configuration": "Release",
+        "returncode": 0,
+        "status": "PASS",
+        "source_unchanged": true,
+        "log": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp201-final-compatibility-g06p0stz/logs/M06-watchos-Datadog-Package-Release.log",
+        "log_sha256": "b71069a054ec632152a9f287d952b0c93a51b1e6a1d3ea25764b8d996ea50fda",
+        "modules": {
+          "DatadogCore": {
+            "expected_swift_sources": 79,
+            "observed_source_count": 79,
+            "missing": [],
+            "emitted_module_count": 3
+          },
+          "DatadogInternal": {
+            "expected_swift_sources": 160,
+            "observed_source_count": 160,
+            "missing": [],
+            "emitted_module_count": 3
+          },
+          "DatadogLogs": {
+            "expected_swift_sources": 18,
+            "observed_source_count": 18,
+            "missing": [],
+            "emitted_module_count": 3
+          },
+          "DatadogTrace": {
+            "expected_swift_sources": 54,
+            "observed_source_count": 54,
+            "missing": [],
+            "emitted_module_count": 3
+          },
+          "DatadogRUM": {
+            "expected_swift_sources": 144,
+            "observed_source_count": 144,
+            "missing": [],
+            "emitted_module_count": 3
+          },
+          "DatadogCrashReporting": {
+            "expected_swift_sources": 14,
+            "observed_source_count": 14,
+            "missing": [],
+            "emitted_module_count": 3
+          },
+          "DatadogWebViewTracking": {
+            "expected_swift_sources": 6,
+            "observed_source_count": 6,
+            "missing": [],
+            "emitted_module_count": 3
+          },
+          "DatadogSessionReplay": {
+            "expected_swift_sources": 159,
+            "observed_source_count": 159,
+            "missing": [],
+            "emitted_module_count": 3
+          },
+          "DatadogProfiling": {
+            "expected_swift_sources": 17,
+            "observed_source_count": 17,
+            "missing": [],
+            "emitted_module_count": 3
+          },
+          "DatadogFlags": {
+            "expected_swift_sources": 32,
+            "observed_source_count": 32,
+            "missing": [],
+            "emitted_module_count": 3
+          }
+        }
+      },
+      {
+        "cell": "M07",
+        "platform": "visionos",
+        "scheme": "Datadog-Package",
+        "configuration": "Debug",
+        "returncode": 0,
+        "status": "PASS",
+        "source_unchanged": true,
+        "log": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp201-final-compatibility-g06p0stz/logs/M07-visionos-Datadog-Package-Debug.log",
+        "log_sha256": "5de413f6a54f8ec2cb2fda365a6fa449cc9c477f06d1c4f243710770a777e2ef",
+        "modules": {
+          "DatadogCore": {
+            "expected_swift_sources": 79,
+            "observed_source_count": 79,
+            "missing": [],
+            "emitted_module_count": 2
+          },
+          "DatadogInternal": {
+            "expected_swift_sources": 160,
+            "observed_source_count": 160,
+            "missing": [],
+            "emitted_module_count": 2
+          },
+          "DatadogLogs": {
+            "expected_swift_sources": 18,
+            "observed_source_count": 18,
+            "missing": [],
+            "emitted_module_count": 2
+          },
+          "DatadogTrace": {
+            "expected_swift_sources": 54,
+            "observed_source_count": 54,
+            "missing": [],
+            "emitted_module_count": 2
+          },
+          "DatadogRUM": {
+            "expected_swift_sources": 144,
+            "observed_source_count": 144,
+            "missing": [],
+            "emitted_module_count": 2
+          },
+          "DatadogCrashReporting": {
+            "expected_swift_sources": 14,
+            "observed_source_count": 14,
+            "missing": [],
+            "emitted_module_count": 2
+          },
+          "DatadogWebViewTracking": {
+            "expected_swift_sources": 6,
+            "observed_source_count": 6,
+            "missing": [],
+            "emitted_module_count": 2
+          },
+          "DatadogSessionReplay": {
+            "expected_swift_sources": 159,
+            "observed_source_count": 159,
+            "missing": [],
+            "emitted_module_count": 2
+          },
+          "DatadogProfiling": {
+            "expected_swift_sources": 17,
+            "observed_source_count": 17,
+            "missing": [],
+            "emitted_module_count": 2
+          },
+          "DatadogFlags": {
+            "expected_swift_sources": 32,
+            "observed_source_count": 32,
+            "missing": [],
+            "emitted_module_count": 2
+          }
+        }
+      },
+      {
+        "cell": "M07",
+        "platform": "visionos",
+        "scheme": "Datadog-Package",
+        "configuration": "Release",
+        "returncode": 0,
+        "status": "PASS",
+        "source_unchanged": true,
+        "log": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp201-final-compatibility-g06p0stz/logs/M07-visionos-Datadog-Package-Release.log",
+        "log_sha256": "6e45c202c6163dd2841cdd0e29f7c6c86c4921f352a088bb70a74053d59f09c4",
+        "modules": {
+          "DatadogCore": {
+            "expected_swift_sources": 79,
+            "observed_source_count": 79,
+            "missing": [],
+            "emitted_module_count": 2
+          },
+          "DatadogInternal": {
+            "expected_swift_sources": 160,
+            "observed_source_count": 160,
+            "missing": [],
+            "emitted_module_count": 2
+          },
+          "DatadogLogs": {
+            "expected_swift_sources": 18,
+            "observed_source_count": 18,
+            "missing": [],
+            "emitted_module_count": 2
+          },
+          "DatadogTrace": {
+            "expected_swift_sources": 54,
+            "observed_source_count": 54,
+            "missing": [],
+            "emitted_module_count": 2
+          },
+          "DatadogRUM": {
+            "expected_swift_sources": 144,
+            "observed_source_count": 144,
+            "missing": [],
+            "emitted_module_count": 2
+          },
+          "DatadogCrashReporting": {
+            "expected_swift_sources": 14,
+            "observed_source_count": 14,
+            "missing": [],
+            "emitted_module_count": 2
+          },
+          "DatadogWebViewTracking": {
+            "expected_swift_sources": 6,
+            "observed_source_count": 6,
+            "missing": [],
+            "emitted_module_count": 2
+          },
+          "DatadogSessionReplay": {
+            "expected_swift_sources": 159,
+            "observed_source_count": 159,
+            "missing": [],
+            "emitted_module_count": 2
+          },
+          "DatadogProfiling": {
+            "expected_swift_sources": 17,
+            "observed_source_count": 17,
+            "missing": [],
+            "emitted_module_count": 2
+          },
+          "DatadogFlags": {
+            "expected_swift_sources": 32,
+            "observed_source_count": 32,
+            "missing": [],
+            "emitted_module_count": 2
+          }
+        }
+      },
+      {
+        "cell": "M08",
+        "platform": "catalyst",
+        "scheme": "Datadog-Package",
+        "configuration": "Debug",
+        "returncode": 0,
+        "status": "PASS",
+        "source_unchanged": true,
+        "log": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp201-final-compatibility-g06p0stz/logs/M08-catalyst-Datadog-Package-Debug.log",
+        "log_sha256": "0955e140f5fa45f7e30b65be89219034acc0be61bb98b3254ca8c4a9dde13d8c",
+        "modules": {
+          "DatadogCore": {
+            "expected_swift_sources": 79,
+            "observed_source_count": 79,
+            "missing": [],
+            "emitted_module_count": 3
+          },
+          "DatadogInternal": {
+            "expected_swift_sources": 160,
+            "observed_source_count": 160,
+            "missing": [],
+            "emitted_module_count": 3
+          },
+          "DatadogLogs": {
+            "expected_swift_sources": 18,
+            "observed_source_count": 18,
+            "missing": [],
+            "emitted_module_count": 3
+          },
+          "DatadogTrace": {
+            "expected_swift_sources": 54,
+            "observed_source_count": 54,
+            "missing": [],
+            "emitted_module_count": 3
+          },
+          "DatadogRUM": {
+            "expected_swift_sources": 144,
+            "observed_source_count": 144,
+            "missing": [],
+            "emitted_module_count": 3
+          },
+          "DatadogCrashReporting": {
+            "expected_swift_sources": 14,
+            "observed_source_count": 14,
+            "missing": [],
+            "emitted_module_count": 3
+          },
+          "DatadogWebViewTracking": {
+            "expected_swift_sources": 6,
+            "observed_source_count": 6,
+            "missing": [],
+            "emitted_module_count": 3
+          },
+          "DatadogSessionReplay": {
+            "expected_swift_sources": 159,
+            "observed_source_count": 159,
+            "missing": [],
+            "emitted_module_count": 3
+          },
+          "DatadogProfiling": {
+            "expected_swift_sources": 17,
+            "observed_source_count": 17,
+            "missing": [],
+            "emitted_module_count": 3
+          },
+          "DatadogFlags": {
+            "expected_swift_sources": 32,
+            "observed_source_count": 32,
+            "missing": [],
+            "emitted_module_count": 3
+          }
+        }
+      },
+      {
+        "cell": "M08",
+        "platform": "catalyst",
+        "scheme": "Datadog-Package",
+        "configuration": "Release",
+        "returncode": 0,
+        "status": "PASS",
+        "source_unchanged": true,
+        "log": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp201-final-compatibility-g06p0stz/logs/M08-catalyst-Datadog-Package-Release.log",
+        "log_sha256": "6c243658058fc5e4cd92c2df0e4612ee4eefd4b4a70a3ba26f9c1a58920ba047",
+        "modules": {
+          "DatadogCore": {
+            "expected_swift_sources": 79,
+            "observed_source_count": 79,
+            "missing": [],
+            "emitted_module_count": 3
+          },
+          "DatadogInternal": {
+            "expected_swift_sources": 160,
+            "observed_source_count": 160,
+            "missing": [],
+            "emitted_module_count": 3
+          },
+          "DatadogLogs": {
+            "expected_swift_sources": 18,
+            "observed_source_count": 18,
+            "missing": [],
+            "emitted_module_count": 3
+          },
+          "DatadogTrace": {
+            "expected_swift_sources": 54,
+            "observed_source_count": 54,
+            "missing": [],
+            "emitted_module_count": 3
+          },
+          "DatadogRUM": {
+            "expected_swift_sources": 144,
+            "observed_source_count": 144,
+            "missing": [],
+            "emitted_module_count": 3
+          },
+          "DatadogCrashReporting": {
+            "expected_swift_sources": 14,
+            "observed_source_count": 14,
+            "missing": [],
+            "emitted_module_count": 3
+          },
+          "DatadogWebViewTracking": {
+            "expected_swift_sources": 6,
+            "observed_source_count": 6,
+            "missing": [],
+            "emitted_module_count": 3
+          },
+          "DatadogSessionReplay": {
+            "expected_swift_sources": 159,
+            "observed_source_count": 159,
+            "missing": [],
+            "emitted_module_count": 3
+          },
+          "DatadogProfiling": {
+            "expected_swift_sources": 17,
+            "observed_source_count": 17,
+            "missing": [],
+            "emitted_module_count": 3
+          },
+          "DatadogFlags": {
+            "expected_swift_sources": 32,
+            "observed_source_count": 32,
+            "missing": [],
+            "emitted_module_count": 3
+          }
+        }
+      },
+      {
+        "cell": "M09",
+        "platform": "macos",
+        "scheme": "DatadogCore",
+        "configuration": "Debug",
+        "returncode": 0,
+        "status": "PASS",
+        "source_unchanged": true,
+        "log": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp201-final-compatibility-g06p0stz/logs/M09-macos-DatadogCore-Debug.log",
+        "log_sha256": "247045e74783dec020a64dc8ef08fa0946c745be481f48f8166696249029f21b",
+        "modules": {
+          "DatadogInternal": {
+            "expected_swift_sources": 160,
+            "observed_source_count": 160,
+            "missing": [],
+            "emitted_module_count": 2
+          },
+          "DatadogCore": {
+            "expected_swift_sources": 79,
+            "observed_source_count": 79,
+            "missing": [],
+            "emitted_module_count": 2
+          }
+        }
+      },
+      {
+        "cell": "M09",
+        "platform": "macos",
+        "scheme": "DatadogLogs",
+        "configuration": "Debug",
+        "returncode": 0,
+        "status": "PASS",
+        "source_unchanged": true,
+        "log": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp201-final-compatibility-g06p0stz/logs/M09-macos-DatadogLogs-Debug.log",
+        "log_sha256": "e0b3a974aaf2d6ecbfa522b35bd76e692e592540cab42fda25040181735bb6b8",
+        "modules": {
+          "DatadogInternal": {
+            "expected_swift_sources": 160,
+            "observed_source_count": 160,
+            "missing": [],
+            "emitted_module_count": 2
+          },
+          "DatadogLogs": {
+            "expected_swift_sources": 18,
+            "observed_source_count": 18,
+            "missing": [],
+            "emitted_module_count": 2
+          }
+        }
+      },
+      {
+        "cell": "M09",
+        "platform": "macos",
+        "scheme": "DatadogTrace",
+        "configuration": "Debug",
+        "returncode": 0,
+        "status": "PASS",
+        "source_unchanged": true,
+        "log": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp201-final-compatibility-g06p0stz/logs/M09-macos-DatadogTrace-Debug.log",
+        "log_sha256": "217870dc187fd675b93f1841bca20d961d480772931831ffba82032ba9bc5c36",
+        "modules": {
+          "DatadogInternal": {
+            "expected_swift_sources": 160,
+            "observed_source_count": 160,
+            "missing": [],
+            "emitted_module_count": 2
+          },
+          "DatadogTrace": {
+            "expected_swift_sources": 54,
+            "observed_source_count": 54,
+            "missing": [],
+            "emitted_module_count": 2
+          }
+        }
+      },
+      {
+        "cell": "M09",
+        "platform": "macos",
+        "scheme": "DatadogRUM",
+        "configuration": "Debug",
+        "returncode": 0,
+        "status": "PASS",
+        "source_unchanged": true,
+        "log": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp201-final-compatibility-g06p0stz/logs/M09-macos-DatadogRUM-Debug.log",
+        "log_sha256": "dae10327776d3e65af37f832b506a903223524ba8e13ddc57944c21cb7a47800",
+        "modules": {
+          "DatadogInternal": {
+            "expected_swift_sources": 160,
+            "observed_source_count": 160,
+            "missing": [],
+            "emitted_module_count": 2
+          },
+          "DatadogRUM": {
+            "expected_swift_sources": 144,
+            "observed_source_count": 144,
+            "missing": [],
+            "emitted_module_count": 2
+          }
+        }
+      },
+      {
+        "cell": "M09",
+        "platform": "macos",
+        "scheme": "DatadogCrashReporting",
+        "configuration": "Debug",
+        "returncode": 0,
+        "status": "PASS",
+        "source_unchanged": true,
+        "log": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp201-final-compatibility-g06p0stz/logs/M09-macos-DatadogCrashReporting-Debug.log",
+        "log_sha256": "65e9f183f7af32fc267688abb2b3466afbcd40459c01b2f8afc21bd3328f22d4",
+        "modules": {
+          "DatadogInternal": {
+            "expected_swift_sources": 160,
+            "observed_source_count": 160,
+            "missing": [],
+            "emitted_module_count": 2
+          },
+          "DatadogCrashReporting": {
+            "expected_swift_sources": 14,
+            "observed_source_count": 14,
+            "missing": [],
+            "emitted_module_count": 2
+          }
+        }
+      },
+      {
+        "cell": "M09",
+        "platform": "macos",
+        "scheme": "DatadogWebViewTracking",
+        "configuration": "Debug",
+        "returncode": 0,
+        "status": "PASS",
+        "source_unchanged": true,
+        "log": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp201-final-compatibility-g06p0stz/logs/M09-macos-DatadogWebViewTracking-Debug.log",
+        "log_sha256": "2018e9baa21a9ba4ae3afc865ff1ceb62ae68b79748210f916ec3d3d0d81dd8e",
+        "modules": {
+          "DatadogInternal": {
+            "expected_swift_sources": 160,
+            "observed_source_count": 160,
+            "missing": [],
+            "emitted_module_count": 2
+          },
+          "DatadogWebViewTracking": {
+            "expected_swift_sources": 6,
+            "observed_source_count": 6,
+            "missing": [],
+            "emitted_module_count": 2
+          }
+        }
+      },
+      {
+        "cell": "M09",
+        "platform": "macos",
+        "scheme": "DatadogFlags",
+        "configuration": "Debug",
+        "returncode": 0,
+        "status": "PASS",
+        "source_unchanged": true,
+        "log": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp201-final-compatibility-g06p0stz/logs/M09-macos-DatadogFlags-Debug.log",
+        "log_sha256": "6010429441935113e697fbbacbdbaaf788677ce58303fc07dcd8c94a2158a091",
+        "modules": {
+          "DatadogInternal": {
+            "expected_swift_sources": 160,
+            "observed_source_count": 160,
+            "missing": [],
+            "emitted_module_count": 2
+          },
+          "DatadogFlags": {
+            "expected_swift_sources": 32,
+            "observed_source_count": 32,
+            "missing": [],
+            "emitted_module_count": 2
+          }
+        }
+      },
+      {
+        "cell": "M09",
+        "platform": "macos",
+        "scheme": "DatadogCore",
+        "configuration": "Release",
+        "returncode": 0,
+        "status": "PASS",
+        "source_unchanged": true,
+        "log": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp201-final-compatibility-g06p0stz/logs/M09-macos-DatadogCore-Release.log",
+        "log_sha256": "73c1ff113b957d6f0cdbd267bc7f3f20e08102e2eb35de4b1c5c1ca5d31314ef",
+        "modules": {
+          "DatadogInternal": {
+            "expected_swift_sources": 160,
+            "observed_source_count": 160,
+            "missing": [],
+            "emitted_module_count": 2
+          },
+          "DatadogCore": {
+            "expected_swift_sources": 79,
+            "observed_source_count": 79,
+            "missing": [],
+            "emitted_module_count": 2
+          }
+        }
+      },
+      {
+        "cell": "M09",
+        "platform": "macos",
+        "scheme": "DatadogLogs",
+        "configuration": "Release",
+        "returncode": 0,
+        "status": "PASS",
+        "source_unchanged": true,
+        "log": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp201-final-compatibility-g06p0stz/logs/M09-macos-DatadogLogs-Release.log",
+        "log_sha256": "e34f57aa44b52c66553e95e3b38b77aa2b75196e84533d9fc3ad0950d80b385d",
+        "modules": {
+          "DatadogInternal": {
+            "expected_swift_sources": 160,
+            "observed_source_count": 160,
+            "missing": [],
+            "emitted_module_count": 2
+          },
+          "DatadogLogs": {
+            "expected_swift_sources": 18,
+            "observed_source_count": 18,
+            "missing": [],
+            "emitted_module_count": 2
+          }
+        }
+      },
+      {
+        "cell": "M09",
+        "platform": "macos",
+        "scheme": "DatadogTrace",
+        "configuration": "Release",
+        "returncode": 0,
+        "status": "PASS",
+        "source_unchanged": true,
+        "log": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp201-final-compatibility-g06p0stz/logs/M09-macos-DatadogTrace-Release.log",
+        "log_sha256": "63ddced8f4d273a7097240a3eea5f8e17f9dae5d10e290e6171a70e642ec48b8",
+        "modules": {
+          "DatadogInternal": {
+            "expected_swift_sources": 160,
+            "observed_source_count": 160,
+            "missing": [],
+            "emitted_module_count": 2
+          },
+          "DatadogTrace": {
+            "expected_swift_sources": 54,
+            "observed_source_count": 54,
+            "missing": [],
+            "emitted_module_count": 2
+          }
+        }
+      },
+      {
+        "cell": "M09",
+        "platform": "macos",
+        "scheme": "DatadogRUM",
+        "configuration": "Release",
+        "returncode": 0,
+        "status": "PASS",
+        "source_unchanged": true,
+        "log": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp201-final-compatibility-g06p0stz/logs/M09-macos-DatadogRUM-Release.log",
+        "log_sha256": "61a440656deb69586afc5bd83929bba2e1087cbc19b0789793931ec615c7c597",
+        "modules": {
+          "DatadogInternal": {
+            "expected_swift_sources": 160,
+            "observed_source_count": 160,
+            "missing": [],
+            "emitted_module_count": 2
+          },
+          "DatadogRUM": {
+            "expected_swift_sources": 144,
+            "observed_source_count": 144,
+            "missing": [],
+            "emitted_module_count": 2
+          }
+        }
+      },
+      {
+        "cell": "M09",
+        "platform": "macos",
+        "scheme": "DatadogCrashReporting",
+        "configuration": "Release",
+        "returncode": 0,
+        "status": "PASS",
+        "source_unchanged": true,
+        "log": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp201-final-compatibility-g06p0stz/logs/M09-macos-DatadogCrashReporting-Release.log",
+        "log_sha256": "4def03a6cd609f0ad63b01d50286d573d1476e3b20701bbb9d94defa398eb394",
+        "modules": {
+          "DatadogInternal": {
+            "expected_swift_sources": 160,
+            "observed_source_count": 160,
+            "missing": [],
+            "emitted_module_count": 2
+          },
+          "DatadogCrashReporting": {
+            "expected_swift_sources": 14,
+            "observed_source_count": 14,
+            "missing": [],
+            "emitted_module_count": 2
+          }
+        }
+      },
+      {
+        "cell": "M09",
+        "platform": "macos",
+        "scheme": "DatadogWebViewTracking",
+        "configuration": "Release",
+        "returncode": 0,
+        "status": "PASS",
+        "source_unchanged": true,
+        "log": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp201-final-compatibility-g06p0stz/logs/M09-macos-DatadogWebViewTracking-Release.log",
+        "log_sha256": "0488c7b19f115797f17c4ef13c306b1eac0058e2f024c6c7a2bec5ec1d84d655",
+        "modules": {
+          "DatadogInternal": {
+            "expected_swift_sources": 160,
+            "observed_source_count": 160,
+            "missing": [],
+            "emitted_module_count": 2
+          },
+          "DatadogWebViewTracking": {
+            "expected_swift_sources": 6,
+            "observed_source_count": 6,
+            "missing": [],
+            "emitted_module_count": 2
+          }
+        }
+      },
+      {
+        "cell": "M09",
+        "platform": "macos",
+        "scheme": "DatadogFlags",
+        "configuration": "Release",
+        "returncode": 0,
+        "status": "PASS",
+        "source_unchanged": true,
+        "log": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp201-final-compatibility-g06p0stz/logs/M09-macos-DatadogFlags-Release.log",
+        "log_sha256": "c61d12b8d5c7fdc4e499e9fa082ba76edb228603282dd62b1401deff062fefcc",
+        "modules": {
+          "DatadogInternal": {
+            "expected_swift_sources": 160,
+            "observed_source_count": 160,
+            "missing": [],
+            "emitted_module_count": 2
+          },
+          "DatadogFlags": {
+            "expected_swift_sources": 32,
+            "observed_source_count": 32,
+            "missing": [],
+            "emitted_module_count": 2
+          }
+        }
+      }
+    ]
+  },
+  "public_clients": {
+    "status": "PASS",
+    "summary": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp201-final-compatibility-g06p0stz/client-summary.json",
+    "sha256": "878521647e0d116b7edd953b05c1dd0e71be9b4bd0fc196d90e09831faeb4136",
+    "fixture_manifest_sha256": "1b45f8e910f25c1e818da74218f26b62491b874595e64f9e5ec6ca21fee98026",
+    "runner_sha256": "38a9927c77714dd09f4abf88090c3eae4a8934957902e6baab4b930282abe94e",
+    "adapter_sha256": "d98dc653447fe6589d26d0daeea5b502cb442c18ba870d539bcf5eca9d20428e",
+    "cells": [
+      {
+        "run_id": "exp201-client-b2d064c5ebd5495b9d6f2e040a6e1a52",
+        "variant": "Scene",
+        "mode": "public-client",
+        "os": "27.0",
+        "status": "PASS",
+        "artifact": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp201-final-compatibility-g06p0stz/client-runs/Swift5Client/Debug/cells/exp201-client-b2d064c5ebd5495b9d6f2e040a6e1a52",
+        "expected_fixture_sha256": "1b45f8e910f25c1e818da74218f26b62491b874595e64f9e5ec6ca21fee98026",
+        "launched_at": "2026-09-20T00:46:11.537270+00:00",
+        "pid": 96643,
+        "result": {
+          "background_request": true,
+          "configuration": "Debug",
+          "configured": true,
+          "fixture_version": 201,
+          "has_scene_manifest": true,
+          "language": "Swift5",
+          "mode": "public-client",
+          "normal_request": true,
+          "os": "27.0",
+          "preinit_nop": true,
+          "run_id": "exp201-client-b2d064c5ebd5495b9d6f2e040a6e1a52"
+        },
+        "finished_at": "2026-09-20T00:46:12.400305+00:00",
+        "process_absent": true,
+        "data_absent": true,
+        "boot_state_after_cell": "Booted",
+        "cleaned": true,
+        "language": "Swift5",
+        "configuration": "Debug"
+      },
+      {
+        "run_id": "exp201-client-f1add34a7bf447f1b3625d6a039cff81",
+        "variant": "Scene",
+        "mode": "public-client",
+        "os": "27.0",
+        "status": "PASS",
+        "artifact": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp201-final-compatibility-g06p0stz/client-runs/Swift5Client/Release/cells/exp201-client-f1add34a7bf447f1b3625d6a039cff81",
+        "expected_fixture_sha256": "1b45f8e910f25c1e818da74218f26b62491b874595e64f9e5ec6ca21fee98026",
+        "launched_at": "2026-09-20T00:47:10.491982+00:00",
+        "pid": 97444,
+        "result": {
+          "background_request": true,
+          "configuration": "Release",
+          "configured": true,
+          "fixture_version": 201,
+          "has_scene_manifest": true,
+          "language": "Swift5",
+          "mode": "public-client",
+          "normal_request": true,
+          "os": "27.0",
+          "preinit_nop": true,
+          "run_id": "exp201-client-f1add34a7bf447f1b3625d6a039cff81"
+        },
+        "finished_at": "2026-09-20T00:47:11.324539+00:00",
+        "process_absent": true,
+        "data_absent": true,
+        "boot_state_after_cell": "Booted",
+        "cleaned": true,
+        "language": "Swift5",
+        "configuration": "Release"
+      },
+      {
+        "run_id": "exp201-client-ff41d62c722a4eada3482e0830952435",
+        "variant": "Scene",
+        "mode": "public-client",
+        "os": "27.0",
+        "status": "PASS",
+        "artifact": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp201-final-compatibility-g06p0stz/client-runs/Swift6Client/Debug/cells/exp201-client-ff41d62c722a4eada3482e0830952435",
+        "expected_fixture_sha256": "1b45f8e910f25c1e818da74218f26b62491b874595e64f9e5ec6ca21fee98026",
+        "launched_at": "2026-09-20T00:47:23.164283+00:00",
+        "pid": 97772,
+        "result": {
+          "background_request": true,
+          "configuration": "Debug",
+          "configured": true,
+          "fixture_version": 201,
+          "has_scene_manifest": true,
+          "language": "Swift6",
+          "mode": "public-client",
+          "normal_request": true,
+          "os": "27.0",
+          "preinit_nop": true,
+          "run_id": "exp201-client-ff41d62c722a4eada3482e0830952435"
+        },
+        "finished_at": "2026-09-20T00:47:23.780129+00:00",
+        "process_absent": true,
+        "data_absent": true,
+        "boot_state_after_cell": "Booted",
+        "cleaned": true,
+        "language": "Swift6",
+        "configuration": "Debug"
+      },
+      {
+        "run_id": "exp201-client-52bd1ed0c012497a8eacc69035993d64",
+        "variant": "Scene",
+        "mode": "public-client",
+        "os": "27.0",
+        "status": "PASS",
+        "artifact": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp201-final-compatibility-g06p0stz/client-runs/Swift6Client/Release/cells/exp201-client-52bd1ed0c012497a8eacc69035993d64",
+        "expected_fixture_sha256": "1b45f8e910f25c1e818da74218f26b62491b874595e64f9e5ec6ca21fee98026",
+        "launched_at": "2026-09-20T00:48:03.921939+00:00",
+        "pid": 98552,
+        "result": {
+          "background_request": true,
+          "configuration": "Release",
+          "configured": true,
+          "fixture_version": 201,
+          "has_scene_manifest": true,
+          "language": "Swift6",
+          "mode": "public-client",
+          "normal_request": true,
+          "os": "27.0",
+          "preinit_nop": true,
+          "run_id": "exp201-client-52bd1ed0c012497a8eacc69035993d64"
+        },
+        "finished_at": "2026-09-20T00:48:04.745568+00:00",
+        "process_absent": true,
+        "data_absent": true,
+        "boot_state_after_cell": "Booted",
+        "cleaned": true,
+        "language": "Swift6",
+        "configuration": "Release"
+      },
+      {
+        "run_id": "exp201-client-48e50cd54d3e415ea7bba04ca86e7086",
+        "variant": "Scene",
+        "mode": "public-client",
+        "os": "27.0",
+        "status": "PASS",
+        "artifact": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp201-final-compatibility-g06p0stz/client-runs/ObjCClient/Release/cells/exp201-client-48e50cd54d3e415ea7bba04ca86e7086",
+        "expected_fixture_sha256": "1b45f8e910f25c1e818da74218f26b62491b874595e64f9e5ec6ca21fee98026",
+        "launched_at": "2026-09-20T00:48:12.630403+00:00",
+        "pid": 99300,
+        "result": {
+          "background_request": true,
+          "configuration": "Release",
+          "configured": true,
+          "fixture_version": 201,
+          "has_scene_manifest": 1,
+          "language": "Objective-C",
+          "mode": "public-client",
+          "normal_request": true,
+          "os": "27.0",
+          "preinit_nop": true,
+          "run_id": "exp201-client-48e50cd54d3e415ea7bba04ca86e7086"
+        },
+        "finished_at": "2026-09-20T00:48:13.466837+00:00",
+        "process_absent": true,
+        "data_absent": true,
+        "boot_state_after_cell": "Booted",
+        "cleaned": true,
+        "language": "Objective-C",
+        "configuration": "Release"
+      }
+    ],
+    "boot_state_preserved": true,
+    "fixture_boundaries": "Normal public imports only, no SPI/testable/Internal. Exact body/response and completion count checked after URLSession invalidation; preinit NOP and active RUM observer controls. No backend/internal-lifecycle claim."
+  },
+  "feature_docs": {
+    "cell": "M11",
+    "status": "PASS",
+    "returncode": 0,
+    "verified_source_revision": "1bdc9286c17d69d73e5e41530e6179c72a723368",
+    "paths": [
+      "DatadogRUM/RUM_FEATURE.md",
+      "DatadogSessionReplay/SESSION_REPLAY_FEATURE.md",
+      "DatadogTrace/TRACE_FEATURE.md",
+      "DatadogProfiling/PROFILING_FEATURE.md",
+      "DatadogLogs/LOGS_FEATURE.md"
+    ],
+    "patch": "/tmp/exp201-m11-feature-doc-audit-Q7vK2p/feature-docs.patch",
+    "patch_sha256": "1c3bcecce5919962cb60f3a27cf023b51a65769dcc3e56f37b6e7cf754db6c5e",
+    "audit": "/tmp/exp201-m11-feature-doc-audit-Q7vK2p/audit.md",
+    "audit_sha256": "8e428298dc6b17c94116149059727723107d9e7f1f76f976d9f3d93cb550ce7d",
+    "log": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp201-final-compatibility-g06p0stz/feature-docs-verify-after-audit.log",
+    "log_sha256": "3585ca20fb1b8de0021bf55826c4f7ddacb2d2dfea30cf868b2dc7307706c2d2",
+    "completed_at": 1789865576.0761878,
+    "commit": {
+      "before": "1bdc9286c17d69d73e5e41530e6179c72a723368",
+      "paths": [
+        "DatadogRUM/RUM_FEATURE.md",
+        "DatadogSessionReplay/SESSION_REPLAY_FEATURE.md",
+        "DatadogTrace/TRACE_FEATURE.md",
+        "DatadogProfiling/PROFILING_FEATURE.md",
+        "DatadogLogs/LOGS_FEATURE.md"
+      ],
+      "message": "Refresh feature documentation verification",
+      "attempts": [
+        {
+          "signed": true,
+          "returncode": -15,
+          "timeout": true,
+          "log": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp201-final-compatibility-g06p0stz/feature-doc-commit-signed.log",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "signed": false,
+          "returncode": 0,
+          "timeout": false,
+          "log": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp201-final-compatibility-g06p0stz/feature-doc-commit-unsigned.log",
+          "sha256": "62cddd69f6510a924efc6a8cb826640a270967a17e51a879dbf235eae8cb0711"
+        }
+      ],
+      "started_at": 1789865636.012118,
+      "after": "5a570517404ba53f2f05adc8f7d55bf05361f437",
+      "signature": "N",
+      "committed_paths": [
+        "DatadogLogs/LOGS_FEATURE.md",
+        "DatadogProfiling/PROFILING_FEATURE.md",
+        "DatadogRUM/RUM_FEATURE.md",
+        "DatadogSessionReplay/SESSION_REPLAY_FEATURE.md",
+        "DatadogTrace/TRACE_FEATURE.md"
+      ],
+      "tree_clean": true,
+      "source_unchanged": true,
+      "finished_at": 1789865661.19069
+    },
+    "initial_failure": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp201-final-compatibility-g06p0stz/feature-docs-verify.json",
+    "post_history_fetch_failure": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp201-final-compatibility-g06p0stz/feature-docs-verify-after-fetch.json",
+    "history_note": "Missing exact verification objects were fetched through existing authenticated HTTPS without source/head/config changes. Inherited RUM/Trace drift audited; Trace descriptions repaired and five verification headers refreshed. Earlier incorrect Trace no-drift audit remains preserved as audit.md.previous."
+  },
+  "api_attempts": [
+    {
+      "experiment": "EXP-201",
+      "cell": "M10",
+      "candidate_revision": "1bdc9286c17d69d73e5e41530e6179c72a723368",
+      "command": [
+        "swift",
+        "run",
+        "api-surface",
+        "verify",
+        "--path",
+        "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp201-final-compatibility-g06p0stz/src",
+        "--library-name",
+        "DatadogCore",
+        "--library-name",
+        "DatadogLogs",
+        "--library-name",
+        "DatadogTrace",
+        "--library-name",
+        "DatadogRUM",
+        "--library-name",
+        "DatadogCrashReporting",
+        "--library-name",
+        "DatadogWebViewTracking",
+        "--library-name",
+        "DatadogSessionReplay",
+        "--library-name",
+        "DatadogFlags",
+        "--library-name",
+        "DatadogProfiling",
+        "--language",
+        "swift",
+        "--output-file",
+        "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp201-final-compatibility-g06p0stz/api-surface-swift-generated",
+        "--reference-file",
+        "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp201-final-compatibility-g06p0stz/src/api-surface-swift",
+        "--language",
+        "objc",
+        "--output-file",
+        "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp201-final-compatibility-g06p0stz/api-surface-objc-generated",
+        "--reference-file",
+        "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp201-final-compatibility-g06p0stz/src/api-surface-objc"
+      ],
+      "cwd": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp201-final-compatibility-g06p0stz/src/tools/api-surface",
+      "modules": [
+        "DatadogCore",
+        "DatadogLogs",
+        "DatadogTrace",
+        "DatadogRUM",
+        "DatadogCrashReporting",
+        "DatadogWebViewTracking",
+        "DatadogSessionReplay",
+        "DatadogFlags",
+        "DatadogProfiling"
+      ],
+      "reference_hashes_before": {
+        "swift": "f730081252b2636953fa0cbe0dfc196527fe843a106fae0db739ad54fa13784f",
+        "objc": "dc5109292a269d7b0b1f646f9e96158059611cf8797aeecb115742942fe8331e"
+      },
+      "started_at": 1789865502.4901278,
+      "status": "FAIL",
+      "log": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp201-final-compatibility-g06p0stz/api-verification.log",
+      "returncode": 1,
+      "finished_at": 1789865652.584924,
+      "source_unchanged": true,
+      "log_sha256": "d6d9aad45912de038a0fd423c15915c263fe36dfd624ab4fb2cf7ba1676474f6",
+      "reference_hashes_after": {
+        "swift": "f730081252b2636953fa0cbe0dfc196527fe843a106fae0db739ad54fa13784f",
+        "objc": "dc5109292a269d7b0b1f646f9e96158059611cf8797aeecb115742942fe8331e"
+      },
+      "outputs": {},
+      "tool_dependency_pins": {
+        "pins": [
+          {
+            "identity": "sourcekitten",
+            "kind": "remoteSourceControl",
+            "location": "https://github.com/jpsim/SourceKitten",
+            "state": {
+              "revision": "731ffe6a35344a19bab00cdca1c952d5b4fee4d8",
+              "version": "0.37.2"
+            }
+          },
+          {
+            "identity": "swift-argument-parser",
+            "kind": "remoteSourceControl",
+            "location": "https://github.com/apple/swift-argument-parser",
+            "state": {
+              "revision": "6a52f3251125d74daf04fcbd5e6f08a75d074382",
+              "version": "1.8.2"
+            }
+          },
+          {
+            "identity": "swxmlhash",
+            "kind": "remoteSourceControl",
+            "location": "https://github.com/drmohundro/SWXMLHash.git",
+            "state": {
+              "revision": "a853604c9e9a83ad9954c7e3d2a565273982471f",
+              "version": "7.0.2"
+            }
+          },
+          {
+            "identity": "yams",
+            "kind": "remoteSourceControl",
+            "location": "https://github.com/jpsim/Yams.git",
+            "state": {
+              "revision": "a27b21e0c81c5bf42049b897a62aaf387e80f279",
+              "version": "6.2.2"
+            }
+          }
+        ],
+        "version": 2
+      }
+    },
+    {
+      "experiment": "EXP-201",
+      "cell": "M10",
+      "status": "DEFINED BEFORE EXECUTION",
+      "original_failure": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp201-final-compatibility-g06p0stz/api-verification.json",
+      "hypothesis": "The original verifier failed only because its latest/name destination has no matching device. Pinning the actual27.0 device leaves generated interface comparison and SDK source unchanged.",
+      "candidate_revision": "1bdc9286c17d69d73e5e41530e6179c72a723368",
+      "artifact_root": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp201-api-destination-6ibikgxo",
+      "archive_paths": [
+        "tools/api-surface/Package.swift",
+        "tools/api-surface/Sources"
+      ],
+      "tool_archive_sha256": "f7980fc4429e7ba340f331338affa1ddb0a8d74958a7ce82435ac146e876ab7a",
+      "destination": [
+        "com.apple.CoreSimulator.SimRuntime.iOS-27-0",
+        {
+          "dataPath": "/Users/valentin.pertuisot/Library/Developer/CoreSimulator/Devices/BE03D65C-84F6-4FE0-95DA-A8F8D81A5D21/data",
+          "dataPathSize": 5592645632,
+          "logPath": "/Users/valentin.pertuisot/Library/Logs/CoreSimulator/BE03D65C-84F6-4FE0-95DA-A8F8D81A5D21",
+          "udid": "BE03D65C-84F6-4FE0-95DA-A8F8D81A5D21",
+          "lastUsedAt": "2026-09-12T09:48:55Z",
+          "isAvailable": true,
+          "logPathSize": 548864,
+          "deviceTypeIdentifier": "com.apple.CoreSimulator.SimDeviceType.iPhone-17-Pro",
+          "state": "Shutdown",
+          "name": "iPhone 17 Pro"
+        }
+      ],
+      "patch_sha256": "32a057602a5262319d002831954c099476c297e9a3146892b2d88c3845218bf5",
+      "original_verifier_source_sha256": "35b089ff52fd1cbaa0d207dab9eb55597a331ac497ce023b3d266a7498c91545",
+      "adapted_verifier_source_sha256": "de24f1b42f0accf7578a5b736d2c60253b94765464e37444238c4e6fd0999bd1",
+      "comparison_source_sha256": "2289f674e735bc4d37766cdce3a6d6eac25bd5d3d376389ad11695862602f74a",
+      "source_manifest_sha256": "d2759ed7288db99c809b0893719842e9f95485d3d33050883c51542c5a2f5350",
+      "baseline_hashes": {
+        "swift": "f730081252b2636953fa0cbe0dfc196527fe843a106fae0db739ad54fa13784f",
+        "objc": "dc5109292a269d7b0b1f646f9e96158059611cf8797aeecb115742942fe8331e"
+      },
+      "tool_package_resolved_sha256": "a656e52d3e33debc701e06a2e204d6934b3a3c5ec7ce34bd20e50398f48c414a",
+      "defined_at": 1789865743.12021,
+      "stop_rule": "Stop on any compiler/parser/comparison failure; preserve output and classify before another attempt. No baseline rewrite.",
+      "result": {
+        "cell": "M10",
+        "status": "FAIL",
+        "definition": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp201-api-destination-6ibikgxo/definition.json",
+        "command": [
+          "swift",
+          "run",
+          "--disable-automatic-resolution",
+          "api-surface",
+          "verify",
+          "--path",
+          "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp201-final-compatibility-g06p0stz/src",
+          "--library-name",
+          "DatadogCore",
+          "--library-name",
+          "DatadogLogs",
+          "--library-name",
+          "DatadogTrace",
+          "--library-name",
+          "DatadogRUM",
+          "--library-name",
+          "DatadogCrashReporting",
+          "--library-name",
+          "DatadogWebViewTracking",
+          "--library-name",
+          "DatadogSessionReplay",
+          "--library-name",
+          "DatadogFlags",
+          "--library-name",
+          "DatadogProfiling",
+          "--language",
+          "swift",
+          "--output-file",
+          "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp201-api-destination-6ibikgxo/api-surface-swift-generated",
+          "--reference-file",
+          "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp201-final-compatibility-g06p0stz/src/api-surface-swift",
+          "--language",
+          "objc",
+          "--output-file",
+          "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp201-api-destination-6ibikgxo/api-surface-objc-generated",
+          "--reference-file",
+          "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp201-final-compatibility-g06p0stz/src/api-surface-objc"
+        ],
+        "cwd": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp201-api-destination-6ibikgxo/tools/api-surface",
+        "modules": [
+          "DatadogCore",
+          "DatadogLogs",
+          "DatadogTrace",
+          "DatadogRUM",
+          "DatadogCrashReporting",
+          "DatadogWebViewTracking",
+          "DatadogSessionReplay",
+          "DatadogFlags",
+          "DatadogProfiling"
+        ],
+        "started_at": 1789865794.259648,
+        "log": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp201-api-destination-6ibikgxo/verify.log",
+        "returncode": 1,
+        "finished_at": 1789865797.032028,
+        "source_unchanged": true,
+        "log_sha256": "9fe2fa3eebbc185a177eda2cdff1ec259d77dd3756dacfd5b77603371f0a04ef",
+        "reference_hashes_after": {
+          "swift": "f730081252b2636953fa0cbe0dfc196527fe843a106fae0db739ad54fa13784f",
+          "objc": "dc5109292a269d7b0b1f646f9e96158059611cf8797aeecb115742942fe8331e"
+        },
+        "outputs": {},
+        "comparison_unchanged": true,
+        "tool_pins_unchanged": true,
+        "device_after": {
+          "dataPath": "/Users/valentin.pertuisot/Library/Developer/CoreSimulator/Devices/BE03D65C-84F6-4FE0-95DA-A8F8D81A5D21/data",
+          "dataPathSize": 5592645632,
+          "logPath": "/Users/valentin.pertuisot/Library/Logs/CoreSimulator/BE03D65C-84F6-4FE0-95DA-A8F8D81A5D21",
+          "udid": "BE03D65C-84F6-4FE0-95DA-A8F8D81A5D21",
+          "lastUsedAt": "2026-09-12T09:48:55Z",
+          "isAvailable": true,
+          "logPathSize": 548864,
+          "deviceTypeIdentifier": "com.apple.CoreSimulator.SimDeviceType.iPhone-17-Pro",
+          "state": "Shutdown",
+          "name": "iPhone 17 Pro"
+        },
+        "boot_state_preserved": true
+      }
+    },
+    {
+      "definition": {
+        "experiment": "EXP-201",
+        "cell": "M10",
+        "status": "DEFINED BEFORE EXECUTION",
+        "original_failure": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp201-final-compatibility-g06p0stz/api-verification.json",
+        "hypothesis": "The original verifier failed only because its latest/name destination has no matching device. Pinning the actual27.0 device leaves generated interface comparison and SDK source unchanged.",
+        "candidate_revision": "1bdc9286c17d69d73e5e41530e6179c72a723368",
+        "artifact_root": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp201-api-complete-54fm8q0z",
+        "archive_paths": [
+          "tools/api-surface"
+        ],
+        "tool_archive_sha256": "36ea99aabb1d674589e10139560101609773bfb13ca9ae91ba45751beedc8eb0",
+        "destination": [
+          "com.apple.CoreSimulator.SimRuntime.iOS-27-0",
+          {
+            "dataPath": "/Users/valentin.pertuisot/Library/Developer/CoreSimulator/Devices/BE03D65C-84F6-4FE0-95DA-A8F8D81A5D21/data",
+            "dataPathSize": 5592645632,
+            "logPath": "/Users/valentin.pertuisot/Library/Logs/CoreSimulator/BE03D65C-84F6-4FE0-95DA-A8F8D81A5D21",
+            "udid": "BE03D65C-84F6-4FE0-95DA-A8F8D81A5D21",
+            "lastUsedAt": "2026-09-12T09:48:55Z",
+            "isAvailable": true,
+            "logPathSize": 548864,
+            "deviceTypeIdentifier": "com.apple.CoreSimulator.SimDeviceType.iPhone-17-Pro",
+            "state": "Shutdown",
+            "name": "iPhone 17 Pro"
+          }
+        ],
+        "patch_sha256": "32a057602a5262319d002831954c099476c297e9a3146892b2d88c3845218bf5",
+        "original_verifier_source_sha256": "35b089ff52fd1cbaa0d207dab9eb55597a331ac497ce023b3d266a7498c91545",
+        "adapted_verifier_source_sha256": "de24f1b42f0accf7578a5b736d2c60253b94765464e37444238c4e6fd0999bd1",
+        "comparison_source_sha256": "2289f674e735bc4d37766cdce3a6d6eac25bd5d3d376389ad11695862602f74a",
+        "source_manifest_sha256": "d2759ed7288db99c809b0893719842e9f95485d3d33050883c51542c5a2f5350",
+        "baseline_hashes": {
+          "swift": "f730081252b2636953fa0cbe0dfc196527fe843a106fae0db739ad54fa13784f",
+          "objc": "dc5109292a269d7b0b1f646f9e96158059611cf8797aeecb115742942fe8331e"
+        },
+        "tool_package_resolved_sha256": "a656e52d3e33debc701e06a2e204d6934b3a3c5ec7ce34bd20e50398f48c414a",
+        "defined_at": 1789865967.516683,
+        "stop_rule": "Stop on any compiler/parser/comparison failure; preserve output and classify before another attempt. No baseline rewrite.",
+        "previous_attempt": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp201-api-destination-6ibikgxo/result.json",
+        "correction": "Preserve complete original tool manifest graph including APISurfaceCoreTests and Fixtures; prior attempt omitted declared test target sources and never compiled or compared SDK interfaces."
+      },
+      "result": {
+        "cell": "M10",
+        "status": "PASS",
+        "definition": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp201-api-complete-54fm8q0z/definition.json",
+        "command": [
+          "swift",
+          "run",
+          "--disable-automatic-resolution",
+          "api-surface",
+          "verify",
+          "--path",
+          "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp201-final-compatibility-g06p0stz/src",
+          "--library-name",
+          "DatadogCore",
+          "--library-name",
+          "DatadogLogs",
+          "--library-name",
+          "DatadogTrace",
+          "--library-name",
+          "DatadogRUM",
+          "--library-name",
+          "DatadogCrashReporting",
+          "--library-name",
+          "DatadogWebViewTracking",
+          "--library-name",
+          "DatadogSessionReplay",
+          "--library-name",
+          "DatadogFlags",
+          "--library-name",
+          "DatadogProfiling",
+          "--language",
+          "swift",
+          "--output-file",
+          "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp201-api-complete-54fm8q0z/api-surface-swift-generated",
+          "--reference-file",
+          "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp201-final-compatibility-g06p0stz/src/api-surface-swift",
+          "--language",
+          "objc",
+          "--output-file",
+          "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp201-api-complete-54fm8q0z/api-surface-objc-generated",
+          "--reference-file",
+          "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp201-final-compatibility-g06p0stz/src/api-surface-objc"
+        ],
+        "cwd": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp201-api-complete-54fm8q0z/tools/api-surface",
+        "modules": [
+          "DatadogCore",
+          "DatadogLogs",
+          "DatadogTrace",
+          "DatadogRUM",
+          "DatadogCrashReporting",
+          "DatadogWebViewTracking",
+          "DatadogSessionReplay",
+          "DatadogFlags",
+          "DatadogProfiling"
+        ],
+        "started_at": 1789865967.6042628,
+        "log": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp201-api-complete-54fm8q0z/verify.log",
+        "returncode": 0,
+        "finished_at": 1789866153.537884,
+        "source_unchanged": true,
+        "log_sha256": "616339b98bedbd42e28cb17981b0979e093899d1bf1e499302f2c0d41557439f",
+        "reference_hashes_after": {
+          "swift": "f730081252b2636953fa0cbe0dfc196527fe843a106fae0db739ad54fa13784f",
+          "objc": "dc5109292a269d7b0b1f646f9e96158059611cf8797aeecb115742942fe8331e"
+        },
+        "outputs": {
+          "swift": {
+            "sha256": "f730081252b2636953fa0cbe0dfc196527fe843a106fae0db739ad54fa13784f",
+            "matches_reference": true
+          },
+          "objc": {
+            "sha256": "dc5109292a269d7b0b1f646f9e96158059611cf8797aeecb115742942fe8331e",
+            "matches_reference": true
+          }
+        },
+        "comparison_unchanged": true,
+        "tool_pins_unchanged": true,
+        "device_after": {
+          "dataPath": "/Users/valentin.pertuisot/Library/Developer/CoreSimulator/Devices/BE03D65C-84F6-4FE0-95DA-A8F8D81A5D21/data",
+          "dataPathSize": 5592645632,
+          "logPath": "/Users/valentin.pertuisot/Library/Logs/CoreSimulator/BE03D65C-84F6-4FE0-95DA-A8F8D81A5D21",
+          "udid": "BE03D65C-84F6-4FE0-95DA-A8F8D81A5D21",
+          "lastUsedAt": "2026-09-12T09:48:55Z",
+          "isAvailable": true,
+          "logPathSize": 548864,
+          "deviceTypeIdentifier": "com.apple.CoreSimulator.SimDeviceType.iPhone-17-Pro",
+          "state": "Shutdown",
+          "name": "iPhone 17 Pro"
+        },
+        "boot_state_preserved": true
+      },
+      "parser_diagnostics": "SourceKitten reports unavailable AppKit imports while parsing conditional macOS files on an iOS target. Both complete nine-module outputs still byte-match committed baselines; actual production builds already passed on every declared target. No clean-diagnostic parser claim."
+    }
+  ],
+  "integration_amendment": {
+    "defined_at": "2026-09-20T00:58:15.564552+00:00",
+    "reason": "Independent reviewer identified direct changed-path coverage in the separately named DatadogIntegrationTests suite. Existing four module suites do not replace it.",
+    "scope": "Complete original DatadogIntegrationTests target inventory on17.5, Debug, fresh results; preserve failures/skips; no accepted module reruns.",
+    "status": "DEFINED BEFORE EXECUTION",
+    "result": {
+      "status": "FAIL",
+      "discovered": 278,
+      "executed": 278,
+      "passed": 277,
+      "failed": 1,
+      "skipped": 0,
+      "missing": [],
+      "unexpected": [],
+      "artifact_root": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp201-integration-v66_c35h",
+      "failure": "RUMViewHitchesIntegration_Tests/testViewHitchesCollected_whenFeatureFlagIsEnabled(): final delta slowFrames nil/zero",
+      "classification": "Inherited last-delta-only test oracle defect reproduced in both arms; original failures retained."
+    }
+  },
+  "documentation_revision": "c53ed48cf78661f410212170f59ff636d18a05f7",
+  "production_source_unchanged": true,
+  "integration_hitch_diagnostic": {
+    "experiment": "EXP-201",
+    "cell": "M01",
+    "scope": "Paired narrow view-hitch diagnostic after the complete candidate run fails its last-delta-only assertion",
+    "defined_at": "2026-09-20T01:10:11.766616+00:00",
+    "artifact_root": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp201-hitch-diagnostic-snxrzq25",
+    "arms": {
+      "baseline": "62f64d7b655bdc83f3036c4ad81090a270f6202b",
+      "candidate": "1bdc9286c17d69d73e5e41530e6179c72a723368"
+    },
+    "source_change": "Only a temporary post-collection diagnostic attachment and assertion message in the existing delta hitch test; the original assertion and workload remain intact. No SDK changes.",
+    "hypothesis": "A prior full/view_update event may already include slowFrames; the unchanged stop delta correctly omits them. The inherited test mistakes omission for zero.",
+    "oracle": "Retain original result and complete event projection history; compare ordinary/delta enabled/disabled controls in both arms. Do not infer collected hitches from static source alone.",
+    "stop_rule": "One paired diagnostic run, no retry. If neither captures history that discriminates omission from missing samples, retain INCONCLUSIVE and move to independent gates.",
+    "attempts": [
+      {
+        "artifact_root": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp201-hitch-diagnostic-snxrzq25",
+        "summary": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp201-hitch-diagnostic-snxrzq25/summary.json",
+        "classification": "INVALID before tests: private dependency SSH authentication unavailable"
+      },
+      {
+        "artifact_root": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp201-hitch-https-9gg1c2ij",
+        "summary": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp201-hitch-https-9gg1c2ij/summary.json",
+        "classification": "INVALID before tests: existing OpenTelemetryApi binary missing in detached worktree"
+      },
+      {
+        "artifact_root": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp201-hitch-complete-k_7pu9mo",
+        "summary": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp201-hitch-complete-k_7pu9mo/summary.json",
+        "classification": "RUNNING with pinned HTTPS dependencies and identical hashed OpenTelemetryApi inputs; baseline 4 tests executes with inherited delta assertion failure"
+      }
+    ],
+    "timeline_analysis": {
+      "experiment": "EXP-201",
+      "scope": "Post-collection paired original-assertion diagnostic; no runtime test result is relabeled",
+      "arms": {
+        "baseline": {
+          "artifact": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp201-hitch-complete-k_7pu9mo/baseline-attachments/FC58FD14-256A-424D-8E31-53231EEE5575.txt",
+          "sha256": "3297987dec482db7de4610a618f84ee7df27a8a016e182ac55cc976562566633",
+          "original_predicate": false,
+          "original_last_delta_count": 0,
+          "reconstructed": {
+            "owner": [
+              "9e1b1cb7-18b2-4c35-8e66-ead3a6a66d1b",
+              "92b03051-67b3-4bd8-93a5-4e6f7453543c"
+            ],
+            "document_versions": [
+              1,
+              2,
+              3
+            ],
+            "final_active": false,
+            "final_slow_frames": [
+              {
+                "duration": 86235333,
+                "start": 500000000
+              }
+            ],
+            "count": 1
+          },
+          "negative_controls": {
+            "remove_all_slow_frames": {
+              "rejected": true,
+              "reason": "no final slow frames"
+            },
+            "explicit_empty_final_delta": {
+              "rejected": true,
+              "reason": "no final slow frames"
+            },
+            "missing_initial_full": {
+              "rejected": true,
+              "reason": "missing initial full view"
+            },
+            "duplicate_document_version": {
+              "rejected": true,
+              "reason": "non-increasing or duplicate versions"
+            },
+            "mixed_owner": {
+              "rejected": true,
+              "reason": "mixed or missing owner"
+            },
+            "missing_stopped_state": {
+              "rejected": true,
+              "reason": "final state not stopped"
+            }
+          }
+        },
+        "candidate": {
+          "artifact": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp201-hitch-complete-k_7pu9mo/candidate-stdout-timeline.json",
+          "sha256": "a733ae4a3f5509e63ceefc1313dd605fe86a11e4e774a611fe21de933905b75d",
+          "original_predicate": false,
+          "original_last_delta_count": 0,
+          "reconstructed": {
+            "owner": [
+              "47fa13cc-d1a2-410e-87fb-707bf904439a",
+              "792f9af2-92e7-481b-8dab-6d4a7ce5e170"
+            ],
+            "document_versions": [
+              1,
+              2,
+              3
+            ],
+            "final_active": false,
+            "final_slow_frames": [
+              {
+                "duration": 86373292,
+                "start": 516666667
+              }
+            ],
+            "count": 1
+          },
+          "negative_controls": {
+            "remove_all_slow_frames": {
+              "rejected": true,
+              "reason": "no final slow frames"
+            },
+            "explicit_empty_final_delta": {
+              "rejected": true,
+              "reason": "no final slow frames"
+            },
+            "missing_initial_full": {
+              "rejected": true,
+              "reason": "missing initial full view"
+            },
+            "duplicate_document_version": {
+              "rejected": true,
+              "reason": "non-increasing or duplicate versions"
+            },
+            "mixed_owner": {
+              "rejected": true,
+              "reason": "mixed or missing owner"
+            },
+            "missing_stopped_state": {
+              "rejected": true,
+              "reason": "final state not stopped"
+            }
+          }
+        }
+      },
+      "classification": "Inherited last-delta oracle defect reproduced in both arms",
+      "script_sha256": "921f457f4e9ff5a2b89807f96f7a8ddcc9efbc853076dd648440147277ca120d"
+    },
+    "candidate_stdout_provenance": {
+      "source": "/private/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp201-hitch-complete-k_7pu9mo/candidate.xcresult/Staging/1_Test/Diagnostics/DatadogIntegrationTests-38B9FE10-1441-44F8-82F9-FB3F35466545-Configuration-Test Scheme Action-Iteration-1/DatadogIntegrationTests-2B190BC8-8073-46FE-A5B1-9E437195315B/StandardOutputAndStandardError.txt",
+      "sha256": "503f01bfe8bfda4b0716c555dde9dd744d448abe914b248905c0ccac5696a6a5",
+      "line": 75,
+      "scope": "Four tests finish with3pass/1original assertion failure; xcodebuild still finalizing diagnostics, no successful runner-exit claim."
+    },
+    "classification": "Inherited last-delta-only test oracle defect reproduced in both arms; original failures retained.",
+    "next": "Prepare/review one-file test-only reconstruction with nil/empty controls, then require full integration qualification. Candidate diagnostic tests completed4 with1expected-original failure; xcodebuild remains finalizing diagnostics."
+  },
+  "independent_platform_client_review": {
+    "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp201-independent-review-54vc2294/EXP-201-qualification-audit.md",
+    "sha256": "8c4f8d92d03fa15a0f45d37f641a5d2b0e9280365774c1e70f428899f8a45f56",
+    "verdict": "M02-M09 accepted after independent per-architecture Swift/private C/ObjC/C++/resource inventory checks; M01 integration gap admitted separately."
+  },
+  "support_documentation": {
+    "gate": "S1:F02",
+    "status": "PASS",
+    "source_revision": "1bdc9286c17d69d73e5e41530e6179c72a723368",
+    "documentation_revision": "c53ed48cf78661f410212170f59ff636d18a05f7",
+    "change": "One E01 Unreleased fix line; no customer setup or API changes.",
+    "commit": {
+      "parent": "5a570517404ba53f2f05adc8f7d55bf05361f437",
+      "paths": [
+        "CHANGELOG.md"
+      ],
+      "message": "Document URLSession request preparation fix",
+      "attempts": [
+        {
+          "signing": "-S",
+          "returncode": -15,
+          "timed_out": true,
+          "output": ""
+        },
+        {
+          "signing": "--no-gpg-sign",
+          "returncode": 0,
+          "timed_out": false,
+          "output": "[valpertui/urlsession-exactly-once c53ed48cf] Document URLSession request preparation fix\n 1 file changed, 1 insertion(+)\n"
+        }
+      ],
+      "head": "c53ed48cf78661f410212170f59ff636d18a05f7",
+      "signature": "N",
+      "completed_at": 1789867859.154964
+    },
+    "reviewed_invariants": [
+      "Existing URLSession setup/public API preserved",
+      "Unchanged endpoints/header policy/event schema/privacy surface",
+      "Original platform minimums retained",
+      "No deferred scene APIs or source dependencies",
+      "Five audited feature docs and five compiling/running public clients"
+    ],
+    "support_caveat": "A duplicate resume arriving during request preparation is deferred: its caller may return before native resume runs, and the continuation runs on the thread that finishes preparation after buffered callbacks have been enqueued. No latency, throughput or arbitrary thread/scheduling guarantee is added.",
+    "caveat_source": "DatadogInternal/Sources/NetworkInstrumentation/NetworkInstrumentationFeature.swift:resumeAction(for:continuation:) and finishPreparation(for:)",
+    "evidence": [
+      "EXP-197 source/red-green/reentrancy controls",
+      "EXP-199 terminal ownership and qualified native-state controls",
+      "EXP-200 ordinary and custom/NOP compatibility",
+      "EXP-201 M02-M11 public clients/platform/API/feature-doc checks"
+    ],
+    "temporary_audit": {
+      "path": "/tmp/exp201-f02-changelog-audit-7kLq9x/support-audit.json",
+      "sha256": "19c822c56ce76494eaa888c0ee0285e2a8ebb1b49003c3f6eec9f2721728dfa7",
+      "root_disposition": "Accepted source/support evidence after correction. Reject the suggestion to edit aggregate F02 dependencies: aggregate fields intentionally preserve reference/S3 obligations, while release_requirements.S1 owns candidate readiness."
+    },
+    "limits": "F03 integration, numeric performance, backend acceptance and F06 release review remain separate. No publication or push."
+  }
 }

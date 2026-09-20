@@ -458,7 +458,7 @@
   "result": {
     "ownership": "PASS on unchanged-source red/green and four native cells",
     "functional": "Internal455 tests/491 executions plus5 native state repetitions; Core815+4OS-skips, RUM901/937executions, Trace141, zero failures/runtime warnings",
-    "remaining": "Candidate ordinary/legacy requalification running; numeric P03, allocation/latency, backend and final platform/client release checks remain open.",
+    "remaining": "Ordinary/legacy17.5 requalification and EXP-200 compatibility pass. EXP-201 platform/public-client/API/doc checks pass, with integration diagnosis still open. Numeric performance/retention, backend acceptance and final release review remain open.",
     "signature": "Local candidate1bdc9286 unsigned after failed agent communication, explicitly user-authorized. No push."
   },
   "design_review": {
@@ -477,7 +477,8 @@
   "review": {
     "production": "Scoped independent pass: no synchronization, ARC or ordering finding.",
     "test_correction": "Scope three request-mutation counters to their URL; applied.",
-    "pending": "Existing suspend/resume test transient state assertion failed once after full455-pass at same production hashes. Review boundary synchronization before further qualification. No production regression conclusion."
+    "historical_pending": "Existing suspend/resume test transient state assertion failed once after full455-pass at same production hashes. Review boundary synchronization before further qualification. No production regression conclusion.",
+    "native_state_disposition": "Closed by native_state_boundary: sequential predicates independently reviewed; five repeated native transitions plus455 tests/491executions pass. Failed attempt retained below."
   },
   "commit": {
     "candidate_revision": "1bdc9286c17d69d73e5e41530e6179c72a723368",

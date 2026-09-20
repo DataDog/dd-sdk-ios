@@ -2214,3 +2214,34 @@ before opening the measured epoch. Use one weak settlement witness per task in a
 bounded window, including warm-up; overwriting a single witness proves only the
 last task released. Weak-table raw slot counts remain diagnostic, while live
 members and owned preparation/payload records must reach zero.
+
+For final compatibility, independently check every architecture's source-file list,
+private C/Objective-C/C++ inputs and resource bytes; a union across architectures
+can hide an omission. Complete affected-module inventories include the separate
+DatadogIntegrationTests target when public native networking uses the changed path.
+Its Example.app host requires a launchable runtime; source-directory file counts
+are not discovered test counts. Keep inherited TSAN report_bugs=0 distinct from a
+clean sanitizer claim.
+
+The current API verifier hard-codes an iPhone17Pro latest destination. If absent,
+preserve the failure and freeze a temporary destination-only adaptation; keep its
+full declared Tests/Fixtures graph, parser/comparator and API baseline bytes.
+Feature-doc verification needs reachable prior source objects. Use authenticated
+HTTPS fetch with per-command rewrite/credential settings if the SSH agent is
+unavailable; never change persistent Git configuration or emit credentials.
+Verification headers now identify1bdc9286c; if later rebased/amended/squashed, rerun
+the feature-doc skill before any separately authorized push so the SHA is reachable.
+
+For delta view assertions, reconstruct all target-owned full/update records in
+strict documentVersion order. A missing delta field means unchanged; an explicit
+empty array clears the field. Require initial full state, unique increasing
+versions, final stopped state and exact final values. Preserve the original
+assertion when diagnosing an inherited failure; remove all relevant payloads and
+append an explicit empty final update as separate negative controls. A last-delta
+nil alone cannot establish that the signal was never collected.
+
+Detached integration worktrees also need the existing Carthage OpenTelemetryApi
+binary, in addition to exact Swift-package pins. Check these before a diagnostic
+build and hash reused framework inputs for both arms. Aggregate gate fields retain
+reference/S3 evidence; only the relevant release_requirements entry qualifies an
+isolated S1 or S2 candidate.

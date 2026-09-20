@@ -232,4 +232,4 @@ conclusions belong in [ASSESSMENT.md](ASSESSMENT.md).
 
 | <a id="exp-200"></a>EXP-200 | C04, C05 | S1:C04/C05 closed |18/18 paired cells pass: strict ordinary/legacy26.5 ownership and custom/NOP17.5/26.5/27.0. Five oracle corruptions reject; clean installs, identities and restored boot states verified. | [record](Experiments/EXP-200-compatibility.md#exp-200--complete-customnop-and-ios265-compatibility) |
 
-| <a id="exp-201"></a>EXP-201 | F03 | DEFINED | Exact1bdc9286 affected platform packages, existing Swift/Objective-C clients and unchanged API/doc verification. Current-develop minimums/macOS inventory supersede the stale reference recipe for S1 only. | [record](Experiments/EXP-201-final-compatibility.md#exp-201--qualify-affected-platform-packages-and-existing-clients) |
+| <a id="exp-201"></a>EXP-201 | F02, F03 | S1:F02 closed; M01 diagnosis |24 platform builds, five public clients and exact API/doc verification pass. Full integration278 executes with one delta-hitch assertion under paired event-history diagnosis. F03 remains open. | [record](Experiments/EXP-201-final-compatibility.md#exp-201--qualify-affected-platform-packages-and-existing-clients) |

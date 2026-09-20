@@ -343,5 +343,36 @@
       ],
       "disposition": "Preserve snapshot and omissions. No further correction loop during this timebox; continue C04/C05 and F03. After syntax correction only a limited unqualified smoke would be admissible."
     }
+  },
+  "second_fixture_qualification_timebox": {
+    "defined_at": "2026-09-20T01:02:51.262282+00:00",
+    "duration_minutes": 45,
+    "scope": "Temporary fixture correction only while root completes EXP201; accepted numeric runs wait for host idle and frozen independent review.",
+    "input_fixture": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp198-entry-rows.GPJ1XG",
+    "required_repairs": [
+      "Fix parse syntax .now() + .nanoseconds",
+      "Prepare/drain registered companion metrics before allocation epoch",
+      "Use live weak memberships and zero owned records rather than raw terminal-table slots",
+      "Observe every task in bounded64 window and warm-up autorelease settlement",
+      "Add full-lifetime churn including construction, ownership negative controls and post-teardown native forwarding; execute declared unbound companion rows"
+    ],
+    "stop_rule": "One implementation correction and independent review, then root compile/qualification. Stop this attempt on remaining oracle gaps or timeout; preserve all artifacts, no accepted ABBA until every frozen requirement holds.",
+    "thresholds_changed": false,
+    "status": "ENDED: SOURCE REVIEW REJECTED, NOT EXECUTED",
+    "output_fixture": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp198-final-correction.wy9HqJ",
+    "swift_sha256": "26e7ec9716963b5894e9adfb0f79778d335695b4798a4560ecdf0c7679b2e846",
+    "blockers": [
+      "Post-teardown forwarding calls settle(), which force-unwraps a feature deliberately set nil; fixture would trap before result output.",
+      "Retention shares the feature with prior allocation rows, violating the fresh220-lifetime cohort.",
+      "Allocation warm-up runs before the logger is installed, with no discarded counter-active batch.",
+      "Missing feature/payload/continuation and numeric-budget negative controls, completed-task resume discriminator and per-row observed lifecycle counts.",
+      "Separate unbound processes have no defined paired order/count/invalidation contract and do not fit unchanged32launches."
+    ],
+    "next": "Finish independent compatibility/backend/documentation gates; any later attempt needs an explicitly revised bounded fixture design before implementation. No threshold change or numeric acceptance.",
+    "independent_review": {
+      "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp198-final-source-audit-za8ja44e/EXP-198-fixture-review.md",
+      "sha256": "a4b97de6ece3ab6f0df3a45dc5ee09a76a2be64bdcdc1705ffb283deb76118fc",
+      "verdict": "REJECTED BEFORE EXECUTION"
+    }
   }
 }

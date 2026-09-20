@@ -45,6 +45,17 @@ implementation because first installation can reenter runtime hooks. This repair
 closes the owned-record defect only: P03 numeric retention remains open, and shared
 heap growth without instrumentation remains unattributed. All thresholds stand.
 
+EXP-201 adds independently reviewed platform/public-client coverage and unchanged
+API baselines at1bdc9286. Five documentation-only updates correct inherited Trace
+semantics and verification metadata. The separately added integration suite has
+277passes and one delta-hitch assertion failure under source-paired diagnosis;
+no URLSession regression is inferred before the actual event-history comparison.
+The second EXP-198 fixture draft is rejected before execution for measurement and
+teardown defects; these are fixture findings, not SDK production crashes. Numeric
+performance and full release acceptance remain open. S1:F02 is qualified by the
+source-matched changelog/support review and compiled public clients; deferred
+resume timing/thread behavior is explicitly recorded in EXP-201.
+
 Review closure does not imply overall release readiness. Current release status
 belongs exclusively to [release-gates.json](release-gates.json) and [PLAN](PLAN.md).
 [Triage](REVIEW_TRIAGE.md) records the initial assessment and finding boundaries;

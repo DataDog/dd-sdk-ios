@@ -133,3 +133,14 @@ Current qualification boundary: the all-thread counter passes caller, actual fea
 ## Candidate and ownership amendment
 
 The original464af911 protocol remains in Git at `cfecc08d45fb0aa36a548ed81d1461527b4f6e14` for this same path (SHA256 `d94d439cf3ebca860236d0974097e2483b41b2b9e0f5b526e5b1f0747dbe0a3b`). EXP-199 demonstrates and repairs a strong terminal-value retention defect. This amendment changes only B and the terminal-record oracle to match that repair. Keep every timing/allocation row, boundary, sample count, ABBA order, absolute memory threshold, negative control and failed diagnostic. No accepted numeric measurement predates this amendment.
+
+## Second fixture qualification timebox
+
+Defined2026-09-20 before correction:45minutes for a fresh temporary copy to close
+the five recorded row-fixture gaps. Keep the prior unbuilt draft and all failures.
+One implementation pass and independent source review precede root compilation
+and bounded qualification; any remaining oracle gap or timeout ends this attempt.
+Preparation may run alongside EXP-201 source/documentation work, but accepted
+measurements wait for completed host workloads. Thresholds, rows, sample counts,
+ABBA order and candidate identities remain unchanged. The owning result records
+the exact input, required corrections and subsequent output hashes.

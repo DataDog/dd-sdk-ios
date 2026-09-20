@@ -1800,13 +1800,13 @@
         },
         "S1": {
           "scope": "Documentation for the actual shipped changes",
-          "status": "OPEN",
+          "status": "CLOSED",
           "dependencies": [
             "S1:F07"
           ],
           "decisive_test": "Review changelog/support limitations and affected feature docs against exact source; preserve existing API and customer setup. Publish no unrelated experimental scene API.",
           "environment": "Source and compiling examples for affected modules",
-          "evidence": "Reference evidence retained; this release candidate is not qualified.",
+          "evidence": "EXP-201 support review at production1bdc9286: E01 changelog committed c53ed48c, five audited feature docs at5a570517, five public Swift/Objective-C clients compile/run and unchanged nine-module API baselines. Existing setup/wire/privacy/minimums preserved; duplicate-resume timing/thread caveat recorded. No deferred scene API. Results/EXP-201-final-compatibility.json owns evidence; performance/backend/F03/F06 remain separate.",
           "required": true
         },
         "S2": {
@@ -1865,7 +1865,7 @@
           ],
           "decisive_test": "Freeze affected modules/platforms via F07; run relevant complete suites, deployment builds, existing Swift/Objective-C clients, lint and unchanged API/wire/privacy checks.",
           "environment": "FINAL_COMPATIBILITY.md release applicability matrix",
-          "evidence": "Reference evidence retained; this release candidate is not qualified.",
+          "evidence": "EXP-201 production1bdc9286: M02-M11 pass with24 platform builds, five public clients, exact Swift/Objective-C API equality and audited docs. M01 full integration278 executes277pass/1delta-hitch failure/0skip. Paired62f/1bd histories prove inherited last-delta-only assertion defect; both collected one hitch and12 offline corruptions reject. Original failures retained; test-only correction/full integration qualification pending. F03 stays OPEN.",
           "required": true
         },
         "S2": {
