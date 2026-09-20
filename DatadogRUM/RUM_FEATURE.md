@@ -241,6 +241,7 @@ monitor.stopView(key: "ProductList")
 
 ### Implementation
 - **`DatadogRUM/Sources/Feature/RUMFeature.swift`** - Internal feature implementation. Shows how configuration translates to behavior.
+- **`DatadogRUM/Sources/RUMVitals/RenderLoop/RenderLoopObserver.swift`** - Internal display-link lifetime and frame delivery. A weak callback target lets the observer and its readers release when their owning RUM graph is released.
 
 ## Configuration Categories
 
