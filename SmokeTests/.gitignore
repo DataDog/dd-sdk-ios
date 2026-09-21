@@ -2,12 +2,6 @@
 .build
 xcuserdata
 
-# Carthage test
-# - ignore `Cartfile.resolved` and `Cartfile` as they will be re-created for every test run
-/carthage/Carthage
-/carthage/Cartfile.resolved
-/carthage/Cartfile
-
 # SPM test
 # - ignore `SPMProject.xcodeproj` as it will be re-created for every test run
 /spm/SPMProject.xcodeproj

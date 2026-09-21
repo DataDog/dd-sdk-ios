@@ -69,7 +69,6 @@ body:
       options:
         - SPM
         - Cocoapods
-        - Carthage
         - XCFramework
         - Source
     validations:

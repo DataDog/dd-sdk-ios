@@ -60,31 +60,6 @@ let package = Package(
   ```
 </details>
 
-<details>
-  <summary>Carthage</summary>
-
-  The `Cartfile` remains the same: 
-  ```
-  github "DataDog/dd-sdk-ios"
-  ```
-
-  In Xcode, you **must** link the following frameworks:
-  ```
-  DatadogCore.xcframework
-  DatadogInternal.xcframework
-  ```
-
-  Then select the product modules you intend to use:
-  ```
-  DatadogCrashReporting.xcframework + CrashReporter.xcframework
-  DatadogLogs.xcframework
-  DatadogRUM.xcframework
-  DatadogSessionReplay.xcframework
-  DatadogTrace.xcframework
-  DatadogWebViewTracking.xcframework
-  ```
-</details>
-
 ### SDK Configuration
 
 The SDK should be initialized as early as possible in the app lifecycle, specifically in the `AppDelegate`'s `application(_:didFinishLaunchingWithOptions:)` callback. This ensures accurate measurement of all metrics, including application startup duration. For apps built with SwiftUI, use `@UIApplicationDelegateAdaptor` to access the `AppDelegate`.
@@ -230,30 +205,6 @@ let package = Package(
   ```
 </details>
 
-<details>
-  <summary>Carthage</summary>
-
-  The `Cartfile` stays the same: 
-  ```
-  github "DataDog/dd-sdk-ios"
-  ```
-
-  In Xcode, you **must** link the following frameworks:
-  ```
-  DatadogInternal.xcframework
-  DatadogCore.xcframework
-  ```
-
-  Then you can select the modules you want to use:
-  ```
-  DatadogLogs.xcframework
-  DatadogTrace.xcframework
-  DatadogRUM.xcframework
-  DatadogCrashReporting.xcframework + CrashReporter.xcframework
-  DatadogWebViewTracking.xcframework
-  DatadogObjc.xcframework
-  ```
-</details>
 
 **Note**: In case of Crash Reporting and WebView Tracking usage it's also needed to add RUM and/or Logs modules to be able to report events to RUM and/or Logs respectively.
 
