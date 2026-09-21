@@ -334,35 +334,61 @@ class NetworkInstrumentationIntegrationTests: XCTestCase {
 #if os(iOS)
 import Network
 
-final class E03NativeResourceCompletionTests: XCTestCase {
+final class URLSessionResourceCompletionTests: XCTestCase {
     @MainActor
-    func testNativeMissingBodyFailureReportsNetworkError() throws { try runTransfer(.missingBody) }
+    func testWhenResponseBodyIsMissing_itReportsNetworkError() throws {
+        try runTransfer(.missingBody)
+    }
+
     @MainActor
-    func testNativePartialBodyFailureReportsNetworkError() throws { try runTransfer(.partialBody) }
+    func testWhenResponseBodyIsIncomplete_itReportsNetworkError() throws {
+        try runTransfer(.partialBody)
+    }
+
     @MainActor
-    func testNativeCompleteBodyReportsResource() throws { try runTransfer(.complete) }
+    func testWhenResponseBodyCompletes_itReportsResource() throws {
+        try runTransfer(.complete)
+    }
+
     @MainActor
-    func testNativeSuccessfulHEADReportsEmptyResource() throws { try runTransfer(.head) }
+    func testWhenHEADResponseSucceeds_itReportsEmptyResource() throws {
+        try runTransfer(.head)
+    }
+
     @MainActor
-    func testNativeSuccessful204ReportsEmptyResource() throws { try runTransfer(.noContent) }
+    func testWhenResponseHasNoContent_itReportsEmptyResource() throws {
+        try runTransfer(.noContent)
+    }
+
     @MainActor
-    func testNativeNoResponseFailureReportsNetworkError() throws { try runTransfer(.noResponse) }
+    func testWhenConnectionClosesBeforeResponse_itReportsNetworkError() throws {
+        try runTransfer(.noResponse)
+    }
+
     @MainActor
-    func testNativeFailedBodyAfterNavigationRetainsOwner() throws { try runTransfer(.partialBody, transition: .view) }
+    func testWhenResponseBodyFailsAfterNavigation_itKeepsStartingView() throws {
+        try runTransfer(.partialBody, transition: .view)
+    }
+
     @MainActor
-    func testNativeFailedBodyAfterSessionStopRetainsOwner() throws { try runTransfer(.partialBody, transition: .session) }
+    func testWhenResponseBodyFailsAfterSessionStop_itKeepsStartingSessionAndView() throws {
+        try runTransfer(.partialBody, transition: .session)
+    }
+
     @MainActor
-    func testNativeCompleteHTTPErrorPreservesResourcePolicy() throws { try runTransfer(.httpError) }
+    func testWhenHTTPErrorResponseCompletes_itReportsResource() throws {
+        try runTransfer(.httpError)
+    }
 
     private enum Transition { case none, view, session }
 
     @MainActor
-    private func runTransfer(_ mode: E03TransferServer.Mode, transition: Transition = .none) throws {
+    private func runTransfer(_ mode: ControlledHTTPResponseServer.Mode, transition: Transition = .none) throws {
         XCTAssertTrue(Thread.isMainThread)
         let ready = expectation(description: "local listener ready")
         let requestReceived = expectation(description: "native request received")
         let headersWritten = mode == .noResponse ? nil : expectation(description: "HTTP headers written")
-        let server = try E03TransferServer(mode: mode, ready: ready, requestReceived: requestReceived, headersWritten: headersWritten)
+        let server = try ControlledHTTPResponseServer(mode: mode, ready: ready, requestReceived: requestReceived, headersWritten: headersWritten)
         server.start()
         wait(for: [ready], timeout: 5)
         let port = try XCTUnwrap(server.port)
@@ -376,8 +402,8 @@ final class E03NativeResourceCompletionTests: XCTestCase {
             XCTAssertTrue(server.listenerCancelled)
             XCTAssertNoThrow(try core.flushAndTearDown())
         }
-        RUM.enable(with: .init(applicationID: "e03-transfer", urlSessionTracking: .init(), trackFrustrations: true), in: core)
-        URLSessionInstrumentation.enableDurationBreakdown(with: .init(delegateClass: E03TransferDelegate.self), in: core)
+        RUM.enable(with: .init(applicationID: "resource-transfer", urlSessionTracking: .init(), trackFrustrations: true), in: core)
+        URLSessionInstrumentation.enableDurationBreakdown(with: .init(delegateClass: ResourceTransferDelegateSpy.self), in: core)
         let monitor = RUMMonitor.shared(in: core)
         monitor.startView(key: "transfer-owner", name: "Transfer Owner")
         monitor.startAction(type: .tap, name: "Transfer Action")
@@ -387,7 +413,7 @@ final class E03NativeResourceCompletionTests: XCTestCase {
         let invalidated = expectation(description: "URLSession invalidation")
         let headers = mode == .noResponse ? nil : expectation(description: "URLSession received HTTP headers")
         let firstData = mode.body.isEmpty ? nil : expectation(description: "URLSession received initial body byte")
-        let delegate = E03TransferDelegate(headers: headers, firstData: firstData, completed: completed, invalidated: invalidated)
+        let delegate = ResourceTransferDelegateSpy(headers: headers, firstData: firstData, completed: completed, invalidated: invalidated)
         let configuration = URLSessionConfiguration.ephemeral
         configuration.protocolClasses = []
         configuration.timeoutIntervalForRequest = 5
@@ -516,7 +542,7 @@ final class E03NativeResourceCompletionTests: XCTestCase {
     }
 }
 
-private final class E03TransferDelegate: NSObject, URLSessionDataDelegate {
+private final class ResourceTransferDelegateSpy: NSObject, URLSessionDataDelegate {
     let headers: XCTestExpectation?
     let firstData: XCTestExpectation?
     let completed: XCTestExpectation
@@ -557,7 +583,7 @@ private final class E03TransferDelegate: NSObject, URLSessionDataDelegate {
     func urlSession(_ session: URLSession, didBecomeInvalidWithError error: Error?) { invalidated.fulfill() }
 }
 
-private final class E03TransferServer {
+private final class ControlledHTTPResponseServer {
     enum Mode {
         case missingBody, partialBody, complete, head, noContent, noResponse, httpError
         var status: Int? { self == .noResponse ? nil : self == .noContent ? 204 : self == .httpError ? 404 : 200 }
