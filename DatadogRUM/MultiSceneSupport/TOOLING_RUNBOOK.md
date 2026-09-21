@@ -2983,3 +2983,32 @@ Use a command-scoped exact HTTPS mapping with the existing credential helper; do
 not change saved configuration. After a timed-out push, read the actual remote
 head and verify transport-process absence before any retry. Preserve a failed
 post-push guard and confirm the intended head/body before editing the PR.
+
+
+For Duo readiness, require terminal `Finished` without any migration-failure text,
+then a nonempty native Home accessibility tree before app installation. Freeze the
+Xcode/runtime/device-type and AXe binary identities. Timeout cleanup must reap the
+child and prove its whole owned process group absent; shutdown must succeed or be
+proven already complete before deletion. Query migration logs only for boot failures,
+scoped to the owned device and exact boot interval. The [stopped readiness check](Results/S2-Duo-environment-readiness.json)
+retains a second semantic boot failure with successful cleanup; do not retry it.
+
+Formatted CI passes can mask expected failures inserted by early-flake detection.
+Use the unformatted `ResultBundles/*.log` or xcresult to identify the assertion and
+every repetition before classifying the result. Download exact job artifacts via
+the authenticated GitLab Browse/Download controls; record source job, file hash and
+current PR head. E01's first nine displayed passes were expected failures, and all
+ten request-count assertions failed. A mock's private interception boundary cannot
+certify the real networking boundary; qualify each at its owning test level.
+
+Resolve compiled test membership from the frozen Xcode target’s source phase;
+a directory glob can both omit shared sources and include files outside the target.
+For very short repeated tests, a process sampler can miss the entire execution.
+Preserve that failure. Existing PID-tagged startup logs and a single testable/suite
+run containing every iteration may independently establish same-process execution
+under review, without rerunning the tests. Retain exact inherited duplicate-class
+pairs; reject new names or library pairs and avoid warning-free claims.
+
+A passing suite summary after `Restarting after unexpected exit` does not qualify
+the original process. Read the first exception and keep its failure. E03’s detailed
+Core artifact identifies an over-fulfilled upload expectation before the restart.

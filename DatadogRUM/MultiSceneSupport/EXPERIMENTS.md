@@ -16,7 +16,7 @@ Active records use stable section anchors. Do not edit or load the frozen archiv
 wholesale. [Lookup rules](Archive/README.md) and [rejected lessons](REJECTED_APPROACHES.md)
 remain available for a specific question.
 
-Post-publication follow-ups retain their existing release-gate ownership: [Resource review](Results/S1-resource-completion-review.json), [hitch assertions](Results/S1-hitch-review.json), and [current CI](Results/S1-ci-followup.json). They do not allocate additional numbered experiments.
+Post-publication follow-ups retain their existing release-gate ownership: [Resource review](Results/S1-resource-completion-review.json), [hitch assertions](Results/S1-hitch-review.json), and [current CI](Results/S1-ci-followup.json). They do not allocate additional numbered experiments. The [E01 test witness](Results/S1-resume-witness-review.json) and [Duo environment readiness](Results/S2-Duo-environment-readiness.json) stay within those existing release gates.
 
 | Experiment | Related gates | Bounded outcome | Decisive conclusion | Detailed record |
 | --- | --- | --- | --- | --- |

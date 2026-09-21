@@ -1,0 +1,34 @@
+{
+  "schema_version": 1,
+  "work_item": "S2:F08 environment-only Duo readiness",
+  "status": "STOPPED_BEFORE_READINESS",
+  "recorded_at": "2026-09-21T18:48:58.240277+00:00",
+  "artifact_root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-duo-readiness-_kd586qn",
+  "definition": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-duo-readiness-_kd586qn/definition.json",
+    "sha256": "3fac9b4c32fac9d0e44c81e54320fb0bc8c07cc61bbae4874f375cd7fd545798"
+  },
+  "controls": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-duo-readiness-_kd586qn/controls.json",
+    "sha256": "ba344f22745fd24f0320652a3e34e099572be1c18f1bf8fd5e5f2c5376e5ea29"
+  },
+  "result": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-duo-readiness-_kd586qn/result.json",
+    "sha256": "7e4d5c03ed627a03a68e8860a88966099fcec57548a3c5615aefd194fcd9ab7c"
+  },
+  "review": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-duo-readiness-_kd586qn/review.json",
+    "sha256": "f718d115abd4e5b4f1579cb6bc1dc32bf066ffe5311d0fd8f601ffdb0d9401db"
+  },
+  "host_diagnostics": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-duo-readiness-_kd586qn/host-diagnostics.json",
+    "sha256": "0e6b211535e7e2c2bd6620e0034d67fac3ee3f880504718f42c4f0cc4089e0ae"
+  },
+  "outcome": "One fresh Duo27.1 simulator reaches terminalStatus3/Data Migration Failed despite exit0. No app installed/launched;no AXe probe. Source/bundle/protected guards and shutdown/delete/process-group cleanup pass before the original deadline.",
+  "cause": "Unresolved. Scoped simulator log has no migration detail;existing owned system.log/CoreSimulator lines do not identify cause;host unified-log store denies access.",
+  "app_installs": 0,
+  "app_launches": 0,
+  "axe_probes": 0,
+  "gate_credit": false,
+  "next_action": "Require a materially changed environment and separate fixed admission before another fresh boot. Continue independent S1 CI and callback source/oracle preparation; do not repeat the stopped app journey."
+}

@@ -110,5 +110,6 @@
     "review": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-app-j01-tf3_dxfy/review.json",
     "candidate": "UNRUN"
   },
-  "next_action": "One independently admitted environment-only fresh Duo boot and accessibility preflight. Parse semantic migration outcome before any app install; no retry of the original journey."
+  "next_action": "Require a materially changed environment and separate fixed admission before another fresh boot. Continue independent S1 CI and callback source/oracle preparation; do not repeat the stopped app journey.",
+  "environment_readiness": "Results/S2-Duo-environment-readiness.json"
 }

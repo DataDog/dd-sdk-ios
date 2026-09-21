@@ -1,0 +1,81 @@
+{
+  "schema_version": 1,
+  "work_item": "S1:F06 PR3215 resume-deferral test fixture repair",
+  "status": "QUALIFIED_AND_PUBLISHED_SIGNED",
+  "recorded_at": "2026-09-21T19:19:01.017396+00:00",
+  "root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s1-resume-witness-wg4afuza",
+  "definition": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s1-resume-witness-wg4afuza/definition.json",
+    "sha256": "80e5ea648f79eabb68daef8efd9fad1ea4a481414063ffed105b691c2f1db082"
+  },
+  "source_edit": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s1-resume-witness-wg4afuza/source-edit.json",
+    "sha256": "ec2499783ee9b2d9bf84afafb43530eae03b32ad84856b854094c35a11a43f3f"
+  },
+  "controls": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s1-resume-witness-wg4afuza/controls-admitted.json",
+    "sha256": "0592b71658ceb348d6b8439280a6e41bd4b624cc87265cb2f74291475d27be26"
+  },
+  "freeze": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s1-resume-witness-wg4afuza/freeze-admitted.json",
+    "sha256": "50ed154d8bd009e2ff6d4efcaf464c691b59b50aea5b95476c63b98d5d0cae84"
+  },
+  "baseline_revision": "ab71c3a6fb77307081f58b67d86d096d0340ce5f",
+  "finding": "The full watchOS artifact identifies the request-count assertion at line 82: 3 versus 2 in all 10 repetitions. Early-flake detection marked the first 9 as expected failures. Continuation count 2 and forwarding count 3 did not fail. The watchOS mock records each private resume invocation; the corrected test checks exact task forwarding without starting requests.",
+  "review": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s1-resume-witness-wg4afuza/final-review.json",
+    "sha256": "359db33d57552e09b897a1eb8a11388787c514e8f12537b8a544f214b20254b7"
+  },
+  "sdk_changes": 0,
+  "shared_fixture_changes": 0,
+  "native_executions": 20,
+  "gate_closures": [],
+  "discovery_reconciliation": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s1-resume-witness-wg4afuza/discovery-reconciliation.json",
+    "sha256": "5c56cbc8a55342199b501fd5bbd260d4fd6d504c75f037df1049f7acdc430fef"
+  },
+  "native_reconciliation": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s1-resume-witness-wg4afuza/test-reconciliation.json",
+    "sha256": "f5cf50efb2e4ae1cd158c2b0ae86f9c38a1d86ad0784dfb65e86910be3efc8c3"
+  },
+  "watchos_compile": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s1-resume-witness-wg4afuza/watchos-result.json",
+    "sha256": "80874c7c5e90641ab62740322c822a02cee67a092c58ba7700f06ae680484204"
+  },
+  "publication": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s1-resume-witness-wg4afuza/publication.json",
+    "sha256": "32a2930cf0cbae8a039c6ae38b15296bf6065eeb780da1734fe4d7414a7a1020"
+  },
+  "signed_head": "0eaba3e39d89256f849addee284e1b92d14b8a5e",
+  "native_successes": 20,
+  "native_cases": 2,
+  "native_process_id": 51047,
+  "compiled_target_sources": 54,
+  "watchos_runtime": "CURRENT_HEAD_CI_PENDING",
+  "inherited_runtime_diagnostics": 59,
+  "warning_free": false,
+  "preserved_stops": [
+    {
+      "artifact": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s1-resume-witness-wg4afuza/discover-result.json",
+        "sha256": "a7db9dd486f67fec493d8927dc2053395133fff600064f88fc5d2e933e32d0b7"
+      },
+      "disposition": "Directory glob did not match Xcode target membership; frozen PBX sources reconcile the existing build without a rerun."
+    },
+    {
+      "artifact": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s1-resume-witness-wg4afuza/test-result.json",
+        "sha256": "6c51fb27772ed5fbd5c1092439d27a8f35a5aee049ca66a28447ffc69cc55e13"
+      },
+      "disposition": "The 50 ms sampler missed the 32 ms run. PID-tagged startup, one testable/suite run and all 20 joined results establish same-process execution; no rerun."
+    },
+    {
+      "artifact": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s1-resume-witness-wg4afuza/publication-guard-refresh.json",
+        "sha256": "e6d81bc30e47b34acc69a741013ee4c44c75d125ad2c23d532539de6c7d40003"
+      },
+      "disposition": "Initial post-push metadata guard failed; subsequent read confirms the intended remote head and unchanged PR body. Push was not retried."
+    }
+  ],
+  "next_action": "Current-head watchOS CI and maintainer review; no additional local test run."
+}

@@ -2,69 +2,83 @@
   "schema_version": 1,
   "gate": "S1:F06",
   "status": "CI_TRIAGE_IN_PROGRESS",
-  "recorded_at": "2026-09-21T17:59:46.496634+00:00",
+  "recorded_at": "2026-09-21T19:19:01.017396+00:00",
   "artifact_root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s1-hitch-review-3bgot45i",
   "snapshot": {
-    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s1-hitch-review-3bgot45i/ci-before-hitch-publication.json",
-    "sha256": "7c6a5ee63a062fd4edc2aecaf4d4f0d3fa7c6326bb1dd82268442ef3e0b02b1b",
-    "at": "2026-09-21T17:42:00.094597+00:00",
-    "limit": "Before hitch0deff4750 publication; prior H00 green CI does not qualify the new head."
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s1-hitch-review-3bgot45i/ci-refresh-20260921T185832Z.json",
+    "sha256": "db8f411c64e854028c908f407cf6159665ae82dcd7778116f19146bce2991ae2",
+    "at": "2026-09-21T18:58:32Z",
+    "limit": "Seven-PR observation. E01 is subsequently updated by its signed publication receipt; later CI and review changes require a fresh read."
   },
   "log_analysis": {
-    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s1-hitch-review-3bgot45i/ci-log-analysis.json",
-    "sha256": "67ca82ed78fae2e7ae7cc0966b060cef94ea8a40a76bd0d1b289e0f7c531314c"
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s1-hitch-review-3bgot45i/ci-log-analysis-round3.json",
+    "sha256": "324da025f1432ce2c45465c07eabdf4775833228bae5884a989810a204437e9d"
   },
   "items": [
     {
       "id": "E01-watchOS",
       "owner": "SDK implementer",
-      "dependency": "Exact failing assertion and CI artifact from job2062467344",
-      "status": "DETAILED_FAILURE_LOCATION_PENDING",
-      "finding": "New resume-deferral test reports3versus2 on repetition10; both continuation-count and captured-request-count assertions expect2. The formatted log does not identify which failed.",
-      "decisive_test": "Identify assertion from xcresult/JUnit, then one admitted same-process10-repeat diagnostic with target/foreign public interceptions, private ServerMock callbacks and swizzle teardown identities; keep original2continuation/3forwarded/2request assertions.",
+      "dependency": "Current-head CI and maintainer review at 0eaba3e3",
+      "status": "TEST_REPAIR_PUBLISHED_CI_PENDING",
+      "finding": "Signed test-only 0eaba3e3 replaces mock request counts with exact task-forwarding identities. Both macOS cases pass 10 iterations in one process; watchOS arm64/x86_64 full-target compilation passes.",
+      "decisive_test": "Exact target/foreign forwarding witness;2focused cases repeated10times on macOS with no expected failures/skips;watchOS test-target compilation and current-head CI runtime. No ServerMock/SDK edit.",
       "environment": "CI Xcode26.0/watchOS26.0 with test visibility enabled; no local watchOS runtime is installed.",
-      "review": "Independent review identified public/private swizzle and fixture-lifecycle interaction as a candidate mechanism, not a proven defect.",
-      "sdk_cause": "UNRESOLVED"
+      "review": "Independent source/result review accepts the bounded repair. Preserve both harness stops, their static reconciliations and 59 inherited test-dependency diagnostics; no warning-free claim.",
+      "sdk_cause": "NO_SDK_REPAIR_REQUIRED_FOR_IDENTIFIED_ASSERTION",
+      "repair": "Results/S1-resume-witness-review.json",
+      "current_head": "0eaba3e39d89256f849addee284e1b92d14b8a5e"
     },
     {
-      "id": "E03-macOS",
+      "id": "E02-timeseries",
       "owner": "SDK implementer / upstream test maintainer",
-      "dependency": "Source-bound inherited timeseries assertion review",
-      "status": "INHERITED_ORACLE_MISMATCH_IDENTIFIED",
-      "finding": "pause() flushes partial batches after the test records the pre-pause count;2versus1 can therefore reflect a legal flush. Test and collector match develop9a8a66c3 exactly.",
-      "decisive_test": "A separately scoped deterministic buffered-sample control must distinguish pause flush from sampling after pause. Preserve current CI failure; no waiver or Resource SDK edit follows.",
-      "environment": "macOS native unit test; raw job2063993559 on Resource046719c3"
+      "status": "TEST_ORACLE_REPAIR_DESIGN_REVIEWED",
+      "dependency": "Separately scoped deterministic test-only correction",
+      "finding": "TimeseriesSessionCollectorTests.testWhenBackgrounded_pauseAlwaysStopsSampling$6 fails2vs1 at formatted logline5673, matching earlier E03 job2063993559. Collector pause flushes buffered samples; current test and collector match develop exactly.",
+      "decisive_test": "Use existing synchronous flush as the pause queue barrier, then compare post-pause event counts after the unchanged wait; preserve pre-pause positive sampling and complementary resume control. Negative control must reject sampling after the barrier.",
+      "environment": "Native macOS unit tests; no Resource production change."
+    },
+    {
+      "id": "E03-current-macOS",
+      "owner": "SDK implementer",
+      "status": "UPLOAD_FLUSH_FIXTURE_REVIEW_PENDING",
+      "dependency": "Review exact upload fixture and a deterministic flush-only discriminator",
+      "finding": "The detailed Core log identifies DataUploadWorkerTests.testItFlushesAllData over-fulfilling Make 3 uploads at line 7752, then uncaught NSInternalInconsistencyException and signal 6. Xcode restarts at line 8155; the later 503-case passing summary does not erase the crash.",
+      "decisive_test": "Separate explicit flush from automatic upload scheduling while retaining exactly three uploads, event order and nil previous status. Add a no-flush negative control before accepting a test-only repair.",
+      "environment": "Native macOS and current PR3218 CI. Worker and test match inspected develop 9a8a66c3 byte-for-byte; no Resource SDK attribution is established.",
+      "prior_failure": "Earlier job2063993559 timeseries failure is retained in the first analysis and E02 item."
     },
     {
       "id": "E04-watchOS",
       "owner": "SDK implementer",
-      "dependency": "Current external CI retry result",
-      "status": "EXTERNAL_RETRY_PENDING",
-      "decisive_test": "If still failing, obtain exact integrity rule from raw test artifact; formatted job2062467644 reports only DatadogTestsObserver.swift:163.",
+      "dependency": "Maintainer review and separately authorized merge",
+      "status": "CURRENT_CHECKS_PASS_REVIEW_PENDING",
+      "decisive_test": "All current CI checks pass at the 18:58 observation. Retain the older failed integrity job; no agent retry or merge.",
       "environment": "Authenticated CI artifact; no agent retry"
     },
     {
-      "id": "E02-and-E05-macOS",
-      "owner": "SDK implementer",
-      "dependency": "Authenticated raw job logs",
-      "status": "LOG_ACCESS_BLOCKED_BY_LOCKED_DESKTOP",
-      "decisive_test": "Identify actual failed test/assertion on each current head before proposing any correction.",
-      "environment": "Chrome GitLab session; jobs2062467421and2062467601 at snapshot"
+      "id": "E05-current-CI",
+      "owner": "Repository CI / SDK implementer",
+      "status": "SMOKE_JOBS_PENDING",
+      "dependency": "Current external CI jobs",
+      "finding": "All seven PRs are now ready for review by external action. E05 macOS passes; only iOS/tvOS smoke jobs remain pending at 18:58. Its aggregate DDCI status still reports failure.",
+      "decisive_test": "Resolve current required smoke-job and aggregate outcomes. Session Replay captured-content correctness remains outside repair scope.",
+      "environment": "Repository CI / PR3220; preserve externally changed ready state."
     },
     {
       "id": "H00-current-CI",
       "owner": "Repository CI / RUM maintainers",
-      "dependency": "Published signed0deff4750",
-      "status": "CURRENT_HEAD_CI_AND_REVIEW_PENDING",
-      "decisive_test": "All required current-head CI and maintainer acceptance; local exact3/3 already qualified.",
-      "environment": "Repository CI / PR3214"
+      "dependency": "Distinguish queued work at teardown from persistent retention",
+      "status": "CORE_RETENTION_DISCRIMINATOR_PENDING",
+      "decisive_test": "Trace ownership and queue draining on the exact source. A bounded check must distinguish delayed release from persistent retention; preserve the integrity assertion and avoid blind retries.",
+      "environment": "Repository CI / PR3214",
+      "finding": "The detailed watchOS log identifies a live DatadogCoreProxy after RUMMonitorTests.testRandomlyCallingDifferentAPIsConcurrentlyDoesNotCrash. The test, monitor, proxy and core match inspected develop 9a8a66c3."
     },
     {
       "id": "DL01-current-CI",
       "owner": "Repository CI / SDK implementer",
-      "dependency": "Current sync/check results",
-      "status": "AGGREGATE_FAILURE_RECONCILIATION_PENDING",
-      "decisive_test": "Resolve aggregate failure against current component-job states without blind retry.",
+      "dependency": "Maintainer review and separately authorized merge",
+      "status": "CURRENT_CHECKS_PASS_REVIEW_PENDING",
+      "decisive_test": "Current CI checks pass at29c28a01; mergegate and review remain. No merge authorized.",
       "environment": "Repository CI / PR3216"
     }
   ],
@@ -151,5 +165,9 @@
   "sdk_changes": 0,
   "agent_ci_retries": 0,
   "gate_closures": [],
-  "next_action": "Retrieve exact failure artifacts when desktop access returns; continue independent S2 tooling preparation while blocked."
+  "next_action": "Proceed with separate bounded timeseries and upload-flush test repairs; investigate H00 ownership before any change. Follow E01 current-head CI without repeating accepted local tests.",
+  "prior_log_analysis": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s1-hitch-review-3bgot45i/ci-log-analysis-round2.json",
+    "sha256": "492b626868b471e8c6790e513adcb61580d7296456763d98bfc05658bbf26054"
+  }
 }
