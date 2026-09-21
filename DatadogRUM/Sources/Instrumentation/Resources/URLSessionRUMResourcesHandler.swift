@@ -205,32 +205,32 @@ internal final class URLSessionRUMResourcesHandler: DatadogURLSessionHandlerSupp
             )
         }
 
-        if let httpResponse = interception.completion?.httpResponse {
-            subscriber.process(
-                command: RUMStopResourceCommand(
-                    resourceKey: interception.identifier.uuidString,
-                    time: dateProvider.now,
-                    attributes: combinedAttributes,
-                    kind: RUMResourceType(response: httpResponse),
-                    httpStatusCode: httpResponse.statusCode,
-                    size: interception.mostAccurateResponseSize
-                )
+        if let httpResponse = interception.completion?.httpResponse, interception.completion?.error == nil {
+            var command = RUMStopResourceCommand(
+                resourceKey: interception.identifier.uuidString,
+                time: dateProvider.now,
+                attributes: combinedAttributes,
+                kind: RUMResourceType(response: httpResponse),
+                httpStatusCode: httpResponse.statusCode,
+                size: interception.mostAccurateResponseSize
             )
+            command.isAutomatic = true
+            subscriber.process(command: command)
         }
 
         if let error = interception.completion?.error {
             let errorAttributes = combinedAttributes
-            subscriber.process(
-                command: RUMStopResourceWithErrorCommand(
-                    resourceKey: interception.identifier.uuidString,
-                    time: dateProvider.now,
-                    error: error,
-                    source: .network,
-                    httpStatusCode: interception.completion?.httpResponse?.statusCode,
-                    globalAttributes: [:],
-                    attributes: errorAttributes
-                )
+            var command = RUMStopResourceWithErrorCommand(
+                resourceKey: interception.identifier.uuidString,
+                time: dateProvider.now,
+                error: error,
+                source: .network,
+                httpStatusCode: interception.completion?.httpResponse?.statusCode,
+                globalAttributes: [:],
+                attributes: errorAttributes
             )
+            command.isAutomatic = true
+            subscriber.process(command: command)
         }
     }
 

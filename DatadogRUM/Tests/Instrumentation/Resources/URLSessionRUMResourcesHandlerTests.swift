@@ -1314,3 +1314,93 @@ struct ExpectedGraphQLHeaders {
     static let variables: String = "_dd-custom-header-graph-ql-variables"
     static let payload: String = "_dd-custom-header-graph-ql-payload"
 }
+
+extension URLSessionRUMResourcesHandlerTests {
+    func testGivenResponseAndMissingBodyError_whenCompleting_itReportsOnlyNetworkError() throws {
+        try assertTransferCompletion(status: 200, body: nil, error: URLError(.networkConnectionLost))
+    }
+
+    func testGivenResponseAndPartialBodyError_whenCompleting_itPreservesErrorMetricsAndAttributes() throws {
+        try assertTransferCompletion(status: 200, body: Data("part".utf8), error: URLError(.networkConnectionLost), metrics: true)
+    }
+
+    func testGivenCompleteBody_whenCompleting_itReportsResource() throws {
+        try assertTransferCompletion(status: 200, body: Data("complete".utf8), error: nil)
+    }
+
+    func testGivenCompleteBodyWithMetrics_whenCompleting_itPreservesDeliveryTypeAndTransferSize() throws {
+        try assertTransferCompletion(status: 200, body: Data("complete".utf8), error: nil, metrics: true)
+    }
+
+    func testGivenSuccessfulHEAD_whenCompleting_itReportsEmptyResource() throws {
+        try assertTransferCompletion(status: 200, body: Data(), error: nil, method: "HEAD")
+    }
+
+    func testGivenSuccessful204_whenCompleting_itReportsEmptyResource() throws {
+        try assertTransferCompletion(status: 204, body: Data(), error: nil)
+    }
+
+    func testGivenNoResponseError_whenCompleting_itPreservesNetworkError() throws {
+        try assertTransferCompletion(status: nil, body: nil, error: URLError(.cannotConnectToHost))
+    }
+
+    func testGivenCompleteHTTPErrorResponse_whenCompleting_itPreservesResourcePolicy() throws {
+        try assertTransferCompletion(status: 404, body: Data("missing".utf8), error: nil)
+    }
+
+    private func assertTransferCompletion(
+        status: Int?,
+        body: Data?,
+        error: Error?,
+        method: String = "GET",
+        metrics: Bool = false,
+        file: StaticString = #filePath,
+        line: UInt = #line
+    ) throws {
+        var request = URLRequest(url: URL(string: "https://example.com/transfer")!)
+        request.httpMethod = method
+        let interception = URLSessionTaskInterception(request: .init(request: request), isFirstParty: false, trackingMode: .automatic)
+        let response = status.map { HTTPURLResponse(url: request.url!, statusCode: $0, httpVersion: "HTTP/1.1", headerFields: ["Content-Length": "128"])! }
+        if let body { interception.register(nextData: body) }
+        if metrics { interception.register(metrics: .mockWith(deliveryType: .cache, transferSize: 128)) }
+        interception.register(response: response, error: error)
+        var providerCalls = 0
+        let handler = createHandler(rumAttributesProvider: { providedRequest, providedResponse, providedData, providedError in
+            providerCalls += 1
+            XCTAssertEqual(providedRequest.httpMethod, method, file: file, line: line)
+            XCTAssertEqual((providedResponse as? HTTPURLResponse)?.statusCode, status, file: file, line: line)
+            XCTAssertEqual(providedData, body, file: file, line: line)
+            XCTAssertEqual((providedError as NSError?)?.code, (error as NSError?)?.code, file: file, line: line)
+            return ["transfer.control": "preserved"]
+        })
+        handler.interceptionDidComplete(interception: interception)
+        let commands = commandSubscriber.receivedCommands
+        XCTAssertEqual(providerCalls, 1, file: file, line: line)
+        XCTAssertEqual(commands.count, metrics ? 2 : 1, file: file, line: line)
+        XCTAssertEqual(commands.compactMap { $0 as? RUMAddResourceMetricsCommand }.count, metrics ? 1 : 0, file: file, line: line)
+        if metrics {
+            let command = try XCTUnwrap(commands.first as? RUMAddResourceMetricsCommand, file: file, line: line)
+            XCTAssertEqual(command.resourceKey, interception.identifier.uuidString, file: file, line: line)
+            XCTAssertEqual(command.metrics.deliveryType, .cache, file: file, line: line)
+            XCTAssertEqual(command.metrics.transferSize, 128, file: file, line: line)
+        }
+        let successes = commands.compactMap { $0 as? RUMStopResourceCommand }
+        let failures = commands.compactMap { $0 as? RUMStopResourceWithErrorCommand }
+        XCTAssertEqual(successes.count, error == nil ? 1 : 0, file: file, line: line)
+        XCTAssertEqual(failures.count, error == nil ? 0 : 1, file: file, line: line)
+        if error != nil {
+            let failure = try XCTUnwrap(failures.first, file: file, line: line)
+            XCTAssertEqual(failure.resourceKey, interception.identifier.uuidString, file: file, line: line)
+            XCTAssertEqual(failure.httpStatusCode, status, file: file, line: line)
+            XCTAssertEqual(failure.errorSource, .network, file: file, line: line)
+            XCTAssertTrue(failure.isNetworkError, file: file, line: line)
+            XCTAssertEqual(failure.attributes["transfer.control"] as? String, "preserved", file: file, line: line)
+            XCTAssertEqual(Set(failure.attributes.keys), ["transfer.control"], file: file, line: line)
+        } else {
+            let success = try XCTUnwrap(successes.first, file: file, line: line)
+            XCTAssertEqual(success.resourceKey, interception.identifier.uuidString, file: file, line: line)
+            XCTAssertEqual(success.httpStatusCode, status, file: file, line: line)
+            XCTAssertEqual(success.attributes["transfer.control"] as? String, "preserved", file: file, line: line)
+        }
+    }
+}

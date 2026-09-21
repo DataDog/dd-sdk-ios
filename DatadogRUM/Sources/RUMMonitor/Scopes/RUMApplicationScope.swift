@@ -153,6 +153,9 @@ internal class RUMApplicationScope: RUMScope, RUMContextProvider {
             applicationState.wasAnySessionStopped = true
         }
 
+        // Resolve once before a retained owner can finish during session broadcast.
+        let command = command.resolvingResourceOwners(in: sessionScopes.flatMap { $0.viewScopes })
+
         // Can't use scope(byPropagating:context:writer) because of the extra step in looking for sessions
         // that need a refresh
         sessionScopes = sessionScopes.compactMap({ scope in
