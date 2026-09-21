@@ -41,18 +41,18 @@ class URLSessionTaskSwizzlerTests: XCTestCase {
     }
 
     func testSwizzling_taskResume_defersOnlyTargetAndForwardsEachCall() throws {
-        let server = ServerMock(
-            delivery: .success(response: .mockWith(statusCode: 200), data: .mock(ofSize: 10)),
-            skipIsMainThreadCheck: true
-        )
-        let session = server.getInterceptedURLSession()
+        let session = URLSession(configuration: .ephemeral)
         let target = session.dataTask(with: URL.mockAny())
         let foreign = session.dataTask(with: URL.mockAny())
-        let forwarded = ReadWriteLock(wrappedValue: 0)
+        let forwardedTaskIDs = ReadWriteLock(wrappedValue: [ObjectIdentifier]())
         let previous = URLSessionTaskSwizzler()
         try previous.swizzle { task, continuation in
-            if task === target || task === foreign { forwarded.mutate { $0 += 1 } }
-            continuation()
+            guard task === target || task === foreign else {
+                continuation()
+                return
+            }
+            // Observe forwarded calls without starting requests.
+            forwardedTaskIDs.mutate { $0.append(ObjectIdentifier(task)) }
         }
         defer { previous.unswizzle() }
         var continuations: [URLSessionTaskSwizzler.ResumeContinuation] = []
@@ -71,14 +71,16 @@ class URLSessionTaskSwizzlerTests: XCTestCase {
             swizzler.unswizzle()
         }
         foreign.resume()
-        XCTAssertEqual(forwarded.wrappedValue, 1)
+        XCTAssertEqual(forwardedTaskIDs.wrappedValue, [ObjectIdentifier(foreign)])
         target.resume()
         target.resume()
-        XCTAssertEqual(forwarded.wrappedValue, 1)
+        XCTAssertEqual(forwardedTaskIDs.wrappedValue, [ObjectIdentifier(foreign)])
         XCTAssertEqual(continuations.count, 2)
         continuations.forEach { $0() }
         continuations.removeAll()
-        XCTAssertEqual(forwarded.wrappedValue, 3)
-        XCTAssertEqual(server.waitAndReturnRequests(count: 2).count, 2)
+        XCTAssertEqual(
+            forwardedTaskIDs.wrappedValue,
+            [ObjectIdentifier(foreign), ObjectIdentifier(target), ObjectIdentifier(target)]
+        )
     }
 }
