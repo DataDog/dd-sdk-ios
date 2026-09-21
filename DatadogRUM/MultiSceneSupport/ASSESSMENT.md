@@ -24,14 +24,16 @@ merge dependency. [EXP-214](Results/EXP-214-resource-action-design.json) records
 
 Replay captured-content correctness is outside the release scope. Host-app crash safety and non-disruption to other SDK features remain required; no full Replay suite, content repair or inherited-fixture waiver is needed. The [scope disposition](Results/S1-replay-scope-disposition.json) removes the content-fixture blocker without adding a test pass. Signed [feature-document corrections](Results/S1-documentation-checkpoint.json) qualify E03/DL01/E02/E04 docs without SDK changes. Ticketing, current CI, human review and authorized delivery remain; no S1 delivery or broader P03 closure is claimed.
 
-S2 now selects the same narrow E01 source on verified develop `62f64d7b`, with
-production `1bdc9286` qualified through `652ce169`. The independent
-[source audit](Results/EXP-209-s2-source-audit.json) proves deferred scene and
-semantic SwiftUI code absent and supports narrow ordinary-app, reentrancy,
-documentation, composed-build and workflow evidence reuse. This makes the scoped
-application-performance comparison non-applicable, without a numerical claim.
-Broader view/cache lifetime, current-candidate Duo, active-work and app journeys
-remain open. Historical EXP-195 source differs and cannot certify this candidate.
+S2 selects E01 + DL01 + E04, production `c9faed81` on develop `62f64d7b`,
+qualified through test-only `1aa71d7f`. The independent
+[composition review](Results/EXP-216-s2-composition-promotion.json) proves the
+six-file boundary and closes object-lifetime safety for the exact candidate.
+Ordinary compatibility and reentrancy retain narrow source-matched evidence;
+new semantic SwiftUI and multi-scene code remain absent, making the scoped
+application-performance comparison non-applicable without a numerical claim.
+Documentation and final compatibility are reopened for the composed source.
+Current-candidate Duo, native-input, app and final release gates remain open.
+Historical EXP-195 source differs and cannot certify this candidate.
 
 The [current-source comparison](Results/EXP-210-s2-automatic-coverage.json) is
 checkpointed with unresolved native-input variability. The original SDK-on UIKit
@@ -41,19 +43,14 @@ These mixed outcomes do not isolate an SDK, fixture or input cause. Independent
 review stops further equivalent attempts; no candidate launches or gate credit.
 Preserve all raw outcomes and use a concrete new discriminator before expansion.
 
-The [S2 lifetime audit](Results/EXP-211-s2-lifetime.json) qualifies a local weak
-callback-target repair for inherited active DisplayLinker retention. Eight
-unchanged frame/lifetime controls plus the corrected real-core teardown control
-pass on actual17.5. The latter observes pending configuration delivery before
-teardown: the original2s failure included a legitimate five-second message-bus
-owner and does not prove an unbounded core/Monitor leak. The [E04 composition](Results/EXP-212-cache-composition.json)
-now qualifies exact cache source together with E01 and this repair in local commit
-`c9faed81`: 13 RUM, three native bridge and one real-core control pass once each.
-The [ordinary lifetime probe](Results/EXP-213-view-host-lifetime.json) passes the
-success/error unit ownership boundaries, committed in signed `ef9d9732`. Its native
-failures remain preserved: SDK-off synchronous observation also retains all hosts,
-while async observation releases all four after real disappearance within the
-same2s. [EXP-215](Results/EXP-215-native-view-lifetime.json) now qualifies the SDK-on boundary: three cases/six cycles pass host/content release with pending Resource ownership, then old view/Resource release with the live restoration peer and event owner preserved. Source/artifact/cleanup guards and independent review pass; test-only1aa71d7f changes no production code. This qualifies the exact E01+DL01+E04 composition; the selected E01-only candidate and broader P03 remain unchanged until source-aware promotion review. No performance claim follows.
+The selected candidate's lifetime evidence covers task success/failure/cancellation,
+core/display-link teardown, bounded value-cache expiry and native UIKit/SwiftUI
+host/content release while Resources remain pending. Terminal completion releases
+the old Resource/view with its original event owner and live restoration peer
+preserved. [The source-bound disposition](Results/EXP-216-s2-composition-promotion.json)
+combines the accepted component and [native host evidence](Results/EXP-215-native-view-lifetime.json).
+Original synchronous fixture failures and configuration-delivery ownership remain
+recorded; these results imply neither a blanket leak guarantee nor a performance pass.
 
 Physical Duo hardware is unavailable until after release. S2 may use qualified
 simulator and relevant physical iPhone/iPad evidence, disclosing that uncertainty;

@@ -2825,3 +2825,19 @@ to release. Require pending work, its original event owner, peer UUID/activity a
 SDK presence before teardown. [EXP-215](Results/EXP-215-native-view-lifetime.json)
 binds three native cases/six cycle receipts and explicit negative controls; its
 result applies only to the qualified composition, not an older selected candidate.
+
+
+### Source-aware candidate promotion
+
+Bind every gate review to the authoritative register's absolute path, hash and
+release-specific `gate.release_requirements.S2` (or the intended stage). An older
+checkout or the top-level experimental-reference status is not interchangeable.
+Reject mismatched authority before changing any gate; preserve the rejected review.
+
+Inventory all source and tracked deltas, distinguish SDK from auxiliary Sources,
+and map each retained invariant separately. Record the previous candidate freeze
+as history. Source exclusions do not transfer full-suite, Duo, app or backend
+passes. Reopen only the concrete invalidated obligations, with their existing
+owner/dependency/decisive-test/environment, then regenerate the checklist.
+[EXP-216](Results/EXP-216-s2-composition-promotion.json) owns a worked disposition;
+accepted runtime checks are not repeated for this source/documentation checkpoint.

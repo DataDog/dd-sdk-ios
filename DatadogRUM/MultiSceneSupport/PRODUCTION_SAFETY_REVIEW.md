@@ -22,13 +22,12 @@ before deferring S3 behavior; this review is not a generic extraction eligibilit
 certificate. New scene API promotion remains pending. Physical EXP-196 is safely
 checkpointed: Full Screen Apps restored and task apps/keep-awake cleaned up.
 
-The [S2 source review](Results/EXP-209-s2-source-audit.json) now freezes E01 only on
-current develop. It confirms 3 production files, absence of deferred scene/semantic
-behavior and source-matched reuse of the accepted narrow compatibility evidence.
-The review rejects using task lifetime alone to close broader S2 view/cache
-lifetime. F03 remains composed evidence and A01 a bounded completed workflow.
-Duo/native/app gates, inherited extraction defects and final delivery remain open;
-this source decision is neither a runtime pass nor a new performance result.
+The [S2 composition review](Results/EXP-216-s2-composition-promotion.json) selects
+exact E01 + DL01 + E04 production `c9faed81`, with six qualified production files
+and no deferred semantic/scene implementation. It closes the source-bound lifetime
+gate and retains only narrow prior compatibility/reentrancy/workflow invariants.
+F02 documentation and F03 composed compatibility reopen; Duo/app/backend and final
+delivery remain separate. The former E01-only freeze and its evidence stay historical.
 
 The [EXP-210 diagnosis](Results/EXP-210-s2-automatic-coverage.json) retains an open
 native-input observation: two original SDK-on switch inputs fail, while SDK-off
@@ -37,30 +36,16 @@ SDK/action/geometry cause and checkpoints the variability. No production repair,
 E01 regression or candidate acceptance is established. All identities, strict
 assertions, outcomes and cleanup are preserved; the skipped control stays unrun.
 
-The [EXP-211 lifetime repair](Results/EXP-211-s2-lifetime.json) fixes inherited
-active CADisplayLink target ownership in isolated local commita4be961d. Eight
-unchanged passing controls and one corrected real-core teardown control qualify
-the weak callback target on actual17.5. All nine weak witnesses release after the
-pending MessageBus configuration delivery is positively observed. The earlier2s
-Monitor-graph retention included that legitimate five-second owner; it is not an
-unbounded core/Monitor leak finding. The invalid fixture-cleanup run is preserved.
-S2:P03 remains open for its broader source-matched obligations; E04 remains bounded
-value-entry expiry/correlation. E01 S1 task gates and the S2 release freeze remain
-unchanged. [EXP-212](Results/EXP-212-cache-composition.json) now qualifies the exact
-E04 cache composition with E01 and this repair in local commit `c9faed81`. Its 17
-frozen tests pass across three invocations; strict lint, exact input/product
-identities, cleanup and independent review pass. The rejected stale lint-reuse
-receipt is preserved. EXP-215 subsequently qualifies the ordinary native host slice. Whole P03/T10 and selected
-candidate promotion require the source-aware composition review; historical findings are not relabeled.
-
-[EXP-213](Results/EXP-213-view-host-lifetime.json) adds passing stopped-view/Resource
-success and failure lifetime controls, but the native host fixture retains its
-controllers/content and last RUM view. SDK-off controls reproduce host retention
-under synchronous observation and release all four hosts under async observation,
-with the same2s limit and actual disappearance. The fixture boundary is material;
-no SDK retaining path or SDK-on lifetime pass is established. The restoration
-cache remains a separate view owner. Signed unit commit `ef9d9732` and durable
-artifacts preserve every failure, correction and diagnostic. [EXP-215](Results/EXP-215-native-view-lifetime.json) now passes all three SDK-on native cases/six cycles after actual disappearance: pending Resources retain the stopped view while hosts release, and completion releases old view/Resource with exact event ownership and active peer preserved. Assertions precede core/window teardown; source/artifact/cleanup/deadline and independent review pass. This is bounded evidence for c9faed81, not an SDK leak repair or automatic promotion of the E01-only S2 freeze. The separate source-aware composition review is next.
+Task, native core/display-link, bounded cache, stopped-view/Resource and actual
+UIKit/SwiftUI host lifetimes now have source-matched evidence for this composition.
+[EXP-215](Results/EXP-215-native-view-lifetime.json) observes host/content release
+with pending work, then old Resource/view release with exact event owner and a
+stable live restoration peer, before core/window teardown. EXP211's legitimate
+configuration-delivery owner and EXP213's SDK-off synchronous fixture retention
+remain documented in their owning records; neither is relabeled as an SDK leak.
+The [promotion review](Results/EXP-216-s2-composition-promotion.json) preserves all
+failures and limits. No Session Replay captured-content or numerical performance
+qualification follows, and original R01–R12 dispositions below remain unchanged.
 
 The [S1 delivery plan](S1_DELIVERY_PLAN.md) separates repair qualification from
 publication and merge. H00 and initial E01 have signed local delivery trees identical to
