@@ -257,7 +257,7 @@
           "evidence_root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/deliveries/dl01-20260920-7n7z3qln/platforms-separated-streams"
         }
       ],
-      "new_runtime_admission": "No further runtime admitted by this packet; freeze per-lane source, selectors and actual deadlines first.",
+      "new_runtime_admission": "Seven missing hostless schemes admitted at compatibility_continuation; fixed deadline and fail-fast sequential discovery/admission/test. Core/RUM/platform passes are retained. Integration and Replay remain separate.",
       "public_API": "Source-identical public declarations and bridge/header/build inputs; only internal implementations differ. Verify affected compilation before delivery.",
       "CI": "NOT_RUN_ON_UNPUBLISHED_DELIVERY_HEAD",
       "human_review": "PENDING",
@@ -272,7 +272,27 @@
       ],
       "rollback": "Revert the weak display-link target change and its tests/docs independently.",
       "feature_docs": "AFFECTED_RUM_PASS_GLOBAL_TRACE_DRIFT_INHERITED_FROM_DEVELOP",
-      "platform_runtime": "NOT_INFERRED_FROM_COMPILATION"
+      "platform_runtime": "NOT_INFERRED_FROM_COMPILATION",
+      "compatibility_continuation": {
+        "status": "ACTIVE_INSPECT_PER_PHASE_RECEIPTS",
+        "definition": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/deliveries/dl01-20260920-7n7z3qln/missing-hostless-hl8h7q5p/definition.json",
+        "definition_sha256": "162ea0ac2424b8288ae999afc5e3d10dfe880d852576072bec98e27a93444d99",
+        "timebox_deadline": "2026-09-21T03:57:05.374033+00:00",
+        "schemes": [
+          "DatadogInternal",
+          "DatadogLogs",
+          "DatadogTrace",
+          "DatadogCrashReporting",
+          "DatadogWebViewTracking",
+          "DatadogFlags",
+          "DatadogProfiling"
+        ],
+        "source_inputs": 1864,
+        "expected_cases": 1122,
+        "expected_executions": 1158,
+        "accepted_suites_repeated": false,
+        "SPM_artifact_freeze": "Checksum-verified archive and exact tree before Xcode, after each phase and after cleanup."
+      }
     },
     {
       "id": "E02",
@@ -1030,5 +1050,5 @@
       ]
     }
   ],
-  "updated_at": "2026-09-20T22:01:00.230637+00:00"
+  "updated_at": "2026-09-21T02:01:08.852466+00:00"
 }

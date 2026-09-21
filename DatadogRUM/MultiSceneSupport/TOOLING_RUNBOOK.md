@@ -368,6 +368,17 @@ test result exists. Static Swift/Objective-C method counts are not executable
 counts. Retain default single execution: Xcode rejects `-test-iterations 1`. A
 runner-option correction gets a fresh attempt and keeps its original deadline.
 
+Package pins and checkout revisions do not bind extracted SPM binary artifacts.
+Freeze the checksum-verified archive and every extracted file/symlink; require the
+exact tree before Xcode, after each phase and after cleanup. Permit only the
+archive's legitimate relative symlinks, and reject missing metadata, binaries,
+modules/signatures, extra or changed files, substitutions and escaping targets.
+E01's preserved WebView build failure executed zero tests because the shared test
+artifact lost its regular files. Recovery used the existing exact 2.7.8 archive in
+an isolated cache; ten negative controls exercise the real guard before a launch
+sentinel. Keep the original deadline and failed result, and do not repeat accepted
+suites. A passing Git/pin check alone must never qualify this prerequisite.
+
 Resolve compiled test membership from the project build phase, including shared
 files outside the module's Tests directory. Inspect Swift Testing argument arrays
 and availability attributes as well as XCTSkip calls. An iOS-inapplicable,

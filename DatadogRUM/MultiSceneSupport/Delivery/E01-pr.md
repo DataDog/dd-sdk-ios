@@ -10,7 +10,7 @@ This PR is stacked on the separate hitch-assertion correction for review. Its di
 
 Validation uses the exact qualified source tree: complete affected Internal (455 cases / 491 executions), Core (815 passes, four OS skips), RUM (901 cases / 937 executions), Trace (141 passes), and integration (278/278) inventories; additional automatic/registered failure/cancellation lifetime controls pass 8/8. Debug and optimized reentrancy, ordinary/legacy/custom/NOP compatibility, 24 platform/configuration builds, five public-client runtime cells and unchanged API comparisons are recorded. Both candidate backend modes passed exact RUM/Trace inventories and ownership checks. Original failures, OS skips and warning limits remain in the evidence packet.
 
-The inherited QoS warning also occurred on unchanged develop. Its captured stack is incomplete; neither harmlessness nor sanitizer/performance clearance is claimed. Remaining repository-wide iOS scheme coverage, current CI and final release review are explicit pending checks.
+The inherited QoS warning also occurred on unchanged develop. Its captured stack is incomplete; neither harmlessness nor sanitizer/performance clearance is claimed. Full Logs, CrashReporting, WebViewTracking, Flags and Profiling suites add 544 passes with one predefined watchOS-only skip. Full Replay remains pending its inherited fixture prerequisite and candidate qualification; current CI and final release review remain open.
 
 ### Review checklist
 

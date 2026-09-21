@@ -259,7 +259,7 @@
       "delivery_head": "ab71c3a6fb77307081f58b67d86d096d0340ce5f",
       "feature_document_reachability": "PASS_LOCAL_AB71C3A6; refresh after final ticket rewrite",
       "compatibility_continuation": {
-        "status": "ACTIVE_INSPECT_PER_PHASE_RECEIPTS",
+        "status": "PASS_FIVE_MISSING_HOSTLESS_SUITES",
         "definition": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/deliveries/s1-initial-20260920-qqyq49od/e01-remaining-hostless-bzj5bhof/definition.json",
         "definition_sha256": "63137f2bf29122497865fb56acf96c386c45c7ed5c56c820998dfb17c9012926",
         "timebox_deadline": "2026-09-21T03:21:01.680519+00:00",
@@ -271,8 +271,27 @@
           "DatadogProfiling"
         ],
         "source_inputs": 1864,
-        "accepted_suites_repeated": false
-      }
+        "accepted_suites_repeated": false,
+        "summary": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/deliveries/s1-initial-20260920-qqyq49od/e01-package-artifact-correction-uli7ntmu/summary.json",
+        "summary_sha256": "112420684e488adcca1e9dadb3a1c4bf3c8e8205bcfd32067d981a6b5ad4597f",
+        "cases": 545,
+        "executions": 545,
+        "passed": 544,
+        "predefined_watchOS_only_skips": 1,
+        "corrected_definition": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/deliveries/s1-initial-20260920-qqyq49od/e01-package-artifact-correction-uli7ntmu/definition.json",
+        "corrected_definition_sha256": "3b583f0deda051dc1b0f080539b03ec4a123dbec78d6beeaa972494186370c08",
+        "preserved_failure": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/deliveries/s1-initial-20260920-qqyq49od/e01-remaining-hostless-bzj5bhof/webview/root-audit.json",
+        "artifact_negative_controls": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/deliveries/s1-initial-20260920-qqyq49od/e01-package-artifact-correction-uli7ntmu/artifact-negative-controls.json",
+        "artifact_negative_controls_sha256": "652c17f28719ac3bd0742408d75f0dd9fcc41a36adb638e5facb06ab24d7bda2",
+        "limits": [
+          "No full Replay result; the inherited fixture prerequisite and candidate-specific qualification remain open.",
+          "No full repository iOS, release-ready, current CI, warning-free or blanket sanitizer claim.",
+          "Accepted Core/Internal/RUM/Trace/Integration/platform/client/backend cells were not repeated."
+        ]
+      },
+      "remaining_iOS_schemes": [
+        "DatadogSessionReplay"
+      ]
     },
     {
       "owner": "Main execution session / SDK implementer",
@@ -685,7 +704,27 @@
         "DatadogFlags",
         "DatadogProfiling",
         "DatadogIntegrationTests"
-      ]
+      ],
+      "compatibility_continuation": {
+        "status": "ACTIVE_INSPECT_PER_PHASE_RECEIPTS",
+        "definition": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/deliveries/dl01-20260920-7n7z3qln/missing-hostless-hl8h7q5p/definition.json",
+        "definition_sha256": "162ea0ac2424b8288ae999afc5e3d10dfe880d852576072bec98e27a93444d99",
+        "timebox_deadline": "2026-09-21T03:57:05.374033+00:00",
+        "schemes": [
+          "DatadogInternal",
+          "DatadogLogs",
+          "DatadogTrace",
+          "DatadogCrashReporting",
+          "DatadogWebViewTracking",
+          "DatadogFlags",
+          "DatadogProfiling"
+        ],
+        "source_inputs": 1864,
+        "expected_cases": 1122,
+        "expected_executions": 1158,
+        "accepted_suites_repeated": false,
+        "SPM_artifact_freeze": "Checksum-verified archive and exact tree before Xcode, after each phase and after cleanup."
+      }
     }
   ],
   "checkpoint": {
@@ -694,9 +733,10 @@
     "develop_verified": "62f64d7b655bdc83f3036c4ad81090a270f6202b",
     "EXP213": "complete; signed unit-onlyef9d9732; SDK-on native P03 remains open",
     "local_packets": "Results/S1-H00-E01-packets.json",
-    "next_repair": "E03 Replay inherited-fixture disposition belongs to maintainers; continue E01 missing hostless checks before further S2 expansion",
+    "next_repair": "Continue the admitted seven DL01 hostless suites; E01/E03 Replay prerequisite and delivery review remain explicit.",
     "independent_local_packets": "Results/S1-independent-packets.json",
     "E03_product_amendment": "2026-09-20T21:53:03.431125+00:00",
-    "E03": "2026-09-21T01:25:46.369482+00:00"
+    "E03": "2026-09-21T01:25:46.369482+00:00",
+    "E01_hostless": "2026-09-21T02:01:08.852466+00:00"
   }
 }

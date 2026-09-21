@@ -4,7 +4,7 @@ Activated at the completed EXP-213 checkpoint on 2026-09-20.
 
 ## Outcome and authority
 
-Deliver six independent customer fixes (E01–E05 and the display-link lifetime fix) in separate reviewable PRs, plus one test-only prerequisite PR. Start review of the qualified S1 work before further S2/S3 expansion. E03 has a signed, qualified repair and completed compatibility execution; full Replay still needs a maintainer-owned inherited-fixture correction or waiver. E01 missing hostless checks and other independent packets continue before S2 expansion.
+Deliver six independent customer fixes (E01–E05 and the display-link lifetime fix) in separate reviewable PRs, plus one test-only prerequisite PR. Start review of the qualified S1 work before further S2/S3 expansion. E03 has a signed, qualified repair and completed compatibility execution; full Replay still needs a maintainer-owned inherited-fixture correction or waiver. E01's five missing hostless checks now pass. DL01's seven remaining hostless checks are admitted next; other independent packets continue before S2 expansion.
 
 This document prepares delivery; it does not perform or authorize a push, remote PR creation, merge, or change to an active experiment. Read `AGENTS.md` and `.continue-here.md` first when executing. The current experiment remains authoritative for its in-flight work. This delivery sequence applies after its safe checkpoint and incorporates the user's subsequent priority for S1 review. Preserve all experiment results, including inconclusive or failed controls.
 
@@ -83,6 +83,7 @@ The queue is the executable path/commit inventory. Paths below describe the revi
 - Three internal networking files, two Internal test files, changelog and the five already affected feature documents. Exact commits and paths are in the queue.
 - Preserve request preparation synchronization, native resume continuations, early callback buffering and weak terminal cleanup together. A claim flag alone is not this fix.
 - Reuse accepted full affected suites, 278/278 integration tests, platform/client/API checks, failure/cancellation/reentrancy controls and the [four-cell backend qualification](Experiments/EXP-202-urlsession-backend.md) where their source identities still match.
+- Five additional hostless suites now pass 544 tests with one predefined watchOS-only skip. Full Replay still requires its inherited fixture disposition and candidate qualification; no full-iOS pass is claimed.
 - Remaining delivery: H00 upstream, verified rebase, candidate-specific F06 review, signatures and current required CI. The “15/16” score is E01 only.
 - State the timing limitation: a duplicate resume during preparation can be forwarded later on the preparation thread. Preserve the inherited QoS-warning evidence without claiming harmlessness or new performance clearance.
 

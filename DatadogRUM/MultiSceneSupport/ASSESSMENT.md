@@ -78,7 +78,11 @@ surface, feature documentation and full integration coverage qualify S1:F02/F03.
 [final matrix](Results/EXP-201-final-compatibility.json) retain exact inventories,
 the corrected inherited hitch assertion and diagnostic limits.
 
-E01 has15 of16 required gates qualified. The focused object-lifetime audit closes
+E01 has15 of16 required gates qualified. Its signed delivery candidate also passes
+the five previously missing hostless suites: 544 tests and one predefined
+watchOS-only skip. [The packet](Results/S1-H00-E01-packets.json) preserves the
+zero-test SPM-artifact failure and checksum-verified correction. Full Replay still
+requires its inherited-fixture disposition and candidate qualification. The focused object-lifetime audit closes
 S1:P03: native success/error/cancellation and feature teardown release their weak
 witnesses in automatic and registered modes; the8-test follow-up passes with no
 runtime warnings. Backend A01/T03/T08 now close after the independent four-cell

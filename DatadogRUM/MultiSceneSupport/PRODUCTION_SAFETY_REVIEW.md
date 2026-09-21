@@ -85,7 +85,12 @@ approach remains recorded. S1:P03 now closes using accepted success/reentry evid
 and a reviewed8/8 native error/cancellation follow-up. Preparation, interception,
 task, handler and feature release pass in both modes, with no runtime warnings.
 Test-only commit652ce169 leaves production unchanged; numeric allocator budgets
-remain outside release prerequisites under the user scope correction.
+remain outside release prerequisites under the user scope correction. The E01
+delivery packet now adds five complete hostless suites: 544 passes and one
+predefined watchOS-only skip. A missing SPM test artifact caused one rejected
+zero-test build; exact-checksum recovery and ten pre-Xcode negative controls
+qualified the corrected continuation. Full Replay and human delivery checks remain
+open; the cache failure does not alter the accepted product safety evidence.
 
 S1 platform/API/docs and full integration checks are qualified by
 [EXP-201](Results/EXP-201-final-compatibility.json); its inherited delta-hitch

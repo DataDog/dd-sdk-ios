@@ -83,7 +83,7 @@
       ],
       "named_reviewer": null,
       "body": "Delivery/E01-pr.md",
-      "body_sha256": "9d39b75b62fcd2d6d74ec24e584f552289d6462102e9fc79a9f3b5a6d4779e30",
+      "body_sha256": "6c5296c56938757bd7c24d1ad1908a973fb6eb8f6d994dcaedff9ed7483afd08",
       "checkout": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/deliveries/s1-initial-20260920-qqyq49od/E01",
       "detached_until_real_ticket": true,
       "baseline_commit": "8d7e429b0242c5b384417862e2418e2dbdffe500",
@@ -160,7 +160,7 @@
       },
       "remaining_checks": [
         "Real ticket for commit/title and delivery branch",
-        "Missing repository-wide iOS schemes: DatadogSessionReplay, DatadogLogs, DatadogCrashReporting, DatadogWebViewTracking, DatadogFlags, DatadogProfiling; affected-suite F03 evidence remains accepted within its prior scope",
+        "Full Replay remains unqualified: resolve the inherited scroll-pocket fixture prerequisite, then qualify this candidate or obtain an explicit scoped maintainer waiver; no E01 full-Replay run is implied by E03 evidence.",
         "Current required CI and candidate F06 human review",
         "H00 verified upstream merge then content-equivalent rebase/retarget and affected revalidation only",
         "Local references repaired and all five docs pass; refresh again if the final real-ticket delivery history is rewritten. Metadata-only changes do not invalidate runtime evidence.",
@@ -185,7 +185,7 @@
         "reason": "ANSI color output; source unchanged; superseded by explicit color.ui=false capture"
       },
       "compatibility_continuation": {
-        "status": "ACTIVE_INSPECT_PER_PHASE_RECEIPTS",
+        "status": "PASS_FIVE_MISSING_HOSTLESS_SUITES",
         "definition": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/deliveries/s1-initial-20260920-qqyq49od/e01-remaining-hostless-bzj5bhof/definition.json",
         "definition_sha256": "63137f2bf29122497865fb56acf96c386c45c7ed5c56c820998dfb17c9012926",
         "timebox_deadline": "2026-09-21T03:21:01.680519+00:00",
@@ -197,11 +197,27 @@
           "DatadogProfiling"
         ],
         "source_inputs": 1864,
-        "accepted_suites_repeated": false
+        "accepted_suites_repeated": false,
+        "summary": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/deliveries/s1-initial-20260920-qqyq49od/e01-package-artifact-correction-uli7ntmu/summary.json",
+        "summary_sha256": "112420684e488adcca1e9dadb3a1c4bf3c8e8205bcfd32067d981a6b5ad4597f",
+        "cases": 545,
+        "executions": 545,
+        "passed": 544,
+        "predefined_watchOS_only_skips": 1,
+        "corrected_definition": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/deliveries/s1-initial-20260920-qqyq49od/e01-package-artifact-correction-uli7ntmu/definition.json",
+        "corrected_definition_sha256": "3b583f0deda051dc1b0f080539b03ec4a123dbec78d6beeaa972494186370c08",
+        "preserved_failure": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/deliveries/s1-initial-20260920-qqyq49od/e01-remaining-hostless-bzj5bhof/webview/root-audit.json",
+        "artifact_negative_controls": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/deliveries/s1-initial-20260920-qqyq49od/e01-package-artifact-correction-uli7ntmu/artifact-negative-controls.json",
+        "artifact_negative_controls_sha256": "652c17f28719ac3bd0742408d75f0dd9fcc41a36adb638e5facb06ab24d7bda2",
+        "limits": [
+          "No full Replay result; the inherited fixture prerequisite and candidate-specific qualification remain open.",
+          "No full repository iOS, release-ready, current CI, warning-free or blanket sanitizer claim.",
+          "Accepted Core/Internal/RUM/Trace/Integration/platform/client/backend cells were not repeated."
+        ]
       }
     }
   ],
-  "next_repair": "E03 repair and compatibility execution are complete with the inherited Replay fixture disposition open; continue E01 missing hostless checks before further S2/S3 expansion.",
+  "next_repair": "Continue DL01 missing compatibility checks; E01 and E03 full Replay and human delivery gates remain separate.",
   "DL01_extraction_boundary": "Immutable a4be961d, exactly RenderLoopObserver.swift and DisplayLinkerTests.swift plus own changelog/feature docs; combined S2 branch is not the PR.",
-  "updated_at": "2026-09-21T01:25:46.369482+00:00"
+  "updated_at": "2026-09-21T02:01:08.852466+00:00"
 }
