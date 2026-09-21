@@ -29,6 +29,11 @@ Freeze decoders and all helper sources before collection; verify them before eve
 projection/assembly. Persist fulfilled siblings even if another parallel read fails.
 Late raw data remains evidence without satisfying an earlier deadline.
 
+For native/WebView app journeys, keep Browser service and SDK version separate from
+native values. The bridge replaces application/session IDs, not those Browser fields.
+Inventory the full application/session without native service/version filters, then
+reconcile the native partition. See the [offline app guards](../../../tools/multi-scene/acceptance/README.md#controlled-app-inventory-preparation).
+
 ## Cross-query identity and revisions
 
 Opaque search-envelope IDs identify rows within a response; they are not stable

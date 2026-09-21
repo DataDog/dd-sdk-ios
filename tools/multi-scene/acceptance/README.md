@@ -377,3 +377,28 @@ For a physical iPad that reveals A during B close, use `replay_contract.validate
 The original same-key scenario supports `DD_PROBE_PHYSICAL_TOPOLOGY=1`. Before its first manual start it writes `Documents/<run>.physical-challenge.json` and waits at most five minutes. Arrange the two actual probe windows with native device controls. Start an independent screen recording and capture a screenshot showing both window contents. Retain the challenge, screenshot hash, capture UUID and exact run/process/native-scene/generation identities in a fresh receipt copied to `Documents/<run>.physical-admission.json`. Its capture timestamp must follow the challenge and be at most sixty seconds old. The fixture consumes it once, samples live scene attachment/visibility/lifecycle every fifty milliseconds, and guards before/after steps6–16; loss prevents subsequent mutations and produces INCONCLUSIVE.
 
 Use `physical_same_key_contract.validate_local`, `validate_display` and `validate_backend`. The display proof must preserve the host receipt/challenge, native process identity, actual screenshot/video hashes and timings, and a review that both actual scene contents remained visible through the critical interval. Local frames, capability flags, or a terminal22/22 alone do not qualify. The backend check compares the complete session inventory to every native mapper view and Action/Resource ID, including the seven decisive pairs. The compact unit fixture explicitly contains fabricated topology and clocks; it is never physical evidence.
+
+## Controlled app inventory preparation
+
+`app_journey_inventory.py` supplies offline guards for the finite F08 app journeys.
+It is not a scenario in the acceptance runner and grants no runtime or release
+acceptance. It consumes decoded full RUM rows and query receipts; real transport,
+account binding, native phase capture and cleanup still need qualification.
+
+The helper preserves raw IDs and available backend revisions, compares distinct
+view occurrences and exact owner edges, and rejects incomplete pagination or
+foreign query/session identity. Only a verified explicit SwiftUI occurrence may
+normalize its process-dependent hash suffix. Browser source/service/SDK version
+remain separate from native fields: a full application/session query must include
+all partitions. Replay eligibility is required for a persisted container check;
+active-at-dispatch ownership needs independent native evidence. Graph equality
+still requires review of raw revisions and downstream non-owner values.
+
+Run its offline controls with:
+
+```sh
+python3 -B -m unittest discover -s tools/multi-scene/acceptance -p test_app_journey_inventory.py
+```
+
+The [source oracle](../../../DatadogRUM/MultiSceneSupport/Results/S2-F08-source-oracle.json)
+owns remaining capture requirements. These controls do not reopen stopped runs.

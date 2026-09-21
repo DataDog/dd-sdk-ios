@@ -1,0 +1,229 @@
+{
+  "schema_version": 1,
+  "work_item": "S2:F08 authenticated app source/oracle preparation",
+  "status": "SOURCE_AND_OFFLINE_INVENTORY_PREPARATION_REVIEWED",
+  "at": "2026-09-21T21:30:08.556874+00:00",
+  "owner": "SDK implementer",
+  "reviewer": "existing /root/c06_runtime_plan",
+  "scope": "Existing J02 service navigation, J03 dashboard correlation and J04 authenticated lifecycle only. No native execution, app or SDK edits, rebuild, login, publication or new experiment.",
+  "artifact_root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-f08-oracle-preparation-pincwto7",
+  "application_revision": "6e33f1c18a52d04b0793e6954f456bdbc1affe2f",
+  "app_source_sha256": {
+    "Targets/Feature/Login/UI/LoginView.swift": "42772febcc6daaf9f93fc55220c8f6b38ce6dfaaf4c04d16aadf84388721ac93",
+    "Targets/Feature/Login/UI/LoginUserMonitoring.swift": "b8cfa74ca7ccbd42bd8ad39855e9ceb74f1112d41c9577872a2527fc5c7fcae7",
+    "Targets/DatadogApp/UI/App/Root/LoginRootCoordinator.swift": "0e29ea281c94d51e84794fb36bb7ce6faedd0ba88069701845df69cb731b0d4c",
+    "Targets/Platform/UserMonitoring/UserMonitor.swift": "6789083b623722bded7133f455bd2a51c82093cfd182c692d0594e99d1c170dc",
+    "Targets/Platform/DatadogObservability/UserMonitorLive.swift": "dfa4fccbb57a65e541187f7b1487f520ae01557dbe52e975f384ae1a3ef7578b",
+    "Targets/DatadogApp/UI/App/Root/Signed In Root/Datadog Products/APM Services/APMServicesUserMonitoring.swift": "80299aeaa228800212c38e26e2a23d4cb01ef0a89dbe9d76083b14d5d57adfb4",
+    "Targets/DatadogApp/UI/App/Root/Signed In Root/Datadog Products/APM Services/APMServicesCoordinator.swift": "615dfbcfc50f4de229e037c315032842eba096c9a65a3736a7ba9907de330c09",
+    "Targets/DatadogApp/UI/App/Root/Signed In Root/Datadog Products/APM Services/List/APMServicesList.swift": "01eec29749051effa4dfc2793f1e3ce3484ee43390e80c100dfe93191a98dd8a",
+    "Targets/DatadogApp/UI/App/Root/Signed In Root/Datadog Products/APM Services/Detail/APMServiceDetailView.swift": "52688016e3d6e6ec21c0cd6d463b38acd234334a52484219cbb3171a8d7f7006",
+    "Targets/DatadogApp/UI/App/Root/Signed In Root/SignedInRootCoordinator+NavigationContextResolvers.swift": "8e26978c873260d00fb77c4393f9d7b4a46a866f07e65b6781e58f7cbcc66d55",
+    "Targets/DatadogApp/UI/App/Root/Signed In Root/Datadog Products/Dashboards/DashboardUserMonitoring.swift": "2384a2159959789d65aad209de152c173785e7846c88c63ca62f3631bcea14b1",
+    "Targets/Platform/UserMonitoring/UserMonitor+ViewName.swift": "b785971f9e688067affd7828e8663126bb92bfec53d760438a557fb2b2e0e254",
+    "Targets/Platform/DatadogObservability/ObservabilitySystem.swift": "e06942de9dce818cbb6909d7eec01fa95136d2b3ef9ee3582a8c6a004f6cf8a4",
+    "Targets/DatadogApp/UI/App/Root/Signed In Root/Datadog Products/Dashboards/Details/DashboardDetailCoordinator.swift": "09c7b5c8e1daaaf55e937ee5c28d0726d387cf3e41c4b01de284eee0f285f44a",
+    "Targets/DatadogApp/UI/App/Root/Signed In Root/Datadog Products/Dashboards/Details/DashboardDetailViewController.swift": "168a063bf5e7fd041d6a30a8570705ce84f245602ff753f02df193eff4f99f52",
+    "Targets/DatadogApp/UI/App/Root/Signed In Root/Datadog Products/APM Services/Detail/APMServiceDetailViewModel.swift": "829b60e690ee16643d02e01b50a86a35ab526a16033fb3f2683f5f4e11cbbd26",
+    "Targets/DatadogApp/UI/App/Root/Signed In Root/Datadog Products/APM Services/List/APMServicesListContentViewModel.swift": "3133e162bf61f31c52832c8c920f7a525545a04246ca730ffaa65548b1c97099"
+  },
+  "sdk_source_sha256": {
+    "62f64d7b655bdc83f3036c4ad81090a270f6202b": {
+      "DatadogRUM/Sources/Instrumentation/Views/SwiftUI/SwiftUIViewModifier.swift": "d02498dec265e90cbe3758ae39f3635d5fec912b41b9c826f9b66f907b118310",
+      "DatadogRUM/Sources/Instrumentation/Views/RUMViewsHandler.swift": "1a0cd631854af6253f598938e249a18613453f1d9c7b3f4ac8470a2448055541",
+      "DatadogRUM/Sources/Integrations/WebViewEventReceiver.swift": "14c7429d7eb7739dee6a84019ec8c5159da1339c05db9571baa0bdd89f1759b7",
+      "DatadogRUM/Sources/RUMMonitor/Scopes/Utils/ViewCache.swift": "2e11fe514e93e4e6b7795fe53d671241869cea9a2e5bc8da6b1432abe35200ee",
+      "DatadogRUM/Sources/RUMMonitor/Scopes/RUMSessionScope.swift": "7d7adf4e33ca914cbd6424b1b45cdb425f19b0cb9c2919dbe5ce6b4f4b956395"
+    },
+    "c9faed816a1d4828d7d8c4b64acae01119425889": {
+      "DatadogRUM/Sources/Instrumentation/Views/SwiftUI/SwiftUIViewModifier.swift": "d02498dec265e90cbe3758ae39f3635d5fec912b41b9c826f9b66f907b118310",
+      "DatadogRUM/Sources/Instrumentation/Views/RUMViewsHandler.swift": "1a0cd631854af6253f598938e249a18613453f1d9c7b3f4ac8470a2448055541",
+      "DatadogRUM/Sources/Integrations/WebViewEventReceiver.swift": "14c7429d7eb7739dee6a84019ec8c5159da1339c05db9571baa0bdd89f1759b7",
+      "DatadogRUM/Sources/RUMMonitor/Scopes/Utils/ViewCache.swift": "142961ec6c5ce10c61595b306e16f98ca34b1047694057bcaaf3d2d977a251ad",
+      "DatadogRUM/Sources/RUMMonitor/Scopes/RUMSessionScope.swift": "e59f10a3b3990c9b2c334e9168738aed2a57563bcd10f6f4cfa931a58051acda"
+    }
+  },
+  "builds_reused_by_reference": "Results/S2-F08-app-preparation.json",
+  "gate_closures": [],
+  "findings": [
+    {
+      "id": "O01",
+      "claim": "ServiceList and ServiceDetail explicit SwiftUI views coexist with Services and ServiceDetails custom UIKit predicate views. They have distinct identities on one RUMViewsHandler stack; whichever callback arrives last is topmost. Source alone cannot freeze native callback order or occurrence counts.",
+      "evidence": [
+        "UserMonitorLive.swift: viewModifier and CustomUIKitRUMViewsPredicate",
+        "APMServicesCoordinator.swift: labelled list UIHostingController",
+        "SignedInRootCoordinator+NavigationContextResolvers.swift: labelled service-detail UIHostingController",
+        "RUMViewsHandler.swift: add/remove and notify_onAppear/notify_viewDidAppear_impl"
+      ],
+      "assertion": "Preserve both instrumentation families, every view ID and every available backend revision. Complete native callback ordering and mapper versions require separate capture; backend SDK chronology alone does not prove them. Do not merge same-name occurrences or accept owners from a name whitelist."
+    },
+    {
+      "id": "O02",
+      "claim": "trackRUMView includes Swift typeDescription.hashValue in the view path. SwiftUI paths cannot be assumed byte-identical across processes.",
+      "evidence": [
+        "SwiftUIViewModifier.swift: trackRUMView path construction"
+      ],
+      "assertion": "Any path normalization must be limited to a verified explicit-SwiftUI occurrence and its exact known name prefix plus integer hash suffix. Preserve raw values; unrelated UIKit/browser URLs remain exact. Duplicate occurrences and owner IDs are never normalized away."
+    },
+    {
+      "id": "O03",
+      "claim": "UserMonitor.Attributes.viewName adds context key view-name. That semantic screen attribute is independent of RUM view.name/view.id ownership. Plain service selection and Back do not declare named manual actions in the audited route.",
+      "evidence": [
+        "UserMonitor+ViewName.swift",
+        "APMServicesUserMonitoring.swift",
+        "APMServicesList.swift",
+        "APMServiceDetailView.swift"
+      ],
+      "assertion": "Do not use context.view-name as an owner oracle or invent ServiceOpened/Back manual events. Freeze actual automatic action targets before the candidate input; named refresh/favorite actions require their corresponding declared gesture and are outside the current navigation sequence."
+    },
+    {
+      "id": "O04",
+      "claim": "WebView RUM receiver rewrites native application/session IDs; container.view.id is injected only from lastView(before: corrected browser time, hasReplay: true). Browser view.id remains distinct.",
+      "evidence": [
+        "WebViewEventReceiver.swift: receive(rum:core:)",
+        "DashboardDetailViewController.swift: WebViewTracking.enable",
+        "DashboardDetailCoordinator.swift: Dashboard Details accessibility label"
+      ],
+      "assertion": "Assert exact native application/session and the browser view identity independently. Require native replay eligibility before making a container-owner claim; absence of replay eligibility is unmet coverage, not an SDK failure. Inspect no replay pixels/content."
+    },
+    {
+      "id": "O05",
+      "claim": "Baseline ViewCache purges only during insert. An idle wait beyond the three-minute TTL does not itself evict its cached view. The candidate retains active entries and purges during lookup/insertion.",
+      "evidence": [
+        "Baseline and candidate ViewCache.swift",
+        "Candidate RUMSessionScope.swift: active/inactive boundaries"
+      ],
+      "assertion": "J03 is an ordinary long-lived-dashboard non-regression check. It must not require the baseline to fail or claim a cache-eviction reproduction from elapsed time alone. Existing E04 defect evidence remains EXP207; no new intervention or journey is added."
+    },
+    {
+      "id": "O06",
+      "claim": "The view handler stops the current top on background and starts the then-current top on foreground. Service detail also refreshes several data models on foreground reentry.",
+      "evidence": [
+        "RUMViewsHandler.swift: applicationDidEnterBackground/applicationWillEnterForeground",
+        "APMServiceDetailView.swift: onForegroundReentry"
+      ],
+      "assertion": "J04 remains on the returned service list to preserve the original sequence. Bind actual pre/post occurrences and process/session continuity; do not assume the old view UUID survives, and do not treat unrelated detail-refresh action names as required."
+    },
+    {
+      "id": "O07",
+      "claim": "The bridge replaces application/session IDs and merges ddtags, but preserves Browser source/service/sdk.version/view.id. Use a broad application/session inventory without native service or SDK filters, plus the independently complete native partition.",
+      "evidence": [
+        "WebViewEventReceiver.swift: receive(rum:core:) in both frozen SDK revisions"
+      ],
+      "assertion": "Freeze Browser identity separately from native identity. Inventory the full application/session without native service or SDK filters, retain raw event IDs and pagination, then reconcile the exact native partition. No shared service/version assumption."
+    }
+  ],
+  "finite_journeys": [
+    {
+      "id": "J02",
+      "existing_scope": "Open service list, open one existing service detail, return to list.",
+      "dependencies": [
+        "J01 runtime integrity",
+        "Authorized authenticated app session and read-only service selection",
+        "Exact pre-input source/build/session/native-state and request inventory"
+      ],
+      "native_states": [
+        "service-list-ready",
+        "service-detail-ready",
+        "service-list-returned"
+      ],
+      "known_view_families": {
+        "list": [
+          "ServiceList",
+          "Services"
+        ],
+        "detail": [
+          "ServiceDetail",
+          "ServiceDetails"
+        ]
+      },
+      "decisive_test": "Both arms complete the same native navigation. Full backend occurrence/owner graph matches the frozen comparison contract; every accepted view has its own ID, document versions, lifecycle and source/name classification. Complete action/resource inventories retain native owner relationships; no owner-by-name substitution.",
+      "remaining": "Native callback order, actual auto-action names and endpoint/request inventory require qualified authenticated readiness before candidate input."
+    },
+    {
+      "id": "J03",
+      "existing_scope": "Open one accessible dashboard, retain its native owner over the existing three-minute TTL, then one existing browser interaction.",
+      "dependencies": [
+        "Qualified authenticated dashboard",
+        "Native DashboardDetails owner and replay-eligibility proof",
+        "Actual browser telemetry availability and frozen interaction",
+        "Complete native/browser ownership capture"
+      ],
+      "decisive_test": "The candidate browser event retains exact application/session IDs and its own browser view ID; when replay eligible, container.view.id matches the actual still-active DashboardDetails occurrence. Compare baseline without forcing an idle-TTL failure. No captured-content validation.",
+      "remaining": "Runtime native/browser IDs, feature availability, timing and replay eligibility; no extra cache-purge intervention admitted."
+    },
+    {
+      "id": "J04",
+      "existing_scope": "Background and foreground the same authenticated process after returning to service list.",
+      "dependencies": [
+        "J02 list-returned boundary",
+        "Same-process native lifecycle proof and complete backend inventory"
+      ],
+      "decisive_test": "Native list restoration succeeds with no process restart, foreign session or stale owner. Compare complete pre/post active occurrence relationships and action/resource ownership; preserve and classify differences without relaxing the oracle.",
+      "remaining": "Observed native lifecycle and exact pre/post occurrence inventory."
+    }
+  ],
+  "negative_controls_required": [
+    "foreign application/session",
+    "stale or restored run",
+    "same-name wrong view ID",
+    "missing manual or UIKit occurrence",
+    "extra/duplicate occurrence",
+    "late/missing critical native state",
+    "candidate action without frozen baseline target",
+    "semantic view-name attribute substituted for owner",
+    "unrelated URL normalized as SwiftUI hash",
+    "browser view ID substituted for native container ID",
+    "container owner absent despite proven replay eligibility",
+    "replay eligibility absent but counted as container success",
+    "incomplete raw pagination or view versions",
+    "baseline idle-TTL success mislabeled as failure",
+    "post-background process restart",
+    "partial cleanup relabeled as ordinary pass"
+  ],
+  "admission_limits": "This is source preparation only. No runtime/oracle pass, gate closure, new experiment or environment retry is implied. Existing J01, Duo and EXP220 automation stops remain closed; fresh execution needs materially changed environment and reviewed fixed admission.",
+  "next_action": "Qualify native phase capture and authenticated account/session bindings before any F08 input admission. The offline helper is reusable, but complete mapper/callback claims remain unresolved and no existing environment stop is reopened.",
+  "review": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-f08-oracle-preparation-pincwto7/source-review.json",
+    "sha256": "41f6a1f5348c383e8c11770dc50da59e45e9dc020559a49c2a60d8691815d6e9"
+  },
+  "capture_review": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-f08-oracle-preparation-pincwto7/capture-and-browser-review.json",
+    "sha256": "7cc9b25c0d51504321b810e409758aed729b651744c1590e7e7db698eb9a5b9d"
+  },
+  "offline_helper": {
+    "status": "APPROVED_OFFLINE_ONLY",
+    "source": "../../../tools/multi-scene/acceptance/app_journey_inventory.py",
+    "controls": "../../../tools/multi-scene/acceptance/test_app_journey_inventory.py",
+    "tests_observed": 14,
+    "runtime_acceptance": false,
+    "wired_to_runner": false,
+    "scope": [
+      "Decoded raw inventory request identity, count and terminal pagination",
+      "Native/broad-session partition equality",
+      "Exact raw owner edges and same-name occurrence comparison",
+      "Narrow verified explicit SwiftUI hash normalization",
+      "Persisted Browser/native container identity with replay eligibility"
+    ],
+    "unresolved": [
+      "Real MCP transport/decoding and native input/phase receipt collection",
+      "Clean installation/process and authenticated account bindings",
+      "Candidate target contract frozen before the critical input",
+      "Actual native callback ordering, active-at-dispatch ownership and complete mapper revisions",
+      "Downstream non-owner values and available view-version differences require classification",
+      "Same-process lifecycle and cleanup assertions"
+    ],
+    "files": {
+      "tools/multi-scene/acceptance/app_journey_inventory.py": "f7a74759fd99b57b7240b4b80af0245f6e30f333d45827c3ae097c705e7a0ff2",
+      "tools/multi-scene/acceptance/test_app_journey_inventory.py": "8a94961d142718b575090ecd8f49e1414dc9a4f1cc246b4a29c16190e815e52b"
+    },
+    "review": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-f08-oracle-preparation-pincwto7/offline-helper-review.json",
+      "sha256": "f92aad7e0189e29c1aaf5bc4ecb7f24af043946123b0c2bcf3403ff095a9ea20"
+    },
+    "controls_receipt": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-f08-oracle-preparation-pincwto7/offline-controls.json",
+      "sha256": "c9378798ebb85f71ec7c5ef5ecfa56894bcb249d16fa65e3daf69c8276cbad69"
+    }
+  }
+}

@@ -43,8 +43,8 @@
       "status": "STOPPED_PRE_ASSERTION"
     },
     {
-      "id": "J02-J04",
-      "name": "Service list/detail and authenticated lifecycle",
+      "id": "J02",
+      "name": "Service list/detail navigation",
       "owner": "SDK implementer; user supplies interactive login if required",
       "dependencies": [
         "J01 runtime integrity",
@@ -55,19 +55,25 @@
       "sequence": [
         "Open service list",
         "Open one existing service detail",
-        "Return to list",
-        "Background and foreground the same authenticated process"
+        "Return to list"
       ],
-      "decisive_test": "Exact manual ServiceList/ServiceDetail owner relationships, unchanged action/resource completion inventory and request-start ownership. The hosting controllers also have legacy predicate labels Services/ServiceDetails; resolve expected overlap before execution rather than accepting arbitrary names.",
-      "runtime_runs": 0
+      "decisive_test": "Both arms complete the same native navigation. Full backend occurrence/owner graph matches the frozen comparison contract; every accepted view has its own ID, document versions, lifecycle and source/name classification. Complete action/resource inventories retain native owner relationships; no owner-by-name substitution.",
+      "runtime_runs": 0,
+      "source_constraints": [
+        "Services/ServiceDetails and ServiceList/ServiceDetail have distinct identities on one shared stack; preserve their actual callback order and every occurrence.",
+        "No invented named manual open/back action; freeze actual automatic action and request targets before candidate input.",
+        "context.view-name is not a RUM owner."
+      ]
     },
     {
       "id": "J03",
-      "name": "Dashboard WebView owner beyond cache TTL",
+      "name": "Long-lived dashboard WebView ownership",
       "owner": "SDK implementer; user supplies interactive login if required",
       "dependencies": [
-        "Authenticated readiness",
-        "Frozen dashboard native/browser correlation oracle"
+        "Qualified authenticated dashboard",
+        "Native DashboardDetails owner and replay-eligibility proof",
+        "Actual browser telemetry availability and frozen interaction",
+        "Complete native/browser ownership capture"
       ],
       "environment": "Same qualified simulator/app pair with one read-only accessible dashboard",
       "sequence": [
@@ -75,8 +81,32 @@
         "Keep its native owner attached beyond the frozen baseline cache TTL of three minutes",
         "Produce one existing browser interaction and capture complete correlation evidence"
       ],
-      "decisive_test": "Native DashboardDetails owner remains valid for browser telemetry after the TTL; no missing, stale or foreign owner, with complete baseline/candidate event inventories.",
-      "runtime_runs": 0
+      "decisive_test": "The candidate browser event retains exact application/session IDs and its own browser view ID; when replay eligible, container.view.id matches the actual still-active DashboardDetails occurrence. Compare baseline without forcing an idle-TTL failure. No captured-content validation.",
+      "runtime_runs": 0,
+      "source_constraints": [
+        "Idle time beyond three minutes does not force baseline cache eviction; this is ordinary non-regression coverage.",
+        "No browser/native view-ID substitution or Replay-content validation.",
+        "Browser service and SDK version are preserved by the bridge; freeze them separately and query the complete application/session."
+      ]
+    },
+    {
+      "id": "J04",
+      "name": "Authenticated service-list lifecycle",
+      "owner": "SDK implementer; user supplies interactive login if required",
+      "dependencies": [
+        "J02 list-returned boundary",
+        "Same-process native lifecycle proof and complete backend inventory"
+      ],
+      "environment": "Same qualified simulator/app pair; authorized read-only organization data",
+      "sequence": [
+        "After J02 returns to service list, background once",
+        "Foreground the same process once and prove restored list"
+      ],
+      "decisive_test": "Native list restoration succeeds with no process restart, foreign session or stale owner. Compare complete pre/post active occurrence relationships and action/resource ownership; preserve and classify differences without relaxing the oracle.",
+      "runtime_runs": 0,
+      "source_constraints": [
+        "Bind observed pre/post view occurrences; no assumed stable UUID or added service-detail refresh journey."
+      ]
     },
     {
       "id": "F08-distribution",
@@ -96,7 +126,8 @@
     "Source revision, static SDK linkage, sdk.version, bundle ID and host start/end timestamps",
     "Pre-run service inventory and exactly one fresh non-restored RUM session per arm; ambiguous ownership fails closed",
     "Complete raw service/session pagination; bounded ingestion waits; preserve failed or partial outcomes",
-    "No copied credentials, source edits, rebuilds, input retries, TestFlight upload or Replay-content qualification"
+    "No copied credentials, source edits, rebuilds, input retries, TestFlight upload or Replay-content qualification",
+    "Broad application/session inventory must include Browser rows with their own service/SDK version; reconcile the separately queried native partition. Preserve available backend revisions without claiming complete mapper updates."
   ],
   "gate_closures": [],
   "runtime_definition": {
@@ -110,6 +141,9 @@
     "review": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-app-j01-tf3_dxfy/review.json",
     "candidate": "UNRUN"
   },
-  "next_action": "Require a materially changed environment and separate fixed admission before another fresh boot. Continue independent S1 CI and callback source/oracle preparation; do not repeat the stopped app journey.",
-  "environment_readiness": "Results/S2-Duo-environment-readiness.json"
+  "next_action": "Qualify native phase capture and authenticated account/session bindings before any F08 input admission. The offline helper is reusable, but complete mapper/callback claims remain unresolved and no existing environment stop is reopened.",
+  "environment_readiness": "Results/S2-Duo-environment-readiness.json",
+  "source_oracle": "Results/S2-F08-source-oracle.json",
+  "source_preparation_status": "SOURCE_AND_OFFLINE_INVENTORY_PREPARATION_REVIEWED",
+  "source_prepared_at": "2026-09-21T21:39:37.351271+00:00"
 }

@@ -30,5 +30,12 @@
   "app_launches": 0,
   "axe_probes": 0,
   "gate_credit": false,
-  "next_action": "Require a materially changed environment and separate fixed admission before another fresh boot. Continue independent S1 CI and callback source/oracle preparation; do not repeat the stopped app journey."
+  "next_action": "Require a materially changed environment and separate fixed admission before another fresh boot. Continue independent S1 CI and callback source/oracle preparation; do not repeat the stopped app journey.",
+  "subsequent_read_only_observation": {
+    "at": "2026-09-21T22:02:48.157262+00:00",
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-environment-readonly-e_8o0cdl/summary.json",
+    "sha256": "de1b5e34899c22ed4d4b9f2cf6471c653d6b59656e8da29c0a0f8002f381fc6a",
+    "result": "Existing prebooted iPhone18Pro/iOS27.0 and Duo/iOS27.1 respond to AXe describe-ui. No app launch/input/install/boot/shutdown; before/after boot inventory unchanged.",
+    "limit": "Existing-device access does not qualify fresh-device migration, input delivery or SDK behavior. Separate bounded admission required."
+  }
 }
