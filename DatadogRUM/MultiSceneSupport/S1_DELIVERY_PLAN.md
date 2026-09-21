@@ -4,7 +4,7 @@ Activated at the completed EXP-213 checkpoint on 2026-09-20.
 
 ## Outcome and authority
 
-Deliver six independent customer fixes (E01–E05 and the display-link lifetime fix) in separate reviewable PRs, plus one test-only prerequisite PR. Start review of the qualified S1 work before further S2/S3 expansion. E03 has a signed, qualified repair and completed compatibility execution; full Replay still needs a maintainer-owned inherited-fixture correction or waiver. E01's five missing hostless checks now pass. DL01's seven remaining hostless suites and full Integration now pass with recorded skips/warnings. E02's eight missing hostless suites are active; other independent packets continue before S2 expansion.
+Deliver six independent customer fixes (E01–E05 and the display-link lifetime fix) in separate reviewable PRs, plus one test-only prerequisite PR. Start review of the qualified S1 work before further S2/S3 expansion. E03 has a signed, qualified repair and completed compatibility execution; full Replay still needs a maintainer-owned inherited-fixture correction or waiver. E01's five missing hostless checks now pass. DL01's seven remaining hostless suites and full Integration now pass with recorded skips/warnings. E02 now also passes its eight missing hostless suites, full Integration and twelve platform builds. E04's eight missing hostless suites are active; other independent packets continue before S2 expansion.
 
 This document prepares delivery; it does not perform or authorize a push, remote PR creation, merge, or change to an active experiment. Read `AGENTS.md` and `.continue-here.md` first when executing. The current experiment remains authoritative for its in-flight work. This delivery sequence applies after its safe checkpoint and incorporates the user's subsequent priority for S1 review. Preserve all experiment results, including inconclusive or failed controls.
 
@@ -102,7 +102,7 @@ The queue is the executable path/commit inventory. Paths below describe the revi
 - Two predicates in `RUMViewScope.swift`, two RUM scope-test files and two public-monitor integration files.
 - [EXP-205](Experiments/EXP-205-view-occurrence-isolation.md): two baseline unit reds; full RUM 903 cases / 939 executions; paired native serialization two baseline failures versus 2/2 green.
 - Decisive behavior: pending H1 Resource retains H1; Detail → H2 cannot mutate H1's attributes; H2 action remains on H2; restoration produces one active occurrence.
-- Fill the separate candidate's missing release checks and add customer-facing changelog/documentation. Native writer evidence does not establish backend ingestion or actual UIKit callback behavior.
+- The independent packet now adds eight full iOS suites (1,972 passes/five predefined skips), Integration280/280 with eight preserved QoS warnings, and twelve platform builds/144 complete architecture source lists. Full Replay and delivery review remain; changelog/docs are prepared. Native writer evidence does not establish backend ingestion or actual UIKit callback behavior.
 
 ### E04 — native WebView cache lifetime
 
@@ -118,7 +118,7 @@ The queue is the executable path/commit inventory. Paths below describe the revi
 - Three Trace implementation files, one Trace unit-test file and one public network integration file.
 - Capture existing optional NetworkContext RUM ownership at start and use it for automatic span/baggage correlation. Explicit nil must not adopt a later view; preserve legacy fallback when capture is unavailable.
 - [EXP-208](Experiments/EXP-208-trace-ownership.md): full Trace 154 passes and native 3/3 green; the initial header-preservation regression and its narrow correction remain documented.
-- Before declaring release readiness, freeze which registered-mode, failure/cancellation/guard-cleanup, backend ownership and platform checks are applicable; fill missing evidence or document source-proven non-applicability.
+- The [finite release admission](Results/S1-E05-release-admission.json) reuses EXP208 completion-guard/cancellation and value-only lifetime evidence after independent review. Two registered ownership/nil cases and two candidate backend mode cells remain, with exact fixture/oracle/count/deadline admission required before execution. Missing iOS/platform and human delivery checks remain separate.
 - Do not absorb broader PR2683 header-merge/partial-carrier policy. Existing native qualification used automatic Trace with automatic RUM Resources disabled; it does not establish every networking configuration.
 
 ### E03 — Resource action ownership

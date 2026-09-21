@@ -359,7 +359,7 @@ succeed, persist their receipts immediately, and reject missing/failed readers
 even if SQLite is parseable. DL01's pre-run review caught and closed that gap with
 six negative controls before execution. Keep machine-readable Xcode discovery
 stdout separate from stderr diagnostics; its initial mixed-stream attempt stopped
-before any platform build and remains preserved. DL01's corrected twelve build cells now pass; compilation is distinct from native platform runtime. Persist source lists, emitted modules and product hashes at completion. An implicit package build can select an exported native workspace instead; freeze the explicit package-only archive paths and verify all affected source bytes. Preserve a wrong-container discovery stop before any build.
+before any platform build and remains preserved. E02's later guard rejects an incomplete individual architecture even if the union is complete, and rejects extra or symlinked exported sources. Its two positive/eight negative controls precede the twelve passing cells. Keep build-host exclusivity and process cleanup distinct from native runtime coverage. DL01's corrected twelve build cells now pass; compilation is distinct from native platform runtime. Persist source lists, emitted modules and product hashes at completion. An implicit package build can select an exported native workspace instead; freeze the explicit package-only archive paths and verify all affected source bytes. Preserve a wrong-container discovery stop before any build.
 
 For a complete suite with no prior exact executable inventory, separate discovery
 from assertion execution. Verify the full enabled target, inspect parameter inputs

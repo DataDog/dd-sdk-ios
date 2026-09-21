@@ -6,7 +6,7 @@ A native view that stays open longer than the cache expiry can lose correlation 
 
 Mark exact view UUIDs inactive on navigation and session termination, preserve restoration, and purge expired entries under the existing write lock. Retain the cache capacity of 30, timestamp ordering and Replay filtering.
 
-Validation reused for identical production/test contents: full RUM suite, 910 cases / 946 executions; three native bridge controls passed against the baseline ownership failures. Repository lint passed. The native fixture injects WebView messages and inspects serialized output; actual browser callbacks and backend ingestion remain separate. Candidate lifetime, remaining iOS/platform checks and inherited Trace-document drift are recorded in the packet.
+Validation reused for identical production/test contents: full RUM suite, 910 cases / 946 executions; three native bridge controls passed against the baseline ownership failures. Repository lint passed. The native fixture injects WebView messages and inspects serialized output; actual browser callbacks and backend ingestion remain separate. Source-matched teardown, expiry and restoration controls cover the changed cache/session lifetime paths; the cache adds no host or pending Resource reference. Remaining iOS/platform checks and inherited Trace-document drift are recorded in the packet.
 
 ### Review checklist
 

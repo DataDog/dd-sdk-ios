@@ -1,0 +1,121 @@
+{
+  "status": "SOURCE_REVIEW_COMPLETE_FINITE_RUNTIME_DELIVERABLES_NOT_YET_ADMITTED",
+  "recorded_at": "2026-09-21T02:50:08.827337+00:00",
+  "candidate": {
+    "checkout": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/deliveries/e05-20260920-rtzz6gpd/worktree",
+    "head": "9899a67a2f59e0423a00c9765ddc77c272741740",
+    "clean": true,
+    "qualified_source": "9254adbcbf5a1809219ec30f6cc07df4f3af4518",
+    "production_sha256": {
+      "DatadogTrace/Sources/DatadogTracer.swift": "612aa2a6d9ff8d9ac1be55346ed3c93ce32e183c01aedba16a2985568110adac",
+      "DatadogTrace/Sources/Integrations/TracingURLSessionHandler.swift": "6a76028d4e76459ad2f59f5d1b720ebc712a1e0390e6cb992fc91e39eebd2427",
+      "DatadogTrace/Sources/Span/SpanWriteContext.swift": "fb428dab3721675d84c7357f8010d980b4d6d4d28906aedc3a4a0d7273d77fa9"
+    },
+    "test_sha256": {
+      "DatadogTrace/Tests/TracingURLSessionHandlerTests.swift": "bf05ec8bacc5759e6d8d8509e92a42b3f18275ef427e988526d5cd7b1af314cf",
+      "Datadog/IntegrationUnitTests/Public/NetworkInstrumentationIntegrationTests.swift": "47f50ccf4ee00441cd467a16b5eaeb3ef3e3afee4525fe0ae962804941184413"
+    }
+  },
+  "owner": "SDK implementer; RUM maintainers review final candidate",
+  "independent_review": {
+    "path": "/tmp/e05-trace-ownership-review-20260921/review.json",
+    "sha256": "e472e3b83256989a177facfda77e8461bd02074146b35c94531c8434a29320ad"
+  },
+  "completion_cleanup": {
+    "status": "COVERED_WITH_SOURCE_MATCHED_EXP208_EVIDENCE",
+    "changed_edges": [
+      {
+        "edge": "modify captures request-time RUM context in TracingURLSessionHandlerCapturedState; present NetworkContext.rumContext, including nil, is distinct from absent NetworkContext (TracingURLSessionHandler.swift:81-90, 170-184).",
+        "retention": "RUMCoreContext is a value struct containing IDs, sampler and scalar metadata; it carries no URLSessionTask, host, interception, scope, or callback reference (DatadogInternal/Sources/Models/RUM/RUMCoreContext.swift:10-31).",
+        "disposition": "COVERED_SOURCE_AND_UNIT"
+      },
+      {
+        "edge": "interceptionDidStart stores one value-only RUM wrapper per existing interception UUID, with first-only insertion under the lock (TracingURLSessionHandler.swift:202-212).",
+        "disposition": "COVERED_BY_REVERSE_COMPLETION_AND_NATIVE_A_B_DESIGN"
+      },
+      {
+        "edge": "interceptionDidComplete removes the UUID entry before first-party/origin/tracer/timing/completion guards, then supplies the captured optional RUM value only to the two URLSession span writer branches (TracingURLSessionHandler.swift:227-241, 269-317).",
+        "disposition": "COVERED_BY_GUARD_RETRY_UNIT; NO_IMMEDIATE_UNBIND_CLAIM"
+      },
+      {
+        "edge": "LazySpanWriteContext overrides only RUM additional context when its double-optional is present; the default DatadogTracer writer remains unchanged for manual spans and absent captured entries (SpanWriteContext.swift:26-55; DatadogTracer.swift:143-168).",
+        "disposition": "COVERED_BY_PRESERVATION_CONTROLS"
+      }
+    ],
+    "existing_tests": {
+      "ownership_13_case_lane": [
+        "testGivenRequestTimeRUMContext_whenInjectedInterceptionCompletesAfterContextSwitch_itKeepsBaggageAndAllRUMTags",
+        "testGivenExplicitNilRequestTimeRUMContext_whenInjectedInterceptionCompletesAfterContextSwitch_itKeepsRUMBaggageAndTagsAbsent",
+        "testGivenAbsentNetworkContext_whenInjectedInterceptionCompletesAfterContextSwitch_itUsesModifyTimeReceiverRUM",
+        "testGivenRequestTimeRUMContext_whenUninjectedInterceptionCompletesAfterContextSwitch_itKeepsAllRUMTags",
+        "testGivenExplicitNilRequestTimeRUMContext_whenUninjectedInterceptionCompletesAfterContextSwitch_itDoesNotAdoptLaterRUMTags",
+        "testGivenTwoRequestTimeRUMContexts_whenInterceptionsCompleteInReverseOrder_itKeepsEachOwnersTags",
+        "testGivenRequestTimeRUMContextWithActiveSpan_whenInterceptionCompletesAfterContextSwitch_itPreservesParentAndRUMOwnership",
+        "testGivenRequestTimeRUMContextWithGraphQLHeaders_whenInterceptionCompletesAfterContextSwitch_itPreservesRUMOwnership",
+        "testGivenCompletionWithoutCapturedRUMContext_whenInterceptionCompletes_itUsesCurrentWriterContext",
+        "testGivenExplicitNilNetworkContext_whenBuildingTraceContext_itPreservesReceiverSamplingFallback",
+        "testGivenNoInjectedTrace_whenBuildingSpanContext_itPreservesExistingReceiverSamplingFallback",
+        "testGivenRequestTimeRUMContext_whenInjectingTraceHeaders_itPreservesParentUserAndAccountHeaders",
+        "testGivenCapturedRUMContext_whenEarlyCompletionGuardIsRetriedAfterContextChange_itUsesLegacyContextAndPreservesCancellationErrorSpan"
+      ],
+      "outcome": "The corrected baseline recorded exactly 13 cases: eight ownership failures and five preservation passes. The guard-retry test exercises tracer, timing, completion, and origin guards, retries after context B, and proves the captured A entry was consumed before the retry uses legacy B.",
+      "success_error_cancellation_and_incomplete_controls": [
+        "testGivenFirstPartyInterceptionWithNoError_whenInterceptionCompletes_itEncodesRequestInfoInSpan",
+        "testGivenAutomaticModeInterception_withError_itEncodesErrorInSpan",
+        "testGivenFirstPartyIncompleteInterception_whenInterceptionCompletes_itDoesNotSendTheSpan",
+        "testGivenCapturedRUMContext_whenEarlyCompletionGuardIsRetriedAfterContextChange_itUsesLegacyContextAndPreservesCancellationErrorSpan"
+      ],
+      "native_accepted_scope": [
+        "testAutomaticTraceRequestTimeRUMOwnershipWithReverseCompletion",
+        "testAutomaticTraceRequestBeforeRUMDoesNotAdoptLaterOwnership",
+        "testParentSpanPropagation"
+      ],
+      "native_limit": "The accepted native design proves real automatic URLProtocol start/release/completion receipts, serialized client spans, request-time owners, explicit nil before RUM, and reverse completion. It does not prove registered-mode RUM ownership."
+    },
+    "limit": {
+      "source_result": "The new dictionary retains only a value-type RUMCoreContext keyed by an existing interception UUID and removes it before every completion guard. No new task, host, interception, scope, or callback is retained by the change.",
+      "unbind_contract": "No DatadogURLSessionHandler unregister API exists in the inspected protocol; NetworkInstrumentationFeature stores handlers and finish notifies each handler before removing the interception. E05 explicitly disclaims immediate-unbind, hard-capacity, and measured-footprint claims.",
+      "decision": "Do not invent an immediate-unbind test or claim a bounded map high-water guarantee. Treat release of the handler itself as existing feature lifecycle behavior, outside this E05 patch; retain the completed-interception cleanup proof above."
+    }
+  },
+  "routing_source_audit": {
+    "DatadogTrace/Sources/Trace.swift": "53-85: one Trace handler registered before automatic mode is enabled.",
+    "DatadogInternal/Sources/NetworkInstrumentation/NetworkInstrumentationFeature.swift": "98-148 and273-305: delegate registration changes interception mode, not the handler. 402-417 captures NetworkContext for either mode;493-500 starts only the first interception;615-635 notifies completion before removing it.",
+    "qualified_limit": "Existing registered parent-span test has no RUM ownership transition. Shared code is applicability evidence, not a registered ownership result."
+  },
+  "remaining_semantic_deliverables": [
+    {
+      "id": "E05-REGISTERED",
+      "owner": "SDK implementer",
+      "dependency": "Source review above; frozen exact test additions, delegate/metrics receipts, pre-result oracle and fixed runtime/cleanup admission",
+      "decisive_test": "Two native cases: registered A/B reverse completion preserves exact request-time application/session/view/action and baggage; registered request before RUM retains all four absent ownership tags after later RUM activation. Require real start, hold, release, completion and delegate metrics receipts, exact two plus one client spans, caller headers and completion-time non-RUM context. No fabricated metrics.",
+      "proposed_selectors": [
+        "NetworkInstrumentationIntegrationTests/testRegisteredTraceRequestTimeRUMOwnershipWithReverseCompletion",
+        "NetworkInstrumentationIntegrationTests/testRegisteredTraceRequestBeforeRUMDoesNotAdoptLaterOwnership"
+      ],
+      "environment": "Exact independent E05 production; isolated test-only qualification checkout; clean compatible iOS17.5 Example host; full Integration suite can include these two missing cases.",
+      "preserve": "All existing EXP208 bodies/controls and automatic evidence; no new SDK change or broad header policy.",
+      "status": "DEFINED_DELIVERABLE_NOT_EXECUTION_ADMISSION"
+    },
+    {
+      "id": "E05-BACKEND",
+      "owner": "SDK implementer",
+      "dependency": "E05-REGISTERED and frozen native fixture/oracle/source/build/install identities; fresh authenticated Trace/RUM MCP; exact full local RUM/span inventory and bounded publication windows before launch",
+      "decisive_test": "Two candidate cells, automatic and registered. In each, hold one request started before RUM and A/B requests started under distinct RUM owners, complete B then A with the pre-RUM completion after RUM exists, and require exactly three client spans with nil/A/B ownership, exact trace/header identities and native receipts. Reconcile complete service/run inventory plus each RUM session; a session-only query cannot find the intentionally unowned span. Freeze all expected local/backend event counts before admission. Preserve raw rows and reject extras or missing pagination.",
+      "environment": "Simulator-capable native harness using permitted local credentials, unique fresh run ID and service, real Datadog backend; no live customer sessions implied.",
+      "reuse": "Original local baseline reds prove the defect; do not repeat them solely to collect a second backend baseline.",
+      "status": "DEFINED_DELIVERABLE_NOT_EXECUTION_ADMISSION"
+    }
+  ],
+  "remaining_compatibility": "Complete the packet missing iOS/platform cells; inherited Replay fixture prerequisite, current CI, real ticket and human review remain.",
+  "explicit_exclusions": [
+    "S2 UIKit/SwiftUI host lifetime and task retention",
+    "Network performance or numeric benchmarking",
+    "PR2683 partial/mixed carrier and header merge policy",
+    "Immediate handler unbind, hard map capacity, or footprint claims",
+    "Whole E05 release or gate promotion before registered-mode and backend evidence"
+  ],
+  "new_runtime_admitted": false,
+  "new_experiment_number": false,
+  "release_gate_closed": false
+}
