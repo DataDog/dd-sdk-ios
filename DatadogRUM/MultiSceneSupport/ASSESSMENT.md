@@ -147,7 +147,7 @@ controls. A request started without RUM retains absent ownership after later RUM
 activation. Sampling, parent propagation, caller headers and non-RUM context controls
 pass. Completion consumes value-only captures before guards; this bounds lifetime
 relative to existing interceptions, without immediate-unbind or measured-footprint
-claims. Two registered-mode cases also pass within full Integration282/282 and independently verified callback receipts; the [delivery admission](Results/S1-E05-release-admission.json) owns that result. Broader release, backend and numerical performance remain unqualified. The nine-file backend fixture builds and offline ownership/file-mutation controls pass; neither backend mode has executed.
+claims. Two registered-mode cases also pass within full Integration282/282 and independently verified callback receipts; the [delivery admission](Results/S1-E05-release-admission.json) owns that result. Broader release, backend and numerical performance remain unqualified. Two automatic fixture attempts stopped before Trace/RUM work and pass cleanup; registered never ran. The corrected launch/activation fixture builds and passes independent source review plus six positive/46 negative controls, but was not launched because the original window lacked sufficient backend budget. Both backend mode cells remain unqualified.
 
 The first E05 candidate exposed a baggage-only write falsely claiming an SDK
 TraceContext; its one-condition correction preserves emitted headers and passes the

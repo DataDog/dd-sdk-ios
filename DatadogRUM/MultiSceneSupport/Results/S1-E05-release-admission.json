@@ -1,6 +1,6 @@
 {
   "status": "REGISTERED_HOSTLESS_AND_PLATFORMS_QUALIFIED_BACKEND_REPLAY_PENDING",
-  "recorded_at": "2026-09-21T05:17:40.879215+00:00",
+  "recorded_at": "2026-09-21T05:58:47.019792+00:00",
   "candidate": {
     "checkout": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/deliveries/e05-20260920-rtzz6gpd/worktree",
     "head": "399b01ea0e059186a139921a01a18bff7997648f",
@@ -288,7 +288,7 @@
     "requirement": "Actual TTID startup receipt; passive owner context plus serial bus fence before each task; full service/run and session backend inventories. Freeze fixture, oracle, source/build/install identities and deadlines before execution."
   },
   "backend_fixture_preparation": {
-    "status": "BUILT_AND_OFFLINE_CONTROLS_PASS_FINAL_HOST_REVIEW_PENDING_NO_NATIVE_RUN",
+    "status": "ORIGINAL_AUTOMATIC_INVALID_PRESERVED",
     "root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/deliveries/e05-20260920-rtzz6gpd/backend-ownership-srxe2dq_",
     "build": {
       "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/deliveries/e05-20260920-rtzz6gpd/backend-ownership-srxe2dq_/build-qualification.json",
@@ -304,11 +304,11 @@
     },
     "oracle_controls": {
       "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/deliveries/e05-20260920-rtzz6gpd/backend-ownership-srxe2dq_/oracle-controls.json",
-      "sha256": "f368ecf6b2685e0c6bc9c62941b44a63218820774508cfccef132524a2ea4ea4"
+      "sha256": "d6a558ccb6f6abbcf709ecea2c9e94a35af5bb821475f61bdb0cc11b9619ba52"
     },
     "file_guard_controls": {
       "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/deliveries/e05-20260920-rtzz6gpd/backend-ownership-srxe2dq_/file-guard-controls.json",
-      "sha256": "34c3ea5735b555d243c3de3f64c5aa840aca5490b0bff5be71c767cabdca8e42"
+      "sha256": "cafcd94c165c95bf99be721d903b58d0e54b16968f5bb5f827939d60af02aa52"
     },
     "original_compile_failure": {
       "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/deliveries/e05-20260920-rtzz6gpd/backend-ownership-srxe2dq_/compile-qualification.json",
@@ -334,7 +334,7 @@
       "path": "/tmp/e05-trace-ownership-review-20260921/backend-oracle-review-correction.json",
       "sha256": "c450aa2479eed7143b92c4670f627d670b0d5c38c230396fb43cf84ec3cf4be0"
     },
-    "native_launches": 0,
+    "native_launches": 1,
     "source_or_product_changes": false,
     "raw_backend_inventory": {
       "startup_rum": 3,
@@ -343,6 +343,148 @@
       "service_spans": 3,
       "session_spans": 2
     },
-    "limits": "Compile and synthetic controls only. Runtime helper freeze and final independent host review, fresh source/environment preflight and absolute execution/cleanup deadlines are required before two candidate backend cells. Full Replay remains separate."
+    "limits": "Original automatic stopped before Core initialization; registered did not run. Later reviewed corrections and stop disposition are separate; no backend qualification.",
+    "final_host_review": {
+      "path": "/tmp/e05-trace-ownership-review-20260921/final-host-oracle-acceptance.json",
+      "sha256": "173014d9f2a7ca0dff5742a6612f4b2854fc1e62155f0668be530cec64b61fcb"
+    },
+    "mode_gate_controls": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/deliveries/e05-20260920-rtzz6gpd/backend-ownership-srxe2dq_/mode-gate-controls.json",
+      "sha256": "1471afd5de1f941552c9e955f6f7fb3c0ec9e19b1020fcef2e28f2e55a4194c2"
+    },
+    "original_native_result": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/deliveries/e05-20260920-rtzz6gpd/backend-ownership-srxe2dq_/runs/automatic-5fe9dc6d47/summary.json",
+      "sha256": "d1047f20261551767c65ec8b881aa367b9a2047fa81370eeb5c28d739f5e3664",
+      "status": "INVALID_INITIAL_TOPOLOGY_BEFORE_SDK_INIT",
+      "registered_launched": false,
+      "cleanup": "PASS"
+    }
+  },
+  "backend_runtime_admission": {
+    "status": "STOPPED_ORIGINAL_AUTOMATIC_INVALID_REGISTERED_NOT_RUN",
+    "root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/deliveries/e05-20260920-rtzz6gpd/backend-ownership-srxe2dq_",
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/deliveries/e05-20260920-rtzz6gpd/backend-ownership-srxe2dq_/native-admission.json",
+    "sha256": "fe732027f3a8e817dc67c5e4ef412eb0d7fa465c33b7647923ac597f9e375270",
+    "helper_manifest_sha256": "85b749205e7d06262a4907149105d85d794c821f67ad8557bde08111920f82c4",
+    "review": {
+      "path": "/tmp/e05-trace-ownership-review-20260921/final-host-oracle-acceptance.json",
+      "sha256": "173014d9f2a7ca0dff5742a6612f4b2854fc1e62155f0668be530cec64b61fcb"
+    },
+    "cells": {
+      "automatic": {
+        "output": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/deliveries/e05-20260920-rtzz6gpd/backend-ownership-srxe2dq_/runs/automatic-5fe9dc6d47",
+        "execution_deadline_ms": 1789970299962,
+        "cleanup_deadline_ms": 1789970419962
+      },
+      "registered": {
+        "output": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/deliveries/e05-20260920-rtzz6gpd/backend-ownership-srxe2dq_/runs/registered-eda96550bb",
+        "execution_deadline_ms": 1789972099962,
+        "cleanup_deadline_ms": 1789972219962
+      }
+    },
+    "stop_rule": "First invalid native/backend/cleanup result stops; registered requires automatic PASS; fixed deadlines are not extended."
+  },
+  "backend_launch_order_correction": {
+    "root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/deliveries/e05-20260920-rtzz6gpd/backend-launch-order-correction-9sp7ripv",
+    "status": "AUTOMATIC_INVALID_BOOTSTRAP_ENUM_REGISTERED_NOT_RUN",
+    "previous_compile_only_root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/deliveries/e05-20260920-rtzz6gpd/backend-activation-correction-cbpowgkz",
+    "reason": "Late Core initialization cannot receive already-fired lifecycle callbacks; prepare only Core during didFinishLaunching; activation still gates Trace and scenario. Actual TTID oracle retained.",
+    "definition": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/deliveries/e05-20260920-rtzz6gpd/backend-launch-order-correction-9sp7ripv/correction-definition.json",
+      "sha256": "e4d7bfa0fa92c46dc9fe1fed9a5bdfab0b6065d40ecc45ecf89bf9d45594b31d"
+    },
+    "original_deadlines_preserved": true,
+    "native_admission": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/deliveries/e05-20260920-rtzz6gpd/backend-launch-order-correction-9sp7ripv/native-admission.json",
+      "sha256": "a42b20d7a7d73fa1b90ed9f069e43c2e70da3dd5717a208708d2721a8e6bdbe0"
+    },
+    "build": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/deliveries/e05-20260920-rtzz6gpd/backend-launch-order-correction-9sp7ripv/build-qualification.json",
+      "sha256": "c76a63290a7d9e7ff926c2110056d18e3844699ac166a1aab2a4b3cc3804fa45"
+    },
+    "review": {
+      "path": "/tmp/e05-trace-ownership-review-20260921/launch-order-source-review.json",
+      "sha256": "8604b3aeffa25131ef511ece99a08e3b12df2d4b5f8a921bd3c6fdee243e6ea6"
+    },
+    "helper_manifest_sha256": "dbbe418d3e73be453baf26a6def1a886036d7c8f70f5a03b52f2ee7624961a7b",
+    "controls": {
+      "positive": 5,
+      "negative": 45
+    },
+    "fixture_warnings": 0,
+    "sdk_warning_lines": 49,
+    "native_launches": 1,
+    "result": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/deliveries/e05-20260920-rtzz6gpd/backend-launch-order-correction-9sp7ripv/runs/automatic-5bdc00ddee/summary.json",
+      "sha256": "19f6c600821f8b032fb3e1725dcbe85f9f3751d75e2d2580af0cb2362eb37e8c",
+      "failure": "native prerequisite failed before requested boundary: initial topology",
+      "cleanup": "PASS",
+      "native_launches": 1,
+      "backend": "NOT_RUN",
+      "registered": "NOT_RUN"
+    }
+  },
+  "backend_bootstrap_state_correction": {
+    "status": "NOT_RUN_BUDGET",
+    "recorded_at": "2026-09-21T05:58:47.019792+00:00",
+    "root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/deliveries/e05-20260920-rtzz6gpd/backend-bootstrap-state-correction-omno1wfz",
+    "native_launches": 0,
+    "backend": "NOT_RUN",
+    "reason": "Remaining original automatic execution window could not accommodate frozen115s RUM startup and600s APM visibility allowances plus native work. No launch or extension.",
+    "failed_attempts": [
+      {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/deliveries/e05-20260920-rtzz6gpd/backend-ownership-srxe2dq_/runs/automatic-5fe9dc6d47/summary.json",
+        "sha256": "d1047f20261551767c65ec8b881aa367b9a2047fa81370eeb5c28d739f5e3664",
+        "failure": "native prerequisite failed before requested boundary: initial topology",
+        "cleanup": "PASS",
+        "native_launches": 1,
+        "backend": "NOT_RUN",
+        "registered": "NOT_RUN"
+      },
+      {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/deliveries/e05-20260920-rtzz6gpd/backend-launch-order-correction-9sp7ripv/runs/automatic-5bdc00ddee/summary.json",
+        "sha256": "19f6c600821f8b032fb3e1725dcbe85f9f3751d75e2d2580af0cb2362eb37e8c",
+        "failure": "native prerequisite failed before requested boundary: initial topology",
+        "cleanup": "PASS",
+        "native_launches": 1,
+        "backend": "NOT_RUN",
+        "registered": "NOT_RUN"
+      }
+    ],
+    "compile_only_rejected_before_launch": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/deliveries/e05-20260920-rtzz6gpd/backend-activation-correction-cbpowgkz",
+    "build": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/deliveries/e05-20260920-rtzz6gpd/backend-bootstrap-state-correction-omno1wfz/build-qualification.json",
+      "sha256": "ca117038afd941f3caef60300bbf7c585d4dbe061461469aee66a26fa4acd9bc"
+    },
+    "review": {
+      "path": "/tmp/e05-trace-ownership-review-20260921/bootstrap-state-source-review-final.json",
+      "sha256": "93c2df7fbf6c953e72fc19ee8a2594262a4af95f053cc0ae6adfcaadadff243e"
+    },
+    "controls": {
+      "positive": 6,
+      "negative": 46,
+      "oracle": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/deliveries/e05-20260920-rtzz6gpd/backend-bootstrap-state-correction-omno1wfz/oracle-controls.json",
+        "sha256": "67478bdef0babf0dd71bc5a9167f00593001e2d36ddc50cd20b6cf93ff5179ef"
+      },
+      "file_guards": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/deliveries/e05-20260920-rtzz6gpd/backend-bootstrap-state-correction-omno1wfz/file-guard-controls.json",
+        "sha256": "fc3518cf9a061dac70d27c89861fc9f77a7d4da6b0086253b83dbe55d1cb80db"
+      },
+      "mode_gate": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/deliveries/e05-20260920-rtzz6gpd/backend-bootstrap-state-correction-omno1wfz/mode-gate-controls.json",
+        "sha256": "1471afd5de1f941552c9e955f6f7fb3c0ec9e19b1020fcef2e28f2e55a4194c2"
+      }
+    },
+    "helper_manifest": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/deliveries/e05-20260920-rtzz6gpd/backend-bootstrap-state-correction-omno1wfz/helper-manifest.json",
+      "sha256": "08a53a9b0597456c997380495b4c607a628ba76971d59520e387bd2730689acf"
+    },
+    "warning_disposition": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/deliveries/e05-20260920-rtzz6gpd/backend-bootstrap-state-correction-omno1wfz/warning-disposition.json",
+      "sha256": "1d5e4cf77b38fbf3af48532929c4caaba264aeb02a544b8c9460e3d10d688914"
+    },
+    "no_sdk_changes": true,
+    "next": "Finish documentation checkpoint and independently scoped paired Replay topology diagnostic. E05 requires a fresh explicit bounded admission and refreshed preflight after this stopped window; no implicit retry or reused run identity."
   }
 }

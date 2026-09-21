@@ -104,10 +104,23 @@ OS skips. Twelve platform builds pass144 architecture source lists and936 produc
 records, including Trace on macOS. Both lanes completed within their frozen deadlines;
 this is not a new experiment or a production repair.
 
-The backend delivery fixture now compiles against unchanged399b01ea. The owning
-admission preserves the initial fixture typing failure, corrected nine-file build
-and independent callback review correction. Three synthetic valid inventories,
-28 malformed ownership/boundary controls and five file-mutation controls pass;
-these qualify only offline preparation. The host is prepared to preserve startup,
-completion and post-exit evidence, with full RUM session/service and APM inventories.
-Neither candidate backend mode has run, and no release gate closes at this checkpoint.
+The backend delivery follow-up preserves two invalid automatic attempts. The
+first stopped before Core initialization because UIApplication was still inactive
+inside sceneDidBecomeActive. An activation-only correction compiled but never
+launched: source inspection showed that late Core registration cannot replay
+already-fired launch notifications. Moving only Core initialization into
+application didFinishLaunching allows Core to observe those dates, but the next attempt stopped
+on an overly narrow bootstrap-state assertion: the OS reported background there,
+then active app/foreground-active scene at scenario start. Both attempts retain
+exact native receipts and pass all cleanup guards; neither reached backend checks,
+and registered mode never launched. These fixture failures establish no SDK defect.
+
+The final reviewed fixture permits inactive/background bootstrap while retaining
+actual active app/scene, one window, real cold/nonprewarmed TTID, all ownership
+boundaries and cleanup. Compile passes with zero fixture warnings and49 preserved
+SDK warning lines. Six positive/46 negative offline controls pass. It remains
+NOT_RUN_BUDGET: the original automatic window could not accommodate the frozen
+backend allowances, so the correction was never installed or launched. Original
+deadlines and all failed/unused builds remain unchanged. The owning admission
+links source, build, review, controls and stop disposition. A fresh bounded runtime
+admission is required after this checkpoint; no backend or release gate closes.

@@ -857,6 +857,18 @@
         "product_manifest_sha256": "d341b6eaff4e51f90e0e059f92ffe0d7d9a8f01aa5f6f0b2bd77cf2e90aeeaad",
         "cleanup": "PASS",
         "within_deadline": true
+      },
+      "backend_qualification": {
+        "status": "PENDING_AFTER_PRESERVED_FIXTURE_FAILURES_AND_BUDGET_STOP",
+        "owning_result": "Results/S1-E05-release-admission.json",
+        "latest_disposition": {
+          "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/deliveries/e05-20260920-rtzz6gpd/backend-bootstrap-state-correction-omno1wfz/execution-disposition.json",
+          "sha256": "e9611814a7647b1d2db881ac62e05538922ccf0619d3c080558e797c8af348d5"
+        },
+        "native_automatic_attempts": 2,
+        "backend_passes": 0,
+        "registered_launches": 0,
+        "final_corrected_fixture_launches": 0
       }
     },
     {
@@ -991,6 +1003,7 @@
     "E04_compatibility": "2026-09-21T03:18:51.689000+00:00",
     "E04_platforms": "2026-09-21T03:27:16.488943+00:00",
     "E05_compatibility": "2026-09-21T04:28:01.427156+00:00",
-    "next_execution": "Prepare the reviewed E05 two-mode backend fixture and separately bounded inherited Replay diagnostic. Completed compatibility lanes are not repeated."
+    "next_execution": "One paired inherited Replay topology diagnostic; E05 backend requires a fresh explicit bounded admission after its preserved stop. Do not repeat accepted suites.",
+    "E05_backend": "2026-09-21T05:58:47.019792+00:00"
   }
 }

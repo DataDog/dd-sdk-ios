@@ -2732,3 +2732,15 @@ require real body/metrics/completion, session invalidation and host cleanup inst
 of inventing a mandatory cancellation callback. Verify actual frozen helper,
 interpretation and native-contract files in the live acceptance path; matching
 hash labels inside an exchange alone cannot establish that those files are unchanged.
+
+Keep early SDK initialization separate from scenario activation. In the E05 fixture,
+sceneDidBecomeActive preceded aggregate UIApplication active state; observe both
+actual states before scenario work. Core must register its launch callback before
+launch/activation notifications because this candidate does not replay stored dates.
+Prepare only Core during didFinishLaunching, allowing observed inactive/background
+bootstrap; start Trace/tasks/RUM only after active app plus foreground-active scene.
+A background bootstrap enum is not proof of a background scenario. Preserve the
+real backend TTID/cold/nonprewarmed gate and fail activation timeout before tasks.
+If fixture corrections consume the original runtime budget, preserve every failed
+attempt and mark an unlaunched correction NOT_RUN_BUDGET. Do not extend the old
+admission or reuse its IDs; checkpoint before a separately defined continuation.
