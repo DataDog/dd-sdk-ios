@@ -189,5 +189,10 @@
     "sha256": "e8fdd65ee50be23bbbb0c0382cc99161bd7f92b1be7388760eb30ff5ba80b9d9",
     "status": "ACCEPT_CHECKPOINT_WITH_ORACLE_REJECTION"
   },
-  "next": "Keep original oracle rejection and all EXP210 failures. Do not run SDK-off or repeat this pair. Define a separate callback-side witness before any future dispatch diagnosis; continue independent release preparation meanwhile."
+  "next": "Keep original oracle rejection and all EXP210 failures. Do not run SDK-off or repeat this pair. Define a separate callback-side witness before any future dispatch diagnosis; continue independent release preparation meanwhile.",
+  "next_diagnostic_design": {
+    "record": "Results/S2-native-input-callback-plan.json",
+    "status": "DESIGN_REVIEWED_NOT_EXECUTION_ADMITTED",
+    "source_implementation_or_execution": false
+  }
 }

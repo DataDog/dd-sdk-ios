@@ -1,0 +1,101 @@
+{
+  "schema_version": 1,
+  "work_item": "S2:F08 finite controlled app journeys",
+  "status": "PLANNED_RUNTIME_UNRUN",
+  "recorded_at": "2026-09-21T15:52:55.073169+00:00",
+  "owner": "SDK implementer",
+  "application_revision": "6e33f1c18a52d04b0793e6954f456bdbc1affe2f",
+  "build_preparation": "Results/S2-F08-app-preparation.json",
+  "build_completion": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-app-build-execution-xcie51kb/completion.json",
+  "source_sha256": {
+    "Targets/Feature/Login/UI/LoginView.swift": "42772febcc6daaf9f93fc55220c8f6b38ce6dfaaf4c04d16aadf84388721ac93",
+    "Targets/Feature/Login/UI/LoginUserMonitoring.swift": "b8cfa74ca7ccbd42bd8ad39855e9ceb74f1112d41c9577872a2527fc5c7fcae7",
+    "Targets/DatadogApp/UI/App/Root/LoginRootCoordinator.swift": "0e29ea281c94d51e84794fb36bb7ce6faedd0ba88069701845df69cb731b0d4c",
+    "Targets/Platform/UserMonitoring/UserMonitor.swift": "6789083b623722bded7133f455bd2a51c82093cfd182c692d0594e99d1c170dc",
+    "Targets/Platform/DatadogObservability/UserMonitorLive.swift": "dfa4fccbb57a65e541187f7b1487f520ae01557dbe52e975f384ae1a3ef7578b",
+    "Targets/DatadogApp/UI/App/Root/Signed In Root/Datadog Products/APM Services/APMServicesUserMonitoring.swift": "80299aeaa228800212c38e26e2a23d4cb01ef0a89dbe9d76083b14d5d57adfb4",
+    "Targets/DatadogApp/UI/App/Root/Signed In Root/Datadog Products/APM Services/APMServicesCoordinator.swift": "615dfbcfc50f4de229e037c315032842eba096c9a65a3736a7ba9907de330c09",
+    "Targets/DatadogApp/UI/App/Root/Signed In Root/Datadog Products/APM Services/List/APMServicesList.swift": "01eec29749051effa4dfc2793f1e3ce3484ee43390e80c100dfe93191a98dd8a",
+    "Targets/DatadogApp/UI/App/Root/Signed In Root/Datadog Products/APM Services/Detail/APMServiceDetailView.swift": "52688016e3d6e6ec21c0cd6d463b38acd234334a52484219cbb3171a8d7f7006",
+    "Targets/DatadogApp/UI/App/Root/Signed In Root/SignedInRootCoordinator+NavigationContextResolvers.swift": "8e26978c873260d00fb77c4393f9d7b4a46a866f07e65b6781e58f7cbcc66d55",
+    "Targets/DatadogApp/UI/App/Root/Signed In Root/Datadog Products/Dashboards/DashboardUserMonitoring.swift": "2384a2159959789d65aad209de152c173785e7846c88c63ca62f3631bcea14b1"
+  },
+  "scope": "Existing normal-mode app integration and SDK coexistence. This app combines explicit SwiftUI tracking and a custom UIKit predicate; it cannot certify automatic-only C07-C10.",
+  "journeys": [
+    {
+      "id": "J01",
+      "name": "Logged-out login and lifecycle",
+      "owner": "SDK implementer",
+      "dependencies": [
+        "Complete installed-bundle/static-link identity review",
+        "Separate bounded runtime definition and oracle admission"
+      ],
+      "environment": "Two fresh task-owned Duo27.1 simulators, one baseline and one candidate installation, Xcode27.1-built Debug apps; no credentials",
+      "sequence": [
+        "Launch once with --rum-release-validation and prove logged-out Login UI",
+        "Tap existing Log In with Subdomain once; prove subdomain form",
+        "Tap existing Back once; prove default login form",
+        "Background once and activate same process once; prove restored login UI",
+        "Finish native evidence, allow bounded upload, then remove task app/simulator"
+      ],
+      "decisive_test": "Native state transitions succeed. Exact LoginView exists and one LoginWithSubdomainTapped belongs to its active view ID/session. Preserve complete service/session inventory and compare source-bound baseline/candidate lifecycle ownership and counts; no required manual Back action and no guessed background view-ID churn.",
+      "runtime_runs": 0
+    },
+    {
+      "id": "J02-J04",
+      "name": "Service list/detail and authenticated lifecycle",
+      "owner": "SDK implementer; user supplies interactive login if required",
+      "dependencies": [
+        "J01 runtime integrity",
+        "Prepared authenticated app session",
+        "Frozen exact mixed-instrumentation inventory before inputs"
+      ],
+      "environment": "Same qualified simulator/app pair; authorized read-only organization data",
+      "sequence": [
+        "Open service list",
+        "Open one existing service detail",
+        "Return to list",
+        "Background and foreground the same authenticated process"
+      ],
+      "decisive_test": "Exact manual ServiceList/ServiceDetail owner relationships, unchanged action/resource completion inventory and request-start ownership. The hosting controllers also have legacy predicate labels Services/ServiceDetails; resolve expected overlap before execution rather than accepting arbitrary names.",
+      "runtime_runs": 0
+    },
+    {
+      "id": "J03",
+      "name": "Dashboard WebView owner beyond cache TTL",
+      "owner": "SDK implementer; user supplies interactive login if required",
+      "dependencies": [
+        "Authenticated readiness",
+        "Frozen dashboard native/browser correlation oracle"
+      ],
+      "environment": "Same qualified simulator/app pair with one read-only accessible dashboard",
+      "sequence": [
+        "Open dashboard details",
+        "Keep its native owner attached beyond the frozen baseline cache TTL of three minutes",
+        "Produce one existing browser interaction and capture complete correlation evidence"
+      ],
+      "decisive_test": "Native DashboardDetails owner remains valid for browser telemetry after the TTL; no missing, stale or foreign owner, with complete baseline/candidate event inventories.",
+      "runtime_runs": 0
+    },
+    {
+      "id": "F08-distribution",
+      "name": "Internal TestFlight evaluation",
+      "owner": "Release owner",
+      "dependencies": [
+        "Separately authorized distribution",
+        "Qualified candidate and completed local journeys"
+      ],
+      "environment": "Internal TestFlight on eligible physical device",
+      "decisive_test": "Finite ordinary-journey outcome and crash/non-disruption evaluation on the distributed exact candidate.",
+      "status": "NOT_AUTHORIZED"
+    }
+  ],
+  "shared_binding": [
+    "Fresh simulator identity and clean installation; verify full installed bundle against frozen manifest",
+    "Source revision, static SDK linkage, sdk.version, bundle ID and host start/end timestamps",
+    "Pre-run service inventory and exactly one fresh non-restored RUM session per arm; ambiguous ownership fails closed",
+    "Complete raw service/session pagination; bounded ingestion waits; preserve failed or partial outcomes",
+    "No copied credentials, source edits, rebuilds, input retries, TestFlight upload or Replay-content qualification"
+  ],
+  "gate_closures": []
+}

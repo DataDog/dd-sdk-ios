@@ -2943,3 +2943,11 @@ reference hashes and exact source/object membership; reject every unknown input.
 Compiler source excerpts may contain app credential literals, so redact those in
 addition to resolved sensitive build settings. No failed compile or corrected
 preflight oracle grants runtime or gate credit.
+
+The controlled app uses static SDK frameworks and a Debug launcher stub. Freeze
+the full installed bundle, final Debug dylib, actual final linker search paths and
+resolved SDK archives before runtime. A launcher hash alone cannot distinguish
+the arms. Preserve rejected artifact-layout assumptions; do not rebuild to repair
+an offline classifier. Bind each journey to the frozen bundle, SDK version, fresh
+simulator/process/session and complete backend inventory. The source-derived
+[finite app journeys](Results/S2-F08-app-journeys.json) own the next checks.

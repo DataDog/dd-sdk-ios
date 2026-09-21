@@ -58,7 +58,7 @@ occur before the frozen boundary. SDK-off remains unrun; all input variability,
 command failure and observer limits remain recorded. No SDK cause, coverage pass
 or gate closure follows. A different callback-side witness requires fresh admission.
 
-The [controlled app preparation](Results/S2-F08-app-preparation.json) retains a failed baseline build and generated-input drift. The reviewed app-only compatibility adaptation is symmetric; both frozen SDKs and all64dependency pins are unchanged. Both app inputs and30matching resource outputs are now frozen, but no corrected build or app launch ran within the original window. F08 remains open; unavailable Trace client stats are outside this comparison.
+The [controlled app preparation](Results/S2-F08-app-preparation.json) now has two successful, separately admitted simulator builds after the symmetric app adaptation. Each preserves64dependency pins,17compiled SDK source lists, five private Clang cells and unchanged generated inputs. Full installed-bundle manifests distinguish the Debug dylibs and13statically linked SDK archives; the shared launcher stub is not an SDK identity. Original build failures and the rejected dynamic-framework assumption remain recorded. No app has launched. The [finite app journeys](Results/S2-F08-app-journeys.json) define logged-out, service/lifecycle and long-lived DashboardDetails checks; F08 stays open and TestFlight requires separate authorization.
 
 The selected candidate's lifetime evidence covers task success/failure/cancellation,
 core/display-link teardown, bounded value-cache expiry and native UIKit/SwiftUI

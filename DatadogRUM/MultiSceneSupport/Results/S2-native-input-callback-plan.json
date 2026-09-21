@@ -1,0 +1,68 @@
+{
+  "schema_version": 1,
+  "status": "DESIGN_REVIEWED_NOT_EXECUTION_ADMITTED",
+  "recorded_at": "2026-09-21T15:34:21.686308+00:00",
+  "owner": "SDK implementer",
+  "reviewer": "/root/c06_runtime_plan",
+  "purpose": "Investigate EXP210 native-switch input variability with a callback-side witness; preserve EXP218 observer rejection.",
+  "gate_dependencies": [
+    "S2:A02",
+    "S2:C07",
+    "S2:C08"
+  ],
+  "experiment_number": null,
+  "source_revision": "62f64d7b655bdc83f3036c4ad81090a270f6202b",
+  "selected_candidate_not_admitted": "c9faed816a1d4828d7d8c4b64acae01119425889",
+  "prior_sources": {
+    "sources/UIKitApp.swift": "5e791850186fbdb849ba7f0a26e36a902340d7e6f4e55c563f433934588e22dc",
+    "sources/InputProbe.swift": "1fd4d375489440cde40edbb6262e1578b26c1442d6208d02dc9a6c29375e5d2a",
+    "sources/Observation.swift": "b3b6d15e79e0c2c5ba73aa19192ca337aec5b31b023614a58e090ea3d87af206",
+    "tests/InputObservationUITests.swift": "a9627d1839831d140fcb698fc142d1ae2287677587fad66f1c05b3b6041b5d72",
+    "native.py": "7e11d92a20403801b1665472153d8414e1cd5dd9aada5eeefef58f1f149f5e36",
+    "oracle.py": "b810473ddf89e54d59a77a1de2f22e1489b9d3ed6e1bf5e1b7eeda08de9d55ec"
+  },
+  "required_new_definition": "Assign a separate experiment and absolute execution/cleanup deadline only after the sole native lane is available. Freeze new isolated sources, helper/oracle hashes, complete build inputs, fresh simulator/run identity and negative controls before execution.",
+  "proposed_changes": [
+    "Public UIApplication.sendAction override calls super exactly once and records bounded in-memory entry/exit, action identity, selector, sender identity/class/AXID, monotonic times and returned Bool.",
+    "Only the selector-based home.toggle requires this witness; UIButton.addAction(UIAction:) keeps its existing touch/native-receipt positive control.",
+    "FixtureObservation.hit adds a bounded callback witness before its unchanged original callback log; no new synchronous observer I/O or additional input."
+  ],
+  "success_order": [
+    "Assigned home.toggle touch began",
+    "sendAction entry for selector toggled and expected UISwitch sender",
+    "Exactly one original callback with the same active action identity",
+    "sendAction exit",
+    "Frozen native value0to1 and receipt2 before any flush or later input"
+  ],
+  "forbidden_requirements": [
+    "No required ended-touch ancestry",
+    "No required callback containment in sendEvent",
+    "No required0to1transition inside sendAction",
+    "No invented UIApplication.sendAction requirement for the button UIAction callback"
+  ],
+  "classification": [
+    "Successful callback without matching action witness is observer-inconclusive, not SDK interference.",
+    "An observed missing native effect is preserved as a diagnostic outcome; no programmatic action, repeated gesture or successful-only selection.",
+    "Two passing arms leave original intermittent variability unresolved; no causal or release-gate claim."
+  ],
+  "negative_controls": [
+    "wrong selector",
+    "wrong sender identity or AXID",
+    "duplicate action or callback",
+    "missing assigned touch begin",
+    "late action/callback after frozen boundary",
+    "callback without matching action",
+    "stale/restored run ID",
+    "buffer overflow or missing flush",
+    "source/build/runtime drift"
+  ],
+  "unchanged": [
+    "SDK bytes and default predicates",
+    "control target/action, UIAction closures and geometry",
+    "single original button tap and switch tap",
+    "existing15second outcome bounds and original capture window",
+    "original EXP210 failures and EXP218 rejected oracle"
+  ],
+  "native_execution_started": false,
+  "gate_closures": []
+}

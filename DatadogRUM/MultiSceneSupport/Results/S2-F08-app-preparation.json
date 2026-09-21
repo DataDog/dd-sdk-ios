@@ -161,5 +161,53 @@
       "trace_client_stats": "Unavailable in both frozen SDKs; removed argument symmetrically, not qualified by these app builds."
     }
   },
-  "current_status": "PREPARED_BUILD_ADMISSION_STOPPED_TIME_BUDGET"
+  "current_status": "BUILD_PAIR_PASS_RUNTIME_UNRUN",
+  "build_execution": {
+    "root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-app-build-execution-xcie51kb",
+    "definition": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-app-build-execution-xcie51kb/definition.json",
+    "deadline": "2026-09-21T16:35:17.325952+00:00",
+    "checkpoint_commit": "6825d02ba514a2abe3e3f18cbae3e79e22260dce",
+    "status": "BUILD_PAIR_PASS_RUNTIME_UNRUN",
+    "baseline_receipt": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-app-build-execution-xcie51kb/baseline/build-receipt.json",
+    "candidate_receipt": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-app-build-execution-xcie51kb/candidate/build-receipt.json",
+    "runtime_launches": 0,
+    "baseline_executable_sha256": "364e2c8de5b67ef0be9bf42101e3908551caafdd126224569ca6e03d1eb902f5",
+    "completion": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-app-build-execution-xcie51kb/completion.json",
+    "completion_sha256": "c26daa156b547bfb61c8dca770b70abd04fab89ae976295ae39f6f8aa07f1ee7",
+    "arms": {
+      "baseline": {
+        "status": "PASS",
+        "build_receipt": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-app-build-execution-xcie51kb/baseline/build-receipt.json",
+        "build_receipt_sha256": "eb2a5be22ec606e4d00c456b160674cbaf18cc785c8697cef8ec39edbcb8af69",
+        "installed_bundle_freeze": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-app-build-execution-xcie51kb/baseline/installed-bundle-freeze.json",
+        "installed_bundle_freeze_sha256": "d212a21932ab52cca9fa1b7e53cc34cfa4ef284f8f7ba7a9de12e2af4c78084a",
+        "files": 1815,
+        "mach_o": 71,
+        "static_sdk_archives": 13,
+        "debug_dylib_sha256": "06516e3d086ca375fdf7f1d840df6553521c485da3b0c9245dc73fadb277e529",
+        "rum_archive_sha256": "20fb1312a695488348841cc0dfe73e8ab3cdc4e488570841f2ed0428ecda441f",
+        "sdk_version": "3.17.0+62f64d7b",
+        "source_generated_protected_guards": "PASS",
+        "owned_process_group_absent": true
+      },
+      "candidate": {
+        "status": "PASS",
+        "build_receipt": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-app-build-execution-xcie51kb/candidate/build-receipt.json",
+        "build_receipt_sha256": "2f34bbb7906e5f664ab8cbf265a3afde4eb3ea2fd54028642be7969700c4e3fb",
+        "installed_bundle_freeze": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-app-build-execution-xcie51kb/candidate/installed-bundle-freeze.json",
+        "installed_bundle_freeze_sha256": "62499d93bc790864d3ddddaec7d940c45a635fc3fb799119d2a933eaf64c9c2a",
+        "files": 1815,
+        "mach_o": 71,
+        "static_sdk_archives": 13,
+        "debug_dylib_sha256": "32789c2614dbfc8fd7cec152e91ce6ada035a6767b67cc8d20694192083164ca",
+        "rum_archive_sha256": "995ff134c0e6acb952193619424d5d7e1e766bd7e8f24d006dd9a943694a4885",
+        "sdk_version": "3.17.0+c9faed81",
+        "source_generated_protected_guards": "PASS",
+        "owned_process_group_absent": true
+      }
+    },
+    "independent_review": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-app-build-execution-xcie51kb/review.json",
+    "gate_closures": []
+  },
+  "next_journey_plan": "Results/S2-F08-app-journeys.json"
 }
