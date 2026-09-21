@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "kind": "active_local_delivery_queue",
+  "kind": "active_delivery_queue",
   "created_on": "2026-09-20",
   "release_stream": "S1",
   "authority": "S1_DELIVERY_PLAN.md owns user-approved delivery order; release-gates.json remains qualification authority. Delivery state is separate from gate closure.",
@@ -33,7 +33,7 @@
       "xcconfigs/Datadog.local.xcconfig",
       "Datadog/Datadog.xcodeproj/project.pbxproj"
     ],
-    "branch_convention": "valpertui/<real-JIRA-ticket>/<delivery-slug>; resolve real ticket before publishing; never invent one",
+    "branch_convention": "valpertui/<delivery-slug>; direct user confirmation permits these seven draft publications without ticket references. Never invent tickets.",
     "ci_required": true,
     "human_review_required": true,
     "codeowners_must_be_rechecked": true,
@@ -111,15 +111,15 @@
         "@DataDog/rum-mobile-ios"
       ],
       "issue": null,
-      "publication_authorization": false,
+      "publication_authorization": true,
       "merge_authorization": false,
-      "pr_url": null,
+      "pr_url": "https://github.com/DataDog/dd-sdk-ios/pull/3214",
       "merge_commit": null,
       "id": "H00",
       "gate_reference": "S1:F06 prerequisite; local delivery ID, not an additional release gate",
       "title": "Reconstruct view hitch state in delta-event assertions",
       "branch_slug": "rum-view-hitch-assertions",
-      "state": "LOCAL_SIGNED_QUALIFICATION_PASS_PUBLICATION_PENDING",
+      "state": "DRAFT_PUBLISHED_CI_AND_REVIEW_PENDING",
       "source_worktree": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/view-hitch-assertions",
       "source_branch": "valpertui/rum-view-hitch-assertions",
       "source_head": "d98f3540a5cf445844c2547378e05cffd2212dbd",
@@ -138,8 +138,7 @@
       "decisive_test": "Reconstruct full plus delta documents in documentVersion order; absent delta fields preserve prior state and explicit empty fields clear it. Accepted paired baseline/candidate assertions remain unchanged.",
       "environment": "Affected native integration fixture and repository CI, exact current test source; no production or device-specific qualification.",
       "remaining_gates": [
-        "Real ticket or explicit waiver and separately authorized publication",
-        "Current required CI and human review",
+        "Current-base CI and human review",
         "Separately authorized merge and verified upstream source"
       ],
       "rollback": "Revert only the assertion correction if required; preserve the original failing evidence.",
@@ -158,10 +157,8 @@
           }
         ],
         "remaining_checks": [
-          "Real ticket for commit/title and delivery branch",
-          "Current required repository iOS CI",
-          "Human review",
-          "Separately authorized publication/merge and verified upstream tree"
+          "Current-base CI and human review",
+          "Separately authorized merge and verified upstream source"
         ]
       },
       "packet": "Results/S1-H00-E01-packets.json",
@@ -175,11 +172,15 @@
       "delivery_checkout": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/deliveries/s1-initial-20260920-qqyq49od/H00",
       "delivery_head": "8d7e429b0242c5b384417862e2418e2dbdffe500",
       "body": "Delivery/H00-pr.md",
-      "body_sha256": "008fe637fe9e77d92397646d0c5d52794fb3204002be54d061211a405be3b7c5",
+      "body_sha256": "8c6217a407360176bdb93bd1460dbfcaffd9917667eafa677fdc2ddfcf89fe6f",
       "path_inventory_owner": "Results/S1-delivery-queue.json",
       "local_preparation": "Results/S1-local-preparation.json",
       "outgoing_signature_status": "ALL_VERIFIED_GOOD",
-      "next_action": "Await direct publication confirmation and resolve the ticket requirement; do not rerun accepted tests."
+      "next_action": "Inspect current CI and maintainer review; do not rerun accepted tests without changed inputs.",
+      "pr_number": 3214,
+      "remote_branch": "valpertui/rum-view-hitch-assertions",
+      "remote_base": "develop",
+      "publication_record": "Results/S1-publication.json"
     },
     {
       "owner": "Main execution session / SDK implementer",
@@ -188,15 +189,15 @@
         "@DataDog/rum-mobile-ios"
       ],
       "issue": null,
-      "publication_authorization": false,
+      "publication_authorization": true,
       "merge_authorization": false,
-      "pr_url": null,
+      "pr_url": "https://github.com/DataDog/dd-sdk-ios/pull/3215",
       "merge_commit": null,
       "id": "E01",
       "gate_reference": "S1:E01 and E01-specific S1:F06",
       "title": "Prepare URLSession instrumentation once per task",
       "branch_slug": "urlsession-exactly-once",
-      "state": "LOCAL_SIGNED_QUALIFICATION_PASS_PUBLICATION_PENDING",
+      "state": "DRAFT_PUBLISHED_CI_AND_REVIEW_PENDING",
       "source_worktree": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/urlsession-exactly-once",
       "source_branch": "valpertui/urlsession-exactly-once",
       "source_head": "652ce169773b0be5b6767179eca8ab5f4cf25f8a",
@@ -236,10 +237,9 @@
       "decisive_test": "Exactly one request mutation/start through repeated, concurrent, reentrant and suspend/resume operations; early callbacks and terminal cleanup preserved. Automatic/registered backend owners and failure/cancellation weak controls match accepted results.",
       "environment": "Accepted affected Internal/Core/RUM/Trace and integration suites; ordinary and legacy native runtimes, custom/NOP matrix, platform/client/API checks already recorded. Fresh CI and only invalidated local checks after rebase.",
       "remaining_gates": [
-        "Real ticket or explicit waiver and separately authorized publication",
-        "Current required CI and human review",
-        "Separately authorized merge and verified upstream source",
-        "Actual H00 merge, then content-verified rebase/retarget and only invalidated checks"
+        "Verified H00 upstream merge, then rebase/retarget with source-bound validation",
+        "Current-base CI and human review",
+        "Separately authorized merge and verified upstream source"
       ],
       "limits": [
         "15/16 describes E01 only, not the entire S1 stream",
@@ -263,11 +263,9 @@
           }
         ],
         "remaining_checks": [
-          "Real ticket for commit/title and delivery branch",
-          "Current required CI and candidate F06 human review",
-          "H00 verified upstream merge then content-equivalent rebase/retarget and affected revalidation only",
-          "Local references repaired and all five docs pass; refresh again if the final real-ticket delivery history is rewritten. Metadata-only changes do not invalidate runtime evidence.",
-          "Separately authorized publication/merge"
+          "Verified H00 upstream merge, then rebase/retarget with source-bound validation",
+          "Current-base CI and human review",
+          "Separately authorized merge and verified upstream source"
         ]
       },
       "packet": "Results/S1-H00-E01-packets.json",
@@ -308,11 +306,15 @@
       "replay_scope_disposition": "Results/S1-replay-scope-disposition.json",
       "delivery_checkout": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/deliveries/s1-initial-20260920-qqyq49od/E01",
       "body": "Delivery/E01-pr.md",
-      "body_sha256": "4ff1471691bef2669e27a428764b384db57e88fc8cef6020787cb4b496efdab2",
+      "body_sha256": "0f3467f7f3dfe87583e786125e6606a1d13709a305c4cf2694fbe15b0019bfe1",
       "path_inventory_owner": "Results/S1-delivery-queue.json",
       "local_preparation": "Results/S1-local-preparation.json",
       "outgoing_signature_status": "ALL_VERIFIED_GOOD",
-      "next_action": "Await direct publication confirmation and resolve the ticket requirement; do not rerun accepted tests."
+      "next_action": "Inspect current CI and maintainer review; do not rerun accepted tests without changed inputs.",
+      "pr_number": 3215,
+      "remote_branch": "valpertui/urlsession-exactly-once",
+      "remote_base": "valpertui/rum-view-hitch-assertions",
+      "publication_record": "Results/S1-publication.json"
     },
     {
       "owner": "Main execution session / SDK implementer",
@@ -321,15 +323,15 @@
         "@DataDog/rum-mobile-ios"
       ],
       "issue": null,
-      "publication_authorization": false,
+      "publication_authorization": true,
       "merge_authorization": false,
-      "pr_url": null,
+      "pr_url": "https://github.com/DataDog/dd-sdk-ios/pull/3217",
       "merge_commit": null,
       "id": "E02",
       "gate_reference": "S1:E02; separate candidate freeze required",
       "title": "Keep attributes isolated between repeated view occurrences",
       "branch_slug": "view-occurrence-ownership",
-      "state": "LOCAL_SIGNED_QUALIFICATION_PASS_PUBLICATION_PENDING",
+      "state": "DRAFT_PUBLISHED_CI_AND_REVIEW_PENDING",
       "source_worktree": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/view-occurrence-ownership",
       "source_branch": "valpertui/view-occurrence-ownership",
       "source_head": "96d064c4fa083a7a74c709eb4a626fc17017db01",
@@ -362,8 +364,7 @@
       "decisive_test": "Pending H1 Resource retains its original view; Detail to H2 navigation cannot change H1 start/stop attributes, H2 action stays on H2, and restoration retains only one active occurrence. Assert serialized full/delta output.",
       "environment": "Accepted full RUM and native public-monitor fixture on recorded runtime; freeze missing affected compatibility/platform/API/CI cells on delivery source.",
       "remaining_gates": [
-        "Real ticket or explicit waiver and separately authorized publication",
-        "Current required CI and human review",
+        "Current-base CI and human review",
         "Separately authorized merge and verified upstream source"
       ],
       "limits": [
@@ -451,11 +452,15 @@
       },
       "replay_scope_disposition": "Results/S1-replay-scope-disposition.json",
       "documentation_checkpoint": "Results/S1-documentation-checkpoint.json",
-      "body_sha256": "eed83e8c013f3bdebc7c0ca05ddc99fe9ccbc722f60da8c6a4b2f6dc0478c907",
+      "body_sha256": "92bae5c9e7098a8775dd945d7ef3c8b3b816960912c7ca84f54c0e54e6697ae4",
       "path_inventory_owner": "Results/S1-documentation-checkpoint.json",
       "local_preparation": "Results/S1-local-preparation.json",
       "outgoing_signature_status": "ALL_VERIFIED_GOOD",
-      "next_action": "Await direct publication confirmation and resolve the ticket requirement; do not rerun accepted tests."
+      "next_action": "Inspect current CI and maintainer review; do not rerun accepted tests without changed inputs.",
+      "pr_number": 3217,
+      "remote_branch": "valpertui/view-occurrence-ownership",
+      "remote_base": "develop",
+      "publication_record": "Results/S1-publication.json"
     },
     {
       "owner": "Main execution session / SDK implementer",
@@ -464,16 +469,16 @@
         "@DataDog/rum-mobile-ios"
       ],
       "issue": null,
-      "publication_authorization": false,
+      "publication_authorization": true,
       "merge_authorization": false,
-      "pr_url": null,
+      "pr_url": "https://github.com/DataDog/dd-sdk-ios/pull/3218",
       "merge_commit": null,
       "id": "E03",
       "gate_reference": "S1:E03; signed repair and owner contract qualified; E03-D remains",
       "title": "Keep Resource completion counters on their owning view",
       "title_provisional": true,
       "branch_slug": "resource-completion-ownership",
-      "state": "LOCAL_SIGNED_QUALIFICATION_PASS_PUBLICATION_PENDING",
+      "state": "DRAFT_PUBLISHED_UPSTREAM_CONFLICT",
       "source_worktree": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/resource-completion-ownership",
       "source_branch": "valpertui/resource-completion-ownership",
       "source_head": "62f64d7b655bdc83f3036c4ad81090a270f6202b",
@@ -516,8 +521,8 @@
       "decisive_test": "Keep four original foreign ownership reds and four ordinary/100ms expiry controls. Preserve all nine historical bodies/baseline; supersede ninth automatic role explicitly. Actual-handler/native failed-body transfer produces one owning network Error, zero completed Resources, controlled action0/1 with received status; successful/HEAD/204 and manual compatibility remain unchanged.",
       "environment": "Bounded source/design review first, then affected RUM unit and native public-monitor/actual-handler tests on available supported runtime; candidate compatibility/CI after a compatible repair exists.",
       "remaining_gates": [
-        "Real ticket or explicit waiver and separately authorized publication",
-        "Current required CI and human review",
+        "Reconcile new develop Resource-cache conflict and qualify the combined source",
+        "Current-base CI and human review",
         "Separately authorized merge and verified upstream source"
       ],
       "candidate_design": "Single automatic error terminal plus per-dispatch known-owner IDs; action filtering follows expiry and preserves matching Resource/TNS settlement and unknown manual compatibility.",
@@ -529,7 +534,7 @@
       ],
       "rollback": "Revert the standalone Resource repair and its documentation independently; it has no hard merge dependency.",
       "contract_proposal": "E03_COMPLETION_CONTRACT.md",
-      "next_action": "Await direct publication confirmation and resolve the ticket requirement; do not rerun accepted tests.",
+      "next_action": "Reconcile and test the upstream Resource-cache changes in a separate checkout.",
       "product_decision": "E03_RESOURCE_COMPLETION_DECISION.md",
       "implementation_worktree": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/exp214-repair-_6vxqe6i/worktree",
       "allowed_production_paths_after_design_admission": [
@@ -589,10 +594,14 @@
       "replay_topology_diagnostic": "Results/S1-E03-packet.json",
       "replay_scope_disposition": "Results/S1-replay-scope-disposition.json",
       "documentation_checkpoint": "Results/S1-documentation-checkpoint.json",
-      "body_sha256": "2ddfcc195bf30c404375674f184ef182b1cca12540ffa67adee4200f853222eb",
+      "body_sha256": "4de7f2c76e88145388afd01f1b8e8d3eaf8deb226f70821e73280f8f27f3adb4",
       "path_inventory_owner": "Results/S1-E03-packet.json",
       "local_preparation": "Results/S1-local-preparation.json",
-      "outgoing_signature_status": "ALL_VERIFIED_GOOD"
+      "outgoing_signature_status": "ALL_VERIFIED_GOOD",
+      "pr_number": 3218,
+      "remote_branch": "valpertui/resource-completion-ownership",
+      "remote_base": "develop",
+      "publication_record": "Results/S1-publication.json"
     },
     {
       "owner": "Main execution session / SDK implementer",
@@ -601,15 +610,15 @@
         "@DataDog/rum-mobile-ios"
       ],
       "issue": null,
-      "publication_authorization": false,
+      "publication_authorization": true,
       "merge_authorization": false,
-      "pr_url": null,
+      "pr_url": "https://github.com/DataDog/dd-sdk-ios/pull/3219",
       "merge_commit": null,
       "id": "E04",
       "gate_reference": "S1:E04; separate candidate freeze required",
-      "title": "Retain delayed WebView correlation after native view inactivity",
+      "title": "Preserve WebView correlation after long native views",
       "branch_slug": "active-view-cache-lifetime",
-      "state": "LOCAL_SIGNED_QUALIFICATION_PASS_PUBLICATION_PENDING",
+      "state": "DRAFT_PUBLISHED_CI_AND_REVIEW_PENDING",
       "source_worktree": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/active-view-cache-lifetime",
       "source_branch": "valpertui/active-view-cache-lifetime",
       "source_head": "a3d34069cccbe35cac0fd2bc1fb456e64b1f4c43",
@@ -643,8 +652,7 @@
       "decisive_test": "Long-lived active native view remains the delayed WebView container; inactivity starts its TTL exactly once. Preserve session stop/timeout/restoration, capacity 30, ordering, Replay and out-of-window rejection.",
       "environment": "Accepted full RUM and injected native WebView bridge serialization pair; missing applicable release/CI checks on independent delivery branch.",
       "remaining_gates": [
-        "Real ticket or explicit waiver and separately authorized publication",
-        "Current required CI and human review",
+        "Current-base CI and human review",
         "Separately authorized merge and verified upstream source"
       ],
       "limits": [
@@ -733,11 +741,15 @@
       },
       "replay_scope_disposition": "Results/S1-replay-scope-disposition.json",
       "documentation_checkpoint": "Results/S1-documentation-checkpoint.json",
-      "body_sha256": "553ee5a4b614fb2043f77393fd14cd58abae429feb789a8cad61ece47ae7c035",
+      "body_sha256": "d3d936ec860cd08cf0a6f8111f9ea0450f9fbc6bbcf6bddf5cb9f81d0878d3ee",
       "path_inventory_owner": "Results/S1-documentation-checkpoint.json",
       "local_preparation": "Results/S1-local-preparation.json",
       "outgoing_signature_status": "ALL_VERIFIED_GOOD",
-      "next_action": "Await direct publication confirmation and resolve the ticket requirement; do not rerun accepted tests."
+      "next_action": "Inspect current CI and maintainer review; do not rerun accepted tests without changed inputs.",
+      "pr_number": 3219,
+      "remote_branch": "valpertui/active-view-cache-lifetime",
+      "remote_base": "develop",
+      "publication_record": "Results/S1-publication.json"
     },
     {
       "owner": "Main execution session / SDK implementer",
@@ -746,15 +758,15 @@
         "@DataDog/rum-mobile-ios"
       ],
       "issue": null,
-      "publication_authorization": false,
+      "publication_authorization": true,
       "merge_authorization": false,
-      "pr_url": null,
+      "pr_url": "https://github.com/DataDog/dd-sdk-ios/pull/3220",
       "merge_commit": null,
       "id": "E05",
       "gate_reference": "S1:E05; separate candidate freeze required",
       "title": "Preserve request-time RUM ownership in automatic traces",
       "branch_slug": "request-time-trace-ownership",
-      "state": "LOCAL_SIGNED_QUALIFICATION_PASS_PUBLICATION_PENDING",
+      "state": "DRAFT_PUBLISHED_CI_AND_REVIEW_PENDING",
       "source_worktree": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/request-time-trace-ownership",
       "source_branch": "valpertui/request-time-trace-ownership",
       "source_head": "9254adbcbf5a1809219ec30f6cc07df4f3af4518",
@@ -785,8 +797,7 @@
       "decisive_test": "Reverse completion preserves each request's start-time RUM owner in outgoing baggage and serialized span. Explicit nil never adopts a later view. Preserve parent sampling, user/account context, caller headers and legacy missing-network-context fallback.",
       "environment": "Accepted full Trace and native public networking integration pair; audit/fill applicable registered mode, terminal cleanup, backend and platform/CI cells before release claims.",
       "remaining_gates": [
-        "Real ticket or explicit waiver and separately authorized publication",
-        "Current required CI and human review",
+        "Current-base CI and human review",
         "Separately authorized merge and verified upstream source"
       ],
       "limits": [
@@ -919,14 +930,18 @@
         "owner": "Results/S1-E05-release-admission.json",
         "original_failures_preserved": true
       },
-      "next_action": "Await direct publication confirmation and resolve the ticket requirement; do not rerun accepted tests.",
+      "next_action": "Inspect current CI and maintainer review; do not rerun accepted tests without changed inputs.",
       "replay_scope_disposition": "Results/S1-replay-scope-disposition.json",
-      "body_sha256": "5c389ba4bb599f9df0bb2035af5ca0b61aae8b6bc2e3cfb94281d177aec3aa20",
+      "body_sha256": "af5229c640cf463e5778ab0f391f4e2d3c2c9c980c20cf8b5ada190bfc7b3114",
       "path_inventory_owner": "Results/S1-delivery-queue.json",
       "local_preparation": "Results/S1-local-preparation.json",
       "outgoing_signature_status": "ALL_VERIFIED_GOOD",
       "qualified_original_delivery_head": "399b01ea0e059186a139921a01a18bff7997648f",
-      "qualified_original_delivery_checkout": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/deliveries/e05-20260920-rtzz6gpd/worktree"
+      "qualified_original_delivery_checkout": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/deliveries/e05-20260920-rtzz6gpd/worktree",
+      "pr_number": 3220,
+      "remote_branch": "valpertui/request-time-trace-ownership",
+      "remote_base": "develop",
+      "publication_record": "Results/S1-publication.json"
     },
     {
       "owner": "Main execution session / SDK implementer",
@@ -935,15 +950,15 @@
         "@DataDog/rum-mobile-ios"
       ],
       "issue": null,
-      "publication_authorization": false,
+      "publication_authorization": true,
       "merge_authorization": false,
-      "pr_url": null,
+      "pr_url": "https://github.com/DataDog/dd-sdk-ios/pull/3216",
       "merge_commit": null,
       "id": "DL01",
       "gate_reference": "General S1 reliability extraction from EXP-211; local delivery ID, not a new release gate",
       "title": "Release RUM display-link observers with their owner",
       "branch_slug": "rum-display-link-lifetime",
-      "state": "LOCAL_SIGNED_QUALIFICATION_PASS_PUBLICATION_PENDING",
+      "state": "DRAFT_PUBLISHED_CI_AND_REVIEW_PENDING",
       "source_worktree": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/s2-rum-lifetime",
       "source_branch": "valpertui/s2-rum-lifetime",
       "source_head_observed": "ef9d9732d4440038d5ce9278e86943fed3f9e931",
@@ -977,8 +992,7 @@
       "decisive_test": "Real CADisplayLink cannot retain its observer through its target; weak callback forwarding releases correctly and preserves frame delivery. SDK release witness is evaluated after actual pending MessageBus work has drained.",
       "environment": "Recorded ordinary iPad iOS17.5 evidence; independent develop-based Core/RUM tests and relevant conditional-platform compile checks. No Duo hardware dependency.",
       "remaining_gates": [
-        "Real ticket or explicit waiver and separately authorized publication",
-        "Current required CI and human review",
+        "Current-base CI and human review",
         "Separately authorized merge and verified upstream source"
       ],
       "limits": [
@@ -1044,11 +1058,15 @@
       },
       "replay_scope_disposition": "Results/S1-replay-scope-disposition.json",
       "documentation_checkpoint": "Results/S1-documentation-checkpoint.json",
-      "body_sha256": "96eb688768a81bbd87e7da372dfacb2936fb22bac263331b3244f7520d2d4ac0",
+      "body_sha256": "1df3d5556c735a67d3dae6fac9adb4714613ed3ff35005c0f4936b5a0475269f",
       "path_inventory_owner": "Results/S1-documentation-checkpoint.json",
       "local_preparation": "Results/S1-local-preparation.json",
       "outgoing_signature_status": "ALL_VERIFIED_GOOD",
-      "next_action": "Await direct publication confirmation and resolve the ticket requirement; do not rerun accepted tests."
+      "next_action": "Inspect current CI and maintainer review; do not rerun accepted tests without changed inputs.",
+      "pr_number": 3216,
+      "remote_branch": "valpertui/rum-display-link-lifetime",
+      "remote_base": "develop",
+      "publication_record": "Results/S1-publication.json"
     }
   ],
   "checkpoint": {
@@ -1069,10 +1087,18 @@
     "E04_compatibility": "2026-09-21T03:18:51.689000+00:00",
     "E04_platforms": "2026-09-21T03:27:16.488943+00:00",
     "E05_compatibility": "2026-09-21T04:28:01.427156+00:00",
-    "next_execution": "Local seven-packet preparation complete. Direct publication confirmation remains pending; prepare the concrete EXP-210 native-input discriminator while it is pending.",
+    "next_execution": "Reconcile E03 with develop9a8a66c3; CI and human review continue independently for seven drafts.",
     "E05_backend": "2026-09-21T09:00:56.220458+00:00",
     "documentation": "2026-09-21T07:38:08.196508+00:00",
-    "local_signed_preparation": "2026-09-21T11:49:36.360508+00:00"
+    "local_signed_preparation": "2026-09-21T11:49:36.360508+00:00",
+    "publication": "2026-09-21T13:07:47.472746+00:00"
   },
-  "last_updated_at": "2026-09-21T11:49:36.360508+00:00"
+  "last_updated_at": "2026-09-21T13:07:47.472746+00:00",
+  "publication": {
+    "status": "SEVEN_DRAFTS_PUBLISHED_AND_VERIFIED",
+    "record": "Results/S1-publication.json",
+    "authorized_by": "Direct user instruction in this task, 2026-09-21",
+    "ticket_disposition": "Reference waived for these draft publications",
+    "merge_authorization": false
+  }
 }

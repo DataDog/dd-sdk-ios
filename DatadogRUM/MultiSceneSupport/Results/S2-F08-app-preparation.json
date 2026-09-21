@@ -1,0 +1,111 @@
+{
+  "schema_version": 1,
+  "work_item": "S2:F08 app build preparation",
+  "status": "SOURCE_PREPARED_PAUSED_FOR_S1_UPSTREAM_CONFLICT",
+  "defined_at": "2026-09-21T12:41:38.795475+00:00",
+  "deadline": "2026-09-21T14:11:38.795475+00:00",
+  "owner": "SDK implementer",
+  "gate": "S2:F08",
+  "scope": "Prepare two isolated source-frozen normal-mode app builds as F08 prerequisites; this is build preparation, not a new runtime experiment or gate closure.",
+  "artifact_root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-app-build-preparation-d9or72eq",
+  "application_revision": "6e33f1c18a52d04b0793e6954f456bdbc1affe2f",
+  "baseline_sdk_revision": "62f64d7b655bdc83f3036c4ad81090a270f6202b",
+  "candidate_sdk_production_revision": "c9faed816a1d4828d7d8c4b64acae01119425889",
+  "candidate_qualification_revision": "7604da24bfb757e8d19314e7183b840fa17d858f",
+  "original_app_repo": "/Users/valentin.pertuisot/work/datadog-ios",
+  "existing_preparation_checkout": "/Users/valentin.pertuisot/work/datadog-ios-rum-validation",
+  "preserve_existing_preparation": {
+    "Targets/Platform/DatadogObservability/Configuration.swift": "d51c3e6993bbf7f9ebb3ab85ea4a7d24ebc80422dc21fed07bb04fa8767bc302",
+    "Targets/Platform/DatadogObservability/DogfoodingConfig.swift": "fa7e16af9f9747f68de21aaf5f6f19d4dbf86b44a4d3c2380f706ed6d552295a",
+    "Targets/Platform/DatadogObservability/ObservabilitySystem.swift": "e06942de9dce818cbb6909d7eec01fa95136d2b3ef9ee3582a8c6a004f6cf8a4",
+    "Tuist/Package.resolved": "1a109a22d35d1418b3a9576c9672f77fd468e0bd0f075995648d0376f4679fd5",
+    "Tuist/Package.swift": "ea4edb9eb1c37719f13338a5a2f29ec148a8c7601a02144736513827686c0a2e",
+    "Tuist/ProjectDescriptionHelpers/Targets/DatadogApp.swift": "ddc15af5f75e7bbc03d7b8cc4c4f229cd751d77fabb603ac303a45497fd87c0a",
+    "Targets/Platform/DatadogObservability/RUM_RELEASE_VALIDATION.md": "70b5beaa690f72ad2059412eef232f0c174ed9bffb5e745bc0f839d1c1f7d225"
+  },
+  "main_protected_state": {
+    "Datadog/Datadog.xcodeproj/project.pbxproj": {
+      "inode": 25975875,
+      "size": 902583,
+      "mode": 33188,
+      "mtime_ns": 1789126687245591396,
+      "ctime_ns": 1789126687246111975,
+      "index": "100644 510335b47d222e3e2cbc254a80f6c9ea49493242 0\tDatadog/Datadog.xcodeproj/project.pbxproj",
+      "sha256": "bbe593b88e84ea88146cd14aa78187c6da11fa11dfa563a656244a439a7df35f"
+    },
+    "xcconfigs/Datadog.local.xcconfig": {
+      "inode": 25529787,
+      "size": 113,
+      "mode": 33188,
+      "mtime_ns": 1789113232845312747,
+      "ctime_ns": 1789113232851920535,
+      "index": "100644 db7030f1a10e7a44f43406914b20dee280c845ce 0\txcconfigs/Datadog.local.xcconfig"
+    }
+  },
+  "environment": {
+    "developer_dir": "/Applications/Xcode_27.1.app/Contents/Developer",
+    "xcode": "27.1",
+    "build": "27A9269",
+    "sdk": "27.1",
+    "tuist": "4.141.0",
+    "app_deployment": "18.0",
+    "SDK_deployment": "15.0",
+    "flavour": "STAGING",
+    "configuration": "Debug",
+    "destination": "generic/platform=iOS Simulator"
+  },
+  "frozen_configuration": {
+    "launch_argument": "--rum-release-validation",
+    "service": "ios-app-rum-release-validation",
+    "site": "us1",
+    "application_id": "43cbc59b-0626-438b-a3d9-c6417a4545a3",
+    "credentials": "Xcode consumes the existing optional local include through an ephemeral wrapper; do not copy or log protected config/token values.",
+    "invalid_configuration": "Skip observability instead of falling back to original organization credentials."
+  },
+  "allowed_changes": [
+    "Four previously prepared validation app source/manifest paths in isolated worktrees only",
+    "SDK package path and dogfooded SDK revision attribution per arm",
+    "Regenerated projects and resolved dependencies at existing pins; only remote SDK pin removed for local source",
+    "Local host guards/build receipts and owning documentation"
+  ],
+  "forbidden_changes": [
+    "SDK implementation or tests",
+    "Original app and existing preparation checkout",
+    "Dependency upgrades, new dependencies or repository build-script changes",
+    "Runtime launches, customer data mutations, TestFlight upload, push, PR, merge or publication",
+    "Session Replay captured-content qualification"
+  ],
+  "limits": {
+    "build_invocations": 2,
+    "seconds_per_build": 1800,
+    "dependency_resolution_seconds_per_arm": 300,
+    "project_generation_seconds_per_arm": 180,
+    "runtime_launches": 0,
+    "retries": 0,
+    "deadline_extension": false
+  },
+  "success_conditions": [
+    "All non-SDK package pins retain exact identity/version/revision",
+    "Full source and build-input inventories, correct selected SDK source and no missing or foreign compiled SDK sources",
+    "One simulator app build per arm from unchanged app logic, with explicit build errors/warnings retained",
+    "Resolved validation configuration matches approved app/service/site without exposing token",
+    "Original app, previous preparation and main protected paths unchanged"
+  ],
+  "stop_rules": [
+    "Preserve any failure and stop the dependent build; no implicit retry or expanded scope",
+    "Do not weaken warning policy or edit SDK/dependency code to make app compile without a separately reviewed finding",
+    "No installation or normal-mode journey before a separately frozen run identity, finite scenario and backend oracle"
+  ],
+  "remaining_after_builds": [
+    "Prepare exact normal-mode journeys and telemetry expectations",
+    "Verify accessible test data and login through the app when a concrete build is ready",
+    "Define and independently admit the source-paired native/backend comparison",
+    "Retain separately authorized distribution and final release review"
+  ],
+  "preparation_receipt": "prepared.json",
+  "build_invocations_used": 0,
+  "runtime_launches_used": 0,
+  "checkpoint_at": "2026-09-21T13:07:47.472746+00:00",
+  "tool_preflight": "Required SwiftGen CLI is absent at /opt/homebrew/bin/swiftgen. App build scripts normally install it; no tool/dependency installation or build was attempted. Resolve before a separately admitted build if the existing deadline expires.",
+  "deadline_policy": "Original14:11:38UTC deadline remains; no automatic extension while S1 reconciliation takes priority."
+}

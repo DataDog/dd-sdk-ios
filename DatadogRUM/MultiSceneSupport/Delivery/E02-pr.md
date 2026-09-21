@@ -1,18 +1,18 @@
 ### What and why?
 
-If an app returns to the same view key while an older occurrence still has a pending Resource, new start/stop attributes can overwrite the older occurrence. Keep those attributes on the active occurrence while the pending Resource retains its original view.
+If an app returns to the same view key while an older occurrence still has a pending Resource, new start/stop attributes can overwrite the older occurrence. Keep those attributes on the active occurrence while the Resource retains its original view.
 
 ### How?
 
-Require an active view before applying matching start or stop attributes. Preserve repeated starts on the current view, action ownership and session restoration.
+Apply matching start/stop attributes only to an active view. Repeated starts on the current view and session restoration keep their existing behavior.
 
-Regression tests reproduce the old overwrite and verify serialized full/delta events after navigation. The RUM suite and remaining selected module suites pass on iOS 17.5. Integration validation used the independent hitch-assertion correction and retains existing QoS warnings. Debug and Release platform builds and strict lint pass. The ownership checks inspect serialized SDK output; backend ingestion remains untested.
+Regression tests reproduce the overwrite and check serialized full/delta events. RUM, selected module suites, platform builds and strict lint pass locally. Integration checks use [hitch-assertion fix](https://github.com/DataDog/dd-sdk-ios/pull/3214) and retain existing QoS warnings. These checks do not establish backend ingestion.
 
 ### Review checklist
 
 - [x] Unit and integration coverage matches the change.
-- [ ] Issue reference or explicit waiver confirmed for publication.
+- [x] Ticket reference waived for these drafts.
 - [x] CHANGELOG updated.
-- [x] No new public API requiring an Objective-C interface.
-- [x] Public APIs unchanged.
-- [ ] Required CI and maintainer review.
+- [x] No public API or Objective-C interface changes.
+- [x] API generation not required.
+- [ ] Current CI and maintainer review.

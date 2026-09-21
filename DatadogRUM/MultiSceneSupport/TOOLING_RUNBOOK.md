@@ -345,6 +345,15 @@ changes status/path columns. The first packet preflight stopped before creating 
 worktree when this check rejected the unchanged E03 reproducer paths. The corrected
 parser and invalid preparation record remain in the packet artifact directory.
 
+For publication, require direct task authorization and verify every outgoing
+commit signature, exact head/base, complete diff allowlist and concise body.
+Check the live develop commit and duplicate branches/PRs first. Publish exact
+allowed refs without force or incidental tags, then read back each draft's head,
+base, commit list, paths and body. Preserve the local qualification identity if
+upstream has advanced; source conflicts require a separate reconciliation and
+invalidated-check inventory. The [seven-draft receipt](Results/S1-publication.json)
+records this check; E03's newer Resource-cache conflict is still open.
+
 Keep real-ticket metadata, full repository iOS/CI coverage, human review, publication
 and verified merge separate. Affected-suite F03 evidence is not a `make test-ios-all`
 result. Use one explicit missing/invalidated-check inventory per candidate, and carry
