@@ -411,6 +411,222 @@ class NetworkInstrumentationIntegrationTests: XCTestCase {
         )
     }
 
+    func testRegisteredTraceRequestTimeRUMOwnershipWithReverseCompletion() throws {
+        RUM.enable(
+            with: .init(applicationID: "e05-app", urlSessionTracking: nil),
+            in: core
+        )
+        core.setUserInfo(id: "user-a")
+        core.setAccountInfo(id: "account-a")
+
+        let monitor = RUMMonitor.shared(in: core)
+        monitor.startView(key: "e05-view-a", name: "E05 View A")
+        monitor.startAction(type: .swipe, name: "E05 Action A")
+        core.flush()
+        let contextA = try currentRUMContext()
+        try assertUsableRUMContext(contextA)
+
+        let coordinator = E05HeldURLProtocolCoordinator()
+        let completedA = expectation(description: "delegate A completed")
+        let completedB = expectation(description: "delegate B completed")
+        let metricsA = expectation(description: "delegate A collected metrics")
+        let metricsB = expectation(description: "delegate B collected metrics")
+        URLSessionInstrumentation.enableDurationBreakdown(
+            with: .init(delegateClass: E05RegisteredURLSessionDelegate.self),
+            in: core
+        )
+        let delegate = E05RegisteredURLSessionDelegate(
+            onMetrics: { marker in
+                if marker == "A" { metricsA.fulfill() }
+                if marker == "B" { metricsB.fulfill() }
+            },
+            onCompletion: { marker in
+                if marker == "A" { completedA.fulfill() }
+                if marker == "B" { completedB.fulfill() }
+            }
+        )
+        let session = coordinator.makeRegisteredSession(delegate: delegate)
+        XCTAssertTrue(session.delegate === delegate)
+        defer {
+            coordinator.deactivate()
+            session.invalidateAndCancel()
+        }
+        let requestA = e05Request(path: "a", marker: "A", callerHeader: "caller-a")
+        let requestB = e05Request(path: "b", marker: "B", callerHeader: "caller-b", baggage: "custom=keep-b")
+        let startedA = expectation(description: "request A reached URLProtocol start")
+        let startedB = expectation(description: "request B reached URLProtocol start")
+        coordinator.setOnStart { marker in
+            if marker == "A" { startedA.fulfill() }
+            if marker == "B" { startedB.fulfill() }
+        }
+
+        let taskA = session.dataTask(with: requestA)
+        taskA.resume()
+        wait(for: [startedA], timeout: 5)
+        XCTAssertEqual(coordinator.request(for: "A")?.value(forHTTPHeaderField: "x-e05-caller"), "caller-a")
+
+        monitor.stopAction(type: .swipe, name: "E05 Action A")
+        monitor.startView(key: "e05-view-b", name: "E05 View B")
+        monitor.startAction(type: .swipe, name: "E05 Action B")
+        core.setUserInfo(id: "user-b")
+        core.setAccountInfo(id: "account-b")
+        core.flush()
+        let contextB = try currentRUMContext()
+        try assertUsableRUMContext(contextB)
+        XCTAssertNotEqual(contextA.viewID, contextB.viewID)
+        XCTAssertNotEqual(contextA.userActionID, contextB.userActionID)
+
+        let taskB = session.dataTask(with: requestB)
+        taskB.resume()
+        wait(for: [startedB], timeout: 5)
+        XCTAssertEqual(coordinator.request(for: "B")?.value(forHTTPHeaderField: "x-e05-caller"), "caller-b")
+
+        XCTAssertTrue(delegate.metricsMarkers.isEmpty)
+        XCTAssertTrue(delegate.completedMarkers.isEmpty)
+        coordinator.release(marker: "B")
+        wait(for: [completedB, metricsB], timeout: 5)
+        coordinator.release(marker: "A")
+        wait(for: [completedA, metricsA], timeout: 5)
+        core.flush()
+
+        XCTAssertEqual(coordinator.startedMarkers.sorted(), ["A", "B"])
+        XCTAssertEqual(coordinator.releasedMarkers, ["B", "A"])
+        XCTAssertEqual(delegate.completedMarkers, ["B", "A"])
+        XCTAssertEqual(delegate.metricsMarkers.sorted(), ["A", "B"])
+        try assertRegisteredCallbacks(for: delegate, marker: "A", task: taskA)
+        try assertRegisteredCallbacks(for: delegate, marker: "B", task: taskB)
+
+        let spans = try core.waitAndReturnSpanMatchers()
+        XCTAssertEqual(spans.count, 2)
+        XCTAssertTrue(try spans.allSatisfy { try $0.operationName() == "urlsession.request" })
+        let spanA = try XCTUnwrap(spans.first(where: { (try? $0.resource()) == "https://www.example.com/e05/a" }))
+        let spanB = try XCTUnwrap(spans.first(where: { (try? $0.resource()) == "https://www.example.com/e05/b" }))
+        try assertRUMTags(spanA, equalTo: contextA)
+        try assertRUMTags(spanB, equalTo: contextB)
+        try assertSpanTraceIdentity(spanA, request: coordinator.request(for: "A"))
+        try assertSpanTraceIdentity(spanB, request: coordinator.request(for: "B"))
+        try assertCompletionUserAndAccount(spanA, userID: "user-b", accountID: "account-b")
+        try assertCompletionUserAndAccount(spanB, userID: "user-b", accountID: "account-b")
+        try assertTraceHeaders(
+            for: coordinator.request(for: "A"),
+            expectedBaggage: "session.id=\(contextA.sessionID),user.id=user-a,account.id=account-a",
+            callerHeader: "caller-a"
+        )
+        try assertTraceHeaders(
+            for: coordinator.request(for: "B"),
+            expectedBaggage: "custom=keep-b",
+            callerHeader: "caller-b"
+        )
+    }
+
+    func testRegisteredTraceRequestBeforeRUMDoesNotAdoptLaterOwnership() throws {
+        core.setUserInfo(id: "user-before")
+        core.setAccountInfo(id: "account-before")
+        core.flush()
+
+        let coordinator = E05HeldURLProtocolCoordinator()
+        let completed = expectation(description: "delegate completed")
+        let metrics = expectation(description: "delegate collected metrics")
+        URLSessionInstrumentation.enableDurationBreakdown(
+            with: .init(delegateClass: E05RegisteredURLSessionDelegate.self),
+            in: core
+        )
+        let delegate = E05RegisteredURLSessionDelegate(
+            onMetrics: { marker in
+                if marker == "before-rum" { metrics.fulfill() }
+            },
+            onCompletion: { marker in
+                if marker == "before-rum" { completed.fulfill() }
+            }
+        )
+        let session = coordinator.makeRegisteredSession(delegate: delegate)
+        XCTAssertTrue(session.delegate === delegate)
+        defer {
+            coordinator.deactivate()
+            session.invalidateAndCancel()
+        }
+        let started = expectation(description: "request reached URLProtocol start")
+        coordinator.setOnStart { marker in
+            if marker == "before-rum" { started.fulfill() }
+        }
+        let request = e05Request(path: "before-rum", marker: "before-rum", callerHeader: "caller-before")
+        let task = session.dataTask(with: request)
+        task.resume()
+        wait(for: [started], timeout: 5)
+        let requestAtStart = try XCTUnwrap(coordinator.request(for: "before-rum"))
+
+        RUM.enable(
+            with: .init(applicationID: "e05-late-app", urlSessionTracking: nil),
+            in: core
+        )
+        let monitor = RUMMonitor.shared(in: core)
+        monitor.startView(key: "e05-late-view", name: "E05 Late View")
+        monitor.startAction(type: .swipe, name: "E05 Late Action")
+        core.setUserInfo(id: "user-after")
+        core.setAccountInfo(id: "account-after")
+        core.flush()
+        let lateContext = try currentDatadogContext()
+        let lateRUMContext = try XCTUnwrap(lateContext.additionalContext(ofType: RUMCoreContext.self))
+        XCTAssertFalse(lateRUMContext.applicationID.isEmpty)
+        XCTAssertFalse(lateRUMContext.sessionID.isEmpty)
+        XCTAssertFalse(try XCTUnwrap(lateRUMContext.viewID).isEmpty)
+        XCTAssertFalse(try XCTUnwrap(lateRUMContext.userActionID).isEmpty)
+        XCTAssertEqual(lateContext.userInfo?.id, "user-after")
+        XCTAssertEqual(lateContext.accountInfo?.id, "account-after")
+
+        XCTAssertTrue(delegate.metricsMarkers.isEmpty)
+        XCTAssertTrue(delegate.completedMarkers.isEmpty)
+        coordinator.release(marker: "before-rum")
+        wait(for: [completed, metrics], timeout: 5)
+        core.flush()
+
+        XCTAssertEqual(coordinator.startedMarkers, ["before-rum"])
+        XCTAssertEqual(coordinator.releasedMarkers, ["before-rum"])
+        XCTAssertEqual(delegate.completedMarkers, ["before-rum"])
+        XCTAssertEqual(delegate.metricsMarkers, ["before-rum"])
+        try assertRegisteredCallbacks(for: delegate, marker: "before-rum", task: task)
+
+        let spans = try core.waitAndReturnSpanMatchers()
+        XCTAssertEqual(spans.count, 1)
+        XCTAssertTrue(try spans.allSatisfy { try $0.operationName() == "urlsession.request" })
+        let span = try XCTUnwrap(spans.first)
+        XCTAssertNil(try? span.meta.custom(keyPath: "meta._dd.application.id"), "E05 no-RUM application tag")
+        XCTAssertNil(try? span.meta.custom(keyPath: "meta._dd.session.id"), "E05 no-RUM session tag")
+        XCTAssertNil(try? span.meta.custom(keyPath: "meta._dd.view.id"), "E05 no-RUM view tag")
+        XCTAssertNil(try? span.meta.custom(keyPath: "meta._dd.action.id"), "E05 no-RUM action tag")
+        try assertCompletionUserAndAccount(span, userID: "user-after", accountID: "account-after")
+        try assertSpanTraceIdentity(span, request: requestAtStart)
+        try assertTraceHeaders(
+            for: requestAtStart,
+            expectedBaggage: "user.id=user-before,account.id=account-before",
+            callerHeader: "caller-before"
+        )
+    }
+
+    private func assertRegisteredCallbacks(
+        for delegate: E05RegisteredURLSessionDelegate,
+        marker: String,
+        task: URLSessionTask
+    ) throws {
+        let receipt = try XCTUnwrap(delegate.receipt(for: marker))
+        XCTAssertEqual(receipt.taskIdentifiers, Set([task.taskIdentifier]))
+        XCTAssertEqual(receipt.dataCallbacks, 1)
+        XCTAssertEqual(receipt.body, Data("ok".utf8))
+        XCTAssertEqual(receipt.completionCount, 1)
+        XCTAssertEqual(receipt.statusCode, 200)
+        XCTAssertFalse(receipt.hasError)
+        XCTAssertEqual(receipt.metrics.count, 1)
+        let metrics = try XCTUnwrap(receipt.metrics.first)
+        XCTAssertTrue(metrics.interval.start.timeIntervalSinceReferenceDate.isFinite)
+        XCTAssertTrue(metrics.interval.end.timeIntervalSinceReferenceDate.isFinite)
+        XCTAssertGreaterThan(metrics.interval.duration, 0)
+        XCTAssertTrue(metrics.interval.duration.isFinite)
+        let attachment = XCTAttachment(string: "marker=\(marker) task=\(task.taskIdentifier) data=\(receipt.dataCallbacks) metrics=\(receipt.metrics.count) completions=\(receipt.completionCount) duration=\(metrics.interval.duration) transactions=\(metrics.transactionCount)")
+        attachment.name = "Registered URLSession callback receipts"
+        attachment.lifetime = .keepAlways
+        add(attachment)
+    }
+
     private func currentRUMContext() throws -> RUMCoreContext {
         let context = try currentDatadogContext()
         return try XCTUnwrap(context.additionalContext(ofType: RUMCoreContext.self))
@@ -622,6 +838,13 @@ private final class E05HeldURLProtocolCoordinator {
         return URLSession(configuration: configuration)
     }
 
+    func makeRegisteredSession(delegate: E05RegisteredURLSessionDelegate) -> URLSession {
+        E05HeldURLProtocol.setActiveCoordinator(self)
+        let configuration = URLSessionConfiguration.ephemeral
+        configuration.protocolClasses = [E05HeldURLProtocol.self]
+        return URLSession(configuration: configuration, delegate: delegate, delegateQueue: nil)
+    }
+
     func deactivate() {
         lock.lock()
         active = false
@@ -697,6 +920,90 @@ private final class E05HeldURLProtocolCoordinator {
         lock.lock()
         defer { lock.unlock() }
         return read()
+    }
+}
+
+private final class E05RegisteredURLSessionDelegate: NSObject, URLSessionDataDelegate {
+    struct MetricsReceipt {
+        var interval: DateInterval
+        var transactionCount: Int
+    }
+
+    struct CallbackReceipt {
+        var taskIdentifiers: Set<Int> = []
+        var dataCallbacks = 0
+        var body = Data()
+        var metrics: [MetricsReceipt] = []
+        var completionCount = 0
+        var statusCode: Int?
+        var hasError = false
+    }
+
+    private let lock = NSLock()
+    private let onMetrics: (String) -> Void
+    private let onCompletion: (String) -> Void
+    private var receipts: [String: CallbackReceipt] = [:]
+    private var metricsOrder: [String] = []
+    private var completionOrder: [String] = []
+
+    init(onMetrics: @escaping (String) -> Void, onCompletion: @escaping (String) -> Void) {
+        self.onMetrics = onMetrics
+        self.onCompletion = onCompletion
+    }
+
+    var metricsMarkers: [String] {
+        lock.lock()
+        defer { lock.unlock() }
+        return metricsOrder
+    }
+
+    var completedMarkers: [String] {
+        lock.lock()
+        defer { lock.unlock() }
+        return completionOrder
+    }
+
+    func receipt(for marker: String) -> CallbackReceipt? {
+        lock.lock()
+        defer { lock.unlock() }
+        return receipts[marker]
+    }
+
+    func urlSession(_ session: URLSession, dataTask: URLSessionDataTask, didReceive data: Data) {
+        let marker = dataTask.originalRequest?.value(forHTTPHeaderField: "x-e05-marker") ?? "missing-marker"
+        lock.lock()
+        var receipt = receipts[marker] ?? CallbackReceipt()
+        receipt.taskIdentifiers.insert(dataTask.taskIdentifier)
+        receipt.dataCallbacks += 1
+        receipt.body.append(data)
+        receipts[marker] = receipt
+        lock.unlock()
+    }
+
+    func urlSession(_ session: URLSession, task: URLSessionTask, didFinishCollecting metrics: URLSessionTaskMetrics) {
+        let marker = task.originalRequest?.value(forHTTPHeaderField: "x-e05-marker") ?? "missing-marker"
+        lock.lock()
+        var receipt = receipts[marker] ?? CallbackReceipt()
+        receipt.taskIdentifiers.insert(task.taskIdentifier)
+        receipt.metrics.append(MetricsReceipt(interval: metrics.taskInterval, transactionCount: metrics.transactionMetrics.count))
+        receipts[marker] = receipt
+        metricsOrder.append(marker)
+        lock.unlock()
+        onMetrics(marker)
+    }
+
+    func urlSession(_ session: URLSession, task: URLSessionTask, didCompleteWithError error: Error?) {
+        let marker = task.originalRequest?.value(forHTTPHeaderField: "x-e05-marker") ?? "missing-marker"
+        lock.lock()
+        var receipt = receipts[marker] ?? CallbackReceipt()
+        receipt.taskIdentifiers.insert(task.taskIdentifier)
+        receipt.completionCount += 1
+        receipt.statusCode = (task.response as? HTTPURLResponse)?.statusCode
+        receipt.hasError = error != nil
+        receipts[marker] = receipt
+        completionOrder.append(marker)
+        lock.unlock()
+        onCompletion(marker)
     }
 }
 
