@@ -158,7 +158,7 @@
       "file_lists": 144
     }
   },
-  "last_updated_at": "2026-09-21T14:01:34.522669+00:00",
+  "last_updated_at": "2026-09-21T17:15:37.233128+00:00",
   "ios_core": {
     "status": "PASS",
     "cases": 819,
@@ -266,7 +266,7 @@
   "replay_scope_disposition": "Results/S1-replay-scope-disposition.json",
   "current_delivery": {
     "source_commit": "b3c60b7b9e40fe0fc44bee03a78f0023fe62a28c",
-    "delivery_head": "1b2bff3e72e0c9e3f88869ea548868cd6f2f7cf8",
+    "delivery_head": "046719c3b62c9643bee2065866e35dd07b2e2158",
     "baseline": "9a8a66c3da7859437fcb3139455b51e07bd150c7",
     "signature": "G",
     "status": "QUALIFIED_CURRENT_UPSTREAM_RESOURCE_CONTRACT",
@@ -279,7 +279,8 @@
     "qualification": "Results/EXP-219-upstream-resource-integration.json",
     "publication": "Results/S1-publication.json",
     "pr_url": "https://github.com/DataDog/dd-sdk-ios/pull/3218",
-    "authoritative_for_current_draft": true
+    "authoritative_for_current_draft": true,
+    "test_readability_followup": "Results/S1-resource-completion-review.json"
   },
   "historical_fields_scope": "Existing EXP-214 production/documentation, broad module/platform and diagnostic fields below remain original-source evidence. current_delivery owns the updated draft."
 }

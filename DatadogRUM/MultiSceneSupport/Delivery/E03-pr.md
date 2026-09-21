@@ -4,9 +4,11 @@ A Resource that finishes after navigation or a session change can alter another 
 
 ### How?
 
-Carry the Resource owner on completion commands and apply action updates only to that owner. Failed transfers produce one network Error on the owning view, preserving the HTTP status. Successful bodies, empty HEAD/204 responses and manual completions keep their existing behavior.
+Snapshot the views that own the resource key before dispatching its completion. This keeps a late completion from changing another view's action, even when the starting session has stopped. Unknown manual completions retain their existing behavior.
 
-Reconciled with develop's new cache metrics. Local checks pass: 956 RUM test executions, nine metrics tests, nine native transfer cases, strict lint, and Swift/Objective-C API checks for all nine modules. The stopped-session case retains an existing precondition diagnostic. Backend ingestion is untested; current CI and maintainer review remain required.
+Failed transfers produce one network Error on the owning view, preserving the HTTP status. Successful transfers, including empty HEAD/204 responses, keep their existing behavior.
+
+Local validation covers 956 RUM test executions, nine cache-metrics tests, nine native transfer cases, strict lint and nine-module Swift/Objective-C API checks. The test-name cleanup preserves the assertions and timing and passes lint and syntax checks. The stopped-session case retains an existing precondition diagnostic. Backend ingestion is untested; current CI and maintainer review remain required.
 
 ### Review checklist
 

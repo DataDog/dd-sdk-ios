@@ -478,14 +478,15 @@
       "title": "Keep Resource completion counters on their owning view",
       "title_provisional": false,
       "branch_slug": "resource-completion-ownership",
-      "state": "DRAFT_PUBLISHED_AWAITING_CI_REVIEW",
+      "state": "DRAFT_PUBLISHED_CI_AND_REVIEW_PENDING",
       "source_worktree": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/resource-completion-ownership",
       "source_branch": "valpertui/resource-completion-ownership",
       "source_head": "62f64d7b655bdc83f3036c4ad81090a270f6202b",
       "production_revision": "b3c60b7b9e40fe0fc44bee03a78f0023fe62a28c",
       "selected_commits": [
         "b3c60b7b9e40fe0fc44bee03a78f0023fe62a28c",
-        "1b2bff3e72e0c9e3f88869ea548868cd6f2f7cf8"
+        "1b2bff3e72e0c9e3f88869ea548868cd6f2f7cf8",
+        "046719c3b62c9643bee2065866e35dd07b2e2158"
       ],
       "target": "develop unless the admitted design proves a specific dependency",
       "hard_merge_dependencies": [],
@@ -534,7 +535,7 @@
       ],
       "rollback": "Revert the standalone Resource repair and its documentation independently; it has no hard merge dependency.",
       "contract_proposal": "E03_COMPLETION_CONTRACT.md",
-      "next_action": "Inspect current-head CI and address attributable review findings; accepted EXP-219 tests need no repetition.",
+      "next_action": "Inspect CI on signed046719c3 and maintainer review. Production is unchanged after the simplification review; accepted tests were not repeated.",
       "product_decision": "E03_RESOURCE_COMPLETION_DECISION.md",
       "implementation_worktree": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp219-upstream-integration-l_p4vm9s/worktree",
       "allowed_production_paths_after_design_admission": [
@@ -549,10 +550,11 @@
         "E03-A: compatible six-file design reviewed; metadata distinction explicit",
         "E03-B: original9 bodies preserved;15unit and9native baseline cases qualified with invalid attempts retained",
         "E03-C: signed compatible repair, full RUM925/961 and9 native XCTest passes with classified inherited diagnostic; source review confirms metrics preserve fixed expiry and action counters",
-        "E03 current-develop integration: EXP219 sourceb3c60b7b/docs1b2bff3e; RUM920/956,metrics9/9,native9/9, strict semantics/lint/API/docs/review/cleanup pass."
+        "E03 current-develop integration: EXP219 sourceb3c60b7b/docs1b2bff3e; RUM920/956,metrics9/9,native9/9, strict semantics/lint/API/docs/review/cleanup pass.",
+        "PR3218 review: behavior-based test names and readable fixtures published at signed046719c3; exact token mapping, strict lint and syntax checks pass. Smaller ownership alternatives do not preserve the contract."
       ],
-      "delivery_head": "1b2bff3e72e0c9e3f88869ea548868cd6f2f7cf8",
-      "delivery_checkout": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp219-upstream-integration-l_p4vm9s/worktree",
+      "delivery_head": "046719c3b62c9643bee2065866e35dd07b2e2158",
+      "delivery_checkout": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s1-resource-review-fnfbexny/worktree",
       "packet": "Results/S1-E03-packet.json",
       "body": "Delivery/E03-pr.md",
       "allowed_additional_test_paths": [
@@ -596,7 +598,7 @@
       "replay_topology_diagnostic": "Results/S1-E03-packet.json",
       "replay_scope_disposition": "Results/S1-replay-scope-disposition.json",
       "documentation_checkpoint": "Results/S1-documentation-checkpoint.json",
-      "body_sha256": "5b7edd6e9affb00a5ff36580ac6955a89cd713a90eeaf14f773917721e62088a",
+      "body_sha256": "672a94f8962f1b2a9b29c665658d27f4f43a3d36a06eb6750b836894695fb2c2",
       "path_inventory_owner": "Results/S1-E03-packet.json",
       "local_preparation": "Results/S1-local-preparation.json",
       "outgoing_signature_status": "ALL_VERIFIED_GOOD",
@@ -605,7 +607,8 @@
       "remote_base": "develop",
       "publication_record": "Results/S1-publication.json",
       "upstream_reconciliation": "Results/EXP-219-upstream-resource-integration.json",
-      "historical_compatibility_scope": "Existing platform/core/compatibility fields remain qualified on their recorded pre-reconciliation source; current-head CI still required."
+      "historical_compatibility_scope": "Existing platform/core/compatibility fields remain qualified on their recorded pre-reconciliation source; current-head CI still required.",
+      "review_followup": "Results/S1-resource-completion-review.json"
     },
     {
       "owner": "Main execution session / SDK implementer",

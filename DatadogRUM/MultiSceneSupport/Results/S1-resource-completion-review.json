@@ -1,20 +1,61 @@
 {
   "schema_version": 1,
   "work_item": "S1:F06 Resource completion review follow-up",
-  "status": "REVIEW_AND_TEST_CLEANUP_IN_PROGRESS",
-  "recorded_at": "2026-09-21T16:47:56.894287+00:00",
+  "status": "SIGNED_TEST_CLEANUP_PUBLISHED_PRODUCTION_UNCHANGED",
+  "recorded_at": "2026-09-21T17:15:37.233128+00:00",
   "owner": "SDK implementer + existing independent reviewer",
   "pr": "https://github.com/DataDog/dd-sdk-ios/pull/3218",
-  "published_head": "1b2bff3e72e0c9e3f88869ea548868cd6f2f7cf8",
+  "published_head": "046719c3b62c9643bee2065866e35dd07b2e2158",
   "artifact_root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s1-resource-review-fnfbexny",
   "worktree": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s1-resource-review-fnfbexny/worktree",
   "purpose": "Replace internal experiment names in tests and assess whether a smaller resource-tracking implementation preserves the qualified behavior. Keep production unchanged unless a simpler implementation is established.",
   "current_changes": "Three test files use behavior-based class/helper/method names and fixture literals; semicolon-separated fixture steps expanded. Every existing assertion and time limit retained; source unchanged.",
   "remaining": [
-    "Review naming and whole-repository uses; lint/parse and exact normalized token comparison",
-    "Independent comparison of smaller ownership designs including manual unknown stops, multiple owners, session transitions and expiry",
-    "If simpler source is justified, admit and execute the exact invalidated checks before a signed PR update; otherwise preserve current implementation and explain why"
+    "Verify current-head CI and retain maintainer review as a separate release requirement."
   ],
   "gate_closures": [],
-  "native_runs": 0
+  "native_runs": 0,
+  "design_comparison": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s1-resource-review-fnfbexny/design-comparison.json",
+    "sha256": "59716686e5e1c1f81d0127480a0e3bc3af5fd08a4eacfa417c2b51dd2f890578",
+    "decision": "KEEP_PRODUCTION_UNCHANGED",
+    "production_delta": {
+      "files": 6,
+      "added_lines": 69,
+      "removed_lines": 22
+    }
+  },
+  "validation": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s1-resource-review-fnfbexny/test-readability-validation.json",
+    "sha256": "ce4dad545b3e19b097cc21ff4268a9ed435b8ef2af8336ca0881369b17a346a3",
+    "status": "PASS",
+    "assertion_calls_preserved": 388,
+    "strict_lint": "PASS zero violations",
+    "syntax_parse": "PASS three files",
+    "renamed_token_equivalence": true,
+    "runtime_rerun": false
+  },
+  "local_commit": {
+    "sha": "046719c3b62c9643bee2065866e35dd07b2e2158",
+    "signature": "G",
+    "publication": "PUBLISHED",
+    "signing_attempts": [
+      "test-cleanup-commit.json",
+      "test-cleanup-resigning.json",
+      "test-cleanup-unlocked-signing.json"
+    ],
+    "reason": "Re-signed with identical tree after user unlocked the Mac.",
+    "unsigned_predecessor": "4daf9dd47c8419d8f939797fce95644385de190b"
+  },
+  "proposed_pr_body": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s1-resource-review-fnfbexny/proposed-pr-body.md",
+    "sha256": "672a94f8962f1b2a9b29c665658d27f4f43a3d36a06eb6750b836894695fb2c2",
+    "status": "PUBLISHED_VERIFIED"
+  },
+  "publication": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s1-resource-review-fnfbexny/publication.json",
+    "sha256": "23ca867c2721676c0e5db4cb949fe4bb9392e6af5919105f528d176f9f42e806",
+    "status": "SIGNED_TEST_CLEANUP_PUBLISHED",
+    "outgoing_commits_verified": 3
+  }
 }

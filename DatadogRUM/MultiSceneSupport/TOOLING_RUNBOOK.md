@@ -2963,3 +2963,10 @@ Reap a terminated watchdog child before testing PID absence. The J01 cleanup
 removed its app/simulator and passed source guards, but its parent still observed
 the child PID and recorded FAIL. A separate post-parent-exit receipt proves absence
 without rewriting that failure or granting journey credit.
+
+For test-name/readability changes, bind the exact old-to-new identifier and fixture
+literal mapping, compare all remaining tokens in order, preserve assertions and
+time limits, and run strict test lint plus platform-target syntax parsing. Reuse
+source-matched runtime evidence when behavior is unchanged. A local unsigned
+cleanup commit must be signed and every outgoing commit verified before pushing;
+keep a timed-out signing attempt as evidence without changing the remote branch.
