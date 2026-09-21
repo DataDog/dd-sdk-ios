@@ -1,7 +1,7 @@
 ---
-last_updated: 2026-09-20
+last_updated: 2026-09-21
 sdk_version: 3.17.0
-verified_against_commit: 62f64d7b6
+verified_against_commit: c5f3955ab
 tracked_files:
   - DatadogRUM/Sources/RUM.swift
   - DatadogRUM/Sources/RUMConfiguration.swift
