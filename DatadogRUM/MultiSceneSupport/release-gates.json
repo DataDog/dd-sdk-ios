@@ -1891,16 +1891,16 @@
         },
         "S2": {
           "scope": "Candidate-scoped final compatibility matrix",
-          "status": "OPEN",
+          "status": "CLOSED",
           "dependencies": [
             "S2:F07",
             "S2:C06"
           ],
           "decisive_test": "Freeze affected modules/platforms via F07; run relevant complete suites, deployment builds, existing Swift/Objective-C clients, lint and unchanged API/wire/privacy checks. Replay scope is crash safety and other-feature non-disruption only; no full capture suite.",
           "environment": "FINAL_COMPATIBILITY.md release applicability matrix",
-          "evidence": "EXP-216 independent source-aware review at productionc9faed81 / test head1aa71d7f. Reopen: E01 exact source matrix plus separate DL01/E04 singleton full suites/platforms are inputs, not blanket whole-composition passes. Freeze finite source-affected matrix after source audit; reuse invariant results and only execute missing combined-source checks. Preserve all warnings/skips; no fullReplay capture requirement. Results/EXP-216-s2-composition-promotion.json preserves exact prior evidence and review. No new build/native/backend result.",
+          "evidence": "EXP-217 independently qualifies production c9faed81 at unchanged signed head 7604da24. Ten selected iOS suites: 3,152 cases / 3,224 executions, with 3,219 successes and five predefined OS skips. Ten Replay-only cases were excluded before assertions; eight Integration QoS warnings remain. Five public clients, twelve new platform builds, strict lint and unchanged nine-module Swift/Objective-C APIs pass. Twelve macOS cells for six unchanged products and F02 reuse source-matched evidence. Source, dependency, runtime, protected-path and cleanup guards pass within the original deadline. Original pre-assertion stops and warnings remain. Closes only S2:F03; no SDK/test changes or Duo, app, backend, performance, full Replay or whole-release claim. Results/EXP-217-s2-compatibility.json.",
           "required": true,
-          "remaining_checks": [
+          "completed_checks": [
             {
               "owner": "SDK implementer",
               "dependencies": [

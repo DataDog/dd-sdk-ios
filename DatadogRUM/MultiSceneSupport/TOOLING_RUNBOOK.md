@@ -2841,3 +2841,28 @@ passes. Reopen only the concrete invalidated obligations, with their existing
 owner/dependency/decisive-test/environment, then regenerate the checklist.
 [EXP-216](Results/EXP-216-s2-composition-promotion.json) owns a worked disposition;
 accepted runtime checks are not repeated for this source/documentation checkpoint.
+
+
+### Source-bound counts and verified exclusions
+
+Historical suite counts can precede later committed tests. Bind the count to the
+current fixture revision and require complete raw discovery before assertions.
+Preserve a mismatch as a stopped admission; an inventory correction must identify
+every added/removed method and must not silently omit a failure.
+
+XCTest method and Swift Testing filters are not interchangeable. For a wholly
+excluded Swift Testing suite, a suite-level filter may be required. Before running
+assertions, enumerate again with the actual command filters and require exactly
+the intended disabled methods, every required method enabled and unchanged raw
+identities. Do not infer exclusion from the command string or selected count.
+[EXP-217](Results/EXP-217-s2-compatibility.json) preserves the ignored-filter stop
+and the subsequent enumeration proof. Excluded Replay-content cases count as
+neither passes nor OS skips; retain other-feature ownership/coexistence checks.
+
+
+For composed public clients and API checks, a manifest hash alone does not reject
+extra source files. Compare exact source path sets and bytes, reject unexpected
+symlinks, and retain the admitted roots separately from generated build outputs.
+Bind the simulator runtime version and build as well as its device identifier.
+Apply these checks before assertions; preserve earlier definitions when tightening
+preflight. Metadata-only documentation changes do not justify repeated native runs.

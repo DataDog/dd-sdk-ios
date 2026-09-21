@@ -31,7 +31,14 @@ six-file boundary and closes object-lifetime safety for the exact candidate.
 Ordinary compatibility and reentrancy retain narrow source-matched evidence;
 new semantic SwiftUI and multi-scene code remain absent, making the scoped
 application-performance comparison non-applicable without a numerical claim.
-[Composed documentation](Results/S2-F02-composition-documentation.json) now passes source/example/registry checks; final compatibility remains open for the composed source.
+[Composed documentation](Results/S2-F02-composition-documentation.json) and
+[composed compatibility](Results/EXP-217-s2-compatibility.json) now qualify F02/F03
+for this exact source. The finite matrix includes 3,152 selected cases / 3,224 executions,
+five public clients, twelve new platform builds, strict lint and unchanged
+Swift/Objective-C APIs, with source-matched macOS/documentation reuse. Five OS skips,
+eight Integration QoS warnings and the original pre-assertion stops remain recorded.
+All ten Replay-only cases were excluded before assertions. No SDK/test change or
+numerical performance claim follows.
 Current-candidate Duo, native-input, app and final release gates remain open.
 Historical EXP-195 source differs and cannot certify this candidate.
 

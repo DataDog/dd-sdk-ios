@@ -1,0 +1,487 @@
+{
+  "schema_version": 1,
+  "experiment": "EXP-217",
+  "gate": "S2:F03",
+  "owner": "SDK implementer",
+  "independent_reviewer": "existing c06_runtime_plan",
+  "status": "PASS_DEFINED_S2_F03_MATRIX",
+  "defined_at": "2026-09-21T10:17:52.527112+00:00",
+  "timebox_deadline": "2026-09-21T12:17:52.527112+00:00",
+  "worktree": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/s2-rum-lifetime",
+  "qualification_head": "7604da24bfb757e8d19314e7183b840fa17d858f",
+  "production_revision": "c9faed816a1d4828d7d8c4b64acae01119425889",
+  "baseline": "62f64d7b655bdc83f3036c4ad81090a270f6202b",
+  "hypothesis": "The admitted E01, DL01 and E04 fixes compose without regressions on existing APIs, supported package builds and other SDK features. Singleton whole-suite results do not establish their combined compatibility.",
+  "allowed_work": [
+    "Frozen M01-M11 per-cell reuse/missing inventory and source closure audit",
+    "Fresh isolated harness/artifact preparation; no SDK/test/build-script changes",
+    "Execute only source-unqualified selected module, client, platform, lint/API checks after separate pre-result admission",
+    "One durable summary and owning gate/docs updates after review"
+  ],
+  "allowed_sdk_test_build_edits": [],
+  "scope": "Existing APIs only. No Session Replay captured-content, slot/geometry/privacy correctness tests or repairs; retain RUM/other-feature coexistence assertions. No new semantic/multi-scene performance or backend campaign.",
+  "candidate_cells": {
+    "M01": "Ten non-Replay scheme inventories; exact Replay-only selector exclusions frozen before execution. RUM/Core/Integration composition unqualified. Review shared TestUtilities closure before deciding any reuse.",
+    "M02_M03": "Five existing Swift5/Swift6 Debug/Release and Objective-C Release clients; source-matched compile/runtime reuse only if closure permits, otherwise candidate-linked checks.",
+    "M04_M08": "Ten full-package Debug/Release builds across iOS/tvOS/watchOS/visionOS/Catalyst; new combined RUM source requires builds.",
+    "M09": "Two RUM macOS builds; six products without RUM dependencies potentially reusable from E01 after exact closure audit.",
+    "M10": "Strict source/test lint and nine-module public Swift/Objective-C API baseline; source invariants can reuse exact verification only after audit.",
+    "M11": "Reuse source-verified F02 signed7604 documentation result; no repeated documentation audit."
+  },
+  "execution_limits": {
+    "single_native_build_lane": true,
+    "discovery_seconds": 600,
+    "suite_seconds": 900,
+    "build_seconds": 600,
+    "cleanup_seconds": 90,
+    "retries": 0,
+    "test_iterations": 1,
+    "parallel_testing": false
+  },
+  "decisive_oracle": [
+    "Exact complete selected discovered/executed identifier multiset and parameter multiplicities; only predefined OS skips",
+    "Real zero build/test exits, readable xcresults, every compiled target input and emitted module/product",
+    "Frozen source/dependency/binary/checksum identity before and after; clean installation and cleanup for hosted clients",
+    "Unchanged public APIs, wire/privacy/minimum settings, protected user paths",
+    "Independent source-aware acceptance; no blanket singleton transfer or full Replay/full test-ios-all claim"
+  ],
+  "stop_rules": [
+    "No executable phase until its finite inventory/source/environment/artifact inputs are frozen before results",
+    "Stop affected lane on unexpected test, inventory, source/dependency drift, timeout, process contention or failed cleanup; preserve original result, no retry for green",
+    "Never extend deadline; prepare a separately justified follow-up only for a remaining existing gate or concrete regression",
+    "No push, API change, SDK implementation, human intervention requirement or release claim"
+  ],
+  "prior_evidence_owners": [
+    "Results/EXP-216-s2-composition-promotion.json",
+    "Results/S2-F02-composition-documentation.json",
+    "Results/S1-H00-E01-packets.json",
+    "Results/S1-independent-packets.json",
+    "Results/EXP-201-final-compatibility.json"
+  ],
+  "artifact_root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp217-s2-compatibility-wgm7gns_",
+  "definition_sha256": "04623026158bc2082a49c4d14f9a9b70145f5ca9ad837a65a68335e1890406c7",
+  "selected_matrix": {
+    "M01": {
+      "disposition": "NEW_COMPOSED_SOURCE_EXECUTION",
+      "raw_cases": 3162,
+      "selected_cases": 3152,
+      "selected_runs": 3224,
+      "predefined_os_skips": 5,
+      "excluded_replay_only_selectors": {
+        "DatadogInternalTests": [
+          "UIViewSessionReplaySlotIDTests/slotIDIsNilByDefault()",
+          "UIViewSessionReplaySlotIDTests/slotIDIsStoredPerView()",
+          "UIViewSessionReplaySlotIDTests/settingSlotIDToNilClearsIt()",
+          "UIViewSessionReplaySlotIDTests/changingSlotIDMarksTheViewAsNeedingLayout()",
+          "UIViewSessionReplaySlotIDTests/settingSameSlotIDDoesNotMarkTheViewAsNeedingLayout()",
+          "UIViewSessionReplaySlotIDTests/clearingSlotIDMarksTheViewAsNeedingLayout()"
+        ],
+        "DatadogWebViewTrackingTests": [
+          "WebViewTrackingTests/testSendingWebRecordEvent()",
+          "WebViewTrackingTests/testItAddsUserScriptWithSessionReplay()"
+        ],
+        "DatadogIntegrationTests": [
+          "WebRecordIntegrationTests/testWebRecordIntegration()",
+          "WebRecordIntegrationTests/testWebRecordIntegrationWithNewSessionReplayConfigurationAPI()"
+        ]
+      },
+      "definition": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp217-s2-compatibility-wgm7gns_/m01/definition.json",
+        "sha256": "b903fc05efaabf333bc5ae4d8908b4b2ad490aa2cb8029b2c8a2757185da7328"
+      },
+      "scope_controls": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp217-s2-compatibility-wgm7gns_/m01/scope-oracle-controls.json",
+        "sha256": "3d1ee153a1576e9e4a824d751b258afcac2a270d1d01d7e6c367c35864761d88"
+      },
+      "reuse_reason": "Shared TestUtilities links RUM, so prior seven non-RUM hostless singleton results do not qualify combined source.",
+      "initial_inventory_prediction": {
+        "raw_cases": 3158,
+        "selected_cases": 3148,
+        "selected_runs": 3220
+      },
+      "status": "PASS_INDEPENDENTLY_REVIEWED",
+      "current_definition": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp217-s2-compatibility-wgm7gns_/m01-verified-scope/definition.json",
+        "sha256": "0c8849f6f5c4d817afde43ccefb9e81853b422a6f5ba1927a4729c988a943544"
+      },
+      "lane_state": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp217-s2-compatibility-wgm7gns_/m01-verified-scope/lane-state.json",
+        "sha256": "1ebee19aff98eb89f0181ae301a53edba652269b16f3da0c51fce9066cc336eb"
+      },
+      "observed_totals": {
+        "cases": 3152,
+        "runs": 3224,
+        "successes": 3219,
+        "skips": 5,
+        "structured_runtime_warnings": 8
+      },
+      "suites": [
+        {
+          "id": "core",
+          "artifact_root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp217-s2-compatibility-wgm7gns_/m01-corrected-admission/core",
+          "root_audit": {
+            "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp217-s2-compatibility-wgm7gns_/m01-corrected-admission/core/root-audit.json",
+            "sha256": "8c4663d5f1468bcbe6dd8074f37313c4275d2fca9c60b3e3b6b8b6bf70acb822"
+          },
+          "observed": {
+            "cases": 823,
+            "runs": 823,
+            "run_results": {
+              "Success": 819,
+              "Skipped": 4
+            },
+            "skips": [
+              "CarrierInfoPublisherTests/testGivenCellularServiceAvailable_itProvidesInitialValue()",
+              "CarrierInfoPublisherTests/testGivenCellularServiceUnAvailable_itProvidesNoInitialValue()",
+              "CarrierInfoPublisherTests/testGivenSubscribedInfoProvider_whenCarrierInfoChanges_itNotifiesSubscriber()",
+              "NetworkConnectionInfoConversionTests/testNWPathLinkQuality()"
+            ],
+            "runtimeWarnings": []
+          },
+          "same_candidate_reuse": true
+        },
+        {
+          "id": "internal",
+          "artifact_root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp217-s2-compatibility-wgm7gns_/m01-verified-scope/internal",
+          "root_audit": {
+            "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp217-s2-compatibility-wgm7gns_/m01-verified-scope/internal/root-audit.json",
+            "sha256": "a2c1810642cc4159e0718be32a13de7ea4c7da5a6fc3d6731eda290279adbf01"
+          },
+          "observed": {
+            "cases": 453,
+            "runs": 489,
+            "run_results": {
+              "Success": 489
+            },
+            "skips": [],
+            "runtimeWarnings": []
+          },
+          "same_candidate_reuse": false
+        },
+        {
+          "id": "rum",
+          "artifact_root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp217-s2-compatibility-wgm7gns_/m01-verified-scope/rum",
+          "root_audit": {
+            "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp217-s2-compatibility-wgm7gns_/m01-verified-scope/rum/root-audit.json",
+            "sha256": "e1254ea619c4939652435280f76686105fb90313586fce4f8fb4ec55d5c41564"
+          },
+          "observed": {
+            "cases": 912,
+            "runs": 948,
+            "run_results": {
+              "Success": 948
+            },
+            "skips": [],
+            "runtimeWarnings": []
+          },
+          "same_candidate_reuse": false
+        },
+        {
+          "id": "logs",
+          "artifact_root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp217-s2-compatibility-wgm7gns_/m01-verified-scope/logs",
+          "root_audit": {
+            "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp217-s2-compatibility-wgm7gns_/m01-verified-scope/logs/root-audit.json",
+            "sha256": "6ac3597feb54facc7658fe0b7117c8f65a3ae44146cde117cb68298704cc5580"
+          },
+          "observed": {
+            "cases": 88,
+            "runs": 88,
+            "run_results": {
+              "Success": 88
+            },
+            "skips": [],
+            "runtimeWarnings": []
+          },
+          "same_candidate_reuse": false
+        },
+        {
+          "id": "trace",
+          "artifact_root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp217-s2-compatibility-wgm7gns_/m01-verified-scope/trace",
+          "root_audit": {
+            "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp217-s2-compatibility-wgm7gns_/m01-verified-scope/trace/root-audit.json",
+            "sha256": "12e3c96161960fc9634dd3f9d5f6ceb2e6f5c94f8f51cfd5efd700efd8b288fe"
+          },
+          "observed": {
+            "cases": 141,
+            "runs": 141,
+            "run_results": {
+              "Success": 141
+            },
+            "skips": [],
+            "runtimeWarnings": []
+          },
+          "same_candidate_reuse": false
+        },
+        {
+          "id": "crash",
+          "artifact_root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp217-s2-compatibility-wgm7gns_/m01-verified-scope/crash",
+          "root_audit": {
+            "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp217-s2-compatibility-wgm7gns_/m01-verified-scope/crash/root-audit.json",
+            "sha256": "fa36d6ba128dd509fc62bd68a1a77500d5acf0e85361918f34a4082885db54f0"
+          },
+          "observed": {
+            "cases": 67,
+            "runs": 67,
+            "run_results": {
+              "Success": 66,
+              "Skipped": 1
+            },
+            "skips": [
+              "KSCrashBacktraceTests/testGenerateBacktraceReturnsNilOnWatchOS()"
+            ],
+            "runtimeWarnings": []
+          },
+          "same_candidate_reuse": false
+        },
+        {
+          "id": "webview",
+          "artifact_root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp217-s2-compatibility-wgm7gns_/m01-verified-scope/webview",
+          "root_audit": {
+            "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp217-s2-compatibility-wgm7gns_/m01-verified-scope/webview/root-audit.json",
+            "sha256": "642540ae958e30f3b898f14121f4c781476dd5b2645a5036ce1d2eac29fc6686"
+          },
+          "observed": {
+            "cases": 29,
+            "runs": 29,
+            "run_results": {
+              "Success": 29
+            },
+            "skips": [],
+            "runtimeWarnings": []
+          },
+          "same_candidate_reuse": false
+        },
+        {
+          "id": "flags",
+          "artifact_root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp217-s2-compatibility-wgm7gns_/m01-verified-scope/flags",
+          "root_audit": {
+            "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp217-s2-compatibility-wgm7gns_/m01-verified-scope/flags/root-audit.json",
+            "sha256": "4045258078f11b817813aebb73d890672f159b5615bf9112b449a9efefbaa758"
+          },
+          "observed": {
+            "cases": 135,
+            "runs": 135,
+            "run_results": {
+              "Success": 135
+            },
+            "skips": [],
+            "runtimeWarnings": []
+          },
+          "same_candidate_reuse": false
+        },
+        {
+          "id": "profiling",
+          "artifact_root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp217-s2-compatibility-wgm7gns_/m01-verified-scope/profiling",
+          "root_audit": {
+            "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp217-s2-compatibility-wgm7gns_/m01-verified-scope/profiling/root-audit.json",
+            "sha256": "d13ffa6a1e5d479b404cf8c6a1800828af77eb798b5321f2a999280acef8b6ba"
+          },
+          "observed": {
+            "cases": 224,
+            "runs": 224,
+            "run_results": {
+              "Success": 224
+            },
+            "skips": [],
+            "runtimeWarnings": []
+          },
+          "same_candidate_reuse": false
+        },
+        {
+          "id": "integration",
+          "artifact_root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp217-s2-compatibility-wgm7gns_/m01-verified-scope/integration",
+          "root_audit": {
+            "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp217-s2-compatibility-wgm7gns_/m01-verified-scope/integration/root-audit.json",
+            "sha256": "39ad6fb8a6592a846145d21d0e4b2389c231e09ae12188851da89de18c5b9c00"
+          },
+          "observed": {
+            "cases": 280,
+            "runs": 280,
+            "run_results": {
+              "Success": 280
+            },
+            "skips": [],
+            "runtimeWarnings": [
+              {
+                "issueType": "Runtime Warning",
+                "message": "Thread running at User-initiated quality-of-service class waiting on a lower QoS thread running at Default quality-of-service class. Investigate ways to avoid priority inversions"
+              },
+              {
+                "issueType": "Runtime Warning",
+                "message": "Thread running at User-interactive quality-of-service class waiting on a lower QoS thread running at Default quality-of-service class. Investigate ways to avoid priority inversions",
+                "sourceURL": "file:///Users/valentin.pertuisot/work/dd-sdk-ios-extractions/s2-rum-lifetime/DatadogRUM/Sources/Instrumentation/AppHangs/AppHangsWatchdogThread.swift"
+              },
+              {
+                "issueType": "Runtime Warning",
+                "message": "Thread running at User-interactive quality-of-service class waiting on a lower QoS thread running at Default quality-of-service class. Investigate ways to avoid priority inversions",
+                "sourceURL": "file:///Users/valentin.pertuisot/work/dd-sdk-ios-extractions/s2-rum-lifetime/DatadogRUM/Sources/Instrumentation/AppHangs/AppHangsWatchdogThread.swift"
+              },
+              {
+                "issueType": "Runtime Warning",
+                "message": "Thread running at User-interactive quality-of-service class waiting on a lower QoS thread running at Default quality-of-service class. Investigate ways to avoid priority inversions",
+                "sourceURL": "file:///Users/valentin.pertuisot/work/dd-sdk-ios-extractions/s2-rum-lifetime/DatadogRUM/Sources/Instrumentation/AppHangs/AppHangsWatchdogThread.swift"
+              },
+              {
+                "issueType": "Runtime Warning",
+                "message": "Thread running at User-interactive quality-of-service class waiting on a lower QoS thread running at Default quality-of-service class. Investigate ways to avoid priority inversions",
+                "sourceURL": "file:///Users/valentin.pertuisot/work/dd-sdk-ios-extractions/s2-rum-lifetime/DatadogRUM/Sources/Instrumentation/AppHangs/AppHangsWatchdogThread.swift"
+              },
+              {
+                "issueType": "Runtime Warning",
+                "message": "Thread running at User-interactive quality-of-service class waiting on a lower QoS thread running at Default quality-of-service class. Investigate ways to avoid priority inversions",
+                "sourceURL": "file:///Users/valentin.pertuisot/work/dd-sdk-ios-extractions/s2-rum-lifetime/DatadogRUM/Sources/Instrumentation/AppHangs/AppHangsWatchdogThread.swift"
+              },
+              {
+                "issueType": "Runtime Warning",
+                "message": "Thread running at User-interactive quality-of-service class waiting on a lower QoS thread running at Default quality-of-service class. Investigate ways to avoid priority inversions",
+                "sourceURL": "file:///Users/valentin.pertuisot/work/dd-sdk-ios-extractions/s2-rum-lifetime/DatadogRUM/Sources/Instrumentation/AppHangs/AppHangsWatchdogThread.swift"
+              },
+              {
+                "issueType": "Runtime Warning",
+                "message": "Thread running at User-interactive quality-of-service class waiting on a lower QoS thread running at Default quality-of-service class. Investigate ways to avoid priority inversions",
+                "sourceURL": "file:///Users/valentin.pertuisot/work/dd-sdk-ios-extractions/s2-rum-lifetime/Datadog/IntegrationUnitTests/CrashReporting/GeneratingBacktraceTests.swift"
+              }
+            ]
+          },
+          "same_candidate_reuse": false
+        }
+      ],
+      "pre_assertion_corrections": [
+        {
+          "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp217-s2-compatibility-wgm7gns_/m01/preparation-stop.json",
+          "sha256": "d29537f71cf690ef80a38fbe1e0bae9aac9bd85176d66e0add69fc8d8d1e1616"
+        },
+        {
+          "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp217-s2-compatibility-wgm7gns_/m01/preparation-correction.json",
+          "sha256": "ebe2572e0d92cf2a42e4ddd8227055e8f8211dc8da9fe6b6215a0c54c5bd86cb"
+        },
+        {
+          "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp217-s2-compatibility-wgm7gns_/m01-prelaunch-correction.json",
+          "sha256": "d070ba04f8cdf2ccadf71e703823155422c522833650f137bcf2282141a3d0c1"
+        },
+        {
+          "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp217-s2-compatibility-wgm7gns_/m01-inventory-correction.json",
+          "sha256": "d80551d597f0d57e2dacd81a4e89305267204f776eeb6a90f19881c4983bcffe"
+        },
+        {
+          "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp217-s2-compatibility-wgm7gns_/m01-verified-scope-admission.json",
+          "sha256": "1cfa680099ba18422a6c5224451a8d7e344c48f1b67d8c5ee0421593db824d46"
+        }
+      ],
+      "correction_limits": "Original preparation/discovery stops remain unchanged; no assertion failure was retried. Four committed EXP199 terminal tests were absent from the historical count; all are included. Scoped enumeration proved actual CLI exclusions before tests. Same-candidate accepted Core was not rerun. SDK/tests and original deadline unchanged.",
+      "runtime_warning_disposition": "Eight Integration QoS warnings retained. Cited AppHangs and generating-backtrace paths unchanged from develop; no root-cause, harmlessness, sanitizer or performance claim.",
+      "independent_review": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp217-s2-compatibility-wgm7gns_/m01-independent-review.json",
+        "sha256": "201f75e245808ca97964f0dcd22263d8736917a08bf52c70dd0eae55882333d7"
+      }
+    },
+    "M02_M03": {
+      "disposition": "NEW_FIVE_EXISTING_CLIENT_CELLS",
+      "reason": "Existing public API unchanged, but composed RUM runtime closure differs.",
+      "definition": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp217-s2-compatibility-wgm7gns_/platforms/client-definition.json",
+        "sha256": "93da5909bad6739fc277dc0aa783818dc06abeb740900f50b32c8cd8efc81984"
+      },
+      "original_pre_execution_definition": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp217-s2-compatibility-wgm7gns_/pre-execution-hardening-originals/platforms-client-definition.json",
+        "sha256": "9395fce16af9312988ce97b058ba0260b51e7652a0a7c8452321fdc62723195c"
+      },
+      "status": "PASS_FIVE_EXISTING_CLIENTS",
+      "result": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp217-s2-compatibility-wgm7gns_/platforms/client-summary.json",
+        "sha256": "8ac9586e1fc66054d38a2a1e6c3fe2501c17e091f8774a6165e5b4849368a15f"
+      }
+    },
+    "M04_M08": {
+      "disposition": "NEW_TEN_FULL_PACKAGE_BUILDS",
+      "definition": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp217-s2-compatibility-wgm7gns_/platforms/definition.json",
+        "sha256": "57dda31d3c946e641cca5c49f78eb5d4efcf9b79a0d3ef96a0c511bd066275b6"
+      },
+      "status": "PASS_TEN_FULL_PACKAGE_BUILDS",
+      "result": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp217-s2-compatibility-wgm7gns_/platforms/summary.json",
+        "sha256": "3f63df22fa391f12432259e7431e9373367b1e5ffc8c012c0c87813c5d130921"
+      }
+    },
+    "M09": {
+      "disposition": "NEW_TWO_RUM_BUILDS_PLUS_SOURCE_MATCHED_REUSE_FOR_SIX_PRODUCTS",
+      "source_audit": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp217-s2-compatibility-wgm7gns_/macos-reuse-source-audit.json",
+        "sha256": "76dda1c9e4e4391e026575fe5584de951cf30a0dc39d55b92139757cc06246d2"
+      },
+      "reused_cells": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp217-s2-compatibility-wgm7gns_/platforms/macos-reused-cells.json",
+        "sha256": "97c06e9375b04eb70f0398b64ebdd24ec8bc295fd76a5c4b817648e41415958f"
+      },
+      "status": "PASS_TWO_NEW_BUILDS_AND_TWELVE_SOURCE_MATCHED_REUSED_CELLS"
+    },
+    "M10": {
+      "disposition": "NEW_STRICT_LINT_AND_NINE_MODULE_API_VERIFICATION",
+      "definition": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp217-s2-compatibility-wgm7gns_/m10/definition.json",
+        "sha256": "dc5cf27e967f980e9b863410b36e2d040dd765f3c40854e2cc06248bc5ee15a0"
+      },
+      "original_pre_execution_definition": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp217-s2-compatibility-wgm7gns_/pre-execution-hardening-originals/m10-definition.json",
+        "sha256": "8da3000e0eab0cb8b1107f681a6f1ce7e8a804719c7247886fbdc3cb04ca41c6"
+      },
+      "status": "PASS_STRICT_LINT_AND_UNCHANGED_PUBLIC_APIS",
+      "lint": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp217-s2-compatibility-wgm7gns_/m10/lint-result.json",
+        "sha256": "32b7bd3c835df29c1874d2c520d75a71f4403c0c3a3e89591ba2b9e3d9173ce7"
+      },
+      "api": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp217-s2-compatibility-wgm7gns_/m10/api-result.json",
+        "sha256": "0b57246e66fba8f16dd586b5ceffa9a419f5f36b12c7f7c2f3f4bb47aad2e172"
+      }
+    },
+    "M11": {
+      "disposition": "REUSE_CURRENT_F02",
+      "owner": "Results/S2-F02-composition-documentation.json",
+      "sha256": "4203005e4dc591b597791182e666782b70c1eeba7b7e9279b3207ba13fe576dc",
+      "status": "PASS_SOURCE_MATCHED_REUSE"
+    }
+  },
+  "rejected_first_review": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp217-s2-compatibility-wgm7gns_/rejected-first-review.json",
+    "sha256": "7ff3677baae9b3e66c793dc5051995503f2f04b097def65cd21ee5317e13f065",
+    "reason": "Used stale five-product reference M09; actual candidate supports seven including changed RUM. No gate credit; corrected independent review pending."
+  },
+  "gate_closures": [
+    "S2:F03"
+  ],
+  "production_changes": 0,
+  "new_backend_queries": 0,
+  "updated_at": "2026-09-21T11:33:53.944666+00:00",
+  "accepted_pre_result_review": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp217-s2-compatibility-wgm7gns_/accepted-admission-review.json",
+    "sha256": "12997aa770817e917bcd235bec166483f5bffcf9a1984115b42516778495cabb"
+  },
+  "completed_execution_at": "2026-09-21T11:28:49.955520+00:00",
+  "final_execution_summary": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp217-s2-compatibility-wgm7gns_/final-summary.json",
+    "sha256": "32ddbdebfde5e251e5210ad467012d373935b042aaab578e548ffe3d479c6373"
+  },
+  "compiled_artifact_audit": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp217-s2-compatibility-wgm7gns_/compiled-artifact-audit.json",
+    "sha256": "7b68644929841155dc082cae930ff99d5ad3b5db08dd7bc606941944c51f6b1e"
+  },
+  "pre_execution_hardening": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp217-s2-compatibility-wgm7gns_/pre-execution-hardening.json",
+    "sha256": "6497a8a2c8b8394df4d7e3e1e761137277666c3c4c1dc248b4f39be47ec7c3c2"
+  },
+  "completed_at": "2026-09-21T11:33:53.944666+00:00",
+  "independent_final_review": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp217-s2-compatibility-wgm7gns_/final-independent-review.json",
+    "sha256": "808af2e982052e015f6553d72ea2abb61c76c583ea8924eb78ba92650e950cc5"
+  },
+  "protected_user_paths_unchanged": true,
+  "documentation_checkpoint_signing": {
+    "attempted": true,
+    "timeout_seconds": 25,
+    "result": "SIGNING_AGENT_TIMEOUT",
+    "disposition": "Authorized local unsigned fallback; signed history remains required before any separately authorized push.",
+    "recorded_at": "2026-09-21T11:41:44.001848+00:00"
+  }
+}

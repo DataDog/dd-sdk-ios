@@ -67,7 +67,11 @@ and DatadogIntegrationTests. Reconcile these ten with the frozen Makefile.
 
 Replay captured-content correctness is outside the release scope. Host-app crash safety and non-disruption to other SDK features remain required; no full Replay suite, content repair or inherited-fixture waiver is needed. Reuse source-matched coexistence and
 other-feature evidence; admit a narrow check only for a concrete crash or disruption.
-Preserve prior capture-suite failures without declaring them passed. This selected
+Preserve prior capture-suite failures without declaring them passed. Exclude Replay-only assertions inside the selected schemes too: slot/layout,
+record-content and recording privacy/capability tests remain outside scope. Freeze
+exact selector exclusions before results; these are neither passes nor OS skips.
+Keep RUM/other-feature metadata and ownership coexistence tests. Each candidate
+result owns its complete raw and selected inventories. This selected
 matrix is not a full `make test-ios-all` result. The
 [scope disposition](Results/S1-replay-scope-disposition.json) owns the amendment.
 

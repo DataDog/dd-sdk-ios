@@ -26,8 +26,15 @@ The [S2 composition review](Results/EXP-216-s2-composition-promotion.json) selec
 exact E01 + DL01 + E04 production `c9faed81`, with six qualified production files
 and no deferred semantic/scene implementation. It closes the source-bound lifetime
 gate and retains only narrow prior compatibility/reentrancy/workflow invariants.
-[F02 documentation](Results/S2-F02-composition-documentation.json) is now source-verified; F03 composed compatibility and Duo/app/backend/final
-delivery remain open. The former E01-only freeze and its evidence stay historical.
+[F02 documentation](Results/S2-F02-composition-documentation.json) and
+[F03 compatibility](Results/EXP-217-s2-compatibility.json) now qualify this exact
+source. Independent review accepts the selected suites, five public clients,
+twelve new platform builds and lint/API, with source-matched macOS/docs reuse.
+Ten Replay-only cases were excluded before assertions. Eight Integration QoS
+warnings remain diagnostics; cited AppHangs/backtrace sources match develop, which
+does not establish root cause or harmlessness. There is no blanket warning,
+sanitizer, performance or crash-freedom clearance. Duo/app/backend/final delivery
+remain open. The former E01-only freeze and its evidence stay historical.
 
 The [EXP-210 diagnosis](Results/EXP-210-s2-automatic-coverage.json) retains an open
 native-input observation: two original SDK-on switch inputs fail, while SDK-off
