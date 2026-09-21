@@ -1,0 +1,20 @@
+{
+  "schema_version": 1,
+  "work_item": "S1:F06 Resource completion review follow-up",
+  "status": "REVIEW_AND_TEST_CLEANUP_IN_PROGRESS",
+  "recorded_at": "2026-09-21T16:47:56.894287+00:00",
+  "owner": "SDK implementer + existing independent reviewer",
+  "pr": "https://github.com/DataDog/dd-sdk-ios/pull/3218",
+  "published_head": "1b2bff3e72e0c9e3f88869ea548868cd6f2f7cf8",
+  "artifact_root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s1-resource-review-fnfbexny",
+  "worktree": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s1-resource-review-fnfbexny/worktree",
+  "purpose": "Replace internal experiment names in tests and assess whether a smaller resource-tracking implementation preserves the qualified behavior. Keep production unchanged unless a simpler implementation is established.",
+  "current_changes": "Three test files use behavior-based class/helper/method names and fixture literals; semicolon-separated fixture steps expanded. Every existing assertion and time limit retained; source unchanged.",
+  "remaining": [
+    "Review naming and whole-repository uses; lint/parse and exact normalized token comparison",
+    "Independent comparison of smaller ownership designs including manual unknown stops, multiple owners, session transitions and expiry",
+    "If simpler source is justified, admit and execute the exact invalidated checks before a signed PR update; otherwise preserve current implementation and explain why"
+  ],
+  "gate_closures": [],
+  "native_runs": 0
+}

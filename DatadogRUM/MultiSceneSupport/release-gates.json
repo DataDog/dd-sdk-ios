@@ -2724,7 +2724,7 @@
           ],
           "decisive_test": "Freeze app and SDK source/build identity; compare ordinary journeys and exact telemetry expectations, long sessions, resources and WebView correlation. Include internal TestFlight evaluation after separate distribution authorization.",
           "environment": "Controlled normal-mode Datadog app; probe RUM application43cbc59b-0626-438b-a3d9-c6417a4545a3; service ios-app-rum-release-validation; simulator/physical host",
-          "evidence": "App6e33f1c18 now builds successfully against baseline62f64 and candidatec9fa in a separately admitted window. Source/generated/protected guards,64pins, full installed-bundle and13static SDK archive identities pass. Original preparation/build failures remain preserved. Runtime journeys are defined but unrun in Results/S2-F08-app-journeys.json; no comparison or gate credit. Results/S2-F08-app-preparation.json owns build qualification.",
+          "evidence": "App6e33f1c18 builds against baseline62f64 and candidatec9fa with frozen source/generated/protected state,64pins, full bundle and13static SDK archives. J01 baseline launched once but stopped before UI assertions: bootstatus exit0 masked Data Migration Failed; AXe automation failed. No taps or candidate launch. Original cleanup FAIL and separate post-exit absence proof remain. Results/S2-F08-app-journeys.json owns this invalid runtime and the environment-preflight next step; F08 stays open. Results/S2-F08-app-preparation.json owns accepted builds.",
           "required": true
         },
         "S3": {

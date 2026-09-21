@@ -1,8 +1,8 @@
 {
   "schema_version": 1,
   "work_item": "S2:F08 finite controlled app journeys",
-  "status": "PLANNED_RUNTIME_UNRUN",
-  "recorded_at": "2026-09-21T15:52:55.073169+00:00",
+  "status": "J01_STOPPED_PRE_ASSERTION_ENVIRONMENT",
+  "recorded_at": "2026-09-21T16:37:35.872371+00:00",
   "owner": "SDK implementer",
   "application_revision": "6e33f1c18a52d04b0793e6954f456bdbc1affe2f",
   "build_preparation": "Results/S2-F08-app-preparation.json",
@@ -39,7 +39,8 @@
         "Finish native evidence, allow bounded upload, then remove task app/simulator"
       ],
       "decisive_test": "Native state transitions succeed. Exact LoginView exists and one LoginWithSubdomainTapped belongs to its active view ID/session. Preserve complete service/session inventory and compare source-bound baseline/candidate lifecycle ownership and counts; no required manual Back action and no guessed background view-ID churn.",
-      "runtime_runs": 0
+      "runtime_runs": 1,
+      "status": "STOPPED_PRE_ASSERTION"
     },
     {
       "id": "J02-J04",
@@ -97,5 +98,17 @@
     "Complete raw service/session pagination; bounded ingestion waits; preserve failed or partial outcomes",
     "No copied credentials, source edits, rebuilds, input retries, TestFlight upload or Replay-content qualification"
   ],
-  "gate_closures": []
+  "gate_closures": [],
+  "runtime_definition": {
+    "root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-app-j01-tf3_dxfy",
+    "status": "STOPPED_PRE_ASSERTION_ENVIRONMENT",
+    "deadline": "2026-09-21T16:58:12.182171+00:00",
+    "native_launches": 1,
+    "new_experiment_number": null,
+    "summary": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-app-j01-tf3_dxfy/summary.json",
+    "summary_sha256": "a22f19f8f93f69a85d4b55f341d05e59f912ad5ab9b060a8aa6840fcdce894ec",
+    "review": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-app-j01-tf3_dxfy/review.json",
+    "candidate": "UNRUN"
+  },
+  "next_action": "One independently admitted environment-only fresh Duo boot and accessibility preflight. Parse semantic migration outcome before any app install; no retry of the original journey."
 }

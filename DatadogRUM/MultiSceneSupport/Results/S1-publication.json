@@ -196,7 +196,7 @@
     "CI failures: E01 Build Dependencies; DL01 iOS; E02 macOS; E04 watchOS; E05 macOS. Mosaic sign-in pending; preserve failures without an SDK-cause claim or blind retries.",
     "H00 must actually merge with separate authorization before E01 rebase/retarget."
   ],
-  "last_updated_at": "2026-09-21T15:21:11.875636+00:00",
+  "last_updated_at": "2026-09-21T16:47:56.894287+00:00",
   "signed_outgoing_commits_at_initial_publication": 16,
   "latest_update": {
     "id": "E03",
@@ -205,9 +205,9 @@
     "publication_receipt_sha256": "17ec3c61e9b48e0916507a6508ef16d9320c906278b7a34a5f396b95a78833e7"
   },
   "latest_ci": {
-    "record": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/deliveries/s1-publication-20260921-vwps6cdd/ci-fourth-check.json",
-    "sha256": "b5f8e575bd35274377c5deb512ccc35b4651da473ca8f54e09d1dbf47b8fc443",
-    "checked_at": "2026-09-21T15:17:00.317290+00:00",
+    "record": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/deliveries/s1-publication-20260921-vwps6cdd/ci-fifth-check.json",
+    "sha256": "27e15b87e97ca962ce466a45f536b16efdb6d80900edb8f2366773925e04c6db",
+    "checked_at": "2026-09-21T16:11:53.328652+00:00",
     "all_seven_mergeable": true,
     "failed_checks": {
       "3215": [
@@ -243,10 +243,7 @@
         "devflow/mergegate"
       ],
       "3218": [
-        "devflow/mergegate",
-        "DDCI Status",
-        "dd-gitlab/Smoke Tests (iOS)",
-        "dd-gitlab/Smoke Tests (tvOS)"
+        "devflow/mergegate"
       ],
       "3219": [
         "devflow/mergegate"
@@ -254,6 +251,36 @@
       "3220": [
         "devflow/mergegate"
       ]
-    }
+    },
+    "passing_ci_prs": [
+      3214,
+      3218
+    ],
+    "current_draft_state": {
+      "3214": false,
+      "3215": true,
+      "3216": true,
+      "3217": true,
+      "3218": true,
+      "3219": true,
+      "3220": true
+    },
+    "draft_state_note": "H00 is now ready for review; the other six remain drafts. No remote mutation was made by this check.",
+    "failure_output_attempt": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/deliveries/s1-publication-20260921-vwps6cdd/ci-failure-outputs.json",
+    "failure_output_disposition": "GitHub check-run API has no failed check-run outputs for these status-context failures; Mosaic logs still required."
+  },
+  "review_followup": "Results/S1-resource-completion-review.json",
+  "mosaic_observation": {
+    "at": "2026-09-21T16:47:56.894287+00:00",
+    "access": "Authenticated Chrome session works; user interaction takes precedence",
+    "pr": 3215,
+    "failed_job": 2062467332,
+    "source_url": "https://mosaic.us1.ddbuild.io/change-request/9164459717099911940?owner=DataDog&repository=dd-sdk-ios&taskExecutionId=2062467332&taskId=gitlab",
+    "observed_log": "Carthage could not decode downloaded OpenTelemetryApi.json: Unexpected character colon after top-level value around line1,column4. make dependencies exited1, before SDK compilation.",
+    "classification": "Dependency download/format failure; do not infer an SDK source defect",
+    "latest_dependency_job": 2063731935,
+    "latest_dependency_status": "SUCCESS after external retry",
+    "other_observed_failure": "watchOS unit job now fails; log not yet inspected",
+    "agent_retries": 0
   }
 }

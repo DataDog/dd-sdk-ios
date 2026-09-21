@@ -352,7 +352,7 @@ allowed refs without force or incidental tags, then read back each draft's head,
 base, commit list, paths and body. Preserve the local qualification identity if
 upstream has advanced; source conflicts require a separate reconciliation and
 invalidated-check inventory. The [seven-draft receipt](Results/S1-publication.json)
-records this check; E03's newer Resource-cache conflict is still open.
+records this check. EXP-219 now qualifies E03's current-develop Resource-cache reconciliation and exact signed publication; current CI and human review remain.
 
 Keep real-ticket metadata, full repository iOS/CI coverage, human review, publication
 and verified merge separate. Affected-suite F03 evidence is not a `make test-ios-all`
@@ -2951,3 +2951,15 @@ the arms. Preserve rejected artifact-layout assumptions; do not rebuild to repai
 an offline classifier. Bind each journey to the frozen bundle, SDK version, fresh
 simulator/process/session and complete backend inventory. The source-derived
 [finite app journeys](Results/S2-F08-app-journeys.json) own the next checks.
+
+Read simulator bootstatus semantics, not only its exit code. The first controlled
+J01 run received exit0 with terminal `Data Migration Failed`; its later AXe
+remote-automation timeout happened before any UI assertion. A replacement
+environment preflight must qualify boot completion and acquire a native UI tree
+before installing the app. Preserve the stopped journey; do not classify it as an
+SDK defect or convert infrastructure recovery into runtime acceptance.
+
+Reap a terminated watchdog child before testing PID absence. The J01 cleanup
+removed its app/simulator and passed source guards, but its parent still observed
+the child PID and recorded FAIL. A separate post-parent-exit receipt proves absence
+without rewriting that failure or granting journey credit.
