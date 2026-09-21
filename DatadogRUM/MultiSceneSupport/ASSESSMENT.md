@@ -50,6 +50,14 @@ These mixed outcomes do not isolate an SDK, fixture or input cause. Independent
 review stops further equivalent attempts; no candidate launches or gate credit.
 Preserve all raw outcomes and use a concrete new discriminator before expansion.
 
+[EXP-218](Results/EXP-218-native-input-observation.json) adds one valid SDK-on
+input observation, not a completed comparison. Its native test passes, but the
+unchanged diagnostic oracle rejects the switch's missing ended-touch ancestry and
+state change after `sendEvent` returns. The original callback and value transition
+occur before the frozen boundary. SDK-off remains unrun; all input variability,
+command failure and observer limits remain recorded. No SDK cause, coverage pass
+or gate closure follows. A different callback-side witness requires fresh admission.
+
 The selected candidate's lifetime evidence covers task success/failure/cancellation,
 core/display-link teardown, bounded value-cache expiry and native UIKit/SwiftUI
 host/content release while Resources remain pending. Terminal completion releases

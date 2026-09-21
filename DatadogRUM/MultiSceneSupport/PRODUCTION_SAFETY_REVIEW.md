@@ -43,6 +43,14 @@ SDK/action/geometry cause and checkpoints the variability. No production repair,
 E01 regression or candidate acceptance is established. All identities, strict
 assertions, outcomes and cleanup are preserved; the skipped control stays unrun.
 
+[EXP-218](Results/EXP-218-native-input-observation.json) adds one valid SDK-on
+input observation, not a completed comparison. Its native test passes, but the
+unchanged diagnostic oracle rejects the switch's missing ended-touch ancestry and
+state change after `sendEvent` returns. The original callback and value transition
+occur before the frozen boundary. SDK-off remains unrun; all input variability,
+command failure and observer limits remain recorded. No SDK cause, coverage pass
+or gate closure follows. A different callback-side witness requires fresh admission.
+
 Task, native core/display-link, bounded cache, stopped-view/Resource and actual
 UIKit/SwiftUI host lifetimes now have source-matched evidence for this composition.
 [EXP-215](Results/EXP-215-native-view-lifetime.json) observes host/content release

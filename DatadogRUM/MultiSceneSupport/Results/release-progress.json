@@ -435,7 +435,7 @@
     "S2": {
       "name": "Single-scene iPhone Duo readiness",
       "deadline": "2026-10-16",
-      "shipping_rule": "No worse RUM after SDK27 rebuild without major application changes. Selected E01+DL01+E04 productionc9faed81 on develop62f64, documented through7604da24; EXP-216 binds exact source and lifetime evidence. Combined-source compatibility, Duo/app and final release gates remain; no new scene API or physical-Duo prerequisite.",
+      "shipping_rule": "No worse RUM after SDK27 rebuild without major application changes. Selected E01+DL01+E04 productionc9faed81 on develop62f64, documented through7604da24; EXP-216 binds exact source and lifetime evidence. Combined-source compatibility is qualified by EXP-217; Duo/app/backend and final release gates remain; no new scene API or physical-Duo prerequisite.",
       "required": {
         "count": 28,
         "closed": 13,

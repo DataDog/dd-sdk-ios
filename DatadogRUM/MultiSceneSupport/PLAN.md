@@ -77,7 +77,7 @@ retains the work. Expected low risk is not measured evidence.
 | Release | Deadline | Shipping rule | Required | Closed | Remaining |
 | --- | --- | --- | ---: | ---: | ---: |
 | S1 — Independent reliability fixes | TBD | Release each narrow fix independently after its candidate checks and F06. Required-gate counts here describe selected E01 only; the seven-unit [S1 delivery queue](S1_DELIVERY_PLAN.md) separately tracks H00, E01-E05 and DL01. E03 design/repair checkpoint precedes further S2/S3 expansion; other qualified packets proceed independently. | 16 | 15 | 1 |
-| S2 — Single-scene iPhone Duo readiness | 2026-10-16 | No worse RUM after SDK27 rebuild without major application changes. Selected E01+DL01+E04 productionc9faed81 on develop62f64, documented through7604da24; EXP-216 binds exact source and lifetime evidence. Combined-source compatibility, Duo/app and final release gates remain; no new scene API or physical-Duo prerequisite. | 28 | 13 | 15 |
+| S2 — Single-scene iPhone Duo readiness | 2026-10-16 | No worse RUM after SDK27 rebuild without major application changes. Selected E01+DL01+E04 productionc9faed81 on develop62f64, documented through7604da24; EXP-216 binds exact source and lifetime evidence. Combined-source compatibility is qualified by EXP-217; Duo/app/backend and final release gates remain; no new scene API or physical-Duo prerequisite. | 28 | 13 | 15 |
 | S3 — Full multi-scene support | TBD | Complete exact scene APIs, full ownership/lifecycle/client/docs matrix, physical Duo F04 and S3:F06 after hardware release. Preserve all prior evidence boundaries. | 70 | 46 | 24 |
 
 ### S1 release gates

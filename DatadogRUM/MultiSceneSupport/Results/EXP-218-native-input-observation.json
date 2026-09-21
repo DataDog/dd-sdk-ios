@@ -1,0 +1,193 @@
+{
+  "schema_version": 1,
+  "experiment": "EXP-218",
+  "title": "Observe native input dispatch before the automatic compatibility comparison",
+  "status": "INCONCLUSIVE_OBSERVER_CONTRACT",
+  "defined_at": "2026-09-21T12:00:19.857227+00:00",
+  "deadline": "2026-09-21T13:00:19.857227+00:00",
+  "owner": "SDK implementer",
+  "reviewer": "existing c06_runtime_plan",
+  "gates": [
+    "S2:A02",
+    "S2:C07",
+    "S2:C08"
+  ],
+  "admission": "Investigate the concrete EXP-210 baseline UIKit input inconsistency; no release-gate closure or SDK repair is pre-authorized by a diagnostic outcome.",
+  "source_revision": "62f64d7b655bdc83f3036c4ad81090a270f6202b",
+  "selected_candidate_not_executed": "c9faed816a1d4828d7d8c4b64acae01119425889",
+  "hypothesis": "Assigned native touch targets, event dispatch and existing valueChanged callbacks can locate a missing switch effect before interpreting RUM output. Fixed SDK-on/off arms may show an association, but prior SDK-on variability prevents a causal interference claim from one pair.",
+  "artifact_root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp218-native-input-c84flody",
+  "source_fixtures_sha256": {
+    "tools/multi-scene/automatic-coverage/Fixture/UIKitApp.swift": "4cd33b4038d949f80836a2f448132751da098652d9fb4c12bf16c09333b06bfa",
+    "tools/multi-scene/automatic-coverage/Fixture/Observation.swift": "dd0a252e94a70a2b021c2b301ee2353e7439be79b546ca4d7615e28f4d458aba",
+    "tools/multi-scene/automatic-coverage/UITests/AutomaticCoverageUITests.swift": "6ed952e7172dce17ae5cc3b31f77b84eda3533fa86f8e41446c53df5182573f3"
+  },
+  "environment": {
+    "build_sdk": "27.1",
+    "xcode": "27.1",
+    "xcode_build": "27A9269",
+    "developer_dir": "/Applications/Xcode_27.1.app/Contents/Developer",
+    "device_type": "iPhone 17",
+    "runtime": "27.0",
+    "runtime_build": "24A434",
+    "fixture_deployment_target": "16.0",
+    "SDK_deployment_target": "15.0",
+    "device_policy": "Create one fresh task-owned simulator after verifying exact runtime; remove it after both cells or a stopped attempt. No reused device/session identifier."
+  },
+  "cells": [
+    {
+      "id": "sdk-on",
+      "sdk_initialized": true
+    },
+    {
+      "id": "sdk-off",
+      "sdk_initialized": false
+    }
+  ],
+  "fixed_sequence": [
+    "Fresh clean installation and unique run identity",
+    "Launch UIKit stack with existing default view/action predicates when SDK-on",
+    "Assert foreground Home, receipt0 and visible/hittable switch value0 before input",
+    "Existing home.tap button.tap() then its original 1.2-second capture window and native receipt1 within15seconds",
+    "Record pre-input switch frame/value and perform the existing home.toggle toggle.tap() exactly once",
+    "Freeze value transition and callback/receipt outcome within15seconds, before any later interaction",
+    "Flush the bounded event buffer at the post-input boundary; capture native records and perform scoped termination/uninstall cleanup"
+  ],
+  "allowed_changes": [
+    "Fresh isolated archive of the seven existing baseline source/private/resource roots; no SDK bytes changed",
+    "Isolated fixture copy: public UIApplication subclass and explicit UIApplicationMain entry, bounded in-memory pre/post sendEvent observations; call super exactly once",
+    "Isolated Observation.swift copy: runtime SDK-on/off initialization flag and a post-input diagnostic flush; preserve native callbacks, default predicates, RUM mappers and geometry",
+    "Fresh bounded XCTest collector retaining the exact initial tap/toggle inputs, existing preconditions and15second bounds; freeze failure before flush or later input",
+    "Fresh host runner/oracle and negative controls; exact source/build/installed identities and bounded cleanup",
+    "Owning result, experiment index, gate evidence, assessment, safety review, runbook and restart updates"
+  ],
+  "forbidden_changes": [
+    "SDK implementation, public APIs, existing accepted fixture/runner source, repository build scripts or dependencies",
+    "Control/window hierarchy or layout changes, UISwitch subclassing, extra hitTest calls, synchronous file writes in sendEvent",
+    "Programmatic switch actions, input retries or successful-only outcome selection",
+    "Duo pose, SwiftUI or physical-device cells; Session Replay captured-content work",
+    "Pushing, opening remote PRs, merging or publishing"
+  ],
+  "limits": {
+    "builds": 1,
+    "build_seconds": 600,
+    "native_launches": 2,
+    "native_seconds_per_cell": 120,
+    "effect_seconds": 15,
+    "event_buffer_records": 64,
+    "cleanup_seconds": 90,
+    "retries": 0,
+    "deadline_extension": false
+  },
+  "decisive_oracle": [
+    "Complete run-bound receipt/native/event inventories with monotonic sequences and exact selected test identifier",
+    "Button positive control: one assigned touch target resolving to home.tap, one native callback, receipt1",
+    "Switch observation: assigned touch ancestry plus before/after state and exactly one original callback for a successful value0to1 transition before the recorded result boundary; failed input remains a diagnostic failure",
+    "SDK-off produces no RUM rows; SDK-on mapper rows are context only, with no required switch RUM action",
+    "Reject stale/restored run IDs, buffer overflow/missing phases, missing/duplicate callbacks, late callbacks, source/binary/runtime drift and cleanup failure",
+    "No closure of the full compatibility matrix from this pair"
+  ],
+  "stop_rules": [
+    "Require independent source/oracle admission before native execution",
+    "Always retain both fixed arms unless source/environment/build/collector/cleanup integrity fails; an observed missing switch effect is a retained outcome, not permission to retry",
+    "Stop on infrastructure timeout, unexpected native crash or integrity failure; preserve partials and clean task artifacts",
+    "Both arms passing leaves original intermittent failure unresolved; do not fabricate root cause or launch more cells",
+    "Record only the observed dispatch/callback boundary and independently review any follow-up before changing input or SDK behavior"
+  ],
+  "prior_evidence": "Results/EXP-210-s2-automatic-coverage.json",
+  "new_backend_queries": 0,
+  "gate_closures": [],
+  "definition_sha256": "97f954ce81cbbf824209003bf335944ce2284c06fa30d11986dc62aef3871184",
+  "finished_at": "2026-09-21T12:30:01.051631+00:00",
+  "outcome": {
+    "status": "INCONCLUSIVE_OBSERVER_CONTRACT",
+    "finished_at": "2026-09-21T12:30:01.051631+00:00",
+    "builds": 1,
+    "command_only_rejections": 1,
+    "native_launches": 1,
+    "native_test_cases": 1,
+    "native_test_passes": 1,
+    "native_test_failures": 0,
+    "native_test_skips": 0,
+    "strict_oracle": "FAIL",
+    "oracle_error": "Success lacks native dispatch/callback witness",
+    "unexecuted_cell": "sdk-off; stopped on observer/oracle mismatch as defined",
+    "native_run_id": "exp218-a80efeb003934bd794faf3543faefed4",
+    "native_observation": {
+      "button_callbacks": 1,
+      "switch_callbacks": 1,
+      "frozen_switch_outcome": {
+        "changed": true,
+        "native_success": true,
+        "receipt": "receipt:2",
+        "value": "1"
+      },
+      "switch_dispatch_events": 2,
+      "switch_states_in_dispatch": [
+        false,
+        false,
+        false,
+        false
+      ],
+      "callback_after_final_dispatch_ms": 1.0600090026855469,
+      "touch_begin_ancestry_contains_switch": true,
+      "touch_end_ancestry_empty": true
+    },
+    "buffer": {
+      "capacity": 64,
+      "dropped": 0,
+      "events": 4,
+      "records": 8,
+      "sdk_enabled": true
+    },
+    "evidence_counts": {
+      "launch": 1,
+      "sdk_mode": 1,
+      "rum": 7,
+      "native_appear": 1,
+      "geometry": 4,
+      "native_input": 2,
+      "input_dispatch": 8,
+      "input_dispatch_complete": 1,
+      "native_background": 1
+    },
+    "result_limit": "Successful native effect does not satisfy the stricter dispatch witness. No SDK-on/off comparison, causal finding or acceptance pass. Historical variability remains unresolved.",
+    "post_result_oracle_edits": false,
+    "native_retry": false,
+    "SDK_edits": false,
+    "backend_queries": 0,
+    "gate_closures": [],
+    "cleanup": {
+      "both_task_simulators_removed": true,
+      "app_data_absent": true,
+      "protected_and_source_guards": "PASS"
+    },
+    "completed_before_deadline": true
+  },
+  "pre_execution_correction": {
+    "record": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp218-native-input-c84flody/command-correction.json",
+    "sha256": "a69f49bc7a9c43726064656cc6e8cf69d05f16a72e829f2b33ae597a3b165006",
+    "original_zero_test_failure_preserved": true,
+    "SDK_or_fixture_changes": false,
+    "deadline_extended": false
+  },
+  "validation": {
+    "positive_controls": 4,
+    "negative_controls": 13,
+    "SDK_source_files_unchanged": 391,
+    "compiled_Swift_inputs": 387,
+    "compiled_source_lists": 5,
+    "compiler_warning_line_occurrences": 29,
+    "native_runtime_warnings": 0
+  },
+  "checkpoint": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp218-native-input-c84flody/checkpoint-summary.json",
+    "sha256": "04b6aec7cab18f4482f5c4802dc6fc3802780a093820b20cb0887fc27490bc3b"
+  },
+  "independent_review": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp218-native-input-c84flody/final-review.json",
+    "sha256": "e8fdd65ee50be23bbbb0c0382cc99161bd7f92b1be7388760eb30ff5ba80b9d9",
+    "status": "ACCEPT_CHECKPOINT_WITH_ORACLE_REJECTION"
+  },
+  "next": "Keep original oracle rejection and all EXP210 failures. Do not run SDK-off or repeat this pair. Define a separate callback-side witness before any future dispatch diagnosis; continue independent release preparation meanwhile."
+}

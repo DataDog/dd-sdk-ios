@@ -273,7 +273,7 @@
           ],
           "decisive_test": "Keep both comparisons separate: old-build vs SDK27 rebuild, and current-vs-baseline RUM SDK on rebuilt apps. Complete eight unresolved old-build Duo cells through prepared human input; rerun only affected candidate cells after F07. No changed automatic detection/owner regression.",
           "environment": "Xcode27.1 Duo simulator with preflighted frozen builds and one human session",
-          "evidence": "EXP-210 freezes40 current-source comparison cells and qualifies host guards/builds, but no acceptance cell. Original SDK-on XCTest and same-binary Device Hub switch inputs fail; SDK-disabled and later SDK/action-enabled diagnostic journeys pass. Independent review checkpoints unresolved input variability, establishes no SDK/geometry cause and forbids skipped-arm/implicit retries. No candidate launched or gate closed. Resolve a concrete new discriminator before native comparison expansion; continue independent obligations. Historical EXP-195 source and8 unresolved old-build Duo cells remain separate. Results/EXP-210-s2-automatic-coverage.json owns durable evidence.",
+          "evidence": "EXP-210 freezes40 current-source comparison cells and qualifies host guards/builds, but no acceptance cell. Original SDK-on XCTest and same-binary Device Hub switch inputs fail; SDK-disabled and later SDK/action-enabled diagnostic journeys pass. Independent review checkpoints unresolved input variability, establishes no SDK/geometry cause and forbids skipped-arm/implicit retries. No candidate launched or gate closed. Resolve a concrete new discriminator before native comparison expansion; continue independent obligations. Historical EXP-195 source and8 unresolved old-build Duo cells remain separate. Results/EXP-210-s2-automatic-coverage.json owns durable evidence. EXP-218 retains one native SDK-on pass and strict observer-oracle rejection: ended-touch ancestry is absent and the switch callback follows sendEvent return. SDK-off was not launched. One zero-test command rejection was corrected before execution under independent admission; all source/build/cleanup identities and the original deadline were retained. No cause or gate credit; a callback-side witness requires separate admission. Results/EXP-218-native-input-observation.json.",
           "required": true
         }
       }
@@ -307,7 +307,7 @@
           ],
           "decisive_test": "Keep both comparisons separate: old-build vs SDK27 rebuild, and current-vs-baseline RUM SDK on rebuilt apps. Complete eight unresolved old-build Duo cells through prepared human input; rerun only affected candidate cells after F07. No changed automatic detection/owner regression.",
           "environment": "Xcode27.1 Duo simulator with preflighted frozen builds and one human session",
-          "evidence": "EXP-210 freezes40 current-source comparison cells and qualifies host guards/builds, but no acceptance cell. Original SDK-on XCTest and same-binary Device Hub switch inputs fail; SDK-disabled and later SDK/action-enabled diagnostic journeys pass. Independent review checkpoints unresolved input variability, establishes no SDK/geometry cause and forbids skipped-arm/implicit retries. No candidate launched or gate closed. Resolve a concrete new discriminator before native comparison expansion; continue independent obligations. Historical EXP-195 source and8 unresolved old-build Duo cells remain separate. Results/EXP-210-s2-automatic-coverage.json owns durable evidence.",
+          "evidence": "EXP-210 freezes40 current-source comparison cells and qualifies host guards/builds, but no acceptance cell. Original SDK-on XCTest and same-binary Device Hub switch inputs fail; SDK-disabled and later SDK/action-enabled diagnostic journeys pass. Independent review checkpoints unresolved input variability, establishes no SDK/geometry cause and forbids skipped-arm/implicit retries. No candidate launched or gate closed. Resolve a concrete new discriminator before native comparison expansion; continue independent obligations. Historical EXP-195 source and8 unresolved old-build Duo cells remain separate. Results/EXP-210-s2-automatic-coverage.json owns durable evidence. EXP-218 retains one native SDK-on pass and strict observer-oracle rejection: ended-touch ancestry is absent and the switch callback follows sendEvent return. SDK-off was not launched. One zero-test command rejection was corrected before execution under independent admission; all source/build/cleanup identities and the original deadline were retained. No cause or gate credit; a callback-side witness requires separate admission. Results/EXP-218-native-input-observation.json.",
           "required": true
         }
       }
@@ -2748,7 +2748,7 @@
           ],
           "decisive_test": "Freeze ordered scenarios, automated reset/capture/assertions and source/input/topology proof before requesting one session. Preserve failed automation; no weaker oracle. Include eight unresolved old-build Duo cells and changed ordinary gestures/dismissal/resize/hosting; candidate app journeys and adversarial active-work folds. Freeze finite inventory before execution.",
           "environment": "Single host; Duo simulator27.1 and connected eligible iPhone/iPad",
-          "evidence": "Reference evidence retained; this release candidate is not qualified.",
+          "evidence": "Reference evidence retained; this release candidate is not qualified. EXP-218 retains one native SDK-on pass and strict observer-oracle rejection: ended-touch ancestry is absent and the switch callback follows sendEvent return. SDK-off was not launched. One zero-test command rejection was corrected before execution under independent admission; all source/build/cleanup identities and the original deadline were retained. No cause or gate credit; a callback-side witness requires separate admission. Results/EXP-218-native-input-observation.json.",
           "required": true
         },
         "S3": {
@@ -2805,7 +2805,7 @@
       "id": "S2",
       "name": "Single-scene iPhone Duo readiness",
       "deadline": "2026-10-16",
-      "shipping_rule": "No worse RUM after SDK27 rebuild without major application changes. Selected E01+DL01+E04 productionc9faed81 on develop62f64, documented through7604da24; EXP-216 binds exact source and lifetime evidence. Combined-source compatibility, Duo/app and final release gates remain; no new scene API or physical-Duo prerequisite.",
+      "shipping_rule": "No worse RUM after SDK27 rebuild without major application changes. Selected E01+DL01+E04 productionc9faed81 on develop62f64, documented through7604da24; EXP-216 binds exact source and lifetime evidence. Combined-source compatibility is qualified by EXP-217; Duo/app/backend and final release gates remain; no new scene API or physical-Duo prerequisite.",
       "hardware_uncertainty": "No physical Duo validated. Targeted F09 follows when hardware is available; it is not pre-release readiness proof.",
       "selected_candidate": "E01 + DL01 + E04",
       "candidate_freeze": {
@@ -2824,8 +2824,9 @@
           "E05",
           "deferred semantic SwiftUI and multi-scene implementation"
         ],
-        "status": "SOURCE/LIFETIME/DOCUMENTATION QUALIFIED; COMPOSED COMPATIBILITY/DUO/APP/FINAL RELEASE OPEN",
-        "documentation": "Results/S2-F02-composition-documentation.json"
+        "status": "SOURCE/LIFETIME/DOCUMENTATION/COMPATIBILITY QUALIFIED; DUO/APP/BACKEND/FINAL RELEASE OPEN",
+        "documentation": "Results/S2-F02-composition-documentation.json",
+        "compatibility": "Results/EXP-217-s2-compatibility.json"
       },
       "qualification_candidate": {
         "head": "7604da24bfb757e8d19314e7183b840fa17d858f",
@@ -2837,8 +2838,8 @@
           "E04"
         ],
         "evidence": "Results/EXP-216-s2-composition-promotion.json",
-        "status": "SELECTED; SOURCE/P03/F02 QUALIFIED",
-        "remaining": "S2:F03 combined-source compatibility remains open, as do current candidate Duo/app/backend/final gates. No accepted checks rerun merely to resume.",
+        "status": "SELECTED; SOURCE/P03/F02/F03 QUALIFIED",
+        "remaining": "Current candidate Duo/app/backend/final gates remain open. S2:F03 closes at unchanged7604da24 through EXP-217. No accepted checks rerun merely to resume.",
         "production_revision": "c9faed816a1d4828d7d8c4b64acae01119425889"
       },
       "candidate_freeze_history": [

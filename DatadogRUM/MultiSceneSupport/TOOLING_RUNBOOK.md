@@ -2438,6 +2438,28 @@ independent work. A matching source inventory or selected object-code section is
 not whole-binary identity. Archive raw controls/products before cleaning owned
 simulators; restored evidence paths do not restore live destination identities.
 
+### Passive native input observations (EXP-218)
+
+Freeze the input result before background flush. A bounded in-memory
+`UIApplication.sendEvent` observer must call super exactly once and must not add
+hit tests, control subclasses, layout changes or synchronous dispatch-time I/O.
+Assigned touch ancestry can be absent at touch end, and a native target callback
+can arrive after `sendEvent` returns. The recorded switch case demonstrates both;
+pre/post dispatch snapshots alone do not establish the final native state. Keep
+callback, frozen UI value, touch delivery and RUM observations separate. Do not
+weaken a failed frozen oracle or run its skipped differential arm.
+
+Xcode27.1 rejects `-test-iterations 1`; omit that option for a single execution and
+verify the exact test count afterward. A rejected command can still create an
+xcresult bundle: inspect its zero-test inventory, not directory existence. Preserve
+command-only failures and require independent admission before a pre-launch host
+correction. Use fresh output/run/device identities, unchanged build/source/oracle
+and the original deadline. Native retries remain prohibited.
+
+The [EXP-218 record](Results/EXP-218-native-input-observation.json) retains its
+zero-test command rejection and the later native pass/strict-oracle rejection.
+Both task simulators and app data were removed; no SDK-on/off or gate pass follows.
+
 ### Lifetime evidence and native display-link teardown (EXP-211)
 
 Map each lifetime claim to its witness: collection removal, weak object release,
