@@ -1,0 +1,139 @@
+{
+  "schema_version": 1,
+  "experiment": "EXP-215",
+  "title": "Qualify SDK-on native host release with pending Resource ownership",
+  "gate": "S2:P03",
+  "status": "QUALIFIED_NATIVE_COMPOSITION_EVIDENCE",
+  "owner": "Root implementation and sole native/build lane",
+  "independent_reviewer": "c06_runtime_plan",
+  "defined_at": "2026-09-21T09:06:57.257609+00:00",
+  "timebox_deadline": "2026-09-21T10:06:57.257609+00:00",
+  "artifact_root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp215-native-view-lifetime-2x3pxl2y",
+  "worktree": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/s2-rum-lifetime",
+  "baseline_revision": "ef9d9732d4440038d5ce9278e86943fed3f9e931",
+  "production_revision": "c9faed816a1d4828d7d8c4b64acae01119425889",
+  "allowed_source_edits": [
+    "Datadog/IntegrationUnitTests/RUM/RUMSessionTrackingTests.swift"
+  ],
+  "original_test_sha256": "979764fe03c4870f3d7073e0f9670e0c71dc68f9ce16ae492dcdad20a0800cf9",
+  "allowed_production_edits": [],
+  "runs": [
+    {
+      "id": "native",
+      "scheme": "DatadogIntegrationTests",
+      "target": "DatadogIntegrationTests",
+      "host_bundle": "com.datadogqh.Example",
+      "selectors": [
+        "RUMViewLifetimeIntegrationTests/testAutomaticUIKitControllerReleasesWhileResourceOwnerRemains()",
+        "RUMViewLifetimeIntegrationTests/testAutomaticSwiftUIHostReleasesWhileResourceOwnerRemains()",
+        "RUMViewLifetimeIntegrationTests/testManualSwiftUIHostReleasesWhileResourceOwnerRemains()"
+      ],
+      "expected_cases": 3,
+      "expected_runs": 3,
+      "cycles_each": 2,
+      "run_multiplicities": {},
+      "allowed_skips": []
+    }
+  ],
+  "hypothesis": "Native automatic UIKit/SwiftUI and manually tracked SwiftUI hosts release while their stopped view still legitimately owns a pending Resource. Advancing the active peer replaces the application restoration owner, so old view and Resource release after completion with original event ownership and unchanged peer.",
+  "decisive_oracle": [
+    "Observe controller/content and view/Resource weak witnesses nonnil after actual appearance, exact tracked owner and real window attachment.",
+    "Remove root; require actual disappearance, stopped RUM view and host/content release within2s while SDK/core and Resource remain alive.",
+    "Start a live manual peer then submit a view attribute command to advance lastActiveView before terminal old-view release. No private-state mutation.",
+    "Complete original Resource once; require one exact URL event under original view, old Resource/view weak nil within2s, unchanged active peer UUID and SDK feature.",
+    "Require six mode/cycle receipts bound to three exactly-once executions, complete target compilation and unchanged source/dependencies/artifacts/cleanup."
+  ],
+  "execution_limits": {
+    "discovery_seconds": 600,
+    "build_test_seconds": 900,
+    "cleanup_seconds": 90,
+    "native_appearance_seconds": 5,
+    "post_owner_drop_seconds": 2,
+    "configuration_cleanup_seconds": 7,
+    "retries": 0,
+    "test_iterations": 1,
+    "parallel_testing": false
+  },
+  "environment": "Rediscovered Xcode27.1 build27A9269; actual booted iPad17.5 build21F79; deployment15, Debug XCTest lifecycle. No desktop gestures or backend query. Fresh source/pins/framework/SPM artifact inventory and selected-test discovery required.",
+  "reuse": [
+    "EXP213 accepted unit tests; no rerun.",
+    "EXP213 SDK-off async observation qualifies fixture boundary; preserve synchronous failures.",
+    "EXP199 task and EXP211/212 core/cache evidence remain source-bound."
+  ],
+  "stop_rules": [
+    "Review frozen test/oracle/source before native discovery/execution.",
+    "Missing positive witness, assertion/compile failure, skip, source drift, unexpected identifier, deadline or cleanup failure stops without retry or timeout widening.",
+    "No fixture/core/notification teardown before critical assertions; cleanup unconditional afterward.",
+    "No SDK repair without a new attributable defect; no Session Replay content work."
+  ],
+  "completion": "Fill remaining native evidence for S2:P03. Candidate promotion/gate closure requires source-aware final review. No global lifetime, physical Duo, backend or allocator claim.",
+  "definition_sha256": "fd4f215479e4957c2db9000800360f9f8650f56cdfc6a9ef0d5e8230a2b6935a",
+  "source_freeze_sha256": "fb0acc2ac8500839701a52b501b731ada56a94495ae49e42804b64cb2e1ef1bd",
+  "test_sha256": "119061deb8c710b4fb587be6b78047a41653040c1dcdae8990669686ffcb9570",
+  "native_receipt_controls": {
+    "positive": 1,
+    "negative": 19,
+    "status": "PASS"
+  },
+  "preparation_stop": "Initial cache scan missed durable dependency cache; corrected by fresh discovery and checksum/pin verification; no build or test executed.",
+  "native_executions": 3,
+  "native_cycles": 6,
+  "result": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp215-native-view-lifetime-2x3pxl2y/summary.json",
+    "sha256": "94fcc800f8119a22cb0c0fc49222f7bbb59bebf8bcefc7ff3eeb541eb7debdc3"
+  },
+  "source_review": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp215-native-view-lifetime-2x3pxl2y/source-review.json",
+    "sha256": "4c00b6570a0a939c07063da83d6c764eec64a1f392e81d95971d65b318640aee"
+  },
+  "final_review": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp215-native-view-lifetime-2x3pxl2y/final-review.json",
+    "sha256": "6127f656494305d13b61860c1f999081bc0d17cea9129f18ee287a25831d0e32"
+  },
+  "test_commit": {
+    "parent": "ef9d9732d4440038d5ce9278e86943fed3f9e931",
+    "paths": [
+      "Datadog/IntegrationUnitTests/RUM/RUMSessionTrackingTests.swift"
+    ],
+    "message": "Test native host release with pending RUM resources",
+    "attempts": [
+      {
+        "kind": "signed",
+        "pid": 60846,
+        "returncode": -15,
+        "timeout": true,
+        "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "kind": "authorized-unsigned-fallback",
+        "pid": 61044,
+        "returncode": 0,
+        "timeout": false,
+        "log_sha256": "0779568fe41794b59b74cc6e7af5d2dddf4adb05cd70c410c7921cd1fd7a9a92"
+      }
+    ],
+    "started_at": 1789982662.295286,
+    "commit": "1aa71d7f02b1f0370f018624c0c1c01efc1c7ebe",
+    "signature": "N",
+    "committed_paths": [
+      "Datadog/IntegrationUnitTests/RUM/RUMSessionTrackingTests.swift"
+    ],
+    "protected_unchanged": true,
+    "finished_at": 1789982687.414206
+  },
+  "component_source_correspondence": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp215-native-view-lifetime-2x3pxl2y/component-source-correspondence.json",
+    "sha256": "b7aefbc012b87579d42e2c62b8a1edd40c150db634bbba9c05339ca055987f79",
+    "changed_shipping_paths": 6,
+    "unchanged_shipping_paths": 859
+  },
+  "completed_at": "2026-09-21T09:27:10.085717+00:00",
+  "next_action": "Separate source-aware promotion review of c9faed81 E01+DL01+E04; keep selected E01-only S2 freeze and unrelated gates unchanged until the review.",
+  "gate_closures": 0,
+  "durable_evidence": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp215-native-view-lifetime-2x3pxl2y",
+    "manifest_sha256": "5f9840d4b59dc1995c0986a75b20c2ae62d9ac6cb9add27696b324bb91e916df",
+    "files": 542,
+    "bytes": 361951973
+  }
+}

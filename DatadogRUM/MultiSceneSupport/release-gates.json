@@ -525,7 +525,7 @@
           ],
           "decisive_test": "Source-matched lifecycle and teardown checks leave no extra strong owner, retain cycle or unbounded registry after completion, cancellation, view/scene removal and feature release. Legitimate active ownership is allowed. Preserve attribution and peer state. Allocator byte deltas and churn alone do not fail this correctness gate; sustained application memory impact belongs to P01.",
           "environment": "Focused deterministic lifetime regressions plus representative native lifecycle/teardown checks for the actual shipped source",
-          "evidence": "EXP-211/212 qualify weak display-target and exact E04 composition in productionc9faed81. EXP-213 signed test-onlyef9d9732 adds2/2 stopped-view/Resource success/error lifetime controls. Original native3 failures remain: SDK-off sync also retains4/4 hosts while async releases4/4 after actual disappearance within the same2s. This qualifies the fixture boundary only; SDK-on host lifetime and restoration-owner-aware release remain open. All raw results/products/reviews are byte-verified durably. Selected E01-only S2 freeze unchanged. Results/EXP-211-s2-lifetime.json; Results/EXP-212-cache-composition.json; Results/EXP-213-view-host-lifetime.json.",
+          "evidence": "EXP-211/212 qualify exact E01+DL01+E04 productionc9faed81. EXP-213 signed unit-onlyef9d9732 adds two stopped-view/Resource success/error controls; original native and SDK-off diagnostic outcomes remain unchanged. EXP-215 test-only1aa71d7f now passes three native cases/six cycles with actual host/content release, pending Resource ownership, exact completion event owner, old view/Resource weak release and stable active peer. Source/artifact/cleanup/deadline guards and independent final review pass;0 skips/runtime warnings. All six changed production files match independently qualified components;859 other shipping-source entries match develop. Selected E01-only S2 freeze remains authoritative until separate source-aware promotion review. Results/EXP-211-s2-lifetime.json; Results/EXP-212-cache-composition.json; Results/EXP-213-view-host-lifetime.json; Results/EXP-215-native-view-lifetime.json.",
           "required": true
         }
       }
@@ -2803,7 +2803,7 @@
         "status": "SOURCE FROZEN; NATIVE DUO AND FINAL RELEASE GATES OPEN"
       },
       "qualification_candidate": {
-        "head": "ef9d9732d4440038d5ce9278e86943fed3f9e931",
+        "head": "1aa71d7f02b1f0370f018624c0c1c01efc1c7ebe",
         "branch": "valpertui/s2-rum-lifetime",
         "baseline": "62f64d7b655bdc83f3036c4ad81090a270f6202b",
         "components": [
@@ -2811,9 +2811,9 @@
           "EXP-211 weak display-link target",
           "E04"
         ],
-        "evidence": "Results/EXP-213-view-host-lifetime.json",
-        "status": "COMPOSITION AND UNIT LIFETIME QUALIFIED; NATIVE HOST CHECKS OPEN",
-        "remaining": "Qualify SDK-on native host lifetime with the diagnosed async boundary and explicit restoration ownership, then source-aware gate promotion. Current candidate_freeze remains authoritative.",
+        "evidence": "Results/EXP-215-native-view-lifetime.json",
+        "status": "COMPOSITION UNIT AND NATIVE LIFETIME QUALIFIED; PROMOTION REVIEW OPEN",
+        "remaining": "Source-aware promotion review must map exact E01/DL01/E04 composition to required gates without copying unrelated runtime passes. Selected E01-only candidate_freeze remains authoritative.",
         "production_revision": "c9faed816a1d4828d7d8c4b64acae01119425889"
       }
     },

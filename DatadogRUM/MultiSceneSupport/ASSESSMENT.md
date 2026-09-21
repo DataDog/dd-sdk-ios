@@ -53,9 +53,7 @@ The [ordinary lifetime probe](Results/EXP-213-view-host-lifetime.json) passes th
 success/error unit ownership boundaries, committed in signed `ef9d9732`. Its native
 failures remain preserved: SDK-off synchronous observation also retains all hosts,
 while async observation releases all four after real disappearance within the
-same2s. This qualifies the fixture boundary only. The separate restoration owner
-must be accounted for in the next SDK-on slice; broader P03 stays open. This
-composition is not yet the frozen E01-only S2 candidate; no performance claim follows.
+same2s. [EXP-215](Results/EXP-215-native-view-lifetime.json) now qualifies the SDK-on boundary: three cases/six cycles pass host/content release with pending Resource ownership, then old view/Resource release with the live restoration peer and event owner preserved. Source/artifact/cleanup guards and independent review pass; test-only1aa71d7f changes no production code. This qualifies the exact E01+DL01+E04 composition; the selected E01-only candidate and broader P03 remain unchanged until source-aware promotion review. No performance claim follows.
 
 Physical Duo hardware is unavailable until after release. S2 may use qualified
 simulator and relevant physical iPhone/iPad evidence, disclosing that uncertainty;

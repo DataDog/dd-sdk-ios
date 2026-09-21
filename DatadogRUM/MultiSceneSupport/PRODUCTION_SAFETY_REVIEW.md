@@ -50,8 +50,8 @@ unchanged. [EXP-212](Results/EXP-212-cache-composition.json) now qualifies the e
 E04 cache composition with E01 and this repair in local commit `c9faed81`. Its 17
 frozen tests pass across three invocations; strict lint, exact input/product
 identities, cleanup and independent review pass. The rejected stale lint-reuse
-receipt is preserved. Ordinary view/host lifetime, whole P03/T10 and selected
-candidate promotion remain open; historical findings are not relabeled.
+receipt is preserved. EXP-215 subsequently qualifies the ordinary native host slice. Whole P03/T10 and selected
+candidate promotion require the source-aware composition review; historical findings are not relabeled.
 
 [EXP-213](Results/EXP-213-view-host-lifetime.json) adds passing stopped-view/Resource
 success and failure lifetime controls, but the native host fixture retains its
@@ -60,9 +60,7 @@ under synchronous observation and release all four hosts under async observation
 with the same2s limit and actual disappearance. The fixture boundary is material;
 no SDK retaining path or SDK-on lifetime pass is established. The restoration
 cache remains a separate view owner. Signed unit commit `ef9d9732` and durable
-artifacts preserve every failure, correction and diagnostic. Use async observation
-and a source-aware restoration-owner oracle when the S2 lane resumes; no production repair or P03
-closure is inferred.
+artifacts preserve every failure, correction and diagnostic. [EXP-215](Results/EXP-215-native-view-lifetime.json) now passes all three SDK-on native cases/six cycles after actual disappearance: pending Resources retain the stopped view while hosts release, and completion releases old view/Resource with exact event ownership and active peer preserved. Assertions precede core/window teardown; source/artifact/cleanup/deadline and independent review pass. This is bounded evidence for c9faed81, not an SDK leak repair or automatic promotion of the E01-only S2 freeze. The separate source-aware composition review is next.
 
 The [S1 delivery plan](S1_DELIVERY_PLAN.md) separates repair qualification from
 publication and merge. H00 and initial E01 have signed local delivery trees identical to

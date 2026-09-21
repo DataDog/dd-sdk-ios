@@ -2809,3 +2809,19 @@ unique within that response; they are not stable cross-query event identities.
 Preserve completeness, pagination and ownership negative controls. The
 [E05 admission](Results/S1-E05-release-admission.json) distinguishes original FAILs
 from accepted composed offline evidence. No retry or original-result overwrite is implied.
+
+
+### Native ownership observation boundaries
+
+A synchronous MainActor XCTest wait can itself change native host release. Preserve
+a matched SDK-off control before attributing retention to the SDK; use actual
+appearance/disappearance and condition-based async observation. Keep every original
+wait limit. Start the terminal weak-release deadline at the ownership-ending call,
+before serialized-event collection, so reading events cannot extend the deadline.
+
+Account for legitimate restoration ownership through public commands: establish a
+live peer and process a command while it is active before requiring the old view
+to release. Require pending work, its original event owner, peer UUID/activity and
+SDK presence before teardown. [EXP-215](Results/EXP-215-native-view-lifetime.json)
+binds three native cases/six cycle receipts and explicit negative controls; its
+result applies only to the qualified composition, not an older selected candidate.
