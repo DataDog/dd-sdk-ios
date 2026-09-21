@@ -1821,15 +1821,15 @@
         },
         "S2": {
           "scope": "Documentation for the actual shipped changes",
-          "status": "OPEN",
+          "status": "CLOSED",
           "dependencies": [
             "S2:F07"
           ],
           "decisive_test": "Review changelog/support limitations and affected feature docs against exact source; preserve existing API and customer setup. Publish no unrelated experimental scene API.",
           "environment": "Source and compiling examples for affected modules",
-          "evidence": "EXP-216 independent source-aware review at productionc9faed81 / test head1aa71d7f. Reopen: changelog still lists E01 only, RUM docs omit changed native-cache inactive window and all five verification headers still point to1bd. Current all42tracked source paths unchanged but composed documentation not yet reviewed/updated; add DL01/E04 notes and source-check all examples plus registry. Results/EXP-216-s2-composition-promotion.json preserves exact prior evidence and review. No new build/native/backend result.",
+          "evidence": "Signed documentation7604da24 records exact E01+DL01+E04 productionc9faed81. Six documentation paths only: combined changelog, weak display-link/native-cache notes, corrected existing example symbols and Trace attribute wording, all five feature metadata. All42tracked sources unchanged; nine Swift examples source-reviewed, five-doc verifier and all registries pass. No SDK/test/build change or new compiler/runtime/capture run. Results/S2-F02-composition-documentation.json; recheck metadata after any final history rewrite.",
           "required": true,
-          "remaining_checks": [
+          "completed_checks": [
             {
               "owner": "SDK implementer",
               "dependencies": [
@@ -2677,7 +2677,7 @@
           "dependencies": [],
           "decisive_test": "Inventory exact production diff, imports/callers/API/wire and transitive dependencies. Prove deferred scene routing/lifecycle/authority is absent, not merely hidden by API/manifest flags. Preserve upstream changes absent from the experimental branch.",
           "environment": "Exact develop62f64 and clean composed head1aa71d7f, productionc9faed81; complete source inventory and independent source-only review",
-          "evidence": "EXP-216 independent source-aware review at productionc9faed81 / test head1aa71d7f. Close for newly selected c9 source only after independent acceptance: complete865Sources709SDK+156auxiliary entries,6exact component production paths,859unchanged;20tracked delta6production8tests6docs. Project/dependency/API/model/encoder/transport/storage unchanged; no deferred source dependency. Results/EXP-216-s2-composition-promotion.json preserves exact prior evidence and review. No new build/native/backend result.",
+          "evidence": "EXP-216 independent source-aware review at productionc9faed81 / test head1aa71d7f. Close for newly selected c9 source only after independent acceptance: complete865Sources709SDK+156auxiliary entries,6exact component production paths,859unchanged;20tracked delta6production8tests6docs. Project/dependency/API/model/encoder/transport/storage unchanged; no deferred source dependency. Results/EXP-216-s2-composition-promotion.json preserves exact prior evidence and review. No new build/native/backend result. Documentation-only7604da24 subsequently changes exactly six docs; all production/test/project/dependency inputs remain identical. Results/S2-F02-composition-documentation.json.",
           "required": true
         }
       }
@@ -2805,13 +2805,13 @@
       "id": "S2",
       "name": "Single-scene iPhone Duo readiness",
       "deadline": "2026-10-16",
-      "shipping_rule": "No worse RUM after SDK27 rebuild without major application changes. Selected E01+DL01+E04 productionc9faed81 on develop62f64, qualified through1aa71d7f; EXP-216 binds exact source and lifetime evidence. Documentation, combined-source compatibility, Duo/app and final release gates remain; no new scene API or physical-Duo prerequisite.",
+      "shipping_rule": "No worse RUM after SDK27 rebuild without major application changes. Selected E01+DL01+E04 productionc9faed81 on develop62f64, documented through7604da24; EXP-216 binds exact source and lifetime evidence. Combined-source compatibility, Duo/app and final release gates remain; no new scene API or physical-Duo prerequisite.",
       "hardware_uncertainty": "No physical Duo validated. Targeted F09 follows when hardware is available; it is not pre-release readiness proof.",
       "selected_candidate": "E01 + DL01 + E04",
       "candidate_freeze": {
         "baseline": "62f64d7b655bdc83f3036c4ad81090a270f6202b",
         "production_revision": "c9faed816a1d4828d7d8c4b64acae01119425889",
-        "qualification_head": "1aa71d7f02b1f0370f018624c0c1c01efc1c7ebe",
+        "qualification_head": "7604da24bfb757e8d19314e7183b840fa17d858f",
         "audit": "Results/EXP-216-s2-composition-promotion.json",
         "dependencies": [
           "E01",
@@ -2824,10 +2824,11 @@
           "E05",
           "deferred semantic SwiftUI and multi-scene implementation"
         ],
-        "status": "SOURCE AND LIFETIME QUALIFIED; DOCUMENTATION/COMPOSED COMPATIBILITY/DUO/APP/FINAL RELEASE OPEN"
+        "status": "SOURCE/LIFETIME/DOCUMENTATION QUALIFIED; COMPOSED COMPATIBILITY/DUO/APP/FINAL RELEASE OPEN",
+        "documentation": "Results/S2-F02-composition-documentation.json"
       },
       "qualification_candidate": {
-        "head": "1aa71d7f02b1f0370f018624c0c1c01efc1c7ebe",
+        "head": "7604da24bfb757e8d19314e7183b840fa17d858f",
         "branch": "valpertui/s2-rum-lifetime",
         "baseline": "62f64d7b655bdc83f3036c4ad81090a270f6202b",
         "components": [
@@ -2836,8 +2837,8 @@
           "E04"
         ],
         "evidence": "Results/EXP-216-s2-composition-promotion.json",
-        "status": "SELECTED; SOURCE AND P03 QUALIFIED",
-        "remaining": "F02 documentation and F03 combined-source compatibility are reopened. Current candidate Duo/app/final acceptance remains open; no repeat of accepted lifetime checks.",
+        "status": "SELECTED; SOURCE/P03/F02 QUALIFIED",
+        "remaining": "S2:F03 combined-source compatibility remains open, as do current candidate Duo/app/backend/final gates. No accepted checks rerun merely to resume.",
         "production_revision": "c9faed816a1d4828d7d8c4b64acae01119425889"
       },
       "candidate_freeze_history": [

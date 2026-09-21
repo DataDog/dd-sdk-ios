@@ -1,0 +1,54 @@
+{
+  "schema_version": 1,
+  "gate": "S2:F02",
+  "status": "CLOSED_DOCUMENTATION_SOURCE_VERIFIED",
+  "recorded_at": "2026-09-21T10:05:51.299351+00:00",
+  "owner": "SDK implementer",
+  "worktree": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/s2-rum-lifetime",
+  "production": "c9faed816a1d4828d7d8c4b64acae01119425889",
+  "documentation_head": "7604da24bfb757e8d19314e7183b840fa17d858f",
+  "signature": "G",
+  "verified_against_commit": "1aa71d7f0",
+  "artifact_root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-composition-docs-ul0pktfv",
+  "definition": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-composition-docs-ul0pktfv/definition.json",
+    "sha256": "238201348ce5d72891fbc49938865997cede07b7bd772678c4e828899c36266f"
+  },
+  "summary": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-composition-docs-ul0pktfv/summary.json",
+    "sha256": "c3bee740ca3296ed120ddf9d5c6548dbd3a99accff9261bb4d50c3e781b97001"
+  },
+  "candidate_commit_receipt": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-composition-docs-ul0pktfv/candidate-commit/commit.json",
+    "sha256": "01313a7aa4665ae4112bf336fc40ed09846b4105ef0514957178702188bbc2e3"
+  },
+  "source_review": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-composition-docs-ul0pktfv/tracked-source-audit.json",
+    "sha256": "16f27ba4d34cd2ba4afae88340c72024bd9f427f472040a4f19f902dd3716670"
+  },
+  "verification": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-composition-docs-ul0pktfv/verification.log",
+    "sha256": "c2906006eac2d63d507f57adbe101fe52e7a4f8bff6d3d033836efa903fba1bd"
+  },
+  "patch": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-composition-docs-ul0pktfv/documentation.patch",
+    "sha256": "3d57de0ac6c02636aad6866e073dddd554b8b8602f534b531d17f72d6d05ca68"
+  },
+  "feature_docs": 5,
+  "tracked_sources": 42,
+  "Swift_examples": 9,
+  "allowed_paths": [
+    "CHANGELOG.md",
+    "DatadogLogs/LOGS_FEATURE.md",
+    "DatadogProfiling/PROFILING_FEATURE.md",
+    "DatadogRUM/RUM_FEATURE.md",
+    "DatadogSessionReplay/SESSION_REPLAY_FEATURE.md",
+    "DatadogTrace/TRACE_FEATURE.md"
+  ],
+  "SDK_test_build_changes": 0,
+  "new_builds_native_backend_or_runtime_tests": 0,
+  "preimplementation_inventory_correction": "Actual frozen files contain9Swift fences plus1Mermaid diagram; prior narrative count10Swift was inaccurate. All9SDK examples remain required; no file or example is excluded. Corrected before any edit/build/test.",
+  "scope": "Source compile-readiness and documentation verification only. F03 composed runtime/build matrix remains open. Session Replay captured-content implementation/tests are unchanged and excluded.",
+  "history_rewrite_rule": "Re-run metadata audit after any final history rewrite before separately authorized push.",
+  "protected_main_paths_unchanged": true
+}

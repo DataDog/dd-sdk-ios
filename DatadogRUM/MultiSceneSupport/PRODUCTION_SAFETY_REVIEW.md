@@ -26,8 +26,8 @@ The [S2 composition review](Results/EXP-216-s2-composition-promotion.json) selec
 exact E01 + DL01 + E04 production `c9faed81`, with six qualified production files
 and no deferred semantic/scene implementation. It closes the source-bound lifetime
 gate and retains only narrow prior compatibility/reentrancy/workflow invariants.
-F02 documentation and F03 composed compatibility reopen; Duo/app/backend and final
-delivery remain separate. The former E01-only freeze and its evidence stay historical.
+[F02 documentation](Results/S2-F02-composition-documentation.json) is now source-verified; F03 composed compatibility and Duo/app/backend/final
+delivery remain open. The former E01-only freeze and its evidence stay historical.
 
 The [EXP-210 diagnosis](Results/EXP-210-s2-automatic-coverage.json) retains an open
 native-input observation: two original SDK-on switch inputs fail, while SDK-off

@@ -25,13 +25,13 @@ merge dependency. [EXP-214](Results/EXP-214-resource-action-design.json) records
 Replay captured-content correctness is outside the release scope. Host-app crash safety and non-disruption to other SDK features remain required; no full Replay suite, content repair or inherited-fixture waiver is needed. The [scope disposition](Results/S1-replay-scope-disposition.json) removes the content-fixture blocker without adding a test pass. Signed [feature-document corrections](Results/S1-documentation-checkpoint.json) qualify E03/DL01/E02/E04 docs without SDK changes. Ticketing, current CI, human review and authorized delivery remain; no S1 delivery or broader P03 closure is claimed.
 
 S2 selects E01 + DL01 + E04, production `c9faed81` on develop `62f64d7b`,
-qualified through test-only `1aa71d7f`. The independent
+documented in signed `7604da24` after test-only `1aa71d7f`. The independent
 [composition review](Results/EXP-216-s2-composition-promotion.json) proves the
 six-file boundary and closes object-lifetime safety for the exact candidate.
 Ordinary compatibility and reentrancy retain narrow source-matched evidence;
 new semantic SwiftUI and multi-scene code remain absent, making the scoped
 application-performance comparison non-applicable without a numerical claim.
-Documentation and final compatibility are reopened for the composed source.
+[Composed documentation](Results/S2-F02-composition-documentation.json) now passes source/example/registry checks; final compatibility remains open for the composed source.
 Current-candidate Duo, native-input, app and final release gates remain open.
 Historical EXP-195 source differs and cannot certify this candidate.
 
