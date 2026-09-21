@@ -29,7 +29,11 @@ Derive membership from the frozen Xcode target's source phase, including shared
 Swift and private C/Objective-C/C++ inputs, resources and generated sources. A
 `Tests/` glob or source-directory count is not a target or test inventory. For each
 architecture, compare its own compiler source list, emitted modules/objects and
-product metadata; a union can conceal a missing architecture-specific file.
+product metadata; a union can conceal a missing architecture-specific file. Bind
+actual SwiftPM target directories (which may end in `-t.build`) to exact module
+list basenames. Xcode's prebuilt XCTest runner has its own SDK/deployment metadata:
+verify it against the selected Xcode template and executable architecture slice,
+then check the app and compiled test bundle against their intended build settings.
 
 Inventory the actual changed modules on each platform. RUM-only macOS builds do
 not prove Trace/Internal compilation. Include the separate Integration target when

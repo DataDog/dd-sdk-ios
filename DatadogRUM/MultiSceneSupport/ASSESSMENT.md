@@ -26,8 +26,9 @@ The current-source automatic comparison has unresolved native-input variability.
 and passing SDK-off/later action-on controls without an isolated cause.
 [EXP-218](Results/EXP-218-native-input-observation.json) adds a native SDK-on pass
 whose strict dispatch observer rejects its boundary; SDK-off remains unrun.
-The [callback-side witness](Results/EXP-220-native-input-callback.json) is preparation
-only. None establishes an SDK cause, completed comparison or candidate gate closure.
+The [callback-side witness](Results/EXP-220-native-input-callback.json) built, but
+automation-session setup failed before either arm ran. None establishes an SDK
+cause, completed comparison or candidate gate closure.
 
 [Controlled app builds](Results/S2-F08-app-preparation.json) are reusable by identity;
 [app journeys](Results/S2-F08-app-journeys.json) remain unqualified.

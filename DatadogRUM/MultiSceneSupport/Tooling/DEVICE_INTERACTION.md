@@ -134,6 +134,13 @@ limits; no tool workaround waives them.
 
 ## Cleanup and interruption
 
+`simctl listapps` can emit an OpenStep property list. Decode saved output through
+Apple's `plutil` before applying exact bundle-absence checks; Python plistlib does
+not support that representation. Preserve a failed cleanup verdict separately from
+later proof of app, data, simulator and process absence. Persist terminal state even
+when cleanup raises, so an earlier running-state receipt cannot become the cursor.
+
+
 Export app JSONL, runner checkpoints/hierarchy/images, console and partial xcresult
 before uninstall. Bind each to this run and contiguous sequence. Preserve raw
 bytes even if parsing fails; ignore foreign receipts and reject symlinks. Cleanup

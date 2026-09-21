@@ -59,7 +59,7 @@ to the linked results and [delivery queue](Results/S1-delivery-queue.json).
 
 | Observation / obligation | Required disposition boundary |
 | --- | --- |
-| Current S2 native-input variability | [EXP-210](Results/EXP-210-s2-automatic-coverage.json) and [EXP-218](Results/EXP-218-native-input-observation.json) do not isolate an SDK cause. [EXP-220](Results/EXP-220-native-input-callback.json) is a separate prepared callback witness, not acceptance. |
+| Current S2 native-input variability | [EXP-210](Results/EXP-210-s2-automatic-coverage.json) and [EXP-218](Results/EXP-218-native-input-observation.json) do not isolate an SDK cause. [EXP-220](Results/EXP-220-native-input-callback.json) stopped on automation-session setup before either arm ran; it adds no SDK attribution or acceptance. |
 | Duo semantic boot failure | [Environment record](Results/S2-Duo-environment-readiness.json): no app install/assertion and no SDK attribution; material environment change plus new admission before retry. |
 | Networking QoS / inherited test diagnostics | [EXP-204](Results/EXP-204-network-qos.json) establishes baseline recurrence with incomplete stacks, not root cause, harmlessness or sanitizer/performance clearance. Keep candidate-specific warnings in their own results. |
 | Baggage versus trace-carrier policy | [PR2683 review](Results/PR-2683-header-ownership-review.json) is not qualification of that proposal or general partial/mixed-carrier policy; bounded T08 follow-up stays separate. |

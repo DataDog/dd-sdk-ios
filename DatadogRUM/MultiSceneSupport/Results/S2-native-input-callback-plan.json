@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "status": "EXP220_PREPARATION_PAUSED",
+  "status": "DEFINED_ATTEMPT_STOPPED_BEFORE_ASSERTIONS",
   "recorded_at": "2026-09-21T15:34:21.686308+00:00",
   "owner": "SDK implementer",
   "reviewer": "/root/c06_runtime_plan",
@@ -66,5 +66,5 @@
   "native_execution_started": false,
   "gate_closures": [],
   "definition": "Results/EXP-220-native-input-callback.json",
-  "resume": "Results/EXP-220-native-input-callback.json"
+  "resume": "EXP-220 execution stopped on AXe remote-automation setup after semantic boot, before discovery/install/assertions. Both arms remain NOT_RUN. Preserve original evidence and require a concrete environment change plus separate admission for native continuation."
 }

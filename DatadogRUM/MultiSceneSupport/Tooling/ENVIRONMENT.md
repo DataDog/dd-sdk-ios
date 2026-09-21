@@ -65,6 +65,9 @@ enumeration; a disconnected paired record does not qualify installation.
 Require terminal `Finished`, no `Data Migration Failed` text, and a nonempty native
 Home accessibility tree before installing a controlled app. `bootstatus` exit 0
 alone is insufficient. Freeze toolchain/runtime/device-type and AXe identities.
+A finished boot does not establish remote automation access. A failed Home-tree
+session stops installation/assertions; retain the error and do not retry on the
+same environment merely because the build or boot succeeded.
 Scope migration logs to the owned simulator and actual boot interval; preserve
 unavailable log access without assigning a cause. The
 [stopped Duo checks](../Results/S2-Duo-environment-readiness.json) need a materially

@@ -2,7 +2,7 @@
   "schema_version": 1,
   "experiment": "EXP-220",
   "title": "Observe selector callback ownership during native UIKit input",
-  "status": "PAUSED_SOURCE_PREPARATION",
+  "status": "PRE_ASSERTION_STOP_AUTOMATION_SESSION",
   "defined_at": "2026-09-21T19:50:35.516309+00:00",
   "deadline": "2026-09-21T21:20:35.516309+00:00",
   "owner": "SDK implementer",
@@ -157,9 +157,92 @@
     "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp220-callback-input-d092fui4/source-review.json",
     "sha256": "bad104335156aed631f32c5e09689d1d98ac1945d9bda4d6e0a083df22743165"
   },
-  "resume": "Preserve this completed preparation attempt. Do not extend/reopen its deadline. Define a separate bounded execution admission after fresh environment discovery and completion/review of the host runner; reuse prepared sources and controls only after hash verification.",
+  "resume": "Execution is closed before assertions. No equivalent native retry: require a concrete automation-session environment change and separate bounded admission. Preserve both NOT_RUN arms and original host/cleanup failures. Reuse unchanged compiled artifacts by exact identity; continue independent plan preparation.",
   "keep_awake_stop": {
     "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp220-callback-input-d092fui4/keep-awake-stop.json",
     "sha256": "68dd8fa5ce043aba3e1ea422d2ca230d165267146cff8ffd2607b450095f5a8a"
+  },
+  "execution": {
+    "artifact_root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp220-resume-1hogpbwl",
+    "admission": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp220-resume-1hogpbwl/execution-admission.json",
+      "sha256": "7dd4634919d02548bba82977d0128e4c8b164a3e8306ffbb336ed1ebc0377fd1"
+    },
+    "runner_review": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp220-resume-1hogpbwl/runner-review.json",
+      "sha256": "3a8634c9b8b963d2f641af52441c22b6a5ed66359b6eb2897e7087d41d9204b2"
+    },
+    "host_negative_controls": 21,
+    "builds": 1,
+    "native_launches": 0,
+    "gate_credit": false,
+    "original_host_status": "STOP: Built SDK/deployment drift",
+    "qualified_build": "build-qualified.json",
+    "compiler_negative_controls": 5,
+    "qualification_scope": "Separate unchanged-build metadata interpretation; no SDK/fixture/oracle change or deadline extension.",
+    "deadline": "2026-09-21T21:40:19.970696+00:00",
+    "status": "PRE_ASSERTION_STOP_AUTOMATION_SESSION",
+    "attempt_closed": true,
+    "test_discoveries": 0,
+    "native_installations": 0,
+    "sdk_on": "NOT_RUN",
+    "sdk_off": "NOT_RUN",
+    "semantic_boot": "PASS",
+    "automation_failure": "AXe timed out creating the simulator remote automation session",
+    "cleanup_original": "CLEANUP_FAILED: OpenStep plist parsing",
+    "cleanup_postcondition": "PASS_POSTCONDITION_ONLY: bundles, simulator, data directory and task processes absent",
+    "fixture_oracle_changed": false,
+    "source_and_user_paths": "UNCHANGED",
+    "retries": 0,
+    "artifacts": {
+      "terminal-summary.json": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp220-resume-1hogpbwl/terminal-summary.json",
+        "sha256": "a94d889558a80b44abea469cff1ee130a7cd5d1f64759b579b1aa8b048d3d0f6"
+      },
+      "terminal-review.json": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp220-resume-1hogpbwl/terminal-review.json",
+        "sha256": "a6de4dd25674deed3d765f3143055546c4c488b85ea6454959b0a3d6c995e6a5"
+      },
+      "execution-admission.json": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp220-resume-1hogpbwl/execution-admission.json",
+        "sha256": "7dd4634919d02548bba82977d0128e4c8b164a3e8306ffbb336ed1ebc0377fd1"
+      },
+      "runner-review.json": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp220-resume-1hogpbwl/runner-review.json",
+        "sha256": "3a8634c9b8b963d2f641af52441c22b6a5ed66359b6eb2897e7087d41d9204b2"
+      },
+      "host-adaptation.json": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp220-resume-1hogpbwl/host-adaptation.json",
+        "sha256": "057e98337030800cda0df48c361d51b5e336fb82f0f48ccf345d37b819678218"
+      },
+      "build-qualified.json": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp220-resume-1hogpbwl/build-qualified.json",
+        "sha256": "a991bb8bb9073c0d798779fbebdbc4e6cd324622efbba7632daecc11f6d703fd"
+      },
+      "build-result.json": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp220-resume-1hogpbwl/build-result.json",
+        "sha256": "c7b4a668a80aa0e50eff78eb3d09c45e0fa4a8b3ccea7185b8f5c861fa4e252b"
+      },
+      "host-controls.json": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp220-resume-1hogpbwl/host-controls.json",
+        "sha256": "33cbde439df35326934f4a5b6d26d5dd0da80eb3a11a39fcb4e74182b5cbe7b8"
+      },
+      "cleanup.json": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp220-resume-1hogpbwl/cleanup.json",
+        "sha256": "2890c606cf8fa5c859d1afea8c7cb08795a190a02f8811e513c52ad42ee4ff00"
+      },
+      "cleanup-postcondition.json": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp220-resume-1hogpbwl/cleanup-postcondition.json",
+        "sha256": "5da1e5b443b5c01aaf36033d1f8a4735d15a455d487f29545505d2fd4054aaf9"
+      },
+      "source-manifest.json": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp220-resume-1hogpbwl/source-manifest.json",
+        "sha256": "9387147d8b848f3a6d19438a65afa155baa2905cb8e2e872af6ead0518070781"
+      },
+      "boot.json": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp220-resume-1hogpbwl/boot.json",
+        "sha256": "2b18828bb1981573f60c8d999d200817f9dfe6935c7a5160aa73e4fc426484f0"
+      }
+    }
   }
 }
