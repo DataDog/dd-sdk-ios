@@ -3012,3 +3012,10 @@ pairs; reject new names or library pairs and avoid warning-free claims.
 A passing suite summary after `Restarting after unexpected exit` does not qualify
 the original process. Read the first exception and keep its failure. E03’s detailed
 Core artifact identifies an over-fulfilled upload expectation before the restart.
+
+Before admitting a CI repair, require evidence connecting the failure to the changed
+production surface or associated tests. An unchanged upstream test failing in a PR
+is insufficient. Check existing upstream fixes before creating a duplicate; PR3196
+already owns the timeseries pause correction. Preserve completed local evidence
+without claiming it tests a different upstream head. Unattributed flakes do not
+justify extra tests or fixture repairs; required CI remains a maintainer gate.

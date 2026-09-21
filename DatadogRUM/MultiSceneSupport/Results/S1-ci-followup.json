@@ -1,8 +1,8 @@
 {
   "schema_version": 1,
   "gate": "S1:F06",
-  "status": "CI_TRIAGE_IN_PROGRESS",
-  "recorded_at": "2026-09-21T19:19:01.017396+00:00",
+  "status": "ATTRIBUTABLE_FAILURES_ONLY",
+  "recorded_at": "2026-09-21T19:45:47.182919+00:00",
   "artifact_root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s1-hitch-review-3bgot45i",
   "snapshot": {
     "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s1-hitch-review-3bgot45i/ci-refresh-20260921T185832Z.json",
@@ -31,21 +31,52 @@
     {
       "id": "E02-timeseries",
       "owner": "SDK implementer / upstream test maintainer",
-      "status": "TEST_ORACLE_REPAIR_DESIGN_REVIEWED",
-      "dependency": "Separately scoped deterministic test-only correction",
-      "finding": "TimeseriesSessionCollectorTests.testWhenBackgrounded_pauseAlwaysStopsSampling$6 fails2vs1 at formatted logline5673, matching earlier E03 job2063993559. Collector pause flushes buffered samples; current test and collector match develop exactly.",
-      "decisive_test": "Use existing synchronous flush as the pause queue barrier, then compare post-pause event counts after the unchanged wait; preserve pre-pause positive sampling and complementary resume control. Negative control must reject sampling after the barrier.",
-      "environment": "Native macOS unit tests; no Resource production change."
+      "status": "UPSTREAM_FIX_OWNED_BY_PR3196",
+      "dependency": "Upstream PR3196; no duplicate local publication",
+      "finding": "Existing open PR3196 at5d5058e9 fixes the pause/flush race in the same test. Local investigation independently reached that direction; source is not byte-identical.",
+      "decisive_test": "Upstream maintainer acceptance and subsequent exact-source CI when available. Local20/20 and deliberate negative control are retained as local evidence only; not qualification of PR3196.",
+      "environment": "Native macOS unit tests; no Resource production change.",
+      "definition": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s1-timeseries-pause-olnmq8w2/definition.json",
+        "sha256": "583c95a1e30cbcc807e0cd352c198a528d5a2f17682a22b73815e76112bbac0b"
+      },
+      "qualification_root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s1-timeseries-pause-olnmq8w2",
+      "deadline": "2026-09-21T20:37:18.722910+00:00",
+      "upstream": {
+        "url": "https://github.com/DataDog/dd-sdk-ios/pull/3196",
+        "head": "5d5058e94c5520693f20a1ce6510be8dd34ea35d",
+        "state": "OPEN",
+        "source_path": "DatadogRUM/Tests/Timeseries/TimeseriesSessionCollectorTests.swift",
+        "comparison": "Same post-pause flush barrier and settled-count comparison. Local source additionally asserts nondecreasing count at pause and flushes after the wait. Not byte-identical; upstream head was not tested."
+      },
+      "local_qualification": {
+        "positive_executions": 20,
+        "positive_successes": 20,
+        "negative_executions": 1,
+        "negative_expected_failures": 1,
+        "after_wait": 6,
+        "at_pause_boundary": 3,
+        "compiled_sources": 80,
+        "inherited_diagnostics": 59,
+        "warning_free": false,
+        "cleanup": "PASS",
+        "review": {
+          "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s1-timeseries-pause-olnmq8w2/final-review.json",
+          "sha256": "c137883c5ea1c932b00208a1f1aef74741e7d745f87ead06c1e90369801aeb1b"
+        }
+      },
+      "publication": "None: no commit or push of the local test candidate."
     },
     {
       "id": "E03-current-macOS",
       "owner": "SDK implementer",
-      "status": "UPLOAD_FLUSH_FIXTURE_REVIEW_PENDING",
-      "dependency": "Review exact upload fixture and a deterministic flush-only discriminator",
+      "status": "UNATTRIBUTED_FLAKE_REPAIR_OUT_OF_SCOPE",
+      "dependency": "Clear evidence linking failure to changed Resource surface or associated tests before further investigation",
       "finding": "The detailed Core log identifies DataUploadWorkerTests.testItFlushesAllData over-fulfilling Make 3 uploads at line 7752, then uncaught NSInternalInconsistencyException and signal 6. Xcode restarts at line 8155; the later 503-case passing summary does not erase the crash.",
-      "decisive_test": "Separate explicit flush from automatic upload scheduling while retaining exactly three uploads, event order and nil previous status. Add a no-flush negative control before accepting a test-only repair.",
+      "decisive_test": "Retain original crash and exact source comparison. No repair or extra test is admitted without changed-surface evidence.",
       "environment": "Native macOS and current PR3218 CI. Worker and test match inspected develop 9a8a66c3 byte-for-byte; no Resource SDK attribution is established.",
-      "prior_failure": "Earlier job2063993559 timeseries failure is retained in the first analysis and E02 item."
+      "prior_failure": "Earlier job2063993559 timeseries failure is retained in the first analysis and E02 item.",
+      "scope_disposition": "Worker/test match inspected develop; no Resource cause is established. Proposed fixture repair is not implemented."
     },
     {
       "id": "E04-watchOS",
@@ -67,11 +98,12 @@
     {
       "id": "H00-current-CI",
       "owner": "Repository CI / RUM maintainers",
-      "dependency": "Distinguish queued work at teardown from persistent retention",
-      "status": "CORE_RETENTION_DISCRIMINATOR_PENDING",
-      "decisive_test": "Trace ownership and queue draining on the exact source. A bounded check must distinguish delayed release from persistent retention; preserve the integrity assertion and avoid blind retries.",
+      "dependency": "Clear evidence linking failure to changed hitch surface or associated tests before further investigation",
+      "status": "UNATTRIBUTED_FLAKE_REPAIR_OUT_OF_SCOPE",
+      "decisive_test": "Retain integrity failure and source comparison. Do not relax assertion, retry CI or run a retention investigation without changed-surface evidence.",
       "environment": "Repository CI / PR3214",
-      "finding": "The detailed watchOS log identifies a live DatadogCoreProxy after RUMMonitorTests.testRandomlyCallingDifferentAPIsConcurrentlyDoesNotCrash. The test, monitor, proxy and core match inspected develop 9a8a66c3."
+      "finding": "The detailed watchOS log identifies a live DatadogCoreProxy after RUMMonitorTests.testRandomlyCallingDifferentAPIsConcurrentlyDoesNotCrash. The test, monitor, proxy and core match inspected develop 9a8a66c3.",
+      "scope_disposition": "Test/monitor/core/proxy match inspected develop; no hitch cause is established. Source audit remains diagnostic history only."
     },
     {
       "id": "DL01-current-CI",
@@ -165,9 +197,19 @@
   "sdk_changes": 0,
   "agent_ci_retries": 0,
   "gate_closures": [],
-  "next_action": "Proceed with separate bounded timeseries and upload-flush test repairs; investigate H00 ownership before any change. Follow E01 current-head CI without repeating accepted local tests.",
+  "next_action": "Resume S2 callback witness preparation. Existing S1 PRs await CI/maintainer review; reopen repair work only for clear evidence implicating changed surfaces or associated tests.",
   "prior_log_analysis": {
     "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s1-hitch-review-3bgot45i/ci-log-analysis-round2.json",
     "sha256": "492b626868b471e8c6790e513adcb61580d7296456763d98bfc05658bbf26054"
+  },
+  "scope_policy": {
+    "source": "Direct user instruction2026-09-21",
+    "rule": "Do not investigate or fix flaky CI unless clear evidence implicates the changed production surface or associated tests. Preserve failures and review requirements; this does not waive required CI.",
+    "unrelated_repairs_stopped": [
+      "E02 duplicate pause-test publication",
+      "E03 upload-flush fixture repair",
+      "H00 retained-core repair"
+    ],
+    "next_plan_work": "S2 callback-side native input witness; no additional CI retries or local flake tests."
   }
 }
