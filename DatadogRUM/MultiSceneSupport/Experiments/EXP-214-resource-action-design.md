@@ -87,11 +87,13 @@ add a skip or change a threshold. SDK27/runtime27 Example discovery stopped befo
 assertions because the legacy host lacks a scene lifecycle; that rejection and
 both temporary iPhone simulator restorations remain recorded.
 
-The finite remaining check belongs to the RUM maintainers before E03 release-review
-sign-off: an admitted fixture correction followed by full clean-host Replay
-qualification, or an explicit scoped waiver. CI, ticketing, documentation drift and
-human review remain. E01's five missing hostless schemes continue independently;
-no accepted suite is repeated and no new experiment number or release gate closes.
+The earlier full-Replay fixture prerequisite is superseded by the user's2026-09-21
+scope correction: captured content is neither tested nor repaired in this project.
+Original failures remain unchanged; no fixture correction, waiver or further
+Replay diagnostic is required. Only host-app crash safety and non-disruption to
+other SDK features remain in scope. CI, ticketing and human review remain;
+[the documentation checkpoint](../Results/S1-documentation-checkpoint.json) now
+qualifies all five feature docs in signedf43d812d without SDK changes.
 
 The bounded topology diagnostic is complete. Both corrected arms preserve the
 original requirement failure and capture93 layers in visible, attached windows:
@@ -108,5 +110,5 @@ no production or original assertions. Xcode then decorated the exported attachme
 name; its reviewed parser correction re-audited the same develop bytes without a
 rerun. Four positive/nineteen negative oracle controls pass. The E03 packet owns
 all raw inventories, comparisons, invalid attempts and reviews. No further native
-diagnostic is admitted; maintainer fixture disposition remains separate while the
-two finite E05 backend cells continue from a fresh admission.
+diagnostic is admitted; captured-content disposition is outside release scope.
+E05 backend ownership continues under its own finite admission and stop rules.

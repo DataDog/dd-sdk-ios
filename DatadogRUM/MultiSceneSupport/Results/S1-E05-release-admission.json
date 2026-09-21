@@ -109,7 +109,7 @@
       "status": "DEFINED_DELIVERABLE_NOT_EXECUTION_ADMISSION"
     }
   ],
-  "remaining_compatibility": "Full Replay requires inherited fixture disposition and candidate-specific qualification; real ticket, current CI and human review remain.",
+  "remaining_compatibility": "Real ticket, current CI and human review remain. Session Replay captured-content testing and repair are excluded by user scope2026-09-21. Preserve historical failures without a PASS; host-app crash safety and non-disruption to other SDK features remain required. No fixture correction, waiver or full Replay run is required.",
   "explicit_exclusions": [
     "S2 UIKit/SwiftUI host lifetime and task retention",
     "Network performance or numeric benchmarking",
@@ -488,14 +488,83 @@
     "next": "Finish documentation checkpoint and independently scoped paired Replay topology diagnostic. E05 requires a fresh explicit bounded admission and refreshed preflight after this stopped window; no implicit retry or reused run identity."
   },
   "backend_fresh_preparation": {
-    "status": "EXACT_COMPILE_REUSE_PREFLIGHT_PENDING_RUNTIME_ADMISSION",
+    "status": "STOPPED_AUTOMATIC_LOCAL_IDENTITY_REJECTION_REGISTERED_NOT_RUN",
     "root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/deliveries/e05-20260920-rtzz6gpd/backend-fresh-admission-egmipt4e",
     "preparation_sha256": "5d178a4a13d03d76fca7761532494903a9e8ce2aefe1573608c957695e1a2a8c",
     "reuse_sha256": "76ec5227554d6f3a0392d56250ebbf59b8ae1bc186dfc0a66dcaa40dbba27a89",
     "helper_manifest_sha256": "af1bb1d76c7b138868dfc1ba7d34f21b7208e662af997875210feacd62810fd0",
     "source_build_helpers_verified": true,
     "rebuilds": 0,
-    "native_launches": 0,
-    "next": "Refresh preflight after checkpoint and define new fixed automatic/registered deadlines. Preserve prior stopped admissions and all identities; registered requires automatic PASS."
+    "native_launches": 1,
+    "next": "Independent read-only audit of retained mapper/header identities and exact source encoder; no native rerun, deadline extension or registered launch under this admission.",
+    "review": {
+      "path": "/tmp/e05-trace-ownership-review-20260921/fresh-compile-reuse-review.json",
+      "sha256": "8f22e8f8f1ad468626262326fba5f56dc66f933c576b18dbb11f42301328af5e"
+    },
+    "preflight_sha256": "f1709fa12854a0444b07d00a585d1aa083df074a471d043f4b4e046854a97b3d",
+    "native_admission": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/deliveries/e05-20260920-rtzz6gpd/backend-fresh-admission-egmipt4e/native-admission.json",
+      "sha256": "c1c55289a8720320ca6b9b1e92ff3046efabf99c76967a3f0268de6c6e5eb1cf"
+    },
+    "cells": {
+      "automatic": {
+        "output": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/deliveries/e05-20260920-rtzz6gpd/backend-fresh-admission-egmipt4e/runs/automatic-9b45bf2a2c",
+        "execution_deadline_ms": 1789975945412,
+        "cleanup_deadline_ms": 1789976065412
+      },
+      "registered": {
+        "output": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/deliveries/e05-20260920-rtzz6gpd/backend-fresh-admission-egmipt4e/runs/registered-d4980db815",
+        "execution_deadline_ms": 1789978045412,
+        "cleanup_deadline_ms": 1789978165412
+      }
+    },
+    "controls": {
+      "positive": 6,
+      "negative": 46
+    },
+    "result": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/deliveries/e05-20260920-rtzz6gpd/backend-fresh-admission-egmipt4e/runs/automatic-9b45bf2a2c/summary.json",
+      "sha256": "1edf3e8fe9af6fc9d1a8f516cfa80f4faa1da1bc7395a02dcbc09986f4db6db0",
+      "state": "INVALID",
+      "failure": "local trace identity differs",
+      "native_launches": 1,
+      "startup_backend_inventory": 3,
+      "startup_real_cold_ttid": "PASSED_BEFORE_SCENARIO_RELEASE",
+      "final_backend": "NOT_RUN",
+      "registered": "NOT_RUN",
+      "cleanup": "PASS",
+      "native_evidence_records": 27,
+      "initial_finding": "All mapper parent_id fields are string 0; frozen oracle expects sixteen zero characters. Independent source/encoding review pending; no SDK defect or backend qualification claimed."
+    }
+  },
+  "replay_scope_disposition": "Results/S1-replay-scope-disposition.json",
+  "backend_local_identity_review": {
+    "status": "PASS_LOCAL_REAUDIT_BACKEND_INCONCLUSIVE",
+    "root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/deliveries/e05-20260920-rtzz6gpd/backend-local-id-review-c6tu7rho",
+    "original_result": "INVALID_PRESERVED",
+    "offline_audit": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/deliveries/e05-20260920-rtzz6gpd/backend-local-id-review-c6tu7rho/local-identity-review.json",
+      "sha256": "2e72ead633630305b038b273da7dec0ad03d853fe7cab6d20fad0aab2e3cbd73",
+      "real_evidence_reaudits": 2,
+      "synthetic_positive": 8,
+      "synthetic_negative": 66
+    },
+    "correction": "Source-canonical unpadded hex IDs and root parent string0; full identity/ownership assertions preserved.",
+    "backend_continuation": {
+      "summary": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/deliveries/e05-20260920-rtzz6gpd/backend-local-id-review-c6tu7rho/backend-only/summary.json",
+      "summary_sha256": "38ca2fc004797c127b32626377378a23799476205e5d3c645d20f0c6050bb30a",
+      "admission": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/deliveries/e05-20260920-rtzz6gpd/backend-local-id-review-c6tu7rho/backend-only/admission.json",
+      "admission_sha256": "0e168dd7a82368eebb35f7598fd715ce27dc7ec094ecc6d691cc790f864e51f1",
+      "status": "INCONCLUSIVE_BACKEND_ONLY",
+      "reason": "First broad RUM session aggregate returned3, required7; stop without search/APM/retry.",
+      "native_launches": 0,
+      "registered": "NOT_RUN"
+    },
+    "next": "After checkpoint, define a fresh automatic admission with unchanged qualified source/fixture/build and corrected oracle. Retain app through backend collection; refresh preflight/IDs/deadlines. No old-window reuse or registered admission before automatic PASS.",
+    "stop_review": {
+      "path": "/tmp/e05-trace-ownership-review-20260921/backend-only-stop-review-metadata-corrected.json",
+      "sha256": "f81719630cb85bf7a51f5da5d3169ffb8efe4223e6bb352d26be3ab092ffd85c",
+      "status": "INCONCLUSIVE_REQUIRES_NEW_AUTOMATIC_ADMISSION"
+    }
   }
 }

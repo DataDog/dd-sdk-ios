@@ -1,0 +1,28 @@
+{
+  "status": "PASS_FOUR_SIGNED_DOCUMENTATION_PACKETS",
+  "recorded_at": "2026-09-21T07:38:08.196508+00:00",
+  "root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/deliveries/trace-doc-drift-review-zs5p2fai",
+  "checkpoint": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/deliveries/scope-backend-checkpoint-iflc9h9n",
+  "source_review": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/deliveries/trace-doc-drift-review-zs5p2fai/source-review.json",
+    "sha256": "1a2fa44ffa1bad237d60ced24db1ce597529e19a6163141dd725ff2aa55502d8"
+  },
+  "verification": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/deliveries/scope-backend-checkpoint-iflc9h9n/documentation-verification.json",
+    "sha256": "27b14a7ec1a6110efee1122ec6f9663e99d9aea738a950240120637367c96a2a"
+  },
+  "heads": {
+    "E03": "f43d812d85d96bea88b6b3e944d9210f0406405d",
+    "DL01": "29c28a01b4abec47a2c0869ca1ad6ade16b3dbd6",
+    "E02": "4dec888b99e70285cc855197790c3c2f6d20e426",
+    "E04": "171a24092dd5a953e428fd5e038f70a3021a9dc2"
+  },
+  "sdk_test_build_inputs_changed": false,
+  "new_runtime_tests": 0,
+  "changes": [
+    "Trace non-suspended application-duration semantics match frozen source",
+    "Two Replay documentation examples use an existing text privacy enum case; no capture implementation change",
+    "Five feature documents have current source coverage and reachable verification metadata"
+  ],
+  "limit": "Recheck reachable metadata after final ticketed history rewrite; no runtime or release gate closure."
+}

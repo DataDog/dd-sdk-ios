@@ -38,7 +38,9 @@
     "human_review_required": true,
     "codeowners_must_be_rechecked": true,
     "performance": "Preserve current acceptance scope. No new mandatory standalone networking, per-dispatch or allocation benchmark campaign. Included new semantic SwiftUI/multi-scene code requires its existing application-impact gate; expected absent from these PRs. Investigate concrete regressions.",
-    "evidence_reuse": "Bind accepted results to exact source/test/dependency/toolchain/configuration/runtime identities. Rerun missing or invalidated checks only; metadata-only re-signing is not a reason to rerun tests."
+    "evidence_reuse": "Bind accepted results to exact source/test/dependency/toolchain/configuration/runtime identities. Rerun missing or invalidated checks only; metadata-only re-signing is not a reason to rerun tests.",
+    "session_replay_scope": "Session Replay captured-content testing and repair are excluded by user scope2026-09-21. Preserve historical failures without a PASS; host-app crash safety and non-disruption to other SDK features remain required. No fixture correction, waiver or full Replay run is required.",
+    "session_replay_scope_record": "Results/S1-replay-scope-disposition.json"
   },
   "scheduling": {
     "checkpoint": "Finish or safely checkpoint the current bounded experiment; preserve its failures and exact source identities. Do not interrupt or modify its worktree from this side conversation.",
@@ -164,7 +166,8 @@
           "Separately authorized publication/merge and verified upstream tree"
         ]
       },
-      "packet": "Results/S1-H00-E01-packets.json"
+      "packet": "Results/S1-H00-E01-packets.json",
+      "replay_scope_disposition": "Results/S1-replay-scope-disposition.json"
     },
     {
       "owner": "Main execution session / SDK implementer",
@@ -284,14 +287,13 @@
         "artifact_negative_controls": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/deliveries/s1-initial-20260920-qqyq49od/e01-package-artifact-correction-uli7ntmu/artifact-negative-controls.json",
         "artifact_negative_controls_sha256": "652c17f28719ac3bd0742408d75f0dd9fcc41a36adb638e5facb06ab24d7bda2",
         "limits": [
-          "No full Replay result; the inherited fixture prerequisite and candidate-specific qualification remain open.",
+          "Current CI and human review remain; Replay content tests are excluded and the signed documentation checkpoint closes inherited Trace prose drift.",
           "No full repository iOS, release-ready, current CI, warning-free or blanket sanitizer claim.",
           "Accepted Core/Internal/RUM/Trace/Integration/platform/client/backend cells were not repeated."
         ]
       },
-      "remaining_iOS_schemes": [
-        "DatadogSessionReplay"
-      ]
+      "remaining_iOS_schemes": [],
+      "replay_scope_disposition": "Results/S1-replay-scope-disposition.json"
     },
     {
       "owner": "Main execution session / SDK implementer",
@@ -337,23 +339,20 @@
       "decisive_test": "Pending H1 Resource retains its original view; Detail to H2 navigation cannot change H1 start/stop attributes, H2 action stays on H2, and restoration retains only one active occurrence. Assert serialized full/delta output.",
       "environment": "Accepted full RUM and native public-monitor fixture on recorded runtime; freeze missing affected compatibility/platform/API/CI cells on delivery source.",
       "remaining_gates": [
-        "Inherited Replay fixture correction or explicit scoped waiver, then candidate-specific full Replay qualification",
-        "Inherited Trace-document drift, real ticket, current CI and human review",
-        "Separately authorized publication/merge and verified upstream source"
+        "Separately authorized publication/merge and verified upstream source",
+        "Real ticket, current CI and human review"
       ],
       "limits": [
         "Source-less sequential navigation evidence; not a multi-scene router",
         "No backend or real navigation callback claim from writer serialization alone"
       ],
       "rollback": "Revert only E02 predicates and its tests/docs; retain unrelated shared-file tests.",
-      "delivery_head": "1759abb9725b9d34682d44739966fb7736835e94",
+      "delivery_head": "4dec888b99e70285cc855197790c3c2f6d20e426",
       "delivery_checkout": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/deliveries/e02-20260920-jw2fh35s/worktree",
       "packet": "Results/S1-independent-packets.json",
       "body": "Delivery/E02-pr.md",
       "existing_source_tests_identical": true,
-      "remaining_iOS_schemes": [
-        "DatadogSessionReplay"
-      ],
+      "remaining_iOS_schemes": [],
       "compatibility_continuation": {
         "status": "PASS_ALL_EIGHT_HOSTLESS_SUITES",
         "definition": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/deliveries/e02-20260920-jw2fh35s/missing-hostless-n6igdnez/definition.json",
@@ -399,7 +398,7 @@
         "warning_disposition_sha256": "b7a58cdb2ac27606f1927a7341585321b971745e25af84fe70d3bae0af059d4d",
         "limits": [
           "No change to outgoing E02 product history or hard merge dependency.",
-          "Twelve platform cells, full Replay prerequisite, inherited Trace-document drift, real ticket, CI and human review remain.",
+          "Current CI and human review remain; Replay content tests are excluded and the signed documentation checkpoint closes inherited Trace prose drift.",
           "No backend, full repository iOS, release-readiness or blanket sanitizer claim."
         ]
       },
@@ -425,7 +424,9 @@
         "file_lists": 144,
         "post_run_products_sha256": "25af05529140dc4772465b432d82ce14cbb89ba3fcea78d6c9e0a4ea9ed2d1ed",
         "product_files": 933
-      }
+      },
+      "replay_scope_disposition": "Results/S1-replay-scope-disposition.json",
+      "documentation_checkpoint": "Results/S1-documentation-checkpoint.json"
     },
     {
       "owner": "Main execution session / SDK implementer",
@@ -474,9 +475,8 @@
       "decisive_test": "Keep four original foreign ownership reds and four ordinary/100ms expiry controls. Preserve all nine historical bodies/baseline; supersede ninth automatic role explicitly. Actual-handler/native failed-body transfer produces one owning network Error, zero completed Resources, controlled action0/1 with received status; successful/HEAD/204 and manual compatibility remain unchanged.",
       "environment": "Bounded source/design review first, then affected RUM unit and native public-monitor/actual-handler tests on available supported runtime; candidate compatibility/CI after a compatible repair exists.",
       "remaining_gates": [
-        "E03-D: maintainer-owned correction or explicit scoped waiver of the inherited Replay scroll-pocket fixture; original full Replay result remains FAIL",
-        "E03-D: inherited global Trace-document drift, real ticket, required CI and human review, with native diagnostic and QoS limits retained",
-        "Separately authorized publication/merge with signed outgoing history and verified upstream content"
+        "Separately authorized publication/merge with signed outgoing history and verified upstream content",
+        "Real ticket, current CI and human review"
       ],
       "candidate_design": "Single automatic error terminal plus per-dispatch known-owner IDs; action filtering follows expiry and preserves matching Resource/TNS settlement and unknown manual compatibility.",
       "limits": [
@@ -503,7 +503,7 @@
         "E03-B: original9 bodies preserved;15unit and9native baseline cases qualified with invalid attempts retained",
         "E03-C: signed compatible repair, full RUM925/961 and9 native XCTest passes with classified inherited diagnostic; source review confirms metrics preserve fixed expiry and action counters"
       ],
-      "delivery_head": "385583bf42dafd51e148967ea500c2e9bae61646",
+      "delivery_head": "f43d812d85d96bea88b6b3e944d9210f0406405d",
       "delivery_checkout": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/exp214-repair-_6vxqe6i/worktree",
       "packet": "Results/S1-E03-packet.json",
       "body": "Delivery/E03-pr.md",
@@ -511,9 +511,7 @@
         "DatadogRUM/Tests/Instrumentation/Resources/URLSessionRUMResourcesHandlerTests.swift",
         "Datadog/IntegrationUnitTests/Public/NetworkInstrumentationIntegrationTests.swift"
       ],
-      "remaining_iOS_schemes": [
-        "DatadogSessionReplay"
-      ],
+      "remaining_iOS_schemes": [],
       "platform_compilation": {
         "status": "PASS",
         "candidate_revision": "385583bf42dafd51e148967ea500c2e9bae61646",
@@ -545,7 +543,9 @@
           "moment": "Before E03 full compatibility/release-review sign-off; independent S1 packets may continue now."
         }
       ],
-      "replay_topology_diagnostic": "Results/S1-E03-packet.json"
+      "replay_topology_diagnostic": "Results/S1-E03-packet.json",
+      "replay_scope_disposition": "Results/S1-replay-scope-disposition.json",
+      "documentation_checkpoint": "Results/S1-documentation-checkpoint.json"
     },
     {
       "owner": "Main execution session / SDK implementer",
@@ -592,9 +592,8 @@
       "decisive_test": "Long-lived active native view remains the delayed WebView container; inactivity starts its TTL exactly once. Preserve session stop/timeout/restoration, capacity 30, ordering, Replay and out-of-window rejection.",
       "environment": "Accepted full RUM and injected native WebView bridge serialization pair; missing applicable release/CI checks on independent delivery branch.",
       "remaining_gates": [
-        "Full Replay requires its inherited fixture prerequisite and candidate-specific qualification",
-        "Inherited Trace-document drift, real ticket, current CI and human review",
-        "Separately authorized publication/merge and verified upstream source"
+        "Separately authorized publication/merge and verified upstream source",
+        "Real ticket, current CI and human review"
       ],
       "limits": [
         "Native injected messages and writer JSON do not prove actual browser callback or backend ingestion",
@@ -602,14 +601,12 @@
         "No new mandatory numeric microbenchmark campaign"
       ],
       "rollback": "Revert E04 cache/session behavior and tests/docs without losing E02/E03 shared-file assertions.",
-      "delivery_head": "c5f3955ab8fc1539fd1b60e15b71dbd674b26067",
+      "delivery_head": "171a24092dd5a953e428fd5e038f70a3021a9dc2",
       "delivery_checkout": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/deliveries/e04-20260920-9o3thfw6/worktree",
       "packet": "Results/S1-independent-packets.json",
       "body": "Delivery/E04-pr.md",
       "existing_source_tests_identical": true,
-      "remaining_iOS_schemes": [
-        "DatadogSessionReplay"
-      ],
+      "remaining_iOS_schemes": [],
       "lifetime_disposition": {
         "status": "E04_SPECIFIC_CACHE_SESSION_TEARDOWN_AND_RESTORATION_COVERED",
         "path": "Results/S1-E04-lifetime-disposition.json"
@@ -657,7 +654,7 @@
         "warning_disposition_sha256": "821e6a0300ecb74d309aae6e53cae5a08a3315c61e46f7ba13e2e04c5e923870",
         "limits": [
           "No change to outgoing E04 product history or hard merge dependency.",
-          "Twelve platform cells, full Replay prerequisite, inherited Trace-document drift, real ticket, CI and human review remain.",
+          "Current CI and human review remain; Replay content tests are excluded and the signed documentation checkpoint closes inherited Trace prose drift.",
           "No backend, full repository iOS, release-readiness or blanket sanitizer claim."
         ]
       },
@@ -681,7 +678,9 @@
         "file_lists": 144,
         "post_run_products_sha256": "6cc0263cdf1595e2f47a98c3e8d2a8c1cf1d5bd3a03fa3757201380cc4fac2af",
         "product_files": 933
-      }
+      },
+      "replay_scope_disposition": "Results/S1-replay-scope-disposition.json",
+      "documentation_checkpoint": "Results/S1-documentation-checkpoint.json"
     },
     {
       "owner": "Main execution session / SDK implementer",
@@ -730,7 +729,6 @@
       "environment": "Accepted full Trace and native public networking integration pair; audit/fill applicable registered mode, terminal cleanup, backend and platform/CI cells before release claims.",
       "remaining_gates": [
         "E05-BACKEND: two candidate mode cells with complete service/session ownership inventory; exact execution admission pending",
-        "Full Replay requires its inherited fixture prerequisite and E05 qualification",
         "Real ticket, current CI and human review",
         "Separately authorized publication/merge and verified upstream source"
       ],
@@ -745,9 +743,7 @@
       "packet": "Results/S1-independent-packets.json",
       "body": "Delivery/E05-pr.md",
       "existing_source_tests_identical": false,
-      "remaining_iOS_schemes": [
-        "DatadogSessionReplay"
-      ],
+      "remaining_iOS_schemes": [],
       "semantic_release_admission": {
         "path": "Results/S1-E05-release-admission.json",
         "status": "REGISTERED_HOSTLESS_AND_PLATFORMS_QUALIFIED_BACKEND_REPLAY_PENDING"
@@ -860,18 +856,16 @@
         "within_deadline": true
       },
       "backend_qualification": {
-        "status": "PENDING_AFTER_PRESERVED_FIXTURE_FAILURES_AND_BUDGET_STOP",
+        "status": "LOCAL_REAUDIT_PASS_BACKEND_INCONCLUSIVE",
         "owning_result": "Results/S1-E05-release-admission.json",
-        "latest_disposition": {
-          "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/deliveries/e05-20260920-rtzz6gpd/backend-bootstrap-state-correction-omno1wfz/execution-disposition.json",
-          "sha256": "e9611814a7647b1d2db881ac62e05538922ccf0619d3c080558e797c8af348d5"
-        },
-        "native_automatic_attempts": 2,
+        "native_automatic_attempts": 3,
         "backend_passes": 0,
         "registered_launches": 0,
-        "final_corrected_fixture_launches": 0
+        "latest_summary": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/deliveries/e05-20260920-rtzz6gpd/backend-local-id-review-c6tu7rho/backend-only/summary.json",
+        "summary_sha256": "38ca2fc004797c127b32626377378a23799476205e5d3c645d20f0c6050bb30a"
       },
-      "next_action": "Prepare fresh fixed admission from backend-fresh-admission-egmipt4e after documentation checkpoint. Exact final compile-only fixture and helpers reused; refresh native/MCP/protected preflight, then automatic before registered. No old deadline/run identity reuse."
+      "next_action": "Review preserved upload/cleanup boundary before any fresh bounded automatic admission; registered remains unadmitted.",
+      "replay_scope_disposition": "Results/S1-replay-scope-disposition.json"
     },
     {
       "owner": "Main execution session / SDK implementer",
@@ -918,9 +912,8 @@
       "decisive_test": "Real CADisplayLink cannot retain its observer through its target; weak callback forwarding releases correctly and preserves frame delivery. SDK release witness is evaluated after actual pending MessageBus work has drained.",
       "environment": "Recorded ordinary iPad iOS17.5 evidence; independent develop-based Core/RUM tests and relevant conditional-platform compile checks. No Duo hardware dependency.",
       "remaining_gates": [
-        "Inherited Replay fixture correction or explicit scoped waiver, then candidate-specific full Replay qualification",
-        "Inherited Trace-document drift, real ticket, current CI and human review",
-        "Separately authorized publication/merge and verified upstream source"
+        "Separately authorized publication/merge and verified upstream source",
+        "Real ticket, current CI and human review"
       ],
       "limits": [
         "Eight accepted D2 tests plus one corrected D4 witness are focused evidence, not global lifetime clearance",
@@ -929,14 +922,12 @@
         "Leave active S2 composed worktree unchanged"
       ],
       "rollback": "Revert the weak display-link target change and its tests/docs independently.",
-      "delivery_head": "342194900a5310a48f6828c01736ecc812fa1421",
+      "delivery_head": "29c28a01b4abec47a2c0869ca1ad6ade16b3dbd6",
       "delivery_checkout": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/deliveries/dl01-20260920-7n7z3qln/worktree",
       "packet": "Results/S1-independent-packets.json",
       "body": "Delivery/DL01-pr.md",
       "existing_source_tests_identical": true,
-      "remaining_iOS_schemes": [
-        "DatadogSessionReplay"
-      ],
+      "remaining_iOS_schemes": [],
       "compatibility_continuation": {
         "status": "PASS_ALL_SEVEN_HOSTLESS_SUITES",
         "definition": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/deliveries/dl01-20260920-7n7z3qln/missing-hostless-hl8h7q5p/definition.json",
@@ -981,10 +972,12 @@
         "warning_disposition_sha256": "e9881fa58cc511857ce6e647590eb3717ce6b49c9f5bbe051ea42c737dc1019d",
         "limits": [
           "No change to outgoing DL01 product history or hard merge dependency.",
-          "Full Replay, inherited Trace-document drift, real ticket, CI and human review remain.",
+          "Current CI and human review remain; Replay content tests are excluded and the signed documentation checkpoint closes inherited Trace prose drift.",
           "No backend, full repository iOS, release-readiness or blanket sanitizer claim."
         ]
-      }
+      },
+      "replay_scope_disposition": "Results/S1-replay-scope-disposition.json",
+      "documentation_checkpoint": "Results/S1-documentation-checkpoint.json"
     }
   ],
   "checkpoint": {
@@ -993,7 +986,7 @@
     "develop_verified": "62f64d7b655bdc83f3036c4ad81090a270f6202b",
     "EXP213": "complete; signed unit-onlyef9d9732; SDK-on native P03 remains open",
     "local_packets": "Results/S1-H00-E01-packets.json",
-    "next_repair": "Continue E04 eight hostless suites, then its separately admitted Integration/platform checks. E05 finite registered/backend admission follows; shared Replay fixture and delivery prerequisites remain.",
+    "next_repair": "Fresh bounded E05 automatic backend admission after source-reviewed early-cleanup stop; no Replay content work. Current CI, real tickets and human review remain.",
     "independent_local_packets": "Results/S1-independent-packets.json",
     "E03_product_amendment": "2026-09-20T21:53:03.431125+00:00",
     "E03": "2026-09-21T01:25:46.369482+00:00",
@@ -1005,8 +998,9 @@
     "E04_compatibility": "2026-09-21T03:18:51.689000+00:00",
     "E04_platforms": "2026-09-21T03:27:16.488943+00:00",
     "E05_compatibility": "2026-09-21T04:28:01.427156+00:00",
-    "next_execution": "One paired inherited Replay topology diagnostic; E05 backend requires a fresh explicit bounded admission after its preserved stop. Do not repeat accepted suites.",
-    "E05_backend": "2026-09-21T05:58:47.019792+00:00"
+    "next_execution": "E05 upload/cleanup review; finish packet docs and review prerequisites. Session Replay captured-content testing/repair is excluded; no full Replay prerequisite.",
+    "E05_backend": "2026-09-21T05:58:47.019792+00:00",
+    "documentation": "2026-09-21T07:38:08.196508+00:00"
   },
-  "last_updated_at": "2026-09-21T06:52:16.860091+00:00"
+  "last_updated_at": "2026-09-21T07:38:08.196508+00:00"
 }

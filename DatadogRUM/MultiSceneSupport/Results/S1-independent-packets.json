@@ -27,7 +27,7 @@
       "checkout": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/deliveries/dl01-20260920-7n7z3qln/worktree",
       "detached_until_real_ticket": true,
       "baseline_commit": "62f64d7b655bdc83f3036c4ad81090a270f6202b",
-      "delivery_head": "342194900a5310a48f6828c01736ecc812fa1421",
+      "delivery_head": "29c28a01b4abec47a2c0869ca1ad6ade16b3dbd6",
       "qualified_source": "a4be961d14c77c9a7787c9bfb55398784022d0f9",
       "exact_owned_source_test_contents_equal": true,
       "production_paths_and_sha256": {
@@ -38,19 +38,28 @@
       },
       "documentation_paths_and_sha256": {
         "CHANGELOG.md": "4a597baca158e9d8aed62a108121fff21dd5357a3a47847acacb1fffc5396868",
-        "DatadogRUM/RUM_FEATURE.md": "c460ff591b77985e87be40e1dcde5604eead9ab572516425ee0c955b80033e87"
+        "DatadogRUM/RUM_FEATURE.md": "33f301b9a2b4c3808653e010c5b8d6b6be2acfda12a50c8f715390aeab47d7dd",
+        "DatadogLogs/LOGS_FEATURE.md": "d43f81ad1d433f3972e59455b35ac92bcbd52825d6a688223abcef946e4c544b",
+        "DatadogProfiling/PROFILING_FEATURE.md": "dd5eaf2472d41b7cf622140a888c33396d7f1ff6423df2e7a9d9593d603208f7",
+        "DatadogSessionReplay/SESSION_REPLAY_FEATURE.md": "be9ce7c3b4a34ccb48e2da260d9174dc3b0df4bc1862a155d329ffc1ea64f555",
+        "DatadogTrace/TRACE_FEATURE.md": "9644eeb3b5647cad5b1ca442b782df9174ce214bc4a58c42cfff974a0f5b2d63"
       },
       "diff_paths": [
         "CHANGELOG.md",
         "DatadogCore/Tests/Datadog/RUM/RUMVitals/DisplayLinkerTests.swift",
         "DatadogRUM/RUM_FEATURE.md",
-        "DatadogRUM/Sources/RUMVitals/RenderLoop/RenderLoopObserver.swift"
+        "DatadogRUM/Sources/RUMVitals/RenderLoop/RenderLoopObserver.swift",
+        "DatadogLogs/LOGS_FEATURE.md",
+        "DatadogProfiling/PROFILING_FEATURE.md",
+        "DatadogSessionReplay/SESSION_REPLAY_FEATURE.md",
+        "DatadogTrace/TRACE_FEATURE.md"
       ],
       "signatures": [
-        "342194900a5310a48f6828c01736ecc812fa1421 G"
+        "342194900a5310a48f6828c01736ecc812fa1421 G",
+        "29c28a01b4abec47a2c0869ca1ad6ade16b3dbd6 G"
       ],
       "body": "Delivery/DL01-pr.md",
-      "body_sha256": "4c4b01be69dc7dd1e945789e00d7e61aa9c15301626e38c5df0e2edd101d47db",
+      "body_sha256": "6d84c65364ac942ac3b8c93a0c3d7ac81ca7a44f670107843c66588da777c70d",
       "evidence": [
         {
           "kind": "current_affected_suites",
@@ -96,7 +105,7 @@
           "warning_disposition_sha256": "e9881fa58cc511857ce6e647590eb3717ce6b49c9f5bbe051ea42c737dc1019d",
           "limits": [
             "No change to outgoing DL01 product history or hard merge dependency.",
-            "Full Replay, inherited Trace-document drift, real ticket, CI and human review remain.",
+            "Historical pre-scope note (superseded by Results/S1-replay-scope-disposition.json and Results/S1-documentation-checkpoint.json): Full Replay, inherited Trace-document drift, real ticket, CI and human review remain.",
             "No backend, full repository iOS, release-readiness or blanket sanitizer claim."
           ]
         }
@@ -132,11 +141,11 @@
         },
         {
           "scheme": "DatadogSessionReplay",
-          "status": "PENDING_INHERITED_FIXTURE_PREREQUISITE_AND_CANDIDATE_QUALIFICATION",
-          "owner": "SDK implementer / CI",
-          "environment": "Clean legacy Example host on compatible iPhone26.5 runtime; exact candidate, complete inventory and cleanup",
-          "decisive_test": "All discovered cases and parameterized runs pass; only predefined OS skips; source and cleanup stable",
-          "dependency": "Maintainer correction or explicit scoped waiver for the unchanged-develop scroll-pocket failure; E03 evidence does not qualify DL01 Replay."
+          "status": "EXCLUDED_CAPTURE_CONTENT_SUITE_BY_USER_SCOPE",
+          "owner": "SDK implementer",
+          "environment": "Source-matched coexistence and affected other-feature checks; no full Replay execution",
+          "decisive_test": "No SDK-caused host-app crash or stoppage of another SDK feature; captured content is not assessed",
+          "dependency": "Results/S1-replay-scope-disposition.json"
         },
         {
           "scheme": "DatadogLogs",
@@ -343,7 +352,7 @@
           "evidence_root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/deliveries/dl01-20260920-7n7z3qln/platforms-separated-streams"
         }
       ],
-      "new_runtime_admission": "Seven hostless schemes and full Integration completed within their fixed deadlines. No active DL01 native lane; accepted Core/RUM/platform cells were not repeated.",
+      "new_runtime_admission": "Accepted hostless, Integration and platform checks are complete. No runtime lane is active. Replay capture tests are excluded; real ticket, current CI, human review and authorized delivery remain.",
       "public_API": "Source-identical public declarations and bridge/header/build inputs; only internal implementations differ. Verify affected compilation before delivery.",
       "CI": "NOT_RUN_ON_UNPUBLISHED_DELIVERY_HEAD",
       "human_review": "PENDING",
@@ -354,10 +363,11 @@
         "Eight accepted D2 tests plus one corrected D4 witness are focused evidence, not global lifetime clearance",
         "Two-second witness originally included a legitimate five-second queued owner",
         "No claim of continuous memory growth in an initialize-once app",
-        "Leave active S2 composed worktree unchanged"
+        "Leave active S2 composed worktree unchanged",
+        "Session Replay captured-content testing and repair are excluded by user scope2026-09-21. Preserve historical failures without a PASS; host-app crash safety and non-disruption to other SDK features remain required. No fixture correction, waiver or full Replay run is required."
       ],
       "rollback": "Revert the weak display-link target change and its tests/docs independently.",
-      "feature_docs": "AFFECTED_RUM_PASS_GLOBAL_TRACE_DRIFT_INHERITED_FROM_DEVELOP",
+      "feature_docs": "PASS_ALL_FIVE_AND_REGISTRY",
       "platform_runtime": "NOT_INFERRED_FROM_COMPILATION",
       "compatibility_continuation": {
         "status": "PASS_ALL_SEVEN_HOSTLESS_SUITES",
@@ -403,10 +413,12 @@
         "warning_disposition_sha256": "e9881fa58cc511857ce6e647590eb3717ce6b49c9f5bbe051ea42c737dc1019d",
         "limits": [
           "No change to outgoing DL01 product history or hard merge dependency.",
-          "Full Replay, inherited Trace-document drift, real ticket, CI and human review remain.",
-          "No backend, full repository iOS, release-readiness or blanket sanitizer claim."
+          "No backend, full repository iOS, release-readiness or blanket sanitizer claim.",
+          "Real ticket, current CI and human review remain. Session Replay captured-content testing and repair are excluded by user scope2026-09-21. Preserve historical failures without a PASS; host-app crash safety and non-disruption to other SDK features remain required. No fixture correction, waiver or full Replay run is required."
         ]
-      }
+      },
+      "replay_scope_disposition": "Results/S1-replay-scope-disposition.json",
+      "documentation_checkpoint": "Results/S1-documentation-checkpoint.json"
     },
     {
       "id": "E02",
@@ -422,7 +434,7 @@
       "checkout": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/deliveries/e02-20260920-jw2fh35s/worktree",
       "detached_until_real_ticket": true,
       "baseline_commit": "62f64d7b655bdc83f3036c4ad81090a270f6202b",
-      "delivery_head": "1759abb9725b9d34682d44739966fb7736835e94",
+      "delivery_head": "4dec888b99e70285cc855197790c3c2f6d20e426",
       "qualified_source": "96d064c4fa083a7a74c709eb4a626fc17017db01",
       "exact_owned_source_test_contents_equal": true,
       "production_paths_and_sha256": {
@@ -436,7 +448,11 @@
       },
       "documentation_paths_and_sha256": {
         "CHANGELOG.md": "331146bcf2cdc05932cdc7d5e25231acf3dc20dad19c9697bed8d2fd7c5bdebf",
-        "DatadogRUM/RUM_FEATURE.md": "97618847686d11b01c6d068fcf36ed53a71725a809b086431990215c97e7cc6f"
+        "DatadogRUM/RUM_FEATURE.md": "04f4122ed2c9e4a9661fcef8eccb1b9cd0b87a94cab1ca4fa17b0a06abb4af2e",
+        "DatadogLogs/LOGS_FEATURE.md": "deef915c8f3aed80593e67426a79f7dd63ea76e57df6c9227595d9be73992ffe",
+        "DatadogProfiling/PROFILING_FEATURE.md": "c4d1f128d94e0b0183dbcd46bb08067a28d1f3cfd6735e629b2931c876b74aba",
+        "DatadogSessionReplay/SESSION_REPLAY_FEATURE.md": "6e4cd287f0efc5384bdedecc584f96ad09a93876baae454a32efdc2f707d84cb",
+        "DatadogTrace/TRACE_FEATURE.md": "e27e51c5ff45b8600702c050595e7ddb042da05a6c2cf2682621b8fe2d91e337"
       },
       "diff_paths": [
         "CHANGELOG.md",
@@ -445,13 +461,18 @@
         "DatadogRUM/RUM_FEATURE.md",
         "DatadogRUM/Sources/RUMMonitor/Scopes/RUMViewScope.swift",
         "DatadogRUM/Tests/RUMMonitor/Scopes/RUMApplicationScopeTests.swift",
-        "DatadogRUM/Tests/RUMMonitor/Scopes/RUMSessionScopeTests.swift"
+        "DatadogRUM/Tests/RUMMonitor/Scopes/RUMSessionScopeTests.swift",
+        "DatadogLogs/LOGS_FEATURE.md",
+        "DatadogProfiling/PROFILING_FEATURE.md",
+        "DatadogSessionReplay/SESSION_REPLAY_FEATURE.md",
+        "DatadogTrace/TRACE_FEATURE.md"
       ],
       "signatures": [
-        "1759abb9725b9d34682d44739966fb7736835e94 G"
+        "1759abb9725b9d34682d44739966fb7736835e94 G",
+        "4dec888b99e70285cc855197790c3c2f6d20e426 G"
       ],
       "body": "Delivery/E02-pr.md",
-      "body_sha256": "2020d99437ad1f0877e9292711a00c637055c314a32ab705470cb9b376dba325",
+      "body_sha256": "6d33b057e06e8c3fd79d44d8b6f7ac0ec6ebca9ef6d7e187d2abe7eaf3b470ab",
       "evidence": [
         {
           "kind": "qualified_source_rebinding",
@@ -491,7 +512,7 @@
           "warning_disposition_sha256": "b7a58cdb2ac27606f1927a7341585321b971745e25af84fe70d3bae0af059d4d",
           "limits": [
             "No change to outgoing E02 product history or hard merge dependency.",
-            "Twelve platform cells, full Replay prerequisite, inherited Trace-document drift, real ticket, CI and human review remain.",
+            "Historical pre-scope note (superseded by Results/S1-replay-scope-disposition.json and Results/S1-documentation-checkpoint.json): Twelve platform cells, full Replay prerequisite, inherited Trace-document drift, real ticket, CI and human review remain.",
             "No backend, full repository iOS, release-readiness or blanket sanitizer claim."
           ]
         },
@@ -554,11 +575,11 @@
         },
         {
           "scheme": "DatadogSessionReplay",
-          "status": "PENDING_INHERITED_FIXTURE_PREREQUISITE_AND_CANDIDATE_QUALIFICATION",
-          "owner": "SDK implementer / CI",
-          "environment": "Clean legacy Example host on compatible iPhone26.5 runtime; exact candidate, full inventory and cleanup",
-          "decisive_test": "All discovered cases and parameterized runs pass; only predefined OS skips; source and cleanup stable",
-          "dependency": "Maintainer correction or explicit scoped waiver for the unchanged-develop scroll-pocket failure; E03 evidence is not an E02 full-Replay pass."
+          "status": "EXCLUDED_CAPTURE_CONTENT_SUITE_BY_USER_SCOPE",
+          "owner": "SDK implementer",
+          "environment": "Source-matched coexistence and affected other-feature checks; no full Replay execution",
+          "decisive_test": "No SDK-caused host-app crash or stoppage of another SDK feature; captured content is not assessed",
+          "dependency": "Results/S1-replay-scope-disposition.json"
         },
         {
           "scheme": "DatadogLogs",
@@ -789,7 +810,7 @@
           "source_audit_sha256": "a5aa1ff73b4d4423a84cb8f726aa82abba5be1f02d69598be4b950e34b8a61b7"
         }
       ],
-      "new_runtime_admission": "Eight hostless schemes, Integration280/280 and twelve platform cells are complete. No E02 native/build lane remains active; full Replay and human delivery prerequisites remain.",
+      "new_runtime_admission": "Accepted hostless, Integration and platform checks are complete. No runtime lane is active. Replay capture tests are excluded; real ticket, current CI, human review and authorized delivery remain.",
       "public_API": "Source-identical public declarations and bridge/header/build inputs; only internal implementations differ. Verify affected compilation before delivery.",
       "CI": "NOT_RUN_ON_UNPUBLISHED_DELIVERY_HEAD",
       "human_review": "PENDING",
@@ -798,10 +819,11 @@
       "upstream_merge_sha": null,
       "limits": [
         "Source-less sequential navigation evidence; not a multi-scene router",
-        "No backend or real navigation callback claim from writer serialization alone"
+        "No backend or real navigation callback claim from writer serialization alone",
+        "Session Replay captured-content testing and repair are excluded by user scope2026-09-21. Preserve historical failures without a PASS; host-app crash safety and non-disruption to other SDK features remain required. No fixture correction, waiver or full Replay run is required."
       ],
       "rollback": "Revert only E02 predicates and its tests/docs; retain unrelated shared-file tests.",
-      "feature_docs": "AFFECTED_RUM_PASS_GLOBAL_TRACE_DRIFT_INHERITED_FROM_DEVELOP",
+      "feature_docs": "PASS_ALL_FIVE_AND_REGISTRY",
       "compatibility_continuation": {
         "status": "PASS_ALL_EIGHT_HOSTLESS_SUITES",
         "definition": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/deliveries/e02-20260920-jw2fh35s/missing-hostless-n6igdnez/definition.json",
@@ -847,8 +869,8 @@
         "warning_disposition_sha256": "b7a58cdb2ac27606f1927a7341585321b971745e25af84fe70d3bae0af059d4d",
         "limits": [
           "No change to outgoing E02 product history or hard merge dependency.",
-          "Twelve platform cells, full Replay prerequisite, inherited Trace-document drift, real ticket, CI and human review remain.",
-          "No backend, full repository iOS, release-readiness or blanket sanitizer claim."
+          "No backend, full repository iOS, release-readiness or blanket sanitizer claim.",
+          "Real ticket, current CI and human review remain. Session Replay captured-content testing and repair are excluded by user scope2026-09-21. Preserve historical failures without a PASS; host-app crash safety and non-disruption to other SDK features remain required. No fixture correction, waiver or full Replay run is required."
         ]
       },
       "platform_runtime": {
@@ -873,7 +895,9 @@
         "file_lists": 144,
         "post_run_products_sha256": "25af05529140dc4772465b432d82ce14cbb89ba3fcea78d6c9e0a4ea9ed2d1ed",
         "product_files": 933
-      }
+      },
+      "replay_scope_disposition": "Results/S1-replay-scope-disposition.json",
+      "documentation_checkpoint": "Results/S1-documentation-checkpoint.json"
     },
     {
       "id": "E04",
@@ -889,7 +913,7 @@
       "checkout": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/deliveries/e04-20260920-9o3thfw6/worktree",
       "detached_until_real_ticket": true,
       "baseline_commit": "62f64d7b655bdc83f3036c4ad81090a270f6202b",
-      "delivery_head": "c5f3955ab8fc1539fd1b60e15b71dbd674b26067",
+      "delivery_head": "171a24092dd5a953e428fd5e038f70a3021a9dc2",
       "qualified_source": "a3d34069cccbe35cac0fd2bc1fb456e64b1f4c43",
       "exact_owned_source_test_contents_equal": true,
       "production_paths_and_sha256": {
@@ -903,7 +927,11 @@
       },
       "documentation_paths_and_sha256": {
         "CHANGELOG.md": "f20f47e36970fe07a185105768e8737bb5298f75a793892da99c6e14d5f93774",
-        "DatadogRUM/RUM_FEATURE.md": "d94c178d1920903b1b08da15ff63640afe21f8187ac89ee4541aa1e2014160e4"
+        "DatadogRUM/RUM_FEATURE.md": "cd0340981847900fce56ff7632893ff8a34eee3b346f50eb0f7c885ed67d8f89",
+        "DatadogLogs/LOGS_FEATURE.md": "a59d6e2d02f3531eb9f3a634928a2a40b94ab93c8924b626c0a7cf57fe4ee4fd",
+        "DatadogProfiling/PROFILING_FEATURE.md": "5200bea044571559d9f5b7fb1cdb1d9df4e41f1a0d36a95a7d1916bcd4077c2e",
+        "DatadogSessionReplay/SESSION_REPLAY_FEATURE.md": "b9d11a6ba17dd6a153bac51355652f7e0c39f402b91ab1e179eb24b0941e6ecc",
+        "DatadogTrace/TRACE_FEATURE.md": "678e8b767fac89a404a9397d910a6727cf8f390cce656e897ba5d940849aa28b"
       },
       "diff_paths": [
         "CHANGELOG.md",
@@ -912,13 +940,18 @@
         "DatadogRUM/Sources/RUMMonitor/Scopes/RUMSessionScope.swift",
         "DatadogRUM/Sources/RUMMonitor/Scopes/Utils/ViewCache.swift",
         "DatadogRUM/Tests/Integrations/WebViewEventReceiverTests.swift",
-        "DatadogRUM/Tests/RUMMonitor/Scopes/RUMSessionScopeTests.swift"
+        "DatadogRUM/Tests/RUMMonitor/Scopes/RUMSessionScopeTests.swift",
+        "DatadogLogs/LOGS_FEATURE.md",
+        "DatadogProfiling/PROFILING_FEATURE.md",
+        "DatadogSessionReplay/SESSION_REPLAY_FEATURE.md",
+        "DatadogTrace/TRACE_FEATURE.md"
       ],
       "signatures": [
-        "c5f3955ab8fc1539fd1b60e15b71dbd674b26067 G"
+        "c5f3955ab8fc1539fd1b60e15b71dbd674b26067 G",
+        "171a24092dd5a953e428fd5e038f70a3021a9dc2 G"
       ],
       "body": "Delivery/E04-pr.md",
-      "body_sha256": "99ceaf622beb10bbb9673b8accfcf527e78f7b6bc2ce47142b596861317068f1",
+      "body_sha256": "85986e3a679237003df902e7564e8dce5cc04dc97c3067735060a6e6030d7ee8",
       "evidence": [
         {
           "kind": "qualified_source_rebinding",
@@ -980,10 +1013,11 @@
         },
         {
           "scheme": "DatadogSessionReplay",
-          "status": "MISSING_FULL_SUITE",
-          "owner": "SDK implementer / CI",
-          "environment": "Supported available iOS simulator; frozen candidate and complete test inventory",
-          "decisive_test": "All discovered cases and parameterized runs pass; only predefined OS skips; source and cleanup stable"
+          "status": "EXCLUDED_CAPTURE_CONTENT_SUITE_BY_USER_SCOPE",
+          "owner": "SDK implementer",
+          "environment": "Source-matched coexistence and affected other-feature checks; no full Replay execution",
+          "decisive_test": "No SDK-caused host-app crash or stoppage of another SDK feature; captured content is not assessed",
+          "dependency": "Results/S1-replay-scope-disposition.json"
         },
         {
           "scheme": "DatadogLogs",
@@ -1213,7 +1247,7 @@
           "summary_sha256": "e2a3276c8e15f2716a20a97a1658c6bc5d2f504c2f1a3457cf341c667dbd262d"
         }
       ],
-      "new_runtime_admission": "Eight hostless schemes, Integration279/279 and all twelve platform builds are complete. No E04 native/build lane remains active; full Replay prerequisite/candidate qualification and human delivery checks remain.",
+      "new_runtime_admission": "Accepted hostless, Integration and platform checks are complete. No runtime lane is active. Replay capture tests are excluded; real ticket, current CI, human review and authorized delivery remain.",
       "public_API": "Source-identical public declarations and bridge/header/build inputs; only internal implementations differ. Verify affected compilation before delivery.",
       "CI": "NOT_RUN_ON_UNPUBLISHED_DELIVERY_HEAD",
       "human_review": "PENDING",
@@ -1223,10 +1257,11 @@
       "limits": [
         "Native injected messages and writer JSON do not prove actual browser callback or backend ingestion",
         "EXP-212 composition does not replace independent E04 release qualification",
-        "No new mandatory numeric microbenchmark campaign"
+        "No new mandatory numeric microbenchmark campaign",
+        "Session Replay captured-content testing and repair are excluded by user scope2026-09-21. Preserve historical failures without a PASS; host-app crash safety and non-disruption to other SDK features remain required. No fixture correction, waiver or full Replay run is required."
       ],
       "rollback": "Revert E04 cache/session behavior and tests/docs without losing E02/E03 shared-file assertions.",
-      "feature_docs": "AFFECTED_RUM_PASS_GLOBAL_TRACE_DRIFT_INHERITED_FROM_DEVELOP",
+      "feature_docs": "PASS_ALL_FIVE_AND_REGISTRY",
       "additional_finite_admission_required": [],
       "lifetime_disposition": {
         "status": "E04_SPECIFIC_CACHE_SESSION_TEARDOWN_AND_RESTORATION_COVERED",
@@ -1288,8 +1323,8 @@
         "warning_disposition_sha256": "821e6a0300ecb74d309aae6e53cae5a08a3315c61e46f7ba13e2e04c5e923870",
         "limits": [
           "No change to outgoing E04 product history or hard merge dependency.",
-          "Twelve platform cells, full Replay prerequisite, inherited Trace-document drift, real ticket, CI and human review remain.",
-          "No backend, full repository iOS, release-readiness or blanket sanitizer claim."
+          "No backend, full repository iOS, release-readiness or blanket sanitizer claim.",
+          "Real ticket, current CI and human review remain. Session Replay captured-content testing and repair are excluded by user scope2026-09-21. Preserve historical failures without a PASS; host-app crash safety and non-disruption to other SDK features remain required. No fixture correction, waiver or full Replay run is required."
         ]
       },
       "platform_runtime": {
@@ -1312,7 +1347,9 @@
         "file_lists": 144,
         "post_run_products_sha256": "6cc0263cdf1595e2f47a98c3e8d2a8c1cf1d5bd3a03fa3757201380cc4fac2af",
         "product_files": 933
-      }
+      },
+      "replay_scope_disposition": "Results/S1-replay-scope-disposition.json",
+      "documentation_checkpoint": "Results/S1-documentation-checkpoint.json"
     },
     {
       "id": "E05",
@@ -1364,7 +1401,7 @@
         "9175dd7af56ddd6cc9bf66e835e4ef519f2d124c G"
       ],
       "body": "Delivery/E05-pr.md",
-      "body_sha256": "a8bfc4de53dc39fdbb8d2fd1a75bead2e2d512359c96a4172381a44f76693ed8",
+      "body_sha256": "761f92c08e55e5e1d9c28ab4467491adc5b64822a9097bec6b9bf7985332ea3e",
       "evidence": [
         {
           "kind": "qualified_source_rebinding",
@@ -1447,10 +1484,11 @@
         },
         {
           "scheme": "DatadogSessionReplay",
-          "status": "MISSING_FULL_SUITE",
-          "owner": "SDK implementer / CI",
-          "environment": "Supported available iOS simulator; frozen candidate and complete test inventory",
-          "decisive_test": "All discovered cases and parameterized runs pass; only predefined OS skips; source and cleanup stable"
+          "status": "EXCLUDED_CAPTURE_CONTENT_SUITE_BY_USER_SCOPE",
+          "owner": "SDK implementer",
+          "environment": "Source-matched coexistence and affected other-feature checks; no full Replay execution",
+          "decisive_test": "No SDK-caused host-app crash or stoppage of another SDK feature; captured content is not assessed",
+          "dependency": "Results/S1-replay-scope-disposition.json"
         },
         {
           "scheme": "DatadogLogs",
@@ -1734,7 +1772,7 @@
           }
         }
       ],
-      "new_runtime_admission": "Corrected Core passes; seven never-executed hostless suites continue under the original05:44:34UTC deadline. Platform export is prepared with a reviewed Trace-specific macOS slice; execution admission pending. Backend and Replay remain unadmitted.",
+      "new_runtime_admission": "Hostless, registered Integration and platform checks are complete. The automatic native attempt remains INVALID; its separately corrected local re-audit passes, but backend-only continuation is INCONCLUSIVE after count3 instead of7. No native/backend lane is active and no registered run is admitted.",
       "public_API": "Source-identical public declarations and bridge/header/build inputs; only internal implementations differ. Verify affected compilation before delivery.",
       "CI": "NOT_RUN_ON_UNPUBLISHED_DELIVERY_HEAD",
       "human_review": "PENDING",
@@ -1744,7 +1782,8 @@
       "limits": [
         "Do not expand into PR2683 partial-carrier/header-merge policy",
         "Native qualification used automatic Trace with automatic RUM Resources disabled",
-        "Immediate unbind and backend ownership are not implied by the qualified automatic/registered native results."
+        "Immediate unbind and backend ownership are not implied by the qualified automatic/registered native results.",
+        "Session Replay captured-content testing and repair are excluded by user scope2026-09-21. Preserve historical failures without a PASS; host-app crash safety and non-disruption to other SDK features remain required. No fixture correction, waiver or full Replay run is required."
       ],
       "rollback": "Revert E05 ownership capture/write behavior and its tests/docs without reverting E01 networking.",
       "feature_docs": "PASS_ALL_FIVE_DOCUMENTS_AND_REGISTRY",
@@ -1864,8 +1903,9 @@
         "cleanup": "PASS",
         "within_deadline": true
       },
-      "next_execution": "Implement and review the finite three-request backend fixture and strict inventories for two candidate mode cells. Shared Replay diagnostic is separately defined; no backend or Replay execution admission yet."
+      "next_execution": "Independent review of the preserved backend ingestion stop; no retry, fresh native execution or registered admission is implied.",
+      "replay_scope_disposition": "Results/S1-replay-scope-disposition.json"
     }
   ],
-  "updated_at": "2026-09-21T04:28:01.427156+00:00"
+  "updated_at": "2026-09-21T07:38:08.196508+00:00"
 }

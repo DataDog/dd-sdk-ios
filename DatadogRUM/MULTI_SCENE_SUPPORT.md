@@ -69,8 +69,11 @@ Status: approved for multi-window iPad and iPhone applications.
 4. Process-wide long tasks, hangs, memory warnings, and crashes emit once on the
    process representative. Shared process/render-loop vitals are not duplicated
    as independent per-window measurements.
-5. Session Replay needs crash-free coexistence only. Scene-correct recording,
-   touch routing, and replay context are out of scope for this project.
+5. Session Replay must not crash the host app or stop other SDK features.
+   Testing or repairing captured content, including scene-correct recording,
+   touch routing, geometry and replay context, is out of scope. Full Replay
+   capture-suite failures are not release blockers; preserve their evidence
+   without fixing the captured content.
 6. iPhone Duo on iOS 27.1 is the release target. Semantic multi-scene support
    before iOS 27 is not required, while normal apps on every supported deployment
    target must remain compatible.
@@ -211,8 +214,10 @@ Duo27.1 matrix; no SDK or review checkpoint alone establishes them all.
   separate project.
 - Window Execution Context serialization and backend visualization remain
   follow-up work. Preserve internal ownership without an interim wire format.
-- Session Replay must coexist without SDK crashes; scene-correct replay is out
-  of scope.
+- Session Replay must coexist without SDK crashes or disruption to other SDK
+  features. Captured-content correctness and its full test suite are out of scope;
+  [the scope disposition](MultiSceneSupport/Results/S1-replay-scope-disposition.json)
+  removes the inherited content-fixture prerequisite without declaring it passed.
 - Earlier-system semantic multi-scene support is optional where it would
   compromise the iOS27+ solution. Ordinary supported apps, including iOS15,
   remain a compatibility requirement.

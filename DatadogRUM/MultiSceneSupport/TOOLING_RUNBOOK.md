@@ -431,6 +431,18 @@ write as an action-duration defect. In EXP214, deadlines use actionStartTime;
 lastActivityTime has no reader and metrics do not change counters. Reuse the
 qualified expiry control instead of adding an unsupported repair or run.
 
+## Session Replay acceptance scope
+
+The user's2026-09-21 clarification excludes testing and repairing captured content.
+Do not run the full Replay capture suite, continue private scroll-pocket/topology
+diagnostics, or require a content-fixture repair/waiver before release. Preserve
+prior FAIL/INVALID artifacts without relabeling them PASS. Only SDK-caused host-app
+crashes and disruption to other SDK features justify a narrowly scoped check.
+Reuse exact-source coexistence and affected-feature evidence. The
+[scope disposition](Results/S1-replay-scope-disposition.json) records applicability;
+[the compatibility matrix](FINAL_COMPATIBILITY.md) selects ten non-Replay schemes.
+Do not call that selection a full `make test-ios-all` result.
+
 ## Documentation reading and update workflow
 
 [.continue-here.md](../../.continue-here.md) is the sole restart cursor.
@@ -2757,3 +2769,21 @@ and retain nonce, selector, device, runtime, timestamp and content checks. A par
 correction re-audits saved bytes without rerunning a valid native arm. Generated
 private Swift fixture type names can differ across builds; retain their raw
 difference and source/demangled evidence instead of silently normalizing a pass.
+
+## Local span identity and stopped-run backend continuation
+
+Local SpanEvent IDs use canonical unpadded lowercase hexadecimal; root parent is
+the string `0`. Normalize numeric low/span/high IDs for equality while retaining
+all128 trace bits, and keep backend decimal decoding independent. Reject padding,
+wrong numeric identity, nonzero parents and foreign ownership. Bind a corrected
+oracle to immutable native bytes and preserve the original INVALID result.
+
+A local re-audit is not backend acceptance. A separately frozen backend-only
+continuation may query the exact original run with fresh request IDs and unchanged
+source/build/decoder fingerprints, under a fixed deadline. Retain raw responses
+before interpreting them, require complete service/session inventories, and stop
+on the first missing or mismatched inventory without retry. E05's retained local
+evidence passed, but its continuation stopped at3 RUM rows instead of7; original
+cleanup followed the earlier local assertion failure. Review that upload boundary
+before admitting any new native run. [The E05 record](Results/S1-E05-release-admission.json)
+owns exact artifacts and any later disposition; no existing admission is extended.

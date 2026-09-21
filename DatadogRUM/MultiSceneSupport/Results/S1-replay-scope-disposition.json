@@ -1,0 +1,83 @@
+{
+  "schema_version": 1,
+  "decision": "USER_SCOPE_CORRECTION",
+  "recorded_at": "2026-09-21T07:33:20.889846+00:00",
+  "authority": "User instruction2026-09-21: stop testing Session Replay itself; its changes are only to avoid host-app crashes or disruption to other SDK features; do not fix incorrect captured content.",
+  "status": "CONTENT_ONLY_REQUIREMENTS_REMOVED_NOT_PASSED",
+  "applies_to": [
+    "S1",
+    "S2",
+    "S3"
+  ],
+  "required": [
+    "No SDK-caused host-app crash attributable to Replay coexistence",
+    "No Replay-caused loss or stoppage of other SDK features; reuse exact-source accepted evidence and investigate concrete shared-path regressions"
+  ],
+  "excluded": [
+    "Full Session Replay capture-correctness suites",
+    "Recording, geometry, pixel, private scroll-pocket or scene-correct content repair",
+    "Further paired Replay topology diagnostics or fixture correction/waiver prerequisite"
+  ],
+  "execution": "No new Replay test or content repair is admitted. A concrete crash or other-feature disruption may justify a narrowly defined regression check under existing gates. Do not run the full capture suite for release sign-off.",
+  "gate_effect": "No release gate automatically closes, no original FAIL becomes PASS, and no full repository test-ios-all result is claimed. F05 retains its accepted crash-coexistence evidence and candidate/source applicability boundaries.",
+  "inherited_fixture": {
+    "owning_packet": "Results/S1-E03-packet.json",
+    "result": "FAIL preserved on candidate and unchanged develop; paired raw topology remains DIFFERENT_OR_UNRESOLVED_TOPOLOGY_STOP_FOR_REVIEW",
+    "disposition": "Out of scope for project release; no fixture correction or maintainer waiver required.",
+    "diagnostic_crash": "The broad private-KVC observer crashed the diagnostic fixture; preserved as a tooling defect, not an established SDK host-app crash."
+  },
+  "candidate_source_audit": [
+    {
+      "unit": "H00",
+      "checkout": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/deliveries/s1-initial-20260920-qqyq49od/H00",
+      "head": "8d7e429b0242c5b384417862e2418e2dbdffe500",
+      "replay_production_diff_paths": [],
+      "conclusion": "No Replay capture implementation change in this independent packet; changed shared paths retain their own crash/lifetime/reentrancy and other-feature compatibility requirements. No new Replay runtime qualification inferred."
+    },
+    {
+      "unit": "E01",
+      "checkout": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/deliveries/s1-initial-20260920-qqyq49od/E01",
+      "head": "ab71c3a6fb77307081f58b67d86d096d0340ce5f",
+      "replay_production_diff_paths": [],
+      "conclusion": "No Replay capture implementation change in this independent packet; changed shared paths retain their own crash/lifetime/reentrancy and other-feature compatibility requirements. No new Replay runtime qualification inferred."
+    },
+    {
+      "unit": "E03",
+      "checkout": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/exp214-repair-_6vxqe6i/worktree",
+      "head": "f43d812d85d96bea88b6b3e944d9210f0406405d",
+      "replay_production_diff_paths": [],
+      "conclusion": "No Replay capture implementation change in this independent packet; changed shared paths retain their own crash/lifetime/reentrancy and other-feature compatibility requirements. No new Replay runtime qualification inferred."
+    },
+    {
+      "unit": "DL01",
+      "checkout": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/deliveries/dl01-20260920-7n7z3qln/worktree",
+      "head": "29c28a01b4abec47a2c0869ca1ad6ade16b3dbd6",
+      "replay_production_diff_paths": [],
+      "conclusion": "No Replay capture implementation change in this independent packet; changed shared paths retain their own crash/lifetime/reentrancy and other-feature compatibility requirements. No new Replay runtime qualification inferred."
+    },
+    {
+      "unit": "E02",
+      "checkout": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/deliveries/e02-20260920-jw2fh35s/worktree",
+      "head": "4dec888b99e70285cc855197790c3c2f6d20e426",
+      "replay_production_diff_paths": [],
+      "conclusion": "No Replay capture implementation change in this independent packet; changed shared paths retain their own crash/lifetime/reentrancy and other-feature compatibility requirements. No new Replay runtime qualification inferred."
+    },
+    {
+      "unit": "E04",
+      "checkout": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/deliveries/e04-20260920-9o3thfw6/worktree",
+      "head": "171a24092dd5a953e428fd5e038f70a3021a9dc2",
+      "replay_production_diff_paths": [],
+      "conclusion": "No Replay capture implementation change in this independent packet; changed shared paths retain their own crash/lifetime/reentrancy and other-feature compatibility requirements. No new Replay runtime qualification inferred."
+    },
+    {
+      "unit": "E05",
+      "checkout": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/deliveries/e05-20260920-rtzz6gpd/worktree",
+      "head": "399b01ea0e059186a139921a01a18bff7997648f",
+      "replay_production_diff_paths": [],
+      "conclusion": "No Replay capture implementation change in this independent packet; changed shared paths retain their own crash/lifetime/reentrancy and other-feature compatibility requirements. No new Replay runtime qualification inferred."
+    }
+  ],
+  "runtime_tests_added": 0,
+  "sdk_changes": 0,
+  "gate_closures": 0
+}

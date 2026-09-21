@@ -48,30 +48,36 @@
     "finished_at": 1789946683.5639281
   },
   "documentation_commit": {
-    "parent": "562cf74dde410767caf95561e68f2f021feb471c",
+    "parent": "385583bf42dafd51e148967ea500c2e9bae61646",
     "paths": [
-      "CHANGELOG.md",
-      "DatadogRUM/RUM_FEATURE.md"
+      "DatadogLogs/LOGS_FEATURE.md",
+      "DatadogProfiling/PROFILING_FEATURE.md",
+      "DatadogRUM/RUM_FEATURE.md",
+      "DatadogSessionReplay/SESSION_REPLAY_FEATURE.md",
+      "DatadogTrace/TRACE_FEATURE.md"
     ],
-    "message": "Document failed-transfer errors and Resource action ownership",
+    "message": "Correct feature documentation examples and application-state timing",
     "attempts": [
       {
         "kind": "signed",
-        "pid": 88640,
+        "pid": 83604,
         "returncode": 0,
         "timeout": false,
-        "log_sha256": "38b7f4ca1af8dc6a2877ecbcfd723be0595d6c1f2ba8b2d344ed48a83774c38a"
+        "log_sha256": "2d6321513f2eb2d3a861660c450f7a53965f4aa61c4ae13668c1606cd006891d"
       }
     ],
-    "started_at": 1789946911.1491609,
-    "commit": "385583bf42dafd51e148967ea500c2e9bae61646",
+    "started_at": 1789975207.55515,
+    "commit": "f43d812d85d96bea88b6b3e944d9210f0406405d",
     "signature": "G",
     "committed_paths": [
-      "CHANGELOG.md",
-      "DatadogRUM/RUM_FEATURE.md"
+      "DatadogLogs/LOGS_FEATURE.md",
+      "DatadogProfiling/PROFILING_FEATURE.md",
+      "DatadogRUM/RUM_FEATURE.md",
+      "DatadogSessionReplay/SESSION_REPLAY_FEATURE.md",
+      "DatadogTrace/TRACE_FEATURE.md"
     ],
     "protected_unchanged": true,
-    "finished_at": 1789946911.595692
+    "finished_at": 1789975210.032657
   },
   "qualification": {
     "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/exp214-repair-_6vxqe6i/repair-qualification/qualification.json",
@@ -88,12 +94,12 @@
     "complete_release_qualification": false
   },
   "documentation": {
-    "commit": "385583bf42dafd51e148967ea500c2e9bae61646",
+    "commit": "f43d812d85d96bea88b6b3e944d9210f0406405d",
     "signature": "G",
-    "verification": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/exp214-repair-_6vxqe6i/documentation-commit/verification.json",
+    "verification": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/deliveries/scope-backend-checkpoint-iflc9h9n/documentation-verification.json",
     "affected_RUM_and_registry": "PASS",
-    "global_check": "FAIL_INHERITED_TRACE_DOCUMENT_DRIFT",
-    "verification_parent": "562cf74dde410767caf95561e68f2f021feb471c"
+    "global_check": "PASS_ALL_FIVE_AND_REGISTRY",
+    "verification_parent": "385583bf42dafd51e148967ea500c2e9bae61646"
   },
   "diff_paths": [
     "DatadogRUM/Sources/RUMMonitor/RUMCommand.swift",
@@ -107,17 +113,18 @@
     "DatadogRUM/Tests/Instrumentation/Resources/URLSessionRUMResourcesHandlerTests.swift",
     "Datadog/IntegrationUnitTests/Public/NetworkInstrumentationIntegrationTests.swift",
     "CHANGELOG.md",
-    "DatadogRUM/RUM_FEATURE.md"
+    "DatadogRUM/RUM_FEATURE.md",
+    "DatadogLogs/LOGS_FEATURE.md",
+    "DatadogProfiling/PROFILING_FEATURE.md",
+    "DatadogSessionReplay/SESSION_REPLAY_FEATURE.md",
+    "DatadogTrace/TRACE_FEATURE.md"
   ],
   "hard_merge_dependencies": [],
   "remaining_gates": [
-    "E03-D: maintainer-owned correction or explicit scoped waiver of the inherited Replay scroll-pocket fixture; original full Replay result remains FAIL",
-    "E03-D: inherited global Trace-document drift, real ticket, required CI and human review, with native diagnostic and QoS limits retained",
-    "Separately authorized publication/merge with signed outgoing history and verified upstream content"
+    "E03-D: real ticket, current CI and human review with native diagnostic and QoS limits retained",
+    "Signed outgoing history and separately authorized publication/merge"
   ],
-  "remaining_iOS_schemes": [
-    "DatadogSessionReplay"
-  ],
+  "remaining_iOS_schemes": [],
   "remaining_platform_cells": 0,
   "limits": [
     "Original two-file dirty reproducer is unchanged; the signed repair lives in a separate checkout",
@@ -151,7 +158,7 @@
       "file_lists": 144
     }
   },
-  "last_updated_at": "2026-09-21T06:52:16.857416+00:00",
+  "last_updated_at": "2026-09-21T07:38:08.196508+00:00",
   "ios_core": {
     "status": "PASS",
     "cases": 819,
@@ -168,7 +175,8 @@
   "ios_compatibility": {
     "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/exp214-repair-_6vxqe6i/ios-compatibility-summary.json",
     "sha256": "aad0e4536d68df98de2828982b5026a821e1cc9365aa9219cafef0d10b2d1f14",
-    "status": "ELEVEN_SCHEMES_EXECUTED_STRICT_REPLAY_QUALIFICATION_OPEN"
+    "status": "NON_REPLAY_CHECKS_QUALIFIED_CONTENT_FAILURE_PRESERVED_OUT_OF_SCOPE",
+    "original_status": "ELEVEN_SCHEMES_EXECUTED_STRICT_REPLAY_QUALIFICATION_OPEN"
   },
   "review_followups": [
     {
@@ -177,10 +185,11 @@
         "@DataDog/rum-mobile",
         "@DataDog/rum-mobile-ios"
       ],
-      "dependency": "Maintainer-owned correction or explicit waiver of the inherited private _UIScrollPocket fixture requirement; preserve candidate/develop results.",
-      "decisive_test": "After an admitted fixture correction, complete exact full Replay inventory and original assertions on the corrected clean hosted environment; alternatively record explicit scoped maintainer waiver. No automatic skip or threshold relaxation.",
-      "environment": "Xcode27.1, regular iPhone26.5, frozen candidate source and dependency/binary identities; clean Example host. SDK27/runtime27 needs a separately admitted scene-compatible host.",
-      "moment": "Before E03 full compatibility/release-review sign-off; independent S1 packets may continue now."
+      "dependency": "Results/S1-replay-scope-disposition.json",
+      "decisive_test": "No further Replay capture test or repair; preserve original failures. Only crash safety and other-feature non-disruption remain in scope.",
+      "environment": "No new runtime admitted",
+      "moment": "No release prerequisite",
+      "status": "REMOVED_BY_USER_SCOPE_NOT_PASSED"
     }
   ],
   "replay_topology_diagnostic": {
@@ -251,6 +260,8 @@
     "device_restored": "Shutdown",
     "original_deadlines_met": true,
     "full_replay_qualified": false,
-    "next": "Maintainer fixture correction or explicit scoped waiver before full Replay sign-off; no diagnostic rerun. Continue independent E05 backend qualification."
-  }
+    "next": "No further Replay diagnostic or content repair. Original raw comparison remains unresolved and outside release scope by user instruction; Results/S1-replay-scope-disposition.json"
+  },
+  "documentation_checkpoint": "Results/S1-documentation-checkpoint.json",
+  "replay_scope_disposition": "Results/S1-replay-scope-disposition.json"
 }

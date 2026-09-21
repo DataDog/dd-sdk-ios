@@ -91,7 +91,8 @@ Two registered delegate ownership cases now pass within full Integration282/282
 on iOS17.5, with three genuine data/metrics/completion receipts and independent
 acceptance. Eight QoS warnings remain. The qualified test-only addition is local
 commit4002188a, unsigned after recorded signing timeout; production is unchanged.
-The two backend mode cells and full Replay stay unqualified. This preserves the
+The two backend mode cells stay unqualified. Replay capture tests are excluded
+by the subsequent user scope decision; original results are retained. This preserves the
 completed experiment's automatic comparison and its original limits.
 
 The delivery compatibility run exposed one deterministic stale Core expectation:
@@ -124,3 +125,22 @@ backend allowances, so the correction was never installed or launched. Original
 deadlines and all failed/unused builds remain unchanged. The owning admission
 links source, build, review, controls and stop disposition. A fresh bounded runtime
 admission is required after this checkpoint; no backend or release gate closes.
+
+The later fresh automatic admission used the exact reviewed fixture and build.
+Actual cold TTID and the startup inventory passed before the scenario started;
+all three requests completed. The frozen local oracle then rejected the SDK's
+canonical root parent string0 because it expected sixteen zeros. Preserve its
+INVALID summary and successful cleanup. Source review confirmed an oracle format
+defect. An isolated correction retains full high+low trace IDs, ownership and
+all original predicates; two retained native documents plus eight synthetic
+positive and66 negative controls pass without a native rerun.
+
+A separately frozen backend-only continuation stopped without retry at its first
+full-session aggregate:3 rows where7 were required. No search or APM query ran,
+and no backend pass is inferred. Source review shows the original assertion
+exception entered cleanup before final collection and terminated the app. This
+is insufficient to diagnose SDK ingestion. A new bounded automatic admission,
+with fresh identity/deadlines and the corrected oracle, is the smallest decisive
+continuation; it must retain the app through all backend inventories. Registered
+remains unadmitted until automatic fully passes. The owning result preserves exact
+artifact hashes, reviews and the original stops. No Replay test or SDK repair follows.

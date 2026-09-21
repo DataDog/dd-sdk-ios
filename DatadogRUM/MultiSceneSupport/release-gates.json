@@ -1844,11 +1844,11 @@
         "D11",
         "D12"
       ],
-      "decisive_test": "All affected modules, ObjC Release, SPM iOS/macOS/tvOS/watchOS/visionOS, lint and approved API baselines pass at frozen revision",
+      "decisive_test": "All affected modules, ObjC Release, SPM iOS/macOS/tvOS/watchOS/visionOS, lint and approved API baselines pass at frozen revision; Session Replay is limited to crash-free coexistence and non-disruption of other SDK features, excluding capture-correctness tests",
       "environment": "CI + supported SDK toolchains",
       "completion_mode": null,
       "status": "OPEN",
-      "evidence": "FINAL_COMPATIBILITY.md defines11 finite cells:11 full iOS schemes, external Swift/ObjC Release clients, complete platform packages, lint/API and feature-doc verification. Procedure prepared from current Makefile/source; final reviewed-candidate execution remains after F01.",
+      "evidence": "FINAL_COMPATIBILITY.md defines11 finite cells, with M01 selecting ten non-Replay iOS schemes and source-scoped Replay coexistence. The full capture suite is excluded by user scope2026-09-21; original failures remain recorded. External clients, complete platform packages, lint/API and feature-doc checks remain. Final reviewed-candidate execution remains after F01.",
       "release_requirements": {
         "S3": {
           "scope": "Final compatibility build/test matrix",
@@ -1861,9 +1861,9 @@
             "S3:D11",
             "S3:D12"
           ],
-          "decisive_test": "All affected modules, ObjC Release, SPM iOS/macOS/tvOS/watchOS/visionOS, lint and approved API baselines pass at frozen revision",
+          "decisive_test": "All affected modules, ObjC Release, SPM iOS/macOS/tvOS/watchOS/visionOS, lint and approved API baselines pass at frozen revision; Session Replay is limited to crash-free coexistence and non-disruption of other SDK features, excluding capture-correctness tests",
           "environment": "CI + supported SDK toolchains",
-          "evidence": "FINAL_COMPATIBILITY.md defines11 finite cells:11 full iOS schemes, external Swift/ObjC Release clients, complete platform packages, lint/API and feature-doc verification. Procedure prepared from current Makefile/source; final reviewed-candidate execution remains after F01.",
+          "evidence": "FINAL_COMPATIBILITY.md defines11 finite cells, with M01 selecting ten non-Replay iOS schemes and source-scoped Replay coexistence. The full capture suite is excluded by user scope2026-09-21; original failures remain recorded. External clients, complete platform packages, lint/API and feature-doc checks remain. Final reviewed-candidate execution remains after F01.",
           "required": true
         },
         "S1": {
@@ -1873,7 +1873,7 @@
             "S1:F07",
             "S1:C06"
           ],
-          "decisive_test": "Freeze affected modules/platforms via F07; run relevant complete suites, deployment builds, existing Swift/Objective-C clients, lint and unchanged API/wire/privacy checks.",
+          "decisive_test": "Freeze affected modules/platforms via F07; run relevant complete suites, deployment builds, existing Swift/Objective-C clients, lint and unchanged API/wire/privacy checks. Replay scope is crash safety and other-feature non-disruption only; no full capture suite.",
           "environment": "FINAL_COMPATIBILITY.md release applicability matrix",
           "evidence": "EXP-201 production1bdc9286, final local925b9326: M01-M11 pass. Reused full Internal/Core/RUM/Trace suites plus corrected full integration278/278, exact discovered/executed identifier multiset, zero failures/skips.24 platform/configuration builds, five public Swift/Objective-C clients, exact API equality, strict changed-file lint and audited feature docs pass. Inherited delta-oracle defect is paired-proven; only one integration test file changed. Original failures, nine QoS warnings and diagnostic timeout retained; no zero-warning/sanitizer/performance claim. Results/EXP-201-final-compatibility.json.",
           "required": true
@@ -1885,7 +1885,7 @@
             "S2:F07",
             "S2:C06"
           ],
-          "decisive_test": "Freeze affected modules/platforms via F07; run relevant complete suites, deployment builds, existing Swift/Objective-C clients, lint and unchanged API/wire/privacy checks.",
+          "decisive_test": "Freeze affected modules/platforms via F07; run relevant complete suites, deployment builds, existing Swift/Objective-C clients, lint and unchanged API/wire/privacy checks. Replay scope is crash safety and other-feature non-disruption only; no full capture suite.",
           "environment": "FINAL_COMPATIBILITY.md release applicability matrix",
           "evidence": "EXP-209 independent source/evidence review: exact E01 production1bdc9286 at qualification head652ce169 on develop62f64. Reuse accepted Results/EXP-201-final-compatibility.json, Results/EXP-199-terminal-task-ownership.json for this unchanged finite invariant. No new native run or expanded runtime/Duo claim. EXP-201 production1bdc9286, final local925b9326: M01-M11 pass. Reused full Internal/Core/RUM/Trace suites plus corrected full integration278/278, exact discovered/executed identifier multiset, zero failures/skips.24 platform/configuration builds, five public Swift/Objective-C clients, exact API equality, strict changed-file lint and audited feature docs pass. Inherited delta-oracle defect is paired-proven; only one integration test file changed. Original failures, nine QoS warnings and diagnostic timeout retained; no zero-warning/sanitizer/performance claim. Results/EXP-201-final-compatibility.json. Composed evidence: EXP201 matrix at925b9326 plus separate8/8 terminal follow-up at652ce169; no one-head full rerun. Inherited diagnostic limits remain.",
           "required": true
@@ -1955,7 +1955,7 @@
       "dependencies": [
         "A01"
       ],
-      "decisive_test": "Enable Replay through two scenes, navigation and teardown without SDK-caused crash; no scene-correct replay claim",
+      "decisive_test": "Enable Replay through scenes, navigation and teardown without SDK-caused host crash or stopping other SDK features; captured-content correctness is excluded",
       "environment": "Physical multi-window device",
       "completion_mode": null,
       "status": "CLOSED",
@@ -1967,7 +1967,7 @@
           "dependencies": [
             "S3:A01"
           ],
-          "decisive_test": "Enable Replay through two scenes, navigation and teardown without SDK-caused crash; no scene-correct replay claim",
+          "decisive_test": "Enable Replay through scenes, navigation and teardown without SDK-caused host crash or stopping other SDK features; captured-content correctness is excluded",
           "environment": "Physical multi-window device",
           "evidence": "EXP-196 fresh physical iPad27.0 run passes native8/8, four actual Replay record-growth checkpoints, OS B disconnect and exact six-view backend inventory; zero Action/Resource/error/crash. All3 signed/installed Mach-O, exact source reuse and app/process cleanup verified. First simulator-timing rejection preserved; separate physical close-return oracle5e25b6af2. No simultaneous-visible or scene-correct Replay claim. Results/EXP-196-physical-ipad-suite.json owns evidence.",
           "required": true
@@ -2407,7 +2407,7 @@
             "S3:C10",
             "S3:A02"
           ],
-          "decisive_test": "Require applicable correctness, View/Action information, Resource attribution, object-lifetime/reentrancy, privacy, crash/API and exact source/artifact checks plus attributable review. Included new semantic SwiftUI/multi-scene changes require the bounded P01 application comparison for frame rate, hitches/hangs, CPU and memory; source exclusion can qualify non-applicability. No detailed network or per-dispatch microbenchmark prerequisite. Signed outgoing history is required before any separately authorized push.",
+          "decisive_test": "Require applicable correctness, View/Action information, Resource attribution, object-lifetime/reentrancy, privacy, crash/API and exact source/artifact checks plus attributable review. Included new semantic SwiftUI/multi-scene changes require the bounded P01 application comparison for frame rate, hitches/hangs, CPU and memory; source exclusion can qualify non-applicability. No detailed network or per-dispatch microbenchmark prerequisite. Signed outgoing history is required before any separately authorized push. Session Replay captured-content defects are not blockers; host-app crash safety and other-feature non-disruption remain required.",
           "environment": "Review + CI",
           "evidence": "Pending; unchanged reference obligation. Latest scope supersedes earlier numeric/practical-network benchmarking prerequisites: User acceptance-scope correction2026-09-20: only new SwiftUI semantic tracking and multi-scene changes require representative application-level performance comparison. Detailed network microbenchmarks and a replacement standalone network campaign are not release blockers; investigate networking performance only on concrete customer-visible evidence. Correctness, attribution and object lifetime remain required. NETWORK_BENCHMARK_FOLLOWUP.md",
           "required": true
@@ -2432,9 +2432,9 @@
             "S1:T03",
             "S1:T08"
           ],
-          "decisive_test": "Require applicable correctness, View/Action information, Resource attribution, object-lifetime/reentrancy, privacy, crash, API and exact source/artifact checks plus attributable review. Detailed network benchmarks and a replacement standalone network performance campaign are not prerequisites; investigate concrete visible regressions if found. Signed outgoing history is required before any separately authorized push. Separately land the qualified hitch assertion fix, then rebase only after verified upstream merge and confirm source/test identities.",
+          "decisive_test": "Require applicable correctness, View/Action information, Resource attribution, object-lifetime/reentrancy, privacy, crash, API and exact source/artifact checks plus attributable review. Detailed network benchmarks and a replacement standalone network performance campaign are not prerequisites; investigate concrete visible regressions if found. Signed outgoing history is required before any separately authorized push. Separately land the qualified hitch assertion fix, then rebase only after verified upstream merge and confirm source/test identities. Session Replay captured-content defects are not blockers; host-app crash safety and other-feature non-disruption remain required.",
           "environment": "Exact candidate; one host; no concurrent measurement contamination",
-          "evidence": "E01 production1bdc9286 and signed deliveryab71c3a6 retain all15 prerequisite gates, including EXP202 backend ownership. Five additional hostless suites now pass544 tests with one predefined watchOS-only skip on the unchanged delivery source. Preserve the initial zero-test WebView build failure and exact-checksum SPM artifact correction. Full Replay remains pending its inherited fixture prerequisite and candidate qualification; no full repository iOS pass is claimed. F06 also requires real ticket, current CI/human review, H00 upstream delivery, verified-source retarget and signed outgoing history before any separately authorized push. EXP204 inherited QoS recurrence retains incomplete-stack/root-cause limits. No new standalone network benchmark is required.",
+          "evidence": "E01 production1bdc9286 and signed deliveryab71c3a6 retain all15 prerequisite gates, including EXP202 backend ownership. Five additional hostless suites now pass544 tests with one predefined watchOS-only skip on the unchanged delivery source. Preserve the initial zero-test WebView build failure and exact-checksum SPM artifact correction. Replay capture-suite qualification is excluded by user scope2026-09-21; original failures remain and no full repository test-ios-all pass is claimed. F06 also requires real ticket, current CI/human review, H00 upstream delivery, verified-source retarget and signed outgoing history before any separately authorized push. EXP204 inherited QoS recurrence retains incomplete-stack/root-cause limits. No new standalone network benchmark is required.",
           "required": true
         },
         "S2": {
@@ -2469,7 +2469,7 @@
             "S2:F08",
             "S2:A02"
           ],
-          "decisive_test": "Require applicable correctness, View/Action information, Resource attribution, object-lifetime/reentrancy, privacy, crash/API and exact source/artifact checks plus attributable review. Included new semantic SwiftUI/multi-scene changes require the bounded P01 application comparison for frame rate, hitches/hangs, CPU and memory; source exclusion can qualify non-applicability. No detailed network or per-dispatch microbenchmark prerequisite. Signed outgoing history is required before any separately authorized push.",
+          "decisive_test": "Require applicable correctness, View/Action information, Resource attribution, object-lifetime/reentrancy, privacy, crash/API and exact source/artifact checks plus attributable review. Included new semantic SwiftUI/multi-scene changes require the bounded P01 application comparison for frame rate, hitches/hangs, CPU and memory; source exclusion can qualify non-applicability. No detailed network or per-dispatch microbenchmark prerequisite. Signed outgoing history is required before any separately authorized push. Session Replay captured-content defects are not blockers; host-app crash safety and other-feature non-disruption remain required.",
           "environment": "Exact candidate; one host; no concurrent measurement contamination",
           "evidence": "Reference evidence retained; this release candidate is not qualified. Latest scope supersedes earlier numeric/practical-network benchmarking prerequisites: User acceptance-scope correction2026-09-20: only new SwiftUI semantic tracking and multi-scene changes require representative application-level performance comparison. Detailed network microbenchmarks and a replacement standalone network campaign are not release blockers; investigate networking performance only on concrete customer-visible evidence. Correctness, attribution and object lifetime remain required. NETWORK_BENCHMARK_FOLLOWUP.md",
           "required": true
@@ -2565,7 +2565,7 @@
       "environment": "Isolated clean checkout of then-current develop; affected unit and native fixtures",
       "completion_mode": null,
       "status": "OPEN",
-      "evidence": "EXP206 original9 bodies and100ms limits remain. Signed EXP214 repair562cf74dd/docs385583bf4 qualifies RUM925/961 and9 native owner cases with the narrow inherited stopped-session diagnostic. Twelve platform builds and144 architecture source lists pass. Eleven iOS schemes executed: nine strict audits pass, Crash66 applicable iOS assertions qualify separately with its original skip-policy rejection retained, and Replay remains FAIL742successes/3predefinedskips/1inherited scroll-pocket fixture failure. Clean unchanged-develop comparison reproduces that exact failure; maintainer correction or explicit waiver is required before full Replay qualification. Integration287/287 uses test-only H00 composition and retains9 QoS warnings matching prior evidence. CI, real ticket, documentation drift and human delivery review remain open; no release/backend claim.",
+      "evidence": "EXP206 original9 bodies and100ms limits remain. Signed EXP214 repair562cf74dd and documentationf43d812d qualify RUM925/961 and9 native owner cases with the preserved session diagnostic. Twelve platform builds/144 source lists pass. Ten non-Replay iOS schemes qualify, including66 applicable Crash assertions and Integration287/287 with9 preserved QoS warnings. Original Replay FAIL and unresolved raw topology remain historical evidence; capture correctness, fixture repair and waiver are excluded by user scope2026-09-21. All five feature docs/registry pass without SDK changes. Real ticket, current CI and human review remain; no release/backend claim.",
       "release_requirements": {
         "S1": {
           "scope": "Resource completion ownership extraction",
@@ -2575,7 +2575,7 @@
           ],
           "decisive_test": "Tracked late success/error/metrics cannot mutate a foreign view/session action. Native failed-body transfer, including response plus error, emits Error1/Resource0 with received status and controlled action0/1. Preserve successful/HEAD/204 behavior, both100ms expiry controls and unrelated manual compatibility. Original ninth automatic acceptance role is explicitly superseded; historical evidence stays intact.",
           "environment": "Isolated clean checkout of then-current develop; affected unit and native fixtures",
-          "evidence": "EXP206 original9 bodies and100ms limits remain. Signed EXP214 repair562cf74dd/docs385583bf4 qualifies RUM925/961 and9 native owner cases with the narrow inherited stopped-session diagnostic. Twelve platform builds and144 architecture source lists pass. Eleven iOS schemes executed: nine strict audits pass, Crash66 applicable iOS assertions qualify separately with its original skip-policy rejection retained, and Replay remains FAIL742successes/3predefinedskips/1inherited scroll-pocket fixture failure. Clean unchanged-develop comparison reproduces that exact failure; maintainer correction or explicit waiver is required before full Replay qualification. Integration287/287 uses test-only H00 composition and retains9 QoS warnings matching prior evidence. CI, real ticket, documentation drift and human delivery review remain open; no release/backend claim.",
+          "evidence": "EXP206 original9 bodies and100ms limits remain. Signed EXP214 repair562cf74dd and documentationf43d812d qualify RUM925/961 and9 native owner cases with the preserved session diagnostic. Twelve platform builds/144 source lists pass. Ten non-Replay iOS schemes qualify, including66 applicable Crash assertions and Integration287/287 with9 preserved QoS warnings. Original Replay FAIL and unresolved raw topology remain historical evidence; capture correctness, fixture repair and waiver are excluded by user scope2026-09-21. All five feature docs/registry pass without SDK changes. Real ticket, current CI and human review remain; no release/backend claim.",
           "required": false
         }
       }

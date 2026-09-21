@@ -83,7 +83,7 @@
       ],
       "named_reviewer": null,
       "body": "Delivery/E01-pr.md",
-      "body_sha256": "6c5296c56938757bd7c24d1ad1908a973fb6eb8f6d994dcaedff9ed7483afd08",
+      "body_sha256": "5768f17bc219d96a2a97066bc4819512d520e363329c750873bbabf9b6433e40",
       "checkout": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/deliveries/s1-initial-20260920-qqyq49od/E01",
       "detached_until_real_ticket": true,
       "baseline_commit": "8d7e429b0242c5b384417862e2418e2dbdffe500",
@@ -160,7 +160,6 @@
       },
       "remaining_checks": [
         "Real ticket for commit/title and delivery branch",
-        "Full Replay remains unqualified: resolve the inherited scroll-pocket fixture prerequisite, then qualify this candidate or obtain an explicit scoped maintainer waiver; no E01 full-Replay run is implied by E03 evidence.",
         "Current required CI and candidate F06 human review",
         "H00 verified upstream merge then content-equivalent rebase/retarget and affected revalidation only",
         "Local references repaired and all five docs pass; refresh again if the final real-ticket delivery history is rewritten. Metadata-only changes do not invalidate runtime evidence.",
@@ -210,14 +209,15 @@
         "artifact_negative_controls": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/deliveries/s1-initial-20260920-qqyq49od/e01-package-artifact-correction-uli7ntmu/artifact-negative-controls.json",
         "artifact_negative_controls_sha256": "652c17f28719ac3bd0742408d75f0dd9fcc41a36adb638e5facb06ab24d7bda2",
         "limits": [
-          "No full Replay result; the inherited fixture prerequisite and candidate-specific qualification remain open.",
+          "Session Replay captured-content testing and repair are excluded by user scope2026-09-21. Preserve historical failures without a PASS; host-app crash safety and non-disruption to other SDK features remain required. No fixture correction, waiver or full Replay run is required.",
           "No full repository iOS, release-ready, current CI, warning-free or blanket sanitizer claim.",
           "Accepted Core/Internal/RUM/Trace/Integration/platform/client/backend cells were not repeated."
         ]
-      }
+      },
+      "replay_scope_disposition": "Results/S1-replay-scope-disposition.json"
     }
   ],
-  "next_repair": "Continue DL01 missing compatibility checks; E01 and E03 full Replay and human delivery gates remain separate.",
+  "next_repair": "Finish E05 backend ownership and independent S1 delivery review; no Replay content fixture prerequisite or full-suite run.",
   "DL01_extraction_boundary": "Immutable a4be961d, exactly RenderLoopObserver.swift and DisplayLinkerTests.swift plus own changelog/feature docs; combined S2 branch is not the PR.",
-  "updated_at": "2026-09-21T02:01:08.852466+00:00"
+  "updated_at": "2026-09-21T07:38:08.196508+00:00"
 }

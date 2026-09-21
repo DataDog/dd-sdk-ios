@@ -47,7 +47,7 @@ of a current-develop customer defect.
 
 | Cell | Required environment and scope | Decisive result |
 | --- | --- | --- |
-| M01 / Full iOS modules | Available supported iOS simulator with a launchable test host; the 11 schemes below, complete inventories, Debug test configuration. Prefer the discovered26.5 host where27 cannot launch the legacy Example. | Every selected module test executes and passes at the candidate. Record runtime per module; an older-host result never closes legacy27/C03. |
+| M01 / Full iOS modules | Available supported iOS simulator with a launchable test host; the ten non-Replay schemes below, complete inventories, Debug test configuration. Prefer the discovered26.5 host where27 cannot launch the legacy Example. | Every selected module test executes and passes at the candidate. Record runtime per module; an older-host result never closes legacy27/C03. |
 | M02 / New iOS surface | iOS27 simulator, Debug and Release external Swift client, iOS15 deployment target with runtime guards; Swift5 and6 language modes. | Normal imports expose exactly the approved target/semantic APIs; custom conformer compiles unchanged, NOP remains safe, valid calls forward once. Compile the support guide and Publisher/Observation host call sites, including compiler>=6.4 guard. |
 | M03 / Objective-C Release | iOS27 simulator, standalone Objective-C Release client using generated public headers and the approved off-main contract. | All approved selectors compile and run. Main/off-main positive and negative controls prove no SDK trap/deadlock, invalid UIKit access/retention or foreign telemetry. Debug-only exposure is insufficient. |
 | M04 / iOS package | Full Datadog-Package, generic iOS destination, Debug and Release. | All selected production modules/resources emit; package minimum remains15. |
@@ -59,11 +59,17 @@ of a current-develop customer defect.
 | M10 / Lint and API baseline | Existing repository lint/API tools with supported SDK toolchain; reviewed Swift and Objective-C baselines. | Lint succeeds, generated API changes equal the F01 approval and verification matches committed baselines. Preserve old APIs; no accidental SPI/Debug symbols appear. |
 | M11 / Documentation integration | Full feature-doc workflow and existing feature-doc verification against approved source. | Tracked source coverage, every cross-feature snippet and registry agree; verification metadata refers to the audited source. F02 publishes only after its own checklist is complete. |
 
-The M01 schemes come from the current `test-ios-all` target in [Makefile](../../Makefile):
-DatadogCore, DatadogInternal, DatadogRUM, DatadogSessionReplay, DatadogLogs,
-DatadogTrace, DatadogCrashReporting, DatadogWebViewTracking, DatadogFlags,
-DatadogProfiling and DatadogIntegrationTests. Reconcile this list with the frozen
-Makefile before running; a repository module change is an explicit matrix amendment.
+The repository `test-ios-all` target in [Makefile](../../Makefile) has eleven schemes.
+The user-approved M01 selection excludes the Session Replay capture suite and keeps
+DatadogCore, DatadogInternal, DatadogRUM, DatadogLogs, DatadogTrace,
+DatadogCrashReporting, DatadogWebViewTracking, DatadogFlags, DatadogProfiling
+and DatadogIntegrationTests. Reconcile these ten with the frozen Makefile.
+
+Replay captured-content correctness is outside the release scope. Host-app crash safety and non-disruption to other SDK features remain required; no full Replay suite, content repair or inherited-fixture waiver is needed. Reuse source-matched coexistence and
+other-feature evidence; admit a narrow check only for a concrete crash or disruption.
+Preserve prior capture-suite failures without declaring them passed. This selected
+matrix is not a full `make test-ios-all` result. The
+[scope disposition](Results/S1-replay-scope-disposition.json) owns the amendment.
 
 For M01, use the existing Make target with exact discovered values, for example
 `make test-ios SCHEME="<listed scheme>" OS="<runtime>" DEVICE="<device>"`.
