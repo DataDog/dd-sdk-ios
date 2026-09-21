@@ -1,7 +1,7 @@
 ---
-last_updated: 2026-09-20
+last_updated: 2026-09-21
 sdk_version: 3.17.0
-verified_against_commit: 1bdc9286c
+verified_against_commit: 1aa71d7f0
 tracked_files:
   - DatadogRUM/Sources/RUM.swift
   - DatadogRUM/Sources/RUMConfiguration.swift
@@ -241,6 +241,7 @@ monitor.stopView(key: "ProductList")
 
 ### Implementation
 - **`DatadogRUM/Sources/Feature/RUMFeature.swift`** - Internal feature implementation. Shows how configuration translates to behavior.
+- **`DatadogRUM/Sources/RUMVitals/RenderLoop/RenderLoopObserver.swift`** - Internal display-link lifetime and frame delivery. A weak callback target lets the observer and its readers release when their owning RUM graph is released.
 
 ## Configuration Categories
 
@@ -336,6 +337,7 @@ When `Datadog.Configuration.remoteConfiguration` is set, Core fetches and caches
   - `WebViewTracking.enable(webView:hosts:)` called on the native side
   - Web page instrumented with Datadog Browser SDK
   - See `DatadogWebViewTracking/Sources/WebViewTracking.swift`
+  - Native-view correlation retains the active view and starts its existing expiry window when the view becomes inactive. The cache remains bounded.
 
 ## Additional Context
 

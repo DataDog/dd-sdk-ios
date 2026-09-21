@@ -1,6 +1,6 @@
 ---
-last_updated: 2026-09-20
-verified_against_commit: 1bdc9286c
+last_updated: 2026-09-21
+verified_against_commit: 1aa71d7f0
 sdk_version: 3.17.0
 tracked_files:
   - DatadogProfiling/Sources/Profiling.swift

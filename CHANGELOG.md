@@ -1,5 +1,7 @@
 # Unreleased
 
+- [FIX] Release the RUM display-link observer and its frame readers when their owner is released.
+- [FIX] Preserve delayed WebView correlation for long-lived active native RUM views.
 - [FIX] Ensure repeated URLSession resumes apply request customization once and preserve ordering when completion callbacks arrive early.
 - [FIX] Resolve the RUM session sampling decision synchronously in `RUM.enable()`, so WebViews instrumented immediately after initialization get a decision consistent with the session. See [#3183][]
 - [FEATURE] Add CPU-time samples alongside wall-time samples by default for application launch and Continuous Profiling. See [#3195][]
