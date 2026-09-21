@@ -111,20 +111,12 @@
   ],
   "hard_merge_dependencies": [],
   "remaining_gates": [
-    "E03-D: nine remaining iOS schemes on final candidate source; eight-module lane admitted, full Integration test-only oracle composition pending",
-    "E03-D: inherited global Trace-document drift, real ticket, required CI and human review",
+    "E03-D: maintainer-owned correction or explicit scoped waiver of the inherited Replay scroll-pocket fixture; original full Replay result remains FAIL",
+    "E03-D: inherited global Trace-document drift, real ticket, required CI and human review, with native diagnostic and QoS limits retained",
     "Separately authorized publication/merge with signed outgoing history and verified upstream content"
   ],
   "remaining_iOS_schemes": [
-    "DatadogInternal",
-    "DatadogSessionReplay",
-    "DatadogLogs",
-    "DatadogTrace",
-    "DatadogCrashReporting",
-    "DatadogWebViewTracking",
-    "DatadogFlags",
-    "DatadogProfiling",
-    "DatadogIntegrationTests"
+    "DatadogSessionReplay"
   ],
   "remaining_platform_cells": 0,
   "limits": [
@@ -152,9 +144,14 @@
     "products": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/exp214-repair-_6vxqe6i/platforms-package-export/post-run-products.json",
     "products_sha256": "777be5cbe1170551442ad5c259f2111859a33275a26a012340c2096b79be74bf",
     "cleanup": "PASS",
-    "limit": "Compilation only; macOS covers affected RUM plus Internal, other five platform families cover the complete production package. Original wrong-container attempt stopped before builds and is preserved."
+    "limit": "Compilation only; macOS covers affected RUM plus Internal, other five platform families cover the complete production package. Original wrong-container attempt stopped before builds and is preserved.",
+    "per_architecture_source_audit": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/exp214-repair-_6vxqe6i/platforms-package-export/per-architecture-source-audit.json",
+      "sha256": "bedbd69c91c667cd607e9efa4973ea735a275b9277ec6ffd7add97d6592713b3",
+      "file_lists": 144
+    }
   },
-  "last_updated_at": "2026-09-21T00:18:19.714775+00:00",
+  "last_updated_at": "2026-09-21T01:25:46.369482+00:00",
   "ios_core": {
     "status": "PASS",
     "cases": 819,
@@ -167,5 +164,23 @@
     "run_sha256": "a5f6de85f0d7860d3af89a63e9ec019f051db7ea6b8c13740e0c17c0f6a1c5f6",
     "cleanup": "PASS",
     "candidate_revision": "385583bf42dafd51e148967ea500c2e9bae61646"
-  }
+  },
+  "ios_compatibility": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/exp214-repair-_6vxqe6i/ios-compatibility-summary.json",
+    "sha256": "aad0e4536d68df98de2828982b5026a821e1cc9365aa9219cafef0d10b2d1f14",
+    "status": "ELEVEN_SCHEMES_EXECUTED_STRICT_REPLAY_QUALIFICATION_OPEN"
+  },
+  "review_followups": [
+    {
+      "id": "E03-D-REPLAY-FIXTURE",
+      "owner": [
+        "@DataDog/rum-mobile",
+        "@DataDog/rum-mobile-ios"
+      ],
+      "dependency": "Maintainer-owned correction or explicit waiver of the inherited private _UIScrollPocket fixture requirement; preserve candidate/develop results.",
+      "decisive_test": "After an admitted fixture correction, complete exact full Replay inventory and original assertions on the corrected clean hosted environment; alternatively record explicit scoped maintainer waiver. No automatic skip or threshold relaxation.",
+      "environment": "Xcode27.1, regular iPhone26.5, frozen candidate source and dependency/binary identities; clean Example host. SDK27/runtime27 needs a separately admitted scene-compatible host.",
+      "moment": "Before E03 full compatibility/release-review sign-off; independent S1 packets may continue now."
+    }
+  ]
 }

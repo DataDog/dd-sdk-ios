@@ -157,7 +157,7 @@
     "manual_scope": "Original broad question is superseded for automatic outcome; unrelated manual compatibility changes remain unapproved. First seek a source-compatible repair.",
     "product_decision": "E03_RESOURCE_COMPLETION_DECISION.md"
   },
-  "last_updated_at": "2026-09-21T00:15:56.000352+00:00",
+  "last_updated_at": "2026-09-21T01:25:46.369482+00:00",
   "product_amendment": {
     "recorded_at": "2026-09-20T21:53:03.431125+00:00",
     "decision_file": "E03_RESOURCE_COMPLETION_DECISION.md",
@@ -323,7 +323,13 @@
       "products": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/exp214-repair-_6vxqe6i/platforms-package-export/post-run-products.json",
       "products_sha256": "777be5cbe1170551442ad5c259f2111859a33275a26a012340c2096b79be74bf",
       "cleanup": "PASS",
-      "within_deadline": true
+      "within_deadline": true,
+      "per_architecture_audit": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/exp214-repair-_6vxqe6i/platforms-package-export/per-architecture-source-audit.json",
+        "sha256": "bedbd69c91c667cd607e9efa4973ea735a275b9277ec6ffd7add97d6592713b3",
+        "file_lists": 144,
+        "status": "PASS"
+      }
     },
     "ios_core": {
       "status": "PASS",
@@ -365,7 +371,7 @@
       "cleanup": "PASS"
     },
     "ios_modules": {
-      "status": "DEFINED_BEFORE_DISCOVERY",
+      "status": "STOPPED_ON_REPLAY_COMPATIBILITY_FAILURE",
       "definition": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/exp214-repair-_6vxqe6i/ios-remaining-modules-cr79iw_o/definition.json",
       "definition_sha256": "b932d3df31471bb30a6ac03803e0e9a9d46ddef0c1c04f7b408f3a6eecceb99e",
       "timebox_deadline": "2026-09-21T03:15:56.000352+00:00",
@@ -382,11 +388,192 @@
       "source_inputs": 1864,
       "remaining_after": [
         "DatadogIntegrationTests"
-      ]
+      ],
+      "summary": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/exp214-repair-_6vxqe6i/ios-remaining-modules-cr79iw_o/lane-summary.json",
+      "summary_sha256": "3a46daca04ea12d42cfe903f123d4c87be10ab543431459e92966388dfa05129"
     },
     "inventory_disposition": {
       "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/exp214-repair-_6vxqe6i/compatibility-inventory-disposition.json",
       "sha256": "1a6ad007b7322199f853cde78254ddb86940c820be8a327e48fc5a0207225973"
+    },
+    "ios_remaining_six": {
+      "status": "STOPPED_ON_UNLISTED_SOURCE_DECLARED_WATCHOS_ONLY_SKIP",
+      "definition": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/exp214-repair-_6vxqe6i/ios-after-replay-failure-k2oueb_j/definition.json",
+      "definition_sha256": "168a9d63f75172a6821d72bcb93cbe1e3171bc4eac7adead99e41bef3a60c7f3",
+      "timebox_deadline": "2026-09-21T03:15:56.000352+00:00",
+      "schemes": [
+        "DatadogLogs",
+        "DatadogTrace",
+        "DatadogCrashReporting",
+        "DatadogWebViewTracking",
+        "DatadogFlags",
+        "DatadogProfiling"
+      ],
+      "observed_cells": {
+        "logs": {
+          "status": "PASS",
+          "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/exp214-repair-_6vxqe6i/ios-after-replay-failure-k2oueb_j/logs/root-audit.json",
+          "sha256": "6ac3597feb54facc7658fe0b7117c8f65a3ae44146cde117cb68298704cc5580",
+          "observed": {
+            "cases": 88,
+            "runs": 88,
+            "run_results": {
+              "Success": 88
+            },
+            "skips": [],
+            "runtimeWarnings": []
+          }
+        },
+        "trace": {
+          "status": "PASS",
+          "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/exp214-repair-_6vxqe6i/ios-after-replay-failure-k2oueb_j/trace/root-audit.json",
+          "sha256": "12e3c96161960fc9634dd3f9d5f6ceb2e6f5c94f8f51cfd5efd700efd8b288fe",
+          "observed": {
+            "cases": 141,
+            "runs": 141,
+            "run_results": {
+              "Success": 141
+            },
+            "skips": [],
+            "runtimeWarnings": []
+          }
+        },
+        "crash": {
+          "status": "FAIL",
+          "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/exp214-repair-_6vxqe6i/ios-after-replay-failure-k2oueb_j/crash/root-audit.json",
+          "sha256": "1cd15b4f1c4865c00a88b37cfad44db33b68ae07d7fb1c31495d446f2fa8015b",
+          "observed": {
+            "cases": 67,
+            "runs": 67,
+            "run_results": {
+              "Success": 66,
+              "Skipped": 1
+            },
+            "skips": [
+              "KSCrashBacktraceTests/testGenerateBacktraceReturnsNilOnWatchOS()"
+            ],
+            "runtimeWarnings": []
+          }
+        }
+      },
+      "remaining_schemes": [
+        "DatadogWebViewTracking",
+        "DatadogFlags",
+        "DatadogProfiling"
+      ],
+      "limit": "Original Crash strict audit remains FAIL; separate independent source review qualifies66 applicable iOS assertions, without rerun or learned skip allowance.",
+      "crash_applicability": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/exp214-repair-_6vxqe6i/ios-after-replay-failure-k2oueb_j/crash/ios-applicability-disposition.json",
+        "sha256": "7441dea619045ccba8e8c74b89fd9a9e7fc480b52302cc714842333561d8105c",
+        "status": "QUALIFIED_66_APPLICABLE_IOS_ASSERTIONS_WITH_ONE_WATCHOS_ONLY_CASE",
+        "passed": 66,
+        "watchOS_only_cases": 1
+      }
+    },
+    "integration_preparation": {
+      "status": "SIGNED_TEST_ONLY_COMPOSITION_FULL_INTEGRATION_DISCOVERY_ADMITTED",
+      "root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/exp214-repair-_6vxqe6i/integration-h00-composition-sw_2a9o3",
+      "head": "d6d7d1c9b3777b952b46f0a6fadfb0c16ac01af7",
+      "signature": "G",
+      "production_inputs_identical": 886,
+      "only_overlay": "Datadog/IntegrationUnitTests/RUM/RUMViewHitchesIntegration_Tests.swift",
+      "product_delivery_history_unchanged": true
+    },
+    "replay_comparison": {
+      "status": "IDENTICAL_SEVEN_FAILURES_OBSERVED_HOST_CLEANUP_NOT_QUALIFIED",
+      "definition": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/exp214-repair-_6vxqe6i/replay-develop-comparison-1l3hr7yu/definition.json",
+      "definition_sha256": "950c52761ee5d893c195302c5cb7d284f1e6afa0fbf6064a0becb300aba2ec6e",
+      "comparison": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/exp214-repair-_6vxqe6i/replay-develop-comparison-1l3hr7yu/comparison.json",
+      "comparison_sha256": "6af9f067c1c2521a430e83c5001d324d8524f285f05f722fe5bd5b9452fed5c7",
+      "limitation": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/exp214-repair-_6vxqe6i/replay-develop-comparison-1l3hr7yu/host-cleanup-limitation.json",
+      "limitation_sha256": "c02b7c545f3e71bc20efae9cefc984dbc1e0dad8f383678a16cb77d1475f39d2",
+      "unchanged_replay_files": 316,
+      "limit": "Replay is an Example-hosted target. Original runner labeled it hostless, so no clean-install or fixture-cleanup claim. Next full Replay uses explicit source-discovered host lifecycle."
+    },
+    "integration_execution": {
+      "status": "PASS_WITH_NINE_PRESERVED_QOS_WARNINGS",
+      "root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/exp214-repair-_6vxqe6i/integration-h00-composition-sw_2a9o3/qualification-clean-host-k9y1wxui",
+      "definition_sha256": "ee09d546a6c2cf180df5ec9951fe48bd9185dc65bc77349dcb405ed165214d95",
+      "timebox_deadline": "2026-09-21T02:19:27.821567+00:00",
+      "required_cases": 287,
+      "original_preflight_failure": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/exp214-repair-_6vxqe6i/integration-h00-composition-sw_2a9o3/qualification/native/discover-run.json",
+      "preflight_cleanup": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/exp214-repair-_6vxqe6i/integration-h00-composition-sw_2a9o3/qualification-clean-host-k9y1wxui/clean-install-preparation.json",
+      "root_audit": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/exp214-repair-_6vxqe6i/integration-h00-composition-sw_2a9o3/qualification-clean-host-k9y1wxui/native/root-audit.json",
+      "root_audit_sha256": "b155b6d98551871de59c1f6b7fdeed68c91134d0dcc93aa7cd0512a129d27af2",
+      "cases": 287,
+      "executions": 287,
+      "passed": 287,
+      "cleanup": "PASS",
+      "runtime_warning_disposition": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/exp214-repair-_6vxqe6i/integration-h00-composition-sw_2a9o3/qualification-clean-host-k9y1wxui/runtime-warning-disposition.json",
+      "runtime_warning_disposition_sha256": "e73ac5740c08999eb9be961cc7d965a8148c3c6b31d3d568bd35d5b9da7b557f"
+    },
+    "ios_final_three": {
+      "status": "PASS",
+      "definition": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/exp214-repair-_6vxqe6i/ios-final-three-eaxx036v/definition.json",
+      "definition_sha256": "cadf7fa59453739b909f0302654712b0c4a5472e557b4669720ea03b13e5f1cc",
+      "timebox_deadline": "2026-09-21T03:15:56.000352+00:00",
+      "qualified": {
+        "DatadogWebViewTracking": {
+          "root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/exp214-repair-_6vxqe6i/ios-final-three-eaxx036v/webview",
+          "cases": 31,
+          "executions": 31,
+          "root_audit_sha256": "b56244116c193d25b6c96f24d082693545a4e494741c36e20d4d1c0a239bd418"
+        },
+        "DatadogFlags": {
+          "root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/exp214-repair-_6vxqe6i/ios-final-three-eaxx036v/flags",
+          "cases": 135,
+          "executions": 135,
+          "root_audit_sha256": "4045258078f11b817813aebb73d890672f159b5615bf9112b449a9efefbaa758"
+        },
+        "DatadogProfiling": {
+          "root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/exp214-repair-_6vxqe6i/ios-final-three-eaxx036v/profiling",
+          "cases": 224,
+          "executions": 224,
+          "root_audit_sha256": "d13ffa6a1e5d479b404cf8c6a1800828af77eb798b5321f2a999280acef8b6ba"
+        }
+      }
+    },
+    "replay_regular_iphone": {
+      "status": "FAIL_INHERITED_SCROLL_POCKET_FIXTURE",
+      "definition": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/exp214-repair-_6vxqe6i/replay-iphone26-full-7mn08hyv/definition.json",
+      "definition_sha256": "2546510feef2b643a91dc3291444f6e1dcd17736ccd5b0b1265546d291d8953d",
+      "timebox_deadline": "2026-09-21T01:57:59.357486+00:00",
+      "original_27_host_rejection": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/exp214-repair-_6vxqe6i/replay-iphone-full-8fsgq0zv/disposition.json",
+      "host_cleanup_source_bound": true,
+      "observed": {
+        "cases": 736,
+        "runs": 746,
+        "passed": 742,
+        "predefined_skips": 3,
+        "failed": 1,
+        "runtime_warnings": 4
+      },
+      "comparison": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/exp214-repair-_6vxqe6i/replay-scroll-pocket-baseline-bznxi44d/comparison.json",
+      "comparison_sha256": "b6012fe0f021f3f0da7c30eb17ad8b6b0fe9cb020de99aaba621c21cf746e598",
+      "independent_review": {
+        "path": "/tmp/e03-replay-scroll-pocket-review-20260921/review.json",
+        "sha256": "7dc2a73e8e1393e96dfe2cdf19d51d9234260ae0a55f69726938fcf5149207ea",
+        "decision": "INHERITED_FIXTURE_FAILURE; FULL_REPLAY_REMAINS_STRICTLY_UNQUALIFIED"
+      },
+      "simulator_restoration": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/exp214-repair-_6vxqe6i/replay-iphone26-full-7mn08hyv/device-restoration.json"
+    },
+    "summary": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/exp214-repair-_6vxqe6i/ios-compatibility-summary.json",
+      "sha256": "aad0e4536d68df98de2828982b5026a821e1cc9365aa9219cafef0d10b2d1f14",
+      "status": "ELEVEN_SCHEMES_EXECUTED_STRICT_REPLAY_QUALIFICATION_OPEN"
+    },
+    "remaining_iOS_schemes": [
+      "DatadogSessionReplay"
+    ],
+    "maintainer_followup": {
+      "owner": [
+        "@DataDog/rum-mobile",
+        "@DataDog/rum-mobile-ios"
+      ],
+      "dependency": "Maintainer-owned correction or explicit waiver of the inherited private _UIScrollPocket fixture requirement; preserve candidate/develop results.",
+      "decisive_test": "After an admitted fixture correction, complete exact full Replay inventory and original assertions on the corrected clean hosted environment; alternatively record explicit scoped maintainer waiver. No automatic skip or threshold relaxation.",
+      "environment": "Xcode27.1, regular iPhone26.5, frozen candidate source and dependency/binary identities; clean Example host. SDK27/runtime27 needs a separately admitted scene-compatible host.",
+      "moment": "Before E03 full compatibility/release-review sign-off; independent S1 packets may continue now."
     }
   }
 }

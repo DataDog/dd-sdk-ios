@@ -183,10 +183,25 @@
         "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/deliveries/s1-initial-20260920-qqyq49od/E01-reachable-docs/E01-current.patch",
         "sha256": "0d60209e1c3074eb1462ede8065479d826134446c16b991408cb6a4edd64a266",
         "reason": "ANSI color output; source unchanged; superseded by explicit color.ui=false capture"
+      },
+      "compatibility_continuation": {
+        "status": "ACTIVE_INSPECT_PER_PHASE_RECEIPTS",
+        "definition": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/deliveries/s1-initial-20260920-qqyq49od/e01-remaining-hostless-bzj5bhof/definition.json",
+        "definition_sha256": "63137f2bf29122497865fb56acf96c386c45c7ed5c56c820998dfb17c9012926",
+        "timebox_deadline": "2026-09-21T03:21:01.680519+00:00",
+        "schemes": [
+          "DatadogLogs",
+          "DatadogCrashReporting",
+          "DatadogWebViewTracking",
+          "DatadogFlags",
+          "DatadogProfiling"
+        ],
+        "source_inputs": 1864,
+        "accepted_suites_repeated": false
       }
     }
   ],
-  "next_repair": "E03 ownership contract/design admission before another S2/S3 expansion experiment",
+  "next_repair": "E03 repair and compatibility execution are complete with the inherited Replay fixture disposition open; continue E01 missing hostless checks before further S2/S3 expansion.",
   "DL01_extraction_boundary": "Immutable a4be961d, exactly RenderLoopObserver.swift and DisplayLinkerTests.swift plus own changelog/feature docs; combined S2 branch is not the PR.",
-  "updated_at": "2026-09-20T22:00:24.935664+00:00"
+  "updated_at": "2026-09-21T01:25:46.369482+00:00"
 }

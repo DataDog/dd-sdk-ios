@@ -368,6 +368,29 @@ test result exists. Static Swift/Objective-C method counts are not executable
 counts. Retain default single execution: Xcode rejects `-test-iterations 1`. A
 runner-option correction gets a fresh attempt and keeps its original deadline.
 
+Resolve compiled test membership from the project build phase, including shared
+files outside the module's Tests directory. Inspect Swift Testing argument arrays
+and availability attributes as well as XCTSkip calls. An iOS-inapplicable,
+source-declared watchOS case may receive a separately reviewed applicability
+record after an omitted skip policy is detected; preserve the original rejection
+and admission. Name every covered iOS assertion and excluded platform case. Never
+convert an assertion failure into an allowed skip or claim the excluded platform.
+
+Derive hosted-app cleanup from the target's TEST_HOST and resolved bundle identity,
+not a stage label or module name. Replay and Integration use the Example host;
+Logs, Trace, CrashReporting, Internal, WebViewTracking, Flags and Profiling targets
+in this source do not. Require uninstall/absence before a hosted phase and
+terminate/uninstall/absence afterward. Preserve any earlier hostless misclassification
+as a cleanup limitation. Freeze the exact host policy with project/source identity.
+
+Check the host lifecycle against both build SDK and runtime before selecting a
+simulator. An unchanged legacy Example host built with SDK27 cannot supply a27
+Replay/Integration control; the OS requires scene adoption. A matching Makefile
+device name alone is insufficient. The iPhone26.5 replacement in EXP214 retains
+unchanged source and its original deadline. Xcode may print TEST SUCCEEDED and
+exit0 for enumeration that contains a host-launch error: require nonempty exact
+inventory and reject the JSON errors field before admitting assertions.
+
 For E03, the [approved completion decision](E03_RESOURCE_COMPLETION_DECISION.md)
 defines failed required-body transfers as Error1/Resource0, retaining received
 status. Freeze callback and serialized-event controls before implementation.

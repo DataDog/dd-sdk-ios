@@ -4,7 +4,7 @@ Activated at the completed EXP-213 checkpoint on 2026-09-20.
 
 ## Outcome and authority
 
-Deliver six independent customer fixes (E01–E05 and the display-link lifetime fix) in separate reviewable PRs, plus one test-only prerequisite PR. Start review of the qualified S1 work before further S2/S3 expansion. E03 has a signed, qualified repair; its remaining compatibility checks are the next checkpoint. Other packets continue independently.
+Deliver six independent customer fixes (E01–E05 and the display-link lifetime fix) in separate reviewable PRs, plus one test-only prerequisite PR. Start review of the qualified S1 work before further S2/S3 expansion. E03 has a signed, qualified repair and completed compatibility execution; full Replay still needs a maintainer-owned inherited-fixture correction or waiver. E01 missing hostless checks and other independent packets continue before S2 expansion.
 
 This document prepares delivery; it does not perform or authorize a push, remote PR creation, merge, or change to an active experiment. Read `AGENTS.md` and `.continue-here.md` first when executing. The current experiment remains authoritative for its in-flight work. This delivery sequence applies after its safe checkpoint and incorporates the user's subsequent priority for S1 review. Preserve all experiment results, including inconclusive or failed controls.
 
@@ -123,7 +123,7 @@ The queue is the executable path/commit inventory. Paths below describe the revi
 ### E03 — Resource action ownership
 
 - Existing worktree is still at develop `62f64d7b` with only two dirty reproducer test files. Preserve it and the durable [baseline patch](Results/EXP-206-baseline-reproduction.patch).
-- E03-A/B are complete. The [local packet](Results/S1-E03-packet.json) has signed repair562cf74dd and documentation385583bf4 after full RUM925/961 and nine native XCTest passes. The exact owner contract qualifies with an inherited stopped-session diagnostic retained. E03-C is complete with source-reviewed metric/expiry preservation; E03-D now has twelve passing platform build cells with frozen source/module/product identities and cleanup; the remaining iOS suites, global Trace-document drift, real ticket, CI and human review stay open.
+- E03-A/B are complete. The [local packet](Results/S1-E03-packet.json) has signed repair562cf74dd and documentation385583bf4 after full RUM925/961 and nine native XCTest passes. The exact owner contract qualifies with an inherited stopped-session diagnostic retained. E03-C is complete with source-reviewed metric/expiry preservation; E03-D has twelve passing platform builds and eleven executed iOS schemes. Full Replay remains unqualified because its private scroll-pocket fixture fails identically on unchanged develop. The packet names its maintainer owner, dependency, decisive full-suite test and clean iPhone26.5 environment. Resolve that correction or scoped waiver before E03 release-review sign-off; continue independent E01 checks meanwhile. Global Trace-document drift, real ticket, CI and human review stay open.
 - Proposed PR title remains provisional until the implemented contract is reviewed. The fix must preserve current action semantics within the Resource's owning view, not blindly attach every callback to the action that existed at Resource start.
 
 ## Repeatable execution procedure

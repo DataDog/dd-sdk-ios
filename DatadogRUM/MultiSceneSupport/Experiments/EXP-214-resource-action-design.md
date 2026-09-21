@@ -50,8 +50,45 @@ while1ns is the assertion tolerance. Do not claim metrics are filtered before
 peer scopes. All twelve affected-platform Debug/Release cells now pass with1178 frozen source
 inputs, complete source/module inventories, product hashes and cleanup. The initial
 full-repository export selected the wrong workspace and stopped before any build;
-its correction retained the same runner and deadline. Core passes819 cases:815 successes and four exact OS skips, using separate
-full-target discovery and execution admission. Nine iOS suites remain. Its
-unsupported explicit one-iteration option stopped before compilation; the corrected
-invocation uses the default single run within the original budget. Other S1 packets
-remain independent; delivery review stays open.
+its correction retained the same runner and deadline. All144 per-architecture
+Swift source lists are independently complete; no additional build was run for that audit.
+
+The eleven iOS schemes have now been exercised at unchanged production source:
+
+| Scheme | Cases / executions | Result |
+| --- | --- | --- |
+| Core | 819 /819 | 815 pass; four exact predefined OS skips |
+| Internal | 436 /472 | All executions pass |
+| RUM | 925 /961 | All executions pass |
+| Replay | 736 /746 | 742 pass; three predefined skips; one inherited fixture failure |
+| Logs | 88 /88 | Pass |
+| Trace | 141 /141 | Pass |
+| CrashReporting | 67 /67 | 66 applicable iOS assertions qualify; watchOS-only case excluded by separate review |
+| WebViewTracking | 31 /31 | Pass |
+| Flags | 135 /135 | Pass |
+| Profiling | 224 /224 | Pass |
+| Integration | 287 /287 | Pass on signed H00 test-only composition; nine QoS warnings retained |
+
+The owning result links the durable eleven-scheme summary, exact identities,
+readers, cleanup and original rejected audits. Crash's initially empty skip policy
+remains rejected; its separate source-based record qualifies only66 iOS assertions.
+Integration usesd6d7d1c9 with886 identical production inputs and only the qualified
+hitch test changed. Its nine warning messages, multiplicities and named locations
+match EXP201 evidence; that is not a harmlessness or performance claim.
+
+Replay's seven fixed-coordinate failures on iPad17.5 reproduce identically on
+unchanged develop. Those initial runs incorrectly used hostless cleanup; their
+limitation remains explicit. The corrected clean-host iPhone26.5 suite passes all
+seven coordinate cases, but fails the iOS26-applicable scroll-pocket requirement.
+A clean one-case unchanged-develop run reproduces the exact requirement failure.
+Independent review attributes it to the inherited private UIKit fixture boundary;
+full Replay remains unqualified. Preserve the four hierarchy warnings and do not
+add a skip or change a threshold. SDK27/runtime27 Example discovery stopped before
+assertions because the legacy host lacks a scene lifecycle; that rejection and
+both temporary iPhone simulator restorations remain recorded.
+
+The finite remaining check belongs to the RUM maintainers before E03 release-review
+sign-off: an admitted fixture correction followed by full clean-host Replay
+qualification, or an explicit scoped waiver. CI, ticketing, documentation drift and
+human review remain. E01's five missing hostless schemes continue independently;
+no accepted suite is repeated and no new experiment number or release gate closes.
