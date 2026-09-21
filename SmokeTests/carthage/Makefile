@@ -70,4 +70,4 @@ endif
 		fi;)
 	set -eo pipefail; \
 	xcodebuild -version; \
-	xcodebuild -project "CTProject.xcodeproj" -destination "platform=$(PLATFORM),name=$(DEVICE),OS=$(OS)" -scheme "$(SCHEME)" test | xcbeautify
+	xcodebuild -project "CTProject.xcodeproj" -destination "platform=$(PLATFORM),name=$(DEVICE),OS=$(OS)" -scheme "$(SCHEME)" test | $(call XCBEAUTIFY)

@@ -18,7 +18,7 @@ internal final class ImageSnapshotCache {
         let maximumRemovals: Int
 
         static let `default` = Self(
-            expirationFrameCount: 300,
+            expirationFrameCount: 150,
             removalIntervalFrameCount: 10,
             maximumRemovals: 128
         )
