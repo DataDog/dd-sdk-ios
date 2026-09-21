@@ -123,7 +123,7 @@ defect on current develop: late Resource success/error changes a newer view or
 session's live action counters and error_tap, despite correct Resource/error parent
 IDs. [EXP-206](Results/EXP-206-resource-action-ownership.json) has four exact
 baseline failures and five preservation passes. Its earlier stateless repair was rejected under the retired automatic dual-terminal
-premise. EXP214 now qualifies signed repair562cf74dd through full RUM925/961 and nine native XCTest passes with exact owner/count evidence. The inherited stopped-session precondition diagnostic remains explicitly classified, and source review confirms metrics preserve fixed action expiry and counters. Full candidate compatibility and release review remain open.
+premise. EXP214 now qualifies signed repair562cf74dd through full RUM925/961 and nine native XCTest passes with exact owner/count evidence. The inherited stopped-session precondition diagnostic remains explicitly classified, and source review confirms metrics preserve fixed action expiry and counters. All twelve affected-platform Debug/Release builds now pass on the signed candidate with complete source/module/product identities and cleanup. The remaining iOS suites and release review stay open.
 
 The independent E04 candidate preserves delayed WebView correlation after a long
 native visit. It retains A for the full inactivity window after navigation to B,

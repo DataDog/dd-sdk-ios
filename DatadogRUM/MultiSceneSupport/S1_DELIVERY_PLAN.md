@@ -4,7 +4,7 @@ Activated at the completed EXP-213 checkpoint on 2026-09-20.
 
 ## Outcome and authority
 
-Deliver six independent customer fixes (E01–E05 and the display-link lifetime fix) in separate reviewable PRs, plus one test-only prerequisite PR. Start review of the qualified S1 work before further S2/S3 expansion. E03 is the next repair task; it is not a permanent deferred item and does not hold the other PRs hostage.
+Deliver six independent customer fixes (E01–E05 and the display-link lifetime fix) in separate reviewable PRs, plus one test-only prerequisite PR. Start review of the qualified S1 work before further S2/S3 expansion. E03 has a signed, qualified repair; its remaining compatibility checks are the next checkpoint. Other packets continue independently.
 
 This document prepares delivery; it does not perform or authorize a push, remote PR creation, merge, or change to an active experiment. Read `AGENTS.md` and `.continue-here.md` first when executing. The current experiment remains authoritative for its in-flight work. This delivery sequence applies after its safe checkpoint and incorporates the user's subsequent priority for S1 review. Preserve all experiment results, including inconclusive or failed controls.
 
@@ -30,7 +30,7 @@ Only H00 → E01 is a hard merge edge. Shared test files and changelog conflicts
 
 1. Safely finish/checkpoint the current experiment and capture current source/worktree identities.
 2. Prepare H00 and E01 local review packets immediately. E01 can be reviewed against H00's delivery branch without waiting for its merge.
-3. Make E03 design/admission the next repair checkpoint, before starting another S2/S3 expansion experiment. Do not postpone this until all other S1 PRs merge.
+3. Complete E03-D candidate compatibility and delivery preparation before starting another S2/S3 expansion experiment. Do not postpone this until all other S1 PRs merge.
 4. While review/CI is pending, prepare DL01, E02, E04 and E05 in that default order, filling only missing or invalidated qualification. Start each review as its packet becomes ready; E03 and S2/S3 are not global blockers.
 5. Merge authorized, approved, green PRs as they become ready. Default independent order is H00, E01, DL01, E02, E04, E05; insert E03 when qualified. Review availability may change independent ordering.
 6. Recompose S2 from actual merged develop fixes, retaining only its still-unmerged S2-specific work. Verify source identity and invalidated checks before using the composed artifact. S3 remains separate.
@@ -123,7 +123,7 @@ The queue is the executable path/commit inventory. Paths below describe the revi
 ### E03 — Resource action ownership
 
 - Existing worktree is still at develop `62f64d7b` with only two dirty reproducer test files. Preserve it and the durable [baseline patch](Results/EXP-206-baseline-reproduction.patch).
-- E03-A/B are complete. The [local packet](Results/S1-E03-packet.json) has signed repair562cf74dd and documentation385583bf4 after full RUM925/961 and nine native XCTest passes. The exact owner contract qualifies with an inherited stopped-session diagnostic retained. E03-C is complete with source-reviewed metric/expiry preservation; E03-D retains final-source compatibility, global Trace-document drift, real ticket, CI and human review.
+- E03-A/B are complete. The [local packet](Results/S1-E03-packet.json) has signed repair562cf74dd and documentation385583bf4 after full RUM925/961 and nine native XCTest passes. The exact owner contract qualifies with an inherited stopped-session diagnostic retained. E03-C is complete with source-reviewed metric/expiry preservation; E03-D now has twelve passing platform build cells with frozen source/module/product identities and cleanup; the remaining iOS suites, global Trace-document drift, real ticket, CI and human review stay open.
 - Proposed PR title remains provisional until the implemented contract is reviewed. The fix must preserve current action semantics within the Resource's owning view, not blindly attach every callback to the action that existed at Resource start.
 
 ## Repeatable execution procedure

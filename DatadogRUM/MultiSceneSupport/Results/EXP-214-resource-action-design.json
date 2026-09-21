@@ -157,7 +157,7 @@
     "manual_scope": "Original broad question is superseded for automatic outcome; unrelated manual compatibility changes remain unapproved. First seek a source-compatible repair.",
     "product_decision": "E03_RESOURCE_COMPLETION_DECISION.md"
   },
-  "last_updated_at": "2026-09-20T23:37:41.791752+00:00",
+  "last_updated_at": "2026-09-21T00:15:56.000352+00:00",
   "product_amendment": {
     "recorded_at": "2026-09-20T21:53:03.431125+00:00",
     "decision_file": "E03_RESOURCE_COMPLETION_DECISION.md",
@@ -290,5 +290,103 @@
     "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/exp214-repair-_6vxqe6i/metrics-preservation-disposition.json",
     "sha256": "da8251a18e719541fd6cddae2483c8701ef52b460badf64928d01870e0fe4445",
     "new_source_or_runtime": false
+  },
+  "compatibility_runs": {
+    "platforms": {
+      "status": "PASS",
+      "definition": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/exp214-repair-_6vxqe6i/platforms-package-export/definition.json",
+      "definition_sha256": "e1e876284f6ff778958732a342333303c564a2add0769bdaa7d72c0e62626e31",
+      "source_manifest_sha256": "fcdf047854f305fb21eb7b83c75a51be477a28278f4397d0dfcd92dab745551c",
+      "cells": 12,
+      "deadline": "2026-09-21T00:44:29.991905+00:00",
+      "source": "385583bf42dafd51e148967ea500c2e9bae61646",
+      "preflight": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/exp214-repair-_6vxqe6i/compatibility-preflight.json",
+      "limits": {
+        "discovery_seconds": 180,
+        "each_build_seconds": 600,
+        "cleanup_seconds": 60,
+        "retries": 0
+      },
+      "attempts": [
+        {
+          "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/exp214-repair-_6vxqe6i/platforms",
+          "status": "STOPPED",
+          "completed_cells": 0,
+          "cause": "Full-repository export selected the native Datadog.xcworkspace rather than the root Swift package, requiring its distinct dependency pins.",
+          "cleanup": "PASS"
+        }
+      ],
+      "summary": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/exp214-repair-_6vxqe6i/platforms-package-export/summary.json",
+      "summary_sha256": "28e4bded19288ccef19dad1d79b2a564e2d1a0908f6f04fbd9e1d1f273167fb5",
+      "passed_cells": 12,
+      "source_files": 1178,
+      "products": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/exp214-repair-_6vxqe6i/platforms-package-export/post-run-products.json",
+      "products_sha256": "777be5cbe1170551442ad5c259f2111859a33275a26a012340c2096b79be74bf",
+      "cleanup": "PASS",
+      "within_deadline": true
+    },
+    "ios_core": {
+      "status": "PASS",
+      "definition": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/exp214-repair-_6vxqe6i/ios-compatibility-single-run-s11ccnxp/definition.json",
+      "definition_sha256": "f7b9fefd63a1c55d510965fc23c8336003caa8af137c1db64faab0dad14efdcc",
+      "timebox_deadline": "2026-09-21T00:49:15.688432+00:00",
+      "expected_cases": 819,
+      "expected_runs": 819,
+      "expected_OS_skips": 4,
+      "source_inputs": 1864,
+      "remaining_schemes": [
+        "DatadogInternal",
+        "DatadogSessionReplay",
+        "DatadogLogs",
+        "DatadogTrace",
+        "DatadogCrashReporting",
+        "DatadogWebViewTracking",
+        "DatadogFlags",
+        "DatadogProfiling",
+        "DatadogIntegrationTests"
+      ],
+      "attempts": [
+        {
+          "artifact_root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/exp214-repair-_6vxqe6i/ios-compatibility-3mu5dssp",
+          "status": "STOPPED_BEFORE_COMPILATION",
+          "returncode": 64,
+          "cause": "xcodebuild rejects -test-iterations 1; default scheme already has one non-repeated run",
+          "tests_executed": 0,
+          "cleanup": "PASS"
+        }
+      ],
+      "amendment": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/exp214-repair-_6vxqe6i/ios-compatibility-single-run-s11ccnxp/amendment.json",
+      "qualified_root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/exp214-repair-_6vxqe6i/ios-compatibility-single-run-s11ccnxp",
+      "root_audit_sha256": "551db8680d39f5cbc6c56e6713b331c5d8a23429495e4b74521ca713ed5a1c2f",
+      "passed": 815,
+      "skipped": 4,
+      "cases": 819,
+      "runs": 819,
+      "cleanup": "PASS"
+    },
+    "ios_modules": {
+      "status": "DEFINED_BEFORE_DISCOVERY",
+      "definition": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/exp214-repair-_6vxqe6i/ios-remaining-modules-cr79iw_o/definition.json",
+      "definition_sha256": "b932d3df31471bb30a6ac03803e0e9a9d46ddef0c1c04f7b408f3a6eecceb99e",
+      "timebox_deadline": "2026-09-21T03:15:56.000352+00:00",
+      "schemes": [
+        "DatadogInternal",
+        "DatadogSessionReplay",
+        "DatadogLogs",
+        "DatadogTrace",
+        "DatadogCrashReporting",
+        "DatadogWebViewTracking",
+        "DatadogFlags",
+        "DatadogProfiling"
+      ],
+      "source_inputs": 1864,
+      "remaining_after": [
+        "DatadogIntegrationTests"
+      ]
+    },
+    "inventory_disposition": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/exp214-repair-_6vxqe6i/compatibility-inventory-disposition.json",
+      "sha256": "1a6ad007b7322199f853cde78254ddb86940c820be8a327e48fc5a0207225973"
+    }
   }
 }

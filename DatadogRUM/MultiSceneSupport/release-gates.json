@@ -2565,7 +2565,7 @@
       "environment": "Isolated clean checkout of then-current develop; affected unit and native fixtures",
       "completion_mode": null,
       "status": "OPEN",
-      "evidence": "EXP206 original9 bodies and100ms limits preserved. Signed EXP214 repair562cf74dd and docs385583bf4 qualify full RUM925cases/961passes and9 native XCTest cases. Exact public owner/count audit classifies only source-proven inherited stopped-session telemetry; initial rejection and all controls remain. Source review confirms fixed expiry/counters and a write-only activity timestamp for metrics; the original100ms control is preserved. Final-source compatibility, CI and human review remain open; no backend/prevalence claim.",
+      "evidence": "EXP206 original9 bodies and100ms limits preserved. Signed EXP214 repair562cf74dd and docs385583bf4 qualify full RUM925cases/961passes and9 native XCTest cases. Exact public owner/count audit classifies only source-proven inherited stopped-session telemetry; initial rejection and all controls remain. Source review confirms fixed expiry/counters and a write-only activity timestamp for metrics; the original100ms control is preserved. Final-source compatibility, CI and human review remain open; no backend/prevalence claim. All twelve affected-platform build cells pass on signed385583bf4 with full source/module/product identities and cleanup. Core passes819 cases with exactly four OS skips. Nine remaining iOS suites and delivery review stay open.",
       "release_requirements": {
         "S1": {
           "scope": "Resource completion ownership extraction",
@@ -2575,7 +2575,7 @@
           ],
           "decisive_test": "Tracked late success/error/metrics cannot mutate a foreign view/session action. Native failed-body transfer, including response plus error, emits Error1/Resource0 with received status and controlled action0/1. Preserve successful/HEAD/204 behavior, both100ms expiry controls and unrelated manual compatibility. Original ninth automatic acceptance role is explicitly superseded; historical evidence stays intact.",
           "environment": "Isolated clean checkout of then-current develop; affected unit and native fixtures",
-          "evidence": "EXP206 original9 bodies and100ms limits preserved. Signed EXP214 repair562cf74dd and docs385583bf4 qualify full RUM925cases/961passes and9 native XCTest cases. Exact public owner/count audit classifies only source-proven inherited stopped-session telemetry; initial rejection and all controls remain. Source review confirms fixed expiry/counters and a write-only activity timestamp for metrics; the original100ms control is preserved. Final-source compatibility, CI and human review remain open; no backend/prevalence claim.",
+          "evidence": "EXP206 original9 bodies and100ms limits preserved. Signed EXP214 repair562cf74dd and docs385583bf4 qualify full RUM925cases/961passes and9 native XCTest cases. Exact public owner/count audit classifies only source-proven inherited stopped-session telemetry; initial rejection and all controls remain. Source review confirms fixed expiry/counters and a write-only activity timestamp for metrics; the original100ms control is preserved. Final-source compatibility, CI and human review remain open; no backend/prevalence claim. All twelve affected-platform build cells pass on signed385583bf4 with full source/module/product identities and cleanup. Core passes819 cases with exactly four OS skips. Nine remaining iOS suites and delivery review stay open.",
           "required": false
         }
       }
@@ -2934,7 +2934,7 @@
           "E01"
         ]
       ],
-      "next_repair": "EXP214:E03-A/B before another S2/S3 expansion",
+      "next_repair": "EXP214:E03-D compatibility and delivery before further S2/S3 expansion",
       "publication_authorized": false,
       "merge_authorized": false
     }

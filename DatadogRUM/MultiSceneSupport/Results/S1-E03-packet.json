@@ -111,13 +111,12 @@
   ],
   "hard_merge_dependencies": [],
   "remaining_gates": [
-    "E03-D: ten remaining iOS schemes and twelve affected-platform Debug/Release cells on final candidate source",
+    "E03-D: nine remaining iOS schemes on final candidate source; eight-module lane admitted, full Integration test-only oracle composition pending",
     "E03-D: inherited global Trace-document drift, real ticket, required CI and human review",
     "Separately authorized publication/merge with signed outgoing history and verified upstream content"
   ],
   "remaining_iOS_schemes": [
     "DatadogInternal",
-    "DatadogCore",
     "DatadogSessionReplay",
     "DatadogLogs",
     "DatadogTrace",
@@ -127,7 +126,7 @@
     "DatadogProfiling",
     "DatadogIntegrationTests"
   ],
-  "remaining_platform_cells": 12,
+  "remaining_platform_cells": 0,
   "limits": [
     "Original two-file dirty reproducer is unchanged; the signed repair lives in a separate checkout",
     "Within the owning view, valid completion updates the current eligible action",
@@ -142,5 +141,31 @@
     "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/exp214-repair-_6vxqe6i/metrics-preservation-disposition.json",
     "sha256": "da8251a18e719541fd6cddae2483c8701ef52b460badf64928d01870e0fe4445",
     "new_source_or_runtime": false
+  },
+  "platform_compilation": {
+    "status": "PASS",
+    "candidate_revision": "385583bf42dafd51e148967ea500c2e9bae61646",
+    "cells": 12,
+    "source_files": 1178,
+    "summary": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/exp214-repair-_6vxqe6i/platforms-package-export/summary.json",
+    "summary_sha256": "28e4bded19288ccef19dad1d79b2a564e2d1a0908f6f04fbd9e1d1f273167fb5",
+    "products": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/exp214-repair-_6vxqe6i/platforms-package-export/post-run-products.json",
+    "products_sha256": "777be5cbe1170551442ad5c259f2111859a33275a26a012340c2096b79be74bf",
+    "cleanup": "PASS",
+    "limit": "Compilation only; macOS covers affected RUM plus Internal, other five platform families cover the complete production package. Original wrong-container attempt stopped before builds and is preserved."
+  },
+  "last_updated_at": "2026-09-21T00:18:19.714775+00:00",
+  "ios_core": {
+    "status": "PASS",
+    "cases": 819,
+    "executions": 819,
+    "passed": 815,
+    "allowed_OS_skips": 4,
+    "root_audit": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/exp214-repair-_6vxqe6i/ios-compatibility-single-run-s11ccnxp/core/root-audit.json",
+    "root_audit_sha256": "551db8680d39f5cbc6c56e6713b331c5d8a23429495e4b74521ca713ed5a1c2f",
+    "run": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/exp214-repair-_6vxqe6i/ios-compatibility-single-run-s11ccnxp/core/run.json",
+    "run_sha256": "a5f6de85f0d7860d3af89a63e9ec019f051db7ea6b8c13740e0c17c0f6a1c5f6",
+    "cleanup": "PASS",
+    "candidate_revision": "385583bf42dafd51e148967ea500c2e9bae61646"
   }
 }

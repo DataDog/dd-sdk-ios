@@ -70,8 +70,11 @@ the qualified sources; E01 then repairs five reachable verification fields witho
 changing production/tests/build inputs. This adds no runtime or release-gate pass. E03 is explicitly
 prioritized in [EXP-214](Results/EXP-214-resource-action-design.json) before further
 S2 expansion. The approved failed-body outcome is now Error1/Resource0 with received status.
-Admission must also preserve the original unannotated foreign-owner and manual
-compatibility controls without introducing unbounded history. [DL01/E02/E04/E05 packets](Results/S1-independent-packets.json) now preserve the exact qualified production/test contents in separate signed delivery histories. DL01 passes standalone Core819+4 frozen skips, RUM901/937 and twelve affected-platform builds with strict inventories and cleanup. This closes those packet checks only. The pre-run result-reader oracle rejection and its independently verified correction are retained; inherited Trace-document drift remains explicit for DL01/E02/E04. E05's affected documents pass with a reachable source SHA. Remaining release and ownership checks stay open.
+The signed repair preserves the original unannotated foreign-owner and manual
+compatibility controls without unbounded history: full RUM925/961 and nine native
+XCTest cases qualify its owner contract with a narrow inherited session diagnostic.
+Twelve platform build cells now pass with source/artifact identity and cleanup.
+Remaining iOS, backend limits and delivery review are separate. [DL01/E02/E04/E05 packets](Results/S1-independent-packets.json) now preserve the exact qualified production/test contents in separate signed delivery histories. DL01 passes standalone Core819+4 frozen skips, RUM901/937 and twelve affected-platform builds with strict inventories and cleanup. This closes those packet checks only. The pre-run result-reader oracle rejection and its independently verified correction are retained; inherited Trace-document drift remains explicit for DL01/E02/E04. E05's affected documents pass with a reachable source SHA. Remaining release and ownership checks stay open.
 
 The independent S1 E01 findings are separate from historical D01–D12. Repeated
 request mutation and strong terminal-preparation retention are repaired in

@@ -47,5 +47,11 @@ metrics do not change action counters, and lastActivityTime has no reader. The
 unchanged100ms preservation control passed in the full repaired suite; no extra
 source slice or runtime is needed. Its command offset is1ms after the deadline,
 while1ns is the assertion tolerance. Do not claim metrics are filtered before
-peer scopes. The signed repair now proceeds to missing candidate compatibility
-checks. Other S1 packets remain independent; delivery review stays open.
+peer scopes. All twelve affected-platform Debug/Release cells now pass with1178 frozen source
+inputs, complete source/module inventories, product hashes and cleanup. The initial
+full-repository export selected the wrong workspace and stopped before any build;
+its correction retained the same runner and deadline. Core passes819 cases:815 successes and four exact OS skips, using separate
+full-target discovery and execution admission. Nine iOS suites remain. Its
+unsupported explicit one-iteration option stopped before compilation; the corrected
+invocation uses the default single run within the original budget. Other S1 packets
+remain independent; delivery review stays open.
