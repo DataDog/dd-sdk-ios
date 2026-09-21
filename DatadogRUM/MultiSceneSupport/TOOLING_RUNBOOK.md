@@ -6,7 +6,7 @@ workflows used by the project. Product behavior and support conclusions belong i
 `ASSESSMENT.md`; `EXPERIMENTS.md` indexes evidence; exact new experiment and
 session identifiers belong in the active numbered shard under `Experiments/`.
 
-Last updated: 2026-09-20
+Last updated: 2026-09-21
 
 ## Purpose
 
@@ -2970,3 +2970,16 @@ time limits, and run strict test lint plus platform-target syntax parsing. Reuse
 source-matched runtime evidence when behavior is unchanged. A local unsigned
 cleanup commit must be signed and every outgoing commit verified before pushing;
 keep a timed-out signing attempt as evidence without changing the remote branch.
+
+For reused Python preflight helpers, bind their sibling import directory before
+`runpy.run_path`; preserve any pre-native import rejection and use separate
+receipts for the correction. Keep the original execution deadline. For hitch
+reconstruction, a full document replaces optional fields while delta omissions
+preserve them; retain identity/version and missing-payload controls.
+
+Before selecting Git HTTPS as a transport fallback, verify the resolved URL with
+`git ls-remote --get-url`: inherited `insteadOf` rules can silently select SSH.
+Use a command-scoped exact HTTPS mapping with the existing credential helper; do
+not change saved configuration. After a timed-out push, read the actual remote
+head and verify transport-process absence before any retry. Preserve a failed
+post-push guard and confirm the intended head/body before editing the PR.

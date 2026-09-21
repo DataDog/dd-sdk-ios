@@ -16,6 +16,8 @@ Active records use stable section anchors. Do not edit or load the frozen archiv
 wholesale. [Lookup rules](Archive/README.md) and [rejected lessons](REJECTED_APPROACHES.md)
 remain available for a specific question.
 
+Post-publication follow-ups retain their existing release-gate ownership: [Resource review](Results/S1-resource-completion-review.json), [hitch assertions](Results/S1-hitch-review.json), and [current CI](Results/S1-ci-followup.json). They do not allocate additional numbered experiments.
+
 | Experiment | Related gates | Bounded outcome | Decisive conclusion | Detailed record |
 | --- | --- | --- | --- | --- |
 | <a id="exp-001"></a>EXP-001 | H16 | FAIL + INCONCLUSIVE · backend | Single-window harness, payload markers, and backend queries work. Three second-window attempts ended in simulator-wide `backboardd` respawns; the second captured baseline scene B replacing still-visible A first. | [record](</Users/valentin.pertuisot/work/dd-sdk-ios/DatadogRUM/MultiSceneSupport/Archive/EXPERIMENTS_THROUGH_EXP-142.md:458>) |

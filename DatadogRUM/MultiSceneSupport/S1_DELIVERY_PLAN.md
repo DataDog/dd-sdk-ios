@@ -13,18 +13,18 @@ Current CI and human review remain. No merge or TestFlight is authorized.
 
 ## Review units
 
-All seven rows now have separate draft PRs. Only H00 → E01
+All seven rows now have separate PRs; the publication record owns current draft/ready state. Only H00 → E01
 is a hard merge dependency. Shared test files or changelog conflicts do not create
 an architectural dependency. The main implementer owns local preparation;
 maintainers own CI and review acceptance.
 
 | Unit / draft PR | Customer behavior | Local head | Review base / dependency | Qualification owner |
 | --- | --- | --- | --- | --- |
-| [H00 #3214](https://github.com/DataDog/dd-sdk-ios/pull/3214) | Reconstruct full/delta view state before hitch assertions; test-only | 8d7e429b | develop | [H00/E01 packets](Results/S1-H00-E01-packets.json) |
+| [H00 #3214](https://github.com/DataDog/dd-sdk-ios/pull/3214) | Reconstruct full/delta view state before hitch assertions; test-only | 0deff4750 | develop | [Hitch review follow-up](Results/S1-hitch-review.json) |
 | [E01 #3215](https://github.com/DataDog/dd-sdk-ios/pull/3215) | Prepare URLSession instrumentation once; preserve early callbacks and terminal release | ab71c3a6 | H00 for review; verified H00 merge before final retarget | [H00/E01 packets](Results/S1-H00-E01-packets.json) |
 | [DL01 #3216](https://github.com/DataDog/dd-sdk-ios/pull/3216) | Release display-link observers through a weak callback target | 29c28a01 | develop | [Independent packets](Results/S1-independent-packets.json) |
 | [E02 #3217](https://github.com/DataDog/dd-sdk-ios/pull/3217) | Keep attributes on the active occurrence of a repeated view key | 4dec888b | develop | [Independent packets](Results/S1-independent-packets.json) |
-| [E03 #3218](https://github.com/DataDog/dd-sdk-ios/pull/3218) | Keep late Resource/action effects on their owner; failed transfers emit one Error | 1b2bff3e | develop | [Resource packet](Results/S1-E03-packet.json) |
+| [E03 #3218](https://github.com/DataDog/dd-sdk-ios/pull/3218) | Keep late Resource/action effects on their owner; failed transfers emit one Error | 046719c3 | develop | [Resource review follow-up](Results/S1-resource-completion-review.json) |
 | [E04 #3219](https://github.com/DataDog/dd-sdk-ios/pull/3219) | Keep active native-view correlation until inactivity starts cache expiry | 171a2409 | develop | [Independent packets](Results/S1-independent-packets.json) |
 | [E05 #3220](https://github.com/DataDog/dd-sdk-ios/pull/3220) | Preserve request-time RUM ownership in automatic Trace, including explicit nil | 44478840 | develop | [Trace admission](Results/S1-E05-release-admission.json), [signed-tree receipt](Results/S1-local-preparation.json) |
 
@@ -32,6 +32,8 @@ E05's original qualified checkout remains intact. Its final two test-only commit
 were re-signed in a separate checkout with identical complete trees. All five
 feature-document corrections are already included in E02/E03/E04/DL01's explicit
 path lists. Product PRs exclude the planning directory and both protected paths.
+
+The [CI follow-up record](Results/S1-ci-followup.json) owns the remaining failure investigations, exact assertions, environments and decisive checks. H00's two review corrections are qualified and published; the user resolved E02's feature-document finding.
 
 ## Finite remaining delivery checklist
 

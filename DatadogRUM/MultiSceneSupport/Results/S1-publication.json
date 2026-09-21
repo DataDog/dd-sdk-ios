@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "status": "SEVEN_DRAFTS_PUBLISHED_AND_VERIFIED",
+  "status": "SEVEN_PRS_PUBLISHED_CI_AND_REVIEW_PENDING",
   "at": "2026-09-21T13:07:47.472746+00:00",
   "authorization": {
     "source": "Direct user instruction in this task",
@@ -22,15 +22,16 @@
       "pr_url": "https://github.com/DataDog/dd-sdk-ios/pull/3214",
       "branch": "valpertui/rum-view-hitch-assertions",
       "base_branch": "develop",
-      "head": "8d7e429b0242c5b384417862e2418e2dbdffe500",
-      "tree": "f9e5c7ed96fd2a656eb9b9c74d6b90b466df0ced",
+      "head": "0deff4750a172309c79bcc916e99f575ccc37f8d",
+      "tree": "59ab089e82461854ad8bce31b91f143c7543c42a",
       "title": "Reconstruct view hitch state in delta-event assertions",
       "body": "Delivery/H00-pr.md",
-      "body_sha256": "8c6217a407360176bdb93bd1460dbfcaffd9917667eafa677fdc2ddfcf89fe6f",
+      "body_sha256": "add0d4825c7699cfed5ebfd99a551aa6989f9f3a9686978381c9687c7317d2dc",
       "diff_paths": [
         "Datadog/IntegrationUnitTests/RUM/RUMViewHitchesIntegration_Tests.swift"
       ],
-      "state": "DRAFT_VERIFIED"
+      "state": "SIGNED_HITCH_CORRECTION_PUBLISHED_CI_PENDING",
+      "previous_head": "8d7e429b0242c5b384417862e2418e2dbdffe500"
     },
     {
       "id": "E01",
@@ -191,82 +192,34 @@
     }
   ],
   "current_findings": [
-    "All seven current draft heads are mergeable; no merge is authorized.",
-    "CI failures: E01 Build Dependencies; DL01 iOS; E02 macOS; E04 watchOS; E05 macOS. Mosaic sign-in pending; preserve failures without an SDK-cause claim or blind retries.",
-    "H00 must actually merge with separate authorization before E01 rebase/retarget.",
-    "PR3218 behavior-based test cleanup046719c3 is signed and published; production is unchanged. New-head CI and maintainer review remain."
+    "Seven PRs are published; draft/ready state is externally managed. No merge is authorized.",
+    "Hitch0deff4750 is signed,3/3qualified and published; current-head CI and maintainer review remain.",
+    "Results/S1-ci-followup.json owns exact current CI failures and finite follow-ups; no agent retries or new SDK defect claim.",
+    "H00 must actually merge with separate authorization before E01 rebase/retarget."
   ],
-  "last_updated_at": "2026-09-21T17:15:37.233128+00:00",
+  "last_updated_at": "2026-09-21T17:59:46.496634+00:00",
   "signed_outgoing_commits_at_initial_publication": 16,
   "latest_update": {
-    "owner": "Results/S1-resource-completion-review.json",
-    "status": "SIGNED_TEST_CLEANUP_PUBLISHED_PRODUCTION_UNCHANGED",
-    "head": "046719c3b62c9643bee2065866e35dd07b2e2158",
+    "owner": "Results/S1-hitch-review.json",
+    "head": "0deff4750a172309c79bcc916e99f575ccc37f8d",
+    "status": "QUALIFIED_SIGNED_TEST_CORRECTION_PUBLISHED",
     "production_unchanged": true
   },
   "latest_ci": {
-    "record": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s1-resource-review-fnfbexny/current-ci-before-publication.json",
-    "sha256": "e2d7074cfe42a69fafa888133e7766e2f2031f68dbad4b17d098fbe026aefda4",
-    "checked_at": "2026-09-21T17:03:07.633788+00:00",
-    "all_seven_mergeable": true,
-    "failed_checks": {
-      "3215": [
-        "DDCI Status",
-        "dd-gitlab/Unit Tests (watchOS)"
-      ],
-      "3216": [
-        "DDCI Status"
-      ],
-      "3217": [
-        "DDCI Status",
-        "dd-gitlab/Unit Tests (macOS)"
-      ],
-      "3219": [
-        "DDCI Status",
-        "dd-gitlab/Unit Tests (watchOS)"
-      ],
-      "3220": [
-        "DDCI Status",
-        "dd-gitlab/Unit Tests (macOS)"
-      ]
-    },
-    "pending_checks": {
-      "3214": [
-        "devflow/mergegate"
-      ],
-      "3215": [
-        "devflow/mergegate"
-      ],
-      "3216": [
-        "devflow/mergegate",
-        "dd-gitlab/Smoke Tests (iOS)",
-        "dd-gitlab/Smoke Tests (tvOS)"
-      ],
-      "3217": [
-        "devflow/mergegate"
-      ],
-      "3218": [
-        "devflow/mergegate"
-      ],
-      "3219": [
-        "devflow/mergegate"
-      ],
-      "3220": [
-        "devflow/mergegate"
-      ]
-    },
+    "owner": "Results/S1-ci-followup.json",
+    "checked_at": "2026-09-21T17:42:00.094597+00:00",
+    "record": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s1-hitch-review-3bgot45i/ci-before-hitch-publication.json",
+    "sha256": "7c6a5ee63a062fd4edc2aecaf4d4f0d3fa7c6326bb1dd82268442ef3e0b02b1b",
+    "scope": "Precedes hitch0deff4750; old H00 green status does not qualify the new head.",
     "current_draft_state": {
       "3214": false,
       "3215": true,
       "3216": false,
       "3217": false,
-      "3218": true,
-      "3219": true,
+      "3218": false,
+      "3219": false,
       "3220": true
-    },
-    "scope": "Snapshot precedes PR3218 test cleanup046719c3; its prior green CI does not qualify the new head.",
-    "log_access": "Mosaic works in Chrome. Native UI interaction yields to the user. E01 prior dependency retry passed; remaining raw failure logs require inspection.",
-    "previous_snapshot": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/deliveries/s1-publication-20260921-vwps6cdd/ci-fifth-check.json"
+    }
   },
   "review_followup": {
     "owner": "Results/S1-resource-completion-review.json",
@@ -294,17 +247,21 @@
         4064064757,
         4064064782
       ],
-      "status": "CONFIRMED_TEST_ORACLE_CORRECTIONS_REQUIRED",
-      "production_change": false
+      "status": "TEST_CORRECTIONS_QUALIFIED_AND_PUBLISHED",
+      "production_change": false,
+      "owner": "Results/S1-hitch-review.json",
+      "head": "0deff4750a172309c79bcc916e99f575ccc37f8d",
+      "review_threads_resolved_by_agent": false
     },
     {
       "pr": 3217,
       "comments": [
         4064242212
       ],
-      "status": "NOT_REPRODUCED_AT_REVIEWED_PUBLISHED_HEAD",
+      "status": "RESOLVED_BY_USER_AFTER_ANCESTRY_CHECK",
       "evidence": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s1-resource-review-fnfbexny/e02-feature-doc-ancestry-review.json",
-      "reason": "Baseline1759abb97 is direct parent of published4dec888b9; no correction justified."
+      "reason": "Baseline1759abb97 is direct parent of published4dec888b9; no correction justified.",
+      "resolved_thread_evidence": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s1-resource-review-fnfbexny/user-review-update.json"
     }
   ]
 }

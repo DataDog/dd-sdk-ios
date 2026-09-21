@@ -1,16 +1,16 @@
 ### What and why?
 
-A stopped RUM view can omit unchanged hitch data from its final delta. The integration test treats that delta as a full document and can fail even though an earlier update recorded the hitch.
+RUM view updates can omit unchanged hitch data. Reading only the terminal update can make the integration test miss an earlier hitch.
 
 ### How?
 
-Reconstruct each view in document-version order before checking its hitches. Omitted fields preserve prior values; explicit empty fields clear them. The workload, timing and hitch thresholds stay unchanged.
+Reconstruct view state in version order. Full documents replace the baseline; delta omissions preserve prior values and explicit empty fields clear them. Disabled tracking must omit hitch data in every source document.
 
-Both affected integration tests pass on iOS 17.5, and strict repository lint passes. This changes test assertions only.
+The two integration tests and a regression for recurring full baselines pass on iOS 17.5. Focused strict lint passes; workload, timing and thresholds stay unchanged. This changes one test file only.
 
 ### Review checklist
 
-- [x] Both affected integration tests pass.
+- [x] All three affected tests pass.
 - [x] Ticket reference waived for these drafts.
 - [x] CHANGELOG not required for a test-only change.
 - [x] No public API or Objective-C interface changes.

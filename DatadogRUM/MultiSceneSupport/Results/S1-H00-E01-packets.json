@@ -125,7 +125,13 @@
         }
       },
       "initial_body_sha256": "ae7bf9857db6f08b880b3a2d1139d4efe2f5ae2147cf7aaabef3aea23a783809",
-      "current_local_preparation": "Results/S1-local-preparation.json"
+      "current_local_preparation": "Results/S1-local-preparation.json",
+      "current_review_followup": {
+        "owner": "Results/S1-hitch-review.json",
+        "head": "0deff4750a172309c79bcc916e99f575ccc37f8d",
+        "status": "QUALIFIED_SIGNED_TEST_CORRECTION_PUBLISHED",
+        "original_qualification_preserved": true
+      }
     },
     {
       "id": "E01",

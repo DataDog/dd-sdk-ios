@@ -119,7 +119,7 @@
       "gate_reference": "S1:F06 prerequisite; local delivery ID, not an additional release gate",
       "title": "Reconstruct view hitch state in delta-event assertions",
       "branch_slug": "rum-view-hitch-assertions",
-      "state": "DRAFT_PUBLISHED_CI_AND_REVIEW_PENDING",
+      "state": "SIGNED_HITCH_REVIEW_CORRECTION_PUBLISHED",
       "source_worktree": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/view-hitch-assertions",
       "source_branch": "valpertui/rum-view-hitch-assertions",
       "source_head": "d98f3540a5cf445844c2547378e05cffd2212dbd",
@@ -135,7 +135,7 @@
       "evidence": [
         "DatadogRUM/MultiSceneSupport/Experiments/EXP-201-final-compatibility.md"
       ],
-      "decisive_test": "Reconstruct full plus delta documents in documentVersion order; absent delta fields preserve prior state and explicit empty fields clear it. Accepted paired baseline/candidate assertions remain unchanged.",
+      "decisive_test": "Full documents replace baseline state; delta omissions preserve state and explicit empty fields clear it. Disabled tracking omits slow_frames in every source document. Exact3cases/3passes,zero skips and41-source membership qualify signed0deff4750.",
       "environment": "Affected native integration fixture and repository CI, exact current test source; no production or device-specific qualification.",
       "remaining_gates": [
         "Current-base CI and human review",
@@ -143,11 +143,11 @@
       ],
       "rollback": "Revert only the assertion correction if required; preserve the original failing evidence.",
       "delivery": {
-        "checkout": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/deliveries/s1-initial-20260920-qqyq49od/H00",
-        "delivery_head": "8d7e429b0242c5b384417862e2418e2dbdffe500",
+        "checkout": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s1-hitch-review-3bgot45i/worktree",
+        "delivery_head": "0deff4750a172309c79bcc916e99f575ccc37f8d",
         "baseline_commit": "62f64d7b655bdc83f3036c4ad81090a270f6202b",
         "body": "Delivery/H00-pr.md",
-        "exact_tree_equal": true,
+        "exact_tree_equal": false,
         "outgoing_commits": [
           {
             "sha": "8d7e429b0242c5b384417862e2418e2dbdffe500",
@@ -159,7 +159,8 @@
         "remaining_checks": [
           "Current-base CI and human review",
           "Separately authorized merge and verified upstream source"
-        ]
+        ],
+        "qualification_owner": "Results/S1-hitch-review.json"
       },
       "packet": "Results/S1-H00-E01-packets.json",
       "replay_scope_disposition": "Results/S1-replay-scope-disposition.json",
@@ -169,18 +170,24 @@
         "summary": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/deliveries/s1-initial-20260920-qqyq49od/h00-selected-inventory-u1xc_wbs/summary.json",
         "summary_sha256": "2184b2879330189f63e23dcd554f54f5a264ae289ffa5a46b547041c4c6d182e"
       },
-      "delivery_checkout": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/deliveries/s1-initial-20260920-qqyq49od/H00",
-      "delivery_head": "8d7e429b0242c5b384417862e2418e2dbdffe500",
+      "delivery_checkout": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s1-hitch-review-3bgot45i/worktree",
+      "delivery_head": "0deff4750a172309c79bcc916e99f575ccc37f8d",
       "body": "Delivery/H00-pr.md",
-      "body_sha256": "8c6217a407360176bdb93bd1460dbfcaffd9917667eafa677fdc2ddfcf89fe6f",
+      "body_sha256": "add0d4825c7699cfed5ebfd99a551aa6989f9f3a9686978381c9687c7317d2dc",
       "path_inventory_owner": "Results/S1-delivery-queue.json",
       "local_preparation": "Results/S1-local-preparation.json",
       "outgoing_signature_status": "ALL_VERIFIED_GOOD",
-      "next_action": "Inspect current CI and maintainer review; do not rerun accepted tests without changed inputs.",
+      "next_action": "Current-head CI and maintainer review; separately authorized H00 merge before E01 retarget.",
       "pr_number": 3214,
       "remote_branch": "valpertui/rum-view-hitch-assertions",
       "remote_base": "develop",
-      "publication_record": "Results/S1-publication.json"
+      "publication_record": "Results/S1-publication.json",
+      "previous_published_delivery": {
+        "head": "8d7e429b0242c5b384417862e2418e2dbdffe500",
+        "checkout": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/deliveries/s1-initial-20260920-qqyq49od/H00",
+        "body_sha256": "8c6217a407360176bdb93bd1460dbfcaffd9917667eafa677fdc2ddfcf89fe6f"
+      },
+      "review_followup": "Results/S1-hitch-review.json"
     },
     {
       "owner": "Main execution session / SDK implementer",
@@ -1108,5 +1115,6 @@
     "authorized_by": "Direct user instruction in this task, 2026-09-21",
     "ticket_disposition": "Reference waived for these draft publications",
     "merge_authorization": false
-  }
+  },
+  "current_ci_owner": "Results/S1-ci-followup.json"
 }

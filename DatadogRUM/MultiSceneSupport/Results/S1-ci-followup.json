@@ -1,0 +1,155 @@
+{
+  "schema_version": 1,
+  "gate": "S1:F06",
+  "status": "CI_TRIAGE_IN_PROGRESS",
+  "recorded_at": "2026-09-21T17:59:46.496634+00:00",
+  "artifact_root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s1-hitch-review-3bgot45i",
+  "snapshot": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s1-hitch-review-3bgot45i/ci-before-hitch-publication.json",
+    "sha256": "7c6a5ee63a062fd4edc2aecaf4d4f0d3fa7c6326bb1dd82268442ef3e0b02b1b",
+    "at": "2026-09-21T17:42:00.094597+00:00",
+    "limit": "Before hitch0deff4750 publication; prior H00 green CI does not qualify the new head."
+  },
+  "log_analysis": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s1-hitch-review-3bgot45i/ci-log-analysis.json",
+    "sha256": "67ca82ed78fae2e7ae7cc0966b060cef94ea8a40a76bd0d1b289e0f7c531314c"
+  },
+  "items": [
+    {
+      "id": "E01-watchOS",
+      "owner": "SDK implementer",
+      "dependency": "Exact failing assertion and CI artifact from job2062467344",
+      "status": "DETAILED_FAILURE_LOCATION_PENDING",
+      "finding": "New resume-deferral test reports3versus2 on repetition10; both continuation-count and captured-request-count assertions expect2. The formatted log does not identify which failed.",
+      "decisive_test": "Identify assertion from xcresult/JUnit, then one admitted same-process10-repeat diagnostic with target/foreign public interceptions, private ServerMock callbacks and swizzle teardown identities; keep original2continuation/3forwarded/2request assertions.",
+      "environment": "CI Xcode26.0/watchOS26.0 with test visibility enabled; no local watchOS runtime is installed.",
+      "review": "Independent review identified public/private swizzle and fixture-lifecycle interaction as a candidate mechanism, not a proven defect.",
+      "sdk_cause": "UNRESOLVED"
+    },
+    {
+      "id": "E03-macOS",
+      "owner": "SDK implementer / upstream test maintainer",
+      "dependency": "Source-bound inherited timeseries assertion review",
+      "status": "INHERITED_ORACLE_MISMATCH_IDENTIFIED",
+      "finding": "pause() flushes partial batches after the test records the pre-pause count;2versus1 can therefore reflect a legal flush. Test and collector match develop9a8a66c3 exactly.",
+      "decisive_test": "A separately scoped deterministic buffered-sample control must distinguish pause flush from sampling after pause. Preserve current CI failure; no waiver or Resource SDK edit follows.",
+      "environment": "macOS native unit test; raw job2063993559 on Resource046719c3"
+    },
+    {
+      "id": "E04-watchOS",
+      "owner": "SDK implementer",
+      "dependency": "Current external CI retry result",
+      "status": "EXTERNAL_RETRY_PENDING",
+      "decisive_test": "If still failing, obtain exact integrity rule from raw test artifact; formatted job2062467644 reports only DatadogTestsObserver.swift:163.",
+      "environment": "Authenticated CI artifact; no agent retry"
+    },
+    {
+      "id": "E02-and-E05-macOS",
+      "owner": "SDK implementer",
+      "dependency": "Authenticated raw job logs",
+      "status": "LOG_ACCESS_BLOCKED_BY_LOCKED_DESKTOP",
+      "decisive_test": "Identify actual failed test/assertion on each current head before proposing any correction.",
+      "environment": "Chrome GitLab session; jobs2062467421and2062467601 at snapshot"
+    },
+    {
+      "id": "H00-current-CI",
+      "owner": "Repository CI / RUM maintainers",
+      "dependency": "Published signed0deff4750",
+      "status": "CURRENT_HEAD_CI_AND_REVIEW_PENDING",
+      "decisive_test": "All required current-head CI and maintainer acceptance; local exact3/3 already qualified.",
+      "environment": "Repository CI / PR3214"
+    },
+    {
+      "id": "DL01-current-CI",
+      "owner": "Repository CI / SDK implementer",
+      "dependency": "Current sync/check results",
+      "status": "AGGREGATE_FAILURE_RECONCILIATION_PENDING",
+      "decisive_test": "Resolve aggregate failure against current component-job states without blind retry.",
+      "environment": "Repository CI / PR3216"
+    }
+  ],
+  "local_environment": {
+    "at": "2026-09-21T17:52:23.704469+00:00",
+    "runtime_inventory": [
+      {
+        "identifier": "com.apple.CoreSimulator.SimRuntime.iOS-17-5",
+        "version": "17.5",
+        "buildversion": "21F79",
+        "isAvailable": true,
+        "platform": "iOS"
+      },
+      {
+        "identifier": "com.apple.CoreSimulator.SimRuntime.iOS-26-5",
+        "version": "26.5",
+        "buildversion": "23F77",
+        "isAvailable": true,
+        "platform": "iOS"
+      },
+      {
+        "identifier": "com.apple.CoreSimulator.SimRuntime.iOS-27-0",
+        "version": "27.0",
+        "buildversion": "24A434",
+        "isAvailable": true,
+        "platform": "iOS"
+      },
+      {
+        "identifier": "com.apple.CoreSimulator.SimRuntime.iOS-27-1",
+        "version": "27.1",
+        "buildversion": "24A94401",
+        "isAvailable": true,
+        "platform": "iOS"
+      },
+      {
+        "identifier": "com.apple.CoreSimulator.SimRuntime.iOS-27-2",
+        "version": "27.2",
+        "buildversion": "24B5084k",
+        "isAvailable": true,
+        "platform": "iOS"
+      },
+      {
+        "identifier": "com.apple.CoreSimulator.SimRuntime.tvOS-26-5",
+        "version": "26.5",
+        "buildversion": "23L470",
+        "isAvailable": true,
+        "platform": "tvOS"
+      },
+      {
+        "identifier": "com.apple.CoreSimulator.SimRuntime.tvOS-27-0",
+        "version": "27.0",
+        "buildversion": "24J5346a",
+        "isAvailable": true,
+        "platform": "tvOS"
+      },
+      {
+        "identifier": "com.apple.CoreSimulator.SimRuntime.xrOS-26-5",
+        "version": "26.5",
+        "buildversion": "23O470",
+        "isAvailable": true,
+        "platform": "xrOS"
+      },
+      {
+        "identifier": "com.apple.CoreSimulator.SimRuntime.xrOS-27-0",
+        "version": "27.0",
+        "buildversion": "24M5348a",
+        "isAvailable": true,
+        "platform": "xrOS"
+      }
+    ],
+    "installed_xcodes": [
+      "Xcode-27.2-beta.app",
+      "Xcode.app",
+      "Xcode_27.1.app",
+      "Xcode_27.app"
+    ],
+    "ci_environment": {
+      "xcode": "26.0",
+      "watchOS": "26.0",
+      "device": "Apple Watch Series 11 (46mm)",
+      "test_visibility": true
+    }
+  },
+  "sdk_changes": 0,
+  "agent_ci_retries": 0,
+  "gate_closures": [],
+  "next_action": "Retrieve exact failure artifacts when desktop access returns; continue independent S2 tooling preparation while blocked."
+}

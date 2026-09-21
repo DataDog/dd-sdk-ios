@@ -1,0 +1,123 @@
+{
+  "schema_version": 1,
+  "work_item": "S1:F06 PR3214 hitch-assertion review corrections",
+  "status": "QUALIFIED_SIGNED_TEST_CORRECTION_PUBLISHED",
+  "recorded_at": "2026-09-21T17:59:46.496634+00:00",
+  "artifact_root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s1-hitch-review-3bgot45i",
+  "definition_sha256": "d05506167f463b007bd989dff4708fa527faafb36e62cf2fb4ae196dd1e28e5c",
+  "baseline": "8d7e429b0242c5b384417862e2418e2dbdffe500",
+  "worktree": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s1-hitch-review-3bgot45i/worktree",
+  "findings": [
+    {
+      "comment": 4064064757,
+      "fix": "Assert slow_frames is absent in every disabled-tracking source document, independent of reconstructed count."
+    },
+    {
+      "comment": 4064064782,
+      "fix": "Accept periodic full baselines and a terminal full document; each full document replaces optional payload state, each delta preserves omitted fields."
+    }
+  ],
+  "production_changes": false,
+  "gate_closures": [],
+  "native_runs": 1,
+  "head": "0deff4750a172309c79bcc916e99f575ccc37f8d",
+  "tree": "59ab089e82461854ad8bce31b91f143c7543c42a",
+  "signature": "G",
+  "qualification": {
+    "cases": 3,
+    "executions": 3,
+    "passed": 3,
+    "skips": 0,
+    "structured_runtime_warnings": 0,
+    "compiled_target_sources": 41,
+    "discovered_target_tests": 279,
+    "selected_tests": 3,
+    "reconstruction_controls": "12/12 pass; baseline rejects three valid full-baseline controls",
+    "selector_controls": "2 positive and8negative controls pass",
+    "strict_lint": "PASS zero violations",
+    "syntax": "PASS iOS17.5 target",
+    "source_dependency_protected_and_side_document_guards": "PASS",
+    "cleanup": "PASS host and owned simulator absent",
+    "deadline": "2026-09-21T18:04:50.985642+00:00",
+    "within_deadline": true
+  },
+  "publication": {
+    "status": "PUBLISHED_AND_VERIFIED",
+    "at": "2026-09-21T17:56:40.107562+00:00",
+    "head": "0deff4750a172309c79bcc916e99f575ccc37f8d",
+    "tree": "59ab089e82461854ad8bce31b91f143c7543c42a",
+    "previous_head": "8d7e429b0242c5b384417862e2418e2dbdffe500",
+    "pr": "https://github.com/DataDog/dd-sdk-ios/pull/3214",
+    "base": "develop",
+    "isDraft": false,
+    "body_sha256": "add0d4825c7699cfed5ebfd99a551aa6989f9f3a9686978381c9687c7317d2dc",
+    "signature_status": "TWO_OUTGOING_COMMITS_GOOD",
+    "sdk_changes": 0,
+    "merge": false,
+    "original_transport_timeout_preserved": true,
+    "strict_post_push_guard_stopped_before_description_edit": true,
+    "later_remote_readback_verified": true
+  },
+  "review": {
+    "reviewer": "/root/c06_runtime_plan",
+    "status": "PASS_BOUNDED_THREE_CASE_QUALIFICATION"
+  },
+  "artifacts": {
+    "definition.json": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s1-hitch-review-3bgot45i/definition.json",
+      "sha256": "d05506167f463b007bd989dff4708fa527faafb36e62cf2fb4ae196dd1e28e5c"
+    },
+    "source-commit.json": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s1-hitch-review-3bgot45i/source-commit.json",
+      "sha256": "d923c22f0bef57fb53284510898f7deb1410f7e87781b7ac308f9d1d3a80d0c0"
+    },
+    "baseline-controls.json": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s1-hitch-review-3bgot45i/baseline-controls.json",
+      "sha256": "fb44ab34d49a0afdad0d278a72c9c76b6bf79780705ad827d2612e142369689f"
+    },
+    "candidate-controls.json": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s1-hitch-review-3bgot45i/candidate-controls.json",
+      "sha256": "4230b694e98f89faf68781f2e443379201fb0cecd468e8a12bf92f8c4db06a80"
+    },
+    "selected-inventory-controls.json": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s1-hitch-review-3bgot45i/selected-inventory-controls.json",
+      "sha256": "14a6071d8480ba1bbc5d5e4347cc6c7fadae55545d3276cda46e5261124cfca6"
+    },
+    "source-freeze.json": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s1-hitch-review-3bgot45i/source-freeze.json",
+      "sha256": "55c07ed67a898b7f38c4b3a71ccf7561366acd415d2de8ec69918b7991503cc5"
+    },
+    "native/root-audit.json": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s1-hitch-review-3bgot45i/native/root-audit.json",
+      "sha256": "f1b1bd26f6460c4cff5c8b8af32a888ccd0aeccc34ad7099f8c45e67d4b0660e"
+    },
+    "native/run.json": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s1-hitch-review-3bgot45i/native/run.json",
+      "sha256": "b0581a5b42078e8909ac2bd01b2dee21e6410ce8c0842e1e1c4cc644ceeb17ae"
+    },
+    "owned-simulator-cleanup.json": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s1-hitch-review-3bgot45i/owned-simulator-cleanup.json",
+      "sha256": "8d060fe1ba3ece6a23cb47a9de30e3dc387c31a98c4c1c86d5ee49671a8c4640"
+    },
+    "final-review.json": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s1-hitch-review-3bgot45i/final-review.json",
+      "sha256": "7c86ebcb0b41a871a30cad0d4682ed45fac3a9ef44a1526896f44690f6a969ac"
+    },
+    "publication.json": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s1-hitch-review-3bgot45i/publication.json",
+      "sha256": "e0cee604ab61d2a5e03eb7887b8f7252e7f3279458c0f8ef511dec1880064e43"
+    }
+  },
+  "preserved_stops": [
+    "GNU copy flag rejected before native work",
+    "ANSI-colored usage output rejected before native work",
+    "Missing acceptance sibling import stopped preparation before simulator creation",
+    "Inherited Git URL rewrite caused SSH transport timeout; no remote update",
+    "Strict post-push readback stopped before description edit; subsequent remote readback verified"
+  ],
+  "remaining": [
+    "Current-head CI",
+    "Maintainer review",
+    "Separately authorized merge; only then E01 upstream verification and retarget"
+  ]
+}
