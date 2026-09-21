@@ -1284,8 +1284,8 @@ class RUMSessionScopeTests: XCTestCase {
     func testGivenRetainedResource_whenItSucceeds_itDoesNotCountInAnotherViewsAction() throws {
         let time = Date.mockDecember15th2019At10AMUTC()
         let scope: RUMSessionScope = .mockWith(parent: parent, startTime: time, dependencies: .mockWith(samplingRate: 100, trackFrustrations: true))
-        let h1 = ViewIdentifier("exp206-h1"), h2 = ViewIdentifier("exp206-h2")
-        let resourceKey = "exp206-h1-success"
+        let h1 = ViewIdentifier("previous-view"), h2 = ViewIdentifier("current-view")
+        let resourceKey = "previous-view-success"
 
         _ = scope.process(
             command: RUMStartViewCommand.mockWith(time: time, identity: h1),
@@ -1350,8 +1350,8 @@ class RUMSessionScopeTests: XCTestCase {
     func testGivenRetainedResource_whenItFails_itDoesNotFrustrateAnotherViewsAction() throws {
         let time = Date.mockDecember15th2019At10AMUTC()
         let scope: RUMSessionScope = .mockWith(parent: parent, startTime: time, dependencies: .mockWith(samplingRate: 100, trackFrustrations: true))
-        let h1 = ViewIdentifier("exp206-h1-error"), h2 = ViewIdentifier("exp206-h2-error")
-        let resourceKey = "exp206-h1-error"
+        let h1 = ViewIdentifier("previous-view-error"), h2 = ViewIdentifier("current-error-view")
+        let resourceKey = "previous-view-error"
 
         _ = scope.process(
             command: RUMStartViewCommand.mockWith(time: time, identity: h1),
@@ -1385,7 +1385,7 @@ class RUMSessionScopeTests: XCTestCase {
                 resourceKey: resourceKey,
                 time: time.addingTimeInterval(0.050),
                 message: "H1 error",
-                type: "EXP206",
+                type: "TestResourceError",
                 source: .network,
                 httpStatusCode: 500
             ),
@@ -1416,7 +1416,7 @@ class RUMSessionScopeTests: XCTestCase {
     func testGivenForeignResourceCompletion_whenActionExpires_itPreservesClockDrivenExpiration() throws {
         let time = Date(timeIntervalSinceReferenceDate: 0)
         let scope: RUMSessionScope = .mockWith(parent: parent, startTime: time, dependencies: .mockWith(samplingRate: 100))
-        let resourceKey = "exp206-expiring-completion"
+        let resourceKey = "completion-after-action-expiry"
         _ = scope.process(
             command: RUMStartViewCommand.mockWith(time: time, identity: ViewIdentifier("h1")),
             context: context,
@@ -1458,7 +1458,7 @@ class RUMSessionScopeTests: XCTestCase {
     func testGivenForeignResourceMetrics_whenActionExpires_itPreservesClockDrivenExpiration() throws {
         let time = Date(timeIntervalSinceReferenceDate: 0)
         let scope: RUMSessionScope = .mockWith(parent: parent, startTime: time, dependencies: .mockWith(samplingRate: 100))
-        let resourceKey = "exp206-expiring-metrics"
+        let resourceKey = "metrics-after-action-expiry"
         _ = scope.process(
             command: RUMStartViewCommand.mockWith(time: time, identity: ViewIdentifier("h1")),
             context: context,
@@ -1500,7 +1500,7 @@ class RUMSessionScopeTests: XCTestCase {
     func testGivenSameViewResource_whenItSucceeds_itCountsInCurrentAction() throws {
         let time = Date.mockDecember15th2019At10AMUTC()
         let scope: RUMSessionScope = .mockWith(parent: parent, startTime: time, dependencies: .mockWith(samplingRate: 100))
-        let resourceKey = "exp206-same-success"
+        let resourceKey = "same-view-success"
         _ = scope.process(
             command: RUMStartViewCommand.mockWith(time: time, identity: ViewIdentifier("same")),
             context: context,
@@ -1539,7 +1539,7 @@ class RUMSessionScopeTests: XCTestCase {
     func testGivenSameViewResource_whenItFails_itCountsAndFrustratesCurrentAction() throws {
         let time = Date.mockDecember15th2019At10AMUTC()
         let scope: RUMSessionScope = .mockWith(parent: parent, startTime: time, dependencies: .mockWith(samplingRate: 100, trackFrustrations: true))
-        let resourceKey = "exp206-same-error"
+        let resourceKey = "same-view-error"
         _ = scope.process(
             command: RUMStartViewCommand.mockWith(time: time, identity: ViewIdentifier("same")),
             context: context,
@@ -1565,7 +1565,7 @@ class RUMSessionScopeTests: XCTestCase {
                 resourceKey: resourceKey,
                 time: time.addingTimeInterval(0.040),
                 message: "same error",
-                type: "EXP206",
+                type: "TestResourceError",
                 source: .network,
                 httpStatusCode: 500
             ),
@@ -1757,8 +1757,9 @@ private class TimeseriesCollectorSpy: TimeseriesCollecting {
 
 extension RUMSessionScopeTests {
     func testGivenAutomaticUnownedCompletion_itDoesNotMutateCurrentAction() throws {
-        let fixture = E03ResourceScopeFixture()
-        fixture.startView("current"); fixture.startAction("current")
+        let fixture = RUMResourceCompletionFixture()
+        fixture.startView("current")
+        fixture.startAction("current")
         fixture.send(try fixture.automaticCompletion(error: false))
         fixture.send(try fixture.automaticCompletion(error: true))
         fixture.stopAction()
@@ -1768,33 +1769,45 @@ extension RUMSessionScopeTests {
     }
 
     func testGivenResourceStartedBeforeReplacementAction_itCountsOnlyCurrentOwningAction() throws {
-        let fixture = E03ResourceScopeFixture()
+        let fixture = RUMResourceCompletionFixture()
         let completion = try fixture.automaticCompletion(error: true)
         let key = try XCTUnwrap(completion as? RUMResourceCommand).resourceKey
-        fixture.startView("owner"); fixture.startResource(key)
-        fixture.startAction("first"); fixture.stopAction()
-        fixture.startAction("replacement"); fixture.send(completion); fixture.stopAction()
+        fixture.startView("owner")
+        fixture.startResource(key)
+        fixture.startAction("first")
+        fixture.stopAction()
+        fixture.startAction("replacement")
+        fixture.send(completion)
+        fixture.stopAction()
         try fixture.assertAction("first", resources: 0, errors: 0)
         try fixture.assertAction("replacement", resources: 0, errors: 1)
         XCTAssertEqual(fixture.errors.count, 1)
     }
 
     func testGivenUnknownManualCompletions_itPreservesLegacyActionCounts() throws {
-        let fixture = E03ResourceScopeFixture()
-        fixture.startView("manual"); fixture.startAction("manual")
-        fixture.stopResource("unknown"); fixture.stopResource("unknown")
-        fixture.failResource("unknown"); fixture.stopAction()
+        let fixture = RUMResourceCompletionFixture()
+        fixture.startView("manual")
+        fixture.startAction("manual")
+        fixture.stopResource("unknown")
+        fixture.stopResource("unknown")
+        fixture.failResource("unknown")
+        fixture.stopAction()
         try fixture.assertAction("manual", resources: 2, errors: 1)
         XCTAssertTrue(fixture.resources.isEmpty)
         XCTAssertTrue(fixture.errors.isEmpty)
     }
 
     func testGivenReusedManualKey_itCompletesCurrentTrackedResource() throws {
-        let fixture = E03ResourceScopeFixture()
-        fixture.startView("old"); fixture.startResource("reused"); fixture.stopResource("reused")
+        let fixture = RUMResourceCompletionFixture()
+        fixture.startView("old")
+        fixture.startResource("reused")
+        fixture.stopResource("reused")
         let old = try XCTUnwrap(fixture.resources.first).view.id
-        fixture.startView("new"); fixture.startAction("new"); fixture.startResource("reused")
-        fixture.failResource("reused"); fixture.stopAction()
+        fixture.startView("new")
+        fixture.startAction("new")
+        fixture.startResource("reused")
+        fixture.failResource("reused")
+        fixture.stopAction()
         XCTAssertEqual(fixture.resources.count, 1)
         XCTAssertEqual(fixture.errors.count, 1)
         XCTAssertNotEqual(try XCTUnwrap(fixture.errors.first).view.id, old)
@@ -1802,13 +1815,17 @@ extension RUMSessionScopeTests {
     }
 
     func testGivenAmbiguousAutomaticKey_itSettlesKnownOwnersWithoutMutatingForeignAction() throws {
-        let fixture = E03ResourceScopeFixture()
+        let fixture = RUMResourceCompletionFixture()
         let completion = try fixture.automaticCompletion(error: false)
         let key = try XCTUnwrap(completion as? RUMResourceCommand).resourceKey
-        fixture.startView("one"); fixture.startResource(key)
-        fixture.startView("two"); fixture.startResource(key)
-        fixture.startView("foreign"); fixture.startAction("foreign")
-        fixture.send(completion); fixture.stopAction()
+        fixture.startView("one")
+        fixture.startResource(key)
+        fixture.startView("two")
+        fixture.startResource(key)
+        fixture.startView("foreign")
+        fixture.startAction("foreign")
+        fixture.send(completion)
+        fixture.stopAction()
         try fixture.assertAction("foreign", resources: 0, errors: 0)
         XCTAssertEqual(fixture.resources.count, 2)
         XCTAssertEqual(Set(fixture.resources.map { $0.view.id }).count, 2)
@@ -1818,18 +1835,22 @@ extension RUMSessionScopeTests {
     }
 
     func testGivenMultipleManualOwners_itPreservesOwnersAndIgnoresForeignAction() throws {
-        let fixture = E03ResourceScopeFixture()
-        fixture.startView("one"); fixture.startResource("shared")
-        fixture.startView("two"); fixture.startResource("shared")
-        fixture.startView("foreign"); fixture.startAction("foreign")
-        fixture.stopResource("shared"); fixture.stopAction()
+        let fixture = RUMResourceCompletionFixture()
+        fixture.startView("one")
+        fixture.startResource("shared")
+        fixture.startView("two")
+        fixture.startResource("shared")
+        fixture.startView("foreign")
+        fixture.startAction("foreign")
+        fixture.stopResource("shared")
+        fixture.stopAction()
         XCTAssertEqual(fixture.resources.count, 2)
         XCTAssertEqual(Set(fixture.resources.map { $0.view.id }).count, 2)
         try fixture.assertAction("foreign", resources: 0, errors: 0)
     }
 }
 
-final class E03ResourceScopeFixture {
+final class RUMResourceCompletionFixture {
     let application: RUMApplicationScope
     let session: RUMSessionScope?
     let writer = FileWriterMock()

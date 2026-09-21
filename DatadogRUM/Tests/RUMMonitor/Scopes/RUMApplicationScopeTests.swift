@@ -741,9 +741,9 @@ class RUMApplicationScopeTests: XCTestCase {
     func testGivenStoppedSessionResource_whenItSucceeds_itDoesNotCountInNewSessionAction() throws {
         let time = Date.mockDecember15th2019At10AMUTC()
         let scope = createRUMApplicationScope(dependencies: .mockWith(samplingRate: 100, trackFrustrations: true))
-        let resourceKey = "exp206-stopped-success"
-        let firstView = ViewIdentifier("exp206-first")
-        let secondView = ViewIdentifier("exp206-second")
+        let resourceKey = "stopped-session-success"
+        let firstView = ViewIdentifier("previous-session-view")
+        let secondView = ViewIdentifier("current-session-view")
         _ = scope.process(
             command: RUMStartViewCommand.mockWith(time: time, identity: firstView),
             context: .mockAny(),
@@ -818,9 +818,9 @@ class RUMApplicationScopeTests: XCTestCase {
     func testGivenStoppedSessionResource_whenItFails_itDoesNotFrustrateNewSessionAction() throws {
         let time = Date.mockDecember15th2019At10AMUTC()
         let scope = createRUMApplicationScope(dependencies: .mockWith(samplingRate: 100, trackFrustrations: true))
-        let resourceKey = "exp206-stopped-error"
+        let resourceKey = "stopped-session-error"
         _ = scope.process(
-            command: RUMStartViewCommand.mockWith(time: time, identity: ViewIdentifier("exp206-first-error")),
+            command: RUMStartViewCommand.mockWith(time: time, identity: ViewIdentifier("previous-session-error-view")),
             context: .mockAny(),
             writer: writer
         )
@@ -837,7 +837,7 @@ class RUMApplicationScopeTests: XCTestCase {
             writer: writer
         )
         _ = scope.process(
-            command: RUMStartViewCommand.mockWith(time: time.addingTimeInterval(0.040), identity: ViewIdentifier("exp206-second-error")),
+            command: RUMStartViewCommand.mockWith(time: time.addingTimeInterval(0.040), identity: ViewIdentifier("current-session-error-view")),
             context: .mockAny(),
             writer: writer
         )
@@ -858,7 +858,7 @@ class RUMApplicationScopeTests: XCTestCase {
                 resourceKey: resourceKey,
                 time: time.addingTimeInterval(0.060),
                 message: "stopped error",
-                type: "EXP206",
+                type: "TestResourceError",
                 source: .network,
                 httpStatusCode: 500
             ),
@@ -906,13 +906,16 @@ class RUMApplicationScopeTests: XCTestCase {
 
 extension RUMApplicationScopeTests {
     func testGivenSameResourceKeyInSeparateApplications_itResolvesOwnersIndependently() throws {
-        let first = E03ResourceScopeFixture(applicationScope: true)
-        let second = E03ResourceScopeFixture(applicationScope: true)
+        let first = RUMResourceCompletionFixture(applicationScope: true)
+        let second = RUMResourceCompletionFixture(applicationScope: true)
         let completion = try first.automaticCompletion(error: true)
         let key = try XCTUnwrap(completion as? RUMResourceCommand).resourceKey
         for fixture in [first, second] {
-            fixture.startView("owner"); fixture.startAction("owner"); fixture.startResource(key)
-            fixture.send(completion); fixture.stopAction()
+            fixture.startView("owner")
+            fixture.startAction("owner")
+            fixture.startResource(key)
+            fixture.send(completion)
+            fixture.stopAction()
             XCTAssertEqual(fixture.errors.count, 1)
             try fixture.assertAction("owner", resources: 0, errors: 1)
         }
@@ -921,14 +924,17 @@ extension RUMApplicationScopeTests {
     }
 
     func testGivenExpiredAutomaticResourceOwner_itDoesNotAdoptRestoredView() throws {
-        let fixture = E03ResourceScopeFixture(applicationScope: true)
+        let fixture = RUMResourceCompletionFixture(applicationScope: true)
         let completion = try fixture.automaticCompletion(error: true)
         let key = try XCTUnwrap(completion as? RUMResourceCommand).resourceKey
-        fixture.startView("owner"); fixture.startResource(key)
+        fixture.startView("owner")
+        fixture.startResource(key)
         let previous = try XCTUnwrap(fixture.application.activeSession).sessionUUID
         fixture.time.addTimeInterval(RUMSessionScope.Constants.sessionTimeoutDuration + 1)
         fixture.send(completion)
-        fixture.startView("new"); fixture.startAction("new"); fixture.stopAction()
+        fixture.startView("new")
+        fixture.startAction("new")
+        fixture.stopAction()
         XCTAssertNotEqual(fixture.application.activeSession?.sessionUUID, previous)
         XCTAssertTrue(fixture.errors.isEmpty)
         XCTAssertTrue(fixture.resources.isEmpty)
