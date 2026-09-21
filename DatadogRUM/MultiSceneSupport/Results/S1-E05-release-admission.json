@@ -1,5 +1,5 @@
 {
-  "status": "REGISTERED_HOSTLESS_AND_PLATFORMS_QUALIFIED_BACKEND_REPLAY_PENDING",
+  "status": "PASS_LOCAL_QUALIFICATION_AUTOMATIC_AND_COMPOSED_REGISTERED_BACKEND",
   "recorded_at": "2026-09-21T05:58:47.019792+00:00",
   "candidate": {
     "checkout": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/deliveries/e05-20260920-rtzz6gpd/worktree",
@@ -106,7 +106,8 @@
       "decisive_test": "Two candidate cells, automatic and registered. In each, hold one request started before RUM and A/B requests started under distinct RUM owners, complete B then A with the pre-RUM completion after RUM exists, and require exactly three client spans with nil/A/B ownership, exact trace/header identities and native receipts. Reconcile complete service/run inventory plus each RUM session; a session-only query cannot find the intentionally unowned span. Freeze all expected local/backend event counts before admission. Preserve raw rows and reject extras or missing pagination.",
       "environment": "Simulator-capable native harness using permitted local credentials, unique fresh run ID and service, real Datadog backend; no live customer sessions implied.",
       "reuse": "Original local baseline reds prove the defect; do not repeat them solely to collect a second backend baseline.",
-      "status": "DEFINED_DELIVERABLE_NOT_EXECUTION_ADMISSION"
+      "status": "PASS_AUTOMATIC_AND_COMPOSED_REGISTERED_BACKEND",
+      "evidence": "backend_corrected_oracle_admission and backend_stable_identity_review; original registered FAIL and backend-only FAIL remain unchanged"
     }
   ],
   "remaining_compatibility": "Real ticket, current CI and human review remain. Session Replay captured-content testing and repair are excluded by user scope2026-09-21. Preserve historical failures without a PASS; host-app crash safety and non-disruption to other SDK features remain required. No fixture correction, waiver or full Replay run is required.",
@@ -485,7 +486,8 @@
       "sha256": "1d5e4cf77b38fbf3af48532929c4caaba264aeb02a544b8c9460e3d10d688914"
     },
     "no_sdk_changes": true,
-    "next": "Finish documentation checkpoint and independently scoped paired Replay topology diagnostic. E05 requires a fresh explicit bounded admission and refreshed preflight after this stopped window; no implicit retry or reused run identity."
+    "next": "Superseded by backend_corrected_oracle_admission and backend_registered_admission. No Replay content diagnostic, correction or waiver is required.",
+    "historical_next": "Finish documentation checkpoint and independently scoped paired Replay topology diagnostic. E05 requires a fresh explicit bounded admission and refreshed preflight after this stopped window; no implicit retry or reused run identity."
   },
   "backend_fresh_preparation": {
     "status": "STOPPED_AUTOMATIC_LOCAL_IDENTITY_REJECTION_REGISTERED_NOT_RUN",
@@ -566,5 +568,98 @@
       "sha256": "f81719630cb85bf7a51f5da5d3169ffb8efe4223e6bb352d26be3ab092ffd85c",
       "status": "INCONCLUSIVE_REQUIRES_NEW_AUTOMATIC_ADMISSION"
     }
-  }
+  },
+  "backend_corrected_oracle_admission": {
+    "status": "PASS_AUTOMATIC_NATIVE_RUM_APM_AND_CLEANUP",
+    "root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/deliveries/e05-20260920-rtzz6gpd/backend-local-oracle-correction-kekaysdq",
+    "native_admission_sha256": "28fa1f47ebdb81c9db63723acc30443606effba797e01556ee6e497115efc75d",
+    "helper_manifest_sha256": "be77351d99d0250ef3f5b2db250f3cecc42c0d9ecc430b23328f4b75e52c6b77",
+    "review": "/tmp/e05-trace-ownership-review-20260921/fresh-automatic-admission-review.json",
+    "review_sha256": "8966bfcdc508b97dc77e7c1b9fccb0c45b8a3972ca57baf6b066057569622afa",
+    "automatic_output": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/deliveries/e05-20260920-rtzz6gpd/backend-local-oracle-correction-kekaysdq/runs/automatic-9c599cb082",
+    "execution_deadline_ms": 1789979540525,
+    "cleanup_deadline_ms": 1789979660525,
+    "registered": "SEPARATELY_ADMITTED_FRESH_ROOT",
+    "same_source_fixture_build": true,
+    "result": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/deliveries/e05-20260920-rtzz6gpd/backend-local-oracle-correction-kekaysdq/runs/automatic-9c599cb082/summary.json",
+      "sha256": "4a3eae2851b807f0c2a60cfaa1d4a16eedf1e3059793d921ea8f1ff9c410f41d",
+      "state": "PASS",
+      "startup_rum": 3,
+      "final_rum_session": 7,
+      "final_rum_service": 7,
+      "span_service": 3,
+      "span_session": 2,
+      "native_launches": 1,
+      "cleanup": "PASS"
+    },
+    "result_review": {
+      "path": "/tmp/e05-trace-ownership-review-20260921/automatic-pass-registered-admission-review.json",
+      "sha256": "863d880313a8a5f7f41e5051bfd8f2ec465a62bc1b8fa9a9f9cd056e5a175f6d"
+    }
+  },
+  "backend_registered_admission": {
+    "status": "FAIL_ORIGINAL_STALE_REDUCER_PRESERVED",
+    "root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/deliveries/e05-20260920-rtzz6gpd/backend-registered-admission-11ph6z49",
+    "native_admission_sha256": "26b4bd46bda8c6bc1dd73101e58a8d04fcf55adad9ab7d827c1efdb1296d2a9e",
+    "helper_manifest_sha256": "be77351d99d0250ef3f5b2db250f3cecc42c0d9ecc430b23328f4b75e52c6b77",
+    "review": {
+      "path": "/tmp/e05-trace-ownership-review-20260921/registered-failure-review.json",
+      "sha256": "423849702ca87ccd9d8640d2637a89b82a2376377d5a757d310946c3dfa50d01"
+    },
+    "review_sha256": "863d880313a8a5f7f41e5051bfd8f2ec465a62bc1b8fa9a9f9cd056e5a175f6d",
+    "automatic_summary_sha256": "4a3eae2851b807f0c2a60cfaa1d4a16eedf1e3059793d921ea8f1ff9c410f41d",
+    "output": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/deliveries/e05-20260920-rtzz6gpd/backend-registered-admission-11ph6z49/runs/registered-fdb3d8b482",
+    "execution_deadline_ms": 1789980579909,
+    "cleanup_deadline_ms": 1789980699909,
+    "same_source_fixture_build": true,
+    "result": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/deliveries/e05-20260920-rtzz6gpd/backend-registered-admission-11ph6z49/runs/registered-fdb3d8b482/summary.json",
+      "sha256": "18b90e572e00c029d80aa4958451e9e3774692b9062e41184b5c1fff0bd72a71",
+      "failure": "derived session counts not settled",
+      "native_launches": 1,
+      "native_local": "PASS",
+      "startup_rum": 3,
+      "final_rum_session": 7,
+      "final_rum_service": 7,
+      "span_service": 3,
+      "span_session": 2,
+      "cleanup": "PASS"
+    }
+  },
+  "backend_registered_session_observation": {
+    "status": "FAIL_ORIGINAL_CROSS_QUERY_OPAQUE_ID_ASSUMPTION_PRESERVED",
+    "root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/deliveries/e05-20260920-rtzz6gpd/registered-settled-session-k84y49sm",
+    "admission_sha256": "5ebae37b5aadb7d69e720a00e1b4dddffe19b61df508a37ceb3822cd27440592",
+    "summary_sha256": "ace7bd41c68c1eabd53e32012e91477ea45c87d24c7e92388877f984f54205d6",
+    "native_launches": 0,
+    "review": {
+      "path": "/tmp/e05-trace-ownership-review-20260921/registered-cross-query-id-review.json",
+      "sha256": "f3e42d6c8c54f215d71097fbd28506d230a4823514b58a5dd9bbad2f8f488c75"
+    }
+  },
+  "backend_stable_identity_review": {
+    "status": "PASS_OFFLINE_COMPOSED_REGISTERED_INDEPENDENTLY_REVIEWED",
+    "root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/deliveries/e05-20260920-rtzz6gpd/backend-stable-identity-review-6mfeinmx",
+    "definition_sha256": "70c2bdbc56b53c31037670252ec523893d9332bc1dff6f01149023c20d031548",
+    "corrected_oracle_sha256": "999a5cefa577bd9b4e8dbbe2c1b3238b52026cda7ae427ea01cb4c405aaf06c1",
+    "result_sha256": "c6bd2f03dd62abb6e8a7ee4aadecc89908b1de1816b4a697be2d9595cf9a0080",
+    "real_evidence_passes": 2,
+    "existing_synthetic_positive": 4,
+    "existing_synthetic_negative": 33,
+    "new_synthetic_positive": 2,
+    "new_synthetic_negative": 15,
+    "original_stale_registered_rejected": true,
+    "native_launches": 0,
+    "backend_queries": 0,
+    "sdk_changes": 0,
+    "limits": "Separate composed registered acceptance; original stale-counter runtime FAIL and opaque-ID backend-only FAIL remain unchanged. All native, stable identity, source, within-response ID, duplicate, pagination, ownership and exact-count predicates remain.",
+    "final_review": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/deliveries/e05-20260920-rtzz6gpd/backend-stable-identity-review-6mfeinmx/final-review.json",
+      "sha256": "783b30c6ba175d0be59bba04b336c54d3803892eba63f80ca85c83c72d9ae00f",
+      "decision": "ACCEPT_COMPOSED_OFFLINE_E05_BACKEND_WITH_ORIGINAL_FAILURES_UNCHANGED"
+    }
+  },
+  "updated_at": "2026-09-21T09:00:56.220458+00:00",
+  "local_delivery_qualification": "Complete within source-matched packet scope; real ticket, current required CI, human review, outgoing signatures and separately authorized publication/merge remain."
 }

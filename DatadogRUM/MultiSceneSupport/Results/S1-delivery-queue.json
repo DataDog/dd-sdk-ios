@@ -161,13 +161,19 @@
         ],
         "remaining_checks": [
           "Real ticket for commit/title and delivery branch",
-          "Standalone H00 affected integration and required repository lint/iOS CI; qualified candidate test bytes are reused, not claimed as a new baseline run",
+          "Current required repository iOS CI",
           "Human review",
           "Separately authorized publication/merge and verified upstream tree"
         ]
       },
       "packet": "Results/S1-H00-E01-packets.json",
-      "replay_scope_disposition": "Results/S1-replay-scope-disposition.json"
+      "replay_scope_disposition": "Results/S1-replay-scope-disposition.json",
+      "standalone_hitch_qualification": {
+        "owner": "Results/S1-H00-E01-packets.json",
+        "status": "PASS_STANDALONE_TWO_CASES_AND_REPOSITORY_LINT",
+        "summary": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/deliveries/s1-initial-20260920-qqyq49od/h00-selected-inventory-u1xc_wbs/summary.json",
+        "summary_sha256": "2184b2879330189f63e23dcd554f54f5a264ae289ffa5a46b547041c4c6d182e"
+      }
     },
     {
       "owner": "Main execution session / SDK implementer",
@@ -238,7 +244,7 @@
       "rollback": "Revert E01 production/test/doc commits together while retaining H00; refresh affected feature-document verification.",
       "delivery": {
         "checkout": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/deliveries/s1-initial-20260920-qqyq49od/E01",
-        "delivery_head": "7915e1be91407663ba8a374d0c36f4b804280fd7",
+        "delivery_head": "ab71c3a6fb77307081f58b67d86d096d0340ce5f",
         "baseline_commit": "8d7e429b0242c5b384417862e2418e2dbdffe500",
         "body": "Delivery/E01-pr.md",
         "exact_tree_equal": true,
@@ -252,9 +258,9 @@
         ],
         "remaining_checks": [
           "Real ticket for commit/title and delivery branch",
-          "Missing repository-wide iOS schemes: DatadogSessionReplay, DatadogLogs, DatadogCrashReporting, DatadogWebViewTracking, DatadogFlags, DatadogProfiling; affected-suite F03 evidence remains accepted within its prior scope",
           "Current required CI and candidate F06 human review",
           "H00 verified upstream merge then content-equivalent rebase/retarget and affected revalidation only",
+          "Local references repaired and all five docs pass; refresh again if the final real-ticket delivery history is rewritten. Metadata-only changes do not invalidate runtime evidence.",
           "Separately authorized publication/merge"
         ]
       },
@@ -487,7 +493,7 @@
       ],
       "rollback": "Revert the standalone Resource repair and its documentation independently; it has no hard merge dependency.",
       "contract_proposal": "E03_COMPLETION_CONTRACT.md",
-      "next_action": "Paired topology diagnostic is complete; raw comparison remains unresolved only at the fixture-owned private Swift symbol. Preserve both93-layer inventories, original expected failures and all invalid attempts. Maintainers own fixture correction or scoped waiver before full Replay sign-off. Continue E05 backend qualification.",
+      "next_action": "Complete real-ticket metadata, current CI and human delivery review. Replay captured-content diagnostics, fixture correction and waiver are excluded; original failed evidence remains preserved.",
       "product_decision": "E03_RESOURCE_COMPLETION_DECISION.md",
       "implementation_worktree": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/exp214-repair-_6vxqe6i/worktree",
       "allowed_production_paths_after_design_admission": [
@@ -528,7 +534,8 @@
       "compatibility_summary": {
         "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/exp214-repair-_6vxqe6i/ios-compatibility-summary.json",
         "sha256": "aad0e4536d68df98de2828982b5026a821e1cc9365aa9219cafef0d10b2d1f14",
-        "status": "ELEVEN_SCHEMES_EXECUTED_STRICT_REPLAY_QUALIFICATION_OPEN"
+        "status": "NON_REPLAY_CHECKS_QUALIFIED_CONTENT_FAILURE_PRESERVED_OUT_OF_SCOPE",
+        "original_status": "ELEVEN_SCHEMES_EXECUTED_STRICT_REPLAY_QUALIFICATION_OPEN"
       },
       "review_followups": [
         {
@@ -697,7 +704,7 @@
       "gate_reference": "S1:E05; separate candidate freeze required",
       "title": "Preserve request-time RUM ownership in automatic traces",
       "branch_slug": "request-time-trace-ownership",
-      "state": "local_packet_registered_hostless_platforms_qualified_backend_replay_pending",
+      "state": "LOCAL_QUALIFICATION_PASS_DELIVERY_PENDING",
       "source_worktree": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/request-time-trace-ownership",
       "source_branch": "valpertui/request-time-trace-ownership",
       "source_head": "9254adbcbf5a1809219ec30f6cc07df4f3af4518",
@@ -728,14 +735,13 @@
       "decisive_test": "Reverse completion preserves each request's start-time RUM owner in outgoing baggage and serialized span. Explicit nil never adopts a later view. Preserve parent sampling, user/account context, caller headers and legacy missing-network-context fallback.",
       "environment": "Accepted full Trace and native public networking integration pair; audit/fill applicable registered mode, terminal cleanup, backend and platform/CI cells before release claims.",
       "remaining_gates": [
-        "E05-BACKEND: two candidate mode cells with complete service/session ownership inventory; exact execution admission pending",
-        "Real ticket, current CI and human review",
-        "Separately authorized publication/merge and verified upstream source"
+        "Real ticket, current required CI and human review",
+        "Sign outgoing history before separately authorized publication/merge and verified upstream source"
       ],
       "limits": [
         "Do not expand into PR2683 partial-carrier/header-merge policy",
         "Native qualification used automatic Trace with automatic RUM Resources disabled",
-        "Immediate unbind and backend ownership are not implied by the qualified automatic/registered native results."
+        "Immediate unbind and numerical footprint are not claimed; composed backend qualification preserves all original failures."
       ],
       "rollback": "Revert E05 ownership capture/write behavior and its tests/docs without reverting E01 networking.",
       "delivery_head": "399b01ea0e059186a139921a01a18bff7997648f",
@@ -746,7 +752,8 @@
       "remaining_iOS_schemes": [],
       "semantic_release_admission": {
         "path": "Results/S1-E05-release-admission.json",
-        "status": "REGISTERED_HOSTLESS_AND_PLATFORMS_QUALIFIED_BACKEND_REPLAY_PENDING"
+        "sha256": "23569ca945767fbd600b176c979a75b32ac4c6e67570bd43421c4093e16c6c19",
+        "status": "PASS_LOCAL_QUALIFICATION_AUTOMATIC_AND_COMPOSED_REGISTERED_BACKEND"
       },
       "source_reuse": "All production and accepted automatic/registered/Trace tests remain identical; the separate Core header expectation is corrected to the approved request-time contract and passes complete Core requalification.",
       "registered_qualification": {
@@ -856,15 +863,12 @@
         "within_deadline": true
       },
       "backend_qualification": {
-        "status": "LOCAL_REAUDIT_PASS_BACKEND_INCONCLUSIVE",
-        "owning_result": "Results/S1-E05-release-admission.json",
-        "native_automatic_attempts": 3,
-        "backend_passes": 0,
-        "registered_launches": 0,
-        "latest_summary": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/deliveries/e05-20260920-rtzz6gpd/backend-local-id-review-c6tu7rho/backend-only/summary.json",
-        "summary_sha256": "38ca2fc004797c127b32626377378a23799476205e5d3c645d20f0c6050bb30a"
+        "automatic": "PASS_NATIVE_RUM_APM_AND_CLEANUP",
+        "registered": "PASS_COMPOSED_OFFLINE_INDEPENDENTLY_REVIEWED",
+        "owner": "Results/S1-E05-release-admission.json",
+        "original_failures_preserved": true
       },
-      "next_action": "Review preserved upload/cleanup boundary before any fresh bounded automatic admission; registered remains unadmitted.",
+      "next_action": "Complete external delivery prerequisites; no accepted runtime checks repeat.",
       "replay_scope_disposition": "Results/S1-replay-scope-disposition.json"
     },
     {
@@ -986,7 +990,7 @@
     "develop_verified": "62f64d7b655bdc83f3036c4ad81090a270f6202b",
     "EXP213": "complete; signed unit-onlyef9d9732; SDK-on native P03 remains open",
     "local_packets": "Results/S1-H00-E01-packets.json",
-    "next_repair": "Fresh bounded E05 automatic backend admission after source-reviewed early-cleanup stop; no Replay content work. Current CI, real tickets and human review remain.",
+    "next_repair": "No S1 SDK repair established; local preparation checkpoint complete.",
     "independent_local_packets": "Results/S1-independent-packets.json",
     "E03_product_amendment": "2026-09-20T21:53:03.431125+00:00",
     "E03": "2026-09-21T01:25:46.369482+00:00",
@@ -998,9 +1002,9 @@
     "E04_compatibility": "2026-09-21T03:18:51.689000+00:00",
     "E04_platforms": "2026-09-21T03:27:16.488943+00:00",
     "E05_compatibility": "2026-09-21T04:28:01.427156+00:00",
-    "next_execution": "E05 upload/cleanup review; finish packet docs and review prerequisites. Session Replay captured-content testing/repair is excluded; no full Replay prerequisite.",
-    "E05_backend": "2026-09-21T05:58:47.019792+00:00",
+    "next_execution": "Define exactly three S2 SDK-on async host-lifetime checks from EXP213; keep S1 delivery prerequisites pending.",
+    "E05_backend": "2026-09-21T09:00:56.220458+00:00",
     "documentation": "2026-09-21T07:38:08.196508+00:00"
   },
-  "last_updated_at": "2026-09-21T07:38:08.196508+00:00"
+  "last_updated_at": "2026-09-21T09:00:56.220458+00:00"
 }

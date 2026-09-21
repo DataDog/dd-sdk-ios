@@ -136,3 +136,17 @@ public upstream ref. Only the qualified test file changes; its SHA remains
 The original URLSession history is intact, accepted tests were not rerun, and no
 upstream action occurred. Signing timed out; the authorized local unsigned fallback
 succeeded. Separate upstream delivery and the dependent rebase remain pending.
+
+
+The independent H00 delivery now closes its missing standalone local check:
+exactly two unchanged hitch cases pass on17.5 with zero skips or structured
+runtime warnings, complete41-source target compilation and cleanup. Existing
+strict repository lint passes734 source and709 test files without violations.
+The [H00 packet](../Results/S1-H00-E01-packets.json) binds signed8d7e429b,
+source/dependency/build/result hashes and the unchanged absolute deadline.
+Its original discovery executed zero assertions and stopped because Xcode marks
+explicitly unselected tests disabled. The separately reviewed correction binds
+all278 target identifiers, exactly two enabled and276 deliberately excluded;
+selected disabled, wrong/extra/missing/duplicate identifiers still reject.
+Preserve that stop and the earlier exact-selector/control-target corrections.
+This adds no full Integration, remote CI, Replay or release-freeze claim.

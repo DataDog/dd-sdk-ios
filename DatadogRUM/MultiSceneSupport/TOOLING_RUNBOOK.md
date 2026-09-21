@@ -2787,3 +2787,25 @@ evidence passed, but its continuation stopped at3 RUM rows instead of7; original
 cleanup followed the earlier local assertion failure. Review that upload boundary
 before admitting any new native run. [The E05 record](Results/S1-E05-release-admission.json)
 owns exact artifacts and any later disposition; no existing admission is extended.
+
+
+### Selected test inventories and cross-query backend identity
+
+Before assertions run, bind the exact selected test identifiers, not just their
+count. Xcode discovery may mark every deliberately unselected case disabled;
+freeze the full inventory and require only the selected methods and their parents
+to be enabled. Reject extra, missing, duplicate or disabled selected IDs and require
+the complete target source list. H00 preserves its original zero-assertion discovery
+stop; its qualified two-case run and repository lint are owned by
+[the H00 packet](Results/S1-H00-E01-packets.json).
+
+An exact event count does not prove that a derived session reducer has settled.
+Require its terminal counters and stable identity independently. A later observation
+needs a separate frozen admission; retain original results and deadlines. Compare
+client events across queries by stable type/event identity and full relevant payload;
+compare reducers by session, document version, initial view and terminal counts.
+Opaque search-envelope IDs need only bind each row to its raw response and remain
+unique within that response; they are not stable cross-query event identities.
+Preserve completeness, pagination and ownership negative controls. The
+[E05 admission](Results/S1-E05-release-admission.json) distinguishes original FAILs
+from accepted composed offline evidence. No retry or original-result overwrite is implied.

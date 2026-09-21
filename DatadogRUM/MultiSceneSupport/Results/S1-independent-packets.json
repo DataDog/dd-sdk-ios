@@ -1353,7 +1353,7 @@
     },
     {
       "id": "E05",
-      "state": "LOCAL_PACKET_REGISTERED_HOSTLESS_PLATFORMS_QUALIFIED_BACKEND_REPLAY_PENDING",
+      "state": "LOCAL_QUALIFICATION_PASS_DELIVERY_PENDING",
       "prepared_at": "2026-09-20T21:36:00.110051+00:00",
       "ticket": null,
       "named_reviewer": null,
@@ -1401,7 +1401,7 @@
         "9175dd7af56ddd6cc9bf66e835e4ef519f2d124c G"
       ],
       "body": "Delivery/E05-pr.md",
-      "body_sha256": "761f92c08e55e5e1d9c28ab4467491adc5b64822a9097bec6b9bf7985332ea3e",
+      "body_sha256": "13eddace669885aa68ca0245c8216d28437385233f157b18bebb56b21b88c104",
       "evidence": [
         {
           "kind": "qualified_source_rebinding",
@@ -1415,8 +1415,8 @@
         {
           "kind": "independent_changed_edge_review_and_finite_admission",
           "path": "Results/S1-E05-release-admission.json",
-          "sha256": "8ad3dca02e93b5d5203958213c42a6e985d2ef1d775091af30fd80a1b9a1f294",
-          "status": "REGISTERED_HOSTLESS_AND_PLATFORMS_QUALIFIED_BACKEND_REPLAY_PENDING"
+          "sha256": "23569ca945767fbd600b176c979a75b32ac4c6e67570bd43421c4093e16c6c19",
+          "status": "PASS_LOCAL_QUALIFICATION_AUTOMATIC_AND_COMPOSED_REGISTERED_BACKEND"
         }
       ],
       "dependency_pins_and_build_identity": "Owned by the linked qualified/current receipts; no new runtime identities are inferred for source-only rebinding.",
@@ -1772,7 +1772,7 @@
           }
         }
       ],
-      "new_runtime_admission": "Hostless, registered Integration and platform checks are complete. The automatic native attempt remains INVALID; its separately corrected local re-audit passes, but backend-only continuation is INCONCLUSIVE after count3 instead of7. No native/backend lane is active and no registered run is admitted.",
+      "new_runtime_admission": "No new native/backend run due. Local qualification complete; current CI and human delivery remain.",
       "public_API": "Source-identical public declarations and bridge/header/build inputs; only internal implementations differ. Verify affected compilation before delivery.",
       "CI": "NOT_RUN_ON_UNPUBLISHED_DELIVERY_HEAD",
       "human_review": "PENDING",
@@ -1782,18 +1782,16 @@
       "limits": [
         "Do not expand into PR2683 partial-carrier/header-merge policy",
         "Native qualification used automatic Trace with automatic RUM Resources disabled",
-        "Immediate unbind and backend ownership are not implied by the qualified automatic/registered native results.",
+        "Immediate unbind and numerical footprint are not claimed; composed backend qualification preserves all original failures.",
         "Session Replay captured-content testing and repair are excluded by user scope2026-09-21. Preserve historical failures without a PASS; host-app crash safety and non-disruption to other SDK features remain required. No fixture correction, waiver or full Replay run is required."
       ],
       "rollback": "Revert E05 ownership capture/write behavior and its tests/docs without reverting E01 networking.",
       "feature_docs": "PASS_ALL_FIVE_DOCUMENTS_AND_REGISTRY",
-      "additional_finite_admission_required": [
-        "E05-BACKEND: exactly two candidate mode cells with nil/A/B client spans and complete service/session inventory; freeze exact counts and publication windows before execution"
-      ],
+      "additional_finite_admission_required": [],
       "semantic_release_admission": {
         "path": "Results/S1-E05-release-admission.json",
-        "sha256": "8ad3dca02e93b5d5203958213c42a6e985d2ef1d775091af30fd80a1b9a1f294",
-        "status": "REGISTERED_HOSTLESS_AND_PLATFORMS_QUALIFIED_BACKEND_REPLAY_PENDING"
+        "sha256": "23569ca945767fbd600b176c979a75b32ac4c6e67570bd43421c4093e16c6c19",
+        "status": "PASS_LOCAL_QUALIFICATION_AUTOMATIC_AND_COMPOSED_REGISTERED_BACKEND"
       },
       "completion_cleanup_disposition": "Source-matched EXP208 tests and independent review cover all changed completion guards and value-only captures; no immediate-unbind or task/host retention promise is added.",
       "registered_qualification": {
@@ -1903,9 +1901,15 @@
         "cleanup": "PASS",
         "within_deadline": true
       },
-      "next_execution": "Independent review of the preserved backend ingestion stop; no retry, fresh native execution or registered admission is implied.",
-      "replay_scope_disposition": "Results/S1-replay-scope-disposition.json"
+      "next_execution": "Real ticket/current required CI/human review and outgoing signatures before separately authorized publication/merge.",
+      "replay_scope_disposition": "Results/S1-replay-scope-disposition.json",
+      "backend_qualification": {
+        "automatic": "PASS_NATIVE_RUM_APM_AND_CLEANUP",
+        "registered": "PASS_COMPOSED_OFFLINE_INDEPENDENTLY_REVIEWED",
+        "owner": "Results/S1-E05-release-admission.json",
+        "original_failures_preserved": true
+      }
     }
   ],
-  "updated_at": "2026-09-21T07:38:08.196508+00:00"
+  "updated_at": "2026-09-21T09:00:56.220458+00:00"
 }

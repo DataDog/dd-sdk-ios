@@ -25,7 +25,7 @@
       ],
       "named_reviewer": null,
       "body": "Delivery/H00-pr.md",
-      "body_sha256": "2221613c3f32f96cd11eea4171f4444dd684184952028dbc31b413f135cdcc22",
+      "body_sha256": "ae7bf9857db6f08b880b3a2d1139d4efe2f5ae2147cf7aaabef3aea23a783809",
       "checkout": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/deliveries/s1-initial-20260920-qqyq49od/H00",
       "detached_until_real_ticket": true,
       "baseline_commit": "62f64d7b655bdc83f3036c4ad81090a270f6202b",
@@ -67,10 +67,63 @@
       "dependency": null,
       "remaining_checks": [
         "Real ticket for commit/title and delivery branch",
-        "Standalone H00 affected integration and required repository lint/iOS CI; qualified candidate test bytes are reused, not claimed as a new baseline run",
+        "Current required repository iOS CI",
         "Human review",
         "Separately authorized publication/merge and verified upstream tree"
-      ]
+      ],
+      "standalone_hitch_qualification": {
+        "status": "PASS_STANDALONE_TWO_CASES_AND_REPOSITORY_LINT",
+        "root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/deliveries/s1-initial-20260920-qqyq49od/h00-standalone-hitches-z3xux7xf",
+        "definition_sha256": "c213018b045b9c697331c8b2a4c9c07da4f3cf9e9f3c4b7e37365a5cd4f3774a",
+        "source_freeze_sha256": "5e3f1e62acab1a388ced8ac444c66625b14c9ccc94f363ceeefca439f70719c6",
+        "deadline": "2026-09-21T08:54:12.582386+00:00",
+        "source_inputs": 1864,
+        "expected_cases": 2,
+        "expected_runs": 2,
+        "allowed_skips": 0,
+        "review": {
+          "path": "/tmp/e05-trace-ownership-review-20260921/h00-selector-binding-correction-review-v2.json",
+          "sha256": "959666d84e21a7306a2042398d7b0340dabc95e6d75f282ac11a918b89530370"
+        },
+        "selector_controls": {
+          "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/deliveries/s1-initial-20260920-qqyq49od/h00-standalone-hitches-z3xux7xf/selector-controls.json",
+          "sha256": "2a25b085019704ee5205f5bfb295461f8308e31ab49992747730e811922fe446"
+        },
+        "original_discovery_stop": {
+          "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/deliveries/s1-initial-20260920-qqyq49od/h00-standalone-hitches-z3xux7xf/native/discover-run.json",
+          "sha256": "9afd73fcc6933e1865cd068c3aa588aed1769e2d714188deca3ca482de47582e",
+          "failure": "wrong target or disabled discovery entries",
+          "assertion_executions": 0,
+          "cleanup": "PASS"
+        },
+        "corrected_discovery": {
+          "status": "PASS",
+          "root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/deliveries/s1-initial-20260920-qqyq49od/h00-selected-inventory-u1xc_wbs",
+          "definition_sha256": "79630e2071731f4e6831bb6f58c141c7b2877ffa61480e128fb9758786267551",
+          "source_freeze_sha256": "05387877595f46061d22c35b3f92df53e491ae8b7fee5b428e42266737ac4454",
+          "review": {
+            "path": "/tmp/e05-trace-ownership-review-20260921/h00-selected-inventory-admission-review.json",
+            "sha256": "517a414b039405e114b04e592c9a82df892e4e489d4541a36905dd05eab5e89f"
+          },
+          "deadline": "2026-09-21T08:54:12.582386+00:00",
+          "test_execution": "PASS_TWO_CASES"
+        },
+        "summary": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/deliveries/s1-initial-20260920-qqyq49od/h00-selected-inventory-u1xc_wbs/summary.json",
+        "summary_sha256": "2184b2879330189f63e23dcd554f54f5a264ae289ffa5a46b547041c4c6d182e",
+        "compiled_integration_sources": 41,
+        "passed": 2,
+        "executions": 2,
+        "skips": 0,
+        "runtime_warnings": 0,
+        "cleanup": "PASS",
+        "strict_repository_lint": {
+          "status": "PASS",
+          "sources": 734,
+          "tests": 709,
+          "violations": 0,
+          "swiftlint_version": "0.65.0"
+        }
+      }
     },
     {
       "id": "E01",

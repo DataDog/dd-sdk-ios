@@ -144,3 +144,32 @@ with fresh identity/deadlines and the corrected oracle, is the smallest decisive
 continuation; it must retain the app through all backend inventories. Registered
 remains unadmitted until automatic fully passes. The owning result preserves exact
 artifact hashes, reviews and the original stops. No Replay test or SDK repair follows.
+
+
+### S1 backend completion — 2026-09-21
+
+The corrected automatic cell passes native/RUM/APM and cleanup: startup RUM3,
+final session7/service7, client spans3/session-owned spans2. Its summary is
+4a3eae2851b807f0c2a60cfaa1d4a16eedf1e3059793d921ea8f1ff9c410f41d.
+Three real requests retain nil/A/B ownership and complete B, A, then unowned.
+
+The separately admitted registered cell completed all native predicates and
+inventories, but its original summary18b90e57 remains FAIL: the first session
+reducer was document22 with view/action counts1/0. A later service query observed
+document30 with3/2. One separately admitted session-only observation settled the
+reducer but its original summaryace7bd41 remains FAIL under cross-query opaque-ID
+equality. All seven search-envelope IDs differed while stable event identities
+and complete client projections matched. Neither original result is relabeled.
+
+An isolated offline correction compares reducer session ID, document version,
+initial-view ID and all terminal counts, retaining complete client projections,
+within-response raw/outer IDs, duplicate/page/completeness, ownership, source,
+startup, native and cleanup guards. Automatic and composed registered evidence
+pass; the original stale registered evidence still rejects. Existing four positive/
+33 negative and new two positive/15 negative controls pass. Preserve the initial
+synthetic control stop caused by aliased fixture responses. No SDK change, native
+launch or backend query occurred in this correction. Resultc6bd2f03 and independent
+review783b30c6 close E05-BACKEND as composed evidence. The owning
+[admission record](../Results/S1-E05-release-admission.json) binds durable paths
+and full hashes. Real ticket, current required CI, human review, outgoing signatures
+and separately authorized delivery remain. No broader release gate closes.

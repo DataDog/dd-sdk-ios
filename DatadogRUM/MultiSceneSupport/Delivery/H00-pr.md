@@ -6,7 +6,7 @@ View-hitch integration assertions currently inspect the final RUM view update as
 
 Apply full and delta documents in document-version order. An omitted field preserves the previous value; an explicit empty value clears it. Keep the workload, timing and hitch thresholds unchanged. Missing-frame and appended-empty controls must still fail.
 
-Validation: the original assertion failed on both develop and the URLSession candidate. Both histories reconstructed one stopped view with one hitch, and six malformed-history controls per arm rejected. The corrected test file then passed in the complete 278-test integration run on iOS 17.5. This delivery commit has exactly the qualified test-file bytes; a fresh standalone H00/required CI run is pending. No production source changes.
+Validation: the original assertion failed on both develop and the URLSession candidate. Both histories reconstructed one stopped view with one hitch, and six malformed-history controls per arm rejected. The corrected test file then passed in the complete 278-test integration run on iOS 17.5. The standalone delivery now passes both changed-class tests on iOS 17.5, with no skips or structured runtime warnings, complete 41-file target compilation and verified cleanup. Repository strict lint passes all 734 source and 709 test files with zero violations. Current CI and human review remain pending. No production source changes.
 
 ### Review checklist
 
