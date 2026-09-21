@@ -48,7 +48,7 @@
       "H00",
       "E01"
     ],
-    "next_repair": "EXP-214 / E03-D candidate compatibility and delivery checkpoint before S2 expansion",
+    "next_repair": "No unqualified S1 SDK repair remains; investigate current CI or new attributable review findings.",
     "independent_packet_priority": [
       "DL01",
       "E02",
@@ -476,16 +476,16 @@
       "id": "E03",
       "gate_reference": "S1:E03; signed repair and owner contract qualified; E03-D remains",
       "title": "Keep Resource completion counters on their owning view",
-      "title_provisional": true,
+      "title_provisional": false,
       "branch_slug": "resource-completion-ownership",
-      "state": "DRAFT_PUBLISHED_UPSTREAM_CONFLICT",
+      "state": "DRAFT_PUBLISHED_AWAITING_CI_REVIEW",
       "source_worktree": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/resource-completion-ownership",
       "source_branch": "valpertui/resource-completion-ownership",
       "source_head": "62f64d7b655bdc83f3036c4ad81090a270f6202b",
-      "production_revision": "562cf74dde410767caf95561e68f2f021feb471c",
+      "production_revision": "b3c60b7b9e40fe0fc44bee03a78f0023fe62a28c",
       "selected_commits": [
-        "562cf74dde410767caf95561e68f2f021feb471c",
-        "385583bf42dafd51e148967ea500c2e9bae61646"
+        "b3c60b7b9e40fe0fc44bee03a78f0023fe62a28c",
+        "1b2bff3e72e0c9e3f88869ea548868cd6f2f7cf8"
       ],
       "target": "develop unless the admitted design proves a specific dependency",
       "hard_merge_dependencies": [],
@@ -516,13 +516,13 @@
         "DatadogRUM/MultiSceneSupport/Experiments/EXP-206-resource-action-ownership.md",
         "DatadogRUM/MultiSceneSupport/Results/EXP-206-resource-action-ownership.json",
         "DatadogRUM/MultiSceneSupport/Results/EXP-206-ownership-design-review.json",
-        "DatadogRUM/MultiSceneSupport/Results/EXP-214-resource-action-design.json"
+        "DatadogRUM/MultiSceneSupport/Results/EXP-214-resource-action-design.json",
+        "DatadogRUM/MultiSceneSupport/Results/EXP-219-upstream-resource-integration.json"
       ],
       "decisive_test": "Keep four original foreign ownership reds and four ordinary/100ms expiry controls. Preserve all nine historical bodies/baseline; supersede ninth automatic role explicitly. Actual-handler/native failed-body transfer produces one owning network Error, zero completed Resources, controlled action0/1 with received status; successful/HEAD/204 and manual compatibility remain unchanged.",
       "environment": "Bounded source/design review first, then affected RUM unit and native public-monitor/actual-handler tests on available supported runtime; candidate compatibility/CI after a compatible repair exists.",
       "remaining_gates": [
-        "Reconcile new develop Resource-cache conflict and qualify the combined source",
-        "Current-base CI and human review",
+        "Current-head CI and maintainer review",
         "Separately authorized merge and verified upstream source"
       ],
       "candidate_design": "Single automatic error terminal plus per-dispatch known-owner IDs; action filtering follows expiry and preserves matching Resource/TNS settlement and unknown manual compatibility.",
@@ -534,9 +534,9 @@
       ],
       "rollback": "Revert the standalone Resource repair and its documentation independently; it has no hard merge dependency.",
       "contract_proposal": "E03_COMPLETION_CONTRACT.md",
-      "next_action": "Reconcile and test the upstream Resource-cache changes in a separate checkout.",
+      "next_action": "Inspect current-head CI and address attributable review findings; accepted EXP-219 tests need no repetition.",
       "product_decision": "E03_RESOURCE_COMPLETION_DECISION.md",
-      "implementation_worktree": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/exp214-repair-_6vxqe6i/worktree",
+      "implementation_worktree": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp219-upstream-integration-l_p4vm9s/worktree",
       "allowed_production_paths_after_design_admission": [
         "DatadogRUM/Sources/RUMMonitor/RUMCommand.swift",
         "DatadogRUM/Sources/RUMMonitor/Scopes/RUMApplicationScope.swift",
@@ -548,10 +548,11 @@
       "completed_steps": [
         "E03-A: compatible six-file design reviewed; metadata distinction explicit",
         "E03-B: original9 bodies preserved;15unit and9native baseline cases qualified with invalid attempts retained",
-        "E03-C: signed compatible repair, full RUM925/961 and9 native XCTest passes with classified inherited diagnostic; source review confirms metrics preserve fixed expiry and action counters"
+        "E03-C: signed compatible repair, full RUM925/961 and9 native XCTest passes with classified inherited diagnostic; source review confirms metrics preserve fixed expiry and action counters",
+        "E03 current-develop integration: EXP219 sourceb3c60b7b/docs1b2bff3e; RUM920/956,metrics9/9,native9/9, strict semantics/lint/API/docs/review/cleanup pass."
       ],
-      "delivery_head": "f43d812d85d96bea88b6b3e944d9210f0406405d",
-      "delivery_checkout": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/exp214-repair-_6vxqe6i/worktree",
+      "delivery_head": "1b2bff3e72e0c9e3f88869ea548868cd6f2f7cf8",
+      "delivery_checkout": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp219-upstream-integration-l_p4vm9s/worktree",
       "packet": "Results/S1-E03-packet.json",
       "body": "Delivery/E03-pr.md",
       "allowed_additional_test_paths": [
@@ -581,27 +582,30 @@
       "review_followups": [
         {
           "id": "E03-D-REPLAY-FIXTURE",
+          "status": "REMOVED_BY_USER_SCOPE_NOT_PASSED",
           "owner": [
             "@DataDog/rum-mobile",
             "@DataDog/rum-mobile-ios"
           ],
-          "dependency": "Maintainer-owned correction or explicit waiver of the inherited private _UIScrollPocket fixture requirement; preserve candidate/develop results.",
-          "decisive_test": "After an admitted fixture correction, complete exact full Replay inventory and original assertions on the corrected clean hosted environment; alternatively record explicit scoped maintainer waiver. No automatic skip or threshold relaxation.",
-          "environment": "Xcode27.1, regular iPhone26.5, frozen candidate source and dependency/binary identities; clean Example host. SDK27/runtime27 needs a separately admitted scene-compatible host.",
-          "moment": "Before E03 full compatibility/release-review sign-off; independent S1 packets may continue now."
+          "dependency": "Results/S1-replay-scope-disposition.json",
+          "decisive_test": "No Replay-content test or repair; retain prior failures. Only host crash safety and other-feature non-disruption remain required.",
+          "environment": "No new runtime admitted",
+          "moment": "Not a release prerequisite"
         }
       ],
       "replay_topology_diagnostic": "Results/S1-E03-packet.json",
       "replay_scope_disposition": "Results/S1-replay-scope-disposition.json",
       "documentation_checkpoint": "Results/S1-documentation-checkpoint.json",
-      "body_sha256": "4de7f2c76e88145388afd01f1b8e8d3eaf8deb226f70821e73280f8f27f3adb4",
+      "body_sha256": "5b7edd6e9affb00a5ff36580ac6955a89cd713a90eeaf14f773917721e62088a",
       "path_inventory_owner": "Results/S1-E03-packet.json",
       "local_preparation": "Results/S1-local-preparation.json",
       "outgoing_signature_status": "ALL_VERIFIED_GOOD",
       "pr_number": 3218,
       "remote_branch": "valpertui/resource-completion-ownership",
       "remote_base": "develop",
-      "publication_record": "Results/S1-publication.json"
+      "publication_record": "Results/S1-publication.json",
+      "upstream_reconciliation": "Results/EXP-219-upstream-resource-integration.json",
+      "historical_compatibility_scope": "Existing platform/core/compatibility fields remain qualified on their recorded pre-reconciliation source; current-head CI still required."
     },
     {
       "owner": "Main execution session / SDK implementer",
@@ -1072,7 +1076,7 @@
   "checkpoint": {
     "at": "2026-09-20T21:36:00.110051+00:00",
     "main_source_checkpoint": "430075a1e11ef66ffdd6a989bef2d2dc156d52c6",
-    "develop_verified": "62f64d7b655bdc83f3036c4ad81090a270f6202b",
+    "develop_verified": "9a8a66c3da7859437fcb3139455b51e07bd150c7",
     "EXP213": "complete; signed unit-onlyef9d9732; SDK-on native P03 remains open",
     "local_packets": "Results/S1-H00-E01-packets.json",
     "next_repair": "No S1 SDK repair established; local preparation checkpoint complete.",
@@ -1087,13 +1091,14 @@
     "E04_compatibility": "2026-09-21T03:18:51.689000+00:00",
     "E04_platforms": "2026-09-21T03:27:16.488943+00:00",
     "E05_compatibility": "2026-09-21T04:28:01.427156+00:00",
-    "next_execution": "Reconcile E03 with develop9a8a66c3; CI and human review continue independently for seven drafts.",
+    "next_execution": "S1 current CI/human review; E03 reconciliation is published. Resume S2 app preparation and bounded API-document reconciliation.",
     "E05_backend": "2026-09-21T09:00:56.220458+00:00",
     "documentation": "2026-09-21T07:38:08.196508+00:00",
     "local_signed_preparation": "2026-09-21T11:49:36.360508+00:00",
-    "publication": "2026-09-21T13:07:47.472746+00:00"
+    "publication": "2026-09-21T13:07:47.472746+00:00",
+    "E03_upstream_reconciliation": "2026-09-21T14:01:34.522669+00:00"
   },
-  "last_updated_at": "2026-09-21T13:07:47.472746+00:00",
+  "last_updated_at": "2026-09-21T14:01:34.522669+00:00",
   "publication": {
     "status": "SEVEN_DRAFTS_PUBLISHED_AND_VERIFIED",
     "record": "Results/S1-publication.json",

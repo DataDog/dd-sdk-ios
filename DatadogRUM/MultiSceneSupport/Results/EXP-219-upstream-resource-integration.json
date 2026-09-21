@@ -1,0 +1,244 @@
+{
+  "schema_version": 1,
+  "id": "EXP-219",
+  "status": "QUALIFIED_SIGNED_AND_PUBLISHED",
+  "defined_at": "2026-09-21T13:13:47.700018+00:00",
+  "deadline": "2026-09-21T15:13:47.700018+00:00",
+  "gate": "S1:E03 and S1:F06 current-base delivery integration",
+  "owner": "SDK implementer + existing independent reviewer",
+  "artifact_root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp219-upstream-integration-l_p4vm9s",
+  "worktree": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp219-upstream-integration-l_p4vm9s/worktree",
+  "qualified_original_head": "f43d812d85d96bea88b6b3e944d9210f0406405d",
+  "qualified_original_baseline": "62f64d7b655bdc83f3036c4ad81090a270f6202b",
+  "new_upstream": "9a8a66c3da7859437fcb3139455b51e07bd150c7",
+  "pr_url": "https://github.com/DataDog/dd-sdk-ios/pull/3218",
+  "remote_branch": "valpertui/resource-completion-ownership",
+  "purpose": "Resolve the observed PR conflict with upstream Resource delivery_type/transfer_size while preserving the qualified E03 failed-transfer and owner contracts. This qualifies changed inputs, not a repeat merely to resume.",
+  "allowed_paths": [
+    "CHANGELOG.md",
+    "Datadog/IntegrationUnitTests/Public/NetworkInstrumentationIntegrationTests.swift",
+    "DatadogLogs/LOGS_FEATURE.md",
+    "DatadogProfiling/PROFILING_FEATURE.md",
+    "DatadogRUM/RUM_FEATURE.md",
+    "DatadogRUM/Sources/Instrumentation/Resources/URLSessionRUMResourcesHandler.swift",
+    "DatadogRUM/Sources/RUMMonitor/RUMCommand.swift",
+    "DatadogRUM/Sources/RUMMonitor/Scopes/RUMApplicationScope.swift",
+    "DatadogRUM/Sources/RUMMonitor/Scopes/RUMSessionScope.swift",
+    "DatadogRUM/Sources/RUMMonitor/Scopes/RUMUserActionScope.swift",
+    "DatadogRUM/Sources/RUMMonitor/Scopes/RUMViewScope.swift",
+    "DatadogRUM/Tests/Instrumentation/Resources/URLSessionRUMResourcesHandlerTests.swift",
+    "DatadogRUM/Tests/RUMMonitor/Scopes/RUMApplicationScopeTests.swift",
+    "DatadogRUM/Tests/RUMMonitor/Scopes/RUMSessionScopeTests.swift",
+    "DatadogSessionReplay/SESSION_REPLAY_FEATURE.md",
+    "DatadogTrace/TRACE_FEATURE.md"
+  ],
+  "allowed_reconciliation": [
+    "Apply the same E03 changes to a new checkout of exact current develop; preserve the original qualified checkout and published commit.",
+    "Remove obsolete local_cache_hit references already removed upstream; adapt existing E03 metric fixture to deliveryType/transferSize without weakening failure, owner, status or attribute assertions.",
+    "Add a bounded composition discriminator for metrics forwarded on successful and failed transfers if existing tests do not check the combination.",
+    "Refresh existing feature-document source identities after the source commit; no unrelated SDK repair or generated-file changes."
+  ],
+  "required_validation": [
+    {
+      "lane": "source",
+      "check": "Exact allowlist versus upstream; all other tracked files identical; generated models and upstream cache extraction untouched; all existing E03 foreign-owner/manual/100ms controls preserved."
+    },
+    {
+      "lane": "unit",
+      "check": "Full affected DatadogRUM suite once plus the URLSessionTaskInterception metrics test class once; exact nonempty executable inventories frozen before assertions; zero unexpected failures/skips/warnings."
+    },
+    {
+      "lane": "native",
+      "check": "The unchanged nine E03 URLSession cases once on a pre-iOS27 simulator suitable for the legacy Example host; preserve strict callback/serialized-event ownership and separately reviewed exact inherited stopped-session diagnostic."
+    },
+    {
+      "lane": "static",
+      "check": "Strict relevant lint, five feature-document checks and unchanged public API relative to new upstream, not relative to pre-cache models."
+    },
+    {
+      "lane": "delivery",
+      "check": "Independent review and signed explicit-path commits; update only #3218 after verification, with exact remote lease if rewritten history is necessary. Current CI/human review still required."
+    }
+  ],
+  "environment": {
+    "developer_dir": "/Applications/Xcode_27.1.app/Contents/Developer",
+    "runtime_policy": "Rediscover available iOS17.5 or26.5 simulator before execution; no physical device or backend query required.",
+    "app_host": "Legacy Example under native integration; do not use iOS27 for its launch.",
+    "packages": "Freeze resolved versions and extracted binary artifacts in a fresh execution directory."
+  },
+  "limits": {
+    "total_seconds": 7200,
+    "unit_assertion_runs": 2,
+    "native_assertion_runs": 1,
+    "native_cases": 9,
+    "seconds_per_build_discovery": 600,
+    "seconds_per_assertion_run": 900,
+    "cleanup_seconds": 90,
+    "retries": 0,
+    "deadline_extension": false,
+    "backend_queries": 0,
+    "session_replay_content_tests": 0
+  },
+  "stop_rules": [
+    "Stop on an unexpected source/dependency/API change, failed discovery/build/test/oracle/cleanup, inventory mismatch or deadline. Preserve original artifacts and do not loosen the oracle.",
+    "Do not publish a reconciled source before source-bound qualification and review.",
+    "No merge, TestFlight, unrelated branch update, generated SDK model edit or public API change."
+  ],
+  "protected_state": {
+    "Datadog/Datadog.xcodeproj/project.pbxproj": {
+      "inode": 25975875,
+      "size": 902583,
+      "mode": 33188,
+      "mtime_ns": 1789126687245591396,
+      "ctime_ns": 1789126687246111975,
+      "index": "100644 510335b47d222e3e2cbc254a80f6c9ea49493242 0\tDatadog/Datadog.xcodeproj/project.pbxproj",
+      "sha256": "bbe593b88e84ea88146cd14aa78187c6da11fa11dfa563a656244a439a7df35f"
+    },
+    "xcconfigs/Datadog.local.xcconfig": {
+      "inode": 25529787,
+      "size": 113,
+      "mode": 33188,
+      "mtime_ns": 1789113232845312747,
+      "ctime_ns": 1789113232851920535,
+      "index": "100644 db7030f1a10e7a44f43406914b20dee280c845ce 0\txcconfigs/Datadog.local.xcconfig"
+    }
+  },
+  "original_checkout": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/exp214-repair-_6vxqe6i/worktree",
+  "source_admission": "PASS; existing independent reviewer approved the source and runtime harness before assertions.",
+  "progress": {
+    "updated_at": "2026-09-21T13:41:57.945125+00:00",
+    "source_reconciliation": "Ten original source/test paths; eight byte-identical to qualified E03. Handler and its metrics fixtures reconciled with upstream; one success-metrics discriminator added.",
+    "preparation_stops": [
+      "ANSI-colored patch rejected without applying source; exact uncolored diff admitted.",
+      "Fresh checkout lacked the exact ignored Package.resolved; strict resolution stopped before build/assertions. One independently admitted environment correction copied the unchanged qualified lockfile; no dependency upgrade."
+    ],
+    "runtime_admission": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp219-upstream-integration-l_p4vm9s/runtime-admission-review.json",
+    "guard_controls": 26,
+    "source_inputs": 1864,
+    "artifacts_verified": 266,
+    "lane": "complete",
+    "assertion_retries": 0,
+    "deadline_unchanged": true
+  },
+  "completed_at": "2026-09-21T14:01:34.522669+00:00",
+  "qualification": {
+    "status": "QUALIFIED_CURRENT_UPSTREAM_RESOURCE_CONTRACT",
+    "source_commit": "b3c60b7b9e40fe0fc44bee03a78f0023fe62a28c",
+    "delivery_head": "1b2bff3e72e0c9e3f88869ea548868cd6f2f7cf8",
+    "baseline": "9a8a66c3da7859437fcb3139455b51e07bd150c7",
+    "signature": "G",
+    "runtime": {
+      "RUM": {
+        "cases": 920,
+        "executions": 956
+      },
+      "ResourceMetrics": {
+        "cases": 9,
+        "executions": 9
+      },
+      "native": {
+        "cases": 9,
+        "executions": 9,
+        "attachment_semantics": "PASS"
+      }
+    },
+    "unexpected_failures": 0,
+    "skips": 0,
+    "structured_runtime_warnings": 0,
+    "frozen_source_inputs": 1864,
+    "binary_artifact_entries": 266,
+    "offline_guard_controls": 26,
+    "strict_lint": "PASS",
+    "swift_objc_api_modules": 9,
+    "feature_docs": 5,
+    "registry": "PASS",
+    "independent_review": "PASS",
+    "final_cleanup": "PASS",
+    "owned_simulator_removed": true,
+    "protected_unchanged": true,
+    "no_backend_queries": true,
+    "no_Replay_content_tests": true,
+    "deadline_unchanged": true,
+    "artifacts": {
+      "unit/root-audit.json": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp219-upstream-integration-l_p4vm9s/unit/root-audit.json",
+        "sha256": "07c0a1fb6ca4ca6fc3c5af868a4762cb4d879aaa2a00ac6438473af677fc90e4"
+      },
+      "metrics/root-audit.json": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp219-upstream-integration-l_p4vm9s/metrics/root-audit.json",
+        "sha256": "1e7f57c39f7e834b42da36fcd57dc594e6dd07c3b523508fa364c7896172b743"
+      },
+      "native/root-audit.json": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp219-upstream-integration-l_p4vm9s/native/root-audit.json",
+        "sha256": "4c4a2e34c9eebdcd5f771c083f7b941943733a3d3e1e182e4802ac819bad58fe"
+      },
+      "native/attachment-audit.json": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp219-upstream-integration-l_p4vm9s/native/attachment-audit.json",
+        "sha256": "fdffcec8755d6974402cf07df30721fdc8430220c9d2e8a19cbe387b29ac4abe"
+      },
+      "static/lint-result.json": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp219-upstream-integration-l_p4vm9s/static/lint-result.json",
+        "sha256": "47e2d7ddf6e91f714b256ec5583377db9a5507b9f6ada420ca7f85f0ff8c9a4f"
+      },
+      "static/api-result.json": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp219-upstream-integration-l_p4vm9s/static/api-result.json",
+        "sha256": "defdc75ae55a8448492851a94b5e5498ca7f52ddd76eeb76690d3d0aabc07f89"
+      },
+      "feature-docs-verification.json": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp219-upstream-integration-l_p4vm9s/feature-docs-verification.json",
+        "sha256": "b27f415cfd67f70f29a6a3a92b0bb380e1b5cf4fd04931b476832da6dc916b36"
+      },
+      "final-independent-review.json": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp219-upstream-integration-l_p4vm9s/final-independent-review.json",
+        "sha256": "577e360f1b71e9810970415ca50abed3f705a018042311d0f5bb12546b5e8db1"
+      },
+      "final-cleanup.json": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp219-upstream-integration-l_p4vm9s/final-cleanup.json",
+        "sha256": "14acbb539fa00c60b7f0329ab9676b2fbaec9ff7022429961e3c15852b924ca5"
+      },
+      "publication.json": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp219-upstream-integration-l_p4vm9s/publication.json",
+        "sha256": "17ec3c61e9b48e0916507a6508ef16d9320c906278b7a34a5f396b95a78833e7"
+      }
+    },
+    "limits": [
+      "Native iOS17.5 and exact selected suites only; prior broad platform/module checks remain bound to their original source.",
+      "The separately reviewed inherited stopped-session precondition diagnostic remains; no telemetry-free or complete session-metadata claim.",
+      "Current-head CI, maintainer review and separately authorized merge remain required."
+    ]
+  },
+  "publication": {
+    "status": "SIGNED_RECONCILIATION_PUBLISHED_AND_VERIFIED",
+    "time": "2026-09-21T13:57:48.904479+00:00",
+    "pr": "https://github.com/DataDog/dd-sdk-ios/pull/3218",
+    "previous_head": "f43d812d85d96bea88b6b3e944d9210f0406405d",
+    "head": "1b2bff3e72e0c9e3f88869ea548868cd6f2f7cf8",
+    "base": "9a8a66c3da7859437fcb3139455b51e07bd150c7",
+    "commits": [
+      "1b2bff3e72e0c9e3f88869ea548868cd6f2f7cf8",
+      "b3c60b7b9e40fe0fc44bee03a78f0023fe62a28c"
+    ],
+    "paths": [
+      "CHANGELOG.md",
+      "Datadog/IntegrationUnitTests/Public/NetworkInstrumentationIntegrationTests.swift",
+      "DatadogLogs/LOGS_FEATURE.md",
+      "DatadogProfiling/PROFILING_FEATURE.md",
+      "DatadogRUM/RUM_FEATURE.md",
+      "DatadogRUM/Sources/Instrumentation/Resources/URLSessionRUMResourcesHandler.swift",
+      "DatadogRUM/Sources/RUMMonitor/RUMCommand.swift",
+      "DatadogRUM/Sources/RUMMonitor/Scopes/RUMApplicationScope.swift",
+      "DatadogRUM/Sources/RUMMonitor/Scopes/RUMSessionScope.swift",
+      "DatadogRUM/Sources/RUMMonitor/Scopes/RUMUserActionScope.swift",
+      "DatadogRUM/Sources/RUMMonitor/Scopes/RUMViewScope.swift",
+      "DatadogRUM/Tests/Instrumentation/Resources/URLSessionRUMResourcesHandlerTests.swift",
+      "DatadogRUM/Tests/RUMMonitor/Scopes/RUMApplicationScopeTests.swift",
+      "DatadogRUM/Tests/RUMMonitor/Scopes/RUMSessionScopeTests.swift",
+      "DatadogSessionReplay/SESSION_REPLAY_FEATURE.md",
+      "DatadogTrace/TRACE_FEATURE.md"
+    ],
+    "body_sha256": "5b7edd6e9affb00a5ff36580ac6955a89cd713a90eeaf14f773917721e62088a",
+    "mergeable": "UNKNOWN",
+    "draft": true,
+    "merge_authorized": false
+  }
+}

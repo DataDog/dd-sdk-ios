@@ -11,7 +11,6 @@
   "publication_receipt_sha256": "dfe894fb9a0585fefc723833e7f0a814598876cacef3e6221916bfdda89e1f37",
   "qualified_develop": "62f64d7b655bdc83f3036c4ad81090a270f6202b",
   "current_develop": "9a8a66c3da7859437fcb3139455b51e07bd150c7",
-  "signed_outgoing_commits": 16,
   "native_tests_rerun": 0,
   "sdk_changes": 0,
   "protected_paths_unchanged": true,
@@ -91,11 +90,11 @@
       "pr_url": "https://github.com/DataDog/dd-sdk-ios/pull/3218",
       "branch": "valpertui/resource-completion-ownership",
       "base_branch": "develop",
-      "head": "f43d812d85d96bea88b6b3e944d9210f0406405d",
-      "tree": "3d865bf2835b97cffb007b1a2d3dbcc987e49208",
+      "head": "1b2bff3e72e0c9e3f88869ea548868cd6f2f7cf8",
+      "tree": "0e27cb4e4d0e086f2730f3bf3338776682d91dcd",
       "title": "Keep Resource completion counters on their owning view",
       "body": "Delivery/E03-pr.md",
-      "body_sha256": "4de7f2c76e88145388afd01f1b8e8d3eaf8deb226f70821e73280f8f27f3adb4",
+      "body_sha256": "5b7edd6e9affb00a5ff36580ac6955a89cd713a90eeaf14f773917721e62088a",
       "diff_paths": [
         "CHANGELOG.md",
         "Datadog/IntegrationUnitTests/Public/NetworkInstrumentationIntegrationTests.swift",
@@ -114,7 +113,8 @@
         "DatadogSessionReplay/SESSION_REPLAY_FEATURE.md",
         "DatadogTrace/TRACE_FEATURE.md"
       ],
-      "state": "DRAFT_VERIFIED"
+      "state": "DRAFT_RECONCILED_VERIFIED",
+      "previous_head": "f43d812d85d96bea88b6b3e944d9210f0406405d"
     },
     {
       "id": "E04",
@@ -191,8 +191,16 @@
     }
   ],
   "current_findings": [
-    "E03 #3218 conflicts with Resource cache/delivery_type/transfer_size changes merged into develop after qualification. Reconcile and validate before updating; original qualified candidate preserved.",
-    "Other six drafts have no source conflict. Current CI and human review are still open.",
+    "E03 current-develop Resource-cache reconciliation is qualified and published at1b2bff3e. Exact signatures, body, head, base and files verified.",
+    "E01 Build Dependencies CI failed; Mosaic logs require sign-in. No SDK cause established; other CI and human review remain open.",
     "H00 must merge with separate authorization before E01 rebase/retarget."
-  ]
+  ],
+  "last_updated_at": "2026-09-21T14:01:34.522669+00:00",
+  "signed_outgoing_commits_at_initial_publication": 16,
+  "latest_update": {
+    "id": "E03",
+    "record": "Results/EXP-219-upstream-resource-integration.json",
+    "publication_receipt": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp219-upstream-integration-l_p4vm9s/publication.json",
+    "publication_receipt_sha256": "17ec3c61e9b48e0916507a6508ef16d9320c906278b7a34a5f396b95a78833e7"
+  }
 }

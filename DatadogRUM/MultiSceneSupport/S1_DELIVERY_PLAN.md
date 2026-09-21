@@ -4,7 +4,7 @@ All seven local packets are qualified within their recorded scopes and have
 verified signed outgoing histories. [The queue](Results/S1-delivery-queue.json)
 owns current checkout, commit, path and description identities;
 [the local preparation receipt](Results/S1-local-preparation.json) verifies them.
-Source and test trees remain unchanged. No accepted runtime check needs repeating.
+E03 now includes the qualified current-develop reconciliation in [EXP-219](Results/EXP-219-upstream-resource-integration.json). No accepted check needs repeating.
 
 The user directly authorized the seven draft publications without ticket references
 on September21. [The publication receipt](Results/S1-publication.json) verifies
@@ -24,7 +24,7 @@ maintainers own CI and review acceptance.
 | [E01 #3215](https://github.com/DataDog/dd-sdk-ios/pull/3215) | Prepare URLSession instrumentation once; preserve early callbacks and terminal release | ab71c3a6 | H00 for review; verified H00 merge before final retarget | [H00/E01 packets](Results/S1-H00-E01-packets.json) |
 | [DL01 #3216](https://github.com/DataDog/dd-sdk-ios/pull/3216) | Release display-link observers through a weak callback target | 29c28a01 | develop | [Independent packets](Results/S1-independent-packets.json) |
 | [E02 #3217](https://github.com/DataDog/dd-sdk-ios/pull/3217) | Keep attributes on the active occurrence of a repeated view key | 4dec888b | develop | [Independent packets](Results/S1-independent-packets.json) |
-| [E03 #3218](https://github.com/DataDog/dd-sdk-ios/pull/3218) | Keep late Resource/action effects on their owner; failed transfers emit one Error | f43d812d | develop | [Resource packet](Results/S1-E03-packet.json) |
+| [E03 #3218](https://github.com/DataDog/dd-sdk-ios/pull/3218) | Keep late Resource/action effects on their owner; failed transfers emit one Error | 1b2bff3e | develop | [Resource packet](Results/S1-E03-packet.json) |
 | [E04 #3219](https://github.com/DataDog/dd-sdk-ios/pull/3219) | Keep active native-view correlation until inactivity starts cache expiry | 171a2409 | develop | [Independent packets](Results/S1-independent-packets.json) |
 | [E05 #3220](https://github.com/DataDog/dd-sdk-ios/pull/3220) | Preserve request-time RUM ownership in automatic Trace, including explicit nil | 44478840 | develop | [Trace admission](Results/S1-E05-release-admission.json), [signed-tree receipt](Results/S1-local-preparation.json) |
 
@@ -37,7 +37,6 @@ path lists. Product PRs exclude the planning directory and both protected paths.
 
 | Deliverable | Owner | Dependency | Decisive completion check | Environment |
 | --- | --- | --- | --- | --- |
-| E03 upstream reconciliation | Main implementer + independent reviewer | develop9a8a66c3 Resource-cache changes | Preserve both upstream cache fields and E03 owner/error contracts; qualify merged source and update #3218 | Isolated checkout / affected tests / current CI |
 | Current required CI | Repository CI / main implementer | Published candidate heads | Every required check passes on the actual PR head; preserve and investigate failures | Repository CI |
 | Human review and source-bound final acceptance | RUM maintainers | Concrete PRs and qualification records | Requested changes resolved; applicable F06 conditions explicitly accepted | PR review / candidate evidence |
 | H00 upstream verification and E01 retarget | Main implementer | Separately authorized, approved H00 merge | Verify actual upstream content; remove duplicate prerequisite from E01 and revalidate only changed inputs/checks | Git / current develop / affected CI |
@@ -45,8 +44,8 @@ path lists. Product PRs exclude the planning directory and both protected paths.
 | Recompose S2 from merged fixes | Main implementer | Actual upstream source available | Source audit includes only required fixes and identifies invalidated candidate gates | Isolated checkout / finite S2 gates |
 
 The original qualification baseline is 62f64d7b. Develop advanced to 9a8a66c3
-before publication; E03 has a source conflict with its Resource-cache changes.
-The other six drafts have no source conflict. Earlier qualification remains tied
+before publication. E03 is now reconciled and published with its Resource-cache
+changes qualified. The other six drafts had no source conflict. Earlier qualification remains tied
 to its original source and does not replace current-base CI. Candidate-scoped
 runtime, backend and warning limits remain in the linked qualification owners.
 

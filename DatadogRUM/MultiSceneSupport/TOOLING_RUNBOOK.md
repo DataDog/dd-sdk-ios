@@ -2897,3 +2897,25 @@ symlinks, and retain the admitted roots separately from generated build outputs.
 Bind the simulator runtime version and build as well as its device identifier.
 Apply these checks before assertions; preserve earlier definitions when tightening
 preflight. Metadata-only documentation changes do not justify repeated native runs.
+
+
+### Reconcile a published packet with newer upstream source
+
+Preserve the qualified checkout. Freeze the new upstream revision and exact packet
+path allowlist before applying its patch to a fresh checkout. Use `--no-color
+--no-ext-diff` for machine-readable patches; forced Git color can invalidate an
+otherwise correct patch. Retain a rejected application as preparation evidence.
+
+A fresh worktree may lack its ignored Package.resolved. Copy only the qualified
+lockfile, verify exact checkout revisions and archive/extracted-artifact hashes,
+and keep the original resolution failure. An environment correction does not
+reset the experiment deadline or permit assertion retries.
+
+Derive changed suite inventories from named upstream additions/removals before
+discovery. Require every architecture's exact compiler membership before assertions,
+and bind native attachments to the current device, invocation and critical boundary.
+Compare public APIs against the new upstream reference, then bind feature-document
+metadata to the new signed source commit. Update only the authorized draft with an
+exact remote lease and read back its head, base, commits, files and concise body.
+[EXP-219](Results/EXP-219-upstream-resource-integration.json) records this procedure;
+its affected checks do not replace current CI or broaden older platform evidence.
