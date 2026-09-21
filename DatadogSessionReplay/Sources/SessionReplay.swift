@@ -89,11 +89,13 @@ public enum SessionReplay {
 
         let sessionReplay = try SessionReplayFeature(core: core, configuration: configuration)
 
-        // Subscribe typed-bus receivers before registration so initial context push is received:
+        try core.register(feature: sessionReplay)
+
+        // Subscribe typed-bus receivers after successful registration; the initial context
+        // push below still reaches `contextReceiver` since it is published after this point:
         core.messageBus.subscribe(receiver: sessionReplay.contextReceiver)
         core.messageBus.subscribe(receiver: sessionReplay.webViewRecordReceiver)
 
-        try core.register(feature: sessionReplay)
         core.set(
             context: SessionReplayCoreContext.Configuration(
                 sampleRate: configuration.replaySampleRate,
