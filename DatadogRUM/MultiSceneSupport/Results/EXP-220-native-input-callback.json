@@ -2,7 +2,7 @@
   "schema_version": 1,
   "experiment": "EXP-220",
   "title": "Observe selector callback ownership during native UIKit input",
-  "status": "PRE_ASSERTION_STOP_AUTOMATION_SESSION",
+  "status": "DIAGNOSTIC_PAIR_COLLECTED_WITH_PRESERVED_HOST_STOP",
   "defined_at": "2026-09-21T19:50:35.516309+00:00",
   "deadline": "2026-09-21T21:20:35.516309+00:00",
   "owner": "SDK implementer",
@@ -157,7 +157,7 @@
     "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp220-callback-input-d092fui4/source-review.json",
     "sha256": "bad104335156aed631f32c5e09689d1d98ac1945d9bda4d6e0a083df22743165"
   },
-  "resume": "Execution is closed before assertions. No equivalent native retry: require a concrete automation-session environment change and separate bounded admission. Preserve both NOT_RUN arms and original host/cleanup failures. Reuse unchanged compiled artifacts by exact identity; continue independent plan preparation.",
+  "resume": "Resume finite F08 controlled-app preparation. Do not repeat this diagnostic pair without a concrete new discriminator; retain original setup and stale-path stops.",
   "keep_awake_stop": {
     "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp220-callback-input-d092fui4/keep-awake-stop.json",
     "sha256": "68dd8fa5ce043aba3e1ea422d2ca230d165267146cff8ffd2607b450095f5a8a"
@@ -252,5 +252,57 @@
     "result": "Existing prebooted iPhone18Pro/iOS27.0 and Duo/iOS27.1 respond to AXe describe-ui. No app launch/input/install/boot/shutdown; before/after boot inventory unchanged.",
     "limit": "Existing-device access does not qualify fresh-device migration, input delivery or SDK behavior. Separate bounded admission required."
   },
-  "next_action": "Define and independently review a new bounded admission using an already-booted accessible regular iPhone and the exact qualified build. Preserve the original attempt/deadline/cleanup outcomes; no current native acceptance."
+  "next_action": "Resume finite F08 controlled-app preparation. Do not repeat this diagnostic pair without a concrete new discriminator; retain original setup and stale-path stops.",
+  "prebooted_attempt": {
+    "at": "2026-09-21T22:29:30.359446+00:00",
+    "status": "PRE_ASSERTION_STOP_ENUMERATION_SIDE_EFFECT",
+    "attempt_closed": true,
+    "root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp220-prebooted-i68eehoh",
+    "source_revision": "62f64d7b655bdc83f3036c4ad81090a270f6202b",
+    "selected_candidate_executed": false,
+    "new_builds": 0,
+    "test_enumerations": 1,
+    "expected_test_methods": 1,
+    "fixture_app_installations": 0,
+    "fixture_app_launches": 0,
+    "test_runner_installed_and_started_for_enumeration": true,
+    "sdk_on": "NOT_RUN",
+    "sdk_off": "NOT_RUN",
+    "backend_queries": 0,
+    "gate_credit": false,
+    "original_cleanup": "CLEANUP_FAILED, retained",
+    "postcondition": "PASS_POSTCONDITION_ONLY within original90second cleanup budget",
+    "existing_app_records": "Exact full inventory unchanged after task runner removal",
+    "device_state": "Original prebooted device remains Booted",
+    "SDK_attribution": "None: host incorrectly assumed UI test enumeration had no installation side effect",
+    "retries": 0,
+    "next": "Review terminal evidence and possible execution-only continuation using unchanged discovered inventory. No original deadline renewal or test re-enumeration.",
+    "terminal_summary": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp220-prebooted-i68eehoh/terminal-summary.json",
+      "sha256": "b12f8148dd77e2d9a8b24f2aa3836d4f67e9e56d06759cd3eb1292f05efb0cc5"
+    }
+  },
+  "comparison": {
+    "status": "DIAGNOSTIC_PAIR_COLLECTED_WITH_PRESERVED_HOST_STOP",
+    "summary": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp220-sdk-off-0opxdnt5/terminal-summary.json",
+      "sha256": "32f883205600b9aae5f608de0bf114459e941d32fb79c4469fb4ba1e57bc02f8"
+    },
+    "independent_review": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp220-sdk-off-0opxdnt5/terminal-review.json",
+      "sha256": "be78283f28fcba5a5fa36f7c1e6df1bd8665398057ef6c944725def679f35886"
+    },
+    "sdk_on": "VALID_DIAGNOSTIC_OUTCOME/CALLBACK_WITNESS_OBSERVED via reviewed offline qualification; original stale-path STOP retained",
+    "sdk_off": "COLLECTED/VALID_DIAGNOSTIC_OUTCOME/CALLBACK_WITNESS_OBSERVED",
+    "native_app_launches": 2,
+    "native_repeats": 0,
+    "RUM_rows": {
+      "on": 6,
+      "off": 0
+    },
+    "environment": "baseline62f64; SDK27.1 build; existing regular iPhone18Pro/iOS27.0(24A434)",
+    "cleanup": "PASS for both; original42-app dictionary and Booted state preserved",
+    "conclusion": "The two observed button/switch callback sequences succeeded. Earlier variability was not reproduced or attributed to SDK involvement. No selected-candidate/Duo or automatic-tracking acceptance.",
+    "gate_credit": false
+  }
 }

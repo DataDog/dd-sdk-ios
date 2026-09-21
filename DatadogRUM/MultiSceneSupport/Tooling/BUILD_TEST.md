@@ -48,6 +48,19 @@ ID. Intentionally unselected cases may be disabled. XCTest method filters and Sw
 Testing suite filters differ; verify the resulting discovery rather than the
 command text. Replay-content exclusions are neither passes nor OS skips.
 
+UI-test enumeration can install and launch the test runner even when no test
+method executes. Record task-bundle/container absence before enumeration, verify
+any installed runner against the frozen build, then remove it and prove the clean
+boundary before app execution. Treat discovery as a possible installation boundary;
+an unexpected runner is a host setup finding, not SDK input.
+
+XCTest may reinstall the app into a new bundle container. Re-query app and runner
+paths after execution, verify their frozen Mach-O/Info.plist identities, then bind
+observed PIDs to those paths. Keep pre-XCTest paths as preparation evidence. An
+offline correction may use complete saved identity/process/result evidence while
+preserving the original host failure; do not repeat a valid native arm to repair
+a path classifier.
+
 When current sources add/remove tests, reconcile every changed method against the
 frozen source before another invocation. Retain the original pre-assertion stop.
 A historical suite count cannot silently omit a newer failure.

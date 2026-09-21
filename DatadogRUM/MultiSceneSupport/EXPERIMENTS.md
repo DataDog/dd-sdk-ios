@@ -267,4 +267,4 @@ conclusions belong in [ASSESSMENT.md](ASSESSMENT.md).
 
 | <a id="exp-219"></a>EXP-219 | E03, F06 | QUALIFIED / PUBLISHED | Current-develop reconciliation passes RUM920/956, metrics9/9, native9/9 and ownership audit; signed source/docs published in #3218. CI/review remain. | [record](Experiments/EXP-219-upstream-resource-integration.md#exp-219--reconcile-e03-with-current-develop) |
 
-| <a id="exp-220"></a>EXP-220 | A02, C07, C08 | PRE-ASSERTION STOP · automation unavailable | One build qualified; boot passed, AXe session failed before discovery/install. Both arms NOT_RUN; cleanup postconditions proven separately. No gate credit. | [record](Experiments/EXP-220-native-input-callback.md#exp-220--observe-selector-callback-ownership-during-native-uikit-input) |
+| <a id="exp-220"></a>EXP-220 | A02, C07, C08 | DIAGNOSTIC PAIR COLLECTED | Baseline SDK-on/off callbacks succeed on regular iPhone27.0; SDK-on qualified offline after a preserved stale-path host stop. No SDK cause, candidate/Duo acceptance or gate credit. | [record](Experiments/EXP-220-native-input-callback.md#exp-220--observe-selector-callback-ownership-during-native-uikit-input) |
