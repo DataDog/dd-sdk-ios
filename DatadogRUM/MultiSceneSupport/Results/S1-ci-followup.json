@@ -2,13 +2,13 @@
   "schema_version": 1,
   "gate": "S1:F06",
   "status": "ATTRIBUTABLE_FAILURES_ONLY",
-  "recorded_at": "2026-09-21T19:45:47.182919+00:00",
+  "recorded_at": "2026-09-21T21:42:42.197940+00:00",
   "artifact_root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s1-hitch-review-3bgot45i",
   "snapshot": {
-    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s1-hitch-review-3bgot45i/ci-refresh-20260921T185832Z.json",
-    "sha256": "db8f411c64e854028c908f407cf6159665ae82dcd7778116f19146bce2991ae2",
-    "at": "2026-09-21T18:58:32Z",
-    "limit": "Seven-PR observation. E01 is subsequently updated by its signed publication receipt; later CI and review changes require a fresh read."
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s1-review-refresh-uxyf0kkq/github-snapshot.json",
+    "sha256": "d3080465dc34b4714bd66201cb9093be247647dc68028f831d1a4f54234dec26",
+    "at": "2026-09-21T21:39:28.322Z",
+    "limit": "Read-only current-head statuses and review timeline; no maintainer approval or required-check completeness inferred."
   },
   "log_analysis": {
     "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s1-hitch-review-3bgot45i/ci-log-analysis-round3.json",
@@ -18,15 +18,17 @@
     {
       "id": "E01-watchOS",
       "owner": "SDK implementer",
-      "dependency": "Current-head CI and maintainer review at 0eaba3e3",
-      "status": "TEST_REPAIR_PUBLISHED_CI_PENDING",
+      "dependency": "Maintainer review and separately authorized H00 merge/verified-source retarget",
+      "status": "CURRENT_CHECKS_PASS_REVIEW_PENDING",
       "finding": "Signed test-only 0eaba3e3 replaces mock request counts with exact task-forwarding identities. Both macOS cases pass 10 iterations in one process; watchOS arm64/x86_64 full-target compilation passes.",
       "decisive_test": "Exact target/foreign forwarding witness;2focused cases repeated10times on macOS with no expected failures/skips;watchOS test-target compilation and current-head CI runtime. No ServerMock/SDK edit.",
       "environment": "CI Xcode26.0/watchOS26.0 with test visibility enabled; no local watchOS runtime is installed.",
       "review": "Independent source/result review accepts the bounded repair. Preserve both harness stops, their static reconciliations and 59 inherited test-dependency diagnostics; no warning-free claim.",
       "sdk_cause": "NO_SDK_REPAIR_REQUIRED_FOR_IDENTIFIED_ASSERTION",
       "repair": "Results/S1-resume-witness-review.json",
-      "current_head": "0eaba3e39d89256f849addee284e1b92d14b8a5e"
+      "current_head": "0eaba3e39d89256f849addee284e1b92d14b8a5e",
+      "prior_status": "TEST_REPAIR_PUBLISHED_CI_PENDING",
+      "current_ci": "All 22 reported statuses are successful in the linked snapshot; original failures and their scope dispositions remain."
     },
     {
       "id": "E02-timeseries",
@@ -84,26 +86,32 @@
       "dependency": "Maintainer review and separately authorized merge",
       "status": "CURRENT_CHECKS_PASS_REVIEW_PENDING",
       "decisive_test": "All current CI checks pass at the 18:58 observation. Retain the older failed integrity job; no agent retry or merge.",
-      "environment": "Authenticated CI artifact; no agent retry"
+      "environment": "Authenticated CI artifact; no agent retry",
+      "prior_status": "CURRENT_CHECKS_PASS_REVIEW_PENDING",
+      "current_ci": "All 22 reported statuses are successful in the linked snapshot; original failures and their scope dispositions remain."
     },
     {
       "id": "E05-current-CI",
       "owner": "Repository CI / SDK implementer",
-      "status": "SMOKE_JOBS_PENDING",
+      "status": "CURRENT_CHECKS_PASS_REVIEW_PENDING",
       "dependency": "Current external CI jobs",
       "finding": "All seven PRs are now ready for review by external action. E05 macOS passes; only iOS/tvOS smoke jobs remain pending at 18:58. Its aggregate DDCI status still reports failure.",
       "decisive_test": "Resolve current required smoke-job and aggregate outcomes. Session Replay captured-content correctness remains outside repair scope.",
-      "environment": "Repository CI / PR3220; preserve externally changed ready state."
+      "environment": "Repository CI / PR3220; preserve externally changed ready state.",
+      "prior_status": "SMOKE_JOBS_PENDING",
+      "current_ci": "All 22 reported statuses are successful in the linked snapshot; original failures and their scope dispositions remain."
     },
     {
       "id": "H00-current-CI",
       "owner": "Repository CI / RUM maintainers",
       "dependency": "Clear evidence linking failure to changed hitch surface or associated tests before further investigation",
-      "status": "UNATTRIBUTED_FLAKE_REPAIR_OUT_OF_SCOPE",
+      "status": "CURRENT_CHECKS_PASS_REVIEW_PENDING",
       "decisive_test": "Retain integrity failure and source comparison. Do not relax assertion, retry CI or run a retention investigation without changed-surface evidence.",
       "environment": "Repository CI / PR3214",
       "finding": "The detailed watchOS log identifies a live DatadogCoreProxy after RUMMonitorTests.testRandomlyCallingDifferentAPIsConcurrentlyDoesNotCrash. The test, monitor, proxy and core match inspected develop 9a8a66c3.",
-      "scope_disposition": "Test/monitor/core/proxy match inspected develop; no hitch cause is established. Source audit remains diagnostic history only."
+      "scope_disposition": "Test/monitor/core/proxy match inspected develop; no hitch cause is established. Source audit remains diagnostic history only.",
+      "prior_status": "UNATTRIBUTED_FLAKE_REPAIR_OUT_OF_SCOPE",
+      "current_ci": "All 22 reported statuses are successful in the linked snapshot; original failures and their scope dispositions remain."
     },
     {
       "id": "DL01-current-CI",
@@ -111,7 +119,9 @@
       "dependency": "Maintainer review and separately authorized merge",
       "status": "CURRENT_CHECKS_PASS_REVIEW_PENDING",
       "decisive_test": "Current CI checks pass at29c28a01; mergegate and review remain. No merge authorized.",
-      "environment": "Repository CI / PR3216"
+      "environment": "Repository CI / PR3216",
+      "prior_status": "CURRENT_CHECKS_PASS_REVIEW_PENDING",
+      "current_ci": "All 22 reported statuses are successful in the linked snapshot; original failures and their scope dispositions remain."
     }
   ],
   "local_environment": {
@@ -197,7 +207,7 @@
   "sdk_changes": 0,
   "agent_ci_retries": 0,
   "gate_closures": [],
-  "next_action": "Resume S2 callback witness preparation. Existing S1 PRs await CI/maintainer review; reopen repair work only for clear evidence implicating changed surfaces or associated tests.",
+  "next_action": "Continue the independent S2 app-journey oracle and blocked-input preparation. Current S1 heads await maintainer review; only attributable findings admit repair. The four cited feature-baseline findings do not reproduce on published history.",
   "prior_log_analysis": {
     "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s1-hitch-review-3bgot45i/ci-log-analysis-round2.json",
     "sha256": "492b626868b471e8c6790e513adcb61580d7296456763d98bfc05658bbf26054"
@@ -210,6 +220,18 @@
       "E03 upload-flush fixture repair",
       "H00 retained-core repair"
     ],
-    "next_plan_work": "S2 callback-side native input witness; no additional CI retries or local flake tests."
+    "next_plan_work": "S2:F08 source-bound finite app-journey oracle; no CI retries or unrelated flake tests."
+  },
+  "prior_snapshot": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s1-hitch-review-3bgot45i/ci-refresh-20260921T185832Z.json",
+    "sha256": "db8f411c64e854028c908f407cf6159665ae82dcd7778116f19146bce2991ae2",
+    "at": "2026-09-21T18:58:32Z",
+    "limit": "Seven-PR observation. E01 is subsequently updated by its signed publication receipt; later CI and review changes require a fresh read."
+  },
+  "feature_document_review": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s1-review-refresh-uxyf0kkq/feature-baseline-review.json",
+    "sha256": "12f7a5fce68f5914f6f0095e70cbe2b23b7e742ddc51d524940cca161d8add86",
+    "status": "FOUR_CITED_BASELINES_REACHABLE",
+    "repairs": 0
   }
 }

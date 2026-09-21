@@ -119,7 +119,7 @@
       "gate_reference": "S1:F06 prerequisite; local delivery ID, not an additional release gate",
       "title": "Reconstruct view hitch state in delta-event assertions",
       "branch_slug": "rum-view-hitch-assertions",
-      "state": "SIGNED_HITCH_REVIEW_CORRECTION_PUBLISHED",
+      "state": "READY_FOR_REVIEW",
       "source_worktree": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/view-hitch-assertions",
       "source_branch": "valpertui/rum-view-hitch-assertions",
       "source_head": "d98f3540a5cf445844c2547378e05cffd2212dbd",
@@ -187,7 +187,18 @@
         "checkout": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/deliveries/s1-initial-20260920-qqyq49od/H00",
         "body_sha256": "8c6217a407360176bdb93bd1460dbfcaffd9917667eafa677fdc2ddfcf89fe6f"
       },
-      "review_followup": "Results/S1-hitch-review.json"
+      "review_followup": "Results/S1-hitch-review.json",
+      "current_observation": {
+        "at": "2026-09-21T21:39:28.322Z",
+        "head": "0deff4750a172309c79bcc916e99f575ccc37f8d",
+        "draft": false,
+        "merged": false,
+        "checks": 22,
+        "successes": 22,
+        "non_success": [],
+        "maintainer_acceptance": "NOT_ESTABLISHED",
+        "owner": "Results/S1-ci-followup.json"
+      }
     },
     {
       "owner": "Main execution session / SDK implementer",
@@ -204,7 +215,7 @@
       "gate_reference": "S1:E01 and E01-specific S1:F06",
       "title": "Prepare URLSession instrumentation once per task",
       "branch_slug": "urlsession-exactly-once",
-      "state": "DRAFT_PUBLISHED_CI_AND_REVIEW_PENDING",
+      "state": "READY_FOR_REVIEW",
       "source_worktree": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/urlsession-exactly-once",
       "source_branch": "valpertui/urlsession-exactly-once",
       "source_head": "652ce169773b0be5b6767179eca8ab5f4cf25f8a",
@@ -276,7 +287,7 @@
         ]
       },
       "packet": "Results/S1-H00-E01-packets.json",
-      "delivery_head": "ab71c3a6fb77307081f58b67d86d096d0340ce5f",
+      "delivery_head": "0eaba3e39d89256f849addee284e1b92d14b8a5e",
       "feature_document_reachability": "PASS_LOCAL_AB71C3A6; refresh after final ticket rewrite",
       "compatibility_continuation": {
         "status": "PASS_FIVE_MISSING_HOSTLESS_SUITES",
@@ -311,7 +322,7 @@
       },
       "remaining_iOS_schemes": [],
       "replay_scope_disposition": "Results/S1-replay-scope-disposition.json",
-      "delivery_checkout": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/deliveries/s1-initial-20260920-qqyq49od/E01",
+      "delivery_checkout": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s1-resume-witness-wg4afuza/worktree",
       "body": "Delivery/E01-pr.md",
       "body_sha256": "0f3467f7f3dfe87583e786125e6606a1d13709a305c4cf2694fbe15b0019bfe1",
       "path_inventory_owner": "Results/S1-delivery-queue.json",
@@ -321,7 +332,23 @@
       "pr_number": 3215,
       "remote_branch": "valpertui/urlsession-exactly-once",
       "remote_base": "valpertui/rum-view-hitch-assertions",
-      "publication_record": "Results/S1-publication.json"
+      "publication_record": "Results/S1-publication.json",
+      "current_observation": {
+        "at": "2026-09-21T21:39:28.322Z",
+        "head": "0eaba3e39d89256f849addee284e1b92d14b8a5e",
+        "draft": false,
+        "merged": false,
+        "checks": 22,
+        "successes": 22,
+        "non_success": [],
+        "maintainer_acceptance": "NOT_ESTABLISHED",
+        "owner": "Results/S1-ci-followup.json"
+      },
+      "prior_delivery_checkpoint": {
+        "head": "ab71c3a6fb77307081f58b67d86d096d0340ce5f",
+        "checkout": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/deliveries/s1-initial-20260920-qqyq49od/E01"
+      },
+      "resume_witness_review": "Results/S1-resume-witness-review.json"
     },
     {
       "owner": "Main execution session / SDK implementer",
@@ -338,7 +365,7 @@
       "gate_reference": "S1:E02; separate candidate freeze required",
       "title": "Keep attributes isolated between repeated view occurrences",
       "branch_slug": "view-occurrence-ownership",
-      "state": "DRAFT_PUBLISHED_CI_AND_REVIEW_PENDING",
+      "state": "READY_FOR_REVIEW",
       "source_worktree": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/view-occurrence-ownership",
       "source_branch": "valpertui/view-occurrence-ownership",
       "source_head": "96d064c4fa083a7a74c709eb4a626fc17017db01",
@@ -467,7 +494,29 @@
       "pr_number": 3217,
       "remote_branch": "valpertui/view-occurrence-ownership",
       "remote_base": "develop",
-      "publication_record": "Results/S1-publication.json"
+      "publication_record": "Results/S1-publication.json",
+      "current_observation": {
+        "at": "2026-09-21T21:39:28.322Z",
+        "head": "4dec888b99e70285cc855197790c3c2f6d20e426",
+        "draft": false,
+        "merged": false,
+        "checks": 11,
+        "successes": 9,
+        "non_success": [
+          {
+            "context": "dd-gitlab/Unit Tests (macOS)",
+            "state": "failure",
+            "target_url": "https://mosaic.us1.ddbuild.io/change-request/14243009027219032828?owner=DataDog&repository=dd-sdk-ios&taskExecutionId=2062467421&taskId=gitlab&utm_content=gitlab_task_check&utm_source=github_pr_page"
+          },
+          {
+            "context": "DDCI Status",
+            "state": "failure",
+            "target_url": "https://mosaic.us1.ddbuild.io/change-request/repository/DataDog/dd-sdk-ios/pull/3217/request/14243009027219032828?utm_content=ddci_status_check&utm_source=github_pr_page"
+          }
+        ],
+        "maintainer_acceptance": "NOT_ESTABLISHED",
+        "owner": "Results/S1-ci-followup.json"
+      }
     },
     {
       "owner": "Main execution session / SDK implementer",
@@ -485,7 +534,7 @@
       "title": "Keep Resource completion counters on their owning view",
       "title_provisional": false,
       "branch_slug": "resource-completion-ownership",
-      "state": "DRAFT_PUBLISHED_CI_AND_REVIEW_PENDING",
+      "state": "READY_FOR_REVIEW",
       "source_worktree": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/resource-completion-ownership",
       "source_branch": "valpertui/resource-completion-ownership",
       "source_head": "62f64d7b655bdc83f3036c4ad81090a270f6202b",
@@ -615,7 +664,29 @@
       "publication_record": "Results/S1-publication.json",
       "upstream_reconciliation": "Results/EXP-219-upstream-resource-integration.json",
       "historical_compatibility_scope": "Existing platform/core/compatibility fields remain qualified on their recorded pre-reconciliation source; current-head CI still required.",
-      "review_followup": "Results/S1-resource-completion-review.json"
+      "review_followup": "Results/S1-resource-completion-review.json",
+      "current_observation": {
+        "at": "2026-09-21T21:39:28.322Z",
+        "head": "046719c3b62c9643bee2065866e35dd07b2e2158",
+        "draft": false,
+        "merged": false,
+        "checks": 11,
+        "successes": 9,
+        "non_success": [
+          {
+            "context": "dd-gitlab/Unit Tests (macOS)",
+            "state": "failure",
+            "target_url": "https://mosaic.us1.ddbuild.io/change-request/3119332554732198686?owner=DataDog&repository=dd-sdk-ios&taskExecutionId=2064304539&taskId=gitlab&utm_content=gitlab_task_check&utm_source=github_pr_page"
+          },
+          {
+            "context": "DDCI Status",
+            "state": "failure",
+            "target_url": "https://mosaic.us1.ddbuild.io/change-request/repository/DataDog/dd-sdk-ios/pull/3218/request/3119332554732198686?utm_content=ddci_status_check&utm_source=github_pr_page"
+          }
+        ],
+        "maintainer_acceptance": "NOT_ESTABLISHED",
+        "owner": "Results/S1-ci-followup.json"
+      }
     },
     {
       "owner": "Main execution session / SDK implementer",
@@ -632,7 +703,7 @@
       "gate_reference": "S1:E04; separate candidate freeze required",
       "title": "Preserve WebView correlation after long native views",
       "branch_slug": "active-view-cache-lifetime",
-      "state": "DRAFT_PUBLISHED_CI_AND_REVIEW_PENDING",
+      "state": "READY_FOR_REVIEW",
       "source_worktree": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/active-view-cache-lifetime",
       "source_branch": "valpertui/active-view-cache-lifetime",
       "source_head": "a3d34069cccbe35cac0fd2bc1fb456e64b1f4c43",
@@ -763,7 +834,18 @@
       "pr_number": 3219,
       "remote_branch": "valpertui/active-view-cache-lifetime",
       "remote_base": "develop",
-      "publication_record": "Results/S1-publication.json"
+      "publication_record": "Results/S1-publication.json",
+      "current_observation": {
+        "at": "2026-09-21T21:39:28.322Z",
+        "head": "171a24092dd5a953e428fd5e038f70a3021a9dc2",
+        "draft": false,
+        "merged": false,
+        "checks": 22,
+        "successes": 22,
+        "non_success": [],
+        "maintainer_acceptance": "NOT_ESTABLISHED",
+        "owner": "Results/S1-ci-followup.json"
+      }
     },
     {
       "owner": "Main execution session / SDK implementer",
@@ -780,7 +862,7 @@
       "gate_reference": "S1:E05; separate candidate freeze required",
       "title": "Preserve request-time RUM ownership in automatic traces",
       "branch_slug": "request-time-trace-ownership",
-      "state": "DRAFT_PUBLISHED_CI_AND_REVIEW_PENDING",
+      "state": "READY_FOR_REVIEW",
       "source_worktree": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/request-time-trace-ownership",
       "source_branch": "valpertui/request-time-trace-ownership",
       "source_head": "9254adbcbf5a1809219ec30f6cc07df4f3af4518",
@@ -955,7 +1037,18 @@
       "pr_number": 3220,
       "remote_branch": "valpertui/request-time-trace-ownership",
       "remote_base": "develop",
-      "publication_record": "Results/S1-publication.json"
+      "publication_record": "Results/S1-publication.json",
+      "current_observation": {
+        "at": "2026-09-21T21:39:28.322Z",
+        "head": "444788406977c52ffdf84b88571c4cbe63eef245",
+        "draft": false,
+        "merged": false,
+        "checks": 22,
+        "successes": 22,
+        "non_success": [],
+        "maintainer_acceptance": "NOT_ESTABLISHED",
+        "owner": "Results/S1-ci-followup.json"
+      }
     },
     {
       "owner": "Main execution session / SDK implementer",
@@ -972,7 +1065,7 @@
       "gate_reference": "General S1 reliability extraction from EXP-211; local delivery ID, not a new release gate",
       "title": "Release RUM display-link observers with their owner",
       "branch_slug": "rum-display-link-lifetime",
-      "state": "DRAFT_PUBLISHED_CI_AND_REVIEW_PENDING",
+      "state": "READY_FOR_REVIEW",
       "source_worktree": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/s2-rum-lifetime",
       "source_branch": "valpertui/s2-rum-lifetime",
       "source_head_observed": "ef9d9732d4440038d5ce9278e86943fed3f9e931",
@@ -1080,7 +1173,18 @@
       "pr_number": 3216,
       "remote_branch": "valpertui/rum-display-link-lifetime",
       "remote_base": "develop",
-      "publication_record": "Results/S1-publication.json"
+      "publication_record": "Results/S1-publication.json",
+      "current_observation": {
+        "at": "2026-09-21T21:39:28.322Z",
+        "head": "29c28a01b4abec47a2c0869ca1ad6ade16b3dbd6",
+        "draft": false,
+        "merged": false,
+        "checks": 22,
+        "successes": 22,
+        "non_success": [],
+        "maintainer_acceptance": "NOT_ESTABLISHED",
+        "owner": "Results/S1-ci-followup.json"
+      }
     }
   ],
   "checkpoint": {
@@ -1106,9 +1210,10 @@
     "documentation": "2026-09-21T07:38:08.196508+00:00",
     "local_signed_preparation": "2026-09-21T11:49:36.360508+00:00",
     "publication": "2026-09-21T13:07:47.472746+00:00",
-    "E03_upstream_reconciliation": "2026-09-21T14:01:34.522669+00:00"
+    "E03_upstream_reconciliation": "2026-09-21T14:01:34.522669+00:00",
+    "latest_review_refresh": "Results/S1-ci-followup.json"
   },
-  "last_updated_at": "2026-09-21T14:01:34.522669+00:00",
+  "last_updated_at": "2026-09-21T21:42:42.197940+00:00",
   "publication": {
     "status": "SEVEN_DRAFTS_PUBLISHED_AND_VERIFIED",
     "record": "Results/S1-publication.json",
