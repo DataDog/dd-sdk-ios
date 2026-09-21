@@ -3019,3 +3019,10 @@ is insufficient. Check existing upstream fixes before creating a duplicate; PR31
 already owns the timeseries pause correction. Preserve completed local evidence
 without claiming it tests a different upstream head. Unattributed flakes do not
 justify extra tests or fixture repairs; required CI remains a maintainer gate.
+
+A paused preparation is not native acceptance. Preserve its definition, source/helper
+hashes, controls and original deadline. After a laptop restart, verify those hashes
+and protected paths, rediscover Xcode/runtime/devices/authentication, and define a
+separate bounded execution admission before building or running. Do not extend a
+closed attempt or rerun accepted checks merely to resume. EXP220 is paused before
+host-runner implementation, SDK archiving, any build or simulator creation.

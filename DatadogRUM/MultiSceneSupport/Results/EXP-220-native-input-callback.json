@@ -1,0 +1,165 @@
+{
+  "schema_version": 1,
+  "experiment": "EXP-220",
+  "title": "Observe selector callback ownership during native UIKit input",
+  "status": "PAUSED_SOURCE_PREPARATION",
+  "defined_at": "2026-09-21T19:50:35.516309+00:00",
+  "deadline": "2026-09-21T21:20:35.516309+00:00",
+  "owner": "SDK implementer",
+  "reviewer": "existing /root/c06_runtime_plan",
+  "gates": [
+    "S2:A02",
+    "S2:C07",
+    "S2:C08"
+  ],
+  "admission": "Investigate the concrete EXP210 app-level input mismatch using the separately reviewed callback-side design. This is a native acceptance prerequisite, not CI-flake repair. Preserve EXP218 and do not repeat its observer contract.",
+  "source_revision": "62f64d7b655bdc83f3036c4ad81090a270f6202b",
+  "selected_candidate_not_executed": "c9faed816a1d4828d7d8c4b64acae01119425889",
+  "artifact_root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp220-callback-input-d092fui4",
+  "design_record": {
+    "path": "Results/S2-native-input-callback-plan.json",
+    "sha256": "4e8195bb194ddf4f34e35d1f9943deac3d8e38d7b1de86da81708c8cbc41ddcc"
+  },
+  "prior_artifact_root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp218-native-input-c84flody",
+  "prior_sources": {
+    "sources/UIKitApp.swift": "5e791850186fbdb849ba7f0a26e36a902340d7e6f4e55c563f433934588e22dc",
+    "sources/InputProbe.swift": "1fd4d375489440cde40edbb6262e1578b26c1442d6208d02dc9a6c29375e5d2a",
+    "sources/Observation.swift": "b3b6d15e79e0c2c5ba73aa19192ca337aec5b31b023614a58e090ea3d87af206",
+    "tests/InputObservationUITests.swift": "a9627d1839831d140fcb698fc142d1ae2287677587fad66f1c05b3b6041b5d72",
+    "native.py": "7e11d92a20403801b1665472153d8414e1cd5dd9aada5eeefef58f1f149f5e36",
+    "oracle.py": "b810473ddf89e54d59a77a1de2f22e1489b9d3ed6e1bf5e1b7eeda08de9d55ec"
+  },
+  "environment": {
+    "build_sdk": "27.1",
+    "xcode": "27.1",
+    "xcode_build": "27A9269",
+    "developer_dir": "/Applications/Xcode_27.1.app/Contents/Developer",
+    "device_type": "iPhone 17",
+    "runtime": "27.0",
+    "runtime_build": "24A434",
+    "fixture_deployment_target": "16.0",
+    "SDK_deployment_target": "15.0",
+    "device_policy": "Create one fresh task-owned iPhone17/iOS27.0 simulator only after exact runtime verification. Semantic boot completion required. Remove it and both app containers after pair or stop.",
+    "xcodegen": "2.46.0"
+  },
+  "cells": [
+    {
+      "id": "sdk-on",
+      "sdk_initialized": true
+    },
+    {
+      "id": "sdk-off",
+      "sdk_initialized": false
+    }
+  ],
+  "fixed_sequence": [
+    "Fresh clean installation and unique run identity",
+    "Launch UIKit stack with existing default view/action predicates when SDK-on",
+    "Assert foreground Home, receipt0 and visible/hittable switch value0 before input",
+    "Existing home.tap button.tap() then its original 1.2-second capture window and native receipt1 within15seconds",
+    "Record pre-input switch frame/value and perform the existing home.toggle toggle.tap() exactly once",
+    "Freeze value transition and callback/receipt outcome within15seconds, before any later interaction",
+    "Flush the bounded event buffer at the post-input boundary; capture native records and perform scoped termination/uninstall cleanup"
+  ],
+  "allowed_changes": [
+    "Fresh isolated copies of baseline SDK and prior fixture; SDK bytes remain unchanged.",
+    "Public UIApplication.sendAction override calls super exactly once; bounded value-only entry/exit records with action identity, selector, sender identity/class/AXID and returned Bool.",
+    "Add a bounded in-memory callback record immediately before the unchanged native_input write. Keep original target/action, UIAction closure, geometry and one tap per control.",
+    "Add monotonic receipt timestamps; keep original15second effect limits and capture window.",
+    "New frozen oracle/runner and negative controls; fresh simulator/process/run identity and full source/binary/runtime cleanup guards.",
+    "Owning result/index/gate evidence/assessment/safety/runbook/cursor only."
+  ],
+  "forbidden_changes": [
+    "SDK code, public APIs, accepted fixtures, repository build scripts or dependencies.",
+    "Duo boot or fold tests, physical device work or Session Replay content tests.",
+    "Input retry, programmatic control action, successful-only selection, post-result oracle relaxation.",
+    "Remote publication, new PR, merge or CI-flake repair."
+  ],
+  "decisive_oracle": [
+    "Require exact native receipt/run/input identities, original button positive control and frozen switch state/receipt before flush or later input.",
+    "For the selector-based switch: assigned touch begin, one matching sendAction entry, one original callback with that active action identity, matching exit and frozen value0to1/receipt2 in order.",
+    "Do not require ended-touch ancestry, callback containment in sendEvent or a value transition inside sendAction. Do not require a sendAction witness for UIButton UIAction.",
+    "Successful native callback without matching action evidence is OBSERVER_INCONCLUSIVE, never SDK interference or a qualified witness. Missing native effect is preserved as a diagnostic failure.",
+    "Both fixed arms run unless source/environment/build/collector/cleanup integrity fails. Two successes do not resolve earlier intermittency or close release gates.",
+    "Reject wrong selector/sender/AXID, duplicate actions/callbacks, missing assigned touch, late callback/action, stale/restored run, buffer loss, source/build/runtime drift and unexpected XCTest inventory."
+  ],
+  "limits": {
+    "builds": 1,
+    "build_seconds": 600,
+    "discovery_commands": 1,
+    "native_launches": 2,
+    "native_seconds_per_cell": 180,
+    "effect_seconds": 15,
+    "event_buffer_records": 64,
+    "cleanup_seconds": 90,
+    "retries": 0,
+    "deadline_extension": false
+  },
+  "stop_rules": [
+    "Independent source/oracle admission before build/runtime.",
+    "Terminal semantic boot failure, unexpected crash, timeout or any identity/cleanup failure stops remaining native work. Preserve partials.",
+    "No additional pair after inconclusive or passing outcomes. Plan a specific new discriminator only if evidence warrants it."
+  ],
+  "main_protected_state": {
+    "Datadog/Datadog.xcodeproj/project.pbxproj": {
+      "inode": 25975875,
+      "size": 902583,
+      "mode": 33188,
+      "mtime_ns": 1789126687245591396,
+      "ctime_ns": 1789126687246111975,
+      "index": "100644 510335b47d222e3e2cbc254a80f6c9ea49493242 0\tDatadog/Datadog.xcodeproj/project.pbxproj",
+      "sha256": "bbe593b88e84ea88146cd14aa78187c6da11fa11dfa563a656244a439a7df35f"
+    },
+    "xcconfigs/Datadog.local.xcconfig": {
+      "inode": 25529787,
+      "size": 113,
+      "mode": 33188,
+      "mtime_ns": 1789113232845312747,
+      "ctime_ns": 1789113232851920535,
+      "index": "100644 db7030f1a10e7a44f43406914b20dee280c845ce 0\txcconfigs/Datadog.local.xcconfig"
+    }
+  },
+  "side_documents": {
+    "DatadogRUM/MULTI_SCENE_SUPPORT.md": "dce1ba9fddfb0277330b3348e995e3027860b3e96dfef7ac4ba077b8d9373cf5",
+    "DatadogRUM/MultiSceneSupport/NAVIGATION_API.md": "51e2ed2901ef086ffc023eec07ca3d70573f94eeb27f87a94b05c619863ec717",
+    "DatadogRUM/MultiSceneSupport/STABLE_API_REVIEW.md": "9f236e235833c5542dcb393ecc4f2c4f916313a034a7536014ca343c147b49ba",
+    "DatadogRUM/MultiSceneSupport/OPERATIONS.md": "8c22e9060ac4914711b8df1e888f8aeda9794035e3d5ecc613379e651b377b86",
+    "DatadogRUM/MultiSceneSupport/SUPPORT_GUIDE.md": "f2364610a39df4401d582a038644df4d9da62600defe48a0e939c7a579084532",
+    "DatadogRUM/MultiSceneSupport/NAVIGATION_API_GUILD.md": "aba084b3f2897d6e4c3adacdb3879f48b91943345190a9d1a9d46dc6ba19f746",
+    "DatadogRUM/MultiSceneSupport/STABLE_API_REVIEW_GUILD.md": "10d965983c7f381c9f8c0156889236233c3aaa9c22d807834c6053459dbf0ec0",
+    "DatadogRUM/MultiSceneSupport/GUILD_EXECUTIVE_SUMMARY.md": "3418332616c79b811e69c972627c52fb788ca821e0dfe0117d01c0ed60f5321f"
+  },
+  "new_backend_queries": 0,
+  "gate_closures": [],
+  "definition_sha256": "638a83eb68047b58dd84f877d2aa2b28b63dd50018dee1d69381a2f1e6576a99",
+  "paused_at": "2026-09-21T20:00:22.221851+00:00",
+  "pause_reason": "User requested a safe checkpoint before restarting the laptop.",
+  "preparation": {
+    "source_files": 3,
+    "ui_test_files": 1,
+    "UIKitApp_unchanged": true,
+    "source_oracle_review": "SOURCE_ORACLE_REVIEWED_RUNNER_REQUIRED",
+    "oracle_positive_controls": 4,
+    "oracle_negative_controls": 25,
+    "builds": 0,
+    "simulators_created": 0,
+    "native_launches": 0,
+    "backend_queries": 0,
+    "host_runner_implemented": false,
+    "SDK_archive_created": false,
+    "source_guard": "PASS"
+  },
+  "checkpoint": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp220-callback-input-d092fui4/preparation-checkpoint.json",
+    "sha256": "a13a7e76766acc83f1809b9a20fb3bae59f110733b25ac3c74689ee0c5493eb0"
+  },
+  "source_review": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp220-callback-input-d092fui4/source-review.json",
+    "sha256": "bad104335156aed631f32c5e09689d1d98ac1945d9bda4d6e0a083df22743165"
+  },
+  "resume": "Preserve this completed preparation attempt. Do not extend/reopen its deadline. Define a separate bounded execution admission after fresh environment discovery and completion/review of the host runner; reuse prepared sources and controls only after hash verification.",
+  "keep_awake_stop": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp220-callback-input-d092fui4/keep-awake-stop.json",
+    "sha256": "68dd8fa5ce043aba3e1ea422d2ca230d165267146cff8ffd2607b450095f5a8a"
+  }
+}

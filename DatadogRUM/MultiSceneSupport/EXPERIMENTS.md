@@ -266,3 +266,5 @@ conclusions belong in [ASSESSMENT.md](ASSESSMENT.md).
 | <a id="exp-218"></a>EXP-218 | A02, C07, C08 | INCONCLUSIVE OBSERVER | Native SDK-on1/1 passes; strict dispatch oracle rejects absent terminal ancestry and callback after sendEvent. SDK-off unrun; zero-test command rejection, cleanup and all evidence retained. No SDK cause or gate credit. | [record](Experiments/EXP-218-native-input-observation.md#exp-218--observe-the-missing-switch-effect) |
 
 | <a id="exp-219"></a>EXP-219 | E03, F06 | QUALIFIED / PUBLISHED | Current-develop reconciliation passes RUM920/956, metrics9/9, native9/9 and ownership audit; signed source/docs published in #3218. CI/review remain. | [record](Experiments/EXP-219-upstream-resource-integration.md#exp-219--reconcile-e03-with-current-develop) |
+
+| <a id="exp-220"></a>EXP-220 | A02, C07, C08 | PREPARATION PAUSED · no build/native run | Callback source/oracle reviewed;4positive/25negative controls. Host runner/admission remain; no gate credit. | [record](Experiments/EXP-220-native-input-callback.md#exp-220--observe-selector-callback-ownership-during-native-uikit-input) |

@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "status": "DESIGN_REVIEWED_NOT_EXECUTION_ADMITTED",
+  "status": "EXP220_PREPARATION_PAUSED",
   "recorded_at": "2026-09-21T15:34:21.686308+00:00",
   "owner": "SDK implementer",
   "reviewer": "/root/c06_runtime_plan",
@@ -10,7 +10,7 @@
     "S2:C07",
     "S2:C08"
   ],
-  "experiment_number": null,
+  "experiment_number": "EXP-220",
   "source_revision": "62f64d7b655bdc83f3036c4ad81090a270f6202b",
   "selected_candidate_not_admitted": "c9faed816a1d4828d7d8c4b64acae01119425889",
   "prior_sources": {
@@ -64,5 +64,7 @@
     "original EXP210 failures and EXP218 rejected oracle"
   ],
   "native_execution_started": false,
-  "gate_closures": []
+  "gate_closures": [],
+  "definition": "Results/EXP-220-native-input-callback.json",
+  "resume": "Results/EXP-220-native-input-callback.json"
 }
