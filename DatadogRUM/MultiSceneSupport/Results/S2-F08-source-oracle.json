@@ -182,7 +182,7 @@
     "partial cleanup relabeled as ordinary pass"
   ],
   "admission_limits": "This is source preparation only. No runtime/oracle pass, gate closure, new experiment or environment retry is implied. Existing J01, Duo and EXP220 automation stops remain closed; fresh execution needs materially changed environment and reviewed fixed admission.",
-  "next_action": "Qualify native phase capture and authenticated account/session bindings before any F08 input admission. The offline helper is reusable, but complete mapper/callback claims remain unresolved and no existing environment stop is reopened.",
+  "next_action": "Prepare a separate bounded J01 continuation with exact backend tag fields and the reviewed transport decoder. Preserve all earlier stops. Authenticated journeys and complete mapper/callback claims remain unqualified.",
   "review": {
     "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-f08-oracle-preparation-pincwto7/source-review.json",
     "sha256": "41f6a1f5348c383e8c11770dc50da59e45e9dc020559a49c2a60d8691815d6e9"
@@ -206,7 +206,7 @@
       "Persisted Browser/native container identity with replay eligibility"
     ],
     "unresolved": [
-      "Real MCP transport/decoding and native input/phase receipt collection",
+      "Complete journey native input/phase capture; initial MCP transport is separately qualified by transport_qualification.",
       "Clean installation/process and authenticated account bindings",
       "Candidate target contract frozen before the critical input",
       "Actual native callback ordering, active-at-dispatch ownership and complete mapper revisions",
@@ -225,5 +225,23 @@
       "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-f08-oracle-preparation-pincwto7/offline-controls.json",
       "sha256": "c9378798ebb85f71ec7c5ef5ecfa56894bcb249d16fa65e3daf69c8276cbad69"
     }
+  },
+  "transport_qualification": {
+    "status": "ACCEPTED_OFFLINE_ONLY",
+    "artifact_root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-app-transport-qualification-zfm17hmc",
+    "definition_sha256": "8b8cebeecf3b581ef25c52cbad98a311a2731bfe37ef399a5e7e57616bd074e2",
+    "summary_sha256": "2d7676adb80af6deeabd2163e5aed3d8c87878fb59e031dfef78f456e0511dfb",
+    "review_sha256": "5c300fedc96f29a8c3081df7fdd918779ed0d077aadd6e268f8bd90c7a55f385",
+    "source": "../../../tools/multi-scene/acceptance/app_journey_transport.py",
+    "controls": "../../../tools/multi-scene/acceptance/test_app_journey_transport.py",
+    "source_sha256": "c482f5f19088ae30c7471bd61977adabda5e1720c87a171d895efa1cd46baa3d",
+    "controls_sha256": "0f2faef63937852117ed35c8b3fcbc37f3f89131bfc5f22ffb906479eb3c2fd3",
+    "test_methods": 6,
+    "real_payload_negative_controls": 5,
+    "raw_initial_rows": 12,
+    "compiled_sdk_version": "3.17.0+62f64d7b",
+    "backend_sdk_tag": "3.17.0_62f64d7b",
+    "tag_rule_source": "https://docs.datadoghq.com/getting_started/tagging/",
+    "runtime_acceptance": false
   }
 }

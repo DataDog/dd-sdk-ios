@@ -32,7 +32,10 @@ preserved. This does not reproduce earlier variability or establish an SDK
 cause, complete automatic-tracking comparison or candidate gate closure.
 
 [Controlled app builds](Results/S2-F08-app-preparation.json) are reusable by identity;
-[app journeys](Results/S2-F08-app-journeys.json) remain unqualified.
+[app journeys](Results/S2-F08-app-journeys.json) remain unqualified. Prebooted Duo
+Login readiness and clean removal are observed; the attempted journey stopped
+before input on a host decoder error, now qualified offline. No SDK defect or
+baseline/candidate journey acceptance follows.
 [Semantic Duo boot failures](Results/S2-Duo-environment-readiness.json) occur before
 app installation/assertions and have no established SDK cause. An equivalent retry
 requires materially changed conditions and separate admission.

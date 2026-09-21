@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "work_item": "S2:F08 finite controlled app journeys",
-  "status": "J01_STOPPED_PRE_ASSERTION_ENVIRONMENT",
+  "status": "STOPPED_BEFORE_INPUT_TRANSPORT_CONTRACT",
   "recorded_at": "2026-09-21T16:37:35.872371+00:00",
   "owner": "SDK implementer",
   "application_revision": "6e33f1c18a52d04b0793e6954f456bdbc1affe2f",
@@ -141,9 +141,32 @@
     "review": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-app-j01-tf3_dxfy/review.json",
     "candidate": "UNRUN"
   },
-  "next_action": "Qualify native phase capture and authenticated account/session bindings before any F08 input admission. The offline helper is reusable, but complete mapper/callback claims remain unresolved and no existing environment stop is reopened.",
+  "next_action": "Define/review a separate bounded J01 continuation with exact compiled/installed identities, separate backend tag identities and the qualified complete-inventory decoder. No old run or deadline is reopened.",
   "environment_readiness": "Results/S2-Duo-environment-readiness.json",
   "source_oracle": "Results/S2-F08-source-oracle.json",
   "source_preparation_status": "SOURCE_AND_OFFLINE_INVENTORY_PREPARATION_REVIEWED",
-  "source_prepared_at": "2026-09-21T21:39:37.351271+00:00"
+  "source_prepared_at": "2026-09-21T21:39:37.351271+00:00",
+  "prebooted_continuation": {
+    "root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-app-j01-prebooted-0ux7kfit",
+    "status": "STOPPED_BEFORE_INPUT_TRANSPORT_CONTRACT",
+    "deadline": "2026-09-22T00:03:54.806+00:00",
+    "definition_sha256": "7f746524d6c46e05065511afd0abbff4089bbe94d09faa505656b9b5d1229586",
+    "review_sha256": "51c12f5c3a18c9f54c54c22597e97f0e4b54227b2d807a1dd593cb88e0ce0d43",
+    "admission_sha256": "0dbe83097304ef5aa03fa50cf0bedd18f702f2e304794080c4beae370ae49dde",
+    "device": "9A00C776-2D63-420A-830F-44CE1B5E3F2E",
+    "native_launches": 1,
+    "reason": "Existing prebooted Duo readiness; original fresh-device stops retained",
+    "scope": "Finite J01 only; candidate conditional on baseline acceptance and cleanup",
+    "native_inputs": 0,
+    "candidate": "UNRUN",
+    "summary": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-app-j01-prebooted-0ux7kfit/terminal-summary.json",
+    "summary_sha256": "4c6dc71aa802aea21819cd8361bf3e59954e738862da1791738f32c9462d232d",
+    "cleanup": "PASS",
+    "offline_transport_qualification": {
+      "root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-app-transport-qualification-zfm17hmc",
+      "status": "ACCEPTED_OFFLINE_ONLY",
+      "summary_sha256": "2d7676adb80af6deeabd2163e5aed3d8c87878fb59e031dfef78f456e0511dfb",
+      "review_sha256": "5c300fedc96f29a8c3081df7fdd918779ed0d077aadd6e268f8bd90c7a55f385"
+    }
+  }
 }

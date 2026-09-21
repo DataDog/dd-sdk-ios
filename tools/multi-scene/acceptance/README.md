@@ -382,8 +382,8 @@ Use `physical_same_key_contract.validate_local`, `validate_display` and `validat
 
 `app_journey_inventory.py` supplies offline guards for the finite F08 app journeys.
 It is not a scenario in the acceptance runner and grants no runtime or release
-acceptance. It consumes decoded full RUM rows and query receipts; real transport,
-account binding, native phase capture and cleanup still need qualification.
+acceptance. It consumes decoded full RUM rows and query receipts. Account binding,
+complete native phase capture and journey cleanup still need qualification.
 
 The helper preserves raw IDs and available backend revisions, compares distinct
 view occurrences and exact owner edges, and rejects incomplete pagination or
@@ -393,6 +393,16 @@ remain separate from native fields: a full application/session query must includ
 all partitions. Replay eligibility is required for a persisted container check;
 active-at-dispatch ownership needs independent native evidence. Graph equality
 still requires review of raw revisions and downstream non-owner values.
+
+`app_journey_transport.py` decodes full MCP responses. Metadata `count` is the
+query total even on the empty terminal page. Each page total, accumulated offsets,
+exhausted pagination and an independent ungrouped COUNT must agree. Explicit or
+textual truncation, stale request identity and partial captures fail closed. Preserve
+raw SDK tags separately from exact compiled/installed version strings; do not
+normalize build identity. Saved initial data qualifies transport, not a journey.
+
+Run transport controls with `python3 -B -m unittest discover -s
+tools/multi-scene/acceptance -p test_app_journey_transport.py`.
 
 Run its offline controls with:
 
