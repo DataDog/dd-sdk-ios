@@ -1,9 +1,9 @@
 {
-  "status": "SOURCE_REVIEW_COMPLETE_FINITE_RUNTIME_DELIVERABLES_NOT_YET_ADMITTED",
-  "recorded_at": "2026-09-21T02:50:08.827337+00:00",
+  "status": "REGISTERED_AND_CORE_QUALIFIED_SEVEN_HOSTLESS_ACTIVE_BACKEND_PENDING",
+  "recorded_at": "2026-09-21T03:48:40.051216+00:00",
   "candidate": {
     "checkout": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/deliveries/e05-20260920-rtzz6gpd/worktree",
-    "head": "9899a67a2f59e0423a00c9765ddc77c272741740",
+    "head": "399b01ea0e059186a139921a01a18bff7997648f",
     "clean": true,
     "qualified_source": "9254adbcbf5a1809219ec30f6cc07df4f3af4518",
     "production_sha256": {
@@ -13,8 +13,10 @@
     },
     "test_sha256": {
       "DatadogTrace/Tests/TracingURLSessionHandlerTests.swift": "bf05ec8bacc5759e6d8d8509e92a42b3f18275ef427e988526d5cd7b1af314cf",
-      "Datadog/IntegrationUnitTests/Public/NetworkInstrumentationIntegrationTests.swift": "47f50ccf4ee00441cd467a16b5eaeb3ef3e3afee4525fe0ae962804941184413"
-    }
+      "Datadog/IntegrationUnitTests/Public/NetworkInstrumentationIntegrationTests.swift": "09da2bc06c9f5f22d6c4d57edf12e8577f3946337f25a7e78b97cdca8765b086",
+      "DatadogCore/Tests/Datadog/Tracing/TracingURLSessionHandlerTests.swift": "6d1a0ab7b8eb4b1642c268855de74e0c214c036f62578461d6c4a8f96f637d75"
+    },
+    "signature": "N_AFTER_RECORDED_SIGNING_TIMEOUT"
   },
   "owner": "SDK implementer; RUM maintainers review final candidate",
   "independent_review": {
@@ -95,7 +97,7 @@
       ],
       "environment": "Exact independent E05 production; isolated test-only qualification checkout; clean compatible iOS17.5 Example host; full Integration suite can include these two missing cases.",
       "preserve": "All existing EXP208 bodies/controls and automatic evidence; no new SDK change or broad header policy.",
-      "status": "DEFINED_DELIVERABLE_NOT_EXECUTION_ADMISSION"
+      "status": "PASS_TWO_REGISTERED_CASES_IN_FULL_INTEGRATION_282"
     },
     {
       "id": "E05-BACKEND",
@@ -115,7 +117,123 @@
     "Immediate handler unbind, hard map capacity, or footprint claims",
     "Whole E05 release or gate promotion before registered-mode and backend evidence"
   ],
-  "new_runtime_admitted": false,
+  "new_runtime_admitted": true,
   "new_experiment_number": false,
-  "release_gate_closed": false
+  "release_gate_closed": false,
+  "registered_implementation": {
+    "status": "QUALIFIED_AND_PROMOTED_TEST_ONLY_TO_DELIVERY",
+    "root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/deliveries/e05-20260920-rtzz6gpd/registered-ownership-jn0p9n_9",
+    "admission_sha256": "3296ab74bb62c4060846a549af8a0db96c79cecb95e93b8e31b667132ca224ee",
+    "implementation_sha256": "0ce053e1b6ef439e84388c7ed5f4475519d747ed9a2b017d8fdcb748e4a6691e",
+    "existing_automatic_bodies_unchanged": true,
+    "product_sources_unchanged": true,
+    "full_integration_expected_cases": 282,
+    "review": {
+      "path": "/tmp/e05-trace-ownership-review-20260921/registered-fixture-review.json",
+      "sha256": "5fc7692d0775a7148d6b0d61cebdc23ddbc7790dad2c3967742f199e28d7146c"
+    },
+    "review_correction": {
+      "path": "/tmp/e05-trace-ownership-review-20260921/registered-fixture-review-correction.json",
+      "sha256": "9cacf1976c213f3f59953119416638a317a4ad48348fdf742bdbff3d4fca814e"
+    },
+    "review_correction_sha256": "6d6e56c265a7f686bc14bee47d56f0dbcff16db9782c21b8c5192a13d2c9bb2d",
+    "composition": "b131f48ad8dee29505942b1e307321c25807fdca",
+    "composition_signature": "N_AFTER_RECORDED_SIGNING_TIMEOUT"
+  },
+  "registered_runtime_definition": {
+    "status": "COMPLETED_WITHIN_ORIGINAL_DEADLINE",
+    "root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/deliveries/e05-20260920-rtzz6gpd/registered-ownership-jn0p9n_9/qualification-wyvkoyzc",
+    "definition_sha256": "9137753b738d17a6a3f851ba91c574b1cd15e7cad4daebea706566585a9bb748",
+    "deadline": "2026-09-21T04:24:59.372398+00:00",
+    "composition": "b131f48ad8dee29505942b1e307321c25807fdca",
+    "composition_signature": "N_AFTER_RECORDED_SIGNING_TIMEOUT",
+    "product_unchanged": true,
+    "expected_cases": 282,
+    "new_registered_cases": 2,
+    "source_review": {
+      "path": "/tmp/e05-trace-ownership-review-20260921/registered-implementation-review.json",
+      "sha256": "3246eadc4bc4845adfef271845da765f9ad572bdebc7173cb7be3a5c45369464"
+    },
+    "review_correction_sha256": "6d6e56c265a7f686bc14bee47d56f0dbcff16db9782c21b8c5192a13d2c9bb2d"
+  },
+  "registered_qualification": {
+    "status": "PASS_FULL_INTEGRATION_AND_REGISTERED_OWNERSHIP_WITH_EIGHT_PRESERVED_QOS_WARNINGS",
+    "root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/deliveries/e05-20260920-rtzz6gpd/registered-ownership-jn0p9n_9/qualification-wyvkoyzc",
+    "summary_sha256": "73bc6f5322dc9fd8c56546c277ca0b8b4f62d5dcd233bc3127741fba8baa53e5",
+    "definition_sha256": "9137753b738d17a6a3f851ba91c574b1cd15e7cad4daebea706566585a9bb748",
+    "cases": 282,
+    "executions": 282,
+    "passed": 282,
+    "skips": 0,
+    "registered_cases": 2,
+    "genuine_task_receipts": 3,
+    "callback_audit_sha256": "41a0f9cf125065ec45a255eebb99b9654b8e47a77dbd94e1bb675f225efa54da",
+    "warning_disposition_sha256": "ed442006c06f458ff179c5436784d971136e8fd1185d071403989cde4bb1f294",
+    "review": {
+      "path": "/tmp/e05-trace-ownership-review-20260921/acceptance-review.json",
+      "sha256": "4fe7f44f0cc46c92099d963f67bf4e0f8d3237366874ded2f666910829de8c89"
+    },
+    "composition": "b131f48ad8dee29505942b1e307321c25807fdca",
+    "composition_signature": "N_AFTER_RECORDED_SIGNING_TIMEOUT",
+    "promotion": {
+      "delivery_head": "4002188aa64472add03f24e3129d23575f8375d6",
+      "signature": "N_AFTER_RECORDED_SIGNING_TIMEOUT",
+      "paths": [
+        "Datadog/IntegrationUnitTests/Public/NetworkInstrumentationIntegrationTests.swift"
+      ],
+      "commit_receipt_sha256": "88bb24b855e8f51f21cdecea04b77eb253eae195a893c92032cc5905032b6c7b",
+      "H00_overlay_excluded": true,
+      "production_unchanged": true
+    },
+    "limits": [
+      "Eight QoS warnings preserved; no performance or sanitizer claim.",
+      "Backend mode cells and remaining candidate compatibility/review stay separate."
+    ]
+  },
+  "missing_hostless_admission": {
+    "root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/deliveries/e05-20260920-rtzz6gpd/missing-hostless-cwg7jubx",
+    "definition_sha256": "7c9c69df7df49c792ceac58e37914b39070b118e5118641ac106204a5f8877f1",
+    "status": "STOPPED_ON_CORE_ASSERTION_FAILURE",
+    "expected_cases": 2701,
+    "expected_executions": 2773,
+    "predefined_skips": 5,
+    "deadline": "2026-09-21T05:44:34.332442+00:00",
+    "original_result": {
+      "cases": 819,
+      "passes": 814,
+      "predefined_skips": 4,
+      "failures": 1,
+      "selector": "TracingURLSessionHandlerTests/testGivenAllTracingHeaderTypes_itUsesTheSameIds()",
+      "mismatch": "Actual request NetworkContext session in baggage versus expected receiver session; trace IDs unchanged.",
+      "audit_sha256": "2eb18009426d0a7ee665e182ceb02459f049d73c796e97f2206b1d3878bcf1b8",
+      "cleanup": "PASS",
+      "remaining_seven_suites": "NOT_EXECUTED",
+      "disposition": "Independent review approves only test expectation correction; original FAIL preserved. Corrected Core requalification passes separately."
+    }
+  },
+  "core_fixture_correction": {
+    "status": "PASS_815_WITH_FOUR_PREDEFINED_OS_SKIPS",
+    "review": "/tmp/e05-trace-ownership-review-20260921/core-request-time-context-review.json",
+    "review_sha256": "1dafe1c24adf2b3de49f4fc90e68841534cc7f1c5bf121241cc86fc39ce6da2a",
+    "test_only_commit": "399b01ea0e059186a139921a01a18bff7997648f",
+    "signature": "N_AFTER_RECORDED_SIGNING_TIMEOUT",
+    "commit_receipt_sha256": "56a985c08a42f813607543d9924157be4668120485bcd3f4a58ef5f2422d3f71",
+    "path": "DatadogCore/Tests/Datadog/Tracing/TracingURLSessionHandlerTests.swift",
+    "sha256": "6d1a0ab7b8eb4b1642c268855de74e0c214c036f62578461d6c4a8f96f637d75",
+    "root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/deliveries/e05-20260920-rtzz6gpd/hostless-core-correction-iafkro4r/core",
+    "audit_sha256": "551db8680d39f5cbc6c56e6713b331c5d8a23429495e4b74521ca713ed5a1c2f",
+    "original_failure_preserved": true,
+    "production_unchanged": true,
+    "other_inputs_unchanged": 1863,
+    "lint": "PASS_REPOSITORY_TEST_CONFIGURATION; original unconfigured lint rejection retained"
+  },
+  "hostless_continuation": {
+    "root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/deliveries/e05-20260920-rtzz6gpd/hostless-core-correction-iafkro4r",
+    "definition_sha256": "4b14767c811365bd4a46e0224fadce291b75d927063b61f13a30a8b16fad48dd",
+    "status": "CORE_PASS_SEVEN_REMAINING_ACTIVE",
+    "expected_cases": 2701,
+    "expected_executions": 2773,
+    "predefined_skips": 5,
+    "original_deadline": "2026-09-21T05:44:34.332442+00:00"
+  }
 }

@@ -2696,3 +2696,19 @@ failures. Header-byte preservation and the returned TraceContext ownership must
 both be asserted. Matched baseline/candidate runtime warnings remain diagnostics,
 not automatic clearance. Signing timeout may use the user's authorized local
 unsigned fallback; record it, retain explicit commit paths and never push.
+
+
+Registered ownership evidence must come from delegate-only tasks with actual data,
+metrics and completion callbacks. Preserve the callback attachments and exact task
+IDs; a valid metrics object can have no transaction metrics, so that count is a
+diagnostic rather than a required network phase. Require B's completion before
+releasing A, without imposing an unsupported cross-task metrics callback order.
+
+Full compatibility targets can contain a second test class with the same name as
+an affected module's class. Identify failures by target and selector. A changed
+ownership contract may require a source-reviewed fixture correction in that other
+target; preserve the old failure and full header equality, then qualify the corrected
+target once. An intentional expectation correction is not an inherited pass or a
+flake. Use the repository's tests.swiftlint.yml for test-file linting. On macOS,
+build and inventory the actual changed product: E05 requires Trace plus Internal,
+whereas the RUM-only packet's macOS slice cannot establish Trace compilation.

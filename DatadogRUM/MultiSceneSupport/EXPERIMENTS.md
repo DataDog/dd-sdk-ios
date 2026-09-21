@@ -245,7 +245,7 @@ conclusions belong in [ASSESSMENT.md](ASSESSMENT.md).
 
 | <a id="exp-207"></a>EXP-207 | E04 | E04 eligibility qualified | Eight exact baseline failures and five controls; two-file repair passes 910 cases/946 executions and identical native bridge 3/3 versus two expected baseline assertions. Broader release checks remain. | [record](Experiments/EXP-207-active-view-cache.md#exp-207--retain-delayed-webview-containers-after-long-native-visits) |
 
-| <a id="exp-208"></a>EXP-208 | E05 | PASS | Eight exact unit reds;154/154 full Trace green; native2 ownership reds versus3/3 candidate. Independent acceptance closes bounded E05 eligibility; prior failures preserved. | [record](Experiments/EXP-208-trace-ownership.md#exp-208--preserve-request-ownership-through-trace-completion) |
+| <a id="exp-208"></a>EXP-208 | E05 | PASS | Eight exact unit reds;154/154 full Trace green; native2 ownership reds versus3/3 candidate. Independent acceptance closes bounded E05 eligibility; delivery follow-up adds Integration282 and two registered ownership passes. Backend remains separate; prior failures preserved. | [record](Experiments/EXP-208-trace-ownership.md#exp-208--preserve-request-ownership-through-trace-completion) |
 
 | <a id="exp-209"></a>EXP-209 | C01, C02, C03, C04, C05, C06, P01, P04, A01, F02, F03, F07 | Source audit qualified | E01-only source frozen; 12 S2 gates qualify by exclusion or exact evidence reuse. Broader P03 reuse rejected; all Duo/native/app/final gates stay open. Zero builds/runs. | [record](Experiments/EXP-209-s2-source-audit.md#exp-209--freeze-the-smallest-s2-candidate) |
 

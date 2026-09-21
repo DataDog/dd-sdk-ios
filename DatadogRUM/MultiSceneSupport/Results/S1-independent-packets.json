@@ -918,7 +918,7 @@
         "c5f3955ab8fc1539fd1b60e15b71dbd674b26067 G"
       ],
       "body": "Delivery/E04-pr.md",
-      "body_sha256": "9a7cd9873d8163c9b97180455b35ccac145280890037bf5ef9fce69c51917b79",
+      "body_sha256": "99ceaf622beb10bbb9673b8accfcf527e78f7b6bc2ce47142b596861317068f1",
       "evidence": [
         {
           "kind": "qualified_source_rebinding",
@@ -942,17 +942,34 @@
       "remaining_iOS_inventory": [
         {
           "scheme": "DatadogCore",
-          "status": "MISSING_FULL_SUITE",
+          "status": "PASS_FULL_SUITE_PREDEFINED_OS_SKIPS_ONLY",
           "owner": "SDK implementer / CI",
           "environment": "Supported available iOS simulator; frozen candidate and complete test inventory",
-          "decisive_test": "All discovered cases and parameterized runs pass; only predefined OS skips; source and cleanup stable"
+          "decisive_test": "All discovered cases and parameterized runs pass; only predefined OS skips; source and cleanup stable",
+          "cases": 819,
+          "executions": 819,
+          "passes": 815,
+          "predefined_skips": [
+            "CarrierInfoPublisherTests/testGivenCellularServiceAvailable_itProvidesInitialValue()",
+            "CarrierInfoPublisherTests/testGivenCellularServiceUnAvailable_itProvidesNoInitialValue()",
+            "CarrierInfoPublisherTests/testGivenSubscribedInfoProvider_whenCarrierInfoChanges_itNotifiesSubscriber()",
+            "NetworkConnectionInfoConversionTests/testNWPathLinkQuality()"
+          ],
+          "artifact": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/deliveries/e04-20260920-9o3thfw6/missing-hostless-bqv01wbv/core",
+          "audit_sha256": "551db8680d39f5cbc6c56e6713b331c5d8a23429495e4b74521ca713ed5a1c2f"
         },
         {
           "scheme": "DatadogInternal",
-          "status": "MISSING_FULL_SUITE",
+          "status": "PASS_FULL_SUITE_PREDEFINED_OS_SKIPS_ONLY",
           "owner": "SDK implementer / CI",
           "environment": "Supported available iOS simulator; frozen candidate and complete test inventory",
-          "decisive_test": "All discovered cases and parameterized runs pass; only predefined OS skips; source and cleanup stable"
+          "decisive_test": "All discovered cases and parameterized runs pass; only predefined OS skips; source and cleanup stable",
+          "cases": 436,
+          "executions": 472,
+          "passes": 472,
+          "predefined_skips": [],
+          "artifact": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/deliveries/e04-20260920-9o3thfw6/missing-hostless-bqv01wbv/internal",
+          "audit_sha256": "3d6284bebe593f709bd31a760257c10ce01c34224fa3f7ee086bcc10c467f342"
         },
         {
           "scheme": "DatadogRUM",
@@ -970,153 +987,233 @@
         },
         {
           "scheme": "DatadogLogs",
-          "status": "MISSING_FULL_SUITE",
+          "status": "PASS_FULL_SUITE_PREDEFINED_OS_SKIPS_ONLY",
           "owner": "SDK implementer / CI",
           "environment": "Supported available iOS simulator; frozen candidate and complete test inventory",
-          "decisive_test": "All discovered cases and parameterized runs pass; only predefined OS skips; source and cleanup stable"
+          "decisive_test": "All discovered cases and parameterized runs pass; only predefined OS skips; source and cleanup stable",
+          "cases": 88,
+          "executions": 88,
+          "passes": 88,
+          "predefined_skips": [],
+          "artifact": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/deliveries/e04-20260920-9o3thfw6/missing-hostless-bqv01wbv/logs",
+          "audit_sha256": "6ac3597feb54facc7658fe0b7117c8f65a3ae44146cde117cb68298704cc5580"
         },
         {
           "scheme": "DatadogTrace",
-          "status": "MISSING_FULL_SUITE",
+          "status": "PASS_FULL_SUITE_PREDEFINED_OS_SKIPS_ONLY",
           "owner": "SDK implementer / CI",
           "environment": "Supported available iOS simulator; frozen candidate and complete test inventory",
-          "decisive_test": "All discovered cases and parameterized runs pass; only predefined OS skips; source and cleanup stable"
+          "decisive_test": "All discovered cases and parameterized runs pass; only predefined OS skips; source and cleanup stable",
+          "cases": 141,
+          "executions": 141,
+          "passes": 141,
+          "predefined_skips": [],
+          "artifact": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/deliveries/e04-20260920-9o3thfw6/missing-hostless-bqv01wbv/trace",
+          "audit_sha256": "12e3c96161960fc9634dd3f9d5f6ceb2e6f5c94f8f51cfd5efd700efd8b288fe"
         },
         {
           "scheme": "DatadogCrashReporting",
-          "status": "MISSING_FULL_SUITE",
+          "status": "PASS_FULL_SUITE_PREDEFINED_OS_SKIPS_ONLY",
           "owner": "SDK implementer / CI",
           "environment": "Supported available iOS simulator; frozen candidate and complete test inventory",
-          "decisive_test": "All discovered cases and parameterized runs pass; only predefined OS skips; source and cleanup stable"
+          "decisive_test": "All discovered cases and parameterized runs pass; only predefined OS skips; source and cleanup stable",
+          "cases": 67,
+          "executions": 67,
+          "passes": 66,
+          "predefined_skips": [
+            "KSCrashBacktraceTests/testGenerateBacktraceReturnsNilOnWatchOS()"
+          ],
+          "artifact": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/deliveries/e04-20260920-9o3thfw6/missing-hostless-bqv01wbv/crash",
+          "audit_sha256": "fa36d6ba128dd509fc62bd68a1a77500d5acf0e85361918f34a4082885db54f0"
         },
         {
           "scheme": "DatadogWebViewTracking",
-          "status": "MISSING_FULL_SUITE",
+          "status": "PASS_FULL_SUITE_PREDEFINED_OS_SKIPS_ONLY",
           "owner": "SDK implementer / CI",
           "environment": "Supported available iOS simulator; frozen candidate and complete test inventory",
-          "decisive_test": "All discovered cases and parameterized runs pass; only predefined OS skips; source and cleanup stable"
+          "decisive_test": "All discovered cases and parameterized runs pass; only predefined OS skips; source and cleanup stable",
+          "cases": 31,
+          "executions": 31,
+          "passes": 31,
+          "predefined_skips": [],
+          "artifact": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/deliveries/e04-20260920-9o3thfw6/missing-hostless-bqv01wbv/webview",
+          "audit_sha256": "b56244116c193d25b6c96f24d082693545a4e494741c36e20d4d1c0a239bd418"
         },
         {
           "scheme": "DatadogFlags",
-          "status": "MISSING_FULL_SUITE",
+          "status": "PASS_FULL_SUITE_PREDEFINED_OS_SKIPS_ONLY",
           "owner": "SDK implementer / CI",
           "environment": "Supported available iOS simulator; frozen candidate and complete test inventory",
-          "decisive_test": "All discovered cases and parameterized runs pass; only predefined OS skips; source and cleanup stable"
+          "decisive_test": "All discovered cases and parameterized runs pass; only predefined OS skips; source and cleanup stable",
+          "cases": 135,
+          "executions": 135,
+          "passes": 135,
+          "predefined_skips": [],
+          "artifact": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/deliveries/e04-20260920-9o3thfw6/missing-hostless-bqv01wbv/flags",
+          "audit_sha256": "4045258078f11b817813aebb73d890672f159b5615bf9112b449a9efefbaa758"
         },
         {
           "scheme": "DatadogProfiling",
-          "status": "MISSING_FULL_SUITE",
+          "status": "PASS_FULL_SUITE_PREDEFINED_OS_SKIPS_ONLY",
           "owner": "SDK implementer / CI",
           "environment": "Supported available iOS simulator; frozen candidate and complete test inventory",
-          "decisive_test": "All discovered cases and parameterized runs pass; only predefined OS skips; source and cleanup stable"
+          "decisive_test": "All discovered cases and parameterized runs pass; only predefined OS skips; source and cleanup stable",
+          "cases": 224,
+          "executions": 224,
+          "passes": 224,
+          "predefined_skips": [],
+          "artifact": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/deliveries/e04-20260920-9o3thfw6/missing-hostless-bqv01wbv/profiling",
+          "audit_sha256": "d13ffa6a1e5d479b404cf8c6a1800828af77eb798b5321f2a999280acef8b6ba"
         },
         {
           "scheme": "DatadogIntegrationTests",
-          "status": "MISSING_FULL_SUITE",
+          "status": "PASS_FULL_INTEGRATION_WITH_EIGHT_PRESERVED_QOS_WARNINGS",
           "owner": "SDK implementer / CI",
           "environment": "Supported available iOS simulator; frozen candidate and complete test inventory",
-          "decisive_test": "All discovered cases and parameterized runs pass; only predefined OS skips; source and cleanup stable"
+          "decisive_test": "All discovered cases and parameterized runs pass; only predefined OS skips; source and cleanup stable",
+          "cases": 279,
+          "executions": 279,
+          "passes": 279,
+          "skips": 0,
+          "artifact": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/deliveries/e04-20260920-9o3thfw6/integration-h00-composition-w7uasu6n/qualification-r1qrjs6f",
+          "summary_sha256": "26bc0c6282dc9b91452a7a20aa26e285d37adc61dfc2a69da2b6e60ef22321bf"
         }
       ],
       "remaining_platform_inventory": [
         {
           "platform": "iOS",
           "configuration": "Debug",
-          "status": "MISSING_AFFECTED_BUILD",
+          "status": "PASS_AFFECTED_BUILD",
           "owner": "SDK implementer / CI",
           "environment": "Current supported Xcode; declared package minima",
-          "decisive_test": "Complete affected production SwiftFileLists and emitted modules; zero build exit"
+          "decisive_test": "Complete affected production SwiftFileLists and emitted modules; zero build exit",
+          "artifact_root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/deliveries/e04-20260920-9o3thfw6/platforms-package-export-x81pc3qe",
+          "cell": "ios-Debug",
+          "summary_sha256": "e2a3276c8e15f2716a20a97a1658c6bc5d2f504c2f1a3457cf341c667dbd262d"
         },
         {
           "platform": "iOS",
           "configuration": "Release",
-          "status": "MISSING_AFFECTED_BUILD",
+          "status": "PASS_AFFECTED_BUILD",
           "owner": "SDK implementer / CI",
           "environment": "Current supported Xcode; declared package minima",
-          "decisive_test": "Complete affected production SwiftFileLists and emitted modules; zero build exit"
+          "decisive_test": "Complete affected production SwiftFileLists and emitted modules; zero build exit",
+          "artifact_root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/deliveries/e04-20260920-9o3thfw6/platforms-package-export-x81pc3qe",
+          "cell": "ios-Release",
+          "summary_sha256": "e2a3276c8e15f2716a20a97a1658c6bc5d2f504c2f1a3457cf341c667dbd262d"
         },
         {
           "platform": "tvOS",
           "configuration": "Debug",
-          "status": "MISSING_AFFECTED_BUILD",
+          "status": "PASS_AFFECTED_BUILD",
           "owner": "SDK implementer / CI",
           "environment": "Current supported Xcode; declared package minima",
-          "decisive_test": "Complete affected production SwiftFileLists and emitted modules; zero build exit"
+          "decisive_test": "Complete affected production SwiftFileLists and emitted modules; zero build exit",
+          "artifact_root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/deliveries/e04-20260920-9o3thfw6/platforms-package-export-x81pc3qe",
+          "cell": "tvos-Debug",
+          "summary_sha256": "e2a3276c8e15f2716a20a97a1658c6bc5d2f504c2f1a3457cf341c667dbd262d"
         },
         {
           "platform": "tvOS",
           "configuration": "Release",
-          "status": "MISSING_AFFECTED_BUILD",
+          "status": "PASS_AFFECTED_BUILD",
           "owner": "SDK implementer / CI",
           "environment": "Current supported Xcode; declared package minima",
-          "decisive_test": "Complete affected production SwiftFileLists and emitted modules; zero build exit"
+          "decisive_test": "Complete affected production SwiftFileLists and emitted modules; zero build exit",
+          "artifact_root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/deliveries/e04-20260920-9o3thfw6/platforms-package-export-x81pc3qe",
+          "cell": "tvos-Release",
+          "summary_sha256": "e2a3276c8e15f2716a20a97a1658c6bc5d2f504c2f1a3457cf341c667dbd262d"
         },
         {
           "platform": "watchOS",
           "configuration": "Debug",
-          "status": "MISSING_AFFECTED_BUILD",
+          "status": "PASS_AFFECTED_BUILD",
           "owner": "SDK implementer / CI",
           "environment": "Current supported Xcode; declared package minima",
-          "decisive_test": "Complete affected production SwiftFileLists and emitted modules; zero build exit"
+          "decisive_test": "Complete affected production SwiftFileLists and emitted modules; zero build exit",
+          "artifact_root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/deliveries/e04-20260920-9o3thfw6/platforms-package-export-x81pc3qe",
+          "cell": "watchos-Debug",
+          "summary_sha256": "e2a3276c8e15f2716a20a97a1658c6bc5d2f504c2f1a3457cf341c667dbd262d"
         },
         {
           "platform": "watchOS",
           "configuration": "Release",
-          "status": "MISSING_AFFECTED_BUILD",
+          "status": "PASS_AFFECTED_BUILD",
           "owner": "SDK implementer / CI",
           "environment": "Current supported Xcode; declared package minima",
-          "decisive_test": "Complete affected production SwiftFileLists and emitted modules; zero build exit"
+          "decisive_test": "Complete affected production SwiftFileLists and emitted modules; zero build exit",
+          "artifact_root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/deliveries/e04-20260920-9o3thfw6/platforms-package-export-x81pc3qe",
+          "cell": "watchos-Release",
+          "summary_sha256": "e2a3276c8e15f2716a20a97a1658c6bc5d2f504c2f1a3457cf341c667dbd262d"
         },
         {
           "platform": "visionOS",
           "configuration": "Debug",
-          "status": "MISSING_AFFECTED_BUILD",
+          "status": "PASS_AFFECTED_BUILD",
           "owner": "SDK implementer / CI",
           "environment": "Current supported Xcode; declared package minima",
-          "decisive_test": "Complete affected production SwiftFileLists and emitted modules; zero build exit"
+          "decisive_test": "Complete affected production SwiftFileLists and emitted modules; zero build exit",
+          "artifact_root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/deliveries/e04-20260920-9o3thfw6/platforms-package-export-x81pc3qe",
+          "cell": "visionos-Debug",
+          "summary_sha256": "e2a3276c8e15f2716a20a97a1658c6bc5d2f504c2f1a3457cf341c667dbd262d"
         },
         {
           "platform": "visionOS",
           "configuration": "Release",
-          "status": "MISSING_AFFECTED_BUILD",
+          "status": "PASS_AFFECTED_BUILD",
           "owner": "SDK implementer / CI",
           "environment": "Current supported Xcode; declared package minima",
-          "decisive_test": "Complete affected production SwiftFileLists and emitted modules; zero build exit"
+          "decisive_test": "Complete affected production SwiftFileLists and emitted modules; zero build exit",
+          "artifact_root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/deliveries/e04-20260920-9o3thfw6/platforms-package-export-x81pc3qe",
+          "cell": "visionos-Release",
+          "summary_sha256": "e2a3276c8e15f2716a20a97a1658c6bc5d2f504c2f1a3457cf341c667dbd262d"
         },
         {
           "platform": "Mac Catalyst",
           "configuration": "Debug",
-          "status": "MISSING_AFFECTED_BUILD",
+          "status": "PASS_AFFECTED_BUILD",
           "owner": "SDK implementer / CI",
           "environment": "Current supported Xcode; declared package minima",
-          "decisive_test": "Complete affected production SwiftFileLists and emitted modules; zero build exit"
+          "decisive_test": "Complete affected production SwiftFileLists and emitted modules; zero build exit",
+          "artifact_root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/deliveries/e04-20260920-9o3thfw6/platforms-package-export-x81pc3qe",
+          "cell": "catalyst-Debug",
+          "summary_sha256": "e2a3276c8e15f2716a20a97a1658c6bc5d2f504c2f1a3457cf341c667dbd262d"
         },
         {
           "platform": "Mac Catalyst",
           "configuration": "Release",
-          "status": "MISSING_AFFECTED_BUILD",
+          "status": "PASS_AFFECTED_BUILD",
           "owner": "SDK implementer / CI",
           "environment": "Current supported Xcode; declared package minima",
-          "decisive_test": "Complete affected production SwiftFileLists and emitted modules; zero build exit"
+          "decisive_test": "Complete affected production SwiftFileLists and emitted modules; zero build exit",
+          "artifact_root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/deliveries/e04-20260920-9o3thfw6/platforms-package-export-x81pc3qe",
+          "cell": "catalyst-Release",
+          "summary_sha256": "e2a3276c8e15f2716a20a97a1658c6bc5d2f504c2f1a3457cf341c667dbd262d"
         },
         {
           "platform": "macOS",
           "configuration": "Debug",
-          "status": "MISSING_AFFECTED_BUILD",
+          "status": "PASS_AFFECTED_BUILD",
           "owner": "SDK implementer / CI",
           "environment": "Current supported Xcode; declared package minima",
-          "decisive_test": "Complete affected production SwiftFileLists and emitted modules; zero build exit"
+          "decisive_test": "Complete affected production SwiftFileLists and emitted modules; zero build exit",
+          "artifact_root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/deliveries/e04-20260920-9o3thfw6/platforms-package-export-x81pc3qe",
+          "cell": "macos-Debug",
+          "summary_sha256": "e2a3276c8e15f2716a20a97a1658c6bc5d2f504c2f1a3457cf341c667dbd262d"
         },
         {
           "platform": "macOS",
           "configuration": "Release",
-          "status": "MISSING_AFFECTED_BUILD",
+          "status": "PASS_AFFECTED_BUILD",
           "owner": "SDK implementer / CI",
           "environment": "Current supported Xcode; declared package minima",
-          "decisive_test": "Complete affected production SwiftFileLists and emitted modules; zero build exit"
+          "decisive_test": "Complete affected production SwiftFileLists and emitted modules; zero build exit",
+          "artifact_root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/deliveries/e04-20260920-9o3thfw6/platforms-package-export-x81pc3qe",
+          "cell": "macos-Release",
+          "summary_sha256": "e2a3276c8e15f2716a20a97a1658c6bc5d2f504c2f1a3457cf341c667dbd262d"
         }
       ],
-      "new_runtime_admission": "Only the eight missing hostless schemes are active; fixed deadline04:39:21UTC, fresh discovery/admission/one execution. Integration and platforms are not yet admitted.",
+      "new_runtime_admission": "Eight hostless schemes, Integration279/279 and all twelve platform builds are complete. No E04 native/build lane remains active; full Replay prerequisite/candidate qualification and human delivery checks remain.",
       "public_API": "Source-identical public declarations and bridge/header/build inputs; only internal implementations differ. Verify affected compilation before delivery.",
       "CI": "NOT_RUN_ON_UNPUBLISHED_DELIVERY_HEAD",
       "human_review": "PENDING",
@@ -1138,7 +1235,7 @@
         "additional_runtime_required": false
       },
       "compatibility_continuation": {
-        "status": "ACTIVE_INSPECT_PER_PHASE_RECEIPTS",
+        "status": "PASS_ALL_EIGHT_HOSTLESS_SUITES",
         "definition": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/deliveries/e04-20260920-9o3thfw6/missing-hostless-bqv01wbv/definition.json",
         "definition_sha256": "003f042e976d3411e78c40ee57e32a7116547007ac75313f58844aa12145b756",
         "timebox_deadline": "2026-09-21T04:39:21.317921+00:00",
@@ -1156,7 +1253,13 @@
         "expected_cases": 1941,
         "expected_executions": 1977,
         "predefined_skips": 5,
-        "accepted_suites_repeated": false
+        "accepted_suites_repeated": false,
+        "summary": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/deliveries/e04-20260920-9o3thfw6/missing-hostless-bqv01wbv/summary.json",
+        "summary_sha256": "1fb355eb7f87410125164658e28abb86c2026068b36122c487fef7cdb6026ce0",
+        "cases": 1941,
+        "executions": 1977,
+        "passes": 1972,
+        "cleanup_and_artifact_guards": "PASS_ALL_PHASES"
       },
       "prepared_integration_composition": {
         "root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/deliveries/e04-20260920-9o3thfw6/integration-h00-composition-w7uasu6n",
@@ -1166,12 +1269,54 @@
         "only_overlay": "Datadog/IntegrationUnitTests/RUM/RUMViewHitchesIntegration_Tests.swift",
         "other_source_build_inputs_identical": 1863,
         "expected_cases": 279,
-        "runtime_admitted": false
+        "runtime_admitted": true,
+        "runtime_completed": true
+      },
+      "integration_qualification": {
+        "status": "PASS_FULL_INTEGRATION_WITH_EIGHT_PRESERVED_QOS_WARNINGS",
+        "summary": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/deliveries/e04-20260920-9o3thfw6/integration-h00-composition-w7uasu6n/qualification-r1qrjs6f/summary.json",
+        "summary_sha256": "26bc0c6282dc9b91452a7a20aa26e285d37adc61dfc2a69da2b6e60ef22321bf",
+        "composition": "45fb3e07c660553fcff83c0e5745a6bd0d125b2d",
+        "composition_signature": "N_AFTER_RECORDED_SIGNING_TIMEOUT",
+        "source_build_inputs_identical_except_reviewed_hitch_test": 1863,
+        "cases": 279,
+        "executions": 279,
+        "passes": 279,
+        "skips": 0,
+        "warning_count": 8,
+        "warning_disposition": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/deliveries/e04-20260920-9o3thfw6/integration-h00-composition-w7uasu6n/qualification-r1qrjs6f/runtime-warning-disposition.json",
+        "warning_disposition_sha256": "821e6a0300ecb74d309aae6e53cae5a08a3315c61e46f7ba13e2e04c5e923870",
+        "limits": [
+          "No change to outgoing E04 product history or hard merge dependency.",
+          "Twelve platform cells, full Replay prerequisite, inherited Trace-document drift, real ticket, CI and human review remain.",
+          "No backend, full repository iOS, release-readiness or blanket sanitizer claim."
+        ]
+      },
+      "platform_runtime": {
+        "status": "PASS_ALL_TWELVE_BUILD_CELLS",
+        "root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/deliveries/e04-20260920-9o3thfw6/platforms-package-export-x81pc3qe",
+        "definition_sha256": "aca06c9932e11b5c0d3ae54c65bcf9e316239b6ffebbdadeea844a03f80f68a7",
+        "deadline": "2026-09-21T04:08:39.745240+00:00",
+        "admission": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/deliveries/e04-20260920-9o3thfw6/platforms-package-export-x81pc3qe/admission.json",
+        "admission_sha256": "bc3826d83293b7a7afaec3e6ce8667e1449bfd64583bf0039eb8b19ccb3c3969",
+        "cells": 12,
+        "source_inputs": 1178,
+        "scope": "M04-M09 affected supported branches: complete package on five non-macOS destinations, RUM and Internal on macOS; each Debug and Release. No other macOS product changed. No runtime/platform hardware claim.",
+        "controls": {
+          "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/deliveries/e02-20260920-jw2fh35s/platforms-package-export-8d4n4y0j/oracle-negative-controls.json",
+          "sha256": "07f013b8ccf730c1fa8b47e6bff6a022f796f67790854d186a8a91c729090aab"
+        },
+        "summary_sha256": "e2a3276c8e15f2716a20a97a1658c6bc5d2f504c2f1a3457cf341c667dbd262d",
+        "per_architecture_audit": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/deliveries/e04-20260920-9o3thfw6/platforms-package-export-x81pc3qe/per-architecture-source-audit.json",
+        "per_architecture_audit_sha256": "74f47d32ba5d28ccaef30e84798416dc3298792726f6857532c350b182f01fd1",
+        "file_lists": 144,
+        "post_run_products_sha256": "6cc0263cdf1595e2f47a98c3e8d2a8c1cf1d5bd3a03fa3757201380cc4fac2af",
+        "product_files": 933
       }
     },
     {
       "id": "E05",
-      "state": "LOCAL_SIGNED_PACKET_QUALIFICATION_PENDING",
+      "state": "LOCAL_PACKET_REGISTERED_QUALIFIED_COMPATIBILITY_BACKEND_PENDING",
       "prepared_at": "2026-09-20T21:36:00.110051+00:00",
       "ticket": null,
       "named_reviewer": null,
@@ -1183,9 +1328,9 @@
       "checkout": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/deliveries/e05-20260920-rtzz6gpd/worktree",
       "detached_until_real_ticket": true,
       "baseline_commit": "62f64d7b655bdc83f3036c4ad81090a270f6202b",
-      "delivery_head": "9899a67a2f59e0423a00c9765ddc77c272741740",
+      "delivery_head": "399b01ea0e059186a139921a01a18bff7997648f",
       "qualified_source": "9254adbcbf5a1809219ec30f6cc07df4f3af4518",
-      "exact_owned_source_test_contents_equal": true,
+      "exact_owned_source_test_contents_equal": false,
       "production_paths_and_sha256": {
         "DatadogTrace/Sources/DatadogTracer.swift": "612aa2a6d9ff8d9ac1be55346ed3c93ce32e183c01aedba16a2985568110adac",
         "DatadogTrace/Sources/Integrations/TracingURLSessionHandler.swift": "6a76028d4e76459ad2f59f5d1b720ebc712a1e0390e6cb992fc91e39eebd2427",
@@ -1193,7 +1338,8 @@
       },
       "test_paths_and_sha256": {
         "DatadogTrace/Tests/TracingURLSessionHandlerTests.swift": "bf05ec8bacc5759e6d8d8509e92a42b3f18275ef427e988526d5cd7b1af314cf",
-        "Datadog/IntegrationUnitTests/Public/NetworkInstrumentationIntegrationTests.swift": "47f50ccf4ee00441cd467a16b5eaeb3ef3e3afee4525fe0ae962804941184413"
+        "Datadog/IntegrationUnitTests/Public/NetworkInstrumentationIntegrationTests.swift": "09da2bc06c9f5f22d6c4d57edf12e8577f3946337f25a7e78b97cdca8765b086",
+        "DatadogCore/Tests/Datadog/Tracing/TracingURLSessionHandlerTests.swift": "6d1a0ab7b8eb4b1642c268855de74e0c214c036f62578461d6c4a8f96f637d75"
       },
       "documentation_paths_and_sha256": {
         "CHANGELOG.md": "798cc9ffedce67a01afbf98c9c2fb484bfec53a954334cab506e50d965896c12",
@@ -1203,6 +1349,7 @@
       "diff_paths": [
         "CHANGELOG.md",
         "Datadog/IntegrationUnitTests/Public/NetworkInstrumentationIntegrationTests.swift",
+        "DatadogCore/Tests/Datadog/Tracing/TracingURLSessionHandlerTests.swift",
         "DatadogRUM/RUM_FEATURE.md",
         "DatadogTrace/Sources/DatadogTracer.swift",
         "DatadogTrace/Sources/Integrations/TracingURLSessionHandler.swift",
@@ -1211,11 +1358,13 @@
         "DatadogTrace/Tests/TracingURLSessionHandlerTests.swift"
       ],
       "signatures": [
+        "399b01ea0e059186a139921a01a18bff7997648f N after recorded signing timeout",
+        "4002188aa64472add03f24e3129d23575f8375d6 N after recorded signing timeout",
         "9899a67a2f59e0423a00c9765ddc77c272741740 G",
         "9175dd7af56ddd6cc9bf66e835e4ef519f2d124c G"
       ],
       "body": "Delivery/E05-pr.md",
-      "body_sha256": "f20dd22f253f89d1019b9b97b124053c35f3974efc860943827808261fe376f0",
+      "body_sha256": "6305a50f947a85d484bb782398afb5e96cfeb559ba9c20137f21bfa568178683",
       "evidence": [
         {
           "kind": "qualified_source_rebinding",
@@ -1229,29 +1378,45 @@
         {
           "kind": "independent_changed_edge_review_and_finite_admission",
           "path": "Results/S1-E05-release-admission.json",
-          "sha256": "b63581a2aa3ae7a8dc72c1a24bc16994b62059c03dd38bf017937fae71991f0d",
-          "status": "SOURCE_REVIEW_COMPLETE_FINITE_RUNTIME_DELIVERABLES_NOT_YET_ADMITTED"
+          "sha256": "3c1fa7a8f500880389d8d5fee292d0075d1d25f551cbdb88cd3ca77f57da7a91",
+          "status": "REGISTERED_AND_CORE_QUALIFIED_SEVEN_HOSTLESS_ACTIVE_BACKEND_PENDING"
         }
       ],
       "dependency_pins_and_build_identity": "Owned by the linked qualified/current receipts; no new runtime identities are inferred for source-only rebinding.",
       "remaining_iOS_inventory": [
         {
           "scheme": "DatadogCore",
-          "status": "MISSING_FULL_SUITE",
+          "status": "PASS_815_WITH_FOUR_PREDEFINED_OS_SKIPS",
           "owner": "SDK implementer / CI",
           "environment": "Supported available iOS simulator; frozen candidate and complete test inventory",
-          "decisive_test": "All discovered cases and parameterized runs pass; only predefined OS skips; source and cleanup stable"
+          "decisive_test": "All discovered cases and parameterized runs pass; only predefined OS skips; source and cleanup stable",
+          "qualification": {
+            "status": "PASS_815_WITH_FOUR_PREDEFINED_OS_SKIPS",
+            "review": "/tmp/e05-trace-ownership-review-20260921/core-request-time-context-review.json",
+            "review_sha256": "1dafe1c24adf2b3de49f4fc90e68841534cc7f1c5bf121241cc86fc39ce6da2a",
+            "test_only_commit": "399b01ea0e059186a139921a01a18bff7997648f",
+            "signature": "N_AFTER_RECORDED_SIGNING_TIMEOUT",
+            "commit_receipt_sha256": "56a985c08a42f813607543d9924157be4668120485bcd3f4a58ef5f2422d3f71",
+            "path": "DatadogCore/Tests/Datadog/Tracing/TracingURLSessionHandlerTests.swift",
+            "sha256": "6d1a0ab7b8eb4b1642c268855de74e0c214c036f62578461d6c4a8f96f637d75",
+            "root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/deliveries/e05-20260920-rtzz6gpd/hostless-core-correction-iafkro4r/core",
+            "audit_sha256": "551db8680d39f5cbc6c56e6713b331c5d8a23429495e4b74521ca713ed5a1c2f",
+            "original_failure_preserved": true,
+            "production_unchanged": true,
+            "other_inputs_unchanged": 1863,
+            "lint": "PASS_REPOSITORY_TEST_CONFIGURATION; original unconfigured lint rejection retained"
+          }
         },
         {
           "scheme": "DatadogInternal",
-          "status": "MISSING_FULL_SUITE",
+          "status": "ADMITTED_IN_SEVEN_UNEXECUTED_SUITE_CONTINUATION",
           "owner": "SDK implementer / CI",
           "environment": "Supported available iOS simulator; frozen candidate and complete test inventory",
           "decisive_test": "All discovered cases and parameterized runs pass; only predefined OS skips; source and cleanup stable"
         },
         {
           "scheme": "DatadogRUM",
-          "status": "MISSING_FULL_SUITE",
+          "status": "ADMITTED_IN_SEVEN_UNEXECUTED_SUITE_CONTINUATION",
           "owner": "SDK implementer / CI",
           "environment": "Supported available iOS simulator; frozen candidate and complete test inventory",
           "decisive_test": "All discovered cases and parameterized runs pass; only predefined OS skips; source and cleanup stable"
@@ -1265,7 +1430,7 @@
         },
         {
           "scheme": "DatadogLogs",
-          "status": "MISSING_FULL_SUITE",
+          "status": "ADMITTED_IN_SEVEN_UNEXECUTED_SUITE_CONTINUATION",
           "owner": "SDK implementer / CI",
           "environment": "Supported available iOS simulator; frozen candidate and complete test inventory",
           "decisive_test": "All discovered cases and parameterized runs pass; only predefined OS skips; source and cleanup stable"
@@ -1279,38 +1444,72 @@
         },
         {
           "scheme": "DatadogCrashReporting",
-          "status": "MISSING_FULL_SUITE",
+          "status": "ADMITTED_IN_SEVEN_UNEXECUTED_SUITE_CONTINUATION",
           "owner": "SDK implementer / CI",
           "environment": "Supported available iOS simulator; frozen candidate and complete test inventory",
           "decisive_test": "All discovered cases and parameterized runs pass; only predefined OS skips; source and cleanup stable"
         },
         {
           "scheme": "DatadogWebViewTracking",
-          "status": "MISSING_FULL_SUITE",
+          "status": "ADMITTED_IN_SEVEN_UNEXECUTED_SUITE_CONTINUATION",
           "owner": "SDK implementer / CI",
           "environment": "Supported available iOS simulator; frozen candidate and complete test inventory",
           "decisive_test": "All discovered cases and parameterized runs pass; only predefined OS skips; source and cleanup stable"
         },
         {
           "scheme": "DatadogFlags",
-          "status": "MISSING_FULL_SUITE",
+          "status": "ADMITTED_IN_SEVEN_UNEXECUTED_SUITE_CONTINUATION",
           "owner": "SDK implementer / CI",
           "environment": "Supported available iOS simulator; frozen candidate and complete test inventory",
           "decisive_test": "All discovered cases and parameterized runs pass; only predefined OS skips; source and cleanup stable"
         },
         {
           "scheme": "DatadogProfiling",
-          "status": "MISSING_FULL_SUITE",
+          "status": "ADMITTED_IN_SEVEN_UNEXECUTED_SUITE_CONTINUATION",
           "owner": "SDK implementer / CI",
           "environment": "Supported available iOS simulator; frozen candidate and complete test inventory",
           "decisive_test": "All discovered cases and parameterized runs pass; only predefined OS skips; source and cleanup stable"
         },
         {
           "scheme": "DatadogIntegrationTests",
-          "status": "MISSING_FULL_SUITE",
+          "status": "PASS_282_WITH_EIGHT_PRESERVED_QOS_WARNINGS",
           "owner": "SDK implementer / CI",
           "environment": "Supported available iOS simulator; frozen candidate and complete test inventory",
-          "decisive_test": "All discovered cases and parameterized runs pass; only predefined OS skips; source and cleanup stable"
+          "decisive_test": "All discovered cases and parameterized runs pass; only predefined OS skips; source and cleanup stable",
+          "qualification": {
+            "status": "PASS_FULL_INTEGRATION_AND_REGISTERED_OWNERSHIP_WITH_EIGHT_PRESERVED_QOS_WARNINGS",
+            "root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/deliveries/e05-20260920-rtzz6gpd/registered-ownership-jn0p9n_9/qualification-wyvkoyzc",
+            "summary_sha256": "73bc6f5322dc9fd8c56546c277ca0b8b4f62d5dcd233bc3127741fba8baa53e5",
+            "definition_sha256": "9137753b738d17a6a3f851ba91c574b1cd15e7cad4daebea706566585a9bb748",
+            "cases": 282,
+            "executions": 282,
+            "passed": 282,
+            "skips": 0,
+            "registered_cases": 2,
+            "genuine_task_receipts": 3,
+            "callback_audit_sha256": "41a0f9cf125065ec45a255eebb99b9654b8e47a77dbd94e1bb675f225efa54da",
+            "warning_disposition_sha256": "ed442006c06f458ff179c5436784d971136e8fd1185d071403989cde4bb1f294",
+            "review": {
+              "path": "/tmp/e05-trace-ownership-review-20260921/acceptance-review.json",
+              "sha256": "4fe7f44f0cc46c92099d963f67bf4e0f8d3237366874ded2f666910829de8c89"
+            },
+            "composition": "b131f48ad8dee29505942b1e307321c25807fdca",
+            "composition_signature": "N_AFTER_RECORDED_SIGNING_TIMEOUT",
+            "promotion": {
+              "delivery_head": "4002188aa64472add03f24e3129d23575f8375d6",
+              "signature": "N_AFTER_RECORDED_SIGNING_TIMEOUT",
+              "paths": [
+                "Datadog/IntegrationUnitTests/Public/NetworkInstrumentationIntegrationTests.swift"
+              ],
+              "commit_receipt_sha256": "88bb24b855e8f51f21cdecea04b77eb253eae195a893c92032cc5905032b6c7b",
+              "H00_overlay_excluded": true,
+              "production_unchanged": true
+            },
+            "limits": [
+              "Eight QoS warnings preserved; no performance or sanitizer claim.",
+              "Backend mode cells and remaining candidate compatibility/review stay separate."
+            ]
+          }
         }
       ],
       "remaining_platform_inventory": [
@@ -1411,7 +1610,7 @@
           "decisive_test": "Complete affected production SwiftFileLists and emitted modules; zero build exit"
         }
       ],
-      "new_runtime_admission": "No further runtime admitted by this packet; freeze per-lane source, selectors and actual deadlines first.",
+      "new_runtime_admission": "Corrected Core passes; seven never-executed hostless suites continue under the original05:44:34UTC deadline. Platform export is prepared with a reviewed Trace-specific macOS slice; execution admission pending. Backend and Replay remain unadmitted.",
       "public_API": "Source-identical public declarations and bridge/header/build inputs; only internal implementations differ. Verify affected compilation before delivery.",
       "CI": "NOT_RUN_ON_UNPUBLISHED_DELIVERY_HEAD",
       "human_review": "PENDING",
@@ -1421,21 +1620,101 @@
       "limits": [
         "Do not expand into PR2683 partial-carrier/header-merge policy",
         "Native qualification used automatic Trace with automatic RUM Resources disabled",
-        "Immediate unbind cleanup and registered-mode/backend ownership matrix are not implied by current eligibility evidence"
+        "Immediate unbind and backend ownership are not implied by the qualified automatic/registered native results."
       ],
       "rollback": "Revert E05 ownership capture/write behavior and its tests/docs without reverting E01 networking.",
       "feature_docs": "PASS_ALL_FIVE_DOCUMENTS_AND_REGISTRY",
       "additional_finite_admission_required": [
-        "E05-REGISTERED: exactly two native registered ownership/nil cases; freeze complete fixture/receipt/oracle/deadline before execution",
         "E05-BACKEND: exactly two candidate mode cells with nil/A/B client spans and complete service/session inventory; freeze exact counts and publication windows before execution"
       ],
       "semantic_release_admission": {
         "path": "Results/S1-E05-release-admission.json",
-        "sha256": "b63581a2aa3ae7a8dc72c1a24bc16994b62059c03dd38bf017937fae71991f0d",
-        "status": "SOURCE_REVIEW_COMPLETE_FINITE_RUNTIME_DELIVERABLES_NOT_YET_ADMITTED"
+        "sha256": "3c1fa7a8f500880389d8d5fee292d0075d1d25f551cbdb88cd3ca77f57da7a91",
+        "status": "REGISTERED_AND_CORE_QUALIFIED_SEVEN_HOSTLESS_ACTIVE_BACKEND_PENDING"
       },
-      "completion_cleanup_disposition": "Source-matched EXP208 tests and independent review cover all changed completion guards and value-only captures; no immediate-unbind or task/host retention promise is added."
+      "completion_cleanup_disposition": "Source-matched EXP208 tests and independent review cover all changed completion guards and value-only captures; no immediate-unbind or task/host retention promise is added.",
+      "registered_qualification": {
+        "status": "PASS_FULL_INTEGRATION_AND_REGISTERED_OWNERSHIP_WITH_EIGHT_PRESERVED_QOS_WARNINGS",
+        "root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/deliveries/e05-20260920-rtzz6gpd/registered-ownership-jn0p9n_9/qualification-wyvkoyzc",
+        "summary_sha256": "73bc6f5322dc9fd8c56546c277ca0b8b4f62d5dcd233bc3127741fba8baa53e5",
+        "definition_sha256": "9137753b738d17a6a3f851ba91c574b1cd15e7cad4daebea706566585a9bb748",
+        "cases": 282,
+        "executions": 282,
+        "passed": 282,
+        "skips": 0,
+        "registered_cases": 2,
+        "genuine_task_receipts": 3,
+        "callback_audit_sha256": "41a0f9cf125065ec45a255eebb99b9654b8e47a77dbd94e1bb675f225efa54da",
+        "warning_disposition_sha256": "ed442006c06f458ff179c5436784d971136e8fd1185d071403989cde4bb1f294",
+        "review": {
+          "path": "/tmp/e05-trace-ownership-review-20260921/acceptance-review.json",
+          "sha256": "4fe7f44f0cc46c92099d963f67bf4e0f8d3237366874ded2f666910829de8c89"
+        },
+        "composition": "b131f48ad8dee29505942b1e307321c25807fdca",
+        "composition_signature": "N_AFTER_RECORDED_SIGNING_TIMEOUT",
+        "promotion": {
+          "delivery_head": "4002188aa64472add03f24e3129d23575f8375d6",
+          "signature": "N_AFTER_RECORDED_SIGNING_TIMEOUT",
+          "paths": [
+            "Datadog/IntegrationUnitTests/Public/NetworkInstrumentationIntegrationTests.swift"
+          ],
+          "commit_receipt_sha256": "88bb24b855e8f51f21cdecea04b77eb253eae195a893c92032cc5905032b6c7b",
+          "H00_overlay_excluded": true,
+          "production_unchanged": true
+        },
+        "limits": [
+          "Eight QoS warnings preserved; no performance or sanitizer claim.",
+          "Backend mode cells and remaining candidate compatibility/review stay separate."
+        ]
+      },
+      "qualified_source_reuse": "All production and accepted automatic/registered/Trace tests remain identical; the separate Core header expectation is corrected to the approved request-time contract and passes complete Core requalification.",
+      "missing_hostless_admission": {
+        "root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/deliveries/e05-20260920-rtzz6gpd/missing-hostless-cwg7jubx",
+        "definition_sha256": "7c9c69df7df49c792ceac58e37914b39070b118e5118641ac106204a5f8877f1",
+        "status": "STOPPED_ON_CORE_ASSERTION_FAILURE",
+        "expected_cases": 2701,
+        "expected_executions": 2773,
+        "predefined_skips": 5,
+        "deadline": "2026-09-21T05:44:34.332442+00:00",
+        "original_result": {
+          "cases": 819,
+          "passes": 814,
+          "predefined_skips": 4,
+          "failures": 1,
+          "selector": "TracingURLSessionHandlerTests/testGivenAllTracingHeaderTypes_itUsesTheSameIds()",
+          "mismatch": "Actual request NetworkContext session in baggage versus expected receiver session; trace IDs unchanged.",
+          "audit_sha256": "2eb18009426d0a7ee665e182ceb02459f049d73c796e97f2206b1d3878bcf1b8",
+          "cleanup": "PASS",
+          "remaining_seven_suites": "NOT_EXECUTED",
+          "disposition": "Independent review approves only test expectation correction; original FAIL preserved. Corrected Core requalification passes separately."
+        }
+      },
+      "core_fixture_correction": {
+        "status": "PASS_815_WITH_FOUR_PREDEFINED_OS_SKIPS",
+        "review": "/tmp/e05-trace-ownership-review-20260921/core-request-time-context-review.json",
+        "review_sha256": "1dafe1c24adf2b3de49f4fc90e68841534cc7f1c5bf121241cc86fc39ce6da2a",
+        "test_only_commit": "399b01ea0e059186a139921a01a18bff7997648f",
+        "signature": "N_AFTER_RECORDED_SIGNING_TIMEOUT",
+        "commit_receipt_sha256": "56a985c08a42f813607543d9924157be4668120485bcd3f4a58ef5f2422d3f71",
+        "path": "DatadogCore/Tests/Datadog/Tracing/TracingURLSessionHandlerTests.swift",
+        "sha256": "6d1a0ab7b8eb4b1642c268855de74e0c214c036f62578461d6c4a8f96f637d75",
+        "root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/deliveries/e05-20260920-rtzz6gpd/hostless-core-correction-iafkro4r/core",
+        "audit_sha256": "551db8680d39f5cbc6c56e6713b331c5d8a23429495e4b74521ca713ed5a1c2f",
+        "original_failure_preserved": true,
+        "production_unchanged": true,
+        "other_inputs_unchanged": 1863,
+        "lint": "PASS_REPOSITORY_TEST_CONFIGURATION; original unconfigured lint rejection retained"
+      },
+      "hostless_continuation": {
+        "root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/deliveries/e05-20260920-rtzz6gpd/hostless-core-correction-iafkro4r",
+        "definition_sha256": "4b14767c811365bd4a46e0224fadce291b75d927063b61f13a30a8b16fad48dd",
+        "status": "CORE_PASS_SEVEN_REMAINING_ACTIVE",
+        "expected_cases": 2701,
+        "expected_executions": 2773,
+        "predefined_skips": 5,
+        "original_deadline": "2026-09-21T05:44:34.332442+00:00"
+      }
     }
   ],
-  "updated_at": "2026-09-21T02:55:56.787049+00:00"
+  "updated_at": "2026-09-21T04:05:18.379655+00:00"
 }

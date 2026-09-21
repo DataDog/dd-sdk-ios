@@ -6,7 +6,7 @@ Automatic URLSession spans can adopt the RUM view active when a request finishes
 
 Carry the existing optional NetworkContext ownership through handler state into the span writer. Remove captures before completion guards, preserve non-RUM context and caller headers, and avoid treating a baggage-only write as trace-carrier ownership. Public APIs and wire formats are unchanged.
 
-Validation reused for identical production/test contents: 154 full Trace tests and three native automatic-Trace controls passed. Lint and affected feature-document verification passed on this packet. Native qualification had automatic RUM Resources disabled; registered mode, terminal cleanup and backend ownership checks remain pending. The inherited QoS warning is recorded without a harmlessness claim. Broader baggage merging and partial-carrier policy are outside this repair.
+Validation: 154 full Trace tests and three native automatic-Trace controls passed. Full Integration passed 282/282 with a test-only hitch assertion overlay, including two new registered ownership tests. Three real registered requests each produced exactly one data, metrics and completion callback. Source-matched tests cover completion-guard cleanup. The Core header fixture now expects the request session and passes the full Core suite (815 passes, four predefined OS skips); all eleven header assertions remain. Lint and affected feature documents pass. Automatic RUM Resources were disabled; backend ownership and remaining compatibility checks are pending. Eight inherited QoS warnings remain without a harmlessness claim. Broader baggage merging and partial-carrier policy are outside this repair.
 
 ### Review checklist
 
