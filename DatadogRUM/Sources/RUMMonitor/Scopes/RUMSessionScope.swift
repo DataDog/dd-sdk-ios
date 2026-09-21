@@ -277,6 +277,7 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
     // MARK: - RUMScope
 
     func process(command: RUMCommand, context: DatadogContext, writer: Writer) -> Bool {
+        let command = command.resolvingResourceOwners(in: viewScopes)
         if hasTimedOut(currentTime: command.time) {
             endReason = .timeOut
             return false // end this session (no longer keep the session scope)

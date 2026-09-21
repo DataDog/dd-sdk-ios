@@ -116,6 +116,12 @@ internal class RUMUserActionScope: RUMScope, RUMContextProvider {
             return false
         }
 
+        // Foreign completions still drive expiration, but are not activity in this view.
+        if let completion = command as? RUMResourceCompletionCommand,
+           !completion.updatesAction(in: self.context.activeViewID) {
+            return true
+        }
+
         lastActivityTime = command.time
         switch command {
         case is RUMStartViewCommand, is RUMStopViewCommand:
