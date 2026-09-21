@@ -55,11 +55,9 @@ internal final class LogMessageReceiver: BusMessageReceiver {
 }
 
 /// Receiver to consume a Log event coming from Browser SDK.
-internal struct WebViewLogReceiver: FeatureMessageReceiver {
-    func receive(message: FeatureMessage, from core: DatadogCoreProtocol) -> Bool {
-        guard case var .webview(.log(event)) = message else {
-            return false
-        }
+internal final class WebViewLogReceiver: BusMessageReceiver {
+    func receive(message: WebViewLogMessage, from core: DatadogCoreProtocol) {
+        var event = message.event
 
         let tagsKey = LogEventEncoder.StaticCodingKeys.tags.rawValue
         let dateKey = LogEventEncoder.StaticCodingKeys.date.rawValue
@@ -93,7 +91,5 @@ internal struct WebViewLogReceiver: FeatureMessageReceiver {
 
             writer.write(value: AnyEncodable(event))
         }
-
-        return true
     }
 }

@@ -92,6 +92,7 @@ public enum Logs {
 
         // Subscribe typed-bus receivers:
         core.messageBus.subscribe(receiver: feature.logMessageReceiver)
+        core.messageBus.subscribe(receiver: feature.webViewLogReceiver)
     }
 
     /// Adds a custom attribute to all future logs sent by any logger created from the provided Core.
