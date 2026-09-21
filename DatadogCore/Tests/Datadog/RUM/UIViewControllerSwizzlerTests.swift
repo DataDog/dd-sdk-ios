@@ -5,15 +5,25 @@
  */
 
 #if !os(watchOS)
-
 import XCTest
 import TestUtilities
 @testable import DatadogRUM
 
-private class ViewControllerMock: UIViewController {
+private class ViewControllerMock: DDViewController {
     var viewDidAppearExpectation: XCTestExpectation?
     var viewDidDisappearExpectation: XCTestExpectation?
 
+    #if os(macOS)
+    override func viewDidAppear() {
+        super.viewDidAppear()
+        viewDidAppearExpectation?.fulfill()
+    }
+
+    override func viewDidDisappear() {
+        super.viewDidDisappear()
+        viewDidDisappearExpectation?.fulfill()
+    }
+    #else
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
         viewDidAppearExpectation?.fulfill()
@@ -23,11 +33,16 @@ private class ViewControllerMock: UIViewController {
         super.viewDidDisappear(animated)
         viewDidDisappearExpectation?.fulfill()
     }
+    #endif
 }
 
 class UIViewControllerSwizzlerTests: XCTestCase {
+    #if os(macOS)
+    private let handler = AppKitRUMViewsHandlerMock()
+    #else
     private let handler = UIKitRUMViewsHandlerMock()
-    private lazy var swizzler = try! UIViewControllerSwizzler(handler: handler)
+    #endif
+    private lazy var swizzler = try! DDViewControllerSwizzler(handler: handler)
 
     override func setUp() {
         super.setUp()
@@ -47,15 +62,23 @@ class UIViewControllerSwizzlerTests: XCTestCase {
         viewController.viewDidAppearExpectation = callOriginalMethodExpectation
         let animated = Bool.random()
 
+        // When
+        #if os(macOS)
+        handler.notifyViewDidAppear = { receivedViewController in
+            XCTAssertTrue(receivedViewController === viewController)
+            notifyHandlerExpectation.fulfill()
+        }
+
+        viewController.viewDidAppear()
+        #else
         handler.notifyViewDidAppear = { receivedViewController, receivedAnimated in
             XCTAssertTrue(receivedViewController === viewController)
             XCTAssertEqual(receivedAnimated, animated)
             notifyHandlerExpectation.fulfill()
         }
 
-        // When
         viewController.viewDidAppear(animated)
-
+        #endif
         // Then
         wait(for: [notifyHandlerExpectation, callOriginalMethodExpectation], timeout: 0.5, enforceOrder: true)
     }
@@ -68,14 +91,23 @@ class UIViewControllerSwizzlerTests: XCTestCase {
         viewController.viewDidDisappearExpectation = callOriginalMethodExpectation
         let animated = Bool.random()
 
+        // When
+        #if os(macOS)
+        handler.notifyViewDidDisappear = { receivedViewController in
+            XCTAssertTrue(receivedViewController === viewController)
+            notifyHandlerExpectation.fulfill()
+        }
+
+        viewController.viewDidDisappear()
+        #else
         handler.notifyViewDidDisappear = { receivedViewController, receivedAnimated in
             XCTAssertTrue(receivedViewController === viewController)
             XCTAssertEqual(receivedAnimated, animated)
             notifyHandlerExpectation.fulfill()
         }
 
-        // When
         viewController.viewDidDisappear(animated)
+        #endif
 
         // Then
         wait(for: [notifyHandlerExpectation, callOriginalMethodExpectation], timeout: 0.5, enforceOrder: true)

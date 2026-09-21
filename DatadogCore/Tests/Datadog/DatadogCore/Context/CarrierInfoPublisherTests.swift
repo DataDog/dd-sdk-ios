@@ -4,7 +4,7 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
-#if canImport(CoreTelephony)
+#if canImport(CoreTelephony) && !os(macOS)
 
 import XCTest
 import CoreTelephony

@@ -4,7 +4,7 @@
  * Copyright 2019-Present Datadog, Inc.
  */
 
-#if !os(watchOS)
+#if !os(watchOS) && !os(macOS)
 
 import Foundation
 import UIKit
@@ -12,7 +12,7 @@ import DatadogInternal
 
 internal final class LegacySwiftUIComponentDetector: SwiftUIComponentDetector {
     func createActionCommand(
-        from touch: UITouch,
+        from touch: DDTouch,
         predicate: SwiftUIRUMActionsPredicate?,
         dateProvider: DateProvider
     ) -> RUMAddUserActionCommand? {
@@ -21,6 +21,7 @@ internal final class LegacySwiftUIComponentDetector: SwiftUIComponentDetector {
             return nil
         }
 
+        #if canImport(UIKit)
         if let view = touch.view,
            view.isSwiftUIView,
            // For iOS 17 and below, we can't reliably distinguish SwiftUI component types (e.g., Button vs Label).
@@ -41,6 +42,7 @@ internal final class LegacySwiftUIComponentDetector: SwiftUIComponentDetector {
                 )
             }
         }
+        #endif
 
         return nil
     }

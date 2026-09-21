@@ -66,8 +66,12 @@ extension RUM.Configuration {
         override(\.urlSessionTracking, with: rum.trackResources)
         #if !os(watchOS)
         override(\.trackMemoryWarnings, with: rum.trackMemoryWarnings)
+        #if os(macOS)
+        override(\.macOSActionsPredicate, with: rum.trackUserInteractions)
+        #else
         override(\.uiKitActionsPredicate, with: rum.trackUserInteractions)
         override(\.swiftUIActionsPredicate, with: rum.trackUserInteractions)
+        #endif
         #endif
     }
 
@@ -150,7 +154,26 @@ extension RUM.Configuration {
         }
     }
 
-    #if !os(watchOS)
+    #if os(macOS)
+    /// Toggles MacOS user-interaction tracking, which is modeled in-code as the presence of a MacOS
+    /// action predicate.
+    ///
+    /// - `true` keeps any developer-provided predicate, installing the default one only when none is
+    ///   set.
+    /// - `false` clears it, disabling MacOS action tracking.
+    /// - `nil` leaves the current value untouched.
+    ///
+    /// - Parameters:
+    ///   - keyPath: The `uiKitActionsPredicate` property to toggle.
+    ///   - enabled: The remote `trackUserInteractions` flag, or `nil` when omitted.
+    private mutating func override(_ keyPath: WritableKeyPath<Self, MacOSRUMActionsPredicate?>, with enabled: Bool?) {
+        if let enabled {
+            self[keyPath: keyPath] = enabled
+                ? self[keyPath: keyPath] ?? DefaultMacOSRUMActionsPredicate()
+                : nil
+        }
+    }
+    #elseif !os(watchOS)
     /// Toggles UIKit user-interaction tracking, which is modeled in-code as the presence of a UIKit
     /// action predicate.
     ///

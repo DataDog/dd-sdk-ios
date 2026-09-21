@@ -1,0 +1,32 @@
+{
+  "configurations" : [
+    {
+      "id" : "21D7B369-D2A1-464D-9DD7-4934626E8270",
+      "name" : "Configuration 1",
+      "options" : {
+
+      }
+    }
+  ],
+  "defaultOptions" : {
+
+  },
+  "testTargets" : [
+    {
+      "target" : {
+        "containerPath" : "container:SPMProject.xcodeproj",
+        "identifier" : "09A2F33A2FF7BB9900E99710",
+        "name" : "App macOS Tests"
+      }
+    },
+    {
+      "enabled" : false,
+      "target" : {
+        "containerPath" : "container:SPMProject.xcodeproj",
+        "identifier" : "09A2F3472FF7BBA800E99710",
+        "name" : "App macOS UITests"
+      }
+    }
+  ],
+  "version" : 1
+}

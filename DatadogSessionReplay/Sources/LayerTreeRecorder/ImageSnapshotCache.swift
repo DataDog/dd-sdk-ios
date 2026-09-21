@@ -6,6 +6,7 @@
 
 #if os(iOS)
 import Foundation
+import UIKit
 
 /// Cache of layer image snapshots.
 ///
@@ -13,11 +14,16 @@ import Foundation
 /// metadata needed to decide when a cached snapshot can be reused.
 internal final class ImageSnapshotCache {
     struct Policy {
+        /// Advisory limits in bitmap bytes, excluding associated redacted images and in-flight snapshots.
+        let contentCostLimit: Int
+        let maskCostLimit: Int
         let expirationFrameCount: UInt64
         let removalIntervalFrameCount: UInt64
         let maximumRemovals: Int
 
         static let `default` = Self(
+            contentCostLimit: 32 * 1_024 * 1_024,
+            maskCostLimit: 8 * 1_024 * 1_024,
             expirationFrameCount: 150,
             removalIntervalFrameCount: 10,
             maximumRemovals: 128
@@ -52,12 +58,16 @@ internal final class ImageSnapshotCache {
         maskSnapshots: NSCache<NSNumber, MaskSnapshot> = NSCache()
     ) {
         self.policy = .init(
+            contentCostLimit: max(0, policy.contentCostLimit),
+            maskCostLimit: max(0, policy.maskCostLimit),
             expirationFrameCount: policy.expirationFrameCount,
             removalIntervalFrameCount: max(1, policy.removalIntervalFrameCount),
             maximumRemovals: max(1, policy.maximumRemovals)
         )
         self.contentSnapshots = contentSnapshots
         self.maskSnapshots = maskSnapshots
+        contentSnapshots.totalCostLimit = self.policy.contentCostLimit
+        maskSnapshots.totalCostLimit = self.policy.maskCostLimit
     }
 
     func updateFrameNumber(for requests: [ImageSnapshotRequest]) {
@@ -100,7 +110,11 @@ internal final class ImageSnapshotCache {
         _ snapshotData: ContentSnapshotData,
         forReplayID replayID: Int64
     ) {
-        contentSnapshots.setObject(snapshotData.snapshot, forKey: replayID as NSNumber)
+        contentSnapshots.setObject(
+            snapshotData.snapshot,
+            forKey: replayID as NSNumber,
+            cost: snapshotData.snapshot.image.bitmapByteCount
+        )
         contentMetadata[replayID] = .init(
             localRect: snapshotData.localRect,
             renderBounds: snapshotData.renderBounds,
@@ -132,7 +146,11 @@ internal final class ImageSnapshotCache {
         _ snapshotData: MaskSnapshotData,
         forReplayID replayID: Int64
     ) {
-        maskSnapshots.setObject(snapshotData.snapshot, forKey: replayID as NSNumber)
+        maskSnapshots.setObject(
+            snapshotData.snapshot,
+            forKey: replayID as NSNumber,
+            cost: snapshotData.snapshot.image.bitmapByteCount
+        )
         maskMetadata[replayID] = .init(
             bounds: snapshotData.bounds,
             frame: snapshotData.frame,
@@ -202,6 +220,16 @@ internal final class ImageSnapshotCache {
         .prefix(policy.maximumRemovals)
 
         removeMaskSnapshotData(forReplayIDs: expiredMaskReplayIDs)
+    }
+}
+
+extension UIImage {
+    /// The size of the backing bitmap in bytes, excluding associated images.
+    fileprivate var bitmapByteCount: Int {
+        guard let cgImage else {
+            return 0
+        }
+        return cgImage.bytesPerRow * cgImage.height
     }
 }
 #endif
