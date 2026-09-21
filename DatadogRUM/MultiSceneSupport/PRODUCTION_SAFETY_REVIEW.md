@@ -594,3 +594,12 @@ actual disconnect; preserve the original failure and exact29-event partial join,
 and stop equivalent retries without assigning an SDK defect. H14 closes with
 actual physical resizing and complete22-event ownership equality. Restore the approved temporary Windowed Apps preference when
 the suite completes. Physical Duo and final review gates remain separate.
+
+## Ordinary-call availability proposal
+
+[The finite S3 availability plan](Results/S3-api-availability-plan.json) now places
+exactly-once fallback, Resource/Action/Operation pairing, custom/NOP behavior and
+Objective-C off-main safety in F01/C06/F03 before promotion. No SDK repair or
+review finding is marked resolved by this documentation change. Earlier-system
+exact routing remains disabled until qualified; unguarded deployment15 clients
+and actual17.5 fallback require proof. S1/S2 source and qualification are unchanged.

@@ -74,6 +74,13 @@ automatic SwiftUI naming/control limitations are outside new S2 scope. Exact API
 review F01 remains attributable and pending for S3; assessment assumptions are not
 approval. [Stage views](PLAN.md) own readiness.
 
+The ordinary iOS15 scene/target-call amendment is now mapped to existing S3
+F01/C06/F03/A02 obligations in the [availability plan](Results/S3-api-availability-plan.json).
+It adds no gate or pass. Approval, implementation, unguarded Swift/Objective-C
+client builds,17.5 fallback and27 exact same-key ownership remain required. The
+semantic host stays iOS27 with its compiler6.4 Observation guard; optional older
+exact routing must be qualified before it is enabled.
+
 The isolated E01 candidate1bdc9286 fixes repeated URLSession request mutation and
 strong terminal-preparation retention. Its deterministic and native automatic/
 registered controls preserve header, body, metrics and cleanup semantics. Debug

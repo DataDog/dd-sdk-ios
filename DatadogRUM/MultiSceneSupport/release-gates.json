@@ -208,20 +208,24 @@
       "id": "C06",
       "deliverable": "iOS 15 deployment and oldest debuggable runtime",
       "owner": "SDK implementer",
-      "dependencies": [],
-      "decisive_test": "Compile/link at iOS 15 deployment; repeat baseline/current automatic/manual/legacy and actual legacy lifecycle smoke on the oldest available iOS 17 runtime, recording the exact patch. Disclose unexecuted iOS 15/16 coverage.",
-      "environment": "Genuine iOS 15 deployment build plus iOS 17 simulator/device supported by the available Xcode toolchain",
+      "dependencies": [
+        "F01"
+      ],
+      "decisive_test": "After F01, compile/link unguarded ordinary Swift/ObjC scene/target clients at iOS15 deployment, preserving guarded iOS27 semantic APIs; execute exact-once legacy fallback, attributes/options/callbacks, Resource/Action/Operation pairing, custom/NOP and baseline/current automatic/manual/legacy lifecycle on actual17.5. Disclose unexecuted15/16 runtime.",
+      "environment": "Xcode27.1 deployment15 builds; actual iOS17.5(21F79) iPad simulator; exact older-scene behavior stays disabled unless its finite family cases are separately qualified",
       "completion_mode": null,
       "status": "OPEN",
-      "evidence": "User-corrected deployment15 plus oldest runnable17.x contract. EXP-190 official27.1 requests for17.0/17.0.1/17.2/17.4/17.5 all unavailable;26.6 also rejects17.0. No installed17 runtime/native case. Historical catalog/direct HTML is not runtime availability;15/16 execution remains unexecuted. User supplied17.5 on2026-09-19: fresh inventory confirms runtime21F79 available and iPad Pro11-inch(M4)(16GB) booted. Candidate tests remain unexecuted; environment availability is not acceptance.",
+      "evidence": "Older runtime availability and prior S1/S2 evidence do not qualify the proposed S3 API. Results/S3-api-availability-plan.json separates deployment compilation,17.5 legacy fallback and optional older-iPad exact routing; no new pass or support claim.",
       "release_requirements": {
         "S3": {
           "scope": "iOS 15 deployment and oldest debuggable runtime",
           "status": "OPEN",
-          "dependencies": [],
-          "decisive_test": "Compile/link at iOS 15 deployment; repeat baseline/current automatic/manual/legacy and actual legacy lifecycle smoke on the oldest available iOS 17 runtime, recording the exact patch. Disclose unexecuted iOS 15/16 coverage.",
-          "environment": "Installed available iOS17.5(21F79), booted iPad simulator; candidate test-host execution and deployment15 compile/link remain required.",
-          "evidence": "Fresh runtime/device inventory verifies actual17.5 availability. No matrix cell passed yet. Prior failed acquisitions retained; no runtime exception used.",
+          "dependencies": [
+            "S3:F01"
+          ],
+          "decisive_test": "After F01, compile/link unguarded ordinary Swift/ObjC scene/target clients at iOS15 deployment, preserving guarded iOS27 semantic APIs; execute exact-once legacy fallback, attributes/options/callbacks, Resource/Action/Operation pairing, custom/NOP and baseline/current automatic/manual/legacy lifecycle on actual17.5. Disclose unexecuted15/16 runtime.",
+          "environment": "Xcode27.1 deployment15 builds; actual iOS17.5(21F79) iPad simulator; exact older-scene behavior stays disabled unless its finite family cases are separately qualified",
+          "evidence": "Older runtime availability and prior S1/S2 evidence do not qualify the proposed S3 API. Results/S3-api-availability-plan.json separates deployment compilation,17.5 legacy fallback and optional older-iPad exact routing; no new pass or support claim.",
           "required": true
         },
         "S1": {
@@ -1753,33 +1757,39 @@
       "deliverable": "Stable API review",
       "owner": "RUM API reviewers",
       "dependencies": [
+        "T01",
+        "T02",
         "T03",
         "T04",
         "T05",
         "T06",
         "T07",
+        "T15",
         "R06"
       ],
-      "decisive_test": "Reviewed RFC resolves Swift/ObjC names, availability, target forms, custom-conformer behavior and migration; only then update API baselines",
-      "environment": "API review",
+      "decisive_test": "Attributable RFC approves ordinary iOS15 scene/target calls with SDK-selected exactly-once legacy fallback, family pairing and Swift/ObjC/custom/NOP behavior; semantic host stays iOS27 with compiler6.4 Observation guard. Qualify exact same-key A/B routing before enabling it; then approve API baselines.",
+      "environment": "API review; subsequent implementation/qualification in S3:C06 and F03 M02/M03/M10",
       "completion_mode": null,
       "status": "REVIEW BLOCKED",
-      "evidence": "STABLE_API_REVIEW.md proposes eight finite decisions and records21 Swift overloads/21 Objective-C selectors at2baa06da0. Committed package a32acbdcc awaits the requested attributable RFC decision; off-main Objective-C safety and Release/client/API-baseline validation are required before promotion. Results/F01-proposed-api-inventory.json.",
+      "evidence": "September21 availability proposal is planned, not approved or implemented:21 ordinary Swift overloads,20 ordinary Objective-C selectors plus currentInScene factory. Current prototype availability remains iOS27. Results/S3-api-availability-plan.json maps the finite compatibility obligations; original Results/F01-proposed-api-inventory.json remains historical. F01 stays REVIEW BLOCKED.",
       "release_requirements": {
         "S3": {
           "scope": "Stable API review",
           "status": "REVIEW BLOCKED",
           "dependencies": [
+            "S3:T01",
+            "S3:T02",
             "S3:T03",
             "S3:T04",
             "S3:T05",
             "S3:T06",
             "S3:T07",
+            "S3:T15",
             "S3:R06"
           ],
-          "decisive_test": "Reviewed RFC resolves Swift/ObjC names, availability, target forms, custom-conformer behavior and migration; only then update API baselines",
-          "environment": "API review",
-          "evidence": "STABLE_API_REVIEW.md proposes eight finite decisions and records21 Swift overloads/21 Objective-C selectors at2baa06da0. Committed package a32acbdcc awaits the requested attributable RFC decision; off-main Objective-C safety and Release/client/API-baseline validation are required before promotion. Results/F01-proposed-api-inventory.json.",
+          "decisive_test": "Attributable RFC approves ordinary iOS15 scene/target calls with SDK-selected exactly-once legacy fallback, family pairing and Swift/ObjC/custom/NOP behavior; semantic host stays iOS27 with compiler6.4 Observation guard. Qualify exact same-key A/B routing before enabling it; then approve API baselines.",
+          "environment": "API review; subsequent implementation/qualification in S3:C06 and F03 M02/M03/M10",
+          "evidence": "September21 availability proposal is planned, not approved or implemented:21 ordinary Swift overloads,20 ordinary Objective-C selectors plus currentInScene factory. Current prototype availability remains iOS27. Results/S3-api-availability-plan.json maps the finite compatibility obligations; original Results/F01-proposed-api-inventory.json remains historical. F01 stays REVIEW BLOCKED.",
           "required": true
         }
       }
@@ -1855,11 +1865,11 @@
         "D11",
         "D12"
       ],
-      "decisive_test": "All affected modules, ObjC Release, SPM iOS/macOS/tvOS/watchOS/visionOS, lint and approved API baselines pass at frozen revision; Session Replay is limited to crash-free coexistence and non-disruption of other SDK features, excluding capture-correctness tests",
+      "decisive_test": "All11 FINAL_COMPATIBILITY cells pass at the frozen F01-approved S3 candidate: unguarded ordinary Swift/ObjC deployment15 clients and17.5 fallback, qualified27 exact same-key routing, ObjC Release off-main safety, full affected modules/platforms, lint/API/docs. Replay scope remains crash-free coexistence and non-disruption only.",
       "environment": "CI + supported SDK toolchains",
       "completion_mode": null,
       "status": "OPEN",
-      "evidence": "FINAL_COMPATIBILITY.md defines11 finite cells, with M01 selecting ten non-Replay iOS schemes and source-scoped Replay coexistence. The full capture suite is excluded by user scope2026-09-21; original failures remain recorded. External clients, complete platform packages, lint/API and feature-doc checks remain. Final reviewed-candidate execution remains after F01.",
+      "evidence": "Finite M02/M03/M10/M11 now distinguish ordinary iOS15 callability/fallback from iOS27 semantic APIs and compiler6.4 Observation. Exact A/B same-key reverse-stop ownership is deterministic API qualification; EXP129 and human journeys do not replace it. No accepted S1/S2 cell is reopened. Results/S3-api-availability-plan.json.",
       "release_requirements": {
         "S3": {
           "scope": "Final compatibility build/test matrix",
@@ -1872,9 +1882,9 @@
             "S3:D11",
             "S3:D12"
           ],
-          "decisive_test": "All affected modules, ObjC Release, SPM iOS/macOS/tvOS/watchOS/visionOS, lint and approved API baselines pass at frozen revision; Session Replay is limited to crash-free coexistence and non-disruption of other SDK features, excluding capture-correctness tests",
+          "decisive_test": "All11 FINAL_COMPATIBILITY cells pass at the frozen F01-approved S3 candidate: unguarded ordinary Swift/ObjC deployment15 clients and17.5 fallback, qualified27 exact same-key routing, ObjC Release off-main safety, full affected modules/platforms, lint/API/docs. Replay scope remains crash-free coexistence and non-disruption only.",
           "environment": "CI + supported SDK toolchains",
-          "evidence": "FINAL_COMPATIBILITY.md defines11 finite cells, with M01 selecting ten non-Replay iOS schemes and source-scoped Replay coexistence. The full capture suite is excluded by user scope2026-09-21; original failures remain recorded. External clients, complete platform packages, lint/API and feature-doc checks remain. Final reviewed-candidate execution remains after F01.",
+          "evidence": "Finite M02/M03/M10/M11 now distinguish ordinary iOS15 callability/fallback from iOS27 semantic APIs and compiler6.4 Observation. Exact A/B same-key reverse-stop ownership is deterministic API qualification; EXP129 and human journeys do not replace it. No accepted S1/S2 cell is reopened. Results/S3-api-availability-plan.json.",
           "required": true
         },
         "S1": {
@@ -2757,9 +2767,9 @@
           "dependencies": [
             "S3:A01"
           ],
-          "decisive_test": "Freeze ordered scenarios, automated reset/capture/assertions and source/input/topology proof before requesting one session. Preserve failed automation; no weaker oracle. Only remaining scene combinations; hardware Duo session follows availability.",
+          "decisive_test": "Freeze only residual ordered gestures/dismissals and scene combinations with automated reset/capture/assertions plus input/topology proof. Preserve failed automation and exact ownership oracle; F03 deterministic same-key API qualification is separate. Request one prepared human session; Duo hardware follows availability.",
           "environment": "Single host; Duo simulator27.1 and connected eligible iPhone/iPad",
-          "evidence": "Reference evidence retained; this release candidate is not qualified.",
+          "evidence": "Results/S3-api-availability-plan.json preserves the split: EXP129 is inconclusive; EXP196 H01 physical PASS and H05 serial evidence cannot certify simultaneous same-key routing or remaining gestures. No human-session or deterministic API gate closes.",
           "required": true
         }
       }

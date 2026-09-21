@@ -68,7 +68,9 @@
       "id": "C06",
       "status": "OPEN",
       "owner": "SDK implementer",
-      "dependencies": []
+      "dependencies": [
+        "F01"
+      ]
     },
     {
       "id": "C07",
@@ -201,11 +203,14 @@
       "status": "REVIEW BLOCKED",
       "owner": "RUM API reviewers",
       "dependencies": [
+        "T01",
+        "T02",
         "T03",
         "T04",
         "T05",
         "T06",
         "T07",
+        "T15",
         "R06"
       ]
     },
@@ -633,7 +638,9 @@
             "id": "S3:C06",
             "status": "OPEN",
             "owner": "SDK implementer",
-            "dependencies": []
+            "dependencies": [
+              "S3:F01"
+            ]
           },
           {
             "id": "S3:C07",
@@ -774,11 +781,14 @@
             "status": "REVIEW BLOCKED",
             "owner": "RUM API reviewers",
             "dependencies": [
+              "S3:T01",
+              "S3:T02",
               "S3:T03",
               "S3:T04",
               "S3:T05",
               "S3:T06",
               "S3:T07",
+              "S3:T15",
               "S3:R06"
             ]
           },

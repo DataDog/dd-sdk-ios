@@ -1,0 +1,41 @@
+{
+  "schema_version": 1,
+  "status": "PLANNED_AWAITING_ATTRIBUTABLE_F01_APPROVAL",
+  "recorded_at": "2026-09-21T14:20:51.740756+00:00",
+  "owner": "SDK implementer; RUM API reviewers own approval",
+  "scope": "Documentation-only finite S3 gate alignment; no implementation, API approval, test result or S1/S2 scope change",
+  "reviewer": "/root/c06_runtime_plan",
+  "proposal_sha256": {
+    "DatadogRUM/MULTI_SCENE_SUPPORT.md": "dce1ba9fddfb0277330b3348e995e3027860b3e96dfef7ac4ba077b8d9373cf5",
+    "DatadogRUM/MultiSceneSupport/NAVIGATION_API.md": "51e2ed2901ef086ffc023eec07ca3d70573f94eeb27f87a94b05c619863ec717",
+    "DatadogRUM/MultiSceneSupport/STABLE_API_REVIEW.md": "9f236e235833c5542dcb393ecc4f2c4f916313a034a7536014ca343c147b49ba",
+    "DatadogRUM/MultiSceneSupport/OPERATIONS.md": "8c22e9060ac4914711b8df1e888f8aeda9794035e3d5ecc613379e651b377b86",
+    "DatadogRUM/MultiSceneSupport/SUPPORT_GUIDE.md": "f2364610a39df4401d582a038644df4d9da62600defe48a0e939c7a579084532",
+    "DatadogRUM/MultiSceneSupport/NAVIGATION_API_GUILD.md": "aba084b3f2897d6e4c3adacdb3879f48b91943345190a9d1a9d46dc6ba19f746",
+    "DatadogRUM/MultiSceneSupport/STABLE_API_REVIEW_GUILD.md": "10d965983c7f381c9f8c0156889236233c3aaa9c22d807834c6053459dbf0ec0",
+    "DatadogRUM/MultiSceneSupport/GUILD_EXECUTIVE_SUMMARY.md": "3418332616c79b811e69c972627c52fb788ca821e0dfe0117d01c0ed60f5321f"
+  },
+  "affected_gates": [
+    "S3:F01",
+    "S3:C06",
+    "S3:F03",
+    "S3:A02"
+  ],
+  "new_gate_ids": [],
+  "gates_closed": [],
+  "required_cells": [
+    "F01 attributable API decision with Action/Operation ownership dependencies",
+    "C06 deployment15 unguarded ordinary Swift/ObjC clients and actual17.5 fallback",
+    "F03 M02/M03 exact same-key A/B reverse-stop owner/peer controls on27 and ObjC Release off-main safety",
+    "F03 M10 availability and approved API baselines; M11 supported fallback/semantic examples",
+    "A02 residual human gestures/dismissals remain separate"
+  ],
+  "conditional_older_routing": "Keep older exact family capability disabled until its bounded ownership and fallback qualification passes. Older exact semantics are optional; ordinary iOS15 callability/fallback is required.",
+  "source_boundary": "Prototype availability is unchanged; proposal is not implemented. No source or baseline edits before F01 approval.",
+  "independent_review": {
+    "reviewer": "/root/c06_runtime_plan",
+    "status": "PASS",
+    "dependency_graph": "acyclic",
+    "scope": "No gate closed or S1/S2 requirement changed; future exact same-key evidence and post-F01 source binding remain required."
+  }
+}

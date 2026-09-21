@@ -2919,3 +2919,17 @@ metadata to the new signed source commit. Update only the authorized draft with 
 exact remote lease and read back its head, base, commits, files and concise body.
 [EXP-219](Results/EXP-219-upstream-resource-integration.json) records this procedure;
 its affected checks do not replace current CI or broaden older platform evidence.
+
+## Controlled app build prerequisites
+
+Resolve required tools before admitting builds. S2:F08 uses task-local verified
+SwiftGen6.6.3, first in PATH; DD_SKIP_LOCAL_BUILD_TOOLS disables format/lint
+mutation but does not disable the app script's SwiftGen installation fallback.
+Require exact command resolution, frozen package pins, fresh per-arm outputs and
+source/protected guards. A stopped preparation deadline is never extended; the
+[owning result](Results/S2-F08-app-preparation.json) preserves its later admission.
+
+When a tracked-file manifest intentionally hashes regular files, validate tracked
+directory symlinks separately against mode, index/HEAD blob and literal link target.
+Do not silently omit an unexpected path. Preserve the rejected inventory before
+a reviewed guard correction; it adds no build or runtime credit.

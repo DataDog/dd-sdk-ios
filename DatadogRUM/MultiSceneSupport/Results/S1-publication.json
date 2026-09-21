@@ -191,16 +191,44 @@
     }
   ],
   "current_findings": [
-    "E03 current-develop Resource-cache reconciliation is qualified and published at1b2bff3e. Exact signatures, body, head, base and files verified.",
-    "E01 Build Dependencies CI failed; Mosaic logs require sign-in. No SDK cause established; other CI and human review remain open.",
-    "H00 must merge with separate authorization before E01 rebase/retarget."
+    "All seven current draft heads are mergeable; no merge is authorized.",
+    "E03 current-develop reconciliation1b2bff3e is qualified and published; current CI remains pending.",
+    "CI failures: E01 Build Dependencies; DL01 iOS; E02 macOS; E04 watchOS; E05 macOS. Mosaic sign-in pending; preserve failures without an SDK-cause claim or blind retries.",
+    "H00 must actually merge with separate authorization before E01 rebase/retarget."
   ],
-  "last_updated_at": "2026-09-21T14:01:34.522669+00:00",
+  "last_updated_at": "2026-09-21T14:25:55.680129+00:00",
   "signed_outgoing_commits_at_initial_publication": 16,
   "latest_update": {
     "id": "E03",
     "record": "Results/EXP-219-upstream-resource-integration.json",
     "publication_receipt": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp219-upstream-integration-l_p4vm9s/publication.json",
     "publication_receipt_sha256": "17ec3c61e9b48e0916507a6508ef16d9320c906278b7a34a5f396b95a78833e7"
+  },
+  "latest_ci": {
+    "record": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/deliveries/s1-publication-20260921-vwps6cdd/ci-third-check.json",
+    "sha256": "830c639b3f149211679ba573ac3ab7454cc2ef48331dfcfc0fe6ba35bc963f37",
+    "checked_at": "2026-09-21T14:22:52.046378+00:00",
+    "all_seven_mergeable": true,
+    "failed_checks": {
+      "3215": [
+        "DDCI Status",
+        "dd-gitlab/Build Dependencies"
+      ],
+      "3216": [
+        "DDCI Status",
+        "dd-gitlab/Unit Tests (iOS)"
+      ],
+      "3217": [
+        "DDCI Status",
+        "dd-gitlab/Unit Tests (macOS)"
+      ],
+      "3219": [
+        "dd-gitlab/Unit Tests (watchOS)"
+      ],
+      "3220": [
+        "dd-gitlab/Unit Tests (macOS)"
+      ]
+    },
+    "log_access": "Mosaic sign-in pending; no cause established"
   }
 }

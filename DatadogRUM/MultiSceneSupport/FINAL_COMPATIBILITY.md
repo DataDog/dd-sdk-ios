@@ -48,16 +48,16 @@ of a current-develop customer defect.
 | Cell | Required environment and scope | Decisive result |
 | --- | --- | --- |
 | M01 / Full iOS modules | Available supported iOS simulator with a launchable test host; the ten non-Replay schemes below, complete inventories, Debug test configuration. Prefer the discovered26.5 host where27 cannot launch the legacy Example. | Every selected module test executes and passes at the candidate. Record runtime per module; an older-host result never closes legacy27/C03. |
-| M02 / New iOS surface | iOS27 simulator, Debug and Release external Swift client, iOS15 deployment target with runtime guards; Swift5 and6 language modes. | Normal imports expose exactly the approved target/semantic APIs; custom conformer compiles unchanged, NOP remains safe, valid calls forward once. Compile the support guide and Publisher/Observation host call sites, including compiler>=6.4 guard. |
-| M03 / Objective-C Release | iOS27 simulator, standalone Objective-C Release client using generated public headers and the approved off-main contract. | All approved selectors compile and run. Main/off-main positive and negative controls prove no SDK trap/deadlock, invalid UIKit access/retention or foreign telemetry. Debug-only exposure is insufficient. |
+| M02 / Swift clients | Debug and Release external clients, Swift5/6, deployment15; actual17.5 fallback and27 exact-routing hosts. | Ordinary scene/target calls compile without caller OS27 guards. Legacy fallback forwards once with unchanged attributes/options/callbacks and family pairing; custom/NOP conformers remain safe. On27, A/B same-key views stop in reverse order with exact owners and peer continuity. Content/Publisher/Observation semantic-host clients retain iOS27 guards, with compiler>=6.4 for Observation. |
+| M03 / Objective-C Release | Standalone client using generated public headers, deployment15, actual17.5 fallback and27 exact-routing hosts, approved off-main contract. | Ordinary selectors and target factory compile without caller OS27 guards. Exact-once fallback and27 same-key owner/peer controls pass. Main/off-main positive and negative controls prove no SDK trap/deadlock, invalid UIKit access/retention or foreign telemetry. Debug-only exposure is insufficient. |
 | M04 / iOS package | Full Datadog-Package, generic iOS destination, Debug and Release. | All selected production modules/resources emit; package minimum remains15. |
 | M05 / tvOS package | Full Datadog-Package, generic tvOS destination, Debug and Release. | All selected production modules/resources emit; iOS-only APIs stay excluded and minimum remains15. |
 | M06 / watchOS package | Full Datadog-Package, generic watchOS destination, Debug and Release. | All selected production modules/resources emit, including the D01 Resource path; minimum remains9. |
 | M07 / visionOS package | Full Datadog-Package, generic visionOS destination, Debug and Release. | All selected production modules/resources emit and the approved iOS-only semantic surface stays excluded; minimum remains1. |
 | M08 / Mac Catalyst package | Full Datadog-Package, macOS destination with Mac Catalyst variant, Debug and Release. | All selected modules emit with existing availability and package settings. |
 | M09 / macOS modules | DatadogCore, DatadogLogs, DatadogTrace, DatadogCrashReporting and DatadogWebViewTracking, Debug and Release. | Complete production targets emit at minimum12.6, including D02's repaired native WebView path. Do not infer support for unlisted macOS modules. |
-| M10 / Lint and API baseline | Existing repository lint/API tools with supported SDK toolchain; reviewed Swift and Objective-C baselines. | Lint succeeds, generated API changes equal the F01 approval and verification matches committed baselines. Preserve old APIs; no accidental SPI/Debug symbols appear. |
-| M11 / Documentation integration | Full feature-doc workflow and existing feature-doc verification against approved source. | Tracked source coverage, every cross-feature snippet and registry agree; verification metadata refers to the audited source. F02 publishes only after its own checklist is complete. |
+| M10 / Lint and API baseline | Existing repository lint/API tools with supported SDK toolchain; reviewed Swift and Objective-C baselines. | Lint succeeds, generated API changes equal the F01 approval and verification matches committed baselines. Preserve old APIs and verify ordinary iOS15 availability separately from iOS27 semantic/compiler6.4 Observation guards; no accidental SPI/Debug symbols appear. |
+| M11 / Documentation integration | Full feature-doc workflow and existing feature-doc verification against approved source. | Tracked source coverage, every cross-feature snippet and registry agree with audited source, ordinary-call fallback, same-key limits and semantic availability. F02 publishes only after its own checklist is complete. |
 
 The repository `test-ios-all` target in [Makefile](../../Makefile) has eleven schemes.
 The user-approved M01 selection excludes the Session Replay capture suite and keeps
@@ -102,6 +102,20 @@ path in this task. A successful SPI import does not prove normal public access.
 Before execution, freeze the exact selector/call-site inventory and the reviewer-
 approved off-main oracle. Do not remove experimental guards to make a fixture
 compile before F01 approval.
+
+The September21 availability amendment is a proposal until F01 records approval.
+M02/M03 must freeze the ordinary-call inventory and family-specific oracle before
+implementation: Resource completion keeps its captured start owner; continuous
+Actions keep their paired start/stop; Operations retain application-wide identity
+and resolve each step. Legacy fallback chooses the equivalent old API before
+scene mutation and does not promise independent same-key windows. No recursion,
+retained UIKit objects or duplicate callback/event is acceptable.
+
+The17.5 lane qualifies that fallback when exact routing is disabled. Enabling any
+older-iPad family requires its own bounded A/B ownership and fallback cells before
+the capability is enabled; older exact semantics remain optional. The required27
+same-key case is automated and distinct from A02 gestures/dismissals and physical
+H gates. EXP129 is inconclusive; serial evidence cannot prove simultaneous owners.
 
 ## Durable result contract
 

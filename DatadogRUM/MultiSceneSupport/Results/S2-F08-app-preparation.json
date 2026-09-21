@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "work_item": "S2:F08 app build preparation",
-  "status": "SOURCE_PREPARED_PAUSED_FOR_S1_UPSTREAM_CONFLICT",
+  "status": "STOPPED_BEFORE_BUILDS",
   "defined_at": "2026-09-21T12:41:38.795475+00:00",
   "deadline": "2026-09-21T14:11:38.795475+00:00",
   "owner": "SDK implementer",
@@ -105,7 +105,24 @@
   "preparation_receipt": "prepared.json",
   "build_invocations_used": 0,
   "runtime_launches_used": 0,
-  "checkpoint_at": "2026-09-21T13:07:47.472746+00:00",
-  "tool_preflight": "Required SwiftGen CLI is absent at /opt/homebrew/bin/swiftgen. App build scripts normally install it; no tool/dependency installation or build was attempted. Resolve before a separately admitted build if the existing deadline expires.",
-  "deadline_policy": "Original14:11:38UTC deadline remains; no automatic extension while S1 reconciliation takes priority."
+  "checkpoint_at": "2026-09-21T14:07:46.273534+00:00",
+  "tool_preflight": "Task-local SwiftGen6.6.3 is verified; original14:11:38UTC attempt remains stopped with zero builds. New independently admitted continuation has separate definition/deadline and fresh outputs.",
+  "deadline_policy": "Original14:11:38UTC deadline remains; no automatic extension while S1 reconciliation takes priority.",
+  "stop_receipt": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-app-build-preparation-d9or72eq/stop-receipt.json",
+  "next_tool_readiness": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-app-tooling-szrzof5y",
+  "tool_readiness": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-app-tooling-szrzof5y/tool-receipt.json",
+  "continuation": {
+    "status": "STOPPED_DEPENDENCY_TIMEOUT",
+    "definition": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-app-build-continuation-78brzy2r/definition.json",
+    "deadline": "2026-09-21T15:47:27.565219+00:00",
+    "build_invocations": 0,
+    "runtime_launches": 0,
+    "runner_freeze": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-app-build-continuation-78brzy2r/runner-freeze.json",
+    "preflight_rejection": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-app-build-continuation-78brzy2r/preflight-inventory-rejection.json",
+    "install_receipt": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-app-build-continuation-78brzy2r/baseline/install-receipt.json",
+    "stop_receipt": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-app-build-continuation-78brzy2r/stop-receipt.json",
+    "dependency_installs_used": 1,
+    "generation_invocations": 0,
+    "next": "Independently review exact pinned-cache recovery; no retry or deadline extension is implicitly admitted."
+  }
 }
