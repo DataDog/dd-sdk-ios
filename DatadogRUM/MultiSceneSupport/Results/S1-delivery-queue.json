@@ -363,7 +363,30 @@
         "DatadogFlags",
         "DatadogProfiling",
         "DatadogIntegrationTests"
-      ]
+      ],
+      "compatibility_continuation": {
+        "status": "ACTIVE_INSPECT_PER_PHASE_RECEIPTS",
+        "definition": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/deliveries/e02-20260920-jw2fh35s/missing-hostless-n6igdnez/definition.json",
+        "definition_sha256": "9772226bc52599f638dc6d4d58f718f689328e20c15431bab8b9bd6e5e31aed5",
+        "timebox_deadline": "2026-09-21T04:15:57.643424+00:00",
+        "schemes": [
+          "DatadogCore",
+          "DatadogInternal",
+          "DatadogLogs",
+          "DatadogTrace",
+          "DatadogCrashReporting",
+          "DatadogWebViewTracking",
+          "DatadogFlags",
+          "DatadogProfiling"
+        ],
+        "source_inputs": 1864,
+        "expected_cases": 1941,
+        "expected_executions": 1977,
+        "predefined_skips": 5,
+        "accepted_suites_repeated": false,
+        "SPM_artifact_freeze": "Exact archive and tree before and after every phase and cleanup.",
+        "compiled_test_membership": "Every Swift source list and required Clang source/object checked before assertion admission."
+      }
     },
     {
       "owner": "Main execution session / SDK implementer",
@@ -529,9 +552,8 @@
       "decisive_test": "Long-lived active native view remains the delayed WebView container; inactivity starts its TTL exactly once. Preserve session stop/timeout/restoration, capacity 30, ordering, Replay and out-of-window rejection.",
       "environment": "Accepted full RUM and injected native WebView bridge serialization pair; missing applicable release/CI checks on independent delivery branch.",
       "remaining_gates": [
-        "Complete the packet-specific finite missing iOS and platform inventory; preserve qualified evidence and limits",
-        "Complete any explicitly listed ownership/lifetime/backend admission and checks",
-        "Real ticket, reachable verification metadata, current CI and human review",
+        "Missing complete iOS schemes and twelve affected-platform builds on the independent candidate; Replay requires its inherited fixture prerequisite",
+        "Inherited Trace-document drift, real ticket, current CI and human review",
         "Separately authorized publication/merge and verified upstream source"
       ],
       "limits": [
@@ -556,7 +578,11 @@
         "DatadogFlags",
         "DatadogProfiling",
         "DatadogIntegrationTests"
-      ]
+      ],
+      "lifetime_disposition": {
+        "status": "E04_SPECIFIC_CACHE_SESSION_TEARDOWN_AND_RESTORATION_COVERED",
+        "path": "Results/S1-E04-lifetime-disposition.json"
+      }
     },
     {
       "owner": "Main execution session / SDK implementer",
@@ -677,9 +703,8 @@
       "decisive_test": "Real CADisplayLink cannot retain its observer through its target; weak callback forwarding releases correctly and preserves frame delivery. SDK release witness is evaluated after actual pending MessageBus work has drained.",
       "environment": "Recorded ordinary iPad iOS17.5 evidence; independent develop-based Core/RUM tests and relevant conditional-platform compile checks. No Duo hardware dependency.",
       "remaining_gates": [
-        "Complete the packet-specific finite missing iOS and platform inventory; preserve qualified evidence and limits",
-        "Complete any explicitly listed ownership/lifetime/backend admission and checks",
-        "Real ticket, reachable verification metadata, current CI and human review",
+        "Inherited Replay fixture correction or explicit scoped waiver, then candidate-specific full Replay qualification",
+        "Inherited Trace-document drift, real ticket, current CI and human review",
         "Separately authorized publication/merge and verified upstream source"
       ],
       "limits": [
@@ -695,18 +720,10 @@
       "body": "Delivery/DL01-pr.md",
       "existing_source_tests_identical": true,
       "remaining_iOS_schemes": [
-        "DatadogInternal",
-        "DatadogSessionReplay",
-        "DatadogLogs",
-        "DatadogTrace",
-        "DatadogCrashReporting",
-        "DatadogWebViewTracking",
-        "DatadogFlags",
-        "DatadogProfiling",
-        "DatadogIntegrationTests"
+        "DatadogSessionReplay"
       ],
       "compatibility_continuation": {
-        "status": "ACTIVE_INSPECT_PER_PHASE_RECEIPTS",
+        "status": "PASS_ALL_SEVEN_HOSTLESS_SUITES",
         "definition": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/deliveries/dl01-20260920-7n7z3qln/missing-hostless-hl8h7q5p/definition.json",
         "definition_sha256": "162ea0ac2424b8288ae999afc5e3d10dfe880d852576072bec98e27a93444d99",
         "timebox_deadline": "2026-09-21T03:57:05.374033+00:00",
@@ -723,7 +740,35 @@
         "expected_cases": 1122,
         "expected_executions": 1158,
         "accepted_suites_repeated": false,
-        "SPM_artifact_freeze": "Checksum-verified archive and exact tree before Xcode, after each phase and after cleanup."
+        "SPM_artifact_freeze": "Checksum-verified archive and exact tree before Xcode, after each phase and after cleanup.",
+        "summary": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/deliveries/dl01-20260920-7n7z3qln/missing-hostless-hl8h7q5p/summary.json",
+        "summary_sha256": "afc4a3fa0f0e2a144b394a00b51931c7e2bc000b305bd9709601e7f8565a9c53",
+        "cases": 1122,
+        "executions": 1158,
+        "passes": 1157,
+        "predefined_skips": 1,
+        "cleanup_and_artifact_guards": "PASS_ALL_PHASES"
+      },
+      "integration_qualification": {
+        "status": "PASS_FULL_INTEGRATION_WITH_EIGHT_PRESERVED_QOS_WARNINGS",
+        "summary": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/deliveries/dl01-20260920-7n7z3qln/integration-h00-composition-soqvc77o/qualification-cfewh631/summary.json",
+        "summary_sha256": "7da74b90e9d37d073a8bfb08c6c5aa9eaca7a6021e10a4ff766428efb8499572",
+        "composition": "4c1e7da46528cceb9666224b3c449cb57e4cd0a7",
+        "composition_signature": "N_AFTER_RECORDED_SIGNING_TIMEOUT",
+        "product_candidate": "342194900a5310a48f6828c01736ecc812fa1421",
+        "source_build_inputs_identical_except_reviewed_hitch_test": 1863,
+        "cases": 278,
+        "executions": 278,
+        "passes": 278,
+        "skips": 0,
+        "warnings": 8,
+        "warning_disposition": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/deliveries/dl01-20260920-7n7z3qln/integration-h00-composition-soqvc77o/qualification-cfewh631/runtime-warning-disposition.json",
+        "warning_disposition_sha256": "e9881fa58cc511857ce6e647590eb3717ce6b49c9f5bbe051ea42c737dc1019d",
+        "limits": [
+          "No change to outgoing DL01 product history or hard merge dependency.",
+          "Full Replay, inherited Trace-document drift, real ticket, CI and human review remain.",
+          "No backend, full repository iOS, release-readiness or blanket sanitizer claim."
+        ]
       }
     }
   ],
@@ -733,10 +778,12 @@
     "develop_verified": "62f64d7b655bdc83f3036c4ad81090a270f6202b",
     "EXP213": "complete; signed unit-onlyef9d9732; SDK-on native P03 remains open",
     "local_packets": "Results/S1-H00-E01-packets.json",
-    "next_repair": "Continue the admitted seven DL01 hostless suites; E01/E03 Replay prerequisite and delivery review remain explicit.",
+    "next_repair": "Continue E02 eight-suite admission; then its missing Integration/platform checks. DL01/E01 Replay prerequisite and delivery review remain explicit.",
     "independent_local_packets": "Results/S1-independent-packets.json",
     "E03_product_amendment": "2026-09-20T21:53:03.431125+00:00",
     "E03": "2026-09-21T01:25:46.369482+00:00",
-    "E01_hostless": "2026-09-21T02:01:08.852466+00:00"
+    "E01_hostless": "2026-09-21T02:01:08.852466+00:00",
+    "DL01_compatibility": "2026-09-21T02:25:19.941440+00:00",
+    "E02_hostless": "2026-09-21T02:25:19.941440+00:00"
   }
 }

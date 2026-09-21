@@ -4,7 +4,7 @@ Activated at the completed EXP-213 checkpoint on 2026-09-20.
 
 ## Outcome and authority
 
-Deliver six independent customer fixes (E01–E05 and the display-link lifetime fix) in separate reviewable PRs, plus one test-only prerequisite PR. Start review of the qualified S1 work before further S2/S3 expansion. E03 has a signed, qualified repair and completed compatibility execution; full Replay still needs a maintainer-owned inherited-fixture correction or waiver. E01's five missing hostless checks now pass. DL01's seven remaining hostless checks are admitted next; other independent packets continue before S2 expansion.
+Deliver six independent customer fixes (E01–E05 and the display-link lifetime fix) in separate reviewable PRs, plus one test-only prerequisite PR. Start review of the qualified S1 work before further S2/S3 expansion. E03 has a signed, qualified repair and completed compatibility execution; full Replay still needs a maintainer-owned inherited-fixture correction or waiver. E01's five missing hostless checks now pass. DL01's seven remaining hostless suites and full Integration now pass with recorded skips/warnings. E02's eight missing hostless suites are active; other independent packets continue before S2 expansion.
 
 This document prepares delivery; it does not perform or authorize a push, remote PR creation, merge, or change to an active experiment. Read `AGENTS.md` and `.continue-here.md` first when executing. The current experiment remains authoritative for its in-flight work. This delivery sequence applies after its safe checkpoint and incorporates the user's subsequent priority for S1 review. Preserve all experiment results, including inconclusive or failed controls.
 
@@ -93,7 +93,7 @@ The queue is the executable path/commit inventory. Paths below describe the revi
 - Only `DatadogRUM/Sources/RUMVitals/RenderLoop/RenderLoopObserver.swift` and `DatadogCore/Tests/Datadog/RUM/RUMVitals/DisplayLinkerTests.swift`, plus its own changelog/affected feature document.
 - Private weak callback target breaks the real CADisplayLink target cycle. Preserve frame forwarding, invalidation and existing AppKit/NOP/conditional branches.
 - [EXP-211](Experiments/EXP-211-s2-lifetime.md) supplies eight accepted D2 tests and one corrected D4 release witness after actual pending MessageBus work drains. It reproduced on ordinary iPad iOS17.5; Duo is not required.
-- The two-file extraction is independent of E01/E04. Standalone Core/RUM and twelve platform build cells pass; remaining repository-wide iOS checks stay explicit in the packet. Do not import the combined S2 branch or later host-lifetime experiment.
+- The two-file extraction is independent of E01/E04. Standalone Core/RUM, seven additional hostless suites and twelve platform build cells pass. Full Integration278/278 passes on a test-only H00 composition with eight preserved QoS warnings; Replay remains pending its inherited fixture prerequisite and candidate-specific qualification. Do not import the combined S2 branch or later host-lifetime experiment.
 - This establishes focused observer release, not global lifetime clearance or continuous growth in an initialize-once app.
 
 ### E02 — repeated view occurrence
@@ -110,7 +110,7 @@ The queue is the executable path/commit inventory. Paths below describe the revi
 - `RUMSessionScope.swift` and `ViewCache.swift`, with three test files.
 - [EXP-207](Experiments/EXP-207-active-view-cache.md): active entries persist; first inactivity starts TTL; repeated deactivation does not reset it. Preserve session stop/timeout/max-duration/restoration, capacity 30, ordering and Replay behavior.
 - Full RUM 910 cases / 946 executions and paired native bridge 3/3 green are eligibility evidence. Injected messages/writer JSON do not claim real-browser/backend validation.
-- Fill independent release/lifetime checks. [EXP-212 composition](Experiments/EXP-212-cache-composition.md) is useful additional evidence, not a substitute for E04's own freeze. Old numerical-microbenchmark prerequisites are superseded by the current acceptance scope.
+- The [changed-path lifetime review](Results/S1-E04-lifetime-disposition.json) maps every E04 teardown/restoration edge to accepted EXP207 controls; no additional host/Resource lifetime run is required for this scalar cache change. Remaining iOS/platform/delivery checks stay open. [EXP-212 composition](Experiments/EXP-212-cache-composition.md) is useful additional evidence, not a substitute for E04's own freeze. Old numerical-microbenchmark prerequisites are superseded by the current acceptance scope.
 
 ### E05 — request-time Trace ownership
 

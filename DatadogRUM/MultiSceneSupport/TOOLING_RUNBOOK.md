@@ -365,7 +365,7 @@ For a complete suite with no prior exact executable inventory, separate discover
 from assertion execution. Verify the full enabled target, inspect parameter inputs
 and OS skip branches, then freeze identifiers and per-case run counts before the
 test result exists. Static Swift/Objective-C method counts are not executable
-counts. Retain default single execution: Xcode rejects `-test-iterations 1`. A
+counts. When a test target includes Clang sources, match its project build-phase membership against target-scoped CompileC records and require every emitted object before assertion admission; a Swift-only inventory is incomplete for mixed targets. Retain default single execution: Xcode rejects `-test-iterations 1`. A
 runner-option correction gets a fresh attempt and keeps its original deadline.
 
 Package pins and checkout revisions do not bind extracted SPM binary artifacts.

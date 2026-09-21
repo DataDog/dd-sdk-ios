@@ -21,7 +21,7 @@ completion of S1. Signed [H00/E01 local packets](Results/S1-H00-E01-packets.json
 preserve qualified production/test/build inputs; E01 now also has reachable feature-doc metadata. Ticketing, missing repository-wide checks,
 CI/review and authorized publication are still pending. Only H00 → E01 is an established
 merge dependency. [EXP-214](Results/EXP-214-resource-action-design.json) records E03's signed repair and qualified owner contract before more S2 expansion.
-[DL01/E02/E04/E05 local packets](Results/S1-independent-packets.json) now have signed independent delivery histories and unchanged qualified source/test contents. DL01 additionally passes its standalone Core suite (819 passes, four predefined OS skips) and RUM suite (901 cases / 937 executions, no skips). DL01 also passes all twelve affected-platform builds. Missing full-repository checks, other candidates' platform checks, candidate-specific ownership gaps, ticketing, CI and human review remain explicit. No S1 delivery or broader P03 closure is claimed.
+[DL01/E02/E04/E05 local packets](Results/S1-independent-packets.json) now have signed independent delivery histories and unchanged qualified source/test contents. DL01 additionally passes its standalone Core suite (819 passes, four predefined OS skips) and RUM suite (901 cases / 937 executions, no skips). DL01 also passes all twelve affected-platform builds, seven additional hostless suites (1,157 passes and one predefined watchOS-only skip), and Integration278/278 with a test-only H00 overlay. Eight QoS warnings match a subset of preserved baseline evidence. Full Replay remains pending its inherited fixture prerequisite and candidate qualification. E02 is executing its eight missing hostless suites under a separate frozen admission. Missing full-repository checks, other candidates' platform checks, candidate-specific ownership gaps, ticketing, CI and human review remain explicit. No S1 delivery or broader P03 closure is claimed.
 
 S2 now selects the same narrow E01 source on verified develop `62f64d7b`, with
 production `1bdc9286` qualified through `652ce169`. The independent
@@ -137,7 +137,7 @@ executions and an identical three-test native bridge comparison. Session lifetim
 restoration, capacity and Replay controls pass. This is injected-message writer-JSON
 evidence; backend, real browser timing, physical Duo and numerical performance are
 not qualified. Lookup now takes a write lock for expiry. E04's release qualification
-remains separate from the selected E01 candidate.
+remains separate from the selected E01 candidate. The [changed-path lifetime disposition](Results/S1-E04-lifetime-disposition.json) reuses exact EXP207 cache/session teardown and restoration controls; E04 adds no host or pending Resource retention edge. Ordinary host lifetime remains a separate S2:P03 obligation.
 
 E05 now preserves ordinary automatic Trace request ownership through delayed or
 reverse completion. [EXP-208](Results/EXP-208-trace-ownership.json) qualifies the

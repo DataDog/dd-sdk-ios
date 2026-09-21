@@ -50,7 +50,7 @@
         "342194900a5310a48f6828c01736ecc812fa1421 G"
       ],
       "body": "Delivery/DL01-pr.md",
-      "body_sha256": "fdd17fd437d5d115213559cb4498e7663b1cc43de0da43f1cd767412954214b8",
+      "body_sha256": "4c4b01be69dc7dd1e945789e00d7e61aa9c15301626e38c5df0e2edd101d47db",
       "evidence": [
         {
           "kind": "current_affected_suites",
@@ -65,6 +65,40 @@
           "cells": 12,
           "scope": "Compilation only; full Datadog-Package on iOS/tvOS/watchOS/visionOS/Catalyst and RUM/Internal on macOS, each Debug/Release",
           "preserved_invalid_attempt": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/deliveries/dl01-20260920-7n7z3qln/platforms"
+        },
+        {
+          "kind": "remaining_seven_hostless_suites",
+          "status": "PASS_ALL_SEVEN_HOSTLESS_SUITES",
+          "summary": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/deliveries/dl01-20260920-7n7z3qln/missing-hostless-hl8h7q5p/summary.json",
+          "summary_sha256": "afc4a3fa0f0e2a144b394a00b51931c7e2bc000b305bd9709601e7f8565a9c53",
+          "cases": 1122,
+          "executions": 1158,
+          "passes": 1157,
+          "predefined_skips": 1,
+          "accepted_suites_repeated": false,
+          "cleanup_and_artifact_guards": "PASS_ALL_PHASES"
+        },
+        {
+          "kind": "full_integration_test_only_H00_composition",
+          "status": "PASS_FULL_INTEGRATION_WITH_EIGHT_PRESERVED_QOS_WARNINGS",
+          "summary": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/deliveries/dl01-20260920-7n7z3qln/integration-h00-composition-soqvc77o/qualification-cfewh631/summary.json",
+          "summary_sha256": "7da74b90e9d37d073a8bfb08c6c5aa9eaca7a6021e10a4ff766428efb8499572",
+          "composition": "4c1e7da46528cceb9666224b3c449cb57e4cd0a7",
+          "composition_signature": "N_AFTER_RECORDED_SIGNING_TIMEOUT",
+          "product_candidate": "342194900a5310a48f6828c01736ecc812fa1421",
+          "source_build_inputs_identical_except_reviewed_hitch_test": 1863,
+          "cases": 278,
+          "executions": 278,
+          "passes": 278,
+          "skips": 0,
+          "warnings": 8,
+          "warning_disposition": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/deliveries/dl01-20260920-7n7z3qln/integration-h00-composition-soqvc77o/qualification-cfewh631/runtime-warning-disposition.json",
+          "warning_disposition_sha256": "e9881fa58cc511857ce6e647590eb3717ce6b49c9f5bbe051ea42c737dc1019d",
+          "limits": [
+            "No change to outgoing DL01 product history or hard merge dependency.",
+            "Full Replay, inherited Trace-document drift, real ticket, CI and human review remain.",
+            "No backend, full repository iOS, release-readiness or blanket sanitizer claim."
+          ]
         }
       ],
       "dependency_pins_and_build_identity": "Owned by the linked qualified/current receipts; no new runtime identities are inferred for source-only rebinding.",
@@ -78,10 +112,16 @@
         },
         {
           "scheme": "DatadogInternal",
-          "status": "MISSING_FULL_SUITE",
+          "status": "PASS_CURRENT_COMPLETE_SUITE",
           "owner": "SDK implementer / CI",
           "environment": "Supported available iOS simulator; frozen candidate and complete test inventory",
-          "decisive_test": "All discovered cases and parameterized runs pass; only predefined OS skips; source and cleanup stable"
+          "decisive_test": "All discovered cases and parameterized runs pass; only predefined OS skips; source and cleanup stable",
+          "cases": 436,
+          "executions": 472,
+          "passes": 472,
+          "skips": [],
+          "evidence": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/deliveries/dl01-20260920-7n7z3qln/missing-hostless-hl8h7q5p/internal/root-audit.json",
+          "audit_sha256": "3d6284bebe593f709bd31a760257c10ce01c34224fa3f7ee086bcc10c467f342"
         },
         {
           "scheme": "DatadogRUM",
@@ -92,59 +132,105 @@
         },
         {
           "scheme": "DatadogSessionReplay",
-          "status": "MISSING_FULL_SUITE",
+          "status": "PENDING_INHERITED_FIXTURE_PREREQUISITE_AND_CANDIDATE_QUALIFICATION",
           "owner": "SDK implementer / CI",
-          "environment": "Supported available iOS simulator; frozen candidate and complete test inventory",
-          "decisive_test": "All discovered cases and parameterized runs pass; only predefined OS skips; source and cleanup stable"
+          "environment": "Clean legacy Example host on compatible iPhone26.5 runtime; exact candidate, complete inventory and cleanup",
+          "decisive_test": "All discovered cases and parameterized runs pass; only predefined OS skips; source and cleanup stable",
+          "dependency": "Maintainer correction or explicit scoped waiver for the unchanged-develop scroll-pocket failure; E03 evidence does not qualify DL01 Replay."
         },
         {
           "scheme": "DatadogLogs",
-          "status": "MISSING_FULL_SUITE",
+          "status": "PASS_CURRENT_COMPLETE_SUITE",
           "owner": "SDK implementer / CI",
           "environment": "Supported available iOS simulator; frozen candidate and complete test inventory",
-          "decisive_test": "All discovered cases and parameterized runs pass; only predefined OS skips; source and cleanup stable"
+          "decisive_test": "All discovered cases and parameterized runs pass; only predefined OS skips; source and cleanup stable",
+          "cases": 88,
+          "executions": 88,
+          "passes": 88,
+          "skips": [],
+          "evidence": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/deliveries/dl01-20260920-7n7z3qln/missing-hostless-hl8h7q5p/logs/root-audit.json",
+          "audit_sha256": "6ac3597feb54facc7658fe0b7117c8f65a3ae44146cde117cb68298704cc5580"
         },
         {
           "scheme": "DatadogTrace",
-          "status": "MISSING_FULL_SUITE",
+          "status": "PASS_CURRENT_COMPLETE_SUITE",
           "owner": "SDK implementer / CI",
           "environment": "Supported available iOS simulator; frozen candidate and complete test inventory",
-          "decisive_test": "All discovered cases and parameterized runs pass; only predefined OS skips; source and cleanup stable"
+          "decisive_test": "All discovered cases and parameterized runs pass; only predefined OS skips; source and cleanup stable",
+          "cases": 141,
+          "executions": 141,
+          "passes": 141,
+          "skips": [],
+          "evidence": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/deliveries/dl01-20260920-7n7z3qln/missing-hostless-hl8h7q5p/trace/root-audit.json",
+          "audit_sha256": "12e3c96161960fc9634dd3f9d5f6ceb2e6f5c94f8f51cfd5efd700efd8b288fe"
         },
         {
           "scheme": "DatadogCrashReporting",
-          "status": "MISSING_FULL_SUITE",
+          "status": "PASS_CURRENT_COMPLETE_SUITE_WITH_PREDEFINED_SKIP",
           "owner": "SDK implementer / CI",
           "environment": "Supported available iOS simulator; frozen candidate and complete test inventory",
-          "decisive_test": "All discovered cases and parameterized runs pass; only predefined OS skips; source and cleanup stable"
+          "decisive_test": "All discovered cases and parameterized runs pass; only predefined OS skips; source and cleanup stable",
+          "cases": 67,
+          "executions": 67,
+          "passes": 66,
+          "skips": [
+            "KSCrashBacktraceTests/testGenerateBacktraceReturnsNilOnWatchOS()"
+          ],
+          "evidence": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/deliveries/dl01-20260920-7n7z3qln/missing-hostless-hl8h7q5p/crash/root-audit.json",
+          "audit_sha256": "fa36d6ba128dd509fc62bd68a1a77500d5acf0e85361918f34a4082885db54f0"
         },
         {
           "scheme": "DatadogWebViewTracking",
-          "status": "MISSING_FULL_SUITE",
+          "status": "PASS_CURRENT_COMPLETE_SUITE",
           "owner": "SDK implementer / CI",
           "environment": "Supported available iOS simulator; frozen candidate and complete test inventory",
-          "decisive_test": "All discovered cases and parameterized runs pass; only predefined OS skips; source and cleanup stable"
+          "decisive_test": "All discovered cases and parameterized runs pass; only predefined OS skips; source and cleanup stable",
+          "cases": 31,
+          "executions": 31,
+          "passes": 31,
+          "skips": [],
+          "evidence": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/deliveries/dl01-20260920-7n7z3qln/missing-hostless-hl8h7q5p/webview/root-audit.json",
+          "audit_sha256": "b56244116c193d25b6c96f24d082693545a4e494741c36e20d4d1c0a239bd418"
         },
         {
           "scheme": "DatadogFlags",
-          "status": "MISSING_FULL_SUITE",
+          "status": "PASS_CURRENT_COMPLETE_SUITE",
           "owner": "SDK implementer / CI",
           "environment": "Supported available iOS simulator; frozen candidate and complete test inventory",
-          "decisive_test": "All discovered cases and parameterized runs pass; only predefined OS skips; source and cleanup stable"
+          "decisive_test": "All discovered cases and parameterized runs pass; only predefined OS skips; source and cleanup stable",
+          "cases": 135,
+          "executions": 135,
+          "passes": 135,
+          "skips": [],
+          "evidence": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/deliveries/dl01-20260920-7n7z3qln/missing-hostless-hl8h7q5p/flags/root-audit.json",
+          "audit_sha256": "4045258078f11b817813aebb73d890672f159b5615bf9112b449a9efefbaa758"
         },
         {
           "scheme": "DatadogProfiling",
-          "status": "MISSING_FULL_SUITE",
+          "status": "PASS_CURRENT_COMPLETE_SUITE",
           "owner": "SDK implementer / CI",
           "environment": "Supported available iOS simulator; frozen candidate and complete test inventory",
-          "decisive_test": "All discovered cases and parameterized runs pass; only predefined OS skips; source and cleanup stable"
+          "decisive_test": "All discovered cases and parameterized runs pass; only predefined OS skips; source and cleanup stable",
+          "cases": 224,
+          "executions": 224,
+          "passes": 224,
+          "skips": [],
+          "evidence": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/deliveries/dl01-20260920-7n7z3qln/missing-hostless-hl8h7q5p/profiling/root-audit.json",
+          "audit_sha256": "d13ffa6a1e5d479b404cf8c6a1800828af77eb798b5321f2a999280acef8b6ba"
         },
         {
           "scheme": "DatadogIntegrationTests",
-          "status": "MISSING_FULL_SUITE",
+          "status": "PASS_CURRENT_278_WITH_PRESERVED_QOS_WARNINGS",
           "owner": "SDK implementer / CI",
           "environment": "Supported available iOS simulator; frozen candidate and complete test inventory",
-          "decisive_test": "All discovered cases and parameterized runs pass; only predefined OS skips; source and cleanup stable"
+          "decisive_test": "All discovered cases and parameterized runs pass; only predefined OS skips; source and cleanup stable",
+          "evidence": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/deliveries/dl01-20260920-7n7z3qln/integration-h00-composition-soqvc77o/qualification-cfewh631/summary.json",
+          "summary_sha256": "7da74b90e9d37d073a8bfb08c6c5aa9eaca7a6021e10a4ff766428efb8499572",
+          "test_only_composition": "4c1e7da46528cceb9666224b3c449cb57e4cd0a7",
+          "cases": 278,
+          "executions": 278,
+          "passes": 278,
+          "skips": []
         }
       ],
       "remaining_platform_inventory": [
@@ -257,7 +343,7 @@
           "evidence_root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/deliveries/dl01-20260920-7n7z3qln/platforms-separated-streams"
         }
       ],
-      "new_runtime_admission": "Seven missing hostless schemes admitted at compatibility_continuation; fixed deadline and fail-fast sequential discovery/admission/test. Core/RUM/platform passes are retained. Integration and Replay remain separate.",
+      "new_runtime_admission": "Seven hostless schemes and full Integration completed within their fixed deadlines. No active DL01 native lane; accepted Core/RUM/platform cells were not repeated.",
       "public_API": "Source-identical public declarations and bridge/header/build inputs; only internal implementations differ. Verify affected compilation before delivery.",
       "CI": "NOT_RUN_ON_UNPUBLISHED_DELIVERY_HEAD",
       "human_review": "PENDING",
@@ -274,7 +360,7 @@
       "feature_docs": "AFFECTED_RUM_PASS_GLOBAL_TRACE_DRIFT_INHERITED_FROM_DEVELOP",
       "platform_runtime": "NOT_INFERRED_FROM_COMPILATION",
       "compatibility_continuation": {
-        "status": "ACTIVE_INSPECT_PER_PHASE_RECEIPTS",
+        "status": "PASS_ALL_SEVEN_HOSTLESS_SUITES",
         "definition": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/deliveries/dl01-20260920-7n7z3qln/missing-hostless-hl8h7q5p/definition.json",
         "definition_sha256": "162ea0ac2424b8288ae999afc5e3d10dfe880d852576072bec98e27a93444d99",
         "timebox_deadline": "2026-09-21T03:57:05.374033+00:00",
@@ -291,7 +377,35 @@
         "expected_cases": 1122,
         "expected_executions": 1158,
         "accepted_suites_repeated": false,
-        "SPM_artifact_freeze": "Checksum-verified archive and exact tree before Xcode, after each phase and after cleanup."
+        "SPM_artifact_freeze": "Checksum-verified archive and exact tree before Xcode, after each phase and after cleanup.",
+        "summary": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/deliveries/dl01-20260920-7n7z3qln/missing-hostless-hl8h7q5p/summary.json",
+        "summary_sha256": "afc4a3fa0f0e2a144b394a00b51931c7e2bc000b305bd9709601e7f8565a9c53",
+        "cases": 1122,
+        "executions": 1158,
+        "passes": 1157,
+        "predefined_skips": 1,
+        "cleanup_and_artifact_guards": "PASS_ALL_PHASES"
+      },
+      "integration_qualification": {
+        "status": "PASS_FULL_INTEGRATION_WITH_EIGHT_PRESERVED_QOS_WARNINGS",
+        "summary": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/deliveries/dl01-20260920-7n7z3qln/integration-h00-composition-soqvc77o/qualification-cfewh631/summary.json",
+        "summary_sha256": "7da74b90e9d37d073a8bfb08c6c5aa9eaca7a6021e10a4ff766428efb8499572",
+        "composition": "4c1e7da46528cceb9666224b3c449cb57e4cd0a7",
+        "composition_signature": "N_AFTER_RECORDED_SIGNING_TIMEOUT",
+        "product_candidate": "342194900a5310a48f6828c01736ecc812fa1421",
+        "source_build_inputs_identical_except_reviewed_hitch_test": 1863,
+        "cases": 278,
+        "executions": 278,
+        "passes": 278,
+        "skips": 0,
+        "warnings": 8,
+        "warning_disposition": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/deliveries/dl01-20260920-7n7z3qln/integration-h00-composition-soqvc77o/qualification-cfewh631/runtime-warning-disposition.json",
+        "warning_disposition_sha256": "e9881fa58cc511857ce6e647590eb3717ce6b49c9f5bbe051ea42c737dc1019d",
+        "limits": [
+          "No change to outgoing DL01 product history or hard merge dependency.",
+          "Full Replay, inherited Trace-document drift, real ticket, CI and human review remain.",
+          "No backend, full repository iOS, release-readiness or blanket sanitizer claim."
+        ]
       }
     },
     {
@@ -527,7 +641,7 @@
           "decisive_test": "Complete affected production SwiftFileLists and emitted modules; zero build exit"
         }
       ],
-      "new_runtime_admission": "No further runtime admitted by this packet; freeze per-lane source, selectors and actual deadlines first.",
+      "new_runtime_admission": "Only the eight missing hostless schemes at compatibility_continuation are admitted; fail-fast fresh discovery, separate pre-result admission and one execution. Full Integration, Replay and platforms remain separate.",
       "public_API": "Source-identical public declarations and bridge/header/build inputs; only internal implementations differ. Verify affected compilation before delivery.",
       "CI": "NOT_RUN_ON_UNPUBLISHED_DELIVERY_HEAD",
       "human_review": "PENDING",
@@ -539,7 +653,30 @@
         "No backend or real navigation callback claim from writer serialization alone"
       ],
       "rollback": "Revert only E02 predicates and its tests/docs; retain unrelated shared-file tests.",
-      "feature_docs": "AFFECTED_RUM_PASS_GLOBAL_TRACE_DRIFT_INHERITED_FROM_DEVELOP"
+      "feature_docs": "AFFECTED_RUM_PASS_GLOBAL_TRACE_DRIFT_INHERITED_FROM_DEVELOP",
+      "compatibility_continuation": {
+        "status": "ACTIVE_INSPECT_PER_PHASE_RECEIPTS",
+        "definition": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/deliveries/e02-20260920-jw2fh35s/missing-hostless-n6igdnez/definition.json",
+        "definition_sha256": "9772226bc52599f638dc6d4d58f718f689328e20c15431bab8b9bd6e5e31aed5",
+        "timebox_deadline": "2026-09-21T04:15:57.643424+00:00",
+        "schemes": [
+          "DatadogCore",
+          "DatadogInternal",
+          "DatadogLogs",
+          "DatadogTrace",
+          "DatadogCrashReporting",
+          "DatadogWebViewTracking",
+          "DatadogFlags",
+          "DatadogProfiling"
+        ],
+        "source_inputs": 1864,
+        "expected_cases": 1941,
+        "expected_executions": 1977,
+        "predefined_skips": 5,
+        "accepted_suites_repeated": false,
+        "SPM_artifact_freeze": "Exact archive and tree before and after every phase and cleanup.",
+        "compiled_test_membership": "Every Swift source list and required Clang source/object checked before assertion admission."
+      }
     },
     {
       "id": "E04",
@@ -595,6 +732,13 @@
             "DatadogRUM/MultiSceneSupport/Results/EXP-207-active-view-cache.json",
             "DatadogRUM/MultiSceneSupport/Experiments/EXP-212-cache-composition.md"
           ]
+        },
+        {
+          "kind": "independent_changed_path_lifetime_review",
+          "status": "E04_SPECIFIC_CACHE_SESSION_TEARDOWN_AND_RESTORATION_COVERED",
+          "path": "Results/S1-E04-lifetime-disposition.json",
+          "sha256": "42fcf565f42446febf41ce55ded9c52b9e82c9412962179f1c697b0d16c193ee",
+          "additional_runtime_required": false
         }
       ],
       "dependency_pins_and_build_identity": "Owned by the linked qualified/current receipts; no new runtime identities are inferred for source-only rebinding.",
@@ -789,9 +933,13 @@
       ],
       "rollback": "Revert E04 cache/session behavior and tests/docs without losing E02/E03 shared-file assertions.",
       "feature_docs": "AFFECTED_RUM_PASS_GLOBAL_TRACE_DRIFT_INHERITED_FROM_DEVELOP",
-      "additional_finite_admission_required": [
-        "Independent cache/session teardown and restoration lifetime; map exact reusable EXP207/EXP212 controls before choosing any missing runtime"
-      ]
+      "additional_finite_admission_required": [],
+      "lifetime_disposition": {
+        "status": "E04_SPECIFIC_CACHE_SESSION_TEARDOWN_AND_RESTORATION_COVERED",
+        "path": "Results/S1-E04-lifetime-disposition.json",
+        "sha256": "42fcf565f42446febf41ce55ded9c52b9e82c9412962179f1c697b0d16c193ee",
+        "additional_runtime_required": false
+      }
     },
     {
       "id": "E05",
@@ -1050,5 +1198,5 @@
       ]
     }
   ],
-  "updated_at": "2026-09-21T02:01:08.852466+00:00"
+  "updated_at": "2026-09-21T02:27:12.469360+00:00"
 }

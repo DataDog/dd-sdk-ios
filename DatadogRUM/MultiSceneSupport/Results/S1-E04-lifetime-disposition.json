@@ -1,0 +1,94 @@
+{
+  "status": "E04_SPECIFIC_CACHE_SESSION_TEARDOWN_AND_RESTORATION_COVERED",
+  "recorded_at": "2026-09-21T02:27:12.469360+00:00",
+  "candidate": {
+    "checkout": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/deliveries/e04-20260920-9o3thfw6/worktree",
+    "head": "c5f3955ab8fc1539fd1b60e15b71dbd674b26067",
+    "clean": true,
+    "production_sha256": {
+      "DatadogRUM/Sources/RUMMonitor/Scopes/RUMSessionScope.swift": "e59f10a3b3990c9b2c334e9168738aed2a57563bcd10f6f4cfa931a58051acda",
+      "DatadogRUM/Sources/RUMMonitor/Scopes/Utils/ViewCache.swift": "142961ec6c5ce10c61595b306e16f98ca34b1047694057bcaaf3d2d977a251ad"
+    },
+    "qualified_source": "a3d34069cccbe35cac0fd2bc1fb456e64b1f4c43"
+  },
+  "changed_path_mapping": [
+    {
+      "source_edge": "RUMSessionScope.viewScopes.didSet records the previous active view as inactive before assigning the next active view (RUMSessionScope.swift:42-50).",
+      "existing_controls": [
+        "testGivenLongLivedView_whenNextViewStarts_itRetainsDelayedContainerUntilInactiveTTL",
+        "testGivenStoppedView_whenRetentionExpires_itReleasesCachedContainer",
+        "testGivenLongLivedNativeView_whenDelayedWebEventArrivesAfterNavigation_itRetainsOriginalContainer",
+        "testGivenLongLivedNativeView_whenDelayedWebEventsArrive_itPreservesContainerWindow"
+      ],
+      "disposition": "COVERED"
+    },
+    {
+      "source_edge": "endReason's first transition deactivates the active view, and deinit deactivates it again idempotently (RUMSessionScope.swift:117-128 and deactivateActiveView near the end of the file).",
+      "existing_controls": [
+        "testGivenStoppedSession_whenRetentionExpires_itReleasesCachedContainer",
+        "testGivenTimedOutSession_whenRetentionExpires_itReleasesCachedContainer",
+        "testGivenExpiredSession_whenRetentionExpires_itReleasesCachedContainer",
+        "testGivenReleasedSession_whenRetentionExpires_itReleasesCachedContainer"
+      ],
+      "disposition": "COVERED"
+    },
+    {
+      "source_edge": "Restoration constructs a fresh RUMViewScope and inserts its new ID as active (RUMSessionScope.swift:212-255).",
+      "existing_controls": [
+        "testGivenRestoredSession_whenViewTransfers_itCachesFreshContainer",
+        "testGivenSessionViewCache_whenCapacityIsExceeded_itPreservesNewestViews"
+      ],
+      "disposition": "COVERED"
+    },
+    {
+      "source_edge": "ViewCache tracks inactiveSince, purges only inactive entries by TTL, and then enforces capacity (ViewCache.swift:19-27 and 53-135).",
+      "existing_controls": [
+        "testRequestView_withReplay",
+        "testRequestView_withoutReplay",
+        "testPurge_whenExceedingCount",
+        "testPurge_whenExceedingTTL",
+        "testGivenSessionViewCache_whenCapacityIsExceeded_itPreservesNewestViews"
+      ],
+      "disposition": "COVERED"
+    }
+  ],
+  "evidence_reuse": {
+    "exp207_result": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios/DatadogRUM/MultiSceneSupport/Results/EXP-207-active-view-cache.json",
+      "sha256": "ce5e74ac8d0dff8c206541c75ece9a28fb7feaf14a73dabe4b19aee475547dd6",
+      "source_boundary": "Independent E04 only; its eight lifecycle/container red cases and five preservation controls cover the changed cache/session paths.",
+      "native_limit": "The native arm is injected WebView/controller writer JSON, so it supports delayed-container routing only; no host-lifetime claim is needed for E04."
+    },
+    "exp212_result": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios/DatadogRUM/MultiSceneSupport/Results/EXP-212-cache-composition.json",
+      "sha256": "87161993eb19af494fc97c3c0e55b14fbb38e65c3db78d9cf065c4fb0cd85324",
+      "status": "QUALIFIED_FOCUSED_COMPOSITION",
+      "source_boundary": "Exact EXP207 unit/native controls were rerun on the composed source; the additional real-core lifetime control is separate evidence and does not alter E04's changed-path mapping."
+    }
+  },
+  "independent_review": {
+    "path": "/tmp/e04-independent-lifetime-review-20260921/review-correction.json",
+    "sha256": "81ca1eff92b3f3e7e5e1710415a7e49a2a17576e1e1e03f9c6f9ffea014d39b7"
+  },
+  "preserved_original_review": {
+    "path": "/tmp/e04-independent-lifetime-review-20260921/review.json",
+    "sha256": "c6eb6cc6f2ba6c9ab08a086d648a05cc340e25eb4a55f3e7a8d0aa8030c08cc9",
+    "hash_note": "The correction artifact truncates the superseded hash by one character; this full hash is computed from the preserved original."
+  },
+  "correction": {
+    "removed_requirement": "UIKit and SwiftUI host-removal tests with pending Resource completion are not required to qualify the E04 cache/session change.",
+    "reason": "ViewCache stores scalar view metadata only; E04 adds no UIKit/SwiftUI host reference, pending Resource ownership, or callback retention edge. Those are S2:P03/EXP213 obligations and must remain separately scoped.",
+    "no_unproven_transfer_contract": "No new transferred-Resource ownership assertion is proposed. Existing restoration evidence is limited to the implemented contract: a fresh RUMViewScope/cache ID is created from the prior active view's identity/path metadata and the old scope releases."
+  },
+  "additional_runtime_required": false,
+  "missing_changed_path_discriminator": null,
+  "limits": [
+    "ordinary UIKit or SwiftUI host destruction",
+    "pending Resource callback retention or host ownership",
+    "DisplayLinker/core teardown, covered separately by EXP211/EXP212",
+    "backend/live browser timing and performance",
+    "S2:P03, T10, and whole-P03 promotion",
+    "remaining E04 platform/build/release inventory"
+  ],
+  "no_release_gate_closed": true
+}
