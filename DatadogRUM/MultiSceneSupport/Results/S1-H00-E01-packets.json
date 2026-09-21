@@ -25,7 +25,7 @@
       ],
       "named_reviewer": null,
       "body": "Delivery/H00-pr.md",
-      "body_sha256": "ae7bf9857db6f08b880b3a2d1139d4efe2f5ae2147cf7aaabef3aea23a783809",
+      "body_sha256": "008fe637fe9e77d92397646d0c5d52794fb3204002be54d061211a405be3b7c5",
       "checkout": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/deliveries/s1-initial-20260920-qqyq49od/H00",
       "detached_until_real_ticket": true,
       "baseline_commit": "62f64d7b655bdc83f3036c4ad81090a270f6202b",
@@ -123,7 +123,9 @@
           "violations": 0,
           "swiftlint_version": "0.65.0"
         }
-      }
+      },
+      "initial_body_sha256": "ae7bf9857db6f08b880b3a2d1139d4efe2f5ae2147cf7aaabef3aea23a783809",
+      "current_local_preparation": "Results/S1-local-preparation.json"
     },
     {
       "id": "E01",
@@ -136,7 +138,7 @@
       ],
       "named_reviewer": null,
       "body": "Delivery/E01-pr.md",
-      "body_sha256": "5768f17bc219d96a2a97066bc4819512d520e363329c750873bbabf9b6433e40",
+      "body_sha256": "4ff1471691bef2669e27a428764b384db57e88fc8cef6020787cb4b496efdab2",
       "checkout": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/deliveries/s1-initial-20260920-qqyq49od/E01",
       "detached_until_real_ticket": true,
       "baseline_commit": "8d7e429b0242c5b384417862e2418e2dbdffe500",
@@ -267,7 +269,9 @@
           "Accepted Core/Internal/RUM/Trace/Integration/platform/client/backend cells were not repeated."
         ]
       },
-      "replay_scope_disposition": "Results/S1-replay-scope-disposition.json"
+      "replay_scope_disposition": "Results/S1-replay-scope-disposition.json",
+      "initial_body_sha256": "5768f17bc219d96a2a97066bc4819512d520e363329c750873bbabf9b6433e40",
+      "current_local_preparation": "Results/S1-local-preparation.json"
     }
   ],
   "next_repair": "Finish E05 backend ownership and independent S1 delivery review; no Replay content fixture prerequisite or full-suite run.",

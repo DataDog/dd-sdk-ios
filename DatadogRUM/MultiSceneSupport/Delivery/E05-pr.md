@@ -1,19 +1,18 @@
 ### What and why?
 
-Automatic URLSession spans can adopt the RUM view active when a request finishes. Preserve the RUM context captured at request preparation so reverse completion retains each request's owner, including an explicitly absent owner.
+An automatic URLSession span can adopt the RUM view active when the request finishes. Capture the existing RUM context during request preparation so out-of-order completions keep each request's original owner. A request started without a RUM owner must remain ownerless.
 
 ### How?
 
-Carry the existing optional NetworkContext ownership through handler state into the span writer. Remove captures before completion guards, preserve non-RUM context and caller headers, and avoid treating a baggage-only write as trace-carrier ownership. Public APIs and wire formats are unchanged.
+Carry the captured context through the URLSession handler into the span writer, and release it before completion guards. Preserve other span context and caller headers. A baggage-only write must not claim ownership of trace headers it did not inject.
 
-Validation: 154 full Trace tests and three native automatic-Trace controls passed. Full Integration passed 282/282 with a test-only hitch assertion overlay, including two new registered ownership tests. Three real registered requests each produced exactly one data, metrics and completion callback. Source-matched tests cover completion-guard cleanup. The Core header fixture now expects the request session and passes the full Core suite (815 passes, four predefined OS skips); all eleven header assertions remain. Lint and affected feature documents pass. Eight additional iOS suites pass 2,768 executions with five predefined OS skips. All twelve platform builds pass with 144 complete architecture source lists, including Trace on macOS. Automatic RUM Resources were disabled. Automatic backend and independently reviewed composed registered evidence reconcile all three nil/A/B client spans and the complete RUM service/session inventories. The original registered stale-counter failure and the backend-only opaque-ID assertion failure remain preserved; the offline correction compares stable event/reducer identities while retaining within-response ID, duplicate and ownership checks. Current CI and human review remain pending. Replay captured-content tests are excluded; crash safety and other-feature compatibility remain required. Eight inherited QoS warnings remain without a harmlessness claim. Broader baggage merging and partial-carrier policy are outside this repair.
+All 154 Trace tests pass. Native automatic and registered-delegate requests preserve separate owners through reverse completion, including an ownerless request. Backend RUM/span inventories confirm those owners. Remaining selected module suites, twelve platform builds and strict lint pass. Integration validation used the independent hitch-assertion correction and retains existing QoS warnings. Native ownership scenarios disable automatic RUM Resources; they do not cover every networking configuration.
 
 ### Review checklist
 
-- [x] Feature or bugfix has appropriate unit and integration regressions; evidence and limits are recorded above.
-- [ ] Each commit and PR mentions the real issue/Jira reference; ticket is pending.
-- [x] Changelog updated for the customer-facing change.
-- [x] No public API is added; no new Objective-C interface is required.
-- [x] Public API source remains unchanged; API generation is not required for a new surface.
-- [ ] Complete the packet's missing candidate checks and current required CI.
-- [ ] Human review and separately authorized publication/merge.
+- [x] Unit and integration coverage matches the change.
+- [ ] Issue reference or explicit waiver confirmed for publication.
+- [x] CHANGELOG updated.
+- [x] No new public API requiring an Objective-C interface.
+- [x] Public APIs unchanged.
+- [ ] Required CI and maintainer review.

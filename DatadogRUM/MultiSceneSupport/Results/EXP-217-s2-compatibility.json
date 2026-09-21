@@ -482,6 +482,13 @@
     "timeout_seconds": 25,
     "result": "SIGNING_AGENT_TIMEOUT",
     "disposition": "Authorized local unsigned fallback; signed history remains required before any separately authorized push.",
-    "recorded_at": "2026-09-21T11:41:44.001848+00:00"
+    "recorded_at": "2026-09-21T11:41:44.001848+00:00",
+    "initial_unsigned_commit": "26cb8d0bc9366ecb38a25a6af14b6e202a3e4ef2",
+    "user_requested_retry": {
+      "result": "PASS_VERIFIED_SIGNATURE",
+      "commit": "3d6d2e69999fd369f394ce1bd585b0dea2dad70d",
+      "identical_tree": true,
+      "protected_paths_unchanged": true
+    }
   }
 }

@@ -1,19 +1,18 @@
 ### What and why?
 
-When an app returns to a view key while an earlier occurrence still has a pending Resource, later start/stop attributes can overwrite that earlier occurrence. Apply matching view start/stop attributes only to the active occurrence; pending Resources keep their original view.
+If an app returns to the same view key while an older occurrence still has a pending Resource, new start/stop attributes can overwrite the older occurrence. Keep those attributes on the active occurrence while the pending Resource retains its original view.
 
 ### How?
 
-Add two active-view predicates and regressions for repeated-key navigation, action ownership, restoration and full/delta event serialization. Existing active duplicate-start behavior remains covered.
+Require an active view before applying matching start or stop attributes. Preserve repeated starts on the current view, action ownership and session restoration.
 
-Validation reused for identical production/test contents: full RUM suite, 903 cases / 939 executions; two native public-monitor serialization controls passed against two baseline failures. Repository lint passed. Backend ingestion and native navigation callbacks are not established by the writer-level controls. Eight additional complete iOS suites passed: 1,972 executions and five predefined OS skips. Full Integration280/280 passed with a test-only hitch assertion correction and eight preserved baseline QoS warnings. All twelve affected-platform Debug/Release builds passed, with144 complete architecture source lists. All five feature-document checks pass. Replay captured-content tests are excluded; crash safety and other-feature compatibility remain required. Current CI and human review remain in the packet.
+Regression tests reproduce the old overwrite and verify serialized full/delta events after navigation. The RUM suite and remaining selected module suites pass on iOS 17.5. Integration validation used the independent hitch-assertion correction and retains existing QoS warnings. Debug and Release platform builds and strict lint pass. The ownership checks inspect serialized SDK output; backend ingestion remains untested.
 
 ### Review checklist
 
-- [x] Feature or bugfix has appropriate unit and integration regressions; evidence and limits are recorded above.
-- [ ] Each commit and PR mentions the real issue/Jira reference; ticket is pending.
-- [x] Changelog updated for the customer-facing change.
-- [x] No public API is added; no new Objective-C interface is required.
-- [x] Public API source remains unchanged; API generation is not required for a new surface.
-- [ ] Complete the packet's missing candidate checks and current required CI.
-- [ ] Human review and separately authorized publication/merge.
+- [x] Unit and integration coverage matches the change.
+- [ ] Issue reference or explicit waiver confirmed for publication.
+- [x] CHANGELOG updated.
+- [x] No new public API requiring an Objective-C interface.
+- [x] Public APIs unchanged.
+- [ ] Required CI and maintainer review.

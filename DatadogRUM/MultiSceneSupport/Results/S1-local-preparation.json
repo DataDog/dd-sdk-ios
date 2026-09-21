@@ -1,0 +1,430 @@
+{
+  "schema_version": 1,
+  "status": "PASS_LOCAL_SIGNED_PACKETS_PUBLICATION_PENDING",
+  "recorded_at": "2026-09-21T11:49:36.360508+00:00",
+  "owner": "SDK implementer",
+  "qualification_owner": "Results/S1-delivery-queue.json",
+  "identity_audit": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/deliveries/s1-local-publication-audit-juq1jnr3/before.json",
+    "sha256": "e25b18d53e6abb37ba9047ffe4a4447595f77e7ceb93be707c36bd887b67a537"
+  },
+  "E05_signing": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/deliveries/s1-local-publication-audit-juq1jnr3/E05-signing.json",
+    "sha256": "ab1f3c3feea985d80d677e976468c12d2a566b2ddeed1a559f8d086159875281"
+  },
+  "publication_authorization": false,
+  "merge_authorization": false,
+  "authorization_note": "Direct confirmation in this task remains pending. The relayed request was rejected by automatic approval review and cannot authorize publication.",
+  "new_tests": 0,
+  "sdk_test_build_changes": 0,
+  "gate_closures": [],
+  "items": [
+    {
+      "id": "H00",
+      "checkout": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/deliveries/s1-initial-20260920-qqyq49od/H00",
+      "head": "8d7e429b0242c5b384417862e2418e2dbdffe500",
+      "base": "62f64d7b655bdc83f3036c4ad81090a270f6202b",
+      "tree": "f9e5c7ed96fd2a656eb9b9c74d6b90b466df0ced",
+      "clean": true,
+      "diff_paths": [
+        "Datadog/IntegrationUnitTests/RUM/RUMViewHitchesIntegration_Tests.swift"
+      ],
+      "allowlist_evidence": "Results/S1-delivery-queue.json",
+      "stale_queue_missing_paths": [],
+      "outgoing_commits": [
+        {
+          "commit": "8d7e429b0242c5b384417862e2418e2dbdffe500",
+          "signature": "G",
+          "verification": "Good \"git\" signature for valentin.pertuisot@datadoghq.com with ED25519 key SHA256:EzUMJz7j+BgI2sx1oIl8YVWjRTxB3OqYvL9OIfdHPus",
+          "message": "Reconstruct view hitch state in delta-event assertions"
+        }
+      ],
+      "body": "Delivery/H00-pr.md",
+      "body_sha256": "008fe637fe9e77d92397646d0c5d52794fb3204002be54d061211a405be3b7c5",
+      "file_sha256": {
+        "Datadog/IntegrationUnitTests/RUM/RUMViewHitchesIntegration_Tests.swift": "d969dcbc570ecfd78f0e2cc6e62c05d0af970fa9bd570da457563a9ec8712247"
+      },
+      "publication_authorization": false,
+      "merge_authorization": false
+    },
+    {
+      "id": "E01",
+      "checkout": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/deliveries/s1-initial-20260920-qqyq49od/E01",
+      "head": "ab71c3a6fb77307081f58b67d86d096d0340ce5f",
+      "base": "8d7e429b0242c5b384417862e2418e2dbdffe500",
+      "tree": "214a5260f21d6382f8fcc74a8497daf234a9dde4",
+      "clean": true,
+      "diff_paths": [
+        "CHANGELOG.md",
+        "DatadogInternal/Sources/NetworkInstrumentation/NetworkInstrumentationFeature.swift",
+        "DatadogInternal/Sources/NetworkInstrumentation/URLSession/NetworkInstrumentationSwizzler.swift",
+        "DatadogInternal/Sources/NetworkInstrumentation/URLSession/URLSessionTaskSwizzler.swift",
+        "DatadogInternal/Tests/NetworkInstrumentation/NetworkInstrumentationFeatureTests.swift",
+        "DatadogInternal/Tests/NetworkInstrumentation/URLSessionTaskSwizzlerTests.swift",
+        "DatadogLogs/LOGS_FEATURE.md",
+        "DatadogProfiling/PROFILING_FEATURE.md",
+        "DatadogRUM/RUM_FEATURE.md",
+        "DatadogSessionReplay/SESSION_REPLAY_FEATURE.md",
+        "DatadogTrace/TRACE_FEATURE.md"
+      ],
+      "allowlist_evidence": "Results/S1-delivery-queue.json",
+      "stale_queue_missing_paths": [],
+      "outgoing_commits": [
+        {
+          "commit": "7915e1be91407663ba8a374d0c36f4b804280fd7",
+          "signature": "G",
+          "verification": "Good \"git\" signature for valentin.pertuisot@datadoghq.com with ED25519 key SHA256:EzUMJz7j+BgI2sx1oIl8YVWjRTxB3OqYvL9OIfdHPus",
+          "message": "Prepare URLSession instrumentation once per task"
+        },
+        {
+          "commit": "ab71c3a6fb77307081f58b67d86d096d0340ce5f",
+          "signature": "G",
+          "verification": "Good \"git\" signature for valentin.pertuisot@datadoghq.com with ED25519 key SHA256:EzUMJz7j+BgI2sx1oIl8YVWjRTxB3OqYvL9OIfdHPus",
+          "message": "Bind feature documentation to reachable delivery source"
+        }
+      ],
+      "body": "Delivery/E01-pr.md",
+      "body_sha256": "4ff1471691bef2669e27a428764b384db57e88fc8cef6020787cb4b496efdab2",
+      "file_sha256": {
+        "CHANGELOG.md": "ceba3974d910c95add9d6ec1479d0f8f52e590da27bedb504be44d053647463d",
+        "DatadogInternal/Sources/NetworkInstrumentation/NetworkInstrumentationFeature.swift": "2631ea56885a12d1b3d14b1044dd9a84319a0b382b817afb95b4edd305df5246",
+        "DatadogInternal/Sources/NetworkInstrumentation/URLSession/NetworkInstrumentationSwizzler.swift": "a00edec0d9451c3b78c52f308c2a7f771d0e8b9cfafada79a2848f1b164cfef7",
+        "DatadogInternal/Sources/NetworkInstrumentation/URLSession/URLSessionTaskSwizzler.swift": "96d302999632cc609a98e774106f1e51c4ef9fecfe089287426285aa524e4570",
+        "DatadogInternal/Tests/NetworkInstrumentation/NetworkInstrumentationFeatureTests.swift": "235c957d68ebe84de71f251373723e76b474da21d15fe3c8a65cc38a202a62d5",
+        "DatadogInternal/Tests/NetworkInstrumentation/URLSessionTaskSwizzlerTests.swift": "0d3586be978915dfa11be06a2938eff836af61296b8ae629fd7e51e225fa5b58",
+        "DatadogLogs/LOGS_FEATURE.md": "21df0fa844abfbd6a1514128ca064f23e91fc07a6af0feb26b02d1eeeb092c18",
+        "DatadogProfiling/PROFILING_FEATURE.md": "370e9c5371a4bbd4ec80edd7b5c8c8964062bf67d80a49d11cab5f2cc364c808",
+        "DatadogRUM/RUM_FEATURE.md": "1e0f79f2ffea249ca2465fca15dbe72d35e5e7b82b8c68de52f6c1f5319190f6",
+        "DatadogSessionReplay/SESSION_REPLAY_FEATURE.md": "14df82ace73f36f7a0e87ae4c4d8c921d4848647a9222e7e0cb2dcddb746f60d",
+        "DatadogTrace/TRACE_FEATURE.md": "f36e002323a1a5c0b2d4d78b2a8962ac0faecfbc8e868a5444817733e693554e"
+      },
+      "publication_authorization": false,
+      "merge_authorization": false
+    },
+    {
+      "id": "E02",
+      "checkout": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/deliveries/e02-20260920-jw2fh35s/worktree",
+      "head": "4dec888b99e70285cc855197790c3c2f6d20e426",
+      "base": "62f64d7b655bdc83f3036c4ad81090a270f6202b",
+      "tree": "48c5f9c7162b812b7ede2ce1380c344ee0f7f5f7",
+      "clean": true,
+      "diff_paths": [
+        "CHANGELOG.md",
+        "Datadog/IntegrationUnitTests/RUM/RUMAttributesIntegrationTests.swift",
+        "Datadog/IntegrationUnitTests/RUM/RUMAttributesIntegration_Tests.swift",
+        "DatadogLogs/LOGS_FEATURE.md",
+        "DatadogProfiling/PROFILING_FEATURE.md",
+        "DatadogRUM/RUM_FEATURE.md",
+        "DatadogRUM/Sources/RUMMonitor/Scopes/RUMViewScope.swift",
+        "DatadogRUM/Tests/RUMMonitor/Scopes/RUMApplicationScopeTests.swift",
+        "DatadogRUM/Tests/RUMMonitor/Scopes/RUMSessionScopeTests.swift",
+        "DatadogSessionReplay/SESSION_REPLAY_FEATURE.md",
+        "DatadogTrace/TRACE_FEATURE.md"
+      ],
+      "allowlist_evidence": "Results/S1-documentation-checkpoint.json",
+      "stale_queue_missing_paths": [
+        "DatadogLogs/LOGS_FEATURE.md",
+        "DatadogProfiling/PROFILING_FEATURE.md",
+        "DatadogSessionReplay/SESSION_REPLAY_FEATURE.md",
+        "DatadogTrace/TRACE_FEATURE.md"
+      ],
+      "outgoing_commits": [
+        {
+          "commit": "1759abb9725b9d34682d44739966fb7736835e94",
+          "signature": "G",
+          "verification": "Good \"git\" signature for valentin.pertuisot@datadoghq.com with ED25519 key SHA256:EzUMJz7j+BgI2sx1oIl8YVWjRTxB3OqYvL9OIfdHPus",
+          "message": "Keep attributes isolated between repeated view occurrences"
+        },
+        {
+          "commit": "4dec888b99e70285cc855197790c3c2f6d20e426",
+          "signature": "G",
+          "verification": "Good \"git\" signature for valentin.pertuisot@datadoghq.com with ED25519 key SHA256:EzUMJz7j+BgI2sx1oIl8YVWjRTxB3OqYvL9OIfdHPus",
+          "message": "Correct feature documentation examples and application-state timing"
+        }
+      ],
+      "body": "Delivery/E02-pr.md",
+      "body_sha256": "eed83e8c013f3bdebc7c0ca05ddc99fe9ccbc722f60da8c6a4b2f6dc0478c907",
+      "file_sha256": {
+        "CHANGELOG.md": "331146bcf2cdc05932cdc7d5e25231acf3dc20dad19c9697bed8d2fd7c5bdebf",
+        "Datadog/IntegrationUnitTests/RUM/RUMAttributesIntegrationTests.swift": "d3a0c57b8f4e4b581758846707bbd4277af06c1b7a57e4799225f87232eb098a",
+        "Datadog/IntegrationUnitTests/RUM/RUMAttributesIntegration_Tests.swift": "337028cb121b4be4085d0052160c6aa281ee63f12b6c2ca22416e9465ee85c8c",
+        "DatadogLogs/LOGS_FEATURE.md": "deef915c8f3aed80593e67426a79f7dd63ea76e57df6c9227595d9be73992ffe",
+        "DatadogProfiling/PROFILING_FEATURE.md": "c4d1f128d94e0b0183dbcd46bb08067a28d1f3cfd6735e629b2931c876b74aba",
+        "DatadogRUM/RUM_FEATURE.md": "04f4122ed2c9e4a9661fcef8eccb1b9cd0b87a94cab1ca4fa17b0a06abb4af2e",
+        "DatadogRUM/Sources/RUMMonitor/Scopes/RUMViewScope.swift": "e06c6ca0fd3b679c94e1ff602126dd14032efd09824f39bb7864dbcf27c0e6bb",
+        "DatadogRUM/Tests/RUMMonitor/Scopes/RUMApplicationScopeTests.swift": "007a6346b934967670950cc6d8131546b3246fc21f37595915df84cb613aeb9a",
+        "DatadogRUM/Tests/RUMMonitor/Scopes/RUMSessionScopeTests.swift": "f66d4c720d4110f8b219e3f48e5607ae3c9586526691ca000aec5c44a69c0353",
+        "DatadogSessionReplay/SESSION_REPLAY_FEATURE.md": "6e4cd287f0efc5384bdedecc584f96ad09a93876baae454a32efdc2f707d84cb",
+        "DatadogTrace/TRACE_FEATURE.md": "e27e51c5ff45b8600702c050595e7ddb042da05a6c2cf2682621b8fe2d91e337"
+      },
+      "publication_authorization": false,
+      "merge_authorization": false
+    },
+    {
+      "id": "E03",
+      "checkout": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/exp214-repair-_6vxqe6i/worktree",
+      "head": "f43d812d85d96bea88b6b3e944d9210f0406405d",
+      "base": "62f64d7b655bdc83f3036c4ad81090a270f6202b",
+      "tree": "3d865bf2835b97cffb007b1a2d3dbcc987e49208",
+      "clean": true,
+      "diff_paths": [
+        "CHANGELOG.md",
+        "Datadog/IntegrationUnitTests/Public/NetworkInstrumentationIntegrationTests.swift",
+        "DatadogLogs/LOGS_FEATURE.md",
+        "DatadogProfiling/PROFILING_FEATURE.md",
+        "DatadogRUM/RUM_FEATURE.md",
+        "DatadogRUM/Sources/Instrumentation/Resources/URLSessionRUMResourcesHandler.swift",
+        "DatadogRUM/Sources/RUMMonitor/RUMCommand.swift",
+        "DatadogRUM/Sources/RUMMonitor/Scopes/RUMApplicationScope.swift",
+        "DatadogRUM/Sources/RUMMonitor/Scopes/RUMSessionScope.swift",
+        "DatadogRUM/Sources/RUMMonitor/Scopes/RUMUserActionScope.swift",
+        "DatadogRUM/Sources/RUMMonitor/Scopes/RUMViewScope.swift",
+        "DatadogRUM/Tests/Instrumentation/Resources/URLSessionRUMResourcesHandlerTests.swift",
+        "DatadogRUM/Tests/RUMMonitor/Scopes/RUMApplicationScopeTests.swift",
+        "DatadogRUM/Tests/RUMMonitor/Scopes/RUMSessionScopeTests.swift",
+        "DatadogSessionReplay/SESSION_REPLAY_FEATURE.md",
+        "DatadogTrace/TRACE_FEATURE.md"
+      ],
+      "allowlist_evidence": "Results/S1-E03-packet.json",
+      "stale_queue_missing_paths": [
+        "Datadog/IntegrationUnitTests/Public/NetworkInstrumentationIntegrationTests.swift",
+        "DatadogLogs/LOGS_FEATURE.md",
+        "DatadogProfiling/PROFILING_FEATURE.md",
+        "DatadogRUM/Sources/Instrumentation/Resources/URLSessionRUMResourcesHandler.swift",
+        "DatadogRUM/Sources/RUMMonitor/RUMCommand.swift",
+        "DatadogRUM/Sources/RUMMonitor/Scopes/RUMApplicationScope.swift",
+        "DatadogRUM/Sources/RUMMonitor/Scopes/RUMSessionScope.swift",
+        "DatadogRUM/Sources/RUMMonitor/Scopes/RUMUserActionScope.swift",
+        "DatadogRUM/Sources/RUMMonitor/Scopes/RUMViewScope.swift",
+        "DatadogRUM/Tests/Instrumentation/Resources/URLSessionRUMResourcesHandlerTests.swift",
+        "DatadogSessionReplay/SESSION_REPLAY_FEATURE.md",
+        "DatadogTrace/TRACE_FEATURE.md"
+      ],
+      "outgoing_commits": [
+        {
+          "commit": "562cf74dde410767caf95561e68f2f021feb471c",
+          "signature": "G",
+          "verification": "Good \"git\" signature for valentin.pertuisot@datadoghq.com with ED25519 key SHA256:EzUMJz7j+BgI2sx1oIl8YVWjRTxB3OqYvL9OIfdHPus",
+          "message": "Preserve Resource completion ownership and failed-transfer errors"
+        },
+        {
+          "commit": "385583bf42dafd51e148967ea500c2e9bae61646",
+          "signature": "G",
+          "verification": "Good \"git\" signature for valentin.pertuisot@datadoghq.com with ED25519 key SHA256:EzUMJz7j+BgI2sx1oIl8YVWjRTxB3OqYvL9OIfdHPus",
+          "message": "Document failed-transfer errors and Resource action ownership"
+        },
+        {
+          "commit": "f43d812d85d96bea88b6b3e944d9210f0406405d",
+          "signature": "G",
+          "verification": "Good \"git\" signature for valentin.pertuisot@datadoghq.com with ED25519 key SHA256:EzUMJz7j+BgI2sx1oIl8YVWjRTxB3OqYvL9OIfdHPus",
+          "message": "Correct feature documentation examples and application-state timing"
+        }
+      ],
+      "body": "Delivery/E03-pr.md",
+      "body_sha256": "2ddfcc195bf30c404375674f184ef182b1cca12540ffa67adee4200f853222eb",
+      "file_sha256": {
+        "CHANGELOG.md": "d92f847dedf788f27d5054a13ea2ca1775ede7e65e9158c52ea6aa8e7e25adb6",
+        "Datadog/IntegrationUnitTests/Public/NetworkInstrumentationIntegrationTests.swift": "ad6f7fcee90d6c5e71de3d4fd5ab2ba3f4b9df2b06750bda22e74d147e3dcd37",
+        "DatadogLogs/LOGS_FEATURE.md": "e4e7dba8536f9739de338f03f90a07ee0972ebbfbabab0d9f4822c07c4a67ff4",
+        "DatadogProfiling/PROFILING_FEATURE.md": "5d2dba616c289740c21767f1f224361873956382276f1f326654e711c0ecaeac",
+        "DatadogRUM/RUM_FEATURE.md": "7a15b1aa5bedc242797347d580c48a39bb0e350c7ce93ac86169839eb40b4ec1",
+        "DatadogRUM/Sources/Instrumentation/Resources/URLSessionRUMResourcesHandler.swift": "0649f78e2450c98a35a7ba24451c2a769a7c0f812a939c04c713c3a1eca9ccdf",
+        "DatadogRUM/Sources/RUMMonitor/RUMCommand.swift": "4220fb096fc41edcf55b36d8b807198673bceff423e041673ef879e116b07cc0",
+        "DatadogRUM/Sources/RUMMonitor/Scopes/RUMApplicationScope.swift": "f4f9bab47aa2c4c9b4a0c7484c4e080c717bf829ff10f23cf4309ac86804544f",
+        "DatadogRUM/Sources/RUMMonitor/Scopes/RUMSessionScope.swift": "4c6fc31804fdb0a1dc24f485601d758c0f46254804efb8a40950c7f81e15fa3f",
+        "DatadogRUM/Sources/RUMMonitor/Scopes/RUMUserActionScope.swift": "25879fbfd15582f65eb1a7c7d6d11fce542440f47e63c0e1b587de2c29d08c75",
+        "DatadogRUM/Sources/RUMMonitor/Scopes/RUMViewScope.swift": "4d37fc727ca48191d5fd7262ada611af95a3d7915ad9cd6cf9407b0e3ed6910e",
+        "DatadogRUM/Tests/Instrumentation/Resources/URLSessionRUMResourcesHandlerTests.swift": "b4b89987cad8658d06dc246c650d0cffa60d5352440bc85316822277664354bd",
+        "DatadogRUM/Tests/RUMMonitor/Scopes/RUMApplicationScopeTests.swift": "b6cd1f9ae4c31c8c5aa2ecb7384803f761daba376ecef9451eec1ec3628333bc",
+        "DatadogRUM/Tests/RUMMonitor/Scopes/RUMSessionScopeTests.swift": "d9b09536ad5c84bac6b2a6b33b128117657982add45f6e39956253d8b977b252",
+        "DatadogSessionReplay/SESSION_REPLAY_FEATURE.md": "13719f2e8ad3a00e3c16066d00170f0e68a1503067e9cf5979bc53306f340bc4",
+        "DatadogTrace/TRACE_FEATURE.md": "e4175561223e0fb921421690d7a36a140a8bcc2ade9d583d87007a6507dd5204"
+      },
+      "publication_authorization": false,
+      "merge_authorization": false
+    },
+    {
+      "id": "E04",
+      "checkout": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/deliveries/e04-20260920-9o3thfw6/worktree",
+      "head": "171a24092dd5a953e428fd5e038f70a3021a9dc2",
+      "base": "62f64d7b655bdc83f3036c4ad81090a270f6202b",
+      "tree": "5e9e4a3eb2ecbbc5a7c4ed37e77f7bef7b0ccca7",
+      "clean": true,
+      "diff_paths": [
+        "CHANGELOG.md",
+        "Datadog/IntegrationUnitTests/RUM/WebEventIntegrationTests.swift",
+        "DatadogLogs/LOGS_FEATURE.md",
+        "DatadogProfiling/PROFILING_FEATURE.md",
+        "DatadogRUM/RUM_FEATURE.md",
+        "DatadogRUM/Sources/RUMMonitor/Scopes/RUMSessionScope.swift",
+        "DatadogRUM/Sources/RUMMonitor/Scopes/Utils/ViewCache.swift",
+        "DatadogRUM/Tests/Integrations/WebViewEventReceiverTests.swift",
+        "DatadogRUM/Tests/RUMMonitor/Scopes/RUMSessionScopeTests.swift",
+        "DatadogSessionReplay/SESSION_REPLAY_FEATURE.md",
+        "DatadogTrace/TRACE_FEATURE.md"
+      ],
+      "allowlist_evidence": "Results/S1-documentation-checkpoint.json",
+      "stale_queue_missing_paths": [
+        "DatadogLogs/LOGS_FEATURE.md",
+        "DatadogProfiling/PROFILING_FEATURE.md",
+        "DatadogSessionReplay/SESSION_REPLAY_FEATURE.md",
+        "DatadogTrace/TRACE_FEATURE.md"
+      ],
+      "outgoing_commits": [
+        {
+          "commit": "c5f3955ab8fc1539fd1b60e15b71dbd674b26067",
+          "signature": "G",
+          "verification": "Good \"git\" signature for valentin.pertuisot@datadoghq.com with ED25519 key SHA256:EzUMJz7j+BgI2sx1oIl8YVWjRTxB3OqYvL9OIfdHPus",
+          "message": "Preserve active native view correlation for delayed WebView events"
+        },
+        {
+          "commit": "171a24092dd5a953e428fd5e038f70a3021a9dc2",
+          "signature": "G",
+          "verification": "Good \"git\" signature for valentin.pertuisot@datadoghq.com with ED25519 key SHA256:EzUMJz7j+BgI2sx1oIl8YVWjRTxB3OqYvL9OIfdHPus",
+          "message": "Correct feature documentation examples and application-state timing"
+        }
+      ],
+      "body": "Delivery/E04-pr.md",
+      "body_sha256": "553ee5a4b614fb2043f77393fd14cd58abae429feb789a8cad61ece47ae7c035",
+      "file_sha256": {
+        "CHANGELOG.md": "f20f47e36970fe07a185105768e8737bb5298f75a793892da99c6e14d5f93774",
+        "Datadog/IntegrationUnitTests/RUM/WebEventIntegrationTests.swift": "25b31685157d3e6bc2a3b53e302a03663dcea08421eebaceecbb2fcd648703fa",
+        "DatadogLogs/LOGS_FEATURE.md": "a59d6e2d02f3531eb9f3a634928a2a40b94ab93c8924b626c0a7cf57fe4ee4fd",
+        "DatadogProfiling/PROFILING_FEATURE.md": "5200bea044571559d9f5b7fb1cdb1d9df4e41f1a0d36a95a7d1916bcd4077c2e",
+        "DatadogRUM/RUM_FEATURE.md": "cd0340981847900fce56ff7632893ff8a34eee3b346f50eb0f7c885ed67d8f89",
+        "DatadogRUM/Sources/RUMMonitor/Scopes/RUMSessionScope.swift": "e59f10a3b3990c9b2c334e9168738aed2a57563bcd10f6f4cfa931a58051acda",
+        "DatadogRUM/Sources/RUMMonitor/Scopes/Utils/ViewCache.swift": "142961ec6c5ce10c61595b306e16f98ca34b1047694057bcaaf3d2d977a251ad",
+        "DatadogRUM/Tests/Integrations/WebViewEventReceiverTests.swift": "31828eaf854a8b4318fad595f833050339602b522205a2ef06b438ee875f9cf2",
+        "DatadogRUM/Tests/RUMMonitor/Scopes/RUMSessionScopeTests.swift": "9add92b4ac3af1c3751185c9d39f2fa99245c96fc2409bc8eaea623cdc2b2a66",
+        "DatadogSessionReplay/SESSION_REPLAY_FEATURE.md": "b9d11a6ba17dd6a153bac51355652f7e0c39f402b91ab1e179eb24b0941e6ecc",
+        "DatadogTrace/TRACE_FEATURE.md": "678e8b767fac89a404a9397d910a6727cf8f390cce656e897ba5d940849aa28b"
+      },
+      "publication_authorization": false,
+      "merge_authorization": false
+    },
+    {
+      "id": "E05",
+      "checkout": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/deliveries/s1-local-publication-audit-juq1jnr3/E05-signed",
+      "head": "444788406977c52ffdf84b88571c4cbe63eef245",
+      "base": "62f64d7b655bdc83f3036c4ad81090a270f6202b",
+      "tree": "8181fc4512d38b48cd5ad08fb60b971b339a1682",
+      "clean": true,
+      "diff_paths": [
+        "CHANGELOG.md",
+        "Datadog/IntegrationUnitTests/Public/NetworkInstrumentationIntegrationTests.swift",
+        "DatadogCore/Tests/Datadog/Tracing/TracingURLSessionHandlerTests.swift",
+        "DatadogRUM/RUM_FEATURE.md",
+        "DatadogTrace/Sources/DatadogTracer.swift",
+        "DatadogTrace/Sources/Integrations/TracingURLSessionHandler.swift",
+        "DatadogTrace/Sources/Span/SpanWriteContext.swift",
+        "DatadogTrace/TRACE_FEATURE.md",
+        "DatadogTrace/Tests/TracingURLSessionHandlerTests.swift"
+      ],
+      "allowlist_evidence": "Results/S1-delivery-queue.json",
+      "stale_queue_missing_paths": [],
+      "outgoing_commits": [
+        {
+          "commit": "9175dd7af56ddd6cc9bf66e835e4ef519f2d124c",
+          "signature": "G",
+          "verification": "Good \"git\" signature for valentin.pertuisot@datadoghq.com with ED25519 key SHA256:EzUMJz7j+BgI2sx1oIl8YVWjRTxB3OqYvL9OIfdHPus",
+          "message": "Preserve request-time RUM ownership in automatic URLSession traces"
+        },
+        {
+          "commit": "9899a67a2f59e0423a00c9765ddc77c272741740",
+          "signature": "G",
+          "verification": "Good \"git\" signature for valentin.pertuisot@datadoghq.com with ED25519 key SHA256:EzUMJz7j+BgI2sx1oIl8YVWjRTxB3OqYvL9OIfdHPus",
+          "message": "Document request-time RUM ownership for automatic traces"
+        },
+        {
+          "commit": "57d8417793f8ff4a41dffe0afbc50cb4fd0738db",
+          "signature": "G",
+          "verification": "Good \"git\" signature for valentin.pertuisot@datadoghq.com with ED25519 key SHA256:EzUMJz7j+BgI2sx1oIl8YVWjRTxB3OqYvL9OIfdHPus",
+          "message": "Verify request-time Trace ownership for registered URLSession delegates",
+          "original_unsigned_commit": "4002188aa64472add03f24e3129d23575f8375d6"
+        },
+        {
+          "commit": "444788406977c52ffdf84b88571c4cbe63eef245",
+          "signature": "G",
+          "verification": "Good \"git\" signature for valentin.pertuisot@datadoghq.com with ED25519 key SHA256:EzUMJz7j+BgI2sx1oIl8YVWjRTxB3OqYvL9OIfdHPus",
+          "message": "Align Trace header fixture with captured request session",
+          "original_unsigned_commit": "399b01ea0e059186a139921a01a18bff7997648f"
+        }
+      ],
+      "body": "Delivery/E05-pr.md",
+      "body_sha256": "5c389ba4bb599f9df0bb2035af5ca0b61aae8b6bc2e3cfb94281d177aec3aa20",
+      "file_sha256": {
+        "CHANGELOG.md": "798cc9ffedce67a01afbf98c9c2fb484bfec53a954334cab506e50d965896c12",
+        "Datadog/IntegrationUnitTests/Public/NetworkInstrumentationIntegrationTests.swift": "09da2bc06c9f5f22d6c4d57edf12e8577f3946337f25a7e78b97cdca8765b086",
+        "DatadogCore/Tests/Datadog/Tracing/TracingURLSessionHandlerTests.swift": "6d1a0ab7b8eb4b1642c268855de74e0c214c036f62578461d6c4a8f96f637d75",
+        "DatadogRUM/RUM_FEATURE.md": "7b301c15c9ad629bbb2b7c44b4c180008aa55b611ed41afd57734f7fdaec4988",
+        "DatadogTrace/Sources/DatadogTracer.swift": "612aa2a6d9ff8d9ac1be55346ed3c93ce32e183c01aedba16a2985568110adac",
+        "DatadogTrace/Sources/Integrations/TracingURLSessionHandler.swift": "6a76028d4e76459ad2f59f5d1b720ebc712a1e0390e6cb992fc91e39eebd2427",
+        "DatadogTrace/Sources/Span/SpanWriteContext.swift": "fb428dab3721675d84c7357f8010d980b4d6d4d28906aedc3a4a0d7273d77fa9",
+        "DatadogTrace/TRACE_FEATURE.md": "d05edc94f1c79cb12efaaa4f760a80ad6cf67621172f90d932775ad8427305fa",
+        "DatadogTrace/Tests/TracingURLSessionHandlerTests.swift": "bf05ec8bacc5759e6d8d8509e92a42b3f18275ef427e988526d5cd7b1af314cf"
+      },
+      "qualified_original_checkout": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/deliveries/e05-20260920-rtzz6gpd/worktree",
+      "qualified_original_head": "399b01ea0e059186a139921a01a18bff7997648f",
+      "publication_authorization": false,
+      "merge_authorization": false
+    },
+    {
+      "id": "DL01",
+      "checkout": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/deliveries/dl01-20260920-7n7z3qln/worktree",
+      "head": "29c28a01b4abec47a2c0869ca1ad6ade16b3dbd6",
+      "base": "62f64d7b655bdc83f3036c4ad81090a270f6202b",
+      "tree": "a474f0c041a609dcd3aee6ec32040e2de95eb3b5",
+      "clean": true,
+      "diff_paths": [
+        "CHANGELOG.md",
+        "DatadogCore/Tests/Datadog/RUM/RUMVitals/DisplayLinkerTests.swift",
+        "DatadogLogs/LOGS_FEATURE.md",
+        "DatadogProfiling/PROFILING_FEATURE.md",
+        "DatadogRUM/RUM_FEATURE.md",
+        "DatadogRUM/Sources/RUMVitals/RenderLoop/RenderLoopObserver.swift",
+        "DatadogSessionReplay/SESSION_REPLAY_FEATURE.md",
+        "DatadogTrace/TRACE_FEATURE.md"
+      ],
+      "allowlist_evidence": "Results/S1-documentation-checkpoint.json",
+      "stale_queue_missing_paths": [
+        "DatadogLogs/LOGS_FEATURE.md",
+        "DatadogProfiling/PROFILING_FEATURE.md",
+        "DatadogSessionReplay/SESSION_REPLAY_FEATURE.md",
+        "DatadogTrace/TRACE_FEATURE.md"
+      ],
+      "outgoing_commits": [
+        {
+          "commit": "342194900a5310a48f6828c01736ecc812fa1421",
+          "signature": "G",
+          "verification": "Good \"git\" signature for valentin.pertuisot@datadoghq.com with ED25519 key SHA256:EzUMJz7j+BgI2sx1oIl8YVWjRTxB3OqYvL9OIfdHPus",
+          "message": "Release RUM display-link observers with their owner"
+        },
+        {
+          "commit": "29c28a01b4abec47a2c0869ca1ad6ade16b3dbd6",
+          "signature": "G",
+          "verification": "Good \"git\" signature for valentin.pertuisot@datadoghq.com with ED25519 key SHA256:EzUMJz7j+BgI2sx1oIl8YVWjRTxB3OqYvL9OIfdHPus",
+          "message": "Correct feature documentation examples and application-state timing"
+        }
+      ],
+      "body": "Delivery/DL01-pr.md",
+      "body_sha256": "96eb688768a81bbd87e7da372dfacb2936fb22bac263331b3244f7520d2d4ac0",
+      "file_sha256": {
+        "CHANGELOG.md": "4a597baca158e9d8aed62a108121fff21dd5357a3a47847acacb1fffc5396868",
+        "DatadogCore/Tests/Datadog/RUM/RUMVitals/DisplayLinkerTests.swift": "55348a76d5ec3d582ea2380ff8990e67f3101f58a3630176c17a92915162a2c5",
+        "DatadogLogs/LOGS_FEATURE.md": "d43f81ad1d433f3972e59455b35ac92bcbd52825d6a688223abcef946e4c544b",
+        "DatadogProfiling/PROFILING_FEATURE.md": "dd5eaf2472d41b7cf622140a888c33396d7f1ff6423df2e7a9d9593d603208f7",
+        "DatadogRUM/RUM_FEATURE.md": "33f301b9a2b4c3808653e010c5b8d6b6be2acfda12a50c8f715390aeab47d7dd",
+        "DatadogRUM/Sources/RUMVitals/RenderLoop/RenderLoopObserver.swift": "7e62ab97369bd16e40c7ad6337127a31e95584ef1a196e9873e3302e8862dd06",
+        "DatadogSessionReplay/SESSION_REPLAY_FEATURE.md": "be9ce7c3b4a34ccb48e2da260d9174dc3b0df4bc1862a155d329ffc1ea64f555",
+        "DatadogTrace/TRACE_FEATURE.md": "9644eeb3b5647cad5b1ca442b782df9174ce214bc4a58c42cfff974a0f5b2d63"
+      },
+      "publication_authorization": false,
+      "merge_authorization": false
+    }
+  ],
+  "limits": [
+    "Exact source and test trees preserve accepted evidence; no new runtime, backend or release claim.",
+    "Tickets or an explicit waiver, separately authorized publication, current required CI and human review remain.",
+    "H00 must actually merge before E01 final rebase and retarget; no merge is authorized."
+  ]
+}

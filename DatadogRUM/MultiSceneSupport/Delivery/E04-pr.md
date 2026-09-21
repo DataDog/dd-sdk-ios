@@ -1,19 +1,18 @@
 ### What and why?
 
-A native view that stays open longer than the cache expiry can lose correlation with delayed WebView events. Keep its entry active until that view becomes inactive, then start the existing expiry window once.
+A native view that stays open longer than the correlation cache's expiry can lose its association with delayed WebView events. Keep an active view's entry until it becomes inactive, then start the existing expiry window once.
 
 ### How?
 
-Mark exact view UUIDs inactive on navigation and session termination, preserve restoration, and purge expired entries under the existing write lock. Retain the cache capacity of 30, timestamp ordering and Replay filtering.
+Mark the exact view inactive on navigation or session termination and restore active entries when a session resumes. Purge expired entries under the existing write lock. Preserve the 30-entry limit, timestamp ordering and Replay metadata filtering.
 
-Validation reused for identical production/test contents: full RUM suite, 910 cases / 946 executions; three native bridge controls passed against the baseline ownership failures. Repository lint passed. The native fixture injects WebView messages and inspects serialized output; actual browser callbacks and backend ingestion remain separate. Source-matched teardown, expiry and restoration controls cover the changed cache/session lifetime paths; the cache adds no host or pending Resource reference. Eight additional complete iOS suites passed with1,972 passes and five predefined OS skips. Full Integration279/279 passed on the test-only hitch composition, preserving eight prior QoS warnings. All twelve affected-platform Debug/Release builds passed with144 complete architecture source lists. All five feature-document checks pass. Replay captured-content tests are excluded; crash safety and other-feature compatibility remain required. Current CI and human review remain in the packet.
+Regression tests cover long visits, delayed events, repeated deactivation, expiry and restoration. The RUM suite passes 946 executions, and three native bridge controls pass. Remaining selected module suites, Debug/Release platform builds and strict lint pass. Integration validation used the independent hitch-assertion correction and retains existing QoS warnings. Bridge controls inject messages and inspect serialized output; they do not qualify real-browser timing or backend ingestion.
 
 ### Review checklist
 
-- [x] Feature or bugfix has appropriate unit and integration regressions; evidence and limits are recorded above.
-- [ ] Each commit and PR mentions the real issue/Jira reference; ticket is pending.
-- [x] Changelog updated for the customer-facing change.
-- [x] No public API is added; no new Objective-C interface is required.
-- [x] Public API source remains unchanged; API generation is not required for a new surface.
-- [ ] Complete the packet's missing candidate checks and current required CI.
-- [ ] Human review and separately authorized publication/merge.
+- [x] Unit and integration coverage matches the change.
+- [ ] Issue reference or explicit waiver confirmed for publication.
+- [x] CHANGELOG updated.
+- [x] No new public API requiring an Objective-C interface.
+- [x] Public APIs unchanged.
+- [ ] Required CI and maintainer review.
