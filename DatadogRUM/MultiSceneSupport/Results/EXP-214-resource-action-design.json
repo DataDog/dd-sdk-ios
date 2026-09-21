@@ -575,5 +575,12 @@
       "environment": "Xcode27.1, regular iPhone26.5, frozen candidate source and dependency/binary identities; clean Example host. SDK27/runtime27 needs a separately admitted scene-compatible host.",
       "moment": "Before E03 full compatibility/release-review sign-off; independent S1 packets may continue now."
     }
+  },
+  "replay_topology_diagnostic": {
+    "owner": "Results/S1-E03-packet.json",
+    "status": "COMPLETE_EXPECTED_RED_ARMS_RAW_COMPARISON_UNRESOLVED",
+    "comparison_sha256": "50d4ec5919f7ba6b52d2785901567f4318472ec54dd960264e2656c91484ee4e",
+    "review_sha256": "543ca8bbead9b1f735f7ff07b51bca7574e1a34b18dc83b19ddf53bacb888312",
+    "full_replay_qualified": false
   }
 }

@@ -487,7 +487,7 @@
       ],
       "rollback": "Revert the standalone Resource repair and its documentation independently; it has no hard merge dependency.",
       "contract_proposal": "E03_COMPLETION_CONTRACT.md",
-      "next_action": "E03 compatibility execution is complete; obtain the maintainer-owned Replay fixture correction or scoped waiver before full Replay sign-off. Continue E01 missing hostless checks and other independent S1 packet checks; ticket, CI and human review remain.",
+      "next_action": "Paired topology diagnostic is complete; raw comparison remains unresolved only at the fixture-owned private Swift symbol. Preserve both93-layer inventories, original expected failures and all invalid attempts. Maintainers own fixture correction or scoped waiver before full Replay sign-off. Continue E05 backend qualification.",
       "product_decision": "E03_RESOURCE_COMPLETION_DECISION.md",
       "implementation_worktree": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/exp214-repair-_6vxqe6i/worktree",
       "allowed_production_paths_after_design_admission": [
@@ -544,7 +544,8 @@
           "environment": "Xcode27.1, regular iPhone26.5, frozen candidate source and dependency/binary identities; clean Example host. SDK27/runtime27 needs a separately admitted scene-compatible host.",
           "moment": "Before E03 full compatibility/release-review sign-off; independent S1 packets may continue now."
         }
-      ]
+      ],
+      "replay_topology_diagnostic": "Results/S1-E03-packet.json"
     },
     {
       "owner": "Main execution session / SDK implementer",
@@ -869,7 +870,8 @@
         "backend_passes": 0,
         "registered_launches": 0,
         "final_corrected_fixture_launches": 0
-      }
+      },
+      "next_action": "Prepare fresh fixed admission from backend-fresh-admission-egmipt4e after documentation checkpoint. Exact final compile-only fixture and helpers reused; refresh native/MCP/protected preflight, then automatic before registered. No old deadline/run identity reuse."
     },
     {
       "owner": "Main execution session / SDK implementer",
@@ -1005,5 +1007,6 @@
     "E05_compatibility": "2026-09-21T04:28:01.427156+00:00",
     "next_execution": "One paired inherited Replay topology diagnostic; E05 backend requires a fresh explicit bounded admission after its preserved stop. Do not repeat accepted suites.",
     "E05_backend": "2026-09-21T05:58:47.019792+00:00"
-  }
+  },
+  "last_updated_at": "2026-09-21T06:52:16.860091+00:00"
 }

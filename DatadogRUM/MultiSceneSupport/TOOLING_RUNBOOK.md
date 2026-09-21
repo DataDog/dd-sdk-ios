@@ -2744,3 +2744,16 @@ real backend TTID/cold/nonprewarmed gate and fail activation timeout before task
 If fixture corrections consume the original runtime budget, preserve every failed
 attempt and mark an unlaunched correction NOT_RUN_BUDGET. Do not extend the old
 admission or reuse its IDs; checkpoint before a separately defined continuation.
+
+For isolated Replay topology diagnostics, NSObject.safeValue is not an exception
+barrier until Core installs ObjcException.rethrow. Avoid exploratory KVC on every
+layer delegate: retain the complete tree but read private fields only on the exact
+class already required by the original assertion. Do not initialize Core solely
+to alter a passive observer. Preserve invalid observer crashes separately.
+
+Swift Testing attachment preferredName is not the xcresult export name. Freeze
+the exact base plus the observed index/UUID decoration, require exactly one match,
+and retain nonce, selector, device, runtime, timestamp and content checks. A parser
+correction re-audits saved bytes without rerunning a valid native arm. Generated
+private Swift fixture type names can differ across builds; retain their raw
+difference and source/demangled evidence instead of silently normalizing a pass.

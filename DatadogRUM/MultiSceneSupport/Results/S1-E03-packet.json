@@ -151,7 +151,7 @@
       "file_lists": 144
     }
   },
-  "last_updated_at": "2026-09-21T01:25:46.369482+00:00",
+  "last_updated_at": "2026-09-21T06:52:16.857416+00:00",
   "ios_core": {
     "status": "PASS",
     "cases": 819,
@@ -182,5 +182,75 @@
       "environment": "Xcode27.1, regular iPhone26.5, frozen candidate source and dependency/binary identities; clean Example host. SDK27/runtime27 needs a separately admitted scene-compatible host.",
       "moment": "Before E03 full compatibility/release-review sign-off; independent S1 packets may continue now."
     }
-  ]
+  ],
+  "replay_topology_diagnostic": {
+    "status": "COMPLETE_EXPECTED_RED_ARMS_RAW_COMPARISON_UNRESOLVED",
+    "root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/exp214-repair-_6vxqe6i/replay-layer-topology-correction-tukvk4hq",
+    "original_invalid_root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/exp214-repair-_6vxqe6i/replay-layer-topology-ply9yh8h",
+    "original_invalid_disposition": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/exp214-repair-_6vxqe6i/replay-layer-topology-ply9yh8h/diagnostic-failure-disposition.json",
+      "sha256": "8ff21e5bbaa0ae146469bc45446be098ec003aa4e9d63c4b76c7fb557eb395fe"
+    },
+    "fixture_sha256": "b2589ea58b8192a2309d80a81860b3bc5fe925df92cad74ea29829c5e4e0b6f6",
+    "arm_audits": {
+      "develop": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/exp214-repair-_6vxqe6i/replay-layer-topology-correction-tukvk4hq/run-develop/topology-audit.json",
+        "sha256": "8bd86f13b6b16fd255de03dc3d096da792327fb44e7c1ff5bb62bf553f0868f6",
+        "status": "PASS_EXPECTED_RED_DIAGNOSTIC_ONLY",
+        "layers": 93,
+        "private_scroll_pockets": 0,
+        "top_bottom_witnesses": 0,
+        "native_invocations": 1
+      },
+      "candidate": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/exp214-repair-_6vxqe6i/replay-layer-topology-correction-tukvk4hq/run-candidate/topology-audit.json",
+        "sha256": "7a773fd272efea6840a7850e216e0ba4a5d2079987160b932517765cb16b5f64",
+        "status": "PASS_EXPECTED_RED_DIAGNOSTIC_ONLY",
+        "layers": 93,
+        "private_scroll_pockets": 0,
+        "top_bottom_witnesses": 0,
+        "native_invocations": 1
+      }
+    },
+    "comparison": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/exp214-repair-_6vxqe6i/replay-layer-topology-correction-tukvk4hq/comparison.json",
+      "sha256": "50d4ec5919f7ba6b52d2785901567f4318472ec54dd960264e2656c91484ee4e",
+      "status": "DIFFERENT_OR_UNRESOLVED_TOPOLOGY_STOP_FOR_REVIEW"
+    },
+    "differences": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/exp214-repair-_6vxqe6i/replay-layer-topology-correction-tukvk4hq/topology-differences.json",
+      "sha256": "6ccb65984cadb3ae244723950c4a3460511d3eb3d4d8ac8f85abfa2bd14c82df",
+      "count": 1,
+      "field": "delegate_class",
+      "layer_path": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "classification": "Fixture-owned generated SwiftUI hosting class private discriminator; raw mismatch preserved, no normalized pass."
+    },
+    "review": {
+      "path": "/tmp/e03-replay-scroll-pocket-review-20260921/final-diagnostic-review.json",
+      "sha256": "543ca8bbead9b1f735f7ff07b51bca7574e1a34b18dc83b19ddf53bacb888312",
+      "decision": "PRESERVE_UNRESOLVED_RAW_COMPARISON"
+    },
+    "oracle_controls": {
+      "positive": 4,
+      "negative": 19,
+      "sha256": "64b7572cc0b760083b00b0eb41dc0e48372ba072ebce493646142155eab1c712"
+    },
+    "preserved_failures": [
+      "Initial broad edge KVC diagnostic crashed before original assertion; Core exception bridge was not initialized. Candidate unrun.",
+      "Corrected develop result stopped at exporter-decorated attachment name; host parser correction re-audited identical saved bytes without rerun."
+    ],
+    "native_attempts_total": 3,
+    "corrected_native_attempts": 2,
+    "runtime_warnings_per_corrected_arm": 1,
+    "cleanup": "PASS",
+    "device_restored": "Shutdown",
+    "original_deadlines_met": true,
+    "full_replay_qualified": false,
+    "next": "Maintainer fixture correction or explicit scoped waiver before full Replay sign-off; no diagnostic rerun. Continue independent E05 backend qualification."
+  }
 }

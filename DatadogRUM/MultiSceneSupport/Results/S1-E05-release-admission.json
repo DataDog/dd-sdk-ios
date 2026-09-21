@@ -486,5 +486,16 @@
     },
     "no_sdk_changes": true,
     "next": "Finish documentation checkpoint and independently scoped paired Replay topology diagnostic. E05 requires a fresh explicit bounded admission and refreshed preflight after this stopped window; no implicit retry or reused run identity."
+  },
+  "backend_fresh_preparation": {
+    "status": "EXACT_COMPILE_REUSE_PREFLIGHT_PENDING_RUNTIME_ADMISSION",
+    "root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/deliveries/e05-20260920-rtzz6gpd/backend-fresh-admission-egmipt4e",
+    "preparation_sha256": "5d178a4a13d03d76fca7761532494903a9e8ce2aefe1573608c957695e1a2a8c",
+    "reuse_sha256": "76ec5227554d6f3a0392d56250ebbf59b8ae1bc186dfc0a66dcaa40dbba27a89",
+    "helper_manifest_sha256": "af1bb1d76c7b138868dfc1ba7d34f21b7208e662af997875210feacd62810fd0",
+    "source_build_helpers_verified": true,
+    "rebuilds": 0,
+    "native_launches": 0,
+    "next": "Refresh preflight after checkpoint and define new fixed automatic/registered deadlines. Preserve prior stopped admissions and all identities; registered requires automatic PASS."
   }
 }

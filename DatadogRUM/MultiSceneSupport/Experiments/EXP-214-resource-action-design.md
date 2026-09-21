@@ -92,3 +92,21 @@ sign-off: an admitted fixture correction followed by full clean-host Replay
 qualification, or an explicit scoped waiver. CI, ticketing, documentation drift and
 human review remain. E01's five missing hostless schemes continue independently;
 no accepted suite is repeated and no new experiment number or release gate closes.
+
+The bounded topology diagnostic is complete. Both corrected arms preserve the
+original requirement failure and capture93 layers in visible, attached windows:
+no _UIScrollPocket or top/bottom witnesses, with UIKit.ScrollEdgeEffectView present.
+Host geometry, runtime and edge outcomes match; one fixture-owned SwiftUI hosting
+class has a different generated private discriminator. The strict raw comparison
+remains unresolved, as independently reviewed; there is no normalized or full
+Replay pass. Each arm retains one inherited hierarchy warning. Both cleanups and
+simulator Shutdown restoration pass within the original deadlines.
+
+Preserve the earlier diagnostic crash: broad edge KVC used the exception helper
+before Core initialized its bridge. The exact-class observer correction changed
+no production or original assertions. Xcode then decorated the exported attachment
+name; its reviewed parser correction re-audited the same develop bytes without a
+rerun. Four positive/nineteen negative oracle controls pass. The E03 packet owns
+all raw inventories, comparisons, invalid attempts and reviews. No further native
+diagnostic is admitted; maintainer fixture disposition remains separate while the
+two finite E05 backend cells continue from a fresh admission.
