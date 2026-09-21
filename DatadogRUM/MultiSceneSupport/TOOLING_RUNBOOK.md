@@ -2712,3 +2712,11 @@ target once. An intentional expectation correction is not an inherited pass or a
 flake. Use the repository's tests.swiftlint.yml for test-file linting. On macOS,
 build and inventory the actual changed product: E05 requires Trace plus Internal,
 whereas the RUM-only packet's macOS slice cannot establish Trace compilation.
+
+For E05 backend ownership, freeze three logical views, two manual actions and one
+actual TTID vital per mode. Current source emits no standalone application-start
+action. Fold view updates by identity/version and require zero RUM Resources when
+URLSession RUM tracking is disabled. Read owner context through a passive feature
+scope, then fence the serial message bus before task start; context publication
+alone does not prove the Trace receiver has consumed it. Full service/run span
+inventory is required to find a deliberately ownerless pre-RUM request.

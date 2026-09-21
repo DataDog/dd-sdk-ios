@@ -91,7 +91,7 @@ Two registered delegate ownership cases now pass within full Integration282/282
 on iOS17.5, with three genuine data/metrics/completion receipts and independent
 acceptance. Eight QoS warnings remain. The qualified test-only addition is local
 commit4002188a, unsigned after recorded signing timeout; production is unchanged.
-The two backend mode cells and remaining compatibility stay unqualified. This preserves the
+The two backend mode cells and full Replay stay unqualified. This preserves the
 completed experiment's automatic comparison and its original limits.
 
 The delivery compatibility run exposed one deterministic stale Core expectation:
@@ -99,5 +99,7 @@ it supplied request session A but expected receiver session B in baggage. Indepe
 review approved only that test correction, preserving the complete eleven-header
 equality. Local test-only commit399b01ea (unsigned after signing timeout) passes
 Core815 tests plus four predefined OS skips. The original819-case failed run remains
-unchanged. Seven previously unrun hostless suites continue under the original deadline;
+unchanged. The full eight-suite continuation now passes2,768 executions/five predefined
+OS skips. Twelve platform builds pass144 architecture source lists and936 product
+records, including Trace on macOS. Both lanes completed within their frozen deadlines;
 this is not a new experiment or a production repair.

@@ -1,6 +1,6 @@
 {
-  "status": "REGISTERED_AND_CORE_QUALIFIED_SEVEN_HOSTLESS_ACTIVE_BACKEND_PENDING",
-  "recorded_at": "2026-09-21T03:48:40.051216+00:00",
+  "status": "REGISTERED_HOSTLESS_AND_PLATFORMS_QUALIFIED_BACKEND_REPLAY_PENDING",
+  "recorded_at": "2026-09-21T04:28:01.427156+00:00",
   "candidate": {
     "checkout": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/deliveries/e05-20260920-rtzz6gpd/worktree",
     "head": "399b01ea0e059186a139921a01a18bff7997648f",
@@ -109,7 +109,7 @@
       "status": "DEFINED_DELIVERABLE_NOT_EXECUTION_ADMISSION"
     }
   ],
-  "remaining_compatibility": "Complete the packet missing iOS/platform cells; inherited Replay fixture prerequisite, current CI, real ticket and human review remain.",
+  "remaining_compatibility": "Full Replay requires inherited fixture disposition and candidate-specific qualification; real ticket, current CI and human review remain.",
   "explicit_exclusions": [
     "S2 UIKit/SwiftUI host lifetime and task retention",
     "Network performance or numeric benchmarking",
@@ -117,7 +117,7 @@
     "Immediate handler unbind, hard map capacity, or footprint claims",
     "Whole E05 release or gate promotion before registered-mode and backend evidence"
   ],
-  "new_runtime_admitted": true,
+  "new_runtime_admitted": false,
   "new_experiment_number": false,
   "release_gate_closed": false,
   "registered_implementation": {
@@ -230,10 +230,61 @@
   "hostless_continuation": {
     "root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/deliveries/e05-20260920-rtzz6gpd/hostless-core-correction-iafkro4r",
     "definition_sha256": "4b14767c811365bd4a46e0224fadce291b75d927063b61f13a30a8b16fad48dd",
-    "status": "CORE_PASS_SEVEN_REMAINING_ACTIVE",
+    "status": "PASS_ALL_EIGHT_HOSTLESS_SUITES",
     "expected_cases": 2701,
     "expected_executions": 2773,
     "predefined_skips": 5,
-    "original_deadline": "2026-09-21T05:44:34.332442+00:00"
+    "original_deadline": "2026-09-21T05:44:34.332442+00:00",
+    "summary_sha256": "137ce881375af919bba55beff9e24e258e002ac00d5446ec56a3a29a786d0d24",
+    "counts": {
+      "cases": 2701,
+      "executions": 2773,
+      "passed": 2768,
+      "skips": 5
+    }
+  },
+  "platform_admission": {
+    "root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/deliveries/e05-20260920-rtzz6gpd/platforms-package-export-9sf3pkq9",
+    "status": "PASS_TWELVE_CELLS",
+    "definition_sha256": "4a64533001969f94227a37f6762a7527ad200e0b70661b9eda970652d46c3d97",
+    "deadline": "2026-09-21T05:11:43.264539+00:00",
+    "expected_cells": 12,
+    "macOS_modules": [
+      "DatadogTrace",
+      "DatadogInternal"
+    ],
+    "source_manifest_sha256": "90c3988279369533772c2e1d6201c8beeb0a084ae44abe860a9960445632b7f2",
+    "summary_sha256": "25fba541bb5dbb22b7640b14d3e4dc7c77718d5d75fc41a28fbb0ef4d366f88d",
+    "architecture_source_lists": 144,
+    "architecture_audit_sha256": "2dbb8756bb4a0ca4f06e5f6e539b4c07611fd3c0f25f266147ebf501f76ff299",
+    "product_records": 936,
+    "product_manifest_sha256": "d341b6eaff4e51f90e0e059f92ffe0d7d9a8f01aa5f6f0b2bd77cf2e90aeeaad",
+    "cleanup": "PASS",
+    "within_deadline": true
+  },
+  "backend_fixture_design": {
+    "status": "SOURCE_REVIEWED_NOT_EXECUTION_ADMISSION",
+    "review": "/tmp/e05-trace-ownership-review-20260921/backend-fixture-admission.json",
+    "sha256": "80fe1a8b35b6a975ed482145f78a1a69a67de367a075f9d1a546fe0780c5756c",
+    "cells": [
+      "automatic",
+      "registered"
+    ],
+    "requests_per_cell": 3,
+    "release_order": [
+      "B",
+      "A",
+      "nil-before-RUM"
+    ],
+    "logical_inventory": {
+      "views": 3,
+      "manual_actions": 2,
+      "ttid_vitals": 1,
+      "application_start_actions": 0,
+      "resources": 0,
+      "errors": 0,
+      "client_spans": 3
+    },
+    "requirement": "Actual TTID startup receipt; passive owner context plus serial bus fence before each task; full service/run and session backend inventories. Freeze fixture, oracle, source/build/install identities and deadlines before execution."
   }
 }

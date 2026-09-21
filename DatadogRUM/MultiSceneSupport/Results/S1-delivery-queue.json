@@ -697,7 +697,7 @@
       "gate_reference": "S1:E05; separate candidate freeze required",
       "title": "Preserve request-time RUM ownership in automatic traces",
       "branch_slug": "request-time-trace-ownership",
-      "state": "local_packet_registered_qualified_compatibility_backend_pending",
+      "state": "local_packet_registered_hostless_platforms_qualified_backend_replay_pending",
       "source_worktree": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/request-time-trace-ownership",
       "source_branch": "valpertui/request-time-trace-ownership",
       "source_head": "9254adbcbf5a1809219ec30f6cc07df4f3af4518",
@@ -729,7 +729,7 @@
       "environment": "Accepted full Trace and native public networking integration pair; audit/fill applicable registered mode, terminal cleanup, backend and platform/CI cells before release claims.",
       "remaining_gates": [
         "E05-BACKEND: two candidate mode cells with complete service/session ownership inventory; exact execution admission pending",
-        "Missing full iOS/platform checks; Replay requires its inherited fixture prerequisite",
+        "Full Replay requires its inherited fixture prerequisite and E05 qualification",
         "Real ticket, current CI and human review",
         "Separately authorized publication/merge and verified upstream source"
       ],
@@ -745,18 +745,11 @@
       "body": "Delivery/E05-pr.md",
       "existing_source_tests_identical": false,
       "remaining_iOS_schemes": [
-        "DatadogInternal",
-        "DatadogRUM",
-        "DatadogSessionReplay",
-        "DatadogLogs",
-        "DatadogCrashReporting",
-        "DatadogWebViewTracking",
-        "DatadogFlags",
-        "DatadogProfiling"
+        "DatadogSessionReplay"
       ],
       "semantic_release_admission": {
         "path": "Results/S1-E05-release-admission.json",
-        "status": "REGISTERED_AND_CORE_QUALIFIED_SEVEN_HOSTLESS_ACTIVE_BACKEND_PENDING"
+        "status": "REGISTERED_HOSTLESS_AND_PLATFORMS_QUALIFIED_BACKEND_REPLAY_PENDING"
       },
       "source_reuse": "All production and accepted automatic/registered/Trace tests remain identical; the separate Core header expectation is corrected to the approved request-time contract and passes complete Core requalification.",
       "registered_qualification": {
@@ -833,11 +826,37 @@
       "hostless_continuation": {
         "root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/deliveries/e05-20260920-rtzz6gpd/hostless-core-correction-iafkro4r",
         "definition_sha256": "4b14767c811365bd4a46e0224fadce291b75d927063b61f13a30a8b16fad48dd",
-        "status": "CORE_PASS_SEVEN_REMAINING_ACTIVE",
+        "status": "PASS_ALL_EIGHT_HOSTLESS_SUITES",
         "expected_cases": 2701,
         "expected_executions": 2773,
         "predefined_skips": 5,
-        "original_deadline": "2026-09-21T05:44:34.332442+00:00"
+        "original_deadline": "2026-09-21T05:44:34.332442+00:00",
+        "summary_sha256": "137ce881375af919bba55beff9e24e258e002ac00d5446ec56a3a29a786d0d24",
+        "counts": {
+          "cases": 2701,
+          "executions": 2773,
+          "passed": 2768,
+          "skips": 5
+        }
+      },
+      "platform_qualification": {
+        "root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/deliveries/e05-20260920-rtzz6gpd/platforms-package-export-9sf3pkq9",
+        "status": "PASS_TWELVE_CELLS",
+        "definition_sha256": "4a64533001969f94227a37f6762a7527ad200e0b70661b9eda970652d46c3d97",
+        "deadline": "2026-09-21T05:11:43.264539+00:00",
+        "expected_cells": 12,
+        "macOS_modules": [
+          "DatadogTrace",
+          "DatadogInternal"
+        ],
+        "source_manifest_sha256": "90c3988279369533772c2e1d6201c8beeb0a084ae44abe860a9960445632b7f2",
+        "summary_sha256": "25fba541bb5dbb22b7640b14d3e4dc7c77718d5d75fc41a28fbb0ef4d366f88d",
+        "architecture_source_lists": 144,
+        "architecture_audit_sha256": "2dbb8756bb4a0ca4f06e5f6e539b4c07611fd3c0f25f266147ebf501f76ff299",
+        "product_records": 936,
+        "product_manifest_sha256": "d341b6eaff4e51f90e0e059f92ffe0d7d9a8f01aa5f6f0b2bd77cf2e90aeeaad",
+        "cleanup": "PASS",
+        "within_deadline": true
       }
     },
     {
@@ -970,6 +989,8 @@
     "E02_compatibility": "2026-09-21T02:45:08.711543+00:00",
     "E02_platforms": "2026-09-21T02:55:56.787049+00:00",
     "E04_compatibility": "2026-09-21T03:18:51.689000+00:00",
-    "E04_platforms": "2026-09-21T03:27:16.488943+00:00"
+    "E04_platforms": "2026-09-21T03:27:16.488943+00:00",
+    "E05_compatibility": "2026-09-21T04:28:01.427156+00:00",
+    "next_execution": "Prepare the reviewed E05 two-mode backend fixture and separately bounded inherited Replay diagnostic. Completed compatibility lanes are not repeated."
   }
 }
