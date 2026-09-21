@@ -1,0 +1,146 @@
+# Evidence and acceptance contracts
+
+Read when defining, interpreting or reusing a run. Exact inventories, thresholds,
+phase deadlines and attempt limits live in the owning definition/fixture README.
+This page preserves common discriminators; it does not replace those contracts.
+
+## Admission and ownership
+
+Name an existing release gate or reproduced regression, the candidate/stage, one
+owner, decisive oracle, required environment, complete expected inventory, source
+and helper identities, retry policy, execution/cleanup budgets and stop rules.
+Freeze them before implementation/execution at the boundaries the protocol requires.
+Qualify one small end-to-end path before expanding a new harness; reuse that cell
+within its matrix rather than adding an identical smoke run.
+
+One owner integrates a coupled fixture/runner/evaluator. Root owns the sole native
+build/run lane. Use the designated independent reviewer for consequential SDK
+concurrency/lifetime or new oracle decisions; routine host/bookkeeping corrections
+need a concise changed-input record, not another design chain. No competing builds,
+profiling or measurements during a timed workload. Engineering time alone does not
+expire unchanged reviewed artifacts; actual execution and cleanup budgets do.
+
+An amended input/oracle does not overwrite an earlier verdict or reset its deadline.
+Preserve failures, define the changed boundary and admit only the needed continuation.
+No metadata-only change, reconnection or restart requires repeating accepted tests.
+
+## Evidence levels
+
+| Evidence | Establishes | Does not establish |
+| --- | --- | --- |
+| Source/compiler audit | Reachability, platform guards, dependency or ownership shape | Executed runtime behavior |
+| Deterministic SDK tests | Named routing, lifetime and reentrancy contracts under controlled inputs | Native OS ordering, visible topology or upload |
+| Mounted/native receipt | Exact exercised callbacks, owners, input and installed identity | Unobserved physical ordering or backend persistence |
+| Backend events/reducers | Queried complete inventories and exact persisted ownership/values | Missing local boundaries or unqueried events |
+| Physical/visual proof | The recorded device, topology and native input interval | Duo hinge/scheduling parity on other hardware |
+
+Counts, callback completion and absence of crashes alone do not prove semantic
+ownership. A posted scene notification is not OS disconnect; a weak controller
+check is not keyed SwiftUI registration/instrumentation teardown. Maintain separate
+native, mapper, backend, reduced entity, profile and cleanup verdicts.
+
+## Durable artifact contract
+
+Use a new output directory and run ID. Record source revision/signature, exact
+source path/hash dictionary and archive, fixture/runner/oracle manifests, dependency
+and toolchain/runtime metadata, complete built/installed Mach-O map, process identity,
+clean-install proof, ordered raw native receipts, critical-boundary/topology evidence,
+finalized tests, raw backend exchanges with request/deadline/pagination identity,
+strict semantic projection, cleanup and one compact durable summary.
+
+The [acceptance harness](../../../tools/multi-scene/acceptance/README.md) connects
+preflight, installation, source identity, scenario, backend and summary. Its named
+`scenario` selection must retain the default action contract and prior families.
+Expected inventories travel in nonce-bound requests. Preserve raw console/screens/
+bundles locally and commit only sanitized summaries and durable artifact locators.
+Do not log credentials or unrelated customer data.
+
+Persist observed bytes before parsing, terminal-failure handling and uninstall.
+Capture/persistence errors do not suppress cleanup or the original failure. Each
+response binds its own request, phase and deadline. Include decode, persistence,
+manifest verification and final assembly inside the budget; a late response stays
+available as evidence without a PASS. Reject truncation even if counts match.
+
+Before backend projection/assembly, verify the live helper files against the
+approved manifest, not merely hash labels in a response. Reject extra/missing files,
+foreign-run payloads, symlinks, malformed types and ambiguous flattened/nested fields.
+Complete JSON objects in mixed stdout/OSLog need actual prefixes and sequence checks.
+Do not manufacture missing records or metadata from expected names/phases.
+
+## Critical-boundary controls
+
+Freeze positive and negative controls with the oracle. At minimum preserve the
+applicable controls for stale fixtures/run IDs, consumed readiness, missing or late
+critical assertions, wrong owner, wrong count, duplicate/extra event, stopped/foreign
+source, incomplete pagination, malformed field and missing cleanup. A passing
+count-only oracle must not replace an earlier ownership discriminator.
+
+Prove live views and topology **before** the API interval. Capture accepted state,
+request-release barriers, callbacks and completion order at the actual boundary.
+Backgrounding may legitimately end a view/action between driver steps. A bounded
+synchronous two-view batch establishes only that serial contract.
+
+Mapper Home records contain exact RUM UUID plus logical scene/screen, not an
+invented occurrence number. Action records use `sourceContext` and `rumContext`.
+Bind markers to independently observed event/view/session IDs and the immediately
+preceding mapper version/sequence. Reject early same-name completion and stale
+readiness. Native/model/backend evidence must agree independently.
+
+Decode primitive/ObjC-wrapped mapper values through the actual encoding path.
+`AttributeValue.dd.decode` casts the stored value; it does not construct an arbitrary
+Codable enum. Encode/decode declared evidence types when needed, test actual
+projections, and reject Boolean/number coercion. Missing indexed data and connector
+projection defects need separate checks against exact encoded JSON.
+
+## Verdicts and corrections
+
+- **PASS**: every admitted predicate passes within its boundary and budget.
+- **FAIL**: the admitted semantic assertion is violated; retain raw findings.
+- **INVALID**: setup, fixture, oracle or collection cannot support the intended test.
+- **INCONCLUSIVE**: environment or incomplete evidence prevents the required claim.
+- **SKIPPED / NOT_RUN / PREPARED**: record exactly what did not execute; no pass follows.
+
+Keep the original label and a later reviewed classification separately. A local
+oracle failure cannot be rescued by a backend match. A parser correction may
+re-audit immutable saved bytes with separate provenance; missing native/upload
+boundaries need a separately admitted run, not expected-value synthesis. Cleanup
+and infrastructure failures do not automatically attribute an SDK defect.
+
+A narrow representation exception must preserve original presence/type/values and
+its negative controls. Examples: empty slow-frame mapper arrays may be absent
+backend fields, but explicit null or a missing nonempty array is different; backend
+view revisions can differ from mapper revisions but must remain positive integers.
+Exact IDs, owners, values and terminal inventories remain mandatory.
+
+## Reuse and candidate promotion
+
+Bind reuse to the original definition, source/build/oracle hashes, complete receipts,
+terminal state and scope. A changed commit ID with identical relevant bytes does
+not invalidate evidence; different source composition does not inherit a full-suite,
+Duo, backend or app pass. Retain accepted per-cell identities after host-only changes.
+
+Read the authoritative register's absolute path/hash and the intended
+`release_requirements.S1|S2|S3`. The experimental-reference status and an older
+checkout are not the selected release qualification. Reject an authority mismatch
+before changing gates. Inventory every retained SDK/auxiliary-source delta and
+map each inherited invariant separately. Reopen only concrete invalidated
+obligations, preserving their owner, dependency, decisive test and environment.
+[EXP-216](../Results/EXP-216-s2-composition-promotion.json) illustrates this review.
+
+An archive with historical paths is evidence, not a portable CI runner or fresh
+execution authority. Gate status belongs to the register, generated progress to
+PLAN, and completed narratives to their owning records. Use
+[documentation maintenance](DOCUMENTATION.md) to update them once.
+
+## Scope limits
+
+Session Replay acceptance concerns host-app crash safety and non-disruption to other
+SDK features. Captured-content correctness, full Replay capture suites and content-
+fixture waivers are outside current scope; retain their historical failures.
+
+Detailed network/per-dispatch benchmarking is optional. Object lifetime, correctness
+and attribution remain required. Included new semantic SwiftUI/multi-scene code
+requires representative application-visible frame rate, hitches/hangs, CPU and
+memory comparison, or a reviewed source exclusion establishing non-applicability.
+Historical [baseline thresholds](../BASELINES.md) remain unchanged; simulator numbers
+or missing warning frames cannot establish device performance or crash freedom.

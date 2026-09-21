@@ -1,0 +1,147 @@
+# Builds, tests and public clients
+
+Read for an admitted build/test/API check. Use [environment preflight](ENVIRONMENT.md)
+and the [common evidence contract](EVIDENCE.md); exact commands, counts, thresholds
+and budgets come from the owning definition or fixture README.
+
+## Freeze inputs before work
+
+Bind the approved source-member dictionary and archive, SDK/fixture/runner/oracle
+hashes, dependencies, compiler flags, runtime and output identities. Verify exact
+path sets and bytes, not a manifest hash alone. Reject unexpected files and
+symlinks. For tracked directory symlinks, check mode, Git blob and literal target
+separately. Recheck source/helper identity before assertions and after execution.
+Generated outputs must be explicitly inventoried outside the admitted source roots.
+
+Use fresh per-arm output directories. When reusing a binary, retain its original
+build, source, configuration and complete product fingerprint. Freeze every Mach-O,
+including the Debug dylib; a launcher stub hash alone cannot distinguish static-SDK
+arms. Bind final linker search paths and resolved SDK archives. Reclassify a saved
+artifact offline when possible rather than rebuilding to repair its classifier.
+
+The repository's SPM helper can rename the workspace. Use an isolated package for
+checks that would disturb protected workspace state. Do not modify build scripts
+or dependency pins to repair an unrelated preparation failure.
+
+## Full-target platform compatibility checks
+
+Derive membership from the frozen Xcode target's source phase, including shared
+Swift and private C/Objective-C/C++ inputs, resources and generated sources. A
+`Tests/` glob or source-directory count is not a target or test inventory. For each
+architecture, compare its own compiler source list, emitted modules/objects and
+product metadata; a union can conceal a missing architecture-specific file.
+
+Inventory the actual changed modules on each platform. RUM-only macOS builds do
+not prove Trace/Internal compilation. Include the separate Integration target when
+public networking reaches the changed code. Verify the actual `TEST_HOST` and app
+bundle, then use a launchable host/runtime pair. Build success followed by not-run
+tests, a legacy-host startup trap or a nonexistent result bundle is not execution.
+
+Preserve availability filters, skips and parameterized invocations. Discover test
+identifiers before assertions with the exact intended command filters. Require all
+selected methods and parents enabled, with no extra, missing or duplicate selected
+ID. Intentionally unselected cases may be disabled. XCTest method filters and Swift
+Testing suite filters differ; verify the resulting discovery rather than the
+command text. Replay-content exclusions are neither passes nor OS skips.
+
+When current sources add/remove tests, reconcile every changed method against the
+frozen source before another invocation. Retain the original pre-assertion stop.
+A historical suite count cannot silently omit a newer failure.
+
+## Bounded XCTest collection
+
+Prepare source, selection, output paths and the oracle before starting Xcode.
+Use the repository test skill and commands with the smallest relevant target.
+The Objective-C monitor API class is `DatadogCoreTests/DDRUMMonitor_apiTests`.
+Apply `-enableCodeCoverage NO` only to a test action; do not use
+`-test-iterations 1` where Xcode rejects it. Verify the default actual run count.
+
+Acceptance requires the real process exit, a finalized xcresult, its selected test
+tree and all assertion failures. Wrapper messages, console PASS and summary counts
+alone are insufficient. A case can contain multiple failed assertions; identify
+failures by target and selector when classes share names. `No result`, `notRun`,
+missing selected tests or an unexpected restarted process invalidates the claimed
+complete run. Preserve the first exception before a restarted suite's later pass.
+
+Keep XCTest asynchronous while host bridges serve requests. Collect both immediate
+and yielded helper completion before inspecting exit status or parsing output.
+Store the complete transcript durably even if a tool filter returns too much text;
+return a bounded projection plus path/hash/byte count.
+
+A collector/finalization timeout does not authorize an equivalent retry. Preserve
+console, partial bundle, runner/testmanagerd evidence and exact configuration,
+then clean up within the original budget. A separately admitted
+`-collect-test-diagnostics never` pair may reuse unchanged products with matching
+configuration and symmetric treatment; it must still retain warnings and finalized
+inventories. Missing verbose archives do not clear sanitizer/runtime diagnostics.
+
+A diagnostic child can own another process group. Identify it by the exact
+experiment/app/output path before termination, reap it and prove absence. Process
+guards should match actual XCTest/test bundles, known SDK hosts and competing
+build/profile workloads; a broad `Runner` suffix also matches unrelated system apps.
+Never kill or exclude an unrelated process to repair a guard.
+
+## Assertion and warning interpretation
+
+For expected-red controls, require executed tests with exact assertion locations.
+A zero-test compile failure is preparation evidence. Preserve optional-value
+failures; do not replace missing values with zero or widen time tolerances.
+Repository source/test SwiftLint configurations and explicit changed-file lists
+are required; configuration-free lint is not the repository gate.
+
+Runtime warnings remain diagnostics unless an independently reviewed exception
+binds the exact test, message, identifiers and multiplicity to source-proven
+inherited behavior. Keep wrong-case/message/count negative controls. Preserve raw
+FAIL separately from a qualified disposition. Matching baseline warnings establish
+recurrence, not root cause, harmlessness, clean TSan or a performance pass.
+Inherited `report_bugs=0` is not clean sanitizer evidence.
+
+Formatted CI passes can be expected failures from early-flake detection. Inspect
+unformatted job logs or xcresult and every repetition. A brief process sampler may
+miss short tests: under review, PID-tagged startup logs and a single suite containing
+all iterations can establish same-process execution without a rerun. Preserve the
+sampler failure and exact inherited duplicate-class pairs. New pairs still fail.
+[Delivery](DELIVERY.md#ci-and-review-follow-ups) limits when CI repairs are in scope.
+
+## Public API and optimized checks
+
+Compile public Swift/Objective-C clients against the actual shipping configuration.
+Experimental Swift SPI, `@testable` tests, Debug-only ObjC selectors and Release
+clients without `@testable` are separate evidence. Prototype availability does not
+approve new public API. F01/F03 own nullable target construction, off-main ObjC
+safety, ordinary deployment-15 calls, older-system fallback and newer exact routing.
+
+Use `make api-surface-verify` as the check; `make api-surface` mutates the baseline.
+If its hard-coded destination is absent, retain the failed preparation and freeze
+only a reviewed destination adaptation, preserving the full fixtures/dependencies,
+parser/comparator and API baseline. Feature-document verified SHAs must exist in
+final outgoing ancestry after a rebase/amend/squash; rerun that documentation check
+before publication without repeating unchanged native evidence.
+
+Optimized reentrancy requires actual `-O` compiler jobs and
+`ENABLE_TESTABILITY=YES`, exact selectors and the admitted workload. A Debug result
+is not Release evidence. Functional reentrancy and numeric performance are separate
+gates. Optional network microbenchmarks stay outside release prerequisites; if
+admitted, calibrate allocation visibility across all relevant threads, separate
+timing/allocation processes, preserve ABBA order and stop competing workloads.
+Keep original median/p95/allocation/count limits and independent overrun controls.
+
+## Fixture-specific build notes
+
+- Freeze normal and opt-in fixture membership; ordinary Release must exclude
+  acceptance-only implementations and manifests where required.
+- Source-only observation hooks retain separate archived/compiled hashes and may
+  not mutate scenario state. Control/candidate constructors or an unused benchmark
+  exclusion must be symmetric and documented before execution.
+- For Python `runpy` helpers, resolve sibling imports before native admission.
+  An import correction does not reset the deadline.
+- Swift Testing attachment `preferredName` is not its exported filename. Freeze the
+  observed index/UUID decoration, require one exact match, and retain nonce,
+  selector, runtime, timestamp and content checks. Re-audit saved bytes for a parser
+  correction. Preserve raw private-type-name differences with source evidence.
+- The [legacy runner](../../../tools/multi-scene/baselines/legacy_compatibility.py)
+  owns C03's readiness-first baseline build and finite paired matrix. Its actual
+  lifecycle timestamps and cleanup checks cannot be replaced by posted signals.
+- The [controlled app preparation](../Results/S2-F08-app-preparation.json) owns
+  generated-resource, static-framework and exact source/object inventories. Build
+  qualification is separate from its [journeys](../Results/S2-F08-app-journeys.json).

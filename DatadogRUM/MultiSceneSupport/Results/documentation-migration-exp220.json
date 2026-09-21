@@ -1,0 +1,1838 @@
+{
+  "schema_version": 1,
+  "source_revision": "8d62fe01f92b8582eca9613bfef15e9708d296fd",
+  "scope": "Documentation and existing documentation checker only; no experiment execution or push during consolidation.",
+  "source_documents": [
+    {
+      "path": ".continue-here.md",
+      "sha256": "1b8bb006f707e35381e6a0d700a8fe7f73ea420b0b57c5ceda0ae7d2b855b8a5",
+      "lines": 182,
+      "words": 1762
+    },
+    {
+      "path": "DatadogRUM/MultiSceneSupport/TOOLING_RUNBOOK.md",
+      "sha256": "1209827a085330eaca02f7d22afa68bfa7e760fb9e94d6e7c87e1bfbd71657a0",
+      "lines": 3028,
+      "words": 26478
+    },
+    {
+      "path": "DatadogRUM/MultiSceneSupport/ASSESSMENT.md",
+      "sha256": "261a5f4a37947e01204ddea1814c791763f5ca5bca40bdf8cae10a6cf4679310",
+      "lines": 344,
+      "words": 4740
+    },
+    {
+      "path": "DatadogRUM/MultiSceneSupport/PRODUCTION_SAFETY_REVIEW.md",
+      "sha256": "b52bf31c56432a1943abc94cdfcabf4df88b95c1d92988613887d1ab97d634a8",
+      "lines": 611,
+      "words": 7183
+    },
+    {
+      "path": "DatadogRUM/MultiSceneSupport/REVIEW_TRIAGE.md",
+      "sha256": "8b6dd48e70ab41e30a01ebcd8277f208d7310e9d2a6f45cafe7467b78b987c40",
+      "lines": 57,
+      "words": 1457
+    },
+    {
+      "path": "DatadogRUM/MultiSceneSupport/COMPONENT_REVIEW.md",
+      "sha256": "10b15adf336ab75bc3e4ad85e64d5f8f58db588cc8f98edf4d85a02519351c11",
+      "lines": 156,
+      "words": 1708
+    }
+  ],
+  "sections": [
+    {
+      "source": ".continue-here.md",
+      "heading": "# RUM release restart cursor",
+      "lines": [
+        1,
+        7
+      ],
+      "sha256": "9044ac41314412741fb930682853d38b89efa6271409256735d92a3409a46e93",
+      "current_owner": "../../.continue-here.md",
+      "historical_owners": [],
+      "disposition": "Consolidated procedure or present conclusion; exact prior observations remain with linked records and the historical checkpoint."
+    },
+    {
+      "source": ".continue-here.md",
+      "heading": "## Current priority and next action",
+      "lines": [
+        8,
+        138
+      ],
+      "sha256": "c49f7ed0155ef20218b1c4ea07026bdebc34a48f32655aa6fcdecf24df13998e",
+      "current_owner": "../../.continue-here.md",
+      "historical_owners": [],
+      "disposition": "Consolidated procedure or present conclusion; exact prior observations remain with linked records and the historical checkpoint."
+    },
+    {
+      "source": ".continue-here.md",
+      "heading": "## Selected S2 and other boundaries",
+      "lines": [
+        139,
+        159
+      ],
+      "sha256": "38aab2e0236c51e16c2f14e0b1bffb1e1c41c9752d78fc799a60a23e35549e9e",
+      "current_owner": "../../.continue-here.md",
+      "historical_owners": [],
+      "disposition": "Consolidated procedure or present conclusion; exact prior observations remain with linked records and the historical checkpoint."
+    },
+    {
+      "source": ".continue-here.md",
+      "heading": "## Workspace and execution safety",
+      "lines": [
+        160,
+        182
+      ],
+      "sha256": "a3b7dfc1dbd0d88d51e1151e79952a9dcc3b9ef7deb4e54a6001669d9f3467d4",
+      "current_owner": "../../.continue-here.md",
+      "historical_owners": [],
+      "disposition": "Consolidated procedure or present conclusion; exact prior observations remain with linked records and the historical checkpoint."
+    },
+    {
+      "source": "DatadogRUM/MultiSceneSupport/TOOLING_RUNBOOK.md",
+      "heading": "# Multi-scene RUM tooling runbook",
+      "lines": [
+        1,
+        10
+      ],
+      "sha256": "8a8486e739bda40d66ae208eeef1f8b93428b958667b4d42aff14459b477cc2b",
+      "current_owner": "TOOLING_RUNBOOK.md",
+      "historical_owners": [],
+      "disposition": "Consolidated procedure or present conclusion; exact prior observations remain with linked records and the historical checkpoint."
+    },
+    {
+      "source": "DatadogRUM/MultiSceneSupport/TOOLING_RUNBOOK.md",
+      "heading": "## Purpose",
+      "lines": [
+        11,
+        22
+      ],
+      "sha256": "ff63d978003fd42db5f65e7072824ce400059d793bdae7df2a775281831ebb0b",
+      "current_owner": "TOOLING_RUNBOOK.md",
+      "historical_owners": [],
+      "disposition": "Consolidated procedure or present conclusion; exact prior observations remain with linked records and the historical checkpoint."
+    },
+    {
+      "source": "DatadogRUM/MultiSceneSupport/TOOLING_RUNBOOK.md",
+      "heading": "## Repeatable acceptance and release progress",
+      "lines": [
+        23,
+        72
+      ],
+      "sha256": "ff3fe6216e73da7b5dd270dcd313fb649310e27ca2aa4c407425cfec986399d9",
+      "current_owner": "Tooling/EVIDENCE.md",
+      "historical_owners": [],
+      "disposition": "Consolidated procedure or present conclusion; exact prior observations remain with linked records and the historical checkpoint."
+    },
+    {
+      "source": "DatadogRUM/MultiSceneSupport/TOOLING_RUNBOOK.md",
+      "heading": "## Execution ownership and checkpointing",
+      "lines": [
+        73,
+        98
+      ],
+      "sha256": "f933cc8690ba0da8cdeaba3996dd042c4f7ac16b6c3cfe58d832cd96b7278396",
+      "current_owner": "Tooling/EVIDENCE.md",
+      "historical_owners": [],
+      "disposition": "Consolidated procedure or present conclusion; exact prior observations remain with linked records and the historical checkpoint."
+    },
+    {
+      "source": "DatadogRUM/MultiSceneSupport/TOOLING_RUNBOOK.md",
+      "heading": "## Isolated URLSession backend acceptance",
+      "lines": [
+        99,
+        237
+      ],
+      "sha256": "3ca6dd65e3fca22855aa266fda84162629cd3f823551fdabaa5352a83d1d0140",
+      "current_owner": "Tooling/BACKEND.md",
+      "historical_owners": [
+        "Results/EXP-202-urlsession-backend.json"
+      ],
+      "disposition": "Consolidated procedure or present conclusion; exact prior observations remain with linked records and the historical checkpoint."
+    },
+    {
+      "source": "DatadogRUM/MultiSceneSupport/TOOLING_RUNBOOK.md",
+      "heading": "## Full-target platform compatibility checks",
+      "lines": [
+        238,
+        266
+      ],
+      "sha256": "e4dd24c51b3785104b0e4cc8a2aeffff0f19d0b196d048aaeec70bae199ff192",
+      "current_owner": "Tooling/BUILD_TEST.md",
+      "historical_owners": [
+        "Experiments/EXP-143-199.md#exp-162--restore-watchos-resource-and-macos-webview-compilation"
+      ],
+      "disposition": "Consolidated procedure or present conclusion; exact prior observations remain with linked records and the historical checkpoint."
+    },
+    {
+      "source": "DatadogRUM/MultiSceneSupport/TOOLING_RUNBOOK.md",
+      "heading": "## Controller thread compatibility",
+      "lines": [
+        267,
+        277
+      ],
+      "sha256": "ab26c2cf3a93335c40a1a15cff8901f0e4e02180e40ae9cf119a3aec94d28ad6",
+      "current_owner": "Tooling/ENVIRONMENT.md",
+      "historical_owners": [],
+      "disposition": "Consolidated procedure or present conclusion; exact prior observations remain with linked records and the historical checkpoint."
+    },
+    {
+      "source": "DatadogRUM/MultiSceneSupport/TOOLING_RUNBOOK.md",
+      "heading": "## Bounded native XCTest result collection",
+      "lines": [
+        278,
+        332
+      ],
+      "sha256": "de564ed261de957f9ff99cb619fbc80149d8138c01ff464f20372b7dfc805340",
+      "current_owner": "Tooling/BUILD_TEST.md",
+      "historical_owners": [
+        "Results/EXP-205-view-occurrence-isolation.json",
+        "Results/EXP-208-trace-ownership.json"
+      ],
+      "disposition": "Consolidated procedure or present conclusion; exact prior observations remain with linked records and the historical checkpoint."
+    },
+    {
+      "source": "DatadogRUM/MultiSceneSupport/TOOLING_RUNBOOK.md",
+      "heading": "## Independent S1 delivery packets",
+      "lines": [
+        333,
+        442
+      ],
+      "sha256": "4fbece2ae7f0f0d7a12d1ff4e9be693af1a58f3dae227564b5c9b4886d36419f",
+      "current_owner": "Tooling/DELIVERY.md",
+      "historical_owners": [
+        "Results/S1-H00-E01-packets.json",
+        "Results/S1-delivery-queue.json",
+        "Results/S1-independent-packets.json",
+        "Results/S1-publication.json"
+      ],
+      "disposition": "Consolidated procedure or present conclusion; exact prior observations remain with linked records and the historical checkpoint."
+    },
+    {
+      "source": "DatadogRUM/MultiSceneSupport/TOOLING_RUNBOOK.md",
+      "heading": "## Session Replay acceptance scope",
+      "lines": [
+        443,
+        454
+      ],
+      "sha256": "f17b5e311ee5cdf05edc3acacba87bb4a4f7ccbdc0e0c61c107fcb97dbe3d9f7",
+      "current_owner": "Tooling/EVIDENCE.md",
+      "historical_owners": [
+        "Results/S1-replay-scope-disposition.json"
+      ],
+      "disposition": "Consolidated procedure or present conclusion; exact prior observations remain with linked records and the historical checkpoint."
+    },
+    {
+      "source": "DatadogRUM/MultiSceneSupport/TOOLING_RUNBOOK.md",
+      "heading": "## Documentation reading and update workflow",
+      "lines": [
+        455,
+        488
+      ],
+      "sha256": "3296f451666c025ff39505785e2a5611df8306246f87bed5a1466ef67c6e6328",
+      "current_owner": "Tooling/DOCUMENTATION.md",
+      "historical_owners": [
+        "Experiments/DOCUMENTATION_CHECKPOINT_EXP-178.md",
+        "Results/release-progress.json"
+      ],
+      "disposition": "Consolidated procedure or present conclusion; exact prior observations remain with linked records and the historical checkpoint."
+    },
+    {
+      "source": "DatadogRUM/MultiSceneSupport/TOOLING_RUNBOOK.md",
+      "heading": "## Evidence levels",
+      "lines": [
+        489,
+        516
+      ],
+      "sha256": "9599e985351eb30f703bf1131a26e43e793c192f28ae0e92d5630054202d5625",
+      "current_owner": "Tooling/EVIDENCE.md",
+      "historical_owners": [],
+      "disposition": "Consolidated procedure or present conclusion; exact prior observations remain with linked records and the historical checkpoint."
+    },
+    {
+      "source": "DatadogRUM/MultiSceneSupport/TOOLING_RUNBOOK.md",
+      "heading": "## Reuse evidence across release stages",
+      "lines": [
+        517,
+        528
+      ],
+      "sha256": "ccda916959e04e65502534e5d4113fc45b47497cd76cdd3ec2dbf24ffb2b2e1b",
+      "current_owner": "Tooling/EVIDENCE.md",
+      "historical_owners": [
+        "Results/EXP-209-s2-source-audit.json"
+      ],
+      "disposition": "Consolidated procedure or present conclusion; exact prior observations remain with linked records and the historical checkpoint."
+    },
+    {
+      "source": "DatadogRUM/MultiSceneSupport/TOOLING_RUNBOOK.md",
+      "heading": "## Restart verification without rerunning accepted experiments",
+      "lines": [
+        529,
+        571
+      ],
+      "sha256": "d44ce3191c1955c19512b03c242949758a30e57c9695afdd7945c017f5d17fb8",
+      "current_owner": "Tooling/ENVIRONMENT.md",
+      "historical_owners": [],
+      "disposition": "Consolidated procedure or present conclusion; exact prior observations remain with linked records and the historical checkpoint."
+    },
+    {
+      "source": "DatadogRUM/MultiSceneSupport/TOOLING_RUNBOOK.md",
+      "heading": "## Xcode MCP preparation",
+      "lines": [
+        572,
+        573
+      ],
+      "sha256": "b6bfb831f8326191f974d783dc5b42f952b824df9760598848ca4e26f374de5f",
+      "current_owner": "Tooling/ENVIRONMENT.md",
+      "historical_owners": [],
+      "disposition": "Consolidated procedure or present conclusion; exact prior observations remain with linked records and the historical checkpoint."
+    },
+    {
+      "source": "DatadogRUM/MultiSceneSupport/TOOLING_RUNBOOK.md",
+      "heading": "### Select the intended Xcode",
+      "lines": [
+        574,
+        589
+      ],
+      "sha256": "2f5efdfa7374ffa46f74fe91be68aa227df8088097915d736a5264f93a1235fd",
+      "current_owner": "Tooling/ENVIRONMENT.md",
+      "historical_owners": [],
+      "disposition": "Consolidated procedure or present conclusion; exact prior observations remain with linked records and the historical checkpoint."
+    },
+    {
+      "source": "DatadogRUM/MultiSceneSupport/TOOLING_RUNBOOK.md",
+      "heading": "### Resolve and cache the workspace",
+      "lines": [
+        590,
+        609
+      ],
+      "sha256": "f8e25a221d3622d8d08ed8f3e1ea3b63c7409f17955853a75adc6c93dc3fa789",
+      "current_owner": "Tooling/ENVIRONMENT.md",
+      "historical_owners": [],
+      "disposition": "Consolidated procedure or present conclusion; exact prior observations remain with linked records and the historical checkpoint."
+    },
+    {
+      "source": "DatadogRUM/MultiSceneSupport/TOOLING_RUNBOOK.md",
+      "heading": "### Verify useful access",
+      "lines": [
+        610,
+        616
+      ],
+      "sha256": "7a41660071cc7c6a8a0a489799fe77c1b8819d7360f47aad81f5879cec5afec8",
+      "current_owner": "Tooling/ENVIRONMENT.md",
+      "historical_owners": [],
+      "disposition": "Consolidated procedure or present conclusion; exact prior observations remain with linked records and the historical checkpoint."
+    },
+    {
+      "source": "DatadogRUM/MultiSceneSupport/TOOLING_RUNBOOK.md",
+      "heading": "### Cache stable selections",
+      "lines": [
+        617,
+        629
+      ],
+      "sha256": "8bf03a5758ec0bad3dda2599a897138ec40422ef78ee8ea910ab8cc1ceff8a9f",
+      "current_owner": "Tooling/ENVIRONMENT.md",
+      "historical_owners": [],
+      "disposition": "Consolidated procedure or present conclusion; exact prior observations remain with linked records and the historical checkpoint."
+    },
+    {
+      "source": "DatadogRUM/MultiSceneSupport/TOOLING_RUNBOOK.md",
+      "heading": "## Xcode-provided interaction instructions",
+      "lines": [
+        630,
+        645
+      ],
+      "sha256": "4208292737b6a8f13e8de4557870abca710240abdcc34541aafb31b9daf9b117",
+      "current_owner": "Tooling/DEVICE_INTERACTION.md",
+      "historical_owners": [],
+      "disposition": "Consolidated procedure or present conclusion; exact prior observations remain with linked records and the historical checkpoint."
+    },
+    {
+      "source": "DatadogRUM/MultiSceneSupport/TOOLING_RUNBOOK.md",
+      "heading": "## Build, test, and launch workflow",
+      "lines": [
+        646,
+        647
+      ],
+      "sha256": "59eb84de81c97e86dd7bc5a96ca8c2fc8cefb8718b62921094c3722f67a2fee6",
+      "current_owner": "Tooling/BUILD_TEST.md",
+      "historical_owners": [],
+      "disposition": "Consolidated procedure or present conclusion; exact prior observations remain with linked records and the historical checkpoint."
+    },
+    {
+      "source": "DatadogRUM/MultiSceneSupport/TOOLING_RUNBOOK.md",
+      "heading": "### Fast test loop",
+      "lines": [
+        648,
+        728
+      ],
+      "sha256": "aa024749ace12849a63aa24ea086f72fb53834398bd607399c756c5fe9fb846b",
+      "current_owner": "Tooling/BUILD_TEST.md",
+      "historical_owners": [],
+      "disposition": "Consolidated procedure or present conclusion; exact prior observations remain with linked records and the historical checkpoint."
+    },
+    {
+      "source": "DatadogRUM/MultiSceneSupport/TOOLING_RUNBOOK.md",
+      "heading": "### Experimental public-API loop",
+      "lines": [
+        729,
+        774
+      ],
+      "sha256": "a189d85697d7087d2456912dbb88351c30297f533afd311d5019433b38c6f752",
+      "current_owner": "Tooling/BUILD_TEST.md",
+      "historical_owners": [],
+      "disposition": "Consolidated procedure or present conclusion; exact prior observations remain with linked records and the historical checkpoint."
+    },
+    {
+      "source": "DatadogRUM/MultiSceneSupport/TOOLING_RUNBOOK.md",
+      "heading": "### Customer migration-cost loop",
+      "lines": [
+        775,
+        934
+      ],
+      "sha256": "bfea39fdca62a1ffd1546291cc8b4ba8d4e1406fcfa40054b77bb530232cff3d",
+      "current_owner": "Tooling/SCENARIOS.md",
+      "historical_owners": [],
+      "disposition": "Consolidated procedure or present conclusion; exact prior observations remain with linked records and the historical checkpoint."
+    },
+    {
+      "source": "DatadogRUM/MultiSceneSupport/TOOLING_RUNBOOK.md",
+      "heading": "### Launch configuration",
+      "lines": [
+        935,
+        959
+      ],
+      "sha256": "c7d5a5d246f6ddffe9691bcf407c787371fd82dbc8f9bf55ee4978f1c05c3681",
+      "current_owner": "Tooling/DEVICE_INTERACTION.md",
+      "historical_owners": [],
+      "disposition": "Consolidated procedure or present conclusion; exact prior observations remain with linked records and the historical checkpoint."
+    },
+    {
+      "source": "DatadogRUM/MultiSceneSupport/TOOLING_RUNBOOK.md",
+      "heading": "## Clean-run precondition",
+      "lines": [
+        960,
+        999
+      ],
+      "sha256": "55547e3e3417b2037fbe872a7f1751367c874830a3176e70e7b9ee6cbaa59269",
+      "current_owner": "Tooling/DEVICE_INTERACTION.md",
+      "historical_owners": [],
+      "disposition": "Consolidated procedure or present conclusion; exact prior observations remain with linked records and the historical checkpoint."
+    },
+    {
+      "source": "DatadogRUM/MultiSceneSupport/TOOLING_RUNBOOK.md",
+      "heading": "## Device-interaction workflow",
+      "lines": [
+        1000,
+        1033
+      ],
+      "sha256": "73dc60f04a76deceaf676fc20d7b701e7efc45b765f15c7a5a731629fcff3360",
+      "current_owner": "Tooling/DEVICE_INTERACTION.md",
+      "historical_owners": [],
+      "disposition": "Consolidated procedure or present conclusion; exact prior observations remain with linked records and the historical checkpoint."
+    },
+    {
+      "source": "DatadogRUM/MultiSceneSupport/TOOLING_RUNBOOK.md",
+      "heading": "### Fully automated scenarios",
+      "lines": [
+        1034,
+        1051
+      ],
+      "sha256": "98fb79bd4f268e7b2d0369cc66da2bf83efb6622575182dd61390beb2e2ce491",
+      "current_owner": "Tooling/DEVICE_INTERACTION.md",
+      "historical_owners": [],
+      "disposition": "Consolidated procedure or present conclusion; exact prior observations remain with linked records and the historical checkpoint."
+    },
+    {
+      "source": "DatadogRUM/MultiSceneSupport/TOOLING_RUNBOOK.md",
+      "heading": "### Physical-device connection preflight",
+      "lines": [
+        1052,
+        1097
+      ],
+      "sha256": "2baf4c1525395aa8a525a719210d03ba94e8d26cdaf3742a6323aa5f4d393161",
+      "current_owner": "Tooling/DEVICE_INTERACTION.md",
+      "historical_owners": [],
+      "disposition": "Consolidated procedure or present conclusion; exact prior observations remain with linked records and the historical checkpoint."
+    },
+    {
+      "source": "DatadogRUM/MultiSceneSupport/TOOLING_RUNBOOK.md",
+      "heading": "### Physical installed-code identity",
+      "lines": [
+        1098,
+        1123
+      ],
+      "sha256": "bedbf70aa621eb071da7ed469a375db8d07cdab764a7ecc8f47b21fb822951aa",
+      "current_owner": "Tooling/DEVICE_INTERACTION.md",
+      "historical_owners": [],
+      "disposition": "Consolidated procedure or present conclusion; exact prior observations remain with linked records and the historical checkpoint."
+    },
+    {
+      "source": "DatadogRUM/MultiSceneSupport/TOOLING_RUNBOOK.md",
+      "heading": "### Physical-device signing preflight",
+      "lines": [
+        1124,
+        1241
+      ],
+      "sha256": "c0c2226c69640c593cabedac25b7410ec3efae2b0d850c9cd55c4a98606123f3",
+      "current_owner": "Tooling/DEVICE_INTERACTION.md",
+      "historical_owners": [
+        "Experiments/EXP-143-199.md#exp-156--physical-ipad-automation-preflight"
+      ],
+      "disposition": "Consolidated procedure or present conclusion; exact prior observations remain with linked records and the historical checkpoint."
+    },
+    {
+      "source": "DatadogRUM/MultiSceneSupport/TOOLING_RUNBOOK.md",
+      "heading": "### Coordinate and gesture rules",
+      "lines": [
+        1242,
+        1273
+      ],
+      "sha256": "0c50600abddc6c95cf27d77d2cacf2fdc7a732284dfbda5a07555d6dea781a61",
+      "current_owner": "Tooling/DEVICE_INTERACTION.md",
+      "historical_owners": [],
+      "disposition": "Consolidated procedure or present conclusion; exact prior observations remain with linked records and the historical checkpoint."
+    },
+    {
+      "source": "DatadogRUM/MultiSceneSupport/TOOLING_RUNBOOK.md",
+      "heading": "### Expired sessions",
+      "lines": [
+        1274,
+        1299
+      ],
+      "sha256": "75523c4f21736edb86a2607b74a12e47e699a79a9a895fd0a8f359ffe2d2efdc",
+      "current_owner": "Tooling/DEVICE_INTERACTION.md",
+      "historical_owners": [],
+      "disposition": "Consolidated procedure or present conclusion; exact prior observations remain with linked records and the historical checkpoint."
+    },
+    {
+      "source": "DatadogRUM/MultiSceneSupport/TOOLING_RUNBOOK.md",
+      "heading": "## Scenario interaction recipes",
+      "lines": [
+        1300,
+        1322
+      ],
+      "sha256": "f9b6a5805ac8195256e108d41a9bef3427b3a3fece177cc698bda9d5a59426ac",
+      "current_owner": "Tooling/DEVICE_INTERACTION.md",
+      "historical_owners": [],
+      "disposition": "Consolidated procedure or present conclusion; exact prior observations remain with linked records and the historical checkpoint."
+    },
+    {
+      "source": "DatadogRUM/MultiSceneSupport/TOOLING_RUNBOOK.md",
+      "heading": "## Simulator, device, and human routing",
+      "lines": [
+        1323,
+        1341
+      ],
+      "sha256": "824b784e8c24c44189452147ba62bb951d829528a84d35fb439d70c45b6d4510",
+      "current_owner": "Tooling/DEVICE_INTERACTION.md",
+      "historical_owners": [],
+      "disposition": "Consolidated procedure or present conclusion; exact prior observations remain with linked records and the historical checkpoint."
+    },
+    {
+      "source": "DatadogRUM/MultiSceneSupport/TOOLING_RUNBOOK.md",
+      "heading": "## Run artifacts",
+      "lines": [
+        1342,
+        1362
+      ],
+      "sha256": "05dddc096abcd01400d678c8805b13394a79f10bbc23220fbee4a4628ff5d0bc",
+      "current_owner": "Tooling/EVIDENCE.md",
+      "historical_owners": [],
+      "disposition": "Consolidated procedure or present conclusion; exact prior observations remain with linked records and the historical checkpoint."
+    },
+    {
+      "source": "DatadogRUM/MultiSceneSupport/TOOLING_RUNBOOK.md",
+      "heading": "## Datadog validation workflow",
+      "lines": [
+        1363,
+        1401
+      ],
+      "sha256": "dec189c902b77edfa03bacd1b56066ecb0db23e962038cefdaa98cbeb27bf449",
+      "current_owner": "Tooling/BACKEND.md",
+      "historical_owners": [],
+      "disposition": "Consolidated procedure or present conclusion; exact prior observations remain with linked records and the historical checkpoint."
+    },
+    {
+      "source": "DatadogRUM/MultiSceneSupport/TOOLING_RUNBOOK.md",
+      "heading": "## Failure classification",
+      "lines": [
+        1402,
+        1437
+      ],
+      "sha256": "fe6e2f665752a4b01f195dc8c8e61452a57de01fa7411cd3fb52993f72ede93c",
+      "current_owner": "Tooling/EVIDENCE.md",
+      "historical_owners": [],
+      "disposition": "Consolidated procedure or present conclusion; exact prior observations remain with linked records and the historical checkpoint."
+    },
+    {
+      "source": "DatadogRUM/MultiSceneSupport/TOOLING_RUNBOOK.md",
+      "heading": "## Security and repository hygiene",
+      "lines": [
+        1438,
+        1455
+      ],
+      "sha256": "dc9c8ef37d961042682db2ebcf87fac6d4964c227177ab2f25044c6276b6d8ab",
+      "current_owner": "Tooling/DELIVERY.md",
+      "historical_owners": [],
+      "disposition": "Consolidated procedure or present conclusion; exact prior observations remain with linked records and the historical checkpoint."
+    },
+    {
+      "source": "DatadogRUM/MultiSceneSupport/TOOLING_RUNBOOK.md",
+      "heading": "## Known Apple Xcode MCP constraints",
+      "lines": [
+        1456,
+        1473
+      ],
+      "sha256": "aa8d9d056f12fd993504df7d0bca232ee5c4e8125d757035f4da364ff3dff400",
+      "current_owner": "Tooling/ENVIRONMENT.md",
+      "historical_owners": [],
+      "disposition": "Consolidated procedure or present conclusion; exact prior observations remain with linked records and the historical checkpoint."
+    },
+    {
+      "source": "DatadogRUM/MultiSceneSupport/TOOLING_RUNBOOK.md",
+      "heading": "## Pre-run checklist",
+      "lines": [
+        1474,
+        1489
+      ],
+      "sha256": "2406c9f2999b7ac803ed55d994595139b393c84520be45922001d9b6db4ab8a8",
+      "current_owner": "TOOLING_RUNBOOK.md",
+      "historical_owners": [],
+      "disposition": "Consolidated procedure or present conclusion; exact prior observations remain with linked records and the historical checkpoint."
+    },
+    {
+      "source": "DatadogRUM/MultiSceneSupport/TOOLING_RUNBOOK.md",
+      "heading": "## Post-run checklist",
+      "lines": [
+        1490,
+        1505
+      ],
+      "sha256": "ddfc44e6fd8128220341313f08f964d68a6b8d20fe203d7c0a8de62476b495e6",
+      "current_owner": "TOOLING_RUNBOOK.md",
+      "historical_owners": [],
+      "disposition": "Consolidated procedure or present conclusion; exact prior observations remain with linked records and the historical checkpoint."
+    },
+    {
+      "source": "DatadogRUM/MultiSceneSupport/TOOLING_RUNBOOK.md",
+      "heading": "## Acceptance discriminators",
+      "lines": [
+        1506,
+        1507
+      ],
+      "sha256": "ee4c3660b99801746542ae41ac7ef28711615b8cf620a581e4b8c5c94b19d86c",
+      "current_owner": "Tooling/EVIDENCE.md",
+      "historical_owners": [],
+      "disposition": "Consolidated procedure or present conclusion; exact prior observations remain with linked records and the historical checkpoint."
+    },
+    {
+      "source": "DatadogRUM/MultiSceneSupport/TOOLING_RUNBOOK.md",
+      "heading": "### Fresh build and critical boundaries",
+      "lines": [
+        1508,
+        1530
+      ],
+      "sha256": "23ab2b235467e6dbf5afda63b9213f966d72f7ebb434d739fcac581cc06067ba",
+      "current_owner": "Tooling/EVIDENCE.md",
+      "historical_owners": [
+        "Experiments/EXP-143-199.md#exp-159--explicit-scene-targeted-long-running-actions",
+        "Experiments/EXP-143-199.md#exp-176--accept-explicit-resource-starts-and-captured-completion-owners"
+      ],
+      "disposition": "Consolidated procedure or present conclusion; exact prior observations remain with linked records and the historical checkpoint."
+    },
+    {
+      "source": "DatadogRUM/MultiSceneSupport/TOOLING_RUNBOOK.md",
+      "heading": "### Compatibility, lifetime and restoration runners",
+      "lines": [
+        1531,
+        1548
+      ],
+      "sha256": "c57526a090a9a34f66617634c6d6fc21fb483fa57c03c113cb253d4042dfac42",
+      "current_owner": "Tooling/SCENARIOS.md",
+      "historical_owners": [
+        "Experiments/EXP-143-199.md#exp-165--preserve-legacy-nativewebview-replay-correlation",
+        "Experiments/EXP-143-199.md#exp-166--isolate-ui-event-handoff-by-sdk-lifecycle-and-reduce-allocations",
+        "Experiments/EXP-143-199.md#exp-167--preserve-navigation-ownership-across-session-restoration",
+        "Experiments/EXP-143-199.md#exp-168--release-keyed-swiftui-registrations-and-instrumentation",
+        "Experiments/EXP-143-199.md#exp-169--keep-automatic-tracking-until-semantic-input-is-ready",
+        "Experiments/EXP-143-199.md#exp-170--accept-semantic-reconnects-only-after-a-live-attachment",
+        "Experiments/EXP-143-199.md#exp-171--restore-retained-hosts-from-the-reader-without-body-reconstruction",
+        "Experiments/EXP-143-199.md#exp-172--retire-disconnected-scene-history-without-accepting-stale-callbacks",
+        "Experiments/EXP-143-199.md#exp-173--commit-accepted-presentation-state-and-fence-occurrence-callbacks"
+      ],
+      "disposition": "Consolidated procedure or present conclusion; exact prior observations remain with linked records and the historical checkpoint."
+    },
+    {
+      "source": "DatadogRUM/MultiSceneSupport/TOOLING_RUNBOOK.md",
+      "heading": "### Observer and Resource completion controls",
+      "lines": [
+        1549,
+        1565
+      ],
+      "sha256": "fd67e307e972339ea7fe8ca0265673ffc1628c77c5db6b4a63e868e9524f26c6",
+      "current_owner": "Tooling/SCENARIOS.md",
+      "historical_owners": [
+        "Experiments/EXP-143-199.md#exp-174--preserve-monotonic-reentrant-observer-delivery",
+        "Experiments/EXP-143-199.md#exp-175--keep-resource-completion-on-its-owning-scope"
+      ],
+      "disposition": "Consolidated procedure or present conclusion; exact prior observations remain with linked records and the historical checkpoint."
+    },
+    {
+      "source": "DatadogRUM/MultiSceneSupport/TOOLING_RUNBOOK.md",
+      "heading": "### Named telemetry contracts",
+      "lines": [
+        1566,
+        1643
+      ],
+      "sha256": "c0d79bc0a499815c4e43cff1e6b226fdd539bf71daf72edaf7a10b847e7d9740",
+      "current_owner": "Tooling/BACKEND.md",
+      "historical_owners": [
+        "Experiments/EXP-143-199.md#exp-176--accept-explicit-resource-starts-and-captured-completion-owners",
+        "Experiments/EXP-143-199.md#exp-177--target-current-view-errors-without-changing-resource-owners",
+        "Experiments/EXP-143-199.md#exp-178--target-view-attributes-and-removal",
+        "Experiments/EXP-143-199.md#exp-179--target-custom-timing-and-loading-time",
+        "Experiments/EXP-143-199.md#exp-180--target-feature-flags-and-preserve-internal-mutation-ownership"
+      ],
+      "disposition": "Consolidated procedure or present conclusion; exact prior observations remain with linked records and the historical checkpoint."
+    },
+    {
+      "source": "DatadogRUM/MultiSceneSupport/TOOLING_RUNBOOK.md",
+      "heading": "## Captured Trace acceptance",
+      "lines": [
+        1644,
+        1692
+      ],
+      "sha256": "c7c40da2cc06bf93590c0fe9633f4e14920586685c12d46cb5bd84beb8ee5f4d",
+      "current_owner": "Tooling/BACKEND.md",
+      "historical_owners": [
+        "Experiments/EXP-143-199.md#exp-181--accept-captured-trace-ownership-through-cross-scene-completion"
+      ],
+      "disposition": "Consolidated procedure or present conclusion; exact prior observations remain with linked records and the historical checkpoint."
+    },
+    {
+      "source": "DatadogRUM/MultiSceneSupport/TOOLING_RUNBOOK.md",
+      "heading": "## Captured Logs and mirrored errors",
+      "lines": [
+        1693,
+        1727
+      ],
+      "sha256": "688e0cfbfa3bf79c5289d271c141792554c2368adca2723e0bed8c2d00841883",
+      "current_owner": "Tooling/BACKEND.md",
+      "historical_owners": [
+        "Experiments/EXP-143-199.md#exp-182--accept-captured-logs-and-mirrored-error-ownership"
+      ],
+      "disposition": "Consolidated procedure or present conclusion; exact prior observations remain with linked records and the historical checkpoint."
+    },
+    {
+      "source": "DatadogRUM/MultiSceneSupport/TOOLING_RUNBOOK.md",
+      "heading": "## WebView container acceptance",
+      "lines": [
+        1728,
+        1754
+      ],
+      "sha256": "6ef86172d1bec51decb50ba05faddf2c66d9e1bbfae51e18bd7fa86c6be89200",
+      "current_owner": "Tooling/BACKEND.md",
+      "historical_owners": [
+        "Experiments/EXP-143-199.md#exp-183--accept-native-webview-container-ownership"
+      ],
+      "disposition": "Consolidated procedure or present conclusion; exact prior observations remain with linked records and the historical checkpoint."
+    },
+    {
+      "source": "DatadogRUM/MultiSceneSupport/TOOLING_RUNBOOK.md",
+      "heading": "## Exported and fatal process context",
+      "lines": [
+        1755,
+        1825
+      ],
+      "sha256": "047361ed6c570b93d2df547d90988c946049864dfbc8186b9a9ba81bfc6f1d12",
+      "current_owner": "Tooling/BACKEND.md",
+      "historical_owners": [
+        "Experiments/EXP-143-199.md#exp-184--accept-exported-and-fatal-process-context"
+      ],
+      "disposition": "Consolidated procedure or present conclusion; exact prior observations remain with linked records and the historical checkpoint."
+    },
+    {
+      "source": "DatadogRUM/MultiSceneSupport/TOOLING_RUNBOOK.md",
+      "heading": "### Process signal acceptance",
+      "lines": [
+        1826,
+        1867
+      ],
+      "sha256": "a9c956344fabe164b7512b435ebcad8723abc6a60bba827fc96021b928f6ee02",
+      "current_owner": "Tooling/BACKEND.md",
+      "historical_owners": [],
+      "disposition": "Consolidated procedure or present conclusion; exact prior observations remain with linked records and the historical checkpoint."
+    },
+    {
+      "source": "DatadogRUM/MultiSceneSupport/TOOLING_RUNBOOK.md",
+      "heading": "## Shared vitals acceptance (EXP-186/T13)",
+      "lines": [
+        1868,
+        1893
+      ],
+      "sha256": "75dd6a00ab254d95838e051d9694cb96138b3ec2d6d376932225957070c2f73d",
+      "current_owner": "Tooling/BACKEND.md",
+      "historical_owners": [],
+      "disposition": "Consolidated procedure or present conclusion; exact prior observations remain with linked records and the historical checkpoint."
+    },
+    {
+      "source": "DatadogRUM/MultiSceneSupport/TOOLING_RUNBOOK.md",
+      "heading": "## Profiling correlation validation (EXP-187/T14)",
+      "lines": [
+        1894,
+        1994
+      ],
+      "sha256": "e48bb4cf8e7de3181c66b6b7bf079030ea33d89dcd3d794049df27ddf3a7e572",
+      "current_owner": "Tooling/BACKEND.md",
+      "historical_owners": [
+        "Results/EXP-187-physical-export.json"
+      ],
+      "disposition": "Consolidated procedure or present conclusion; exact prior observations remain with linked records and the historical checkpoint."
+    },
+    {
+      "source": "DatadogRUM/MultiSceneSupport/TOOLING_RUNBOOK.md",
+      "heading": "### Optional launch profile in the EXP-187 inventory",
+      "lines": [
+        1995,
+        2010
+      ],
+      "sha256": "c4c95993f9988f4006c34776e2627a2f586f6ab6b36a95d68c2aff3f277a652d",
+      "current_owner": "Tooling/BACKEND.md",
+      "historical_owners": [],
+      "disposition": "Consolidated procedure or present conclusion; exact prior observations remain with linked records and the historical checkpoint."
+    },
+    {
+      "source": "DatadogRUM/MultiSceneSupport/TOOLING_RUNBOOK.md",
+      "heading": "### One-scene representative hardware sample",
+      "lines": [
+        2011,
+        2065
+      ],
+      "sha256": "66d5ef2950c214ed783eb753364cce2801b52a224670cf9952a341743ef0ed11",
+      "current_owner": "Tooling/BACKEND.md",
+      "historical_owners": [],
+      "disposition": "Consolidated procedure or present conclusion; exact prior observations remain with linked records and the historical checkpoint."
+    },
+    {
+      "source": "DatadogRUM/MultiSceneSupport/TOOLING_RUNBOOK.md",
+      "heading": "## Legacy runtime readiness after a platform trap",
+      "lines": [
+        2066,
+        2124
+      ],
+      "sha256": "3f5f4233b5378208b6e2039c22a3eba127c7f928dbb0eb0aa5797bea5ad712e5",
+      "current_owner": "Tooling/ENVIRONMENT.md",
+      "historical_owners": [
+        "Experiments/EXP-143-199.md#exp-188--check-legacy-lifecycle-readiness-on-ios-272"
+      ],
+      "disposition": "Consolidated procedure or present conclusion; exact prior observations remain with linked records and the historical checkpoint."
+    },
+    {
+      "source": "DatadogRUM/MultiSceneSupport/TOOLING_RUNBOOK.md",
+      "heading": "## Xcode 27.1-only Duo and runnable minimum",
+      "lines": [
+        2125,
+        2327
+      ],
+      "sha256": "86f61a9d02ae34a57b69a732a3acff6bfd4870b644157ff04e2780df3401d0df",
+      "current_owner": "Tooling/DEVICE_INTERACTION.md",
+      "historical_owners": [
+        "Results/EXP-191-duo-same-key.json"
+      ],
+      "disposition": "Consolidated procedure or present conclusion; exact prior observations remain with linked records and the historical checkpoint."
+    },
+    {
+      "source": "DatadogRUM/MultiSceneSupport/TOOLING_RUNBOOK.md",
+      "heading": "## Automatic-only compatibility comparisons",
+      "lines": [
+        2328,
+        2426
+      ],
+      "sha256": "61f66908a56f2a662c9f10828d6de1d42d31d883b6c8262858edda508ba8477e",
+      "current_owner": "Tooling/SCENARIOS.md",
+      "historical_owners": [],
+      "disposition": "Consolidated procedure or present conclusion; exact prior observations remain with linked records and the historical checkpoint."
+    },
+    {
+      "source": "DatadogRUM/MultiSceneSupport/TOOLING_RUNBOOK.md",
+      "heading": "### Current-source automatic comparison (EXP-210)",
+      "lines": [
+        2427,
+        2449
+      ],
+      "sha256": "d217bf9a81867d4fa15f9bf972509140b5e9c133728eb4d964a482e82f325c31",
+      "current_owner": "Tooling/SCENARIOS.md",
+      "historical_owners": [],
+      "disposition": "Consolidated procedure or present conclusion; exact prior observations remain with linked records and the historical checkpoint."
+    },
+    {
+      "source": "DatadogRUM/MultiSceneSupport/TOOLING_RUNBOOK.md",
+      "heading": "### Passive native input observations (EXP-218)",
+      "lines": [
+        2450,
+        2471
+      ],
+      "sha256": "d3445b965482b51e6360e85d14f25b070dd73e23007c9b5f518ac1c8308960c6",
+      "current_owner": "Tooling/SCENARIOS.md",
+      "historical_owners": [
+        "Results/EXP-218-native-input-observation.json"
+      ],
+      "disposition": "Consolidated procedure or present conclusion; exact prior observations remain with linked records and the historical checkpoint."
+    },
+    {
+      "source": "DatadogRUM/MultiSceneSupport/TOOLING_RUNBOOK.md",
+      "heading": "### Lifetime evidence and native display-link teardown (EXP-211)",
+      "lines": [
+        2472,
+        2523
+      ],
+      "sha256": "8f006f2f1adf4e3f98eab047fdcd079b02697d88124d5bbd2e2a4f164371f197",
+      "current_owner": "Tooling/SCENARIOS.md",
+      "historical_owners": [],
+      "disposition": "Consolidated procedure or present conclusion; exact prior observations remain with linked records and the historical checkpoint."
+    },
+    {
+      "source": "DatadogRUM/MultiSceneSupport/TOOLING_RUNBOOK.md",
+      "heading": "### EXP-196 unattended physical iPad execution",
+      "lines": [
+        2524,
+        2556
+      ],
+      "sha256": "8ff46ccc444b76597cf3c8a1dd845df0b9abf3fa31ff8fabaa652954ef19d6f6",
+      "current_owner": "Tooling/DEVICE_INTERACTION.md",
+      "historical_owners": [],
+      "disposition": "Consolidated procedure or present conclusion; exact prior observations remain with linked records and the historical checkpoint."
+    },
+    {
+      "source": "DatadogRUM/MultiSceneSupport/TOOLING_RUNBOOK.md",
+      "heading": "### Release-specific execution after the EXP-196 checkpoint",
+      "lines": [
+        2557,
+        2596
+      ],
+      "sha256": "42d27e52df1d1fb4070b993a2c5bbf18ba526d235f0b16f2a815c4c34b5cac47",
+      "current_owner": "Tooling/DELIVERY.md",
+      "historical_owners": [],
+      "disposition": "Consolidated procedure or present conclusion; exact prior observations remain with linked records and the historical checkpoint."
+    },
+    {
+      "source": "DatadogRUM/MultiSceneSupport/TOOLING_RUNBOOK.md",
+      "heading": "### EXP-197 current-develop qualification",
+      "lines": [
+        2597,
+        2731
+      ],
+      "sha256": "1b040f86b306f9c73f49ee99df9e22399235033d1710341971169d8231dc8eee",
+      "current_owner": "Tooling/BUILD_TEST.md",
+      "historical_owners": [],
+      "disposition": "Consolidated procedure or present conclusion; exact prior observations remain with linked records and the historical checkpoint."
+    },
+    {
+      "source": "DatadogRUM/MultiSceneSupport/TOOLING_RUNBOOK.md",
+      "heading": "### EXP-208 qualification checkpoint",
+      "lines": [
+        2732,
+        2803
+      ],
+      "sha256": "2129237ed6899126becc5b896e262fc444b0829f4bdebd4f5a9898a7453eda7f",
+      "current_owner": "Tooling/BACKEND.md",
+      "historical_owners": [
+        "Results/EXP-208-trace-ownership.json"
+      ],
+      "disposition": "Consolidated procedure or present conclusion; exact prior observations remain with linked records and the historical checkpoint."
+    },
+    {
+      "source": "DatadogRUM/MultiSceneSupport/TOOLING_RUNBOOK.md",
+      "heading": "## Local span identity and stopped-run backend continuation",
+      "lines": [
+        2804,
+        2822
+      ],
+      "sha256": "cfad5946e41a8825bc6407d71fafee1dbf99f3a03c8165845d75986d7cf0812d",
+      "current_owner": "Tooling/BACKEND.md",
+      "historical_owners": [
+        "Results/S1-E05-release-admission.json"
+      ],
+      "disposition": "Consolidated procedure or present conclusion; exact prior observations remain with linked records and the historical checkpoint."
+    },
+    {
+      "source": "DatadogRUM/MultiSceneSupport/TOOLING_RUNBOOK.md",
+      "heading": "### Selected test inventories and cross-query backend identity",
+      "lines": [
+        2823,
+        2844
+      ],
+      "sha256": "addd48bc2eed533a12d50a1679e0935ea9f65b45dc5edc8514e37b5c94da43c1",
+      "current_owner": "Tooling/BUILD_TEST.md",
+      "historical_owners": [
+        "Results/S1-E05-release-admission.json",
+        "Results/S1-H00-E01-packets.json"
+      ],
+      "disposition": "Consolidated procedure or present conclusion; exact prior observations remain with linked records and the historical checkpoint."
+    },
+    {
+      "source": "DatadogRUM/MultiSceneSupport/TOOLING_RUNBOOK.md",
+      "heading": "### Native ownership observation boundaries",
+      "lines": [
+        2845,
+        2860
+      ],
+      "sha256": "06467eefd2732b6195bb8197effcc7bc3fea3c89e788d8317c0fe0b0bd989ce8",
+      "current_owner": "Tooling/SCENARIOS.md",
+      "historical_owners": [
+        "Results/EXP-215-native-view-lifetime.json"
+      ],
+      "disposition": "Consolidated procedure or present conclusion; exact prior observations remain with linked records and the historical checkpoint."
+    },
+    {
+      "source": "DatadogRUM/MultiSceneSupport/TOOLING_RUNBOOK.md",
+      "heading": "### Source-aware candidate promotion",
+      "lines": [
+        2861,
+        2876
+      ],
+      "sha256": "4fb310739f6b772ba351003e4d4863fcf6c39764cba0f6c8387bf164556d53da",
+      "current_owner": "Tooling/EVIDENCE.md",
+      "historical_owners": [
+        "Results/EXP-216-s2-composition-promotion.json"
+      ],
+      "disposition": "Consolidated procedure or present conclusion; exact prior observations remain with linked records and the historical checkpoint."
+    },
+    {
+      "source": "DatadogRUM/MultiSceneSupport/TOOLING_RUNBOOK.md",
+      "heading": "### Source-bound counts and verified exclusions",
+      "lines": [
+        2877,
+        2901
+      ],
+      "sha256": "2c75d4a3ac26e355fcfa4a50b0edcf217c3e7ae5f1eb374faaa6cada8c9bb229",
+      "current_owner": "Tooling/BUILD_TEST.md",
+      "historical_owners": [
+        "Results/EXP-217-s2-compatibility.json"
+      ],
+      "disposition": "Consolidated procedure or present conclusion; exact prior observations remain with linked records and the historical checkpoint."
+    },
+    {
+      "source": "DatadogRUM/MultiSceneSupport/TOOLING_RUNBOOK.md",
+      "heading": "### Reconcile a published packet with newer upstream source",
+      "lines": [
+        2902,
+        2922
+      ],
+      "sha256": "9ad60feb1720cdeaca9fc531319fb04f76bf7e2c7fab859826084552016dc5bd",
+      "current_owner": "Tooling/DELIVERY.md",
+      "historical_owners": [
+        "Results/EXP-219-upstream-resource-integration.json"
+      ],
+      "disposition": "Consolidated procedure or present conclusion; exact prior observations remain with linked records and the historical checkpoint."
+    },
+    {
+      "source": "DatadogRUM/MultiSceneSupport/TOOLING_RUNBOOK.md",
+      "heading": "## Controlled app build prerequisites",
+      "lines": [
+        2923,
+        3028
+      ],
+      "sha256": "b9842215766adcc0a166b4e87d2d7402a66747012638e147253d6457c6bf156d",
+      "current_owner": "Tooling/ENVIRONMENT.md",
+      "historical_owners": [
+        "Results/S2-Duo-environment-readiness.json",
+        "Results/S2-F08-app-journeys.json",
+        "Results/S2-F08-app-preparation.json"
+      ],
+      "disposition": "Consolidated procedure or present conclusion; exact prior observations remain with linked records and the historical checkpoint."
+    },
+    {
+      "source": "DatadogRUM/MultiSceneSupport/ASSESSMENT.md",
+      "heading": "# RUM multi-scene support assessment",
+      "lines": [
+        1,
+        8
+      ],
+      "sha256": "02f3cc3b80c23e7ef7a609b8dfc1364824bb06e708d8dbd1aa5f4965cd996699",
+      "current_owner": "ASSESSMENT.md",
+      "historical_owners": [],
+      "disposition": "Consolidated procedure or present conclusion; exact prior observations remain with linked records and the historical checkpoint."
+    },
+    {
+      "source": "DatadogRUM/MultiSceneSupport/ASSESSMENT.md",
+      "heading": "## Release evidence boundaries",
+      "lines": [
+        9,
+        182
+      ],
+      "sha256": "fc284d78ede0d86da6d0e6791253b6de8987328573e2d80f4317f6ea64b880cc",
+      "current_owner": "ASSESSMENT.md",
+      "historical_owners": [
+        "Results/EXP-199-terminal-task-ownership.json",
+        "Results/EXP-200-compatibility.json",
+        "Results/EXP-201-final-compatibility.json",
+        "Results/EXP-202-backend-qualification.json",
+        "Results/EXP-203-optimized-reentrancy.json",
+        "Results/EXP-204-network-qos.json",
+        "Results/EXP-205-view-occurrence-isolation.json",
+        "Results/EXP-206-resource-action-ownership.json",
+        "Results/EXP-207-active-view-cache.json",
+        "Results/EXP-208-trace-ownership.json",
+        "Results/EXP-210-s2-automatic-coverage.json",
+        "Results/EXP-214-resource-action-design.json",
+        "Results/EXP-215-native-view-lifetime.json",
+        "Results/EXP-216-s2-composition-promotion.json",
+        "Results/EXP-217-s2-compatibility.json",
+        "Results/EXP-218-native-input-observation.json",
+        "Results/EXP-219-upstream-resource-integration.json",
+        "Results/EXP-220-native-input-callback.json",
+        "Results/PR-2683-header-ownership-review.json",
+        "Results/S1-E04-lifetime-disposition.json",
+        "Results/S1-E05-release-admission.json",
+        "Results/S1-H00-E01-packets.json",
+        "Results/S1-ci-followup.json",
+        "Results/S1-documentation-checkpoint.json",
+        "Results/S1-hitch-review.json",
+        "Results/S1-independent-packets.json",
+        "Results/S1-publication.json",
+        "Results/S1-replay-scope-disposition.json",
+        "Results/S1-resource-completion-review.json",
+        "Results/S1-resume-witness-review.json",
+        "Results/S2-Duo-environment-readiness.json",
+        "Results/S2-F02-composition-documentation.json",
+        "Results/S2-F08-app-journeys.json",
+        "Results/S2-F08-app-preparation.json",
+        "Results/S3-api-availability-plan.json"
+      ],
+      "disposition": "Consolidated procedure or present conclusion; exact prior observations remain with linked records and the historical checkpoint."
+    },
+    {
+      "source": "DatadogRUM/MultiSceneSupport/ASSESSMENT.md",
+      "heading": "## Immediate compatibility priority",
+      "lines": [
+        183,
+        233
+      ],
+      "sha256": "ab0c9f6b5dd75373e3863c16e3fe235b1b141248a3f6876332351b7a76ee1979",
+      "current_owner": "ASSESSMENT.md",
+      "historical_owners": [
+        "Results/EXP-195-automatic-tracking.json",
+        "Results/EXP-195-duo-automatic-coverage.json",
+        "Results/EXP-195-manifest-true-coverage.json",
+        "Results/EXP-195-regular-automatic-coverage.json",
+        "Results/EXP-195-split-replay.json"
+      ],
+      "disposition": "Consolidated procedure or present conclusion; exact prior observations remain with linked records and the historical checkpoint."
+    },
+    {
+      "source": "DatadogRUM/MultiSceneSupport/ASSESSMENT.md",
+      "heading": "## Current support",
+      "lines": [
+        234,
+        266
+      ],
+      "sha256": "1ceb5b0d63218155d2c52699e39606d4d59e82d769fc2536e9c64c2fdcb83d9f",
+      "current_owner": "ASSESSMENT.md",
+      "historical_owners": [
+        "Results/EXP-163-action-stop-attributes.json",
+        "Results/EXP-165-webview-correlation.json",
+        "Results/EXP-166-handoff-isolation.json",
+        "Results/EXP-166-handoff-performance.json",
+        "Results/EXP-167-session-restoration.json",
+        "Results/EXP-168-swiftui-lifetime.json",
+        "Results/EXP-169-pending-authority.json",
+        "Results/EXP-170-reconnect-acceptance.json",
+        "Results/EXP-171-retained-reader.json",
+        "Results/EXP-172-scene-retention.json",
+        "Results/EXP-173-presentation-acceptance.json",
+        "Results/EXP-174-observer-delivery.json",
+        "Results/EXP-175-resource-completion.json",
+        "Results/EXP-176-resource-start.json",
+        "Results/EXP-177-current-view-errors.json",
+        "Results/EXP-178-view-attributes.json",
+        "Results/EXP-179-timing-loading.json",
+        "Results/EXP-180-flags-internal-mutations.json",
+        "Results/EXP-181-trace-start-ownership.json",
+        "Results/EXP-182-log-mirror-ownership.json",
+        "Results/EXP-183-webview-container-ownership.json",
+        "Results/EXP-184-exported-fatal-context.json",
+        "Results/EXP-185-process-signal-routing.json",
+        "Results/EXP-186-shared-vitals.json",
+        "Results/EXP-187-physical-profile-correlation.json",
+        "Results/EXP-189-legacy-build-sdk.json",
+        "Results/EXP-190-minimum-runtime.json",
+        "Results/EXP-194-replay-coexistence.json",
+        "Results/EXP-196-physical-ipad-suite.json"
+      ],
+      "disposition": "Consolidated procedure or present conclusion; exact prior observations remain with linked records and the historical checkpoint."
+    },
+    {
+      "source": "DatadogRUM/MultiSceneSupport/ASSESSMENT.md",
+      "heading": "## Limits on support claims",
+      "lines": [
+        267,
+        344
+      ],
+      "sha256": "36d382878ae5ba2d73164cdca2c717610d704df4b9c8af71c075b9cb8eb1d619",
+      "current_owner": "ASSESSMENT.md",
+      "historical_owners": [
+        "Experiments/DOCUMENTATION_CHECKPOINT_EXP-178.md",
+        "Results/Datadog-app-source-audit.json",
+        "Results/EXP-193-adaptive-split.json",
+        "Results/EXP-196-physical-ipad-suite.json",
+        "Results/F02-guide-ownership-audit.json"
+      ],
+      "disposition": "Consolidated procedure or present conclusion; exact prior observations remain with linked records and the historical checkpoint."
+    },
+    {
+      "source": "DatadogRUM/MultiSceneSupport/PRODUCTION_SAFETY_REVIEW.md",
+      "heading": "# Production safety review and dispositions",
+      "lines": [
+        1,
+        375
+      ],
+      "sha256": "48594f64072a2a440690057de3d645128e703091d44c6437a5cf4fed70dde8e8",
+      "current_owner": "PRODUCTION_SAFETY_REVIEW.md",
+      "historical_owners": [
+        "Experiments/DOCUMENTATION_CHECKPOINT_EXP-178.md",
+        "Experiments/EXP-143-199.md#exp-162--restore-watchos-resource-and-macos-webview-compilation",
+        "Experiments/EXP-143-199.md#exp-163--preserve-overdue-action-stop-attributes-without-peer-leakage",
+        "Experiments/EXP-143-199.md#exp-164--preserve-controller-api-caller-thread-compatibility",
+        "Experiments/EXP-143-199.md#exp-165--preserve-legacy-nativewebview-replay-correlation",
+        "Experiments/EXP-143-199.md#exp-166--isolate-ui-event-handoff-by-sdk-lifecycle-and-reduce-allocations",
+        "Experiments/EXP-143-199.md#exp-167--preserve-navigation-ownership-across-session-restoration",
+        "Experiments/EXP-143-199.md#exp-168--release-keyed-swiftui-registrations-and-instrumentation",
+        "Experiments/EXP-143-199.md#exp-169--keep-automatic-tracking-until-semantic-input-is-ready",
+        "Experiments/EXP-143-199.md#exp-170--accept-semantic-reconnects-only-after-a-live-attachment",
+        "Experiments/EXP-143-199.md#exp-173--commit-accepted-presentation-state-and-fence-occurrence-callbacks",
+        "Results/EXP-171-retained-reader.json",
+        "Results/EXP-172-scene-retention.json",
+        "Results/EXP-173-presentation-acceptance.json",
+        "Results/EXP-174-observer-delivery.json",
+        "Results/EXP-175-resource-completion.json",
+        "Results/EXP-181-trace-start-ownership.json",
+        "Results/EXP-182-log-mirror-ownership.json",
+        "Results/EXP-183-webview-container-ownership.json",
+        "Results/EXP-193-adaptive-split.json",
+        "Results/EXP-195-automatic-tracking.json",
+        "Results/EXP-197-urlsession-extraction.json",
+        "Results/EXP-198-network-performance.json",
+        "Results/EXP-199-terminal-task-ownership.json",
+        "Results/EXP-201-final-compatibility.json",
+        "Results/EXP-202-backend-qualification.json",
+        "Results/EXP-202-urlsession-backend.json",
+        "Results/EXP-203-optimized-reentrancy.json",
+        "Results/EXP-204-documentation-consolidation.json",
+        "Results/EXP-204-network-qos.json",
+        "Results/EXP-205-view-occurrence-isolation.json",
+        "Results/EXP-206-resource-action-ownership.json",
+        "Results/EXP-207-active-view-cache.json",
+        "Results/EXP-208-trace-ownership.json",
+        "Results/EXP-210-s2-automatic-coverage.json",
+        "Results/EXP-214-resource-action-design.json",
+        "Results/EXP-215-native-view-lifetime.json",
+        "Results/EXP-216-s2-composition-promotion.json",
+        "Results/EXP-217-s2-compatibility.json",
+        "Results/EXP-218-native-input-observation.json",
+        "Results/EXP-219-upstream-resource-integration.json",
+        "Results/EXP-220-native-input-callback.json",
+        "Results/PR-2683-header-ownership-review.json",
+        "Results/S1-E04-lifetime-disposition.json",
+        "Results/S1-E05-release-admission.json",
+        "Results/S1-ci-followup.json",
+        "Results/S1-documentation-checkpoint.json",
+        "Results/S1-hitch-review.json",
+        "Results/S1-independent-packets.json",
+        "Results/S1-publication.json",
+        "Results/S1-replay-scope-disposition.json",
+        "Results/S1-resource-completion-review.json",
+        "Results/S1-resume-witness-review.json",
+        "Results/S2-Duo-environment-readiness.json",
+        "Results/S2-F02-composition-documentation.json",
+        "Results/S2-F08-app-journeys.json",
+        "Results/S2-F08-app-preparation.json"
+      ],
+      "disposition": "Consolidated procedure or present conclusion; exact prior observations remain with linked records and the historical checkpoint."
+    },
+    {
+      "source": "DatadogRUM/MultiSceneSupport/PRODUCTION_SAFETY_REVIEW.md",
+      "heading": "## Subsequent bounded finding: Flags message ownership",
+      "lines": [
+        376,
+        392
+      ],
+      "sha256": "617ef17f1caccbe3b8e7ca79323dfd67fac3709cb919e14ca18dfe1ef321c5ac",
+      "current_owner": "PRODUCTION_SAFETY_REVIEW.md",
+      "historical_owners": [
+        "Experiments/EXP-143-199.md#exp-180--target-feature-flags-and-preserve-internal-mutation-ownership"
+      ],
+      "disposition": "Consolidated procedure or present conclusion; exact prior observations remain with linked records and the historical checkpoint."
+    },
+    {
+      "source": "DatadogRUM/MultiSceneSupport/PRODUCTION_SAFETY_REVIEW.md",
+      "heading": "## Subsequent bounded validation: exported and fatal context",
+      "lines": [
+        393,
+        407
+      ],
+      "sha256": "3b411d1415ec9c51b07ac7f9b86e35c6088ad135a12fe38f73683815dd2803ff",
+      "current_owner": "PRODUCTION_SAFETY_REVIEW.md",
+      "historical_owners": [
+        "Experiments/EXP-143-199.md#exp-184--accept-exported-and-fatal-process-context"
+      ],
+      "disposition": "Consolidated procedure or present conclusion; exact prior observations remain with linked records and the historical checkpoint."
+    },
+    {
+      "source": "DatadogRUM/MultiSceneSupport/PRODUCTION_SAFETY_REVIEW.md",
+      "heading": "## Subsequent bounded validation: process signals",
+      "lines": [
+        408,
+        417
+      ],
+      "sha256": "df8dc41787483d12b74fd5c8ad00c6c1bca32fc86012e47d6f5931dd65957224",
+      "current_owner": "PRODUCTION_SAFETY_REVIEW.md",
+      "historical_owners": [
+        "Experiments/EXP-143-199.md#exp-185--validate-process-signal-routing"
+      ],
+      "disposition": "Consolidated procedure or present conclusion; exact prior observations remain with linked records and the historical checkpoint."
+    },
+    {
+      "source": "DatadogRUM/MultiSceneSupport/PRODUCTION_SAFETY_REVIEW.md",
+      "heading": "## Subsequent bounded validation: shared vitals",
+      "lines": [
+        418,
+        433
+      ],
+      "sha256": "15d609f60c3e03555bb89f338e51a552a14611e96a32e3dba1dfebcbd619ee80",
+      "current_owner": "PRODUCTION_SAFETY_REVIEW.md",
+      "historical_owners": [
+        "Experiments/EXP-143-199.md#exp-186--validate-shared-vitals-and-view-association"
+      ],
+      "disposition": "Consolidated procedure or present conclusion; exact prior observations remain with linked records and the historical checkpoint."
+    },
+    {
+      "source": "DatadogRUM/MultiSceneSupport/PRODUCTION_SAFETY_REVIEW.md",
+      "heading": "## Subsequent bounded validation: profile correlation",
+      "lines": [
+        434,
+        478
+      ],
+      "sha256": "d5a76179a21e4ca8dca5333b7a173cebaa78d778e271539992ea3aa3e1774b96",
+      "current_owner": "PRODUCTION_SAFETY_REVIEW.md",
+      "historical_owners": [
+        "Experiments/EXP-143-199.md#exp-187--validate-process-profile-and-operation-correlation",
+        "Results/EXP-187-physical-export.json",
+        "Results/EXP-187-simulator-profile-correlation.json"
+      ],
+      "disposition": "Consolidated procedure or present conclusion; exact prior observations remain with linked records and the historical checkpoint."
+    },
+    {
+      "source": "DatadogRUM/MultiSceneSupport/PRODUCTION_SAFETY_REVIEW.md",
+      "heading": "## Stable API review boundary",
+      "lines": [
+        479,
+        496
+      ],
+      "sha256": "50dbc5ea7628e8b173513346c35119185262d3ad4b871f3921b85bb0835c2b06",
+      "current_owner": "PRODUCTION_SAFETY_REVIEW.md",
+      "historical_owners": [
+        "Results/F02-guide-ownership-audit.json"
+      ],
+      "disposition": "Consolidated procedure or present conclusion; exact prior observations remain with linked records and the historical checkpoint."
+    },
+    {
+      "source": "DatadogRUM/MultiSceneSupport/PRODUCTION_SAFETY_REVIEW.md",
+      "heading": "## Subsequent bounded validation: legacy host launch boundary",
+      "lines": [
+        497,
+        603
+      ],
+      "sha256": "73dd2b4691fcc4165f9f4ca2e2843f340d3a27d572d8149f4d6d93cb13841676",
+      "current_owner": "PRODUCTION_SAFETY_REVIEW.md",
+      "historical_owners": [
+        "Experiments/EXP-143-199.md#exp-188--check-legacy-lifecycle-readiness-on-ios-272",
+        "Results/EXP-190-minimum-runtime.json",
+        "Results/EXP-191-duo-same-key.json",
+        "Results/EXP-192-duo-simulator-fidelity.json"
+      ],
+      "disposition": "Consolidated procedure or present conclusion; exact prior observations remain with linked records and the historical checkpoint."
+    },
+    {
+      "source": "DatadogRUM/MultiSceneSupport/PRODUCTION_SAFETY_REVIEW.md",
+      "heading": "## Ordinary-call availability proposal",
+      "lines": [
+        604,
+        611
+      ],
+      "sha256": "b3e4b22b150dbc50cb7b0f0d20a6a3f97d0145130577a2dab3734ba53f1077d3",
+      "current_owner": "PRODUCTION_SAFETY_REVIEW.md",
+      "historical_owners": [
+        "Results/S3-api-availability-plan.json"
+      ],
+      "disposition": "Consolidated procedure or present conclusion; exact prior observations remain with linked records and the historical checkpoint."
+    },
+    {
+      "source": "DatadogRUM/MultiSceneSupport/REVIEW_TRIAGE.md",
+      "heading": "# Production safety review triage",
+      "lines": [
+        1,
+        13
+      ],
+      "sha256": "4e5265e9bfdb8f5456afa4ac60ae2799e06b4646939e043d248cd853927079fe",
+      "current_owner": "REVIEW_TRIAGE.md",
+      "historical_owners": [],
+      "disposition": "Consolidated procedure or present conclusion; exact prior observations remain with linked records and the historical checkpoint."
+    },
+    {
+      "source": "DatadogRUM/MultiSceneSupport/REVIEW_TRIAGE.md",
+      "heading": "## Finding decisions",
+      "lines": [
+        14,
+        39
+      ],
+      "sha256": "ef45f464a9d1031691218f5b345f98e222ff96176a7cb54fb5ef1c6b80b4241c",
+      "current_owner": "REVIEW_TRIAGE.md",
+      "historical_owners": [
+        "Results/EXP-162-platform-compatibility.json",
+        "Results/review-triage-probes.json"
+      ],
+      "disposition": "Consolidated procedure or present conclusion; exact prior observations remain with linked records and the historical checkpoint."
+    },
+    {
+      "source": "DatadogRUM/MultiSceneSupport/REVIEW_TRIAGE.md",
+      "heading": "## Additional risks and exclusions",
+      "lines": [
+        40,
+        50
+      ],
+      "sha256": "b4dc0af366bd57972a3fcf6597e175e628cc7ab38fd49c64da12936ad5c6db80",
+      "current_owner": "REVIEW_TRIAGE.md",
+      "historical_owners": [
+        "Results/EXP-174-observer-delivery.json",
+        "Results/EXP-175-resource-completion.json",
+        "Results/EXP-176-resource-start.json"
+      ],
+      "disposition": "Consolidated procedure or present conclusion; exact prior observations remain with linked records and the historical checkpoint."
+    },
+    {
+      "source": "DatadogRUM/MultiSceneSupport/REVIEW_TRIAGE.md",
+      "heading": "## Disposition rules",
+      "lines": [
+        51,
+        57
+      ],
+      "sha256": "7936602398df16630d6c957eae13f489e613f7adb0d93fd5effcec1ffb521f49",
+      "current_owner": "REVIEW_TRIAGE.md",
+      "historical_owners": [],
+      "disposition": "Consolidated procedure or present conclusion; exact prior observations remain with linked records and the historical checkpoint."
+    },
+    {
+      "source": "DatadogRUM/MultiSceneSupport/COMPONENT_REVIEW.md",
+      "heading": "# Incremental multi-scene component review",
+      "lines": [
+        1,
+        25
+      ],
+      "sha256": "f3ac645a77cea727f7086238d252a7ae6c71e359a70854782483ee3a9ab6c5ae",
+      "current_owner": "COMPONENT_REVIEW.md",
+      "historical_owners": [],
+      "disposition": "Consolidated procedure or present conclusion; exact prior observations remain with linked records and the historical checkpoint."
+    },
+    {
+      "source": "DatadogRUM/MultiSceneSupport/COMPONENT_REVIEW.md",
+      "heading": "## Responsibility results",
+      "lines": [
+        26,
+        41
+      ],
+      "sha256": "c47a5a7e66e236cf9679527e6f1d3356feda3b95f800ba3bf2f1c7c0c2746894",
+      "current_owner": "COMPONENT_REVIEW.md",
+      "historical_owners": [],
+      "disposition": "Consolidated procedure or present conclusion; exact prior observations remain with linked records and the historical checkpoint."
+    },
+    {
+      "source": "DatadogRUM/MultiSceneSupport/COMPONENT_REVIEW.md",
+      "heading": "## Historical findings and repair evidence",
+      "lines": [
+        42,
+        149
+      ],
+      "sha256": "2e56a7d37886696a50450296e04c51c0b7eac80b7e25e0f3ab1de8d05a2c018f",
+      "current_owner": "COMPONENT_REVIEW.md",
+      "historical_owners": [
+        "Results/EXP-174-observer-delivery.json"
+      ],
+      "disposition": "Consolidated procedure or present conclusion; exact prior observations remain with linked records and the historical checkpoint."
+    },
+    {
+      "source": "DatadogRUM/MultiSceneSupport/COMPONENT_REVIEW.md",
+      "heading": "## Review and extraction boundary",
+      "lines": [
+        150,
+        156
+      ],
+      "sha256": "61a5a227170853e69a55b7b23eb706c15e69df312b4de3b7eab204ed6154544c",
+      "current_owner": "COMPONENT_REVIEW.md",
+      "historical_owners": [],
+      "disposition": "Consolidated procedure or present conclusion; exact prior observations remain with linked records and the historical checkpoint."
+    }
+  ],
+  "preserved_excerpts": [
+    {
+      "source": "PRODUCTION_SAFETY_REVIEW.md",
+      "start_line": 236,
+      "end_line": 375,
+      "sha256": "68834fcf194a7ca27d5b5dd2d6e3bebdc8263c8bdf6cc976ceec64c3112e0c31",
+      "history_anchor": "original-safety-review"
+    },
+    {
+      "source": "COMPONENT_REVIEW.md",
+      "start_line": 42,
+      "end_line": 149,
+      "sha256": "2e56a7d37886696a50450296e04c51c0b7eac80b7e25e0f3ab1de8d05a2c018f",
+      "history_anchor": "component-repair-history"
+    },
+    {
+      "source": "ASSESSMENT.md",
+      "start_line": 9,
+      "end_line": 182,
+      "sha256": "fc284d78ede0d86da6d0e6791253b6de8987328573e2d80f4317f6ea64b880cc",
+      "history_anchor": "retired-release-progress-narratives"
+    },
+    {
+      "source": "ASSESSMENT.md",
+      "start_line": 297,
+      "end_line": 344,
+      "sha256": "8106a777f2169e0bbcc4ab1de3f72851264f08040858fd83d8e763e3df1e3f6e",
+      "history_anchor": "retired-environment-and-physical-chronology"
+    },
+    {
+      "source": ".continue-here.md",
+      "start_line": 8,
+      "end_line": 159,
+      "sha256": "703a0c76301a031a20c1aa6d7ffff0149579ec8d0b247861702e6ac01b9bf1f2",
+      "history_anchor": "retired-restart-chronology"
+    },
+    {
+      "source": "TOOLING_RUNBOOK.md",
+      "start_line": 101,
+      "end_line": 105,
+      "sha256": "7682001bc6c9e991da1db3e3adcfe01428c417dba44c94bce98a91266430cd49",
+      "history_anchor": "runbook-observation-01"
+    },
+    {
+      "source": "TOOLING_RUNBOOK.md",
+      "start_line": 259,
+      "end_line": 259,
+      "sha256": "215201e1f253ca9de1c827ed5e55f9d69fad8dcc32540fc7c486a8438aedb8bf",
+      "history_anchor": "runbook-observation-02"
+    },
+    {
+      "source": "TOOLING_RUNBOOK.md",
+      "start_line": 300,
+      "end_line": 305,
+      "sha256": "1b19ad7006bc7c282358d85439a777e49a3ceedc4f11e71cac4b61aae11c1f9c",
+      "history_anchor": "runbook-observation-03"
+    },
+    {
+      "source": "TOOLING_RUNBOOK.md",
+      "start_line": 755,
+      "end_line": 765,
+      "sha256": "3e3d9c06a6fe0fb14ccae10b853e7b7fb1fe2d9319a0ee7fe8cb40ac4b31765e",
+      "history_anchor": "runbook-observation-04"
+    },
+    {
+      "source": "TOOLING_RUNBOOK.md",
+      "start_line": 852,
+      "end_line": 862,
+      "sha256": "51696803d8da278cf7047badeebc249b39bf1bc7c98ef1844704e73ea33617ba",
+      "history_anchor": "runbook-observation-05"
+    },
+    {
+      "source": "TOOLING_RUNBOOK.md",
+      "start_line": 949,
+      "end_line": 954,
+      "sha256": "1f93b73f19e844d5674301cb36474afb06efa8f49da86aab97c6df0286ec14c0",
+      "history_anchor": "runbook-observation-06"
+    },
+    {
+      "source": "TOOLING_RUNBOOK.md",
+      "start_line": 993,
+      "end_line": 998,
+      "sha256": "dfd42d9a2348321fffdcb0920e8a32532b12637503f01c2bd327e16547864724",
+      "history_anchor": "runbook-observation-07"
+    },
+    {
+      "source": "TOOLING_RUNBOOK.md",
+      "start_line": 1075,
+      "end_line": 1083,
+      "sha256": "6cbc9c8b29f9ec1d96d2b6bc35e443d8640c979a47081e5b5bc44a37866bacc4",
+      "history_anchor": "runbook-observation-08"
+    },
+    {
+      "source": "TOOLING_RUNBOOK.md",
+      "start_line": 1211,
+      "end_line": 1218,
+      "sha256": "932a7eaabef9811bae4603c591bf25c83a401258d32d1c65163af3567e278878",
+      "history_anchor": "runbook-observation-09"
+    },
+    {
+      "source": "TOOLING_RUNBOOK.md",
+      "start_line": 1227,
+      "end_line": 1233,
+      "sha256": "3212fa7c308afa7ecefe89900813554317273e52ee442e6e67b3a32824428c88",
+      "history_anchor": "runbook-observation-10"
+    },
+    {
+      "source": "TOOLING_RUNBOOK.md",
+      "start_line": 1235,
+      "end_line": 1240,
+      "sha256": "e99b3d0f059e80af566cee21802ab792d5bfd454f2490edfbc1e942be60e5e27",
+      "history_anchor": "runbook-observation-11"
+    },
+    {
+      "source": "TOOLING_RUNBOOK.md",
+      "start_line": 1749,
+      "end_line": 1753,
+      "sha256": "e5f756f1118f2f1e3bb81ba7444a2e0a0714ac48a97d21f123f5ca658c9fa390",
+      "history_anchor": "runbook-observation-12"
+    },
+    {
+      "source": "TOOLING_RUNBOOK.md",
+      "start_line": 1851,
+      "end_line": 1857,
+      "sha256": "a6860c3bd986a7735f2f132f1a5c99526587ec474b26bcb03e35da3d73e99f32",
+      "history_anchor": "runbook-observation-13"
+    },
+    {
+      "source": "TOOLING_RUNBOOK.md",
+      "start_line": 1888,
+      "end_line": 1892,
+      "sha256": "af0e5ce9d045701b4d92f991180433a69d3306dc9200b1984ffbc760b273d040",
+      "history_anchor": "runbook-observation-14"
+    },
+    {
+      "source": "TOOLING_RUNBOOK.md",
+      "start_line": 1916,
+      "end_line": 1921,
+      "sha256": "bd067d29a0dd897d59e7d5680ce880149f99338f8633f381943d9ed115e532bd",
+      "history_anchor": "runbook-observation-15"
+    },
+    {
+      "source": "TOOLING_RUNBOOK.md",
+      "start_line": 2104,
+      "end_line": 2108,
+      "sha256": "0201b4a00ddc726d35b578a8b812698069427125c209709ad3762dd85b76362d",
+      "history_anchor": "runbook-observation-16"
+    },
+    {
+      "source": "TOOLING_RUNBOOK.md",
+      "start_line": 2118,
+      "end_line": 2123,
+      "sha256": "7224340374698802c16af97a712d5cdf79566c9dd1421f7001085d53bcc59996",
+      "history_anchor": "runbook-observation-17"
+    },
+    {
+      "source": "TOOLING_RUNBOOK.md",
+      "start_line": 2153,
+      "end_line": 2159,
+      "sha256": "a5f4f2d78a374ae5cff86c43541d96010f4f13f0345b02e9055caaf4732a4a1c",
+      "history_anchor": "runbook-observation-18"
+    },
+    {
+      "source": "TOOLING_RUNBOOK.md",
+      "start_line": 2191,
+      "end_line": 2196,
+      "sha256": "56b6be5b004dce5239d59dff0911e74765b87b98dfb6ee90118577e1e835ac96",
+      "history_anchor": "runbook-observation-19"
+    },
+    {
+      "source": "TOOLING_RUNBOOK.md",
+      "start_line": 2212,
+      "end_line": 2216,
+      "sha256": "7e3ea065cdb5fe09a1f6ba3da503a84e2c5d195091a4356ccfa062f5f56f7041",
+      "history_anchor": "runbook-observation-20"
+    },
+    {
+      "source": "TOOLING_RUNBOOK.md",
+      "start_line": 2270,
+      "end_line": 2276,
+      "sha256": "8aed67af88c6b3881f2097c616283654087e05154c4e1392f77e74eccb1e0542",
+      "history_anchor": "runbook-observation-21"
+    },
+    {
+      "source": "TOOLING_RUNBOOK.md",
+      "start_line": 2298,
+      "end_line": 2302,
+      "sha256": "b0e6c4a40a4efbfea56164a6f4c72d870396dd86c8884d882b273c1d67eb7548",
+      "history_anchor": "runbook-observation-22"
+    },
+    {
+      "source": "TOOLING_RUNBOOK.md",
+      "start_line": 2312,
+      "end_line": 2320,
+      "sha256": "777a30bc3413ed9b8efd80fbb310258b4753faf3b49e90cc479b636e8856dd8a",
+      "history_anchor": "runbook-observation-23"
+    },
+    {
+      "source": "TOOLING_RUNBOOK.md",
+      "start_line": 2330,
+      "end_line": 2338,
+      "sha256": "aa268c73f4a8ff7f4c791efa2b23b178a6b2f7de238e5cf3e12901e29a21ac9e",
+      "history_anchor": "runbook-observation-24"
+    },
+    {
+      "source": "TOOLING_RUNBOOK.md",
+      "start_line": 2340,
+      "end_line": 2344,
+      "sha256": "17844574e199600eba9621a3eb5bce6bd1ec545949a7f2bcbd998dc610f4b1a9",
+      "history_anchor": "runbook-observation-25"
+    },
+    {
+      "source": "TOOLING_RUNBOOK.md",
+      "start_line": 2364,
+      "end_line": 2369,
+      "sha256": "fa9bea13a2da9b78b6b5bfc97d6a4f7815ce1b43e1460133b4e5f2e2800e263d",
+      "history_anchor": "runbook-observation-26"
+    },
+    {
+      "source": "TOOLING_RUNBOOK.md",
+      "start_line": 2371,
+      "end_line": 2378,
+      "sha256": "40b07dd147f528a83abf421de5e6751758a48e8be7a333227bf3088f18363c09",
+      "history_anchor": "runbook-observation-27"
+    },
+    {
+      "source": "TOOLING_RUNBOOK.md",
+      "start_line": 2435,
+      "end_line": 2448,
+      "sha256": "b832248320c7a47a83d53ceef39e897ba0ee712cc07802b1fd5387dfc4cd3192",
+      "history_anchor": "runbook-observation-28"
+    },
+    {
+      "source": "TOOLING_RUNBOOK.md",
+      "start_line": 2530,
+      "end_line": 2530,
+      "sha256": "4a507c534fdbfb86cd671418bf80006f9f4b2ffdcbb10209cd9c95af1ba3bad8",
+      "history_anchor": "runbook-observation-29"
+    },
+    {
+      "source": "TOOLING_RUNBOOK.md",
+      "start_line": 2581,
+      "end_line": 2586,
+      "sha256": "17c7b1e52e931690499779662bee3bf13b0c69734eacd08132f2b2310a674493",
+      "history_anchor": "runbook-observation-30"
+    },
+    {
+      "source": "TOOLING_RUNBOOK.md",
+      "start_line": 2639,
+      "end_line": 2643,
+      "sha256": "b1f306fddf895745c53ee55c40af175e1928ef284241f604229959252ea6b841",
+      "history_anchor": "runbook-observation-31"
+    },
+    {
+      "source": "TOOLING_RUNBOOK.md",
+      "start_line": 2645,
+      "end_line": 2653,
+      "sha256": "1e480f0820df054747e8b738c87955a15e5f5b0db123458d230c437106e700dc",
+      "history_anchor": "runbook-observation-32"
+    },
+    {
+      "source": "TOOLING_RUNBOOK.md",
+      "start_line": 2692,
+      "end_line": 2699,
+      "sha256": "441dc7100ac01da4f20a6a30bdd72a28358bbb4335884837eaccb299fefa4309",
+      "history_anchor": "runbook-observation-33"
+    },
+    {
+      "source": "TOOLING_RUNBOOK.md",
+      "start_line": 2914,
+      "end_line": 2921,
+      "sha256": "d473d25613f0f3c02204141259f4ef170050d6119198d99ced475a02e8dd0130",
+      "history_anchor": "runbook-observation-34"
+    }
+  ],
+  "history": "Experiments/DOCUMENTATION_CHECKPOINT_EXP-220.md",
+  "procedure_pages": [
+    "Tooling/BACKEND.md",
+    "Tooling/BUILD_TEST.md",
+    "Tooling/DELIVERY.md",
+    "Tooling/DEVICE_INTERACTION.md",
+    "Tooling/DOCUMENTATION.md",
+    "Tooling/ENVIRONMENT.md",
+    "Tooling/EVIDENCE.md",
+    "Tooling/SCENARIOS.md"
+  ],
+  "preservation": {
+    "baseline_record": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/docs-progressive-s3t5oudr/baseline.json",
+    "unchanged_existing_evidence_files": 221,
+    "user_api_documents": 8,
+    "config_contents_read_hashed_or_copied": false,
+    "verification": "PASS: both protected paths (config metadata/index only), eight user API documents, all 221 existing evidence/register/plan/index/baseline/rejected-approach files unchanged."
+  },
+  "validation": {
+    "status": "PASS",
+    "at": "2026-09-21T20:49:44.270175+00:00",
+    "documentation_checker": {
+      "links": 688,
+      "experiments": 220,
+      "procedures": 8
+    },
+    "unit_tests": {
+      "command": "python3 -B -m unittest discover -s tools/multi-scene -p test_release_checklist.py",
+      "passed": 15,
+      "failed": 0,
+      "note": "Documentation-only temporary fixtures; no native or SDK tests."
+    },
+    "migration_audit": {
+      "complete_old_section_intervals": 99,
+      "exact_preserved_excerpts": 39,
+      "historical_owner_links": "PASS",
+      "existing_inbound_runbook_anchors": "preserved",
+      "historical_assessment_anchor": "redirected to existing EXP-178 checkpoint"
+    },
+    "diff_check": "PASS for edited tracked paths; staged all-path check follows before commit",
+    "initial_link_correction": "Flags result filename corrected after the first checker rejected it; final checker passes."
+  },
+  "next_instruction": "After committing this consolidation, the user authorizes a new bounded 10-hour caffeinate session and resuming project work. EXP-220 original deadline remains closed; saved preparation and fresh execution admission are required.",
+  "excerpt_format": "Exact original line content in inert code fences, trimming only trailing blank lines; excerpt SHA-256 covers original source bytes including those blank lines.",
+  "document_sizes": {
+    ".continue-here.md": {
+      "before_lines": 182,
+      "after_lines": 93,
+      "before_words": 1762,
+      "after_words": 669
+    },
+    "DatadogRUM/MultiSceneSupport/TOOLING_RUNBOOK.md": {
+      "before_lines": 3028,
+      "after_lines": 145,
+      "before_words": 26478,
+      "after_words": 1144
+    },
+    "DatadogRUM/MultiSceneSupport/ASSESSMENT.md": {
+      "before_lines": 344,
+      "after_lines": 140,
+      "before_words": 4740,
+      "after_words": 2224
+    },
+    "DatadogRUM/MultiSceneSupport/PRODUCTION_SAFETY_REVIEW.md": {
+      "before_lines": 611,
+      "after_lines": 76,
+      "before_words": 7183,
+      "after_words": 1141
+    },
+    "DatadogRUM/MultiSceneSupport/REVIEW_TRIAGE.md": {
+      "before_lines": 57,
+      "after_lines": 57,
+      "before_words": 1457,
+      "after_words": 1061
+    },
+    "DatadogRUM/MultiSceneSupport/COMPONENT_REVIEW.md": {
+      "before_lines": 156,
+      "after_lines": 56,
+      "before_words": 1708,
+      "after_words": 719
+    }
+  },
+  "checker_sources": {
+    "tools/multi-scene/release_checklist.py": "82efd794c224991b392c81f2d30da53a96557692b9cfed4cb434e1e83bce7803",
+    "tools/multi-scene/test_release_checklist.py": "c2eebd3eb6c27b6d7549b728b83220f8b0051e10a31416b15f9cd4ea2930ffaf"
+  }
+}

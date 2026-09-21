@@ -1,0 +1,159 @@
+# Device interaction and cleanup
+
+Read when an admitted scenario needs installation, native input or cleanup.
+[Environment](ENVIRONMENT.md) owns connection/toolchain readiness;
+[evidence](EVIDENCE.md) owns source and semantic acceptance.
+
+## Prepare before opening a session
+
+Read the live Xcode-provided interaction instructions. Export any required skill
+to a fresh absolute path and inspect it before interaction. Follow the live tool
+schema and any required delegation: the same owner must start, install, capture
+and end its session. Keys are scoped to the creating context. Missing supported
+interaction instructions are a workflow limit; do not invent commands.
+
+Finish source review, scenario choice, expected results and input strategy first.
+Start a workspace session with a fresh identifier, use the returned key exactly,
+and preserve each live parameter spelling (`interactionSessionKey` versus
+`interactSessionKey`). Do not start a replacement merely because a key looks
+human-readable. Confirm invalid/expired state through an actual call first.
+
+## Clean installation and launch
+
+1. Resolve the exact target and probe bundle; qualify physical connection/signing
+   before mutation.
+2. Terminate only its running process, uninstall only that bundle, and prove app
+   and data-container absence before install. A session opened to discover the
+   target does not itself contaminate this boundary.
+3. Install the frozen binary and compare its complete installed Mach-O inventory.
+4. Launch with inherited arguments plus `--probe-scenario <id>`,
+   `--probe-run-id <fresh-id>` and `--probe-run-mode clean|restoration`. Do not edit
+   shared schemes for a run. Existing output/receipt identities must be rejected.
+5. Confirm actual process, run ID, configuration and scenario readiness before
+   the first critical action. Retain raw records from process start.
+
+Restoration uses its defined predecessor/data container, not this clean sequence.
+A clean app container may leave SwiftUI window-server values: normalize telemetry
+run IDs to this launch while preserving routed values only for window identity.
+Check every view in the resulting session. An unexpected initial scene is INVALID;
+do not rename it to the expected one. Use a separately admitted fresh target or
+proven window cleanup. A stale `get_app_container` path after reboot needs path-
+existence evidence, scoped uninstall and absent app/data lookup before installation.
+
+## Physical signing and installed identity
+
+The probe can compile with signing disabled. Before uninstalling, require a valid
+Apple Development identity in the actual user's keychain, a device-granted profile,
+command-local team selection and an `arm64` build. Restricted-context zero identities
+must be checked in user context before declaring credentials unavailable.
+Verify app signature and embedded profile before install; do not commit signing
+material or change accounts, credentials or persistent build settings.
+
+If scheme-wide signing contaminates package targets, the local fallback is an exact
+unsigned build copied to a fresh directory. Use an existing profile/certificate
+that grants this device and bundle; derive minimal concrete entitlements, inventory
+nested Mach-O code, sign depth-first then the outer bundle, and perform strict/deep
+verification. Do not use `--deep` to create signatures. Preserve signed and unsigned
+copies and independent team/certificate/device/app-ID checks. Creating or replacing
+credentials requires user involvement. An unsigned install rejection is not SDK
+execution; verify app/process absence and retain the original logs.
+
+CoreDevice app-data transfer does not expose the bundle. Use the fixture's
+pre-SDK installed-code receipt with `MULTISCENE_CODE_IDENTITY_RUN_ID` and
+`MULTISCENE_CODE_IDENTITY_REVISION`, then compare it using
+[installed_code.py](../../../tools/multi-scene/acceptance/installed_code.py).
+Require exact run/revision, process, bundle/executable and all Mach-O hashes,
+including the Debug dylib. A reused/malformed receipt prevents initialization.
+A generic arm64 build is acceptable only when declared; install/run proof must
+still come from the exact physical device. Do not suspend acceptance to attempt
+an unverified LLDB file transfer.
+
+`devicectl ... --console --log-output` may put only launcher status in that file.
+Capture actual console separately and verify the durable JSONL before ending.
+Command exit 0 does not establish attachment, console capture or app success.
+
+## Input and readiness boundaries
+
+For interactive scenarios capture live hierarchy, confirm the expected identifier
+and hit point/visible bounds, send the prepared input, then collect native effects,
+hierarchy and screenshots. Activate the observed bundle when necessary. Do not
+reuse guessed coordinates, alter layout to make input pass, or substitute a
+programmatic gesture. Use the exact admitted drag duration and retry policy.
+
+Fully automated signal-driven scenarios do not need `Synthesize` to advance.
+Accessibility collection can block them; collect after terminal unless earlier
+visual proof is part of the contract. Preserve a failed capture before admitting
+any changed-configuration comparison. No general retry permission follows.
+
+`open-window` consumes its `scene-ready` acknowledgement. Do not wait for that same
+signal twice. For a later occurrence use an after-index/fresh-occurrence condition;
+a stale earlier event can satisfy a poorly placed wait. A short marker can occur
+before subscription: prefer terminal evidence when it already proves that marker.
+A delayed task is not an exact stop clock; explicitly gate work before stop and
+after the newly revealed destination. Neither sleeps nor later assertions repair
+missing precritical readiness.
+
+An expired session before input proves no gesture. A fresh session can retain the
+clean boundary only if logs prove no install, launch or state mutation occurred
+since it; otherwise repeat the complete admitted clean setup with a new run ID.
+Preserve any partial attempt rather than merging it into a later pass.
+
+## Duo display and input
+
+Verify the active inner display and actual window geometry/lifecycle. Use observed
+Device Hub pose controls, then require fresh display and native geometry readback.
+The supplied platform restricts new Duo windows to the inner display. An AX tree,
+requested orientation or successful tap/drag alone cannot prove visible pairing,
+a fold or an interactive transition. A black inactive-display capture is not
+layout evidence; select the actual active-display ID for direct capture.
+
+For `appResize`, distinguish no active session (`24004` in the recorded preflight)
+from unsupported capability. Keep the owned resize process alive through the
+sweep, record display size separately from app bounds, and end only that session.
+Cleanup may background the scene; export before that boundary and do not claim
+uninterrupted ownership across it. A black resize capture limits visible claims.
+
+Require accepted route and fresh native geometry before work; materialization is
+an observation, not a route commit. Use lifecycle/scene-ready/geometry receipts,
+not later assertions that copy geometry. Admit each phase only after the preceding
+resource/end pair. Join declared custom actions by exact IDs and `action.type`;
+automatic actions can inherit marker attributes and must remain separate.
+
+Native gesture readiness requires compact geometry, active destination and an
+actual transition coordinator. Element existence is weaker than hittability;
+follow the observed overlay/Back control and prove the intended native effect.
+A switch needs callback plus value change, and a scroll must actually move content.
+Successful tool delivery without recognized begin/resolution is inconclusive.
+Stop at the admitted equivalent-attempt limit; preserve unexecuted prerequisites.
+
+For simultaneous visibility retain both scene identities, geometry and activation
+through the critical interval, with suitable continuous visual evidence. Two
+registered fullscreen scenes with one backgrounded do not satisfy the requirement.
+[Simulator fidelity](../DUO_SIMULATOR_ASSESSMENT.md) and each gate retain physical
+limits; no tool workaround waives them.
+
+## Cleanup and interruption
+
+Export app JSONL, runner checkpoints/hierarchy/images, console and partial xcresult
+before uninstall. Bind each to this run and contiguous sequence. Preserve raw
+bytes even if parsing fails; ignore foreign receipts and reject symlinks. Cleanup
+must run after attempted boot/install, including preparation failures, and retain
+capture errors alongside the primary failure.
+
+Terminate only matched app/runner/process groups, reap children before checking
+absence, uninstall only task bundles, verify app/data/process absence and restore
+owned simulator boot state. A failed cleanup receipt stays failed; later absence
+proof is separately timestamped. Preserve original errors and stable runtime/device
+identity; only declared usage/size inventory fields may vary.
+
+After reconnecting a physical device, resolve its installed bundle and fresh PID.
+A reused PID alone does not identify the old run. Verify a different process before
+termination, then read a fresh inventory proving absence. Transport loss leaves
+cleanup unverified; continue cleanup after reconnection without repeating a passing
+capture. Restore temporarily authorized system preferences, and stop only the
+owned keep-awake process at the agreed boundary.
+
+On pause, preserve source/definition/helpers/controls and the original deadline.
+Close the attempt, release the host and write the sole next action in the cursor.
+A later execution needs fresh discovery and a separate bounded admission; it does
+not silently extend the old run or repeat accepted tests.

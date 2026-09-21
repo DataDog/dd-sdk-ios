@@ -171,6 +171,71 @@ ACTIVE_DOCUMENTS = [
 ]
 
 
+DOCUMENT_ROOT = 'DatadogRUM/MultiSceneSupport/'
+TOOLING_DIRECTORY = DOCUMENT_ROOT + 'Tooling'
+RUNBOOK = DOCUMENT_ROOT + 'TOOLING_RUNBOOK.md'
+DOCUMENT_BUDGETS = {
+    RUNBOOK: (200, 1800),
+    '.continue-here.md': (110, 1100),
+}
+PROCEDURE_BUDGET = (320, 3600)
+HISTORICAL_DOCUMENTS = [
+    DOCUMENT_ROOT + 'Experiments/DOCUMENTATION_CHECKPOINT_EXP-178.md',
+    DOCUMENT_ROOT + 'Experiments/DOCUMENTATION_CHECKPOINT_EXP-220.md',
+]
+
+
+def procedure_documents(repo):
+    """Discover nested procedures so newly added pages cannot escape link checks."""
+    paths = sorted((repo / TOOLING_DIRECTORY).rglob('*.md'))
+    if not paths:
+        raise ValueError('runbook must route to at least one procedure')
+    if any(path.is_symlink() for path in paths):
+        raise ValueError('procedure documents must be regular files, not symlinks')
+    return [str(path.relative_to(repo)) for path in paths]
+
+
+def validate_reading_budget(name, text, budget):
+    # Include tables and code fences: moving a journal into either does not make
+    # the entry point cheaper to read. The word bound also catches giant lines.
+    lines, words = budget
+    if len(text.splitlines()) > lines or len(text.split()) > words:
+        raise ValueError(name + ': reading budget exceeded; consolidate or route to its owner')
+
+
+def validate_document_layout(repo, procedures):
+    from urllib.parse import unquote
+    for name, budget in DOCUMENT_BUDGETS.items():
+        validate_reading_budget(name, (repo / name).read_text(), budget)
+    runbook = repo / RUNBOOK
+    routed = set()
+    for raw in re.findall(r'\]\((<[^>]+>|[^)\s]+)\)', prose(runbook.read_text())):
+        value = unquote(raw.strip('<>'))
+        if re.match(r'^[a-zA-Z][\w+.-]*:', value):
+            continue
+        path = value.partition('#')[0]
+        if path:
+            routed.add((runbook.parent / path).resolve())
+    for name in procedures:
+        path = repo / name
+        if path.resolve() not in routed:
+            raise ValueError(name + ': procedure missing from runbook routes')
+        validate_reading_budget(name, path.read_text(), PROCEDURE_BUDGET)
+
+    # Long exact progress paragraphs in multiple active summaries caused drift.
+    # Tables/short common rules may share vocabulary; narratives have one owner.
+    seen = {}
+    for name in ['.continue-here.md', DOCUMENT_ROOT + 'ASSESSMENT.md',
+                 DOCUMENT_ROOT + 'PRODUCTION_SAFETY_REVIEW.md']:
+        for paragraph in re.split(r'\n\s*\n', prose((repo / name).read_text())):
+            normalized = ' '.join(paragraph.split())
+            if len(normalized.split()) < 60 or normalized.startswith(('#', '|')):
+                continue
+            if normalized in seen and seen[normalized] != name:
+                raise ValueError(name + ': duplicated narrative from ' + seen[normalized])
+            seen[normalized] = name
+
+
 def prose(text):
     """Ignore quoted code/history when checking active links and instructions."""
     result, fence = [], None
@@ -227,7 +292,10 @@ def validate_links(repo, names):
 
 
 def validate_documents(repo, gates):
-    texts = {name: prose((repo / name).read_text()) for name in ACTIVE_DOCUMENTS}
+    procedures = procedure_documents(repo)
+    names = ACTIVE_DOCUMENTS + procedures
+    validate_document_layout(repo, procedures)
+    texts = {name: prose((repo / name).read_text()) for name in names}
     index = texts['DatadogRUM/MultiSceneSupport/EXPERIMENTS.md']
     ids = re.findall(r'^\| (?:<a id="exp-\d{3}"></a>)?(EXP-\d{3}) \|', index, re.M)
     records = repo / 'DatadogRUM/MultiSceneSupport/Experiments'
@@ -252,8 +320,8 @@ def validate_documents(repo, gates):
         if name != 'DatadogRUM/MultiSceneSupport/PLAN.md':
             if re.search(r'\b\d+\s*/\s*\d+\s+(?:release\s+)?gates?\s+closed', text, re.I):
                 raise ValueError(name + ': gate totals belong in generated progress')
-    history = 'DatadogRUM/MultiSceneSupport/Experiments/DOCUMENTATION_CHECKPOINT_EXP-178.md'
-    return {'links': validate_links(repo, ACTIVE_DOCUMENTS + [history]), 'experiments': len(ids)}
+    return {'links': validate_links(repo, names + HISTORICAL_DOCUMENTS),
+            'experiments': len(ids), 'procedures': len(procedures)}
 
 
 def progress_document(register, gates):

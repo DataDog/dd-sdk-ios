@@ -202,16 +202,80 @@ class ReleaseChecklistTests(unittest.TestCase):
             with self.assertRaisesRegex(ValueError, "missing link target"):
                 CHECKLIST.validate_links(root, ["source.md"])
 
+    def document_fixture(self, root):
+        for name in CHECKLIST.ACTIVE_DOCUMENTS + CHECKLIST.HISTORICAL_DOCUMENTS:
+            path = root / name
+            path.parent.mkdir(parents=True, exist_ok=True)
+            path.write_text("# Document\n")
+        procedure = root / CHECKLIST.TOOLING_DIRECTORY / "BUILD.md"
+        procedure.parent.mkdir(parents=True)
+        procedure.write_text("# Build\n[plan](../PLAN.md#document)\n")
+        (root / CHECKLIST.RUNBOOK).write_text("# Runbook\n[Build](Tooling/BUILD.md)\n")
+        (root / CHECKLIST.DOCUMENT_ROOT / "EXPERIMENTS.md").write_text(
+            '| <a id="exp-001"></a>EXP-001 | T01 | PASS | Owner matched | [record](PLAN.md) |\n')
+        return CHECKLIST.validate(self.register())
+
+    def test_new_nested_procedure_is_checked_and_must_be_routed(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            gates = self.document_fixture(root)
+            self.assertEqual(CHECKLIST.validate_documents(root, gates)["procedures"], 1)
+            nested = root / CHECKLIST.TOOLING_DIRECTORY / "native" / "INPUT.md"
+            nested.parent.mkdir()
+            nested.write_text("# Input\n[missing](../../PLAN.md#absent)\n")
+            with self.assertRaisesRegex(ValueError, "procedure missing from runbook routes"):
+                CHECKLIST.validate_documents(root, gates)
+            runbook = root / CHECKLIST.RUNBOOK
+            runbook.write_text(runbook.read_text() + '[Input](Tooling/native/INPUT.md)\n')
+            with self.assertRaisesRegex(ValueError, "missing heading"):
+                CHECKLIST.validate_documents(root, gates)
+            nested.write_text("# Input\n[plan](../../PLAN.md#document)\n")
+            self.assertEqual(CHECKLIST.validate_documents(root, gates)["procedures"], 2)
+            nested.unlink()
+            with self.assertRaisesRegex(ValueError, "missing link target"):
+                CHECKLIST.validate_documents(root, gates)
+
+    def test_reading_budgets_reject_journals_giant_lines_and_fenced_growth(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            gates = self.document_fixture(root)
+            cases = [
+                (CHECKLIST.RUNBOOK, "detail\n" * 201),
+                (CHECKLIST.RUNBOOK, "detail " * 1801),
+                (".continue-here.md", "detail\n" * 111),
+                (".continue-here.md", "detail " * 1101),
+                (CHECKLIST.TOOLING_DIRECTORY + "/BUILD.md", "```text\n" + "detail\n" * 321 + "```\n"),
+                (CHECKLIST.TOOLING_DIRECTORY + "/BUILD.md", "detail " * 3601),
+            ]
+            for name, growth in cases:
+                with self.subTest(name=name, size=len(growth)):
+                    path = root / name
+                    original = path.read_text()
+                    path.write_text(original + growth)
+                    with self.assertRaisesRegex(ValueError, "reading budget exceeded"):
+                        CHECKLIST.validate_documents(root, gates)
+                    path.write_text(original)
+            CHECKLIST.validate_documents(root, gates)
+
+    def test_long_progress_narrative_cannot_be_copied_between_active_summaries(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            gates = self.document_fixture(root)
+            paragraph = ' '.join('observation' + str(i) for i in range(70))
+            assessment = root / CHECKLIST.DOCUMENT_ROOT / "ASSESSMENT.md"
+            safety = root / CHECKLIST.DOCUMENT_ROOT / "PRODUCTION_SAFETY_REVIEW.md"
+            assessment.write_text("# Assessment\n\n" + paragraph + "\n")
+            safety.write_text("# Safety\n\n" + paragraph.replace(' ', '\n', 3) + "\n")
+            with self.assertRaisesRegex(ValueError, "duplicated narrative"):
+                CHECKLIST.validate_documents(root, gates)
+            safety.write_text("# Safety\n\nSee the assessment for support conclusions.\n")
+            CHECKLIST.validate_documents(root, gates)
+
     def test_index_and_restart_ownership_guards(self):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
-            for name in CHECKLIST.ACTIVE_DOCUMENTS:
-                path = root / name
-                path.parent.mkdir(parents=True, exist_ok=True)
-                path.write_text("# Document\n")
-            historical = root / "DatadogRUM/MultiSceneSupport/Experiments/DOCUMENTATION_CHECKPOINT_EXP-178.md"
-            historical.parent.mkdir(parents=True, exist_ok=True)
-            historical.write_text("# History\n")
+            gates = self.document_fixture(root)
+            historical = root / CHECKLIST.HISTORICAL_DOCUMENTS[0]
             index = root / "DatadogRUM/MultiSceneSupport/EXPERIMENTS.md"
             row = '| <a id="exp-001"></a>EXP-001 | T01 | PASS | Owner matched | [record](PLAN.md) |\n'
             index.write_text(row)
