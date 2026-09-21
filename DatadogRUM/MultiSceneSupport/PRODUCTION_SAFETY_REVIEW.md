@@ -51,6 +51,8 @@ occur before the frozen boundary. SDK-off remains unrun; all input variability,
 command failure and observer limits remain recorded. No SDK cause, coverage pass
 or gate closure follows. A different callback-side witness requires fresh admission.
 
+The [controlled app preparation](Results/S2-F08-app-preparation.json) retains a failed baseline build and generated-input drift. The reviewed app-only compatibility adaptation is symmetric; both frozen SDKs and all64dependency pins are unchanged. Both app inputs and30matching resource outputs are now frozen, but no corrected build or app launch ran within the original window. F08 remains open; unavailable Trace client stats are outside this comparison.
+
 Task, native core/display-link, bounded cache, stopped-view/Resource and actual
 UIKit/SwiftUI host lifetimes now have source-matched evidence for this composition.
 [EXP-215](Results/EXP-215-native-view-lifetime.json) observes host/content release

@@ -2724,7 +2724,7 @@
           ],
           "decisive_test": "Freeze app and SDK source/build identity; compare ordinary journeys and exact telemetry expectations, long sessions, resources and WebView correlation. Include internal TestFlight evaluation after separate distribution authorization.",
           "environment": "Controlled normal-mode Datadog app; probe RUM application43cbc59b-0626-438b-a3d9-c6417a4545a3; service ios-app-rum-release-validation; simulator/physical host",
-          "evidence": "App source audit complete at6e33f1c18. User authorizes controlled normal-mode app sessions in the probes RUM application with a distinct service. Candidate/baseline configuration, builds and exact backend comparison remain; no live-customer baseline claimed. Original app organization lookup failure is preserved but no longer blocks controlled runs.",
+          "evidence": "App source6e33f1c18 is frozen against baseline62f64 and candidatec9fa. Controlled probe-app/service configuration is authorized. The first baseline build stopped at four compiler diagnostics and generated-input drift; no app launch. A reviewed symmetric two-file app adaptation and30paired SwiftGen outputs now have frozen inputs, but the original window cannot admit another full build. Results/S2-F08-app-preparation.json owns the stopped attempts and prepared continuation; no comparison or gate credit.",
           "required": true
         },
         "S3": {

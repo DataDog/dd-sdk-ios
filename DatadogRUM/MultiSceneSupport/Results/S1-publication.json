@@ -196,7 +196,7 @@
     "CI failures: E01 Build Dependencies; DL01 iOS; E02 macOS; E04 watchOS; E05 macOS. Mosaic sign-in pending; preserve failures without an SDK-cause claim or blind retries.",
     "H00 must actually merge with separate authorization before E01 rebase/retarget."
   ],
-  "last_updated_at": "2026-09-21T14:25:55.680129+00:00",
+  "last_updated_at": "2026-09-21T15:21:11.875636+00:00",
   "signed_outgoing_commits_at_initial_publication": 16,
   "latest_update": {
     "id": "E03",
@@ -205,9 +205,9 @@
     "publication_receipt_sha256": "17ec3c61e9b48e0916507a6508ef16d9320c906278b7a34a5f396b95a78833e7"
   },
   "latest_ci": {
-    "record": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/deliveries/s1-publication-20260921-vwps6cdd/ci-third-check.json",
-    "sha256": "830c639b3f149211679ba573ac3ab7454cc2ef48331dfcfc0fe6ba35bc963f37",
-    "checked_at": "2026-09-21T14:22:52.046378+00:00",
+    "record": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/deliveries/s1-publication-20260921-vwps6cdd/ci-fourth-check.json",
+    "sha256": "b5f8e575bd35274377c5deb512ccc35b4651da473ca8f54e09d1dbf47b8fc443",
+    "checked_at": "2026-09-21T15:17:00.317290+00:00",
     "all_seven_mergeable": true,
     "failed_checks": {
       "3215": [
@@ -223,12 +223,37 @@
         "dd-gitlab/Unit Tests (macOS)"
       ],
       "3219": [
+        "DDCI Status",
         "dd-gitlab/Unit Tests (watchOS)"
       ],
       "3220": [
+        "DDCI Status",
         "dd-gitlab/Unit Tests (macOS)"
       ]
     },
-    "log_access": "Mosaic sign-in pending; no cause established"
+    "log_access": "Mosaic sign-in pending; no cause established",
+    "pending_checks": {
+      "3214": [
+        "devflow/mergegate"
+      ],
+      "3216": [
+        "devflow/mergegate"
+      ],
+      "3217": [
+        "devflow/mergegate"
+      ],
+      "3218": [
+        "devflow/mergegate",
+        "DDCI Status",
+        "dd-gitlab/Smoke Tests (iOS)",
+        "dd-gitlab/Smoke Tests (tvOS)"
+      ],
+      "3219": [
+        "devflow/mergegate"
+      ],
+      "3220": [
+        "devflow/mergegate"
+      ]
+    }
   }
 }

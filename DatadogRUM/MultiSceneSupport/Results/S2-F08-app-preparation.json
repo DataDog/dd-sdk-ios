@@ -105,7 +105,7 @@
   "preparation_receipt": "prepared.json",
   "build_invocations_used": 0,
   "runtime_launches_used": 0,
-  "checkpoint_at": "2026-09-21T14:07:46.273534+00:00",
+  "checkpoint_at": "2026-09-21T15:21:11.875636+00:00",
   "tool_preflight": "Task-local SwiftGen6.6.3 is verified; original14:11:38UTC attempt remains stopped with zero builds. New independently admitted continuation has separate definition/deadline and fresh outputs.",
   "deadline_policy": "Original14:11:38UTC deadline remains; no automatic extension while S1 reconciliation takes priority.",
   "stop_receipt": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-app-build-preparation-d9or72eq/stop-receipt.json",
@@ -123,6 +123,43 @@
     "stop_receipt": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-app-build-continuation-78brzy2r/stop-receipt.json",
     "dependency_installs_used": 1,
     "generation_invocations": 0,
-    "next": "Independently review exact pinned-cache recovery; no retry or deadline extension is implicitly admitted."
-  }
+    "next": "Independently review exact pinned-cache recovery; no retry or deadline extension is implicitly admitted.",
+    "recovery": {
+      "root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-app-build-continuation-78brzy2r/cache-recovery",
+      "admission": "Independent cache and generated-output reviews; original attempts preserved",
+      "exact_package_repositories_per_arm": 64,
+      "checksum_matched_binary_archives_per_arm": 11,
+      "baseline_install": "PASS",
+      "baseline_generation": "Command exit0; original strict postflight rejection retained, exact generated-output classification admitted offline",
+      "baseline_build_receipt": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-app-build-continuation-78brzy2r/cache-recovery/baseline/build-receipt.json",
+      "build_input_freeze": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-app-build-continuation-78brzy2r/cache-recovery/baseline/build-input-freeze.json",
+      "invalid_help_inspection": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-app-build-continuation-78brzy2r/help-inspection-invalid.json",
+      "build_invocations": 1,
+      "runtime_launches": 0,
+      "baseline_build_status": "STOPPED_EXIT_65",
+      "compile_stop_receipt": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-app-build-continuation-78brzy2r/compile-stop.json",
+      "candidate_builds": 0,
+      "next": "Review symmetric validation configuration and missing Trace API adaptation plus pre-generated resource inputs; original SDK/app revisions and failed build retained."
+    },
+    "compatibility_preparation": {
+      "root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-app-build-continuation-78brzy2r/compatibility",
+      "status": "PREPARED_BUILD_ADMISSION_STOPPED_TIME_BUDGET",
+      "stop_receipt": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-app-build-continuation-78brzy2r/compatibility/stop-receipt.json",
+      "definition": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-app-build-continuation-78brzy2r/compatibility/definition.json",
+      "patch_receipt": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-app-build-continuation-78brzy2r/compatibility/patch-receipt.json",
+      "resources": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-app-build-continuation-78brzy2r/compatibility/resource-generation.json",
+      "oracle_self_check": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-app-build-continuation-78brzy2r/compatibility/oracle-self-check.json",
+      "frozen_inputs": {
+        "baseline": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-app-build-continuation-78brzy2r/compatibility/baseline/build-input-freeze.json",
+        "candidate": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-app-build-continuation-78brzy2r/compatibility/candidate/build-input-freeze.json"
+      },
+      "sdk_source_changes": 0,
+      "source_entries_per_arm": 699,
+      "generated_resource_outputs_per_arm": 30,
+      "new_builds": 0,
+      "runtime_launches": 0,
+      "trace_client_stats": "Unavailable in both frozen SDKs; removed argument symmetrically, not qualified by these app builds."
+    }
+  },
+  "current_status": "PREPARED_BUILD_ADMISSION_STOPPED_TIME_BUDGET"
 }

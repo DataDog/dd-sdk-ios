@@ -2933,3 +2933,13 @@ When a tracked-file manifest intentionally hashes regular files, validate tracke
 directory symlinks separately against mode, index/HEAD blob and literal link target.
 Do not silently omit an unexpected path. Preserve the rejected inventory before
 a reviewed guard correction; it adds no build or runtime credit.
+
+Freeze resource-generator outputs before building the controlled app. Run only the
+existing literal SwiftGen commands with the verified binary and frozen templates/
+resources; require paired hashes and no post-build drift. Keep comment-only empty
+outputs separate from compiled inputs. Account for Xcode-generated asset symbols
+and framework version sources only at their exact target/platform paths with frozen
+reference hashes and exact source/object membership; reject every unknown input.
+Compiler source excerpts may contain app credential literals, so redact those in
+addition to resolved sensitive build settings. No failed compile or corrected
+preflight oracle grants runtime or gate credit.
