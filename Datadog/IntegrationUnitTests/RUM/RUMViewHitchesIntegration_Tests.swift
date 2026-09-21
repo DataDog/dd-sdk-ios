@@ -12,8 +12,8 @@ import TestUtilities
 @testable import DatadogInternal
 
 /// Mirrors `RUMViewHitchesIntegrationTests` with `featureFlags[.viewUpdates] = true`.
-/// With the flag the stop-view write produces a `RUMViewUpdateEvent` (delta). Assertions fold
-/// the target view's full baseline and ordered deltas, because omitted delta fields are unchanged.
+/// Assertions fold full baselines and ordered deltas. A full event replaces the baseline;
+/// fields omitted from a delta keep their previous values.
 final class RUMViewHitchesIntegration_Tests: XCTestCase {
     private var core: DatadogCoreProxy! // swiftlint:disable:this implicitly_unwrapped_optional
 
@@ -50,6 +50,9 @@ final class RUMViewHitchesIntegration_Tests: XCTestCase {
         XCTAssertEqual(customViews.count, 1)
         let customView = try XCTUnwrap(customViews.first)
         let documents = hitchDocuments(for: customView)
+        for document in documents {
+            XCTAssertNil(document.slowFramesCount, "Disabled tracking must omit slow_frames")
+        }
 
         let reconstructed = try XCTUnwrap(reconstructHitches(from: documents))
         XCTAssertFalse(reconstructed.isActive)
@@ -123,6 +126,43 @@ final class RUMViewHitchesIntegration_Tests: XCTestCase {
         XCTAssertFalse(hasStoppedHitches(in: explicitEmptyFinalDelta))
     }
 
+    func testReconstructHitches_whenFullDocumentsRecur_itReplacesTheBaseline() throws {
+        func document(
+            _ version: Int64,
+            _ kind: HitchDocument.Kind,
+            isActive: Bool? = nil,
+            slowFramesCount: Int? = nil
+        ) -> HitchDocument {
+            HitchDocument(
+                kind: kind,
+                sessionID: "session",
+                viewID: "view",
+                documentVersion: version,
+                isActive: isActive,
+                slowFramesCount: slowFramesCount
+            )
+        }
+
+        let documents = [
+            document(1, .full, isActive: true, slowFramesCount: 3),
+            document(2, .delta),
+            document(3, .delta),
+            document(4, .delta),
+            document(5, .delta),
+            document(6, .delta),
+            document(7, .full, isActive: true),
+            document(8, .delta)
+        ]
+        let afterBaseline = try XCTUnwrap(reconstructHitches(from: documents))
+        XCTAssertTrue(afterBaseline.isActive)
+        XCTAssertEqual(afterBaseline.slowFramesCount, 0)
+
+        let withFullStop = documents + [document(9, .full, isActive: false, slowFramesCount: 2)]
+        let stopped = try XCTUnwrap(reconstructHitches(from: withFullStop))
+        XCTAssertFalse(stopped.isActive)
+        XCTAssertEqual(stopped.slowFramesCount, 2)
+    }
+
     private struct HitchDocument {
         enum Kind: Equatable {
             case full
@@ -173,8 +213,6 @@ final class RUMViewHitchesIntegration_Tests: XCTestCase {
             !initial.sessionID.isEmpty,
             !initial.viewID.isEmpty,
             let initialIsActive = initial.isActive,
-            ordered.dropFirst().allSatisfy({ $0.kind == .delta }),
-            ordered.last?.kind == .delta,
             Set(ordered.map(\.sessionID)).count == 1,
             Set(ordered.map(\.viewID)).count == 1,
             zip(ordered, ordered.dropFirst()).allSatisfy({ $0.documentVersion < $1.documentVersion })
@@ -185,12 +223,21 @@ final class RUMViewHitchesIntegration_Tests: XCTestCase {
         var isActive = initialIsActive
         var slowFramesCount = initial.slowFramesCount
 
-        for delta in ordered.dropFirst() {
-            if let deltaIsActive = delta.isActive {
-                isActive = deltaIsActive
-            }
-            if let deltaSlowFramesCount = delta.slowFramesCount {
-                slowFramesCount = deltaSlowFramesCount
+        for document in ordered.dropFirst() {
+            switch document.kind {
+            case .full:
+                guard let baselineIsActive = document.isActive else {
+                    return nil
+                }
+                isActive = baselineIsActive
+                slowFramesCount = document.slowFramesCount
+            case .delta:
+                if let deltaIsActive = document.isActive {
+                    isActive = deltaIsActive
+                }
+                if let deltaSlowFramesCount = document.slowFramesCount {
+                    slowFramesCount = deltaSlowFramesCount
+                }
             }
         }
 
