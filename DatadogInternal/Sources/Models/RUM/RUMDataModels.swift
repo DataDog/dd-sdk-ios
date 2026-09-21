@@ -424,6 +424,9 @@ public struct RUMActionEvent: RUMDataModel, Equatable {
     /// Display properties
     public let display: Display?
 
+    /// Execution context properties
+    public let executionContext: ExecutionContext?
+
     /// Operating system properties
     public let os: OperatingSystem?
 
@@ -472,6 +475,7 @@ public struct RUMActionEvent: RUMDataModel, Equatable {
         case ddtags = "ddtags"
         case device = "device"
         case display = "display"
+        case executionContext = "execution_context"
         case os = "os"
         case service = "service"
         case session = "session"
@@ -502,6 +506,7 @@ public struct RUMActionEvent: RUMDataModel, Equatable {
     ///   - ddtags: Tags of the event in key:value format, separated by commas (e.g. 'env:prod,version:1.2.3')
     ///   - device: Device properties
     ///   - display: Display properties
+    ///   - executionContext: Execution context properties
     ///   - os: Operating system properties
     ///   - service: The service name for this application
     ///   - session: Session properties
@@ -527,6 +532,7 @@ public struct RUMActionEvent: RUMDataModel, Equatable {
         ddtags: String? = nil,
         device: Device? = nil,
         display: Display? = nil,
+        executionContext: ExecutionContext? = nil,
         os: OperatingSystem? = nil,
         service: String? = nil,
         session: Session,
@@ -552,6 +558,7 @@ public struct RUMActionEvent: RUMDataModel, Equatable {
         self.ddtags = ddtags
         self.device = device
         self.display = display
+        self.executionContext = executionContext
         self.os = os
         self.service = service
         self.session = session
@@ -1167,6 +1174,47 @@ public struct RUMActionEvent: RUMDataModel, Equatable {
         }
     }
 
+    /// Execution context properties
+    public struct ExecutionContext: Codable, Equatable {
+        /// UUID of the execution context
+        public let id: String
+
+        /// Execution context name
+        public let name: String?
+
+        /// Type of the execution context
+        public let type: ExecutionContextType
+
+        public enum CodingKeys: String, CodingKey {
+            case id = "id"
+            case name = "name"
+            case type = "type"
+        }
+
+        /// Execution context properties
+        ///
+        /// - Parameters:
+        ///   - id: UUID of the execution context
+        ///   - name: Execution context name
+        ///   - type: Type of the execution context
+        public init(
+            id: String,
+            name: String? = nil,
+            type: ExecutionContextType
+        ) {
+            self.id = id
+            self.name = name
+            self.type = type
+        }
+
+        /// Type of the execution context
+        public enum ExecutionContextType: String, Codable {
+            case mainProcess = "main-process"
+            case rendererProcess = "renderer-process"
+            case utilityProcess = "utility-process"
+        }
+    }
+
     /// Session properties
     public struct Session: Codable, Equatable {
         /// Whether this session has a replay
@@ -1264,6 +1312,9 @@ public struct RUMActionEvent: RUMDataModel, Equatable {
         /// Is the action starting in the foreground (focus in browser)
         public let inForeground: Bool?
 
+        /// Whether this view was synthetically created to carry view-less events
+        public let isFake: Bool?
+
         /// User defined name of the view
         public var name: String?
 
@@ -1276,6 +1327,7 @@ public struct RUMActionEvent: RUMDataModel, Equatable {
         public enum CodingKeys: String, CodingKey {
             case id = "id"
             case inForeground = "in_foreground"
+            case isFake = "is_fake"
             case name = "name"
             case referrer = "referrer"
             case url = "url"
@@ -1286,18 +1338,21 @@ public struct RUMActionEvent: RUMDataModel, Equatable {
         /// - Parameters:
         ///   - id: UUID of the view
         ///   - inForeground: Is the action starting in the foreground (focus in browser)
+        ///   - isFake: Whether this view was synthetically created to carry view-less events
         ///   - name: User defined name of the view
         ///   - referrer: URL that linked to the initial view of the page
         ///   - url: URL of the view
         public init(
             id: String,
             inForeground: Bool? = nil,
+            isFake: Bool? = nil,
             name: String? = nil,
             referrer: String? = nil,
             url: String
         ) {
             self.id = id
             self.inForeground = inForeground
+            self.isFake = isFake
             self.name = name
             self.referrer = referrer
             self.url = url
@@ -1509,6 +1564,9 @@ public struct RUMErrorEvent: RUMDataModel, Equatable {
     /// Error properties
     public var error: Error
 
+    /// Execution context properties
+    public let executionContext: ExecutionContext?
+
     /// Feature flags properties
     public var featureFlags: FeatureFlags?
 
@@ -1564,6 +1622,7 @@ public struct RUMErrorEvent: RUMDataModel, Equatable {
         case device = "device"
         case display = "display"
         case error = "error"
+        case executionContext = "execution_context"
         case featureFlags = "feature_flags"
         case freeze = "freeze"
         case os = "os"
@@ -1597,6 +1656,7 @@ public struct RUMErrorEvent: RUMDataModel, Equatable {
     ///   - device: Device properties
     ///   - display: Display properties
     ///   - error: Error properties
+    ///   - executionContext: Execution context properties
     ///   - featureFlags: Feature flags properties
     ///   - freeze: Properties of App Hang and ANR errors
     ///   - os: Operating system properties
@@ -1625,6 +1685,7 @@ public struct RUMErrorEvent: RUMDataModel, Equatable {
         device: Device? = nil,
         display: Display? = nil,
         error: Error,
+        executionContext: ExecutionContext? = nil,
         featureFlags: FeatureFlags? = nil,
         freeze: Freeze? = nil,
         os: OperatingSystem? = nil,
@@ -1653,6 +1714,7 @@ public struct RUMErrorEvent: RUMDataModel, Equatable {
         self.device = device
         self.display = display
         self.error = error
+        self.executionContext = executionContext
         self.featureFlags = featureFlags
         self.freeze = freeze
         self.os = os
@@ -2077,6 +2139,9 @@ public struct RUMErrorEvent: RUMDataModel, Equatable {
         /// A boolean value saying if any of the stack traces was truncated due to minification.
         public let wasTruncated: Bool?
 
+        /// WebAssembly modules available for stack trace symbolication.
+        public let wasmModules: [WasmModules]?
+
         public enum CodingKeys: String, CodingKey {
             case binaryImages = "binary_images"
             case category = "category"
@@ -2097,6 +2162,7 @@ public struct RUMErrorEvent: RUMDataModel, Equatable {
             case timeSinceAppStart = "time_since_app_start"
             case type = "type"
             case wasTruncated = "was_truncated"
+            case wasmModules = "wasm_modules"
         }
 
         /// Error properties
@@ -2121,6 +2187,7 @@ public struct RUMErrorEvent: RUMDataModel, Equatable {
         ///   - timeSinceAppStart: Time since application start when error happened (in milliseconds)
         ///   - type: The type of the error
         ///   - wasTruncated: A boolean value saying if any of the stack traces was truncated due to minification.
+        ///   - wasmModules: WebAssembly modules available for stack trace symbolication.
         public init(
             binaryImages: [BinaryImages]? = nil,
             category: Category? = nil,
@@ -2140,7 +2207,8 @@ public struct RUMErrorEvent: RUMDataModel, Equatable {
             threads: [Threads]? = nil,
             timeSinceAppStart: Int64? = nil,
             type: String? = nil,
-            wasTruncated: Bool? = nil
+            wasTruncated: Bool? = nil,
+            wasmModules: [WasmModules]? = nil
         ) {
             self.binaryImages = binaryImages
             self.category = category
@@ -2161,6 +2229,7 @@ public struct RUMErrorEvent: RUMDataModel, Equatable {
             self.timeSinceAppStart = timeSinceAppStart
             self.type = type
             self.wasTruncated = wasTruncated
+            self.wasmModules = wasmModules
         }
 
         /// Description of the binary image (native library; for Android: .so file) loaded or referenced by the process/application.
@@ -2491,6 +2560,7 @@ public struct RUMErrorEvent: RUMDataModel, Equatable {
         public enum SourceType: String, Codable {
             case android = "android"
             case browser = "browser"
+            case browserWasm = "browser+wasm"
             case ios = "ios"
             case reactNative = "react-native"
             case flutter = "flutter"
@@ -2544,6 +2614,74 @@ public struct RUMErrorEvent: RUMDataModel, Equatable {
                 self.stack = stack
                 self.state = state
             }
+        }
+
+        /// A WebAssembly module loaded by the application.
+        public struct WasmModules: Codable, Equatable {
+            /// Build ID used to identify the WebAssembly debug symbols.
+            public let buildId: String
+
+            /// URL identifying the WebAssembly module.
+            public let url: String
+
+            public enum CodingKeys: String, CodingKey {
+                case buildId = "build_id"
+                case url = "url"
+            }
+
+            /// A WebAssembly module loaded by the application.
+            ///
+            /// - Parameters:
+            ///   - buildId: Build ID used to identify the WebAssembly debug symbols.
+            ///   - url: URL identifying the WebAssembly module.
+            public init(
+                buildId: String,
+                url: String
+            ) {
+                self.buildId = buildId
+                self.url = url
+            }
+        }
+    }
+
+    /// Execution context properties
+    public struct ExecutionContext: Codable, Equatable {
+        /// UUID of the execution context
+        public let id: String
+
+        /// Execution context name
+        public let name: String?
+
+        /// Type of the execution context
+        public let type: ExecutionContextType
+
+        public enum CodingKeys: String, CodingKey {
+            case id = "id"
+            case name = "name"
+            case type = "type"
+        }
+
+        /// Execution context properties
+        ///
+        /// - Parameters:
+        ///   - id: UUID of the execution context
+        ///   - name: Execution context name
+        ///   - type: Type of the execution context
+        public init(
+            id: String,
+            name: String? = nil,
+            type: ExecutionContextType
+        ) {
+            self.id = id
+            self.name = name
+            self.type = type
+        }
+
+        /// Type of the execution context
+        public enum ExecutionContextType: String, Codable {
+            case mainProcess = "main-process"
+            case rendererProcess = "renderer-process"
+            case utilityProcess = "utility-process"
         }
     }
 
@@ -2679,6 +2817,9 @@ public struct RUMErrorEvent: RUMDataModel, Equatable {
         /// Is the error starting in the foreground (focus in browser)
         public let inForeground: Bool?
 
+        /// Whether this view was synthetically created to carry view-less events
+        public let isFake: Bool?
+
         /// User defined name of the view
         public var name: String?
 
@@ -2691,6 +2832,7 @@ public struct RUMErrorEvent: RUMDataModel, Equatable {
         public enum CodingKeys: String, CodingKey {
             case id = "id"
             case inForeground = "in_foreground"
+            case isFake = "is_fake"
             case name = "name"
             case referrer = "referrer"
             case url = "url"
@@ -2701,18 +2843,21 @@ public struct RUMErrorEvent: RUMDataModel, Equatable {
         /// - Parameters:
         ///   - id: UUID of the view
         ///   - inForeground: Is the error starting in the foreground (focus in browser)
+        ///   - isFake: Whether this view was synthetically created to carry view-less events
         ///   - name: User defined name of the view
         ///   - referrer: URL that linked to the initial view of the page
         ///   - url: URL of the view
         public init(
             id: String,
             inForeground: Bool? = nil,
+            isFake: Bool? = nil,
             name: String? = nil,
             referrer: String? = nil,
             url: String
         ) {
             self.id = id
             self.inForeground = inForeground
+            self.isFake = isFake
             self.name = name
             self.referrer = referrer
             self.url = url
@@ -3012,6 +3157,9 @@ public struct RUMLongTaskEvent: RUMDataModel, Equatable {
     /// Display properties
     public let display: Display?
 
+    /// Execution context properties
+    public let executionContext: ExecutionContext?
+
     /// Long Task properties
     public let longTask: LongTask
 
@@ -3063,6 +3211,7 @@ public struct RUMLongTaskEvent: RUMDataModel, Equatable {
         case ddtags = "ddtags"
         case device = "device"
         case display = "display"
+        case executionContext = "execution_context"
         case longTask = "long_task"
         case os = "os"
         case service = "service"
@@ -3094,6 +3243,7 @@ public struct RUMLongTaskEvent: RUMDataModel, Equatable {
     ///   - ddtags: Tags of the event in key:value format, separated by commas (e.g. 'env:prod,version:1.2.3')
     ///   - device: Device properties
     ///   - display: Display properties
+    ///   - executionContext: Execution context properties
     ///   - longTask: Long Task properties
     ///   - os: Operating system properties
     ///   - service: The service name for this application
@@ -3120,6 +3270,7 @@ public struct RUMLongTaskEvent: RUMDataModel, Equatable {
         ddtags: String? = nil,
         device: Device? = nil,
         display: Display? = nil,
+        executionContext: ExecutionContext? = nil,
         longTask: LongTask,
         os: OperatingSystem? = nil,
         service: String? = nil,
@@ -3146,6 +3297,7 @@ public struct RUMLongTaskEvent: RUMDataModel, Equatable {
         self.ddtags = ddtags
         self.device = device
         self.display = display
+        self.executionContext = executionContext
         self.longTask = longTask
         self.os = os
         self.service = service
@@ -3489,6 +3641,47 @@ public struct RUMLongTaskEvent: RUMDataModel, Equatable {
         }
     }
 
+    /// Execution context properties
+    public struct ExecutionContext: Codable, Equatable {
+        /// UUID of the execution context
+        public let id: String
+
+        /// Execution context name
+        public let name: String?
+
+        /// Type of the execution context
+        public let type: ExecutionContextType
+
+        public enum CodingKeys: String, CodingKey {
+            case id = "id"
+            case name = "name"
+            case type = "type"
+        }
+
+        /// Execution context properties
+        ///
+        /// - Parameters:
+        ///   - id: UUID of the execution context
+        ///   - name: Execution context name
+        ///   - type: Type of the execution context
+        public init(
+            id: String,
+            name: String? = nil,
+            type: ExecutionContextType
+        ) {
+            self.id = id
+            self.name = name
+            self.type = type
+        }
+
+        /// Type of the execution context
+        public enum ExecutionContextType: String, Codable {
+            case mainProcess = "main-process"
+            case rendererProcess = "renderer-process"
+            case utilityProcess = "utility-process"
+        }
+    }
+
     /// Long Task properties
     public struct LongTask: Codable, Equatable {
         /// Duration in ns for which the animation frame was being blocked
@@ -3770,6 +3963,9 @@ public struct RUMLongTaskEvent: RUMDataModel, Equatable {
         /// UUID of the view
         public let id: String
 
+        /// Whether this view was synthetically created to carry view-less events
+        public let isFake: Bool?
+
         /// User defined name of the view
         public var name: String?
 
@@ -3781,6 +3977,7 @@ public struct RUMLongTaskEvent: RUMDataModel, Equatable {
 
         public enum CodingKeys: String, CodingKey {
             case id = "id"
+            case isFake = "is_fake"
             case name = "name"
             case referrer = "referrer"
             case url = "url"
@@ -3790,16 +3987,19 @@ public struct RUMLongTaskEvent: RUMDataModel, Equatable {
         ///
         /// - Parameters:
         ///   - id: UUID of the view
+        ///   - isFake: Whether this view was synthetically created to carry view-less events
         ///   - name: User defined name of the view
         ///   - referrer: URL that linked to the initial view of the page
         ///   - url: URL of the view
         public init(
             id: String,
+            isFake: Bool? = nil,
             name: String? = nil,
             referrer: String? = nil,
             url: String
         ) {
             self.id = id
+            self.isFake = isFake
             self.name = name
             self.referrer = referrer
             self.url = url
@@ -3864,6 +4064,9 @@ public struct RUMResourceEvent: RUMDataModel, Equatable {
     /// Display properties
     public let display: Display?
 
+    /// Execution context properties
+    public let executionContext: ExecutionContext?
+
     /// Operating system properties
     public let os: OperatingSystem?
 
@@ -3915,6 +4118,7 @@ public struct RUMResourceEvent: RUMDataModel, Equatable {
         case ddtags = "ddtags"
         case device = "device"
         case display = "display"
+        case executionContext = "execution_context"
         case os = "os"
         case resource = "resource"
         case service = "service"
@@ -3946,6 +4150,7 @@ public struct RUMResourceEvent: RUMDataModel, Equatable {
     ///   - ddtags: Tags of the event in key:value format, separated by commas (e.g. 'env:prod,version:1.2.3')
     ///   - device: Device properties
     ///   - display: Display properties
+    ///   - executionContext: Execution context properties
     ///   - os: Operating system properties
     ///   - resource: Resource properties
     ///   - service: The service name for this application
@@ -3972,6 +4177,7 @@ public struct RUMResourceEvent: RUMDataModel, Equatable {
         ddtags: String? = nil,
         device: Device? = nil,
         display: Display? = nil,
+        executionContext: ExecutionContext? = nil,
         os: OperatingSystem? = nil,
         resource: Resource,
         service: String? = nil,
@@ -3998,6 +4204,7 @@ public struct RUMResourceEvent: RUMDataModel, Equatable {
         self.ddtags = ddtags
         self.device = device
         self.display = display
+        self.executionContext = executionContext
         self.os = os
         self.resource = resource
         self.service = service
@@ -4328,6 +4535,47 @@ public struct RUMResourceEvent: RUMDataModel, Equatable {
         }
     }
 
+    /// Execution context properties
+    public struct ExecutionContext: Codable, Equatable {
+        /// UUID of the execution context
+        public let id: String
+
+        /// Execution context name
+        public let name: String?
+
+        /// Type of the execution context
+        public let type: ExecutionContextType
+
+        public enum CodingKeys: String, CodingKey {
+            case id = "id"
+            case name = "name"
+            case type = "type"
+        }
+
+        /// Execution context properties
+        ///
+        /// - Parameters:
+        ///   - id: UUID of the execution context
+        ///   - name: Execution context name
+        ///   - type: Type of the execution context
+        public init(
+            id: String,
+            name: String? = nil,
+            type: ExecutionContextType
+        ) {
+            self.id = id
+            self.name = name
+            self.type = type
+        }
+
+        /// Type of the execution context
+        public enum ExecutionContextType: String, Codable {
+            case mainProcess = "main-process"
+            case rendererProcess = "renderer-process"
+            case utilityProcess = "utility-process"
+        }
+    }
+
     /// Resource properties
     public struct Resource: Codable, Equatable {
         /// Connect phase properties
@@ -4360,7 +4608,7 @@ public struct RUMResourceEvent: RUMDataModel, Equatable {
         /// UUID of the resource
         public let id: String?
 
-        /// Whether the resource was served from the device's local cache
+        /// Whether the resource was served from the device's local cache (deprecated in favor of `delivery_type`/`transfer_size`)
         public let localCacheHit: Bool?
 
         /// HTTP method of the resource
@@ -4446,7 +4694,7 @@ public struct RUMResourceEvent: RUMDataModel, Equatable {
         ///   - firstByte: First Byte phase properties
         ///   - graphql: GraphQL request parameters
         ///   - id: UUID of the resource
-        ///   - localCacheHit: Whether the resource was served from the device's local cache
+        ///   - localCacheHit: Whether the resource was served from the device's local cache (deprecated in favor of `delivery_type`/`transfer_size`)
         ///   - method: HTTP method of the resource
         ///   - `protocol`: Network protocol used to fetch the resource (e.g., 'http/1.1', 'h2')
         ///   - provider: The provider for this resource
@@ -4963,6 +5211,9 @@ public struct RUMResourceEvent: RUMDataModel, Equatable {
         /// UUID of the view
         public let id: String
 
+        /// Whether this view was synthetically created to carry view-less events
+        public let isFake: Bool?
+
         /// User defined name of the view
         public var name: String?
 
@@ -4974,6 +5225,7 @@ public struct RUMResourceEvent: RUMDataModel, Equatable {
 
         public enum CodingKeys: String, CodingKey {
             case id = "id"
+            case isFake = "is_fake"
             case name = "name"
             case referrer = "referrer"
             case url = "url"
@@ -4983,16 +5235,19 @@ public struct RUMResourceEvent: RUMDataModel, Equatable {
         ///
         /// - Parameters:
         ///   - id: UUID of the view
+        ///   - isFake: Whether this view was synthetically created to carry view-less events
         ///   - name: User defined name of the view
         ///   - referrer: URL that linked to the initial view of the page
         ///   - url: URL of the view
         public init(
             id: String,
+            isFake: Bool? = nil,
             name: String? = nil,
             referrer: String? = nil,
             url: String
         ) {
             self.id = id
+            self.isFake = isFake
             self.name = name
             self.referrer = referrer
             self.url = url
@@ -5297,6 +5552,9 @@ public struct RUMTimeseriesCpuEvent: RUMDataModel, Equatable {
     /// Display properties
     public let display: Display?
 
+    /// Execution context properties
+    public let executionContext: ExecutionContext?
+
     /// Operating system properties
     public let os: OperatingSystem?
 
@@ -5346,6 +5604,7 @@ public struct RUMTimeseriesCpuEvent: RUMDataModel, Equatable {
         case ddtags = "ddtags"
         case device = "device"
         case display = "display"
+        case executionContext = "execution_context"
         case os = "os"
         case service = "service"
         case session = "session"
@@ -5375,6 +5634,7 @@ public struct RUMTimeseriesCpuEvent: RUMDataModel, Equatable {
     ///   - ddtags: Tags of the event in key:value format, separated by commas (e.g. 'env:prod,version:1.2.3')
     ///   - device: Device properties
     ///   - display: Display properties
+    ///   - executionContext: Execution context properties
     ///   - os: Operating system properties
     ///   - service: The service name for this application
     ///   - session: Session properties
@@ -5399,6 +5659,7 @@ public struct RUMTimeseriesCpuEvent: RUMDataModel, Equatable {
         ddtags: String? = nil,
         device: Device? = nil,
         display: Display? = nil,
+        executionContext: ExecutionContext? = nil,
         os: OperatingSystem? = nil,
         service: String? = nil,
         session: Session,
@@ -5423,6 +5684,7 @@ public struct RUMTimeseriesCpuEvent: RUMDataModel, Equatable {
         self.ddtags = ddtags
         self.device = device
         self.display = display
+        self.executionContext = executionContext
         self.os = os
         self.service = service
         self.session = session
@@ -5633,6 +5895,47 @@ public struct RUMTimeseriesCpuEvent: RUMDataModel, Equatable {
                 self.height = height
                 self.width = width
             }
+        }
+    }
+
+    /// Execution context properties
+    public struct ExecutionContext: Codable, Equatable {
+        /// UUID of the execution context
+        public let id: String
+
+        /// Execution context name
+        public let name: String?
+
+        /// Type of the execution context
+        public let type: ExecutionContextType
+
+        public enum CodingKeys: String, CodingKey {
+            case id = "id"
+            case name = "name"
+            case type = "type"
+        }
+
+        /// Execution context properties
+        ///
+        /// - Parameters:
+        ///   - id: UUID of the execution context
+        ///   - name: Execution context name
+        ///   - type: Type of the execution context
+        public init(
+            id: String,
+            name: String? = nil,
+            type: ExecutionContextType
+        ) {
+            self.id = id
+            self.name = name
+            self.type = type
+        }
+
+        /// Type of the execution context
+        public enum ExecutionContextType: String, Codable {
+            case mainProcess = "main-process"
+            case rendererProcess = "renderer-process"
+            case utilityProcess = "utility-process"
         }
     }
 
@@ -5826,6 +6129,9 @@ public struct RUMTimeseriesCpuEvent: RUMDataModel, Equatable {
         /// UUID of the view
         public let id: String
 
+        /// Whether this view was synthetically created to carry view-less events
+        public let isFake: Bool?
+
         /// User defined name of the view
         public var name: String?
 
@@ -5837,6 +6143,7 @@ public struct RUMTimeseriesCpuEvent: RUMDataModel, Equatable {
 
         public enum CodingKeys: String, CodingKey {
             case id = "id"
+            case isFake = "is_fake"
             case name = "name"
             case referrer = "referrer"
             case url = "url"
@@ -5846,16 +6153,19 @@ public struct RUMTimeseriesCpuEvent: RUMDataModel, Equatable {
         ///
         /// - Parameters:
         ///   - id: UUID of the view
+        ///   - isFake: Whether this view was synthetically created to carry view-less events
         ///   - name: User defined name of the view
         ///   - referrer: URL that linked to the initial view of the page
         ///   - url: URL of the view
         public init(
             id: String,
+            isFake: Bool? = nil,
             name: String? = nil,
             referrer: String? = nil,
             url: String
         ) {
             self.id = id
+            self.isFake = isFake
             self.name = name
             self.referrer = referrer
             self.url = url
@@ -5900,6 +6210,9 @@ public struct RUMTimeseriesMemoryEvent: RUMDataModel, Equatable {
 
     /// Display properties
     public let display: Display?
+
+    /// Execution context properties
+    public let executionContext: ExecutionContext?
 
     /// Operating system properties
     public let os: OperatingSystem?
@@ -5950,6 +6263,7 @@ public struct RUMTimeseriesMemoryEvent: RUMDataModel, Equatable {
         case ddtags = "ddtags"
         case device = "device"
         case display = "display"
+        case executionContext = "execution_context"
         case os = "os"
         case service = "service"
         case session = "session"
@@ -5979,6 +6293,7 @@ public struct RUMTimeseriesMemoryEvent: RUMDataModel, Equatable {
     ///   - ddtags: Tags of the event in key:value format, separated by commas (e.g. 'env:prod,version:1.2.3')
     ///   - device: Device properties
     ///   - display: Display properties
+    ///   - executionContext: Execution context properties
     ///   - os: Operating system properties
     ///   - service: The service name for this application
     ///   - session: Session properties
@@ -6003,6 +6318,7 @@ public struct RUMTimeseriesMemoryEvent: RUMDataModel, Equatable {
         ddtags: String? = nil,
         device: Device? = nil,
         display: Display? = nil,
+        executionContext: ExecutionContext? = nil,
         os: OperatingSystem? = nil,
         service: String? = nil,
         session: Session,
@@ -6027,6 +6343,7 @@ public struct RUMTimeseriesMemoryEvent: RUMDataModel, Equatable {
         self.ddtags = ddtags
         self.device = device
         self.display = display
+        self.executionContext = executionContext
         self.os = os
         self.service = service
         self.session = session
@@ -6237,6 +6554,47 @@ public struct RUMTimeseriesMemoryEvent: RUMDataModel, Equatable {
                 self.height = height
                 self.width = width
             }
+        }
+    }
+
+    /// Execution context properties
+    public struct ExecutionContext: Codable, Equatable {
+        /// UUID of the execution context
+        public let id: String
+
+        /// Execution context name
+        public let name: String?
+
+        /// Type of the execution context
+        public let type: ExecutionContextType
+
+        public enum CodingKeys: String, CodingKey {
+            case id = "id"
+            case name = "name"
+            case type = "type"
+        }
+
+        /// Execution context properties
+        ///
+        /// - Parameters:
+        ///   - id: UUID of the execution context
+        ///   - name: Execution context name
+        ///   - type: Type of the execution context
+        public init(
+            id: String,
+            name: String? = nil,
+            type: ExecutionContextType
+        ) {
+            self.id = id
+            self.name = name
+            self.type = type
+        }
+
+        /// Type of the execution context
+        public enum ExecutionContextType: String, Codable {
+            case mainProcess = "main-process"
+            case rendererProcess = "renderer-process"
+            case utilityProcess = "utility-process"
         }
     }
 
@@ -6437,6 +6795,9 @@ public struct RUMTimeseriesMemoryEvent: RUMDataModel, Equatable {
         /// UUID of the view
         public let id: String
 
+        /// Whether this view was synthetically created to carry view-less events
+        public let isFake: Bool?
+
         /// User defined name of the view
         public var name: String?
 
@@ -6448,6 +6809,7 @@ public struct RUMTimeseriesMemoryEvent: RUMDataModel, Equatable {
 
         public enum CodingKeys: String, CodingKey {
             case id = "id"
+            case isFake = "is_fake"
             case name = "name"
             case referrer = "referrer"
             case url = "url"
@@ -6457,16 +6819,19 @@ public struct RUMTimeseriesMemoryEvent: RUMDataModel, Equatable {
         ///
         /// - Parameters:
         ///   - id: UUID of the view
+        ///   - isFake: Whether this view was synthetically created to carry view-less events
         ///   - name: User defined name of the view
         ///   - referrer: URL that linked to the initial view of the page
         ///   - url: URL of the view
         public init(
             id: String,
+            isFake: Bool? = nil,
             name: String? = nil,
             referrer: String? = nil,
             url: String
         ) {
             self.id = id
+            self.isFake = isFake
             self.name = name
             self.referrer = referrer
             self.url = url
@@ -6615,6 +6980,9 @@ public struct RUMViewEvent: RUMDataModel, Equatable {
     /// Display properties
     public let display: Display?
 
+    /// Execution context properties
+    public let executionContext: ExecutionContext?
+
     /// Feature flags properties
     public var featureFlags: FeatureFlags?
 
@@ -6668,6 +7036,7 @@ public struct RUMViewEvent: RUMDataModel, Equatable {
         case ddtags = "ddtags"
         case device = "device"
         case display = "display"
+        case executionContext = "execution_context"
         case featureFlags = "feature_flags"
         case os = "os"
         case privacy = "privacy"
@@ -6699,6 +7068,7 @@ public struct RUMViewEvent: RUMDataModel, Equatable {
     ///   - ddtags: Tags of the event in key:value format, separated by commas (e.g. 'env:prod,version:1.2.3')
     ///   - device: Device properties
     ///   - display: Display properties
+    ///   - executionContext: Execution context properties
     ///   - featureFlags: Feature flags properties
     ///   - os: Operating system properties
     ///   - privacy: Privacy properties
@@ -6725,6 +7095,7 @@ public struct RUMViewEvent: RUMDataModel, Equatable {
         ddtags: String? = nil,
         device: Device? = nil,
         display: Display? = nil,
+        executionContext: ExecutionContext? = nil,
         featureFlags: FeatureFlags? = nil,
         os: OperatingSystem? = nil,
         privacy: Privacy? = nil,
@@ -6751,6 +7122,7 @@ public struct RUMViewEvent: RUMDataModel, Equatable {
         self.ddtags = ddtags
         self.device = device
         self.display = display
+        self.executionContext = executionContext
         self.featureFlags = featureFlags
         self.os = os
         self.privacy = privacy
@@ -7214,6 +7586,47 @@ public struct RUMViewEvent: RUMDataModel, Equatable {
         }
     }
 
+    /// Execution context properties
+    public struct ExecutionContext: Codable, Equatable {
+        /// UUID of the execution context
+        public let id: String
+
+        /// Execution context name
+        public let name: String?
+
+        /// Type of the execution context
+        public let type: ExecutionContextType
+
+        public enum CodingKeys: String, CodingKey {
+            case id = "id"
+            case name = "name"
+            case type = "type"
+        }
+
+        /// Execution context properties
+        ///
+        /// - Parameters:
+        ///   - id: UUID of the execution context
+        ///   - name: Execution context name
+        ///   - type: Type of the execution context
+        public init(
+            id: String,
+            name: String? = nil,
+            type: ExecutionContextType
+        ) {
+            self.id = id
+            self.name = name
+            self.type = type
+        }
+
+        /// Type of the execution context
+        public enum ExecutionContextType: String, Codable {
+            case mainProcess = "main-process"
+            case rendererProcess = "renderer-process"
+            case utilityProcess = "utility-process"
+        }
+    }
+
     /// Feature flags properties
     public struct FeatureFlags: Codable, Equatable {
         public var featureFlagsInfo: [String: Encodable]
@@ -7507,6 +7920,9 @@ public struct RUMViewEvent: RUMDataModel, Equatable {
         /// Whether the View corresponding to this event is considered active
         public let isActive: Bool?
 
+        /// Whether this view was synthetically created to carry view-less events
+        public let isFake: Bool?
+
         /// Whether the View had a low average refresh rate
         public let isSlowRendered: Bool?
 
@@ -7601,6 +8017,7 @@ public struct RUMViewEvent: RUMDataModel, Equatable {
             case interactionToNextPaintTime = "interaction_to_next_paint_time"
             case interactionToNextViewTime = "interaction_to_next_view_time"
             case isActive = "is_active"
+            case isFake = "is_fake"
             case isSlowRendered = "is_slow_rendered"
             case jsRefreshRate = "js_refresh_rate"
             case largestContentfulPaint = "largest_contentful_paint"
@@ -7657,6 +8074,7 @@ public struct RUMViewEvent: RUMDataModel, Equatable {
         ///   - interactionToNextPaintTime: Duration in ns between start of the view and start of the INP (deprecated in favor of `view.performance.inp.timestamp`)
         ///   - interactionToNextViewTime: Duration in ns to from the last interaction on previous view to the moment the current view was displayed
         ///   - isActive: Whether the View corresponding to this event is considered active
+        ///   - isFake: Whether this view was synthetically created to carry view-less events
         ///   - isSlowRendered: Whether the View had a low average refresh rate
         ///   - jsRefreshRate: The JavaScript refresh rate for React Native
         ///   - largestContentfulPaint: Duration in ns to the largest contentful paint (deprecated in favor of `view.performance.lcp.timestamp`)
@@ -7709,6 +8127,7 @@ public struct RUMViewEvent: RUMDataModel, Equatable {
             interactionToNextPaintTime: Int64? = nil,
             interactionToNextViewTime: Int64? = nil,
             isActive: Bool? = nil,
+            isFake: Bool? = nil,
             isSlowRendered: Bool? = nil,
             jsRefreshRate: JsRefreshRate? = nil,
             largestContentfulPaint: Int64? = nil,
@@ -7761,6 +8180,7 @@ public struct RUMViewEvent: RUMDataModel, Equatable {
             self.interactionToNextPaintTime = interactionToNextPaintTime
             self.interactionToNextViewTime = interactionToNextViewTime
             self.isActive = isActive
+            self.isFake = isFake
             self.isSlowRendered = isSlowRendered
             self.jsRefreshRate = jsRefreshRate
             self.largestContentfulPaint = largestContentfulPaint
@@ -8811,6 +9231,9 @@ public struct RUMViewUpdateEvent: RUMDataModel, Equatable {
     /// Display properties
     public let display: Display?
 
+    /// Execution context properties
+    public let executionContext: ExecutionContext?
+
     /// Feature flags properties
     public var featureFlags: FeatureFlags?
 
@@ -8864,6 +9287,7 @@ public struct RUMViewUpdateEvent: RUMDataModel, Equatable {
         case ddtags = "ddtags"
         case device = "device"
         case display = "display"
+        case executionContext = "execution_context"
         case featureFlags = "feature_flags"
         case os = "os"
         case privacy = "privacy"
@@ -8895,6 +9319,7 @@ public struct RUMViewUpdateEvent: RUMDataModel, Equatable {
     ///   - ddtags: Tags of the event in key:value format, separated by commas (e.g. 'env:prod,version:1.2.3')
     ///   - device: Device properties
     ///   - display: Display properties
+    ///   - executionContext: Execution context properties
     ///   - featureFlags: Feature flags properties
     ///   - os: Operating system properties
     ///   - privacy: Privacy properties
@@ -8921,6 +9346,7 @@ public struct RUMViewUpdateEvent: RUMDataModel, Equatable {
         ddtags: String? = nil,
         device: Device? = nil,
         display: Display? = nil,
+        executionContext: ExecutionContext? = nil,
         featureFlags: FeatureFlags? = nil,
         os: OperatingSystem? = nil,
         privacy: Privacy? = nil,
@@ -8947,6 +9373,7 @@ public struct RUMViewUpdateEvent: RUMDataModel, Equatable {
         self.ddtags = ddtags
         self.device = device
         self.display = display
+        self.executionContext = executionContext
         self.featureFlags = featureFlags
         self.os = os
         self.privacy = privacy
@@ -9410,6 +9837,47 @@ public struct RUMViewUpdateEvent: RUMDataModel, Equatable {
         }
     }
 
+    /// Execution context properties
+    public struct ExecutionContext: Codable, Equatable {
+        /// UUID of the execution context
+        public let id: String
+
+        /// Execution context name
+        public let name: String?
+
+        /// Type of the execution context
+        public let type: ExecutionContextType
+
+        public enum CodingKeys: String, CodingKey {
+            case id = "id"
+            case name = "name"
+            case type = "type"
+        }
+
+        /// Execution context properties
+        ///
+        /// - Parameters:
+        ///   - id: UUID of the execution context
+        ///   - name: Execution context name
+        ///   - type: Type of the execution context
+        public init(
+            id: String,
+            name: String? = nil,
+            type: ExecutionContextType
+        ) {
+            self.id = id
+            self.name = name
+            self.type = type
+        }
+
+        /// Type of the execution context
+        public enum ExecutionContextType: String, Codable {
+            case mainProcess = "main-process"
+            case rendererProcess = "renderer-process"
+            case utilityProcess = "utility-process"
+        }
+    }
+
     /// Feature flags properties
     public struct FeatureFlags: Codable, Equatable {
         public var featureFlagsInfo: [String: Encodable]
@@ -9703,6 +10171,9 @@ public struct RUMViewUpdateEvent: RUMDataModel, Equatable {
         /// Whether the View corresponding to this event is considered active
         public let isActive: Bool?
 
+        /// Whether this view was synthetically created to carry view-less events
+        public let isFake: Bool?
+
         /// Whether the View had a low average refresh rate
         public let isSlowRendered: Bool?
 
@@ -9797,6 +10268,7 @@ public struct RUMViewUpdateEvent: RUMDataModel, Equatable {
             case interactionToNextPaintTime = "interaction_to_next_paint_time"
             case interactionToNextViewTime = "interaction_to_next_view_time"
             case isActive = "is_active"
+            case isFake = "is_fake"
             case isSlowRendered = "is_slow_rendered"
             case jsRefreshRate = "js_refresh_rate"
             case largestContentfulPaint = "largest_contentful_paint"
@@ -9853,6 +10325,7 @@ public struct RUMViewUpdateEvent: RUMDataModel, Equatable {
         ///   - interactionToNextPaintTime: Duration in ns between start of the view and start of the INP (deprecated in favor of `view.performance.inp.timestamp`)
         ///   - interactionToNextViewTime: Duration in ns to from the last interaction on previous view to the moment the current view was displayed
         ///   - isActive: Whether the View corresponding to this event is considered active
+        ///   - isFake: Whether this view was synthetically created to carry view-less events
         ///   - isSlowRendered: Whether the View had a low average refresh rate
         ///   - jsRefreshRate: The JavaScript refresh rate for React Native
         ///   - largestContentfulPaint: Duration in ns to the largest contentful paint (deprecated in favor of `view.performance.lcp.timestamp`)
@@ -9905,6 +10378,7 @@ public struct RUMViewUpdateEvent: RUMDataModel, Equatable {
             interactionToNextPaintTime: Int64? = nil,
             interactionToNextViewTime: Int64? = nil,
             isActive: Bool? = nil,
+            isFake: Bool? = nil,
             isSlowRendered: Bool? = nil,
             jsRefreshRate: JsRefreshRate? = nil,
             largestContentfulPaint: Int64? = nil,
@@ -9957,6 +10431,7 @@ public struct RUMViewUpdateEvent: RUMDataModel, Equatable {
             self.interactionToNextPaintTime = interactionToNextPaintTime
             self.interactionToNextViewTime = interactionToNextViewTime
             self.isActive = isActive
+            self.isFake = isFake
             self.isSlowRendered = isSlowRendered
             self.jsRefreshRate = jsRefreshRate
             self.largestContentfulPaint = largestContentfulPaint
@@ -11007,6 +11482,9 @@ public struct RUMVitalAppLaunchEvent: RUMDataModel, Equatable {
     /// Display properties
     public let display: Display?
 
+    /// Execution context properties
+    public let executionContext: ExecutionContext?
+
     /// Operating system properties
     public let os: OperatingSystem?
 
@@ -11057,6 +11535,7 @@ public struct RUMVitalAppLaunchEvent: RUMDataModel, Equatable {
         case ddtags = "ddtags"
         case device = "device"
         case display = "display"
+        case executionContext = "execution_context"
         case os = "os"
         case service = "service"
         case session = "session"
@@ -11087,6 +11566,7 @@ public struct RUMVitalAppLaunchEvent: RUMDataModel, Equatable {
     ///   - ddtags: Tags of the event in key:value format, separated by commas (e.g. 'env:prod,version:1.2.3')
     ///   - device: Device properties
     ///   - display: Display properties
+    ///   - executionContext: Execution context properties
     ///   - os: Operating system properties
     ///   - service: The service name for this application
     ///   - session: Session properties
@@ -11112,6 +11592,7 @@ public struct RUMVitalAppLaunchEvent: RUMDataModel, Equatable {
         ddtags: String? = nil,
         device: Device? = nil,
         display: Display? = nil,
+        executionContext: ExecutionContext? = nil,
         os: OperatingSystem? = nil,
         service: String? = nil,
         session: Session,
@@ -11137,6 +11618,7 @@ public struct RUMVitalAppLaunchEvent: RUMDataModel, Equatable {
         self.ddtags = ddtags
         self.device = device
         self.display = display
+        self.executionContext = executionContext
         self.os = os
         self.service = service
         self.session = session
@@ -11419,6 +11901,47 @@ public struct RUMVitalAppLaunchEvent: RUMDataModel, Equatable {
         }
     }
 
+    /// Execution context properties
+    public struct ExecutionContext: Codable, Equatable {
+        /// UUID of the execution context
+        public let id: String
+
+        /// Execution context name
+        public let name: String?
+
+        /// Type of the execution context
+        public let type: ExecutionContextType
+
+        public enum CodingKeys: String, CodingKey {
+            case id = "id"
+            case name = "name"
+            case type = "type"
+        }
+
+        /// Execution context properties
+        ///
+        /// - Parameters:
+        ///   - id: UUID of the execution context
+        ///   - name: Execution context name
+        ///   - type: Type of the execution context
+        public init(
+            id: String,
+            name: String? = nil,
+            type: ExecutionContextType
+        ) {
+            self.id = id
+            self.name = name
+            self.type = type
+        }
+
+        /// Type of the execution context
+        public enum ExecutionContextType: String, Codable {
+            case mainProcess = "main-process"
+            case rendererProcess = "renderer-process"
+            case utilityProcess = "utility-process"
+        }
+    }
+
     /// Session properties
     public struct Session: Codable, Equatable {
         /// Whether this session has a replay
@@ -11513,6 +12036,9 @@ public struct RUMVitalAppLaunchEvent: RUMDataModel, Equatable {
         /// UUID of the view
         public let id: String
 
+        /// Whether this view was synthetically created to carry view-less events
+        public let isFake: Bool?
+
         /// User defined name of the view
         public var name: String?
 
@@ -11524,6 +12050,7 @@ public struct RUMVitalAppLaunchEvent: RUMDataModel, Equatable {
 
         public enum CodingKeys: String, CodingKey {
             case id = "id"
+            case isFake = "is_fake"
             case name = "name"
             case referrer = "referrer"
             case url = "url"
@@ -11533,16 +12060,19 @@ public struct RUMVitalAppLaunchEvent: RUMDataModel, Equatable {
         ///
         /// - Parameters:
         ///   - id: UUID of the view
+        ///   - isFake: Whether this view was synthetically created to carry view-less events
         ///   - name: User defined name of the view
         ///   - referrer: URL that linked to the initial view of the page
         ///   - url: URL of the view
         public init(
             id: String,
+            isFake: Bool? = nil,
             name: String? = nil,
             referrer: String? = nil,
             url: String
         ) {
             self.id = id
+            self.isFake = isFake
             self.name = name
             self.referrer = referrer
             self.url = url
@@ -11676,6 +12206,9 @@ public struct RUMVitalDurationEvent: RUMDataModel, Equatable {
     /// Display properties
     public let display: Display?
 
+    /// Execution context properties
+    public let executionContext: ExecutionContext?
+
     /// Operating system properties
     public let os: OperatingSystem?
 
@@ -11726,6 +12259,7 @@ public struct RUMVitalDurationEvent: RUMDataModel, Equatable {
         case ddtags = "ddtags"
         case device = "device"
         case display = "display"
+        case executionContext = "execution_context"
         case os = "os"
         case service = "service"
         case session = "session"
@@ -11756,6 +12290,7 @@ public struct RUMVitalDurationEvent: RUMDataModel, Equatable {
     ///   - ddtags: Tags of the event in key:value format, separated by commas (e.g. 'env:prod,version:1.2.3')
     ///   - device: Device properties
     ///   - display: Display properties
+    ///   - executionContext: Execution context properties
     ///   - os: Operating system properties
     ///   - service: The service name for this application
     ///   - session: Session properties
@@ -11781,6 +12316,7 @@ public struct RUMVitalDurationEvent: RUMDataModel, Equatable {
         ddtags: String? = nil,
         device: Device? = nil,
         display: Display? = nil,
+        executionContext: ExecutionContext? = nil,
         os: OperatingSystem? = nil,
         service: String? = nil,
         session: Session,
@@ -11806,6 +12342,7 @@ public struct RUMVitalDurationEvent: RUMDataModel, Equatable {
         self.ddtags = ddtags
         self.device = device
         self.display = display
+        self.executionContext = executionContext
         self.os = os
         self.service = service
         self.session = session
@@ -12088,6 +12625,47 @@ public struct RUMVitalDurationEvent: RUMDataModel, Equatable {
         }
     }
 
+    /// Execution context properties
+    public struct ExecutionContext: Codable, Equatable {
+        /// UUID of the execution context
+        public let id: String
+
+        /// Execution context name
+        public let name: String?
+
+        /// Type of the execution context
+        public let type: ExecutionContextType
+
+        public enum CodingKeys: String, CodingKey {
+            case id = "id"
+            case name = "name"
+            case type = "type"
+        }
+
+        /// Execution context properties
+        ///
+        /// - Parameters:
+        ///   - id: UUID of the execution context
+        ///   - name: Execution context name
+        ///   - type: Type of the execution context
+        public init(
+            id: String,
+            name: String? = nil,
+            type: ExecutionContextType
+        ) {
+            self.id = id
+            self.name = name
+            self.type = type
+        }
+
+        /// Type of the execution context
+        public enum ExecutionContextType: String, Codable {
+            case mainProcess = "main-process"
+            case rendererProcess = "renderer-process"
+            case utilityProcess = "utility-process"
+        }
+    }
+
     /// Session properties
     public struct Session: Codable, Equatable {
         /// Whether this session has a replay
@@ -12182,6 +12760,9 @@ public struct RUMVitalDurationEvent: RUMDataModel, Equatable {
         /// UUID of the view
         public let id: String
 
+        /// Whether this view was synthetically created to carry view-less events
+        public let isFake: Bool?
+
         /// User defined name of the view
         public var name: String?
 
@@ -12193,6 +12774,7 @@ public struct RUMVitalDurationEvent: RUMDataModel, Equatable {
 
         public enum CodingKeys: String, CodingKey {
             case id = "id"
+            case isFake = "is_fake"
             case name = "name"
             case referrer = "referrer"
             case url = "url"
@@ -12202,16 +12784,19 @@ public struct RUMVitalDurationEvent: RUMDataModel, Equatable {
         ///
         /// - Parameters:
         ///   - id: UUID of the view
+        ///   - isFake: Whether this view was synthetically created to carry view-less events
         ///   - name: User defined name of the view
         ///   - referrer: URL that linked to the initial view of the page
         ///   - url: URL of the view
         public init(
             id: String,
+            isFake: Bool? = nil,
             name: String? = nil,
             referrer: String? = nil,
             url: String
         ) {
             self.id = id
+            self.isFake = isFake
             self.name = name
             self.referrer = referrer
             self.url = url
@@ -12305,6 +12890,9 @@ public struct RUMVitalOperationStepEvent: RUMDataModel, Equatable {
     /// Display properties
     public let display: Display?
 
+    /// Execution context properties
+    public let executionContext: ExecutionContext?
+
     /// Operating system properties
     public let os: OperatingSystem?
 
@@ -12355,6 +12943,7 @@ public struct RUMVitalOperationStepEvent: RUMDataModel, Equatable {
         case ddtags = "ddtags"
         case device = "device"
         case display = "display"
+        case executionContext = "execution_context"
         case os = "os"
         case service = "service"
         case session = "session"
@@ -12385,6 +12974,7 @@ public struct RUMVitalOperationStepEvent: RUMDataModel, Equatable {
     ///   - ddtags: Tags of the event in key:value format, separated by commas (e.g. 'env:prod,version:1.2.3')
     ///   - device: Device properties
     ///   - display: Display properties
+    ///   - executionContext: Execution context properties
     ///   - os: Operating system properties
     ///   - service: The service name for this application
     ///   - session: Session properties
@@ -12410,6 +13000,7 @@ public struct RUMVitalOperationStepEvent: RUMDataModel, Equatable {
         ddtags: String? = nil,
         device: Device? = nil,
         display: Display? = nil,
+        executionContext: ExecutionContext? = nil,
         os: OperatingSystem? = nil,
         service: String? = nil,
         session: Session,
@@ -12435,6 +13026,7 @@ public struct RUMVitalOperationStepEvent: RUMDataModel, Equatable {
         self.ddtags = ddtags
         self.device = device
         self.display = display
+        self.executionContext = executionContext
         self.os = os
         self.service = service
         self.session = session
@@ -12717,6 +13309,47 @@ public struct RUMVitalOperationStepEvent: RUMDataModel, Equatable {
         }
     }
 
+    /// Execution context properties
+    public struct ExecutionContext: Codable, Equatable {
+        /// UUID of the execution context
+        public let id: String
+
+        /// Execution context name
+        public let name: String?
+
+        /// Type of the execution context
+        public let type: ExecutionContextType
+
+        public enum CodingKeys: String, CodingKey {
+            case id = "id"
+            case name = "name"
+            case type = "type"
+        }
+
+        /// Execution context properties
+        ///
+        /// - Parameters:
+        ///   - id: UUID of the execution context
+        ///   - name: Execution context name
+        ///   - type: Type of the execution context
+        public init(
+            id: String,
+            name: String? = nil,
+            type: ExecutionContextType
+        ) {
+            self.id = id
+            self.name = name
+            self.type = type
+        }
+
+        /// Type of the execution context
+        public enum ExecutionContextType: String, Codable {
+            case mainProcess = "main-process"
+            case rendererProcess = "renderer-process"
+            case utilityProcess = "utility-process"
+        }
+    }
+
     /// Session properties
     public struct Session: Codable, Equatable {
         /// Whether this session has a replay
@@ -12811,6 +13444,9 @@ public struct RUMVitalOperationStepEvent: RUMDataModel, Equatable {
         /// UUID of the view
         public let id: String
 
+        /// Whether this view was synthetically created to carry view-less events
+        public let isFake: Bool?
+
         /// User defined name of the view
         public var name: String?
 
@@ -12822,6 +13458,7 @@ public struct RUMVitalOperationStepEvent: RUMDataModel, Equatable {
 
         public enum CodingKeys: String, CodingKey {
             case id = "id"
+            case isFake = "is_fake"
             case name = "name"
             case referrer = "referrer"
             case url = "url"
@@ -12831,16 +13468,19 @@ public struct RUMVitalOperationStepEvent: RUMDataModel, Equatable {
         ///
         /// - Parameters:
         ///   - id: UUID of the view
+        ///   - isFake: Whether this view was synthetically created to carry view-less events
         ///   - name: User defined name of the view
         ///   - referrer: URL that linked to the initial view of the page
         ///   - url: URL of the view
         public init(
             id: String,
+            isFake: Bool? = nil,
             name: String? = nil,
             referrer: String? = nil,
             url: String
         ) {
             self.id = id
+            self.isFake = isFake
             self.name = name
             self.referrer = referrer
             self.url = url
@@ -15895,4 +16535,4 @@ extension TelemetryUsageEvent.Telemetry {
     }
 }
 
-// Generated from https://github.com/DataDog/rum-events-format/tree/c6b13a3e00dd323c48240bacb6d8e7699b4e8b7f
+// Generated from https://github.com/DataDog/rum-events-format/tree/75aac05f07c331fffa8598919931106ed24bee63
