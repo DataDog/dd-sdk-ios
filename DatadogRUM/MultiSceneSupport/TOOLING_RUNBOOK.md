@@ -2720,3 +2720,15 @@ URLSession RUM tracking is disabled. Read owner context through a passive featur
 scope, then fence the serial message bus before task start; context publication
 alone does not prove the Trace receiver has consumed it. Full service/run span
 inventory is required to find a deliberately ownerless pre-RUM request.
+
+Generated ApplicationLaunch/TTID events precede manual probe attributes, while the
+backend session reducer is server-derived. Require exact run/nonce/phase on manual
+A/B events. For those generated rows, preserve absent probe fields and reject any
+mismatched nonnil run/nonce; bind the rows through the unique service, actual
+app/session/view/TTID identities and one-use startup exchange. Count the reducer
+explicitly: E05 startup has three raw rows, final inventory seven. It is not an
+application-start action. URLProtocol.stopLoading is diagnostic on normal success;
+require real body/metrics/completion, session invalidation and host cleanup instead
+of inventing a mandatory cancellation callback. Verify actual frozen helper,
+interpretation and native-contract files in the live acceptance path; matching
+hash labels inside an exchange alone cannot establish that those files are unchanged.

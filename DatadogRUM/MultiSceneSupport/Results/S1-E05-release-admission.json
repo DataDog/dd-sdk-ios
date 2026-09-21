@@ -1,6 +1,6 @@
 {
   "status": "REGISTERED_HOSTLESS_AND_PLATFORMS_QUALIFIED_BACKEND_REPLAY_PENDING",
-  "recorded_at": "2026-09-21T04:28:01.427156+00:00",
+  "recorded_at": "2026-09-21T05:17:40.879215+00:00",
   "candidate": {
     "checkout": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/deliveries/e05-20260920-rtzz6gpd/worktree",
     "head": "399b01ea0e059186a139921a01a18bff7997648f",
@@ -286,5 +286,63 @@
       "client_spans": 3
     },
     "requirement": "Actual TTID startup receipt; passive owner context plus serial bus fence before each task; full service/run and session backend inventories. Freeze fixture, oracle, source/build/install identities and deadlines before execution."
+  },
+  "backend_fixture_preparation": {
+    "status": "BUILT_AND_OFFLINE_CONTROLS_PASS_FINAL_HOST_REVIEW_PENDING_NO_NATIVE_RUN",
+    "root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/deliveries/e05-20260920-rtzz6gpd/backend-ownership-srxe2dq_",
+    "build": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/deliveries/e05-20260920-rtzz6gpd/backend-ownership-srxe2dq_/build-qualification.json",
+      "sha256": "017a4f434b294ab52fcf076374f98f42bdd874d1650d11666a3b91b1b69e2340"
+    },
+    "inputs": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/deliveries/e05-20260920-rtzz6gpd/backend-ownership-srxe2dq_/build-inputs-v2.json",
+      "sha256": "1c885f6cae17a540fe0bf4e344fcdc86b2e0e68178964a7610095b409e26af3b"
+    },
+    "fixture_manifest": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/deliveries/e05-20260920-rtzz6gpd/backend-ownership-srxe2dq_/fixture-members-v2.json",
+      "sha256": "f4e53df4f8f7f94bfd8b0c82c2767f11861d36ae315d1994511a1b1927d16da4"
+    },
+    "oracle_controls": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/deliveries/e05-20260920-rtzz6gpd/backend-ownership-srxe2dq_/oracle-controls.json",
+      "sha256": "f368ecf6b2685e0c6bc9c62941b44a63218820774508cfccef132524a2ea4ea4"
+    },
+    "file_guard_controls": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/deliveries/e05-20260920-rtzz6gpd/backend-ownership-srxe2dq_/file-guard-controls.json",
+      "sha256": "34c3ea5735b555d243c3de3f64c5aa840aca5490b0bff5be71c767cabdca8e42"
+    },
+    "original_compile_failure": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/deliveries/e05-20260920-rtzz6gpd/backend-ownership-srxe2dq_/compile-qualification.json",
+      "sha256": "3291baea81f75a1c8f68b8a776e4d62e032ae6fef190374e739dc8129418a6ef"
+    },
+    "corrected_compile": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/deliveries/e05-20260920-rtzz6gpd/backend-ownership-srxe2dq_/compile-corrected-qualification.json",
+      "sha256": "915c30b6834a64b4780300ce168e599e0521839a326d020af407002926de95b0"
+    },
+    "implementation_review": {
+      "path": "/tmp/e05-trace-ownership-review-20260921/backend-fixture-implementation-acceptance.json",
+      "sha256": "2bcf340f187167f49a24b8ef4cccc48c0cc5ef03475c973bd432458253cdb783"
+    },
+    "review_correction": {
+      "path": "/tmp/e05-trace-ownership-review-20260921/backend-mode-receipts-correction.json",
+      "sha256": "ea5af9db5e85c267478c0b047fa014fc7b0e4bab3a33f4dc4740bd8fd75656eb"
+    },
+    "oracle_review": {
+      "path": "/tmp/e05-trace-ownership-review-20260921/backend-oracle-review.json",
+      "sha256": "a2b9a9d2329c4e68786a47278e932f21e338e34d1cb23832d038e94926d975ce"
+    },
+    "provenance_disposition": {
+      "path": "/tmp/e05-trace-ownership-review-20260921/backend-oracle-review-correction.json",
+      "sha256": "c450aa2479eed7143b92c4670f627d670b0d5c38c230396fb43cf84ec3cf4be0"
+    },
+    "native_launches": 0,
+    "source_or_product_changes": false,
+    "raw_backend_inventory": {
+      "startup_rum": 3,
+      "final_rum": 7,
+      "derived_sessions": 1,
+      "service_spans": 3,
+      "session_spans": 2
+    },
+    "limits": "Compile and synthetic controls only. Runtime helper freeze and final independent host review, fresh source/environment preflight and absolute execution/cleanup deadlines are required before two candidate backend cells. Full Replay remains separate."
   }
 }

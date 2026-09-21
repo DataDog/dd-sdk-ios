@@ -136,7 +136,7 @@ loss on unchanged develop. [EXP-208](Results/EXP-208-trace-ownership.json) quali
 the exact three-file candidate through eight baseline ownership failures,154/154
 full Trace tests and matched native red/green evidence. Captures contain values
 only and are removed before every completion guard. Their lifetime follows the
-existing retained interception. The [independent changed-edge review](Results/S1-E05-release-admission.json) confirms exact EXP208 completion-guard and cancellation coverage; E05 adds no task/host/callback retaining edge. Immediate unbind and numerical footprint are not claimed. The two registered ownership cases now pass within Integration282/282 and independent callback acceptance. Two backend mode cells remain under finite pre-execution admission. Sampling, caller headers and completion-time non-RUM context
+existing retained interception. The [independent changed-edge review](Results/S1-E05-release-admission.json) confirms exact EXP208 completion-guard and cancellation coverage; E05 adds no task/host/callback retaining edge. Immediate unbind and numerical footprint are not claimed. The two registered ownership cases now pass within Integration282/282 and independent callback acceptance. Two backend mode cells remain under finite pre-execution admission. The fixture builds and offline controls reject wrong ownership, stale gates and changed helper files. These preparation checks supply no backend or release qualification. Sampling, caller headers and completion-time non-RUM context
 are preserved. This eligibility result does not replace historical R01–R12.
 
 The first candidate passed153/154 and exposed baggage-only writes being mistaken
