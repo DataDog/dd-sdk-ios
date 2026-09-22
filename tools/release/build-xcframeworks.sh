@@ -25,7 +25,6 @@ parse_args "$@"
 
 
 REPO_PATH=$(realpath "$repo_path")
-SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 
 echo_info "Clean '$REPO_PATH' with 'git clean -fxd'"
 cd "$REPO_PATH" && git clean -fxd && cd -
@@ -104,7 +103,7 @@ echo_info "▸ PLATFORMS = '$PLATFORMS'"
 
 # Build third-party XCFrameworks
 echo_subtitle2 "Fetch third-party dependencies"
-"$SCRIPT_DIR/../repo-setup/fetch-dependencies.sh"
+./tools/repo-setup/fetch-dependencies.sh
 cp -r "Dependencies/OpenTelemetryApi.xcframework" "$XCFRAMEWORKS_OUTPUT"
 
 # Build Datadog XCFrameworks

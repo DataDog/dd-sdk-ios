@@ -45,5 +45,7 @@ fi
 
 if [[ "$dependencies" == "true" ]]; then
     echo_subtitle "Cleaning fetched third-party dependencies"
-    clean_dir ./Dependencies
+    # Removes the directory itself: it also holds a hidden version marker, which
+    # a `$dir/*` glob would leave behind.
+    rm -rfv ./Dependencies
 fi
