@@ -4,11 +4,11 @@
 - [FIX] Pin KSCrash to exact version 2.5.1 via SPM to prevent silently resolving newer, unvetted releases.
 - [FIX] Keep attributes isolated when returning to a previously tracked RUM view while its earlier resources are still pending.
 - [IMPROVEMENT] Require Swift tools version 6.2 (Xcode 26) to resolve the package with Swift Package Manager. See [#3231][]
+- [FIX] Report failed URLSession body transfers as network errors with their received HTTP status, and keep late Resource completions from changing another view's action counters.
 
 # 3.18.0 / 21-09-2026
 
 - [FIX] Preserve delayed WebView correlation for long-lived active native RUM views.
-- [FIX] Report failed URLSession body transfers as network errors with their received HTTP status, and keep late Resource completions from changing another view's action counters.
 - [FIX] Resolve the RUM session sampling decision synchronously in `RUM.enable()`, so WebViews instrumented immediately after initialization get a decision consistent with the session. See [#3183][]
 - [FEATURE] Add CPU-time samples alongside wall-time samples by default for application launch and Continuous Profiling. See [#3195][]
 - [IMPROVEMENT] Migrate `DatadogProfiling` to Swift 6. See [#3186][]
