@@ -1,0 +1,94 @@
+{
+  "schema_version": 1,
+  "recorded_at": "2026-09-22T15:12:19.862123+00:00",
+  "status": "FIVE_REBASED_SIGNED_PUSHED_TWO_ALREADY_MERGED",
+  "manifest": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-s1-rebase-20260922/.git/s1-task/manifest.json"
+  },
+  "frozen_develop": "dfc3ffccad7891d07e1151b557bb23d86b6cdcdd",
+  "coordination": {
+    "task_id": "01a0ac90-6e2e-7761-af4b-0cf4cdf48649",
+    "acknowledged": true,
+    "acknowledgment": "Main task acknowledged safe checkpoint; owns native lane, will apply manifest/narrow documentation patch; frozen S2 sources unchanged."
+  },
+  "source_semantics": "All five source/test patches have identical added/deleted lines to original own series. E03 retains both independently added test blocks verbatim.",
+  "validation": {
+    "E01_macOS": 95,
+    "E02_macOS": 57,
+    "E03_macOS": 113,
+    "E05_macOS": 43,
+    "unexpected_failures": 0,
+    "skips": 0,
+    "strict_lint": "PASS all 28 changed Swift file instances",
+    "feature_docs": "PASS five docs on each branch",
+    "DL01": "No fresh runtime: affected source/tests unchanged; earlier qualified evidence retained."
+  },
+  "limits": [
+    "S2 source selection unchanged; no existing local checkout, local branch ref, configuration, device or build output changed by this task.",
+    "No PR merged, reopened or created. E01 was already externally retargeted to develop.",
+    "No broad platform/backend/Replay-content/release-readiness claim. Earlier accepted evidence keeps original identity.",
+    "Preparation failures retained in manifest; zero new assertions before those failures.",
+    "Current-head CI has four reported pending checks per PR at snapshot; required-check completeness not inferred."
+  ],
+  "ci_snapshot": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-s1-rebase-20260922/.git/s1-task/ci-publication-snapshot.json",
+    "sha256": "ad491f3a1934d4516216c0284385b755f16d0a4e2d756a9fda790bc6ebc77655",
+    "at": "2026-09-22T15:08:55.812169+00:00"
+  },
+  "items": [
+    {
+      "id": "H00",
+      "pr": 3214,
+      "original_head": "0deff4750a172309c79bcc916e99f575ccc37f8d",
+      "merge_commit": "eb0fdb8ae1c6084a18b8b914c578e484b53edcea",
+      "disposition": "SKIPPED_MERGED"
+    },
+    {
+      "id": "E01",
+      "pr": 3215,
+      "original_head": "0eaba3e39d89256f849addee284e1b92d14b8a5e",
+      "rebased_head": "0ec10c36dd02d51dde68ada89f104fcd34548022",
+      "merge_commit": null,
+      "disposition": "REBASED_AND_PUSHED"
+    },
+    {
+      "id": "DL01",
+      "pr": 3216,
+      "original_head": "29c28a01b4abec47a2c0869ca1ad6ade16b3dbd6",
+      "rebased_head": "0ca7cafbc745c6f29d0f7a34af3e84732a012061",
+      "merge_commit": null,
+      "disposition": "REBASED_AND_PUSHED"
+    },
+    {
+      "id": "E02",
+      "pr": 3217,
+      "original_head": "4dec888b99e70285cc855197790c3c2f6d20e426",
+      "rebased_head": "117942e7e1e29cc5ea30c2d482f4fc35bd164d83",
+      "merge_commit": null,
+      "disposition": "REBASED_AND_PUSHED"
+    },
+    {
+      "id": "E03",
+      "pr": 3218,
+      "original_head": "046719c3b62c9643bee2065866e35dd07b2e2158",
+      "rebased_head": "4b9e842babd188282a0521ac6c357897304ee3a0",
+      "merge_commit": null,
+      "disposition": "REBASED_AND_PUSHED"
+    },
+    {
+      "id": "E04",
+      "pr": 3219,
+      "original_head": "171a24092dd5a953e428fd5e038f70a3021a9dc2",
+      "merge_commit": "b8b201639e8c0eb487462fa7997b02143d4ef32b",
+      "disposition": "SKIPPED_MERGED"
+    },
+    {
+      "id": "E05",
+      "pr": 3220,
+      "original_head": "444788406977c52ffdf84b88571c4cbe63eef245",
+      "rebased_head": "ba03a1ba4d40941adb1b932c6830f8ca1722ce93",
+      "merge_commit": null,
+      "disposition": "REBASED_AND_PUSHED"
+    }
+  ]
+}
