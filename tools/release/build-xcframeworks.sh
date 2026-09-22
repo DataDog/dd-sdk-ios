@@ -103,10 +103,9 @@ echo_info "▸ XCFRAMEWORKS_OUTPUT = '$XCFRAMEWORKS_OUTPUT'"
 echo_info "▸ PLATFORMS = '$PLATFORMS'"
 
 # Build third-party XCFrameworks
-echo_subtitle2 "Run 'carthage bootstrap --platform $PLATFORMS --use-xcframeworks'"
-export REPO_ROOT=$(realpath "$SCRIPT_DIR/../..") 
-$REPO_ROOT/tools/carthage-shim.sh bootstrap --platform $PLATFORMS --use-xcframeworks
-cp -r "Carthage/Build/OpenTelemetryApi.xcframework" "$XCFRAMEWORKS_OUTPUT"
+echo_subtitle2 "Fetch third-party dependencies"
+"$SCRIPT_DIR/../repo-setup/fetch-dependencies.sh"
+cp -r "Dependencies/OpenTelemetryApi.xcframework" "$XCFRAMEWORKS_OUTPUT"
 
 # Build Datadog XCFrameworks
 build_xcframework DatadogInternal "$PLATFORMS"

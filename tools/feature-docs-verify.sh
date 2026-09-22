@@ -66,8 +66,6 @@ ignored_dirs = {
     ".git",
     "artifacts",
     "build",
-    "Carthage",
-    "Checkouts",
     "DerivedData",
 }
 for dirpath, dirnames, filenames in os.walk(repo_root):

@@ -1,12 +1,11 @@
 // Base configuration file for all targets.
-// Note: all configuration here will be applied to artifacts produced by Carthage.
 
 DD_SWIFT_SDK_PRODUCT_NAME=DatadogCore
 DD_CR_SDK_PRODUCT_NAME=DatadogCrashReporting
 
 ARCHS[sdk=iphoneos*]=$(ARCHS_STANDARD) arm64e
 
-// Minimum deployment targets for building the SDK (including Carthage build from sources)
+// Minimum deployment targets for building the SDK
 IPHONEOS_DEPLOYMENT_TARGET=15.0
 TVOS_DEPLOYMENT_TARGET=15.0
 MACOSX_DEPLOYMENT_TARGET=12.6
@@ -16,7 +15,7 @@ XROS_DEPLOYMENT_TARGET=1.0
 // Minimum supported Swift version
 SWIFT_VERSION=5.9
 
-// Include internal base config (git-ignored, so excluded from Carthage build)
+// Include internal base config (git-ignored, so excluded when the SDK is built from source by dependency managers)
 // TODO: RUM-4079 Remove once when we're fully on GitLab
 #include? "Base.local.xcconfig"
 
