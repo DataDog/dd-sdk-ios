@@ -42,7 +42,8 @@ extension CALayerSnapshot.SemanticObservationMapping: CaseIterable {
         .tabSelectionBackdrop,
         .visualEffectBackdrop,
         .visualEffectBackground,
-        .liquidLens
+        .liquidLens,
+        .unsupported
     ]
 }
 #endif
