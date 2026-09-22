@@ -1,0 +1,375 @@
+{
+  "schema_version": 1,
+  "experiment": "EXP-223",
+  "gates": [
+    "S2:H11",
+    "S2:H12",
+    "S2:H13",
+    "S2:H14"
+  ],
+  "status": "SIMULATOR_FIXTURE_BUILDS_QUALIFIED_RUNTIME_BINDINGS_REMAIN",
+  "defined_at": "2026-09-22T23:17:07.076784+00:00",
+  "owner": "SDK implementer + device operator",
+  "reviewer": "/root/c06_runtime_plan",
+  "baseline": "62f64d7b655bdc83f3036c4ad81090a270f6202b",
+  "candidate": "c9faed816a1d4828d7d8c4b64acae01119425889",
+  "purpose": "Close the existing ordinary single-scene transition obligations with recognized native input and exact baseline/candidate ownership. No production SDK change.",
+  "matrix": [
+    {
+      "id": "duo-UIKit-automatic-stack-A",
+      "arm": "A",
+      "framework": "UIKit",
+      "tracking": "automatic",
+      "layout": "stack",
+      "environment": "duo",
+      "attempts": 1
+    },
+    {
+      "id": "duo-UIKit-automatic-stack-B",
+      "arm": "B",
+      "framework": "UIKit",
+      "tracking": "automatic",
+      "layout": "stack",
+      "environment": "duo",
+      "attempts": 1
+    },
+    {
+      "id": "duo-SwiftUI-automatic-stack-A",
+      "arm": "A",
+      "framework": "SwiftUI",
+      "tracking": "automatic",
+      "layout": "stack",
+      "environment": "duo",
+      "attempts": 1
+    },
+    {
+      "id": "duo-SwiftUI-automatic-stack-B",
+      "arm": "B",
+      "framework": "SwiftUI",
+      "tracking": "automatic",
+      "layout": "stack",
+      "environment": "duo",
+      "attempts": 1
+    },
+    {
+      "id": "duo-SwiftUI-manual-stack-A",
+      "arm": "A",
+      "framework": "SwiftUI",
+      "tracking": "manual",
+      "layout": "stack",
+      "environment": "duo",
+      "attempts": 1
+    },
+    {
+      "id": "duo-SwiftUI-manual-stack-B",
+      "arm": "B",
+      "framework": "SwiftUI",
+      "tracking": "manual",
+      "layout": "stack",
+      "environment": "duo",
+      "attempts": 1
+    },
+    {
+      "id": "duo-SwiftUI-manual-split-A",
+      "arm": "A",
+      "framework": "SwiftUI",
+      "tracking": "manual",
+      "layout": "split",
+      "environment": "duo",
+      "attempts": 1
+    },
+    {
+      "id": "duo-SwiftUI-manual-split-B",
+      "arm": "B",
+      "framework": "SwiftUI",
+      "tracking": "manual",
+      "layout": "split",
+      "environment": "duo",
+      "attempts": 1
+    },
+    {
+      "id": "physical_ipad-UIKit-automatic-stack-A",
+      "arm": "A",
+      "framework": "UIKit",
+      "tracking": "automatic",
+      "layout": "stack",
+      "environment": "physical_ipad",
+      "attempts": 1
+    },
+    {
+      "id": "physical_ipad-UIKit-automatic-stack-B",
+      "arm": "B",
+      "framework": "UIKit",
+      "tracking": "automatic",
+      "layout": "stack",
+      "environment": "physical_ipad",
+      "attempts": 1
+    },
+    {
+      "id": "physical_ipad-SwiftUI-automatic-stack-A",
+      "arm": "A",
+      "framework": "SwiftUI",
+      "tracking": "automatic",
+      "layout": "stack",
+      "environment": "physical_ipad",
+      "attempts": 1
+    },
+    {
+      "id": "physical_ipad-SwiftUI-automatic-stack-B",
+      "arm": "B",
+      "framework": "SwiftUI",
+      "tracking": "automatic",
+      "layout": "stack",
+      "environment": "physical_ipad",
+      "attempts": 1
+    },
+    {
+      "id": "physical_ipad-SwiftUI-manual-stack-A",
+      "arm": "A",
+      "framework": "SwiftUI",
+      "tracking": "manual",
+      "layout": "stack",
+      "environment": "physical_ipad",
+      "attempts": 1
+    },
+    {
+      "id": "physical_ipad-SwiftUI-manual-stack-B",
+      "arm": "B",
+      "framework": "SwiftUI",
+      "tracking": "manual",
+      "layout": "stack",
+      "environment": "physical_ipad",
+      "attempts": 1
+    },
+    {
+      "id": "physical_ipad-UIKit-automatic-split-A",
+      "arm": "A",
+      "framework": "UIKit",
+      "tracking": "automatic",
+      "layout": "split",
+      "environment": "physical_ipad",
+      "attempts": 1
+    },
+    {
+      "id": "physical_ipad-UIKit-automatic-split-B",
+      "arm": "B",
+      "framework": "UIKit",
+      "tracking": "automatic",
+      "layout": "split",
+      "environment": "physical_ipad",
+      "attempts": 1
+    },
+    {
+      "id": "physical_ipad-SwiftUI-automatic-split-A",
+      "arm": "A",
+      "framework": "SwiftUI",
+      "tracking": "automatic",
+      "layout": "split",
+      "environment": "physical_ipad",
+      "attempts": 1
+    },
+    {
+      "id": "physical_ipad-SwiftUI-automatic-split-B",
+      "arm": "B",
+      "framework": "SwiftUI",
+      "tracking": "automatic",
+      "layout": "split",
+      "environment": "physical_ipad",
+      "attempts": 1
+    },
+    {
+      "id": "physical_ipad-SwiftUI-manual-split-A",
+      "arm": "A",
+      "framework": "SwiftUI",
+      "tracking": "manual",
+      "layout": "split",
+      "environment": "physical_ipad",
+      "attempts": 1
+    },
+    {
+      "id": "physical_ipad-SwiftUI-manual-split-B",
+      "arm": "B",
+      "framework": "SwiftUI",
+      "tracking": "manual",
+      "layout": "split",
+      "environment": "physical_ipad",
+      "attempts": 1
+    }
+  ],
+  "build_contract": {
+    "builds_max": 4,
+    "keys": [
+      "A-simulator",
+      "B-simulator",
+      "A-device",
+      "B-device"
+    ],
+    "products_per_build": [
+      "UIKit",
+      "SwiftUI"
+    ],
+    "toolchain": "Xcode27.1",
+    "architecture": "arm64",
+    "configuration": "Release",
+    "fixture_deployment": "18.0",
+    "sdk_deployment": "15.0",
+    "physical_build_admission": "Only after live device/signing readiness; simulator preparation independent."
+  },
+  "environments": {
+    "duo": "Existing qualified Duo27.1 simulator, real Closed/Open displays; no boot recovery or automated gesture path.",
+    "physical_ipad": "One connected, unlocked, resize-capable iPadOS18+ with actual native input and signed task products. Rediscover before admission. Relevant physical iPad coverage, never physical Duo certification."
+  },
+  "reuse": [
+    {
+      "owner": "EXP-210-s2-automatic-coverage.json",
+      "scope": "When its selected-source automatic UIKit/SwiftUI split cells pass, reuse actual Detail-before-close and Detail-after-reopen geometry/selection/mapper evidence for Duo H14. Initial Open supplies Root evidence only. No duplicate automatic Duo split cells or backend claim."
+    }
+  ],
+  "stack_scenario": [
+    "Home readiness; tap Open detail and wait for exact native/mapper readiness",
+    "Complete one real interactive edge pop; wait for terminal callback and fresh Home owner",
+    "Open Detail again; cancel one real interactive edge pop; preserve outgoing owner",
+    "Present native sheet; complete one real interactive dismissal; wait for callback work and returned Detail owner",
+    "Re-present sheet; cancel one real interactive dismissal; preserve Sheet owner",
+    "Dismiss remaining sheet using its ordinary button; return Home through ordinary navigation; one genuine Home background drain"
+  ],
+  "split_scenario": [
+    "Select Detail through ordinary split navigation and capture its real selection/path",
+    "Duo: Open, Closed, Open while retaining selected Detail; physical iPad: regular, compact, regular through real window resize",
+    "Before each dependent navigation step capture actual display, geometry, complete controller inventory and exact selected path; join the complete resulting view inventory without adding synthetic marker work.",
+    "Return to original pose/window configuration, then one genuine Home background drain"
+  ],
+  "observation_design": [
+    "Passive public controller graph; no inserted host/controller, swizzle, input delivery or replacement of framework-owned delegates.",
+    "At an interactive-only durable readiness snapshot, add one observation target to each existing public pan recognizer in the owned window. At the first actual .began callback require one initiallyInteractive/isInteractive coordinator and attach real interaction-change/completion callbacks. Missing or late registration is INVALID. No periodic scan supplies a gesture or coordinator.",
+    "Retain exact coordinator/from/to/window/controller identities, native monotonic ordering, recognized interaction changes/cancellation, actual native stack and declared SwiftUI path/selection.",
+    "Callback work is a separately labelled custom action from the actual transition completion callback; it never substitutes for automatic action coverage. Capture contemporaneous mapper context under the evidence lock before dispatch.",
+    "Snapshot requests, ordered off-main persistence, actual screenshot/display responses, publication, human supervisor, process quiescence and task-only cleanup reuse existing acceptance components. Frozen prior helper bytes remain unchanged.",
+    "Snapshot original recognizer policies, delegate, view/window and enablement; own no existing delegate. Remove only own targets on completion, new readiness, failure and background. Preserve terminal attachment/enablement separately because native pop/dismissal legitimately changes them. Reject late callbacks."
+  ],
+  "decisive_assertions": [
+    "One source-bound ordinary scene and fixture-owned key window; retain complete auxiliary window inventory with public source provenance. No cardinality or private-class whitelist.",
+    "Before-input readiness is durable, current and unconsumed. Native callback chains begin after that boundary and terminal effects precede subsequent input.",
+    "Cancellation preserves the outgoing owner; completed navigation/dismissal gives the correctly observed return occurrence and real callback work. Automatic baseline limitations require explicit paired source classification and cannot be represented as repaired.",
+    "SwiftUI automatic uses public default predicates; manual uses only existing trackRUMView modifiers with automatic view tracking disabled. No semantic S3 targets or raw start/stop substitute.",
+    "Adaptive steps prove actual changed display/native geometry and stable selected path. Capture owners independently; same name is not same occurrence.",
+    "Join complete local mapper inventory with exact application/session backend inventory, terminal versions/counters, non-view identities and callback owners. Reject missing/extra/duplicate/stale events; isolate incidental ApplicationLaunch/TTID explicitly.",
+    "Keep scenario, evidence and cleanup verdicts separate; required missing evidence/cleanup makes overall acceptance INVALID. SDK attribution requires a valid native scenario and selected source proof."
+  ],
+  "budgets_seconds": {
+    "build_per_key": 900,
+    "human_step": 180,
+    "snapshot": 30,
+    "display_capture": 30,
+    "native_per_cell": 1800,
+    "backend_per_cell": 600,
+    "cleanup": 300,
+    "native_snapshot_max": 0.1,
+    "observer_callback_max": 0.002
+  },
+  "budget_basis": "Build900s follows existing two-target automatic builds; each finite stack has four human interactive boundaries plus setup/return taps within1800s. Human180s, capture30s, backend600s and cleanup300s reuse measured recent S2 budgets. No original deadline is changed.",
+  "attempt_policy": {
+    "native_attempts_per_cell": 1,
+    "retries": 0,
+    "deadline_extension": false,
+    "qualification": "First planned UIKit baseline cell qualifies the passive transition witness. On mechanism failure stop that path; preserve evidence and all unrun cells. No SDK-on/off diagnostic series."
+  },
+  "offline_controls": [
+    "Missed/noninteractive coordinator",
+    "Cancel/completion mismatch",
+    "Duplicate coordinator/terminal callback",
+    "Foreign controller/window/scene",
+    "Stale or consumed readiness",
+    "Missing callback-work owner",
+    "Wrong/fresh owner on cancellation",
+    "Stale/foreign/restored run identity",
+    "Missing or reordered native path/selection proof",
+    "Extra/missing backend event and incomplete pagination",
+    "Late evidence/publication or missing cleanup"
+  ],
+  "review_status": "FIXTURE_NATIVE_AND_LOCAL_OWNERSHIP_PREPARATION_APPROVED_RUNTIME_REVIEW_REMAINS",
+  "native_admitted": false,
+  "results": [],
+  "gate_closures": [],
+  "next_action": "Finish scoped design review, implement passive fixture/strict oracle, run focused offline controls and qualify source-bound builds. Schedule only as part of the existing ordered human session.",
+  "physical_mapping": "The S2 rows require a relevant physical iPhone/iPad, not both. This finite matrix explicitly selects one resize-capable physical iPad for H11/H12/H13 as well as H14. It makes no physical iPhone or Duo claim; all automatic/manual/source pairs are retained.",
+  "review_adjustments": [
+    "Independent native/mapper evidence; no assumed SDK interactive coordinator.",
+    "First-began registration and recognizer target lifecycle; no polling rescue.",
+    "Explicit12cell physicaliPad mapping and deferred SwiftUI callbacks.",
+    "Native attachment/enablement changes are captured as observations, never falsely attributed to an observer assignment.",
+    "Reviewer withdrew a requested animations_queued=true assertion after verifying the actual UIKit header: completion-only registration may return false while its genuine completion still runs. Keep the Boolean diagnostic and strict actual callback ordering."
+  ],
+  "preparation": {
+    "status": "SIMULATOR_FIXTURE_BUILDS_QUALIFIED_RUNTIME_BINDINGS_REMAIN",
+    "offline_controls": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp223-transition-build-nvt_f6jx/run/preparation-review/controls.json",
+      "sha256": "003deaff4732706fa4d87a7b21b6d47ae46be4f969ed7ef2d3faa0935de063b3",
+      "tests": 33,
+      "state": "PASS"
+    },
+    "native_admitted": false,
+    "remaining": [
+      "Human-paced runtime/backend and adaptive geometry bindings",
+      "Final scoped implementation review of complete workflow",
+      "Live physical iPad/signing availability and ordered human session"
+    ],
+    "build_root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp223-transition-build-nvt_f6jx/run",
+    "build_plan_sha256": "9863378a92cde9547fb4cfc8ab9c5f9847005aa44d11e9e847305e59b83b17a8",
+    "build_results": {
+      "A-simulator": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp223-transition-build-nvt_f6jx/run/A-simulator/build-result.json",
+        "sha256": "6d8def0092385faf8d6ed45225b327e9652884bf07556f0ffb0f41e85ab9093c",
+        "source": "62f64d7b655bdc83f3036c4ad81090a270f6202b",
+        "seconds": 60.043,
+        "products": {
+          "UIKit": {
+            "files": 7,
+            "mach_o": 1
+          },
+          "SwiftUI": {
+            "files": 7,
+            "mach_o": 1
+          }
+        }
+      },
+      "B-simulator": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp223-transition-build-nvt_f6jx/run/B-simulator/build-result.json",
+        "sha256": "5b7d317b31a686f3775391525e2d83a04dbe32cdbea365e3732057fa9ff3d170",
+        "source": "c9faed816a1d4828d7d8c4b64acae01119425889",
+        "seconds": 57.863,
+        "products": {
+          "UIKit": {
+            "files": 7,
+            "mach_o": 1
+          },
+          "SwiftUI": {
+            "files": 7,
+            "mach_o": 1
+          }
+        }
+      }
+    },
+    "retained_control_failure": {
+      "root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp223-owner-controls-so4cppf7",
+      "scope": "One aliased positive-control mock renamed the same owner twice; corrected test data only, oracle unchanged."
+    },
+    "review": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp223-transition-build-nvt_f6jx/run/preparation-review/review.json",
+      "sha256": "8ee1ca6b8aa0e8f208af5cfeac107fbd366382a41d45e8cb05dec18c9a31827f",
+      "state": "PASS_FOR_PREPARATION_ONLY",
+      "scope": "Fixture/native and local paired oracle only. Full runtime, backend, adaptive geometry and physical execution remain unqualified."
+    }
+  },
+  "updated_at": "2026-09-22T23:47:12.511107+00:00",
+  "live_environment": {
+    "observed_at": "2026-09-22T23:41:23.416020+00:00",
+    "xcode": "27.1 (27A9269)",
+    "workspace": "/Users/valentin.pertuisot/work/dd-sdk-ios/Datadog.xcworkspace",
+    "duo_simulators_eligible": 2,
+    "physical_ipad_available": false,
+    "physical_iphone_available": true,
+    "native_admission": false,
+    "qualification_limit": "MCP eligibility inventory only; actual display/device/operator prerequisites must be refreshed before native execution."
+  }
+}

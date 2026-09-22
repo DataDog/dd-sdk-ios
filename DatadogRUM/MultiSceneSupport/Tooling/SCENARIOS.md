@@ -173,6 +173,14 @@ paired appear/disappear and no overlap before the same content reappears; do not
 assume an outgoing SwiftUI callback is synchronous with UIKit completion. A local
 re-audit cannot supply missing backend evidence or rewrite the original verdict.
 
+For ordinary single-scene interactive navigation/dismissal, use the
+[transition fixture](../../../tools/multi-scene/interactive-transitions/README.md).
+Bind the actual coordinator at gesture begin; callback-only animation registration
+is valid even when no animation is queued. Keep native controller/model results
+separate from RUM owner assertions. Manual SwiftUI path hashes are process-local;
+automatic paths retain exact comparison. Record unchanged baseline limitations
+separately without changing failed semantic expectations into passes.
+
 ## Specialized fixture entry points
 
 | Contract | Read only when needed | Preserve |

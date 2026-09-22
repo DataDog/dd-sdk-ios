@@ -2,7 +2,7 @@
   "schema_version": 1,
   "work_item": "S2:A02 ordered single human-input session",
   "status": "ORDERED_SCOPE_PREPARED_TRANSITION_AND_ACCOUNT_BINDINGS_REMAIN",
-  "updated_at": "2026-09-22T23:03:24.378566+00:00",
+  "updated_at": "2026-09-22T23:47:12.511107+00:00",
   "owner": "Harness implementer",
   "user_role": "Only real gestures and any required interactive sign-in",
   "request_user_now": false,
@@ -62,7 +62,7 @@
         "UIKit-hosted SwiftUI: only remaining manual candidate, human-paced push/pop/present/dismiss, with actual attachment and SwiftUI/mapper readiness captured before each transition"
       ],
       "automated_checks": "Recognized native transition begin/cancel/completion, actual geometry and independently mapped exact occurrence owner before callback work; inherited omissions kept separate from new regression.",
-      "remaining": "Freeze and qualify source-specific fixtures, screenshots, collector and per-step budgets before scheduling.",
+      "remaining": "H11-H14 source fixtures and both simulator product pairs qualify; human driver, backend/geometry bindings and fresh physical/operator prerequisites remain. H16 prepared binding is retained.",
       "hosting_evidence": "EXP-222 preserves three complete bound cells and candidate manual native portion/cleanup. Its missing Root SwiftUI lifecycle pair remains INVALID; no additional automatic retry. Human-paced candidate requires a separately frozen fixture/admission.",
       "hosting_binding": {
         "owner": "EXP-222-hosted-swiftui.json",
@@ -91,6 +91,21 @@
           "Relevant physical and backend obligations"
         ],
         "reviewer": "existing /root/c06_runtime_plan"
+      },
+      "transition_binding": {
+        "owner": "EXP-223-interactive-transitions.json",
+        "state": "SIMULATOR_FIXTURE_BUILDS_QUALIFIED_RUNTIME_BINDINGS_REMAIN",
+        "duo_cells": 8,
+        "physical_ipad_cells": 12,
+        "build_root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp223-transition-build-nvt_f6jx/run",
+        "build_plan_sha256": "9863378a92cde9547fb4cfc8ab9c5f9847005aa44d11e9e847305e59b83b17a8",
+        "offline_controls": 33,
+        "native_admitted": false,
+        "remaining": [
+          "Human-paced runtime/backend and adaptive geometry bindings",
+          "Final scoped implementation review of complete workflow",
+          "Live physical iPad/signing availability and ordered human session"
+        ]
       }
     },
     {
@@ -188,7 +203,7 @@
       "F08 reviewed J01-J04 runtime and both capture products; account/control prerequisite remains"
     ],
     "remaining_bindings": [
-      "H11-H14 interactive transition and geometry collector",
+      "H11-H14 human-paced runtime/backend/geometry bindings; source fixtures,33controls and four simulator products qualify",
       "F08 account and exact read-only Browser control; fresh shared operator/environment admission"
     ],
     "native_cells_executed": 0,
