@@ -25,7 +25,7 @@ def fixture(arm="B"):
         return row
     def owner(name, ms):
         add("native-start", ms, name=name)
-        event = dict(type="view", view=dict(id=ids[name], name=name, is_active=True),
+        event = dict(type="view", date=base + ms, view=dict(id=ids[name], name=name, is_active=True),
                      session=dict(id=sid, has_replay=True), application=dict(id=app))
         mapper = add("native-view", ms + 1, event_json=json.dumps(event))
         add("native-ready", ms + 2, name=name, view_id=ids[name], session_id=sid,
@@ -55,9 +55,11 @@ def fixture(arm="B"):
         event = copy.deepcopy(events[marker]);event["application"]["id"] = app;event["session"]["id"] = sid
         owner_name = "NativeA" if marker == "M1" or (marker == "M3" and arm == "B") else "NativeB" if marker == "M2" else None
         if owner_name:event["container"] = dict(source="ios", view=dict(id=ids[owner_name]))
-        raw = json.dumps(event)
+        attributes = dict(custom=event, client_time=event.pop("date"), source=event.pop("source"),
+                          service=[event["service"]])
+        raw = json.dumps(dict(id="actual-backend-row-" + marker, attributes=attributes))
         add("writer-ack", ms, marker=marker, view_id=event["view"]["id"], event_json=raw,
-            event_sha256=hashlib.sha256(raw.encode()).hexdigest())
+            event_sha256=hashlib.sha256(raw.encode()).hexdigest(), evidence_kind="datadog-mcp")
     owner("NativeA", 0)
     add("web-document-ready", 3, webview="A", document_id="fresh-document-A")
     freeze("M1", 181_003);emit("M1", 181_004);ack("M1", 181_006)
@@ -72,7 +74,7 @@ def fixture(arm="B"):
     emit("M4", 480_013);ack("M4", 480_015)
     add("tracking-disabled", 480_016, webview="A")
     add("weak-release", 480_017, webview="A", is_nil=True)
-    return dict(identity=identity, records=records), expected
+    return dict(identity=identity, records=records, persistence_failure=False, durable_sequence=len(records)), expected
 
 
 class MarkerControls(unittest.TestCase):
@@ -87,7 +89,7 @@ class MarkerControls(unittest.TestCase):
 
     def alter_upload(self, document, marker, change):
         row = self.row(document, "writer-ack", marker)
-        event = json.loads(row["event_json"]);change(event)
+        event = json.loads(row["event_json"]);change(event["attributes"]["custom"])
         row["event_json"] = json.dumps(event)
         row["event_sha256"] = hashlib.sha256(row["event_json"].encode()).hexdigest()
 
@@ -97,6 +99,31 @@ class MarkerControls(unittest.TestCase):
                 result = evaluate_markers(*fixture(arm))
                 self.assertEqual(result["state"], "MARKERS_QUALIFIED")
                 self.assertIn("complete backend inventory", result["remaining"])
+
+    def test_missing_durable_terminal_sequence(self):
+        self.mutate(lambda d, _: d.pop("durable_sequence"), "durably complete")
+
+    def test_stale_durable_terminal_sequence(self):
+        self.mutate(lambda d, _: d.update(durable_sequence=len(d["records"]) - 1), "durably complete")
+
+    def test_native_and_browser_server_offset_same_domain(self):
+        document, expected = fixture()
+        for row in document["records"]:
+            if row["kind"] == "native-view":
+                event = json.loads(row["event_json"]);event["date"] += 600_000;row["event_json"] = json.dumps(event)
+            if row["kind"] == "writer-ack":
+                event = json.loads(row["event_json"]);event["attributes"]["client_time"] += 600_000
+                row["event_json"] = json.dumps(event);row["event_sha256"] = hashlib.sha256(row["event_json"].encode()).hexdigest()
+        self.assertEqual(evaluate_markers(document, expected)["state"], "MARKERS_QUALIFIED")
+
+    def test_conflicting_backend_source(self):
+        self.mutate(lambda d, _: self.alter_upload(d, "M1", lambda e: e.update(source="ios")), "conflicting backend source")
+
+    def test_missing_backend_container_is_not_inferred(self):
+        self.mutate(lambda d, _: self.alter_upload(d, "M3", lambda e: e.pop("container")), "container differs")
+
+    def test_callback_body_is_not_backend_acknowledgement(self):
+        self.mutate(lambda d, _: self.row(d, "writer-ack", "M3").update(evidence_kind="webkit-callback"), "raw backend evidence")
 
     def test_wrong_native_container(self):
         self.mutate(lambda d, _: self.alter_upload(d, "M3", lambda e: e["container"]["view"].update(id="40000000-0000-0000-0000-000000000002")), "container differs")
@@ -130,12 +157,13 @@ class MarkerControls(unittest.TestCase):
 
     def test_late_short_ttl_ack(self):
         def change(d, _):
-            row=self.row(d, "writer-ack", "M3");row["wall_ms"]+=180_000
+            row=self.row(d, "writer-ack", "M3")
+            for record in d["records"][row["sequence"]-1:]: record["wall_ms"]+=180_000
         self.mutate(change, "TTL bracket")
 
     def test_monotonic_ttl_cannot_substitute_for_wall_ttl(self):
         def change(d, _):
-            row=self.row(d, "emit-before", "M4");row["wall_ms"]-=180_000
+            row=self.row(d, "emit-before", "M4");row["wall_ms"]-=1_000
         self.mutate(change, "TTL bracket")
 
     def test_consumed_writer_ack(self):
@@ -168,7 +196,24 @@ class MarkerControls(unittest.TestCase):
         self.mutate(lambda d, _: self.row(d, "tracking-disabled").update(kind="webkit-callback", marker="M4"), "callback inventory")
 
     def test_late_server_clock_correction_cannot_change_owner_expectation(self):
-        self.mutate(lambda d, _: self.alter_upload(d, "M3", lambda e: e.update(date=1_790_000_300_050)), "outside A timestamp")
+        def change(d, _):
+            row = self.row(d, "writer-ack", "M3")
+            event = json.loads(row["event_json"]);event["attributes"]["client_time"] = 1_790_000_300_050
+            row["event_json"] = json.dumps(event);row["event_sha256"] = hashlib.sha256(row["event_json"].encode()).hexdigest()
+        self.mutate(change, "outside A timestamp")
 
 
+class PersistenceControls(unittest.TestCase):
+    def test_backward_date_rejects(self):
+        document, expected = fixture("B")
+        document["records"][1]["wall_ms"] = document["records"][0]["wall_ms"] - 1
+        with self.assertRaisesRegex(Rejected, "backward"): evaluate_markers(document, expected)
+    def test_persistence_failure_rejects(self):
+        document, expected = fixture("B")
+        document["persistence_failure"] = True
+        with self.assertRaisesRegex(Rejected, "persistence"): evaluate_markers(document, expected)
+    def test_missing_persistence_receipt_rejects(self):
+        document, expected = fixture("B")
+        document.pop("persistence_failure")
+        with self.assertRaisesRegex(Rejected, "persistence"): evaluate_markers(document, expected)
 if __name__ == "__main__":unittest.main()

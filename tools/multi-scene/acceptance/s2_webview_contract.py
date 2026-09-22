@@ -1,6 +1,6 @@
 """S2 WebView marker checks, separate from source/build/fold/cleanup acceptance.
 
-The caller must retain raw callback bodies and raw uploaded events. This module
+The caller must retain raw callback bodies and raw MCP backend rows separately. This module
 never infers native ownership from the uploaded container it is checking.
 """
 import hashlib
@@ -46,15 +46,48 @@ def body(text):
     return envelope["event"]
 
 
+def backend_projection(raw):
+    """Project the known MCP envelope without substituting native fixture fields."""
+    def pairs(values):
+        result = {}
+        for key, value in values:
+            require(key not in result, "duplicate backend JSON key")
+            result[key] = value
+        return result
+    row = json.loads(raw, object_pairs_hook=pairs)
+    require(isinstance(row, dict) and isinstance(row.get("id"), str) and row["id"], "missing backend row ID")
+    attributes = row.get("attributes")
+    require(isinstance(attributes, dict) and isinstance(attributes.get("custom"), dict), "missing raw MCP payload")
+    payload = attributes["custom"]
+    source = attributes.get("source")
+    require(isinstance(source, str) and ("source" not in payload or payload["source"] == source),
+            "conflicting backend source")
+    date = integer(attributes.get("client_time"), "backend corrected event date")
+    require("date" not in payload or payload["date"] == date, "conflicting backend event date")
+    require(payload.get("service") in attributes.get("service", []), "conflicting backend service")
+    return dict(payload, source=source, date=date)
+
+
+def contains_fields(actual, expected):
+    """Backend enrichment may add fields; every submitted field must survive exactly."""
+    if isinstance(expected, dict):
+        return isinstance(actual, dict) and all(k in actual and contains_fields(actual[k], v)
+                                              for k, v in expected.items())
+    return type(actual) is type(expected) and actual == expected
+
+
 def evaluate_markers(document, expected):
     """Return marker evidence only; no build, topology, backend-inventory or gate claim."""
     require(document.get("identity") == expected["identity"], "stale fixture identity")
+    require(document.get("persistence_failure") is False, "missing or failed evidence persistence")
     identity = expected["identity"]
     run = identifier(identity.get("run_id"), "run ID")
     identifier(identity.get("nonce"), "nonce")
     require(identity.get("arm") in ("A", "B"), "unqualified arm")
     records = document.get("records")
     require(isinstance(records, list) and records, "missing marker evidence")
+    require(type(document.get("durable_sequence")) is int and document["durable_sequence"] == len(records),
+            "terminal evidence is not durably complete")
     for index, record in enumerate(records, 1):
         require(isinstance(record, dict) and record.get("sequence") == index,
                 "missing, repeated or reordered evidence")
@@ -63,6 +96,7 @@ def evaluate_markers(document, expected):
         if index > 1:
             require(records[index - 2]["monotonic_ns"] <= record["monotonic_ns"],
                     "reversed native monotonic evidence")
+            require(records[index - 2]["wall_ms"] <= record["wall_ms"], "system Date moved backward")
     def one(kind, **fields):
         return unique([r for r in records if r.get("kind") == kind
                        and all(r.get(k) == v for k, v in fields.items())], kind + str(fields))
@@ -97,7 +131,8 @@ def evaluate_markers(document, expected):
         session = sid
         before(start, mapper)
         before(mapper, ready)
-        owner[name] = {"start": start, "ready": ready, "id": vid}
+        owner[name] = {"start": start, "ready": ready, "id": vid,
+                       "sdk_start_ms": integer(event.get("date"), "native SDK view-start date")}
     require(owner["NativeA"]["id"] != owner["NativeB"]["id"], "native occurrences alias")
     a, b = owner["NativeA"], owner["NativeB"]
     open_pose, closed_pose = one("fold-complete", phase="open"), one("fold-complete", phase="closed")
@@ -179,30 +214,32 @@ def evaluate_markers(document, expected):
                 elapsed(emission, b["ready"], greater=True)
         raw = ack.get("event_json")
         require(isinstance(raw, str) and hashlib.sha256(raw.encode()).hexdigest() == ack.get("event_sha256"),
-                "writer acknowledgement is not bound to raw event")
-        uploaded = json.loads(raw)
+                "backend acknowledgement is not bound to raw row")
+        require(ack.get("evidence_kind") == "datadog-mcp", "acknowledgement is not raw backend evidence")
+        uploaded = backend_projection(raw)
         require(uploaded.get("view", {}).get("id") == vid
                 and uploaded.get("application", {}).get("id") == expected["application_id"]
                 and uploaded.get("session", {}).get("id") == session, "uploaded identity replacement failed")
         require(uploaded.get("source") == "browser" and uploaded.get("service") == expected["browser_service"],
                 "Browser output identity changed")
         require(uploaded.get("context", {}).get("probe") == event["context"]["probe"], "writer acknowledgement reused")
-        require(uploaded.get("view") == event.get("view") and uploaded.get("_dd") == event.get("_dd")
+        require(contains_fields(uploaded.get("view"), event.get("view"))
+                and contains_fields(uploaded.get("_dd"), event.get("_dd"))
                 and uploaded.get("session", {}).get("has_replay") is True, "Browser payload fields changed")
         corrected_date = integer(uploaded.get("date"), "corrected Browser date")
         if marker in ("M1", "M3", "M4"):
-            require(a["ready"]["wall_ms"] < corrected_date < b["start"]["wall_ms"],
+            require(a["sdk_start_ms"] < corrected_date < b["sdk_start_ms"],
                     "corrected old event is outside A timestamp bracket")
         else:
-            require(corrected_date > b["ready"]["wall_ms"], "fresh B event predates B ownership")
+            require(corrected_date > b["sdk_start_ms"], "fresh B event predates B ownership")
         wanted = a["id"] if marker == "M1" or (marker == "M3" and identity["arm"] == "B") else b["id"] if marker == "M2" else None
         container = uploaded.get("container")
         if wanted is None:
             require(container is None, "expired native owner retained or B inherited", "FAIL")
         else:
-            require(container == {"source": "ios", "view": {"id": wanted}}, "exact native container differs", "FAIL")
+            require(contains_fields(container, {"source": "ios", "view": {"id": wanted}}), "exact native container differs", "FAIL")
         browser.append({"marker": marker, "view_id": vid, "container_id": wanted,
-                        "raw_event_sha256": ack["event_sha256"]})
+                        "raw_backend_row_sha256": ack["event_sha256"]})
     require(len(set(webviews.values())) == 2, "native WebViews alias")
     require(len({r["view_id"] for r in browser}) == 4
             and not ({r["view_id"] for r in browser} & {a["id"], b["id"]}), "browser/native IDs alias")

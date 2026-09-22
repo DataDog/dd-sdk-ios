@@ -1,8 +1,8 @@
 {
   "schema_version": 1,
   "work_item": "S2:T10 finite native/WebView preparation",
-  "status": "MARKER_ORACLE_OFFLINE_PREPARED_NATIVE_FIXTURE_PENDING",
-  "updated_at": "2026-09-22T11:46:35.516564+00:00",
+  "status": "MARKER_AND_DURABLE_RECEIPT_CONTROLS_PASS_APP_INTEGRATION_PENDING",
+  "updated_at": "2026-09-22T13:08:56.912114+00:00",
   "owner": "SDK implementer",
   "baseline": "62f64d7b655bdc83f3036c4ad81090a270f6202b",
   "candidate": "c9faed816a1d4828d7d8c4b64acae01119425889",
@@ -62,24 +62,26 @@
     },
     {
       "id": "M3",
-      "precondition": "Immediately after M2 actual callback, remove retained A WKWebView; prove window==nil and independently mapped B active. Emit M3 while the earliest deactivation bracket is less than 180 seconds old. Require M3 marker-specific writer acknowledgement within that same fixed bracket.",
+      "precondition": "Immediately after M2 actual callback, remove retained A WKWebView; prove window==nil and independently mapped B active. Emit M3 while the earliest deactivation bracket is less than 180 seconds old. Require M3 marker-specific backend acknowledgement within that same fixed bracket.",
       "browser_event": "Emit the first frozen A-dated envelope through the same real retained WKWebView/installed SDK handler.",
       "expected": "Candidate A container; baseline container absent after B insertion purges insertion-aged A. Never assign B."
     },
     {
       "id": "M4",
-      "precondition": "After M3 writer acknowledgement, perform actual Closed and wait until more than 180 seconds beyond the latest possible A deactivation in both wall and monotonic clocks. B remains active.",
+      "precondition": "After M3 backend acknowledgement, perform actual Closed and wait until more than 180 seconds beyond the latest possible A deactivation in both wall and monotonic clocks. B remains active.",
       "browser_event": "Emit second frozen A-dated envelope through the real callback; then disable tracking and release retained A.",
       "expected": "Candidate container absent; Browser/application/session identity preserved; no B inheritance. Prove A deallocation with weak reference after callback/write completion."
     }
   ],
   "capture_contract": [
     "Immutable per-arm run/nonce/source/helper/build/product identity, complete owned scene/window/controller/actual display inventory and current native A/B mapper IDs.",
-    "Record JavaScript invocation, actual WKScriptMessage receipt/body/WebView identity/attachment, native deactivation interval and local write or marker-specific backend acknowledgement separately.",
+    "Record JavaScript invocation, actual WKScriptMessage receipt/body/WebView identity/attachment, native deactivation interval and marker-specific raw Datadog MCP acknowledgement separately. Normal SDK upload; no forwarding proxy.",
     "An exact event acknowledgement is repeatable and tied to its browser UUID. currentSessionID, page load completion and elapsed sleep are not writer barriers.",
     "Query full application/session without native service or SDK filters; independent count and complete raw pages, then exact native/browser partitions. Keep raw available view revisions.",
     "After required evidence, stop task SDK work, remove only the task app, prove original display/device/app inventory and input-worker quiescence. Separate scenario/evidence/cleanup verdicts.",
-    "Bracket deactivation with the native B transition entry and independently mapped ready receipt; verify wall and monotonic TTL intervals separately. Never compare a Date-derived TTL to an uncalibrated DispatchTime duration."
+    "Bracket deactivation with the native B transition entry and independently mapped ready receipt; verify wall and monotonic TTL intervals separately. Never compare a Date-derived TTL to an uncalibrated DispatchTime duration.",
+    "Use actual native mapper view-start dates and raw MCP client_time for corrected event-date ownership; wall/monotonic receipt clocks qualify elapsed TTL separately. Preserve exact raw row and source/service envelope; never fill missing backend fields from callback evidence.",
+    "Serialize immutable scalar snapshots off callback paths in enqueue order. Require durable_sequence equal to the complete record count and await the evidence writer flush; persistence failure remains sticky."
   ],
   "negative_controls": [
     "wrong A/B container",
@@ -96,26 +98,37 @@
     "missing post-TTL emission or retained A release"
   ],
   "independent_preparation": [
-    "Implement the scalar marker collector and strict timeline/ownership oracle without desktop access.",
-    "Reuse EXP165 real WK/collector pattern and EXP183 callback-forwarding pattern only; their S3 routing assumptions are excluded.",
-    "Reuse existing complete MCP inventory transport and exact source/build/cleanup runner after the current scoped review."
+    "28 focused oracle controls and Foundation persistence controls passed; exact logs/source hashes are in the controls receipt.",
+    "Use normal SDK upload and existing autonomous MCP polling; raw Browser events bypass native mapper.",
+    "Reuse existing source/build/cleanup contracts; human fold requests must remain outside the inactive TTL boundary."
   ],
   "remaining_prerequisites": [
-    "Implement source-only fixture and offline controls; freeze fixed runtime/transport/cleanup budgets before admission.",
-    "Bind current actual Replay eligibility and native/WebKit/server-offset timestamps; do not infer them from configuration.",
-    "Use the qualified fold mechanism once available, otherwise include these two cells in the one prepared human session.",
+    "Integrate the prepared scalar writer and real WK handler observer into the two-arm app and existing host runner; full iOS compilation/runtime remains unqualified.",
+    "Bind actual Replay eligibility, native mapper start dates, WK callback identity, server offset and exact complete raw backend inventory.",
+    "Freeze fixed runtime/transport/cleanup budgets and include both fold cells in the single human-input session; the automated fold path is stopped.",
     "Datadog integrated J03 remains separately owned by S2-F08-source-oracle.json."
   ],
   "gate_closures": [],
   "native_launches": 0,
   "new_experiment_number": null,
-  "timing_decision": "Keep both UI round trips outside the short inactive-retention boundary: Open before B, Closed after M3 write acknowledgement. Do not pause between B and M3 for model/UI interaction. Any missed inactive deadline invalidates the cell; no retry/extension.",
+  "timing_decision": "Keep both UI round trips outside the short inactive-retention boundary: Open before B, Closed after M3 backend acknowledgement. Do not pause between B and M3 for model/UI interaction. Any missed inactive deadline invalidates the cell; no retry/extension.",
   "marker_oracle": {
     "source": "tools/multi-scene/acceptance/s2_webview_contract.py",
     "tests": "tools/multi-scene/acceptance/test_s2_webview_contract.py",
     "controls": {
-      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-webview-marker-preparation-3u_gib42/controls-result.json",
-      "sha256": "9e2c57b00e82828249b92d051a8debc1d68596cad991dbd84e4c358dfc220084"
-    }
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-webview-receipts-y3xn4xkr/controls-result.json",
+      "sha256": "dd2e8b21df47d2ff6f0d061d6e9c56c75c3002a811f3d67cff7fcf0cbc9293c7"
+    },
+    "passed_controls": 28,
+    "scope": "Offline marker/ownership/backend-projection controls; Swift syntax; Foundation concurrent ordered persistence, durable flush and sticky failure. No native or backend acceptance."
+  },
+  "fixture_sources": [
+    "tools/multi-scene/webview-correlation/S2/S2WebViewEvidence.swift",
+    "tools/multi-scene/webview-correlation/S2/S2WebViewBridge.swift"
+  ],
+  "review": {
+    "reviewer": "/root/c06_runtime_plan",
+    "scope": "Frozen A-dated M3/M4; native B transition deactivates A; corrected mapper/backend date comparison; serial durability; normal SDK upload with exact MCP rows.",
+    "limits": "Marker preparation only; app/runner and runtime evidence remain to qualify."
   }
 }
