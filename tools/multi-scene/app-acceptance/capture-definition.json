@@ -1,0 +1,65 @@
+{
+  "schema_version": 1,
+  "gate": "S2:F08",
+  "scope": "Validation-only observation for the existing J01-J04 app journeys; no new scenario or SDK change.",
+  "defined_at": "2026-09-22T19:46:51.436399+00:00",
+  "state": "DEFINED_BEFORE_IMPLEMENTATION",
+  "app_revision": "6e33f1c18a52d04b0793e6954f456bdbc1affe2f",
+  "baseline": "62f64d7b655bdc83f3036c4ad81090a270f6202b",
+  "candidate": "c9faed816a1d4828d7d8c4b64acae01119425889",
+  "existing_input_sources": {
+    "Targets/Platform/DatadogObservability/ObservabilitySystem.swift": "7552a0e49aba9f4e67c352295449bfcb8fffc2f7f2df8a6294e02ab86c23aac0",
+    "Targets/Platform/DatadogObservability/UserMonitorLive.swift": "dfa4fccbb57a65e541187f7b1487f520ae01557dbe52e975f384ae1a3ef7578b",
+    "Targets/DatadogApp/SceneDelegate.swift": "c402795a46697ce16fa7d6c5449f7cc850a53134091616795d2b6f701d43517b",
+    "Targets/DatadogApp/WindowController.swift": "a32f5b658026861d2dc416791e36e9fefad2d59f52b540390ebfc5dceebff4c9",
+    "Targets/DatadogApp/UI/App/Root/Signed In Root/SignedInRootCoordinator+UINavigationControllerDelegate.swift": "e7dd5786afba32f88a4bbd13210b2a0d82aa15e1c1ebc580d4321cde13327fe1",
+    "Targets/DatadogApp/UI/App/Root/Signed In Root/Datadog Products/Dashboards/Details/DashboardDetailViewController.swift": "168a063bf5e7fd041d6a30a8570705ce84f245602ff753f02df193eff4f99f52"
+  },
+  "new_app_paths": [
+    "Targets/Platform/DatadogObservability/ReleaseValidationCapture.swift"
+  ],
+  "activation": [
+    "--rum-release-validation",
+    "--capture-run-id canonical UUID",
+    "--capture-nonce canonical UUID"
+  ],
+  "preserve": [
+    "All mapper return values, including nil from the cancellation error filter",
+    "Existing UIHostingController classes and custom UIKit predicate return values",
+    "Existing navigation delegate, method bodies, routing, services and feature configuration",
+    "Original trackRUMView generic input; append observation outside that expression",
+    "Existing app, prior worktrees and accepted app products",
+    "Raw source, SDK and fixture identities separately"
+  ],
+  "evidence": [
+    "All five available native mapper families with full accepted event JSON and dropped-error receipts",
+    "Existing navigation willShow/didShow entry/exit and original scene/window callbacks",
+    "Adjacent SwiftUI appearance/disappearance and actual DashboardDetailViewController callbacks",
+    "Complete public scene/window/controller inventory, weak source-owned RootWindow/WebView bindings and actual display joins",
+    "Passive raw Browser message plus scalar RUM context observations through a receiver returning false",
+    "One serialized event sequence and exact run/request/hash/byte-count writer checkpoints; native receipts carry latest mapper/context sequence without claiming synchronous SDK state"
+  ],
+  "limits": {
+    "record_limit": 100000,
+    "stream_bytes": 67108864,
+    "request_bytes": 16384,
+    "callback_cost_ns": 2000000,
+    "mapper_cost_ns": 10000000,
+    "snapshot_cost_ns": 100000000,
+    "new_builds_admitted": 0,
+    "native_runs_admitted": 0,
+    "retries": 0
+  },
+  "qualification": [
+    "Offline controls for stale identity, consumed request, prefix completeness, mapper nil preservation, ownership and callback classification",
+    "Scoped designated review before new builds",
+    "First planned baseline J01 qualifies changed capture and real Home input, no additional diagnostic"
+  ],
+  "non_claims": [
+    "Navigation delegate callbacks are not UIKit viewDidAppear callbacks",
+    "Adjacent SwiftUI callbacks do not reveal internal modifier callback order",
+    "Bus context is an asynchronously delivered snapshot, not synchronous current owner",
+    "Browser messages do not prove persisted container ownership without the backend/native join",
+    "No Replay content, production overhead or release gate credit"
+  ]
+}

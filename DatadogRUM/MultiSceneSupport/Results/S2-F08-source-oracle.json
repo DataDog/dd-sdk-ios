@@ -182,7 +182,7 @@
     "partial cleanup relabeled as ordinary pass"
   ],
   "admission_limits": "This is source preparation only. No runtime/oracle pass, gate closure, new experiment or environment retry is implied. Existing J01, Duo and EXP220 automation stops remain closed; fresh execution needs materially changed environment and reviewed fixed admission.",
-  "next_action": "Complete the separate validation-only app observation binding described in runtime_capture_preparation; preserve accepted builds and all original J01 stops. Request account/input participation only when the ordered session capture is ready.",
+  "next_action": "Prepare the separate symmetric app capture builds, preserving all accepted products and original J01 stops. Complete runtime joins before requesting the single human session.",
   "review": {
     "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-f08-oracle-preparation-pincwto7/source-review.json",
     "sha256": "41f6a1f5348c383e8c11770dc50da59e45e9dc020559a49c2a60d8691815d6e9"
@@ -245,7 +245,7 @@
     "runtime_acceptance": false
   },
   "runtime_capture_preparation": {
-    "state": "APP_OBSERVATION_BINDING_REQUIRED_BEFORE_RUNTIME",
+    "state": "CAPTURE_PATCH_REVIEWED_BUILD_AND_RUNTIME_BINDING_REQUIRED",
     "at": "2026-09-22T19:27:10.255660+00:00",
     "scope": "Existing J01-J04 only; no app, SDK, build, native or backend action in this source check.",
     "inspected_baseline_app_sources": {
@@ -266,12 +266,64 @@
       "Qualify changed capture in the first planned baseline journey, not another input diagnostic. Preserve all original Home/input failures; use the one ordered human session."
     ],
     "remaining": [
-      "Define the smallest symmetric app observation patch and offline controls",
-      "Bind exact callback/mapper/browser capture and review before any new build",
-      "Fresh authenticated account/service/dashboard prerequisite in the single human session"
+      "Prepare separately identified app copies and verify symmetric source/compiler/build membership",
+      "Complete native/mapper/browser/backend runtime joins and fixed first-baseline admission",
+      "Authenticated account/service/dashboard prerequisite in the ordered human session"
     ],
     "new_builds_admitted": false,
     "native_launches": 0,
-    "gate_closures": []
+    "gate_closures": [],
+    "definition": {
+      "path": "../../../tools/multi-scene/app-acceptance/capture-definition.json",
+      "sha256": "bab511d25073baec3aa68e45acfad6863ff6a4677728b4e3f93789051f80cee6"
+    },
+    "access_preflight": {
+      "at": "2026-09-22T19:46:51.436399+00:00",
+      "tool": "direct Datadog MCP search_rum_applications",
+      "application_id": "43cbc59b-0626-438b-a3d9-c6417a4545a3",
+      "exact_matches": 1,
+      "is_active": true,
+      "processing": "ALL",
+      "runtime_admission": false
+    },
+    "updated_at": "2026-09-22T20:06:51.954780+00:00",
+    "artifact_root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-f08-capture-reviewed-controls-32tvi0u8",
+    "review": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-f08-capture-reviewed-controls-32tvi0u8/capture-review.json",
+      "sha256": "ae252cf2d3656e9ad447e9b58e43b4e4e9e076664db25a2f7b352f494fca638c"
+    },
+    "source_sha256": {
+      "tools/multi-scene/app-acceptance/README.md": "d41953083ca276c9c88a705d2f8d7afbe084ac0e4a6da9b5c99868de061a5528",
+      "tools/multi-scene/app-acceptance/ReleaseValidationCapture.swift": "b1eee57fc0250f79c71f4b81b63d9134285ea2dccea3bdc93362d4fa24ddff68",
+      "tools/multi-scene/app-acceptance/capture-definition.json": "bab511d25073baec3aa68e45acfad6863ff6a4677728b4e3f93789051f80cee6",
+      "tools/multi-scene/app-acceptance/capture_contract.py": "3a0bd6e7c36cd454bf986374ca30b75ae547af8485a9311176ff1d52ad1a29bf",
+      "tools/multi-scene/app-acceptance/capture_patch.py": "09817109cc684c822efe0c9e1456c7030c6062175d7d4ab3ca9d49d10e3dcd32",
+      "tools/multi-scene/app-acceptance/portable_controls.py": "b5500c4762695e0e131f80a9d9bc42c4bf77e72bfa91198423b1c066818229ce",
+      "tools/multi-scene/app-acceptance/test_capture_contract.py": "75ebdc07b8fb5576e156a81bdeb942cbdccd40871a95116e719b47f74e4ca534",
+      "tools/multi-scene/app-acceptance/test_capture_patch.py": "68a9f401558e4606533d32ac0ad64827f7cfa415b861fdbed539de77d12cb591"
+    },
+    "controls": {
+      "python_tests": 17,
+      "swift_mapper_cases": 14,
+      "swift_concurrent_writer_rows": 52,
+      "python_stderr_sha256": "1c8ceef3dafd6a8bef26a8ff3bd70fdb5b15fedda7f2dca581aba534438b38c8",
+      "swift_receipt_sha256": "d4ba98b4cf831cd21ae7c5a401e40c33962694c6002afb976ae4ec67f8a71e75"
+    },
+    "window_source_audit": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-f08-capture-reviewed-controls-32tvi0u8/window-source-audit.json",
+      "sha256": "74629578ab993629aef1c0da9da5dffa424027850df1363aad2cfd6bf2d61e73"
+    },
+    "overlay": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-f08-capture-reviewed-controls-32tvi0u8/overlay/overlay.json",
+      "sha256": "dac98817792325d27dd2a17dc01abd396fd24b77b160df2afa69dbad78458b52",
+      "symmetric_baseline_candidate": true,
+      "declared_paths": 7,
+      "applied": false
+    },
+    "preserved_control_failure": {
+      "root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-f08-capture-controls-omhirm31",
+      "classification": "Host control compilation only: top-level constant needed private because CaptureStore is private; no app or SDK failure",
+      "corrected_root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-f08-capture-corrected-x3pefce6"
+    }
   }
 }

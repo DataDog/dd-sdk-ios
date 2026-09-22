@@ -125,6 +125,13 @@ session, retain that zero-input result. Close or prove session absence before ap
 cleanup. A fresh-session comparison needs a new identity; repeated disappearance
 is an environment blocker, not an SDK finding.
 
+For the controlled Datadog app, use the [F08 capture overlay](../../../tools/multi-scene/app-acceptance/README.md)
+in separately identified validation builds. Preserve custom predicates, controller
+classes and mapper filtering. Existing navigation callbacks, adjacent SwiftUI
+lifecycle, raw Browser payloads and asynchronous context receipts have separate
+meanings. Consume exact durable prefixes before readiness; root/subtree provenance
+must exclude unknown auxiliary app content. Accepted original builds stay unchanged.
+
 ## Duo display and input
 
 Verify the active inner display and actual window geometry/lifecycle. Use observed
