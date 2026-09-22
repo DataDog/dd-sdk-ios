@@ -42,7 +42,12 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
     /// Active View scopes. Scopes are added / removed when the View starts / stops displaying.
     private(set) var viewScopes: [RUMViewScope] = [] {
         didSet {
-            activeView = viewScopes.last(where: { $0.isActiveView })
+            let previousActiveViewUUID = activeView?.viewUUID
+            let nextActiveView = viewScopes.last(where: { $0.isActiveView })
+            if previousActiveViewUUID != nextActiveView?.viewUUID, let previousActiveViewUUID {
+                dependencies.viewCache.markInactive(id: previousActiveViewUUID.toRUMDataFormat)
+            }
+            activeView = nextActiveView
             if !state.hasTrackedAnyView && !viewScopes.isEmpty {
                 state = RUMSessionState(
                     sessionUUID: state.sessionUUID,
@@ -112,7 +117,14 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
     private var hadApplicationLaunchViewWhenEnteringBackground: Bool? = nil
     /// The reason why this session has ended or `nil` if it is still active.
     private(set) var endReason: EndReason? {
-        didSet { if endReason != nil { dependencies.timeseriesCollector?.stop(sessionID: sessionUUID.toRUMDataFormat) } }
+        didSet {
+            if oldValue == nil, endReason != nil {
+                deactivateActiveView()
+            }
+            if endReason != nil {
+                dependencies.timeseriesCollector?.stop(sessionID: sessionUUID.toRUMDataFormat)
+            }
+        }
     }
 
     /// Counter to track the index of views in this session. Starts at 0 for the first view.
@@ -235,6 +247,12 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
                 )
                 self.viewScopes = [activeView]
                 self.activeView = activeView
+                dependencies.viewCache.insert(
+                    id: activeView.viewUUID.toRUMDataFormat,
+                    timestamp: startTime.timeIntervalSince1970.dd.toInt64Milliseconds,
+                    hasReplay: context.hasReplay,
+                    isActive: true
+                )
                 nextViewIndex += 1
             } else {
                 self.viewScopes = []
@@ -412,8 +430,20 @@ internal class RUMSessionScope: RUMScope, RUMContextProvider {
         dependencies.viewCache.insert(
             id: id,
             timestamp: startTime.timeIntervalSince1970.dd.toInt64Milliseconds,
-            hasReplay: hasReplay
+            hasReplay: hasReplay,
+            isActive: true
         )
+    }
+
+    deinit {
+        deactivateActiveView()
+    }
+
+    private func deactivateActiveView() {
+        guard let activeView else {
+            return
+        }
+        dependencies.viewCache.markInactive(id: activeView.viewUUID.toRUMDataFormat)
     }
 
     private func startApplicationLaunchView(on command: RUMCommand, context: DatadogContext, writer: Writer) {
