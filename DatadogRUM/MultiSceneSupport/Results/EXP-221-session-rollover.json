@@ -1,0 +1,160 @@
+{
+  "schema_version": 1,
+  "experiment": "EXP-221",
+  "stage": "explicit-session-rollover",
+  "status": "COMPLETE; BOTH_CANDIDATE_MODES_PASS; BOTH_BASELINES_INVALID",
+  "updated_at": "2026-09-22T04:40:08.109194+00:00",
+  "gates": [
+    "S2:T03",
+    "S2:T08"
+  ],
+  "owner": "SDK implementer; root owns sole build/native lane",
+  "artifact_root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp221-session-rollover-jhqk1yii",
+  "baseline_revision": "62f64d7b655bdc83f3036c4ad81090a270f6202b",
+  "candidate_revision": "c9faed816a1d4828d7d8c4b64acae01119425889",
+  "definition": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp221-session-rollover-jhqk1yii/definition.json",
+    "sha256": "7c88cbb25e93e94c42dada9aacede76fb77183f94ce3de0f398ea66de1d2c9b8"
+  },
+  "oracle_amendment": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp221-session-rollover-jhqk1yii/oracle-amendment.json",
+    "sha256": "19b649145cb0f3c152e8e2ff59b404e97c687bfed756a53c41ddff9a629c5612"
+  },
+  "implementation_review": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp221-session-rollover-jhqk1yii/implementation-review.json",
+    "sha256": "9b88a6eaf00ba84f5309c3a97b9e1d057097d7ad26bfdc463534db11c474f0df"
+  },
+  "review_followup": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp221-session-rollover-jhqk1yii/implementation-review-followup.json",
+    "sha256": "d3f491a288bd495a9dac945c0e78a2258afa37026bae2d04ee38aeb544bd1999"
+  },
+  "oracle_controls": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp221-session-rollover-jhqk1yii/controls-reviewed.json",
+    "sha256": "29a324925789f42541a6786e1bad1207e987de442c151b71056d30136fdbfb1d"
+  },
+  "admission_controls": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp221-session-rollover-jhqk1yii/admission-controls.json",
+    "sha256": "d83c7499f4adf942f449c876bf9bb54414f6f001fd03aea83f4c8515e639ec92"
+  },
+  "environment": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp221-session-rollover-jhqk1yii/environment-preflight.json",
+    "sha256": "ff2146b4a0df4b8eeb50bb70df39ff0d9b4916071ccf399869822bab3844aee1"
+  },
+  "backend_access": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp221-session-rollover-jhqk1yii/access-preflight.json",
+    "sha256": "aae8f16a08330e3f36caa7192f9be811ab56c48a8ba0a018d1ff34b484257225"
+  },
+  "helper_manifest": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp221-session-rollover-jhqk1yii/matrix/helper-manifest.json",
+    "sha256": "f0a81a4504ab0a098326423dbf46484cc7b8d8a6376a198c4762d902a36c5e47"
+  },
+  "fixture_sha256": "224a1cc20d2e049cade44e9f608435fcb8fac4d2b21077884e822a8c8b82b808",
+  "scope": "Four arm/mode cells; actual pending work crosses stopSession and explicitly started Detail. No SDK edits, accepted navigation reruns, automatic-tracking, performance or physical claim.",
+  "decisive_contract": "Old Home/session owns Resources, Resource Error, manual parent and outgoing baggage; new Detail/session owns action and automatic Trace correlation. Actual old/nil/new callbacks and held/terminal mapper receipts precede critical work. Full13-row RUM (11client+2reducer) and10-span APM inventory with exact row-level mapping.",
+  "prepared_controls": {
+    "oracle_tests": 48,
+    "admission_tests": 12,
+    "positive_specimens": "Constructed units for each arm/mode; never execution evidence",
+    "earlier_unit_errors": "Two invalid constructed-specimen versions retained. Pending counters/version order and terminal acknowledgement placement corrected without weakening native/oracle assertions.",
+    "review_fix": "Added actual after-detail currentSessionID receipt, previously used only as an in-memory readiness gate."
+  },
+  "native_launches": 4,
+  "completed_builds": 2,
+  "gate_closures": [],
+  "next_action": "No rollover retry is due. Implement and review the separately defined one-session Duo fold stage; integrated-app obligations remain.",
+  "build_summary": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp221-session-rollover-jhqk1yii/build-summary.json",
+    "sha256": "93862901d77a40df8a1998e957c59a306995fc8ac81bea984cf3ab0ce4dffd1d"
+  },
+  "build_disposition": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp221-session-rollover-jhqk1yii/build-disposition.json",
+    "sha256": "c0251e3c0a618bbfdcda7d00519af04e9df82c75502525ba4c605bb6d98f2f9f"
+  },
+  "attempts": [
+    {
+      "arm": "A",
+      "mode": "automatic",
+      "run_id": "26444cfe-8b7f-4770-a1c4-c3d21a4ca187",
+      "state": "INVALID",
+      "summary": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp221-session-rollover-jhqk1yii/cells/A-automatic/summary.json",
+        "sha256": "4d71b0da83f43538e4dcc50b507c8183e45747c62440a1501305d523e81f26a5"
+      },
+      "cleanup": "PASS; 68 native snapshots retained; original apps and all protected paths exact",
+      "native_launches": 1,
+      "failure": "missing/duplicate/wrong session baggage",
+      "backend": "Startup three rows retained; final backend NOT_RUN"
+    },
+    {
+      "arm": "B",
+      "mode": "automatic",
+      "run_id": "6bb0f9d0-c703-4ccd-861e-285a5dc87851",
+      "state": "PASS",
+      "summary": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp221-session-rollover-jhqk1yii/cells/B-automatic/summary.json",
+        "sha256": "618c74065c537544d5c83dfa6fac0787eaeeb596900244e0f36149f7eacae77e"
+      },
+      "cleanup": "PASS; 68 native snapshots retained; original apps and all protected paths exact",
+      "native_launches": 1,
+      "oracle": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp221-session-rollover-jhqk1yii/cells/B-automatic/oracle-result.json",
+        "sha256": "01d9a9cd907958dca7e5ab685c6ab4d1cd697c7e2df2fe54b73842173f17c8e2"
+      },
+      "backend": "Complete 13 RUM rows across two sessions; 10 spans in each independent APM inventory; nine full traces"
+    },
+    {
+      "arm": "A",
+      "mode": "registered",
+      "run_id": "d6fce60e-e483-44c1-a896-2a95777bf979",
+      "state": "INVALID",
+      "summary": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp221-session-rollover-jhqk1yii/cells/A-registered/summary.json",
+        "sha256": "f3f31044da816850141fd2267210ddd14247c8346eb6574000440bca196303ea"
+      },
+      "cleanup": "PASS; 68 native snapshots retained; original apps and all protected paths exact",
+      "native_launches": 1,
+      "failure": "missing/duplicate/wrong session baggage",
+      "backend": "Startup three rows retained; final backend NOT_RUN"
+    },
+    {
+      "arm": "B",
+      "mode": "registered",
+      "run_id": "b1368e42-ed0f-42be-9615-f1df4373e72f",
+      "state": "PASS",
+      "summary": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp221-session-rollover-jhqk1yii/cells/B-registered/summary.json",
+        "sha256": "4792220d8c24b4f6bddd6c4d2a485400d59868c48341b1d7c43e8844f44fa179"
+      },
+      "cleanup": "PASS; 68 native snapshots retained; original apps and all protected paths exact",
+      "native_launches": 1,
+      "oracle": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp221-session-rollover-jhqk1yii/cells/B-registered/oracle-result.json",
+        "sha256": "66c78ce8cf067dcea91917e06a90a82dfd53c288c242d8a18093298a03f46c45"
+      },
+      "backend": "Complete 13 RUM rows across two sessions; 10 spans in each independent APM inventory; nine full traces"
+    }
+  ],
+  "baseline_baggage_diagnostic": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp221-session-rollover-jhqk1yii/baseline-baggage-diagnostic/result.json",
+    "sha256": "5a669438163cf0745fad9cb978fc6afebf68f143d5c59de40c5ca5fec958bb08"
+  },
+  "baseline_finding_review": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp221-session-rollover-jhqk1yii/baseline-baggage-diagnostic/review.json",
+    "sha256": "acc1196cd1a92a04b32f93f54dc998b2d18d670bfa6dab567a05b14f97ae4b00"
+  },
+  "registered_baseline_diagnostic": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp221-session-rollover-jhqk1yii/baseline-registered-baggage-diagnostic/result.json",
+    "sha256": "0157a8972af8de905f049ce12a98e152ea7b0ce3e139608c7b260e46905482b1"
+  },
+  "registered_candidate_admission": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp221-session-rollover-jhqk1yii/registered-candidate-admission-decision.json",
+    "sha256": "540bba00bdf6c3480a8dadf226308466a9367846cbc367156fdfe54d38df703d"
+  },
+  "finding": "Both baseline modes changed only rum-http500 task.currentRequest baggage from the original session to the new session on resume calls 2, 3 and 4. All actual protocol-start carriers stayed original-owned. No second wire dispatch with new baggage is established. Both candidate modes preserve the original carrier under the unchanged strict oracle.",
+  "candidate_conclusion": "Actual old/nil/new session callbacks, pending and terminal Home mappers, captured Resource/parent ownership, completion-time automatic Trace context, exact metrics/errors/header/sampling and complete backend inventories qualify in both modes. E03 action-count and E05 completion-correlation limits remain inherited.",
+  "limits": "Baselines remain INVALID; diagnostic collection does not qualify them. Candidate acceptance is independent under the original strict oracle. No fold, integrated-app, automatic view/action, performance or physical claim.",
+  "rollover_summary": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp221-session-rollover-jhqk1yii/rollover-summary.json",
+    "sha256": "fe0316bee3364b306d6b47d1e902ae71f9d1125a1e70e6d9e8fceb670389af6a"
+  }
+}

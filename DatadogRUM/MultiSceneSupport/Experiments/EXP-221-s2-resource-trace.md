@@ -38,5 +38,20 @@ claim a contemporaneous snapshot. Both original failures remain immutable.
 Each candidate mode stops Detail correctly; the known baseline terminal-view
 behavior remains an observation. Exact Resource start ownership, native metrics,
 parent/header/sampling values and inherited action/correlation limits are preserved.
-No native run was repeated. Session/fold definitions and integrated-app acceptance
-remain; navigation alone closes no release gate.
+No navigation run was repeated. The later boundary records below own their status;
+navigation alone closes no release gate.
+
+The [session-rollover slice](../Results/EXP-221-session-rollover.json) is complete.
+Both candidate modes pass the unchanged strict native oracle and full backend
+inventory. Both baselines remain invalid: repeated resumes changed the held RUM
+task's currentRequest baggage to the new session. All observed protocol-start
+carriers retained the original session; this is not evidence of a second wire
+dispatch with changed baggage. Every run and diagnostic is retained, and all four
+cleanups pass. No native run was repeated or baseline predicate relaxed.
+
+The [fold slice](../Results/EXP-221-duo-fold.json) has a reviewed definition and host/
+oracle amendment. Its single-session fixture will retain actual Device Hub input,
+public app geometry and host display evidence before releasing held work. The
+implementation and controls must be reviewed before the single stage admission;
+no fold build or native launch has occurred. Fold and integrated-app acceptance
+remain open.

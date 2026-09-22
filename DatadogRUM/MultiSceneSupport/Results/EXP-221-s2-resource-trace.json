@@ -3,7 +3,7 @@
   "experiment": "EXP-221",
   "title": "S2 Resource and Trace ownership across active-work boundaries",
   "defined_at": "2026-09-22T01:17:18.113240+00:00",
-  "status": "NAVIGATION_QUALIFIED_SESSION_FOLD_PENDING",
+  "status": "NAVIGATION_QUALIFIED; LATER_BOUNDARIES_HAVE_OWNING_RECORDS",
   "owner": "root; sole build/native owner",
   "independent_reviewer": "/root/c06_runtime_plan",
   "gates": [
@@ -36,8 +36,9 @@
         "A-registered",
         "B-registered"
       ],
-      "status": "REQUIRES_SOURCE_BOUND_CONTRACT_BEFORE_IMPLEMENTATION",
-      "admission": "one launch per cell; baseline before candidate; failed lane stops; no automatic retry"
+      "status": "SEE_OWNING_STAGE_RECORD",
+      "admission": "one launch per cell; baseline before candidate; failed lane stops; no automatic retry",
+      "record": "Results/EXP-221-session-rollover.json"
     },
     {
       "boundary": "actual-Duo-fold",
@@ -47,8 +48,9 @@
         "A-registered",
         "B-registered"
       ],
-      "status": "REQUIRES_SOURCE_BOUND_CONTRACT_BEFORE_IMPLEMENTATION",
-      "admission": "one launch per cell; baseline before candidate; failed lane stops; no automatic retry"
+      "status": "SEE_OWNING_STAGE_RECORD",
+      "admission": "one launch per cell; baseline before candidate; failed lane stops; no automatic retry",
+      "record": "Results/EXP-221-duo-fold.json"
     }
   ],
   "initial_slice": "Four navigation cells. Eight Swift fixture files remain byte-identical to EXP202. Oracle changes are three identity constants and the reviewed sorting of validated trace-detail span IDs before cross-query comparison; all ownership/value/cardinality checks remain.",
@@ -378,7 +380,7 @@
       "scope": "Original FAIL retained. Later complete RUM inventory qualifies with original startup/APM receipts and unchanged oracle; no contemporaneous APM snapshot or native rerun claim."
     }
   ],
-  "next_action": "Define and independently review the exact session-rollover contract before changing its fixture/oracle. Navigation source and evidence stay immutable; actual fold remains separately unadmitted.",
+  "next_action": "The separately owned fold stage and integrated-app obligations remain; accepted navigation and completed rollover are not due for repetition. The restart cursor owns the executable action.",
   "automatic_pair": {
     "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp221-s2-resource-trace-6wfeet4m/navigation-automatic-pair.json",
     "sha256": "58dd094b72d627e0a42309515749c85c8f9abffd57aeb7a22bfa9984cf583924"
@@ -399,5 +401,14 @@
   "navigation_summary": {
     "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp221-s2-resource-trace-6wfeet4m/navigation-summary.json",
     "sha256": "83d361846b5e09ad298b5694ebc0383a425f5d7d70c759721809ff7a1f33ef83"
+  },
+  "session_rollover": {
+    "owner": "Results/EXP-221-session-rollover.json",
+    "scope": "Two-session boundary, own source/oracle/build, attempts and findings."
+  },
+  "count_scope": "Top-level builds/native_launches and navigation_results describe the initial navigation slice only; each later stage record owns its counts.",
+  "duo_fold": {
+    "owner": "Results/EXP-221-duo-fold.json",
+    "scope": "One-session actual fold, its source/oracle, controls and attempts."
   }
 }

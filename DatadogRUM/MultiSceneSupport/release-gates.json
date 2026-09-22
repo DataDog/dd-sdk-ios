@@ -881,7 +881,7 @@
           ],
           "decisive_test": "Complete delayed work across navigation, session rollover and fold; exact Resource start-view/session, success/error and metrics behavior must match the frozen baseline contract. Require no new foreign action/error counts; retain the inherited EXP202 Resource/action count1/0 exception explicitly. E03 repair is excluded from this composition.",
           "environment": "Candidate-vs-baseline native fixtures and Datadog app where integrated",
-          "evidence": "EXP221 qualifies the four navigation arm/mode cells on c9faed81 versus62f64d7b with native/mapper/complete backend evidence and cleanup. Original failures and separately qualified corrections remain in Results/EXP-221-s2-resource-trace.json. Session/fold and applicable integrated-app obligations remain open; E03/E05 limits remain unchanged.",
+          "evidence": "EXP221 qualifies all four navigation cells; both selected-candidate rollover modes also pass strict native/backend/cleanup checks. Both rollover baselines remain INVALID on reviewed repeated-resume currentRequest baggage mutation; protocol-start carriers stayed old-owned. Results/EXP-221-s2-resource-trace.json and Results/EXP-221-session-rollover.json own the evidence and limits. Actual fold and integrated-app obligations remain open; E03/E05 limitations are unchanged.",
           "required": true,
           "completion_mode": "Captured Resource start ownership; inherited action-count limitation documented",
           "completed_checks": [
@@ -893,6 +893,16 @@
               ],
               "deliverable": "Compare Resource ownership and native metrics across Home-to-Detail navigation in automatic/registered URLSession modes",
               "decisive_test": "Four exact-source arm/mode cells; complete native, mapper, independent backend inventories and cleanup; strict owner/value assertions and preserved original failure evidence. EXP221 navigation-summary owns the exact scope.",
+              "environment": "Existing Duo27.1 /24A94401, Xcode27.1 /27A9269, Release fixture and authenticated Datadog RUM/APM"
+            },
+            {
+              "owner": "SDK implementer",
+              "dependencies": [
+                "S2:A01",
+                "S2:F07"
+              ],
+              "deliverable": "Qualify held Resource and Trace work across an explicit session rollover in both URLSession modes",
+              "decisive_test": "Both candidate modes pass the unchanged strict two-session native oracle, 13 RUM rows, two independent 10-span inventories, nine full traces and cleanup. Both baseline failures remain invalid with source-attributed currentRequest baggage mutation; no backend or comparison pass is inferred for them.",
               "environment": "Existing Duo27.1 /24A94401, Xcode27.1 /27A9269, Release fixture and authenticated Datadog RUM/APM"
             }
           ]
@@ -1050,7 +1060,7 @@
           ],
           "decisive_test": "Across navigation/fold, preserve manual/parent span start ownership and existing automatic URLSession completion-time RUM correlation, with exact trace/parent IDs and unchanged headers/sampling. Retain the inherited EXP202 correlation limit; E05 request-time repair is excluded from this composition.",
           "environment": "Candidate-vs-baseline native fixtures and Datadog app where integrated",
-          "evidence": "EXP221 qualifies the four navigation arm/mode cells on c9faed81 versus62f64d7b with native/mapper/complete backend evidence and cleanup. Original failures and separately qualified corrections remain in Results/EXP-221-s2-resource-trace.json. Session/fold and applicable integrated-app obligations remain open; E03/E05 limits remain unchanged.",
+          "evidence": "EXP221 qualifies all four navigation cells; both selected-candidate rollover modes also pass strict native/backend/cleanup checks. Both rollover baselines remain INVALID on reviewed repeated-resume currentRequest baggage mutation; protocol-start carriers stayed old-owned. Results/EXP-221-s2-resource-trace.json and Results/EXP-221-session-rollover.json own the evidence and limits. Actual fold and integrated-app obligations remain open; E03/E05 limitations are unchanged.",
           "required": true,
           "completion_mode": "Captured manual span start ownership; documented existing process-context fallback for automatic URLSession completion",
           "completed_checks": [
@@ -1062,6 +1072,16 @@
               ],
               "deliverable": "Compare Trace context, parentage, headers and sampling across Home-to-Detail navigation in automatic/registered URLSession modes",
               "decisive_test": "Four exact-source arm/mode cells; complete native, mapper, independent backend inventories and cleanup; strict owner/value assertions and preserved original failure evidence. EXP221 navigation-summary owns the exact scope.",
+              "environment": "Existing Duo27.1 /24A94401, Xcode27.1 /27A9269, Release fixture and authenticated Datadog RUM/APM"
+            },
+            {
+              "owner": "SDK implementer",
+              "dependencies": [
+                "S2:A01",
+                "S2:F07"
+              ],
+              "deliverable": "Qualify held Resource and Trace work across an explicit session rollover in both URLSession modes",
+              "decisive_test": "Both candidate modes pass the unchanged strict two-session native oracle, 13 RUM rows, two independent 10-span inventories, nine full traces and cleanup. Both baseline failures remain invalid with source-attributed currentRequest baggage mutation; no backend or comparison pass is inferred for them.",
               "environment": "Existing Duo27.1 /24A94401, Xcode27.1 /27A9269, Release fixture and authenticated Datadog RUM/APM"
             }
           ]

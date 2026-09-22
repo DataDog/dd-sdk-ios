@@ -1,0 +1,35 @@
+{
+  "schema_version": 1,
+  "experiment": "EXP-221",
+  "stage": "duo-fold-one-session",
+  "status": "DEFINITION_REVIEWED; IMPLEMENTATION_PENDING",
+  "updated_at": "2026-09-22T04:40:08.109194+00:00",
+  "owner": "SDK implementer; root owns sole build/native lane",
+  "gates": [
+    "S2:T03",
+    "S2:T08"
+  ],
+  "artifact_root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp221-duo-fold-03hu30t3",
+  "definition": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp221-duo-fold-03hu30t3/definition-v2.json",
+    "sha256": "882dddf73853d35bbb4009ea5aeff25839acce3c2875672070f14556f48de0d8"
+  },
+  "oracle_host_amendment": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp221-duo-fold-03hu30t3/oracle-host-amendment.json",
+    "sha256": "59eb7d9fbc63b1e856264caabe79e342d8d5c4c50e8092166b31d58c72213c56"
+  },
+  "definition_review": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp221-duo-fold-03hu30t3/definition-review-final.json",
+    "sha256": "a3f4568b0a74f32cdd49d127e02c46ab74a2a3a2716a773ed4cd0b80ed0131e4"
+  },
+  "scope": "One RUM session; held Resource/Trace work crosses actual Closed/Open/Closed Device Hub transitions with precritical public geometry, owner and active-display evidence. No automatic tracking or H14 credit.",
+  "attempt_limit": {
+    "builds": 2,
+    "native_launches": 4,
+    "retries": 0
+  },
+  "builds": 0,
+  "native_launches": 0,
+  "gate_closures": [],
+  "next_action": "Implement the isolated fixture/host/oracle, qualify discriminating controls and obtain implementation review before issuing the single pre-build stage admission."
+}
