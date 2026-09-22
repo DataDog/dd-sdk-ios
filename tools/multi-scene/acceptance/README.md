@@ -412,3 +412,30 @@ python3 -B -m unittest discover -s tools/multi-scene/acceptance -p test_app_jour
 
 The [source oracle](../../../DatadogRUM/MultiSceneSupport/Results/S2-F08-source-oracle.json)
 owns remaining capture requirements. These controls do not reopen stopped runs.
+
+
+## Human-paced hosting and shared host bindings
+
+`s2_hosting_paced_workflow.py` prepares/builds/verifies the single remaining
+B-manual hosting fixture and runs its `cell` through `hosting_connector.js`
+with family `hosting_paced`. The fixture exposes Push Detail, Return to Root,
+Present Modal and Dismiss Modal only after exact previous lifecycle/mapper
+readiness. The driver retains actual screenshot/display/readiness bytes and never
+reissues a consumed prompt. App-local uptime bounds actual input; host deadlines
+bound capture and publication separately. Full original hosting/backend predicates
+still apply. No fold, automatic-action or physical credit follows.
+
+`runtime_binding.py` permits an explicit host-only integration before native
+admission. It preserves the original plan, helper snapshot, compiler inputs,
+objects and complete app products. Only individually allowlisted acceptance
+Python/JavaScript paths may change, in a new immutable helper snapshot and binding.
+It rejects an already admitted/attempted root or any compiled-source change.
+Completed controls and the designated review bind the exact new snapshot; the
+native admission binds that review. This is build reuse, not deadline renewal or
+permission to reclassify an older failed run.
+
+The paced and WebView drivers share response publication, raw backend transport
+and task-only cleanup. Evidence preservation failures do not skip app removal.
+Scenario, evidence and cleanup remain separate verdicts; missing required evidence
+or failed cleanup keeps overall acceptance invalid. Owning result records contain
+the exact roots/receipts and remaining cells; neither entry point admits itself.

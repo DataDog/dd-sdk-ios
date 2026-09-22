@@ -2,7 +2,7 @@
   "schema_version": 1,
   "work_item": "S2:A02 ordered single human-input session",
   "status": "ORDERED_SCOPE_PREPARED_CAPTURE_AND_BUILD_BINDINGS_INCOMPLETE",
-  "updated_at": "2026-09-22T16:26:42.242226+00:00",
+  "updated_at": "2026-09-22T17:04:12.426207+00:00",
   "owner": "Harness implementer",
   "user_role": "Only real gestures and any required interactive sign-in",
   "request_user_now": false,
@@ -112,7 +112,18 @@
       ],
       "automated_checks": "Recognized native transition begin/cancel/completion, actual geometry and independently mapped exact occurrence owner before callback work; inherited omissions kept separate from new regression.",
       "remaining": "Freeze and qualify source-specific fixtures, screenshots, collector and per-step budgets before scheduling.",
-      "hosting_evidence": "EXP-222 preserves three complete bound cells and candidate manual native portion/cleanup. Its missing Root SwiftUI lifecycle pair remains INVALID; no additional automatic retry. Human-paced candidate requires a separately frozen fixture/admission."
+      "hosting_evidence": "EXP-222 preserves three complete bound cells and candidate manual native portion/cleanup. Its missing Root SwiftUI lifecycle pair remains INVALID; no additional automatic retry. Human-paced candidate requires a separately frozen fixture/admission.",
+      "hosting_binding": {
+        "owner": "EXP-222-hosted-swiftui.json",
+        "state": "REVIEWED_RUNNER_AND_BUILD_QUALIFIED",
+        "root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp222-human-paced-vps5pwqv/run",
+        "plan_sha256": "df550104fc66afbd8617f0618382829075d4645ab45b5e50c13ee9d94843edb7",
+        "runtime_review_sha256": "4e931ff0573701d6d92cf5ccfc59cd6484fcbc926b95337a55e865fb3fba232d",
+        "remaining_cells": [
+          "B-manual"
+        ],
+        "native_admitted": false
+      }
     },
     {
       "order": 3,
@@ -134,7 +145,8 @@
         "plan_sha256": "914149e5ba7ad9c864510064a999616b33ae7cd546ea58036e63c62eb398ac10",
         "review_sha256": "a398e3683de97f721166368d32566123d7c739b2b7035a92ad69af3d53732fb6",
         "native_admitted": false,
-        "limit": "Two cells, four real human fold gestures; all marker/backend capture and task-only cleanup automated. Native qualification and integrated J03 still required."
+        "limit": "Two cells, four real human fold gestures; all marker/backend capture and task-only cleanup automated. Native qualification and integrated J03 still required.",
+        "runtime_review_sha256": "61e65356b9659b4749b1f5b04c474f01381a560a21fbe3c1fef4e30fed885939"
       }
     },
     {
@@ -165,5 +177,19 @@
   "fold_transport_stop": {
     "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp221-fold-date-bound-igwfrusu/stage-stop.json",
     "sha256": "10557f7803f21383617bbdd994f25415d30a34cc331802e6f73d8ccf75abc93e"
+  },
+  "preparation_progress": {
+    "ready_families": [
+      "H16 remaining paced manual candidate",
+      "T10 WebView baseline/candidate"
+    ],
+    "remaining_bindings": [
+      "C07-C10 current-source automatic tracking human collector",
+      "H11-H14 interactive transition and geometry collector",
+      "T03/T08 existing fold products with human capture",
+      "F08 native/browser capture and account prerequisites"
+    ],
+    "native_cells_executed": 0,
+    "gates_closed": []
   }
 }

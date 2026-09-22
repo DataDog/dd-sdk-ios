@@ -3,7 +3,7 @@
   "experiment": "EXP-222",
   "gate": "S2:H16",
   "status": "MANUAL_CANDIDATE_LIFECYCLE_ORACLE_INVALID",
-  "updated_at": "2026-09-22T15:40:22.597632+00:00",
+  "updated_at": "2026-09-22T17:04:12.426207+00:00",
   "owner": "SDK implementer",
   "reviewer": "/root/c06_runtime_plan",
   "baseline": "62f64d7b655bdc83f3036c4ad81090a270f6202b",
@@ -359,5 +359,72 @@
     "native_portion": "Five actual UIKit controller transitions, expected RUM occurrences and cleanup qualify only native hosting behavior.",
     "missing": "No Root disappear/reappear pair around immediate push/pop; outgoing Root attachment was not independently captured. Source allows deferred/coalesced SwiftUI callbacks, so no SDK regression is established.",
     "decision": "Keep occurrence controls and original INVALID unchanged. No further automatic native launch. Use the ordered human-paced manual candidate cell, with attachment/mapper readiness before each transition and complete backend collection."
+  },
+  "human_preparation": {
+    "state": "REVIEWED_RUNNER_AND_BUILD_PASS_SINGLE_HUMAN_CELL_PENDING",
+    "defined_at": "2026-09-22T16:31:00.281423+00:00",
+    "native_admitted": false,
+    "remaining_cells": [
+      "B-manual"
+    ],
+    "builds": 1,
+    "native_launches": 1,
+    "retries": 0,
+    "base_fixture_sha256": "af0fb468a3b652001f321c416258b44aba4cfb17c1efe345e116e500da7f5e7a",
+    "source": "c9faed816a1d4828d7d8c4b64acae01119425889",
+    "gates": [
+      "S2:H16",
+      "S2:A02"
+    ],
+    "discriminator": "One actual user tap releases each already-ready push/pop/present/dismiss transition. Require the prior SwiftUI lifetime callbacks and mapped occurrence before exposing the next control; capture all root/detail/modal attachment identities before input. Strict five-occurrence, exact TTID and complete backend oracle remains unchanged.",
+    "source_limit": "Generate a separate fixture from the qualified original without editing it. Add only human pacing, native target-action and attachment observations. No new RUM view/action calls, semantic API, SDK source change or repeat of the three qualified cells.",
+    "budgets_seconds": {
+      "build": 1200,
+      "native": 1200,
+      "human_step": 180,
+      "backend": 600,
+      "cleanup": 120
+    },
+    "remaining": "Single B-manual native qualification in the ordered human session. Four actual taps after lifecycle and attachment readiness; runner owns exact screenshots, full backend inventory and independent task cleanup. The accepted three cells, original manual INVALID and physical/A02 obligations remain unchanged.",
+    "root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp222-human-paced-vps5pwqv/run",
+    "plan_sha256": "df550104fc66afbd8617f0618382829075d4645ab45b5e50c13ee9d94843edb7",
+    "controls": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp222-human-paced-vps5pwqv/run/paced-controls.json",
+      "sha256": "b5026e453315a17511f64e5629c8d9979a5bfed93760fd7d0a4660d040363ecb",
+      "tests": 14
+    },
+    "workflow": "tools/multi-scene/acceptance/s2_hosting_paced_workflow.py",
+    "generated_fixture_sha256": "bae71ec17b4946302297708c6f84639b282d9fc8b2b39b304eacb911287662d0",
+    "build_result": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp222-human-paced-vps5pwqv/run/build-result.json",
+      "sha256": "15fc83ab407ba5db377a444723fe043c1baa9cc1bdf451e7ae08848b2be402eb",
+      "state": "QUALIFIED_BUILD_ONLY"
+    },
+    "review": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp222-human-paced-vps5pwqv/run/paced-fixture-review.json",
+      "sha256": "ec27a10b7e29369b6b9ad22c2b911a046ad6cfd15c0d602ec17fd8d341c7c36f",
+      "reviewer": "/root/c06_runtime_plan",
+      "state": "PASS"
+    },
+    "runtime": {
+      "binding": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp222-human-paced-vps5pwqv/run/runtime-binding.json",
+        "sha256": "9fbe367d0327848d7b7aa23b19a21ccdbc6b086d6b41e23e4b9b1944817e49c9"
+      },
+      "controls": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp222-human-paced-vps5pwqv/run/runtime-controls.json",
+        "sha256": "b5858c01afe8428065a71b4dd02734f457e26f715f611cc3ab26315ccffc0e3c"
+      },
+      "review": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp222-human-paced-vps5pwqv/run/runtime-review.json",
+        "sha256": "4e931ff0573701d6d92cf5ccfc59cd6484fcbc926b95337a55e865fb3fba232d"
+      },
+      "additional_builds": 0,
+      "native_launches": 0,
+      "controls_count": {
+        "python": 27,
+        "connector": 9
+      }
+    }
   }
 }

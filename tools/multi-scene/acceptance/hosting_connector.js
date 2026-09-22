@@ -2,7 +2,7 @@
 // Arguments supplied by the trusted tool orchestrator: tools, notify, root, arm, mode, device, repo.
 const quote = s => "'" + String(s).replaceAll("'", "'\\''") + "'";
 const selectedFamily = typeof family === 'undefined' ? 'hosting' : family;
-if (!['hosting','webview'].includes(selectedFamily)) throw Error('Unknown acceptance family');
+if (!['hosting','webview','hosting_paced'].includes(selectedFamily)) throw Error('Unknown acceptance family');
 const script = repo + '/tools/multi-scene/acceptance/s2_' + selectedFamily + '_workflow.py';
 const shell = async args => {
   let r = await tools.exec_command(args); let output = r.output || '';
@@ -20,7 +20,7 @@ async function exchange(path) {
   const response={request,count_response:null,pages:[]};
   try {
     if (Date.now()/1000>=bound.deadline) throw Error('Expired request');
-    response.count_response=await tools.mcp__datadog__aggregate_rum_events({query:request.query,from:request.from,to:request.to,computes:[{aggregation:'COUNT',field:'*',output:'events'}],max_tokens:1000,telemetry:{intent:'Count complete controlled hosting session for exact native ownership acceptance'}});
+    response.count_response=await tools.mcp__datadog__aggregate_rum_events({query:request.query,from:request.from,to:request.to,computes:[{aggregation:'COUNT',field:'*',output:'events'}],max_tokens:1000,telemetry:{intent:'Count complete controlled acceptance session for exact native ownership acceptance'}});
     const countText=response.count_response.content.filter(x=>x.type==='text').map(x=>x.text).join('\n');
     const countPayload=[...countText.matchAll(/<TSV_DATA>([\s\S]*?)<\/TSV_DATA>/g)];
     if(countPayload.length!==1) throw Error('Unqualified count response');
@@ -31,7 +31,7 @@ async function exchange(path) {
     let offset=0;
     for(let page=0;!response.count_pending&&page<6;page++) {
       if (Date.now()/1000>=bound.deadline) throw Error('Expired inventory deadline');
-      const raw=await tools.mcp__datadog__search_datadog_rum_events({query:request.query,from:request.from,to:request.to,start_at:offset,detailed_output:true,max_tokens:50000,telemetry:{intent:'Retain complete raw controlled hosting session including final view revisions'}});
+      const raw=await tools.mcp__datadog__search_datadog_rum_events({query:request.query,from:request.from,to:request.to,start_at:offset,detailed_output:true,max_tokens:50000,telemetry:{intent:'Retain complete raw controlled acceptance session including final view revisions'}});
       response.pages.push({start_at:offset,response:raw});
       const text=raw.content.filter(x=>x.type==='text').map(x=>x.text).join('\n');
       const matches=[...text.matchAll(/<JSON_DATA>([\s\S]*?)<\/JSON_DATA>/g)];
@@ -47,11 +47,11 @@ async function exchange(path) {
   const bytes=Array.from(unescape(encodeURIComponent(JSON.stringify(response))),x=>x.charCodeAt(0));
   const alphabet='ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/';let payload='';
   for(let i=0;i<bytes.length;i+=3){const n=(bytes[i]<<16)|((bytes[i+1]||0)<<8)|(bytes[i+2]||0);payload+=alphabet[(n>>>18)&63]+alphabet[(n>>>12)&63]+(i+1<bytes.length?alphabet[(n>>>6)&63]:'=')+(i+2<bytes.length?alphabet[n&63]:'=');}
-  const done=await shell({cmd:'python3 -B '+quote(script)+' publish --request '+quote(path)+' --payload '+quote(payload),login:false,sandbox_permissions:'require_escalated',justification:'Persist exact Datadog tool responses and atomically publish the validated H16 inventory within its original deadline.',max_output_tokens:1200});
+  const done=await shell({cmd:'python3 -B '+quote(script)+' publish --request '+quote(path)+' --payload '+quote(payload),login:false,sandbox_permissions:'require_escalated',justification:'Persist exact Datadog tool responses and atomically publish the validated acceptance inventory within its original deadline.',max_output_tokens:1200});
   if(done.exit_code!==0) throw Error('Evidence publication failed: '+done.output);
 }
 const invocation=arm==='backend-only'?' backend-only --root '+quote(root):' cell --root '+quote(root)+' --arm '+quote(arm)+(selectedFamily==='hosting'?' --mode '+quote(mode):'')+' --device '+quote(device);
-const args={cmd:'python3 -B '+quote(script)+invocation,login:false,sandbox_permissions:'require_escalated',justification:'Run the defined H16 cell, collect exact local/backend evidence, and remove only its task app under fixed deadlines.',yield_time_ms:1000,max_output_tokens:1500};
+const args={cmd:'python3 -B '+quote(script)+invocation,login:false,sandbox_permissions:'require_escalated',justification:'Run the defined acceptance cell, collect exact local/backend evidence, and remove only its task app under fixed deadlines.',yield_time_ms:1000,max_output_tokens:1500};
 let current=await tools.exec_command(args);let pending='';const seen=new Set();
 while(true) {
   pending+=(current.output||'');

@@ -145,7 +145,11 @@ def collect_session(out, identity, local, started, deadline):
     require(False,'session polling bound exhausted')
 
 
-def cleanup_cell(root, out, documents, identity, device_id, device, original_apps, initial, pid, terminal, scenario, deadline):
+def cleanup_cell(root, out, documents, identity, device_id, device, original_apps, initial, pid, terminal, scenario, deadline, *, task_bundle=None, task_absent=None, verify_source=None, recapture=None):
+    bundle=task_bundle or build_workflow.BUNDLE
+    absent_check=task_absent or absent
+    verify_check=verify_source or build_workflow.verify
+    recapture_check=recapture or sealed_evidence
     errors=[]
     def attempt(label, action):
         try:
@@ -154,11 +158,11 @@ def cleanup_cell(root, out, documents, identity, device_id, device, original_app
     if documents and documents.exists():
         attempt('preserve native evidence',lambda:shutil.copytree(documents,out/'native-preserved'))
         if terminal is not None and scenario=='PASS':
-            attempt('terminal recapture',lambda:sealed_evidence((documents/'evidence.json').read_bytes(),terminal,identity))
+            attempt('terminal recapture',lambda:recapture_check((documents/'evidence.json').read_bytes(),terminal,identity))
     # Evidence failures must not skip task-only termination and removal.
-    attempt('terminate task',lambda:shared.capture(['xcrun','simctl','terminate',device_id,build_workflow.BUNDLE],timeout=min(30,deadline-time.time()),check=False))
-    attempt('remove task',lambda:shared.capture(['xcrun','simctl','uninstall',device_id,build_workflow.BUNDLE],timeout=min(30,deadline-time.time()),check=False))
-    attempt('task absence',lambda:require(absent(device_id) and (pid is None or not shared.process(pid)),'task app/process remains'))
+    attempt('terminate task',lambda:shared.capture(['xcrun','simctl','terminate',device_id,bundle],timeout=min(30,deadline-time.time()),check=False))
+    attempt('remove task',lambda:shared.capture(['xcrun','simctl','uninstall',device_id,bundle],timeout=min(30,deadline-time.time()),check=False))
+    attempt('task absence',lambda:require(absent_check(device_id) and (pid is None or not shared.process(pid)),'task app/process remains'))
     attempt('app inventory',lambda:require(shared.apps(device_id)==original_apps,'original app inventory changed'))
     def verify_device():
         actual=shared.devices(device_id)
@@ -175,7 +179,7 @@ def cleanup_cell(root, out, documents, identity, device_id, device, original_app
                     require(time.time()+2<deadline,'cleanup restoration incomplete');time.sleep(2)
                     after=display(device_id,out,'cleanup-restoration-'+str(index),deadline);index+=1
         attempt('display restoration',restore_display)
-    attempt('workspace/source identity',lambda:build_workflow.verify(root))
+    attempt('workspace/source identity',lambda:verify_check(root))
     return errors
 
 
@@ -188,6 +192,8 @@ def cell(args):
     require(review['state']=='PASS' and review['reviewer']=='/root/c06_runtime_plan' and review['plan_sha256']==shared.sha(root/'plan.json')
         and review['controls_sha256']==shared.sha(root/'controls-qualification.json') and controls['helpers']==plan['helpers']
         and admission['review_sha256']==shared.sha(root/'review.json'),'missing/stale WebView review or controls')
+    if (root/'runtime-binding.json').exists():
+        require(admission.get('runtime_review_sha256')==build_workflow.runtime_binding.reviewed(root),'runtime admission not reviewed')
     out=root/'cells'/args.arm;require(not out.exists(),'cell already consumed')
     for p in (root/'cells').glob('*/summary.json'):require(shared.read(p)['state']=='PASS','prior cell stopped the matrix')
     if args.arm=='B':require(shared.read(root/'cells/A/summary.json')['state']=='PASS','baseline qualification required')

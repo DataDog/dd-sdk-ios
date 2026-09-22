@@ -38,3 +38,5 @@ test('count readiness retains actual count and avoids unstable pages',async()=>{
 test('backend-only continuation uses the same response transport',async()=>{const r=await run({backendOnly:true});assert.equal(r.result.exit_code,0);assert.equal(r.searchCalls,2);});
 
 test('WebView shares raw transport and exposes only ready human steps',async()=>{const r=await run({family:'webview',human:true});assert.equal(r.result.exit_code,0);assert.match(r.commands[0],/s2_webview_workflow/);assert.doesNotMatch(r.commands[0],/--mode/);assert.deepEqual(r.notifications,[{human_input:{phase:'open'}}]);assert.deepEqual(r.published.count_response,r.count);});
+
+test('human hosting cell uses the shared exact raw transport',async()=>{const r=await run({family:'hosting_paced',human:true});assert.match(r.commands[0],/s2_hosting_paced_workflow/);assert.doesNotMatch(r.commands[0],/--mode/);assert.deepEqual(r.published.pages.map(p=>p.response),r.pages);assert.equal(r.notifications.length,1);});

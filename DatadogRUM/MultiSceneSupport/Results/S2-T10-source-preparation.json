@@ -2,7 +2,7 @@
   "schema_version": 1,
   "work_item": "S2:T10 finite native/WebView preparation",
   "status": "REVIEWED_RUNNER_AND_BOTH_BUILDS_QUALIFIED_HUMAN_SESSION_PENDING",
-  "updated_at": "2026-09-22T16:26:42.098070+00:00",
+  "updated_at": "2026-09-22T17:04:12.426207+00:00",
   "owner": "SDK implementer",
   "baseline": "62f64d7b655bdc83f3036c4ad81090a270f6202b",
   "candidate": "c9faed816a1d4828d7d8c4b64acae01119425889",
@@ -213,6 +213,23 @@
       "sha256": "9f46228b60c9163912d35cc62dec2a5ab64c8834ffb70cba5284605d489621ef",
       "python": 74,
       "connector": 8,
+      "native_launches": 0
+    },
+    "shared_host_binding": {
+      "binding": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-webview-clock-build-5zkoighg/run/runtime-binding.json",
+        "sha256": "a09d9add03ff71318d7bfb61ff4df572b0304686054091731a73d0019acd96be"
+      },
+      "controls": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-webview-clock-build-5zkoighg/run/runtime-controls.json",
+        "sha256": "0802229a5735ca6a34e32c3804815ffbb008ed03e495e2376ba64d52285386a0"
+      },
+      "review": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-webview-clock-build-5zkoighg/run/runtime-review.json",
+        "sha256": "61e65356b9659b4749b1f5b04c474f01381a560a21fbe3c1fef4e30fed885939"
+      },
+      "scope": "Shared cleanup parameterization and paced-family connector routing only. Original WebView fixture, strict oracle, build plan and both complete compiled products unchanged. New native admission must bind this runtime review.",
+      "additional_builds": 0,
       "native_launches": 0
     }
   },

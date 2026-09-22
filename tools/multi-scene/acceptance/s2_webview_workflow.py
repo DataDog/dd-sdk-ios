@@ -14,6 +14,7 @@ import tarfile
 import time
 import json
 import s2_hosting_workflow as shared
+import runtime_binding
 from acceptance_common import digest, require
 
 BUNDLE='com.datadoghq.s2.webview.acceptance'
@@ -21,6 +22,10 @@ SOURCES=['tools/multi-scene/webview-correlation/S2/'+n for n in ['App.swift','S2
 DEFINITION='DatadogRUM/MultiSceneSupport/Results/S2-T10-source-preparation.json'
 HELPERS=['tools/multi-scene/acceptance/'+n for n in ['s2_webview_workflow.py','s2_hosting_workflow.py','acceptance_common.py','app_journey_transport.py','app_journey_inventory.py','hosting_contract.py','s2_webview_contract.py','s2_webview_runtime.py','s2_webview_session.py','s2_webview_driver.py','hosting_connector.js']]+['tools/multi-scene/webview-correlation/run.py','tools/multi-scene/baselines/run.py',DEFINITION]+SOURCES
 PATHS=shared.PATHS+['DatadogWebViewTracking/Sources','DatadogSessionReplay/Sources']
+RUNTIME_ALLOWED=['tools/multi-scene/acceptance/'+name for name in
+    ['runtime_binding.py','s2_webview_workflow.py','s2_webview_driver.py','hosting_connector.js']]
+
+HELPERS=list(dict.fromkeys(HELPERS+RUNTIME_ALLOWED))
 
 
 def execution_contract(definition):
@@ -36,8 +41,7 @@ def execution_contract(definition):
 def verify(root):
     plan=shared.read(root/'plan.json')
     require(shared.protected()==plan['protected'],'protected workspace changed')
-    require(shared.tree(root/'helpers')==plan['helpers'],'frozen helper snapshot changed')
-    require(all(shared.sha(shared.REPO/name)==value for name,value in plan['helpers'].items() if name!=DEFINITION),'frozen helper changed')
+    runtime_binding.validate(root,plan,allowed=RUNTIME_ALLOWED,excluded=[DEFINITION])
     require(execution_contract(shared.read(shared.REPO/DEFINITION))==execution_contract(plan['definition']),'frozen execution contract changed')
     for arm in shared.ARMS:
         require(shared.tree(root/arm/'sdk')==plan['arms'][arm]['sdk'],'SDK inventory changed')
