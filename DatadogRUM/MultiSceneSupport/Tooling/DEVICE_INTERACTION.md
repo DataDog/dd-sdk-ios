@@ -80,6 +80,12 @@ hierarchy and screenshots. Activate the observed bundle when necessary. Do not
 reuse guessed coordinates, alter layout to make input pass, or substitute a
 programmatic gesture. Use the exact admitted drag duration and retry policy.
 
+Bind AX readiness to the observed role and attribute namespace: a SwiftUI text-field
+placeholder may appear in `AXValue` with a null `AXLabel`. Require the exact unique
+field and heading, preserving negative controls for wrong or ambiguous elements.
+Before a coordinate tap during a form animation, observe stable target geometry
+inside the original effect deadline. A command success alone proves no UI outcome.
+
 Fully automated signal-driven scenarios do not need `Synthesize` to advance.
 Accessibility collection can block them; collect after terminal unless earlier
 visual proof is part of the contract. Preserve a failed capture before admitting

@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "work_item": "S2:F08 finite controlled app journeys",
-  "status": "STOPPED_BEFORE_INPUT_TRANSPORT_CONTRACT",
+  "status": "STOPPED_AFTER_ONE_TAP_NATIVE_OBSERVER",
   "recorded_at": "2026-09-21T16:37:35.872371+00:00",
   "owner": "SDK implementer",
   "application_revision": "6e33f1c18a52d04b0793e6954f456bdbc1affe2f",
@@ -30,17 +30,17 @@
         "Complete installed-bundle/static-link identity review",
         "Separate bounded runtime definition and oracle admission"
       ],
-      "environment": "Two fresh task-owned Duo27.1 simulators, one baseline and one candidate installation, Xcode27.1-built Debug apps; no credentials",
+      "environment": "Existing prebooted Duo27.1, clean baseline then candidate installations with full original-app/boot-state preservation; exact Xcode27.1-built Debug app pair; no credentials",
       "sequence": [
         "Launch once with --rum-release-validation and prove logged-out Login UI",
         "Tap existing Log In with Subdomain once; prove subdomain form",
         "Tap existing Back once; prove default login form",
         "Background once and activate same process once; prove restored login UI",
-        "Finish native evidence, allow bounded upload, then remove task app/simulator"
+        "Finish native evidence, allow bounded upload, remove only the task app and prove original apps/Booted state unchanged"
       ],
       "decisive_test": "Native state transitions succeed. Exact LoginView exists and one LoginWithSubdomainTapped belongs to its active view ID/session. Preserve complete service/session inventory and compare source-bound baseline/candidate lifecycle ownership and counts; no required manual Back action and no guessed background view-ID churn.",
-      "runtime_runs": 1,
-      "status": "STOPPED_PRE_ASSERTION"
+      "runtime_runs": 3,
+      "status": "STOPPED_AFTER_ONE_TAP_NATIVE_OBSERVER"
     },
     {
       "id": "J02",
@@ -141,7 +141,7 @@
     "review": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-app-j01-tf3_dxfy/review.json",
     "candidate": "UNRUN"
   },
-  "next_action": "Define/review a separate bounded J01 continuation with exact compiled/installed identities, separate backend tag identities and the qualified complete-inventory decoder. No old run or deadline is reopened.",
+  "next_action": "Admit a separate bounded J01 pair with the reviewed field/animation observer and incremental collector. Preserve all previous closed attempts.",
   "environment_readiness": "Results/S2-Duo-environment-readiness.json",
   "source_oracle": "Results/S2-F08-source-oracle.json",
   "source_preparation_status": "SOURCE_AND_OFFLINE_INVENTORY_PREPARATION_REVIEWED",
@@ -168,5 +168,44 @@
       "summary_sha256": "2d7676adb80af6deeabd2163e5aed3d8c87878fb59e031dfef78f456e0511dfb",
       "review_sha256": "5c300fedc96f29a8c3081df7fdd918779ed0d077aadd6e268f8bd90c7a55f385"
     }
+  },
+  "qualified_transport_continuation": {
+    "root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-app-j01-qualified-_wnijcda",
+    "status": "PREINSTALL_STOP_CAPTURE_PERSISTENCE_DEADLINE",
+    "deadline": "2026-09-22T00:26:24.929+00:00",
+    "definition_sha256": "6ca05ac000e59d6e2c2f8dbda0e5f78706bd552655a9fe081d663e90f73432bc",
+    "review_sha256": "86b22fa31b75cebf8c13dfe1456ef9c6c58bd1a8fbf043c036b958782a438cf7",
+    "native_launches": 0,
+    "candidate": "UNRUN",
+    "prior_attempt": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-app-j01-prebooted-0ux7kfit",
+    "scope": "J01 only; no gate closure or promotion",
+    "summary": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-app-j01-qualified-_wnijcda/terminal-summary.json",
+    "summary_sha256": "ba211a0311a01d103535424c1a63a96d1e5b06fd544c95850ec1b656e8f44499"
+  },
+  "updated_at": "2026-09-22T00:04:24.936858+00:00",
+  "incremental_continuation": {
+    "root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-app-j01-incremental-f8xss4f3",
+    "status": "STOPPED_AFTER_ONE_TAP_NATIVE_OBSERVER",
+    "summary": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-app-j01-incremental-f8xss4f3/terminal-summary.json",
+    "summary_sha256": "afc4905947da4b4dfb61b7a4715228876bd03bcac9800a68f881c8c0be584e03",
+    "native_launches": 1,
+    "native_inputs": 1,
+    "candidate": "UNRUN",
+    "cleanup": "PASS",
+    "original_deadline": "2026-09-22T00:40:28.662+00:00"
+  },
+  "collector_qualification": {
+    "root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-app-collector-delta-p4n5bspe",
+    "status": "ACCEPTED_OFFLINE_COLLECTOR_DELTA",
+    "summary_sha256": "7f65ac954e157682560678f6dde7f5ee384ec3a37f5565b6097ec5443bba7398",
+    "review_sha256": "7da474c0122b52882273ca8ffed72741f95d0ca94c39e93f2c54e2b0571c0f1c",
+    "scope": "Identical complete raw payloads; transmit each page/count once;12controls. Actual new preflight and second initial capture completed inside original phase limits."
+  },
+  "native_observer_qualification": {
+    "root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-app-ax-qualification-_hhxhchl",
+    "status": "ACCEPTED_OFFLINE_AX_QUALIFICATION",
+    "summary_sha256": "d2ca3e39eb6af64ed67de273ad2c90d9f117f46fe978e3610798fdeb71c2ab92",
+    "scope": "14saved native snapshots prove the subdomain transition. Match the unique enabled TextField AXValue and wait for two equal Back/heading/field geometry observations within15seconds.15negative controls. Old STOP unchanged.",
+    "review_sha256": "92bb0aac8cd6083a33ee1b5fa30ccf669c10960aace81dd02ba99bd1b3b781f5"
   }
 }

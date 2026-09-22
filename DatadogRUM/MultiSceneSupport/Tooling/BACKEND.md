@@ -38,6 +38,10 @@ Freeze persisted SDK tags separately from compiled/installed versions: tag
 with `_`. Compare each exact expected representation; never relax binary identity.
 Publish initial readiness only after the complete capture validates; partial pages
 must remain a separate file that cannot release native input.
+Persist each fulfilled raw response once, then assemble the complete receipt locally.
+Guard each append with the prior receipt hash, request/native identity and page cursor;
+include persistence in the deadline. Repeated transmission of accumulated payloads
+can consume the phase budget without collecting additional evidence.
 
 For native/WebView app journeys, keep Browser service and SDK version separate from
 native values. The bridge replaces application/session IDs, not those Browser fields.
