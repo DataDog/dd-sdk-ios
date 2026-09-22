@@ -8,11 +8,11 @@
 - [IMPROVEMENT] Require Swift tools version 6.2 (Xcode 26) to resolve the package with Swift Package Manager. See [#3231][]
 - [FIX] Report slow frame and freeze rates for RUM views when navigation starts a new view without calling `stopView()` on the previous one.
 - [FIX] Traced requests and spans created immediately after the SDK is initialized now use the same sampling decision as the rest of the RUM session, and carry that session's ID. Previously they could be sampled independently of the session and sent without it. See [#3221][]
+- [FIX] Keep automatic URLSession spans linked to the RUM view and session captured when each request starts.
 
 # 3.18.0 / 21-09-2026
 
 - [FIX] Preserve delayed WebView correlation for long-lived active native RUM views.
-- [FIX] Keep automatic URLSession spans linked to the RUM view and session captured when each request starts.
 - [FIX] Resolve the RUM session sampling decision synchronously in `RUM.enable()`, so WebViews instrumented immediately after initialization get a decision consistent with the session. See [#3183][]
 - [FEATURE] Add CPU-time samples alongside wall-time samples by default for application launch and Continuous Profiling. See [#3195][]
 - [IMPROVEMENT] Migrate `DatadogProfiling` to Swift 6. See [#3186][]
