@@ -134,6 +134,17 @@ extension CALayerSnapshot.SemanticObservationMapping {
         return .init(semantics: .visualEffect(.liquidLens))
     }
 
+    static let tabSelectionBackdrop = Self { layer, _, _ in
+        guard layer.isTabSelectionBackdrop else {
+            return nil
+        }
+
+        return .init(
+            semantics: .visualEffect(.backdrop),
+            ignoresSublayers: true
+        )
+    }
+
     static let visualEffectBackdrop = Self { layer, _, _ in
         guard layer.isVisualEffectBackdrop else {
             return nil

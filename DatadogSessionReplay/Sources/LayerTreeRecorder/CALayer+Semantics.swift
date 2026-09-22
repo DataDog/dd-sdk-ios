@@ -107,14 +107,17 @@ extension CALayer {
         delegate?.isKind(of: Classes.visualEffectBackgroundView) == true
     }
 
-    var isVisualEffectBackdrop: Bool {
+    var isTabSelectionBackdrop: Bool {
         guard isKind(of: Classes.backdropLayer) else {
             return false
         }
 
-        return superlayer?.delegate is UIVisualEffectView
-            || delegate?.isKind(of: Classes.tabSelectionView) == true
+        return delegate?.isKind(of: Classes.tabSelectionView) == true
             || superlayer?.delegate?.isKind(of: Classes.tabSelectionView) == true
+    }
+
+    var isVisualEffectBackdrop: Bool {
+        isKind(of: Classes.backdropLayer) && superlayer?.delegate is UIVisualEffectView
     }
 
     private func hasViewDelegateClass(matching predicate: (AnyClass) -> Bool) -> Bool {
