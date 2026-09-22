@@ -12,3 +12,11 @@ This advances S2:H16 independently of fold input. It does not qualify interactiv
 gestures, adaptive resize, automatic actions or physical-device behavior. Preserve
 H16’s relevant physical evidence and A02 dependency before claiming full closure.
 No production SDK change or accepted-test rerun is included.
+
+The baseline automatic and manual five-occurrence view/lifecycle scenarios pass
+locally, and task-only cleanup passes. The owning record preserves the original
+lifecycle-oracle rejection, separate automatic backend qualification, manual
+pagination failure and complete backend-only read. Manual TTID selects DetailView;
+source supports selection of the current active view, but the fixture did not
+capture that dispatch boundary. H16 stays open until this specific witness is
+qualified. Both candidate cells remain unexecuted.

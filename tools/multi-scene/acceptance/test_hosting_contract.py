@@ -15,7 +15,7 @@ def fixture():
         n=len(rows)+1;row=dict(kind=kind,sequence=n,wall_ms=n,monotonic_ns=n,**fields);rows.append(row);return row
     def event(i,active):
         version[i]=version.get(i,0)+1
-        v={'id':ids[i],'name':'ApplicationLaunch' if i==0 else c.NAMES[i-1],'url':'com/datadog/application-launch/view' if i==0 else c.NAMES[i-1], 'is_active':active}
+        v={'id':ids[i],'name':'ApplicationLaunch' if i==0 else c.NAMES[i-1],'url':'com/datadog/application-launch/view' if i==0 else c.NAMES[i-1], 'is_active':active,'time_spent':1000+i}
         for k in ['action','resource','error','long_task']:v[k]={'count':0}
         e={'type':'view','date':100+i,'service':c.SERVICE,'application':{'id':c.APP_ID},'session':{'id':session},'view':v,'_dd':{'document_version':version[i]}}
         add('mapper',event_json=json.dumps(e));return e
@@ -70,6 +70,19 @@ class HostingControls(unittest.TestCase):
     def test_actual_geometry_required(self):self.row('boundary')['screen']['width']=0;self.rejected()
     def test_lifecycle_interruption(self):self.row('scene-active')['kind']='scene-inactive';self.rejected()
     def test_duplicate_tracking_configuration(self):self.row('launch')['automatic_uikit']=True;self.rejected()
+    def test_backend_revision_namespace_is_independent(self):
+        result=c.local(self.doc,self.expected);rows=backend(result)
+        for row in rows:
+            event=row['attributes']['custom']
+            if event['type']=='view':event['_dd']['document_version']=1
+        accepted=c.backend(rows,result)
+        self.assertEqual(set((v['mapper'],v['backend']) for v in accepted['view_versions'].values()),{(2,1)})
+    def test_backend_changed_terminal_duration_rejected(self):
+        result=c.local(self.doc,self.expected);rows=backend(result);rows[1]['attributes']['custom']['view']['time_spent']+=1
+        with self.assertRaises(Rejected):c.backend(rows,result)
+    def test_backend_changed_start_date_rejected(self):
+        result=c.local(self.doc,self.expected);rows=backend(result);rows[1]['attributes']['client_time']=0
+        with self.assertRaises(Rejected):c.backend(rows,result)
     def test_backend_missing_view(self):
         r=c.local(self.doc,self.expected)
         with self.assertRaises(Rejected):c.backend(backend(r)[1:],r)

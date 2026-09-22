@@ -18,7 +18,7 @@ import tempfile
 import time
 import uuid
 from acceptance_common import Rejected, require, digest
-from app_journey_transport import complete_inventory
+from app_journey_transport import complete_inventory, pollable_inventory
 import hosting_contract as oracle
 
 REPO = Path(__file__).resolve().parents[3]
@@ -63,14 +63,22 @@ def tree(root):
         if p.is_file():result[str(p.relative_to(root))]=sha(p)
     return result
 
-def product(app):
+def product(app, bundle=BUNDLE):
     files=tree(app);binaries={}
     for name,value in files.items():
         with (Path(app)/name).open('rb') as stream: magic=stream.read(4).hex()
         if magic in ['cffaedfe','feedfacf','cafebabe','bebafeca','cafebabf','bfbafeca','cefaedfe','feedface']:binaries[name]=value
     info=plistlib.loads((Path(app)/'Info.plist').read_bytes())
-    require(info['CFBundleExecutable'] in binaries and info['CFBundleIdentifier']==BUNDLE,'wrong product')
+    require(info['CFBundleExecutable'] in binaries and info['CFBundleIdentifier']==bundle,'wrong product')
     return {'files':files,'binaries':binaries,'executable':info['CFBundleExecutable']}
+
+
+def freeze_helpers(root, manifest):
+    destination=Path(root)/'helpers';destination.mkdir()
+    for name,value in manifest.items():
+        source=REPO/name;require(sha(source)==value,'helper changed before snapshot')
+        target=destination/name;target.parent.mkdir(parents=True,exist_ok=True);shutil.copy2(source,target)
+    require(tree(destination)==manifest,'helper snapshot differs')
 
 def verify_client(root, expected):
     require(tree(root)==expected,'fixture/project inventory added, removed or changed')
@@ -78,6 +86,7 @@ def verify_client(root, expected):
 def verify(root):
     root=Path(root);p=read(root/'plan.json')
     require(protected()==p['protected'],'protected workspace changed')
+    if p.get('helper_snapshot'):require(tree(root/p['helper_snapshot'])==p['helpers'],'frozen helper snapshot changed')
     amendment=root/'harness-amendment.json'
     if amendment.exists():
         change=read(amendment)
@@ -88,9 +97,63 @@ def verify(root):
         p['helpers']={**p['helpers'],**change['helpers']}
     require(all(sha(REPO/k)==v for k,v in p['helpers'].items()),'frozen harness changed')
     for arm in ARMS:
-        require(tree(root/arm/'sdk')==p['arms'][arm]['sdk'],'SDK source changed')
-        verify_client(root/arm/'client',p['arms'][arm]['client'])
+        folder=Path(p['arms'][arm].get('build_origin',root/arm))
+        require(tree(folder/'sdk')==p['arms'][arm]['sdk'],'SDK source changed')
+        verify_client(folder/'client',p['arms'][arm]['client'])
+        if 'reuse' in p:
+            old=Path(p['reuse']['root']);require(sha(old/'plan.json')==p['reuse']['plan_sha256'],'original build plan changed')
+            require(sha(old/arm/'build-result.json')==sha(root/arm/'build-result.json')==p['reuse']['receipts'][arm],'reused build receipt changed')
+            verify_build(folder,p['arms'][arm],p['reuse']['plan_sha256'])
     return p
+
+
+def verify_build(folder, frozen, plan_sha):
+    """Revalidate original compiler inputs/objects and full product without rebuilding."""
+    folder=Path(folder);result=read(folder/'build-result.json');admission=read(folder/'build-admission.json')
+    require(result['state']=='QUALIFIED_BUILD_ONLY' and result['source']==frozen['revision'],'unqualified reused source')
+    require(admission['plan_sha256']==plan_sha and admission['issued_at']<result['finished_at']<admission['deadline'],'original build was not timely')
+    require(sha(folder/'source.tar')==frozen['archive_sha256'],'original source archive changed')
+    require(tree(folder/'sdk')==frozen['sdk'],'original SDK inventory changed')
+    verify_client(folder/'client',frozen['client'])
+    actual_lists={str(p) for p in (folder/'DerivedData/Build/Intermediates.noindex').rglob('*.SwiftFileList')}
+    require(actual_lists==set(result['compiler_lists']) and actual_lists,'compiler list inventory changed')
+    sdk_inputs=set();fixture_inputs=set()
+    for name,bound in result['compiler_lists'].items():
+        path=Path(name);require(not path.is_symlink() and 'arm64' in path.parts and sha(path)==bound['sha256'],'compiler list changed')
+        members={}
+        for value in shlex.split(path.read_text()):
+            source=Path(value);require(not source.is_symlink(),'symlinked compiler input');source=source.resolve()
+            members[str(source)]=sha(source)
+            if source.is_relative_to(folder/'sdk'):sdk_inputs.add(str(source.relative_to(folder/'sdk')))
+            elif source.is_relative_to(folder/'client'):fixture_inputs.add(source.name)
+            else:require(source.is_relative_to(folder/'DerivedData'),'foreign compiler input')
+        require(members==bound['members'],'compiler input bytes/membership changed')
+    expected={n for n in frozen['sdk'] if n.endswith('.swift') and n!='Package.swift'}
+    require(sdk_inputs==expected and fixture_inputs=={'App.swift','S2WebViewEvidence.swift'},'reused compiler source coverage changed')
+    objects={str(x.relative_to(folder)):sha(x) for x in (folder/'DerivedData/Build/Intermediates.noindex').rglob('*.o')}
+    require(objects and objects==result['objects'],'compiled object inventory changed')
+    app=folder/'DerivedData/Build/Products/Release-iphonesimulator/Hosting.app'
+    require(Path(result['app'])==app and product(app)==result['product'],'reused complete product changed')
+    return result
+
+
+def prepare_reuse(args, state, definition, helpers):
+    root=args.root.resolve();old=args.reuse_builds.resolve();prior=read(old/'plan.json')
+    continuation=definition['acceptance_continuation']
+    require(str(old)==continuation['original_root'] and sha(old/'plan.json')==continuation['original_plan_sha256'],'unbound original build root')
+    require(prior['protected']==state,'protected state differs from original build')
+    sources=['tools/multi-scene/hosted-swiftui/App.swift','tools/multi-scene/webview-correlation/S2/S2WebViewEvidence.swift']
+    require(all(prior['helpers'][name]==helpers[name] for name in sources),'compiled fixture changed; reuse forbidden')
+    plan={'experiment':'EXP-222','created_at':time.time(),'protected':state,'helper_snapshot':'helpers','helpers':helpers,'definition':definition,'arms':{},'reuse':{'root':str(old),'plan_sha256':sha(old/'plan.json'),'receipts':{}}}
+    for arm,rev in ARMS.items():
+        frozen=prior['arms'][arm];require(frozen['revision']==rev,'source revision differs')
+        owner=definition['build_qualification'][arm];receipt=old/arm/'build-result.json'
+        require(str(receipt)==owner['receipt'] and sha(receipt)==owner['sha256'],'original build receipt differs from owner')
+        verify_build(old/arm,frozen,sha(old/'plan.json'))
+        folder=root/arm;folder.mkdir();shutil.copy2(receipt,folder/'build-result.json')
+        plan['arms'][arm]=dict(frozen,build_origin=str(old/arm));plan['reuse']['receipts'][arm]=sha(receipt)
+    require(protected()==state,'protected state changed during reuse');save(root/'plan.json',plan,exclusive=True);verify(root)
+    print(json.dumps({'state':'PREPARED_REUSED_BUILDS','root':str(root),'plan_sha256':sha(root/'plan.json'),'additional_builds':0}),flush=True)
 
 def command(argv, folder, name, *, deadline, cwd=None):
     require(time.time()<deadline,'command after fixed deadline')
@@ -111,9 +174,11 @@ def prepare(args):
     root=args.root.resolve();require(not root.exists(),'output already exists');root.mkdir(parents=True)
     state=protected(); (root/'cells').mkdir()
     definition=read(REPO/HELPERS[-1]);require(definition['experiment']=='EXP-222' and definition['builds']==2,'unqualified definition')
+    helpers={k:sha(REPO/k) for k in HELPERS};freeze_helpers(root,helpers)
+    if args.reuse_builds is not None:return prepare_reuse(args,state,definition,helpers)
     spec=importlib.util.spec_from_file_location('baseline_package',REPO/'tools/multi-scene/baselines/run.py');mod=importlib.util.module_from_spec(spec);spec.loader.exec_module(mod)
     helpers={k:sha(REPO/k) for k in HELPERS}
-    plan={'experiment':'EXP-222','created_at':time.time(),'protected':state,'helpers':helpers,'definition':definition,'arms':{}}
+    plan={'experiment':'EXP-222','created_at':time.time(),'protected':state,'helper_snapshot':'helpers','helpers':helpers,'definition':definition,'arms':{}}
     sources=['tools/multi-scene/hosted-swiftui/App.swift','tools/multi-scene/webview-correlation/S2/S2WebViewEvidence.swift']
     fixture=digest({k:sha(REPO/k) for k in sources})
     for arm,rev in ARMS.items():
@@ -136,7 +201,7 @@ def prepare(args):
     print(json.dumps({'state':'PREPARED','root':str(root),'plan_sha256':sha(root/'plan.json')}),flush=True)
 
 def build(args):
-    p=verify(args.root);folder=args.root/args.arm;deadline=time.time()+p['definition']['budgets_seconds']['build_per_arm']
+    p=verify(args.root);require('reuse' not in p,'reused builds cannot be rebuilt in place');folder=args.root/args.arm;deadline=time.time()+p['definition']['budgets_seconds']['build_per_arm']
     save(folder/'build-admission.json',{'issued_at':time.time(),'deadline':deadline,'plan_sha256':sha(args.root/'plan.json')},exclusive=True)
     try:
         command(['xcodebuild','build','-quiet','-project','Hosting.xcodeproj','-scheme','Hosting','-configuration','Release','-destination','generic/platform=iOS Simulator','-derivedDataPath',str(folder/'DerivedData'),'ARCHS=arm64','ONLY_ACTIVE_ARCH=YES','CODE_SIGNING_ALLOWED=NO'],folder,'build',deadline=deadline,cwd=folder/'client')
@@ -187,27 +252,37 @@ def display(device, out, label, deadline):
 def process(pid):return capture(['ps','-p',str(pid),'-o','comm='],check=False).stdout.decode().strip()
 
 
-def request(folder, run, query, start, deadline, label):
+def request(folder, run, query, start, deadline, label, minimum_rows=0):
     require(time.time()<deadline,'backend request after deadline')
     req={'run_id':run['run_id'],'nonce':str(uuid.uuid4()),'query':query,'from':start,'to':'now'}
-    path=folder/(label+'.request.json');save(path,dict(request=req,deadline=deadline),exclusive=True)
+    path=folder/(label+'.request.json');save(path,dict(request=req,deadline=deadline,minimum_rows=minimum_rows),exclusive=True)
     print(json.dumps({'backend_request':str(path)}),flush=True)
     response=folder/(label+'.response.json')
     while not response.exists():
         require(time.time()<deadline,'backend response deadline');time.sleep(.2)
     require(response.stat().st_mtime<deadline and time.time()<deadline,'late backend publication')
-    return complete_inventory(read(response),req,row_limit=100,page_limit=6)
+    return pollable_inventory(read(response),req,row_limit=100,page_limit=6,minimum_rows=minimum_rows)
 
 
-def cell(args):
-    root=args.root.resolve();plan=verify(root)
+def reviewed(root):
+    plan=verify(root)
     review=read(root/'review.json');controls=read(root/'controls-qualification.json')
     require(review.get('state')=='PASS' and review.get('reviewer')=='/root/c06_runtime_plan' and review.get('plan_sha256')==sha(root/'plan.json'),'scoped implementation review missing/stale')
     require(controls.get('state')=='PASS' and controls.get('helpers')==plan['helpers'],'focused controls missing/stale')
     require(review.get('controls_sha256')==sha(root/'controls-qualification.json'),'review does not bind completed controls')
     amendment=root/'harness-amendment.json'
     require(review.get('amendment_sha256')==(sha(amendment) if amendment.exists() else None),'review does not bind harness amendment')
-    name=args.arm+'-'+args.mode;out=root/'cells'/name
+    return plan
+
+
+def cell(args):
+    root=args.root.resolve();plan=reviewed(root)
+    name=args.arm+'-'+args.mode
+    allowed=plan['definition'].get('acceptance_continuation',{}).get('remaining_cells',[r['arm']+'-'+r['mode'] for r in plan['definition']['matrix']])
+    require(name in allowed,'cell not admitted or already qualified')
+    if plan['definition'].get('acceptance_continuation',{}).get('backend_only'):
+        require(read(root/'backend-only/summary.json')['state']=='QUALIFIED_COMPOSED','manual baseline backend qualification required')
+    out=root/'cells'/name
     require(not out.exists(),'cell already consumed');out.mkdir()
     for old in (root/'cells').glob('*/summary.json'):require(read(old)['state']=='PASS','stopped after prior failed cell')
     build=read(root/args.arm/'build-result.json');app=Path(build['app']);require(product(app)==build['product'],'built product changed')
@@ -244,14 +319,7 @@ def cell(args):
             screen=boundary['screen'];require(screen['scale']==initial_display['pointScale'] and sorted([screen['width']*screen['scale'],screen['height']*screen['scale']])==sorted(initial_display['nativeSize']),'native screen differs from actual display')
         local=oracle.local(document,identity);require(local['pid']==pid,'native PID differs');save(out/'local-result.json',local,exclusive=True);summary['scenario']='PASS'
         backend_deadline=min(execution_deadline,time.time()+budgets['backend']);summary['backend_deadline']=backend_deadline
-        start=datetime.datetime.fromtimestamp(started-60,datetime.timezone.utc).isoformat();query='@application.id:'+oracle.APP_ID+' @session.id:'+local['session_id']
-        for attempt in range(24):
-            rows=request(out,identity,query,start,backend_deadline,'backend-'+str(attempt))
-            try:
-                accepted=oracle.backend(rows,local,pending=True);save(out/'backend-result.json',accepted,exclusive=True);break
-            except Rejected as error:
-                require(error.state=='PENDING',str(error));require(time.time()+15<backend_deadline,'backend inventory incomplete at deadline');time.sleep(15)
-        else:require(False,'backend polling attempts exhausted')
+        collect(out,identity,local,started,backend_deadline)
         summary['evidence']='PASS';require(product(installed_app)==build['product'],'installed product changed during run');verify(root)
         require(time.time()<execution_deadline,'execution finalized late');summary['state']='PASS'
     except Exception as error:
@@ -278,6 +346,46 @@ def cell(args):
     return 0 if summary['state']=='PASS' else 1
 
 
+
+def collect(out, identity, local, started, deadline):
+    start=datetime.datetime.fromtimestamp(started-60,datetime.timezone.utc).isoformat()
+    query='@application.id:'+oracle.APP_ID+' @session.id:'+local['session_id']
+    minimum=len(local['views'])+len([e for e in local['mappers'] if e['type']=='action'])+2
+    for attempt in range(24):
+        try:
+            rows=request(out,identity,query,start,deadline,'backend-'+str(attempt),minimum_rows=minimum)
+            accepted=oracle.backend(rows,local,pending=True);save(out/'backend-result.json',accepted,exclusive=True)
+            return accepted
+        except Rejected as error:
+            require(error.state=='PENDING',str(error));require(time.time()+15<deadline,'backend inventory incomplete at deadline');time.sleep(15)
+    require(False,'backend polling attempts exhausted')
+
+
+def backend_only(args):
+    root=args.root.resolve();plan=reviewed(root);bound=plan['definition']['acceptance_continuation']['backend_only']
+    prior=Path(bound['cell']);summary=read(prior/'summary.json')
+    for name,value in bound['artifacts'].items():require(sha(prior/name)==value,'original native evidence changed')
+    require(summary['state']=='INVALID' and summary['scenario']=='PASS' and summary['cleanup']=='PASS','original local/cleanup evidence unqualified')
+    require(sha(prior.parents[1]/'plan.json')==summary['plan_sha256'],'original native plan changed')
+    identity=summary['identity'];local=oracle.local(read(prior/'evidence.json'),identity)
+    require(local==read(prior/'local-result.json'),'saved local projection changed')
+    require(identity['arm']=='A' and identity['mode']=='manual' and identity['source']==ARMS['A'] and identity['fixture']==plan['arms']['A']['fixture'],'original fixture differs')
+    require(summary['build_sha256']==sha(root/'A/build-result.json'),'original build differs')
+    device=summary['device']['udid'];require(not process(local['pid']) and absent(device),'original task not quiescent')
+    out=root/'backend-only';require(not out.exists(),'backend continuation consumed');out.mkdir()
+    deadline=time.time()+plan['definition']['budgets_seconds']['backend']
+    result={'state':'RUNNING','started_at':time.time(),'deadline':deadline,'original_summary_sha256':sha(prior/'summary.json'),'plan_sha256':sha(root/'plan.json'),'native_launches':0,'scenario':'PASS_ORIGINAL_RECEIPT','cleanup':'PASS_ORIGINAL_RECEIPT','evidence':'INCOMPLETE'}
+    save(out/'summary.json',result)
+    try:
+        result['backend']=collect(out,identity,local,summary['started_at'],deadline)
+        verify(root);require(not process(local['pid']) and absent(device),'task changed during backend-only continuation')
+        require(time.time()<deadline,'backend continuation completed late')
+        result.update(state='QUALIFIED_COMPOSED',evidence='PASS_SEPARATE_BACKEND_READ')
+    except Exception as error:result.update(state='INVALID',reason=str(error))
+    result['finished_at']=time.time();save(out/'summary.json',result)
+    print(json.dumps({'state':result['state'],'summary':str(out/'summary.json'),'native_launches':0}),flush=True)
+    return 0 if result['state']=='QUALIFIED_COMPOSED' else 1
+
 def publish(args):
     import base64
     path=args.request;bound=read(path);dest=path.with_name(path.name.replace('.request.json','.response.json'))
@@ -285,7 +393,10 @@ def publish(args):
     diagnostic=dest.with_name(dest.stem+'.raw.json');save(diagnostic,receipt,exclusive=True)
     require(time.time()<bound['deadline'],'late response; raw retained')
     if not receipt.get('error'):
-        try:complete_inventory(receipt,bound['request'],row_limit=100,page_limit=6)
+        try:pollable_inventory(receipt,bound['request'],row_limit=100,page_limit=6,minimum_rows=bound.get('minimum_rows',0))
+        except Rejected as error:
+            if error.state=='PENDING':receipt['pending']=str(error)
+            else:receipt['error']='Inventory validation failed: '+str(error)
         except Exception as error:receipt['error']='Inventory validation failed: '+str(error)
     save(dest,receipt,exclusive=True);require(time.time()<bound['deadline'],'publication exceeded deadline')
     print(json.dumps({'published':str(dest),'sha256':sha(dest)}),flush=True)
@@ -293,10 +404,11 @@ def publish(args):
 
 def main():
     p=argparse.ArgumentParser();sub=p.add_subparsers(dest='stage',required=True)
-    for stage in ['prepare','build','cell']:
+    for stage in ['prepare','build','cell','backend-only']:
         s=sub.add_parser(stage);s.add_argument('--root',type=Path,required=True)
-        if stage!='prepare':s.add_argument('--arm',choices=ARMS,required=True)
+        if stage=='prepare':s.add_argument('--reuse-builds',type=Path)
+        if stage in ['build','cell']:s.add_argument('--arm',choices=ARMS,required=True)
         if stage=='cell':s.add_argument('--mode',choices=['automatic','manual'],required=True);s.add_argument('--device',required=True)
     s=sub.add_parser('publish');s.add_argument('--request',type=Path,required=True);s.add_argument('--payload',required=True)
-    a=p.parse_args();return {'prepare':prepare,'build':build,'cell':cell,'publish':publish}[a.stage](a) or 0
+    a=p.parse_args();return {'prepare':prepare,'build':build,'cell':cell,'publish':publish,'backend-only':backend_only}[a.stage](a) or 0
 if __name__=='__main__':raise SystemExit(main())

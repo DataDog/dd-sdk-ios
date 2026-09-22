@@ -72,3 +72,32 @@ def complete_inventory(receipt, request, *, row_limit, page_limit):
         require(total == count, "page total disagrees with independent count")
         decoded["pages"].append(dict(start_at=page["start_at"], rows=rows, truncated=False))
     return inventory(decoded, request, row_limit=row_limit, page_limit=page_limit)
+
+
+def pollable_inventory(receipt, request, *, row_limit, page_limit, minimum_rows=0):
+    """A changing count may be polled again; it never yields an accepted inventory."""
+    require(not receipt.get('error'), 'failed collector receipt')
+    require(set(request) == {'run_id', 'nonce', 'query', 'from', 'to'} and
+            all(isinstance(v, str) and v for v in request.values()), 'incomplete query identity')
+    require(receipt.get('request') == request, 'stale or foreign query receipt')
+    require(type(row_limit) is int and row_limit > 0 and type(page_limit) is int and page_limit > 0,
+            'invalid inventory bounds')
+    count = raw_count(receipt['count_response'])
+    require(count <= row_limit, 'count exceeds frozen limit')
+    require(type(minimum_rows) is int and 0 <= minimum_rows <= row_limit,'invalid count readiness bound')
+    if 'count_pending' in receipt:
+        require(receipt['count_pending'] is True and receipt.get('pages')==[] and count < minimum_rows,'invalid count readiness receipt')
+        require(False,'minimum native-derived inventory not indexed','PENDING')
+    pages = receipt.get('pages')
+    require(isinstance(pages, list) and 1 <= len(pages) <= page_limit, 'missing or excessive pages')
+    offset = 0; ids = []; totals = []
+    for index, page in enumerate(pages):
+        require(type(page.get('start_at')) is int and page['start_at'] == offset, 'page offset differs')
+        rows, total = raw_page(page['response'])
+        require(total <= row_limit, 'page total exceeds frozen limit')
+        require(bool(rows) == (index < len(pages) - 1), 'missing empty terminal page')
+        offset += len(rows); require(offset <= row_limit, 'inventory exceeds frozen limit')
+        ids.extend(row['id'] for row in rows); totals.append(total)
+    require(all(ids) and len(ids) == len(set(ids)), 'missing or duplicate raw ID')
+    require(all(total == count for total in totals), 'inventory changed during collection', 'PENDING')
+    return complete_inventory(receipt, request, row_limit=row_limit, page_limit=page_limit)

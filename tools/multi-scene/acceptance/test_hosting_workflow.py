@@ -1,5 +1,6 @@
 import base64
 import json
+import plistlib
 from pathlib import Path
 import tempfile
 import time
@@ -42,5 +43,45 @@ class HostingWorkflowControls(unittest.TestCase):
         (self.root/'App.swift').write_text('source');expected=w.tree(self.root)
         (self.root/'Extra.swift').write_text('unexpected')
         with self.assertRaises(Rejected):w.verify_client(self.root,expected)
+
+
+class ReusedBuildControls(unittest.TestCase):
+    def setUp(self):
+        self.temp=tempfile.TemporaryDirectory();self.addCleanup(self.temp.cleanup);self.root=Path(self.temp.name).resolve()
+        for name in ['sdk','client','DerivedData/Build/Intermediates.noindex/arm64','DerivedData/Build/Products/Release-iphonesimulator/Hosting.app']:(self.root/name).mkdir(parents=True,exist_ok=True)
+        self.intermediate=self.root/'DerivedData/Build/Intermediates.noindex/arm64'
+        for name in ['sdk/SDK.swift','client/App.swift','client/S2WebViewEvidence.swift']:(self.root/name).write_text('source')
+        self.sources=[self.root/n for n in ['sdk/SDK.swift','client/App.swift','client/S2WebViewEvidence.swift']]
+        self.list=self.intermediate/'Inputs.SwiftFileList';self.list.write_text('\n'.join(str(p) for p in self.sources))
+        (self.intermediate/'SDK.o').write_bytes(b'object');(self.root/'source.tar').write_bytes(b'archive')
+        self.app=self.root/'DerivedData/Build/Products/Release-iphonesimulator/Hosting.app'
+        (self.app/'Hosting').write_bytes(bytes.fromhex('cffaedfe')+b'product')
+        (self.app/'Info.plist').write_bytes(plistlib.dumps({'CFBundleIdentifier':w.BUNDLE,'CFBundleExecutable':'Hosting'}))
+        self.frozen={'revision':'revision','sdk':w.tree(self.root/'sdk'),'client':w.tree(self.root/'client'),'archive_sha256':w.sha(self.root/'source.tar')}
+        w.save(self.root/'build-admission.json',{'plan_sha256':'plan','issued_at':1,'deadline':3})
+        self.result={'state':'QUALIFIED_BUILD_ONLY','source':'revision','finished_at':2,'app':str(self.app),'product':w.product(self.app),'compiler_lists':{str(self.list):{'sha256':w.sha(self.list),'members':{str(p):w.sha(p) for p in self.sources}}},'objects':{str((self.intermediate/'SDK.o').relative_to(self.root)):w.sha(self.intermediate/'SDK.o')}}
+        w.save(self.root/'build-result.json',self.result)
+    def verify(self):return w.verify_build(self.root,self.frozen,'plan')
+    def test_unchanged_product_reused_without_rebuild(self):self.assertEqual(self.verify(),self.result)
+    def test_changed_compiler_input_rejected(self):
+        self.sources[0].write_text('changed')
+        with self.assertRaises(Rejected):self.verify()
+    def test_extra_compiler_list_rejected(self):
+        (self.intermediate/'Extra.SwiftFileList').write_text(str(self.sources[0]))
+        with self.assertRaises(Rejected):self.verify()
+    def test_changed_object_rejected(self):
+        (self.intermediate/'SDK.o').write_bytes(b'changed')
+        with self.assertRaises(Rejected):self.verify()
+    def test_extra_object_rejected(self):
+        (self.intermediate/'Extra.o').write_bytes(b'extra')
+        with self.assertRaises(Rejected):self.verify()
+    def test_changed_product_rejected(self):
+        (self.app/'Hosting').write_bytes(bytes.fromhex('cffaedfe')+b'changed')
+        with self.assertRaises(Rejected):self.verify()
+    def test_original_late_build_rejected(self):
+        self.result['finished_at']=4;w.save(self.root/'build-result.json',self.result)
+        with self.assertRaises(Rejected):self.verify()
+    def test_wrong_original_plan_rejected(self):
+        with self.assertRaises(Rejected):w.verify_build(self.root,self.frozen,'other-plan')
 
 if __name__=='__main__':unittest.main()

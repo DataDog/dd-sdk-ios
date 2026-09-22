@@ -2,8 +2,8 @@
   "schema_version": 1,
   "experiment": "EXP-222",
   "gate": "S2:H16",
-  "status": "LOCAL_LIFECYCLE_REAUDIT_PASS_ORIGINAL_INVALID_BACKEND_ABSENT",
-  "updated_at": "2026-09-22T13:13:56.110050+00:00",
+  "status": "BASELINE_VIEW_LIFECYCLE_QUALIFIED_TTID_DISPATCH_WITNESS_MISSING",
+  "updated_at": "2026-09-22T14:39:51.118185+00:00",
   "owner": "SDK implementer",
   "reviewer": "/root/c06_runtime_plan",
   "baseline": "62f64d7b655bdc83f3036c4ad81090a270f6202b",
@@ -80,16 +80,44 @@
       "decisive_observation": "All five actual UIKit transitions and automatic mapper occurrences completed; Root SwiftUI onDisappear31 followed presentation boundary29 and dismissal start30, preceding next Root onAppear32. Strict harness timing assumption rejected the run.",
       "sdk_finding": null,
       "remaining_cells": "Unexecuted; original admission stopped."
+    },
+    {
+      "cell": "A-automatic",
+      "root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp222-hosting-acceptance-ugejbjwl",
+      "state": "INVALID",
+      "scenario": "PASS",
+      "evidence": "INCOMPLETE",
+      "cleanup": "PASS",
+      "summary_sha256": "a18d747eff87b537ce196ea1d747f2c6f2da9bf2da2020e4d6a6ff232a71cba0",
+      "reason": "backend response deadline",
+      "offline_composed": {
+        "state": "QUALIFIED_COMPOSED",
+        "receipt": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp222-hosting-acceptance-ugejbjwl/backend-version-reaudit.json",
+        "sha256": "9c9c19d30b90520a7ad99c025a73b51a9a729a927ddb79d273439c53bb60ea4a",
+        "scope": "A automatic Duo simulator H16 portion only; original INVALID unchanged"
+      },
+      "sdk_finding": null
+    },
+    {
+      "cell": "A-manual",
+      "root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp222-hosting-remaining-xsa26s12",
+      "state": "INVALID",
+      "scenario": "PASS",
+      "evidence": "INCOMPLETE",
+      "cleanup": "PASS",
+      "summary_sha256": "cb904149606feea5676d568b5cb2ea4c4c0796cc5777bb426a110c33b5c1c628",
+      "sdk_finding": null,
+      "reason": "Backend inventory crossed ingestion: count7, page totals7/8/8, cross-page duplicate raw ID. Original receipt remains INVALID; full backend qualification still required."
     }
   ],
   "gate_closures": [],
-  "native_launches": 1,
+  "native_launches": 3,
   "implementation": {
     "fixture": "tools/multi-scene/hosted-swiftui/App.swift",
     "workflow": "tools/multi-scene/acceptance/s2_hosting_workflow.py",
     "oracle": "tools/multi-scene/acceptance/hosting_contract.py",
     "connector": "tools/multi-scene/acceptance/hosting_connector.js",
-    "focused_controls": 38,
+    "focused_controls": 69,
     "native_admitted": false
   },
   "build_qualification": {
@@ -102,7 +130,7 @@
       "sha256": "01d76a7ace61d7cc75f1e13d8864b62fb7bc4bb091995453a9c30970df5937c1"
     }
   },
-  "next": "Review a finite acceptance continuation using the corrected oracle and unchanged compiled products; no additional input diagnostic. WebView preparation continues independently.",
+  "next": "Advance independent WebView preparation. Prepare the single missing TTID dispatch-owner witness before a new finite hosting acceptance admission; do not repeat baseline input diagnostics.",
   "offline_reaudit": {
     "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp222-hosted-swiftui-_y3wbrkk/offline-lifecycle-reaudit.json",
     "sha256": "d6a76e92c0704813cb2ff7ad851fc97033845eec46743c9dc7cf4e50603a479b",
@@ -112,5 +140,58 @@
       "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp222-hosted-swiftui-_y3wbrkk/offline-lifecycle-controls.json",
       "sha256": "0f1b008fb50a1e001f9b91161854dc62155e72e9cf6e1c2e78b5072ce38afb28"
     }
+  },
+  "acceptance_continuation": {
+    "state": "STOPPED_AT_MANUAL_BACKEND_ORACLE",
+    "original_root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp222-hosted-swiftui-_y3wbrkk",
+    "original_plan_sha256": "454159f382b180d8e2f41b667afef889b682d01a67bb6f2ff8813b8560626059",
+    "reviewer": "/root/c06_runtime_plan",
+    "basis": "Corrected offline-validated SwiftUI lifetime oracle; actual UIKit transition mechanism qualified locally. Separate retrospective backend read had0 rows, so original INVALID is not recovered. Fresh acceptance measures complete end-to-end ownership, not another input diagnostic.",
+    "matrix": "Original four cells, one launch each, fresh output/run/nonce/session identities. First failure stops the matrix.",
+    "builds": "Reuse both unchanged qualified products; revalidate exact source, compiler membership/bytes, objects, original timely build receipts and complete products. No rebuild.",
+    "scope": "Duo simulator portion of S2:H16 only; relevant physical device and A02 remain.",
+    "budgets": "Original fixed native/backend/cell/cleanup limits apply to newly issued deadlines only; no earlier deadline changes.",
+    "remaining_cells": [
+      "B-automatic",
+      "B-manual"
+    ],
+    "baseline_evidence": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp222-hosting-acceptance-ugejbjwl/backend-version-reaudit.json",
+      "sha256": "9c9c19d30b90520a7ad99c025a73b51a9a729a927ddb79d273439c53bb60ea4a"
+    },
+    "backend_only": {
+      "cell": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp222-hosting-remaining-xsa26s12/cells/A-manual",
+      "artifacts": {
+        "summary.json": "cb904149606feea5676d568b5cb2ea4c4c0796cc5777bb426a110c33b5c1c628",
+        "evidence.json": "9babe5c408d5a41f166a923ab1d468e4e5e8b1fdd1589124ad1c969bd74bca49",
+        "local-result.json": "19d929655a9909fa2c2d0e3c562ec4f77619df5bda27687bf0f466e438175c2c"
+      },
+      "attempts": 1,
+      "scope": "Fresh complete backend inventory for original manual baseline; no native launch. Separate query timestamps and unchanged original failure.",
+      "budget_seconds": 600
+    },
+    "backend_only_result": {
+      "summary": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp222-hosting-final-i_cinuu9/backend-only/summary.json",
+      "sha256": "744c2c4c65fe09787b45c4ac2feba13247fe11b9e62a1e77630292ad9f341733",
+      "state": "INVALID",
+      "reason": "unexpected vital",
+      "native_launches": 0,
+      "complete_raw_inventory": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp222-hosting-final-i_cinuu9/backend-only/backend-0.response.json",
+      "raw_sha256": "cfb1536121ad2ba6fd22b454280614200252f8c84b994a6d1d80271fc6901271"
+    }
+  },
+  "transport_correction": {
+    "strict_inventory": "Original complete_inventory unchanged. Duplicate/malformed/stale/truncated/oversized/missing-terminal receipts hard-fail before count-race classification.",
+    "pending": "Structurally complete unique-row count races release no rows and may poll within the original fixed deadline.",
+    "count_readiness": "Before paging, wait for the native-derived minimum inventory: actual mapper views/actions plus one TTID and one reducer. Retain every actual count response; readiness alone is never acceptance.",
+    "additional_native_diagnostics": 0
+  },
+  "ttid_evidence_gap": {
+    "observed": "Manual baseline TTID is attached to exact DetailView; the fixture expected ApplicationLaunch. Source selects current active view at TTID command processing.",
+    "classification": "Fixture/oracle evidence gap; no selected-SDK regression finding.",
+    "reviewer": "/root/c06_runtime_plan",
+    "missing": "Saved mapper timestamps do not prove the actual TTID dispatch boundary and selected active view. No owner whitelist or retrospective owner inference is accepted.",
+    "next_discriminator": "Source-bound TTID dispatch witness carrying its exact selected native owner; qualify the observation before any new hosting acceptance. Preserve accepted hosting view/lifetime and cleanup evidence.",
+    "candidate_cells": "Both unexecuted; all previous admissions stopped."
   }
 }

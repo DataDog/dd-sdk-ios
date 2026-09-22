@@ -103,7 +103,7 @@ def local(document, expected):
 def backend(rows, result, *, pending=False):
     """Full app/session inventory; missing ingestion may wait, wrong owners fail."""
     state = 'PENDING' if pending else 'INVALID'
-    views = {}; starts=[]; vitals=[]; reducers=[]
+    views = {}; starts=[]; vitals=[]; reducers=[]; versions={}
     for row in rows:
         e = row['attributes']['custom']
         require(source(row) == 'ios' and field(e,'application.id') == APP_ID and field(e,'session.id') == result['session_id'] and field(e,'service') == SERVICE, 'foreign backend identity')
@@ -115,6 +115,9 @@ def backend(rows, result, *, pending=False):
             vid = field(e,'view.id'); ver = field(e,'_dd.document_version')
             require(type(ver) is int and ver > 0, 'missing backend revision')
             key=(vid,ver); require(key not in views, 'duplicate backend view revision'); views[key]=e
+            client_date=row['attributes'].get('client_time',e.get('date'))
+            require(type(client_date) is int and client_date==result['views'][vid]['date'], 'backend view start date differs')
+            require('date' not in e or e['date']==client_date,'conflicting backend view start date')
         elif kind == 'action':
             require(field(e,'action.type') == 'application_start', 'unexpected backend action'); starts.append(e)
         elif kind == 'vital':
@@ -124,7 +127,11 @@ def backend(rows, result, *, pending=False):
     for vid, expected in result['views'].items():
         event = max((e for (key,_),e in views.items() if key==vid),key=lambda e:field(e,'_dd.document_version'))
         require(field(event,'view.name') == expected['view']['name'] and field(event,'view.url') == expected['view']['url'], 'backend occurrence identity differs')
-        require(field(event,'_dd.document_version') == expected['_dd']['document_version'] and field(event,'view.is_active') is False, 'final backend revision not settled', state)
+        require(field(event,'view.is_active') is False, 'final backend activity not settled', state)
+        duration=expected['view'].get('time_spent')
+        require(type(duration) is int and duration>0,'missing terminal mapper duration')
+        require(field(event,'view.time_spent')==duration,'final backend duration not settled',state)
+        versions[vid]={'mapper':expected['_dd']['document_version'],'backend':field(event,'_dd.document_version')}
         for counter in ['action','resource','error','long_task']:
             require(field(event,'view.'+counter+'.count') == expected['view'][counter]['count'], 'backend view counter differs')
     expected_starts=[e for e in result['mappers'] if e['type']=='action']
@@ -141,4 +148,4 @@ def backend(rows, result, *, pending=False):
     for e in starts:
         match=next(v for v in expected_starts if v['action']['id']==field(e,'action.id'))
         require(field(e,'view.id')==match['view']['id'], 'application start owner differs')
-    return {'state':'BACKEND_QUALIFIED','raw_rows':len(rows),'view_occurrences':len(actual_ids),'application_start_actions':len(starts),'incidental_app_launch_vitals':len(vitals),'session_reducers':len(reducers)}
+    return {'state':'BACKEND_QUALIFIED','raw_rows':len(rows),'view_occurrences':len(actual_ids),'application_start_actions':len(starts),'incidental_app_launch_vitals':len(vitals),'session_reducers':len(reducers),'view_versions':versions}

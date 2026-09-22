@@ -38,6 +38,12 @@ Freeze persisted SDK tags separately from compiled/installed versions: tag
 with `_`. Compare each exact expected representation; never relax binary identity.
 Publish initial readiness only after the complete capture validates; partial pages
 must remain a separate file that cannot release native input.
+A native-derived minimum event count can delay raw paging until the known families
+are indexed; count-only readiness accepts no rows. Retain each actual count. For a
+count/page-total race, validate identity, schemas, bounds, contiguous offsets,
+terminal exhaustion and unique raw IDs before classifying it as pending. Retry the
+whole inventory only inside the original budget. Duplicate or malformed pages stay
+invalid even when counts also changed.
 Persist each fulfilled raw response once, then assemble the complete receipt locally.
 Guard each append with the prior receipt hash, request/native identity and page cursor;
 include persistence in the deadline. Repeated transmission of accumulated payloads

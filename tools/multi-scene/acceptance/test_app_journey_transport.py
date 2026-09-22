@@ -104,5 +104,50 @@ class TransportControls(unittest.TestCase):
                     collect(changed, request)
 
 
+
+class PollingControls(unittest.TestCase):
+    def collect(self, receipt, request):
+        return transport.pollable_inventory(receipt,request,row_limit=10,page_limit=4)
+    def test_count_readiness_is_pending_without_raw_search(self):
+        request,receipt,_=fixture();receipt['pages']=[];receipt['count_pending']=True
+        with self.assertRaises(Rejected) as caught:transport.pollable_inventory(receipt,request,row_limit=10,page_limit=4,minimum_rows=4)
+        self.assertEqual(caught.exception.state,'PENDING')
+    def test_count_readiness_cannot_hide_missing_pages_after_threshold(self):
+        request,receipt,_=fixture();receipt['pages']=[];receipt['count_pending']=True
+        with self.assertRaises(Rejected) as caught:transport.pollable_inventory(receipt,request,row_limit=10,page_limit=4,minimum_rows=3)
+        self.assertNotEqual(caught.exception.state,'PENDING')
+    def test_count_readiness_cannot_discard_partial_rows(self):
+        request,receipt,_=fixture();receipt['count_pending']=True
+        with self.assertRaises(Rejected) as caught:transport.pollable_inventory(receipt,request,row_limit=10,page_limit=4,minimum_rows=4)
+        self.assertNotEqual(caught.exception.state,'PENDING')
+    def test_changed_count_never_returns_rows(self):
+        request,receipt,_=fixture();receipt['count_response']=response('TSV_DATA','<total_buckets>0</total_buckets>','events')
+        with self.assertRaises(Rejected) as caught:self.collect(receipt,request)
+        self.assertEqual(caught.exception.state,'PENDING')
+        with self.assertRaises(Rejected):collect(receipt,request)
+    def test_changed_page_total_never_returns_rows(self):
+        request,receipt,_=fixture();receipt['pages'][-1]['response']=page([],4)
+        with self.assertRaises(Rejected) as caught:self.collect(receipt,request)
+        self.assertEqual(caught.exception.state,'PENDING')
+    def test_stable_collection_still_requires_complete_inventory(self):
+        request,receipt,rows=fixture();self.assertEqual(self.collect(receipt,request),rows)
+        receipt['pages'].pop()
+        with self.assertRaises(Rejected) as caught:self.collect(receipt,request)
+        self.assertNotEqual(caught.exception.state,'PENDING')
+    def test_count_race_cannot_hide_stale_or_malformed_receipt(self):
+        request,receipt,_=fixture();receipt['count_response']=response('TSV_DATA','<total_buckets>0</total_buckets>','events')
+        for mutate in [lambda r:r['request'].update(nonce='old'),lambda r:r['pages'][1].update(start_at=0),lambda r:r['pages'].pop(),lambda r:r['pages'][0].update(response=page([],3,'<is_truncated>true</is_truncated>'))]:
+            changed=copy.deepcopy(receipt);mutate(changed)
+            with self.assertRaises(Rejected) as caught:self.collect(changed,request)
+            self.assertNotEqual(caught.exception.state,'PENDING')
+    def test_duplicate_rows_remain_invalid_during_race(self):
+        request,receipt,rows=fixture();receipt['count_response']=response('TSV_DATA','<total_buckets>0</total_buckets>','events');receipt['pages'][1]['response']=page([rows[0]],3)
+        with self.assertRaises(Rejected) as caught:self.collect(receipt,request)
+        self.assertNotEqual(caught.exception.state,'PENDING')
+    def test_excess_total_is_not_polled(self):
+        request,receipt,_=fixture();receipt['pages'][-1]['response']=page([],11)
+        with self.assertRaises(Rejected) as caught:self.collect(receipt,request)
+        self.assertNotEqual(caught.exception.state,'PENDING')
+
 if __name__ == "__main__":
     unittest.main()
