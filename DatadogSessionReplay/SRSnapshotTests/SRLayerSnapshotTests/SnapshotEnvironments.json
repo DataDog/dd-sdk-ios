@@ -18,6 +18,14 @@
             }
         },
         {
+            "name": "ios-27.0-iphone17",
+            "simulator": {
+                "modelIdentifier": "iPhone18,3",
+                "name": "iPhone 17",
+                "osVersion": "27.0"
+            }
+        },
+        {
             "name": "ios-18.5-iphone16",
             "simulator": {
                 "modelIdentifier": "iPhone17,3",
