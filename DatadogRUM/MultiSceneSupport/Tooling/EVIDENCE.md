@@ -91,6 +91,11 @@ Bind markers to independently observed event/view/session IDs and the immediatel
 preceding mapper version/sequence. Reject early same-name completion and stale
 readiness. Native/model/backend evidence must agree independently.
 
+A boundary must select its mapper and append its sequence under the same evidence
+lock. A snapshot taken before asynchronous readiness work can become stale while
+retaining the correct view ID. Complete SDK callbacks and main-thread observations
+before that lock, and keep the latest-mapper oracle strict.
+
 Decode primitive/ObjC-wrapped mapper values through the actual encoding path.
 `AttributeValue.dd.decode` casts the stored value; it does not construct an arbitrary
 Codable enum. Encode/decode declared evidence types when needed, test actual

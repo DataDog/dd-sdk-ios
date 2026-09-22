@@ -59,6 +59,15 @@ the separate native-only continuation. After reboot, one bounded restoration of 
 previously usable Duo stopped at terminalStatus3/Data Migration Failed despite
 exit0. It never installed/launched an app or admitted a native cell. Original
 Shutdown and protected state were restored within the cleanup deadline. The owner
-retains both this failure and the earlier zero-native stop. Exact builds remain
-reusable; another Duo boot requires a materially changed environment and separate
-admission. Fold and integrated-app acceptance remain open.
+retains both this failure and the earlier zero-native stop. Those builds apply to
+the original fixture only; another Duo boot requires a materially changed environment
+and separate admission. Fold and integrated-app acceptance remain open.
+
+The user subsequently restarted a different existing Duo. Native access works.
+After two preserved host-only path/display stops, the baseline app launched and
+verified three startup RUM rows, then the strict oracle rejected a stale Home mapper
+reference before any pose input. Cleanup passed; candidate remains unrun. The
+[fold owner](../Results/EXP-221-duo-fold.json) records the atomic fixture-recorder
+repair, focused controls and separate build/native admission. SDK sources and the
+semantic oracle are unchanged. This does not reclassify prior failures or qualify
+a fold cell.

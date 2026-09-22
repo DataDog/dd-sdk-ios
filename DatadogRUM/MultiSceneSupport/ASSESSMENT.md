@@ -27,8 +27,10 @@ manual parent and automatic completion-time Trace correlation match the baseline
 and candidate terminal views stop correctly. Both candidate modes also pass
 [explicit session rollover](Results/EXP-221-session-rollover.json). Baseline repeated
 resumes mutate currentRequest baggage; their observed protocol-start carriers stay
-original-owned. [Fold](Results/EXP-221-duo-fold.json) remains unexecuted after a
-pre-installation readiness stop and a subsequent Duo boot failure after reboot.
+original-owned. [Fold](Results/EXP-221-duo-fold.json) remains unqualified: after the
+user restarted the Duo, the baseline app launched but its fixture supplied a stale
+mapper reference before pose input. Cleanup passed. The fixture repair preserves
+the strict ownership oracle; no SDK cause or candidate fold result is established.
 Integrated-app and automatic view/action tracking
 acceptance also remain open.
 
@@ -46,8 +48,9 @@ cause, complete automatic-tracking comparison or candidate gate closure.
 [app journeys](Results/S2-F08-app-journeys.json) remain unqualified. The prebooted
 Duo baseline binds its fresh backend owner and completes subdomain/Back navigation.
 AXe Home input has no observed effect; two Xcode MCP sessions are missing before
-input. Lifecycle and paired acceptance remain open. Cleanup passes; no SDK cause
-is established.
+input. A separate ordinary-iPhone Home prerequisite stops before installation
+on an AXe automation-session timeout. Lifecycle and paired acceptance remain open.
+Cleanup passes; no SDK cause is established.
 [Semantic Duo boot failures](Results/S2-Duo-environment-readiness.json) occur before
 app installation/assertions and have no established SDK cause. An equivalent retry
 requires materially changed conditions and separate admission.

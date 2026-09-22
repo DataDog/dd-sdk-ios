@@ -141,7 +141,7 @@
     "review": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-app-j01-tf3_dxfy/review.json",
     "candidate": "UNRUN"
   },
-  "next_action": "Prepare a separately bounded ordinary-iPhone variant of the existing one-input Device Hub Home prerequisite while Duo boot is blocked. Reuse the accepted baseline app, exact precritical UI/PID/product/ready binding and15second independent Home effect. No full J01 retry, backend collection or Duo/gate substitution follows.",
+  "next_action": "Home mechanism remains unqualified. Preserve the ordinary-iPhone automation timeout; resume independently prepared fold work on the user-restarted Duo under its separate reviewed admission. No implicit Home/J01 retry follows.",
   "environment_readiness": "Results/S2-Duo-environment-readiness.json",
   "source_oracle": "Results/S2-F08-source-oracle.json",
   "source_preparation_status": "SOURCE_AND_OFFLINE_INVENTORY_PREPARATION_REVIEWED",
@@ -182,7 +182,7 @@
     "summary": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-app-j01-qualified-_wnijcda/terminal-summary.json",
     "summary_sha256": "ba211a0311a01d103535424c1a63a96d1e5b06fd544c95850ec1b656e8f44499"
   },
-  "updated_at": "2026-09-22T06:58:28.716257+00:00",
+  "updated_at": "2026-09-22T08:01:00.914759+00:00",
   "incremental_continuation": {
     "root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-app-j01-incremental-f8xss4f3",
     "status": "STOPPED_AFTER_ONE_TAP_NATIVE_OBSERVER",
@@ -268,5 +268,49 @@
     "proposal_sha256": "fdc6db6651e4af3757c52358397e1ec1a937e488e172b298ecf9faf21f9a3d53",
     "review_sha256": "9862a308ec590d9aacbe3dcbaa81de54db64f00ba675f2bd59719a2e53686344",
     "scope": "One observed Device Hub Home button input with precritical target binding, independent timed SpringBoard/same-PID effect and cleanup. Original Duo proposal remains unadmitted; ordinary-iPhone variant requires its own definition/review before execution."
+  },
+  "home_cua_ordinary_iphone": {
+    "root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-app-home-cua-iphone-1rp6e1un",
+    "status": "STOPPED_BEFORE_APP_EFFECT",
+    "device": "59A8E789-932A-48D0-9281-0F49DEB8E96D",
+    "runtime": "iOS27.0/24A434",
+    "definition": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-app-home-cua-iphone-1rp6e1un/definition.json",
+      "sha256": "bf5802a1cea7514d5aca9651c241a55d2cfd1739e1880750412b83ed08fe4d70"
+    },
+    "implementation_review": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-app-home-cua-iphone-1rp6e1un/implementation-review.json",
+      "sha256": "e64d4c9679146c80c8821304ecdf1ac29c7ec0b61bef59f407694e3c9b29d488"
+    },
+    "controls": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-app-home-cua-iphone-1rp6e1un/controls.json",
+      "sha256": "8e24b9e5e061090e54b158db0002cde10e7ec37e816d02707645ba0c440c1ae5"
+    },
+    "summary": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-app-home-cua-iphone-1rp6e1un/summary.json",
+      "sha256": "c7b65e927267e8199b0093dd8415c192a09bf1c7a48b63596dc5a3b1a5c56a0c"
+    },
+    "result_review": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-app-home-cua-iphone-1rp6e1un/result-review.json",
+      "sha256": "a968ba142449696aceb600d40cb1b72ccc9efe3f9870e288311af2b96fc20837"
+    },
+    "bootstatus": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-app-home-cua-iphone-1rp6e1un/baseline/bootstatus.json",
+      "sha256": "1ad624a04c63e036dafdf6aa55ad43d466804b7df3124ecd4470b2919f5f838b"
+    },
+    "native_probe": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-app-home-cua-iphone-1rp6e1un/baseline/initial-home.json",
+      "sha256": "145281141baf4b4d4f44aed425bad246b1495b0e1d02dbeb6c18fa04e7094057"
+    },
+    "cleanup": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-app-home-cua-iphone-1rp6e1un/cleanup.json",
+      "sha256": "c9682b2bc3a00de503f50cbc8859b0a5cd007c41cf14ae4e24e323f8602ac5c4"
+    },
+    "outcome": "Boot Finished; first AXe describe-ui timed out creating remote automation session. Stop before install/launch/input. Original Shutdown restored; source/protected/runtime/process guards pass.",
+    "app_installs": 0,
+    "app_launches": 0,
+    "home_inputs": 0,
+    "backend_queries": 0,
+    "gate_closures": []
   }
 }

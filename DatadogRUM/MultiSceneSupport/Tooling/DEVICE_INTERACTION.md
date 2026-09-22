@@ -91,6 +91,12 @@ field and heading, preserving negative controls for wrong or ambiguous elements.
 Before a coordinate tap during a form animation, observe stable target geometry
 inside the original effect deadline. A command success alone proves no UI outcome.
 
+Serialize input authorization with cleanup. A completed UI call and persisted
+post-input evidence must establish quiescence before pose changes or app removal.
+Post-dispatch failures remain uncertain; defer cleanup explicitly. Reject new input
+once cleanup starts, and recheck any conditional cleanup input before uninstall.
+A late terminal receipt cannot turn a failed run into acceptance.
+
 Fully automated signal-driven scenarios do not need `Synthesize` to advance.
 Accessibility collection can block them; collect after terminal unless earlier
 visual proof is part of the contract. Preserve a failed capture before admitting
@@ -124,6 +130,11 @@ The supplied platform restricts new Duo windows to the inner display. An AX tree
 requested orientation or successful tap/drag alone cannot prove visible pairing,
 a fold or an interactive transition. A black inactive-display capture is not
 layout evidence; select the actual active-display ID for direct capture.
+
+Use a dedicated file for `devicectl --json-output`; stdout may also contain a
+human-readable summary. Preserve both streams and validate the structured command
+identity before joining display and native geometry. Qualify the actual capture
+function before installing a fixture.
 
 For `appResize`, distinguish no active session (`24004` in the recorded preflight)
 from unsupported capability. Keep the owned resize process alive through the

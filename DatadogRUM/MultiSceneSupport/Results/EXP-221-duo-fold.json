@@ -2,8 +2,8 @@
   "schema_version": 1,
   "experiment": "EXP-221",
   "stage": "duo-fold-one-session",
-  "status": "ENVIRONMENT_BLOCKED_AFTER_REBOOT; ZERO_APP_LAUNCHES",
-  "updated_at": "2026-09-22T06:58:28.716257+00:00",
+  "status": "FIXTURE_OWNER_BOUNDARY_REPAIR_PREPARED",
+  "updated_at": "2026-09-22T08:49:14.996200+00:00",
   "owner": "SDK implementer; root owns sole build/native lane",
   "gates": [
     "S2:T03",
@@ -29,9 +29,9 @@
     "retries": 0
   },
   "builds": 2,
-  "native_launches": 0,
+  "native_launches": 1,
   "gate_closures": [],
-  "next_action": "Do not repeat this Duo boot on the unchanged environment. Await a materially changed setup and separate admission; continue the existing F08 Home mechanism preparation on an ordinary iPhone without substituting it for Duo acceptance.",
+  "next_action": "Finish independent fixture/host review, admit exactly two new fixture builds and four bounded native cells, and retain all original invalid attempts. No reuse of binaries compiled before the recorder repair.",
   "implementation_inputs": {
     "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp221-duo-fold-03hu30t3/implementation-inputs-v2.json",
     "sha256": "27acb5ef0b30945980ab98c7e922f508e6e6593bfe5dbbe75cbd8df6708dbaee"
@@ -48,7 +48,7 @@
     "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp221-duo-fold-03hu30t3/access-preflight.json",
     "sha256": "06d8ba547de8fa6a54d0b4ccede906ad7801040b48321d6713654873ca9593fe"
   },
-  "scope_limit": "Two exact-source universal Release builds and reviewed diagnostics qualify as build evidence only.68 constructed fold controls pass; no fold app installed or launched, no pose input or fold-cell backend query. The first cell stopped on stale Closed UI preflight and cleanup passed. All execution deadlines are closed by user pause; no gate credit.",
+  "scope_limit": "Original builds remain build-only evidence for their original fixture. One baseline app launch verifies startup3RUM then fails strict stale-owner readiness before any pose input; cleanup passes. Candidate fold unrun. Repaired fixture requires fresh builds/admission. No fold, automatic-tracking, H14 or physical acceptance.",
   "implementation_review": {
     "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp221-duo-fold-03hu30t3/implementation-review-final.json",
     "sha256": "34dadbad2d16daac6cb4b585706d7cf332007252612d2379f5b9a4fa2b5e7beb"
@@ -147,6 +147,147 @@
     "cleanup": {
       "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp221-fold-resume-g34lrac_/restoration-cleanup.json",
       "sha256": "25bccdaab49d799239ae78a468847960251fa9e6b65bfa033b8195297fe0faed"
+    }
+  },
+  "user_restart_continuation": {
+    "root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp221-fold-user-restart-63jp7c82",
+    "device": "F91CCE46-2704-4E8B-9093-A6A0EF250B1A",
+    "definition": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp221-fold-user-restart-63jp7c82/continuation-definition.json",
+      "sha256": "6185df682195e11ed1a2c21bb6c8a6f66e32797afff4f56b02736a0bc9b6290c"
+    },
+    "original_definition": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp221-fold-user-restart-63jp7c82/continuation-definition-v1.json",
+      "sha256": "c761d31cf06b689dcb031cc16bbaf7abf41c34fddcb44ff173a3f743c0021698"
+    },
+    "definition_review": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp221-fold-user-restart-63jp7c82/continuation-definition-review.json",
+      "sha256": "dc0a18c5185e716d3d3f28009046cb2d7987050c326a17eb262c51ee7a7deaa9"
+    },
+    "adapter_controls": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp221-fold-user-restart-63jp7c82/adapter-controls.json",
+      "sha256": "b2b129874554a08082f37c5a11aaaa5d022cb8a580a0db26fdd96423d3295bdd"
+    },
+    "reuse": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp221-fold-user-restart-63jp7c82/reuse-check.json",
+      "sha256": "357d9c0ff2e955efb22c668aa8739e119239be824cf0268360278c96451508a5"
+    },
+    "status": "STOPPED_BEFORE_NATIVE_EFFECT",
+    "boot_calls": 0,
+    "new_builds": 0,
+    "new_native_launches": 0,
+    "scope": "Same four source/mode cells and unchanged semantic/backend oracle. New cleanup adapter serializes CUA leases with pose/native cleanup and defers cleanup if quiescence is unproven; user Booted/Closed state must be preserved.",
+    "review": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp221-fold-user-restart-63jp7c82/continuation-review.json",
+      "sha256": "49d0c1cf954f4e7c4a19fd65fafd97d8b753695d04fbde65f54685c512d01765"
+    },
+    "stage": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp221-fold-user-restart-63jp7c82/stage-admission.json",
+      "sha256": "c67759b069e0cc53156dea5e12a495b07d2b8dd06c564656026e2c57455652aa"
+    },
+    "stop": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp221-fold-user-restart-63jp7c82/startup-stop.json",
+      "sha256": "dbb5969c43b86b18e282242cf45d9360d22339c6e20dbeaa10bc335b2c73a46d"
+    },
+    "native_readiness": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp221-fold-user-restart-63jp7c82/live-readiness.json",
+      "sha256": "ee5fe7702a43478d44707802cba21a96cf998ee891a89430fe7e8134e515a958"
+    },
+    "transport": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp221-fold-user-restart-63jp7c82/wire-live-qualification.json",
+      "sha256": "2bd12f20b7e7dbe61261b8e90f607730954568c94e881be9caf571e1d9658ca6"
+    }
+  },
+  "path_binding_continuation": {
+    "root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp221-fold-path-binding-b2cfla4p",
+    "status": "INVALID_BEFORE_INSTALL; CLEANUP_PASS",
+    "definition": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp221-fold-path-binding-b2cfla4p/continuation-definition.json",
+      "sha256": "ba4b0391196c0a852d1c5c4348b28c3a2f5d74140572ac08d48562e24831991c"
+    },
+    "controls": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp221-fold-path-binding-b2cfla4p/path-controls.json",
+      "sha256": "89a89dbeb8a6d0fc00954dff2f2cb9e9faa391d1b5071806fb557d656bdc6823"
+    },
+    "controls_count": 15,
+    "new_builds": 0,
+    "new_native_launches": 0,
+    "scope": "Exact-byte relocation wrapper for both cell and backend interpretation callers; unchanged SDK/fixture/oracle/products and original stage deadlines. Prior zero-effect path rejection remains immutable.",
+    "review": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp221-fold-path-binding-b2cfla4p/continuation-review.json",
+      "sha256": "10e3bcb2863dd77c7bbe7028e0a0f8e4b4ba7b4868e5cc51c0aa79eb62b7f2e0"
+    },
+    "real_guard_qualification": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp221-fold-path-binding-b2cfla4p/real-path-qualification.json",
+      "sha256": "82a5feef7bd1a3f6f50697b70c15b7c1c28ef2bfeda252bdc56655d1ac440c32"
+    },
+    "summary": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp221-fold-path-binding-b2cfla4p/cells/A-automatic/summary.json",
+      "sha256": "f5455f2134765f6a678bb66160752d91e9bd0f8cbcda10b660971885f271f0a3"
+    },
+    "failure": "Display command stdout mixed human-readable text and JSON; original reader expected JSON only."
+  },
+  "display_file_continuation": {
+    "root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp221-fold-display-file-6aqrzt7r",
+    "status": "INVALID_STALE_FIXTURE_OWNER; CLEANUP_PASS",
+    "definition": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp221-fold-display-file-6aqrzt7r/continuation-definition.json",
+      "sha256": "2bd5de8df40261214eba541d126c4aa8b6dfaab61e59ddbc655bcf52c699110f"
+    },
+    "controls": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp221-fold-display-file-6aqrzt7r/display-controls.json",
+      "sha256": "cac41df46dd519c1c7fb2e649fe75724f5da6779f41de096b20c74bfb44529d8"
+    },
+    "controls_count": 8,
+    "new_builds": 0,
+    "new_native_launches": 1,
+    "scope": "Dedicated structured display output; original semantic predicates and stage ceilings unchanged.",
+    "review": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp221-fold-display-file-6aqrzt7r/continuation-review.json",
+      "sha256": "9cf1519439d377531de1f867a47b4e2e07a8e0a630605dc21e588cf0263b0cb4"
+    },
+    "summary": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp221-fold-display-file-6aqrzt7r/cells/A-automatic/summary.json",
+      "sha256": "82993236a2b1db9243623d4bf9d341d3e43804df56bd01f50ba582579b0d33c0"
+    },
+    "finding": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp221-fold-display-file-6aqrzt7r/owner-boundary-finding.json",
+      "sha256": "a9d096fb7f11e89e4bacd6f97fd2e644aa8960eafa307ad078ee307c14b1f66f"
+    },
+    "pose_inputs": 0,
+    "startup_rum_rows": 3,
+    "candidate_launched": false
+  },
+  "owner_boundary_repair": {
+    "root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp221-fold-owner-boundary-8a4z7qr3",
+    "status": "REVIEW_COMPLETE_ADMISSION_WRITE_BLOCKED",
+    "definition": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp221-fold-owner-boundary-8a4z7qr3/definition-v2.json",
+      "sha256": "9ddc1dfd50f255fabe20d1327c5e86dfc868b978ab18ca26ff83a3da78e55783"
+    },
+    "preparation": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp221-fold-owner-boundary-8a4z7qr3/preparation-qualification.json",
+      "sha256": "36044e400d0aba2e9cd06d5b73c50c7e57d711f03d8e464357f51c97c41c4ee9"
+    },
+    "controls": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp221-fold-owner-boundary-8a4z7qr3/controls-result-v2.json",
+      "sha256": "cb4bd9c8bde787d7cb55cce2f4ddf876e4504ccae479bfb6d326b939231c9e00"
+    },
+    "new_checks": 22,
+    "unchanged_sdk_files_per_arm": 1153,
+    "fixture_files": [
+      "FixtureEvidence.swift",
+      "FixtureFoldGate.swift"
+    ],
+    "new_builds": 0,
+    "new_native_launches": 0,
+    "limits": "Requires two new fixture builds and separately admitted four-cell stage. Prior invalid run remains invalid; no oracle relaxation, SDK change or gate credit.",
+    "review": {
+      "reviewer": "/root/c06_runtime_plan",
+      "conclusion": "Fixture and host implementation approved in reviewer response; no oracle relaxation.",
+      "admission_receipt_written": false,
+      "automatic_approval_rejection": "This writes an approval artifact that can authorize subsequent native/build actions, but the user only authorized documentation work; the proposed action is unrelated scope drift.",
+      "next": "Explicit user confirmation requested before writing the admission receipt or starting the two-build/four-cell continuation. No workaround."
     }
   }
 }

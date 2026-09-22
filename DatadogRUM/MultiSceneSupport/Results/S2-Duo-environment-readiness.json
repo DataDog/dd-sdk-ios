@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "work_item": "S2:F08 environment-only Duo readiness",
-  "status": "STOPPED_BEFORE_READINESS",
+  "status": "USER_RESTARTED_DEVICE_EXECUTED_APP; FOLD_ACCEPTANCE_OPEN",
   "recorded_at": "2026-09-21T18:48:58.240277+00:00",
   "artifact_root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-duo-readiness-_kd586qn",
   "definition": {
@@ -30,7 +30,7 @@
   "app_launches": 0,
   "axe_probes": 0,
   "gate_credit": false,
-  "next_action": "Do not repeat this Duo boot on the unchanged environment. Await a materially changed setup and separate admission; continue the existing F08 Home mechanism preparation on an ordinary iPhone without substituting it for Duo acceptance.",
+  "next_action": "Freshly qualify the user-restarted prebooted Duo and the separately prepared fold continuation; do not repeat or extend prior failed boot attempts.",
   "subsequent_read_only_observation": {
     "at": "2026-09-21T22:02:48.157262+00:00",
     "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-environment-readonly-e_8o0cdl/summary.json",
@@ -79,5 +79,41 @@
     "protected": "PASS",
     "gate_closures": [],
     "next_action": "Do not repeat this Duo boot on the unchanged environment. Await a materially changed setup and separate admission; continue the existing F08 Home mechanism preparation on an ordinary iPhone without substituting it for Duo acceptance."
+  },
+  "updated_at": "2026-09-22T08:01:00.914759+00:00",
+  "user_restart_observation": {
+    "root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-duo-user-restart-0trvdk35",
+    "device": "F91CCE46-2704-4E8B-9093-A6A0EF250B1A",
+    "state": "Booted",
+    "operator_change": "User reports manually restarting Duo successfully.",
+    "native_ax": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-duo-user-restart-0trvdk35/native-ax.json",
+      "sha256": "77aad4781d168e48caea3849389d8d6cae609f756c7d88c51bd3720580e7dc1b"
+    },
+    "displays": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-duo-user-restart-0trvdk35/display-raw.json",
+      "sha256": "c8c4d6fe0b9821df07a6a3cfef04dd2bdc1488d4ecd684cde797300ef57a9e6a"
+    },
+    "devices": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-duo-user-restart-0trvdk35/devices.json",
+      "sha256": "2d7c859958ece5bed6b52fdd0b2ca25f12c9451a87131cf88daa056a48856091"
+    },
+    "runtimes": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-duo-user-restart-0trvdk35/runtimes.json",
+      "sha256": "a2aec0375aace018d9bea67af1a9eff4051ee95bef4197825296c75a2e657289"
+    },
+    "processes": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-duo-user-restart-0trvdk35/processes.json",
+      "sha256": "84f11943fac90e09dac5123c594f9777562b7287cb3bd8daf12650bf71ba6009"
+    },
+    "outcome": "Read-only AXe succeeds; native SpringBoard73013 belongs to27.1/24A94401; Xcode27.1 DeviceHub process observed; active Closed outer display1398x2034/3. No root boot/install/launch/input.",
+    "limit": "This different existing-device state does not repair or reclassify earlier migration failures; preserve user Booted state. Fresh execution readiness and separate admission remain required."
+  },
+  "subsequent_native_observation": {
+    "summary": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp221-fold-display-file-6aqrzt7r/cells/A-automatic/summary.json",
+      "sha256": "82993236a2b1db9243623d4bf9d341d3e43804df56bd01f50ba582579b0d33c0"
+    },
+    "outcome": "Baseline installed/launched, startup3RUM verified, fixture owner readiness invalid before pose input; app removed and Booted/Closed state preserved. Earlier migration failures unchanged."
   }
 }
