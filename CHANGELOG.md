@@ -1,5 +1,7 @@
 # Unreleased
 
+- [FIX] Keep automatic URLSession spans linked to the RUM view and session captured when each request starts.
+
 # 3.18.0 / 21-09-2026
 
 - [FIX] Preserve delayed WebView correlation for long-lived active native RUM views.

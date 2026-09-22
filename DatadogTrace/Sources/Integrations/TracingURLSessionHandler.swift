@@ -20,6 +20,8 @@ internal struct TracingURLSessionHandler: DatadogURLSessionHandler {
         let activeSpan: OTSpan?
         /// Whether GraphQL headers were detected in the request
         let hasGraphQLHeaders: Bool
+        /// The RUM context resolved synchronously when the request was modified.
+        let rumContext: RUMCoreContext?
     }
 
     /// Integration with Core Context.
@@ -51,6 +53,13 @@ internal struct TracingURLSessionHandler: DatadogURLSessionHandler {
         let baggage: BaggageItems
     }
 
+    private struct CapturedRUMContext {
+        let rumContext: RUMCoreContext?
+    }
+
+    @ReadWriteLock
+    private var capturedRUMContexts: [UUID: CapturedRUMContext] = [:]
+
     init(
         tracer: DatadogTracer,
         contextReceiver: ContextMessageReceiver,
@@ -74,6 +83,13 @@ internal struct TracingURLSessionHandler: DatadogURLSessionHandler {
             return (request, nil, nil)
         }
 
+        let requestTimeRUMContext: RUMCoreContext?
+        if let networkContext {
+            requestTimeRUMContext = networkContext.rumContext
+        } else {
+            requestTimeRUMContext = contextReceiver.context.rumContext
+        }
+
         // Use the current active span as parent if the propagation headers support it.
         let newSpanElements = makeElementsForNewSpanContext(tracer: tracer, parentSpanContext: tracer.activeSpan?.context as? DDSpanContext, networkContext: networkContext)
 
@@ -84,7 +100,7 @@ internal struct TracingURLSessionHandler: DatadogURLSessionHandler {
             sampleRate: newSpanElements.sampleRate,
             samplingPriority: newSpanElements.samplingPriority,
             samplingDecisionMaker: newSpanElements.samplingDecisionMaker,
-            rumSessionId: contextReceiver.context.rumContext?.sessionID,
+            rumSessionId: requestTimeRUMContext?.sessionID,
             userId: contextReceiver.context.userInfo?.id,
             accountId: contextReceiver.context.accountInfo?.id
         )
@@ -118,7 +134,7 @@ internal struct TracingURLSessionHandler: DatadogURLSessionHandler {
             writer.traceHeaderFields.forEach { field, value in
                 // do not overwrite existing header
                 if request.value(forHTTPHeaderField: field) == nil {
-                    hasSetAnyHeader = true
+                    hasSetAnyHeader = hasSetAnyHeader || field != W3CHTTPHeaders.baggage
                     request.setValue(value, forHTTPHeaderField: field)
                 }
             }
@@ -154,10 +170,12 @@ internal struct TracingURLSessionHandler: DatadogURLSessionHandler {
         // Detect GraphQL requests by checking for GraphQL headers
         let hasGraphQLHeaders = request.hasGraphQLHeaders
 
-        // Return captured state with both active span and GraphQL detection
-        let capturedState: URLSessionHandlerCapturedState? = (tracer.activeSpan != nil || hasGraphQLHeaders)
-            ? TracingURLSessionHandlerCapturedState(activeSpan: tracer.activeSpan, hasGraphQLHeaders: hasGraphQLHeaders)
-            : nil
+        // Return captured state with active span, GraphQL detection and request-time RUM ownership.
+        let capturedState = TracingURLSessionHandlerCapturedState(
+            activeSpan: tracer.activeSpan,
+            hasGraphQLHeaders: hasGraphQLHeaders,
+            rumContext: requestTimeRUMContext
+        )
 
         return (
             request,
@@ -184,6 +202,15 @@ internal struct TracingURLSessionHandler: DatadogURLSessionHandler {
         // TODO: RUM-13769 This code can be simplified since we never use more than one handler simultaneously.
         let capturedState = capturedStates.compactMap({ $0 as? TracingURLSessionHandlerCapturedState }).first
 
+        if let capturedState {
+            _capturedRUMContexts.mutate { contexts in
+                guard contexts[interception.identifier] == nil else {
+                    return
+                }
+                contexts[interception.identifier] = CapturedRUMContext(rumContext: capturedState.rumContext)
+            }
+        }
+
         capturedState?.activeSpan.map {
             interception.register(activeSpanContext: $0.context)
         }
@@ -198,6 +225,11 @@ internal struct TracingURLSessionHandler: DatadogURLSessionHandler {
     }
 
     func interceptionDidComplete(interception: DatadogInternal.URLSessionTaskInterception) {
+        var capturedRUMContext: CapturedRUMContext?
+        _capturedRUMContexts.mutate {
+            capturedRUMContext = $0.removeValue(forKey: interception.identifier)
+        }
+
         guard
             interception.isFirstPartyRequest, // `Span` should be only send for 1st party requests
             interception.origin != "rum", // if that request was tracked as RUM resource, the RUM backend will create the span on our behalf
@@ -250,7 +282,10 @@ internal struct TracingURLSessionHandler: DatadogURLSessionHandler {
             span = tracer.startSpan(
                 spanContext: context,
                 operationName: "urlsession.request",
-                startTime: startTime
+                startTime: startTime,
+                eventWriter: capturedRUMContext.map {
+                    LazySpanWriteContext(featureScope: tracer.featureScope, rumContext: .some($0.rumContext))
+                }
             )
         } else if Sampler(samplingRate: samplingRate).sample() {
             // Span context may not be injected on iOS13+ if `URLSession.dataTask(...)` for `URL`
@@ -272,7 +307,10 @@ internal struct TracingURLSessionHandler: DatadogURLSessionHandler {
             span = tracer.startSpan(
                 spanContext: context,
                 operationName: "urlsession.request",
-                startTime: startTime
+                startTime: startTime,
+                eventWriter: capturedRUMContext.map {
+                    LazySpanWriteContext(featureScope: tracer.featureScope, rumContext: .some($0.rumContext))
+                }
             )
         } else {
             return

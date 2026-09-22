@@ -26,9 +26,12 @@ internal final class LazySpanWriteContext: SpanWriteContext {
     /// The core context valid at the moment of creating `LazySpanWriteContext`.
     /// It doesn't require synchronization as it is accessed only from the core context queue.
     private var context: DatadogContext?
+    /// `nil` preserves the context captured by this writer. A present optional replaces only RUM context.
+    private let rumContext: RUMCoreContext??
 
-    init(featureScope: FeatureScope) {
+    init(featureScope: FeatureScope, rumContext: RUMCoreContext?? = nil) {
         self.featureScope = featureScope
+        self.rumContext = rumContext
 
         // Capture the core context valid at the moment of initialization:
         featureScope.context { [weak self] context in
@@ -39,8 +42,11 @@ internal final class LazySpanWriteContext: SpanWriteContext {
     func spanWriteContext(_ block: @escaping (DatadogContext, Writer) -> Void) {
         // Ignore the current context and use the one captured at initialization:
         featureScope.eventWriteContext { _, writer in
-            guard let context = self.context else {
+            guard var context = self.context else {
                 return // unexpected
+            }
+            if let rumContext = self.rumContext {
+                context.set(additionalContext: rumContext)
             }
             block(context, writer)
         }
