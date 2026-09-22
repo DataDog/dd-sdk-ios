@@ -1,0 +1,403 @@
+{
+  "schema_version": 1,
+  "experiment": "EXP-221",
+  "title": "S2 Resource and Trace ownership across active-work boundaries",
+  "defined_at": "2026-09-22T01:17:18.113240+00:00",
+  "status": "NAVIGATION_QUALIFIED_SESSION_FOLD_PENDING",
+  "owner": "root; sole build/native owner",
+  "independent_reviewer": "/root/c06_runtime_plan",
+  "gates": [
+    "S2:T03",
+    "S2:T08"
+  ],
+  "baseline_revision": "62f64d7b655bdc83f3036c4ad81090a270f6202b",
+  "candidate_revision": "c9faed816a1d4828d7d8c4b64acae01119425889",
+  "source_contract_sha256": "d04622f257f31efd280ab89b4611960e34eb0fa2b6f0afedc354f0f5f2015c25",
+  "artifact_root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp221-s2-resource-trace-6wfeet4m",
+  "question": "Does exact S2 composition preserve the baseline Resource/Trace contract on actual Duo27.1 while requests outlive navigation, session and fold boundaries?",
+  "scope_limit": "No SDK change, new public API, test-suite rerun, performance claim or automatic UIKit/SwiftUI view-tracking claim. E03/E05 are not included. Existing accepted source/lifetime/compatibility evidence stays qualified within its original limits.",
+  "finite_matrix": [
+    {
+      "boundary": "navigation",
+      "cells": [
+        "A-automatic",
+        "B-automatic",
+        "A-registered",
+        "B-registered"
+      ],
+      "status": "QUALIFIED_WITH_PRESERVED_ORIGINAL_FAILURES",
+      "admission": "one launch per cell; baseline before candidate; failed lane stops; no automatic retry"
+    },
+    {
+      "boundary": "explicit-session-rollover",
+      "cells": [
+        "A-automatic",
+        "B-automatic",
+        "A-registered",
+        "B-registered"
+      ],
+      "status": "REQUIRES_SOURCE_BOUND_CONTRACT_BEFORE_IMPLEMENTATION",
+      "admission": "one launch per cell; baseline before candidate; failed lane stops; no automatic retry"
+    },
+    {
+      "boundary": "actual-Duo-fold",
+      "cells": [
+        "A-automatic",
+        "B-automatic",
+        "A-registered",
+        "B-registered"
+      ],
+      "status": "REQUIRES_SOURCE_BOUND_CONTRACT_BEFORE_IMPLEMENTATION",
+      "admission": "one launch per cell; baseline before candidate; failed lane stops; no automatic retry"
+    }
+  ],
+  "initial_slice": "Four navigation cells. Eight Swift fixture files remain byte-identical to EXP202. Oracle changes are three identity constants and the reviewed sorting of validated trace-detail span IDs before cross-query comparison; all ownership/value/cardinality checks remain.",
+  "reuse": {
+    "experiment": "EXP-202",
+    "archive": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp202-qualified-ki2ipwzb/evidence.tar.gz",
+    "archive_sha256": "fc1c8a644260d213242734bf075c364646efa43e27d49ca9219cdfe7d372da08",
+    "manifest_sha256": "96e6bafec418c971451753d4e53d4f53a736be5a6c63276f20c3f4564a7b5cc8",
+    "fixture_members": [
+      {
+        "member": "frozen-builds/B/fixture/AppDelegate.swift",
+        "sha256": "507b6e3267a210c2fcb5f541d1065c59f71910130583e3466e9f0cae3d959fc3"
+      },
+      {
+        "member": "frozen-builds/B/fixture/FixtureConfiguration.swift",
+        "sha256": "5f4cd67fe34017600ba315aa08e51d9ec903a03bf5b123b759dcc996fc125908"
+      },
+      {
+        "member": "frozen-builds/B/fixture/FixtureEvidence.swift",
+        "sha256": "31f866c9cc50b863ec8a01e687ca848f4dbccae12f8d084fb579c6354c1a79ac"
+      },
+      {
+        "member": "frozen-builds/B/fixture/FixtureScenario.swift",
+        "sha256": "cc2faae9fd9ecbaf25d473693077c31c00c63a00c006b46b9696db8804434e6c"
+      },
+      {
+        "member": "frozen-builds/B/fixture/FixtureSceneDelegate.swift",
+        "sha256": "de889673346967cb9059907c1ec001531697c3bc109e747a0db732aae1766df3"
+      },
+      {
+        "member": "frozen-builds/B/fixture/FixtureSessionDelegate.swift",
+        "sha256": "8c68669829172fff41b683e1d2d34304a39016ec3eac789606d2cc0bb1543949"
+      },
+      {
+        "member": "frozen-builds/B/fixture/FixtureStartupGate.swift",
+        "sha256": "b516cde77b13f9849ef3f50ab9728ccd06ba2adbd54f36ea15dd1bf862c4ba2f"
+      },
+      {
+        "member": "frozen-builds/B/fixture/FixtureURLProtocol.swift",
+        "sha256": "a69552fb25dff250c37918194bad1a0a2bef568d8a939f2a497133c888c26696"
+      }
+    ],
+    "semantic_oracle": {
+      "member": "R/host/exp202_oracle.py",
+      "sha256": "109086b5f377f85296e64dcb20b6ca04e9c7b4a312a8d1e4e303536013cc4ad1"
+    },
+    "do_not_reuse": "Historical run IDs, sessions, temporary paths, execution permissions/deadlines, installed apps or old runtime claims."
+  },
+  "navigation_contract": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp221-s2-resource-trace-6wfeet4m/navigation-contract.json",
+    "sha256": "10d69525d7bda5995ab0974ed9b3869e5eb6dbc61a20c1d3e561d6b5b4cc7e1a"
+  },
+  "environment": {
+    "xcode": "27.1 /27A9269",
+    "developer_directory": "/Applications/Xcode_27.1.app/Contents/Developer",
+    "runtime": "iOS27.1 /24A94401",
+    "device": "Existing prebooted iPhone Duo only; rediscover exact UUID and bind per-cell admission",
+    "deployment_target": "iOS15",
+    "configuration": "Release",
+    "native_mutations": "Install/launch/terminate/uninstall only the unique task bundle; preserve original installed-app inventory and Booted state; no create/erase/boot/shutdown/delete. Navigation needs no UI automation.",
+    "backend": "Direct Datadog MCP RUM+APM, Mobile - Integration; fresh authenticated read preflight and complete inventories per run.",
+    "service": "ios-s2-resource-trace-validation-<fresh UUID>",
+    "bundle": "com.datadoghq.s2.resource-trace.acceptance"
+  },
+  "per_cell_budgets_seconds": {
+    "native_preflight_install": 120,
+    "startup_native_readiness": 20,
+    "startup_backend": 115,
+    "startup_host_wait": 125,
+    "native_scenario": 120,
+    "final_rum_backend": 115,
+    "each_final_apm_inventory": 600,
+    "each_apm_host_wait": 610,
+    "total_execution": 1860,
+    "cleanup": 120
+  },
+  "build_budget_seconds_per_arm": 1200,
+  "attempt_limit": {
+    "initial_navigation_native_launches": 4,
+    "initial_navigation_builds": 2,
+    "retry": 0,
+    "expansion": "Session/fold rows require exact precritical source/inventory/oracle amendment and reviewer admission before implementation; they do not inherit navigation acceptance."
+  },
+  "before_execution": [
+    "Independently review source/reuse scope and host adaptation.",
+    "Verify exact live helpers/fixtures, source archives/pins, actual compiler inputs and complete built/installed file and Mach-O identities.",
+    "Qualify original oracle against immutable accepted evidence and preserve its negative controls; add only adaptation-specific controls.",
+    "Record fresh device/app/process state, one run/nonce and immutable execution/cleanup deadlines.",
+    "Resolve authorized local config through Xcode without logging values or modifying/staging the protected file."
+  ],
+  "stop_rules": [
+    "Any failed local contract stops that lane; backend cannot rescue it.",
+    "Never weaken source/runtime/count/ownership/rounding/readiness predicates to fit results.",
+    "A stopped phase retains raw evidence and deadline; changes require a separate bounded continuation.",
+    "Clean up only owned app/process/files and prove preserved device/original-app state."
+  ],
+  "completion": "Close S2:T03/T08 only after every applicable finite boundary and integrated Datadog-app requirement is supported. Navigation alone yields only named partial evidence; all gates stay OPEN.",
+  "implementation_changes": "Task-local host safety/admission and one reviewed trace-inventory order normalization. No SDK or Swift fixture edits.",
+  "builds": 2,
+  "native_launches": 4,
+  "gate_closures": [],
+  "definition": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp221-s2-resource-trace-6wfeet4m/definition.json",
+    "sha256": "fda963ca4ff64682ea3fd0cf8d3d4ae94f1b5172523c7f5ce4749abf22b61883"
+  },
+  "source_review": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp221-s2-resource-trace-6wfeet4m/source-review.json",
+    "sha256": "93caceced0fc5fb6ef6d99a093f6de9a098df52a03017e37077c279fe0ee487a"
+  },
+  "offline_controls": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp221-s2-resource-trace-6wfeet4m/trace-order-controls-final.json",
+    "sha256": "6fed1253951a76d9e9ac71d2cc33c504528b01169aabbbc17b5a5c297af7814b",
+    "passed": 57,
+    "qualification_binding_controls": 3
+  },
+  "host_budget_amendment": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp221-s2-resource-trace-6wfeet4m/host-budget-amendment.json",
+    "sha256": "ee7d1c7c15fa3afd2a1951d07e3a7ee860132f540d881a68ca82ca3595f4b2c5"
+  },
+  "helper_manifest": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp221-s2-resource-trace-6wfeet4m/matrix/helper-manifest.json",
+    "sha256": "69307bb278ea53f849086bf1c801596ca7d390a18c6eccbacb94b6b6a5718880"
+  },
+  "host_review": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp221-s2-resource-trace-6wfeet4m/trace-order-review.json",
+    "sha256": "47833982b05d9994bd60201a0961f03e8a74f6e7fe18b5ba434569d966582085"
+  },
+  "build_qualifications": {
+    "A": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp221-s2-resource-trace-6wfeet4m/matrix/A/build-qualification.json",
+      "sha256": "577613cecdd0eb1d6eb6e4f30dfbc0e1eafe5992160e1976a474d2df4f2f18b8"
+    },
+    "B": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp221-s2-resource-trace-6wfeet4m/matrix/B/build-qualification.json",
+      "sha256": "888ed77472128cfa0e4509a8295e34d9d04f5245c9c5d041a1c5dc88e1ac1c35"
+    }
+  },
+  "build_diagnostics": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp221-s2-resource-trace-6wfeet4m/build-diagnostics.json",
+    "sha256": "c3e004ef78467a1dab5763b6ea875430351b9a7d7bc05a8859ca92cb06e78f43"
+  },
+  "host_corrections": {
+    "pre_native_stop": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp221-s2-resource-trace-6wfeet4m/pre-native-driver-stop.json",
+      "sha256": "6665366c23a32da55fb89803727de1d299e0054159b02365f70b585b4aac037b"
+    },
+    "inprocess_admission": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp221-s2-resource-trace-6wfeet4m/inprocess-admission-amendment.json",
+      "sha256": "78d2e31a10b4eef5b954e207afdce49415f3f76e421a35a246a0fbf78d75b4f8"
+    },
+    "allowlist": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp221-s2-resource-trace-6wfeet4m/launcher-allowlist-correction.json",
+      "sha256": "9d9bb724b84c0a92644c953de9a6ad52426fab364c780bfd7d1f6c21f83864f7"
+    },
+    "invalid_offline_selection": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp221-s2-resource-trace-6wfeet4m/offline-selection-stop.json",
+      "sha256": "7756c009f08d106bcbf6ec4c9df492d88060cd3b2b8a851ef1b6fad4e9cdd51e"
+    },
+    "trace_order": {
+      "finding": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp221-s2-resource-trace-6wfeet4m/trace-inventory-order-finding.json",
+        "sha256": "76e3862c50becf616f7af211e5ac005e33f937049abcf3a8865b3f109b7b1529"
+      },
+      "amendment": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp221-s2-resource-trace-6wfeet4m/trace-order-amendment.json",
+        "sha256": "95b42f980ab820609e8d972a81c3d2dc226b9d4ff2e758c0b515a38d208eb702"
+      },
+      "offline_reaudit": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp221-s2-resource-trace-6wfeet4m/trace-order-reaudit.json",
+        "sha256": "42462e159db8ef41289c633b962bffa601ec43632c38d2d5853b236713b54232"
+      },
+      "initial_control_result": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp221-s2-resource-trace-6wfeet4m/trace-order-controls.json",
+        "sha256": "f8b80306ff891096a6d9ed6c795d40db0222437bf4d2246f5e2f7f4b53f96a8f"
+      },
+      "control_fixture_correction": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp221-s2-resource-trace-6wfeet4m/trace-order-control-correction.json",
+        "sha256": "7629409acd2cfb885bb19b62b33e7d56a6fe40df5d9856289f6b4bc43032b660"
+      },
+      "device_preflight": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp221-s2-resource-trace-6wfeet4m/trace-order-device-preflight.json",
+        "sha256": "852bf388df6a726649c980fe541d37f462004de19811398ba8c842a1ae92e22d"
+      }
+    }
+  },
+  "navigation_results": [
+    {
+      "arm": "A",
+      "mode": "automatic",
+      "output": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp221-s2-resource-trace-6wfeet4m/cells/A-automatic-v2",
+      "state": "BASELINE_E01_OBSERVATION",
+      "native_launches": 1,
+      "summary": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp221-s2-resource-trace-6wfeet4m/cells/A-automatic-v2/summary.json",
+        "sha256": "0f32b58614424c3eb18e4b3db9007c0b55962f348a3490c5766d9d266513c8ec"
+      },
+      "oracle": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp221-s2-resource-trace-6wfeet4m/cells/A-automatic-v2/oracle-result.json",
+        "sha256": "3b39914dc986871a8d9ed80d10cfc682dd2008e81e820ac7e74421ffcb5f4371"
+      },
+      "driver": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp221-s2-resource-trace-6wfeet4m/cells/A-automatic-v2.driver-receipt.json",
+        "sha256": "a543b28bb94bf376eed21d2fd23817c98d0f5fbe6804b66204000b18901c40cb"
+      },
+      "cleanup": "PASS",
+      "inventory": {
+        "native_tasks": 11,
+        "resources": 5,
+        "errors": 1,
+        "actions": 1,
+        "unique_views": 3,
+        "client_spans": 6
+      },
+      "backend_queries": {
+        "rum-session": 12,
+        "span-session": 10,
+        "span-service": 10
+      }
+    },
+    {
+      "arm": "B",
+      "mode": "automatic",
+      "output": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp221-s2-resource-trace-6wfeet4m/cells/B-automatic",
+      "state": "PASS",
+      "native_launches": 1,
+      "summary": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp221-s2-resource-trace-6wfeet4m/cells/B-automatic/summary.json",
+        "sha256": "15c82d639591f972c41b798c221af28835f3411cd8490c9f64c260b9cf8b6406"
+      },
+      "oracle": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp221-s2-resource-trace-6wfeet4m/cells/B-automatic/oracle-result.json",
+        "sha256": "af3fc69986d8eae9fd7ac7075d2425dc47a0b45196836cd4dfefcbbd30a05818"
+      },
+      "driver": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp221-s2-resource-trace-6wfeet4m/cells/B-automatic.driver-receipt.json",
+        "sha256": "f8384f438d5c40ecbbbce25a1e026fff12b94be9a2a7afd8e75c647fa63deb6f"
+      },
+      "cleanup": "PASS",
+      "inventory": {
+        "native_tasks": 11,
+        "resources": 5,
+        "errors": 1,
+        "actions": 1,
+        "unique_views": 3,
+        "client_spans": 6
+      },
+      "backend_queries": {
+        "rum-session": 12,
+        "span-session": 10,
+        "span-service": 10
+      }
+    },
+    {
+      "arm": "A",
+      "mode": "registered",
+      "output": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp221-s2-resource-trace-6wfeet4m/cells/A-registered",
+      "state": "BASELINE_E01_OBSERVATION_OFFLINE_REAUDIT",
+      "native_launches": 1,
+      "local_result": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp221-s2-resource-trace-6wfeet4m/cells/A-registered/local-result.json",
+        "sha256": "6510fc133c2b45a1b8c7e5ffd2dc6053fea0384e79382c465c570198141b738d"
+      },
+      "scope": "Original local/backend/cleanup evidence qualifies with order-only correction. Original FAIL and every raw byte retained; no native/backend rerun or deadline extension.",
+      "original_state": "FAIL",
+      "original_failure": "backend cross-query span payload disagreement",
+      "summary": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp221-s2-resource-trace-6wfeet4m/cells/A-registered/summary.json",
+        "sha256": "1212732debaab888aae5c42f667b96c7ab1bfc0cec937042235d50e3b3c331d8"
+      },
+      "offline_reaudit": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp221-s2-resource-trace-6wfeet4m/trace-order-reaudit.json",
+        "sha256": "42462e159db8ef41289c633b962bffa601ec43632c38d2d5853b236713b54232"
+      },
+      "cleanup": "PASS",
+      "inventory": {
+        "native_tasks": 11,
+        "resources": 5,
+        "errors": 1,
+        "actions": 1,
+        "unique_views": 3,
+        "client_spans": 6
+      },
+      "backend_queries": {
+        "rum-session": 12,
+        "span-session": 10,
+        "span-service": 10
+      }
+    },
+    {
+      "arm": "B",
+      "mode": "registered",
+      "output": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp221-s2-resource-trace-6wfeet4m/cells/B-registered",
+      "state": "FAIL",
+      "failure": "backend view owner/terminal values differ",
+      "summary": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp221-s2-resource-trace-6wfeet4m/cells/B-registered/summary.json",
+        "sha256": "61ac1aa16c1af18654914ecf85b5561e02b76ff3330d4da96b8589f99ce744c6"
+      },
+      "finding": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp221-s2-resource-trace-6wfeet4m/B-registered-backend-finding.json",
+        "sha256": "d8cfb7560ba2dec12a9b11a124d273d9e5a1b9b86e32aca98e622b8fc52a7b29"
+      },
+      "local_result": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp221-s2-resource-trace-6wfeet4m/cells/B-registered/local-result.json",
+        "sha256": "0aa0b691048a2e575355ddd87702738971bed4f70cdc32e0d12a6996a5e9b336"
+      },
+      "cleanup": "PASS",
+      "native_launches": 1,
+      "backend_queries": {
+        "rum-session": 12,
+        "span-session": 10,
+        "span-service": 10
+      },
+      "qualification_state": "PASS_COMPOSED_BACKEND_FOLLOWUP",
+      "composed_result": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp221-s2-resource-trace-6wfeet4m/backend-followup-B-registered/summary.json",
+        "sha256": "178686c82d5e32469d49418d2bd4972874ac47b3ff6ca830bcba21d0834a0156"
+      },
+      "inventory": {
+        "native_tasks": 11,
+        "resources": 5,
+        "errors": 1,
+        "actions": 1,
+        "unique_views": 3,
+        "client_spans": 6
+      },
+      "scope": "Original FAIL retained. Later complete RUM inventory qualifies with original startup/APM receipts and unchanged oracle; no contemporaneous APM snapshot or native rerun claim."
+    }
+  ],
+  "next_action": "Define and independently review the exact session-rollover contract before changing its fixture/oracle. Navigation source and evidence stay immutable; actual fold remains separately unadmitted.",
+  "automatic_pair": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp221-s2-resource-trace-6wfeet4m/navigation-automatic-pair.json",
+    "sha256": "58dd094b72d627e0a42309515749c85c8f9abffd57aeb7a22bfa9984cf583924"
+  },
+  "baseline_summary_limit": "Raw cell backend_state retains a pre-evaluation string for baseline observations; the final oracle-result and cleanup records own their completed verdict.",
+  "backend_followup_definition": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp221-s2-resource-trace-6wfeet4m/B-registered-backend-followup-definition.json",
+    "sha256": "06e672d69c5aa834f648d244c838b263061c6a4f6b7ee98a84ce247667fa19e0"
+  },
+  "backend_followup": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp221-s2-resource-trace-6wfeet4m/backend-followup-B-registered/summary.json",
+    "sha256": "178686c82d5e32469d49418d2bd4972874ac47b3ff6ca830bcba21d0834a0156",
+    "finalization_bound": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp221-s2-resource-trace-6wfeet4m/backend-followup-B-registered/finalization-bound.json",
+      "sha256": "8be9eaaff4ce7d96ff4c1a9bc8f26186c97111369f3cd7fdb9e8c9a0f9ab2f1e"
+    }
+  },
+  "navigation_summary": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp221-s2-resource-trace-6wfeet4m/navigation-summary.json",
+    "sha256": "83d361846b5e09ad298b5694ebc0383a425f5d7d70c759721809ff7a1f33ef83"
+  }
+}

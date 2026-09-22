@@ -111,6 +111,16 @@ trace/span/parent IDs and require one matching operation/resource/service/run ro
 Absent metadata remains inconclusive. Preserve optional trace flags: absent differs
 from false. Indexed nanosecond duration is the exact source, not rounded detail ms.
 
+Treat complete trace-detail span IDs as an unordered inventory: validate each ID,
+sort only for cross-query equality, and still reject missing, extra or duplicate
+members. Never normalize ownership, parentage or measured values to fit a result.
+
+A complete row count does not prove reduced view state is current. Require exact
+terminal fields as well. If a bounded run captures stale state, preserve its failure;
+a separately admitted whole-inventory follow-up may compose later RUM with original
+Trace evidence only when all identities, raw receipts and assertions remain bound.
+Label that time separation explicitly; never silently extend the original deadline.
+
 Preserve grouped normalized resource names separately from original `http.url`.
 The YAML/JSON decoder must reject object tags, aliases and duplicate keys and work
 in the actual orchestrator, where browser globals may be absent. Batch independent

@@ -881,9 +881,21 @@
           ],
           "decisive_test": "Complete delayed work across navigation, session rollover and fold; exact Resource start-view/session, success/error and metrics behavior must match the frozen baseline contract. Require no new foreign action/error counts; retain the inherited EXP202 Resource/action count1/0 exception explicitly. E03 repair is excluded from this composition.",
           "environment": "Candidate-vs-baseline native fixtures and Datadog app where integrated",
-          "evidence": "Reference evidence retained; this release candidate is not qualified. Results/S2-remaining-gate-applicability.json clarifies the selected composition and inherited EXP202 exceptions without closing the gate.",
+          "evidence": "EXP221 qualifies the four navigation arm/mode cells on c9faed81 versus62f64d7b with native/mapper/complete backend evidence and cleanup. Original failures and separately qualified corrections remain in Results/EXP-221-s2-resource-trace.json. Session/fold and applicable integrated-app obligations remain open; E03/E05 limits remain unchanged.",
           "required": true,
-          "completion_mode": "Captured Resource start ownership; inherited action-count limitation documented"
+          "completion_mode": "Captured Resource start ownership; inherited action-count limitation documented",
+          "completed_checks": [
+            {
+              "owner": "SDK implementer",
+              "dependencies": [
+                "S2:A01",
+                "S2:F07"
+              ],
+              "deliverable": "Compare Resource ownership and native metrics across Home-to-Detail navigation in automatic/registered URLSession modes",
+              "decisive_test": "Four exact-source arm/mode cells; complete native, mapper, independent backend inventories and cleanup; strict owner/value assertions and preserved original failure evidence. EXP221 navigation-summary owns the exact scope.",
+              "environment": "Existing Duo27.1 /24A94401, Xcode27.1 /27A9269, Release fixture and authenticated Datadog RUM/APM"
+            }
+          ]
         }
       }
     },
@@ -1038,9 +1050,21 @@
           ],
           "decisive_test": "Across navigation/fold, preserve manual/parent span start ownership and existing automatic URLSession completion-time RUM correlation, with exact trace/parent IDs and unchanged headers/sampling. Retain the inherited EXP202 correlation limit; E05 request-time repair is excluded from this composition.",
           "environment": "Candidate-vs-baseline native fixtures and Datadog app where integrated",
-          "evidence": "Reference evidence retained; this release candidate is not qualified. Results/S2-remaining-gate-applicability.json clarifies the selected composition and inherited EXP202 exceptions without closing the gate.",
+          "evidence": "EXP221 qualifies the four navigation arm/mode cells on c9faed81 versus62f64d7b with native/mapper/complete backend evidence and cleanup. Original failures and separately qualified corrections remain in Results/EXP-221-s2-resource-trace.json. Session/fold and applicable integrated-app obligations remain open; E03/E05 limits remain unchanged.",
           "required": true,
-          "completion_mode": "Captured manual span start ownership; documented existing process-context fallback for automatic URLSession completion"
+          "completion_mode": "Captured manual span start ownership; documented existing process-context fallback for automatic URLSession completion",
+          "completed_checks": [
+            {
+              "owner": "SDK implementer",
+              "dependencies": [
+                "S2:A01",
+                "S2:F07"
+              ],
+              "deliverable": "Compare Trace context, parentage, headers and sampling across Home-to-Detail navigation in automatic/registered URLSession modes",
+              "decisive_test": "Four exact-source arm/mode cells; complete native, mapper, independent backend inventories and cleanup; strict owner/value assertions and preserved original failure evidence. EXP221 navigation-summary owns the exact scope.",
+              "environment": "Existing Duo27.1 /24A94401, Xcode27.1 /27A9269, Release fixture and authenticated Datadog RUM/APM"
+            }
+          ]
         }
       },
       "separate_header_policy_review": {

@@ -21,6 +21,12 @@ Its compatibility evidence retains predefined OS skips, Replay-content exclusion
 Integration QoS warnings and original preparation stops. No blanket warning,
 sanitizer, crash-freedom or performance clearance follows.
 
+[The selected-source Resource/Trace navigation comparison](Results/EXP-221-s2-resource-trace.json)
+now qualifies both URLSession modes on Duo: Resources retain their start owner,
+manual parent and automatic completion-time Trace correlation match the baseline,
+and candidate terminal views stop correctly. Session/fold and integrated-app
+acceptance remain open; this does not qualify automatic view/action tracking.
+
 The current-source automatic comparison has unresolved native-input variability.
 [EXP-210](Results/EXP-210-s2-automatic-coverage.json) includes SDK-on switch failures
 and passing SDK-off/later action-on controls without an isolated cause.

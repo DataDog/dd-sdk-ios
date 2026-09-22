@@ -65,6 +65,11 @@ Before backend projection/assembly, verify the live helper files against the
 approved manifest, not merely hash labels in a response. Reject extra/missing files,
 foreign-run payloads, symlinks, malformed types and ambiguous flattened/nested fields.
 Complete JSON objects in mixed stdout/OSLog need actual prefixes and sequence checks.
+
+For approval-gated execution, issue the short-lived admission inside the approved
+process from an immutable request; an approval delay must not consume its runtime
+budget. Bind fresh identities and fixed deadlines before native actions. Retain
+startup stdout/stderr and an exit receipt even when no scenario summary is created.
 Do not manufacture missing records or metadata from expected names/phases.
 
 ## Critical-boundary controls
