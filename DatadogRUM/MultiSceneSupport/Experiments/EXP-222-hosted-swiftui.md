@@ -22,7 +22,18 @@ controls now cover the correction without a tolerance or owner whitelist.
 
 The saved candidate inventory remained incomplete because its session aggregate
 still counted one of six views. A separate bounded backend-only collection now
-passes the complete strict inventory, with zero native launches. Only the unrun
-manual candidate remains in the Duo comparison; reuse the qualified products.
+passes the complete strict inventory, with zero native launches. The final manual
+candidate completed all five UIKit transitions and RUM occurrences,
+but Root SwiftUI disappear/reappear callbacks were absent around an immediate
+push/pop. Its original oracle verdict remains INVALID and cleanup passes. Stop
+further automatic native attempts. The scoped review below owns the remaining
+simulator obligation.
 The owning record binds every original verdict, raw response, separate re-audit
 and exact source. H16 physical evidence and A02 remain separate requirements.
+
+The designated review keeps the manual lifecycle verdict invalid. The captured
+UIKit and RUM portion is useful evidence, but Root attachment across the omitted
+callback pair was not independently observed. Preserve the strict occurrence
+controls. The ordered human session will supply the remaining paced manual
+candidate with attachment/mapper readiness before each transition and complete
+backend collection. No automatic retry or SDK change is justified.

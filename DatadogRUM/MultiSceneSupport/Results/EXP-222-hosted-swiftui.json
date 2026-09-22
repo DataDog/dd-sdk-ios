@@ -2,8 +2,8 @@
   "schema_version": 1,
   "experiment": "EXP-222",
   "gate": "S2:H16",
-  "status": "THREE_CELLS_QUALIFIED_MANUAL_CANDIDATE_PENDING",
-  "updated_at": "2026-09-22T15:33:55.964698+00:00",
+  "status": "MANUAL_CANDIDATE_LIFECYCLE_ORACLE_INVALID",
+  "updated_at": "2026-09-22T15:40:22.597632+00:00",
   "owner": "SDK implementer",
   "reviewer": "/root/c06_runtime_plan",
   "baseline": "62f64d7b655bdc83f3036c4ad81090a270f6202b",
@@ -145,10 +145,29 @@
       "summary_sha256": "0e9ab4b2b7c847425982e99eb060334aece8b416db7b81ec15a61a6a2c67e674",
       "sdk_finding": null,
       "reason": "TTID differs from exact dispatch witness"
+    },
+    {
+      "state": "INVALID",
+      "scenario": "UNQUALIFIED",
+      "evidence": "INCOMPLETE",
+      "cleanup": "PASS",
+      "identity": {
+        "run_id": "4527968e-6cf8-474e-9e22-81495bc70695",
+        "nonce": "079d3313-c15b-48a0-9436-6e6f0d0f1f51",
+        "arm": "B",
+        "mode": "manual",
+        "source": "c9faed816a1d4828d7d8c4b64acae01119425889",
+        "fixture": "4d1ae09bc44f39ea8c4a7cc7c5edc26adf756193724d335b5a8d74cd1352f400"
+      },
+      "reason": "missing, extra or reordered SwiftUI lifecycle occurrence",
+      "cell": "B-manual",
+      "root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp222-final-manual-ynmvm919/run",
+      "summary_sha256": "da2434219121135b457a589e4661e60b51e87ecff88c0af65396674bb73b3410",
+      "sdk_finding": null
     }
   ],
   "gate_closures": [],
-  "native_launches": 5,
+  "native_launches": 6,
   "implementation": {
     "fixture": "tools/multi-scene/hosted-swiftui/App.swift",
     "workflow": "tools/multi-scene/acceptance/s2_hosting_workflow.py",
@@ -167,7 +186,7 @@
       "sha256": "01d76a7ace61d7cc75f1e13d8864b62fb7bc4bb091995453a9c30970df5937c1"
     }
   },
-  "next": "Run only B-manual with unchanged qualified product, then compare the four bound cells. Physical H16 and A02 remain.",
+  "next": "Continue WebView host integration and prepare the ordered human session; manual hosting needs the reviewed paced attachment/lifecycle discriminator. No automated hosting retry.",
   "offline_reaudit": {
     "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp222-hosted-swiftui-_y3wbrkk/offline-lifecycle-reaudit.json",
     "sha256": "d6a76e92c0704813cb2ff7ad851fc97033845eec46743c9dc7cf4e50603a479b",
@@ -283,7 +302,7 @@
     }
   },
   "rounding_continuation": {
-    "state": "MANUAL_CANDIDATE_PREPARED",
+    "state": "STOPPED",
     "original_root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp222-ttid-witness-cqp_8ixo",
     "original_plan_sha256": "a7c65ad482b56de12c6b7412c221e3fed1ee49183be5b1cdb9bff2a078189463",
     "build_qualification": {
@@ -296,9 +315,7 @@
         "sha256": "f1b64e68335bc4bd56492079f4ff1121075f0ca970483df2f9968b44933ad6be"
       }
     },
-    "remaining_cells": [
-      "B-manual"
-    ],
+    "remaining_cells": [],
     "reference": {
       "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp222-ttid-rounding-8vbg8416/receipt.json",
       "sha256": "d7baec0e3d65839986f078e8f366213fbd25b32053157935fbd2f2b123a70c6b"
@@ -335,5 +352,12 @@
       "reviewer": "/root/c06_runtime_plan",
       "state": "PASS"
     }
+  },
+  "manual_lifecycle_review": {
+    "reviewer": "/root/c06_runtime_plan",
+    "state": "INCONCLUSIVE_FOR_MANUAL_LIFECYCLE",
+    "native_portion": "Five actual UIKit controller transitions, expected RUM occurrences and cleanup qualify only native hosting behavior.",
+    "missing": "No Root disappear/reappear pair around immediate push/pop; outgoing Root attachment was not independently captured. Source allows deferred/coalesced SwiftUI callbacks, so no SDK regression is established.",
+    "decision": "Keep occurrence controls and original INVALID unchanged. No further automatic native launch. Use the ordered human-paced manual candidate cell, with attachment/mapper readiness before each transition and complete backend collection."
   }
 }
