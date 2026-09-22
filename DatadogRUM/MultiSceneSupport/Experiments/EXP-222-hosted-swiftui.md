@@ -13,17 +13,16 @@ gestures, adaptive resize, automatic actions or physical-device behavior. Preser
 H16’s relevant physical evidence and A02 dependency before claiming full closure.
 No production SDK change or accepted-test rerun is included.
 
-The baseline automatic and manual five-occurrence view/lifecycle scenarios pass
-locally, and task-only cleanup passes. The owning record preserves the original
-lifecycle-oracle rejection, separate automatic backend qualification, manual
-pagination failure and complete backend-only read. Manual TTID selects DetailView;
-source supports selection of the current active view, but the fixture did not
-capture that dispatch boundary. H16 stays open until this specific witness is
-qualified. Both candidate cells remain unexecuted.
+The baseline automatic comparison is separately qualified, and the rebuilt manual
+baseline now passes the full native/backend/cleanup contract. The candidate
+automatic cell passes native ownership and cleanup. Its original backend verdict
+is INVALID: the oracle truncated a millisecond that the SDK rounds. A small offline
+reference compiled from the frozen SDK proves the exact conversion; threshold
+controls now cover the correction without a tolerance or owner whitelist.
 
-The bounded continuation observes the existing TTID message through a passive
-fixture feature registered before RUM. Exact owner, vital ID, duration and raw
-launch time/offset replace the unsupported fixed launch-view assumption. The
-source contract is identical in both frozen arms. Focused controls pass; scoped
-implementation review and rebuilt fixture qualification precede one manual
-baseline and the two candidate cells. Original verdicts remain unchanged.
+The saved candidate inventory remained incomplete because its session aggregate
+still counted one of six views. A separate bounded backend-only collection now
+passes the complete strict inventory, with zero native launches. Only the unrun
+manual candidate remains in the Duo comparison; reuse the qualified products.
+The owning record binds every original verdict, raw response, separate re-audit
+and exact source. H16 physical evidence and A02 remain separate requirements.

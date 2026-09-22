@@ -84,4 +84,36 @@ class ReusedBuildControls(unittest.TestCase):
     def test_wrong_original_plan_rejected(self):
         with self.assertRaises(Rejected):w.verify_build(self.root,self.frozen,'other-plan')
 
+class PriorQualificationControls(unittest.TestCase):
+    def setUp(self):
+        self.temp=tempfile.TemporaryDirectory();self.addCleanup(self.temp.cleanup);self.root=Path(self.temp.name)
+        self.plan={'definition':{'rounding_continuation':{'remaining_cells':['B-manual'],'qualified_cells':{}}},
+                   'arms':{arm:{'fixture':'fixture'} for arm in w.ARMS},'reuse':{'receipts':{arm:'build-'+arm for arm in w.ARMS}}}
+        for name,state in [('A-manual','PASS'),('B-automatic','QUALIFIED_COMPOSED')]:
+            arm,mode=name.split('-');path=self.root/(name+'.json')
+            w.save(path,{'state':state,'scenario':'PASS','evidence':'PASS','cleanup':'PASS','build_sha256':'build-'+arm,
+                'identity':{'arm':arm,'mode':mode,'source':w.ARMS[arm],'fixture':'fixture'}})
+            self.plan['definition']['rounding_continuation']['qualified_cells'][name]={'path':str(path),'sha256':w.sha(path)}
+    def test_exact_prior_cells_allow_only_unrun_candidate(self):w.prior_cell_qualifications(self.plan)
+    def test_missing_prior_evidence_rejected(self):
+        del self.plan['definition']['rounding_continuation']['qualified_cells']['B-automatic']
+        with self.assertRaises(Rejected):w.prior_cell_qualifications(self.plan)
+    def test_changed_evidence_rejected(self):
+        (self.root/'A-manual.json').write_text('{}')
+        with self.assertRaises(Rejected):w.prior_cell_qualifications(self.plan)
+    def test_wrong_source_fixture_build_or_incomplete_cleanup_rejected(self):
+        path=self.root/'B-automatic.json';original=w.read(path)
+        for field in ['source','fixture','build','cleanup']:
+            import copy
+            receipt=copy.deepcopy(original)
+            if field in ['source','fixture']:receipt['identity'][field]='other'
+            elif field=='build':receipt['build_sha256']='other'
+            else:receipt['cleanup']='INVALID'
+            w.save(path,receipt);self.plan['definition']['rounding_continuation']['qualified_cells']['B-automatic']['sha256']=w.sha(path)
+            with self.subTest(field=field),self.assertRaises(Rejected):w.prior_cell_qualifications(self.plan)
+    def test_previously_run_cell_not_readmitted(self):
+        self.plan['definition']['rounding_continuation']['remaining_cells'].append('B-automatic')
+        with self.assertRaises(Rejected):w.prior_cell_qualifications(self.plan)
+
+
 if __name__=='__main__':unittest.main()

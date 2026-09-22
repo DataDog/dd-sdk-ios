@@ -104,6 +104,21 @@ class HostingControls(unittest.TestCase):
         r=c.local(self.doc,self.expected);rows=backend(r);rows[-2]['attributes']['custom']['view']['id']=r['view_ids'][0]
         with self.assertRaises(Rejected):c.backend(rows,r)
 
+    def test_sdk_milliseconds_rounds_nearest_away_from_zero(self):
+        for milliseconds, expected in [(1.49,1),(1.5,2),(1.51,2),(2.5,3),(-1.49,-1),(-1.5,-2),(-1.51,-2)]:
+            with self.subTest(milliseconds=milliseconds):
+                self.assertEqual(c.sdk_milliseconds(milliseconds / 1000), expected)
+
+    def test_sdk_milliseconds_preserves_captured_foundation_date(self):
+        # Offline Swift reference executes these operations against frozen SDK source.
+        self.assertEqual(c.sdk_milliseconds(811782770.5435171 + 0.021324753761291504 + 978307200), 1790089970565)
+
+    def test_sdk_milliseconds_saturates_and_rejects_nonfinite(self):
+        self.assertEqual(c.sdk_milliseconds(1e20), 2 ** 63 - 1)
+        self.assertEqual(c.sdk_milliseconds(-1e20), -(2 ** 63))
+        for value in [float('inf'), float('-inf'), float('nan')]:
+            with self.subTest(value=value), self.assertRaises(Rejected):c.sdk_milliseconds(value)
+
     def test_ttid_observer_missing(self):self.row('ttid-observer-registered')['kind']='missing';self.rejected()
     def test_ttid_witness_missing(self):self.row('ttid-message')['kind']='missing';self.rejected()
     def test_ttid_witness_ownerless(self):self.row('ttid-message')['attributes']['view.id']['value']=[];self.rejected()

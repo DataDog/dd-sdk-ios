@@ -10,6 +10,17 @@ APP_ID = '43cbc59b-0626-438b-a3d9-c6417a4545a3'
 SERVICE = 'ios-s2-hosting-validation'
 
 
+def sdk_milliseconds(seconds):
+    """Match Swift Int64.ddWithNoOverflow: nearest, ties away from zero."""
+    value = seconds * 1000
+    require(math.isfinite(value), 'non-finite corrected date')
+    fraction, whole = math.modf(value)
+    rounded = int(whole)
+    if abs(fraction) >= 0.5:
+        rounded += 1 if value > 0 else -1
+    return min(2 ** 63 - 1, max(-(2 ** 63), rounded))
+
+
 def local(document, expected):
     require(document.get('identity') == expected, 'stale hosting identity')
     for key in ['run_id', 'nonce']: identifier(expected[key])
@@ -122,7 +133,7 @@ def local(document, expected):
     for key in ['raw_date_reference_seconds','raw_date_unix_seconds','server_time_offset_seconds']:
         require(type(witness.get(key)) in (int,float) and math.isfinite(witness[key]),'invalid TTID date/offset')
     require(witness['raw_date_reference_seconds']+978307200==witness['raw_date_unix_seconds'],'inconsistent raw TTID Date')
-    corrected=int((witness['raw_date_reference_seconds']+witness['server_time_offset_seconds']+978307200)*1000)
+    corrected=sdk_milliseconds(witness['raw_date_reference_seconds']+witness['server_time_offset_seconds']+978307200)
     require(corrected>0,'invalid corrected TTID date')
     ttid={'raw':witness,'view_id':owner,'view_name':values['view.name'],'vital_id':witness['vital_id'],
           'duration_ns':witness['duration_ns'],'corrected_date_ms':corrected}

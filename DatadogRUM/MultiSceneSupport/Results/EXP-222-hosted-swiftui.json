@@ -2,8 +2,8 @@
   "schema_version": 1,
   "experiment": "EXP-222",
   "gate": "S2:H16",
-  "status": "TTID_WITNESS_REVIEWED_REBUILDS_PENDING",
-  "updated_at": "2026-09-22T15:03:11.467506+00:00",
+  "status": "THREE_CELLS_QUALIFIED_MANUAL_CANDIDATE_PENDING",
+  "updated_at": "2026-09-22T15:33:55.964698+00:00",
   "owner": "SDK implementer",
   "reviewer": "/root/c06_runtime_plan",
   "baseline": "62f64d7b655bdc83f3036c4ad81090a270f6202b",
@@ -108,10 +108,47 @@
       "summary_sha256": "cb904149606feea5676d568b5cb2ea4c4c0796cc5777bb426a110c33b5c1c628",
       "sdk_finding": null,
       "reason": "Backend inventory crossed ingestion: count7, page totals7/8/8, cross-page duplicate raw ID. Original receipt remains INVALID; full backend qualification still required."
+    },
+    {
+      "state": "PASS",
+      "scenario": "PASS",
+      "evidence": "PASS",
+      "cleanup": "PASS",
+      "identity": {
+        "run_id": "ed7848fe-f9a3-4342-aff7-424a2d8860f3",
+        "nonce": "f311a90a-f38b-493f-b226-238f8409bee8",
+        "arm": "A",
+        "mode": "manual",
+        "source": "62f64d7b655bdc83f3036c4ad81090a270f6202b",
+        "fixture": "4d1ae09bc44f39ea8c4a7cc7c5edc26adf756193724d335b5a8d74cd1352f400"
+      },
+      "cell": "A-manual",
+      "root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp222-ttid-witness-cqp_8ixo",
+      "summary_sha256": "0c9d1cb95ca5a18f135c165f7c1a27b6a9aa414931f69515ea923750fc6ea75d",
+      "sdk_finding": null
+    },
+    {
+      "state": "INVALID",
+      "scenario": "PASS",
+      "evidence": "INCOMPLETE",
+      "cleanup": "PASS",
+      "identity": {
+        "run_id": "d8ce7e20-0678-4aea-ac25-4589df722dd5",
+        "nonce": "d6e55bfd-81b6-415b-a90e-40be501f417d",
+        "arm": "B",
+        "mode": "automatic",
+        "source": "c9faed816a1d4828d7d8c4b64acae01119425889",
+        "fixture": "4d1ae09bc44f39ea8c4a7cc7c5edc26adf756193724d335b5a8d74cd1352f400"
+      },
+      "cell": "B-automatic",
+      "root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp222-ttid-witness-cqp_8ixo",
+      "summary_sha256": "0e9ab4b2b7c847425982e99eb060334aece8b416db7b81ec15a61a6a2c67e674",
+      "sdk_finding": null,
+      "reason": "TTID differs from exact dispatch witness"
     }
   ],
   "gate_closures": [],
-  "native_launches": 3,
+  "native_launches": 5,
   "implementation": {
     "fixture": "tools/multi-scene/hosted-swiftui/App.swift",
     "workflow": "tools/multi-scene/acceptance/s2_hosting_workflow.py",
@@ -130,7 +167,7 @@
       "sha256": "01d76a7ace61d7cc75f1e13d8864b62fb7bc4bb091995453a9c30970df5937c1"
     }
   },
-  "next": "Complete scoped implementation review and exact two-arm builds for the TTID witness, then one manual baseline qualification and the two unrun candidate cells. WebView host integration proceeds independently.",
+  "next": "Run only B-manual with unchanged qualified product, then compare the four bound cells. Physical H16 and A02 remain.",
   "offline_reaudit": {
     "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp222-hosted-swiftui-_y3wbrkk/offline-lifecycle-reaudit.json",
     "sha256": "d6a76e92c0704813cb2ff7ad851fc97033845eec46743c9dc7cf4e50603a479b",
@@ -192,10 +229,11 @@
     "reviewer": "/root/c06_runtime_plan",
     "missing": "Saved mapper timestamps do not prove the actual TTID dispatch boundary and selected active view. No owner whitelist or retrospective owner inference is accepted.",
     "next_discriminator": "Source-bound TTID dispatch witness carrying its exact selected native owner; qualify the observation before any new hosting acceptance. Preserve accepted hosting view/lifetime and cleanup evidence.",
-    "candidate_cells": "Both unexecuted; all previous admissions stopped."
+    "candidate_cells": "Automatic executed once; manual unexecuted.",
+    "resolution": "Both rebuilt native cells capture exact TTID dispatch identity. Manual baseline passes fully. Candidate automatic local/cleanup pass; exact SDK date conversion is now fixed and its same-session backend aggregate remains to settle."
   },
   "ttid_continuation": {
-    "state": "REVIEWED_PENDING_REBUILDS_AND_RUN_BOUND_ADMISSION",
+    "state": "STOPPED_AT_CANDIDATE_DATE_ORACLE",
     "reviewer": "/root/c06_runtime_plan",
     "discriminator": "Passive existing TTIDMessage dispatch snapshot: exact typed attributes, vital ID/name/duration, raw Date and server offset; offline corrected-time comparison. No SDK change or launch-owner whitelist.",
     "registration": "Unique fixture feature after initialize and before RUM.enable; immediate scalar capture, returns false, never captures/calls core or UI. Witness required only before terminal.",
@@ -232,6 +270,70 @@
       "state": "PASS",
       "conclusion": "Existing TTID payload captures the same active owner and vital identity used by the backend writer. Passive registration/typed values/offline time comparison are sound; fresh exact builds precede baseline-manual then candidates.",
       "scope": "Consequential witness/oracle and native-cell prerequisite changes; no SDK or UI interaction change."
+    },
+    "build_qualification": {
+      "A": {
+        "receipt": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp222-ttid-witness-cqp_8ixo/A/build-result.json",
+        "sha256": "8fbb1f67c60f00c48448b180d6be3de3e53e6020f4b19eaf3aed09f4018c4580"
+      },
+      "B": {
+        "receipt": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp222-ttid-witness-cqp_8ixo/B/build-result.json",
+        "sha256": "f1b64e68335bc4bd56492079f4ff1121075f0ca970483df2f9968b44933ad6be"
+      }
+    }
+  },
+  "rounding_continuation": {
+    "state": "MANUAL_CANDIDATE_PREPARED",
+    "original_root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp222-ttid-witness-cqp_8ixo",
+    "original_plan_sha256": "a7c65ad482b56de12c6b7412c221e3fed1ee49183be5b1cdb9bff2a078189463",
+    "build_qualification": {
+      "A": {
+        "receipt": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp222-ttid-witness-cqp_8ixo/A/build-result.json",
+        "sha256": "8fbb1f67c60f00c48448b180d6be3de3e53e6020f4b19eaf3aed09f4018c4580"
+      },
+      "B": {
+        "receipt": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp222-ttid-witness-cqp_8ixo/B/build-result.json",
+        "sha256": "f1b64e68335bc4bd56492079f4ff1121075f0ca970483df2f9968b44933ad6be"
+      }
+    },
+    "remaining_cells": [
+      "B-manual"
+    ],
+    "reference": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp222-ttid-rounding-8vbg8416/receipt.json",
+      "sha256": "d7baec0e3d65839986f078e8f366213fbd25b32053157935fbd2f2b123a70c6b"
+    },
+    "offline_reaudit": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp222-ttid-witness-cqp_8ixo/backend-date-reaudit.json",
+      "sha256": "ca054f0a8772940abe459121173d14d8692e454d56f205b6fc4fd6c6e5299a3e"
+    },
+    "scope": "Only unrun manual candidate. Reuse exact unchanged products and prior automatic candidate composed/backend and manual baseline complete evidence. No native automatic retry.",
+    "stop_rule": "Keep original invalid and incomplete offline receipts unchanged. Missing reducer remains incomplete. No automatic native retry or deadline extension.",
+    "backend_only_result": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp222-candidate-backend-z20q6t56/run/backend-only/summary.json",
+      "sha256": "cf5f19b5d48ca3e2c9fdf8754232462aeae17a8aba69b70c925f09f62670d397"
+    },
+    "qualified_cells": {
+      "A-manual": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp222-ttid-witness-cqp_8ixo/cells/A-manual/summary.json",
+        "sha256": "0c9d1cb95ca5a18f135c165f7c1a27b6a9aa414931f69515ea923750fc6ea75d"
+      },
+      "B-automatic": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp222-candidate-backend-z20q6t56/run/backend-only/summary.json",
+        "sha256": "cf5f19b5d48ca3e2c9fdf8754232462aeae17a8aba69b70c925f09f62670d397"
+      }
+    },
+    "controls": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp222-candidate-backend-z20q6t56/run/controls-qualification.json",
+      "sha256": "9e7eda75a58f8d46d90a4e9d041717bcb9ac7ac911c5edb69a55e08e99e3a715",
+      "python": 78,
+      "connector": 7
+    },
+    "review": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp222-candidate-backend-z20q6t56/run/review.json",
+      "sha256": "00e63f385a8b6dd8ded3442a50e46797205edbd6b49ad595d8675746a613ce05",
+      "reviewer": "/root/c06_runtime_plan",
+      "state": "PASS"
     }
   }
 }

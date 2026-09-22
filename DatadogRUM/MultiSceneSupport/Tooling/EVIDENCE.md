@@ -133,6 +133,12 @@ re-audit immutable saved bytes with separate provenance; missing native/upload
 boundaries need a separately admitted run, not expected-value synthesis. Cleanup
 and infrastructure failures do not automatically attribute an SDK defect.
 
+Date projections must match the source operation order and integer conversion.
+Bind a small exact-source reference when diagnosing rounding; do not add a time
+tolerance. Recheck every remaining predicate after a parser fix: a complete row
+inventory may still contain an unsettled session aggregate. Collect missing
+backend evidence separately while retaining the original verdict and deadline.
+
 A narrow representation exception must preserve original presence/type/values and
 its negative controls. Examples: empty slow-frame mapper arrays may be absent
 backend fields, but explicit null or a missing nonempty array is different; backend

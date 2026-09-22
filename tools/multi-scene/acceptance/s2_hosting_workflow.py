@@ -137,9 +137,31 @@ def verify_build(folder, frozen, plan_sha):
     return result
 
 
+def selected_continuation(definition):
+    for name in ['rounding_continuation', 'ttid_continuation', 'acceptance_continuation']:
+        if name in definition:return definition[name]
+    return {}
+
+
+def prior_cell_qualifications(plan):
+    """Only the previously unrun manual candidate may follow the date re-audit."""
+    continuation=plan['definition']['rounding_continuation']
+    require(continuation['remaining_cells']==['B-manual'],'rounding continuation expanded')
+    qualified=continuation['qualified_cells']
+    require(set(qualified)=={'A-manual','B-automatic'},'missing prior qualifications')
+    for name,bound in qualified.items():
+        path=Path(bound['path']);require(sha(path)==bound['sha256'],'prior qualification changed')
+        receipt=read(path);arm,mode=name.split('-');identity=receipt['identity']
+        require(identity['arm']==arm and identity['mode']==mode and identity['source']==ARMS[arm]
+                and identity['fixture']==plan['arms'][arm]['fixture'],'foreign prior qualification')
+        require(receipt['state']==('PASS' if arm=='A' else 'QUALIFIED_COMPOSED')
+                and receipt['scenario']=='PASS' and receipt['evidence']=='PASS' and receipt['cleanup']=='PASS','prior cell incomplete')
+        require(receipt['build_sha256']==plan['reuse']['receipts'][arm],'prior qualification build differs')
+
+
 def prepare_reuse(args, state, definition, helpers):
     root=args.root.resolve();old=args.reuse_builds.resolve();prior=read(old/'plan.json')
-    continuation=definition['acceptance_continuation']
+    continuation=selected_continuation(definition)
     require(str(old)==continuation['original_root'] and sha(old/'plan.json')==continuation['original_plan_sha256'],'unbound original build root')
     require(prior['protected']==state,'protected state differs from original build')
     sources=['tools/multi-scene/hosted-swiftui/App.swift','tools/multi-scene/webview-correlation/S2/S2WebViewEvidence.swift']
@@ -147,7 +169,7 @@ def prepare_reuse(args, state, definition, helpers):
     plan={'experiment':'EXP-222','created_at':time.time(),'protected':state,'helper_snapshot':'helpers','helpers':helpers,'definition':definition,'arms':{},'reuse':{'root':str(old),'plan_sha256':sha(old/'plan.json'),'receipts':{}}}
     for arm,rev in ARMS.items():
         frozen=prior['arms'][arm];require(frozen['revision']==rev,'source revision differs')
-        owner=definition['build_qualification'][arm];receipt=old/arm/'build-result.json'
+        owner=continuation.get('build_qualification',definition['build_qualification'])[arm];receipt=old/arm/'build-result.json'
         require(str(receipt)==owner['receipt'] and sha(receipt)==owner['sha256'],'original build receipt differs from owner')
         verify_build(old/arm,frozen,sha(old/'plan.json'))
         folder=root/arm;folder.mkdir();shutil.copy2(receipt,folder/'build-result.json')
@@ -278,12 +300,14 @@ def reviewed(root):
 def cell(args):
     root=args.root.resolve();plan=reviewed(root)
     name=args.arm+'-'+args.mode
-    continuation=plan['definition'].get('ttid_continuation',plan['definition'].get('acceptance_continuation',{}))
+    continuation=selected_continuation(plan['definition'])
     allowed=continuation.get('remaining_cells',[r['arm']+'-'+r['mode'] for r in plan['definition']['matrix']])
     require(name in allowed,'cell not admitted or already qualified')
     if continuation.get('backend_only'):
         require(read(root/'backend-only/summary.json')['state']=='QUALIFIED_COMPOSED','manual baseline backend qualification required')
-    if 'ttid_continuation' in plan['definition'] and args.arm=='B':
+    if 'rounding_continuation' in plan['definition']:
+        prior_cell_qualifications(plan)
+    elif 'ttid_continuation' in plan['definition'] and args.arm=='B':
         require(read(root/'cells/A-manual/summary.json')['state']=='PASS','witness-qualified manual baseline required')
     out=root/'cells'/name
     require(not out.exists(),'cell already consumed');out.mkdir()
@@ -365,29 +389,78 @@ def collect(out, identity, local, started, deadline):
 
 
 def backend_only(args):
-    root=args.root.resolve();plan=reviewed(root);bound=plan['definition']['acceptance_continuation']['backend_only']
+    root=args.root.resolve();plan=reviewed(root);bound=selected_continuation(plan['definition'])['backend_only']
     prior=Path(bound['cell']);summary=read(prior/'summary.json')
     for name,value in bound['artifacts'].items():require(sha(prior/name)==value,'original native evidence changed')
     require(summary['state']=='INVALID' and summary['scenario']=='PASS' and summary['cleanup']=='PASS','original local/cleanup evidence unqualified')
     require(sha(prior.parents[1]/'plan.json')==summary['plan_sha256'],'original native plan changed')
     identity=summary['identity'];local=oracle.local(read(prior/'evidence.json'),identity)
-    require(local==read(prior/'local-result.json'),'saved local projection changed')
-    require(identity['arm']=='A' and identity['mode']=='manual' and identity['source']==ARMS['A'] and identity['fixture']==plan['arms']['A']['fixture'],'original fixture differs')
-    require(summary['build_sha256']==sha(root/'A/build-result.json'),'original build differs')
+    saved=read(prior/'local-result.json')
+    if bound.get('date_reaudit'):
+        date=bound['date_reaudit'];require(sha(date['path'])==date['sha256'],'date re-audit changed')
+        audit=read(date['path']);require(audit['state']=='INCOMPLETE' and audit['reason']=='session view count not settled'
+            and audit['original_summary_sha256']==sha(prior/'summary.json') and audit['identity']==identity,'wrong date re-audit')
+        require(audit['date_projection']['original_ms']==saved['ttid']['corrected_date_ms']
+            and audit['date_projection']['sdk_rounded_ms']==local['ttid']['corrected_date_ms'],'date correction changed')
+        saved['ttid']['corrected_date_ms']=local['ttid']['corrected_date_ms']
+    require(local==saved,'saved local projection changed')
+    arm,mode=bound.get('name','A-manual').split('-')
+    require(identity['arm']==arm and identity['mode']==mode and identity['source']==ARMS[arm] and identity['fixture']==plan['arms'][arm]['fixture'],'original fixture differs')
+    require(summary['build_sha256']==sha(root/arm/'build-result.json'),'original build differs')
     device=summary['device']['udid'];require(not process(local['pid']) and absent(device),'original task not quiescent')
     out=root/'backend-only';require(not out.exists(),'backend continuation consumed');out.mkdir()
     deadline=time.time()+plan['definition']['budgets_seconds']['backend']
-    result={'state':'RUNNING','started_at':time.time(),'deadline':deadline,'original_summary_sha256':sha(prior/'summary.json'),'plan_sha256':sha(root/'plan.json'),'native_launches':0,'scenario':'PASS_ORIGINAL_RECEIPT','cleanup':'PASS_ORIGINAL_RECEIPT','evidence':'INCOMPLETE'}
+    result={'state':'RUNNING','started_at':time.time(),'deadline':deadline,'original_summary_sha256':sha(prior/'summary.json'),'plan_sha256':sha(root/'plan.json'),'native_launches':0,'scenario':'PASS','cleanup':'PASS','evidence':'INCOMPLETE','identity':identity,'build_sha256':summary['build_sha256'],'provenance':'Original native/cleanup receipts plus separately timed complete backend collection'}
     save(out/'summary.json',result)
     try:
         result['backend']=collect(out,identity,local,summary['started_at'],deadline)
         verify(root);require(not process(local['pid']) and absent(device),'task changed during backend-only continuation')
         require(time.time()<deadline,'backend continuation completed late')
-        result.update(state='QUALIFIED_COMPOSED',evidence='PASS_SEPARATE_BACKEND_READ')
+        result.update(state='QUALIFIED_COMPOSED',evidence='PASS')
     except Exception as error:result.update(state='INVALID',reason=str(error))
     result['finished_at']=time.time();save(out/'summary.json',result)
     print(json.dumps({'state':result['state'],'summary':str(out/'summary.json'),'native_launches':0}),flush=True)
     return 0 if result['state']=='QUALIFIED_COMPOSED' else 1
+
+def reaudit_date(args):
+    """Re-evaluate a timely saved inventory; never replace an original verdict."""
+    root=args.root.resolve();folder=args.request.resolve().parent;summary=read(folder/'summary.json')
+    require(folder==root/'cells/B-automatic' and summary['state']=='INVALID'
+            and summary['scenario']=='PASS' and summary['cleanup']=='PASS'
+            and summary['reason']=='TTID differs from exact dispatch witness','wrong original date rejection')
+    original_sha=sha(folder/'summary.json')
+    require(sha(root/'plan.json')==summary['plan_sha256'],'original plan changed')
+    for name,value in summary['artifacts'].items():require(sha(folder/name)==value,'original artifact changed')
+    request=read(args.request);response=args.request.with_name(args.request.name.replace('.request.json','.response.json'))
+    raw=response.with_name(response.stem+'.raw.json')
+    require(sha(raw)==sha(response),'published response substituted')
+    published=response.stat().st_mtime
+    require(request['deadline']==summary['backend_deadline'] and summary['started_at']<args.request.stat().st_mtime<published<request['deadline'],'saved publication not timely')
+    document=read(folder/'evidence.json');local=oracle.local(document,summary['identity']);old=read(folder/'local-result.json')
+    before=old['ttid']['corrected_date_ms'];old['ttid']['corrected_date_ms']=local['ttid']['corrected_date_ms']
+    require(local==old,'re-audit changes more than exact date conversion')
+    reference=read(args.reference);require(reference['state']=='PASS','Swift reference unqualified')
+    for path,value in reference['inputs'].items():require(sha(path)==value,'Swift reference input changed')
+    require(reference['observations']['B-automatic']['raw_unix_matches'] is True
+            and reference['observations']['B-automatic']['sdk_corrected_ms']==local['ttid']['corrected_date_ms'],'projection differs from exact SDK conversion')
+    rows=complete_inventory(read(raw),request['request'],row_limit=100,page_limit=6)
+    try:
+        accepted=oracle.backend(rows,local,pending=True);state='QUALIFIED_COMPOSED';reason=None
+    except Rejected as error:
+        require(error.state=='PENDING',str(error));accepted=None;state='INCOMPLETE';reason=str(error)
+    result={'state':state,'reason':reason,'scenario':'PASS','evidence':'PASS' if accepted else 'INCOMPLETE','cleanup':'PASS',
+        'identity':summary['identity'],'build_sha256':summary['build_sha256'],'original_summary_sha256':original_sha,
+        'original_plan_sha256':summary['plan_sha256'],'original_verdict':summary['state'],
+        'native_launches':0,'backend_queries':0,'at':time.time(),'published_at':published,'original_backend_deadline':request['deadline'],
+        'raw_bindings':{str(p):sha(p) for p in [args.request,raw,response,folder/'evidence.json',folder/'local-result.json']},
+        'reference':{'path':str(args.reference),'sha256':sha(args.reference)},
+        'helpers':{name:sha(REPO/name) for name in HELPERS if name.endswith('.py') and '/acceptance/' in name},
+        'date_projection':{'original_ms':before,'sdk_rounded_ms':local['ttid']['corrected_date_ms']},'backend':accepted,
+        'scope':'B automatic Duo simulator H16 portion only; original verdict immutable; no deadline extended'}
+    require(sha(folder/'summary.json')==original_sha,'original verdict changed')
+    save(root/'backend-date-reaudit.json',result,exclusive=True)
+    print(json.dumps({'state':result['state'],'path':str(root/'backend-date-reaudit.json'),'sha256':sha(root/'backend-date-reaudit.json')}),flush=True)
+
 
 def publish(args):
     import base64
@@ -412,6 +485,7 @@ def main():
         if stage=='prepare':s.add_argument('--reuse-builds',type=Path)
         if stage in ['build','cell']:s.add_argument('--arm',choices=ARMS,required=True)
         if stage=='cell':s.add_argument('--mode',choices=['automatic','manual'],required=True);s.add_argument('--device',required=True)
+    s=sub.add_parser('reaudit-date');s.add_argument('--root',type=Path,required=True);s.add_argument('--request',type=Path,required=True);s.add_argument('--reference',type=Path,required=True)
     s=sub.add_parser('publish');s.add_argument('--request',type=Path,required=True);s.add_argument('--payload',required=True)
-    a=p.parse_args();return {'prepare':prepare,'build':build,'cell':cell,'publish':publish,'backend-only':backend_only}[a.stage](a) or 0
+    a=p.parse_args();return {'prepare':prepare,'build':build,'cell':cell,'publish':publish,'backend-only':backend_only,'reaudit-date':reaudit_date}[a.stage](a) or 0
 if __name__=='__main__':raise SystemExit(main())
