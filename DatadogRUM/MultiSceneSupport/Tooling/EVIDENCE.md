@@ -63,6 +63,10 @@ available as evidence without a PASS. Reject truncation even if counts match.
 Publish a terminal transport error when validation fails, so the driver can stop
 and enter cleanup promptly. Reserve cleanup time for actual tool round trips and
 keep the input quiescence fence; elapsed deadlines never authorize another action.
+Transfer the actual returned UI response directly. Matching prior text or checksums
+do not authorize substituting another phase's observation as the current receipt.
+A late terminal may establish worker quiescence for separately admitted restoration,
+but cannot reopen the original cleanup or acceptance deadline.
 
 Before backend projection/assembly, verify the live helper files against the
 approved manifest, not merely hash labels in a response. Reject extra/missing files,

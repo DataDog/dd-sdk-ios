@@ -27,11 +27,12 @@ manual parent and automatic completion-time Trace correlation match the baseline
 and candidate terminal views stop correctly. Both candidate modes also pass
 [explicit session rollover](Results/EXP-221-session-rollover.json). Baseline repeated
 resumes mutate currentRequest baggage; their observed protocol-start carriers stay
-original-owned. [Fold](Results/EXP-221-duo-fold.json) remains unqualified. The repaired
-fixture passes ownership readiness, but its first Open transition reveals an
-unclassified second window and an unreliable host pose icon. The probe is removed
-and Closed restored under a separate cleanup receipt. No SDK cause or candidate
-fold result is established; window diagnosis precedes further acceptance.
+original-owned. [Fold](Results/EXP-221-duo-fold.json) remains unqualified. A baseline
+diagnostic observed a later non-key text-effects window while the fixture's key
+window stayed in the same scene. It does not classify the earlier ambiguous
+callback or establish a candidate result. Current geometry and all-window topology
+must be captured together before further acceptance. The probe is removed and the
+original device state restored; both invalid run verdicts remain.
 Integrated-app and automatic view/action tracking
 acceptance also remain open.
 

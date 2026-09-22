@@ -137,7 +137,11 @@ and native geometry evidence.
 A single scene may expose additional windows. Inventory their public identity,
 scene, key/hidden/alpha, level, frame, root controller and screen before classifying
 them. Total window count alone cannot identify a peer or harmless auxiliary window;
-do not accept an earlier callback after a newer ambiguous sample.
+do not accept an earlier callback after a newer ambiguous sample. Capture current
+geometry and complete inventory together on the main queue at each critical
+boundary: a window can appear without another geometry callback. A later class
+observation cannot identify an earlier unrecorded window. Keep any allowed auxiliary
+signature scoped to the observed runtime/fixture; unknown windows remain failures.
 
 Use a dedicated file for `devicectl --json-output`; stdout may also contain a
 human-readable summary. Preserve both streams and validate the structured command

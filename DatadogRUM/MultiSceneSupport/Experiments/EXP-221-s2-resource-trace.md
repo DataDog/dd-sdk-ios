@@ -79,5 +79,22 @@ owned window, active scene and held tasks remained unchanged. The host's sidebar
 icon stayed Closed while the inner display was active. Original timeout and deferred
 cleanup remain invalid; a separate later restoration removed the app and restored
 Booted/Closed. Remaining cells are unrun. The owner retains the exact build, callback,
-input, cleanup and independent-review artifacts. Next is a diagnostic-only window
-inventory with separate admission; no acceptance predicate is relaxed.
+input, cleanup and independent-review artifacts. A separately admitted baseline window diagnostic follows; no prior result is
+reclassified.
+
+The diagnostic compiled once and collected18 public window inventories alongside
+16 geometry callbacks after one Open. All callback-linked snapshots had only the
+fixture window. At the original timeout, a later inventory showed a non-key
+`UITextEffectsWindow` with `UITrackingElementWindowController`, level10/alpha1,
+in the same scene and screen. It appeared within a79.375second gap after the last
+geometry callback; its precise creation time is unknown. This does not identify
+the unrecorded second window in the earlier run.
+
+The expected native timeout remains. Collection passed its diagnostic checks, but
+late cleanup response publication made the overall run INVALID. A separate bounded
+restoration removed the probe and verified the original device/runtime/app state.
+The owner retains both receipts, the actual UI response and transport/adapter errors.
+No candidate, Detail transition, held-resource release or final backend collection
+ran. The reviewed next step is fresh atomic geometry plus all-window inventory at
+each critical boundary; auxiliary classification must remain fixture/runtime-scoped
+and reject unknown windows without weakening accepted owners or scene continuity.

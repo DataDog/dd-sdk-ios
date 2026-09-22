@@ -2,8 +2,8 @@
   "schema_version": 1,
   "experiment": "EXP-221",
   "stage": "duo-fold-one-session",
-  "status": "BASELINE_INVALID_TOPOLOGY_DIAGNOSTIC_NEXT",
-  "updated_at": "2026-09-22T09:39:26.905854+00:00",
+  "status": "WINDOW_DIAGNOSTIC_RECORDED_ATOMIC_TOPOLOGY_BOUNDARY_NEXT",
+  "updated_at": "2026-09-22T10:24:58.859969+00:00",
   "owner": "SDK implementer; root owns sole build/native lane",
   "gates": [
     "S2:T03",
@@ -28,10 +28,10 @@
     "native_launches": 4,
     "retries": 0
   },
-  "builds": 4,
-  "native_launches": 2,
+  "builds": 5,
+  "native_launches": 3,
   "gate_closures": [],
-  "next_action": "Prepare the independently recommended diagnostic-only all-window inventory and bounded input/restoration transport. Define and review its separate admission before another build or launch; the four-cell acceptance stage is stopped.",
+  "next_action": "Prepare and review an atomic current-geometry/full-window fixture boundary and exact runtime-scoped auxiliary classification with negative controls. Qualify baseline evidence before admitting candidate acceptance. Preserve both invalid runs and their separate restorations; no native retry under closed admissions.",
   "implementation_inputs": {
     "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp221-duo-fold-03hu30t3/implementation-inputs-v2.json",
     "sha256": "27acb5ef0b30945980ab98c7e922f508e6e6593bfe5dbbe75cbd8df6708dbaee"
@@ -337,5 +337,73 @@
     ],
     "startup_rum_rows": 3
   },
-  "count_scope": "Cumulative original and owner-boundary fixtures: two builds each; one pre-input stale-mapper launch and one post-Open topology-invalid launch. Original first-cell preflight and path/environment stops launched no app. Per-continuation counts and original admission limits remain below."
+  "count_scope": "Cumulative fold fixtures: original2 builds/1 stale-mapper launch; owner-boundary2 builds/1 topology-invalid launch; window diagnostic1 build/1 launch. No candidate fold launch.",
+  "window_inventory_diagnostic": {
+    "root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp221-fold-window-inventory-uyqyhqlz",
+    "status": "DIAGNOSTIC_COLLECTED_ORIGINAL_CLEANUP_INVALID_LATER_STATE_RESTORED",
+    "definition": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp221-fold-window-inventory-uyqyhqlz/definition.json",
+      "sha256": "491118435359b64f004cd9ddfefbc02cc5de75685063a79581edea2be60060ee"
+    },
+    "cutoff_amendment": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp221-fold-window-inventory-uyqyhqlz/observation-cutoff-amendment.json",
+      "sha256": "aec75bb9dc9bf8c99ee2b2ee93d6f4fa05c8d7da102b93e499706681b8df4832"
+    },
+    "preparation": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp221-fold-window-inventory-uyqyhqlz/preparation-qualification.json",
+      "sha256": "488d126fd3df56859652750e5a5dfdb0ed6f8df72b95ffaabe91031f3863b1a7"
+    },
+    "controls": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp221-fold-window-inventory-uyqyhqlz/controls-result.json",
+      "sha256": "22bcecdba52c3fd7ab3ec31bcf4ab2ac22ee38c23769afe334d8e4465b30ff7e"
+    },
+    "access": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp221-fold-window-inventory-uyqyhqlz/access-preflight.json",
+      "sha256": "6b65c82d508f7d28588865acd4c3610c7343e80d616d8e54b9d97f8a55b27f3c"
+    },
+    "tool_access": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp221-fold-window-inventory-uyqyhqlz/access-tools.json",
+      "sha256": "461ddfca9392ff80f5e5c1635df41d219abec7688179d5c2f2f2fef795dfcaf3"
+    },
+    "new_builds": 1,
+    "new_native_launches": 1,
+    "scope": "One baseline build/launch, one Open and one restoration Close.18 public window inventories/16 geometry callbacks. Expected native Open timeout retained; no fold release, candidate, final backend or acceptance credit.",
+    "build": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp221-fold-window-inventory-uyqyhqlz/matrix/A/build-qualification.json",
+      "sha256": "2e48d1056c9cd027d738ee48ec434487f14fac0eed1ac378368d7a6bd65150cf"
+    },
+    "review": {
+      "reviewer": "/root/c06_runtime_plan",
+      "decision": "Keep INVALID cleanup and later restoration separate. All geometry-linked snapshots had one window; late phase-return captured the auxiliary. Require fresh atomic current geometry/full inventory at critical boundaries before another acceptance attempt."
+    },
+    "warning_review": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp221-fold-window-inventory-uyqyhqlz/build-warning-review.json",
+      "sha256": "b32d3e3433bb4e70a52625a602d5fe96da369993712a423f468ea51548f32e21"
+    },
+    "admission": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp221-fold-window-inventory-uyqyhqlz/cells/A-automatic-admission.json",
+      "sha256": "37397e354f4e497dfbfb843af1250bd5e7dfa61839b5c95ad2ccd34755cc7a2e"
+    },
+    "result": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp221-fold-window-inventory-uyqyhqlz/cells/A-automatic/diagnostic-result.json",
+      "sha256": "e0746c1aa6429f1cd25f237382540ea883bb1de1bee0ba17f206b8f62552ce8e"
+    },
+    "summary": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp221-fold-window-inventory-uyqyhqlz/cells/A-automatic/summary.json",
+      "sha256": "bde9a22cf22718a05f7fdfe6e322c8cdbfda80dcf0802fba5b674790f194d993"
+    },
+    "findings": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp221-fold-window-inventory-uyqyhqlz/diagnostic-findings.json",
+      "sha256": "a192c26c181b02b8e02396c703523cc8068bfdf9eef0cf1cdb1b0552485905b1"
+    },
+    "later_restoration": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp221-fold-window-inventory-uyqyhqlz/later-cleanup/summary.json",
+      "sha256": "c1cf276a9fcf3d29813e48c97fa41ff9f058cbf97372f97ece80fcc271a40b02"
+    },
+    "operational_failures": [
+      "Pre-admission evidence directory absent; corrected before first request/install/launch/input.",
+      "Automatic approval review rejected reuse of reversed Open-phase wire observations for cleanup. Actual cleanup response was retained directly, after the original pose deadline.",
+      "Separate cleanup caller first supplied display reference instead of decoded active object, then a runtime list instead of its single record. One native removal completed; final read-only verification confirmed all original-state checks within the separate120s bound."
+    ]
+  }
 }
