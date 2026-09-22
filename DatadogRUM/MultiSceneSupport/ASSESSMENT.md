@@ -27,8 +27,9 @@ manual parent and automatic completion-time Trace correlation match the baseline
 and candidate terminal views stop correctly. Both candidate modes also pass
 [explicit session rollover](Results/EXP-221-session-rollover.json). Baseline repeated
 resumes mutate currentRequest baggage; their observed protocol-start carriers stay
-original-owned. Fold and integrated-app acceptance remain open, as does automatic
-view/action tracking.
+original-owned. [Fold](Results/EXP-221-duo-fold.json) remains unexecuted after a
+pre-installation readiness stop. Integrated-app and automatic view/action tracking
+acceptance also remain open.
 
 The current-source automatic comparison has unresolved native-input variability.
 [EXP-210](Results/EXP-210-s2-automatic-coverage.json) includes SDK-on switch failures

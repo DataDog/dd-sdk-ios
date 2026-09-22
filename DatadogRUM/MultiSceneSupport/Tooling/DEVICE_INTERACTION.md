@@ -80,6 +80,11 @@ hierarchy and screenshots. Activate the observed bundle when necessary. Do not
 reuse guessed coordinates, alter layout to make input pass, or substitute a
 programmatic gesture. Use the exact admitted drag duration and retry policy.
 
+Prepare the receiver and evidence-transfer format before capturing a time-bounded
+UI snapshot. Retain the complete raw text losslessly; transfer and persistence count
+against its original freshness limit. A stale snapshot stops before mutation. Shorten
+the handoff and review a separate continuation rather than extending that limit.
+
 Bind AX readiness to the observed role and attribute namespace: a SwiftUI text-field
 placeholder may appear in `AXValue` with a null `AXLabel`. Require the exact unique
 field and heading, preserving negative controls for wrong or ambiguous elements.

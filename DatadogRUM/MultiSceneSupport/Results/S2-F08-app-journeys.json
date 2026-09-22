@@ -261,5 +261,12 @@
     "inputs": 0,
     "launches": 0,
     "scope": "Immediate Start/capture/End in one orchestration works. Does not isolate idle time, call boundary or intervening installation as the earlier cause; no Home input or SDK/gate credit."
+  },
+  "home_cua_proposal": {
+    "status": "CONDITIONAL_PROPOSAL_ONLY_NO_EXECUTION_ADMISSION",
+    "root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-app-home-cua-preparation-6znzrugk",
+    "proposal_sha256": "fdc6db6651e4af3757c52358397e1ec1a937e488e172b298ecf9faf21f9a3d53",
+    "review_sha256": "9862a308ec590d9aacbe3dcbaa81de54db64f00ba675f2bd59719a2e53686344",
+    "scope": "One observed Device Hub Home button input with precritical target binding, independent timed SpringBoard/same-PID effect and cleanup. Helpers/controls not implemented; execution is paused for the user reboot."
   }
 }

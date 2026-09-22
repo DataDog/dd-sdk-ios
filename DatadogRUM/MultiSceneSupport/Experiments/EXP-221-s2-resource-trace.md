@@ -49,9 +49,11 @@ carriers retained the original session; this is not evidence of a second wire
 dispatch with changed baggage. Every run and diagnostic is retained, and all four
 cleanups pass. No native run was repeated or baseline predicate relaxed.
 
-The [fold slice](../Results/EXP-221-duo-fold.json) has a reviewed definition and host/
-oracle amendment. Its single-session fixture will retain actual Device Hub input,
-public app geometry and host display evidence before releasing held work. The
-implementation and controls must be reviewed before the single stage admission;
-no fold build or native launch has occurred. Fold and integrated-app acceptance
-remain open.
+The [fold slice](../Results/EXP-221-duo-fold.json) has two qualified universal Release
+builds, 68 passing harness controls and a source-bound warning review. Its first cell
+stopped before installation because the Closed UI preflight aged past 120 seconds
+during transfer; no app launch, pose input or backend query occurred, and cleanup
+passed. A lossless text handoff has 20 passing controls, but its separate continuation
+remains unadmitted. Work is paused for the user’s reboot, all old deadlines are
+closed, and the exact builds remain reusable after fresh checks. Fold and integrated-
+app acceptance remain open.

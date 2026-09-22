@@ -2,8 +2,8 @@
   "schema_version": 1,
   "experiment": "EXP-221",
   "stage": "duo-fold-one-session",
-  "status": "DEFINITION_REVIEWED; IMPLEMENTATION_PENDING",
-  "updated_at": "2026-09-22T04:40:08.109194+00:00",
+  "status": "PAUSED_USER_REBOOT; ZERO_NATIVE_PREFLIGHT_STOP_RETAINED",
+  "updated_at": "2026-09-22T06:06:07.409127+00:00",
   "owner": "SDK implementer; root owns sole build/native lane",
   "gates": [
     "S2:T03",
@@ -28,8 +28,78 @@
     "native_launches": 4,
     "retries": 0
   },
-  "builds": 0,
+  "builds": 2,
   "native_launches": 0,
   "gate_closures": [],
-  "next_action": "Implement the isolated fixture/host/oracle, qualify discriminating controls and obtain implementation review before issuing the single pre-build stage admission."
+  "next_action": "Wait for explicit resume. Rediscover Xcode/runtime/device/UI/Datadog access after reboot, verify reusable exact source/product/controls, qualify the shorter live observation handoff, and review a fresh bounded native-only continuation. Do not reopen either old clock or rerun builds merely to resume.",
+  "implementation_inputs": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp221-duo-fold-03hu30t3/implementation-inputs-v2.json",
+    "sha256": "27acb5ef0b30945980ab98c7e922f508e6e6593bfe5dbbe75cbd8df6708dbaee"
+  },
+  "controls": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp221-duo-fold-03hu30t3/controls-result-v2.json",
+    "sha256": "b5d7404f80065f6a8fbb4cda1f916f053b85a3c0a0cabd1d56fd882d173fb962"
+  },
+  "environment": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp221-duo-fold-03hu30t3/environment-preflight.json",
+    "sha256": "bcf731f5b576a732c8493b0b681422ccdb9a5ecf9515d791961ffeff835236e6"
+  },
+  "backend_access": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp221-duo-fold-03hu30t3/access-preflight.json",
+    "sha256": "06d8ba547de8fa6a54d0b4ccede906ad7801040b48321d6713654873ca9593fe"
+  },
+  "scope_limit": "Two exact-source universal Release builds and reviewed diagnostics qualify as build evidence only.68 constructed fold controls pass; no fold app installed or launched, no pose input or fold-cell backend query. The first cell stopped on stale Closed UI preflight and cleanup passed. All execution deadlines are closed by user pause; no gate credit.",
+  "implementation_review": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp221-duo-fold-03hu30t3/implementation-review-final.json",
+    "sha256": "34dadbad2d16daac6cb4b585706d7cf332007252612d2379f5b9a4fa2b5e7beb"
+  },
+  "stage_admission": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp221-duo-fold-03hu30t3/stage-admission.json",
+    "sha256": "90667fa4146a230c6bb25e3b33ca40924614a3c5fc89a90a1619e447d6bfe635"
+  },
+  "build_completion": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp221-duo-fold-03hu30t3/build-completion.json",
+    "sha256": "c9c690df4767d30022b0a6d8b8c40967f36afcc4d89ccbe0252e3cdd2458812a"
+  },
+  "attempt": {
+    "summary": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp221-duo-fold-03hu30t3/cells/A-automatic/summary.json",
+      "sha256": "ecd79f67e8d2dedc8f3ae2534f79f836eb53177950080da4b633584ea3e8e506"
+    },
+    "failure": "stale Closed UI preflight",
+    "native_launches": 0,
+    "backend_queries": 0,
+    "cleanup": "PASS"
+  },
+  "pause_checkpoint": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp221-duo-fold-03hu30t3/pause-checkpoint.json",
+    "sha256": "b64e1b57d554525f6152d5dfb4c9ace026dc3c1c19408ccd0100711f67927fbd"
+  },
+  "continuation_preparation": {
+    "root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp221-fold-fresh-preflight-tzz1q698",
+    "status": "UNADMITTED; REVIEW_INTERRUPTED_FOR_USER_PAUSE",
+    "definition": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp221-fold-fresh-preflight-tzz1q698/continuation-definition.json",
+      "sha256": "bf3980f1911176e82de013725a96adcfb5b01dbd5ba62e4f057f336c0716e7db"
+    },
+    "transport_source": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp221-fold-fresh-preflight-tzz1q698/cua-wire.cjs",
+      "sha256": "bd00ee5c2decccdbb045009a424bebfcf8fb1ae5b7ad923de2d6403bc61066d0"
+    },
+    "transport_controls": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp221-fold-fresh-preflight-tzz1q698/cua-wire-controls.json",
+      "sha256": "8fcb2c3bf35cad4a859bb55c0361a75efbaec54e459b7a62523111de62095bd8"
+    },
+    "transport_tests": 20,
+    "read_only_observation": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp221-fold-fresh-preflight-tzz1q698/wire-observation-paused.json",
+      "sha256": "c9eba4db7b1929943dae03edad2613c253c96429574219008ccc53367cfc7fb4"
+    },
+    "pause_checkpoint": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp221-fold-fresh-preflight-tzz1q698/pause-checkpoint.json",
+      "sha256": "b64e1b57d554525f6152d5dfb4c9ace026dc3c1c19408ccd0100711f67927fbd"
+    },
+    "source_reuse": "All original helper/oracle/fixture/SDK bytes and built products unchanged. Exact prepared matrix copies verified; original products remain at their original paths.",
+    "limits": "Original proposal inherited old clocks; it is not executable after this pause. The read-only text roundtrip has no freshness/native qualification."
+  }
 }
