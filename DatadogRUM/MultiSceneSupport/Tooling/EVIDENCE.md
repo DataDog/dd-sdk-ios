@@ -67,6 +67,16 @@ Transfer the actual returned UI response directly. Matching prior text or checks
 do not authorize substituting another phase's observation as the current receipt.
 A late terminal may establish worker quiescence for separately admitted restoration,
 but cannot reopen the original cleanup or acceptance deadline.
+Preflight output directories, schemas and atomic no-clobber response publication
+before native execution. The runner owns decode, persistence, current native
+sampling and assertions after the actual UI return. Use one bound interaction
+qualification, preferably the first planned baseline cell. If it fails, stop that
+path and use the prepared human session. Derive future fixed budgets from observed
+latency; never renew an active or expired deadline. Keep host-wall and native clocks
+separate: prove causal request/response binding and native monotonic ordering, or
+measure an explicit clock-offset bound. Record scenario/evidence/cleanup separately;
+incomplete required evidence or cleanup leaves overall acceptance invalid.
+
 
 Before backend projection/assembly, verify the live helper files against the
 approved manifest, not merely hash labels in a response. Reject extra/missing files,

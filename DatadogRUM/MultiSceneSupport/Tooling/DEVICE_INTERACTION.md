@@ -140,8 +140,11 @@ them. Total window count alone cannot identify a peer or harmless auxiliary wind
 do not accept an earlier callback after a newer ambiguous sample. Capture current
 geometry and complete inventory together on the main queue at each critical
 boundary: a window can appear without another geometry callback. A later class
-observation cannot identify an earlier unrecorded window. Keep any allowed auxiliary
-signature scoped to the observed runtime/fixture; unknown windows remain failures.
+observation cannot identify an earlier unrecorded window.
+Class names are diagnostic metadata. Use source-supported fixture ownership and
+public framework provenance for auxiliary windows, with exact owned scene/window/
+controller/root/key identities. Never hardcode private classes or an arbitrary
+allowed window count; unknown ownership remains a failure.
 
 Use a dedicated file for `devicectl --json-output`; stdout may also contain a
 human-readable summary. Preserve both streams and validate the structured command

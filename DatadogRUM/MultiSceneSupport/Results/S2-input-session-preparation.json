@@ -1,0 +1,155 @@
+{
+  "schema_version": 1,
+  "work_item": "S2:A02 ordered single human-input session",
+  "status": "ORDERED_SCOPE_PREPARED_CAPTURE_AND_BUILD_BINDINGS_INCOMPLETE",
+  "updated_at": "2026-09-22T11:11:31.149282+00:00",
+  "owner": "Harness implementer",
+  "user_role": "Only real gestures and any required interactive sign-in",
+  "request_user_now": false,
+  "reason": "Do not request gestures before exact fixture/build/collector/oracle readiness. Current fold automation has one reviewed qualification opportunity; no equivalent diagnostic chain.",
+  "source_candidate": "c9faed816a1d4828d7d8c4b64acae01119425889",
+  "ordered_groups": [
+    {
+      "order": 1,
+      "gates": [
+        "C07",
+        "C08",
+        "C09",
+        "C10"
+      ],
+      "cases": [
+        {
+          "build": "baseline-26.5",
+          "device": "duo",
+          "framework": "UIKit",
+          "layout": "stack",
+          "multiple_scenes": false,
+          "input": "PREPARED HUMAN COLLECTOR REQUIRED"
+        },
+        {
+          "build": "baseline-26.5",
+          "device": "duo",
+          "framework": "UIKit",
+          "layout": "split",
+          "multiple_scenes": false,
+          "input": "PREPARED HUMAN COLLECTOR REQUIRED"
+        },
+        {
+          "build": "baseline-26.5",
+          "device": "duo",
+          "framework": "SwiftUI",
+          "layout": "stack",
+          "multiple_scenes": false,
+          "input": "PREPARED HUMAN COLLECTOR REQUIRED"
+        },
+        {
+          "build": "baseline-26.5",
+          "device": "duo",
+          "framework": "SwiftUI",
+          "layout": "split",
+          "multiple_scenes": false,
+          "input": "PREPARED HUMAN COLLECTOR REQUIRED"
+        },
+        {
+          "build": "candidate-26.5",
+          "device": "duo",
+          "framework": "UIKit",
+          "layout": "stack",
+          "multiple_scenes": false,
+          "input": "PREPARED HUMAN COLLECTOR REQUIRED"
+        },
+        {
+          "build": "candidate-26.5",
+          "device": "duo",
+          "framework": "UIKit",
+          "layout": "split",
+          "multiple_scenes": false,
+          "input": "PREPARED HUMAN COLLECTOR REQUIRED"
+        },
+        {
+          "build": "candidate-26.5",
+          "device": "duo",
+          "framework": "SwiftUI",
+          "layout": "stack",
+          "multiple_scenes": false,
+          "input": "PREPARED HUMAN COLLECTOR REQUIRED"
+        },
+        {
+          "build": "candidate-26.5",
+          "device": "duo",
+          "framework": "SwiftUI",
+          "layout": "split",
+          "multiple_scenes": false,
+          "input": "PREPARED HUMAN COLLECTOR REQUIRED"
+        }
+      ],
+      "actions": [
+        "Follow each frozen stack/split tap, switch, scroll and navigation script",
+        "Use one actual Closed-to-Open-to-Closed transition when requested"
+      ],
+      "automated_checks": "Exact native control effect and mapper/backend owners/counts; fresh pose geometry before dependent work.",
+      "binding_limit": "EXP210 candidate652ce169 is historical E01-only. Rebuilt/current-composition obligations require their own exact c9faed81 build binding; these labels confer no reuse credit."
+    },
+    {
+      "order": 2,
+      "gates": [
+        "H11",
+        "H12",
+        "H13",
+        "H14",
+        "H16"
+      ],
+      "source_pairs": [
+        "baseline62f64",
+        "candidatec9faed81"
+      ],
+      "actions": [
+        "UIKit: complete one edge pop, return to Detail, cancel one edge pop",
+        "SwiftUI: complete one edge pop, return to Detail, cancel one edge pop",
+        "Presentation: complete dismissal, re-present, cancel dismissal",
+        "Adaptive layout: Closed-to-Open-to-Closed while preserving selection/path",
+        "UIKit-hosted SwiftUI: push, present, dismiss and return"
+      ],
+      "automated_checks": "Recognized native transition begin/cancel/completion, actual geometry and independently mapped exact occurrence owner before callback work; inherited omissions kept separate from new regression.",
+      "remaining": "Freeze and qualify source-specific fixtures, screenshots, collector and per-step budgets before scheduling."
+    },
+    {
+      "order": 3,
+      "gates": [
+        "T03",
+        "T08",
+        "T10"
+      ],
+      "conditional": "Only input still unqualified after the single bounded automated mechanism qualification.",
+      "actions": [
+        "Follow Open then Closed prompts for each admitted Resource/Trace cell",
+        "Follow fold prompts during the two WebView long-lived/delayed-event cells"
+      ],
+      "automated_checks": "Existing strict Resource/Trace evidence and S2-T10-source-preparation.json; waiting, backend collection and cleanup automated."
+    },
+    {
+      "order": 4,
+      "gates": [
+        "F08"
+      ],
+      "actions": [
+        "Logged out: Log In with Subdomain, Back, Home, reactivate same app",
+        "Complete interactive sign-in if required",
+        "Open service list, select one existing service, return",
+        "Open one accessible dashboard, wait for ready prompt, perform one declared read-only browser interaction",
+        "Return to service list, Home, reactivate same process"
+      ],
+      "automated_checks": "Reuse the qualified app build pair and J01-J04 source/ownership contract. Query Browser separately from native partition and prove same-process lifecycle.",
+      "build_owner": "S2-F08-app-preparation.json",
+      "oracle_owner": "S2-F08-source-oracle.json",
+      "remaining": "Authenticated account/dashboard prerequisite and complete runtime mapper/callback evidence are not yet qualified."
+    }
+  ],
+  "operator_contract": [
+    "One prompt per ready step, with a screenshot of the actual control; never reuse consumed readiness.",
+    "No effect or missed boundary stops that cell; preserve evidence and continue independent cells.",
+    "Runner owns fresh reset/install, clocks, snapshots, full backend assertions and cleanup; user does not inspect raw logs.",
+    "No new S3 API, physical-Duo, unrelated CI, optional networking or Replay-content work."
+  ],
+  "gate_closures": []
+}

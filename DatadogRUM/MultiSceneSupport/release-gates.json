@@ -1175,7 +1175,7 @@
           ],
           "decisive_test": "Long-lived native/WebView association and delayed web events survive navigation/fold then detach without stale ownership.",
           "environment": "Candidate-vs-baseline native fixtures and Datadog app where integrated",
-          "evidence": "Reference evidence retained; this release candidate is not qualified.",
+          "evidence": "Reference evidence retained. Results/S2-T10-source-preparation.json freezes the four-marker source/ownership preparation; current candidate native/fold/app evidence remains open.",
           "required": true
         }
       }
@@ -2804,7 +2804,7 @@
           ],
           "decisive_test": "Freeze ordered scenarios, automated reset/capture/assertions and source/input/topology proof before requesting one session. Preserve failed automation; no weaker oracle. Include eight unresolved old-build Duo cells and changed ordinary gestures/dismissal/resize/hosting; candidate app journeys and adversarial active-work folds. Freeze finite inventory before execution.",
           "environment": "Single host; Duo simulator27.1 and connected eligible iPhone/iPad",
-          "evidence": "Reference evidence retained; this release candidate is not qualified. EXP-218 retains one native SDK-on pass and strict observer-oracle rejection: ended-touch ancestry is absent and the switch callback follows sendEvent return. SDK-off was not launched. One zero-test command rejection was corrected before execution under independent admission; all source/build/cleanup identities and the original deadline were retained. No cause or gate credit; a callback-side witness requires separate admission. Results/EXP-218-native-input-observation.json. Results/EXP-220-native-input-callback.json qualifies one baseline SDK-on/off callback observation on regular iPhone18Pro27.0. Both native input sequences succeed; SDK-on has separately reviewed offline path qualification and retains its original host STOP. Earlier variability remains unattributed. No selected-candidate/Duo, automatic-tracking or gate credit. Prior setup/cleanup failures remain; no equivalent pair without a new discriminator.",
+          "evidence": "Results/S2-input-session-preparation.json orders the finite S2 groups. Exact fixture/build/capture bindings are still required before requesting the single session; no input acceptance credit.",
           "required": true
         },
         "S3": {

@@ -1,0 +1,111 @@
+{
+  "schema_version": 1,
+  "work_item": "S2:T10 finite native/WebView preparation",
+  "status": "SOURCE_PREPARED_NOT_ADMITTED",
+  "updated_at": "2026-09-22T11:11:31.149282+00:00",
+  "owner": "SDK implementer",
+  "baseline": "62f64d7b655bdc83f3036c4ad81090a270f6202b",
+  "candidate": "c9faed816a1d4828d7d8c4b64acae01119425889",
+  "gate": "S2:T10",
+  "source_sha256": {
+    "A": {
+      "DatadogRUM/Sources/Integrations/WebViewEventReceiver.swift": "14c7429d7eb7739dee6a84019ec8c5159da1339c05db9571baa0bdd89f1759b7",
+      "DatadogRUM/Sources/RUMMonitor/Scopes/Utils/ViewCache.swift": "2e11fe514e93e4e6b7795fe53d671241869cea9a2e5bc8da6b1432abe35200ee",
+      "DatadogRUM/Sources/RUMMonitor/Scopes/RUMSessionScope.swift": "7d7adf4e33ca914cbd6424b1b45cdb425f19b0cb9c2919dbe5ce6b4f4b956395",
+      "DatadogWebViewTracking/Sources/DDScriptMessageHandler.swift": "e7b53592a7dd4cf6db5fdce56d81b13e23c9a719456165558149be1ae5757310",
+      "DatadogWebViewTracking/Sources/MessageEmitter.swift": "b8579127d2a87a1886c4e6d101c9530220089d682d0fa28c1219f21eec018c57"
+    },
+    "B": {
+      "DatadogRUM/Sources/Integrations/WebViewEventReceiver.swift": "14c7429d7eb7739dee6a84019ec8c5159da1339c05db9571baa0bdd89f1759b7",
+      "DatadogRUM/Sources/RUMMonitor/Scopes/Utils/ViewCache.swift": "142961ec6c5ce10c61595b306e16f98ca34b1047694057bcaaf3d2d977a251ad",
+      "DatadogRUM/Sources/RUMMonitor/Scopes/RUMSessionScope.swift": "e59f10a3b3990c9b2c334e9168738aed2a57563bcd10f6f4cfa931a58051acda",
+      "DatadogWebViewTracking/Sources/DDScriptMessageHandler.swift": "e7b53592a7dd4cf6db5fdce56d81b13e23c9a719456165558149be1ae5757310",
+      "DatadogWebViewTracking/Sources/MessageEmitter.swift": "b8579127d2a87a1886c4e6d101c9530220089d682d0fa28c1219f21eec018c57"
+    }
+  },
+  "scope": "One single-scene baseline/candidate comparison with real WKWebView callbacks, long active lifetime, navigation, fold and delayed events. No scene API, logical peer, Replay content or physical claim.",
+  "source_findings": [
+    "Browser receiver preserves browser view/source/service/sdk identity, replaces native application/session, and resolves container from corrected browser event time and Replay-eligible cache entries. Native mapper does not observe raw Browser writes.",
+    "Candidate active entries survive elapsed TTL; inactive entries expire more than180seconds after native deactivation. Baseline expiry is measured from insertion and occurs during another insert.",
+    "Physical removal of a WKWebView is not the cache deactivation/expiry boundary. A delayed old-dated event before inactive expiry may correctly retain A after detach; after expiry it must not inherit B."
+  ],
+  "finite_cells": [
+    {
+      "arm": "A",
+      "environment": "Existing eligible Duo27.1; fresh identities and clean task-only install",
+      "native_launches": 1,
+      "fold_open": 1,
+      "fold_closed": 1,
+      "retries": 0
+    },
+    {
+      "arm": "B",
+      "environment": "Existing eligible Duo27.1; fresh identities and clean task-only install",
+      "native_launches": 1,
+      "fold_open": 1,
+      "fold_closed": 1,
+      "retries": 0
+    }
+  ],
+  "ordered_markers": [
+    {
+      "id": "M1",
+      "precondition": "Actual native A active and Replay-eligible; same WKWebView remains attached for more than180seconds with monotonic evidence.",
+      "browser_event": "Fresh A event; retain two additional immutable A-dated envelopes for M3/M4.",
+      "expected": "Exact A container in both arms; original Browser ID remains distinct."
+    },
+    {
+      "id": "M2",
+      "precondition": "Real A-to-B native navigation and actual display-evidenced fold/return; B readiness mapper and WebKit document readiness precede emission.",
+      "browser_event": "Fresh B event.",
+      "expected": "Exact B container; same native process/scene/session; no accidental A assignment."
+    },
+    {
+      "id": "M3",
+      "precondition": "Remove retained A WKWebView from its native parent; prove window==nil and A inactive, but less than180seconds since A deactivation.",
+      "browser_event": "Emit the first frozen A-dated envelope through the same real retained WKWebView/installed SDK handler.",
+      "expected": "Candidate A container. Baseline may lack A after B insertion purges insertion-aged A; preserve the exact source-predicted difference. Never assign B."
+    },
+    {
+      "id": "M4",
+      "precondition": "More than180seconds since A deactivation; no fake clock or forced purge; B remains active.",
+      "browser_event": "Emit second frozen A-dated envelope through the real callback; then disable tracking and release retained A.",
+      "expected": "Candidate container absent; Browser/application/session identity preserved; no B inheritance. Prove A deallocation with weak reference after callback/write completion."
+    }
+  ],
+  "capture_contract": [
+    "Immutable per-arm run/nonce/source/helper/build/product identity, complete owned scene/window/controller/actual display inventory and current native A/B mapper IDs.",
+    "Record JavaScript invocation, actual WKScriptMessage receipt/body/WebView identity/attachment, native deactivation interval and local write or marker-specific backend acknowledgement separately.",
+    "An exact event acknowledgement is repeatable and tied to its browser UUID. currentSessionID, page load completion and elapsed sleep are not writer barriers.",
+    "Query full application/session without native service or SDK filters; independent count and complete raw pages, then exact native/browser partitions. Keep raw available view revisions.",
+    "After required evidence, stop task SDK work, remove only the task app, prove original display/device/app inventory and input-worker quiescence. Separate scenario/evidence/cleanup verdicts."
+  ],
+  "negative_controls": [
+    "wrong A/B container",
+    "Browser ID substituted for native container",
+    "missing actual WK callback",
+    "stale/restored identity",
+    "native owner assertion after emission",
+    "Replay eligibility absent",
+    "detach mislabeled as expiry",
+    "TTL measured from insertion rather than deactivation",
+    "late old event inherits B",
+    "incomplete Browser inventory due native filter",
+    "consumed acknowledgement",
+    "missing post-TTL emission or retained A release"
+  ],
+  "independent_preparation": [
+    "Implement the scalar marker collector and strict timeline/ownership oracle without desktop access.",
+    "Reuse EXP165 real WK/collector pattern and EXP183 callback-forwarding pattern only; their S3 routing assumptions are excluded.",
+    "Reuse existing complete MCP inventory transport and exact source/build/cleanup runner after the current scoped review."
+  ],
+  "remaining_prerequisites": [
+    "Implement source-only fixture and offline controls; freeze fixed runtime/transport/cleanup budgets before admission.",
+    "Bind current actual Replay eligibility and native/WebKit/server-offset timestamps; do not infer them from configuration.",
+    "Use the qualified fold mechanism once available, otherwise include these two cells in the one prepared human session.",
+    "Datadog integrated J03 remains separately owned by S2-F08-source-oracle.json."
+  ],
+  "gate_closures": [],
+  "native_launches": 0,
+  "new_experiment_number": null
+}

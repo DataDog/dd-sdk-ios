@@ -14,7 +14,9 @@ plan for reviewable evidence; no TestFlight upload or release is authorized.
 | H13 ordinary presentation | Frozen sheet/cover routes and dismissal witness | Finish and cancel the declared presentation gestures | Accepted destination/occurrence, callback ordering, no duplicate or stray view/work |
 | H14 ordinary adaptive layout | One actual scene, native geometry/trait recorder | Fold/unfold and use the visible split-layout controls in the fixed script | Actual geometry transitions and native input effects; exact baseline/candidate owner/name differences |
 | H16 UIKit-hosted SwiftUI | Existing hybrid host, automatic tracking, no new navigation integration | Execute the fixed push/present/return script | Same automatic detection/count/owner contract; classify pre-existing omissions |
-| F08 Datadog app | Candidate/baseline app builds frozen; normal-mode telemetry enabled; probe-application configuration and distinct service | Monitors list/detail, dashboard/detail WebView, scroll and account journey using accessible test data | Native action receipts plus exact session/view/work ownership; only compare the integration actually present |
+| F08 Datadog app | Candidate/baseline app builds frozen; normal-mode telemetry enabled; probe-application configuration and distinct service | Logged-out login, Services list/detail/Back, dashboard WebView and same-process lifecycle using accessible test data | Native action receipts plus exact session/view/work ownership; only compare the integration actually present |
+
+The [ordered S2 preparation](Results/S2-input-session-preparation.json) owns the fixed groups and remaining build/capture prerequisites. [WebView preparation](Results/S2-T10-source-preparation.json) proceeds independently of desktop input. The session is not ready to request until those prerequisites are complete.
 
 Each group can contain dozens of predeclared steps. Before requesting the session,
 produce one ordered checklist with baseline/candidate source and build identities,

@@ -98,3 +98,12 @@ No candidate, Detail transition, held-resource release or final backend collecti
 ran. The reviewed next step is fresh atomic geometry plus all-window inventory at
 each critical boundary; auxiliary classification must remain fixture/runtime-scoped
 and reject unknown windows without weakening accepted owners or scene continuity.
+
+The bounded execution correction now combines exact returned UI observations,
+post-return native sampling, local parsing/validation, backend polling and fenced
+cleanup in the existing runner. Full window inventory and public defining-bundle
+provenance are bound to the audited fixture/compiled SDK sources; private class names
+and total-window cardinality do not decide acceptance. The owning result retains
+34 offline controls and the scoped review's clock-domain correction. One baseline
+full cell is planned to qualify the mechanism; no additional diagnostic cell or
+candidate run is admitted. Scenario, evidence and cleanup verdicts remain separate.

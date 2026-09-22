@@ -2,8 +2,8 @@
   "schema_version": 1,
   "experiment": "EXP-221",
   "stage": "duo-fold-one-session",
-  "status": "WINDOW_DIAGNOSTIC_RECORDED_ATOMIC_TOPOLOGY_BOUNDARY_NEXT",
-  "updated_at": "2026-09-22T10:24:58.859969+00:00",
+  "status": "PRIOR_INVALIDS_PRESERVED; BOUNDED_CORRECTION_PREPARED",
+  "updated_at": "2026-09-22T11:17:06.650377+00:00",
   "owner": "SDK implementer; root owns sole build/native lane",
   "gates": [
     "S2:T03",
@@ -31,7 +31,7 @@
   "builds": 5,
   "native_launches": 3,
   "gate_closures": [],
-  "next_action": "Prepare and review an atomic current-geometry/full-window fixture boundary and exact runtime-scoped auxiliary classification with negative controls. Qualify baseline evidence before admitting candidate acceptance. Preserve both invalid runs and their separate restorations; no native retry under closed admissions.",
+  "next_action": "Admit exactly one baseline automatic full fold cell. Candidate remains unadmitted until baseline mechanism qualifies. On mechanism failure stop automation and use the prepared human-input session; advance T10/F08 independently.",
   "implementation_inputs": {
     "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp221-duo-fold-03hu30t3/implementation-inputs-v2.json",
     "sha256": "27acb5ef0b30945980ab98c7e922f508e6e6593bfe5dbbe75cbd8df6708dbaee"
@@ -405,5 +405,44 @@
       "Automatic approval review rejected reuse of reversed Open-phase wire observations for cleanup. Actual cleanup response was retained directly, after the original pose deadline.",
       "Separate cleanup caller first supplied display reference instead of decoded active object, then a runtime list instead of its single record. One native removal completed; final read-only verification confirmed all original-state checks within the separate120s bound."
     ]
+  },
+  "execution_correction": {
+    "root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp221-fold-atomic-topology-t_l4dazz",
+    "status": "REVIEWED_READY_FOR_SINGLE_BASELINE_QUALIFICATION",
+    "definition": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp221-fold-atomic-topology-t_l4dazz/definition-v2.json",
+      "sha256": "842d9f2cc64ac9a006ebca940ec744b469bfd1dbeacb663a2d7924822c82480b"
+    },
+    "budgets": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp221-fold-atomic-topology-t_l4dazz/budgets.json",
+      "sha256": "4749a7fa502e8865e0ed0796274ce0c37e212fb11aec9daabb721373f3fe22f7"
+    },
+    "ownership_audit": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp221-fold-atomic-topology-t_l4dazz/ownership-audit.json",
+      "sha256": "6bc5788e68262960b1eb585bc970372249a064d65c9d17f6a237b6a31cbc43c5"
+    },
+    "controls": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp221-fold-atomic-topology-t_l4dazz/controls-result.json",
+      "sha256": "945ac79ab754a8a91766487f4001cd09d6bacd4ad89c6077fce5a2a57435c15d"
+    },
+    "review": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp221-fold-atomic-topology-t_l4dazz/implementation-review.json",
+      "sha256": "80637905079f20b72c4713fe9d63d35bfa64d90fdd4fd872d397b3219cce7f0f"
+    },
+    "correction": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp221-fold-atomic-topology-t_l4dazz/review-correction.json",
+      "sha256": "eb8cc768ee69d7d34a0012b2a97782e617f4491ad6d6fe6a2b85839d9f54d77b"
+    },
+    "fixture_sha256": "058cde51b035476f24843eefac31aff4ccb879f7549864b84043aef9427d112d",
+    "helper_manifest_sha256": "947396ba70dc28cdf9e5d7a2cdfe5fa205cf4c5d5c98b904545b161a72a5616a",
+    "attempt_limit": {
+      "baseline_builds": 1,
+      "baseline_automatic_cells": 1,
+      "retries": 0
+    },
+    "builds": 0,
+    "native_launches": 0,
+    "gate_closures": [],
+    "failure_policy": "Stop this automated path if the first planned baseline cannot qualify the mechanism; prepare the already-planned ordered human session. No equivalent input or SDK-on/off diagnostic chain."
   }
 }
