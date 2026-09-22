@@ -54,5 +54,9 @@ baseline62f64 against selectedc9faed81. Original input failures above are unchan
 The human observer and four genuine source/compiler arms qualify; no native cell
 has run. The rejected fixture compiler expression and corrected builds remain
 separate. Source review, controls and full product identities live in that record.
-Complete the bounded human cell/fold/cleanup runner before its first planned baseline
-qualification. This preparation adds no SDK change or behavioral gate credit.
+The complete human runner is reviewed and frozen with88 offline controls. It binds
+actual fold geometry, cell admission, compact sidebar input, durable mapper capture,
+worker quiescence and task-only cleanup. Original synthetic supervisor failures and
+their repair controls remain in its receipt. First planned baseline qualification
+awaits the ordered human session; no stage is admitted. This preparation adds no
+SDK change, additional build or behavioral gate credit.

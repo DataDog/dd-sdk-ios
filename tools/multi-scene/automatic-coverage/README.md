@@ -126,8 +126,26 @@ persisted prefixes before readiness is consumed. This is a paced fixture compari
 not an uninstrumented production performance measurement.
 
 `human_journey.py` retains the original ordered flows. `human_capture.py` connects
-fresh requests, durable prefixes, screenshots, native effects and actual background
-capture. It is incomplete: whole-cell admission, fold, compact sidebar and cleanup
-integration remain. Do not invoke it as acceptance. The first planned baseline
-must qualify the completed mechanism; no extra diagnostic or equivalent retry.
-Input witnesses prove observed native effects, not independent human causality.
+fresh requests, durable prefixes, actual screenshots, native effects, fold geometry
+and background capture. `human_runtime.py prepare --root BUILD_ROOT` verifies the
+four qualified builds and prepares the same40 cells and manifest-only product
+copies. It performs no build or native work. Full runtime review and controls must
+bind the resulting plan before `stage` can consume fresh environment and operator
+readiness receipts. A stage and every child have fixed execution/cleanup clocks.
+
+`human_operator.py --directory RUNTIME/operator --seconds SECONDS` serves a local,
+read-only prompt page. It cannot supply input, readiness or acceptance. Each actual
+screenshot belongs to the current unexpired prompt; old generations cannot be
+shown after the step changes. The runner captures native effects and advances the
+page itself. It preserves child output before parsing and keeps cleanup prompts
+available when a cell is interrupted. It sends no native input.
+
+`human_runtime.py run --root BUILD_ROOT` consumes the admitted matrix in adjacent
+baseline/candidate pairs. The first planned baseline qualifies the changed input
+mechanism. Any failed mechanism stops this path without a diagnostic retry; a
+source-pair difference stops expansion for classification. Preserved cells must
+still match their stage, source/product binding and complete artifact inventory.
+The existing comparison oracle retains occurrence owners and unchanged limitations.
+The comparison report closes no gate by itself and retains the regular27.0 versus
+Duo27.1 OS-patch confound. Input witnesses prove observed native effects, not
+independent human causality. Native qualification remains unexecuted.

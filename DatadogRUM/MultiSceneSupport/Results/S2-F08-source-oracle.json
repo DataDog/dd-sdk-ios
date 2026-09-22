@@ -182,7 +182,7 @@
     "partial cleanup relabeled as ordinary pass"
   ],
   "admission_limits": "This is source preparation only. No runtime/oracle pass, gate closure, new experiment or environment retry is implied. Existing J01, Duo and EXP220 automation stops remain closed; fresh execution needs materially changed environment and reviewed fixed admission.",
-  "next_action": "Prepare a separate bounded J01 continuation with exact backend tag fields and the reviewed transport decoder. Preserve all earlier stops. Authenticated journeys and complete mapper/callback claims remain unqualified.",
+  "next_action": "Complete the separate validation-only app observation binding described in runtime_capture_preparation; preserve accepted builds and all original J01 stops. Request account/input participation only when the ordered session capture is ready.",
   "review": {
     "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-f08-oracle-preparation-pincwto7/source-review.json",
     "sha256": "41f6a1f5348c383e8c11770dc50da59e45e9dc020559a49c2a60d8691815d6e9"
@@ -243,5 +243,35 @@
     "backend_sdk_tag": "3.17.0_62f64d7b",
     "tag_rule_source": "https://docs.datadoghq.com/getting_started/tagging/",
     "runtime_acceptance": false
+  },
+  "runtime_capture_preparation": {
+    "state": "APP_OBSERVATION_BINDING_REQUIRED_BEFORE_RUNTIME",
+    "at": "2026-09-22T19:27:10.255660+00:00",
+    "scope": "Existing J01-J04 only; no app, SDK, build, native or backend action in this source check.",
+    "inspected_baseline_app_sources": {
+      "Targets/Platform/DatadogObservability/ObservabilitySystem.swift": "7552a0e49aba9f4e67c352295449bfcb8fffc2f7f2df8a6294e02ab86c23aac0",
+      "Targets/Platform/DatadogObservability/UserMonitorLive.swift": "dfa4fccbb57a65e541187f7b1487f520ae01557dbe52e975f384ae1a3ef7578b"
+    },
+    "findings": [
+      "The accepted normal-mode app builds configure no view/action/resource/long-task pass-through mapper. Their only error mapper filters async-load cancellation; backend and accessibility evidence cannot supply missing mapper revisions or SDK callback order.",
+      "Explicit SwiftUI tracking lives in UserMonitorLive.viewModifier, while the UIKit predicate computes a RUMView without recording its controller/callback. Native/browser timing cannot be reconstructed from same-name backend views.",
+      "The accepted build pair stays valid for its original scope. Adding a capture discriminator requires separate symmetric validation-only app observation and new build identities; do not modify or relabel the existing products."
+    ],
+    "implementation_constraints": [
+      "Preserve normal app routing, UI, service calls, SDK features, predicates, mapper return values and the cancellation filter, including its nil result.",
+      "Validation launch mode only; record every accepted mapper value with ordered durable sequence before using it as readiness. Keep raw controlled-session evidence local; no credential/configuration output or public data commit.",
+      "Observe existing native callbacks, explicit SwiftUI lifecycle, same process and the complete owned scene/window/controller inventory. No replacement delegate, new gesture, swizzle or manual telemetry added as a proxy.",
+      "Bind callback work to independently captured latest owner at its real boundary; source/predicate invocation is not automatically proof of UIKit viewDidAppear ordering.",
+      "Keep browser source/view IDs distinct from native container/session IDs. Missing replay eligibility is incomplete ownership coverage, not a Replay-content defect.",
+      "Qualify changed capture in the first planned baseline journey, not another input diagnostic. Preserve all original Home/input failures; use the one ordered human session."
+    ],
+    "remaining": [
+      "Define the smallest symmetric app observation patch and offline controls",
+      "Bind exact callback/mapper/browser capture and review before any new build",
+      "Fresh authenticated account/service/dashboard prerequisite in the single human session"
+    ],
+    "new_builds_admitted": false,
+    "native_launches": 0,
+    "gate_closures": []
   }
 }

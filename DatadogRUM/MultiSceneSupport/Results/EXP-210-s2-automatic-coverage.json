@@ -580,7 +580,7 @@
     "scope": "388 common SDK objects; full files differ. Five selected __TEXT.__text sections match, including event and scroll instrumentation/proxy. This is not whole-binary identity or causal proof."
   },
   "human_current_composition": {
-    "state": "OBSERVER_REVIEWED_FOUR_BUILDS_QUALIFIED_RUNTIME_INCOMPLETE",
+    "state": "REVIEWED_RUNTIME_AND_BUILDS_PREPARED_FOR_SINGLE_HUMAN_SESSION",
     "defined_at": "2026-09-22T17:48:56.817730+00:00",
     "gates": [
       "S2:C07",
@@ -607,7 +607,7 @@
     "discriminator": "Human gestures, fresh native request/phase identity, existing native callback effects and a passive UIScrollView pan/content-offset witness. Real display geometry, complete window inventory and mapper occurrences remain independently checked. No XCTest success is synthesized.",
     "observer_scope": "Generate only an observation-file bridge into copied fixtures. Preserve UIKit/SwiftUI view hierarchy, controls, navigation, default RUM configuration, mapper pass-through and application scene declaration. Add no swizzle, gesture recognizer, delegate replacement, manual RUM view/action or SDK edit. Existing scroll recognizers receive observation targets only. Read public accessibility identifiers/frames only when a host snapshot is requested, to bind the actual visible control and scroll target. Missing public observation invalidates that mechanism; no private class rule.",
     "observer_qualification": "First planned baseline cell; no extra diagnostic cell or repeated failed input path. An unobservable control effect fails qualification.",
-    "remaining": "Complete actual-display fold, compact UIKit split sidebar, whole-cell admission/manifest variants and shared cleanup integration; review the complete runner before the first planned baseline qualification. Request the one human session only after the remaining family bindings are ready.",
+    "remaining": "Fresh environment and operator readiness after the ordered session bindings are complete. First planned baseline qualifies the actual human mechanism; no native launch, retry or stage admitted.",
     "build_contract": {
       "keys": [
         "baseline-27.1",
@@ -649,7 +649,10 @@
       "progression": "First planned baseline qualifies actual control visibility, native effects and observer cost; any failed mechanism stops equivalent input paths, no diagnostic retry. Candidate pair before wider matrix.",
       "native_evidence": "Exact durable native prefixes, source-bound visible control/callback or appearance, counter/toggle effect, actual UIScrollView pan/displacement, complete window inventory, real display transition, actual Home/background and complete local mapper inventory.",
       "cleanup": "Existing acceptance helper preserves native Documents before task-only removal; exact original app/device/display restoration, separate scenario/evidence/cleanup verdicts.",
-      "comparison": "Reuse existing summarize/compare ownership and occurrence semantics after independent human input qualification; no synthesized XCTest result and no backend claim."
+      "comparison": "Reuse existing summarize/compare ownership and occurrence semantics after independent human input qualification; no synthesized XCTest result and no backend claim.",
+      "human_fold_seconds": 240,
+      "fold_input_reserve_seconds": 60,
+      "fold_budget_basis": "Reuse the reviewed Resource fold bound: up to180s human observation plus60s native/display/persistence reserve. No model round trips for local capture; all clocks fixed before each step."
     },
     "build_root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-automatic-human-typed-build-bfh4vhwn/run",
     "observer_controls": {
@@ -681,7 +684,7 @@
       "total_build_invocations_max": 5,
       "equivalent_retries": 0
     },
-    "updated_at": "2026-09-22T18:30:05.832696+00:00",
+    "updated_at": "2026-09-22T19:32:42.222380+00:00",
     "build_plan": {
       "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-automatic-human-typed-build-bfh4vhwn/run/build-plan.json",
       "sha256": "bd446eb004af5fbeb22e41486c5981e86fc284d4198c046551aa8802b0a9a800"
@@ -721,28 +724,53 @@
       "native_launches": 0
     },
     "capture_progress": {
-      "state": "OFFLINE_PREPARATION_ONLY",
-      "new_controls": 14,
+      "state": "COMPLETE_OFFLINE_PREPARATION_NATIVE_UNQUALIFIED",
+      "offline_controls_in_complete_runtime_qualification": 88,
       "ready": [
-        "Finite 14-step regular /33-step Duo order",
-        "Fresh request UUID and exact durable prefix before readiness",
-        "Source callback plus exact native counter change",
-        "Original SwiftUI destination appearance and pan/content-offset effects",
-        "Fixed per-step/cell clocks and actual Home/background persistence",
-        "Native foreground geometry and appearance precede the first snapshot request"
+        "Finite original40-cell order with first baseline/candidate qualification pair",
+        "Source/build/full product and manifest-only copy identity",
+        "Fresh request UUID, durable prefix, exact native effects and observer cost",
+        "Actual-display fold with source-owned window/controller and legacy viewport discriminator",
+        "Compact UIKit sidebar readiness, real Home/background and full local mapper inventory",
+        "Fixed stage/step/cell clocks, output preflight and interrupted child/group cleanup",
+        "Cleanup-only prompt guard and separate scenario/evidence/cleanup verdicts"
       ],
       "incomplete": [
-        "Whole-cell source/build/install identity and admission",
-        "Actual-display fold integration",
-        "Compact UIKit split sidebar handling",
-        "Manifest-true product copies",
-        "Existing shared cleanup integration",
-        "Scoped complete-runner review"
+        "Actual first-baseline mechanism qualification and finite native comparisons",
+        "Other family bindings and human-session readiness"
       ]
     },
     "capture_controls_initial_readiness": {
       "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-automatic-human-source-u1z2h9lw/initial-capture-controls.json",
       "sha256": "a835af84cfe81c6f46aeb931ceb57a7741b7b3357b5c7ef641c413ade31cd617"
+    },
+    "runtime_preparation": {
+      "state": "REVIEWED_PREPARATION_ONLY",
+      "root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-automatic-human-typed-build-bfh4vhwn/run/runtime",
+      "plan": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-automatic-human-typed-build-bfh4vhwn/run/runtime/runtime-plan.json",
+        "sha256": "e2e4ae5611a72045364222e0eff725343fc14a1fe3e318be3a60389136468ab8"
+      },
+      "controls": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-automatic-human-typed-build-bfh4vhwn/run/runtime/controls.json",
+        "sha256": "7ef9a914bb2ddb432dbefe573fe9fcc26f8debfb2ad67667dcd971340e59d43d"
+      },
+      "review": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-automatic-human-typed-build-bfh4vhwn/run/runtime/review.json",
+        "sha256": "b59754c84df2265b500524258944b8ce9a07e4f8d4b038c86fcd5e5266733705"
+      },
+      "offline_controls": 88,
+      "helper_files": 40,
+      "product_copies": 12,
+      "matrix_cells": 40,
+      "additional_builds": 0,
+      "native_launches": 0,
+      "native_admitted": false,
+      "qualification": "First existing baseline-27.1 regular UIKit stack cell, followed by its exact candidate pair. A failed mechanism or unexplained source-pair difference stops expansion.",
+      "worker_safety": "Dedicated cell group, native-descendant quiescence before task teardown, immutable child result and separate supervisor absence receipt before final acceptance.",
+      "operator": "Read-only loopback prompt page; exact returned screenshot generation/expiry, automatic native-effect progression, cleanup retires ordinary prompts.",
+      "comparison": "120 finite view/action comparisons across source, genuine rebuild, device-plus-OS-patch and scene declaration. Source differences require classification; complete local capture does not itself close release gates.",
+      "prior_offline_failures": "The controls receipt retains the two pre-repair EOF/exit synthetic failures; the specific EOF-before-exit and descendant controls now pass. No SDK or native regression finding."
     }
   }
 }

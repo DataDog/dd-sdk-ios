@@ -187,6 +187,13 @@ not support that representation. Preserve a failed cleanup verdict separately fr
 later proof of app, data, simulator and process absence. Persist terminal state even
 when cleanup raises, so an earlier running-state receipt cannot become the cursor.
 
+A reaped driver PID does not prove its command descendants are gone. Keep native
+commands in the owned cell group, prove worker quiescence before task teardown,
+and require a final group-absence receipt before overall acceptance. Preserve the
+child result separately from the supervisor verdict. Retire the actionable human
+prompt immediately on cleanup entry; publish any restoration gesture as a separate
+cleanup request. EOF can precede process exit: wait within the original cleanup
+budget before escalation, and never relabel a late absence receipt as timely.
 
 Export app JSONL, runner checkpoints/hierarchy/images, console and partial xcresult
 before uninstall. Bind each to this run and contiguous sequence. Preserve raw

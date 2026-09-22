@@ -10,6 +10,7 @@ import time
 import uuid
 import human_contract as oracle
 import human_journey as journey
+import human_fold
 import human_build
 from acceptance_common import require
 import s2_hosting_workflow as shared
@@ -102,12 +103,44 @@ class Collector:
         shared.save(folder/'prompt.json',prompt,exclusive=True)
         print(json.dumps({'human_input':prompt}),flush=True)
         return actual
+    def ensure_root(self,layout,prefix):
+        deadline=min(self.deadline,time.time()+self.budget['human_step_seconds'])
+        initial,_=self.snapshot(prefix+'.root.readiness',deadline)
+        root='sidebar' if layout=='split' else 'home'
+        try:
+            journey.visible(initial,root,self.binding);return
+        except ValueError:
+            require(self.framework=='UIKit' and layout=='split','expected root is not observable')
+        journey.visible(initial,'empty',self.binding)
+        before,folder=self.snapshot(prefix+'.revealSidebar.before',deadline)
+        actual=self.prompt(prefix+'.revealSidebar','Use the visible native Back control to show Sidebar once.',folder,deadline,before)
+        def appeared():
+            values=[r for r in self.pending() if r['sequence']>before['sequence'] and r['kind']=='native_appear' and r['payload']['screen']=='sidebar']
+            return values if values else None
+        self.wait(appeared,deadline)
+        require(time.time()+self.budget['settle_seconds']<deadline,'sidebar left no observation interval')
+        time.sleep(self.budget['settle_seconds'])
+        after,after_folder=self.snapshot(prefix+'.revealSidebar.effect',deadline)
+        selected=journey.interval(self.evidence,before,after)
+        require(not any(r['kind'] in ['human_callback','native_input'] for r in selected),'unexpected fixture action while revealing Sidebar')
+        native=oracle.one([r for r in selected if r['kind']=='native_appear' and r['payload']['screen']=='sidebar'],'native Sidebar appearance')
+        timed=oracle.one([r for r in selected if r['kind']=='human_appearance' and r['payload']['screen']=='sidebar'],'timed Sidebar appearance')
+        require(timed['payload']['request_id']==before['payload']['request_id'] and timed['sequence']<native['sequence']
+                and before['payload']['uptime_ns']<=timed['payload']['uptime_ns']<=after['payload']['uptime_ns'],'stale Sidebar effect')
+        journey.visible(after,'sidebar',self.binding)
+        observed=transport.display(self.device,after_folder,'display',deadline)
+        require(displays.display_signature(displays.active_display(json.loads(actual),self.device))==
+                displays.display_signature(displays.active_display(json.loads(observed),self.device)),'fold cannot qualify a native Back effect')
+        self.receipts += [{'run_id':self.run,'phase':prefix+'.revealSidebar.before','timestamp':before['timestamp'],'payload':{}},
+                          {'run_id':self.run,'phase':prefix+'.revealSidebar.effect','timestamp':after['timestamp'],'payload':{'native_sequence':native['sequence']}}]
     def perform(self,step):
         deadline=min(self.deadline,time.time()+self.budget['human_step_seconds']);phase=step['phase']
         before,folder=self.snapshot(phase+'.before',deadline)
         journey.visible(before,step['screen'],self.binding);oracle.target(before,step['target'],self.binding)
         self.receipts.append({'run_id':self.run,'phase':phase+'.before','timestamp':before['timestamp'],'payload':{'target':step['target']}})
-        instruction=('Scroll inside ' if step['kind']=='scroll' else 'Activate ')+step['target']+' once; then wait for the next prompt.'
+        control=step['target'].split('.')[-1]
+        label={'tap':'Tap','toggle':'Enable','scroll':'the rows','next':'Open detail','sheet':'Present sheet','back':'Return home','close':'Dismiss sheet'}[control]
+        instruction='On '+step['screen']+', '+('scroll ' if control=='scroll' else 'tap ')+label+' once, then wait.'
         self.prompt(phase,instruction,folder,deadline,before)
         def observed():
             selected=[r for r in self.pending() if r['sequence']>before['sequence']]
@@ -117,6 +150,7 @@ class Collector:
             else:ready=[r for r in selected if r['kind']=='native_input']
             return ready if ready else None
         self.wait(observed,deadline)
+        print(json.dumps({"human_status":{"instruction":"Input observed. Capturing its effect; wait for the next ready step."}}),flush=True)
         require(time.time()+self.budget['settle_seconds']<deadline,'effect left no settled observation interval')
         time.sleep(self.budget['settle_seconds'])
         after,after_folder=self.snapshot(phase+'.effect',deadline)
@@ -127,6 +161,38 @@ class Collector:
             'before_events_sha256':shared.sha(folder/'events.jsonl'),'after_events_sha256':shared.sha(after_folder/'events.jsonl'),
             'finished_at':time.time(),'deadline':deadline},exclusive=True)
         return effect
+    def fold(self,phase,sdk):
+        deadline=min(self.deadline,time.time()+self.budget['human_fold_seconds'])
+        input_deadline=deadline-self.budget['fold_input_reserve_seconds']
+        before,folder=self.snapshot(phase+'.before',deadline);before_rows=list(self.evidence)
+        self.receipts.append({'run_id':self.run,'phase':'await-'+phase,'timestamp':before['timestamp'],'payload':{}})
+        before_display=self.prompt(phase,'Set the selected Duo to '+('Closed' if phase=='close' else 'Open')+' once.',
+                                   folder,input_deadline,before)
+        active=displays.active_display(json.loads(before_display),self.device)
+        index=0;after_display=None
+        while time.time()+30<input_deadline:
+            self.live(input_deadline);time.sleep(1)
+            current=transport.display(self.device,folder,'observed-'+str(index),input_deadline);index+=1
+            observed=displays.active_display(json.loads(current),self.device)
+            if observed['uniqueId']!=active['uniqueId']:
+                after_display=current;break
+        require(after_display is not None,'human fold did not change the actual display in time')
+        print(json.dumps({'human_status':{'instruction':'Display transition observed. Capturing ownership evidence; wait.'}}),flush=True)
+        require(time.time()+self.budget['settle_seconds']<deadline,'fold left no native observation reserve')
+        time.sleep(self.budget['settle_seconds'])
+        after,after_folder=self.snapshot(phase+'.effect',deadline)
+        mode=human_fold.transition(before,after,self.binding,before_display,after_display,device=self.device,
+            sdk=sdk,phase=phase,before_rows=before_rows,after_rows=self.evidence)
+        # Retain the response that established this transition, never an earlier
+        # observation with a matching signature.
+        (after_folder/'actual-display.json').write_bytes(after_display)
+        proof={'state':'FOLD_QUALIFIED','run_id':self.run,'phase':phase,'mode':mode,'deadline':deadline,
+            'input_deadline':input_deadline,'finished_at':time.time(),'before_sequence':before['sequence'],
+            'after_sequence':after['sequence'],'actual_display_sha256':shared.sha(after_folder/'actual-display.json'),
+            'actual_capture_command':str(folder/('observed-'+str(index-1)+'.json'))}
+        self.live(deadline);shared.save(after_folder/'fold.json',proof,exclusive=True)
+        self.receipts.append({'run_id':self.run,'phase':'received-'+phase,'timestamp':after['timestamp'],'payload':proof})
+        return proof
     def home(self):
         deadline=min(self.deadline,time.time()+self.budget['human_step_seconds'])
         before,folder=self.snapshot('background.before',deadline)
@@ -137,6 +203,7 @@ class Collector:
             if not values:return None
             require(len(values)==1,'duplicate native background');return values[0]
         event=self.wait(background,deadline)
+        print(json.dumps({'human_status':{'instruction':'Background observed. Capturing final events and cleanup; wait.'}}),flush=True)
         identifier='background-'+str(event['sequence']);path=self.documents/('events-checkpoint-'+identifier+'.json')
         self.wait(lambda:path if path.exists() else None,deadline)
         raw=(self.documents/'events.jsonl').read_bytes();checkpoint=path.read_bytes()
