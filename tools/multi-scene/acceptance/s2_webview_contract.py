@@ -76,6 +76,24 @@ def contains_fields(actual, expected):
     return type(actual) is type(expected) and actual == expected
 
 
+def sealed_evidence(raw, terminal, identity):
+    """Verify the final durable snapshot; capture it again before cleanup removes the app."""
+    require(terminal.get("state") == "PASS" and terminal.get("identity") == identity, "invalid terminal identity/state")
+    require(hashlib.sha256(raw).hexdigest() == terminal.get("evidence_sha256"), "evidence changed after terminal")
+    document = json.loads(raw)
+    records = document.get("records", [])
+    cutoff = terminal.get("closed_sequence")
+    require(type(cutoff) is int and cutoff > 0 and cutoff == len(records)
+            and document.get("closed_sequence") == cutoff and document.get("durable_sequence") == cutoff,
+            "late or incomplete terminal observation")
+    require(document.get("identity") == identity and document.get("persistence_failure") is False,
+            "terminal evidence identity/persistence differs")
+    require(records[-1].get("kind") == "terminal" and records[-1].get("observation_closed") is True
+            and records[-1].get("state") == "PASS" and not any(r.get("after_cutoff") for r in records),
+            "observations after terminal cutoff")
+    return document
+
+
 def evaluate_markers(document, expected):
     """Return marker evidence only; no build, topology, backend-inventory or gate claim."""
     require(document.get("identity") == expected["identity"], "stale fixture identity")
@@ -135,6 +153,18 @@ def evaluate_markers(document, expected):
                        "sdk_start_ms": integer(event.get("date"), "native SDK view-start date")}
     require(owner["NativeA"]["id"] != owner["NativeB"]["id"], "native occurrences alias")
     a, b = owner["NativeA"], owner["NativeB"]
+    inactive = one("native-inactive", name="NativeA")
+    inactive_mapper = unique([r for r in records if r.get("sequence") == inactive.get("mapper_sequence")],
+                             "independent inactive mapper")
+    require(inactive_mapper.get("kind") == "native-view", "deactivation is not a mapper observation")
+    inactive_event = json.loads(inactive_mapper.get("event_json", "null"))
+    require(isinstance(inactive_event, dict) and inactive_event.get("type") == "view"
+            and inactive_event.get("view", {}).get("id") == a["id"] == inactive.get("view_id")
+            and inactive_event["view"].get("name") == "NativeA" and inactive_event["view"].get("is_active") is False
+            and inactive_event.get("session", {}).get("id") == session
+            and inactive_event.get("application", {}).get("id") == expected["application_id"],
+            "A inactive owner differs")
+    before(b["start"], inactive_mapper); before(inactive_mapper, inactive); before(b["ready"], inactive)
     open_pose, closed_pose = one("fold-complete", phase="open"), one("fold-complete", phase="closed")
     before(a["ready"], open_pose)
     before(open_pose, b["start"])
@@ -146,7 +176,7 @@ def evaluate_markers(document, expected):
     frozen = {m: one("envelope-frozen", marker=m) for m in MARKERS}
     detached = one("detached", webview="A")
     require(detached.get("window") is None, "WebView A remains attached")
-    before(b["ready"], detached)
+    before(inactive, detached)
     callbacks = [r for r in records if r.get("kind") == "webkit-callback"]
     require([r.get("marker") for r in callbacks] == list(MARKERS), "callback inventory differs")
     browser, webviews = [], {}
@@ -211,7 +241,7 @@ def evaluate_markers(document, expected):
                 before(ack, closed_pose)
             else:
                 before(closed_pose, emission)
-                elapsed(emission, b["ready"], greater=True)
+                elapsed(emission, inactive, greater=True)
         raw = ack.get("event_json")
         require(isinstance(raw, str) and hashlib.sha256(raw.encode()).hexdigest() == ack.get("event_sha256"),
                 "backend acknowledgement is not bound to raw row")

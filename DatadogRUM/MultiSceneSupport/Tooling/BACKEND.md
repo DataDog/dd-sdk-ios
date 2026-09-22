@@ -75,6 +75,10 @@ Generated launch/TTID records precede probe tags. Bind them by unique service an
 actual app/session/view/Vital identities plus a one-use startup exchange; preserve
 absent probe fields and reject mismatched nonnil ones. A session reducer is not an
 application-start action. Periodic vitals disabled does not disable first-frame TTID.
+When TTID ownership is consequential, preserve its existing message-bus value
+snapshot at dispatch: typed app/session/view attributes, vital ID, raw Date, server
+offset and duration. Match backend ownership and corrected time exactly; mapper
+receipt timing or an assumed launch-view owner is insufficient.
 
 ## Resources and URLSession
 

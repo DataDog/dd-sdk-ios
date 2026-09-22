@@ -193,7 +193,7 @@ def prepare(args):
         info={'CFBundleName':'Hosting','CFBundleDisplayName':'S2 Hosting','CFBundleIdentifier':'$(PRODUCT_BUNDLE_IDENTIFIER)','CFBundleVersion':'1','CFBundleShortVersionString':'1.0','CFBundleExecutable':'$(EXECUTABLE_NAME)','CFBundlePackageType':'APPL','UILaunchScreen':{},'LSRequiresIPhoneOS':True,'HostingSource':rev,'HostingFixture':fixture,'HostingClientToken':'$(DATADOG_CLIENT_TOKEN)','HostingApplicationID':oracle.APP_ID,'UIApplicationSceneManifest':{'UIApplicationSupportsMultipleScenes':False,'UISceneConfigurations':{'UIWindowSceneSessionRoleApplication':[{'UISceneConfigurationName':'Default','UISceneDelegateClassName':'$(PRODUCT_MODULE_NAME).HostingScene'}]}}}
         (client/'Info.plist').write_bytes(plistlib.dumps(info))
         (client/'CredentialInclude.xcconfig').write_text('#include "'+str(REPO/'xcconfigs/Datadog.local.xcconfig')+'"\n')
-        target={'type':'application','platform':'iOS','deploymentTarget':'15.0','sources':[{'path':Path(n).name} for n in sources],'configFiles':{'Debug':'CredentialInclude.xcconfig','Release':'CredentialInclude.xcconfig'},'settings':{'base':{'PRODUCT_BUNDLE_IDENTIFIER':BUNDLE,'IPHONEOS_DEPLOYMENT_TARGET':'15.0','GENERATE_INFOPLIST_FILE':'NO','INFOPLIST_FILE':'Info.plist','SWIFT_VERSION':'5.0','SWIFT_DEFAULT_ACTOR_ISOLATION':'nonisolated','SWIFT_STRICT_CONCURRENCY':'complete','CODE_SIGNING_ALLOWED':'NO','TARGETED_DEVICE_FAMILY':'1,2','ENABLE_TESTABILITY':'YES'}},'dependencies':[{'package':'SDK','product':x} for x in ['DatadogCore','DatadogRUM']]}
+        target={'type':'application','platform':'iOS','deploymentTarget':'15.0','sources':[{'path':Path(n).name} for n in sources],'configFiles':{'Debug':'CredentialInclude.xcconfig','Release':'CredentialInclude.xcconfig'},'settings':{'base':{'PRODUCT_BUNDLE_IDENTIFIER':BUNDLE,'IPHONEOS_DEPLOYMENT_TARGET':'15.0','GENERATE_INFOPLIST_FILE':'NO','INFOPLIST_FILE':'Info.plist','SWIFT_VERSION':'5.0','SWIFT_DEFAULT_ACTOR_ISOLATION':'nonisolated','SWIFT_STRICT_CONCURRENCY':'complete','CODE_SIGNING_ALLOWED':'NO','TARGETED_DEVICE_FAMILY':'1,2','ENABLE_TESTABILITY':'YES'}},'dependencies':[{'package':'SDK','product':x} for x in ['DatadogCore','DatadogRUM','DatadogInternal']]}
         save(client/'project.json',{'name':'Hosting','packages':{'SDK':{'path':'../sdk'}},'targets':{'Hosting':target},'schemes':{'Hosting':{'build':{'targets':{'Hosting':'all'}}}}})
         command(['xcodegen','generate','--spec','project.json'],folder,'generate',deadline=time.time()+60,cwd=client)
         plan['arms'][arm]={'revision':rev,'sdk':tree(sdk),'client':tree(client),'fixture':fixture,'archive_sha256':sha(archive)}
@@ -278,10 +278,13 @@ def reviewed(root):
 def cell(args):
     root=args.root.resolve();plan=reviewed(root)
     name=args.arm+'-'+args.mode
-    allowed=plan['definition'].get('acceptance_continuation',{}).get('remaining_cells',[r['arm']+'-'+r['mode'] for r in plan['definition']['matrix']])
+    continuation=plan['definition'].get('ttid_continuation',plan['definition'].get('acceptance_continuation',{}))
+    allowed=continuation.get('remaining_cells',[r['arm']+'-'+r['mode'] for r in plan['definition']['matrix']])
     require(name in allowed,'cell not admitted or already qualified')
-    if plan['definition'].get('acceptance_continuation',{}).get('backend_only'):
+    if continuation.get('backend_only'):
         require(read(root/'backend-only/summary.json')['state']=='QUALIFIED_COMPOSED','manual baseline backend qualification required')
+    if 'ttid_continuation' in plan['definition'] and args.arm=='B':
+        require(read(root/'cells/A-manual/summary.json')['state']=='PASS','witness-qualified manual baseline required')
     out=root/'cells'/name
     require(not out.exists(),'cell already consumed');out.mkdir()
     for old in (root/'cells').glob('*/summary.json'):require(read(old)['state']=='PASS','stopped after prior failed cell')

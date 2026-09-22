@@ -1,8 +1,8 @@
 {
   "schema_version": 1,
   "work_item": "S2:T10 finite native/WebView preparation",
-  "status": "MARKER_AND_DURABLE_RECEIPT_CONTROLS_PASS_APP_INTEGRATION_PENDING",
-  "updated_at": "2026-09-22T13:08:56.912114+00:00",
+  "status": "BOTH_ARMS_COMPILE_BOUNDARY_FIXES_PREPARED_HOST_INTEGRATION_PENDING",
+  "updated_at": "2026-09-22T15:01:35.669254+00:00",
   "owner": "SDK implementer",
   "baseline": "62f64d7b655bdc83f3036c4ad81090a270f6202b",
   "candidate": "c9faed816a1d4828d7d8c4b64acae01119425889",
@@ -79,9 +79,9 @@
     "An exact event acknowledgement is repeatable and tied to its browser UUID. currentSessionID, page load completion and elapsed sleep are not writer barriers.",
     "Query full application/session without native service or SDK filters; independent count and complete raw pages, then exact native/browser partitions. Keep raw available view revisions.",
     "After required evidence, stop task SDK work, remove only the task app, prove original display/device/app inventory and input-worker quiescence. Separate scenario/evidence/cleanup verdicts.",
-    "Bracket deactivation with the native B transition entry and independently mapped ready receipt; verify wall and monotonic TTL intervals separately. Never compare a Date-derived TTL to an uncalibrated DispatchTime duration.",
+    "Bracket deactivation with native B transition entry and exact NativeA inactive mapper plus B ready receipt. Verify wall and monotonic TTL intervals separately.",
     "Use actual native mapper view-start dates and raw MCP client_time for corrected event-date ownership; wall/monotonic receipt clocks qualify elapsed TTL separately. Preserve exact raw row and source/service envelope; never fill missing backend fields from callback evidence.",
-    "Serialize immutable scalar snapshots off callback paths in enqueue order. Require durable_sequence equal to the complete record count and await the evidence writer flush; persistence failure remains sticky."
+    "Serialize scalar snapshots off callback paths; seal observation sequence and bind the terminal hash. Retain post-cutoff callbacks as invalidating evidence; recapture before cleanup. Persistence failure remains sticky."
   ],
   "negative_controls": [
     "wrong A/B container",
@@ -103,7 +103,7 @@
     "Reuse existing source/build/cleanup contracts; human fold requests must remain outside the inactive TTL boundary."
   ],
   "remaining_prerequisites": [
-    "Integrate the prepared scalar writer and real WK handler observer into the two-arm app and existing host runner; full iOS compilation/runtime remains unqualified.",
+    "Complete host runner integration and qualify the corrected source with both builds before native admission. Original app integration compiled against both arms; runtime remains unqualified.",
     "Bind actual Replay eligibility, native mapper start dates, WK callback identity, server offset and exact complete raw backend inventory.",
     "Freeze fixed runtime/transport/cleanup budgets and include both fold cells in the single human-input session; the automated fold path is stopped.",
     "Datadog integrated J03 remains separately owned by S2-F08-source-oracle.json."
@@ -124,11 +124,59 @@
   },
   "fixture_sources": [
     "tools/multi-scene/webview-correlation/S2/S2WebViewEvidence.swift",
-    "tools/multi-scene/webview-correlation/S2/S2WebViewBridge.swift"
+    "tools/multi-scene/webview-correlation/S2/S2WebViewBridge.swift",
+    "tools/multi-scene/webview-correlation/S2/App.swift"
   ],
   "review": {
     "reviewer": "/root/c06_runtime_plan",
     "scope": "Frozen A-dated M3/M4; native B transition deactivates A; corrected mapper/backend date comparison; serial durability; normal SDK upload with exact MCP rows.",
     "limits": "Marker preparation only; app/runner and runtime evidence remain to qualify."
+  },
+  "build_preparation": {
+    "native_admitted": false,
+    "builds": 2,
+    "arms": [
+      "A",
+      "B"
+    ],
+    "sdk": "iOS27.1 simulator",
+    "deployment": "iOS15",
+    "configuration": "Release arm64",
+    "build_budget_seconds": 1200,
+    "workflow": "tools/multi-scene/acceptance/s2_webview_workflow.py",
+    "purpose": "Typecheck/link the planned real WK callback, native mapper and durable host-barrier app against both exact source revisions. Human fold, native execution, backend collection and acceptance remain unadmitted.",
+    "parse_observation": "Initial sandboxed frontend parse exited0 with xcrun cache permission errors; no build/typecheck claim. Full isolated builds supersede parse-only preparation.",
+    "result": {
+      "root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-webview-build-ftpd_55h",
+      "plan_sha256": "6597aa82a32a91f907f2b84e900d437373bee39196cb79edc30424e10fa4c676",
+      "arms": {
+        "A": {
+          "receipt": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-webview-build-ftpd_55h/A/build-result.json",
+          "sha256": "9e44e2be6b970658f652027b13d34d766ed8a1c16461d6dec8e3f0520ade8117",
+          "state": "QUALIFIED_BUILD_ONLY"
+        },
+        "B": {
+          "receipt": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-webview-build-ftpd_55h/B/build-result.json",
+          "sha256": "3d97631b17229021678081084a7ebcee583e3cbe7ca137d08c47d64a7f445dcf",
+          "state": "QUALIFIED_BUILD_ONLY"
+        }
+      },
+      "limit": "Both exact SDK arms compiled and linked. These products predate the reviewed deactivation/fold-receipt/terminal corrections and cannot admit runtime acceptance."
+    }
+  },
+  "boundary_review": {
+    "reviewer": "/root/c06_runtime_plan",
+    "findings": [
+      "Require observed NativeA inactive mapper before M2/detachment; B readiness alone is insufficient.",
+      "Bind fold response kind, phase, actual raw proof hash, device, host run, identity and request.",
+      "Seal observations once; retain and reject late callbacks; terminal binds final durable sequence/hash."
+    ],
+    "implementation": "Prepared; full host integration must validate actual display proof and recapture sealed evidence before cleanup.",
+    "controls": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-webview-boundary-controls-3dfm9kin/result.json",
+      "sha256": "0f2d94a2a1313d012b518abb7e806dfbb25f11c430a5a490ea4331b129fb2f09"
+    },
+    "native_launches": 0,
+    "implementation_review": "PASS by designated reviewer: all three reported blockers addressed; host integration, new builds and native acceptance remain required."
   }
 }

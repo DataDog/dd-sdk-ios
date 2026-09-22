@@ -19,6 +19,7 @@ def fixture():
         for k in ['action','resource','error','long_task']:v[k]={'count':0}
         e={'type':'view','date':100+i,'service':c.SERVICE,'application':{'id':c.APP_ID},'session':{'id':session},'view':v,'_dd':{'document_version':version[i]}}
         add('mapper',event_json=json.dumps(e));return e
+    add('ttid-observer-registered');add('rum-enable')
     add('launch',mode='automatic',automatic_uikit=False,automatic_swiftui=True,pid=100)
     add('scene-connected',scene='scene',window='window',root_controller='root',navigation='nav');add('scene-active')
     event(0,True);event(0,False)
@@ -30,6 +31,9 @@ def fixture():
         e=event(i,True)
         window={'id':'window','owned':True,'key':True,'hidden':False,'alpha':1,'root':'nav','root_is_navigation':True,'contains_fixture_controller':True,'screen':'screen','width':375,'height':812}
         add('boundary',phase=phase,occurrence=i,controller=controller,controller_attached=True,transition_finished=True,scene='scene',window='window',inventory=[{'id':'scene','activation':0,'windows':[window]}],screen={'id':'screen','width':375,'height':812,'scale':3},presented='modal' if phase=='present' else None,top='root' if phase=='present' else controller,latest_view=e['view'],session=session)
+    add('ttid-message',payload_type='TTIDMessage',vital_name='time_to_initial_display',vital_id=str(uuid.uuid4()),duration_ns=1234,
+        raw_date_reference_seconds=800_000_000.125,raw_date_unix_seconds=1_778_307_200.125,server_time_offset_seconds=0.25,
+        attributes={k:{'type':t,'value':v} for k,t,v in [('application.id','String',c.APP_ID),('session.id','String',session),('view.id','[String]',[ids[2]]),('view.name','[String]',['DetailView'])]})
     add('native-teardown');add('swiftui-disappear',name='RootView');event(5,False);add('stop-session');add('terminal',state='PASS')
     return {'identity':identity,'records':rows,'durable_sequence':len(rows),'persistence_failure':False}
 
@@ -38,7 +42,8 @@ def backend(result):
     rows=[]
     for e in result['views'].values():
         rows.append({'id':str(uuid.uuid4()),'attributes':{'source':'ios','custom':copy.deepcopy(e)}})
-    rows.append({'id':str(uuid.uuid4()),'attributes':{'source':'ios','custom':{'type':'vital','application':{'id':c.APP_ID},'session':{'id':result['session_id']},'service':c.SERVICE,'view':{'id':result['launch_view_id']},'vital':{'type':'app_launch','name':'time_to_initial_display','app_launch_metric':'ttid','duration':1234}}}})
+    witness=result['ttid']
+    rows.append({'id':str(uuid.uuid4()),'attributes':{'source':'ios','client_time':witness['corrected_date_ms'],'custom':{'type':'vital','application':{'id':c.APP_ID},'session':{'id':result['session_id']},'service':c.SERVICE,'view':{'id':witness['view_id'],'name':witness['view_name'],'url':result['views'][witness['view_id']]['view']['url']},'vital':{'id':witness['vital_id'],'type':'app_launch','name':'time_to_initial_display','app_launch_metric':'ttid','duration':witness['duration_ns']}}}})
     rows.append({'id':str(uuid.uuid4()),'attributes':{'source':'ios','custom':{'type':'session','_dd':{'origin':'reducer'},'application':{'id':c.APP_ID},'service':c.SERVICE,'session':{'id':result['session_id'],'view':{'count':6},'action':{'count':0},'crash':{'count':0}}}}})
     return rows
 
@@ -98,6 +103,25 @@ class HostingControls(unittest.TestCase):
     def test_backend_wrong_ttid_owner(self):
         r=c.local(self.doc,self.expected);rows=backend(r);rows[-2]['attributes']['custom']['view']['id']=r['view_ids'][0]
         with self.assertRaises(Rejected):c.backend(rows,r)
+
+    def test_ttid_observer_missing(self):self.row('ttid-observer-registered')['kind']='missing';self.rejected()
+    def test_ttid_witness_missing(self):self.row('ttid-message')['kind']='missing';self.rejected()
+    def test_ttid_witness_ownerless(self):self.row('ttid-message')['attributes']['view.id']['value']=[];self.rejected()
+    def test_ttid_witness_wrong_typed_attributes(self):self.row('ttid-message')['attributes']['view.id']['type']='String';self.rejected()
+    def test_ttid_witness_wrong_payload(self):self.row('ttid-message')['payload_type']='OperationMessage';self.rejected()
+    def test_ttid_witness_wrong_raw_date(self):self.row('ttid-message')['raw_date_unix_seconds']+=1;self.rejected()
+    def test_backend_ttid_id_duration_date_name(self):
+        for field in ['id','duration','date','name']:
+            result=c.local(self.doc,self.expected);rows=backend(result);row=rows[-2];event=row['attributes']['custom']
+            if field=='id':event['vital']['id']=str(uuid.uuid4())
+            elif field=='duration':event['vital']['duration']+=1
+            elif field=='date':row['attributes']['client_time']+=1
+            else:event['view']['name']='ApplicationLaunch'
+            with self.subTest(field=field),self.assertRaises(Rejected):c.backend(rows,result)
+    def test_modified_offset_cannot_match_original_backend(self):
+        result=c.local(self.doc,self.expected);rows=backend(result)
+        self.row('ttid-message')['server_time_offset_seconds']+=1
+        with self.assertRaises(Rejected):c.backend(rows,c.local(self.doc,self.expected))
 
     def test_backend_missing_session_reducer(self):
         r=c.local(self.doc,self.expected)

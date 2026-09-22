@@ -7,6 +7,7 @@ import Foundation
 import SwiftUI
 import UIKit
 import DatadogCore
+import DatadogInternal
 import DatadogRUM
 
 // Reuses the tested scalar, ordered, off-callback evidence writer.
@@ -55,11 +56,41 @@ struct ContentSurface: View {
     }
 }
 
+// Passive fixture observation of the SDK's value snapshot at TTID dispatch.
+private struct HostingTTIDFeature: DatadogFeature {
+    static let name = "s2-hosting-ttid-witness"
+    let messageReceiver: FeatureMessageReceiver
+}
+private struct HostingTTIDReceiver: FeatureMessageReceiver {
+    let evidence: S2WebViewEvidence
+    func receive(message: FeatureMessage, from core: DatadogCoreProtocol) -> Bool {
+        guard case .payload(let payload) = message, let message = payload as? TTIDMessage else { return false }
+        var attributes: [String: Any] = [:]
+        for (key, value) in message.attributes {
+            if let value = value as? String { attributes[key] = ["type": "String", "value": value] }
+            else if let value = value as? [String] { attributes[key] = ["type": "[String]", "value": value] }
+            else { attributes[key] = ["type": "unsupported"] }
+        }
+        evidence.record("ttid-message", fields: ["payload_type": "TTIDMessage", "attributes": attributes,
+            "vital_id": message.ttid.id, "vital_name": message.ttid.name,
+            "duration_ns": message.ttid.duration as Any? ?? NSNull(),
+            "raw_date_reference_seconds": message.ttid.date.timeIntervalSinceReferenceDate,
+            "raw_date_unix_seconds": message.ttid.date.timeIntervalSince1970,
+            "server_time_offset_seconds": message.ttid.serverTimeOffset])
+        // Keep the message bus's original consumer/fallback behavior.
+        return false
+    }
+}
+
 @main @MainActor final class HostingApp: UIResponder, UIApplicationDelegate {
     func application(_ application: UIApplication, didFinishLaunchingWithOptions options: [UIApplication.LaunchOptionsKey: Any]? = nil) -> Bool {
         let info = Bundle.main
         Datadog.initialize(with: .init(clientToken: info.object(forInfoDictionaryKey: "HostingClientToken") as? String ?? "",
             env: "s2-hosting", service: "ios-s2-hosting-validation"), trackingConsent: .granted)
+        do {
+            try CoreRegistry.default.register(feature: HostingTTIDFeature(messageReceiver: HostingTTIDReceiver(evidence: HostingSettings.evidence)))
+            HostingSettings.evidence.record("ttid-observer-registered")
+        } catch { HostingSettings.evidence.record("ttid-observer-failure") }
         var rum = RUM.Configuration(applicationID: info.object(forInfoDictionaryKey: "HostingApplicationID") as? String ?? "")
         rum.sessionSampleRate = 100
         rum.telemetrySampleRate = 0
@@ -77,6 +108,7 @@ struct ContentSurface: View {
         rum.errorEventMapper = { HostingSettings.mapper($0); return $0 }
         rum.resourceEventMapper = { HostingSettings.mapper($0); return $0 }
         rum.longTaskEventMapper = { HostingSettings.mapper($0); return $0 }
+        HostingSettings.evidence.record("rum-enable")
         RUM.enable(with: rum)
         HostingSettings.evidence.record("launch", fields: ["pid": ProcessInfo.processInfo.processIdentifier,
             "mode": HostingSettings.mode, "automatic_uikit": false,
@@ -212,6 +244,7 @@ struct ContentSurface: View {
             }
             return latest.count == 6 && latest.values.allSatisfy { !$0 }
         }
+        try await wait("ttid-witness") { evidence.matching("ttid-message").count == 1 }
         evidence.record("stop-session")
         RUMMonitor.shared().stopSession()
     }

@@ -8,6 +8,7 @@ final class S2WebViewEvidence: @unchecked Sendable {
     private let output: URL
     private var records: [[String: Any]] = []
     private var persistenceFailure = false
+    private var closedSequence: Int?
 
     init(identity: [String: String], output: URL) {
         self.identity = identity
@@ -67,9 +68,20 @@ final class S2WebViewEvidence: @unchecked Sendable {
         }
     }
 
+    /// Close the observation interval once. Later callbacks remain visible and invalidate
+    /// the host's terminal hash rather than silently disappearing from the evidence.
+    func close(state: String) throws -> Int {
+        lock.lock(); defer { lock.unlock() }
+        guard closedSequence == nil else { throw Failure.closed }
+        closedSequence = records.count + 1
+        return append("terminal", fields: ["state": state, "observation_closed": true],
+                      wall: Int64(Date().timeIntervalSince1970 * 1_000))
+    }
+
     private func append(_ kind: String, fields: [String: Any], wall: Int64) -> Int {
         var row = fields
         let sequence = records.count + 1
+        if let closedSequence, sequence > closedSequence { row["after_cutoff"] = true }
         row["kind"] = kind
         row["sequence"] = sequence
         row["wall_ms"] = wall
@@ -77,18 +89,20 @@ final class S2WebViewEvidence: @unchecked Sendable {
         records.append(row)
         let snapshot = records
         // Enqueue under the same lock so concurrent mapper and WebKit calls retain order.
-        writer.async { self.persist(snapshot) }
+        let cutoff = closedSequence
+        writer.async { self.persist(snapshot, cutoff: cutoff) }
         return sequence
     }
 
-    private func persist(_ snapshot: [[String: Any]]) {
+    private func persist(_ snapshot: [[String: Any]], cutoff: Int?) {
         lock.lock()
         let failed = persistenceFailure
         lock.unlock()
         do {
             let data = try JSONSerialization.data(withJSONObject: [
                 "schema_version": 1, "identity": identity, "records": snapshot,
-                "durable_sequence": snapshot.count, "persistence_failure": failed
+                "durable_sequence": snapshot.count, "persistence_failure": failed,
+                "closed_sequence": cutoff as Any? ?? NSNull()
             ], options: [.sortedKeys])
             try data.write(to: output, options: .atomic)
         } catch {
@@ -96,5 +110,5 @@ final class S2WebViewEvidence: @unchecked Sendable {
         }
     }
 
-    enum Failure: Error { case encoding, persistence }
+    enum Failure: Error { case encoding, persistence, closed }
 }

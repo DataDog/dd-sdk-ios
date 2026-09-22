@@ -1,5 +1,6 @@
 """Ordinary UIKit-hosted SwiftUI evidence. Never grants gesture/fold/physical credit."""
 import json
+import math
 from acceptance_common import require
 from app_journey_inventory import field, identifier, source
 
@@ -25,6 +26,9 @@ def local(document, expected):
     terminal = unique('terminal')
     require(terminal['state'] == 'PASS' and terminal is rows[-1], 'native scenario incomplete')
     require(not any(r['kind'] in ['encoding-failure', 'scene-disconnected', 'scene-inactive'] for r in rows), 'native continuity lost')
+    observer=unique('ttid-observer-registered'); enable=unique('rum-enable')
+    require(observer['sequence'] < enable['sequence'], 'TTID observer registered after RUM')
+    require(not any(r['kind']=='ttid-observer-failure' for r in rows),'TTID observer registration failed')
     launch = unique('launch')
     require(launch['mode'] == expected['mode'] and launch['automatic_uikit'] is False and launch['automatic_swiftui'] == (expected['mode'] == 'automatic'), 'wrong tracking configuration')
     scene = unique('scene-connected'); unique('scene-active')
@@ -97,7 +101,32 @@ def local(document, expected):
     stop = unique('stop-session'); teardown=unique('native-teardown')
     require(bounds[-1]['sequence'] < teardown['sequence'] < stop['sequence'] < terminal['sequence'], 'wrong terminal boundary')
     require(any(r['kind']=='swiftui-disappear' and r['name']=='RootView' and teardown['sequence'] < r['sequence'] < stop['sequence'] for r in rows), 'missing terminal native disappearance')
-    return {'state':'LOCAL_QUALIFIED','identity':expected,'session_id':next(iter(sessions)), 'view_ids':ids,'launch_view_id':launch_id,'names':names,'views':views,'mappers':[e for _,e in mappers], 'pid':launch['pid'], 'scene':scene['scene'], 'window':scene['window']}
+    witness=unique('ttid-message')
+    require(observer['sequence'] < witness['sequence'] < terminal['sequence'], 'TTID witness outside observation')
+    require(witness.get('payload_type')=='TTIDMessage' and witness.get('vital_name')=='time_to_initial_display','wrong TTID witness type')
+    attributes=witness.get('attributes',{})
+    require(set(attributes)=={'application.id','session.id','view.id','view.name'},'missing/extra TTID attributes')
+    values={}
+    for key,kind in [('application.id','String'),('session.id','String'),('view.id','[String]'),('view.name','[String]')]:
+        item=attributes[key]
+        require(isinstance(item,dict) and set(item)=={'type','value'} and item['type']==kind,'wrong typed TTID attribute')
+        value=item['value']
+        if kind=='[String]':
+            require(isinstance(value,list) and len(value)==1 and isinstance(value[0],str),'ownerless/ambiguous TTID attribute')
+            value=value[0]
+        require(isinstance(value,str) and value,'empty TTID attribute');values[key]=value
+    require(values['application.id']==APP_ID and values['session.id']==next(iter(sessions)),'foreign TTID app/session')
+    owner=values['view.id'];require(owner in views and views[owner]['view']['name']==values['view.name'],'TTID owner not in native inventory')
+    identifier(witness.get('vital_id'))
+    require(type(witness.get('duration_ns')) is int and witness['duration_ns']>0,'invalid TTID duration')
+    for key in ['raw_date_reference_seconds','raw_date_unix_seconds','server_time_offset_seconds']:
+        require(type(witness.get(key)) in (int,float) and math.isfinite(witness[key]),'invalid TTID date/offset')
+    require(witness['raw_date_reference_seconds']+978307200==witness['raw_date_unix_seconds'],'inconsistent raw TTID Date')
+    corrected=int((witness['raw_date_reference_seconds']+witness['server_time_offset_seconds']+978307200)*1000)
+    require(corrected>0,'invalid corrected TTID date')
+    ttid={'raw':witness,'view_id':owner,'view_name':values['view.name'],'vital_id':witness['vital_id'],
+          'duration_ns':witness['duration_ns'],'corrected_date_ms':corrected}
+    return {'state':'LOCAL_QUALIFIED','ttid':ttid,'identity':expected,'session_id':next(iter(sessions)), 'view_ids':ids,'launch_view_id':launch_id,'names':names,'views':views,'mappers':[e for _,e in mappers], 'pid':launch['pid'], 'scene':scene['scene'], 'window':scene['window']}
 
 
 def backend(rows, result, *, pending=False):
@@ -121,7 +150,15 @@ def backend(rows, result, *, pending=False):
         elif kind == 'action':
             require(field(e,'action.type') == 'application_start', 'unexpected backend action'); starts.append(e)
         elif kind == 'vital':
-            require(field(e,'vital.type') == 'app_launch' and field(e,'vital.name') == 'time_to_initial_display' and field(e,'vital.app_launch_metric') == 'ttid' and field(e,'view.id') == result['launch_view_id'] and type(field(e,'vital.duration')) is int and field(e,'vital.duration') > 0, 'unexpected vital'); vitals.append(e)
+            witness=result['ttid'];client_date=row['attributes'].get('client_time',e.get('date'))
+            require(field(e,'vital.type') == 'app_launch' and field(e,'vital.name') == 'time_to_initial_display'
+                    and field(e,'vital.app_launch_metric') == 'ttid' and field(e,'vital.id') == witness['vital_id']
+                    and field(e,'view.id') == witness['view_id'] and field(e,'view.name') == witness['view_name']
+                    and field(e,'view.url') == result['views'][witness['view_id']]['view']['url']
+                    and type(field(e,'vital.duration')) is int and field(e,'vital.duration') == witness['duration_ns']
+                    and type(client_date) is int and client_date==witness['corrected_date_ms']
+                    and ('date' not in e or e['date']==client_date), 'TTID differs from exact dispatch witness')
+            vitals.append(e)
         else: require(False, 'unexpected backend family')
     actual_ids = {v for v,_ in views}; require(actual_ids == set(result['views']), 'backend view inventory incomplete', state)
     for vid, expected in result['views'].items():

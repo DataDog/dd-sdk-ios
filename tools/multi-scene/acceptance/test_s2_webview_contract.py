@@ -4,7 +4,7 @@ import hashlib
 import json
 import unittest
 from acceptance_common import Rejected
-from s2_webview_contract import evaluate_markers
+from s2_webview_contract import evaluate_markers, sealed_evidence
 
 
 def fixture(arm="B"):
@@ -66,6 +66,10 @@ def fixture(arm="B"):
     freeze("M3", 181_007);freeze("M4", 181_008)
     add("fold-complete", 300_000, phase="open", proof_sha256="a" * 64)
     owner("NativeB", 300_010)
+    inactive_event = dict(type="view", date=base, view=dict(id=ids["NativeA"], name="NativeA", is_active=False),
+                          session=dict(id=sid, has_replay=True), application=dict(id=app))
+    inactive_mapper = add("native-view", 300_012, event_json=json.dumps(inactive_event))
+    add("native-inactive", 300_012, name="NativeA", view_id=ids["NativeA"], mapper_sequence=inactive_mapper["sequence"])
     add("web-document-ready", 300_013, webview="B", document_id="fresh-document-B")
     freeze("M2", 300_014);emit("M2", 300_015)
     add("detached", 300_017, webview="A", window=None)
@@ -92,6 +96,15 @@ class MarkerControls(unittest.TestCase):
         event = json.loads(row["event_json"]);change(event["attributes"]["custom"])
         row["event_json"] = json.dumps(event)
         row["event_sha256"] = hashlib.sha256(row["event_json"].encode()).hexdigest()
+
+    def test_missing_actual_a_deactivation(self):
+        self.mutate(lambda d, _: self.row(d, "native-inactive").update(kind="missing"), "native-inactive")
+
+    def test_inactive_must_be_a_not_b(self):
+        self.mutate(lambda d, _: self.row(d, "native-inactive").update(view_id="40000000-0000-0000-0000-000000000002"), "inactive owner")
+
+    def test_inactive_receipt_cannot_follow_detachment(self):
+        self.mutate(lambda d, _: self.row(d, "native-inactive").update(mapper_sequence=self.row(d, "detached")["sequence"]), "not a mapper")
 
     def test_both_source_predicted_arms(self):
         for arm in ("A", "B"):
@@ -217,3 +230,31 @@ class PersistenceControls(unittest.TestCase):
         document.pop("persistence_failure")
         with self.assertRaisesRegex(Rejected, "persistence"): evaluate_markers(document, expected)
 if __name__ == "__main__":unittest.main()
+
+
+class TerminalControls(unittest.TestCase):
+    def prepared(self):
+        identity = {"run_id": "controlled"}
+        rows = [{"kind": "terminal", "sequence": 1, "observation_closed": True, "state": "PASS"}]
+        document = dict(identity=identity, records=rows, closed_sequence=1, durable_sequence=1, persistence_failure=False)
+        raw = json.dumps(document).encode()
+        terminal = dict(state="PASS", identity=identity, closed_sequence=1, evidence_sha256=hashlib.sha256(raw).hexdigest())
+        return document, raw, terminal, identity
+
+    def test_sealed_snapshot(self):
+        document, raw, terminal, identity = self.prepared()
+        self.assertEqual(sealed_evidence(raw, terminal, identity), document)
+
+    def test_late_actual_callback_changes_hash(self):
+        document, raw, terminal, identity = self.prepared()
+        document["records"].append({"kind": "native-view", "after_cutoff": True})
+        with self.assertRaisesRegex(Rejected, "changed after terminal"):
+            sealed_evidence(json.dumps(document).encode(), terminal, identity)
+
+    def test_late_callback_before_receipt_is_also_rejected(self):
+        document, raw, terminal, identity = self.prepared()
+        document["records"].append({"kind": "native-view", "after_cutoff": True})
+        document["durable_sequence"] = 2
+        raw = json.dumps(document).encode(); terminal["evidence_sha256"] = hashlib.sha256(raw).hexdigest()
+        with self.assertRaisesRegex(Rejected, "late or incomplete"):
+            sealed_evidence(raw, terminal, identity)

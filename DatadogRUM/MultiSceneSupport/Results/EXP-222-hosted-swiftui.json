@@ -2,8 +2,8 @@
   "schema_version": 1,
   "experiment": "EXP-222",
   "gate": "S2:H16",
-  "status": "BASELINE_VIEW_LIFECYCLE_QUALIFIED_TTID_DISPATCH_WITNESS_MISSING",
-  "updated_at": "2026-09-22T14:39:51.118185+00:00",
+  "status": "TTID_WITNESS_REVIEWED_REBUILDS_PENDING",
+  "updated_at": "2026-09-22T15:03:11.467506+00:00",
   "owner": "SDK implementer",
   "reviewer": "/root/c06_runtime_plan",
   "baseline": "62f64d7b655bdc83f3036c4ad81090a270f6202b",
@@ -130,7 +130,7 @@
       "sha256": "01d76a7ace61d7cc75f1e13d8864b62fb7bc4bb091995453a9c30970df5937c1"
     }
   },
-  "next": "Advance independent WebView preparation. Prepare the single missing TTID dispatch-owner witness before a new finite hosting acceptance admission; do not repeat baseline input diagnostics.",
+  "next": "Complete scoped implementation review and exact two-arm builds for the TTID witness, then one manual baseline qualification and the two unrun candidate cells. WebView host integration proceeds independently.",
   "offline_reaudit": {
     "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp222-hosted-swiftui-_y3wbrkk/offline-lifecycle-reaudit.json",
     "sha256": "d6a76e92c0704813cb2ff7ad851fc97033845eec46743c9dc7cf4e50603a479b",
@@ -193,5 +193,45 @@
     "missing": "Saved mapper timestamps do not prove the actual TTID dispatch boundary and selected active view. No owner whitelist or retrospective owner inference is accepted.",
     "next_discriminator": "Source-bound TTID dispatch witness carrying its exact selected native owner; qualify the observation before any new hosting acceptance. Preserve accepted hosting view/lifetime and cleanup evidence.",
     "candidate_cells": "Both unexecuted; all previous admissions stopped."
+  },
+  "ttid_continuation": {
+    "state": "REVIEWED_PENDING_REBUILDS_AND_RUN_BOUND_ADMISSION",
+    "reviewer": "/root/c06_runtime_plan",
+    "discriminator": "Passive existing TTIDMessage dispatch snapshot: exact typed attributes, vital ID/name/duration, raw Date and server offset; offline corrected-time comparison. No SDK change or launch-owner whitelist.",
+    "registration": "Unique fixture feature after initialize and before RUM.enable; immediate scalar capture, returns false, never captures/calls core or UI. Witness required only before terminal.",
+    "source_contract_identical_in_both_arms": {
+      "DatadogInternal/Sources/Models/RUM/TTIDMessage.swift": "4ac9354e80df1f9a37a18bc801fb9f94e2cb7ee4874747b1b924f832d37fd7ca",
+      "DatadogInternal/Sources/Models/RUM/Vital.swift": "b01af1309a752bdb701ce3e0265a052b68abafe84a783b3e9154242f538d1b68",
+      "DatadogRUM/Sources/RUMContext/RUMContextProvider.swift": "57f1243b824cdc53ee119da49c8ef7bbee202518fc953e54d397ab5a4becc38f",
+      "DatadogRUM/Sources/RUMMonitor/Scopes/RUMAppLaunchManager.swift": "0742433f7d2aa05027e9521cb87ee04538fd56739deaa9313fe404d057b35e8b",
+      "DatadogCore/Sources/Core/MessageBus.swift": "143b610bb7c4522063d603620bd97bc079f86700bd890c1aefaedb7b640f06b0"
+    },
+    "remaining_cells": [
+      "A-manual",
+      "B-automatic",
+      "B-manual"
+    ],
+    "builds": 2,
+    "retries": 0,
+    "stop_rule": "First invalid/fail stops continuation. Candidate cells require witness-qualified manual baseline. Preserve original automatic composed result and every original invalid verdict.",
+    "baseline_evidence": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp222-hosting-acceptance-ugejbjwl/backend-version-reaudit.json",
+      "sha256": "9c9c19d30b90520a7ad99c025a73b51a9a729a927ddb79d273439c53bb60ea4a"
+    },
+    "budgets": "Existing fixed per-build/native/backend/cleanup limits; issue new deadlines only.",
+    "native_admitted": false,
+    "scope": "Only missing H16 Duo simulator comparison; no fold, gesture, action or physical credit.",
+    "controls": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-boundary-controls-ksh0qx8y/result.json",
+      "sha256": "eb0621a9ab507df99c2c2004d14ce9b52f3cecd3396247eba07d023548683c94",
+      "python": 104,
+      "connector": 7
+    },
+    "implementation_review": {
+      "reviewer": "/root/c06_runtime_plan",
+      "state": "PASS",
+      "conclusion": "Existing TTID payload captures the same active owner and vital identity used by the backend writer. Passive registration/typed values/offline time comparison are sound; fresh exact builds precede baseline-manual then candidates.",
+      "scope": "Consequential witness/oracle and native-cell prerequisite changes; no SDK or UI interaction change."
+    }
   }
 }

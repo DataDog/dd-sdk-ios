@@ -20,3 +20,10 @@ pagination failure and complete backend-only read. Manual TTID selects DetailVie
 source supports selection of the current active view, but the fixture did not
 capture that dispatch boundary. H16 stays open until this specific witness is
 qualified. Both candidate cells remain unexecuted.
+
+The bounded continuation observes the existing TTID message through a passive
+fixture feature registered before RUM. Exact owner, vital ID, duration and raw
+launch time/offset replace the unsupported fixed launch-view assumption. The
+source contract is identical in both frozen arms. Focused controls pass; scoped
+implementation review and rebuilt fixture qualification precede one manual
+baseline and the two candidate cells. Original verdicts remain unchanged.
