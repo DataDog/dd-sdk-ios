@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "work_item": "S2:F08 finite controlled app journeys",
-  "status": "STOPPED_AFTER_ONE_TAP_NATIVE_OBSERVER",
+  "status": "ENVIRONMENT_BLOCKED_HOME_INTERACTION",
   "recorded_at": "2026-09-21T16:37:35.872371+00:00",
   "owner": "SDK implementer",
   "application_revision": "6e33f1c18a52d04b0793e6954f456bdbc1affe2f",
@@ -39,8 +39,8 @@
         "Finish native evidence, allow bounded upload, remove only the task app and prove original apps/Booted state unchanged"
       ],
       "decisive_test": "Native state transitions succeed. Exact LoginView exists and one LoginWithSubdomainTapped belongs to its active view ID/session. Preserve complete service/session inventory and compare source-bound baseline/candidate lifecycle ownership and counts; no required manual Back action and no guessed background view-ID churn.",
-      "runtime_runs": 3,
-      "status": "STOPPED_AFTER_ONE_TAP_NATIVE_OBSERVER"
+      "runtime_runs": 4,
+      "status": "STOPPED_AFTER_HOME_WITHOUT_NATIVE_EFFECT"
     },
     {
       "id": "J02",
@@ -141,7 +141,7 @@
     "review": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-app-j01-tf3_dxfy/review.json",
     "candidate": "UNRUN"
   },
-  "next_action": "Admit a separate bounded J01 pair with the reviewed field/animation observer and incremental collector. Preserve all previous closed attempts.",
+  "next_action": "Continue finite current-composition Resource/Trace preparation and changed-path applicability review. J01 needs a demonstrated working Home mechanism before a fresh complete pair; AXe failures and both zero-input MCP-session failures remain closed.",
   "environment_readiness": "Results/S2-Duo-environment-readiness.json",
   "source_oracle": "Results/S2-F08-source-oracle.json",
   "source_preparation_status": "SOURCE_AND_OFFLINE_INVENTORY_PREPARATION_REVIEWED",
@@ -182,7 +182,7 @@
     "summary": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-app-j01-qualified-_wnijcda/terminal-summary.json",
     "summary_sha256": "ba211a0311a01d103535424c1a63a96d1e5b06fd544c95850ec1b656e8f44499"
   },
-  "updated_at": "2026-09-22T00:04:24.936858+00:00",
+  "updated_at": "2026-09-22T01:04:12.353216+00:00",
   "incremental_continuation": {
     "root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-app-j01-incremental-f8xss4f3",
     "status": "STOPPED_AFTER_ONE_TAP_NATIVE_OBSERVER",
@@ -207,5 +207,59 @@
     "summary_sha256": "d2ca3e39eb6af64ed67de273ad2c90d9f117f46fe978e3610798fdeb71c2ab92",
     "scope": "14saved native snapshots prove the subdomain transition. Match the unique enabled TextField AXValue and wait for two equal Back/heading/field geometry observations within15seconds.15negative controls. Old STOP unchanged.",
     "review_sha256": "92bb0aac8cd6083a33ee1b5fa30ccf669c10960aace81dd02ba99bd1b3b781f5"
+  },
+  "native_qualified_continuation": {
+    "root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-app-j01-native-qualified-7ya65z1e",
+    "status": "STOPPED_AFTER_HOME_WITHOUT_NATIVE_EFFECT",
+    "summary": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-app-j01-native-qualified-7ya65z1e/terminal-summary.json",
+    "summary_sha256": "6ff64fe183193b1b9262c6b4813bc92223a1d46d979b7611511291da75fa427e",
+    "native_launches": 1,
+    "native_inputs": 2,
+    "home_commands": 1,
+    "reactivations": 0,
+    "candidate": "UNRUN",
+    "cleanup": "PASS",
+    "original_deadline": "2026-09-22T00:52:52.616+00:00"
+  },
+  "home_gesture_preparation": {
+    "root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-app-home-gesture-q5y8jhw6",
+    "status": "STOPPED_HOME_GESTURE_NO_NATIVE_EFFECT",
+    "native_launches": 1,
+    "controls_sha256": "5b49dc6501efdadb4c106cccd54ae3dc7417c68ac2181e4d70f2b8ba8d907e5b",
+    "scope": "One native-only edge swipe with observed frame, exact SpringBoard process/AX, same appPID and cleanup. No backend or gate credit.",
+    "gestures": 1,
+    "backend_queries": 0,
+    "cleanup": "PASS",
+    "summary": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-app-home-gesture-q5y8jhw6/terminal-summary.json",
+    "summary_sha256": "1b406d7274b7ef141a4b1caadcb275c2c09cbbce7abf12cd673495530ca82dc7"
+  },
+  "home_mcp_prerequisites": [
+    {
+      "root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-app-home-mcp-8kt7grc6",
+      "status": "STOPPED_MCP_SESSION_BEFORE_INPUT",
+      "summary_sha256": "8deb11f44a532841b4d1a904d105816e52d20a6168d11d5f00d30b18dc37f5f9",
+      "native_launches": 1,
+      "home_commands": 0,
+      "cleanup": "PASS",
+      "scope": "Native input prerequisite only; session missing on first capture, no SDK/backend/gate acceptance."
+    },
+    {
+      "root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-app-home-fresh-session-xbh986pz",
+      "status": "STOPPED_FRESH_MCP_SESSION_BEFORE_INPUT",
+      "summary_sha256": "d6015adc7047ad743dde4ee5e26bf1d5d4000c46449181721a92343581f16139",
+      "native_launches": 1,
+      "home_commands": 0,
+      "cleanup": "PASS",
+      "scope": "Native input prerequisite only; session missing on first capture, no SDK/backend/gate acceptance."
+    }
+  ],
+  "mcp_lifecycle_discovery": {
+    "root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-duo-mcp-lifecycle-58p4y4y6",
+    "status": "PASS_CAPTURE_ONLY_SESSION_CLOSED",
+    "summary_sha256": "dbbd459d787a1492099b97995270d4886aeae66898627166c49a7aee25c1ebac",
+    "observation_sha256": "3ad6b4647de521542ced9f0e39799d00459ce78a47261dd1f6252a4501f064c2",
+    "inputs": 0,
+    "launches": 0,
+    "scope": "Immediate Start/capture/End in one orchestration works. Does not isolate idle time, call boundary or intervening installation as the earlier cause; no Home input or SDK/gate credit."
   }
 }

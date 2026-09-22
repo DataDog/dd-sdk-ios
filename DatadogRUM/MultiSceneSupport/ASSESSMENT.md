@@ -33,9 +33,10 @@ cause, complete automatic-tracking comparison or candidate gate closure.
 
 [Controlled app builds](Results/S2-F08-app-preparation.json) are reusable by identity;
 [app journeys](Results/S2-F08-app-journeys.json) remain unqualified. The prebooted
-Duo baseline reaches Login, binds its fresh backend owner and opens the subdomain
-form after one native tap. The host observer rejects its AX field representation;
-cleanup passes. No full baseline/candidate journey or SDK defect follows.
+Duo baseline binds its fresh backend owner and completes subdomain/Back navigation.
+AXe Home input has no observed effect; two Xcode MCP sessions are missing before
+input. Lifecycle and paired acceptance remain open. Cleanup passes; no SDK cause
+is established.
 [Semantic Duo boot failures](Results/S2-Duo-environment-readiness.json) occur before
 app installation/assertions and have no established SDK cause. An equivalent retry
 requires materially changed conditions and separate admission.

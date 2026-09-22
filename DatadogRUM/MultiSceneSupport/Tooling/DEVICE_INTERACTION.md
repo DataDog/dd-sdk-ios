@@ -104,6 +104,13 @@ clean boundary only if logs prove no install, launch or state mutation occurred
 since it; otherwise repeat the complete admitted clean setup with a new run ID.
 Preserve any partial attempt rather than merging it into a later pass.
 
+Finish helper preparation before opening the interaction session. Bind the actual
+returned key and verify it with a live capture near input; a successful StartSession
+receipt does not prove later liveness. If the first capture reports a missing
+session, retain that zero-input result. Close or prove session absence before app
+cleanup. A fresh-session comparison needs a new identity; repeated disappearance
+is an environment blocker, not an SDK finding.
+
 ## Duo display and input
 
 Verify the active inner display and actual window geometry/lifecycle. Use observed

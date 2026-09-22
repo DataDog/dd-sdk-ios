@@ -879,10 +879,11 @@
             "S2:A01",
             "S2:F07"
           ],
-          "decisive_test": "Complete delayed work across navigation/session/fold; success/error/metrics keep exact owner and no foreign action/error counts.",
+          "decisive_test": "Complete delayed work across navigation, session rollover and fold; exact Resource start-view/session, success/error and metrics behavior must match the frozen baseline contract. Require no new foreign action/error counts; retain the inherited EXP202 Resource/action count1/0 exception explicitly. E03 repair is excluded from this composition.",
           "environment": "Candidate-vs-baseline native fixtures and Datadog app where integrated",
-          "evidence": "Reference evidence retained; this release candidate is not qualified.",
-          "required": true
+          "evidence": "Reference evidence retained; this release candidate is not qualified. Results/S2-remaining-gate-applicability.json clarifies the selected composition and inherited EXP202 exceptions without closing the gate.",
+          "required": true,
+          "completion_mode": "Captured Resource start ownership; inherited action-count limitation documented"
         }
       }
     },
@@ -1035,10 +1036,11 @@
             "S2:A01",
             "S2:F07"
           ],
-          "decisive_test": "Existing start correlation survives completion after navigation/fold, with unchanged sampling/header behavior.",
+          "decisive_test": "Across navigation/fold, preserve manual/parent span start ownership and existing automatic URLSession completion-time RUM correlation, with exact trace/parent IDs and unchanged headers/sampling. Retain the inherited EXP202 correlation limit; E05 request-time repair is excluded from this composition.",
           "environment": "Candidate-vs-baseline native fixtures and Datadog app where integrated",
-          "evidence": "Reference evidence retained; this release candidate is not qualified.",
-          "required": true
+          "evidence": "Reference evidence retained; this release candidate is not qualified. Results/S2-remaining-gate-applicability.json clarifies the selected composition and inherited EXP202 exceptions without closing the gate.",
+          "required": true,
+          "completion_mode": "Captured manual span start ownership; documented existing process-context fallback for automatic URLSession completion"
         }
       },
       "separate_header_policy_review": {
@@ -1567,7 +1569,7 @@
           ],
           "decisive_test": "Recognized cancellation preserves outgoing owner; completion produces fresh return owner; baseline/candidate agree. Exclude unchanged paths only through F07 source evidence; full multi-scene combinations remain S3.",
           "environment": "Qualified Duo simulator and relevant physical iPhone/iPad; prepared human native input as needed",
-          "evidence": "Reference evidence retained; this release candidate is not qualified.",
+          "evidence": "Reference evidence retained; this release candidate is not qualified. Results/S2-remaining-gate-applicability.json reviews the F07 exclusion option: unchanged gesture/hosting implementations do not close the actual native lifecycle/owner contract through the changed E04 transition path. Gate remains open.",
           "required": true
         }
       }
@@ -1605,7 +1607,7 @@
           ],
           "decisive_test": "Recognized native cancellation/completion preserves documented automatic/manual coverage and exact changed-path ownership. Exclude unchanged paths only through F07 source evidence; full multi-scene combinations remain S3.",
           "environment": "Qualified Duo simulator and relevant physical iPhone/iPad; prepared human native input as needed",
-          "evidence": "Reference evidence retained; this release candidate is not qualified.",
+          "evidence": "Reference evidence retained; this release candidate is not qualified. Results/S2-remaining-gate-applicability.json reviews the F07 exclusion option: unchanged gesture/hosting implementations do not close the actual native lifecycle/owner contract through the changed E04 transition path. Gate remains open.",
           "required": true
         }
       }
@@ -1645,7 +1647,7 @@
           ],
           "decisive_test": "Actual cancel/dismiss callbacks preserve outgoing/fresh return ownership and callback work; no synthetic completion. Exclude unchanged paths only through F07 source evidence; full multi-scene combinations remain S3.",
           "environment": "Qualified Duo simulator and relevant physical iPhone/iPad; prepared human native input as needed",
-          "evidence": "Reference evidence retained; this release candidate is not qualified.",
+          "evidence": "Reference evidence retained; this release candidate is not qualified. Results/S2-remaining-gate-applicability.json reviews the F07 exclusion option: unchanged gesture/hosting implementations do not close the actual native lifecycle/owner contract through the changed E04 transition path. Gate remains open.",
           "required": true
         }
       }
@@ -1683,7 +1685,7 @@
           ],
           "decisive_test": "Measured geometry/selection/path and relevant automatic/manual owner behavior match baseline through resize/fold. Exclude unchanged paths only through F07 source evidence; full multi-scene combinations remain S3.",
           "environment": "Qualified Duo simulator and relevant physical iPhone/iPad; prepared human native input as needed",
-          "evidence": "Reference evidence retained; this release candidate is not qualified.",
+          "evidence": "Reference evidence retained; this release candidate is not qualified. Results/S2-remaining-gate-applicability.json reviews the F07 exclusion option: unchanged gesture/hosting implementations do not close the actual native lifecycle/owner contract through the changed E04 transition path. Gate remains open.",
           "required": true
         }
       }
@@ -1747,7 +1749,7 @@
           ],
           "decisive_test": "Existing automatic/manual UIHostingController integration matches baseline on changed shipped paths, without adopting semantic scene APIs. Exclude unchanged paths only through F07 source evidence; full multi-scene combinations remain S3.",
           "environment": "Qualified Duo simulator and relevant physical iPhone/iPad; prepared human native input as needed",
-          "evidence": "Reference evidence retained; this release candidate is not qualified.",
+          "evidence": "Reference evidence retained; this release candidate is not qualified. Results/S2-remaining-gate-applicability.json reviews the F07 exclusion option: unchanged gesture/hosting implementations do not close the actual native lifecycle/owner contract through the changed E04 transition path. Gate remains open.",
           "required": true
         }
       }
@@ -2724,7 +2726,7 @@
           ],
           "decisive_test": "Freeze app and SDK source/build identity; compare ordinary journeys and exact telemetry expectations, long sessions, resources and WebView correlation. Include internal TestFlight evaluation after separate distribution authorization.",
           "environment": "Controlled normal-mode Datadog app; probe RUM application43cbc59b-0626-438b-a3d9-c6417a4545a3; service ios-app-rum-release-validation; simulator/physical host",
-          "evidence": "Frozen app6e33f1c18 builds against baseline62f64/candidatec9fa remain reusable. Results/S2-F08-app-journeys.json owns closed setup/transport/observer attempts and offline repairs. Latest prebooted baseline binds its fresh owner and opens the subdomain form after one tap, then stops on a host AX observer mismatch; cleanup passes, candidate is unrun. Results/S2-F08-source-oracle.json owns source/inventory preparation and finite J02-J04 expectations. Full paired journeys, account binding, mapper completeness and release evaluation remain open; no gate credit.",
+          "evidence": "Frozen app6e33f1c18 builds against baseline62f64/candidatec9fa remain reusable. Results/S2-F08-app-journeys.json owns all closed setup/transport/native attempts, reviewed collector/AX observers and the current input prerequisite. Native navigation is partial; no full baseline/candidate pair or gate credit. Results/S2-F08-source-oracle.json owns source/inventory preparation and finite J02-J04 expectations. Full paired journeys, account binding, mapper completeness and release evaluation remain open.",
           "required": true
         },
         "S3": {

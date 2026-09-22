@@ -1,0 +1,72 @@
+{
+  "schema_version": 1,
+  "work_item": "S2 remaining gate applicability",
+  "status": "SOURCE_REVIEW_COMPLETE_GATES_OPEN",
+  "at": "2026-09-22T01:04:12.353216+00:00",
+  "owner": "SDK implementer",
+  "independent_reviewer": "/root/c06_runtime_plan",
+  "baseline": "62f64d7b655bdc83f3036c4ad81090a270f6202b",
+  "production_revision": "c9faed816a1d4828d7d8c4b64acae01119425889",
+  "qualification_head": "7604da24bfb757e8d19314e7183b840fa17d858f",
+  "source_audit": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp216-s2-composition-promotion-n8o1smrz/source-audit.json",
+    "sha256": "43bed53f7a886230c6a1a645ddd0c1a9e078071b065c112e07771b148b676c52"
+  },
+  "basis": "Six production paths from EXP216; selected composition excludes E02/E03/E05 and deferred semantic SwiftUI/multi-scene code. Existing EXP215/217 lifetime/compatibility evidence is retained within its original scope.",
+  "changed_transition_path": {
+    "RUMSessionScope.swift": "View transitions insert/deactivate cache entries; restore/session end/deinit also mutate the cache. Active-view selection and ordinary command propagation remain unchanged.",
+    "ViewCache.swift": "Bounded scalar cache with active lifetime and inactive TTL; lastView is consumed only by WebViewEventReceiver.",
+    "limits": "Unchanged navigation/hosting source and isolated cache consumers do not prove native callback, lifecycle, geometry or owner assertions."
+  },
+  "gate_dispositions": [
+    {
+      "gate": "S2:H11",
+      "scope": "UIKit edge pop",
+      "status": "OPEN",
+      "source_exclusion": "E01/DL01 do not implement this navigation/geometry behavior; semantic scene APIs and WebView/captured-content checks are excluded. E04 remains on the shared view-transition path.",
+      "decisive_remaining": "Native cancellation/completion and outgoing/fresh owner behavior on exact baseline/candidate source with actual native input."
+    },
+    {
+      "gate": "S2:H12",
+      "scope": "SwiftUI edge pop",
+      "status": "OPEN",
+      "source_exclusion": "E01/DL01 do not implement this navigation/geometry behavior; semantic scene APIs and WebView/captured-content checks are excluded. E04 remains on the shared view-transition path.",
+      "decisive_remaining": "Native cancellation/completion and automatic/manual ownership on exact baseline/candidate source with actual native input."
+    },
+    {
+      "gate": "S2:H13",
+      "scope": "Presentation dismissal",
+      "status": "OPEN",
+      "source_exclusion": "E01/DL01 do not implement this navigation/geometry behavior; semantic scene APIs and WebView/captured-content checks are excluded. E04 remains on the shared view-transition path.",
+      "decisive_remaining": "Real cancellation/dismissal, callback work and owner preservation on exact baseline/candidate source with actual native input."
+    },
+    {
+      "gate": "S2:H14",
+      "scope": "Adaptive resize/fold",
+      "status": "OPEN",
+      "source_exclusion": "E01/DL01 do not implement this navigation/geometry behavior; semantic scene APIs and WebView/captured-content checks are excluded. E04 remains on the shared view-transition path.",
+      "decisive_remaining": "Measured geometry/selection and owner behavior on exact baseline/candidate source with actual native input."
+    },
+    {
+      "gate": "S2:H16",
+      "scope": "UIKit-hosted SwiftUI",
+      "status": "OPEN",
+      "source_exclusion": "E01/DL01 do not implement this navigation/geometry behavior; semantic scene APIs and WebView/captured-content checks are excluded. E04 remains on the shared view-transition path.",
+      "decisive_remaining": "Actual automatic/manual hosting parity on exact baseline/candidate source with actual native input."
+    }
+  ],
+  "telemetry_contract_clarification": {
+    "S2:T03": "Preserve exact Resource start-view/session and terminal/error/metrics behavior. Require no new foreign action/error counts; explicitly retain the inherited EXP202 Resource/action count1/0 exception. E03 repair remains excluded from this composition.",
+    "S2:T08": "Preserve manual/parent span start ownership, baseline automatic URLSession completion-time RUM correlation, exact trace/parent/header/sampling behavior. E05 request-time ownership repair remains excluded.",
+    "S3": "Full explicit/captured ownership contracts are unchanged. No known defect is relabeled fixed."
+  },
+  "gate_closures": [],
+  "native_launches": 0,
+  "tests_rerun": 0,
+  "implementation_changes": 0,
+  "source_sha256": {
+    "DatadogRUM/Sources/RUMMonitor/Scopes/RUMSessionScope.swift": "e59f10a3b3990c9b2c334e9168738aed2a57563bcd10f6f4cfa931a58051acda",
+    "DatadogRUM/Sources/RUMMonitor/Scopes/Utils/ViewCache.swift": "142961ec6c5ce10c61595b306e16f98ca34b1047694057bcaaf3d2d977a251ad",
+    "DatadogRUM/Sources/Integrations/WebViewEventReceiver.swift": "14c7429d7eb7739dee6a84019ec8c5159da1339c05db9571baa0bdd89f1759b7"
+  }
+}
