@@ -113,6 +113,7 @@ extension CALayer {
         }
 
         return superlayer?.delegate is UIVisualEffectView
+            || delegate?.isKind(of: Classes.tabSelectionView) == true
             || superlayer?.delegate?.isKind(of: Classes.tabSelectionView) == true
     }
 
