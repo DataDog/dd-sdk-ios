@@ -61,6 +61,15 @@ internal struct LayerWireframeBuilder {
             snapshot.observation.semantics,
             contentSnapshots[snapshot.replayID]
         ) {
+        case (.unsupported(let label), _):
+            return Output(
+                wireframe: SRWireframe(
+                    placeholderFor: snapshot,
+                    label: label,
+                    permanentId: heatmapIdentifier?.rawValue
+                ),
+                resource: nil
+            )
         case (.layer, .some(let result)),
             (.image, .some(let result)):
             return makeContentSnapshotOutput(

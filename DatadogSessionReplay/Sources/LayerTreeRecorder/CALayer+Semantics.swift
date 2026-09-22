@@ -26,6 +26,10 @@ extension CALayer {
         isKind(of: Classes.portalLayer)
     }
 
+    var isHost: Bool {
+        isKind(of: Classes.layerHost)
+    }
+
     var isSignedDistanceField: Bool {
         isKind(of: Classes.sdfLayer) || isKind(of: Classes.sdfElementLayer)
     }
@@ -136,6 +140,7 @@ private enum Classes {
     static let glassGroupView: AnyClass? = NSClassFromString("UIKit._GlassGroupView")
     static let liquidLensView: AnyClass? = NSClassFromString("_UILiquidLensView")
     static let portalLayer: AnyClass? = NSClassFromString("CAPortalLayer")
+    static let layerHost: AnyClass? = NSClassFromString("CALayerHost")
     static let sdfLayer: AnyClass? = NSClassFromString("CASDFLayer")
     static let sdfElementLayer: AnyClass? = NSClassFromString("CASDFElementLayer")
     static let navigationBarPlatterView: AnyClass? = NSClassFromString("_UINavigationBarPlatterView")

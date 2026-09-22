@@ -130,6 +130,17 @@ extension CALayerSnapshot.SemanticObservationMapping {
 
         return .init(semantics: .layer, ignoresImagePrivacy: true)
     }
+
+    static let unsupported = Self { layer, _, _ in
+        guard layer.isHost else {
+            return nil
+        }
+
+        return .init(
+            semantics: .unsupported("Remote content"),
+            ignoresSublayers: true
+        )
+    }
 }
 
 extension CALayerSnapshot.SemanticObservation.GradientSemantics {
