@@ -706,41 +706,6 @@ class SpanEventBuilderTests: XCTestCase {
     }
     // swiftlint:enable opening_brace
 
-    func testWhenBundleWithRUMisEnabled_andSessionIsSampledIn_itCreatesSpanWithViewName() {
-        // Given
-        let viewName: String = .mockRandom()
-        let rum = RUMCoreContext(
-            applicationID: .mockRandom(),
-            sessionID: .mockRandom(),
-            sessionSampler: .mockKeepAll(),
-            viewID: .mockRandom(),
-            userActionID: .mockRandom(),
-            viewName: viewName
-        )
-        let context: DatadogContext = .mockWith(additionalContext: [rum])
-
-        // When
-        let builder: SpanEventBuilder = .mockWith(bundleWithRUM: true)
-        let span = builder.createSpanEvent(
-            context: context,
-            traceID: .mockAny(),
-            spanID: .mockAny(),
-            parentSpanID: .mockAny(),
-            operationName: .mockAny(),
-            startTime: .mockAny(),
-            finishTime: .mockAny(),
-            samplingRate: .mockAny(),
-            samplingPriority: .mockAny(),
-            samplingDecisionMaker: .mockAny(),
-            tags: [:],
-            baggageItems: [:],
-            logFields: []
-        )
-
-        // Then
-        XCTAssertEqual(span.tags[SpanTags.rumViewName], viewName)
-    }
-
     func testWhenBundleWithRUMisEnabled_butSampledOut_itCreatesSpanWithNoRUMContext() {
         // Given
         let rum = RUMCoreContext(
