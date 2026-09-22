@@ -27,10 +27,11 @@ manual parent and automatic completion-time Trace correlation match the baseline
 and candidate terminal views stop correctly. Both candidate modes also pass
 [explicit session rollover](Results/EXP-221-session-rollover.json). Baseline repeated
 resumes mutate currentRequest baggage; their observed protocol-start carriers stay
-original-owned. [Fold](Results/EXP-221-duo-fold.json) remains unqualified: after the
-user restarted the Duo, the baseline app launched but its fixture supplied a stale
-mapper reference before pose input. Cleanup passed. The fixture repair preserves
-the strict ownership oracle; no SDK cause or candidate fold result is established.
+original-owned. [Fold](Results/EXP-221-duo-fold.json) remains unqualified. The repaired
+fixture passes ownership readiness, but its first Open transition reveals an
+unclassified second window and an unreliable host pose icon. The probe is removed
+and Closed restored under a separate cleanup receipt. No SDK cause or candidate
+fold result is established; window diagnosis precedes further acceptance.
 Integrated-app and automatic view/action tracking
 acceptance also remain open.
 

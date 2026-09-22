@@ -129,7 +129,15 @@ Device Hub pose controls, then require fresh display and native geometry readbac
 The supplied platform restricts new Duo windows to the inner display. An AX tree,
 requested orientation or successful tap/drag alone cannot prove visible pairing,
 a fold or an interactive transition. A black inactive-display capture is not
-layout evidence; select the actual active-display ID for direct capture.
+layout evidence; select the actual active-display ID for direct capture. The sidebar
+icon can retain a previous pose: use it only as observed UI data, never as pose
+proof. Bind the exact selected device and actual control to independent display
+and native geometry evidence.
+
+A single scene may expose additional windows. Inventory their public identity,
+scene, key/hidden/alpha, level, frame, root controller and screen before classifying
+them. Total window count alone cannot identify a peer or harmless auxiliary window;
+do not accept an earlier callback after a newer ambiguous sample.
 
 Use a dedicated file for `devicectl --json-output`; stdout may also contain a
 human-readable summary. Preserve both streams and validate the structured command

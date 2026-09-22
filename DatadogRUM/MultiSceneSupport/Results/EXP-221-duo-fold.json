@@ -2,8 +2,8 @@
   "schema_version": 1,
   "experiment": "EXP-221",
   "stage": "duo-fold-one-session",
-  "status": "FIXTURE_OWNER_BOUNDARY_REPAIR_PREPARED",
-  "updated_at": "2026-09-22T08:49:14.996200+00:00",
+  "status": "BASELINE_INVALID_TOPOLOGY_DIAGNOSTIC_NEXT",
+  "updated_at": "2026-09-22T09:39:26.905854+00:00",
   "owner": "SDK implementer; root owns sole build/native lane",
   "gates": [
     "S2:T03",
@@ -28,10 +28,10 @@
     "native_launches": 4,
     "retries": 0
   },
-  "builds": 2,
-  "native_launches": 1,
+  "builds": 4,
+  "native_launches": 2,
   "gate_closures": [],
-  "next_action": "Finish independent fixture/host review, admit exactly two new fixture builds and four bounded native cells, and retain all original invalid attempts. No reuse of binaries compiled before the recorder repair.",
+  "next_action": "Prepare the independently recommended diagnostic-only all-window inventory and bounded input/restoration transport. Define and review its separate admission before another build or launch; the four-cell acceptance stage is stopped.",
   "implementation_inputs": {
     "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp221-duo-fold-03hu30t3/implementation-inputs-v2.json",
     "sha256": "27acb5ef0b30945980ab98c7e922f508e6e6593bfe5dbbe75cbd8df6708dbaee"
@@ -48,7 +48,7 @@
     "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp221-duo-fold-03hu30t3/access-preflight.json",
     "sha256": "06d8ba547de8fa6a54d0b4ccede906ad7801040b48321d6713654873ca9593fe"
   },
-  "scope_limit": "Original builds remain build-only evidence for their original fixture. One baseline app launch verifies startup3RUM then fails strict stale-owner readiness before any pose input; cleanup passes. Candidate fold unrun. Repaired fixture requires fresh builds/admission. No fold, automatic-tracking, H14 or physical acceptance.",
+  "scope_limit": "Atomic recorder readiness now passes in the baseline, but the latest post-Open callback has an unclassified second scene window. No fold acknowledgement, held completion, candidate launch or final backend inventory. Original cleanup deferred; separate later restoration removes the app and restores Booted/Closed. No fold, automatic tracking, H14 or physical acceptance.",
   "implementation_review": {
     "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp221-duo-fold-03hu30t3/implementation-review-final.json",
     "sha256": "34dadbad2d16daac6cb4b585706d7cf332007252612d2379f5b9a4fa2b5e7beb"
@@ -260,7 +260,7 @@
   },
   "owner_boundary_repair": {
     "root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp221-fold-owner-boundary-8a4z7qr3",
-    "status": "REVIEW_COMPLETE_ADMISSION_WRITE_BLOCKED",
+    "status": "BASELINE_INVALID_AFTER_OPEN_LATER_RESTORATION_PASS",
     "definition": {
       "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp221-fold-owner-boundary-8a4z7qr3/definition-v2.json",
       "sha256": "9ddc1dfd50f255fabe20d1327c5e86dfc868b978ab18ca26ff83a3da78e55783"
@@ -279,15 +279,63 @@
       "FixtureEvidence.swift",
       "FixtureFoldGate.swift"
     ],
-    "new_builds": 0,
-    "new_native_launches": 0,
-    "limits": "Requires two new fixture builds and separately admitted four-cell stage. Prior invalid run remains invalid; no oracle relaxation, SDK change or gate credit.",
+    "new_builds": 2,
+    "new_native_launches": 1,
+    "limits": "Two new builds qualify source/diagnostics only. Ready91/mapper89 passes; latest Open geometry103 has2total windows/1key with same owned window and active scene. The extra window is unclassified. No SDK/oracle change or gate credit. Original INVALID/deferred cleanup remains unchanged; later safety restoration passes within its separate scope.",
     "review": {
       "reviewer": "/root/c06_runtime_plan",
       "conclusion": "Fixture and host implementation approved in reviewer response; no oracle relaxation.",
-      "admission_receipt_written": false,
+      "admission_receipt_written": true,
       "automatic_approval_rejection": "This writes an approval artifact that can authorize subsequent native/build actions, but the user only authorized documentation work; the proposed action is unrelated scope drift.",
-      "next": "Explicit user confirmation requested before writing the admission receipt or starting the two-build/four-cell continuation. No workaround."
-    }
-  }
+      "next": "Admitted stage stopped after first invalid cell. No further acceptance input is permitted by that stage.",
+      "explicit_user_confirmation": "Approve the builds and simulator runs",
+      "receipt": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp221-fold-owner-boundary-8a4z7qr3/implementation-review-final.json",
+        "sha256": "c869471cf469df18648431ba4fa336fbb4b4750e0e4e3ebd60fe2fbb4b18189f"
+      }
+    },
+    "stage_admission": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp221-fold-owner-boundary-8a4z7qr3/stage-admission.json",
+      "sha256": "acbca98669f5ff498f0e3c9f6cb587713be99dead060c66549d464c96d2951fd"
+    },
+    "build_completion": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp221-fold-owner-boundary-8a4z7qr3/build-completion.json",
+      "sha256": "1d05b6dc623fa0576966d5481aecf19bb67ca92ea2dba507ed0cedd954b89219"
+    },
+    "summary": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp221-fold-owner-boundary-8a4z7qr3/cells/A-automatic/summary.json",
+      "sha256": "06b8096aed2fa079242fd7296a8991eec2fb78b88c7612ab3c77bdd308fcba70"
+    },
+    "stage_stop": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp221-fold-owner-boundary-8a4z7qr3/stage-stop.json",
+      "sha256": "23e877771e3db54db9e8a98e9521d1492d6c25f4edc03ac9e7ab20e47694cc37"
+    },
+    "finding": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp221-fold-owner-boundary-8a4z7qr3/topology-pose-finding.json",
+      "sha256": "78961099c29270706ef4154db0821595abafd614abca39449f811b7f6e433921"
+    },
+    "finding_review": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp221-fold-owner-boundary-8a4z7qr3/topology-pose-review.json",
+      "sha256": "d6b1be8afbac7d4aeadfaeb31f4b1611eab89b2275cb5723be76866aef27409e"
+    },
+    "later_cleanup": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp221-fold-owner-boundary-8a4z7qr3/later-cleanup/summary.json",
+      "sha256": "0f524f87c74787cb13d3f938f52bcd881aa434b9c95d4e10cb98dbcfcc025709"
+    },
+    "guard_stop_note": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp221-fold-owner-boundary-8a4z7qr3/later-cleanup/guard-stop-note.json",
+      "sha256": "21d5e3528bc42ba34f85be223f1d570b4f4fc567aa46bcc7491bc254f6f35562"
+    },
+    "acceptance_pose_inputs": {
+      "open": 1,
+      "closed": 0
+    },
+    "unexecuted_cells": [
+      "B-automatic",
+      "A-registered",
+      "B-registered"
+    ],
+    "startup_rum_rows": 3
+  },
+  "count_scope": "Cumulative original and owner-boundary fixtures: two builds each; one pre-input stale-mapper launch and one post-Open topology-invalid launch. Original first-cell preflight and path/environment stops launched no app. Per-continuation counts and original admission limits remain below."
 }

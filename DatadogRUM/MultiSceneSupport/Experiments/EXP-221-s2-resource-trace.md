@@ -71,3 +71,13 @@ reference before any pose input. Cleanup passed; candidate remains unrun. The
 repair, focused controls and separate build/native admission. SDK sources and the
 semantic oracle are unchanged. This does not reclassify prior failures or qualify
 a fold cell.
+
+The approved recorder repair compiled in both arms. Its first baseline cell passed
+latest-owner readiness and delivered Open, then stopped because the latest native
+callback reported a second window without enough evidence to classify it. The
+owned window, active scene and held tasks remained unchanged. The host's sidebar
+icon stayed Closed while the inner display was active. Original timeout and deferred
+cleanup remain invalid; a separate later restoration removed the app and restored
+Booted/Closed. Remaining cells are unrun. The owner retains the exact build, callback,
+input, cleanup and independent-review artifacts. Next is a diagnostic-only window
+inventory with separate admission; no acceptance predicate is relaxed.

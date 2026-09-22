@@ -60,6 +60,9 @@ Capture/persistence errors do not suppress cleanup or the original failure. Each
 response binds its own request, phase and deadline. Include decode, persistence,
 manifest verification and final assembly inside the budget; a late response stays
 available as evidence without a PASS. Reject truncation even if counts match.
+Publish a terminal transport error when validation fails, so the driver can stop
+and enter cleanup promptly. Reserve cleanup time for actual tool round trips and
+keep the input quiescence fence; elapsed deadlines never authorize another action.
 
 Before backend projection/assembly, verify the live helper files against the
 approved manifest, not merely hash labels in a response. Reject extra/missing files,
