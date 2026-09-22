@@ -53,7 +53,12 @@ The [fold slice](../Results/EXP-221-duo-fold.json) has two qualified universal R
 builds, 68 passing harness controls and a source-bound warning review. Its first cell
 stopped before installation because the Closed UI preflight aged past 120 seconds
 during transfer; no app launch, pose input or backend query occurred, and cleanup
-passed. A lossless text handoff has 20 passing controls, but its separate continuation
-remains unadmitted. Work is paused for the user’s reboot, all old deadlines are
-closed, and the exact builds remain reusable after fresh checks. Fold and integrated-
-app acceptance remain open.
+passed. The lossless text handoff has20 passing controls and a live32second exact-
+text transfer; seven new admission controls and the final independent review cover
+the separate native-only continuation. After reboot, one bounded restoration of the
+previously usable Duo stopped at terminalStatus3/Data Migration Failed despite
+exit0. It never installed/launched an app or admitted a native cell. Original
+Shutdown and protected state were restored within the cleanup deadline. The owner
+retains both this failure and the earlier zero-native stop. Exact builds remain
+reusable; another Duo boot requires a materially changed environment and separate
+admission. Fold and integrated-app acceptance remain open.

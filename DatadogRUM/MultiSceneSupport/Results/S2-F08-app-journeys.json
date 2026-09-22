@@ -141,7 +141,7 @@
     "review": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-app-j01-tf3_dxfy/review.json",
     "candidate": "UNRUN"
   },
-  "next_action": "Continue finite current-composition Resource/Trace preparation and changed-path applicability review. J01 needs a demonstrated working Home mechanism before a fresh complete pair; AXe failures and both zero-input MCP-session failures remain closed.",
+  "next_action": "Prepare a separately bounded ordinary-iPhone variant of the existing one-input Device Hub Home prerequisite while Duo boot is blocked. Reuse the accepted baseline app, exact precritical UI/PID/product/ready binding and15second independent Home effect. No full J01 retry, backend collection or Duo/gate substitution follows.",
   "environment_readiness": "Results/S2-Duo-environment-readiness.json",
   "source_oracle": "Results/S2-F08-source-oracle.json",
   "source_preparation_status": "SOURCE_AND_OFFLINE_INVENTORY_PREPARATION_REVIEWED",
@@ -182,7 +182,7 @@
     "summary": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-app-j01-qualified-_wnijcda/terminal-summary.json",
     "summary_sha256": "ba211a0311a01d103535424c1a63a96d1e5b06fd544c95850ec1b656e8f44499"
   },
-  "updated_at": "2026-09-22T01:04:12.353216+00:00",
+  "updated_at": "2026-09-22T06:58:28.716257+00:00",
   "incremental_continuation": {
     "root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-app-j01-incremental-f8xss4f3",
     "status": "STOPPED_AFTER_ONE_TAP_NATIVE_OBSERVER",
@@ -267,6 +267,6 @@
     "root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-app-home-cua-preparation-6znzrugk",
     "proposal_sha256": "fdc6db6651e4af3757c52358397e1ec1a937e488e172b298ecf9faf21f9a3d53",
     "review_sha256": "9862a308ec590d9aacbe3dcbaa81de54db64f00ba675f2bd59719a2e53686344",
-    "scope": "One observed Device Hub Home button input with precritical target binding, independent timed SpringBoard/same-PID effect and cleanup. Helpers/controls not implemented; execution is paused for the user reboot."
+    "scope": "One observed Device Hub Home button input with precritical target binding, independent timed SpringBoard/same-PID effect and cleanup. Original Duo proposal remains unadmitted; ordinary-iPhone variant requires its own definition/review before execution."
   }
 }

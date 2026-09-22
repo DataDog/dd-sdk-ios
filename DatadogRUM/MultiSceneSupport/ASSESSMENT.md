@@ -28,7 +28,8 @@ and candidate terminal views stop correctly. Both candidate modes also pass
 [explicit session rollover](Results/EXP-221-session-rollover.json). Baseline repeated
 resumes mutate currentRequest baggage; their observed protocol-start carriers stay
 original-owned. [Fold](Results/EXP-221-duo-fold.json) remains unexecuted after a
-pre-installation readiness stop. Integrated-app and automatic view/action tracking
+pre-installation readiness stop and a subsequent Duo boot failure after reboot.
+Integrated-app and automatic view/action tracking
 acceptance also remain open.
 
 The current-source automatic comparison has unresolved native-input variability.

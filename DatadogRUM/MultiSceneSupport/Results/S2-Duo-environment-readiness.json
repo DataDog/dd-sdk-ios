@@ -30,12 +30,54 @@
   "app_launches": 0,
   "axe_probes": 0,
   "gate_credit": false,
-  "next_action": "Require a materially changed environment and separate fixed admission before another fresh boot. Continue independent S1 CI and callback source/oracle preparation; do not repeat the stopped app journey.",
+  "next_action": "Do not repeat this Duo boot on the unchanged environment. Await a materially changed setup and separate admission; continue the existing F08 Home mechanism preparation on an ordinary iPhone without substituting it for Duo acceptance.",
   "subsequent_read_only_observation": {
     "at": "2026-09-21T22:02:48.157262+00:00",
     "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-environment-readonly-e_8o0cdl/summary.json",
     "sha256": "de1b5e34899c22ed4d4b9f2cf6471c653d6b59656e8da29c0a0f8002f381fc6a",
     "result": "Existing prebooted iPhone18Pro/iOS27.0 and Duo/iOS27.1 respond to AXe describe-ui. No app launch/input/install/boot/shutdown; before/after boot inventory unchanged.",
     "limit": "Existing-device access does not qualify fresh-device migration, input delivery or SDK behavior. Separate bounded admission required."
+  },
+  "post_reboot_existing_device_restoration": {
+    "status": "STOPPED_SEMANTIC_BOOT_FAILURE",
+    "at": "2026-09-22T06:58:28.716257+00:00",
+    "device": "9A00C776-2D63-420A-830F-44CE1B5E3F2E",
+    "root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp221-fold-resume-g34lrac_",
+    "review": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp221-fold-resume-g34lrac_/continuation-review.json",
+      "sha256": "306bf0c95ab31a6297acb37397d7145600ee68f24957368c0130b3eba936d07f"
+    },
+    "definition": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp221-fold-resume-g34lrac_/continuation-definition.json",
+      "sha256": "146b0103533403a99d44812ce349a76435be0966d9fbf34ae229977cf0da9d09"
+    },
+    "restoration": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp221-fold-resume-g34lrac_/restoration-result.json",
+      "sha256": "37985c6ef3cffe53aeb403404e37dc537abb0298b7ce784d7416849e51bb6d1b"
+    },
+    "bootstatus": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp221-fold-resume-g34lrac_/restoration-bootstatus.json",
+      "sha256": "1c702e632c7bab2a89817c26d9065e709fb44f20a2a3b18823abb194f02dcc17"
+    },
+    "cleanup": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp221-fold-resume-g34lrac_/restoration-cleanup.json",
+      "sha256": "25bccdaab49d799239ae78a468847960251fa9e6b65bfa033b8195297fe0faed"
+    },
+    "startup_schema_stop": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp221-fold-resume-g34lrac_/restoration-startup-stop.json",
+      "sha256": "347bc71751bc9594ac2cfd43df11996627223fd2d89f217d39fb1e1494fc0f2b"
+    },
+    "boot_calls": 1,
+    "terminal_status": 3,
+    "boot_exit_code": 0,
+    "semantic_outcome": "Data Migration Failed",
+    "app_installs": 0,
+    "app_launches": 0,
+    "pose_inputs": 0,
+    "native_only_admission_created": false,
+    "cleanup_state": "Shutdown",
+    "protected": "PASS",
+    "gate_closures": [],
+    "next_action": "Do not repeat this Duo boot on the unchanged environment. Await a materially changed setup and separate admission; continue the existing F08 Home mechanism preparation on an ordinary iPhone without substituting it for Duo acceptance."
   }
 }
