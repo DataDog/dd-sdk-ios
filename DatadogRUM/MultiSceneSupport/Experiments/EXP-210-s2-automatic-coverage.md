@@ -46,3 +46,13 @@ owned simulators are deleted after app cleanup. The mirror is evidence, not a
 relocated executable attempt. Historical EXP-195 results and eight unresolved
 old-build Duo cells remain separate. No backend, performance, physical-Duo,
 active-work or semantic-API acceptance is claimed.
+
+## Current composition human preparation
+
+The owning result's `human_current_composition` retains the same40 slots and binds
+baseline62f64 against selectedc9faed81. Original input failures above are unchanged.
+The human observer and four genuine source/compiler arms qualify; no native cell
+has run. The rejected fixture compiler expression and corrected builds remain
+separate. Source review, controls and full product identities live in that record.
+Complete the bounded human cell/fold/cleanup runner before its first planned baseline
+qualification. This preparation adds no SDK change or behavioral gate credit.

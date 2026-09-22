@@ -2,7 +2,7 @@
   "schema_version": 1,
   "work_item": "S2:A02 ordered single human-input session",
   "status": "ORDERED_SCOPE_PREPARED_CAPTURE_AND_BUILD_BINDINGS_INCOMPLETE",
-  "updated_at": "2026-09-22T17:44:24.003230+00:00",
+  "updated_at": "2026-09-22T18:30:05.832696+00:00",
   "owner": "Harness implementer",
   "user_role": "Only real gestures and any required interactive sign-in",
   "request_user_now": false,
@@ -17,78 +17,27 @@
         "C09",
         "C10"
       ],
-      "cases": [
-        {
-          "build": "baseline-26.5",
-          "device": "duo",
-          "framework": "UIKit",
-          "layout": "stack",
-          "multiple_scenes": false,
-          "input": "PREPARED HUMAN COLLECTOR REQUIRED"
-        },
-        {
-          "build": "baseline-26.5",
-          "device": "duo",
-          "framework": "UIKit",
-          "layout": "split",
-          "multiple_scenes": false,
-          "input": "PREPARED HUMAN COLLECTOR REQUIRED"
-        },
-        {
-          "build": "baseline-26.5",
-          "device": "duo",
-          "framework": "SwiftUI",
-          "layout": "stack",
-          "multiple_scenes": false,
-          "input": "PREPARED HUMAN COLLECTOR REQUIRED"
-        },
-        {
-          "build": "baseline-26.5",
-          "device": "duo",
-          "framework": "SwiftUI",
-          "layout": "split",
-          "multiple_scenes": false,
-          "input": "PREPARED HUMAN COLLECTOR REQUIRED"
-        },
-        {
-          "build": "candidate-26.5",
-          "device": "duo",
-          "framework": "UIKit",
-          "layout": "stack",
-          "multiple_scenes": false,
-          "input": "PREPARED HUMAN COLLECTOR REQUIRED"
-        },
-        {
-          "build": "candidate-26.5",
-          "device": "duo",
-          "framework": "UIKit",
-          "layout": "split",
-          "multiple_scenes": false,
-          "input": "PREPARED HUMAN COLLECTOR REQUIRED"
-        },
-        {
-          "build": "candidate-26.5",
-          "device": "duo",
-          "framework": "SwiftUI",
-          "layout": "stack",
-          "multiple_scenes": false,
-          "input": "PREPARED HUMAN COLLECTOR REQUIRED"
-        },
-        {
-          "build": "candidate-26.5",
-          "device": "duo",
-          "framework": "SwiftUI",
-          "layout": "split",
-          "multiple_scenes": false,
-          "input": "PREPARED HUMAN COLLECTOR REQUIRED"
-        }
-      ],
       "actions": [
         "Follow each frozen stack/split tap, switch, scroll and navigation script",
         "Use one actual Closed-to-Open-to-Closed transition when requested"
       ],
       "automated_checks": "Exact native control effect and mapper/backend owners/counts; fresh pose geometry before dependent work.",
-      "binding_limit": "EXP210 candidate652ce169 is historical E01-only. Rebuilt/current-composition obligations require their own exact c9faed81 build binding; these labels confer no reuse credit."
+      "binding_limit": "Four genuine current-source build arms now qualify. Historical EXP195/earlier EXP210 results do not certify this composition. The finite human runtime remains incomplete.",
+      "matrix": {
+        "owner": "EXP-210-s2-automatic-coverage.json",
+        "section": "matrix.inventory with human_current_composition source/build binding",
+        "cells": 40,
+        "source_baseline": "62f64d7b655bdc83f3036c4ad81090a270f6202b",
+        "source_candidate": "c9faed816a1d4828d7d8c4b64acae01119425889",
+        "native_admitted": false
+      },
+      "current_binding": {
+        "owner": "EXP-210-s2-automatic-coverage.json",
+        "state": "OBSERVER_REVIEWED_FOUR_BUILDS_QUALIFIED_RUNTIME_INCOMPLETE",
+        "build_root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-automatic-human-typed-build-bfh4vhwn/run",
+        "plan_sha256": "bd446eb004af5fbeb22e41486c5981e86fc284d4198c046551aa8802b0a9a800",
+        "remaining": "Complete actual-display fold, compact UIKit split sidebar, whole-cell admission/manifest variants and shared cleanup integration; review the complete runner before the first planned baseline qualification. Request the one human session only after the remaining family bindings are ready."
+      }
     },
     {
       "order": 2,
@@ -203,7 +152,7 @@
       "T03/T08 Resource/Trace four human-fold cells with unchanged build reuse"
     ],
     "remaining_bindings": [
-      "C07-C10 current-source automatic tracking human collector",
+      "C07-C10: all current-source builds qualify; automatic human whole-cell/fold/cleanup runtime remains",
       "H11-H14 interactive transition and geometry collector",
       "F08 native/browser capture and account prerequisites"
     ],

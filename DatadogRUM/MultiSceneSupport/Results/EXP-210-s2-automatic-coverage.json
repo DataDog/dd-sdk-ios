@@ -578,5 +578,171 @@
   "object_comparison": {
     "path": "/var/folders/54/lrjgxzh90n174wzdwxhnlnnh0000gp/T/exp210-automatic-kxbfjmha/D3-sdk-object-comparison.json",
     "scope": "388 common SDK objects; full files differ. Five selected __TEXT.__text sections match, including event and scroll instrumentation/proxy. This is not whole-binary identity or causal proof."
+  },
+  "human_current_composition": {
+    "state": "OBSERVER_REVIEWED_FOUR_BUILDS_QUALIFIED_RUNTIME_INCOMPLETE",
+    "defined_at": "2026-09-22T17:48:56.817730+00:00",
+    "gates": [
+      "S2:C07",
+      "S2:C08",
+      "S2:C09",
+      "S2:C10",
+      "S2:A02"
+    ],
+    "source_revisions": {
+      "baseline": "62f64d7b655bdc83f3036c4ad81090a270f6202b",
+      "candidate": "c9faed816a1d4828d7d8c4b64acae01119425889"
+    },
+    "matrix_cells": 40,
+    "matrix_basis": "The existing EXP210 four build arms, regular/Duo, UIKit/SwiftUI stack/split plus eight SDK27 Duo manifest-true cells; exact current-source replacement. Historical EXP195 reference and its unresolved old-source cells stay separate. No additional SDK-on/off diagnostics.",
+    "builds_max": 4,
+    "native_admitted": false,
+    "native_cells_executed": 0,
+    "retries": 0,
+    "base_observation_sha256": "dd0a252e94a70a2b021c2b301ee2353e7439be79b546ca4d7615e28f4d458aba",
+    "unchanged_ui": {
+      "tools/multi-scene/automatic-coverage/Fixture/UIKitApp.swift": "4cd33b4038d949f80836a2f448132751da098652d9fb4c12bf16c09333b06bfa",
+      "tools/multi-scene/automatic-coverage/Fixture/SwiftUIApp.swift": "f99ed78c8f77a59698e4a05198bb0a314074bfd063be53e03e99b448d30508eb"
+    },
+    "discriminator": "Human gestures, fresh native request/phase identity, existing native callback effects and a passive UIScrollView pan/content-offset witness. Real display geometry, complete window inventory and mapper occurrences remain independently checked. No XCTest success is synthesized.",
+    "observer_scope": "Generate only an observation-file bridge into copied fixtures. Preserve UIKit/SwiftUI view hierarchy, controls, navigation, default RUM configuration, mapper pass-through and application scene declaration. Add no swizzle, gesture recognizer, delegate replacement, manual RUM view/action or SDK edit. Existing scroll recognizers receive observation targets only. Read public accessibility identifiers/frames only when a host snapshot is requested, to bind the actual visible control and scroll target. Missing public observation invalidates that mechanism; no private class rule.",
+    "observer_qualification": "First planned baseline cell; no extra diagnostic cell or repeated failed input path. An unobservable control effect fails qualification.",
+    "remaining": "Complete actual-display fold, compact UIKit split sidebar, whole-cell admission/manifest variants and shared cleanup integration; review the complete runner before the first planned baseline qualification. Request the one human session only after the remaining family bindings are ready.",
+    "build_contract": {
+      "keys": [
+        "baseline-27.1",
+        "candidate-27.1",
+        "baseline-26.5",
+        "candidate-26.5"
+      ],
+      "seconds_per_build": 900,
+      "native_launches": 0,
+      "fixture_deployment": "16.0",
+      "sdk_deployment": "15.0",
+      "architecture": "arm64",
+      "configuration": "Release"
+    },
+    "initial_observer_review": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-automatic-human-source-u1z2h9lw/source-review.json",
+      "sha256": "3e32293977bf23afdfc74ef31ea4fac5088bb05fce76b75ff01a650fb82ae1a0"
+    },
+    "input_provenance_limit": "Pan state and displacement prove an observed native gesture effect, not independent physical-human causality.",
+    "observer_cost_contract": {
+      "file_polling": "Off-main serialized queue; no 200ms UI traversal or synchronous Documents read.",
+      "evidence_writes": "Reserve native event order under one lock, then serialize and persist all copied fixture observations on one background queue.",
+      "snapshot": "Main-actor UI/accessibility snapshot only on explicit host request while input is quiescent; finish before the human prompt.",
+      "callback_main_thread_max_ns": 2000000,
+      "snapshot_main_thread_max_ns": 100000000,
+      "qualification_limit": "Paced, observation-equipped fixture comparison; no uninstrumented production performance claim. Excess callback overhead invalidates native comparison."
+    },
+    "runtime_contract": {
+      "native_admitted": false,
+      "stage_execution_seconds": 14400,
+      "cleanup_seconds": 300,
+      "regular_cell_seconds": 1800,
+      "duo_cell_seconds": 3600,
+      "human_step_seconds": 180,
+      "snapshot_seconds": 30,
+      "settle_seconds": 1.2,
+      "retries": 0,
+      "initial_cell": "baseline-27.1/regular/UIKit/stack/false",
+      "progression": "First planned baseline qualifies actual control visibility, native effects and observer cost; any failed mechanism stops equivalent input paths, no diagnostic retry. Candidate pair before wider matrix.",
+      "native_evidence": "Exact durable native prefixes, source-bound visible control/callback or appearance, counter/toggle effect, actual UIScrollView pan/displacement, complete window inventory, real display transition, actual Home/background and complete local mapper inventory.",
+      "cleanup": "Existing acceptance helper preserves native Documents before task-only removal; exact original app/device/display restoration, separate scenario/evidence/cleanup verdicts.",
+      "comparison": "Reuse existing summarize/compare ownership and occurrence semantics after independent human input qualification; no synthesized XCTest result and no backend claim."
+    },
+    "build_root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-automatic-human-typed-build-bfh4vhwn/run",
+    "observer_controls": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-automatic-human-source-u1z2h9lw/compile-repair-controls.json",
+      "sha256": "b363ec3b363f430ebef348efd82c0a843ac6303887182a5e14a34ac2cb1c86a9"
+    },
+    "build_review": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-automatic-human-source-u1z2h9lw/build-only-review.json",
+      "sha256": "6e8eb6099ef975d631af92c90328fe6b098a96b472f140f2fbd87c78bcd72bf2"
+    },
+    "build_preparation_attempts": [
+      {
+        "root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-automatic-human-build-5zf3ygso/run",
+        "plan_sha256": "4ad0bf264d30b924172a948b1f8979297a2d80c245b9894c053f097355ca9bc7",
+        "state": "INVALID_FIXTURE_COMPILE",
+        "executed_keys": [
+          "baseline-27.1"
+        ],
+        "failure_sha256": "311a83907a91ce27dbf7bc41c8b5be0482d3676350922fb5abb65220935fd4be",
+        "command_sha256": "6b19375ef434cb9573839c4280363f52838df406ea827e835a3f67d097bdb4ca",
+        "discriminator": "Compiler rejected chained window-selection expression at HumanObservation.swift:38; replace with explicitly typed equivalent iteration. No SDK or behavioral failure.",
+        "remaining_arms": "NOT_RUN",
+        "native_launches": 0
+      }
+    ],
+    "build_attempt_accounting": {
+      "original_failed_builds": 1,
+      "corrected_build_arms_max": 4,
+      "total_build_invocations_max": 5,
+      "equivalent_retries": 0
+    },
+    "updated_at": "2026-09-22T18:30:05.832696+00:00",
+    "build_plan": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-automatic-human-typed-build-bfh4vhwn/run/build-plan.json",
+      "sha256": "bd446eb004af5fbeb22e41486c5981e86fc284d4198c046551aa8802b0a9a800"
+    },
+    "observer_review": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-automatic-human-source-u1z2h9lw/final-observer-review.json",
+      "sha256": "2e592a30c264fc85a847054a467e4076d9defaa1c6c3f73d88abcf2695ff0418"
+    },
+    "build_results": {
+      "baseline-27.1": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-automatic-human-typed-build-bfh4vhwn/run/baseline-27.1/build-result.json",
+        "sha256": "99978ad5e99aa58e07a9c34cf27468d86ad1815c235f081a31ad6e1048aa3039"
+      },
+      "candidate-27.1": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-automatic-human-typed-build-bfh4vhwn/run/candidate-27.1/build-result.json",
+        "sha256": "ef2b075a1d67df2cfe96b08b5b3e4a710120cb4dec2397462bb69f6bc2e8f8d2"
+      },
+      "baseline-26.5": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-automatic-human-typed-build-bfh4vhwn/run/baseline-26.5/build-result.json",
+        "sha256": "3dda50684e628a89d1df79777af66dc37d1f66d67602c9341466745dd3207922"
+      },
+      "candidate-26.5": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-automatic-human-typed-build-bfh4vhwn/run/candidate-26.5/build-result.json",
+        "sha256": "0a021fa597b7ac1d2a3d8a3b2e355185f3e8661d51d8d3e081f1081d3a2b2490"
+      }
+    },
+    "capture_controls": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-automatic-human-source-u1z2h9lw/capture-controls.json",
+      "sha256": "9c3e35f3b0a42e4eed40ae11eae5c423a24c97d0371dbc1aa79ba50e10201649"
+    },
+    "build_qualification": {
+      "genuine_source_compiler_arms": 4,
+      "app_products": 8,
+      "configuration": "Release arm64; fixture16.0; SDK15.0",
+      "membership": "Exact per-target SwiftFileList source bytes, SDK member inventory, object outputs and every product/Mach-O file",
+      "new_fixture_warnings": 0,
+      "native_launches": 0
+    },
+    "capture_progress": {
+      "state": "OFFLINE_PREPARATION_ONLY",
+      "new_controls": 14,
+      "ready": [
+        "Finite 14-step regular /33-step Duo order",
+        "Fresh request UUID and exact durable prefix before readiness",
+        "Source callback plus exact native counter change",
+        "Original SwiftUI destination appearance and pan/content-offset effects",
+        "Fixed per-step/cell clocks and actual Home/background persistence",
+        "Native foreground geometry and appearance precede the first snapshot request"
+      ],
+      "incomplete": [
+        "Whole-cell source/build/install identity and admission",
+        "Actual-display fold integration",
+        "Compact UIKit split sidebar handling",
+        "Manifest-true product copies",
+        "Existing shared cleanup integration",
+        "Scoped complete-runner review"
+      ]
+    },
+    "capture_controls_initial_readiness": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-automatic-human-source-u1z2h9lw/initial-capture-controls.json",
+      "sha256": "a835af84cfe81c6f46aeb931ceb57a7741b7b3357b5c7ef641c413ade31cd617"
+    }
   }
 }

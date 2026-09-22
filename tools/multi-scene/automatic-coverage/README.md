@@ -107,3 +107,27 @@ collector; a failed input path is never retried to obtain a pass. Manifest-true
 variants inherit their own frozen definition and change only the declaration.
 These host controls do not alter the native-input or semantic ownership oracle,
 and local mapper comparisons do not prove backend or active-work fold coverage.
+
+
+## Current composition human collector
+
+EXP210's `human_current_composition` owns the finite source/build and runtime
+contracts. `human_build.py prepare --root FRESH` freezes four genuine SDK/source
+arms; `build --root ROOT --key baseline-27.1` consumes that arm's fixed build
+admission. Each app target must compile its exact source set. This build workflow
+never installs or launches an app. Keep rejected and corrected builds separate.
+
+The copied observer preserves the original UIKit/SwiftUI UI and RUM configuration.
+It adds passive callbacks, existing-pan observations and requested public window/
+accessibility snapshots. Requests and ordered file writes run off-main. Each
+snapshot/callback has a bound measured-cost receipt; missing or excessive cost
+invalidates the comparison. Exact sequence/byte-count/hash checkpoints establish
+persisted prefixes before readiness is consumed. This is a paced fixture comparison,
+not an uninstrumented production performance measurement.
+
+`human_journey.py` retains the original ordered flows. `human_capture.py` connects
+fresh requests, durable prefixes, screenshots, native effects and actual background
+capture. It is incomplete: whole-cell admission, fold, compact sidebar and cleanup
+integration remain. Do not invoke it as acceptance. The first planned baseline
+must qualify the completed mechanism; no extra diagnostic or equivalent retry.
+Input witnesses prove observed native effects, not independent human causality.

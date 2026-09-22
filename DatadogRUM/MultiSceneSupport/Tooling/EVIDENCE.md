@@ -180,3 +180,13 @@ requires representative application-visible frame rate, hitches/hangs, CPU and
 memory comparison, or a reviewed source exclusion establishing non-applicability.
 Historical [baseline thresholds](../BASELINES.md) remain unchanged; simulator numbers
 or missing warning frames cannot establish device performance or crash freedom.
+
+
+## Asynchronous fixture persistence
+
+A reserved event sequence does not prove that its bytes reached disk. A serial
+writer checkpoint must follow all earlier enqueued writes and bind the exact run,
+request, final sequence, byte count and hash. Validate that durable prefix before
+consuming readiness. Keep later bytes separate; a partial tail or matching older
+snapshot cannot repair a missing receipt. Preserve actual callback effects and
+measure observer cost before attributing an input failure to SDK code.
