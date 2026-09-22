@@ -100,4 +100,25 @@ class HostingControls(unittest.TestCase):
             r=c.local(self.doc,self.expected);rows=backend(r);rows[-1]['attributes']['custom']['session'][counter]['count']=value
             with self.assertRaises(Rejected):c.backend(rows,r)
 
+    def test_deferred_swiftui_disappearance_retains_exact_occurrence(self):
+        # Actual captured ordering: UIKit present completes before SwiftUI disappearance;
+        # it still precedes the next Root appearance and all owner guards are unchanged.
+        rows=self.doc['records'];disappear=[r for r in rows if r['kind']=='swiftui-disappear' and r['name']=='RootView'][1]
+        rows.remove(disappear);next_appear=[r for r in rows if r['kind']=='swiftui-appear' and r['name']=='RootView'][2]
+        rows.insert(rows.index(next_appear),disappear)
+        modal_disappear=next(r for r in rows if r['kind']=='swiftui-disappear' and r['name']=='ModalView')
+        rows.remove(modal_disappear);rows.insert(rows.index(self.row('boundary','dismiss')),modal_disappear)
+        for i,r in enumerate(rows,1):r.update(sequence=i,wall_ms=i,monotonic_ns=i)
+        c.local(self.doc,self.expected)
+    def test_overlapping_root_lifetime_rejected(self):
+        rows=self.doc['records'];disappear=[r for r in rows if r['kind']=='swiftui-disappear' and r['name']=='RootView'][1]
+        rows.remove(disappear);next_appear=[r for r in rows if r['kind']=='swiftui-appear' and r['name']=='RootView'][2]
+        rows.insert(rows.index(next_appear)+1,disappear)
+        for i,r in enumerate(rows,1):r.update(sequence=i,wall_ms=i,monotonic_ns=i)
+        self.rejected()
+    def test_duplicate_lifecycle_receipt_rejected(self):
+        rows=self.doc['records'];rows.insert(5,copy.deepcopy(self.row('swiftui-appear')))
+        for i,r in enumerate(rows,1):r.update(sequence=i,wall_ms=i,monotonic_ns=i)
+        self.doc['durable_sequence']=len(rows);self.rejected()
+
 if __name__=='__main__':unittest.main()

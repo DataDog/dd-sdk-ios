@@ -48,6 +48,14 @@ def local(document, expected):
     launch_views = [e for e in views.values() if e['view']['name'] == 'ApplicationLaunch']
     require(len(launch_views)==1 and launch_views[0]['view']['url']=='com/datadog/application-launch/view', 'wrong incidental launch view')
     launch_id=launch_views[0]['view']['id']
+    appearances=[r for r in rows if r['kind']=='swiftui-appear']
+    disappearances=[r for r in rows if r['kind']=='swiftui-disappear']
+    require([r['name'] for r in appearances]==NAMES and [r['name'] for r in disappearances]==NAMES,
+            'missing, extra or reordered SwiftUI lifecycle occurrence')
+    for index,(appear,disappear) in enumerate(zip(appearances,disappearances)):
+        require(appear['sequence']<disappear['sequence']<terminal['sequence'],'invalid SwiftUI lifetime')
+        following=[r for r in appearances[index+1:] if r['name']==appear['name']]
+        require(not following or disappear['sequence']<following[0]['sequence'],'overlapping same-content lifetime')
     bounds = [r for r in rows if r['kind'] == 'boundary']
     require([r['phase'] for r in bounds] == PHASES, 'missing/reordered native transitions')
     controllers = []; ids = []; names = []; previous_boundary = launch['sequence']
@@ -76,9 +84,6 @@ def local(document, expected):
             require(boundary['presented'] is None and boundary['top'] == boundary['controller'], 'wrong navigation owner')
         appears = [r for r in rows if r['kind'] == 'swiftui-appear' and r['name'] == name and previous_boundary < r['sequence'] < boundary['sequence']]
         require(len(appears) == 1, 'missing/duplicate native content appearance')
-        if index > 1:
-            disappears = [r for r in rows if r['kind'] == 'swiftui-disappear' and r['name'] == NAMES[index-2] and previous_boundary < r['sequence'] < boundary['sequence']]
-            require(len(disappears) == 1, 'missing/duplicate outgoing disappearance')
         current = [(r,e) for r,e in view_rows if r['sequence'] < boundary['sequence']][-1]
         event = current[1]; view = event['view']
         require(current[0]['sequence'] > previous_boundary and view == boundary['latest_view'] and view['is_active'] is True, 'stale/current owner not independently mapped')

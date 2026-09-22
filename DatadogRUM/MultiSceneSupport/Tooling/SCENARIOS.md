@@ -166,6 +166,13 @@ reviewed runner guards. [EXP-218](../Results/EXP-218-native-input-observation.js
 and [EXP-220](../Results/EXP-220-native-input-callback.json) retain distinct scopes;
 the cursor alone states whether execution is currently admitted.
 
+For UIKit-hosted SwiftUI, UIKit transition completion and SwiftUI appearance/
+disappearance are independent receipts. Keep completion and exact mapper ownership
+before each native boundary. Validate the complete SwiftUI occurrence stream with
+paired appear/disappear and no overlap before the same content reappears; do not
+assume an outgoing SwiftUI callback is synchronous with UIKit completion. A local
+re-audit cannot supply missing backend evidence or rewrite the original verdict.
+
 ## Specialized fixture entry points
 
 | Contract | Read only when needed | Preserve |

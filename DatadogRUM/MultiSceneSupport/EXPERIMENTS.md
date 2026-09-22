@@ -271,4 +271,4 @@ conclusions belong in [ASSESSMENT.md](ASSESSMENT.md).
 
 | <a id="exp-221"></a>EXP-221 | T03, T08 | FOLD TRANSPORT STOPPED; LATER RESTORATION PASS | Late Closed receipt invalidates the Date continuation; original cleanup remains INVALID and separate restoration passes. Human-input preparation next. Accepted navigation/rollover retained. | [record](Experiments/EXP-221-s2-resource-trace.md#exp-221--compare-active-work-ownership-on-the-selected-s2-composition) |
 
-| <a id="exp-222"></a>EXP-222 | H16 | FIRST CELL INVALID; CLEANUP PASS | Actual transitions complete; strict SwiftUI callback-timing assumption rejected. Other cells unrun; offline review next. No SDK finding or gate credit. | [record](Experiments/EXP-222-hosted-swiftui.md#exp-222--qualify-ordinary-hosting-on-the-selected-s2-composition) |
+| <a id="exp-222"></a>EXP-222 | H16 | FIRST CELL INVALID; CLEANUP PASS | Offline lifecycle re-audit qualifies local automatic hosting; original INVALID preserved and backend absent. Other cells unrun; no SDK finding or gate credit. | [record](Experiments/EXP-222-hosted-swiftui.md#exp-222--qualify-ordinary-hosting-on-the-selected-s2-composition) |

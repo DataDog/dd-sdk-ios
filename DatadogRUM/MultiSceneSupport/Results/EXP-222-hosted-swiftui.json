@@ -2,7 +2,7 @@
   "schema_version": 1,
   "experiment": "EXP-222",
   "gate": "S2:H16",
-  "status": "FIRST_CELL_INVALID_CALLBACK_TIMING_ASSUMPTION_CLEANUP_PASS",
+  "status": "LOCAL_LIFECYCLE_REAUDIT_PASS_ORIGINAL_INVALID_BACKEND_ABSENT",
   "updated_at": "2026-09-22T13:13:56.110050+00:00",
   "owner": "SDK implementer",
   "reviewer": "/root/c06_runtime_plan",
@@ -102,5 +102,15 @@
       "sha256": "01d76a7ace61d7cc75f1e13d8864b62fb7bc4bb091995453a9c30970df5937c1"
     }
   },
-  "next": "Scoped review and offline re-audit of the captured lifecycle timeline; no native retry or gate closure."
+  "next": "Review a finite acceptance continuation using the corrected oracle and unchanged compiled products; no additional input diagnostic. WebView preparation continues independently.",
+  "offline_reaudit": {
+    "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp222-hosted-swiftui-_y3wbrkk/offline-lifecycle-reaudit.json",
+    "sha256": "d6a76e92c0704813cb2ff7ad851fc97033845eec46743c9dc7cf4e50603a479b",
+    "scope": "Baseline local five-hosting-occurrence contract only; original INVALID and cleanup PASS preserved. Separate complete backend read returned0 rows; no overall acceptance.",
+    "reviewer": "/root/c06_runtime_plan",
+    "controls": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp222-hosted-swiftui-_y3wbrkk/offline-lifecycle-controls.json",
+      "sha256": "0f1b008fb50a1e001f9b91161854dc62155e72e9cf6e1c2e78b5072ce38afb28"
+    }
+  }
 }
