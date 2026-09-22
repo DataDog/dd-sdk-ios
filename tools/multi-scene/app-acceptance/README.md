@@ -37,3 +37,30 @@ Every failed preparation and closed deadline remains immutable. Changed build
 inputs require fresh copies and admission. A checker correction can re-evaluate
 valid saved outputs without rebuilding or extending the original deadline.
 These helpers do not replace native, backend or cleanup verdicts.
+
+## Runtime journeys
+
+`journey_workflow.py prepare` binds the existing complete products to the finite
+[journey definition](journey-definition.json). Preparation never admits execution.
+`journey_session.py` reuses the existing human operator page and owned-process
+supervisor for one reviewed arm. Fresh operator, account and environment receipts
+are required; `journey_connector.js` exchanges only a published backend request.
+The [owning record](../../../DatadogRUM/MultiSceneSupport/Results/S2-F08-source-oracle.json)
+contains current identities, controls and remaining prerequisites.
+
+The driver proves actual input effects, native attachment and mapper owners before
+each step. Complete refresh observations can trigger a fresh snapshot within the
+original prompt deadline; a refresh is never substituted for native readiness.
+Browser payloads retain their own service/version and view IDs. J03 separately
+checks the still-active native owner beyond the existing retention interval.
+
+After the final Home step, the original process stays alive in background until
+complete backend evidence is retained. The driver then stops it, requires the
+sealed stream to equal the frozen inventory, and rechecks only saved responses.
+It issues no query after termination. Any new tail, incomplete inventory, late
+publication or failed cleanup keeps the original acceptance INVALID.
+
+A complete baseline mechanism can permit the planned candidate. Final occurrence,
+Browser and incidental-event source classifications remain separate release work;
+mechanism qualification alone cannot close F08. All raw controlled-session data
+and account selections stay in private local artifacts.

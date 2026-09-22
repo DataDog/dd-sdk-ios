@@ -195,6 +195,18 @@ it into native events. Flags/build aggregates remain exact. Family check invento
 and malformed-type controls live in the
 [acceptance README](../../../tools/multi-scene/acceptance/README.md).
 
+## Controlled app journeys
+
+Use the [F08 runtime](../../../tools/multi-scene/app-acceptance/README.md#runtime-journeys)
+for the finite J01–J04 pair. Keep complete native and broad-session inventories,
+raw Browser identity, exact mapper revisions and the protected J03 owner distinct.
+The uploader remains alive through collection; termination follows complete raw
+exchange publication. Seal the final capture and rejoin only those saved responses.
+A changed tail or late publication invalidates the original attempt. Mechanism
+qualification permits only the planned pair; final source classification owns
+release acceptance. Current bindings belong to the
+[F08 record](../Results/S2-F08-source-oracle.json), not this procedure.
+
 ## Process, fatal and shared-vitals signals
 
 Keep exported Core snapshots, crash-provider state, serialized plugin injection and

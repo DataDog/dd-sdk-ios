@@ -1,0 +1,115 @@
+"""Pure F08 native phase assertions; no UI input or identity inferred from names alone."""
+from journey_contract import one, require, field, mapper_inventory
+
+NAMES = {'login':['LoginView'], 'list':['ServiceList','Services'], 'detail':['ServiceDetail','ServiceDetails'],
+         'dashboard':['DashboardDetails']}
+LABELS = {'list':'List of Services', 'detail':'Service Details', 'dashboard':'Dashboard Details'}
+
+
+def nodes(value):
+    if isinstance(value, dict):
+        yield value
+        for child in value.values():yield from nodes(child)
+    elif isinstance(value, list):
+        for child in value:yield from nodes(child)
+
+
+def label(value):return value.get('AXLabel', value.get('label', value.get('Label','')))
+def kind(value):return str(value.get('type', value.get('role', value.get('AXRole','')))).replace('AX','').replace('XCUIElementType','').lower()
+def matches(tree, text, role=None):return [n for n in nodes(tree) if label(n)==text and (role is None or kind(n)==role)]
+
+
+def login(tree, subdomain=False):
+    default=matches(tree,'Log In with Subdomain','button')
+    title=matches(tree,'Enter Subdomain','statictext')
+    fields=[n for n in nodes(tree) if kind(n)=='textfield' and n.get('enabled') is True and n.get('AXValue')=='subdomain']
+    if subdomain:return len(title)==1 and len(fields)==1 and not default
+    return len(default)==1 and not title and not fields
+
+
+def back_target(tree):
+    require(login(tree, True), 'subdomain form is not ready')
+    heading=one(matches(tree,'Enter Subdomain','statictext'),'subdomain heading')
+    def frame(node):
+        value=node.get('frame',node.get('AXFrame'))
+        require(isinstance(value,dict) and all(type(value.get(k)) in (float,int) for k in ['x','y','width','height'])
+                and value['width']>0 and value['height']>0, 'AX target geometry unavailable')
+        return value
+    h=frame(heading);choices=[]
+    for value in matches(tree,'Back','button'):
+        f=frame(value);cy=f['y']+f['height']/2
+        if value.get('enabled',True) is True and h['x']-80<=f['x']+f['width']<=h['x']+2 and h['y']-8<=cy<=h['y']+h['height']+8:choices.append(value)
+    return one(choices,'source-defined subdomain Back')
+
+
+def home(tree):
+    return not matches(tree,'Log In with Subdomain','button') and not matches(tree,'Enter Subdomain','statictext') and any(label(n) in ['Home','Home Screen','SpringBoard'] for n in nodes(tree))
+
+
+def visible(rows, snapshot, phase, binding):
+    """Tie the actual attached labelled controller to the original navigation callback."""
+    require(phase in LABELS, 'unknown authenticated phase')
+    topology=snapshot['fields']['topology']
+    controller=one([c for c in topology['controllers'] if c.get('label')==LABELS[phase]
+                    and c.get('window')==binding['window'] and c.get('scene')==binding['scene']], 'attached phase controller')
+    require(not controller.get('transition'), 'native transition still active')
+    callbacks=[r for r in rows if r['sequence']<snapshot['sequence'] and r['kind']=='navigation_callback'
+               and r['fields']['controller']['id']==controller['id']]
+    require(callbacks and callbacks[-1]['fields']['callback']=='didShow-exit'
+            and callbacks[-1]['fields']['stack'][-1]==controller['id'], 'original navigation delegate did not finish on phase controller')
+    return dict(controller=controller['id'], native_callback_sequence=callbacks[-1]['sequence'], label=LABELS[phase])
+
+
+def foreground_binding(rows, snapshot, previous=None, *, authenticated_transition=False):
+    topology=snapshot['fields']['topology'];scenes=topology.get('scene_inventory',[])
+    scene=one(scenes,'ordinary scene')
+    window=one([w for w in scene['windows'] if w.get('owned') is True],'source-owned window')
+    source=one([r for r in rows if r['sequence']<snapshot['sequence'] and r['kind']=='owned_window'
+                and r['fields']['window']==window['id'] and r['fields']['scene']==scene['id']], 'source window installation')
+    current=dict(scene=scene['id'],window=window['id'],root=window['root'],owned_labels=list(LABELS.values()))
+    if previous:
+        require(all(current[k]==previous[k] for k in ['scene','window']), 'owned native scene/window replaced')
+        require(authenticated_transition or current['root']==previous['root'], 'root changed outside authenticated transition')
+    return current
+
+
+def lifecycle(rows, start, end, scene, callback):
+    names=[callback+'-enter',callback+'-exit']
+    selected=[r for r in rows if start<r['sequence']<=end and r['kind']=='scene_callback'
+              and r['fields']['callback'] in names]
+    require([r['fields']['callback'] for r in selected]==names and all(r['fields']['scene']==scene for r in selected),
+            'missing, repeated or foreign lifecycle boundary')
+    return [r['sequence'] for r in selected]
+
+
+def j01(rows, phases, expected, background):
+    names=['login-initial','login-subdomain','login-returned','login-reactivated']
+    require(all(name in phases for name in names), 'incomplete J01 phase inventory')
+    owners=[phases[name]['owner']['view_id'] for name in names]
+    require(len(set(owners[:3]))==1 and owners[3]!=owners[0], 'login lifecycle owner behavior differs')
+    local=mapper_inventory(rows,expected)
+    manual=[v['event'] for k,v in local['accepted'].items() if k[0]=='action' and field(v['event'],'action.target.name')=='LoginWithSubdomainTapped']
+    require(len(manual)==1 and field(manual[0],'view.id')==owners[0], 'named subdomain action owner/count differs')
+    first,last=(phases[n]['snapshot']['sequence'] for n in ['login-returned','login-reactivated'])
+    scene=phases['login-returned']['binding']['scene']
+    require(first<background['sequence']<last, 'Home evidence outside journey')
+    for callback in ['willResignActive','didEnterBackground','willEnterForeground','didBecomeActive']:
+        lifecycle(rows,first,last,scene,callback)
+    require(field(local['views'][owners[0]]['event'],'view.is_active') is False, 'previous login owner never stopped')
+    return dict(state='J01_LOCAL_BOUNDARIES_JOINED', old_view=owners[0], new_view=owners[3], action_count=1)
+
+
+def j04(rows, observations, expected, background):
+    before=observations['service-list-after-dashboard'];after=observations['service-list-reactivated']
+    old,new=before['owner']['view_id'],after['owner']['view_id']
+    require(old!=new, 'foreground reentry reused the stopped service-list occurrence')
+    require(before['binding']==after['binding'] and before['visible']['controller']==after['visible']['controller'],
+            'authenticated list native instance changed')
+    start,end=before['snapshot']['sequence'],after['snapshot']['sequence']
+    require(start<background['sequence']<end, 'authenticated Home evidence outside journey')
+    for callback in ['willResignActive','didEnterBackground','willEnterForeground','didBecomeActive']:
+        lifecycle(rows,start,end,before['binding']['scene'],callback)
+    local=mapper_inventory(rows,expected)
+    require(field(local['views'][old]['event'],'view.is_active') is False
+            and field(local['views'][new]['event'],'view.is_active') is True, 'authenticated view lifetime differs')
+    return dict(state='J04_LOCAL_BOUNDARIES_JOINED',old_view=old,new_view=new,process_id=expected['pid'])

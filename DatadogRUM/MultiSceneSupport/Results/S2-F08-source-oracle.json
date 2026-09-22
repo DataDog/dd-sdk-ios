@@ -182,7 +182,7 @@
     "partial cleanup relabeled as ordinary pass"
   ],
   "admission_limits": "This is source preparation only. No runtime/oracle pass, gate closure, new experiment or environment retry is implied. Existing J01, Duo and EXP220 automation stops remain closed; fresh execution needs materially changed environment and reviewed fixed admission.",
-  "next_action": "Finish native/mapper/browser/backend joins using both qualified symmetric capture products before the ordered human session.",
+  "next_action": "Prepare remaining H11-H14 bindings for the ordered human session. F08 runtime design, controls and existing complete product reuse qualify; account/control and fresh operator/environment prerequisites remain.",
   "review": {
     "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-f08-oracle-preparation-pincwto7/source-review.json",
     "sha256": "41f6a1f5348c383e8c11770dc50da59e45e9dc020559a49c2a60d8691815d6e9"
@@ -413,5 +413,53 @@
       },
       "candidate_adapter_review_sha256": "53191345790b4fbf186b00d6deaf4555d85a5df313808727b168397a1c95593f"
     }
+  },
+  "runtime_preparation": {
+    "state": "REVIEWED_RUNTIME_AND_PRODUCTS_PREPARED_NATIVE_UNADMITTED",
+    "at": "2026-09-22T23:03:24.378566+00:00",
+    "root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-f08-human-runtime-8rz7zcpe/run",
+    "definition": "../../../tools/multi-scene/app-acceptance/journey-definition.json",
+    "plan_sha256": "79cea5ba48c2f5781582c9e0cf87d2af5af29031d97a91b4da4f60c9ee55be80",
+    "review_sha256": "8d1ab9a06cb85208ff1bef1818c10dc9dd51a475d5c1d9b2f8b9d766a9b464dd",
+    "controls_sha256": "306178c6f888e6f916df758a91fd7044b473e37392a024c7479f6d693ba35fd8",
+    "python_distinct_tests": 53,
+    "javascript_controls": 4,
+    "native_launches": 0,
+    "gate_closures": [],
+    "source_product_reuse": {
+      "root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-f08-capture-context-wwea5ijl",
+      "completion_sha256": "9ac2d2fd925701e019a829a20a08f8df2ce9a844592f82e80f4e9d07de3ab765",
+      "builds_added": 0,
+      "both_source_guards_and_full_products_revalidated": true
+    },
+    "boundaries": [
+      "One operator prompt per actual ready step; no automated input",
+      "Exact native callback/mapper ownership and complete broad/native backend inventories",
+      "Raw Browser service/version separated from native identity; protected Replay-qualified J03 interval over181s",
+      "Background uploader remains alive through backend collection, then exact stream seal and saved-only rejoin",
+      "Explicit baseline mechanism qualification can permit the already-planned candidate; overall F08 remains INVALID pending final source classification",
+      "Timely durable publication and owned worker absence are required before candidate admission"
+    ],
+    "finite_final_classification": [
+      "Baseline/candidate occurrence and owner graph, including mixed UIKit/manual SwiftUI ordering",
+      "Browser containers outside the protected J03 interval and every unallowlisted backend addition",
+      "Incidental vital/operation payloads and source/backend view-update retention differences"
+    ],
+    "account_preparation": {
+      "state": "READ_ONLY_MCP_TARGETS_FOUND_NOT_NATIVE_PREREQUISITE_PROOF",
+      "organization": "mobile-integration",
+      "service_candidate": "ios-benchmark",
+      "dashboard_candidate": "Mobile Template Variable Test",
+      "remaining": "Interactive app sign-in and exact actual read-only Browser control/effect; freeze before candidate input."
+    },
+    "remaining": [
+      "H11-H14 bindings before requesting the ordered session",
+      "Account/control readiness",
+      "Fresh operator/Xcode/runtime/backend admission",
+      "First planned baseline mechanism qualification and paired source comparison"
+    ],
+    "preserved_control_failures": [
+      "Initial test import/mock setup and terminal join test-shape failures remain local evidence; no native or SDK failure is inferred."
+    ]
   }
 }

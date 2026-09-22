@@ -1,0 +1,113 @@
+{
+  "schema_version": 1,
+  "gate": "S2:F08",
+  "state": "DEFINED_BEFORE_RUNTIME_IMPLEMENTATION",
+  "defined_at": "2026-09-22T21:45:06.794520+00:00",
+  "scope": "The existing paired J01-J04 controlled app journeys. No SDK, app-route, fold scenario or production configuration changes.",
+  "source_definition": "capture-definition.json",
+  "matrix": [
+    {
+      "arm": "baseline",
+      "journeys": [
+        "J01",
+        "J02",
+        "J03",
+        "J04"
+      ]
+    },
+    {
+      "arm": "candidate",
+      "journeys": [
+        "J01",
+        "J02",
+        "J03",
+        "J04"
+      ]
+    }
+  ],
+  "environment": "Prebooted qualified Duo27.1, Xcode27.1, ordinary single scene; controlled test organization access in the existing app. No boot recovery or automated gesture path.",
+  "preconditions": [
+    "Both source-bound capture products qualified and unchanged",
+    "One ordered human-input session ready; fresh Xcode/runtime/device/backend access",
+    "Task app and both containers absent; original app/device/display inventories retained",
+    "Fresh run/nonce, PID and complete source/product identities",
+    "Same explicit read-only organization/service/dashboard and Browser interaction frozen before candidate input"
+  ],
+  "journeys": {
+    "J01": [
+      "Default login",
+      "Log In with Subdomain",
+      "Back to default login",
+      "Home",
+      "Reactivate same process"
+    ],
+    "J02": [
+      "Interactive sign-in if required",
+      "Service list",
+      "Selected existing service detail",
+      "Return to service list"
+    ],
+    "J03": [
+      "Selected existing dashboard",
+      "Native DashboardDetails and Browser readiness",
+      "Remain on dashboard for at least181seconds",
+      "One frozen read-only Browser interaction",
+      "Return to service list"
+    ],
+    "J04": [
+      "Home from service list",
+      "Reactivate same process on service list"
+    ]
+  },
+  "terminal_capture": "After J04, one symmetric Home drain ends foreground telemetry. Preserve the actual background writer checkpoint and complete current stream. Freeze the terminal inventory and query interval, keep the exact process alive in background while complete backend collection finishes, then stop only that task process and seal the final stream. Final bytes must equal the frozen inventory. Rejoin only saved responses; no query after termination, extra gesture, or deadline extension. This drain cannot substitute for J01 or J04.",
+  "identity_contract": [
+    "One native application/session bound to configured PID and captured mapper identity; reject prior sessions",
+    "Native service and compiled SDK version remain separate from Browser service/source/SDK version",
+    "Every local view occurrence and mapper revision retained; every available backend revision joined by exact ID/version",
+    "Backend may retain only latest view revisions; terminal mapped version and counters must settle",
+    "Every accepted non-view mapped event has one exact backend counterpart; dropped errors remain absent",
+    "Full Browser/native application-session inventory reconciles the separately complete native partition",
+    "Native key-window/controller proof and actual display precede each input; root replacement allowed only across authenticated-root transition",
+    "Context messages are asynchronous snapshots; active ownership also requires independently mapped view identity and native attachment",
+    "J03 requires native Replay eligibility and exact container owner; no Replay content inspection"
+  ],
+  "limits": {
+    "initial_launches_per_arm": 1,
+    "journey_home_cycles_per_arm": 2,
+    "terminal_drains_per_arm": 1,
+    "human_step_seconds": 180,
+    "authentication_seconds": 600,
+    "snapshot_seconds": 30,
+    "display_capture_seconds": 30,
+    "native_seconds_per_arm": 2700,
+    "backend_seconds_per_arm": 600,
+    "cleanup_seconds": 300,
+    "retries": 0,
+    "deadline_extension": false,
+    "backend_row_limit": 2000,
+    "backend_page_limit": 41,
+    "prompt_snapshot_reacquisitions": 3
+  },
+  "budget_basis": "Native steps reuse the reviewed180second human-step and30second capture bounds. J01 historical600seconds extends prospectively to include J02-J04, a181second dashboard wait and up to600seconds of sign-in. Backend/cleanup reuse current600/300second S2 limits. No existing clock changes.",
+  "verdicts": [
+    "scenario",
+    "evidence",
+    "cleanup"
+  ],
+  "acceptance": "Overall acceptance remains INVALID if required evidence or cleanup is incomplete. Attribute an SDK regression only after valid native input and exact selected-source proof. First baseline J01 qualifies changed human/capture mechanism; no diagnostic retry.",
+  "remaining": [
+    "Final scoped review and frozen runtime binding",
+    "Actual account and Browser control prerequisite",
+    "Fresh operator/Xcode/runtime/backend prerequisites before native admission",
+    "Finite post-capture source classifications and paired occurrence comparison before F08 acceptance"
+  ],
+  "native_launches": 0,
+  "gate_closures": [],
+  "candidate_dependency": {
+    "mechanism": "Explicit baseline mechanism qualification requires scenario PASS, complete native/Browser payload and protected J03 joins, original timely publications and cleanup PASS. Native scenario and cleanup alone are insufficient.",
+    "release_acceptance": "Required source classifications and the paired occurrence comparison stay open; mechanism qualification does not change the original overall INVALID verdict or close F08.",
+    "first_actual_browser_payload": "Identity schema, source partition and full raw view inventory must qualify at dashboard readiness before the181second interval.",
+    "browser_witness": "Prove the actual frozen control effect independently. Post-wait Browser events establish retained ownership; do not infer gesture causality from temporal proximity.",
+    "readiness": "Complete same-request refresh rows may trigger at most3 fresh native snapshots within the original prompt clock. Recheck exact owner/display/WebView and a quiet boundary. Changed context/clock, lifecycle, manual or predicate callbacks consume readiness."
+  }
+}

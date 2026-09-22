@@ -1,8 +1,8 @@
 {
   "schema_version": 1,
   "work_item": "S2:A02 ordered single human-input session",
-  "status": "ORDERED_SCOPE_PREPARED_CAPTURE_AND_BUILD_BINDINGS_INCOMPLETE",
-  "updated_at": "2026-09-22T21:40:27.734228+00:00",
+  "status": "ORDERED_SCOPE_PREPARED_TRANSITION_AND_ACCOUNT_BINDINGS_REMAIN",
+  "updated_at": "2026-09-22T23:03:24.378566+00:00",
   "owner": "Harness implementer",
   "user_role": "Only real gestures and any required interactive sign-in",
   "request_user_now": false,
@@ -150,17 +150,21 @@
       "automated_checks": "Preserve the accepted original app pair; qualify separate symmetric capture builds against the same J01-J04 source/ownership contract. Query Browser separately from native and prove same-process lifecycle.",
       "build_owner": "S2-F08-app-preparation.json",
       "oracle_owner": "S2-F08-source-oracle.json",
-      "remaining": "Authenticated account/dashboard prerequisite and complete runtime mapper/callback evidence are not yet qualified.",
+      "remaining": "Fresh account/control and operator/environment prerequisites remain. Reviewed runtime owns native/mapper/Browser/backend collection and task-only cleanup.",
       "capture_binding": {
         "owner": "S2-F08-source-oracle.json",
-        "state": "TWO_CAPTURE_PRODUCTS_QUALIFIED_RUNTIME_BINDING_REMAINS",
+        "state": "REVIEWED_RUNTIME_AND_BOTH_PRODUCTS_PREPARED",
         "root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-f08-capture-reviewed-controls-32tvi0u8",
         "review_sha256": "ae252cf2d3656e9ad447e9b58e43b4e4e9e076664db25a2f7b352f494fca638c",
-        "remaining": "Both symmetric capture builds and full products qualify; preserve original failures. Runtime joins and account prerequisites remain; no native execution.",
+        "remaining": "No native admission. Account/control prerequisites and final paired source classifications remain.",
         "build_preparation_root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-f08-capture-build-h670kgc1",
         "corrected_build_preparation_root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-f08-capture-relocated-e35i8m4l",
         "context_compatible_build_root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-f08-capture-context-wwea5ijl",
-        "build_completion_sha256": "9ac2d2fd925701e019a829a20a08f8df2ce9a844592f82e80f4e9d07de3ab765"
+        "build_completion_sha256": "9ac2d2fd925701e019a829a20a08f8df2ce9a844592f82e80f4e9d07de3ab765",
+        "runtime_root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-f08-human-runtime-8rz7zcpe/run",
+        "runtime_plan_sha256": "79cea5ba48c2f5781582c9e0cf87d2af5af29031d97a91b4da4f60c9ee55be80",
+        "runtime_review_sha256": "8d1ab9a06cb85208ff1bef1818c10dc9dd51a475d5c1d9b2f8b9d766a9b464dd",
+        "runtime_controls_sha256": "306178c6f888e6f916df758a91fd7044b473e37392a024c7479f6d693ba35fd8"
       }
     }
   ],
@@ -180,11 +184,12 @@
       "C07-C10 reviewed human runtime and four current-source build arms; native qualification pending",
       "H16 remaining paced manual candidate",
       "T10 WebView baseline/candidate",
-      "T03/T08 Resource/Trace four human-fold cells with unchanged build reuse"
+      "T03/T08 Resource/Trace four human-fold cells with unchanged build reuse",
+      "F08 reviewed J01-J04 runtime and both capture products; account/control prerequisite remains"
     ],
     "remaining_bindings": [
       "H11-H14 interactive transition and geometry collector",
-      "F08 reviewed capture and both full products qualify; native/backend runtime joins and account prerequisites remain"
+      "F08 account and exact read-only Browser control; fresh shared operator/environment admission"
     ],
     "native_cells_executed": 0,
     "gates_closed": []
