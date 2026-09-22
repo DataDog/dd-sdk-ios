@@ -104,6 +104,20 @@ post-return native sampling, local parsing/validation, backend polling and fence
 cleanup in the existing runner. Full window inventory and public defining-bundle
 provenance are bound to the audited fixture/compiled SDK sources; private class names
 and total-window cardinality do not decide acceptance. The owning result retains
-34 offline controls and the scoped review's clock-domain correction. One baseline
-full cell is planned to qualify the mechanism; no additional diagnostic cell or
-candidate run is admitted. Scenario, evidence and cleanup verdicts remain separate.
+34 offline controls and the scoped review's clock-domain correction. The one baseline
+full cell below supplied interaction qualification; no additional diagnostic cell
+is due. Scenario, evidence and cleanup verdicts remain separate.
+
+The single corrected baseline cell completed actual Open/Closed, current all-window
+ownership and precritical release proofs. Cleanup restored the original state and
+removed the task app. Original overall acceptance remains INVALID: rum-http500's
+Date duration 325.011355996s exceeds the native DispatchTime entry-to-mapper
+interval 325.009818458s plus 1 ms by 0.537538 ms. Final backend and candidate were not run.
+The owning result retains the raw evidence and separate verdicts; the scoped
+review approved an exact Date bracket from initial resume-before through mapper
+receipt, without tolerance. The new fixture rejects backward/nonfinite dates and
+retains registered metrics and monotonic Trace checks. Its51 offline controls pass.
+A budget review caught inherited120second cleanup clocks before admission; all
+new contract/build inputs now reserve2400seconds execution and300seconds cleanup
+per cell, with a13200second complete two-build/four-cell ledger. The owner retains
+the scoped review and fixed budgets. No SDK cause is established.

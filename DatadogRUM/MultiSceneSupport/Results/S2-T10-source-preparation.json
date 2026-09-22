@@ -1,8 +1,8 @@
 {
   "schema_version": 1,
   "work_item": "S2:T10 finite native/WebView preparation",
-  "status": "SOURCE_PREPARED_NOT_ADMITTED",
-  "updated_at": "2026-09-22T11:11:31.149282+00:00",
+  "status": "MARKER_ORACLE_OFFLINE_PREPARED_NATIVE_FIXTURE_PENDING",
+  "updated_at": "2026-09-22T11:46:35.516564+00:00",
   "owner": "SDK implementer",
   "baseline": "62f64d7b655bdc83f3036c4ad81090a270f6202b",
   "candidate": "c9faed816a1d4828d7d8c4b64acae01119425889",
@@ -26,7 +26,7 @@
   "scope": "One single-scene baseline/candidate comparison with real WKWebView callbacks, long active lifetime, navigation, fold and delayed events. No scene API, logical peer, Replay content or physical claim.",
   "source_findings": [
     "Browser receiver preserves browser view/source/service/sdk identity, replaces native application/session, and resolves container from corrected browser event time and Replay-eligible cache entries. Native mapper does not observe raw Browser writes.",
-    "Candidate active entries survive elapsed TTL; inactive entries expire more than180seconds after native deactivation. Baseline expiry is measured from insertion and occurs during another insert.",
+    "Candidate active entries survive elapsed TTL; inactive entries expire more than 180 seconds after native deactivation. Baseline insertion of B purges insertion-aged A after its active lifetime exceeds 180 seconds.",
     "Physical removal of a WKWebView is not the cache deactivation/expiry boundary. A delayed old-dated event before inactive expiry may correctly retain A after detach; after expiry it must not inherit B."
   ],
   "finite_cells": [
@@ -50,25 +50,25 @@
   "ordered_markers": [
     {
       "id": "M1",
-      "precondition": "Actual native A active and Replay-eligible; same WKWebView remains attached for more than180seconds with monotonic evidence.",
+      "precondition": "Actual native A active and Replay-eligible; same WKWebView stays attached for more than 180 seconds in both wall and monotonic clocks. Freeze M3/M4 A-dated envelopes, then perform actual Open while A remains active.",
       "browser_event": "Fresh A event; retain two additional immutable A-dated envelopes for M3/M4.",
       "expected": "Exact A container in both arms; original Browser ID remains distinct."
     },
     {
       "id": "M2",
-      "precondition": "Real A-to-B native navigation and actual display-evidenced fold/return; B readiness mapper and WebKit document readiness precede emission.",
+      "precondition": "After the proved Open transition, perform actual A-to-B native navigation. B readiness mapper and fresh B document readiness precede emission. Do not wait for a backend acknowledgement or Closed gesture before M3.",
       "browser_event": "Fresh B event.",
       "expected": "Exact B container; same native process/scene/session; no accidental A assignment."
     },
     {
       "id": "M3",
-      "precondition": "Remove retained A WKWebView from its native parent; prove window==nil and A inactive, but less than180seconds since A deactivation.",
+      "precondition": "Immediately after M2 actual callback, remove retained A WKWebView; prove window==nil and independently mapped B active. Emit M3 while the earliest deactivation bracket is less than 180 seconds old. Require M3 marker-specific writer acknowledgement within that same fixed bracket.",
       "browser_event": "Emit the first frozen A-dated envelope through the same real retained WKWebView/installed SDK handler.",
-      "expected": "Candidate A container. Baseline may lack A after B insertion purges insertion-aged A; preserve the exact source-predicted difference. Never assign B."
+      "expected": "Candidate A container; baseline container absent after B insertion purges insertion-aged A. Never assign B."
     },
     {
       "id": "M4",
-      "precondition": "More than180seconds since A deactivation; no fake clock or forced purge; B remains active.",
+      "precondition": "After M3 writer acknowledgement, perform actual Closed and wait until more than 180 seconds beyond the latest possible A deactivation in both wall and monotonic clocks. B remains active.",
       "browser_event": "Emit second frozen A-dated envelope through the real callback; then disable tracking and release retained A.",
       "expected": "Candidate container absent; Browser/application/session identity preserved; no B inheritance. Prove A deallocation with weak reference after callback/write completion."
     }
@@ -78,7 +78,8 @@
     "Record JavaScript invocation, actual WKScriptMessage receipt/body/WebView identity/attachment, native deactivation interval and local write or marker-specific backend acknowledgement separately.",
     "An exact event acknowledgement is repeatable and tied to its browser UUID. currentSessionID, page load completion and elapsed sleep are not writer barriers.",
     "Query full application/session without native service or SDK filters; independent count and complete raw pages, then exact native/browser partitions. Keep raw available view revisions.",
-    "After required evidence, stop task SDK work, remove only the task app, prove original display/device/app inventory and input-worker quiescence. Separate scenario/evidence/cleanup verdicts."
+    "After required evidence, stop task SDK work, remove only the task app, prove original display/device/app inventory and input-worker quiescence. Separate scenario/evidence/cleanup verdicts.",
+    "Bracket deactivation with the native B transition entry and independently mapped ready receipt; verify wall and monotonic TTL intervals separately. Never compare a Date-derived TTL to an uncalibrated DispatchTime duration."
   ],
   "negative_controls": [
     "wrong A/B container",
@@ -107,5 +108,14 @@
   ],
   "gate_closures": [],
   "native_launches": 0,
-  "new_experiment_number": null
+  "new_experiment_number": null,
+  "timing_decision": "Keep both UI round trips outside the short inactive-retention boundary: Open before B, Closed after M3 write acknowledgement. Do not pause between B and M3 for model/UI interaction. Any missed inactive deadline invalidates the cell; no retry/extension.",
+  "marker_oracle": {
+    "source": "tools/multi-scene/acceptance/s2_webview_contract.py",
+    "tests": "tools/multi-scene/acceptance/test_s2_webview_contract.py",
+    "controls": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-webview-marker-preparation-3u_gib42/controls-result.json",
+      "sha256": "9e2c57b00e82828249b92d051a8debc1d68596cad991dbd84e4c358dfc220084"
+    }
+  }
 }

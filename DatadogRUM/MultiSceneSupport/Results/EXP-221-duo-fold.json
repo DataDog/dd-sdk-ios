@@ -2,8 +2,8 @@
   "schema_version": 1,
   "experiment": "EXP-221",
   "stage": "duo-fold-one-session",
-  "status": "PRIOR_INVALIDS_PRESERVED; BOUNDED_CORRECTION_PREPARED",
-  "updated_at": "2026-09-22T11:17:06.650377+00:00",
+  "status": "DATE_BOUND_COMPARISON_PREPARED; PRIOR_INVALID_PRESERVED",
+  "updated_at": "2026-09-22T12:19:10.424402+00:00",
   "owner": "SDK implementer; root owns sole build/native lane",
   "gates": [
     "S2:T03",
@@ -28,10 +28,10 @@
     "native_launches": 4,
     "retries": 0
   },
-  "builds": 5,
-  "native_launches": 3,
+  "builds": 6,
+  "native_launches": 4,
   "gate_closures": [],
-  "next_action": "Admit exactly one baseline automatic full fold cell. Candidate remains unadmitted until baseline mechanism qualifies. On mechanism failure stop automation and use the prepared human-input session; advance T10/F08 independently.",
+  "next_action": "Close scoped budget review, then admit the finite four-cell fold comparison. No interaction diagnostic; first failed cell stops the lane.",
   "implementation_inputs": {
     "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp221-duo-fold-03hu30t3/implementation-inputs-v2.json",
     "sha256": "27acb5ef0b30945980ab98c7e922f508e6e6593bfe5dbbe75cbd8df6708dbaee"
@@ -48,7 +48,7 @@
     "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp221-duo-fold-03hu30t3/access-preflight.json",
     "sha256": "06d8ba547de8fa6a54d0b4ccede906ad7801040b48321d6713654873ca9593fe"
   },
-  "scope_limit": "Atomic recorder readiness now passes in the baseline, but the latest post-Open callback has an unclassified second scene window. No fold acknowledgement, held completion, candidate launch or final backend inventory. Original cleanup deferred; separate later restoration removes the app and restores Booted/Closed. No fold, automatic tracking, H14 or physical acceptance.",
+  "scope_limit": "Latest completed baseline observed actual Open/Closed with exact precritical owned topology and cleanup PASS, but overall Resource acceptance remains INVALID at the historical cross-clock bound. No final backend/candidate/gate credit. Original invalids and later cleanup restorations remain separate.",
   "implementation_review": {
     "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp221-duo-fold-03hu30t3/implementation-review-final.json",
     "sha256": "34dadbad2d16daac6cb4b585706d7cf332007252612d2379f5b9a4fa2b5e7beb"
@@ -408,7 +408,7 @@
   },
   "execution_correction": {
     "root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp221-fold-atomic-topology-t_l4dazz",
-    "status": "REVIEWED_READY_FOR_SINGLE_BASELINE_QUALIFICATION",
+    "status": "NATIVE_QUALIFICATION_COMPLETE_RESOURCE_ACCEPTANCE_INVALID",
     "definition": {
       "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp221-fold-atomic-topology-t_l4dazz/definition-v2.json",
       "sha256": "842d9f2cc64ac9a006ebca940ec744b469bfd1dbeacb663a2d7924822c82480b"
@@ -440,9 +440,61 @@
       "baseline_automatic_cells": 1,
       "retries": 0
     },
+    "builds": 1,
+    "native_launches": 1,
+    "gate_closures": [],
+    "failure_policy": "Stop this automated path if the first planned baseline cannot qualify the mechanism; prepare the already-planned ordered human session. No equivalent input or SDK-on/off diagnostic chain.",
+    "result": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp221-fold-atomic-topology-t_l4dazz/native-qualification-disposition.json",
+      "sha256": "9edbe8666b247f1ca39605751c99ad161ac65338fca3662ce9d7282f7cc0aef7"
+    },
+    "original_summary": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp221-fold-atomic-topology-t_l4dazz/cells/A-automatic/summary.json",
+      "sha256": "b3a94b8c13e3fe4ea21234a47efdbfa6946daf951c017f399c490d674f14e95b"
+    },
+    "scenario_verdict": "UNQUALIFIED",
+    "evidence_verdict": "INCOMPLETE",
+    "cleanup_verdict": "PASS"
+  },
+  "date_bound_continuation": {
+    "root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp221-fold-date-bound-igwfrusu",
+    "status": "PREPARED_NOT_ADMITTED",
+    "definition": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp221-fold-date-bound-igwfrusu/definition-v2.json",
+      "sha256": "439433d02f62606db898ec7f2e4155227e8788e23a01b2c7e7a0555e59e44180"
+    },
+    "budgets": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp221-fold-date-bound-igwfrusu/budgets.json",
+      "sha256": "a6f47521fe07b992d42ee641f3dec90e902bd999a1ad7823f05f6f388930cec0"
+    },
+    "duration_review": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp221-fold-date-bound-igwfrusu/duration-review.json",
+      "sha256": "4bac882fb2e6edf3197600ca876505012e6e268229ac4fb9397a6efc8e2c991e"
+    },
+    "controls": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp221-fold-date-bound-igwfrusu/controls-result.json",
+      "sha256": "030f8d2cd82a7cfd2b33b02c247bfb7c55ecdaf536c09c379bab2b614aa1263d"
+    },
+    "ownership_audit": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp221-fold-date-bound-igwfrusu/ownership-audit.json",
+      "sha256": "75d550ad38b723579ccd06f0f90bab8d41aacc7f0925eab718cadf3f7f1e2c82"
+    },
+    "semantic_audit": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp221-fold-date-bound-igwfrusu/semantic-predicate-audit.json",
+      "sha256": "0b94dc03e19bfbf0dd85ff03ef83c4bbd91155ee6f3c7fc11a5b05fd9a98792e"
+    },
+    "helper_manifest": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp221-fold-date-bound-igwfrusu/matrix/helper-manifest.json",
+      "sha256": "713434f66d32dc577b3d3a2f5a3e914ff05c6cc9dff232832da4a0cbb62ba210"
+    },
+    "attempt_limit": {
+      "builds": 2,
+      "native_launches": 4,
+      "retries": 0
+    },
     "builds": 0,
     "native_launches": 0,
     "gate_closures": [],
-    "failure_policy": "Stop this automated path if the first planned baseline cannot qualify the mechanism; prepare the already-planned ordered human session. No equivalent input or SDK-on/off diagnostic chain."
+    "scope": "Date bracket replaces cross-clock Resource upper bound without tolerance. Existing observed CUA mechanism reused; exact registered metrics and automatic Trace predicates unchanged. Original cell cannot be reclassified."
   }
 }
