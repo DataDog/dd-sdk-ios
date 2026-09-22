@@ -102,9 +102,17 @@ class CapturePrefixTests(unittest.TestCase):
         receipt['byte_count'] = len(data);receipt['sha256'] = hashlib.sha256(data).hexdigest()
         with self.assertRaises(ValueError):prefix(data, receipt, IDENTITY)
 
-    def test_snapshot_after_another_boundary_is_not_readiness(self):
-        rows, request = payload([('snapshot', {'request_sha256': hashlib.sha256(json.dumps(REQUEST).encode()).hexdigest(), 'topology': {'pid': 12, 'app_state': 0}}), ('context', {})])
-        with self.assertRaises(ValueError):published_snapshot(*encode(rows), request)
+    def test_concurrent_observation_keeps_actual_snapshot_boundary(self):
+        entries = [('snapshot', {'request_sha256': hashlib.sha256(json.dumps(REQUEST).encode()).hexdigest(), 'topology': {'pid': 12, 'app_state': 0}}), ('context', {})]
+        rows, request = payload(entries)
+        result, snapshot = published_snapshot(*encode(rows), request)
+        self.assertEqual(snapshot['sequence'], 1)
+        self.assertEqual(result['rows'][-2]['kind'], 'context')
+        for field, value in [('phase', 'later'), ('request_id', IDENTITY['run_id'])]:
+            changed = copy.deepcopy(rows);changed[-2][field] = value
+            with self.subTest(field=field), self.assertRaises(ValueError):published_snapshot(*encode(changed), request)
+        duplicated, _ = payload(entries + [entries[0]])
+        with self.assertRaises(ValueError):published_snapshot(*encode(duplicated), request)
 
 
 class NativeOwnerTests(unittest.TestCase):

@@ -182,7 +182,7 @@
     "partial cleanup relabeled as ordinary pass"
   ],
   "admission_limits": "This is source preparation only. No runtime/oracle pass, gate closure, new experiment or environment retry is implied. Existing J01, Duo and EXP220 automation stops remain closed; fresh execution needs materially changed environment and reviewed fixed admission.",
-  "next_action": "Prepare the separate symmetric app capture builds, preserving all accepted products and original J01 stops. Complete runtime joins before requesting the single human session.",
+  "next_action": "Finish native/mapper/browser/backend joins using both qualified symmetric capture products before the ordered human session.",
   "review": {
     "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-f08-oracle-preparation-pincwto7/source-review.json",
     "sha256": "41f6a1f5348c383e8c11770dc50da59e45e9dc020559a49c2a60d8691815d6e9"
@@ -245,9 +245,9 @@
     "runtime_acceptance": false
   },
   "runtime_capture_preparation": {
-    "state": "CAPTURE_PATCH_REVIEWED_BUILD_AND_RUNTIME_BINDING_REQUIRED",
+    "state": "CONTEXT_COMPATIBLE_CAPTURE_BASELINE_BUILD_RUNNING",
     "at": "2026-09-22T19:27:10.255660+00:00",
-    "scope": "Existing J01-J04 only; no app, SDK, build, native or backend action in this source check.",
+    "scope": "Symmetric validation-only app capture preparation/build qualification for existing J01-J04; SDK unchanged; native/backend execution unadmitted.",
     "inspected_baseline_app_sources": {
       "Targets/Platform/DatadogObservability/ObservabilitySystem.swift": "7552a0e49aba9f4e67c352295449bfcb8fffc2f7f2df8a6294e02ab86c23aac0",
       "Targets/Platform/DatadogObservability/UserMonitorLive.swift": "dfa4fccbb57a65e541187f7b1487f520ae01557dbe52e975f384ae1a3ef7578b"
@@ -266,11 +266,10 @@
       "Qualify changed capture in the first planned baseline journey, not another input diagnostic. Preserve all original Home/input failures; use the one ordered human session."
     ],
     "remaining": [
-      "Prepare separately identified app copies and verify symmetric source/compiler/build membership",
-      "Complete native/mapper/browser/backend runtime joins and fixed first-baseline admission",
+      "Complete native/mapper/browser/backend runtime joins and first-baseline admission",
       "Authenticated account/service/dashboard prerequisite in the ordered human session"
     ],
-    "new_builds_admitted": false,
+    "new_builds_admitted": true,
     "native_launches": 0,
     "gate_closures": [],
     "definition": {
@@ -286,7 +285,7 @@
       "processing": "ALL",
       "runtime_admission": false
     },
-    "updated_at": "2026-09-22T20:06:51.954780+00:00",
+    "updated_at": "2026-09-22T21:40:27.734228+00:00",
     "artifact_root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-f08-capture-reviewed-controls-32tvi0u8",
     "review": {
       "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-f08-capture-reviewed-controls-32tvi0u8/capture-review.json",
@@ -324,6 +323,95 @@
       "root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-f08-capture-controls-omhirm31",
       "classification": "Host control compilation only: top-level constant needed private because CaptureStore is private; no app or SDK failure",
       "corrected_root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-f08-capture-corrected-x3pefce6"
+    },
+    "build_preparation": {
+      "root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-f08-capture-build-h670kgc1",
+      "definition_sha256": "b7f4367f73a7d340741255c348696060c4c702bb5786bd14d9b7a85a176ccea9",
+      "baseline": "STOPPED_EXIT_65_GENERATED_MODULEMAP_POINTS_TO_ORIGINAL_SOURCE",
+      "candidate": "NOT_RUN",
+      "build_invocations": 1,
+      "native_launches": 0,
+      "stop_receipt_sha256": "48510f65663832ae3270936cbc076e0008984a4af286f51f129942bd764d0941",
+      "remaining": "Review exact generated module-map/root relocation in separate new copies, then qualify both capture builds. Preserve failed inputs and original accepted products."
+    },
+    "concurrent_checkpoint_correction": {
+      "source": "../../../tools/multi-scene/app-acceptance/capture_contract.py",
+      "sha256": "a9333f371cf2b1c6d33ab3245723f40925f07edd56354b326596b852f5f43969",
+      "reviewer": "existing /root/c06_runtime_plan",
+      "reason": "A mapper/context callback can reserve rows between snapshot and checkpoint. Retain the exact snapshot and adjacent cost; permit only well-formed same-request/phase trailing observations. Reject another snapshot/phase or stale prompt boundary.",
+      "decoder_tests": 14,
+      "controls_root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-f08-capture-build-h670kgc1"
+    },
+    "collector_preparation": {
+      "source": "../../../tools/multi-scene/app-acceptance/capture_io.py",
+      "state": "REVIEWED_OFFLINE_CONTROLS_PASS",
+      "offline_tests": 11,
+      "runtime_admission": false,
+      "controls_root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-f08-capture-relocated-e35i8m4l",
+      "source_sha256": "f0171620f0c20d60bcb6903f3583d4171d50656fb7da062f997be47885091963",
+      "review_sha256": "5e2d1acbbd6423f32367c592bbbd3ed9251f3126b41f1623a004e8b42ad366d6"
+    },
+    "corrected_build_preparation": {
+      "root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-f08-capture-relocated-e35i8m4l",
+      "definition_sha256": "aff4014cb02073ae936296341e1aa1d87a8bdfb01460f680f2484b1b3f8569d0",
+      "review_sha256": "5e2d1acbbd6423f32367c592bbbd3ed9251f3126b41f1623a004e8b42ad366d6",
+      "relocation_sha256": "087eba91557de243864708e9fd1f1dcc4c87032d9242d104d9e6a8562b9cb23a",
+      "generated_files_per_arm": 500,
+      "modulemaps_relocated_per_arm": 70,
+      "baseline": "STOPPED_EXIT_65_FIXTURE_INTERNAL_PROPERTY_ACCESS",
+      "candidate": "NOT_RUN",
+      "native_launches": 0,
+      "prior_failure": "build_preparation remains immutable; only exact generated umbrella prefixes changed in fresh copies",
+      "offline_controls": {
+        "tests": 33,
+        "receipt_sha256": "529a93576aa635a7d191459fbae8829ef5bab7753e39426df6891d39bb39aab3",
+        "scope": "8 relocation, 11 collector, 14 decoder/ownership controls; no native qualification"
+      },
+      "stop_receipt_sha256": "4d834f728208f96e7d118d493a43ea4ab41b2fccebc8c49cce8cfbafaa8a0173"
+    },
+    "context_compatible_build": {
+      "root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-f08-capture-context-wwea5ijl",
+      "definition_sha256": "883293feafb3f0c17cc7f8c9a8cc5f1f795752533ab5184a722c5545120d20d3",
+      "review_sha256": "160af2fa9aa08103865d0d5f42249e6353323f47da3034b1fb6ebc7ca2c94e6f",
+      "capture_source_sha256": "7ee67c9273e340d93c4f710d14ca5786e2f0b95fc5f8160baea0e7465c3a8d8c",
+      "baseline": "BUILD_AND_FULL_PRODUCT_QUALIFIED",
+      "candidate": "BUILD_AND_FULL_PRODUCT_QUALIFIED",
+      "native_launches": 0,
+      "typecheck": {
+        "root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-f08-capture-context-typecheck-lgimumqj",
+        "state": "PASS",
+        "scope": "Full fixture Swift6/iOS18 simulator typecheck against actual baseline SDK modules; external version String stub only"
+      },
+      "warning_disposition": "Retain Sendable type-erasure warning. Reviewed record callers pass only scalar/value snapshots or pre-encoded JSON, without mutable UIKit/SDK objects.",
+      "correction": "Use the public SessionReplayCoreContext.HasReplay value, identical to the internal convenience getter; no SDK API changes.",
+      "product_qualification": "Full bundle/Mach-O/linker checks plus exact current libtool/object/archive member binding; separate deadline verdict required.",
+      "baseline_product_qualification_sha256": "4060d5fec50942ce7ffaa606fd2baab0769dc554df96283c045da0de32f25629",
+      "baseline_manifest_sha256": "ccc636960ef83fa380284c98fd750143decccab2f4141af12d3acb0ff4a0ae71",
+      "classifier_correction": {
+        "original_rejection": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-f08-capture-context-wwea5ijl/compiler-classifier-correction.json",
+        "review_sha256": "7136e4a16b1382b0c0331f219c503ea016422cb975ed5af6542502a4c7713b8c",
+        "scope": "Exact immediate target/platform membership and escaped source tokens; re-evaluate saved successful build without rebuilding."
+      },
+      "completion_sha256": "9ac2d2fd925701e019a829a20a08f8df2ce9a844592f82e80f4e9d07de3ab765",
+      "product_summary": {
+        "baseline": {
+          "source": "62f64d7b655bdc83f3036c4ad81090a270f6202b",
+          "product_files": 1815,
+          "mach_o": 71,
+          "sdk_archives": 13,
+          "finished_at": "2026-09-22T21:28:58.765393+00:00",
+          "deadline": "2026-09-22T21:50:43.379155+00:00"
+        },
+        "candidate": {
+          "source": "c9faed816a1d4828d7d8c4b64acae01119425889",
+          "product_files": 1815,
+          "mach_o": 71,
+          "sdk_archives": 13,
+          "finished_at": "2026-09-22T21:39:02.823332+00:00",
+          "deadline": "2026-09-22T22:07:58.978470+00:00"
+        }
+      },
+      "candidate_adapter_review_sha256": "53191345790b4fbf186b00d6deaf4555d85a5df313808727b168397a1c95593f"
     }
   }
 }

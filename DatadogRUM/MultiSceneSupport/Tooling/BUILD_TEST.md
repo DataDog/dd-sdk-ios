@@ -12,6 +12,10 @@ path sets and bytes, not a manifest hash alone. Reject unexpected files and
 symlinks. For tracked directory symlinks, check mode, Git blob and literal target
 separately. Recheck source/helper identity before assertions and after execution.
 Generated outputs must be explicitly inventoried outside the admitted source roots.
+When copying generated projects, include module maps and their resolved umbrella
+headers in that inventory. Review exact root relocation before building; never
+repair dependency sources for a stale generated path. Non-compiler package/Git
+state needs an explicit disposition and a build path that cannot regenerate it.
 
 Use fresh per-arm output directories. When reusing a binary, retain its original
 build, source, configuration and complete product fingerprint. Freeze every Mach-O,

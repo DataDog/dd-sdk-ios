@@ -19,3 +19,21 @@ No build or native execution is admitted by this preparation. After offline cont
 and review, create separately identified symmetric app builds. Qualify capture in
 the first planned baseline journey of the ordered human session. Do not add an
 extra input diagnostic or reopen an old deadline.
+
+Build and capture helpers are separate from native admission:
+
+- `capture_build.py` freezes all app/SDK sources, target membership, dependencies and
+  generated compiler inputs. Copied module maps require an exact, reviewed umbrella
+  path relocation; dependency Git metadata and Tuist workspace state are classified
+  separately. It reuses the accepted direct Xcode build with no Tuist regeneration.
+- `capture_product.py` checks and fingerprints the full bundle, Mach-O inventory,
+  final link command and resolved SDK archives. A launcher hash alone is insufficient.
+- `capture_io.py` publishes fresh requests and preserves actual writer receipts and
+  stream bytes before decoding. Concurrent callbacks may follow a snapshot before
+  its checkpoint; the actual snapshot remains the boundary. Before a human prompt,
+  a full readback validation rejects consumed readiness or incomplete observations.
+
+Every failed preparation and closed deadline remains immutable. Changed build
+inputs require fresh copies and admission. A checker correction can re-evaluate
+valid saved outputs without rebuilding or extending the original deadline.
+These helpers do not replace native, backend or cleanup verdicts.

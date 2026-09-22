@@ -2,7 +2,7 @@
   "schema_version": 1,
   "work_item": "S2:A02 ordered single human-input session",
   "status": "ORDERED_SCOPE_PREPARED_CAPTURE_AND_BUILD_BINDINGS_INCOMPLETE",
-  "updated_at": "2026-09-22T20:06:51.954780+00:00",
+  "updated_at": "2026-09-22T21:40:27.734228+00:00",
   "owner": "Harness implementer",
   "user_role": "Only real gestures and any required interactive sign-in",
   "request_user_now": false,
@@ -74,6 +74,23 @@
           "B-manual"
         ],
         "native_admitted": false
+      },
+      "adaptive_reuse": {
+        "owner": "EXP-210-s2-automatic-coverage.json",
+        "state": "MAPPED_FUTURE_EVIDENCE_NOT_YET_EXECUTED",
+        "source_scope": "Genuine UIKit UISplitViewController and SwiftUI NavigationSplitView automatic cells on both selected revisions",
+        "qualified_phases_when_passed": [
+          "Detail selected before close",
+          "Detail still selected after reopen"
+        ],
+        "initial_open": "Root-state evidence only",
+        "evidence_limit": "Native topology, geometry, selected path and local mapper occurrence owners only; dummy-token fixture has no backend inventory",
+        "remaining": [
+          "Manual SwiftUI split tracking",
+          "H11-H13 native cancellation and completion",
+          "Relevant physical and backend obligations"
+        ],
+        "reviewer": "existing /root/c06_runtime_plan"
       }
     },
     {
@@ -136,10 +153,14 @@
       "remaining": "Authenticated account/dashboard prerequisite and complete runtime mapper/callback evidence are not yet qualified.",
       "capture_binding": {
         "owner": "S2-F08-source-oracle.json",
-        "state": "CAPTURE_PATCH_REVIEWED_BUILD_AND_RUNTIME_BINDING_REQUIRED",
+        "state": "TWO_CAPTURE_PRODUCTS_QUALIFIED_RUNTIME_BINDING_REMAINS",
         "root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-f08-capture-reviewed-controls-32tvi0u8",
         "review_sha256": "ae252cf2d3656e9ad447e9b58e43b4e4e9e076664db25a2f7b352f494fca638c",
-        "remaining": "Separate app builds and complete runtime/account binding; native unadmitted."
+        "remaining": "Both symmetric capture builds and full products qualify; preserve original failures. Runtime joins and account prerequisites remain; no native execution.",
+        "build_preparation_root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-f08-capture-build-h670kgc1",
+        "corrected_build_preparation_root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-f08-capture-relocated-e35i8m4l",
+        "context_compatible_build_root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-f08-capture-context-wwea5ijl",
+        "build_completion_sha256": "9ac2d2fd925701e019a829a20a08f8df2ce9a844592f82e80f4e9d07de3ab765"
       }
     }
   ],
@@ -163,7 +184,7 @@
     ],
     "remaining_bindings": [
       "H11-H14 interactive transition and geometry collector",
-      "F08 reviewed validation-only capture: separate app builds, runtime joins and account prerequisites"
+      "F08 reviewed capture and both full products qualify; native/backend runtime joins and account prerequisites remain"
     ],
     "native_cells_executed": 0,
     "gates_closed": []

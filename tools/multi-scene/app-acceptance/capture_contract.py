@@ -111,7 +111,13 @@ def snapshot(result, request, consumed=()):
     require(len(matching) == 1, 'snapshot is missing or duplicated')
     row = matching[0]
     require(row['identity'] == {key: request[key] for key in ('run_id', 'nonce')} and row['phase'] == request['phase'], 'snapshot phase/identity differs')
-    require(row['sequence'] == result['rows'][-1]['sequence'] - 1, 'snapshot not at checkpoint boundary')
+    following = result['rows'][row['sequence']:]
+    require(following and following[0]['kind'] == 'observer_cost'
+            and following[0]['fields'].get('event_sequence') == row['sequence'], 'snapshot cost missing')
+    # Concurrent mapper/context callbacks may reserve rows before checkpoint's lock.
+    # Keep the actual snapshot boundary; never substitute the trailing observation.
+    require(all(item['request_id'] == request['request_id'] and item['phase'] == request['phase']
+                and item['kind'] != 'snapshot' for item in following), 'checkpoint crosses snapshot request/phase')
     topology = row['fields'].get('topology')
     require(isinstance(topology, dict) and 'capture_error' not in topology, 'native inventory missing or overflowed')
     require(integer(topology.get('pid'), 1) and type(topology.get('app_state')) is int, 'missing native process state')

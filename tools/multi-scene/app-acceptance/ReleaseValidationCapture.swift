@@ -261,7 +261,7 @@ private struct CaptureReceiver: FeatureMessageReceiver {
                 "session_id": rum?.sessionID as Any? ?? NSNull(), "view_id": rum?.viewID as Any? ?? NSNull(),
                 "view_name": rum?.viewName as Any? ?? NSNull(), "view_path": rum?.viewPath as Any? ?? NSNull(),
                 "view_server_offset": rum?.viewServerTimeOffset as Any? ?? NSNull(),
-                "server_offset": context.serverTimeOffset, "has_replay": context.hasReplay as Any? ?? NSNull()], started: started)
+                "server_offset": context.serverTimeOffset, "has_replay": context.additionalContext(ofType: SessionReplayCoreContext.HasReplay.self)?.value as Any? ?? NSNull()], started: started)
         default: break
         }
         // MessageBus visits every feature; false preserves its original fallback result.
