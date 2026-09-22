@@ -96,6 +96,9 @@ post-input evidence must establish quiescence before pose changes or app removal
 Post-dispatch failures remain uncertain; defer cleanup explicitly. Reject new input
 once cleanup starts, and recheck any conditional cleanup input before uninstall.
 A late terminal receipt cannot turn a failed run into acceptance.
+If the one admitted mechanism qualification or continuation misses publication,
+stop that automated path. Prepare the ordered human-input session with runner-owned
+capture/assertions; do not add equivalent input diagnostics or a larger retry budget.
 
 Fully automated signal-driven scenarios do not need `Synthesize` to advance.
 Accessibility collection can block them; collect after terminal unless earlier

@@ -2,8 +2,8 @@
   "schema_version": 1,
   "experiment": "EXP-221",
   "stage": "duo-fold-one-session",
-  "status": "DATE_BOUND_COMPARISON_PREPARED; PRIOR_INVALID_PRESERVED",
-  "updated_at": "2026-09-22T12:19:10.424402+00:00",
+  "status": "AUTOMATED_PATH_STOPPED_LATER_RESTORATION_PASS",
+  "updated_at": "2026-09-22T12:42:13.978240+00:00",
   "owner": "SDK implementer; root owns sole build/native lane",
   "gates": [
     "S2:T03",
@@ -28,10 +28,10 @@
     "native_launches": 4,
     "retries": 0
   },
-  "builds": 6,
-  "native_launches": 4,
+  "builds": 8,
+  "native_launches": 5,
   "gate_closures": [],
-  "next_action": "Close scoped budget review, then admit the finite four-cell fold comparison. No interaction diagnostic; first failed cell stops the lane.",
+  "next_action": "Prepare the already-planned one human-input session with automated capture, complete assertions and cleanup.",
   "implementation_inputs": {
     "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp221-duo-fold-03hu30t3/implementation-inputs-v2.json",
     "sha256": "27acb5ef0b30945980ab98c7e922f508e6e6593bfe5dbbe75cbd8df6708dbaee"
@@ -48,7 +48,7 @@
     "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp221-duo-fold-03hu30t3/access-preflight.json",
     "sha256": "06d8ba547de8fa6a54d0b4ccede906ad7801040b48321d6713654873ca9593fe"
   },
-  "scope_limit": "Latest completed baseline observed actual Open/Closed with exact precritical owned topology and cleanup PASS, but overall Resource acceptance remains INVALID at the historical cross-clock bound. No final backend/candidate/gate credit. Original invalids and later cleanup restorations remain separate.",
+  "scope_limit": "Closed gesture returned before deadline but receipt publication was late; no SDK regression inference. The new Date duration discriminator was not evaluated.",
   "implementation_review": {
     "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp221-duo-fold-03hu30t3/implementation-review-final.json",
     "sha256": "34dadbad2d16daac6cb4b585706d7cf332007252612d2379f5b9a4fa2b5e7beb"
@@ -337,7 +337,7 @@
     ],
     "startup_rum_rows": 3
   },
-  "count_scope": "Cumulative fold fixtures: original2 builds/1 stale-mapper launch; owner-boundary2 builds/1 topology-invalid launch; window diagnostic1 build/1 launch. No candidate fold launch.",
+  "count_scope": "Cumulative fold fixtures: original2 builds/1 launch; owner-boundary2/1; window diagnostic1/1; atomic topology1/1; Date continuation2/1. No candidate fold launch; no gate closure.",
   "window_inventory_diagnostic": {
     "root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp221-fold-window-inventory-uyqyhqlz",
     "status": "DIAGNOSTIC_COLLECTED_ORIGINAL_CLEANUP_INVALID_LATER_STATE_RESTORED",
@@ -458,7 +458,7 @@
   },
   "date_bound_continuation": {
     "root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp221-fold-date-bound-igwfrusu",
-    "status": "PREPARED_NOT_ADMITTED",
+    "status": "CLOSED_AFTER_FIRST_INVALID_CELL",
     "definition": {
       "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp221-fold-date-bound-igwfrusu/definition-v2.json",
       "sha256": "439433d02f62606db898ec7f2e4155227e8788e23a01b2c7e7a0555e59e44180"
@@ -492,9 +492,48 @@
       "native_launches": 4,
       "retries": 0
     },
-    "builds": 0,
-    "native_launches": 0,
+    "builds": 2,
+    "native_launches": 1,
     "gate_closures": [],
-    "scope": "Date bracket replaces cross-clock Resource upper bound without tolerance. Existing observed CUA mechanism reused; exact registered metrics and automatic Trace predicates unchanged. Original cell cannot be reclassified."
+    "scope": "Date bracket replaces cross-clock Resource upper bound without tolerance. Existing observed CUA mechanism reused; exact registered metrics and automatic Trace predicates unchanged. Original cell cannot be reclassified.",
+    "review": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp221-fold-date-bound-igwfrusu/implementation-review.json",
+      "sha256": "d4a7389b4365f768910b17581988a6ffe5e27b26be58a7d4052d69e6a7a7c6b0"
+    },
+    "admission": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp221-fold-date-bound-igwfrusu/stage-admission.json",
+      "sha256": "817b4454e566f5650592ada1a9779c6ad084fd23e847a40d5bed355a11c8632c"
+    },
+    "scenario_verdict": "UNQUALIFIED",
+    "evidence_verdict": "INCOMPLETE",
+    "cleanup_verdict": "INVALID",
+    "original_summary": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp221-fold-date-bound-igwfrusu/cells/A-automatic/summary.json",
+      "sha256": "a977cf00a341cb313ef4411b91fadc163712aa6af0e23f3813aa0ac0098e189a"
+    },
+    "later_restoration": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp221-fold-date-bound-igwfrusu/later-restoration/summary.json",
+      "sha256": "441640cf2461d9494aea453673b4403e945e6dad8430a5d7f554f8617049fdec"
+    },
+    "stage_stop": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp221-fold-date-bound-igwfrusu/stage-stop.json",
+      "sha256": "10557f7803f21383617bbdd994f25415d30a34cc331802e6f73d8ccf75abc93e"
+    },
+    "input_receipts": {
+      "open": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp221-fold-date-bound-igwfrusu/cells/A-automatic/pose-open/input-terminal.json",
+        "sha256": "d0809e988b6d375b0beeedbdc13290d0c499499856a70fe99e3b17a69ea68f5d"
+      },
+      "closed": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp221-fold-date-bound-igwfrusu/cells/A-automatic/pose-closed/input-terminal.json",
+        "sha256": "68bd1e0a6823c53d301b545ba8953f4679bec4b5fd8fed64a1ea509cd65d9608"
+      }
+    },
+    "unexecuted_cells": [
+      "A-registered",
+      "B-automatic",
+      "B-registered"
+    ],
+    "finding": "Closed gesture returned before deadline but receipt publication was late; no SDK regression inference. The new Date duration discriminator was not evaluated."
   }
 }
