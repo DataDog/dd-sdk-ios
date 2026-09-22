@@ -537,7 +537,7 @@
     "finding": "Closed gesture returned before deadline but receipt publication was late; no SDK regression inference. The new Date duration discriminator was not evaluated."
   },
   "human_preparation": {
-    "state": "REVIEWED_HUMAN_PROOF_AND_BUILD_REUSE_RUNTIME_BINDING_PENDING",
+    "state": "REVIEWED_RUNTIME_AND_BUILD_REUSE_READY_FOR_SINGLE_HUMAN_SESSION",
     "defined_at": "2026-09-22T17:09:30.486641+00:00",
     "native_admitted": false,
     "gates": [
@@ -600,8 +600,8 @@
         "observation": "The cell passes a complete audit document with an arms map; the final fold oracle indexes a per-arm record directly. Select the exact arm from the bound full audit, preserving its fixture/source/compiler ownership assertions. Original runs never completed this final path; no SDK finding."
       }
     ],
-    "remaining": "Bind the reviewed human host/oracle to a fresh fixed runtime stage and the original build identities, then schedule the four finite cells within the single ordered human-input session. No native admission yet.",
-    "updated_at": "2026-09-22T17:29:41.021637+00:00",
+    "remaining": "Rediscover Xcode/runtime/device and RUM/APM access at human-session readiness. Issue this fresh stage only then; first A-automatic cell qualifies the mechanism. Four cells remain, zero builds/retries.",
+    "updated_at": "2026-09-22T17:44:24.003230+00:00",
     "preparation": {
       "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp221-human-fold-reviewed-34w4abag/preparation-result.json",
       "sha256": "968c0b38f9fbc507616918c90ab7c1b4f003598d0bdce28e142d32adaf903b42"
@@ -614,9 +614,38 @@
       "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp221-human-fold-reviewed-34w4abag/scoped-review.json",
       "sha256": "d4b6eb64c223437ab322536bf439a865a5d39b5607a806dfebae572b63a6e9f9"
     },
-    "offline_controls": 14,
+    "offline_controls": {
+      "python": 33,
+      "connector": 6
+    },
     "native_cells_executed": 0,
     "additional_builds": 0,
-    "accepted_input_limit": "Human-observed display transition under the ordered operator prompt; no proof of a Device Hub click causing the transition or exact gesture timestamp. The discriminator is held native work across actual display/geometry change with exact precritical/current/ack/final ownership."
+    "accepted_input_limit": "Human-observed display transition under the ordered operator prompt; no proof of a Device Hub click causing the transition or exact gesture timestamp. The discriminator is held native work across actual display/geometry change with exact precritical/current/ack/final ownership.",
+    "runtime_stage": {
+      "stage": "human-observed-resource-fold",
+      "build_limit": 0,
+      "cell_limit": 4,
+      "retry_limit": 0,
+      "total_seconds": 11400,
+      "execution_seconds": 11100,
+      "ledger_seconds": {
+        "four_cells_including_cleanup": 10800,
+        "between_cell_reserve": 600
+      },
+      "basis": "Reuse qualified builds. Retain cell2400/cleanup300 and source fold240; reserve600 for four-cell host handoffs. Fresh stage only after complete reviewed preparation and operator readiness; original stage remains closed."
+    },
+    "runtime_root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp221-human-runtime-0k379oyz/run",
+    "runtime_plan": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp221-human-runtime-0k379oyz/run/runtime-plan.json",
+      "sha256": "81d5910397004cde5dae90573f37c190139ce692cc162ae34ef68df157ef03d4"
+    },
+    "runtime_controls": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp221-human-runtime-0k379oyz/run/runtime-controls.json",
+      "sha256": "f1591314d67067a313826dc660b6f2251a41f2460dd279296595cd5cf0f07c04"
+    },
+    "runtime_review": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp221-human-runtime-0k379oyz/run/runtime-review.json",
+      "sha256": "ba14bfcbaaa18c47d0a8b23b1ee11ec66a68d122566da56cf65996ade005e3ae"
+    }
   }
 }

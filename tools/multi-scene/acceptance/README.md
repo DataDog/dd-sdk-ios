@@ -439,3 +439,28 @@ and task-only cleanup. Evidence preservation failures do not skip app removal.
 Scenario, evidence and cleanup remain separate verdicts; missing required evidence
 or failed cleanup keeps overall acceptance invalid. Owning result records contain
 the exact roots/receipts and remaining cells; neither entry point admits itself.
+
+
+## Human Resource/Trace fold with immutable build reuse
+
+`resource_fold_runtime.py` prepares a separate runtime root from the fold owner's
+frozen inputs. `resource_fold_reuse.py` verifies original source/compiler lists,
+member bytes, objects, dependencies and complete products. It does not rebuild or
+rewrite the original plan, qualification, failed run or cleanup verdict.
+
+The generated runner retains the Resource/Trace local/backend predicates and native
+cleanup. Its human input bridge captures the actual returned display files and
+screenshots, then samples current native ownership before releasing held work.
+It proves a human-observed display transition after the prompt; it does not prove
+the precise Device Hub gesture or its timestamp. No automated input worker runs.
+Backend requests stream directly to the existing connector and retain their first
+published clock; raw responses, validation, publication and cleanup stay bounded.
+
+Prepare and review before execution. `verify --runtime-root PATH --plan-sha256 SHA`
+checks the runtime identity. Only after live environment/authentication preflight
+and operator readiness may `stage` with those arguments issue the single fixed
+admission. Its SHA is required by `cell --arm A|B --mode automatic|registered
+--device UUID --stage-sha256 SHA`. The generated connector serves exact RUM/APM
+responses while the cell requests human input. The four ordered cells have zero
+retries; the first baseline qualifies the mechanism. Missing effect, evidence or
+cleanup stops this path. Original deadlines are never reopened.
