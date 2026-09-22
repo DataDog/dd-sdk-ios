@@ -108,7 +108,12 @@ extension CALayer {
     }
 
     var isVisualEffectBackdrop: Bool {
-        isKind(of: Classes.visualEffectBackdropLayer)
+        guard isKind(of: Classes.backdropLayer) else {
+            return false
+        }
+
+        return superlayer?.delegate is UIVisualEffectView
+            || superlayer?.delegate?.isKind(of: Classes.tabSelectionView) == true
     }
 
     private func hasViewDelegateClass(matching predicate: (AnyClass) -> Bool) -> Bool {
@@ -135,7 +140,7 @@ private enum Classes {
     static let scrollEdgeEffectView: AnyClass? = NSClassFromString("UIKit.ScrollEdgeEffectView")
     static let backdropLayer: AnyClass? = NSClassFromString("CABackdropLayer")
     static let visualEffectBackgroundView: AnyClass? = NSClassFromString("_UIVisualEffectBackgroundView")
-    static let visualEffectBackdropLayer: AnyClass? = NSClassFromString("UICABackdropLayer")
+    static let tabSelectionView: AnyClass? = NSClassFromString("_UITabSelectionView")
 }
 
 extension NSObjectProtocol {

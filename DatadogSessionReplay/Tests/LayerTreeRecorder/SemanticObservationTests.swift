@@ -233,8 +233,8 @@ struct SemanticObservationTests {
     }
 
     @available(iOS 26.0, *)
-    @Test("Records tab bar platter as an automatic capsule and records sublayers")
-    func recordsTabBarPlatterAsAutomaticCapsuleAndRecordsSublayers() throws {
+    @Test("Records tab bar platter and selection backdrop semantics")
+    func recordsTabBarPlatterAndSelectionBackdropSemantics() throws {
         // Given
         let tabBarController = UITabBarController()
         tabBarController.viewControllers = (0..<3).map { index in
