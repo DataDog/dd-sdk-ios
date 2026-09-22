@@ -119,11 +119,9 @@ Build Dependencies:
     - !reference [.release-pipeline-job, rules]
   artifacts:
     paths:
-      - Carthage/Build
+      - Dependencies
     expire_in: 4 hours
     when: on_success
-  id_tokens:
-    <<: *dd-octo-sts-id-token
   script:
     - ./tools/runner-setup.sh --xcode "$DEFAULT_XCODE"
     - make clean dependencies

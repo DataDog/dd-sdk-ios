@@ -1,5 +1,5 @@
 all: env-check repo-setup dependencies templates
-.PHONY: env-check repo-setup dependencies clean templates \
+.PHONY: env-check repo-setup dependencies clean clean-dependencies templates \
 		lint lint-cpp license-check \
 		test test-ios test-ios-all test-tvos test-tvos-all test-visionos test-visionos-all \
 		ui-test ui-test-all ui-test-podinstall \
@@ -34,15 +34,15 @@ repo-setup:
 
 dependencies:
 	@$(ECHO_TITLE) "make dependencies"
-	./tools/repo-setup/carthage-bootstrap.sh
+	./tools/repo-setup/fetch-dependencies.sh
 
 clean:
 	@$(ECHO_TITLE) "make clean"
 	./tools/clean.sh --derived-data --pods --xcconfigs
 
-clean-carthage:
-	@$(ECHO_TITLE) "make clean-carthage"
-	./tools/clean.sh --carthage
+clean-dependencies:
+	@$(ECHO_TITLE) "make clean-dependencies"
+	./tools/clean.sh --dependencies
 
 lint:
 	@$(ECHO_TITLE) "make lint"
