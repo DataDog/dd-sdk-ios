@@ -535,5 +535,88 @@
       "B-registered"
     ],
     "finding": "Closed gesture returned before deadline but receipt publication was late; no SDK regression inference. The new Date duration discriminator was not evaluated."
+  },
+  "human_preparation": {
+    "state": "REVIEWED_HUMAN_PROOF_AND_BUILD_REUSE_RUNTIME_BINDING_PENDING",
+    "defined_at": "2026-09-22T17:09:30.486641+00:00",
+    "native_admitted": false,
+    "gates": [
+      "S2:T03",
+      "S2:T08",
+      "S2:A02"
+    ],
+    "cells": [
+      "A-automatic",
+      "A-registered",
+      "B-automatic",
+      "B-registered"
+    ],
+    "builds": 0,
+    "native_launches": 4,
+    "retries": 0,
+    "original_root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp221-fold-date-bound-igwfrusu",
+    "source_revisions": {
+      "A": "62f64d7b655bdc83f3036c4ad81090a270f6202b",
+      "B": "c9faed816a1d4828d7d8c4b64acae01119425889"
+    },
+    "original_inputs": {
+      "host/fold_host.py": "cd1ad17e40cd9c2e863a6587ef3b5c4202a2823af4e52335b94aeccc10696bc2",
+      "host/fold_oracle.py": "0f2c6f2aa5e8e86d6e975c9a6c412614d60abfe553ffd86392cf9d7090daa574",
+      "host/cell.py": "5d833b8ed8f09865d2cc6bfd872fcba8e9eb22a1dc4cb9c914290700a18529ad",
+      "host/connector.js": "f123f4d0a04a98295c071fb38a566043bf7988b3c23d72c6eadf8e9897f83c42",
+      "host/stage.py": "386a02a761b89cae340b52348c57dcc787965ed372cfb27a4ed6b14909677791",
+      "host/safety.py": "f58e451433b866c7db93c01a3ca7b8a12bbb68ee4e44d6e311801d802050de5f",
+      "matrix/plan.json": "4e9ea250116c10cda8b9775fc6a55baec851344fd22af6170f4b52e27f3635ea",
+      "matrix/contract.json": "9c84bc30098a7a10e6549cdf357922d621fb2540bbc0f02d6dd9827ae8cf9f54",
+      "matrix/fixture-members.json": "a41fb3cfce66525eced105f0bad3253fdefda2538106d44d6dc2b1963063299a",
+      "ownership-audit.json": "75d550ad38b723579ccd06f0f90bab8d41aacc7f0925eab718cadf3f7f1e2c82"
+    },
+    "reused_builds": {
+      "A": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp221-fold-date-bound-igwfrusu/matrix/A/build-qualification.json",
+        "sha256": "b76455fd0f38aa0772f5a88e7f1a0114721549275dd661687042fd6a942d1abb"
+      },
+      "B": {
+        "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp221-fold-date-bound-igwfrusu/matrix/B/build-qualification.json",
+        "sha256": "9ccacce0582ce2946436286ec6c05b03837215f54a157a63bbd6c46a1037183a"
+      }
+    },
+    "discriminator": "Human changes the actual selected Duo display after native held-work readiness. One host process retains the before display and prompt, detects actual display change, requests fresh native topology, publishes the bound release, collects complete RUM/APM evidence and cleans up. No CUA worker or model-mediated critical receipt.",
+    "preserved_contract": "Unchanged compiled fixture/SDK, Date-bound duration checks, complete source-owned topology and key-window inventory, exact native callback/current/ack/final order before dependent work, Resource start ownership, inherited Trace completion correlation and full backend assertions.",
+    "budgets_seconds": {
+      "cell": 2400,
+      "native_after_startup": 600,
+      "human_fold": 240,
+      "cleanup": 300,
+      "human_input_max": 180,
+      "post_input_transport_reserve": 60
+    },
+    "budget_basis": "Retain source-enforced 240-second native fold phases and the existing fixed cell/cleanup bounds. Local display/sample/publication replaces the failed 306-second model handoff; no active or expired deadline is extended.",
+    "stop_rule": "First planned baseline cell qualifies the human transport. Missing actual effect, required evidence or cleanup stops that path; no diagnostic pair or retry. Preserve original INVALID and separate restoration.",
+    "preparation_findings": [
+      {
+        "kind": "HARNESS_SCHEMA_MISMATCH",
+        "location": "fold_oracle.evaluate ownership audit selection",
+        "observation": "The cell passes a complete audit document with an arms map; the final fold oracle indexes a per-arm record directly. Select the exact arm from the bound full audit, preserving its fixture/source/compiler ownership assertions. Original runs never completed this final path; no SDK finding."
+      }
+    ],
+    "remaining": "Bind the reviewed human host/oracle to a fresh fixed runtime stage and the original build identities, then schedule the four finite cells within the single ordered human-input session. No native admission yet.",
+    "updated_at": "2026-09-22T17:29:41.021637+00:00",
+    "preparation": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp221-human-fold-reviewed-34w4abag/preparation-result.json",
+      "sha256": "968c0b38f9fbc507616918c90ab7c1b4f003598d0bdce28e142d32adaf903b42"
+    },
+    "build_reuse": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp221-human-fold-reviewed-34w4abag/build-reuse.json",
+      "sha256": "43f9965543ed2b9a83c6f30bd11523e3f0b1ff124f02aa999e12c5b33ac262bd"
+    },
+    "review": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp221-human-fold-reviewed-34w4abag/scoped-review.json",
+      "sha256": "d4b6eb64c223437ab322536bf439a865a5d39b5607a806dfebae572b63a6e9f9"
+    },
+    "offline_controls": 14,
+    "native_cells_executed": 0,
+    "additional_builds": 0,
+    "accepted_input_limit": "Human-observed display transition under the ordered operator prompt; no proof of a Device Hub click causing the transition or exact gesture timestamp. The discriminator is held native work across actual display/geometry change with exact precritical/current/ack/final ownership."
   }
 }
