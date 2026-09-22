@@ -1,0 +1,106 @@
+{
+  "schema_version": 1,
+  "experiment": "EXP-222",
+  "gate": "S2:H16",
+  "status": "FIRST_CELL_INVALID_CALLBACK_TIMING_ASSUMPTION_CLEANUP_PASS",
+  "updated_at": "2026-09-22T13:13:56.110050+00:00",
+  "owner": "SDK implementer",
+  "reviewer": "/root/c06_runtime_plan",
+  "baseline": "62f64d7b655bdc83f3036c4ad81090a270f6202b",
+  "candidate": "c9faed816a1d4828d7d8c4b64acae01119425889",
+  "purpose": "Qualify ordinary single-scene UIKit-hosted SwiftUI parity without waiting for fold/gesture input. Exact selected source; no production SDK change.",
+  "matrix": [
+    {
+      "arm": "A",
+      "mode": "automatic",
+      "environment": "Existing eligible Booted Duo27.1; actual selected device rediscovered before admission",
+      "attempts": 1
+    },
+    {
+      "arm": "A",
+      "mode": "manual",
+      "environment": "Existing eligible Booted Duo27.1; actual selected device rediscovered before admission",
+      "attempts": 1
+    },
+    {
+      "arm": "B",
+      "mode": "automatic",
+      "environment": "Existing eligible Booted Duo27.1; actual selected device rediscovered before admission",
+      "attempts": 1
+    },
+    {
+      "arm": "B",
+      "mode": "manual",
+      "environment": "Existing eligible Booted Duo27.1; actual selected device rediscovered before admission",
+      "attempts": 1
+    }
+  ],
+  "builds": 2,
+  "scenario": [
+    "One scene and fixture-owned key window; plain UIHostingController instances, no subclass affecting SDK reflection.",
+    "Automatic: default SwiftUI view predicate only, UIKit view predicate disabled; manual: existing trackRUMView modifier only, both automatic view predicates disabled. No raw startView/stopView substitute.",
+    "Root \u2192 pushed Detail \u2192 popped Root \u2192 full-screen Modal \u2192 dismissed Root; actual UIKit delegate/completion and SwiftUI callbacks before each ownership assertion.",
+    "After final Root assertion, replace the native root with an untracked plain UIKit controller. Require actual Root disappearance and all six final inactive mapper views (five hosting occurrences plus ApplicationLaunch), then stop the RUM session and collect backend evidence."
+  ],
+  "decisive_assertions": [
+    "Fixed five ordinary view occurrences and matching A/B semantic inventory; preserve any inherited default naming limitation explicitly.",
+    "Fresh run/nonce/session, exact source/compiler/product/installed identities, application ID and separate validation service.",
+    "Complete source-supported owned window/controller inventory at each boundary; one actual active scene, key-window ownership, positive actual display/native geometry and stable instance identities. No window-cardinality or private class acceptance shortcut.",
+    "Actual push/pop didShow and presentation/dismissal completion precede boundary snapshots; SwiftUI appear/disappear callbacks establish actual content transitions.",
+    "Every distinct view ID and final inactive lifetime must match full local mapper and complete raw application/session backend inventory. Unexpected owner, duplicate, missing occurrence or new foreign view blocks acceptance.",
+    "No gesture-cancellation, interactive dismissal, fold/adaptive layout, automatic-action or physical-device claim. Relevant physical evidence and A02 dependency remain separate release prerequisites.",
+    "ApplicationLaunch is a separate source-defined incidental view; exact TTID vital owner/type/name/duration and complete application/session inventory remain required. It is never counted as a sixth hosting occurrence."
+  ],
+  "budgets_seconds": {
+    "build_per_arm": 1200,
+    "native": 180,
+    "backend": 600,
+    "cleanup": 120,
+    "cell": 1080
+  },
+  "budget_basis": "Recent exact-composition builds took80.7/88.6s. No external input round trips in native transitions;180s allows five completion/mapper boundaries. Existing600s backend budget includes query, parse and durable publication.120s separate cleanup follows prior successful task-only restoration. Freeze all absolute deadlines before launch; no extensions.",
+  "stop_rule": "First cell qualifies the new composition fixture and orchestration. Stop after the first INVALID/FAIL; retain skipped arms and original verdicts. Preparation compile/type errors may be corrected before native admission; no equivalent native input diagnostic sequence.",
+  "execution_requirements": [
+    "Focused offline ownership, lifecycle, stale identity, durable evidence, full-inventory and cleanup controls.",
+    "Scoped designated reviewer assessment of fixture/oracle/runner before native admission.",
+    "Preflight output paths, schema and actual response publication; freeze sources/builds and live Xcode/Duo/Datadog access.",
+    "Existing acceptance transport handles raw responses, count/pagination, parsing and persistence; local host performs scenario/evidence/cleanup under independent fixed budgets."
+  ],
+  "results": [
+    {
+      "cell": "A-automatic",
+      "state": "INVALID",
+      "scenario": "UNQUALIFIED",
+      "evidence": "INCOMPLETE",
+      "cleanup": "PASS",
+      "root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp222-hosted-swiftui-_y3wbrkk",
+      "summary_sha256": "346ad12394f531afd988d16d116ea695e4f382e307172ce87bcd2c346f618679",
+      "stage_stop_sha256": "0c2fd97e5c8a0397cc1b1275d440bf596d04641694c5a6f6687d8c455aa317f3",
+      "run_id": "c1d7d4e7-219e-4649-ae12-8b43c7733fe2",
+      "decisive_observation": "All five actual UIKit transitions and automatic mapper occurrences completed; Root SwiftUI onDisappear31 followed presentation boundary29 and dismissal start30, preceding next Root onAppear32. Strict harness timing assumption rejected the run.",
+      "sdk_finding": null,
+      "remaining_cells": "Unexecuted; original admission stopped."
+    }
+  ],
+  "gate_closures": [],
+  "native_launches": 1,
+  "implementation": {
+    "fixture": "tools/multi-scene/hosted-swiftui/App.swift",
+    "workflow": "tools/multi-scene/acceptance/s2_hosting_workflow.py",
+    "oracle": "tools/multi-scene/acceptance/hosting_contract.py",
+    "connector": "tools/multi-scene/acceptance/hosting_connector.js",
+    "focused_controls": 38,
+    "native_admitted": false
+  },
+  "build_qualification": {
+    "A": {
+      "receipt": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp222-hosted-swiftui-_y3wbrkk/A/build-result.json",
+      "sha256": "0b03217506034c22b59620af1190ff18cb5f8bbe398bbfc1fb6ff24bd78dfbab"
+    },
+    "B": {
+      "receipt": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/exp222-hosted-swiftui-_y3wbrkk/B/build-result.json",
+      "sha256": "01d76a7ace61d7cc75f1e13d8864b62fb7bc4bb091995453a9c30970df5937c1"
+    }
+  },
+  "next": "Scoped review and offline re-audit of the captured lifecycle timeline; no native retry or gate closure."
+}
