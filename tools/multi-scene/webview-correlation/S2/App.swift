@@ -25,7 +25,17 @@ private enum WebSettings {
         "fixture": Bundle.main.object(forInfoDictionaryKey: "WebFixture") as? String ?? ""]
     static let device = argument("--device")
     static let hostRun = argument("--host-run")
-    static let deadline = Double(argument("--deadline-ms")).map { $0 / 1_000 } ?? 0
+    static let startedTick = DispatchTime.now().uptimeNanoseconds
+    static let budgetSeconds = Double(argument("--budget-seconds")) ?? 0
+    static let deadline: UInt64 = budgetSeconds.isFinite && budgetSeconds > 0 && budgetSeconds <= 1_800
+        ? startedTick + UInt64(budgetSeconds * 1_000_000_000) : 0
+    static func phaseBudget(_ kind: String) throws -> UInt64 {
+        let maximum: Double = kind == "human-fold" ? 300 : 180
+        let argumentName = kind == "human-fold" ? "--fold-budget-seconds" : "--marker-budget-seconds"
+        guard let value = Double(argument(argumentName)), value.isFinite, value > 0, value <= maximum
+        else { throw WebFailure.invalid("phase-budget") }
+        return UInt64(value * 1_000_000_000)
+    }
     static let evidence = S2WebViewEvidence(identity: identity, output: directory.appendingPathComponent("evidence.json"))
     static let browserService = "ios-s2-webview-browser-validation"
     static func capture<T: Encodable>(_ event: T, kind: String) {
@@ -38,11 +48,43 @@ private enum WebSettings {
 }
 private enum WebFailure: Error { case invalid(String) }
 
+// Passive fixture observation of the SDK's value snapshot at TTID dispatch.
+private struct WebTTIDFeature: DatadogFeature {
+    static let name = "s2-webview-ttid-witness"
+    let messageReceiver: FeatureMessageReceiver
+}
+private struct WebTTIDReceiver: FeatureMessageReceiver {
+    let evidence: S2WebViewEvidence
+    func receive(message: FeatureMessage, from core: DatadogCoreProtocol) -> Bool {
+        guard case .payload(let payload) = message, let message = payload as? TTIDMessage else { return false }
+        var attributes: [String: Any] = [:]
+        for (key, value) in message.attributes {
+            if let value = value as? String { attributes[key] = ["type": "String", "value": value] }
+            else if let value = value as? [String] { attributes[key] = ["type": "[String]", "value": value] }
+            else { attributes[key] = ["type": "unsupported"] }
+        }
+        evidence.record("ttid-message", fields: ["payload_type": "TTIDMessage", "attributes": attributes,
+            "vital_id": message.ttid.id, "vital_name": message.ttid.name,
+            "duration_ns": message.ttid.duration as Any? ?? NSNull(),
+            "raw_date_reference_seconds": message.ttid.date.timeIntervalSinceReferenceDate,
+            "raw_date_unix_seconds": message.ttid.date.timeIntervalSince1970,
+            "server_time_offset_seconds": message.ttid.serverTimeOffset])
+        // Keep the message bus's original consumer/fallback behavior.
+        return false
+    }
+}
+
 @main @MainActor final class WebApp: UIResponder, UIApplicationDelegate {
     func application(_ application: UIApplication, didFinishLaunchingWithOptions options: [UIApplication.LaunchOptionsKey: Any]? = nil) -> Bool {
         let info = Bundle.main
+        WebSettings.evidence.record("runtime-admission", fields: ["started_ns": WebSettings.startedTick,
+            "deadline_ns": WebSettings.deadline, "budget_seconds": WebSettings.budgetSeconds])
         Datadog.initialize(with: .init(clientToken: info.object(forInfoDictionaryKey: "WebClientToken") as? String ?? "",
             env: "s2-webview", service: "ios-s2-webview-native-validation", batchSize: .small, uploadFrequency: .frequent), trackingConsent: .granted)
+        do {
+            try CoreRegistry.default.register(feature: WebTTIDFeature(messageReceiver: WebTTIDReceiver(evidence: WebSettings.evidence)))
+            WebSettings.evidence.record("ttid-observer-registered")
+        } catch { WebSettings.evidence.record("ttid-observer-failure") }
         var rum = RUM.Configuration(applicationID: info.object(forInfoDictionaryKey: "WebApplicationID") as? String ?? "")
         rum.sessionSampleRate = 100; rum.telemetrySampleRate = 0
         rum.uiKitViewsPredicate = nil; rum.uiKitActionsPredicate = nil
@@ -53,6 +95,7 @@ private enum WebFailure: Error { case invalid(String) }
         rum.actionEventMapper = { WebSettings.capture($0, kind: "native-action"); return $0 }
         rum.errorEventMapper = { WebSettings.capture($0, kind: "native-error"); return $0 }
         rum.resourceEventMapper = { WebSettings.capture($0, kind: "native-resource"); return $0 }
+        WebSettings.evidence.record("rum-enable")
         RUM.enable(with: rum)
         SessionReplay.enable(with: .init(replaySampleRate: 100))
         WebSettings.evidence.record("launch", fields: ["pid": ProcessInfo.processInfo.processIdentifier])
@@ -102,6 +145,7 @@ private enum WebFailure: Error { case invalid(String) }
                           let view = event["view"] as? [String: Any] else { return false }
                     return view["name"] as? String == "NativeB" && view["is_active"] as? Bool == false
                 }
+                try await wait("TTID-witness") { evidence.matching("ttid-message").count == 1 }
                 RUMMonitor.shared().stopSession()
                 try await finish(state: "PASS")
             }
@@ -109,6 +153,7 @@ private enum WebFailure: Error { case invalid(String) }
         }
     }
     func sceneWillResignActive(_ scene: UIScene) { evidence.record("scene-inactive", fields: ["scene": scene.session.persistentIdentifier]) }
+    func sceneDidEnterBackground(_ scene: UIScene) { evidence.record("scene-background", fields: ["scene": scene.session.persistentIdentifier]) }
     func sceneDidDisconnect(_ scene: UIScene) { evidence.record("scene-disconnected", fields: ["scene": scene.session.persistentIdentifier]) }
     func navigationController(_ navigationController: UINavigationController, didShow viewController: UIViewController, animated: Bool) {
         shownControllers.insert(key(viewController)); evidence.record("did-show", fields: ["controller": key(viewController), "animated": animated])
@@ -129,12 +174,13 @@ private enum WebFailure: Error { case invalid(String) }
         readyDocuments.insert(label)
         evidence.record("web-document-ready", fields: ["webview": label, "document_id": document, "webview_identity": key(webView)])
     }
-    private func wait(_ label: String, until deadline: Double? = nil, condition: () -> Bool) async throws {
+    private func wait(_ label: String, until deadline: UInt64? = nil, condition: () -> Bool) async throws {
         let bound = min(deadline ?? WebSettings.deadline, WebSettings.deadline)
         while !condition() {
-            guard Date().timeIntervalSince1970 < bound else { throw WebFailure.invalid("deadline-" + label) }
+            guard DispatchTime.now().uptimeNanoseconds < bound else { throw WebFailure.invalid("deadline-" + label) }
             try await Task.sleep(nanoseconds: 50_000_000)
         }
+        guard DispatchTime.now().uptimeNanoseconds < bound else { throw WebFailure.invalid("deadline-" + label) }
     }
     private func owner(_ name: String, active: Bool = true) -> [String: Any]? {
         let events = evidence.matching("native-view").compactMap { row -> [String: Any]? in
@@ -166,32 +212,51 @@ private enum WebFailure: Error { case invalid(String) }
             guard let controller else { return false }
             return owned.contains(key(controller)) || controller.children.contains(where: { contains($0) }) || contains(controller.presentedViewController)
         }
+        let captureStarted = DispatchTime.now().uptimeNanoseconds
         let scenes = UIApplication.shared.connectedScenes.compactMap { $0 as? UIWindowScene }.map { value in
             ["id": value.session.persistentIdentifier, "activation": value.activationState.rawValue, "windows": value.windows.map { item in
                 ["id": key(item), "owned": item === window, "key": item.isKeyWindow, "hidden": item.isHidden,
                  "alpha": item.alpha, "contains_fixture_controller": contains(item.rootViewController),
+                 "defining_bundle": Bundle(for: type(of: item)).bundlePath,
+                 "root_defining_bundle": item.rootViewController.map { Bundle(for: type(of: $0)).bundlePath } as Any? ?? NSNull(),
                  "root": item.rootViewController.map(key) as Any? ?? NSNull(), "width": item.bounds.width,
                  "height": item.bounds.height, "screen": key(item.screen)] as [String: Any]
             }] as [String: Any]
         }
         evidence.record("topology", fields: ["phase": phase, "scene": scene.session.persistentIdentifier,
             "window": key(window), "controller": key(controller), "controller_attached": true,
-            "inventory": scenes, "screen": ["id": key(scene.screen), "width": scene.screen.bounds.width,
+            "inventory": scenes, "connected_scene_count": UIApplication.shared.connectedScenes.count,
+            "capture_started_ns": captureStarted, "capture_finished_ns": DispatchTime.now().uptimeNanoseconds,
+            "window_framework_bundle": Bundle(for: UIWindow.self).bundlePath,
+            "controller_framework_bundle": Bundle(for: UIViewController.self).bundlePath,
+            "navigation": key(navigation), "root": key(root),
+            "screen": ["id": key(scene.screen), "width": scene.screen.bounds.width,
                 "height": scene.screen.bounds.height, "scale": scene.screen.scale]])
     }
-    private func exchange(_ kind: String, fields: [String: Any], deadline: Double? = nil) async throws -> [String: Any] {
-        let id = UUID().uuidString.lowercased(), bound = min(deadline ?? WebSettings.deadline, WebSettings.deadline)
-        let request: [String: Any] = ["id": id, "kind": kind, "identity": WebSettings.identity, "deadline_ms": Int64(bound * 1_000), "fields": fields]
+    private func exchange(_ kind: String, fields: [String: Any], deadline: UInt64? = nil) async throws -> [String: Any] {
+        let id = UUID().uuidString.lowercased(), issued = DispatchTime.now().uptimeNanoseconds
+        let bound = min(deadline ?? WebSettings.deadline, WebSettings.deadline, issued + (try WebSettings.phaseBudget(kind)))
+        guard issued < bound else { throw WebFailure.invalid("expired-request-" + kind) }
+        let request: [String: Any] = ["id": id, "kind": kind, "identity": WebSettings.identity,
+            "issued_ns": issued, "deadline_ns": bound, "fields": fields]
         let data = try JSONSerialization.data(withJSONObject: request, options: [.sortedKeys])
+        let requestHash = SHA256.hash(data: data).map({ String(format: "%02x", $0) }).joined()
+        evidence.record("host-request-issued", fields: ["request_id": id, "request_kind": kind,
+            "request_sha256": requestHash, "issued_ns": issued, "deadline_ns": bound])
         try await evidence.flush()
         try data.write(to: WebSettings.directory.appendingPathComponent("request-\(id).json"), options: .atomic)
         let response = WebSettings.directory.appendingPathComponent("response-\(id).json")
         try await wait(kind, until: bound) { FileManager.default.fileExists(atPath: response.path) }
-        guard Date().timeIntervalSince1970 < bound,
-              let value = try JSONSerialization.jsonObject(with: Data(contentsOf: response)) as? [String: Any],
+        let responseData = try Data(contentsOf: response)
+        guard let value = try JSONSerialization.jsonObject(with: responseData) as? [String: Any],
               value["id"] as? String == id, value["kind"] as? String == kind, value["identity"] as? [String: String] == WebSettings.identity,
-              value["request_sha256"] as? String == SHA256.hash(data: data).map({ String(format: "%02x", $0) }).joined(),
+              value["request_sha256"] as? String == requestHash,
               value["state"] as? String == "PASS" else { throw WebFailure.invalid("invalid-response-" + kind) }
+        let consumed = DispatchTime.now().uptimeNanoseconds
+        guard consumed < bound else { throw WebFailure.invalid("late-response-" + kind) }
+        evidence.record("host-response-consumed", fields: ["request_id": id, "request_kind": kind,
+            "request_sha256": requestHash, "response_sha256": SHA256.hash(data: responseData).map({ String(format: "%02x", $0) }).joined(),
+            "issued_ns": issued, "deadline_ns": bound, "consumed_ns": consumed])
         return value
     }
     private func emit(_ marker: String, body: String, webView: WKWebView, ownerName: String) async throws {
@@ -205,7 +270,7 @@ private enum WebFailure: Error { case invalid(String) }
         _ = try await webView.evaluateJavaScript("window.DatadogEventBridge.send(\(literal)[0]); true")
         try await wait(marker + "-callback") { evidence.matching("webkit-callback", field: "marker", value: marker).count == 1 }
     }
-    private func acknowledge(_ markers: [String], deadline: Double? = nil) async throws {
+    private func acknowledge(_ markers: [String], deadline: UInt64? = nil) async throws {
         let callbacks = markers.compactMap { evidence.matching("webkit-callback", field: "marker", value: $0).first }
         let reply = try await exchange("backend-markers", fields: ["callbacks": callbacks], deadline: deadline)
         guard let acknowledgements = reply["acknowledgements"] as? [[String: Any]], acknowledgements.count == markers.count else { throw WebFailure.invalid("missing-acks") }
@@ -235,7 +300,7 @@ private enum WebFailure: Error { case invalid(String) }
         evidence.record("fold-complete", fields: ["phase": phase, "proof_sha256": hash, "proof_json": raw])
     }
     private func run() async throws {
-        guard WebSettings.deadline > Date().timeIntervalSince1970, let root, let nav = navigation else { throw WebFailure.invalid("admission") }
+        guard WebSettings.deadline > DispatchTime.now().uptimeNanoseconds, let root, let nav = navigation else { throw WebFailure.invalid("admission") }
         try await wait("A-ready") { readyDocuments.contains("A") && shownControllers.contains(key(root)) }
         // Replay eligibility is a context prerequisite; captured content is outside acceptance.
         var replay = false
@@ -243,7 +308,7 @@ private enum WebFailure: Error { case invalid(String) }
             replay = await withCheckedContinuation { continuation in
                 CoreRegistry.default.scope(for: RUMFeature.self).context { continuation.resume(returning: $0.hasReplay == true) }
             }
-            guard Date().timeIntervalSince1970 < WebSettings.deadline else { throw WebFailure.invalid("replay-context") }
+            guard DispatchTime.now().uptimeNanoseconds < WebSettings.deadline else { throw WebFailure.invalid("replay-context") }
             if !replay { try await Task.sleep(nanoseconds: 50_000_000) }
         }
         _ = try await start("NativeA", controller: root); try topology("A-ready", controller: root)
@@ -260,7 +325,7 @@ private enum WebFailure: Error { case invalid(String) }
         evidence.record("navigation-start", fields: ["controller": key(bController)])
         nav.pushViewController(bController, animated: true)
         try await wait("B-shown") { shownControllers.contains(key(bController)) && readyDocuments.contains("B") }
-        let deactivationEarliest = Date().timeIntervalSince1970
+        let deactivationEarliest = DispatchTime.now().uptimeNanoseconds
         _ = try await start("NativeB", controller: bController)
         try await wait("A-inactive") { owner("NativeA", active: false) != nil }
         guard let inactive = owner("NativeA", active: false), let event = inactive["event"] as? [String: Any],
@@ -274,7 +339,7 @@ private enum WebFailure: Error { case invalid(String) }
         try await emit("M2", body: secondEnvelope, webView: b, ownerName: "NativeB")
         a.removeFromSuperview(); evidence.record("detached", fields: ["webview": "A", "window": a.window.map(key) as Any? ?? NSNull()])
         try await emit("M3", body: third, webView: a, ownerName: "NativeB")
-        try await acknowledge(["M2", "M3"], deadline: deactivationEarliest + 180)
+        try await acknowledge(["M2", "M3"], deadline: deactivationEarliest + 180_000_000_000)
         try await fold("closed", controller: bController)
         try await wait("inactive-lifetime") { Date().timeIntervalSince(deactivationLatest) > 181 && DispatchTime.now().uptimeNanoseconds - deactivationTick > 181_000_000_000 }
         try await emit("M4", body: fourth, webView: a, ownerName: "NativeB"); try await acknowledge(["M4"])

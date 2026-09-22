@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """S2 WebView source/build preparation in the shared acceptance harness.
 
-This stage does not install or launch an app and cannot claim runtime acceptance.
+Preparation/build stages do not imply runtime acceptance; cell execution requires a separate reviewed admission.
 """
 import argparse
 import importlib.util
@@ -19,15 +19,26 @@ from acceptance_common import digest, require
 BUNDLE='com.datadoghq.s2.webview.acceptance'
 SOURCES=['tools/multi-scene/webview-correlation/S2/'+n for n in ['App.swift','S2WebViewBridge.swift','S2WebViewEvidence.swift']]
 DEFINITION='DatadogRUM/MultiSceneSupport/Results/S2-T10-source-preparation.json'
-HELPERS=['tools/multi-scene/acceptance/'+n for n in ['s2_webview_workflow.py','s2_hosting_workflow.py','acceptance_common.py','app_journey_transport.py','app_journey_inventory.py','hosting_contract.py','s2_webview_contract.py']]+['tools/multi-scene/webview-correlation/run.py','tools/multi-scene/baselines/run.py',DEFINITION]+SOURCES
+HELPERS=['tools/multi-scene/acceptance/'+n for n in ['s2_webview_workflow.py','s2_hosting_workflow.py','acceptance_common.py','app_journey_transport.py','app_journey_inventory.py','hosting_contract.py','s2_webview_contract.py','s2_webview_runtime.py','s2_webview_session.py','s2_webview_driver.py','hosting_connector.js']]+['tools/multi-scene/webview-correlation/run.py','tools/multi-scene/baselines/run.py',DEFINITION]+SOURCES
 PATHS=shared.PATHS+['DatadogWebViewTracking/Sources','DatadogSessionReplay/Sources']
+
+
+def execution_contract(definition):
+    """Progress records may evolve; selected inputs, budgets and assertions may not."""
+    keys=['schema_version','gate','baseline','candidate','scope','source_sha256','finite_cells',
+          'ordered_markers','capture_contract','timing_decision','fixture_sources']
+    result={key:definition[key] for key in keys}
+    result['build']={key:value for key,value in definition['build_preparation'].items() if key not in ['result','parse_observation']}
+    result['runtime']={key:definition['runtime_preparation'][key] for key in ['budgets_seconds','attempt_policy','clock_contract']}
+    return result
 
 
 def verify(root):
     plan=shared.read(root/'plan.json')
     require(shared.protected()==plan['protected'],'protected workspace changed')
     require(shared.tree(root/'helpers')==plan['helpers'],'frozen helper snapshot changed')
-    require(all(shared.sha(shared.REPO/name)==value for name,value in plan['helpers'].items()),'frozen helper changed')
+    require(all(shared.sha(shared.REPO/name)==value for name,value in plan['helpers'].items() if name!=DEFINITION),'frozen helper changed')
+    require(execution_contract(shared.read(shared.REPO/DEFINITION))==execution_contract(plan['definition']),'frozen execution contract changed')
     for arm in shared.ARMS:
         require(shared.tree(root/arm/'sdk')==plan['arms'][arm]['sdk'],'SDK inventory changed')
         shared.verify_client(root/arm/'client',plan['arms'][arm]['client'])
@@ -37,8 +48,10 @@ def verify(root):
 def prepare(args):
     root=args.root.resolve();require(not root.exists(),'output already exists');root.mkdir(parents=True)
     definition=shared.read(shared.REPO/DEFINITION)
-    require(definition['gate']=='S2:T10' and definition['build_preparation']['native_admitted'] is False,'unqualified build-only definition')
-    state=shared.protected()
+    require(definition['gate']=='S2:T10' and definition['build_preparation']['native_admitted'] is False
+        and definition['baseline']==shared.ARMS['A'] and definition['candidate']==shared.ARMS['B'],'unqualified build-only definition')
+    execution_contract(definition)
+    state=shared.protected();(root/'cells').mkdir()
     spec=importlib.util.spec_from_file_location('webview_package',shared.REPO/'tools/multi-scene/webview-correlation/run.py');module=importlib.util.module_from_spec(spec);spec.loader.exec_module(module)
     fixture=digest({name:shared.sha(shared.REPO/name) for name in SOURCES})
     plan={'gate':'S2:T10','created_at':time.time(),'definition':definition,'protected':state,'helpers':{name:shared.sha(shared.REPO/name) for name in HELPERS},'arms':{}}
@@ -91,10 +104,42 @@ def build(args):
         shared.save(folder/'build-failure.json',{'state':'INVALID','at':time.time(),'reason':str(error)},exclusive=True);raise
 
 
+def verify_build(root, arm):
+    plan=verify(root);folder=root/arm;frozen=plan['arms'][arm];result=shared.read(folder/'build-result.json');admission=shared.read(folder/'build-admission.json')
+    require(result['state']=='QUALIFIED_BUILD_ONLY' and result['source']==frozen['revision'],'unqualified WebView build')
+    require(admission['plan_sha256']==shared.sha(root/'plan.json') and admission['issued_at']<result['finished_at']<admission['deadline'],'original build not timely')
+    require(shared.sha(folder/'source.tar')==frozen['archive_sha256'],'source archive changed')
+    actual_lists={str(p) for p in (folder/'DerivedData/Build/Intermediates.noindex').rglob('*.SwiftFileList')}
+    require(actual_lists==set(result['compiler_lists']) and actual_lists,'compiler membership changed')
+    sdk_inputs=set();fixture_inputs=set()
+    for name,bound in result['compiler_lists'].items():
+        path=Path(name);require(not path.is_symlink() and 'arm64' in path.parts and shared.sha(path)==bound['sha256'],'compiler list changed')
+        members={}
+        for value in shlex.split(path.read_text()):
+            source=Path(value);require(not source.is_symlink(),'symlinked compiler input');source=source.resolve();members[str(source)]=shared.sha(source)
+            if source.is_relative_to(folder/'sdk'):sdk_inputs.add(str(source.relative_to(folder/'sdk')))
+            elif source.is_relative_to(folder/'client'):fixture_inputs.add(source.name)
+            else:require(source.is_relative_to(folder/'DerivedData'),'foreign compiler source')
+        require(members==bound['members'],'compiler input bytes changed')
+    require(sdk_inputs=={name for name in frozen['sdk'] if name.endswith('.swift') and name!='Package.swift'}
+        and fixture_inputs=={Path(name).name for name in SOURCES},'compiler source coverage changed')
+    objects={str(p.relative_to(folder)):shared.sha(p) for p in (folder/'DerivedData/Build/Intermediates.noindex').rglob('*.o')}
+    require(objects and objects==result['objects'],'compiled objects changed')
+    app=folder/'DerivedData/Build/Products/Release-iphonesimulator/S2WebView.app'
+    require(Path(result['app'])==app and shared.product(app,bundle=BUNDLE)==result['product'],'complete WebView product changed')
+    return result
+
+
 def main():
     parser=argparse.ArgumentParser();sub=parser.add_subparsers(dest='stage',required=True)
-    for stage in ['prepare','build']:
+    for stage in ['prepare','build','cell']:
         item=sub.add_parser(stage);item.add_argument('--root',type=Path,required=True)
-        if stage=='build':item.add_argument('--arm',choices=shared.ARMS,required=True)
-    args=parser.parse_args();return {'prepare':prepare,'build':build}[args.stage](args) or 0
+        if stage in ['build','cell']:item.add_argument('--arm',choices=shared.ARMS,required=True)
+        if stage=='cell':item.add_argument('--device',required=True)
+    item=sub.add_parser('publish');item.add_argument('--request',type=Path,required=True);item.add_argument('--payload',required=True)
+    args=parser.parse_args()
+    if args.stage=='cell':
+        import s2_webview_driver
+        return s2_webview_driver.cell(args)
+    return {'prepare':prepare,'build':build,'publish':shared.publish}[args.stage](args) or 0
 if __name__=='__main__':raise SystemExit(main())

@@ -72,7 +72,10 @@ before native execution. The runner owns decode, persistence, current native
 sampling and assertions after the actual UI return. Use one bound interaction
 qualification, preferably the first planned baseline cell. If it fails, stop that
 path and use the prepared human session. Derive future fixed budgets from observed
-latency; never renew an active or expired deadline. Keep host-wall and native clocks
+latency; never renew an active or expired deadline. For the prepared WebView flow,
+[the fixture contract](../../../tools/multi-scene/webview-correlation/S2/README.md)
+joins app-local monotonic consumption with host-local publication by exact request/
+response hashes and sequence. Preflight real atomic response publication before launch. Keep host-wall and native clocks
 separate: prove causal request/response binding and native monotonic ordering, or
 measure an explicit clock-offset bound. Record scenario/evidence/cleanup separately;
 incomplete required evidence or cleanup leaves overall acceptance invalid.

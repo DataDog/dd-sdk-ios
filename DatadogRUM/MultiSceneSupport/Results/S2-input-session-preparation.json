@@ -2,7 +2,7 @@
   "schema_version": 1,
   "work_item": "S2:A02 ordered single human-input session",
   "status": "ORDERED_SCOPE_PREPARED_CAPTURE_AND_BUILD_BINDINGS_INCOMPLETE",
-  "updated_at": "2026-09-22T15:57:39.461956+00:00",
+  "updated_at": "2026-09-22T16:26:42.242226+00:00",
   "owner": "Harness implementer",
   "user_role": "Only real gestures and any required interactive sign-in",
   "request_user_now": false,
@@ -126,7 +126,16 @@
         "Follow Open then Closed prompts for each admitted Resource/Trace cell",
         "Follow fold prompts during the two WebView long-lived/delayed-event cells"
       ],
-      "automated_checks": "Existing strict Resource/Trace evidence and S2-T10-source-preparation.json; waiting, backend collection and cleanup automated."
+      "automated_checks": "Existing strict Resource/Trace evidence and S2-T10-source-preparation.json; waiting, backend collection and cleanup automated.",
+      "webview_binding": {
+        "owner": "S2-T10-source-preparation.json",
+        "state": "REVIEWED_RUNNER_AND_BUILDS_QUALIFIED",
+        "root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-webview-clock-build-5zkoighg/run",
+        "plan_sha256": "914149e5ba7ad9c864510064a999616b33ae7cd546ea58036e63c62eb398ac10",
+        "review_sha256": "a398e3683de97f721166368d32566123d7c739b2b7035a92ad69af3d53732fb6",
+        "native_admitted": false,
+        "limit": "Two cells, four real human fold gestures; all marker/backend capture and task-only cleanup automated. Native qualification and integrated J03 still required."
+      }
     },
     {
       "order": 4,

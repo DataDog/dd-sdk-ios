@@ -1,8 +1,8 @@
 {
   "schema_version": 1,
   "work_item": "S2:T10 finite native/WebView preparation",
-  "status": "BOTH_ARMS_COMPILE_BOUNDARY_FIXES_PREPARED_HOST_INTEGRATION_PENDING",
-  "updated_at": "2026-09-22T15:01:35.669254+00:00",
+  "status": "REVIEWED_RUNNER_AND_BOTH_BUILDS_QUALIFIED_HUMAN_SESSION_PENDING",
+  "updated_at": "2026-09-22T16:26:42.098070+00:00",
   "owner": "SDK implementer",
   "baseline": "62f64d7b655bdc83f3036c4ad81090a270f6202b",
   "candidate": "c9faed816a1d4828d7d8c4b64acae01119425889",
@@ -103,9 +103,9 @@
     "Reuse existing source/build/cleanup contracts; human fold requests must remain outside the inactive TTL boundary."
   ],
   "remaining_prerequisites": [
-    "Complete host runner integration and qualify the corrected source with both builds before native admission. Original app integration compiled against both arms; runtime remains unqualified.",
-    "Bind actual Replay eligibility, native mapper start dates, WK callback identity, server offset and exact complete raw backend inventory.",
-    "Freeze fixed runtime/transport/cleanup budgets and include both fold cells in the single human-input session; the automated fold path is stopped.",
+    "Bind the reviewed plan and both qualified corrected products into the single ordered human session; first baseline cell supplies native mechanism qualification.",
+    "Bind current Replay eligibility, native mapper/TTID/WK callbacks, real display inventory and exact complete raw backend inventory in the first planned baseline cell.",
+    "Include both fold cells in the single ordered human-input session; no automated fold path or native admission exists.",
     "Datadog integrated J03 remains separately owned by S2-F08-source-oracle.json."
   ],
   "gate_closures": [],
@@ -147,6 +147,77 @@
     "purpose": "Typecheck/link the planned real WK callback, native mapper and durable host-barrier app against both exact source revisions. Human fold, native execution, backend collection and acceptance remain unadmitted.",
     "parse_observation": "Initial sandboxed frontend parse exited0 with xcrun cache permission errors; no build/typecheck claim. Full isolated builds supersede parse-only preparation.",
     "result": {
+      "root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-webview-clock-build-5zkoighg/run",
+      "plan_sha256": "914149e5ba7ad9c864510064a999616b33ae7cd546ea58036e63c62eb398ac10",
+      "arms": {
+        "A": {
+          "receipt": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-webview-clock-build-5zkoighg/run/A/build-result.json",
+          "sha256": "64507aaddbdddb7de16a343a1f1206ee50327126ef9144291c05adfb8f5158db",
+          "state": "QUALIFIED_BUILD_ONLY",
+          "seconds": 61.05
+        },
+        "B": {
+          "receipt": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-webview-clock-build-5zkoighg/run/B/build-result.json",
+          "sha256": "0f657f71380815b43d947d506b7177ae03a10dfe8bb280c658f6e53565521f9b",
+          "state": "QUALIFIED_BUILD_ONLY",
+          "seconds": 60.45
+        }
+      },
+      "limit": "Exact corrected fixtures compile/link against both frozen SDK arms. Original build logs, full product, compiler-member bytes and objects retained. Native/backend/cleanup acceptance remains unrun.",
+      "diagnostics": "22 diagnostic entries per arm match the prior exact-SDK build logs after removing source location prefixes, including two command-exited0 diagnostics and known Swift warnings. Both actual build exits0; no warning-free or native-safety claim."
+    }
+  },
+  "boundary_review": {
+    "reviewer": "/root/c06_runtime_plan",
+    "findings": [
+      "Require observed NativeA inactive mapper before M2/detachment; B readiness alone is insufficient.",
+      "Bind fold response kind, phase, actual raw proof hash, device, host run, identity and request.",
+      "Seal observations once; retain and reject late callbacks; terminal binds final durable sequence/hash."
+    ],
+    "implementation": "Prepared in the shared host runner: actual display proof, source-owned window provenance, exact publication/consumption, and sealed recapture before cleanup. Clock repair and builds still pending final qualification.",
+    "controls": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-webview-boundary-controls-3dfm9kin/result.json",
+      "sha256": "0f2d94a2a1313d012b518abb7e806dfbb25f11c430a5a490ea4331b129fb2f09"
+    },
+    "native_launches": 0,
+    "implementation_review": "PASS by designated reviewer: all three reported blockers addressed; host integration, new builds and native acceptance remain required."
+  },
+  "runtime_preparation": {
+    "native_admitted": false,
+    "budgets_seconds": {
+      "native": 1800,
+      "marker_backend": 180,
+      "human_fold": 300,
+      "backend": 600,
+      "cleanup": 300
+    },
+    "attempt_policy": "One baseline cell qualifies the changed mechanism; candidate follows only a complete baseline PASS. No retries or active/expired deadline extensions. Human fold only; both requests outside the M3 TTL interval.",
+    "clock_contract": "App waits use uptime deadlines from bounded relative durations. Host phase deadlines freeze on observing each exact request and stay within the original overall deadline. Request/response hashes, native issued/consumed sequence and app-local deadline prove causality; no host/simulator wall-clock comparison. TTL keeps both app-local wall and monotonic checks.",
+    "budget_basis": {
+      "native": "Two required >181-second lifetime intervals, up to three marker acknowledgements and two ready human gestures; 1800 seconds bounds all work.",
+      "marker_backend": "Recent complete backend-only collection took 24.9 seconds; the full hosting cell took 106.6 seconds including setup/scenario/cleanup. 180 seconds permits transport/indexing but M3 remains capped by its original app-local inactive-retention deadline.",
+      "human_fold": "300 seconds per ready gesture. The prior automated fold published approximately306 seconds after the native tool returned and is stopped; no model/tool response publication is on this human path.",
+      "backend": "600 seconds includes count, all raw pages, persistence/publication and settled aggregate, retaining the existing measured backend bound.",
+      "cleanup": "Observed successful hosting cleanup took1.4-1.5 seconds. 300 seconds allows task removal, recapture and one human Closed restoration; an expired restoration remains INVALID."
+    },
+    "review": {
+      "reviewer": "/root/c06_runtime_plan",
+      "state": "PASS",
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-webview-clock-build-5zkoighg/run/review.json",
+      "sha256": "a398e3683de97f721166368d32566123d7c739b2b7035a92ad69af3d53732fb6",
+      "limits": "Source/offline qualification only; planned first baseline cell qualifies native mechanism. Native remains unadmitted."
+    },
+    "gate_closures": [],
+    "controls": {
+      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-webview-clock-controls-o2th17qz/result.json",
+      "sha256": "9f46228b60c9163912d35cc62dec2a5ab64c8834ffb70cba5284605d489621ef",
+      "python": 74,
+      "connector": 8,
+      "native_launches": 0
+    }
+  },
+  "prior_build_results": [
+    {
       "root": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-webview-build-ftpd_55h",
       "plan_sha256": "6597aa82a32a91f907f2b84e900d437373bee39196cb79edc30424e10fa4c676",
       "arms": {
@@ -163,20 +234,5 @@
       },
       "limit": "Both exact SDK arms compiled and linked. These products predate the reviewed deactivation/fold-receipt/terminal corrections and cannot admit runtime acceptance."
     }
-  },
-  "boundary_review": {
-    "reviewer": "/root/c06_runtime_plan",
-    "findings": [
-      "Require observed NativeA inactive mapper before M2/detachment; B readiness alone is insufficient.",
-      "Bind fold response kind, phase, actual raw proof hash, device, host run, identity and request.",
-      "Seal observations once; retain and reject late callbacks; terminal binds final durable sequence/hash."
-    ],
-    "implementation": "Prepared; full host integration must validate actual display proof and recapture sealed evidence before cleanup.",
-    "controls": {
-      "path": "/Users/valentin.pertuisot/work/dd-sdk-ios-extractions/evidence/s2-webview-boundary-controls-3dfm9kin/result.json",
-      "sha256": "0f2d94a2a1313d012b518abb7e806dfbb25f11c430a5a490ea4331b129fb2f09"
-    },
-    "native_launches": 0,
-    "implementation_review": "PASS by designated reviewer: all three reported blockers addressed; host integration, new builds and native acceptance remain required."
-  }
+  ]
 }

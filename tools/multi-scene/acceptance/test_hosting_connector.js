@@ -9,10 +9,11 @@ async function run(options={}) {
   const count={content:[{type:'text',text:'<METADATA><total_buckets>1</total_buckets></METADATA><TSV_DATA>events\n1</TSV_DATA>'}]};
   const rows=options.tooMany?Array.from({length:101},(_,i)=>({id:String(i)})):[{id:'actual-return',value:'é'}];
   const pages=[{content:[{type:'text',text:'<JSON_DATA>'+JSON.stringify(rows)+'</JSON_DATA>'}]},{content:[{type:'text',text:'<JSON_DATA>[]</JSON_DATA>'}]}];
-  let calls=0,published,aggregateCalls=0,searchCalls=0,waits=0;
+  let calls=0,published,aggregateCalls=0,searchCalls=0,waits=0;const commands=[],notifications=[];
   const tools={
     exec_command:async args=>{
-      if(args.cmd.includes(' cell ')||args.cmd.includes(' backend-only '))return {session_id:1,output:'{"backend_request":"/fresh/request.request.json"}\n'};
+      commands.push(args.cmd);
+      if(args.cmd.includes(' cell ')||args.cmd.includes(' backend-only '))return {session_id:1,output:(options.human?'{}\n{"human_input":{"phase":"open"}}\n':'')+'{"backend_request":"/fresh/request.request.json"}\n'};
       if(args.cmd.startsWith('cat '))return {exit_code:0,output:JSON.stringify(bound)};
       if(args.cmd.includes(' publish ')){
         const encoded=args.cmd.match(/--payload '([^']+)'/)[1];published=JSON.parse(Buffer.from(encoded,'base64').toString('utf8'));
@@ -24,8 +25,8 @@ async function run(options={}) {
     mcp__datadog__aggregate_rum_events:async()=>{aggregateCalls++;return count;},
     mcp__datadog__search_datadog_rum_events:async()=>{searchCalls++;if(options.failedPage)throw Error('read failed');return pages[calls++];}
   };
-  const result=await new AsyncFunction('tools','notify','root','arm','mode','device','repo',source)(tools,()=>{},'/root',options.backendOnly?'backend-only':'A','automatic','device','/repo');
-  return {published,count,pages,aggregateCalls,searchCalls,waits,result};
+  const result=await new AsyncFunction('tools','notify','root','arm','mode','device','repo','family',source)(tools,value=>notifications.push(value),'/root',options.backendOnly?'backend-only':'A','automatic','device','/repo',options.family);
+  return {published,count,pages,aggregateCalls,searchCalls,waits,result,commands,notifications};
 }
 test('keeps exact raw count and actual returned pages',async()=>{const r=await run();assert.deepEqual(r.published.count_response,r.count);assert.deepEqual(r.published.pages.map(p=>p.response),r.pages);assert.deepEqual(r.published.pages.map(p=>p.start_at),[0,1]);});
 test('failed page retains fulfilled count',async()=>{const r=await run({failedPage:true});assert.deepEqual(r.published.count_response,r.count);assert.match(r.published.error,/read failed/);});
@@ -35,3 +36,5 @@ test('waits for yielded publication completion',async()=>{const r=await run({yie
 
 test('count readiness retains actual count and avoids unstable pages',async()=>{const r=await run({notReady:true});assert.equal(r.searchCalls,0);assert.deepEqual(r.published.count_response,r.count);assert.deepEqual(r.published.pages,[]);assert.equal(r.published.count_pending,true);});
 test('backend-only continuation uses the same response transport',async()=>{const r=await run({backendOnly:true});assert.equal(r.result.exit_code,0);assert.equal(r.searchCalls,2);});
+
+test('WebView shares raw transport and exposes only ready human steps',async()=>{const r=await run({family:'webview',human:true});assert.equal(r.result.exit_code,0);assert.match(r.commands[0],/s2_webview_workflow/);assert.doesNotMatch(r.commands[0],/--mode/);assert.deepEqual(r.notifications,[{human_input:{phase:'open'}}]);assert.deepEqual(r.published.count_response,r.count);});
