@@ -1,7 +1,7 @@
 ---
-last_updated: 2026-09-21
+last_updated: 2026-09-22
 sdk_version: 3.18.0
-verified_against_commit: 82b0673ce
+verified_against_commit: 72b56e859
 tracked_files:
   - DatadogTrace/Sources/Trace.swift
   - DatadogTrace/Sources/TraceConfiguration.swift
@@ -240,6 +240,7 @@ Set `urlSessionTracking` to connect Trace to the shared automatic `URLSession` n
 - **Status-code redaction**: `redactedStatusCodes` (default `[404]`) replaces the `resource.name` tag with the status code string for matching responses. Pass an empty set to disable.
 - **Duration breakdown**: For DNS / SSL / TTFB timing, also call `URLSessionInstrumentation.enableDurationBreakdown(with: .init(delegateClass: YourURLSessionDelegate.self))` after `Trace.enable()`.
 - **Duration sanitation**: automatic URLSession spans clamp their finish time so it is never earlier than their start time before computing foreground/background tags or finishing the span.
+- **Application-state timing**: `foreground_duration` measures time in states where the process cannot be suspended. On iOS, background intervals are excluded. The internal macOS path excludes sleep intervals and sets `is_background` to `false`; this does not add official macOS support. Other platforms retain start/end background-state classification.
 
 > Note: Automatic `URLSession` network instrumentation involves swizzling `URLSession` and `URLSessionTask` methods.
 
@@ -312,4 +313,4 @@ Returned when `Datadog.initialize()` was not called or `Trace.enable()` was not 
 - The default tracer's `sampleRate` decides which spans are kept; manual `keepTrace()` / `dropTrace()` overrides that decision for the whole trace, and should be called on the root span right after creation so that propagation carries the correct sampling priority.
 - For the OpenTelemetry tracer provider, `instrumentationName`, `instrumentationVersion`, `schemaUrl` and `attributes` parameters are accepted for API compatibility but ignored — configure tags via `Trace.Configuration.tags`.
 - Automatic `URLSession` network instrumentation relies on swizzling; if your app already swizzles `URLSession` itself, validate behavior in integration tests.
-- Automatic URLSession spans sanitize inconsistent task timing by using `max(startTime, endTime)` for finish time, foreground duration ranges, and background-state lookup.
+- Automatic URLSession spans sanitize inconsistent task timing by using `max(startTime, endTime)` for finish time, non-suspended-duration ranges, and background-state lookup.
